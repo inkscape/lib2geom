@@ -81,27 +81,15 @@ ConvexHull::is_degenerate() {
  * (Proof: take any two points both in a and in b.  Any point between them is in a by convexity,
  * and in b by convexity, thus in both.  Need to prove still finite bounds.)
  */
-ConvexHull intersection(ConvexHull a, ConvexHull b);
+ConvexHull intersection(ConvexHull a, ConvexHull b) {
+
+}
 
 /*** ConvexHull merge(ConvexHull a, ConvexHull b);
  * find the smallest convex hull that surrounds a and b.
  */
-ConvexHull merge(ConvexHull a, ConvexHull b);
+ConvexHull merge(ConvexHull a, ConvexHull b) {
 
-/*** Arbitrary transform operator.
- * Take a convex hull and apply an arbitrary convexity preserving transform.
- *  we should be concerned about singular tranforms here.
- */
-template <class T> ConvexHull operator*(ConvexHull const &p, T const &m) {
-    ConvexHull pr;
-    
-    pr.cmd = p.cmd;
-    pr.boundary.reserve(p.boundary.size());
-    
-    for(unsigned i = 0; i < p.boundary.size(); i++) {
-        pr.boundary.push_back(p.boundary[i]*m);
-    }
-    return pr;
 }
 
 class ConvexCover{

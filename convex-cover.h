@@ -11,10 +11,14 @@ namespace Geom{
  * the convex hull.  It is defined by a set of points travelling in a clockwise direction.  We require the first point to be top most, and of the topmost, leftmost.
 
  * An empty hull has no points, we allow a single point or two points degenerate cases.
+
+ * We provide the centroid as a member for efficient direction determination.  We can update the
+ * centroid with all operations with the same time complexity as the operation or better.
  */
 class ConvexHull{
 public:
     std::vector<Point> boundary;
+    Point centroid;
     
     void merge(Point p);
     bool contains_point(Point p);
@@ -34,7 +38,11 @@ bool intersectp(ConvexHull a, ConvexHull b);
 ConvexHull intersection(ConvexHull a, ConvexHull b);
 ConvexHull merge(ConvexHull a, ConvexHull b);
 
-// we should be concerned about singular tranforms here.
+
+/*** Arbitrary transform operator.
+ * Take a convex hull and apply an arbitrary convexity preserving transform.
+ *  we should be concerned about singular tranforms here.
+ */
 template <class T> ConvexHull operator*(ConvexHull const &p, T const &m) {
     ConvexHull pr;
     
