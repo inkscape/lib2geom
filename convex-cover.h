@@ -1,23 +1,36 @@
 #include "path.h"
 
-/** A convex cover is a sequence of convex polygons that completely
- * cover the path.  For now a convex hull class is included here.
+/** A convex cover is a sequence of convex polygons that completely cover the path.  For now a
+ * convex hull class is included here (the convex-hull header is wrong)
  */
 
 namespace Geom{
 
 /** ConvexHull
  * A convexhull is a convex region - every point between two points in the convex hull is also in
- * the convex hull.  It is defined by a set of points travelling in a clockwise direction.
+ * the convex hull.  It is defined by a set of points travelling in a clockwise direction.  We require the first point to be top most, and of the topmost, leftmost.
+
+ * An empty hull has no points, we allow a single point or two points degenerate cases.
  */
 class ConvexHull{
 public:
     std::vector<Point> boundary;
     
-    void add_point(Point p);
+    void merge(Point p);
     bool contains_point(Point p);
+    
+    /** Is the convex hull clockwise?  We use the definition of clockwise from point.h
+    **/
+    bool is_clockwise() const;
+    bool no_colinear_points() const;
+    bool top_point_first() const;
+    bool meets_invariants() const;
+    
+    bool empty() const { return boundary.empty();}
+    bool is_degenerate() const;
 };
 
+bool intersectp(ConvexHull a, ConvexHull b);
 ConvexHull intersection(ConvexHull a, ConvexHull b);
 ConvexHull merge(ConvexHull a, ConvexHull b);
 
