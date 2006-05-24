@@ -1,9 +1,9 @@
 #include "path.h"
 
-Geom::Path read_svgd(FILE* f);
-/** read a file containing an SVG style path data giving a Path. Reads to either eof or a '"'.*/
+Geom::SubPath read_svgd(FILE* f);
+/** read a file containing an SVG style path data giving a SubPath. Reads to either eof or a '"'.*/
 
-void write_svgd(FILE* f, Geom::Path const &p);
+void write_svgd(FILE* f, Geom::SubPath const &p);
 /** write a file SVG pth data style from p. */
 
 

@@ -10,13 +10,13 @@ public:
     std::vector<Geom::Point> handles;
     double tol;
     
-    path_to_polyline(const Geom::Path &p, double tol = 1.0);
+    path_to_polyline(const Geom::SubPath &p, double tol = 1.0);
     
-    void line_to_polyline(Geom::Path::PathElem e);
+    void line_to_polyline(Geom::SubPath::SubPathElem e);
     
-    void cubic_to_polyline(Geom::Path::PathElem e);
+    void cubic_to_polyline(Geom::SubPath::SubPathElem e);
     
-    operator Geom::Path();
+    operator Geom::SubPath();
 };
 /*
   Local Variables:

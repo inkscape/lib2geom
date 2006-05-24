@@ -1,9 +1,9 @@
 #include "path-to-polyline.h"
 
-path_to_polyline::path_to_polyline(const Geom::Path &p, double tol) 
+path_to_polyline::path_to_polyline(const Geom::SubPath &p, double tol) 
 :tol(tol)
 {
-    for(Geom::Path::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
+    for(Geom::SubPath::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
         switch(iter.cmd()) {
         case Geom::moveto:
             handles.push_back((*iter)[0]);
@@ -23,11 +23,11 @@ path_to_polyline::path_to_polyline(const Geom::Path &p, double tol)
         
 }
     
-void path_to_polyline::line_to_polyline(Geom::Path::PathElem e) {
+void path_to_polyline::line_to_polyline(Geom::SubPath::SubPathElem e) {
     handles.push_back(e.begin()[1]);
 }
 
-void path_to_polyline::cubic_to_polyline(Geom::Path::PathElem e) {
+void path_to_polyline::cubic_to_polyline(Geom::SubPath::SubPathElem e) {
     Geom::Point v[3];
     for(int i = 0; i < 3; i++)
         v[i] = e[i+1] - e[0];
@@ -59,19 +59,19 @@ void path_to_polyline::cubic_to_polyline(Geom::Path::PathElem e) {
         Geom::Point midmidmid = Lerp(0.5, midmid[0], midmid[1]);
         {
             Geom::Point curve[4] = {e[0], mid[0], midmid[0], midmidmid};
-            Geom::Path::PathElem e0(Geom::cubicto, std::vector<Geom::Point>::const_iterator(curve), std::vector<Geom::Point>::const_iterator(curve) + 4);
+            Geom::SubPath::SubPathElem e0(Geom::cubicto, std::vector<Geom::Point>::const_iterator(curve), std::vector<Geom::Point>::const_iterator(curve) + 4);
             cubic_to_polyline(e0);
         } {
             Geom::Point curve[4] = {midmidmid, midmid[1], mid[2], e[3]};
-            Geom::Path::PathElem e1(Geom::cubicto, std::vector<Geom::Point>::const_iterator(curve), std::vector<Geom::Point>::const_iterator(curve) + 4);
+            Geom::SubPath::SubPathElem e1(Geom::cubicto, std::vector<Geom::Point>::const_iterator(curve), std::vector<Geom::Point>::const_iterator(curve) + 4);
             cubic_to_polyline(e1);
         }
     }
 }
     
-path_to_polyline::operator Geom::Path() {
+path_to_polyline::operator Geom::SubPath() {
     // make a polyline path
-    Geom::Path p;
+    Geom::SubPath p;
     p.cmd.push_back(Geom::moveto);
     p.handles.push_back(handles[0]);
     for(std::vector<Geom::Point>::const_iterator h(handles.begin()+1), e(handles.end());

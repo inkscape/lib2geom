@@ -3,7 +3,7 @@
 using namespace Geom;
 
 
-double cubic_length_subdividing(Geom::Path::PathElem e, double tol) {
+double cubic_length_subdividing(Geom::SubPath::SubPathElem e, double tol) {
     Geom::Point v[3];
     for(int i = 0; i < 3; i++)
         v[i] = e[i+1] - e[0];
@@ -24,20 +24,20 @@ double cubic_length_subdividing(Geom::Path::PathElem e, double tol) {
         Geom::Point midmidmid = Lerp(0.5, midmid[0], midmid[1]);
         {
             Geom::Point curve[4] = {e[0], mid[0], midmid[0], midmidmid};
-            Geom::Path::PathElem e0(Geom::cubicto, std::vector<Geom::Point>::const_iterator(curve), std::vector<Geom::Point>::const_iterator(curve) + 4);
+            Geom::SubPath::SubPathElem e0(Geom::cubicto, std::vector<Geom::Point>::const_iterator(curve), std::vector<Geom::Point>::const_iterator(curve) + 4);
             result = cubic_length_subdividing(e0, tol);
         } {
             Geom::Point curve[4] = {midmidmid, midmid[1], mid[2], e[3]};
-            Geom::Path::PathElem e1(Geom::cubicto, std::vector<Geom::Point>::const_iterator(curve), std::vector<Geom::Point>::const_iterator(curve) + 4);
+            Geom::SubPath::SubPathElem e1(Geom::cubicto, std::vector<Geom::Point>::const_iterator(curve), std::vector<Geom::Point>::const_iterator(curve) + 4);
             return result + cubic_length_subdividing(e1, tol);
         }
     }
 }
 
-double arc_length_subdividing(Geom::Path p, double tol) {
+double arc_length_subdividing(Geom::SubPath p, double tol) {
     double result = 0;
 
-    for(Geom::Path::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
+    for(Geom::SubPath::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
         switch(iter.cmd()) {
         case Geom::moveto:
             break;
@@ -68,10 +68,10 @@ double cubic_length_integrating(double t, void* param) {
     return sqrt(dot(p,p));
 }
 
-double arc_length_integrating(Geom::Path p, double tol) {
+double arc_length_integrating(Geom::SubPath p, double tol) {
     double result = 0, abserr = 0;
 
-    for(Geom::Path::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
+    for(Geom::SubPath::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
         switch(iter.cmd()) {
         case Geom::moveto:
             break;
@@ -91,7 +91,7 @@ double arc_length_integrating(Geom::Path p, double tol) {
             gsl_function F;
             gsl_integration_workspace * w 
                 = gsl_integration_workspace_alloc (20);
-            Path::PathElem pe(*iter);
+            SubPath::SubPathElem pe(*iter);
             F.function = &cubic_length_integrating;
             F.params = (void*)pc;
             double quad_result, err;

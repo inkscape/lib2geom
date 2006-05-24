@@ -8,11 +8,11 @@
 int main(int argc, char **argv) {
     FILE* f = fopen("banana.svg", "r");
     assert(f);
-    Geom::Path p = read_svgd(f);
+    Geom::SubPath p = read_svgd(f);
     
     path_to_polyline pl(p);
     
-    write_svgd(f, Geom::Path(pl));
+    write_svgd(f, Geom::SubPath(pl));
 }
 #endif
 

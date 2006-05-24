@@ -23,7 +23,7 @@
 
 namespace Geom{
 
-enum PathOp{
+enum SubPathOp{
     moveto,
     lineto,
     quadto,
@@ -32,25 +32,25 @@ enum PathOp{
     close
 };
 
-unsigned const PathOpHandles[] = {1, 1, 2, 3, 4, 0, 0};
-int const PathOpTail[] = {0, -1, -1, -1, -1, 0, 0};
+unsigned const SubPathOpHandles[] = {1, 1, 2, 3, 4, 0, 0};
+int const SubPathOpTail[] = {0, -1, -1, -1, -1, 0, 0};
 
-class Path{
+class SubPath{
 public:
     std::vector<Point> handles;
-    std::vector<PathOp> cmd;
+    std::vector<SubPathOp> cmd;
 
-    class PathElem{
+    class SubPathElem{
     public:
-        PathOp op;
+        SubPathOp op;
         std::vector<Point>::const_iterator s, e;
         std::vector<Point>::const_iterator begin() const {return s;}
         std::vector<Point>::const_iterator end() const {return e;}
         Point first() { return *s;}
         Point last() { return e[-1];}
 
-        PathElem() {}
-        PathElem(PathOp op,
+        SubPathElem() {}
+        SubPathElem(SubPathOp op,
                  std::vector<Point>::const_iterator s,
                  std::vector<Point>::const_iterator e) : op(op), s(s), e(e) {
         }
@@ -63,76 +63,93 @@ public:
         bool nearest_location(Point p, double& dist, double& t);
     };
 
-    class PathConstIter {
+    class SubPathConstIter {
     public:
-        std::vector<PathOp>::const_iterator c;
+        std::vector<SubPathOp>::const_iterator c;
         std::vector<Point>::const_iterator h;
         
-        PathConstIter() {}
-        PathConstIter(std::vector<PathOp>::const_iterator c,
+        SubPathConstIter() {}
+        SubPathConstIter(std::vector<SubPathOp>::const_iterator c,
                  std::vector<Point>::const_iterator h) :
             c(c), h(h) {}
-        void operator++() {h+=PathOpHandles[*c]; c++;}
-        void operator--() {c--; h-=PathOpHandles[*c];}
-        PathElem operator*() const {return PathElem(*c, h+PathOpTail[*c], h + PathOpHandles[*c]);}
+        void operator++() {h+=SubPathOpHandles[*c]; c++;}
+        void operator--() {c--; h-=SubPathOpHandles[*c];}
+        SubPathElem operator*() const {return SubPathElem(*c, h+SubPathOpTail[*c], h + SubPathOpHandles[*c]);}
 
         std::vector<Point>::const_iterator begin() const {return h;}
-        std::vector<Point>::const_iterator end() const {return h + PathOpHandles[*c];}
-        PathOp cmd() { return *c;}
+        std::vector<Point>::const_iterator end() const {return h + SubPathOpHandles[*c];}
+        SubPathOp cmd() { return *c;}
     };
 
-    typedef PathConstIter const_iterator;
+    typedef SubPathConstIter const_iterator;
 
-    class PathLocation{
+    class SubPathLocation{
     public:
-        PathConstIter it;
+        SubPathConstIter it;
         double t; // element specific meaning [0,1)
-        PathLocation(PathConstIter it, double t) : it(it), t(t) {}
+        SubPathLocation(SubPathConstIter it, double t) : it(it), t(t) {}
     };
 
-    PathConstIter begin() const { return PathConstIter(cmd.begin(), handles.begin());}
-    PathConstIter end() const { return PathConstIter(cmd.end(), handles.end());}
+    SubPathConstIter begin() const { return SubPathConstIter(cmd.begin(), handles.begin());}
+    SubPathConstIter end() const { return SubPathConstIter(cmd.end(), handles.end());}
 
     /** returns the point at the position given by walking along the path. */
-    PathLocation point_at_arc_length(double s);
+    SubPathLocation point_at_arc_length(double s);
 
     /** return the last nearest point on the path. */
-    PathLocation nearest_location(Point p, double& dist);
+    SubPathLocation nearest_location(Point p, double& dist);
 
     /** return a new path over [begin, end). */
-    Path subpath(PathConstIter begin, PathConstIter end);
+    SubPath subpath(SubPathConstIter begin, SubPathConstIter end);
     
     /** return a new path over [begin, end). */
-    Path subpath(PathLocation begin, PathLocation end);
+    SubPath subpath(SubPathLocation begin, SubPathLocation end);
 
     /** compute the bounding box of this path. */
     Maybe<Rect> bbox() const;
 
     /** a new path with an extra node inserted at at without changing the curve. */
-    Path insert_nodes(PathLocation* b, PathLocation* e);
-    Path insert_node(PathLocation at);
+    SubPath insert_nodes(SubPathLocation* b, SubPathLocation* e);
+    SubPath insert_node(SubPathLocation at);
 
     /** coords of point on path. */
-    Point point_at(PathLocation at);
+    Point point_at(SubPathLocation at);
 
-    void point_tangent_acc_at (PathLocation at, Point & pos, Point & tgt, Point &acc);
+    void point_tangent_acc_at (SubPathLocation at, Point & pos, Point & tgt, Point &acc);
     
-    void push_back(PathElem e);
-    void insert(PathConstIter before, PathConstIter s, PathConstIter e);
-    PathConstIter indexed_elem(int i) { // mainly for debugging
-        PathConstIter it = begin();
+    void push_back(SubPathElem e);
+    void insert(SubPathConstIter before, SubPathConstIter s, SubPathConstIter e);
+    SubPathConstIter indexed_elem(int i) { // mainly for debugging
+        SubPathConstIter it = begin();
         while(--i >= 0) ++it;
         return it;
     }
 };
 
-inline bool operator!=(const Path::PathConstIter &a, const Path::PathConstIter &b) 
+class Path{
+public:
+    std::vector<SubPath> subpaths;
+    
+    typedef std::vector<SubPath>::const_iterator PathConstIter;
+    typedef PathConstIter const_iterator;
+
+    class PathLocation{
+    public:
+        SubPath::SubPathConstIter it;
+        double t; // element specific meaning [0,1)
+        PathLocation(SubPath::SubPathConstIter it, double t) : it(it), t(t) {}
+    };
+    Path() {}
+    Path(SubPath sp) {subpaths.push_back(sp);}
+};
+
+inline bool operator!=(const SubPath::SubPathConstIter &a, const SubPath::SubPathConstIter &b) 
 { return (a.c!=b.c) || (a.h != b.h);}
 
-//Path operator * (Path, Matrix);
+//SubPath operator * (SubPath, Matrix);
 
-template <class T> Path operator*(Path const &p, T const &m) {
-    Path pr;
+template <class T> SubPath operator*(SubPath const &p, T const &m) {
+    SubPath pr;
     
     pr.cmd = p.cmd;
     pr.handles.reserve(p.handles.size());

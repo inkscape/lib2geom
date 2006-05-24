@@ -6,6 +6,7 @@ CXX=g++
 CXXFLAGS = -g
 
 path.o: path.cpp nearestpoint.cpp path.h
+arc-length.o: arc-length.cpp arc-length.h path.h
 
 path-to-svgd.o: path-to-svgd.cpp path-to-svgd.h path.h
 
@@ -26,7 +27,7 @@ conic: conic.cpp path.o path-to-svgd.cpp read-svgd.o path-to-polyline.o point-fn
 	$(CXX) -o $@ -I . $^ $(extra_cppflags) 
 
 clean:
-	rm -f *.o path path-to-svgd toy conic toy-cairo
+	rm -f *.o path path-to-svgd toy conic toy-cairo *~
 
 .cpp.o:
 	$(CXX)  $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@

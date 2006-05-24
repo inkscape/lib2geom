@@ -46,10 +46,10 @@ cubicto_extrema (std::vector<double> x) {
 /*** find_vector_extreme_points
  * 
  */
-std::vector<Geom::Path::PathLocation> find_vector_extreme_points(Geom::Path p, Geom::Point dir) {
-    std::vector<Geom::Path::PathLocation> result;
+std::vector<Geom::SubPath::SubPathLocation> find_vector_extreme_points(Geom::SubPath p, Geom::Point dir) {
+    std::vector<Geom::SubPath::SubPathLocation> result;
 
-    for(Geom::Path::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
+    for(Geom::SubPath::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
         switch(iter.cmd()) {
         case Geom::moveto:
             break;
@@ -64,7 +64,7 @@ std::vector<Geom::Path::PathLocation> find_vector_extreme_points(Geom::Path p, G
             for(std::vector<double>::iterator it = ts.begin();
                 it != ts.end();
                 ++it) {
-                result.push_back(Geom::Path::PathLocation(iter, *it));
+                result.push_back(Geom::SubPath::SubPathLocation(iter, *it));
             }
             break;
         }
@@ -79,11 +79,11 @@ std::vector<Geom::Path::PathLocation> find_vector_extreme_points(Geom::Path p, G
 /*** find_cusp_points
  * 
  */
-std::vector<Geom::Path::PathLocation>
-find_cusp_points(Geom::Path p, int dim) {
-    std::vector<Geom::Path::PathLocation> result;
+std::vector<Geom::SubPath::SubPathLocation>
+find_cusp_points(Geom::SubPath p, int dim) {
+    std::vector<Geom::SubPath::SubPathLocation> result;
 
-    for(Geom::Path::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
+    for(Geom::SubPath::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
         switch(iter.cmd()) {
         case Geom::moveto:
         case Geom::lineto:
@@ -97,7 +97,7 @@ find_cusp_points(Geom::Path p, int dim) {
             for(std::vector<double>::iterator it = ts.begin();
                 it != ts.end();
                 ++it) {
-                result.push_back(Geom::Path::PathLocation(iter, *it));
+                result.push_back(Geom::SubPath::SubPathLocation(iter, *it));
             }
             break;
         }
@@ -114,11 +114,11 @@ find_cusp_points(Geom::Path p, int dim) {
 /*** find_inflection_points
  * 
  */
-std::vector<Geom::Path::PathLocation>
-find_inflection_points(Geom::Path p) {
-    std::vector<Geom::Path::PathLocation> result;
+std::vector<Geom::SubPath::SubPathLocation>
+find_inflection_points(Geom::SubPath p) {
+    std::vector<Geom::SubPath::SubPathLocation> result;
 
-    for(Geom::Path::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
+    for(Geom::SubPath::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
         switch(iter.cmd()) {
         case Geom::moveto:
             break;
@@ -137,7 +137,7 @@ find_inflection_points(Geom::Path p) {
             Geom::Point bT = -rot90(pc[2]);
             double t_cusp = -dot(aT, pc[1])/(2*dot(aT, pc[2]));
             if(t_cusp > 0 && t_cusp < 1)
-              result.push_back(Geom::Path::PathLocation(iter, t_cusp));
+              result.push_back(Geom::SubPath::SubPathLocation(iter, t_cusp));
             double det = t_cusp*t_cusp - dot(bT, pc[1])/(3*dot(aT, pc[2]));
             if(det >= 0) {
                 det = sqrt(det);
@@ -145,9 +145,9 @@ find_inflection_points(Geom::Path p) {
                 double t2 = t_cusp + det;
                 //printf("%g %g %g %g\n", t_cusp, det, t1, t2);
                 if(t1 > 0 && t1 < 1)
-                    result.push_back(Geom::Path::PathLocation(iter, t1));
+                    result.push_back(Geom::SubPath::SubPathLocation(iter, t1));
                 if(t2 > 0 && t2 < 1)
-                    result.push_back(Geom::Path::PathLocation(iter, t2));
+                    result.push_back(Geom::SubPath::SubPathLocation(iter, t2));
             }
             break;
         }
@@ -162,11 +162,11 @@ find_inflection_points(Geom::Path p) {
 /*** find_flat_points
  * 
  */
-std::vector<Geom::Path::PathLocation>
-find_flat_points(Geom::Path p) {
-    std::vector<Geom::Path::PathLocation> result;
+std::vector<Geom::SubPath::SubPathLocation>
+find_flat_points(Geom::SubPath p) {
+    std::vector<Geom::SubPath::SubPathLocation> result;
 
-    for(Geom::Path::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
+    for(Geom::SubPath::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
         switch(iter.cmd()) {
         case Geom::moveto:
             break;
@@ -184,7 +184,7 @@ find_flat_points(Geom::Path p) {
             
             double t1 = 2*sqrt(1/(3*fabs(s3)));
             if(t1 > 0 && t1 < 1)
-                result.push_back(Geom::Path::PathLocation(iter, t1));
+                result.push_back(Geom::SubPath::SubPathLocation(iter, t1));
             
         
             break;

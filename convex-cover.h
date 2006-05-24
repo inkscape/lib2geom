@@ -57,7 +57,7 @@ template <class T> ConvexHull operator*(ConvexHull const &p, T const &m) {
 
 class ConvexCover{
 public:
-    Path* path;
+    SubPath* path;
     
     
 };

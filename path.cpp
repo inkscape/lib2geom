@@ -3,7 +3,7 @@
 
 namespace Geom{
 
-Maybe<Rect> Path::bbox() const {
+Maybe<Rect> SubPath::bbox() const {
 // needs work for other elements.
     if(handles.size() > 0) {
         Rect r(handles[0], handles[0]);
@@ -22,7 +22,7 @@ Maybe<Rect> Path::bbox() const {
  * note that this operation modifies the path.
  */
 
-void Path::push_back(PathElem e) {
+void SubPath::push_back(SubPathElem e) {
     assert(e.begin() != e.end());
     if(!handles.empty() && *e.begin() != handles.back()) {
         cmd.push_back(Geom::moveto);
@@ -37,12 +37,12 @@ void Path::push_back(PathElem e) {
 }
 
 
-/*** Path::insert
+/*** SubPath::insert
  * copy elements from [s,e) to before before (as per vector.insert)
  * note that this operation modifies the path.
  * 
  */
-void Path::insert(PathConstIter before, PathConstIter s, PathConstIter e) {
+void SubPath::insert(SubPathConstIter before, SubPathConstIter s, SubPathConstIter e) {
     assert(0);
 /*
     if((*s).begin()[0] != ) {
@@ -55,13 +55,13 @@ void Path::insert(PathConstIter before, PathConstIter s, PathConstIter e) {
 }
 
 
-/*Path Path::insert_node(PathLocation at) {
-    Path p;
+/*SubPath SubPath::insert_node(SubPathLocation at) {
+    SubPath p;
     
     p.insert(p.end(), begin(), at.it); // begining of path
     }*/
 
-Geom::Point Geom::Path::PathElem::point_at(double t) {
+Geom::Point Geom::SubPath::SubPathElem::point_at(double t) {
     switch(op) {
     case Geom::moveto: // these four could be merged by a smarter person
         return s[0];
@@ -90,7 +90,7 @@ Geom::Point Geom::Path::PathElem::point_at(double t) {
 }
 
 void
-Geom::Path::PathElem::point_tangent_acc_at(double t, 
+Geom::SubPath::SubPathElem::point_tangent_acc_at(double t, 
                                            Geom::Point &pos, 
                                            Geom::Point &tgt,
                                            Geom::Point &acc) {
@@ -129,17 +129,17 @@ Geom::Path::PathElem::point_tangent_acc_at(double t,
 }
 
 
-Point Path::point_at(PathLocation at) {
+Point SubPath::point_at(SubPathLocation at) {
     return (*at.it).point_at(at.t);
 }
 
-void Path::point_tangent_acc_at(PathLocation at, Point &pos, Point & tgt, Point &acc) {
+void SubPath::point_tangent_acc_at(SubPathLocation at, Point &pos, Point & tgt, Point &acc) {
     (*at.it).point_tangent_acc_at(at.t, pos, tgt, acc);
 }
 
 #include "nearestpoint.cpp"
 
-bool Path::PathElem::nearest_location(Point p, double& dist, double& tt) {
+bool SubPath::SubPathElem::nearest_location(Point p, double& dist, double& tt) {
     double new_dist, new_t;
     switch(op) {
     case Geom::moveto:
@@ -178,26 +178,26 @@ bool Path::PathElem::nearest_location(Point p, double& dist, double& tt) {
     return false;
 }
 
-Path::PathLocation Path::nearest_location(Point p, double &dist) {
-    PathLocation pl(begin(), 0);
+SubPath::SubPathLocation SubPath::nearest_location(Point p, double &dist) {
+    SubPathLocation pl(begin(), 0);
     dist = INFINITY;
     double t = 0;
     int i = 0;
-    for(PathConstIter elm = begin();
+    for(SubPathConstIter elm = begin();
         elm != end();
        ) {
         ++elm;
         if((*elm).nearest_location(p, dist, t)) {
-            pl = PathLocation(elm, t);
+            pl = SubPathLocation(elm, t);
         }
         i++;
     }
     return pl;
 }
 
-Path Path::subpath(PathConstIter begin, PathConstIter end) {
-    Path result;
-    for(PathConstIter iter(begin); iter != end; ++iter) {
+SubPath SubPath::subpath(SubPathConstIter begin, SubPathConstIter end) {
+    SubPath result;
+    for(SubPathConstIter iter(begin); iter != end; ++iter) {
         result.push_back(*iter);
     }
     return result;

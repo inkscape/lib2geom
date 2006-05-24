@@ -29,7 +29,7 @@ using std::vector;
 static GtkWidget *canvas;
 static GdkGC *dash_gc;
 static GdkGC *plain_gc;
-Geom::Path display_path;
+Geom::SubPath display_path;
 
 static Geom::Point old_handle_pos;
 static Geom::Point old_mouse_point;
@@ -100,7 +100,7 @@ void draw_elip(cairo_t *cr, Geom::Point *h) {
     }
 }
 
-void draw_path(cairo_t *cr, Geom::Path p) {
+void draw_path(cairo_t *cr, Geom::SubPath p) {
     path_to_polyline pl(p, 1);
     
     Geom::Point old(pl.handles[0]);
@@ -136,7 +136,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     
     Geom::Point dir(1,1);
     /*
-    vector<Geom::Path::PathLocation> pts = find_vector_extreme_points(display_path, dir);
+    vector<Geom::SubPath::SubPathLocation> pts = find_vector_extreme_points(display_path, dir);
     
     for(int i = 0; i < pts.size(); i++) {
         draw_circ(cr, display_path.point_at(pts[i]));
@@ -147,7 +147,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     cairo_save(cr);
     cairo_set_source_rgba (cr, 0., 0., 0.5, 0.8);
 
-    Geom::Path::PathLocation pl = 
+    Geom::SubPath::SubPathLocation pl = 
         display_path.nearest_location(old_mouse_point, dist);
     {
         Geom::Point pos, tgt, acc;
@@ -167,12 +167,12 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     cairo_save(cr);
     cairo_set_source_rgba (cr, 0.25, 0.25, 0., 0.8);
 
-    Geom::Path pth = display_path.subpath(display_path.indexed_elem(2), display_path.end());
+    Geom::SubPath pth = display_path.subpath(display_path.indexed_elem(2), display_path.end());
     pth = pth*Geom::translate(Geom::Point(30, 30));
     draw_path(cr, pth);
     Bezier a, b;
     const int curve_seg = 3;
-    Geom::Path::PathElem ai(*display_path.indexed_elem(curve_seg)), bi(*pth.indexed_elem(curve_seg));
+    Geom::SubPath::SubPathElem ai(*display_path.indexed_elem(curve_seg)), bi(*pth.indexed_elem(curve_seg));
     
     for(int i = 0; i < 4; i++) {
         a.p[i] = ai[i];
@@ -184,17 +184,17 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     cairo_save(cr);
     cairo_set_source_rgba (cr, 0, 0.5, 0., 0.8);
     for(int i = 0; i < ts.size(); i++) {
-        Geom::Path::PathLocation pl(display_path.indexed_elem(curve_seg), ts[i].first);
+        Geom::SubPath::SubPathLocation pl(display_path.indexed_elem(curve_seg), ts[i].first);
         
         draw_handle(cr, display_path.point_at(pl));
-        Geom::Path::PathLocation p2(pth.indexed_elem(curve_seg), ts[i].second);
+        Geom::SubPath::SubPathLocation p2(pth.indexed_elem(curve_seg), ts[i].second);
         
         draw_circ(cr, display_path.point_at(p2));
     }
     cairo_restore(cr);
     
     /*
-    vector<Geom::Path::PathLocation> pts = 
+    vector<Geom::SubPath::SubPathLocation> pts = 
         find_inflection_points(display_path);
   
     for(int i = 0; i < pts.size(); i++) {
