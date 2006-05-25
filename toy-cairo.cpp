@@ -113,6 +113,16 @@ void draw_path(cairo_t *cr, Geom::SubPath p) {
     
 }
 
+#include "centroid.h"
+
+Geom::Point path_centroid_polyline(Geom::SubPath p, double &area) {
+    path_to_polyline pl(p, 1);
+    Geom::Point centr;
+    Geom::centroid(pl.handles,  centr, area);
+    
+    return centr;
+}
+
 Geom::Point* selected_handle = 0;
 
 
@@ -208,7 +218,14 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
         //draw_ray(cr, pos+tgt, acc);
     }
     */
+    double area = 0;
+    Geom::Point cntr = path_centroid_polyline(display_path, area);
+    draw_circ(cr, cntr);
+    cairo_move_to(cr, cntr[0], cntr[1]);
+    cairo_show_text (cr, "center of the universe");
+    
     notify << "path length: " << arc_length_integrating(display_path, 1e3) << "\n";
+    notify << "Area: " << area << ", " << cntr;
     
 
     {

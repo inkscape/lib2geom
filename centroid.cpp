@@ -21,7 +21,10 @@
 
     * for now we require the path to be a polyline and assume it is closed.
 **/
-int centroid(std::vector<Point> p, Point centroid, double &area) {
+
+namespace Geom{
+int centroid(std::vector<Point> p, Point& centroid, double &area) {
+    const unsigned n = p.size();
     if (n < 3)
         return 1;
     Point centroid_tmp(0,0);
@@ -29,16 +32,17 @@ int centroid(std::vector<Point> p, Point centroid, double &area) {
     for (int i(n-1), j(0); j < n; i = j, j++) {
         const double ai = cross(p[j], p[i]);
         atmp += ai;
-        centroid_tmp += (p[j] + p[i]) * ai; // first moment.
+        centroid_tmp += ai*(p[j] + p[i]); // first moment.
     }
-    *area = atmp / 2;
+    area = atmp / 2;
     if (atmp != 0) {
-        centroid = centroid / (3 * atmp);
+        centroid = centroid_tmp / (3 * atmp);
         return 0;
     }
     return 2;
 }
 
+};
 /*
   Local Variables:
   mode:c++
