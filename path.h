@@ -92,6 +92,8 @@ public:
 
     SubPathConstIter begin() const { return SubPathConstIter(cmd.begin(), handles.begin());}
     SubPathConstIter end() const { return SubPathConstIter(cmd.end(), handles.end());}
+    
+    bool empty() const { return cmd.empty(); }
 
     /** returns the point at the position given by walking along the path. */
     SubPathLocation point_at_arc_length(double s);
