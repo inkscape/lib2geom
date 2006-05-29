@@ -11,6 +11,9 @@ path_to_polyline::path_to_polyline(const Geom::SubPath &p, double tol)
         case Geom::lineto:
             line_to_polyline(*iter);
             break;
+        case Geom::quadto:
+            quad_to_polyline(*iter);
+            break;
         case Geom::cubicto:
             cubic_to_polyline(*iter);
             break;
@@ -69,6 +72,42 @@ void path_to_polyline::cubic_to_polyline(Geom::SubPath::SubPathElem e) {
     }
 }
     
+void path_to_polyline::quad_to_polyline(Geom::SubPath::SubPathElem e) {
+    Geom::Point v[2];
+    for(int i = 0; i < 2; i++)
+        v[i] = e[i+1] - e[0];
+    Geom::Point orth = v[1]; // unit normal to path line
+    //printf("(%g, %g) :  ", orth[0], orth[1]);
+    rot90(orth);
+    orth.normalize();
+    double err = fabs(dot(orth, v[0]));
+    const double thresh = tol;
+    
+    // better rule, apparently *
+    err = L1(e[0] + e[2] - 2*e[1]);
+
+    if(err < thresh) {
+        handles.push_back(e[2]); // approximately a line
+        //printf("*\n");
+    } else {
+        // ideally we break at the two extreme points.  Instead we're going to just cut in half
+        //printf("\n");
+        Geom::Point mid[2];
+        for(int i = 0; i < 2; i++)
+            mid[i] = Lerp(0.5, e[i], e[i+1]);
+        Geom::Point midmid = Lerp(0.5, mid[0], mid[1]);
+        {
+            Geom::Point curve[3] = {e[0], mid[0], midmid};
+            Geom::SubPath::SubPathElem e0(Geom::quadto, std::vector<Geom::Point>::const_iterator(curve), std::vector<Geom::Point>::const_iterator(curve) + 3);
+            quad_to_polyline(e0);
+        } {
+            Geom::Point curve[4] = {midmid, mid[1], e[2]};
+            Geom::SubPath::SubPathElem e1(Geom::quadto, std::vector<Geom::Point>::const_iterator(curve), std::vector<Geom::Point>::const_iterator(curve) + 3);
+            quad_to_polyline(e1);
+        }
+    }
+}
+   
 path_to_polyline::operator Geom::SubPath() {
     // make a polyline path
     Geom::SubPath p;

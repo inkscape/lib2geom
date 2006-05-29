@@ -14,6 +14,7 @@ public:
     
     void line_to_polyline(Geom::SubPath::SubPathElem e);
     
+    void quad_to_polyline(Geom::SubPath::SubPathElem e);
     void cubic_to_polyline(Geom::SubPath::SubPathElem e);
     
     operator Geom::SubPath();

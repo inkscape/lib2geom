@@ -160,7 +160,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     Geom::SubPath::SubPathLocation pl = 
         display_path.nearest_location(old_mouse_point, dist);
     {
-        Geom::Point pos, tgt, acc;
+        /*Geom::Point pos, tgt, acc;
         display_path.point_tangent_acc_at (pl, pos, tgt, acc);
         draw_circ(cr, pos);
         double kurvature = dot(acc, rot90(tgt))/pow(Geom::L2(tgt),3);
@@ -169,11 +169,11 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
             draw_ray(cr, pos, 
                      (1./kurvature)*Geom::unit_vector(rot90(tgt)));
         else // just normal
-            draw_ray(cr, pos, rot90(tgt));
+        draw_ray(cr, pos, rot90(tgt));*/
             
     }
     cairo_restore(cr);
-
+/*    
     cairo_save(cr);
     cairo_set_source_rgba (cr, 0.25, 0.25, 0., 0.8);
 
@@ -202,7 +202,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
         draw_circ(cr, display_path.point_at(p2));
     }
     cairo_restore(cr);
-    
+    */
     /*
     vector<Geom::SubPath::SubPathLocation> pts = 
         find_inflection_points(display_path);
@@ -218,6 +218,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
         //draw_ray(cr, pos+tgt, acc);
     }
     */
+
     double area = 0;
     Geom::Point cntr = path_centroid_polyline(display_path, area);
     draw_circ(cr, cntr);
@@ -226,7 +227,13 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     
     notify << "path length: " << arc_length_integrating(display_path, 1e3) << "\n";
     notify << "Area: " << area << ", " << cntr;
-    
+
+    centroid(display_path, cntr, area);
+    draw_circ(cr, cntr);
+    cairo_move_to(cr, cntr[0], cntr[1]);
+    cairo_show_text (cr, "center of the path");
+
+    notify << "pathwise Area: " << area << ", " << cntr;
 
     {
         notify << std::ends;

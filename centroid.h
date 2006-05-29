@@ -16,6 +16,7 @@
 
 namespace Geom{
 	int centroid(std::vector<Point> p, Point& centroid, double &area);
+	int centroid(SubPath const &p, Point& centroid, double &area);
 
 };
 /*

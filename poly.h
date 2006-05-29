@@ -78,6 +78,7 @@ public:
     Poly operator*(const Poly& p);
 
     double eval(double x);
+    double operator()(double t) { return eval(t);}
 };
 
 Poly integral(Poly const & p);

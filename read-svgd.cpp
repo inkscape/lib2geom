@@ -62,6 +62,11 @@ Geom::SubPath read_svgd(FILE* f) {
             path.handles.push_back(read_point(f));
             path.handles.push_back(read_point(f));
             break;
+        case 'Q':
+            path.cmd.push_back(Geom::quadto);
+            path.handles.push_back(read_point(f));
+            path.handles.push_back(read_point(f));
+            break;
         case 'z':
             path.cmd.push_back(Geom::close);
             break;

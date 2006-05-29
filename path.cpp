@@ -109,6 +109,8 @@ Geom::SubPath::SubPathElem::point_tangent_acc_at(double t,
         for(int i = 0; i < 2; i++)
             mid[i] = Lerp(t, s[i], s[i+1]);
         pos = Lerp(t, mid[0], mid[1]);
+        tgt = 2*t*(mid[0]-mid[1]) -2*mid[0];
+        acc = 2*(mid[0]-mid[1]);
         break;
     }
     case Geom::cubicto:
@@ -118,8 +120,8 @@ Geom::SubPath::SubPathElem::point_tangent_acc_at(double t,
             pc[i] = Point(0,0);
         
         cubic_bezier_poly_coeff(s, pc);
-        pos = t*t*t*pc[3] + t*t*pc[2] + t*pc[1] + pc[0];
-        tgt = 3*t*t*pc[3] + 2*t*pc[2] + pc[1];
+        pos = t*(t*(t*pc[3] + pc[2]) + pc[1]) + pc[0];
+        tgt = t*(3*t*pc[3] + 2*pc[2]) + pc[1];
         acc = 6*t*pc[3] + 2*pc[2];
         break;
     }
@@ -155,6 +157,17 @@ bool SubPath::SubPathElem::nearest_location(Point p, double& dist, double& tt) {
         if((t > 0) && (t < 1)) {
             new_t = t;
             new_dist = fabs(dot(p - s[0], unit_vector(rot90(s[1] - s[0]))));
+        }
+        break;
+    }
+    case Geom::quadto:
+    {
+        new_dist = L2(p - s[2]);
+        new_t = 1;
+        double t = dot(p - s[0], (s[2] - s[0])) / dot(s[2] - s[0], s[2] - s[0]);
+        if((t > 0) && (t < 1)) {
+            new_t = t;
+            new_dist = fabs(dot(p - s[0], unit_vector(rot90(s[2] - s[0]))));
         }
         break;
     }

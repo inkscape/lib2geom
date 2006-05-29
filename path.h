@@ -43,19 +43,20 @@ public:
     class SubPathElem{
     public:
         SubPathOp op;
-        std::vector<Point>::const_iterator s, e;
-        std::vector<Point>::const_iterator begin() const {return s;}
-        std::vector<Point>::const_iterator end() const {return e;}
+        typedef std::vector<Point>::const_iterator const_iterator;
+        const_iterator s, e;
+        const_iterator begin() const {return s;}
+        const_iterator end() const {return e;}
         Point first() { return *s;}
         Point last() { return e[-1];}
 
         SubPathElem() {}
         SubPathElem(SubPathOp op,
-                 std::vector<Point>::const_iterator s,
-                 std::vector<Point>::const_iterator e) : op(op), s(s), e(e) {
+                 const_iterator s, const_iterator e) : op(op), s(s), e(e) {
         }
         
-        Point operator[](int i) {return s[i];}
+        Point operator[]( const int i) {return s[i];}
+        Point operator[]( const int i) const {return s[i];}
         
         void point_tangent_acc_at(double t, Point &p, Point &t, Point &a);
         Point point_at(double t);
