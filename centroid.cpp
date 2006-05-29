@@ -67,6 +67,27 @@ cubic_bezier_poly(SubPath::SubPathElem const & b, int dim) {
 }
 
 
+static Poly
+quadratic_bezier_poly(SubPath::SubPathElem const & b, int dim) {
+    Poly result;
+    double c[6] = {1, 
+                    -2, 2, 
+                    1, -2, 1};
+
+    int cp = 0;
+    
+    result.coeff.resize(3);
+    
+    for(int i = 0; i < 3; i++) {
+        for(int j = 0; j <= i; j++) {
+            result.coeff[2 - j] += (c[cp]*(b[2- i]))[dim];
+            cp++;
+        }
+    }
+    return result;
+}
+
+
 
 int centroid(SubPath const &p, Point& centroid, double &area) {
     Point centroid_tmp(0,0);
@@ -83,6 +104,21 @@ int centroid(SubPath const &p, Point& centroid, double &area) {
                 const double ai = cross(elm.first(), elm.last());
                 atmp += ai;
                 centroid_tmp += ai*(elm.first() + elm.last()); // first moment.
+                break;
+            }
+            case Geom::quadto:
+            {
+                Poly Bx = quadratic_bezier_poly(elm, X); // poly version of bezier (0-1)
+                Poly By = quadratic_bezier_poly(elm, Y);
+                Poly dBx = derivative(Bx);
+                Poly dBy = derivative(By);
+                Poly curl = By*dBx -Bx*dBy;
+                Poly A = integral(curl);
+                Poly Cx = integral(curl*Bx);
+                Poly Cy = integral(curl*By);
+                const double ai = A(1); // we don't need to subtract the constant as integral makes the constant 0.
+                atmp += ai;
+                centroid_tmp += 2*Point(Cx(1), Cy(1)); // first moment.
                 break;
             }
             case Geom::cubicto:
