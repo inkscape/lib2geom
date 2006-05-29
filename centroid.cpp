@@ -1,5 +1,6 @@
 #include "path.h"
 #include "poly.h"
+#include "arc-length.h"
 
 
 /*
@@ -86,7 +87,7 @@ int centroid(SubPath const &p, Point& centroid, double &area) {
             }
             case Geom::cubicto:
             {
-                Poly Bx = cubic_bezier_poly(elm, X);
+                Poly Bx = cubic_bezier_poly(elm, X); // poly version of bezier (0-1)
                 Poly By = cubic_bezier_poly(elm, Y);
                 Poly dBx = derivative(Bx);
                 Poly dBy = derivative(By);
@@ -94,9 +95,9 @@ int centroid(SubPath const &p, Point& centroid, double &area) {
                 Poly A = integral(curl);
                 Poly Cx = integral(curl*Bx);
                 Poly Cy = integral(curl*By);
-                const double ai = A(1) - A(0);
+                const double ai = A(1); // we don't need to subtract the constant as integral makes the constant 0.
                 atmp += ai;
-                centroid_tmp += 2*Point(Cx(1) - Cx(0), Cy(1) - Cy(0)); // first moment.
+                centroid_tmp += 2*Point(Cx(1), Cy(1)); // first moment.
                 break;
             }
             default:
@@ -114,6 +115,38 @@ int centroid(SubPath const &p, Point& centroid, double &area) {
         return 0;
     }
     return 2;
+}
+
+int dcentroid(SubPath const &p, Point& dcentroid) {
+    Point centroid_tmp(0,0);
+    for(SubPath::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
+        SubPath::SubPathElem elm = *iter;
+        switch(iter.cmd()) {
+            case Geom::moveto:
+                break;
+            case Geom::lineto:
+            {
+                centroid_tmp += (elm.first() + elm.last())/2;
+                break;
+            }
+            case Geom::cubicto:
+            {
+                Poly Bx = cubic_bezier_poly(elm, X); // poly version of bezier (0-1)
+                Poly By = cubic_bezier_poly(elm, Y);
+                Poly dBx = derivative(Bx);
+                Poly dBy = derivative(By);
+                Poly Cx = integral(Bx + 0.5*dBx);
+                Poly Cy = integral(By + 0.5*dBy);
+                centroid_tmp += Point(Cx(1), Cy(1)); // first moment.
+                break;
+            }
+            default:
+                break;
+        }
+    }
+    
+    dcentroid = centroid_tmp /arc_length_integrating(p, 0.01);
+    return 0;
 }
 
 };

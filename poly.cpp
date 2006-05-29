@@ -1,6 +1,6 @@
 #include "poly.h"
 
-Poly Poly::operator*(const Poly& p) {
+Poly Poly::operator*(const Poly& p) const {
     Poly result;
     const unsigned out_size = degree() +  p.degree()+1;
     const unsigned min_size = std::max(size(), p.size());
@@ -17,7 +17,7 @@ Poly Poly::operator*(const Poly& p) {
 
 #include <gsl/gsl_poly.h>
 
-double Poly::eval(double x) {
+double Poly::eval(double x) const {
     return gsl_poly_eval(&coeff[0], size(), x);
 }
 

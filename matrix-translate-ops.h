@@ -6,8 +6,8 @@
  * blah (Geom::Matrix, Geom::translate).
  */
 
-#include "libnr/matrix.h"
-#include "libnr/translate.h"
+#include "matrix.h"
+#include "translate.h"
 
 //Geom::Matrix operator*(Geom::Matrix const &m, Geom::translate const &t);
 

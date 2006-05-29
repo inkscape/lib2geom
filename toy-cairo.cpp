@@ -22,6 +22,8 @@
 #include "rotate-ops.h"
 #include "arc-length.h"
 #include "path-intersect.h"
+#include "matrix-rotate-ops.h"
+#include "matrix-translate-ops.h"
 
 using std::string;
 using std::vector;
@@ -126,6 +128,8 @@ Geom::Point path_centroid_polyline(Geom::SubPath p, double &area) {
 Geom::Point* selected_handle = 0;
 
 
+bool rotater  = false;
+
 static gboolean
 expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
 {
@@ -141,6 +145,15 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     for(int i = 0; i < display_path.handles.size(); i++) {
         draw_handle(cr, display_path.handles[i]);
     }
+    if(rotater) {
+        Geom::Point cntr;
+        double area;
+        centroid(display_path, cntr, area);
+        Geom::Matrix m(Geom::translate(-cntr));
+        m = (m*Geom::rotate(0.01))*Geom::translate(cntr);
+        display_path = display_path*m;
+    }
+    
     draw_path(cr, display_path);
     //draw_elip(cr, handles);
     
@@ -228,6 +241,12 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     notify << "path length: " << arc_length_integrating(display_path, 1e3) << "\n";
     notify << "Area: " << area << ", " << cntr;
 
+/*    dcentroid(display_path, cntr);
+    draw_circ(cr, cntr);
+    cairo_move_to(cr, cntr[0], cntr[1]);
+    cairo_show_text (cr, "center of the stroke");
+    notify << "path centre: " << cntr;
+*/
     centroid(display_path, cntr, area);
     draw_circ(cr, cntr);
     cairo_move_to(cr, cntr[0], cntr[1]);
@@ -315,6 +334,8 @@ static gint key_release_event(GtkWidget *widget, GdkEventKey *event, gpointer) {
         ret = TRUE;
     } else if (event->keyval == 'l') {
         ret = TRUE;
+    } else if (event->keyval == 'r') {
+        rotater = !rotater;
     } else if (event->keyval == 'd') {
         write_svgd(stderr, display_path);
         ret = TRUE;
@@ -343,6 +364,11 @@ delete_event_cb(GtkWidget* window, GdkEventAny* e, gpointer data)
 #include "scale-ops.h"
 #include "translate-scale-ops.h"
 
+static gboolean idler(GtkWidget* widget) {
+    if(rotater)
+        gtk_widget_queue_draw(widget);
+    return TRUE;
+}
 
 int main(int argc, char **argv) {
     char const *const filename = (argc >= 2
@@ -440,6 +466,8 @@ int main(int argc, char **argv) {
     assert(GTK_WIDGET_CAN_FOCUS(canvas));
     gtk_widget_grab_focus(canvas);
     assert(gtk_widget_is_focus(canvas));
+    
+    g_idle_add((GSourceFunc)idler, canvas);
 
     gtk_main();
 

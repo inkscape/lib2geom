@@ -7,6 +7,7 @@ CXXFLAGS = -g
 
 path.o: path.cpp nearestpoint.cpp path.h
 arc-length.o: arc-length.cpp arc-length.h path.h
+poly.o: poly.cpp poly.h
 
 path-to-svgd.o: path-to-svgd.cpp path-to-svgd.h path.h
 
@@ -20,7 +21,7 @@ path-to-svgd: path.o path-to-svgd.cpp read-svgd.o path-to-polyline.o types.o rec
 toy: toy.cpp path.o path-to-svgd.o read-svgd.o path-to-polyline.o types.o rect.o geom.o read-svgd.o path-find-points-of-interest.o point-fns.o types.o rotate-fns.o matrix.o arc-length.o path-intersect.o
 	$(CXX) $(CXXFLAGS) -o $@ -I . $^ $(extra_cppflags) 
 
-toy-cairo: toy-cairo.cpp path.o path-to-svgd.o read-svgd.o path-to-polyline.o types.o rect.o geom.o read-svgd.o path-find-points-of-interest.o point-fns.o types.o rotate-fns.o matrix.o arc-length.o path-intersect.o centroid.o poly.o
+toy-cairo: toy-cairo.cpp path.o path-to-svgd.o read-svgd.o path-to-polyline.o types.o rect.o geom.o read-svgd.o path-find-points-of-interest.o point-fns.o types.o rotate-fns.o matrix.o arc-length.o path-intersect.o centroid.o poly.o matrix-rotate-ops.o matrix-translate-ops.o 
 	$(CXX) $(CXXFLAGS) -o $@ -I . $^ $(extra_cppflags) 
 
 conic: conic.cpp path.o path-to-svgd.cpp read-svgd.o path-to-polyline.o point-fns.o types.o rect.o geom.o path.h

@@ -1,7 +1,7 @@
 #ifndef SEEN_LIBGeom_Geom_MATRIX_ROTATE_OPS_H
 #define SEEN_LIBGeom_Geom_MATRIX_ROTATE_OPS_H
 
-#include "libnr/forward.h"
+#include "matrix.h"
 
 Geom::Matrix operator*(Geom::Matrix const &m, Geom::rotate const &r);
 
