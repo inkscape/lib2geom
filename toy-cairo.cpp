@@ -173,7 +173,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     Geom::SubPath::SubPathLocation pl = 
         display_path.nearest_location(old_mouse_point, dist);
     {
-        /*Geom::Point pos, tgt, acc;
+        Geom::Point pos, tgt, acc;
         display_path.point_tangent_acc_at (pl, pos, tgt, acc);
         draw_circ(cr, pos);
         double kurvature = dot(acc, rot90(tgt))/pow(Geom::L2(tgt),3);
@@ -182,12 +182,12 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
             draw_ray(cr, pos, 
                      (1./kurvature)*Geom::unit_vector(rot90(tgt)));
         else // just normal
-        draw_ray(cr, pos, rot90(tgt));*/
+            draw_ray(cr, pos, rot90(tgt));
             
     }
     cairo_restore(cr);
 /*    
-    cairo_save(cr);
+      cairo_save(cr);
     cairo_set_source_rgba (cr, 0.25, 0.25, 0., 0.8);
 
     Geom::SubPath pth = display_path.subpath(display_path.indexed_elem(2), display_path.end());
@@ -334,6 +334,8 @@ static gint key_release_event(GtkWidget *widget, GdkEventKey *event, gpointer) {
         ret = TRUE;
     } else if (event->keyval == 'l') {
         ret = TRUE;
+    } else if (event->keyval == 'q') {
+        exit(0);
     } else if (event->keyval == 'r') {
         rotater = !rotater;
     } else if (event->keyval == 'd') {

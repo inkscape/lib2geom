@@ -45,6 +45,17 @@ public:
         assert(result.size() == out_size);
         return result;
     }
+    Poly operator-(const double k) const {
+        Poly result;
+        const unsigned out_size = size();
+        result.coeff.reserve(out_size);
+        
+        for(unsigned i = 0; i < out_size; i++) {
+            result.coeff.push_back(coeff[i]);
+        }
+        result.coeff[0] -= k;
+        return result;
+    }
     Poly operator*(const double p) const {
         Poly result;
         const unsigned out_size = size();
@@ -91,7 +102,17 @@ Poly integral(Poly const & p);
 Poly derivative(Poly const & p);
 Poly divide_out_root(Poly const & p, double x);
 
+/*** solve(Poly p)
+ * find all p.degree() roots of p.
+ * This function can take a long time with suitably crafted polynomials, but in practice it should be fast.  Should we provide special forms for degree() <= 4?
+ */
 std::vector<std::complex<double> > solve(const Poly & p);
+
+/*** solve_reals(Poly p)
+ * find all real solutions to Poly p.
+ * currently we just use solve and pick out the suitably real looking values, there may be a better algorithm.
+ */
+std::vector<double> solve_reals(const Poly & p);
 
 inline std::ostream &operator<< (std::ostream &out_file, const Poly &in_poly) {
     if(in_poly.size() == 0)

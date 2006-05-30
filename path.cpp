@@ -1,7 +1,29 @@
 #include "path.h"
 #include "cubic_bez_util.h"
+#include "poly.h"
 
 namespace Geom{
+
+
+static Poly
+quadratic_bezier_poly(SubPath::SubPathElem const & b, int dim) {
+    Poly result;
+    double c[6] = {1, 
+                    -2, 2, 
+                    1, -2, 1};
+
+    int cp = 0;
+    
+    result.coeff.resize(3);
+    
+    for(int i = 0; i < 3; i++) {
+        for(int j = 0; j <= i; j++) {
+            result.coeff[2 - j] += (c[cp]*(b[2- i]))[dim];
+            cp++;
+        }
+    }
+    return result;
+}
 
 Maybe<Rect> SubPath::bbox() const {
 // needs work for other elements.
@@ -105,12 +127,15 @@ Geom::SubPath::SubPathElem::point_tangent_acc_at(double t,
         break;
     case Geom::quadto:
     {
-        Geom::Point mid[2];
-        for(int i = 0; i < 2; i++)
-            mid[i] = Lerp(t, s[i], s[i+1]);
-        pos = Lerp(t, mid[0], mid[1]);
-        tgt = 2*t*(mid[0]-mid[1]) -2*mid[0];
-        acc = 2*(mid[0]-mid[1]);
+        Poly Qx = quadratic_bezier_poly(*this, X);
+        Poly Qy = quadratic_bezier_poly(*this, Y);
+        pos = Point(Qx(t), Qy(t));
+        Qx = derivative(Qx);
+        Qy = derivative(Qy);
+        tgt = Point(Qx(t), Qy(t));
+        Qx = derivative(Qx);
+        Qy = derivative(Qy);
+        acc = Point(Qx(t), Qy(t));
         break;
     }
     case Geom::cubicto:
@@ -165,9 +190,21 @@ bool SubPath::SubPathElem::nearest_location(Point p, double& dist, double& tt) {
         new_dist = L2(p - s[2]);
         new_t = 1;
         double t = dot(p - s[0], (s[2] - s[0])) / dot(s[2] - s[0], s[2] - s[0]);
-        if((t > 0) && (t < 1)) {
-            new_t = t;
-            new_dist = fabs(dot(p - s[0], unit_vector(rot90(s[2] - s[0]))));
+        
+        Poly distx = quadratic_bezier_poly(*this, X) - p[X];
+        distx = distx*distx;
+        Poly disty = quadratic_bezier_poly(*this, Y) - p[Y];
+        disty = disty*disty;
+        
+        Poly dist = derivative(distx + disty);
+        
+        std::vector<double> sol = solve_reals(dist);
+        for(int i = 0; i < sol.size(); i++) {
+            double t = sol[i];
+            if((t > 0) && (t < 1)) {
+                new_t = t;
+                new_dist = L2(point_at(t) - p);
+            }
         }
         break;
     }
@@ -198,8 +235,8 @@ SubPath::SubPathLocation SubPath::nearest_location(Point p, double &dist) {
     int i = 0;
     for(SubPathConstIter elm = begin();
         elm != end();
+        ++elm
        ) {
-        ++elm;
         if((*elm).nearest_location(p, dist, t)) {
             pl = SubPathLocation(elm, t);
         }

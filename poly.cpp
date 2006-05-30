@@ -39,11 +39,21 @@ std::vector<std::complex<double> > solve(Poly const & p) {
      
     for (int i = 0; i < p.degree(); i++) {
         roots.push_back(std::complex<double> (z[2*i] ,z[2*i+1]));
-        printf ("z%d = %+.18f %+.18f\n", 
-                i, z[2*i], z[2*i+1]);
+        //printf ("z%d = %+.18f %+.18f\n", i, z[2*i], z[2*i+1]);
     }    
     delete[] z;
     return roots;
+}
+
+std::vector<double > solve_reals(Poly const & p) {
+    std::vector<std::complex<double> > roots = solve(p);
+    std::vector<double> real_roots;
+    
+    for(int i = 0; i < roots.size(); i++) {
+        if(roots[i].imag() == 0) // should be more lenient perhaps
+            real_roots.push_back(roots[i].real());
+    }
+    return real_roots;
 }
 
 Poly integral(Poly const & p) {
