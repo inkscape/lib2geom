@@ -1,0 +1,25 @@
+
+* make a wikipage?
+* make lineto, quadto and cubicto all beziers with the same code
+* skeletal strokes in the long run to
+* better toy, with menus and stuff for loading files, saving to pdf and png. I'm invisaging something with a window, a menu at the top with file and transform and the rest of the window is a canvas
+* implement 'Path' properly (currently we only provide subpath)
+* make a list of all bezier ops used in inkscape, implement list
+* porting existing algorithms from inkscape to the new path datastructure is probably the most valuable
+* improving the cairo backend
+* we also need to make unit tests, and devise timing tests
+* better Makefile with fastdep, shared library, separate headers - the usual things
+
+
+
+to build:
+ libgsl0-dev
+ cairo-1.1.7 or better (from git), make as a deb and install over existing cairo package - nothing should need to change.
+
+ http://njhurst.com/programming/debian-cairo.tgz
+ grab that tar and tar xzvf it inside the cairo dir
+ so you can make a .deb for cairo and install it cleanly
+ configure --prefix=/usr
+
+ refblas3* on dapper
+
