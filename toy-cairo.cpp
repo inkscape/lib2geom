@@ -365,7 +365,7 @@ delete_event_cb(GtkWidget* window, GdkEventAny* e, gpointer data)
 #include "translate-ops.h"
 #include "scale-ops.h"
 #include "translate-scale-ops.h"
-
+w
 static gboolean idler(GtkWidget* widget) {
     if(rotater)
         gtk_widget_queue_draw(widget);
@@ -391,11 +391,85 @@ int main(int argc, char **argv) {
     
     gtk_init (&argc, &argv);
 
-    gdk_rgb_init();
+    void
+        on_open_activate                      (GtkMenuItem     *menuitem,
+                                        gpointer         user_data);
+    void
+        on_quit_activate                      (GtkMenuItem     *menuitem, 
+                                        gpointer         user_data);
+    void
+        on_about_activate                     (GtkMenuItem *menuitem,                              gpointer user_data);
 
+    gdk_rgb_init();
+    GtkWidget *menubox;
+    GtkWidget *menubar;
+    GtkWidget *menuitem;
+    GtkWidget *menu;
+    GtkWidget *open;
+    GtkWidget *separatormenuitem;
+    GtkWidget *quit;
+    GtkWidget *menuitem2;
+    GtkWidget *menu2;
+    GtkWidget *about;
+    GtkAccelGroup *accel_group;
+
+    accel_group = gtk_accel_group_new ();
+ 
     GtkWidget* window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 
     gtk_window_set_title(GTK_WINDOW(window), "text toy");
+
+    menubox = gtk_vbox_new (FALSE, 0);
+    gtk_widget_show (menubox);
+    gtk_container_add (GTK_CONTAINER (window), menubox);
+
+    menubar = gtk_menu_bar_new ();
+    gtk_widget_show (menubar);
+    gtk_box_pack_start (GTK_BOX (menubox), menubar, FALSE, FALSE, 0);
+
+    menuitem = gtk_menu_item_new_with_mnemonic ("_File");
+    gtk_widget_show (menuitem);
+    gtk_container_add (GTK_CONTAINER (menubar), menuitem);
+
+    menu = gtk_menu_new ();
+    gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem), menu);
+
+    open = gtk_image_menu_item_new_from_stock ("gtk-open", accel_group);
+    gtk_widget_show (open);
+    gtk_container_add (GTK_CONTAINER (menu), open);
+
+    separatormenuitem = gtk_separator_menu_item_new ();
+    gtk_widget_show (separatormenuitem);
+    gtk_container_add (GTK_CONTAINER (menu), separatormenuitem);
+    gtk_widget_set_sensitive (separatormenuitem, FALSE);
+
+    quit = gtk_image_menu_item_new_from_stock ("gtk-quit", accel_group);
+    gtk_widget_show (quit);
+    gtk_container_add (GTK_CONTAINER (menu), quit);
+
+    menuitem2 = gtk_menu_item_new_with_mnemonic ("_Help");
+    gtk_widget_show (menuitem2);
+    gtk_container_add (GTK_CONTAINER (menubar), menuitem2);
+
+    menu2 = gtk_menu_new ();
+    gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem2), menu2);
+
+    about = gtk_menu_item_new_with_mnemonic ("_About");
+    gtk_widget_show (about);
+    gtk_container_add (GTK_CONTAINER (menu2), about);
+
+    g_signal_connect ((gpointer) open, "activate",
+                    G_CALLBACK (on_open_activate),
+                    NULL);
+    g_signal_connect ((gpointer) quit, "activate",
+                    G_CALLBACK (on_quit_activate),
+                    NULL);
+    g_signal_connect ((gpointer) about, "activate",
+                    G_CALLBACK (on_about_activate),
+                    NULL);
+
+    gtk_window_add_accel_group (GTK_WINDOW (window), accel_group);
+
 
     gtk_window_set_policy(GTK_WINDOW(window), TRUE, TRUE, TRUE);
 

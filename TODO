@@ -1,4 +1,5 @@
 
+* convert toy-cairo to gtkmm
 * make a wikipage?
 * make lineto, quadto and cubicto all beziers with the same code
 * skeletal strokes in the long run to
