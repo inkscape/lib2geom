@@ -1,4 +1,4 @@
-
+* pathlocations are perhaps too fragile - any change to the path can make the iterator invalid.
 * convert toy-cairo to gtkmm
 * make a wikipage?
 * make lineto, quadto and cubicto all beziers with the same code
