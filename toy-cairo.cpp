@@ -126,7 +126,7 @@ Geom::Point path_centroid_polyline(Geom::SubPath p, double &area) {
 }
 
 Geom::Point* selected_handle = 0;
-
+Geom::Point gradient_vector(20,20);
 
 bool rotater  = false;
 
@@ -153,6 +153,9 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
         m = (m*Geom::rotate(0.01))*Geom::translate(cntr);
         display_path = display_path*m;
     }
+    
+    draw_line_seg(cr, Geom::Point(10,10), gradient_vector);
+    draw_handle(cr, gradient_vector);
     
     draw_path(cr, display_path);
     //draw_elip(cr, handles);
@@ -216,22 +219,17 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     }
     cairo_restore(cr);
     */
-    /*
+    
     vector<Geom::SubPath::SubPathLocation> pts = 
-        find_inflection_points(display_path);
+        find_vector_extreme_points(display_path, gradient_vector);
   
     for(int i = 0; i < pts.size(); i++) {
         Geom::Point pos, tgt, acc;
-        display_path.point_tangent_acc_at (pts[i], pos, tgt, acc);
-        //tgt *= 0.1;
-        //acc *= 0.1;
         draw_handle(cr, display_path.point_at(pts[i]));
-        draw_circ(cr, pos);
-        
-        //draw_ray(cr, pos+tgt, acc);
+        //display_path.point_tangent_acc_at (pts[i], pos, tgt, acc);
+        //draw_circ(cr, pos);
     }
-    */
-
+    
     double area = 0;
     Geom::Point cntr = path_centroid_polyline(display_path, area);
     draw_circ(cr, cntr);
@@ -313,6 +311,10 @@ static gint mouse_event(GtkWidget* window, GdkEventButton* e, gpointer data) {
                 selected_handle = &display_path.handles[i];
                 old_handle_pos = mouse - display_path.handles[i];
             }
+        }
+        if(Geom::L2(mouse - gradient_vector) < 5) {
+            selected_handle = &gradient_vector;
+            old_handle_pos = mouse - gradient_vector;
         }
         handle_mouse(window);
     } else if(e->button == 2) {

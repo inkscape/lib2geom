@@ -4,14 +4,13 @@ using namespace Geom;
 
 static std::vector<double>
 cubicto_extrema (std::vector<double> x) {
-    Geom::Coord a, b, c, D;
     std::vector<double> result;
     
 // see derivation in path-cubicto.
 
-    a =   (x[0] - 3 * x[1] + 3 * x[2] - x[3]);
-    b = 2*(x[1] - 2 * x[2] + x[3]);
-    c =   (x[2] - x[3]);
+    const Geom::Coord a =   (x[0] - 3 * x[1] + 3 * x[2] - x[3]);
+    const Geom::Coord b = 2*(x[1] - 2 * x[2] + x[3]);
+    const Geom::Coord c =   (x[2] - x[3]);
 
     /*
      * s = (-b +/- sqrt (b * b - 4 * a * c)) / 2 * a;
@@ -26,7 +25,7 @@ cubicto_extrema (std::vector<double> x) {
         }
     } else {
         /* s = (-b +/- sqrt (b * b - 4 * a * c)) / 2 * a; */
-        D = b * b - 4 * a * c;
+        const Geom::Coord D = b * b - 4 * a * c;
         if (D >= 0.0) {
             /* Have solution */
             double d = sqrt (D);
@@ -54,6 +53,8 @@ std::vector<Geom::SubPath::SubPathLocation> find_vector_extreme_points(Geom::Sub
         case Geom::moveto:
             break;
         case Geom::lineto:
+            break;
+        case Geom::quadto:
             break;
         case Geom::cubicto:
         {
