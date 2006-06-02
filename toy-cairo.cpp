@@ -156,7 +156,13 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     
     draw_line_seg(cr, Geom::Point(10,10), gradient_vector);
     draw_handle(cr, gradient_vector);
-    
+    {
+        std::ostringstream gradientstr;
+        gradientstr << "gradient: " << gradient_vector - Geom::Point(10,10);
+        gradientstr << std::ends;
+        cairo_move_to(cr, gradient_vector[0], gradient_vector[1]);
+        cairo_show_text (cr, gradientstr.str().c_str());
+    }    
     draw_path(cr, display_path);
     //draw_elip(cr, handles);
     
@@ -221,7 +227,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     */
     
     vector<Geom::SubPath::SubPathLocation> pts = 
-        find_vector_extreme_points(display_path, gradient_vector);
+        find_vector_extreme_points(display_path, gradient_vector-Geom::Point(10,10));
   
     for(int i = 0; i < pts.size(); i++) {
         Geom::Point pos, tgt, acc;
