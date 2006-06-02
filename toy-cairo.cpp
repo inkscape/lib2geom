@@ -197,7 +197,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
             cairo_arc(cr, kurv_vector[0], kurv_vector[1], (1./kurvature), c_angle-1, c_angle+1);
             
         } else // just normal
-            ;//draw_ray(cr, pos, rot90(tgt));
+            draw_ray(cr, pos, 50*Geom::unit_vector(rot90(tgt)));
             
     }
     cairo_restore(cr);
