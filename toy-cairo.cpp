@@ -193,6 +193,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
             cairo_new_sub_path(cr);
             double c_angle = atan2(kurv_vector)+M_PI;
             kurv_vector += pos;
+            kurvature = fabs(kurvature);
             cairo_arc(cr, kurv_vector[0], kurv_vector[1], (1./kurvature), c_angle-1, c_angle+1);
             
         } else // just normal
