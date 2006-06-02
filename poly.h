@@ -94,6 +94,8 @@ public:
 
     double eval(double x) const;
     double operator()(double t) const { return eval(t);}
+    
+    void normalize();
 };
 
 inline Poly operator*(double a, Poly const & b) { return b * a;}
@@ -113,6 +115,7 @@ std::vector<std::complex<double> > solve(const Poly & p);
  * currently we just use solve and pick out the suitably real looking values, there may be a better algorithm.
  */
 std::vector<double> solve_reals(const Poly & p);
+double polish_root(Poly const & p, double guess, double tol);
 
 inline std::ostream &operator<< (std::ostream &out_file, const Poly &in_poly) {
     if(in_poly.size() == 0)

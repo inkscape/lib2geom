@@ -22,6 +22,7 @@
 #include "rotate-ops.h"
 #include "arc-length.h"
 #include "path-intersect.h"
+#include "path-ops.h"
 #include "matrix-rotate-ops.h"
 #include "matrix-translate-ops.h"
 
@@ -181,6 +182,14 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
 
     Geom::SubPath::SubPathLocation pl = 
         display_path.nearest_location(old_mouse_point, dist);
+        {
+            std::ostringstream gradientstr;
+            gradientstr << "arc_position: " << arc_length_integrating(display_path, pl, 1e-3);
+            gradientstr << std::ends;
+            Geom::Point pos = display_path.point_at(pl);
+            cairo_move_to(cr, pos[0]+5, pos[1]);
+            cairo_show_text (cr, gradientstr.str().c_str());
+        }    
     {
         Geom::Point pos, tgt, acc;
         display_path.point_tangent_acc_at (pl, pos, tgt, acc);
@@ -242,6 +251,19 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
         //draw_circ(cr, pos);
     }
     
+    if(0) { // probably busted
+  
+        cairo_save(cr);
+        cairo_set_source_rgba (cr, 0., 0.25, 0.25, 0.8);
+        vector<Geom::SubPath::SubPathLocation> pts = 
+            find_maximal_curvature_points(display_path);
+  
+        for(int i = 0; i < pts.size(); i++) {
+            Geom::Point pos, tgt, acc;
+            draw_circ(cr, display_path.point_at(pts[i]));
+        }
+        cairo_restore(cr);
+    }
     double area = 0;
     Geom::Point cntr = path_centroid_polyline(display_path, area);
     draw_circ(cr, cntr);

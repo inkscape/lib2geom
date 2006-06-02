@@ -9,6 +9,7 @@
 
 double arc_length_subdividing(Geom::SubPath p, double tol);
 double arc_length_integrating(Geom::SubPath p, double tol);
+double arc_length_integrating(Geom::SubPath p, Geom::SubPath::SubPathLocation pl, double tol);
 
 /*
   Local Variables:

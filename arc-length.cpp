@@ -68,48 +68,60 @@ double cubic_length_integrating(double t, void* param) {
     return sqrt(dot(p,p));
 }
 
+void arc_length_integrating(Geom::SubPath::SubPathElem pe, double tol, double &result, double &abs_error) {
+    switch(pe.op) {
+    case Geom::lineto:
+    {
+        result += L2(pe.first() - pe.last());
+        break;
+    }
+    case Geom::cubicto:
+    {
+        Geom::Point pc[4];
+        for(int i = 0; i < 4; i++)
+            pc[i] = Point(0,0);
+            
+        cubic_bezier_poly_coeff(pe.begin(), pc);
+
+        gsl_function F;
+        gsl_integration_workspace * w 
+            = gsl_integration_workspace_alloc (20);
+        F.function = &cubic_length_integrating;
+        F.params = (void*)pc;
+        double quad_result, err;
+        /* We could probably use the non adaptive code here if we removed any cusps first. */
+        int returncode = 
+            gsl_integration_qag (&F, 0, 1, 0, tol, 20, 
+                                 GSL_INTEG_GAUSS21, w, &quad_result, &err);
+            
+        abs_error += fabs(err);
+            
+        result += quad_result;
+        break;
+    }
+    default:
+        return;
+    }
+}
+
 double arc_length_integrating(Geom::SubPath p, double tol) {
     double result = 0, abserr = 0;
 
     for(Geom::SubPath::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
-        switch(iter.cmd()) {
-        case Geom::moveto:
-            break;
-        case Geom::lineto:
-        {
-            result += L2((*iter).first() - (*iter).last());
-            break;
-        }
-        case Geom::cubicto:
-        {
-            Geom::Point pc[4];
-            for(int i = 0; i < 4; i++)
-                pc[i] = Point(0,0);
-            
-            cubic_bezier_poly_coeff((*iter).begin(), pc);
-
-            gsl_function F;
-            gsl_integration_workspace * w 
-                = gsl_integration_workspace_alloc (20);
-            SubPath::SubPathElem pe(*iter);
-            F.function = &cubic_length_integrating;
-            F.params = (void*)pc;
-            double quad_result, err;
-            /* We could probably use the non adaptive code here if we removed any cusps first. */
-            int returncode = 
-                gsl_integration_qag (&F, 0, 1, 0, tol, 20, 
-                                     GSL_INTEG_GAUSS21, w, &quad_result, &err);
-            
-            abserr += fabs(err);
-            
-            result += quad_result;
-            break;
-        }
-        default:
-            break;
-        }
+        arc_length_integrating(*iter, tol, result, abserr);
     }
     //printf("got %g with err %g\n", result, abserr);
+    
+    return result;
+}
+
+double arc_length_integrating(Geom::SubPath p, Geom::SubPath::SubPathLocation pl, double tol) {
+    double result = 0, abserr = 0;
+
+    for(Geom::SubPath::const_iterator iter(p.begin()), end(p.end()); 
+        iter != end; ++iter) {
+        arc_length_integrating(*iter, tol, result, abserr);
+    }
     
     return result;
 }

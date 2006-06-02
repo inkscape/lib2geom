@@ -15,6 +15,8 @@ std::vector<Geom::SubPath::SubPathLocation>
 find_inflection_points(Geom::SubPath p);
 std::vector<Geom::SubPath::SubPathLocation>
 find_flat_points(Geom::SubPath p);
+std::vector<Geom::SubPath::SubPathLocation>
+find_maximal_curvature_points(Geom::SubPath p);
 
 Geom::SubPath::SubPathLocation dim_extreme_points(Geom::SubPath::SubPathElem e);
 

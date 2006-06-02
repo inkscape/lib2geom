@@ -1,5 +1,7 @@
 #include "path-find-points-of-interest.h"
 #include "cubic_bez_util.h"
+#include "path-poly-fns.h"
+
 using namespace Geom;
 
 static std::vector<double>
@@ -186,8 +188,6 @@ find_flat_points(Geom::SubPath p) {
             double t1 = 2*sqrt(1/(3*fabs(s3)));
             if(t1 > 0 && t1 < 1)
                 result.push_back(Geom::SubPath::SubPathLocation(iter, t1));
-            
-        
             break;
         }
         default:
@@ -195,6 +195,54 @@ find_flat_points(Geom::SubPath p) {
         }
     }
     
+    return result;
+}
+
+/*** find_maximal_curvature_points
+ * 
+ */
+std::vector<Geom::SubPath::SubPathLocation>
+find_maximal_curvature_points(Geom::SubPath p) {
+    std::vector<Geom::SubPath::SubPathLocation> result;
+
+    for(Geom::SubPath::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
+        switch(iter.cmd()) {
+        case Geom::moveto:
+            break;
+        case Geom::lineto:
+            break;
+        case Geom::quadto:
+        case Geom::cubicto:
+        {
+            Poly Bx = get_parametric_poly(*iter, X); // poly version of bezier (0-1)
+            Poly By = get_parametric_poly(*iter, Y);
+            Poly dBx = derivative(Bx);
+            Poly dBy = derivative(By);
+            Poly ddBx = derivative(dBx);
+            Poly ddBy = derivative(dBy);
+            Poly dcurl = ddBy*dBx -ddBx*dBy;
+            Poly t2 = dBx*dBx + dBy*dBy;
+            Poly curvature_num = 2*derivative(dcurl)*t2 - dcurl;
+            curvature_num.normalize();
+            std::cout << curvature_num << std::endl;
+            if(curvature_num.degree() > 0) {
+                std::vector<double> possible = solve_reals(curvature_num);
+                for(unsigned i = 0; i < possible.size(); i++) {
+                    const double t = polish_root(curvature_num, possible[i], 1e-6);
+                    
+                    if((0 < t) && (t < 1)) {
+                        printf("%g %g", t, curvature_num.eval(t));
+                        result.push_back(Geom::SubPath::SubPathLocation(iter, t));
+                    }
+                }
+                printf("\n");
+            }
+            break;
+        }
+        default:
+            break;
+        }
+    }
     return result;
 }
 

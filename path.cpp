@@ -2,11 +2,10 @@
 #include "cubic_bez_util.h"
 #include "poly.h"
 
-namespace Geom{
 
 
 static Poly
-quadratic_bezier_poly(SubPath::SubPathElem const & b, int dim) {
+quadratic_bezier_poly(Geom::SubPath::SubPathElem const & b, int dim) {
     Poly result;
     double c[6] = {1, 
                     -2, 2, 
@@ -24,6 +23,48 @@ quadratic_bezier_poly(SubPath::SubPathElem const & b, int dim) {
     }
     return result;
 }
+
+
+static Poly
+cubic_bezier_poly(Geom::SubPath::SubPathElem const & b, int dim) {
+    Poly result;
+    double c[10] = {1, 
+                    -3, 3, 
+                    3, -6, 3,
+                    -1, 3, -3, 1};
+
+    int cp = 0;
+    
+    result.coeff.resize(4);
+    
+    for(int i = 0; i < 4; i++) {
+        for(int j = 0; j <= i; j++) {
+            result.coeff[3 - j] += (c[cp]*(b[3- i]))[dim];
+            cp++;
+        }
+    }
+    return result;
+}
+
+Poly get_parametric_poly(Geom::SubPath::SubPathElem const & b, int dim) {
+    Poly result;
+    switch(b.op) {
+    case Geom::lineto:
+        result.coeff.push_back(b[0][dim]);
+        result.coeff.push_back((b[1]-b[0])[dim]);
+        return result;
+    case Geom::quadto:
+        return quadratic_bezier_poly(b, dim);
+    case Geom::cubicto:
+        return cubic_bezier_poly(b, dim);
+    default:
+        return result;
+    }
+}
+
+
+namespace Geom{
+
 
 Maybe<Rect> SubPath::bbox() const {
 // needs work for other elements.
@@ -121,14 +162,11 @@ Geom::SubPath::SubPathElem::point_tangent_acc_at(double t,
         pos = s[0];
         break;
     case Geom::lineto:
-        pos = Lerp(t, s[0], s[1]);
-        tgt = s[1] - s[0];
-        acc = Point(0,0);
-        break;
     case Geom::quadto:
+    case Geom::cubicto:
     {
-        Poly Qx = quadratic_bezier_poly(*this, X);
-        Poly Qy = quadratic_bezier_poly(*this, Y);
+        Poly Qx = get_parametric_poly(*this, X);
+        Poly Qy = get_parametric_poly(*this, Y);
         pos = Point(Qx(t), Qy(t));
         Qx = derivative(Qx);
         Qy = derivative(Qy);
@@ -136,18 +174,6 @@ Geom::SubPath::SubPathElem::point_tangent_acc_at(double t,
         Qx = derivative(Qx);
         Qy = derivative(Qy);
         acc = Point(Qx(t), Qy(t));
-        break;
-    }
-    case Geom::cubicto:
-    {
-        Geom::Point pc[4];
-        for(int i = 0; i < 4; i++)
-            pc[i] = Point(0,0);
-        
-        cubic_bezier_poly_coeff(s, pc);
-        pos = t*(t*(t*pc[3] + pc[2]) + pc[1]) + pc[0];
-        tgt = t*(3*t*pc[3] + 2*pc[2]) + pc[1];
-        acc = 6*t*pc[3] + 2*pc[2];
         break;
     }
     default:

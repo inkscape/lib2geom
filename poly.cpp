@@ -21,7 +21,22 @@ double Poly::eval(double x) const {
     return gsl_poly_eval(&coeff[0], size(), x);
 }
 
-std::vector<std::complex<double> > solve(Poly const & p) {
+void Poly::normalize() {
+    while(coeff.back() == 0)
+        coeff.pop_back();
+    
+    double scale = 1./coeff.back(); // unitize
+    
+    for(unsigned i = 0; i < size(); i++) {
+        coeff[i] *= scale;
+    }
+    
+}
+
+
+std::vector<std::complex<double> > solve(Poly const & pp) {
+    Poly p(pp);
+    p.normalize();
     gsl_poly_complex_workspace * w 
         = gsl_poly_complex_workspace_alloc (p.size());
        
@@ -54,6 +69,17 @@ std::vector<double > solve_reals(Poly const & p) {
             real_roots.push_back(roots[i].real());
     }
     return real_roots;
+}
+
+double polish_root(Poly const & p, double guess, double tol) {
+    Poly dp = derivative(p);
+    
+    double fn = p(guess);
+    while(fabs(fn) > tol) {
+        guess -= fn/dp(guess);
+        fn = p(guess);
+    }
+    return guess;
 }
 
 Poly integral(Poly const & p) {
