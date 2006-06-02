@@ -365,12 +365,39 @@ delete_event_cb(GtkWidget* window, GdkEventAny* e, gpointer data)
 #include "translate-ops.h"
 #include "scale-ops.h"
 #include "translate-scale-ops.h"
-w
+
 static gboolean idler(GtkWidget* widget) {
     if(rotater)
         gtk_widget_queue_draw(widget);
     return TRUE;
 }
+
+static void
+on_open_activate(GtkMenuItem *menuitem, gpointer user_data) {
+    //TODO: show open dialog, get filename
+    
+    char const *const filename = "banana.svgd";
+
+    FILE* f = fopen(filename, "r");
+    if (!f) {
+        perror(filename);
+        return;
+    }
+    display_path = read_svgd(f);
+    
+    gtk_widget_queue_draw(canvas); // globals are probably evil
+}
+
+static void
+on_quit_activate(GtkMenuItem *menuitem,  gpointer user_data) {
+
+}
+
+static void
+on_about_activate(GtkMenuItem *menuitem, gpointer user_data) {
+
+}
+
 
 int main(int argc, char **argv) {
     char const *const filename = (argc >= 2
@@ -390,16 +417,7 @@ int main(int argc, char **argv) {
     display_path = display_path*(sc.inverse()*Geom::scale(500,500));
     
     gtk_init (&argc, &argv);
-
-    void
-        on_open_activate                      (GtkMenuItem     *menuitem,
-                                        gpointer         user_data);
-    void
-        on_quit_activate                      (GtkMenuItem     *menuitem, 
-                                        gpointer         user_data);
-    void
-        on_about_activate                     (GtkMenuItem *menuitem,                              gpointer user_data);
-
+    
     gdk_rgb_init();
     GtkWidget *menubox;
     GtkWidget *menubar;
@@ -462,7 +480,7 @@ int main(int argc, char **argv) {
                     G_CALLBACK (on_open_activate),
                     NULL);
     g_signal_connect ((gpointer) quit, "activate",
-                    G_CALLBACK (on_quit_activate),
+                    gtk_main_quit,
                     NULL);
     g_signal_connect ((gpointer) about, "activate",
                     G_CALLBACK (on_about_activate),
@@ -510,12 +528,12 @@ int main(int argc, char **argv) {
     gtk_widget_pop_colormap();
     gtk_widget_pop_visual();
 
-    GtkWidget *vb = gtk_vbox_new(0, 0);
+    //GtkWidget *vb = gtk_vbox_new(0, 0);
 
 
-    gtk_container_add(GTK_CONTAINER(window), vb);
+    //gtk_container_add(GTK_CONTAINER(window), vb);
 
-    gtk_box_pack_start(GTK_BOX(vb), canvas, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(menubox), canvas, TRUE, TRUE, 0);
 
     gtk_window_set_default_size(GTK_WINDOW(window), 600, 600);
 
