@@ -389,13 +389,8 @@ on_open_activate(GtkMenuItem *menuitem, gpointer user_data) {
 }
 
 static void
-on_quit_activate(GtkMenuItem *menuitem,  gpointer user_data) {
-
-}
-
-static void
 on_about_activate(GtkMenuItem *menuitem, gpointer user_data) {
-
+    
 }
 
 
