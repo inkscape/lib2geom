@@ -187,11 +187,16 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
         draw_circ(cr, pos);
         double kurvature = dot(acc, rot90(tgt))/pow(Geom::L2(tgt),3);
         
-        if(fabs(kurvature) > 0.001)
-            draw_ray(cr, pos, 
-                     (1./kurvature)*Geom::unit_vector(rot90(tgt)));
-        else // just normal
-            draw_ray(cr, pos, rot90(tgt));
+        if(fabs(kurvature) > 0.001) {
+            Geom::Point kurv_vector = (1./kurvature)*Geom::unit_vector(rot90(tgt));
+            draw_ray(cr, pos, kurv_vector);
+            cairo_new_sub_path(cr);
+            double c_angle = atan2(kurv_vector)+M_PI;
+            kurv_vector += pos;
+            cairo_arc(cr, kurv_vector[0], kurv_vector[1], (1./kurvature), c_angle-1, c_angle+1);
+            
+        } else // just normal
+            ;//draw_ray(cr, pos, rot90(tgt));
             
     }
     cairo_restore(cr);
