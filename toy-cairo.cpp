@@ -154,7 +154,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
         m = (m*Geom::rotate(0.01))*Geom::translate(cntr);
         display_path = display_path*m;
     }
-    
+    Geom::SubPath::HashCookie hash_cookie = display_path;
     draw_line_seg(cr, Geom::Point(10,10), gradient_vector);
     draw_handle(cr, gradient_vector);
     {
@@ -182,6 +182,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
 
     Geom::SubPath::SubPathLocation pl = 
         display_path.nearest_location(old_mouse_point, dist);
+    assert(hash_cookie == display_path);
         {
             std::ostringstream gradientstr;
             gradientstr << "arc_position: " << arc_length_integrating(display_path, pl, 1e-3);
@@ -270,6 +271,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     cairo_move_to(cr, cntr[0], cntr[1]);
     cairo_show_text (cr, "center of the universe");
     
+    assert(hash_cookie == display_path);
     notify << "path length: " << arc_length_integrating(display_path, 1e3) << "\n";
     notify << "Area: " << area << ", " << cntr;
 
@@ -279,6 +281,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     cairo_show_text (cr, "center of the stroke");
     notify << "path centre: " << cntr;
 */
+    assert(hash_cookie == display_path);
     centroid(display_path, cntr, area);
     draw_circ(cr, cntr);
     cairo_move_to(cr, cntr[0], cntr[1]);
@@ -300,6 +303,9 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
         /*pango_cairo_draw_layout(cr,
           0, height-logical_extent.height, layout);*/
     }
+    
+    assert(hash_cookie == display_path);
+    
     double x, y;
     x = widget->allocation.x + widget->allocation.width / 2;
     y = widget->allocation.y + widget->allocation.height / 2;

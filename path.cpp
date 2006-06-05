@@ -280,6 +280,18 @@ SubPath SubPath::subpath(SubPathConstIter begin, SubPathConstIter end) {
 }
 
 
+// Perhaps this hash is not dtrong enough
+SubPath::operator HashCookie() {
+    HashCookie hc;
+    hc.value = (unsigned long)(&(*cmd.begin()));
+    hc.value *= 0x101;
+    hc.value += (unsigned long)(&(*cmd.end()));
+    hc.value *= 0x101;
+    hc.value += (unsigned long)(&(*handles.begin()));
+    hc.value *= 0x101;
+    hc.value += (unsigned long)(&(*handles.end()));
+    return hc;
+}
 
 };
 

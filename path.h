@@ -37,6 +37,7 @@ int const SubPathOpTail[] = {0, -1, -1, -1, -1, 0, 0};
 
 class SubPath{
 public:
+    bool closed; // should this shape be closed (join endpoints with a line)
     std::vector<Point> handles;
     std::vector<SubPathOp> cmd;
 
@@ -90,6 +91,14 @@ public:
         double t; // element specific meaning [0,1)
         SubPathLocation(SubPathConstIter it, double t) : it(it), t(t) {}
     };
+    
+    class HashCookie {
+        unsigned long value;
+    public:
+        friend class SubPath;
+        
+        unsigned long get_value() { return value;}
+    };
 
     SubPathConstIter begin() const { return SubPathConstIter(cmd.begin(), handles.begin());}
     SubPathConstIter end() const { return SubPathConstIter(cmd.end(), handles.end());}
@@ -122,12 +131,21 @@ public:
     
     void push_back(SubPathElem e);
     void insert(SubPathConstIter before, SubPathConstIter s, SubPathConstIter e);
-    SubPathConstIter indexed_elem(int i) { // mainly for debugging
+
+// mainly for debugging
+public:
+    SubPathConstIter indexed_elem(int i) {
         SubPathConstIter it = begin();
         while(--i >= 0) ++it;
         return it;
     }
+    
+    operator HashCookie();
 };
+
+inline bool operator==(SubPath::HashCookie a, SubPath::HashCookie b) {
+    return a.get_value() == b.get_value();
+}
 
 class Path{
 public:
