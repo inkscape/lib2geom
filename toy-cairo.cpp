@@ -25,6 +25,7 @@
 #include "path-ops.h"
 #include "matrix-rotate-ops.h"
 #include "matrix-translate-ops.h"
+#include "path-cairo.h"
 
 using std::string;
 using std::vector;
@@ -164,6 +165,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
         cairo_move_to(cr, gradient_vector[0], gradient_vector[1]);
         cairo_show_text (cr, gradientstr.str().c_str());
     }    
+    cairo_sub_path(cr, display_path);
     draw_path(cr, display_path);
     //draw_elip(cr, handles);
     
