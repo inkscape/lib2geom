@@ -12,10 +12,14 @@ void cairo_sub_path(cairo_t *cr, Geom::SubPath const &p) {
                 cairo_line_to(cr, elm.last()[0], elm.last()[1]);
                 break;
             case Geom::quadto:
-                cairo_curve_to(cr, elm[1][0], elm[1][1], 
-                               elm[2][0], elm[2][1], 
+            {
+                Geom::Point b1 = elm[0] + (2./3) * (elm[1] - elm[0]);
+                Geom::Point b2 = b1 + (1./3) * (elm[2] - elm[0]);
+                cairo_curve_to(cr, b1[0], b1[1], 
+                               b2[0], b2[1], 
                                elm[2][0], elm[2][1]);
                 break;
+            }
             case Geom::cubicto:
                 cairo_curve_to(cr, elm[1][0], elm[1][1], 
                                elm[2][0], elm[2][1], 
