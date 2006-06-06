@@ -210,6 +210,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
             draw_ray(cr, pos, 50*Geom::unit_vector(rot90(tgt)));
             
     }
+        //notify << "path length: " << arc_length_integrating(display_path, pl, 1e3) << "\n";
     cairo_restore(cr);
 /*    
       cairo_save(cr);
@@ -272,7 +273,6 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     cairo_show_text (cr, "center of the universe");
     
     assert(hash_cookie == display_path);
-    notify << "path length: " << arc_length_integrating(display_path, 1e3) << "\n";
     notify << "Area: " << area << ", " << cntr;
 
 /*    dcentroid(display_path, cntr);

@@ -119,7 +119,7 @@ double arc_length_integrating(Geom::SubPath p, Geom::SubPath::SubPathLocation pl
     double result = 0, abserr = 0;
 
     for(Geom::SubPath::const_iterator iter(p.begin()), end(p.end()); 
-        iter != end; ++iter) {
+        (iter != end); ++iter) {
         arc_length_integrating(*iter, tol, result, abserr);
     }
     

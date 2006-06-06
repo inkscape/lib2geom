@@ -1,5 +1,6 @@
 #include "path.h"
 
+namespace Geom{
 class Bezier {
 public:
     Geom::Point p[4];
@@ -9,7 +10,6 @@ public:
     ~Bezier() {}
 };
 
-namespace Geom{
 std::vector<std::pair<double, double> > FindIntersections( Bezier a, Bezier b);
 };
 

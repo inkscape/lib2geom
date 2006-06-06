@@ -2,7 +2,7 @@ extra_cppflags := $(shell pkg-config --cflags --libs gtk+-2.0) -lgsl -lblas
 
 all: path path-to-svgd toy-cairo conic
 
-CXX=g++
+CXX=g++-4.1
 CXXFLAGS = -g
 
 path.o: path.cpp nearestpoint.cpp path.h
