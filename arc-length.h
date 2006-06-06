@@ -7,9 +7,9 @@
  * extreme points . dir.
  */
 
-double arc_length_subdividing(Geom::SubPath p, double tol);
-double arc_length_integrating(Geom::SubPath p, double tol);
-double arc_length_integrating(Geom::SubPath p, Geom::SubPath::SubPathLocation pl, double tol);
+double arc_length_subdividing(Geom::SubPath const & p, double tol);
+double arc_length_integrating(Geom::SubPath const & p, double tol);
+double arc_length_integrating(Geom::SubPath const & p, Geom::SubPath::SubPathLocation const & pl, double tol);
 
 /*
   Local Variables:

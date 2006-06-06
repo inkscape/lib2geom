@@ -29,8 +29,11 @@ void cairo_sub_path(cairo_t *cr, Geom::SubPath const &p) {
                 break;
         }
     }
-    if(p.closed)
-        cairo_line_to(cr, p.handles[0][0], p.handles[0][1]);
+    if(p.closed) {
+        cairo_line_to(cr, p.handles[1][0], p.handles[1][1]);
+        //cairo_fill(cr);
+    } else
+        ;//cairo_stroke(cr);
         
 }
 

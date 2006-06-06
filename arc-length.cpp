@@ -1,9 +1,11 @@
 #include "path-find-points-of-interest.h"
 #include "cubic_bez_util.h"
+#include "poly.h"
+#include "path-poly-fns.h"
 using namespace Geom;
 
 
-double cubic_length_subdividing(Geom::SubPath::SubPathElem e, double tol) {
+double cubic_length_subdividing(Geom::SubPath::SubPathElem const & e, double tol) {
     Geom::Point v[3];
     for(int i = 0; i < 3; i++)
         v[i] = e[i+1] - e[0];
@@ -34,7 +36,7 @@ double cubic_length_subdividing(Geom::SubPath::SubPathElem e, double tol) {
     }
 }
 
-double arc_length_subdividing(Geom::SubPath p, double tol) {
+double arc_length_subdividing(Geom::SubPath const & p, double tol) {
     double result = 0;
 
     for(Geom::SubPath::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
@@ -68,13 +70,12 @@ double cubic_length_integrating(double t, void* param) {
     return sqrt(dot(p,p));
 }
 
-void arc_length_integrating(Geom::SubPath::SubPathElem pe, double tol, double &result, double &abs_error) {
-    switch(pe.op) {
-    case Geom::lineto:
-    {
-        result += L2(pe.first() - pe.last());
-        break;
-    }
+double poly_length_integrating(double t, void* param) {
+    Poly* pc = (Poly*)param;
+    return hypot(pc[0].eval(t), pc[1].eval(t));
+}
+
+/* Original cubic case
     case Geom::cubicto:
     {
         Geom::Point pc[4];
@@ -89,9 +90,41 @@ void arc_length_integrating(Geom::SubPath::SubPathElem pe, double tol, double &r
         F.function = &cubic_length_integrating;
         F.params = (void*)pc;
         double quad_result, err;
+        // We could probably use the non adaptive code here if we removed any cusps first.
+        int returncode = 
+            gsl_integration_qag (&F, 0, t, 0, tol, 20, 
+                                 GSL_INTEG_GAUSS21, w, &quad_result, &err);
+            
+        abs_error += fabs(err);
+            
+        result += quad_result;
+        break;
+    }
+*/
+
+void arc_length_integrating(Geom::SubPath::SubPathElem pe, double t, double tol, double &result, double &abs_error) {
+    switch(pe.op) {
+    case Geom::lineto:
+    {
+        result += L2(pe.first() - pe.last());
+        break;
+    }
+    case Geom::quadto:
+    case Geom::cubicto:
+    {
+        Poly B[2] = {get_parametric_poly(pe, X), get_parametric_poly(pe, Y)};
+        for(int i = 0; i < 2; i++)
+            B[i] = derivative(B[i]);
+        
+        gsl_function F;
+        gsl_integration_workspace * w 
+            = gsl_integration_workspace_alloc (20);
+        F.function = &cubic_length_integrating;
+        F.params = (void*)B;
+        double quad_result, err;
         /* We could probably use the non adaptive code here if we removed any cusps first. */
         int returncode = 
-            gsl_integration_qag (&F, 0, 1, 0, tol, 20, 
+            gsl_integration_qag (&F, 0, t, 0, tol, 20, 
                                  GSL_INTEG_GAUSS21, w, &quad_result, &err);
             
         abs_error += fabs(err);
@@ -104,24 +137,29 @@ void arc_length_integrating(Geom::SubPath::SubPathElem pe, double tol, double &r
     }
 }
 
-double arc_length_integrating(Geom::SubPath p, double tol) {
+double arc_length_integrating(Geom::SubPath const & p, double tol) {
     double result = 0, abserr = 0;
 
     for(Geom::SubPath::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
-        arc_length_integrating(*iter, tol, result, abserr);
+        arc_length_integrating(*iter, 1.0, tol, result, abserr);
     }
     //printf("got %g with err %g\n", result, abserr);
     
     return result;
 }
 
-double arc_length_integrating(Geom::SubPath p, Geom::SubPath::SubPathLocation pl, double tol) {
+double arc_length_integrating(Geom::SubPath const & p, Geom::SubPath::SubPathLocation const & pl, double tol) {
     double result = 0, abserr = 0;
-
+    ptrdiff_t offset = pl.it - p.begin();
+    
+    assert(offset >= 0);
+    assert(offset < p.size());
+    
     for(Geom::SubPath::const_iterator iter(p.begin()), end(p.end()); 
-        (iter != end); ++iter) {
-        arc_length_integrating(*iter, tol, result, abserr);
+        (iter != pl.it); ++iter) {
+        arc_length_integrating(*iter, 1.0, tol, result, abserr);
     }
+    arc_length_integrating(*pl.it, pl.t, tol, result, abserr);
     
     return result;
 }

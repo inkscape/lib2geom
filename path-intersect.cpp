@@ -289,12 +289,12 @@ void
 Bezier::ParameterSplitLeft(double t, Bezier &left)
 {
     left.p[0] = p[0];
-    left.p[1] = p[0] + t * ( p[1] - p[0] );
-    left.p[2] = p[1] + t * ( p[2] - p[1] ); // temporary holding spot
-    p[2] = p[2] + t * (p[3] - p[2]);
-    p[1] = left.p[2] + t * (p[2] - left.p[2]);
-    left.p[2] = left.p[1] + t * (left.p[2] - left.p[1]);
-    left.p[3] = p[0] = left.p[2] + t * (p[1]-left.p[2]);
+    left.p[1] = Lerp(t, p[0], p[1]);
+    left.p[2] = Lerp(t, p[1], p[2]); // temporary holding spot
+    p[2] = Lerp(t, p[2], p[3]);
+    p[1] = Lerp(t, left.p[2], p[2]);
+    left.p[2] = Lerp(t, left.p[1], left.p[2]);
+    left.p[3] = p[0] = Lerp(t, left.p[2], p[1]);
 }
 
 

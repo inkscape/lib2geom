@@ -48,8 +48,8 @@ public:
         const_iterator s, e;
         const_iterator begin() const {return s;}
         const_iterator end() const {return e;}
-        Point first() { return *s;}
-        Point last() { return e[-1];}
+        Point first() const { return *s;}
+        Point last() const { return e[-1];}
 
         SubPathElem() {}
         SubPathElem(SubPathOp op,
@@ -104,6 +104,7 @@ public:
     SubPathConstIter end() const { return SubPathConstIter(cmd.end(), handles.end());}
     
     bool empty() const { return cmd.empty(); }
+    unsigned size() const { return cmd.size(); }
 
     /** returns the point at the position given by walking along the path. */
     SubPathLocation point_at_arc_length(double s);
@@ -166,6 +167,9 @@ public:
 
 inline bool operator!=(const SubPath::SubPathConstIter &a, const SubPath::SubPathConstIter &b) 
 { return (a.c!=b.c) || (a.h != b.h);}
+
+inline ptrdiff_t operator-(const SubPath::SubPathConstIter &a, const SubPath::SubPathConstIter &b) 
+{ return a.c - b.c;}
 
 //SubPath operator * (SubPath, Matrix);
 

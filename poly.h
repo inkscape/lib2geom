@@ -1,3 +1,5 @@
+#ifndef SEEN_POLY_H
+#define SEEN_POLY_H
 #include <assert.h>
 #include <vector>
 #include <iostream>
@@ -141,3 +143,4 @@ inline std::ostream &operator<< (std::ostream &out_file, const Poly &in_poly) {
   End:
 */
 // vim: filetype=cpp:expandtab:shiftwidth=4:tabstop=8:softtabstop=4:encoding=utf-8:textwidth=99 :
+#endif

@@ -165,17 +165,10 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
         cairo_move_to(cr, gradient_vector[0], gradient_vector[1]);
         cairo_show_text (cr, gradientstr.str().c_str());
     }    
-    //cairo_sub_path(cr, display_path);
-    draw_path(cr, display_path);
+    display_path.closed = true;
+    cairo_sub_path(cr, display_path);
+    //draw_path(cr, display_path);
     //draw_elip(cr, handles);
-    
-    Geom::Point dir(1,1);
-    /*
-    vector<Geom::SubPath::SubPathLocation> pts = find_vector_extreme_points(display_path, dir);
-    
-    for(int i = 0; i < pts.size(); i++) {
-        draw_circ(cr, display_path.point_at(pts[i]));
-        }*/
     
     double dist = INFINITY;
 
@@ -185,14 +178,14 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     Geom::SubPath::SubPathLocation pl = 
         display_path.nearest_location(old_mouse_point, dist);
     assert(hash_cookie == display_path);
-        {
-            std::ostringstream gradientstr;
-            gradientstr << "arc_position: " << arc_length_integrating(display_path, pl, 1e-3);
-            gradientstr << std::ends;
-            Geom::Point pos = display_path.point_at(pl);
-            cairo_move_to(cr, pos[0]+5, pos[1]);
-            cairo_show_text (cr, gradientstr.str().c_str());
-        }    
+    {
+        std::ostringstream gradientstr;
+        gradientstr << "arc_position: " << arc_length_integrating(display_path, pl, 1e-3);
+        gradientstr << std::ends;
+        Geom::Point pos = display_path.point_at(pl);
+        cairo_move_to(cr, pos[0]+5, pos[1]);
+        cairo_show_text (cr, gradientstr.str().c_str());
+    }    
     {
         Geom::Point pos, tgt, acc;
         display_path.point_tangent_acc_at (pl, pos, tgt, acc);
@@ -210,13 +203,13 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
             
         } else // just normal
             draw_ray(cr, pos, 50*Geom::unit_vector(rot90(tgt)));
-            
+        
     }
-        //notify << "path length: " << arc_length_integrating(display_path, pl, 1e3) << "\n";
+    //notify << "sub path length: " << arc_length_subdividing(display_path, 1e-3) << "\n";
     cairo_restore(cr);
 /*    
       cairo_save(cr);
-    cairo_set_source_rgba (cr, 0.25, 0.25, 0., 0.8);
+      cairo_set_source_rgba (cr, 0.25, 0.25, 0., 0.8);
 
     Geom::SubPath pth = display_path.subpath(display_path.indexed_elem(2), display_path.end());
     pth = pth*Geom::translate(Geom::Point(30, 30));
@@ -259,9 +252,11 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
   
         cairo_save(cr);
         cairo_set_source_rgba (cr, 0., 0.25, 0.25, 0.8);
+        assert(hash_cookie == display_path);
         vector<Geom::SubPath::SubPathLocation> pts = 
             find_maximal_curvature_points(display_path);
-  
+        
+        assert(hash_cookie == display_path);
         for(int i = 0; i < pts.size(); i++) {
             Geom::Point pos, tgt, acc;
             draw_circ(cr, display_path.point_at(pts[i]));
