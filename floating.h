@@ -57,8 +57,9 @@ public:
            deleted while still floating */
     }
 
-    void unfloat() {
+    FloatingObject *unfloat() {
         FloatingFrame::_unfloat(this);
+        return this;
     }
 };
 
