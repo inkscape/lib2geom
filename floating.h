@@ -28,19 +28,39 @@ private:
     std::vector<FloatingObject *> _floating;
 
     static void _float(FloatingObject *object) {
-        _top_frame->_floating.push_back(object);
+        _top_frame->_do_float(object, _top_frame);
     }
+    void _do_float(FloatingObject *object) {
+        _floating.push_back(object);
+    }
+
     static void _unfloat(FloatingObject *object) {
-        FloatingFrame *frame;
-        for ( frame = top_frame ; frame ; frame = frame->_parent ) {
-            std::vector<FloatingObject *>::iterator found;
-            found = std::find(frame->_floating.begin(),
-                              frame->_floating.end(),
-                              object);
-            if ( found != frame->_floating.end() ) {
-                frame->_floating.erase(found);
-                break;
+        _top_frame->_do_unfloat(object);
+    }
+    bool _do_unfloat(FloatingObject *object) {
+        for ( frame = this ; frame ; frame = frame->_parent ) {
+            if (frame->_do_unfloat_one(object)) {
+                return true;
             }
+        }
+        return false;
+    }
+    bool _do_unfloat_one(FloatingObject *object) {
+        std::vector<FloatingObject *>::iterator found;
+        found = std::find(frame->_floating.begin(),
+                          frame->_floating.end(),
+                          object);
+        if ( found != frame->_floating.end() ) {
+            _floating.erase(found);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    static void _refloat(FloatingObject *object) {
+        if (_top_frame->_do_unfloat(object)) {
+            _top_frame->_parent->_do_float(object);
         }
     }
 
@@ -59,6 +79,11 @@ public:
 
     FloatingObject *unfloat() {
         FloatingFrame::_unfloat(this);
+        return this;
+    }
+
+    FloatingObject *refloat() {
+        FloatingFrame::_refloat(this);
         return this;
     }
 };
