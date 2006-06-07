@@ -37,20 +37,17 @@ private:
     static void _unfloat(FloatingObject *object) {
         _top_frame->_do_unfloat(object);
     }
-    bool _do_unfloat(FloatingObject *object) {
+    void _do_unfloat(FloatingObject *object) {
         for ( frame = this ; frame ; frame = frame->_parent ) {
             if (frame->_do_unfloat_one(object)) {
-                return true;
+                break;
             }
         }
-        return false;
     }
     bool _do_unfloat_one(FloatingObject *object) {
         std::vector<FloatingObject *>::iterator found;
-        found = std::find(frame->_floating.begin(),
-                          frame->_floating.end(),
-                          object);
-        if ( found != frame->_floating.end() ) {
+        found = std::find(_floating.begin(), _floating.end(), object);
+        if ( found != _floating.end() ) {
             _floating.erase(found);
             return true;
         } else {
@@ -59,7 +56,7 @@ private:
     }
 
     static void _refloat(FloatingObject *object) {
-        if (_top_frame->_do_unfloat(object)) {
+        if (_top_frame->_do_unfloat_one(object)) {
             _top_frame->_parent->_do_float(object);
         }
     }
