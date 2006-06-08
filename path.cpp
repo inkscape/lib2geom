@@ -183,10 +183,18 @@ Geom::SubPath::SubPathElem::point_tangent_acc_at(double t,
 
 
 Point SubPath::point_at(SubPathLocation at) {
+    ptrdiff_t offset = at.it - begin();
+    
+    assert(offset >= 0);
+    assert(offset < size());
     return (*at.it).point_at(at.t);
 }
 
 void SubPath::point_tangent_acc_at(SubPathLocation at, Point &pos, Point & tgt, Point &acc) {
+    ptrdiff_t offset = at.it - begin();
+    
+    assert(offset >= 0);
+    assert(offset < size());
     (*at.it).point_tangent_acc_at(at.t, pos, tgt, acc);
 }
 

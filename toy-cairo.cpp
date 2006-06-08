@@ -248,7 +248,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
         //draw_circ(cr, pos);
     }
     
-    if(0) { // probably busted
+    if(1) { // probably busted
   
         cairo_save(cr);
         cairo_set_source_rgba (cr, 0., 0.25, 0.25, 0.8);

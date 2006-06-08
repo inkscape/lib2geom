@@ -106,7 +106,7 @@ void arc_length_integrating(Geom::SubPath::SubPathElem pe, double t, double tol,
     switch(pe.op) {
     case Geom::lineto:
     {
-        result += L2(pe.first() - pe.last());
+        result += L2(pe.first() - pe.last())*t;
         break;
     }
     case Geom::quadto:
