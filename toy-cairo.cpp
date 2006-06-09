@@ -27,6 +27,25 @@
 #include "matrix-translate-ops.h"
 #include "path-cairo.h"
 
+void
+cairo_move_to (cairo_t *cr, Geom::Point p1) {
+	cairo_move_to(cr, p1[0], p1[1]);
+}
+
+void
+cairo_line_to (cairo_t *cr, Geom::Point p1) {
+	cairo_line_to(cr, p1[0], p1[1]);
+}
+
+void
+cairo_curve_to (cairo_t *cr, Geom::Point p1, 
+		Geom::Point p2, Geom::Point p3) {
+	cairo_curve_to(cr, p1[0], p1[1],
+		       p2[0], p2[1],
+		       p3[0], p3[1]);
+}
+
+
 using std::string;
 using std::vector;
 
@@ -104,7 +123,7 @@ void draw_elip(cairo_t *cr, Geom::Point *h) {
     }
 }
 
-void draw_path(cairo_t *cr, Geom::SubPath p) {
+void draw_path(cairo_t *cr, Geom::SubPath const & p) {
     path_to_polyline pl(p, 1);
     
     Geom::Point old(pl.handles[0]);
@@ -119,7 +138,7 @@ void draw_path(cairo_t *cr, Geom::SubPath p) {
 
 #include "centroid.h"
 
-Geom::Point path_centroid_polyline(Geom::SubPath p, double &area) {
+Geom::Point path_centroid_polyline(Geom::SubPath const & p, double &area) {
     path_to_polyline pl(p, 1);
     Geom::Point centr;
     Geom::centroid(pl.handles,  centr, area);
@@ -127,10 +146,32 @@ Geom::Point path_centroid_polyline(Geom::SubPath p, double &area) {
     return centr;
 }
 
+Geom::SubPath::Location param(Geom::SubPath const & p, double t) {
+    double T = t*(p.size()-1);
+    //std::cout << T << ", " <<  T-int(T) << std::endl;
+    return Geom::SubPath::Location(p.indexed_elem(int(T)), T - int(T));
+}
+
+void draw_evolute(cairo_t *cr, Geom::SubPath const & p) {
+    int i = 0;
+    for(double t = 0; t <= 1.0; t+= 1./1024) {
+        Geom::SubPath::Location pl = param(p, t);
+        
+        Geom::Point pos, tgt, acc;
+        display_path.point_tangent_acc_at (pl, pos, tgt, acc);
+        Geom::Point pt = pos + 10*rot90(unit_vector(tgt));
+        if(i)
+            cairo_line_to(cr, pt);
+        else 
+            cairo_move_to(cr, pt);
+        i++;
+    }
+}
+
 Geom::Point* selected_handle = 0;
 Geom::Point gradient_vector(20,20);
 
-bool rotater  = false;
+bool rotater  = false, evolution= false;
 
 static gboolean
 expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
@@ -155,6 +196,9 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
         m = (m*Geom::rotate(0.01))*Geom::translate(cntr);
         display_path = display_path*m;
     }
+    if(evolution) {
+        draw_evolute(cr, display_path);
+    }
     Geom::SubPath::HashCookie hash_cookie = display_path;
     draw_line_seg(cr, Geom::Point(10,10), gradient_vector);
     draw_handle(cr, gradient_vector);
@@ -175,7 +219,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     cairo_save(cr);
     cairo_set_source_rgba (cr, 0., 0., 0.5, 0.8);
 
-    Geom::SubPath::SubPathLocation pl = 
+    Geom::SubPath::Location pl = 
         display_path.nearest_location(old_mouse_point, dist);
     assert(hash_cookie == display_path);
     {
@@ -228,17 +272,17 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     cairo_save(cr);
     cairo_set_source_rgba (cr, 0, 0.5, 0., 0.8);
     for(int i = 0; i < ts.size(); i++) {
-        Geom::SubPath::SubPathLocation pl(display_path.indexed_elem(curve_seg), ts[i].first);
+        Geom::SubPath::Location pl(display_path.indexed_elem(curve_seg), ts[i].first);
         
         draw_handle(cr, display_path.point_at(pl));
-        Geom::SubPath::SubPathLocation p2(pth.indexed_elem(curve_seg), ts[i].second);
+        Geom::SubPath::Location p2(pth.indexed_elem(curve_seg), ts[i].second);
         
         draw_circ(cr, display_path.point_at(p2));
     }
     cairo_restore(cr);
     */
     
-    vector<Geom::SubPath::SubPathLocation> pts = 
+    vector<Geom::SubPath::Location> pts = 
         find_vector_extreme_points(display_path, gradient_vector-Geom::Point(10,10));
   
     for(int i = 0; i < pts.size(); i++) {
@@ -248,12 +292,12 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
         //draw_circ(cr, pos);
     }
     
-    if(1) { // probably busted
+    if(0) { // probably busted
   
         cairo_save(cr);
         cairo_set_source_rgba (cr, 0., 0.25, 0.25, 0.8);
         assert(hash_cookie == display_path);
-        vector<Geom::SubPath::SubPathLocation> pts = 
+        vector<Geom::SubPath::Location> pts = 
             find_maximal_curvature_points(display_path);
         
         assert(hash_cookie == display_path);
@@ -377,6 +421,8 @@ static gint key_release_event(GtkWidget *widget, GdkEventKey *event, gpointer) {
         exit(0);
     } else if (event->keyval == 'r') {
         rotater = !rotater;
+    } else if (event->keyval == 'e') {
+        evolution = !evolution;
     } else if (event->keyval == 'd') {
         write_svgd(stderr, display_path);
         ret = TRUE;

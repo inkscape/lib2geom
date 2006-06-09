@@ -1,7 +1,7 @@
 #include "path.h"
 
 namespace Geom{
-double curvature(SubPath::SubPathLocation e);
+double curvature(SubPath::Location e);
 };
 
 /*

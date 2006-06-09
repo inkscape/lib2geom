@@ -85,11 +85,11 @@ public:
 
     typedef SubPathConstIter const_iterator;
 
-    class SubPathLocation{
+    class Location{
     public:
         SubPathConstIter it;
         double t; // element specific meaning [0,1)
-        SubPathLocation(SubPathConstIter it, double t) : it(it), t(t) {}
+        Location(SubPathConstIter it, double t) : it(it), t(t) {}
     };
     
     class HashCookie {
@@ -107,35 +107,35 @@ public:
     unsigned size() const { return cmd.size(); }
 
     /** returns the point at the position given by walking along the path. */
-    SubPathLocation point_at_arc_length(double s);
+    Location point_at_arc_length(double s);
 
     /** return the last nearest point on the path. */
-    SubPathLocation nearest_location(Point p, double& dist);
+    Location nearest_location(Point p, double& dist);
 
     /** return a new path over [begin, end). */
     SubPath subpath(SubPathConstIter begin, SubPathConstIter end);
     
     /** return a new path over [begin, end). */
-    SubPath subpath(SubPathLocation begin, SubPathLocation end);
+    SubPath subpath(Location begin, Location end);
 
     /** compute the bounding box of this path. */
     Maybe<Rect> bbox() const;
 
     /** a new path with an extra node inserted at at without changing the curve. */
-    SubPath insert_nodes(SubPathLocation* b, SubPathLocation* e);
-    SubPath insert_node(SubPathLocation at);
+    SubPath insert_nodes(Location* b, Location* e);
+    SubPath insert_node(Location at);
 
     /** coords of point on path. */
-    Point point_at(SubPathLocation at);
+    Point point_at(Location at);
 
-    void point_tangent_acc_at (SubPathLocation at, Point & pos, Point & tgt, Point &acc);
+    void point_tangent_acc_at (Location at, Point & pos, Point & tgt, Point &acc);
     
     void push_back(SubPathElem e);
     void insert(SubPathConstIter before, SubPathConstIter s, SubPathConstIter e);
 
 // mainly for debugging
 public:
-    SubPathConstIter indexed_elem(int i) {
+    SubPathConstIter indexed_elem(int i) const {
         SubPathConstIter it = begin();
         while(--i >= 0) ++it;
         return it;

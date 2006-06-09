@@ -126,7 +126,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     
     Geom::Point dir(1,1);
     /*
-    vector<Geom::SubPath::SubPathLocation> pts = find_vector_extreme_points(display_path, dir);
+    vector<Geom::SubPath::Location> pts = find_vector_extreme_points(display_path, dir);
     
     for(int i = 0; i < pts.size(); i++) {
         draw_circ(widget->window, display_path.point_at(pts[i]));
@@ -134,7 +134,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     
     double dist = INFINITY;
 
-    Geom::SubPath::SubPathLocation pl = 
+    Geom::SubPath::Location pl = 
         display_path.nearest_location(old_mouse_point, dist);
     {
         Geom::Point pos, tgt, acc;
@@ -163,17 +163,17 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     
     std::vector<std::pair <double, double> > ts = Geom::FindIntersections(a, b);
     for(int i = 0; i < ts.size(); i++) {
-        Geom::SubPath::SubPathLocation pl(display_path.indexed_elem(curve_seg), ts[i].first);
+        Geom::SubPath::Location pl(display_path.indexed_elem(curve_seg), ts[i].first);
         
         draw_handle(widget->window, display_path.point_at(pl));
-        Geom::SubPath::SubPathLocation p2(pth.indexed_elem(curve_seg), ts[i].second);
+        Geom::SubPath::Location p2(pth.indexed_elem(curve_seg), ts[i].second);
         
         draw_circ(widget->window, display_path.point_at(p2));
     }
     
     
     /*
-    vector<Geom::SubPath::SubPathLocation> pts = 
+    vector<Geom::SubPath::Location> pts = 
         find_inflection_points(display_path);
   
     for(int i = 0; i < pts.size(); i++) {

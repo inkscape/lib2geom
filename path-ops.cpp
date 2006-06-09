@@ -2,7 +2,7 @@
 
 namespace Geom{
 
-double curvature(SubPath const& p, SubPath::SubPathLocation const& pl) {
+double curvature(SubPath const& p, SubPath::Location const& pl) {
     Geom::Point pos, tgt, acc;
     p.point_tangent_acc_at(pl, pos, tgt, acc);
     double kurvature = dot(acc, rot90(tgt))/pow(Geom::L2(tgt),3);

@@ -118,7 +118,7 @@ void SubPath::insert(SubPathConstIter before, SubPathConstIter s, SubPathConstIt
 }
 
 
-/*SubPath SubPath::insert_node(SubPathLocation at) {
+/*SubPath SubPath::insert_node(Location at) {
     SubPath p;
     
     p.insert(p.end(), begin(), at.it); // begining of path
@@ -182,7 +182,7 @@ Geom::SubPath::SubPathElem::point_tangent_acc_at(double t,
 }
 
 
-Point SubPath::point_at(SubPathLocation at) {
+Point SubPath::point_at(Location at) {
     ptrdiff_t offset = at.it - begin();
     
     assert(offset >= 0);
@@ -190,7 +190,7 @@ Point SubPath::point_at(SubPathLocation at) {
     return (*at.it).point_at(at.t);
 }
 
-void SubPath::point_tangent_acc_at(SubPathLocation at, Point &pos, Point & tgt, Point &acc) {
+void SubPath::point_tangent_acc_at(Location at, Point &pos, Point & tgt, Point &acc) {
     ptrdiff_t offset = at.it - begin();
     
     assert(offset >= 0);
@@ -262,8 +262,8 @@ bool SubPath::SubPathElem::nearest_location(Point p, double& dist, double& tt) {
     return false;
 }
 
-SubPath::SubPathLocation SubPath::nearest_location(Point p, double &dist) {
-    SubPathLocation pl(begin(), 0);
+SubPath::Location SubPath::nearest_location(Point p, double &dist) {
+    Location pl(begin(), 0);
     dist = INFINITY;
     double t = 0;
     int i = 0;
@@ -272,7 +272,7 @@ SubPath::SubPathLocation SubPath::nearest_location(Point p, double &dist) {
         ++elm
        ) {
         if((*elm).nearest_location(p, dist, t)) {
-            pl = SubPathLocation(elm, t);
+            pl = Location(elm, t);
         }
         i++;
     }

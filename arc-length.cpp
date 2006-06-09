@@ -148,7 +148,7 @@ double arc_length_integrating(Geom::SubPath const & p, double tol) {
     return result;
 }
 
-double arc_length_integrating(Geom::SubPath const & p, Geom::SubPath::SubPathLocation const & pl, double tol) {
+double arc_length_integrating(Geom::SubPath const & p, Geom::SubPath::Location const & pl, double tol) {
     double result = 0, abserr = 0;
     ptrdiff_t offset = pl.it - p.begin();
     
