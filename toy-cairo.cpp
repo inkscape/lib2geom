@@ -168,10 +168,26 @@ void draw_evolute(cairo_t *cr, Geom::SubPath const & p) {
     }
 }
 
+void draw_stroke(cairo_t *cr, Geom::SubPath const & p) {
+    int i = 0;
+    for(double t = 0; t <= 1.0; t+= 1./1024) {
+        Geom::SubPath::Location pl = param(p, t);
+        
+        Geom::Point pos, tgt, acc;
+        display_path.point_tangent_acc_at (pl, pos, tgt, acc);
+        Geom::Point pt = pos + 10*rot90(unit_vector(tgt));
+        if(i)
+            cairo_line_to(cr, pt);
+        else 
+            cairo_move_to(cr, pt);
+        i++;
+    }
+}
+
 Geom::Point* selected_handle = 0;
 Geom::Point gradient_vector(20,20);
 
-bool rotater  = false, evolution= false;
+bool rotater  = false, evolution= false, half_stroking=false;
 
 static gboolean
 expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
@@ -198,6 +214,9 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     }
     if(evolution) {
         draw_evolute(cr, display_path);
+    }
+    if(half_stroking) {
+        draw_stroke(cr, display_path);
     }
     Geom::SubPath::HashCookie hash_cookie = display_path;
     draw_line_seg(cr, Geom::Point(10,10), gradient_vector);
@@ -423,6 +442,8 @@ static gint key_release_event(GtkWidget *widget, GdkEventKey *event, gpointer) {
         rotater = !rotater;
     } else if (event->keyval == 'e') {
         evolution = !evolution;
+    } else if (event->keyval == 's') {
+        half_stroking = !half_stroking;
     } else if (event->keyval == 'd') {
         write_svgd(stderr, display_path);
         ret = TRUE;
