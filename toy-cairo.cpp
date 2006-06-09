@@ -159,7 +159,15 @@ void draw_evolute(cairo_t *cr, Geom::SubPath const & p) {
         
         Geom::Point pos, tgt, acc;
         display_path.point_tangent_acc_at (pl, pos, tgt, acc);
+        double kurvature = dot(acc, rot90(tgt))/pow(Geom::L2(tgt),3);
+        
         Geom::Point pt = pos + 10*rot90(unit_vector(tgt));
+        if(fabs(kurvature) > 0.0001) {
+            Geom::Point kurv_vector = (1./kurvature)*Geom::unit_vector(rot90(tgt));
+            kurv_vector += pos;
+            //kurvature = fabs(kurvature);
+            pt = kurv_vector;
+        }
         if(i)
             cairo_line_to(cr, pt);
         else 
