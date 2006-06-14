@@ -11,6 +11,9 @@ double arc_length_subdividing(Geom::SubPath const & p, double tol);
 double arc_length_integrating(Geom::SubPath const & p, double tol);
 double arc_length_integrating(Geom::SubPath const & p, Geom::SubPath::Location const & pl, double tol);
 
+
+Geom::SubPath::Location natural_parameterisation(Geom::SubPath const & p, double s, double tol);
+
 /*
   Local Variables:
   mode:c++

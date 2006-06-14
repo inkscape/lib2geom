@@ -45,7 +45,7 @@ std::vector<std::complex<double> > solve(Poly const & pp) {
     for(int i = 0; i < p.size(); i++)
         a[i] = p[i];
     std::vector<std::complex<double> > roots;
-    roots.resize(p.degree());
+    //roots.resize(p.degree());
     
     gsl_poly_complex_solve (a, p.size(), w, z);
     delete[]a;

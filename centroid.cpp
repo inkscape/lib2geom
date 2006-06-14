@@ -92,12 +92,10 @@ quadratic_bezier_poly(SubPath::SubPathElem const & b, int dim) {
 int centroid(SubPath const &p, Point& centroid, double &area) {
     Point centroid_tmp(0,0);
     double atmp = 0;
-    Point start_pt;
     for(SubPath::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
         SubPath::SubPathElem elm = *iter;
         switch(iter.cmd()) {
             case Geom::moveto:
-                start_pt = (*iter)[0]; // remember starting point
                 break;
             case Geom::lineto:
             {
@@ -141,9 +139,9 @@ int centroid(SubPath const &p, Point& centroid, double &area) {
         }
     }
     // join ends
-    const double ai = cross(p.handles.back(), start_pt);
+    const double ai = cross(p.handles.back(), p.handles[0]);
     atmp += ai;
-    centroid_tmp += ai*(p.handles.back(), start_pt); // first moment.
+    centroid_tmp += ai*(p.handles.back(), p.handles[0]); // first moment.
     
     area = atmp / 2;
     if (atmp != 0) {

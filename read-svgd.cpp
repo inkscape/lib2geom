@@ -43,8 +43,8 @@ void write_svgd(FILE* f, Geom::SubPath const &p) {
 Geom::SubPath read_svgd(FILE* f) {
     Geom::SubPath path;
     assert(f);
-    path.cmd.push_back(Geom::moveto);
-    path.handles.push_back(Geom::Point(0,0));
+    //path.cmd.push_back(Geom::moveto);
+    //path.handles.push_back(Geom::Point(0,0));
     
     while(!feof(f)) {
         eat_space(f);

@@ -196,6 +196,7 @@ Geom::Point* selected_handle = 0;
 Geom::Point gradient_vector(20,20);
 
 bool rotater  = false, evolution= false, half_stroking=false;
+bool equal_arc = false;
 
 static gboolean
 expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
@@ -226,10 +227,22 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     if(half_stroking) {
         draw_stroke(cr, display_path);
     }
+    if(equal_arc) {
+        cairo_save(cr);
+        cairo_set_source_rgba (cr, 0.5, 0, 0.5, 0.8);
+        double sl = arc_length_integrating(display_path, 1e-3);
+        for(double s = 0; s < sl; s+= 50.0) {
+            Geom::SubPath::Location pl = 
+                natural_parameterisation(display_path, s, 1e-3);
+            
+            draw_circ(cr, display_path.point_at(pl));
+        }
+        cairo_restore(cr);
+    }
     Geom::SubPath::HashCookie hash_cookie = display_path;
-    draw_line_seg(cr, Geom::Point(10,10), gradient_vector);
-    draw_handle(cr, gradient_vector);
     {
+        draw_line_seg(cr, Geom::Point(10,10), gradient_vector);
+        draw_handle(cr, gradient_vector);
         std::ostringstream gradientstr;
         gradientstr << "gradient: " << gradient_vector - Geom::Point(10,10);
         gradientstr << std::ends;
@@ -309,17 +322,20 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     cairo_restore(cr);
     */
     
-    vector<Geom::SubPath::Location> pts = 
-        find_vector_extreme_points(display_path, gradient_vector-Geom::Point(10,10));
-  
-    for(int i = 0; i < pts.size(); i++) {
-        Geom::Point pos, tgt, acc;
-        draw_handle(cr, display_path.point_at(pts[i]));
-        //display_path.point_tangent_acc_at (pts[i], pos, tgt, acc);
-        //draw_circ(cr, pos);
+    if(0) {
+        vector<Geom::SubPath::Location> pts = 
+            find_vector_extreme_points(display_path, gradient_vector-Geom::Point(10,10));
+        
+        for(int i = 0; i < pts.size(); i++) {
+            Geom::Point pos, tgt, acc;
+            draw_handle(cr, display_path.point_at(pts[i]));
+            //display_path.point_tangent_acc_at (pts[i], pos, tgt, acc);
+            //draw_circ(cr, pos);
+        }
     }
     
     if(0) { // probably busted
+        cairo_stroke(cr);
   
         cairo_save(cr);
         cairo_set_source_rgba (cr, 0., 0.25, 0.25, 0.8);
@@ -332,6 +348,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
             Geom::Point pos, tgt, acc;
             draw_circ(cr, display_path.point_at(pts[i]));
         }
+        cairo_stroke(cr);
         cairo_restore(cr);
     }
     double area = 0;
@@ -452,6 +469,9 @@ static gint key_release_event(GtkWidget *widget, GdkEventKey *event, gpointer) {
         evolution = !evolution;
     } else if (event->keyval == 's') {
         half_stroking = !half_stroking;
+    } else if (event->keyval == 'a') {
+        equal_arc = !equal_arc;
+        
     } else if (event->keyval == 'd') {
         write_svgd(stderr, display_path);
         ret = TRUE;
