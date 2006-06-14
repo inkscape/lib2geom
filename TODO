@@ -1,3 +1,16 @@
+for Inkscape:
+
+- "set" operations:
+  - union
+  - difference
+  - intersection
+  - mutual exclusion
+  - cut
+- dilating/contracting shapes
+- generate postscript stroke geometries
+
+other:
+
 * pathlocations are perhaps too fragile - any change to the path can make the iterator invalid.
 * convert toy-cairo to gtkmm
 * make a wikipage?
