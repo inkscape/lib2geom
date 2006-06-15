@@ -455,6 +455,55 @@ static gint mouse_release_event(GtkWidget* window, GdkEventButton* e, gpointer d
     return FALSE;
 }
 
+#include "path-find-points-of-interest.h"
+#include "cubic_bez_util.h"
+#include "poly.h"
+#include "path-poly-fns.h"
+#include <gsl/gsl_integration.h>
+static double poly_length_integrating(double t, void* param) {
+    Poly* pc = (Poly*)param;
+    return hypot(pc[0].eval(t), pc[1].eval(t));
+}
+
+void write_ell(Geom::SubPath const &p) {
+    double tol = 1e-6;
+    
+    for(Geom::SubPath::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
+        Geom::SubPath::SubPathElem pe = *iter;
+        switch(pe.op) {
+            case Geom::quadto:
+            case Geom::cubicto:
+            {
+                std::cout << "\\begin{align*}";
+                Poly B[2] = {get_parametric_poly(pe, Geom::X), get_parametric_poly(pe, Geom::Y)};
+                for(int i = 0; i < 2; i++)
+                    B[i] = derivative(B[i]);
+                
+                std::cout << "&\\int_0^1\\sqrt{(" << B[0] << ")^2 + (" << B[1] << ")^2}dt \\\\\n";
+                std::cout << "&= \\int_0^1\\sqrt{(" << B[0]*B[0]  + B[1]*B[1] << ")^2}dt \\\\\n";
+                gsl_function F;
+                gsl_integration_workspace * w 
+                    = gsl_integration_workspace_alloc (20);
+                F.function = &poly_length_integrating;
+                F.params = (void*)B;
+                double quad_result, err;
+                /* We could probably use the non adaptive code here if we removed any cusps first. */
+                int returncode = 
+                    gsl_integration_qag (&F, 0, 1, 0, tol, 20, 
+                                         GSL_INTEG_GAUSS21, w, &quad_result, &err);
+            
+                double abs_error = fabs(err);
+                
+                double result = quad_result;
+                std::cout << "&=" << result <<"\n\\end{align*}\n" << std::endl;
+                break;
+            }
+            default:
+                break;
+        }
+    }
+}
+
 static gint key_release_event(GtkWidget *widget, GdkEventKey *event, gpointer) {
     gint ret = FALSE;
     if (event->keyval == ' ') {
@@ -466,6 +515,9 @@ static gint key_release_event(GtkWidget *widget, GdkEventKey *event, gpointer) {
     } else if (event->keyval == 'r') {
         rotater = !rotater;
     } else if (event->keyval == 'e') {
+        // print out elliptic integrals and solutions
+        write_ell(display_path);
+    } else if (event->keyval == 'v') {
         evolution = !evolution;
     } else if (event->keyval == 's') {
         half_stroking = !half_stroking;

@@ -70,7 +70,7 @@ double arc_length_subdividing(Geom::SubPath const & p, double tol) {
     return sqrt(dot(p,p));
     }*/
 
-double poly_length_integrating(double t, void* param) {
+static double poly_length_integrating(double t, void* param) {
     Poly* pc = (Poly*)param;
     return hypot(pc[0].eval(t), pc[1].eval(t));
 }

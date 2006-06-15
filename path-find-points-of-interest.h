@@ -20,6 +20,7 @@ find_maximal_curvature_points(Geom::SubPath const & p);
 
 Geom::SubPath::Location dim_extreme_points(Geom::SubPath::SubPathElem e);
 
+/*template <class F>
 template <class F>
 std::vector<Geom::SubPath::Location> find_points(Geom::SubPath const & p, F f) {
     std::vector<Geom::SubPath::Location> result;
@@ -31,7 +32,7 @@ std::vector<Geom::SubPath::Location> find_points(Geom::SubPath const & p, F f) {
         result.insert(result.end(), v.begin(), v.end());
     }
     return result;
-}
+    }*/
 
 /*
   Local Variables:

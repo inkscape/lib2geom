@@ -119,7 +119,7 @@ find_cusp_points(Geom::SubPath const & p, int dim) {
  */
 std::vector<Geom::SubPath::Location>
 find_inflection_points(Geom::SubPath const & p) {
-    std::vector<Geom::SubPath::Location> result;
+    /*std::vector<Geom::SubPath::Location> result;
 
     for(Geom::SubPath::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
         switch(iter.cmd()) {
@@ -159,7 +159,7 @@ find_inflection_points(Geom::SubPath const & p) {
         }
     }
     
-    return result;
+    return result;*/
 }
 
 /*** find_flat_points
