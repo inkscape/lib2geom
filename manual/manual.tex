@@ -1,0 +1,65 @@
+\documentstyle{book}
+
+\begin{document}
+
+\chapter{Basic design}
+
+\section{Points}
+
+\section{Transformations}
+\subsection{scale}
+\subsection{rotate}
+\subsection{translate}
+\subsection{Matrix}
+
+\section{Rect}
+
+\section{ConvexHull}
+
+\section{Path}
+
+\section{SubPath}
+
+\section{Location}
+
+\section{Location sequences}
+
+Many algorithms are more efficient on a sorted sequence of locations,
+than calling the function repeatedly for each.  So we have algorithms
+that take a sequence of locations, assumed in order, and perform an
+action on those.  For example, cutting a path at one location is
+basically linear in the number of path segments, but cutting a path in
+10 locations is still about the same amount of work.  Similarly,
+working out the arc length for a location is about the same amount of
+work as working out the arc length for 1000 locations on that path.
+
+Many operations are best described as returning an ordered set of
+locations - for example, we have a function which returns
+intersections between two paths.  rather than return just one
+intersection, we might return all intersections, either in order along
+the path, or in order of distance along other path.
+
+Think about dashes: a dash is a fixed arclength offset.  So rather
+than getting the location for a point at arc length 1, at arc length
+2, 3, 4.. to the length of the curve, instead we just ask for all of
+these, and the algorithm can chug along the curve outputting the
+answer for each.  the reason it is faster is because to work out the
+location at arc length say 100, we basically need to work out the
+length for many spots up to 100.
+
+Perhaps we then want to split the curve at each of those points.  To
+split a segment at a location first requires finding that segment,
+then spliting it and finally constructing a new path to output a whole
+new path so we can fit the two new segments in.  If we started at the
+begining, and split at the first location, that would be n+1 steps - n
+segs in the original, plus an extra one.  If we wanted to split at 100
+points, it would be n+1 steps for the first, n+2 for the
+second... n+100 steps for the last, this would take a total of 100n +
+100*101/2 steps!  Whereas, if we split as we went along, it would take
+just n+100 steps.
+
+The downside is that I'll probably not provide a separate split
+routine that takes a single point, to discourage people from making
+exactly that mistake.
+
+\end{document}
