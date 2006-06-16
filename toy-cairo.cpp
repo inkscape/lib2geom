@@ -26,6 +26,7 @@
 #include "matrix-rotate-ops.h"
 #include "matrix-translate-ops.h"
 #include "path-cairo.h"
+#include <pango/pangocairo.h>
 
 void
 cairo_move_to (cairo_t *cr, Geom::Point p1) {
@@ -247,7 +248,25 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
         gradientstr << "gradient: " << gradient_vector - Geom::Point(10,10);
         gradientstr << std::ends;
         cairo_move_to(cr, gradient_vector[0], gradient_vector[1]);
-        cairo_show_text (cr, gradientstr.str().c_str());
+        cairo_save(cr);
+        {
+            PangoLayout* layout = pango_cairo_create_layout (cr);
+            pango_layout_set_text(layout, 
+                                  gradientstr.str().c_str(), -1);
+
+            PangoFontDescription *font_desc = pango_font_description_new();
+            pango_font_description_set_family(font_desc, "Sans");
+            const int size_px = 10;
+            pango_font_description_set_absolute_size(font_desc, size_px * 1024.0);
+            pango_layout_set_font_description(layout, font_desc);
+            PangoRectangle logical_extent;
+            pango_layout_get_pixel_extents(layout,
+                                           NULL,
+                                           &logical_extent);
+            cairo_rotate(cr, atan2(gradient_vector));
+            pango_cairo_show_layout(cr, layout);
+        }
+        cairo_restore(cr);
     }    
     display_path.closed = true;
     cairo_sub_path(cr, display_path);
@@ -262,14 +281,6 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     Geom::SubPath::Location pl = 
         display_path.nearest_location(old_mouse_point, dist);
     assert(hash_cookie == display_path);
-    {
-        std::ostringstream gradientstr;
-        gradientstr << "arc_position: " << arc_length_integrating(display_path, pl, 1e-3);
-        gradientstr << std::ends;
-        Geom::Point pos = display_path.point_at(pl);
-        cairo_move_to(cr, pos[0]+5, pos[1]);
-        cairo_show_text (cr, gradientstr.str().c_str());
-    }    
     {
         Geom::Point pos, tgt, acc;
         display_path.point_tangent_acc_at (pl, pos, tgt, acc);
@@ -287,6 +298,29 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
             
         } else // just normal
             draw_ray(cr, pos, 50*Geom::unit_vector(rot90(tgt)));
+        std::ostringstream gradientstr;
+        gradientstr << "arc_position: " << arc_length_integrating(display_path, pl, 1e-3);
+        gradientstr << std::ends;
+        cairo_move_to(cr, pos[0]+5, pos[1]);
+        {
+            PangoLayout* layout = pango_cairo_create_layout (cr);
+            pango_layout_set_text(layout, 
+                                  gradientstr.str().c_str(), -1);
+
+            PangoFontDescription *font_desc = pango_font_description_new();
+            pango_font_description_set_family(font_desc, "Sans");
+            const int size_px = 12;
+            pango_font_description_set_absolute_size(font_desc, size_px * 1024.0);
+            pango_layout_set_font_description(layout, font_desc);
+            PangoRectangle logical_extent;
+            pango_layout_get_pixel_extents(layout,
+                                           NULL,
+                                           &logical_extent);
+            cairo_save(cr);
+            cairo_rotate(cr, atan2(rot90(tgt)));
+            pango_cairo_show_layout(cr, layout);
+            cairo_restore(cr);
+        }
         
     }
     //notify << "sub path length: " << arc_length_subdividing(display_path, 1e-3) << "\n";
