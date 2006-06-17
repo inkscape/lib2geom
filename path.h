@@ -28,8 +28,7 @@ enum SubPathOp{
     lineto,
     quadto,
     cubicto,
-    ellipto,
-    close
+    ellipto
 };
 
 unsigned const SubPathOpHandles[] = {1, 1, 2, 3, 4, 0, 0};
