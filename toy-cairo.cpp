@@ -294,7 +294,8 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
             double c_angle = atan2(kurv_vector)+M_PI;
             kurv_vector += pos;
             kurvature = fabs(kurvature);
-            cairo_arc(cr, kurv_vector[0], kurv_vector[1], (1./kurvature), c_angle-1, c_angle+1);
+            double angle_delta = std::min(100*kurvature, M_PI);
+            cairo_arc(cr, kurv_vector[0], kurv_vector[1], (1./kurvature), c_angle-angle_delta, c_angle+angle_delta);
             
         } else // just normal
             draw_ray(cr, pos, 50*Geom::unit_vector(rot90(tgt)));
