@@ -3,7 +3,7 @@
 
 void cairo_sub_path(cairo_t *cr, Geom::SubPath const &p) {
     for(Geom::SubPath::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
-        Geom::SubPath::SubPathElem elm = *iter;
+        Geom::SubPath::Elem elm = *iter;
         switch(iter.cmd()) {
             case Geom::moveto:
                 cairo_move_to(cr, elm.first()[0], elm.first()[1]);

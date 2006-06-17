@@ -5,7 +5,7 @@
 
 
 static Poly
-quadratic_bezier_poly(Geom::SubPath::SubPathElem const & b, int dim) {
+quadratic_bezier_poly(Geom::SubPath::Elem const & b, int dim) {
     Poly result;
     double c[6] = {1, 
                     -2, 2, 
@@ -26,7 +26,7 @@ quadratic_bezier_poly(Geom::SubPath::SubPathElem const & b, int dim) {
 
 
 static Poly
-cubic_bezier_poly(Geom::SubPath::SubPathElem const & b, int dim) {
+cubic_bezier_poly(Geom::SubPath::Elem const & b, int dim) {
     Poly result;
     double c[10] = {1, 
                     -3, 3, 
@@ -46,7 +46,7 @@ cubic_bezier_poly(Geom::SubPath::SubPathElem const & b, int dim) {
     return result;
 }
 
-Poly get_parametric_poly(Geom::SubPath::SubPathElem const & b, int dim) {
+Poly get_parametric_poly(Geom::SubPath::Elem const & b, int dim) {
     Poly result;
     switch(b.op) {
     case Geom::lineto:
@@ -85,7 +85,7 @@ Maybe<Rect> SubPath::bbox() const {
  * note that this operation modifies the path.
  */
 
-void SubPath::push_back(SubPathElem e) {
+void SubPath::push_back(Elem e) {
     assert(e.begin() != e.end());
     if(!handles.empty() && *e.begin() != handles.back()) {
         cmd.push_back(Geom::moveto);
@@ -124,7 +124,7 @@ void SubPath::insert(SubPathConstIter before, SubPathConstIter s, SubPathConstIt
     p.insert(p.end(), begin(), at.it); // begining of path
     }*/
 
-Geom::Point Geom::SubPath::SubPathElem::point_at(double t) {
+Geom::Point Geom::SubPath::Elem::point_at(double t) {
     switch(op) {
     case Geom::moveto: // these four could be merged by a smarter person
         return s[0];
@@ -153,7 +153,7 @@ Geom::Point Geom::SubPath::SubPathElem::point_at(double t) {
 }
 
 void
-Geom::SubPath::SubPathElem::point_tangent_acc_at(double t, 
+Geom::SubPath::Elem::point_tangent_acc_at(double t, 
                                            Geom::Point &pos, 
                                            Geom::Point &tgt,
                                            Geom::Point &acc) {
@@ -200,7 +200,7 @@ void SubPath::point_tangent_acc_at(Location at, Point &pos, Point & tgt, Point &
 
 #include "nearestpoint.cpp"
 
-bool SubPath::SubPathElem::nearest_location(Point p, double& dist, double& tt) {
+bool SubPath::Elem::nearest_location(Point p, double& dist, double& tt) {
     double new_dist, new_t;
     switch(op) {
     case Geom::moveto:

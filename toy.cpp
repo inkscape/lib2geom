@@ -154,7 +154,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     draw_path(widget->window, pth);
     Bezier a, b;
     const int curve_seg = 3;
-    Geom::SubPath::SubPathElem ai(*display_path.indexed_elem(curve_seg)), bi(*pth.indexed_elem(curve_seg));
+    Geom::SubPath::Elem ai(*display_path.indexed_elem(curve_seg)), bi(*pth.indexed_elem(curve_seg));
     
     for(int i = 0; i < 4; i++) {
         a.p[i] = ai[i];

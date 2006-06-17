@@ -26,11 +26,11 @@ path_to_polyline::path_to_polyline(const Geom::SubPath &p, double tol)
         
 }
     
-void path_to_polyline::line_to_polyline(Geom::SubPath::SubPathElem e) {
+void path_to_polyline::line_to_polyline(Geom::SubPath::Elem e) {
     handles.push_back(e.begin()[1]);
 }
 
-void path_to_polyline::cubic_to_polyline(Geom::SubPath::SubPathElem e) {
+void path_to_polyline::cubic_to_polyline(Geom::SubPath::Elem e) {
     Geom::Point v[3];
     for(int i = 0; i < 3; i++)
         v[i] = e[i+1] - e[0];
@@ -62,17 +62,17 @@ void path_to_polyline::cubic_to_polyline(Geom::SubPath::SubPathElem e) {
         Geom::Point midmidmid = Lerp(0.5, midmid[0], midmid[1]);
         {
             Geom::Point curve[4] = {e[0], mid[0], midmid[0], midmidmid};
-            Geom::SubPath::SubPathElem e0(Geom::cubicto, std::vector<Geom::Point>::const_iterator(curve), std::vector<Geom::Point>::const_iterator(curve) + 4);
+            Geom::SubPath::Elem e0(Geom::cubicto, std::vector<Geom::Point>::const_iterator(curve), std::vector<Geom::Point>::const_iterator(curve) + 4);
             cubic_to_polyline(e0);
         } {
             Geom::Point curve[4] = {midmidmid, midmid[1], mid[2], e[3]};
-            Geom::SubPath::SubPathElem e1(Geom::cubicto, std::vector<Geom::Point>::const_iterator(curve), std::vector<Geom::Point>::const_iterator(curve) + 4);
+            Geom::SubPath::Elem e1(Geom::cubicto, std::vector<Geom::Point>::const_iterator(curve), std::vector<Geom::Point>::const_iterator(curve) + 4);
             cubic_to_polyline(e1);
         }
     }
 }
     
-void path_to_polyline::quad_to_polyline(Geom::SubPath::SubPathElem e) {
+void path_to_polyline::quad_to_polyline(Geom::SubPath::Elem e) {
     Geom::Point v[2];
     for(int i = 0; i < 2; i++)
         v[i] = e[i+1] - e[0];
@@ -98,11 +98,11 @@ void path_to_polyline::quad_to_polyline(Geom::SubPath::SubPathElem e) {
         Geom::Point midmid = Lerp(0.5, mid[0], mid[1]);
         {
             Geom::Point curve[3] = {e[0], mid[0], midmid};
-            Geom::SubPath::SubPathElem e0(Geom::quadto, std::vector<Geom::Point>::const_iterator(curve), std::vector<Geom::Point>::const_iterator(curve) + 3);
+            Geom::SubPath::Elem e0(Geom::quadto, std::vector<Geom::Point>::const_iterator(curve), std::vector<Geom::Point>::const_iterator(curve) + 3);
             quad_to_polyline(e0);
         } {
             Geom::Point curve[4] = {midmid, mid[1], e[2]};
-            Geom::SubPath::SubPathElem e1(Geom::quadto, std::vector<Geom::Point>::const_iterator(curve), std::vector<Geom::Point>::const_iterator(curve) + 3);
+            Geom::SubPath::Elem e1(Geom::quadto, std::vector<Geom::Point>::const_iterator(curve), std::vector<Geom::Point>::const_iterator(curve) + 3);
             quad_to_polyline(e1);
         }
     }

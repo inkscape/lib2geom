@@ -46,7 +46,7 @@ int centroid(std::vector<Point> p, Point& centroid, double &area) {
 }
 
 static Poly
-cubic_bezier_poly(SubPath::SubPathElem const & b, int dim) {
+cubic_bezier_poly(SubPath::Elem const & b, int dim) {
     Poly result;
     double c[10] = {1, 
                     -3, 3, 
@@ -68,7 +68,7 @@ cubic_bezier_poly(SubPath::SubPathElem const & b, int dim) {
 
 
 static Poly
-quadratic_bezier_poly(SubPath::SubPathElem const & b, int dim) {
+quadratic_bezier_poly(SubPath::Elem const & b, int dim) {
     Poly result;
     double c[6] = {1, 
                     -2, 2, 
@@ -93,7 +93,7 @@ int centroid(SubPath const &p, Point& centroid, double &area) {
     Point centroid_tmp(0,0);
     double atmp = 0;
     for(SubPath::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
-        SubPath::SubPathElem elm = *iter;
+        SubPath::Elem elm = *iter;
         switch(iter.cmd()) {
             case Geom::moveto:
                 break;
@@ -154,7 +154,7 @@ int centroid(SubPath const &p, Point& centroid, double &area) {
 int dcentroid(SubPath const &p, Point& dcentroid) {
     Point centroid_tmp(0,0);
     for(SubPath::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
-        SubPath::SubPathElem elm = *iter;
+        SubPath::Elem elm = *iter;
         switch(iter.cmd()) {
             case Geom::moveto:
                 break;

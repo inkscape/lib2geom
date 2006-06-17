@@ -12,10 +12,10 @@ public:
     
     path_to_polyline(const Geom::SubPath &p, double tol = 1.0);
     
-    void line_to_polyline(Geom::SubPath::SubPathElem e);
+    void line_to_polyline(Geom::SubPath::Elem e);
     
-    void quad_to_polyline(Geom::SubPath::SubPathElem e);
-    void cubic_to_polyline(Geom::SubPath::SubPathElem e);
+    void quad_to_polyline(Geom::SubPath::Elem e);
+    void cubic_to_polyline(Geom::SubPath::Elem e);
     
     operator Geom::SubPath();
 };

@@ -5,7 +5,7 @@
 using namespace Geom;
 
 
-double cubic_length_subdividing(Geom::SubPath::SubPathElem const & e, double tol) {
+double cubic_length_subdividing(Geom::SubPath::Elem const & e, double tol) {
     Geom::Point v[3];
     for(int i = 0; i < 3; i++)
         v[i] = e[i+1] - e[0];
@@ -26,11 +26,11 @@ double cubic_length_subdividing(Geom::SubPath::SubPathElem const & e, double tol
         Geom::Point midmidmid = Lerp(0.5, midmid[0], midmid[1]);
         {
             Geom::Point curve[4] = {e[0], mid[0], midmid[0], midmidmid};
-            Geom::SubPath::SubPathElem e0(Geom::cubicto, std::vector<Geom::Point>::const_iterator(curve), std::vector<Geom::Point>::const_iterator(curve) + 4);
+            Geom::SubPath::Elem e0(Geom::cubicto, std::vector<Geom::Point>::const_iterator(curve), std::vector<Geom::Point>::const_iterator(curve) + 4);
             result = cubic_length_subdividing(e0, tol);
         } {
             Geom::Point curve[4] = {midmidmid, midmid[1], mid[2], e[3]};
-            Geom::SubPath::SubPathElem e1(Geom::cubicto, std::vector<Geom::Point>::const_iterator(curve), std::vector<Geom::Point>::const_iterator(curve) + 4);
+            Geom::SubPath::Elem e1(Geom::cubicto, std::vector<Geom::Point>::const_iterator(curve), std::vector<Geom::Point>::const_iterator(curve) + 4);
             return result + cubic_length_subdividing(e1, tol);
         }
     }
@@ -102,7 +102,7 @@ static double poly_length_integrating(double t, void* param) {
     }
 */
 
-void arc_length_integrating(Geom::SubPath::SubPathElem pe, double t, double tol, double &result, double &abs_error) {
+void arc_length_integrating(Geom::SubPath::Elem pe, double t, double tol, double &result, double &abs_error) {
     switch(pe.op) {
     case Geom::lineto:
     {
@@ -175,7 +175,7 @@ double arc_length_integrating(Geom::SubPath const & p, Geom::SubPath::Location c
      
 struct arc_length_params
 {
-    Geom::SubPath::SubPathElem pe;
+    Geom::SubPath::Elem pe;
     double s,tol, result, abs_error;
     double left, right;
 };

@@ -18,7 +18,7 @@ find_flat_points(Geom::SubPath const & p);
 std::vector<Geom::SubPath::Location>
 find_maximal_curvature_points(Geom::SubPath const & p);
 
-Geom::SubPath::Location dim_extreme_points(Geom::SubPath::SubPathElem e);
+Geom::SubPath::Location dim_extreme_points(Geom::SubPath::Elem e);
 
 /*template <class F>
 template <class F>

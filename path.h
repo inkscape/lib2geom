@@ -41,7 +41,7 @@ public:
     std::vector<Point> handles;
     std::vector<SubPathOp> cmd;
 
-    class SubPathElem{
+    class Elem{
     public:
         SubPathOp op;
         typedef std::vector<Point>::const_iterator const_iterator;
@@ -51,8 +51,8 @@ public:
         Point first() const { return *s;}
         Point last() const { return e[-1];}
 
-        SubPathElem() {}
-        SubPathElem(SubPathOp op,
+        Elem() {}
+        Elem(SubPathOp op,
                  const_iterator s, const_iterator e) : op(op), s(s), e(e) {
         }
         
@@ -76,7 +76,7 @@ public:
             c(c), h(h) {}
         void operator++() {h+=SubPathOpHandles[*c]; c++;}
         void operator--() {c--; h-=SubPathOpHandles[*c];}
-        SubPathElem operator*() const {return SubPathElem(*c, h+SubPathOpTail[*c], h + SubPathOpHandles[*c]);}
+        Elem operator*() const {return Elem(*c, h+SubPathOpTail[*c], h + SubPathOpHandles[*c]);}
 
         std::vector<Point>::const_iterator begin() const {return h;}
         std::vector<Point>::const_iterator end() const {return h + SubPathOpHandles[*c];}
@@ -130,7 +130,7 @@ public:
 
     void point_tangent_acc_at (Location at, Point & pos, Point & tgt, Point &acc);
     
-    void push_back(SubPathElem e);
+    void push_back(Elem e);
     void insert(SubPathConstIter before, SubPathConstIter s, SubPathConstIter e);
 
 // mainly for debugging

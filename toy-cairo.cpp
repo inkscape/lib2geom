@@ -335,7 +335,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     draw_path(cr, pth);
     Bezier a, b;
     const int curve_seg = 3;
-    Geom::SubPath::SubPathElem ai(*display_path.indexed_elem(curve_seg)), bi(*pth.indexed_elem(curve_seg));
+    Geom::SubPath::Elem ai(*display_path.indexed_elem(curve_seg)), bi(*pth.indexed_elem(curve_seg));
     
     for(int i = 0; i < 4; i++) {
         a.p[i] = ai[i];
@@ -504,7 +504,7 @@ void write_ell(Geom::SubPath const &p) {
     double tol = 1e-6;
     
     for(Geom::SubPath::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
-        Geom::SubPath::SubPathElem pe = *iter;
+        Geom::SubPath::Elem pe = *iter;
         switch(pe.op) {
             case Geom::quadto:
             case Geom::cubicto:
