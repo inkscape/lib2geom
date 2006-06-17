@@ -105,7 +105,7 @@ void SubPath::push_back(Elem e) {
  * note that this operation modifies the path.
  * 
  */
-void SubPath::insert(SubPathConstIter before, SubPathConstIter s, SubPathConstIter e) {
+void SubPath::insert(ConstIter before, ConstIter s, ConstIter e) {
     assert(0);
 /*
     if((*s).begin()[0] != ) {
@@ -267,7 +267,7 @@ SubPath::Location SubPath::nearest_location(Point p, double &dist) {
     dist = INFINITY;
     double t = 0;
     int i = 0;
-    for(SubPathConstIter elm = begin();
+    for(ConstIter elm = begin();
         elm != end();
         ++elm
        ) {
@@ -279,9 +279,9 @@ SubPath::Location SubPath::nearest_location(Point p, double &dist) {
     return pl;
 }
 
-SubPath SubPath::subpath(SubPathConstIter begin, SubPathConstIter end) {
+SubPath SubPath::subpath(ConstIter begin, ConstIter end) {
     SubPath result;
-    for(SubPathConstIter iter(begin); iter != end; ++iter) {
+    for(ConstIter iter(begin); iter != end; ++iter) {
         result.push_back(*iter);
     }
     return result;

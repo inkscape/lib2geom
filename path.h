@@ -65,13 +65,13 @@ public:
         bool nearest_location(Point p, double& dist, double& t);
     };
 
-    class SubPathConstIter {
+    class ConstIter {
     public:
         std::vector<SubPathOp>::const_iterator c;
         std::vector<Point>::const_iterator h;
         
-        SubPathConstIter() {}
-        SubPathConstIter(std::vector<SubPathOp>::const_iterator c,
+        ConstIter() {}
+        ConstIter(std::vector<SubPathOp>::const_iterator c,
                  std::vector<Point>::const_iterator h) :
             c(c), h(h) {}
         void operator++() {h+=SubPathOpHandles[*c]; c++;}
@@ -83,13 +83,13 @@ public:
         SubPathOp cmd() { return *c;}
     };
 
-    typedef SubPathConstIter const_iterator;
+    typedef ConstIter const_iterator;
 
     class Location{
     public:
-        SubPathConstIter it;
+        ConstIter it;
         double t; // element specific meaning [0,1)
-        Location(SubPathConstIter it, double t) : it(it), t(t) {}
+        Location(ConstIter it, double t) : it(it), t(t) {}
     };
     
     class HashCookie {
@@ -100,8 +100,8 @@ public:
         unsigned long get_value() { return value;}
     };
 
-    SubPathConstIter begin() const { return SubPathConstIter(cmd.begin(), handles.begin());}
-    SubPathConstIter end() const { return SubPathConstIter(cmd.end(), handles.end());}
+    ConstIter begin() const { return ConstIter(cmd.begin(), handles.begin());}
+    ConstIter end() const { return ConstIter(cmd.end(), handles.end());}
     
     bool empty() const { return cmd.empty(); }
     unsigned size() const { return cmd.size(); }
@@ -113,7 +113,7 @@ public:
     Location nearest_location(Point p, double& dist);
 
     /** return a new path over [begin, end). */
-    SubPath subpath(SubPathConstIter begin, SubPathConstIter end);
+    SubPath subpath(ConstIter begin, ConstIter end);
     
     /** return a new path over [begin, end). */
     SubPath subpath(Location begin, Location end);
@@ -131,12 +131,12 @@ public:
     void point_tangent_acc_at (Location at, Point & pos, Point & tgt, Point &acc);
     
     void push_back(Elem e);
-    void insert(SubPathConstIter before, SubPathConstIter s, SubPathConstIter e);
+    void insert(ConstIter before, ConstIter s, ConstIter e);
 
 // mainly for debugging
 public:
-    SubPathConstIter indexed_elem(int i) const {
-        SubPathConstIter it = begin();
+    ConstIter indexed_elem(int i) const {
+        ConstIter it = begin();
         while(--i >= 0) ++it;
         return it;
     }
@@ -157,18 +157,18 @@ public:
 
     class PathLocation{
     public:
-        SubPath::SubPathConstIter it;
+        SubPath::ConstIter it;
         double t; // element specific meaning [0,1)
-        PathLocation(SubPath::SubPathConstIter it, double t) : it(it), t(t) {}
+        PathLocation(SubPath::ConstIter it, double t) : it(it), t(t) {}
     };
     Path() {}
     Path(SubPath sp) {subpaths.push_back(sp);}
 };
 
-inline bool operator!=(const SubPath::SubPathConstIter &a, const SubPath::SubPathConstIter &b) 
+inline bool operator!=(const SubPath::ConstIter &a, const SubPath::ConstIter &b) 
 { return (a.c!=b.c) || (a.h != b.h);}
 
-inline ptrdiff_t operator-(const SubPath::SubPathConstIter &a, const SubPath::SubPathConstIter &b) 
+inline ptrdiff_t operator-(const SubPath::ConstIter &a, const SubPath::ConstIter &b) 
 { return a.c - b.c;}
 
 //SubPath operator * (SubPath, Matrix);
