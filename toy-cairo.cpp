@@ -177,6 +177,24 @@ void draw_evolute(cairo_t *cr, Geom::SubPath const & p) {
     }
 }
 
+void draw_involute(cairo_t *cr, Geom::SubPath const & p) {
+    int i = 0;
+    double sl = arc_length_integrating(p, 1e-3);
+    for(double s = 0; s < sl; s+= 5.0) {
+        Geom::SubPath::Location pl = 
+            natural_parameterisation(display_path, s, 1e-3);
+        
+        Geom::Point pos, tgt, acc;
+        display_path.point_tangent_acc_at (pl, pos, tgt, acc);
+        Geom::Point pt = pos - 0.1*s*unit_vector(tgt);
+        if(i)
+            cairo_line_to(cr, pt);
+        else 
+            cairo_move_to(cr, pt);
+        i++;
+    }
+}
+
 void draw_stroke(cairo_t *cr, Geom::SubPath const & p) {
     int i = 0;
     for(double t = 0; t <= 1.0; t+= 1./1024) {
@@ -197,6 +215,7 @@ Geom::Point* selected_handle = 0;
 Geom::Point gradient_vector(20,20);
 
 bool rotater  = false, evolution= false, half_stroking=false;
+bool involution = false;
 bool equal_arc = false;
 
 static gboolean
@@ -224,6 +243,9 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     }
     if(evolution) {
         draw_evolute(cr, display_path);
+    }
+    if(involution) {
+        draw_involute(cr, display_path);
     }
     if(half_stroking) {
         draw_stroke(cr, display_path);
@@ -554,6 +576,8 @@ static gint key_release_event(GtkWidget *widget, GdkEventKey *event, gpointer) {
         write_ell(display_path);
     } else if (event->keyval == 'v') {
         evolution = !evolution;
+    } else if (event->keyval == 'n') {
+        involution = !involution;
     } else if (event->keyval == 's') {
         half_stroking = !half_stroking;
     } else if (event->keyval == 'a') {
