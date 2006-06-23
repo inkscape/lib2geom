@@ -104,6 +104,8 @@ public:
     bool empty() const { return cmd.empty(); }
     unsigned size() const { return cmd.size(); }
 
+    Point initial_point() const { return handles.front(); }
+
     /** returns the point at the position given by walking along the path. */
     Location point_at_arc_length(double s);
 
