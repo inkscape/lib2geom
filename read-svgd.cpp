@@ -51,7 +51,6 @@ Geom::Path read_svgd(FILE* f) {
         switch(cmd) {
         case 'M':
             path.subpaths.push_back(Geom::SubPath());
-            path.subpaths.back().cmd.push_back(Geom::moveto);
             path.subpaths.back().handles.push_back(read_point(f));
             break;
         case 'L':

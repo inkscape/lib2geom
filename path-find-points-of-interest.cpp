@@ -52,8 +52,6 @@ std::vector<Geom::SubPath::Location> find_vector_extreme_points(Geom::SubPath co
 
     for(Geom::SubPath::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
         switch(iter.cmd()) {
-        case Geom::moveto:
-            break;
         case Geom::lineto:
             break;
         case Geom::quadto:
@@ -88,7 +86,6 @@ find_cusp_points(Geom::SubPath const & p, int dim) {
 
     for(Geom::SubPath::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
         switch(iter.cmd()) {
-        case Geom::moveto:
         case Geom::lineto:
             break;
         case Geom::cubicto:
@@ -123,8 +120,6 @@ find_inflection_points(Geom::SubPath const & p) {
 
     for(Geom::SubPath::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
         switch(iter.cmd()) {
-        case Geom::moveto:
-            break;
         case Geom::lineto:
             break;
         case Geom::cubicto:
@@ -171,8 +166,6 @@ find_flat_points(Geom::SubPath const & p) {
 
     for(Geom::SubPath::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
         switch(iter.cmd()) {
-        case Geom::moveto:
-            break;
         case Geom::lineto:
             break;
         case Geom::cubicto:
@@ -207,8 +200,6 @@ find_maximal_curvature_points(Geom::SubPath const & p) {
 
     for(Geom::SubPath::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
         switch(iter.cmd()) {
-        case Geom::moveto:
-            break;
         case Geom::lineto:
             break;
         case Geom::quadto:

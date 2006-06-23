@@ -24,7 +24,6 @@
 namespace Geom{
 
 enum SubPathOp{
-    moveto,
     lineto,
     quadto,
     cubicto,

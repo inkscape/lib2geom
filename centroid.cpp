@@ -95,8 +95,6 @@ int centroid(SubPath const &p, Point& centroid, double &area) {
     for(SubPath::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
         SubPath::Elem elm = *iter;
         switch(iter.cmd()) {
-            case Geom::moveto:
-                break;
             case Geom::lineto:
             {
                 const double ai = cross(elm.first(), elm.last());
@@ -156,8 +154,6 @@ int dcentroid(SubPath const &p, Point& dcentroid) {
     for(SubPath::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
         SubPath::Elem elm = *iter;
         switch(iter.cmd()) {
-            case Geom::moveto:
-                break;
             case Geom::lineto:
             {
                 centroid_tmp += (elm.first() + elm.last())/2;

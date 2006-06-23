@@ -5,9 +5,6 @@ path_to_polyline::path_to_polyline(const Geom::SubPath &p, double tol)
 {
     for(Geom::SubPath::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
         switch(iter.cmd()) {
-        case Geom::moveto:
-            handles.push_back((*iter)[0]);
-            break;
         case Geom::lineto:
             line_to_polyline(*iter);
             break;
@@ -111,7 +108,6 @@ void path_to_polyline::quad_to_polyline(Geom::SubPath::Elem e) {
 path_to_polyline::operator Geom::SubPath() {
     // make a polyline path
     Geom::SubPath p;
-    p.cmd.push_back(Geom::moveto);
     p.handles.push_back(handles[0]);
     for(std::vector<Geom::Point>::const_iterator h(handles.begin()+1), e(handles.end());
         h != e; ++h) {

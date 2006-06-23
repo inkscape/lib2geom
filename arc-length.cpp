@@ -41,8 +41,6 @@ double arc_length_subdividing(Geom::SubPath const & p, double tol) {
 
     for(Geom::SubPath::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
         switch(iter.cmd()) {
-        case Geom::moveto:
-            break;
         case Geom::lineto:
         {
             result += L2((*iter).first() - (*iter).last());

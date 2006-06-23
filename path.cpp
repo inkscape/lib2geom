@@ -88,15 +88,10 @@ Maybe<Rect> SubPath::bbox() const {
 void SubPath::push_back(Elem e) {
     assert(e.begin() != e.end());
     if(!handles.empty() && *e.begin() != handles.back()) {
-        cmd.push_back(Geom::moveto);
         handles.push_back(*e.begin());
     }
     cmd.push_back(e.op);
-    // inelegant
-    if(e.op == moveto)
-        handles.insert(handles.end(), e.begin(), e.end());
-    else
-        handles.insert(handles.end(), e.begin()+1, e.end());
+    handles.insert(handles.end(), e.begin()+1, e.end());
 }
 
 
@@ -109,7 +104,6 @@ void SubPath::insert(ConstIter before, ConstIter s, ConstIter e) {
     assert(0);
 /*
     if((*s).begin()[0] != ) {
-        cmd.push_back(Geom::moveto);
         handles.push_back(*e.begin());
     }
     cmd.push_back(e.op);
@@ -126,8 +120,6 @@ void SubPath::insert(ConstIter before, ConstIter s, ConstIter e) {
 
 Geom::Point Geom::SubPath::Elem::point_at(double t) {
     switch(op) {
-    case Geom::moveto: // these four could be merged by a smarter person
-        return s[0];
     case Geom::lineto:
         return Lerp(t, s[0], s[1]);
     case Geom::quadto:
@@ -158,9 +150,6 @@ Geom::SubPath::Elem::point_tangent_acc_at(double t,
                                            Geom::Point &tgt,
                                            Geom::Point &acc) {
     switch(op) {
-    case Geom::moveto: // these four could be merged by a smarter person
-        pos = s[0];
-        break;
     case Geom::lineto:
     case Geom::quadto:
     case Geom::cubicto:
@@ -203,11 +192,7 @@ void SubPath::point_tangent_acc_at(Location at, Point &pos, Point & tgt, Point &
 bool SubPath::Elem::nearest_location(Point p, double& dist, double& tt) {
     double new_dist, new_t;
     switch(op) {
-    case Geom::moveto:
-        new_dist = L2(p - s[0]);
-        new_t = 0; // not meaningful
-        break;
-  // For the rest we can assume that start has already been tried.
+    // For the rest we can assume that start has already been tried.
     case Geom::lineto:
     {
         new_dist = L2(p - s[1]);
