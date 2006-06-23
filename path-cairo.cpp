@@ -3,7 +3,7 @@
 
 void cairo_sub_path(cairo_t *cr, Geom::SubPath const &p) {
     cairo_move_to(cr, p.initial_point()[0], p.initial_point()[1]);
-    for(Geom::SubPath::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
+    for(Geom::SubPath::const_iterator iter(p.begin()), end(p.end()); iter < end; ++iter) {
         Geom::SubPath::Elem elm = *iter;
         switch(iter.cmd()) {
             case Geom::lineto:

@@ -30,8 +30,7 @@ enum SubPathOp{
     ellipto
 };
 
-unsigned const SubPathOpHandles[] = {1, 2, 3, 4, 0, 0};
-int const SubPathOpTail[] = {0, 0, 0, 0, 0, 0};
+unsigned const SubPathOpHandles[] = {1, 2, 3, 4};
 
 class SubPath{
 public:
@@ -74,7 +73,7 @@ public:
             c(c), h(h) {}
         void operator++() {h+=SubPathOpHandles[*c]; c++;}
         void operator--() {c--; h-=SubPathOpHandles[*c];}
-        Elem operator*() const {return Elem(*c, h+SubPathOpTail[*c], h + SubPathOpHandles[*c]);}
+        Elem operator*() const {assert(*c >= 0); assert(*c <= ellipto);  return Elem(*c, h-1, h + SubPathOpHandles[*c]);}
 
         std::vector<Point>::const_iterator begin() const {return h;}
         std::vector<Point>::const_iterator end() const {return h + SubPathOpHandles[*c];}
@@ -98,7 +97,7 @@ public:
         unsigned long get_value() { return value;}
     };
 
-    ConstIter begin() const { return ConstIter(cmd.begin(), handles.begin());}
+    ConstIter begin() const { return ConstIter(cmd.begin(), handles.begin()+1);}
     ConstIter end() const { return ConstIter(cmd.end(), handles.end());}
     
     bool empty() const { return cmd.empty(); }
@@ -166,7 +165,10 @@ public:
 };
 
 inline bool operator!=(const SubPath::ConstIter &a, const SubPath::ConstIter &b) 
-{ return (a.c!=b.c) || (a.h != b.h);}
+{ assert(a.c <= b.c);  assert(a.h <= b.h); return (a.c!=b.c) || (a.h != b.h);}
+
+inline bool operator<(const SubPath::ConstIter &a, const SubPath::ConstIter &b) 
+{ return (a.c < b.c) && (a.h < b.h);}
 
 inline ptrdiff_t operator-(const SubPath::ConstIter &a, const SubPath::ConstIter &b) 
 { return a.c - b.c;}
