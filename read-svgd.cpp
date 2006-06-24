@@ -43,6 +43,8 @@ void write_svgd(FILE* f, Geom::SubPath const &p) {
 Geom::Path read_svgd(FILE* f) {
     Geom::Path path;
     assert(f);
+
+    Geom::SubPath *subpath=NULL;
     
     while(!feof(f)) {
         eat_space(f);
@@ -51,25 +53,29 @@ Geom::Path read_svgd(FILE* f) {
         switch(cmd) {
         case 'M':
             path.subpaths.push_back(Geom::SubPath());
-            path.subpaths.back().handles.push_back(read_point(f));
+            subpath = &path.subpaths.back();
+            subpath->handles.push_back(read_point(f));
             break;
         case 'L':
-            path.subpaths.back().cmd.push_back(Geom::lineto);
-            path.subpaths.back().handles.push_back(read_point(f));
+            subpath->cmd.push_back(Geom::lineto);
+            subpath->handles.push_back(read_point(f));
             break;
         case 'C':
-            path.subpaths.back().cmd.push_back(Geom::cubicto);
-            path.subpaths.back().handles.push_back(read_point(f));
-            path.subpaths.back().handles.push_back(read_point(f));
-            path.subpaths.back().handles.push_back(read_point(f));
+            subpath->cmd.push_back(Geom::cubicto);
+            subpath->handles.push_back(read_point(f));
+            subpath->handles.push_back(read_point(f));
+            subpath->handles.push_back(read_point(f));
             break;
         case 'Q':
-            path.subpaths.back().cmd.push_back(Geom::quadto);
-            path.subpaths.back().handles.push_back(read_point(f));
-            path.subpaths.back().handles.push_back(read_point(f));
+            subpath->cmd.push_back(Geom::quadto);
+            subpath->handles.push_back(read_point(f));
+            subpath->handles.push_back(read_point(f));
             break;
         case 'z':
-            path.subpaths.back().closed = true;
+            subpath->closed = true;
+            subpath->cmd.push_back(Geom::lineto);
+            subpath->handles.push_back(subpath->initial_point());
+            subpath = NULL;
             break;
         default:
             ungetc(cmd, f);

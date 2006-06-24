@@ -3,6 +3,7 @@
 path_to_polyline::path_to_polyline(const Geom::SubPath &p, double tol) 
 :tol(tol)
 {
+    handles.push_back(p.initial_point());
     for(Geom::SubPath::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
         switch(iter.cmd()) {
         case Geom::lineto:
