@@ -28,6 +28,8 @@
 #include "path-cairo.h"
 #include <pango/pangocairo.h>
 
+#include "path-metric.h"
+
 void
 cairo_move_to (cairo_t *cr, Geom::Point p1) {
 	cairo_move_to(cr, p1[0], p1[1]);
@@ -46,6 +48,14 @@ cairo_curve_to (cairo_t *cr, Geom::Point p1,
 		       p3[0], p3[1]);
 }
 
+/*
+void draw_string(GtkWidget *widget, string s, int x, int y) {
+    PangoLayout *layout = gtk_widget_create_pango_layout(widget, s.c_str());
+    cairo_t* cr = gdk_cairo_create (widget->window);
+    cairo_move_to(cr, x, y);
+    pango_cairo_show_layout(cr, layout);
+    cairo_destroy (cr);
+}*/
 
 using std::string;
 using std::vector;
@@ -54,6 +64,7 @@ static GtkWidget *canvas;
 static GdkGC *dash_gc;
 static GdkGC *plain_gc;
 Geom::SubPath display_path;
+Geom::SubPath original_curve;
 
 static Geom::Point old_handle_pos;
 static Geom::Point old_mouse_point;
@@ -292,6 +303,9 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     }    
     display_path.closed = true;
     cairo_sub_path(cr, display_path);
+    
+    cairo_set_source_rgba (cr, 0.5, 0.7, 0.3, 0.8);
+    cairo_sub_path(cr, original_curve);
     //draw_path(cr, display_path);
     //draw_elip(cr, handles);
     
@@ -429,6 +443,9 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     cairo_move_to(cr, cntr[0], cntr[1]);
     cairo_show_text (cr, "center of the path");
 
+    notify << "L2 error from original:" 
+           << L2(display_path, original_curve, 1, 1e-4) 
+           << std::endl;
     notify << "pathwise Area: " << area << ", " << cntr;
 
     {
@@ -439,7 +456,8 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
                                        NULL,
                                        &logical_extent);
         cairo_move_to(cr, 0, height-logical_extent.height);
-        cairo_show_text (cr, notify.str().c_str());
+        pango_cairo_show_layout(cr, layout);
+        //cairo_show_text (cr, notify.str().c_str());
         //cairo_text_path(cr, notify.str().c_str());
         //cairo_stroke (cr);
         /*pango_cairo_draw_layout(cr,
@@ -655,6 +673,7 @@ int main(int argc, char **argv) {
     display_path = display_path*Geom::translate(-r.min());
     Geom::scale sc(r.max() - r.min());
     display_path = display_path*(sc.inverse()*Geom::scale(500,500));
+    original_curve = display_path;
     
     gtk_init (&argc, &argv);
     

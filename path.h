@@ -56,10 +56,10 @@ public:
         Point operator[]( const int i) {return s[i];}
         Point operator[]( const int i) const {return s[i];}
         
-        void point_tangent_acc_at(double t, Point &p, Point &t, Point &a);
-        Point point_at(double t);
+        void point_tangent_acc_at(double t, Point &p, Point &t, Point &a) const;
+        Point point_at(double t) const;
         //Point tangent_at(double t);
-        bool nearest_location(Point p, double& dist, double& t);
+        bool nearest_location(Point p, double& dist, double& t) const;
     };
 
     class ConstIter {
@@ -109,7 +109,7 @@ public:
     Location point_at_arc_length(double s);
 
     /** return the last nearest point on the path. */
-    Location nearest_location(Point p, double& dist);
+    Location nearest_location(Point p, double& dist) const;
 
     /** return a new path over [begin, end). */
     SubPath subpath(ConstIter begin, ConstIter end);
@@ -125,9 +125,9 @@ public:
     SubPath insert_node(Location at);
 
     /** coords of point on path. */
-    Point point_at(Location at);
+    Point point_at(Location at) const;
 
-    void point_tangent_acc_at (Location at, Point & pos, Point & tgt, Point &acc);
+    void point_tangent_acc_at (Location at, Point & pos, Point & tgt, Point &acc) const;
     
     void push_back(Elem e);
     void insert(ConstIter before, ConstIter s, ConstIter e);

@@ -118,7 +118,7 @@ void SubPath::insert(ConstIter before, ConstIter s, ConstIter e) {
     p.insert(p.end(), begin(), at.it); // begining of path
     }*/
 
-Geom::Point Geom::SubPath::Elem::point_at(double t) {
+Geom::Point Geom::SubPath::Elem::point_at(double t) const {
     switch(op) {
     case Geom::lineto:
         return Lerp(t, s[0], s[1]);
@@ -148,7 +148,7 @@ void
 Geom::SubPath::Elem::point_tangent_acc_at(double t, 
                                            Geom::Point &pos, 
                                            Geom::Point &tgt,
-                                           Geom::Point &acc) {
+                                           Geom::Point &acc) const {
     switch(op) {
     case Geom::lineto:
     case Geom::quadto:
@@ -171,7 +171,7 @@ Geom::SubPath::Elem::point_tangent_acc_at(double t,
 }
 
 
-Point SubPath::point_at(Location at) {
+Point SubPath::point_at(Location at) const {
     ptrdiff_t offset = at.it - begin();
     
     assert(offset >= 0);
@@ -179,7 +179,7 @@ Point SubPath::point_at(Location at) {
     return (*at.it).point_at(at.t);
 }
 
-void SubPath::point_tangent_acc_at(Location at, Point &pos, Point & tgt, Point &acc) {
+void SubPath::point_tangent_acc_at(Location at, Point &pos, Point & tgt, Point &acc) const {
     ptrdiff_t offset = at.it - begin();
     
     assert(offset >= 0);
@@ -189,7 +189,7 @@ void SubPath::point_tangent_acc_at(Location at, Point &pos, Point & tgt, Point &
 
 #include "nearestpoint.cpp"
 
-bool SubPath::Elem::nearest_location(Point p, double& dist, double& tt) {
+bool SubPath::Elem::nearest_location(Point p, double& dist, double& tt) const {
     double new_dist, new_t;
     switch(op) {
     // For the rest we can assume that start has already been tried.
@@ -247,7 +247,7 @@ bool SubPath::Elem::nearest_location(Point p, double& dist, double& tt) {
     return false;
 }
 
-SubPath::Location SubPath::nearest_location(Point p, double &dist) {
+SubPath::Location SubPath::nearest_location(Point p, double &dist) const {
     Location pl(begin(), 0);
     dist = INFINITY;
     double t = 0;

@@ -42,7 +42,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     
     cairo_set_source_rgba (cr, 0.5, 0.5, 0, 0.8);
     cairo_set_line_width (cr, 3);
-    BezOrd z0(-0.5,0.5);
+    BezOrd z0(1,2);
     for(int ti = 0; ti < width; ti++) {
         double t = (double(ti))/(width);
         double y =  1/z0.point_at(t);
