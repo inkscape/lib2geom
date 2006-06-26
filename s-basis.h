@@ -4,19 +4,28 @@
 
 class BezOrd{
 public:
-    double d[2];
+    double a[2];
     BezOrd() {}
-    BezOrd(double a, double b) {d[0] = a; d[1] = b;}
+    BezOrd(double aa, double b) {a[0] = aa; a[1] = b;}
 
     double operator[](const int i) const {
         assert(i >= 0);
         assert(i < 2);
-        return d[i];
+        return a[i];
     }
     double& operator[](const int i) {
         assert(i >= 0);
         assert(i < 2);
-        return d[i];
+        return a[i];
+    }
+    double point_at(double t) {
+        return (a[0]*(1-t) + a[1]*t);
+    }
+    double tri() const {
+        return a[1] - a[0];
+    }
+    double hat() const {
+        return (a[1] + a[0])/2;
     }
 };
 

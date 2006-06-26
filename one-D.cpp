@@ -20,7 +20,7 @@ static GtkWidget *canvas;
 // return a kth order approx to 1/a)
 SBasis reciprocal(BezOrd const &a, int k) {
     SBasis res;
-    double r_s0 = (a[1] - a[0])/(-a[0]*a[1]);
+    double r_s0 = (a.tri()*a.tri())/(-a[0]*a[1]);
     double r_s0k = 1;
     for(int i = 0; i < k; i++) {
         res.a.push_back(BezOrd(r_s0k/a[0], r_s0k/a[1]));
@@ -40,11 +40,12 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     std::ostringstream notify;
     gdk_drawable_get_size(widget->window, &width, &height);
     
-    cairo_set_source_rgba (cr, 0.5, 0.5, 0, 0.5);
-    cairo_set_line_width (cr, 2);
+    cairo_set_source_rgba (cr, 0.5, 0.5, 0, 0.8);
+    cairo_set_line_width (cr, 3);
+    BezOrd z0(-0.5,0.5);
     for(int ti = 0; ti < width; ti++) {
         double t = (double(ti))/(width);
-        double y =  1/(1*(1-t) + 2*t);
+        double y =  1/z0.point_at(t);
         if(ti)
             cairo_line_to(cr, t*width, height - y*width);
         else
@@ -55,8 +56,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     if(0) {
         SBasis C;
         C.a.push_back(BezOrd(0,0));
-        for(int A = 0; A < 2; A++) {
-            cairo_set_source_rgba (cr, 0.5, 0, 0.5, pow(0.8, A));
+        for(int A = 0; A < 100; A++) {
             for(int I = 0; I < 3; I++) {
                 C.a.back() = BezOrd(0,0);
                 if(I < 2) {
@@ -76,8 +76,9 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
         }
     }
     if(1) {
-        for(int A = 0; A < 4; A++) {
-            SBasis C = reciprocal(BezOrd(1,2), A);
+        for(int A = 0; A < 10; A++) {
+            cairo_set_source_rgba (cr, 0.5, 0, 0.5, pow(0.8, A));
+            SBasis C = reciprocal(z0, A);
             for(int ti = 0; ti < width; ti++) {
                 double t = (double(ti))/(width);
                 double y =  C.point_at(t);
@@ -86,9 +87,9 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
                 else
                     cairo_move_to(cr, t*width, height - y*width);
             }    
+            cairo_stroke(cr);
         }
     }
-    cairo_stroke(cr);
 
     cairo_move_to(cr, 250,250);
     
