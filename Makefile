@@ -38,6 +38,9 @@ b-spline: b-spline.cpp path.o path-to-svgd.cpp read-svgd.o path-to-polyline.o po
 ode-toy-cairo: ode-toy-cairo.cpp path.o path-to-svgd.o read-svgd.o path-to-polyline.o types.o rect.o geom.o read-svgd.o path-find-points-of-interest.o point-fns.o types.o rotate-fns.o matrix.o arc-length.o path-intersect.o centroid.o poly.o
 	$(CXX) $(CXXFLAGS) -o $@ -I . $^ $(extra_cppflags) 
 
+one-D: one-D.cpp s-basis.h
+	$(CXX) $(CXXFLAGS) -o $@ -I . $^ $(extra_cppflags) 
+
 poly-test: poly-test.cpp poly.cpp poly.h
 	$(CXX) $(CXXFLAGS) -o $@ -I . $^ $(extra_cppflags) 
 
