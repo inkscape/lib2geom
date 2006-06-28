@@ -17,6 +17,91 @@ using std::vector;
 static GtkWidget *canvas;
 
 
+/* Takes two vectors and fills C with their convolution. */
+template <typename T>
+void convolve(std::vector<T> &A, std::vector<T> &B, std::vector<T> &C) {
+    C.resize(A.size() + B.size());
+    fill(C.begin(), C.end(), 0);
+    
+    for(unsigned j = 0; j < B.size(); j++) {
+        for(unsigned i = j; i < A.size()+j; i++) {
+            C[i] += B[j]*A[i-j];
+        }
+    }
+}
+
+SBasis operator*(double k, SBasis const &a) {
+    SBasis c;
+    c.a.resize(a.size());
+    for(unsigned j = 0; j < a.size(); j++) {
+        for(unsigned dim = 0; dim < 2; dim++)
+            c[j][dim] += k*a[j][dim];
+    }
+    return c;
+}
+
+SBasis multiply(SBasis const &a, SBasis const &b) {
+    // c = {a0*b0 - shift(1, a.tri*b.tri), a1*b1 - shift(1, a.tri*b.tri)}
+    
+    // shift(1, a.tri*b.tri)
+    SBasis c;
+    c.a.resize(a.size() + b.size());
+    c.a[0] = BezOrd(0,0);
+    for(unsigned j = 0; j < b.size(); j++) {
+        for(unsigned i = j; i < a.size()+j; i++) {
+            double tri = b[j].tri()*a[i-j].tri();
+            for(unsigned dim = 0; dim < 2; dim++)
+                c.a[i+1/*shift*/][dim] = -tri;
+        }
+    }
+    for(unsigned j = 0; j < b.size(); j++) {
+        for(unsigned i = j; i < a.size()+j; i++) {
+            for(unsigned dim = 0; dim < 2; dim++)
+                c[i][dim] += b[j][dim]*a[i-j][dim];
+        }
+    }
+    return c;
+}
+
+SBasis integral(SBasis const &c) {
+    SBasis a;
+    a.a.resize(c.size() + 1);
+    a.a[0] = BezOrd(0,0);
+    
+    for(unsigned k = 1; k < c.size() + 1; k++) {
+        double ahat = -c[k-1].tri()/(2*k);
+        a[k][0] = ahat;
+        a[k][1] = ahat;
+    }
+    double atri = 0;
+    for(int k = c.size()-1; k >= 0; k--) { // XXX: unsigned?
+        atri = (c[k].hat() + (k+1)*atri)/(2*k+1);
+        a[k][0] -= atri/2;
+        a[k][1] += atri/2;
+    }
+    
+    return a;
+}
+
+SBasis derivative(SBasis const &a) {
+    SBasis c;
+    c.a.resize(a.size());
+    
+    for(unsigned k = 0; k < a.size(); k++) {
+        double d = (2*k+1)*a[k].tri();
+        for(unsigned dim = 0; dim < 2; dim++) {
+            if(k+1 < a.size()) {
+                if(dim)
+                    c[k][dim] = d - (k+1)*a[k+1][dim];
+                else
+                    c[k][dim] = d + (k+1)*a[k+1][dim];
+            }
+        }
+    }
+    
+    return c;
+}
+
 // return a kth order approx to 1/a)
 SBasis reciprocal(BezOrd const &a, int k) {
     SBasis res;
@@ -40,55 +125,35 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     std::ostringstream notify;
     gdk_drawable_get_size(widget->window, &width, &height);
     
-    cairo_set_source_rgba (cr, 0.5, 0.5, 0, 0.8);
-    cairo_set_line_width (cr, 3);
-    BezOrd z0(1,2);
-    for(int ti = 0; ti < width; ti++) {
-        double t = (double(ti))/(width);
-        double y =  1/z0.point_at(t);
-        if(ti)
-            cairo_line_to(cr, t*width, height - y*width);
-        else
-            cairo_move_to(cr, t*width, height - y*width);
+    cairo_set_source_rgba (cr, 0., 0., 0, 0.8);
+    cairo_set_line_width (cr, 0.5);
+    for(int i = 1; i < 4; i+=2) {
+        cairo_move_to(cr, 0, i*height/4);
+        cairo_line_to(cr, width, i*height/4);
+        cairo_move_to(cr, i*width/4, 0);
+        cairo_line_to(cr, i*width/4, height);
     }
     cairo_stroke(cr);
+    cairo_set_source_rgba (cr, 0.5, 0.5, 0, 0.8);
+    cairo_set_line_width (cr, 3);
+    BezOrd z0(0,1);
+    cairo_stroke(cr);
     cairo_set_line_width (cr, 1);
-    if(0) {
-        SBasis C;
-        C.a.push_back(BezOrd(0,0));
-        for(int A = 0; A < 100; A++) {
-            for(int I = 0; I < 3; I++) {
-                C.a.back() = BezOrd(0,0);
-                if(I < 2) {
-                    C.a.back()[I] = 1;
-                } else {
-                    C.a.push_back(BezOrd(1,1));
-                }
-                for(int ti = 0; ti < width; ti++) {
-                    double t = (double(ti))/(width);
-                    double y =  C.point_at(t);
-                    if(ti)
-                        cairo_line_to(cr, t*width, height - y*width);
-                    else
-                        cairo_move_to(cr, t*width, height - y*width);
-                }    
-            }
-        }
-    }
     if(1) {
-        for(int A = 0; A < 10; A++) {
-            cairo_set_source_rgba (cr, 0.5, 0, 0.5, pow(0.8, A));
-            SBasis C = reciprocal(z0, A);
-            for(int ti = 0; ti < width; ti++) {
-                double t = (double(ti))/(width);
-                double y =  C.point_at(t);
-                if(ti)
-                    cairo_line_to(cr, t*width, height - y*width);
-                else
-                    cairo_move_to(cr, t*width, height - y*width);
-            }    
-            cairo_stroke(cr);
-        }
+        cairo_set_source_rgba (cr, 0.5, 0, 0.5, 0.8);
+        SBasis Z;
+        Z.a.push_back(z0);
+        SBasis C = integral(Z);
+
+        for(int ti = 0; ti < width; ti++) {
+            double t = (double(ti))/(width);
+            double y =  C.point_at(t);
+            if(ti)
+                cairo_line_to(cr, t*width/2 + width/4, 3*height/4 - y*height/2);
+            else
+                cairo_move_to(cr, t*width/2 + width/4, 3*height/4 - y*height/2);
+        }    
+        cairo_stroke(cr);
     }
 
     cairo_move_to(cr, 250,250);

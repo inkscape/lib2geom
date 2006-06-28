@@ -1,6 +1,7 @@
 #ifndef SEEN_SBASIS_H
 #define SEEN_SBASIS_H
 #include <vector>
+#include <algorithm>
 
 class BezOrd{
 public:
@@ -39,6 +40,14 @@ public:
     
     unsigned size() const { return a.size(); }
     
+    BezOrd& operator[](const unsigned i) {
+        assert(i < a.size());
+        return a[i];
+    }
+    BezOrd const & operator[](const unsigned i) const {
+        assert(i < a.size());
+        return a[i];
+    }
     double point_at(double t) {
         double s = t*(1-t);
         double p0 = 0, p1 = 0;
@@ -67,6 +76,10 @@ public:
             result.a.push_back(p.a[i]);
         assert(result.size() == out_size);
         return result;
+    }
+
+    void clear() {
+        fill(a.begin(), a.end(), BezOrd(0,0));
     }
 };
 
