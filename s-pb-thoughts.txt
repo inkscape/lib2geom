@@ -1,0 +1,78 @@
+ these s-power bases are exactly what I was trying to invent
+ did you read that paper?
+(13:11:50) mental@gristle.org: I didn't really understand it.
+ oh, well it's precisely what we need for lib2geom
+ it has a nice haskell connection, btw
+ rather than representing things as finite polynomials, we can store them as lazy lists and simply take enough terms at the end of the calculations
+ did you at least look at the examples?
+ namely, convertion of nurbs to beziers and offset curves?
+ the basic idea is that although polynomials (which are really linear combinations of 1, x, x^2, x^3...) are easy to work with
+ they are crap for two main reasons: a) though they are always correct for 0, any rounding or truncation will make the values at 1 fluctuate
+ b) converting between bezier and polynomial is mathematically inprecise
+ b) is subtle and I didn't understand it for quite a while
+ but a) I had already run into
+ anyway, basically s-pbs provide a robust arithmetic for doing paths
+ and there are simple, online algorithms for most operations
+ oh yes, and truncating a s-pb gives an approximation that is basically as good as possible with that number of terms
+ so you might work out the offset curve as a degree 6 pb (corresponding to a degree 11 bezier curve) then truncate to a 2 term (cubic)
+(13:21:05) mental@gristle.org: so, basically an s-pb is an alternate way of approximating functions which has nicer properties than polynomials, at least for our purpose
+ or you might subdivide first
+ an s-pb is an alternate way of approximating functions which has nicer properties than polynomials and nicer properties than beziers, at least for our purpose; at the cost of a little more work
+ for example, multiplying a polynomial is straightforward (poly.cpp has an implementation, e.g.), multiplying a bezier is horid
+ but polynomials don't give a nice control handle interpretation
+ whereas beziers and s-pbs do
+ that article basically shows that anything you can do with polynomials, you can do with s-pbs
+ (with a little extra work)
+ so I'll probably remove poly.h
+ every curve can be written as an inifinite s-pb
+ including things like spirals
+ so we could do spiral offset directly
+ basically, if you can write an operation mathematically, you can do it symbolically on an s-pb
+ including differentiation and integration
+ lets say we have a function S(t) which is a lazy list s-pb of a single path elem
+ then we can compute arc length as int(sqrt(diff(S)^2))
+ and we can evaluate that at an arbitrary point on the curve to a require precision simply by lazy list operations
+ similarly, offset means S + d*(transpose(S')/sqrt(diff(S)^2))
+ and we can convert that back to a curve using a routine that takes a lazy list and either degree reduces (truncates) or subdivides until the require tol is achieved
+(13:27:22) mental@gristle.org: man, lazy evaluation without garbage collection, though :/
+ yeah, been pondering that
+ probably easier to string together online algorithms and use a vector cache
+(13:28:09) mental@gristle.org: vector cache?
+ but I thought you might like to think about that as an algorithm
+ std::vector<term>
+(13:28:34) mental@gristle.org: ah, so basically we accumulate stuff in a vector during the computation and discard the vector when complete?
+ we can do a lot simply by providing fixed length versions
+ yeah
+(13:28:44) mental@gristle.org: (using it as a memory pool, essentially)
+ no, not really
+ I was just thinking that for a lazy list we start with something like lazy ->lazy
+ then [1] lazy -> lazy
+ (I think my notation is wrong here)
+ then [1, 5, 3, 87] lazy -> lazy
+ etc
+ many algorithms are linear time online
+ i.e. they do a constant amount of work, looking at a single term or a few terms
+ then output another term
+ you could think of them as a production line
+ every time the caller asks for another term, each element in the chain requests as many terms as it needs
+ any point where we need more than one term, we keep a vector remembering all the bits (as we will need them again)
+ addition, for example, simply takes the two inputs term by term and adds them
+ scalar multiply similar takes a term, multiplies and chugs the answer
+ sqrt ditto (I think)
+ but multiply requires all the terms whose indices add to the required term
+ There are a few algorithms I haven't worked out yet - inverse function (which we could find using the lagrange inversion theorem, perhaps), converting to a beziergon to a specified tolerance, handling singularities correctly (if you get a pole in the complex plane inside a certain distance from your path you need to subdivide to get past it)
+ but what I like is the facts that you can increase precision at the caller's point rather than having to make a guess as to the required precision first
+ and with s-pb we might be able to create a true natural parameterisation accurate to tol
+ http://en.wikipedia.org/wiki/Lagrange_inversion_theorem
+ that would be really cool if it worked with s-pb
+ you could take any s-pb and get an inverse function
+ (think implicit plotter)
+ for inversion we would require that the function in question is monotonic with non-zero derivative
+ I wonder if that condition could be tested easily symbolically
+ we should probably also think about paths of s-pb functions
+ to handle subdivision techniques
+ oh yeah, and I should work out how to find the intersection of two s-pbs
+ I have that nice paper that solves an arbitrary pair of polynomials via eigen decomposition, I may be able to rewrite that in terms of s-pb
+ you can find the intersections of an arbitrary set of polynomials via the resultant (I think I sent you a link)
+ perhaps the result is expressible in s-pb
+ (well of course it is, what I mean is that perhaps you can find it without going via polynomials first)

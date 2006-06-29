@@ -26,6 +26,9 @@ toy: toy.cpp path.o path-to-svgd.o read-svgd.o path-to-polyline.o types.o rect.o
 toy-cairo: toy-cairo.cpp path.o path-to-svgd.o read-svgd.o path-to-polyline.o types.o rect.o geom.o read-svgd.o path-find-points-of-interest.o point-fns.o types.o rotate-fns.o matrix.o arc-length.o path-intersect.o centroid.o poly.o matrix-rotate-ops.o matrix-translate-ops.o path-cairo.o path-metric.o
 	$(CXX) $(CXXFLAGS) -o $@ -I . $^ $(extra_cppflags) 
 
+tensor-reparam: tensor-reparam.cpp path.o path-to-svgd.o read-svgd.o path-to-polyline.o types.o rect.o geom.o read-svgd.o path-find-points-of-interest.o point-fns.o types.o rotate-fns.o matrix.o arc-length.o path-intersect.o centroid.o poly.o matrix-rotate-ops.o matrix-translate-ops.o path-cairo.o path-metric.o
+	$(CXX) $(CXXFLAGS) -o $@ -I . $^ $(extra_cppflags) 
+
 conic: conic.cpp path.o path-to-svgd.cpp read-svgd.o path-to-polyline.o point-fns.o types.o rect.o geom.o path.h poly.o
 	$(CXX) $(CXXFLAGS) -o $@ -I . $^ $(extra_cppflags) 
 
@@ -38,7 +41,7 @@ b-spline: b-spline.cpp path.o path-to-svgd.cpp read-svgd.o path-to-polyline.o po
 ode-toy-cairo: ode-toy-cairo.cpp path.o path-to-svgd.o read-svgd.o path-to-polyline.o types.o rect.o geom.o read-svgd.o path-find-points-of-interest.o point-fns.o types.o rotate-fns.o matrix.o arc-length.o path-intersect.o centroid.o poly.o
 	$(CXX) $(CXXFLAGS) -o $@ -I . $^ $(extra_cppflags) 
 
-one-D: one-D.cpp s-basis.h
+one-D: one-D.cpp s-basis.h s-basis.cpp
 	$(CXX) $(CXXFLAGS) -o $@ -I . $^ $(extra_cppflags) 
 
 poly-test: poly-test.cpp poly.cpp poly.h

@@ -32,16 +32,16 @@ public:
     double apply(double t) { return (1-t)*a[0] + t*a[1];}
 };
 
-BezOrd operator-(BezOrd const &a) {
+inline BezOrd operator-(BezOrd const &a) {
     return BezOrd(-a.a[0], -a.a[1]);
 }
-BezOrd operator+(BezOrd const & a, BezOrd const & b) {
+inline BezOrd operator+(BezOrd const & a, BezOrd const & b) {
     return BezOrd(a[0] + b[0], a[1] + b[1]);
 }
-BezOrd operator-(BezOrd const & a, BezOrd const & b) {
+inline BezOrd operator-(BezOrd const & a, BezOrd const & b) {
     return BezOrd(a[0] - b[0], a[1] - b[1]);
 }
-BezOrd operator*(double const a, BezOrd const & b) {
+inline BezOrd operator*(double const a, BezOrd const & b) {
     return BezOrd(a*b[0], a*b[1]);
 }
 
@@ -114,6 +114,27 @@ public:
         fill(a.begin(), a.end(), BezOrd(0,0));
     }
 };
+
+
+SBasis operator*(double k, SBasis const &a);
+
+SBasis shift(SBasis const &a, int sh);
+
+SBasis shift(BezOrd const &a, int sh);
+
+SBasis multiply(SBasis const &a, SBasis const &b);
+SBasis compose(SBasis const &a, SBasis const &b);
+
+SBasis integral(SBasis const &c);
+
+SBasis derivative(SBasis const &a);
+
+SBasis sqrt(SBasis const &a, int k);
+
+// return a kth order approx to 1/a)
+SBasis reciprocal(BezOrd const &a, int k);
+
+SBasis divide(SBasis const &a, SBasis const &b, int k);
 
 
 /*
