@@ -162,12 +162,13 @@ SBasis divide(SBasis const &a, SBasis const &b, int k) {
     for(unsigned i = 0; i < k; i++) {
         BezOrd ci(r[i][0]/b[0][0], r[i][1]/b[0][1]); //H0
         c[i] = c[i] + ci;
-        r = r - multiply(ci,b);
+        r[i] = r[i] - ci;
+        //r = r - multiply(ci,b);
     }
     
     return c;
 }
-    BezOrd z0(0.5,1.);
+BezOrd z0(0.5,1.);
 
 static gboolean
 expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
@@ -191,14 +192,14 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     SBasis one(BezOrd(1,1));
     assert(one.a.size() == 1);
     SBasis P0(z0), P1(BezOrd(3, 1));
-    SBasis Q = multiply(P0, P1);
+    SBasis Q = P0;//multiply(P0, P1);
     {
         cairo_set_source_rgba (cr, 0.5, 0.5, 0.5, 0.5);
         cairo_set_line_width (cr, 3);
 
         for(int ti = 0; ti < width; ti++) {
             double t = (double(ti))/(width);
-            double y = one.point_at(t)/(Q.point_at(t));
+            double y = one.point_at(t)/(Q.point_at(t))/2;
             if(ti)
                 cairo_line_to(cr, t*width/2 + width/4, 3*height/4 - y*height/2);
             else
@@ -215,7 +216,24 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
 
         for(int ti = 0; ti < width; ti++) {
             double t = (double(ti))/(width);
-            double y =  C.point_at(t);
+            double y =  C.point_at(t)/2;
+            if(ti)
+                cairo_line_to(cr, t*width/2 + width/4, 3*height/4 - y*height/2);
+            else
+                cairo_move_to(cr, t*width/2 + width/4, 3*height/4 - y*height/2);
+        }    
+        cairo_stroke(cr);
+    }
+
+    for(int order = 0; order < 10; order++) {
+        cairo_set_source_rgba (cr, 0.5, 0.5, 0, 0.8);
+        SBasis Z;
+        Z.a.push_back(z0);
+        SBasis C = reciprocal(z0, order);
+
+        for(int ti = 0; ti < width; ti++) {
+            double t = (double(ti))/(width);
+            double y =  C.point_at(t)/2;
             if(ti)
                 cairo_line_to(cr, t*width/2 + width/4, 3*height/4 - y*height/2);
             else
