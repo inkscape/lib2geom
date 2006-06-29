@@ -20,7 +20,7 @@ static GtkWidget *canvas;
 /* Takes two vectors and fills C with their convolution. */
 template <typename T>
 void convolve(std::vector<T> &A, std::vector<T> &B, std::vector<T> &C) {
-    C.resize(A.size() + B.size());
+    C.resize(A.size() + B.size(), BezOrd(0,0));
     fill(C.begin(), C.end(), 0);
     
     for(unsigned j = 0; j < B.size(); j++) {
@@ -32,10 +32,31 @@ void convolve(std::vector<T> &A, std::vector<T> &B, std::vector<T> &C) {
 
 SBasis operator*(double k, SBasis const &a) {
     SBasis c;
-    c.a.resize(a.size());
+    c.a.resize(a.size(), BezOrd(0,0));
     for(unsigned j = 0; j < a.size(); j++) {
         for(unsigned dim = 0; dim < 2; dim++)
             c[j][dim] += k*a[j][dim];
+    }
+    return c;
+}
+
+SBasis shift(SBasis const &a, int sh) {
+    SBasis c = a;
+    if(sh > 0) {
+        c.a.insert(c.a.begin(), sh, BezOrd(0,0));
+    } else {
+        // truncate
+    }
+    return c;
+}
+
+SBasis shift(BezOrd const &a, int sh) {
+    SBasis c;
+    if(sh > 0) {
+        c.a.insert(c.a.begin(), sh, BezOrd(0,0));
+        c.a.push_back(a);
+    } else {
+        // truncate
     }
     return c;
 }
@@ -45,7 +66,7 @@ SBasis multiply(SBasis const &a, SBasis const &b) {
     
     // shift(1, a.tri*b.tri)
     SBasis c;
-    c.a.resize(a.size() + b.size());
+    c.a.resize(a.size() + b.size(), BezOrd(0,0));
     c.a[0] = BezOrd(0,0);
     for(unsigned j = 0; j < b.size(); j++) {
         for(unsigned i = j; i < a.size()+j; i++) {
@@ -65,7 +86,7 @@ SBasis multiply(SBasis const &a, SBasis const &b) {
 
 SBasis integral(SBasis const &c) {
     SBasis a;
-    a.a.resize(c.size() + 1);
+    a.a.resize(c.size() + 1, BezOrd(0,0));
     a.a[0] = BezOrd(0,0);
     
     for(unsigned k = 1; k < c.size() + 1; k++) {
@@ -85,7 +106,7 @@ SBasis integral(SBasis const &c) {
 
 SBasis derivative(SBasis const &a) {
     SBasis c;
-    c.a.resize(a.size());
+    c.a.resize(a.size(), BezOrd(0,0));
     
     for(unsigned k = 0; k < a.size(); k++) {
         double d = (2*k+1)*a[k].tri();
@@ -97,6 +118,22 @@ SBasis derivative(SBasis const &a) {
                     c[k][dim] = d + (k+1)*a[k+1][dim];
             }
         }
+    }
+    
+    return c;
+}
+
+SBasis sqrt(SBasis const &a, int k) {
+    SBasis c;
+    
+    c.a.push_back(BezOrd(sqrt(a[0][0]), sqrt(a[0][1])));
+    SBasis r = a - multiply(c, c); // remainder
+    
+    for(unsigned i = 1; i <= k; i++) {
+        BezOrd ci(r[i][0]/(2*c[0][0]), r[i][1]/(2*c[0][1]));
+        SBasis cisi = shift(ci, i);
+        r = r - multiply(shift((2*c + cisi), i), SBasis(ci));
+        c = c + cisi;
     }
     
     return c;
@@ -114,6 +151,23 @@ SBasis reciprocal(BezOrd const &a, int k) {
     return res;
 }
 
+SBasis divide(SBasis const &a, SBasis const &b, int k) {
+    SBasis c;
+    SBasis r = a; // remainder
+    
+    k++;
+    r.a.resize(k, BezOrd(0,0));
+    c.a.resize(k, BezOrd(0,0));
+
+    for(unsigned i = 0; i < k; i++) {
+        BezOrd ci(r[i][0]/b[0][0], r[i][1]/b[0][1]); //H0
+        c[i] = c[i] + ci;
+        r = r - multiply(ci,b);
+    }
+    
+    return c;
+}
+    BezOrd z0(0.5,1.);
 
 static gboolean
 expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
@@ -134,16 +188,30 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
         cairo_line_to(cr, i*width/4, height);
     }
     cairo_stroke(cr);
-    cairo_set_source_rgba (cr, 0.5, 0.5, 0, 0.8);
-    cairo_set_line_width (cr, 3);
-    BezOrd z0(0,1);
-    cairo_stroke(cr);
+    SBasis one(BezOrd(1,1));
+    assert(one.a.size() == 1);
+    SBasis P0(z0), P1(BezOrd(3, 1));
+    SBasis Q = multiply(P0, P1);
+    {
+        cairo_set_source_rgba (cr, 0.5, 0.5, 0.5, 0.5);
+        cairo_set_line_width (cr, 3);
+
+        for(int ti = 0; ti < width; ti++) {
+            double t = (double(ti))/(width);
+            double y = one.point_at(t)/(Q.point_at(t));
+            if(ti)
+                cairo_line_to(cr, t*width/2 + width/4, 3*height/4 - y*height/2);
+            else
+                cairo_move_to(cr, t*width/2 + width/4, 3*height/4 - y*height/2);
+        }    
+        cairo_stroke(cr);
+    }
     cairo_set_line_width (cr, 1);
-    if(1) {
+    for(int order = 0; order < 10; order++) {
         cairo_set_source_rgba (cr, 0.5, 0, 0.5, 0.8);
         SBasis Z;
         Z.a.push_back(z0);
-        SBasis C = integral(Z);
+        SBasis C = divide(one, Q, order);//sqrt(z0, order);
 
         for(int ti = 0; ti < width; ti++) {
             double t = (double(ti))/(width);
@@ -191,12 +259,15 @@ static gint mouse_motion_event(GtkWidget* widget, GdkEventMotion* e, gpointer da
 }
 
 static gint mouse_event(GtkWidget* window, GdkEventButton* e, gpointer data) {
-    if(e->button == 1 || e->button == 3) {
-	    ;
-    } else if(e->button == 2) {
+    if(e->button == 2) {
         gtk_widget_queue_draw(window);
+    } else if(e->button == 1) {
+        z0[1] /= 0.9;
+    } else if(e->button == 3) {
+        z0[1] *= 0.9;
     }
-
+    gtk_widget_queue_draw(window);
+    
     return FALSE;
 }
 

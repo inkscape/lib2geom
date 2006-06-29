@@ -28,10 +28,20 @@ public:
     double hat() const {
         return (a[1] + a[0])/2;
     }
+    double apply(double t) { return (1-t)*a[0] + t*a[1];}
 };
 
+BezOrd operator-(BezOrd const &a) {
+    return BezOrd(-a.a[0], -a.a[1]);
+}
 BezOrd operator+(BezOrd const & a, BezOrd const & b) {
     return BezOrd(a[0] + b[0], a[1] + b[1]);
+}
+BezOrd operator-(BezOrd const & a, BezOrd const & b) {
+    return BezOrd(a[0] - b[0], a[1] - b[1]);
+}
+BezOrd operator*(double const a, BezOrd const & b) {
+    return BezOrd(a*b[0], a*b[1]);
 }
 
 class SBasis{
@@ -39,6 +49,11 @@ public:
     std::vector<BezOrd> a;
     
     unsigned size() const { return a.size(); }
+    
+    SBasis() {}
+    SBasis(BezOrd const & bo) {
+        a.push_back(bo);
+    }
     
     BezOrd& operator[](const unsigned i) {
         assert(i < a.size());
@@ -74,6 +89,22 @@ public:
             result.a.push_back(a[i]);
         for(unsigned i = min_size; i < p.size(); i++)
             result.a.push_back(p.a[i]);
+        assert(result.size() == out_size);
+        return result;
+    }
+    SBasis operator-(const SBasis& p) const {
+        SBasis result;
+        const unsigned out_size = std::max(size(), p.size());
+        const unsigned min_size = std::min(size(), p.size());
+        //result.a.reserve(out_size);
+        
+        for(unsigned i = 0; i < min_size; i++) {
+            result.a.push_back(a[i] - p.a[i]);
+        }
+        for(unsigned i = min_size; i < size(); i++)
+            result.a.push_back(a[i]);
+        for(unsigned i = min_size; i < p.size(); i++)
+            result.a.push_back(-p.a[i]);
         assert(result.size() == out_size);
         return result;
     }
