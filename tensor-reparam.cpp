@@ -186,13 +186,36 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     for(int i = 0; i < display_path.handles.size(); i++) {
         draw_handle(cr, display_path.handles[i]);
     }
+    Geom::SubPath edges;
+    edges.cmd.push_back(Geom::quadto);
+    edges.handles.push_back(Geom::Point(0,0));
+    edges.handles.push_back(Geom::Point(0,200));
+    edges.handles.push_back(Geom::Point(0,400));
+    edges.cmd.push_back(Geom::quadto);
+    edges.handles.push_back(Geom::Point(200,400));
+    edges.handles.push_back(Geom::Point(400,400));
+    edges.cmd.push_back(Geom::quadto);
+    edges.handles.push_back(Geom::Point(300,300));
+    edges.handles.push_back(Geom::Point(400,0));
+    edges.cmd.push_back(Geom::quadto);
+    edges.handles.push_back(Geom::Point(200,40));
+    edges.handles.push_back(Geom::Point(0,0));
     
-    for(int u = 0; u < 5; u++) {
-        for(int v = 0; v < 5; v++) {
-            
+    for(double u = 0; u <= 1; u+=0.125) {
+        Geom::Point L = edges.point_at(Geom::SubPath::Location(edges.begin(), u));
+        Geom::Point R = edges.point_at(Geom::SubPath::Location(edges.indexed_elem(2), 1-u));
+        for(double v = 0; v < 1.; v+=0.125) {
+            Geom::Point T = edges.point_at(Geom::SubPath::Location(edges.indexed_elem(1), v));
+            Geom::Point B = edges.point_at(Geom::SubPath::Location(edges.indexed_elem(3), 1-v));
+            double U = (T[Geom::Y] - B[Geom::Y]) / 400.;
+            Geom::Point V = (1-U)*L + U*R;
+            if(v == 0)
+                cairo_move_to(cr, V);
+            else
+                cairo_line_to(cr, V);
         }
     }
-    
+    cairo_stroke(cr);
     cairo_sub_path(cr, display_path);
     cairo_stroke(cr);
     
