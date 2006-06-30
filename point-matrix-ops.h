@@ -7,21 +7,12 @@
 
 namespace Geom {
 
-inline Point operator*(Point const &v, Matrix const &m)
-{
-#if 1  /* Which code makes it easier to see what's happening? */
-    Geom::Point const xform_col0(m[0],
-                               m[2]);
-    Geom::Point const xform_col1(m[1],
-                               m[3]);
-    Geom::Point const xlate(m[4], m[5]);
-    return ( Point(dot(v, xform_col0),
-                   dot(v, xform_col1))
-             + xlate );
-#else
-    return Point(v[X] * m[0]  +  v[Y] * m[2]  +  m[4],
-                 v[X] * m[1]  +  v[Y] * m[3]  +  m[5]);
-#endif
+inline Point operator*(Point const &v, Matrix const &m) {
+    Point ret;
+    for(int i = 0; i < 2; i++) {
+        ret[i] = v[X] * m[i] + v[Y] * m[i + 2] + m[i + 4];
+    }
+    return ret;
 }
 
 inline Point &Point::operator*=(Matrix const &m)

@@ -14,37 +14,24 @@
 #include "matrix.h"
 #include "matrix-fns.h"
 
-
-
-/**
- *  Implement NR functions and methods
- */
 namespace Geom {
-
-
-
-
 
 /**
  *  Multiply two matrices together
  */
-Matrix operator*(Matrix const &m0, Matrix const &m1)
-{
-    Geom::Coord const d0 = m0[0] * m1[0]  +  m0[1] * m1[2];
-    Geom::Coord const d1 = m0[0] * m1[1]  +  m0[1] * m1[3];
-    Geom::Coord const d2 = m0[2] * m1[0]  +  m0[3] * m1[2];
-    Geom::Coord const d3 = m0[2] * m1[1]  +  m0[3] * m1[3];
-    Geom::Coord const d4 = m0[4] * m1[0]  +  m0[5] * m1[2]  +  m1[4];
-    Geom::Coord const d5 = m0[4] * m1[1]  +  m0[5] * m1[3]  +  m1[5];
-
-    Matrix ret( d0, d1, d2, d3, d4, d5 );
-
+Matrix operator*(Matrix const &m0, Matrix const &m1) {
+    Matrix ret;
+    int n = 0;
+    for(int a = 0; a < 5; a += 2) {
+        for(int b = 0; b < 2; b++) {
+            ret[n] = m0[a] * m1[b] + m0[a + 1] * m1[b + 2];
+            n++;
+        }
+    }
+    ret[4] += m1[4];
+    ret[5] += m2[5];
     return ret;
 }
-
-
-
-
 
 /**
  *  Multiply a matrix by another
@@ -55,66 +42,47 @@ Matrix &Matrix::operator*=(Matrix const &o)
     return *this;
 }
 
-
-
-
-
 /**
  *  Multiply by a scaling matrix
  */
-Matrix &Matrix::operator*=(scale const &other)
-{
-    /* This loop is massive overkill.  Let's unroll.
-     *   o    _c[] goes from 0..5
-     *   o    other[] alternates between 0 and 1
-     */
-    /*
-     * for (unsigned i = 0; i < 3; ++i) {
-     *     for (unsigned j = 0; j < 2; ++j) {
-     *         this->_c[i * 2 + j] *= other[j];
-     *     }
-     * }
-     */
-
-    Geom::Coord const xscale = other[0];
-    Geom::Coord const yscale = other[1];
-    Geom::Coord *dest = _c;
-
-    /*i=0 j=0*/  *dest++ *= xscale;
-    /*i=0 j=1*/  *dest++ *= yscale;
-    /*i=1 j=0*/  *dest++ *= xscale;
-    /*i=1 j=1*/  *dest++ *= yscale;
-    /*i=2 j=0*/  *dest++ *= xscale;
-    /*i=2 j=1*/  *dest   *= yscale;
+Matrix &Matrix::operator*=(scale const &other) {
+    for(int i = 0; i < 6; i += 2) {
+        _c[i] *= other[X];
+    }
+    for(int i = 1; i < 6; i += 2) {
+        _c[i] *= other[Y];
+    }
 
     return *this;
 }
 
-
-
+/**
+ *  Translate the matrix
+ */
+Matrix &Matrix::operator*=(translate const &other) {
+    _c[4] += other[X];
+    _c[5] += other[Y];
+    return *this;
+}
 
 
 /**
  *  Return the inverse of this matrix.  If an inverse is not defined,
  *  then return the identity matrix.
  */
-Matrix Matrix::inverse() const
-{
-    Matrix d(0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+Matrix Matrix::inverse() const {
+    Matrix d;
 
-    Geom::Coord const det = _c[0] * _c[3] - _c[1] * _c[2];
-    if (!Geom_DF_TEST_CLOSE(det, 0.0, Geom_EPSILON)) {
+    Geom::Coord const determ = det();
+    if (!Geom_DF_TEST_CLOSE(determ, 0.0, Geom_EPSILON)) {
+        Geom::Coord const ideterm = 1.0 / determ;
 
-        Geom::Coord const idet = 1.0 / det;
-        Geom::Coord *dest = d._c;
-
-        /*0*/ *dest++ =  _c[3] * idet;
-        /*1*/ *dest++ = -_c[1] * idet;
-        /*2*/ *dest++ = -_c[2] * idet;
-        /*3*/ *dest++ =  _c[0] * idet;
-        /*4*/ *dest++ = -_c[4] * d._c[0] - _c[5] * d._c[2];
-        /*5*/ *dest   = -_c[4] * d._c[1] - _c[5] * d._c[3];
-
+        d._c[0] =  _c[3] * ideterm;
+        d._c[1] = -_c[1] * ideterm;
+        d._c[2] = -_c[2] * ideterm;
+        d._c[3] =  _c[0] * ideterm;
+        d._c[4] = -_c[4] * d._c[0] - _c[5] * d._c[2];
+        d._c[5] = -_c[4] * d._c[1] - _c[5] * d._c[3];
     } else {
         d.set_identity();
     }
@@ -122,39 +90,25 @@ Matrix Matrix::inverse() const
     return d;
 }
 
-
-
-
-
 /**
  *  Set this matrix to Identity
  */
-void Matrix::set_identity()
-{
-    Geom::Coord *dest = _c;
-
-    *dest++ = 1.0; //0
-    *dest++ = 0.0; //1
-    *dest++ = 0.0; //2
-    *dest++ = 1.0; //3
-    // translation
-    *dest++ = 0.0; //4
-    *dest   = 0.0; //5
+void Matrix::set_identity() {
+    _c[0] = 1.0;
+    _c[1] = 0.0;
+    _c[2] = 0.0;
+    _c[3] = 1.0;
+    _c[4] = 0.0;
+    _c[5] = 0.0;
 }
-
-
-
-
 
 /**
  *  return an Identity matrix
  */
-Matrix identity()
-{
-    Matrix ret(1.0, 0.0,
-               0.0, 1.0,
-               0.0, 0.0);
-    return ret;
+Matrix identity() {
+    return Matrix(1.0, 0.0,
+                  0.0, 1.0,
+                  0.0, 0.0);
 }
 
 
@@ -162,18 +116,13 @@ Matrix identity()
 
 
 /**
- *
+ *  Creates a matrix given the axis and origin of the coordinate system.
  */
-Matrix from_basis(Point const x_basis, Point const y_basis, Point const offset)
-{
-    Matrix const ret(x_basis[X], y_basis[X],
-                     x_basis[Y], y_basis[Y],
-                     offset[X], offset[Y]);
-    return ret;
+Matrix from_basis(Point const x_basis, Point const y_basis, Point const offset) {
+    return Matrix(x_basis[X], x_basis[Y],
+                  y_basis[X], y_basis[Y],
+                  offset [X], offset [Y]);
 }
-
-
-
 
 /**
  * Returns a rotation matrix corresponding by the specified angle (in radians) about the origin.
@@ -188,54 +137,33 @@ Matrix from_basis(Point const x_basis, Point const y_basis, Point const offset)
 rotate::rotate(Geom::Coord const theta) :
     vec(cos(theta),
         sin(theta))
-{
-}
-
-
-
-
+{}
 
 /**
  *  Return the determinant of the Matrix
  */
-Geom::Coord Matrix::det() const
-{
+Geom::Coord Matrix::det() const {
     return _c[0] * _c[3] - _c[1] * _c[2];
 }
-
-
-
-
 
 /**
  * Return the scalar of the descriminant of the Matrix
  */
-Geom::Coord Matrix::descrim2() const
-{
+Geom::Coord Matrix::descrim2() const {
     return fabs(det());
 }
-
-
-
-
 
 /**
  *  Return the descriminant of the Matrix
  */
-Geom::Coord Matrix::descrim() const
-{
+Geom::Coord Matrix::descrim() const {
     return sqrt(descrim2());
 }
-
-
-
-
 
 /**
  *  Assign a matrix to a given coordinate array
  */
-Matrix &Matrix::assign(Coord const *array)
-{
+Matrix &Matrix::assign(Coord const *array) {
     assert(array != NULL);
 
     Coord const *src = array;
@@ -251,15 +179,10 @@ Matrix &Matrix::assign(Coord const *array)
     return *this;
 }
 
-
-
-
-
 /**
  *  Copy this matrix's values to an array
  */
 Geom::Coord *Matrix::copyto(Geom::Coord *array) const {
-
     assert(array != NULL);
 
     Coord const *src = _c;
@@ -275,65 +198,96 @@ Geom::Coord *Matrix::copyto(Geom::Coord *array) const {
     return array;
 }
 
-
-
-
-
 /**
- *
+ *  TODO: remove this - it's the same thing as descrim
  */
 double expansion(Matrix const &m) {
     return sqrt(fabs(m.det()));
 }
 
-
-
-
-
 /**
- *
+ *  TODO: remove this - it's the same thing as descrim
  */
 double Matrix::expansion() const {
     return sqrt(fabs(det()));
 }
 
-
-
-
-
 /**
- *
+ *  Amount of x-scaling
  */
 double Matrix::expansionX() const {
     return sqrt(_c[0] * _c[0] + _c[1] * _c[1]);
 }
 
+Point Matrix::get_x_axis() const {
+    return Point(_c[0], _c[1]);
+}
 
+Point Matrix::get_y_axis() const {
+    return Point(_c[2], _c[3]);
+}
 
+Point Matrix::get_translation() const {
+    return Point(_c[4], _c[5]);
+}
 
+Point Matrix::set_x_axis(Point const &vec) {
+    for(int i = 0; i < 2; i++)
+        _c[i] = vec[i];
+}
+
+Point Matrix::set_y_axis(Point const &vec) {
+    for(int i = 0; i < 2; i++)
+        _c[i + 2] = vec[i];
+}
+
+Point Matrix::set_translation(Point const &loc) {
+    for(int i = 0; i < 2; i++)
+        _c[i + 4] = loc[i];
+}
 
 /**
- *
+ *  Amount of y-scaling
  */
 double Matrix::expansionY() const {
     return sqrt(_c[2] * _c[2] + _c[3] * _c[3]);
 }
 
-
-
-
-
 /**
- *
+ *  Does this matrix perform only a translation?
  */
 bool Matrix::is_translation(Coord const eps) const {
     return ( fabs(_c[0] - 1.0) < eps &&
              fabs(_c[3] - 1.0) < eps &&
              fabs(_c[1])       < eps &&
-             fabs(_c[2])       < eps   );
+             fabs(_c[2])       < eps &&
+             fabs(_c[4])       < eps &&
+             fabs(_c[5])       < eps);
 }
 
+/**
+ *  Does this matrix perform only a scale?
+ */
+bool Matrix::is_scale(Coord const eps) const {
+    return ( fabs(_c[0] - 1) < eps &&
+             fabs(_c[1]) < eps &&
+             fabs(_c[2]) < eps &&
+             fabs(_c[3] - 1) < eps &&
+             fabs(_c[4]) < eps &&
+             fabs(_c[5) );
+}
 
+/**
+ *  Does this matrix perform only a rotation?
+ */
+bool Matrix::is_rotation(Coord const eps) const {
+    return ( fabs(_c[0] - _c[3]) < eps &&
+             fabs(_c[1] + _c[2]) < eps &&
+             fabs(_c[4])         < eps &&
+             fabs(_c[5])         < eps   );
+}
+
+//TODO: Remove all this crap!
 
 #define nr_matrix_test_equal(m0,m1,e) ((!(m0) && !(m1)) || ((m0) && (m1) && Geom_MATRIX_DF_TEST_CLOSE(m0, m1, e)))
 #define nr_matrix_test_transform_equal(m0,m1,e) ((!(m0) && !(m1)) || ((m0) && (m1) && Geom_MATRIX_DF_TEST_TRANSFORM_CLOSE(m0, m1, e)))
@@ -348,10 +302,6 @@ bool Matrix::test_identity() const {
     return Geom_MATRIX_DF_TEST_CLOSE(this, &identity, Geom_EPSILON);
 }
 
-
-
-
-
 /**
  *
  */
@@ -359,20 +309,12 @@ bool transform_equalp(Matrix const &m0, Matrix const &m1, Geom::Coord const epsi
     return Geom_MATRIX_DF_TEST_TRANSFORM_CLOSE(&m0, &m1, epsilon);
 }
 
-
-
-
-
 /**
  *
  */
 bool translate_equalp(Matrix const &m0, Matrix const &m1, Geom::Coord const epsilon) {
     return Geom_MATRIX_DF_TEST_TRANSLATE_CLOSE(&m0, &m1, epsilon);
 }
-
-
-
-
 
 /**
  *
@@ -382,10 +324,6 @@ bool matrix_equalp(Matrix const &m0, Matrix const &m1, Geom::Coord const epsilon
     return ( Geom_MATRIX_DF_TEST_TRANSFORM_CLOSE(&m0, &m1, epsilon) &&
              Geom_MATRIX_DF_TEST_TRANSLATE_CLOSE(&m0, &m1, epsilon)   );
 }
-
-
-
-
 
 /**
  *  A home-made assertion.  Stop if the two matrixes are not 'close' to
@@ -405,11 +343,7 @@ void assert_close(Matrix const &a, Matrix const &b)
     }
 }
 
-
-
 }  //namespace Geom
-
-
 
 /*
   Local Variables:

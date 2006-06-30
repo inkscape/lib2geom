@@ -29,7 +29,9 @@ class Matrix;
 
 /// Cartesian point.
 class Point {
-public:
+    Coord _pt[2];
+
+  public:
     inline Point()
     { _pt[X] = _pt[Y] = 0; }
 
@@ -131,9 +133,6 @@ public:
     }
 
     friend inline std::ostream &operator<< (std::ostream &out_file, const Geom::Point &in_pnt);
-
-private:
-    Coord _pt[2];
 };
 
 /** A function to print out the Point.  It just prints out the coords

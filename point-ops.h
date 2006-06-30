@@ -50,6 +50,15 @@ inline Point operator*(double const s, Point const &b)
     return ret;
 }
 
+inline Point operator*(Point const &b, double const s)
+{
+    Point ret;
+    for(int i = 0; i < 2; i++) {
+        ret[i] = s * b[i];
+    }
+    return ret;
+}
+
 inline Point operator/(Point const &b, double const d)
 {
     Point ret;
@@ -59,6 +68,14 @@ inline Point operator/(Point const &b, double const d)
     return ret;
 }
 
+inline Point operator/(double const d, Point const &b)
+{
+    Point ret;
+    for(int i = 0; i < 2; i++) {
+        ret[i] = d / b[i];
+    }
+    return ret;
+}
 
 inline bool operator==(Point const &a, Point const &b)
 {

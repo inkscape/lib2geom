@@ -12,7 +12,9 @@ struct NRPointL {
 namespace Geom {
 
 class IPoint {
-public:
+    ICoord _pt[2];
+
+  public:
     IPoint()
     { }
 
@@ -73,9 +75,6 @@ public:
         }
         return *this;
     }
-  
-private:
-    ICoord _pt[2];
 };
 
 
