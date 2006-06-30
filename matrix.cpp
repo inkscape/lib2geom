@@ -29,7 +29,7 @@ Matrix operator*(Matrix const &m0, Matrix const &m1) {
         }
     }
     ret[4] += m1[4];
-    ret[5] += m2[5];
+    ret[5] += m1[5];
     return ret;
 }
 
@@ -274,7 +274,7 @@ bool Matrix::is_scale(Coord const eps) const {
              fabs(_c[2]) < eps &&
              fabs(_c[3] - 1) < eps &&
              fabs(_c[4]) < eps &&
-             fabs(_c[5) );
+             fabs(_c[5]) );
 }
 
 /**
