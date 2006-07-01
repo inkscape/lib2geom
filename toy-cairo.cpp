@@ -444,7 +444,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     cairo_show_text (cr, "center of the path");
 
     notify << "L2 error from original:" 
-           << L2(display_path, original_curve, 1, 1e-4) 
+        //<< L2(display_path, original_curve, 1, 1e-4) 
            << std::endl;
     notify << "pathwise Area: " << area << ", " << cntr;
 
