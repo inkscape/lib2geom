@@ -48,15 +48,15 @@ SBasis shift(BezOrd const &a, int sh) {
 }
 
 SBasis multiply(SBasis const &a, SBasis const &b) {
-    // c = {a0*b0 - shift(1, a.tri*b.tri), a1*b1 - shift(1, a.tri*b.tri)}
+    // c = {a0*b0 - shift(1, a.Tri*b.Tri), a1*b1 - shift(1, a.Tri*b.Tri)}
     
-    // shift(1, a.tri*b.tri)
+    // shift(1, a.Tri*b.Tri)
     SBasis c;
     c.a.resize(a.size() + b.size(), BezOrd(0,0));
     c.a[0] = BezOrd(0,0);
     for(unsigned j = 0; j < b.size(); j++) {
         for(unsigned i = j; i < a.size()+j; i++) {
-            double tri = b[j].tri()*a[i-j].tri();
+            double tri = Tri(b[j])*Tri(a[i-j]);
             for(unsigned dim = 0; dim < 2; dim++)
                 c.a[i+1/*shift*/][dim] = -tri;
         }
@@ -81,15 +81,15 @@ SBasis integral(SBasis const &c) {
     a.a[0] = BezOrd(0,0);
     
     for(unsigned k = 1; k < c.size() + 1; k++) {
-        double ahat = -c[k-1].tri()/(2*k);
+        double ahat = -Tri(c[k-1])/(2*k);
         a[k][0] = ahat;
         a[k][1] = ahat;
     }
-    double atri = 0;
+    double aTri = 0;
     for(int k = c.size()-1; k >= 0; k--) { // XXX: unsigned?
-        atri = (c[k].hat() + (k+1)*atri)/(2*k+1);
-        a[k][0] -= atri/2;
-        a[k][1] += atri/2;
+        aTri = (Hat(c[k]) + (k+1)*aTri)/(2*k+1);
+        a[k][0] -= aTri/2;
+        a[k][1] += aTri/2;
     }
     
     return a;
@@ -100,7 +100,7 @@ SBasis derivative(SBasis const &a) {
     c.a.resize(a.size(), BezOrd(0,0));
     
     for(unsigned k = 0; k < a.size(); k++) {
-        double d = (2*k+1)*a[k].tri();
+        double d = (2*k+1)*Tri(a[k]);
         for(unsigned dim = 0; dim < 2; dim++) {
             if(k+1 < a.size()) {
                 if(dim)
@@ -133,7 +133,7 @@ SBasis sqrt(SBasis const &a, int k) {
 // return a kth order approx to 1/a)
 SBasis reciprocal(BezOrd const &a, int k) {
     SBasis res;
-    double r_s0 = (a.tri()*a.tri())/(-a[0]*a[1]);
+    double r_s0 = (Tri(a)*Tri(a))/(-a[0]*a[1]);
     double r_s0k = 1;
     for(int i = 0; i < k; i++) {
         res.a.push_back(BezOrd(r_s0k/a[0], r_s0k/a[1]));

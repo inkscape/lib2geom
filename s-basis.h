@@ -4,11 +4,31 @@
 #include <cassert>
 #include <algorithm>
 
+class Hat{
+public:
+    Hat () {}
+    Hat(double d) :d(d) {}
+    operator double() const { return d; }
+    double d;
+};
+
+class Tri{
+public:
+    Tri () {}
+    Tri(double d) :d(d) {}
+    operator double() const { return d; }
+    double d;
+};
+
 class BezOrd{
 public:
     double a[2];
     BezOrd() {}
     BezOrd(double aa, double b) {a[0] = aa; a[1] = b;}
+    BezOrd(Hat h, Tri t) {
+        a[0] = double(h) - double(t)/2; 
+        a[1] = double(h) + double(t)/2;
+    }
 
     double operator[](const int i) const {
         assert(i >= 0);
@@ -23,10 +43,10 @@ public:
     double point_at(double t) {
         return (a[0]*(1-t) + a[1]*t);
     }
-    double tri() const {
+    operator Tri() const {
         return a[1] - a[0];
     }
-    double hat() const {
+    operator Hat() const {
         return (a[1] + a[0])/2;
     }
     double apply(double t) { return (1-t)*a[0] + t*a[1];}

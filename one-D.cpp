@@ -57,7 +57,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
         cairo_stroke(cr);
     }
     cairo_set_line_width (cr, 1);
-    for(int order = 0; order < 10; order++) {
+    if(0) for(int order = 1; order < 10; order++) {
         cairo_set_source_rgba (cr, 0.5, 0, 0.5, 0.8);
         SBasis Z;
         Z.a.push_back(z0);
@@ -73,16 +73,19 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
         }    
         cairo_stroke(cr);
     }
-
-    for(int order = 0; order < 10; order++) {
+    
+    double maxerr = 0;
+    for(int order = 2; order < 10; order++) {
         cairo_set_source_rgba (cr, 0.5, 0.5, 0, 0.8);
         SBasis Z;
         Z.a.push_back(z0);
         SBasis C = reciprocal(z0, order);
-
+        
+        
         for(int ti = 0; ti < width; ti++) {
             double t = (double(ti))/(width);
             double y =  C.point_at(t)/2;
+            maxerr >?= C.point_at(t) - one.point_at(t)/(Q.point_at(t));
             if(ti)
                 cairo_line_to(cr, t*width/2 + width/4, 3*height/4 - y*height/2);
             else
@@ -90,10 +93,11 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
         }    
         cairo_stroke(cr);
     }
-
+    
+    
     cairo_move_to(cr, 250,250);
     
-
+    notify << maxerr;
     {
         notify << std::ends;
         PangoLayout *layout = gtk_widget_create_pango_layout(widget, notify.str().c_str());
