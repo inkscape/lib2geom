@@ -153,8 +153,8 @@ SBasis divide(SBasis const &a, SBasis const &b, int k) {
     for(unsigned i = 0; i < k; i++) {
         BezOrd ci(r[i][0]/b[0][0], r[i][1]/b[0][1]); //H0
         c[i] = c[i] + ci;
-        r[i] = r[i] - ci;
-        //r = r - multiply(ci,b);
+        //r[i] = r[i] - ci;
+        r = r - shift(multiply(ci,b), i);
     }
     
     return c;
