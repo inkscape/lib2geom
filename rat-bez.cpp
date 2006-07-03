@@ -72,17 +72,21 @@ void draw_offset(cairo_t *cr, multidim_sbasis<2> const &B, double dist) {
         
             arc = sqrt(arc, 2);
     
-            multidim_sbasis<2> offset;
+            multidim_sbasis<3> offset;
     
             for(int dim = 0; dim < 2; dim++) {
                 double sgn = dim?-1:1;
-                offset[dim] = Bp[dim] + divide(dist*sgn*dB[1-dim],arc, 2);
+                offset[dim] = multiply(Bp[dim], arc) + dist*sgn*dB[1-dim];
             }
+	    offset[2] = arc;
         
             for(int ti = 0; ti <= 30; ti++) {
                 double t = (double(ti))/(30);
                 double x = offset[0].point_at(t);
                 double y = offset[1].point_at(t);
+		double w = offset[2].point_at(t);
+		x /= w;
+		y /= w;
                 if(ti)
                     cairo_line_to(cr, x, y);
                 else
