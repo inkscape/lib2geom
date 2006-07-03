@@ -77,12 +77,11 @@ SBasis integral(SBasis const &c) {
     
     for(unsigned k = 1; k < c.size() + 1; k++) {
         double ahat = -Tri(c[k-1])/(2*k);
-        a[k][0] = ahat;
-        a[k][1] = ahat;
+        a[k] = Hat(ahat);
     }
     double aTri = 0;
     for(int k = c.size()-1; k >= 0; k--) { // XXX: unsigned?
-        aTri = (Hat(c[k]) + (k+1)*aTri)/(2*k+1);
+        aTri = (Hat(c[k]) + (k+1)*aTri/2)/(2*k+1);
         a[k][0] -= aTri/2;
         a[k][1] += aTri/2;
     }
