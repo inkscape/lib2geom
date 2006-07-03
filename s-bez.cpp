@@ -57,6 +57,49 @@ SBasis quad(int l, int dim) {
         multiply(BezOrd(0, 1), segment(l+1, l+2, dim));
 }
 
+void draw_offset(cairo_t *cr, SBasis *B) {
+    SBasis Bp[2];
+    for(int subdivi = 0; subdivi < 16; subdivi++) {
+        double dsubu = 1./16;
+        double subu = dsubu*subdivi;
+        for(int dim = 0; dim < 2; dim++) {
+            Bp[dim] = compose(B[dim], BezOrd(subu, dsubu+subu));
+        }
+        draw_handle(cr, Geom::Point(Bp[0].point_at(1), Bp[1].point_at(1)));
+    
+        SBasis dB[2];
+        SBasis arc;
+        for(int dim = 0; dim < 2; dim++) {
+            dB[dim] = derivative(Bp[dim]);
+            arc = arc + multiply(dB[dim], dB[dim]);
+        }
+        double err = fabs(arc.point_at(0.5));
+        if(0) {
+            draw_offset(cr, Bp);
+        } else {
+        
+            arc = sqrt(arc, 2);
+    
+            SBasis offset[2];
+    
+            for(int dim = 0; dim < 2; dim++) {
+                double sgn = dim?-1:1;
+                offset[dim] = Bp[dim] + divide(10*sgn*dB[1-dim],arc, 2);
+            }
+        
+            for(int ti = 0; ti <= 30; ti++) {
+                double t = (double(ti))/(30);
+                double x = offset[0].point_at(t);
+                double y = offset[1].point_at(t);
+                if(ti)
+                    cairo_line_to(cr, x, y);
+                else
+                    cairo_move_to(cr, x, y);
+            }
+        }
+    }
+}
+
 static gboolean
 expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
 {
@@ -102,50 +145,11 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     }    
     cairo_stroke(cr);
     
-    for(int subdivi = 0; subdivi < 4; subdivi++) {
-        cairo_set_source_rgba (cr, 0.5, 0.25, 0, 0.8);
-        for(int dim = 0; dim < 2; dim++) {
-            B[dim] =  multiply(BezOrd(1, 0), quad(0, dim)) +
-                multiply(BezOrd(0, 1), quad(1, dim));
-            B[dim] = compose(B[dim], BezOrd(0.25*subdivi, 0.25*subdivi + 0.25));
-        }
-        draw_handle(cr, Geom::Point(B[0].point_at(1), B[1].point_at(1)));
-    
-        SBasis dB[2];
-        SBasis arc;
-        for(int dim = 0; dim < 2; dim++) {
-            dB[dim] = derivative(B[dim]);
-            notify << B[dim] << ";   " << dB[dim] << std::endl;
-            arc = arc + multiply(dB[dim], dB[dim]);
-        }
-        arc = sqrt(arc, 5);
-    
-        SBasis offset[2];
-    
-        for(int dim = 0; dim < 2; dim++) {
-            double sgn = dim?-1:1;
-            offset[dim] = B[dim] + divide(10*sgn*dB[1-dim],arc, 5);
-        }
-        SBasis perspective_offset[2];
-        
-        SBasis W = offset[Geom::Y];
-        
-        for(int dim = 0; dim < 2; dim++) {
-            perspective_offset[dim] = divide(offset[dim], W);
-        }
-        
-        for(int ti = 0; ti <= 30; ti++) {
-            double t = (double(ti))/(30);
-            double x = perspective_offset[0].point_at(t);
-            double y = perspective_offset[1].point_at(t);
-            if(ti)
-                cairo_line_to(cr, x, y);
-            else
-                cairo_move_to(cr, x, y);
-        }
-    cairo_set_source_rgba (cr, 0., 0.5, 0, 0.8);
+    draw_offset(cr, B);
+    cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
     cairo_stroke(cr);
-    }
+    
+    
     cairo_set_source_rgba (cr, 0., 0.5, 0, 0.8);
     /*arc = integral(arc);
     arc = arc - BezOrd(Hat(arc.point_at(0)));
