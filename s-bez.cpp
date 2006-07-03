@@ -52,7 +52,7 @@ BezOrd segment(int l, int r, int dim) {
     return BezOrd(handles[l][dim], handles[r][dim]);
 }
 
-SBasis quad(int l) {
+SBasis quad(int l, int dim) {
     return multiply(BezOrd(1, 0), segment(l+0, l+1, dim)) +
         multiply(BezOrd(0, 1), segment(l+1, l+2, dim));
 }
@@ -87,7 +87,8 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     
     SBasis B[2];
     for(int dim = 0; dim < 2; dim++) {
-        B[dim] = quad(0);
+        B[dim] =  multiply(BezOrd(1, 0), quad(0, dim)) +
+        multiply(BezOrd(0, 1), quad(1, dim));
     }
     
     for(int ti = 0; ti <= 30; ti++) {
