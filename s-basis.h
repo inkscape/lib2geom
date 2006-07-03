@@ -66,6 +66,16 @@ inline BezOrd operator+(BezOrd const & a, BezOrd const & b) {
 inline BezOrd operator-(BezOrd const & a, BezOrd const & b) {
     return BezOrd(a[0] - b[0], a[1] - b[1]);
 }
+inline BezOrd& operator+=(BezOrd & a, BezOrd const & b) {
+    a[0] += b[0];
+    a[1] += b[1];
+    return a;
+}
+inline BezOrd& operator-=(BezOrd & a, BezOrd const & b) {
+    a[0] -= b[0];
+    a[1] -= b[1];
+    return a;
+}
 inline BezOrd operator*(double const a, BezOrd const & b) {
     return BezOrd(a*b[0], a*b[1]);
 }
@@ -140,6 +150,29 @@ public:
     }
 };
 
+inline SBasis operator-(const SBasis& p) {
+    SBasis result;
+    result.a.reserve(p.size());
+        
+    for(unsigned i = 0; i < p.size(); i++) {
+        result.a.push_back(-p.a[i]);
+    }
+    return result;
+}
+
+inline SBasis& operator+=(SBasis& a, const SBasis& b) {
+    const unsigned out_size = std::max(a.size(), b.size());
+    const unsigned min_size = std::min(a.size(), b.size());
+    a.a.reserve(out_size);
+        
+    for(unsigned i = 0; i < min_size; i++)
+        a.a[i] += b.a[i];
+    for(unsigned i = min_size; i < b.size(); i++)
+        a.a.push_back(b.a[i]);
+    
+    assert(a.size() == out_size);
+    return a;
+}
 
 SBasis operator*(double k, SBasis const &a);
 

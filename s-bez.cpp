@@ -57,8 +57,10 @@ SBasis quad(int l, int dim) {
         multiply(BezOrd(0, 1), segment(l+1, l+2, dim));
 }
 
-void draw_offset(cairo_t *cr, SBasis *B) {
-    SBasis Bp[2];
+#include "multidim-sbasis.h"
+
+void draw_offset(cairo_t *cr, multidim_sbasis<2> const &B) {
+    multidim_sbasis<2> Bp;
     for(int subdivi = 0; subdivi < 16; subdivi++) {
         double dsubu = 1./16;
         double subu = dsubu*subdivi;
@@ -67,12 +69,10 @@ void draw_offset(cairo_t *cr, SBasis *B) {
         }
         draw_handle(cr, Geom::Point(Bp[0].point_at(1), Bp[1].point_at(1)));
     
-        SBasis dB[2];
+        multidim_sbasis<2> dB;
         SBasis arc;
-        for(int dim = 0; dim < 2; dim++) {
-            dB[dim] = derivative(Bp[dim]);
-            arc = arc + multiply(dB[dim], dB[dim]);
-        }
+        dB = derivative(Bp);
+        arc = dot(dB, dB);
         double err = fabs(arc.point_at(0.5));
         if(0) {
             draw_offset(cr, Bp);
@@ -80,7 +80,7 @@ void draw_offset(cairo_t *cr, SBasis *B) {
         
             arc = sqrt(arc, 2);
     
-            SBasis offset[2];
+            multidim_sbasis<2> offset;
     
             for(int dim = 0; dim < 2; dim++) {
                 double sgn = dim?-1:1;
@@ -124,11 +124,8 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
         cairo_line_to(cr, i*width/4, height);
     }
     cairo_stroke(cr);
-    SBasis one(BezOrd(1,1));
-    assert(one.a.size() == 1);
-    SBasis P0(z0), P1(BezOrd(3, 1));
     
-    SBasis B[2];
+    multidim_sbasis<2> B;
     for(int dim = 0; dim < 2; dim++) {
         B[dim] =  multiply(BezOrd(1, 0), quad(0, dim)) +
         multiply(BezOrd(0, 1), quad(1, dim));
