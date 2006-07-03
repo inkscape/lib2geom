@@ -30,6 +30,11 @@ public:
         a[1] = double(h) + double(t)/2;
     }
 
+    BezOrd(Hat h) {
+        a[0] = double(h); 
+        a[1] = double(h);
+    }
+
     double operator[](const int i) const {
         assert(i >= 0);
         assert(i < 2);
@@ -155,6 +160,9 @@ SBasis sqrt(SBasis const &a, int k);
 SBasis reciprocal(BezOrd const &a, int k);
 
 SBasis divide(SBasis const &a, SBasis const &b, int k);
+
+// a(b(t))
+SBasis compose(SBasis const &a, SBasis const &b);
 
 
 /*

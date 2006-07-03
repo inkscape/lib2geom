@@ -70,11 +70,6 @@ SBasis multiply(SBasis const &a, SBasis const &b) {
     return c;
 }
 
-// a(b)
-SBasis compose(SBasis const &a, SBasis const &b) {
-    // return a0 + s(a1 + s(a2 +...  where s = (1-u)u; ak =(1 - u)a^0_k + ua^1_k
-}
-
 SBasis integral(SBasis const &c) {
     SBasis a;
     a.a.resize(c.size() + 1, BezOrd(0,0));
@@ -101,7 +96,9 @@ SBasis derivative(SBasis const &a) {
     
     for(unsigned k = 0; k < a.size(); k++) {
         double d = (2*k+1)*Tri(a[k]);
+        
         for(unsigned dim = 0; dim < 2; dim++) {
+            c[k][dim] = d;
             if(k+1 < a.size()) {
                 if(dim)
                     c[k][dim] = d - (k+1)*a[k+1][dim];
@@ -160,6 +157,17 @@ SBasis divide(SBasis const &a, SBasis const &b, int k) {
     return c;
 }
 
+// a(b) - probably wrong for now
+// return a0 + s(a1 + s(a2 +...  where s = (1-u)u; ak =(1 - u)a^0_k + ua^1_k
+SBasis compose(SBasis const &a, SBasis const &b) {
+    SBasis s = multiply((SBasis(BezOrd(1,1))-b), b);
+    SBasis r = a.a.back();
+    
+    for(int i = a.size(); i >= 0; i--) {
+        r = SBasis(a[i]) + multiply(r,s);
+    }
+    return r;
+}
 /*
   Local Variables:
   mode:c++

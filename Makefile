@@ -44,6 +44,9 @@ ode-toy-cairo: ode-toy-cairo.cpp path.o path-to-svgd.o read-svgd.o path-to-polyl
 one-D: one-D.cpp s-basis.h s-basis.cpp
 	$(CXX) $(CXXFLAGS) -o $@ -I . $^ $(extra_cppflags) 
 
+s-bez: s-bez.cpp s-basis.h s-basis.cpp
+	$(CXX) $(CXXFLAGS) -o $@ -I . $^ $(extra_cppflags) 
+
 poly-test: poly-test.cpp poly.cpp poly.h
 	$(CXX) $(CXXFLAGS) -o $@ -I . $^ $(extra_cppflags) 
 
