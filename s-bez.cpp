@@ -119,9 +119,19 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     }    
     cairo_stroke(cr);
     
-    cairo_move_to(cr, 250,250);
-    
+    cairo_set_source_rgba (cr, 0., 0.5, 0, 0.8);
     arc = integral(arc);
+    arc = arc - BezOrd(Hat(arc.point_at(0)));
+    for(int ti = 0; ti <= 30; ti++) {
+        double t = (double(ti))/(30);
+        double x = width*t;
+        double y = height - (arc.point_at(t));
+        if(ti)
+            cairo_line_to(cr, x, y);
+        else
+            cairo_move_to(cr, x, y);
+    }    
+    cairo_stroke(cr);
     notify << "arc length = " << arc.point_at(1) - arc.point_at(0) << std::endl;
     {
         PangoLayout* layout = pango_cairo_create_layout (cr);
