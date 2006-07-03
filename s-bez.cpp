@@ -124,6 +124,21 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     }    
     cairo_stroke(cr);
     
+    SBasis offset[2];
+    for(int dim = 0; dim < 2; dim++) {
+        double sgn = dim?-1:1;
+        offset[dim] = B[dim] + divide(10*sgn*dB[1-dim],arc, 5);
+    }
+    for(int ti = 0; ti <= 30; ti++) {
+        double t = (double(ti))/(30);
+        double x = offset[0].point_at(t);
+        double y = offset[1].point_at(t);
+        if(ti)
+            cairo_line_to(cr, x, y);
+        else
+            cairo_move_to(cr, x, y);
+    }    
+    
     cairo_set_source_rgba (cr, 0., 0.5, 0, 0.8);
     arc = integral(arc);
     arc = arc - BezOrd(Hat(arc.point_at(0)));
