@@ -53,8 +53,8 @@ SBasis quad(int l, int dim) {
 
 void draw_offset(cairo_t *cr, multidim_sbasis<2> const &B, double dist) {
     multidim_sbasis<2> Bp;
-    for(int subdivi = 0; subdivi < 16; subdivi++) {
-        double dsubu = 1./16;
+    for(int subdivi = 0; subdivi < 4; subdivi++) {
+        double dsubu = 1./4;
         double subu = dsubu*subdivi;
         for(int dim = 0; dim < 2; dim++) {
             Bp[dim] = compose(B[dim], BezOrd(subu, dsubu+subu));

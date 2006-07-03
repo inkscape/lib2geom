@@ -51,47 +51,6 @@ SBasis quad(int l, int dim) {
 
 #include "multidim-sbasis.h"
 
-void draw_offset(cairo_t *cr, multidim_sbasis<2> const &B, double dist) {
-    multidim_sbasis<2> Bp;
-    for(int subdivi = 0; subdivi < 4; subdivi++) {
-        double dsubu = 1./4;
-        double subu = dsubu*subdivi;
-        for(int dim = 0; dim < 2; dim++) {
-            Bp[dim] = compose(B[dim], BezOrd(subu, dsubu+subu));
-        }
-        draw_handle(cr, Geom::Point(Bp[0].point_at(1), Bp[1].point_at(1)));
-    
-        multidim_sbasis<2> dB;
-        SBasis arc;
-        dB = derivative(Bp);
-        arc = dot(dB, dB);
-        double err = fabs(arc.point_at(0.5));
-        if(0) {
-            draw_offset(cr, Bp, dist);
-        } else {
-        
-            arc = sqrt(arc, 2);
-    
-            multidim_sbasis<2> offset;
-    
-            for(int dim = 0; dim < 2; dim++) {
-                double sgn = dim?-1:1;
-                offset[dim] = Bp[dim] + divide(dist*sgn*dB[1-dim],arc, 2);
-            }
-        
-            for(int ti = 0; ti <= 30; ti++) {
-                double t = (double(ti))/(30);
-                double x = offset[0].point_at(t);
-                double y = offset[1].point_at(t);
-                if(ti)
-                    cairo_line_to(cr, x, y);
-                else
-                    cairo_move_to(cr, x, y);
-            }
-        }
-    }
-}
-
 static gboolean
 expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
 {
@@ -134,26 +93,40 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     }    
     cairo_stroke(cr);
     
-    draw_offset(cr, B, 10);
-    draw_offset(cr, B, -10);
     cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
     cairo_stroke(cr);
     
     
     cairo_set_source_rgba (cr, 0., 0.5, 0, 0.8);
-    /*arc = integral(arc);
-    arc = arc - BezOrd(Hat(arc.point_at(0)));
-    for(int ti = 0; ti <= 30; ti++) {
-        double t = (double(ti))/(30);
-        double x = width*t;
-        double y = height - (arc.point_at(t));
-        if(ti)
-            cairo_line_to(cr, x, y);
-        else
-            cairo_move_to(cr, x, y);
+    multidim_sbasis<2> dB;
+    dB = derivative(B);
+    double prev_seg = 0;
+    int N = 16;
+    for(int subdivi = 0; subdivi < N; subdivi++) {
+        double dsubu = 1./N;
+        double subu = dsubu*subdivi;
+        multidim_sbasis<2> dBp;
+        for(int dim = 0; dim < 2; dim++) {
+            dBp[dim] = compose(dB[dim], BezOrd(subu, dsubu+subu));
+        }
+        SBasis arc;
+        arc = dot(dBp, dBp);
+        arc = sqrt(arc, 2);
+        arc = (1./N)*integral(arc);
+        arc = arc - BezOrd(Hat(arc.point_at(0) - prev_seg));
+        prev_seg = arc.point_at(1);
+        for(int ti = 0; ti <= 30; ti++) {
+            double t = (double(ti))/(30);
+            double x = width*(t*dsubu + subu);
+            double y = height - (arc.point_at(t));
+            if(ti)
+                cairo_line_to(cr, x, y);
+            else
+                cairo_move_to(cr, x, y);
+        }
+        cairo_stroke(cr);
     }
-    cairo_stroke(cr);
-    notify << "arc length = " << arc.point_at(1) - arc.point_at(0) << std::endl;*/
+    //notify << "arc length = " << arc.point_at(1) - arc.point_at(0) << std::endl;
     {
         PangoLayout* layout = pango_cairo_create_layout (cr);
         pango_layout_set_text(layout, 

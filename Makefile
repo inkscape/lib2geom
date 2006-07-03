@@ -52,6 +52,9 @@ s-bez: s-bez.cpp s-basis.h s-basis.cpp multidim-sbasis.h interactive-bits.o
 rat-bez: rat-bez.cpp s-basis.h s-basis.cpp multidim-sbasis.h interactive-bits.o
 	$(CXX) $(CXXFLAGS) -o $@ -I . $^ $(extra_cppflags) 
 
+arc-bez: arc-bez.cpp s-basis.h s-basis.cpp multidim-sbasis.h interactive-bits.o
+	$(CXX) $(CXXFLAGS) -o $@ -I . $^ $(extra_cppflags) 
+
 poly-test: poly-test.cpp poly.cpp poly.h
 	$(CXX) $(CXXFLAGS) -o $@ -I . $^ $(extra_cppflags) 
 
