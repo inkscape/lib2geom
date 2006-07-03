@@ -121,12 +121,29 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     }
     cairo_stroke(cr);
     
-    multidim_sbasis<2> B;
+    multidim_sbasis<3> B;
     for(int dim = 0; dim < 2; dim++) {
-        B[dim] =  multiply(BezOrd(1, 0), quad(0, dim)) +
-        multiply(BezOrd(0, 1), quad(1, dim));
+        B[dim] = multiply(BezOrd(1, 0), BezOrd(handles[0][dim], handles[1][dim]*sqrt(2))) +
+	    multiply(BezOrd(0, 1), BezOrd(handles[1][dim]*sqrt(2), handles[2][dim]));
     }
+    B[2] =  multiply(BezOrd(1, 0), BezOrd(1, sqrt(2))) +
+	    multiply(BezOrd(0, 1), BezOrd(sqrt(2), 1));
     
+    for(int ti = 0; ti <= 30; ti++) {
+        double t = (double(ti))/(30);
+        double w = B[2].point_at(t);
+        double x = B[0].point_at(t)/w;
+        double y = B[1].point_at(t)/w;
+        if(ti)
+            cairo_line_to(cr, x, y);
+        else
+            cairo_move_to(cr, x, y);
+    }    
+    cairo_stroke(cr);
+    
+    for(int dim = 0; dim < 2; dim++) {
+	    B[dim] = divide(B[dim], B[2], 2);
+    }
     for(int ti = 0; ti <= 30; ti++) {
         double t = (double(ti))/(30);
         double x = B[0].point_at(t);
@@ -138,26 +155,11 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     }    
     cairo_stroke(cr);
     
-    draw_offset(cr, B, 10);
-    draw_offset(cr, B, -10);
     cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
     cairo_stroke(cr);
     
     
     cairo_set_source_rgba (cr, 0., 0.5, 0, 0.8);
-    /*arc = integral(arc);
-    arc = arc - BezOrd(Hat(arc.point_at(0)));
-    for(int ti = 0; ti <= 30; ti++) {
-        double t = (double(ti))/(30);
-        double x = width*t;
-        double y = height - (arc.point_at(t));
-        if(ti)
-            cairo_line_to(cr, x, y);
-        else
-            cairo_move_to(cr, x, y);
-    }
-    cairo_stroke(cr);
-    notify << "arc length = " << arc.point_at(1) - arc.point_at(0) << std::endl;*/
     {
         PangoLayout* layout = pango_cairo_create_layout (cr);
         pango_layout_set_text(layout, 
@@ -279,7 +281,7 @@ int main(int argc, char **argv) {
     handles.push_back(Geom::Point(uniform()*400, uniform()*400));
     handles.push_back(Geom::Point(uniform()*400, uniform()*400));
     handles.push_back(Geom::Point(uniform()*400, uniform()*400));
-    handles.push_back(Geom::Point(uniform()*400, uniform()*400));
+    //handles.push_back(Geom::Point(uniform()*400, uniform()*400));
     
     gtk_init (&argc, &argv);
     
