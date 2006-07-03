@@ -102,45 +102,44 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     }    
     cairo_stroke(cr);
     
-    SBasis dB[2];
-    SBasis arc;
-    notify << std::endl;
-    for(int dim = 0; dim < 2; dim++) {
-        dB[dim] = derivative(B[dim]);
-        notify << B[dim] << ";   " << dB[dim] << std::endl;
-        arc = arc + multiply(dB[dim], dB[dim]);
-    }
-    notify << arc << std::endl;
-    arc = sqrt(arc, 5);
-    notify << arc << std::endl;
-    for(int ti = 0; ti <= 30; ti++) {
-        double t = (double(ti))/(30);
-        double x = width*t;
-        double y = height - (arc.point_at(t));
-        if(ti)
-            cairo_line_to(cr, x, y);
-        else
-            cairo_move_to(cr, x, y);
-    }    
-    cairo_stroke(cr);
+    for(int subdivi = 0; subdivi < 4; subdivi++) {
+        cairo_set_source_rgba (cr, 0.5, 0.25, 0, 0.8);
+        for(int dim = 0; dim < 2; dim++) {
+            B[dim] =  multiply(BezOrd(1, 0), quad(0, dim)) +
+                multiply(BezOrd(0, 1), quad(1, dim));
+            B[dim] = compose(B[dim], BezOrd(0.25*subdivi, 0.25*subdivi + 0.25));
+        }
+        draw_handle(cr, Geom::Point(B[0].point_at(1), B[1].point_at(1)));
     
-    SBasis offset[2];
-    for(int dim = 0; dim < 2; dim++) {
-        double sgn = dim?-1:1;
-        offset[dim] = B[dim] + divide(10*sgn*dB[1-dim],arc, 5);
-    }
-    for(int ti = 0; ti <= 30; ti++) {
-        double t = (double(ti))/(30);
-        double x = offset[0].point_at(t);
-        double y = offset[1].point_at(t);
-        if(ti)
-            cairo_line_to(cr, x, y);
-        else
-            cairo_move_to(cr, x, y);
-    }    
+        SBasis dB[2];
+        SBasis arc;
+        for(int dim = 0; dim < 2; dim++) {
+            dB[dim] = derivative(B[dim]);
+            notify << B[dim] << ";   " << dB[dim] << std::endl;
+            arc = arc + multiply(dB[dim], dB[dim]);
+        }
+        arc = sqrt(arc, 5);
     
+        SBasis offset[2];
+    
+        for(int dim = 0; dim < 2; dim++) {
+            double sgn = dim?-1:1;
+            offset[dim] = B[dim] + divide(10*sgn*dB[1-dim],arc, 5);
+        }
+        for(int ti = 0; ti <= 30; ti++) {
+            double t = (double(ti))/(30);
+            double x = offset[0].point_at(t);
+            double y = offset[1].point_at(t);
+            if(ti)
+                cairo_line_to(cr, x, y);
+            else
+                cairo_move_to(cr, x, y);
+        }
     cairo_set_source_rgba (cr, 0., 0.5, 0, 0.8);
-    arc = integral(arc);
+    cairo_stroke(cr);
+    }
+    cairo_set_source_rgba (cr, 0., 0.5, 0, 0.8);
+    /*arc = integral(arc);
     arc = arc - BezOrd(Hat(arc.point_at(0)));
     for(int ti = 0; ti <= 30; ti++) {
         double t = (double(ti))/(30);
@@ -150,9 +149,9 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
             cairo_line_to(cr, x, y);
         else
             cairo_move_to(cr, x, y);
-    }    
+    }
     cairo_stroke(cr);
-    notify << "arc length = " << arc.point_at(1) - arc.point_at(0) << std::endl;
+    notify << "arc length = " << arc.point_at(1) - arc.point_at(0) << std::endl;*/
     {
         PangoLayout* layout = pango_cairo_create_layout (cr);
         pango_layout_set_text(layout, 

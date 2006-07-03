@@ -160,10 +160,10 @@ SBasis divide(SBasis const &a, SBasis const &b, int k) {
 // return a0 + s(a1 + s(a2 +...  where s = (1-u)u; ak =(1 - u)a^0_k + ua^1_k
 SBasis compose(SBasis const &a, SBasis const &b) {
     SBasis s = multiply((SBasis(BezOrd(1,1))-b), b);
-    SBasis r = a.a.back();
+    SBasis r;
     
-    for(int i = a.size(); i >= 0; i--) {
-        r = SBasis(a[i]) + multiply(r,s);
+    for(int i = a.size()-1; i >= 0; i--) {
+        r = SBasis(BezOrd(Hat(a[i][0]))) - a[i][0]*b + a[i][1]*b + multiply(r,s);
     }
     return r;
 }
