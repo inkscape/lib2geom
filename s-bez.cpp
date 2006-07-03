@@ -126,10 +126,18 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
             double sgn = dim?-1:1;
             offset[dim] = B[dim] + divide(10*sgn*dB[1-dim],arc, 5);
         }
+        SBasis perspective_offset[2];
+        
+        SBasis W = offset[Geom::Y];
+        
+        for(int dim = 0; dim < 2; dim++) {
+            perspective_offset[dim] = divide(offset[dim], W);
+        }
+        
         for(int ti = 0; ti <= 30; ti++) {
             double t = (double(ti))/(30);
-            double x = offset[0].point_at(t);
-            double y = offset[1].point_at(t);
+            double x = perspective_offset[0].point_at(t);
+            double y = perspective_offset[1].point_at(t);
             if(ti)
                 cairo_line_to(cr, x, y);
             else
