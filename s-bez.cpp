@@ -28,18 +28,6 @@ Geom::Point *selected_handle;
 Geom::Point old_handle_pos;
 Geom::Point old_mouse_point;
 
-inline std::ostream &operator<< (std::ostream &out_file, const BezOrd & bo) {
-    out_file << "{" << bo[0] << ", " << bo[1] << "}";
-    return out_file;
-}
-
-inline std::ostream &operator<< (std::ostream &out_file, const SBasis & p) {
-    for(int i = 0; i < p.size(); i++) {
-        out_file << p[i] << "s^" << i << " + ";
-    }
-    return out_file;
-}
-
 BezOrd segment(int l, int r, int dim) {
     return BezOrd(handles[l][dim], handles[r][dim]);
 }
@@ -53,8 +41,9 @@ SBasis quad(int l, int dim) {
 
 void draw_offset(cairo_t *cr, multidim_sbasis<2> const &B, double dist) {
     multidim_sbasis<2> Bp;
-    for(int subdivi = 0; subdivi < 4; subdivi++) {
-        double dsubu = 1./4;
+    const int N = 16;
+    for(int subdivi = 0; subdivi < N; subdivi++) {
+        double dsubu = 1./N;
         double subu = dsubu*subdivi;
         for(int dim = 0; dim < 2; dim++) {
             Bp[dim] = compose(B[dim], BezOrd(subu, dsubu+subu));

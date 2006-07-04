@@ -28,18 +28,6 @@ Geom::Point *selected_handle;
 Geom::Point old_handle_pos;
 Geom::Point old_mouse_point;
 
-inline std::ostream &operator<< (std::ostream &out_file, const BezOrd & bo) {
-    out_file << "{" << bo[0] << ", " << bo[1] << "}";
-    return out_file;
-}
-
-inline std::ostream &operator<< (std::ostream &out_file, const SBasis & p) {
-    for(int i = 0; i < p.size(); i++) {
-        out_file << p[i] << "s^" << i << " + ";
-    }
-    return out_file;
-}
-
 BezOrd segment(int l, int r, int dim) {
     return BezOrd(handles[l][dim], handles[r][dim]);
 }
@@ -142,7 +130,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     cairo_stroke(cr);
     
     for(int dim = 0; dim < 2; dim++) {
-	    B[dim] = divide(B[dim], B[2], 2);
+	    B[dim] = divide(B[dim], B[2], 0);
     }
     for(int ti = 0; ti <= 30; ti++) {
         double t = (double(ti))/(30);

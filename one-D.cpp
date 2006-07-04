@@ -115,7 +115,10 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     
     
     cairo_move_to(cr, 250,250);
-    
+    double u0 = z0[0]/Tri(z0);
+    notify << "one pole at " << z0 << "giving r^2 = " << u0
+           << " * " << 1-u0 << " = "
+           << fabs(u0*(u0-1)) << "; r = " << sqrt(fabs(u0*(u0-1)));
     notify << maxerr << " and div "  << div_maxerr;
     {
         notify << std::ends;

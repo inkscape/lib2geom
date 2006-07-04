@@ -156,7 +156,7 @@ SBasis divide(SBasis const &a, SBasis const &b, int k) {
     return c;
 }
 
-// a(b) - probably wrong for now
+// a(b)
 // return a0 + s(a1 + s(a2 +...  where s = (1-u)u; ak =(1 - u)a^0_k + ua^1_k
 SBasis compose(SBasis const &a, SBasis const &b) {
     SBasis s = multiply((SBasis(BezOrd(1,1))-b), b);

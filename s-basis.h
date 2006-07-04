@@ -194,8 +194,21 @@ SBasis reciprocal(BezOrd const &a, int k);
 
 SBasis divide(SBasis const &a, SBasis const &b, int k);
 
+#include <iostream>
 // a(b(t))
 SBasis compose(SBasis const &a, SBasis const &b);
+
+inline std::ostream &operator<< (std::ostream &out_file, const BezOrd &bo) {
+    out_file << "{" << bo.a[0] << ", " << bo.a[1] << "}";
+    return out_file;
+}
+
+inline std::ostream &operator<< (std::ostream &out_file, const SBasis & p) {
+    for(int i = 0; i < p.size(); i++) {
+        out_file << p[i] << "s^" << i << " + ";
+    }
+    return out_file;
+}
 
 
 /*
