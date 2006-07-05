@@ -9,9 +9,9 @@ path.o: path.cpp nearestpoint.cpp path.h
 arc-length.o: arc-length.cpp arc-length.h path.h
 poly.o: poly.cpp poly.h
 path-cairo.o: path-cairo.cpp path-cairo.h
-	$(CXX) $(CXXFLAGS) -c $^ $(shell pkg-config --cflags cairo) 
+	$(CXX) $(CXXFLAGS) -c $< $(shell pkg-config --cflags cairo) 
 interactive-bits.o: interactive-bits.cpp interactive-bits.h
-	$(CXX) $(CXXFLAGS) -c $^ $(shell pkg-config --cflags cairo) 
+	$(CXX) $(CXXFLAGS) -c $< $(shell pkg-config --cflags cairo) 
 
 path-to-svgd.o: path-to-svgd.cpp path-to-svgd.h path.h
 
