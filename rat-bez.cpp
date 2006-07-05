@@ -127,27 +127,36 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
         else
             cairo_move_to(cr, x, y);
     }    
-    cairo_stroke(cr);
-    
-    for(int dim = 0; dim < 2; dim++) {
-	    B[dim] = divide(B[dim], B[2], 0);
-    }
-    for(int ti = 0; ti <= 30; ti++) {
-        double t = (double(ti))/(30);
-        double x = B[0].point_at(t);
-        double y = B[1].point_at(t);
-        if(ti)
-            cairo_line_to(cr, x, y);
-        else
-            cairo_move_to(cr, x, y);
-    }    
-    cairo_stroke(cr);
-    
     cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
     cairo_stroke(cr);
+    cairo_set_source_rgba (cr, 0., 0., 0, 0.8);
+    
+    int N = 2;
+    for(int subdivi = 0; subdivi < N; subdivi++) {
+        double dsubu = 1./N;
+        double subu = dsubu*subdivi;
+        multidim_sbasis<3> Bp;
+        for(int dim = 0; dim < 3; dim++) {
+            Bp[dim] = compose(B[dim], BezOrd(subu, dsubu+subu));
+        }
+        
+        for(int dim = 0; dim < 2; dim++) {
+	    Bp[dim] = divide(Bp[dim], Bp[2], 1);
+        }
+        for(int ti = 0; ti <= 30; ti++) {
+            double t = (double(ti))/(30);
+            double x = Bp[0].point_at(t);
+            double y = Bp[1].point_at(t);
+            if(ti)
+                cairo_line_to(cr, x, y);
+            else
+                cairo_move_to(cr, x, y);
+        }    
+    }
+    cairo_stroke(cr);
     
     
-    cairo_set_source_rgba (cr, 0., 0.5, 0, 0.8);
+    cairo_set_source_rgba (cr, 0., 0, 0, 1);
     {
         PangoLayout* layout = pango_cairo_create_layout (cr);
         pango_layout_set_text(layout, 
