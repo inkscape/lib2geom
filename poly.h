@@ -98,6 +98,8 @@ public:
     double operator()(double t) const { return eval(t);}
     
     void normalize();
+    
+    void monicify();
 };
 
 inline Poly operator*(double a, Poly const & b) { return b * a;}

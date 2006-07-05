@@ -57,8 +57,7 @@ SBasis multiply(SBasis const &a, SBasis const &b) {
     for(unsigned j = 0; j < b.size(); j++) {
         for(unsigned i = j; i < a.size()+j; i++) {
             double tri = Tri(b[j])*Tri(a[i-j]);
-            for(unsigned dim = 0; dim < 2; dim++)
-                c.a[i+1/*shift*/][dim] = -tri;
+            c.a[i+1/*shift*/] += Hat(-tri);
         }
     }
     for(unsigned j = 0; j < b.size(); j++) {
@@ -80,12 +79,12 @@ SBasis integral(SBasis const &c) {
         a[k] = Hat(ahat);
     }
     double aTri = 0;
-    for(int k = c.size()-1; k >= 0; k--) { // XXX: unsigned?
+    for(int k = c.size()-1; k >= 0; k--) {
         aTri = (Hat(c[k]) + (k+1)*aTri/2)/(2*k+1);
         a[k][0] -= aTri/2;
         a[k][1] += aTri/2;
     }
-    
+    a.normalize();
     return a;
 }
 
@@ -167,6 +166,14 @@ SBasis compose(SBasis const &a, SBasis const &b) {
     }
     return r;
 }
+
+
+void SBasis::normalize() {
+    while(0 == a.back()[0] && 0 == a.back()[1])
+        a.pop_back();
+}
+
+
 /*
   Local Variables:
   mode:c++

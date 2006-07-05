@@ -14,6 +14,8 @@
 #include "point-ops.h"
 #include "point-fns.h"
 #include "interactive-bits.h"
+#include "bezier-to-sbasis.h"
+#include "path.h"
 
 using std::string;
 using std::vector;
@@ -41,7 +43,7 @@ SBasis quad(int l, int dim) {
 
 void draw_offset(cairo_t *cr, multidim_sbasis<2> const &B, double dist) {
     multidim_sbasis<2> Bp;
-    const int N = 16;
+    const int N = 2;
     for(int subdivi = 0; subdivi < N; subdivi++) {
         double dsubu = 1./N;
         double subu = dsubu*subdivi;
@@ -54,11 +56,16 @@ void draw_offset(cairo_t *cr, multidim_sbasis<2> const &B, double dist) {
         SBasis arc;
         dB = derivative(Bp);
         arc = dot(dB, dB);
-        double err = fabs(arc.point_at(0.5));
-        if(0) {
+        
+        double err = 0;
+        for(int i = 1; i < arc.size(); i++)
+            err += fabs(Hat(arc[i]));
+        double le = fabs(arc[0][0]) - err;
+        double re = fabs(arc[0][1]) - err;
+        err /= std::max(arc[0][0], arc[0][1]);
+        if(err > 2) {
             draw_offset(cr, Bp, dist);
         } else {
-        
             arc = sqrt(arc, 2);
     
             multidim_sbasis<2> offset;
@@ -104,27 +111,16 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
         cairo_move_to(cr, i*width/4, 0);
         cairo_line_to(cr, i*width/4, height);
     }
+    cairo_move_to(cr, handles[0]);
+    cairo_curve_to(cr, handles[1], handles[2], handles[3]);
     cairo_stroke(cr);
     
-    multidim_sbasis<2> B;
-    for(int dim = 0; dim < 2; dim++) {
-        B[dim] =  multiply(BezOrd(1, 0), quad(0, dim)) +
-        multiply(BezOrd(0, 1), quad(1, dim));
+    multidim_sbasis<2> B = bezier_to_sbasis<2, 3>(handles.begin());
+    
+    for(int i = 0; i < 5; i++) {
+        draw_offset(cr, B, 10*i);
+        draw_offset(cr, B, -10*i);
     }
-    
-    for(int ti = 0; ti <= 30; ti++) {
-        double t = (double(ti))/(30);
-        double x = B[0].point_at(t);
-        double y = B[1].point_at(t);
-        if(ti)
-            cairo_line_to(cr, x, y);
-        else
-            cairo_move_to(cr, x, y);
-    }    
-    cairo_stroke(cr);
-    
-    draw_offset(cr, B, 10);
-    draw_offset(cr, B, -10);
     cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
     cairo_stroke(cr);
     

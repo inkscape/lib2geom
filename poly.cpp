@@ -24,13 +24,16 @@ double Poly::eval(double x) const {
 void Poly::normalize() {
     while(coeff.back() == 0)
         coeff.pop_back();
+}
+
+void Poly::monicify() {
+    normalize();
     
     double scale = 1./coeff.back(); // unitize
     
     for(unsigned i = 0; i < size(); i++) {
         coeff[i] *= scale;
     }
-    
 }
 
 

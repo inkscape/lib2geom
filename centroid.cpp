@@ -1,7 +1,9 @@
 #include "path.h"
 #include "poly.h"
 #include "arc-length.h"
-
+#include "s-basis.h"
+#include "multidim-sbasis.h"
+#include "bezier-to-sbasis.h"
 
 /*
  * ANSI C code from the article
@@ -137,6 +139,46 @@ int centroid(SubPath const &p, Point& centroid, double &area) {
         }
     }
     // join ends
+    const double ai = cross(p.handles.back(), p.handles[0]);
+    atmp += ai;
+    centroid_tmp += ai*(p.handles.back(), p.handles[0]); // first moment.
+    
+    area = atmp / 2;
+    if (atmp != 0) {
+        centroid = centroid_tmp / (3 * atmp);
+        return 0;
+    }
+    return 2;
+}
+
+int centroid_sb(SubPath const &p, Point& centroid, double &area) {
+    Point centroid_tmp(0,0);
+    double atmp = 0;
+    for(SubPath::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
+        SubPath::Elem elm = *iter;
+        multidim_sbasis<2> B;
+        switch(iter.cmd()) {
+            case Geom::lineto:
+                B = bezier_to_sbasis<2, 1>(elm.begin());
+                break;
+            case Geom::quadto:
+                B = bezier_to_sbasis<2, 2>(elm.begin());
+                break;
+            case Geom::cubicto:
+                B = bezier_to_sbasis<2, 3>(elm.begin());
+                break;
+            default:
+                break;
+        }
+        multidim_sbasis<2> dB = rot90(derivative(B));
+        SBasis curl = dot(B, dB);
+        SBasis A = integral(curl);
+        multidim_sbasis<2> C = integral(multiply(curl, B));
+        atmp += A(1) - A(0);
+        centroid_tmp += 2*Point(C[0](1)-C[0](0),
+                                C[1](1)-C[1](0)); // first moment.
+    }
+// join ends
     const double ai = cross(p.handles.back(), p.handles[0]);
     atmp += ai;
     centroid_tmp += ai*(p.handles.back(), p.handles[0]); // first moment.

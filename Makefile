@@ -25,7 +25,7 @@ path-to-svgd: path.o path-to-svgd.cpp read-svgd.o path-to-polyline.o types.o rec
 toy: toy.cpp path.o path-to-svgd.o read-svgd.o path-to-polyline.o types.o rect.o geom.o read-svgd.o path-find-points-of-interest.o point-fns.o types.o rotate-fns.o matrix.o arc-length.o path-intersect.o poly.o
 	$(CXX) $(CXXFLAGS) -o $@ -I . $^ $(extra_cppflags)
 
-toy-cairo: toy-cairo.cpp path.o path-to-svgd.o read-svgd.o path-to-polyline.o types.o rect.o geom.o read-svgd.o path-find-points-of-interest.o point-fns.o types.o rotate-fns.o matrix.o arc-length.o path-intersect.o centroid.o poly.o matrix-rotate-ops.o matrix-translate-ops.o path-cairo.o path-metric.o interactive-bits.o
+toy-cairo: toy-cairo.cpp path.o path-to-svgd.o read-svgd.o path-to-polyline.o types.o rect.o geom.o read-svgd.o path-find-points-of-interest.o point-fns.o types.o rotate-fns.o matrix.o arc-length.o path-intersect.o centroid.o poly.o matrix-rotate-ops.o matrix-translate-ops.o path-cairo.o path-metric.o interactive-bits.o s-basis.o
 	$(CXX) $(CXXFLAGS) -o $@ -I . $^ $(extra_cppflags) 
 
 tensor-reparam: tensor-reparam.cpp path.o path-to-svgd.o read-svgd.o path-to-polyline.o types.o rect.o geom.o read-svgd.o path-find-points-of-interest.o point-fns.o types.o rotate-fns.o matrix.o arc-length.o path-intersect.o centroid.o poly.o matrix-rotate-ops.o matrix-translate-ops.o path-cairo.o path-metric.o
@@ -43,12 +43,22 @@ b-spline: b-spline.cpp path.o path-to-svgd.cpp read-svgd.o path-to-polyline.o po
 ode-toy-cairo: ode-toy-cairo.cpp path.o path-to-svgd.o read-svgd.o path-to-polyline.o types.o rect.o geom.o read-svgd.o path-find-points-of-interest.o point-fns.o types.o rotate-fns.o matrix.o arc-length.o path-intersect.o centroid.o poly.o
 	$(CXX) $(CXXFLAGS) -o $@ -I . $^ $(extra_cppflags) 
 
-sbasis: one-D s-bez rat-bez arc-bez
+s-basis.o: s-basis.cpp s-basis.h bezier-to-sbasis.h
+sbasis-poly.o: sbasis-poly.cpp sbasis-poly.h
 
-one-D: one-D.cpp s-basis.h s-basis.cpp
+sbasis.a: sbasis-poly.o poly.o s-basis.o 
+	rm -f $@
+	ar cq $@ $^
+
+sbasis: one-D s-bez rat-bez arc-bez unit-test-sbasis
+
+one-D: one-D.cpp sbasis.a
 	$(CXX) $(CXXFLAGS) -o $@ -I . $^ $(extra_cppflags) 
 
-s-bez: s-bez.cpp s-basis.h s-basis.cpp multidim-sbasis.h interactive-bits.o
+unit-test-sbasis: unit-test-sbasis.cpp sbasis.a
+	$(CXX) $(CXXFLAGS) -o $@ -I . $^ -lgsl -lblas
+
+s-bez: s-bez.cpp sbasis.a interactive-bits.o
 	$(CXX) $(CXXFLAGS) -o $@ -I . $^ $(extra_cppflags) 
 
 rat-bez: rat-bez.cpp s-basis.h s-basis.cpp multidim-sbasis.h interactive-bits.o
@@ -72,6 +82,9 @@ conjugate_gradient.o: conjugate_gradient.cpp conjugate_gradient.h
 
 test_cg: conjugate_gradient.o test_cg.cpp
 	$(CXX) $(CXXFLAGS) -o $@ -I . $^ -lgsl -lblas
+
+heat_diffusion: heat_diffusion.cpp
+	$(CXX) $(CXXFLAGS) -o $@ -I . $^ $(extra_cppflags) 
 
 clean:
 	rm -f *.o path path-to-svgd toy conic toy-cairo ode-toy-cairo *~

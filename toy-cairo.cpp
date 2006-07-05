@@ -383,10 +383,13 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     draw_circ(cr, cntr);
     cairo_move_to(cr, cntr[0], cntr[1]);
     cairo_show_text (cr, "center of the path");
+    notify << "pathwise Area: " << area << ", " << cntr << std::endl;
 
-    notify << "L2 error from original:" 
-        //<< L2(display_path, original_curve, 1, 1e-4) 
-           << std::endl;
+    assert(hash_cookie == display_path);
+    centroid_sb(display_path, cntr, area);
+    cairo_move_to(cr, cntr[0], cntr[1]);
+    cairo_show_text (cr, "center of the sbasis");
+
     notify << "pathwise Area: " << area << ", " << cntr;
 
     {
@@ -398,11 +401,6 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
                                        &logical_extent);
         cairo_move_to(cr, 0, height-logical_extent.height);
         pango_cairo_show_layout(cr, layout);
-        //cairo_show_text (cr, notify.str().c_str());
-        //cairo_text_path(cr, notify.str().c_str());
-        //cairo_stroke (cr);
-        /*pango_cairo_draw_layout(cr,
-          0, height-logical_extent.height, layout);*/
     }
     
     assert(hash_cookie == display_path);

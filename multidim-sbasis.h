@@ -1,3 +1,6 @@
+#ifndef _MULTIDIM_SBASIS
+#define _MULTIDIM_SBASIS
+
 #include "s-basis.h"
 
 template <unsigned D>
@@ -49,7 +52,7 @@ operator -=(multidim_sbasis<D> & a, multidim_sbasis<D> const & b) {
 
 template <unsigned D>
 multidim_sbasis<D>
-derivative(multidim_sbasis<D> & a) {
+derivative(multidim_sbasis<D> const & a) {
     multidim_sbasis<D> r;
     for(unsigned i = 0; i < D; i++)
         r.f[i]=derivative(a.f[i]);
@@ -58,7 +61,7 @@ derivative(multidim_sbasis<D> & a) {
 
 template <unsigned D>
 multidim_sbasis<D>
-integral(multidim_sbasis<D> & a) {
+integral(multidim_sbasis<D> const & a) {
     multidim_sbasis<D> r;
     for(unsigned i = 0; i < D; i++)
         r.f[i]=integral(a.f[i]);
@@ -71,6 +74,24 @@ dot(multidim_sbasis<D> const & a, multidim_sbasis<D> const & b) {
     SBasis r;
     for(unsigned i = 0; i < D; i++)
         r += multiply(a.f[i],b.f[i]);
+    return r;
+}
+
+template <unsigned D>
+multidim_sbasis<D>
+multiply(BezOrd const & a, multidim_sbasis<D> const & b) {
+    multidim_sbasis<D> r;
+    for(unsigned i = 0; i < D; i++)
+        r[i] = multiply(a,b.f[i]);
+    return r;
+}
+
+template <unsigned D>
+multidim_sbasis<D>
+multiply(SBasis const & a, multidim_sbasis<D> const & b) {
+    multidim_sbasis<D> r;
+    for(unsigned i = 0; i < D; i++)
+        r[i] = multiply(a,b.f[i]);
     return r;
 }
 
@@ -92,3 +113,4 @@ rot90(multidim_sbasis<2> const & a) {
   End:
 */
 // vim: filetype=cpp:expandtab:shiftwidth=4:tabstop=8:softtabstop=4:encoding=utf-8:textwidth=99 :
+#endif

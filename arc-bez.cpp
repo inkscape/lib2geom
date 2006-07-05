@@ -89,7 +89,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     multidim_sbasis<2> dB;
     dB = derivative(B);
     double prev_seg = 0;
-    int N = 16;
+    int N = 1;
     for(int subdivi = 0; subdivi < N; subdivi++) {
         double dsubu = 1./N;
         double subu = dsubu*subdivi;

@@ -112,6 +112,9 @@ public:
         }
         return (1-t)*p0 + t*p1;
     }
+    double operator()(double t) {
+        return point_at(t);
+    }
     SBasis operator+(const SBasis& p) const {
         SBasis result;
         const unsigned out_size = std::max(size(), p.size());
@@ -148,6 +151,8 @@ public:
     void clear() {
         fill(a.begin(), a.end(), BezOrd(0,0));
     }
+    
+    void normalize(); // remove extra zeros
 };
 
 inline SBasis operator-(const SBasis& p) {
