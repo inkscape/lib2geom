@@ -62,12 +62,16 @@ poly-test: poly-test.cpp poly.cpp poly.h
 
 2geom-tolua.cpp: 2geom-tolua.pkg
 
-
 %.cpp: %.pkg
 	tolua++5.1 -o $@ $^ 
 
 lib2geomlua: 2geom-tolua.pkg 2geom-tolua.cpp
 	tolua++5.1 -n $@ -o 2geom-tolua.cpp  2geom-tolua.pkg
+
+conjugate_gradient.o: conjugate_gradient.cpp conjugate_gradient.h
+
+test_cg: conjugate_gradient.o test_cg.cpp
+	$(CXX) $(CXXFLAGS) -o $@ -I . $^ -lgsl -lblas
 
 clean:
 	rm -f *.o path path-to-svgd toy conic toy-cairo ode-toy-cairo *~
