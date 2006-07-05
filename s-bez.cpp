@@ -41,9 +41,12 @@ SBasis quad(int l, int dim) {
 
 #include "multidim-sbasis.h"
 
+unsigned total_pieces;
+
 void draw_offset(cairo_t *cr, multidim_sbasis<2> const &B, double dist) {
     multidim_sbasis<2> Bp;
     const int N = 2;
+    total_pieces += N;
     for(int subdivi = 0; subdivi < N; subdivi++) {
         double dsubu = 1./N;
         double subu = dsubu*subdivi;
@@ -63,7 +66,7 @@ void draw_offset(cairo_t *cr, multidim_sbasis<2> const &B, double dist) {
         double le = fabs(arc[0][0]) - err;
         double re = fabs(arc[0][1]) - err;
         err /= std::max(arc[0][0], arc[0][1]);
-        if(err > 2) {
+        if(err > 0.5) {
             draw_offset(cr, Bp, dist);
         } else {
             arc = sqrt(arc, 2);
@@ -116,11 +119,13 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     cairo_stroke(cr);
     
     multidim_sbasis<2> B = bezier_to_sbasis<2, 3>(handles.begin());
-    
+    total_pieces = 0;
     for(int i = 0; i < 5; i++) {
         draw_offset(cr, B, 10*i);
         draw_offset(cr, B, -10*i);
     }
+    notify << "total pieces = " << total_pieces;
+    
     cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
     cairo_stroke(cr);
     

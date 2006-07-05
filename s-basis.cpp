@@ -66,6 +66,8 @@ SBasis multiply(SBasis const &a, SBasis const &b) {
                 c[i][dim] += b[j][dim]*a[i-j][dim];
         }
     }
+    c.normalize();
+    //assert(!(0 == c.a.back()[0] && 0 == c.a.back()[1]));
     return c;
 }
 
@@ -120,6 +122,9 @@ SBasis sqrt(SBasis const &a, int k) {
         SBasis cisi = shift(ci, i);
         r = r - multiply(shift((2*c + cisi), i), SBasis(ci));
         c = c + cisi;
+        r.normalize();
+        if(r.size() == 0) // if exact
+            break;
     }
     
     return c;
@@ -150,6 +155,9 @@ SBasis divide(SBasis const &a, SBasis const &b, int k) {
         c[i] = c[i] + ci;
         //r[i] = r[i] - ci;
         r = r - shift(multiply(ci,b), i);
+        r.normalize();
+        if(r.size() == 0) // if exact
+            break;
     }
     
     return c;
