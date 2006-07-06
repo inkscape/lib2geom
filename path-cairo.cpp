@@ -42,5 +42,5 @@ void cairo_sub_path(cairo_t *cr, Geom::SubPath const &p) {
   c-brace-offset:0
   fill-column:99
   End:
-  vim: filetype=c++:expandtab:shiftwidth=4:tabstop=8:softtabstop=4 :
+  vim: filetype=cpp:expandtab:shiftwidth=4:tabstop=8:softtabstop=4 :
 */

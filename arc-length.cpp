@@ -337,5 +337,5 @@ Geom::SubPath::Location natural_parameterisation(Geom::SubPath const & p, double
   c-brace-offset:0
   fill-column:99
   End:
-  vim: filetype=c++:expandtab:shiftwidth=4:tabstop=8:softtabstop=4 :
+  vim: filetype=cpp:expandtab:shiftwidth=4:tabstop=8:softtabstop=4 :
 */

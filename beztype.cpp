@@ -314,6 +314,6 @@ int	GetBezierType ( TPoint2 *pt )
   c-brace-offset:0
   fill-column:99
   End:
-  vim: filetype=c++:expandtab:shiftwidth=4:tabstop=8:softtabstop=4 :
+  vim: filetype=cpp:expandtab:shiftwidth=4:tabstop=8:softtabstop=4 :
 */
 
