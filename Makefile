@@ -64,7 +64,7 @@ path-to-svgd: path-to-svgd.cpp lib2geom.a
 # Targets;
 
 $(TARGETS): %: %.o interactive-bits.o path-cairo.o lib2geom.a 
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ -I. $^ $(EXTRA_LDFLAGS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ -I. $^ $(LDFLAGS) $(EXTRA_LDFLAGS)
 
 
 # test stuff.
