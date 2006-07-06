@@ -1,74 +1,73 @@
-extra_cppflags := $(shell pkg-config --cflags --libs gtk+-2.0) -lgsl -lblas
+EXTRA_CPPFLAGS:=$(shell pkg-config --cflags gtk+-2.0) \
+		$(shell pkg-config --cflags cairo) 
+		
+EXTRA_LDFLAGS:=$(shell pkg-config --libs gtk+-2.0) -lgsl -lblas
 
-all: path path-to-svgd toy-cairo conic sbasis
 
 CXX=g++
-CXXFLAGS = -g -O0
-
-path.o: path.cpp nearestpoint.cpp path.h
-arc-length.o: arc-length.cpp arc-length.h path.h
-poly.o: poly.cpp poly.h
-path-cairo.o: path-cairo.cpp path-cairo.h
-	$(CXX) $(CXXFLAGS) -c $< $(shell pkg-config --cflags cairo) 
-interactive-bits.o: interactive-bits.cpp interactive-bits.h
-	$(CXX) $(CXXFLAGS) -c $< $(shell pkg-config --cflags cairo) 
-
-path-to-svgd.o: path-to-svgd.cpp path-to-svgd.h path.h
-
-path: path.cpp rect.o point-fns.o types.o path.h poly.o
-	$(CXX) $(CXXFLAGS) -o $@ $^ -DUNIT_TEST $(extra_cppflags) 
+CXXFLAGS=-O3
+CPPFLAGS=-I.
 
 
-path-to-svgd: path.o path-to-svgd.cpp read-svgd.o path-to-polyline.o types.o rect.o point-fns.o types.o path.h poly.o
-	$(CXX) $(CXXFLAGS) -o $@ -I . $^ -DUNIT_TEST $(extra_cppflags) 
+TARGETOBJS=arc-bez.o conic.o one-D.o poly-test.o rat-bez.o s-bez.o \
+	toy-cairo.o unit-test-sbasis.o
+BADTARGETOBJS=bspline.o conic-2.o ode-toy-cairo.o tensor-reparam.o toy.o
 
-toy: toy.cpp path.o path-to-svgd.o read-svgd.o path-to-polyline.o types.o rect.o geom.o read-svgd.o path-find-points-of-interest.o point-fns.o types.o rotate-fns.o matrix.o arc-length.o path-intersect.o poly.o
-	$(CXX) $(CXXFLAGS) -o $@ -I . $^ $(extra_cppflags)
+LIBOBJS=arc-length.o centroid.o geom.o matrix-rotate-ops.o \
+	matrix-translate-ops.o matrix.o path-find-points-of-interest.o \
+	path-intersect.o path-metric.o path-to-polyline.o path-to-svgd.o \
+	path.o point-fns.o poly.o read-svgd.o rect.o rotate-fns.o s-basis.o \
+	sbasis-poly.o types.o
 
-toy-cairo: toy-cairo.cpp path.o path-to-svgd.o read-svgd.o path-to-polyline.o types.o rect.o geom.o read-svgd.o path-find-points-of-interest.o point-fns.o types.o rotate-fns.o matrix.o arc-length.o path-intersect.o centroid.o poly.o matrix-rotate-ops.o matrix-translate-ops.o path-cairo.o path-metric.o interactive-bits.o s-basis.o
-	$(CXX) $(CXXFLAGS) -o $@ -I . $^ $(extra_cppflags) 
+EXTRAOBJS=interactive-bits.o path-cairo.o $(TARGETOBJS)
 
-tensor-reparam: tensor-reparam.cpp path.o path-to-svgd.o read-svgd.o path-to-polyline.o types.o rect.o geom.o read-svgd.o path-find-points-of-interest.o point-fns.o types.o rotate-fns.o matrix.o arc-length.o path-intersect.o centroid.o poly.o matrix-rotate-ops.o matrix-translate-ops.o path-cairo.o path-metric.o
-	$(CXX) $(CXXFLAGS) -o $@ -I . $^ $(extra_cppflags) 
+TARGETS=$(TARGETOBJS:.o=)
 
-conic: conic.cpp path.o path-to-svgd.cpp read-svgd.o path-to-polyline.o point-fns.o types.o rect.o geom.o path.h poly.o
-	$(CXX) $(CXXFLAGS) -o $@ -I . $^ $(extra_cppflags) 
+ALLOBJS=$(LIBOBJS) $(EXTRAOBJS)
 
-conic-2: conic-2.cpp path.o path-to-svgd.cpp read-svgd.o path-to-polyline.o point-fns.o types.o rect.o geom.o path.h poly.o
-	$(CXX) $(CXXFLAGS) -o $@ -I . $^ $(extra_cppflags) 
+# Dependency magic.
+%o: %.cpp
+	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) $*.cpp -o $*.o
+	@$(CXX) -MM $(CPPFLAGS) $*.cpp > $*.d
+	@cp -f $*.d $*.d.tmp 
+	@sed -e 's/.*://' -e 's/\\$$//' < $*.d.tmp | fmt -1 | \
+	  sed -e 's/^ *//' -e 's/$$/:/' >> $*.d
+	@rm -f $*.d.tmp
 
-b-spline: b-spline.cpp path.o path-to-svgd.cpp read-svgd.o path-to-polyline.o point-fns.o types.o rect.o geom.o path.h poly.o
-	$(CXX) $(CXXFLAGS) -o $@ -I . $^ $(extra_cppflags) 
+# Grab dependencies where they exist.
+-include $(ALLOBJS:.o=.d)
 
-ode-toy-cairo: ode-toy-cairo.cpp path.o path-to-svgd.o read-svgd.o path-to-polyline.o types.o rect.o geom.o read-svgd.o path-find-points-of-interest.o point-fns.o types.o rotate-fns.o matrix.o arc-length.o path-intersect.o centroid.o poly.o
-	$(CXX) $(CXXFLAGS) -o $@ -I . $^ $(extra_cppflags) 
+$(EXTRAOBJS): CPPFLAGS:=$(EXTRA_CPPFLAGS) $(CPPFLAGS)
 
-s-basis.o: s-basis.cpp s-basis.h bezier-to-sbasis.h
-sbasis-poly.o: sbasis-poly.cpp sbasis-poly.h
 
-sbasis.a: sbasis-poly.o poly.o s-basis.o 
-	rm -f $@
-	ar cq $@ $^
+all: $(TARGETS)
 
 sbasis: one-D s-bez rat-bez arc-bez unit-test-sbasis
 
-one-D: one-D.cpp sbasis.a
-	$(CXX) $(CXXFLAGS) -o $@ -I . $^ $(extra_cppflags) 
 
-unit-test-sbasis: unit-test-sbasis.cpp sbasis.a
-	$(CXX) $(CXXFLAGS) -o $@ -I . $^ -lgsl -lblas
+lib2geom.a: $(LIBOBJS)
+	ar cr lib2geom.a $(LIBOBJS)
+	ranlib lib2geom.a
 
-s-bez: s-bez.cpp sbasis.a interactive-bits.o
-	$(CXX) $(CXXFLAGS) -o $@ -I . $^ $(extra_cppflags) 
 
-rat-bez: rat-bez.cpp s-basis.h s-basis.cpp multidim-sbasis.h interactive-bits.o
-	$(CXX) $(CXXFLAGS) -o $@ -I . $^ $(extra_cppflags) 
+# TODO: There are problems if the unit test code is in the main .o file
+#       since that will be in the library.  So these targets may not work.
+#       Best to pull out the test code.
 
-arc-bez: arc-bez.cpp s-basis.h s-basis.cpp multidim-sbasis.h interactive-bits.o
-	$(CXX) $(CXXFLAGS) -o $@ -I . $^ $(extra_cppflags) 
+path: path.cpp lib2geom.a
+	$(CXX) $(CXXFLAGS) -o $@ $^ -DUNIT_TEST $(extra_cppflags)
 
-poly-test: poly-test.cpp poly.cpp poly.h
-	$(CXX) $(CXXFLAGS) -o $@ -I . $^ $(extra_cppflags) 
+path-to-svgd: path-to-svgd.cpp lib2geom.a
+	$(CXX) $(CXXFLAGS) -o $@ -I . $^ -DUNIT_TEST $(extra_cppflags)
+
+
+# Targets;
+
+$(TARGETS): %: %.o interactive-bits.o path-cairo.o lib2geom.a 
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ -I. $^ $(EXTRA_LDFLAGS)
+
+
+# test stuff.
 
 2geom-tolua.cpp: 2geom-tolua.pkg
 
@@ -78,6 +77,7 @@ poly-test: poly-test.cpp poly.cpp poly.h
 lib2geomlua: 2geom-tolua.pkg 2geom-tolua.cpp
 	tolua++5.1 -n $@ -o 2geom-tolua.cpp  2geom-tolua.pkg
 
+
 conjugate_gradient.o: conjugate_gradient.cpp conjugate_gradient.h
 
 test_cg: conjugate_gradient.o test_cg.cpp
@@ -86,10 +86,11 @@ test_cg: conjugate_gradient.o test_cg.cpp
 heat_diffusion: heat_diffusion.cpp
 	$(CXX) $(CXXFLAGS) -o $@ -I . $^ $(extra_cppflags) 
 
+
+.PHONY: all clean clobber
 clean:
-	rm -f *.o path path-to-svgd toy conic toy-cairo ode-toy-cairo *~
+	rm -f $(ALLOBJS) *~
 
-.cpp.o:
-	$(CXX)  $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
+clobber: clean
+	rm -f $(TARGETS)
 
-.PHONY: all clean mkdirs
