@@ -181,6 +181,43 @@ void SBasis::normalize() {
         a.pop_back();
 }
 
+SBasis sin(double a0, double a1, int k) {
+    SBasis s = BezOrd(sin(a0), sin(a1));
+    Tri tr(s[0]);
+    double t2 = (a1 - a0);
+    s.a.push_back(BezOrd(cos(a0)*t2 - tr, -cos(a1)*t2 + tr));
+    
+    t2 *= t2;
+    for(int i = 0; i < k; i++) {
+        BezOrd bo(4*(i+1)*s[i+1][0] - 2*s[i+1][1],
+                  -2*s[i+1][0] + 4*(i+1)*s[i+1][1]);
+        bo += -(t2/(i+1))*s[i];
+        
+        
+        s.a.push_back((1./(i+2))*bo);
+    }
+    
+    return s;
+}
+
+SBasis cos(double a0, double a1, int k) {
+    SBasis s = BezOrd(cos(a0), cos(a1));
+    Tri tr(s[0]);
+    double t2 = (a1 - a0);
+    s.a.push_back(BezOrd(-sin(a0)*t2 - tr, sin(a1)*t2 + tr));
+    
+    t2 *= t2;
+    for(int i = 0; i < k; i++) {
+        BezOrd bo(4*(i+1)*s[i+1][0] - 2*s[i+1][1],
+                  -2*s[i+1][0] + 4*(i+1)*s[i+1][1]);
+        bo += -(t2/(i+1))*s[i];
+        
+        
+        s.a.push_back((1./(i+2))*bo);
+    }
+    
+    return s;
+}
 
 /*
   Local Variables:

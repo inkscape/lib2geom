@@ -82,25 +82,6 @@ void draw_offset(cairo_t *cr, multidim_sbasis<2> const &B, double dist) {
     }
 }
 
-SBasis sin(double a0, double a1, int k) {
-    SBasis s = BezOrd(sin(a0), sin(a1));
-    Tri tr(s[0]);
-    double t2 = (a1 - a0);
-    s.a.push_back(BezOrd(cos(a0)*t2 - tr, -cos(a1)*t2 + tr));
-    
-    t2 *= t2;
-    for(int i = 0; i < k; i++) {
-        BezOrd bo(4*(i+1)*s[i+1][0] - 2*s[i+1][1],
-                  -2*s[i+1][0] + 4*(i+1)*s[i+1][1]);
-        bo += -(t2/(i+1))*s[i];
-        
-        
-        s.a.push_back((1./(i+2))*bo);
-    }
-    
-    return s;
-}
-
 static gboolean
 expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
 {
@@ -132,7 +113,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     double a0 = ((handles[0][0]-width/4)*2)/width;
     double a1 = ((handles[1][0]-width/4)*2)/width;
     notify << "[" << a0 << ", " << a1 << "]";
-    SBasis arc = sin(a0, a1, 1);
+    SBasis arc = cos(a0, a1, 1);
     for(int ti = 0; ti <= 30; ti++) {
         double t = (double(ti))/(30);
         double x = width/4 + width*((1-t)*a0 + t*a1)/2;
@@ -145,7 +126,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     for(int ti = 0; ti <= 30; ti++) {
         double t = (double(ti))/(30);
         double x = width/4 + width*t/2;
-        double y = 3*height/4 - width*(arc.point_at(t) - sin((1-t)*a0 + t*a1))/2;
+        double y = 3*height/4 - width*(arc.point_at(t) - cos((1-t)*a0 + t*a1))/2;
         if(ti)
             cairo_line_to(cr, x, y);
         else
