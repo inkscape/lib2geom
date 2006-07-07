@@ -20,6 +20,10 @@ static GtkWidget *canvas;
 
 BezOrd z0(0.5,1.);
 
+vector<double> solve(SBasis const &b) {
+    
+}
+
 static gboolean
 expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
 {

@@ -30,22 +30,9 @@ Geom::Point *selected_handle;
 Geom::Point old_handle_pos;
 Geom::Point old_mouse_point;
 
-BezOrd segment(int l, int r, int dim) {
-    return BezOrd(handles[l][dim], handles[r][dim]);
-}
-
-SBasis quad(int l, int dim) {
-    return multiply(BezOrd(1, 0), segment(l+0, l+1, dim)) +
-        multiply(BezOrd(0, 1), segment(l+1, l+2, dim));
-}
-
 #include "multidim-sbasis.h"
 
 unsigned total_pieces;
-
-void draw_sb(cairo_t *cr, multidim_sbasis<2> const &B) {
-    
-}
 
 void draw_offset(cairo_t *cr, multidim_sbasis<2> const &B, double dist) {
     multidim_sbasis<2> Bp;
@@ -95,6 +82,25 @@ void draw_offset(cairo_t *cr, multidim_sbasis<2> const &B, double dist) {
     }
 }
 
+SBasis sin(double a0, double a1, int k) {
+    SBasis s = BezOrd(sin(a0), sin(a1));
+    Tri tr(s[0]);
+    double t2 = (a1 - a0);
+    s.a.push_back(BezOrd(cos(a0)*t2 - tr, -cos(a1)*t2 + tr));
+    
+    t2 *= t2;
+    for(int i = 0; i < k; i++) {
+        BezOrd bo(4*(i+1)*s[i+1][0] - 2*s[i+1][1],
+                  -2*s[i+1][0] + 4*(i+1)*s[i+1][1]);
+        bo += -(t2/(i+1))*s[i];
+        
+        
+        s.a.push_back((1./(i+2))*bo);
+    }
+    
+    return s;
+}
+
 static gboolean
 expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
 {
@@ -118,36 +124,34 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
         cairo_move_to(cr, i*width/4, 0);
         cairo_line_to(cr, i*width/4, height);
     }
-    cairo_move_to(cr, handles[0]);
-    cairo_curve_to(cr, handles[1], handles[2], handles[3]);
     cairo_stroke(cr);
     
-    multidim_sbasis<2> B = bezier_to_sbasis<2, 3>(handles.begin());
-    total_pieces = 0;
-    for(int i = 0; i < 5; i++) {
-        draw_offset(cr, B, 10*i);
-        draw_offset(cr, B, -10*i);
-    }
-    notify << "total pieces = " << total_pieces;
-    
-    cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
-    cairo_stroke(cr);
-    
+    //multidim_sbasis<2> B = bezier_to_sbasis<2, 3>(handles.begin());
     
     cairo_set_source_rgba (cr, 0., 0.5, 0, 0.8);
-    /*arc = integral(arc);
-    arc = arc - BezOrd(Hat(arc.point_at(0)));
+    double a0 = ((handles[0][0]-width/4)*2)/width;
+    double a1 = ((handles[1][0]-width/4)*2)/width;
+    notify << "[" << a0 << ", " << a1 << "]";
+    SBasis arc = sin(a0, a1, 1);
     for(int ti = 0; ti <= 30; ti++) {
         double t = (double(ti))/(30);
-        double x = width*t;
-        double y = height - (arc.point_at(t));
+        double x = width/4 + width*((1-t)*a0 + t*a1)/2;
+        double y = 3*height/4 - width*(arc.point_at(t))/2;
+        if(ti)
+            cairo_line_to(cr, x, y);
+        else
+            cairo_move_to(cr, x, y);
+    }
+    for(int ti = 0; ti <= 30; ti++) {
+        double t = (double(ti))/(30);
+        double x = width/4 + width*t/2;
+        double y = 3*height/4 - width*(arc.point_at(t) - sin((1-t)*a0 + t*a1))/2;
         if(ti)
             cairo_line_to(cr, x, y);
         else
             cairo_move_to(cr, x, y);
     }
     cairo_stroke(cr);
-    notify << "arc length = " << arc.point_at(1) - arc.point_at(0) << std::endl;*/
     {
         PangoLayout* layout = pango_cairo_create_layout (cr);
         pango_layout_set_text(layout, 
@@ -266,10 +270,8 @@ double uniform() {
 }
 
 int main(int argc, char **argv) {
-    handles.push_back(Geom::Point(uniform()*400, uniform()*400));
-    handles.push_back(Geom::Point(uniform()*400, uniform()*400));
-    handles.push_back(Geom::Point(uniform()*400, uniform()*400));
-    handles.push_back(Geom::Point(uniform()*400, uniform()*400));
+    handles.push_back(Geom::Point(100, 400));
+    handles.push_back(Geom::Point(400, 400));
     
     gtk_init (&argc, &argv);
     

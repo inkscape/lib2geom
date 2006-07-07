@@ -1,6 +1,6 @@
 EXTRA_CPPFLAGS:=$(shell pkg-config --cflags gtk+-2.0) \
 		$(shell pkg-config --cflags cairo) 
-		
+
 EXTRA_LDFLAGS:=$(shell pkg-config --libs gtk+-2.0) -lgsl -lblas
 
 
@@ -10,7 +10,7 @@ CPPFLAGS=-I.
 
 
 TARGETOBJS=arc-bez.o conic.o one-D.o poly-test.o rat-bez.o s-bez.o \
-	toy-cairo.o unit-test-sbasis.o
+	toy-cairo.o unit-test-sbasis.o clothoid.o
 BADTARGETOBJS=bspline.o conic-2.o ode-toy-cairo.o tensor-reparam.o toy.o
 
 LIBOBJS=arc-length.o centroid.o geom.o matrix-rotate-ops.o \
