@@ -99,7 +99,7 @@ public:
         assert(i < a.size());
         return a[i];
     }
-    double point_at(double t) {
+    double point_at(double t) const {
         double s = t*(1-t);
         double p0 = 0, p1 = 0;
         double sk = 1;
@@ -112,7 +112,7 @@ public:
         }
         return (1-t)*p0 + t*p1;
     }
-    double operator()(double t) {
+    double operator()(double t) const {
         return point_at(t);
     }
     SBasis operator+(const SBasis& p) const {

@@ -21,6 +21,15 @@ void draw_handle(cairo_t *cr, Geom::Point h) {
     cairo_line_to(cr, x, y+3);
 }
 
+void draw_cross(cairo_t *cr, Geom::Point h) {
+    double x = h[Geom::X];
+    double y = h[Geom::Y];
+    cairo_move_to(cr, x-3, y-3);
+    cairo_line_to(cr, x+3, y+3);
+    cairo_move_to(cr, x+3, y-3);
+    cairo_line_to(cr, x-3, y+3);
+}
+
 void draw_circ(cairo_t *cr, Geom::Point h) {
     int x = int(h[Geom::X]);
     int y = int(h[Geom::Y]);

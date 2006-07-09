@@ -14,6 +14,13 @@ public:
     SBasis const & operator[](unsigned i) const {
         return f[i];
     }
+    
+    unsigned size() const {
+        unsigned s = f[0].size();
+        for(unsigned i = 1; i < D; i++)
+            s = std::max(s, f[i].size());
+        return s;
+    }
 };
 
 template <unsigned D>
@@ -101,6 +108,11 @@ rot90(multidim_sbasis<2> const & a) {
     r.f[0] = -a.f[1];
     r.f[1] = a.f[0];
     return r;
+}
+
+Geom::Point
+point_at(multidim_sbasis<2> const & a, double t) {
+    return Geom::Point(a[0](t), a[1](t));
 }
 
 /*

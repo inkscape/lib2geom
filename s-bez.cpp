@@ -16,6 +16,7 @@
 #include "interactive-bits.h"
 #include "bezier-to-sbasis.h"
 #include "path.h"
+#include <iterator>
 
 using std::string;
 using std::vector;
@@ -43,8 +44,104 @@ SBasis quad(int l, int dim) {
 
 unsigned total_pieces;
 
-void draw_sb(cairo_t *cr, multidim_sbasis<2> const &B) {
+/* From Sanchez-Reyes 1997
+   W_{j,k} = W_{n0j, n-k} = choose(n-2k-1, j-k)choose(2k+1,k)/choose(n,j)
+     for k=0,...,q-1; j = k, ...,n-k-1
+   W_{q,q} = 1 (n even)
+
+This is wrong, it should read
+   W_{j,k} = W_{n0j, n-k} = choose(n-2k-1, j-k)/choose(n,j)
+     for k=0,...,q-1; j = k, ...,n-k-1
+   W_{q,q} = 1 (n even)
+
+*/
+#include "choose.h"
+
+double W(unsigned n, unsigned j, unsigned k) {
+    unsigned q = (n+1)/2;
+    if((n & 1) == 0 && j == q && k == q)
+        return 1;
+    if(k > n-k) return W(n, n-j, n-k);
+    assert(!(k < 0));
+    if(k < 0) return 0;
+    assert(!(k >= q));
+    if(k >= q) return 0;
+    //assert(!(j >= n-k));
+    if(j >= n-k) return 0;
+    //assert(!(j < k));
+    if(j < k) return 0;
+    return choose<double>(n-2*k-1, j-k) /
+        choose<double>(n,j);
+}
+
+// this produces a degree k bezier from a degree k sbasis
+std::vector<Geom::Point>
+sbasis_to_bezier(multidim_sbasis<2> const &B, unsigned q) {
+    std::vector<Geom::Point> result;
+    if(q > B.size())
+        q = B.size();
+    unsigned n = q*2;
+    result.resize(n, Geom::Point(0,0));
+    n--;
+    for(int dim = 0; dim < 2; dim++) {
+        for(int k = 0; k < q; k++) {
+            for(int j = 0; j <= n-k; j++) {
+                result[j][dim] += (W(n, j, k)*B[dim][k][0] +
+                             W(n, n-j, k)*B[dim][k][1]);
+                }
+        }
+    }
+    return result;
+}
+
+std::vector<Geom::Point>
+sbasis2_to_bezier(multidim_sbasis<2> const &B, unsigned q) {
+    std::vector<Geom::Point> result;
     
+    result.resize(4, Geom::Point(0,0));
+    for(int dim = 0; dim < 2; dim++) {
+        result[0][dim] = B[dim][0][0];
+        result[1][dim] = (2*B[dim][0][0] +   B[dim][0][1] + B[dim][1][0])/3;
+        result[2][dim] = (  B[dim][0][0] + 2*B[dim][0][1] + B[dim][1][1])/3;
+        result[3][dim] = B[dim][0][1];
+    }
+    return result;
+}
+
+void draw_sb(cairo_t *cr, multidim_sbasis<2> const &B) {
+    cairo_move_to(cr, point_at(B, 0));
+    for(int ti = 1; ti <= 30; ti++) {
+        double t = (double(ti))/(30);
+        cairo_line_to(cr, point_at(B, t));
+    }
+}
+
+void draw_cb(cairo_t *cr, multidim_sbasis<2> const &B) {
+    std::vector<Geom::Point> bez = sbasis_to_bezier(B, 2);
+    for(int i = 0; i < bez.size(); i++) {
+        std::ostringstream notify;
+        notify << i;
+        draw_cross(cr, bez[i]);
+        cairo_move_to(cr, bez[i]);
+        PangoLayout* layout = pango_cairo_create_layout (cr);
+        pango_layout_set_text(layout, 
+                              notify.str().c_str(), -1);
+
+        PangoFontDescription *font_desc = pango_font_description_new();
+        pango_font_description_set_family(font_desc, "Sans");
+        const int size_px = 10;
+        pango_font_description_set_absolute_size(font_desc, size_px * 1024.0);
+        pango_layout_set_font_description(layout, font_desc);
+        PangoRectangle logical_extent;
+        pango_layout_get_pixel_extents(layout,
+                                       NULL,
+                                       &logical_extent);
+        pango_cairo_show_layout(cr, layout);
+    }
+    cairo_move_to(cr, bez[0]);
+    cairo_curve_to(cr, bez[1], bez[2], bez[3]);
+    //copy(bez.begin(), bez.end(), std::ostream_iterator<Geom::Point>(std::cout, ", "));
+    //std::cout << std::endl;
 }
 
 void draw_offset(cairo_t *cr, multidim_sbasis<2> const &B, double dist) {
@@ -81,16 +178,9 @@ void draw_offset(cairo_t *cr, multidim_sbasis<2> const &B, double dist) {
                 double sgn = dim?-1:1;
                 offset[dim] = Bp[dim] + divide(dist*sgn*dB[1-dim],arc, 2);
             }
+            //draw_sb(cr, offset);
+            draw_cb(cr, offset);
         
-            for(int ti = 0; ti <= 30; ti++) {
-                double t = (double(ti))/(30);
-                double x = offset[0].point_at(t);
-                double y = offset[1].point_at(t);
-                if(ti)
-                    cairo_line_to(cr, x, y);
-                else
-                    cairo_move_to(cr, x, y);
-            }
         }
     }
 }
@@ -108,7 +198,24 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     cairo_set_source_rgba (cr, 0., 0.5, 0, 1);
     cairo_set_line_width (cr, 1);
     for(int i = 0; i < handles.size(); i++) {
+        std::ostringstream notify;
+        notify << i;
         draw_circ(cr, handles[i]);
+        cairo_move_to(cr, handles[i]);
+        PangoLayout* layout = pango_cairo_create_layout (cr);
+        pango_layout_set_text(layout, 
+                              notify.str().c_str(), -1);
+
+        PangoFontDescription *font_desc = pango_font_description_new();
+        pango_font_description_set_family(font_desc, "Sans");
+        const int size_px = 10;
+        pango_font_description_set_absolute_size(font_desc, size_px * 1024.0);
+        pango_layout_set_font_description(layout, font_desc);
+        PangoRectangle logical_extent;
+        pango_layout_get_pixel_extents(layout,
+                                       NULL,
+                                       &logical_extent);
+        pango_cairo_show_layout(cr, layout);
     }
     cairo_set_source_rgba (cr, 0., 0., 0, 0.8);
     cairo_set_line_width (cr, 0.5);
@@ -118,17 +225,19 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
         cairo_move_to(cr, i*width/4, 0);
         cairo_line_to(cr, i*width/4, height);
     }
-    cairo_move_to(cr, handles[0]);
-    cairo_curve_to(cr, handles[1], handles[2], handles[3]);
-    cairo_stroke(cr);
+    //cairo_move_to(cr, handles[0]);
+    //cairo_curve_to(cr, handles[1], handles[2], handles[3]);
+    //cairo_stroke(cr);
     
     multidim_sbasis<2> B = bezier_to_sbasis<2, 3>(handles.begin());
+    draw_cb(cr, B);
+    draw_sb(cr, B);
     total_pieces = 0;
-    for(int i = 0; i < 5; i++) {
+    for(int i = 4; i < 5; i++) {
         draw_offset(cr, B, 10*i);
         draw_offset(cr, B, -10*i);
-    }
-    notify << "total pieces = " << total_pieces;
+        }
+        notify << "total pieces = " << total_pieces; 
     
     cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
     cairo_stroke(cr);

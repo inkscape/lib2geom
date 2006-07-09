@@ -5,6 +5,7 @@
 void draw_line_seg(cairo_t *cr, Geom::Point a, Geom::Point b);
 void draw_spot(cairo_t *cr, Geom::Point h);
 void draw_handle(cairo_t *cr, Geom::Point h);
+void draw_cross(cairo_t *cr, Geom::Point h);
 void draw_circ(cairo_t *cr, Geom::Point h);
 void draw_ray(cairo_t *cr, Geom::Point h, Geom::Point dir);
 
