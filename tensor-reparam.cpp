@@ -29,33 +29,21 @@
 #include <pango/pangocairo.h>
 
 #include "path-metric.h"
+#include "s-basis.h"
+#include "interactive-bits.h"
+#include "bezier-to-sbasis.h"
+#include "sbasis-to-bezier.h"
+#include "multidim-sbasis.h"
+#include "path-find-points-of-interest.h"
+#include "cubic_bez_util.h"
+#include "poly.h"
+#include "path-poly-fns.h"
+#include <gsl/gsl_integration.h>
+#include "translate-ops.h"
+#include "scale-ops.h"
+#include "translate-scale-ops.h"
 
-void
-cairo_move_to (cairo_t *cr, Geom::Point p1) {
-	cairo_move_to(cr, p1[0], p1[1]);
-}
 
-void
-cairo_line_to (cairo_t *cr, Geom::Point p1) {
-	cairo_line_to(cr, p1[0], p1[1]);
-}
-
-void
-cairo_curve_to (cairo_t *cr, Geom::Point p1, 
-		Geom::Point p2, Geom::Point p3) {
-	cairo_curve_to(cr, p1[0], p1[1],
-		       p2[0], p2[1],
-		       p3[0], p3[1]);
-}
-
-/*
-void draw_string(GtkWidget *widget, string s, int x, int y) {
-    PangoLayout *layout = gtk_widget_create_pango_layout(widget, s.c_str());
-    cairo_t* cr = gdk_cairo_create (widget->window);
-    cairo_move_to(cr, x, y);
-    pango_cairo_show_layout(cr, layout);
-    cairo_destroy (cr);
-}*/
 
 using std::string;
 using std::vector;
@@ -64,112 +52,52 @@ static GtkWidget *canvas;
 static GdkGC *dash_gc;
 static GdkGC *plain_gc;
 Geom::SubPath display_path;
-Geom::SubPath original_curve;
 
 static Geom::Point old_handle_pos;
 static Geom::Point old_mouse_point;
 
-void draw_line_seg(cairo_t *cr, Geom::Point a, Geom::Point b) {
-    cairo_move_to(cr, a[0], a[1]);
-    cairo_line_to(cr, b[0], b[1]);
-    cairo_stroke(cr);
-}
-
-void draw_spot(cairo_t *cr, Geom::Point h) {
-    draw_line_seg(cr, h, h);
-}
-
-void draw_handle(cairo_t *cr, Geom::Point h, string name = string("")) {
-    double x = h[Geom::X];
-    double y = h[Geom::Y];
-    cairo_move_to(cr, x-3, y);
-    cairo_line_to(cr, x+3, y);
-    cairo_move_to(cr, x, y-3);
-    cairo_line_to(cr, x, y+3);
-    //templayout.set_text(name);
-    //w.draw_layout(g, x, y, templayout);
-}
-
-void draw_circ(cairo_t *cr, Geom::Point h) {
-    int x = int(h[Geom::X]);
-    int y = int(h[Geom::Y]);
-    cairo_new_sub_path(cr);
-    cairo_arc(cr, x, y, 3, 0, M_PI*2);
-    cairo_stroke(cr);
-}
-
-void draw_ray(cairo_t *cr, Geom::Point h, Geom::Point dir) {
-    draw_line_seg(cr, h, h+dir);
-}
-
-//line_intersection
-/*static kind
-segment_intersect(Geom::Point const &p00, Geom::Point const &p01,
-				 Geom::Point const &p10, Geom::Point const &p11,
-				 Geom::Point &result)
-*/
-
-void draw_elip(cairo_t *cr, Geom::Point *h) {
-    draw_line_seg(cr, h[0], h[1]);
-    draw_line_seg(cr, h[3], h[4]);
-    draw_line_seg(cr, h[3], h[2]);
-    draw_line_seg(cr, h[2], h[1]);
-
-    Geom::Point c;
-    line_twopoint_intersect(h[0], h[1], h[3], h[4], c);
-    draw_handle(cr, c);
-    
-    Geom::Point old;
-    for(int i = 0; i <= 100; i++) {
-        double t = i/100.0;
-        
-        Geom::Point n = (1-t)*h[0] + t*h[3];
-        Geom::Point c1, c2;
-        line_twopoint_intersect(2*c-n, n, h[0], h[2], c1);
-        line_twopoint_intersect(2*c-n, n, h[4], h[2], c2);
-        Geom::Point six;
-        line_twopoint_intersect(c1, h[3], c2, h[1], six);
-        if(i)
-            draw_line_seg(cr, old, six);
-        old = six;
-    }
-}
-
-void draw_path(cairo_t *cr, Geom::SubPath const & p) {
-    path_to_polyline pl(p, 1);
-    
-    Geom::Point old(pl.handles[0]);
-    
-    for(unsigned i = 1; i < pl.handles.size(); i++) {
-        Geom::Point p(pl.handles[i]);
-        draw_line_seg(cr, old, p);
-        old = p;
-    }
-    
-}
-
-#include "centroid.h"
-
-Geom::Point path_centroid_polyline(Geom::SubPath const & p, double &area) {
-    path_to_polyline pl(p, 1);
-    Geom::Point centr;
-    Geom::centroid(pl.handles,  centr, area);
-    
-    return centr;
-}
-
 Geom::SubPath::Location param(Geom::SubPath const & p, double t) {
     double T = t*(p.size()-1);
-    //std::cout << T << ", " <<  T-int(T) << std::endl;
     return Geom::SubPath::Location(p.indexed_elem(int(T)), T - int(T));
 }
 
 Geom::Point* selected_handle = 0;
-Geom::Point gradient_vector(20,20);
 
-bool rotater  = false, evolution= false, half_stroking=false;
-bool involution = false;
-bool equal_arc = false;
+void draw_sb(cairo_t *cr, multidim_sbasis<2> const &B) {
+    cairo_move_to(cr, point_at(B, 0));
+    for(int ti = 1; ti <= 30; ti++) {
+        double t = (double(ti))/(30);
+        cairo_line_to(cr, point_at(B, t));
+    }
+}
+
+void draw_cb(cairo_t *cr, multidim_sbasis<2> const &B) {
+    std::vector<Geom::Point> bez = sbasis2_to_bezier(B, 2);
+    /*for(int i = 0; i < bez.size(); i++) {
+        std::ostringstream notify;
+        notify << i;
+        draw_cross(cr, bez[i]);
+        cairo_move_to(cr, bez[i]);
+        PangoLayout* layout = pango_cairo_create_layout (cr);
+        pango_layout_set_text(layout, 
+                              notify.str().c_str(), -1);
+
+        PangoFontDescription *font_desc = pango_font_description_new();
+        pango_font_description_set_family(font_desc, "Sans");
+        const int size_px = 10;
+        pango_font_description_set_absolute_size(font_desc, size_px * 1024.0);
+        pango_layout_set_font_description(layout, font_desc);
+        PangoRectangle logical_extent;
+        pango_layout_get_pixel_extents(layout,
+                                       NULL,
+                                       &logical_extent);
+        pango_cairo_show_layout(cr, layout);
+        }*/
+    cairo_move_to(cr, bez[0]);
+    cairo_curve_to(cr, bez[1], bez[2], bez[3]);
+    //copy(bez.begin(), bez.end(), std::ostream_iterator<Geom::Point>(std::cout, ", "));
+    //std::cout << std::endl;
+}
 
 static gboolean
 expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
@@ -201,26 +129,36 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     edges.handles.push_back(Geom::Point(200,40));
     edges.handles.push_back(Geom::Point(0,0));
     
-    for(double u = 0; u <= 1; u+=0.125) {
-        Geom::Point L = edges.point_at(Geom::SubPath::Location(edges.begin(), u));
-        Geom::Point R = edges.point_at(Geom::SubPath::Location(edges.indexed_elem(2), 1-u));
-        for(double v = 0; v < 1.; v+=0.125) {
-            Geom::Point T = edges.point_at(Geom::SubPath::Location(edges.indexed_elem(1), v));
-            Geom::Point B = edges.point_at(Geom::SubPath::Location(edges.indexed_elem(3), 1-v));
-            double U = (T[Geom::Y] - B[Geom::Y]) / 400.;
-            Geom::Point V = (1-U)*L + U*R;
-            if(v == 0)
-                cairo_move_to(cr, V);
-            else
-                cairo_line_to(cr, V);
+    //cairo_sub_path(cr, display_path);
+    //cairo_stroke(cr);
+    
+    Geom::SubPath &p(display_path);
+    cairo_move_to(cr, p.initial_point()[0], p.initial_point()[1]);
+    for(Geom::SubPath::const_iterator iter(p.begin()), end(p.end()); iter < end; ++iter) {
+        Geom::SubPath::Elem elm = *iter;
+        multidim_sbasis<2> B;
+        switch(iter.cmd()) {
+            case Geom::lineto:
+                B = bezier_to_sbasis<2, 1>(elm.begin());
+                break;
+            case Geom::quadto:
+                B = bezier_to_sbasis<2, 2>(elm.begin());
+                break;
+            case Geom::cubicto:
+                B = bezier_to_sbasis<2, 3>(elm.begin());
+                break;
+            default:
+                break;
         }
+        //for(int dim = 0; dim < 2; dim++)
+        //    std::cout << B[dim] << std::endl;
+        draw_sb(cr, B);
+        SBasis Sq = BezOrd(0,1);
+        Sq = multiply(Sq,BezOrd(1,0));
+        B += multiply(Sq, rot90(derivative(B)));
+        draw_sb(cr, B);
     }
     cairo_stroke(cr);
-    cairo_sub_path(cr, display_path);
-    cairo_stroke(cr);
-    
-    cairo_set_source_rgba (cr, 0.5, 0.7, 0.3, 0.8);
-    cairo_sub_path(cr, original_curve);
     
     notify << "pathwise Area: " ;
 
@@ -273,10 +211,6 @@ static gint mouse_event(GtkWidget* window, GdkEventButton* e, gpointer data) {
                 old_handle_pos = mouse - display_path.handles[i];
             }
         }
-        if(Geom::L2(mouse - gradient_vector) < 5) {
-            selected_handle = &gradient_vector;
-            old_handle_pos = mouse - gradient_vector;
-        }
         handle_mouse(window);
     } else if(e->button == 2) {
         gtk_widget_queue_draw(window);
@@ -291,12 +225,6 @@ static gint mouse_release_event(GtkWidget* window, GdkEventButton* e, gpointer d
     return FALSE;
 }
 
-#include "path-find-points-of-interest.h"
-#include "cubic_bez_util.h"
-#include "poly.h"
-#include "path-poly-fns.h"
-#include <gsl/gsl_integration.h>
-
 static gint key_release_event(GtkWidget *widget, GdkEventKey *event, gpointer) {
     gint ret = FALSE;
     if (event->keyval == ' ') {
@@ -306,18 +234,6 @@ static gint key_release_event(GtkWidget *widget, GdkEventKey *event, gpointer) {
     } else if (event->keyval == 'q') {
         exit(0);
     } else if (event->keyval == 'r') {
-        rotater = !rotater;
-    } else if (event->keyval == 'e') {
-        // print out elliptic integrals and solutions
-    } else if (event->keyval == 'v') {
-        evolution = !evolution;
-    } else if (event->keyval == 'n') {
-        involution = !involution;
-    } else if (event->keyval == 's') {
-        half_stroking = !half_stroking;
-    } else if (event->keyval == 'a') {
-        equal_arc = !equal_arc;
-        
     } else if (event->keyval == 'd') {
         write_svgd(stderr, display_path);
         ret = TRUE;
@@ -342,13 +258,7 @@ delete_event_cb(GtkWidget* window, GdkEventAny* e, gpointer data)
     return FALSE;
 }
 
-#include "translate-ops.h"
-#include "scale-ops.h"
-#include "translate-scale-ops.h"
-
 static gboolean idler(GtkWidget* widget) {
-    if(rotater)
-        gtk_widget_queue_draw(widget);
     return TRUE;
 }
 
@@ -389,22 +299,11 @@ int main(int argc, char **argv) {
     
     display_path = display_path*Geom::translate(-r.min());
     Geom::scale sc(r.max() - r.min());
-    display_path = display_path*(sc.inverse()*Geom::scale(500,500));
-    original_curve = display_path;
+    display_path = display_path*(sc.inverse()*Geom::scale(300,300));
     
     gtk_init (&argc, &argv);
     
     gdk_rgb_init();
-    GtkWidget *menubox;
-    GtkWidget *menubar;
-    GtkWidget *menuitem;
-    GtkWidget *menu;
-    GtkWidget *open;
-    GtkWidget *separatormenuitem;
-    GtkWidget *quit;
-    GtkWidget *menuitem2;
-    GtkWidget *menu2;
-    GtkWidget *about;
     GtkAccelGroup *accel_group;
 
     accel_group = gtk_accel_group_new ();
@@ -413,42 +312,42 @@ int main(int argc, char **argv) {
 
     gtk_window_set_title(GTK_WINDOW(window), "text toy");
 
-    menubox = gtk_vbox_new (FALSE, 0);
+    GtkWidget *menubox = gtk_vbox_new (FALSE, 0);
     gtk_widget_show (menubox);
     gtk_container_add (GTK_CONTAINER (window), menubox);
 
-    menubar = gtk_menu_bar_new ();
+    GtkWidget *menubar = gtk_menu_bar_new ();
     gtk_widget_show (menubar);
     gtk_box_pack_start (GTK_BOX (menubox), menubar, FALSE, FALSE, 0);
 
-    menuitem = gtk_menu_item_new_with_mnemonic ("_File");
+    GtkWidget *menuitem = gtk_menu_item_new_with_mnemonic ("_File");
     gtk_widget_show (menuitem);
     gtk_container_add (GTK_CONTAINER (menubar), menuitem);
 
-    menu = gtk_menu_new ();
+    GtkWidget *menu = gtk_menu_new ();
     gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem), menu);
 
-    open = gtk_image_menu_item_new_from_stock ("gtk-open", accel_group);
+    GtkWidget *open = gtk_image_menu_item_new_from_stock ("gtk-open", accel_group);
     gtk_widget_show (open);
     gtk_container_add (GTK_CONTAINER (menu), open);
 
-    separatormenuitem = gtk_separator_menu_item_new ();
+    GtkWidget *separatormenuitem = gtk_separator_menu_item_new ();
     gtk_widget_show (separatormenuitem);
     gtk_container_add (GTK_CONTAINER (menu), separatormenuitem);
     gtk_widget_set_sensitive (separatormenuitem, FALSE);
 
-    quit = gtk_image_menu_item_new_from_stock ("gtk-quit", accel_group);
+    GtkWidget *quit = gtk_image_menu_item_new_from_stock ("gtk-quit", accel_group);
     gtk_widget_show (quit);
     gtk_container_add (GTK_CONTAINER (menu), quit);
 
-    menuitem2 = gtk_menu_item_new_with_mnemonic ("_Help");
+    GtkWidget *menuitem2 = gtk_menu_item_new_with_mnemonic ("_Help");
     gtk_widget_show (menuitem2);
     gtk_container_add (GTK_CONTAINER (menubar), menuitem2);
 
-    menu2 = gtk_menu_new ();
+    GtkWidget *menu2 = gtk_menu_new ();
     gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem2), menu2);
 
-    about = gtk_menu_item_new_with_mnemonic ("_About");
+    GtkWidget *about = gtk_menu_item_new_with_mnemonic ("_About");
     gtk_widget_show (about);
     gtk_container_add (GTK_CONTAINER (menu2), about);
 
@@ -511,7 +410,7 @@ int main(int argc, char **argv) {
 
     gtk_box_pack_start(GTK_BOX(menubox), canvas, TRUE, TRUE, 0);
 
-    gtk_window_set_default_size(GTK_WINDOW(window), 600, 600);
+    gtk_window_set_default_size(GTK_WINDOW(window), 1000, 500);
 
     gtk_widget_show_all(window);
 

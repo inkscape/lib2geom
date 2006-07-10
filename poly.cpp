@@ -107,6 +107,17 @@ Poly derivative(Poly const & p) {
     return result;
 }
 
+Poly compose(Poly const & a, Poly const & b) {
+    Poly result;
+    
+    for(int i = a.size()-1; i >=0; i--) {
+        result = Poly(a.coeff[i]) + result * b;
+    }
+    return result;
+    
+}
+
+
 /*Poly divide_out_root(Poly const & p, double x) {
     assert(1);
     }*/

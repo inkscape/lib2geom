@@ -15,6 +15,13 @@ void convolve(std::vector<T> &A, std::vector<T> &B, std::vector<T> &C) {
     }
     }*/
 
+double SBasis::tail_error(unsigned tail) const {
+    double err = 0;
+    for(unsigned i = tail; i < size(); i++) {
+        err += fabs(a[i][0]) + fabs(a[i][1]);
+    }
+    return err;
+}
 
 SBasis operator*(double k, SBasis const &a) {
     SBasis c;
@@ -44,6 +51,14 @@ SBasis shift(BezOrd const &a, int sh) {
     } else {
         // truncate
     }
+    return c;
+}
+
+SBasis truncate(SBasis const &a, unsigned terms) {
+    SBasis c;
+    if(terms > a.size())
+        terms = a.size();
+    c.a.insert(c.a.begin(), a.a.begin(), a.a.begin() + terms);
     return c;
 }
 
@@ -173,6 +188,43 @@ SBasis compose(SBasis const &a, SBasis const &b) {
         r = SBasis(BezOrd(Hat(a[i][0]))) - a[i][0]*b + a[i][1]*b + multiply(r,s);
     }
     return r;
+}
+
+SBasis inverse(SBasis const &a, int k) {
+    SBasis c;
+    SBasis r = BezOrd(0,1); // remainder
+    BezOrd t1(1+a[1][0], 1-a[1][1]);
+    BezOrd one(1,1);
+    BezOrd t1i = one;
+    SBasis t = multiply(SBasis(one) - a, a);
+    SBasis ti(one);
+    std::cout << "a=" << a << std::endl;
+    std::cout << "t1=" << t1 << std::endl;
+
+    for(unsigned i = 0; i < k; i++) {
+        std::cout << i << ": " <<std::endl;
+        std::cout << "r=" << r << std::endl
+                  << "c=" << c << std::endl
+                  << "ti=" << ti << std::endl
+                  << std::endl;
+        if(r.size() <= i)
+            r.a.resize(i+1, BezOrd(0,0));
+        std::cout << "t1i=" << t1i << std::endl;
+        BezOrd ci(r[i][0]/t1i[0], r[i][1]/t1i[1]); //H0
+        std::cout << "ci=" << ci << std::endl;
+        for(int dim = 0; dim < 2; dim++)
+            t1i[dim] *= t1[dim];
+        c.a.push_back(ci);//c[i] = c[i] + ci;
+        //r[i] = r[i] - ci;
+        r = r - multiply(ci,ti);
+        ti = multiply(ti,t);
+        //r.normalize();
+        //if(r.size() == 0) // if exact
+        //    break;
+        std::cout << "iteration\n";
+    }
+    
+    return c;
 }
 
 

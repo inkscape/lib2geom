@@ -15,8 +15,11 @@
 #include "point-fns.h"
 #include "interactive-bits.h"
 #include "bezier-to-sbasis.h"
+#include "sbasis-to-bezier.h"
 #include "path.h"
+#include "path-cairo.h"
 #include <iterator>
+#include "multidim-sbasis.h"
 
 using std::string;
 using std::vector;
@@ -31,82 +34,7 @@ Geom::Point *selected_handle;
 Geom::Point old_handle_pos;
 Geom::Point old_mouse_point;
 
-BezOrd segment(int l, int r, int dim) {
-    return BezOrd(handles[l][dim], handles[r][dim]);
-}
-
-SBasis quad(int l, int dim) {
-    return multiply(BezOrd(1, 0), segment(l+0, l+1, dim)) +
-        multiply(BezOrd(0, 1), segment(l+1, l+2, dim));
-}
-
-#include "multidim-sbasis.h"
-
 unsigned total_pieces;
-
-/* From Sanchez-Reyes 1997
-   W_{j,k} = W_{n0j, n-k} = choose(n-2k-1, j-k)choose(2k+1,k)/choose(n,j)
-     for k=0,...,q-1; j = k, ...,n-k-1
-   W_{q,q} = 1 (n even)
-
-This is wrong, it should read
-   W_{j,k} = W_{n0j, n-k} = choose(n-2k-1, j-k)/choose(n,j)
-     for k=0,...,q-1; j = k, ...,n-k-1
-   W_{q,q} = 1 (n even)
-
-*/
-#include "choose.h"
-
-double W(unsigned n, unsigned j, unsigned k) {
-    unsigned q = (n+1)/2;
-    if((n & 1) == 0 && j == q && k == q)
-        return 1;
-    if(k > n-k) return W(n, n-j, n-k);
-    assert(!(k < 0));
-    if(k < 0) return 0;
-    assert(!(k >= q));
-    if(k >= q) return 0;
-    //assert(!(j >= n-k));
-    if(j >= n-k) return 0;
-    //assert(!(j < k));
-    if(j < k) return 0;
-    return choose<double>(n-2*k-1, j-k) /
-        choose<double>(n,j);
-}
-
-// this produces a degree k bezier from a degree k sbasis
-std::vector<Geom::Point>
-sbasis_to_bezier(multidim_sbasis<2> const &B, unsigned q) {
-    std::vector<Geom::Point> result;
-    if(q > B.size())
-        q = B.size();
-    unsigned n = q*2;
-    result.resize(n, Geom::Point(0,0));
-    n--;
-    for(int dim = 0; dim < 2; dim++) {
-        for(int k = 0; k < q; k++) {
-            for(int j = 0; j <= n-k; j++) {
-                result[j][dim] += (W(n, j, k)*B[dim][k][0] +
-                             W(n, n-j, k)*B[dim][k][1]);
-                }
-        }
-    }
-    return result;
-}
-
-std::vector<Geom::Point>
-sbasis2_to_bezier(multidim_sbasis<2> const &B, unsigned q) {
-    std::vector<Geom::Point> result;
-    
-    result.resize(4, Geom::Point(0,0));
-    for(int dim = 0; dim < 2; dim++) {
-        result[0][dim] = B[dim][0][0];
-        result[1][dim] = (2*B[dim][0][0] +   B[dim][0][1] + B[dim][1][0])/3;
-        result[2][dim] = (  B[dim][0][0] + 2*B[dim][0][1] + B[dim][1][1])/3;
-        result[3][dim] = B[dim][0][1];
-    }
-    return result;
-}
 
 void draw_sb(cairo_t *cr, multidim_sbasis<2> const &B) {
     cairo_move_to(cr, point_at(B, 0));
@@ -116,9 +44,28 @@ void draw_sb(cairo_t *cr, multidim_sbasis<2> const &B) {
     }
 }
 
+
+// mutating
+void subpath_from_sbasis(Geom::SubPath &sp, multidim_sbasis<2> const &B, double tol) {
+    if(B.tail_error(2) < tol || B.size() == 2) { // nearly cubic enough
+        std::vector<Geom::Point> e = sbasis_to_bezier(B, 2);
+        //reverse(e.begin(), e.end());
+        if(sp.handles.empty())
+            sp.handles.push_back(e[0]);
+        else
+            if(sp.handles.back() != e[0])
+                std::cout << sp.handles.back() << " vs " << e[0] << std::endl;
+        sp.handles.insert(sp.handles.begin(), e.begin()+1, e.end());
+        sp.cmd.push_back(Geom::cubicto);
+    } else {
+        subpath_from_sbasis(sp, compose(B, BezOrd(0, 0.5)), tol);
+        subpath_from_sbasis(sp, compose(B, BezOrd(0.5, 1)), tol);
+    }
+}
+
 void draw_cb(cairo_t *cr, multidim_sbasis<2> const &B) {
-    std::vector<Geom::Point> bez = sbasis_to_bezier(B, 2);
-    for(int i = 0; i < bez.size(); i++) {
+    std::vector<Geom::Point> bez = sbasis2_to_bezier(B, 2);
+    /*for(int i = 0; i < bez.size(); i++) {
         std::ostringstream notify;
         notify << i;
         draw_cross(cr, bez[i]);
@@ -137,7 +84,7 @@ void draw_cb(cairo_t *cr, multidim_sbasis<2> const &B) {
                                        NULL,
                                        &logical_extent);
         pango_cairo_show_layout(cr, layout);
-    }
+        }*/
     cairo_move_to(cr, bez[0]);
     cairo_curve_to(cr, bez[1], bez[2], bez[3]);
     //copy(bez.begin(), bez.end(), std::ostream_iterator<Geom::Point>(std::cout, ", "));
@@ -179,6 +126,10 @@ void draw_offset(cairo_t *cr, multidim_sbasis<2> const &B, double dist) {
                 offset[dim] = Bp[dim] + divide(dist*sgn*dB[1-dim],arc, 2);
             }
             //draw_sb(cr, offset);
+            Geom::SubPath sp;
+            sp.closed = false;
+            subpath_from_sbasis(sp, offset, 0.1);
+            cairo_sub_path(cr, sp);
             draw_cb(cr, offset);
         
         }
@@ -229,11 +180,14 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     //cairo_curve_to(cr, handles[1], handles[2], handles[3]);
     //cairo_stroke(cr);
     
+    SBasis Sq = BezOrd(0, 0.03);
+    Sq = multiply(Sq, Sq);
     multidim_sbasis<2> B = bezier_to_sbasis<2, 3>(handles.begin());
-    draw_cb(cr, B);
+    B = compose(Sq, B);
+    //draw_cb(cr, B);
     draw_sb(cr, B);
     total_pieces = 0;
-    for(int i = 4; i < 5; i++) {
+    for(int i = 5; i < 5; i++) {
         draw_offset(cr, B, 10*i);
         draw_offset(cr, B, -10*i);
         }

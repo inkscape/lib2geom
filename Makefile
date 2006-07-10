@@ -5,19 +5,20 @@ EXTRA_LDFLAGS:=$(shell pkg-config --libs gtk+-2.0) -lgsl -lblas
 
 
 CXX=g++
-CXXFLAGS=-O3
+CXXFLAGS=-g
 CPPFLAGS=-I.
 
 
 TARGETOBJS=arc-bez.o conic.o one-D.o poly-test.o rat-bez.o s-bez.o \
-	toy-cairo.o unit-test-sbasis.o clothoid.o choose_test.o
+	toy-cairo.o unit-test-sbasis.o clothoid.o choose_test.o \
+	tensor-reparam.o
 BADTARGETOBJS=bspline.o conic-2.o ode-toy-cairo.o tensor-reparam.o toy.o
 
 LIBOBJS=arc-length.o centroid.o geom.o matrix-rotate-ops.o \
 	matrix-translate-ops.o matrix.o path-find-points-of-interest.o \
 	path-intersect.o path-metric.o path-to-polyline.o path-to-svgd.o \
 	path.o point-fns.o poly.o read-svgd.o rect.o rotate-fns.o s-basis.o \
-	sbasis-poly.o types.o
+	sbasis-poly.o types.o sbasis-to-bezier.o
 
 EXTRAOBJS=interactive-bits.o path-cairo.o $(TARGETOBJS)
 

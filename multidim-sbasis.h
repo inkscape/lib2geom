@@ -21,10 +21,18 @@ public:
             s = std::max(s, f[i].size());
         return s;
     }
+    
+    double tail_error(unsigned tail) const {
+        double s = f[0].tail_error(tail);
+        for(unsigned i = 1; i < D; i++)
+            s = std::max(s, f[0].tail_error(tail));
+        return s;
+        
+    }
 };
 
 template <unsigned D>
-multidim_sbasis<D>
+inline multidim_sbasis<D>
 operator +(multidim_sbasis<D> const & a, multidim_sbasis<D> const & b) {
     multidim_sbasis<D> r;
     for(unsigned i = 0; i < D; i++)
@@ -33,7 +41,7 @@ operator +(multidim_sbasis<D> const & a, multidim_sbasis<D> const & b) {
 }
 
 template <unsigned D>
-multidim_sbasis<D>
+inline multidim_sbasis<D>
 operator -(multidim_sbasis<D> const & a, multidim_sbasis<D> const & b) {
     multidim_sbasis<D> r;
     for(unsigned i = 0; i < D; i++)
@@ -42,7 +50,16 @@ operator -(multidim_sbasis<D> const & a, multidim_sbasis<D> const & b) {
 }
 
 template <unsigned D>
-multidim_sbasis<D>
+inline multidim_sbasis<D>
+operator *(double a, multidim_sbasis<D> const & b) {
+    multidim_sbasis<D> r;
+    for(unsigned i = 0; i < D; i++)
+        r.f[i] = a*b.f[i];
+    return r;
+}
+
+template <unsigned D>
+inline multidim_sbasis<D>
 operator +=(multidim_sbasis<D> & a, multidim_sbasis<D> const & b) {
     for(unsigned i = 0; i < D; i++)
         a.f[i]+=b.f[i];
@@ -58,7 +75,7 @@ operator -=(multidim_sbasis<D> & a, multidim_sbasis<D> const & b) {
 }*/
 
 template <unsigned D>
-multidim_sbasis<D>
+inline multidim_sbasis<D>
 derivative(multidim_sbasis<D> const & a) {
     multidim_sbasis<D> r;
     for(unsigned i = 0; i < D; i++)
@@ -67,7 +84,7 @@ derivative(multidim_sbasis<D> const & a) {
 }
 
 template <unsigned D>
-multidim_sbasis<D>
+inline multidim_sbasis<D>
 integral(multidim_sbasis<D> const & a) {
     multidim_sbasis<D> r;
     for(unsigned i = 0; i < D; i++)
@@ -76,7 +93,7 @@ integral(multidim_sbasis<D> const & a) {
 }
 
 template <unsigned D>
-SBasis
+inline SBasis
 dot(multidim_sbasis<D> const & a, multidim_sbasis<D> const & b) {
     SBasis r;
     for(unsigned i = 0; i < D; i++)
@@ -85,7 +102,16 @@ dot(multidim_sbasis<D> const & a, multidim_sbasis<D> const & b) {
 }
 
 template <unsigned D>
-multidim_sbasis<D>
+inline SBasis
+L2(multidim_sbasis<D> const & a, int k) {
+    SBasis r;
+    for(unsigned i = 0; i < D; i++)
+        r += multiply(a.f[i],a.f[i]);
+    return sqrt(r,k);
+}
+
+template <unsigned D>
+inline multidim_sbasis<D>
 multiply(BezOrd const & a, multidim_sbasis<D> const & b) {
     multidim_sbasis<D> r;
     for(unsigned i = 0; i < D; i++)
@@ -94,7 +120,7 @@ multiply(BezOrd const & a, multidim_sbasis<D> const & b) {
 }
 
 template <unsigned D>
-multidim_sbasis<D>
+inline multidim_sbasis<D>
 multiply(SBasis const & a, multidim_sbasis<D> const & b) {
     multidim_sbasis<D> r;
     for(unsigned i = 0; i < D; i++)
@@ -102,7 +128,52 @@ multiply(SBasis const & a, multidim_sbasis<D> const & b) {
     return r;
 }
 
-multidim_sbasis<2> 
+template <unsigned D>
+inline multidim_sbasis<D>
+compose(SBasis const & a, multidim_sbasis<D> const & b) {
+    multidim_sbasis<D> r;
+    for(unsigned i = 0; i < D; i++)
+        r[i] = compose(a,b.f[i]);
+    return r;
+}
+
+template <unsigned D>
+inline multidim_sbasis<D>
+compose(multidim_sbasis<D> const & a, BezOrd const & b) {
+    multidim_sbasis<D> r;
+    for(unsigned i = 0; i < D; i++)
+        r[i] = compose(a.f[i],b);
+    return r;
+}
+
+template <unsigned D>
+inline multidim_sbasis<D>
+compose(multidim_sbasis<D> const & a, SBasis const & b) {
+    multidim_sbasis<D> r;
+    for(unsigned i = 0; i < D; i++)
+        r[i] = compose(a.f[i],b);
+    return r;
+}
+
+template <unsigned D>
+inline multidim_sbasis<D>
+compose(multidim_sbasis<D> const & a, multidim_sbasis<D> const & b) {
+    multidim_sbasis<D> r;
+    for(unsigned i = 0; i < D; i++)
+        r[i] = compose(a.f[i],b.f[i]);
+    return r;
+}
+
+template <unsigned D>
+inline multidim_sbasis<D>
+truncate(multidim_sbasis<D> const & a, unsigned terms) {
+    multidim_sbasis<D> r;
+    for(unsigned i = 0; i < D; i++)
+        r[i] = truncate(a.f[i],terms);
+    return r;
+}
+
+inline multidim_sbasis<2> 
 rot90(multidim_sbasis<2> const & a) {
     multidim_sbasis<2> r;
     r.f[0] = -a.f[1];
@@ -110,7 +181,8 @@ rot90(multidim_sbasis<2> const & a) {
     return r;
 }
 
-Geom::Point
+#include "point.h"
+inline Geom::Point
 point_at(multidim_sbasis<2> const & a, double t) {
     return Geom::Point(a[0](t), a[1](t));
 }

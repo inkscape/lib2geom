@@ -100,6 +100,10 @@ public:
     void normalize();
     
     void monicify();
+    Poly() {}
+    Poly(const Poly& p) : coeff(p.coeff) {}
+    Poly(const double a) {coeff.push_back(a);}
+    
 };
 
 inline Poly operator*(double a, Poly const & b) { return b * a;}
@@ -107,6 +111,7 @@ inline Poly operator*(double a, Poly const & b) { return b * a;}
 Poly integral(Poly const & p);
 Poly derivative(Poly const & p);
 Poly divide_out_root(Poly const & p, double x);
+Poly compose(Poly const & a, Poly const & b);
 
 /*** solve(Poly p)
  * find all p.degree() roots of p.
