@@ -33,6 +33,16 @@ void cairo_sub_path(cairo_t *cr, Geom::SubPath const &p) {
     }
 }
 
+void cairo_path(cairo_t *cr, Geom::Path const &p) {
+    std::vector<Geom::SubPath> subpaths;
+    
+    for (std::vector<Geom::SubPath>::const_iterator it(p.begin()),
+             iEnd(p.end());
+         it != iEnd; ++it) {
+        cairo_sub_path(cr, *it);
+    }
+}
+
 /*
   Local Variables:
   mode:c++

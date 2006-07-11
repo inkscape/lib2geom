@@ -4,5 +4,6 @@
 typedef struct _cairo cairo_t;
 
 void cairo_sub_path(cairo_t *cr, Geom::SubPath const &p);
+void cairo_path(cairo_t *cr, Geom::Path const &p);
 
 #endif

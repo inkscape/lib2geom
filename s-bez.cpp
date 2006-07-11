@@ -47,20 +47,14 @@ void draw_sb(cairo_t *cr, multidim_sbasis<2> const &B) {
 
 
 // mutating
-void subpath_from_sbasis(Geom::SubPath &sp, multidim_sbasis<2> const &B, double tol) {
+void subpath_from_sbasis(Geom::PathBuilder &pb, multidim_sbasis<2> const &B, double tol) {
     if(B.tail_error(2) < tol || B.size() == 2) { // nearly cubic enough
         std::vector<Geom::Point> e = sbasis_to_bezier(B, 2);
         //reverse(e.begin(), e.end());
-        if(sp.handles.empty())
-            sp.handles.push_back(e[0]);
-        else
-            if(sp.handles.back() != e[0])
-                std::cout << sp.handles.back() << " vs " << e[0] << std::endl;
-        sp.handles.insert(sp.handles.begin(), e.begin()+1, e.end());
-        sp.cmd.push_back(Geom::cubicto);
+        pb.push_cubic(e[1], e[2], e[3]);
     } else {
-        subpath_from_sbasis(sp, compose(B, BezOrd(0, 0.5)), tol);
-        subpath_from_sbasis(sp, compose(B, BezOrd(0.5, 1)), tol);
+        subpath_from_sbasis(pb, compose(B, BezOrd(0, 0.5)), tol);
+        subpath_from_sbasis(pb, compose(B, BezOrd(0.5, 1)), tol);
     }
 }
 
@@ -127,10 +121,9 @@ void draw_offset(cairo_t *cr, multidim_sbasis<2> const &B, double dist) {
                 offset[dim] = Bp[dim] + divide(dist*sgn*dB[1-dim],arc, 2);
             }
             //draw_sb(cr, offset);
-            Geom::SubPath sp;
-            sp.closed = false;
-            subpath_from_sbasis(sp, offset, 0.1);
-            cairo_sub_path(cr, sp);
+            Geom::PathBuilder pb;
+            subpath_from_sbasis(pb, offset, 0.1);
+            cairo_path(cr, pb.peek());
             draw_cb(cr, offset);
         
         }
@@ -188,7 +181,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     draw_cb(cr, B);
     //draw_sb(cr, B);
     total_pieces = 0;
-    for(int i = 5; i < 5; i++) {
+    for(int i = 3; i < 5; i++) {
         draw_offset(cr, B, 10*i);
         draw_offset(cr, B, -10*i);
         }

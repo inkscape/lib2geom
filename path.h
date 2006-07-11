@@ -153,7 +153,10 @@ public:
     
     typedef std::vector<SubPath>::const_iterator PathConstIter;
     typedef PathConstIter const_iterator;
-
+    
+    const_iterator begin() const { return subpaths.begin(); }
+    const_iterator end() const { return subpaths.end(); }
+    
     class PathLocation{
     public:
         SubPath::ConstIter it;
