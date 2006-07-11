@@ -233,6 +233,21 @@ void SBasis::normalize() {
         a.pop_back();
 }
 
+/*
+SBasis inverse(SBasis const &a, int k) {
+    SBasis c;
+    c.a.resize(BezOrd(0,0), k);
+    SBasis r = BezOrd(0,1); // u
+    SBasis ti = BezOrd(1,1); // 1
+    BezOrd t 
+    for(int i = 0; i < k; i++) {
+        BezOrd ci = r[i]/(1-Tri(a[i]));
+        c[i] += ci;
+        r[i] -= ci*ti;
+    }
+}
+*/
+
 SBasis sin(double a0, double a1, int k) {
     SBasis s = BezOrd(sin(a0), sin(a1));
     Tri tr(s[0]);

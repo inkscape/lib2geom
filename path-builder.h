@@ -11,7 +11,7 @@ public:
 
     void start_subpath(Point const &p) {
         _path.subpaths.push_back(SubPath());
-        _current_subpath = _path.subpaths.back();
+        _current_subpath = &_path.subpaths.back();
         _current_subpath->handles.push_back(p);
         _initial_point = _current_point = p;
     }
@@ -48,7 +48,7 @@ public:
     void close_subpath() {
         if (_current_subpath) {
             push_line(_initial_point);
-            _current_subpath.closed = true;
+            _current_subpath->closed = true;
             _current_subpath = NULL;
         }
     }

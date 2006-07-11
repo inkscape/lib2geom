@@ -20,6 +20,7 @@
 #include "path-cairo.h"
 #include <iterator>
 #include "multidim-sbasis.h"
+#include "path-builder.h"
 
 using std::string;
 using std::vector;
@@ -183,9 +184,9 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     SBasis Sq = BezOrd(0, 0.03);
     Sq = multiply(Sq, Sq);
     multidim_sbasis<2> B = bezier_to_sbasis<2, 3>(handles.begin());
-    B = compose(Sq, B);
-    //draw_cb(cr, B);
-    draw_sb(cr, B);
+    //B = compose(Sq, B);
+    draw_cb(cr, B);
+    //draw_sb(cr, B);
     total_pieces = 0;
     for(int i = 5; i < 5; i++) {
         draw_offset(cr, B, 10*i);
