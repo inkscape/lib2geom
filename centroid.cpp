@@ -4,6 +4,7 @@
 #include "s-basis.h"
 #include "multidim-sbasis.h"
 #include "bezier-to-sbasis.h"
+#include "path-sbasis.h"
 
 /*
  * ANSI C code from the article
@@ -156,29 +157,16 @@ int centroid_sb(SubPath const &p, Point& centroid, double &area) {
     double atmp = 0;
     for(SubPath::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
         SubPath::Elem elm = *iter;
-        multidim_sbasis<2> B;
-        switch(iter.cmd()) {
-            case Geom::lineto:
-                B = bezier_to_sbasis<2, 1>(elm.begin());
-                break;
-            case Geom::quadto:
-                B = bezier_to_sbasis<2, 2>(elm.begin());
-                break;
-            case Geom::cubicto:
-                B = bezier_to_sbasis<2, 3>(elm.begin());
-                break;
-            default:
-                break;
-        }
+        multidim_sbasis<2> B = elem_to_sbasis(elm);
         multidim_sbasis<2> dB = rot90(derivative(B));
         SBasis curl = dot(B, dB);
         SBasis A = integral(curl);
         multidim_sbasis<2> C = integral(multiply(curl, B));
         atmp += A(1) - A(0);
-        centroid_tmp += 2*Point(C[0](1)-C[0](0),
-                                C[1](1)-C[1](0)); // first moment.
+        centroid_tmp += point_at(C, 1)- point_at(C, 0); // first moment.
     }
 // join ends
+    centroid_tmp *= 2;
     const double ai = cross(p.handles.back(), p.handles[0]);
     atmp += ai;
     centroid_tmp += ai*(p.handles.back(), p.handles[0]); // first moment.
@@ -189,36 +177,6 @@ int centroid_sb(SubPath const &p, Point& centroid, double &area) {
         return 0;
     }
     return 2;
-}
-
-int dcentroid(SubPath const &p, Point& dcentroid) {
-    Point centroid_tmp(0,0);
-    for(SubPath::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
-        SubPath::Elem elm = *iter;
-        switch(iter.cmd()) {
-            case Geom::lineto:
-            {
-                centroid_tmp += (elm.first() + elm.last())/2;
-                break;
-            }
-            case Geom::cubicto:
-            {
-                Poly Bx = cubic_bezier_poly(elm, X); // poly version of bezier (0-1)
-                Poly By = cubic_bezier_poly(elm, Y);
-                Poly dBx = derivative(Bx);
-                Poly dBy = derivative(By);
-                Poly Cx = integral(Bx + 0.5*dBx);
-                Poly Cy = integral(By + 0.5*dBy);
-                centroid_tmp += Point(Cx(1), Cy(1)); // first moment.
-                break;
-            }
-            default:
-                break;
-        }
-    }
-    
-    dcentroid = centroid_tmp /arc_length_integrating(p, 0.01);
-    return 0;
 }
 
 };

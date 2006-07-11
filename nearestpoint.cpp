@@ -213,14 +213,14 @@ static int FindRoots(
  */
 static int CrossingCount(
     Geom::Point	*V,			/*  Control pts of Bezier curve	*/
-    int		degree)			/*  Degreee of Bezier curve 	*/
+    int		degree)			/*  Degree of Bezier curve 	*/
 {
     int 	n_crossings = 0;	/*  Number of zero-crossings	*/
-    int		sign, old_sign;		/*  Sign of coefficients	*/
+    int		old_sign;		/*  Sign of coefficients	*/
     
-    sign = old_sign = SGN(V[0][Geom::Y]);
+    old_sign = SGN(V[0][Geom::Y]);
     for (int i = 1; i <= degree; i++) {
-        sign = SGN(V[i][Geom::Y]);
+        int sign = SGN(V[i][Geom::Y]);
         if (sign != old_sign)
             n_crossings++;
         old_sign = sign;

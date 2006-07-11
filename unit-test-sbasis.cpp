@@ -2,6 +2,23 @@
 #include <math.h>
 #include <cassert>
 #include "sbasis-poly.h"
+#include <iterator>
+#include "point.h"
+#include "sbasis-to-bezier.h"
+#include "solve-sbasis.h"
+
+Poly roots_to_poly(double *a, unsigned n) {
+    Poly r;
+    r.coeff.push_back(1);
+    
+    for(unsigned i = 0; i < n; i++) {
+        Poly p;
+        p.coeff.push_back(-a[i]);
+        p.coeff.push_back(1);
+        r = r*p;
+    }
+    return r;
+}
 
 int main() {
     SBasis P0(BezOrd(0.5, -1)), P1(BezOrd(3, 1));
@@ -89,12 +106,32 @@ int main() {
     P.coeff.push_back(1./3);
     P.coeff.push_back(-2./3);
     P.coeff.push_back(0);
-
+    
     std::cout << sbasis_to_poly(inverse(A,5))
               << "\n   ==   \n"
               << P
               << std::endl;
     
+    double roots[] = {0.1,0.2,0.6};
+    Poly prod = roots_to_poly(roots, sizeof(roots)/sizeof(double));
+    std::cout << "real solve\n";
+    std::cout << prod 
+              << " solves as ";
+    std::vector<std::complex<double> > prod_root = solve(prod);
+    copy(prod_root.begin(), prod_root.end(), 
+         std::ostream_iterator<std::complex<double> >(std::cout, ",\t"));
+    std::cout << std::endl;
+    
+    SBasis prod_sb = poly_to_sbasis(prod);
+    std::vector<double> bez = sbasis_to_bezier(prod_sb, prod_sb.size());
+    
+    copy(bez.begin(), bez.end(), 
+         std::ostream_iterator<double>(std::cout, ",\t"));
+    std::cout << std::endl;
+    
+    /*std::cout << "crossing count = " 
+              << crossing_count(bez, bez.size())
+              << std::endl;*/
 }
 
 /*
