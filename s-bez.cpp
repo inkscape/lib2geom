@@ -46,18 +46,6 @@ void draw_sb(cairo_t *cr, multidim_sbasis<2> const &B) {
 }
 
 
-// mutating
-void subpath_from_sbasis(Geom::PathBuilder &pb, multidim_sbasis<2> const &B, double tol) {
-    if(B.tail_error(2) < tol || B.size() == 2) { // nearly cubic enough
-        std::vector<Geom::Point> bez = sbasis_to_bezier(B, 2);
-        reverse(bez.begin(), bez.end());
-        pb.push_cubic(bez[0], bez[1], bez[2], bez[3]);
-    } else {
-        subpath_from_sbasis(pb, compose(B, BezOrd(0, 0.5)), tol);
-        subpath_from_sbasis(pb, compose(B, BezOrd(0.5, 1)), tol);
-    }
-}
-
 void draw_cb(cairo_t *cr, multidim_sbasis<2> const &B) {
     std::vector<Geom::Point> bez = sbasis2_to_bezier(B, 2);
     cairo_move_to(cr, bez[0]);

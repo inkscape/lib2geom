@@ -12,4 +12,8 @@ sbasis_to_bezier(multidim_sbasis<2> const &B, unsigned q);
 std::vector<Geom::Point>
 sbasis2_to_bezier(multidim_sbasis<2> const &B, unsigned q);
 
+#include "path-builder.h"
+void
+subpath_from_sbasis(Geom::PathBuilder &pb, multidim_sbasis<2> const &B, double tol);
+
 #endif
