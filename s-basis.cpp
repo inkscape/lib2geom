@@ -190,37 +190,46 @@ SBasis compose(SBasis const &a, SBasis const &b) {
     return r;
 }
 
+/*
+Inversion algorithm. The notation is certainly very misleading. The
+pseudocode should say:
+
+c(v) := 0
+r(u) := r_0(u) := u
+for i:=0 to k do
+  c_i(v) := H_0(r_i(u)/(t_1)^i; u)
+  c(v) := c(v) + c_i(v)*t^i
+  r(u) := r(u) ? c_i(u)*(t(u))^i
+endfor
+*/
+
 SBasis inverse(SBasis const &a, int k) {
-    SBasis c;
-    SBasis r = BezOrd(0,1); // remainder
-    BezOrd t1(1+a[1][0], 1-a[1][1]);
+    SBasis c;                           // c(v) := 0
+    SBasis r = BezOrd(0,1);             // r(u) := r_0(u) := u
+    BezOrd t1(1+a[1][0], 1-a[1][1]);    // t_1
     BezOrd one(1,1);
-    BezOrd t1i = one;
-    SBasis t = multiply(SBasis(one) - a, a);
-    SBasis ti(one);
+    BezOrd t1i = one;                   // t_1^0
+    SBasis t = multiply(SBasis(one) - a, a); // t(u)
+    SBasis ti(one);                     // t(u)^0
     std::cout << "a=" << a << std::endl;
     std::cout << "t1=" << t1 << std::endl;
 
-    for(unsigned i = 0; i < k; i++) {
+    for(unsigned i = 0; i < k; i++) {   // for i:=0 to k do
         std::cout << i << ": " <<std::endl;
         std::cout << "r=" << r << std::endl
                   << "c=" << c << std::endl
                   << "ti=" << ti << std::endl
                   << std::endl;
-        if(r.size() <= i)
+        if(r.size() <= i)                // ensure enough space in the remainder, probably not needed
             r.a.resize(i+1, BezOrd(0,0));
         std::cout << "t1i=" << t1i << std::endl;
-        BezOrd ci(r[i][0]/t1i[0], r[i][1]/t1i[1]); //H0
+        BezOrd ci(r[i][0]/t1i[0], r[i][1]/t1i[1]); // c_i(v) := H_0(r_i(u)/(t_1)^i; u)
         std::cout << "ci=" << ci << std::endl;
-        for(int dim = 0; dim < 2; dim++)
+        for(int dim = 0; dim < 2; dim++) // t1^i *= t1
             t1i[dim] *= t1[dim];
-        c.a.push_back(ci);//c[i] = c[i] + ci;
-        //r[i] = r[i] - ci;
-        r = r - multiply(ci,ti);
+        c.a.push_back(ci);               // c(v) := c(v) + c_i(v)*t^i
+        r = r - multiply(ci,ti);         // r(u) := r(u) - c_i(u)*(t(u))^i
         ti = multiply(ti,t);
-        //r.normalize();
-        //if(r.size() == 0) // if exact
-        //    break;
         std::cout << "iteration\n";
     }
     
@@ -232,21 +241,6 @@ void SBasis::normalize() {
     while(0 == a.back()[0] && 0 == a.back()[1])
         a.pop_back();
 }
-
-/*
-SBasis inverse(SBasis const &a, int k) {
-    SBasis c;
-    c.a.resize(BezOrd(0,0), k);
-    SBasis r = BezOrd(0,1); // u
-    SBasis ti = BezOrd(1,1); // 1
-    BezOrd t 
-    for(int i = 0; i < k; i++) {
-        BezOrd ci = r[i]/(1-Tri(a[i]));
-        c[i] += ci;
-        r[i] -= ci*ti;
-    }
-}
-*/
 
 SBasis sin(double a0, double a1, int k) {
     SBasis s = BezOrd(sin(a0), sin(a1));
