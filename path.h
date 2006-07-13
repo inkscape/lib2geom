@@ -47,6 +47,7 @@ public:
         const_iterator end() const {return e;}
         Point first() const { return *s;}
         Point last() const { return e[-1];}
+        size_t size() { return e - s; }
 
         Elem() {}
         Elem(SubPathOp op,

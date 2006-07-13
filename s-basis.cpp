@@ -15,10 +15,16 @@ void convolve(std::vector<T> &A, std::vector<T> &B, std::vector<T> &C) {
     }
     }*/
 
+/*** At some point we should work on tighter bounds for the error.  It is clear that the error is
+ * bounded by the L1 norm over the tail of the series, but this is very loose, leading to far too
+ * many cubic beziers.  I've changed this to be \sum _i=tail ^\infty |hat a_i| 2^-i but I have no
+ * evidence that this is correct.
+ */
 double SBasis::tail_error(unsigned tail) const {
-    double err = 0;
+    double err = 0, s = 1./(1<<tail); // rough
     for(unsigned i = tail; i < size(); i++) {
-        err += fabs(a[i][0]) + fabs(a[i][1]);
+        err += (fabs(a[i][0]) + fabs(a[i][1]))*s;
+        s /= 2;
     }
     return err;
 }

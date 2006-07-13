@@ -47,7 +47,7 @@ sbasis_to_bezier(SBasis const &B, unsigned q) {
     return result;
 }
 
-// this produces a degree k bezier from a degree k sbasis
+// this produces a degree k bezier from a degree q sbasis
 std::vector<Geom::Point>
 sbasis_to_bezier(multidim_sbasis<2> const &B, unsigned q) {
     std::vector<Geom::Point> result;
@@ -69,7 +69,9 @@ sbasis_to_bezier(multidim_sbasis<2> const &B, unsigned q) {
 
 std::vector<Geom::Point>
 sbasis2_to_bezier(multidim_sbasis<2> const &B, unsigned q) {
-    if(B.size() != 2)
+    if(q > B.size())
+        q = B.size();
+    if(q != 2)
 	    return sbasis_to_bezier(B, B.size());
     std::vector<Geom::Point> result;
     const double third = 1./3;
@@ -81,6 +83,7 @@ sbasis2_to_bezier(multidim_sbasis<2> const &B, unsigned q) {
         result[2][dim] = third*(  Bd[0][0] + 2*Bd[0][1] + Bd[1][1]);
         result[3][dim] = Bd[0][1];
     }
+    assert(result.size() == 4);
     return result;
 }
 

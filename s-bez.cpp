@@ -26,7 +26,7 @@ using std::string;
 using std::vector;
 
 static GtkWidget *canvas;
-
+std::ostringstream *note_p = 0;
 
 BezOrd z0(0.5,1.);
 
@@ -49,9 +49,9 @@ void draw_sb(cairo_t *cr, multidim_sbasis<2> const &B) {
 // mutating
 void subpath_from_sbasis(Geom::PathBuilder &pb, multidim_sbasis<2> const &B, double tol) {
     if(B.tail_error(2) < tol || B.size() == 2) { // nearly cubic enough
-        std::vector<Geom::Point> e = sbasis_to_bezier(B, 2);
-        //reverse(e.begin(), e.end());
-        pb.push_cubic(e[1], e[2], e[3]);
+        std::vector<Geom::Point> bez = sbasis_to_bezier(B, 2);
+        reverse(bez.begin(), bez.end());
+        pb.push_cubic(bez[0], bez[1], bez[2], bez[3]);
     } else {
         subpath_from_sbasis(pb, compose(B, BezOrd(0, 0.5)), tol);
         subpath_from_sbasis(pb, compose(B, BezOrd(0.5, 1)), tol);
@@ -60,33 +60,11 @@ void subpath_from_sbasis(Geom::PathBuilder &pb, multidim_sbasis<2> const &B, dou
 
 void draw_cb(cairo_t *cr, multidim_sbasis<2> const &B) {
     std::vector<Geom::Point> bez = sbasis2_to_bezier(B, 2);
-    /*for(int i = 0; i < bez.size(); i++) {
-        std::ostringstream notify;
-        notify << i;
-        draw_cross(cr, bez[i]);
-        cairo_move_to(cr, bez[i]);
-        PangoLayout* layout = pango_cairo_create_layout (cr);
-        pango_layout_set_text(layout, 
-                              notify.str().c_str(), -1);
-
-        PangoFontDescription *font_desc = pango_font_description_new();
-        pango_font_description_set_family(font_desc, "Sans");
-        const int size_px = 10;
-        pango_font_description_set_absolute_size(font_desc, size_px * 1024.0);
-        pango_layout_set_font_description(layout, font_desc);
-        PangoRectangle logical_extent;
-        pango_layout_get_pixel_extents(layout,
-                                       NULL,
-                                       &logical_extent);
-        pango_cairo_show_layout(cr, layout);
-        }*/
     cairo_move_to(cr, bez[0]);
     cairo_curve_to(cr, bez[1], bez[2], bez[3]);
-    //copy(bez.begin(), bez.end(), std::ostream_iterator<Geom::Point>(std::cout, ", "));
-    //std::cout << std::endl;
 }
 
-void draw_offset(cairo_t *cr, multidim_sbasis<2> const &B, double dist) {
+void draw_offset(cairo_t *cr, multidim_sbasis<2> const &B, double dist, double tol=1) {
     multidim_sbasis<2> Bp;
     const int N = 2;
     total_pieces += N;
@@ -109,7 +87,7 @@ void draw_offset(cairo_t *cr, multidim_sbasis<2> const &B, double dist) {
         double le = fabs(arc[0][0]) - err;
         double re = fabs(arc[0][1]) - err;
         err /= std::max(arc[0][0], arc[0][1]);
-        if(err > 0.5) {
+        if(err > tol) {
             draw_offset(cr, Bp, dist);
         } else {
             arc = sqrt(arc, 2);
@@ -120,11 +98,12 @@ void draw_offset(cairo_t *cr, multidim_sbasis<2> const &B, double dist) {
                 double sgn = dim?-1:1;
                 offset[dim] = Bp[dim] + divide(dist*sgn*dB[1-dim],arc, 2);
             }
-            //draw_sb(cr, offset);
+            //draw_cb(cr, offset);
             Geom::PathBuilder pb;
-            subpath_from_sbasis(pb, offset, 0.1);
+            subpath_from_sbasis(pb, offset, tol);
             cairo_path(cr, pb.peek());
-            draw_cb(cr, offset);
+            cairo_path_handles(cr, pb.peek());
+            //draw_cb(cr, offset);
         
         }
     }
@@ -138,6 +117,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     int width = 256;
     int height = 256;
     std::ostringstream notify;
+    note_p = &notify;
     gdk_drawable_get_size(widget->window, &width, &height);
     
     cairo_set_source_rgba (cr, 0., 0.5, 0, 1);
@@ -181,7 +161,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     draw_cb(cr, B);
     //draw_sb(cr, B);
     total_pieces = 0;
-    for(int i = 3; i < 5; i++) {
+    for(int i = 4; i < 5; i++) {
         draw_offset(cr, B, 10*i);
         draw_offset(cr, B, -10*i);
         }
@@ -223,7 +203,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
         pango_cairo_show_layout(cr, layout);
     }
     cairo_destroy (cr);
-    
+    note_p = 0;
     return TRUE;
 }
 
