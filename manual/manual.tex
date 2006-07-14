@@ -4,7 +4,43 @@
 
 \chapter{Basic design}
 
+2Geom is written using a functional programming style\cite{}.
+Generally data structures are considered immutable and rather than
+assignment we use labeling.  However, C++ can become unwieldly if this
+is taken to extreme and so a certain amount of pragmatism is used in
+practice.
+
+The code relies strongly on the type system and uses some of the more
+'tricky' elements of C++ to make the code more elegant.  However, as
+the intended use of 2Geom is a serious vector graphics application,
+where performance is still used as a quality metric, we consider
+performance a bug and have traded elegance for efficiency where it
+matters.
+
+In general the data structures used in 2Geom are relatively 'flat' and
+require little from the memory management.  Currently most data
+structures are built on standard STL headers\cite{stl} and new and
+delete are used sparingly.  It is intended for 2Geom to be fully
+compatible with Boehm garbage collector\cite{boehm} though this has
+not yet been tested.
+
 \section{Points}
+
+2Geom uses the term Point rather loosely from a mathematical
+perspective.  Points are actually unbased vectors represented as a
+two-ple for X and Y.  People often ask why 2Geom uses a 2 element
+array rather than the more traditional \verb|struct| with \verb|.x|
+and \verb|.y|.  We originally chose this representation after noting
+the large number of copy and paste bugs introduced in code performing
+calculations using \verb|.x| and \verb|.y|.
+
+We found that code using .x and .y encouraged people to attempt to
+inline geometry operations rather than using operators (perhaps
+looking for a performance enhancement), and to try and optimise
+operations (usually incorrectly).  By using a vector we encourage
+people to think about Points as symmetrical objects and discourage
+direct use of the components.  We still provide direct access for the
+rare occasion that these are needed.
 
 \section{Transformations}
 \subsection{scale}
@@ -95,5 +131,55 @@ takes roughly the same time as performing the bezier multiplication
 directly, and further more, subdivision and degree reduction are
 straightforward in this form.
 
+
+\section{Acknowledgements and history}
+
+2Geom is a group project, having many authors and contributors.  The
+original code was sketched out by Nathan Hurst and Peter Moulder for
+the Inkscape vector graphics program to provide well typed, correct
+and easy to use C++ classes.  Since then many people have refined and
+debugged the code.  One of the earliest C++ification projects for
+inkscape was replacing NRPoint with NR::Point.
+
+A conspicuous absence was a Path datatype, and indeed Inkscape
+developed at least 3 different internal path datatypes, plus several
+others in related projects.  Considering the core importance of path
+operations in vector graphics this led to much reimplementation of
+algorithms, numerous bugs and many round trips converting between
+forms.
+
+Many attempts were made to try and develop a single path data
+structure, but all were fated to sit in random SCMs scattered across
+the web.
+
+Several unrelated projects had copied out various portions of the NR
+code from Inkscape and 
+
+In 2006 Mentalguy and Nathan felt it was time to separate out
+the geometry portions of inkscape into a separate library for general
+use.  the namespace was changed from NR to Geom and a prototype for
+paths was sketched out.  Nathan studied the state of the art for
+computational geometry whilst Mental focussed on the design of Paths.
+
+Before the remerging of 2Geom with the inkscape svn HEAD it was felt
+that a few smaller projects should be ported to use 2Geom.  Michael
+Wybrow's libavoid advanced connector routing system was ported first.
+
+--now.
+
+\subsection{People who have contributed to 2Geom}
+
+%alphabetical
+Aaron C. Spike,
+Fred (livarot),
+Javier Sanchez-Reyes,
+Jonathon Wright,
+Joshua Blocher,
+Kim Marriott,
+Mentalguy,
+Michael J. Wybrow,
+Michael Sloan,
+Nathan J. Hurst,
+Peter J. R. Moulder
 
 \end{document}
