@@ -100,7 +100,15 @@ int main() {
               << compose(test_sb,test_sb)
               << std::endl;
 
-    std::cout << "inverse\n";
+    std::cout << "inverse of x - 1\n";
+    std::cout << sbasis_to_poly(inverse(BezOrd(-1,0),2))
+              << "\n   ==   x + 1\n\n";
+    
+    std::cout << sbasis_to_poly(compose(inverse(BezOrd(-1,0),2), 
+                                        BezOrd(-1,0))) << std::endl;
+    
+    /*
+    std::cout << "inverse of sqrt(" << sbasis_to_poly(BezOrd(1,4)) << ") - 1\n";
     SBasis A = sqrt(BezOrd(1,4), 5) - one;
     Poly P;
     P.coeff.push_back(1./3);
@@ -110,9 +118,9 @@ int main() {
     std::cout << sbasis_to_poly(inverse(A,5))
               << "\n   ==   \n"
               << P
-              << std::endl;
+              << std::endl;*/
     
-    double roots[] = {0.1,0.2,0.6};
+    /*double roots[] = {0.1,0.2,0.6};
     Poly prod = roots_to_poly(roots, sizeof(roots)/sizeof(double));
     std::cout << "real solve\n";
     std::cout << prod 
@@ -127,7 +135,7 @@ int main() {
     
     copy(bez.begin(), bez.end(), 
          std::ostream_iterator<double>(std::cout, ",\t"));
-    std::cout << std::endl;
+         std::cout << std::endl;*/
     
     /*std::cout << "crossing count = " 
               << crossing_count(bez, bez.size())

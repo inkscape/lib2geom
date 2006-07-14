@@ -21,6 +21,7 @@
 #include <iterator>
 #include "multidim-sbasis.h"
 #include "path-builder.h"
+#include "geom.h"
 
 using std::string;
 using std::vector;
@@ -52,6 +53,25 @@ void draw_cb(cairo_t *cr, multidim_sbasis<2> const &B) {
     cairo_move_to(cr, bez[0]);
     cairo_curve_to(cr, bez[1], bez[2], bez[3]);
 }
+
+void draw_elip() {
+    Geom::Point c;
+    Geom::Point h[1];
+    line_twopoint_intersect(h[0], h[1], h[3], h[4], c);
+    
+    Geom::Point old;
+    for(int i = 0; i <= 100; i++) {
+        double t = i/100.0;
+        
+        Geom::Point n = (1-t)*h[0] + t*h[3];
+        Geom::Point c1, c2;
+        line_twopoint_intersect(2*c-n, n, h[0], h[2], c1);
+        line_twopoint_intersect(2*c-n, n, h[4], h[2], c2);
+        Geom::Point six;
+        line_twopoint_intersect(c1, h[3], c2, h[1], six);
+        old = six;
+    }
+}    
 
 static gboolean
 expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
@@ -89,14 +109,19 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     cairo_set_source_rgba (cr, 0., 0., 0, 0.8);
     cairo_set_line_width (cr, 0.5);
     
+
+    
     SBasis Sq = BezOrd(0, 1);
     multidim_sbasis<2> B;
     double s_angle = Geom::atan2(handles[1] - handles[0]);
     double e_angle = Geom::atan2(handles[2] - handles[0]);
     double s_length = Geom::L2(handles[1] - handles[0]);
     double e_length = Geom::L2(handles[2] - handles[0]);
-    B[0] = s_length*cos(s_angle, e_angle, 3) + BezOrd(Hat(handles[0][0]));
-    B[1] = e_length*sin(s_angle, e_angle, 3) + BezOrd(Hat(handles[0][1]));
+    double aff[4] = {s_length,0,0,s_length};
+    SBasis C = cos(0, 2*M_PI, 10);
+    SBasis S = sin(0, 2*M_PI, 10);
+    B[0] = aff[0]*C + aff[1]*S + BezOrd(Hat(handles[0][0]));
+    B[1] = aff[2]*C + aff[3]*S + BezOrd(Hat(handles[0][1]));
     Geom::PathBuilder pb;
     subpath_from_sbasis(pb, B, 1);
     cairo_path(cr, pb.peek());
@@ -224,6 +249,7 @@ double uniform() {
 }
 
 int main(int argc, char **argv) {
+    handles.push_back(Geom::Point(uniform()*400, uniform()*400));
     handles.push_back(Geom::Point(uniform()*400, uniform()*400));
     handles.push_back(Geom::Point(uniform()*400, uniform()*400));
     handles.push_back(Geom::Point(uniform()*400, uniform()*400));

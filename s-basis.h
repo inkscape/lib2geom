@@ -182,6 +182,7 @@ inline SBasis& operator+=(SBasis& a, const SBasis& b) {
 }
 
 SBasis operator*(double k, SBasis const &a);
+SBasis operator*(SBasis const &a, SBasis const &b);
 
 SBasis shift(SBasis const &a, int sh);
 

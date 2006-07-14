@@ -212,14 +212,18 @@ endfor
 SBasis inverse(SBasis const &a, int k) {
     SBasis c;                           // c(v) := 0
     SBasis r = BezOrd(0,1);             // r(u) := r_0(u) := u
-    BezOrd t1(1+a[1][0], 1-a[1][1]);    // t_1
+    BezOrd t1(1,1);
+    if(a.size() > 1)
+        t1 = BezOrd(1+a[1][0], 1-a[1][1]);    // t_1
     BezOrd one(1,1);
     BezOrd t1i = one;                   // t_1^0
-    SBasis t = multiply(SBasis(one) - a, a); // t(u)
+    SBasis one_minus_a = SBasis(one) - a;
+    SBasis t = multiply(one_minus_a, a); // t(u)
     SBasis ti(one);                     // t(u)^0
     std::cout << "a=" << a << std::endl;
+    std::cout << "1-a=" << one_minus_a << std::endl;
     std::cout << "t1=" << t1 << std::endl;
-
+    
     for(unsigned i = 0; i < k; i++) {   // for i:=0 to k do
         std::cout << i << ": " <<std::endl;
         std::cout << "r=" << r << std::endl
@@ -233,8 +237,10 @@ SBasis inverse(SBasis const &a, int k) {
         std::cout << "ci=" << ci << std::endl;
         for(int dim = 0; dim < 2; dim++) // t1^i *= t1
             t1i[dim] *= t1[dim];
-        c.a.push_back(ci);               // c(v) := c(v) + c_i(v)*t^i
+        c = c + ci[0]*one_minus_a + ci[1]*a; // c(v) := c(v) + c_i(v)*t^i
         r = r - multiply(ci,ti);         // r(u) := r(u) - c_i(u)*(t(u))^i
+        if(r.tail_error(0) == 0)
+            break; // yay!
         ti = multiply(ti,t);
         std::cout << "iteration\n";
     }

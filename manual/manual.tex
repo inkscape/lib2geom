@@ -62,4 +62,38 @@ The downside is that I'll probably not provide a separate split
 routine that takes a single point, to discourage people from making
 exactly that mistake.
 
+\section{S power basis form}
+
+2Geom provides a very powerful algebra for modifying paths.  Although
+paths are kept in an extended SVG native form where possible, many
+operations require approximation.  To do this we can convert a path
+into a sequence of s-power basis polynomials, henceforth referred to
+as s-basis, perform the required operations and convert back,
+approximating to a requested tolerance as required.
+
+The details of the s-basis form are beyond the scope of this manual,
+the interested reader should consult \cite{SanchezReyes1997,SanchezReyes2000,SanchezReyes2001,SanchezReyes2003,SanchezReyes2004} for the details.
+
+The most important properties of the s-basis form are:
+\begin{itemize}
+\item exact representation of bezier segments
+\item fast conversion from all svg elements
+\item basic arithmetic - $+$, $-$, $\times$, $\divide$
+\item algebraic derivative and integral
+\item elementary trigonometric functions: $\sqrt{\cdot}$, $\sin(\cdot)$, $\cos(\cdot)$, $\exp(\cdot)$
+\item efficient degree elevation and reduction
+\item function inversion
+\item recovery of exact solutions for many non trivial operations
+\item strong convergence guarantees
+\item low condition number on bezier conversion.
+\item $C^0$ continuity guarantee
+\end{itemize}
+
+All these operations are fast.  For example, multiplication of two
+beziers by converting to s-basis form, multiplying and converting back
+takes roughly the same time as performing the bezier multiplication
+directly, and further more, subdivision and degree reduction are
+straightforward in this form.
+
+
 \end{document}
