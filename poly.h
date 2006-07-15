@@ -131,9 +131,15 @@ inline std::ostream &operator<< (std::ostream &out_file, const Poly &in_poly) {
         out_file << "0";
     else {
         for(int i = (int)in_poly.coeff.size()-1; i >= 0; --i) {
-            out_file << "(" << in_poly.coeff[i] << ")*x^" << i;
-            if(i)
+            if(i == 1) {
+                out_file << "" << in_poly.coeff[i] << "*x";
                 out_file << " + ";
+            } else if(i) {
+                out_file << "" << in_poly.coeff[i] << "*x^" << i;
+                out_file << " + ";
+            } else
+                out_file << in_poly.coeff[i];
+            
         }
     }
     return out_file;

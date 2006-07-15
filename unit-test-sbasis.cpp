@@ -98,28 +98,52 @@ int main() {
     std::cout << poly_to_sbasis(compose(test,test))
               << "\n   ==   \n"
               << compose(test_sb,test_sb)
+              << std::endl
+              << std::endl;
+    std::cout << (compose(sbasis_to_poly(BezOrd(1,2)),sbasis_to_poly(BezOrd(-1,0))))
+              << std::endl;
+    std::cout << (compose(SBasis(BezOrd(1,2)),SBasis(BezOrd(-1,0))))
               << std::endl;
 
     std::cout << "inverse of x - 1\n";
     std::cout << sbasis_to_poly(inverse(BezOrd(-1,0),2))
-              << "\n   ==   x + 1\n\n";
+              << "   ==   y + 1\n";
+    std::cout << "f^-1(f(x)) = " 
+              << sbasis_to_poly(compose(inverse(BezOrd(-1,0),2), 
+                                        BezOrd(-1,0))) 
+              << std::endl
+              << std::endl;
     
-    std::cout << sbasis_to_poly(compose(inverse(BezOrd(-1,0),2), 
-                                        BezOrd(-1,0))) << std::endl;
+    std::cout << "inverse of 3x - 2\n";
+    std::cout << sbasis_to_poly(inverse(BezOrd(-2,1),2))
+              << "   ==   (y + 2)/3\n";
+    std::cout << "f^-1(f(x)) = " 
+              << sbasis_to_poly(compose(inverse(BezOrd(-2,1),2), 
+                                        BezOrd(-2,1))) 
+              << std::endl
+              << std::endl;
     
-    /*
+    
     std::cout << "inverse of sqrt(" << sbasis_to_poly(BezOrd(1,4)) << ") - 1\n";
     SBasis A = sqrt(BezOrd(1,4), 5) - one;
     Poly P;
-    P.coeff.push_back(1./3);
-    P.coeff.push_back(-2./3);
     P.coeff.push_back(0);
+    P.coeff.push_back(-2./3);
+    P.coeff.push_back(1./3);
     
     std::cout << sbasis_to_poly(inverse(A,5))
               << "\n   ==   \n"
               << P
-              << std::endl;*/
+              << std::endl;
     
+    {
+    std::cout << "inverse of (x^2+2x)/3\n";
+    SBasis A = poly_to_sbasis(P);
+    
+    std::cout << sbasis_to_poly(inverse(A,5))
+              << "\n   ==   \n"
+              << std::endl;
+    }
     /*double roots[] = {0.1,0.2,0.6};
     Poly prod = roots_to_poly(roots, sizeof(roots)/sizeof(double));
     std::cout << "real solve\n";

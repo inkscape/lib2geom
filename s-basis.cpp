@@ -209,42 +209,57 @@ for i:=0 to k do
 endfor
 */
 
-SBasis inverse(SBasis const &a, int k) {
-    SBasis c;                           // c(v) := 0
-    SBasis r = BezOrd(0,1);             // r(u) := r_0(u) := u
-    BezOrd t1(1,1);
-    if(a.size() > 1)
-        t1 = BezOrd(1+a[1][0], 1-a[1][1]);    // t_1
-    BezOrd one(1,1);
-    BezOrd t1i = one;                   // t_1^0
-    SBasis one_minus_a = SBasis(one) - a;
-    SBasis t = multiply(one_minus_a, a); // t(u)
-    SBasis ti(one);                     // t(u)^0
-    std::cout << "a=" << a << std::endl;
-    std::cout << "1-a=" << one_minus_a << std::endl;
-    std::cout << "t1=" << t1 << std::endl;
-    
-    for(unsigned i = 0; i < k; i++) {   // for i:=0 to k do
-        std::cout << i << ": " <<std::endl;
-        std::cout << "r=" << r << std::endl
-                  << "c=" << c << std::endl
-                  << "ti=" << ti << std::endl
-                  << std::endl;
-        if(r.size() <= i)                // ensure enough space in the remainder, probably not needed
-            r.a.resize(i+1, BezOrd(0,0));
-        std::cout << "t1i=" << t1i << std::endl;
-        BezOrd ci(r[i][0]/t1i[0], r[i][1]/t1i[1]); // c_i(v) := H_0(r_i(u)/(t_1)^i; u)
-        std::cout << "ci=" << ci << std::endl;
-        for(int dim = 0; dim < 2; dim++) // t1^i *= t1
-            t1i[dim] *= t1[dim];
-        c = c + ci[0]*one_minus_a + ci[1]*a; // c(v) := c(v) + c_i(v)*t^i
-        r = r - multiply(ci,ti);         // r(u) := r(u) - c_i(u)*(t(u))^i
-        if(r.tail_error(0) == 0)
-            break; // yay!
-        ti = multiply(ti,t);
-        std::cout << "iteration\n";
+SBasis inverse(SBasis a, int k) {
+    assert(a.size() > 0);
+// the function should have 'unit range'.  The paper
+    // claims that this is equivalent, I'm not sure.
+    double a0 = a[0][0];
+    if(a0 != 0) {
+        a -= a0;
     }
+    double a1 = a[0][1];
+    assert(a1 != 0); // not invertable.
     
+    if(a1 != 1) {
+        a /= a1;
+    }
+    SBasis c;                           // c(v) := 0
+    if(a.size() > 1) {                      // non linear
+        SBasis r = BezOrd(0,1);             // r(u) := r_0(u) := u
+        BezOrd t1(1+a[1][0], 1-a[1][1]);    // t_1
+        BezOrd one(1,1);
+        BezOrd t1i = one;                   // t_1^0
+        SBasis one_minus_a = SBasis(one) - a;
+        SBasis t = multiply(one_minus_a, a); // t(u)
+        SBasis ti(one);                     // t(u)^0
+        std::cout << "a=" << a << std::endl;
+        std::cout << "1-a=" << one_minus_a << std::endl;
+        std::cout << "t1=" << t1 << std::endl;
+    
+        for(unsigned i = 0; i < k; i++) {   // for i:=0 to k do
+            std::cout << i << ": " <<std::endl;
+            std::cout << "r=" << r << std::endl
+                      << "c=" << c << std::endl
+                      << "ti=" << ti << std::endl
+                      << std::endl;
+            if(r.size() <= i)                // ensure enough space in the remainder, probably not needed
+                r.a.resize(i+1, BezOrd(0,0));
+            std::cout << "t1i=" << t1i << std::endl;
+            BezOrd ci(r[i][0]/t1i[0], r[i][1]/t1i[1]); // c_i(v) := H_0(r_i(u)/(t_1)^i; u)
+            std::cout << "ci=" << ci << std::endl;
+            for(int dim = 0; dim < 2; dim++) // t1^i *= t1
+                t1i[dim] *= t1[dim];
+            c = c + ci[0]*one_minus_a + ci[1]*a; // c(v) := c(v) + c_i(v)*t^i
+            r = r - multiply(ci,ti);         // r(u) := r(u) - c_i(u)*(t(u))^i
+            if(r.tail_error(0) == 0)
+                break; // yay!
+            ti = multiply(ti,t);
+            std::cout << "iteration\n";
+        }
+    } else
+        c = BezOrd(0,1); // linear
+    c -= a0; // invert the offset
+    c /= a1; // invert the slope
     return c;
 }
 
