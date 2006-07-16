@@ -142,6 +142,8 @@ public:
     }
     
     operator HashCookie();
+    
+    unsigned total_segments() const;
 };
 
 inline bool operator==(SubPath::HashCookie a, SubPath::HashCookie b) {
@@ -166,6 +168,8 @@ public:
     };
     Path() {}
     Path(SubPath sp) {subpaths.push_back(sp);}
+    
+    unsigned total_segments() const;
 };
 
 inline bool operator!=(const SubPath::ConstIter &a, const SubPath::ConstIter &b) 

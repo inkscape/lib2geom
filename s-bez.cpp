@@ -30,14 +30,13 @@ using std::vector;
 static GtkWidget *canvas;
 std::ostringstream *note_p = 0;
 
-BezOrd z0(0.5,1.);
-
 std::vector<Geom::Point> handles;
 Geom::Point *selected_handle;
 Geom::Point old_handle_pos;
 Geom::Point old_mouse_point;
 
-unsigned total_pieces;
+unsigned total_pieces_sub;
+unsigned total_pieces_inc;
 
 void draw_sb(cairo_t *cr, multidim_sbasis<2> const &B) {
     cairo_move_to(cr, point_at(B, 0));
@@ -55,60 +54,62 @@ void draw_cb(cairo_t *cr, multidim_sbasis<2> const &B) {
 }
 
 void draw_offset(cairo_t *cr, multidim_sbasis<2> const &B, double dist, double tol=1) {
-    multidim_sbasis<2> Bp;
-    const int N = 2;
-    total_pieces += N;
-    for(int subdivi = 0; subdivi < N; subdivi++) {
-        double dsubu = 1./N;
-        double subu = dsubu*subdivi;
-        for(int dim = 0; dim < 2; dim++) {
-            Bp[dim] = compose(B[dim], BezOrd(subu, dsubu+subu));
-        }
-        draw_handle(cr, Geom::Point(Bp[0].point_at(1), Bp[1].point_at(1)));
+    draw_handle(cr, Geom::Point(B[0].point_at(1), B[1].point_at(1)));
     
-        multidim_sbasis<2> dB;
-        SBasis arc;
-        dB = derivative(Bp);
-        arc = dot(dB, dB);
-        
-        double err = 0;
-        for(int i = 1; i < arc.size(); i++)
-            err += fabs(Hat(arc[i]));
-        double le = fabs(arc[0][0]) - err;
-        double re = fabs(arc[0][1]) - err;
-        err /= std::max(arc[0][0], arc[0][1]);
-        if(err > tol) {
-            draw_offset(cr, Bp, dist);
-        } else {
-            arc = sqrt(arc, 2);
+    multidim_sbasis<2> dB;
+    dB = derivative(B);
+    SBasis arc = dot(dB, dB);
     
-            multidim_sbasis<2> offset;
-    
+    /*** A rather weak effort at estimating the offset curve error.  Here we assume that the
+     * biggest error occurs where the derivative vanishes.  This code tries to bound the smallest
+     * magnitude of the derivative.
+     */
+    double err = 0;
+    for(int i = 1; i < arc.size(); i++)
+        err += fabs(Hat(arc[i]));
+    double le = fabs(arc[0][0]) - err;
+    double re = fabs(arc[0][1]) - err;
+    err /= std::max(arc[0][0], arc[0][1]);
+    if(err > tol) {
+        const int N = 2;
+        for(int subdivi = 0; subdivi < N; subdivi++) {
+            double dsubu = 1./N;
+            double subu = dsubu*subdivi;
+            multidim_sbasis<2> Bp;
             for(int dim = 0; dim < 2; dim++) {
-                double sgn = dim?-1:1;
-                offset[dim] = Bp[dim] + divide(dist*sgn*dB[1-dim],arc, 2);
+                Bp[dim] = compose(B[dim], BezOrd(subu, dsubu+subu));
             }
-            //draw_cb(cr, offset);
-            {
+            draw_offset(cr, Bp, dist);
+        }
+    } else {
+        arc = sqrt(arc, 2);
+    
+        multidim_sbasis<2> offset;
+    
+        for(int dim = 0; dim < 2; dim++) {
+            double sgn = dim?-1:1;
+            offset[dim] = B[dim] + divide(dist*sgn*dB[1-dim],arc, 2);
+        }
+        {
             Geom::PathBuilder pb;
             subpath_from_sbasis_incremental(pb, offset, tol);
             cairo_path(cr, pb.peek());
+            total_pieces_inc += pb.peek().total_segments();
             cairo_set_source_rgba (cr, 0., 0.5, 0, 0.5);
             cairo_stroke(cr);
             //cairo_path_handles(cr, pb.peek());
-            }
-            {
+        }
+        {
             Geom::PathBuilder pb;
             subpath_from_sbasis(pb, offset, tol);
             Geom::Path p = pb.peek();//*Geom::translate(1,1);
+            total_pieces_sub += p.total_segments();
             cairo_path(cr, p);
             cairo_set_source_rgba (cr, 0.5, 0., 0, 0.5);
             cairo_stroke(cr);
             //cairo_path_handles(cr, p);
-            }
-            //draw_cb(cr, offset);
-        
         }
+        
     }
 }
 
@@ -163,12 +164,14 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     //B = compose(Sq, B);
     draw_cb(cr, B);
     //draw_sb(cr, B);
-    total_pieces = 0;
+    total_pieces_sub = 0;
+    total_pieces_inc = 0;
     for(int i = 4; i < 5; i++) {
         draw_offset(cr, B, 10*i);
         draw_offset(cr, B, -10*i);
         }
-        notify << "total pieces = " << total_pieces; 
+    notify << "total pieces subdivision = " << total_pieces_sub << std::endl; 
+        notify << "total pieces inc = " << total_pieces_inc; 
     
     cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
     cairo_stroke(cr);

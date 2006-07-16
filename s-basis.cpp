@@ -209,10 +209,12 @@ for i:=0 to k do
 endfor
 */
 
+//#define DEBUG_INVERSION 1 
+
 SBasis inverse(SBasis a, int k) {
     assert(a.size() > 0);
-// the function should have 'unit range'.  The paper
-    // claims that this is equivalent, I'm not sure.
+// the function should have 'unit range'.  The paper claims that "a00 = 0 and a01 = 1" is
+// equivalent to this, I'm not sure.
     double a0 = a[0][0];
     if(a0 != 0) {
         a -= a0;
@@ -224,7 +226,11 @@ SBasis inverse(SBasis a, int k) {
         a /= a1;
     }
     SBasis c;                           // c(v) := 0
-    if(a.size() > 1) {                      // non linear
+    if(a.size() >= 2 && k == 2) {
+        c.a.push_back(BezOrd(0,1));
+        BezOrd t1(1+a[1][0], 1-a[1][1]);    // t_1
+        c.a.push_back(BezOrd(-a[1][0]/t1[0], -a[1][1]/t1[1]));
+    } else if(a.size() >= 2) {                      // non linear
         SBasis r = BezOrd(0,1);             // r(u) := r_0(u) := u
         BezOrd t1(1+a[1][0], 1-a[1][1]);    // t_1
         BezOrd one(1,1);
@@ -232,30 +238,47 @@ SBasis inverse(SBasis a, int k) {
         SBasis one_minus_a = SBasis(one) - a;
         SBasis t = multiply(one_minus_a, a); // t(u)
         SBasis ti(one);                     // t(u)^0
+#ifdef DEBUG_INVERSION
         std::cout << "a=" << a << std::endl;
         std::cout << "1-a=" << one_minus_a << std::endl;
         std::cout << "t1=" << t1 << std::endl;
+        assert(t1 == t[1]);
+#endif
     
+        c.a.resize(k+1, BezOrd(0,0));
         for(unsigned i = 0; i < k; i++) {   // for i:=0 to k do
-            std::cout << i << ": " <<std::endl;
+#ifdef DEBUG_INVERSION
+            std::cout << "-------" << i << ": ---------" <<std::endl;
             std::cout << "r=" << r << std::endl
                       << "c=" << c << std::endl
                       << "ti=" << ti << std::endl
                       << std::endl;
+#endif
             if(r.size() <= i)                // ensure enough space in the remainder, probably not needed
                 r.a.resize(i+1, BezOrd(0,0));
-            std::cout << "t1i=" << t1i << std::endl;
             BezOrd ci(r[i][0]/t1i[0], r[i][1]/t1i[1]); // c_i(v) := H_0(r_i(u)/(t_1)^i; u)
+#ifdef DEBUG_INVERSION
+            std::cout << "t1i=" << t1i << std::endl;
+            if(i == 1) {
+                std::cout << "ci should be=" << BezOrd(-a[1][0]/t1[0], -a[1][1]/t1[1]) << std::endl;
+                if(ci != BezOrd(-a[1][0]/t1[0], -a[1][1]/t1[1])) {
+                    
+                }
+            }
             std::cout << "ci=" << ci << std::endl;
+#endif
             for(int dim = 0; dim < 2; dim++) // t1^i *= t1
                 t1i[dim] *= t1[dim];
-            c = c + ci[0]*one_minus_a + ci[1]*a; // c(v) := c(v) + c_i(v)*t^i
-            r = r - multiply(ci,ti);         // r(u) := r(u) - c_i(u)*(t(u))^i
-            if(r.tail_error(0) == 0)
-                break; // yay!
+            c[i] = ci; // c(v) := c(v) + c_i(v)*t^i
+            SBasis civ = ci[0]*one_minus_a + ci[1]*a;
+            r = truncate(r - multiply(civ,ti), k+1);         // r(u) := r(u) - c_i(u)*(t(u))^i
+            //if(r.tail_error(0) == 0)
+            //    break; // yay!
             ti = multiply(ti,t);
-            std::cout << "iteration\n";
         }
+#ifdef DEBUG_INVERSION
+        std::cout << "##########################" << std::endl;
+#endif
     } else
         c = BezOrd(0,1); // linear
     c -= a0; // invert the offset

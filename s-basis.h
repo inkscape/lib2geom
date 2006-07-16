@@ -76,6 +76,14 @@ inline BezOrd& operator-=(BezOrd & a, BezOrd const & b) {
     a[1] -= b[1];
     return a;
 }
+inline bool operator==(BezOrd const & a, BezOrd const & b) {
+    return a[0] == b[0] &&
+        a[1] == b[1];
+}
+inline bool operator!=(BezOrd const & a, BezOrd const & b) {
+    return a[0] != b[0] ||
+        a[1] != b[1];
+}
 inline BezOrd operator*(double const a, BezOrd const & b) {
     return BezOrd(a*b[0], a*b[1]);
 }

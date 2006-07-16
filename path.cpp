@@ -273,7 +273,7 @@ SubPath SubPath::subpath(ConstIter begin, ConstIter end) {
 }
 
 
-// Perhaps this hash is not dtrong enough
+// Perhaps this hash is not strong enough
 SubPath::operator HashCookie() {
     HashCookie hc;
     hc.value = (unsigned long)(&(*cmd.begin()));
@@ -285,6 +285,21 @@ SubPath::operator HashCookie() {
     hc.value += (unsigned long)(&(*handles.end()));
     return hc;
 }
+
+unsigned 
+SubPath::total_segments() const {
+    return cmd.size();
+}
+
+unsigned
+Path::total_segments() const {
+    unsigned segs = 0;
+    for(Path::const_iterator it = begin(); it != end(); it++) {
+        segs += (*it).total_segments();
+    }
+    return segs;
+}
+
 
 };
 

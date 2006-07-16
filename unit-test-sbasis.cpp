@@ -128,9 +128,15 @@ int main() {
     SBasis A = sqrt(BezOrd(1,4), 5) - one;
     Poly P;
     P.coeff.push_back(0);
-    P.coeff.push_back(-2./3);
+    P.coeff.push_back(2./3);
     P.coeff.push_back(1./3);
     
+    std::cout << "2 term approximation\n";
+    std::cout << sbasis_to_poly(inverse(A,2))
+              << "\n   ==   \n"
+              << P
+              << std::endl;
+    std::cout << "general approximation\n";
     std::cout << sbasis_to_poly(inverse(A,5))
               << "\n   ==   \n"
               << P
@@ -139,9 +145,12 @@ int main() {
     {
     std::cout << "inverse of (x^2+2x)/3\n";
     SBasis A = poly_to_sbasis(P);
-    
-    std::cout << sbasis_to_poly(inverse(A,5))
-              << "\n   ==   \n"
+    SBasis I = inverse(A,10);
+    std::cout << sbasis_to_poly(truncate(compose(A, I), 10))
+              << "   ==   x\n"
+              << std::endl;
+    std::cout << sbasis_to_poly(truncate(compose(I, A), 10))
+              << "   ==   x\n"
               << std::endl;
     }
     /*double roots[] = {0.1,0.2,0.6};
