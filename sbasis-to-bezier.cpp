@@ -100,6 +100,47 @@ subpath_from_sbasis(Geom::PathBuilder &pb, multidim_sbasis<2> const &B, double t
     }
 }
 
+#include <iostream>
+
+/***
+/* This version works by inverting a reasonable upper bound on the error term after subdividing the
+curve at $a$.  We keep biting off pieces until there is no more curve left.
+* 
+* Derivation: The tail of the power series is $a_ks^k + a_{k+1}s^{k+1} + \ldots = e$.  A
+* subdivision at $a$ results in a tail error of $e*A^k, A = (1-a)a$.  Let this be the desired
+* tolerance tol $= e*A^k$ and invert getting $A = e^{1/k}$ and $a = 1/2 - \sqrt{1/4 - A}$
+*/
+void
+subpath_from_sbasis_incremental(Geom::PathBuilder &pb, multidim_sbasis<2> B, double tol) {
+    const unsigned k = 2; // cubic bezier
+    double te = B.tail_error(k);
+    
+    //std::cout << "tol = " << tol << std::endl;
+    while(1) {
+        double A = sqrt(tol/te); // pow(te, 1./k)
+        double a = A;
+        if(A < 1) {
+            A = std::min(A, 0.25);
+            a = 0.5 - sqrt(0.25 - A); // quadratic formula
+            if(a > 1) a = 1; // clamp to the end of the segment
+        } else
+            a = 1;
+        assert(a > 0);
+        //std::cout << "te = " << te << std::endl;
+        //std::cout << "A = " << A << "; a=" << a << std::endl;
+        multidim_sbasis<2> Bs = compose(B, BezOrd(0, a));
+        assert(Bs.tail_error(k));
+        std::vector<Geom::Point> bez = sbasis_to_bezier(Bs, 2);
+        reverse(bez.begin(), bez.end());
+        pb.push_cubic(bez[0], bez[1], bez[2], bez[3]);
+        
+// move to next piece of curve
+        if(a >= 1) break;
+        B = compose(B, BezOrd(a, 1)); 
+        te = B.tail_error(k);
+    }
+}
+
 
 /*
   Local Variables:

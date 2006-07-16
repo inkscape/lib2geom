@@ -21,6 +21,8 @@
 #include <iterator>
 #include "multidim-sbasis.h"
 #include "path-builder.h"
+#include "translate.h"
+#include "translate-ops.h"
 
 using std::string;
 using std::vector;
@@ -87,10 +89,23 @@ void draw_offset(cairo_t *cr, multidim_sbasis<2> const &B, double dist, double t
                 offset[dim] = Bp[dim] + divide(dist*sgn*dB[1-dim],arc, 2);
             }
             //draw_cb(cr, offset);
+            {
+            Geom::PathBuilder pb;
+            subpath_from_sbasis_incremental(pb, offset, tol);
+            cairo_path(cr, pb.peek());
+            cairo_set_source_rgba (cr, 0., 0.5, 0, 0.5);
+            cairo_stroke(cr);
+            //cairo_path_handles(cr, pb.peek());
+            }
+            {
             Geom::PathBuilder pb;
             subpath_from_sbasis(pb, offset, tol);
-            cairo_path(cr, pb.peek());
-            cairo_path_handles(cr, pb.peek());
+            Geom::Path p = pb.peek();//*Geom::translate(1,1);
+            cairo_path(cr, p);
+            cairo_set_source_rgba (cr, 0.5, 0., 0, 0.5);
+            cairo_stroke(cr);
+            //cairo_path_handles(cr, p);
+            }
             //draw_cb(cr, offset);
         
         }

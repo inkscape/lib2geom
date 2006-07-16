@@ -191,6 +191,15 @@ template <class T> SubPath operator*(SubPath const &p, T const &m) {
     return pr;
 }
 
+template <class T> Path operator*(Path const &p, T const &m) {
+    Path pr;
+    
+    for(Path::const_iterator it = p.begin(); it != p.end(); it++) {
+        pr.subpaths.push_back(*it*m);
+    }
+    return pr;
+}
+
 template <typename Point, unsigned order>
 struct BezImpl {
     static inline Point compute(double t, Point *b) {
