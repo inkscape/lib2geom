@@ -163,6 +163,8 @@ public:
     void normalize(); // remove extra zeros
 
     double tail_error(unsigned tail) const;
+    
+    void truncate(unsigned k);
 };
 
 inline SBasis operator-(const SBasis& p) {
@@ -275,6 +277,7 @@ SBasis divide(SBasis const &a, SBasis const &b, int k);
 #include <iostream>
 // a(b(t))
 SBasis compose(SBasis const &a, SBasis const &b);
+SBasis compose(SBasis const &a, SBasis const &b, unsigned k);
 SBasis inverse(SBasis a, int k);
 
 inline std::ostream &operator<< (std::ostream &out_file, const BezOrd &bo) {
