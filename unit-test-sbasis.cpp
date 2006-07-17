@@ -20,6 +20,14 @@ Poly roots_to_poly(double *a, unsigned n) {
     return r;
 }
 
+unsigned small_rand() {
+    return (rand() & 0xff) + 1;
+}
+
+double uniform() {
+    return double(rand()) / RAND_MAX;
+}
+
 int main() {
     SBasis P0(BezOrd(0.5, -1)), P1(BezOrd(3, 1));
     BezOrd one(1,1);
@@ -152,6 +160,31 @@ int main() {
     std::cout << sbasis_to_poly(truncate(compose(I, A), 10))
               << "   ==   x\n"
               << std::endl;
+    std::cout << sbasis_to_poly(truncate(I - (sqrt(BezOrd(1,4), 10) - one), 10))
+              << std::endl;
+    }
+    for(int i = 0 ; i < 10; i++) {
+        Poly P;
+        P.coeff.push_back(0);
+        P.coeff.push_back(1);
+        for(int j = 0 ; j < 2; j++) {
+            P.coeff.push_back((uniform()-0.5)/10);
+        }
+        std::vector<std::complex<double> > prod_root = solve(derivative(P));
+        copy(prod_root.begin(), prod_root.end(), 
+             std::ostream_iterator<std::complex<double> >(std::cout, ",\t"));
+        std::cout << std::endl;
+        std::cout << "inverse of (" << P << " )\n";
+        for(int k = 1; k < 30; k++) {
+            SBasis A = poly_to_sbasis(P);
+            SBasis I = inverse(A,k);
+            SBasis err = compose(A, I) - BezOrd(0,1); // ideally is 0
+            std::cout << truncate(err, k).tail_error(0)
+                      << std::endl;
+            /*std::cout << sbasis_to_poly(err)
+                      << "   ==   x\n"
+                      << std::endl;*/
+        }
     }
     /*double roots[] = {0.1,0.2,0.6};
     Poly prod = roots_to_poly(roots, sizeof(roots)/sizeof(double));

@@ -232,7 +232,7 @@ SBasis inverse(SBasis a, int k) {
         c.a.push_back(BezOrd(-a[1][0]/t1[0], -a[1][1]/t1[1]));
     } else if(a.size() >= 2) {                      // non linear
         SBasis r = BezOrd(0,1);             // r(u) := r_0(u) := u
-        BezOrd t1(1+a[1][0], 1-a[1][1]);    // t_1
+        BezOrd t1(1./(1+a[1][0]), 1./(1-a[1][1]));    // 1./t_1
         BezOrd one(1,1);
         BezOrd t1i = one;                   // t_1^0
         SBasis one_minus_a = SBasis(one) - a;
@@ -242,7 +242,7 @@ SBasis inverse(SBasis a, int k) {
         std::cout << "a=" << a << std::endl;
         std::cout << "1-a=" << one_minus_a << std::endl;
         std::cout << "t1=" << t1 << std::endl;
-        assert(t1 == t[1]);
+        //assert(t1 == t[1]);
 #endif
     
         c.a.resize(k+1, BezOrd(0,0));
@@ -256,22 +256,20 @@ SBasis inverse(SBasis a, int k) {
 #endif
             if(r.size() <= i)                // ensure enough space in the remainder, probably not needed
                 r.a.resize(i+1, BezOrd(0,0));
-            BezOrd ci(r[i][0]/t1i[0], r[i][1]/t1i[1]); // c_i(v) := H_0(r_i(u)/(t_1)^i; u)
+            BezOrd ci(r[i][0]*t1i[0], r[i][1]*t1i[1]); // c_i(v) := H_0(r_i(u)/(t_1)^i; u)
 #ifdef DEBUG_INVERSION
             std::cout << "t1i=" << t1i << std::endl;
-            if(i == 1) {
-                std::cout << "ci should be=" << BezOrd(-a[1][0]/t1[0], -a[1][1]/t1[1]) << std::endl;
-                if(ci != BezOrd(-a[1][0]/t1[0], -a[1][1]/t1[1])) {
-                    
-                }
-            }
             std::cout << "ci=" << ci << std::endl;
 #endif
-            for(int dim = 0; dim < 2; dim++) // t1^i *= t1
+            for(int dim = 0; dim < 2; dim++) // t1^-i *= 1./t1
                 t1i[dim] *= t1[dim];
             c[i] = ci; // c(v) := c(v) + c_i(v)*t^i
-            SBasis civ = ci[0]*one_minus_a + ci[1]*a;
-            r = truncate(r - multiply(civ,ti), k+1);         // r(u) := r(u) - c_i(u)*(t(u))^i
+            // change from v to u parameterisation
+            SBasis civ = ci[0]*one_minus_a + ci[1]*a; 
+            // r(u) := r(u) - c_i(u)*(t(u))^i
+            // We can truncate this to the number of final terms, as no following terms can
+            // contribute to the result.
+            r = truncate(r - multiply(civ,ti), k);
             //if(r.tail_error(0) == 0)
             //    break; // yay!
             ti = multiply(ti,t);
