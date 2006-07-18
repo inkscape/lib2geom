@@ -347,7 +347,7 @@ static double ComputeXIntercept(
     Geom::Point 	*V,			/*  Control points	*/
     int		degree) 		/*  Degree of curve	*/
 {
-    const Point A = V[degree] - V[0];
+    const Geom::Point A = V[degree] - V[0];
 
     return (A[Geom::X]*V[0][Geom::Y] - A[Geom::Y]*V[0][Geom::X]) / -A[Geom::Y];
 }

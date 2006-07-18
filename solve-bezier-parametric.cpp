@@ -2,46 +2,47 @@
 #include "point-fns.h"
 #include <algorithm>
 
-/*** Find the zeros of the parametric function in 2d defined by two beziers X(t), Y(t).  The
- * original code simply kept subdividing until it was happy with the linearity of the bezier.  This requires an n^2 subdivision for each step, even when there is only one solution.
+/*** Find the zeros of the parametric function in 2d defined by two beziers X(t), Y(t).  The code subdivides until it happy with the linearity of the bezier.  This requires an n^2 subdivision for each step, even when there is only one solution.
  * 
  * Perhaps it would be better to subdivide particularly around nodes with changing sign, rather than simply cutting in half.
  */
 
-#define SGN(a)      (((a)<0) ? -1 : 0)
+#define SGN(a)      (((a)<0) ? -1 : 1)
 
 /*
  *  Forward declarations
  */
 static Geom::Point 
-Bezier(Geom::Point *V,
+Bezier(Geom::Point const *V,
        unsigned degree,
        double t,
        Geom::Point *Left,
        Geom::Point *Right);
 
 unsigned
-crossing_count(Geom::Point *V, unsigned degree);
+crossing_count(Geom::Point const *V, unsigned degree);
 static unsigned 
-control_poly_flat_enough(Geom::Point *V, unsigned degree);
+control_poly_flat_enough(Geom::Point const *V, unsigned degree);
 static double
-compute_x_intercept(Geom::Point *V, unsigned degree);
+compute_x_intercept(Geom::Point const *V, unsigned degree);
 
-int	MAXDEPTH = 64;	/*  Maximum depth for recursion */
+const int MAXDEPTH = 64;	/*  Maximum depth for recursion */
 
-#define	EPSILON	(ldexp(1.0,-MAXDEPTH-1)) /*Flatness control value */
+const double EPSILON = ldexp(1.0,-MAXDEPTH-1); /*Flatness control value */
 
-bool use_secant = true;
+unsigned total_steps, total_subs;
 
 /*
  *  find_bezier_roots : Given an equation in Bernstein-Bezier form, find all 
  *    of the roots in the interval [0, 1].  Return the number of roots found.
  */
-void find_bezier_roots(Geom::Point *w, /* The control points  */
-                       unsigned degree,	/* The degree of the polynomial */
-                       std::vector<double> &solutions, /* RETURN candidate t-values */
-                       unsigned depth)	/* The depth of the recursion */
+void
+find_parametric_bezier_roots(Geom::Point const *w, /* The control points  */
+                  unsigned degree,	/* The degree of the polynomial */
+                  std::vector<double> &solutions, /* RETURN candidate t-values */
+                  unsigned depth)	/* The depth of the recursion */
 {  
+    total_steps++;
     const unsigned max_crossings = crossing_count(w, degree);
     switch (max_crossings) {
     case 0: 	/* No solutions here	*/
@@ -56,56 +57,9 @@ void find_bezier_roots(Geom::Point *w, /* The control points  */
             return;
         }
         
-        // I would rather use something like secant method here, rather than needlessly
-        // subdividing. -- njh
+        // I thought secant method would be faster here, but it'aint. -- njh
 
-        // secant search - this should be faster than the subdivision search
-        if(use_secant) {
-            double ys[degree+1];
-            double right_t = 1, left_t = 0;
-            double right_y = w[degree][Geom::Y];
-            double left_y = w[degree][Geom::Y];
-            while(right_t - left_t > EPSILON) {
-                double dt = (left_y / (right_y - left_y));
-                // one danger is slow convergence due to salami tactics
-                const double linear_convergence = 1./8;
-                if(dt < linear_convergence)
-                    dt = linear_convergence;
-                if(dt > 1- linear_convergence)
-                    dt = 1- linear_convergence;
-                
-                const double t = (1-dt)*left_t + dt*right_t;
-                for(unsigned i = 0; i <= degree; i++) {
-                    ys[i] = w[i][Geom::Y];
-                }
-                // triangle - note the order of updates
-                for(unsigned d = 0; d < degree; d++)
-                    for(unsigned i = d; i <= degree; i++)
-                        ys[i] = (1-t)*ys[i] + t*ys[i+1];
-                const double y = ys[degree]; // value at t
-                if(SGN(y) == left_y) {
-                    left_y = y;
-                    left_t = t;
-                }
-                if(SGN(y) == right_y) {
-                    right_y = y;
-                    right_t = t;
-                }
-                assert(SGN(left_y) != SGN(right_y));
-            }
-            double xs[degree+1];
-            double t = (left_t + right_t)/2; // perhaps the mid_point is better?
-            for(unsigned i = 0; i <= degree; i++) {
-                xs[i] = w[i][Geom::X];
-            }
-            // triangle - note the order of updates
-            for(unsigned d = 0; d < degree; d++)
-                for(unsigned i = d; i <= degree; i++)
-                    xs[i] = (1-t)*xs[i] + t*xs[i+1];
-            solutions.push_back(xs[degree]);
-            return;
-            // is not secant, use subdivision
-        } else if (control_poly_flat_enough(w, degree)) {
+        if (control_poly_flat_enough(w, degree)) {
             solutions.push_back(compute_x_intercept(w, degree));
             return;
         }
@@ -116,9 +70,9 @@ void find_bezier_roots(Geom::Point *w, /* The control points  */
     Geom::Point Left[degree+1],	/* New left and right  */
         Right[degree+1];	/* control polygons  */
     Bezier(w, degree, 0.5, Left, Right);
-    
-    find_bezier_roots(Left,  degree, solutions, depth+1);
-    find_bezier_roots(Right, degree, solutions, depth+1);
+    total_subs ++;
+    find_parametric_bezier_roots(Left,  degree, solutions, depth+1);
+    find_parametric_bezier_roots(Right, degree, solutions, depth+1);
 }
 
 
@@ -129,7 +83,7 @@ void find_bezier_roots(Geom::Point *w, /* The control points  */
  *
  */
 unsigned
-crossing_count(Geom::Point *V,	/*  Control pts of Bezier curve	*/
+crossing_count(Geom::Point const *V,	/*  Control pts of Bezier curve	*/
 	       unsigned degree)	/*  Degree of Bezier curve 	*/
 {
     unsigned 	n_crossings = 0;	/*  Number of zero-crossings */
@@ -153,12 +107,11 @@ crossing_count(Geom::Point *V,	/*  Control pts of Bezier curve	*/
  *
  */
 static unsigned 
-control_poly_flat_enough(Geom::Point *V, /* Control points	*/
+control_poly_flat_enough(Geom::Point const *V, /* Control points	*/
 			 unsigned degree)	/* Degree of polynomial	*/
 {
     /* Find the perpendicular distance from each interior control point to line connecting V[0] and
      * V[degree] */
-    double distance[degree]; /* Distances from pts to line */
 
     /* Derive the implicit equation for line connecting first */
     /*  and last control points */
@@ -168,6 +121,7 @@ control_poly_flat_enough(Geom::Point *V, /* Control points	*/
 
     const double abSquared = (a * a) + (b * b);
 
+    double distance[degree]; /* Distances from pts to line */
     for (unsigned i = 1; i < degree; i++) {
         /* Compute distance from each of the points to that line */
         double & dist(distance[i-1]);
@@ -213,7 +167,7 @@ control_poly_flat_enough(Geom::Point *V, /* Control points	*/
  * 
  */
 static double
-compute_x_intercept(Geom::Point *V, /*  Control points	*/
+compute_x_intercept(Geom::Point const *V, /*  Control points	*/
 		    unsigned degree) /*  Degree of curve	*/
 {
     const Geom::Point A = V[degree] - V[0];
@@ -229,7 +183,7 @@ compute_x_intercept(Geom::Point *V, /*  Control points	*/
  * 
  */
 static Geom::Point 
-Bezier(Geom::Point *V, /* Control pts	*/
+Bezier(Geom::Point const *V, /* Control pts	*/
        unsigned degree,	/* Degree of bezier curve */
        double t,	/* Parameter value */
        Geom::Point *Left,	/* RETURN left half ctl pts */

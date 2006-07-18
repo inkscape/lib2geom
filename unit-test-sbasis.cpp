@@ -5,7 +5,7 @@
 #include <iterator>
 #include "point.h"
 #include "sbasis-to-bezier.h"
-#include "solve-sbasis.h"
+#include "solver.h"
 
 Poly roots_to_poly(double *a, unsigned n) {
     Poly r;

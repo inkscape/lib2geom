@@ -4,11 +4,11 @@
 #include "s-basis.h"
 
 unsigned
-crossing_count(Geom::Point *V,	/*  Control pts of Bezier curve	*/
+crossing_count(Geom::Point const *V,	/*  Control pts of Bezier curve	*/
 	       unsigned degree);	/*  Degree of Bezier curve 	*/
 void
-find_bezier_roots(
-    Geom::Point *w, /* The control points  */
+find_parametric_bezier_roots(
+    Geom::Point const *w, /* The control points  */
     unsigned degree,	/* The degree of the polynomial */
     std::vector<double> & solutions,	/* RETURN candidate t-values */
     unsigned depth);	/* The depth of the recursion */
