@@ -1,4 +1,4 @@
-#include "solve-sbasis.h"
+#include "solver.h"
 #include "point-fns.h"
 #include <algorithm>
 
@@ -31,6 +31,8 @@ int	MAXDEPTH = 64;	/*  Maximum depth for recursion */
 
 #define	EPSILON	(ldexp(1.0,-MAXDEPTH-1)) /*Flatness control value */
 
+bool use_secant = true;
+
 /*
  *  find_bezier_roots : Given an equation in Bernstein-Bezier form, find all 
  *    of the roots in the interval [0, 1].  Return the number of roots found.
@@ -46,9 +48,6 @@ void find_bezier_roots(Geom::Point *w, /* The control points  */
         return;
 	
     case 1:
-        // I would rather use something like secant method here, rather than needlessly
-        // subdividing. -- njh
-
  	/* Unique solution	*/
         /* Stop recursion when the tree is deep enough	*/
         /* if deep enough, return 1 solution at midpoint  */
@@ -56,7 +55,57 @@ void find_bezier_roots(Geom::Point *w, /* The control points  */
             solutions.push_back((w[0][Geom::X] + w[degree][Geom::X]) / 2.0);
             return;
         }
-        if (control_poly_flat_enough(w, degree)) {
+        
+        // I would rather use something like secant method here, rather than needlessly
+        // subdividing. -- njh
+
+        // secant search - this should be faster than the subdivision search
+        if(use_secant) {
+            double ys[degree+1];
+            double right_t = 1, left_t = 0;
+            double right_y = w[degree][Geom::Y];
+            double left_y = w[degree][Geom::Y];
+            while(right_t - left_t > EPSILON) {
+                double dt = (left_y / (right_y - left_y));
+                // one danger is slow convergence due to salami tactics
+                const double linear_convergence = 1./8;
+                if(dt < linear_convergence)
+                    dt = linear_convergence;
+                if(dt > 1- linear_convergence)
+                    dt = 1- linear_convergence;
+                
+                const double t = (1-dt)*left_t + dt*right_t;
+                for(unsigned i = 0; i <= degree; i++) {
+                    ys[i] = w[i][Geom::Y];
+                }
+                // triangle - note the order of updates
+                for(unsigned d = 0; d < degree; d++)
+                    for(unsigned i = d; i <= degree; i++)
+                        ys[i] = (1-t)*ys[i] + t*ys[i+1];
+                const double y = ys[degree]; // value at t
+                if(SGN(y) == left_y) {
+                    left_y = y;
+                    left_t = t;
+                }
+                if(SGN(y) == right_y) {
+                    right_y = y;
+                    right_t = t;
+                }
+                assert(SGN(left_y) != SGN(right_y));
+            }
+            double xs[degree+1];
+            double t = (left_t + right_t)/2; // perhaps the mid_point is better?
+            for(unsigned i = 0; i <= degree; i++) {
+                xs[i] = w[i][Geom::X];
+            }
+            // triangle - note the order of updates
+            for(unsigned d = 0; d < degree; d++)
+                for(unsigned i = d; i <= degree; i++)
+                    xs[i] = (1-t)*xs[i] + t*xs[i+1];
+            solutions.push_back(xs[degree]);
+            return;
+            // is not secant, use subdivision
+        } else if (control_poly_flat_enough(w, degree)) {
             solutions.push_back(compute_x_intercept(w, degree));
             return;
         }

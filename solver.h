@@ -3,13 +3,13 @@
 #include "point.h"
 #include "s-basis.h"
 
-int
+unsigned
 crossing_count(Geom::Point *V,	/*  Control pts of Bezier curve	*/
-	       int degree);	/*  Degree of Bezier curve 	*/
-int
+	       unsigned degree);	/*  Degree of Bezier curve 	*/
+void
 find_bezier_roots(
     Geom::Point *w, /* The control points  */
-    int degree,	/* The degree of the polynomial */
-    double *t,	/* RETURN candidate t-values */
-    int depth);	/* The depth of the recursion */
+    unsigned degree,	/* The degree of the polynomial */
+    std::vector<double> & solutions,	/* RETURN candidate t-values */
+    unsigned depth);	/* The depth of the recursion */
 #endif
