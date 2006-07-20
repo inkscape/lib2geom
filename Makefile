@@ -27,8 +27,9 @@ TARGETS=$(TARGETOBJS:.o=)
 
 ALLOBJS=$(LIBOBJS) $(EXTRAOBJS)
 
+all: $(TARGETS)
 # Dependency magic.
-%o: %.cpp
+%.o: %.cpp
 	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) $*.cpp -o $*.o
 	@$(CXX) -MM $(CPPFLAGS) $*.cpp > $*.d
 	@cp -f $*.d $*.d.tmp 
@@ -42,7 +43,6 @@ ALLOBJS=$(LIBOBJS) $(EXTRAOBJS)
 $(EXTRAOBJS): CPPFLAGS:=$(EXTRA_CPPFLAGS) $(CPPFLAGS)
 
 
-all: $(TARGETS)
 
 sbasis: one-D s-bez rat-bez arc-bez unit-test-sbasis
 
