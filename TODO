@@ -24,7 +24,13 @@ other:
 * we also need to make unit tests, and devise timing tests
 * better Makefile with fastdep, shared library, separate headers - the usual things
 
-
+* checking the svg-d parser
+* writing conversion routines to and from existing inkscape types
+* attempting to write nodepath editing stuff in a more generic way
+* split? (given a list of locations, insert a node at each of those points, or convert each to a separate subpath)
+* convert a set of subpaths to a set of singleton paths
+* convert a set of paths to a single path
+* convex hull
 
 to build:
  libgsl0-dev
