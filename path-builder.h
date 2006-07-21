@@ -24,6 +24,12 @@ public:
         _current_point = p1;
     }
 
+    void push_line(Point const &p0, Point const &p1) {
+        if(p0 != _current_point)
+            start_subpath(p0);
+        push_line(p1);
+    }
+
     void push_quad(Point const &p1, Point const &p2) {
         if (!_current_subpath) start_subpath(_current_point);
         _current_subpath->cmd.push_back(quadto);

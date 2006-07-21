@@ -109,23 +109,76 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     cairo_set_source_rgba (cr, 0., 0., 0, 0.8);
     cairo_set_line_width (cr, 0.5);
     
-
+    cairo_set_source_rgba (cr, 0., 0., 0, 0.8);
+    cairo_set_line_width (cr, 0.5);
+    for(int i = 1; i < 4; i+=2) {
+        cairo_move_to(cr, 0, i*height/4);
+        cairo_line_to(cr, width, i*height/4);
+        cairo_move_to(cr, i*width/4, 0);
+        cairo_line_to(cr, i*width/4, height);
+    }
+    cairo_stroke(cr);
     
-    SBasis Sq = BezOrd(0, 1);
+    Geom::Point d0 = handles[1] - handles[0];
+    Geom::Point d1 = handles[2] - handles[3];
+    Geom::Point c;
+    Geom::Point tri;
+    line_twopoint_intersect(handles[0], handles[0]+Geom::rot90(d0), 
+                            handles[3], handles[3]+Geom::rot90(d1), c);
+    line_twopoint_intersect(handles[0], handles[1], 
+                            handles[2], handles[3], tri);
+    
+    cairo_save(cr);
+    cairo_move_to(cr, handles[0]);
+    cairo_line_to(cr, c);
+    cairo_line_to(cr, handles[3]);
+    cairo_move_to(cr, handles[0]);
+    cairo_line_to(cr, tri);
+    cairo_line_to(cr, handles[3]);
+    cairo_set_line_width(cr, 0.5);
+    cairo_stroke(cr);
+    cairo_restore(cr);
+    
+    SBasis one = BezOrd(1, 1);
     multidim_sbasis<2> B;
-    double s_angle = Geom::atan2(handles[1] - handles[0]);
-    double e_angle = Geom::atan2(handles[2] - handles[0]);
-    double s_length = Geom::L2(handles[1] - handles[0]);
-    double e_length = Geom::L2(handles[2] - handles[0]);
-    double aff[4] = {s_length,0,0,s_length};
-    SBasis C = cos(0, 2*M_PI, 10);
-    SBasis S = sin(0, 2*M_PI, 10);
-    B[0] = aff[0]*C + aff[1]*S + BezOrd(Hat(handles[0][0]));
-    B[1] = aff[2]*C + aff[3]*S + BezOrd(Hat(handles[0][1]));
+    double alpha = M_PI;
+    SBasis C = cos(0, alpha, 10);
+    SBasis S = sin(0, alpha, 10);
+    SBasis X(BezOrd(0,alpha));
+    SBasis sinC = X - S;
+    SBasis cosC = one - C;
+    //SBasis tanC = divide(sinC, cosC, 10);
+    SBasis Z3 = (1./(sinC(1)))*sinC;
+    SBasis Z0 = reverse(Z3);
+    SBasis Z2 = (1./(cosC(1)))*cosC - Z3;
+    SBasis Z1 = reverse(Z2);
+    
+    SBasis Z[4] = {Z0, Z1, Z2, Z3};
+    
+    for(unsigned dim  = 0; dim < 2; dim++) {
+        B[dim] = BezOrd(0,0);
+        for(unsigned i  = 0; i < 4; i++) {
+            B[dim] += handles[i][dim]*Z[i];
+        }
+    }
+    {
     Geom::PathBuilder pb;
     subpath_from_sbasis(pb, B, 1);
     cairo_path(cr, pb.peek());
     cairo_path_handles(cr, pb.peek());
+    }
+    /*for(unsigned i  = 0; i < 4; i++) {
+        std::cout << Z[i](0) << ", " <<  Z[i](1) << std::endl;
+    }
+    for(unsigned i = 0; i < 4; i++) {
+        B[0] = BezOrd(width/4, 3*width/4);
+        B[0].a.push_back(BezOrd(0,0));
+        B[1] = (SBasis)BezOrd(Hat(3*height/4)) - (height/2)*Z[i];
+        Geom::PathBuilder pb;
+        subpath_from_sbasis(pb, B, 1);
+        cairo_path(cr, pb.peek());
+        cairo_path_handles(cr, pb.peek());
+        }*/
     
     cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
     cairo_stroke(cr);
@@ -249,11 +302,16 @@ double uniform() {
 }
 
 int main(int argc, char **argv) {
-    handles.push_back(Geom::Point(uniform()*400, uniform()*400));
-    handles.push_back(Geom::Point(uniform()*400, uniform()*400));
-    handles.push_back(Geom::Point(uniform()*400, uniform()*400));
-    handles.push_back(Geom::Point(uniform()*400, uniform()*400));
-    handles.push_back(Geom::Point(uniform()*400, uniform()*400));
+    //handles.push_back(Geom::Point(uniform()*400, uniform()*400));
+    //handles.push_back(Geom::Point(uniform()*400, uniform()*400));
+    //handles.push_back(Geom::Point(uniform()*400, uniform()*400));
+    //handles.push_back(Geom::Point(uniform()*400, uniform()*400));
+    
+    handles.push_back(Geom::Point(100, 500));
+    handles.push_back(Geom::Point(100, 500 - 200*M_PI/2));
+    handles.push_back(Geom::Point(500, 500 - 200*M_PI/2));
+    handles.push_back(Geom::Point(500, 500));
+    
     
     gtk_init (&argc, &argv);
     

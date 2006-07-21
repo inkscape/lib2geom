@@ -325,6 +325,15 @@ SBasis cos(double a0, double a1, int k) {
                k);
 }
 
+SBasis reverse(SBasis const &c) {
+    SBasis a;
+    for(unsigned k = 0; k < c.size(); k++) {
+        BezOrd b(c[k][1], c[k][0]);
+        a.a.push_back(b);
+    }
+    return a;
+}
+
 /*
   Local Variables:
   mode:c++
