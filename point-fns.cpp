@@ -36,6 +36,15 @@ Geom::Coord Geom::atan2(Point const p) {
     return std::atan2(p[Geom::Y], p[Geom::X]);
 }
 
+/** compute the angle turning from a to b.  This should give pi for angle_between(a, rot90(a));
+ * This works by projecting b onto the basis defined by a, rot90(a)
+ */
+Geom::Coord Geom::angle_between(Point const a, Point const b) {
+    return std::atan2(cross(b,a), dot(b,a));
+}
+
+
+
 /** Returns a version of \a a scaled to be a unit vector (within rounding error).
  *
  *  The current version tries to handle infinite coordinates gracefully,

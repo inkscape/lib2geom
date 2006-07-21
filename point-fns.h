@@ -28,6 +28,8 @@ bool is_zero(Point const &p);
 bool is_unit_vector(Point const &p);
 
 extern double atan2(Point const p);
+/** compute the angle turning from a to b (signed). */
+extern double angle_between(Point const a, Point const b);
 
 inline bool point_equalp(Point const &a, Point const &b, double const eps)
 {

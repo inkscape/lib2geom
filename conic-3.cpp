@@ -71,7 +71,11 @@ void draw_elip() {
         line_twopoint_intersect(c1, h[3], c2, h[1], six);
         old = six;
     }
-}    
+}
+
+double sinC(double t) { return t - sin(t);}
+double cosC(double t) { return 1 - cos(t);}
+double tanC(double t) { return sinC(t) / cosC(t);}
 
 static gboolean
 expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
@@ -119,22 +123,40 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     }
     cairo_stroke(cr);
     
-    Geom::Point d0 = handles[1] - handles[0];
-    Geom::Point d1 = handles[2] - handles[3];
+    vector<Geom::Point> e_a_h;
+    Geom::Point a0 = handles[0] - handles[1];
+    Geom::Point a1 = handles[2] - handles[1];
+    double angle = Geom::angle_between(a0, a1);
+    double len = std::max(Geom::L2(a0),
+                          Geom::L2(a1));
+    a0 = len*unit_vector(a0);
+    a1 = len*unit_vector(a1);
+    notify << "angle = " << angle;
+    e_a_h.resize(4);
+    e_a_h[0] = handles[1] + a0;
+    e_a_h[3] = handles[1] + a1;
+    e_a_h[1] = e_a_h[0] + tanC(angle)*Geom::rot90(a0);
+    e_a_h[2] = e_a_h[3] - tanC(angle)*Geom::rot90(a1);
+    for(int i = 0; i < e_a_h.size(); i++) {
+        draw_circ(cr, e_a_h[i]);
+    }
+    
+    Geom::Point d0 = e_a_h[1] - e_a_h[0];
+    Geom::Point d1 = e_a_h[2] - e_a_h[3];
     Geom::Point c;
     Geom::Point tri;
-    line_twopoint_intersect(handles[0], handles[0]+Geom::rot90(d0), 
-                            handles[3], handles[3]+Geom::rot90(d1), c);
-    line_twopoint_intersect(handles[0], handles[1], 
-                            handles[2], handles[3], tri);
+    line_twopoint_intersect(e_a_h[0], e_a_h[0]+Geom::rot90(d0), 
+                            e_a_h[3], e_a_h[3]+Geom::rot90(d1), c);
+    line_twopoint_intersect(e_a_h[0], e_a_h[1], 
+                            e_a_h[2], e_a_h[3], tri);
     
     cairo_save(cr);
-    cairo_move_to(cr, handles[0]);
+    cairo_move_to(cr, e_a_h[0]);
     cairo_line_to(cr, c);
-    cairo_line_to(cr, handles[3]);
-    cairo_move_to(cr, handles[0]);
+    cairo_line_to(cr, e_a_h[3]);
+    cairo_move_to(cr, e_a_h[0]);
     cairo_line_to(cr, tri);
-    cairo_line_to(cr, handles[3]);
+    cairo_line_to(cr, e_a_h[3]);
     cairo_set_line_width(cr, 0.5);
     cairo_stroke(cr);
     cairo_restore(cr);
@@ -158,7 +180,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     for(unsigned dim  = 0; dim < 2; dim++) {
         B[dim] = BezOrd(0,0);
         for(unsigned i  = 0; i < 4; i++) {
-            B[dim] += handles[i][dim]*Z[i];
+            B[dim] += e_a_h[i][dim]*Z[i];
         }
     }
     {
@@ -302,15 +324,15 @@ double uniform() {
 }
 
 int main(int argc, char **argv) {
-    //handles.push_back(Geom::Point(uniform()*400, uniform()*400));
-    //handles.push_back(Geom::Point(uniform()*400, uniform()*400));
-    //handles.push_back(Geom::Point(uniform()*400, uniform()*400));
+    handles.push_back(Geom::Point(uniform()*400, uniform()*400));
+    handles.push_back(Geom::Point(uniform()*400, uniform()*400));
+    handles.push_back(Geom::Point(uniform()*400, uniform()*400));
     //handles.push_back(Geom::Point(uniform()*400, uniform()*400));
     
-    handles.push_back(Geom::Point(100, 500));
+    /*handles.push_back(Geom::Point(100, 500));
     handles.push_back(Geom::Point(100, 500 - 200*M_PI/2));
     handles.push_back(Geom::Point(500, 500 - 200*M_PI/2));
-    handles.push_back(Geom::Point(500, 500));
+    handles.push_back(Geom::Point(500, 500));*/
     
     
     gtk_init (&argc, &argv);
