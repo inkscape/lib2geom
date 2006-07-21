@@ -22,6 +22,9 @@ enum IntersectorKind {
 /* Define here various primatives, such as line, line segment, circle, bezier path etc. */
 
 
+int
+intersector_ccw(const Geom::Point& p0, const Geom::Point& p1,
+		const Geom::Point& p2);
 
 /* intersectors */
 

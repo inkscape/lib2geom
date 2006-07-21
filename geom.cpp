@@ -85,13 +85,14 @@ line_intersection(Geom::Point const &n0, double const d0,
 
 
 /* ccw exists as a building block */
-static int
-intersector_ccw(const Geom::Point p0, const Geom::Point p1, const Geom::Point p2)
+int
+intersector_ccw(const Geom::Point& p0, const Geom::Point& p1,
+        const Geom::Point& p2)
 /* Determine which way a set of three points winds. */
 {
     Geom::Point d1 = p1 - p0;
     Geom::Point d2 = p2 - p0;
-/* compare slopes but avoid division operation */
+    /* compare slopes but avoid division operation */
     double c = dot(Geom::rot90(d1), d2);
     if(c > 0)
         return +1; // ccw - do these match def'n in header?
