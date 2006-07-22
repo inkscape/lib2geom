@@ -1,12 +1,12 @@
-#include "coord.h"
-#include "dim2.h"
+$#include "coord.h"
+$#include "dim2.h"
 
-#include "decimal-round.h"
-#include "point.h"
+$#include "decimal-round.h"
+$#include "point.h"
 
 /// Cartesian point.
 class Point {
-  public:
+
     inline Point();
 
     inline Point(Coord x, Coord y);
@@ -15,10 +15,10 @@ class Point {
 
     inline Point(Point const &p);
 
-    inline Point &operator=(Point const &p);
+//    inline Point &operator=(Point const &p);
 
-    inline Coord operator[](unsigned i) const;
-    inline Coord &operator[](unsigned i);
+//    inline Coord operator[](unsigned i) const;
+//    inline Coord &operator[](unsigned i);
 
     /** Return a point like this point but rotated -90 degrees.
         (If the y axis grows downwards and the x axis grows to the
@@ -41,17 +41,17 @@ class Point {
 
     void normalize();
 
-    inline Point &operator+=(Point const &o);
+//    inline Point &operator+=(Point const &o);
   
-    inline Point &operator-=(Point const &o);
+//    inline Point &operator-=(Point const &o);
   
-    inline Point &operator/=(double const s);
+//    inline Point &operator/=(double const s);
 
-    inline Point &operator*=(double const s);
+//    inline Point &operator*=(double const s);
 
-    Point &operator*=(Matrix const &m);
+//    Point &operator*=(Matrix const &m);
 
-    inline int operator == (const Point &in_pnt);
+//    inline int operator == (const Point &in_pnt);
 };
 
 /*
