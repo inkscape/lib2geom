@@ -124,21 +124,27 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     cairo_stroke(cr);
     
     vector<Geom::Point> e_a_h;
-    Geom::Point a0 = handles[0] - handles[1];
-    Geom::Point a1 = handles[2] - handles[1];
-    double angle = Geom::angle_between(a0, a1);
-    double len = std::max(Geom::L2(a0),
-                          Geom::L2(a1));
-    a0 = len*unit_vector(a0);
-    a1 = len*unit_vector(a1);
+    Geom::Point a[2] = {handles[0] - handles[1],
+                        handles[2] - handles[1]};
+    double angle = Geom::angle_between(a[0], a[1]);
+    double len = std::max(Geom::L2(a[0]),
+                          Geom::L2(a[1]));
+    for(int i = 0; i < 2; i++) 
+        a[i] = len*unit_vector(a[i]);
     notify << "angle = " << angle;
+    notify << " sinC = " << sinC(angle);
+    notify << " cosC = " << cosC(angle);
+    notify << " tanC = " << tanC(angle);
     e_a_h.resize(4);
-    e_a_h[0] = handles[1] + a0;
-    e_a_h[3] = handles[1] + a1;
-    e_a_h[1] = e_a_h[0] + tanC(angle)*Geom::rot90(a0);
-    e_a_h[2] = e_a_h[3] - tanC(angle)*Geom::rot90(a1);
+    e_a_h[0] = handles[1] + a[0];
+    e_a_h[3] = handles[1] + a[1];
+    e_a_h[1] = e_a_h[0] + tanC(angle)*Geom::rot90(a[0]);
+    e_a_h[2] = e_a_h[3] - tanC(angle)*Geom::rot90(a[1]);
     for(int i = 0; i < e_a_h.size(); i++) {
         draw_circ(cr, e_a_h[i]);
+    }
+    for(int i = 0; i < 2; i++) {
+        draw_cross(cr, e_a_h[i*3] + Geom::rot90(a[i]));
     }
     
     Geom::Point d0 = e_a_h[1] - e_a_h[0];
