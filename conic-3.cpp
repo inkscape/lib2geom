@@ -135,7 +135,10 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     notify << " sinC = " << sinC(angle);
     notify << " cosC = " << cosC(angle);
     notify << " tanC = " << tanC(angle);
-    e_a_h.resize(4);
+    e_a_h = handles;
+    //e_a_h.resize(4);
+    
+/*
     e_a_h[0] = handles[1] + a[0];
     e_a_h[3] = handles[1] + a[1];
     e_a_h[1] = e_a_h[0] + tanC(angle)*Geom::rot90(a[0]);
@@ -165,7 +168,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     cairo_line_to(cr, e_a_h[3]);
     cairo_set_line_width(cr, 0.5);
     cairo_stroke(cr);
-    cairo_restore(cr);
+    cairo_restore(cr);*/
     
     SBasis one = BezOrd(1, 1);
     multidim_sbasis<2> B;
@@ -330,15 +333,15 @@ double uniform() {
 }
 
 int main(int argc, char **argv) {
+    /*handles.push_back(Geom::Point(uniform()*400, uniform()*400));
     handles.push_back(Geom::Point(uniform()*400, uniform()*400));
-    handles.push_back(Geom::Point(uniform()*400, uniform()*400));
-    handles.push_back(Geom::Point(uniform()*400, uniform()*400));
+    handles.push_back(Geom::Point(uniform()*400, uniform()*400));*/
     //handles.push_back(Geom::Point(uniform()*400, uniform()*400));
     
-    /*handles.push_back(Geom::Point(100, 500));
+    handles.push_back(Geom::Point(100, 500));
     handles.push_back(Geom::Point(100, 500 - 200*M_PI/2));
     handles.push_back(Geom::Point(500, 500 - 200*M_PI/2));
-    handles.push_back(Geom::Point(500, 500));*/
+    handles.push_back(Geom::Point(500, 500));
     
     
     gtk_init (&argc, &argv);

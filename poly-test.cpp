@@ -59,9 +59,34 @@ void DK(Poly const & ply) {
     }
 }
 
+double Laguerre(Poly const & p,
+                Poly const & pp,
+                Poly const & ppp,
+                double x0,
+                double tol) {
+    double a = 2*tol;
+    double xk = x0;
+    double n = p.degree();
+    while(a > tol) {
+        cout << "xk = " << xk << endl;
+        double G = pp(xk) / p(xk);
+        double H = G*G - ppp(xk) / p(xk);
+        
+        double radicand = (n - 1)*(n*H-G*G);
+        assert(radicand > 0);
+        if(G < 0)
+            a = - sqrt(radicand);
+        else
+            a = sqrt(radicand);
+        a = n / (a + G); // avoiding cancellation
+        xk -= a;
+    }
+    return xk;
+}
+
 int
 main(int argc, char** argv) {
-    Poly a, b;
+    Poly a, b, r;
     
     a.coeff.push_back(1);
     a.coeff.push_back(2);
@@ -77,17 +102,21 @@ main(int argc, char** argv) {
     
     std::cout << derivative(b*b*b) <<std::endl;
     std::cout << integral(derivative(b*b*b)) <<std::endl;
+    cout << "divide: ";
+    std::cout << divide(a,b, r) << endl;
+    cout << r << endl;
     Poly prod = lin_poly(1, 3)*lin_poly(1,-4)*lin_poly(1,-7)*lin_poly(2,1);
     
     std::cout << prod <<std::endl;
     solve(prod) ;
-    DK(prod);
+    //DK(prod);
     
     Poly dk_trial;
     dk_trial.coeff.push_back(-5);
     dk_trial.coeff.push_back(3);
     dk_trial.coeff.push_back(-3);
     dk_trial.coeff.push_back(1);
+/*
     vector<complex<double> > prod_root = solve(prod);
     copy(prod_root.begin(), prod_root.end(), ostream_iterator<complex<double> >(cout, ",\t"));
     cout << endl;
@@ -97,6 +126,14 @@ main(int argc, char** argv) {
     vector<complex<double> > prod_root = solve(dk_trial);
     copy(prod_root.begin(), prod_root.end(), ostream_iterator<complex<double> >(cout, ",\t"));
     cout << endl;
+    }*/
+    {
+        Poly p = dk_trial,
+            pp = derivative(p),
+            ppp = derivative(pp);
+        double x0 = 3;
+        double tol = 1e-15;
+        cout << Laguerre(p, pp, ppp, x0, tol);
     }
     
     std::cout << prod.eval(4) << std::endl;

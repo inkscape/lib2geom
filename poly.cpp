@@ -117,6 +117,50 @@ Poly compose(Poly const & a, Poly const & b) {
     
 }
 
+/* This version is backwards - dividing taylor terms
+Poly divide(Poly const &a, Poly const &b, Poly &r) {
+    Poly c;
+    r = a; // remainder
+    
+    const unsigned k = a.size();
+    r.coeff.resize(k, 0);
+    c.coeff.resize(k, 0);
+
+    for(unsigned i = 0; i < k; i++) {
+        double ci = r[i]/b[0];
+        c.coeff[i] += ci;
+        Poly bb = ci*b;
+        std::cout << ci <<"*" << b << ", r= " << r << std::endl;
+        r -= bb.shifted(i);
+    }
+    
+    return c;
+}
+*/
+
+// probably wrong
+Poly divide(Poly const &a, Poly const &b, Poly &r) {
+    Poly c;
+    r = a; // remainder
+    
+    const unsigned k = a.size();
+    r.coeff.resize(k, 0);
+    c.coeff.resize(k-1, 0);
+
+    for(int i = k-1; i >= b.size()-1; i--) {
+        double ci = r[i]/b[0];
+        c.coeff[i-1] += ci;
+        Poly bb = ci*b;
+        std::cout << ci <<"*" << b.shifted(i-1) << ", r= " << r << std::endl;
+        r -= bb.shifted(i-1);
+        r.coeff[i] = 0;
+    }
+    
+    return c;
+}
+
+
+
 
 /*Poly divide_out_root(Poly const & p, double x) {
     assert(1);

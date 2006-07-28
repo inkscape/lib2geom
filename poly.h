@@ -47,6 +47,18 @@ public:
         assert(result.size() == out_size);
         return result;
     }
+    Poly operator-=(const Poly& p) {
+        const unsigned out_size = std::max(size(), p.size());
+        const unsigned min_size = std::min(size(), p.size());
+        coeff.resize(out_size);
+        
+        for(unsigned i = 0; i < min_size; i++) {
+            coeff[i] -= p.coeff[i];
+        }
+        for(unsigned i = min_size; i < out_size; i++)
+            coeff[i] = -p.coeff[i];
+        return *this;
+    }
     Poly operator-(const double k) const {
         Poly result;
         const unsigned out_size = size();
@@ -70,7 +82,7 @@ public:
         return result;
     }
 // equivalent to multiply by x^terms, discard negative terms
-    Poly shifted(int terms) { 
+    Poly shifted(int terms) const { 
         Poly result;
         
         const unsigned out_size = std::max(0u, size()+terms);
@@ -103,7 +115,6 @@ public:
     Poly() {}
     Poly(const Poly& p) : coeff(p.coeff) {}
     Poly(const double a) {coeff.push_back(a);}
-    
 };
 
 inline Poly operator*(double a, Poly const & b) { return b * a;}
@@ -112,6 +123,7 @@ Poly integral(Poly const & p);
 Poly derivative(Poly const & p);
 Poly divide_out_root(Poly const & p, double x);
 Poly compose(Poly const & a, Poly const & b);
+Poly divide(Poly const &a, Poly const &b, Poly &r);
 
 /*** solve(Poly p)
  * find all p.degree() roots of p.
