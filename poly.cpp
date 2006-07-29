@@ -17,9 +17,9 @@ Poly Poly::operator*(const Poly& p) const {
 
 #include <gsl/gsl_poly.h>
 
-double Poly::eval(double x) const {
+/*double Poly::eval(double x) const {
     return gsl_poly_eval(&coeff[0], size(), x);
-}
+    }*/
 
 void Poly::normalize() {
     while(coeff.back() == 0)
@@ -100,6 +100,8 @@ Poly integral(Poly const & p) {
 Poly derivative(Poly const & p) {
     Poly result;
     
+    if(p.size() <= 1)
+        return Poly(0);
     result.coeff.reserve(p.size()-1);
     for(int i = 1; i < p.size(); i++) {
         result.coeff.push_back(i*p[i]);
@@ -138,27 +140,43 @@ Poly divide(Poly const &a, Poly const &b, Poly &r) {
 }
 */
 
-// probably wrong
 Poly divide(Poly const &a, Poly const &b, Poly &r) {
     Poly c;
     r = a; // remainder
+    assert(b.size() > 0);
     
-    const unsigned k = a.size();
-    r.coeff.resize(k, 0);
-    c.coeff.resize(k-1, 0);
-
-    for(int i = k-1; i >= b.size()-1; i--) {
-        double ci = r[i]/b[0];
-        c.coeff[i-1] += ci;
+    const int k = a.degree();
+    const int l = b.degree();
+    c.coeff.resize(k, 0.);
+    
+    for(int i = k; i >= l; i--) {
+        assert(i >= 0);
+        double ci = r.coeff.back()/b.coeff.back();
+        c.coeff[i-l] += ci;
         Poly bb = ci*b;
-        std::cout << ci <<"*" << b.shifted(i-1) << ", r= " << r << std::endl;
-        r -= bb.shifted(i-1);
-        r.coeff[i] = 0;
+        //std::cout << ci <<"*(" << b.shifted(i-l) << ") = " 
+        //          << bb.shifted(i-l) << "     r= " << r << std::endl;
+        r -= bb.shifted(i-l);
+        r.coeff.pop_back();
     }
+    //std::cout << "r= " << r << std::endl;
+    r.normalize();
+    c.normalize();
     
     return c;
 }
 
+Poly gcd(Poly const &a, Poly const &b, const double tol) {
+    if(a.size() < b.size())
+        return gcd(b, a);
+    if(b.size() <= 0)
+        return a;
+    if(b.size() == 1)
+        return a;
+    Poly r;
+    divide(a, b, r);
+    return gcd(b, r);
+}
 
 
 

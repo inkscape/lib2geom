@@ -14,6 +14,7 @@ public:
     unsigned degree() const { return size()-1;}
 
     double operator[](const int i) const { return coeff[i];}
+    double& operator[](const int i) { return coeff[i];}
     
     Poly operator+(const Poly& p) const {
         Poly result;
@@ -84,8 +85,7 @@ public:
 // equivalent to multiply by x^terms, discard negative terms
     Poly shifted(int terms) const { 
         Poly result;
-        
-        const unsigned out_size = std::max(0u, size()+terms);
+        const unsigned out_size = std::max(0, int(size())+terms);
         result.coeff.reserve(out_size);
         
         if(terms < 0) {
@@ -105,9 +105,18 @@ public:
         return result;
     }
     Poly operator*(const Poly& p) const;
+    
+    template <typename T>
+    T eval(T x) const {
+        T r = 0;
+        for(int k = size()-1; k >= 0; k--) {
+            r = r*x + T(coeff[k]);
+        }
+        return r;
 
-    double eval(double x) const;
-    double operator()(double t) const { return eval(t);}
+    }
+    template <typename T>
+    T operator()(T t) const { return eval(t);}
     
     void normalize();
     
@@ -124,6 +133,7 @@ Poly derivative(Poly const & p);
 Poly divide_out_root(Poly const & p, double x);
 Poly compose(Poly const & a, Poly const & b);
 Poly divide(Poly const &a, Poly const &b, Poly &r);
+Poly gcd(Poly const &a, Poly const &b, const double tol=1e-10);
 
 /*** solve(Poly p)
  * find all p.degree() roots of p.

@@ -134,6 +134,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     }
     cairo_stroke(cr);
     
+
     std::vector<Geom::Point> e_h = handles;
     for(int i = 0; i < 5; i++) {
         Geom::Point p = e_h[i];
@@ -144,9 +145,14 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
             cairo_move_to(cr, p);
     }
     cairo_stroke(cr);
-    for(int i = 1; i < 4; i++) {
-        //e_h[i] = (e_h[i]-e_h[0])*3 + e_h[0];
-    }
+
+    //Geom::Point ctr = (e_h[0] + e_h[4])/2;
+    //e_h[1] = (e_h[1]-e_h[0])*3 + e_h[0];
+    //e_h[2] = (e_h[2]-ctr)*3 + ctr;
+    //e_h[3] = (e_h[3]-e_h[4])*3 + e_h[4];
+    //for(int i = 1; i <= 3; i++) {
+    //   e_h[i] = (e_h[i]-ctr)*3 + ctr;
+    // }
     
     multidim_sbasis<2> B;
     const double alpha = M_PI;
@@ -322,8 +328,8 @@ double uniform() {
 }
 
 int main(int argc, char **argv) {
-    /*for(int i = 0; i < 5; i++)
-      handles.push_back(Geom::Point(uniform()*400, uniform()*400));*/
+    //for(int i = 0; i < 3; i++)
+    //    handles.push_back(Geom::Point(uniform()*400, uniform()*400));
     
     double sc = 30;
     Geom::Point c(6*sc, 6*sc);
