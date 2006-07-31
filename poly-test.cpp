@@ -75,7 +75,7 @@ main(int argc, char** argv) {
     solve(prod) ;
     //DK(prod);
 
-    //sturm st(prod);
+    sturm st(prod);
     
     Poly dk_trial;
     dk_trial.push_back(-5);
