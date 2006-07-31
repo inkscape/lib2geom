@@ -77,6 +77,11 @@ main(int argc, char** argv) {
 
     sturm st(prod);
     
+    for(double t = -3.25; t < 8.25; t+= 0.5) {
+        std::cout << st.count_signs(t) << std::endl;
+    }
+    std::cout << "infty = " << st.count_signs(INFINITY) << std::endl;
+    
     Poly dk_trial;
     dk_trial.push_back(-5);
     dk_trial.push_back(3);
