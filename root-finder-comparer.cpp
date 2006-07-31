@@ -26,9 +26,14 @@
 #include "solver.h"
 #include <iterator>
 #include "nearestpoint.cpp"
+#include "sbasis-poly.h"
+#include "sturm.h"
+#include "poly-dk-solve.h"
+#include "poly-laguerre-solve.h"
 
 using std::string;
 using std::vector;
+using std::complex;
 
 static GtkWidget *canvas;
 
@@ -89,7 +94,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     }
     
     std::vector<double> solutions;
-    clock_t end_t = clock()+0.1*CLOCKS_PER_SEC;
+    clock_t end_t = clock()+clock_t(0.1*CLOCKS_PER_SEC);
     unsigned iterations = 0;
     while(end_t > clock()) {
         total_steps = 0;
@@ -99,7 +104,45 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
         iterations++;
     }
     notify << "original time = " << 1./iterations << std::endl;
-    end_t = clock()+0.1*CLOCKS_PER_SEC;
+    
+    multidim_sbasis<2> test_sb = bezier_to_sbasis<2, 5>(handles.begin());
+    Poly ply = sbasis_to_poly(test_sb[1]);
+    ply = Poly(3*height/4) - ply;
+    
+    vector<complex<double> > complex_solutions;
+    complex_solutions = solve(ply);
+    std::cout << "gsl: ";
+    std::copy(complex_solutions.begin(), complex_solutions.end(), std::ostream_iterator<std::complex<double> >(std::cout, ",\t"));
+    std::cout << std::endl;
+
+    /*complex_solutions = Laguerre(ply);
+    std::cout << "laguerre: ";
+    std::copy(complex_solutions.begin(), complex_solutions.end(), std::ostream_iterator<std::complex<double> >(std::cout, ",\t"));
+    std::cout << std::endl;*/
+
+    /*complex_solutions = DK(ply);
+    std::cout << "dk: ";
+    std::copy(complex_solutions.begin(), complex_solutions.end(), std::ostream_iterator<std::complex<double> >(std::cout, ",\t"));
+    std::cout << std::endl;*/
+
+    end_t = clock()+clock_t(0.1*CLOCKS_PER_SEC);
+    iterations = 0;
+    while(end_t > clock()) {
+        solve(ply);
+        iterations++;
+    }
+    notify << "gsl poly " << ", time = " << 1./iterations << std::endl;
+    
+    end_t = clock()+clock_t(0.1*CLOCKS_PER_SEC);
+    iterations = 0;
+    while(end_t > clock()) {
+        //Laguerre(ply);
+        iterations++;
+    }
+    notify << "Laguerre poly " << ", time = " << 1./iterations << std::endl;
+    
+    
+    end_t = clock()+clock_t(0.1*CLOCKS_PER_SEC);
     iterations = 0;
     while(end_t > clock()) {
         total_steps = 0;
@@ -110,9 +153,16 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     }
     notify << "subdivision " << total_steps << ", " << total_subs <<  ", time = " << 1./iterations << std::endl;
     for(unsigned i = 0; i < solutions.size(); i++) {
-        draw_cross(cr, Geom::Point(solutions[i], 3*height/4));
+        ;//draw_cross(cr, Geom::Point(solutions[i], 3*height/4));
         
     }
+    for(unsigned i = 0; i < complex_solutions.size(); i++) {
+        if(complex_solutions[i].imag() == 0) {
+            double x = test_sb[0](complex_solutions[i].real());
+            draw_handle(cr, Geom::Point(x, 3*height/4));
+        }
+    }
+
     notify << "found " << solutions.size() << "solutions at:\n";
     std::copy(solutions.begin(), solutions.end(), std::ostream_iterator<double >(notify, ","));
 

@@ -19,7 +19,7 @@ LIBOBJS=arc-length.o centroid.o geom.o matrix-rotate-ops.o \
 	path-intersect.o path-metric.o path-to-polyline.o path-to-svgd.o \
 	path.o point-fns.o poly.o read-svgd.o rect.o rotate-fns.o s-basis.o \
 	sbasis-poly.o types.o sbasis-to-bezier.o \
-	solve-bezier-parametric.o solve-bezier-one-d.o
+	solve-bezier-parametric.o solve-bezier-one-d.o poly-dk-solve.o poly-laguerre-solve.o
 
 EXTRAOBJS=interactive-bits.o path-cairo.o $(TARGETOBJS)
 

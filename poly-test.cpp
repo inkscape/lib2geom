@@ -2,6 +2,10 @@
 #include <vector>
 #include <iterator>
 
+#include "poly-dk-solve.h"
+#include "poly-laguerre-solve.h"
+#include "sturm.h"
+
 //x^5*1 + x^4*1212.36 + x^3*-2137.83 + x^2*1357.77 + x^1*-366.403 + x^0*42.0846
 
 
@@ -12,88 +16,6 @@ Poly lin_poly(double a, double b) { // ax + b
     p.push_back(b);
     p.push_back(a);
     return p;
-}
-
-complex<double> eval(Poly const & p, complex<double> x) {
-    complex<double> result = 0;
-    complex<double> xx = 1;
-    
-    for(int i = 0; i < p.size(); i++) {
-        result += p[i]*xx;
-        xx *= x;
-    }
-    return result;
-}
-
-void DK(Poly const & ply) {
-    vector<complex<double> > roots;
-    vector<complex<double> > new_roots;
-    const int N = ply.degree();
-    
-    complex<double> b(0.4, 0.9);
-    complex<double> p = 1;
-    for(int i = 0; i < N; i++) {
-        roots.push_back(p);
-        p *= b;
-    }
-    assert(roots.size() == ply.degree());
-    
-    //copy(roots.begin(), roots.end(), ostream_iterator<complex<double> >(cout, ",\t"));
-    //cout << endl;
-    
-    new_roots.resize(N);
-    for(int i = 0; i < 35; i++) {
-        for(int r_i = 0; r_i < N; r_i++) {
-            complex<double> denom = 1;
-            complex<double> R = roots[r_i];
-            for(int d_i = 0; d_i < N; d_i++) {
-                if(r_i != d_i)
-                    denom *= R-roots[d_i];
-            }
-            //cout << denom <<endl;
-            roots[r_i] = R - eval(ply, R)/denom;
-        }
-        //copy(new_roots.begin(), new_roots.end(), roots.begin());
-        //copy(roots.begin(), roots.end(), ostream_iterator<complex<double> >(cout, ",\t"));
-        //cout << endl;
-    }
-}
-
-complex<double> Laguerre(Poly const & p,
-                Poly const & pp,
-                Poly const & ppp,
-                double x0,
-                double tol,
-bool & quad_root) {
-    complex<double> a = 2*tol;
-    complex<double> xk = x0;
-    double n = p.degree();
-    quad_root = false;
-    while(norm(a) > (tol*tol)) {
-        //cout << "xk = " << xk << endl;
-        complex<double> px = p(xk);
-        if(norm(px) < tol*tol)
-            return xk;
-        complex<double> G = pp(xk) / px;
-        complex<double> H = G*G - ppp(xk) / px;
-        
-        //cout << "G = " << G << "H = " << H;
-        complex<double> radicand = (n - 1)*(n*H-G*G);
-        //assert(radicand.real() > 0);
-        if(radicand.real() < 0)
-            quad_root = true;
-        //cout << "radicand = " << radicand << endl;
-        if(G.real() < 0) // here we try to maximise the denominator avoiding cancellation
-            a = - sqrt(radicand);
-        else
-            a = sqrt(radicand);
-        //cout << "a = " << a << endl;
-        a = n / (a + G);
-        //cout << "a = " << a << endl;
-        xk -= a;
-    }
-    //cout << "xk = " << xk << endl;
-    return xk;
 }
 
 int
@@ -152,6 +74,8 @@ main(int argc, char** argv) {
     std::cout << prod <<std::endl;
     solve(prod) ;
     //DK(prod);
+
+    //sturm st(prod);
     
     Poly dk_trial;
     dk_trial.push_back(-5);
@@ -173,30 +97,10 @@ main(int argc, char** argv) {
     }
     
     cout << "p = " << p << " = ";
-    while(p.size() > 1)
-    {
-        Poly pp = derivative(p),
-            ppp = derivative(pp);
-        double x0 = 0;
-        double tol = 1e-15;
-        bool quad_root = false;
-        complex<double> sol = Laguerre(p, pp, ppp, x0, tol, quad_root);
-        Poly dvs;
-        if(quad_root) {
-            dvs.push_back((sol*conj(sol)).real());
-            dvs.push_back(-(sol + conj(sol)).real());
-            dvs.push_back(1.0);
-            cout << "(" <<  dvs << ")";
-        } else {
-            //cout << sol << endl;
-            dvs.push_back(-sol.real());
-            dvs.push_back(1.0);
-            cout << "(" <<  dvs << ")";
-        }
-        Poly r;
-        p = divide(p, dvs, r);
-        //cout << r << endl;
-    }
+
+    vector<complex<double> > sol = Laguerre(p);
+    copy(sol.begin(), sol.end(), ostream_iterator<complex<double> >(cout, ",\t"));
+    
     cout << endl;
     
     //std::cout << prod.eval(4.) << std::endl;

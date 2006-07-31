@@ -71,6 +71,15 @@ public:
         result[0] -= k;
         return result;
     }
+    Poly operator-() const {
+        Poly result;
+        result.resize(size());
+        
+        for(unsigned i = 0; i < size(); i++) {
+            result[i] = -(*this)[i];
+        }
+        return result;
+    }
     Poly operator*(const double p) const {
         Poly result;
         const unsigned out_size = size();
