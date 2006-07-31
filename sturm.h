@@ -34,14 +34,6 @@ public:
                     n_signs++;
                 old_sign = sign;
             }
-        } else if(t <= -big) {
-            int old_sign = sgn((*this)[0].back());
-            for (int i = 1; i < size(); i++) {
-                int sign = sgn((*this)[i].back());
-                if (sign != old_sign)
-                    n_signs++;
-                old_sign = sign;
-            }
         } else {
             int old_sign = sgn((*this)[0].eval(t));
             for (int i = 1; i < size(); i++) {
