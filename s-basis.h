@@ -88,34 +88,25 @@ inline BezOrd operator*(double const a, BezOrd const & b) {
     return BezOrd(a*b[0], a*b[1]);
 }
 
-class SBasis{
+class SBasis : public std::vector<BezOrd>{
 public:
-    std::vector<BezOrd> a;
-    
-    unsigned size() const { return a.size(); }
-    
     SBasis() {}
+    SBasis(SBasis const & a) :
+        std::vector<BezOrd>(a)
+    {}
     SBasis(BezOrd const & bo) {
-        a.push_back(bo);
+        push_back(bo);
     }
     
-    BezOrd& operator[](const unsigned i) {
-        assert(i < a.size());
-        return a[i];
-    }
-    BezOrd const & operator[](const unsigned i) const {
-        assert(i < a.size());
-        return a[i];
-    }
     double point_at(double t) const {
         double s = t*(1-t);
         double p0 = 0, p1 = 0;
         double sk = 1;
         int k = 0;
 // XXX rewrite as horner
-        for(int k = 0; k < a.size(); k++) {
-            p0 += sk*a[k][0];
-            p1 += sk*a[k][1];
+        for(int k = 0; k < size(); k++) {
+            p0 += sk*(*this)[k][0];
+            p1 += sk*(*this)[k][1];
             sk *= s;
         }
         return (1-t)*p0 + t*p1;
@@ -127,15 +118,15 @@ public:
         SBasis result;
         const unsigned out_size = std::max(size(), p.size());
         const unsigned min_size = std::min(size(), p.size());
-        //result.a.reserve(out_size);
+        //result.reserve(out_size);
         
         for(unsigned i = 0; i < min_size; i++) {
-            result.a.push_back(a[i] + p.a[i]);
+            result.push_back((*this)[i] + p[i]);
         }
         for(unsigned i = min_size; i < size(); i++)
-            result.a.push_back(a[i]);
+            result.push_back((*this)[i]);
         for(unsigned i = min_size; i < p.size(); i++)
-            result.a.push_back(p.a[i]);
+            result.push_back(p[i]);
         assert(result.size() == out_size);
         return result;
     }
@@ -143,21 +134,21 @@ public:
         SBasis result;
         const unsigned out_size = std::max(size(), p.size());
         const unsigned min_size = std::min(size(), p.size());
-        //result.a.reserve(out_size);
+        //result.reserve(out_size);
         
         for(unsigned i = 0; i < min_size; i++) {
-            result.a.push_back(a[i] - p.a[i]);
+            result.push_back((*this)[i] - p[i]);
         }
         for(unsigned i = min_size; i < size(); i++)
-            result.a.push_back(a[i]);
+            result.push_back((*this)[i]);
         for(unsigned i = min_size; i < p.size(); i++)
-            result.a.push_back(-p.a[i]);
+            result.push_back(-p[i]);
         assert(result.size() == out_size);
         return result;
     }
 
     void clear() {
-        fill(a.begin(), a.end(), BezOrd(0,0));
+        fill(begin(), end(), BezOrd(0,0));
     }
     
     void normalize(); // remove extra zeros
@@ -169,10 +160,10 @@ public:
 
 inline SBasis operator-(const SBasis& p) {
     SBasis result;
-    result.a.reserve(p.size());
+    result.reserve(p.size());
         
     for(unsigned i = 0; i < p.size(); i++) {
-        result.a.push_back(-p.a[i]);
+        result.push_back(-p[i]);
     }
     return result;
 }
@@ -180,12 +171,12 @@ inline SBasis operator-(const SBasis& p) {
 inline SBasis& operator+=(SBasis& a, const SBasis& b) {
     const unsigned out_size = std::max(a.size(), b.size());
     const unsigned min_size = std::min(a.size(), b.size());
-    a.a.reserve(out_size);
+    a.reserve(out_size);
         
     for(unsigned i = 0; i < min_size; i++)
-        a.a[i] += b.a[i];
+        a[i] += b[i];
     for(unsigned i = min_size; i < b.size(); i++)
-        a.a.push_back(b.a[i]);
+        a.push_back(b[i]);
     
     assert(a.size() == out_size);
     return a;
@@ -194,59 +185,59 @@ inline SBasis& operator+=(SBasis& a, const SBasis& b) {
 inline SBasis& operator-=(SBasis& a, const SBasis& b) {
     const unsigned out_size = std::max(a.size(), b.size());
     const unsigned min_size = std::min(a.size(), b.size());
-    a.a.reserve(out_size);
+    a.reserve(out_size);
         
     for(unsigned i = 0; i < min_size; i++)
-        a.a[i] -= b.a[i];
+        a[i] -= b[i];
     for(unsigned i = min_size; i < b.size(); i++)
-        a.a.push_back(-b.a[i]);
+        a.push_back(-b[i]);
     
     assert(a.size() == out_size);
     return a;
 }
 
 inline SBasis& operator+=(SBasis& a, const BezOrd& b) {
-    a.a[0] += b;
+    a[0] += b;
     return a;
 }
 
 inline SBasis& operator-=(SBasis& a, const BezOrd& b) {
-    a.a[0] -= b;
+    a[0] -= b;
     return a;
 }
 
 inline SBasis& operator+=(SBasis& a, double b) {
     if(a.size() < 1)
-        a.a.push_back(BezOrd(b,b));
+        a.push_back(BezOrd(b,b));
     else {
-        a.a[0][0] += double(b);
-        a.a[0][1] += double(b);
+        a[0][0] += double(b);
+        a[0][1] += double(b);
     }
     return a;
 }
 
 inline SBasis& operator-=(SBasis& a, double b) {
     if(a.size() < 1)
-        a.a.push_back(BezOrd(-b, -b));
+        a.push_back(BezOrd(-b, -b));
     else {
-        a.a[0][0] -= double(b);
-        a.a[0][1] -= double(b);
+        a[0][0] -= double(b);
+        a[0][1] -= double(b);
     }
     return a;
 }
 
 inline SBasis& operator*=(SBasis& a, double b) {
     for(unsigned i = 0; i < a.size(); i++) {
-        a.a[i][0] *= b;
-        a.a[i][1] *= b;
+        a[i][0] *= b;
+        a[i][1] *= b;
     }
     return a;
 }
 
 inline SBasis& operator/=(SBasis& a, double b) {
     for(unsigned i = 0; i < a.size(); i++) {
-        a.a[i][0] /= b;
-        a.a[i][1] /= b;
+        a[i][0] /= b;
+        a[i][1] /= b;
     }
     return a;
 }
@@ -281,7 +272,7 @@ SBasis compose(SBasis const &a, SBasis const &b, unsigned k);
 SBasis inverse(SBasis a, int k);
 
 inline std::ostream &operator<< (std::ostream &out_file, const BezOrd &bo) {
-    out_file << "{" << bo.a[0] << ", " << bo.a[1] << "}";
+    out_file << "{" << bo[0] << ", " << bo[1] << "}";
     return out_file;
 }
 

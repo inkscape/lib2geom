@@ -9,12 +9,12 @@
 
 Poly roots_to_poly(double *a, unsigned n) {
     Poly r;
-    r.coeff.push_back(1);
+    r.push_back(1);
     
     for(unsigned i = 0; i < n; i++) {
         Poly p;
-        p.coeff.push_back(-a[i]);
-        p.coeff.push_back(1);
+        p.push_back(-a[i]);
+        p.push_back(1);
         r = r*p;
     }
     return r;
@@ -42,7 +42,7 @@ int main() {
     
     Poly test;
     for(int i = 0; i < 4; i++)
-        test.coeff.push_back(1);
+        test.push_back(1);
     
     SBasis test_sb = poly_to_sbasis(test);
     std::cout << test << "(" << test.size() << ")"
@@ -135,9 +135,9 @@ int main() {
     std::cout << "inverse of sqrt(" << sbasis_to_poly(BezOrd(1,4)) << ") - 1\n";
     SBasis A = sqrt(BezOrd(1,4), 5) - one;
     Poly P;
-    P.coeff.push_back(0);
-    P.coeff.push_back(2./3);
-    P.coeff.push_back(1./3);
+    P.push_back(0);
+    P.push_back(2./3);
+    P.push_back(1./3);
     
     std::cout << "2 term approximation\n";
     std::cout << sbasis_to_poly(inverse(A,2))
@@ -165,10 +165,10 @@ int main() {
     }
     for(int i = 0 ; i < 10; i++) {
         Poly P;
-        P.coeff.push_back(0);
-        P.coeff.push_back(1);
+        P.push_back(0);
+        P.push_back(1);
         for(int j = 0 ; j < 2; j++) {
-            P.coeff.push_back((uniform()-0.5)/10);
+            P.push_back((uniform()-0.5)/10);
         }
         std::vector<std::complex<double> > prod_root = solve(derivative(P));
         copy(prod_root.begin(), prod_root.end(), 

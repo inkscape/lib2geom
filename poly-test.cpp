@@ -9,8 +9,8 @@ using namespace std;
 
 Poly lin_poly(double a, double b) { // ax + b
     Poly p;
-    p.coeff.push_back(b);
-    p.coeff.push_back(a);
+    p.push_back(b);
+    p.push_back(a);
     return p;
 }
 
@@ -19,7 +19,7 @@ complex<double> eval(Poly const & p, complex<double> x) {
     complex<double> xx = 1;
     
     for(int i = 0; i < p.size(); i++) {
-        result += p.coeff[i]*xx;
+        result += p[i]*xx;
         xx *= x;
     }
     return result;
@@ -100,12 +100,12 @@ int
 main(int argc, char** argv) {
     Poly a, b, r;
     
-    a.coeff.push_back(1);
-    a.coeff.push_back(2);
-    a.coeff.push_back(1);
+    a.push_back(1);
+    a.push_back(2);
+    a.push_back(1);
     
-    b.coeff.push_back(1);
-    b.coeff.push_back(1);
+    b.push_back(1);
+    b.push_back(1);
     
     std::cout << a <<std::endl;
     std::cout << b <<std::endl;
@@ -117,13 +117,13 @@ main(int argc, char** argv) {
     
     Poly f, g;
     
-    f.coeff.push_back(-42);
-    f.coeff.push_back(0);
-    f.coeff.push_back(-12);
-    f.coeff.push_back(1);
+    f.push_back(-42);
+    f.push_back(0);
+    f.push_back(-12);
+    f.push_back(1);
     
-    g.coeff.push_back(-3);
-    g.coeff.push_back(1);
+    g.push_back(-3);
+    g.push_back(1);
     
     
     cout << "divide (example from wikipedia): " << f << "/" << g << endl;
@@ -132,7 +132,7 @@ main(int argc, char** argv) {
 
     g[0] = -3;
     g[1] = 1;
-    g.coeff.push_back(1);
+    g.push_back(1);
     
     cout << "divide (example from wikipedia): " << f << "/" << g << endl;
     std::cout << divide(f, g, r) << endl;
@@ -154,10 +154,10 @@ main(int argc, char** argv) {
     //DK(prod);
     
     Poly dk_trial;
-    dk_trial.coeff.push_back(-5);
-    dk_trial.coeff.push_back(3);
-    dk_trial.coeff.push_back(-3);
-    dk_trial.coeff.push_back(1);
+    dk_trial.push_back(-5);
+    dk_trial.push_back(3);
+    dk_trial.push_back(-3);
+    dk_trial.push_back(1);
 
     Poly p = prod*dk_trial;
     
@@ -183,14 +183,14 @@ main(int argc, char** argv) {
         complex<double> sol = Laguerre(p, pp, ppp, x0, tol, quad_root);
         Poly dvs;
         if(quad_root) {
-            dvs.coeff.push_back((sol*conj(sol)).real());
-            dvs.coeff.push_back(-(sol + conj(sol)).real());
-            dvs.coeff.push_back(1.0);
+            dvs.push_back((sol*conj(sol)).real());
+            dvs.push_back(-(sol + conj(sol)).real());
+            dvs.push_back(1.0);
             cout << "(" <<  dvs << ")";
         } else {
             //cout << sol << endl;
-            dvs.coeff.push_back(-sol.real());
-            dvs.coeff.push_back(1.0);
+            dvs.push_back(-sol.real());
+            dvs.push_back(1.0);
             cout << "(" <<  dvs << ")";
         }
         Poly r;

@@ -10,7 +10,7 @@
 double SBasis::tail_error(unsigned tail) const {
     double err = 0, s = 1./(1<<tail); // rough
     for(unsigned i = tail; i < size(); i++) {
-        err += (fabs(a[i][0]) + fabs(a[i][1]))*s;
+        err += (fabs((*this)[i][0]) + fabs((*this)[i][1]))*s;
         s /= 2;
     }
     return err;
@@ -18,7 +18,7 @@ double SBasis::tail_error(unsigned tail) const {
 
 SBasis operator*(double k, SBasis const &a) {
     SBasis c;
-    c.a.resize(a.size(), BezOrd(0,0));
+    c.resize(a.size(), BezOrd(0,0));
     for(unsigned j = 0; j < a.size(); j++) {
         for(unsigned dim = 0; dim < 2; dim++)
             c[j][dim] += k*a[j][dim];
@@ -29,7 +29,7 @@ SBasis operator*(double k, SBasis const &a) {
 SBasis shift(SBasis const &a, int sh) {
     SBasis c = a;
     if(sh > 0) {
-        c.a.insert(c.a.begin(), sh, BezOrd(0,0));
+        c.insert(c.begin(), sh, BezOrd(0,0));
     } else {
         // truncate
     }
@@ -39,8 +39,8 @@ SBasis shift(SBasis const &a, int sh) {
 SBasis shift(BezOrd const &a, int sh) {
     SBasis c;
     if(sh > 0) {
-        c.a.insert(c.a.begin(), sh, BezOrd(0,0));
-        c.a.push_back(a);
+        c.insert(c.begin(), sh, BezOrd(0,0));
+        c.push_back(a);
     } else {
         // truncate
     }
@@ -51,14 +51,14 @@ SBasis truncate(SBasis const &a, unsigned terms) {
     SBasis c;
     if(terms > a.size())
         terms = a.size();
-    c.a.insert(c.a.begin(), a.a.begin(), a.a.begin() + terms);
+    c.insert(c.begin(), a.begin(), a.begin() + terms);
     return c;
 }
 
 void
 SBasis::truncate(unsigned k) {
-    if(k < a.size()) {
-        a.resize(k);
+    if(k < size()) {
+        resize(k);
     }
 }
 
@@ -67,12 +67,12 @@ SBasis multiply(SBasis const &a, SBasis const &b) {
     
     // shift(1, a.Tri*b.Tri)
     SBasis c;
-    c.a.resize(a.size() + b.size(), BezOrd(0,0));
-    c.a[0] = BezOrd(0,0);
+    c.resize(a.size() + b.size(), BezOrd(0,0));
+    c[0] = BezOrd(0,0);
     for(unsigned j = 0; j < b.size(); j++) {
         for(unsigned i = j; i < a.size()+j; i++) {
             double tri = Tri(b[j])*Tri(a[i-j]);
-            c.a[i+1/*shift*/] += Hat(-tri);
+            c[i+1/*shift*/] += Hat(-tri);
         }
     }
     for(unsigned j = 0; j < b.size(); j++) {
@@ -82,14 +82,14 @@ SBasis multiply(SBasis const &a, SBasis const &b) {
         }
     }
     c.normalize();
-    //assert(!(0 == c.a.back()[0] && 0 == c.a.back()[1]));
+    //assert(!(0 == c.back()[0] && 0 == c.back()[1]));
     return c;
 }
 
 SBasis integral(SBasis const &c) {
     SBasis a;
-    a.a.resize(c.size() + 1, BezOrd(0,0));
-    a.a[0] = BezOrd(0,0);
+    a.resize(c.size() + 1, BezOrd(0,0));
+    a[0] = BezOrd(0,0);
     
     for(unsigned k = 1; k < c.size() + 1; k++) {
         double ahat = -Tri(c[k-1])/(2*k);
@@ -107,7 +107,7 @@ SBasis integral(SBasis const &c) {
 
 SBasis derivative(SBasis const &a) {
     SBasis c;
-    c.a.resize(a.size(), BezOrd(0,0));
+    c.resize(a.size(), BezOrd(0,0));
     
     for(unsigned k = 0; k < a.size(); k++) {
         double d = (2*k+1)*Tri(a[k]);
@@ -130,8 +130,8 @@ SBasis sqrt(SBasis const &a, int k) {
     if(k == 0)
         return SBasis();
     SBasis c;
-    c.a.resize(k, BezOrd(0,0));
-    c.a[0] = BezOrd(sqrt(a[0][0]), sqrt(a[0][1]));
+    c.resize(k, BezOrd(0,0));
+    c[0] = BezOrd(sqrt(a[0][0]), sqrt(a[0][1]));
     SBasis r = a - multiply(c, c); // remainder
     
     for(unsigned i = 1; i <= k; i++) {
@@ -150,11 +150,11 @@ SBasis sqrt(SBasis const &a, int k) {
 // return a kth order approx to 1/a)
 SBasis reciprocal(BezOrd const &a, int k) {
     SBasis c;
-    c.a.resize(k, BezOrd(0,0));
+    c.resize(k, BezOrd(0,0));
     double r_s0 = (Tri(a)*Tri(a))/(-a[0]*a[1]);
     double r_s0k = 1;
     for(int i = 0; i < k; i++) {
-        c.a[i] = BezOrd(r_s0k/a[0], r_s0k/a[1]);
+        c[i] = BezOrd(r_s0k/a[0], r_s0k/a[1]);
         r_s0k *= r_s0;
     }
     return c;
@@ -165,8 +165,8 @@ SBasis divide(SBasis const &a, SBasis const &b, int k) {
     SBasis r = a; // remainder
     
     k++;
-    r.a.resize(k, BezOrd(0,0));
-    c.a.resize(k, BezOrd(0,0));
+    r.resize(k, BezOrd(0,0));
+    c.resize(k, BezOrd(0,0));
 
     for(unsigned i = 0; i < k; i++) {
         BezOrd ci(r[i][0]/b[0][0], r[i][1]/b[0][1]); //H0
@@ -236,9 +236,9 @@ SBasis inverse(SBasis a, int k) {
     }
     SBasis c;                           // c(v) := 0
     if(a.size() >= 2 && k == 2) {
-        c.a.push_back(BezOrd(0,1));
+        c.push_back(BezOrd(0,1));
         BezOrd t1(1+a[1][0], 1-a[1][1]);    // t_1
-        c.a.push_back(BezOrd(-a[1][0]/t1[0], -a[1][1]/t1[1]));
+        c.push_back(BezOrd(-a[1][0]/t1[0], -a[1][1]/t1[1]));
     } else if(a.size() >= 2) {                      // non linear
         SBasis r = BezOrd(0,1);             // r(u) := r_0(u) := u
         BezOrd t1(1./(1+a[1][0]), 1./(1-a[1][1]));    // 1./t_1
@@ -254,7 +254,7 @@ SBasis inverse(SBasis a, int k) {
         //assert(t1 == t[1]);
 #endif
     
-        c.a.resize(k+1, BezOrd(0,0));
+        c.resize(k+1, BezOrd(0,0));
         for(unsigned i = 0; i < k; i++) {   // for i:=0 to k do
 #ifdef DEBUG_INVERSION
             std::cout << "-------" << i << ": ---------" <<std::endl;
@@ -264,7 +264,7 @@ SBasis inverse(SBasis a, int k) {
                       << std::endl;
 #endif
             if(r.size() <= i)                // ensure enough space in the remainder, probably not needed
-                r.a.resize(i+1, BezOrd(0,0));
+                r.resize(i+1, BezOrd(0,0));
             BezOrd ci(r[i][0]*t1i[0], r[i][1]*t1i[1]); // c_i(v) := H_0(r_i(u)/(t_1)^i; u)
 #ifdef DEBUG_INVERSION
             std::cout << "t1i=" << t1i << std::endl;
@@ -296,15 +296,15 @@ SBasis inverse(SBasis a, int k) {
 
 
 void SBasis::normalize() {
-    while(0 == a.back()[0] && 0 == a.back()[1])
-        a.pop_back();
+    while(0 == back()[0] && 0 == back()[1])
+        pop_back();
 }
 
 SBasis sin(double a0, double a1, int k) {
     SBasis s = BezOrd(sin(a0), sin(a1));
     Tri tr(s[0]);
     double t2 = (a1 - a0);
-    s.a.push_back(BezOrd(cos(a0)*t2 - tr, -cos(a1)*t2 + tr));
+    s.push_back(BezOrd(cos(a0)*t2 - tr, -cos(a1)*t2 + tr));
     
     t2 *= t2;
     for(int i = 0; i < k; i++) {
@@ -313,7 +313,7 @@ SBasis sin(double a0, double a1, int k) {
         bo -= (t2/(i+1))*s[i];
         
         
-        s.a.push_back((1./(i+2))*bo);
+        s.push_back((1./(i+2))*bo);
     }
     
     return s;
@@ -329,7 +329,7 @@ SBasis reverse(SBasis const &c) {
     SBasis a;
     for(unsigned k = 0; k < c.size(); k++) {
         BezOrd b(c[k][1], c[k][0]);
-        a.a.push_back(b);
+        a.push_back(b);
     }
     return a;
 }

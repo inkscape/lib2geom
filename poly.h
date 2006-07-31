@@ -6,29 +6,29 @@
 #include <algorithm>
 #include <complex>
 
-class Poly{
+class Poly : public std::vector<double>{
 public:
-    std::vector<double> coeff; // sum x^i*coeff[i]
+    // coeff; // sum x^i*coeff[i]
     
-    unsigned size() const { return coeff.size();}
+    //unsigned size() const { return coeff.size();}
     unsigned degree() const { return size()-1;}
 
-    double operator[](const int i) const { return coeff[i];}
-    double& operator[](const int i) { return coeff[i];}
+    //double operator[](const int i) const { return (*this)[i];}
+    //double& operator[](const int i) { return (*this)[i];}
     
     Poly operator+(const Poly& p) const {
         Poly result;
         const unsigned out_size = std::max(size(), p.size());
         const unsigned min_size = std::min(size(), p.size());
-        //result.coeff.reserve(out_size);
+        //result.reserve(out_size);
         
         for(unsigned i = 0; i < min_size; i++) {
-            result.coeff.push_back(coeff[i] + p.coeff[i]);
+            result.push_back((*this)[i] + p[i]);
         }
         for(unsigned i = min_size; i < size(); i++)
-            result.coeff.push_back(coeff[i]);
+            result.push_back((*this)[i]);
         for(unsigned i = min_size; i < p.size(); i++)
-            result.coeff.push_back(p.coeff[i]);
+            result.push_back(p[i]);
         assert(result.size() == out_size);
         return result;
     }
@@ -36,48 +36,48 @@ public:
         Poly result;
         const unsigned out_size = std::max(size(), p.size());
         const unsigned min_size = std::min(size(), p.size());
-        result.coeff.reserve(out_size);
+        result.reserve(out_size);
         
         for(unsigned i = 0; i < min_size; i++) {
-            result.coeff.push_back(coeff[i] - p.coeff[i]);
+            result.push_back((*this)[i] - p[i]);
         }
         for(unsigned i = min_size; i < size(); i++)
-            result.coeff.push_back(coeff[i]);
+            result.push_back((*this)[i]);
         for(unsigned i = min_size; i < p.size(); i++)
-            result.coeff.push_back(-p.coeff[i]);
+            result.push_back(-p[i]);
         assert(result.size() == out_size);
         return result;
     }
     Poly operator-=(const Poly& p) {
         const unsigned out_size = std::max(size(), p.size());
         const unsigned min_size = std::min(size(), p.size());
-        coeff.resize(out_size);
+        resize(out_size);
         
         for(unsigned i = 0; i < min_size; i++) {
-            coeff[i] -= p.coeff[i];
+            (*this)[i] -= p[i];
         }
         for(unsigned i = min_size; i < out_size; i++)
-            coeff[i] = -p.coeff[i];
+            (*this)[i] = -p[i];
         return *this;
     }
     Poly operator-(const double k) const {
         Poly result;
         const unsigned out_size = size();
-        result.coeff.reserve(out_size);
+        result.reserve(out_size);
         
         for(unsigned i = 0; i < out_size; i++) {
-            result.coeff.push_back(coeff[i]);
+            result.push_back((*this)[i]);
         }
-        result.coeff[0] -= k;
+        result[0] -= k;
         return result;
     }
     Poly operator*(const double p) const {
         Poly result;
         const unsigned out_size = size();
-        result.coeff.reserve(out_size);
+        result.reserve(out_size);
         
         for(unsigned i = 0; i < out_size; i++) {
-            result.coeff.push_back(coeff[i]*p);
+            result.push_back((*this)[i]*p);
         }
         assert(result.size() == out_size);
         return result;
@@ -86,18 +86,18 @@ public:
     Poly shifted(int terms) const { 
         Poly result;
         const unsigned out_size = std::max(0, int(size())+terms);
-        result.coeff.reserve(out_size);
+        result.reserve(out_size);
         
         if(terms < 0) {
             for(unsigned i = 0; i < out_size; i++) {
-                result.coeff.push_back(coeff[i-terms]);
+                result.push_back((*this)[i-terms]);
             }
         } else {
             for(unsigned i = 0; i < terms; i++) {
-                result.coeff.push_back(0.0);
+                result.push_back(0.0);
             }
             for(unsigned i = 0; i < size(); i++) {
-                result.coeff.push_back(coeff[i]);
+                result.push_back((*this)[i]);
             }
         }
         
@@ -110,20 +110,20 @@ public:
     T eval(T x) const {
         T r = 0;
         for(int k = size()-1; k >= 0; k--) {
-            r = r*x + T(coeff[k]);
+            r = r*x + T((*this)[k]);
         }
         return r;
-
     }
+    
     template <typename T>
-    T operator()(T t) const { return eval(t);}
+    T operator()(T t) const { return (T)eval(t);}
     
     void normalize();
     
     void monicify();
     Poly() {}
-    Poly(const Poly& p) : coeff(p.coeff) {}
-    Poly(const double a) {coeff.push_back(a);}
+    Poly(const Poly& p) : std::vector<double>(p) {}
+    Poly(const double a) {push_back(a);}
 };
 
 inline Poly operator*(double a, Poly const & b) { return b * a;}
@@ -152,15 +152,15 @@ inline std::ostream &operator<< (std::ostream &out_file, const Poly &in_poly) {
     if(in_poly.size() == 0)
         out_file << "0";
     else {
-        for(int i = (int)in_poly.coeff.size()-1; i >= 0; --i) {
+        for(int i = (int)in_poly.size()-1; i >= 0; --i) {
             if(i == 1) {
-                out_file << "" << in_poly.coeff[i] << "*x";
+                out_file << "" << in_poly[i] << "*x";
                 out_file << " + ";
             } else if(i) {
-                out_file << "" << in_poly.coeff[i] << "*x^" << i;
+                out_file << "" << in_poly[i] << "*x^" << i;
                 out_file << " + ";
             } else
-                out_file << in_poly.coeff[i];
+                out_file << in_poly[i];
             
         }
     }

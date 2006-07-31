@@ -13,11 +13,11 @@ quadratic_bezier_poly(Geom::SubPath::Elem const & b, int dim) {
 
     int cp = 0;
     
-    result.coeff.resize(3);
+    result.resize(3);
     
     for(int i = 0; i < 3; i++) {
         for(int j = 0; j <= i; j++) {
-            result.coeff[2 - j] += (c[cp]*(b[2- i]))[dim];
+            result[2 - j] += (c[cp]*(b[2- i]))[dim];
             cp++;
         }
     }
@@ -35,11 +35,11 @@ cubic_bezier_poly(Geom::SubPath::Elem const & b, int dim) {
 
     int cp = 0;
     
-    result.coeff.resize(4);
+    result.resize(4);
     
     for(int i = 0; i < 4; i++) {
         for(int j = 0; j <= i; j++) {
-            result.coeff[3 - j] += (c[cp]*(b[3- i]))[dim];
+            result[3 - j] += (c[cp]*(b[3- i]))[dim];
             cp++;
         }
     }
@@ -50,8 +50,8 @@ Poly get_parametric_poly(Geom::SubPath::Elem const & b, int dim) {
     Poly result;
     switch(b.op) {
     case Geom::lineto:
-        result.coeff.push_back(b[0][dim]);
-        result.coeff.push_back((b[1]-b[0])[dim]);
+        result.push_back(b[0][dim]);
+        result.push_back((b[1]-b[0])[dim]);
         return result;
     case Geom::quadto:
         return quadratic_bezier_poly(b, dim);

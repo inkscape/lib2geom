@@ -15,10 +15,10 @@ SBasis poly_to_sbasis(Poly const & p) {
 Poly sbasis_to_poly(SBasis const & sb) {
     Poly S; // (1-x)x = -1*x^2 + 1*x + 0
     Poly A, B;
-    B.coeff.push_back(0);
-    B.coeff.push_back(1);
-    A.coeff.push_back(1);
-    A.coeff.push_back(-1);
+    B.push_back(0);
+    B.push_back(1);
+    A.push_back(1);
+    A.push_back(-1);
     S = A*B;
     Poly r;
     

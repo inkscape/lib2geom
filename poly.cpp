@@ -5,11 +5,11 @@ Poly Poly::operator*(const Poly& p) const {
     const unsigned out_size = degree() +  p.degree()+1;
     const unsigned min_size = std::max(size(), p.size());
     
-    result.coeff.resize(out_size);
+    result.resize(out_size);
     
     for(unsigned i = 0; i < size(); i++) {
         for(unsigned j = 0; j < p.size(); j++) {
-            result.coeff[i+j] += coeff[i] * p.coeff[j];
+            result[i+j] += (*this)[i] * p[j];
         }
     }
     return result;
@@ -22,17 +22,17 @@ Poly Poly::operator*(const Poly& p) const {
     }*/
 
 void Poly::normalize() {
-    while(coeff.back() == 0)
-        coeff.pop_back();
+    while(back() == 0)
+        pop_back();
 }
 
 void Poly::monicify() {
     normalize();
     
-    double scale = 1./coeff.back(); // unitize
+    double scale = 1./back(); // unitize
     
     for(unsigned i = 0; i < size(); i++) {
-        coeff[i] *= scale;
+        (*this)[i] *= scale;
     }
 }
 
@@ -88,10 +88,10 @@ double polish_root(Poly const & p, double guess, double tol) {
 Poly integral(Poly const & p) {
     Poly result;
     
-    result.coeff.reserve(p.size()+1);
-    result.coeff.push_back(0); // arbitrary const
+    result.reserve(p.size()+1);
+    result.push_back(0); // arbitrary const
     for(int i = 0; i < p.size(); i++) {
-        result.coeff.push_back(p[i]/(i+1));
+        result.push_back(p[i]/(i+1));
     }
     return result;
 
@@ -102,9 +102,9 @@ Poly derivative(Poly const & p) {
     
     if(p.size() <= 1)
         return Poly(0);
-    result.coeff.reserve(p.size()-1);
+    result.reserve(p.size()-1);
     for(int i = 1; i < p.size(); i++) {
-        result.coeff.push_back(i*p[i]);
+        result.push_back(i*p[i]);
     }
     return result;
 }
@@ -113,7 +113,7 @@ Poly compose(Poly const & a, Poly const & b) {
     Poly result;
     
     for(int i = a.size()-1; i >=0; i--) {
-        result = Poly(a.coeff[i]) + result * b;
+        result = Poly(a[i]) + result * b;
     }
     return result;
     
@@ -125,12 +125,12 @@ Poly divide(Poly const &a, Poly const &b, Poly &r) {
     r = a; // remainder
     
     const unsigned k = a.size();
-    r.coeff.resize(k, 0);
-    c.coeff.resize(k, 0);
+    r.resize(k, 0);
+    c.resize(k, 0);
 
     for(unsigned i = 0; i < k; i++) {
         double ci = r[i]/b[0];
-        c.coeff[i] += ci;
+        c[i] += ci;
         Poly bb = ci*b;
         std::cout << ci <<"*" << b << ", r= " << r << std::endl;
         r -= bb.shifted(i);
@@ -147,17 +147,17 @@ Poly divide(Poly const &a, Poly const &b, Poly &r) {
     
     const int k = a.degree();
     const int l = b.degree();
-    c.coeff.resize(k, 0.);
+    c.resize(k, 0.);
     
     for(int i = k; i >= l; i--) {
         assert(i >= 0);
-        double ci = r.coeff.back()/b.coeff.back();
-        c.coeff[i-l] += ci;
+        double ci = r.back()/b.back();
+        c[i-l] += ci;
         Poly bb = ci*b;
         //std::cout << ci <<"*(" << b.shifted(i-l) << ") = " 
         //          << bb.shifted(i-l) << "     r= " << r << std::endl;
         r -= bb.shifted(i-l);
-        r.coeff.pop_back();
+        r.pop_back();
     }
     //std::cout << "r= " << r << std::endl;
     r.normalize();

@@ -58,11 +58,11 @@ cubic_bezier_poly(SubPath::Elem const & b, int dim) {
 
     int cp = 0;
     
-    result.coeff.resize(4);
+    result.resize(4);
     
     for(int i = 0; i < 4; i++) {
         for(int j = 0; j <= i; j++) {
-            result.coeff[3 - j] += (c[cp]*(b[3- i]))[dim];
+            result[3 - j] += (c[cp]*(b[3- i]))[dim];
             cp++;
         }
     }
@@ -79,11 +79,11 @@ quadratic_bezier_poly(SubPath::Elem const & b, int dim) {
 
     int cp = 0;
     
-    result.coeff.resize(3);
+    result.resize(3);
     
     for(int i = 0; i < 3; i++) {
         for(int j = 0; j <= i; j++) {
-            result.coeff[2 - j] += (c[cp]*(b[2- i]))[dim];
+            result[2 - j] += (c[cp]*(b[2- i]))[dim];
             cp++;
         }
     }

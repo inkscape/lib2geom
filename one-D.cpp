@@ -44,7 +44,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     }
     cairo_stroke(cr);
     SBasis one(BezOrd(1,1));
-    assert(one.a.size() == 1);
+    assert(one.size() == 1);
     SBasis P0(z0), P1(BezOrd(3, 1));
     SBasis Q = multiply(P0, P1);
     Q = multiply(Q, P1);
