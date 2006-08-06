@@ -36,6 +36,15 @@ Geom::Point old_mouse_point;
 class sufficient_stats{
 public:
     double Sx, Sy, Sxx, Syy, Sxy;
+    
+    void
+    include(const double x, const double y) {
+        Sx += x;
+        Sy += y;
+        Sxx += x*x;
+        Syy += y*y;
+        Sxy += x*y;
+    }
 };
 
 sufficient_stats
@@ -72,8 +81,6 @@ public:
     void arbitrary();
     void linear_reg();
     
-    void two_part();
-    
     // sufficient stats from start to each point
     vector<sufficient_stats> ac_ss;
     
@@ -86,6 +93,21 @@ public:
         
         mean = n[0]*ss.Sx + n[1]*ss.Sy;
         double N = (to + 1 - from);
+        return n[0]*n[0]*ss.Sxx
+            + n[1]*n[1]*ss.Syy
+            + 2*n[0]*n[1]*ss.Sxy
+            - 2*dist*mean + N*dist*dist;
+    }
+    
+    /*** Compute the best line for the points, given normal. */
+    double best_angled_line(unsigned from, unsigned to,
+                            Point n,
+                            double & mean) {
+        sufficient_stats ss = ac_ss[to+1] - ac_ss[from];
+        double N = (to + 1 - from);
+        
+        mean = (n[0]*ss.Sx + n[1]*ss.Sy);
+        double dist = mean/N;
         return n[0]*n[0]*ss.Sxx
             + n[1]*n[1]*ss.Syy
             + 2*n[0]*n[1]*ss.Sxy
@@ -106,28 +128,19 @@ public:
     }
 
     void simple_dp();
+    void C_simple_dp();
 
+    void C_endpoint(double & berr);
+    
     fit(vector<Point> const & in)
         :input(in) {
         sufficient_stats ss;
-        ss.Sx = 0;
-        ss.Sy = 0;
-        ss.Sxx = 0;
-        ss.Syy = 0;
-        ss.Sxy = 0;
-        
+        ss.Sx = ss.Sy = ss.Sxx = ss.Sxy = ss.Syy = 0;
         ac_ss.push_back(ss);
         for(unsigned l = 0; l < input.size(); l++) {
-            double x = input[l][0];
-            double y = input[l][1];
-            ss.Sx += x;
-            ss.Sy += y;
-            ss.Sxx += x*x;
-            ss.Syy += y*y;
-            ss.Sxy += x*y;
+            ss.include(input[l][0], input[l][1]);
             ac_ss.push_back(ss);
         }
-    
     }
     
 };
@@ -213,11 +226,10 @@ void fit::linear_reg() {
 }
 
 void fit::simple_dp() {
-    vector<unsigned> prev;
-    vector<double> penalty;
-    prev.resize(input.size());
+    const unsigned N = input.size();
+    vector<unsigned> prev(N);
+    vector<double> penalty(N);
     const double bend_pen = 100;
-    penalty.push_back(0);
     
     for(unsigned i = 1; i < input.size(); i++) {
         double mean;
@@ -230,49 +242,118 @@ void fit::simple_dp() {
                 best_prev = j;
             }
         }
-        penalty.push_back(best);
+        penalty[i] = best;
         prev[i] = best_prev;
     }
     
-    solution.push_back(input.back());
     unsigned i = prev.size()-1;
-    do {
-        i = prev[i];
+    while(i > 0) {
         solution.push_back(input[i]);
-    } while(i > 0);
+        i = prev[i];
+    }
+    solution.push_back(input[i]);
     reverse(solution.begin(), solution.end());
 }
 
-void fit::two_part() {
-    pair<reg_line, reg_line> best_pair;
-    double best_pair_err = INFINITY;
-    unsigned best_split;
-    for(unsigned split = 1; split < input.size()-1; split++) {
-        pair<reg_line, reg_line> trial = make_pair(line_best_fit(input.begin(),
-                                               input.begin() + split),
-                                 line_best_fit(input.begin() + split,
-                                               input.end()));
-        double err = trial.first.Srr/trial.first.n + trial.second.Srr/trial.second.n;
-        if(err < best_pair_err) {
-            best_pair_err = err;
-            best_pair = trial;
-            best_split = split;
+void fit::C_endpoint(double & berr) {
+    Geom::Point angles[] = {Point(0,1), Point(1,0), Point(1,1), Point(1,-1)};
+    int C = sizeof(angles)/sizeof(Point);
+    for(unsigned c = 0; c < C; c++) {
+        angles[c] = unit_vector(angles[c]);
+    }
+    const unsigned N = input.size();
+    
+    double best_mean;
+    double best = best_angled_line(0, N-1, angles[0], best_mean);
+    unsigned best_dir = 0;
+    for(unsigned c = 1; c < C; c++) {
+        double m;
+        double err = best_angled_line(0, N-1, angles[c], m);
+        if(err < best) {
+            best = err;
+            best_mean = m;
+            best_dir = c;
         }
+
+    }
+    berr = best;
+    Point dir = angles[best_dir];
+    Point dirT = rot90(dir);
+    Point centre = dir*best_mean/N;
+    
+    solution.push_back(centre + dot(dirT, input[0] - centre)*dirT);
+    solution.push_back(centre + dot(dirT, input.back() - centre)*dirT);
+}
+
+void fit::C_simple_dp() {
+    Geom::Point angles[] = {Point(0,1), Point(1,0), Point(1,1), Point(1,-1)};
+    int C = sizeof(angles)/sizeof(Point);
+    for(unsigned c = 0; c < C; c++) {
+        angles[c] = unit_vector(angles[c]);
+    }
+    const unsigned N = input.size();
+    
+    vector<int> prev(N);
+    vector<double> penalty(N);
+    vector<unsigned> dir(N);
+    vector<double> mean(N);
+    const double bend_pen = 0;
+    
+    for(unsigned i = 1; i < input.size(); i++) {
+        double best_mean;
+        double best = best_angled_line(0, i, angles[0], best_mean);
+        unsigned best_prev = 0;
+        unsigned best_dir = 0;
+        for(unsigned c = 1; c < C; c++) {
+            double m;
+            double err = best_angled_line(0, i, angles[c], m);
+            if(err < best) {
+                best = err;
+                best_mean = m;
+                best_dir = c;
+                best_prev = 0;
+            }
+
+        }
+        for(unsigned j = 1; j < i; j++) {
+            for(unsigned c = 0; c < C; c++) {
+                double m;
+                if(c == dir[j])
+                    continue;
+                double err = penalty[j] + bend_pen + 
+                    best_angled_line(j, i, angles[c], m);
+                if(err < best) {
+                    best = err;
+                    best_mean = m;
+                    best_dir = c;
+                    best_prev = j;
+                }
+
+            }
+        }
+        penalty[i] = best;
+        prev[i] = best_prev;
+        dir[i] = best_dir;
+        mean[i] = best_mean;
     }
     
-    if(best_pair_err < INFINITY) {
-        Point p00 = best_pair.first.centre + dot(best_pair.first.parallel, input[0] - best_pair.first.centre)*best_pair.first.parallel;
-        Point p11 = best_pair.second.centre + dot(best_pair.second.parallel, input.back() - best_pair.second.centre)*best_pair.second.parallel;
-        Point result;
-        line_intersection(best_pair.first.normal, 
-                          dot(best_pair.first.normal, best_pair.first.centre),
-                          best_pair.second.normal, 
-                          dot(best_pair.second.normal, best_pair.second.centre),
-                          result);
-        solution.push_back(p00);
-        solution.push_back(result);
-        solution.push_back(p11);
+    prev[0] = -1;
+    unsigned i = prev.size()-1;
+    unsigned pi = i;
+    while(i > 0) {
+        Point bdir = angles[dir[i]];
+        Point bdirT = rot90(bdir);
+        Point centre = bdir*mean[i]/N;
+        solution.push_back(centre + dot(bdirT, input[i] - centre)*bdirT);
+        solution.push_back(centre + dot(bdirT, input[pi] - centre)*bdirT);
+        pi = i;
+        i = prev[i];
     }
+    /*Point a = angles[dir[i]];
+    Point aT = rot90(a);
+    solution.push_back(a*mean[i] + 
+    dot(input[i], aT)*aT);*/
+    reverse(solution.begin(), solution.end());
 }
 
 
@@ -295,14 +376,11 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     cairo_set_line_width (cr, 1);
     
     fit f(handles);
+    double berr;
     f.simple_dp();
-    double m1, m2;
-    notify << "sqerr = " << f.measure(0, f.input.size()-1, m1) << std::endl;
-    notify << "sqerr = " << f.simple_measure(0, f.input.size()-1, m2) << "; ";
-    notify << "means = " << m1 << " , " << m2;
     f.draw(cr);
     cairo_stroke(cr);
-    
+    notify << f.solution.size();
     //notify << "arc length = " << arc.point_at(1) - arc.point_at(0) << std::endl;
     {
         PangoLayout* layout = pango_cairo_create_layout (cr);
@@ -428,10 +506,11 @@ int main(int argc, char **argv) {
         handles.push_back(start_point);
         start_point += Geom::Point(uniform()*step, 0.5*uniform()*step);
     }
+/*
     for(int i = 0; i < 10; i++) {
         handles.push_back(start_point);
         start_point += Geom::Point(0.5*uniform()*step, uniform()*step);
-    }
+        }*/
     gtk_init (&argc, &argv);
     
     gdk_rgb_init();
