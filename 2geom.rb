@@ -34,6 +34,12 @@ class Inline::C
         static VALUE klass=rb_const_get(Geom_module(), rb_intern("Path"));
         return klass;
       }
+
+      inline VALUE Elem_class() {
+        static VALUE klass=rb_const_get(SubPath_class(), rb_intern("Elem"));
+        return klass;
+      }
+
       }
     EOS
   end
@@ -100,12 +106,30 @@ class SubPath
         return Data_Wrap_Struct(self, NULL, &do_delete<SubPath>, subpath);
       }
     EOS
+
+    builder.c_raw <<-EOS
+      static VALUE each(int argc, VALUE *argv, VALUE self) {
+        using namespace Geom;
+        return self;
+      }
+    EOS
+
+    builder.c_raw <<-EOS
+      static VALUE _closed(int argc, VALUE *argv, VALUE self) {
+        using namespace Geom;
+        SubPath *subpath;
+        Data_Get_Struct(self, SubPath, subpath);
+        return ( subpath->closed ? Qtrue : Qfalse );
+      }
+    EOS
   end
 
   class << self
     alias new _new
     alias allocate _new
   end
+
+  alias closed? _closed
 end
 
 class PathBuilder
@@ -139,11 +163,34 @@ class PathBuilder
         return self;
       }
     EOS
+
+    builder.c_raw <<-EOS
+      static VALUE push_line(int argc, VALUE *argv, VALUE self) {
+        using namespace Geom;
+        PathBuilder *builder;
+        Data_Get_Struct(self, PathBuilder, builder);
+        builder->push_line(Point(rb_num2dbl(argv[0]), rb_num2dbl(argv[1])));
+        return self;
+      }
+    EOS
+
+    builder.c_raw <<-EOS
+      static VALUE close_subpath(int argc, VALUE *argv, VALUE self) {
+        using namespace Geom;
+        PathBuilder *builder;
+        Data_Get_Struct(self, PathBuilder, builder);
+        builder->close_subpath();
+        return self;
+      }
+    EOS
   end
 
   class << self
     alias new _new
     alias allocate _new
+  end
+
+  class Elem
   end
 end
 
