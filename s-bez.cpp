@@ -97,7 +97,7 @@ void draw_offset(cairo_t *cr, multidim_sbasis<2> const &B, double dist, double t
             total_pieces_inc += pb.peek().total_segments();
             cairo_set_source_rgba (cr, 0., 0.5, 0, 0.5);
             cairo_stroke(cr);
-            //cairo_path_handles(cr, pb.peek());
+            cairo_path_handles(cr, pb.peek());
         }
         {
             Geom::PathBuilder pb;
@@ -333,7 +333,7 @@ int main(int argc, char **argv) {
  
     GtkWidget* window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 
-    gtk_window_set_title(GTK_WINDOW(window), "text toy");
+    gtk_window_set_title(GTK_WINDOW(window), "scroll layout");
 
     menubox = gtk_vbox_new (FALSE, 0);
     gtk_widget_show (menubox);
@@ -431,7 +431,10 @@ int main(int argc, char **argv) {
 
     //gtk_container_add(GTK_CONTAINER(window), vb);
 
-    gtk_box_pack_start(GTK_BOX(menubox), canvas, TRUE, TRUE, 0);
+    GtkWidget* pain = gtk_vpaned_new();
+    gtk_widget_show (pain);
+    gtk_box_pack_start(GTK_BOX(menubox), pain, TRUE, TRUE, 0);
+    gtk_paned_add1(GTK_PANED(pain), canvas);
 
     gtk_window_set_default_size(GTK_WINDOW(window), 600, 600);
 

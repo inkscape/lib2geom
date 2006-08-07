@@ -36,16 +36,63 @@ Geom::Point old_mouse_point;
 class sufficient_stats{
 public:
     double Sx, Sy, Sxx, Syy, Sxy;
+    double n;
     
     void
-    include(const double x, const double y) {
-        Sx += x;
-        Sy += y;
-        Sxx += x*x;
-        Syy += y*y;
-        Sxy += x*y;
+    operator+=(Point p) {
+        Sx += p[0];
+        Sy += p[1];
+        Sxx += p[0]*p[0];
+        Syy += p[1]*p[1];
+        Sxy += p[0]*p[1];
+        n += 1.0;
+    }
+    void
+    operator-=(Point p) {
+        Sx -= p[0];
+        Sy -= p[1];
+        Sxx -= p[0]*p[0];
+        Syy -= p[1]*p[1];
+        Sxy -= p[0]*p[1];
+        n -= 1.0;
+    }
+    /*** What is the best regression we can do? . */
+    Point best_normal() {
+        return rot90(unit_vector(Point(n*Sxx - Sx*Sx,
+                                n*Sxy - Sx*Sy)));
+    }
+    /*** Compute the best line for the points, given normal. */
+    double best_line(Point normal, const double dist,
+                     double & mean) {
+        mean = (normal[0]*Sx + normal[1]*Sy);
+        return normal[0]*normal[0]*Sxx
+            + normal[1]*normal[1]*Syy
+            + 2*normal[0]*normal[1]*Sxy
+            - 2*dist*mean + n*dist*dist;
+    }
+    /*** Compute the best line for the points, given normal. */
+    double best_angled_line(Point normal,
+                            double & mean) {
+        mean = (normal[0]*Sx + normal[1]*Sy);
+        double dist = mean/n;
+        return normal[0]*normal[0]*Sxx
+            + normal[1]*normal[1]*Syy
+            + 2*normal[0]*normal[1]*Sxy
+            - 2*dist*mean + n*dist*dist;
     }
 };
+
+sufficient_stats
+operator+(sufficient_stats const & a, sufficient_stats const &b) {
+    sufficient_stats ss;
+    ss.Sx = a.Sx + b.Sx;
+    ss.Sy = a.Sy + b.Sy;
+    ss.Sxx = a.Sxx + b.Sxx;
+    ss.Sxy = a.Sxy + b.Sxy;
+    ss.Syy = a.Syy + b.Syy;
+    ss.n = a.n + b.n;
+    return ss;
+}
 
 sufficient_stats
 operator-(sufficient_stats const & a, sufficient_stats const &b) {
@@ -55,8 +102,21 @@ operator-(sufficient_stats const & a, sufficient_stats const &b) {
     ss.Sxx = a.Sxx - b.Sxx;
     ss.Sxy = a.Sxy - b.Sxy;
     ss.Syy = a.Syy - b.Syy;
+    ss.n = a.n - b.n;
     return ss;
 }
+
+inline std::ostream &operator<< (std::ostream &out_file, const sufficient_stats &s) {
+    out_file << "Sx: " << s.Sx
+             << "Sy: " << s.Sy
+             << "Sxx: " << s.Sxx
+             << "Sxy: " << s.Sxy
+             << "Syy: " << s.Syy
+             << "n: " << s.n;
+    return out_file;
+}
+
+
 
 class fit{
 public:
@@ -89,14 +149,8 @@ public:
         sufficient_stats ss = ac_ss[to+1] - ac_ss[from];
         
         Point n = unit_vector(rot90(input[to] - input[from]));
-        double dist = dot(n, input[from]); // distance from origin
-        
-        mean = n[0]*ss.Sx + n[1]*ss.Sy;
-        double N = (to + 1 - from);
-        return n[0]*n[0]*ss.Sxx
-            + n[1]*n[1]*ss.Syy
-            + 2*n[0]*n[1]*ss.Sxy
-            - 2*dist*mean + N*dist*dist;
+        double dist = dot(n, input[from]);
+        return ss.best_line(n, dist, mean);
     }
     
     /*** Compute the best line for the points, given normal. */
@@ -104,14 +158,7 @@ public:
                             Point n,
                             double & mean) {
         sufficient_stats ss = ac_ss[to+1] - ac_ss[from];
-        double N = (to + 1 - from);
-        
-        mean = (n[0]*ss.Sx + n[1]*ss.Sy);
-        double dist = mean/N;
-        return n[0]*n[0]*ss.Sxx
-            + n[1]*n[1]*ss.Syy
-            + 2*n[0]*n[1]*ss.Sxy
-            - 2*dist*mean + N*dist*dist;
+        return ss.best_angled_line(n, mean);
     }
     
     double simple_measure(unsigned from, unsigned to, double & mean) {
@@ -130,7 +177,7 @@ public:
     void simple_dp();
     void C_simple_dp();
 
-    void C_endpoint(double & berr);
+    void C_endpoint();
     
     fit(vector<Point> const & in)
         :input(in) {
@@ -138,12 +185,98 @@ public:
         ss.Sx = ss.Sy = ss.Sxx = ss.Sxy = ss.Syy = 0;
         ac_ss.push_back(ss);
         for(unsigned l = 0; l < input.size(); l++) {
-            ss.include(input[l][0], input[l][1]);
+            ss += input[l];
             ac_ss.push_back(ss);
         }
     }
     
+    class block{
+    public:
+        unsigned next;
+        sufficient_stats ss;
+        double cost;
+    };
+    vector<block> blocks;
+    void merging_version();
 };
+
+
+void fit::merging_version() {
+    Geom::Point angles[] = {Point(0,1), Point(1,0), Point(1,1), Point(1,-1)};
+    int C = sizeof(angles)/sizeof(Point);
+    for(unsigned c = 0; c < C; c++) {
+        angles[c] = unit_vector(angles[c]);
+    }
+    const double link_cost = 100;
+    const unsigned N = input.size();
+    blocks.resize(N);
+    // pairs
+    for(int i = 0; i < N; i++) {
+        block b;
+        sufficient_stats ss;
+        ss.Sx = ss.Sy = ss.Sxx = ss.Sxy = ss.Syy = 0;
+        ss.n = 0;
+        ss += input[i];
+        ss += input[i+1];
+        b.ss = ss;
+        b.cost = link_cost;
+        b.next = i+1;
+        blocks[i] = b;
+        //std::cout << ss 
+        //<< std::endl;
+    }
+    
+    // merge(a,b)
+    while(1)
+    {
+        block best_block;
+        unsigned best_idx = 0;
+        double best = 0;
+        unsigned beg = 0;
+        unsigned middle = blocks[beg].next;
+        unsigned end = blocks[middle].next;
+        while(end != N) {
+            sufficient_stats ss = blocks[beg].ss + blocks[middle].ss;
+            ss -= input[middle];
+            double mean;
+            Point normal = unit_vector(rot90(input[end] - input[beg]));
+            double dist = dot(normal, input[beg]);
+            double newcost = ss.best_line(normal, dist, mean);
+            double deltaCost = -link_cost - blocks[beg].cost - blocks[middle].cost 
+                + newcost;
+            /*std::cout << beg << ", "
+                      << middle << ", "
+                      << end << ", "
+                      << deltaCost <<"; "
+                      << newcost <<"; "
+                      << mean << ": "
+                      << ss 
+                      << std::endl;*/
+            if(deltaCost < best) {
+                best = deltaCost;
+                best_idx = beg;
+                best_block.ss = ss;
+                best_block.cost = newcost;
+                best_block.next = end;
+            }
+            beg = middle;
+            middle = end;
+            end = blocks[end].next;
+        }
+        if(best < 0)
+            blocks[best_idx] = best_block;
+        else // no improvement possible
+            break;
+    }
+    {
+        solution.resize(0); // empty list
+        unsigned beg = 0;
+        while(beg != N) {
+            solution.push_back(input[beg]);
+            beg = blocks[beg].next;
+        }
+    }
+}
 
 
 void fit::arbitrary() {
@@ -255,7 +388,7 @@ void fit::simple_dp() {
     reverse(solution.begin(), solution.end());
 }
 
-void fit::C_endpoint(double & berr) {
+void fit::C_endpoint() {
     Geom::Point angles[] = {Point(0,1), Point(1,0), Point(1,1), Point(1,-1)};
     int C = sizeof(angles)/sizeof(Point);
     for(unsigned c = 0; c < C; c++) {
@@ -276,7 +409,6 @@ void fit::C_endpoint(double & berr) {
         }
 
     }
-    berr = best;
     Point dir = angles[best_dir];
     Point dirT = rot90(dir);
     Point centre = dir*best_mean/N;
@@ -356,7 +488,6 @@ void fit::C_simple_dp() {
     reverse(solution.begin(), solution.end());
 }
 
-
 static gboolean
 expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
 {
@@ -376,10 +507,15 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     cairo_set_line_width (cr, 1);
     
     fit f(handles);
-    double berr;
+    f.merging_version();
+    f.draw(cr);
+    cairo_set_source_rgba (cr, 0., 0., 0, 1);
+    cairo_stroke(cr);
     f.simple_dp();
     f.draw(cr);
+    cairo_set_source_rgba (cr, 0., 1., 0, 0.5);
     cairo_stroke(cr);
+    cairo_set_source_rgba (cr, 0., 0., 0, 1);
     notify << f.solution.size();
     //notify << "arc length = " << arc.point_at(1) - arc.point_at(0) << std::endl;
     {
