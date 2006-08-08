@@ -6,10 +6,7 @@ Gtk.init
 accel_group = Gtk::AccelGroup.new
 
 window = Gtk::Window.new("toy cairo")
-
-window.signal_connect("destroy") {
-  Gtk.main_quit
-}
+window.signal_connect("destroy") {Gtk.main_quit}
 
 box = Gtk::VBox.new
 window.add(box)
@@ -26,6 +23,26 @@ fileitem.submenu = filemenu
 
 openitem = Gtk::ImageMenuItem.new(Gtk::Stock::OPEN, accel_group)
 filemenu.append(openitem)
+openitem.signal_connect("activate") do
+    dialog = Gtk::FileChooserDialog.new("Open File",
+                                     window,
+                                     Gtk::FileChooser::ACTION_OPEN,
+                                     nil,
+                                     [Gtk::Stock::CANCEL, Gtk::Dialog::RESPONSE_CANCEL],
+                                     [Gtk::Stock::OPEN, Gtk::Dialog::RESPONSE_ACCEPT])
+    [["SVG Path (*.svgd)","*.svgd"],["All files (*)","*"]].each do |x|
+        filter = Gtk::FileFilter.new
+        filter.name = x[0]
+        filter.add_pattern(x[1])
+        dialog.add_filter(filter)
+    end
+    
+    if dialog.run == Gtk::Dialog::RESPONSE_ACCEPT
+        #TODO: do something with this file
+        puts "#{dialog.filename} was selected"
+    end
+    dialog.destroy
+end
 
 filemenu.append(Gtk::SeparatorMenuItem.new)
 
@@ -42,6 +59,11 @@ helpitem.submenu = helpmenu
 
 aboutitem = Gtk::ImageMenuItem.new("_About", true)
 helpmenu.append(aboutitem)
+aboutitem.signal_connect("activate") do
+    puts "Well, this is toy-cairo in ruby!"
+end
+
+
 
 canvas = Gtk::DrawingArea.new
 canvas.set_size_request(400,400)
@@ -50,7 +72,7 @@ box.pack_start(canvas)
 code = Gtk::TextView.new
 box.pack_start(code)
 
-canvas.signal_connect("expose_event") {
+canvas.signal_connect("expose_event") do
   %q{
   cr = Cairo::Context.new(canvas.window) # this bit hasn't been written yet.
   cr.move_to(50, 50)
@@ -62,7 +84,7 @@ canvas.signal_connect("expose_event") {
   cr.set_source_rgb(0.0, 0.0, 0.0)
   cr.fill_preserve
 }
-}
+end
 
 %q{
 
