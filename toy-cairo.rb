@@ -6,6 +6,7 @@ Gtk.init
 accel_group = Gtk::AccelGroup.new
 
 window = Gtk::Window.new("toy cairo")
+window.add_accel_group(accel_group)
 window.signal_connect("destroy") {Gtk.main_quit}
 
 box = Gtk::VBox.new
@@ -59,8 +60,13 @@ helpitem.submenu = helpmenu
 
 aboutitem = Gtk::ImageMenuItem.new("_About", true)
 helpmenu.append(aboutitem)
+
+aboutbox = Gtk::AboutDialog.new
+aboutbox.name = "2geom Toy Cairo"
+#Pixbuf doesn't load SVGs
+#aboutbox.logo = Gdk::Pixbuf.new("2geom.svg")
 aboutitem.signal_connect("activate") do
-    puts "Well, this is toy-cairo in ruby!"
+    aboutbox.show()    
 end
 
 
@@ -87,19 +93,6 @@ canvas.signal_connect("expose_event") do
 end
 
 %q{
-
-    g_signal_connect ((gpointer) open, "activate",
-                    G_CALLBACK (on_open_activate),
-                    NULL);
-    g_signal_connect ((gpointer) quit, "activate",
-                    gtk_main_quit,
-                    NULL);
-    g_signal_connect ((gpointer) about, "activate",
-                    G_CALLBACK (on_about_activate),
-                    NULL);
-
-    gtk_window_add_accel_group (GTK_WINDOW (window), accel_group);
-
 
     gtk_window_set_policy(GTK_WINDOW(window), TRUE, TRUE, TRUE);
 
