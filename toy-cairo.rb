@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 require 'gtk2'
+require 'cairo'
 Gtk.init
 
 accel_group = Gtk::AccelGroup.new
@@ -30,6 +31,7 @@ filemenu.append(Gtk::SeparatorMenuItem.new)
 
 quititem = Gtk::ImageMenuItem.new(Gtk::Stock::QUIT, accel_group)
 filemenu.append(quititem)
+quititem.signal_connect("activate") {Gtk::main_quit()}
 
 # Help menu
 helpitem = Gtk::MenuItem.new("_Help",true)
@@ -44,6 +46,23 @@ helpmenu.append(aboutitem)
 canvas = Gtk::DrawingArea.new
 canvas.set_size_request(400,400)
 box.pack_start(canvas)
+
+code = Gtk::TextView.new
+box.pack_start(code)
+
+canvas.signal_connect("expose_event") {
+  %q{
+  cr = Cairo::Context.new(canvas.window) # this bit hasn't been written yet.
+  cr.move_to(50, 50)
+  cr.curve_to(100, 25, 100, 75, 150, 50)
+  cr.line_to(150, 150)
+  cr.line_to(50, 150)
+  cr.close_path
+
+  cr.set_source_rgb(0.0, 0.0, 0.0)
+  cr.fill_preserve
+}
+}
 
 %q{
 
