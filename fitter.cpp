@@ -38,6 +38,7 @@ public:
     double Sx, Sy, Sxx, Syy, Sxy;
     double n;
     
+    sufficient_stats() : Sx(0), Sy(0), Sxx(0), Syy(0), Sxy(0), n(0) {}
     void
     operator+=(Point p) {
         Sx += p[0];
@@ -69,6 +70,24 @@ public:
             + normal[1]*normal[1]*Syy
             + 2*normal[0]*normal[1]*Sxy
             - 2*dist*mean + n*dist*dist;
+    }
+    /*** Returns the index to the angle in angles that has the line of best fit
+     * passing through mean */
+    unsigned best_schematised_line(const unsigned C, Point angles[4], Point p,
+            double & mean, double & cost) {
+        cost = DBL_MAX;
+        unsigned bestAngle;
+        for(unsigned i=0;i<C;i++) {
+            Point n = unit_vector(rot90(angles[i]));
+            double dist = dot(n, p);
+            double mean;
+            double bl = best_line(n, dist, mean);
+            if(bl < cost) {
+                cost = bl;
+                bestAngle = i;
+            }
+        }
+        return bestAngle;
     }
     /*** Compute the best line for the points, given normal. */
     double best_angled_line(Point normal,
@@ -122,14 +141,29 @@ class fit{
 public:
     vector<Point> input;
     vector<Point> solution;
+
+    vector<pair<Point,Point> > lines;
+    vector<int> thickness;
     
     void
     draw(cairo_t* cr) {
-        assert(solution.size() > 1); {
+        /*
+        if(solution.size() > 1) {
+            //cairo_set_line_width (cr, 1);
             cairo_move_to(cr, solution[0]);
             for(int i = 1; i < solution.size(); i++) {
                 cairo_line_to(cr, solution[i]);
             }
+        }
+        */
+        //cairo_stroke(cr);
+        for(unsigned i = 0;i<lines.size();i++) {
+            if(thickness.size()>i) {
+                cairo_set_line_width (cr, thickness[i]);
+            }
+            cairo_move_to(cr, lines[i].first);
+            cairo_line_to(cr, lines[i].second);
+            cairo_stroke(cr);
         }
     }
     
@@ -193,14 +227,194 @@ public:
     class block{
     public:
         unsigned next;
+        unsigned angle;
         sufficient_stats ss;
         double cost;
+        unsigned size;
     };
     vector<block> blocks;
+    void test();
     void merging_version();
+    void schematised_merging();
+
+    double plen(Point p) {
+        return sqrt(p[0]*p[0]+p[1]*p[1]);
+    }
+
+    double get_block_line(block& b, Point& d, Point& n, Point& c) {
+        n = unit_vector(rot90(d));
+        c = Point(b.ss.Sx/b.size,b.ss.Sy/b.size);
+        return 0;
+    }
 };
 
+void extremePoints(vector<Point> const & pts, Point const & dir, 
+                   Point & min, Point & max) {
+    double minProj = DBL_MAX, maxProj = -DBL_MAX;
+    for(unsigned i=0;i<pts.size();i++) {
+        double p = dot(pts[i],dir);
+        if(p < minProj) {
+            minProj = p;
+            min = pts[i];
+        }
+        if(p > maxProj) {
+            maxProj = p;
+            max = pts[i];
+        }
+    }
+} 
 
+void fit::test() {
+    Geom::Point angles[] = {Point(0,1), Point(1,0), Point(1,1), Point(1,-1)};
+    int C = sizeof(angles)/sizeof(Point);
+    for(unsigned c = 0; c < C; c++) {
+        angles[c] = unit_vector(angles[c]);
+    }
+    sufficient_stats ss;
+    const unsigned N = input.size();
+    for(int i = 0; i < N; i++) {
+        ss += input[i];
+    }
+    double best_bl = DBL_MAX;
+    unsigned best;
+    for(unsigned i=0;i<C;i++) {
+        Point n = unit_vector(rot90(angles[i]));
+        double dist = dot(n, input[0]);
+        double mean;
+        double bl = ss.best_line(n, dist, mean);
+        if(bl < best_bl) {
+            best = i;
+            best_bl = bl;
+        }
+        mean/=N;
+        Point d = angles[i];
+        Point a = mean*n;
+        Point min, max;
+        extremePoints(input,d,min,max);
+        Point b = dot(min,d)*d;
+        Point c = dot(max,d)*d;
+        Point start = a+b;
+        Point end = a+c;
+        lines.push_back(make_pair(start,end));
+        thickness.push_back(1);
+    }
+    thickness[best] = 4;
+}
+
+void fit::schematised_merging() {
+    Geom::Point angles[] = {Point(0,1), Point(1,0), Point(1,1), Point(1,-1)};
+    int C = sizeof(angles)/sizeof(Point);
+    for(unsigned c = 0; c < C; c++) {
+        angles[c] = unit_vector(angles[c]);
+    }
+    const double link_cost = 0;
+    const unsigned N = input.size();
+    unsigned blockCount = N-1;
+    blocks.resize(N-1);
+    // pairs
+    for(int i = 0; i < N-1; i++) {
+        block b;
+        sufficient_stats ss;
+        ss += input[i];
+        ss += input[i+1];
+        b.ss = ss;
+        double mean, newcost;
+        b.angle = ss.best_schematised_line(C, angles, input[i], mean, newcost);
+        b.size = 2;
+        b.cost = link_cost + newcost;
+        b.next = i+1;
+        blocks[i] = b;
+        //std::cout << ss 
+        //<< std::endl;
+    }
+    
+    // merge(a,b)
+    while(0)
+    {
+        block best_block;
+        unsigned best_idx = 0;
+        double best = 0;
+        unsigned beg = 0;
+        unsigned middle = blocks[beg].next;
+        unsigned end = blocks[middle].next;
+        while(end != N-1) {
+            sufficient_stats ss = blocks[beg].ss + blocks[middle].ss;
+            ss -= input[middle];
+            double mean, newcost;
+            unsigned bestAngle = ss.best_schematised_line(C, angles, input[beg], mean, newcost);
+            double deltaCost = -link_cost - blocks[beg].cost - blocks[middle].cost 
+                + newcost;
+            /*std::cout << beg << ", "
+                      << middle << ", "
+                      << end << ", "
+                      << deltaCost <<"; "
+                      << newcost <<"; "
+                      << mean << ": "
+                      << ss 
+                      << std::endl;*/
+            if(deltaCost < best) {
+                best = deltaCost;
+                best_idx = beg;
+                best_block.ss = ss;
+                best_block.cost = newcost;
+                best_block.next = end;
+                best_block.angle = bestAngle;
+                best_block.size = blocks[beg].size + blocks[middle].size;
+            }
+            beg = middle;
+            middle = end;
+            end = blocks[end].next;
+        }
+        blockCount--;
+        if(best < 0)
+            blocks[best_idx] = best_block;
+        else // no improvement possible
+            break;
+    }
+    {
+        solution.resize(0); // empty list
+        unsigned beg = 0;
+        unsigned prev = 0;
+        while(beg < N-1) {
+            block b = blocks[beg];
+            {
+                Point n, c;
+                Point n1, c1;
+                Point d = angles[b.angle];
+                get_block_line(b,d,n,c);
+                Point start = c, end = c+10*angles[b.angle];
+                if(beg==0) {
+                    //start = intersection of b.line and 
+                    //        line through input[0] orthogonal to b.line
+                    line_intersection(n, dot(c,n), d, dot(d,input[0]), start);
+                } else {
+                    //start = intersection of b.line and blocks[prev].line
+                    block p = blocks[prev];
+                    if(b.angle!=p.angle) {
+                        get_block_line(p,angles[p.angle],n1,c1);
+                        line_intersection(n, dot(c,n), n1, dot(c1,n1), start);
+                    }
+                }
+
+                if (b.next < N-1) {
+                    //end = intersection of b.line and blocks[b.next].line
+                    block next = blocks[b.next];
+                    if(b.angle!=next.angle) {
+                        get_block_line(next,angles[next.angle],n1,c1);
+                        line_intersection(n, dot(c,n), n1, dot(c1,n1), end);
+                    }
+                } else {
+                    //end = intersection of b.line and
+                    //      line through input[N-1] orthogonal to b.line
+                    line_intersection(n, dot(c,n), d, dot(d,input[N-1]), end);
+                }                
+                lines.push_back(make_pair(start,end));
+            }
+            prev = beg;
+            beg = b.next;
+        }
+    }
+}
 void fit::merging_version() {
     Geom::Point angles[] = {Point(0,1), Point(1,0), Point(1,1), Point(1,-1)};
     int C = sizeof(angles)/sizeof(Point);
@@ -507,14 +721,16 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     cairo_set_line_width (cr, 1);
     
     fit f(handles);
-    f.merging_version();
+    //f.test();
+    //f.merging_version();
+    f.schematised_merging();
     f.draw(cr);
     cairo_set_source_rgba (cr, 0., 0., 0, 1);
     cairo_stroke(cr);
-    f.simple_dp();
-    f.draw(cr);
-    cairo_set_source_rgba (cr, 0., 1., 0, 0.5);
-    cairo_stroke(cr);
+    //f.simple_dp();
+    //f.draw(cr);
+    //cairo_set_source_rgba (cr, 0., 1., 0, 0.5);
+    //cairo_stroke(cr);
     cairo_set_source_rgba (cr, 0., 0., 0, 1);
     notify << f.solution.size();
     //notify << "arc length = " << arc.point_at(1) - arc.point_at(0) << std::endl;
@@ -666,7 +882,7 @@ int main(int argc, char **argv) {
  
     GtkWidget* window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 
-    gtk_window_set_title(GTK_WINDOW(window), "text toy");
+    gtk_window_set_title(GTK_WINDOW(window), "Fitter");
 
     menubox = gtk_vbox_new (FALSE, 0);
     gtk_widget_show (menubox);
