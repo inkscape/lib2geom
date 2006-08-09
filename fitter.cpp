@@ -230,20 +230,15 @@ public:
         unsigned angle;
         sufficient_stats ss;
         double cost;
-        unsigned size;
     };
     vector<block> blocks;
     void test();
     void merging_version();
     void schematised_merging();
 
-    double plen(Point p) {
-        return sqrt(p[0]*p[0]+p[1]*p[1]);
-    }
-
     double get_block_line(block& b, Point& d, Point& n, Point& c) {
         n = unit_vector(rot90(d));
-        c = Point(b.ss.Sx/b.size,b.ss.Sy/b.size);
+        c = Point(b.ss.Sx/b.ss.n,b.ss.Sy/b.ss.n);
         return 0;
     }
 };
@@ -320,7 +315,6 @@ void fit::schematised_merging() {
         b.ss = ss;
         double mean, newcost;
         b.angle = ss.best_schematised_line(C, angles, input[i], mean, newcost);
-        b.size = 2;
         b.cost = link_cost + newcost;
         b.next = i+1;
         blocks[i] = b;
@@ -359,7 +353,6 @@ void fit::schematised_merging() {
                 best_block.cost = newcost;
                 best_block.next = end;
                 best_block.angle = bestAngle;
-                best_block.size = blocks[beg].size + blocks[middle].size;
             }
             beg = middle;
             middle = end;
