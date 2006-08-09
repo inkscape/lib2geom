@@ -73,11 +73,11 @@ public:
     }
     /*** Returns the index to the angle in angles that has the line of best fit
      * passing through mean */
-    unsigned best_schematised_line(const unsigned C, Point angles[4], Point p,
+    unsigned best_schematised_line(vector<Point>& angles, Point p,
             double & mean, double & cost) {
         cost = DBL_MAX;
         unsigned bestAngle;
-        for(unsigned i=0;i<C;i++) {
+        for(unsigned i=0;i<angles.size();i++) {
             Point n = unit_vector(rot90(angles[i]));
             double dist = dot(n, p);
             double mean;
@@ -213,8 +213,14 @@ public:
 
     void C_endpoint();
     
+    static const unsigned C=4;
+    Geom::Point angles[C];
     fit(vector<Point> const & in)
         :input(in) {
+        Geom::Point as[] = {Point(0,1), Point(1,0), Point(1,1), Point(1,-1)};
+        for(unsigned c = 0; c < C; c++) {
+            angles[c] = unit_vector(as[c]);
+        }
         sufficient_stats ss;
         ss.Sx = ss.Sy = ss.Sxx = ss.Sxy = ss.Syy = 0;
         ac_ss.push_back(ss);
@@ -260,11 +266,6 @@ void extremePoints(vector<Point> const & pts, Point const & dir,
 } 
 
 void fit::test() {
-    Geom::Point angles[] = {Point(0,1), Point(1,0), Point(1,1), Point(1,-1)};
-    int C = sizeof(angles)/sizeof(Point);
-    for(unsigned c = 0; c < C; c++) {
-        angles[c] = unit_vector(angles[c]);
-    }
     sufficient_stats ss;
     const unsigned N = input.size();
     for(int i = 0; i < N; i++) {
@@ -297,15 +298,11 @@ void fit::test() {
 }
 
 void fit::schematised_merging() {
-    Geom::Point angles[] = {Point(0,1), Point(1,0), Point(1,1), Point(1,-1)};
-    int C = sizeof(angles)/sizeof(Point);
-    for(unsigned c = 0; c < C; c++) {
-        angles[c] = unit_vector(angles[c]);
-    }
     const double link_cost = 0;
     const unsigned N = input.size();
     unsigned blockCount = N-1;
     blocks.resize(N-1);
+    vector<Point> vangles(angles,angles+C);
     // pairs
     for(int i = 0; i < N-1; i++) {
         block b;
@@ -314,7 +311,7 @@ void fit::schematised_merging() {
         ss += input[i+1];
         b.ss = ss;
         double mean, newcost;
-        b.angle = ss.best_schematised_line(C, angles, input[i], mean, newcost);
+        b.angle = ss.best_schematised_line(vangles, input[i], mean, newcost);
         b.cost = link_cost + newcost;
         b.next = i+1;
         blocks[i] = b;
@@ -335,7 +332,7 @@ void fit::schematised_merging() {
             sufficient_stats ss = blocks[beg].ss + blocks[middle].ss;
             ss -= input[middle];
             double mean, newcost;
-            unsigned bestAngle = ss.best_schematised_line(C, angles, input[beg], mean, newcost);
+            unsigned bestAngle = ss.best_schematised_line(vangles, input[beg], mean, newcost);
             double deltaCost = -link_cost - blocks[beg].cost - blocks[middle].cost 
                 + newcost;
             /*std::cout << beg << ", "
@@ -409,11 +406,6 @@ void fit::schematised_merging() {
     }
 }
 void fit::merging_version() {
-    Geom::Point angles[] = {Point(0,1), Point(1,0), Point(1,1), Point(1,-1)};
-    int C = sizeof(angles)/sizeof(Point);
-    for(unsigned c = 0; c < C; c++) {
-        angles[c] = unit_vector(angles[c]);
-    }
     const double link_cost = 100;
     const unsigned N = input.size();
     blocks.resize(N);
@@ -490,13 +482,11 @@ void fit::arbitrary() {
     /*solution.resize(input.size());
       copy(input.begin(), input.end(), solution.begin());*/
     // normals
-    Geom::Point angles[] = {Point(0,1), Point(1,0), Point(1,1), Point(1,-1)};
-    int N = sizeof(angles)/sizeof(Point);
     
     double best_error = INFINITY;
     double best_mean = 0;
     int best_angle = 0;
-    for(int i = 0; i < N; i++) {
+    for(int i = 0; i < C; i++) {
         Point angle = angles[i];
         double mean = 0;
         double error = 0;
@@ -596,11 +586,6 @@ void fit::simple_dp() {
 }
 
 void fit::C_endpoint() {
-    Geom::Point angles[] = {Point(0,1), Point(1,0), Point(1,1), Point(1,-1)};
-    int C = sizeof(angles)/sizeof(Point);
-    for(unsigned c = 0; c < C; c++) {
-        angles[c] = unit_vector(angles[c]);
-    }
     const unsigned N = input.size();
     
     double best_mean;
@@ -625,11 +610,6 @@ void fit::C_endpoint() {
 }
 
 void fit::C_simple_dp() {
-    Geom::Point angles[] = {Point(0,1), Point(1,0), Point(1,1), Point(1,-1)};
-    int C = sizeof(angles)/sizeof(Point);
-    for(unsigned c = 0; c < C; c++) {
-        angles[c] = unit_vector(angles[c]);
-    }
     const unsigned N = input.size();
     
     vector<int> prev(N);
