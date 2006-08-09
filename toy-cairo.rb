@@ -79,8 +79,7 @@ code = Gtk::TextView.new
 box.pack_start(code)
 
 canvas.signal_connect("expose_event") do
-  %q{
-  cr = Cairo::Context.new(canvas.window) # this bit hasn't been written yet.
+  cr = canvas.window.create_cairo_context
   cr.move_to(50, 50)
   cr.curve_to(100, 25, 100, 75, 150, 50)
   cr.line_to(150, 150)
@@ -89,7 +88,6 @@ canvas.signal_connect("expose_event") do
 
   cr.set_source_rgb(0.0, 0.0, 0.0)
   cr.fill_preserve
-}
 end
 
 %q{
