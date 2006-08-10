@@ -79,17 +79,6 @@ canvas.add_events(Gdk::Event::BUTTON_PRESS_MASK|
     Gdk::Event::POINTER_MOTION_MASK)
 box.pack_start(canvas)
 
-canvas.signal_connect("expose_event") do
-  cr = canvas.window.create_cairo_context
-  cr.move_to(50, 50)
-  cr.curve_to(100, 25, 100, 75, 150, 50)
-  cr.line_to(150, 150)
-  cr.line_to(50, 150)
-  cr.close_path
-
-  cr.set_source_rgb(0.0, 0.0, 0.0)
-  cr.fill_preserve
-end
 
 canvas.signal_connect("button_press_event") do
 end
@@ -104,6 +93,23 @@ end
 
 code = Gtk::TextView.new
 box.pack_start(code)
+
+tb = code.buffer
+tb.set_text("  cr.move_to(50, 50)
+  cr.curve_to(100, 25, 100, 75, 150, 50)
+  cr.line_to(150, 150)
+  cr.line_to(50, 150)
+  cr.close_path
+
+  cr.set_source_rgb(0.0, 0.0, 0.0)
+  cr.fill_preserve
+")
+
+canvas.signal_connect("expose_event") do
+  cr = canvas.window.create_cairo_context
+  tb = code.buffer
+  Kernel.eval(tb.get_text())
+end
 
 %q{
     dash_gc = gdk_gc_new(canvas->window);
