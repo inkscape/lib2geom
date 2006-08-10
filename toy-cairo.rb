@@ -6,6 +6,7 @@ Gtk.init
 accel_group = Gtk::AccelGroup.new
 
 window = Gtk::Window.new("toy cairo")
+window.set_default_size(600,600)
 window.add_accel_group(accel_group)
 window.signal_connect("destroy") {Gtk.main_quit}
 
@@ -72,11 +73,11 @@ end
 
 
 canvas = Gtk::DrawingArea.new
-canvas.set_size_request(400,400)
+canvas.add_events(Gdk::Event::BUTTON_PRESS_MASK|
+    Gdk::Event::BUTTON_RELEASE_MASK|
+    Gdk::Event::KEY_PRESS_MASK|
+    Gdk::Event::POINTER_MOTION_MASK)
 box.pack_start(canvas)
-
-code = Gtk::TextView.new
-box.pack_start(code)
 
 canvas.signal_connect("expose_event") do
   cr = canvas.window.create_cairo_context
@@ -90,58 +91,21 @@ canvas.signal_connect("expose_event") do
   cr.fill_preserve
 end
 
+canvas.signal_connect("button_press_event") do
+end
+canvas.signal_connect("button_release_event") do
+end
+canvas.signal_connect("key_press_event") do
+end
+canvas.signal_connect("motion_notify_event") do
+end
+
+
+
+code = Gtk::TextView.new
+box.pack_start(code)
+
 %q{
-
-    gtk_window_set_policy(GTK_WINDOW(window), TRUE, TRUE, TRUE);
-
-    gtk_signal_connect(GTK_OBJECT(window),
-                       "delete_event",
-                       GTK_SIGNAL_FUNC(delete_event_cb),
-                       NULL);
-
-    gtk_widget_push_visual(gdk_rgb_get_visual());
-    gtk_widget_push_colormap(gdk_rgb_get_cmap());
-    canvas = gtk_drawing_area_new();
-
-    gtk_signal_connect(GTK_OBJECT (canvas),
-                       "expose_event",
-                       GTK_SIGNAL_FUNC(expose_event),
-                       0);
-    gtk_widget_add_events(canvas, (GDK_BUTTON_PRESS_MASK |
-                                   GDK_BUTTON_RELEASE_MASK |
-                                   GDK_KEY_PRESS_MASK    |
-                                   GDK_POINTER_MOTION_MASK));
-    gtk_signal_connect(GTK_OBJECT (canvas),
-                       "button_press_event",
-                       GTK_SIGNAL_FUNC(mouse_event),
-                       0);
-    gtk_signal_connect(GTK_OBJECT (canvas),
-                       "button_release_event",
-                       GTK_SIGNAL_FUNC(mouse_release_event),
-                       0);
-    gtk_signal_connect(GTK_OBJECT (canvas),
-                       "motion_notify_event",
-                       GTK_SIGNAL_FUNC(mouse_motion_event),
-                       0);
-    gtk_signal_connect(GTK_OBJECT(canvas),
-                       "key_press_event",
-                       GTK_SIGNAL_FUNC(key_release_event),
-                       0);
-
-    gtk_widget_pop_colormap();
-    gtk_widget_pop_visual();
-
-    //GtkWidget *vb = gtk_vbox_new(0, 0);
-
-
-    //gtk_container_add(GTK_CONTAINER(window), vb);
-
-    gtk_box_pack_start(GTK_BOX(menubox), canvas, TRUE, TRUE, 0);
-
-    gtk_window_set_default_size(GTK_WINDOW(window), 600, 600);
-
-    gtk_widget_show_all(window);
-
     dash_gc = gdk_gc_new(canvas->window);
     gint8 dash_list[] = {4, 4};
     gdk_gc_set_dashes(dash_gc, 0, dash_list, 2);
@@ -160,6 +124,8 @@ end
 
     /* Make sure the canvas can receive key press events. */
     GTK_WIDGET_SET_FLAGS(canvas, GTK_CAN_FOCUS);
+    
+    
     assert(GTK_WIDGET_CAN_FOCUS(canvas));
     gtk_widget_grab_focus(canvas);
     assert(gtk_widget_is_focus(canvas));
