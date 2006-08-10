@@ -1,6 +1,13 @@
 #!/usr/bin/env ruby
 require 'gtk2'
 require 'cairo'
+$LOAD_PATH.unshift "../packages/cairo/ext/"
+$LOAD_PATH.unshift "../packages/cairo/lib/"
+
+require 'cairo'
+require 'stringio'
+#require "rsvg2"
+
 Gtk.init
 
 accel_group = Gtk::AccelGroup.new
@@ -47,6 +54,9 @@ openitem.signal_connect("activate") do
 end
 
 filemenu.append(Gtk::SeparatorMenuItem.new)
+
+saveitem = Gtk::ImageMenuItem.new(Gtk::Stock::SAVE, accel_group)
+filemenu.append(saveitem)
 
 quititem = Gtk::ImageMenuItem.new(Gtk::Stock::QUIT, accel_group)
 filemenu.append(quititem)
@@ -103,13 +113,43 @@ tb.set_text("  cr.move_to(50, 50)
 
   cr.set_source_rgb(0.0, 0.0, 0.0)
   cr.fill_preserve
+  cr.set_source_rgb(1.0, 0.0, 0.0)
+  cr.set_line_join(Cairo::LINE_JOIN_MITER)
+  cr.set_line_width(4)
+  cr.stroke
 ")
 
 canvas.signal_connect("expose_event") do
   cr = canvas.window.create_cairo_context
   tb = code.buffer
   Kernel.eval(tb.get_text())
+  #handle = RSVG::Handle.new_from_file("branding/2geom/svg")
+  #cr.render_rsvg_handle(handle)
+
 end
+
+saveitem.signal_connect("activate") {
+  surface = Cairo::ImageSurface.new(Cairo::FORMAT_ARGB32, 200, 200)
+  cr = Cairo::Context.new(surface)
+
+  tb = code.buffer
+  Kernel.eval(tb.get_text())
+
+  cr.target.write_to_png("screenshot.png")
+
+  cr.target.finish
+  surface = Cairo::SVGSurface.new("screenshot.svg", 200, 200)
+  cr = Cairo::Context.new(surface)
+
+  tb = code.buffer
+  Kernel.eval(tb.get_text())
+  
+  cr.show_page
+  
+  cr.target.finish
+}
+
+
 
 %q{
     dash_gc = gdk_gc_new(canvas->window);
