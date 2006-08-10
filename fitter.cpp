@@ -320,7 +320,7 @@ void fit::schematised_merging() {
     }
     
     // merge(a,b)
-    while(0)
+    while(1)
     {
         block best_block;
         unsigned best_idx = 0;
@@ -343,8 +343,10 @@ void fit::schematised_merging() {
                       << mean << ": "
                       << ss 
                       << std::endl;*/
-            if(deltaCost < best) {
+            //if(deltaCost < best) {
+            if(blocks[beg].angle==blocks[middle].angle) {
                 best = deltaCost;
+                best = -1;
                 best_idx = beg;
                 best_block.ss = ss;
                 best_block.cost = newcost;
