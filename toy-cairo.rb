@@ -246,7 +246,7 @@ canvas.signal_connect("expose_event") do
   Kernel.eval(tb.get_text())
   #handle = RSVG::Handle.new_from_file("branding/2geom/svg")
   #cr.render_rsvg_handle(handle)
-
+  canvas.queue_draw()
 end
 
 saveitem.signal_connect("activate") {
