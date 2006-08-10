@@ -8,7 +8,11 @@
 #include <algorithm>
 #include <sstream>
 #include <iostream>
+#include <fstream>
 #include <vector>
+#include <string>
+#include <map>
+#include <cairo/cairo-pdf.h>
 #include "s-basis.h"
 #include "point.h"
 #include "point-ops.h"
@@ -20,6 +24,10 @@ using std::string;
 using std::vector;
 using std::pair;
 using std::make_pair;
+using std::ifstream;
+using std::map;
+using std::cout;
+using std::endl;
 using namespace Geom;
 
 static GtkWidget *canvas;
@@ -27,11 +35,12 @@ static GtkWidget *canvas;
 
 BezOrd z0(0.5,1.);
 
-std::vector<Geom::Point> handles;
+std::vector<Geom::Point*> handles;
 Geom::Point *selected_handle;
 Geom::Point old_handle_pos;
 Geom::Point old_mouse_point;
 
+vector<vector<Point> > paths;
 
 class sufficient_stats{
 public:
@@ -213,14 +222,15 @@ public:
 
     void C_endpoint();
     
-    static const unsigned C=4;
-    Geom::Point angles[C];
+    vector<Geom::Point> angles;
     fit(vector<Point> const & in)
         :input(in) {
+            /*
         Geom::Point as[] = {Point(0,1), Point(1,0), Point(1,1), Point(1,-1)};
-        for(unsigned c = 0; c < C; c++) {
-            angles[c] = unit_vector(as[c]);
+        for(unsigned c = 0; c < 4; c++) {
+            angles.push_back(unit_vector(as[c]));
         }
+        */
         sufficient_stats ss;
         ss.Sx = ss.Sy = ss.Sxx = ss.Sxy = ss.Syy = 0;
         ac_ss.push_back(ss);
@@ -249,6 +259,51 @@ public:
     }
 };
 
+void parse_data(vector<vector<Point> >& paths) {
+    ifstream location_file("data/london-locations.csv"), path_file("data/london.txt");
+    string id,sx,sy;
+    map<string,Point> idlookup;
+    while (getline(location_file,id,','))
+    {
+        getline(location_file,sx,',');
+        getline(location_file,sy,'\n');
+        char *e;
+        double x = strtod(sx.c_str(),&e), y = strtod(sy.c_str(),&e);
+        //cout << id << " (" << x << "," << y << ")"<< endl;
+        idlookup[id]=Point(x,y);
+    }
+    string l;
+    while (getline(path_file,l,'\n')) {
+        vector<Point> ps;
+        if(l.size() < 2) continue; // skip blank lines
+        if(l.find(":",0)!=string::npos) continue; // skip labels
+        string::size_type p=0,q;
+        while((q=l.find(",",p))!=string::npos || p < l.size() && (q = l.size()-1)) {
+            id = l.substr(p,q-p);
+            //cout << id << ",";
+            ps.push_back(2*idlookup[id]);
+            p=q+1;
+        }
+        paths.push_back(ps);
+        //cout << "*******************************************" << endl;
+    }
+        /*
+    unsigned biggest = 0, biggest_i;
+    for(unsigned i=0;i<paths.size();i++) {
+        vector<Point> ps=paths[i];
+        if(ps.size()>biggest) {
+            biggest_i=i;
+            biggest = ps.size();
+        }
+        for(unsigned j=0;j<ps.size();j++) {
+            double x=ps[j][0], y=ps[j][1];
+            cout << "(" << x << "," << y << ")" << ",";
+        }
+        cout << endl;
+    }
+        */
+}
+
 void extremePoints(vector<Point> const & pts, Point const & dir, 
                    Point & min, Point & max) {
     double minProj = DBL_MAX, maxProj = -DBL_MAX;
@@ -273,7 +328,7 @@ void fit::test() {
     }
     double best_bl = DBL_MAX;
     unsigned best;
-    for(unsigned i=0;i<C;i++) {
+    for(unsigned i=0;i<angles.size();i++) {
         Point n = unit_vector(rot90(angles[i]));
         double dist = dot(n, input[0]);
         double mean;
@@ -299,19 +354,22 @@ void fit::test() {
 
 void fit::schematised_merging() {
     const double link_cost = 0;
-    const unsigned N = input.size();
-    unsigned blockCount = N-1;
-    blocks.resize(N-1);
-    vector<Point> vangles(angles,angles+C);
+    const unsigned N = input.size()-1;
+    blocks.resize(N);
+    int C=6;
+    for(int i = 0; i<C ; i++) {
+        double t = M_PI*i/float(C);
+        angles.push_back(Point(cos(t),sin(t)));
+    }
     // pairs
-    for(int i = 0; i < N-1; i++) {
+    for(int i = 0; i < N; i++) {
         block b;
         sufficient_stats ss;
         ss += input[i];
         ss += input[i+1];
         b.ss = ss;
         double mean, newcost;
-        b.angle = ss.best_schematised_line(vangles, input[i], mean, newcost);
+        b.angle = ss.best_schematised_line(angles, input[i], mean, newcost);
         b.cost = link_cost + newcost;
         b.next = i+1;
         blocks[i] = b;
@@ -320,7 +378,7 @@ void fit::schematised_merging() {
     }
     
     // merge(a,b)
-    while(1)
+    while(N>1)
     {
         block best_block;
         unsigned best_idx = 0;
@@ -328,11 +386,11 @@ void fit::schematised_merging() {
         unsigned beg = 0;
         unsigned middle = blocks[beg].next;
         unsigned end = blocks[middle].next;
-        while(end != N-1) {
+        while(middle < N) {
             sufficient_stats ss = blocks[beg].ss + blocks[middle].ss;
-            ss -= input[middle];
+            //ss -= input[middle];
             double mean, newcost;
-            unsigned bestAngle = ss.best_schematised_line(vangles, input[beg], mean, newcost);
+            unsigned bestAngle = ss.best_schematised_line(angles, input[beg], mean, newcost);
             double deltaCost = -link_cost - blocks[beg].cost - blocks[middle].cost 
                 + newcost;
             /*std::cout << beg << ", "
@@ -357,7 +415,6 @@ void fit::schematised_merging() {
             middle = end;
             end = blocks[end].next;
         }
-        blockCount--;
         if(best < 0)
             blocks[best_idx] = best_block;
         else // no improvement possible
@@ -367,7 +424,7 @@ void fit::schematised_merging() {
         solution.resize(0); // empty list
         unsigned beg = 0;
         unsigned prev = 0;
-        while(beg < N-1) {
+        while(beg < N) {
             block b = blocks[beg];
             {
                 Point n, c;
@@ -388,7 +445,7 @@ void fit::schematised_merging() {
                     }
                 }
 
-                if (b.next < N-1) {
+                if (b.next < N) {
                     //end = intersection of b.line and blocks[b.next].line
                     block next = blocks[b.next];
                     if(b.angle!=next.angle) {
@@ -398,7 +455,7 @@ void fit::schematised_merging() {
                 } else {
                     //end = intersection of b.line and
                     //      line through input[N-1] orthogonal to b.line
-                    line_intersection(n, dot(c,n), d, dot(d,input[N-1]), end);
+                    line_intersection(n, dot(c,n), d, dot(d,input[N]), end);
                 }                
                 lines.push_back(make_pair(start,end));
             }
@@ -488,7 +545,7 @@ void fit::arbitrary() {
     double best_error = INFINITY;
     double best_mean = 0;
     int best_angle = 0;
-    for(int i = 0; i < C; i++) {
+    for(int i = 0; i < angles.size(); i++) {
         Point angle = angles[i];
         double mean = 0;
         double error = 0;
@@ -593,7 +650,7 @@ void fit::C_endpoint() {
     double best_mean;
     double best = best_angled_line(0, N-1, angles[0], best_mean);
     unsigned best_dir = 0;
-    for(unsigned c = 1; c < C; c++) {
+    for(unsigned c = 1; c < angles.size(); c++) {
         double m;
         double err = best_angled_line(0, N-1, angles[c], m);
         if(err < best) {
@@ -625,7 +682,7 @@ void fit::C_simple_dp() {
         double best = best_angled_line(0, i, angles[0], best_mean);
         unsigned best_prev = 0;
         unsigned best_dir = 0;
-        for(unsigned c = 1; c < C; c++) {
+        for(unsigned c = 1; c < angles.size(); c++) {
             double m;
             double err = best_angled_line(0, i, angles[c], m);
             if(err < best) {
@@ -637,7 +694,7 @@ void fit::C_simple_dp() {
 
         }
         for(unsigned j = 1; j < i; j++) {
-            for(unsigned c = 0; c < C; c++) {
+            for(unsigned c = 0; c < angles.size(); c++) {
                 double m;
                 if(c == dir[j])
                     continue;
@@ -677,29 +734,27 @@ void fit::C_simple_dp() {
     reverse(solution.begin(), solution.end());
 }
 
-static gboolean
-expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
-{
-    cairo_t *cr = gdk_cairo_create (widget->window);
-    
-    int width = 256;
-    int height = 256;
+void draw_everything(cairo_t* cr, int width, int height) {
     std::ostringstream notify;
-    gdk_drawable_get_size(widget->window, &width, &height);
-    
     cairo_set_source_rgba (cr, 0., 0.5, 0, 1);
     cairo_set_line_width (cr, 1);
+    /*
     for(int i = 0; i < handles.size(); i++) {
-        draw_circ(cr, handles[i]);
+        draw_circ(cr, *handles[i]);
     }
+    */
     cairo_set_source_rgba (cr, 0., 0., 0, 0.8);
     cairo_set_line_width (cr, 1);
     
-    fit f(handles);
-    //f.test();
-    //f.merging_version();
-    f.schematised_merging();
-    f.draw(cr);
+    //for(unsigned i=0;i<paths.size();i++) {
+    {   unsigned i = 8;
+        fit f(paths[i]);
+        f.schematised_merging();
+        f.draw(cr);
+        for(int j = 0; j < paths[i].size(); j++) {
+            draw_circ(cr, paths[i][j]);
+        }
+    }
     cairo_set_source_rgba (cr, 0., 0., 0, 1);
     cairo_stroke(cr);
     //f.simple_dp();
@@ -707,7 +762,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     //cairo_set_source_rgba (cr, 0., 1., 0, 0.5);
     //cairo_stroke(cr);
     cairo_set_source_rgba (cr, 0., 0., 0, 1);
-    notify << f.solution.size();
+    //notify << f.solution.size();
     //notify << "arc length = " << arc.point_at(1) - arc.point_at(0) << std::endl;
     {
         PangoLayout* layout = pango_cairo_create_layout (cr);
@@ -726,6 +781,17 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
         cairo_move_to(cr, 0, height-logical_extent.height);
         pango_cairo_show_layout(cr, layout);
     }
+}
+static gboolean
+expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
+{
+    cairo_t *cr = gdk_cairo_create (widget->window);
+    
+    int width = 256;
+    int height = 256;
+    gdk_drawable_get_size(widget->window, &width, &height);
+    draw_everything(cr,width,height);
+    
     cairo_destroy (cr);
     
     return TRUE;
@@ -759,9 +825,9 @@ static gint mouse_event(GtkWidget* window, GdkEventButton* e, gpointer data) {
     Geom::Point mouse(e->x, e->y);
     if(e->button == 1 || e->button == 3) {
         for(int i = 0; i < handles.size(); i++) {
-            if(Geom::L2(mouse - handles[i]) < 5) {
-                selected_handle = &handles[i];
-                old_handle_pos = mouse - handles[i];
+            if(Geom::L2(mouse - *handles[i]) < 5) {
+                selected_handle = handles[i];
+                old_handle_pos = mouse - *handles[i];
             }
         }
         handle_mouse(window);
@@ -786,6 +852,21 @@ static gint key_release_event(GtkWidget *widget, GdkEventKey *event, gpointer) {
         ret = TRUE;
     } else if (event->keyval == 'q') {
         exit(0);
+    } else if (event->keyval == 's') {
+        int width = 256;
+        int height = 256;
+        gdk_drawable_get_size(widget->window, &width, &height);
+        cairo_surface_t* cr_s = cairo_pdf_surface_create("metromap.pdf",
+                                                         width,
+                                                         height);
+
+        cairo_t* cr = cairo_create(cr_s);
+        draw_everything(cr,width,height);
+        cairo_show_page(cr);
+        cairo_destroy (cr);
+        cairo_surface_destroy (cr_s);
+
+        ret = TRUE;
     }
 
     if (ret) {
@@ -828,16 +909,24 @@ double uniform() {
 
 int main(int argc, char **argv) {
     Geom::Point start_point(uniform()*100, uniform()*100);
+    parse_data(paths);
+/*
+    vector<Point> ps;
     double step = 50;
-    for(int i = 0; i < 10; i++) {
-        handles.push_back(start_point);
+    for(int i = 0; i < 3; i++) {
+        ps.push_back(start_point);
         start_point += Geom::Point(uniform()*step, 0.5*uniform()*step);
     }
-/*
+    paths.push_back(ps);
     for(int i = 0; i < 10; i++) {
         handles.push_back(start_point);
         start_point += Geom::Point(0.5*uniform()*step, uniform()*step);
         }*/
+    for(unsigned i=0;i<paths.size();i++) {
+        for(unsigned j=0;j<paths[i].size();j++) {
+            handles.push_back(&paths[i][j]);
+        }
+    }
     gtk_init (&argc, &argv);
     
     gdk_rgb_init();

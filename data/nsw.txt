@@ -1,0 +1,86 @@
+Olympic Park I:
+Central,Redfern,Macdonaldtown,Newtown,Stanmore,Petersham,Lewisham,Summer Hill,Ashfield,Croydon,Burwood,Strathfield,Homebush,Flemington,Olympic Park
+
+Olympic Park II:
+Blacktown,Seven Hills,Toongabbie,Pendle Hill,Wentworthville,Westmead,Parramatta,Harris Park,Granville,Clyde,Auburn,Lidcombe,Olympic Park
+
+Eastern Suburbs & Illawarra 1:
+Waterfall,Heathcote,Engadine,Loftus,Sutherland,Jannali,Como,Oatley,Mortdale,Penshurst,Hurstville,Allawah,Carlton,Kogarah,Rockdale,Banksia,Arncliffe,Wolli Creek,Tempe,Sydenham,St Peters,Erskineville,Redfern,Central,Town Hall,Martin Place,Kings Cross,Edgecliff,Bondi Junction
+
+Eastern Suburbs & Illawarra 2:
+Cronulla,Woolooware,Caringbah,Miranda,Gymea,Kirrawee,Sutherland,Jannali,Como,Oatley,Mortdale,Penshurst,Hurstville,Allawah,Carlton,Kogarah,Rockdale,Banksia,Arncliffe,Wolli Creek,Tempe,Sydenham,St Peters,Erskineville,Redfern,Central,Town Hall,Martin Place,Kings Cross,Edgecliff,Bondi Junction
+
+South Coast 1:
+Bomaderry,Berry,Gerringong,Kiama,Bombo,Minnamurra,Dunmore,Oak Flats,Albion Park,Dapto,Kembla Grange Racecourse,Unanderra,Coniston,Wollongong,North Wollongong,Fairy Meadow,Towradgi,Corrimal,Bellambi,Woonona,Bulli,Thirroul,Austinmer,Coledale,Wombarra,Scarborough,Coalcliff,Stanwell Park,Otford,Helensburgh,Waterfall,Heathcote,Engadine,Loftus,Sutherland,Jannali,Como,Oatley,Mortdale,Penshurst,Hurstville,Allawah,Carlton,Kogarah,Rockdale,Banksia,Arncliffe,Wolli Creek,Tempe,Sydenham,St Peters,Erskineville,Redfern,Central,Town Hall,Martin Place,Kings Cross,Edgecliff,Bondi Junction
+
+South Coast 2:
+Port Kembla,Port Kembla North,Cringila,Lysaghts,Coniston,Wollongong,North Wollongong,Fairy Meadow,Towradgi,Corrimal,Bellambi,Woonona,Bulli,Thirroul,Austinmer,Coledale,Wombarra,Scarborough,Coalcliff,Stanwell Park,Otford,Helensburgh,Waterfall,Heathcote,Engadine,Loftus,Sutherland,Jannali,Como,Oatley,Mortdale,Penshurst,Hurstville,Allawah,Carlton,Kogarah,Rockdale,Banksia,Arncliffe,Wolli Creek,Tempe,Sydenham,St Peters,Erskineville,Redfern,Central,Town Hall,Martin Place,Kings Cross,Edgecliff,Bondi Junction
+
+Bankstown Line a:
+Town Hall,Wynyard,Circular Quay,St James,Museum,Central,Redfern,Erskineville,St Peters,Sydenham,Marrickville,Dulwich Hill,Hurlstone Park,Canterbury,Campsie,Belmore,Lakemba,Wiley Park,Punchbowl,Bankstown,Yagoona,Birrong,Regents Park,Berala,Lidcombe
+
+Bankstown Line b:
+Lidcombe,Berala,Regents Park,Birrong,Sefton,Chester Hill,Leightonfield,Villawood,Carramar,Cabramatta,Warwick Farm,Liverpool
+
+Inner West 1a:
+Liverpool,Warwick Farm,Cabramatta,Carramar,Villawood,Leightonfield,Chester Hill,Sefton,Regents Park,Berala,Lidcombe,Flemington,Homebush,Strathfield,Burwood,Croydon,Ashfield,Summer Hill,Lewisham,Petersham,Stanmore,Newtown,Macdonaldtown,Redfern,Central,Town Hall,Wynyard,Circular Quay,St James,Museum
+
+Inner West 1b:
+Central,Town Hall,Wynyard,Milsons Point,North Sydney,Waverton,Wollstonecraft,St Leonards,Artarmon,Chatswood
+
+Inner West 2a:
+Parramatta,Harris Park,Granville,Clyde,Auburn,Lidcombe,Flemington,Homebush,Strathfield,Burwood,Croydon,Ashfield,Summer Hill,Lewisham,Petersham,Stanmore,Newtown,Macdonaldtown,Redfern,Central,Town Hall,Wynyard,Circular Quay,St James,Museum
+
+Inner West 2b:
+Central,Town Hall,Wynyard,Milsons Point,North Sydney,Waverton,Wollstonecraft,St Leonards,Artarmon,Chatswood
+
+Airport & East Hills 1:
+Macarthur,Campbelltown,Leumeah,Minto,Ingleburn,Macquarie Fields,Glenfield,Holsworthy,East Hills,Panania,Revesby,Padstow,Riverwood,Narwee,Beverly Hills,Kingsgrove,Bexley North,Bardwell Park,Turrella,Wolli Creek,International,Domestic,Mascot,Green Square,Central,Museum,St James,Circular Quay,Wynyard,Town Hall
+
+Airport & East Hills 2:
+Macarthur,Campbelltown,Leumeah,Minto,Ingleburn,Macquarie Fields,Glenfield,Holsworthy,East Hills,Panania,Revesby,Padstow,Riverwood,Narwee,Beverly Hills,Kingsgrove,Bexley North,Bardwell Park,Turrella,Tempe,Sydenham,St Peters,Erskineville,Redfern,Central,Museum,St James,Circular Quay,Wynyard,Town Hall
+
+South:
+Macarthur,Campbelltown,Leumeah,Minto,Ingleburn,Macquarie Fields,Glenfield,Casula,Liverpool,Warwick Farm,Cabramatta,Canley Vale,Fairfield,Yennora,Guildford,Merrylands,Granville,Clyde,Auburn,Lidcombe,Flemington,Homebush,Strathfield,Burwood,Croydon,Ashfield,Summer Hill,Lewisham,Petersham,Stanmore,Newtown,Macdonaldtown,Redfern,Central,Town Hall,Wynyard,Circular Quay,St James,Museum
+
+Southern Highlands:
+Goulburn,Marulan,Tallong,Wingello,Penrose,Bundanoon,Exeter,Moss Vale,Burradoo,Bowral,Mittagong,Yerrinbool,Bargo,Tahmoor,Picton,Douglas Park,Menangle,Menangle Park,Macarthur,Campbelltown,Leumeah,Minto,Ingleburn,Macquarie Fields,Glenfield,Casula,Liverpool,Warwick Farm,Cabramatta,Canley Vale,Fairfield,Yennora,Guildford,Merrylands,Harris Park,Parramatta,Westmead,Wentworthville,Pendle Hill,Toongabbie,Seven Hills,Blacktown
+
+Southern Highlands ROAD COACH:
+Bowral,Mittagong,Colo Vale,Hill Top,Balmoral,Buxton,Couridjah,Thirlmere,Picton
+
+Cumberland:
+Campbelltown,Leumeah,Minto,Ingleburn,Macquarie Fields,Glenfield,Casula,Liverpool,Warwick Farm,Cabramatta,Canley Vale,Fairfield,Yennora,Guildford,Merrylands,Harris Park,Parramatta,Westmead,Wentworthville,Pendle Hill,Toongabbie,Seven Hills,Blacktown,Doonside,Rooty Hill,Mt Druitt,St Marys
+
+Carlingford Line:
+Carlingford,Telopea,Dundas,Rydalmere,Camellia,Rosehill,Clyde
+
+Western 1:
+Richmond,East Richmond,Clarendon,Windsor,Mulgrave,Vineyard,Riverstone,Schofields,Quakers Hill,Marayong,Blacktown,Seven Hills,Toongabbie,Pendle Hill,Wentworthville,Westmead,Parramatta,Harris Park,Granville,Clyde,Auburn,Lidcombe,Flemington,Homebush,Strathfield,Burwood,Croydon,Ashfield,Summer Hill,Lewisham,Petersham,Stanmore,Newtown,Macdonaldtown,Redfern,Central,Town Hall,Wynyard,Milsons Point,North Sydney
+
+Western 2:
+Emu Plains,Penrith,Kingswood,Werrington,St Marys,Mt Druitt,Rooty Hill,Doonside,Blacktown,Seven Hills,Toongabbie,Pendle Hill,Wentworthville,Westmead,Parramatta,Harris Park,Granville,Clyde,Auburn,Lidcombe,Flemington,Homebush,Strathfield,Burwood,Croydon,Ashfield,Summer Hill,Lewisham,Petersham,Stanmore,Newtown,Macdonaldtown,Redfern,Central,Town Hall,Wynyard,Milsons Point,North Sydney
+
+Blue Mountains:
+Lithgow,Zig Zag,Bell,Mt Victoria,Blackheath,Medlow Bath,Katoomba,Leura,Wentworth Falls,Bullaburra,Lawson,Hazelbrook,Woodford,Linden,Faulconbridge,Springwood,Valley Heights,Warrimoo,Blaxland,Glenbrook,Lapstone,Emu Plains,Penrith,Kingswood,Werrington,St Marys,Mt Druitt,Rooty Hill,Doonside,Blacktown,Seven Hills,Toongabbie,Pendle Hill,Wentworthville,Westmead,Parramatta,Harris Park,Granville,Clyde,Auburn,Lidcombe,Flemington,Homebush,Strathfield,Burwood,Croydon,Ashfield,Summer Hill,Lewisham,Petersham,Stanmore,Newtown,Macdonaldtown,Redfern,Central,Town Hall,Wynyard,Milsons Point,North Sydney
+
+North Shore:
+Berowra,Mt Kuring-gai,Mt Colah,Asquith,Hornsby,Waitara,Wahroonga,Warrawee,Turramurra,Pymble,Gordon,Killara,Lindfield,Roseville,Chatswood,Artarmon,St Leonards,Wollstonecraft,Waverton,North Sydney,Milsons Point,Wynyard,Town Hall,Central,Redfern,Macdonaldtown,Newtown,Stanmore,Petersham,Lewisham,Summer Hill,Ashfield,Croydon,Burwood,Strathfield,Homebush,Flemington,Lidcombe,Auburn,Clyde,Granville,Harris Park,Parramatta
+
+Northern:
+Berowra,Mt Kuring-gai,Mt Colah,Asquith,Hornsby,Normanhurst,Thornleigh,Pennant Hills,Beecroft,Cheltenham,Epping,Eastwood,Denistone,West Ryde,Meadowbank,Rhodes,Concord West,North Strathfield,Strathfield,Burwood,Croydon,Ashfield,Summer Hill,Lewisham,Petersham,Stanmore,Newtown,Macdonaldtown,Redfern,Central,Town Hall,Wynyard,Milsons Point,North Sydney
+
+Newcastle & Central Coast 1:
+Newcastle,Civic,Wickham,Hamilton,Broadmeadow,Adamstown,Kotara,Cardiff,Cockle Creek,Teralba,Booragul,Fassifern,Awaba,Dora Creek,Morisset,Wyee,Warnervale,Wyong,Tuggerah,Ourimbah,Lisarow,Niagara Park,Narara,Gosford,Point Clare,Tascott,Koolewong,Woy Woy,Wondabyne,Hawkesbury River,Cowan,Berowra,Mt Kuring-gai,Mt Colah,Asquith,Hornsby,Waitara,Wahroonga,Warrawee,Turramurra,Pymble,Gordon,Killara,Lindfield,Roseville,Chatswood,Artarmon,St Leonards,Wollstonecraft,Waverton,North Sydney,Milsons Point,Wynyard,Town Hall,Central
+
+Newcastle & Central Coast 2:
+Newcastle,Civic,Wickham,Hamilton,Broadmeadow,Adamstown,Kotara,Cardiff,Cockle Creek,Teralba,Booragul,Fassifern,Awaba,Dora Creek,Morisset,Wyee,Warnervale,Wyong,Tuggerah,Ourimbah,Lisarow,Niagara Park,Narara,Gosford,Point Clare,Tascott,Koolewong,Woy Woy,Wondabyne,Hawkesbury River,Cowan,Berowra,Mt Kuring-gai,Mt Colah,Asquith,Hornsby,Normanhurst,Thornleigh,Pennant Hills,Beecroft,Cheltenham,Epping,Eastwood,Denistone,West Ryde,Meadowbank,Rhodes,Concord West,North Strathfield,Strathfield,Burwood,Croydon,Ashfield,Summer Hill,Lewisham,Petersham,Stanmore,Newtown,Macdonaldtown,Redfern,Central
+
+Wyong Line:
+Wyong,Tuggerah,Ourimbah,Lisarow,Niagara Park,Narara,Gosford,Point Clare,Tascott,Koolewong,Woy Woy,Wondabyne,Hawkesbury River,Cowan,Berowra,Mt Kuring-gai,Mt Colah,Asquith,Hornsby,Normanhurst,Thornleigh,Pennant Hills,Beecroft,Cheltenham,Epping,Eastwood,Denistone,West Ryde,Meadowbank,Rhodes,Concord West,North Strathfield,Strathfield,Homebush,Flemington,Lidcombe,Auburn,Clyde,Granville,Harris Park,Parramatta,Westmead,Wentworthville,Pendle Hill,Toongabbie,Seven Hills,Blacktown,Doonside,Rooty Hill,Mt Druitt,St Marys
+
+Hunter 1:
+Scone,Aberdeen,Muswellbrook,Singleton,Belford,Branxton,Greta,Allandale,Lochinvar,Maitland,High Street,East Maitland,Victoria Street,Metford,Thornton,Beresfield,Tarro,Hexham,Sandgate,Warabrook,Waratah,Hamilton,Wickham,Civic,Newcastle
+
+Hunter 2:
+Dungog,Wiragulla,Wallarobba,Hilldale,Martins Creek,Paterson,Mindaribba,Telarah,Maitland,High Street,East Maitland,Victoria Street,Metford,Thornton,Beresfield,Tarro,Hexham,Sandgate,Warabrook,Waratah,Hamilton,Wickham,Civic,Newcastle
