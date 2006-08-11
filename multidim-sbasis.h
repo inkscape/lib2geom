@@ -18,7 +18,7 @@ public:
     unsigned size() const {
         unsigned s = f[0].size();
         for(unsigned i = 1; i < D; i++)
-            s = std::max(s, f[i].size());
+            s = std::max(s, (unsigned) f[i].size());
         return s;
     }
     
