@@ -356,7 +356,7 @@ void fit::schematised_merging() {
     const double link_cost = 0;
     const unsigned N = input.size()-1;
     blocks.resize(N);
-    int C=6;
+    int C=4;
     for(int i = 0; i<C ; i++) {
         double t = M_PI*i/float(C);
         angles.push_back(Point(cos(t),sin(t)));
@@ -734,6 +734,24 @@ void fit::C_simple_dp() {
     reverse(solution.begin(), solution.end());
 }
 
+// H in [0,360)
+// S, V, R, G, B in [0,1]
+void convertHSVtoRGB(const double H, const double S, const double V,
+                     double& R, double& G, double& B) {
+    int Hi = int(floor(H/60.)) % 6;
+    double f = H/60. - Hi;
+    double p = V*(1-S);
+    double q = V*(1-f*S);
+    double t = V*(1-(1-f)*S);
+    switch(Hi) {
+        case 0: R=V, G=t, B=p; break;
+        case 1: R=q, G=V, B=p; break;
+        case 2: R=p, G=V, B=t; break;
+        case 3: R=p, G=q, B=V; break;
+        case 4: R=t, G=p, B=V; break;
+        case 5: R=V, G=p, B=q; break;
+    }
+}
 void draw_everything(cairo_t* cr, int width, int height) {
     std::ostringstream notify;
     cairo_set_source_rgba (cr, 0., 0.5, 0, 1);
@@ -746,17 +764,20 @@ void draw_everything(cairo_t* cr, int width, int height) {
     cairo_set_source_rgba (cr, 0., 0., 0, 0.8);
     cairo_set_line_width (cr, 1);
     
-    //for(unsigned i=0;i<paths.size();i++) {
-    {   unsigned i = 8;
+    unsigned N= paths.size();
+    for(unsigned i=0;i<N;i++) {
+    //{   unsigned i = 8;
+        double R,G,B;
+        convertHSVtoRGB(360.*double(i)/double(N),0.7,1.,R,G,B);
+        cairo_set_source_rgba (cr, R, G, B, 0.8);
         fit f(paths[i]);
         f.schematised_merging();
         f.draw(cr);
         for(int j = 0; j < paths[i].size(); j++) {
             draw_circ(cr, paths[i][j]);
         }
+        cairo_stroke(cr);
     }
-    cairo_set_source_rgba (cr, 0., 0., 0, 1);
-    cairo_stroke(cr);
     //f.simple_dp();
     //f.draw(cr);
     //cairo_set_source_rgba (cr, 0., 1., 0, 0.5);
