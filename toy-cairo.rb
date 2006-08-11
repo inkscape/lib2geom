@@ -4,7 +4,7 @@ require 'cairo'
 $LOAD_PATH.unshift "../packages/cairo/ext/"
 $LOAD_PATH.unshift "../packages/cairo/lib/"
 
-require 'cairo'
+require 'rexml/document'
 require 'stringio'
 #require "rsvg2"
 
@@ -39,7 +39,7 @@ openitem.signal_connect("activate") do
                                      nil,
                                      [Gtk::Stock::CANCEL, Gtk::Dialog::RESPONSE_CANCEL],
                                      [Gtk::Stock::OPEN, Gtk::Dialog::RESPONSE_ACCEPT])
-    [["SVG Path (*.svgd)","*.svgd"],["All files (*)","*"]].each do |x|
+    [["SVG (*.svg)","*.svg"],["SVG Path (*.svgd)","*.svgd"],["All files (*)","*"]].each do |x|
         filter = Gtk::FileFilter.new
         filter.name = x[0]
         filter.add_pattern(x[1])
@@ -49,6 +49,13 @@ openitem.signal_connect("activate") do
     if dialog.run == Gtk::Dialog::RESPONSE_ACCEPT
         #TODO: do something with this file
         puts "#{dialog.filename} was selected"
+        if dialog.filter.name == "SVG (*.svg)"
+            file = File.new(dialog.filename)
+            doc = REXML::Document.new(file)
+            doc.root.each_element("//path[@d]") do |path|
+                p path.attributes['d']
+            end
+        end
     end
     dialog.destroy
 end
