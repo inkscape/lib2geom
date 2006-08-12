@@ -7,6 +7,7 @@ $LOAD_PATH.unshift "../packages/cairo/lib/"
 require 'rexml/document'
 require 'stringio'
 #require "rsvg2"
+require "2geom"
 
 Gtk.init
 
@@ -254,6 +255,15 @@ canvas.signal_connect("expose_event") do
     Kernel.eval(tb.get_text())
   rescue Exception
   end 
+  
+  b = Geom::PathBuilder.new
+  b.start_subpath 0, 0
+  b.start_subpath 0, 0
+  p = b.peek
+  p p.size # => 2
+  p.each { |s| p s }
+  cr.path(p)
+  
   #handle = RSVG::Handle.new_from_file("branding/2geom/svg")
   #cr.render_rsvg_handle(handle)
   canvas.queue_draw()
@@ -262,7 +272,7 @@ end
 saveitem.signal_connect("activate") {
   surface = Cairo::ImageSurface.new(Cairo::FORMAT_ARGB32, 200, 200)
   cr = Cairo::Context.new(surface)
-
+  
   tb = code.buffer
   Kernel.eval(tb.get_text())
 
