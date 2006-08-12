@@ -1,5 +1,6 @@
 require 'rubygems'
 require 'inline'
+require 'cairo'
 
 LIB_DIR = File.dirname( File.expand_path( $0 ) )
 INCLUDE_DIR = LIB_DIR
@@ -18,6 +19,16 @@ class Inline::C
       template <typename T>
       inline void do_delete(void *ptr) {
         delete static_cast<T *>(ptr);
+      }
+
+      inline VALUE Cairo_module() {
+        static VALUE mod=rb_const_get(rb_cObject, rb_intern("Cairo"));
+        return mod;
+      }
+
+      inline VALUE Cairo_Context_class() {
+        static VALUE klass=rb_const_get(Cairo_module(), rb_intern("Context"));
+        return klass;
       }
 
       inline VALUE Geom_module() {
@@ -43,6 +54,27 @@ class Inline::C
       }
     EOS
   end
+end
+
+module Cairo
+class Context
+  inline do |builder|
+    builder.lib2geom_prologue
+    builder.include '"path-cairo.h"'
+
+    builder.c_raw <<-EOS
+      static VALUE path(int argc, VALUE *argv, VALUE self) {
+        using namespace Geom;
+        cairo_t *ctx;
+        Data_Get_Struct(self, cairo_t, ctx);
+        Path *path;
+        Data_Get_Struct(argv[0], Path, path);
+        cairo_path(ctx, *path);
+        return self;
+      }
+    EOS
+  end
+end
 end
 
 module Geom
