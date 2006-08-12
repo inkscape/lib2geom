@@ -250,7 +250,10 @@ cr.fill_preserve
 canvas.signal_connect("expose_event") do
   cr = canvas.window.create_cairo_context
   tb = code.buffer
-  Kernel.eval(tb.get_text())
+  begin
+    Kernel.eval(tb.get_text())
+  rescue Exception
+  end 
   #handle = RSVG::Handle.new_from_file("branding/2geom/svg")
   #cr.render_rsvg_handle(handle)
   canvas.queue_draw()
