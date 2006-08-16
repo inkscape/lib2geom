@@ -6,6 +6,8 @@ LIB_DIR = File.dirname( File.expand_path( $0 ) )
 INCLUDE_DIR = LIB_DIR
 
 class Inline::C
+  @@geom_type_converters_registered = false
+
   def lib2geom_prologue
     add_compile_flags "-I#{ INCLUDE_DIR }", '-x c++', '-lstdc++'
     add_link_flags "-L#{ LIB_DIR }", '-l2geom'
@@ -51,8 +53,24 @@ class Inline::C
         return klass;
       }
 
+      inline VALUE path_to_value(Geom::Path *path) {
+        return Data_Wrap_Struct(Path_class(), NULL, &do_delete<Geom::Path>, path);
+      }
+
+      inline Geom::Path *value_to_path(VALUE value) {
+        Geom::Path *path;
+        Data_Get_Struct(value, Geom::Path, path);
+        return path;
+      }
+
       }
     EOS
+
+    unless @@geom_type_converters_registered
+      add_type_converter "VALUE", '', ''
+      add_type_converter "Geom::Path *", 'value_to_path', 'path_to_value'
+      @@geom_type_converters_registered = true
+    end
   end
 end
 
@@ -62,14 +80,11 @@ class Context
     builder.lib2geom_prologue
     builder.include '"path-cairo.h"'
 
-    builder.c_raw <<-EOS
-      static VALUE path(int argc, VALUE *argv, VALUE self) {
-        using namespace Geom;
-        cairo_t *ctx;
-        Data_Get_Struct(self, cairo_t, ctx);
-        Path *path;
-        Data_Get_Struct(argv[0], Path, path);
-        cairo_path(ctx, *path);
+    builder.c <<-EOS
+      static VALUE path(Geom::Path *path) {
+        cairo_t *cr;
+        Data_Get_Struct(self, cairo_t, cr);
+        cairo_path(cr, *path);
         return self;
       }
     EOS
