@@ -14,6 +14,7 @@ class Inline::C
 
     include '"path.h"'
     include '"path-builder.h"'
+    include '"poly.h"'
 
     prefix <<-EOS
       namespace {
@@ -53,6 +54,11 @@ class Inline::C
         return klass;
       }
 
+      inline VALUE Poly_class() {
+        static VALUE klass=rb_const_get(Geom_module(), rb_intern("Poly"));
+        return klass;
+      }
+
       inline VALUE path_to_value(Geom::Path *path) {
         return Data_Wrap_Struct(Path_class(), NULL, &do_delete<Geom::Path>, path);
       }
@@ -63,12 +69,22 @@ class Inline::C
         return path;
       }
 
+      inline VALUE poly_to_value(Poly *poly) {
+        return Data_Wrap_Struct(Poly_class(), NULL, &do_delete<Poly>, poly);
+      }
+
+      inline Poly *value_to_poly(VALUE value) {
+        Poly *poly;
+        Data_Get_Struct(value, Poly, poly);
+        return poly;
+      }
+
       }
     EOS
 
     unless @@geom_type_converters_registered
       add_type_converter "VALUE", '', ''
-      add_type_converter "Geom::Path *", 'value_to_path', 'path_to_value'
+      add_type_converter "Geom::Path *", 'value_to_path', ''
       @@geom_type_converters_registered = true
     end
   end
@@ -102,8 +118,8 @@ class Path
     builder.include '<vector>'
 
     builder.c_singleton <<-EOS
-      static Geom::Path *_new() {
-        return (new Geom::Path());
+      static VALUE _new() {
+        return path_to_value(new Geom::Path());
       }
     EOS
 
@@ -233,4 +249,97 @@ class PathBuilder
   end
 end
 
+class Poly
+  include Enumerable
+
+  inline do |builder|
+    builder.lib2geom_prologue
+
+    builder.c_raw_singleton <<-EOS
+      static VALUE _new(int argc, VALUE *argv, VALUE self) {
+        Poly *poly=new Poly();
+        for ( i = 0 ; i < argc ; i++ ) {
+          poly->push_back(NUM2DBL(argv[i]));
+        }
+        return poly_to_value(poly);
+      }
+    EOS
+
+    builder.c_raw_singleton <<-EOS
+      static VALUE dup() {
+        return poly_to_value(new Poly(*value_to_poly(self)));
+      }
+    EOS
+
+    builder.c <<-EOS
+      static unsigned long degree() {
+        return value_to_poly(self)->degree();
+      }
+    EOS
+
+    builder.c <<-EOS
+      static VALUE _add(Poly *poly) {
+        return poly_to_value(new Poly(*value_to_poly(self) + *poly));
+      }
+    EOS
+
+    builder.c <<-EOS
+      static VALUE _subtract(Poly *poly) {
+        return poly_to_value(new Poly(*value_to_poly(self) - *poly));
+      }
+    EOS
+
+    builder.c <<-EOS
+      static VALUE _multiply(Poly *poly) {
+        return poly_to_value(new Poly(*value_to_poly(self) * *poly));
+      }
+    EOS
+
+    builder.c <<-EOS
+      static VALUE _normalize() {
+        value_to_poly(self)->normalize();
+        return self;
+      }
+    EOS
+
+    builder.c <<-EOS
+      static VALUE _monicify() {
+        value_to_poly(self)->monicify();
+        return self;
+      }
+    EOS
+
+    builder.c <<-EOS
+      static double eval(double x) {
+        return value_to_poly(self)->eval(x);
+      }
+    EOS
+
+    builder.c <<-EOS
+      static VALUE each() {
+        Poly *poly=value_to_poly(self);
+        Poly::iterator iter;
+        for ( iter = poly->begin() ; iter != poly->end() ; ++iter ) {
+          rb_yield(DBL2NUM(*iter));
+        }
+        return self;
+      }
+    EOS
+  end
+
+  # fixme: proper clone behavior
+  class << self ; alias clone dup ; end
+
+  alias normalize! _normalize
+  def normalize ; dup.normalize! ; end
+
+  alias monicify! _monicify
+  def monicify ; dup.monicify! ; end
+
+  alias + _add
+  alias - _subtract
+  alias * _multiply
 end
+
+end
+
