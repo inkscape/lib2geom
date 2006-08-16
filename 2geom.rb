@@ -101,35 +101,28 @@ class Path
     builder.lib2geom_prologue
     builder.include '<vector>'
 
-    builder.c_raw_singleton <<-EOS
-      static VALUE _new(int argc, VALUE *argv, VALUE self) {
-        using namespace Geom;
-        Path *path = new Path();
-        return Data_Wrap_Struct(self, NULL, &do_delete<Path>, path);
+    builder.c_singleton <<-EOS
+      static Geom::Path *_new() {
+        return (new Geom::Path());
       }
     EOS
 
-    builder.c_raw <<-EOS
-      static VALUE each(int argc, VALUE *argv, VALUE self) {
-        using namespace Geom;
-        Path *path;
-        Data_Get_Struct(self, Path, path);
-        for ( std::vector<SubPath>::iterator iter = path->subpaths.begin() ;
+    builder.c <<-EOS
+      static VALUE each() {
+        Geom::Path *path=value_to_path(self);
+        for ( std::vector<Geom::SubPath>::iterator iter = path->subpaths.begin() ;
               iter != path->subpaths.end() ; ++iter )
         {
-          SubPath *subpath = new SubPath(*iter);
-          rb_yield(Data_Wrap_Struct(SubPath_class(), NULL, &do_delete<SubPath>, subpath));
+          Geom::SubPath *subpath = new Geom::SubPath(*iter);
+          rb_yield(Data_Wrap_Struct(SubPath_class(), NULL, &do_delete<Geom::SubPath>, subpath));
         }
         return self;
       }
     EOS
 
-    builder.c_raw <<-EOS
-      static VALUE size(int argc, VALUE *argv, VALUE self) {
-        using namespace Geom;
-        Path *path;
-        Data_Get_Struct(self, Path, path);
-        return INT2FIX(path->subpaths.size());
+    builder.c <<-EOS
+      static int size() {
+        return value_to_path(self)->subpaths.size();
       }
     EOS
   end
@@ -161,11 +154,10 @@ class SubPath
       }
     EOS
 
-    builder.c_raw <<-EOS
-      static VALUE _closed(int argc, VALUE *argv, VALUE self) {
-        using namespace Geom;
-        SubPath *subpath;
-        Data_Get_Struct(self, SubPath, subpath);
+    builder.c <<-EOS
+      static VALUE _closed() {
+        Geom::SubPath *subpath;
+        Data_Get_Struct(self, Geom::SubPath, subpath);
         return ( subpath->closed ? Qtrue : Qfalse );
       }
     EOS
