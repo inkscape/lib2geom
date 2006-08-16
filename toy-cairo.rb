@@ -260,8 +260,8 @@ canvas.signal_connect("expose_event") do
   b.start_subpath 0, 0
   b.start_subpath 0, 0
   p = b.peek
-  p p.size # => 2
-  p.each { |s| p s }
+  #p p.size # => 2
+  #p.each { |s| p s }
   cr.path(p)
   
   #handle = RSVG::Handle.new_from_file("branding/2geom/svg")
