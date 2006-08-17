@@ -8,9 +8,15 @@ INCLUDE_DIR = LIB_DIR
 class Inline::C
   @@geom_type_converters_registered = false
 
+  def add_pkgconfig_flags( *modules )
+    add_compile_flags *`pkg-config --cflags #{modules.join(' ')}`.split
+    add_link_flags *`pkg-config --libs #{modules.join(' ')}`.split
+  end
+
   def lib2geom_prologue
     add_compile_flags "-I#{ INCLUDE_DIR }", '-x c++', '-lstdc++'
     add_link_flags "-L#{ LIB_DIR }", '-l2geom'
+    add_pkgconfig_flags "cairo", "pango", "gsl"
 
     include '"path.h"'
     include '"path-builder.h"'
@@ -84,7 +90,8 @@ class Inline::C
 
     unless @@geom_type_converters_registered
       add_type_converter "VALUE", '', ''
-      add_type_converter "Geom::Path *", 'value_to_path', ''
+      add_type_converter "Geom::Path *", 'value_to_path', 'path_to_value'
+      add_type_converter "Poly *", 'value_to_poly', 'poly_to_value'
       @@geom_type_converters_registered = true
     end
   end
@@ -258,15 +265,15 @@ class Poly
     builder.c_raw_singleton <<-EOS
       static VALUE _new(int argc, VALUE *argv, VALUE self) {
         Poly *poly=new Poly();
-        for ( i = 0 ; i < argc ; i++ ) {
+        for ( int i = 0 ; i < argc ; i++ ) {
           poly->push_back(NUM2DBL(argv[i]));
         }
         return poly_to_value(poly);
       }
     EOS
 
-    builder.c_raw_singleton <<-EOS
-      static VALUE dup() {
+    builder.c <<-EOS
+      static VALUE _dup() {
         return poly_to_value(new Poly(*value_to_poly(self)));
       }
     EOS
@@ -320,13 +327,14 @@ class Poly
         Poly *poly=value_to_poly(self);
         Poly::iterator iter;
         for ( iter = poly->begin() ; iter != poly->end() ; ++iter ) {
-          rb_yield(DBL2NUM(*iter));
+          rb_yield(rb_float_new(*iter));
         }
         return self;
       }
     EOS
   end
 
+  alias dup _dup
   # fixme: proper clone behavior
   class << self ; alias clone dup ; end
 
