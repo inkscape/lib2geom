@@ -109,7 +109,8 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
         qt.insert(x0, y0, x1, y1, i);
     }
     
-    draw_quad_tree(cr, qt.root, 0, 0, 512);
+    cairo_set_source_rgba (cr, 0.5, 0.125, 0, 1);
+    draw_quad_tree(cr, qt.root, 0, 0, qt.bx1 - qt.bx0);
     
     notify << "total pieces subdivision = " << total_pieces_sub << std::endl; 
         notify << "total pieces inc = " << total_pieces_inc; 
