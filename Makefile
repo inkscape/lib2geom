@@ -12,7 +12,7 @@ CPPFLAGS=-I.
 TARGETOBJS=arc-bez.o conic.o one-D.o poly-test.o rat-bez.o s-bez.o \
 	toy-cairo.o unit-test-sbasis.o clothoid.o choose_test.o \
 	tensor-reparam.o conic-3.o root-finder-comparer.o conic-4.o \
-	fitter.o
+	fitter.o quad-test.o
 BADTARGETOBJS=bspline.o conic-2.o ode-toy-cairo.o tensor-reparam.o toy.o
 
 LIBOBJS=arc-length.o centroid.o geom.o matrix-rotate-ops.o \
