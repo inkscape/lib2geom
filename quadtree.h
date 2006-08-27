@@ -57,11 +57,42 @@ public:
         // loop until a quad would break the box.
         if(root == 0) {
             root = new Quad;
+            
+            bx0 = 0;
+            bx1 = 1;
+            by0 = 0;
+            by1 = 1;
         }
         Quad *q = root;
         
         double bxx0 = bx0, bxx1 = bx1;
         double byy0 = by0, byy1 = by1;
+        while((bxx0 > x0) ||
+              (bxx1 < x1) ||
+              (byy0 > y0) ||
+              (byy1 < y1)) { // too small initial size - double
+            unsigned i = 0;
+            if(bxx0 > x0) {
+                bxx0 = 2*bxx0 - bxx1;
+                i += 1;
+            } else {
+                bxx1 = 2*bxx1 - bxx0;
+            }
+            if(byy0 > y0) {
+                byy0 = 2*byy0 - byy1;
+                i += 2;
+            } else {
+                byy1 = 2*byy1 - byy0;
+            }
+            q = new Quad;
+            q->children[i] = root;
+            root = q;
+            bx0 = bxx0;
+            bx1 = bxx1;
+            by0 = byy0;
+            by1 = byy1;
+        }
+        
         while(q) {
             double cx = (bxx0 + bxx1)/2;
             double cy = (byy0 + byy1)/2;

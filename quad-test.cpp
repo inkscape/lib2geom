@@ -48,6 +48,24 @@ draw_quad_tree(cairo_t* cr, Quad *q, double x, double y, double d) {
     }
 }
 
+// returns true if the subtree is empty, and deletes any empty subtrees.
+bool
+clean_quad_tree(Quad *q) { 
+    if(q) {
+        bool all_clean = q->data.empty();
+        for(int i = 0; i < 4; i++)
+            if(clean_quad_tree(q->children[i])) {
+                delete q->children[i];
+                q->children[i] = 0;
+            } else if(q->children[i])
+                all_clean = false;
+        if(all_clean) {
+            return true;
+        }
+    }
+    return false;
+}
+
 static gboolean
 expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
 {
@@ -91,10 +109,6 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     }
     
     QuadTree qt;
-    qt.bx0 = 0;
-    qt.bx1 = 1024;
-    qt.by0 = 0;
-    qt.by1 = 1024;
     
     for(unsigned i = 0; i < handles.size()/2; i++) {
         Geom::Point p0 = handles[i*2];
@@ -108,9 +122,10 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
         double y1 = std::max(p0[1], p1[1]);
         qt.insert(x0, y0, x1, y1, i);
     }
-    
+    clean_quad_tree(qt.root);
+
     cairo_set_source_rgba (cr, 0.5, 0.125, 0, 1);
-    draw_quad_tree(cr, qt.root, 0, 0, qt.bx1 - qt.bx0);
+    draw_quad_tree(cr, qt.root, qt.bx0, qt.by0, qt.bx1 - qt.bx0);
     
     notify << "total pieces subdivision = " << total_pieces_sub << std::endl; 
         notify << "total pieces inc = " << total_pieces_inc; 
