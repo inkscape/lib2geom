@@ -150,26 +150,42 @@ inline bool operator==(SubPath::HashCookie a, SubPath::HashCookie b) {
     return a.get_value() == b.get_value();
 }
 
-class Path{
+class PathBuilder;
+
+class Path {
 public:
-    std::vector<SubPath> subpaths;
-    
     typedef std::vector<SubPath>::const_iterator PathConstIter;
     typedef PathConstIter const_iterator;
     
-    const_iterator begin() const { return subpaths.begin(); }
-    const_iterator end() const { return subpaths.end(); }
+    const_iterator begin() const { return _subpaths.begin(); }
+    const_iterator end() const { return _subpaths.end(); }
+    SubPath const &front() const { return _subpaths.front(); }
+    SubPath const &back() const { return _subpaths.back(); }
     
-    class PathLocation{
-    public:
+    struct PathLocation {
         SubPath::ConstIter it;
         double t; // element specific meaning [0,1)
         PathLocation(SubPath::ConstIter it, double t) : it(it), t(t) {}
     };
+
     Path() {}
-    Path(SubPath sp) {subpaths.push_back(sp);}
+    Path(SubPath sp) { _subpaths.push_back(sp); }
     
     unsigned total_segments() const;
+
+    template <typename F>
+    Path map(F f) const {
+        Path pr;
+        for ( const_iterator it = begin() ; it != end() ; it++ ) {
+            pr._subpaths.push_back(f(*it));
+        }
+        return pr;
+    }
+
+private:
+    std::vector<SubPath> _subpaths;
+
+    friend class PathBuilder;
 };
 
 inline bool operator!=(const SubPath::ConstIter &a, const SubPath::ConstIter &b) 
@@ -196,12 +212,12 @@ template <class T> SubPath operator*(SubPath const &p, T const &m) {
 }
 
 template <class T> Path operator*(Path const &p, T const &m) {
-    Path pr;
-    
-    for(Path::const_iterator it = p.begin(); it != p.end(); it++) {
-        pr.subpaths.push_back(*it*m);
-    }
-    return pr;
+    struct multiply_by {
+        T const &_m;
+        multiply_by(T const &m) : _m(m) {}
+        SubPath operator()(SubPath const &sp) { return sp * _m; }
+    };
+    return p.map(multiply_by(m));
 }
 
 template <typename Point, unsigned order>

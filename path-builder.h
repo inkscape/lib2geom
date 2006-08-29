@@ -10,8 +10,8 @@ public:
     PathBuilder() : _current_subpath(NULL) {}
 
     void start_subpath(Point const &p0) {
-        _path.subpaths.push_back(SubPath());
-        _current_subpath = &_path.subpaths.back();
+        _path._subpaths.push_back(SubPath());
+        _current_subpath = &_path._subpaths.back();
         _current_subpath->closed = false;
         _current_subpath->handles.push_back(p0);
         _initial_point = _current_point = p0;
@@ -76,7 +76,7 @@ public:
 private:
     Path _path;
     SubPath *_current_subpath;
-    Point _current_point; // perhaps this is just _current_subpath->handles.back()
+    Point _current_point;
     Point _initial_point;
 };
 

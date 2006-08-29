@@ -1,4 +1,6 @@
 #include "read-svgd.h"
+#include "path-builder.h"
+
 using std::FILE;
 using std::fgetc;
 using std::feof;
@@ -41,10 +43,9 @@ void write_svgd(FILE* f, Geom::SubPath const &p) {
 }
 
 Geom::Path read_svgd(FILE* f) {
-    Geom::Path path;
     assert(f);
 
-    Geom::SubPath *subpath=NULL;
+    Geom::PathBuilder builder;
     
     while(!feof(f)) {
         eat_space(f);
@@ -52,37 +53,27 @@ Geom::Path read_svgd(FILE* f) {
         eat_space(f);
         switch(cmd) {
         case 'M':
-            path.subpaths.push_back(Geom::SubPath());
-            subpath = &path.subpaths.back();
-            subpath->handles.push_back(read_point(f));
+            builder.start_subpath(read_point(f));
             break;
         case 'L':
-            subpath->cmd.push_back(Geom::lineto);
-            subpath->handles.push_back(read_point(f));
+            builder.push_line(read_point(f));
             break;
         case 'C':
-            subpath->cmd.push_back(Geom::cubicto);
-            subpath->handles.push_back(read_point(f));
-            subpath->handles.push_back(read_point(f));
-            subpath->handles.push_back(read_point(f));
+            builder.push_cubic(read_point(f), read_point(f), read_point(f));
             break;
         case 'Q':
-            subpath->cmd.push_back(Geom::quadto);
-            subpath->handles.push_back(read_point(f));
-            subpath->handles.push_back(read_point(f));
+            builder.push_quad(read_point(f), read_point(f));
             break;
         case 'z':
-            subpath->closed = true;
-            subpath->cmd.push_back(Geom::lineto);
-            subpath->handles.push_back(subpath->initial_point());
-            subpath = NULL;
+            builder.close_subpath();
             break;
         default:
             ungetc(cmd, f);
             break;
         }
     }
-    return path;
+
+    return builder.peek();
 }
 
 

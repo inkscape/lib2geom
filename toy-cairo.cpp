@@ -585,7 +585,7 @@ on_open_activate(GtkMenuItem *menuitem, gpointer user_data) {
         perror(filename);
         return;
     }
-    display_path = read_svgd(f).subpaths.front();
+    display_path = read_svgd(f).front();
     
     gtk_widget_queue_draw(canvas); // globals are probably evil
 }
@@ -605,7 +605,7 @@ int main(int argc, char **argv) {
         perror(filename);
         return 1;
     }
-    display_path = read_svgd(f).subpaths.front();
+    display_path = read_svgd(f).front();
 
     Geom::Rect r = display_path.bbox();
     
