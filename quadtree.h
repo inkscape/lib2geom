@@ -8,6 +8,7 @@ public:
         for(int i = 0; i < 4; i++)
             children[i] = 0;
     }
+    typedef std::vector<int>::iterator iterator;
 };
 
 class QuadTree{
@@ -129,7 +130,7 @@ public:
     void
     erase(Quad *q, int shape) {
         for(Quad::iterator i = q->data.begin();  i != q->data.end(); i++) {
-            if(*it == shape) {
+            if(*i == shape) {
                 q->data.erase(i);
                 if(q->data.empty()) {
 

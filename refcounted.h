@@ -10,10 +10,10 @@ public:
 
     unsigned refcount() const { return _refcount; }
 
-    void claim() { ++_refcount; }
+    void claim() { ++_refcount; } // should be atomic
 
     void release() {
-        if (!--_refcount) {
+        if (!--_refcount) { // should be atomic
             delete static_cast<T *>(this);
         }
     }
