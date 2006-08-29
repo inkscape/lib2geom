@@ -126,6 +126,18 @@ public:
         }
         q->data.push_back(shape);
     }
+    void
+    erase(Quad *q, int shape) {
+        for(Quad::iterator i = q->data.begin();  i != q->data.end(); i++) {
+            if(*it == shape) {
+                q->data.erase(i);
+                if(q->data.empty()) {
+
+                }
+            }
+        }
+        return;
+    }
 };
 
 
