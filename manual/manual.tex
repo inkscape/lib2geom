@@ -196,6 +196,8 @@ The most important properties of the s-basis form are:
 \item strong convergence guarantees
 \item low condition number on bezier conversion.
 \item $C^0$ continuity guarantee
+\item root finding
+\item composition
 \end{itemize}
 
 All these operations are fast.  For example, multiplication of two
@@ -231,7 +233,7 @@ both of those should be linear worst case
 
 \item[Shape query:] given a closed path, find all objects whose bounding boxes intersect path.  (this and cast are nearly the same)
 
-\item[Nearest:] given a point (or maybe box) find the nearest objects, perhaps as a generator to get all objects in order.  To do this, we walk around the quad tree neighbourhood, pushing all the elements into a priority queue, when the queue is empty, move out a bit.  nearest could be manhattan, max norm or euc?
+\item[Nearest:] given a point (or maybe box) find the nearest objects, perhaps as a generator to get all objects in order.  To do this, we walk around the quad tree neighbourhood, pushing all the elements into a priority queue, while the queue is empty, move out a bit.  Nearest could be manhattan, max norm or euc?
 
 \item[Binary:] take two dbs, generate all pairs that have intersecting boxes.
 
