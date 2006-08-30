@@ -110,16 +110,21 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     
     QuadTree qt;
     
+    cairo_new_sub_path(cr);
+    
     for(unsigned i = 0; i < handles.size()/2; i++) {
         Geom::Point p0 = handles[i*2];
         Geom::Point p1 = handles[i*2+1];
-        cairo_move_to(cr, p0);
-        cairo_line_to(cr, p1);
+        Geom::Point centre = (p0 + p1)/2;
+        double rad = Geom::L2(p0 - centre);
+        cairo_arc (cr, centre[0], centre[1], rad, 0., 2 * M_PI);
+        //cairo_move_to(cr, p0);
+        //cairo_line_to(cr, p1);
         cairo_stroke(cr);
-        double x0 = std::min(p0[0], p1[0]);
-        double x1 = std::max(p0[0], p1[0]);
-        double y0 = std::min(p0[1], p1[1]);
-        double y1 = std::max(p0[1], p1[1]);
+        double x0 = centre[0]-rad;//std::min(p0[0], p1[0]);
+        double x1 = centre[0]+rad;//std::max(p0[0], p1[0]);
+        double y0 = centre[1]-rad;//std::min(p0[1], p1[1]);
+        double y1 = centre[1]+rad;//std::max(p0[1], p1[1]);
         qt.insert(x0, y0, x1, y1, i);
     }
     clean_quad_tree(qt.root);
@@ -253,9 +258,11 @@ double uniform() {
 }
 
 int main(int argc, char **argv) {
-    for(int i = 0; i < 20; i++) 
-        handles.push_back(Geom::Point(uniform()*400, uniform()*400));
-    
+    for(int i = 0; i < 100; i++) {
+        Geom::Point p(uniform()*400, uniform()*400);
+        handles.push_back(p);
+        handles.push_back(p + Geom::Point(uniform()*40, uniform()*40));
+    }
     gtk_init (&argc, &argv);
     
     gdk_rgb_init();
