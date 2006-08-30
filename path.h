@@ -33,11 +33,17 @@ enum SubPathOp{
 unsigned const SubPathOpHandles[] = {1, 2, 3, 4};
 
 class SubPath{
-public:
     bool closed; // should this shape be closed (join endpoints with a line)
     std::vector<Point> handles;
     std::vector<SubPathOp> cmd;
 
+public:
+    bool is_closed() const { return closed; }
+    void set_closed(bool value) { closed = value; }
+	
+    std::vector<Point> get_handles() const { return handles; }
+    std::vector<SubPathOp> get_cmd() const { return cmd; }
+	
     class Elem{
     public:
         SubPathOp op;
@@ -134,7 +140,6 @@ public:
     void insert(ConstIter before, ConstIter s, ConstIter e);
 
 // mainly for debugging
-public:
     ConstIter indexed_elem(int i) const {
         ConstIter it = begin();
         while(--i >= 0) ++it;
