@@ -1,5 +1,7 @@
 \documentstyle{book}
 
+\newcommand{\code}[1]{\textsf{#1}}
+
 \begin{document}
 
 \chapter{Basic design}
@@ -59,22 +61,44 @@ rare occasion that these are needed.
 \section{SubPath}
 
 
-we assume that paths are made from C0 continuous segments
-(called Path::Element in 2geom)
-because they are c0 continuous they can share endpoints
-for storage we have two arrays: handles and commands
-we assume that all commands define a segment using 'points', namely on canvas positions, and that affine transformation of the points will affine transform the segment
-so to reconstruct the path we walk through handles and cmd in parallel, 'eating' enough points for each element
-adding a handle without updating cmd would almost certainly make the path garbage.
+We assume that paths are made from $C^0$ continuous segments (called
+\code{SubPath::Element} in 2geom).  Because elements are $C^0$ continuous
+they can share endpoints.  For storage we have two arrays: handles and
+commands.  We assume that all commands define a segment using a number
+of \code{Points}, namely on canvas positions, and that affine
+transformation of the points will affine transform the segment.  To
+reconstruct a path we walk through handles and cmd in parallel,
+'eating' enough points for each element adding a handle without
+updating cmd would almost certainly make the path garbage.
 
-this has the property of taking only slightly more memory than a sequence of points in the poly line or poly bezier case, but allows us lots of flexibility with what sort of elements we can 'understand'.
+this has the property of taking only slightly more memory than a
+sequence of points in the poly line or poly bezier case, but allows us
+lots of flexibility with what sort of elements we can 'understand'.
+To walk a SubPath an element a time use the SubPath::iterator.
+Inserting directly into \code{SubPath::handles} or \code{SubPath::cmd}
+will corrupt the SubPath.
 
-subpathops are 'line', 'quadratic bezier', 'cubic bezier', 'c-spline'
+We require each Element provides a specific interface:
 
-what is true is that affine transforming handles also affine transforms the path
-and the convex hull of handles is the convex hull of the path
+\begin{itemize}
+\item Affine transforming handles also affine transforms the path.
+\item The convex hull of element handles is the convex hull of the elements.
+\item The element has a parameterisation $t \in [0,1]$.
+\item It is possible split an Element at any $t$.
+\item The functions \code{point at} and \code{point and tangent at} exist
+\item The Element can be converted to an s-basis.
+\end{itemize}
 
-and the convex hull of element handles is the convex hull of the elements
+From these we get a number of useful properties:
+\begin{itemize}
+\item The convex hull of handles is the convex hull of the path.
+\end{itemize}
+
+SubPathOps are 'line', 'quadratic bezier', 'cubic bezier', 'c-spline'.
+
+c-spline = funky elliptical representation.
+
+Neither NURBS, nor SVG elliptical arcs can be directly represented in this way.
 
 \section{Location}
 
