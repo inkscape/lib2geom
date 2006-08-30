@@ -133,8 +133,8 @@ class Path
     builder.c <<-EOS
       static VALUE each() {
         Geom::Path *path=value_to_path(self);
-        for ( std::vector<Geom::SubPath>::iterator iter = path->subpaths.begin() ;
-              iter != path->subpaths.end() ; ++iter )
+        for ( std::vector<Geom::SubPath>::const_iterator iter = path->begin() ;
+              iter != path->end() ; ++iter )
         {
           Geom::SubPath *subpath = new Geom::SubPath(*iter);
           rb_yield(Data_Wrap_Struct(SubPath_class(), NULL, &do_delete<Geom::SubPath>, subpath));
@@ -145,7 +145,8 @@ class Path
 
     builder.c <<-EOS
       static int size() {
-        return value_to_path(self)->subpaths.size();
+        Geom::Path *path=value_to_path(self);
+        return path->end() - path->begin();
       }
     EOS
   end
