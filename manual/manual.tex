@@ -54,7 +54,27 @@ rare occasion that these are needed.
 
 \section{Path}
 
+
+
 \section{SubPath}
+
+
+we assume that paths are made from C0 continuous segments
+(called Path::Element in 2geom)
+because they are c0 continuous they can share endpoints
+for storage we have two arrays: handles and commands
+we assume that all commands define a segment using 'points', namely on canvas positions, and that affine transformation of the points will affine transform the segment
+so to reconstruct the path we walk through handles and cmd in parallel, 'eating' enough points for each element
+adding a handle without updating cmd would almost certainly make the path garbage.
+
+this has the property of taking only slightly more memory than a sequence of points in the poly line or poly bezier case, but allows us lots of flexibility with what sort of elements we can 'understand'.
+
+subpathops are 'line', 'quadratic bezier', 'cubic bezier', 'c-spline'
+
+what is true is that affine transforming handles also affine transforms the path
+and the convex hull of handles is the convex hull of the path
+
+and the convex hull of element handles is the convex hull of the elements
 
 \section{Location}
 
