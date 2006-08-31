@@ -40,9 +40,9 @@ unsigned total_pieces_sub;
 unsigned total_pieces_inc;
 
 void draw_cb(cairo_t *cr, multidim_sbasis<2> const &B) {
-    std::vector<Geom::Point> bez = sbasis2_to_bezier(B, 2);
-    cairo_move_to(cr, bez[0]);
-    cairo_curve_to(cr, bez[1], bez[2], bez[3]);
+    Geom::PathBuilder pb;
+    subpath_from_sbasis(pb, B, 0.1);
+    cairo_path(cr, pb.peek());
 }
 
 static gboolean
@@ -81,10 +81,10 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     cairo_set_source_rgba (cr, 0., 0., 0, 0.8);
     cairo_set_line_width (cr, 0.5);
     for(int i = 1; i < 4; i+=2) {
-        cairo_move_to(cr, 0, i*height/4);
-        cairo_line_to(cr, width, i*height/4);
+        cairo_move_to(cr, 0, i*width/4);
+        cairo_line_to(cr, width, i*width/4);
         cairo_move_to(cr, i*width/4, 0);
-        cairo_line_to(cr, i*width/4, height);
+        cairo_line_to(cr, i*width/4, width);
     }
     //cairo_move_to(cr, handles[0]);
     //cairo_curve_to(cr, handles[1], handles[2], handles[3]);
@@ -92,7 +92,14 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     
     BezOrd2d bo2(3);
     
-    multidim_sbasis<2> B = bezier_to_sbasis<2, 3>(handles.begin());
+    multidim_sbasis<2> B;
+    B[0].push_back(BezOrd(0, 0.5));
+    B[0].push_back(BezOrd(0.1, -0.2));
+    B[1].push_back(BezOrd(0.5, 0));
+    B[1].push_back(BezOrd(-0.2, 0.1));
+    B = (width/2)*B;
+    for(unsigned  i = 0; i < 2; i ++)
+        B[i] += width/4;
     draw_cb(cr, B);
     //notify << "total pieces inc = " << total_pieces_inc; 
     
@@ -219,10 +226,6 @@ double uniform() {
 }
 
 int main(int argc, char **argv) {
-    handles.push_back(Geom::Point(uniform()*400, uniform()*400));
-    handles.push_back(Geom::Point(uniform()*400, uniform()*400));
-    handles.push_back(Geom::Point(uniform()*400, uniform()*400));
-    handles.push_back(Geom::Point(uniform()*400, uniform()*400));
     
     gtk_init (&argc, &argv);
     
