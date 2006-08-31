@@ -41,8 +41,8 @@ public:
     bool is_closed() const { return closed; }
     void set_closed(bool value) { closed = value; }
 	
-    std::vector<Point> get_handles() const { return handles; }
-    std::vector<SubPathOp> get_cmd() const { return cmd; }
+    std::vector<Point>const & get_handles() const { return handles; }
+    std::vector<SubPathOp>const & get_cmd() const { return cmd; }
 	
     class Elem{
     public:
@@ -111,6 +111,7 @@ public:
     unsigned size() const { return cmd.size(); }
 
     Point initial_point() const { return handles.front(); }
+    Point final_point() const { return handles.back(); }
 
     /** returns the point at the position given by walking along the path. */
     Location point_at_arc_length(double s);
@@ -149,6 +150,7 @@ public:
     operator HashCookie();
     
     unsigned total_segments() const;
+    friend class PathBuilder;
 };
 
 inline bool operator==(SubPath::HashCookie a, SubPath::HashCookie b) {

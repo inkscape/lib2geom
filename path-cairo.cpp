@@ -2,7 +2,7 @@
 #include "path-cairo.h"
 
 void cairo_sub_path(cairo_t *cr, Geom::SubPath const &p) {
-    if(p.cmd.empty()) return;
+    if(p.empty()) return;
     cairo_move_to(cr, p.initial_point()[0], p.initial_point()[1]);
     for(Geom::SubPath::const_iterator iter(p.begin()), end(p.end()); iter < end; ++iter) {
         Geom::SubPath::Elem elm = *iter;
@@ -28,7 +28,7 @@ void cairo_sub_path(cairo_t *cr, Geom::SubPath const &p) {
                 break;
         }
     }
-    if(p.closed) {
+    if(p.is_closed()) {
         cairo_close_path(cr);
     }
 }
@@ -50,7 +50,7 @@ void cairo_path(cairo_t *cr, Geom::Path const &p) {
 #include <pango/pango.h>
 #include <pango/pangocairo.h>
 void cairo_sub_path_handles(cairo_t *cr, Geom::SubPath const &p) {
-    if(p.cmd.empty()) return;
+    if(p.empty()) return;
     cairo_move_to(cr, p.initial_point()[0], p.initial_point()[1]);
     for(Geom::SubPath::const_iterator iter(p.begin()), end(p.end()); iter < end; ++iter) {
         Geom::SubPath::Elem elem = *iter;

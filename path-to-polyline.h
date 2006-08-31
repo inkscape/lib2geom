@@ -4,10 +4,11 @@
 #include <cassert>
 
 #include "point-fns.h"
+#include "path-builder.h"
 
 class path_to_polyline{
 public:
-    std::vector<Geom::Point> handles;
+    Geom::PathBuilder pb;
     double tol;
     
     path_to_polyline(const Geom::SubPath &p, double tol = 1.0);
@@ -17,7 +18,7 @@ public:
     void quad_to_polyline(Geom::SubPath::Elem e);
     void cubic_to_polyline(Geom::SubPath::Elem e);
     
-    operator Geom::SubPath();
+    operator Geom::Path();
 };
 /*
   Local Variables:

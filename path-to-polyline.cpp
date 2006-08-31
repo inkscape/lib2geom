@@ -3,7 +3,7 @@
 path_to_polyline::path_to_polyline(const Geom::SubPath &p, double tol) 
 :tol(tol)
 {
-    handles.push_back(p.initial_point());
+    pb.start_subpath(p.initial_point());
     for(Geom::SubPath::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
         switch(iter.cmd()) {
         case Geom::lineto:
@@ -25,7 +25,7 @@ path_to_polyline::path_to_polyline(const Geom::SubPath &p, double tol)
 }
     
 void path_to_polyline::line_to_polyline(Geom::SubPath::Elem e) {
-    handles.push_back(e.begin()[1]);
+    pb.push_line(e.begin()[1]);
 }
 
 void path_to_polyline::cubic_to_polyline(Geom::SubPath::Elem e) {
@@ -46,7 +46,7 @@ void path_to_polyline::cubic_to_polyline(Geom::SubPath::Elem e) {
     //printf("(%g)", err);
 
     if(err < thresh) {
-        handles.push_back(e[3]); // approximately a line
+        pb.push_line(e[3]); // approximately a line
         //printf("*\n");
     } else {
         // ideally we break at the two extreme points.  Instead we're going to just cut in half
@@ -85,7 +85,7 @@ void path_to_polyline::quad_to_polyline(Geom::SubPath::Elem e) {
     err = L1(e[0] + e[2] - 2*e[1]);
 
     if(err < thresh) {
-        handles.push_back(e[2]); // approximately a line
+        pb.push_line(e[2]); // approximately a line
         //printf("*\n");
     } else {
         // ideally we break at the two extreme points.  Instead we're going to just cut in half
@@ -106,16 +106,9 @@ void path_to_polyline::quad_to_polyline(Geom::SubPath::Elem e) {
     }
 }
    
-path_to_polyline::operator Geom::SubPath() {
+path_to_polyline::operator Geom::Path() {
     // make a polyline path
-    Geom::SubPath p;
-    p.handles.push_back(handles[0]);
-    for(std::vector<Geom::Point>::const_iterator h(handles.begin()+1), e(handles.end());
-        h != e; ++h) {
-        p.cmd.push_back(Geom::lineto);
-        p.handles.push_back(*h);
-    }
-    return p;
+    return pb.peek();
 }
 
 

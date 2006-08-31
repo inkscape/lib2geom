@@ -140,9 +140,9 @@ int centroid(SubPath const &p, Point& centroid, double &area) {
         }
     }
     // join ends
-    const double ai = cross(p.handles.back(), p.handles[0]);
+    const double ai = cross(p.final_point(), p.initial_point());
     atmp += ai;
-    centroid_tmp += ai*(p.handles.back(), p.handles[0]); // first moment.
+    centroid_tmp += ai*(p.final_point(), p.initial_point()); // first moment.
     
     area = atmp / 2;
     if (atmp != 0) {
@@ -167,9 +167,9 @@ int centroid_sb(SubPath const &p, Point& centroid, double &area) {
     }
 // join ends
     centroid_tmp *= 2;
-    const double ai = cross(p.handles.back(), p.handles[0]);
+    const double ai = cross(p.final_point(), p.initial_point());
     atmp += ai;
-    centroid_tmp += ai*(p.handles.back(), p.handles[0]); // first moment.
+    centroid_tmp += ai*(p.final_point(), p.initial_point()); // first moment.
     
     area = atmp / 2;
     if (atmp != 0) {

@@ -76,7 +76,7 @@ void draw_elip(cairo_t *cr, Geom::Point *h) {
     }
 }
 
-void draw_path(cairo_t *cr, Geom::SubPath const & p) {
+/*void draw_path(cairo_t *cr, Geom::SubPath const & p) {
     path_to_polyline pl(p, 1);
     
     Geom::Point old(pl.handles[0]);
@@ -87,14 +87,14 @@ void draw_path(cairo_t *cr, Geom::SubPath const & p) {
         old = p;
     }
     
-}
+    }*/
 
 #include "centroid.h"
 
 Geom::Point path_centroid_polyline(Geom::SubPath const & p, double &area) {
-    path_to_polyline pl(p, 1);
+    //path_to_polyline pl(p, 1);
     Geom::Point centr;
-    Geom::centroid(pl.handles,  centr, area);
+    //Geom::centroid(pl.handles,  centr, area);
     
     return centr;
 }
@@ -182,8 +182,9 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     std::ostringstream notify;
     gdk_drawable_get_size(widget->window, &width, &height);
 
-    for(int i = 0; i < display_path.handles.size(); i++) {
-        draw_handle(cr, display_path.handles[i]);
+    std::vector<Geom::Point> const & hand(display_path.get_handles());
+    for(int i = 0; i < hand.size(); i++) {
+        draw_handle(cr, hand[i]);
     }
     if(rotater) {
         Geom::Point cntr;
@@ -242,13 +243,11 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
         }
         cairo_restore(cr);
     }    
-    display_path.closed = true;
+    display_path.set_closed(true);
     cairo_sub_path(cr, display_path);
     
     cairo_set_source_rgba (cr, 0.5, 0.7, 0.3, 0.8);
     cairo_sub_path(cr, original_curve);
-    //draw_path(cr, display_path);
-    //draw_elip(cr, handles);
     
     double dist = INFINITY;
 
