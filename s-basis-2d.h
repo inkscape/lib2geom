@@ -42,6 +42,18 @@ public:
     }
 };
 
+BezOrd extract_u(BezOrd2d const &a, double u) {
+    return BezOrd(a[0]*(1-u) +
+                  a[1]*u,
+                  a[2]*(1-u) +
+                  a[3]*u);
+}
+BezOrd extract_v(BezOrd2d const &a, double v) {
+    return BezOrd(a[0]*(1-v) +
+                  a[2]*v,
+                  a[1]*(1-v) +
+                  a[3]*v);
+}
 inline BezOrd2d operator-(BezOrd2d const &a) {
     return BezOrd2d(-a.a[0], -a.a[1],
                     -a.a[2], -a.a[3]);
@@ -122,7 +134,6 @@ public:
         double t = v*(1-v);
         BezOrd2d p;
         double tk = 1;
-        int k = 0;
 // XXX rewrite as horner
         for(unsigned vi = 0; vi < vs; vi++) {
             double sk = 1;
@@ -271,10 +282,45 @@ SBasis2d divide(SBasis2d const &a, SBasis2d const &b, int k);
 // a(b(t))
 SBasis2d compose(SBasis2d const &a, SBasis2d const &b);
 SBasis2d compose(SBasis2d const &a, SBasis2d const &b, unsigned k);
-SBasis2d inverse(SBasis2d a, int k);
+SBasis2d inverse(SBasis2d const &a, int k);
+
+SBasis extract_u(SBasis2d const &a, double u) {
+    SBasis sb;
+    double s = u*(1-u);
+    
+    for(unsigned vi = 0; vi < a.vs; vi++) {
+        double sk = 1;
+        BezOrd bo(0,0);
+        for(unsigned ui = 0; ui < a.us; ui++) {
+            bo += sk*(extract_u(a.index(ui, vi), u));
+            sk *= s;
+        }
+        sb.push_back(bo);
+    }
+    
+    return sb;
+}
+
+SBasis extract_v(SBasis2d const &a, double v) {
+    SBasis sb;
+    double s = v*(1-v);
+    
+    for(unsigned ui = 0; ui < a.us; ui++) {
+        double sk = 1;
+        BezOrd bo(0,0);
+        for(unsigned vi = 0; vi < a.vs; vi++) {
+            bo += sk*(extract_v(a.index(ui, vi), v));
+            sk *= s;
+        }
+        sb.push_back(bo);
+    }
+    
+    return sb;
+}
 
 inline std::ostream &operator<< (std::ostream &out_file, const BezOrd2d &bo) {
-    out_file << "{" << bo[0] << ", " << bo[1] << "}";
+    out_file << "{" << bo[0] << ", " << bo[1] << "}, ";
+    out_file << "{" << bo[2] << ", " << bo[3] << "}";
     return out_file;
 }
 

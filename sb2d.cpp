@@ -24,6 +24,7 @@
 #include "translate.h"
 #include "translate-ops.h"
 #include "s-basis-2d.h"
+#include "path-builder.h"
 
 using std::string;
 using std::vector;
@@ -55,7 +56,6 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     std::ostringstream notify;
     note_p = &notify;
     gdk_drawable_get_size(widget->window, &width, &height);
-    
     cairo_set_source_rgba (cr, 0., 0.5, 0, 1);
     cairo_set_line_width (cr, 1);
     for(int i = 0; i < handles.size(); i++) {
@@ -78,6 +78,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
                                        &logical_extent);
         pango_cairo_show_layout(cr, layout);
     }
+    
     cairo_set_source_rgba (cr, 0., 0., 0, 0.8);
     cairo_set_line_width (cr, 0.5);
     for(int i = 1; i < 4; i+=2) {
@@ -86,26 +87,61 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
         cairo_move_to(cr, i*width/4, 0);
         cairo_line_to(cr, i*width/4, width);
     }
-    //cairo_move_to(cr, handles[0]);
-    //cairo_curve_to(cr, handles[1], handles[2], handles[3]);
-    //cairo_stroke(cr);
-    
-    BezOrd2d bo2(3);
+    SBasis2d sb2;
+    sb2.us = 2;
+    sb2.vs = 1;
+    sb2.push_back(BezOrd2d(0));
+    sb2.push_back(BezOrd2d(1));
+    sb2.push_back(BezOrd2d(0));
+    sb2.push_back(BezOrd2d(0));
+    const int depth = 2;
+    vector<Geom::Point> display_handles(4*depth);
+    if(handles.empty()) {
+        for(int i = 0; i < depth; i++)
+        for(int vi = 0; vi < 2; vi++)
+        for(int ui = 0; ui < 2; ui++)
+        handles.push_back(Geom::Point((2*ui+1)*width/4.,
+                                      (2*vi+1)*width/4.));
+    }
+    for(int i = 0; i < depth; i++)
+    for(int vi = 0; vi < 2; vi++)
+        for(int ui = 0; ui < 2; ui++) {
+            unsigned corner = ui + 2*vi;
+            Geom::Point dir(1,-1);
+            Geom::Point base((2*ui+1)*width/4.,
+                             (2*vi+1)*width/4.);
+            double dl = dot((handles[corner+4*i] - base), dir)/dot(dir,dir);
+            display_handles[corner+4*i] = dl*dir + base;
+            sb2[i][corner] = dl*10/(width/2);
+        }
     
     multidim_sbasis<2> B;
-    B[0].push_back(BezOrd(0, 0.5));
-    B[0].push_back(BezOrd(0.1, -0.2));
-    B[1].push_back(BezOrd(0.5, 0));
-    B[1].push_back(BezOrd(-0.2, 0.1));
-    B = (width/2)*B;
-    for(unsigned  i = 0; i < 2; i ++)
-        B[i] += width/4;
-    draw_cb(cr, B);
-    //notify << "total pieces inc = " << total_pieces_inc; 
+    for(int ui = 0; ui <= 10; ui++) {
+        double u = ui/10.;
+        B[0] = 0.1*extract_u(sb2, u) + BezOrd(u);
+        B[1] = SBasis(BezOrd(0,1))-0.1*extract_u(sb2, u);
+        for(unsigned i = 0; i < 2; i ++) {
+            B[i] = (width/2)*B[i] + BezOrd(width/4);
+        }
+        draw_cb(cr, B);
+    }
+    for(int vi = 0; vi <= 10; vi++) {
+        double v = vi/10.;
+        B[1] = -0.1*extract_v(sb2, v) + BezOrd(v);
+        B[0] = SBasis(BezOrd(0,1)) + 0.1*extract_v(sb2, v);
+        for(unsigned i = 0; i < 2; i ++) {
+            B[i] = (width/2)*B[i] + BezOrd(width/4);
+        }
+        draw_cb(cr, B);
+    }
+    notify << "bo = " << sb2.index(0,0); 
     
     cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
     cairo_stroke(cr);
     
+    for(int i = 0; i < display_handles.size(); i++) {
+        draw_circ(cr, display_handles[i]);
+    }
     
     cairo_set_source_rgba (cr, 0., 0.5, 0, 0.8);
     {
@@ -174,6 +210,8 @@ static gint mouse_event(GtkWidget* window, GdkEventButton* e, gpointer data) {
 
 static gint mouse_release_event(GtkWidget* window, GdkEventButton* e, gpointer data) {
     selected_handle = 0;
+    Geom::Point mouse(e->x, e->y);
+    old_handle_pos = mouse;
     return FALSE;
 }
 

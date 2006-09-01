@@ -15,6 +15,7 @@ namespace Geom{
  * We provide the centroid as a member for efficient direction determination.  We can update the
  * centroid with all operations with the same time complexity as the operation or better.
  */
+
 class ConvexHull{
 public:
     std::vector<Point> boundary;
@@ -30,12 +31,30 @@ public:
     bool top_point_first() const;
     bool meets_invariants() const;
     
+    // contains no points
     bool empty() const { return boundary.empty();}
+    
+    // contains exactly one point
+    bool singular() const { return boundary.size() == 1;}
+
+    //  all points are on a line
+    bool linear() const { return boundary.size() == 2;}
     bool is_degenerate() const;
+    
+    // area of the convex hull
+    double area() const;
+    
+    // furthest point in a direction (lg time) 
+    Point const * furthest(Point direction) const;
 };
 
+// do two convex hulls intersect?
 bool intersectp(ConvexHull a, ConvexHull b);
+
+// find the convex hull intersection
 ConvexHull intersection(ConvexHull a, ConvexHull b);
+
+// find the convex hull of a set of convex hulls
 ConvexHull merge(ConvexHull a, ConvexHull b);
 
 

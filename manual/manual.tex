@@ -68,9 +68,14 @@ decompositions (such as SVD to extract the rotation and scale terms).
 
 \section{Rect}
 
+Rectangles, also known as boxes, have all 4 sides parallel to the axes
+and are defined by the least point and the greatest point.
+
 \section{ConvexHull}
 
-A set of points in clockwise direction.  Operations:
+two files, convex-hull.h is the inkscape version using rectangles,
+convex-cover is partial implementation done with a set of points in
+clockwise direction.  Operations:
 
 \begin{description}
 \item[empty:] contains no points
@@ -80,12 +85,13 @@ A set of points in clockwise direction.  Operations:
 \item[furthest:] furthest point in a direction (lg time)
 \item[intersect:] do two convex hulls intersect?
 \item[intersection:] find the convex hull intersection
-\item[union:] find the convex hull of a set of convex hulls
+\item[merge:] find the convex hull of a set of convex hulls
 \end{description}
 
 \section{Path}
 
-
+A Path is an ordered set of \code{SubPath}s.  A \code{Path} in
+Inkscape is drawn in a single fill and stroke.
 
 \section{SubPath}
 
@@ -116,11 +122,13 @@ We require each Element provides a specific interface:
 \item It is possible split an Element at any $t$.
 \item The functions \code{point at} and \code{point and tangent at} exist
 \item The Element can be converted to an s-basis.
+\item A way to efficiently convert to polylines
 \end{itemize}
 
 From these we get a number of useful properties:
 \begin{itemize}
 \item The convex hull of handles is the convex hull of the path.
+\item we can consider a path a single function mapping [0, n] to points.
 \end{itemize}
 
 SubPathOps are 'line', 'quadratic bezier', 'cubic bezier', 'c-spline'.
