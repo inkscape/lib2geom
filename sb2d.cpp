@@ -89,30 +89,30 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     }
     SBasis2d sb2;
     sb2.us = 2;
-    sb2.vs = 1;
-    sb2.push_back(BezOrd2d(0));
-    sb2.push_back(BezOrd2d(1));
-    sb2.push_back(BezOrd2d(0));
-    sb2.push_back(BezOrd2d(0));
-    const int depth = 2;
+    sb2.vs = 2;
+    const int depth = sb2.us*sb2.vs;
+    sb2.resize(depth, BezOrd2d(0));
     vector<Geom::Point> display_handles(4*depth);
     if(handles.empty()) {
-        for(int i = 0; i < depth; i++)
-        for(int vi = 0; vi < 2; vi++)
-        for(int ui = 0; ui < 2; ui++)
-        handles.push_back(Geom::Point((2*ui+1)*width/4.,
-                                      (2*vi+1)*width/4.));
+        for(int vi = 0; vi < sb2.vs; vi++)
+        for(int ui = 0; ui < sb2.us; ui++)
+        for(int iv = 0; iv < 2; iv++)
+        for(int iu = 0; iu < 2; iu++)
+        handles.push_back(Geom::Point((2*(iu+ui)/(2.*ui+1)+1)*width/4.,
+                                      (2*(iv+vi)/(2.*vi+1)+1)*width/4.));
     }
-    for(int i = 0; i < depth; i++)
-    for(int vi = 0; vi < 2; vi++)
-        for(int ui = 0; ui < 2; ui++) {
-            unsigned corner = ui + 2*vi;
+    for(int vi = 0; vi < sb2.vs; vi++)
+        for(int ui = 0; ui < sb2.us; ui++)
+    for(int iv = 0; iv < 2; iv++)
+        for(int iu = 0; iu < 2; iu++) {
+            unsigned corner = iu + 2*iv;
+            unsigned i = ui + vi*sb2.us;
             Geom::Point dir(1,-1);
-            Geom::Point base((2*ui+1)*width/4.,
-                             (2*vi+1)*width/4.);
+            Geom::Point base((2*(iu+ui)/(2.*ui+1)+1)*width/4.,
+                             (2*(iv+vi)/(2.*vi+1)+1)*width/4.);
             double dl = dot((handles[corner+4*i] - base), dir)/dot(dir,dir);
             display_handles[corner+4*i] = dl*dir + base;
-            sb2[i][corner] = dl*10/(width/2);
+            sb2[i][corner] = dl*10/(width/2)*pow(4,ui+vi);
         }
     
     multidim_sbasis<2> B;
