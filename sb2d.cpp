@@ -93,21 +93,28 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     const int depth = sb2.us*sb2.vs;
     sb2.resize(depth, BezOrd2d(0));
     vector<Geom::Point> display_handles(4*depth);
+    Geom::Point dir(1,-2);
     if(handles.empty()) {
         for(int vi = 0; vi < sb2.vs; vi++)
         for(int ui = 0; ui < sb2.us; ui++)
         for(int iv = 0; iv < 2; iv++)
         for(int iu = 0; iu < 2; iu++)
-        handles.push_back(Geom::Point((2*(iu+ui)/(2.*ui+1)+1)*width/4.,
-                                      (2*(iv+vi)/(2.*vi+1)+1)*width/4.));
+            handles.push_back(Geom::Point((2*(iu+ui)/(2.*ui+1)+1)*width/4.,
+                                          (2*(iv+vi)/(2.*vi+1)+1)*width/4.));
+        
+        handles.push_back(Geom::Point(3*width/4.,
+                                      width/4.) + 30*dir);
+    
     }
+    dir = (handles.back() - Geom::Point(3*width/4., width/4.)) / 30;
+    cairo_move_to(cr, 3*width/4., width/4.);
+    cairo_line_to(cr, handles.back());
     for(int vi = 0; vi < sb2.vs; vi++)
         for(int ui = 0; ui < sb2.us; ui++)
     for(int iv = 0; iv < 2; iv++)
         for(int iu = 0; iu < 2; iu++) {
             unsigned corner = iu + 2*iv;
             unsigned i = ui + vi*sb2.us;
-            Geom::Point dir(1,-1);
             Geom::Point base((2*(iu+ui)/(2.*ui+1)+1)*width/4.,
                              (2*(iv+vi)/(2.*vi+1)+1)*width/4.);
             double dl = dot((handles[corner+4*i] - base), dir)/dot(dir,dir);
@@ -118,8 +125,8 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     multidim_sbasis<2> B;
     for(int ui = 0; ui <= 10; ui++) {
         double u = ui/10.;
-        B[0] = 0.1*extract_u(sb2, u) + BezOrd(u);
-        B[1] = SBasis(BezOrd(0,1))-0.1*extract_u(sb2, u);
+        B[0] = 0.1*dir[0]*extract_u(sb2, u) + BezOrd(u);
+        B[1] = SBasis(BezOrd(0,1))+0.1*dir[1]*extract_u(sb2, u);
         for(unsigned i = 0; i < 2; i ++) {
             B[i] = (width/2)*B[i] + BezOrd(width/4);
         }
@@ -127,8 +134,8 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     }
     for(int vi = 0; vi <= 10; vi++) {
         double v = vi/10.;
-        B[1] = -0.1*extract_v(sb2, v) + BezOrd(v);
-        B[0] = SBasis(BezOrd(0,1)) + 0.1*extract_v(sb2, v);
+        B[1] = 0.1*dir[1]*extract_v(sb2, v) + BezOrd(v);
+        B[0] = SBasis(BezOrd(0,1)) + 0.1*dir[0]*extract_v(sb2, v);
         for(unsigned i = 0; i < 2; i ++) {
             B[i] = (width/2)*B[i] + BezOrd(width/4);
         }
