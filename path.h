@@ -78,13 +78,13 @@ public:
         ConstIter(std::vector<SubPathOp>::const_iterator c,
                  std::vector<Point>::const_iterator h) :
             c(c), h(h) {}
-        void operator++() {h+=SubPathOpHandles[*c]; c++;}
-        void operator--() {c--; h-=SubPathOpHandles[*c];}
-        Elem operator*() const {assert(*c >= 0); assert(*c <= ellipto);  return Elem(*c, h-1, h + SubPathOpHandles[*c]);}
+        void operator++() {      h += SubPathOpHandles[*c]; c++; }
+        void operator--() { c--; h -= SubPathOpHandles[*c]; }
+        Elem operator*() const {assert(*c >= 0); assert(*c <= ellipto);  return Elem(*c, h - 1, h + SubPathOpHandles[*c]);}
 
         std::vector<Point>::const_iterator begin() const {return h;}
         std::vector<Point>::const_iterator end() const {return h + SubPathOpHandles[*c];}
-        SubPathOp cmd() { return *c;}
+        SubPathOp cmd() { return *c; }
     };
 
     typedef ConstIter const_iterator;
@@ -103,6 +103,9 @@ public:
         
         unsigned long get_value() { return value;}
     };
+
+    SubPath() {}
+    SubPath(SubPath const & sp) : cmd(sp.cmd), handles(sp.handles), closed(sp.closed) {}
 
     ConstIter begin() const { return ConstIter(cmd.begin(), handles.begin()+1);}
     ConstIter end() const { return ConstIter(cmd.end(), handles.end());}
@@ -207,14 +210,10 @@ inline ptrdiff_t operator-(const SubPath::ConstIter &a, const SubPath::ConstIter
 //SubPath operator * (SubPath, Matrix);
 
 template <class T> SubPath operator*(SubPath const &p, T const &m) {
-    SubPath pr;
-    
-    pr.cmd = p.cmd;
-    pr.handles.reserve(p.handles.size());
-    
-    for(unsigned i = 0; i < p.handles.size(); i++) {
-        pr.handles.push_back(p.handles[i]*m);
-    }
+    SubPath pr = SubPath(p);
+    std::vector<Point> handles = pr.get_handles();
+    for(int i = 0; i < handles.size(); i++)
+        handles[i] = handles[i] * m;
     return pr;
 }
 

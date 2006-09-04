@@ -94,6 +94,7 @@ void draw_elip(cairo_t *cr, Geom::Point *h) {
 Geom::Point path_centroid_polyline(Geom::SubPath const & p, double &area) {
     //path_to_polyline pl(p, 1);
     Geom::Point centr;
+    //TODO: why is this commented out? - botty
     //Geom::centroid(pl.handles,  centr, area);
     
     return centr;
@@ -191,8 +192,8 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
         double area;
         centroid(display_path, cntr, area);
         Geom::Matrix m(Geom::translate(-cntr));
-        m = (m*Geom::rotate(0.01))*Geom::translate(cntr);
-        display_path = display_path*m;
+        m = (m * Geom::rotate(0.01)) * Geom::translate(cntr);
+        display_path = display_path * m;
     }
     if(evolution) {
         draw_evolute(cr, display_path);
@@ -444,10 +445,11 @@ static gint mouse_motion_event(GtkWidget* widget, GdkEventMotion* e, gpointer da
 static gint mouse_event(GtkWidget* window, GdkEventButton* e, gpointer data) {
     Geom::Point mouse(e->x, e->y);
     if(e->button == 1 || e->button == 3) {
-        for(int i = 0; i < display_path.handles.size(); i++) {
-            if(Geom::L2(mouse - display_path.handles[i]) < 5) {
-                selected_handle = &display_path.handles[i];
-                old_handle_pos = mouse - display_path.handles[i];
+        std::vector<Geom::Point> handles = display_path.get_handles();
+        for(int i = 0; i < handles.size(); i++) {
+            if(Geom::L2(mouse - handles[i]) < 5) {
+                selected_handle = &handles[i];
+                old_handle_pos = mouse - handles[i];
             }
         }
         if(Geom::L2(mouse - gradient_vector) < 5) {
