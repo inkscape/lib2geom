@@ -1,26 +1,44 @@
 #include "poly-laguerre-solve.h"
 #include <iterator>
 
-std::complex<double> Laguerre_internal_complex(Poly const & p,
-                Poly const & pp,
-                Poly const & ppp,
-                double x0,
-                double tol,
-bool & quad_root) {
-    std::complex<double> a = 2*tol;
-    std::complex<double> xk = x0;
+typedef std::complex<double> cdouble;
+
+cdouble Laguerre_internal_complex(Poly const & p,
+                                  double x0,
+                                  double tol,
+                                  bool & quad_root) {
+    cdouble a = 2*tol;
+    cdouble xk = x0;
     double n = p.degree();
     quad_root = false;
+    const unsigned shuffle_rate = 10;
+    static double shuffle[] = {0, 0.5, 0.25, 0.75, 0.125, 0.375, 0.625, 0.875, 1.0};
+    unsigned shuffle_counter = 0;
     while(std::norm(a) > (tol*tol)) {
         //std::cout << "xk = " << xk << std::endl;
-        std::complex<double> px = p(xk);
-        if(std::norm(px) < tol*tol)
+        cdouble b = p.back();
+        cdouble d = 0, f = 0;
+        double err = abs(b);
+        double abx = abs(xk);
+        for(int j = p.size()-2; j >= 0; j--) {
+            f = xk*f + d;
+            d = xk*d + b;
+            b = xk*b + p[j];
+            err = abs(b) + abx*err;
+        }
+        
+        err *= 1e-7; // magic epsilon for convergence, should be computed from tol
+        
+        cdouble px = b;
+        if(abs(b) < err)
             return xk;
-        std::complex<double> G = pp(xk) / px;
-        std::complex<double> H = G*G - ppp(xk) / px;
+        //if(std::norm(px) < tol*tol)
+        //    return xk;
+        cdouble G = d / px;
+        cdouble H = G*G - f / px;
         
         //std::cout << "G = " << G << "H = " << H;
-        std::complex<double> radicand = (n - 1)*(n*H-G*G);
+        cdouble radicand = (n - 1)*(n*H-G*G);
         //assert(radicand.real() > 0);
         if(radicand.real() < 0)
             quad_root = true;
@@ -32,18 +50,23 @@ bool & quad_root) {
         //std::cout << "a = " << a << std::endl;
         a = n / (a + G);
         //std::cout << "a = " << a << std::endl;
+        if(shuffle_counter % shuffle_rate == 0)
+            ;//a *= shuffle[shuffle_counter / shuffle_rate];
         xk -= a;
+        shuffle_counter++;
+        if(shuffle_counter >= 90)
+            break;
     }
     //std::cout << "xk = " << xk << std::endl;
     return xk;
 }
 
 double Laguerre_internal(Poly const & p,
-                Poly const & pp,
-                Poly const & ppp,
-                double x0,
-                double tol,
-bool & quad_root) {
+                         Poly const & pp,
+                         Poly const & ppp,
+                         double x0,
+                         double tol,
+                         bool & quad_root) {
     double a = 2*tol;
     double xk = x0;
     double n = p.degree();
@@ -74,18 +97,15 @@ bool & quad_root) {
 }
 
 
-std::vector<std::complex<double> > 
+std::vector<cdouble > 
 Laguerre(Poly p, const double tol) {
-	std::vector<std::complex<double> > solutions;
-	//std::cout << "p = " << p << " = ";
+    std::vector<cdouble > solutions;
+    //std::cout << "p = " << p << " = ";
     while(p.size() > 1)
     {
-        Poly pp = derivative(p),
-            ppp = derivative(pp);
         double x0 = 0;
-        double tol = 1e-15;
         bool quad_root = false;
-        std::complex<double> sol = Laguerre_internal_complex(p, pp, ppp, x0, tol, quad_root);
+        cdouble sol = Laguerre_internal_complex(p, x0, tol, quad_root);
         Poly dvs;
         if(quad_root) {
             dvs.push_back((sol*conj(sol)).real());

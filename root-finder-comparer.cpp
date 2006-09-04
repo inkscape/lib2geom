@@ -136,22 +136,24 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     end_t = clock()+clock_t(0.1*CLOCKS_PER_SEC);
     iterations = 0;
     while(end_t > clock()) {
-        //Laguerre(ply);
+        Laguerre(ply);
         iterations++;
     }
+    complex_solutions = Laguerre(ply);
+    
     notify << "Laguerre poly " << ", time = " << 1./iterations << std::endl;
     
     
     end_t = clock()+clock_t(0.1*CLOCKS_PER_SEC);
     iterations = 0;
-    while(end_t > clock()) {
+    /*while(end_t > clock()) {
         total_steps = 0;
         total_subs = 0;
         solutions.resize(0);
         find_parametric_bezier_roots(&trans[0], 5, solutions, 0);
         iterations++;
     }
-    notify << "subdivision " << total_steps << ", " << total_subs <<  ", time = " << 1./iterations << std::endl;
+    notify << "subdivision " << total_steps << ", " << total_subs <<  ", time = " << 1./iterations << std::endl;*/
     for(unsigned i = 0; i < solutions.size(); i++) {
         ;//draw_cross(cr, Geom::Point(solutions[i], 3*height/4));
         

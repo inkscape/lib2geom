@@ -2,6 +2,7 @@
 #define _MULTIDIM_SBASIS
 
 #include "s-basis.h"
+#include "point.h"
 
 template <unsigned D>
 class multidim_sbasis{
@@ -40,6 +41,14 @@ operator +(multidim_sbasis<D> const & a, multidim_sbasis<D> const & b) {
     return r;
 }
 
+inline multidim_sbasis<2>
+operator +(multidim_sbasis<2> const & a, Geom::Point const & b) {
+    multidim_sbasis<2> r;
+    for(unsigned i = 0; i < 2; i++)
+        r.f[i] = a.f[i]+BezOrd(b[i]);
+    return r;
+}
+
 template <unsigned D>
 inline multidim_sbasis<D>
 operator -(multidim_sbasis<D> const & a, multidim_sbasis<D> const & b) {
@@ -63,6 +72,21 @@ inline multidim_sbasis<D>
 operator +=(multidim_sbasis<D> & a, multidim_sbasis<D> const & b) {
     for(unsigned i = 0; i < D; i++)
         a.f[i]+=b.f[i];
+    return a;
+}
+
+inline multidim_sbasis<2>
+operator +=(multidim_sbasis<2> & a, Geom::Point const & b) {
+    for(unsigned i = 0; i < 2; i++)
+        a.f[i]+= b[i];
+    return a;
+}
+
+template <unsigned D>
+inline multidim_sbasis<D>
+operator *=(multidim_sbasis<D> & a, double b) {
+    for(unsigned i = 0; i < D; i++)
+        a.f[i]*=b;
     return a;
 }
 

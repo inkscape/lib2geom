@@ -133,6 +133,27 @@ public:
     Poly() {}
     Poly(const Poly& p) : std::vector<double>(p) {}
     Poly(const double a) {push_back(a);}
+    
+public:
+    template <class T, class U>
+    void val_and_deriv(T x, U &pd) const {
+        pd[0] = back();
+        int nc = size() - 1;
+        int nd = pd.size() - 1;
+        for(unsigned j = 1; j < pd.size(); j++)
+            pd[j] = 0.0;
+        for(int i = nc -1; i >= 0; i--) {
+            int nnd = std::min(nd, nc-i);
+            for(int j = nnd; j >= 1; j--)
+                pd[j] = pd[j]*x + operator[](i);
+            pd[0] = pd[0]*x + operator[](i);
+        }
+        double cnst = 1;
+        for(int i = 2; i <= nd; i++) {
+            cnst *= i;
+            pd[i] *= cnst;
+        }
+    }
 };
 
 inline Poly operator*(double a, Poly const & b) { return b * a;}

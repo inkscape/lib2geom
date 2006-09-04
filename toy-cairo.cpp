@@ -248,7 +248,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     cairo_sub_path(cr, display_path);
     
     cairo_set_source_rgba (cr, 0.5, 0.7, 0.3, 0.8);
-    cairo_sub_path(cr, original_curve);
+    //cairo_sub_path(cr, original_curve);
     
     double dist = INFINITY;
 
@@ -610,9 +610,9 @@ int main(int argc, char **argv) {
 
     Geom::Rect r = display_path.bbox();
     
-    display_path = display_path*Geom::translate(-r.min());
-    Geom::scale sc(r.max() - r.min());
-    display_path = display_path*(sc.inverse()*Geom::scale(500,500));
+    //display_path = display_path*Geom::translate(-r.min());
+    //Geom::scale sc(r.max() - r.min());
+    //display_path = display_path*(sc.inverse()*Geom::scale(500,500));
     original_curve = display_path;
     
     gtk_init (&argc, &argv);
