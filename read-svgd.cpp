@@ -29,11 +29,11 @@ Geom::Point read_point(FILE* f) {
     return p;
 }
 
-char const SubPathOpNames[] = {'M', 'L', 'Q', 'C', 'A', 'z'};
+char const SubPathOpNames[] = {'L', 'Q', 'C', 'A'};
 void write_svgd(FILE* f, Geom::SubPath const &p) {
     //printf("size %d %d \n",  p.cmd.size(),  p.handles.size());
     for(Geom::SubPath::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
-        //printf("%c ", SubPathOpNames[iter.cmd()]);
+        printf("%c ", SubPathOpNames[iter.cmd()]);
         for(std::vector<Geom::Point>::const_iterator h(iter.begin()), e(iter.end());
             h != e; ++h) {
             Geom::Point pt(*h);
@@ -49,7 +49,7 @@ Geom::Path read_svgd(FILE* f) {
     
     while(!feof(f)) {
         eat_space(f);
-        int cmd = fgetc(f);
+        char cmd = fgetc(f);
         eat_space(f);
         switch(cmd) {
         case 'M':
@@ -64,11 +64,15 @@ Geom::Path read_svgd(FILE* f) {
         case 'Q':
             builder.push_quad(read_point(f), read_point(f));
             break;
-        case 'z':
+        case 'A':
+            builder.push_ellipse(read_point(f), read_point(f), read_point(f), read_point(f));
+            break;
+        case 'Z':
             builder.close_subpath();
             break;
         default:
-            ungetc(cmd, f);
+            //ungetc(cmd, f);
+            //This makes an infinite loop if its an invalid svgd
             break;
         }
     }
