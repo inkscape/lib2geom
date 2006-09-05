@@ -32,14 +32,20 @@ Geom::Point read_point(FILE* f) {
 char const SubPathOpNames[] = {'L', 'Q', 'C', 'A'};
 void write_svgd(FILE* f, Geom::SubPath const &p) {
     //printf("size %d %d \n",  p.cmd.size(),  p.handles.size());
+    if(f == NULL)
+        f = stderr;
+    fprintf(f, "M %g,%g ", p.initial_point()[0], p.initial_point()[1]);
+    
     for(Geom::SubPath::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
-        printf("%c ", SubPathOpNames[iter.cmd()]);
+        fprintf(f, "%c ", SubPathOpNames[iter.cmd()]);
         for(std::vector<Geom::Point>::const_iterator h(iter.begin()), e(iter.end());
             h != e; ++h) {
             Geom::Point pt(*h);
-            printf("%g,%g ", pt[0], pt[1]);
+            fprintf(f, "%g,%g ", pt[0], pt[1]);
         }
     }
+    if(p.is_closed())
+        fprintf(f, "Z ");
 }
 
 Geom::Path read_svgd(FILE* f) {
