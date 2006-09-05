@@ -27,10 +27,6 @@ void draw_line_seg(GdkWindow* w, Geom::Point a, Geom::Point b) {
     gdk_draw_line(w, plain_gc, int(a[0]), int(a[1]), int(b[0]), int(b[1]));
 }
 
-void draw_spot(GdkWindow* w, Geom::Point h) {
-    draw_line_seg(w, h, h);
-}
-
 void draw_handle(GdkWindow* w, Geom::Point h, string name = string("")) {
     int x = int(h[Geom::X]);
     int y = int(h[Geom::Y]);
@@ -43,13 +39,6 @@ void draw_handle(GdkWindow* w, Geom::Point h, string name = string("")) {
 void draw_ray(GdkWindow* w, Geom::Point h, Geom::Point d) {
     draw_line_seg(w, h, 3.*d-2.*h);
 }
-
-//line_intersection
-/*static kind
-segment_intersect(Geom::Point const &p00, Geom::Point const &p01,
-				 Geom::Point const &p10, Geom::Point const &p11,
-				 Geom::Point &result)
-*/
 
 void draw_elip(GdkWindow* w, Geom::Point *h) {
     draw_line_seg(w, h[0], h[1]);

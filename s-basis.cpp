@@ -8,10 +8,10 @@
  * evidence that this is correct.
  */
 double SBasis::tail_error(unsigned tail) const {
-    double err = 0, s = 1./(1<<tail); // rough
+    double err = 0, s = 1./(1<<(2*tail)); // rough
     for(unsigned i = tail; i < size(); i++) {
         err += (fabs((*this)[i][0]) + fabs((*this)[i][1]))*s;
-        s /= 2;
+        s /= 4;
     }
     return err;
 }

@@ -22,20 +22,7 @@ static GtkWidget *canvas;
 
 static double alpha = 1;
 
-/*
-void draw_handle(cairo_t *cr, Geom::Point h, string name = string("")) {
-    double x = h[Geom::X];
-    double y = h[Geom::Y];
-    cairo_move_to(cr, x-3, y);
-    cairo_line_to(cr, x+3, y);
-    cairo_move_to(cr, x, y-3);
-    cairo_line_to(cr, x, y+3);
-    //templayout.set_text(name);
-    //w.draw_layout(g, x, y, templayout);
-}
-*/
 void draw_rat_bez(cairo_t *cr, Geom::Point* h, double w) {
-    printf("%g\n", w);
     cairo_move_to(cr, h[0]);
     for(int i = 1; i <= 100; i++) {
         double t = i*0.01;
@@ -166,13 +153,6 @@ static gint mouse_release_event(GtkWidget* window, GdkEventButton* e, gpointer d
 static gint key_release_event(GtkWidget *widget, GdkEventKey *event, gpointer) {
     gint ret = FALSE;
     if (event->keyval == ' ') {
-        ret = TRUE;
-    } else if (event->keyval == 'l') {
-        ret = TRUE;
-    } else if ('0' <= event->keyval
-               && event->keyval <= '9') {
-        ret = TRUE;
-    } else if ('h' == event->keyval) {
         ret = TRUE;
     }
 

@@ -38,39 +38,10 @@ Geom::Point old_mouse_point;
 
 unsigned total_pieces;
 
-void draw_sb(cairo_t *cr, multidim_sbasis<2> const &B) {
-    cairo_move_to(cr, point_at(B, 0));
-    for(int ti = 1; ti <= 30; ti++) {
-        double t = (double(ti))/(30);
-        cairo_line_to(cr, point_at(B, t));
-    }
-}
-
-
-
 void draw_cb(cairo_t *cr, multidim_sbasis<2> const &B) {
     std::vector<Geom::Point> bez = sbasis2_to_bezier(B, 2);
     cairo_move_to(cr, bez[0]);
     cairo_curve_to(cr, bez[1], bez[2], bez[3]);
-}
-
-void draw_elip() {
-    Geom::Point c;
-    Geom::Point h[1];
-    line_twopoint_intersect(h[0], h[1], h[3], h[4], c);
-    
-    Geom::Point old;
-    for(int i = 0; i <= 100; i++) {
-        double t = i/100.0;
-        
-        Geom::Point n = (1-t)*h[0] + t*h[3];
-        Geom::Point c1, c2;
-        line_twopoint_intersect(2*c-n, n, h[0], h[2], c1);
-        line_twopoint_intersect(2*c-n, n, h[4], h[2], c2);
-        Geom::Point six;
-        line_twopoint_intersect(c1, h[3], c2, h[1], six);
-        old = six;
-    }
 }
 
 double sinC(double t) { return t - sin(t);}
@@ -138,38 +109,6 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     e_a_h = handles;
     //e_a_h.resize(4);
     
-/*
-    e_a_h[0] = handles[1] + a[0];
-    e_a_h[3] = handles[1] + a[1];
-    e_a_h[1] = e_a_h[0] + tanC(angle)*Geom::rot90(a[0]);
-    e_a_h[2] = e_a_h[3] - tanC(angle)*Geom::rot90(a[1]);
-    for(int i = 0; i < e_a_h.size(); i++) {
-        draw_circ(cr, e_a_h[i]);
-    }
-    for(int i = 0; i < 2; i++) {
-        draw_cross(cr, e_a_h[i*3] + Geom::rot90(a[i]));
-    }
-    
-    Geom::Point d0 = e_a_h[1] - e_a_h[0];
-    Geom::Point d1 = e_a_h[2] - e_a_h[3];
-    Geom::Point c;
-    Geom::Point tri;
-    line_twopoint_intersect(e_a_h[0], e_a_h[0]+Geom::rot90(d0), 
-                            e_a_h[3], e_a_h[3]+Geom::rot90(d1), c);
-    line_twopoint_intersect(e_a_h[0], e_a_h[1], 
-                            e_a_h[2], e_a_h[3], tri);
-    
-    cairo_save(cr);
-    cairo_move_to(cr, e_a_h[0]);
-    cairo_line_to(cr, c);
-    cairo_line_to(cr, e_a_h[3]);
-    cairo_move_to(cr, e_a_h[0]);
-    cairo_line_to(cr, tri);
-    cairo_line_to(cr, e_a_h[3]);
-    cairo_set_line_width(cr, 0.5);
-    cairo_stroke(cr);
-    cairo_restore(cr);*/
-    
     SBasis one = BezOrd(1, 1);
     multidim_sbasis<2> B;
     double alpha = M_PI;
@@ -198,18 +137,6 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     cairo_path(cr, pb.peek());
     cairo_path_handles(cr, pb.peek());
     }
-    /*for(unsigned i  = 0; i < 4; i++) {
-        std::cout << Z[i](0) << ", " <<  Z[i](1) << std::endl;
-    }
-    for(unsigned i = 0; i < 4; i++) {
-        B[0] = BezOrd(width/4, 3*width/4);
-        B[0].a.push_back(BezOrd(0,0));
-        B[1] = (SBasis)BezOrd(Hat(3*height/4)) - (height/2)*Z[i];
-        Geom::PathBuilder pb;
-        subpath_from_sbasis(pb, B, 1);
-        cairo_path(cr, pb.peek());
-        cairo_path_handles(cr, pb.peek());
-        }*/
     
     cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
     cairo_stroke(cr);
@@ -333,11 +260,6 @@ double uniform() {
 }
 
 int main(int argc, char **argv) {
-    /*handles.push_back(Geom::Point(uniform()*400, uniform()*400));
-    handles.push_back(Geom::Point(uniform()*400, uniform()*400));
-    handles.push_back(Geom::Point(uniform()*400, uniform()*400));*/
-    //handles.push_back(Geom::Point(uniform()*400, uniform()*400));
-    
     handles.push_back(Geom::Point(100, 500));
     handles.push_back(Geom::Point(100, 500 - 200*M_PI/2));
     handles.push_back(Geom::Point(500, 500 - 200*M_PI/2));
@@ -347,60 +269,48 @@ int main(int argc, char **argv) {
     gtk_init (&argc, &argv);
     
     gdk_rgb_init();
-    GtkWidget *menubox;
-    GtkWidget *menubar;
-    GtkWidget *menuitem;
-    GtkWidget *menu;
-    GtkWidget *open;
-    GtkWidget *separatormenuitem;
-    GtkWidget *quit;
-    GtkWidget *menuitem2;
-    GtkWidget *menu2;
-    GtkWidget *about;
-    GtkAccelGroup *accel_group;
-
-    accel_group = gtk_accel_group_new ();
+    GtkAccelGroup *accel_group = gtk_accel_group_new ();
  
     GtkWidget* window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 
     gtk_window_set_title(GTK_WINDOW(window), "text toy");
 
-    menubox = gtk_vbox_new (FALSE, 0);
+    GtkWidget *menubox = gtk_vbox_new (FALSE, 0);
     gtk_widget_show (menubox);
     gtk_container_add (GTK_CONTAINER (window), menubox);
 
-    menubar = gtk_menu_bar_new ();
+    GtkWidget *menubar = gtk_menu_bar_new ();
     gtk_widget_show (menubar);
     gtk_box_pack_start (GTK_BOX (menubox), menubar, FALSE, FALSE, 0);
 
-    menuitem = gtk_menu_item_new_with_mnemonic ("_File");
+    GtkWidget *menuitem = gtk_menu_item_new_with_mnemonic ("_File");
     gtk_widget_show (menuitem);
     gtk_container_add (GTK_CONTAINER (menubar), menuitem);
 
-    menu = gtk_menu_new ();
+    GtkWidget *menu = gtk_menu_new ();
     gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem), menu);
 
-    open = gtk_image_menu_item_new_from_stock ("gtk-open", accel_group);
+    GtkWidget *open = gtk_image_menu_item_new_from_stock ("gtk-open", accel_group);
     gtk_widget_show (open);
     gtk_container_add (GTK_CONTAINER (menu), open);
 
-    separatormenuitem = gtk_separator_menu_item_new ();
+    GtkWidget *separatormenuitem = gtk_separator_menu_item_new ();
     gtk_widget_show (separatormenuitem);
     gtk_container_add (GTK_CONTAINER (menu), separatormenuitem);
     gtk_widget_set_sensitive (separatormenuitem, FALSE);
 
-    quit = gtk_image_menu_item_new_from_stock ("gtk-quit", accel_group);
+    GtkWidget *quit = gtk_image_menu_item_new_from_stock ("gtk-quit", accel_group);
     gtk_widget_show (quit);
     gtk_container_add (GTK_CONTAINER (menu), quit);
 
-    menuitem2 = gtk_menu_item_new_with_mnemonic ("_Help");
+    GtkWidget *menuitem2 = gtk_menu_item_new_with_mnemonic ("_Help");
     gtk_widget_show (menuitem2);
     gtk_container_add (GTK_CONTAINER (menubar), menuitem2);
 
-    menu2 = gtk_menu_new ();
+    GtkWidget *menu2 = gtk_menu_new ();
     gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem2), menu2);
 
-    about = gtk_menu_item_new_with_mnemonic ("_About");
+    GtkWidget *about = gtk_menu_item_new_with_mnemonic ("_About");
     gtk_widget_show (about);
     gtk_container_add (GTK_CONTAINER (menu2), about);
 
@@ -456,11 +366,6 @@ int main(int argc, char **argv) {
     gtk_widget_pop_colormap();
     gtk_widget_pop_visual();
 
-    //GtkWidget *vb = gtk_vbox_new(0, 0);
-
-
-    //gtk_container_add(GTK_CONTAINER(window), vb);
-
     gtk_box_pack_start(GTK_BOX(menubox), canvas, TRUE, TRUE, 0);
 
     gtk_window_set_default_size(GTK_WINDOW(window), 600, 600);
@@ -472,8 +377,6 @@ int main(int argc, char **argv) {
     assert(GTK_WIDGET_CAN_FOCUS(canvas));
     gtk_widget_grab_focus(canvas);
     assert(gtk_widget_is_focus(canvas));
-
-    //g_idle_add((GSourceFunc)idler, canvas);
 
     gtk_main();
 

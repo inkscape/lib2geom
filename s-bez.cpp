@@ -53,7 +53,7 @@ void draw_cb(cairo_t *cr, multidim_sbasis<2> const &B) {
     cairo_curve_to(cr, bez[1], bez[2], bez[3]);
 }
 
-void draw_offset(cairo_t *cr, multidim_sbasis<2> const &B, double dist, double tol=1) {
+void draw_offset(cairo_t *cr, multidim_sbasis<2> const &B, double dist, double tol=0.1) {
     draw_handle(cr, Geom::Point(B[0].point_at(1), B[1].point_at(1)));
     
     multidim_sbasis<2> dB;
@@ -65,8 +65,11 @@ void draw_offset(cairo_t *cr, multidim_sbasis<2> const &B, double dist, double t
      * magnitude of the derivative.
      */
     double err = 0;
-    for(int i = 1; i < arc.size(); i++)
-        err += fabs(Hat(arc[i]));
+    double ss = 0.25;
+    for(int i = 1; i < arc.size(); i++) {
+        err += fabs(Hat(arc[i]))*ss;
+        ss *= 0.25;
+    }
     double le = fabs(arc[0][0]) - err;
     double re = fabs(arc[0][1]) - err;
     err /= std::max(arc[0][0], arc[0][1]);
@@ -102,12 +105,11 @@ void draw_offset(cairo_t *cr, multidim_sbasis<2> const &B, double dist, double t
         {
             Geom::PathBuilder pb;
             subpath_from_sbasis(pb, offset, tol);
-            Geom::Path p = pb.peek();//*Geom::translate(1,1);
+            Geom::Path p = pb.peek();
             total_pieces_sub += p.total_segments();
             cairo_path(cr, p);
             cairo_set_source_rgba (cr, 0.5, 0., 0, 0.5);
             cairo_stroke(cr);
-            //cairo_path_handles(cr, p);
         }
         
     }
@@ -154,16 +156,9 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
         cairo_move_to(cr, i*width/4, 0);
         cairo_line_to(cr, i*width/4, height);
     }
-    //cairo_move_to(cr, handles[0]);
-    //cairo_curve_to(cr, handles[1], handles[2], handles[3]);
-    //cairo_stroke(cr);
     
-    SBasis Sq = BezOrd(0, 0.03);
-    Sq = multiply(Sq, Sq);
     multidim_sbasis<2> B = bezier_to_sbasis<2, 3>(handles.begin());
-    //B = compose(Sq, B);
     draw_cb(cr, B);
-    //draw_sb(cr, B);
     total_pieces_sub = 0;
     total_pieces_inc = 0;
     for(int i = 4; i < 5; i++) {
@@ -178,19 +173,6 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     
     
     cairo_set_source_rgba (cr, 0., 0.5, 0, 0.8);
-    /*arc = integral(arc);
-    arc = arc - BezOrd(Hat(arc.point_at(0)));
-    for(int ti = 0; ti <= 30; ti++) {
-        double t = (double(ti))/(30);
-        double x = width*t;
-        double y = height - (arc.point_at(t));
-        if(ti)
-            cairo_line_to(cr, x, y);
-        else
-            cairo_move_to(cr, x, y);
-    }
-    cairo_stroke(cr);
-    notify << "arc length = " << arc.point_at(1) - arc.point_at(0) << std::endl;*/
     {
         PangoLayout* layout = pango_cairo_create_layout (cr);
         pango_layout_set_text(layout, 
@@ -426,11 +408,6 @@ int main(int argc, char **argv) {
     gtk_widget_pop_colormap();
     gtk_widget_pop_visual();
 
-    //GtkWidget *vb = gtk_vbox_new(0, 0);
-
-
-    //gtk_container_add(GTK_CONTAINER(window), vb);
-
     GtkWidget* pain = gtk_vpaned_new();
     gtk_widget_show (pain);
     gtk_box_pack_start(GTK_BOX(menubox), pain, TRUE, TRUE, 0);
@@ -445,8 +422,6 @@ int main(int argc, char **argv) {
     assert(GTK_WIDGET_CAN_FOCUS(canvas));
     gtk_widget_grab_focus(canvas);
     assert(gtk_widget_is_focus(canvas));
-
-    //g_idle_add((GSourceFunc)idler, canvas);
 
     gtk_main();
 

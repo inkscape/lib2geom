@@ -23,8 +23,6 @@ using std::vector;
 static GtkWidget *canvas;
 
 
-BezOrd z0(0.5,1.);
-
 std::vector<Geom::Point> handles;
 Geom::Point *selected_handle;
 Geom::Point old_handle_pos;
@@ -64,6 +62,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     double a1 = ((handles[1][0]-width/4)*2)/width;
     notify << "[" << a0 << ", " << a1 << "]";
     SBasis arc = cos(a0, a1, 1);
+    arc = integral(multiply(arc, arc));
     for(int ti = 0; ti <= 30; ti++) {
         double t = (double(ti))/(30);
         double x = width/4 + width*((1-t)*a0 + t*a1)/2;
@@ -316,11 +315,6 @@ int main(int argc, char **argv) {
     gtk_widget_pop_colormap();
     gtk_widget_pop_visual();
 
-    //GtkWidget *vb = gtk_vbox_new(0, 0);
-
-
-    //gtk_container_add(GTK_CONTAINER(window), vb);
-
     gtk_box_pack_start(GTK_BOX(menubox), canvas, TRUE, TRUE, 0);
 
     gtk_window_set_default_size(GTK_WINDOW(window), 600, 600);
@@ -332,8 +326,6 @@ int main(int argc, char **argv) {
     assert(GTK_WIDGET_CAN_FOCUS(canvas));
     gtk_widget_grab_focus(canvas);
     assert(gtk_widget_is_focus(canvas));
-
-    //g_idle_add((GSourceFunc)idler, canvas);
 
     gtk_main();
 

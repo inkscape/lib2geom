@@ -121,7 +121,6 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
 {
     cairo_t *cr = gdk_cairo_create (widget->window);
     cairo_set_line_width (cr, 1);
-    //draw (clock, cr);
 
     int width = 256;
     int height = 256;

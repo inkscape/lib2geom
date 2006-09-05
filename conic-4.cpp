@@ -38,39 +38,10 @@ Geom::Point old_mouse_point;
 
 unsigned total_pieces;
 
-void draw_sb(cairo_t *cr, multidim_sbasis<2> const &B) {
-    cairo_move_to(cr, point_at(B, 0));
-    for(int ti = 1; ti <= 30; ti++) {
-        double t = (double(ti))/(30);
-        cairo_line_to(cr, point_at(B, t));
-    }
-}
-
-
-
 void draw_cb(cairo_t *cr, multidim_sbasis<2> const &B) {
     std::vector<Geom::Point> bez = sbasis2_to_bezier(B, 2);
     cairo_move_to(cr, bez[0]);
     cairo_curve_to(cr, bez[1], bez[2], bez[3]);
-}
-
-void draw_elip() {
-    Geom::Point c;
-    Geom::Point h[1];
-    line_twopoint_intersect(h[0], h[1], h[3], h[4], c);
-    
-    Geom::Point old;
-    for(int i = 0; i <= 100; i++) {
-        double t = i/100.0;
-        
-        Geom::Point n = (1-t)*h[0] + t*h[3];
-        Geom::Point c1, c2;
-        line_twopoint_intersect(2*c-n, n, h[0], h[2], c1);
-        line_twopoint_intersect(2*c-n, n, h[4], h[2], c2);
-        Geom::Point six;
-        line_twopoint_intersect(c1, h[3], c2, h[1], six);
-        old = six;
-    }
 }
 
 double sinC(double t) { return t - sin(t);}
@@ -191,19 +162,6 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
             else 
                 cairo_move_to(cr, p);
         }
-    }
-    /*
-    for(unsigned dim  = 0; dim < 2; dim++) {
-        B[dim] = BezOrd(0,0);
-        for(unsigned i  = 0; i < 5; i++) {
-            B[dim] += handles[i][dim]*basis[i];
-        }
-        }*/
-    {
-        //Geom::PathBuilder pb;
-        //subpath_from_sbasis(pb, B, 1);
-    //cairo_path(cr, pb.peek());
-    //cairo_path_handles(cr, pb.peek());
     }
     
     cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
@@ -452,11 +410,6 @@ int main(int argc, char **argv) {
     gtk_widget_pop_colormap();
     gtk_widget_pop_visual();
 
-    //GtkWidget *vb = gtk_vbox_new(0, 0);
-
-
-    //gtk_container_add(GTK_CONTAINER(window), vb);
-
     gtk_box_pack_start(GTK_BOX(menubox), canvas, TRUE, TRUE, 0);
 
     gtk_window_set_default_size(GTK_WINDOW(window), 600, 600);
@@ -468,8 +421,6 @@ int main(int argc, char **argv) {
     assert(GTK_WIDGET_CAN_FOCUS(canvas));
     gtk_widget_grab_focus(canvas);
     assert(gtk_widget_is_focus(canvas));
-
-    //g_idle_add((GSourceFunc)idler, canvas);
 
     gtk_main();
 

@@ -14,6 +14,10 @@
 #include "point-ops.h"
 #include "point-fns.h"
 #include "interactive-bits.h"
+#include "path-builder.h"
+#include "bezier-to-sbasis.h"
+#include "sbasis-to-bezier.h"
+#include "path-cairo.h"
 
 using std::string;
 using std::vector;
@@ -21,68 +25,12 @@ using std::vector;
 static GtkWidget *canvas;
 
 
-BezOrd z0(0.5,1.);
-
 std::vector<Geom::Point> handles;
 Geom::Point *selected_handle;
 Geom::Point old_handle_pos;
 Geom::Point old_mouse_point;
 
-BezOrd segment(int l, int r, int dim) {
-    return BezOrd(handles[l][dim], handles[r][dim]);
-}
-
-SBasis quad(int l, int dim) {
-    return multiply(BezOrd(1, 0), segment(l+0, l+1, dim)) +
-        multiply(BezOrd(0, 1), segment(l+1, l+2, dim));
-}
-
 #include "multidim-sbasis.h"
-
-void draw_offset(cairo_t *cr, multidim_sbasis<2> const &B, double dist) {
-    multidim_sbasis<2> Bp;
-    for(int subdivi = 0; subdivi < 4; subdivi++) {
-        double dsubu = 1./4;
-        double subu = dsubu*subdivi;
-        for(int dim = 0; dim < 2; dim++) {
-            Bp[dim] = compose(B[dim], BezOrd(subu, dsubu+subu));
-        }
-        draw_handle(cr, Geom::Point(Bp[0].point_at(1), Bp[1].point_at(1)));
-    
-        multidim_sbasis<2> dB;
-        SBasis arc;
-        dB = derivative(Bp);
-        arc = dot(dB, dB);
-        double err = fabs(arc.point_at(0.5));
-        if(0) {
-            draw_offset(cr, Bp, dist);
-        } else {
-        
-            arc = sqrt(arc, 2);
-    
-            multidim_sbasis<3> offset;
-    
-            for(int dim = 0; dim < 2; dim++) {
-                double sgn = dim?-1:1;
-                offset[dim] = multiply(Bp[dim], arc) + dist*sgn*dB[1-dim];
-            }
-	    offset[2] = arc;
-        
-            for(int ti = 0; ti <= 30; ti++) {
-                double t = (double(ti))/(30);
-                double x = offset[0].point_at(t);
-                double y = offset[1].point_at(t);
-		double w = offset[2].point_at(t);
-		x /= w;
-		y /= w;
-                if(ti)
-                    cairo_line_to(cr, x, y);
-                else
-                    cairo_move_to(cr, x, y);
-            }
-        }
-    }
-}
 
 static gboolean
 expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
@@ -109,10 +57,16 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     }
     cairo_stroke(cr);
     
+    multidim_sbasis<2> Bz = bezier_to_sbasis<2, 3>(handles.begin());
+        Geom::PathBuilder pb;
+        subpath_from_sbasis(pb, Bz, 0.1);
+        Geom::Path p = pb.peek();
+        cairo_path(cr, p);
+    cairo_stroke(cr);
+        
     multidim_sbasis<3> B;
     for(int dim = 0; dim < 2; dim++) {
-        B[dim] = multiply(BezOrd(1, 0), BezOrd(handles[0][dim], handles[1][dim]*sqrt(2))) +
-	    multiply(BezOrd(0, 1), BezOrd(handles[1][dim]*sqrt(2), handles[2][dim]));
+        B[dim] = Bz[dim];
     }
     B[2] =  multiply(BezOrd(1, 0), BezOrd(1, sqrt(2))) +
 	    multiply(BezOrd(0, 1), BezOrd(sqrt(2), 1));
@@ -140,18 +94,15 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
             Bp[dim] = compose(B[dim], BezOrd(subu, dsubu+subu));
         }
         
+        multidim_sbasis<2> Bu;
         for(int dim = 0; dim < 2; dim++) {
-	    Bp[dim] = divide(Bp[dim], Bp[2], 1);
+	    Bu[dim] = divide(Bp[dim], Bp[2], 1);
         }
-        for(int ti = 0; ti <= 30; ti++) {
-            double t = (double(ti))/(30);
-            double x = Bp[0].point_at(t);
-            double y = Bp[1].point_at(t);
-            if(ti)
-                cairo_line_to(cr, x, y);
-            else
-                cairo_move_to(cr, x, y);
-        }    
+        
+        Geom::PathBuilder pb;
+        subpath_from_sbasis(pb, Bu, 0.1);
+        Geom::Path p = pb.peek();
+        cairo_path(cr, p);
     }
     cairo_stroke(cr);
     
@@ -230,8 +181,6 @@ static gint key_release_event(GtkWidget *widget, GdkEventKey *event, gpointer) {
     gint ret = FALSE;
     if (event->keyval == ' ') {
         ret = TRUE;
-    } else if (event->keyval == 'l') {
-        ret = TRUE;
     } else if (event->keyval == 'q') {
         exit(0);
     }
@@ -251,21 +200,6 @@ delete_event_cb(GtkWidget* window, GdkEventAny* e, gpointer data)
 }
 
 static void
-on_open_activate(GtkMenuItem *menuitem, gpointer user_data) {
-    //TODO: show open dialog, get filename
-    
-    char const *const filename = "banana.svgd";
-
-    FILE* f = fopen(filename, "r");
-    if (!f) {
-        perror(filename);
-        return;
-    }
-    
-    gtk_widget_queue_draw(canvas); // globals are probably evil
-}
-
-static void
 on_about_activate(GtkMenuItem *menuitem, gpointer user_data) {
     
 }
@@ -275,10 +209,8 @@ double uniform() {
 }
 
 int main(int argc, char **argv) {
-    handles.push_back(Geom::Point(uniform()*400, uniform()*400));
-    handles.push_back(Geom::Point(uniform()*400, uniform()*400));
-    handles.push_back(Geom::Point(uniform()*400, uniform()*400));
-    //handles.push_back(Geom::Point(uniform()*400, uniform()*400));
+    for(int i = 0; i < 4; i++)
+        handles.push_back(Geom::Point(uniform()*400, uniform()*400));
     
     gtk_init (&argc, &argv);
     
@@ -287,8 +219,6 @@ int main(int argc, char **argv) {
     GtkWidget *menubar;
     GtkWidget *menuitem;
     GtkWidget *menu;
-    GtkWidget *open;
-    GtkWidget *separatormenuitem;
     GtkWidget *quit;
     GtkWidget *menuitem2;
     GtkWidget *menu2;
@@ -316,15 +246,6 @@ int main(int argc, char **argv) {
     menu = gtk_menu_new ();
     gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem), menu);
 
-    open = gtk_image_menu_item_new_from_stock ("gtk-open", accel_group);
-    gtk_widget_show (open);
-    gtk_container_add (GTK_CONTAINER (menu), open);
-
-    separatormenuitem = gtk_separator_menu_item_new ();
-    gtk_widget_show (separatormenuitem);
-    gtk_container_add (GTK_CONTAINER (menu), separatormenuitem);
-    gtk_widget_set_sensitive (separatormenuitem, FALSE);
-
     quit = gtk_image_menu_item_new_from_stock ("gtk-quit", accel_group);
     gtk_widget_show (quit);
     gtk_container_add (GTK_CONTAINER (menu), quit);
@@ -340,9 +261,6 @@ int main(int argc, char **argv) {
     gtk_widget_show (about);
     gtk_container_add (GTK_CONTAINER (menu2), about);
 
-    g_signal_connect ((gpointer) open, "activate",
-                    G_CALLBACK (on_open_activate),
-                    NULL);
     g_signal_connect ((gpointer) quit, "activate",
                     gtk_main_quit,
                     NULL);
@@ -392,11 +310,6 @@ int main(int argc, char **argv) {
     gtk_widget_pop_colormap();
     gtk_widget_pop_visual();
 
-    //GtkWidget *vb = gtk_vbox_new(0, 0);
-
-
-    //gtk_container_add(GTK_CONTAINER(window), vb);
-
     gtk_box_pack_start(GTK_BOX(menubox), canvas, TRUE, TRUE, 0);
 
     gtk_window_set_default_size(GTK_WINDOW(window), 600, 600);
@@ -408,9 +321,7 @@ int main(int argc, char **argv) {
     assert(GTK_WIDGET_CAN_FOCUS(canvas));
     gtk_widget_grab_focus(canvas);
     assert(gtk_widget_is_focus(canvas));
-
-    //g_idle_add((GSourceFunc)idler, canvas);
-
+    
     gtk_main();
 
     return 0;
