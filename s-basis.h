@@ -288,6 +288,8 @@ SBasis cos(double a0, double a1, int k);
 
 SBasis reverse(SBasis const &s);
 
+std::vector<double> roots(SBasis const & s);
+
 /*
   Local Variables:
   mode:c++

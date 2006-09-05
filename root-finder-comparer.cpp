@@ -133,6 +133,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     }
     notify << "gsl poly " << ", time = " << 1./iterations << std::endl;
     
+#if LAGUERRE_TEST
     end_t = clock()+clock_t(0.1*CLOCKS_PER_SEC);
     iterations = 0;
     while(end_t > clock()) {
@@ -142,7 +143,19 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     complex_solutions = Laguerre(ply);
     
     notify << "Laguerre poly " << ", time = " << 1./iterations << std::endl;
+#endif    
     
+#define SBASIS_SUBDIV_TEST 1
+#if SBASIS_SUBDIV_TEST
+    end_t = clock()+clock_t(0.1*CLOCKS_PER_SEC);
+    iterations = 0;
+    while(end_t > clock()) {
+        roots( -test_sb[1] + BezOrd(3*height/4));
+        iterations++;
+    }
+    
+    notify << "sbasis subdivision " << ", time = " << 1./iterations << std::endl;
+#endif    
     
     end_t = clock()+clock_t(0.1*CLOCKS_PER_SEC);
     iterations = 0;
@@ -154,16 +167,23 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
         iterations++;
     }
     notify << "subdivision " << total_steps << ", " << total_subs <<  ", time = " << 1./iterations << std::endl;*/
+    solutions = roots( -test_sb[1] + BezOrd(3*height/4));
+    std::cout << "sbasis sub: ";
+    std::copy(solutions.begin(), solutions.end(), std::ostream_iterator<double>(std::cout, ",\t"));
+    std::cout << std::endl;
+    
     for(unsigned i = 0; i < solutions.size(); i++) {
-        ;//draw_cross(cr, Geom::Point(solutions[i], 3*height/4));
+        double x = test_sb[0](solutions[i]);
+        draw_cross(cr, Geom::Point(x, 3*height/4));
         
     }
+/*
     for(unsigned i = 0; i < complex_solutions.size(); i++) {
         if(complex_solutions[i].imag() == 0) {
             double x = test_sb[0](complex_solutions[i].real());
             draw_handle(cr, Geom::Point(x, 3*height/4));
         }
-    }
+        }*/
 
     notify << "found " << solutions.size() << "solutions at:\n";
     std::copy(solutions.begin(), solutions.end(), std::ostream_iterator<double >(notify, ","));
