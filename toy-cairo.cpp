@@ -311,20 +311,14 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     double area = 0;
     
     assert(hash_cookie == display_path);
-    notify << "Area: " << area << ", " << cntr;
-
+    notify << "Area: " << area;
+    
+    Geom::Point cntr;
     assert(hash_cookie == display_path);
     centroid(display_path, cntr, area);
     draw_circ(cr, cntr);
     cairo_move_to(cr, cntr[0], cntr[1]);
     cairo_show_text (cr, "center of the path");
-    notify << "pathwise Area: " << area << ", " << cntr << std::endl;
-
-    assert(hash_cookie == display_path);
-    centroid_sb(display_path, cntr, area);
-    cairo_move_to(cr, cntr[0], cntr[1]);
-    cairo_show_text (cr, "center of the sbasis");
-
     notify << "pathwise Area: " << area << ", " << cntr;
 
     {
@@ -404,53 +398,6 @@ static gint mouse_release_event(GtkWidget* window, GdkEventButton* e, gpointer d
 }
 
 #include "path-find-points-of-interest.h"
-#include "cubic_bez_util.h"
-#include "poly.h"
-#include "path-poly-fns.h"
-#include <gsl/gsl_integration.h>
-static double poly_length_integrating(double t, void* param) {
-    Poly* pc = (Poly*)param;
-    return hypot(pc[0].eval(t), pc[1].eval(t));
-}
-
-void write_ell(Geom::SubPath const &p) {
-    double tol = 1e-6;
-    
-    for(Geom::SubPath::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
-        Geom::SubPath::Elem pe = *iter;
-        switch(pe.op) {
-            case Geom::quadto:
-            case Geom::cubicto:
-            {
-                std::cout << "\\begin{align*}";
-                Poly B[2] = {get_parametric_poly(pe, Geom::X), get_parametric_poly(pe, Geom::Y)};
-                for(int i = 0; i < 2; i++)
-                    B[i] = derivative(B[i]);
-                
-                std::cout << "&\\int_0^1\\sqrt{(" << B[0] << ")^2 + (" << B[1] << ")^2}dt \\\\\n";
-                std::cout << "&= \\int_0^1\\sqrt{(" << B[0]*B[0]  + B[1]*B[1] << ")^2}dt \\\\\n";
-                gsl_function F;
-                gsl_integration_workspace * w 
-                    = gsl_integration_workspace_alloc (20);
-                F.function = &poly_length_integrating;
-                F.params = (void*)B;
-                double quad_result, err;
-                /* We could probably use the non adaptive code here if we removed any cusps first. */
-                int returncode = 
-                    gsl_integration_qag (&F, 0, 1, 0, tol, 20, 
-                                         GSL_INTEG_GAUSS21, w, &quad_result, &err);
-            
-                double abs_error = fabs(err);
-                
-                double result = quad_result;
-                std::cout << "&=" << result <<"\n\\end{align*}\n" << std::endl;
-                break;
-            }
-            default:
-                break;
-        }
-    }
-}
 
 static gint key_release_event(GtkWidget *widget, GdkEventKey *event, gpointer) {
     gint ret = FALSE;
@@ -462,9 +409,6 @@ static gint key_release_event(GtkWidget *widget, GdkEventKey *event, gpointer) {
         exit(0);
     } else if (event->keyval == 'r') {
         rotater = !rotater;
-    } else if (event->keyval == 'e') {
-        // print out elliptic integrals and solutions
-        write_ell(display_path);
     } else if (event->keyval == 'v') {
         evolution = !evolution;
     } else if (event->keyval == 'n') {
@@ -551,60 +495,48 @@ int main(int argc, char **argv) {
     gtk_init (&argc, &argv);
     
     gdk_rgb_init();
-    GtkWidget *menubox;
-    GtkWidget *menubar;
-    GtkWidget *menuitem;
-    GtkWidget *menu;
-    GtkWidget *open;
-    GtkWidget *separatormenuitem;
-    GtkWidget *quit;
-    GtkWidget *menuitem2;
-    GtkWidget *menu2;
-    GtkWidget *about;
-    GtkAccelGroup *accel_group;
-
-    accel_group = gtk_accel_group_new ();
+    GtkAccelGroup *accel_group = gtk_accel_group_new ();
  
     GtkWidget* window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 
     gtk_window_set_title(GTK_WINDOW(window), "text toy");
 
-    menubox = gtk_vbox_new (FALSE, 0);
+    GtkWidget *menubox = gtk_vbox_new (FALSE, 0);
     gtk_widget_show (menubox);
     gtk_container_add (GTK_CONTAINER (window), menubox);
 
-    menubar = gtk_menu_bar_new ();
+    GtkWidget *menubar = gtk_menu_bar_new ();
     gtk_widget_show (menubar);
     gtk_box_pack_start (GTK_BOX (menubox), menubar, FALSE, FALSE, 0);
 
-    menuitem = gtk_menu_item_new_with_mnemonic ("_File");
+    GtkWidget *menuitem = gtk_menu_item_new_with_mnemonic ("_File");
     gtk_widget_show (menuitem);
     gtk_container_add (GTK_CONTAINER (menubar), menuitem);
 
-    menu = gtk_menu_new ();
+    GtkWidget *menu = gtk_menu_new ();
     gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem), menu);
 
-    open = gtk_image_menu_item_new_from_stock ("gtk-open", accel_group);
+    GtkWidget *open = gtk_image_menu_item_new_from_stock ("gtk-open", accel_group);
     gtk_widget_show (open);
     gtk_container_add (GTK_CONTAINER (menu), open);
 
-    separatormenuitem = gtk_separator_menu_item_new ();
+    GtkWidget *separatormenuitem = gtk_separator_menu_item_new ();
     gtk_widget_show (separatormenuitem);
     gtk_container_add (GTK_CONTAINER (menu), separatormenuitem);
     gtk_widget_set_sensitive (separatormenuitem, FALSE);
 
-    quit = gtk_image_menu_item_new_from_stock ("gtk-quit", accel_group);
+    GtkWidget *quit = gtk_image_menu_item_new_from_stock ("gtk-quit", accel_group);
     gtk_widget_show (quit);
     gtk_container_add (GTK_CONTAINER (menu), quit);
 
-    menuitem2 = gtk_menu_item_new_with_mnemonic ("_Help");
+    GtkWidget *menuitem2 = gtk_menu_item_new_with_mnemonic ("_Help");
     gtk_widget_show (menuitem2);
     gtk_container_add (GTK_CONTAINER (menubar), menuitem2);
 
-    menu2 = gtk_menu_new ();
+    GtkWidget *menu2 = gtk_menu_new ();
     gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem2), menu2);
 
-    about = gtk_menu_item_new_with_mnemonic ("_About");
+    GtkWidget *about = gtk_menu_item_new_with_mnemonic ("_About");
     gtk_widget_show (about);
     gtk_container_add (GTK_CONTAINER (menu2), about);
 

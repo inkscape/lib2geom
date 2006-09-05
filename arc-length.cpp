@@ -42,15 +42,11 @@ double arc_length_subdividing(Geom::SubPath const & p, double tol) {
     for(Geom::SubPath::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
         switch(iter.cmd()) {
         case Geom::lineto:
-        {
             result += L2((*iter).first() - (*iter).last());
             break;
-        }
         case Geom::cubicto:
-        {
             result += cubic_length_subdividing(*iter, tol);
             break;
-        }
         default:
             break;
         }
@@ -60,45 +56,10 @@ double arc_length_subdividing(Geom::SubPath const & p, double tol) {
 }
 
 #include <gsl/gsl_integration.h>
-// int gsl_integration_qng (const gsl_function * f, double a, double b, double epsabs, double epsrel, double * result, double * abserr, size_t * neval)
-// int gsl_integration_qag (const gsl_function * f, double a, double b, double epsabs, double epsrel, size_t limit, int key, gsl_integration_workspace * workspace, double * result, double * abserr)
-/*double cubic_length_integrating(double t, void* param) {
-    Point* pc = (Point*)param;
-    Point p = t*(3*t*pc[3] + 2*pc[2]) + pc[1];
-    return sqrt(dot(p,p));
-    }*/
-
 static double poly_length_integrating(double t, void* param) {
     Poly* pc = (Poly*)param;
     return hypot(pc[0].eval(t), pc[1].eval(t));
 }
-
-/* Original cubic case
-    case Geom::cubicto:
-    {
-        Geom::Point pc[4];
-        for(int i = 0; i < 4; i++)
-            pc[i] = Point(0,0);
-            
-        cubic_bezier_poly_coeff(pe.begin(), pc);
-
-        gsl_function F;
-        gsl_integration_workspace * w 
-            = gsl_integration_workspace_alloc (20);
-        F.function = &cubic_length_integrating;
-        F.params = (void*)pc;
-        double quad_result, err;
-        // We could probably use the non adaptive code here if we removed any cusps first.
-        int returncode = 
-            gsl_integration_qag (&F, 0, t, 0, tol, 20, 
-                                 GSL_INTEG_GAUSS21, w, &quad_result, &err);
-            
-        abs_error += fabs(err);
-            
-        result += quad_result;
-        break;
-    }
-*/
 
 void arc_length_integrating(Geom::SubPath::Elem pe, double t, double tol, double &result, double &abs_error) {
     switch(pe.op) {
@@ -177,8 +138,6 @@ struct arc_length_params
     double s,tol, result, abs_error;
     double left, right;
 };
-     
-
 
 double
 arc_length (double t, void *params)
@@ -244,9 +203,6 @@ double polish_brent(double t, arc_length_params &alp) {
            //if (status == GSL_SUCCESS)
            //    printf ("Converged:\n");
      
-           /*printf ("%5d [%.7f, %.7f] %.7f %.7f\n",
-                   iter, x_lo, x_hi,
-                   t, x_hi - x_lo);*/
          }
        while (status == GSL_CONTINUE && iter < max_iter);
        return t;
@@ -299,8 +255,6 @@ Geom::SubPath::Location natural_parameterisation(Geom::SubPath const & p, double
         right = left;
         arc_length_integrating(*iter, 1.0, tol, right, abserr);
         if(right > s) {
-            //char const SubPathOpNames[] = {'M', 'L', 'Q', 'C', 'A', 'z'};
-            //printf("%c:", SubPathOpNames[(*iter).op]);
             arc_length_params alp;
             double t = (s - left) / (right - left); // a good guess
             alp.left = left;
@@ -308,13 +262,6 @@ Geom::SubPath::Location natural_parameterisation(Geom::SubPath const & p, double
             alp.tol = tol;
             alp.s = s-left;
             alp.pe = *iter;
-            /*printf("%g %g %g - ", left, s, right);
-            printf("%g %g ", alp.s, right - left);
-            printf("initial guess = %g %g\n", t, 
-                   arc_length (t, (void*)&alp));
-            printf("bounds = %g %g\n", arc_length (0, (void*)&alp), 
-                   arc_length (1, (void*)&alp));
-            */
             //t = polish(t, alp);
             t = polish_brent(t, alp);
             
