@@ -154,6 +154,7 @@ public:
     
     unsigned total_segments() const;
     friend class PathBuilder;
+    template <class T> friend SubPath operator*(SubPath const &p, T const &m);
 };
 
 inline bool operator==(SubPath::HashCookie a, SubPath::HashCookie b) {
@@ -196,6 +197,7 @@ private:
     std::vector<SubPath> _subpaths;
 
     friend class PathBuilder;
+    template <class T> friend Path operator*(Path const &p, T const &m);
 };
 
 inline bool operator!=(const SubPath::ConstIter &a, const SubPath::ConstIter &b) 
@@ -210,10 +212,9 @@ inline ptrdiff_t operator-(const SubPath::ConstIter &a, const SubPath::ConstIter
 //SubPath operator * (SubPath, Matrix);
 
 template <class T> SubPath operator*(SubPath const &p, T const &m) {
-    SubPath pr = SubPath(p);
-    std::vector<Point> handles = pr.get_handles();
-    for(int i = 0; i < handles.size(); i++)
-        handles[i] = handles[i] * m;
+    SubPath pr(p);
+    for(int i = 0; i < pr.handles.size(); i++)
+        pr.handles[i] = pr.handles[i] * m;
     return pr;
 }
 

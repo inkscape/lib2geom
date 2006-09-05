@@ -5,6 +5,7 @@
 Geom::Point read_point(std::FILE* f);
 
 void write_svgd(std::FILE* f, Geom::SubPath const &p);
+void write_svgd(std::FILE* f, Geom::Path const &p);
 
 Geom::Path read_svgd(std::FILE* f);
 

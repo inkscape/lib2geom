@@ -48,6 +48,12 @@ void write_svgd(FILE* f, Geom::SubPath const &p) {
         fprintf(f, "Z ");
 }
 
+void write_svgd(FILE* f, Geom::Path const &p) {
+    for(Geom::Path::const_iterator it = p.begin(); it != p.end(); it++) {
+        write_svgd(f, *it);
+    }
+}
+
 Geom::Path read_svgd(FILE* f) {
     assert(f);
 

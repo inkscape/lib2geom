@@ -43,62 +43,7 @@ Geom::SubPath original_curve;
 static Geom::Point old_handle_pos;
 static Geom::Point old_mouse_point;
 
-//line_intersection
-/*static kind
-segment_intersect(Geom::Point const &p00, Geom::Point const &p01,
-				 Geom::Point const &p10, Geom::Point const &p11,
-				 Geom::Point &result)
-*/
-
-void draw_elip(cairo_t *cr, Geom::Point *h) {
-    draw_line_seg(cr, h[0], h[1]);
-    draw_line_seg(cr, h[3], h[4]);
-    draw_line_seg(cr, h[3], h[2]);
-    draw_line_seg(cr, h[2], h[1]);
-
-    Geom::Point c;
-    line_twopoint_intersect(h[0], h[1], h[3], h[4], c);
-    draw_handle(cr, c);
-    
-    Geom::Point old;
-    for(int i = 0; i <= 100; i++) {
-        double t = i/100.0;
-        
-        Geom::Point n = (1-t)*h[0] + t*h[3];
-        Geom::Point c1, c2;
-        line_twopoint_intersect(2*c-n, n, h[0], h[2], c1);
-        line_twopoint_intersect(2*c-n, n, h[4], h[2], c2);
-        Geom::Point six;
-        line_twopoint_intersect(c1, h[3], c2, h[1], six);
-        if(i)
-            draw_line_seg(cr, old, six);
-        old = six;
-    }
-}
-
-/*void draw_path(cairo_t *cr, Geom::SubPath const & p) {
-    path_to_polyline pl(p, 1);
-    
-    Geom::Point old(pl.handles[0]);
-    
-    for(unsigned i = 1; i < pl.handles.size(); i++) {
-        Geom::Point p(pl.handles[i]);
-        draw_line_seg(cr, old, p);
-        old = p;
-    }
-    
-    }*/
-
 #include "centroid.h"
-
-Geom::Point path_centroid_polyline(Geom::SubPath const & p, double &area) {
-    //path_to_polyline pl(p, 1);
-    Geom::Point centr;
-    //TODO: why is this commented out? - botty
-    //Geom::centroid(pl.handles,  centr, area);
-    
-    return centr;
-}
 
 Geom::SubPath::Location param(Geom::SubPath const & p, double t) {
     double T = t*(p.size()-1);
@@ -364,20 +309,10 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
         cairo_restore(cr);
     }
     double area = 0;
-    Geom::Point cntr = path_centroid_polyline(display_path, area);
-    draw_circ(cr, cntr);
-    cairo_move_to(cr, cntr[0], cntr[1]);
-    cairo_show_text (cr, "center of the universe");
     
     assert(hash_cookie == display_path);
     notify << "Area: " << area << ", " << cntr;
 
-/*    dcentroid(display_path, cntr);
-    draw_circ(cr, cntr);
-    cairo_move_to(cr, cntr[0], cntr[1]);
-    cairo_show_text (cr, "center of the stroke");
-    notify << "path centre: " << cntr;
-*/
     assert(hash_cookie == display_path);
     centroid(display_path, cntr, area);
     draw_circ(cr, cntr);
@@ -405,13 +340,11 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     
     assert(hash_cookie == display_path);
     
-    double x, y;
-    x = widget->allocation.x + widget->allocation.width / 2;
-    y = widget->allocation.y + widget->allocation.height / 2;
+    double x = widget->allocation.x + widget->allocation.width / 2;
+    double y = widget->allocation.y + widget->allocation.height / 2;
 
-    double radius;
-    radius = std::min (widget->allocation.width / 2,
-                       widget->allocation.height / 2) - 5;
+    double radius = std::min (widget->allocation.width / 2,
+                              widget->allocation.height / 2) - 5;
 
     cairo_destroy (cr);
     
@@ -610,9 +543,9 @@ int main(int argc, char **argv) {
 
     Geom::Rect r = display_path.bbox();
     
-    //display_path = display_path*Geom::translate(-r.min());
-    //Geom::scale sc(r.max() - r.min());
-    //display_path = display_path*(sc.inverse()*Geom::scale(500,500));
+    display_path = display_path*Geom::translate(-r.min());
+    Geom::scale sc(r.max() - r.min());
+    display_path = display_path*(sc.inverse()*Geom::scale(500,500));
     original_curve = display_path;
     
     gtk_init (&argc, &argv);
