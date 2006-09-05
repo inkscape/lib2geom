@@ -104,8 +104,19 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
         iterations++;
     }
     notify << "original time = " << 1./iterations << std::endl;
+    std::cout << "original: ";
+    std::copy(solutions.begin(), solutions.end(), std::ostream_iterator<double>(std::cout, ",\t"));
+    std::cout << std::endl;
     
     multidim_sbasis<2> test_sb = bezier_to_sbasis<2, 5>(handles.begin());
+    double lo, hi;
+    bounds(test_sb[1], lo, hi);
+    cairo_move_to(cr, test_sb[0](0), lo);
+    cairo_line_to(cr, test_sb[0](1), lo);
+    cairo_move_to(cr, test_sb[0](0), hi);
+    cairo_line_to(cr, test_sb[0](1), hi);
+    cairo_stroke(cr);
+    notify << "sb bounds = "<<lo << ", " <<hi<<std::endl;
     Poly ply = sbasis_to_poly(test_sb[1]);
     ply = Poly(3*height/4) - ply;
     

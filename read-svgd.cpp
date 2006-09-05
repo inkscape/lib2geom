@@ -58,11 +58,18 @@ Geom::Path read_svgd(FILE* f) {
         case 'L':
             builder.push_line(read_point(f));
             break;
-        case 'C':
-            builder.push_cubic(read_point(f), read_point(f), read_point(f));
+        case 'C': {
+            Geom::Point p0 = read_point(f);
+            Geom::Point p1 = read_point(f);
+            Geom::Point p2 = read_point(f);
+            builder.push_cubic(p0, p1, p2);
+        }
             break;
-        case 'Q':
-            builder.push_quad(read_point(f), read_point(f));
+        case 'Q': {
+            Geom::Point p0 = read_point(f);
+            Geom::Point p1 = read_point(f);
+            builder.push_quad(p0, p1);
+        }
             break;
         case 'A':
             builder.push_ellipse(read_point(f), read_point(f), read_point(f), read_point(f));
@@ -76,7 +83,6 @@ Geom::Path read_svgd(FILE* f) {
             break;
         }
     }
-
     return builder.peek();
 }
 
