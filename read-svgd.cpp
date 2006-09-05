@@ -72,6 +72,7 @@ Geom::Path read_svgd(FILE* f) {
         }
             break;
         case 'A':
+            // borked
             builder.push_ellipse(read_point(f), read_point(f), read_point(f), read_point(f));
             break;
         case 'Z':
