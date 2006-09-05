@@ -56,35 +56,97 @@ Geom::Path read_svgd(FILE* f) {
             continue;
         else if ((ch >= '0' and ch <= '9') or ch == '-' or ch == '.' or ch == '+') {
             ungetc(ch, f);
+            //TODO: use something else, perhaps.  Unless the svg path number spec matches scan.
             int nflts = fscanf(f, "%lf", &nums[cur]);
             cur++;
         }
         
         switch(mode) {
+        case 'm':
+            if(cur >= 2) {
+                builder.start_subpath_rel(point(nums[0], nums[1]));
+                cur = 0;
+            }
+            break;
         case 'M':
-            if(cur == 2) {
+            if(cur >= 2) {
                 builder.start_subpath(point(nums[0], nums[1]));
                 cur = 0;
             }
             break;
+        case 'l':
+            if(cur >= 2) {
+                builder.push_line_rel(point(nums[0], nums[1]));
+                cur = 0;
+            }
+            break;
         case 'L':
-            if(cur == 2) {
+            if(cur >= 2) {
                 builder.push_line(point(nums[0], nums[1]));
                 cur = 0;
             }
             break;
+        case 'h':
+            if(cur >= 1) {
+                builder.push_horizontal_rel(nums[0]);
+                cur = 0;
+            }
+            break;
+        case 'H':
+            if(cur >= 1) {
+                builder.push_horizontal(nums[0]);
+                cur = 0;
+            }
+            break;
+        case 'v':
+            if(cur >= 1) {
+                builder.push_vertical_rel(nums[0]);
+                cur = 0;
+            }
+            break;
+        case 'V':
+            if(cur >= 1) {
+                builder.push_vertical(nums[0]);
+                cur = 0;
+            }
+            break;
+        case 'c':
+            if(cur >= 6) {
+                builder.push_cubic_rel(point(nums[0], nums[1]), point(nums[2], nums[3]), point(nums[4], nums[5]));
+                cur = 0;
+            }
+            break;
         case 'C':
-            if(cur == 6) {
+            if(cur >= 6) {
                 builder.push_cubic(point(nums[0], nums[1]), point(nums[2], nums[3]), point(nums[4], nums[5]));
                 cur = 0;
             }
             break;
+        case 'q':
+            if(cur >= 4) {
+                builder.push_quad_rel(point(nums[0], nums[1]), point(nums[2], nums[3]));
+                cur = 0;
+            }
+            break;
         case 'Q':
-            if(cur == 4) {
+            if(cur >= 4) {
                 builder.push_quad(point(nums[0], nums[1]), point(nums[2], nums[3]));
                 cur = 0;
             }
             break;
+        case 'a':
+            if(cur >= 7) {
+                //TODO
+                cur = 0;
+            }
+            break;
+        case 'A':
+            if(cur >= 7) {
+                builder.push_ellipse(point(nums[0], nums[1]), nums[2], nums[3] > 0, nums[4] > 0, point(nums[5], nums[6]));
+                cur = 0;
+            }
+            break;
+        case 'z':
         case 'Z':
             builder.close_subpath();
             break;
