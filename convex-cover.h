@@ -24,6 +24,12 @@ public:
     void merge(Point p);
     bool contains_point(Point p);
     
+
+public:
+    ConvexHull() {}
+    ConvexHull::ConvexHull(std::vector<Point> const & points);
+    
+public:
     /** Is the convex hull clockwise?  We use the definition of clockwise from point.h
     **/
     bool is_clockwise() const;
@@ -65,7 +71,6 @@ ConvexHull merge(ConvexHull a, ConvexHull b);
 template <class T> ConvexHull operator*(ConvexHull const &p, T const &m) {
     ConvexHull pr;
     
-    pr.cmd = p.cmd;
     pr.boundary.reserve(p.boundary.size());
     
     for(unsigned i = 0; i < p.boundary.size(); i++) {

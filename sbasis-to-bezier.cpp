@@ -29,14 +29,14 @@ double W(unsigned n, unsigned j, unsigned k) {
         choose<double>(n,j);
 }
 
-// this produces a degree k bezier from a degree k sbasis
+// this produces a degree 2q bezier from a degree k sbasis
 std::vector<double>
 sbasis_to_bezier(SBasis const &B, unsigned q) {
     std::vector<double> result;
-    if(q > B.size())
-        q = B.size();
     unsigned n = q*2;
     result.resize(n, 0);
+    if(q > B.size())
+        q = B.size();
     n--;
     for(int k = 0; k < q; k++) {
         for(int j = 0; j <= n-k; j++) {
@@ -47,16 +47,17 @@ sbasis_to_bezier(SBasis const &B, unsigned q) {
     return result;
 }
 
-// this produces a degree k bezier from a degree q sbasis
+// this produces a 2q point bezier from a degree q sbasis
 std::vector<Geom::Point>
-sbasis_to_bezier(multidim_sbasis<2> const &B, unsigned q) {
+sbasis_to_bezier(multidim_sbasis<2> const &B, unsigned qq) {
     std::vector<Geom::Point> result;
-    if(q > B.size())
-        q = B.size();
-    unsigned n = q*2;
+    unsigned n = qq*2;
     result.resize(n, Geom::Point(0,0));
     n--;
     for(int dim = 0; dim < 2; dim++) {
+        unsigned q = qq;
+        if(q > B[dim].size())
+            q = B[dim].size();
         for(int k = 0; k < q; k++) {
             for(int j = 0; j <= n-k; j++) {
                 result[j][dim] += (W(n, j, k)*B[dim][k][0] +

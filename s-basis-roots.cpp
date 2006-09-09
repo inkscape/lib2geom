@@ -4,15 +4,17 @@
 
 void bounds(SBasis const & s,
             double &lo, double &hi) {
-    lo = std::min(s[0][0], s[0][1]);
-    hi = std::max(s[0][0], s[0][1]);
     double ss = 0.25;
+    double mid = s(0.5);
+    lo = hi = mid;
     for(unsigned i = 1; i < s.size(); i++) {
         double b = fabs(Hat(s[i]))*ss;
         lo -= b;
         hi += b;
         ss *= 0.25;
     }
+    lo = std::min(std::min(lo, s[0][1]),s[0][0]);
+    hi = std::max(std::max(hi, s[0][0]), s[0][1]);
 }
 
 #if 0

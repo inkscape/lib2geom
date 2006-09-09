@@ -26,7 +26,7 @@ public:
     double tail_error(unsigned tail) const {
         double s = f[0].tail_error(tail);
         for(unsigned i = 1; i < D; i++)
-            s = std::max(s, f[0].tail_error(tail));
+            s = std::max(s, f[i].tail_error(tail));
         return s;
         
     }

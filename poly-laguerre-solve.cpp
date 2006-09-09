@@ -106,14 +106,15 @@ Laguerre(Poly p, const double tol) {
         double x0 = 0;
         bool quad_root = false;
         cdouble sol = Laguerre_internal_complex(p, x0, tol, quad_root);
+        //if(abs(sol) > 1) break;
         Poly dvs;
         if(quad_root) {
             dvs.push_back((sol*conj(sol)).real());
             dvs.push_back(-(sol + conj(sol)).real());
             dvs.push_back(1.0);
             //std::cout << "(" <<  dvs << ")";
-	    solutions.push_back(sol);
-	    solutions.push_back(conj(sol));
+	    //solutions.push_back(sol);
+	    //solutions.push_back(conj(sol));
         } else {
             //std::cout << sol << std::endl;
             dvs.push_back(-sol.real());
