@@ -27,7 +27,7 @@ public:
 
 public:
     ConvexHull() {}
-    ConvexHull::ConvexHull(std::vector<Point> const & points);
+    ConvexHull(std::vector<Point> const & points);
     
 public:
     /** Is the convex hull clockwise?  We use the definition of clockwise from point.h
