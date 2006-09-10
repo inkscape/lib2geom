@@ -138,8 +138,8 @@ double fn2 (double x, void * params)
     l = integral(multiply(l, l));
     return l[0][1] - l[0][0];
 }
-     
 
+vector<Geom::Point> zero_handles;
 
 static gboolean
 expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
@@ -198,9 +198,9 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
                 Geom::Point p((2*(iu+ui)/(2.*ui+1)+1),
                               (2*(iv+vi)/(2.*vi+1)+1));
                 if(ui == 0 && vi == 0) {
-                    if(iu == 0 && iv == 0)
-                        p[1] -= 0.1;
-                    if(iu == 1 && iv == 1)
+                    if(iu == iv)
+                        p[1] -= 0.1*(1+iv*2);
+                    if(iu != iv)
                         p[1] += 0.1;
                     //if(vi == sb2.vs - 1)
                     //    p[1] += 0.1;
@@ -234,23 +234,36 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     draw_sb2d(cr, sb2, dir*0.1, width);
     cairo_set_source_rgba (cr, 0., 0., 0, 0.7);
     cairo_stroke(cr);
-/*
+    zero_handles.clear();
     for(int ui = 0; ui <= 1; ui++) {
         SBasis sb = extract_u(sb2, ui);
         vector<double> r = roots(sb);
-        std::cout << "sbasis sub (%d, 0): ";
-        std::copy(r.begin(), r.end(), std::ostream_iterator<double>(std::cout, ",\t"));
-        std::cout << std::endl;
-        
+        notify << "sbasis sub (%d, 0): ";
+        std::copy(r.begin(), r.end(), std::ostream_iterator<double>(notify, ",\t"));
+        notify << std::endl;
+        for(int i = 0; i < r.size(); i++) {
+            zero_handles.push_back(Geom::Point(ui, r[i]));
+        }
     }
     for(int vi = 0; vi <= 1; vi++) {
         SBasis sb = extract_v(sb2, vi);
         vector<double> r = roots(sb);
-        std::cout << "sbasis sub (0, %d): ";
-        std::copy(r.begin(), r.end(), std::ostream_iterator<double>(std::cout, ",\t"));
-        std::cout << std::endl;
+        notify << "sbasis sub (0, %d): ";
+        std::copy(r.begin(), r.end(), std::ostream_iterator<double>(notify, ",\t"));
+        notify << std::endl;
+        for(int i = 0; i < r.size(); i++) {
+            zero_handles.push_back(Geom::Point(r[i], vi));
+        }
     }
-*/
+        std::copy(zero_handles.begin(), zero_handles.end(), std::ostream_iterator<Geom::Point>(notify, ",\t"));
+    
+    for(int i = 0; i < zero_handles.size(); i++) {
+        Geom::Point p = zero_handles[i];
+        zero_handles[i] = p = p*(width/2) + Geom::Point(width/4., width/4.);
+        draw_cross(cr, p);
+        cairo_stroke(cr);
+    }
+    
     multidim_sbasis<2> B = bezier_to_sbasis<2, 1>(handles.begin() + surface_handles+1);
     B += Geom::Point(-width/4., -width/4.);
     B *= (2./width);
@@ -402,7 +415,11 @@ static gint mouse_motion_event(GtkWidget* widget, GdkEventMotion* e, gpointer da
     if(e->state & (GDK_BUTTON1_MASK | GDK_BUTTON3_MASK)) {
         if(selected_handle) {
             *selected_handle = mouse - old_handle_pos;
-            
+            for(int i = 0; i < zero_handles.size(); i++) {
+                if(Geom::L2(*selected_handle - zero_handles[i]) < 5) {
+                    *selected_handle = zero_handles[i];
+                }
+            }
         }
         handle_mouse(widget);
     }
