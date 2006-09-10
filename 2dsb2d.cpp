@@ -179,16 +179,11 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
                         handles.push_back(Geom::Point((2*(iu+ui)/(2.*ui+1)+1)*width/4.,
                                                       (2*(iv+vi)/(2.*vi+1)+1)*width/4.));
         
-        handles.push_back(Geom::Point(3*width/4.,
-                                      width/4.) + 30*dir);
         for(int i = 0; i < 4; i++)
             handles.push_back(Geom::Point(uniform()*width/4.,
                                           uniform()*width/4.));
     
     }
-    dir = (handles[surface_handles] - Geom::Point(3*width/4., width/4.)) / 30;
-    cairo_move_to(cr, 3*width/4., width/4.);
-    cairo_line_to(cr, handles[surface_handles]);
     
     for(int dim = 0; dim < 2; dim++) {
         Geom::Point dir(0,0);
@@ -209,7 +204,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
                     }
     }
     draw_sb2d(cr, sb2, dir*0.1, width);
-    multidim_sbasis<2> B = bezier_to_sbasis<2, 3>(handles.begin() + surface_handles+1);
+    multidim_sbasis<2> B = bezier_to_sbasis<2, 3>(handles.begin() + surface_handles);
     draw_cb(cr, B);
     cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
     cairo_stroke(cr);
