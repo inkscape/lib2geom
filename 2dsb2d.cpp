@@ -95,17 +95,15 @@ compose(SBasis2d const &fg, multidim_sbasis<2> p) {
     SBasis ss[2];
     for(int dim = 0; dim < 2; dim++) 
         s[dim] = multiply(p[dim], (BezOrd(1) - p[dim]));
-    B = compose(fg[0], p);
-    ss[0] = BezOrd(1);
+    ss[1] = BezOrd(1);
     for(int vi = 0; vi < fg.vs; vi++) {
-        ss[1] = ss[0];
+        ss[0] = ss[1];
         for(int ui = 0; ui < fg.us; ui++) {
             unsigned i = ui + vi*fg.us;
-            if(vi || ui)
-                B += multiply(ss[1], compose(fg[i], p));
-            ss[1] = multiply(ss[1], s[1]);
+            B += multiply(ss[0], compose(fg[i], p));
+            ss[0] = multiply(ss[0], s[0]);
         }
-        ss[0] = multiply(ss[0], s[0]);
+        ss[1] = multiply(ss[1], s[1]);
     }
     return B;
 }
@@ -205,6 +203,8 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
                     }
     }
     draw_sb2d(cr, sb2, dir*0.1, width);
+    cairo_set_source_rgba (cr, 0., 0., 0, 0.5);
+    cairo_stroke(cr);
     multidim_sbasis<2> B = bezier_to_sbasis<2, 3>(handles.begin() + surface_handles);
     draw_cb(cr, B);
     cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
