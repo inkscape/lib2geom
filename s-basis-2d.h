@@ -3,6 +3,8 @@
 #include <vector>
 #include <cassert>
 #include <algorithm>
+#include "s-basis.h"
+#include "multidim-sbasis.h"
 
 class BezOrd2d{
 public:
@@ -42,13 +44,13 @@ public:
     }
 };
 
-BezOrd extract_u(BezOrd2d const &a, double u) {
+inline BezOrd extract_u(BezOrd2d const &a, double u) {
     return BezOrd(a[0]*(1-u) +
                   a[1]*u,
                   a[2]*(1-u) +
                   a[3]*u);
 }
-BezOrd extract_v(BezOrd2d const &a, double v) {
+inline BezOrd extract_v(BezOrd2d const &a, double v) {
     return BezOrd(a[0]*(1-v) +
                   a[2]*v,
                   a[1]*(1-v) +
@@ -167,7 +169,7 @@ inline SBasis2d operator-(const SBasis2d& p) {
     return result;
 }
 
-SBasis2d operator+(const SBasis2d& a, const SBasis2d& b) {
+inline SBasis2d operator+(const SBasis2d& a, const SBasis2d& b) {
     SBasis2d result;
     result.us = std::max(a.us, b.us);
     result.vs = std::max(a.vs, b.vs);
@@ -187,7 +189,7 @@ SBasis2d operator+(const SBasis2d& a, const SBasis2d& b) {
     return result;
 }
 
-SBasis2d operator-(const SBasis2d& a, const SBasis2d& b) {
+inline SBasis2d operator-(const SBasis2d& a, const SBasis2d& b) {
     SBasis2d result;
     result.us = std::max(a.us, b.us);
     result.vs = std::max(a.vs, b.vs);
@@ -265,7 +267,6 @@ SBasis2d shift(BezOrd2d const &a, int sh);
 SBasis2d truncate(SBasis2d const &a, unsigned terms);
 
 SBasis2d multiply(SBasis2d const &a, SBasis2d const &b);
-SBasis2d compose(SBasis2d const &a, SBasis2d const &b);
 
 SBasis2d integral(SBasis2d const &c);
 
@@ -284,39 +285,17 @@ SBasis2d compose(SBasis2d const &a, SBasis2d const &b);
 SBasis2d compose(SBasis2d const &a, SBasis2d const &b, unsigned k);
 SBasis2d inverse(SBasis2d const &a, int k);
 
-SBasis extract_u(SBasis2d const &a, double u) {
-    SBasis sb;
-    double s = u*(1-u);
-    
-    for(unsigned vi = 0; vi < a.vs; vi++) {
-        double sk = 1;
-        BezOrd bo(0,0);
-        for(unsigned ui = 0; ui < a.us; ui++) {
-            bo += sk*(extract_u(a.index(ui, vi), u));
-            sk *= s;
-        }
-        sb.push_back(bo);
-    }
-    
-    return sb;
-}
+// these two should probably be replaced with compose
+SBasis extract_u(SBasis2d const &a, double u);
+SBasis extract_v(SBasis2d const &a, double v);
 
-SBasis extract_v(SBasis2d const &a, double v) {
-    SBasis sb;
-    double s = v*(1-v);
-    
-    for(unsigned ui = 0; ui < a.us; ui++) {
-        double sk = 1;
-        BezOrd bo(0,0);
-        for(unsigned vi = 0; vi < a.vs; vi++) {
-            bo += sk*(extract_v(a.index(ui, vi), v));
-            sk *= s;
-        }
-        sb.push_back(bo);
-    }
-    
-    return sb;
-}
+SBasis compose(BezOrd2d const &a, multidim_sbasis<2> p);
+
+SBasis 
+compose(SBasis2d const &fg, multidim_sbasis<2> p);
+
+multidim_sbasis<2> 
+compose(std::vector<SBasis2d> const &fg, multidim_sbasis<2> p);
 
 inline std::ostream &operator<< (std::ostream &out_file, const BezOrd2d &bo) {
     out_file << "{" << bo[0] << ", " << bo[1] << "}, ";

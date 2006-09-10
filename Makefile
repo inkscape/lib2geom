@@ -12,7 +12,8 @@ CPPFLAGS=-I.
 TARGETOBJS=arc-bez.o conic.o one-D.o poly-test.o rat-bez.o s-bez.o \
 	toy-cairo.o unit-test-sbasis.o clothoid.o choose_test.o \
 	conic-3.o root-finder-comparer.o conic-4.o \
-	fitter.o quad-test.o sb2d.o sb1d.o convex-test.o 2dsb2d.o
+	fitter.o quad-test.o sb2d.o sb1d.o convex-test.o 2dsb2d.o \
+	contour.o
 BADTARGETOBJS=bspline.o conic-2.o ode-toy-cairo.o toy.o
 
 LIBOBJS=arc-length.o centroid.o geom.o matrix-rotate-ops.o \
@@ -22,7 +23,7 @@ LIBOBJS=arc-length.o centroid.o geom.o matrix-rotate-ops.o \
 	path.o point-fns.o poly.o read-svgd.o rect.o rotate-fns.o s-basis.o \
 	sbasis-poly.o types.o sbasis-to-bezier.o s-basis-roots.o \
 	solve-bezier-parametric.o solve-bezier-one-d.o poly-dk-solve.o \
-	poly-laguerre-solve.o convex-cover.o
+	poly-laguerre-solve.o convex-cover.o s-basis-2d.o
 
 EXTRAOBJS=interactive-bits.o path-cairo.o $(TARGETOBJS)
 

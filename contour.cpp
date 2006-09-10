@@ -25,6 +25,12 @@
 #include "translate-ops.h"
 #include "s-basis-2d.h"
 #include "path-builder.h"
+#include <gsl/gsl_errno.h>
+#include <gsl/gsl_math.h>
+#include <gsl/gsl_min.h>
+#include <gsl/gsl_vector.h>
+#include <gsl/gsl_multimin.h>
+     
 
 using std::string;
 using std::vector;
@@ -50,12 +56,12 @@ void draw_cb(cairo_t *cr, multidim_sbasis<2> const &B) {
     cairo_path(cr, pb.peek());
 }
 
-void draw_sb2d(cairo_t* cr, vector<SBasis2d> const &sb2, Geom::Point dir, double width) {
+void draw_sb2d(cairo_t* cr, SBasis2d const &sb2, Geom::Point dir, double width) {
     multidim_sbasis<2> B;
     for(int ui = 0; ui <= 10; ui++) {
         double u = ui/10.;
-        B[0] = extract_u(sb2[0], u);// + BezOrd(u);
-        B[1] = extract_u(sb2[1], u);
+        B[0] = dir[0]*extract_u(sb2, u) + BezOrd(u);
+        B[1] = SBasis(BezOrd(0,1))+dir[1]*extract_u(sb2, u);
         for(unsigned i = 0; i < 2; i ++) {
             B[i] = (width/2)*B[i] + BezOrd(width/4);
         }
@@ -63,14 +69,77 @@ void draw_sb2d(cairo_t* cr, vector<SBasis2d> const &sb2, Geom::Point dir, double
     }
     for(int vi = 0; vi <= 10; vi++) {
         double v = vi/10.;
-        B[1] = extract_v(sb2[1], v);// + BezOrd(v);
-        B[0] = extract_v(sb2[0], v);
+        B[1] = dir[1]*extract_v(sb2, v) + BezOrd(v);
+        B[0] = SBasis(BezOrd(0,1)) + dir[0]*extract_v(sb2, v);
         for(unsigned i = 0; i < 2; i ++) {
             B[i] = (width/2)*B[i] + BezOrd(width/4);
         }
         draw_cb(cr, B);
     }
 }
+
+class curve_min{
+public:
+    multidim_sbasis<2> &B;
+    multidim_sbasis<2> out;
+    SBasis2d& sb2;
+    unsigned n;
+    unsigned par;
+    curve_min(multidim_sbasis<2> &B,
+              SBasis2d& sb2) :B(B), sb2(sb2) {}
+};
+
+double
+my_f (const gsl_vector *v, void *params)
+{
+    curve_min &p = *(curve_min*)params;
+    for(int dim = 0; dim < 2; dim++) {
+        p.out[dim] = p.B[dim];
+        double s = 1;
+        for(int i = 0; i < p.n; i++) {
+            p.out[dim] += shift(BezOrd(gsl_vector_get(v, 2*dim + 2*i)*s,
+                                       gsl_vector_get(v, 2*dim + 2*i + 1)*s), i+1);
+            s *= 0.25;
+        }
+    }
+    SBasis l = compose(p.sb2, p.out);
+    l = integral(multiply(l, l));
+    return l[0][1] - l[0][0];
+}
+
+double fn1 (double x, void * params)
+{
+    curve_min &p = *(curve_min*)params;
+    if((p.par &1) == 0)
+        for(int dim = 0; dim < 2; dim++) {
+            p.out[dim] = p.B[dim] + shift(BezOrd(x,0), p.par/2 + 1);
+        }
+    else 
+        for(int dim = 0; dim < 2; dim++) {
+            p.out[dim] = p.B[dim] + shift(BezOrd(0,x), p.par/2 + 1);
+        }
+    SBasis l = compose(p.sb2, p.out);
+    l = integral(multiply(l, l));
+    return l[0][1] - l[0][0];
+}
+
+double fn2 (double x, void * params)
+{
+    curve_min &p = *(curve_min*)params;
+    if((p.par &1) == 0)
+        for(int dim = 0; dim < 2; dim++) {
+            p.out[dim] = p.B[dim] + shift(BezOrd(x), p.par/2 + 1);
+        }
+    else 
+        for(int dim = 0; dim < 2; dim++) {
+            p.out[dim] = p.B[dim] + shift(BezOrd(Hat(0), Tri(x)), p.par/2 + 1);
+        }
+    SBasis l = compose(p.sb2, p.out);
+    l = integral(multiply(l, l));
+    return l[0][1] - l[0][0];
+}
+     
+
 
 static gboolean
 expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
@@ -113,68 +182,192 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
         cairo_move_to(cr, i*width/4, 0);
         cairo_line_to(cr, i*width/4, width);
     }
-    vector<SBasis2d> sb2(2);
-    for(int dim = 0; dim < 2; dim++) {
-        sb2[dim].us = 2;
-        sb2[dim].vs = 2;
-        const int depth = sb2[dim].us*sb2[dim].vs;
-        const int surface_handles = 4*depth;
-        sb2[dim].resize(depth, BezOrd2d(0));
-    }
-    const int depth = sb2[0].us*sb2[0].vs;
+    SBasis2d sb2;
+    sb2.us = 2;
+    sb2.vs = 2;
+    const int depth = sb2.us*sb2.vs;
     const int surface_handles = 4*depth;
+    sb2.resize(depth, BezOrd2d(0));
+    vector<Geom::Point> display_handles(surface_handles);
     Geom::Point dir(1,-2);
     if(handles.empty()) {
-        for(int vi = 0; vi < sb2[0].vs; vi++)
-            for(int ui = 0; ui < sb2[0].us; ui++)
-                for(int iv = 0; iv < 2; iv++)
-                    for(int iu = 0; iu < 2; iu++)
-                        handles.push_back(Geom::Point((2*(iu+ui)/(2.*ui+1)+1)*width/4.,
-                                                      (2*(iv+vi)/(2.*vi+1)+1)*width/4.));
+        for(int vi = 0; vi < sb2.vs; vi++)
+        for(int ui = 0; ui < sb2.us; ui++)
+        for(int iv = 0; iv < 2; iv++)
+            for(int iu = 0; iu < 2; iu++) {
+                Geom::Point p((2*(iu+ui)/(2.*ui+1)+1),
+                              (2*(iv+vi)/(2.*vi+1)+1));
+                if(ui == 0 && vi == 0) {
+                    if(iu == 0 && iv == 0)
+                        p[1] -= 0.1;
+                    if(iu == 1 && iv == 1)
+                        p[1] += 0.1;
+                    //if(vi == sb2.vs - 1)
+                    //    p[1] += 0.1;
+                }
+                handles.push_back((width/4.)*p);
+            }
         
-        for(int i = 0; i < 4; i++)
-            handles.push_back(Geom::Point(uniform()*width/4.,
-                                          uniform()*width/4.));
+        handles.push_back(Geom::Point(3*width/4.,
+                                      width/4.) + 30*dir);
+        for(int i = 0; i < 2; i++)
+            handles.push_back(Geom::Point(3*width/8.,
+                                          (1+6*i)*width/8.));
+
     
     }
-    
-    for(int dim = 0; dim < 2; dim++) {
-        Geom::Point dir(0,0);
-        dir[dim] = 1;
-        for(int vi = 0; vi < sb2[dim].vs; vi++)
-            for(int ui = 0; ui < sb2[dim].us; ui++)
-                for(int iv = 0; iv < 2; iv++)
-                    for(int iu = 0; iu < 2; iu++) {
-                        unsigned corner = iu + 2*iv;
-                        unsigned i = ui + vi*sb2[dim].us;
-                        Geom::Point base((2*(iu+ui)/(2.*ui+1)+1)*width/4.,
-                                         (2*(iv+vi)/(2.*vi+1)+1)*width/4.);
-                        if(vi == 0 && ui == 0) {
-                            base = Geom::Point(width/4., width/4.);
-                        }
-                        double dl = dot((handles[corner+4*i] - base), dir)/dot(dir,dir);
-                        sb2[dim][i][corner] = dl/(width/2)*pow(4,ui+vi);
-                    }
-    }
+    dir = (handles[surface_handles] - Geom::Point(3*width/4., width/4.)) / 30;
+    cairo_move_to(cr, 3*width/4., width/4.);
+    cairo_line_to(cr, handles[surface_handles]);
+    for(int vi = 0; vi < sb2.vs; vi++)
+        for(int ui = 0; ui < sb2.us; ui++)
+    for(int iv = 0; iv < 2; iv++)
+        for(int iu = 0; iu < 2; iu++) {
+            unsigned corner = iu + 2*iv;
+            unsigned i = ui + vi*sb2.us;
+            Geom::Point base((2*(iu+ui)/(2.*ui+1)+1)*width/4.,
+                             (2*(iv+vi)/(2.*vi+1)+1)*width/4.);
+            double dl = dot((handles[corner+4*i] - base), dir)/dot(dir,dir);
+            display_handles[corner+4*i] = dl*dir + base;
+            sb2[i][corner] = dl*10/(width/2)*pow(4,ui+vi);
+        }
     draw_sb2d(cr, sb2, dir*0.1, width);
-    cairo_set_source_rgba (cr, 0., 0., 0, 0.5);
+    cairo_set_source_rgba (cr, 0., 0., 0, 0.7);
     cairo_stroke(cr);
-    multidim_sbasis<2> B = bezier_to_sbasis<2, 3>(handles.begin() + surface_handles);
-    draw_cb(cr, B);
+/*
+    for(int ui = 0; ui <= 1; ui++) {
+        SBasis sb = extract_u(sb2, ui);
+        vector<double> r = roots(sb);
+        std::cout << "sbasis sub (%d, 0): ";
+        std::copy(r.begin(), r.end(), std::ostream_iterator<double>(std::cout, ",\t"));
+        std::cout << std::endl;
+        
+    }
+    for(int vi = 0; vi <= 1; vi++) {
+        SBasis sb = extract_v(sb2, vi);
+        vector<double> r = roots(sb);
+        std::cout << "sbasis sub (0, %d): ";
+        std::copy(r.begin(), r.end(), std::ostream_iterator<double>(std::cout, ",\t"));
+        std::cout << std::endl;
+    }
+*/
+    multidim_sbasis<2> B = bezier_to_sbasis<2, 1>(handles.begin() + surface_handles+1);
+    B += Geom::Point(-width/4., -width/4.);
+    B *= (2./width);
+
+    for(int dim = 0; dim < 2; dim++) {
+        B[dim] += shift(BezOrd(0.1), 1);
+    }
+#if 1
+// *** Minimiser
+    curve_min cm(B, sb2);
+    for(cm.par = 0; cm.par < 8; cm.par++) {
+    int status;
+    int iter = 0, max_iter = 100;
+    const gsl_min_fminimizer_type *T;
+    gsl_min_fminimizer *s;
+    double m = 0.0;
+    double a = -100.0, b = 100.0;
+    gsl_function F;
+     
+    F.function = &fn1;
+    F.params = &cm;
+     
+    T = gsl_min_fminimizer_brent;
+    s = gsl_min_fminimizer_alloc (T);
+    gsl_min_fminimizer_set (s, &F, m, a, b);
+    
+    do
+    {
+        iter++;
+        status = gsl_min_fminimizer_iterate (s);
+     
+        m = gsl_min_fminimizer_x_minimum (s);
+        a = gsl_min_fminimizer_x_lower (s);
+        b = gsl_min_fminimizer_x_upper (s);
+     
+        status 
+            = gsl_min_test_interval (a, b, 0.001, 0.0);
+     
+    }
+    while (status == GSL_CONTINUE && iter < max_iter);
+    cm.B = cm.out;
+    }
+    
+#else
+    const gsl_multimin_fminimizer_type *T =
+        gsl_multimin_fminimizer_nmsimplex;
+    gsl_multimin_fminimizer *s = NULL;
+    gsl_vector *ss, *x;
+    gsl_multimin_function minex_func;
+    
+    size_t iter = 0, i;
+    int status;
+    double size;
+    curve_min cm(B, sb2);
+     
+    /* Initial vertex size vector */
+    cm.n = 1;
+    size_t np = cm.n*4;
+    ss = gsl_vector_alloc (np);
+    gsl_vector_set_all (ss, 0.1);
+     
+    /* Starting point */
+    x = gsl_vector_alloc (np);
+    gsl_vector_set_all (x, 0.0);
+     
+    /* Initialize method and iterate */
+    minex_func.f = &my_f;
+    minex_func.n = np;
+    minex_func.params = (void *)&cm;
+     
+    s = gsl_multimin_fminimizer_alloc (T, np);
+    gsl_multimin_fminimizer_set (s, &minex_func, x, ss);
+     
+    do
+    {
+        iter++;
+        status = gsl_multimin_fminimizer_iterate(s);
+     
+        if (status)
+            break;
+     
+        size = gsl_multimin_fminimizer_size (s);
+        status = gsl_multimin_test_size (size, 1e-2);
+        /*
+        if (status == GSL_SUCCESS)
+        {
+            printf ("converged to minimum at\n");
+        }
+     
+        printf ("%5d ", iter);
+        for (i = 0; i < np; i++)
+        {
+            printf ("%10.3e ", gsl_vector_get (s->x, i));
+        }
+        printf ("f() = %7.3f size = %.3f\n", s->fval, size);*/
+    }
+    while (status == GSL_CONTINUE && iter < 100);
+     
+    gsl_vector_free(x);
+    gsl_vector_free(ss);
+    gsl_multimin_fminimizer_free (s);
+     
+#endif
+    B = cm.out;
+     
+    draw_cb(cr, (width/2)*B + Geom::Point(width/4., width/4.));
+    SBasis l = compose(sb2, B);
+    notify << "l = " << l << std::endl ;
+    l = integral(multiply(l, l));
+    notify << "cost = " << l[0][1] - l[0][0] ;
+    
     cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
     cairo_stroke(cr);
-    B *= (4./width);
-    multidim_sbasis<2> tB = compose(sb2, B);
-    B = (width/2)*B + Geom::Point(width/4, width/4);
-    //draw_cb(cr, B);
-    tB = (width/2)*tB + Geom::Point(width/4, width/4);
     
-    draw_cb(cr, tB);
-    
-    //notify << "bo = " << sb2.index(0,0); 
-    
-    cairo_set_source_rgba (cr, 0.5, 0.25, 0, 1);
-    cairo_stroke(cr);
+    for(int i = 0; i < display_handles.size(); i++) {
+        draw_circ(cr, display_handles[i]);
+    }
     
     cairo_set_source_rgba (cr, 0., 0.5, 0, 0.8);
     {
@@ -355,14 +548,14 @@ int main(int argc, char **argv) {
     gtk_container_add (GTK_CONTAINER (menu2), about);
 
     g_signal_connect ((gpointer) open, "activate",
-                      G_CALLBACK (on_open_activate),
-                      NULL);
+                    G_CALLBACK (on_open_activate),
+                    NULL);
     g_signal_connect ((gpointer) quit, "activate",
-                      gtk_main_quit,
-                      NULL);
+                    gtk_main_quit,
+                    NULL);
     g_signal_connect ((gpointer) about, "activate",
-                      G_CALLBACK (on_about_activate),
-                      NULL);
+                    G_CALLBACK (on_about_activate),
+                    NULL);
 
     gtk_window_add_accel_group (GTK_WINDOW (window), accel_group);
 
