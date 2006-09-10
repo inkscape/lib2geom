@@ -25,20 +25,98 @@
 #include "translate-ops.h"
 #include "s-basis-2d.h"
 #include "path-builder.h"
-#include "convex-cover.h"
 
 using std::string;
 using std::vector;
 
 static GtkWidget *canvas;
+std::ostringstream *note_p = 0;
 
 std::vector<Geom::Point> handles;
 Geom::Point *selected_handle;
 Geom::Point old_handle_pos;
 Geom::Point old_mouse_point;
 
+unsigned total_pieces_sub;
+unsigned total_pieces_inc;
+
 double uniform() {
     return double(rand()) / RAND_MAX;
+}
+
+void draw_cb(cairo_t *cr, multidim_sbasis<2> const &B) {
+    Geom::PathBuilder pb;
+    subpath_from_sbasis(pb, B, 0.1);
+    cairo_path(cr, pb.peek());
+}
+
+void draw_sb2d(cairo_t* cr, vector<SBasis2d> const &sb2, Geom::Point dir, double width) {
+    multidim_sbasis<2> B;
+    for(int ui = 0; ui <= 10; ui++) {
+        double u = ui/10.;
+        B[0] = extract_u(sb2[0], u);// + BezOrd(u);
+        B[1] = extract_u(sb2[1], u);
+        for(unsigned i = 0; i < 2; i ++) {
+            B[i] = (width/2)*B[i] + BezOrd(width/4);
+        }
+        draw_cb(cr, B);
+    }
+    for(int vi = 0; vi <= 10; vi++) {
+        double v = vi/10.;
+        B[1] = extract_v(sb2[1], v);// + BezOrd(v);
+        B[0] = extract_v(sb2[0], v);
+        for(unsigned i = 0; i < 2; i ++) {
+            B[i] = (width/2)*B[i] + BezOrd(width/4);
+        }
+        draw_cb(cr, B);
+    }
+}
+
+SBasis compose(BezOrd2d const &a, multidim_sbasis<2> p) {
+    SBasis sb;
+    multidim_sbasis<2> omp;
+    for(int dim = 0; dim < 2; dim++)
+        omp[dim] = BezOrd(1) - p[dim];
+    //std::cout << "a = " << a << std::endl;
+    //for(int dim = 0; dim < 2; dim++)
+    //    std::cout << p[dim] << ", " << omp[dim] << std::endl;
+    sb = a[0]*multiply(omp[0], omp[1]) +
+        a[1]*multiply(p[0], omp[1]) +
+        a[2]*multiply(omp[0], p[1]) +
+        a[3]*multiply(p[0], p[1]);
+    //std::cout << sb << std::endl;
+    return sb;
+}
+
+SBasis 
+compose(SBasis2d const &fg, multidim_sbasis<2> p) {
+    SBasis B;
+    //SBasis s[2];
+    //for(int dim = 0; dim < 2; dim++) 
+    //    s[dim] = multiply(p[dim], (BezOrd(1) - p[dim]));
+    B = compose(fg[0], p);
+#if 0
+    for(int vi = 0; vi < fg.vs; vi++)
+        for(int ui = 0; ui < fg.us; ui++)
+            for(int iv = 0; iv < 2; iv++)
+                for(int iu = 0; iu < 2; iu++) {
+                    unsigned corner = iu + 2*iv;
+                    unsigned i = ui + vi*fg.us;
+                    //fg[i][corner] = 0;
+                    B += compose(fg[i], p);
+                }
+#endif
+    return B;
+}
+
+
+multidim_sbasis<2> 
+compose(vector<SBasis2d> const &fg, multidim_sbasis<2> p) {
+    multidim_sbasis<2> B;
+    for(int dim = 0; dim < 2; dim++) {
+        B[dim] = compose(fg[dim], p);
+    }
+    return B;
 }
 
 static gboolean
@@ -49,6 +127,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     int width = 256;
     int height = 256;
     std::ostringstream notify;
+    note_p = &notify;
     gdk_drawable_get_size(widget->window, &width, &height);
     cairo_set_source_rgba (cr, 0., 0.5, 0, 1);
     cairo_set_line_width (cr, 1);
@@ -81,33 +160,70 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
         cairo_move_to(cr, i*width/4, 0);
         cairo_line_to(cr, i*width/4, width);
     }
+    vector<SBasis2d> sb2(2);
+    for(int dim = 0; dim < 2; dim++) {
+        sb2[dim].us = 1;
+        sb2[dim].vs = 1;
+        const int depth = sb2[dim].us*sb2[dim].vs;
+        const int surface_handles = 4*depth;
+        sb2[dim].resize(depth, BezOrd2d(0));
+    }
+    const int depth = sb2[0].us*sb2[0].vs;
+    const int surface_handles = 4*depth;
+    Geom::Point dir(1,-2);
     if(handles.empty()) {
-	    for(int i = 0; i < 1000; i++){
-		    Geom::Point c(width/2, width/2);
-		    handles.push_back(Geom::Point(uniform()*(uniform()-0.5)*width/2,
-						  uniform()*(uniform()-0.5)*width/2) + c);
-	    }
-    }
+        for(int vi = 0; vi < sb2[0].vs; vi++)
+            for(int ui = 0; ui < sb2[0].us; ui++)
+                for(int iv = 0; iv < 2; iv++)
+                    for(int iu = 0; iu < 2; iu++)
+                        handles.push_back(Geom::Point((2*(iu+ui)/(2.*ui+1)+1)*width/4.,
+                                                      (2*(iv+vi)/(2.*vi+1)+1)*width/4.));
+        
+        handles.push_back(Geom::Point(3*width/4.,
+                                      width/4.) + 30*dir);
+        for(int i = 0; i < 4; i++)
+            handles.push_back(Geom::Point(uniform()*width/4.,
+                                          uniform()*width/4.));
     
-    
-    clock_t end_t = clock()+clock_t(0.1*CLOCKS_PER_SEC);
-    unsigned iterations = 0;
-    while(end_t > clock()) {
-	Geom::ConvexHull ch(handles);
-        iterations++;
     }
-    notify << "original time = " << 1000*0.1/iterations << std::endl;
-    Geom::ConvexHull ch(handles);
-    assert(ch.is_clockwise());
-    if(ch.contains_point(old_mouse_point))
-        notify << "mouse in convex" << std::endl;
-    cairo_move_to(cr, ch.boundary.back());
-    for(int i = 0; i < ch.boundary.size(); i++) {
-        cairo_line_to(cr, ch.boundary[i]);
-    }
-    cairo_stroke(cr);
+    dir = (handles[surface_handles] - Geom::Point(3*width/4., width/4.)) / 30;
+    cairo_move_to(cr, 3*width/4., width/4.);
+    cairo_line_to(cr, handles[surface_handles]);
     
+    for(int dim = 0; dim < 2; dim++) {
+        Geom::Point dir(0,0);
+        dir[dim] = 1;
+        for(int vi = 0; vi < sb2[dim].vs; vi++)
+            for(int ui = 0; ui < sb2[dim].us; ui++)
+                for(int iv = 0; iv < 2; iv++)
+                    for(int iu = 0; iu < 2; iu++) {
+                        unsigned corner = iu + 2*iv;
+                        unsigned i = ui + vi*sb2[dim].us;
+                        Geom::Point base((2*(iu+ui)/(2.*ui+1)+1)*width/4.,
+                                         (2*(iv+vi)/(2.*vi+1)+1)*width/4.);
+                        if(vi == 0 && ui == 0) {
+                            base = Geom::Point(width/4., width/4.);
+                        }
+                        double dl = dot((handles[corner+4*i] - base), dir)/dot(dir,dir);
+                        sb2[dim][i][corner] = dl/(width/2)*pow(4,ui+vi);
+                    }
+    }
+    draw_sb2d(cr, sb2, dir*0.1, width);
+    multidim_sbasis<2> B = bezier_to_sbasis<2, 3>(handles.begin() + surface_handles+1);
+    draw_cb(cr, B);
     cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
+    cairo_stroke(cr);
+    B *= (4./width);
+    multidim_sbasis<2> tB = compose(sb2, B);
+    B = (width/2)*B + Geom::Point(width/4, width/4);
+    //draw_cb(cr, B);
+    tB = (width/2)*tB + Geom::Point(width/4, width/4);
+    
+    draw_cb(cr, tB);
+    
+    //notify << "bo = " << sb2.index(0,0); 
+    
+    cairo_set_source_rgba (cr, 0.5, 0.25, 0, 1);
     cairo_stroke(cr);
     
     cairo_set_source_rgba (cr, 0., 0.5, 0, 0.8);
@@ -129,6 +245,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
         pango_cairo_show_layout(cr, layout);
     }
     cairo_destroy (cr);
+    note_p = 0;
     return TRUE;
 }
 
@@ -288,14 +405,14 @@ int main(int argc, char **argv) {
     gtk_container_add (GTK_CONTAINER (menu2), about);
 
     g_signal_connect ((gpointer) open, "activate",
-                    G_CALLBACK (on_open_activate),
-                    NULL);
+                      G_CALLBACK (on_open_activate),
+                      NULL);
     g_signal_connect ((gpointer) quit, "activate",
-                    gtk_main_quit,
-                    NULL);
+                      gtk_main_quit,
+                      NULL);
     g_signal_connect ((gpointer) about, "activate",
-                    G_CALLBACK (on_about_activate),
-                    NULL);
+                      G_CALLBACK (on_about_activate),
+                      NULL);
 
     gtk_window_add_accel_group (GTK_WINDOW (window), accel_group);
 

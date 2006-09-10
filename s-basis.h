@@ -168,6 +168,18 @@ inline SBasis operator-(const SBasis& p) {
     return result;
 }
 
+inline SBasis operator-(BezOrd const & bo, const SBasis& p) {
+    SBasis result;
+    result.reserve(p.size());
+        
+    for(unsigned i = 0; i < p.size(); i++) {
+        result.push_back(-p[i]);
+    }
+    result[0] += bo;
+    return result;
+   
+}
+
 inline SBasis& operator+=(SBasis& a, const SBasis& b) {
     const unsigned out_size = std::max(a.size(), b.size());
     const unsigned min_size = std::min(a.size(), b.size());
