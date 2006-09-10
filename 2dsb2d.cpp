@@ -91,21 +91,22 @@ SBasis compose(BezOrd2d const &a, multidim_sbasis<2> p) {
 SBasis 
 compose(SBasis2d const &fg, multidim_sbasis<2> p) {
     SBasis B;
-    //SBasis s[2];
-    //for(int dim = 0; dim < 2; dim++) 
-    //    s[dim] = multiply(p[dim], (BezOrd(1) - p[dim]));
+    SBasis s[2];
+    SBasis ss[2];
+    for(int dim = 0; dim < 2; dim++) 
+        s[dim] = multiply(p[dim], (BezOrd(1) - p[dim]));
     B = compose(fg[0], p);
-#if 0
-    for(int vi = 0; vi < fg.vs; vi++)
-        for(int ui = 0; ui < fg.us; ui++)
-            for(int iv = 0; iv < 2; iv++)
-                for(int iu = 0; iu < 2; iu++) {
-                    unsigned corner = iu + 2*iv;
-                    unsigned i = ui + vi*fg.us;
-                    //fg[i][corner] = 0;
-                    B += compose(fg[i], p);
-                }
-#endif
+    ss[0] = BezOrd(1);
+    for(int vi = 0; vi < fg.vs; vi++) {
+        ss[1] = ss[0];
+        for(int ui = 0; ui < fg.us; ui++) {
+            unsigned i = ui + vi*fg.us;
+            if(vi || ui)
+                B += multiply(ss[1], compose(fg[i], p));
+            ss[1] = multiply(ss[1], s[1]);
+        }
+        ss[0] = multiply(ss[0], s[0]);
+    }
     return B;
 }
 
@@ -162,8 +163,8 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     }
     vector<SBasis2d> sb2(2);
     for(int dim = 0; dim < 2; dim++) {
-        sb2[dim].us = 1;
-        sb2[dim].vs = 1;
+        sb2[dim].us = 2;
+        sb2[dim].vs = 2;
         const int depth = sb2[dim].us*sb2[dim].vs;
         const int surface_handles = 4*depth;
         sb2[dim].resize(depth, BezOrd2d(0));
