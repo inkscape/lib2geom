@@ -14,30 +14,35 @@
 #include "point-ops.h"
 #include "point-fns.h"
 #include "interactive-bits.h"
+#include "multidim-sbasis.h"
+#include "bezier-to-sbasis.h"
+#include "sbasis-to-bezier.h"
+#include "path-cairo.h"
 
 using std::string;
 using std::vector;
 
 static GtkWidget *canvas;
 
-
-BezOrd z0(0.5,1.);
-
 std::vector<Geom::Point> handles;
 Geom::Point *selected_handle;
 Geom::Point old_handle_pos;
 Geom::Point old_mouse_point;
 
-BezOrd segment(int l, int r, int dim) {
-    return BezOrd(handles[l][dim], handles[r][dim]);
+void draw_cb(cairo_t *cr, multidim_sbasis<2> const &B) {
+    Geom::PathBuilder pb;
+    subpath_from_sbasis(pb, B, 0.1);
+    cairo_path(cr, pb.peek());
 }
 
-SBasis quad(int l, int dim) {
-    return multiply(BezOrd(1, 0), segment(l+0, l+1, dim)) +
-        multiply(BezOrd(0, 1), segment(l+1, l+2, dim));
+SBasis curvature(multidim_sbasis<2> & B) {
+    multidim_sbasis<2> dB = derivative(B);
+    multidim_sbasis<2> ddB = derivative(dB);
+    SBasis n = multiply(dB[0], ddB[1]) - multiply(dB[1], ddB[0]);
+    SBasis den = multiply(dB[0], dB[0]) + multiply(dB[1], dB[1]);
+    den = multiply(den, den);
+    return divide(multiply(n, sqrt(den, 4)), den, 6);
 }
-
-#include "multidim-sbasis.h"
 
 static gboolean
 expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
@@ -64,57 +69,71 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     }
     cairo_stroke(cr);
     
-    multidim_sbasis<2> B;
-    for(int dim = 0; dim < 2; dim++) {
-        B[dim] =  multiply(BezOrd(1, 0), quad(0, dim)) +
-        multiply(BezOrd(0, 1), quad(1, dim));
+    multidim_sbasis<2> B = bezier_to_sbasis<2, 3>(handles.begin());
+    draw_cb(cr, B);
+    cairo_stroke(cr);
+    
+    cairo_set_source_rgba (cr, 0.5, 0.5, 0, 0.8);
+    multidim_sbasis<2> dB = derivative(B);
+    if(0) for(int dim = 0; dim < 2; dim++) {
+        multidim_sbasis<2> plot;
+        plot[0] = SBasis(width*BezOrd(0.25,0.75));
+        plot[1] = BezOrd(height*3/4) - 0.5*dB[dim];
+        
+        draw_cb(cr, plot);
+        cairo_stroke(cr);
+    }
+    cairo_set_source_rgba (cr, 0.5, 0, 0.5, 0.8);
+    if(0){
+        multidim_sbasis<2> plot;
+        plot[0] = SBasis(width*BezOrd(0.25,0.75));
+        plot[1] = derivative((1./height)*multiply(dB[0], dB[0])
+            + (1./height)*multiply(dB[1], dB[1]));
+        std::vector<double> r = roots(plot[1]);
+        plot[1] = BezOrd(height*3/4) - plot[1];
+        draw_cb(cr, plot);
+        cairo_stroke(cr);
+        for(int i = 0; i < r.size(); i++) {
+            //draw_cross(cr, point_at(B, r[i]));
+            //draw_cross(cr, point_at(plot, r[i]));
+        }
+    }
+    cairo_set_source_rgba (cr, 0.25, 0.5, 0, 0.8);
+    {
+        multidim_sbasis<2> plot;
+        plot[0] = SBasis(width*BezOrd(0.25,0.75));
+        plot[1] = height*derivative(curvature(B));
+        std::vector<double> r = roots(plot[1]);
+        plot[1] = BezOrd(height*3/4) - plot[1];
+        draw_cb(cr, plot);
+        cairo_stroke(cr);
+        for(int i = 0; i < r.size(); i++) {
+            draw_cross(cr, point_at(B, r[i]));
+            draw_cross(cr, point_at(plot, r[i]));
+        }
     }
     
-    for(int ti = 0; ti <= 30; ti++) {
-        double t = (double(ti))/(30);
-        double x = B[0].point_at(t);
-        double y = B[1].point_at(t);
-        if(ti)
-            cairo_line_to(cr, x, y);
-        else
-            cairo_move_to(cr, x, y);
-    }    
-    cairo_stroke(cr);
-    
-    cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
-    cairo_stroke(cr);
-    
-    
     cairo_set_source_rgba (cr, 0., 0.5, 0, 0.8);
-    multidim_sbasis<2> dB;
-    dB = derivative(B);
     double prev_seg = 0;
-    int N = 1;
+    int N = 10;
     for(int subdivi = 0; subdivi < N; subdivi++) {
         double dsubu = 1./N;
         double subu = dsubu*subdivi;
-        multidim_sbasis<2> dBp;
-        for(int dim = 0; dim < 2; dim++) {
-            dBp[dim] = compose(dB[dim], BezOrd(subu, dsubu+subu));
-        }
-        SBasis arc;
-        arc = dot(dBp, dBp);
-        arc = sqrt(arc, 2);
+        BezOrd dt(subu, dsubu + subu);
+        multidim_sbasis<2> dBp = compose(dB, dt);
+        SBasis arc = L2(dBp, 2);
         arc = (1./N)*integral(arc);
         arc = arc - BezOrd(Hat(arc.point_at(0) - prev_seg));
         prev_seg = arc.point_at(1);
-        for(int ti = 0; ti <= 30; ti++) {
-            double t = (double(ti))/(30);
-            double x = width*(t*dsubu + subu);
-            double y = height - (arc.point_at(t));
-            if(ti)
-                cairo_line_to(cr, x, y);
-            else
-                cairo_move_to(cr, x, y);
-        }
+        
+        multidim_sbasis<2> plot;
+        plot[0] = SBasis(width*dt);
+        plot[1] = BezOrd(height) - arc;
+        
+        draw_cb(cr, plot);
         cairo_stroke(cr);
     }
-    //notify << "arc length = " << arc.point_at(1) - arc.point_at(0) << std::endl;
+    notify << "arc length = " << prev_seg << std::endl;
     {
         PangoLayout* layout = pango_cairo_create_layout (cr);
         pango_layout_set_text(layout, 
@@ -233,10 +252,8 @@ double uniform() {
 }
 
 int main(int argc, char **argv) {
-    handles.push_back(Geom::Point(uniform()*400, uniform()*400));
-    handles.push_back(Geom::Point(uniform()*400, uniform()*400));
-    handles.push_back(Geom::Point(uniform()*400, uniform()*400));
-    handles.push_back(Geom::Point(uniform()*400, uniform()*400));
+    for(int i = 0; i < 4; i++)
+        handles.push_back(Geom::Point(uniform()*400, uniform()*400));
     
     gtk_init (&argc, &argv);
     

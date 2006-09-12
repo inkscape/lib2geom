@@ -118,8 +118,10 @@ double fn1 (double x, void * params)
         for(int dim = 0; dim < 2; dim++) {
             p.out[dim] = p.B[dim] + shift(BezOrd(0,x), p.par/2 + 1);
         }
-    SBasis l = compose(p.sb2, p.out);
-    l = integral(multiply(l, l));
+    multidim_sbasis<2> dp = derivative(p.out);
+    SBasis ds = L2(dp, 5);
+    //SBasis l = compose(p.sb2, p.out);
+    SBasis l = integral( ds);
     return l[0][1] - l[0][0];
 }
 
@@ -280,7 +282,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     const gsl_min_fminimizer_type *T;
     gsl_min_fminimizer *s;
     double m = 0.0;
-    double a = -100.0, b = 100.0;
+    double a = -1000.0, b = 1000.0;
     gsl_function F;
      
     F.function = &fn1;
