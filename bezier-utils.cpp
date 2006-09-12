@@ -25,46 +25,43 @@
 #define SP_HUGE 1e5
 #define noBEZIER_DEBUG
 
-#ifdef HAVE_CONFIG_H
-# include <config.h>
-#endif
-
 #ifdef HAVE_IEEEFP_H
 # include <ieefp.h>
 #endif
 
-#include <glib/gmessages.h>
-#include <glib/gmem.h>
 #include "bezier-utils.h"
+#include "point.h"
 #include "point-fns.h"
 
 #include "isnan.h"
+#include <assert.h>
 
+namespace Geom{
 
-typedef Geom::Point BezierCurve[];
+typedef Point BezierCurve[];
 
 /* Forward declarations */
-static void generate_bezier(Geom::Point b[], Geom::Point const d[], gdouble const u[], unsigned len,
-                            Geom::Point const &tHat1, Geom::Point const &tHat2, double tolerance_sq);
-static void estimate_lengths(Geom::Point bezier[],
-                             Geom::Point const data[], gdouble const u[], unsigned len,
-                             Geom::Point const &tHat1, Geom::Point const &tHat2);
-static void estimate_bi(Geom::Point b[4], unsigned ei,
-                        Geom::Point const data[], double const u[], unsigned len);
-static void reparameterize(Geom::Point const d[], unsigned len, double u[], BezierCurve const bezCurve);
-static gdouble NewtonRaphsonRootFind(BezierCurve const Q, Geom::Point const &P, gdouble u);
-static Geom::Point sp_darray_center_tangent(Geom::Point const d[], unsigned center, unsigned length);
-static Geom::Point sp_darray_right_tangent(Geom::Point const d[], unsigned const len);
-static unsigned copy_without_nans_or_adjacent_duplicates(Geom::Point const src[], unsigned src_len, Geom::Point dest[]);
-static void chord_length_parameterize(Geom::Point const d[], gdouble u[], unsigned len);
-static double compute_max_error_ratio(Geom::Point const d[], double const u[], unsigned len,
+static void generate_bezier(Point b[], Point const d[], double const u[], unsigned len,
+                            Point const &tHat1, Point const &tHat2, double tolerance_sq);
+static void estimate_lengths(Point bezier[],
+                             Point const data[], double const u[], unsigned len,
+                             Point const &tHat1, Point const &tHat2);
+static void estimate_bi(Point b[4], unsigned ei,
+                        Point const data[], double const u[], unsigned len);
+static void reparameterize(Point const d[], unsigned len, double u[], BezierCurve const bezCurve);
+static double NewtonRaphsonRootFind(BezierCurve const Q, Point const &P, double u);
+static Point sp_darray_center_tangent(Point const d[], unsigned center, unsigned length);
+static Point sp_darray_right_tangent(Point const d[], unsigned const len);
+static unsigned copy_without_nans_or_adjacent_duplicates(Point const src[], unsigned src_len, Point dest[]);
+static void chord_length_parameterize(Point const d[], double u[], unsigned len);
+static double compute_max_error_ratio(Point const d[], double const u[], unsigned len,
                                       BezierCurve const bezCurve, double tolerance,
                                       unsigned *splitPoint);
-static double compute_hook(Geom::Point const &a, Geom::Point const &b, double const u, BezierCurve const bezCurve,
+static double compute_hook(Point const &a, Point const &b, double const u, BezierCurve const bezCurve,
                            double const tolerance);
 
 
-static Geom::Point const unconstrained_tangent(0, 0);
+static Point const unconstrained_tangent(0, 0);
 
 
 /*
@@ -77,12 +74,12 @@ static Geom::Point const unconstrained_tangent(0, 0);
 #define B3(u) ( u * u * u )
 
 #ifdef BEZIER_DEBUG
-# define DOUBLE_ASSERT(x) g_assert( ( (x) > -SP_HUGE ) && ( (x) < SP_HUGE ) )
+# define DOUBLE_ASSERT(x) assert( ( (x) > -SP_HUGE ) && ( (x) < SP_HUGE ) )
 # define BEZIER_ASSERT(b) do { \
-           DOUBLE_ASSERT((b)[0][Geom::X]); DOUBLE_ASSERT((b)[0][Geom::Y]);  \
-           DOUBLE_ASSERT((b)[1][Geom::X]); DOUBLE_ASSERT((b)[1][Geom::Y]);  \
-           DOUBLE_ASSERT((b)[2][Geom::X]); DOUBLE_ASSERT((b)[2][Geom::Y]);  \
-           DOUBLE_ASSERT((b)[3][Geom::X]); DOUBLE_ASSERT((b)[3][Geom::Y]);  \
+           DOUBLE_ASSERT((b)[0][X]); DOUBLE_ASSERT((b)[0][Y]);  \
+           DOUBLE_ASSERT((b)[1][X]); DOUBLE_ASSERT((b)[1][Y]);  \
+           DOUBLE_ASSERT((b)[2][X]); DOUBLE_ASSERT((b)[2][Y]);  \
+           DOUBLE_ASSERT((b)[3][X]); DOUBLE_ASSERT((b)[3][Y]);  \
          } while(0)
 #else
 # define DOUBLE_ASSERT(x) do { } while(0)
@@ -95,8 +92,8 @@ static Geom::Point const unconstrained_tangent(0, 0);
  *
  * \return Number of segments generated, or -1 on error.
  */
-gint
-sp_bezier_fit_cubic(Geom::Point *bezier, Geom::Point const *data, gint len, gdouble error)
+int
+sp_bezier_fit_cubic(Point *bezier, Point const *data, int len, double error)
 {
     return sp_bezier_fit_cubic_r(bezier, data, len, error, 1);
 }
@@ -110,27 +107,28 @@ sp_bezier_fit_cubic(Geom::Point *bezier, Geom::Point const *data, gint len, gdou
  *
  * \return Number of segments generated, or -1 on error.
  */
-gint
-sp_bezier_fit_cubic_r(Geom::Point bezier[], Geom::Point const data[], gint const len, gdouble const error, unsigned const max_beziers)
+int
+sp_bezier_fit_cubic_r(Point bezier[], Point const data[], int const len, double const error, unsigned const max_beziers)
 {
-    g_return_val_if_fail(bezier != NULL, -1);
-    g_return_val_if_fail(data != NULL, -1);
-    g_return_val_if_fail(len > 0, -1);
-    g_return_val_if_fail(max_beziers < (1ul << (31 - 2 - 1 - 3)), -1);
-
-    Geom::Point *uniqued_data = g_new(Geom::Point, len);
+    if(bezier == NULL || 
+       data == NULL || 
+       len <= 0 || 
+       max_beziers >= (1ul << (31 - 2 - 1 - 3))) 
+        return -1;
+    
+    Point *uniqued_data = new Point[len];
     unsigned uniqued_len = copy_without_nans_or_adjacent_duplicates(data, len, uniqued_data);
 
     if ( uniqued_len < 2 ) {
-        g_free(uniqued_data);
+        delete[] uniqued_data;
         return 0;
     }
 
     /* Call fit-cubic function with recursion. */
-    gint const ret = sp_bezier_fit_cubic_full(bezier, NULL, uniqued_data, uniqued_len,
+    int const ret = sp_bezier_fit_cubic_full(bezier, NULL, uniqued_data, uniqued_len,
                                               unconstrained_tangent, unconstrained_tangent,
                                               error, max_beziers);
-    g_free(uniqued_data);
+    delete[] uniqued_data;
     return ret;
 }
 
@@ -140,31 +138,31 @@ sp_bezier_fit_cubic_r(Geom::Point bezier[], Geom::Point const data[], gint const
  * \return length of dest
  */
 static unsigned
-copy_without_nans_or_adjacent_duplicates(Geom::Point const src[], unsigned src_len, Geom::Point dest[])
+copy_without_nans_or_adjacent_duplicates(Point const src[], unsigned src_len, Point dest[])
 {
     unsigned si = 0;
     for (;;) {
         if ( si == src_len ) {
             return 0;
         }
-        if (!isNaN(src[si][Geom::X]) &&
-            !isNaN(src[si][Geom::Y])) {
-            dest[0] = Geom::Point(src[si]);
+        if (!isNaN(src[si][X]) &&
+            !isNaN(src[si][Y])) {
+            dest[0] = Point(src[si]);
             ++si;
             break;
         }
     }
     unsigned di = 0;
     for (; si < src_len; ++si) {
-        Geom::Point const src_pt = Geom::Point(src[si]);
+        Point const src_pt = Point(src[si]);
         if ( src_pt != dest[di]
-             && !isNaN(src_pt[Geom::X])
-             && !isNaN(src_pt[Geom::Y])) {
+             && !isNaN(src_pt[X])
+             && !isNaN(src_pt[Y])) {
             dest[++di] = src_pt;
         }
     }
     unsigned dest_len = di + 1;
-    g_assert( dest_len <= src_len );
+    assert( dest_len <= src_len );
     return dest_len;
 }
 
@@ -176,19 +174,20 @@ copy_without_nans_or_adjacent_duplicates(Geom::Point const src[], unsigned src_l
  * \param max_beziers Maximum number of generated segments
  * \param Result array, must be large enough for n. segments * 4 elements.
  */
-gint
-sp_bezier_fit_cubic_full(Geom::Point bezier[], int split_points[],
-                         Geom::Point const data[], gint const len,
-                         Geom::Point const &tHat1, Geom::Point const &tHat2,
+int
+sp_bezier_fit_cubic_full(Point bezier[], int split_points[],
+                         Point const data[], int const len,
+                         Point const &tHat1, Point const &tHat2,
                          double const error, unsigned const max_beziers)
 {
     int const maxIterations = 4;   /* Max times to try iterating */
-
-    g_return_val_if_fail(bezier != NULL, -1);
-    g_return_val_if_fail(data != NULL, -1);
-    g_return_val_if_fail(len > 0, -1);
-    g_return_val_if_fail(max_beziers >= 1, -1);
-    g_return_val_if_fail(error >= 0.0, -1);
+    
+    if(!(bezier != NULL) ||
+       !(data != NULL) ||
+       !(len > 0) ||
+       !(max_beziers >= 1) ||
+       !(error >= 0.0))
+        return -1;
 
     if ( len < 2 ) return 0;
 
@@ -219,7 +218,7 @@ sp_bezier_fit_cubic_full(Geom::Point bezier[], int split_points[],
     unsigned splitPoint;   /* Point to split point set at. */
     bool is_corner;
     {
-        double *u = g_new(double, len);
+        double *u = new double[len];
         chord_length_parameterize(data, u, len);
         if ( u[len - 1] == 0.0 ) {
             /* Zero-length path: every point in data[] is the same.
@@ -227,7 +226,7 @@ sp_bezier_fit_cubic_full(Geom::Point bezier[], int split_points[],
              * (Clients aren't allowed to pass such data; handling the case is defensive
              * programming.)
              */
-            g_free(u);
+            delete[] u;
             return 0;
         }
 
@@ -240,7 +239,7 @@ sp_bezier_fit_cubic_full(Geom::Point bezier[], int split_points[],
 
         if ( fabs(maxErrorRatio) <= 1.0 ) {
             BEZIER_ASSERT(bezier);
-            g_free(u);
+            delete[] u;
             return 1;
         }
 
@@ -252,17 +251,17 @@ sp_bezier_fit_cubic_full(Geom::Point bezier[], int split_points[],
                 maxErrorRatio = compute_max_error_ratio(data, u, len, bezier, tolerance, &splitPoint);
                 if ( fabs(maxErrorRatio) <= 1.0 ) {
                     BEZIER_ASSERT(bezier);
-                    g_free(u);
+                    delete[] u;
                     return 1;
                 }
             }
         }
-        g_free(u);
+        delete[] u;
         is_corner = (maxErrorRatio < 0);
     }
 
     if (is_corner) {
-        g_assert(splitPoint < unsigned(len));
+        assert(splitPoint < unsigned(len));
         if (splitPoint == 0) {
             if (is_zero(tHat1)) {
                 /* Got spike even with unconstrained initial tangent. */
@@ -288,16 +287,17 @@ sp_bezier_fit_cubic_full(Geom::Point bezier[], int split_points[],
          */
         unsigned const rec_max_beziers1 = max_beziers - 1;
 
-        Geom::Point recTHat2, recTHat1;
+        Point recTHat2, recTHat1;
         if (is_corner) {
-            g_return_val_if_fail(0 < splitPoint && splitPoint < unsigned(len - 1), -1);
+            if(!(0 < splitPoint && splitPoint < unsigned(len - 1)))
+               return -1;
             recTHat1 = recTHat2 = unconstrained_tangent;
         } else {
             /* Unit tangent vector at splitPoint. */
             recTHat2 = sp_darray_center_tangent(data, splitPoint, len);
             recTHat1 = -recTHat2;
         }
-        gint const nsegs1 = sp_bezier_fit_cubic_full(bezier, split_points, data, splitPoint + 1,
+        int const nsegs1 = sp_bezier_fit_cubic_full(bezier, split_points, data, splitPoint + 1,
                                                      tHat1, recTHat2, error, rec_max_beziers1);
         if ( nsegs1 < 0 ) {
 #ifdef BEZIER_DEBUG
@@ -305,12 +305,12 @@ sp_bezier_fit_cubic_full(Geom::Point bezier[], int split_points[],
 #endif
             return -1;
         }
-        g_assert( nsegs1 != 0 );
+        assert( nsegs1 != 0 );
         if (split_points != NULL) {
             split_points[nsegs1 - 1] = splitPoint;
         }
         unsigned const rec_max_beziers2 = max_beziers - nsegs1;
-        gint const nsegs2 = sp_bezier_fit_cubic_full(bezier + nsegs1*4,
+        int const nsegs2 = sp_bezier_fit_cubic_full(bezier + nsegs1*4,
                                                      ( split_points == NULL
                                                        ? NULL
                                                        : split_points + nsegs1 ),
@@ -346,17 +346,17 @@ sp_bezier_fit_cubic_full(Geom::Point bezier[], int split_points[],
  *   when \a tHat1 or \a tHat2 is zero.
  */
 static void
-generate_bezier(Geom::Point bezier[],
-                Geom::Point const data[], gdouble const u[], unsigned const len,
-                Geom::Point const &tHat1, Geom::Point const &tHat2,
+generate_bezier(Point bezier[],
+                Point const data[], double const u[], unsigned const len,
+                Point const &tHat1, Point const &tHat2,
                 double const tolerance_sq)
 {
     bool const est1 = is_zero(tHat1);
     bool const est2 = is_zero(tHat2);
-    Geom::Point est_tHat1( est1
+    Point est_tHat1( est1
                          ? sp_darray_left_tangent(data, len, tolerance_sq)
                          : tHat1 );
-    Geom::Point est_tHat2( est2
+    Point est_tHat2( est2
                          ? sp_darray_right_tangent(data, len, tolerance_sq)
                          : tHat2 );
     estimate_lengths(bezier, data, u, len, est_tHat1, est_tHat2);
@@ -373,9 +373,9 @@ generate_bezier(Geom::Point bezier[],
 
 
 static void
-estimate_lengths(Geom::Point bezier[],
-                 Geom::Point const data[], gdouble const uPrime[], unsigned const len,
-                 Geom::Point const &tHat1, Geom::Point const &tHat2)
+estimate_lengths(Point bezier[],
+                 Point const data[], double const uPrime[], unsigned const len,
+                 Point const &tHat1, Point const &tHat2)
 {
     double C[2][2];   /* Matrix C. */
     double X[2];      /* Matrix X. */
@@ -401,8 +401,8 @@ estimate_lengths(Geom::Point bezier[],
         double const b3 = B3(uPrime[i]);
 
         /* rhs for eqn */
-        Geom::Point const a1 = b1 * tHat1;
-        Geom::Point const a2 = b2 * tHat2;
+        Point const a1 = b1 * tHat1;
+        Point const a2 = b2 * tHat2;
 
         C[0][0] += dot(a1, a1);
         C[0][1] += dot(a1, a2);
@@ -411,7 +411,7 @@ estimate_lengths(Geom::Point bezier[],
 
         /* Additional offset to the data point from the predicted point if we were to set bezier[1]
            to bezier[0] and bezier[2] to bezier[3]. */
-        Geom::Point const shortfall
+        Point const shortfall
             = ( data[i]
                 - ( ( b0 + b1 ) * bezier[0] )
                 - ( ( b2 + b3 ) * bezier[3] ) );
@@ -475,15 +475,16 @@ estimate_lengths(Geom::Point bezier[],
     return;
 }
 
-static double lensq(Geom::Point const p) {
+static double lensq(Point const p) {
     return dot(p, p);
 }
 
 static void
-estimate_bi(Geom::Point bezier[4], unsigned const ei,
-            Geom::Point const data[], double const u[], unsigned const len)
+estimate_bi(Point bezier[4], unsigned const ei,
+            Point const data[], double const u[], unsigned const len)
 {
-    g_return_if_fail(1 <= ei && ei <= 2);
+    if(!(1 <= ei && ei <= 2))
+        return;
     unsigned const oi = 3 - ei;
     double num[2] = {0., 0.};
     double den = 0.;
@@ -525,18 +526,18 @@ estimate_bi(Geom::Point bezier[4], unsigned const ei,
  *              Also the size of the array that is allocated for return.
  */
 static void
-reparameterize(Geom::Point const d[],
+reparameterize(Point const d[],
                unsigned const len,
                double u[],
                BezierCurve const bezCurve)
 {
-    g_assert( 2 <= len );
+    assert( 2 <= len );
 
     unsigned const last = len - 1;
-    g_assert( bezCurve[0] == d[0] );
-    g_assert( bezCurve[3] == d[last] );
-    g_assert( u[0] == 0.0 );
-    g_assert( u[last] == 1.0 );
+    assert( bezCurve[0] == d[0] );
+    assert( bezCurve[3] == d[last] );
+    assert( u[0] == 0.0 );
+    assert( u[last] == 1.0 );
     /* Otherwise, consider including 0 and last in the below loop. */
 
     for (unsigned i = 1; i < last; i++) {
@@ -553,34 +554,34 @@ reparameterize(Geom::Point const d[],
  *  
  *  \return Improved u
  */
-static gdouble
-NewtonRaphsonRootFind(BezierCurve const Q, Geom::Point const &P, gdouble const u)
+static double
+NewtonRaphsonRootFind(BezierCurve const Q, Point const &P, double const u)
 {
-    g_assert( 0.0 <= u );
-    g_assert( u <= 1.0 );
+    assert( 0.0 <= u );
+    assert( u <= 1.0 );
 
     /* Generate control vertices for Q'. */
-    Geom::Point Q1[3];
+    Point Q1[3];
     for (unsigned i = 0; i < 3; i++) {
         Q1[i] = 3.0 * ( Q[i+1] - Q[i] );
     }
 
     /* Generate control vertices for Q''. */
-    Geom::Point Q2[2];
+    Point Q2[2];
     for (unsigned i = 0; i < 2; i++) {
         Q2[i] = 2.0 * ( Q1[i+1] - Q1[i] );
     }
 
     /* Compute Q(u), Q'(u) and Q''(u). */
-    Geom::Point const Q_u  = bezier_pt(3, Q, u);
-    Geom::Point const Q1_u = bezier_pt(2, Q1, u);
-    Geom::Point const Q2_u = bezier_pt(1, Q2, u);
+    Point const Q_u  = bezier_pt(3, Q, u);
+    Point const Q1_u = bezier_pt(2, Q1, u);
+    Point const Q2_u = bezier_pt(1, Q2, u);
 
     /* Compute f(u)/f'(u), where f is the derivative wrt u of distsq(u) = 0.5 * the square of the
        distance from P to Q(u).  Here we're using Newton-Raphson to find a stationary point in the
        distsq(u), hopefully corresponding to a local minimum in distsq (and hence a local minimum
        distance from P to Q(u)). */
-    Geom::Point const diff = Q_u - P;
+    Point const diff = Q_u - P;
     double numerator = dot(diff, Q1_u);
     double denominator = dot(Q1_u, Q1_u) + dot(diff, Q2_u);
 
@@ -651,16 +652,16 @@ NewtonRaphsonRootFind(BezierCurve const Q, Geom::Point const &P, gdouble const u
  * is i * BezierII(i-1, V'), where for all j, V'[j] =
  * V[j + 1] - V[j].
  */
-Geom::Point
-bezier_pt(unsigned const degree, Geom::Point const V[], gdouble const t)
+Point
+bezier_pt(unsigned const degree, Point const V[], double const t)
 {
     /** Pascal's triangle. */
     static int const pascal[4][4] = {{1},
                                      {1, 1},
                                      {1, 2, 1},
                                      {1, 3, 3, 1}};
-    g_assert( degree < G_N_ELEMENTS(pascal) );
-    gdouble const s = 1.0 - t;
+    assert( degree < 4);
+    double const s = 1.0 - t;
 
     /* Calculate powers of t and s. */
     double spow[4];
@@ -672,7 +673,7 @@ bezier_pt(unsigned const degree, Geom::Point const V[], gdouble const t)
         tpow[i + 1] = tpow[i] * t;
     }
 
-    Geom::Point ret = spow[degree] * V[0];
+    Point ret = spow[degree] * V[0];
     for (unsigned i = 1; i <= degree; ++i) {
         ret += pascal[degree][i] * spow[degree - i] * tpow[i] * V[i];
     }
@@ -691,11 +692,11 @@ bezier_pt(unsigned const degree, Geom::Point const V[], gdouble const t)
  * the way one might expect, i.e., wrt increasing index into d.
  * \pre (2 \<= len) and (d[0] != d[1]).
  **/
-Geom::Point
-sp_darray_left_tangent(Geom::Point const d[], unsigned const len)
+Point
+sp_darray_left_tangent(Point const d[], unsigned const len)
 {
-    g_assert( len >= 2 );
-    g_assert( d[0] != d[1] );
+    assert( len >= 2 );
+    assert( d[0] != d[1] );
     return unit_vector( d[1] - d[0] );
 }
 
@@ -709,13 +710,13 @@ sp_darray_left_tangent(Geom::Point const d[], unsigned const len)
  * \pre d[len - 1] != d[len - 2].
  * \pre all[p in d] in_svg_plane(p).
  */
-static Geom::Point
-sp_darray_right_tangent(Geom::Point const d[], unsigned const len)
+static Point
+sp_darray_right_tangent(Point const d[], unsigned const len)
 {
-    g_assert( 2 <= len );
+    assert( 2 <= len );
     unsigned const last = len - 1;
     unsigned const prev = last - 1;
-    g_assert( d[last] != d[prev] );
+    assert( d[last] != d[prev] );
     return unit_vector( d[prev] - d[last] );
 }
 
@@ -730,14 +731,14 @@ sp_darray_right_tangent(Geom::Point const d[], unsigned const len)
  * \pre all[p in d] in_svg_plane(p).
  * \post is_unit_vector(ret).
  **/
-Geom::Point
-sp_darray_left_tangent(Geom::Point const d[], unsigned const len, double const tolerance_sq)
+Point
+sp_darray_left_tangent(Point const d[], unsigned const len, double const tolerance_sq)
 {
-    g_assert( 2 <= len );
-    g_assert( 0 <= tolerance_sq );
+    assert( 2 <= len );
+    assert( 0 <= tolerance_sq );
     for (unsigned i = 1;;) {
-        Geom::Point const pi(d[i]);
-        Geom::Point const t(pi - d[0]);
+        Point const pi(d[i]);
+        Point const t(pi - d[0]);
         double const distsq = dot(t, t);
         if ( tolerance_sq < distsq ) {
             return unit_vector(t);
@@ -761,15 +762,15 @@ sp_darray_left_tangent(Geom::Point const d[], unsigned const len, double const t
  * \pre d[len - 1] != d[len - 2].
  * \pre all[p in d] in_svg_plane(p).
  */
-Geom::Point
-sp_darray_right_tangent(Geom::Point const d[], unsigned const len, double const tolerance_sq)
+Point
+sp_darray_right_tangent(Point const d[], unsigned const len, double const tolerance_sq)
 {
-    g_assert( 2 <= len );
-    g_assert( 0 <= tolerance_sq );
+    assert( 2 <= len );
+    assert( 0 <= tolerance_sq );
     unsigned const last = len - 1;
     for (unsigned i = last - 1;; i--) {
-        Geom::Point const pi(d[i]);
-        Geom::Point const t(pi - d[last]);
+        Point const pi(d[i]);
+        Point const t(pi - d[last]);
         double const distsq = dot(t, t);
         if ( tolerance_sq < distsq ) {
             return unit_vector(t);
@@ -792,19 +793,19 @@ sp_darray_right_tangent(Geom::Point const d[], unsigned const len, double const 
  * \pre (0 \< center \< len - 1) and d is uniqued (at least in 
  * the immediate vicinity of \a center).
  */
-static Geom::Point
-sp_darray_center_tangent(Geom::Point const d[],
+static Point
+sp_darray_center_tangent(Point const d[],
                          unsigned const center,
                          unsigned const len)
 {
-    g_assert( center != 0 );
-    g_assert( center < len - 1 );
+    assert( center != 0 );
+    assert( center < len - 1 );
 
-    Geom::Point ret;
+    Point ret;
     if ( d[center + 1] == d[center - 1] ) {
         /* Rotate 90 degrees in an arbitrary direction. */
-        Geom::Point const diff = d[center] - d[center - 1];
-        ret = Geom::rot90(diff);
+        Point const diff = d[center] - d[center - 1];
+        ret = rot90(diff);
     } else {
         ret = d[center - 1] - d[center + 1];
     }
@@ -819,9 +820,10 @@ sp_darray_center_tangent(Geom::Point const d[],
  *  \pre Parameter array u must have space for \a len items.
  */
 static void
-chord_length_parameterize(Geom::Point const d[], gdouble u[], unsigned const len)
+chord_length_parameterize(Point const d[], double u[], unsigned const len)
 {
-    g_return_if_fail( 2 <= len );
+    if(!( 2 <= len ))
+        return;
 
     /* First let u[i] equal the distance travelled along the path from d[0] to d[i]. */
     u[0] = 0.0;
@@ -831,8 +833,9 @@ chord_length_parameterize(Geom::Point const d[], gdouble u[], unsigned const len
     }
 
     /* Then scale to [0.0 .. 1.0]. */
-    gdouble tot_len = u[len - 1];
-    g_return_if_fail( tot_len != 0 );
+    double tot_len = u[len - 1];
+    if(!( tot_len != 0 ))
+        return;
     if (isFinite(tot_len)) {
         for (unsigned i = 1; i < len; ++i) {
             u[i] /= tot_len;
@@ -840,7 +843,7 @@ chord_length_parameterize(Geom::Point const d[], gdouble u[], unsigned const len
     } else {
         /* We could do better, but this probably never happens anyway. */
         for (unsigned i = 1; i < len; ++i) {
-            u[i] = i / (gdouble) ( len - 1 );
+            u[i] = i / (double) ( len - 1 );
         }
     }
 
@@ -852,16 +855,17 @@ chord_length_parameterize(Geom::Point const d[], gdouble u[], unsigned const len
     if (u[len - 1] != 1) {
         double const diff = u[len - 1] - 1;
         if (fabs(diff) > 1e-13) {
-            g_warning("u[len - 1] = %19g (= 1 + %19g), expecting exactly 1",
-                      u[len - 1], diff);
+            assert(0); // No warnings in 2geom
+            //g_warning("u[len - 1] = %19g (= 1 + %19g), expecting exactly 1",
+            //          u[len - 1], diff);
         }
         u[len - 1] = 1;
     }
 
 #ifdef BEZIER_DEBUG
-    g_assert( u[0] == 0.0 && u[len - 1] == 1.0 );
+    assert( u[0] == 0.0 && u[len - 1] == 1.0 );
     for (unsigned i = 1; i < len; i++) {
-        g_assert( u[i] >= u[i-1] );
+        assert( u[i] >= u[i-1] );
     }
 #endif
 }
@@ -880,17 +884,17 @@ chord_length_parameterize(Geom::Point const d[], gdouble u[], unsigned const len
  *        || ((*splitPoint \< len - 1)
  *            \&\& (*splitPoint != 0 || ret \< 0.0))).
  */
-static gdouble
-compute_max_error_ratio(Geom::Point const d[], double const u[], unsigned const len,
+static double
+compute_max_error_ratio(Point const d[], double const u[], unsigned const len,
                         BezierCurve const bezCurve, double const tolerance,
                         unsigned *const splitPoint)
 {
-    g_assert( 2 <= len );
+    assert( 2 <= len );
     unsigned const last = len - 1;
-    g_assert( bezCurve[0] == d[0] );
-    g_assert( bezCurve[3] == d[last] );
-    g_assert( u[0] == 0.0 );
-    g_assert( u[last] == 1.0 );
+    assert( bezCurve[0] == d[0] );
+    assert( bezCurve[3] == d[last] );
+    assert( u[0] == 0.0 );
+    assert( u[last] == 1.0 );
     /* I.e. assert that the error for the first & last points is zero.
      * Otherwise we should include those points in the below loop.
      * The assertion is also necessary to ensure 0 < splitPoint < last.
@@ -899,9 +903,9 @@ compute_max_error_ratio(Geom::Point const d[], double const u[], unsigned const 
     double maxDistsq = 0.0; /* Maximum error */
     double max_hook_ratio = 0.0;
     unsigned snap_end = 0;
-    Geom::Point prev = bezCurve[0];
+    Point prev = bezCurve[0];
     for (unsigned i = 1; i <= last; i++) {
-        Geom::Point const curr = bezier_pt(3, bezCurve, u[i]);
+        Point const curr = bezier_pt(3, bezCurve, u[i]);
         double const distsq = lensq( curr - d[i] );
         if ( distsq > maxDistsq ) {
             maxDistsq = distsq;
@@ -920,11 +924,11 @@ compute_max_error_ratio(Geom::Point const d[], double const u[], unsigned const 
     if (max_hook_ratio <= dist_ratio) {
         ret = dist_ratio;
     } else {
-        g_assert(0 < snap_end);
+        assert(0 < snap_end);
         ret = -max_hook_ratio;
         *splitPoint = snap_end - 1;
     }
-    g_assert( ret == 0.0
+    assert( ret == 0.0
               || ( ( *splitPoint < last )
                    && ( *splitPoint != 0 || ret < 0. ) ) );
     return ret;
@@ -952,22 +956,24 @@ compute_max_error_ratio(Geom::Point const d[], double const u[], unsigned const 
  *  distance.)
  */
 static double
-compute_hook(Geom::Point const &a, Geom::Point const &b, double const u, BezierCurve const bezCurve,
+compute_hook(Point const &a, Point const &b, double const u, BezierCurve const bezCurve,
              double const tolerance)
 {
-    Geom::Point const P = bezier_pt(3, bezCurve, u);
-    Geom::Point const diff = .5 * (a + b) - P;
-    double const dist = Geom::L2(diff);
+    Point const P = bezier_pt(3, bezCurve, u);
+    Point const diff = .5 * (a + b) - P;
+    double const dist = L2(diff);
     if (dist < tolerance) {
         return 0;
     }
-    double const allowed = Geom::L2(b - a) + tolerance;
+    double const allowed = L2(b - a) + tolerance;
     return dist / allowed;
     /** \todo 
      * effic: Hooks are very rare.  We could start by comparing 
      * distsq, only resorting to the more expensive L2 in cases of 
      * uncertainty.
      */
+}
+
 }
 
 /*
