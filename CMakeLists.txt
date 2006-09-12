@@ -28,14 +28,35 @@ s-bez
 toy-cairo
 unit-test-sbasis
 )
+
+SET(2GEOM_EXTRAS_SRC
+bezier-utils.cpp
+bezier-utils.h
+)
+
+SET(2GEOM_TESTS_SRC
+bezier-utils-test
+bez-test
+matrix-test
+#matrix-test.h
+point-fns-test
+#point-fns-test.h
+rotate-test
+#rotate-test.h
+scale-test
+#scale-test.h
+rotate-fns-test
+#rotate-fns-test.h
+test_cg
+translate-test
+#translate-test.h
+types-test
+#types-test.h
+)
 SET(2GEOM_SRC
 arc-length.cpp
 arc-length.h
 bezier-to-sbasis.h
-bezier-utils.cpp
-bezier-utils.h
-bezier-utils-test.cpp
-bez-test.cpp
 beztype.cpp
 b-spline.cpp
 centroid.cpp
@@ -79,8 +100,6 @@ matrix-rotate-ops.cpp
 matrix-rotate-ops.h
 matrix-scale-ops.cpp
 matrix-scale-ops.h
-matrix-test.cpp
-matrix-test.h
 matrix-translate-ops.cpp
 matrix-translate-ops.h
 maybe.h
@@ -108,8 +127,6 @@ path-to-polyline.cpp
 path-to-polyline.h
 point-fns.cpp
 point-fns.h
-point-fns-test.cpp
-point-fns-test.h
 point.h
 point-l.h
 point-matrix-ops.h
@@ -132,14 +149,10 @@ rect-ops.h
 refcounted.h
 rotate-fns.cpp
 rotate-fns.h
-rotate-fns-test.cpp
-rotate-fns-test.h
 rotate.h
 rotate-matrix-ops.cpp
 rotate-matrix-ops.h
 rotate-ops.h
-rotate-test.cpp
-rotate-test.h
 round.h
 s-basis-2d.h
 s-basis-2d.cpp
@@ -154,15 +167,12 @@ scale.h
 scale-matrix-ops.cpp
 scale-matrix-ops.h
 scale-ops.h
-scale-test.cpp
-scale-test.h
 scale-translate-ops.cpp
 scale-translate-ops.h
 solve-bezier-one-d.cpp
 solve-bezier-parametric.cpp
 solver.h
 sturm.h
-test_cg.cpp
 #toy.cpp
 translate.h
 translate-matrix-ops.cpp
@@ -172,15 +182,12 @@ translate-rotate-ops.cpp
 translate-rotate-ops.h
 translate-scale-ops.cpp
 translate-scale-ops.h
-translate-test.cpp
-translate-test.h
 types.cpp
 types.h
-types-test.cpp
-types-test.h
 values.cpp
 values.h
 )
+
 # make lib for 2geom
 ADD_LIBRARY(lib2geom STATIC ${2GEOM_SRC})
 ADD_DEPENDENCIES(lib2geom
@@ -190,7 +197,21 @@ gtk+-2.0
 glib2.0-2.10.3
 gsl0-1.7
 )
+
+OPTION(2GEOM_UNIT_TESTS
+  "Build the projects test files"
+  OFF)
+FOREACH(source ${2GEOM_UNIT_TESTS})
+    ADD_EXECUTABLE(${source} ${source}.cpp)
+    TARGET_LINK_LIBRARIES(${source} lib2geom)
+ENDFOREACH(source)
+ENDIF(2GEOM_UNIT_TESTS)
+
+OPTION(2GEOM_TOYS
+  "Build the projects Toy files"
+  ON)
 FOREACH(source ${2GEOM_TOYS_SRC})
     ADD_EXECUTABLE(${source} ${source}.cpp)
     TARGET_LINK_LIBRARIES(${source} lib2geom)
 ENDFOREACH(source)
+ENDIF(2GEOM_TOYS)
