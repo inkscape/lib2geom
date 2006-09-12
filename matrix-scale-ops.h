@@ -4,7 +4,7 @@
  * Declarations (and definition if inline) of operator blah (Geom::Matrix, Geom::scale). 
  */
 
-#include "libnr/forward.h"
+#include "forward.h"
 
 Geom::Matrix operator/(Geom::Matrix const &m, Geom::scale const &s);
 

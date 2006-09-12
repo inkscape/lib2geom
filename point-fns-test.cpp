@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 #include "utest/utest.h"
-#include "libnr/point-fns.h"
+#include "point-fns.h"
 #include "isnan.h"
 
 using Geom::Point;

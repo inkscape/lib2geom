@@ -1,6 +1,6 @@
 for Inkscape:
 
-- "set" operations:
+  - "set" operations:
   - union
   - difference
   - intersection
@@ -8,6 +8,7 @@ for Inkscape:
   - cut
 - dilating/contracting shapes
 - generate postscript stroke geometries
+- rewrite bezier-utils to use paths
 
 other:
 

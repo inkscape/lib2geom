@@ -5,7 +5,7 @@
  * blah (Geom::scale, Geom::Matrix). 
  */
 
-#include "libnr/forward.h"
+#include "forward.h"
 
 Geom::Matrix operator*(Geom::scale const &s, Geom::Matrix const &m);
 

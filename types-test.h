@@ -1,8 +1,8 @@
 // types-test.h
 #include <cxxtest/TestSuite.h>
 
-#include "libnr/types.h"
-#include "libnr/point-fns.h"
+#include "types.h"
+#include "point-fns.h"
 #include <cmath>
 using Geom::Point;
 using Geom::X;

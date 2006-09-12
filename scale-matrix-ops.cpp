@@ -1,4 +1,4 @@
-#include "libnr/matrix-ops.h"
+#include "matrix-ops.h"
 
 Geom::Matrix
 operator*(Geom::scale const &s, Geom::Matrix const &m)

@@ -1,4 +1,4 @@
-#include "libnr/matrix-translate-ops.h"
+#include "matrix-translate-ops.h"
 
 Geom::Matrix
 operator*(Geom::scale const &s, Geom::translate const &t)

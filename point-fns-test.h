@@ -6,7 +6,7 @@
 #include <glib/gmacros.h>
 #include <stdlib.h>
 
-#include "libnr/point-fns.h"
+#include "point-fns.h"
 #include "isnan.h"
 
 using Geom::Point;

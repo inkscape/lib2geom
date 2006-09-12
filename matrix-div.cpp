@@ -1,5 +1,5 @@
-#include "libnr/matrix-ops.h"
-#include "libnr/point-matrix-ops.h"
+#include "matrix-ops.h"
+#include "point-matrix-ops.h"
 
 Geom::Point operator/(Geom::Point const &p, Geom::Matrix const &m) {
     return p * m.inverse();

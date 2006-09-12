@@ -36,7 +36,7 @@
 #include <glib/gmessages.h>
 #include <glib/gmem.h>
 #include "bezier-utils.h"
-#include <libnr/point-fns.h>
+#include "point-fns.h"
 
 #include "isnan.h"
 

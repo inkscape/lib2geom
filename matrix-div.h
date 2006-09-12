@@ -1,7 +1,7 @@
 #ifndef SEEN_LIBGeom_Geom_MATRIX_DIV_H
 #define SEEN_LIBGeom_Geom_MATRIX_DIV_H
 
-#include "libnr/forward.h"
+#include "forward.h"
 
 Geom::Point operator/(Geom::Point const &, Geom::Matrix const &);
 
