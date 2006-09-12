@@ -16,26 +16,28 @@
  * Released under GNU GPL
  */
 
-#include <libnr/forward.h>
-#include <glib/gtypes.h>
+namespace Geom{
+
+class Point;
 
 /* Bezier approximation utils */
-Geom::Point bezier_pt(unsigned degree, Geom::Point const V[], gdouble t);
+Point bezier_pt(unsigned degree, Point const V[], gdouble t);
 
-gint sp_bezier_fit_cubic(Geom::Point bezier[], Geom::Point const data[], gint len, gdouble error);
+gint sp_bezier_fit_cubic(Point bezier[], Point const data[], gint len, gdouble error);
 
-gint sp_bezier_fit_cubic_r(Geom::Point bezier[], Geom::Point const data[], gint len, gdouble error,
+gint sp_bezier_fit_cubic_r(Point bezier[], Point const data[], gint len, gdouble error,
                            unsigned max_beziers);
 
-gint sp_bezier_fit_cubic_full(Geom::Point bezier[], int split_points[], Geom::Point const data[], gint len,
-                              Geom::Point const &tHat1, Geom::Point const &tHat2,
+gint sp_bezier_fit_cubic_full(Point bezier[], int split_points[], Point const data[], gint len,
+                              Point const &tHat1, Point const &tHat2,
                               gdouble error, unsigned max_beziers);
 
-Geom::Point sp_darray_left_tangent(Geom::Point const d[], unsigned const len);
-Geom::Point sp_darray_left_tangent(Geom::Point const d[], unsigned const len, double const tolerance_sq);
-Geom::Point sp_darray_right_tangent(Geom::Point const d[], unsigned const length, double const tolerance_sq);
+Point sp_darray_left_tangent(Point const d[], unsigned const len);
+Point sp_darray_left_tangent(Point const d[], unsigned const len, double const tolerance_sq);
+Point sp_darray_right_tangent(Point const d[], unsigned const length, double const tolerance_sq);
 
 
+}
 #endif /* __SP_BEZIER_UTILS_H__ */
 
 /*
