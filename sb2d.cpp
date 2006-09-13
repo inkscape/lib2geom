@@ -57,14 +57,16 @@ void draw_sb2d(cairo_t* cr, SBasis2d const &sb2, Geom::Point dir, double width) 
 }
 
 class MyToy: public Toy {
-    virtual void expose(cairo_t *cr, std::ostringstream *notify, int width, int height) {
-        cairo_set_source_rgba (cr, 0., 0., 0, 0.8);
-        cairo_set_line_width (cr, 0.5);
-        for(int i = 1; i < 4; i+=2) {
-            cairo_move_to(cr, 0, i*width/4);
-            cairo_line_to(cr, width, i*width/4);
-            cairo_move_to(cr, i*width/4, 0);
-            cairo_line_to(cr, i*width/4, width);
+    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
+        if(!save) {
+            cairo_set_source_rgba (cr, 0., 0., 0, 0.8);
+            cairo_set_line_width (cr, 0.5);
+            for(int i = 1; i < 4; i+=2) {
+                cairo_move_to(cr, 0, i*width/4);
+                cairo_line_to(cr, width, i*width/4);
+                cairo_move_to(cr, i*width/4, 0);
+                cairo_line_to(cr, i*width/4, width);
+            }
         }
         SBasis2d sb2;
         sb2.us = 2;
@@ -88,8 +90,10 @@ class MyToy: public Toy {
                                               uniform()*width/4.));
         }
         dir = (handles[surface_handles] - Geom::Point(3*width/4., width/4.)) / 30;
-        cairo_move_to(cr, 3*width/4., width/4.);
-        cairo_line_to(cr, handles[surface_handles]);
+        if(!save) {
+            cairo_move_to(cr, 3*width/4., width/4.);
+            cairo_line_to(cr, handles[surface_handles]);
+        }
         for(int vi = 0; vi < sb2.vs; vi++)
          for(int ui = 0; ui < sb2.us; ui++)
           for(int iv = 0; iv < 2; iv++)
@@ -113,10 +117,9 @@ class MyToy: public Toy {
     
         cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
         cairo_stroke(cr);
-    
-        for(int i = 0; i < display_handles.size(); i++) {
-            draw_circ(cr, display_handles[i]);
-        }
+        if(!save)
+            for(int i = 0; i < display_handles.size(); i++)
+                draw_circ(cr, display_handles[i]);
     }
 
     virtual void mouse_pressed(GdkEventButton* e) {}

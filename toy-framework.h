@@ -17,7 +17,7 @@ static GtkWidget *canvas;
 
 class Toy {
 public:
-    virtual void expose(cairo_t *cr, std::ostringstream *notify, int w, int h) {}
+    virtual void draw(cairo_t *cr, std::ostringstream *notify, int w, int h, bool save) {}
 
     virtual void mouse_pressed(GdkEventButton* e) {}
     virtual void mouse_released(GdkEventButton* e) {}

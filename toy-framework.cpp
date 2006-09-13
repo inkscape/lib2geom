@@ -40,7 +40,7 @@ void save() {
         cairo_t* cr = cairo_create(cr_s);
         
         if(current_toy != NULL)
-            current_toy->expose(cr, new std::ostringstream, 600, 600);
+            current_toy->draw(cr, new std::ostringstream, 600, 600, true);
 
         cairo_show_page(cr);
         cairo_destroy (cr);
@@ -102,7 +102,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     std::ostringstream notify;
     
     if(current_toy != NULL)
-        current_toy->expose(cr, &notify, width, height);
+        current_toy->draw(cr, &notify, width, height, false);
     
     cairo_set_source_rgba (cr, 0., 0.5, 0, 1);
     cairo_set_line_width (cr, 1);
