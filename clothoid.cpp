@@ -16,6 +16,10 @@
 #include "interactive-bits.h"
 #include "bezier-to-sbasis.h"
 #include "path.h"
+#include "path-builder.h"
+#include "bezier-to-sbasis.h"
+#include "sbasis-to-bezier.h"
+#include "path-cairo.h"
 
 using std::string;
 using std::vector;
@@ -31,6 +35,12 @@ Geom::Point old_mouse_point;
 #include "multidim-sbasis.h"
 
 unsigned total_pieces;
+
+void draw_md_sb(cairo_t *cr, multidim_sbasis<2> const &B) {
+    Geom::PathBuilder pb;
+    subpath_from_sbasis(pb, B, 0.1);
+    cairo_path(cr, pb.peek());
+}
 
 static gboolean
 expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
@@ -61,26 +71,21 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     double a0 = ((handles[0][0]-width/4)*2)/width;
     double a1 = ((handles[1][0]-width/4)*2)/width;
     notify << "[" << a0 << ", " << a1 << "]";
-    SBasis arc = cos(BezOrd(a0, a1), 1);
-    arc = integral(multiply(arc, arc));
-    for(int ti = 0; ti <= 30; ti++) {
-        double t = (double(ti))/(30);
-        double x = width/4 + width*((1-t)*a0 + t*a1)/2;
-        double y = 3*height/4 - height*(arc.point_at(t))/2;
-        if(ti)
-            cairo_line_to(cr, x, y);
-        else
-            cairo_move_to(cr, x, y);
+    
+    multidim_sbasis<2> B;
+    BezOrd bo = BezOrd(a0*6,a1*6);
+    SBasis t2 = BezOrd(0,1);
+    t2 = t2*t2;
+    B[0] = compose(cos(bo,6), t2);
+    B[1] = compose(sin(bo,6), t2);
+    for(int dim = 0; dim < 2; dim++) {
+        B[dim] = integral(B[dim]);
+        B[dim] -= B[dim](0);
+        B[dim] = 200 + 300*B[dim];
     }
-    for(int ti = 0; ti <= 30; ti++) {
-        double t = (double(ti))/(30);
-        double x = width/4 + width*t/2;
-        double y = 3*height/4 - height*(arc.point_at(t) - cos((1-t)*a0 + t*a1))/2;
-        if(ti)
-            cairo_line_to(cr, x, y);
-        else
-            cairo_move_to(cr, x, y);
-    }
+    draw_md_sb(cr, B);
+    
+    
     cairo_stroke(cr);
     {
         PangoLayout* layout = pango_cairo_create_layout (cr);

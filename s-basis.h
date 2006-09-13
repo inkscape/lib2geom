@@ -237,6 +237,25 @@ inline SBasis& operator+=(SBasis& a, double b) {
     return a;
 }
 
+inline SBasis operator+(BezOrd b, SBasis a) {
+    if(a.size() < 1)
+        a.push_back(b);
+    else {
+        a[0] += b;
+    }
+    return a;
+}
+
+inline SBasis operator+(double b, SBasis a) {
+    if(a.size() < 1)
+        a.push_back(BezOrd(b,b));
+    else {
+        a[0][0] += double(b);
+        a[0][1] += double(b);
+    }
+    return a;
+}
+
 inline SBasis& operator-=(SBasis& a, double b) {
     if(a.size() < 1)
         a.push_back(BezOrd(-b, -b));
