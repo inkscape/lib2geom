@@ -32,6 +32,12 @@ Geom::Point old_mouse_point;
 
 #include "multidim-sbasis.h"
 
+void draw_md_sb(cairo_t *cr, multidim_sbasis<2> const &B) {
+    Geom::PathBuilder pb;
+    subpath_from_sbasis(pb, B, 0.1);
+    cairo_path(cr, pb.peek());
+}
+
 static gboolean
 expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
 {
@@ -61,6 +67,11 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
         cairo_line_to(cr, centre[0], centre[1]+minor_dim/4);
     }
     cairo_stroke(cr);
+    
+    multidim_sbasis<2> B;
+    for(int dim = 0; dim < 2; dim++)
+        B[dim] = BezOrd(handles[1][dim], handles[2][dim]);
+    draw_md_sb(cr, B);
     
     // draw base radius
     cairo_new_sub_path(cr);
@@ -174,7 +185,7 @@ double uniform() {
 }
 
 int main(int argc, char **argv) {
-    for(int i = 0; i < 1; i++)
+    for(int i = 0; i < 3; i++)
         handles.push_back(Geom::Point(uniform()*400, uniform()*400));
     
     gtk_init (&argc, &argv);
