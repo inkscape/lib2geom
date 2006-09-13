@@ -126,22 +126,6 @@ class MyToy: public Toy {
     virtual void key_pressed(GdkEventKey *e) {}
 };
 
-/*
-static void
-on_open_activate(GtkMenuItem *menuitem, gpointer user_data) {
-    //TODO: show open dialog, get filename
-    
-    char const *const filename = "banana.svgd";
-
-    FILE* f = fopen(filename, "r");
-    if (!f) {
-        perror(filename);
-        return;
-    }
-    
-    gtk_widget_queue_draw(canvas); // globals are probably evil
-}*/
-
 int main(int argc, char **argv) {
         init(argc, argv, "sb2d", new MyToy());
         return 0;

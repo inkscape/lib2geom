@@ -8,6 +8,11 @@
 #include "point-fns.h"
 #include "geom.h"
 
+#include "cairo-pdf.h"
+#include "cairo-svg.h"
+
+GtkWindow* window;
+
 void make_about() {
     GtkWidget* about_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_title(GTK_WINDOW(about_window), "About");
@@ -21,10 +26,34 @@ void make_about() {
     gtk_widget_show_all(about_window);
 }
 
+void save() {
+    GtkWidget* d = gtk_file_chooser_dialog_new("Save file as svg or pdf", window, GTK_FILE_CHOOSER_ACTION_SAVE, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT, NULL);
+    if(gtk_dialog_run(GTK_DIALOG(d)) == GTK_RESPONSE_ACCEPT) {
+        char* filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(d));
+        cairo_surface_t* cr_s;
+
+        if (strcmp(filename + strlen(filename) - 4, ".pdf") == 0)
+            cr_s = cairo_pdf_surface_create(filename, 600, 600);
+        else
+            cr_s = cairo_svg_surface_create(filename, 600, 600);
+
+        cairo_t* cr = cairo_create(cr_s);
+        
+        if(current_toy != NULL)
+            current_toy->expose(cr, new std::ostringstream, 600, 600);
+
+        cairo_show_page(cr);
+        cairo_destroy (cr);
+        cairo_surface_destroy (cr_s);
+    }
+    gtk_widget_destroy(d);
+}
+
 GtkItemFactory* item_factory;
 
 GtkItemFactoryEntry menu_items[] = {
     { "/_File",             NULL,           NULL,           0,  "<Branch>" },
+    { "/File/_Save",        "<CTRL>S",      save,           0,  "<StockItem>", GTK_STOCK_SAVE },
     { "/File/_Quit",        "<CTRL>Q",      gtk_main_quit,  0,  "<StockItem>", GTK_STOCK_QUIT },
 /*    { "/_Settings",         NULL,           NULL,           0,  "<Branch>" },
     { "/Settings/Colors",   NULL,           NULL,           0,  "<Item>" },
@@ -46,13 +75,13 @@ static gint delete_event(GtkWidget* window, GdkEventAny* e, gpointer data) {
     return FALSE;
 }
 
-GtkItemFactory* get_menu_factory(GtkWidget* window, GtkItemFactoryEntry items[], gint num) {
+GtkItemFactory* get_menu_factory(GtkWindow* window, GtkItemFactoryEntry items[], gint num) {
     GtkAccelGroup* accel_group = gtk_accel_group_new();
 
     GtkItemFactory* item_factory = gtk_item_factory_new(GTK_TYPE_MENU_BAR, "<main>", accel_group);
     gtk_item_factory_create_items(item_factory, num, items, NULL);
 
-    gtk_window_add_accel_group(GTK_WINDOW(window), accel_group); 
+    gtk_window_add_accel_group(window, accel_group); 
 
     return item_factory;
 }
@@ -189,7 +218,7 @@ void init(int argc, char **argv, char *title, Toy* t) {
     
     gdk_rgb_init();
 
-    GtkWidget* window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
 
     gtk_window_set_title(GTK_WINDOW(window), title);
 
@@ -226,7 +255,7 @@ void init(int argc, char **argv, char *title, Toy* t) {
 
     gtk_window_set_default_size(GTK_WINDOW(window), 600, 600);
 
-    gtk_widget_show_all(window);
+    gtk_widget_show_all(GTK_WIDGET(window));
 
     /* Make sure the canvas can receive key press events. */
     GTK_WIDGET_SET_FLAGS(canvas, GTK_CAN_FOCUS);
