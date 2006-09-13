@@ -61,7 +61,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     double a0 = ((handles[0][0]-width/4)*2)/width;
     double a1 = ((handles[1][0]-width/4)*2)/width;
     notify << "[" << a0 << ", " << a1 << "]";
-    SBasis arc = cos(a0, a1, 1);
+    SBasis arc = cos(BezOrd(a0, a1), 1);
     arc = integral(multiply(arc, arc));
     for(int ti = 0; ti <= 30; ti++) {
         double t = (double(ti))/(30);

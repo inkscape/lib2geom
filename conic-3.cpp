@@ -112,8 +112,8 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     SBasis one = BezOrd(1, 1);
     multidim_sbasis<2> B;
     double alpha = M_PI;
-    SBasis C = cos(0, alpha, 10);
-    SBasis S = sin(0, alpha, 10);
+    SBasis C = cos(BezOrd(0, alpha), 10);
+    SBasis S = sin(BezOrd(0, alpha), 10);
     SBasis X(BezOrd(0,alpha));
     SBasis sinC = X - S;
     SBasis cosC = one - C;

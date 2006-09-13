@@ -300,11 +300,11 @@ void SBasis::normalize() {
         pop_back();
 }
 
-SBasis sin(double a0, double a1, int k) {
-    SBasis s = BezOrd(sin(a0), sin(a1));
+SBasis sin(BezOrd b, int k) {
+    SBasis s = BezOrd(sin(b[0]), sin(b[1]));
     Tri tr(s[0]);
-    double t2 = (a1 - a0);
-    s.push_back(BezOrd(cos(a0)*t2 - tr, -cos(a1)*t2 + tr));
+    double t2 = Tri(b);
+    s.push_back(BezOrd(cos(b[0])*t2 - tr, -cos(b[1])*t2 + tr));
     
     t2 *= t2;
     for(int i = 0; i < k; i++) {
@@ -319,9 +319,9 @@ SBasis sin(double a0, double a1, int k) {
     return s;
 }
 
-SBasis cos(double a0, double a1, int k) {
-    return sin(a0 + M_PI/2,
-               a1 + M_PI/2,
+SBasis cos(BezOrd bo, int k) {
+    return sin(BezOrd(bo[0] + M_PI/2,
+                      bo[1] + M_PI/2),
                k);
 }
 

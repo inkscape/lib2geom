@@ -295,8 +295,8 @@ inline std::ostream &operator<< (std::ostream &out_file, const SBasis & p) {
     return out_file;
 }
 
-SBasis sin(double a0, double a1, int k);
-SBasis cos(double a0, double a1, int k);
+SBasis sin(BezOrd bo, int k);
+SBasis cos(BezOrd bo, int k);
 
 SBasis reverse(SBasis const &s);
 

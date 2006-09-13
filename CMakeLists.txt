@@ -27,6 +27,7 @@ s-bez
 #tensor-reparam
 toy-cairo
 unit-test-sbasis
+gear
 )
 
 SET(2GEOM_EXTRAS_SRC
