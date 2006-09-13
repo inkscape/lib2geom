@@ -18,7 +18,6 @@
 #include "sbasis-to-bezier.h"
 #include "path.h"
 #include "path-cairo.h"
-#include <iterator>
 #include "multidim-sbasis.h"
 #include "path-builder.h"
 #include "translate.h"
