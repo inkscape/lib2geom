@@ -38,16 +38,12 @@ Geom::Point old_mouse_point;
 
 unsigned total_pieces;
 
-void draw_cb(cairo_t *cr, multidim_sbasis<2> const &B) {
-    std::vector<Geom::Point> bez = sbasis2_to_bezier(B, 2);
-    cairo_move_to(cr, bez[0]);
-    cairo_curve_to(cr, bez[1], bez[2], bez[3]);
+void draw_md_sb(cairo_t *cr, multidim_sbasis<2> const &B) {
+    Geom::PathBuilder pb;
+    subpath_from_sbasis(pb, B, 1);
+    cairo_path(cr, pb.peek());
+    cairo_path_handles(cr, pb.peek());
 }
-
-double sinC(double t) { return t - sin(t);}
-double cosC(double t) { return 1 - cos(t);}
-double cos2(double t) { return cos(t)*cos(t);}
-double tanC(double t) { return sinC(t) / cosC(t);}
 
 const double w = 1./3;
 const double cwp = cos(w*M_PI);
@@ -59,6 +55,50 @@ double b3(double t, double w) {return cwp*phi(t,w)/(2*swp) - cwp*cwp*b4(t,w); }
 double b2(double t, double w) {return 2*w*w*sin(t/2)*sin(t/2);}
 double b1(double t, double w) {return b3(2*M_PI - t, w);}
 double b0(double t, double w) {return b4(2*M_PI - t, w);}
+
+class arc_basis{
+public:
+    SBasis basis[5];
+    double w;
+    int k;
+    
+    SBasis phi(BezOrd const &d, double w) { 
+        return sin(w*d, k) - w*sin(d, k); 
+    }
+    SBasis phih(BezOrd const &d, double w) { 
+        return sin(w*d, k) + w*sin(d, k); 
+    }
+    SBasis b4(BezOrd const &d, double w) {
+        return (1./(swp*swp))*phi(0.5*d,w)*phih(0.5*d,w);
+    }
+    SBasis b3(BezOrd const &d, double w) {
+        return (cwp/(2*swp))*phi(d,w) - cwp*cwp*b4(d,w); 
+    }
+
+    SBasis b2(BezOrd const &d, double w) {
+        return 2*w*w*sin(0.5*d, k)*sin(0.5*d, k);
+    }
+    SBasis b1(BezOrd const &d, double w) {
+        return b3(reverse(d), w);
+    }
+    SBasis b0(BezOrd const &d, double w) {
+        return b4(reverse(d), w);
+    }
+    
+    
+    arc_basis(double w) {
+        //basis[5] = {b4, b3, b2, b1, b0};
+        k = 2; // 2 seems roughly right
+        const BezOrd dom(0, 2*M_PI);
+        basis[0] = b4(dom, w);
+        basis[1] = b3(dom, w);
+        basis[2] = b2(dom, w);
+        basis[3] = b1(dom, w);
+        basis[4] = b0(dom, w);
+    }
+
+};
+
 static gboolean
 expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
 {
@@ -117,26 +157,9 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     }
     cairo_stroke(cr);
 
-    //Geom::Point ctr = (e_h[0] + e_h[4])/2;
-    //e_h[1] = (e_h[1]-e_h[0])*3 + e_h[0];
-    //e_h[2] = (e_h[2]-ctr)*3 + ctr;
-    //e_h[3] = (e_h[3]-e_h[4])*3 + e_h[4];
-    //for(int i = 1; i <= 3; i++) {
-    //   e_h[i] = (e_h[i]-ctr)*3 + ctr;
-    // }
-    
-    multidim_sbasis<2> B;
-    const double alpha = M_PI;
-    SBasis C = cos(BezOrd(0, alpha), 10);
-    SBasis S = sin(BezOrd(0, alpha), 10);
-    SBasis Cw = cos(BezOrd(0, w*alpha), 10);
-    SBasis Sw = sin(BezOrd(0, w*alpha), 10);
-    SBasis one(BezOrd(1,1));
-    SBasis X(BezOrd(0,alpha));
     
     typedef double (* F)(double,double);
     F basis[5] = {b4, b3, b2, b1, b0};
-                       
     
     for(int ti = 0; ti <= 30; ti++) {
         double t = 2*M_PI*(double(ti))/(30);
@@ -151,6 +174,19 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
             cairo_move_to(cr, p);
     }
     cairo_stroke(cr);
+    
+    arc_basis ab(1./3);       
+    for(unsigned i  = 0; i < 5; i++)
+        notify << ab.basis[i] << std::endl;
+    multidim_sbasis<2> B;
+    
+    for(unsigned dim  = 0; dim < 2; dim++)
+        for(unsigned i  = 0; i < 5; i++)
+            B[dim] += e_h[i][dim]*ab.basis[i];
+    
+    draw_md_sb(cr, B);
+    
+    
     for(int i = 0; i < 0; i++) {
         for(int ti = 0; ti <= 30; ti++) {
             double t = 2*M_PI*(double(ti))/(30);

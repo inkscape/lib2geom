@@ -68,8 +68,8 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     for(int dim = 0; dim < 2; dim++) {
         B[dim] = Bz[dim];
     }
-    B[2] =  multiply(BezOrd(1, 0), BezOrd(1, sqrt(2))) +
-	    multiply(BezOrd(0, 1), BezOrd(sqrt(2), 1));
+    B[2] =  (BezOrd(1, 0)*BezOrd(1, sqrt(2))) +
+        (BezOrd(0, 1)*BezOrd(sqrt(2), 1));
     
     for(int ti = 0; ti <= 30; ti++) {
         double t = (double(ti))/(30);

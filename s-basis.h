@@ -88,6 +88,11 @@ inline BezOrd operator*(double const a, BezOrd const & b) {
     return BezOrd(a*b[0], a*b[1]);
 }
 
+inline BezOrd
+reverse(BezOrd const &b) {
+    return BezOrd(b[1], b[0]);
+}
+
 class SBasis : public std::vector<BezOrd>{
 public:
     SBasis() {}
@@ -156,6 +161,10 @@ public:
     double tail_error(unsigned tail) const;
     
     void truncate(unsigned k);
+
+// compute f(g)
+    SBasis
+    operator()(SBasis const & g) const;
 };
 
 inline SBasis operator-(const SBasis& p) {
@@ -277,12 +286,23 @@ SBasis reciprocal(BezOrd const &a, int k);
 
 SBasis divide(SBasis const &a, SBasis const &b, int k);
 
+inline SBasis
+operator*(SBasis const & a, SBasis const & b) {
+    return multiply(a, b);
+}
+
 #include <iostream>
 // a(b(t))
 SBasis compose(SBasis const &a, SBasis const &b);
 SBasis compose(SBasis const &a, SBasis const &b, unsigned k);
 SBasis inverse(SBasis a, int k);
 
+// compute f(g)
+inline SBasis
+SBasis::operator()(SBasis const & g) const {
+    return compose(*this, g);
+}
+ 
 inline std::ostream &operator<< (std::ostream &out_file, const BezOrd &bo) {
     out_file << "{" << bo[0] << ", " << bo[1] << "}";
     return out_file;

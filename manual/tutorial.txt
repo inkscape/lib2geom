@@ -1,0 +1,291 @@
+(09:03:49) ACSpike: I tried to glean drawing a circle from conic-4 (I think) I'm either missing the drawing of the circle in the rest of the code, or it is just so short and simple that I don't get it
+(09:08:03) ACSpike: heh, oh "Define here various primatives, such as line, line segment, circle, bezier path etc."
+(09:18:29) njh: don't look at that
+(09:18:37) njh: that's done in a hacky way
+(09:19:09) njh: ok, lets plan what your program will do
+(09:19:23) njh: I'm thinking an 'on canvas' editor for gears
+(09:20:13) njh: the biggest problem is that you have lumpy parameters (for example number of teeth is a whole number)
+(09:20:54) ACSpike: lets start smaller
+(09:21:00) njh: ok
+(09:21:09) njh: howabout just drawing a circle
+(09:21:11) ACSpike: I need an entry point into the world of 2geom
+(09:21:31) ACSpike: can I get an svg path for a circle?
+(09:21:35) njh: well, what I was going to suggest was just making circles with handles
+(09:21:44) ACSpike: ie, no gtk gui stuff
+(09:21:47) njh: hehe, I still haven't done circles :)
+(09:21:52) njh: but you can use cairo
+(09:21:58) ACSpike: well
+(09:22:02) njh: cairo_arc
+(09:22:03) ACSpike: what can I get?
+(09:22:27) njh: lets make a program that just draws a single circle
+(09:23:00) ACSpike: ok. back in a bit
+(09:31:15) njh: ok
+(09:31:22) njh: I've committed a starting point for you
+(09:31:23) ACSpike: ok, I get it. 2geom doesn't do svg
+(09:31:29) ACSpike: it does beziers
+(09:31:37) ACSpike: and draws them on a cairo surface
+(09:32:27) njh: at this point, yeah
+(09:32:38) njh: actually, it doesn't even draw them :)
+(09:32:54) njh: that's done by path-cairo, which is demidetached :)
+(09:33:22) njh: so gear.cpp is a starting point for you
+(09:33:51) njh: one issue is that I haven't done elliptical arcs in Paths yet
+(09:34:04) njh: so we're going to not even use paths at this point
+(09:34:34) njh: just attempt to make a circle using sbasis rather than calling cairo_arc
+(09:35:03) verbalshadow [verbalshadow@gristle.org/Laptop] entered the room.
+(09:35:17) ACSpike: oy
+(09:35:19) njh: so a circle is parameterised by <cos(t), sin(t)> with t going form 0 to 2*pi
+(09:35:27) ACSpike: right
+(09:35:41) njh: does gear compile and run on your computer?
+(09:36:35) ACSpike: did you commit it?
+(09:39:27) njh: I spose I should add before commiting
+(09:39:37) njh: done
+(09:39:57) njh: ok, your second step will be to add two handles
+(09:48:04) njh: feel free to ask if you are stuck
+(09:48:50) ACSpike: oh, boy
+(09:49:04) ACSpike: so we have a handle for radius
+(09:50:01) Botty: the most elegant way to do this convex stuff would be to have a circular iterator
+(09:50:16) Botty: i suppose modulus works
+(09:51:32) njh: it does
+(09:51:55) njh: ACSpike: the longest journey starts with a single step
+(09:52:11) ACSpike: or a single grep
+(09:52:24) njh: I prefer emacs isearch
+(09:52:35) njh: so, does it compile?
+(09:52:39) ACSpike: ya
+(09:52:41) ACSpike: and runs
+(09:52:48) njh: and have yuo worked out how to add a handle
+(09:52:59) ACSpike: pushback
+(09:53:05) njh: yep
+(09:53:11) njh: just increase the loop
+(09:53:27) njh: generates random handles
+(09:53:51) njh: anyway, have you got two extra handles?
+(09:54:00) ACSpike: no
+(09:54:01) njh: please tell me when you have something working
+(09:54:16) ACSpike: I'm trying to grok the single handle
+(09:54:33) njh: just assume that handles can be moved anyway
+(09:54:40) njh: how they work is a bit fiddly
+(09:54:49) ACSpike: and raise kids :-)
+(09:54:51) njh: but all they are is a Geom::Point
+(09:57:54) njh: no
+(09:58:05) njh: how do I do that?
+(10:01:44) ACSpike: yes
+(10:05:04) ACSpike: norm ~ magnatude ~ distance?
+(10:06:07) njh: norms are like distance, yes
+(10:06:31) njh: but not just 'as the crow flies' distance
+(10:06:51) njh: another norm would be how long it takes you to get between places
+(10:07:17) njh: 2geom provides a few norms: L2 and Linfinity
+(10:07:28) njh: L2 = eucliean, as the crow flies distance
+(10:07:34) ACSpike: L1, L2 and infinity
+(10:07:47) ACSpike: l1 equals as the taxi drives
+(10:07:50) njh: Linfinity = maximum distance in x or y
+(10:07:56) njh: yeah l1 is taxi
+(10:08:07) Botty: (X+Y)
+(10:08:11) ACSpike: linfinity is x or y?
+(10:08:14) njh: no, |X| + |Y|
+(10:08:23) Botty: good point...
+(10:08:25) njh: Linfinity = max(|X|, |Y|)
+(10:08:30) ACSpike: right
+(10:08:34) ACSpike: interesting
+(10:08:40) ACSpike: thanks
+(12:02:59) ACSpike: what should I do with these two random handles?
+(12:03:19) ACSpike: pressure angle and number of teeth is what's needed
+(12:06:18) njh: lets start with a line
+(12:06:49) ACSpike: like constrain the movement of the handles?
+(12:06:52) njh: ok, SBasis functions map [0,1] to a value
+(12:06:57) njh: no, just darwing a line segment
+(12:07:20) ACSpike: each handle makes one endpoint?
+(12:07:21) njh: so we want to construct a function that maps [0,1] onto a line from handle 1 to handle 2
+(12:08:14) njh: do you have two new handles?
+(12:09:35) ACSpike: yes
+(12:09:59) njh: ok, so we're going to make a pair of sbasis functions, one for x, one for y
+(12:10:10) njh: to do this we need a multidim_sbasis<2>
+(12:10:18) njh: (one day I'll work out better names :)
+(12:10:28) ACSpike: which means, a second degree sbasis?
+(12:10:47) njh: multidim_sbasis<2> B;
+(12:10:56) ACSpike: this is global?
+(12:10:57) njh: it means a function which maps [0,1] onto a point
+(12:11:03) njh: no, put it in expose
+(12:11:07) njh: everything goes in expose
+(12:20:09) njh: anyway, so you have a function that maps [0,1] onto a point
+(12:20:08) ACSpike: I'm about to look for the definition of multidim_sbasis
+(12:20:15) njh: don't
+(12:20:23) njh: it's complicated and not necessary
+(12:20:27) ACSpike: ok
+(12:20:36) ACSpike: leaps with faith
+(12:21:21) njh: so we need to define what the functions are for X and Y
+(12:21:36) njh: just like a point, these are B[X] and B[Y]
+(12:21:47) ACSpike: ah
+(12:21:55) ACSpike: X and Y are defined somewhere?
+(12:22:00) njh: yeah, in point I think
+(12:22:06) njh: but I'm lazy and use 0 and 1
+(12:22:12) ACSpike: ah, good
+(12:23:33) njh: Now the simplest function maps [0,1] onto a constant value
+(12:23:53) njh: we could do this with B[0] = handles[1][0];
+(12:23:59) ACSpike: so all values between 0 and 1 are the same
+(12:24:03) njh: and similarly B[1] = handles[1][1];
+(12:24:07) njh: yep
+(12:24:11) njh: that would define a point
+(12:24:32) njh: (I'm not sure that would compile, due to missing code)
+(12:24:48) njh: I usually do everything in parallel like this:
+(12:24:55) njh: for(int im = 0; dim < 2; dim++)
+(12:25:04) njh:    B[dim] = handles[1][dim];
+(12:25:25) njh: remember that handles[0] is the point on the gear we did already
+(12:25:51) njh: we're going to draw a line somewhere
+(12:25:57) njh: (you have to draw a line somewhere!)
+(12:26:27) njh: to do this we want to map [0,1] to points between handles[1] and handles[2]
+(12:27:06) njh: for technical(and not very good) reasons this means using BezOrds
+(12:27:11) ACSpike: pause for reflection
+(12:27:11) njh: like this:
+(12:27:30) njh: B[dim] = BezOrd(handles[1][dim], handles[2][dim]);
+(12:27:41) ACSpike: what are BezOrds?
+(12:27:50) njh: so try adding that code into expose
+(12:28:07) njh: BezOrd(a,b) maps 0,1 onto [a,b]
+(12:29:48) njh: the reason for BezOrds is they are the fundamental unit for all the maths
+(12:30:08) ACSpike: what does BezOrd mean though?
+(12:30:10) njh: just like points are the fundamental units for graphics
+(12:30:14) njh: Bezier Ordinal
+(12:30:16) ACSpike: I need to attach the idea to the name
+(12:30:27) njh: you can think of them as linear bezier segments
+(12:30:46) njh: add another poit and you have a quadratic, another, cubic
+(12:31:08) njh: a two point bezier is a line segment
+(12:31:13) Botty: so its like a parametric thing?
+(12:31:19) njh: Botty: correct
+(12:31:30) njh: parametric here means maps from [0,1] to a point
+(12:31:37) njh: <x(t), y(t)>
+(12:31:38) ACSpike: sbasis is all parametric vector squishyness
+(12:31:50) njh: yes, most computer graphics is parametric
+(12:31:59) ACSpike: and squishy
+(12:32:06) njh: sometimes
+(12:32:11) njh: sometimes it is all angular
+(12:39:28) ACSpike: do I need to draw the bezord out?
+(12:39:39) njh: draw it out?
+(12:39:41) njh: to the canvas?
+(12:40:08) njh: no, here is some boilerplate to draw a md_sb to the canvas
+(12:40:25) njh: void draw_cb(cairo_t *cr, multidim_sbasis<2> const &B) {
+    Geom::PathBuilder pb;
+    subpath_from_sbasis(pb, B, 0.1);
+    cairo_path(cr, pb.peek());
+}
+(12:40:37) njh: add that to gear
+(12:41:02) njh: perhaps change the name to draw_md_sb or something
+(12:41:11) njh: then to draw B, just use:
+(12:41:19) njh: draw_md_sb(cr, B);
+(12:41:26) njh: (cr is the cairo canvas)
+(12:41:38) njh: so paste what you have so far
+(12:41:50) njh: (I mean just your lines, not the whole file!)
+(12:46:12) ACSpike: random points are in the same spot on every execution?
+(12:46:31) njh: correct
+(12:46:36) ACSpike: neat
+(12:46:48) njh: that's just rand()
+(12:47:11) ACSpike: wow, the line. it moves.
+(12:47:16) njh: if you want different positions you start the random number generator in a different spot, using say the current time
+(12:47:28) njh: can you commit your changes?
+(12:49:09) ACSpike: yes
+(12:49:11) ACSpike: done
+(12:50:24) njh: ok, so we have a single line :)
+(12:50:35) ACSpike: and a single circle
+(12:50:46) njh: now the nice thing about lines in this form is we can perform arithmetic on them
+(12:50:46) ACSpike: but I don't know why we have a line
+(12:50:54) ACSpike: ok
+(12:52:14) njh: ok, so now you have some experience with lines, we're going to try to make an arc
+(12:52:30) njh: remember that a circle is just <cos, sin>
+(12:52:35) ACSpike: why would I perform arithmetic on a line?
+(12:52:51) njh: because all geometry is arithmetic
+(12:53:31) njh: so we're going to use two built in functions, sin and cos to make an arc from 0 to 1 radian
+(12:53:52) njh: SBasis sin(double a0, double a1, int k);
+SBasis cos(double a0, double a1, int k)
+(12:54:15) njh: these two functions take a range of angles (a0, a1) and a parameter k
+(12:54:23) njh: k is the accuracy
+(12:54:30) njh: for now lets just use k = 2
+(12:55:23) njh: so lets make B[0] = BezOrd(centre[0]) + 100*cos(0,1,2);
+(12:55:29) njh: and similarly Y
+(12:55:44) ***njh has never tried this before, it might not work :)
+(12:56:10) ACSpike: I realize you are taking really small really slow steps
+(12:56:21) ACSpike: but I'm loosing a lot of it
+(12:56:35) njh: that should make an arc centred at the centre with a radius 100
+(12:56:55) njh: perhaps we could convert this conversation into a tutorial when we're finished
+(12:57:01) ACSpike: do I replace the line?
+(12:57:06) njh: yeah
+(12:57:07) ACSpike: make a new arc?
+(12:57:09) ACSpike: ok
+(12:57:19) njh: just comment out the line if you like
+(12:57:25) njh: or you can overwrite it
+(12:58:02) ACSpike: compiling
+(13:00:05) ACSpike: http://rafb.net/paste/results/ZXudDC19.html
+(13:01:26) ACSpike: misplaced parens?
+(13:02:00) njh: no, missing defn
+(13:02:03) njh: try
+(13:02:16) njh: SBasis(BezOrd(centre[0])) + 100*cos(0,1,2);
+(13:02:40) njh: might be due to std::cos actually
+(13:02:48) njh: sin and cos are slightly crap
+(13:03:00) njh: ah, I've got an idea
+(13:05:37) njh: yep, looks like it will work
+(13:07:02) ACSpike: indeed it does
+(13:07:08) ACSpike: now I can draw arcs
+(13:07:29) ACSpike: ok
+(13:07:48) ACSpike: at this point I'm gonna copy the backlogs and go to bed
+(13:08:07) njh: ok!
+(13:08:09) njh: worked it out
+(13:08:21) ACSpike: worked what?
+(13:08:26) njh: I know all this sounds pedestrian
+(13:08:46) ACSpike: you mean this tutorial?
+(13:09:03) njh: but perhaps what you aren't realising is that when you write cos(0,1,2) you aren't just computing cos at a single point
+(13:09:10) ACSpike: right
+(13:09:12) njh: you are computing cos everywhere at the same time
+(13:09:16) ACSpike: it the whole sweep
+(13:09:19) njh: yep
+(13:09:23) ACSpike: I see that
+(13:09:31) ACSpike: but I don't "get" it at all :-)
+(13:09:38) njh: if you run conic-3 you'll see that it converts to beziers automagically
+(13:09:52) njh: well, do you understand how std::cos(t) works?
+(13:10:11) ACSpike: I don't even understand the question
+(13:10:31) njh: well, you wrote cos(x) in your gear program
+(13:10:36) njh: do you understand how it works?
+(13:10:38) ACSpike: my math is really rusty
+(13:10:46) njh: right, yet you managed to draw gears
+(13:11:02) njh: my point is that understanding how something works isn't entirely necessary to use it
+(13:11:05) ACSpike: I don't know the definition of the function, but I know the triangle soh cah toa thing
+(13:11:11) njh: yep
+(13:11:32) njh: I use floating point all the time.  I know exactly how it works,because I once implemented my own version
+(13:11:41) njh: but 99.9999% of programmers don't
+(13:11:52) ACSpike: I read the spec once
+(13:11:53) njh: the same should be true of this new stuff
+(13:12:13) ACSpike: but I want to grok it because I want to help
+(13:12:19) njh: you should be able to make an involute without any more than a rough idea of how it works
+(13:12:29) Botty: I just remember that sin is Y (intuitively opposite), cos is X (intuitively adjacent), and tan is Y / X
+(13:12:32) njh: I think you will grok it, once you've got the hang of playing withit
+(13:12:49) njh: we'll get some nice circular arcs going
+(13:13:01) njh: maybe you can try and come up with a nice interface for circulat arcs
+(13:13:04) ACSpike: I think right now I could draw all the arcs from the gear
+(13:13:14) njh: yep, I think so too
+(13:13:26) njh: and you would get bezier curves at the end, rather than line segments
+(13:13:36) njh: and I think it would be a lot faster as well
+(13:13:40) ACSpike: right
+(13:13:44) njh: (actually, in this case, I doubt it metters :)
+(13:14:04) ACSpike: curveto or arcto?
+(13:14:19) njh: curveto, I'm afraid
+(13:14:31) njh: I would like to pick the best choice, but I haven't worked out how yet
+(13:14:56) ACSpike: so if I want to draw the involute I need to map that function in there somehow
+(13:15:04) njh: but you can't represent involutes with arcs anyway
+(13:15:07) njh: yeah
+(13:15:13) ACSpike: ah hah
+(13:15:15) njh: that is basically all there is to it
+(13:15:24) ACSpike: so this is crazy function plotting
+(13:15:38) njh: you should theoretically be able to just change the type of your equation to SBasis and use the old code
+(13:15:57) njh: the only reason you can't do that is because I haven't written all the operator*(,) type functions :)
+(13:16:19) njh: even more cool is you can compute the derivatives in the same way.  that is something you simply can't do with point plotting
+(13:16:50) njh: for example, if you want the tangent to a bezier path, B, just write derivative(B)
+(13:17:10) njh: something I played with last night was trying to find the points of maximum and minimum curvature on paths
+(13:17:14) njh: ('corners')
+(13:17:29) njh: so I computed the curvature, took the derivative and found where that = 0
+(13:17:44) njh: SBasis curvature(multidim_sbasis<2> & B) {
+    multidim_sbasis<2> dB = derivative(B);
+    multidim_sbasis<2> ddB = derivative(dB);
+    SBasis n = multiply(dB[0], ddB[1]) - multiply(dB[1], ddB[0]);
+    SBasis den = multiply(dB[0], dB[0]) + multiply(dB[1], dB[1]);
+    den = multiply(den, den);
+    return divide(multiply(n, sqrt(den, 4)), den, 6);
+}
+
+(13:17:54) njh: that is pretty much the definition off wikipedia
+(13:18:16) njh: std::vector<double> r = roots(derivative(curvature(B)));
+(13:18:42) njh: gives r, a list of t values with maximum or minimum curvature

@@ -38,10 +38,10 @@ void draw_cb(cairo_t *cr, multidim_sbasis<2> const &B) {
 SBasis curvature(multidim_sbasis<2> & B) {
     multidim_sbasis<2> dB = derivative(B);
     multidim_sbasis<2> ddB = derivative(dB);
-    SBasis n = multiply(dB[0], ddB[1]) - multiply(dB[1], ddB[0]);
-    SBasis den = multiply(dB[0], dB[0]) + multiply(dB[1], dB[1]);
-    den = multiply(den, den);
-    return divide(multiply(n, sqrt(den, 4)), den, 6);
+    SBasis n = dB[0]*ddB[1] -dB[1]*ddB[0];
+    SBasis den = dB[0]*dB[0] + dB[1]*dB[1];
+    den = den*den;
+    return divide(n*sqrt(den, 4), den, 6);
 }
 
 static gboolean
@@ -87,8 +87,8 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     if(0){
         multidim_sbasis<2> plot;
         plot[0] = SBasis(width*BezOrd(0.25,0.75));
-        plot[1] = derivative((1./height)*multiply(dB[0], dB[0])
-            + (1./height)*multiply(dB[1], dB[1]));
+        plot[1] = derivative((1./height)*(dB[0]*dB[0])
+            + (1./height)*(dB[1]*dB[1]));
         std::vector<double> r = roots(plot[1]);
         plot[1] = BezOrd(height*3/4) - plot[1];
         draw_cb(cr, plot);

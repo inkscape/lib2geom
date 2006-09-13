@@ -103,7 +103,7 @@ my_f (const gsl_vector *v, void *params)
         }
     }
     SBasis l = compose(p.sb2, p.out);
-    l = integral(multiply(l, l));
+    l = integral(l*l);
     return l[0][1] - l[0][0];
 }
 
@@ -137,7 +137,7 @@ double fn2 (double x, void * params)
             p.out[dim] = p.B[dim] + shift(BezOrd(Hat(0), Tri(x)), p.par/2 + 1);
         }
     SBasis l = compose(p.sb2, p.out);
-    l = integral(multiply(l, l));
+    l = integral(l*l);
     return l[0][1] - l[0][0];
 }
 
@@ -374,7 +374,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     draw_cb(cr, (width/2)*B + Geom::Point(width/4., width/4.));
     SBasis l = compose(sb2, B);
     notify << "l = " << l << std::endl ;
-    l = integral(multiply(l, l));
+    l = integral(l*l);
     notify << "cost = " << l[0][1] - l[0][0] ;
     
     cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
