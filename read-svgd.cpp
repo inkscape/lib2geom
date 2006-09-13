@@ -50,9 +50,10 @@ Geom::Path read_svgd(FILE* f) {
     while(!feof(f)) {
         char ch = fgetc(f);
 
-        if((ch >= 'A' and ch <= 'Z') or (ch >= 'a' and ch <= 'z'))
+        if((ch >= 'A' and ch <= 'Z') or (ch >= 'a' and ch <= 'z')) {
             mode = ch;
-        else if (ch == ' ' or ch == '\t' or ch == '\n' or ch == '\r' or ch == ',')
+            cur = 0;
+        } else if (ch == ' ' or ch == '\t' or ch == '\n' or ch == '\r' or ch == ',')
             continue;
         else if ((ch >= '0' and ch <= '9') or ch == '-' or ch == '.' or ch == '+') {
             ungetc(ch, f);

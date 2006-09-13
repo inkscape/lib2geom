@@ -89,31 +89,77 @@ ConvexHull::ConvexHull(std::vector<Point> const & points) {
     boundary = stac; // write results
 }
 
+//Mathematically incorrect mod, but more useful.
+int mod(int i, int l) {
+    return i >= 0 ? 
+           i % l : (i % l) + l;
+}
+//OPT: usages can often be replaced by conditions
+
+/*** ConvexHull::left
+ * Tests if a point is left (outside) of a particular segment, n. */
+bool
+ConvexHull::is_left(Point p, int n) {
+    int e = n + 1;
+    if(e >= boundary.size())
+        e = 0;
+    return SignedTriangleArea(boundary[n], boundary[e], p) > 0;
+}
+
+/*** ConvexHull::find_positive
+ * May return any number n where the segment n -> n + 1 (possibly looped around) in the hull such
+ * that the point is on the wrong side to be within the hull.  Returns -1 if it is within the hull.*/
+int
+ConvexHull::find_left(Point p) {
+    int ret = -1;
+
+    int l = boundary.size(); //Who knows if C++ is smart enough to optimize this?
+    for(int i = 0; i < l; i++) {
+        if(is_left(p, i)) {
+            ret = i;
+            break;
+        }
+    }
+
+    return ret;
+}
+//OPT: do a spread iteration - quasi-random with no repeats and full coverage. 
+
+/*** ConvexHull::contains_point
+ * In order to test whether a point is inside a convex hull we can travel once around the outside making
+ * sure that each triangle made from an edge and the point has positive area. */
+bool
+ConvexHull::contains_point(Point p) {
+    return find_left(p) == -1;
+}
+
 /*** ConvexHull::add_point
  * to add a point we need to find whether the new point extends the boundary, and if so, what it
  * obscures.  Tarjan?  Jarvis?*/
-
 void
 ConvexHull::merge(Point p) {
+    int start = find_left(p);
+    int end = start;
+
+    int l = boundary.size();
+
+    //Find the actual starts/ends
+    if(start == 0)
+        while(is_left(p, start - 1))
+            start = mod(start - 1, l);
+    while(is_left(p, end + 1))
+        end = mod(end + 1, l);
+
+    std::vector<Point> out;
     
-}
+    //DOH, I broke the top_point_first invariant.  Didn't know about it.
+    for(int i = end; i != start; i = mod(i + 1, l))
+        out.push_back(boundary[i]);
+    out.push_back(p);
 
-/*** ConvexHull::contains_point
- * to test whether a point is inside a convex hull we can travel once around the outside making
- * sure that each triangle made from an edge and the point has positive area. */
-
-bool
-ConvexHull::contains_point(Point p) {
-    Point op = boundary[0];
-    for(std::vector<Point>::iterator it(boundary.begin()+1), e(boundary.end());
-        it != e;) {
-        if(SignedTriangleArea(op, *it, p) > 0)
-            return false;
-        op = *it;
-        ++it;
-    }
-    return true;
+    boundary = out;
 }
+//OPT: use binary searches to find the actual starts/ends, use known rights as boundaries.  may require cooperation of find_positive algo.
 
 /*** ConvexHull::is_clockwise
  * We require that successive pairs of edges always turn right.
@@ -154,6 +200,7 @@ ConvexHull::top_point_first() const {
     }
     return pivot == boundary.begin();
 }
+//OPT: since the Y values are orderly there should be something like a binary search to do this.
 
 /*** ConvexHull::no_colinear_points
  * We require that no three vertices are colinear.
@@ -190,7 +237,7 @@ ConvexHull intersection(ConvexHull a, ConvexHull b) {
  * find the smallest convex hull that surrounds a and b.
  */
 ConvexHull merge(ConvexHull a, ConvexHull b) {
-
+    
 }
 
 };

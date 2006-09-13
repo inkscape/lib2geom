@@ -52,6 +52,10 @@ public:
     
     // furthest point in a direction (lg time) 
     Point const * furthest(Point direction) const;
+
+private:
+    bool is_left(Point p, int n);
+    int find_left(Point p);
 };
 
 // do two convex hulls intersect?
