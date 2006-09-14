@@ -24,10 +24,6 @@ using std::vector;
 unsigned total_pieces_sub;
 unsigned total_pieces_inc;
 
-double uniform() {
-    return double(rand()) / RAND_MAX;
-}
-
 void draw_cb(cairo_t *cr, multidim_sbasis<2> const &B) {
     Geom::PathBuilder pb;
     subpath_from_sbasis(pb, B, 0.1);
@@ -56,18 +52,8 @@ void draw_sb2d(cairo_t* cr, SBasis2d const &sb2, Geom::Point dir, double width) 
     }
 }
 
-class MyToy: public Toy {
+class Sb2d: public Toy {
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
-        if(!save) {
-            cairo_set_source_rgba (cr, 0., 0., 0, 0.8);
-            cairo_set_line_width (cr, 0.5);
-            for(int i = 1; i < 4; i+=2) {
-                cairo_move_to(cr, 0, i*width/4);
-                cairo_line_to(cr, width, i*width/4);
-                cairo_move_to(cr, i*width/4, 0);
-                cairo_line_to(cr, i*width/4, width);
-            }
-        }
         SBasis2d sb2;
         sb2.us = 2;
         sb2.vs = 2;
@@ -121,16 +107,10 @@ class MyToy: public Toy {
             for(int i = 0; i < display_handles.size(); i++)
                 draw_circ(cr, display_handles[i]);
     }
-
-    virtual void mouse_pressed(GdkEventButton* e) {}
-    virtual void mouse_released(GdkEventButton* e) {}
-    virtual void mouse_moved(GdkEventMotion* e) {}
-
-    virtual void key_pressed(GdkEventKey *e) {}
 };
 
 int main(int argc, char **argv) {
-        init(argc, argv, "sb2d", new MyToy());
+        init(argc, argv, "sb2d", new Sb2d());
         return 0;
 }
 

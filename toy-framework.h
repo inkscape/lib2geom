@@ -9,6 +9,8 @@
 
 using std::vector;
 
+bool screen_lines = true;
+
 std::vector<Geom::Point> handles;
 Geom::Point *selected_handle;
 Geom::Point old_mouse_point;
@@ -30,3 +32,4 @@ Toy* current_toy;
 
 void init(int argc, char **argv, char *title, Toy *t);
 void make_about();
+double uniform();

@@ -13,6 +13,10 @@
 
 GtkWindow* window;
 
+double uniform() {
+    return double(rand()) / RAND_MAX;
+}
+
 void make_about() {
     GtkWidget* about_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_title(GTK_WINDOW(about_window), "About");
@@ -64,16 +68,7 @@ GtkItemFactoryEntry menu_items[] = {
     { "/_Help",             NULL,           NULL,           0,  "<LastBranch>" },
     { "/Help/About",        NULL,           make_about,     0,  "<Item>" }
 };
-
-gint nmenu_items = 4;
-static gint delete_event(GtkWidget* window, GdkEventAny* e, gpointer data) {
-    (void)( window);
-    (void)( e);
-    (void)( data);
-
-    gtk_main_quit();
-    return FALSE;
-}
+gint nmenu_items = 5;
 
 GtkItemFactory* get_menu_factory(GtkWindow* window, GtkItemFactoryEntry items[], gint num) {
     GtkAccelGroup* accel_group = gtk_accel_group_new();
@@ -90,6 +85,15 @@ GtkWidget* get_menubar(GtkItemFactory* item_factory) {
     return gtk_item_factory_get_widget(item_factory, "<main>");
 }
 
+static gint delete_event(GtkWidget* window, GdkEventAny* e, gpointer data) {
+    (void)( window);
+    (void)( e);
+    (void)( data);
+
+    gtk_main_quit();
+    return FALSE;
+}
+
 static gboolean
 expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
 {
@@ -100,7 +104,18 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     gdk_drawable_get_size(widget->window, &width, &height);
 
     std::ostringstream notify;
-    
+
+    if(screen_lines) {    
+        cairo_set_source_rgba (cr, 0., 0., 0, 0.8);
+        cairo_set_line_width (cr, 0.5);
+        for(int i = 1; i < 4; i+=2) {
+            cairo_move_to(cr, 0, i*width/4);
+            cairo_line_to(cr, width, i*width/4);
+            cairo_move_to(cr, i*width/4, 0);
+            cairo_line_to(cr, i*width/4, height);
+        }
+    }
+
     if(current_toy != NULL)
         current_toy->draw(cr, &notify, width, height, false);
     
@@ -130,6 +145,9 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     cairo_set_source_rgba (cr, 0.5, 0, 0, 1);
     if(selected_handle != NULL)
         draw_circ(cr, *selected_handle);
+
+    cairo_set_source_rgba (cr, 0.5, 0.25, 0, 1);
+    cairo_stroke(cr);
 
     cairo_set_source_rgba (cr, 0., 0.5, 0, 0.8);
     {
