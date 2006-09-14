@@ -14,8 +14,9 @@ Poly Poly::operator*(const Poly& p) const {
     }
     return result;
 }
-
+#ifdef HAVE_GSL
 #include <gsl/gsl_poly.h>
+#endif
 
 /*double Poly::eval(double x) const {
     return gsl_poly_eval(&coeff[0], size(), x);
