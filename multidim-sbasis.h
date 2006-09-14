@@ -154,6 +154,18 @@ multiply(SBasis const & a, multidim_sbasis<D> const & b) {
 
 template <unsigned D>
 inline multidim_sbasis<D>
+operator*(BezOrd const & a, multidim_sbasis<D> const & b) {
+    return multiply(a, b);
+}
+
+template <unsigned D>
+inline multidim_sbasis<D>
+operator*(SBasis const & a, multidim_sbasis<D> const & b) {
+    return multiply(a, b);
+}
+
+template <unsigned D>
+inline multidim_sbasis<D>
 compose(SBasis const & a, multidim_sbasis<D> const & b) {
     multidim_sbasis<D> r;
     for(unsigned i = 0; i < D; i++)
