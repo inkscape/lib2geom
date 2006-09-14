@@ -84,7 +84,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     multidim_sbasis<2> I;
     B[0] = cos(bo,2);
     B[1] = sin(bo,2);
-    I = B + bo * derivative(B);
+    I = B - bo * derivative(B);
     B = base_radius*B + centre;
     draw_md_sb(cr, B);
     I = base_radius*I + centre;
