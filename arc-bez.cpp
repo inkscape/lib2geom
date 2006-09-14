@@ -36,9 +36,18 @@ SBasis curvature(multidim_sbasis<2> & B) {
     return divide(n*sqrt(den, 4), den, 6);
 }
 
+SBasis sqcurvature(multidim_sbasis<2> & B) {
+    multidim_sbasis<2> dB = derivative(B);
+    multidim_sbasis<2> ddB = derivative(dB);
+    SBasis n = dB[0]*ddB[1] -dB[1]*ddB[0];
+    SBasis den = dot(dB, dB);
+    den = den*den*den;
+    return divide(n*n, den, 10);
+}
+
 class ArcBez: public Toy {
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
-        multidim_sbasis<2> B = bezier_to_sbasis<2, 3>(handles.begin());
+        multidim_sbasis<2> B = bezier_to_sbasis<2, 2>(handles.begin());
         draw_cb(cr, B);
         cairo_stroke(cr);
         
@@ -71,15 +80,22 @@ class ArcBez: public Toy {
         {
         multidim_sbasis<2> plot;
         plot[0] = SBasis(width*BezOrd(0.25,0.75));
-        plot[1] = height*derivative(curvature(B));
+
+        multidim_sbasis<2> dB = derivative(B);
+        multidim_sbasis<2> ddB = derivative(dB);
+        SBasis n = dB[0]*ddB[1] -dB[1]*ddB[0];
+        SBasis den = dot(dB, dB);
+
+        plot[1] = derivative(divide(n, sqrt(den*den*den,5), 10));
         std::vector<double> r = roots(plot[1]);
-        plot[1] = BezOrd(height*3/4) - plot[1];
+        plot[1] = BezOrd(width*3/4) - (1./1000)*plot[1];
         draw_cb(cr, plot);
         cairo_stroke(cr);
         for(int i = 0; i < r.size(); i++) {
                 draw_cross(cr, point_at(B, r[i]));
                 draw_cross(cr, point_at(plot, r[i]));
         }
+        *notify << plot[1].tail_error(0) << std::endl;
         }
         
         cairo_set_source_rgba (cr, 0., 0.5, 0, 0.8);

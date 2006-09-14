@@ -55,6 +55,8 @@ public:
         return (a[1] + a[0])/2;
     }
     double apply(double t) { return (1-t)*a[0] + t*a[1];}
+    
+    bool zero() const { return a[0] == 0 && a[1] == 0; }
 };
 
 inline BezOrd operator-(BezOrd const &a) {
@@ -93,6 +95,7 @@ reverse(BezOrd const &b) {
     return BezOrd(b[1], b[0]);
 }
 
+/*** An empty SBasis is identically 0. */
 class SBasis : public std::vector<BezOrd>{
 public:
     SBasis() {}
@@ -218,17 +221,23 @@ inline SBasis& operator-=(SBasis& a, const SBasis& b) {
 }
 
 inline SBasis& operator+=(SBasis& a, const BezOrd& b) {
-    a[0] += b;
+    if(a.empty())
+        a.push_back(b);
+    else
+        a[0] += b;
     return a;
 }
 
 inline SBasis& operator-=(SBasis& a, const BezOrd& b) {
-    a[0] -= b;
+    if(a.empty())
+        a.push_back(-b);
+    else
+        a[0] -= b;
     return a;
 }
 
 inline SBasis& operator+=(SBasis& a, double b) {
-    if(a.size() < 1)
+    if(a.empty())
         a.push_back(BezOrd(b,b));
     else {
         a[0][0] += double(b);
@@ -238,7 +247,7 @@ inline SBasis& operator+=(SBasis& a, double b) {
 }
 
 inline SBasis operator+(BezOrd b, SBasis a) {
-    if(a.size() < 1)
+    if(a.empty())
         a.push_back(b);
     else {
         a[0] += b;
@@ -247,7 +256,7 @@ inline SBasis operator+(BezOrd b, SBasis a) {
 }
 
 inline SBasis operator+(double b, SBasis a) {
-    if(a.size() < 1)
+    if(a.empty())
         a.push_back(BezOrd(b,b));
     else {
         a[0][0] += double(b);
@@ -257,7 +266,7 @@ inline SBasis operator+(double b, SBasis a) {
 }
 
 inline SBasis& operator-=(SBasis& a, double b) {
-    if(a.size() < 1)
+    if(a.empty())
         a.push_back(BezOrd(-b, -b));
     else {
         a[0][0] -= double(b);
@@ -308,6 +317,11 @@ SBasis divide(SBasis const &a, SBasis const &b, int k);
 inline SBasis
 operator*(SBasis const & a, SBasis const & b) {
     return multiply(a, b);
+}
+
+inline SBasis& operator*=(SBasis& a, SBasis const & b) {
+    a = multiply(a, b);
+    return a;
 }
 
 #include <iostream>

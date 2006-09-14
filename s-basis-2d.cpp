@@ -56,16 +56,16 @@ compose(SBasis2d const &fg, multidim_sbasis<2> p) {
     SBasis s[2];
     SBasis ss[2];
     for(int dim = 0; dim < 2; dim++) 
-        s[dim] = multiply(p[dim], (BezOrd(1) - p[dim]));
+        s[dim] = p[dim]*(BezOrd(1) - p[dim]);
     ss[1] = BezOrd(1);
     for(int vi = 0; vi < fg.vs; vi++) {
         ss[0] = ss[1];
         for(int ui = 0; ui < fg.us; ui++) {
             unsigned i = ui + vi*fg.us;
-            B += multiply(ss[0], compose(fg[i], p));
-            ss[0] = multiply(ss[0], s[0]);
+            B += ss[0]*compose(fg[i], p);
+            ss[0] *= s[0];
         }
-        ss[1] = multiply(ss[1], s[1]);
+        ss[1] *= s[1];
     }
     return B;
 }

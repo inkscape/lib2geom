@@ -68,7 +68,7 @@ SBasis multiply(SBasis const &a, SBasis const &b) {
     // shift(1, a.Tri*b.Tri)
     SBasis c;
     if(a.empty() || b.empty())
-        return SBasis(BezOrd(0.));
+        return c;
     c.resize(a.size() + b.size(), BezOrd(0,0));
     c[0] = BezOrd(0,0);
     for(unsigned j = 0; j < b.size(); j++) {
@@ -132,6 +132,8 @@ SBasis sqrt(SBasis const &a, int k) {
     if(k == 0)
         return SBasis();
     SBasis c;
+    if(a.empty())
+        return c;
     c.resize(k, BezOrd(0,0));
     c[0] = BezOrd(sqrt(a[0][0]), sqrt(a[0][1]));
     SBasis r = a - multiply(c, c); // remainder
@@ -152,6 +154,7 @@ SBasis sqrt(SBasis const &a, int k) {
 // return a kth order approx to 1/a)
 SBasis reciprocal(BezOrd const &a, int k) {
     SBasis c;
+    assert(!a.zero());
     c.resize(k, BezOrd(0,0));
     double r_s0 = (Tri(a)*Tri(a))/(-a[0]*a[1]);
     double r_s0k = 1;
@@ -164,6 +167,8 @@ SBasis reciprocal(BezOrd const &a, int k) {
 
 SBasis divide(SBasis const &a, SBasis const &b, int k) {
     SBasis c;
+    if(a.empty())
+        throw;
     SBasis r = a; // remainder
     
     k++;
@@ -224,8 +229,7 @@ endfor
 
 SBasis inverse(SBasis a, int k) {
     assert(a.size() > 0);
-// the function should have 'unit range'.  The paper claims that "a00 = 0 and a01 = 1" is
-// equivalent to this, I'm not sure.
+// the function should have 'unit range'("a00 = 0 and a01 = 1") and be monotonic.
     double a0 = a[0][0];
     if(a0 != 0) {
         a -= a0;
@@ -329,10 +333,9 @@ SBasis cos(BezOrd bo, int k) {
 
 SBasis reverse(SBasis const &c) {
     SBasis a;
-    for(unsigned k = 0; k < c.size(); k++) {
-        BezOrd b(c[k][1], c[k][0]);
-        a.push_back(b);
-    }
+    a.reserve(c.size());
+    for(unsigned k = 0; k < c.size(); k++)
+        a.push_back(reverse(c[k]));
     return a;
 }
 
