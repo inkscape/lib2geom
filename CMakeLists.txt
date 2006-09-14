@@ -1,10 +1,29 @@
 PROJECT(lib2geom CXX)
+SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeScripts)
+include(UsePkgConfig)
 
-#BUILD_COMMAND(variable make)
+# Dependencies Packages
+PKGCONFIG(gtk+-2.0 GTK2_INCLUDE_DIR GTK2_LINK_DIR GTK2_LINK_FLAGS GTK2_CFLAGS)
+message(STATUS "GTK2 Configuration")
+message(STATUS "inc: -${GTK2_INCLUDE_DIR}")
+message(STATUS "link flags: -${GTK2_LINK_FLAGS}")
+message(STATUS "cflags: -${GTK2_CFLAGS}")
+message(STATUS "link dir: -${GTK2_LINK_DIR}")
 
-SET(2GEOM_TOYS_SRC
+PKGCONFIG(cairo CAIRO_INCLUDE_DIR CAIRO_LINK_DIR CAIRO_LINK_FLAGS CAIRO_CFLAGS)
+message(STATUS "CAIRO Configuration")
+message(STATUS "inc: -${CAIRO_INCLUDE_DIR}")
+message(STATUS "link flags: -${CAIRO_LINK_FLAGS}")
+message(STATUS "cflags: -${CAIRO_CFLAGS}")
+message(STATUS "link dir: -${CAIRO_LINK_DIR}")
+# end Dependencies
+
+# Set Compiler Flags
+SET(CMAKE_CXX_FLAGS  ${GTK2_CFLAGS} ${CAIRO_CFLAGS})
+
+SET(2GEOM_TOYS_SRC 
+2dsb2d
 arc-bez
-choose_test
 clothoid
 #conic-2
 conic-3
@@ -30,14 +49,18 @@ unit-test-sbasis
 gear
 )
 
-SET(2GEOM_EXTRAS_SRC
-bezier-utils.cpp
-bezier-utils.h
+#SET(2GEOM_EXTRAS_SRC
+#)
+
+SET(2GEOM_TOY-FRAMEWORK_SRC
+toy-framework.cpp
+toy-framework.h
 )
 
 SET(2GEOM_TESTS_SRC
 bezier-utils-test
 bez-test
+choose_test
 matrix-test
 #matrix-test.h
 point-fns-test
@@ -59,15 +82,17 @@ arc-length.cpp
 arc-length.h
 bezier-to-sbasis.h
 beztype.cpp
-b-spline.cpp
+bezier-utils.cpp
+bezier-utils.h
+#b-spline.cpp
 centroid.cpp
 centroid.h
 choose.h
 circulator.h
-compose.cpp
-compose.h
-compose-transform.cpp
-compose-transform.h
+#compose.cpp
+#compose.h
+#compose-transform.cpp
+#compose-transform.h
 conjugate_gradient.cpp
 conjugate_gradient.h
 convex-cover.cpp
@@ -190,29 +215,23 @@ values.h
 )
 
 # make lib for 2geom
-ADD_LIBRARY(lib2geom STATIC ${2GEOM_SRC})
-ADD_DEPENDENCIES(lib2geom
-refblas3-1.2
-cairo-1.1.7
-gtk+-2.0
-glib2.0-2.10.3
-gsl0-1.7
-)
-
-OPTION(2GEOM_UNIT_TESTS
-  "Build the projects test files"
-  OFF)
-FOREACH(source ${2GEOM_UNIT_TESTS})
-    ADD_EXECUTABLE(${source} ${source}.cpp)
-    TARGET_LINK_LIBRARIES(${source} lib2geom)
-ENDFOREACH(source)
-ENDIF(2GEOM_UNIT_TESTS)
+ADD_LIBRARY(lib2geom SHARED ${2GEOM_SRC})
+TARGET_LINK_LIBRARIES(lib2geom ${GTK2_LINK_FLAGS} ${CAIRO_LINK_FLAGS} blas gsl)
 
 OPTION(2GEOM_TOYS
   "Build the projects Toy files"
   ON)
 FOREACH(source ${2GEOM_TOYS_SRC})
     ADD_EXECUTABLE(${source} ${source}.cpp)
-    TARGET_LINK_LIBRARIES(${source} lib2geom)
+    TARGET_LINK_LIBRARIES(${source} lib2geom ${GTK2_LINK_FLAGS} ${CAIRO_LINK_FLAGS})
 ENDFOREACH(source)
 ENDIF(2GEOM_TOYS)
+
+OPTION(2GEOM_UNIT_TESTS
+  "Build the projects Unit Tests"
+  OFF)
+FOREACH(source ${2GEOM_TESTS_SRC})
+    ADD_EXECUTABLE(${source} ${source}.cpp)
+    TARGET_LINK_LIBRARIES(${source} lib2geom)
+ENDFOREACH(source)
+ENDIF(2GEOM_UNIT_TESTS)
