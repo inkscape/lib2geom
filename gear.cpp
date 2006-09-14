@@ -68,13 +68,23 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     }
     cairo_stroke(cr);
     
+    // line
+    multidim_sbasis<2> A;
+    for(int dim = 0; dim < 2; dim++)
+        A[dim] = BezOrd(handles[1][dim], handles[2][dim]);
+    draw_md_sb(cr, A);
+    
+    // arc
     multidim_sbasis<2> B;
-    //for(int dim = 0; dim < 2; dim++)
-    //    B[dim] = BezOrd(handles[1][dim], handles[2][dim]);
-    BezOrd bo = BezOrd(0,1);
+    BezOrd bo = BezOrd(0,4);
     B[0] = SBasis(BezOrd(centre[0])) + 100*cos(bo,2);
     B[1] = SBasis(BezOrd(centre[1])) + 100*sin(bo,2);
     draw_md_sb(cr, B);
+    
+    // involute
+    multidim_sbasis<2> I;
+    I = B + SBasis(bo) * derivative(B);
+    draw_md_sb(cr, I);
     
     // draw base radius
     cairo_new_sub_path(cr);
