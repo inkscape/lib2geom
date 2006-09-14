@@ -67,6 +67,8 @@ SBasis multiply(SBasis const &a, SBasis const &b) {
     
     // shift(1, a.Tri*b.Tri)
     SBasis c;
+    if(a.empty() || b.empty())
+        return SBasis(BezOrd(0.));
     c.resize(a.size() + b.size(), BezOrd(0,0));
     c[0] = BezOrd(0,0);
     for(unsigned j = 0; j < b.size(); j++) {
