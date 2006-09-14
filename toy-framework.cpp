@@ -35,12 +35,15 @@ void save() {
     if(gtk_dialog_run(GTK_DIALOG(d)) == GTK_RESPONSE_ACCEPT) {
         const char* filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(d));
         cairo_surface_t* cr_s;
-
-        if (strcmp(filename + strlen(filename) - 4, ".pdf") == 0)
+        int l = strlen(filename);
+        #ifdef CAIRO_HAS_PDF_SURFACE
+        if (l >= 4 && strcmp(filename + strlen(filename) - 4, ".pdf") == 0)
             cr_s = cairo_pdf_surface_create(filename, 600., 600.);
+        #endif
+        #ifdef CAIRO_HAS_SVG_SURFACE
         else
             cr_s = cairo_svg_surface_create(filename, 600., 600.);
-
+        #endif
         cairo_t* cr = cairo_create(cr_s);
         
         if(current_toy != NULL)
