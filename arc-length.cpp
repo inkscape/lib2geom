@@ -55,6 +55,8 @@ double arc_length_subdividing(Geom::SubPath const & p, double tol) {
     return result;
 }
 
+
+#ifdef HAVE_GSL
 #include <gsl/gsl_integration.h>
 static double poly_length_integrating(double t, void* param) {
     Poly* pc = (Poly*)param;
@@ -274,6 +276,8 @@ Geom::SubPath::Location natural_parameterisation(Geom::SubPath const & p, double
     --iter;
     return Geom::SubPath::Location(iter, 1);
 }
+
+#endif
 
 /*
   Local Variables:

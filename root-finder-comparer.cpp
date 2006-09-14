@@ -69,12 +69,13 @@ class RootFinderComparer: public Toy {
         *notify << "sb bounds = "<<lo << ", " <<hi<<std::endl;
         Poly ply = sbasis_to_poly(test_sb[1]);
         ply = Poly(3*height/4) - ply;
-    
+#ifdef HAVE_GSL    
         vector<complex<double> > complex_solutions;
         complex_solutions = solve(ply);
         std::cout << "gsl: ";
         std::copy(complex_solutions.begin(), complex_solutions.end(), std::ostream_iterator<std::complex<double> >(std::cout, ",\t"));
         std::cout << std::endl;
+#endif
 
         /*complex_solutions = Laguerre(ply);
         std::cout << "laguerre: ";
@@ -86,6 +87,7 @@ class RootFinderComparer: public Toy {
         std::copy(complex_solutions.begin(), complex_solutions.end(), std::ostream_iterator<std::complex<double> >(std::cout, ",\t"));
         std::cout << std::endl;*/
     
+#ifdef HAVE_GSL    
         end_t = clock()+clock_t(0.1*CLOCKS_PER_SEC);
         iterations = 0;
         while(end_t > clock()) {
@@ -93,7 +95,8 @@ class RootFinderComparer: public Toy {
             iterations++;
         }
         *notify << "gsl poly " << ", time = " << 1./iterations << std::endl;
-        
+      #endif
+  
     #if LAGUERRE_TEST
         end_t = clock()+clock_t(0.1*CLOCKS_PER_SEC);
         iterations = 0;

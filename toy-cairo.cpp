@@ -76,6 +76,7 @@ void draw_evolute(cairo_t *cr, Geom::SubPath const & p) {
 }
 
 void draw_involute(cairo_t *cr, Geom::SubPath const & p) {
+#ifdef HAVE_GSL
     int i = 0;
     double sl = arc_length_integrating(p, 1e-3);
     for(double s = 0; s < sl; s+= 5.0) {
@@ -91,9 +92,11 @@ void draw_involute(cairo_t *cr, Geom::SubPath const & p) {
             cairo_move_to(cr, pt);
         i++;
     }
+#endif
 }
 
 void draw_stroke(cairo_t *cr, Geom::SubPath const & p) {
+#ifdef HAVE_GSL
     int i = 0;
     for(double t = 0; t <= 1.0; t+= 1./1024) {
         Geom::SubPath::Location pl = param(p, t);
@@ -107,6 +110,7 @@ void draw_stroke(cairo_t *cr, Geom::SubPath const & p) {
             cairo_move_to(cr, pt);
         i++;
     }
+#endif
 }
 
 Geom::Point* selected_handle = 0;
@@ -148,6 +152,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     if(half_stroking) {
         draw_stroke(cr, display_path);
     }
+#ifdef HAVE_GSL
     if(equal_arc) {
         cairo_save(cr);
         cairo_set_source_rgba (cr, 0.5, 0, 0.5, 0.8);
@@ -160,6 +165,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
         }
         cairo_restore(cr);
     }
+#endif
     Geom::SubPath::HashCookie hash_cookie = display_path;
     {
         draw_line_seg(cr, Geom::Point(10,10), gradient_vector);
@@ -221,6 +227,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
         } else // just normal
             draw_ray(cr, pos, 50*Geom::unit_vector(rot90(tgt)));
         std::ostringstream gradientstr;
+#ifdef HAVE_GSL
         gradientstr << "arc_position: " << arc_length_integrating(display_path, pl, 1e-3);
         gradientstr << std::ends;
         cairo_move_to(cr, pos[0]+5, pos[1]);
@@ -243,6 +250,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
             pango_cairo_show_layout(cr, layout);
             cairo_restore(cr);
         }
+#endif
         
     }
     //notify << "sub path length: " << arc_length_subdividing(display_path, 1e-3) << "\n";

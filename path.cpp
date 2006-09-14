@@ -204,6 +204,7 @@ bool SubPath::Elem::nearest_location(Point p, double& dist, double& tt) const {
         }
         break;
     }
+#ifdef HAVE_GSL
     case Geom::quadto:
     {
         new_dist = L2(p - s[2]);
@@ -227,6 +228,7 @@ bool SubPath::Elem::nearest_location(Point p, double& dist, double& tt) const {
         }
         break;
     }
+#endif
     case Geom::cubicto:
     {
         Point hnd[4];

@@ -163,6 +163,7 @@ int main() {
     std::cout << sbasis_to_poly(truncate(I - (sqrt(BezOrd(1,4), 10) - one), 10))
               << std::endl;
     }
+#ifdef HAVE_GSL
     for(int i = 0 ; i < 10; i++) {
         Poly P;
         P.push_back(0);
@@ -186,6 +187,7 @@ int main() {
                       << std::endl;*/
         }
     }
+#endif
     /*double roots[] = {0.1,0.2,0.6};
     Poly prod = roots_to_poly(roots, sizeof(roots)/sizeof(double));
     std::cout << "real solve\n";

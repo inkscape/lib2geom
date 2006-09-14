@@ -72,7 +72,9 @@ main(int argc, char** argv) {
     Poly prod = lin_poly(1, 3)*lin_poly(1,-4)*lin_poly(1,-7)*lin_poly(2,1);
     
     std::cout << prod <<std::endl;
-    solve(prod) ;
+#ifdef HAVE_GSL
+    solve(prod);
+#endif
     //DK(prod);
 
     sturm st(prod);
@@ -90,16 +92,20 @@ main(int argc, char** argv) {
 
     Poly p = prod*dk_trial;
     
+#ifdef HAVE_GSL
     vector<complex<double> > prod_root = solve(prod);
     copy(prod_root.begin(), prod_root.end(), ostream_iterator<complex<double> >(cout, ",\t"));
     cout << endl;
+#endif
 
     DK(p);
+#ifdef HAVE_GSL
     {
     vector<complex<double> > prod_root = solve(p);
     copy(prod_root.begin(), prod_root.end(), ostream_iterator<complex<double> >(cout, ",\t"));
     cout << endl;
     }
+#endif
     
     cout << "p = " << p << " = ";
 

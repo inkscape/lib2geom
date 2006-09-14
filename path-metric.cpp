@@ -1,6 +1,8 @@
 #include "path-metric.h"
 #include "arc-length.h"
+#ifdef HAVE_GSL
 #include <gsl/gsl_integration.h>
+#endif
 
 struct path_metric_data{
     Geom::SubPath const *a;
@@ -19,6 +21,7 @@ static double path_metric_integrand(double s, void* param) {
 }
 
 double L2(Geom::SubPath const &a, Geom::SubPath const &b, double abstol, double reltol) {
+#ifdef HAVE_GSL
     path_metric_data pmd;
     pmd.a = &a;
     pmd.b = &b;
@@ -35,6 +38,7 @@ double L2(Geom::SubPath const &a, Geom::SubPath const &b, double abstol, double 
     //gsl_integration_qag (&F, 0, sl, 0, tol, 1000, 
     //GSL_INTEG_GAUSS21, w, &quad_result, &err);
     return sqrt(quad_result);
+#endif
 }
 
 /*
