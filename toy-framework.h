@@ -33,3 +33,4 @@ Toy* current_toy;
 void init(int argc, char **argv, char *title, Toy *t);
 void make_about();
 double uniform();
+void redraw();

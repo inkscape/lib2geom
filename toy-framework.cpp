@@ -17,6 +17,8 @@ double uniform() {
     return double(rand()) / RAND_MAX;
 }
 
+void redraw() { gtk_widget_queue_draw(GTK_WIDGET(window)); }
+
 void make_about() {
     GtkWidget* about_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_title(GTK_WINDOW(about_window), "About");
