@@ -33,13 +33,13 @@ void make_about() {
 void save() {
     GtkWidget* d = gtk_file_chooser_dialog_new("Save file as svg or pdf", window, GTK_FILE_CHOOSER_ACTION_SAVE, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT, NULL);
     if(gtk_dialog_run(GTK_DIALOG(d)) == GTK_RESPONSE_ACCEPT) {
-        char* filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(d));
+        const char* filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(d));
         cairo_surface_t* cr_s;
 
         if (strcmp(filename + strlen(filename) - 4, ".pdf") == 0)
-            cr_s = cairo_pdf_surface_create(filename, 600, 600);
+            cr_s = cairo_pdf_surface_create(filename, 600., 600.);
         else
-            cr_s = cairo_svg_surface_create(filename, 600, 600);
+            cr_s = cairo_svg_surface_create(filename, 600., 600.);
 
         cairo_t* cr = cairo_create(cr_s);
         
