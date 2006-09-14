@@ -76,21 +76,25 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     
     // arc
     multidim_sbasis<2> B;
-    BezOrd bo = BezOrd(0,4);
-    B[0] = SBasis(BezOrd(centre[0])) + 100*cos(bo,2);
-    B[1] = SBasis(BezOrd(centre[1])) + 100*sin(bo,2);
-    draw_md_sb(cr, B);
+    double angle = atan2(handles[0] - centre);
+    double base_radius = L2(handles[0] - centre);
+    BezOrd bo = BezOrd(0,angle);
     
     // involute
     multidim_sbasis<2> I;
-    I = B + SBasis(bo) * derivative(B);
+    B[0] = cos(bo,2);
+    B[1] = sin(bo,2);
+    I = B + bo * derivative(B);
+    B = base_radius*B + centre;
+    draw_md_sb(cr, B);
+    I = base_radius*I + centre;
     draw_md_sb(cr, I);
     
     // draw base radius
-    cairo_new_sub_path(cr);
+    /*cairo_new_sub_path(cr);
     double base_radius = L2(handles[0] - centre);
     cairo_arc(cr, centre[0], centre[1], base_radius, 0, M_PI*2);
-    cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
+    cairo_set_source_rgba (cr, 0., 0.125, 0, 1);*/
     cairo_stroke(cr);
     
     notify << "base radius = " << base_radius;
