@@ -32,7 +32,42 @@ void make_about() {
     gtk_widget_show_all(about_window);
 }
 
+Geom::Point read_point(FILE* f) {
+    Geom::Point p;
+    for(int i = 0; i < 2; i++)
+        assert(fscanf(f, " %lf ", &p[i]));
+    return p;
+}
+
+void open() {
+    GtkWidget* d = gtk_file_chooser_dialog_new("Open handle configuration", window, GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, NULL);
+    if(gtk_dialog_run(GTK_DIALOG(d)) == GTK_RESPONSE_ACCEPT) {
+        const char* filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(d));
+        FILE* f = fopen(filename, "r");
+        handles.clear();
+        while(!feof(f)) {
+            handles.push_back(read_point(f));
+            fgetc(f);
+        }
+        fclose(f);
+    }
+    gtk_widget_destroy(d);
+}
+
 void save() {
+    GtkWidget* d = gtk_file_chooser_dialog_new("Save handle configuration", window, GTK_FILE_CHOOSER_ACTION_SAVE, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT, NULL);
+    if(gtk_dialog_run(GTK_DIALOG(d)) == GTK_RESPONSE_ACCEPT) {
+        const char* filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(d));
+        FILE* f = fopen(filename, "w");
+        int l = handles.size();
+        for(int i = 0; i < l; i++)
+            fprintf(f, "%g %g\n", handles[i][0], handles[i][1]);
+        fclose(f);
+    }
+    gtk_widget_destroy(d);
+}
+
+void save_cairo() {
     GtkWidget* d = gtk_file_chooser_dialog_new("Save file as svg or pdf", window, GTK_FILE_CHOOSER_ACTION_SAVE, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT, NULL);
     if(gtk_dialog_run(GTK_DIALOG(d)) == GTK_RESPONSE_ACCEPT) {
         const char* filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(d));
@@ -63,19 +98,17 @@ void save() {
 GtkItemFactory* item_factory;
 
 GtkItemFactoryEntry menu_items[] = {
-    { "/_File",             NULL,           NULL,           0,  "<Branch>" },
+    { "/_File",             NULL,           NULL,           0,  "<Branch>"                    },
+    { "/File/_Open",        "<CTRL>O",      open,           0,  "<StockItem>", GTK_STOCK_OPEN },
     { "/File/_Save",        "<CTRL>S",      save,           0,  "<StockItem>", GTK_STOCK_SAVE },
+    { "/File/sep",          NULL,           NULL,           0,  "<Separator>"                 },
+    { "/File/Save Graphics",NULL,           save_cairo,     0,  "<StockItem>", GTK_STOCK_SAVE },
+    { "/File/sep",          NULL,           NULL,           0,  "<Separator>"                 },
     { "/File/_Quit",        "<CTRL>Q",      gtk_main_quit,  0,  "<StockItem>", GTK_STOCK_QUIT },
-/*    { "/_Settings",         NULL,           NULL,           0,  "<Branch>" },
-    { "/Settings/Colors",   NULL,           NULL,           0,  "<Item>" },
-    { "/Settings/Fonts",    NULL,           NULL,           0,  "<Item>" },
-    { "/Settings/Grid",     NULL,           NULL,           0,  "<Item>" },
-    { "/Settings/sep",      NULL,           NULL,           0,  "<Separator>" },
-    { "/Settings/Show Statusbar", NULL,     show_status,    0,  "<CheckItem>" },*/
-    { "/_Help",             NULL,           NULL,           0,  "<LastBranch>" },
-    { "/Help/About",        NULL,           make_about,     0,  "<Item>" }
+    { "/_Help",             NULL,           NULL,           0,  "<LastBranch>"                },
+    { "/Help/About",        NULL,           make_about,     0,  "<Item>"                      }
 };
-gint nmenu_items = 5;
+gint nmenu_items = 9;
 
 GtkItemFactory* get_menu_factory(GtkWindow* window, GtkItemFactoryEntry items[], gint num) {
     GtkAccelGroup* accel_group = gtk_accel_group_new();
