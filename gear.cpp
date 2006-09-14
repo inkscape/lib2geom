@@ -50,6 +50,12 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     
     cairo_set_source_rgba (cr, 0., 0.5, 0, 1);
     cairo_set_line_width (cr, 1);
+    Geom::Point centre(width/2, height/2);
+    double angle = atan2(handles[0] - centre);
+    double base_radius = L2(handles[0] - centre);
+    double r = L2(handles[1] - centre);
+    handles[1] = base_radius*unit_vector(handles[1] - centre) + centre;
+    double angle1 = atan2(handles[1] - centre);
     for(int i = 0; i < handles.size(); i++) {
         draw_circ(cr, handles[i]);
     }
@@ -57,7 +63,6 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     cairo_set_line_width (cr, 0.5);
     double dominant_dim = std::max(width,height);
     double minor_dim = std::min(width,height);
-    Geom::Point centre(width/2, height/2);
 
     // draw cross hairs
     for(int i = 1; i < 2; i++) {
@@ -68,16 +73,8 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     }
     cairo_stroke(cr);
     
-    // line
-    multidim_sbasis<2> A;
-    for(int dim = 0; dim < 2; dim++)
-        A[dim] = BezOrd(handles[1][dim], handles[2][dim]);
-    draw_md_sb(cr, A);
-    
     // arc
     multidim_sbasis<2> B;
-    double angle = atan2(handles[0] - centre);
-    double base_radius = L2(handles[0] - centre);
     BezOrd bo = BezOrd(0,angle);
     
     // involute
@@ -89,6 +86,13 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     draw_md_sb(cr, B);
     I = base_radius*I + centre;
     draw_md_sb(cr, I);
+    
+    // line
+    multidim_sbasis<2> A;
+    handles[2] = point_at(I, angle1/angle);
+    for(int dim = 0; dim < 2; dim++)
+        A[dim] = BezOrd(handles[1][dim], handles[2][dim]);
+    draw_md_sb(cr, A);
     
     // draw base radius
     /*cairo_new_sub_path(cr);
