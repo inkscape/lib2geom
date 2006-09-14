@@ -36,12 +36,13 @@ void save() {
         const char* filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(d));
         cairo_surface_t* cr_s;
         int l = strlen(filename);
-        #ifdef CAIRO_HAS_PDF_SURFACE
+        #if CAIRO_HAS_PDF_SURFACE
         if (l >= 4 && strcmp(filename + strlen(filename) - 4, ".pdf") == 0)
             cr_s = cairo_pdf_surface_create(filename, 600., 600.);
-        #endif
-        #ifdef CAIRO_HAS_SVG_SURFACE
+        #if CAIRO_HAS_SVG_SURFACE
+        #ifndef CAIRO_HAS_PDF_SURFACE        
         else
+        #endif
             cr_s = cairo_svg_surface_create(filename, 600., 600.);
         #endif
         cairo_t* cr = cairo_create(cr_s);
