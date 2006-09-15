@@ -302,7 +302,7 @@ SBasis inverse(SBasis a, int k) {
 
 
 void SBasis::normalize() {
-    while(0 == back()[0] && 0 == back()[1])
+    while(!empty() && 0 == back()[0] && 0 == back()[1])
         pop_back();
 }
 
