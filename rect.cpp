@@ -9,7 +9,7 @@
  * This code is in public domain
  */
 
-#include "rect-l.h"
+#include "rect.h"
 
 /**
  *    \param r0 Rectangle.

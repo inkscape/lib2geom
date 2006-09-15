@@ -168,6 +168,19 @@ public:
 // compute f(g)
     SBasis
     operator()(SBasis const & g) const;
+    
+    BezOrd&
+    operator[](unsigned i) {
+        //assert(i < size());
+        return this->at(i);
+        //return std::vector<BezOrd>::operator[](i);
+    }
+    
+    BezOrd
+    operator[](unsigned i) const {
+        assert(i < size());
+        return std::vector<BezOrd>::operator[](i);
+    }
 };
 
 inline SBasis operator-(const SBasis& p) {
