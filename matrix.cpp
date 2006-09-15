@@ -16,6 +16,8 @@
 
 namespace Geom {
 
+const double Geom_EPSILON = 1e-18; // taken from libnr.  Probably sqrt(MIN_FLOAT).
+
 /**
  *  Multiply two matrices together
  */

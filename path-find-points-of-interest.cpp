@@ -4,6 +4,8 @@
 
 using namespace Geom;
 
+const double Geom_EPSILON = 1e-18; // taken from libnr.  Probably sqrt(MIN_FLOAT).
+
 static std::vector<double>
 cubicto_extrema (std::vector<double> x) {
     std::vector<double> result;
