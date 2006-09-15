@@ -1,5 +1,5 @@
-#include <libnr/matrix-translate-ops.h>
-#include <libnr/rotate-ops.h>
+#include "matrix-translate-ops.h"
+#include "rotate-ops.h"
 
 Geom::Matrix
 operator*(Geom::translate const &a, Geom::rotate const &b)

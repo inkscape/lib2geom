@@ -19,7 +19,7 @@ message(STATUS "link dir: -${CAIRO_LINK_DIR}")
 # end Dependencies
 
 # Set Compiler Flags
-SET(CMAKE_CXX_FLAGS  ${GTK2_CFLAGS} ${CAIRO_CFLAGS})
+SET(CMAKE_CXX_FLAGS "${GTK2_CFLAGS} ${CAIRO_CFLAGS}")
 
 SET(2GEOM_TOYS_SRC 
 2dsb2d
@@ -31,6 +31,7 @@ conic-4
 conic
 convex-test
 fitter
+interactive-bits
 one-D
 path
 #path.h
@@ -84,15 +85,11 @@ bezier-to-sbasis.h
 beztype.cpp
 bezier-utils.cpp
 bezier-utils.h
-#b-spline.cpp
+b-spline.cpp
 centroid.cpp
 centroid.h
 choose.h
 circulator.h
-#compose.cpp
-#compose.h
-#compose-transform.cpp
-#compose-transform.h
 conjugate_gradient.cpp
 conjugate_gradient.h
 convex-cover.cpp
@@ -109,9 +106,6 @@ forward.h
 geom.cpp
 geom.h
 i-coord.h
-interactive-bits.cpp
-interactive-bits.h
-#interactive-bits.h.gch
 isnan.h
 #libnr.def
 macros.h
@@ -130,15 +124,13 @@ matrix-translate-ops.cpp
 matrix-translate-ops.h
 maybe.h
 multidim-sbasis.h
-nearestpoint.cpp
-object.cpp
-object.h
+#nearestpoint.cpp
 #ode-toy-cairo.cpp
 path-builder.h
 path-cairo.cpp
 path-cairo.h
 #path-cairo.h.gch
-path-cubicto.cpp
+#path-cubicto.cpp
 path-find-points-of-interest.cpp
 path-find-points-of-interest.h
 path-intersect.cpp
@@ -169,8 +161,6 @@ read-svgd.cpp
 read-svgd.h
 rect.cpp
 rect.h
-rect-l.cpp
-rect-l.h
 rect-ops.h
 refcounted.h
 rotate-fns.cpp
@@ -210,8 +200,6 @@ translate-scale-ops.cpp
 translate-scale-ops.h
 types.cpp
 types.h
-values.cpp
-values.h
 )
 
 # make lib for 2geom

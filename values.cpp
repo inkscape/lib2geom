@@ -1,6 +1,6 @@
 #define __Geom_VALUES_C__
 
-#include <libnr/rect-l.h>
+#include "rect-l.h"
 
 
 /*
