@@ -4,15 +4,6 @@
 namespace Geom{
 /* The value of 1.0 / (1L<<14) is enough for most applications */
 const double INV_EPS = (1L<<14);
-
-int compare_doubles(const void *a, const void *b ) {
-    double *A = (double *)a, *B = (double *)b;
-    return( *A > *B )?1:(*A < *B ? -1 : 0 );
-}
-
-void Sort( double *array, int length ) {
-    qsort( (char *)array, length, sizeof( double ), compare_doubles );
-}
     
 /*
  * Split the curve at the midpoint, returning an array with the two parts
@@ -262,19 +253,17 @@ std::vector<std::pair<double, double> > FindIntersections( Bezier a, Bezier b)
     {
 	Point la1 = vabs( ( a.p[2] - a.p[1] ) - (a.p[1] - a.p[0]) );
 	Point la2 = vabs( ( a.p[3] - a.p[2] ) - (a.p[2] - a.p[1]) );
-	Point la(std::max(la1[X], la2[X]),
-                 std::max(la1[X], la2[X]));
-	Point lb1 = vabs( (b.p[2] - b.p[1] ) - ( b.p[1] - b.p[0] ) );
-	Point lb2 = vabs( (b.p[3] - b.p[2] ) - ( b.p[2] - b.p[1] ) );
-	Point lb(std::max(lb1[X], lb2[X]),
-                 std::max(lb1[X], lb2[X]));
-	double l0 = std::max(la[X], la[Y]);
+        double l0 = std::max(std::max(la1[X], la2[X]),
+                      std::max(la1[Y], la2[Y]));
 	int ra;
 	if( l0 * 0.75 * M_SQRT2 + 1.0 == 1.0 ) 
 	    ra = 0;
 	else
 	    ra = (int)ceil( log4( M_SQRT2 * 6.0 / 8.0 * INV_EPS * l0 ) );
-	l0 = std::max(lb[X], lb[Y]);
+	Point lb1 = vabs( (b.p[2] - b.p[1] ) - ( b.p[1] - b.p[0] ) );
+	Point lb2 = vabs( (b.p[3] - b.p[2] ) - ( b.p[2] - b.p[1] ) );
+	l0 = std::max(std::max(lb1[X], lb2[X]),
+                      std::max(lb1[Y], lb2[Y]));
 	int rb;
 	if( l0 * 0.75 * M_SQRT2 + 1.0 == 1.0 ) 
 	    rb = 0;
@@ -282,6 +271,7 @@ std::vector<std::pair<double, double> > FindIntersections( Bezier a, Bezier b)
 	    rb = (int)ceil(log4( M_SQRT2 * 6.0 / 8.0 * INV_EPS * l0 ) );
 	RecursivelyIntersect( a, 0., 1., ra, b, 0., 1., rb, parameters);
     }
+    std::sort(parameters.begin(), parameters.end());
     return parameters;
 }
 
