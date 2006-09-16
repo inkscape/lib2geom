@@ -48,7 +48,7 @@ public:
         return (sqrt(R*R - base_radius()*base_radius())/base_radius()) - acos(base_radius()/R);
     };
     
-    void path(Geom::PathBuilder pb, Geom::Point centre, double angle);
+    Geom::PathBuilder path(Geom::Point centre, double angle);
     
     Gear(int n, double m, double phi) {
         number_of_teeth = n;
@@ -62,7 +62,8 @@ private:
     double module;
     double clearance;
 };
-void Gear::path(Geom::PathBuilder pb, Geom::Point centre, double angle) {
+Geom::PathBuilder Gear::path(Geom::Point centre, double angle) {
+    Geom::PathBuilder pb;
     // involute
     multidim_sbasis<2> B;
     multidim_sbasis<2> I;
@@ -74,6 +75,7 @@ void Gear::path(Geom::PathBuilder pb, Geom::Point centre, double angle) {
     I = B - BezOrd(0,1) * derivative(B);
     I = base_radius()*I + centre;
     subpath_from_sbasis(pb, I, 0.1);
+    return pb;
 };
 
 class GearToy: public Toy {
@@ -103,8 +105,7 @@ class GearToy: public Toy {
         gear.pitch_radius(L2(handles[0] - gear_centre));
         double angle = atan2(handles[0] - gear_centre);
         
-        Geom::PathBuilder pb;
-        gear.path(pb, gear_centre, angle);
+        Geom::PathBuilder pb = gear.path(gear_centre, angle);
         cairo_path(cr, pb.peek());
         cairo_stroke(cr);
         
