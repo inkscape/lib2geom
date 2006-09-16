@@ -1,6 +1,7 @@
 #include <math.h>
 
 #include "s-basis.h"
+#include "isnan.h"
 
 /*** At some point we should work on tighter bounds for the error.  It is clear that the error is
  * bounded by the L1 norm over the tail of the series, but this is very loose, leading to far too
@@ -15,6 +16,20 @@ double SBasis::tail_error(unsigned tail) const {
     }
     return err;
 }
+
+bool BezOrd::is_finite() const {
+    return isFinite(a[0]) && isFinite(a[1]);
+}
+
+bool SBasis::is_finite() const {
+    for(unsigned i = 0; i < size(); i++) {
+        if(!(*this)[i].is_finite())
+            return false;
+    }
+    return true;
+}
+
+
 
 SBasis operator*(double k, SBasis const &a) {
     SBasis c;

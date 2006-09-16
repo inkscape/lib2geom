@@ -57,6 +57,7 @@ public:
     double apply(double t) { return (1-t)*a[0] + t*a[1];}
     
     bool zero() const { return a[0] == 0 && a[1] == 0; }
+    bool is_finite() const;
 };
 
 inline BezOrd operator-(BezOrd const &a) {
@@ -181,6 +182,7 @@ public:
         assert(i < size());
         return std::vector<BezOrd>::operator[](i);
     }
+    bool is_finite() const;
 };
 
 inline SBasis operator-(const SBasis& p) {

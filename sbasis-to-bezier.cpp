@@ -93,6 +93,7 @@ sbasis2_to_bezier(multidim_sbasis<2> const &B, unsigned q) {
 // mutating
 void
 subpath_from_sbasis(Geom::PathBuilder &pb, multidim_sbasis<2> const &B, double tol) {
+    assert(B.is_finite());
     if(B.tail_error(2) < tol || B.size() == 2) { // nearly cubic enough
         if(B.size() == 1) {
             pb.push_line(Geom::Point(B[0][0][0], B[1][0][0]),
@@ -122,6 +123,8 @@ void
 subpath_from_sbasis_incremental(Geom::PathBuilder &pb, multidim_sbasis<2> B, double tol) {
     const unsigned k = 2; // cubic bezier
     double te = B.tail_error(k);
+    assert(B[0].is_finite());
+    assert(B[1].is_finite());
     
     //std::cout << "tol = " << tol << std::endl;
     while(1) {

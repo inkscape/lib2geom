@@ -30,6 +30,12 @@ public:
         return s;
         
     }
+    bool is_finite() const {
+        for(unsigned i = 0; i < D; i++)
+            if(!f[i].is_finite())
+                return false;
+        return true;
+    }
 };
 
 template <unsigned D>
