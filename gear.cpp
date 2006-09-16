@@ -32,7 +32,7 @@ class Gear {
 public:
     double pitch_radius() {return (number_of_teeth * module) / (2.0 * M_PI);};
     double pitch_radius(double R) {module = (2 * M_PI * R) / number_of_teeth;};
-    double base_radius() {return 2.0 * pitch_radius() * cos(pressure_angle);};
+    double base_radius() {return pitch_radius() * cos(pressure_angle);};
     double diametrical_pitch() {return number_of_teeth / (2.0 * pitch_radius());};
     double addendum() {return 1.0 / diametrical_pitch();};
     double dedendum() {return addendum() + clearance;};
@@ -98,7 +98,7 @@ Geom::Path Gear::path(Geom::Point centre, double first_tooth_angle) {
     
     first_tooth_angle -= involute_intersect_angle(pitch_radius()) + involute_intersect_angle(root_radius());
     double tooth_rotation = 2.0*tooth_thickness_angle();
-    for (int i=0; i < number_of_teeth; i++)
+    for (int i=0; i < 5/*number_of_teeth*/; i++)
     {
         double cursor = first_tooth_angle + (i * tooth_rotation);
         
@@ -156,7 +156,7 @@ class GearToy: public Toy {
         }
         cairo_stroke(cr);
         
-        Gear gear = Gear(20,20.0,20.0);
+        Gear gear = Gear(15,200.0,20.0);
         Geom::Point gear_centre = handles[1];
         gear.pitch_radius(L2(handles[0] - gear_centre));
         double angle = atan2(handles[0] - gear_centre);
