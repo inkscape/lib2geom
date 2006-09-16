@@ -38,7 +38,7 @@ public:
     double dedendum() {return addendum() + clearance;};
     double root_radius() {return pitch_radius() - dedendum();};
     double outer_radius() {return pitch_radius() + addendum();};
-    double tooth_thickness_angle() {M_PI / number_of_teeth;};
+    double tooth_thickness_angle() {return M_PI / number_of_teeth;};
     
     // angle of the base circle used to create the involute to a certain radius
     double involute_swath_angle(double R) {
@@ -88,7 +88,7 @@ private:
         return B;
     }
 };
-Geom::Path Gear::path(Geom::Point centre, double angle) {
+Geom::Path Gear::path(Geom::Point centre, double first_tooth_angle) {
     Geom::PathBuilder pb;
     // begin with the angle at the center of each tooth
     double involute_advance = involute_intersect_angle(outer_radius()) - involute_intersect_angle(root_radius());
@@ -96,12 +96,11 @@ Geom::Path Gear::path(Geom::Point centre, double angle) {
     double root_advance = tooth_thickness_angle() - (2 * (involute_intersect_angle(pitch_radius()) - involute_intersect_angle(root_radius())));
     double involute_t = involute_swath_angle(root_radius())/involute_swath_angle(outer_radius());
     
-    angle -= involute_intersect_angle(pitch_radius()) + involute_intersect_angle(root_radius());;
-    double full_rotation = angle + (2.0 * M_PI);
+    first_tooth_angle -= involute_intersect_angle(pitch_radius()) + involute_intersect_angle(root_radius());
     double tooth_rotation = 2.0*tooth_thickness_angle();
-    for (double a=angle; a < full_rotation; a+=tooth_rotation)
+    for (int i; i < number_of_teeth; i++)
     {
-        double cursor = a;
+        double cursor = first_tooth_angle + (i * tooth_rotation);
         
         multidim_sbasis<2> leading_I = involute(cursor, cursor + involute_swath_angle(outer_radius()), BezOrd(involute_t,1), centre);        
         subpath_from_sbasis(pb, leading_I, 0.1);
