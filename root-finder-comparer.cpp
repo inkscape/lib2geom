@@ -29,8 +29,10 @@
 
 #include "toy-framework.cpp"
 
+#define ZROOTS_TEST 0
+#if ZROOTS_TEST
 #include "zroots.c"
-#define ZROOTS_TEST 1
+#endif
 
 using std::string;
 using std::vector;
@@ -88,6 +90,7 @@ public:
 #endif
 #endif
         
+#if ZROOTS_TEST
         fcomplex a[ply.size()];
         for(int i = 0; i < ply.size(); i++) {
             a[i] = ply[i];
@@ -100,17 +103,8 @@ public:
             if(! a[i].imag())
                 solutions[i] = a[i].real();
         }
+#endif
 
-        /*complex_solutions = Laguerre(ply);
-        std::cout << "laguerre: ";
-        std::copy(complex_solutions.begin(), complex_solutions.end(), std::ostream_iterator<std::complex<double> >(std::cout, ",\t"));
-        std::cout << std::endl;*/
-    
-        /*complex_solutions = DK(ply);
-        std::cout << "dk: ";
-        std::copy(complex_solutions.begin(), complex_solutions.end(), std::ostream_iterator<std::complex<double> >(std::cout, ",\t"));
-        std::cout << std::endl;*/
-        
         // Base loop to remove overhead
         end_t = clock()+clock_t(timer_precision*CLOCKS_PER_SEC);
         iterations = 0;
