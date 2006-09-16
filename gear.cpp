@@ -98,7 +98,7 @@ Geom::Path Gear::path(Geom::Point centre, double first_tooth_angle) {
     
     first_tooth_angle -= involute_intersect_angle(pitch_radius()) + involute_intersect_angle(root_radius());
     double tooth_rotation = 2.0*tooth_thickness_angle();
-    for (int i; i < number_of_teeth; i++)
+    for (int i=0; i < number_of_teeth; i++)
     {
         double cursor = first_tooth_angle + (i * tooth_rotation);
         
@@ -161,29 +161,32 @@ class GearToy: public Toy {
         gear.pitch_radius(L2(handles[0] - gear_centre));
         double angle = atan2(handles[0] - gear_centre);
         
-        Geom::Path p = gear.path(gear_centre, angle);
-        cairo_path(cr, p);
-        cairo_stroke(cr);
-        
-        // draw base radius
+        // draw radii
         cairo_new_sub_path(cr);
         cairo_arc(cr, gear_centre[0], gear_centre[1], gear.base_radius(), 0, M_PI*2);
-        cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
+        cairo_set_source_rgba (cr, 0., 0., 0.5, 1);
         cairo_stroke(cr);
         
         cairo_new_sub_path(cr);
         cairo_arc(cr, gear_centre[0], gear_centre[1], gear.pitch_radius(), 0, M_PI*2);
-        cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
+        cairo_set_source_rgba (cr, 0.5, 0., 0., 1);
         cairo_stroke(cr);
         
         cairo_new_sub_path(cr);
         cairo_arc(cr, gear_centre[0], gear_centre[1], gear.outer_radius(), 0, M_PI*2);
-        cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
+        cairo_set_source_rgba (cr, 0., 0.5, 0., 1);
         cairo_stroke(cr);
         
         cairo_new_sub_path(cr);
         cairo_arc(cr, gear_centre[0], gear_centre[1], gear.root_radius(), 0, M_PI*2);
-        cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
+        cairo_set_source_rgba (cr, 0., 0.5, 0., 1);
+        cairo_stroke(cr);
+        
+        //draw gear
+        Geom::Path p = gear.path(gear_centre, angle);
+        cairo_path(cr, p);
+        cairo_set_source_rgba (cr, 0., 0., 0., 0.5);
+        cairo_set_line_width (cr, 2.0);
         cairo_stroke(cr);
         
         *notify << "pitch radius = " << gear.pitch_radius();
