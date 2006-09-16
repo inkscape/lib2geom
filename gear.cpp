@@ -65,7 +65,7 @@ private:
     double pressure_angle;
     double module;
     double clearance;
-    multidim_sbasis<2> involute(double start, double stop, BezOrd swath, Geom::Point centre) {
+    multidim_sbasis<2> involute(double start, double stop, Geom::Point centre) {
         multidim_sbasis<2> B;
         multidim_sbasis<2> I;
         BezOrd bo = BezOrd(start,stop);
@@ -73,7 +73,7 @@ private:
         B[0] = cos(bo,2);
         B[1] = sin(bo,2);
         
-        I = B - swath * derivative(B);
+        I = B - BezOrd(0,1) * derivative(B);
         I = base_radius()*I + centre;
         return I;
     }
@@ -102,7 +102,7 @@ Geom::Path Gear::path(Geom::Point centre, double first_tooth_angle) {
     {
         double cursor = first_tooth_angle + (i * tooth_rotation);
         
-        multidim_sbasis<2> leading_I = involute(cursor, cursor + involute_swath_angle(outer_radius()), BezOrd(involute_t,1), centre);        
+        multidim_sbasis<2> leading_I = compose(involute(cursor, cursor + involute_swath_angle(outer_radius()), centre), BezOrd(involute_t,1));        
         subpath_from_sbasis(pb, leading_I, 0.1);
         cursor += involute_advance;
         
@@ -110,7 +110,7 @@ Geom::Path Gear::path(Geom::Point centre, double first_tooth_angle) {
         subpath_from_sbasis(pb, tip, 0.1);
         cursor += tip_advance;
         
-        multidim_sbasis<2> trailing_I = involute(cursor + involute_swath_angle(outer_radius()), cursor, BezOrd(1,involute_t), centre);        
+        multidim_sbasis<2> trailing_I = compose(involute(cursor + involute_swath_angle(outer_radius()), cursor, centre), BezOrd(1,involute_t));        
         subpath_from_sbasis(pb, trailing_I, 0.1);
         cursor += involute_advance;
         
@@ -164,7 +164,7 @@ class GearToy: public Toy {
         Geom::Path p = gear.path(gear_centre, angle);
         cairo_path(cr, p);
         cairo_stroke(cr);
-        /*
+        
         // draw base radius
         cairo_new_sub_path(cr);
         cairo_arc(cr, gear_centre[0], gear_centre[1], gear.base_radius(), 0, M_PI*2);
@@ -185,7 +185,7 @@ class GearToy: public Toy {
         cairo_arc(cr, gear_centre[0], gear_centre[1], gear.root_radius(), 0, M_PI*2);
         cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
         cairo_stroke(cr);
-        */
+        
         *notify << "pitch radius = " << gear.pitch_radius();
     }
 };
