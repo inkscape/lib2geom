@@ -110,7 +110,7 @@ Geom::Path Gear::path(Geom::Point centre, double first_tooth_angle) {
         subpath_from_sbasis(pb, tip, 0.1);
         cursor += tip_advance;
         
-        multidim_sbasis<2> trailing_I = involute(cursor + involute_swath_angle(outer_radius()), cursor, BezOrd(1-involute_t,1), centre);        
+        multidim_sbasis<2> trailing_I = involute(cursor + involute_swath_angle(outer_radius()), cursor, BezOrd(1,involute_t), centre);        
         subpath_from_sbasis(pb, trailing_I, 0.1);
         cursor += involute_advance;
         
@@ -164,7 +164,7 @@ class GearToy: public Toy {
         Geom::Path p = gear.path(gear_centre, angle);
         cairo_path(cr, p);
         cairo_stroke(cr);
-        
+        /*
         // draw base radius
         cairo_new_sub_path(cr);
         cairo_arc(cr, gear_centre[0], gear_centre[1], gear.base_radius(), 0, M_PI*2);
@@ -185,7 +185,7 @@ class GearToy: public Toy {
         cairo_arc(cr, gear_centre[0], gear_centre[1], gear.root_radius(), 0, M_PI*2);
         cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
         cairo_stroke(cr);
-        
+        */
         *notify << "pitch radius = " << gear.pitch_radius();
     }
 };
