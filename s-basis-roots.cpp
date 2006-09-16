@@ -1,6 +1,8 @@
 #include <math.h>
 
 #include "s-basis.h"
+#include "sbasis-to-bezier.h"
+#include "solver.h"
 
 void bounds(SBasis const & s,
             double &lo, double &hi) {
@@ -8,9 +10,13 @@ void bounds(SBasis const & s,
     double mid = s(0.5);
     lo = hi = mid;
     for(unsigned i = 1; i < s.size(); i++) {
-        double b = fabs(Hat(s[i]))*ss;
-        lo -= b;
-        hi += b;
+        for(unsigned dim = 0; dim < 2; dim++) {
+            double b = s[i][dim]*ss;
+            if(b < 0)
+                lo += b;
+            if(b > 0)
+                hi += b;
+        }
         ss *= 0.25;
     }
     lo = std::min(std::min(lo, s[0][1]),s[0][0]);
@@ -18,31 +24,31 @@ void bounds(SBasis const & s,
 }
 
 #if 0
-double Laguerre_internal_complex(SBasis const & p,
-                                 double x0,
-                                 double tol,
-                                 bool & quad_root) {
+double Laguerre_internal(SBasis const & p,
+                         double x0,
+                         double tol,
+                         bool & quad_root) {
     double a = 2*tol;
     double xk = x0;
-    double n = p.degree();
+    double n = p.size();
     quad_root = false;
-    while(std::norm(a) > (tol*tol)) {
+    while(a > tol) {
         //std::cout << "xk = " << xk << std::endl;
-        double b = p.back();
-        double d = 0, f = 0;
-        double err = abs(b);
-        double abx = abs(xk);
+        BezOrd b = p.back();
+        BezOrd d(0), f(0);
+        double err = fabs(b);
+        double abx = fabs(xk);
         for(int j = p.size()-2; j >= 0; j--) {
             f = xk*f + d;
             d = xk*d + b;
             b = xk*b + p[j];
-            err = abs(b) + abx*err;
+            err = fabs(b) + abx*err;
         }
         
         err *= 1e-7; // magic epsilon for convergence, should be computed from tol
         
         double px = b;
-        if(abs(b) < err)
+        if(fabs(b) < err)
             return xk;
         //if(std::norm(px) < tol*tol)
         //    return xk;
@@ -87,8 +93,9 @@ void subdiv_sbasis(SBasis const & s,
 }
 
 std::vector<double> roots(SBasis const & s) {
-    std::vector<double> r;
-    subdiv_sbasis(s, r, 0, 1);
+    std::vector<double> b = sbasis_to_bezier(s), r;
+    
+    find_bernstein_roots(&b[0], b.size()-1, r, 0, 0., 1.);
     return r;
 }
 

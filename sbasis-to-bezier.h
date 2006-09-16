@@ -4,7 +4,7 @@
 #include "multidim-sbasis.h"
 // this produces a degree k bezier from a degree k sbasis
 std::vector<double>
-sbasis_to_bezier(SBasis const &B, unsigned q);
+sbasis_to_bezier(SBasis const &B, unsigned q = 0);
 
 std::vector<Geom::Point>
 sbasis_to_bezier(multidim_sbasis<2> const &B, unsigned q);
