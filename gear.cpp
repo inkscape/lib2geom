@@ -188,7 +188,7 @@ Gear Gear::spawn(int N, double a) {
         new_angle -= gear.tooth_thickness_angle();
     new_angle -= (_angle) * (pitch_radius() / gear.pitch_radius());
     new_angle += (a) * (pitch_radius() / gear.pitch_radius());
-    gear.angle(new_angle);
+    gear.angle(new_angle + a);
     return gear;
 };
 
