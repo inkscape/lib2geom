@@ -100,10 +100,8 @@ int mod(int i, int l) {
  * Tests if a point is left (outside) of a particular segment, n. */
 bool
 ConvexHull::is_left(Point p, int n) {
-    int e = n + 1;
-    if(e >= boundary.size())
-        e = 0;
-    return SignedTriangleArea(boundary[n], boundary[e], p) > 0;
+    int l = boundary.size();
+    return SignedTriangleArea(boundary[mod(n,l)], boundary[mod(n+1,l)], p) > 0;
 }
 
 /*** ConvexHull::find_positive
@@ -111,17 +109,11 @@ ConvexHull::is_left(Point p, int n) {
  * that the point is on the wrong side to be within the hull.  Returns -1 if it is within the hull.*/
 int
 ConvexHull::find_left(Point p) {
-    int ret = -1;
-
     int l = boundary.size(); //Who knows if C++ is smart enough to optimize this?
     for(int i = 0; i < l; i++) {
-        if(is_left(p, i)) {
-            ret = i;
-            break;
-        }
+        if(is_left(p, i)) return i;
     }
-
-    return ret;
+    return -1;
 }
 //OPT: do a spread iteration - quasi-random with no repeats and full coverage. 
 
@@ -138,28 +130,48 @@ ConvexHull::contains_point(Point p) {
  * obscures.  Tarjan?  Jarvis?*/
 void
 ConvexHull::merge(Point p) {
-    int start = find_left(p);
-    int end = start;
-
-    int l = boundary.size();
-
-    //Find the actual starts/ends
-    if(start == 0)
-        while(is_left(p, start - 1))
-            start = mod(start - 1, l);
-    while(is_left(p, end + 1))
-        end = mod(end + 1, l);
-
     std::vector<Point> out;
-    
-    //DOH, I broke the top_point_first invariant.  Didn't know about it.
-    for(int i = end; i != start; i = mod(i + 1, l))
-        out.push_back(boundary[i]);
-    out.push_back(p);
 
+    int l = boundary.size(), s = 0;
+
+    bool pushed = false, pre = is_left(p, 0);
+
+    if(p[1] < boundary[0][1]) {
+        out.push_back(p);
+        pushed = true;
+        if(pre)
+            s = 1;
+    }
+    else
+        pre = is_left(p, -1);
+    
+    for(int i = s; i < l; i++) {
+        bool cur = is_left(p, i);
+        if(pre) {
+            if(cur) {
+                if(!pushed) {
+                    out.push_back(p);
+                    pushed = true;
+                }
+                continue;
+            }
+            else if(!pushed) {
+                out.push_back(p);
+                pushed = true;
+            }
+        }
+        out.push_back(boundary[i]);
+        pre = cur;
+    }
+    
+    if(p[1] < boundary[0][1])
+        if(!is_left(p, -1))
+            out.push_back(boundary[0]);
+    
     boundary = out;
 }
-//OPT: use binary searches to find the actual starts/ends, use known rights as boundaries.  may require cooperation of find_positive algo.
+//OPT: quickly find an obscured point and find the bounds by extending from there.  then push all points not within the bounds in order.
+  //OPT: use binary searches to find the actual starts/ends, use known rights as boundaries.  may require cooperation of find_left algo.
 
 /*** ConvexHull::is_clockwise
  * We require that successive pairs of edges always turn right.
@@ -179,7 +191,7 @@ ConvexHull::is_clockwise() const {
         second = *it;
         ++it;
     }
-    return true;    
+    return true;
 }
 
 /*** ConvexHull::top_point_first
