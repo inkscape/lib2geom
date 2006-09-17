@@ -69,6 +69,10 @@ class Point {
     Coord operator[](Dim2 d) const throw() { return _pt[d]; }
     Coord &operator[](Dim2 d) throw() { return _pt[d]; }
 
+    static inline Point polar(Coord angle, Coord radius) {
+        return Point(radius * cos(angle), radius * sin(angle));
+    }
+
     /** Return a point like this point but rotated -90 degrees.
         (If the y axis grows downwards and the x axis grows to the
         right, then this is 90 degrees counter-clockwise.)
