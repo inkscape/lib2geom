@@ -32,21 +32,21 @@ class Gear {
 public:
     // pitch circles touch on two properly meshed gears
     // all measurements are taken from the pitch circle
-    double pitch_diameter() {return (number_of_teeth * module) / M_PI;};
+    double pitch_diameter() {return (_number_of_teeth * _module) / M_PI;};
     double pitch_radius() {return pitch_diameter() / 2.0;};
-    double pitch_radius(double R) {module = (2 * M_PI * R) / number_of_teeth;};
+    void pitch_radius(double R) {_module = (2 * M_PI * R) / _number_of_teeth;};
     
     // base circle serves as the basis for the involute toothe profile
-    double base_diameter() {return pitch_diameter() * cos(pressure_angle);};
+    double base_diameter() {return pitch_diameter() * cos(_pressure_angle);};
     double base_radius() {return base_diameter() / 2.0;};
     
     // diametrical pitch
-    double diametrical_pitch() {return number_of_teeth / pitch_diameter();};
+    double diametrical_pitch() {return _number_of_teeth / pitch_diameter();};
     
     // height of the tooth above the pitch circle
     double addendum() {return 1.0 / diametrical_pitch();};
     // depth of the tooth below the pitch circle
-    double dedendum() {return addendum() + clearance;};
+    double dedendum() {return addendum() + _clearance;};
     
     // root circle specifies the bottom of the fillet between teeth
     double root_radius() {return pitch_radius() - dedendum();};
@@ -57,7 +57,7 @@ public:
     double outer_diameter() {return outer_radius() * 2.0;};
     
     // angle covered by the tooth on the pitch circle
-    double tooth_thickness_angle() {return M_PI / number_of_teeth;};
+    double tooth_thickness_angle() {return M_PI / _number_of_teeth;};
     
     // angle of the base circle used to create the involute to a certain radius
     double involute_swath_angle(double R) {
@@ -71,20 +71,33 @@ public:
         return (sqrt(R*R - base_radius()*base_radius())/base_radius()) - acos(base_radius()/R);
     };
     
-    Geom::Path path(Geom::Point centre, double angle);
+    Geom::Point centre() {return _centre;};
+    void centre(Geom::Point c) {_centre = c;};
+    
+    double angle() {return _angle;};
+    void angle(double a) {_angle = a;};
+    
+    int number_of_teeth() {return _number_of_teeth;};
+    
+    Geom::Path path();
+    Gear spawn(int N, double a);
     
     Gear(int n, double m, double phi) {
-        number_of_teeth = n;
-        module = m;
-        pressure_angle = phi;
-        clearance = 0.0;
+        _number_of_teeth = n;
+        _module = m;
+        _pressure_angle = phi;
+        _clearance = 0.0;
+        _angle = 0.0;
+        _centre = Geom::Point(0.0,0.0);
     }
 private:
-    int number_of_teeth;
-    double pressure_angle;
-    double module;
-    double clearance;
-    multidim_sbasis<2> involute(double start, double stop, Geom::Point centre) {
+    int _number_of_teeth;
+    double _pressure_angle;
+    double _module;
+    double _clearance;
+    double _angle;
+    Geom::Point _centre;
+    multidim_sbasis<2> _involute(double start, double stop) {
         multidim_sbasis<2> B;
         multidim_sbasis<2> I;
         BezOrd bo = BezOrd(start,stop);
@@ -93,21 +106,21 @@ private:
         B[1] = sin(bo,2);
         
         I = B - BezOrd(0,1) * derivative(B);
-        I = base_radius()*I + centre;
+        I = base_radius()*I + _centre;
         return I;
     }
-    multidim_sbasis<2> arc(double start, double stop, double R, Geom::Point centre) {
+    multidim_sbasis<2> _arc(double start, double stop, double R) {
         multidim_sbasis<2> B;
         BezOrd bo = BezOrd(start,stop);
         
         B[0] = cos(bo,2);
         B[1] = sin(bo,2);
         
-        B = R*B + centre;
+        B = R*B + _centre;
         return B;
     }
 };
-Geom::Path Gear::path(Geom::Point centre, double first_tooth_angle) {
+Geom::Path Gear::path() {
     Geom::PathBuilder pb;
     
     // angle covered by a full tooth and fillet
@@ -122,40 +135,40 @@ Geom::Path Gear::path(Geom::Point centre, double first_tooth_angle) {
     double involute_t = involute_swath_angle(root_radius())/involute_swath_angle(outer_radius());
     
     //rewind angle to start drawing from the leading edge of the tooth
-    first_tooth_angle = first_tooth_angle - ((0.5 * tip_advance) + involute_advance);
+    double first_tooth_angle = _angle - ((0.5 * tip_advance) + involute_advance);
     
-    for (int i=0; i < number_of_teeth; i++)
+    for (int i=0; i < _number_of_teeth; i++)
     {
         double cursor = first_tooth_angle + (i * tooth_rotation);
         
-        multidim_sbasis<2> leading_I = compose(involute(cursor, cursor + involute_swath_angle(outer_radius()), centre), BezOrd(involute_t,1));        
+        multidim_sbasis<2> leading_I = compose(_involute(cursor, cursor + involute_swath_angle(outer_radius())), BezOrd(involute_t,1));        
         subpath_from_sbasis(pb, leading_I, 0.1);
         cursor += involute_advance;
         
-        multidim_sbasis<2> tip = arc(cursor, cursor+tip_advance, outer_radius(), centre);        
+        multidim_sbasis<2> tip = _arc(cursor, cursor+tip_advance, outer_radius());        
         subpath_from_sbasis(pb, tip, 0.1);
         cursor += tip_advance;
         
         cursor += involute_advance;
-        multidim_sbasis<2> trailing_I = compose(involute(cursor, cursor - involute_swath_angle(outer_radius()), centre), BezOrd(1,involute_t));        
+        multidim_sbasis<2> trailing_I = compose(_involute(cursor, cursor - involute_swath_angle(outer_radius())), BezOrd(1,involute_t));        
         subpath_from_sbasis(pb, trailing_I, 0.1);
         
         if (base_radius() > root_radius()) {
             Geom::Point leading_start = point_at(trailing_I,1);
-            Geom::Point leading_end = (root_radius() * unit_vector(leading_start - centre)) + centre;
+            Geom::Point leading_end = (root_radius() * unit_vector(leading_start - _centre)) + _centre;
             multidim_sbasis<2> leading_fillet;
             for (int dim=0; dim < 2; dim++)
                 leading_fillet[dim] = BezOrd(leading_start[dim], leading_end[dim]);
             subpath_from_sbasis(pb, leading_fillet, 0.1);
         }
         
-        multidim_sbasis<2> root = arc(cursor, cursor+root_advance, root_radius(), centre);
+        multidim_sbasis<2> root = _arc(cursor, cursor+root_advance, root_radius());
         subpath_from_sbasis(pb, root, 0.1);
         cursor += root_advance;
         
         if (base_radius() > root_radius()) {
             Geom::Point trailing_start = point_at(root,1);
-            Geom::Point trailing_end = (base_radius() * unit_vector(trailing_start - centre)) + centre;
+            Geom::Point trailing_end = (base_radius() * unit_vector(trailing_start - _centre)) + _centre;
             multidim_sbasis<2> trailing_fillet;
             for (int dim=0; dim < 2; dim++)
                 trailing_fillet[dim] = BezOrd(trailing_start[dim], trailing_end[dim]);
@@ -165,6 +178,18 @@ Geom::Path Gear::path(Geom::Point centre, double first_tooth_angle) {
     }
     
     return pb.peek();
+};
+Gear Gear::spawn(int N, double a) {
+    Gear gear = Gear(N, _module, _pressure_angle);
+    double dist = gear.pitch_radius() + pitch_radius();
+    gear.centre(Geom::Point(dist * cos(a), dist * sin(a)) + _centre);
+    double new_angle = 0.0;
+    if (gear.number_of_teeth() % 2 == 0)
+        new_angle -= gear.tooth_thickness_angle();
+    new_angle -= (_angle) * (pitch_radius() / gear.pitch_radius());
+    //new_angle += (a) * (pitch_radius() / gear.pitch_radius());
+    gear.angle(new_angle);
+    return gear;
 };
 
 class GearToy: public Toy {
@@ -193,7 +218,8 @@ class GearToy: public Toy {
         Gear gear = Gear(15,200.0,pressure_angle);
         Geom::Point gear_centre = handles[1];
         gear.pitch_radius(L2(handles[0] - gear_centre));
-        double angle = atan2(handles[0] - gear_centre);
+        gear.angle(atan2(handles[0] - gear_centre));
+        gear.centre(gear_centre);
         
         // draw radii
         cairo_new_sub_path(cr);
@@ -217,18 +243,39 @@ class GearToy: public Toy {
         cairo_stroke(cr);
         
         //draw gear
-        Geom::Path p = gear.path(gear_centre, angle);
+        Geom::Path p = gear.path();
         cairo_path(cr, p);
         cairo_set_source_rgba (cr, 0., 0., 0., 0.5);
         cairo_set_line_width (cr, 2.0);
         cairo_stroke(cr);
         
-        *notify << "pitch = " << gear.pitch_radius() << " base = " << gear.base_radius();
+        Gear gear2 = gear.spawn(5, -2.0 * M_PI / 8.0);
+        Geom::Path p2 = gear2.path();
+        cairo_path(cr, p2);
+        cairo_set_source_rgba (cr, 0., 0., 0., 0.5);
+        cairo_set_line_width (cr, 2.0);
+        cairo_stroke(cr);
+        
+        Gear gear3 = gear2.spawn(8, 0.0 * M_PI / 8.0);
+        Geom::Path p3 = gear3.path();
+        cairo_path(cr, p3);
+        cairo_set_source_rgba (cr, 0., 0., 0., 0.5);
+        cairo_set_line_width (cr, 2.0);
+        cairo_stroke(cr);
+        
+        Gear gear4 = gear.spawn(6, 3.0 * M_PI / 4.0);
+        Geom::Path p4 = gear4.path();
+        cairo_path(cr, p4);
+        cairo_set_source_rgba (cr, 0., 0., 0., 0.5);
+        cairo_set_line_width (cr, 2.0);
+        cairo_stroke(cr);
+        
+        *notify << "angle = " << gear.angle();
     }
 };
 
 int main(int argc, char **argv) {
-    for(int i = 0; i < 3; i++)
+    for(int i = 0; i < 2; i++)
         handles.push_back(Geom::Point(uniform()*400, uniform()*400));
     
     screen_lines = false;
