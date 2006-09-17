@@ -32,13 +32,13 @@ class Gear {
 public:
     // pitch circles touch on two properly meshed gears
     // all measurements are taken from the pitch circle
-    double pitch_diameter() {return (number_of_teeth * module) / M_PI;};
-    double pitch_radius() {return pitch_diameter() / 2.0;};
+    double pitch_diameter() {return 2.0 * m_pitch_radius;};
+    double pitch_radius() {return m_pitch_radius;};
     
-    double pitch_radius(double R) {module = (2 * M_PI * R) / number_of_teeth;};
+    double pitch_radius(double R) {m_pitch_radius = R;};
     
     // base circle serves as the basis for the involute toothe profile
-    double base_diameter() {return pitch_diameter() * cos(pressure_angle);};
+    double base_diameter() {return 2.2 * pitch_diameter() * cos(pressure_angle);};
     double base_radius() {return base_diameter() / 2.0;};
     
     // diametrical pitch
@@ -74,16 +74,16 @@ public:
     
     Geom::Path path(Geom::Point centre, double angle);
     
-    Gear(int n, double m, double phi) {
+    Gear(int n, double R, double phi) {
         number_of_teeth = n;
-        module = m;
+        m_pitch_radius = R;
         pressure_angle = phi;
         clearance = 0.0;
     }
 private:
     int number_of_teeth;
     double pressure_angle;
-    double module;
+    double m_pitch_radius;
     double clearance;
     multidim_sbasis<2> involute(double start, double stop, Geom::Point centre) {
         multidim_sbasis<2> B;
@@ -125,7 +125,7 @@ Geom::Path Gear::path(Geom::Point centre, double first_tooth_angle) {
     //rewind angle to start drawing from the leading edge of the tooth
     first_tooth_angle = first_tooth_angle - ((0.5 * tip_advance) + involute_advance);
     
-    for (int i=0; i < 5/*number_of_teeth*/; i++)
+    for (int i=0; i < number_of_teeth; i++)
     {
         double cursor = first_tooth_angle + (i * tooth_rotation);
         
@@ -137,25 +137,32 @@ Geom::Path Gear::path(Geom::Point centre, double first_tooth_angle) {
         subpath_from_sbasis(pb, tip, 0.1);
         cursor += tip_advance;
         
-        multidim_sbasis<2> trailing_I = compose(involute(cursor + involute_swath_angle(outer_radius()), cursor, centre), BezOrd(1,involute_t));        
-        subpath_from_sbasis(pb, trailing_I, 0.1);
         cursor += involute_advance;
+        multidim_sbasis<2> trailing_I = compose(involute(cursor, cursor - involute_swath_angle(outer_radius()), centre), BezOrd(1,involute_t));        
+        subpath_from_sbasis(pb, trailing_I, 0.1);
         
-        /*
         if (base_radius() > root_radius()) {
-            //add line
+            Geom::Point leading_start = point_at(trailing_I,1);
+            Geom::Point leading_end = (root_radius() * unit_vector(leading_start - centre)) + centre;
+            multidim_sbasis<2> leading_fillet;
+            for (int dim=0; dim < 2; dim++)
+                leading_fillet[dim] = BezOrd(leading_start[dim], leading_end[dim]);
+            subpath_from_sbasis(pb, leading_fillet, 0.1);
         }
-        */
         
-        multidim_sbasis<2> root = arc(cursor, cursor+root_advance, root_radius(), centre);        
+        multidim_sbasis<2> root = arc(cursor, cursor+root_advance, root_radius(), centre);
         subpath_from_sbasis(pb, root, 0.1);
         cursor += root_advance;
         
-        /*
         if (base_radius() > root_radius()) {
-            //add line
+            Geom::Point trailing_start = point_at(root,1);
+            Geom::Point trailing_end = (base_radius() * unit_vector(trailing_start - centre)) + centre;
+            multidim_sbasis<2> trailing_fillet;
+            for (int dim=0; dim < 2; dim++)
+                trailing_fillet[dim] = BezOrd(trailing_start[dim], trailing_end[dim]);
+            subpath_from_sbasis(pb, trailing_fillet, 0.1);
         }
-        */
+        
     }
     
     return pb.peek();
