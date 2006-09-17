@@ -59,18 +59,6 @@ public:
     // angle covered by the tooth on the pitch circle
     double tooth_thickness_angle() {return M_PI / _number_of_teeth;}
     
-    // angle of the base circle used to create the involute to a certain radius
-    double involute_swath_angle(double R) {
-        if (R <= base_radius()) return 0.0;
-        return sqrt(R*R - base_radius()*base_radius())/base_radius();
-    }
-
-    // angle of the base circle between the origin of the involute and the intersection on another radius
-    double involute_intersect_angle(double R) {
-        if (R <= base_radius()) return 0.0;
-        return (sqrt(R*R - base_radius()*base_radius())/base_radius()) - acos(base_radius()/R);
-    }
-    
     Geom::Point centre() {return _centre;}
     void centre(Geom::Point c) {_centre = c;}
     
@@ -118,6 +106,17 @@ private:
         
         B = R*B + _centre;
         return B;
+    }
+    // angle of the base circle used to create the involute to a certain radius
+    double involute_swath_angle(double R) {
+        if (R <= base_radius()) return 0.0;
+        return sqrt(R*R - base_radius()*base_radius())/base_radius();
+    }
+
+    // angle of the base circle between the origin of the involute and the intersection on another radius
+    double involute_intersect_angle(double R) {
+        if (R <= base_radius()) return 0.0;
+        return (sqrt(R*R - base_radius()*base_radius())/base_radius()) - acos(base_radius()/R);
     }
 };
 Geom::Path Gear::path() {
@@ -182,7 +181,7 @@ Geom::Path Gear::path() {
 Gear Gear::spawn(int N, double a) {
     Gear gear(N, _module, _pressure_angle);
     double dist = gear.pitch_radius() + pitch_radius();
-    gear.centre(Geom::Point(dist * cos(a), dist * sin(a)) + _centre);
+    gear.centre(Geom::Point::polar(a, dist) + _centre);
     double new_angle = 0.0;
     if (gear.number_of_teeth() % 2 == 0)
         new_angle -= gear.tooth_thickness_angle();
