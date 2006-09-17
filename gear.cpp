@@ -32,13 +32,12 @@ class Gear {
 public:
     // pitch circles touch on two properly meshed gears
     // all measurements are taken from the pitch circle
-    double pitch_diameter() {return 2.0 * m_pitch_radius;};
-    double pitch_radius() {return m_pitch_radius;};
-    
-    double pitch_radius(double R) {m_pitch_radius = R;};
+    double pitch_diameter() {return (number_of_teeth * module) / M_PI;};
+    double pitch_radius() {return pitch_diameter() / 2.0;};
+    double pitch_radius(double R) {module = (2 * M_PI * R) / number_of_teeth;};
     
     // base circle serves as the basis for the involute toothe profile
-    double base_diameter() {return 2.2 * pitch_diameter() * cos(pressure_angle);};
+    double base_diameter() {return pitch_diameter() * cos(pressure_angle);};
     double base_radius() {return base_diameter() / 2.0;};
     
     // diametrical pitch
@@ -74,16 +73,16 @@ public:
     
     Geom::Path path(Geom::Point centre, double angle);
     
-    Gear(int n, double R, double phi) {
+    Gear(int n, double m, double phi) {
         number_of_teeth = n;
-        m_pitch_radius = R;
+        module = m;
         pressure_angle = phi;
         clearance = 0.0;
     }
 private:
     int number_of_teeth;
     double pressure_angle;
-    double m_pitch_radius;
+    double module;
     double clearance;
     multidim_sbasis<2> involute(double start, double stop, Geom::Point centre) {
         multidim_sbasis<2> B;
@@ -190,7 +189,8 @@ class GearToy: public Toy {
         }
         cairo_stroke(cr);
         
-        Gear gear = Gear(15,200.0,20.0);
+        double pressure_angle = 20.0 * M_PI / 180;
+        Gear gear = Gear(15,200.0,pressure_angle);
         Geom::Point gear_centre = handles[1];
         gear.pitch_radius(L2(handles[0] - gear_centre));
         double angle = atan2(handles[0] - gear_centre);
