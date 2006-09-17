@@ -30,14 +30,34 @@ void draw_md_sb(cairo_t *cr, multidim_sbasis<2> const &B) {
 
 class Gear {
 public:
-    double pitch_radius() {return (number_of_teeth * module) / (2.0 * M_PI);};
+    // pitch circles touch on two properly meshed gears
+    // all measurements are taken from the pitch circle
+    double pitch_diameter() {return (number_of_teeth * module) / M_PI;};
+    double pitch_radius() {return pitch_diameter() / 2.0;};
+    
     double pitch_radius(double R) {module = (2 * M_PI * R) / number_of_teeth;};
-    double base_radius() {return pitch_radius() * cos(pressure_angle);};
-    double diametrical_pitch() {return number_of_teeth / (2.0 * pitch_radius());};
+    
+    // base circle serves as the basis for the involute toothe profile
+    double base_diameter() {return pitch_diameter() * cos(pressure_angle);};
+    double base_radius() {return base_diameter() / 2.0;};
+    
+    // diametrical pitch
+    double diametrical_pitch() {return number_of_teeth / pitch_diameter();};
+    
+    // height of the tooth above the pitch circle
     double addendum() {return 1.0 / diametrical_pitch();};
+    // depth of the tooth below the pitch circle
     double dedendum() {return addendum() + clearance;};
+    
+    // root circle specifies the bottom of the fillet between teeth
     double root_radius() {return pitch_radius() - dedendum();};
+    double root_diameter() {return root_radius() * 2.0;};
+    
+    // outer circle is the outside diameter of the gear
     double outer_radius() {return pitch_radius() + addendum();};
+    double outer_diameter() {return outer_radius() * 2.0;};
+    
+    // angle covered by the tooth on the pitch circle
     double tooth_thickness_angle() {return M_PI / number_of_teeth;};
     
     // angle of the base circle used to create the involute to a certain radius
@@ -90,14 +110,21 @@ private:
 };
 Geom::Path Gear::path(Geom::Point centre, double first_tooth_angle) {
     Geom::PathBuilder pb;
-    // begin with the angle at the center of each tooth
+    
+    // angle covered by a full tooth and fillet
+    double tooth_rotation = 2.0 * tooth_thickness_angle();
+    // angle covered by an involute
     double involute_advance = involute_intersect_angle(outer_radius()) - involute_intersect_angle(root_radius());
+    // angle covered by the tooth tip
     double tip_advance = tooth_thickness_angle() - (2 * (involute_intersect_angle(outer_radius()) - involute_intersect_angle(pitch_radius())));
-    double root_advance = tooth_thickness_angle() - (2 * (involute_intersect_angle(pitch_radius()) - involute_intersect_angle(root_radius())));
+    // angle covered by the toothe root
+    double root_advance = (tooth_rotation - tip_advance) - (2.0 * involute_advance);
+    // begin drawing the involute at t if the root circle is larger than the base circle
     double involute_t = involute_swath_angle(root_radius())/involute_swath_angle(outer_radius());
     
-    first_tooth_angle -= involute_intersect_angle(pitch_radius()) + involute_intersect_angle(root_radius());
-    double tooth_rotation = 2.0*tooth_thickness_angle();
+    //rewind angle to start drawing from the leading edge of the tooth
+    first_tooth_angle = first_tooth_angle - ((0.5 * tip_advance) + involute_advance);
+    
     for (int i=0; i < 5/*number_of_teeth*/; i++)
     {
         double cursor = first_tooth_angle + (i * tooth_rotation);
@@ -189,7 +216,7 @@ class GearToy: public Toy {
         cairo_set_line_width (cr, 2.0);
         cairo_stroke(cr);
         
-        *notify << "pitch radius = " << gear.pitch_radius();
+        *notify << "pitch = " << gear.pitch_radius() << " base = " << gear.base_radius();
     }
 };
 
