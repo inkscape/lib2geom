@@ -1,23 +1,31 @@
 PROJECT(lib2geom CXX)
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeScripts)
-include(UsePkgConfig)
 
 # Dependencies Packages
-PKGCONFIG(gtk+-2.0 GTK2_INCLUDE_DIR GTK2_LINK_DIR GTK2_LINK_FLAGS GTK2_CFLAGS)
-message(STATUS "GTK2 Configuration")
-message(STATUS "inc: -${GTK2_INCLUDE_DIR}")
-message(STATUS "link flags: -${GTK2_LINK_FLAGS}")
-message(STATUS "cflags: -${GTK2_CFLAGS}")
-message(STATUS "link dir: -${GTK2_LINK_DIR}")
+IF(UNIX)
+    IF(APPLE)
+    ELSE(APPLE)
+        include(UsePkgConfig)   
+        PKGCONFIG(gtk+-2.0 GTK2_INCLUDE_DIR GTK2_LINK_DIR GTK2_LINK_FLAGS GTK2_CFLAGS)
+        message(STATUS "GTK2 Configuration")
+        message(STATUS "inc: -${GTK2_INCLUDE_DIR}")
+        message(STATUS "link flags: -${GTK2_LINK_FLAGS}")
+        message(STATUS "cflags: -${GTK2_CFLAGS}")
+        message(STATUS "link dir: -${GTK2_LINK_DIR}")
 
-PKGCONFIG(cairo CAIRO_INCLUDE_DIR CAIRO_LINK_DIR CAIRO_LINK_FLAGS CAIRO_CFLAGS)
-message(STATUS "CAIRO Configuration")
-message(STATUS "inc: -${CAIRO_INCLUDE_DIR}")
-message(STATUS "link flags: -${CAIRO_LINK_FLAGS}")
-message(STATUS "cflags: -${CAIRO_CFLAGS}")
-message(STATUS "link dir: -${CAIRO_LINK_DIR}")
+        PKGCONFIG(cairo CAIRO_INCLUDE_DIR CAIRO_LINK_DIR CAIRO_LINK_FLAGS CAIRO_CFLAGS)
+        message(STATUS "CAIRO Configuration")
+        message(STATUS "inc: -${CAIRO_INCLUDE_DIR}")
+        message(STATUS "link flags: -${CAIRO_LINK_FLAGS}")
+        message(STATUS "cflags: -${CAIRO_CFLAGS}")
+        message(STATUS "link dir: -${CAIRO_LINK_DIR}")
+    ENDIF(APPLE)
+ELSE(UNIX)
+    IF(WIN32)
+    ENDIF(WIN32)
+ENDIF(UNIX)
 # end Dependencies
-
+    
 # Set Compiler Flags
 SET(CMAKE_CXX_FLAGS "${GTK2_CFLAGS} ${CAIRO_CFLAGS}")
 
@@ -203,15 +211,15 @@ types.h
 )
 
 # make lib for 2geom
-ADD_LIBRARY(lib2geom SHARED ${2GEOM_SRC})
-TARGET_LINK_LIBRARIES(lib2geom ${GTK2_LINK_FLAGS} ${CAIRO_LINK_FLAGS} blas gsl)
+ADD_LIBRARY(2geom SHARED ${2GEOM_SRC})
+TARGET_LINK_LIBRARIES(2geom ${GTK2_LINK_FLAGS} ${CAIRO_LINK_FLAGS} blas gsl)
 
 OPTION(2GEOM_TOYS
   "Build the projects Toy files"
   ON)
 FOREACH(source ${2GEOM_TOYS_SRC})
     ADD_EXECUTABLE(${source} ${source}.cpp)
-    TARGET_LINK_LIBRARIES(${source} lib2geom ${GTK2_LINK_FLAGS} ${CAIRO_LINK_FLAGS})
+    TARGET_LINK_LIBRARIES(${source} 2geom ${GTK2_LINK_FLAGS} ${CAIRO_LINK_FLAGS})
 ENDFOREACH(source)
 ENDIF(2GEOM_TOYS)
 
@@ -220,6 +228,6 @@ OPTION(2GEOM_UNIT_TESTS
   OFF)
 FOREACH(source ${2GEOM_TESTS_SRC})
     ADD_EXECUTABLE(${source} ${source}.cpp)
-    TARGET_LINK_LIBRARIES(${source} lib2geom)
+    TARGET_LINK_LIBRARIES(${source} 2geom)
 ENDFOREACH(source)
 ENDIF(2GEOM_UNIT_TESTS)
