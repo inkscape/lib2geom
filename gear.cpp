@@ -32,52 +32,52 @@ class Gear {
 public:
     // pitch circles touch on two properly meshed gears
     // all measurements are taken from the pitch circle
-    double pitch_diameter() {return (_number_of_teeth * _module) / M_PI;};
-    double pitch_radius() {return pitch_diameter() / 2.0;};
-    void pitch_radius(double R) {_module = (2 * M_PI * R) / _number_of_teeth;};
+    double pitch_diameter() {return (_number_of_teeth * _module) / M_PI;}
+    double pitch_radius() {return pitch_diameter() / 2.0;}
+    void pitch_radius(double R) {_module = (2 * M_PI * R) / _number_of_teeth;}
     
     // base circle serves as the basis for the involute toothe profile
-    double base_diameter() {return pitch_diameter() * cos(_pressure_angle);};
-    double base_radius() {return base_diameter() / 2.0;};
+    double base_diameter() {return pitch_diameter() * cos(_pressure_angle);}
+    double base_radius() {return base_diameter() / 2.0;}
     
     // diametrical pitch
-    double diametrical_pitch() {return _number_of_teeth / pitch_diameter();};
+    double diametrical_pitch() {return _number_of_teeth / pitch_diameter();}
     
     // height of the tooth above the pitch circle
-    double addendum() {return 1.0 / diametrical_pitch();};
+    double addendum() {return 1.0 / diametrical_pitch();}
     // depth of the tooth below the pitch circle
-    double dedendum() {return addendum() + _clearance;};
+    double dedendum() {return addendum() + _clearance;}
     
     // root circle specifies the bottom of the fillet between teeth
-    double root_radius() {return pitch_radius() - dedendum();};
-    double root_diameter() {return root_radius() * 2.0;};
+    double root_radius() {return pitch_radius() - dedendum();}
+    double root_diameter() {return root_radius() * 2.0;}
     
     // outer circle is the outside diameter of the gear
-    double outer_radius() {return pitch_radius() + addendum();};
-    double outer_diameter() {return outer_radius() * 2.0;};
+    double outer_radius() {return pitch_radius() + addendum();}
+    double outer_diameter() {return outer_radius() * 2.0;}
     
     // angle covered by the tooth on the pitch circle
-    double tooth_thickness_angle() {return M_PI / _number_of_teeth;};
+    double tooth_thickness_angle() {return M_PI / _number_of_teeth;}
     
     // angle of the base circle used to create the involute to a certain radius
     double involute_swath_angle(double R) {
         if (R <= base_radius()) return 0.0;
         return sqrt(R*R - base_radius()*base_radius())/base_radius();
-    };
+    }
 
     // angle of the base circle between the origin of the involute and the intersection on another radius
     double involute_intersect_angle(double R) {
         if (R <= base_radius()) return 0.0;
         return (sqrt(R*R - base_radius()*base_radius())/base_radius()) - acos(base_radius()/R);
-    };
+    }
     
-    Geom::Point centre() {return _centre;};
-    void centre(Geom::Point c) {_centre = c;};
+    Geom::Point centre() {return _centre;}
+    void centre(Geom::Point c) {_centre = c;}
     
-    double angle() {return _angle;};
-    void angle(double a) {_angle = a;};
+    double angle() {return _angle;}
+    void angle(double a) {_angle = a;}
     
-    int number_of_teeth() {return _number_of_teeth;};
+    int number_of_teeth() {return _number_of_teeth;}
     
     Geom::Path path();
     Gear spawn(int N, double a);
@@ -178,9 +178,9 @@ Geom::Path Gear::path() {
     }
     
     return pb.peek();
-};
+}
 Gear Gear::spawn(int N, double a) {
-    Gear gear = Gear(N, _module, _pressure_angle);
+    Gear gear(N, _module, _pressure_angle);
     double dist = gear.pitch_radius() + pitch_radius();
     gear.centre(Geom::Point(dist * cos(a), dist * sin(a)) + _centre);
     double new_angle = 0.0;
@@ -190,7 +190,7 @@ Gear Gear::spawn(int N, double a) {
     new_angle += (a) * (pitch_radius() / gear.pitch_radius());
     gear.angle(new_angle + a);
     return gear;
-};
+}
 
 class GearToy: public Toy {
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
@@ -215,7 +215,7 @@ class GearToy: public Toy {
         cairo_stroke(cr);
         
         double pressure_angle = 20.0 * M_PI / 180;
-        Gear gear = Gear(15,200.0,pressure_angle);
+        Gear gear(15,200.0,pressure_angle);
         Geom::Point gear_centre = handles[1];
         gear.pitch_radius(L2(handles[0] - gear_centre));
         gear.angle(atan2(handles[0] - gear_centre));
