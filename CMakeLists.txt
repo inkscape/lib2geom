@@ -22,6 +22,17 @@ IF(UNIX)
     ENDIF(APPLE)
 ELSE(UNIX)
     IF(WIN32)
+        SET(GTK2_INCLUDE_DIR c:/gtk28/include)
+        SET(GTK2_LINK_FLAGS -lgtk-win32-2.0 -lgdk-win32-2.0 -latk-1.0 -lgdk_pixbuf-2.0 -lpangowin32-1.0 -lgdi32 -lpangocairo-1.0 -lfontconfig -lfreetype -lpango-1.0 -lm -lcairo -lgobject-2.0 -lgmodule-2.0 -lglib-2.0 -lintl -liconv -lgsl -lgslcblas)
+        SET(GTK2_CFLAGS -Ic:/gtk28/include/gtk-2.0 -Ic:/gtk28/lib/gtk-2.0/include -Ic:/gtk28/include/atk-1.0 -Ic:/gtk28/include/cairo -Ic:/gtk28/include/pango-1.0 -Ic:/gtk28/include/glib-2.0 -Ic:/gtk28/lib/glib-2.0/include -Ic:/gtk28/include -Lc:/gtk28/lib)
+        SET(GTK2_LINK_DIR c:/gtk28/lib)
+
+        message(STATUS "GTK2 Configuration")
+        message(STATUS "inc: -${GTK2_INCLUDE_DIR}")
+        message(STATUS "link flags: -${GTK2_LINK_FLAGS}")
+        message(STATUS "cflags: -${GTK2_CFLAGS}")
+        message(STATUS "link dir: -${GTK2_LINK_DIR}")
+
     ENDIF(WIN32)
 ENDIF(UNIX)
 # end Dependencies
