@@ -1,4 +1,5 @@
 #include <vector>
+#include <cassert>
 
 class Quad{
 public:
