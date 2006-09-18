@@ -51,25 +51,30 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
 	    }
     }
     
-    int c = 0;  //Number of points merged in
-
-    std::vector<Geom::Point> h;
-    for(int i = 0; i < 100 - c; i++)
-        h.push_back(handles[i]);
-    
     clock_t end_t = clock()+clock_t(0.1*CLOCKS_PER_SEC);
     unsigned iterations = 0;
     while(end_t > clock()) {
-	Geom::ConvexHull ch(h);
+	Geom::ConvexHull ch(handles);
         iterations++;
     }
-    *notify << "original time = " << 1000*0.1/iterations << std::endl;
-    Geom::ConvexHull ch(h);
+    *notify << "constructor time = " << 1000*0.1/iterations << std::endl;
+    Geom::ConvexHull ch(handles);
 
-    for(int i = 100 - c; i < 100; i++)
-        ch.merge(handles[i]);
+    std::vector<Geom::Point> h;
+    h.push_back(handles[0]);
+    h.push_back(handles[1]);
 
-    ch.merge(old_mouse_point);
+    end_t = clock()+clock_t(0.1*CLOCKS_PER_SEC);
+    iterations = 0;
+    while(end_t > clock()) {
+        Geom::ConvexHull ch(handles);
+        for(int i = 2; i < 100; i++)
+            ch.merge(handles[i]);
+        iterations++;
+    }
+    *notify << "merge time = " << 1000*0.1/iterations << std::endl;
+
+    //ch.merge(old_mouse_point);
 
     //assert(ch.is_clockwise());
     if(ch.contains_point(old_mouse_point))
