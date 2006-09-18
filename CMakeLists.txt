@@ -50,7 +50,6 @@ conic-4
 conic
 convex-test
 fitter
-interactive-bits
 one-D
 path
 #path.h
@@ -73,8 +72,13 @@ gear
 #)
 
 SET(2GEOM_TOY-FRAMEWORK_SRC
+interactive-bits.cpp
+interactive-bits.h
 toy-framework.cpp
 toy-framework.h
+path-cairo.cpp
+path-cairo.h
+#path-cairo.h.gch
 )
 
 SET(2GEOM_TESTS_SRC
@@ -104,7 +108,7 @@ bezier-to-sbasis.h
 beztype.cpp
 bezier-utils.cpp
 bezier-utils.h
-b-spline.cpp
+#b-spline.cpp
 centroid.cpp
 centroid.h
 choose.h
@@ -146,9 +150,6 @@ multidim-sbasis.h
 #nearestpoint.cpp
 #ode-toy-cairo.cpp
 path-builder.h
-path-cairo.cpp
-path-cairo.h
-#path-cairo.h.gch
 #path-cubicto.cpp
 path-find-points-of-interest.cpp
 path-find-points-of-interest.h
@@ -223,14 +224,18 @@ types.h
 
 # make lib for 2geom
 ADD_LIBRARY(2geom SHARED ${2GEOM_SRC})
-TARGET_LINK_LIBRARIES(2geom ${GTK2_LINK_FLAGS} ${CAIRO_LINK_FLAGS} blas gsl)
+TARGET_LINK_LIBRARIES(2geom blas gsl)
+
+# make lib for toy
+ADD_LIBRARY(toy SHARED ${2GEOM_TOY-FRAMEWORK_SRC})
+#TARGET_LINK_LIBRARIES(toy 2geom ${GTK2_LINK_FLAGS} ${CAIRO_LINK_FLAGS})
 
 OPTION(2GEOM_TOYS
   "Build the projects Toy files"
   ON)
 FOREACH(source ${2GEOM_TOYS_SRC})
     ADD_EXECUTABLE(${source} ${source}.cpp)
-    TARGET_LINK_LIBRARIES(${source} 2geom ${GTK2_LINK_FLAGS} ${CAIRO_LINK_FLAGS})
+    TARGET_LINK_LIBRARIES(${source} toy 2geom ${GTK2_LINK_FLAGS} ${CAIRO_LINK_FLAGS})
 ENDFOREACH(source)
 ENDIF(2GEOM_TOYS)
 
