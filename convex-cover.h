@@ -24,11 +24,22 @@ public:
     void merge(Point p);
     bool contains_point(Point p);
     
+    inline Point operator[](unsigned i) const {
+        int l = boundary.size();
+        if(l == 0) return Point();
+        return boundary[i >= 0 ? i % l : i % l + l];
+    }
+
+    /*inline Point &operator[](unsigned i) {
+        int l = boundary.size();
+        if(l == 0) return Point();
+        return boundary[i >= 0 ? i % l : i % l + l];
+    }*/
 
 public:
     ConvexHull() {}
     ConvexHull(std::vector<Point> const & points);
-    
+
 public:
     /** Is the convex hull clockwise?  We use the definition of clockwise from point.h
     **/
@@ -53,7 +64,6 @@ public:
     // furthest point in a direction (lg time) 
     Point const * furthest(Point direction) const;
 
-private:
     bool is_left(Point p, int n);
     int find_left(Point p);
 };

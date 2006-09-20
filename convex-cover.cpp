@@ -67,7 +67,7 @@ ConvexHull::ConvexHull(std::vector<Point> const & points) {
     
 //Sort points by angle (resolve ties in favor of point farther from P);
     std::sort(boundary.begin()+1, boundary.end(), angle_cmp(boundary[0]));
-    
+
     std::vector<Point> stac;
     stac.push_back(boundary[0]);
     stac.push_back(boundary[1]);
@@ -100,8 +100,7 @@ int mod(int i, int l) {
  * Tests if a point is left (outside) of a particular segment, n. */
 bool
 ConvexHull::is_left(Point p, int n) {
-    int l = boundary.size();
-    return SignedTriangleArea(boundary[mod(n,l)], boundary[mod(n+1,l)], p) > 0;
+    return SignedTriangleArea((*this)[n], (*this)[n+1], p) > 0;
 }
 
 /*** ConvexHull::find_positive
@@ -238,11 +237,41 @@ ConvexHull intersection(ConvexHull a, ConvexHull b) {
 
 }
 
+/*
+cross: positive - clockwise
+       negative - counterclockwise
+*/
+
 /*** ConvexHull merge(ConvexHull a, ConvexHull b);
  * find the smallest convex hull that surrounds a and b.
  */
 ConvexHull merge(ConvexHull a, ConvexHull b) {
-    
+    ConvexHull ret;
+    int la = a.boundary.size(), lb = b.boundary.size();
+
+    int icur, iother;     //Current index and other index
+    ConvexHull *cur, *other; //Current hull, other hull 
+
+    if(a.boundary[0][1] < b.boundary[0][1]) {
+        cur = &a;
+        other = &b;
+    } else {
+        cur = &b;
+        other = &a;
+    }
+    while(icur < cur->boundary.size()) {
+        //If icur is clockwise to iother, increment iother. this maintains synch of calipers? maybe? possibly? in a few cases?
+        //I can't find code implementations of the rotating calipers.
+        while(cross((*cur)[icur + 1] - (*cur)[icur], (*other)[iother + 1] - (*other)[iother]) > 0)
+            iother++;
+        if(cur->is_left(other->boundary[iother], icur)) {
+            ConvexHull* temp = cur; cur =  other;  other = temp;
+            int t = icur;          icur = iother; iother = t;
+        }
+        ret.boundary.push_back(cur->boundary[icur]);
+        icur++;
+    }
+    return ret;
 }
 
 };

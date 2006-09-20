@@ -43,8 +43,10 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
         cairo_line_to(cr, i*width/4, width);
     }
 
+    int n = 5;
+
     if(handles.empty()) {
-	    for(int i = 0; i < 100; i++){
+	    for(int i = 0; i < n; i++){
 		    Geom::Point c(width/2, width/2);
 		    handles.push_back(Geom::Point(uniform()*(uniform()-0.5)*width/2,
 						  uniform()*(uniform()-0.5)*height/2) + c);
@@ -66,9 +68,10 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
 
     end_t = clock()+clock_t(0.1*CLOCKS_PER_SEC);
     iterations = 0;
+    Geom::ConvexHull foo(h);
     while(end_t > clock()) {
-        Geom::ConvexHull ch(handles);
-        for(int i = 2; i < 100; i++)
+        Geom::ConvexHull ch(foo);
+        for(int i = 2; i < n; i++)
             ch.merge(handles[i]);
         iterations++;
     }
