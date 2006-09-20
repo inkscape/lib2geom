@@ -153,6 +153,8 @@ path-builder.h
 #path-cubicto.cpp
 path-find-points-of-interest.cpp
 path-find-points-of-interest.h
+path-nearest.cpp
+path-nearest.h
 path-intersect.cpp
 path-intersect.h
 path-metric.cpp
