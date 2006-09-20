@@ -22,7 +22,8 @@ LIBOBJS=arc-length.o centroid.o geom.o matrix-rotate-ops.o \
 	path.o point-fns.o poly.o read-svgd.o rect.o rotate-fns.o s-basis.o \
 	sbasis-poly.o types.o sbasis-to-bezier.o s-basis-roots.o \
 	solve-bezier-parametric.o solve-bezier-one-d.o poly-dk-solve.o \
-	poly-laguerre-solve.o convex-cover.o s-basis-2d.o bezier-utils.o
+	poly-laguerre-solve.o convex-cover.o s-basis-2d.o bezier-utils.o \
+	path-nearest.o
 
 EXTRAOBJS=interactive-bits.o path-cairo.o $(TARGETOBJS)
 
