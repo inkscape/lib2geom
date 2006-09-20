@@ -12,14 +12,17 @@ namespace Geom{
 
  * An empty hull has no points, we allow a single point or two points degenerate cases.
 
- * We provide the centroid as a member for efficient direction determination.  We can update the
- * centroid with all operations with the same time complexity as the operation or better.
+ * We could provide the centroid as a member for efficient direction determination.  We can update the
+ * centroid with all operations with the same time complexity as the operation.
  */
 
 class ConvexHull{
+private:
+    // extracts the convex hull of boundary. internal use only
+    void sort();
 public:
     std::vector<Point> boundary;
-    Point centroid;
+    //Point centroid;
     
     void merge(Point p);
     bool contains_point(Point p);
@@ -38,8 +41,14 @@ public:
 
 public:
     ConvexHull() {}
-    ConvexHull(std::vector<Point> const & points);
+    ConvexHull(std::vector<Point> const & points) {
+        boundary = points;
+        sort();
+    }
 
+    template <typename T>
+    ConvexHull(T b, T e) :boundary(b,e) {}
+    
 public:
     /** Is the convex hull clockwise?  We use the definition of clockwise from point.h
     **/
@@ -95,9 +104,10 @@ template <class T> ConvexHull operator*(ConvexHull const &p, T const &m) {
 
 class ConvexCover{
 public:
-    SubPath* path;
+    SubPath const* path;
+    std::vector<ConvexHull> cc;
     
-    
+    ConvexCover(SubPath const &sp);
 };
 
 };

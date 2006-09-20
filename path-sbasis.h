@@ -6,7 +6,7 @@
 #include "multidim-sbasis.h"
 #include "bezier-to-sbasis.h"
 
-multidim_sbasis<2> elem_to_sbasis(Geom::SubPath::Elem const & elm) {
+inline multidim_sbasis<2> elem_to_sbasis(Geom::SubPath::Elem const & elm) {
     switch(elm.op) {
     case Geom::lineto:
         return bezier_to_sbasis<2, 1>(elm.begin());

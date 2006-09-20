@@ -60,7 +60,15 @@ inline multidim_sbasis<D>
 operator -(multidim_sbasis<D> const & a, multidim_sbasis<D> const & b) {
     multidim_sbasis<D> r;
     for(unsigned i = 0; i < D; i++)
-        r.f[i] = a.f[i]-b.f[i];
+        r.f[i] = a.f[i] - b.f[i];
+    return r;
+}
+
+inline multidim_sbasis<2>
+operator -(multidim_sbasis<2> const & a, Geom::Point const & b) {
+    multidim_sbasis<2> r;
+    for(unsigned i = 0; i < 2; i++)
+        r.f[i] = a.f[i] - BezOrd(b[i]);
     return r;
 }
 
@@ -223,7 +231,6 @@ rot90(multidim_sbasis<2> const & a) {
     return r;
 }
 
-#include "point.h"
 inline Geom::Point
 point_at(multidim_sbasis<2> const & a, double t) {
     return Geom::Point(a[0](t), a[1](t));

@@ -28,7 +28,8 @@
 #include "path-cairo.h"
 #include <pango/pangocairo.h>
 #include "interactive-bits.h"
-
+#include "path-nearest.h"
+#include "convex-cover.h"
 #include "path-metric.h"
 
 using std::string;
@@ -49,6 +50,22 @@ Geom::SubPath::Location param(Geom::SubPath const & p, double t) {
     double T = t*(p.size()-1);
     //std::cout << T << ", " <<  T-int(T) << std::endl;
     return Geom::SubPath::Location(p.indexed_elem(int(T)), T - int(T));
+}
+
+void draw_convex_hull(cairo_t *cr, Geom::ConvexHull const & ch) {
+    cairo_move_to(cr, ch.boundary.back());
+    for(int i = 0; i < ch.boundary.size(); i++) {
+        cairo_line_to(cr, ch.boundary[i]);
+    }
+    cairo_stroke(cr);
+}
+
+void draw_convex_cover(cairo_t *cr, Geom::SubPath const & p) {
+    Geom::ConvexCover cc(p);
+    
+    for(int i = 0; i < cc.cc.size(); i++) {
+        draw_convex_hull(cr, cc.cc[i]);
+    }
 }
 
 void draw_evolute(cairo_t *cr, Geom::SubPath const & p) {
@@ -152,6 +169,8 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     if(half_stroking) {
         draw_stroke(cr, display_path);
     }
+    draw_convex_cover(cr, display_path);
+
 #ifdef HAVE_GSL
     if(equal_arc) {
         cairo_save(cr);
@@ -205,8 +224,10 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     cairo_save(cr);
     cairo_set_source_rgba (cr, 0., 0., 0.5, 0.8);
 
+    //Geom::SubPath::Location pl = 
+    //    display_path.nearest_location(old_mouse_point, dist);
     Geom::SubPath::Location pl = 
-        display_path.nearest_location(old_mouse_point, dist);
+        find_nearest_location(display_path, old_mouse_point);
     assert(hash_cookie == display_path);
     {
         Geom::Point pos, tgt, acc;

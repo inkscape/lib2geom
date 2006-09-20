@@ -21,6 +21,11 @@ inline Coord L2(Point const &p) {
 	return hypot(p[0], p[1]);
 }
 
+/** Compute the square of L2 norm of \a p. Warning: this can overflow where L2 won't.*/
+inline Coord L2sq(Point const &p) {
+	return p[0]*p[0] + p[1]*p[1];
+}
+
 extern double LInfty(Point const &p);
 
 bool is_zero(Point const &p);
@@ -52,7 +57,7 @@ inline Point rot90(Point const &p)
 }
 
 /** Given two points and a parameter t \in [0, 1], return a point
- * proportionally from a to b by t. */
+ * proportionally from a to b by t.  Akin to 1 degree bezier.*/
 inline Point Lerp(double const t, Point const a, Point const b)
 {
     return ( ( 1 - t ) * a
@@ -61,6 +66,7 @@ inline Point Lerp(double const t, Point const a, Point const b)
 
 Point unit_vector(Point const &a);
 
+/** compute the dot product (inner product) between the vectors a and b. */
 inline Coord dot(Point const &a, Point const &b)
 {
     Coord ret = 0;
@@ -70,6 +76,7 @@ inline Coord dot(Point const &a, Point const &b)
     return ret;
 }
 
+/** compute the euclidean distance between points a and b.  XXX: hypot safer/faster? */
 inline Coord distance (Point const &a, Point const &b)
 {
     Coord ret = 0;
@@ -77,6 +84,16 @@ inline Coord distance (Point const &a, Point const &b)
         ret += (a[i] - b[i]) * (a[i] - b[i]);
     }
     return sqrt (ret);
+}
+
+/** compute the square of the distance between points a and b. */
+inline Coord dist_sq (Point const &a, Point const &b)
+{
+    Coord ret = 0;
+    for ( int i = 0 ; i < 2 ; i++ ) {
+        ret += (a[i] - b[i]) * (a[i] - b[i]);
+    }
+    return ret;
 }
 
 /** Defined as dot(a, b.cw()). */

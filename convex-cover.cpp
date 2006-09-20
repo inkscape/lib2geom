@@ -47,20 +47,19 @@ public:
             return true;
 #endif
         if(aa == ab)
-            return L2(da) < L2(db);
+            return L2sq(da) < L2sq(db);
         return false;
     }
 };
 
-ConvexHull::ConvexHull(std::vector<Point> const & points) {
-    boundary = points;
+void
+ConvexHull::sort() {
     // Find pivot P;
     unsigned pivot = 0;
     for(unsigned i = 1; i < boundary.size(); i++) {
-        if(boundary[i][1] < boundary[pivot][1])
-            pivot = i;
-        else if((boundary[i][1] == boundary[pivot][1]) && 
-                (boundary[i][0] < boundary[pivot][0]))
+        if((boundary[i][1] < boundary[pivot][1]) ||
+           ((boundary[i][1] == boundary[pivot][1]) && 
+            (boundary[i][0] < boundary[pivot][0])))
             pivot = i;
     }
     std::swap(boundary[0], boundary[pivot]);
@@ -273,6 +272,14 @@ ConvexHull merge(ConvexHull a, ConvexHull b) {
     }
     return ret;
 }
+
+ConvexCover::ConvexCover(SubPath const &sp) : path(&sp) {
+    cc.reserve(sp.size());
+    for(Geom::SubPath::const_iterator it(sp.begin()), end(sp.end()); it != end; ++it) {
+        cc.push_back(ConvexHull((*it).begin(), (*it).end()));
+    }
+}
+
 
 };
 

@@ -94,6 +94,7 @@ public:
         ConstIter it;
         double t; // element specific meaning [0,1)
         Location(ConstIter it, double t) : it(it), t(t) {}
+        Location() {}
     };
     
     class HashCookie {

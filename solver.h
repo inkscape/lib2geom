@@ -17,9 +17,10 @@ unsigned
 crossing_count(double const *V,	/*  Control pts of Bezier curve	*/
 	       unsigned degree,	/*  Degree of Bezier curve */
 	       double left_t, double right_t);
+// This algorithm is 2000* faster on average than parametric roots.
 void
 find_bernstein_roots(
-    double const *w, /* The control points  */
+    double *w, /* The control points  */
     unsigned degree,	/* The degree of the polynomial */
     std::vector<double> & solutions,	/* RETURN candidate t-values */
     unsigned depth,	/* The depth of the recursion */
