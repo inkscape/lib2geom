@@ -51,10 +51,6 @@ conic
 convex-test
 fitter
 one-D
-path
-#path.h
-path-to-svgd
-#path-to-svgd.h
 poly-test
 quad-test
 rat-bez
@@ -78,7 +74,6 @@ toy-framework.cpp
 toy-framework.h
 path-cairo.cpp
 path-cairo.h
-#path-cairo.h.gch
 )
 
 SET(2GEOM_TESTS_SRC
