@@ -36,9 +36,12 @@ ELSE(UNIX)
     ENDIF(WIN32)
 ENDIF(UNIX)
 # end Dependencies
-    
+
 # Set Compiler Flags
 SET(CMAKE_CXX_FLAGS "${GTK2_CFLAGS} ${CAIRO_CFLAGS}")
+IF(WIN32)
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mms-bitfields")
+ENDIF(WIN32)
 
 SET(2GEOM_TOYS_SRC 
 2dsb2d
@@ -59,7 +62,7 @@ sb1d
 sb2d
 s-bez
 #tensor-reparam
-toy-cairo
+#toy-cairo
 unit-test-sbasis
 gear
 )
@@ -160,6 +163,8 @@ path-poly-fns.h
 path-sbasis.h
 path-to-polyline.cpp
 path-to-polyline.h
+path.cpp
+path.h
 point-fns.cpp
 point-fns.h
 point.h
