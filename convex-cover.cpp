@@ -236,6 +236,8 @@ ConvexHull intersection(ConvexHull a, ConvexHull b) {
 
 }
 
+
+
 /*
 cross: positive - clockwise
        negative - counterclockwise
@@ -246,7 +248,6 @@ cross: positive - clockwise
  */
 ConvexHull merge(ConvexHull a, ConvexHull b) {
     ConvexHull ret;
-    int la = a.boundary.size(), lb = b.boundary.size();
 
     int icur, iother;     //Current index and other index
     ConvexHull *cur, *other; //Current hull, other hull 
@@ -258,16 +259,21 @@ ConvexHull merge(ConvexHull a, ConvexHull b) {
         cur = &b;
         other = &a;
     }
+    //SignedTriangleArea((*this)[n], (*this)[n+1], p) > 0
+    //cross((p1 - p0), (p2 - p0))
     while(icur < cur->boundary.size()) {
-        //If icur is clockwise to iother, increment iother. this maintains synch of calipers? maybe? possibly? in a few cases?
-        //I can't find code implementations of the rotating calipers.
-        while(cross((*cur)[icur + 1] - (*cur)[icur], (*other)[iother + 1] - (*other)[iother]) > 0)
-            iother++;
-        if(cur->is_left(other->boundary[iother], icur)) {
-            ConvexHull* temp = cur; cur =  other;  other = temp;
-            int t = icur;          icur = iother; iother = t;
+        for(int iother = 0; iother < other->boundary.size(); iother++) {
+            Point d = (*other)[iother] - (*cur)[icur];
+            if(cross(d, (*cur)[icur - 1]) < 0 &&
+               cross(d, (*cur)[icur + 1]) < 0 &&
+               cross(d, (*other)[iother - 1]) < 0 &&
+               cross(d, (*other)[iother + 1]) < 0) {
+                   ConvexHull* temp = cur; cur =  other;  other = temp;
+                   int t = icur;          icur = iother; iother = t;
+                   break;
+            }
         }
-        ret.boundary.push_back(cur->boundary[icur]);
+        ret.boundary.push_back((*cur)[icur]);
         icur++;
     }
     return ret;

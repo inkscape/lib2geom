@@ -43,7 +43,7 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
         cairo_line_to(cr, i*width/4, width);
     }
 
-    int n = 5;
+    int n = 50;
 
     if(handles.empty()) {
 	    for(int i = 0; i < n; i++){
@@ -53,6 +53,12 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
 	    }
     }
     
+    std::vector<Geom::Point> h1, h2;
+    for(int i = 0; i < 25; i++) {
+        h1.push_back(handles[i]);
+        h2.push_back(handles[i + 25]);
+    }
+
     clock_t end_t = clock()+clock_t(0.1*CLOCKS_PER_SEC);
     unsigned iterations = 0;
     while(end_t > clock()) {
@@ -60,31 +66,41 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
         iterations++;
     }
     *notify << "constructor time = " << 1000*0.1/iterations << std::endl;
-    Geom::ConvexHull ch(handles);
-
-    std::vector<Geom::Point> h;
-    h.push_back(handles[0]);
-    h.push_back(handles[1]);
+    Geom::ConvexHull ch1(h1);
+    Geom::ConvexHull ch2(h2);
 
     end_t = clock()+clock_t(0.1*CLOCKS_PER_SEC);
     iterations = 0;
-    Geom::ConvexHull foo(h);
     while(end_t > clock()) {
-        Geom::ConvexHull ch(foo);
-        for(int i = 2; i < n; i++)
-            ch.merge(handles[i]);
+        merge(ch1, ch2);
         iterations++;
     }
     *notify << "merge time = " << 1000*0.1/iterations << std::endl;
-
+    Geom::ConvexHull m = merge(ch1, ch2);
     //ch.merge(old_mouse_point);
 
     //assert(ch.is_clockwise());
-    if(ch.contains_point(old_mouse_point))
+    if(m.contains_point(old_mouse_point))
         *notify << "mouse in convex" << std::endl;
-    cairo_move_to(cr, ch.boundary.back());
-    for(int i = 0; i < ch.boundary.size(); i++) {
-        cairo_line_to(cr, ch.boundary[i]);
+
+    cairo_set_source_rgba (cr, 1., 0., 0, 0.8);
+    cairo_move_to(cr, ch1.boundary.back());
+    for(int i = 0; i < ch1.boundary.size(); i++) {
+        cairo_line_to(cr, ch1.boundary[i]);
+    }
+
+    cairo_move_to(cr, ch2.boundary.back());
+    cairo_set_source_rgba (cr, 0., 1., 0, 0.8);
+    for(int i = 0; i < ch2.boundary.size(); i++) {
+        cairo_line_to(cr, ch2.boundary[i]);
+    }
+
+    if(m.boundary.size() > 0) {
+        cairo_move_to(cr, m.boundary.back());
+        cairo_set_source_rgba (cr, 0., 0., 0, 0.8);
+        for(int i = 1; i < m.boundary.size(); i++) {
+            cairo_line_to(cr, m.boundary[i]);
+        }
     }
 }
 };

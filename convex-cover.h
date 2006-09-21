@@ -30,7 +30,7 @@ public:
     inline Point operator[](unsigned i) const {
         int l = boundary.size();
         if(l == 0) return Point();
-        return boundary[i >= 0 ? i % l : i % l + l];
+        return boundary[i >= 0 ? i % l : (i % l) + l];
     }
 
     /*inline Point &operator[](unsigned i) {
