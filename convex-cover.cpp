@@ -243,6 +243,10 @@ cross: positive - clockwise
        negative - counterclockwise
 */
 
+/*int[] bridges(ConvexHull a, ConvexHull b) {
+    
+}*/
+
 /*** ConvexHull merge(ConvexHull a, ConvexHull b);
  * find the smallest convex hull that surrounds a and b.
  */
@@ -262,10 +266,10 @@ ConvexHull merge(ConvexHull a, ConvexHull b) {
     while(icur < cur->boundary.size()) {
         for(int iother = 0; iother < other->boundary.size(); iother++) {
             Point d = (*other)[iother] - (*cur)[icur];
-            if(cross(d, (*cur)[icur - 1]) < 0 &&
-               cross(d, (*cur)[icur + 1]) < 0 &&
-               cross(d, (*other)[iother - 1]) < 0 &&
-               cross(d, (*other)[iother + 1]) < 0) {
+            if(cross(d, (*cur)[icur - 1] - (*cur)[icur]) >= 0 &&
+               cross(d, (*cur)[icur + 1] - (*cur)[icur]) > 0 &&
+               cross(d, (*other)[iother - 1] - (*cur)[icur]) >= 0 &&
+               cross(d, (*other)[iother + 1] - (*cur)[icur]) > 0) {
                    ConvexHull* temp = cur; cur =  other;  other = temp;
                    icur = iother;
                    break;
