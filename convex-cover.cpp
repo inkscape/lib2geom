@@ -251,8 +251,9 @@ std::vector<int> bridges(ConvexHull a, ConvexHull b) {
     for(int ia = 0; ia < a.boundary.size(); ia++) {
         for(int ib = 0; ib < b.boundary.size(); ib++) {
             Point d = b[ib] - a[ia];
-            if(cross(d, a[ia - 1] - a[ia]) >= 0 && cross(d, a[ia + 1] - a[ia]) > 0 &&
-               cross(d, b[ib - 1] - a[ia]) >= 0 && cross(d, b[ib + 1] - a[ia]) > 0) {
+            Geom::Coord e = cross(d, a[ia - 1] - a[ia]), f = cross(d, a[ia + 1] - a[ia]);
+            Geom::Coord g = cross(d, b[ib - 1] - a[ia]), h = cross(d, b[ib + 1] - a[ia]);
+            if((e >= 0 && f > 0 && g >= 0 && h > 0) || (e <= 0 && f < 0 && g <= 0 && h < 0)) {
                     ret.push_back(ia);
                     ret.push_back(ib);
             }
