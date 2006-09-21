@@ -249,7 +249,7 @@ cross: positive - clockwise
 ConvexHull merge(ConvexHull a, ConvexHull b) {
     ConvexHull ret;
 
-    int icur, iother;     //Current index and other index
+    int icur = 0;     //Current index and other index
     ConvexHull *cur, *other; //Current hull, other hull 
 
     if(a.boundary[0][1] < b.boundary[0][1]) {
@@ -259,8 +259,6 @@ ConvexHull merge(ConvexHull a, ConvexHull b) {
         cur = &b;
         other = &a;
     }
-    //SignedTriangleArea((*this)[n], (*this)[n+1], p) > 0
-    //cross((p1 - p0), (p2 - p0))
     while(icur < cur->boundary.size()) {
         for(int iother = 0; iother < other->boundary.size(); iother++) {
             Point d = (*other)[iother] - (*cur)[icur];
@@ -269,7 +267,7 @@ ConvexHull merge(ConvexHull a, ConvexHull b) {
                cross(d, (*other)[iother - 1]) < 0 &&
                cross(d, (*other)[iother + 1]) < 0) {
                    ConvexHull* temp = cur; cur =  other;  other = temp;
-                   int t = icur;          icur = iother; iother = t;
+                   icur = iother;
                    break;
             }
         }

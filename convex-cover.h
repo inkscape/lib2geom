@@ -27,7 +27,7 @@ public:
     void merge(Point p);
     bool contains_point(Point p);
     
-    inline Point operator[](unsigned i) const {
+    inline Point operator[](int i) const {
         int l = boundary.size();
         if(l == 0) return Point();
         return boundary[i >= 0 ? i % l : (i % l) + l];
