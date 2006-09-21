@@ -18,7 +18,7 @@ BADTARGETOBJS=bspline.o conic-2.o ode-toy-cairo.o toy.o
 
 LIBOBJS=arc-length.o centroid.o geom.o matrix-rotate-ops.o \
 	matrix-translate-ops.o matrix.o path-find-points-of-interest.o \
-	path-intersect.o path-metric.o path-to-polyline.o path-to-svgd.o \
+	path-intersect.o path-metric.o path-to-polyline.o \
 	path.o point-fns.o poly.o read-svgd.o rect.o rotate-fns.o s-basis.o \
 	sbasis-poly.o types.o sbasis-to-bezier.o s-basis-roots.o \
 	solve-bezier-parametric.o solve-bezier-one-d.o poly-dk-solve.o \
