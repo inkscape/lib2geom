@@ -243,9 +243,33 @@ cross: positive - clockwise
        negative - counterclockwise
 */
 
-/*int[] bridges(ConvexHull a, ConvexHull b) {
+std::vector<int> bridges(ConvexHull a, ConvexHull b) {
+    std::vector<int> ret;
     
-}*/
+    bool on_a = a.boundary[0][1] < b.boundary[0][1];
+
+    for(int ia = 0; ia < a.boundary.size(); ia++) {
+        for(int ib = 0; ib < b.boundary.size(); ib++) {
+            Point d = b[ib] - a[ia];
+            if(cross(d, a[ia - 1] - a[ia]) >= 0 && cross(d, a[ia + 1] - a[ia]) > 0 &&
+               cross(d, b[ib - 1] - a[ia]) >= 0 && cross(d, b[ib + 1] - a[ia]) > 0) {
+                    ret.push_back(ia);
+                    ret.push_back(ib);
+            }
+        }
+    }
+    return ret;
+}
+
+std::vector<Point> bridge_points(ConvexHull a, ConvexHull b) {
+    std::vector<Point> ret;
+    std::vector<int> indices = bridges(a, b);
+    for(int i = 0; i < indices.size(); i += 2) {
+        ret.push_back(a[indices[i]]);
+        ret.push_back(b[indices[i + 1]]);
+    }
+    return ret;
+}
 
 /*** ConvexHull merge(ConvexHull a, ConvexHull b);
  * find the smallest convex hull that surrounds a and b.
@@ -253,31 +277,6 @@ cross: positive - clockwise
 ConvexHull merge(ConvexHull a, ConvexHull b) {
     ConvexHull ret;
 
-    int icur = 0;     //Current index and other index
-    ConvexHull *cur, *other; //Current hull, other hull 
-
-    if(a.boundary[0][1] < b.boundary[0][1]) {
-        cur = &a;
-        other = &b;
-    } else {
-        cur = &b;
-        other = &a;
-    }
-    while(icur < cur->boundary.size()) {
-        for(int iother = 0; iother < other->boundary.size(); iother++) {
-            Point d = (*other)[iother] - (*cur)[icur];
-            if(cross(d, (*cur)[icur - 1] - (*cur)[icur]) >= 0 &&
-               cross(d, (*cur)[icur + 1] - (*cur)[icur]) > 0 &&
-               cross(d, (*other)[iother - 1] - (*cur)[icur]) >= 0 &&
-               cross(d, (*other)[iother + 1] - (*cur)[icur]) > 0) {
-                   ConvexHull* temp = cur; cur =  other;  other = temp;
-                   icur = iother;
-                   break;
-            }
-        }
-        ret.boundary.push_back((*cur)[icur]);
-        icur++;
-    }
     return ret;
 }
 

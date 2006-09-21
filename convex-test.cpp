@@ -91,6 +91,11 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
             cairo_line_to(cr, m.boundary[i]);
         }
     }
+    std::vector<Geom::Point> bs = bridge_points(ch1, ch2);
+    for(int i = 0; i < bs.size(); i+=2) {
+        cairo_move_to(cr, bs[i]);
+        cairo_line_to(cr, bs[i + 1]);
+    }
     cairo_stroke(cr);
     cairo_set_line_width (cr, 1);
 

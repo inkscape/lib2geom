@@ -80,6 +80,8 @@ public:
 // do two convex hulls intersect?
 bool intersectp(ConvexHull a, ConvexHull b);
 
+std::vector<Point> bridge_points(ConvexHull a, ConvexHull b);
+
 // find the convex hull intersection
 ConvexHull intersection(ConvexHull a, ConvexHull b);
 
