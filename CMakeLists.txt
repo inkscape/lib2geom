@@ -235,17 +235,19 @@ TARGET_LINK_LIBRARIES(toy 2geom "${GTK2_LINK_FLAGS} ${CAIRO_LINK_FLAGS}")
 OPTION(2GEOM_TOYS
   "Build the projects Toy files"
   ON)
-FOREACH(source ${2GEOM_TOYS_SRC})
-    ADD_EXECUTABLE(${source} ${source}.cpp)
-    TARGET_LINK_LIBRARIES(${source} toy 2geom "${GTK2_LINK_FLAGS} ${CAIRO_LINK_FLAGS}")
-ENDFOREACH(source)
+IF(2GEOM_TOYS)
+    FOREACH(source ${2GEOM_TOYS_SRC})
+        ADD_EXECUTABLE(${source} ${source}.cpp)
+        TARGET_LINK_LIBRARIES(${source} toy 2geom "${GTK2_LINK_FLAGS} ${CAIRO_LINK_FLAGS}")
+    ENDFOREACH(source)
 ENDIF(2GEOM_TOYS)
 
 OPTION(2GEOM_UNIT_TESTS
   "Build the projects Unit Tests"
   OFF)
-FOREACH(source ${2GEOM_TESTS_SRC})
-    ADD_EXECUTABLE(${source} ${source}.cpp)
-    TARGET_LINK_LIBRARIES(${source} 2geom)
-ENDFOREACH(source)
+IF(2GEOM_UNIT_TESTS)
+    FOREACH(source ${2GEOM_TESTS_SRC})
+        ADD_EXECUTABLE(${source} ${source}.cpp)
+        TARGET_LINK_LIBRARIES(${source} 2geom)
+    ENDFOREACH(source)
 ENDIF(2GEOM_UNIT_TESTS)
