@@ -305,13 +305,6 @@ Path::total_segments() const {
 
 };
 
-#ifdef UNIT_TEST
-int main(int argc, char **argv) {
-    
-}
-#endif
-
-
 /*
   Local Variables:
   mode:c++

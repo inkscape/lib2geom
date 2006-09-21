@@ -56,17 +56,6 @@ lib2geom.a: $(LIBOBJS)
 	ranlib lib2geom.a
 
 
-# TODO: There are problems if the unit test code is in the main .o file
-#       since that will be in the library.  So these targets may not work.
-#       Best to pull out the test code.
-
-path: path.cpp lib2geom.a
-	$(CXX) $(CXXFLAGS) -o $@ $^ -DUNIT_TEST $(extra_cppflags)
-
-path-to-svgd: path-to-svgd.cpp lib2geom.a
-	$(CXX) $(CXXFLAGS) -o $@ -I . $^ -DUNIT_TEST $(extra_cppflags)
-
-
 # Targets;
 
 $(TARGETS): %: %.o interactive-bits.o path-cairo.o lib2geom.a 
