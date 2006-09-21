@@ -251,6 +251,7 @@ std::vector<int> bridges(ConvexHull a, ConvexHull b) {
     for(int ia = 0; ia < a.boundary.size(); ia++) {
         for(int ib = 0; ib < b.boundary.size(); ib++) {
             Point d = b[ib] - a[ia];
+// It seems that you should be able to remember half of this from the previous step? -- njh
             Geom::Coord e = cross(d, a[ia - 1] - a[ia]), f = cross(d, a[ia + 1] - a[ia]);
             Geom::Coord g = cross(d, b[ib - 1] - a[ia]), h = cross(d, b[ib + 1] - a[ia]);
             if((e >= 0 && f > 0 && g >= 0 && h > 0) || (e <= 0 && f < 0 && g <= 0 && h < 0)) {
