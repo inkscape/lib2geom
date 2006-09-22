@@ -19,7 +19,10 @@ namespace Geom{
 class ConvexHull{
 public: // XXX: should be private :)
     // extracts the convex hull of boundary. internal use only
-    void sort();
+    void find_pivot();
+    void angle_sort();
+    void graham_scan();
+    void graham();
 public:
     std::vector<Point> boundary;
     //Point centroid;
@@ -43,7 +46,7 @@ public:
     ConvexHull() {}
     ConvexHull(std::vector<Point> const & points) {
         boundary = points;
-        sort();
+        graham();
     }
 
     template <typename T>

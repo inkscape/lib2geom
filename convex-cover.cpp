@@ -1,6 +1,17 @@
 #include "convex-cover.h"
 #include <algorithm>
 
+/** Todo:
+    + modify graham scan to work top to bottom, rather than around angles
+    + intersection
+    + minimum distance between convex hulls
+    + maximum distance between convex hulls
+    + hausdorf metric?
+    + check all degenerate cases carefully
+    + check all algorithms meet all invariants
+    + generalise rotating caliper algorithm (iterator/circulator?)
+*/
+
 namespace Geom{
 
 /*** SignedTriangleArea
@@ -11,15 +22,6 @@ SignedTriangleArea(Point p0, Point p1, Point p2) {
     return cross((p1 - p0), (p2 - p0));
 }
 
-/*
-template <typename T>
-void
-swap(T &a, T &b) {
-    T t = a;
-    a = b;
-    b = t;
-    }
-*/
 class angle_cmp{
 public:
     Point o;
@@ -31,12 +33,16 @@ public:
         Point db = b - o;
         
 #if 1
-        double aa = db[0];
-        if(da[1])
-            aa = da[0] / da[1];
+        double aa = da[0];
         double ab = db[0];
-        if(db[1])
-            ab = db[0] / db[1];
+        if((da[1] == 0) && (db[1] == 0))
+            return da[0] < db[0];
+        if(da[1] == 0)
+            return true; // infinite tangent
+        if(db[1] == 0)
+            return false; // infinite tangent
+        aa = da[0] / da[1];
+        ab = db[0] / db[1];
         if(aa > ab)
             return true;
 #else
@@ -53,39 +59,51 @@ public:
 };
 
 void
-ConvexHull::sort() {
+ConvexHull::find_pivot() {
     // Find pivot P;
     unsigned pivot = 0;
-    for(unsigned i = 1; i < boundary.size(); i++) {
-        if((boundary[i][1] < boundary[pivot][1]) ||
-           ((boundary[i][1] == boundary[pivot][1]) && 
-            (boundary[i][0] < boundary[pivot][0])))
+    for(unsigned i = 1; i < boundary.size(); i++)
+        if(boundary[i] <= boundary[pivot])
             pivot = i;
-    }
-    std::swap(boundary[0], boundary[pivot]);
     
-//Sort points by angle (resolve ties in favor of point farther from P);
-    std::sort(boundary.begin()+1, boundary.end(), angle_cmp(boundary[0]));
+    std::swap(boundary[0], boundary[pivot]);
+}
 
-    std::vector<Point> stac;
-    stac.push_back(boundary[0]);
-    stac.push_back(boundary[1]);
+void
+ConvexHull::angle_sort() {
+// sort points by angle (resolve ties in favor of point farther from P);
+// we leave the first one in place as our pivot
+    std::sort(boundary.begin()+1, boundary.end(), angle_cmp(boundary[0]));
+}
+
+void
+ConvexHull::graham_scan() {
+    unsigned stac = 2;
     for(int i = 2; i < boundary.size(); i++) {
-        double o = -SignedTriangleArea(stac[stac.size()-2], stac.back(), boundary[i]);
-        if(o == 0) {
-            stac.pop_back();
-            stac.push_back(boundary[i]);
-        } else if(o > 0) {
-            stac.push_back(boundary[i]);
-        } else {
-            while(o <= 0 && stac.size() > 2) {
-                stac.pop_back();
-                o = -SignedTriangleArea(stac[stac.size()-2], stac.back(), boundary[i]);
+        double o = SignedTriangleArea(boundary[stac-2], 
+                                      boundary[stac-1], 
+                                      boundary[i]);
+        if(o == 0) { // colinear - dangerous...
+            stac--;
+        } else if(o < 0) { // anticlockwise
+        } else { // remove concavity
+            while(o >= 0 && stac > 2) {
+                stac--;
+                o = SignedTriangleArea(boundary[stac-2], 
+                                       boundary[stac-1], 
+                                       boundary[i]);
             }
-            stac.push_back(boundary[i]);
         }
+        boundary[stac++] = boundary[i];
     }
-    boundary = stac; // write results
+    boundary.resize(stac);
+}
+
+void
+ConvexHull::graham() {
+    find_pivot();
+    angle_sort();
+    graham_scan();
 }
 
 //Mathematically incorrect mod, but more useful.
@@ -330,10 +348,23 @@ ConvexHull merge(ConvexHull a, ConvexHull b) {
 }
 
 ConvexHull graham_merge(ConvexHull a, ConvexHull b) {
-    std::vector<Point> r = a.boundary;
-    r.reserve(a.boundary.size() + b.boundary.size());
-    copy(b.boundary.begin(), b.boundary.end(), r.end());
-    return ConvexHull(r.begin(), r.end());
+    ConvexHull result;
+    
+    // we can avoid the find pivot step because of top_point_first
+    if(b.boundary[0] <= a.boundary[0])
+        std::swap(a, b);
+    
+    result.boundary = a.boundary;
+    result.boundary.insert(result.boundary.end(), 
+                           b.boundary.begin(), b.boundary.end());
+    
+/** if we modified graham scan to work top to bottom as proposed in lect754.pdf we could replace the
+ angle sort with a simple merge sort type algorithm. furthermore, we could do the graham scan
+ online, avoiding a bunch of memory copies.  That would probably be linear. -- njh*/
+    result.angle_sort();
+    result.graham_scan();
+    
+    return result;
 }
 
 ConvexCover::ConvexCover(SubPath const &sp) : path(&sp) {

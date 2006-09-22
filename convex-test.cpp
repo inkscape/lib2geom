@@ -86,7 +86,7 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
     *notify << "merge time = " << 1000*0.1/iterations << std::endl;
     {
     Geom::ConvexHull gm = graham_merge(ch1, ch2);
-    Geom::Point offset = Geom::Point(100, 0);
+    Geom::Point offset = Geom::Point(4, 0);
 
     cairo_set_line_width (cr, 2);
     if(gm.boundary.size() > 0) {
