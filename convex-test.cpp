@@ -72,10 +72,33 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
     end_t = clock()+clock_t(0.1*CLOCKS_PER_SEC);
     iterations = 0;
     while(end_t > clock()) {
+        graham_merge(ch1, ch2);
+        iterations++;
+    }
+    *notify << "graham merge time = " << 1000*0.1/iterations << std::endl;
+
+    end_t = clock()+clock_t(0.1*CLOCKS_PER_SEC);
+    iterations = 0;
+    while(end_t > clock()) {
         merge(ch1, ch2);
         iterations++;
     }
     *notify << "merge time = " << 1000*0.1/iterations << std::endl;
+    {
+    Geom::ConvexHull gm = graham_merge(ch1, ch2);
+    Geom::Point offset = Geom::Point(100, 0);
+
+    cairo_set_line_width (cr, 2);
+    if(gm.boundary.size() > 0) {
+        cairo_move_to(cr, gm.boundary.back() + offset);
+        cairo_set_source_rgba (cr, 0., 0., 0, 0.5);
+        for(int i = 0; i < gm.boundary.size(); i++) {
+            cairo_line_to(cr, gm.boundary[i] + offset);
+            draw_number(cr, gm.boundary[i] + offset, i);
+        }
+    }
+    cairo_stroke(cr);
+    }
     Geom::ConvexHull m = merge(ch1, ch2);
     //ch.merge(old_mouse_point);
 

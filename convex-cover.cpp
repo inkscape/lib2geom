@@ -251,6 +251,8 @@ std::pair< std::vector<int>, std::vector<int> > bridges(ConvexHull a, ConvexHull
 std::vector<Point> bridge_points(ConvexHull a, ConvexHull b) {
     std::vector<Point> ret;
     std::pair< std::vector<int>, std::vector<int> > indices = bridges(a, b);
+    assert((indices.first.size() & 1) == 0);
+    assert((indices.second.size() & 1) == 0);
     for(int i = 0; i < indices.first.size(); i += 2) {
         ret.push_back(a[indices.first[i]]);
         ret.push_back(b[indices.first[i + 1]]);
@@ -317,6 +319,13 @@ ConvexHull merge(ConvexHull a, ConvexHull b) {
         bbi += 2;        
     }
     return ret;
+}
+
+ConvexHull graham_merge(ConvexHull a, ConvexHull b) {
+    std::vector<Point> r = a.boundary;
+    r.reserve(a.boundary.size() + b.boundary.size());
+    copy(b.boundary.begin(), b.boundary.end(), r.end());
+    return ConvexHull(r.begin(), r.end());
 }
 
 ConvexCover::ConvexCover(SubPath const &sp) : path(&sp) {

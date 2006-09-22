@@ -17,7 +17,7 @@ namespace Geom{
  */
 
 class ConvexHull{
-private:
+public: // XXX: should be private :)
     // extracts the convex hull of boundary. internal use only
     void sort();
 public:
@@ -87,6 +87,9 @@ ConvexHull intersection(ConvexHull a, ConvexHull b);
 
 // find the convex hull of a set of convex hulls
 ConvexHull merge(ConvexHull a, ConvexHull b);
+
+// naive approach
+ConvexHull graham_merge(ConvexHull a, ConvexHull b);
 
 
 /*** Arbitrary transform operator.
