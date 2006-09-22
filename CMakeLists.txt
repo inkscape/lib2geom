@@ -1,4 +1,5 @@
 PROJECT(lib2geom CXX)
+SET(CMAKE_BACKWARDS_COMPATIBILITY 2.4)
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeScripts)
 
 # Dependencies Packages
@@ -7,18 +8,9 @@ IF(UNIX)
     ELSE(APPLE)
         include(UsePkgConfig)   
         PKGCONFIG(gtk+-2.0 GTK2_INCLUDE_DIR GTK2_LINK_DIR GTK2_LINK_FLAGS GTK2_CFLAGS)
-        message(STATUS "GTK2 Configuration")
-        message(STATUS "inc: -${GTK2_INCLUDE_DIR}")
-        message(STATUS "link flags: -${GTK2_LINK_FLAGS}")
-        message(STATUS "cflags: -${GTK2_CFLAGS}")
-        message(STATUS "link dir: -${GTK2_LINK_DIR}")
-
         PKGCONFIG(cairo CAIRO_INCLUDE_DIR CAIRO_LINK_DIR CAIRO_LINK_FLAGS CAIRO_CFLAGS)
-        message(STATUS "CAIRO Configuration")
-        message(STATUS "inc: -${CAIRO_INCLUDE_DIR}")
-        message(STATUS "link flags: -${CAIRO_LINK_FLAGS}")
-        message(STATUS "cflags: -${CAIRO_CFLAGS}")
-        message(STATUS "link dir: -${CAIRO_LINK_DIR}")
+#        PKGCONFIG(gsl GSL_INCLUDE_DIR GSL_LINK_DIR GSL_LINK_FLAGS GSL_CFLAGS)
+#        PKGCONFIG(blas BLAS_INCLUDE_DIR BLAS_LINK_DIR BLAS_LINK_FLAGS BLAS_CFLAGS)
     ENDIF(APPLE)
 ELSE(UNIX)
     IF(WIN32)
@@ -26,22 +18,40 @@ ELSE(UNIX)
         SET(GTK2_LINK_FLAGS "-lgtk-win32-2.0 -lgdk-win32-2.0 -latk-1.0 -lgdk_pixbuf-2.0 -lpangowin32-1.0 -lgdi32 -lpangocairo-1.0 -lfontconfig -lfreetype -lpango-1.0 -lm -lcairo -lgobject-2.0 -lgmodule-2.0 -lglib-2.0 -lintl -liconv -lgsl -lgslcblas")
         SET(GTK2_CFLAGS "-Ic:/gtk28/include/gtk-2.0 -Ic:/gtk28/lib/gtk-2.0/include -Ic:/gtk28/include/atk-1.0 -Ic:/gtk28/include/cairo -Ic:/gtk28/include/pango-1.0 -Ic:/gtk28/include/glib-2.0 -Ic:/gtk28/lib/glib-2.0/include -Ic:/gtk28/include -Lc:/gtk28/lib")
         SET(GTK2_LINK_DIR c:/gtk28/lib)
-
-        message(STATUS "GTK2 Configuration")
-        message(STATUS "inc: -${GTK2_INCLUDE_DIR}")
-        message(STATUS "link flags: -${GTK2_LINK_FLAGS}")
-        message(STATUS "cflags: -${GTK2_CFLAGS}")
-        message(STATUS "link dir: -${GTK2_LINK_DIR}")
-
     ENDIF(WIN32)
 ENDIF(UNIX)
 # end Dependencies
+
+message(STATUS "GTK2 Configuration")
+message(STATUS "inc: -${GTK2_INCLUDE_DIR}")
+message(STATUS "link flags: -${GTK2_LINK_FLAGS}")
+message(STATUS "cflags: -${GTK2_CFLAGS}")
+message(STATUS "link dir: -${GTK2_LINK_DIR}")
+
+message(STATUS "CAIRO Configuration")
+message(STATUS "inc: -${CAIRO_INCLUDE_DIR}")
+message(STATUS "link flags: -${CAIRO_LINK_FLAGS}")
+message(STATUS "cflags: -${CAIRO_CFLAGS}")
+message(STATUS "link dir: -${CAIRO_LINK_DIR}")
+
+#message(STATUS "GSL Configuration")
+#message(STATUS "inc: -${GSL_INCLUDE_DIR}")
+#message(STATUS "link flags: -${GSL_LINK_FLAGS}")
+#message(STATUS "cflags: -${GSL_CFLAGS}")
+#message(STATUS "link dir: -${GSL_LINK_DIR}")
+
+#message(STATUS "BLAS Configuration")
+#message(STATUS "inc: -${BLAS_INCLUDE_DIR}")
+#message(STATUS "link flags: -${BLAS_LINK_FLAGS}")
+#message(STATUS "cflags: -${BLAS_CFLAGS}")
+#message(STATUS "link dir: -${BLAS_LINK_DIR}")
 
 # Set Compiler Flags
 SET(CMAKE_CXX_FLAGS "${GTK2_CFLAGS} ${CAIRO_CFLAGS}")
 IF(WIN32)
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mms-bitfields")
 ENDIF(WIN32)
+SET(CMAKE_COMMAND "${CMAKE_COMMAND} -j2")
 
 SET(2GEOM_TOYS_SRC 
 2dsb2d
@@ -240,7 +250,7 @@ OPTION(2GEOM_TOYS
 IF(2GEOM_TOYS)
     FOREACH(source ${2GEOM_TOYS_SRC})
         ADD_EXECUTABLE(${source} ${source}.cpp)
-        TARGET_LINK_LIBRARIES(${source} toy 2geom "${GTK2_LINK_FLAGS} ${CAIRO_LINK_FLAGS}")
+        TARGET_LINK_LIBRARIES(${source} toy 2geom "${GTK2_LINK_FLAGS} ${CAIRO_LINK_FLAGS}" )
     ENDFOREACH(source)
 ENDIF(2GEOM_TOYS)
 
