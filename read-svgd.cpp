@@ -30,6 +30,28 @@ void write_svgd(FILE* f, Geom::Path const &p) {
     }
 }
 
+std::ostream &operator<< (std::ostream &out_file, const Geom::SubPath & p) {
+    out_file << "M " << p.initial_point()[0] << "," << p.initial_point()[1];
+    
+    for(Geom::SubPath::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
+        out_file << SubPathOpNames[iter.cmd()] << " ";
+        for(std::vector<Geom::Point>::const_iterator h(iter.begin()), e(iter.end());
+            h != e; ++h) {
+            Geom::Point pt(*h);
+            out_file << pt[0] << "," << pt[1] << " ";
+        }
+    }
+    if(p.is_closed())
+        out_file << "Z ";
+    return out_file;
+}
+
+std::ostream &operator<< (std::ostream &out_file, const Geom::Path & p) {
+    for(Geom::Path::const_iterator it = p.begin(); it != p.end(); it++) {
+        out_file << *it;
+    }
+    return out_file;
+}
 
 Geom::Point point(double d1, double d2) {
     Geom::Point p;
