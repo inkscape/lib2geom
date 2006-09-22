@@ -163,8 +163,6 @@ public:
         end_t = clock()+clock_t(timer_precision*CLOCKS_PER_SEC);
         iterations = 0;
         while(end_t > clock()) {
-            total_steps = 0;
-            total_subs = 0;
             solutions.resize(0);
             find_parametric_bezier_roots(&trans[0], 5, solutions, 0);
             iterations++;
@@ -181,8 +179,6 @@ public:
         end_t = clock()+clock_t(timer_precision*CLOCKS_PER_SEC);
         iterations = 0;
         while(end_t > clock()) {
-            total_steps = 0;
-            total_subs = 0;
             solutions.resize(0);
             find_bernstein_roots(ys, 5, solutions, 0);
             iterations++;
