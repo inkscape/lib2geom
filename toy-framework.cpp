@@ -134,6 +134,23 @@ static gint delete_event(GtkWidget* window, GdkEventAny* e, gpointer data) {
     return FALSE;
 }
 
+void 
+draw_number(cairo_t *cr, Geom::Point pos, int num) {
+    std::ostringstream number;
+    number << num;
+    cairo_move_to(cr, pos);
+    PangoLayout* layout = pango_cairo_create_layout (cr);
+     pango_layout_set_text(layout, number.str().c_str(), -1);
+     PangoFontDescription *font_desc = pango_font_description_new();
+      pango_font_description_set_family(font_desc, "Sans");
+    const int size_px = 10;
+    pango_layout_set_font_description(layout, font_desc);
+    PangoRectangle logical_extent;
+    pango_layout_get_pixel_extents(layout, NULL, &logical_extent);
+    pango_cairo_show_layout(cr, layout); 
+}
+
+
 static gboolean
 expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
 {
@@ -163,24 +180,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     cairo_set_line_width (cr, 1);
     for(int i = 0; i < handles.size(); i++) {
         draw_circ(cr, handles[i]);
-        if(numbers) {
-            std::ostringstream number;
-            number << i;
-            cairo_move_to(cr, handles[i]);
-            PangoLayout* layout = pango_cairo_create_layout (cr);
-            pango_layout_set_text(layout, 
-                                  number.str().c_str(), -1);
-
-            PangoFontDescription *font_desc = pango_font_description_new();
-            pango_font_description_set_family(font_desc, "Sans");
-            const int size_px = 10;
-            pango_layout_set_font_description(layout, font_desc);
-            PangoRectangle logical_extent;
-            pango_layout_get_pixel_extents(layout,
-                                           NULL,
-                                           &logical_extent);
-            pango_cairo_show_layout(cr, layout);
-        }
+        if(numbers) draw_number(cr, handles[i], i);
     }
     
     cairo_set_source_rgba (cr, 0.5, 0, 0, 1);

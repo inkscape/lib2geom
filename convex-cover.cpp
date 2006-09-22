@@ -227,6 +227,41 @@ ConvexHull::is_degenerate() const {
     return boundary.size() < 3;
 }
 
+std::pair< std::vector<int>, std::vector<int> > bridges(ConvexHull a, ConvexHull b) {
+    std::vector<int> abridges;
+    std::vector<int> bbridges;
+
+    for(int ia = 0; ia < a.boundary.size(); ia++) {
+        for(int ib = 0; ib < b.boundary.size(); ib++) {
+            Point d = b[ib] - a[ia];
+            Geom::Coord e = cross(d, a[ia - 1] - a[ia]), f = cross(d, a[ia + 1] - a[ia]);
+            Geom::Coord g = cross(d, b[ib - 1] - a[ia]), h = cross(d, b[ib + 1] - a[ia]);
+            if       (e > 0 && f > 0 && g > 0 && h > 0) {
+                abridges.push_back(ia);
+                abridges.push_back(ib);
+            } else if(e < 0 && f < 0 && g < 0 && h < 0) {
+                bbridges.push_back(ib);
+                bbridges.push_back(ia);
+            }
+        }
+    }
+    return make_pair(abridges, bbridges);
+}
+
+std::vector<Point> bridge_points(ConvexHull a, ConvexHull b) {
+    std::vector<Point> ret;
+    std::pair< std::vector<int>, std::vector<int> > indices = bridges(a, b);
+    for(int i = 0; i < indices.first.size(); i += 2) {
+        ret.push_back(a[indices.first[i]]);
+        ret.push_back(b[indices.first[i + 1]]);
+    }
+    for(int i = 0; i < indices.second.size(); i += 2) {
+        ret.push_back(b[indices.second[i]]);
+        ret.push_back(a[indices.second[i + 1]]);
+    }
+    return ret;
+}
+
 /*** ConvexHull intersection(ConvexHull a, ConvexHull b);
  * find the intersection between two convex hulls.  The intersection is also a convex hull.
  * (Proof: take any two points both in a and in b.  Any point between them is in a by convexity,
@@ -236,49 +271,43 @@ ConvexHull intersection(ConvexHull a, ConvexHull b) {
 
 }
 
-
-
-/*
-cross: positive - clockwise
-       negative - counterclockwise
-*/
-
-std::vector<int> bridges(ConvexHull a, ConvexHull b) {
-    std::vector<int> ret;
-    
-    bool on_a = a.boundary[0][1] < b.boundary[0][1];
-
-    for(int ia = 0; ia < a.boundary.size(); ia++) {
-        for(int ib = 0; ib < b.boundary.size(); ib++) {
-            Point d = b[ib] - a[ia];
-// It seems that you should be able to remember half of this from the previous step? -- njh
-            Geom::Coord e = cross(d, a[ia - 1] - a[ia]), f = cross(d, a[ia + 1] - a[ia]);
-            Geom::Coord g = cross(d, b[ib - 1] - a[ia]), h = cross(d, b[ib + 1] - a[ia]);
-            if((e >= 0 && f > 0 && g >= 0 && h > 0) || (e <= 0 && f < 0 && g <= 0 && h < 0)) {
-                    ret.push_back(ia);
-                    ret.push_back(ib);
-            }
-        }
-    }
-    return ret;
-}
-
-std::vector<Point> bridge_points(ConvexHull a, ConvexHull b) {
-    std::vector<Point> ret;
-    std::vector<int> indices = bridges(a, b);
-    for(int i = 0; i < indices.size(); i += 2) {
-        ret.push_back(a[indices[i]]);
-        ret.push_back(b[indices[i + 1]]);
-    }
-    return ret;
-}
-
 /*** ConvexHull merge(ConvexHull a, ConvexHull b);
  * find the smallest convex hull that surrounds a and b.
  */
 ConvexHull merge(ConvexHull a, ConvexHull b) {
     ConvexHull ret;
 
+    std::pair< std::vector<int>, std::vector<int> > bpair = bridges(a, b);
+    
+    int abi = 0, bbi = 0; //A and B bridge indexes
+    int nexti = 0; //Next index
+
+    if(a.boundary[0][1] > b.boundary[0][1]) goto start_b;
+    while(true) {
+        if(abi < bpair.first.size()) {
+            for(int i = nexti; i < bpair.first[abi]; i++)
+                ret.boundary.push_back(a[i]);
+        } else {
+            for(int i = nexti; i < a.boundary.size(); i++)
+                ret.boundary.push_back(a[i]);
+            break;
+        }
+        nexti = bpair.first[abi + 1];
+        abi += 2;
+
+        start_b:
+
+        if(bbi < bpair.second.size()) {
+            for(int i = nexti; i < bpair.second[bbi]; i++)
+                ret.boundary.push_back(b[i]);
+        } else {
+            for(int i = nexti; i < b.boundary.size(); i++)
+                ret.boundary.push_back(b[i]);
+            break;
+        }
+        nexti = bpair.second[bbi + 1];
+        bbi += 2;        
+    }
     return ret;
 }
 

@@ -35,3 +35,6 @@ void init(int argc, char **argv, char *title, Toy *t);
 void make_about();
 double uniform();
 void redraw();
+
+void 
+draw_number(cairo_t *cr, Geom::Point pos, int num);

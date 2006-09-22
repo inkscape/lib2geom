@@ -83,21 +83,27 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
     if(m.contains_point(old_mouse_point))
         *notify << "mouse in convex" << std::endl;
 
+    Geom::Point offset = Geom::Point(0, -200);
+
     cairo_set_line_width (cr, 2);
     if(m.boundary.size() > 0) {
-        cairo_move_to(cr, m.boundary.back());
+        cairo_move_to(cr, m.boundary.back() + offset);
         cairo_set_source_rgba (cr, 0., 0., 0, 0.5);
         for(int i = 0; i < m.boundary.size(); i++) {
-            cairo_line_to(cr, m.boundary[i]);
+            cairo_line_to(cr, m.boundary[i] + offset);
+            draw_number(cr, m.boundary[i] + offset, i);
         }
     }
+    cairo_stroke(cr);
+    cairo_set_line_width (cr, 1);
+
+    cairo_set_source_rgba(cr, 0., 0., 1., 0.5);
     std::vector<Geom::Point> bs = bridge_points(ch1, ch2);
     for(int i = 0; i < bs.size(); i+=2) {
         cairo_move_to(cr, bs[i]);
         cairo_line_to(cr, bs[i + 1]);
     }
     cairo_stroke(cr);
-    cairo_set_line_width (cr, 1);
 
     cairo_set_source_rgba (cr, 1., 0., 0, 0.8);
     cairo_move_to(cr, ch1.boundary.back());
@@ -116,7 +122,7 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
 };
 
 int main(int argc, char **argv) {
-    numbers = false;
+    numbers = true;
     init(argc, argv, "convex-test", new ConvexTest());
 
     return 0;
