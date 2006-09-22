@@ -65,7 +65,7 @@ s-bez
 #toy-cairo
 unit-test-sbasis
 gear
-differential-constraint
+#differential-constraint # must have GSL
 DC-conic-4
 )
 
