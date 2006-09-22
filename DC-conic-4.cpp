@@ -18,7 +18,11 @@
 #include <iterator>
 #include "multidim-sbasis.h"
 #include "path-builder.h"
-#include "path-to-svgd.h"
+
+#include <iterator>
+#include "translate.h"
+#include "translate-ops.h"
+
 #include "toy-framework.cpp"
 
 using std::string;
@@ -26,12 +30,10 @@ using std::vector;
 
 BezOrd z0(0.5,1.);
 
-unsigned total_pieces;
-
 void draw_md_sb(cairo_t *cr, multidim_sbasis<2> const &B) {
     Geom::PathBuilder pb;
     subpath_from_sbasis(pb, B, 1);
-    //cairo_path(cr, pb.peek());
+    cairo_path(cr, pb.peek());
     cairo_path_handles(cr, pb.peek());
 }
 
@@ -124,8 +126,8 @@ class Conic4: public Toy {
         cairo_stroke(cr);
         
         arc_basis ab(1./3);       
-        //for(unsigned i  = 0; i < 5; i++)
-        //    *notify << ab.basis[i] << std::endl;
+        for(unsigned i  = 0; i < 5; i++)
+            *notify << ab.basis[i] << std::endl;
         multidim_sbasis<2> B;
         
         for(unsigned dim  = 0; dim < 2; dim++)
@@ -133,13 +135,8 @@ class Conic4: public Toy {
                 B[dim] += e_h[i][dim]*ab.basis[i];
         
         draw_md_sb(cr, B);
-        Geom::PathBuilder pb;
-        subpath_from_sbasis(pb, B, 1);
-        Geom::Path pth = pb.peek();
-        *notify << pth;
         
         
-/*
         for(int i = 0; i < 0; i++) {
             for(int ti = 0; ti <= 30; ti++) {
                 double t = 2*M_PI*(double(ti))/(30);
@@ -152,7 +149,6 @@ class Conic4: public Toy {
                     cairo_move_to(cr, p);
             }
         }
-*/
     }
 };
 
@@ -172,6 +168,107 @@ int main(int argc, char **argv) {
 
     return 0;
 }
+
+
+#include <stdio.h>
+#include <gsl/gsl_errno.h>
+#include <gsl/gsl_matrix.h>
+#include <gsl/gsl_odeiv.h>
+     
+class SBez: public Toy {
+    static int
+    func (double t, const double y[], double f[],
+          void *params)
+    {
+        double mu = *(double *)params;
+        multidim_sbasis<2> B = bezier_to_sbasis<2, 3>(handles.begin());
+        multidim_sbasis<2> dB = derivative(B);
+        Geom::Point tan = Geom::unit_vector(point_at(dB,y[0]));
+        Geom::Point yp = point_at(B, y[0]);
+        double dtau = -dot(tan, yp - handles[4])/10;
+        f[0] = dtau;
+        
+        return GSL_SUCCESS;
+    }
+     
+    static int
+    jac (double t, const double y[], double *dfdy, 
+         double dfdt[], void *params)
+    {
+        double mu = *(double *)params;
+        gsl_matrix_view dfdy_mat 
+            = gsl_matrix_view_array (dfdy, 2, 2);
+        gsl_matrix * m = &dfdy_mat.matrix; 
+        gsl_matrix_set (m, 0, 0, 0.0);
+        gsl_matrix_set (m, 0, 1, 1.0);
+        gsl_matrix_set (m, 1, 0, -2.0*mu*y[0]*y[1] - 1.0);
+        gsl_matrix_set (m, 1, 1, -mu*(y[0]*y[0] - 1.0));
+        dfdt[0] = 0.0;
+        dfdt[1] = 0.0;
+        return GSL_SUCCESS;
+    }
+     
+    double y[2];
+
+    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
+        cairo_set_line_width (cr, 0.5);
+    
+        multidim_sbasis<2> B = bezier_to_sbasis<2, 3>(handles.begin());
+        //draw_cb(cr, B);
+    
+        const gsl_odeiv_step_type * T 
+            = gsl_odeiv_step_rk8pd;
+     
+        gsl_odeiv_step * s 
+            = gsl_odeiv_step_alloc (T, 1);
+        gsl_odeiv_control * c 
+            = gsl_odeiv_control_y_new (1e-6, 0.0);
+        gsl_odeiv_evolve * e 
+            = gsl_odeiv_evolve_alloc (1);
+     
+        double mu = 10;
+        gsl_odeiv_system sys = {func, jac, 1, &mu};
+     
+        static double t = 0.0;
+        double t1 = t + 1;
+        double h = 1e-6;
+     
+        while (t < t1)
+        {
+            int status = gsl_odeiv_evolve_apply (e, c, s,
+                                                 &sys, 
+                                                 &t, t1,
+                                                 &h, y);
+     
+            if (status != GSL_SUCCESS)
+                break;
+        
+            //printf ("%.5e %.5e %.5e\n", t, y[0], y[1]);
+        }
+    
+        draw_cross(cr, point_at(B, y[0]));
+     
+        gsl_odeiv_evolve_free (e);
+        gsl_odeiv_control_free (c);
+        gsl_odeiv_step_free (s);
+    }
+public:
+    SBez() {
+        y[0] = 0;
+    }
+};
+
+/*
+  Local Variables:
+  mode:c++
+  c-file-style:"stroustrup"
+  c-file-offsets:((innamespace . 0)(inline-open . 0)(case-label . +))
+  indent-tabs-mode:nil
+  fill-column:99
+  End:
+*/
+// vim: filetype=cpp:expandtab:shiftwidth=4:tabstop=8:softtabstop=4:encoding=utf-8:textwidth=99 :
+
 
 /*
   Local Variables:

@@ -65,6 +65,8 @@ s-bez
 #toy-cairo
 unit-test-sbasis
 gear
+differential-constraint
+DC-conic-4
 )
 
 #SET(2GEOM_EXTRAS_SRC

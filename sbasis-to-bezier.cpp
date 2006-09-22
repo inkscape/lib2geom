@@ -100,7 +100,6 @@ subpath_from_sbasis(Geom::PathBuilder &pb, multidim_sbasis<2> const &B, double t
                          Geom::Point(B[0][0][1], B[1][0][1]));
         } else {
             std::vector<Geom::Point> bez = sbasis_to_bezier(B, 2);
-            reverse(bez.begin(), bez.end());
             pb.push_cubic(bez[0], bez[1], bez[2], bez[3]);
         }
     } else {
