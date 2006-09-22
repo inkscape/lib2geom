@@ -274,6 +274,14 @@ ConvexHull intersection(ConvexHull a, ConvexHull b) {
 /*** ConvexHull merge(ConvexHull a, ConvexHull b);
  * find the smallest convex hull that surrounds a and b.
  */
+
+/* Here's how it works at the moment:
+   The bridge pair is retrieved:
+      A->B  A->B    B->A  B->A
+   { {0, 1, 3, 0}, {2, 3, 0, 0} }
+
+   
+   */
 ConvexHull merge(ConvexHull a, ConvexHull b) {
     ConvexHull ret;
 
@@ -285,27 +293,27 @@ ConvexHull merge(ConvexHull a, ConvexHull b) {
     if(a.boundary[0][1] > b.boundary[0][1]) goto start_b;
     while(true) {
         if(abi < bpair.first.size()) {
-            for(int i = nexti; i < bpair.first[abi]; i++)
+            for(int i = nexti; i <= bpair.first[abi]; i++)
                 ret.boundary.push_back(a[i]);
+            nexti = bpair.first[abi + 1];
         } else {
             for(int i = nexti; i < a.boundary.size(); i++)
                 ret.boundary.push_back(a[i]);
             break;
         }
-        nexti = bpair.first[abi + 1];
         abi += 2;
 
         start_b:
 
         if(bbi < bpair.second.size()) {
-            for(int i = nexti; i < bpair.second[bbi]; i++)
+            for(int i = nexti; i <= bpair.second[bbi]; i++)
                 ret.boundary.push_back(b[i]);
+            nexti = bpair.second[bbi + 1];
         } else {
             for(int i = nexti; i < b.boundary.size(); i++)
                 ret.boundary.push_back(b[i]);
             break;
         }
-        nexti = bpair.second[bbi + 1];
         bbi += 2;        
     }
     return ret;

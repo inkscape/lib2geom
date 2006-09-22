@@ -102,6 +102,7 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
     for(int i = 0; i < bs.size(); i+=2) {
         cairo_move_to(cr, bs[i]);
         cairo_line_to(cr, bs[i + 1]);
+        draw_number(cr, (bs[i] + bs[i + 1]) / 2, i / 2);
     }
     cairo_stroke(cr);
 
@@ -122,7 +123,7 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
 };
 
 int main(int argc, char **argv) {
-    numbers = true;
+    numbers = false;
     init(argc, argv, "convex-test", new ConvexTest());
 
     return 0;
