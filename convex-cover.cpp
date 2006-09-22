@@ -227,6 +227,10 @@ ConvexHull::is_degenerate() const {
     return boundary.size() < 3;
 }
 
+
+/* Here we really need a rotating calipers implementation.  This implementation is slow and incorrect.
+   This incorrectness is a problem because it throws off the algorithms.  Perhaps I will come up with
+   something better tomorrow.*/
 std::pair< std::vector<int>, std::vector<int> > bridges(ConvexHull a, ConvexHull b) {
     std::vector<int> abridges;
     std::vector<int> bbridges;
@@ -282,8 +286,12 @@ ConvexHull intersection(ConvexHull a, ConvexHull b) {
       A->B  A->B    B->A  B->A
    { {0, 1, 3, 0}, {2, 3, 0, 0} }
 
-   
-   */
+   1. a. if a is on top then it is traversed until the first bridge to b.
+      b. if b is on top then it is traversed until the first bridge to a.
+   2. the current hull is traversed until the next bridge (index variables store where in the list we are).
+   3. the next hull and bridge is begun - back to 2
+   4. repeat until you run out of bridges, and then until you run out of points.
+*/
 ConvexHull merge(ConvexHull a, ConvexHull b) {
     ConvexHull ret;
 
