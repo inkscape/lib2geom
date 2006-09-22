@@ -29,7 +29,7 @@ BezOrd z0(0.5,1.);
 unsigned total_pieces;
 
 void draw_cb(cairo_t *cr, multidim_sbasis<2> const &B) {
-    std::vector<Geom::Point> bez = sbasis2_to_bezier(B, 2);
+    std::vector<Geom::Point> bez = sbasis_to_bezier(B, 2);
     cairo_move_to(cr, bez[0]);
     cairo_curve_to(cr, bez[1], bez[2], bez[3]);
 }

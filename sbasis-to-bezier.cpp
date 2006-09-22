@@ -70,26 +70,7 @@ sbasis_to_bezier(multidim_sbasis<2> const &B, unsigned qq) {
     return result;
 }
 
-std::vector<Geom::Point>
-sbasis2_to_bezier(multidim_sbasis<2> const &B, unsigned q) {
-    if(q > B.size())
-        q = B.size();
-    if(q != 2)
-	    return sbasis_to_bezier(B, B.size());
-    std::vector<Geom::Point> result;
-    const double third = 1./3;
-    result.resize(4, Geom::Point(0,0));
-    for(int dim = 0; dim < 2; dim++) {
-        const SBasis &Bd(B[dim]);
-        result[0][dim] = Bd[0][0];
-        result[1][dim] = third*(2*Bd[0][0] +   Bd[0][1] + Bd[1][0]);
-        result[2][dim] = third*(  Bd[0][0] + 2*Bd[0][1] + Bd[1][1]);
-        result[3][dim] = Bd[0][1];
-    }
-    assert(result.size() == 4);
-    return result;
-}
-
+//std::vector<Geom::Point>
 // mutating
 void
 subpath_from_sbasis(Geom::PathBuilder &pb, multidim_sbasis<2> const &B, double tol) {

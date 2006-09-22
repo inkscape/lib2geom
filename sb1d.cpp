@@ -37,14 +37,6 @@ using std::complex;
 
 extern unsigned total_steps, total_subs;
 
-void draw_sb(cairo_t *cr, multidim_sbasis<2> const &B) {
-    cairo_move_to(cr, point_at(B, 0));
-    for(int ti = 1; ti <= 30; ti++) {
-        double t = (double(ti))/(30);
-        cairo_line_to(cr, point_at(B, t));
-    }
-}
-
 double& handle_to_sb(unsigned i, unsigned n, SBasis &sb) {
     assert(i < n);
     assert(n <= sb.size()*2);
@@ -115,7 +107,6 @@ class Sb1d: public Toy {
         subpath_from_sbasis(pb, B, 0.001);
         Geom::Path p = pb.peek();//*Geom::translate(1,1);
         cairo_path(cr, p);
-        //draw_sb(cr, B);
     
         cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
         cairo_stroke(cr);

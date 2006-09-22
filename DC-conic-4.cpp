@@ -108,26 +108,9 @@ class Conic4: public Toy {
         }
         cairo_stroke(cr);
         
-        typedef double (* F)(double,double);
-        F basis[5] = {b4, b3, b2, b1, b0};
-        
-        for(int ti = 0; ti <= 30; ti++) {
-        double t = 2*M_PI*(double(ti))/(30);
-        Geom::Point p(0,0);
-        
-        for(unsigned i  = 0; i < 5; i++)
-            p += basis[i](t,w)*e_h[i];
-        
-            if(ti)
-                cairo_line_to(cr, p);
-            else 
-                cairo_move_to(cr, p);
-        }
-        cairo_stroke(cr);
-        
         arc_basis ab(1./3);       
         for(unsigned i  = 0; i < 5; i++)
-            *notify << ab.basis[i] << std::endl;
+		*notify << ab.basis[i] << std::endl;
         multidim_sbasis<2> B;
         
         for(unsigned dim  = 0; dim < 2; dim++)
@@ -135,20 +118,6 @@ class Conic4: public Toy {
                 B[dim] += e_h[i][dim]*ab.basis[i];
         
         draw_md_sb(cr, B);
-        
-        
-        for(int i = 0; i < 0; i++) {
-            for(int ti = 0; ti <= 30; ti++) {
-                double t = 2*M_PI*(double(ti))/(30);
-                double t1 = (double(ti))/(30);
-                Geom::Point p(width/4 + (width/2)*t1, 3*height/4 - (width/2)*basis[i](t,w));
-                
-                if(ti)
-                    cairo_line_to(cr, p);
-                else 
-                    cairo_move_to(cr, p);
-            }
-        }
     }
 };
 

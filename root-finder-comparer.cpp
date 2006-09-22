@@ -38,6 +38,8 @@ using std::string;
 using std::vector;
 using std::complex;
 
+//#define HAVE_GSL
+
 extern unsigned total_steps, total_subs;
 
 class RootFinderComparer: public Toy {

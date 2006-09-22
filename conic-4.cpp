@@ -24,15 +24,10 @@
 using std::string;
 using std::vector;
 
-BezOrd z0(0.5,1.);
-
-unsigned total_pieces;
-
 void draw_md_sb(cairo_t *cr, multidim_sbasis<2> const &B) {
     Geom::PathBuilder pb;
-    subpath_from_sbasis(pb, B, 1);
-    //cairo_path(cr, pb.peek());
-    cairo_path_handles(cr, pb.peek());
+    subpath_from_sbasis(pb, B, 10);
+    cairo_path(cr, pb.peek());
 }
 
 const double w = 1./3;
@@ -91,10 +86,6 @@ public:
 
 class Conic4: public Toy {
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
-        cairo_set_source_rgba (cr, 0., 0., 0, 0.8);
-        cairo_set_line_width (cr, 0.5);
-        cairo_stroke(cr);
-
         std::vector<Geom::Point> e_h = handles;
         for(int i = 0; i < 5; i++) {
             Geom::Point p = e_h[i];
@@ -104,26 +95,11 @@ class Conic4: public Toy {
             else
                 cairo_move_to(cr, p);
         }
+        cairo_set_source_rgba (cr, 0., 0., 0, 1);
+        cairo_set_line_width (cr, 0.5);
         cairo_stroke(cr);
         
-        typedef double (* F)(double,double);
-        F basis[5] = {b4, b3, b2, b1, b0};
-        
-        for(int ti = 0; ti <= 30; ti++) {
-        double t = 2*M_PI*(double(ti))/(30);
-        Geom::Point p(0,0);
-        
-        for(unsigned i  = 0; i < 5; i++)
-            p += basis[i](t,w)*e_h[i];
-        
-            if(ti)
-                cairo_line_to(cr, p);
-            else 
-                cairo_move_to(cr, p);
-        }
-        cairo_stroke(cr);
-        
-        arc_basis ab(1./3);       
+        arc_basis ab(1./3);
         //for(unsigned i  = 0; i < 5; i++)
         //    *notify << ab.basis[i] << std::endl;
         multidim_sbasis<2> B;
@@ -133,33 +109,18 @@ class Conic4: public Toy {
                 B[dim] += e_h[i][dim]*ab.basis[i];
         
         draw_md_sb(cr, B);
+        cairo_set_source_rgba (cr, 0., 1., 0, 0.5);
+        cairo_set_line_width (cr, 3);
+        cairo_stroke(cr);
+
         Geom::PathBuilder pb;
         subpath_from_sbasis(pb, B, 1);
         Geom::Path pth = pb.peek();
         *notify << pth;
-        
-        
-/*
-        for(int i = 0; i < 0; i++) {
-            for(int ti = 0; ti <= 30; ti++) {
-                double t = 2*M_PI*(double(ti))/(30);
-                double t1 = (double(ti))/(30);
-                Geom::Point p(width/4 + (width/2)*t1, 3*height/4 - (width/2)*basis[i](t,w));
-                
-                if(ti)
-                    cairo_line_to(cr, p);
-                else 
-                    cairo_move_to(cr, p);
-            }
-        }
-*/
     }
 };
 
 int main(int argc, char **argv) {
-    //for(int i = 0; i < 3; i++)
-    //    handles.push_back(Geom::Point(uniform()*400, uniform()*400));
-    
     double sc = 30;
     Geom::Point c(6*sc, 6*sc);
     handles.push_back(sc*Geom::Point(0,0)+c);
