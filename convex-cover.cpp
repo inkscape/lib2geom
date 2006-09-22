@@ -248,7 +248,10 @@ ConvexHull::is_degenerate() const {
 
 /* Here we really need a rotating calipers implementation.  This implementation is slow and incorrect.
    This incorrectness is a problem because it throws off the algorithms.  Perhaps I will come up with
-   something better tomorrow.*/
+   something better tomorrow.  The incorrectness is in the order of the bridges - they must be in the
+   order of traversal around.  Since the a->b and b->a bridges are seperated, they don't need to be merge
+   order, just the order of the traversal of the host hull.  Currently some situations make a n->0 bridge
+   first.*/
 std::pair< std::vector<int>, std::vector<int> > bridges(ConvexHull a, ConvexHull b) {
     std::vector<int> abridges;
     std::vector<int> bbridges;
@@ -308,7 +311,11 @@ ConvexHull intersection(ConvexHull a, ConvexHull b) {
       b. if b is on top then it is traversed until the first bridge to a.
    2. the current hull is traversed until the next bridge (index variables store where in the list we are).
    3. the next hull and bridge is begun - back to 2
-   4. repeat until you run out of bridges, and then until you run out of points.
+   4. repeat until you run out of bridges, or there is a bridge to 0 (the last bridge, hopefully),
+      and then until you run out of points.
+
+   Since it currently doesn't work that last rule about the target being 0 causes it to exit early on some
+   configurations.
 */
 ConvexHull merge(ConvexHull a, ConvexHull b) {
     ConvexHull ret;
@@ -318,12 +325,16 @@ ConvexHull merge(ConvexHull a, ConvexHull b) {
     int abi = 0, bbi = 0; //A and B bridge indexes
     int nexti = 0; //Next index
 
+    bool pa0 = false, pb0 = false; //pushed a/b[0]?
+
     if(a.boundary[0][1] > b.boundary[0][1]) goto start_b;
     while(true) {
         if(abi < bpair.first.size()) {
+            if(nexti == 0) pa0 = true;
             for(int i = nexti; i <= bpair.first[abi]; i++)
                 ret.boundary.push_back(a[i]);
             nexti = bpair.first[abi + 1];
+            if(nexti == 0 && pb0) break;
         } else {
             for(int i = nexti; i < a.boundary.size(); i++)
                 ret.boundary.push_back(a[i]);
@@ -334,9 +345,11 @@ ConvexHull merge(ConvexHull a, ConvexHull b) {
         start_b:
 
         if(bbi < bpair.second.size()) {
+            if(nexti == 0) pb0 = true;
             for(int i = nexti; i <= bpair.second[bbi]; i++)
                 ret.boundary.push_back(b[i]);
             nexti = bpair.second[bbi + 1];
+            if(nexti == 0 && pb0) break;
         } else {
             for(int i = nexti; i < b.boundary.size(); i++)
                 ret.boundary.push_back(b[i]);
