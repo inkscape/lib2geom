@@ -8,8 +8,13 @@
 #include "point-fns.h"
 #include "geom.h"
 
+#include "cairo-features.h"
+#if CAIRO_HAS_PDF_SURFACE
 #include "cairo-pdf.h"
+#endif
+#if CAIRO_HAS_SVG_SURFACE
 #include "cairo-svg.h"
+#endif
 
 GtkWindow* window;
 
