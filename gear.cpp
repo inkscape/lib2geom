@@ -16,6 +16,7 @@
 #include "sbasis-to-bezier.h"
 #include "path-cairo.h"
 #include "multidim-sbasis.h"
+#include "path-to-svgd.h"
 
 #include "toy-framework.cpp"
 
@@ -135,43 +136,46 @@ Geom::Path Gear::path() {
     
     //rewind angle to start drawing from the leading edge of the tooth
     double first_tooth_angle = _angle - ((0.5 * tip_advance) + involute_advance);
-    
+    bool first = true;
     for (int i=0; i < _number_of_teeth; i++)
     {
         double cursor = first_tooth_angle + (i * tooth_rotation);
         
-        multidim_sbasis<2> leading_I = compose(_involute(cursor, cursor + involute_swath_angle(outer_radius())), BezOrd(involute_t,1));        
+        multidim_sbasis<2> leading_I = compose(_involute(cursor, cursor + involute_swath_angle(outer_radius())), BezOrd(involute_t,1));
+        if (first) {
+            pb.start_subpath(point_at(leading_I,0));
+            first = false;
+        } else {
+            pb.push_line(point_at(leading_I,0));
+        }
         subpath_from_sbasis(pb, leading_I, 0.1);
         cursor += involute_advance;
         
-        multidim_sbasis<2> tip = _arc(cursor, cursor+tip_advance, outer_radius());        
+        multidim_sbasis<2> tip = _arc(cursor, cursor+tip_advance, outer_radius());
+        pb.push_line(point_at(tip,0));
         subpath_from_sbasis(pb, tip, 0.1);
         cursor += tip_advance;
         
         cursor += involute_advance;
-        multidim_sbasis<2> trailing_I = compose(_involute(cursor, cursor - involute_swath_angle(outer_radius())), BezOrd(1,involute_t));        
+        multidim_sbasis<2> trailing_I = compose(_involute(cursor, cursor - involute_swath_angle(outer_radius())), BezOrd(1,involute_t));
+        pb.push_line(point_at(trailing_I,0));
         subpath_from_sbasis(pb, trailing_I, 0.1);
         
         if (base_radius() > root_radius()) {
             Geom::Point leading_start = point_at(trailing_I,1);
             Geom::Point leading_end = (root_radius() * unit_vector(leading_start - _centre)) + _centre;
-            multidim_sbasis<2> leading_fillet;
-            for (int dim=0; dim < 2; dim++)
-                leading_fillet[dim] = BezOrd(leading_start[dim], leading_end[dim]);
-            subpath_from_sbasis(pb, leading_fillet, 0.1);
+            pb.push_line(leading_end);
         }
         
         multidim_sbasis<2> root = _arc(cursor, cursor+root_advance, root_radius());
+        pb.push_line(point_at(root,0));
         subpath_from_sbasis(pb, root, 0.1);
         cursor += root_advance;
         
         if (base_radius() > root_radius()) {
             Geom::Point trailing_start = point_at(root,1);
             Geom::Point trailing_end = (base_radius() * unit_vector(trailing_start - _centre)) + _centre;
-            multidim_sbasis<2> trailing_fillet;
-            for (int dim=0; dim < 2; dim++)
-                trailing_fillet[dim] = BezOrd(trailing_start[dim], trailing_end[dim]);
-            subpath_from_sbasis(pb, trailing_fillet, 0.1);
+            pb.push_line(trailing_end);
         }
         
     }
@@ -247,6 +251,8 @@ class GearToy: public Toy {
         cairo_set_source_rgba (cr, 0., 0., 0., 0.5);
         cairo_set_line_width (cr, 2.0);
         cairo_stroke(cr);
+        
+        //std::cout << p << std::endl;
         
         Gear gear2 = gear.spawn(5, -2.0 * M_PI / 8.0);
         Geom::Path p2 = gear2.path();
