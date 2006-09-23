@@ -31,7 +31,7 @@ void write_svgd(FILE* f, Geom::Path const &p) {
 }
 
 std::ostream &operator<< (std::ostream &out_file, const Geom::SubPath & p) {
-    out_file << "M " << p.initial_point()[0] << "," << p.initial_point()[1];
+    out_file << "M " << p.initial_point()[0] << "," << p.initial_point()[1] << " ";
     
     for(Geom::SubPath::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
         out_file << SubPathOpNames[iter.cmd()] << " ";
