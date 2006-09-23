@@ -14,8 +14,8 @@ sbasis2_to_bezier(multidim_sbasis<2> const &B, unsigned q);
 
 #include "path-builder.h"
 void
-subpath_from_sbasis(Geom::PathBuilder &pb, multidim_sbasis<2> const &B, double tol);
+subpath_from_sbasis(Geom::PathBuilder &pb, multidim_sbasis<2> const &B, double tol, bool initial=true);
 void
-subpath_from_sbasis_incremental(Geom::PathBuilder &pb, multidim_sbasis<2> B, double tol);
+subpath_from_sbasis_incremental(Geom::PathBuilder &pb, multidim_sbasis<2> B, double tol, bool initial=true);
 
 #endif

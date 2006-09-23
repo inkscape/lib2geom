@@ -73,19 +73,24 @@ sbasis_to_bezier(multidim_sbasis<2> const &B, unsigned qq) {
 //std::vector<Geom::Point>
 // mutating
 void
-subpath_from_sbasis(Geom::PathBuilder &pb, multidim_sbasis<2> const &B, double tol) {
+subpath_from_sbasis(Geom::PathBuilder &pb, multidim_sbasis<2> const &B, double tol, bool initial) {
     assert(B.is_finite());
     if(B.tail_error(2) < tol || B.size() == 2) { // nearly cubic enough
         if(B.size() == 1) {
-            pb.push_line(Geom::Point(B[0][0][0], B[1][0][0]),
-                         Geom::Point(B[0][0][1], B[1][0][1]));
+            if (initial) {
+                pb.start_subpath(Geom::Point(B[0][0][0], B[1][0][0]);
+            }
+            pb.push_line(Geom::Point(B[0][0][1], B[1][0][1]));
         } else {
             std::vector<Geom::Point> bez = sbasis_to_bezier(B, 2);
-            pb.push_cubic(bez[0], bez[1], bez[2], bez[3]);
+            if (initial) {
+                pb.start_subpath(bez[0]);
+            }
+            pb.push_cubic(bez[1], bez[2], bez[3]);
         }
     } else {
-        subpath_from_sbasis(pb, compose(B, BezOrd(0, 0.5)), tol);
-        subpath_from_sbasis(pb, compose(B, BezOrd(0.5, 1)), tol);
+        subpath_from_sbasis(pb, compose(B, BezOrd(0, 0.5)), tol, initial);
+        subpath_from_sbasis(pb, compose(B, BezOrd(0.5, 1)), tol, false);
     }
 }
 
@@ -100,7 +105,7 @@ curve at $a$.  We keep biting off pieces until there is no more curve left.
 * tolerance tol $= e*A^k$ and invert getting $A = e^{1/k}$ and $a = 1/2 - \sqrt{1/4 - A}$
 */
 void
-subpath_from_sbasis_incremental(Geom::PathBuilder &pb, multidim_sbasis<2> B, double tol) {
+subpath_from_sbasis_incremental(Geom::PathBuilder &pb, multidim_sbasis<2> B, double tol, bool initial) {
     const unsigned k = 2; // cubic bezier
     double te = B.tail_error(k);
     assert(B[0].is_finite());
@@ -123,7 +128,11 @@ subpath_from_sbasis_incremental(Geom::PathBuilder &pb, multidim_sbasis<2> B, dou
         assert(Bs.tail_error(k));
         std::vector<Geom::Point> bez = sbasis_to_bezier(Bs, 2);
         reverse(bez.begin(), bez.end());
-        pb.push_cubic(bez[0], bez[1], bez[2], bez[3]);
+        if (initial) {
+          pb.start_subpath(bez[0]);
+          initial = false;
+        }
+        pb.push_cubic(bez[1], bez[2], bez[3]);
         
 // move to next piece of curve
         if(a >= 1) break;
