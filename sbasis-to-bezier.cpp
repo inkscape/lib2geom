@@ -78,7 +78,7 @@ subpath_from_sbasis(Geom::PathBuilder &pb, multidim_sbasis<2> const &B, double t
     if(B.tail_error(2) < tol || B.size() == 2) { // nearly cubic enough
         if(B.size() == 1) {
             if (initial) {
-                pb.start_subpath(Geom::Point(B[0][0][0], B[1][0][0]);
+                pb.start_subpath(Geom::Point(B[0][0][0], B[1][0][0]));
             }
             pb.push_line(Geom::Point(B[0][0][1], B[1][0][1]));
         } else {
