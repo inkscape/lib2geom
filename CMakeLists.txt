@@ -1,16 +1,20 @@
 PROJECT(lib2geom CXX)
 SET(CMAKE_BACKWARDS_COMPATIBILITY 2.4)
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeScripts)
+SET(2GEOM_DEPENDS gtk+-2.0 cairo gsl blas)
+include(UsePkgConfig)
 
 # Dependencies Packages
 IF(UNIX)
     IF(APPLE)
+    message(STATUS "Apple depends not added yet PLEASE HELP.")
     ELSE(APPLE)
-        include(UsePkgConfig)   
+        FOREACH(dep ${2GEOM_DEPENDS})
+            PKGCONFIG_FOUND(${dep} "${dep}_FOUND")
+            PKGCONFIG(${dep} "${dep}_INCLUDE_DIR" "${dep}_LINK_DIR" "${dep}_LINK_FLAGS" "${dep}_CFLAGS")
+        ENDFOREACH(dep)
+        # This is a hack due to the Cmake vars system,temp fix until I figure it out //verbalshadow
         PKGCONFIG(gtk+-2.0 GTK2_INCLUDE_DIR GTK2_LINK_DIR GTK2_LINK_FLAGS GTK2_CFLAGS)
-        PKGCONFIG(cairo CAIRO_INCLUDE_DIR CAIRO_LINK_DIR CAIRO_LINK_FLAGS CAIRO_CFLAGS)
-#        PKGCONFIG(gsl GSL_INCLUDE_DIR GSL_LINK_DIR GSL_LINK_FLAGS GSL_CFLAGS)
-#        PKGCONFIG(blas BLAS_INCLUDE_DIR BLAS_LINK_DIR BLAS_LINK_FLAGS BLAS_CFLAGS)
     ENDIF(APPLE)
 ELSE(UNIX)
     IF(WIN32)
@@ -22,32 +26,25 @@ ELSE(UNIX)
 ENDIF(UNIX)
 # end Dependencies
 
-message(STATUS "GTK2 Configuration")
-message(STATUS "inc: -${GTK2_INCLUDE_DIR}")
-message(STATUS "link flags: -${GTK2_LINK_FLAGS}")
-message(STATUS "cflags: -${GTK2_CFLAGS}")
-message(STATUS "link dir: -${GTK2_LINK_DIR}")
+IF(gsl_FOUND)
+# must have GSL
+    SET(NEEDS_GSL differential-constraint)
+ENDIF(gsl_FOUND) 
 
-message(STATUS "CAIRO Configuration")
-message(STATUS "inc: -${CAIRO_INCLUDE_DIR}")
-message(STATUS "link flags: -${CAIRO_LINK_FLAGS}")
-message(STATUS "cflags: -${CAIRO_CFLAGS}")
-message(STATUS "link dir: -${CAIRO_LINK_DIR}")
-
-#message(STATUS "GSL Configuration")
-#message(STATUS "inc: -${GSL_INCLUDE_DIR}")
-#message(STATUS "link flags: -${GSL_LINK_FLAGS}")
-#message(STATUS "cflags: -${GSL_CFLAGS}")
-#message(STATUS "link dir: -${GSL_LINK_DIR}")
-
-#message(STATUS "BLAS Configuration")
-#message(STATUS "inc: -${BLAS_INCLUDE_DIR}")
-#message(STATUS "link flags: -${BLAS_LINK_FLAGS}")
-#message(STATUS "cflags: -${BLAS_CFLAGS}")
-#message(STATUS "link dir: -${BLAS_LINK_DIR}")
+FOREACH(need ${2GEOM_DEPENDS})
+    IF("${need}_FOUND")
+        IF(WIN32)
+            message(STATUS "${need} Includes, Compile, and Link Flags: HARDCODED")
+        ELSEIF(UNIX)
+            message(STATUS "${need} Includes, Compile, and Link Flags: FOUND")
+        ENDIF(WIN32)
+    ELSE("${need}_FOUND")
+        message(STATUS "${need} Includes, Compile, and Link Flags: NOT FOUND")
+ENDIF("${need}_FOUND")
+ENDFOREACH(need)
 
 # Set Compiler Flags
-SET(CMAKE_CXX_FLAGS "${GTK2_CFLAGS} ${CAIRO_CFLAGS}")
+SET(CMAKE_CXX_FLAGS "${GTK2_CFLAGS} ${cairo_CFLAGS}")
 IF(WIN32)
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mms-bitfields")
 ENDIF(WIN32)
@@ -75,14 +72,11 @@ s-bez
 #toy-cairo
 unit-test-sbasis
 gear
-#differential-constraint # must have GSL
 DC-conic-4
 cheb
 match-curve
+#"${NEEDS_GSL}"
 )
-
-#SET(2GEOM_EXTRAS_SRC
-#)
 
 SET(2GEOM_TOY-FRAMEWORK_SRC
 interactive-bits.cpp
@@ -244,7 +238,7 @@ ADD_LIBRARY(2geom STATIC ${2GEOM_SRC})
 
 # make lib for toy
 ADD_LIBRARY(toy STATIC ${2GEOM_TOY-FRAMEWORK_SRC})
-TARGET_LINK_LIBRARIES(toy 2geom "${GTK2_LINK_FLAGS} ${CAIRO_LINK_FLAGS}")
+TARGET_LINK_LIBRARIES(toy 2geom "${GTK2_LINK_FLAGS} ${cairo_LINK_FLAGS}")
 
 OPTION(2GEOM_TOYS
   "Build the projects Toy files"
@@ -252,7 +246,7 @@ OPTION(2GEOM_TOYS
 IF(2GEOM_TOYS)
     FOREACH(source ${2GEOM_TOYS_SRC})
         ADD_EXECUTABLE(${source} ${source}.cpp)
-        TARGET_LINK_LIBRARIES(${source} toy 2geom "${GTK2_LINK_FLAGS} ${CAIRO_LINK_FLAGS}" )
+        TARGET_LINK_LIBRARIES(${source} toy 2geom "${GTK2_LINK_FLAGS} ${cairo_LINK_FLAGS}" )
     ENDFOREACH(source)
 ENDIF(2GEOM_TOYS)
 
