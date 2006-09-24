@@ -77,6 +77,8 @@ unit-test-sbasis
 gear
 #differential-constraint # must have GSL
 DC-conic-4
+cheb
+match-curve
 )
 
 #SET(2GEOM_EXTRAS_SRC

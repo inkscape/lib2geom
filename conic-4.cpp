@@ -26,8 +26,11 @@ using std::vector;
 
 void draw_md_sb(cairo_t *cr, multidim_sbasis<2> const &B) {
     Geom::PathBuilder pb;
-    subpath_from_sbasis(pb, B, 10);
+    subpath_from_sbasis(pb, B, 100);
     cairo_path(cr, pb.peek());
+    Geom::PathBuilder pb2;
+    subpath_from_sbasis_incremental(pb2, B, 10);
+    cairo_path(cr, pb2.peek());
 }
 
 const double w = 1./3;
@@ -109,8 +112,8 @@ class Conic4: public Toy {
                 B[dim] += e_h[i][dim]*ab.basis[i];
         
         draw_md_sb(cr, B);
-        cairo_set_source_rgba (cr, 0., 1., 0, 0.5);
-        cairo_set_line_width (cr, 3);
+        cairo_set_source_rgba (cr, 0., 1., 0, 1);
+        cairo_set_line_width (cr, 1);
         cairo_stroke(cr);
 
         Geom::PathBuilder pb;
