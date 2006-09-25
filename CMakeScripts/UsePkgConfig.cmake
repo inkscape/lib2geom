@@ -25,7 +25,7 @@
 
 IF(UNIX)
     IF(APPLE)
-        message(STATUS "Apple's pkg configuration PLEASE HELP.")
+        FIND_PROGRAM(PKGCONFIG_EXECUTABLE NAMES pkg-config PATHS /usr/lib/pkgconfig /usr/X11R6/lib/pkgconfig /local/lib/pkgconfig /opt/local/lib/pkgconfig )
     ELSE(APPLE)
         FIND_PROGRAM(PKGCONFIG_EXECUTABLE NAMES pkg-config PATHS /usr/local/bin )
     ENDIF(APPLE)
