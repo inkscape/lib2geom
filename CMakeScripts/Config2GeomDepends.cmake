@@ -4,20 +4,24 @@ include(UsePkgConfig)
 # Dependencies Packages
 
 FOREACH(dep ${2GEOM_DEPENDS})
+    # This is a hack due to a bug in Cmake vars system,temp fix until cmake 2.4.4 is out //verbalshadow
+    IF(dep MATCHES "gtk+-2.0")
+        SET(dep_name "GTK2")
+    ELSE(dep MATCHES "gtk+-2.0")
+        SET(dep_name "${dep}")
+    ENDIF(dep MATCHES "gtk+-2.0")
+    
     PKGCONFIG_FOUND(${dep} "${dep}_FOUND")
-    PKGCONFIG(${dep} "${dep}_INCLUDE_DIR" "${dep}_LINK_DIR" "${dep}_LINK_FLAGS" "${dep}_CFLAGS")
+    PKGCONFIG(${dep} "${dep_name}_INCLUDE_DIR" "${dep_name}_LINK_DIR" "${dep_name}_LINK_FLAGS" "${dep_name}_CFLAGS")
+    
+    IF("${dep}_FOUND")
+        message(STATUS "${dep} Includes, Compile and Link Flags: FOUND")
+    ELSE("${dep}_FOUND")
+        message(STATUS "${dep} Includes, Compile and Link Flags: NOT FOUND")
+    ENDIF("${dep}_FOUND")
 ENDFOREACH(dep)
-# This is a hack due to a bug in Cmake vars system,temp fix until cmake 2.4.4 is out //verbalshadow
-PKGCONFIG(gtk+-2.0 GTK2_INCLUDE_DIR GTK2_LINK_DIR GTK2_LINK_FLAGS GTK2_CFLAGS)
 # end Dependencies
 
-FOREACH(need ${2GEOM_DEPENDS})
-    IF("${need}_FOUND")
-            message(STATUS "${need} Includes, Compile and Link Flags: FOUND")
-      ELSE("${need}_FOUND")
-        message(STATUS "${need} Includes, Compile and Link Flags: NOT FOUND")
-ENDIF("${need}_FOUND")
-ENDFOREACH(need)
 
 INCLUDE (CheckIncludeFiles)
 # usage: CHECK_INCLUDE_FILES (<header> <RESULT_VARIABLE> )

@@ -23,17 +23,7 @@
 # Calling PKGCONFIG_DEFINITION will fill the definition (e.g -D_REENTRANT) into the argument,
 # e.g. PKGCONFIG_DEFINITION(libart-2.0 LIBART_DEFINITION)
 
-IF(UNIX)
-    IF(APPLE)
-        FIND_PROGRAM(PKGCONFIG_EXECUTABLE NAMES pkg-config PATHS /usr/lib/pkgconfig /usr/X11R6/lib/pkgconfig /local/lib/pkgconfig /opt/local/lib/pkgconfig )
-    ELSE(APPLE)
-        FIND_PROGRAM(PKGCONFIG_EXECUTABLE NAMES pkg-config PATHS /usr/local/bin )
-    ENDIF(APPLE)
-ELSE(UNIX)
-    IF(WIN32)
-        FIND_PROGRAM(PKGCONFIG_EXECUTABLE NAMES pkg-config PATHS c:\gtk28\lib\pkgconfig\ )
-    ENDIF(WIN32)
-ENDIF(UNIX)
+FIND_PROGRAM(PKGCONFIG_EXECUTABLE NAMES pkg-config PATHS /usr/local/bin )
 
 MACRO(PKGCONFIG_FOUND _package _found)
   # reset the variable at the beginning
