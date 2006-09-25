@@ -101,12 +101,15 @@ public:
             double mid = (hi + lo)/2;
             //double Bmid = (Bhi + Blo)/2;
             
-            Geom::Point m_pt = point_at(m, mid);
+            m = truncate(compose(B, BezOrd(0, mid)), 2);
             // perform golden section search
-            double x0 = 0, x3 = std::min(1.,hi); // just a guess!
+            double best_f = 0, best_x = 1;
+            for(int n = 2; n < 4; n++) {
+            Geom::Point m_pt = point_at(m, double(n)/6);
+            double x0 = 0, x3 = 1.; // just a guess!
             const double R = 0.61803399;
             const double C = 1 - R;
-            double x1 = mid;
+            double x1 = C*x0 + R*x3;
             double x2 = C*x1 + R*x3;
             double f1 = L2(point_at(B, x1) - m_pt);
             double f2 = L2(point_at(B, x2) - m_pt);
@@ -119,15 +122,25 @@ public:
                     shift(f2, f1, L2(point_at(B, x1) - m_pt));
 
                 }
+                std::cout << x0 << "," 
+                          << x1 << ","
+                          << x2 << ","
+                          << x3 << ","
+                          << std::endl;
             }
             if(f2 < f1) {
                 f1 = f2;
                 x1 = x2;
             }
-            std::cout << x1 << "->" << f1 << std::endl;
+            if(f1 > best_f) {
+                best_f = f1;
+                best_x = x1;
+            }
+            }
+            std::cout << mid << ":" << best_x << "->" << best_f << std::endl;
             //draw_cross(cr, point_at(B, x1));
             
-            if(f1 > eps) {
+            if(best_f > eps) {
                 hi = mid;
             } else {
                 lo = mid;
@@ -142,6 +155,15 @@ public:
             Geom::Path p = pb.peek();
             cairo_path(cr, p);
         }
+        
+        /*m = truncate(compose(B, BezOrd(0, hi*2)), 2);
+        {
+            Geom::PathBuilder pb;
+            subpath_from_sbasis(pb, m, 0.1);
+            Geom::Path p = pb.peek();
+            cairo_path(cr, p);
+            }*/
+       
         cairo_stroke(cr);
     }
     RootFinderComparer() : timer_precision(0.1), units(1e6) // microseconds
