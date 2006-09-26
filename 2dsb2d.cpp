@@ -109,9 +109,14 @@ class Sb2d2: public Toy {
         cairo_stroke(cr);
         multidim_sbasis<2> B = bezier_to_sbasis<2, 3>(handles.begin() + surface_handles);
         draw_cb(cr, B);
-        std::vector<double> r = roots(B[0]);
-        for(int i = 0; i < r.size(); i++)
-            draw_cross(cr, point_at(B, r[i]));
+        for(int dim = 0; dim < 2; dim++) {
+            std::vector<double> r = roots(B[dim]);
+            for(int i = 0; i < r.size(); i++)
+                draw_cross(cr, point_at(B, r[i]));
+            r = roots(B[dim] - BezOrd(width/4));
+            for(int i = 0; i < r.size(); i++)
+                draw_cross(cr, point_at(B, r[i]));
+        }
         cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
         cairo_stroke(cr);
         B *= (4./width);

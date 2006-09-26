@@ -48,6 +48,10 @@ public:
     double point_at(double t) {
         return (a[0]*(1-t) + a[1]*t);
     }
+    double
+    operator()(double t) {
+        return (a[0]*(1-t) + a[1]*t);
+    }
     operator Tri() const {
         return a[1] - a[0];
     }

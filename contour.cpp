@@ -30,7 +30,7 @@
 #include <gsl/gsl_min.h>
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_multimin.h>
-     
+
 
 using std::string;
 using std::vector;
@@ -85,6 +85,7 @@ public:
     SBasis2d& sb2;
     unsigned n;
     unsigned par;
+    Geom::Point start;
     curve_min(multidim_sbasis<2> &B,
               SBasis2d& sb2) :B(B), sb2(sb2) {}
 };
@@ -136,13 +137,46 @@ double fn2 (double x, void * params)
         for(int dim = 0; dim < 2; dim++) {
             p.out[dim] = p.B[dim] + shift(BezOrd(Hat(0), Tri(x)), p.par/2 + 1);
         }
-    SBasis l = compose(p.sb2, p.out);
+    SBasis l = compose(p.sb2, p.out);// * L2(p.out, 3);
     l = integral(l*l);
     return l[0][1] - l[0][0];
 }
 
 vector<Geom::Point> zero_handles;
 
+#include <stdio.h>
+#include <gsl/gsl_errno.h>
+#include <gsl/gsl_matrix.h>
+#include <gsl/gsl_odeiv.h>
+
+Geom::Point
+gradient(SBasis2d & sb2, double u, double v) {
+    return Geom::Point(derivative(extract_v(sb2, v))(v),
+                       derivative(extract_u(sb2, u))(u));
+
+}
+
+int
+func (double t, const double y[], double f[],
+      void *params)
+{
+    curve_min &p = *(curve_min*)params;
+    
+    Geom::Point grad = gradient(p.sb2, y[0], y[1]);
+    double value = p.sb2.apply(y[0], y[1]);
+    f[0] = grad[1];// - 0.01*grad[0]*value*(value);
+    f[1] = -grad[0];// - 0.01*grad[1]*value*(value);
+    
+    return GSL_SUCCESS;
+}
+     
+int
+jac (double t, const double y[], double *dfdy, 
+     double dfdt[], void *params)
+{
+    return GSL_FAILURE;
+}
+     
 static gboolean
 expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
 {
@@ -200,10 +234,12 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
                 Geom::Point p((2*(iu+ui)/(2.*ui+1)+1),
                               (2*(iv+vi)/(2.*vi+1)+1));
                 if(ui == 0 && vi == 0) {
-                    if(iu == iv)
-                        p[1] -= 0.1*(1+iv*2);
-                    if(iu != iv)
+                    if(iu == 0 && iv == 0)
                         p[1] += 0.1;
+                    if(iu == 1 && iv == 1 )
+                        p[1] -= 0.1;
+                    //if(iu != iv)
+                    //    p[1] += 0.1;
                     //if(vi == sb2.vs - 1)
                     //    p[1] += 0.1;
                 }
@@ -215,8 +251,6 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
         for(int i = 0; i < 2; i++)
             handles.push_back(Geom::Point(3*width/8.,
                                           (1+6*i)*width/8.));
-
-    
     }
     dir = (handles[surface_handles] - Geom::Point(3*width/4., width/4.)) / 30;
     cairo_move_to(cr, 3*width/4., width/4.);
@@ -273,10 +307,10 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     for(int dim = 0; dim < 2; dim++) {
         B[dim] += shift(BezOrd(0.1), 1);
     }
-#if 1
+#if 0
 // *** Minimiser
     curve_min cm(B, sb2);
-    for(cm.par = 0; cm.par < 8; cm.par++) {
+    for(cm.par = 0; cm.par < 3; cm.par++) {
     int status;
     int iter = 0, max_iter = 100;
     const gsl_min_fminimizer_type *T;
@@ -285,7 +319,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     double a = -1000.0, b = 1000.0;
     gsl_function F;
      
-    F.function = &fn1;
+    F.function = &fn2;
     F.params = &cm;
      
     T = gsl_min_fminimizer_brent;
@@ -309,7 +343,8 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     cm.B = cm.out;
     }
     
-#else
+    B = cm.out;
+#elif 0
     const gsl_multimin_fminimizer_type *T =
         gsl_multimin_fminimizer_nmsimplex;
     gsl_multimin_fminimizer *s = NULL;
@@ -368,14 +403,70 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     gsl_vector_free(ss);
     gsl_multimin_fminimizer_free (s);
      
-#endif
     B = cm.out;
+#elif 1
+    SBasis sb = extract_u(sb2, 0);
+    vector<double> r = roots(sb);
+    if(!r.empty()) {
+    curve_min cm(B, sb2);
+    double rt = r[0];
+    cm.start = Geom::Point(width/4, BezOrd(width/4, width*3/4)(rt));
+    cairo_move_to(cr, cm.start);
+    
+    const gsl_odeiv_step_type * T 
+        = gsl_odeiv_step_rk8pd;
      
+    gsl_odeiv_step * s 
+        = gsl_odeiv_step_alloc (T, 2);
+    gsl_odeiv_control * c 
+        = gsl_odeiv_control_y_new (1e-6, 0.0);
+    gsl_odeiv_evolve * e 
+        = gsl_odeiv_evolve_alloc (2);
+     
+    gsl_odeiv_system sys = {func, jac, 2, &cm};
+     
+    double t = 0.0;
+    double h = 1e-6;
+    double y[2] = { 0, rt };
+    
+    for(int ti = 0; ti < 3000; ti++) {
+        double t1 = 0.01*ti;
+        while (t < t1) {
+            int status = gsl_odeiv_evolve_apply (e, c, s,
+                                                 &sys, 
+                                                 &t, t1,
+                                                 &h, y);
+            if(y[0] < 0 ||
+               y[0] > 1 || 
+               y[1] < 0 || 
+               y[1] > 1)
+                break;
+            if (status != GSL_SUCCESS)
+                goto oops;
+            
+        }
+        cairo_line_to(cr, BezOrd(width/4, width*3/4)(y[0]), BezOrd(width/4, width*3/4)(y[1]));
+            if(y[0] < 0 ||
+               y[0] > 1 || 
+               y[1] < 0 || 
+               y[1] > 1)
+                break;
+    }
+oops:
+    
+    gsl_odeiv_evolve_free (e);
+    gsl_odeiv_control_free (c);
+    gsl_odeiv_step_free (s);
+ }
+#endif
+     
+#if 0
     draw_cb(cr, (width/2)*B + Geom::Point(width/4., width/4.));
     SBasis l = compose(sb2, B);
     notify << "l = " << l << std::endl ;
     l = integral(l*l);
     notify << "cost = " << l[0][1] - l[0][0] ;
+#endif
     
     cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
     cairo_stroke(cr);
