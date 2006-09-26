@@ -5,11 +5,11 @@ include(UsePkgConfig)
 
 FOREACH(dep ${2GEOM_DEPENDS})
     # This is a hack due to a bug in Cmake vars system,temp fix until cmake 2.4.4 is out //verbalshadow
-    IF(dep MATCHES "gtk+-2.0")
+    IF("${dep}" MATCHES "gtk\\+-2.0")
         SET(dep_name "GTK2")
-    ELSE(dep MATCHES "gtk+-2.0")
+    ELSE("${dep}" MATCHES "gtk\\+-2.0")
         SET(dep_name "${dep}")
-    ENDIF(dep MATCHES "gtk+-2.0")
+    ENDIF("${dep}" MATCHES "gtk\\+-2.0")
     
     PKGCONFIG_FOUND(${dep} "${dep}_FOUND")
     PKGCONFIG(${dep} "${dep_name}_INCLUDE_DIR" "${dep_name}_LINK_DIR" "${dep_name}_LINK_FLAGS" "${dep_name}_CFLAGS")
