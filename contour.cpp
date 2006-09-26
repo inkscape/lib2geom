@@ -162,7 +162,7 @@ func (double t, const double y[], double f[],
 {
     curve_min &p = *(curve_min*)params;
     
-    Geom::Point grad = gradient(p.sb2, y[0], y[1]);
+    Geom::Point grad = unit_vector(gradient(p.sb2, y[0], y[1]));
     double value = p.sb2.apply(y[0], y[1]);
     f[0] = grad[1];// - 0.01*grad[0]*value*(value);
     f[1] = -grad[0];// - 0.01*grad[1]*value*(value);
