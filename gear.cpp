@@ -142,24 +142,17 @@ Geom::Path Gear::path() {
         double cursor = first_tooth_angle + (i * tooth_rotation);
         
         multidim_sbasis<2> leading_I = compose(_involute(cursor, cursor + involute_swath_angle(outer_radius())), BezOrd(involute_t,1));
-        if (first) {
-            pb.start_subpath(point_at(leading_I,0));
-            first = false;
-        } else {
-            pb.push_line(point_at(leading_I,0));
-        }
-        subpath_from_sbasis(pb, leading_I, 0.1);
+        subpath_from_sbasis(pb, leading_I, 0.1, first);
+        first = false;
         cursor += involute_advance;
         
         multidim_sbasis<2> tip = _arc(cursor, cursor+tip_advance, outer_radius());
-        pb.push_line(point_at(tip,0));
-        subpath_from_sbasis(pb, tip, 0.1);
+        subpath_from_sbasis(pb, tip, 0.1, false);
         cursor += tip_advance;
         
         cursor += involute_advance;
         multidim_sbasis<2> trailing_I = compose(_involute(cursor, cursor - involute_swath_angle(outer_radius())), BezOrd(1,involute_t));
-        pb.push_line(point_at(trailing_I,0));
-        subpath_from_sbasis(pb, trailing_I, 0.1);
+        subpath_from_sbasis(pb, trailing_I, 0.1, false);
         
         if (base_radius() > root_radius()) {
             Geom::Point leading_start = point_at(trailing_I,1);
@@ -168,8 +161,7 @@ Geom::Path Gear::path() {
         }
         
         multidim_sbasis<2> root = _arc(cursor, cursor+root_advance, root_radius());
-        pb.push_line(point_at(root,0));
-        subpath_from_sbasis(pb, root, 0.1);
+        subpath_from_sbasis(pb, root, 0.1, false);
         cursor += root_advance;
         
         if (base_radius() > root_radius()) {
@@ -179,6 +171,8 @@ Geom::Path Gear::path() {
         }
         
     }
+    
+    pb.close_subpath();
     
     return pb.peek();
 }
