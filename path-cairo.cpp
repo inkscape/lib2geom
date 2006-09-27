@@ -1,4 +1,4 @@
-#include <cairo/cairo.h>
+#include <cairo.h>
 #include "path-cairo.h"
 
 void cairo_sub_path(cairo_t *cr, Geom::SubPath const &p) {

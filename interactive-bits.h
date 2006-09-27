@@ -1,5 +1,5 @@
 #include "point.h"
-#include <cairo/cairo.h>
+#include <cairo.h>
 #include <string>
 
 void draw_line_seg(cairo_t *cr, Geom::Point a, Geom::Point b);

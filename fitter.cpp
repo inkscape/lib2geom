@@ -12,7 +12,7 @@
 #include <vector>
 #include <string>
 #include <map>
-#include <cairo/cairo-pdf.h>
+#include <cairo-pdf.h>
 #include "s-basis.h"
 #include "point.h"
 #include "point-ops.h"
