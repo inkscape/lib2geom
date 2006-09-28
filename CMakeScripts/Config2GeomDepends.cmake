@@ -13,7 +13,7 @@ FOREACH(dep ${2GEOM_DEPENDS})
     
     PKGCONFIG_FOUND(${dep} "${dep}_FOUND")
     PKGCONFIG(${dep} "${dep_name}_INCLUDE_DIR" "${dep_name}_LINK_DIR" "${dep_name}_LINK_FLAGS" "${dep_name}_CFLAGS")
-    
+#    PKGCONFIG_VERSION(${dep} "${dep}_VERSION")
     IF("${dep}_FOUND")
         message(STATUS "${dep} Includes, Compile and Link Flags: FOUND")
     ELSE("${dep}_FOUND")

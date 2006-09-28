@@ -6,6 +6,7 @@ INCLUDE(Config2GeomDepends)
 IF(gsl_FOUND)
 # must have GSL
     SET(NEEDS_GSL differential-constraint)
+    SET(LINK_GSL ${gsl_LINK_FLAGS})
 ENDIF(gsl_FOUND) 
 
 # Set Compiler Flags
@@ -37,7 +38,7 @@ gear
 DC-conic-4
 cheb
 match-curve
-#"${NEEDS_GSL}"
+"${NEEDS_GSL}"
 )
 
 SET(2GEOM_TOY-FRAMEWORK_SRC
@@ -208,7 +209,7 @@ OPTION(2GEOM_TOYS
 IF(2GEOM_TOYS)
     FOREACH(source ${2GEOM_TOYS_SRC})
         ADD_EXECUTABLE(${source} ${source}.cpp)
-        TARGET_LINK_LIBRARIES(${source} toy 2geom "${GTK2_LINK_FLAGS} ${cairo_LINK_FLAGS}" )
+        TARGET_LINK_LIBRARIES(${source} toy 2geom "${GTK2_LINK_FLAGS} ${cairo_LINK_FLAGS} ${LINK_GSL}" )
     ENDFOREACH(source)
 ENDIF(2GEOM_TOYS)
 
