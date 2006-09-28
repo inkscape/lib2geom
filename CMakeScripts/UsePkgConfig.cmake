@@ -25,6 +25,10 @@
 
 FIND_PROGRAM(PKGCONFIG_EXECUTABLE NAMES pkg-config PATHS /usr/local/bin )
 
+MACRO(STRIP_NEWLINES _string_var)
+  STRING(REGEX REPLACE "[\n\r]+" "" ${_string_var} ${${_string_var}})
+ENDMACRO(STRIP_NEWLINES _string_var)
+
 MACRO(PKGCONFIG_FOUND _package _found)
   # reset the variable at the beginning
   SET(${_found})
@@ -67,6 +71,8 @@ MACRO(PKGCONFIG _package _include_DIR _link_DIR _link_FLAGS _cflags)
       EXEC_PROGRAM(${PKGCONFIG_EXECUTABLE} ARGS ${_package} --libs OUTPUT_VARIABLE ${_link_FLAGS} )
 
       EXEC_PROGRAM(${PKGCONFIG_EXECUTABLE} ARGS ${_package} --cflags OUTPUT_VARIABLE ${_cflags} )
+
+      STRIP_NEWLINES(${_cflags})
 
     ENDIF(NOT _return_VALUE)
 
