@@ -8,7 +8,7 @@ IF(gsl_FOUND)
     SET(NEEDS_GSL differential-constraint)
     SET(LINK_GSL ${gsl_LINK_FLAGS})
 ENDIF(gsl_FOUND) 
-
+message(STATUS "${gsl_LINK_FLAGS}")
 # Set Compiler Flags
 SET(CMAKE_CXX_FLAGS "${GTK2_CFLAGS} ${cairo_CFLAGS} ${gsl_CFLAGS}")
 SET(CMAKE_MAKE_PROGRAM "${CMAKE_MAKE_PROGRAM} -j2")
@@ -219,6 +219,6 @@ OPTION(2GEOM_UNIT_TESTS
 IF(2GEOM_UNIT_TESTS)
     FOREACH(source ${2GEOM_TESTS_SRC})
         ADD_EXECUTABLE(${source} ${source}.cpp)
-        TARGET_LINK_LIBRARIES(${source} 2geom)
+        TARGET_LINK_LIBRARIES(${source} 2geom "${LINK_GSL}")
     ENDFOREACH(source)
 ENDIF(2GEOM_UNIT_TESTS)
