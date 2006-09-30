@@ -162,7 +162,7 @@ inline bool operator==(Path::HashCookie a, Path::HashCookie b) {
 
 class CurveType {
  public:
-    unsigned n_handles;
+    unsigned const n_handles;
     
     virtual Point point_at(Geom::Path::Elem const & elm, double t)=0;
     virtual multidim_sbasis<2> to_sbasis(Geom::Path::Elem const & elm)=0;
@@ -190,9 +190,9 @@ class CubicTo : public CurveType {
     CubicTo() : CurveType(3) {}
 };
 
-extern LineTo * lineto;
-extern QuadTo * quadto;
-extern CubicTo * cubicto;
+extern LineTo * const lineto;
+extern QuadTo * const quadto;
+extern CubicTo * const cubicto;
 
 inline void Path::ConstIter::operator++() {      h += (*c)->n_handles; c++; }
 inline void Path::ConstIter::operator--() { c--; h -= (*c)->n_handles; }

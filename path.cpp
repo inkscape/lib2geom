@@ -6,11 +6,12 @@
 
 namespace Geom{
 
-
-LineTo * lineto = new LineTo;
-QuadTo * quadto = new QuadTo;
-CubicTo * cubicto = new CubicTo;
-
+static LineTo _lineto;
+LineTo * const lineto=&_lineto;
+static QuadTo _quadto;
+QuadTo * const quadto=&_quadto;
+static CubicTo _cubicto;
+CubicTo * const cubicto=&_cubicto;
 
 multidim_sbasis<2>
 LineTo::to_sbasis(Geom::Path::Elem const & elm) {
