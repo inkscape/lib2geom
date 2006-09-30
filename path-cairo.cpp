@@ -4,31 +4,23 @@
 #include "multidim-sbasis.h"
 #include "sbasis-to-bezier.h"
 
-void cairo_sub_path(cairo_t *cr, Geom::Path const &p) {
+void cairo_path(cairo_t *cr, Geom::Path const &p) {
     if(p.empty()) return;
     cairo_move_to(cr, p.initial_point()[0], p.initial_point()[1]);
     for(Geom::Path::const_iterator iter(p.begin()), end(p.end()); iter < end; ++iter) {
         Geom::Path::Elem elm = *iter;
-        switch(iter.cmd()) {
-            case Geom::lineto:
-                cairo_line_to(cr, elm.last()[0], elm.last()[1]);
-                break;
-            case Geom::quadto:
-            {
-                Geom::Point b1 = elm[0] + (2./3) * (elm[1] - elm[0]);
-                Geom::Point b2 = b1 + (1./3) * (elm[2] - elm[0]);
-                cairo_curve_to(cr, b1[0], b1[1], 
-                               b2[0], b2[1], 
-                               elm[2][0], elm[2][1]);
-                break;
-            }
-            case Geom::cubicto:
-                cairo_curve_to(cr, elm[1][0], elm[1][1], 
-                               elm[2][0], elm[2][1], 
-                               elm[3][0], elm[3][1]);
-                break;
-            default:
-                break;
+        if(dynamic_cast<Geom::LineTo *>(iter.cmd())) {
+            cairo_line_to(cr, elm.last()[0], elm.last()[1]);
+        }  else if(dynamic_cast<Geom::QuadTo *>(iter.cmd())) {
+            Geom::Point b1 = elm[0] + (2./3) * (elm[1] - elm[0]);
+            Geom::Point b2 = b1 + (1./3) * (elm[2] - elm[0]);
+            cairo_curve_to(cr, b1[0], b1[1], 
+                           b2[0], b2[1], 
+                           elm[2][0], elm[2][1]);
+        }  else if(dynamic_cast<Geom::CubicTo *>(iter.cmd())) {
+            cairo_curve_to(cr, elm[1][0], elm[1][1], 
+                           elm[2][0], elm[2][1], 
+                           elm[3][0], elm[3][1]);
         }
     }
     if(p.is_closed()) {
@@ -42,7 +34,7 @@ void cairo_arrangement(cairo_t *cr, Geom::Arrangement const &p) {
     for (std::vector<Geom::Path>::const_iterator it(p.begin()),
              iEnd(p.end());
          it != iEnd; ++it) {
-        cairo_sub_path(cr, *it);
+        cairo_path(cr, *it);
     }
 }
 
@@ -52,7 +44,7 @@ void cairo_arrangement(cairo_t *cr, Geom::Arrangement const &p) {
 #include "interactive-bits.h"
 #include <pango/pango.h>
 #include <pango/pangocairo.h>
-void cairo_sub_path_handles(cairo_t *cr, Geom::Path const &p) {
+void cairo_path_handles(cairo_t *cr, Geom::Path const &p) {
     if(p.empty()) return;
     cairo_move_to(cr, p.initial_point()[0], p.initial_point()[1]);
     for(Geom::Path::const_iterator iter(p.begin()), end(p.end()); iter < end; ++iter) {
@@ -86,7 +78,7 @@ void cairo_arrangement_handles(cairo_t *cr, Geom::Arrangement const &p) {
     for (std::vector<Geom::Path>::const_iterator it(p.begin()),
              iEnd(p.end());
          it != iEnd; ++it) {
-        cairo_sub_path_handles(cr, *it);
+        cairo_path_handles(cr, *it);
     }
 }
 

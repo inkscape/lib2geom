@@ -53,13 +53,7 @@ std::vector<Geom::Path::Location> find_vector_extreme_points(Geom::Path const & 
     std::vector<Geom::Path::Location> result;
 
     for(Geom::Path::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
-        switch(iter.cmd()) {
-        case Geom::lineto:
-            break;
-        case Geom::quadto:
-            break;
-        case Geom::cubicto:
-        {
+        if(dynamic_cast<CubicTo *>(iter.cmd())) {
             std::vector<double> x;
             for(int i = 0; i < 4; i++)
                 x.push_back(dot((*iter)[i],dir));
@@ -69,10 +63,6 @@ std::vector<Geom::Path::Location> find_vector_extreme_points(Geom::Path const & 
                 ++it) {
                 result.push_back(Geom::Path::Location(iter, *it));
             }
-            break;
-        }
-        default:
-            break;
         }
     }
     
@@ -87,11 +77,7 @@ find_cusp_points(Geom::Path const & p, int dim) {
     std::vector<Geom::Path::Location> result;
 
     for(Geom::Path::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
-        switch(iter.cmd()) {
-        case Geom::lineto:
-            break;
-        case Geom::cubicto:
-        {
+        if(dynamic_cast<CubicTo *>(iter.cmd())) {
             std::vector<double> x;
             for(int i = 0; i < 4; i++)
                 x.push_back((*iter)[i][dim]);
@@ -101,10 +87,6 @@ find_cusp_points(Geom::Path const & p, int dim) {
                 ++it) {
                 result.push_back(Geom::Path::Location(iter, *it));
             }
-            break;
-        }
-        default:
-            break;
         }
     }
     
@@ -118,45 +100,6 @@ find_cusp_points(Geom::Path const & p, int dim) {
  */
 std::vector<Geom::Path::Location>
 find_inflection_points(Geom::Path const & p) {
-    /*std::vector<Geom::Path::Location> result;
-
-    for(Geom::Path::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
-        switch(iter.cmd()) {
-        case Geom::lineto:
-            break;
-        case Geom::cubicto:
-        {
-            Geom::Point pc[4];
-            for(int i = 0; i < 4; i++)
-                pc[i] = Geom::Point(0,0);
-
-            
-            cubic_bezier_poly_coeff((*iter).begin(), pc);
-            
-            Geom::Point aT = -rot90(pc[3]);
-            Geom::Point bT = -rot90(pc[2]);
-            double t_cusp = -dot(aT, pc[1])/(2*dot(aT, pc[2]));
-            if(t_cusp > 0 && t_cusp < 1)
-              result.push_back(Geom::Path::Location(iter, t_cusp));
-            double det = t_cusp*t_cusp - dot(bT, pc[1])/(3*dot(aT, pc[2]));
-            if(det >= 0) {
-                det = sqrt(det);
-                double t1 = t_cusp - det;
-                double t2 = t_cusp + det;
-                //printf("%g %g %g %g\n", t_cusp, det, t1, t2);
-                if(t1 > 0 && t1 < 1)
-                    result.push_back(Geom::Path::Location(iter, t1));
-                if(t2 > 0 && t2 < 1)
-                    result.push_back(Geom::Path::Location(iter, t2));
-            }
-            break;
-        }
-        default:
-            break;
-        }
-    }
-    
-    return result;*/
 }
 
 /*** find_flat_points
@@ -167,11 +110,7 @@ find_flat_points(Geom::Path const & p) {
     std::vector<Geom::Path::Location> result;
 
     for(Geom::Path::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
-        switch(iter.cmd()) {
-        case Geom::lineto:
-            break;
-        case Geom::cubicto:
-        {
+        if(dynamic_cast<CubicTo *>(iter.cmd())) {
             Geom::Point pc[4];
             for(int i = 0; i < 4; i++)
                 pc[i] = Geom::Point(0,0);
@@ -183,10 +122,6 @@ find_flat_points(Geom::Path const & p) {
             double t1 = 2*sqrt(1/(3*fabs(s3)));
             if(t1 > 0 && t1 < 1)
                 result.push_back(Geom::Path::Location(iter, t1));
-            break;
-        }
-        default:
-            break;
         }
     }
     
@@ -201,12 +136,8 @@ find_maximal_curvature_points(Geom::Path const & p) {
     std::vector<Geom::Path::Location> result;
 
     for(Geom::Path::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
-        switch(iter.cmd()) {
-        case Geom::lineto:
-            break;
-        case Geom::quadto:
-        case Geom::cubicto:
-        {
+        if(dynamic_cast<QuadTo *>(iter.cmd()) ||
+           dynamic_cast<CubicTo *>(iter.cmd())) {
             Poly Bx = get_parametric_poly(*iter, X); // poly version of bezier (0-1)
             Poly By = get_parametric_poly(*iter, Y);
             Poly dBx = derivative(Bx);
@@ -230,10 +161,6 @@ find_maximal_curvature_points(Geom::Path const & p) {
                 }
                 printf("\n");
             }
-            break;
-        }
-        default:
-            break;
         }
     }
     return result;

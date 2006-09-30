@@ -5,6 +5,7 @@
 #include "rect.h"
 #include "maybe.h"
 #include <vector>
+#include "multidim-sbasis.h" // todo: hide this
 
 /* Need some kind of efficient iterator / position reference. */
 
@@ -23,14 +24,9 @@
 
 namespace Geom{
 
-enum PathOp{
-    lineto,
-    quadto,
-    cubicto,
-    ellipto
-};
+class CurveType;
 
-unsigned const PathOpHandles[] = {1, 2, 3, 4};
+typedef CurveType* PathOp;
 
 class Path{
     bool closed; // should this shape be closed (join endpoints with a line)
@@ -75,15 +71,14 @@ public:
         std::vector<Point>::const_iterator h;
         
         ConstIter() {}
-        ConstIter(std::vector<PathOp>::const_iterator c,
-                 std::vector<Point>::const_iterator h) :
+        ConstIter(std::vector<PathOp>::const_iterator c, std::vector<Point>::const_iterator h) :
             c(c), h(h) {}
-        void operator++() {      h += PathOpHandles[*c]; c++; }
-        void operator--() { c--; h -= PathOpHandles[*c]; }
-        Elem operator*() const {assert(*c >= 0); assert(*c <= ellipto);  return Elem(*c, h - 1, h + PathOpHandles[*c]);}
+        void operator++();
+        void operator--();
+        Elem operator*() const;
 
-        std::vector<Point>::const_iterator begin() const {return h;}
-        std::vector<Point>::const_iterator end() const {return h + PathOpHandles[*c];}
+        std::vector<Point>::const_iterator begin() const;
+        std::vector<Point>::const_iterator end() const;
         PathOp cmd() { return *c; }
     };
 
@@ -161,6 +156,58 @@ public:
 inline bool operator==(Path::HashCookie a, Path::HashCookie b) {
     return a.get_value() == b.get_value();
 }
+
+
+
+
+class CurveType {
+ public:
+    unsigned n_handles;
+    
+    virtual Point point_at(Geom::Path::Elem const & elm, double t)=0;
+    virtual multidim_sbasis<2> to_sbasis(Geom::Path::Elem const & elm)=0;
+    CurveType(unsigned n_handles) : n_handles(n_handles) {}
+};
+
+class LineTo : public CurveType {
+ public:
+    virtual Point point_at(Geom::Path::Elem const & elm, double t);
+    virtual multidim_sbasis<2> to_sbasis(Geom::Path::Elem const & elm);
+    LineTo() : CurveType(1) {}
+};
+
+class QuadTo : public CurveType {
+ public:
+    virtual Point point_at(Geom::Path::Elem const & elm, double t);
+    virtual multidim_sbasis<2> to_sbasis(Geom::Path::Elem const & elm);
+    QuadTo() : CurveType(2) {}
+};
+
+class CubicTo : public CurveType {
+ public:
+    virtual Point point_at(Geom::Path::Elem const & elm, double t);
+    virtual multidim_sbasis<2> to_sbasis(Geom::Path::Elem const & elm);
+    CubicTo() : CurveType(3) {}
+};
+
+extern LineTo * lineto;
+extern QuadTo * quadto;
+extern CubicTo * cubicto;
+
+inline void Path::ConstIter::operator++() {      h += (*c)->n_handles; c++; }
+inline void Path::ConstIter::operator--() { c--; h -= (*c)->n_handles; }
+inline Path::Elem Path::ConstIter::operator*() const {
+    assert(*c >= 0); 
+    return Path::Elem(*c, h - 1, h + (*c)->n_handles);
+}
+
+inline std::vector<Point>::const_iterator Path::ConstIter::begin() const {
+    return h;
+}
+inline std::vector<Point>::const_iterator Path::ConstIter::end() const {
+    return h + (*c)->n_handles;
+}
+
 
 class ArrangementBuilder;
 

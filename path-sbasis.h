@@ -7,7 +7,8 @@
 #include "bezier-to-sbasis.h"
 
 inline multidim_sbasis<2> elem_to_sbasis(Geom::Path::Elem const & elm) {
-    switch(elm.op) {
+    return (*elm.op).to_sbasis(elm);
+/*    switch(elm.op) {
     case Geom::lineto:
         return bezier_to_sbasis<2, 1>(elm.begin());
     case Geom::quadto:
@@ -18,7 +19,7 @@ inline multidim_sbasis<2> elem_to_sbasis(Geom::Path::Elem const & elm) {
         break;
     }
     return multidim_sbasis<2>();
-
+*/
 }
 
 #endif

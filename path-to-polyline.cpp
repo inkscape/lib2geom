@@ -5,21 +5,12 @@ path_to_polyline::path_to_polyline(const Geom::Path &p, double tol)
 {
     pb.start_subpath(p.initial_point());
     for(Geom::Path::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
-        switch(iter.cmd()) {
-        case Geom::lineto:
+        if(dynamic_cast<Geom::LineTo *>(iter.cmd()))
             line_to_polyline(*iter);
-            break;
-        case Geom::quadto:
+        else if(dynamic_cast<Geom::QuadTo *>(iter.cmd()))
             quad_to_polyline(*iter);
-            break;
-        case Geom::cubicto:
+        else if(dynamic_cast<Geom::CubicTo *>(iter.cmd()))
             cubic_to_polyline(*iter);
-            break;
-        default:
-            //Geom::Point pt(*(e-1));
-            //handles.push_back(pt);
-            break;
-        }
     }
         
 }

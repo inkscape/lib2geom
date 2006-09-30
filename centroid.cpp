@@ -1,10 +1,6 @@
 #include "path.h"
-#include "poly.h"
-#include "arc-length.h"
-#include "s-basis.h"
 #include "multidim-sbasis.h"
-#include "bezier-to-sbasis.h"
-#include "path-sbasis.h"
+#include "arc-length.h"
 
 /*
  * ANSI C code from the article
@@ -29,6 +25,7 @@
 **/
 
 namespace Geom{
+
 int centroid(std::vector<Point> p, Point& centroid, double &area) {
     const unsigned n = p.size();
     if (n < 3)
@@ -53,7 +50,7 @@ int centroid(Path const &p, Point& centroid, double &area) {
     double atmp = 0;
     for(Path::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
         Path::Elem elm = *iter;
-        multidim_sbasis<2> B = elem_to_sbasis(elm);
+        multidim_sbasis<2> B = (*elm.op).to_sbasis(elm);
         multidim_sbasis<2> dB = rot90(derivative(B));
         SBasis curl = dot(B, dB);
         SBasis A = integral(curl);

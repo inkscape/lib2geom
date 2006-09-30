@@ -1,70 +1,55 @@
 #include "path.h"
 #include "cubic_bez_util.h"
-#include "poly.h"
-
-
-
-static Poly
-quadratic_bezier_poly(Geom::Path::Elem const & b, int dim) {
-    Poly result;
-    double c[6] = {1, 
-                    -2, 2, 
-                    1, -2, 1};
-
-    int cp = 0;
-    
-    result.resize(3);
-    
-    for(int i = 0; i < 3; i++) {
-        for(int j = 0; j <= i; j++) {
-            result[2 - j] += (c[cp]*(b[2- i]))[dim];
-            cp++;
-        }
-    }
-    return result;
-}
-
-
-static Poly
-cubic_bezier_poly(Geom::Path::Elem const & b, int dim) {
-    Poly result;
-    double c[10] = {1, 
-                    -3, 3, 
-                    3, -6, 3,
-                    -1, 3, -3, 1};
-
-    int cp = 0;
-    
-    result.resize(4);
-    
-    for(int i = 0; i < 4; i++) {
-        for(int j = 0; j <= i; j++) {
-            result[3 - j] += (c[cp]*(b[3- i]))[dim];
-            cp++;
-        }
-    }
-    return result;
-}
-
-Poly get_parametric_poly(Geom::Path::Elem const & b, int dim) {
-    Poly result;
-    switch(b.op) {
-    case Geom::lineto:
-        result.push_back(b[0][dim]);
-        result.push_back((b[1]-b[0])[dim]);
-        return result;
-    case Geom::quadto:
-        return quadratic_bezier_poly(b, dim);
-    case Geom::cubicto:
-        return cubic_bezier_poly(b, dim);
-    default:
-        return result;
-    }
-}
-
+#include "s-basis.h"
+#include "multidim-sbasis.h"
+#include "bezier-to-sbasis.h"
 
 namespace Geom{
 
+
+LineTo * lineto = new LineTo;
+QuadTo * quadto = new QuadTo;
+CubicTo * cubicto = new CubicTo;
+
+
+multidim_sbasis<2>
+LineTo::to_sbasis(Geom::Path::Elem const & elm) {
+    return bezier_to_sbasis<2, 1>(elm.begin());
+}
+
+multidim_sbasis<2>
+QuadTo::to_sbasis(Geom::Path::Elem const & elm) {
+    return bezier_to_sbasis<2, 2>(elm.begin());
+}
+
+multidim_sbasis<2>
+CubicTo::to_sbasis(Geom::Path::Elem const & elm) {
+    return bezier_to_sbasis<2, 3>(elm.begin());
+}
+
+Point
+LineTo::point_at(Geom::Path::Elem const & elm, double t) {
+    return Lerp(t, elm[0], elm[1]);
+}
+
+Point
+QuadTo::point_at(Geom::Path::Elem const & elm, double t) {
+    Geom::Point mid[2];
+    for(int i = 0; i < 2; i++)
+        mid[i] = Lerp(t, elm[i], elm[i+1]);
+    return Lerp(t, mid[0], mid[1]);
+}
+
+Point
+CubicTo::point_at(Geom::Path::Elem const & elm, double t) {
+    Geom::Point mid[3];
+    for(int i = 0; i < 3; i++)
+        mid[i] = Lerp(t, elm[i], elm[i+1]);
+    Geom::Point midmid[2];
+    for(int i = 0; i < 2; i++)
+        midmid[i] = Lerp(t, mid[i], mid[i+1]);
+    return Lerp(t, midmid[0], midmid[1]);
+}
 
 Maybe<Rect> Path::bbox() const {
 // needs work for other elements.
@@ -119,29 +104,7 @@ void Path::insert(ConstIter before, ConstIter s, ConstIter e) {
     }*/
 
 Geom::Point Geom::Path::Elem::point_at(double t) const {
-    switch(op) {
-    case Geom::lineto:
-        return Lerp(t, s[0], s[1]);
-    case Geom::quadto:
-    {
-        Geom::Point mid[2];
-        for(int i = 0; i < 2; i++)
-            mid[i] = Lerp(t, s[i], s[i+1]);
-        return Lerp(t, mid[0], mid[1]);
-    }
-    case Geom::cubicto:
-    {
-        Geom::Point mid[3];
-        for(int i = 0; i < 3; i++)
-            mid[i] = Lerp(t, s[i], s[i+1]);
-        Geom::Point midmid[2];
-        for(int i = 0; i < 2; i++)
-            midmid[i] = Lerp(t, mid[i], mid[i+1]);
-        return Lerp(t, midmid[0], midmid[1]);
-    }
-    default:
-        break;
-    }
+    return (*op).point_at(*this, t);
 }
 
 void
@@ -149,11 +112,7 @@ Geom::Path::Elem::point_tangent_acc_at(double t,
                                            Geom::Point &pos, 
                                            Geom::Point &tgt,
                                            Geom::Point &acc) const {
-    switch(op) {
-    case Geom::lineto:
-    case Geom::quadto:
-    case Geom::cubicto:
-    {
+/*
         Poly Qx = get_parametric_poly(*this, X);
         Poly Qy = get_parametric_poly(*this, Y);
         pos = Point(Qx(t), Qy(t));
@@ -163,11 +122,7 @@ Geom::Path::Elem::point_tangent_acc_at(double t,
         Qx = derivative(Qx);
         Qy = derivative(Qy);
         acc = Point(Qx(t), Qy(t));
-        break;
-    }
-    default:
-        break;
-    }
+*/
 }
 
 
@@ -191,10 +146,7 @@ void Path::point_tangent_acc_at(Location at, Point &pos, Point & tgt, Point &acc
 
 bool Path::Elem::nearest_location(Point p, double& dist, double& tt) const {
     double new_dist, new_t;
-    switch(op) {
-    // For the rest we can assume that start has already been tried.
-    case Geom::lineto:
-    {
+    if(dynamic_cast<Geom::LineTo *>(op)) {
         new_dist = L2(p - s[1]);
         new_t = 1;
         double t = dot(p - s[0], (s[1] - s[0])) / dot(s[1] - s[0], s[1] - s[0]);
@@ -202,44 +154,14 @@ bool Path::Elem::nearest_location(Point p, double& dist, double& tt) const {
             new_t = t;
             new_dist = fabs(dot(p - s[0], unit_vector(rot90(s[1] - s[0]))));
         }
-        break;
-    }
-#ifdef HAVE_GSL
-    case Geom::quadto:
-    {
-        new_dist = L2(p - s[2]);
-        new_t = 1;
-        double t = dot(p - s[0], (s[2] - s[0])) / dot(s[2] - s[0], s[2] - s[0]);
-        
-        Poly distx = quadratic_bezier_poly(*this, X) - p[X];
-        distx = distx*distx;
-        Poly disty = quadratic_bezier_poly(*this, Y) - p[Y];
-        disty = disty*disty;
-        
-        Poly dist = derivative(distx + disty);
-        
-        std::vector<double> sol = solve_reals(dist);
-        for(int i = 0; i < sol.size(); i++) {
-            double t = sol[i];
-            if((t > 0) && (t < 1)) {
-                new_t = t;
-                new_dist = L2(point_at(t) - p);
-            }
-        }
-        break;
-    }
-#endif
-    case Geom::cubicto:
-    {
+    } else if(dynamic_cast<Geom::QuadTo *>(op)) {
+        ;
+    } else if(dynamic_cast<Geom::CubicTo *>(op)) {
         Point hnd[4];
         for(int i = 0; i < 4; i++) 
             hnd[i] = (*this)[i];// fixme
         new_t = NearestPointOnCurve(p, hnd);
         new_dist = L2(p - point_at(new_t));
-        break;
-    }
-    default:
-        return false;
     }
     if(new_dist < dist) {
         dist = new_dist;

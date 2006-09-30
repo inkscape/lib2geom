@@ -4,7 +4,6 @@
 #include "path-poly-fns.h"
 using namespace Geom;
 
-
 double cubic_length_subdividing(Geom::Path::Elem const & e, double tol) {
     Geom::Point v[3];
     for(int i = 0; i < 3; i++)
@@ -40,16 +39,12 @@ double arc_length_subdividing(Geom::Path const & p, double tol) {
     double result = 0;
 
     for(Geom::Path::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
-        switch(iter.cmd()) {
-        case Geom::lineto:
+        if(dynamic_cast<Geom::LineTo *>(iter.cmd()))
             result += L2((*iter).first() - (*iter).last());
-            break;
-        case Geom::cubicto:
+        else if(dynamic_cast<CubicTo *>(iter.cmd()))
             result += cubic_length_subdividing(*iter, tol);
-            break;
-        default:
-            break;
-        }
+        else
+            ;
     }
     
     return result;
@@ -64,15 +59,10 @@ static double poly_length_integrating(double t, void* param) {
 }
 
 void arc_length_integrating(Geom::Path::Elem pe, double t, double tol, double &result, double &abs_error) {
-    switch(pe.op) {
-    case Geom::lineto:
-    {
+    if(dynamic_cast<LineTo *>(iter.cmd()))
         result += L2(pe.first() - pe.last())*t;
-        break;
-    }
-    case Geom::quadto:
-    case Geom::cubicto:
-    {
+    else if(dynamic_cast<QuadTo *>(iter.cmd()) ||
+            dynamic_cast<CubicTo *>(iter.cmd())) {
         Poly B[2] = {get_parametric_poly(pe, X), get_parametric_poly(pe, Y)};
         for(int i = 0; i < 2; i++)
             B[i] = derivative(B[i]);
@@ -91,11 +81,8 @@ void arc_length_integrating(Geom::Path::Elem pe, double t, double tol, double &r
         abs_error += fabs(err);
             
         result += quad_result;
-        break;
-    }
-    default:
+    } else
         return;
-    }
 }
 
 double arc_length_integrating(Geom::Path const & p, double tol) {

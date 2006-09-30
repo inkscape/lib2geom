@@ -3,7 +3,6 @@
 #include "path.h"
 
 typedef struct _cairo cairo_t;
-template <unsigned D> class multidim_sbasis;
 
 void cairo_sub_path(cairo_t *cr, Geom::Path const &p);
 void cairo_arrangement(cairo_t *cr, Geom::Arrangement const &p);

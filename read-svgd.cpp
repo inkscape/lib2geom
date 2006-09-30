@@ -6,6 +6,17 @@ using std::fgetc;
 using std::feof;
 
 char const PathOpNames[] = {'L', 'Q', 'C', 'A'};
+
+char path_op_name(Geom::CurveType* ct) {
+    if(dynamic_cast<Geom::LineTo *>(ct))
+        return 'L';
+    else if(dynamic_cast<Geom::QuadTo *>(ct))
+        return 'Q';
+    else if(dynamic_cast<Geom::CubicTo *>(ct))
+        return 'C';
+    return 0;
+}
+
 void write_svgd(FILE* f, Geom::Path const &p) {
     //printf("size %d %d \n",  p.cmd.size(),  p.handles.size());
     if(f == NULL)
@@ -13,7 +24,7 @@ void write_svgd(FILE* f, Geom::Path const &p) {
     fprintf(f, "M %g,%g ", p.initial_point()[0], p.initial_point()[1]);
     
     for(Geom::Path::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
-        fprintf(f, "%c ", PathOpNames[iter.cmd()]);
+        fprintf(f, "%c ",  path_op_name(iter.cmd()));
         for(std::vector<Geom::Point>::const_iterator h(iter.begin()), e(iter.end());
             h != e; ++h) {
             Geom::Point pt(*h);
@@ -34,7 +45,7 @@ std::ostream &operator<< (std::ostream &out_file, const Geom::Path & p) {
     out_file << "M " << p.initial_point()[0] << "," << p.initial_point()[1] << " ";
     
     for(Geom::Path::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
-        out_file << PathOpNames[iter.cmd()] << " ";
+        out_file << path_op_name(iter.cmd()) << " ";
         for(std::vector<Geom::Point>::const_iterator h(iter.begin()), e(iter.end());
             h != e; ++h) {
             Geom::Point pt(*h);
@@ -43,14 +54,14 @@ std::ostream &operator<< (std::ostream &out_file, const Geom::Path & p) {
     }
     if(p.is_closed())
         out_file << "Z ";
-    return out_file;
+            return out_file;
 }
 
 std::ostream &operator<< (std::ostream &out_file, const Geom::Arrangement & p) {
     for(Geom::Arrangement::const_iterator it = p.begin(); it != p.end(); it++) {
         out_file << *it;
     }
-    return out_file;
+                                                                                   return out_file;
 }
 
 Geom::Point point(double d1, double d2) {
@@ -180,23 +191,23 @@ Geom::Arrangement read_svgd(FILE* f) {
 
 
 /* Possibly useful function I wrote and then didn't use:
-const char* whitespace = " \t\r\n"
-const char* seperator = ", \t\r\n"
-void eat_chars(FILE* f, const char* chars) {
-    while(!feof(f)) {
-        int i = 0;
-        int ch = fgetc(f);
-        while(1) {
-            if(chars[i] == 0) {
-                ungetc(ch, f);
-                return;
-            }
-            if(chars[i] == ch)
-                break;
-            i++;
-        }
-    }
-}
+   const char* whitespace = " \t\r\n"
+   const char* seperator = ", \t\r\n"
+   void eat_chars(FILE* f, const char* chars) {
+   while(!feof(f)) {
+   int i = 0;
+   int ch = fgetc(f);
+   while(1) {
+   if(chars[i] == 0) {
+   ungetc(ch, f);
+   return;
+   }
+   if(chars[i] == ch)
+   break;
+   i++;
+   }
+   }
+   }
 */
 
 /*

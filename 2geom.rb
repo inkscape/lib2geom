@@ -182,7 +182,7 @@ class Path
       static VALUE _closed() {
         Geom::Path *path;
         Data_Get_Struct(self, Geom::Path, path);
-        return ( path->closed ? Qtrue : Qfalse );
+        return ( path->is_closed() ? Qtrue : Qfalse );
       }
     EOS
   end

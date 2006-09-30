@@ -70,24 +70,11 @@ void draw_offset(cairo_t *cr, multidim_sbasis<2> const &B, double dist, double t
             double sgn = dim?-1:1;
             offset[dim] = B[dim] + divide(dist*sgn*dB[1-dim],arc, 2);
         }
-        {
-            Geom::ArrangementBuilder pb;
-            subpath_from_sbasis_incremental(pb, offset, tol);
-            cairo_arrangement(cr, pb.peek());
-            total_pieces_inc += pb.peek().total_segments();
             cairo_set_source_rgba (cr, 0., 0.5, 0, 0.5);
-            cairo_stroke(cr);
-            cairo_arrangement_handles(cr, pb.peek());
-        }
-        {
-            Geom::ArrangementBuilder pb;
-            subpath_from_sbasis(pb, offset, tol);
-            Geom::Arrangement p = pb.peek();
-            total_pieces_sub += p.total_segments();
-            cairo_arrangement(cr, p);
-            cairo_set_source_rgba (cr, 0.5, 0., 0, 0.5);
-            cairo_stroke(cr);
-        }
+        cairo_stroke(cr);
+        cairo_md_sb_handles(cr, offset);
+        cairo_set_source_rgba (cr, 0., 0, 0, 1);
+        cairo_stroke(cr);
         
     }
 }
