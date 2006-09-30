@@ -5,13 +5,13 @@
 #endif
 
 struct path_metric_data{
-    Geom::SubPath const *a;
-    Geom::SubPath const *b;
+    Geom::Path const *a;
+    Geom::Path const *b;
 };
 
 static double path_metric_integrand(double s, void* param) {
     path_metric_data &pmd(*(path_metric_data*)param);
-    Geom::SubPath::Location a_l = 
+    Geom::Path::Location a_l = 
         natural_parameterisation(*pmd.a, s, 1e-3);
     Geom::Point a_p = pmd.a->point_at(a_l);
     double dist = 0;
@@ -20,7 +20,7 @@ static double path_metric_integrand(double s, void* param) {
     return dist*dist;
 }
 
-double L2(Geom::SubPath const &a, Geom::SubPath const &b, double abstol, double reltol) {
+double L2(Geom::Path const &a, Geom::Path const &b, double abstol, double reltol) {
 #ifdef HAVE_GSL
     path_metric_data pmd;
     pmd.a = &a;

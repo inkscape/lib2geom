@@ -8,26 +8,26 @@
  * extreme points . dir.
  */
 
-std::vector<Geom::SubPath::Location>
-find_vector_extreme_points(Geom::SubPath const & p, Geom::Point dir);
+std::vector<Geom::Path::Location>
+find_vector_extreme_points(Geom::Path const & p, Geom::Point dir);
 
-std::vector<Geom::SubPath::Location>
-find_inflection_points(Geom::SubPath const & p);
-std::vector<Geom::SubPath::Location>
-find_flat_points(Geom::SubPath const & p);
-std::vector<Geom::SubPath::Location>
-find_maximal_curvature_points(Geom::SubPath const & p);
+std::vector<Geom::Path::Location>
+find_inflection_points(Geom::Path const & p);
+std::vector<Geom::Path::Location>
+find_flat_points(Geom::Path const & p);
+std::vector<Geom::Path::Location>
+find_maximal_curvature_points(Geom::Path const & p);
 
-Geom::SubPath::Location dim_extreme_points(Geom::SubPath::Elem e);
+Geom::Path::Location dim_extreme_points(Geom::Path::Elem e);
 
 /*template <class F>
 template <class F>
-std::vector<Geom::SubPath::Location> find_points(Geom::SubPath const & p, F f) {
-    std::vector<Geom::SubPath::Location> result;
+std::vector<Geom::Path::Location> find_points(Geom::Path const & p, F f) {
+    std::vector<Geom::Path::Location> result;
 
-    for(Geom::SubPath::const_iterator iter(p.begin()), end(p.end()); 
+    for(Geom::Path::const_iterator iter(p.begin()), end(p.end()); 
         iter != end; ++iter) {
-        std::vector<Geom::SubPath::Location> v = f(*iter);
+        std::vector<Geom::Path::Location> v = f(*iter);
         
         result.insert(result.end(), v.begin(), v.end());
     }

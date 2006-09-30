@@ -5,7 +5,7 @@
 
 
 static Poly
-quadratic_bezier_poly(Geom::SubPath::Elem const & b, int dim) {
+quadratic_bezier_poly(Geom::Path::Elem const & b, int dim) {
     Poly result;
     double c[6] = {1, 
                     -2, 2, 
@@ -26,7 +26,7 @@ quadratic_bezier_poly(Geom::SubPath::Elem const & b, int dim) {
 
 
 static Poly
-cubic_bezier_poly(Geom::SubPath::Elem const & b, int dim) {
+cubic_bezier_poly(Geom::Path::Elem const & b, int dim) {
     Poly result;
     double c[10] = {1, 
                     -3, 3, 
@@ -46,7 +46,7 @@ cubic_bezier_poly(Geom::SubPath::Elem const & b, int dim) {
     return result;
 }
 
-Poly get_parametric_poly(Geom::SubPath::Elem const & b, int dim) {
+Poly get_parametric_poly(Geom::Path::Elem const & b, int dim) {
     Poly result;
     switch(b.op) {
     case Geom::lineto:
@@ -66,7 +66,7 @@ Poly get_parametric_poly(Geom::SubPath::Elem const & b, int dim) {
 namespace Geom{
 
 
-Maybe<Rect> SubPath::bbox() const {
+Maybe<Rect> Path::bbox() const {
 // needs work for other elements.
     if(handles.size() > 0) {
         Rect r(handles[0], handles[0]);
@@ -85,7 +85,7 @@ Maybe<Rect> SubPath::bbox() const {
  * note that this operation modifies the path.
  */
 
-void SubPath::push_back(Elem e) {
+void Path::push_back(Elem e) {
     assert(e.begin() != e.end());
     if(!handles.empty() && *e.begin() != handles.back()) {
         handles.push_back(*e.begin());
@@ -95,12 +95,12 @@ void SubPath::push_back(Elem e) {
 }
 
 
-/*** SubPath::insert
+/*** Path::insert
  * copy elements from [s,e) to before before (as per vector.insert)
  * note that this operation modifies the path.
  * 
  */
-void SubPath::insert(ConstIter before, ConstIter s, ConstIter e) {
+void Path::insert(ConstIter before, ConstIter s, ConstIter e) {
     assert(0);
 /*
     if((*s).begin()[0] != ) {
@@ -112,13 +112,13 @@ void SubPath::insert(ConstIter before, ConstIter s, ConstIter e) {
 }
 
 
-/*SubPath SubPath::insert_node(Location at) {
-    SubPath p;
+/*Path Path::insert_node(Location at) {
+    Path p;
     
     p.insert(p.end(), begin(), at.it); // begining of path
     }*/
 
-Geom::Point Geom::SubPath::Elem::point_at(double t) const {
+Geom::Point Geom::Path::Elem::point_at(double t) const {
     switch(op) {
     case Geom::lineto:
         return Lerp(t, s[0], s[1]);
@@ -145,7 +145,7 @@ Geom::Point Geom::SubPath::Elem::point_at(double t) const {
 }
 
 void
-Geom::SubPath::Elem::point_tangent_acc_at(double t, 
+Geom::Path::Elem::point_tangent_acc_at(double t, 
                                            Geom::Point &pos, 
                                            Geom::Point &tgt,
                                            Geom::Point &acc) const {
@@ -171,7 +171,7 @@ Geom::SubPath::Elem::point_tangent_acc_at(double t,
 }
 
 
-Point SubPath::point_at(Location at) const {
+Point Path::point_at(Location at) const {
     ptrdiff_t offset = at.it - begin();
     
     assert(offset >= 0);
@@ -179,7 +179,7 @@ Point SubPath::point_at(Location at) const {
     return (*at.it).point_at(at.t);
 }
 
-void SubPath::point_tangent_acc_at(Location at, Point &pos, Point & tgt, Point &acc) const {
+void Path::point_tangent_acc_at(Location at, Point &pos, Point & tgt, Point &acc) const {
     ptrdiff_t offset = at.it - begin();
     
     assert(offset >= 0);
@@ -189,7 +189,7 @@ void SubPath::point_tangent_acc_at(Location at, Point &pos, Point & tgt, Point &
 
 #include "nearestpoint.cpp"
 
-bool SubPath::Elem::nearest_location(Point p, double& dist, double& tt) const {
+bool Path::Elem::nearest_location(Point p, double& dist, double& tt) const {
     double new_dist, new_t;
     switch(op) {
     // For the rest we can assume that start has already been tried.
@@ -249,7 +249,7 @@ bool SubPath::Elem::nearest_location(Point p, double& dist, double& tt) const {
     return false;
 }
 
-SubPath::Location SubPath::nearest_location(Point p, double &dist) const {
+Path::Location Path::nearest_location(Point p, double &dist) const {
     Location pl(begin(), 0);
     dist = INFINITY;
     double t = 0;
@@ -266,8 +266,8 @@ SubPath::Location SubPath::nearest_location(Point p, double &dist) const {
     return pl;
 }
 
-SubPath SubPath::subpath(ConstIter begin, ConstIter end) {
-    SubPath result;
+Path Path::subpath(ConstIter begin, ConstIter end) {
+    Path result;
     for(ConstIter iter(begin); iter != end; ++iter) {
         result.push_back(*iter);
     }
@@ -276,7 +276,7 @@ SubPath SubPath::subpath(ConstIter begin, ConstIter end) {
 
 
 // Perhaps this hash is not strong enough
-SubPath::operator HashCookie() {
+Path::operator HashCookie() {
     HashCookie hc;
     hc.value = (unsigned long)(&(*cmd.begin()));
     hc.value *= 0x101;
@@ -289,14 +289,14 @@ SubPath::operator HashCookie() {
 }
 
 unsigned 
-SubPath::total_segments() const {
+Path::total_segments() const {
     return cmd.size();
 }
 
 unsigned
-Path::total_segments() const {
+Arrangement::total_segments() const {
     unsigned segs = 0;
-    for(Path::const_iterator it = begin(); it != end(); it++) {
+    for(Arrangement::const_iterator it = begin(); it != end(); it++) {
         segs += (*it).total_segments();
     }
     return segs;

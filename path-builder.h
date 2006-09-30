@@ -5,13 +5,13 @@
 
 namespace Geom {
 
-class PathBuilder {
+class ArrangementBuilder {
 public:
-    PathBuilder() : _current_subpath(NULL) {}
+    ArrangementBuilder() : _current_subpath(NULL) {}
 
     void start_subpath_rel(Point const &p0) { start_subpath(p0 + _current_point); }
     void start_subpath(Point const &p0) {
-        _path._subpaths.push_back(SubPath());
+        _path._subpaths.push_back(Path());
         _current_subpath = &_path._subpaths.back();
         _current_subpath->closed = false;
         _current_subpath->handles.push_back(p0);
@@ -111,11 +111,11 @@ public:
         }
     }
 
-    Path const &peek() const { return _path; }
+    Arrangement const &peek() const { return _path; }
 
 private:
-    Path _path;
-    SubPath *_current_subpath;
+    Arrangement _path;
+    Path *_current_subpath;
     Point _current_point;
     Point _initial_point;
 };

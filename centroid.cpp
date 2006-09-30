@@ -48,11 +48,11 @@ int centroid(std::vector<Point> p, Point& centroid, double &area) {
     return 2;
 }
 
-int centroid(SubPath const &p, Point& centroid, double &area) {
+int centroid(Path const &p, Point& centroid, double &area) {
     Point centroid_tmp(0,0);
     double atmp = 0;
-    for(SubPath::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
-        SubPath::Elem elm = *iter;
+    for(Path::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
+        Path::Elem elm = *iter;
         multidim_sbasis<2> B = elem_to_sbasis(elm);
         multidim_sbasis<2> dB = rot90(derivative(B));
         SBasis curl = dot(B, dB);

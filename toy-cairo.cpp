@@ -38,18 +38,18 @@ using std::vector;
 static GtkWidget *canvas;
 static GdkGC *dash_gc;
 static GdkGC *plain_gc;
-Geom::SubPath display_path;
-Geom::SubPath original_curve;
+Geom::Path display_path;
+Geom::Path original_curve;
 
 static Geom::Point old_handle_pos;
 static Geom::Point old_mouse_point;
 
 #include "centroid.h"
 
-Geom::SubPath::Location param(Geom::SubPath const & p, double t) {
+Geom::Path::Location param(Geom::Path const & p, double t) {
     double T = t*(p.size()-1);
     //std::cout << T << ", " <<  T-int(T) << std::endl;
-    return Geom::SubPath::Location(p.indexed_elem(int(T)), T - int(T));
+    return Geom::Path::Location(p.indexed_elem(int(T)), T - int(T));
 }
 
 void draw_convex_hull(cairo_t *cr, Geom::ConvexHull const & ch) {
@@ -60,7 +60,7 @@ void draw_convex_hull(cairo_t *cr, Geom::ConvexHull const & ch) {
     cairo_stroke(cr);
 }
 
-void draw_convex_cover(cairo_t *cr, Geom::SubPath const & p) {
+void draw_convex_cover(cairo_t *cr, Geom::Path const & p) {
     Geom::ConvexCover cc(p);
     
     for(int i = 0; i < cc.cc.size(); i++) {
@@ -68,10 +68,10 @@ void draw_convex_cover(cairo_t *cr, Geom::SubPath const & p) {
     }
 }
 
-void draw_evolute(cairo_t *cr, Geom::SubPath const & p) {
+void draw_evolute(cairo_t *cr, Geom::Path const & p) {
     int i = 0;
     for(double t = 0; t <= 1.0; t+= 1./1024) {
-        Geom::SubPath::Location pl = param(p, t);
+        Geom::Path::Location pl = param(p, t);
         
         Geom::Point pos, tgt, acc;
         display_path.point_tangent_acc_at (pl, pos, tgt, acc);
@@ -92,12 +92,12 @@ void draw_evolute(cairo_t *cr, Geom::SubPath const & p) {
     }
 }
 
-void draw_involute(cairo_t *cr, Geom::SubPath const & p) {
+void draw_involute(cairo_t *cr, Geom::Path const & p) {
 #ifdef HAVE_GSL
     int i = 0;
     double sl = arc_length_integrating(p, 1e-3);
     for(double s = 0; s < sl; s+= 5.0) {
-        Geom::SubPath::Location pl = 
+        Geom::Path::Location pl = 
             natural_parameterisation(display_path, s, 1e-3);
         
         Geom::Point pos, tgt, acc;
@@ -112,11 +112,11 @@ void draw_involute(cairo_t *cr, Geom::SubPath const & p) {
 #endif
 }
 
-void draw_stroke(cairo_t *cr, Geom::SubPath const & p) {
+void draw_stroke(cairo_t *cr, Geom::Path const & p) {
 #ifdef HAVE_GSL
     int i = 0;
     for(double t = 0; t <= 1.0; t+= 1./1024) {
-        Geom::SubPath::Location pl = param(p, t);
+        Geom::Path::Location pl = param(p, t);
         
         Geom::Point pos, tgt, acc;
         display_path.point_tangent_acc_at (pl, pos, tgt, acc);
@@ -177,7 +177,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
         cairo_set_source_rgba (cr, 0.5, 0, 0.5, 0.8);
         double sl = arc_length_integrating(display_path, 1e-3);
         for(double s = 0; s < sl; s+= 50.0) {
-            Geom::SubPath::Location pl = 
+            Geom::Path::Location pl = 
                 natural_parameterisation(display_path, s, 1e-3);
             
             draw_circ(cr, display_path.point_at(pl));
@@ -185,7 +185,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
         cairo_restore(cr);
     }
 #endif
-    Geom::SubPath::HashCookie hash_cookie = display_path;
+    Geom::Path::HashCookie hash_cookie = display_path;
     {
         draw_line_seg(cr, Geom::Point(10,10), gradient_vector);
         draw_handle(cr, gradient_vector);
@@ -224,9 +224,9 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     cairo_save(cr);
     cairo_set_source_rgba (cr, 0., 0., 0.5, 0.8);
 
-    //Geom::SubPath::Location pl = 
+    //Geom::Path::Location pl = 
     //    display_path.nearest_location(old_mouse_point, dist);
-    Geom::SubPath::Location pl = 
+    Geom::Path::Location pl = 
         find_nearest_location(display_path, old_mouse_point);
     assert(hash_cookie == display_path);
     {
@@ -280,12 +280,12 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
       cairo_save(cr);
       cairo_set_source_rgba (cr, 0.25, 0.25, 0., 0.8);
 
-    Geom::SubPath pth = display_path.subpath(display_path.indexed_elem(2), display_path.end());
+    Geom::Path pth = display_path.subpath(display_path.indexed_elem(2), display_path.end());
     pth = pth*Geom::translate(Geom::Point(30, 30));
     draw_path(cr, pth);
     Bezier a, b;
     const int curve_seg = 3;
-    Geom::SubPath::Elem ai(*display_path.indexed_elem(curve_seg)), bi(*pth.indexed_elem(curve_seg));
+    Geom::Path::Elem ai(*display_path.indexed_elem(curve_seg)), bi(*pth.indexed_elem(curve_seg));
     
     for(int i = 0; i < 4; i++) {
         a.p[i] = ai[i];
@@ -297,10 +297,10 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     cairo_save(cr);
     cairo_set_source_rgba (cr, 0, 0.5, 0., 0.8);
     for(int i = 0; i < ts.size(); i++) {
-        Geom::SubPath::Location pl(display_path.indexed_elem(curve_seg), ts[i].first);
+        Geom::Path::Location pl(display_path.indexed_elem(curve_seg), ts[i].first);
         
         draw_handle(cr, display_path.point_at(pl));
-        Geom::SubPath::Location p2(pth.indexed_elem(curve_seg), ts[i].second);
+        Geom::Path::Location p2(pth.indexed_elem(curve_seg), ts[i].second);
         
         draw_circ(cr, display_path.point_at(p2));
     }
@@ -308,7 +308,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     */
     
     if(0) {
-        vector<Geom::SubPath::Location> pts = 
+        vector<Geom::Path::Location> pts = 
             find_vector_extreme_points(display_path, gradient_vector-Geom::Point(10,10));
         
         for(int i = 0; i < pts.size(); i++) {
@@ -325,7 +325,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
         cairo_save(cr);
         cairo_set_source_rgba (cr, 0., 0.25, 0.25, 0.8);
         assert(hash_cookie == display_path);
-        vector<Geom::SubPath::Location> pts = 
+        vector<Geom::Path::Location> pts = 
             find_maximal_curvature_points(display_path);
         
         assert(hash_cookie == display_path);

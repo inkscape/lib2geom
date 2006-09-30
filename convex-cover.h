@@ -112,10 +112,10 @@ template <class T> ConvexHull operator*(ConvexHull const &p, T const &m) {
 
 class ConvexCover{
 public:
-    SubPath const* path;
+    Path const* path;
     std::vector<ConvexHull> cc;
     
-    ConvexCover(SubPath const &sp);
+    ConvexCover(Path const &sp);
 };
 
 };

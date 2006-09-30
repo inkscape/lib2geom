@@ -25,7 +25,7 @@ unsigned total_pieces_sub;
 unsigned total_pieces_inc;
 
 void draw_cb(cairo_t *cr, multidim_sbasis<2> const &B) {
-    Geom::PathBuilder pb;
+    Geom::ArrangementBuilder pb;
     subpath_from_sbasis(pb, B, 0.1);
     cairo_path(cr, pb.peek());
 }

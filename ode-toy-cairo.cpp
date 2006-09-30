@@ -29,7 +29,7 @@ using std::vector;
 static GtkWidget *canvas;
 static GdkGC *dash_gc;
 static GdkGC *plain_gc;
-Geom::SubPath display_path;
+Geom::Path display_path;
 
 static Geom::Point old_handle_pos;
 static Geom::Point old_mouse_point;
@@ -67,7 +67,7 @@ void draw_ray(cairo_t *cr, Geom::Point h, Geom::Point dir) {
     draw_line_seg(cr, h, h+dir);
 }
 
-void draw_path(cairo_t *cr, Geom::SubPath p) {
+void draw_path(cairo_t *cr, Geom::Path p) {
     if(p.empty()) return;
     path_to_polyline pl(p, 1);
     
@@ -180,7 +180,7 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     
     Geom::Point dir(1,1);
     /*
-    vector<Geom::SubPath::SubPathLocation> pts = find_vector_extreme_points(display_path, dir);
+    vector<Geom::Path::PathLocation> pts = find_vector_extreme_points(display_path, dir);
     
     for(int i = 0; i < pts.size(); i++) {
         draw_circ(cr, display_path.point_at(pts[i]));

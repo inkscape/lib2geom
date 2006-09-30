@@ -5,8 +5,8 @@
  * extreme points . dir.
  */
 
-Geom::SubPath::Location
-find_nearest_location(Geom::SubPath const & p, Geom::Point pt);
+Geom::Path::Location
+find_nearest_location(Geom::Path const & p, Geom::Point pt);
 
 /*
   Local Variables:

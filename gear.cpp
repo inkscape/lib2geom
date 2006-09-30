@@ -24,7 +24,7 @@ using std::string;
 using std::vector;
 
 void draw_md_sb(cairo_t *cr, multidim_sbasis<2> const &B) {
-    Geom::PathBuilder pb;
+    Geom::ArrangementBuilder pb;
     subpath_from_sbasis(pb, B, 0.1);
     cairo_path(cr, pb.peek());
 }
@@ -68,7 +68,7 @@ public:
     
     int number_of_teeth() {return _number_of_teeth;}
     
-    Geom::Path path();
+    Geom::Arrangement path();
     Gear spawn(int N, double a);
     
     Gear(int n, double m, double phi) {
@@ -120,8 +120,8 @@ private:
         return (sqrt(R*R - base_radius()*base_radius())/base_radius()) - acos(base_radius()/R);
     }
 };
-Geom::Path Gear::path() {
-    Geom::PathBuilder pb;
+Geom::Arrangement Gear::path() {
+    Geom::ArrangementBuilder pb;
     
     // angle covered by a full tooth and fillet
     double tooth_rotation = 2.0 * tooth_thickness_angle();
@@ -240,7 +240,7 @@ class GearToy: public Toy {
         cairo_stroke(cr);
         
         //draw gear
-        Geom::Path p = gear.path();
+        Geom::Arrangement p = gear.path();
         cairo_path(cr, p);
         cairo_set_source_rgba (cr, 0., 0., 0., 0.5);
         cairo_set_line_width (cr, 2.0);
@@ -249,21 +249,21 @@ class GearToy: public Toy {
         //std::cout << p << std::endl;
         
         Gear gear2 = gear.spawn(5, -2.0 * M_PI / 8.0);
-        Geom::Path p2 = gear2.path();
+        Geom::Arrangement p2 = gear2.path();
         cairo_path(cr, p2);
         cairo_set_source_rgba (cr, 0., 0., 0., 0.5);
         cairo_set_line_width (cr, 2.0);
         cairo_stroke(cr);
         
         Gear gear3 = gear2.spawn(8, 0.0 * M_PI / 8.0);
-        Geom::Path p3 = gear3.path();
+        Geom::Arrangement p3 = gear3.path();
         cairo_path(cr, p3);
         cairo_set_source_rgba (cr, 0., 0., 0., 0.5);
         cairo_set_line_width (cr, 2.0);
         cairo_stroke(cr);
         
         Gear gear4 = gear.spawn(6, 3.0 * M_PI / 4.0);
-        Geom::Path p4 = gear4.path();
+        Geom::Arrangement p4 = gear4.path();
         cairo_path(cr, p4);
         cairo_set_source_rgba (cr, 0., 0., 0., 0.5);
         cairo_set_line_width (cr, 2.0);

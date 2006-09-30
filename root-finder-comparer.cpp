@@ -207,9 +207,9 @@ public:
         std::copy(solutions.begin(), solutions.end(), std::ostream_iterator<double >(*notify, ","));
             
         multidim_sbasis<2> B = bezier_to_sbasis<2, 5>(handles.begin());
-        Geom::PathBuilder pb;
+        Geom::ArrangementBuilder pb;
         subpath_from_sbasis(pb, B, 0.1);
-        Geom::Path p = pb.peek();//*Geom::translate(1,1);
+        Geom::Arrangement p = pb.peek();//*Geom::translate(1,1);
         cairo_path(cr, p);
         
         B[0] = BezOrd(width/4, 3*width/4);

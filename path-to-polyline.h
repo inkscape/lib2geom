@@ -8,17 +8,17 @@
 
 class path_to_polyline{
 public:
-    Geom::PathBuilder pb;
+    Geom::ArrangementBuilder pb;
     double tol;
     
-    path_to_polyline(const Geom::SubPath &p, double tol = 1.0);
+    path_to_polyline(const Geom::Path &p, double tol = 1.0);
     
-    void line_to_polyline(Geom::SubPath::Elem e);
+    void line_to_polyline(Geom::Path::Elem e);
     
-    void quad_to_polyline(Geom::SubPath::Elem e);
-    void cubic_to_polyline(Geom::SubPath::Elem e);
+    void quad_to_polyline(Geom::Path::Elem e);
+    void cubic_to_polyline(Geom::Path::Elem e);
     
-    operator Geom::Path();
+    operator Geom::Arrangement();
 };
 /*
   Local Variables:

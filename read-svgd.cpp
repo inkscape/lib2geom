@@ -5,15 +5,15 @@ using std::FILE;
 using std::fgetc;
 using std::feof;
 
-char const SubPathOpNames[] = {'L', 'Q', 'C', 'A'};
-void write_svgd(FILE* f, Geom::SubPath const &p) {
+char const PathOpNames[] = {'L', 'Q', 'C', 'A'};
+void write_svgd(FILE* f, Geom::Path const &p) {
     //printf("size %d %d \n",  p.cmd.size(),  p.handles.size());
     if(f == NULL)
         f = stderr;
     fprintf(f, "M %g,%g ", p.initial_point()[0], p.initial_point()[1]);
     
-    for(Geom::SubPath::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
-        fprintf(f, "%c ", SubPathOpNames[iter.cmd()]);
+    for(Geom::Path::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
+        fprintf(f, "%c ", PathOpNames[iter.cmd()]);
         for(std::vector<Geom::Point>::const_iterator h(iter.begin()), e(iter.end());
             h != e; ++h) {
             Geom::Point pt(*h);
@@ -24,17 +24,17 @@ void write_svgd(FILE* f, Geom::SubPath const &p) {
         fprintf(f, "Z ");
 }
 
-void write_svgd(FILE* f, Geom::Path const &p) {
-    for(Geom::Path::const_iterator it = p.begin(); it != p.end(); it++) {
+void write_svgd(FILE* f, Geom::Arrangement const &p) {
+    for(Geom::Arrangement::const_iterator it = p.begin(); it != p.end(); it++) {
         write_svgd(f, *it);
     }
 }
 
-std::ostream &operator<< (std::ostream &out_file, const Geom::SubPath & p) {
+std::ostream &operator<< (std::ostream &out_file, const Geom::Path & p) {
     out_file << "M " << p.initial_point()[0] << "," << p.initial_point()[1] << " ";
     
-    for(Geom::SubPath::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
-        out_file << SubPathOpNames[iter.cmd()] << " ";
+    for(Geom::Path::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
+        out_file << PathOpNames[iter.cmd()] << " ";
         for(std::vector<Geom::Point>::const_iterator h(iter.begin()), e(iter.end());
             h != e; ++h) {
             Geom::Point pt(*h);
@@ -46,8 +46,8 @@ std::ostream &operator<< (std::ostream &out_file, const Geom::SubPath & p) {
     return out_file;
 }
 
-std::ostream &operator<< (std::ostream &out_file, const Geom::Path & p) {
-    for(Geom::Path::const_iterator it = p.begin(); it != p.end(); it++) {
+std::ostream &operator<< (std::ostream &out_file, const Geom::Arrangement & p) {
+    for(Geom::Arrangement::const_iterator it = p.begin(); it != p.end(); it++) {
         out_file << *it;
     }
     return out_file;
@@ -60,10 +60,10 @@ Geom::Point point(double d1, double d2) {
     return p;
 }
 
-Geom::Path read_svgd(FILE* f) {
+Geom::Arrangement read_svgd(FILE* f) {
     assert(f);
 
-    Geom::PathBuilder builder;
+    Geom::ArrangementBuilder builder;
 
     char mode = 0;
 

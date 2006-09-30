@@ -5,7 +5,7 @@
 using namespace Geom;
 
 
-double cubic_length_subdividing(Geom::SubPath::Elem const & e, double tol) {
+double cubic_length_subdividing(Geom::Path::Elem const & e, double tol) {
     Geom::Point v[3];
     for(int i = 0; i < 3; i++)
         v[i] = e[i+1] - e[0];
@@ -26,20 +26,20 @@ double cubic_length_subdividing(Geom::SubPath::Elem const & e, double tol) {
         Geom::Point midmidmid = Lerp(0.5, midmid[0], midmid[1]);
         {
             Geom::Point curve[4] = {e[0], mid[0], midmid[0], midmidmid};
-            Geom::SubPath::Elem e0(Geom::cubicto, std::vector<Geom::Point>::const_iterator(curve), std::vector<Geom::Point>::const_iterator(curve) + 4);
+            Geom::Path::Elem e0(Geom::cubicto, std::vector<Geom::Point>::const_iterator(curve), std::vector<Geom::Point>::const_iterator(curve) + 4);
             result = cubic_length_subdividing(e0, tol);
         } {
             Geom::Point curve[4] = {midmidmid, midmid[1], mid[2], e[3]};
-            Geom::SubPath::Elem e1(Geom::cubicto, std::vector<Geom::Point>::const_iterator(curve), std::vector<Geom::Point>::const_iterator(curve) + 4);
+            Geom::Path::Elem e1(Geom::cubicto, std::vector<Geom::Point>::const_iterator(curve), std::vector<Geom::Point>::const_iterator(curve) + 4);
             return result + cubic_length_subdividing(e1, tol);
         }
     }
 }
 
-double arc_length_subdividing(Geom::SubPath const & p, double tol) {
+double arc_length_subdividing(Geom::Path const & p, double tol) {
     double result = 0;
 
-    for(Geom::SubPath::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
+    for(Geom::Path::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
         switch(iter.cmd()) {
         case Geom::lineto:
             result += L2((*iter).first() - (*iter).last());
@@ -63,7 +63,7 @@ static double poly_length_integrating(double t, void* param) {
     return hypot(pc[0].eval(t), pc[1].eval(t));
 }
 
-void arc_length_integrating(Geom::SubPath::Elem pe, double t, double tol, double &result, double &abs_error) {
+void arc_length_integrating(Geom::Path::Elem pe, double t, double tol, double &result, double &abs_error) {
     switch(pe.op) {
     case Geom::lineto:
     {
@@ -98,10 +98,10 @@ void arc_length_integrating(Geom::SubPath::Elem pe, double t, double tol, double
     }
 }
 
-double arc_length_integrating(Geom::SubPath const & p, double tol) {
+double arc_length_integrating(Geom::Path const & p, double tol) {
     double result = 0, abserr = 0;
 
-    for(Geom::SubPath::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
+    for(Geom::Path::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
         arc_length_integrating(*iter, 1.0, tol, result, abserr);
     }
     //printf("got %g with err %g\n", result, abserr);
@@ -109,14 +109,14 @@ double arc_length_integrating(Geom::SubPath const & p, double tol) {
     return result;
 }
 
-double arc_length_integrating(Geom::SubPath const & p, Geom::SubPath::Location const & pl, double tol) {
+double arc_length_integrating(Geom::Path const & p, Geom::Path::Location const & pl, double tol) {
     double result = 0, abserr = 0;
     ptrdiff_t offset = pl.it - p.begin();
     
     assert(offset >= 0);
     assert(offset < p.size());
     
-    for(Geom::SubPath::const_iterator iter(p.begin()), end(p.end()); 
+    for(Geom::Path::const_iterator iter(p.begin()), end(p.end()); 
         (iter != pl.it); ++iter) {
         arc_length_integrating(*iter, 1.0, tol, result, abserr);
     }
@@ -136,7 +136,7 @@ double arc_length_integrating(Geom::SubPath const & p, Geom::SubPath::Location c
      
 struct arc_length_params
 {
-    Geom::SubPath::Elem pe;
+    Geom::Path::Elem pe;
     double s,tol, result, abs_error;
     double left, right;
 };
@@ -246,14 +246,14 @@ double polish (double t, arc_length_params &alp) {
 }
 
 
-Geom::SubPath::Location natural_parameterisation(Geom::SubPath const & p, double s, double tol) {
+Geom::Path::Location natural_parameterisation(Geom::Path const & p, double s, double tol) {
     double left = 0, right=0, abserr = 0;
     if(s <= 0)
-        return Geom::SubPath::Location(p.begin(), 0);
+        return Geom::Path::Location(p.begin(), 0);
     
     // bracket first
-    Geom::SubPath::const_iterator iter(p.begin());
-    for(Geom::SubPath::const_iterator end(p.end()); iter != end; ++iter) {
+    Geom::Path::const_iterator iter(p.begin());
+    for(Geom::Path::const_iterator end(p.end()); iter != end; ++iter) {
         right = left;
         arc_length_integrating(*iter, 1.0, tol, right, abserr);
         if(right > s) {
@@ -267,14 +267,14 @@ Geom::SubPath::Location natural_parameterisation(Geom::SubPath const & p, double
             //t = polish(t, alp);
             t = polish_brent(t, alp);
             
-            return Geom::SubPath::Location(iter, t);
+            return Geom::Path::Location(iter, t);
             
         }
         left = right;
     }
     iter = p.end();
     --iter;
-    return Geom::SubPath::Location(iter, 1);
+    return Geom::Path::Location(iter, 1);
 }
 
 #endif

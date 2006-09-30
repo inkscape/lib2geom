@@ -73,7 +73,7 @@ sbasis_to_bezier(multidim_sbasis<2> const &B, unsigned qq) {
 //std::vector<Geom::Point>
 // mutating
 void
-subpath_from_sbasis(Geom::PathBuilder &pb, multidim_sbasis<2> const &B, double tol, bool initial) {
+subpath_from_sbasis(Geom::ArrangementBuilder &pb, multidim_sbasis<2> const &B, double tol, bool initial) {
     assert(B.is_finite());
     if(B.tail_error(2) < tol || B.size() == 2) { // nearly cubic enough
         if(B.size() == 1) {
@@ -105,7 +105,7 @@ curve at $a$.  We keep biting off pieces until there is no more curve left.
 * tolerance tol $= e*A^k$ and invert getting $A = e^{1/k}$ and $a = 1/2 - \sqrt{1/4 - A}$
 */
 void
-subpath_from_sbasis_incremental(Geom::PathBuilder &pb, multidim_sbasis<2> B, double tol, bool initial) {
+subpath_from_sbasis_incremental(Geom::ArrangementBuilder &pb, multidim_sbasis<2> B, double tol, bool initial) {
     const unsigned k = 2; // cubic bezier
     double te = B.tail_error(k);
     assert(B[0].is_finite());

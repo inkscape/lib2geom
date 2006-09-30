@@ -25,10 +25,10 @@ using std::string;
 using std::vector;
 
 void draw_md_sb(cairo_t *cr, multidim_sbasis<2> const &B) {
-    Geom::PathBuilder pb;
+    Geom::ArrangementBuilder pb;
     subpath_from_sbasis(pb, B, 100);
     cairo_path(cr, pb.peek());
-    Geom::PathBuilder pb2;
+    Geom::ArrangementBuilder pb2;
     subpath_from_sbasis_incremental(pb2, B, 10);
     cairo_path(cr, pb2.peek());
 }
@@ -116,9 +116,9 @@ class Conic4: public Toy {
         cairo_set_line_width (cr, 1);
         cairo_stroke(cr);
 
-        Geom::PathBuilder pb;
+        Geom::ArrangementBuilder pb;
         subpath_from_sbasis(pb, B, 1);
-        Geom::Path pth = pb.peek();
+        Geom::Arrangement pth = pb.peek();
         *notify << pth;
     }
 };

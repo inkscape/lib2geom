@@ -1,6 +1,6 @@
 #include "path.h"
 
-double L2(Geom::SubPath const &a, Geom::SubPath const &b, double abstol, double reltol);
+double L2(Geom::Path const &a, Geom::Path const &b, double abstol, double reltol);
 
 /*
   Local Variables:

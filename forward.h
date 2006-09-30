@@ -20,7 +20,7 @@ class translate;
 }
 
 class NArtBpath;
-struct NRBPath;
+struct NRBArrangement;
 struct NRPixBlock;
 struct NRMatrix;
 struct NRPoint;

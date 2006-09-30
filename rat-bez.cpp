@@ -32,9 +32,9 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
     cairo_stroke(cr);
     
     multidim_sbasis<2> Bz = bezier_to_sbasis<2, 3>(handles.begin());
-        Geom::PathBuilder pb;
+        Geom::ArrangementBuilder pb;
         subpath_from_sbasis(pb, Bz, 0.1);
-        Geom::Path p = pb.peek();
+        Geom::Arrangement p = pb.peek();
         cairo_path(cr, p);
     cairo_stroke(cr);
         
@@ -73,9 +73,9 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
 	    Bu[dim] = divide(Bp[dim], Bp[2], 1);
         }
         
-        Geom::PathBuilder pb;
+        Geom::ArrangementBuilder pb;
         subpath_from_sbasis(pb, Bu, 0.1);
-        Geom::Path p = pb.peek();
+        Geom::Arrangement p = pb.peek();
         cairo_path(cr, p);
     }
 }

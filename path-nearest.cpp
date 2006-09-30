@@ -12,14 +12,14 @@ const double Geom_EPSILON = 1e-18; // taken from libnr.  Probably sqrt(MIN_FLOAT
 
 struct element_point_distance{
     double d; // eucl distance squared
-    SubPath::const_iterator e;
+    Path::const_iterator e;
     ConvexHull ch;
-    element_point_distance(SubPath::const_iterator e,
+    element_point_distance(Path::const_iterator e,
 			   Point p) : e(e), ch((*e).begin(), (*e).end()) {
         if(ch.contains_point(p)) {
             d = 0;
         } else {
-            SubPath::Elem::const_iterator it(e.begin());
+            Path::Elem::const_iterator it(e.begin());
             {
                 Point delta = *it-p;
                 d = dot(delta, delta);
@@ -40,20 +40,20 @@ struct element_point_distance{
 /*** find_nearest_location
  * this code assumes that the path is contained within the convex hull of the handles.
  */
-Geom::SubPath::Location find_nearest_location(Geom::SubPath const & p, Geom::Point pt) {
+Geom::Path::Location find_nearest_location(Geom::Path const & p, Geom::Point pt) {
     std::priority_queue<element_point_distance> pq;
     
-    for(Geom::SubPath::const_iterator it(p.begin()), end(p.end()); it != end; ++it) {
+    for(Geom::Path::const_iterator it(p.begin()), end(p.end()); it != end; ++it) {
         pq.push(element_point_distance(it, pt));
     }
     double best_guess = INFINITY;
-    SubPath::Location best(p.begin(), 0);
+    Path::Location best(p.begin(), 0);
     while(!pq.empty()) {
         element_point_distance epd = pq.top();
         
         if(epd.d > best_guess)
             break; // early terminate
-        SubPath::Elem elm = *epd.e;
+        Path::Elem elm = *epd.e;
         multidim_sbasis<2> B = elem_to_sbasis(*epd.e) - pt;
         SBasis Bdist = dot(B, B);
         for(int i = 0; i <=10; i++) {

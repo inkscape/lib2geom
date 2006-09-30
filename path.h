@@ -23,30 +23,30 @@
 
 namespace Geom{
 
-enum SubPathOp{
+enum PathOp{
     lineto,
     quadto,
     cubicto,
     ellipto
 };
 
-unsigned const SubPathOpHandles[] = {1, 2, 3, 4};
+unsigned const PathOpHandles[] = {1, 2, 3, 4};
 
-class SubPath{
+class Path{
     bool closed; // should this shape be closed (join endpoints with a line)
     std::vector<Point> handles;
-    std::vector<SubPathOp> cmd;
+    std::vector<PathOp> cmd;
 
 public:
     bool is_closed() const { return closed; }
     void set_closed(bool value) { closed = value; }
 	
     std::vector<Point>const & get_handles() const { return handles; }
-    std::vector<SubPathOp>const & get_cmd() const { return cmd; }
+    std::vector<PathOp>const & get_cmd() const { return cmd; }
 	
     class Elem{
     public:
-        SubPathOp op;
+        PathOp op;
         typedef std::vector<Point>::const_iterator const_iterator;
         const_iterator s, e;
         const_iterator begin() const {return s;}
@@ -56,7 +56,7 @@ public:
         size_t size() { return e - s; }
 
         Elem() {}
-        Elem(SubPathOp op,
+        Elem(PathOp op,
                  const_iterator s, const_iterator e) : op(op), s(s), e(e) {
         }
         
@@ -71,20 +71,20 @@ public:
 
     class ConstIter {
     public:
-        std::vector<SubPathOp>::const_iterator c;
+        std::vector<PathOp>::const_iterator c;
         std::vector<Point>::const_iterator h;
         
         ConstIter() {}
-        ConstIter(std::vector<SubPathOp>::const_iterator c,
+        ConstIter(std::vector<PathOp>::const_iterator c,
                  std::vector<Point>::const_iterator h) :
             c(c), h(h) {}
-        void operator++() {      h += SubPathOpHandles[*c]; c++; }
-        void operator--() { c--; h -= SubPathOpHandles[*c]; }
-        Elem operator*() const {assert(*c >= 0); assert(*c <= ellipto);  return Elem(*c, h - 1, h + SubPathOpHandles[*c]);}
+        void operator++() {      h += PathOpHandles[*c]; c++; }
+        void operator--() { c--; h -= PathOpHandles[*c]; }
+        Elem operator*() const {assert(*c >= 0); assert(*c <= ellipto);  return Elem(*c, h - 1, h + PathOpHandles[*c]);}
 
         std::vector<Point>::const_iterator begin() const {return h;}
-        std::vector<Point>::const_iterator end() const {return h + SubPathOpHandles[*c];}
-        SubPathOp cmd() { return *c; }
+        std::vector<Point>::const_iterator end() const {return h + PathOpHandles[*c];}
+        PathOp cmd() { return *c; }
     };
 
     typedef ConstIter const_iterator;
@@ -100,13 +100,13 @@ public:
     class HashCookie {
         unsigned long value;
     public:
-        friend class SubPath;
+        friend class Path;
         
         unsigned long get_value() { return value;}
     };
 
-    SubPath() {}
-    SubPath(SubPath const & sp) : cmd(sp.cmd), handles(sp.handles), closed(sp.closed) {}
+    Path() {}
+    Path(Path const & sp) : cmd(sp.cmd), handles(sp.handles), closed(sp.closed) {}
 
     ConstIter begin() const { return ConstIter(cmd.begin(), handles.begin()+1);}
     ConstIter end() const { return ConstIter(cmd.end(), handles.end());}
@@ -124,17 +124,17 @@ public:
     Location nearest_location(Point p, double& dist) const;
 
     /** return a new path over [begin, end). */
-    SubPath subpath(ConstIter begin, ConstIter end);
+    Path subpath(ConstIter begin, ConstIter end);
     
     /** return a new path over [begin, end). */
-    SubPath subpath(Location begin, Location end);
+    Path subpath(Location begin, Location end);
 
     /** compute the bounding box of this path. */
     Maybe<Rect> bbox() const;
 
     /** a new path with an extra node inserted at at without changing the curve. */
-    SubPath insert_nodes(Location* b, Location* e);
-    SubPath insert_node(Location at);
+    Path insert_nodes(Location* b, Location* e);
+    Path insert_node(Location at);
 
     /** coords of point on path. */
     Point point_at(Location at) const;
@@ -154,40 +154,40 @@ public:
     operator HashCookie();
     
     unsigned total_segments() const;
-    friend class PathBuilder;
-    template <class T> friend SubPath operator*(SubPath const &p, T const &m);
+    friend class ArrangementBuilder;
+    template <class T> friend Path operator*(Path const &p, T const &m);
 };
 
-inline bool operator==(SubPath::HashCookie a, SubPath::HashCookie b) {
+inline bool operator==(Path::HashCookie a, Path::HashCookie b) {
     return a.get_value() == b.get_value();
 }
 
-class PathBuilder;
+class ArrangementBuilder;
 
-class Path {
+class Arrangement {
 public:
-    typedef std::vector<SubPath>::const_iterator PathConstIter;
-    typedef PathConstIter const_iterator;
+    typedef std::vector<Path>::const_iterator ArrangementConstIter;
+    typedef ArrangementConstIter const_iterator;
     
     const_iterator begin() const { return _subpaths.begin(); }
     const_iterator end() const { return _subpaths.end(); }
-    SubPath const &front() const { return _subpaths.front(); }
-    SubPath const &back() const { return _subpaths.back(); }
+    Path const &front() const { return _subpaths.front(); }
+    Path const &back() const { return _subpaths.back(); }
     
-    struct PathLocation {
-        SubPath::ConstIter it;
+    struct ArrangementLocation {
+        Path::ConstIter it;
         double t; // element specific meaning [0,1)
-        PathLocation(SubPath::ConstIter it, double t) : it(it), t(t) {}
+        ArrangementLocation(Path::ConstIter it, double t) : it(it), t(t) {}
     };
 
-    Path() {}
-    Path(SubPath sp) { _subpaths.push_back(sp); }
+    Arrangement() {}
+    Arrangement(Path sp) { _subpaths.push_back(sp); }
     
     unsigned total_segments() const;
 
     template <typename F>
-    Path map(F f) const {
-        Path pr;
+    Arrangement map(F f) const {
+        Arrangement pr;
         for ( const_iterator it = begin() ; it != end() ; it++ ) {
             pr._subpaths.push_back(f(*it));
         }
@@ -195,35 +195,35 @@ public:
     }
 
 private:
-    std::vector<SubPath> _subpaths;
+    std::vector<Path> _subpaths;
 
-    friend class PathBuilder;
-    template <class T> friend Path operator*(Path const &p, T const &m);
+    friend class ArrangementBuilder;
+    template <class T> friend Arrangement operator*(Arrangement const &p, T const &m);
 };
 
-inline bool operator!=(const SubPath::ConstIter &a, const SubPath::ConstIter &b) 
+inline bool operator!=(const Path::ConstIter &a, const Path::ConstIter &b) 
 { assert(a.c <= b.c);  assert(a.h <= b.h); return (a.c!=b.c) || (a.h != b.h);}
 
-inline bool operator<(const SubPath::ConstIter &a, const SubPath::ConstIter &b) 
+inline bool operator<(const Path::ConstIter &a, const Path::ConstIter &b) 
 { return (a.c < b.c) && (a.h < b.h);}
 
-inline ptrdiff_t operator-(const SubPath::ConstIter &a, const SubPath::ConstIter &b) 
+inline ptrdiff_t operator-(const Path::ConstIter &a, const Path::ConstIter &b) 
 { return a.c - b.c;}
 
-//SubPath operator * (SubPath, Matrix);
+//Path operator * (Path, Matrix);
 
-template <class T> SubPath operator*(SubPath const &p, T const &m) {
-    SubPath pr(p);
+template <class T> Path operator*(Path const &p, T const &m) {
+    Path pr(p);
     for(int i = 0; i < pr.handles.size(); i++)
         pr.handles[i] = pr.handles[i] * m;
     return pr;
 }
 
-template <class T> Path operator*(Path const &p, T const &m) {
+template <class T> Arrangement operator*(Arrangement const &p, T const &m) {
     struct multiply_by {
         T const &_m;
         multiply_by(T const &m) : _m(m) {}
-        SubPath operator()(SubPath const &sp) { return sp * _m; }
+        Path operator()(Path const &sp) { return sp * _m; }
     };
     return p.map(multiply_by(m));
 }

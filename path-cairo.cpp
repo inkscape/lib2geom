@@ -1,11 +1,11 @@
 #include <cairo.h>
 #include "path-cairo.h"
 
-void cairo_sub_path(cairo_t *cr, Geom::SubPath const &p) {
+void cairo_sub_path(cairo_t *cr, Geom::Path const &p) {
     if(p.empty()) return;
     cairo_move_to(cr, p.initial_point()[0], p.initial_point()[1]);
-    for(Geom::SubPath::const_iterator iter(p.begin()), end(p.end()); iter < end; ++iter) {
-        Geom::SubPath::Elem elm = *iter;
+    for(Geom::Path::const_iterator iter(p.begin()), end(p.end()); iter < end; ++iter) {
+        Geom::Path::Elem elm = *iter;
         switch(iter.cmd()) {
             case Geom::lineto:
                 cairo_line_to(cr, elm.last()[0], elm.last()[1]);
@@ -33,10 +33,10 @@ void cairo_sub_path(cairo_t *cr, Geom::SubPath const &p) {
     }
 }
 
-void cairo_path(cairo_t *cr, Geom::Path const &p) {
-    std::vector<Geom::SubPath> subpaths;
+void cairo_path(cairo_t *cr, Geom::Arrangement const &p) {
+    std::vector<Geom::Path> subpaths;
     
-    for (std::vector<Geom::SubPath>::const_iterator it(p.begin()),
+    for (std::vector<Geom::Path>::const_iterator it(p.begin()),
              iEnd(p.end());
          it != iEnd; ++it) {
         cairo_sub_path(cr, *it);
@@ -49,11 +49,11 @@ void cairo_path(cairo_t *cr, Geom::Path const &p) {
 #include "interactive-bits.h"
 #include <pango/pango.h>
 #include <pango/pangocairo.h>
-void cairo_sub_path_handles(cairo_t *cr, Geom::SubPath const &p) {
+void cairo_sub_path_handles(cairo_t *cr, Geom::Path const &p) {
     if(p.empty()) return;
     cairo_move_to(cr, p.initial_point()[0], p.initial_point()[1]);
-    for(Geom::SubPath::const_iterator iter(p.begin()), end(p.end()); iter < end; ++iter) {
-        Geom::SubPath::Elem elem = *iter;
+    for(Geom::Path::const_iterator iter(p.begin()), end(p.end()); iter < end; ++iter) {
+        Geom::Path::Elem elem = *iter;
         for(int i = 0; i < elem.size(); i++) {
             std::ostringstream notify;
             notify << i;
@@ -77,10 +77,10 @@ void cairo_sub_path_handles(cairo_t *cr, Geom::SubPath const &p) {
     }
 }
 
-void cairo_path_handles(cairo_t *cr, Geom::Path const &p) {
-    std::vector<Geom::SubPath> subpaths;
+void cairo_path_handles(cairo_t *cr, Geom::Arrangement const &p) {
+    std::vector<Geom::Path> subpaths;
     
-    for (std::vector<Geom::SubPath>::const_iterator it(p.begin()),
+    for (std::vector<Geom::Path>::const_iterator it(p.begin()),
              iEnd(p.end());
          it != iEnd; ++it) {
         cairo_sub_path_handles(cr, *it);

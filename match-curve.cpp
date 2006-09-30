@@ -73,9 +73,9 @@ public:
 
     
         multidim_sbasis<2> B = bezier_to_sbasis<2, 5>(handles.begin());
-        Geom::PathBuilder pb;
+        Geom::ArrangementBuilder pb;
         subpath_from_sbasis(pb, B, 0.1);
-        Geom::Path p = pb.peek();
+        Geom::Arrangement p = pb.peek();
         cairo_path(cr, p);
         cairo_stroke(cr);
         
@@ -150,17 +150,17 @@ public:
         //draw_cross(cr, point_at(B, hi));
         draw_circ(cr, point_at(m, hi));
         {
-            Geom::PathBuilder pb;
+            Geom::ArrangementBuilder pb;
             subpath_from_sbasis(pb, m, 0.1);
-            Geom::Path p = pb.peek();
+            Geom::Arrangement p = pb.peek();
             cairo_path(cr, p);
         }
         
         /*m = truncate(compose(B, BezOrd(0, hi*2)), 2);
         {
-            Geom::PathBuilder pb;
+            Geom::ArrangementBuilder pb;
             subpath_from_sbasis(pb, m, 0.1);
-            Geom::Path p = pb.peek();
+            Geom::Arrangement p = pb.peek();
             cairo_path(cr, p);
             }*/
        

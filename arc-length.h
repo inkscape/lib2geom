@@ -7,12 +7,12 @@
  * extreme points . dir.
  */
 
-double arc_length_subdividing(Geom::SubPath const & p, double tol);
-double arc_length_integrating(Geom::SubPath const & p, double tol);
-double arc_length_integrating(Geom::SubPath const & p, Geom::SubPath::Location const & pl, double tol);
+double arc_length_subdividing(Geom::Path const & p, double tol);
+double arc_length_integrating(Geom::Path const & p, double tol);
+double arc_length_integrating(Geom::Path const & p, Geom::Path::Location const & pl, double tol);
 
 
-Geom::SubPath::Location natural_parameterisation(Geom::SubPath const & p, double s, double tol);
+Geom::Path::Location natural_parameterisation(Geom::Path const & p, double s, double tol);
 
 /*
   Local Variables:
