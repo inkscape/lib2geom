@@ -17,7 +17,7 @@ SET(2GEOM_TOYS_SRC
 2dsb2d
 arc-bez
 clothoid
-#conic-2
+conic-2
 conic-3
 conic-4
 conic
@@ -31,7 +31,6 @@ root-finder-comparer
 sb1d
 sb2d
 s-bez
-#tensor-reparam
 #toy-cairo
 unit-test-sbasis
 gear
