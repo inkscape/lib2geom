@@ -24,15 +24,6 @@
 using std::string;
 using std::vector;
 
-unsigned total_pieces;
-
-void draw_md_sb(cairo_t *cr, multidim_sbasis<2> const &B) {
-    Geom::ArrangementBuilder pb;
-    subpath_from_sbasis(pb, B, 0.1);
-    cairo_path(cr, pb.peek());
-}
-
-
 class Clothoid: public Toy {
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         cairo_set_source_rgba (cr, 0., 0., 0, 0.8);
@@ -55,7 +46,7 @@ class Clothoid: public Toy {
             B[dim] -= B[dim](0);
             B[dim] = 200 + 300*B[dim];
         }
-        draw_md_sb(cr, B);
+        cairo_md_sb(cr, B);
     }
 };
 

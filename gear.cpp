@@ -23,11 +23,6 @@
 using std::string;
 using std::vector;
 
-void draw_md_sb(cairo_t *cr, multidim_sbasis<2> const &B) {
-    Geom::ArrangementBuilder pb;
-    subpath_from_sbasis(pb, B, 0.1);
-    cairo_path(cr, pb.peek());
-}
 
 class Gear {
 public:
@@ -241,7 +236,7 @@ class GearToy: public Toy {
         
         //draw gear
         Geom::Arrangement p = gear.path();
-        cairo_path(cr, p);
+        cairo_arrangement(cr, p);
         cairo_set_source_rgba (cr, 0., 0., 0., 0.5);
         cairo_set_line_width (cr, 2.0);
         cairo_stroke(cr);
@@ -250,21 +245,21 @@ class GearToy: public Toy {
         
         Gear gear2 = gear.spawn(5, -2.0 * M_PI / 8.0);
         Geom::Arrangement p2 = gear2.path();
-        cairo_path(cr, p2);
+        cairo_arrangement(cr, p2);
         cairo_set_source_rgba (cr, 0., 0., 0., 0.5);
         cairo_set_line_width (cr, 2.0);
         cairo_stroke(cr);
         
         Gear gear3 = gear2.spawn(8, 0.0 * M_PI / 8.0);
         Geom::Arrangement p3 = gear3.path();
-        cairo_path(cr, p3);
+        cairo_arrangement(cr, p3);
         cairo_set_source_rgba (cr, 0., 0., 0., 0.5);
         cairo_set_line_width (cr, 2.0);
         cairo_stroke(cr);
         
         Gear gear4 = gear.spawn(6, 3.0 * M_PI / 4.0);
         Geom::Arrangement p4 = gear4.path();
-        cairo_path(cr, p4);
+        cairo_arrangement(cr, p4);
         cairo_set_source_rgba (cr, 0., 0., 0., 0.5);
         cairo_set_line_width (cr, 2.0);
         cairo_stroke(cr);

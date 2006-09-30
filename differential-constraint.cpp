@@ -29,7 +29,7 @@ using std::vector;
 unsigned total_pieces_sub;
 unsigned total_pieces_inc;
 
-void draw_cb(cairo_t *cr, multidim_sbasis<2> const &B) {
+void cairo_md_sb(cairo_t *cr, multidim_sbasis<2> const &B) {
     std::vector<Geom::Point> bez = sbasis_to_bezier(B, 2);
     cairo_move_to(cr, bez[0]);
     cairo_curve_to(cr, bez[1], bez[2], bez[3]);
@@ -80,7 +80,7 @@ class SBez: public Toy {
         cairo_set_line_width (cr, 0.5);
     
         multidim_sbasis<2> B = bezier_to_sbasis<2, 3>(handles.begin());
-        draw_cb(cr, B);
+        cairo_md_sb(cr, B);
     
         const gsl_odeiv_step_type * T 
             = gsl_odeiv_step_rk8pd;

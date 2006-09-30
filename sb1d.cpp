@@ -106,7 +106,7 @@ class Sb1d: public Toy {
         B[1] = SBasis(BezOrd(3*width/4)) - B[1];
         subpath_from_sbasis(pb, B, 0.001);
         Geom::Arrangement p = pb.peek();//*Geom::translate(1,1);
-        cairo_path(cr, p);
+        cairo_arrangement(cr, p);
     
         cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
         cairo_stroke(cr);

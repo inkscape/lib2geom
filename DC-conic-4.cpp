@@ -28,15 +28,6 @@
 using std::string;
 using std::vector;
 
-BezOrd z0(0.5,1.);
-
-void draw_md_sb(cairo_t *cr, multidim_sbasis<2> const &B) {
-    Geom::ArrangementBuilder pb;
-    subpath_from_sbasis(pb, B, 1);
-    cairo_path(cr, pb.peek());
-    cairo_path_handles(cr, pb.peek());
-}
-
 const double w = 1./3;
 const double cwp = cos(w*M_PI);
 const double swp = sin(w*M_PI);
@@ -117,7 +108,7 @@ class Conic4: public Toy {
             for(unsigned i  = 0; i < 5; i++)
                 B[dim] += e_h[i][dim]*ab.basis[i];
         
-        draw_md_sb(cr, B);
+        cairo_md_sb(cr, B);
     }
 };
 
@@ -183,7 +174,7 @@ class SBez: public Toy {
         cairo_set_line_width (cr, 0.5);
     
         multidim_sbasis<2> B = bezier_to_sbasis<2, 3>(handles.begin());
-        //draw_cb(cr, B);
+        //cairo_md_sb(cr, B);
     
         const gsl_odeiv_step_type * T 
             = gsl_odeiv_step_rk8pd;

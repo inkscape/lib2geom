@@ -117,7 +117,6 @@ matrix-translate-ops.h
 maybe.h
 multidim-sbasis.h
 #nearestpoint.cpp
-#ode-toy-cairo.cpp
 path-builder.h
 #path-cubicto.cpp
 path-find-points-of-interest.cpp

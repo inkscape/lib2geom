@@ -45,18 +45,18 @@ class Inline::C
         return mod;
       }
 
-      inline VALUE SubPath_class() {
-        static VALUE klass=rb_const_get(Geom_module(), rb_intern("SubPath"));
-        return klass;
-      }
-
       inline VALUE Path_class() {
         static VALUE klass=rb_const_get(Geom_module(), rb_intern("Path"));
         return klass;
       }
 
+      inline VALUE Arrangement_class() {
+        static VALUE klass=rb_const_get(Geom_module(), rb_intern("Arrangement"));
+        return klass;
+      }
+
       inline VALUE Elem_class() {
-        static VALUE klass=rb_const_get(SubPath_class(), rb_intern("Elem"));
+        static VALUE klass=rb_const_get(Path_class(), rb_intern("Elem"));
         return klass;
       }
 
@@ -65,14 +65,14 @@ class Inline::C
         return klass;
       }
 
-      inline VALUE path_to_value(Geom::Path *path) {
-        return Data_Wrap_Struct(Path_class(), NULL, &do_delete<Geom::Path>, path);
+      inline VALUE arrangement_to_value(Geom::Arrangement *arrangement) {
+        return Data_Wrap_Struct(Arrangement_class(), NULL, &do_delete<Geom::Arrangement>, arrangement);
       }
 
-      inline Geom::Path *value_to_path(VALUE value) {
-        Geom::Path *path;
-        Data_Get_Struct(value, Geom::Path, path);
-        return path;
+      inline Geom::Arrangement *value_to_arrangement(VALUE value) {
+        Geom::Arrangement *arrangement;
+        Data_Get_Struct(value, Geom::Arrangement, arrangement);
+        return arrangement;
       }
 
       inline VALUE poly_to_value(Poly *poly) {
@@ -90,7 +90,7 @@ class Inline::C
 
     unless @@geom_type_converters_registered
       add_type_converter "VALUE", '', ''
-      add_type_converter "Geom::Path *", 'value_to_path', 'path_to_value'
+      add_type_converter "Geom::Arrangement *", 'value_to_arrangement', 'arrangement_to_value'
       add_type_converter "Poly *", 'value_to_poly', 'poly_to_value'
       @@geom_type_converters_registered = true
     end
@@ -104,10 +104,10 @@ class Context
     builder.include '"path-cairo.h"'
 
     builder.c <<-EOS
-      static VALUE path(Geom::Path *path) {
+      static VALUE arrangement(Geom::Arrangement *arrangement) {
         cairo_t *cr;
         Data_Get_Struct(self, cairo_t, cr);
-        cairo_path(cr, *path);
+        cairo_arrangement(cr, *arrangement);
         return self;
       }
     EOS
@@ -117,7 +117,7 @@ end
 
 module Geom
 
-class Path
+class Arrangement
   include Enumerable
 
   inline do |builder|
@@ -126,18 +126,18 @@ class Path
 
     builder.c_singleton <<-EOS
       static VALUE _new() {
-        return path_to_value(new Geom::Path());
+        return arrangement_to_value(new Geom::Arrangement());
       }
     EOS
 
     builder.c <<-EOS
       static VALUE each() {
-        Geom::Path *path=value_to_path(self);
-        for ( std::vector<Geom::SubPath>::const_iterator iter = path->begin() ;
-              iter != path->end() ; ++iter )
+        Geom::Arrangement *arrangement=value_to_arrangement(self);
+        for ( std::vector<Geom::Path>::const_iterator iter = arrangement->begin() ;
+              iter != arrangement->end() ; ++iter )
         {
-          Geom::SubPath *subpath = new Geom::SubPath(*iter);
-          rb_yield(Data_Wrap_Struct(SubPath_class(), NULL, &do_delete<Geom::SubPath>, subpath));
+          Geom::Path *path = new Geom::Path(*iter);
+          rb_yield(Data_Wrap_Struct(Path_class(), NULL, &do_delete<Geom::Path>, path));
         }
         return self;
       }
@@ -145,8 +145,8 @@ class Path
 
     builder.c <<-EOS
       static int size() {
-        Geom::Path *path=value_to_path(self);
-        return path->end() - path->begin();
+        Geom::Arrangement *arrangement=value_to_arrangement(self);
+        return arrangement->end() - arrangement->begin();
       }
     EOS
   end
@@ -159,15 +159,15 @@ class Path
   end
 end
 
-class SubPath
+class Path
   inline do |builder|
     builder.lib2geom_prologue
 
     builder.c_raw_singleton <<-EOS
       static VALUE _new(int argc, VALUE *argv, VALUE self) {
         using namespace Geom;
-        SubPath *subpath = new SubPath();
-        return Data_Wrap_Struct(self, NULL, &do_delete<SubPath>, subpath);
+        Path *path = new Path();
+        return Data_Wrap_Struct(self, NULL, &do_delete<Path>, path);
       }
     EOS
 
@@ -180,9 +180,9 @@ class SubPath
 
     builder.c <<-EOS
       static VALUE _closed() {
-        Geom::SubPath *subpath;
-        Data_Get_Struct(self, Geom::SubPath, subpath);
-        return ( subpath->closed ? Qtrue : Qfalse );
+        Geom::Path *path;
+        Data_Get_Struct(self, Geom::Path, path);
+        return ( path->closed ? Qtrue : Qfalse );
       }
     EOS
   end
@@ -195,34 +195,34 @@ class SubPath
   alias closed? _closed
 end
 
-class PathBuilder
+class ArrangementBuilder
   inline do |builder|
     builder.lib2geom_prologue
 
     builder.c_raw_singleton <<-EOS
       static VALUE _new(int argc, VALUE *argv, VALUE self) {
         using namespace Geom;
-        PathBuilder *builder = new PathBuilder();
-        return Data_Wrap_Struct(self, NULL, &do_delete<PathBuilder>, builder);
+        ArrangementBuilder *builder = new ArrangementBuilder();
+        return Data_Wrap_Struct(self, NULL, &do_delete<ArrangementBuilder>, builder);
       }
     EOS
 
     builder.c_raw <<-EOS
       static VALUE peek(int argc, VALUE *argv, VALUE self) {
         using namespace Geom;
-        PathBuilder *builder;
-        Data_Get_Struct(self, PathBuilder, builder);
-        Path *path = new Path(builder->peek());
-        return Data_Wrap_Struct(Path_class(), NULL, &do_delete<Path>, path);
+        ArrangementBuilder *builder;
+        Data_Get_Struct(self, ArrangementBuilder, builder);
+        Arrangement *arrangement = new Arrangement(builder->peek());
+        return Data_Wrap_Struct(Arrangement_class(), NULL, &do_delete<Arrangement>, arrangement);
       }
     EOS
 
     builder.c_raw <<-EOS
-      static VALUE start_subpath(int argc, VALUE *argv, VALUE self) {
+      static VALUE start_path(int argc, VALUE *argv, VALUE self) {
         using namespace Geom;
-        PathBuilder *builder;
-        Data_Get_Struct(self, PathBuilder, builder);
-        builder->start_subpath(Point(rb_num2dbl(argv[0]), rb_num2dbl(argv[1])));
+        ArrangementBuilder *builder;
+        Data_Get_Struct(self, ArrangementBuilder, builder);
+        builder->start_path(Point(rb_num2dbl(argv[0]), rb_num2dbl(argv[1])));
         return self;
       }
     EOS
@@ -230,19 +230,19 @@ class PathBuilder
     builder.c_raw <<-EOS
       static VALUE push_line(int argc, VALUE *argv, VALUE self) {
         using namespace Geom;
-        PathBuilder *builder;
-        Data_Get_Struct(self, PathBuilder, builder);
+        ArrangementBuilder *builder;
+        Data_Get_Struct(self, ArrangementBuilder, builder);
         builder->push_line(Point(rb_num2dbl(argv[0]), rb_num2dbl(argv[1])));
         return self;
       }
     EOS
 
     builder.c_raw <<-EOS
-      static VALUE close_subpath(int argc, VALUE *argv, VALUE self) {
+      static VALUE close_path(int argc, VALUE *argv, VALUE self) {
         using namespace Geom;
-        PathBuilder *builder;
-        Data_Get_Struct(self, PathBuilder, builder);
-        builder->close_subpath();
+        ArrangementBuilder *builder;
+        Data_Get_Struct(self, ArrangementBuilder, builder);
+        builder->close_path();
         return self;
       }
     EOS

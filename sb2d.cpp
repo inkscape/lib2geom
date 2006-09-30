@@ -24,12 +24,6 @@ using std::vector;
 unsigned total_pieces_sub;
 unsigned total_pieces_inc;
 
-void draw_cb(cairo_t *cr, multidim_sbasis<2> const &B) {
-    Geom::ArrangementBuilder pb;
-    subpath_from_sbasis(pb, B, 0.1);
-    cairo_path(cr, pb.peek());
-}
-
 void draw_sb2d(cairo_t* cr, SBasis2d const &sb2, Geom::Point dir, double width) {
     multidim_sbasis<2> B;
     for(int ui = 0; ui <= 10; ui++) {
@@ -39,7 +33,7 @@ void draw_sb2d(cairo_t* cr, SBasis2d const &sb2, Geom::Point dir, double width) 
         for(unsigned i = 0; i < 2; i ++) {
             B[i] = (width/2)*B[i] + BezOrd(width/4);
         }
-        draw_cb(cr, B);
+        cairo_md_sb(cr, B);
     }
     for(int vi = 0; vi <= 10; vi++) {
         double v = vi/10.;
@@ -48,7 +42,7 @@ void draw_sb2d(cairo_t* cr, SBasis2d const &sb2, Geom::Point dir, double width) 
         for(unsigned i = 0; i < 2; i ++) {
             B[i] = (width/2)*B[i] + BezOrd(width/4);
         }
-        draw_cb(cr, B);
+        cairo_md_sb(cr, B);
     }
 }
 
@@ -94,10 +88,10 @@ class Sb2d: public Toy {
            }
         draw_sb2d(cr, sb2, dir*0.1, width);
         multidim_sbasis<2> B = bezier_to_sbasis<2, 3>(handles.begin() + surface_handles+1);
-        draw_cb(cr, B);
+        cairo_md_sb(cr, B);
         B *= 1./(width/4);
         B = (width/2)*B + Geom::Point(width/4, width/4);
-        draw_cb(cr, B);
+        cairo_md_sb(cr, B);
     
         *notify << "bo = " << sb2.index(0,0); 
     

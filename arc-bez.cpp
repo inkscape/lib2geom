@@ -21,12 +21,6 @@
 using std::string;
 using std::vector;
 
-void draw_cb(cairo_t *cr, multidim_sbasis<2> const &B) {
-    Geom::ArrangementBuilder pb;
-    subpath_from_sbasis(pb, B, 0.1);
-    cairo_path(cr, pb.peek());
-}
-
 SBasis curvature(multidim_sbasis<2> & B) {
     multidim_sbasis<2> dB = derivative(B);
     multidim_sbasis<2> ddB = derivative(dB);
@@ -48,7 +42,7 @@ SBasis sqcurvature(multidim_sbasis<2> & B) {
 class ArcBez: public Toy {
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         multidim_sbasis<2> B = bezier_to_sbasis<2, 2>(handles.begin());
-        draw_cb(cr, B);
+        cairo_md_sb(cr, B);
         cairo_stroke(cr);
         
         cairo_set_source_rgba (cr, 0.5, 0.5, 0, 0.8);
@@ -58,7 +52,7 @@ class ArcBez: public Toy {
             plot[0] = SBasis(width*BezOrd(0.25,0.75));
             plot[1] = BezOrd(height*3/4) - 0.5*dB[dim];
         
-            draw_cb(cr, plot);
+            cairo_md_sb(cr, plot);
             cairo_stroke(cr);
         }
         cairo_set_source_rgba (cr, 0.5, 0, 0.5, 0.8);
@@ -69,7 +63,7 @@ class ArcBez: public Toy {
                 + (1./height)*(dB[1]*dB[1]));
         std::vector<double> r = roots(plot[1]);
         plot[1] = BezOrd(height*3/4) - plot[1];
-        draw_cb(cr, plot);
+        cairo_md_sb(cr, plot);
         cairo_stroke(cr);
         for(int i = 0; i < r.size(); i++) {
                 //draw_cross(cr, point_at(B, r[i]));
@@ -89,7 +83,7 @@ class ArcBez: public Toy {
         plot[1] = derivative(divide(n, sqrt(den*den*den,5), 10));
         std::vector<double> r = roots(plot[1]);
         plot[1] = BezOrd(width*3/4) - (1./1000)*plot[1];
-        draw_cb(cr, plot);
+        cairo_md_sb(cr, plot);
         cairo_stroke(cr);
         for(int i = 0; i < r.size(); i++) {
                 draw_cross(cr, point_at(B, r[i]));
@@ -115,7 +109,7 @@ class ArcBez: public Toy {
         plot[0] = SBasis(width*dt);
         plot[1] = BezOrd(height) - arc;
         
-        draw_cb(cr, plot);
+        cairo_md_sb(cr, plot);
         cairo_stroke(cr);
         }
         *notify << "arc length = " << prev_seg << std::endl;

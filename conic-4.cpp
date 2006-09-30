@@ -24,15 +24,6 @@
 using std::string;
 using std::vector;
 
-void draw_md_sb(cairo_t *cr, multidim_sbasis<2> const &B) {
-    Geom::ArrangementBuilder pb;
-    subpath_from_sbasis(pb, B, 100);
-    cairo_path(cr, pb.peek());
-    Geom::ArrangementBuilder pb2;
-    subpath_from_sbasis_incremental(pb2, B, 10);
-    cairo_path(cr, pb2.peek());
-}
-
 const double w = 1./3;
 const double cwp = cos(w*M_PI);
 const double swp = sin(w*M_PI);
@@ -111,7 +102,7 @@ class Conic4: public Toy {
             for(unsigned i  = 0; i < 5; i++)
                 B[dim] += e_h[i][dim]*ab.basis[i];
         
-        draw_md_sb(cr, B);
+        cairo_md_sb(cr, B);
         cairo_set_source_rgba (cr, 0., 1., 0, 1);
         cairo_set_line_width (cr, 1);
         cairo_stroke(cr);

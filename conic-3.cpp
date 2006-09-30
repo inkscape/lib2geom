@@ -28,12 +28,6 @@ BezOrd z0(0.5,1.);
 
 unsigned total_pieces;
 
-void draw_cb(cairo_t *cr, multidim_sbasis<2> const &B) {
-    std::vector<Geom::Point> bez = sbasis_to_bezier(B, 2);
-    cairo_move_to(cr, bez[0]);
-    cairo_curve_to(cr, bez[1], bez[2], bez[3]);
-}
-
 double sinC(double t) { return t - sin(t);}
 double cosC(double t) { return 1 - cos(t);}
 double tanC(double t) { return sinC(t) / cosC(t);}
@@ -84,8 +78,8 @@ class Conic3: public Toy {
         {
             Geom::ArrangementBuilder pb;
             subpath_from_sbasis(pb, B, 1);
-            cairo_path(cr, pb.peek());
-            cairo_path_handles(cr, pb.peek());
+            cairo_arrangement(cr, pb.peek());
+            cairo_arrangement_handles(cr, pb.peek());
         }
     }
 };

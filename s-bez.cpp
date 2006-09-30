@@ -30,12 +30,6 @@ unsigned total_pieces_sub;
 unsigned total_pieces_inc;
 
 
-void draw_cb(cairo_t *cr, multidim_sbasis<2> const &B) {
-    std::vector<Geom::Point> bez = sbasis_to_bezier(B, 2);
-    cairo_move_to(cr, bez[0]);
-    cairo_curve_to(cr, bez[1], bez[2], bez[3]);
-}
-
 void draw_offset(cairo_t *cr, multidim_sbasis<2> const &B, double dist, double tol=0.1) {
     draw_handle(cr, Geom::Point(B[0].point_at(1), B[1].point_at(1)));
     
@@ -79,18 +73,18 @@ void draw_offset(cairo_t *cr, multidim_sbasis<2> const &B, double dist, double t
         {
             Geom::ArrangementBuilder pb;
             subpath_from_sbasis_incremental(pb, offset, tol);
-            cairo_path(cr, pb.peek());
+            cairo_arrangement(cr, pb.peek());
             total_pieces_inc += pb.peek().total_segments();
             cairo_set_source_rgba (cr, 0., 0.5, 0, 0.5);
             cairo_stroke(cr);
-            cairo_path_handles(cr, pb.peek());
+            cairo_arrangement_handles(cr, pb.peek());
         }
         {
             Geom::ArrangementBuilder pb;
             subpath_from_sbasis(pb, offset, tol);
             Geom::Arrangement p = pb.peek();
             total_pieces_sub += p.total_segments();
-            cairo_path(cr, p);
+            cairo_arrangement(cr, p);
             cairo_set_source_rgba (cr, 0.5, 0., 0, 0.5);
             cairo_stroke(cr);
         }
@@ -103,7 +97,7 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
     cairo_set_line_width (cr, 0.5);
     
     multidim_sbasis<2> B = bezier_to_sbasis<2, 3>(handles.begin());
-    draw_cb(cr, B);
+    cairo_md_sb(cr, B);
     total_pieces_sub = 0;
     total_pieces_inc = 0;
     for(int i = 4; i < 5; i++) {

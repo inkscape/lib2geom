@@ -76,7 +76,7 @@ public:
         Geom::ArrangementBuilder pb;
         subpath_from_sbasis(pb, B, 0.1);
         Geom::Arrangement p = pb.peek();
-        cairo_path(cr, p);
+        cairo_arrangement(cr, p);
         cairo_stroke(cr);
         
         multidim_sbasis<2> m;
@@ -153,7 +153,7 @@ public:
             Geom::ArrangementBuilder pb;
             subpath_from_sbasis(pb, m, 0.1);
             Geom::Arrangement p = pb.peek();
-            cairo_path(cr, p);
+            cairo_arrangement(cr, p);
         }
         
         /*m = truncate(compose(B, BezOrd(0, hi*2)), 2);
@@ -161,7 +161,7 @@ public:
             Geom::ArrangementBuilder pb;
             subpath_from_sbasis(pb, m, 0.1);
             Geom::Arrangement p = pb.peek();
-            cairo_path(cr, p);
+            cairo_arrangement(cr, p);
             }*/
        
         cairo_stroke(cr);

@@ -35,7 +35,7 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
         Geom::ArrangementBuilder pb;
         subpath_from_sbasis(pb, Bz, 0.1);
         Geom::Arrangement p = pb.peek();
-        cairo_path(cr, p);
+        cairo_arrangement(cr, p);
     cairo_stroke(cr);
         
     multidim_sbasis<3> B;
@@ -76,7 +76,7 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
         Geom::ArrangementBuilder pb;
         subpath_from_sbasis(pb, Bu, 0.1);
         Geom::Arrangement p = pb.peek();
-        cairo_path(cr, p);
+        cairo_arrangement(cr, p);
     }
 }
 };

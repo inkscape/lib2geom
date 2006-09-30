@@ -1,5 +1,8 @@
 #include <cairo.h>
 #include "path-cairo.h"
+#include "path-builder.h"
+#include "multidim-sbasis.h"
+#include "sbasis-to-bezier.h"
 
 void cairo_sub_path(cairo_t *cr, Geom::Path const &p) {
     if(p.empty()) return;
@@ -33,7 +36,7 @@ void cairo_sub_path(cairo_t *cr, Geom::Path const &p) {
     }
 }
 
-void cairo_path(cairo_t *cr, Geom::Arrangement const &p) {
+void cairo_arrangement(cairo_t *cr, Geom::Arrangement const &p) {
     std::vector<Geom::Path> subpaths;
     
     for (std::vector<Geom::Path>::const_iterator it(p.begin()),
@@ -77,7 +80,7 @@ void cairo_sub_path_handles(cairo_t *cr, Geom::Path const &p) {
     }
 }
 
-void cairo_path_handles(cairo_t *cr, Geom::Arrangement const &p) {
+void cairo_arrangement_handles(cairo_t *cr, Geom::Arrangement const &p) {
     std::vector<Geom::Path> subpaths;
     
     for (std::vector<Geom::Path>::const_iterator it(p.begin()),
@@ -85,6 +88,18 @@ void cairo_path_handles(cairo_t *cr, Geom::Arrangement const &p) {
          it != iEnd; ++it) {
         cairo_sub_path_handles(cr, *it);
     }
+}
+
+void cairo_md_sb(cairo_t *cr, multidim_sbasis<2> const &B) {
+    Geom::ArrangementBuilder pb;
+    subpath_from_sbasis(pb, B, 0.1);
+    cairo_arrangement(cr, pb.peek());
+}
+
+void cairo_md_sb_handles(cairo_t *cr, multidim_sbasis<2> const &B) {
+    Geom::ArrangementBuilder pb;
+    subpath_from_sbasis(pb, B, 0.1);
+    cairo_arrangement_handles(cr, pb.peek());
 }
 
 /*

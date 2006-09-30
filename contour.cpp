@@ -50,10 +50,10 @@ double uniform() {
     return double(rand()) / RAND_MAX;
 }
 
-void draw_cb(cairo_t *cr, multidim_sbasis<2> const &B) {
+void cairo_md_sb(cairo_t *cr, multidim_sbasis<2> const &B) {
     Geom::ArrangementBuilder pb;
     subpath_from_sbasis(pb, B, 0.1);
-    cairo_path(cr, pb.peek());
+    cairo_arrangement(cr, pb.peek());
 }
 
 void draw_sb2d(cairo_t* cr, SBasis2d const &sb2, Geom::Point dir, double width) {
@@ -65,7 +65,7 @@ void draw_sb2d(cairo_t* cr, SBasis2d const &sb2, Geom::Point dir, double width) 
         for(unsigned i = 0; i < 2; i ++) {
             B[i] = (width/2)*B[i] + BezOrd(width/4);
         }
-        draw_cb(cr, B);
+        cairo_md_sb(cr, B);
     }
     for(int vi = 0; vi <= 10; vi++) {
         double v = vi/10.;
@@ -74,7 +74,7 @@ void draw_sb2d(cairo_t* cr, SBasis2d const &sb2, Geom::Point dir, double width) 
         for(unsigned i = 0; i < 2; i ++) {
             B[i] = (width/2)*B[i] + BezOrd(width/4);
         }
-        draw_cb(cr, B);
+        cairo_md_sb(cr, B);
     }
 }
 
@@ -461,7 +461,7 @@ oops:
 #endif
      
 #if 0
-    draw_cb(cr, (width/2)*B + Geom::Point(width/4., width/4.));
+    cairo_md_sb(cr, (width/2)*B + Geom::Point(width/4., width/4.));
     SBasis l = compose(sb2, B);
     notify << "l = " << l << std::endl ;
     l = integral(l*l);

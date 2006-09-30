@@ -210,11 +210,10 @@ public:
         Geom::ArrangementBuilder pb;
         subpath_from_sbasis(pb, B, 0.1);
         Geom::Arrangement p = pb.peek();//*Geom::translate(1,1);
-        cairo_path(cr, p);
+        cairo_arrangement(cr, p);
         
         B[0] = BezOrd(width/4, 3*width/4);
-        subpath_from_sbasis(pb, B, 0.1);
-        cairo_path(cr, pb.peek());
+        cairo_md_sb(cr, B);
     }
     RootFinderComparer() : timer_precision(0.1), units(1e6) // microseconds
  {}
