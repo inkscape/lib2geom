@@ -194,13 +194,19 @@ translate-scale-ops.h
 types.cpp
 types.h
 )
+SET(LIB_TYPE STATIC)
+OPTION(2GEOM_BUILD_SHARED
+  "Build lib2geom and libtoy as shared libraries."
+  OFF)
+SET(LIB_TYPE SHARED)
+ENDIF(2GEOM_UNIT_TESTS)
 
 # make lib for 2geom
-ADD_LIBRARY(2geom STATIC ${2GEOM_SRC})
+ADD_LIBRARY(2geom ${LIB_TYPE} ${2GEOM_SRC})
 #TARGET_LINK_LIBRARIES(2geom blas gsl)
 
 # make lib for toy
-ADD_LIBRARY(toy STATIC ${2GEOM_TOY-FRAMEWORK_SRC})
+ADD_LIBRARY(toy ${LIB_TYPE} ${2GEOM_TOY-FRAMEWORK_SRC})
 TARGET_LINK_LIBRARIES(toy 2geom "${GTK2_LINK_FLAGS} ${cairo_LINK_FLAGS}")
 
 OPTION(2GEOM_TOYS
