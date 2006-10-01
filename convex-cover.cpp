@@ -287,6 +287,39 @@ std::vector<Point> bridge_points(ConvexHull a, ConvexHull b) {
     return ret;
 }
 
+unsigned find_bottom_right(ConvexHull const &a) {
+    unsigned it = 1;
+    while(it < a.boundary.size() && 
+          a.boundary[it][Y] > a.boundary[it-1][Y])
+        it++;
+    return it-1;
+}
+
+/*** ConvexHull sweepline_intersection(ConvexHull a, ConvexHull b);
+ * find the intersection between two convex hulls.  The intersection is also a convex hull.
+ * (Proof: take any two points both in a and in b.  Any point between them is in a by convexity,
+ * and in b by convexity, thus in both.  Need to prove still finite bounds.)
+ * This algorithm works by sweeping a line down both convex hulls in parallel, working out the left and right edges of the new hull.
+ */
+ConvexHull sweepline_intersection(ConvexHull const &a, ConvexHull const &b) {
+    ConvexHull ret;
+    
+    int al = 0;
+    int bl = 0;
+    
+    while(al+1 < a.boundary.size() &&
+          (a.boundary[al+1][Y] > b.boundary[bl][Y])) {
+        al++;
+    }
+    while(bl+1 < b.boundary.size() &&
+          (b.boundary[bl+1][Y] > a.boundary[al][Y])) {
+        bl++;
+    }
+    // al and bl now point to the top of the first pair of edges that overlap in y value
+    double sweep_y = std::min(a.boundary[al][Y],
+                              b.boundary[bl][Y]);
+}
+
 /*** ConvexHull intersection(ConvexHull a, ConvexHull b);
  * find the intersection between two convex hulls.  The intersection is also a convex hull.
  * (Proof: take any two points both in a and in b.  Any point between them is in a by convexity,

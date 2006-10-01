@@ -87,6 +87,7 @@ std::vector<Point> bridge_points(ConvexHull a, ConvexHull b);
 
 // find the convex hull intersection
 ConvexHull intersection(ConvexHull a, ConvexHull b);
+ConvexHull sweepline_intersection(ConvexHull const &a, ConvexHull const &b);
 
 // find the convex hull of a set of convex hulls
 ConvexHull merge(ConvexHull a, ConvexHull b);
@@ -94,6 +95,7 @@ ConvexHull merge(ConvexHull a, ConvexHull b);
 // naive approach
 ConvexHull graham_merge(ConvexHull a, ConvexHull b);
 
+unsigned find_bottom_right(ConvexHull const &a);
 
 /*** Arbitrary transform operator.
  * Take a convex hull and apply an arbitrary convexity preserving transform.
