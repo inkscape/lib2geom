@@ -201,12 +201,15 @@ translate-scale-ops.h
 types.cpp
 types.h
 )
-SET(LIB_TYPE STATIC)
+
 OPTION(2GEOM_BUILD_SHARED
   "Build lib2geom and libtoy as shared libraries."
   OFF)
-SET(LIB_TYPE SHARED)
-ENDIF(2GEOM_UNIT_TESTS)
+IF(2GEOM_BUILD_SHARED)
+    SET(LIB_TYPE SHARED)
+ELSE(2GEOM_BUILD_SHARED)
+    SET(LIB_TYPE STATIC)
+ENDIF(2GEOM_BUILD_SHARED)
 
 # make lib for 2geom
 ADD_LIBRARY(2geom ${LIB_TYPE} ${2GEOM_SRC})
