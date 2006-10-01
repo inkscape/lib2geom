@@ -5,10 +5,13 @@ INCLUDE(Config2GeomDepends)
 
 IF(gsl_FOUND)
 # must have GSL
-    SET(NEEDS_GSL differential-constraint)
+    SET(NEEDS_GSL 
+    differential-constraint
+    DC-conic-4
+    )
     SET(LINK_GSL ${gsl_LINK_FLAGS})
 ENDIF(gsl_FOUND) 
-message(STATUS "${gsl_LINK_FLAGS}")
+
 # Set Compiler Flags
 SET(CMAKE_CXX_FLAGS "${GTK2_CFLAGS} ${cairo_CFLAGS} ${gsl_CFLAGS}")
 SET(CMAKE_MAKE_PROGRAM "${CMAKE_MAKE_PROGRAM} -j2")
@@ -34,7 +37,6 @@ s-bez
 #toy-cairo
 unit-test-sbasis
 gear
-DC-conic-4
 cheb
 match-curve
 "${NEEDS_GSL}"
