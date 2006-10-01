@@ -1,6 +1,6 @@
 #include "convex-cover.h"
 #include <algorithm>
-
+#include <map>
 /** Todo:
     + modify graham scan to work top to bottom, rather than around angles
     + intersection
@@ -11,6 +11,10 @@
     + check all algorithms meet all invariants
     + generalise rotating caliper algorithm (iterator/circulator?)
 */
+
+using std::vector;
+using std::map;
+using std::pair;
 
 namespace Geom{
 
@@ -252,39 +256,33 @@ ConvexHull::is_degenerate() const {
    order of traversal around.  Since the a->b and b->a bridges are seperated, they don't need to be merge
    order, just the order of the traversal of the host hull.  Currently some situations make a n->0 bridge
    first.*/
-std::pair< std::vector<int>, std::vector<int> > bridges(ConvexHull a, ConvexHull b) {
-    std::vector<int> abridges;
-    std::vector<int> bbridges;
+pair< map<int, int>, std::map<int, int> > bridges(ConvexHull a, ConvexHull b) {
+    map<int, int> abridges;
+    map<int, int> bbridges;
 
     for(int ia = 0; ia < a.boundary.size(); ia++) {
         for(int ib = 0; ib < b.boundary.size(); ib++) {
             Point d = b[ib] - a[ia];
             Geom::Coord e = cross(d, a[ia - 1] - a[ia]), f = cross(d, a[ia + 1] - a[ia]);
             Geom::Coord g = cross(d, b[ib - 1] - a[ia]), h = cross(d, b[ib + 1] - a[ia]);
-            if       (e > 0 && f > 0 && g > 0 && h > 0) {
-                abridges.push_back(ia);
-                abridges.push_back(ib);
-            } else if(e < 0 && f < 0 && g < 0 && h < 0) {
-                bbridges.push_back(ib);
-                bbridges.push_back(ia);
-            }
+            if     (e > 0 && f > 0 && g > 0 && h > 0) abridges[ia] = ib;
+            else if(e < 0 && f < 0 && g < 0 && h < 0) bbridges[ib] = ia;
         }
     }
+       
     return make_pair(abridges, bbridges);
 }
 
 std::vector<Point> bridge_points(ConvexHull a, ConvexHull b) {
-    std::vector<Point> ret;
-    std::pair< std::vector<int>, std::vector<int> > indices = bridges(a, b);
-    assert((indices.first.size() & 1) == 0);
-    assert((indices.second.size() & 1) == 0);
-    for(int i = 0; i < indices.first.size(); i += 2) {
-        ret.push_back(a[indices.first[i]]);
-        ret.push_back(b[indices.first[i + 1]]);
+    vector<Point> ret;
+    pair< map<int, int>, map<int, int> > indices = bridges(a, b);
+    for(map<int, int>::iterator it = indices.first.begin(); it != indices.first.end(); it++) {
+      ret.push_back(a[it->first]);
+      ret.push_back(b[it->second]);
     }
-    for(int i = 0; i < indices.second.size(); i += 2) {
-        ret.push_back(b[indices.second[i]]);
-        ret.push_back(a[indices.second[i + 1]]);
+    for(map<int, int>::iterator it = indices.second.begin(); it != indices.second.end(); it++) {
+      ret.push_back(b[it->first]);
+      ret.push_back(a[it->second]);
     }
     return ret;
 }
@@ -295,7 +293,31 @@ std::vector<Point> bridge_points(ConvexHull a, ConvexHull b) {
  * and in b by convexity, thus in both.  Need to prove still finite bounds.)
  */
 ConvexHull intersection(ConvexHull a, ConvexHull b) {
+    ConvexHull ret;
 
+/*    pair< ector<int>, std::vector<int> > bpair = bridges(a, b);
+    vector<int> ab = bpair.first;
+    vector<int> bb = bpair.second;
+    
+    int abi = 0, bbi = 0;
+    int nexti = 0;
+    if(a.boundary[0][1] > b.boundary[0][1]) goto start_b;
+    while(true) {
+
+        for(int i = nexti; i <= ab[abi]; i++)
+            ret.boundary.push_back(b[i]);
+        nexti = ab[abi + 1];
+        //if nexti == 0
+        abi += 2;
+
+        start_b:
+
+        for(int i = nexti; i <= bb[bbi]; i++)
+            ret.boundary.push_back(b[i]);
+        nexti = bb[bbi + 1];
+        bbi += 2;
+
+    }*/
 }
 
 /*** ConvexHull merge(ConvexHull a, ConvexHull b);
@@ -320,42 +342,26 @@ ConvexHull intersection(ConvexHull a, ConvexHull b) {
 ConvexHull merge(ConvexHull a, ConvexHull b) {
     ConvexHull ret;
 
-    std::pair< std::vector<int>, std::vector<int> > bpair = bridges(a, b);
-    
-    int abi = 0, bbi = 0; //A and B bridge indexes
-    int nexti = 0; //Next index
+    pair< map<int, int>, map<int, int> > bpair = bridges(a, b);
+    map<int, int> ab = bpair.first;
+    map<int, int> bb = bpair.second;
 
-    bool pa0 = false, pb0 = false; //pushed a/b[0]?
+    int i = 0;
 
     if(a.boundary[0][1] > b.boundary[0][1]) goto start_b;
     while(true) {
-        if(abi < bpair.first.size()) {
-            if(nexti == 0) pa0 = true;
-            for(int i = nexti; i <= bpair.first[abi]; i++)
-                ret.boundary.push_back(a[i]);
-            nexti = bpair.first[abi + 1];
-            if(nexti == 0 && pb0) break;
-        } else {
-            for(int i = nexti; i < a.boundary.size(); i++)
-                ret.boundary.push_back(a[i]);
-            break;
+        for(; ab.count(i) == 0 && i < a.boundary.size(); i++) {
+            ret.boundary.push_back(a[i]);
         }
-        abi += 2;
-
+        if(i >= a.boundary.size()) break;
+        i = ab[i];
         start_b:
 
-        if(bbi < bpair.second.size()) {
-            if(nexti == 0) pb0 = true;
-            for(int i = nexti; i <= bpair.second[bbi]; i++)
-                ret.boundary.push_back(b[i]);
-            nexti = bpair.second[bbi + 1];
-            if(nexti == 0 && pb0) break;
-        } else {
-            for(int i = nexti; i < b.boundary.size(); i++)
-                ret.boundary.push_back(b[i]);
-            break;
+        for(; bb.count(i) == 0 && i < b.boundary.size(); i++) {
+            ret.boundary.push_back(b[i]);
         }
-        bbi += 2;        
+        if(i >= b.boundary.size()) break;
+        i = bb[i];      
     }
     return ret;
 }

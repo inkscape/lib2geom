@@ -88,7 +88,7 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
     Geom::ConvexHull gm = graham_merge(ch1, ch2);
     Geom::Point offset = Geom::Point(4, 0);
 
-    cairo_set_line_width (cr, 2);
+    /*cairo_set_line_width (cr, 2);
     if(gm.boundary.size() > 0) {
         cairo_move_to(cr, gm.boundary.back() + offset);
         cairo_set_source_rgba (cr, 0., 0., 0, 0.5);
@@ -96,7 +96,7 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
             cairo_line_to(cr, gm.boundary[i] + offset);
             draw_number(cr, gm.boundary[i] + offset, i);
         }
-    }
+    }*/
     cairo_stroke(cr);
     }
     Geom::ConvexHull m = merge(ch1, ch2);
