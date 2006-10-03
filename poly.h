@@ -154,6 +154,13 @@ public:
             pd[i] *= cnst;
         }
     }
+    
+    static Poly linear(double ax, double b) {
+        Poly p;
+        p.push_back(b);
+        p.push_back(ax);
+        return p;
+    }
 };
 
 inline Poly operator*(double a, Poly const & b) { return b * a;}
