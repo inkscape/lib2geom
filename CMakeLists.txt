@@ -8,8 +8,10 @@ IF(gsl_FOUND)
     SET(NEEDS_GSL 
     differential-constraint
     DC-conic-4
+    root-finder-comparer
     )
     SET(LINK_GSL ${gsl_LINK_FLAGS})
+    SET(gsl_CFLAGS "${gsl_CFLAGS} -DHAVE_GDL")
 ENDIF(gsl_FOUND) 
 
 # Set Compiler Flags
@@ -34,10 +36,10 @@ conic
 convex-test
 fitter
 one-D
+root-find-ut
 poly-test
 quad-test
 rat-bez
-root-finder-comparer
 sb1d
 sb2d
 s-bez

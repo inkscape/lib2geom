@@ -19,7 +19,7 @@ double W(unsigned n, unsigned j, unsigned k) {
     if(k > n-k) return W(n, n-j, n-k);
     assert(!(k < 0));
     if(k < 0) return 0;
-    assert(!(k >= q));
+    assert((k <= q));
     if(k >= q) return 0;
     //assert(!(j >= n-k));
     if(j >= n-k) return 0;
@@ -33,9 +33,14 @@ double W(unsigned n, unsigned j, unsigned k) {
 std::vector<double>
 sbasis_to_bezier(SBasis const &B, unsigned q) {
     std::vector<double> result;
-    if(q == 0)
-        q = B.size();
     unsigned n = q*2;
+    if(q == 0) {
+        q = B.size();
+        n = q*2;
+        /*if(B.back()[0] == B.back()[1]) {
+            n--;
+            }*/
+    }
     result.resize(n, 0);
     if(q > B.size())
         q = B.size();

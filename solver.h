@@ -25,4 +25,11 @@ find_bernstein_roots(
     std::vector<double> & solutions,	/* RETURN candidate t-values */
     unsigned depth,	/* The depth of the recursion */
     double left_t=0, double right_t=1);
+void
+find_bernstein_roots_buggy(
+    double *w, /* The control points  */
+    unsigned degree,	/* The degree of the polynomial */
+    std::vector<double> & solutions,	/* RETURN candidate t-values */
+    unsigned depth,	/* The depth of the recursion */
+    double left_t=0, double right_t=1);
 #endif
