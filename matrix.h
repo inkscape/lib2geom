@@ -20,7 +20,6 @@
 //#include <glib/gmessages.h>
 
 #include "coord.h"
-#include "values.h"
 #include "rotate.h"
 #include "scale.h"
 #include "translate.h"
