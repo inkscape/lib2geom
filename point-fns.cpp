@@ -36,7 +36,7 @@ Geom::Coord Geom::atan2(Point const p) {
     return std::atan2(p[Geom::Y], p[Geom::X]);
 }
 
-/** compute the angle turning from a to b.  This should give pi for angle_between(a, rot90(a));
+/** compute the angle turning from a to b.  This should give \f$\pi/2\f$ for angle_between(a, rot90(a));
  * This works by projecting b onto the basis defined by a, rot90(a)
  */
 Geom::Coord Geom::angle_between(Point const a, Point const b) {
