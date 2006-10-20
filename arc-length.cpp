@@ -3,7 +3,9 @@
 #include "poly.h"
 #include "path-poly-fns.h"
 using namespace Geom;
-
+/**
+ *
+ */
 double cubic_length_subdividing(Geom::Path::Elem const & e, double tol) {
     Geom::Point v[3];
     for(int i = 0; i < 3; i++)

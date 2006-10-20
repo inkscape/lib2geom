@@ -16,10 +16,8 @@
 
 namespace Geom {
 
-const double Geom_EPSILON = 1e-18; // taken from libnr.  Probably sqrt(MIN_FLOAT).
-
-/**
- *  Multiply two matrices together
+/** Multiplies two matrices together, effectively combining their transformations.
+ \return The result of the multiplication. 
  */
 Matrix operator*(Matrix const &m0, Matrix const &m1) {
     Matrix ret;
@@ -35,8 +33,8 @@ Matrix operator*(Matrix const &m0, Matrix const &m1) {
     return ret;
 }
 
-/**
- *  Multiply a matrix by another
+/** Multiplies a Matrix with another.
+ \return A pointer to the resulting Matrix.
  */
 Matrix &Matrix::operator*=(Matrix const &o)
 {
@@ -44,8 +42,8 @@ Matrix &Matrix::operator*=(Matrix const &o)
     return *this;
 }
 
-/**
- *  Multiply by a scaling matrix
+/** Scales the Matrix by multiplication with a scale transform.
+ \return The result of the multiplication.
  */
 Matrix &Matrix::operator*=(scale const &other) {
     for(int i = 0; i < 6; i += 2) {
@@ -58,8 +56,8 @@ Matrix &Matrix::operator*=(scale const &other) {
     return *this;
 }
 
-/**
- *  Translate the matrix
+/** Translates the Matrix by multiplication with a translate transform.
+ \return The result of the multiplication.
  */
 Matrix &Matrix::operator*=(translate const &other) {
     _c[4] += other[X];
@@ -68,9 +66,9 @@ Matrix &Matrix::operator*=(translate const &other) {
 }
 
 
-/**
- *  Return the inverse of this matrix.  If an inverse is not defined,
- *  then return the identity matrix.
+/** Attempts to calculate the inverse of the matrix.
+ *  This is a Matrix such that m * m.inverse() is the identity.
+ \return The inverse of the Matrix if defined, otherwise the Identity Matrix.
  */
 Matrix Matrix::inverse() const {
     Matrix d;
@@ -92,8 +90,7 @@ Matrix Matrix::inverse() const {
     return d;
 }
 
-/**
- *  Set this matrix to Identity
+/** Sets this matrix to be the Identity Matrix.
  */
 void Matrix::set_identity() {
     _c[0] = 1.0;
@@ -104,8 +101,7 @@ void Matrix::set_identity() {
     _c[5] = 0.0;
 }
 
-/**
- *  return an Identity matrix
+/** Returns the Identity Matrix.
  */
 Matrix identity() {
     return Matrix(1.0, 0.0,
@@ -113,12 +109,11 @@ Matrix identity() {
                   0.0, 0.0);
 }
 
-
-
-
-
-/**
- *  Creates a matrix given the axis and origin of the coordinate system.
+/** Creates a Matrix given an axis and origin point.
+ \param x_basis the vector of the x-axis.
+ \param y_basis the vector of the y-axis.
+ \param offset the origin of the coordinate system.
+ \return The created Matrix.
  */
 Matrix from_basis(Point const x_basis, Point const y_basis, Point const offset) {
     return Matrix(x_basis[X], x_basis[Y],
@@ -126,8 +121,8 @@ Matrix from_basis(Point const x_basis, Point const y_basis, Point const offset) 
                   offset [X], offset [Y]);
 }
 
-/**
- * Returns a rotation matrix corresponding by the specified angle (in radians) about the origin.
+/** Calculates a rotation matrix corresponding to an angle.
+ \param theta the rotation angle in radians about the origin
  *
  * \see Geom::rotate_degrees
  *
@@ -141,29 +136,28 @@ rotate::rotate(Geom::Coord const theta) :
         sin(theta))
 {}
 
-/**
- *  Return the determinant of the Matrix
+/** Calculates the determinant of the Matrix.
  */
 Geom::Coord Matrix::det() const {
     return _c[0] * _c[3] - _c[1] * _c[2];
 }
 
-/**
- * Return the scalar of the descriminant of the Matrix
+/** Calculates the scalar of the descriminant of the Matrix.
+ *  This is simply the absolute value of the determinant.
  */
 Geom::Coord Matrix::descrim2() const {
     return fabs(det());
 }
 
-/**
- *  Return the descriminant of the Matrix
+/** Calculates the descriminant of the Matrix.
  */
 Geom::Coord Matrix::descrim() const {
     return sqrt(descrim2());
 }
 
-/**
- *  Assign a matrix to a given coordinate array
+/** [DEPRECATED] Assigns a matrix to a given coordinate array.
+ \param array a pointer to the source array, must be 6 Coord long.
+ \return the resulting matrix.
  */
 Matrix &Matrix::assign(Coord const *array) {
     assert(array != NULL);
@@ -181,8 +175,8 @@ Matrix &Matrix::assign(Coord const *array) {
     return *this;
 }
 
-/**
- *  Copy this matrix's values to an array
+/** [DEPRECATED] Copies this matrix's values to an array.
+ \param array a pointer to the target array.
  */
 Geom::Coord *Matrix::copyto(Geom::Coord *array) const {
     assert(array != NULL);
@@ -200,25 +194,28 @@ Geom::Coord *Matrix::copyto(Geom::Coord *array) const {
     return array;
 }
 
-/**
- *  TODO: remove this - it's the same thing as descrim
+/** [DEPRECATED] - use descrim.
  */
 double expansion(Matrix const &m) {
     return sqrt(fabs(m.det()));
 }
 
-/**
- *  TODO: remove this - it's the same thing as descrim
+/** [DEPRECATED] - use descrim.
  */
 double Matrix::expansion() const {
     return sqrt(fabs(det()));
 }
 
-/**
- *  Amount of x-scaling
+/** Calculates the amount of x-scaling imparted by the Matrix.
  */
 double Matrix::expansionX() const {
     return sqrt(_c[0] * _c[0] + _c[1] * _c[1]);
+}
+
+/** Calculates the amount of y-scaling imparted by the Matrix.
+ */
+double Matrix::expansionY() const {
+    return sqrt(_c[2] * _c[2] + _c[3] * _c[3]);
 }
 
 Point Matrix::get_x_axis() const {
@@ -227,10 +224,6 @@ Point Matrix::get_x_axis() const {
 
 Point Matrix::get_y_axis() const {
     return Point(_c[2], _c[3]);
-}
-
-Point Matrix::get_translation() const {
-    return Point(_c[4], _c[5]);
 }
 
 Point Matrix::set_x_axis(Point const &vec) {
@@ -243,50 +236,67 @@ Point Matrix::set_y_axis(Point const &vec) {
         _c[i + 2] = vec[i];
 }
 
+/** Gets the translation imparted by the Matrix.
+ */
+Point Matrix::get_translation() const {
+    return Point(_c[4], _c[5]);
+}
+
+/** Sets the translation imparted by the Matrix.
+ */
 Point Matrix::set_translation(Point const &loc) {
     for(int i = 0; i < 2; i++)
         _c[i + 4] = loc[i];
 }
 
-/**
- *  Amount of y-scaling
- */
-double Matrix::expansionY() const {
-    return sqrt(_c[2] * _c[2] + _c[3] * _c[3]);
-}
-
-/**
- *  Does this matrix perform only a translation?
+/** Answers the question "Does this matrix perform \em{only} a translation?"
+ \param eps an epsilon value defaulting to Geom_EPSILON
+ \return A bool representing yes/no.
  */
 bool Matrix::is_translation(Coord const eps) const {
     return ( fabs(_c[0] - 1.0) < eps &&
+             fabs(_c[1])       < eps &&
+             fabs(_c[2])       < eps &&
              fabs(_c[3] - 1.0) < eps &&
+             _c[4] != 0 && _c[5] != 0);
+}
+
+/** Answers the question "Does this matrix perform \em{only} a scale?"
+ \param eps an epsilon value defaulting to Geom_EPSILON
+ \return A bool representing yes/no.
+ */
+bool Matrix::is_scale(Coord const eps) const {
+    return ( (_c[0] != 1 || _c[3] != 1) &&
+             fabs(_c[1]) < eps &&
+             fabs(_c[2]) < eps &&
+             fabs(_c[4]) < eps &&
+             fabs(_c[5]) < eps);
+}
+
+/** Answers the question "Does this matrix perform a uniform scale?"
+ \param eps an epsilon value defaulting to Geom_EPSILON
+ \return A bool representing yes/no.
+ */
+bool Matrix::is_uniform_scale(Coord const eps) const {
+    return ( _c[0] != 1              &&
+             fabs(_c[0]-_c[3]) < eps &&
              fabs(_c[1])       < eps &&
              fabs(_c[2])       < eps &&
              fabs(_c[4])       < eps &&
              fabs(_c[5])       < eps);
 }
 
-/**
- *  Does this matrix perform only a scale?
- */
-bool Matrix::is_scale(Coord const eps) const {
-    return ( fabs(_c[0] - 1) < eps &&
-             fabs(_c[1]) < eps &&
-             fabs(_c[2]) < eps &&
-             fabs(_c[3] - 1) < eps &&
-             fabs(_c[4]) < eps &&
-             fabs(_c[5]) );
-}
-
-/**
- *  Does this matrix perform only a rotation?
+/** Answers the question "Does this matrix perform \em{only} a rotation?"
+ \param eps an epsilon value defaulting to Geom_EPSILON
+ \return A bool representing yes/no.
  */
 bool Matrix::is_rotation(Coord const eps) const {
     return ( fabs(_c[0] - _c[3]) < eps &&
              fabs(_c[1] + _c[2]) < eps &&
              fabs(_c[4])         < eps &&
-             fabs(_c[5])         < eps   );
+             fabs(_c[5])         < eps &&
+             fabs(L2(get_x_axis()) - 1) < eps &&
+             fabs(L2(get_y_axis()) - 1) < eps);
 }
 
 //TODO: Remove all this crap!

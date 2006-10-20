@@ -5,8 +5,6 @@ using std::FILE;
 using std::fgetc;
 using std::feof;
 
-char const PathOpNames[] = {'L', 'Q', 'C', 'A'};
-
 char path_op_name(Geom::CurveType* ct) {
     if(dynamic_cast<Geom::LineTo *>(ct))
         return 'L';
@@ -191,23 +189,22 @@ Geom::Arrangement read_svgd(FILE* f) {
 
 
 /* Possibly useful function I wrote and then didn't use:
-   const char* whitespace = " \t\r\n"
-   const char* seperator = ", \t\r\n"
-   void eat_chars(FILE* f, const char* chars) {
-   while(!feof(f)) {
-   int i = 0;
-   int ch = fgetc(f);
-   while(1) {
+const char* whitespace = " \t\r\n"
+const char* seperator = ", \t\r\n"
+void eat_chars(FILE* f, const char* chars) {
+ while(!feof(f)) {
+  int i = 0;
+  int ch = fgetc(f);
+  while(1) {
    if(chars[i] == 0) {
-   ungetc(ch, f);
-   return;
+    ungetc(ch, f);
+    return;
    }
-   if(chars[i] == ch)
-   break;
+   if(chars[i] == ch) break;
    i++;
-   }
-   }
-   }
+  }
+ }
+}
 */
 
 /*

@@ -125,7 +125,7 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
     for(int i = 0; i < bs.size(); i+=2) {
         cairo_move_to(cr, bs[i]);
         cairo_line_to(cr, bs[i + 1]);
-        draw_number(cr, (bs[i] + bs[i + 1]) / 2, i / 2);
+        //draw_number(cr, (bs[i] + bs[i + 1]) / 2, i / 2);
     }
     cairo_stroke(cr);
 
@@ -133,6 +133,7 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
     cairo_move_to(cr, ch1.boundary.back());
     for(int i = 0; i < ch1.boundary.size(); i++) {
         cairo_line_to(cr, ch1.boundary[i]);
+        draw_number(cr, ch1.boundary[i], i);
     }
     cairo_stroke(cr);
 
@@ -140,6 +141,7 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
     cairo_set_source_rgba (cr, 0., 1., 0, 0.8);
     for(int i = 0; i < ch2.boundary.size(); i++) {
         cairo_line_to(cr, ch2.boundary[i]);
+        draw_number(cr, ch2.boundary[i], i);
     }
     cairo_stroke(cr);
 }

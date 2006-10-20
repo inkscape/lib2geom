@@ -256,7 +256,8 @@ ConvexHull::is_degenerate() const {
    order of traversal around.  Since the a->b and b->a bridges are seperated, they don't need to be merge
    order, just the order of the traversal of the host hull.  Currently some situations make a n->0 bridge
    first.*/
-pair< map<int, int>, std::map<int, int> > bridges(ConvexHull a, ConvexHull b) {
+pair< map<int, int>, map<int, int> >
+bridges(ConvexHull a, ConvexHull b) {
     map<int, int> abridges;
     map<int, int> bbridges;
 
@@ -327,51 +328,19 @@ ConvexHull sweepline_intersection(ConvexHull const &a, ConvexHull const &b) {
  */
 ConvexHull intersection(ConvexHull a, ConvexHull b) {
     ConvexHull ret;
-
-/*    pair< ector<int>, std::vector<int> > bpair = bridges(a, b);
-    vector<int> ab = bpair.first;
-    vector<int> bb = bpair.second;
+    int ai = 0, bi = 0;
+    int aj = a.boundary.size() - 1;
+    int bj = b.boundary.size() - 1;
     
-    int abi = 0, bbi = 0;
-    int nexti = 0;
-    if(a.boundary[0][1] > b.boundary[0][1]) goto start_b;
-    while(true) {
-
-        for(int i = nexti; i <= ab[abi]; i++)
-            ret.boundary.push_back(b[i]);
-        nexti = ab[abi + 1];
-        //if nexti == 0
-        abi += 2;
-
-        start_b:
-
-        for(int i = nexti; i <= bb[bbi]; i++)
-            ret.boundary.push_back(b[i]);
-        nexti = bb[bbi + 1];
-        bbi += 2;
-
+    /*while (true) {
+        if(a[ai]
     }*/
+    return ret;
 }
 
 /*** ConvexHull merge(ConvexHull a, ConvexHull b);
  * find the smallest convex hull that surrounds a and b.
  */
-
-/* Here's how it works at the moment:
-   The bridge pair is retrieved:
-      A->B  A->B    B->A  B->A
-   { {0, 1, 3, 0}, {2, 3, 0, 0} }
-
-   1. a. if a is on top then it is traversed until the first bridge to b.
-      b. if b is on top then it is traversed until the first bridge to a.
-   2. the current hull is traversed until the next bridge (index variables store where in the list we are).
-   3. the next hull and bridge is begun - back to 2
-   4. repeat until you run out of bridges, or there is a bridge to 0 (the last bridge, hopefully),
-      and then until you run out of points.
-
-   Since it currently doesn't work that last rule about the target being 0 causes it to exit early on some
-   configurations.
-*/
 ConvexHull merge(ConvexHull a, ConvexHull b) {
     ConvexHull ret;
 
@@ -379,22 +348,27 @@ ConvexHull merge(ConvexHull a, ConvexHull b) {
     map<int, int> ab = bpair.first;
     map<int, int> bb = bpair.second;
 
-    int i = 0;
+    ab[-1] = 0;
+    bb[-1] = 0;
+
+    int i = -1;
 
     if(a.boundary[0][1] > b.boundary[0][1]) goto start_b;
     while(true) {
-        for(; ab.count(i) == 0 && i < a.boundary.size(); i++) {
+        for(; ab.count(i) == 0; i++) {
             ret.boundary.push_back(a[i]);
+            if(i >= a.boundary.size()) return ret;
         }
-        if(i >= a.boundary.size()) break;
+        if(ab[i] == 0 && i != -1) break;
         i = ab[i];
         start_b:
-
-        for(; bb.count(i) == 0 && i < b.boundary.size(); i++) {
+        
+        for(; bb.count(i) == 0; i++) {
             ret.boundary.push_back(b[i]);
+            if(i >= b.boundary.size()) return ret;
         }
-        if(i >= b.boundary.size()) break;
-        i = bb[i];      
+        if(bb[i] == 0 && i != -1) break;
+        i = bb[i];
     }
     return ret;
 }

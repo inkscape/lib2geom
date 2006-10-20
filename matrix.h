@@ -23,6 +23,7 @@
 #include "rotate.h"
 #include "scale.h"
 #include "translate.h"
+#include "epsilon.h"
 
 namespace Geom {
 
@@ -31,14 +32,18 @@ namespace Geom {
  * 
  * For purposes of multiplication, points should be thought of as row vectors
  *
- *    p = ( p[X] p[Y]  1  )
+ * \f$(p_X p_Y 1)\f$
  *
- * to be right-multiplied by transformation matrices
- * \verbatim
-    c[] = | c[0] c[1]  0  |
-          | c[2] c[3]  0  |
-          | c[4] c[5]  1  |                           \endverbatim
- *
+ * to be right-multiplied by transformation matrices of the form
+ * \f[
+   \left[
+   \begin{array}{ccc}
+    c_0&c_1&0 \\
+    c_2&c_3&0 \\
+    c_4&c_5&1
+   \end{array}
+   \right]
+   \f]
  * (so the columns of the matrix correspond to the columns (elements) of the result,
  * and the rows of the matrix correspond to columns (elements) of the "input").
  */
@@ -96,10 +101,10 @@ class Matrix {
     //TODO: Remove testing code from production code! matrix.cpp as well
     bool test_identity() const;
 
-    bool is_translation(Coord const eps = 1e-6) const;
-    bool is_rotation(double const eps = 1e-6) const;
-    bool is_scale(double const eps = 1e-6) const;
-    bool is_uniform_scale(double const eps = 1e-6) const;
+    bool is_translation(Coord const eps = Geom_EPSILON) const;
+    bool is_rotation(double const eps = Geom_EPSILON) const;
+    bool is_scale(double const eps = Geom_EPSILON) const;
+    bool is_uniform_scale(double const eps = Geom_EPSILON) const;
 
     Matrix inverse() const;
 
