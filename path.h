@@ -22,13 +22,13 @@
  * How do we show elements through the iterator?
  */
 
-namespace Geom{
+namespace Geom {
 
 class CurveType;
 
-typedef CurveType* PathOp;
+typedef CurveType *PathOp;
 
-class Path{
+class Path {
     bool closed; // should this shape be closed (join endpoints with a line)
     std::vector<Point> handles;
     std::vector<PathOp> cmd;
@@ -40,7 +40,7 @@ public:
     std::vector<Point>const & get_handles() const { return handles; }
     std::vector<PathOp>const & get_cmd() const { return cmd; }
 	
-    class Elem{
+    class Elem {
     public:
         PathOp op;
         typedef std::vector<Point>::const_iterator const_iterator;
@@ -53,8 +53,8 @@ public:
 
         Elem() {}
         Elem(PathOp op,
-                 const_iterator s, const_iterator e) : op(op), s(s), e(e) {
-        }
+             const_iterator s, const_iterator e)
+        : op(op), s(s), e(e) {}
         
         Point operator[]( const int i) {return s[i];}
         Point operator[]( const int i) const {return s[i];}
@@ -71,8 +71,9 @@ public:
         std::vector<Point>::const_iterator h;
         
         ConstIter() {}
-        ConstIter(std::vector<PathOp>::const_iterator c, std::vector<Point>::const_iterator h) :
-            c(c), h(h) {}
+        ConstIter(std::vector<PathOp>::const_iterator c,
+                  std::vector<Point>::const_iterator h)
+        : c(c), h(h) {}
         void operator++();
         void operator--();
         Elem operator*() const;
@@ -84,7 +85,7 @@ public:
 
     typedef ConstIter const_iterator;
 
-    class Location{
+    class Location {
     public:
         ConstIter it;
         double t; // element specific meaning [0,1)
@@ -101,7 +102,8 @@ public:
     };
 
     Path() {}
-    Path(Path const & sp) : cmd(sp.cmd), handles(sp.handles), closed(sp.closed) {}
+    Path(Path const & sp)
+    : cmd(sp.cmd), handles(sp.handles), closed(sp.closed) {}
 
     ConstIter begin() const { return ConstIter(cmd.begin(), handles.begin()+1);}
     ConstIter end() const { return ConstIter(cmd.end(), handles.end());}
@@ -161,7 +163,7 @@ inline bool operator==(Path::HashCookie a, Path::HashCookie b) {
 
 
 class CurveType {
- public:
+public:
     unsigned const n_handles;
     
     virtual Point point_at(Geom::Path::Elem const & elm, double t)=0;
@@ -170,21 +172,21 @@ class CurveType {
 };
 
 class LineTo : public CurveType {
- public:
+public:
     virtual Point point_at(Geom::Path::Elem const & elm, double t);
     virtual multidim_sbasis<2> to_sbasis(Geom::Path::Elem const & elm);
     LineTo() : CurveType(1) {}
 };
 
 class QuadTo : public CurveType {
- public:
+public:
     virtual Point point_at(Geom::Path::Elem const & elm, double t);
     virtual multidim_sbasis<2> to_sbasis(Geom::Path::Elem const & elm);
     QuadTo() : CurveType(2) {}
 };
 
 class CubicTo : public CurveType {
- public:
+public:
     virtual Point point_at(Geom::Path::Elem const & elm, double t);
     virtual multidim_sbasis<2> to_sbasis(Geom::Path::Elem const & elm);
     CubicTo() : CurveType(3) {}
