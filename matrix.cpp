@@ -16,9 +16,7 @@
 
 namespace Geom {
 
-/** Multiplies two matrices together, effectively combining their transformations.
- \return The result of the multiplication. 
- */
+/** Multiplies two matrices together, effectively combining their transformations.*/
 Matrix operator*(Matrix const &m0, Matrix const &m1) {
     Matrix ret;
     int n = 0;
@@ -33,18 +31,14 @@ Matrix operator*(Matrix const &m0, Matrix const &m1) {
     return ret;
 }
 
-/** Multiplies a Matrix with another.
- \return A pointer to the resulting Matrix.
- */
+/** Multiplies a Matrix with another.*/
 Matrix &Matrix::operator*=(Matrix const &o)
 {
     *this = *this * o;
     return *this;
 }
 
-/** Scales the Matrix by multiplication with a scale transform.
- \return The result of the multiplication.
- */
+/** Scales a Matrix by multiplication with a scale transform. */
 Matrix &Matrix::operator*=(scale const &other) {
     for(int i = 0; i < 6; i += 2) {
         _c[i] *= other[X];
@@ -56,9 +50,7 @@ Matrix &Matrix::operator*=(scale const &other) {
     return *this;
 }
 
-/** Translates the Matrix by multiplication with a translate transform.
- \return The result of the multiplication.
- */
+/** Translates a Matrix by multiplication with a translate transform. */
 Matrix &Matrix::operator*=(translate const &other) {
     _c[4] += other[X];
     _c[5] += other[Y];
@@ -66,8 +58,9 @@ Matrix &Matrix::operator*=(translate const &other) {
 }
 
 
-/** Attempts to calculate the inverse of the matrix.
- *  This is a Matrix such that m * m.inverse() is the identity.
+/** Attempts to calculate the inverse of a matrix.
+ *  This is a Matrix such that m * m.inverse() is very near (hopefully < epsilon difference) the identity Matrix.
+ *  \textbf{The Identity Matrix is returned if the matrix has no inverse.}
  \return The inverse of the Matrix if defined, otherwise the Identity Matrix.
  */
 Matrix Matrix::inverse() const {
@@ -90,8 +83,7 @@ Matrix Matrix::inverse() const {
     return d;
 }
 
-/** Sets this matrix to be the Identity Matrix.
- */
+/** Sets this matrix to be the Identity Matrix. */
 void Matrix::set_identity() {
     _c[0] = 1.0;
     _c[1] = 0.0;
@@ -101,8 +93,7 @@ void Matrix::set_identity() {
     _c[5] = 0.0;
 }
 
-/** Returns the Identity Matrix.
- */
+/** Returns the Identity Matrix. */
 Matrix identity() {
     return Matrix(1.0, 0.0,
                   0.0, 1.0,
@@ -110,10 +101,13 @@ Matrix identity() {
 }
 
 /** Creates a Matrix given an axis and origin point.
- \param x_basis the vector of the x-axis.
- \param y_basis the vector of the y-axis.
- \param offset the origin of the coordinate system.
- \return The created Matrix.
+ *  The axis is represented as two vectors, which represent skew, rotation, and scaling in two dimensions.
+ *  from_basis(Point(1, 0), Point(0, 1), Point(0, 0)) would return the identity matrix.
+
+ \param x_basis the vector for the x-axis.
+ \param y_basis the vector for the y-axis.
+ \param offset the translation applied by the matrix.
+ \return The new Matrix.
  */
 Matrix from_basis(Point const x_basis, Point const y_basis, Point const offset) {
     return Matrix(x_basis[X], x_basis[Y],
@@ -121,7 +115,7 @@ Matrix from_basis(Point const x_basis, Point const y_basis, Point const offset) 
                   offset [X], offset [Y]);
 }
 
-/** Calculates a rotation matrix corresponding to an angle.
+/** Constructs a rotate transformation corresponding to an angle.
  \param theta the rotation angle in radians about the origin
  *
  * \see Geom::rotate_degrees
@@ -136,8 +130,7 @@ rotate::rotate(Geom::Coord const theta) :
         sin(theta))
 {}
 
-/** Calculates the determinant of the Matrix.
- */
+/** Calculates the determinant of a Matrix. */
 Geom::Coord Matrix::det() const {
     return _c[0] * _c[3] - _c[1] * _c[2];
 }
@@ -149,15 +142,14 @@ Geom::Coord Matrix::descrim2() const {
     return fabs(det());
 }
 
-/** Calculates the descriminant of the Matrix.
- */
+/** Calculates the descriminant of the Matrix. */
 Geom::Coord Matrix::descrim() const {
     return sqrt(descrim2());
 }
 
 /** [DEPRECATED] Assigns a matrix to a given coordinate array.
  \param array a pointer to the source array, must be 6 Coord long.
- \return the resulting matrix.
+ \return The resulting matrix.
  */
 Matrix &Matrix::assign(Coord const *array) {
     assert(array != NULL);
@@ -194,25 +186,25 @@ Geom::Coord *Matrix::copyto(Geom::Coord *array) const {
     return array;
 }
 
-/** [DEPRECATED] - use descrim.
- */
+/** [DEPRECATED] - use descrim. */
 double expansion(Matrix const &m) {
     return sqrt(fabs(m.det()));
 }
 
-/** [DEPRECATED] - use descrim.
- */
+/** [DEPRECATED] - use descrim. */
 double Matrix::expansion() const {
     return sqrt(fabs(det()));
 }
 
-/** Calculates the amount of x-scaling imparted by the Matrix.
+/** Calculates the amount of x-scaling imparted by the Matrix.  This is the scaling applied before
+ *  the other transformations.  It is \emph{not} the overall y-scaling of the transformation.
  */
 double Matrix::expansionX() const {
     return sqrt(_c[0] * _c[0] + _c[1] * _c[1]);
 }
 
-/** Calculates the amount of y-scaling imparted by the Matrix.
+/** Calculates the amount of y-scaling imparted by the Matrix.  This is the scaling applied before
+ *  the other transformations.  It is \emph{not} the overall y-scaling of the transformation. 
  */
 double Matrix::expansionY() const {
     return sqrt(_c[2] * _c[2] + _c[3] * _c[3]);
@@ -226,12 +218,12 @@ Point Matrix::get_y_axis() const {
     return Point(_c[2], _c[3]);
 }
 
-Point Matrix::set_x_axis(Point const &vec) {
+void Matrix::set_x_axis(Point const &vec) {
     for(int i = 0; i < 2; i++)
         _c[i] = vec[i];
 }
 
-Point Matrix::set_y_axis(Point const &vec) {
+void Matrix::set_y_axis(Point const &vec) {
     for(int i = 0; i < 2; i++)
         _c[i + 2] = vec[i];
 }
@@ -244,7 +236,7 @@ Point Matrix::get_translation() const {
 
 /** Sets the translation imparted by the Matrix.
  */
-Point Matrix::set_translation(Point const &loc) {
+void Matrix::set_translation(Point const &loc) {
     for(int i = 0; i < 2; i++)
         _c[i + 4] = loc[i];
 }

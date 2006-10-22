@@ -3,8 +3,9 @@
 #include "poly.h"
 #include "path-poly-fns.h"
 using namespace Geom;
-/**
- *
+
+/** Calculates the length of a cubic element through subdivision.
+ *  The 'tol' parameter is the maximum error allowed.  This is used to subdivide the curve where necessary.
  */
 double cubic_length_subdividing(Geom::Path::Elem const & e, double tol) {
     Geom::Point v[3];
@@ -37,6 +38,10 @@ double cubic_length_subdividing(Geom::Path::Elem const & e, double tol) {
     }
 }
 
+/** Calculates the length of a path through iteration and subsequent subdivision.
+ *  Currently handles cubic curves and lines.
+ *  The 'tol' parameter is the maximum error allowed.  This is used to subdivide the curve where necessary.
+ */
 double arc_length_subdividing(Geom::Path const & p, double tol) {
     double result = 0;
 
@@ -60,6 +65,13 @@ static double poly_length_integrating(double t, void* param) {
     return hypot(pc[0].eval(t), pc[1].eval(t));
 }
 
+/** Calculates the length of a path Element through gsl integration.
+ \param pe the Element.
+ \param t the parametric input 0 to 1 which specifies the amount of the curve to use.
+ \param tol the maximum error allowed.
+ \param result variable to be incremented with the length of the path
+ \param abs_error variable to be incremented with the estimated error
+*/
 void arc_length_integrating(Geom::Path::Elem pe, double t, double tol, double &result, double &abs_error) {
     if(dynamic_cast<LineTo *>(iter.cmd()))
         result += L2(pe.first() - pe.last())*t;
@@ -80,13 +92,13 @@ void arc_length_integrating(Geom::Path::Elem pe, double t, double tol, double &r
             gsl_integration_qag (&F, 0, t, 0, tol, 20, 
                                  GSL_INTEG_GAUSS21, w, &quad_result, &err);
             
-        abs_error += fabs(err);
-            
+        abs_error += err;
         result += quad_result;
     } else
         return;
 }
 
+/** Calculates the length of a Path through gsl integration.  The parameter 'tol' is the maximum error allowed. */
 double arc_length_integrating(Geom::Path const & p, double tol) {
     double result = 0, abserr = 0;
 
@@ -98,6 +110,7 @@ double arc_length_integrating(Geom::Path const & p, double tol) {
     return result;
 }
 
+/** Calculates the arc length to a specific location on the path.  The parameter 'tol' is the maximum error allowed. */
 double arc_length_integrating(Geom::Path const & p, Geom::Path::Location const & pl, double tol) {
     double result = 0, abserr = 0;
     ptrdiff_t offset = pl.it - p.begin();

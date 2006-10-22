@@ -85,9 +85,9 @@ class Matrix {
     Point get_x_axis() const;
     Point get_y_axis() const;
     Point get_translation() const;
-    Point set_x_axis(Point const &vec);
-    Point set_y_axis(Point const &vec);
-    Point set_translation(Point const &loc);
+    void set_x_axis(Point const &vec);
+    void set_y_axis(Point const &vec);
+    void set_translation(Point const &loc);
 
     explicit Matrix(rotate const &r) {
         set_x_axis(r.vec);

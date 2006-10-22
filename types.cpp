@@ -13,9 +13,9 @@
  *  The current version tries to handle infinite coordinates gracefully,
  *  but it's not clear that any callers need that.
  *
- *  \pre *this != Point(0, 0).
- *  \pre Neither coordinate is NaN.
- *  \post L2(*this) very near 1.0.
+ *  \pre \f$this \neq (0, 0)\f$
+ *  \pre Neither component is NaN.
+ *  \post \f$-\epsilon<\left|this\right|-1<\epsilon\f$
  */
 void Geom::Point::normalize() {
 	double len = hypot(_pt[0], _pt[1]);
