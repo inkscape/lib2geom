@@ -50,10 +50,8 @@ void open() {
         const char* filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(d));
         FILE* f = fopen(filename, "r");
         handles.clear();
-        while(!feof(f)) {
+        while(!feof(f))
             handles.push_back(read_point(f));
-            fgetc(f);
-        }
         fclose(f);
     }
     gtk_widget_destroy(d);
@@ -66,7 +64,7 @@ void save() {
         FILE* f = fopen(filename, "w");
         int l = handles.size();
         for(int i = 0; i < l; i++)
-            fprintf(f, "%g %g\n", handles[i][0], handles[i][1]);
+            fprintf(f, "%lf %lf\n", handles[i][0], handles[i][1]);
         fclose(f);
     }
     gtk_widget_destroy(d);
