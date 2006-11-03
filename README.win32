@@ -5,6 +5,6 @@
 - make a build directory
 - open cmd.exe
     - mingwenv.bat
-    - cmake -g "Unix Makefiles" c:\path\to\2geom\source
+    - cmake -g "MinGW Makefiles" c:\path\to\2geom\source
     - make
 - copy the resulting *.exe files into the inkscape install directory
