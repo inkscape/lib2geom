@@ -1,3 +1,6 @@
+INCLUDE_DIRECTORIES (src)
+LINK_DIRECTORIES (src)
+
 SET(2GEOM_TESTS_SRC
 bezier-utils-test
 bez-test
