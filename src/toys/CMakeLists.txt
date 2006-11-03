@@ -19,6 +19,7 @@ s-bez
 gear
 cheb
 match-curve
+mesh-grad
 "${NEEDS_GSL}"
 )
 
