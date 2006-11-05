@@ -41,13 +41,14 @@ Perhaps we should split the docs into useage/complexity levels.  eg, "basic", "a
 (L0, L1, L2 would be put in the advanced section)
 */
 
-class MyToy: public Toy {
+class DrawToy: public Toy {
     void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         Geom::ArrangementBuilder builder;
-        if(handles.size() > 0) {
+        if(handles.size() > 3) {
+            Geom::Point mid = handles[0];
             builder.start_subpath(handles[0]);
-            for(int i = 1; i < handles.size(); i++) {
-                builder.push_line(handles[i]);
+            for(int i = 3; i < handles.size(); i+=2) {
+                builder.push_cubic(handles[i-2], handles[i-2]*2 - handles[i-3], handles[i-1], handles[i]);
             }
         }
         cairo_arrangement(cr, builder.peek());
@@ -68,13 +69,13 @@ class MyToy: public Toy {
 };
 
 int main(int argc, char **argv) {
-    init(argc, argv, "draw-toy", new MyToy());
+    init(argc, argv, "draw-toy", new DrawToy());
     return 0;
 }
 
 /*
   Local Variables:
-  mode:c++
+  mo
   c-file-style:"stroustrup"
   c-file-offsets:((innamespace . 0)(inline-open . 0)(case-label . +))
   indent-tabs-mode:nil

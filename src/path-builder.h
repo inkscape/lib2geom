@@ -33,22 +33,16 @@ public:
         push_line(p1);
     }
 
-    void push_horizontal_rel(double x) { push_horizontal(x + _current_point[0]); }
-    void push_horizontal(double x) {
+    void push_horizontal_rel(Coord y) { push_horizontal(y + _current_point[1]); }
+    void push_horizontal(Coord y) {
         if (!_current_subpath) start_subpath(_current_point);
-        Point p;
-        p[0] = x;
-        p[1] = _current_point[1];
-        push_line(p);
+        push_line(Point(_current_point[0], y));
     }
 
-    void push_vertical_rel(double y) { push_vertical(y + _current_point[1]); }
-    void push_vertical(double y) {
+    void push_vertical_rel(Coord x) { push_vertical(x + _current_point[0]); }
+    void push_vertical(Coord x) {
         if (!_current_subpath) start_subpath(_current_point);
-        Point p;
-        p[0] = _current_point[0];
-        p[1] = y;
-        push_line(p);
+        push_line(Point(x, _current_point[1]));
     }
 
     void push_quad_rel(Point const &p1, Point const &p2) { push_quad(p1 + _current_point, p2 + _current_point); }
