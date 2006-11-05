@@ -33,9 +33,9 @@
 #include "toy-framework.cpp"
 
 class MyToy: public Toy {
-    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
+    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
     }
-}
+};
 
 int main(int argc, char **argv) {
     init(argc, argv, "untitled", new MyToy());

@@ -77,7 +77,7 @@ void save_cairo() {
         cairo_surface_t* cr_s;
         int l = strlen(filename);
         #if CAIRO_HAS_PDF_SURFACE
-        if (l >= 4 && strcmp(filename + strlen(filename) - 4, ".pdf") == 0)
+        if (l >= 4 && strcmp(filename + l - 4, ".pdf") == 0)
             cr_s = cairo_pdf_surface_create(filename, 600., 600.);
         #endif
         #if CAIRO_HAS_SVG_SURFACE
@@ -98,18 +98,37 @@ void save_cairo() {
     gtk_widget_destroy(d);
 }
 
+void save_image() {
+    GtkWidget* d = gtk_file_chooser_dialog_new("Save file as png", window, GTK_FILE_CHOOSER_ACTION_SAVE, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT, NULL);
+    if(gtk_dialog_run(GTK_DIALOG(d)) == GTK_RESPONSE_ACCEPT) {
+        const char* filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(d));
+        cairo_surface_t* cr_s = cairo_image_surface_create ( CAIRO_FORMAT_ARGB32, 600, 600 );
+        cairo_t* cr = cairo_create(cr_s);
+        
+        if(current_toy != NULL)
+            current_toy->draw(cr, new std::ostringstream, 600, 600, true);
+
+        cairo_show_page(cr);
+        cairo_surface_write_to_png(cr_s, filename);
+        cairo_destroy (cr);
+        cairo_surface_destroy (cr_s);
+    }
+    gtk_widget_destroy(d);
+}
+
 GtkItemFactory* item_factory;
 
 GtkItemFactoryEntry menu_items[] = {
     { "/_File",             NULL,           NULL,           0,  "<Branch>"                    },
-    { "/File/_Open",        "<CTRL>O",      open,           0,  "<StockItem>", GTK_STOCK_OPEN },
-    { "/File/_Save",        "<CTRL>S",      save,           0,  "<StockItem>", GTK_STOCK_SAVE },
+    { "/File/_Open Handles","<CTRL>O",      open,           0,  "<StockItem>", GTK_STOCK_OPEN },
+    { "/File/_Save Handles","<CTRL>S",      save,           0,  "<StockItem>", GTK_STOCK_SAVE_AS },
     { "/File/sep",          NULL,           NULL,           0,  "<Separator>"                 },
-    { "/File/Save Graphics",NULL,           save_cairo,     0,  "<StockItem>", GTK_STOCK_SAVE },
+    { "/File/Save SVG/PDF", NULL,           save_cairo,     0,  "<StockItem>", GTK_STOCK_SAVE },
+    { "/File/Save PNG",     NULL,           save_image,     0,  "<StockItem>", GTK_STOCK_SELECT_COLOR }, 
     { "/File/sep",          NULL,           NULL,           0,  "<Separator>"                 },
     { "/File/_Quit",        "<CTRL>Q",      gtk_main_quit,  0,  "<StockItem>", GTK_STOCK_QUIT },
     { "/_Help",             NULL,           NULL,           0,  "<LastBranch>"                },
-    { "/Help/About",        NULL,           make_about,     0,  "<Item>"                      }
+    { "/Help/About",        NULL,           make_about,     0,  "<StockItem>", GTK_STOCK_ABOUT}
 };
 gint nmenu_items = 9;
 
@@ -238,7 +257,7 @@ static gint mouse_motion_event(GtkWidget* widget, GdkEventMotion* e, gpointer da
 static gint mouse_event(GtkWidget* window, GdkEventButton* e, gpointer data) {
     (void)(data);
     Geom::Point mouse(e->x, e->y);
-    if(e->button == 1 || e->button == 3) {
+    if(e->button == 1) {
         for(int i = 0; i < handles.size(); i++) {
             if(Geom::L2(mouse - handles[i]) < 5)
                 selected_handle = &handles[i];

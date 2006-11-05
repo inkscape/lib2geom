@@ -12,7 +12,7 @@ using std::vector;
 bool screen_lines = true;
 bool numbers = true;
 
-std::vector<Geom::Point> handles;
+vector<Geom::Point> handles;
 Geom::Point *selected_handle;
 Geom::Point old_mouse_point;
 

@@ -90,15 +90,6 @@ public:
         push_cubic(p1, p2, p3);
     }
 
-    void push_ellipse(Point const &p1, Point const &p2, Point const &p3, Point const &p4) {
-        if (!_current_subpath) start_subpath(_current_point);
-        _current_subpath->cmd.push_back(cubicto);
-        _current_subpath->handles.push_back(p1);
-        _current_subpath->handles.push_back(p2);
-        _current_subpath->handles.push_back(p3);
-        _current_subpath->handles.push_back(p4);
-    }
-
     void push_ellipse(Point const &radii, double rotation, bool large, bool sweep, Point const &end) {
         //TODO
     }
