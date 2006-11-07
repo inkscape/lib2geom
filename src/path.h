@@ -133,8 +133,8 @@ public:
     /** compute the bounding box of this path. */
     Maybe<Rect> bbox() const;
 
-    /** a new path with an extra node inserted at at without changing the curve. */
     Path insert_nodes(Location* b, Location* e);
+    /** a new path with an extra node inserted at at without changing the curve. */
     Path insert_node(Location at);
 
     /** coords of point on path. */
