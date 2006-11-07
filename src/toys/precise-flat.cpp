@@ -29,70 +29,44 @@ using std::vector;
 unsigned total_pieces_sub;
 unsigned total_pieces_inc;
 
-
-void draw_offset(cairo_t *cr, multidim_sbasis<2> const &B, double dist, double tol=0.1) {
-    draw_handle(cr, Geom::Point(B[0].point_at(1), B[1].point_at(1)));
-    
-    multidim_sbasis<2> dB;
-    dB = derivative(B);
-    SBasis arc = dot(dB, dB);
-    
-    /*** A rather weak effort at estimating the offset curve error.  Here we assume that the
-     * biggest error occurs where the derivative vanishes.  This code tries to bound the smallest
-     * magnitude of the derivative.
-     */
-    double err = 0;
-    double ss = 0.25;
-    for(int i = 1; i < arc.size(); i++) {
-        err += fabs(Hat(arc[i]))*ss;
-        ss *= 0.25;
-    }
-    double le = fabs(arc[0][0]) - err;
-    double re = fabs(arc[0][1]) - err;
-    err /= std::max(arc[0][0], arc[0][1]);
-    if(err > tol) {
-        const int N = 2;
-        for(int subdivi = 0; subdivi < N; subdivi++) {
-            double dsubu = 1./N;
-            double subu = dsubu*subdivi;
-            multidim_sbasis<2> Bp;
-            for(int dim = 0; dim < 2; dim++) {
-                Bp[dim] = compose(B[dim], BezOrd(subu, dsubu+subu));
-            }
-            draw_offset(cr, Bp, dist);
-        }
-    } else {
-        arc = sqrt(arc, 2);
-    
-        multidim_sbasis<2> offset;
-    
-        for(int dim = 0; dim < 2; dim++) {
-            double sgn = dim?-1:1;
-            offset[dim] = B[dim] + divide(dist*sgn*dB[1-dim],arc, 2);
-        }
-            cairo_set_source_rgba (cr, 0., 0.5, 0, 0.5);
-        cairo_stroke(cr);
-        cairo_md_sb_handles(cr, offset);
-        cairo_set_source_rgba (cr, 0., 0, 0, 1);
-        cairo_stroke(cr);
-        
-    }
-}
-
 class SBez: public Toy {
 virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
     cairo_set_line_width (cr, 0.5);
     
     multidim_sbasis<2> B = bezier_to_sbasis<2, 3>(handles.begin());
+    multidim_sbasis<2> dB = derivative(B);
+    multidim_sbasis<2> ddB = derivative(dB);
     cairo_md_sb(cr, B);
-    total_pieces_sub = 0;
-    total_pieces_inc = 0;
-    for(int i = 4; i < 5; i++) {
-        draw_offset(cr, B, 10*i);
-        draw_offset(cr, B, -10*i);
+    
+    // draw the longest chord that is no worse than tol from the curve.
+    
+    Geom::Point st = unit_vector(point_at(dB, 0));
+    double s3 = fabs(dot(handles[2] - handles[0], rot90(st)));
+    
+    SBasis inflect = dot(dB, rot90(ddB));
+    std::vector<double> rts = roots(inflect);
+    double f = 3;
+    for(int i = 0; i < rts.size(); i++) {
+        draw_handle(cr, point_at(B, rts[i]));
+        
+        double tp = rts[i];
+        Geom::Point st = unit_vector(point_at(dB, tp));
+        Geom::Point O = point_at(B, tp);
+        double s4 = fabs(dot(handles[3] - O, rot90(st)));
+        double tf = pow(f/s4, 1./3);
+        Geom::Point t1p = point_at(B, tp + tf*(1-tp));
+        Geom::Point t1m = point_at(B, tp - tf*(1-tp));
+        cairo_move_to(cr, t1m);
+        cairo_line_to(cr, t1p);
+        cairo_stroke(cr);
+        //std::cout << tp << ", " << t1m << ", " << t1p << std::endl;
     }
-    *notify << "total pieces subdivision = " << total_pieces_sub << std::endl; 
-    *notify << "total pieces inc = " << total_pieces_inc; 
+    
+    cairo_move_to(cr, point_at(B, 0));
+    double t0 = 2*sqrt(f/(3*s3));
+    //std::cout << t0 << std::endl;
+    cairo_line_to(cr, point_at(B, t0));
+    cairo_stroke(cr);
 }
 };
 
