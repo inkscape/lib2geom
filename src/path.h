@@ -115,7 +115,11 @@ public:
     Point final_point() const { return handles.back(); }
 
     /** returns the point at the position given by walking along the path. */
-    Location point_at_arc_length(double s);
+    Location location_at_arc_length(double s);
+
+    Point point_at_arc_length(double s) {
+        return point_at(location_at_arc_length(s));
+    }
 
     /** return the last nearest point on the path. */
     Location nearest_location(Point p, double& dist) const;
