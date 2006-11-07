@@ -7,7 +7,7 @@ void write_svgd(FILE* f, Geom::Path const &p);
 /** write a file SVG pth data style from p. */
 
 std::ostream &operator<< (std::ostream &out_file, const Geom::Path & p);
-std::ostream &operator<< (std::ostream &out_file, const Geom::Arrangement & p);
+std::ostream &operator<< (std::ostream &out_file, const Geom::PathSet & p);
 
 /*
   Local Variables:

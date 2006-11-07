@@ -217,9 +217,9 @@ Path::total_segments() const {
 }
 
 unsigned
-Arrangement::total_segments() const {
+PathSet::total_segments() const {
     unsigned segs = 0;
-    for(Arrangement::const_iterator it = begin(); it != end(); it++) {
+    for(PathSet::const_iterator it = begin(); it != end(); it++) {
         segs += (*it).total_segments();
     }
     return segs;

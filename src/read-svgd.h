@@ -3,9 +3,9 @@
 #include <cassert>
 
 void write_svgd(std::FILE* f, Geom::Path const &p);
-void write_svgd(std::FILE* f, Geom::Arrangement const &p);
+void write_svgd(std::FILE* f, Geom::PathSet const &p);
 
-Geom::Arrangement read_svgd(std::FILE* f);
+Geom::PathSet read_svgd(std::FILE* f);
 
 
 /*

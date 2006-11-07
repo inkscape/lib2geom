@@ -5,9 +5,9 @@
 
 namespace Geom {
 
-class ArrangementBuilder {
+class PathSetBuilder {
 public:
-    ArrangementBuilder() : _current_subpath(NULL) {}
+    PathSetBuilder() : _current_subpath(NULL) {}
 
     void start_subpath_rel(Point const &p0) { start_subpath(p0 + _current_point); }
     void start_subpath(Point const &p0) {
@@ -96,10 +96,10 @@ public:
         }
     }
 
-    Arrangement const &peek() const { return _path; }
+    PathSet const &peek() const { return _path; }
 
 private:
-    Arrangement _path;
+    PathSet _path;
     Path *_current_subpath;
     Point _current_point;
     Point _initial_point;

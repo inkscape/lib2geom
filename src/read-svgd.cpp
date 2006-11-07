@@ -33,8 +33,8 @@ void write_svgd(FILE* f, Geom::Path const &p) {
         fprintf(f, "Z ");
 }
 
-void write_svgd(FILE* f, Geom::Arrangement const &p) {
-    for(Geom::Arrangement::const_iterator it = p.begin(); it != p.end(); it++) {
+void write_svgd(FILE* f, Geom::PathSet const &p) {
+    for(Geom::PathSet::const_iterator it = p.begin(); it != p.end(); it++) {
         write_svgd(f, *it);
     }
 }
@@ -55,8 +55,8 @@ std::ostream &operator<< (std::ostream &out_file, const Geom::Path & p) {
             return out_file;
 }
 
-std::ostream &operator<< (std::ostream &out_file, const Geom::Arrangement & p) {
-    for(Geom::Arrangement::const_iterator it = p.begin(); it != p.end(); it++) {
+std::ostream &operator<< (std::ostream &out_file, const Geom::PathSet & p) {
+    for(Geom::PathSet::const_iterator it = p.begin(); it != p.end(); it++) {
         out_file << *it;
     }
                                                                                    return out_file;
@@ -69,10 +69,10 @@ Geom::Point point(double d1, double d2) {
     return p;
 }
 
-Geom::Arrangement read_svgd(FILE* f) {
+Geom::PathSet read_svgd(FILE* f) {
     assert(f);
 
-    Geom::ArrangementBuilder builder;
+    Geom::PathSetBuilder builder;
 
     char mode = 0;
 

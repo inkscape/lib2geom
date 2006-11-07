@@ -97,7 +97,7 @@ void path_to_polyline::quad_to_polyline(Geom::Path::Elem e) {
     }
 }
    
-path_to_polyline::operator Geom::Arrangement() {
+path_to_polyline::operator Geom::PathSet() {
     // make a polyline path
     return pb.peek();
 }

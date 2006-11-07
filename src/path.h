@@ -155,7 +155,7 @@ public:
     operator HashCookie();
     
     unsigned total_segments() const;
-    friend class ArrangementBuilder;
+    friend class PathSetBuilder;
     template <class T> friend Path operator*(Path const &p, T const &m);
 };
 
@@ -215,32 +215,32 @@ inline std::vector<Point>::const_iterator Path::ConstIter::end() const {
 }
 
 
-class ArrangementBuilder;
+class PathSetBuilder;
 
-class Arrangement {
+class PathSet {
 public:
-    typedef std::vector<Path>::const_iterator ArrangementConstIter;
-    typedef ArrangementConstIter const_iterator;
+    typedef std::vector<Path>::const_iterator PathSetConstIter;
+    typedef PathSetConstIter const_iterator;
     
     const_iterator begin() const { return _subpaths.begin(); }
     const_iterator end() const { return _subpaths.end(); }
     Path const &front() const { return _subpaths.front(); }
     Path const &back() const { return _subpaths.back(); }
     
-    struct ArrangementLocation {
+    struct PathSetLocation {
         Path::ConstIter it;
         double t; // element specific meaning [0,1)
-        ArrangementLocation(Path::ConstIter it, double t) : it(it), t(t) {}
+        PathSetLocation(Path::ConstIter it, double t) : it(it), t(t) {}
     };
 
-    Arrangement() {}
-    Arrangement(Path sp) { _subpaths.push_back(sp); }
+    PathSet() {}
+    PathSet(Path sp) { _subpaths.push_back(sp); }
     
     unsigned total_segments() const;
 
     template <typename F>
-    Arrangement map(F f) const {
-        Arrangement pr;
+    PathSet map(F f) const {
+        PathSet pr;
         for ( const_iterator it = begin() ; it != end() ; it++ ) {
             pr._subpaths.push_back(f(*it));
         }
@@ -250,8 +250,8 @@ public:
 private:
     std::vector<Path> _subpaths;
 
-    friend class ArrangementBuilder;
-    template <class T> friend Arrangement operator*(Arrangement const &p, T const &m);
+    friend class PathSetBuilder;
+    template <class T> friend PathSet operator*(PathSet const &p, T const &m);
 };
 
 inline bool operator!=(const Path::ConstIter &a, const Path::ConstIter &b) 
@@ -272,7 +272,7 @@ template <class T> Path operator*(Path const &p, T const &m) {
     return pr;
 }
 
-template <class T> Arrangement operator*(Arrangement const &p, T const &m) {
+template <class T> PathSet operator*(PathSet const &p, T const &m) {
     struct multiply_by {
         T const &_m;
         multiply_by(T const &m) : _m(m) {}
