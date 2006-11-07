@@ -15,6 +15,7 @@ rat-bez
 sb1d
 sb2d
 s-bez
+precise-flat
 #toy-cairo
 gear
 cheb
