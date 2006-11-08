@@ -28,7 +28,7 @@ void cairo_path(cairo_t *cr, Geom::Path const &p) {
     }
 }
 
-void cairo_arrangement(cairo_t *cr, Geom::Arrangement const &p) {
+void cairo_PathSet(cairo_t *cr, Geom::PathSet const &p) {
     std::vector<Geom::Path> subpaths;
     
     for (std::vector<Geom::Path>::const_iterator it(p.begin()),
@@ -72,7 +72,7 @@ void cairo_path_handles(cairo_t *cr, Geom::Path const &p) {
     }
 }
 
-void cairo_arrangement_handles(cairo_t *cr, Geom::Arrangement const &p) {
+void cairo_PathSet_handles(cairo_t *cr, Geom::PathSet const &p) {
     std::vector<Geom::Path> subpaths;
     
     for (std::vector<Geom::Path>::const_iterator it(p.begin()),
@@ -83,15 +83,15 @@ void cairo_arrangement_handles(cairo_t *cr, Geom::Arrangement const &p) {
 }
 
 void cairo_md_sb(cairo_t *cr, multidim_sbasis<2> const &B) {
-    Geom::ArrangementBuilder pb;
+    Geom::PathSetBuilder pb;
     subpath_from_sbasis(pb, B, 0.1);
-    cairo_arrangement(cr, pb.peek());
+    cairo_PathSet(cr, pb.peek());
 }
 
 void cairo_md_sb_handles(cairo_t *cr, multidim_sbasis<2> const &B) {
-    Geom::ArrangementBuilder pb;
+    Geom::PathSetBuilder pb;
     subpath_from_sbasis(pb, B, 0.1);
-    cairo_arrangement_handles(cr, pb.peek());
+    cairo_PathSet_handles(cr, pb.peek());
 }
 
 /*

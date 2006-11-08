@@ -3,9 +3,16 @@
 #include <cstdlib>
 #include <cmath>
 #include <vector>
-
+#include <iostream>
+#include <sstream>
 #include <gtk/gtk.h>
+#include <gtk/gtk.h>
+
 #include "interactive-bits.h"
+#include "point.h"
+#include "point-ops.h"
+#include "point-fns.h"
+#include "geom.h"
 
 using std::vector;
 

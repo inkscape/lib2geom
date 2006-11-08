@@ -75,11 +75,11 @@ class Sb1d: public Toy {
                     << B[1]
 //sbasis_to_poly(B[1]) 
                     << std::endl;
-            Geom::ArrangementBuilder pb;
+            Geom::PathSetBuilder pb;
             B[1] = SBasis(BezOrd(2*width/4)) - (width/4)*B[1];
             subpath_from_sbasis(pb, B, 0.001);
-            Geom::Arrangement p = pb.peek();
-            cairo_arrangement(cr, p);
+            Geom::PathSet p = pb.peek();
+            cairo_PathSet(cr, p);
             
             cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
             cairo_stroke(cr);

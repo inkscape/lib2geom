@@ -1,34 +1,6 @@
-#include <cstdio>
-#include <cstring>
-#include <cstdlib>
-#include <cmath>
-
-//Not sure how much of this is required, but hey
-#include <gtk/gtk.h>
-#include <cassert>
-#include <algorithm>
-#include <sstream>
-#include <iostream>
-#include <vector>
-#include <iterator>
-#include "s-basis.h"
-#include "interactive-bits.h"
-#include "bezier-to-sbasis.h"
-#include "sbasis-to-bezier.h"
 #include "path.h"
 #include "path-cairo.h"
-#include "multidim-sbasis.h"
 #include "path-builder.h"
-#include "translate.h"
-#include "translate-ops.h"
-#include "solver.h"
-#include "nearestpoint.cpp"
-#include "sbasis-poly.h"
-#include "sturm.h"
-#include "poly-dk-solve.h"
-#include "poly-laguerre-solve.h"
-#include "choose.h"
-#include "convex-cover.h"
 
 #include "toy-framework.cpp"
 
@@ -43,7 +15,7 @@ Perhaps we should split the docs into useage/complexity levels.  eg, "basic", "a
 
 class DrawToy: public Toy {
     void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
-        Geom::ArrangementBuilder builder;
+        Geom::PathSetBuilder builder;
         if(handles.size() > 3) {
             Geom::Point mid = handles[0];
             builder.start_subpath(handles[0]);
@@ -51,7 +23,7 @@ class DrawToy: public Toy {
                 builder.push_cubic(handles[i-2], handles[i-2]*2 - handles[i-3], handles[i-1], handles[i]);
             }
         }
-        cairo_arrangement(cr, builder.peek());
+        cairo_PathSet(cr, builder.peek());
     }
     void mouse_pressed(GdkEventButton* e) {
         Geom::Point mouse(e->x, e->y);

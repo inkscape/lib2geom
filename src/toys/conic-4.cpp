@@ -107,9 +107,9 @@ class Conic4: public Toy {
         cairo_set_line_width (cr, 1);
         cairo_stroke(cr);
 
-        Geom::ArrangementBuilder pb;
+        Geom::PathSetBuilder pb;
         subpath_from_sbasis(pb, B, 1);
-        Geom::Arrangement pth = pb.peek();
+        Geom::PathSet pth = pb.peek();
         *notify << pth;
     }
 };

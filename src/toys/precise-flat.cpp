@@ -1,25 +1,8 @@
-#include <cstdio>
-#include <cstring>
-#include <cstdlib>
-#include <cmath>
-
-#include <gtk/gtk.h>
-#include <cassert>
-#include <algorithm>
-#include <sstream>
-#include <iostream>
-#include <vector>
-#include <iterator>
 #include "s-basis.h"
-#include "interactive-bits.h"
 #include "bezier-to-sbasis.h"
 #include "sbasis-to-bezier.h"
-#include "path.h"
-#include "path-cairo.h"
 #include "multidim-sbasis.h"
-#include "path-builder.h"
-#include "translate.h"
-#include "translate-ops.h"
+#include "path-cairo.h"
 
 #include "toy-framework.cpp"
 

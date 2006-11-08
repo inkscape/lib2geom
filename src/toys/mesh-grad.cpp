@@ -102,7 +102,7 @@ class Sb2d2: public Toy {
             for(int ui = 0; ui < 10; ui++) {
                 double tu = ui/10.;
                 
-                Geom::ArrangementBuilder pb;
+                Geom::PathSetBuilder pb;
                 multidim_sbasis<2> B;
                 multidim_sbasis<2> tB;
                 
@@ -130,7 +130,7 @@ class Sb2d2: public Toy {
                 tB = (width/2)*tB + Geom::Point(width/4, width/4);
                 subpath_from_sbasis(pb, tB, 0.1, false);
                 
-                cairo_arrangement(cr, pb.peek());
+                cairo_PathSet(cr, pb.peek());
                 
                 //std::cout <<  pb.peek().end() - pb.peek().begin() << std::endl;
                 cairo_set_source_rgba (cr, tu, tv, 0, 1);

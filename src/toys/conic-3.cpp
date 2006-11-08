@@ -76,10 +76,10 @@ class Conic3: public Toy {
             }
         }
         {
-            Geom::ArrangementBuilder pb;
+            Geom::PathSetBuilder pb;
             subpath_from_sbasis(pb, B, 1);
-            cairo_arrangement(cr, pb.peek());
-            cairo_arrangement_handles(cr, pb.peek());
+            cairo_PathSet(cr, pb.peek());
+            cairo_PathSet_handles(cr, pb.peek());
         }
     }
 };

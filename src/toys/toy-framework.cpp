@@ -1,13 +1,5 @@
 #include "toy-framework.h"
 
-#include <sstream>
-#include <iostream>
-
-#include "point.h"
-#include "point-ops.h"
-#include "point-fns.h"
-#include "geom.h"
-
 #include "cairo-features.h"
 #if CAIRO_HAS_PDF_SURFACE
 #include "cairo-pdf.h"

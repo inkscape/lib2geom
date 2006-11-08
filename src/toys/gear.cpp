@@ -63,7 +63,7 @@ public:
     
     int number_of_teeth() {return _number_of_teeth;}
     
-    Geom::Arrangement path();
+    Geom::PathSet path();
     Gear spawn(int N, double a);
     
     Gear(int n, double m, double phi) {
@@ -115,8 +115,8 @@ private:
         return (sqrt(R*R - base_radius()*base_radius())/base_radius()) - acos(base_radius()/R);
     }
 };
-Geom::Arrangement Gear::path() {
-    Geom::ArrangementBuilder pb;
+Geom::PathSet Gear::path() {
+    Geom::PathSetBuilder pb;
     
     // angle covered by a full tooth and fillet
     double tooth_rotation = 2.0 * tooth_thickness_angle();
@@ -235,8 +235,8 @@ class GearToy: public Toy {
         cairo_stroke(cr);
         
         //draw gear
-        Geom::Arrangement p = gear.path();
-        cairo_arrangement(cr, p);
+        Geom::PathSet p = gear.path();
+        cairo_PathSet(cr, p);
         cairo_set_source_rgba (cr, 0., 0., 0., 0.5);
         cairo_set_line_width (cr, 2.0);
         cairo_stroke(cr);
@@ -244,22 +244,22 @@ class GearToy: public Toy {
         //std::cout << p << std::endl;
         
         Gear gear2 = gear.spawn(5, -2.0 * M_PI / 8.0);
-        Geom::Arrangement p2 = gear2.path();
-        cairo_arrangement(cr, p2);
+        Geom::PathSet p2 = gear2.path();
+        cairo_PathSet(cr, p2);
         cairo_set_source_rgba (cr, 0., 0., 0., 0.5);
         cairo_set_line_width (cr, 2.0);
         cairo_stroke(cr);
         
         Gear gear3 = gear2.spawn(8, 0.0 * M_PI / 8.0);
-        Geom::Arrangement p3 = gear3.path();
-        cairo_arrangement(cr, p3);
+        Geom::PathSet p3 = gear3.path();
+        cairo_PathSet(cr, p3);
         cairo_set_source_rgba (cr, 0., 0., 0., 0.5);
         cairo_set_line_width (cr, 2.0);
         cairo_stroke(cr);
         
         Gear gear4 = gear.spawn(6, 3.0 * M_PI / 4.0);
-        Geom::Arrangement p4 = gear4.path();
-        cairo_arrangement(cr, p4);
+        Geom::PathSet p4 = gear4.path();
+        cairo_PathSet(cr, p4);
         cairo_set_source_rgba (cr, 0., 0., 0., 0.5);
         cairo_set_line_width (cr, 2.0);
         cairo_stroke(cr);
