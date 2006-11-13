@@ -31,6 +31,13 @@ using std::vector;
 unsigned total_pieces_sub;
 unsigned total_pieces_inc;
 
+const double u_subs = 5,
+             v_subs = 5,
+             fudge = .01;
+
+const double inv_u_subs = 1 / u_subs,
+             inv_v_subs = 1 / v_subs;
+
 void draw_sb2d(cairo_t* cr, vector<SBasis2d> const &sb2, Geom::Point dir, double width) {
     multidim_sbasis<2> B;
     for(int ui = 0; ui <= 10; ui++) {
@@ -127,23 +134,23 @@ class Sb2d2: public Toy {
                 multidim_sbasis<2> B;
                 multidim_sbasis<2> tB;
                 
-                B[0] = BezOrd(tu, tu+0.1);
-                B[1] = BezOrd(tv, tv);
+                B[0] = BezOrd(tu-fudge, tu+fudge+inv_u_subs);
+                B[1] = BezOrd(tv-fudge, tv-fudge);
                 tB = compose(sb2, B);
                 subpath_from_sbasis(pb, tB, 0.1);
                 
-                B[0] = BezOrd(tu+0.1, tu+0.1);
-                B[1] = BezOrd(tv, tv+0.1);
+                B[0] = BezOrd(tu+fudge+inv_u_subs, tu+fudge+inv_u_subs);
+                B[1] = BezOrd(tv-fudge,            tv+fudge+inv_v_subs);
                 tB = compose(sb2, B);
                 subpath_from_sbasis(pb, tB, 0.1, false);
                 
-                B[0] = BezOrd(tu+0.1, tu);
-                B[1] = BezOrd(tv+0.1, tv+0.1);
+                B[0] = BezOrd(tu+fudge+inv_u_subs, tu-fudge);
+                B[1] = BezOrd(tv+fudge+inv_v_subs, tv+fudge+inv_v_subs);
                 tB = compose(sb2, B);
                 subpath_from_sbasis(pb, tB, 0.1, false);
                 
-                B[0] = BezOrd(tu, tu);
-                B[1] = BezOrd(tv+0.1, tv);
+                B[0] = BezOrd(tu-fudge,            tu-fudge);
+                B[1] = BezOrd(tv+fudge+inv_v_subs, tv+fudge);
                 tB = compose(sb2, B);
                 subpath_from_sbasis(pb, tB, 0.1, false);
                 
@@ -160,7 +167,7 @@ class Sb2d2: public Toy {
 };
 
 int main(int argc, char **argv) {
-    init(argc, argv, "2dsb2d", new Sb2d2);
+    init(argc, argv, "bez-grad", new Sb2d2);
     return 0;
 }
 
