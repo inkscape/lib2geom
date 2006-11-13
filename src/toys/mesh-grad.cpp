@@ -31,6 +31,13 @@ using std::vector;
 unsigned total_pieces_sub;
 unsigned total_pieces_inc;
 
+const double u_subs = 5,
+             v_subs = 5,
+             fudge = .01;
+
+const double inv_u_subs = 1 / u_subs,
+             inv_v_subs = 1 / v_subs;
+
 void draw_sb2d(cairo_t* cr, vector<SBasis2d> const &sb2, Geom::Point dir, double width) {
     multidim_sbasis<2> B;
     for(int ui = 0; ui <= 10; ui++) {
@@ -97,37 +104,37 @@ class Sb2d2: public Toy {
         draw_sb2d(cr, sb2, dir*0.1, width);
         cairo_set_source_rgba (cr, 0., 0., 0, 0.5);
         cairo_stroke(cr);
-        for(int vi = 0; vi < 10; vi++) {
-            double tv = vi/10.;
-            for(int ui = 0; ui < 10; ui++) {
-                double tu = ui/10.;
+        for(int vi = 0; vi < v_subs; vi++) {
+            double tv = vi * inv_v_subs;
+            for(int ui = 0; ui < u_subs; ui++) {
+                double tu = ui * inv_u_subs;
                 
                 Geom::PathSetBuilder pb;
                 multidim_sbasis<2> B;
                 multidim_sbasis<2> tB;
                 
-                B[0] = BezOrd(tu-0.01, tu+0.11);
-                B[1] = BezOrd(tv-0.01, tv-0.01);
+                B[0] = BezOrd(tu-fudge, tu+fudge + inv_u_subs );
+                B[1] = BezOrd(tv-fudge, tv-fudge);
                 tB = compose(sb2, B);
-                tB = (width/2)*tB + Geom::Point(width/4, width/4);
+                tB = (width/2) * tB + Geom::Point(width/4, width/4);
                 subpath_from_sbasis(pb, tB, .1);
                 
-                B[0] = BezOrd(tu+0.11, tu+0.11);
-                B[1] = BezOrd(tv-0.01, tv+0.11);
+                B[0] = BezOrd(tu+fudge + inv_u_subs , tu+fudge + inv_u_subs);
+                B[1] = BezOrd(tv-fudge,               tv+fudge + inv_v_subs);
                 tB = compose(sb2, B);
-                tB = (width/2)*tB + Geom::Point(width/4, width/4);
+                tB = (width/2) * tB + Geom::Point(width/4, width/4);
                 subpath_from_sbasis(pb, tB, .1, false);
                 
-                B[0] = BezOrd(tu+0.11, tu-0.01);
-                B[1] = BezOrd(tv+0.11, tv+0.11);
+                B[0] = BezOrd(tu+fudge + inv_u_subs, tu-fudge);
+                B[1] = BezOrd(tv+fudge + inv_v_subs, tv+fudge + inv_v_subs);
                 tB = compose(sb2, B);
-                tB = (width/2)*tB + Geom::Point(width/4, width/4);
+                tB = (width/2) * tB + Geom::Point(width/4, width/4);
                 subpath_from_sbasis(pb, tB, .1, false);
                 
-                B[0] = BezOrd(tu-0.01, tu-0.01);
-                B[1] = BezOrd(tv+0.11, tv-0.01);
+                B[0] = BezOrd(tu-fudge,              tu-fudge);
+                B[1] = BezOrd(tv+fudge + inv_v_subs, tv-fudge);
                 tB = compose(sb2, B);
-                tB = (width/2)*tB + Geom::Point(width/4, width/4);
+                tB = (width/2) * tB + Geom::Point(width/4, width/4);
                 subpath_from_sbasis(pb, tB, .1, false);
                 
                 cairo_PathSet(cr, pb.peek());
