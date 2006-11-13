@@ -106,29 +106,29 @@ class Sb2d2: public Toy {
                 multidim_sbasis<2> B;
                 multidim_sbasis<2> tB;
                 
-                B[0] = BezOrd(tu, tu+0.1);
-                B[1] = BezOrd(tv, tv);
+                B[0] = BezOrd(tu-0.01, tu+0.11);
+                B[1] = BezOrd(tv-0.01, tv-0.01);
                 tB = compose(sb2, B);
                 tB = (width/2)*tB + Geom::Point(width/4, width/4);
-                subpath_from_sbasis(pb, tB, 0.1);
+                subpath_from_sbasis(pb, tB, .1);
                 
-                B[0] = BezOrd(tu+0.1, tu+0.1);
-                B[1] = BezOrd(tv, tv+0.1);
+                B[0] = BezOrd(tu+0.11, tu+0.11);
+                B[1] = BezOrd(tv-0.01, tv+0.11);
                 tB = compose(sb2, B);
                 tB = (width/2)*tB + Geom::Point(width/4, width/4);
-                subpath_from_sbasis(pb, tB, 0.1, false);
+                subpath_from_sbasis(pb, tB, .1, false);
                 
-                B[0] = BezOrd(tu+0.1, tu);
-                B[1] = BezOrd(tv+0.1, tv+0.1);
+                B[0] = BezOrd(tu+0.11, tu-0.01);
+                B[1] = BezOrd(tv+0.11, tv+0.11);
                 tB = compose(sb2, B);
                 tB = (width/2)*tB + Geom::Point(width/4, width/4);
-                subpath_from_sbasis(pb, tB, 0.1, false);
+                subpath_from_sbasis(pb, tB, .1, false);
                 
-                B[0] = BezOrd(tu, tu);
-                B[1] = BezOrd(tv+0.1, tv);
+                B[0] = BezOrd(tu-0.01, tu-0.01);
+                B[1] = BezOrd(tv+0.11, tv-0.01);
                 tB = compose(sb2, B);
                 tB = (width/2)*tB + Geom::Point(width/4, width/4);
-                subpath_from_sbasis(pb, tB, 0.1, false);
+                subpath_from_sbasis(pb, tB, .1, false);
                 
                 cairo_PathSet(cr, pb.peek());
                 
