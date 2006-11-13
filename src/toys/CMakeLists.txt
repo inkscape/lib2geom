@@ -21,6 +21,7 @@ gear
 cheb
 match-curve
 mesh-grad
+bez-grad
 draw-toy
 "${NEEDS_GSL}"
 )
