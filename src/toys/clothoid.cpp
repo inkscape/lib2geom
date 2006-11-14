@@ -1,19 +1,23 @@
 #include "s-basis.h"
-#include "interactive-bits.h"
-#include "bezier-to-sbasis.h"
-#include "path.h"
-#include "path-builder.h"
 #include "bezier-to-sbasis.h"
 #include "sbasis-to-bezier.h"
-#include "path-cairo.h"
 #include "multidim-sbasis.h"
 
-#include "toy-framework.cpp"
+#include "path.h"
+#include "path-cairo.h"
+#include "path-builder.h"
 
-using std::string;
+#include "toy-framework.h"
+
 using std::vector;
 
 class Clothoid: public Toy {
+    public:
+    Clothoid() {
+        handles.push_back(Geom::Point(100, 400));
+        handles.push_back(Geom::Point(400, 400));
+    }
+
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         cairo_set_source_rgba (cr, 0., 0., 0, 0.8);
         cairo_set_line_width (cr, 0.5);
@@ -36,13 +40,11 @@ class Clothoid: public Toy {
             B[dim] = 200 + 300*B[dim];
         }
         cairo_md_sb(cr, B);
+        Toy::draw(cr, notify, width, height, save);
     }
 };
 
 int main(int argc, char **argv) {
-    handles.push_back(Geom::Point(100, 400));
-    handles.push_back(Geom::Point(400, 400));
-    
     init(argc, argv, "clothoid", new Clothoid());
     
     return 0;

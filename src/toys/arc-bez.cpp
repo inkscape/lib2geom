@@ -1,24 +1,18 @@
-#include <cstdio>
-#include <cstring>
-#include <cstdlib>
-#include <cmath>
-
-#include <gtk/gtk.h>
-#include <cassert>
-#include <algorithm>
-#include <sstream>
-#include <iostream>
-#include <vector>
 #include "s-basis.h"
-#include "interactive-bits.h"
-#include "multidim-sbasis.h"
 #include "bezier-to-sbasis.h"
 #include "sbasis-to-bezier.h"
+#include "multidim-sbasis.h"
+
+#include "path.h"
 #include "path-cairo.h"
+#include "path-builder.h"
 
-#include "toy-framework.cpp"
+#include <iterator>
+#include "translate.h"
+#include "translate-ops.h"
 
-using std::string;
+#include "toy-framework.h"
+
 using std::vector;
 
 SBasis curvature(multidim_sbasis<2> & B) {
@@ -40,6 +34,12 @@ SBasis sqcurvature(multidim_sbasis<2> & B) {
 }
 
 class ArcBez: public Toy {
+    public:
+    ArcBez() {
+        for(int i = 0; i < 4; i++)
+            handles.push_back(Geom::Point(uniform()*400, uniform()*400));
+    }
+
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         multidim_sbasis<2> B = bezier_to_sbasis<2, 2>(handles.begin());
         cairo_md_sb(cr, B);
@@ -113,13 +113,11 @@ class ArcBez: public Toy {
         cairo_stroke(cr);
         }
         *notify << "arc length = " << prev_seg << std::endl;
+        Toy::draw(cr, notify, width, height, save);
     }
 };
 
 int main(int argc, char **argv) {
-    for(int i = 0; i < 4; i++)
-        handles.push_back(Geom::Point(uniform()*400, uniform()*400));
-    
     init(argc, argv, "arc-bez", new ArcBez());
 
     return 0;

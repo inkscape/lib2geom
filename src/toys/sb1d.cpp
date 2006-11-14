@@ -1,39 +1,23 @@
-#include <cstdio>
-#include <cstring>
-#include <cstdlib>
-#include <cmath>
-
-#include <gtk/gtk.h>
-#include <cassert>
-#include <algorithm>
-#include <sstream>
-#include <iostream>
-#include <vector>
 #include "s-basis.h"
-#include "interactive-bits.h"
 #include "bezier-to-sbasis.h"
 #include "sbasis-to-bezier.h"
+#include "multidim-sbasis.h"
+#include "s-basis-2d.h"
+
 #include "path.h"
 #include "path-cairo.h"
-#include "multidim-sbasis.h"
 #include "path-builder.h"
+
+#include <iterator>
 #include "translate.h"
 #include "translate-ops.h"
-#include "solver.h"
-#include <iterator>
-#include "nearestpoint.cpp"
-#include "sbasis-poly.h"
-#include "sturm.h"
-#include "poly-dk-solve.h"
-#include "poly-laguerre-solve.h"
 #include "choose.h"
 #include "convex-cover.h"
 
-#include "toy-framework.cpp"
 
-using std::string;
+#include "toy-framework.h"
+
 using std::vector;
-using std::complex;
 
 extern unsigned total_steps, total_subs;
 
@@ -117,15 +101,18 @@ class Sb1d: public Toy {
         for(int i = 0; i < ch.boundary.size(); i++) {
             cairo_line_to(cr, ch.boundary[i]);
         }
+        Toy::draw(cr, notify, width, height, save);
     }
-};
-
-int main(int argc, char **argv) {
+public:
+Sb1d () {
     handles.push_back(Geom::Point(0,450));
     for(unsigned i = 0; i < 4; i++)
         handles.push_back(Geom::Point(uniform()*400, uniform()*400));
     handles.push_back(Geom::Point(0,450));
+}
+};
 
+int main(int argc, char **argv) {
     init(argc, argv, "sb1d", new Sb1d());
     return 0;
 }

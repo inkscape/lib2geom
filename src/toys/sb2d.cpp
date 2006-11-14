@@ -1,23 +1,18 @@
-#include <cassert>
-#include <algorithm>
-#include <vector>
 #include "s-basis.h"
-#include "point-ops.h"
-#include "point-fns.h"
-#include "interactive-bits.h"
 #include "bezier-to-sbasis.h"
 #include "sbasis-to-bezier.h"
+#include "multidim-sbasis.h"
+#include "s-basis-2d.h"
+
 #include "path.h"
 #include "path-cairo.h"
-#include <iterator>
-#include "multidim-sbasis.h"
-#include "path-builder.h"
-#include "translate.h"
-#include "translate-ops.h"
-#include "s-basis-2d.h"
 #include "path-builder.h"
 
-#include "toy-framework.cpp"
+#include <iterator>
+#include "translate.h"
+#include "translate-ops.h"
+
+#include "toy-framework.h"
 
 using std::vector;
 
@@ -100,6 +95,7 @@ class Sb2d: public Toy {
         if(!save)
             for(int i = 0; i < display_handles.size(); i++)
                 draw_circ(cr, display_handles[i]);
+        Toy::draw(cr, notify, width, height, save);
     }
 };
 

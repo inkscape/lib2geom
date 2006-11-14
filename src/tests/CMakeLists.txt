@@ -19,6 +19,7 @@ translate-test
 types-test
 #types-test.h
 unit-test-sbasis
+root-find-ut
 )
 
 OPTION(2GEOM_UNIT_TESTS

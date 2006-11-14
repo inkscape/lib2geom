@@ -1,14 +1,15 @@
-//Pick and choose what you need
 #include "s-basis.h"
 #include "bezier-to-sbasis.h"
 #include "sbasis-to-bezier.h"
 #include "multidim-sbasis.h"
+#include "s-basis-2d.h"
 #include "sbasis-poly.h"
 
 #include "path.h"
 #include "path-cairo.h"
 #include "path-builder.h"
 
+#include <iterator>
 #include "translate.h"
 #include "translate-ops.h"
 #include "solver.h"
@@ -19,10 +20,17 @@
 #include "choose.h"
 #include "convex-cover.h"
 
-#include "toy-framework.h"
+#include "toy-framework.cpp"
 
 class MyToy: public Toy {
-    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
+    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
+        //draw code here
+        Toy::draw(cr, notify, width, height, save);
+    }
+
+    public:
+    MyToy () {
+        //Initialization here
     }
 };
 

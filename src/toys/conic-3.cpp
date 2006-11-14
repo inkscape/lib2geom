@@ -1,27 +1,14 @@
-#include <cstdio>
-#include <cstring>
-#include <cstdlib>
-#include <cmath>
-
-#include <gtk/gtk.h>
-#include <cassert>
-#include <algorithm>
-#include <sstream>
-#include <iostream>
-#include <vector>
 #include "s-basis.h"
-#include "interactive-bits.h"
 #include "bezier-to-sbasis.h"
 #include "sbasis-to-bezier.h"
+#include "multidim-sbasis.h"
+
 #include "path.h"
 #include "path-cairo.h"
-#include <iterator>
-#include "multidim-sbasis.h"
 #include "path-builder.h"
 
-#include "toy-framework.cpp"
+#include "toy-framework.h"
 
-using std::string;
 using std::vector;
 
 BezOrd z0(0.5,1.);
@@ -33,6 +20,14 @@ double cosC(double t) { return 1 - cos(t);}
 double tanC(double t) { return sinC(t) / cosC(t);}
 
 class Conic3: public Toy {
+    public:
+    Conic3 () {
+        handles.push_back(Geom::Point(100, 500));
+        handles.push_back(Geom::Point(100, 500 - 200*M_PI/2));
+        handles.push_back(Geom::Point(500, 500 - 200*M_PI/2));
+        handles.push_back(Geom::Point(500, 500));
+    }
+
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         cairo_set_source_rgba (cr, 0., 0., 0, 0.8);
         cairo_set_line_width (cr, 0.5);
@@ -81,15 +76,11 @@ class Conic3: public Toy {
             cairo_PathSet(cr, pb.peek());
             cairo_PathSet_handles(cr, pb.peek());
         }
+        Toy::draw(cr, notify, width, height, save);
     }
 };
 
 int main(int argc, char **argv) {
-    handles.push_back(Geom::Point(100, 500));
-    handles.push_back(Geom::Point(100, 500 - 200*M_PI/2));
-    handles.push_back(Geom::Point(500, 500 - 200*M_PI/2));
-    handles.push_back(Geom::Point(500, 500));
-    
     init(argc, argv, "conic-3", new Conic3());
 
     return 0;

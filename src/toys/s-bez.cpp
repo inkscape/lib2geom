@@ -1,34 +1,23 @@
-#include <cstdio>
-#include <cstring>
-#include <cstdlib>
-#include <cmath>
-
-#include <gtk/gtk.h>
-#include <cassert>
-#include <algorithm>
-#include <sstream>
-#include <iostream>
-#include <vector>
-#include <iterator>
 #include "s-basis.h"
-#include "interactive-bits.h"
 #include "bezier-to-sbasis.h"
 #include "sbasis-to-bezier.h"
+#include "multidim-sbasis.h"
+#include "s-basis-2d.h"
+
 #include "path.h"
 #include "path-cairo.h"
-#include "multidim-sbasis.h"
 #include "path-builder.h"
+
+#include <iterator>
 #include "translate.h"
 #include "translate-ops.h"
 
-#include "toy-framework.cpp"
+#include "toy-framework.h"
 
-using std::string;
 using std::vector;
 
 unsigned total_pieces_sub;
 unsigned total_pieces_inc;
-
 
 void draw_offset(cairo_t *cr, multidim_sbasis<2> const &B, double dist, double tol=0.1) {
     draw_handle(cr, Geom::Point(B[0].point_at(1), B[1].point_at(1)));
@@ -92,16 +81,16 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
         draw_offset(cr, B, -10*i);
     }
     *notify << "total pieces subdivision = " << total_pieces_sub << std::endl; 
-    *notify << "total pieces inc = " << total_pieces_inc; 
+    *notify << "total pieces inc = " << total_pieces_inc;
+    Toy::draw(cr, notify, width, height, save);
+}
+public:
+SBez () {
+    for(unsigned i = 0; i < 4; i++) handles.push_back(Geom::Point(uniform()*400, uniform()*400));
 }
 };
 
-int main(int argc, char **argv) {
-    handles.push_back(Geom::Point(uniform()*400, uniform()*400));
-    handles.push_back(Geom::Point(uniform()*400, uniform()*400));
-    handles.push_back(Geom::Point(uniform()*400, uniform()*400));
-    handles.push_back(Geom::Point(uniform()*400, uniform()*400));
-    
+int main(int argc, char **argv) {   
     init(argc, argv, "s-bez", new SBez());
 
     return 0;

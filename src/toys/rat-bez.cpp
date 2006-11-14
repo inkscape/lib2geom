@@ -2,14 +2,14 @@
 #include "point.h"
 #include "point-ops.h"
 #include "point-fns.h"
-#include "interactive-bits.h"
 #include "path-builder.h"
+
 #include "bezier-to-sbasis.h"
 #include "sbasis-to-bezier.h"
 #include "path-cairo.h"
 #include "multidim-sbasis.h"
 
-#include "toy-framework.cpp"
+#include "toy-framework.h"
 
 using std::string;
 using std::vector;
@@ -67,13 +67,15 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
         Geom::PathSet p = pb.peek();
         cairo_PathSet(cr, p);
     }
+    Toy::draw(cr, notify, width, height, save);
+}
+public:
+RatBez () {
+    for(int i = 0; i < 4; i++) handles.push_back(Geom::Point(uniform()*400, uniform()*400));
 }
 };
 
 int main(int argc, char **argv) {
-    for(int i = 0; i < 4; i++)
-        handles.push_back(Geom::Point(uniform()*400, uniform()*400));
-    
     init(argc, argv, "rat-bez", new RatBez());
 
     return 0;

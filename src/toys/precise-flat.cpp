@@ -4,9 +4,8 @@
 #include "multidim-sbasis.h"
 #include "path-cairo.h"
 
-#include "toy-framework.cpp"
+#include "toy-framework.h"
 
-using std::string;
 using std::vector;
 
 unsigned total_pieces_sub;
@@ -50,15 +49,17 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
     //std::cout << t0 << std::endl;
     cairo_line_to(cr, point_at(B, t0));
     cairo_stroke(cr);
+    Toy::draw(cr, notify, width, height, save);
 }
+
+public:
+SBez () {
+    for(int i = 0; i < 4; i++) handles.push_back(Geom::Point(uniform()*400, uniform()*400));
+}
+
 };
 
 int main(int argc, char **argv) {
-    handles.push_back(Geom::Point(uniform()*400, uniform()*400));
-    handles.push_back(Geom::Point(uniform()*400, uniform()*400));
-    handles.push_back(Geom::Point(uniform()*400, uniform()*400));
-    handles.push_back(Geom::Point(uniform()*400, uniform()*400));
-    
     init(argc, argv, "s-bez", new SBez());
 
     return 0;

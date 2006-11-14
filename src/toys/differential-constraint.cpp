@@ -1,29 +1,14 @@
-#include <cstdio>
-#include <cstring>
-#include <cstdlib>
-#include <cmath>
-
-#include <gtk/gtk.h>
-#include <cassert>
-#include <algorithm>
-#include <sstream>
-#include <iostream>
-#include <vector>
-#include <iterator>
 #include "s-basis.h"
-#include "interactive-bits.h"
 #include "bezier-to-sbasis.h"
 #include "sbasis-to-bezier.h"
+#include "multidim-sbasis.h"
+
 #include "path.h"
 #include "path-cairo.h"
-#include "multidim-sbasis.h"
 #include "path-builder.h"
-#include "translate.h"
-#include "translate-ops.h"
 
-#include "toy-framework.cpp"
+#include "toy-framework.h"
 
-using std::string;
 using std::vector;
 
 unsigned total_pieces_sub;
@@ -39,19 +24,21 @@ void cairo_md_sb(cairo_t *cr, multidim_sbasis<2> const &B) {
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_odeiv.h>
-     
+
+vector<Geom::Point> *handlesptr = NULL;
+
 class SBez: public Toy {
     static int
     func (double t, const double y[], double f[],
           void *params)
     {
         double mu = *(double *)params;
-        multidim_sbasis<2> B = bezier_to_sbasis<2, 3>(handles.begin());
+        multidim_sbasis<2> B = bezier_to_sbasis<2, 3>(handlesptr->begin());
         multidim_sbasis<2> dB = derivative(B);
         Geom::Point tan = point_at(dB,y[0]);//Geom::unit_vector();
         tan /= dot(tan,tan);
         Geom::Point yp = point_at(B, y[0]);
-        double dtau = -dot(tan, yp - handles[4]);
+        double dtau = -dot(tan, yp - (*handlesptr)[4]);
         f[0] = dtau;
         
         return GSL_SUCCESS;
@@ -77,6 +64,7 @@ class SBez: public Toy {
     double y[2];
 
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
+        handlesptr = &handles;
         cairo_set_line_width (cr, 0.5);
     
         multidim_sbasis<2> B = bezier_to_sbasis<2, 3>(handles.begin());
@@ -117,20 +105,21 @@ class SBez: public Toy {
         gsl_odeiv_evolve_free (e);
         gsl_odeiv_control_free (c);
         gsl_odeiv_step_free (s);
+
+        Toy::draw(cr, notify, width, height, save);
     }
 public:
     SBez() {
         y[0] = 0;
+        handles.push_back(Geom::Point(uniform()*400, uniform()*400));
+        handles.push_back(Geom::Point(uniform()*400, uniform()*400));
+        handles.push_back(Geom::Point(uniform()*400, uniform()*400));
+        handles.push_back(Geom::Point(uniform()*400, uniform()*400));
+        handles.push_back(Geom::Point(uniform()*400, uniform()*400));
     }
 };
 
 int main(int argc, char **argv) {
-    handles.push_back(Geom::Point(uniform()*400, uniform()*400));
-    handles.push_back(Geom::Point(uniform()*400, uniform()*400));
-    handles.push_back(Geom::Point(uniform()*400, uniform()*400));
-    handles.push_back(Geom::Point(uniform()*400, uniform()*400));
-    handles.push_back(Geom::Point(uniform()*400, uniform()*400));
-    
     init(argc, argv, "s-bez", new SBez());
 
     return 0;

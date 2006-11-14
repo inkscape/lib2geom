@@ -9,7 +9,6 @@ conic
 convex-toy
 fitter
 one-D
-root-find-ut
 quad-toy
 rat-bez
 sb1d

@@ -1,9 +1,8 @@
 #include "s-basis.h"
 #include "sbasis-poly.h"
 
-#include "toy-framework.cpp"
+#include "toy-framework.h"
 
-using std::string;
 using std::vector;
 
 BezOrd z0(0.5,1.);
@@ -33,7 +32,8 @@ class OneD: public Toy {
                 cairo_line_to(cr, t*width/2 + width/4, 3*height/4 - y*height/2);
             else
                 cairo_move_to(cr, t*width/2 + width/4, 3*height/4 - y*height/2);
-        }    
+        }
+        Toy::draw(cr, notify, width, height, save);
     }
 
     virtual void mouse_pressed(GdkEventButton* e) {

@@ -1,26 +1,8 @@
-#include <cstdio>
-#include <cstring>
-#include <cstdlib>
-#include <cmath>
-
-#include <gtk/gtk.h>
-#include <cassert>
-#include <algorithm>
-#include <sstream>
-#include <iostream>
-#include <vector>
 #include "s-basis.h"
-#include "interactive-bits.h"
 #include "bezier-to-sbasis.h"
 #include "sbasis-to-bezier.h"
-#include "path.h"
-#include "path-cairo.h"
 #include "multidim-sbasis.h"
-#include "path-builder.h"
-#include "translate.h"
-#include "translate-ops.h"
 #include "solver.h"
-#include <iterator>
 #include "nearestpoint.cpp"
 #include "sbasis-poly.h"
 #include "sturm.h"
@@ -29,9 +11,16 @@
 #include "choose.h"
 #include "convex-cover.h"
 
-#include "toy-framework.cpp"
+#include "path.h"
+#include "path-cairo.h"
+#include "path-builder.h"
 
-using std::string;
+#include <iterator>
+#include "translate.h"
+#include "translate-ops.h"
+
+#include "toy-framework.h"
+
 using std::vector;
 
 SBasis cheb(unsigned n) {
@@ -84,6 +73,7 @@ class Sb1d: public Toy {
             cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
             cairo_stroke(cr);
         }
+        Toy::draw(cr, notify, width, height, save);
     }
 };
 

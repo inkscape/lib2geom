@@ -1,27 +1,15 @@
-#include <cstdio>
-#include <cstring>
-#include <cstdlib>
-#include <cmath>
-
-#include <gtk/gtk.h>
-#include <cassert>
-#include <algorithm>
-#include <sstream>
-#include <iostream>
-#include <vector>
 #include "s-basis.h"
-#include "interactive-bits.h"
 #include "bezier-to-sbasis.h"
 #include "sbasis-to-bezier.h"
+#include "multidim-sbasis.h"
+
 #include "path.h"
 #include "path-cairo.h"
-#include <iterator>
-#include "multidim-sbasis.h"
 #include "path-builder.h"
 #include "path-to-svgd.h"
+
 #include "toy-framework.cpp"
 
-using std::string;
 using std::vector;
 
 const double w = 1./3;
@@ -79,6 +67,17 @@ public:
 };
 
 class Conic4: public Toy {
+    public:
+    Conic4 () {
+        double sc = 30;
+        Geom::Point c(6*sc, 6*sc);
+        handles.push_back(sc*Geom::Point(0,0)+c);
+        handles.push_back(sc*Geom::Point(tan(w*M_PI)/w, 0)+c);
+        handles.push_back(sc*Geom::Point(0, 1/(w*w))+c);
+        handles.push_back(sc*Geom::Point(-tan(w*M_PI)/w, 0)+c);
+        handles.push_back(sc*Geom::Point(0,0)+c);
+    }
+
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         std::vector<Geom::Point> e_h = handles;
         for(int i = 0; i < 5; i++) {
@@ -115,14 +114,6 @@ class Conic4: public Toy {
 };
 
 int main(int argc, char **argv) {
-    double sc = 30;
-    Geom::Point c(6*sc, 6*sc);
-    handles.push_back(sc*Geom::Point(0,0)+c);
-    handles.push_back(sc*Geom::Point(tan(w*M_PI)/w, 0)+c);
-    handles.push_back(sc*Geom::Point(0, 1/(w*w))+c);
-    handles.push_back(sc*Geom::Point(-tan(w*M_PI)/w, 0)+c);
-    handles.push_back(sc*Geom::Point(0,0)+c);
- 
     init(argc, argv, "conic-4.cpp", new Conic4());
 
     return 0;

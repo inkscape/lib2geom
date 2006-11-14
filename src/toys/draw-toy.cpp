@@ -2,7 +2,7 @@
 #include "path-cairo.h"
 #include "path-builder.h"
 
-#include "toy-framework.cpp"
+#include "toy-framework.h"
 
 /*2geom crit:
 L2 = pythagorean distance. Its ok to call it L2 internally, but have a distance alias.  Maybe there is one.

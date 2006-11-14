@@ -1,28 +1,15 @@
-#include <cstdio>
-#include <cstring>
-#include <cstdlib>
-#include <cmath>
-
-#include <gtk/gtk.h>
-#include <cassert>
-#include <algorithm>
-#include <sstream>
-#include <iostream>
-#include <vector>
 #include "s-basis.h"
-#include "interactive-bits.h"
-#include "path-builder.h"
 #include "bezier-to-sbasis.h"
 #include "sbasis-to-bezier.h"
-#include "path-cairo.h"
 #include "multidim-sbasis.h"
-#include "path-to-svgd.h"
 
-#include "toy-framework.cpp"
+#include "path.h"
+#include "path-cairo.h"
+#include "path-builder.h"
 
-using std::string;
+#include "toy-framework.h"
+
 using std::vector;
-
 
 class Gear {
 public:
@@ -185,6 +172,11 @@ Gear Gear::spawn(int N, double a) {
 }
 
 class GearToy: public Toy {
+    public:
+    GearToy () {
+        for(int i = 0; i < 2; i++)
+            handles.push_back(Geom::Point(uniform()*400, uniform()*400));
+    }
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         cairo_set_source_rgba (cr, 0., 0.5, 0, 1);
         cairo_set_line_width (cr, 1);
@@ -265,15 +257,12 @@ class GearToy: public Toy {
         cairo_stroke(cr);
         
         *notify << "angle = " << gear.angle();
+
+        Toy::draw(cr, notify, width, height, save);
     }
 };
 
 int main(int argc, char **argv) {
-    for(int i = 0; i < 2; i++)
-        handles.push_back(Geom::Point(uniform()*400, uniform()*400));
-    
-    screen_lines = false;
-
     init(argc, argv, "gear", new GearToy());
 
     return 0;

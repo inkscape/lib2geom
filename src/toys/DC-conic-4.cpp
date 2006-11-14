@@ -1,31 +1,18 @@
-#include <cstdio>
-#include <cstring>
-#include <cstdlib>
-#include <cmath>
-
-#include <gtk/gtk.h>
-#include <cassert>
-#include <algorithm>
-#include <sstream>
-#include <iostream>
-#include <vector>
 #include "s-basis.h"
-#include "interactive-bits.h"
 #include "bezier-to-sbasis.h"
 #include "sbasis-to-bezier.h"
+#include "multidim-sbasis.h"
+
 #include "path.h"
 #include "path-cairo.h"
-#include <iterator>
-#include "multidim-sbasis.h"
 #include "path-builder.h"
 
 #include <iterator>
 #include "translate.h"
 #include "translate-ops.h"
 
-#include "toy-framework.cpp"
+#include "toy-framework.h"
 
-using std::string;
 using std::vector;
 
 const double w = 1./3;
@@ -83,6 +70,17 @@ public:
 };
 
 class Conic4: public Toy {
+    public:
+    Conic4() {
+        double sc = 30;
+        Geom::Point c(6*sc, 6*sc);
+        handles.push_back(sc*Geom::Point(0,0)+c);
+        handles.push_back(sc*Geom::Point(tan(w*M_PI)/w, 0)+c);
+        handles.push_back(sc*Geom::Point(0, 1/(w*w))+c);
+        handles.push_back(sc*Geom::Point(-tan(w*M_PI)/w, 0)+c);
+        handles.push_back(sc*Geom::Point(0,0)+c);
+    }
+
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         cairo_set_source_rgba (cr, 0., 0., 0, 0.8);
         cairo_set_line_width (cr, 0.5);
@@ -109,27 +107,18 @@ class Conic4: public Toy {
                 B[dim] += e_h[i][dim]*ab.basis[i];
         
         cairo_md_sb(cr, B);
+
+        Toy::draw(cr, notify, width, height, save);
     }
 };
 
 int main(int argc, char **argv) {
-    //for(int i = 0; i < 3; i++)
-    //    handles.push_back(Geom::Point(uniform()*400, uniform()*400));
-    
-    double sc = 30;
-    Geom::Point c(6*sc, 6*sc);
-    handles.push_back(sc*Geom::Point(0,0)+c);
-    handles.push_back(sc*Geom::Point(tan(w*M_PI)/w, 0)+c);
-    handles.push_back(sc*Geom::Point(0, 1/(w*w))+c);
-    handles.push_back(sc*Geom::Point(-tan(w*M_PI)/w, 0)+c);
-    handles.push_back(sc*Geom::Point(0,0)+c);
- 
     init(argc, argv, "conic-4.cpp", new Conic4());
 
     return 0;
 }
 
-
+/*
 #include <stdio.h>
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_matrix.h>
@@ -211,13 +200,14 @@ class SBez: public Toy {
         gsl_odeiv_evolve_free (e);
         gsl_odeiv_control_free (c);
         gsl_odeiv_step_free (s);
+        Toy::draw(cr, notify, width, height, save);
     }
 public:
     SBez() {
         y[0] = 0;
     }
 };
-
+*/
 /*
   Local Variables:
   mode:c++

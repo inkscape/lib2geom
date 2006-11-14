@@ -1,4 +1,6 @@
 #include "toy-framework.h"
+#include "point-ops.h"
+#include "point-fns.h"
 
 #include "cairo-features.h"
 #if CAIRO_HAS_PDF_SURFACE
@@ -9,12 +11,106 @@
 #endif
 
 GtkWindow* window;
+static GtkWidget *canvas;
+Toy* current_toy;
+
+//Utility functions
 
 double uniform() {
     return double(rand()) / RAND_MAX;
 }
 
+void draw_number(cairo_t *cr, Geom::Point pos, int num) {
+    std::ostringstream number;
+    number << num;
+    cairo_move_to(cr, pos);
+    PangoLayout* layout = pango_cairo_create_layout (cr);
+     pango_layout_set_text(layout, number.str().c_str(), -1);
+     PangoFontDescription *font_desc = pango_font_description_new();
+      pango_font_description_set_family(font_desc, "Sans");
+    const int size_px = 10;
+    pango_layout_set_font_description(layout, font_desc);
+    PangoRectangle logical_extent;
+    pango_layout_get_pixel_extents(layout, NULL, &logical_extent);
+    pango_cairo_show_layout(cr, layout); 
+}
+
+//Framework Accessors
 void redraw() { gtk_widget_queue_draw(GTK_WIDGET(window)); }
+
+void Toy::draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save)
+{
+    cairo_set_source_rgba (cr, 0., 0., 0, 0.8);
+    cairo_set_line_width (cr, 0.5);
+    for(int i = 1; i < 4; i+=2) {
+        cairo_move_to(cr, 0, i*width/4);
+        cairo_line_to(cr, width, i*width/4);
+        cairo_move_to(cr, i*width/4, 0);
+        cairo_line_to(cr, i*width/4, height);
+    }
+
+    if(should_draw_numbers()) {
+        cairo_set_source_rgba (cr, 0., 0.5, 0, 1);
+        cairo_set_line_width (cr, 1);
+        for(int i = 0; i < handles.size(); i++) {
+            draw_circ(cr, handles[i]);
+            draw_number(cr, handles[i], i);
+        }
+    }
+    
+    cairo_set_source_rgba (cr, 0.5, 0, 0, 1);
+    if(selected_handle != NULL && mouse_down == true)
+        draw_circ(cr, *selected_handle);
+
+    cairo_set_source_rgba (cr, 0.5, 0.25, 0, 1);
+    cairo_stroke(cr);
+
+    cairo_set_source_rgba (cr, 0., 0.5, 0, 0.8);
+    {
+        *notify << std::ends;
+        PangoLayout *layout = gtk_widget_create_pango_layout(GTK_WIDGET(window), notify->str().c_str());
+        PangoRectangle logical_extent;
+        pango_layout_get_pixel_extents(layout, NULL, &logical_extent);
+        cairo_move_to(cr, 0, height-logical_extent.height);
+        pango_cairo_show_layout(cr, layout);
+    }
+}
+
+void Toy::mouse_moved(GdkEventMotion* e)
+{
+    Geom::Point mouse(e->x, e->y);
+    
+    if(e->state & (GDK_BUTTON1_MASK | GDK_BUTTON3_MASK)) {
+        if(selected_handle != NULL) *selected_handle = mouse;
+        redraw();
+    }
+
+    if(e->state & (GDK_BUTTON2_MASK)) redraw();
+    
+    old_mouse_point = mouse;
+}
+
+void Toy::mouse_pressed(GdkEventButton* e) {
+    Geom::Point mouse(e->x, e->y);
+    if(e->button == 1) {
+        for(int i = 0; i < handles.size(); i++) {
+            if(Geom::L2(mouse - handles[i]) < 5) selected_handle = &handles[i];
+        }
+        redraw();
+        mouse_down = true;
+    } else if(e->button == 2) {
+        redraw();
+    }
+    old_mouse_point = mouse;
+}
+
+void Toy::mouse_released(GdkEventButton* e) {
+    selected_handle = NULL;
+    if(e->button == 1) mouse_down = false;
+    redraw();
+}
+
+//Gui Event Callbacks
 
 void make_about() {
     GtkWidget* about_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -37,29 +133,33 @@ Geom::Point read_point(FILE* f) {
 }
 
 void open() {
+    if(current_toy != NULL) {
     GtkWidget* d = gtk_file_chooser_dialog_new("Open handle configuration", window, GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, NULL);
-    if(gtk_dialog_run(GTK_DIALOG(d)) == GTK_RESPONSE_ACCEPT) {
-        const char* filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(d));
-        FILE* f = fopen(filename, "r");
-        handles.clear();
-        while(!feof(f))
-            handles.push_back(read_point(f));
-        fclose(f);
+        if(gtk_dialog_run(GTK_DIALOG(d)) == GTK_RESPONSE_ACCEPT) {
+            const char* filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(d));
+            FILE* f = fopen(filename, "r");
+            current_toy->handles.clear();
+            while(!feof(f))
+                current_toy->handles.push_back(read_point(f));
+            fclose(f);
+        }
+        gtk_widget_destroy(d);
     }
-    gtk_widget_destroy(d);
 }
 
 void save() {
-    GtkWidget* d = gtk_file_chooser_dialog_new("Save handle configuration", window, GTK_FILE_CHOOSER_ACTION_SAVE, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT, NULL);
-    if(gtk_dialog_run(GTK_DIALOG(d)) == GTK_RESPONSE_ACCEPT) {
-        const char* filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(d));
-        FILE* f = fopen(filename, "w");
-        int l = handles.size();
-        for(int i = 0; i < l; i++)
-            fprintf(f, "%lf %lf\n", handles[i][0], handles[i][1]);
-        fclose(f);
+    if(current_toy != NULL) {
+        GtkWidget* d = gtk_file_chooser_dialog_new("Save handle configuration", window, GTK_FILE_CHOOSER_ACTION_SAVE, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT, NULL);
+        if(gtk_dialog_run(GTK_DIALOG(d)) == GTK_RESPONSE_ACCEPT) {
+            const char* filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(d));
+            FILE* f = fopen(filename, "w");
+            int l = current_toy->handles.size();
+            for(int i = 0; i < l; i++)
+                fprintf(f, "%lf %lf\n", current_toy->handles[i][0], current_toy->handles[i][1]);
+            fclose(f);
+        }
+        gtk_widget_destroy(d);
     }
-    gtk_widget_destroy(d);
 }
 
 void save_cairo() {
@@ -108,7 +208,67 @@ void save_image() {
     gtk_widget_destroy(d);
 }
 
-GtkItemFactory* item_factory;
+static gint delete_event(GtkWidget* window, GdkEventAny* e, gpointer data) {
+    (void)( window);
+    (void)( e);
+    (void)( data);
+
+    gtk_main_quit();
+    return FALSE;
+}
+
+static gboolean expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
+{
+    (void)(data);
+    cairo_t *cr = gdk_cairo_create(widget->window);
+    
+    int width = 256;
+    int height = 256;
+    gdk_drawable_get_size(widget->window, &width, &height);
+
+    std::ostringstream notify;
+
+    if(current_toy != NULL) current_toy->draw(cr, &notify, width, height, false);
+    cairo_destroy(cr);
+
+    return TRUE;
+}
+
+static gint mouse_motion_event(GtkWidget* widget, GdkEventMotion* e, gpointer data) {
+    (void)(data);
+    (void)(widget);
+
+    if(current_toy != NULL) current_toy->mouse_moved(e);
+
+    return FALSE;
+}
+
+static gint mouse_event(GtkWidget* widget, GdkEventButton* e, gpointer data) {
+    (void)(data);
+    (void)(widget);
+
+    if(current_toy != NULL) current_toy->mouse_pressed(e);
+
+    return FALSE;
+}
+
+static gint mouse_release_event(GtkWidget* widget, GdkEventButton* e, gpointer data) {
+    (void)(data);
+    (void)(widget);
+
+    if(current_toy != NULL) current_toy->mouse_released(e);
+
+    return FALSE;
+}
+
+static gint key_release_event(GtkWidget *widget, GdkEventKey *e, gpointer data) {
+    (void)(data);
+    (void)(widget);
+
+    if(current_toy != NULL) current_toy->key_hit(e);
+
+    return FALSE;
+}
 
 GtkItemFactoryEntry menu_items[] = {
     { "/_File",             NULL,           NULL,           0,  "<Branch>"                    },
@@ -124,167 +284,6 @@ GtkItemFactoryEntry menu_items[] = {
 };
 gint nmenu_items = 9;
 
-GtkItemFactory* get_menu_factory(GtkWindow* window, GtkItemFactoryEntry items[], gint num) {
-    GtkAccelGroup* accel_group = gtk_accel_group_new();
-
-    GtkItemFactory* item_factory = gtk_item_factory_new(GTK_TYPE_MENU_BAR, "<main>", accel_group);
-    gtk_item_factory_create_items(item_factory, num, items, NULL);
-
-    gtk_window_add_accel_group(window, accel_group); 
-
-    return item_factory;
-}
-
-GtkWidget* get_menubar(GtkItemFactory* item_factory) {
-    return gtk_item_factory_get_widget(item_factory, "<main>");
-}
-
-static gint delete_event(GtkWidget* window, GdkEventAny* e, gpointer data) {
-    (void)( window);
-    (void)( e);
-    (void)( data);
-
-    gtk_main_quit();
-    return FALSE;
-}
-
-void 
-draw_number(cairo_t *cr, Geom::Point pos, int num) {
-    std::ostringstream number;
-    number << num;
-    cairo_move_to(cr, pos);
-    PangoLayout* layout = pango_cairo_create_layout (cr);
-     pango_layout_set_text(layout, number.str().c_str(), -1);
-     PangoFontDescription *font_desc = pango_font_description_new();
-      pango_font_description_set_family(font_desc, "Sans");
-    const int size_px = 10;
-    pango_layout_set_font_description(layout, font_desc);
-    PangoRectangle logical_extent;
-    pango_layout_get_pixel_extents(layout, NULL, &logical_extent);
-    pango_cairo_show_layout(cr, layout); 
-}
-
-
-static gboolean
-expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
-{
-    cairo_t *cr = gdk_cairo_create (widget->window);
-    
-    int width = 256;
-    int height = 256;
-    gdk_drawable_get_size(widget->window, &width, &height);
-
-    std::ostringstream notify;
-
-    if(screen_lines) {    
-        cairo_set_source_rgba (cr, 0., 0., 0, 0.8);
-        cairo_set_line_width (cr, 0.5);
-        for(int i = 1; i < 4; i+=2) {
-            cairo_move_to(cr, 0, i*width/4);
-            cairo_line_to(cr, width, i*width/4);
-            cairo_move_to(cr, i*width/4, 0);
-            cairo_line_to(cr, i*width/4, height);
-        }
-    }
-
-    if(current_toy != NULL)
-        current_toy->draw(cr, &notify, width, height, false);
-    
-    cairo_set_source_rgba (cr, 0., 0.5, 0, 1);
-    cairo_set_line_width (cr, 1);
-    for(int i = 0; i < handles.size(); i++) {
-        draw_circ(cr, handles[i]);
-        if(numbers) draw_number(cr, handles[i], i);
-    }
-    
-    cairo_set_source_rgba (cr, 0.5, 0, 0, 1);
-    if(selected_handle != NULL)
-        draw_circ(cr, *selected_handle);
-
-    cairo_set_source_rgba (cr, 0.5, 0.25, 0, 1);
-    cairo_stroke(cr);
-
-    cairo_set_source_rgba (cr, 0., 0.5, 0, 0.8);
-    {
-        notify << std::ends;
-        PangoLayout *layout = gtk_widget_create_pango_layout(widget, notify.str().c_str());
-        PangoRectangle logical_extent;
-        pango_layout_get_pixel_extents(layout,
-                                       NULL,
-                                       &logical_extent);
-        cairo_move_to(cr, 0, height-logical_extent.height);
-        pango_cairo_show_layout(cr, layout);
-    }
-    cairo_destroy (cr);
-
-    return TRUE;
-}
-
-static void handle_mouse(GtkWidget* widget) {
-    gtk_widget_queue_draw (widget);
-}
-
-static gint mouse_motion_event(GtkWidget* widget, GdkEventMotion* e, gpointer data) {
-    (void)(data);
-    Geom::Point mouse(e->x, e->y);
-    
-    if(e->state & (GDK_BUTTON1_MASK | GDK_BUTTON3_MASK)) {
-        if(selected_handle)
-            *selected_handle = mouse;
-        handle_mouse(widget);
-    }
-
-    if(e->state & (GDK_BUTTON2_MASK)) {
-        gtk_widget_queue_draw(widget);
-    }
-    
-    old_mouse_point = mouse;
-
-    if(current_toy != NULL)
-        current_toy->mouse_moved(e);
-
-    return FALSE;
-}
-
-static gint mouse_event(GtkWidget* window, GdkEventButton* e, gpointer data) {
-    (void)(data);
-    Geom::Point mouse(e->x, e->y);
-    if(e->button == 1) {
-        for(int i = 0; i < handles.size(); i++) {
-            if(Geom::L2(mouse - handles[i]) < 5)
-                selected_handle = &handles[i];
-        }
-        handle_mouse(window);
-    } else if(e->button == 2) {
-        gtk_widget_queue_draw(window);
-    }
-    old_mouse_point = mouse;
-
-    if(current_toy != NULL)
-        current_toy->mouse_pressed(e);
-
-    return FALSE;
-}
-
-static gint mouse_release_event(GtkWidget* window, GdkEventButton* e, gpointer data) {
-    (void)(data);
-    (void)(window);
-    (void)(e);
-    selected_handle = 0;
-    Geom::Point mouse(e->x, e->y);
-
-    if(current_toy != NULL)
-        current_toy->mouse_released(e);
-
-    return FALSE;
-}
-
-static gint key_release_event(GtkWidget *widget, GdkEventKey *event, gpointer data) {
-    if(current_toy != NULL)    
-        current_toy->key_pressed(event);
-    return FALSE;
-}
-
 void init(int argc, char **argv, char *title, Toy* t) {
     current_toy = t;
     gtk_init (&argc, &argv);
@@ -295,8 +294,12 @@ void init(int argc, char **argv, char *title, Toy* t) {
 
     gtk_window_set_title(GTK_WINDOW(window), title);
 
-    item_factory = get_menu_factory(window, menu_items, nmenu_items);
-    GtkWidget* menu = get_menubar(item_factory);
+    //Creates the menu from the menu data above
+    GtkAccelGroup* accel_group = gtk_accel_group_new();
+    GtkItemFactory* item_factory = gtk_item_factory_new(GTK_TYPE_MENU_BAR, "<main>", accel_group);
+    gtk_item_factory_create_items(item_factory, nmenu_items, menu_items, NULL);
+    gtk_window_add_accel_group(window, accel_group);
+    GtkWidget* menu = gtk_item_factory_get_widget(item_factory, "<main>");
 
     //gtk_window_set_policy(GTK_WINDOW(window), TRUE, TRUE, TRUE);
 
@@ -330,7 +333,7 @@ void init(int argc, char **argv, char *title, Toy* t) {
 
     gtk_widget_show_all(GTK_WIDGET(window));
 
-    /* Make sure the canvas can receive key press events. */
+    // Make sure the canvas can receive key press events.
     GTK_WIDGET_SET_FLAGS(canvas, GTK_CAN_FOCUS);
     assert(GTK_WIDGET_CAN_FOCUS(canvas));
     gtk_widget_grab_focus(canvas);

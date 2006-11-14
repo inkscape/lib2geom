@@ -1,29 +1,18 @@
-#include <cstdio>
-#include <cstring>
-#include <cstdlib>
-#include <cmath>
-
-#include <gtk/gtk.h>
-#include <cassert>
-#include <algorithm>
-#include <sstream>
-#include <iostream>
-#include <vector>
 #include "s-basis.h"
-#include "interactive-bits.h"
 #include "bezier-to-sbasis.h"
 #include "sbasis-to-bezier.h"
+#include "multidim-sbasis.h"
+#include "s-basis-2d.h"
+
 #include "path.h"
 #include "path-cairo.h"
-#include <iterator>
-#include "multidim-sbasis.h"
-#include "path-builder.h"
-#include "translate.h"
-#include "translate-ops.h"
-#include "s-basis-2d.h"
 #include "path-builder.h"
 
-#include "toy-framework.cpp"
+#include <iterator>
+#include "translate.h"
+#include "translate-ops.h"
+
+#include "toy-framework.h"
 
 using std::string;
 using std::vector;
@@ -54,7 +43,7 @@ void draw_sb2d(cairo_t* cr, vector<SBasis2d> const &sb2, Geom::Point dir, double
 }
 
 class Sb2d2: public Toy {
-    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
+    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         vector<SBasis2d> sb2(2);
         for(int dim = 0; dim < 2; dim++) {
         sb2[dim].us = 2;
@@ -122,6 +111,8 @@ class Sb2d2: public Toy {
         cairo_md_sb(cr, tB);
         
         //*notify << "bo = " << sb2.index(0,0);
+
+        Toy::draw(cr, notify, width, height, save);
     }
 };
 
