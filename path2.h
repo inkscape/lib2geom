@@ -207,7 +207,7 @@ private:
 
   Curve *first_;
   Curve *last_;
-  Curve *terminator_;
+  LineSegment *terminator_;
   unsigned size_;
 };
 
