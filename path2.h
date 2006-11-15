@@ -15,10 +15,10 @@ public:
 
   Curve *next() const { return next_; }
   Point initialPoint() const { return initial_point_; }
+  void setInitialPoint(Point p) { initial_point_ = p; }
   Point finalPoint() const { return next_->initialPoint(); }
 
 private:
-  void setInitialPoint(Point p) { initial_point_ = p; }
   void setNext(Curve *next) { next_ = next; }
 
   Point initial_point_;
@@ -113,7 +113,7 @@ public:
   typedef Iterator::difference_type difference_type;
   typedef unsigned size_type;
 
-  Path(Point p) : size_(0) {
+  Path(Point p) : size_(0), is_closed_(false) {
     first_ = last_ = terminator_ = new LineSegment(p, NULL);
   }
 
@@ -130,21 +130,18 @@ public:
   Iterator begin() const {
     return Iterator(first_, 0);
   }
+  Iterator end_open() const {
+    return Iterator(terminator_, size_);
+  }
   Iterator end() const {
-    if (terminator_->next()) {
-      return Iterator(first_, size_ + 1);
+    if (is_closed_) {
+      end_closed();
     } else {
-      return Iterator(terminator_, size_);
+      end_open();
     }
   }
-
-  Curve const &front() const { return *first_; }
-  Curve const &back() const {
-    if (terminator_->next()) {
-      return *terminator_;
-    } else {
-      return *last_;
-    }
+  Iterator end_closed() const {
+    return Iterator(first_, size_ + 1);
   }
   
   template <typename CurveType>
@@ -185,10 +182,8 @@ public:
     do_append(new CurveType(last_->finalPoint(), a, b, c, d, e, f, last_->next()), p);
   }
 
-  void close() {
-    if ( terminator_ != first_ ) {
-      terminator_->setNext(first_);
-    }
+  void close(bool close=true) {
+    is_closed_ = close;
   }
 
   void is_closed() const {
@@ -199,6 +194,7 @@ private:
   void do_append(Curve *curve, Point p) {
     terminator_->setInitialPoint(p);
     if ( first_ == terminator_ ) {
+      terminator_->setNext(first_);
       first_ = curve;
     }
     last_ = curve;
@@ -209,6 +205,7 @@ private:
   Curve *last_;
   LineSegment *terminator_;
   unsigned size_;
+  bool is_closed_;
 };
 
 class Set {
