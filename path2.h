@@ -17,6 +17,7 @@ public:
   Point initialPoint() const { return initial_point_; }
   void setInitialPoint(Point p) { initial_point_ = p; }
   Point finalPoint() const { return next_->initialPoint(); }
+  void setFinalPoint(Point p) { next_->setInitialPoint(p); }
 
 private:
   void setNext(Curve *next) { next_ = next; }
@@ -135,18 +136,51 @@ public:
   typedef Iterator::difference_type difference_type;
   typedef unsigned size_type;
 
-  Path(Point p) : size_(0), is_closed_(false) {
-    first_ = last_ = terminator_ = new LineSegment(p, NULL);
+  Path(Point p) : is_closed_(false) {
+    init_elements(p);
+  }
+  Path(Path const &other) : is_closed_(false) {
+    copy_elements(other);
   }
 
   ~Path() {
-    for ( Curve *iter = first_, Curve *next = first_->next ;
-          iter != terminator_ ;
-          iter = next )
-    {
-      delete iter;
-    }
-    delete terminator_;
+    free_elements();
+  }
+
+  Path &operator=(Path const &other) {
+    free_elements();
+    is_closed_ = other.is_closed_
+    copy_elements(other);
+  }
+
+  size_type size() const {
+    return size_;
+  }
+  size_type max_size() const {
+    return ~0;
+  }
+  bool empty() const {
+    return !size_;
+  }
+
+  void swap(Path &other) {
+    Curve *temp_first = other.first_;
+    Curve *temp_last = other.last_;
+    LineSegment *temp_terminator = other.terminator_;
+    size_type temp_size = other.size_;
+    bool temp_is_closed = other.is_closed_;
+
+    other.first_ = first_;
+    other.last_ = last_;
+    other.terminator_ = terminator_;
+    other.size_ = size;
+    other.is_closed_ = is_closed_;
+
+    first_ = temp_first;
+    last_ = temp_last;
+    terminator_ = temp_terminator;
+    size_ = temp_size;
+    is_closed_ = temp_is_closed;
   }
 
   iterator begin() {
@@ -228,6 +262,25 @@ public:
     return terminator_->next();
   }
 
+  void insert(iterator pos) {
+    // FIXME
+  }
+
+  template <typename InputIterator>
+  void insert(iterator pos, InputIterator f, InputIterator l) {
+    for ( InputIterator iter = f ; iter != l ; ++iter, ++pos ) {
+      insert(pos, *iter);
+    }
+  }
+
+  void erase(iterator pos) {
+    // FIXME
+  }
+
+  void erase(iterator first, iterator last) {
+    // FIXME
+  }
+
 private:
   void do_append(Curve *curve, Point p) {
     terminator_->setInitialPoint(p);
@@ -239,10 +292,30 @@ private:
     ++size_;
   }
 
+  void free_elements() {
+    for ( Curve *iter = first_, Curve *next = first_->next ;
+          iter != terminator_ ;
+          iter = next )
+    {
+      delete iter;
+    }
+    delete terminator_;
+  }
+
+  void init_elements(Point p) {
+    size_ = 0;
+    first_ = last_ = terminator_ = new LineSegment(p, NULL);
+  }
+
+  void copy_elements(Path const &other) {
+    init_elements(other.first_->initialPoint());
+    insert(begin(), other.begin(), other.end_open());
+  }
+
   Curve *first_;
   Curve *last_;
   LineSegment *terminator_;
-  unsigned size_;
+  size_type size_;
   bool is_closed_;
 };
 
