@@ -74,42 +74,64 @@ private:
 };
 */
 
-class Iterator : public std::forward_iterator<Curve const> {
+template <typename T>
+class BaseIterator : public std::forward_iterator<T> {
 public:
-  Iterator() : current_(NULL), offset_(0) {}
+  BaseIterator() : current_(NULL), offset_(0) {}
 
-  Curve const &operator*() const { return *current_; }
-  Curve const *operator->() const { return current_; }
+  reference operator*() const { return *current_; }
+  pointer operator->() const { return current_; }
 
-  Iterator &operator++(int) {
+  BaseIterator &operator++(int) {
     current = current_->next();
     ++offset_;
     return *this;
   }
 
-  Iterator const operator++() {
-    Iterator saved=*this;
+  BaseIterator const operator++() {
+    BaseIterator saved=*this;
     ++(*this);
     return saved;
   }
 
-private:
-  Iterator(Curve const *element, unsigned offset)
+protected:
+  BaseIterator(pointer element, unsigned offset)
   : current_(element), offset_(offset) {}
 
-  Curve const *current_;
+  pointer current_;
   unsigned offset_;
+};
+
+class Iterator : public BaseIterator<Curve> {
+public:
+  Iterator() : BaseIterator() {}
+
+private:
+  Iterator(pointer element, unsigned offset)
+  : BaseIterator(element, offset) {}
 
   friend class Path;
 };
+
+class ConstIterator : public BaseIterator<Curve const> {
+public:
+  ConstIterator() : BaseIterator() {}
+
+private:
+  ConstIterator(pointer element, unsigned offset)
+  : BaseIterator(element, offset) {}
+
+  friend class Path;
+};
+
 
 class Path {
 public:
   typedef Curve const value_type;
   typedef Iterator iterator;
-  typedef Iterator const_iterator;
-  typedef Curve const &reference;
-  typedef Curve const *pointer;
+  typedef ConstIterator const_iterator;
+  typedef Iterator::reference reference;
+  typedef Iterator::pointer pointer;
   typedef Iterator::difference_type difference_type;
   typedef unsigned size_type;
 
@@ -127,21 +149,37 @@ public:
     delete terminator_;
   }
 
-  Iterator begin() const {
-    return Iterator(first_, 0);
+  iterator begin() {
+    return iterator(first_, 0);
   }
-  Iterator end_open() const {
-    return Iterator(terminator_, size_);
+  const_iterator begin() const {
+    return const_iterator(first_, 0);
   }
-  Iterator end() const {
+  iterator end_open() {
+    return iterator(terminator_, size_);
+  }
+  const_iterator end_open() const {
+    return const_iterator(terminator_, size_);
+  }
+  iterator end() {
     if (is_closed_) {
-      end_closed();
+      return end_closed();
     } else {
-      end_open();
+      return end_open();
     }
   }
-  Iterator end_closed() const {
-    return Iterator(first_, size_ + 1);
+  const_iterator end() const {
+    if (is_closed_) {
+      return end_closed();
+    } else {
+      return end_open();
+    }
+  }
+  iterator end_closed() {
+    return iterator(first_, size_ + 1);
+  }
+  const_iterator end_closed() const {
+    return const_iterator(first_, size_ + 1);
   }
   
   template <typename CurveType>
