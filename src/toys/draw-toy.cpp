@@ -24,6 +24,8 @@ class DrawToy: public Toy {
             }
         }
         cairo_PathSet(cr, builder.peek());
+
+        Toy::draw(cr, notify, width, height, save);
     }
     void mouse_pressed(GdkEventButton* e) {
         Geom::Point mouse(e->x, e->y);
@@ -35,8 +37,8 @@ class DrawToy: public Toy {
                 close_i = i;
             }
         }
-        if(close_d < 10) {if(e->button==3) handles.erase(handles.begin() += close_i);}
-                     else if(e->button==1) handles.push_back(mouse);
+        if(close_d < 5) {if(e->button==3) handles.erase(handles.begin() += close_i); else Toy::mouse_pressed(e);}
+        else            {if(e->button==1) handles.push_back(mouse); else Toy::mouse_pressed(e);}
     }
 };
 
