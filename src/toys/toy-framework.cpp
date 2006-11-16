@@ -58,8 +58,8 @@ void Toy::draw(cairo_t *cr, std::ostringstream *notify, int width, int height, b
     }
     
     cairo_set_source_rgba (cr, 0.5, 0, 0, 1);
-    if(selected_handle != NULL && mouse_down == true)
-        draw_circ(cr, *selected_handle);
+    if(selected != -1 && mouse_down == true)
+        draw_circ(cr, handles[selected]);
 
     cairo_set_source_rgba (cr, 0.5, 0.25, 0, 1);
     cairo_stroke(cr);
@@ -80,31 +80,26 @@ void Toy::mouse_moved(GdkEventMotion* e)
     Geom::Point mouse(e->x, e->y);
     
     if(e->state & (GDK_BUTTON1_MASK | GDK_BUTTON3_MASK)) {
-        if(selected_handle != NULL) *selected_handle = mouse;
-        redraw();
+        if(selected != -1) handles[selected] = mouse;
     }
-
-    if(e->state & (GDK_BUTTON2_MASK)) redraw();
-    
     old_mouse_point = mouse;
+    redraw();
 }
 
 void Toy::mouse_pressed(GdkEventButton* e) {
     Geom::Point mouse(e->x, e->y);
     if(e->button == 1) {
         for(int i = 0; i < handles.size(); i++) {
-            if(Geom::L2(mouse - handles[i]) < 5) selected_handle = &handles[i];
+            if(Geom::L2(mouse - handles[i]) < 5) selected = i;
         }
-        redraw();
         mouse_down = true;
-    } else if(e->button == 2) {
-        redraw();
     }
     old_mouse_point = mouse;
+    redraw();
 }
 
 void Toy::mouse_released(GdkEventButton* e) {
-    selected_handle = NULL;
+    selected = -1;
     if(e->button == 1) mouse_down = false;
     redraw();
 }

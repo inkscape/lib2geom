@@ -18,9 +18,10 @@ class Toy {
 public:
     vector<Geom::Point> handles;
     bool mouse_down;
-    Geom::Point *selected_handle, old_mouse_point;
+    Geom::Point old_mouse_point;
+    int selected;
 
-    Toy() { mouse_down = false; }
+    Toy() { mouse_down = false; selected = -1;}
 
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int w, int h, bool save);
 
