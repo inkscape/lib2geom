@@ -14,6 +14,14 @@
 using std::vector;
 
 class ConvexTest: public Toy {
+    public:
+    ConvexTest () {
+        for(int i = 0; i < 50; i++){
+            handles.push_back(Geom::Point(uniform()*uniform()*400+200,
+                                          uniform()*uniform()*400+200));
+	}
+    }
+
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         cairo_set_source_rgba (cr, 0., 0., 0, 0.8);
         cairo_set_line_width (cr, 0.5);
@@ -22,16 +30,6 @@ class ConvexTest: public Toy {
             cairo_line_to(cr, width, i*width/4);
             cairo_move_to(cr, i*width/4, 0);
             cairo_line_to(cr, i*width/4, width);
-        }
-
-        int n = 30;
-
-        if(handles.empty()) {
-            for(int i = 0; i < n; i++){
-                Geom::Point c(width/2, width/2);
-                handles.push_back(Geom::Point(uniform()*(uniform()-0.5)*width/2,
-                                              uniform()*(uniform()-0.5)*height/2) + c);
-	    }
         }
     
         std::vector<Geom::Point> h1, h2;
@@ -47,6 +45,8 @@ class ConvexTest: public Toy {
             iterations++;
         }
         *notify << "constructor time = " << 1000*0.1/iterations << std::endl;
+
+
         Geom::ConvexHull ch1(h1);
         Geom::ConvexHull ch2(h2);
 
@@ -58,13 +58,14 @@ class ConvexTest: public Toy {
         }
         *notify << "graham merge time = " << 1000*0.1/iterations << std::endl;
 
+/*
         end_t = clock()+clock_t(0.1*CLOCKS_PER_SEC);
         iterations = 0;
         while(end_t > clock()) {
             merge(ch1, ch2);
             iterations++;
         }
-        *notify << "merge time = " << 1000*0.1/iterations << std::endl;
+        *notify << "merge time = " << 1000*0.1/iterations << std::endl;*/
         {
         Geom::ConvexHull gm = graham_merge(ch1, ch2);
         Geom::Point offset = Geom::Point(4, 0);
@@ -80,16 +81,16 @@ class ConvexTest: public Toy {
         }*/
         cairo_stroke(cr);
         }
-        Geom::ConvexHull m = merge(ch1, ch2);
+        //Geom::ConvexHull m = merge(ch1, ch2);
         //ch.merge(old_mouse_point);
 
         //assert(ch.is_clockwise());
-        if(m.contains_point(old_mouse_point))
-            *notify << "mouse in convex" << std::endl;
+        //if(m.contains_point(old_mouse_point))
+        //    *notify << "mouse in convex" << std::endl;
 
         Geom::Point offset = Geom::Point(0, -200);
 
-        cairo_set_line_width (cr, 2);
+        /*cairo_set_line_width (cr, 2);
         if(m.boundary.size() > 0) {
             cairo_move_to(cr, m.boundary.back() + offset);
             cairo_set_source_rgba (cr, 0., 0., 0, 0.5);
@@ -97,7 +98,7 @@ class ConvexTest: public Toy {
                 cairo_line_to(cr, m.boundary[i] + offset);
                 draw_number(cr, m.boundary[i] + offset, i);
             }
-        }
+        }*/
         cairo_stroke(cr);
         cairo_set_line_width (cr, 1);
 

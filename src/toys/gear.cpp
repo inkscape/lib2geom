@@ -189,14 +189,14 @@ class GearToy: public Toy {
         double minor_dim = std::min(width,height);
         
         Geom::Point centre = Geom::Point(width/2,height/2);
-        // draw cross hairs
+        /* draw cross hairs
         for(int i = 1; i < 2; i++) {
             cairo_move_to(cr, centre[0]-minor_dim/4, centre[1]);
             cairo_line_to(cr, centre[0]+minor_dim/4, centre[1]);
             cairo_move_to(cr, centre[0], centre[1]-minor_dim/4);
             cairo_line_to(cr, centre[0], centre[1]+minor_dim/4);
         }
-        cairo_stroke(cr);
+        cairo_stroke(cr);*/
         
         double pressure_angle = 20.0 * M_PI / 180;
         Gear gear(15,200.0,pressure_angle);

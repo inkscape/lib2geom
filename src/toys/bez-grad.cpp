@@ -151,6 +151,8 @@ class Sb2d2: public Toy {
             }
         }
         //*notify << "bo = " << sb2.index(0,0);
+
+        Toy::draw(cr, notify, width, height, save);
     }
 };
 

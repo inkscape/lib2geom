@@ -30,7 +30,9 @@ public:
 
     virtual void key_hit(GdkEventKey *e) {}
 
+    //Cheapo way of informing the framework what the toy would like drawn for it.
     virtual bool should_draw_numbers() { return true; }
+    virtual bool should_draw_bounds() { return true; }
 };
 
 //Framework Accesors

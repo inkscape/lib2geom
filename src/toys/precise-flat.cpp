@@ -11,7 +11,7 @@ using std::vector;
 unsigned total_pieces_sub;
 unsigned total_pieces_inc;
 
-class SBez: public Toy {
+class PreciseFlat: public Toy {
 virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
     cairo_set_line_width (cr, 0.5);
     
@@ -53,14 +53,14 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
 }
 
 public:
-SBez () {
+PreciseFlat () {
     for(int i = 0; i < 4; i++) handles.push_back(Geom::Point(uniform()*400, uniform()*400));
 }
 
 };
 
 int main(int argc, char **argv) {
-    init(argc, argv, "s-bez", new SBez());
+    init(argc, argv, "precise-flat", new PreciseFlat());
 
     return 0;
 }

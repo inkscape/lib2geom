@@ -25,11 +25,10 @@ void draw_number(cairo_t *cr, Geom::Point pos, int num) {
     number << num;
     cairo_move_to(cr, pos);
     PangoLayout* layout = pango_cairo_create_layout (cr);
-     pango_layout_set_text(layout, number.str().c_str(), -1);
-     PangoFontDescription *font_desc = pango_font_description_new();
-      pango_font_description_set_family(font_desc, "Sans");
-    const int size_px = 10;
-    pango_layout_set_font_description(layout, font_desc);
+      pango_layout_set_text(layout, number.str().c_str(), -1);
+      PangoFontDescription *font_desc = pango_font_description_new();
+        pango_font_description_set_family(font_desc, "Sans");
+      pango_layout_set_font_description(layout, font_desc);
     PangoRectangle logical_extent;
     pango_layout_get_pixel_extents(layout, NULL, &logical_extent);
     pango_cairo_show_layout(cr, layout); 
@@ -40,22 +39,22 @@ void redraw() { gtk_widget_queue_draw(GTK_WIDGET(window)); }
 
 void Toy::draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save)
 {
-    cairo_set_source_rgba (cr, 0., 0., 0, 0.8);
-    cairo_set_line_width (cr, 0.5);
-    for(int i = 1; i < 4; i+=2) {
-        cairo_move_to(cr, 0, i*width/4);
-        cairo_line_to(cr, width, i*width/4);
-        cairo_move_to(cr, i*width/4, 0);
-        cairo_line_to(cr, i*width/4, height);
+    if(should_draw_bounds()) {
+        cairo_set_source_rgba (cr, 0., 0., 0, 0.8);
+        cairo_set_line_width (cr, 0.5);
+        for(int i = 1; i < 4; i+=2) {
+            cairo_move_to(cr, 0, i*width/4);
+            cairo_line_to(cr, width, i*width/4);
+            cairo_move_to(cr, i*width/4, 0);
+            cairo_line_to(cr, i*width/4, height);
+        }
     }
 
-    if(should_draw_numbers()) {
-        cairo_set_source_rgba (cr, 0., 0.5, 0, 1);
-        cairo_set_line_width (cr, 1);
-        for(int i = 0; i < handles.size(); i++) {
-            draw_circ(cr, handles[i]);
-            draw_number(cr, handles[i], i);
-        }
+    cairo_set_source_rgba (cr, 0., 0.5, 0, 1);
+    cairo_set_line_width (cr, 1);
+    for(int i = 0; i < handles.size(); i++) {
+        draw_circ(cr, handles[i]);
+        if(should_draw_numbers()) draw_number(cr, handles[i], i);
     }
     
     cairo_set_source_rgba (cr, 0.5, 0, 0, 1);

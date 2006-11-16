@@ -110,6 +110,8 @@ class Conic4: public Toy {
         subpath_from_sbasis(pb, B, 1);
         Geom::PathSet pth = pb.peek();
         *notify << pth;
+
+        Toy::draw(cr, notify, width, height, save);
     }
 };
 

@@ -185,7 +185,7 @@ int main(int argc, char **argv) {
 
     GtkWidget* window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 
-    gtk_window_set_title(GTK_WINDOW(window), "text toy");
+    gtk_window_set_title(GTK_WINDOW(window), "gdk conic");
 
     gtk_window_set_policy(GTK_WINDOW(window), TRUE, TRUE, TRUE);
 
