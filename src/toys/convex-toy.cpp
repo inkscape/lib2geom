@@ -16,7 +16,7 @@ using std::vector;
 class ConvexTest: public Toy {
     public:
     ConvexTest () {
-        for(int i = 0; i < 50; i++){
+        for(int i = 0; i < 30; i++){
             handles.push_back(Geom::Point(uniform()*uniform()*400+200,
                                           uniform()*uniform()*400+200));
 	}
