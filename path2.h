@@ -16,6 +16,8 @@ public:
 
   virtual Point initialPoint() const = 0;
   virtual Point finalPoint() const = 0;
+
+  virtual Curve *duplicate() const = 0;
 };
 
 template <unsigned degree>
@@ -50,6 +52,8 @@ public:
     c_[3] = c3;
   }
 
+  Curve *duplicate() const { return new Bezier(*this); }
+
   Point initialPoint() const { return c_[0]; }
   Point finalPoint() const { return c_[degree-1]; }
 
@@ -75,6 +79,8 @@ public:
     large_arc_(large_arc), sweep_(sweep), final_(final)
   {}
 
+  Curve *duplicate() const { return new SVGEllipticalArc(*this); }
+
   Point initialPoint() const { return initial_; }
   Point finalPoint() const { return final_; }
 
@@ -90,6 +96,8 @@ private:
 
 class SBasis : public Curve {
 public:
+  SBasis() {}
+
   explicit SBasis(multidim_sbasis<2> const &coeffs)
   : coeffs_(coeffs) {}
 
@@ -100,6 +108,8 @@ public:
     return Point(coeffs_[X][0][1], coeffs_[Y][0][1]);
   }
 
+  Curve *duplicate() const { return new SBasis(*this); }
+
   double &operator[](int index) { return coeffs_[index]; }
   double const &operator[](int index) const { return coeffs_[index]; }
   
@@ -107,21 +117,147 @@ private:
   multidim_sbasis<2> coeffs_;
 };
 
-class Iterator {
+template <typename IteratorImpl>
+class BaseIterator : public std::forward_iterator<Curve const &> {
 public:
+  BaseIterator() {}
+
+  // default construct
+  // default copy
+
+  bool operator==(BaseIterator const &other) {
+    return other.impl_ == impl_;
+  }
+  bool operator!=(BaseIterator const &other) {
+    return other.impl_ != pos;
+  }
+
+  Curve const &operator*() const { return **impl_; }
+  Curve const *operator->() const { return *impl_; }
+
+  BaseIterator &operator++(int) {
+    ++_pos;
+    return *this;
+  }
+  BaseIterator operator++() {
+    BaseIterator old=*this;
+    ++(*this);
+    return old;
+  }
+
 private:
+  explicit BaseIterator(IteratorImpl const &pos)
+  : impl_(pos) {}
+
+  IteratorImpl impl_;
+  friend class Path;
 };
 
 class Path {
 public:
-private:
-};
+  typedef BaseIterator<std::vector<Curve *>::iterator> iterator;
+  typedef BaseIterator<std::vector<Curve *>::const_iterator> const_iterator;
+  typedef std::vector<Curve *>::size_type size_type;
+  typedef std::vector<Curve *>::difference_type difference_type;
 
-class Location {
-public:
+  Path() {
+    curves_.push_back(new LineSegment());
+  }
+
+  Path(Path const &other)
+  : closed_(other.closed_)
+  {
+    curves_.push_back(new LineSegment());
+    insert(begin(), other.begin(), other.end_open());
+  }
+
+  ~Path() {
+    std::vector<Curve *>::iterator iter;
+    for ( iter = curves_.begin() ; iter != curves_.end() ; ++iter ) {
+      delete *iter;
+    }
+  }
+
+  iterator begin() { return curves_.begin(); }
+  iterator end() { return curves_.end()-1; }
+
+  const_iterator begin() const { return curves_.begin(); }
+  const_iterator end() const { return curves_.end()-1; }
+
+  const_iterator end_open() const { return curves_.end()-1; }
+  const_iterator end_closed() const { return curves_.end(); }
+  const_iterator end_default() const {
+    return ( closed_ ? end_closed() : end_open() );
+  }
+
+  size_type size() const { return curves_.size()-1; }
+  size_type max_size() const { return curves_.max_size()-1; }
+
+  bool empty() const { return curves_.size() == 1; }
+  bool closed() const { return closed_; }
+  void close(bool closed=true) { closed_ = closed; }
+
+  void insert(iterator pos, Curve const &curve) {
+    difference_type offset=pos.impl_-curves_.begin();
+    curves_.insert(pos.impl_, curve.duplicate());
+    stitch(offset, offset + 1);
+  }
+
+  template <InputIterator>
+  void insert(iterator pos, InputIterator first, InputIterator last) {
+    std::vector<Curve *> curves;
+    for ( ; first != last ; ++first ) {
+      curves.push_back(first->duplicate());
+    }
+    difference_type offset=pos.impl_-curves_.begin();
+    curves_.insert(pos.impl_, curves.begin(), curves.end());
+    stitch(offset, offset + curves.size());
+  }
+
+  void insert(iterator pos, size_type n, Curve const &curve) {
+    if ( n > 0 ) {
+      difference_type offset=pos.impl_-curves_.begin();
+      curves_.reserve(curves_.size() + n);
+      for ( size_type left=n ; left > 0 ; --left ) {
+        curves_.push_back(curve->duplicate());
+      }
+      stitch(offset, offset + n);
+    }
+  }
+
+  void clear() {
+    if (!empty()) {
+      curves_.erase(curves_.begin(), curves_.end()-1);
+    }
+  }
+
+  void erase(iterator pos) {
+    difference_type offset=pos.impl_-curves_.begin();
+    delete *pos.impl_;
+    curves_.erase(pos.impl_);
+    stitch(offset, offset);
+  }
+
+  void erase(iterator first, iterator last) {
+    difference_type offset=pos.impl_-curves_.begin();
+    for ( iterator iter = first ; iter != last ; ++iter ) {
+      delete *iter.impl_;
+    }
+    curves_.erase(first.impl_, last.impl_);
+    stitch(offset, offset);
+  }
+
+  void replace(iterator pos, Curve const &curve) {
+    difference_type offset=pos.impl_-curves_.begin();
+    Curve *new_curve = curve->duplicate();
+    delete *pos.impl_;
+    *pos.impl_ = new_curve;
+    stitch(offset, offset + 1);
+  }
+
 private:
-  Iterator pos;
-  double t;
+  std::vector<Curve *> curves_;
+  bool closed_;
 };
 
 class Set {
