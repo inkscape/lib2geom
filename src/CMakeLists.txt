@@ -30,12 +30,7 @@ isnan.h
 #libnr.def
 macros.h
 matrix.cpp
-matrix-div.cpp
-matrix-div.h
-matrix-fns.cpp
-matrix-fns.h
 matrix.h
-matrix-ops.h
 maybe.h
 multidim-sbasis.h
 #nearestpoint.cpp

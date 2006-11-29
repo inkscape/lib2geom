@@ -12,7 +12,8 @@
  */
 
 #include "matrix.h"
-#include "matrix-fns.h"
+#include "point.h"
+#include "point-matrix-ops.h"
 
 namespace Geom {
 
@@ -40,20 +41,15 @@ Matrix &Matrix::operator*=(Matrix const &o)
 
 /** Scales a Matrix by multiplication with a scale transform. */
 Matrix &Matrix::operator*=(scale const &other) {
-    for(int i = 0; i < 6; i += 2) {
-        _c[i] *= other[X];
-    }
-    for(int i = 1; i < 6; i += 2) {
-        _c[i] *= other[Y];
-    }
-
+    for(int i = 0; i < 6; i++)
+        _c[i] *= other[i % 2];
     return *this;
 }
 
 /** Translates a Matrix by multiplication with a translate transform. */
 Matrix &Matrix::operator*=(translate const &other) {
-    _c[4] += other[X];
-    _c[5] += other[Y];
+    for(int i = 0; i < 2; i++)
+        _c[i + 4] += other[i];
     return *this;
 }
 
@@ -210,11 +206,11 @@ double Matrix::expansionY() const {
     return sqrt(_c[2] * _c[2] + _c[3] * _c[3]);
 }
 
-Point Matrix::get_x_axis() const {
+Point Matrix::x_axis() const {
     return Point(_c[0], _c[1]);
 }
 
-Point Matrix::get_y_axis() const {
+Point Matrix::y_axis() const {
     return Point(_c[2], _c[3]);
 }
 
@@ -230,7 +226,7 @@ void Matrix::set_y_axis(Point const &vec) {
 
 /** Gets the translation imparted by the Matrix.
  */
-Point Matrix::get_translation() const {
+Point Matrix::translation() const {
     return Point(_c[4], _c[5]);
 }
 
@@ -246,11 +242,12 @@ void Matrix::set_translation(Point const &loc) {
  \return A bool representing yes/no.
  */
 bool Matrix::is_translation(Coord const eps) const {
-    return ( fabs(_c[0] - 1.0) < eps &&
-             fabs(_c[1])       < eps &&
-             fabs(_c[2])       < eps &&
-             fabs(_c[3] - 1.0) < eps &&
-             _c[4] != 0 && _c[5] != 0);
+    return (fabs(_c[0] - 1.0) < eps &&
+            fabs(_c[1])       < eps &&
+            fabs(_c[2])       < eps &&
+            fabs(_c[3] - 1.0) < eps &&
+            fabs(_c[4])       > eps &&
+            fabs(_c[5])       > eps );
 }
 
 /** Answers the question "Does this matrix perform \em{only} a scale?"
@@ -258,11 +255,12 @@ bool Matrix::is_translation(Coord const eps) const {
  \return A bool representing yes/no.
  */
 bool Matrix::is_scale(Coord const eps) const {
-    return ( (_c[0] != 1 || _c[3] != 1) &&
-             fabs(_c[1]) < eps &&
-             fabs(_c[2]) < eps &&
-             fabs(_c[4]) < eps &&
-             fabs(_c[5]) < eps);
+    return (fabs(_c[0] - 1.0) > eps && 
+            fabs(_c[1])       < eps &&
+            fabs(_c[2])       < eps &&
+            fabs(_c[3] - 1.0) > eps &&
+            fabs(_c[4])       < eps &&
+            fabs(_c[5])       < eps );
 }
 
 /** Answers the question "Does this matrix perform a uniform scale?"
@@ -270,12 +268,12 @@ bool Matrix::is_scale(Coord const eps) const {
  \return A bool representing yes/no.
  */
 bool Matrix::is_uniform_scale(Coord const eps) const {
-    return ( _c[0] != 1              &&
-             fabs(_c[0]-_c[3]) < eps &&
-             fabs(_c[1])       < eps &&
-             fabs(_c[2])       < eps &&
-             fabs(_c[4])       < eps &&
-             fabs(_c[5])       < eps);
+    return (fabs(_c[0] - 1.0) > eps &&
+            fabs(_c[0]-_c[3]) < eps &&
+            fabs(_c[1])       < eps &&
+            fabs(_c[2])       < eps &&
+            fabs(_c[4])       < eps &&
+            fabs(_c[5])       < eps);
 }
 
 /** Answers the question "Does this matrix perform \em{only} a rotation?"
@@ -287,9 +285,8 @@ bool Matrix::is_rotation(Coord const eps) const {
              fabs(_c[1] + _c[2]) < eps &&
              fabs(_c[4])         < eps &&
              fabs(_c[5])         < eps &&
-             fabs(L2(get_x_axis()) - 1) < eps &&
-             fabs(L2(get_y_axis()) - 1) < eps);
-}
+             fabs(L2(x_axis()) - 1) < eps &&
+             fabs(L2(y_axis()) - 1) < eps);}
 
 //TODO: Remove all this crap!
 
@@ -345,6 +342,53 @@ void assert_close(Matrix const &a, Matrix const &b)
                 a[4], a[5], b[4], b[5]);
         abort();
     }
+}
+
+Point operator/(Point const &p, Matrix const &m) {
+    return p * m.inverse();
+}
+
+Matrix operator/(Matrix const &a, Matrix const &b) {
+    return a * b.inverse();
+}
+
+Matrix elliptic_quadratic_form(Matrix const &m) {
+    double const od = m[0] * m[1]  +  m[2] * m[3];
+    return Matrix((m[0]*m[0] + m[1]*m[1]), od,
+                  od, (m[2]*m[2] + m[3]*m[3]),
+                  0, 0);
+/* def quadratic_form((a, b), (c, d)):
+   return ((a*a + c*c), a*c+b*d),(a*c+b*d, (b*b + d*d)) */
+}
+
+Eigen::Eigen(Matrix const &m) {
+    double const B = -m[0] - m[3];
+    double const C = m[0]*m[3] - m[1]*m[2];
+    double const center = -B/2.0;
+    double const delta = sqrt(B*B-4*C)/2.0;
+    values = Point(center + delta, center - delta);
+    for (int i = 0; i < 2; i++) {
+        vectors[i] = unit_vector(rot90(Point(m[0]-values[i], m[1])));
+    }
+}
+
+//TODO: possible others?
+/** Returns just the scale/rotate/skew part of the matrix without the translation part. */
+Matrix without_translation(Matrix const &m) {
+    Matrix const ret(m[0], m[1],
+                     m[2], m[3],
+                     0, 0);
+    return ret;
+}
+
+//TODO: Other methods for rotate/scale - make an actual method?
+translate to_translate(Matrix const &m) {
+    return translate(m[4], m[5]);
+}
+
+void matrix_print(const char *say, Matrix const &m)
+{ 
+    printf ("%s %g %g %g %g %g %g\n", say, m[0], m[1], m[2], m[3], m[4], m[5]);
 }
 
 }  //namespace Geom

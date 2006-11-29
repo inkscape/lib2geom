@@ -4,9 +4,6 @@
 /** \file
  * Definition of Geom::Matrix types.
  *
- * \note Operator functions (e.g. Matrix * Matrix etc.) are mostly in
- * libnr/matrix-ops.h.  See end of file for discussion.
- *
  * Main authors:
  *   Lauris Kaplinski <lauris@kaplinski.com>:
  *     Original NRMatrix definition and related macros.
@@ -82,9 +79,9 @@ class Matrix {
         _c[3] = sm[Y];
     }
 
-    Point get_x_axis() const;
-    Point get_y_axis() const;
-    Point get_translation() const;
+    Point x_axis() const;
+    Point y_axis() const;
+    Point translation() const;
     void set_x_axis(Point const &vec);
     void set_y_axis(Point const &vec);
     void set_translation(Point const &loc);
@@ -147,29 +144,53 @@ inline std::ostream &operator<< (std::ostream &out_file, const Geom::Matrix &m) 
 
 extern void assert_close(Matrix const &a, Matrix const &b);
 
+Geom::Point operator/(Geom::Point const &, Geom::Matrix const &);
+Geom::Matrix operator/(Geom::Matrix const &, Geom::Matrix const &);
+
+/** Given a matrix m such that unit_circle = m*x, this returns the
+ * quadratic form x*A*x = 1. */
+Matrix elliptic_quadratic_form(Matrix const &m);
+
+/** Given a matrix (ignoring the translation) this returns the eigen
+ * values and vectors. */
+class Eigen{
+public:
+    Point vectors[2];
+    Point values;
+    Eigen(Matrix const &m);
+};
+
+// Matrix factories
+Matrix from_basis(const Point x_basis, const Point y_basis, const Point offset=Point(0,0));
+
+Matrix identity();
+
+double expansion(Matrix const &m);
+
+bool transform_equalp(Matrix const &m0, Matrix const &m1, Geom::Coord const epsilon);
+bool translate_equalp(Matrix const &m0, Matrix const &m1, Geom::Coord const epsilon);
+bool matrix_equalp(Matrix const &m0, Matrix const &m1, Geom::Coord const epsilon);
+
+Matrix without_translation(Matrix const &m);
+translate to_translate(Matrix const &m);
+
+void matrix_print(const char *say, Matrix const &m);
+
+inline bool operator==(Matrix const &a, Matrix const &b) {
+    for(unsigned i = 0; i < 6; ++i) {
+        if ( a[i] != b[i] ) {
+            return false;
+        }
+    }
+    return true;
+}
+
+inline bool operator!=(Matrix const &a, Matrix const &b) { return !( a == b ); }
+Matrix operator*(Matrix const &a, Matrix const &b);
+
 } /* namespace Geom */
 
-/** \note
- * Discussion of splitting up matrix.h into lots of little files:
- *
- *   Advantages:
- *
- *    - Reducing amount of recompilation necessary when anything changes.
- *
- *    - Hopefully also reducing compilation time by reducing the number of inline
- *      function definitions encountered by the compiler for a given .o file.
- *      (No timing comparisons done yet.  On systems without much memory available
- *      for caching, this may be outweighed by additional I/O costs.)
- *
- *   Disadvantages:
- *
- *    - More #include lines necessary per file.  If a compile fails due to
- *      not having all the necessary #include lines, then the developer needs
- *      to spend some time working out what #include to add.
- */
-
 #endif /* !__Geom_MATRIX_H__ */
-
 
 /*
   Local Variables:

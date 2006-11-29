@@ -1,4 +1,4 @@
-#include "matrix-ops.h"
+#include "matrix.h"
 
 namespace Geom {
 
