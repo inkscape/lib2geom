@@ -41,12 +41,12 @@ int circle_circle_intersection(Point X0, double r0,
     /* no solution. circles do not intersect. */
     return 0;
   }
-  if (d < fabs(r0 - r1))
+  if (d <= fabs(r0 - r1))
   {
     /* no solution. one circle is contained in the other */
     return 1;
   }
-
+  
   /* 'point 2' is the point where the line through the circle
    * intersection points crosses the line between the circle
    * centers.  
