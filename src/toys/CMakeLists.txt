@@ -22,6 +22,7 @@ match-curve
 mesh-grad
 bez-grad
 draw-toy
+circle-intersect
 "${NEEDS_GSL}"
 )
 
