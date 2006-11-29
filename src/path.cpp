@@ -3,6 +3,7 @@
 #include "s-basis.h"
 #include "multidim-sbasis.h"
 #include "bezier-to-sbasis.h"
+#include "path-sbasis.h"
 
 namespace Geom{
 
@@ -113,17 +114,13 @@ Geom::Path::Elem::point_tangent_acc_at(double t,
                                            Geom::Point &pos, 
                                            Geom::Point &tgt,
                                            Geom::Point &acc) const {
-/*
-        Poly Qx = get_parametric_poly(*this, X);
-        Poly Qy = get_parametric_poly(*this, Y);
-        pos = Point(Qx(t), Qy(t));
-        Qx = derivative(Qx);
-        Qy = derivative(Qy);
-        tgt = Point(Qx(t), Qy(t));
-        Qx = derivative(Qx);
-        Qy = derivative(Qy);
-        acc = Point(Qx(t), Qy(t));
-*/
+    // inelegant
+    multidim_sbasis<2> a = elem_to_sbasis(*this);
+    pos = Geom::Point(a[0](t), a[1](t));
+    a = derivative(a);
+    tgt = Geom::Point(a[0](t), a[1](t));
+    a = derivative(a);
+    acc = Geom::Point(a[0](t), a[1](t));
 }
 
 
