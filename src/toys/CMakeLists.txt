@@ -15,7 +15,7 @@ sb1d
 sb2d
 s-bez
 precise-flat
-#toy-cairo
+toy-cairo
 gear
 cheb
 match-curve

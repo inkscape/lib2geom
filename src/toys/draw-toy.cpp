@@ -3,7 +3,6 @@
 #include "path-builder.h"
 
 #include "matrix.h"
-#include "matrix-fns.h"
 
 #include "toy-framework.h"
 
