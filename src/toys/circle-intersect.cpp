@@ -12,6 +12,7 @@ class CircleIntersect : public Toy {
         cairo_arc(cr, handles[0][0], handles[0][1], r1, 0, M_PI*2);
         cairo_stroke(cr);
         cairo_arc(cr, handles[2][0], handles[2][1], r2, 0, M_PI*2);
+        cairo_stroke(cr);
         
         switch (circle_circle_intersection(handles[0], r1, handles[2], r2, i1, i2)) {
         case 0: *notify << "No intersection"; break;
