@@ -21,18 +21,18 @@ struct element_point_distance{
             Path::Elem::const_iterator it(e.begin());
             {
                 Point delta = *it-p;
-                d = dot(delta, delta);
+                d = L2(delta);
             }
             for(; it != e.end(); it++) {
                 Point delta = *it-p;
-                double dd = dot(delta, delta);
+                double dd = L2(delta);
                 if(dd < d)
                     d = dd;
             }
         }
     }
     bool operator<(const element_point_distance & b) const {
-        return (d < b.d);
+        return (d > b.d);
     }
 };
 
@@ -49,29 +49,24 @@ Geom::Path::Location find_nearest_location(Geom::Path const & p, Geom::Point pt)
     Path::Location best(p.begin(), 0);
     while(!pq.empty()) {
         element_point_distance epd = pq.top();
-        
+        std::cout << epd.d << std::endl;;
         if(epd.d > best_guess)
             break; // early terminate
         Path::Elem elm = *epd.e;
         multidim_sbasis<2> B = elem_to_sbasis(*epd.e) - pt;
         SBasis Bdist = dot(B, B);
-        for(int i = 0; i <=10; i++) {
-            double t = i/10.;
-            if(Bdist(t) < best_guess) {
-                best.it = epd.e;
-                best.t = t;
-            }
-        }
-/*
         std::vector<double> r = roots(derivative(Bdist));
         for(unsigned i = 0; i < r.size(); i++) {
-            if(Bdist(r[i]) < best_guess) {
+            double bd = Bdist(r[i]);
+            if(bd < best_guess) {
                 best.it = epd.e;
                 best.t = r[i];
+                best_guess = bd;
             }
-            }*/
+            }
 	pq.pop();
     }
+    std::cout << "best:" << best.t << std::endl;
     
     return best;
 }
