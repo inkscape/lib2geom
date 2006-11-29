@@ -14,6 +14,7 @@ rat-bez
 sb1d
 sb2d
 s-bez
+pair-intersect
 precise-flat
 toy-cairo
 gear
