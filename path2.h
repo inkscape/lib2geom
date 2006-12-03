@@ -66,8 +66,8 @@ private:
 };
 
 // Bezier<0> and Bezier<1> are meaningless; specialize them out
-template <> class Bezier<0> { Bezier(); };
-template <> class Bezier<1> { Bezier(); };
+template <> class Bezier<0> { };
+template <> class Bezier<1> { };
 
 typedef Bezier<2> LineSegment;
 typedef Bezier<3> QuadraticBezier;
