@@ -8,7 +8,7 @@ void draw_rat_bez(cairo_t *cr, Geom::Point* h, double w) {
     cairo_move_to(cr, h[0]);
     for(int i = 1; i <= 100; i++) {
         double t = i*0.01;
-        
+        //TODO: use bezier-utils
         Geom::Point p = (1-t)*(1-t)*h[0] + 
             2*(1-t)*t*w*h[1] + 
             t*t*h[2];
