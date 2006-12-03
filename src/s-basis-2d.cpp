@@ -39,14 +39,10 @@ SBasis compose(BezOrd2d const &a, multidim_sbasis<2> p) {
     multidim_sbasis<2> omp;
     for(int dim = 0; dim < 2; dim++)
         omp[dim] = BezOrd(1) - p[dim];
-    //std::cout << "a = " << a << std::endl;
-    //for(int dim = 0; dim < 2; dim++)
-    //    std::cout << p[dim] << ", " << omp[dim] << std::endl;
     sb = a[0]*multiply(omp[0], omp[1]) +
         a[1]*multiply(p[0], omp[1]) +
         a[2]*multiply(omp[0], p[1]) +
         a[3]*multiply(p[0], p[1]);
-    //std::cout << sb << std::endl;
     return sb;
 }
 
