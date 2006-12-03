@@ -13,12 +13,11 @@
 #include "coord.h"
 #include "dim2.h"
 
-//#include "round.h"
-#include "decimal-round.h"
+#include "math-utils.h"
 
 /// A NRPoint consists of x and y coodinates.
 /// \todo
-/// This class appears to be obsoleted out in favour of Geom::Point.
+/// This class is deprecated in favour of Geom::Point.
 struct NRPoint {
     Geom::Coord x, y;
 };
@@ -95,8 +94,8 @@ class Point {
                         the final number.
     */
     inline void round (int places = 0) {
-        _pt[X] = (Coord)(Inkscape::decimal_round((double)_pt[X], places));
-        _pt[Y] = (Coord)(Inkscape::decimal_round((double)_pt[Y], places));
+        _pt[X] = (Coord)(decimal_round((double)_pt[X], places));
+        _pt[Y] = (Coord)(decimal_round((double)_pt[Y], places));
         return;
     }
 

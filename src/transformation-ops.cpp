@@ -4,9 +4,29 @@
 
 namespace Geom {
 
+/** Multiplies two matrices together, effectively combining their transformations.*/
+Matrix operator*(Matrix const &m0, Matrix const &m1) {
+    Matrix ret;
+    int n = 0;
+    for(int a = 0; a < 5; a += 2) {
+        for(int b = 0; b < 2; b++) {
+            ret[n] = m0[a] * m1[b] + m0[a + 1] * m1[b + 2];
+            n++;
+        }
+    }
+    ret[4] += m1[4];
+    ret[5] += m1[5];
+    return ret;
+}
 
-//*********************
-//Translate operators
+Point operator/(Point const &p, Matrix const &m) {
+    return p * m.inverse();
+}
+
+Matrix operator/(Matrix const &a, Matrix const &b) {
+    return a * b.inverse();
+}
+
 
 /** Multiplies a translate with a scale.
  \return a Matrix which not only translates by the scaled translation, but also includes the scaling.

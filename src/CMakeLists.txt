@@ -5,7 +5,6 @@ bezier-to-sbasis.h
 beztype.cpp
 bezier-utils.cpp
 bezier-utils.h
-#b-spline.cpp
 centroid.cpp
 centroid.h
 choose.h
@@ -19,7 +18,6 @@ convex-hull-ops.h
 coord.h
 cubic_bez_util.cpp
 cubic_bez_util.h
-decimal-round.h
 dim2.h
 floating.h
 forward.h
@@ -31,6 +29,8 @@ isnan.h
 macros.h
 matrix.cpp
 matrix.h
+math-utils.h
+math-utils.cpp
 maybe.h
 multidim-sbasis.h
 #nearestpoint.cpp
@@ -76,7 +76,6 @@ rotate-fns.cpp
 rotate-fns.h
 rotate.h
 rotate-ops.h
-round.h
 s-basis-2d.h
 s-basis-2d.cpp
 s-basis.cpp
@@ -92,7 +91,6 @@ solve-bezier-one-d.cpp
 solve-bezier-parametric.cpp
 solver.h
 sturm.h
-#toy.cpp
 transformation-ops.cpp
 transformation-ops.h
 translate.h

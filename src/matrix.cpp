@@ -14,23 +14,9 @@
 #include "matrix.h"
 #include "point.h"
 #include "point-matrix-ops.h"
+#include "transformation-ops.h"
 
 namespace Geom {
-
-/** Multiplies two matrices together, effectively combining their transformations.*/
-Matrix operator*(Matrix const &m0, Matrix const &m1) {
-    Matrix ret;
-    int n = 0;
-    for(int a = 0; a < 5; a += 2) {
-        for(int b = 0; b < 2; b++) {
-            ret[n] = m0[a] * m1[b] + m0[a + 1] * m1[b + 2];
-            n++;
-        }
-    }
-    ret[4] += m1[4];
-    ret[5] += m1[5];
-    return ret;
-}
 
 /** Multiplies a Matrix with another.*/
 Matrix &Matrix::operator*=(Matrix const &o)
@@ -342,14 +328,6 @@ void assert_close(Matrix const &a, Matrix const &b)
                 a[4], a[5], b[4], b[5]);
         abort();
     }
-}
-
-Point operator/(Point const &p, Matrix const &m) {
-    return p * m.inverse();
-}
-
-Matrix operator/(Matrix const &a, Matrix const &b) {
-    return a * b.inverse();
 }
 
 Matrix elliptic_quadratic_form(Matrix const &m) {

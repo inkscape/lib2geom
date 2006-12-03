@@ -144,9 +144,6 @@ inline std::ostream &operator<< (std::ostream &out_file, const Geom::Matrix &m) 
 
 extern void assert_close(Matrix const &a, Matrix const &b);
 
-Geom::Point operator/(Geom::Point const &, Geom::Matrix const &);
-Geom::Matrix operator/(Geom::Matrix const &, Geom::Matrix const &);
-
 /** Given a matrix m such that unit_circle = m*x, this returns the
  * quadratic form x*A*x = 1. */
 Matrix elliptic_quadratic_form(Matrix const &m);

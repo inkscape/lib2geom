@@ -23,18 +23,18 @@ class Point;
 /* Bezier approximation utils */
 Point bezier_pt(unsigned degree, Point const V[], double t);
 
-int sp_bezier_fit_cubic(Point bezier[], Point const data[], int len, double error);
+int bezier_fit_cubic(Point bezier[], Point const data[], int len, double error);
 
-int sp_bezier_fit_cubic_r(Point bezier[], Point const data[], int len, double error,
+int bezier_fit_cubic_r(Point bezier[], Point const data[], int len, double error,
                            unsigned max_beziers);
 
-int sp_bezier_fit_cubic_full(Point bezier[], int split_points[], Point const data[], int len,
+int bezier_fit_cubic_full(Point bezier[], int split_points[], Point const data[], int len,
                               Point const &tHat1, Point const &tHat2,
                               double error, unsigned max_beziers);
 
-Point sp_darray_left_tangent(Point const d[], unsigned const len);
-Point sp_darray_left_tangent(Point const d[], unsigned const len, double const tolerance_sq);
-Point sp_darray_right_tangent(Point const d[], unsigned const length, double const tolerance_sq);
+Point darray_left_tangent(Point const d[], unsigned const len);
+Point darray_left_tangent(Point const d[], unsigned const len, double const tolerance_sq);
+Point darray_right_tangent(Point const d[], unsigned const length, double const tolerance_sq);
 
 
 }

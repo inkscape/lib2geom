@@ -1,6 +1,5 @@
 #include "poly.h"
-
-template <typename T> int sgn(T x) { return (x<0)?-1:(x>0)?1:0; }
+#include "math-utils.h"
 
 class sturm : public std::vector<Poly>{
 public:

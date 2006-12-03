@@ -1,6 +1,10 @@
 #include "matrix.h"
 
 namespace Geom {
+Matrix operator*(Matrix const &m0, Matrix const &m1);
+    
+Geom::Point operator/(Geom::Point const &, Geom::Matrix const &);
+Geom::Matrix operator/(Geom::Matrix const &, Geom::Matrix const &);
 
 Matrix operator*(translate const &t, scale const &s);
 Matrix operator*(translate const &t, rotate const &r);

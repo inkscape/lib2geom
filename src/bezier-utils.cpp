@@ -50,8 +50,8 @@ static void estimate_bi(Point b[4], unsigned ei,
                         Point const data[], double const u[], unsigned len);
 static void reparameterize(Point const d[], unsigned len, double u[], BezierCurve const bezCurve);
 static double NewtonRaphsonRootFind(BezierCurve const Q, Point const &P, double u);
-static Point sp_darray_center_tangent(Point const d[], unsigned center, unsigned length);
-static Point sp_darray_right_tangent(Point const d[], unsigned const len);
+static Point darray_center_tangent(Point const d[], unsigned center, unsigned length);
+static Point darray_right_tangent(Point const d[], unsigned const len);
 static unsigned copy_without_nans_or_adjacent_duplicates(Point const src[], unsigned src_len, Point dest[]);
 static void chord_length_parameterize(Point const d[], double u[], unsigned len);
 static double compute_max_error_ratio(Point const d[], double const u[], unsigned len,
@@ -93,9 +93,9 @@ static Point const unconstrained_tangent(0, 0);
  * \return Number of segments generated, or -1 on error.
  */
 int
-sp_bezier_fit_cubic(Point *bezier, Point const *data, int len, double error)
+bezier_fit_cubic(Point *bezier, Point const *data, int len, double error)
 {
-    return sp_bezier_fit_cubic_r(bezier, data, len, error, 1);
+    return bezier_fit_cubic_r(bezier, data, len, error, 1);
 }
 
 /**
@@ -108,7 +108,7 @@ sp_bezier_fit_cubic(Point *bezier, Point const *data, int len, double error)
  * \return Number of segments generated, or -1 on error.
  */
 int
-sp_bezier_fit_cubic_r(Point bezier[], Point const data[], int const len, double const error, unsigned const max_beziers)
+bezier_fit_cubic_r(Point bezier[], Point const data[], int const len, double const error, unsigned const max_beziers)
 {
     if(bezier == NULL || 
        data == NULL || 
@@ -125,9 +125,9 @@ sp_bezier_fit_cubic_r(Point bezier[], Point const data[], int const len, double 
     }
 
     /* Call fit-cubic function with recursion. */
-    int const ret = sp_bezier_fit_cubic_full(bezier, NULL, uniqued_data, uniqued_len,
-                                              unconstrained_tangent, unconstrained_tangent,
-                                              error, max_beziers);
+    int const ret = bezier_fit_cubic_full(bezier, NULL, uniqued_data, uniqued_len,
+                                          unconstrained_tangent, unconstrained_tangent,
+                                          error, max_beziers);
     delete[] uniqued_data;
     return ret;
 }
@@ -175,10 +175,10 @@ copy_without_nans_or_adjacent_duplicates(Point const src[], unsigned src_len, Po
  * \param Result array, must be large enough for n. segments * 4 elements.
  */
 int
-sp_bezier_fit_cubic_full(Point bezier[], int split_points[],
-                         Point const data[], int const len,
-                         Point const &tHat1, Point const &tHat2,
-                         double const error, unsigned const max_beziers)
+bezier_fit_cubic_full(Point bezier[], int split_points[],
+                      Point const data[], int const len,
+                      Point const &tHat1, Point const &tHat2,
+                      double const error, unsigned const max_beziers)
 {
     int const maxIterations = 4;   /* Max times to try iterating */
     
@@ -267,7 +267,7 @@ sp_bezier_fit_cubic_full(Point bezier[], int split_points[],
                 /* Got spike even with unconstrained initial tangent. */
                 ++splitPoint;
             } else {
-                return sp_bezier_fit_cubic_full(bezier, split_points, data, len, unconstrained_tangent, tHat2,
+                return bezier_fit_cubic_full(bezier, split_points, data, len, unconstrained_tangent, tHat2,
                                                 error, max_beziers);
             }
         } else if (splitPoint == unsigned(len - 1)) {
@@ -275,7 +275,7 @@ sp_bezier_fit_cubic_full(Point bezier[], int split_points[],
                 /* Got spike even with unconstrained final tangent. */
                 --splitPoint;
             } else {
-                return sp_bezier_fit_cubic_full(bezier, split_points, data, len, tHat1, unconstrained_tangent,
+                return bezier_fit_cubic_full(bezier, split_points, data, len, tHat1, unconstrained_tangent,
                                                 error, max_beziers);
             }
         }
@@ -294,10 +294,10 @@ sp_bezier_fit_cubic_full(Point bezier[], int split_points[],
             recTHat1 = recTHat2 = unconstrained_tangent;
         } else {
             /* Unit tangent vector at splitPoint. */
-            recTHat2 = sp_darray_center_tangent(data, splitPoint, len);
+            recTHat2 = darray_center_tangent(data, splitPoint, len);
             recTHat1 = -recTHat2;
         }
-        int const nsegs1 = sp_bezier_fit_cubic_full(bezier, split_points, data, splitPoint + 1,
+        int const nsegs1 = bezier_fit_cubic_full(bezier, split_points, data, splitPoint + 1,
                                                      tHat1, recTHat2, error, rec_max_beziers1);
         if ( nsegs1 < 0 ) {
 #ifdef BEZIER_DEBUG
@@ -310,7 +310,7 @@ sp_bezier_fit_cubic_full(Point bezier[], int split_points[],
             split_points[nsegs1 - 1] = splitPoint;
         }
         unsigned const rec_max_beziers2 = max_beziers - nsegs1;
-        int const nsegs2 = sp_bezier_fit_cubic_full(bezier + nsegs1*4,
+        int const nsegs2 = bezier_fit_cubic_full(bezier + nsegs1*4,
                                                      ( split_points == NULL
                                                        ? NULL
                                                        : split_points + nsegs1 ),
@@ -354,13 +354,13 @@ generate_bezier(Point bezier[],
     bool const est1 = is_zero(tHat1);
     bool const est2 = is_zero(tHat2);
     Point est_tHat1( est1
-                         ? sp_darray_left_tangent(data, len, tolerance_sq)
+                         ? darray_left_tangent(data, len, tolerance_sq)
                          : tHat1 );
     Point est_tHat2( est2
-                         ? sp_darray_right_tangent(data, len, tolerance_sq)
+                         ? darray_right_tangent(data, len, tolerance_sq)
                          : tHat2 );
     estimate_lengths(bezier, data, u, len, est_tHat1, est_tHat2);
-    /* We find that sp_darray_right_tangent tends to produce better results
+    /* We find that darray_right_tangent tends to produce better results
        for our current freehand tool than full estimation. */
     if (est1) {
         estimate_bi(bezier, 1, data, u, len);
@@ -636,7 +636,8 @@ NewtonRaphsonRootFind(BezierCurve const Q, Point const &P, double const u)
 /** 
  * Evaluate a Bezier curve at parameter value \a t.
  * 
- * \param degree The degree of the Bezier curve: 3 for cubic, 2 for quadratic etc.
+ * \param degree The degree of the Bezier curve: 3 for cubic, 2 for quadratic etc. Must be less
+ *    than 4.
  * \param V The control points for the Bezier curve.  Must have (\a degree+1)
  *    elements.
  * \param t The "parameter" value, specifying whereabouts along the curve to
@@ -693,7 +694,7 @@ bezier_pt(unsigned const degree, Point const V[], double const t)
  * \pre (2 \<= len) and (d[0] != d[1]).
  **/
 Point
-sp_darray_left_tangent(Point const d[], unsigned const len)
+darray_left_tangent(Point const d[], unsigned const len)
 {
     assert( len >= 2 );
     assert( d[0] != d[1] );
@@ -711,7 +712,7 @@ sp_darray_left_tangent(Point const d[], unsigned const len)
  * \pre all[p in d] in_svg_plane(p).
  */
 static Point
-sp_darray_right_tangent(Point const d[], unsigned const len)
+darray_right_tangent(Point const d[], unsigned const len)
 {
     assert( 2 <= len );
     unsigned const last = len - 1;
@@ -732,7 +733,7 @@ sp_darray_right_tangent(Point const d[], unsigned const len)
  * \post is_unit_vector(ret).
  **/
 Point
-sp_darray_left_tangent(Point const d[], unsigned const len, double const tolerance_sq)
+darray_left_tangent(Point const d[], unsigned const len, double const tolerance_sq)
 {
     assert( 2 <= len );
     assert( 0 <= tolerance_sq );
@@ -746,7 +747,7 @@ sp_darray_left_tangent(Point const d[], unsigned const len, double const toleran
         ++i;
         if (i == len) {
             return ( distsq == 0
-                     ? sp_darray_left_tangent(d, len)
+                     ? darray_left_tangent(d, len)
                      : unit_vector(t) );
         }
     }
@@ -763,7 +764,7 @@ sp_darray_left_tangent(Point const d[], unsigned const len, double const toleran
  * \pre all[p in d] in_svg_plane(p).
  */
 Point
-sp_darray_right_tangent(Point const d[], unsigned const len, double const tolerance_sq)
+darray_right_tangent(Point const d[], unsigned const len, double const tolerance_sq)
 {
     assert( 2 <= len );
     assert( 0 <= tolerance_sq );
@@ -777,7 +778,7 @@ sp_darray_right_tangent(Point const d[], unsigned const len, double const tolera
         }
         if (i == 0) {
             return ( distsq == 0
-                     ? sp_darray_right_tangent(d, len)
+                     ? darray_right_tangent(d, len)
                      : unit_vector(t) );
         }
     }
@@ -794,7 +795,7 @@ sp_darray_right_tangent(Point const d[], unsigned const len, double const tolera
  * the immediate vicinity of \a center).
  */
 static Point
-sp_darray_center_tangent(Point const d[],
+darray_center_tangent(Point const d[],
                          unsigned const center,
                          unsigned const len)
 {
