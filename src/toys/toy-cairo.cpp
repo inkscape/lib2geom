@@ -36,7 +36,12 @@ void draw_convex_hull(cairo_t *cr, Geom::ConvexHull const & ch) {
     for(int i = 0; i < ch.boundary.size(); i++) {
         cairo_line_to(cr, ch.boundary[i]);
     }
-    cairo_stroke(cr);
+    cairo_save(cr);
+    cairo_set_source_rgba (cr, 0.5, 1, 0.5, 0.8);
+    cairo_stroke_preserve(cr);
+    cairo_set_source_rgba (cr, 0.5, 1, 0.5, 0.2);
+    cairo_fill(cr);
+    cairo_restore(cr);
 }
 
 void draw_convex_cover(cairo_t *cr, Geom::Path const & p) {
@@ -54,13 +59,12 @@ void draw_evolute(cairo_t *cr, Geom::Path const & p) {
         
         Geom::Point pos, tgt, acc;
         display_path.point_tangent_acc_at (pl, pos, tgt, acc);
-        double kurvature = dot(acc, rot90(tgt))/pow(Geom::L2(tgt),3);
+        double kurvature = dot(tgt,tgt)/dot(acc, rot90(tgt));
         
         Geom::Point pt = pos + 10*rot90(unit_vector(tgt));
-        if(fabs(kurvature) > 0.0001) {
-            Geom::Point kurv_vector = (1./kurvature)*Geom::unit_vector(rot90(tgt));
+        if(fabs(kurvature) < 10000) {
+            Geom::Point kurv_vector = (kurvature)*rot90(tgt);
             kurv_vector += pos;
-            //kurvature = fabs(kurvature);
             pt = kurv_vector;
         }
         if(i)
@@ -92,7 +96,6 @@ void draw_involute(cairo_t *cr, Geom::Path const & p) {
 }
 
 void draw_stroke(cairo_t *cr, Geom::Path const & p) {
-#ifdef HAVE_GSL
     int i = 0;
     for(double t = 0; t <= 1.0; t+= 1./1024) {
         Geom::Path::Location pl = param(p, t);
@@ -106,7 +109,6 @@ void draw_stroke(cairo_t *cr, Geom::Path const & p) {
             cairo_move_to(cr, pt);
         i++;
     }
-#endif
 }
 
 Geom::Point gradient_vector;
@@ -151,7 +153,7 @@ void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool s
     }
 #endif
     Geom::Path::HashCookie hash_cookie = display_path;
-    {
+    if(0) {
         draw_line_seg(cr, Geom::Point(10,10), handles[0]);
         std::ostringstream gradientstr;
         gradientstr << "gradient: " << handles[0] - Geom::Point(10,10);
