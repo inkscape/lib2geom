@@ -4,6 +4,7 @@
 #include "point.h"
 #include <iterator>
 #include <algorithm>
+#include <exception>
 #include "multidim-sbasis.h"
 
 namespace Geom {
@@ -63,6 +64,10 @@ public:
 private:
   Point c_[degree];
 };
+
+// Bezier<0> and Bezier<1> are meaningless; specialize them out
+template <> class Bezier<0> { Bezier(); };
+template <> class Bezier<1> { Bezier(); };
 
 typedef Bezier<2> LineSegment;
 typedef Bezier<3> QuadraticBezier;
