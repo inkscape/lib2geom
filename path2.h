@@ -19,6 +19,10 @@ public:
   virtual Point finalPoint() const = 0;
 
   virtual Curve *duplicate() const = 0;
+
+  // virtual Rect bounds() const = 0;
+  // virtual Point at_t(Coord t) const = 0;
+  // virtual multidim_sbasis<2> sbasis() const = 0;
 };
 
 template <unsigned degree>
@@ -125,6 +129,9 @@ private:
 template <typename IteratorImpl>
 class BaseIterator : public std::forward_iterator<Curve const &> {
 public:
+  typedef std::ptrdiff_t difference_type;
+  typedef std::size_t size_type;
+
   BaseIterator() {}
 
   // default construct
@@ -158,33 +165,50 @@ private:
   friend class Path;
 };
 
+class ContinuityError : public std::exception {
+  ContinuityError() : exception("non-contiguous path") {}
+  ContinuityError(char const *message) : exception(message) {}
+  ContinuityError(std::string const &message) : exception(message) {}
+};
+
 class Path {
+private:
+  typedef std::vector<Curve *> Sequence;
+
 public:
-  typedef BaseIterator<std::vector<Curve *>::iterator> iterator;
-  typedef BaseIterator<std::vector<Curve *>::const_iterator> const_iterator;
-  typedef std::vector<Curve *>::size_type size_type;
-  typedef std::vector<Curve *>::difference_type difference_type;
+  typedef BaseIterator<Sequence::iterator> iterator;
+  typedef BaseIterator<Sequence::const_iterator> const_iterator;
+  typedef Sequence::size_type size_type;
+  typedef Sequence::difference_type difference_type;
 
   Path() {
-    curves_.push_back(new LineSegment());
+    curves_.push_back(&final_);
   }
 
   Path(Path const &other)
   : closed_(other.closed_)
   {
-    curves_.push_back(new LineSegment());
-    insert(begin(), other.begin(), other.end_open());
+    curves_.push_back(&final_);
+    insert(begin(), other.begin(), other.end());
   }
 
   ~Path() {
-    std::vector<Curve *>::iterator iter;
-    for ( iter = curves_.begin() ; iter != curves_.end() ; ++iter ) {
-      delete *iter;
-    }
+    delete_sequence(curves_.begin(), curves_.end()-1);
+  }
+
+  void swap(Path &other) {
+    std::swap(curves_, other.curves_);
+    std::swap(closed_, other.closed_);
+    std::swap(final_, other.final_);
+    curves_[curves_.size()-1] = &final_;
+    other.curves_[other.curves_.size()-1] = &other.final_;
   }
 
   iterator begin() { return curves_.begin(); }
   iterator end() { return curves_.end()-1; }
+
+  Curve const &front() const { return curves_[0]; }
+  Curve const &back() const { return curves_[curves.size()-2]; }
 
   const_iterator begin() const { return curves_.begin(); }
   const_iterator end() const { return curves_.end()-1; }
@@ -203,65 +227,124 @@ public:
   void close(bool closed=true) { closed_ = closed; }
 
   void insert(iterator pos, Curve const &curve) {
-    difference_type offset=pos.impl_-curves_.begin();
-    curves_.insert(pos.impl_, curve.duplicate());
-    stitch(offset, offset + 1);
+    insert(pos, iterator(pos.impl_+1), &curve, &curve+1);
   }
 
   template <InputIterator>
   void insert(iterator pos, InputIterator first, InputIterator last) {
-    std::vector<Curve *> curves;
-    for ( ; first != last ; ++first ) {
-      curves.push_back(first->duplicate());
-    }
-    difference_type offset=pos.impl_-curves_.begin();
-    curves_.insert(pos.impl_, curves.begin(), curves.end());
-    stitch(offset, offset + curves.size());
+    Sequence source(first, last);
+    check_insert_continuity(pos.impl_, pos.impl_, source.begin(), source.end());
+    duplicate_in_place(source.begin(), source.end());
+    curves_.insert(pos.impl_, source.begin(), source.end());
+    update_final();
   }
 
-  void insert(iterator pos, size_type n, Curve const &curve) {
-    if ( n > 0 ) {
-      difference_type offset=pos.impl_-curves_.begin();
-      curves_.reserve(curves_.size() + n);
-      for ( size_type left=n ; left > 0 ; --left ) {
-        curves_.push_back(curve->duplicate());
-      }
-      stitch(offset, offset + n);
+  void insert(iterator pos, unsigned n, Curve const &curve) {
+    check_insert_continuity(pos.impl_, pos.impl_, &curve, &curve+1);
+    if ( n > 1 && curve.initialPoint() != curve.finalPoint() ) {
+      throw ContinuityError();
     }
+    Sequence source(n, &curve);
+    duplicate_in_place(source.begin(), source.end());
+    curves_.insert(pos.impl_, source.begin(), source.end());
+    update_final();
   }
 
   void clear() {
-    if (!empty()) {
-      curves_.erase(curves_.begin(), curves_.end()-1);
-    }
+    delete_sequence(curves_.begin(), curves_.end()-1);
+    curves_.erase(curves_.begin(), curves_.end()-1);
+    // no need to update final when path is empty
   }
 
   void erase(iterator pos) {
-    difference_type offset=pos.impl_-curves_.begin();
-    delete *pos.impl_;
-    curves_.erase(pos.impl_);
-    stitch(offset, offset);
+    erase(pos, iterator(pos.impl_+1));
   }
 
   void erase(iterator first, iterator last) {
-    difference_type offset=pos.impl_-curves_.begin();
-    for ( iterator iter = first ; iter != last ; ++iter ) {
-      delete *iter.impl_;
-    }
+    check_erase_continuity(first.impl_, last.impl_);
+    delete_sequence(first.impl_, last.impl_);
     curves_.erase(first.impl_, last.impl_);
-    stitch(offset, offset);
+    update_final();
   }
 
-  void replace(iterator pos, Curve const &curve) {
-    difference_type offset=pos.impl_-curves_.begin();
-    Curve *new_curve = curve->duplicate();
-    delete *pos.impl_;
-    *pos.impl_ = new_curve;
-    stitch(offset, offset + 1);
+  void replace(iterator replaced, Curve const &curve) {
+    replace(replaced, iterator(replaced.impl_+1), &curve, &curve+1);
+  }
+
+  void replace(iterator first_replaced, iterator last_replaced,
+               Curve const &curve)
+  {
+    replace(first_replaced, last_replaced, &curve, &curve+1);
+  }
+
+  template <typename InputIterator>
+  void replace(iterator replaced, InputIterator first, InputIterator last) {
+    replace(replaced, iterator(replaced.impl_+1), first, last);
+  }
+
+  template <typename InputIterator>
+  void replace(iterator first_replaced, iterator last_replaced,
+               InputIterator first, InputIterator last)
+  {
+    Sequence source(first, last);
+    check_replace_continuity(first_replaced.impl_, last_replaced.impl_,
+                             source.begin(), source.end());
+    duplicate_in_place(source.begin(), source.end());
+    delete_sequence(first_replaced.impl_, last_replaced.impl_);
+
+    // need to use a different method if Sequence is not a std::vector
+    if ( source.size() == ( last_replaced.impl_ - first_replaced.impl_ ) ) {
+      std::copy(source.begin(), source.end(), &*first_replaced.impl_);
+    } else {
+      curves_.erase(first_replaced.impl_, last_replaced.impl_);
+      curves_.insert(first_replaced.impl_, source.begin(), source.end());
+    }
+
+    update_final();
   }
 
 private:
-  std::vector<Curve *> curves_;
+  void duplicate_in_place(Sequence::iterator first, Sequence::iterator last) {
+    for ( Sequence::iterator iter=first ; iter != last ; ++iter ) {
+      *iter = (*iter)->duplicate();
+    }
+  }
+
+  template <typename InputIterator>
+  void delete_sequence(InputIterator first, InputIterator last)
+  {
+    for ( Sequence::iterator iter=first ; iter != last ; ++iter ) {
+      delete *iter;
+    }
+  }
+
+  template <typename InputIterator>
+  void check_insert_continuity(Sequence::iterator pos,
+                               InputIterator first, InputIterator last)
+  {
+  }
+
+  void check_erase_continuity(Sequence::iterator first,
+                              Sequence::iterator last)
+  {
+  }
+
+  template <typename InputIterator>
+  void check_replace_continuity(Sequence::iterator first_replaced,
+                                Sequence::iterator last_replaced,
+                                InputIterator first, InputIterator last)
+  {
+  }
+
+  void update_final() {
+    if ( curves_.front() != &final_ ) {
+      final_[0] = back().finalPoint();
+      final_[1] = front().initialPoint();
+    }
+  }
+
+  Sequence curves_;
+  LineSegment final_;
   bool closed_;
 };
 
@@ -272,6 +355,11 @@ private:
 
 }
 
+}
+
+template <>
+void std::swap<Path>(Path &a, Path &b) {
+  a.swap(b);
 }
 
 #endif // SEEN_GEOM_PATH_H
