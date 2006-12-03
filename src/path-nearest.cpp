@@ -49,7 +49,6 @@ Geom::Path::Location find_nearest_location(Geom::Path const & p, Geom::Point pt)
     Path::Location best(p.begin(), 0);
     while(!pq.empty()) {
         element_point_distance epd = pq.top();
-        std::cout << epd.d << std::endl;;
         if(epd.d > best_guess)
             break; // early terminate
         Path::Elem elm = *epd.e;
@@ -66,7 +65,6 @@ Geom::Path::Location find_nearest_location(Geom::Path const & p, Geom::Point pt)
             }
 	pq.pop();
     }
-    std::cout << "best:" << best.t << std::endl;
     
     return best;
 }
