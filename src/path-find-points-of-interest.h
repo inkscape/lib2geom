@@ -15,8 +15,10 @@ std::vector<Geom::Path::Location>
 find_inflection_points(Geom::Path const & p);
 std::vector<Geom::Path::Location>
 find_flat_points(Geom::Path const & p);
-std::vector<Geom::Path::Location>
-find_maximal_curvature_points(Geom::Path const & p);
+
+//TODO:reinstate once converted to s-basis
+//std::vector<Geom::Path::Location>
+//find_maximal_curvature_points(Geom::Path const & p);
 
 Geom::Path::Location dim_extreme_points(Geom::Path::Elem e);
 

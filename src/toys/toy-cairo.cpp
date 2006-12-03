@@ -286,23 +286,6 @@ void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool s
         }
     }
     
-    if(0) { // probably busted
-        cairo_stroke(cr);
-  
-        cairo_save(cr);
-        cairo_set_source_rgba (cr, 0., 0.25, 0.25, 0.8);
-        assert(hash_cookie == display_path);
-        vector<Geom::Path::Location> pts = 
-            find_maximal_curvature_points(display_path);
-        
-        assert(hash_cookie == display_path);
-        for(int i = 0; i < pts.size(); i++) {
-            Geom::Point pos, tgt, acc;
-            draw_circ(cr, display_path.point_at(pts[i]));
-        }
-        cairo_stroke(cr);
-        cairo_restore(cr);
-    }
     double area = 0;
     
     assert(hash_cookie == display_path);
@@ -317,14 +300,7 @@ void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool s
     *notify << "pathwise Area: " << area << ", " << cntr;
         
     assert(hash_cookie == display_path);
-  
-//TODO:Remove?    
-/*    double x = widget->allocation.x + widget->allocation.width / 2;
-    double y = widget->allocation.y + widget->allocation.height / 2;
 
-    double radius = std::min (widget->allocation.width / 2,
-                              widget->allocation.height / 2) - 5;
-*/
     Toy::draw(cr, notify, width, height, save);
 }
 

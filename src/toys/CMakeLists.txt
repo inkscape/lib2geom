@@ -1,6 +1,7 @@
 SET(2GEOM_TOYS_SRC 
 2dsb2d
 arc-bez
+b-spline
 clothoid
 conic-2
 conic-3

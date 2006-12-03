@@ -1,7 +1,6 @@
 #include "path-find-points-of-interest.h"
 #include "cubic_bez_util.h"
 #include "poly.h"
-#include "path-poly-fns.h"
 using namespace Geom;
 
 /** Calculates the length of a cubic element through subdivision.

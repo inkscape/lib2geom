@@ -73,9 +73,9 @@ class Sb2d2: public Toy {
         Geom::Point dir(0,0);
         dir[dim] = 1;
         for(int vi = 0; vi < sb2[dim].vs; vi++)
-                for(int ui = 0; ui < sb2[dim].us; ui++)
+            for(int ui = 0; ui < sb2[dim].us; ui++)
                 for(int iv = 0; iv < 2; iv++)
-                        for(int iu = 0; iu < 2; iu++) {
+                    for(int iu = 0; iu < 2; iu++) {
                         unsigned corner = iu + 2*iv;
                         unsigned i = ui + vi*sb2[dim].us;
                         Geom::Point base((2*(iu+ui)/(2.*ui+1)+1)*width/4.,
@@ -85,7 +85,7 @@ class Sb2d2: public Toy {
                         }
                         double dl = dot((handles[corner+4*i] - base), dir)/dot(dir,dir);
                         sb2[dim][i][corner] = dl/(width/2)*pow(4,ui+vi);
-                        }
+                    }
         }
         draw_sb2d(cr, sb2, dir*0.1, width);
         cairo_set_source_rgba (cr, 0., 0., 0, 0.5);

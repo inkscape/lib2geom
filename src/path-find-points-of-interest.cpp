@@ -1,6 +1,5 @@
 #include "path-find-points-of-interest.h"
 #include "cubic_bez_util.h"
-#include "path-poly-fns.h"
 #include "epsilon.h"
 
 using namespace Geom;
@@ -130,6 +129,7 @@ find_flat_points(Geom::Path const & p) {
 /*** find_maximal_curvature_points
  * 
  */
+/*TODO: convert to s-basis
 std::vector<Geom::Path::Location>
 find_maximal_curvature_points(Geom::Path const & p) {
     std::vector<Geom::Path::Location> result;
@@ -164,6 +164,7 @@ find_maximal_curvature_points(Geom::Path const & p) {
     }
     return result;
 }
+*/
 
 /*
   Local Variables:

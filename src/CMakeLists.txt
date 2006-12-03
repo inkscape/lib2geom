@@ -46,7 +46,6 @@ path-metric.cpp
 path-metric.h
 path-ops.cpp
 path-ops.h
-path-poly-fns.h
 path-sbasis.h
 path-to-polyline.cpp
 path-to-polyline.h
