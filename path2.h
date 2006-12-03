@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <exception>
 #include "multidim-sbasis.h"
+#include "bezier-to-sbasis.h"
 
 namespace Geom {
 
@@ -78,6 +79,10 @@ public:
     return Rect(min, max);
   }
 
+  multidim_sbasis<2> sbasis() const {
+    return bezier_to_sbasis<2, degree>(c_);
+  }
+
 private:
   Point c_[degree];
 };
@@ -134,6 +139,8 @@ public:
 
   double &operator[](int index) { return coeffs_[index]; }
   double const &operator[](int index) const { return coeffs_[index]; }
+
+  multidim_sbasis<2> sbasis() const { return coeffs_; }
   
 private:
   multidim_sbasis<2> coeffs_;
