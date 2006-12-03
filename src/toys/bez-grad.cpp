@@ -48,7 +48,7 @@ void draw_sb2d(cairo_t* cr, vector<SBasis2d> const &sb2, Geom::Point dir, double
     }
 }
 
-class Sb2d2: public Toy {
+class BezGrad: public Toy {
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         vector<SBasis2d> sb2(2);
         for(int dim = 0; dim < 2; dim++) {
@@ -157,7 +157,7 @@ class Sb2d2: public Toy {
 };
 
 int main(int argc, char **argv) {
-    init(argc, argv, "bez-grad", new Sb2d2);
+    init(argc, argv, "bez-grad", new BezGrad());
     return 0;
 }
 
