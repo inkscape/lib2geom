@@ -2,6 +2,7 @@
 #define SEEN_GEOM_PATH_H
 
 #include "point.h"
+#include "rect.h"
 #include <iterator>
 #include <algorithm>
 #include <exception>
@@ -64,6 +65,18 @@ public:
 
   Point &operator[](int index) { return c_[index]; }
   Point const &operator[](int index) const { return c_[index]; }
+
+  Rect bounds() const {
+    Point min=c_[0];
+    Point max=c_[0];
+    for ( unsigned i = 1 ; i < degree ; ++i ) {
+      for ( unsigned axis = 0 ; axis < 2 ; ++axis ) {
+        min[axis] = std::min(min[axis], c_[i][axis]);
+        max[axis] = std::max(max[axis], c_[i][axis]);
+      }
+    }
+    return Rect(min, max);
+  }
 
 private:
   Point c_[degree];
