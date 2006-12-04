@@ -18,12 +18,6 @@ template <class T> inline int sqr(const T& x) {return x * x;}
 /** Cube function - cube(x) is equivalent to x * x * x. */
 template <class T> inline int cube(const T& x) {return x * x * x;}
 
-/** Maximum function - returns the highest of two numeric types. They must have the same type.*/
-template <class T> inline const T& max (const T& a, const T& b) {return (a > b) ? a : b;}
-
-/** Minimum function - returns the lowest of two numeric types. They must have the same type.*/
-template <class T> inline const T& min (const T& a, const T& b) {return (a < b) ? a : b;}
-
 /** Between function - returns true if a number x is within a range. The values delimiting the
  *  range, as well as the number must have the same type.
  */

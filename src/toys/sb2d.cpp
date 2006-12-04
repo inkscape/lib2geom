@@ -19,28 +19,6 @@ using std::vector;
 unsigned total_pieces_sub;
 unsigned total_pieces_inc;
 
-void draw_sb2d(cairo_t* cr, SBasis2d const &sb2, Geom::Point dir, double width) {
-    multidim_sbasis<2> B;
-    for(int ui = 0; ui <= 10; ui++) {
-        double u = ui/10.;
-        B[0] = dir[0]*extract_u(sb2, u) + BezOrd(u);
-        B[1] = SBasis(BezOrd(0,1))+dir[1]*extract_u(sb2, u);
-        for(unsigned i = 0; i < 2; i ++) {
-            B[i] = (width/2)*B[i] + BezOrd(width/4);
-        }
-        cairo_md_sb(cr, B);
-    }
-    for(int vi = 0; vi <= 10; vi++) {
-        double v = vi/10.;
-        B[1] = dir[1]*extract_v(sb2, v) + BezOrd(v);
-        B[0] = SBasis(BezOrd(0,1)) + dir[0]*extract_v(sb2, v);
-        for(unsigned i = 0; i < 2; i ++) {
-            B[i] = (width/2)*B[i] + BezOrd(width/4);
-        }
-        cairo_md_sb(cr, B);
-    }
-}
-
 class Sb2d: public Toy {
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         SBasis2d sb2;

@@ -2,12 +2,14 @@ SET(2GEOM_TOYS_SRC
 2dsb2d
 arc-bez
 b-spline
+circle-intersect
 clothoid
 conic-2
 conic-3
 conic-4
 conic
 convex-toy
+contour
 fitter
 one-D
 quad-toy
@@ -24,7 +26,6 @@ match-curve
 mesh-grad
 bez-grad
 draw-toy
-circle-intersect
 "${NEEDS_GSL}"
 )
 

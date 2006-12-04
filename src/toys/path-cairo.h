@@ -1,6 +1,8 @@
 #ifndef PATH_CAIRO
 #define PATH_CAIRO
 #include "path.h"
+#include "s-basis-2d.h"
+#include <vector>
 
 typedef struct _cairo cairo_t;
 
@@ -11,5 +13,6 @@ void cairo_path_handles(cairo_t *cr, Geom::PathSet const &p);
 
 void cairo_md_sb(cairo_t *cr, multidim_sbasis<2>  const &p);
 void cairo_md_sb_handles(cairo_t *cr, multidim_sbasis<2> const &p);
-
+void cairo_sb2d(cairo_t* cr, std::vector<SBasis2d> const &sb2, Geom::Point dir, double width);
+void draw_sb2d(cairo_t* cr, SBasis2d const &sb2, Geom::Point dir, double width);
 #endif

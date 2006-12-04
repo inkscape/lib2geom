@@ -26,28 +26,6 @@ const double u_subs = 5,
 const double inv_u_subs = 1 / u_subs,
              inv_v_subs = 1 / v_subs;
 
-void draw_sb2d(cairo_t* cr, vector<SBasis2d> const &sb2, Geom::Point dir, double width) {
-    multidim_sbasis<2> B;
-    for(int ui = 0; ui <= 10; ui++) {
-        double u = ui/10.;
-        B[0] = extract_u(sb2[0], u);
-        B[1] = extract_u(sb2[1], u);
-        for(unsigned i = 0; i < 2; i ++) {
-            B[i] = (width/2)*B[i] + BezOrd(width/4);
-        }
-        cairo_md_sb(cr, B);
-    }
-    for(int vi = 0; vi <= 10; vi++) {
-        double v = vi/10.;
-        B[1] = extract_v(sb2[1], v);
-        B[0] = extract_v(sb2[0], v);
-        for(unsigned i = 0; i < 2; i ++) {
-            B[i] = (width/2)*B[i] + BezOrd(width/4);
-        }
-        cairo_md_sb(cr, B);
-    }
-}
-
 class BezGrad: public Toy {
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         vector<SBasis2d> sb2(2);
@@ -110,7 +88,7 @@ class BezGrad: public Toy {
                 }
         }
         
-        draw_sb2d(cr, sb2, dir*0.1, width);
+        cairo_sb2d(cr, sb2, dir*0.1, width);
         cairo_set_source_rgba (cr, 0., 0., 0, 0.5);
         cairo_stroke(cr);
         for(int vi = 0; vi < 10; vi++) {

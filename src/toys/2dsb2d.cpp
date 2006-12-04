@@ -20,28 +20,6 @@ using std::vector;
 unsigned total_pieces_sub;
 unsigned total_pieces_inc;
 
-void draw_sb2d(cairo_t* cr, vector<SBasis2d> const &sb2, Geom::Point dir, double width) {
-    multidim_sbasis<2> B;
-    for(int ui = 0; ui <= 10; ui++) {
-        double u = ui/10.;
-        B[0] = extract_u(sb2[0], u);// + BezOrd(u);
-        B[1] = extract_u(sb2[1], u);
-        for(unsigned i = 0; i < 2; i ++) {
-            B[i] = (width/2)*B[i] + BezOrd(width/4);
-        }
-        cairo_md_sb(cr, B);
-    }
-    for(int vi = 0; vi <= 10; vi++) {
-        double v = vi/10.;
-        B[1] = extract_v(sb2[1], v);// + BezOrd(v);
-        B[0] = extract_v(sb2[0], v);
-        for(unsigned i = 0; i < 2; i ++) {
-            B[i] = (width/2)*B[i] + BezOrd(width/4);
-        }
-        cairo_md_sb(cr, B);
-    }
-}
-
 class Sb2d2: public Toy {
     void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         vector<SBasis2d> sb2(2);
@@ -87,7 +65,7 @@ class Sb2d2: public Toy {
                         sb2[dim][i][corner] = dl/(width/2)*pow(4,ui+vi);
                     }
         }
-        draw_sb2d(cr, sb2, dir*0.1, width);
+        cairo_sb2d(cr, sb2, dir*0.1, width);
         cairo_set_source_rgba (cr, 0., 0., 0, 0.5);
         cairo_stroke(cr);
         multidim_sbasis<2> B = bezier_to_sbasis<2, 3>(handles.begin() + surface_handles);
