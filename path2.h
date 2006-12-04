@@ -22,8 +22,9 @@ public:
 
   virtual Curve *duplicate() const = 0;
 
-  // virtual Rect bounds() const = 0;
-  // virtual Point at_t(Coord t) const = 0;
+  // virtual Rect boundsFast() const = 0;
+  // virtual Rect boundsExact() const = 0;
+  // virtual Point pointAt(Coord t) const = 0;
   // virtual multidim_sbasis<2> sbasis() const = 0;
 };
 
@@ -67,6 +68,14 @@ public:
   Point &operator[](int index) { return c_[index]; }
   Point const &operator[](int index) const { return c_[index]; }
 
+  Rect boundsFast() const { return bounds(); }
+  Rect boundsExact() const { return bounds(); }
+
+  multidim_sbasis<2> sbasis() const {
+    return bezier_to_sbasis<2, degree>(c_);
+  }
+
+private:
   Rect bounds() const {
     Point min=c_[0];
     Point max=c_[0];
@@ -79,11 +88,6 @@ public:
     return Rect(min, max);
   }
 
-  multidim_sbasis<2> sbasis() const {
-    return bezier_to_sbasis<2, degree>(c_);
-  }
-
-private:
   Point c_[degree];
 };
 
@@ -212,6 +216,13 @@ public:
     insert(begin(), other.begin(), other.end());
   }
 
+  explicit Path(Point p)
+  : closed_(false)
+  {
+    curves_.push_back(&final_);
+    final_[0] = final_[1] = p;
+  }
+
   ~Path() {
     delete_sequence(curves_.begin(), curves_.end()-1);
   }
@@ -323,7 +334,81 @@ public:
     update_final();
   }
 
+  void start(Point p) {
+    clear();
+    final_[0] = final_[1] = p;
+  }
+
+  void append(Curve const &curve) {
+    if ( curve.initialPoint() != final_[0] ) {
+      throw ContinuityError();
+    }
+    append_private(curve.duplicate());
+  }
+
+  template <typename CurveType, typename A>
+  void appendNew(A a) {
+    append_private(new CurveType(final_[0], a));
+  }
+
+  template <typename CurveType, typename A, typename B>
+  void appendNew(A a, B b) {
+    append_private(new CurveType(final_[0], a, b));
+  }
+
+  template <typename CurveType, typename A, typename B, typename C>
+  void appendNew(A a, B b, C c) {
+    append_private(new CurveType(final_[0], a, b, c));
+  }
+
+  template <typename CurveType, typename A, typename B, typename C,
+                                typename D>
+  void appendNew(A a, B b, C c, D d) {
+    append_private(new CurveType(final_[0], a, b, c, d));
+  }
+
+  template <typename CurveType, typename A, typename B, typename C,
+                                typename D, typename E>
+  void appendNew(A a, B b, C c, D d, E e) {
+    append_private(new CurveType(final_[0], a, b, c, d, e));
+  }
+
+  template <typename CurveType, typename A, typename B, typename C,
+                                typename D, typename E, typename F>
+  void appendNew(A a, B b, C c, D d, E e, F f) {
+    append_private(new CurveType(final_[0], a, b, c, d, e, f));
+  }
+
+  template <typename CurveType, typename A, typename B, typename C,
+                                typename D, typename E, typename F,
+                                typename G>
+  void appendNew(A a, B b, C c, D d, E e, F f, G g) {
+    append_private(new CurveType(final_[0], a, b, c, d, e, f, g));
+  }
+
+  template <typename CurveType, typename A, typename B, typename C,
+                                typename D, typename E, typename F,
+                                typename G, typename H>
+  void appendNew(A a, B b, C c, D d, E e, F f, G g, H h) {
+    append_private(new CurveType(final_[0], a, b, c, d, e, f, g, h));
+  }
+
+  template <typename CurveType, typename A, typename B, typename C,
+                                typename D, typename E, typename F,
+                                typename G, typename H, typename I>
+  void appendNew(A a, B b, C c, D d, E e, F f, G g, H h, I i) {
+    append_private(new CurveType(final_[0], a, b, c, d, e, f, g, h, i));
+  }
+
 private:
+  void append_private(Curve *curve) {
+    if ( curves_.front() == &final_ ) {
+      final_[1] = curve->initialPoint();
+    }
+    curves_.insert(curves_.end()-1, curve);
+    final_[0] = curve->finalPoint();
+  }
+
   void duplicate_in_place(Sequence::iterator first, Sequence::iterator last) {
     for ( Sequence::iterator iter=first ; iter != last ; ++iter ) {
       *iter = (*iter)->duplicate();
