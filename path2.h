@@ -22,10 +22,11 @@ public:
 
   virtual Curve *duplicate() const = 0;
 
-  // virtual Rect boundsFast() const = 0;
-  // virtual Rect boundsExact() const = 0;
-  // virtual Point pointAt(Coord t) const = 0;
-  // virtual multidim_sbasis<2> sbasis() const = 0;
+  virtual Rect boundsFast() const = 0;
+  virtual Rect boundsExact() const = 0;
+
+  virtual Point pointAt(Coord t) const = 0;
+  virtual multidim_sbasis<2> sbasis() const = 0;
 };
 
 template <unsigned degree>
@@ -256,6 +257,24 @@ public:
   bool empty() const { return curves_.size() == 1; }
   bool closed() const { return closed_; }
   void close(bool closed=true) { closed_ = closed; }
+
+  Rect boundsFast() const {
+    Rect bounds=front().boundsFast();
+    const_iterator iter=begin();
+    for ( ++iter ; iter != end() ; ++iter ) {
+      bounds.expandTo(iter->boundsFast());
+    }
+    return bounds;
+  }
+
+  Rect boundsExact() const {
+    Rect bounds=front().boundsFast();
+    const_iterator iter=begin();
+    for ( ++iter ; iter != end() ; ++iter ) {
+      bounds.expandTo(iter->boundsExact());
+    }
+    return bounds;
+  }
 
   void insert(iterator pos, Curve const &curve) {
     insert(pos, iterator(pos.impl_+1), &curve, &curve+1);
