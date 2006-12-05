@@ -224,6 +224,14 @@ public:
     final_[0] = final_[1] = p;
   }
 
+  template <typename InputIterator>
+  Path(InputIterator first, InputIterator last, bool closed=false)
+  : closed_(closed)
+  {
+    curves_.push_back(&final_);
+    insert(begin(), first, last);
+  }
+
   ~Path() {
     delete_sequence(curves_.begin(), curves_.end()-1);
   }
@@ -283,14 +291,14 @@ public:
   template <InputIterator>
   void insert(iterator pos, InputIterator first, InputIterator last) {
     Sequence source(first, last);
-    check_insert_continuity(pos.impl_, pos.impl_, source.begin(), source.end());
+    check_continuity(pos.impl_, pos.impl_, source.begin(), source.end());
     duplicate_in_place(source.begin(), source.end());
     curves_.insert(pos.impl_, source.begin(), source.end());
     update_final();
   }
 
   void insert(iterator pos, unsigned n, Curve const &curve) {
-    check_insert_continuity(pos.impl_, pos.impl_, &curve, &curve+1);
+    check_continuity(pos.impl_, pos.impl_, &curve, &curve+1);
     if ( n > 1 && curve.initialPoint() != curve.finalPoint() ) {
       throw ContinuityError();
     }
@@ -311,7 +319,7 @@ public:
   }
 
   void erase(iterator first, iterator last) {
-    check_erase_continuity(first.impl_, last.impl_);
+    check_continuity(first.impl_, last.impl_, curves_.begin(), curves_.begin());
     delete_sequence(first.impl_, last.impl_);
     curves_.erase(first.impl_, last.impl_);
     update_final();
@@ -337,8 +345,8 @@ public:
                InputIterator first, InputIterator last)
   {
     Sequence source(first, last);
-    check_replace_continuity(first_replaced.impl_, last_replaced.impl_,
-                             source.begin(), source.end());
+    check_continuity(first_replaced.impl_, last_replaced.impl_,
+                     source.begin(), source.end());
     duplicate_in_place(source.begin(), source.end());
     delete_sequence(first_replaced.impl_, last_replaced.impl_);
 
@@ -442,22 +450,39 @@ private:
     }
   }
 
-  template <typename InputIterator>
-  void check_insert_continuity(Sequence::iterator pos,
-                               InputIterator first, InputIterator last)
+  void check_continuity(Sequence::iterator first_replaced,
+                        Sequence::iterator last_replaced,
+                        Sequence::iterator first,
+                        Sequence::iterator last)
   {
-  }
+    // precondition: last_replaced is a valid iterator
 
-  void check_erase_continuity(Sequence::iterator first,
-                              Sequence::iterator last)
-  {
-  }
+    Sequence::iterator iter=first;
+    Point p;
 
-  template <typename InputIterator>
-  void check_replace_continuity(Sequence::iterator first_replaced,
-                                Sequence::iterator last_replaced,
-                                InputIterator first, InputIterator last)
-  {
+    // avoid check at beginning of path
+    if ( first_replaced != curves_.begin() ) {
+      p = (*first_replaced)->initialPoint();
+    } else if ( first != last ) {
+      p = (*iter)->finalPoint();
+      ++iter;
+    } else {
+      p = (*last_replaced)->initialPoint();
+    }
+
+    for ( ; iter != last ; ++iter ) {
+      if ( (*iter)->initialPoint() != p ) {
+        throw ContinuityError();
+      }
+      p = (*iter)->finalPoint();
+    }
+
+    // avoid check at end of path
+    if ( last_replaced != (curves_.end()-1) &&
+         p != (*last_replaced)->initialPoint() )
+    {
+      throw ContinuityError();
+    }
   }
 
   void update_final() {
