@@ -25,9 +25,8 @@ public:
   virtual Rect boundsFast() const = 0;
   virtual Rect boundsExact() const = 0;
 
-  virtual Point pointAt(Coord t) const = 0;
-  virtual std::vector<Point> pointAndDerivativesAt(Coord t, unsigned n)
-                             const = 0;
+  Point pointAt(Coord t) { return pointAndDerivativesAt(t, 0, NULL); }
+  virtual Point pointAndDerivativesAt(Coord t, unsigned n, Point *ds) const = 0;
   virtual multidim_sbasis<2> sbasis() const = 0;
 };
 
