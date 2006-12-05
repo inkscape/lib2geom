@@ -1,4 +1,5 @@
 #include "point.h"
+#include "point-ops.h"
 
 #include <boost/python.hpp>
 using namespace boost::python;
@@ -22,5 +23,18 @@ BOOST_PYTHON_MODULE(lib2geom_py)
 	.def(self *= float())
 
 	.def(self == self)
+
+	//point-ops.h
+	.def(self + self)
+	.def(self - self)
+	.def(self ^ self)
+	.def(-self)
+	.def(float() * self)
+	.def(self * float())
+	.def(self / float())
+	.def(float() / self)
+	.def(self != self)
+	.def(self <= self)
+
     ;
 }
