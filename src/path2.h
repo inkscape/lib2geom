@@ -285,80 +285,57 @@ public:
   }
 
   void insert(iterator pos, Curve const &curve) {
-    insert(pos, iterator(pos.impl_+1), &curve, &curve+1);
+    Sequence source(1, &curve);
+    do_update(pos.impl_, pos.impl_, source.begin(), source.end());
   }
 
-  template <InputIterator>
-  void insert(iterator pos, InputIterator first, InputIterator last) {
-    Sequence source(first, last);
-    check_continuity(pos.impl_, pos.impl_, source.begin(), source.end());
-    duplicate_in_place(source.begin(), source.end());
-    curves_.insert(pos.impl_, source.begin(), source.end());
-    update_final();
-  }
-
-  void insert(iterator pos, unsigned n, Curve const &curve) {
-    check_continuity(pos.impl_, pos.impl_, &curve, &curve+1);
-    if ( n > 1 && curve.initialPoint() != curve.finalPoint() ) {
-      throw ContinuityError();
-    }
-    Sequence source(n, &curve);
-    duplicate_in_place(source.begin(), source.end());
-    curves_.insert(pos.impl_, source.begin(), source.end());
-    update_final();
+  template <typename Impl>
+  void insert(iterator pos, BaseIterator<Impl> first, BaseIterator<Impl> last)
+  {
+    Sequence source(first.impl_, last.impl_);
+    do_update(pos.impl_, pos.impl_, source.begin(), source.end());
   }
 
   void clear() {
-    delete_sequence(curves_.begin(), curves_.end()-1);
-    curves_.erase(curves_.begin(), curves_.end()-1);
-    // no need to update final when path is empty
+    do_update(curves_.begin(), curves_.end()-1,
+              curves_.begin(), curves_.begin());
   }
 
   void erase(iterator pos) {
-    erase(pos, iterator(pos.impl_+1));
+    do_update(pos.impl_, pos.impl_+1, curves_.begin(), curves_.begin());
   }
 
   void erase(iterator first, iterator last) {
-    check_continuity(first.impl_, last.impl_, curves_.begin(), curves_.begin());
-    delete_sequence(first.impl_, last.impl_);
-    curves_.erase(first.impl_, last.impl_);
-    update_final();
+    do_update(first.impl_, last.impl_, curves_.begin(), curves_.begin());
   }
 
   void replace(iterator replaced, Curve const &curve) {
-    replace(replaced, iterator(replaced.impl_+1), &curve, &curve+1);
+    Sequence source(1, &curve);
+    do_update(replaced.impl_, replaced.impl_+1, source.begin(), source.end());
   }
 
   void replace(iterator first_replaced, iterator last_replaced,
                Curve const &curve)
   {
-    replace(first_replaced, last_replaced, &curve, &curve+1);
+    Sequence source(1, &curve);
+    do_update(first.impl_, last.impl_, source.begin(), source.end());
   }
 
-  template <typename InputIterator>
-  void replace(iterator replaced, InputIterator first, InputIterator last) {
-    replace(replaced, iterator(replaced.impl_+1), first, last);
-  }
-
-  template <typename InputIterator>
-  void replace(iterator first_replaced, iterator last_replaced,
-               InputIterator first, InputIterator last)
+  template <typename Impl>
+  void replace(iterator replaced,
+               BaseIterator<Impl> first, BaseIterator<Impl> last)
   {
-    Sequence source(first, last);
-    check_continuity(first_replaced.impl_, last_replaced.impl_,
-                     source.begin(), source.end());
-    duplicate_in_place(source.begin(), source.end());
-    delete_sequence(first_replaced.impl_, last_replaced.impl_);
+    Sequence source(first.impl_, last.impl_);
+    do_update(replaced.impl_, replaced.impl_+1, source.begin(), source.end());
+  }
 
-    // need to use a different method if Sequence is not a std::vector
-    if ( source.size() == ( last_replaced.impl_ - first_replaced.impl_ ) ) {
-      std::copy(source.begin(), source.end(), &*first_replaced.impl_);
-    } else {
-      curves_.erase(first_replaced.impl_, last_replaced.impl_);
-      curves_.insert(first_replaced.impl_, source.begin(), source.end());
-    }
-
-    update_final();
+  template <typename Impl>
+  void replace(iterator first_replaced, iterator last_replaced,
+               BaseIterator<Impl> first, BaseIterator<Impl> last)
+  {
+    Sequence source(first.impl_, last.impl_);
+    do_update(first_replaced.impl_, last_replaced.impl_,
+           source.begin(), source.end());
   }
 
   void start(Point p) {
@@ -367,68 +344,93 @@ public:
   }
 
   void append(Curve const &curve) {
-    if ( curve.initialPoint() != final_[0] ) {
+    if ( curves_.front() != &final_ && curve.initialPoint() != final_[0] ) {
       throw ContinuityError();
     }
-    append_private(curve.duplicate());
+    do_append(curve.duplicate());
   }
 
   template <typename CurveType, typename A>
   void appendNew(A a) {
-    append_private(new CurveType(final_[0], a));
+    do_append(new CurveType(final_[0], a));
   }
 
   template <typename CurveType, typename A, typename B>
   void appendNew(A a, B b) {
-    append_private(new CurveType(final_[0], a, b));
+    do_append(new CurveType(final_[0], a, b));
   }
 
   template <typename CurveType, typename A, typename B, typename C>
   void appendNew(A a, B b, C c) {
-    append_private(new CurveType(final_[0], a, b, c));
+    do_append(new CurveType(final_[0], a, b, c));
   }
 
   template <typename CurveType, typename A, typename B, typename C,
                                 typename D>
   void appendNew(A a, B b, C c, D d) {
-    append_private(new CurveType(final_[0], a, b, c, d));
+    do_append(new CurveType(final_[0], a, b, c, d));
   }
 
   template <typename CurveType, typename A, typename B, typename C,
                                 typename D, typename E>
   void appendNew(A a, B b, C c, D d, E e) {
-    append_private(new CurveType(final_[0], a, b, c, d, e));
+    do_append(new CurveType(final_[0], a, b, c, d, e));
   }
 
   template <typename CurveType, typename A, typename B, typename C,
                                 typename D, typename E, typename F>
   void appendNew(A a, B b, C c, D d, E e, F f) {
-    append_private(new CurveType(final_[0], a, b, c, d, e, f));
+    do_append(new CurveType(final_[0], a, b, c, d, e, f));
   }
 
   template <typename CurveType, typename A, typename B, typename C,
                                 typename D, typename E, typename F,
                                 typename G>
   void appendNew(A a, B b, C c, D d, E e, F f, G g) {
-    append_private(new CurveType(final_[0], a, b, c, d, e, f, g));
+    do_append(new CurveType(final_[0], a, b, c, d, e, f, g));
   }
 
   template <typename CurveType, typename A, typename B, typename C,
                                 typename D, typename E, typename F,
                                 typename G, typename H>
   void appendNew(A a, B b, C c, D d, E e, F f, G g, H h) {
-    append_private(new CurveType(final_[0], a, b, c, d, e, f, g, h));
+    do_append(new CurveType(final_[0], a, b, c, d, e, f, g, h));
   }
 
   template <typename CurveType, typename A, typename B, typename C,
                                 typename D, typename E, typename F,
                                 typename G, typename H, typename I>
   void appendNew(A a, B b, C c, D d, E e, F f, G g, H h, I i) {
-    append_private(new CurveType(final_[0], a, b, c, d, e, f, g, h, i));
+    do_append(new CurveType(final_[0], a, b, c, d, e, f, g, h, i));
   }
 
 private:
-  void append_private(Curve *curve) {
+  void do_update(Sequence::iterator first_replaced,
+                 Sequence::iterator last_replaced,
+                 Sequence::iterator first,
+                 Sequence::iterator last)
+  {
+    // note: modifies the contents of [first,last)
+
+    check_continuity(first_replaced, last_replaced, first, last);
+    duplicate_in_place(first, last);
+    delete_sequence(first_replaced, last_replaced);
+
+    if ( ( last - first ) == ( last_replaced - first_replaced ) ) {
+      std::copy(first, last, first_replaced);
+    } else {
+      // this approach depends on std::vector's behavior WRT iterator stability
+      curves_.erase(first_replaced, last_replaced);
+      curves_.insert(first_replaced, first, last);
+    }
+
+    if ( curves_.front() != &final_ ) {
+      final_[0] = back().finalPoint();
+      final_[1] = front().initialPoint();
+    }
+  }
+
+  void do_append(Curve *curve) {
     if ( curves_.front() == &final_ ) {
       final_[1] = curve->initialPoint();
     }
@@ -455,40 +457,23 @@ private:
                         Sequence::iterator first,
                         Sequence::iterator last)
   {
-    // precondition: last_replaced is a valid iterator
-
-    Sequence::iterator iter=first;
-    Point p;
-
-    // avoid check at beginning of path
-    if ( first_replaced != curves_.begin() ) {
-      p = (*first_replaced)->initialPoint();
-    } else if ( first != last ) {
-      p = (*iter)->finalPoint();
-      ++iter;
-    } else {
-      p = (*last_replaced)->initialPoint();
-    }
-
-    for ( ; iter != last ; ++iter ) {
-      if ( (*iter)->initialPoint() != p ) {
+    if ( first != last ) {
+      if ( first_replaced != curves_.begin() ) {
+        if ( (*first_replaced)->initialPoint() != (*first)->initialPoint() ) {
+          throw ContinuityError();
+        }
+      }
+      if ( last_replaced != (curves_.end()-1) ) {
+        if ( (*(last_replaced-1))->finalPoint() != (*(last-1))->finalPoint() ) {
+          throw ContinuityError();
+        }
+      }
+    } else if ( first_replaced != last_replaced ) {
+      if ( (*first_replaced)->initialPoint() !=
+           (*(last_replaced-1))->finalPoint() )
+      {
         throw ContinuityError();
       }
-      p = (*iter)->finalPoint();
-    }
-
-    // avoid check at end of path
-    if ( last_replaced != (curves_.end()-1) &&
-         p != (*last_replaced)->initialPoint() )
-    {
-      throw ContinuityError();
-    }
-  }
-
-  void update_final() {
-    if ( curves_.front() != &final_ ) {
-      final_[0] = back().finalPoint();
-      final_[1] = front().initialPoint();
     }
   }
 
