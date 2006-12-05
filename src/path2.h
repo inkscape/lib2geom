@@ -224,8 +224,8 @@ public:
     final_[0] = final_[1] = p;
   }
 
-  template <typename InputIterator>
-  Path(InputIterator first, InputIterator last, bool closed=false)
+  template <typename Impl>
+  Path(BaseIterator<Impl> first, BaseIterator<Impl> last, bool closed=false)
   : closed_(closed)
   {
     curves_.push_back(&final_);
@@ -233,7 +233,7 @@ public:
   }
 
   ~Path() {
-    delete_sequence(curves_.begin(), curves_.end()-1);
+    delete_range(curves_.begin(), curves_.end()-1);
   }
 
   void swap(Path &other) {
@@ -414,7 +414,7 @@ private:
 
     check_continuity(first_replaced, last_replaced, first, last);
     duplicate_in_place(first, last);
-    delete_sequence(first_replaced, last_replaced);
+    delete_range(first_replaced, last_replaced);
 
     if ( ( last - first ) == ( last_replaced - first_replaced ) ) {
       std::copy(first, last, first_replaced);
@@ -444,9 +444,7 @@ private:
     }
   }
 
-  template <typename InputIterator>
-  void delete_sequence(InputIterator first, InputIterator last)
-  {
+  void delete_range(Sequence::iterator first, Sequence::iterator last) {
     for ( Sequence::iterator iter=first ; iter != last ; ++iter ) {
       delete *iter;
     }
