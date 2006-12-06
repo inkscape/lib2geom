@@ -26,6 +26,7 @@ match-curve
 mesh-grad
 bez-grad
 draw-toy
+normal-bundle
 "${NEEDS_GSL}"
 )
 

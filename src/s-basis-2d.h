@@ -110,12 +110,12 @@ public:
     // vector in u,v
     unsigned us, vs; // number of u terms, v terms
     SBasis2d() {}
-    SBasis2d(SBasis2d const & a) :
-        std::vector<BezOrd2d>(a)
-    {}
-    SBasis2d(BezOrd2d const & bo) {
+    SBasis2d(BezOrd2d const & bo) 
+        : us(1), vs(1) {
         push_back(bo);
     }
+    SBasis2d(SBasis2d const & a) 
+        : std::vector<BezOrd2d>(a), us(a.us), vs(a.vs) {}
     
     BezOrd2d& index(unsigned ui, unsigned vi) {
         assert(ui < us);

@@ -153,7 +153,7 @@ SBasis sqrt(SBasis const &a, int k) {
     c[0] = BezOrd(sqrt(a[0][0]), sqrt(a[0][1]));
     SBasis r = a - multiply(c, c); // remainder
     
-    for(unsigned i = 1; i <= k; i++) {
+    for(unsigned i = 1; i <= k and i<r.size(); i++) {
         BezOrd ci(r[i][0]/(2*c[0][0]), r[i][1]/(2*c[0][1]));
         SBasis cisi = shift(ci, i);
         r -= multiply(shift((2*c + cisi), i), SBasis(ci));
