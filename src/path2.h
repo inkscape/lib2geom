@@ -152,11 +152,8 @@ private:
 };
 
 template <typename IteratorImpl>
-class BaseIterator : public std::forward_iterator<Curve const &> {
+class BaseIterator : public std::forward_iterator<Curve const> {
 public:
-  typedef std::ptrdiff_t difference_type;
-  typedef std::size_t size_type;
-
   BaseIterator() {}
 
   // default construct
