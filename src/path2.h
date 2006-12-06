@@ -30,11 +30,11 @@ public:
   virtual multidim_sbasis<2> sbasis() const = 0;
 };
 
-template <unsigned degree>
+template <unsigned bezier_degree>
 class Bezier : public Curve {
 public:
-  template <unsigned other_degree>
-  static void assert_degree(Bezier<other_degree> const *) {}
+  template <unsigned required_degree>
+  static void assert_degree(Bezier<required_degree> const *) {}
 
   Bezier() {}
 
@@ -42,30 +42,32 @@ public:
   // default assign
 
   Bezier(Point c0, Point c1) {
-    assert_degree<2>(this);
+    assert_degree<1>(this);
     c_[0] = c0;
     c_[1] = c1;
   }
 
   Bezier(Point c0, Point c1, Point c2) {
-    assert_degree<3>(this);
+    assert_degree<2>(this);
     c_[0] = c0;
     c_[1] = c1;
     c_[2] = c2;
   }
 
   Bezier(Point c0, Point c1, Point c2, Point c3) {
-    assert_degree<4>(this);
+    assert_degree<3>(this);
     c_[0] = c0;
     c_[1] = c1;
     c_[2] = c2;
     c_[3] = c3;
   }
 
+  unsigned degree() const { return bezier_degree; }
+
   Curve *duplicate() const { return new Bezier(*this); }
 
   Point initialPoint() const { return c_[0]; }
-  Point finalPoint() const { return c_[degree-1]; }
+  Point finalPoint() const { return c_[bezier_degree]; }
 
   Point &operator[](int index) { return c_[index]; }
   Point const &operator[](int index) const { return c_[index]; }
@@ -74,14 +76,14 @@ public:
   Rect boundsExact() const { return bounds(); }
 
   multidim_sbasis<2> sbasis() const {
-    return bezier_to_sbasis<2, degree>(c_);
+    return bezier_to_sbasis<2, bezier_degree>(c_);
   }
 
 private:
   Rect bounds() const {
     Point min=c_[0];
     Point max=c_[0];
-    for ( unsigned i = 1 ; i < degree ; ++i ) {
+    for ( unsigned i = 1 ; i <= bezier_degree ; ++i ) {
       for ( unsigned axis = 0 ; axis < 2 ; ++axis ) {
         min[axis] = std::min(min[axis], c_[i][axis]);
         max[axis] = std::max(max[axis], c_[i][axis]);
@@ -90,16 +92,15 @@ private:
     return Rect(min, max);
   }
 
-  Point c_[degree];
+  Point c_[bezier_degree+1];
 };
 
-// Bezier<0> and Bezier<1> are meaningless; specialize them out
+// Bezier<0> is meaningless; specialize it out
 template <> class Bezier<0> { Bezier(); };
-template <> class Bezier<1> { Bezier(); };
 
-typedef Bezier<2> LineSegment;
-typedef Bezier<3> QuadraticBezier;
-typedef Bezier<4> CubicBezier;
+typedef Bezier<1> LineSegment;
+typedef Bezier<2> QuadraticBezier;
+typedef Bezier<3> CubicBezier;
 
 class SVGEllipticalArc : public Curve {
 public:
