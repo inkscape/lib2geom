@@ -190,7 +190,7 @@ private:
 };
 
 class ContinuityError : public std::exception {
-  char const *what() const { return "non-contiguous path"; }
+  char const *what() const throw() { return "non-contiguous path"; }
 };
 
 class Path {
@@ -317,7 +317,7 @@ public:
     final_[0] = final_[1] = p;
   }
 
-  void Path::append(Curve const &curve);
+  void append(Curve const &curve);
 
   template <typename CurveType, typename A>
   void appendNew(A a) {
