@@ -1,13 +1,8 @@
-#ifndef SEEN_GEOM_PATH_H
-#define SEEN_GEOM_PATH_H
-
 #include "path2.h"
 
 namespace Geom {
 
 namespace Path {
-
-class Path {
 
 Path::~Path() {
   delete_range(curves_.begin(), curves_.end()-1);
@@ -121,7 +116,7 @@ void Path::check_continuity(Sequence::iterator first_replaced,
 
 }
 
-#endif // SEEN_GEOM_PATH_H
+}
 
 /*
   Local Variables:
