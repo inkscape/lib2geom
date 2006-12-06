@@ -234,17 +234,9 @@ public:
     insert(begin(), first, last);
   }
 
-  ~Path() {
-    delete_range(curves_.begin(), curves_.end()-1);
-  }
+  ~Path();
 
-  void swap(Path &other) {
-    std::swap(curves_, other.curves_);
-    std::swap(closed_, other.closed_);
-    std::swap(final_, other.final_);
-    curves_[curves_.size()-1] = &final_;
-    other.curves_[other.curves_.size()-1] = &other.final_;
-  }
+  void swap(Path &other);
 
   iterator begin() { return curves_.begin(); }
   iterator end() { return curves_.end()-1; }
@@ -268,23 +260,8 @@ public:
   bool closed() const { return closed_; }
   void close(bool closed=true) { closed_ = closed; }
 
-  Rect boundsFast() const {
-    Rect bounds=front().boundsFast();
-    const_iterator iter=begin();
-    for ( ++iter ; iter != end() ; ++iter ) {
-      bounds.expandTo(iter->boundsFast());
-    }
-    return bounds;
-  }
-
-  Rect boundsExact() const {
-    Rect bounds=front().boundsFast();
-    const_iterator iter=begin();
-    for ( ++iter ; iter != end() ; ++iter ) {
-      bounds.expandTo(iter->boundsExact());
-    }
-    return bounds;
-  }
+  Rect boundsFast() const;
+  Rect boundsExact() const;
 
   void insert(iterator pos, Curve const &curve) {
     Sequence source(1, &curve);
@@ -345,12 +322,7 @@ public:
     final_[0] = final_[1] = p;
   }
 
-  void append(Curve const &curve) {
-    if ( curves_.front() != &final_ && curve.initialPoint() != final_[0] ) {
-      throw ContinuityError();
-    }
-    do_append(curve.duplicate());
-  }
+  void Path::append(Curve const &curve);
 
   template <typename CurveType, typename A>
   void appendNew(A a) {
@@ -410,72 +382,17 @@ private:
   void do_update(Sequence::iterator first_replaced,
                  Sequence::iterator last_replaced,
                  Sequence::iterator first,
-                 Sequence::iterator last)
-  {
-    // note: modifies the contents of [first,last)
+                 Sequence::iterator last);
 
-    check_continuity(first_replaced, last_replaced, first, last);
-    duplicate_in_place(first, last);
-    delete_range(first_replaced, last_replaced);
+  void do_append(Curve *curve);
 
-    if ( ( last - first ) == ( last_replaced - first_replaced ) ) {
-      std::copy(first, last, first_replaced);
-    } else {
-      // this approach depends on std::vector's behavior WRT iterator stability
-      curves_.erase(first_replaced, last_replaced);
-      curves_.insert(first_replaced, first, last);
-    }
-
-    if ( curves_.front() != &final_ ) {
-      final_[0] = back().finalPoint();
-      final_[1] = front().initialPoint();
-    }
-  }
-
-  void do_append(Curve *curve) {
-    if ( curves_.front() == &final_ ) {
-      final_[1] = curve->initialPoint();
-    }
-    curves_.insert(curves_.end()-1, curve);
-    final_[0] = curve->finalPoint();
-  }
-
-  void duplicate_in_place(Sequence::iterator first, Sequence::iterator last) {
-    for ( Sequence::iterator iter=first ; iter != last ; ++iter ) {
-      *iter = (*iter)->duplicate();
-    }
-  }
-
-  void delete_range(Sequence::iterator first, Sequence::iterator last) {
-    for ( Sequence::iterator iter=first ; iter != last ; ++iter ) {
-      delete *iter;
-    }
-  }
+  void duplicate_in_place(Sequence::iterator first, Sequence::iterator last);
+  void delete_range(Sequence::iterator first, Sequence::iterator last);
 
   void check_continuity(Sequence::iterator first_replaced,
                         Sequence::iterator last_replaced,
                         Sequence::iterator first,
-                        Sequence::iterator last)
-  {
-    if ( first != last ) {
-      if ( first_replaced != curves_.begin() ) {
-        if ( (*first_replaced)->initialPoint() != (*first)->initialPoint() ) {
-          throw ContinuityError();
-        }
-      }
-      if ( last_replaced != (curves_.end()-1) ) {
-        if ( (*(last_replaced-1))->finalPoint() != (*(last-1))->finalPoint() ) {
-          throw ContinuityError();
-        }
-      }
-    } else if ( first_replaced != last_replaced ) {
-      if ( (*first_replaced)->initialPoint() !=
-           (*(last_replaced-1))->finalPoint() )
-      {
-        throw ContinuityError();
-      }
-    }
-  }
+                        Sequence::iterator last);
 
   Sequence curves_;
   LineSegment final_;
