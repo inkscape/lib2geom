@@ -11,9 +11,22 @@ tuple point_to_tuple(Geom::Point const& p)
     return make_tuple(p[0], p[1]);
 }
 
-Geom::Point tuple_to_point(boost::python::tuple t)
+Geom::Point tuple_to_point(boost::python::tuple const& t)
 {
     return Geom::Point(extract<double>(t[0]), extract<double>(t[1]));
+}
+
+double point_getitem(Geom::Point const& p, int const index)
+{
+    int i = index;
+    if (i < 0) {
+        i = -i - 1;
+    }
+    if (i > 1) {
+        PyErr_SetString(PyExc_StopIteration, "No more data.");
+        boost::python::throw_error_already_set();
+    }
+    return p[i];
 }
 
 BOOST_PYTHON_MODULE(lib2geom_py)
@@ -38,10 +51,12 @@ BOOST_PYTHON_MODULE(lib2geom_py)
     def("distance", Geom::distance);
     def("dist_sq", Geom::dist_sq);
     def("cross", Geom::cross);
-    def("abs", Geom::abs);
+// TODO: explain why this gives a compile time error
+//    def("abs", Geom::abs);
     
     class_<Geom::Point>("Point", init<double, double>())
         .def(self_ns::str(self))
+        .def("__getitem__", point_getitem)
         .def("tuple", point_to_tuple)
     
         .def("from_tuple", tuple_to_point)
