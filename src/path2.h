@@ -152,7 +152,9 @@ private:
 };
 
 template <typename IteratorImpl>
-class BaseIterator : public std::forward_iterator<Curve const> {
+class BaseIterator
+: public std::iterator<std::forward_iterator_tag, Curve const>
+{
 public:
   BaseIterator() {}
 
@@ -163,14 +165,14 @@ public:
     return other.impl_ == impl_;
   }
   bool operator!=(BaseIterator const &other) {
-    return other.impl_ != pos;
+    return other.impl_ != impl_;
   }
 
   Curve const &operator*() const { return **impl_; }
   Curve const *operator->() const { return *impl_; }
 
   BaseIterator &operator++(int) {
-    ++_pos;
+    ++impl_;
     return *this;
   }
   BaseIterator operator++() {
