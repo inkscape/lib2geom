@@ -96,8 +96,6 @@ void NormalBundle::setBase(multidim_sbasis<2> const &B, double tol=0.1) {
 }
 
 void NormalBundle::draw(cairo_t *cr, int NbLi, int NbCol) {
-    cairo_set_source_rgba (cr, 0., 0., 0.9, 1);
-  
     multidim_sbasis<2> B;
     vector<multidim_sbasis<2> > tB;
     Geom::Point Seg[2];
@@ -202,8 +200,9 @@ class NormalBundleToy: public Toy {
         cairo_set_line_width (cr, 0.5);
         //Base lines
         cairo_set_source_rgba (cr, 0.9, 0., 0., 1);
-        cairo_md_sb(cr, B);        
+        cairo_md_sb(cr, B);
         draw_line_seg(cr, O, Oo);
+        cairo_stroke(cr);
 
         //Sections    
         cairo_set_source_rgba (cr, 0, 0, 0.9, 1);
@@ -211,9 +210,12 @@ class NormalBundleToy: public Toy {
         for (int i=0;i<Q.size();i++){
             cairo_md_sb(cr, Q[i]);
         }
+        cairo_stroke(cr);
 
         //Normal bundle    
+        cairo_set_source_rgba (cr, 0., 0., 0., 1);
         NBdle.draw(cr,3,5);
+        cairo_stroke(cr);
 
 
         Toy::draw(cr, notify, width, height, save);
