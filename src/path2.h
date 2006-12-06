@@ -6,6 +6,7 @@
 #include <iterator>
 #include <algorithm>
 #include <exception>
+#include <stdexcept>
 #include "multidim-sbasis.h"
 #include "bezier-to-sbasis.h"
 
@@ -189,8 +190,9 @@ private:
   friend class Path;
 };
 
-class ContinuityError : public std::exception {
-  char const *what() const throw() { return "non-contiguous path"; }
+class ContinuityError : public std::runtime_error {
+  ContinuityError() : runtime_error("non-contiguous path") {}
+  ContinuityError(std::string const &message) : runtime_error(message) {}
 };
 
 class Path {
