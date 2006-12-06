@@ -190,9 +190,7 @@ private:
 };
 
 class ContinuityError : public std::exception {
-  ContinuityError() : exception("non-contiguous path") {}
-  ContinuityError(char const *message) : exception(message) {}
-  ContinuityError(std::string const &message) : exception(message) {}
+  char const *what() const { return "non-contiguous path"; }
 };
 
 class Path {
