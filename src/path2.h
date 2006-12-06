@@ -144,8 +144,6 @@ public:
 
   Curve *duplicate() const { return new SBasis(*this); }
 
-  double const &operator[](int index) const { return coeffs_[index]; }
-
   multidim_sbasis<2> sbasis() const { return coeffs_; }
   
 private:
