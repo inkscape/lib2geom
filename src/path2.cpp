@@ -138,8 +138,6 @@ void Path::check_continuity(Sequence::iterator first_replaced,
 
 }
 
-}
-
 /*
   Local Variables:
   mode:c++

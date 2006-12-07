@@ -421,7 +421,7 @@ private:
 }
 
 template <>
-void std::swap<Path>(Path &a, Path &b) {
+void std::swap<Geom::Path::Path>(Geom::Path::Path &a, Geom::Path::Path &b) {
   a.swap(b);
 }
 
