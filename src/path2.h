@@ -16,7 +16,7 @@ namespace Path {
 
 class Curve {
 public:
-  virtual ~Curve();
+  virtual ~Curve() {}
 
   virtual Point initialPoint() const = 0;
   virtual Point finalPoint() const = 0;
