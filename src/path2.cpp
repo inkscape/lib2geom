@@ -70,7 +70,6 @@ void Path::do_update(Sequence::iterator first_replaced,
   // note: modifies the contents of [first,last)
 
   check_continuity(first_replaced, last_replaced, first, last);
-  duplicate_in_place(first, last);
   delete_range(first_replaced, last_replaced);
 
   if ( ( last - first ) == ( last_replaced - first_replaced ) ) {
@@ -93,14 +92,6 @@ void Path::do_append(Curve *curve) {
   }
   curves_.insert(curves_.end()-1, curve);
   final_[0] = curve->finalPoint();
-}
-
-void Path::duplicate_in_place(Sequence::iterator first,
-                              Sequence::iterator last)
-{
-  for ( Sequence::iterator iter=first ; iter != last ; ++iter ) {
-    *iter = (*iter)->duplicate();
-  }
 }
 
 void Path::delete_range(Sequence::iterator first, Sequence::iterator last) {

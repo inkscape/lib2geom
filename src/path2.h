@@ -196,11 +196,41 @@ public:
   }
 
 private:
-  explicit BaseIterator(IteratorImpl const &pos)
-  : impl_(pos) {}
+  BaseIterator(IteratorImpl const &pos) : impl_(pos) {}
 
   IteratorImpl impl_;
   friend class Path;
+};
+
+template <typename Iterator>
+class DuplicatingIterator
+: public std::iterator<std::input_iterator_tag, Curve *>
+{
+public:
+  DuplicatingIterator() {}
+  DuplicatingIterator(Iterator const &iter) : impl_(iter) {}
+
+  bool operator==(DuplicatingIterator const &other) {
+    return other.impl_ == impl_;
+  }
+  bool operator!=(DuplicatingIterator const &other) {
+    return other.impl_ != impl_;
+  }
+
+  Curve *operator*() const { return (*impl_)->duplicate(); }
+
+  DuplicatingIterator &operator++(int) {
+    ++impl_;
+    return *this;
+  }
+  DuplicatingIterator operator++() {
+    DuplicatingIterator old=*this;
+    ++(*this);
+    return old;
+  }
+
+private:
+  Iterator impl_;
 };
 
 class ContinuityError : public std::runtime_error {
@@ -275,15 +305,26 @@ public:
   Rect boundsExact() const;
 
   void insert(iterator pos, Curve const &curve) {
-    Sequence source(1, const_cast<Curve *>(&curve));
-    do_update(pos.impl_, pos.impl_, source.begin(), source.end());
+    Sequence source(1, curve.duplicate());
+    try {
+      do_update(pos.impl_, pos.impl_, source.begin(), source.end());
+    } catch (...) {
+      delete_range(source.begin(), source.end());
+      throw;
+    }
   }
 
   template <typename Impl>
   void insert(iterator pos, BaseIterator<Impl> first, BaseIterator<Impl> last)
   {
-    Sequence source(first.impl_, last.impl_);
-    do_update(pos.impl_, pos.impl_, source.begin(), source.end());
+    Sequence source(DuplicatingIterator<Impl>(first.impl_),
+                    DuplicatingIterator<Impl>(last.impl_));
+    try {
+      do_update(pos.impl_, pos.impl_, source.begin(), source.end());
+    } catch (...) {
+      delete_range(source.begin(), source.end());
+      throw;
+    }
   }
 
   void clear() {
@@ -300,24 +341,40 @@ public:
   }
 
   void replace(iterator replaced, Curve const &curve) {
-    Sequence source(1, const_cast<Curve *>(&curve));
-    do_update(replaced.impl_, replaced.impl_+1, source.begin(), source.end());
+    Sequence source(1, curve.duplicate());
+    try {
+      do_update(replaced.impl_, replaced.impl_+1, source.begin(), source.end());
+    } catch (...) {
+      delete_range(source.begin(), source.end());
+      throw;
+    }
   }
 
   void replace(iterator first_replaced, iterator last_replaced,
                Curve const &curve)
   {
-    Sequence source(1, const_cast<Curve *>(&curve));
-    do_update(first_replaced.impl_, last_replaced.impl_,
-              source.begin(), source.end());
+    Sequence source(1, curve.duplicate());
+    try {
+      do_update(first_replaced.impl_, last_replaced.impl_,
+                source.begin(), source.end());
+    } catch (...) {
+      delete_range(source.begin(), source.end());
+      throw;
+    }
   }
 
   template <typename Impl>
   void replace(iterator replaced,
                BaseIterator<Impl> first, BaseIterator<Impl> last)
   {
-    Sequence source(first.impl_, last.impl_);
-    do_update(replaced.impl_, replaced.impl_+1, source.begin(), source.end());
+    Sequence source(DuplicatingIterator<Impl>(first.impl_),
+                    DuplicatingIterator<Impl>(last.impl_));
+    try {
+      do_update(replaced.impl_, replaced.impl_+1, source.begin(), source.end());
+    } catch (...) {
+      delete_range(source.begin(), source.end());
+      throw;
+    }
   }
 
   template <typename Impl>
@@ -325,8 +382,13 @@ public:
                BaseIterator<Impl> first, BaseIterator<Impl> last)
   {
     Sequence source(first.impl_, last.impl_);
-    do_update(first_replaced.impl_, last_replaced.impl_,
-              source.begin(), source.end());
+    try {
+      do_update(first_replaced.impl_, last_replaced.impl_,
+                source.begin(), source.end());
+    } catch (...) {
+      delete_range(source.begin(), source.end());
+      throw;
+    }
   }
 
   void start(Point p) {
@@ -398,7 +460,6 @@ private:
 
   void do_append(Curve *curve);
 
-  void duplicate_in_place(Sequence::iterator first, Sequence::iterator last);
   void delete_range(Sequence::iterator first, Sequence::iterator last);
 
   void check_continuity(Sequence::iterator first_replaced,
