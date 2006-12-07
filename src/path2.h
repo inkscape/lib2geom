@@ -31,8 +31,16 @@ public:
   virtual multidim_sbasis<2> sbasis() const = 0;
 };
 
+struct BezierHelpers {
+protected:
+  static Rect bounds(unsigned degree, Point const *points);
+  static Point point_and_derivatives_at(Coord t,
+                                        unsigned degree, Point const *points,
+                                        unsigned n_derivs, Point *derivs);
+};
+
 template <unsigned bezier_degree>
-class Bezier : public Curve {
+class Bezier : public Curve, private BezierHelpers {
 public:
   template <unsigned required_degree>
   static void assert_degree(Bezier<required_degree> const *) {}
@@ -73,26 +81,20 @@ public:
   Point &operator[](int index) { return c_[index]; }
   Point const &operator[](int index) const { return c_[index]; }
 
-  Rect boundsFast() const { return bounds(); }
-  Rect boundsExact() const { return bounds(); }
+  Rect boundsFast() const { return bounds(bezier_degree, c_); }
+  Rect boundsExact() const { return bounds(bezier_degree, c_); }
+
+  Point pointAndDerivativesAt(Coord t, unsigned n_derivs, Point *derivs)
+  const
+  {
+    return point_and_derivatives_at(t, bezier_degree, c_, n_derivs, derivs);
+  }
 
   multidim_sbasis<2> sbasis() const {
     return bezier_to_sbasis<2, bezier_degree>(c_);
   }
 
 private:
-  Rect bounds() const {
-    Point min=c_[0];
-    Point max=c_[0];
-    for ( unsigned i = 1 ; i <= bezier_degree ; ++i ) {
-      for ( unsigned axis = 0 ; axis < 2 ; ++axis ) {
-        min[axis] = std::min(min[axis], c_[i][axis]);
-        max[axis] = std::max(max[axis], c_[i][axis]);
-      }
-    }
-    return Rect(min, max);
-  }
-
   Point c_[bezier_degree+1];
 };
 
@@ -119,6 +121,13 @@ public:
   Point initialPoint() const { return initial_; }
   Point finalPoint() const { return final_; }
 
+  Rect boundsFast() const;
+  Rect boundsExact() const;
+
+  Point pointAndDerivativesAt(Coord t, unsigned n_derivs, Point *derivs) const;
+
+  multidim_sbasis<2> sbasis() const;
+
 private:
   Point initial_;
   double rx_;
@@ -144,6 +153,11 @@ public:
   }
 
   Curve *duplicate() const { return new SBasis(*this); }
+
+  Rect boundsFast() const;
+  Rect boundsExact() const;
+
+  Point pointAndDerivativesAt(Coord t, unsigned n_derivs, Point *derivs) const;
 
   multidim_sbasis<2> sbasis() const { return coeffs_; }
   

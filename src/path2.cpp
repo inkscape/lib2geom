@@ -4,6 +4,27 @@ namespace Geom {
 
 namespace Path {
 
+Rect BezierHelpers::bounds(unsigned degree, Point const *points) {
+  Point min=points[0];
+  Point max=points[0];
+  for ( unsigned i = 1 ; i <= degree ; ++i ) {
+    for ( unsigned axis = 0 ; axis < 2 ; ++axis ) {
+      min[axis] = std::min(min[axis], points[i][axis]);
+      max[axis] = std::max(max[axis], points[i][axis]);
+    }
+  }
+  return Rect(min, max);
+}
+
+Point BezierHelpers::point_and_derivatives_at(Coord t,
+                                              unsigned degree,
+                                              Point const *points,
+                                              unsigned n_derivs,
+                                              Point *derivs)
+{
+  return Point(0,0); // TODO
+}
+
 Path::~Path() {
   delete_range(curves_.begin(), curves_.end()-1);
 }
