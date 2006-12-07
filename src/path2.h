@@ -26,7 +26,9 @@ public:
   virtual Rect boundsFast() const = 0;
   virtual Rect boundsExact() const = 0;
 
-  Point pointAt(Coord t) { return pointAndDerivativesAt(t, 0, NULL); }
+  virtual void subdivide(Coord t, Curve& a, Curve& b) const {} //TODO: require
+
+  Point pointAt(Coord t) const { return pointAndDerivativesAt(t, 0, NULL); }
   virtual Point pointAndDerivativesAt(Coord t, unsigned n, Point *ds) const = 0;
   virtual multidim_sbasis<2> sbasis() const = 0;
 };
@@ -37,6 +39,9 @@ protected:
   static Point point_and_derivatives_at(Coord t,
                                         unsigned degree, Point const *points,
                                         unsigned n_derivs, Point *derivs);
+  static Point subdivideArr(Coord t, unsigned degree, Point const *V,
+                         Point *Left, Point *Right);
+
 };
 
 template <unsigned bezier_degree>
@@ -84,6 +89,11 @@ public:
   Rect boundsFast() const { return bounds(bezier_degree, c_); }
   Rect boundsExact() const { return bounds(bezier_degree, c_); }
 
+  void subdivide(Coord t, Curve& a, Curve& b) const {
+      Point l[bezier_degree+1],r[bezier_degree+1];
+      subdivideArr(t, bezier_degree, c_, (dynamic_cast<Bezier*>(&a))->c_, (dynamic_cast<Bezier*>(&b))->c_);
+  }
+  
   Point pointAndDerivativesAt(Coord t, unsigned n_derivs, Point *derivs)
   const
   {
@@ -124,6 +134,17 @@ public:
   Rect boundsFast() const;
   Rect boundsExact() const;
 
+  void subdivide(Coord t, Curve& ac, Curve& bc) const {
+    SVGEllipticalArc* a = dynamic_cast<SVGEllipticalArc*>(&ac);
+    SVGEllipticalArc* b = dynamic_cast<SVGEllipticalArc*>(&bc);
+    a->rx_ = b->rx_ = rx_;
+    a->ry_ = b->ry_ = ry_;
+    a->x_axis_rotation_ = b->x_axis_rotation_ = x_axis_rotation_;
+    a->initial_ = initial_;
+    a->final_ = b->initial_ = pointAt(t);
+    b->final_ = final_;
+  }
+  
   Point pointAndDerivativesAt(Coord t, unsigned n_derivs, Point *derivs) const;
 
   multidim_sbasis<2> sbasis() const;

@@ -25,6 +25,33 @@ Point BezierHelpers::point_and_derivatives_at(Coord t,
   return Point(0,0); // TODO
 }
 
+Geom::Point
+BezierHelpers::subdivideArr(Coord t,              // Parameter value
+                            unsigned degree,      // Degree of bezier curve
+                            Geom::Point const *V, // Control pts
+                            Geom::Point *Left,    // RETURN left half ctl pts
+                            Geom::Point *Right)   // RETURN right half ctl pts
+{
+    Geom::Point Vtemp[degree+1][degree+1];
+
+    /* Copy control points	*/
+    std::copy(V, V+degree+1, Vtemp[0]);
+
+    /* Triangle computation	*/
+    for (unsigned i = 1; i <= degree; i++) {	
+        for (unsigned j = 0; j <= degree - i; j++) {
+            Vtemp[i][j] = Lerp(t, Vtemp[i-1][j], Vtemp[i-1][j+1]);
+        }
+    }
+    
+    for (unsigned j = 0; j <= degree; j++)
+        Left[j]  = Vtemp[j][0];
+    for (unsigned j = 0; j <= degree; j++)
+        Right[j] = Vtemp[degree-j][j];
+
+    return (Vtemp[degree][0]);
+}
+
 Path::~Path() {
   delete_range(curves_.begin(), curves_.end()-1);
 }

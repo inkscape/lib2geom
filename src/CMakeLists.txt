@@ -2,7 +2,6 @@ SET(2GEOM_SRC
 arc-length.cpp
 arc-length.h
 bezier-to-sbasis.h
-beztype.cpp
 bezier-utils.cpp
 bezier-utils.h
 centroid.cpp
