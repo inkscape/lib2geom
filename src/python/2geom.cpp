@@ -9,6 +9,7 @@
 
 #include <boost/python.hpp>
 #include <boost/python/implicit.hpp>
+#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 using namespace boost::python;
 
 int python_index(int const index)
@@ -165,6 +166,7 @@ BOOST_PYTHON_MODULE(lib2geom_py)
 
     //s-basis.h
     class_<Geom::BezOrd>("BezOrd", init<double, double>())
+        .def(self_ns::str(self))
         .def("__getitem__", bezord_getitem)
         .def("tuple", bezord_to_tuple)
     
@@ -190,6 +192,48 @@ BOOST_PYTHON_MODULE(lib2geom_py)
 // TODO: explain why this gives a compile time error
 //    implicitly_convertible<tuple,Geom::BezOrd>();
 
+    // TODO: some of these don't compile
+    //def("shift", &Geom::shift);
+    def("truncate", &Geom::truncate);
+    def("multiply", &Geom::multiply);
+    //def("compose", &Geom::compose);
+    def("integral", &Geom::integral);
+    def("derivative", &Geom::derivative);
+    def("sqrt", &Geom::sqrt);
+    def("reciprocal", &Geom::reciprocal);
+    def("divide", &Geom::divide);
+    def("inverse", &Geom::inverse);
+    def("sin", &Geom::sin);
+    def("cos", &Geom::cos);
+    //def("reverse", &Geom::reverse);
+    def("bounds", &Geom::bounds);
+    def("roots", &Geom::roots);
+
+    class_<Geom::SBasis>("SBasis")
+        .def(self_ns::str(self))
+//        .def(vector_indexing_suite<Geom::SBasis>())
+        .def(self + self)
+        .def(self - self)
+        .def("clear", &Geom::SBasis::clear)
+        .def("normalize", &Geom::SBasis::normalize)
+        .def("tail_eror", &Geom::SBasis::tail_error)
+        .def("truncate", &Geom::SBasis::truncate)
+        .def("is_finite", &Geom::SBasis::is_finite)
+        .def(Geom::BezOrd() - self)
+        .def(self += self)
+        .def(self -= self)
+        .def(self += Geom::BezOrd())
+        .def(self -= Geom::BezOrd())
+        .def(self += float())
+        .def(self -= float())
+        .def(Geom::BezOrd() + self)
+        .def(float() + self)
+        .def(self * self)
+        .def(float() * self)
+        .def(self *= self)
+        .def(self *= float())
+        .def(self /= float())
+    ;
 }
 
 /*
