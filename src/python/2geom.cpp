@@ -64,11 +64,6 @@ double bezord_getitem(Geom::BezOrd const& b, int const index)
     return b[i];
 }
 
-Geom::BezOrd bezord_reverse(Geom::BezOrd const& b) {
-    return reverse(b);
-}
-
-
 BOOST_PYTHON_MODULE(lib2geom_py)
 {
     def("point_to_tuple", point_to_tuple);
@@ -190,7 +185,7 @@ BOOST_PYTHON_MODULE(lib2geom_py)
         .def(self == self)
         .def(self != self)
         .def(self * self)
-        .def("reverse", ((Geom::BezOrd (*)(Geom::BezOrd const &b))&bezord_reverse))
+        .def("reverse", ((Geom::BezOrd (*)(Geom::BezOrd const &b))&Geom::reverse))
     ;
     implicitly_convertible<Geom::BezOrd,tuple>();
 // TODO: explain why this gives a compile time error
