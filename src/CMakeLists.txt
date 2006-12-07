@@ -13,8 +13,6 @@ conjugate_gradient.cpp
 conjugate_gradient.h
 convex-cover.cpp
 convex-cover.h
-convex-hull.h
-convex-hull-ops.h
 coord.h
 cubic_bez_util.cpp
 cubic_bez_util.h
