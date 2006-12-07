@@ -64,6 +64,10 @@ double bezord_getitem(Geom::BezOrd const& b, int const index)
     return b[i];
 }
 
+Geom::BezOrd bezord_reverse(Geom::BezOrd const& b) {
+    return reverse(b);
+}
+
 
 BOOST_PYTHON_MODULE(lib2geom_py)
 {
@@ -87,8 +91,8 @@ BOOST_PYTHON_MODULE(lib2geom_py)
     def("distance", Geom::distance);
     def("dist_sq", Geom::dist_sq);
     def("cross", Geom::cross);
-// TODO: explain why this gives a compile time error
-//    def("abs", Geom::abs);
+// TODO: explain why this gives a load time time error
+    def("abs", (Geom::Point (*)(Geom::Point const&))&Geom::abs);
     
     class_<Geom::Point>("Point", init<double, double>())
         .def(self_ns::str(self))
@@ -163,7 +167,7 @@ BOOST_PYTHON_MODULE(lib2geom_py)
 //        .def(self *= self)
         .def("inverse", &Geom::rotate::inverse)
     ;
-
+    
     //s-basis.h
     class_<Geom::BezOrd>("BezOrd", init<double, double>())
         .def(self_ns::str(self))
@@ -186,7 +190,7 @@ BOOST_PYTHON_MODULE(lib2geom_py)
         .def(self == self)
         .def(self != self)
         .def(self * self)
-        //.def("reverse", &Geom::reverse)
+        .def("reverse", ((Geom::BezOrd (*)(Geom::BezOrd const &b))&bezord_reverse))
     ;
     implicitly_convertible<Geom::BezOrd,tuple>();
 // TODO: explain why this gives a compile time error
