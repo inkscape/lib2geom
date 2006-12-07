@@ -420,9 +420,13 @@ private:
 
 }
 
+namespace std {
+
 template <>
-void std::swap<Geom::Path::Path>(Geom::Path::Path &a, Geom::Path::Path &b) {
+void swap<Geom::Path::Path>(Geom::Path::Path &a, Geom::Path::Path &b) {
   a.swap(b);
+}
+
 }
 
 #endif // SEEN_GEOM_PATH_H
