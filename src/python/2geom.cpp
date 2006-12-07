@@ -5,11 +5,23 @@
 #include "scale.h"
 #include "translate.h"
 #include "rotate.h"
+#include "s-basis.h"
 
 #include <boost/python.hpp>
 #include <boost/python/implicit.hpp>
 using namespace boost::python;
 
+int python_index(int const index)
+{
+    if (index < 0) 
+    {
+        return -index - 1;
+    }
+    return index;
+}
+
+
+// helpers for point
 tuple point_to_tuple(Geom::Point const& p)
 {
     return make_tuple(p[0], p[1]);
@@ -22,16 +34,35 @@ Geom::Point tuple_to_point(boost::python::tuple const& t)
 
 double point_getitem(Geom::Point const& p, int const index)
 {
-    int i = index;
-    if (i < 0) {
-        i = -i - 1;
-    }
+    int i = python_index(index);
     if (i > 1) {
         PyErr_SetString(PyExc_StopIteration, "No more data.");
         boost::python::throw_error_already_set();
     }
     return p[i];
 }
+
+// helpers for bezord
+tuple bezord_to_tuple(Geom::BezOrd const& b)
+{
+    return make_tuple(b[0], b[1]);
+}
+
+Geom::BezOrd tuple_to_bezord(boost::python::tuple const& t)
+{
+    return Geom::BezOrd(extract<double>(t[0]), extract<double>(t[1]));
+}
+
+double bezord_getitem(Geom::BezOrd const& b, int const index)
+{
+    int i = python_index(index);
+    if (i > 1) {
+        PyErr_SetString(PyExc_StopIteration, "No more data.");
+        boost::python::throw_error_already_set();
+    }
+    return b[i];
+}
+
 
 BOOST_PYTHON_MODULE(lib2geom_py)
 {
@@ -132,6 +163,32 @@ BOOST_PYTHON_MODULE(lib2geom_py)
         .def("inverse", &Geom::rotate::inverse)
     ;
 
+    //s-basis.h
+    class_<Geom::BezOrd>("BezOrd", init<double, double>())
+        .def("__getitem__", bezord_getitem)
+        .def("tuple", bezord_to_tuple)
+    
+        .def("from_tuple", tuple_to_bezord)
+        .staticmethod("from_tuple")
+        
+        .def("point_at", &Geom::BezOrd::point_at)
+        .def("apply", &Geom::BezOrd::apply)
+        .def("zero", &Geom::BezOrd::zero)
+        .def("is_finite", &Geom::BezOrd::is_finite)
+
+        .def(-self)
+        .def(self + self)
+        .def(self - self)
+        .def(self += self)
+        .def(self -= self)
+        .def(self == self)
+        .def(self != self)
+        .def(self * self)
+        .def("reverse", &Geom::BezOrd::reverse)
+    ;
+    implicitly_convertible<Geom::BezOrd,tuple>();
+// TODO: explain why this gives a compile time error
+//    implicitly_convertible<tuple,Geom::BezOrd>();
 
 }
 
