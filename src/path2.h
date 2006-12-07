@@ -307,7 +307,8 @@ public:
                Curve const &curve)
   {
     Sequence source(1, &curve);
-    do_update(first.impl_, last.impl_, source.begin(), source.end());
+    do_update(first_replaced.impl_, last_replaced.impl_,
+              source.begin(), source.end());
   }
 
   template <typename Impl>
@@ -324,7 +325,7 @@ public:
   {
     Sequence source(first.impl_, last.impl_);
     do_update(first_replaced.impl_, last_replaced.impl_,
-           source.begin(), source.end());
+              source.begin(), source.end());
   }
 
   void start(Point p) {

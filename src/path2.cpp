@@ -85,6 +85,7 @@ void Path::do_update(Sequence::iterator first_replaced,
     final_[0] = back().finalPoint();
     final_[1] = front().initialPoint();
   }
+}
 
 void Path::do_append(Curve *curve) {
   if ( curves_.front() == &final_ ) {
