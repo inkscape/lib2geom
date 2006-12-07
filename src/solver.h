@@ -3,6 +3,8 @@
 #include "point.h"
 #include "s-basis.h"
 
+namespace Geom{
+
 unsigned
 crossing_count(Geom::Point const *V,	/*  Control pts of Bezier curve	*/
 	       unsigned degree);	/*  Degree of Bezier curve */
@@ -17,7 +19,6 @@ unsigned
 crossing_count(double const *V,	/*  Control pts of Bezier curve	*/
 	       unsigned degree,	/*  Degree of Bezier curve */
 	       double left_t, double right_t);
-// This algorithm is 2000* faster on average than parametric roots.
 void
 find_bernstein_roots(
     double *w, /* The control points  */
@@ -32,4 +33,6 @@ find_bernstein_roots_buggy(
     std::vector<double> & solutions,	/* RETURN candidate t-values */
     unsigned depth,	/* The depth of the recursion */
     double left_t=0, double right_t=1);
+
+};
 #endif

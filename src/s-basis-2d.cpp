@@ -1,5 +1,7 @@
 #include "s-basis-2d.h"
 
+namespace Geom{
+
 SBasis extract_u(SBasis2d const &a, double u) {
     SBasis sb;
     double s = u*(1-u);
@@ -75,3 +77,5 @@ compose(std::vector<SBasis2d> const &fg, multidim_sbasis<2> p) {
     }
     return B;
 }
+
+};

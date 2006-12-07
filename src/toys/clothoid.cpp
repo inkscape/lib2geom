@@ -10,6 +10,7 @@
 #include "toy-framework.h"
 
 using std::vector;
+using namespace Geom;
 
 class Clothoid: public Toy {
     public:

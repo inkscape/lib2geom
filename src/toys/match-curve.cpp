@@ -28,6 +28,7 @@
 
 using std::vector;
 using std::complex;
+using namespace Geom;
 
 //#define HAVE_GSL
 

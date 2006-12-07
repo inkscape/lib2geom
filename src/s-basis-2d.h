@@ -5,6 +5,9 @@
 #include <algorithm>
 #include "s-basis.h"
 #include "multidim-sbasis.h"
+#include <iostream>
+
+namespace Geom{
 
 class BezOrd2d{
 public:
@@ -279,7 +282,6 @@ SBasis2d reciprocal(BezOrd2d const &a, int k);
 
 SBasis2d divide(SBasis2d const &a, SBasis2d const &b, int k);
 
-#include <iostream>
 // a(b(t))
 SBasis2d compose(SBasis2d const &a, SBasis2d const &b);
 SBasis2d compose(SBasis2d const &a, SBasis2d const &b, unsigned k);
@@ -309,6 +311,8 @@ inline std::ostream &operator<< (std::ostream &out_file, const SBasis2d & p) {
     }
     return out_file;
 }
+
+};
 
 /*
   Local Variables:

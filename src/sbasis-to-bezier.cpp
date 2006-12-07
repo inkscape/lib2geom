@@ -11,6 +11,9 @@ This is wrong, it should read
 */
 #include "sbasis-to-bezier.h"
 #include "choose.h"
+#include <iostream>
+
+namespace Geom{
 
 double W(unsigned n, unsigned j, unsigned k) {
     unsigned q = (n+1)/2;
@@ -99,8 +102,6 @@ subpath_from_sbasis(Geom::PathSetBuilder &pb, multidim_sbasis<2> const &B, doubl
     }
 }
 
-#include <iostream>
-
 /***
 /* This version works by inverting a reasonable upper bound on the error term after subdividing the
 curve at $a$.  We keep biting off pieces until there is no more curve left.
@@ -118,11 +119,11 @@ subpath_from_sbasis_incremental(Geom::PathSetBuilder &pb, multidim_sbasis<2> B, 
     
     //std::cout << "tol = " << tol << std::endl;
     while(1) {
-        double A = sqrt(tol/te); // pow(te, 1./k)
+        double A = std::sqrt(tol/te); // pow(te, 1./k)
         double a = A;
         if(A < 1) {
             A = std::min(A, 0.25);
-            a = 0.5 - sqrt(0.25 - A); // quadratic formula
+            a = 0.5 - std::sqrt(0.25 - A); // quadratic formula
             if(a > 1) a = 1; // clamp to the end of the segment
         } else
             a = 1;
@@ -146,6 +147,7 @@ subpath_from_sbasis_incremental(Geom::PathSetBuilder &pb, multidim_sbasis<2> B, 
     }
 }
 
+};
 
 /*
   Local Variables:

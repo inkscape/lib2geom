@@ -4,6 +4,8 @@
 #include "s-basis.h"
 #include "point.h"
 
+namespace Geom{
+
 template <unsigned D>
 class multidim_sbasis{
 public:
@@ -235,6 +237,8 @@ inline Geom::Point
 point_at(multidim_sbasis<2> const & a, double t) {
     return Geom::Point(a[0](t), a[1](t));
 }
+
+};
 
 /*
   Local Variables:

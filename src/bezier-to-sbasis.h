@@ -3,6 +3,8 @@
 
 #include "multidim-sbasis.h"
 
+namespace Geom{
+
 template <typename T, unsigned D, unsigned order>
 struct bezier_to_sbasis_impl {
     static inline multidim_sbasis<D> compute(T const &handles) {
@@ -39,6 +41,7 @@ bezier_to_sbasis(T const &handles) {
     return bezier_to_sbasis_impl<T, D, order>::compute(handles);
 }
 
+};
 #endif
 /*
   Local Variables:

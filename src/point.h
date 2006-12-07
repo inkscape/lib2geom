@@ -69,7 +69,7 @@ class Point {
     Coord &operator[](Dim2 d) throw() { return _pt[d]; }
 
     static inline Point polar(Coord angle, Coord radius) {
-        return Point(radius * cos(angle), radius * sin(angle));
+        return Point(radius * std::cos(angle), radius * std::sin(angle));
     }
 
     /** Return a point like this point but rotated -90 degrees.

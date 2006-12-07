@@ -8,8 +8,12 @@
  * use due to instability.
  */
 
+namespace Geom{
+
 SBasis poly_to_sbasis(Poly const & p);
 Poly sbasis_to_poly(SBasis const & s);
+
+};
 
 /*
   Local Variables:

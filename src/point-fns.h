@@ -83,7 +83,7 @@ inline Coord distance (Point const &a, Point const &b)
     for ( int i = 0 ; i < 2 ; i++ ) {
         ret += (a[i] - b[i]) * (a[i] - b[i]);
     }
-    return sqrt (ret);
+    return std::sqrt (ret);
 }
 
 /** compute the square of the distance between points a and b. */

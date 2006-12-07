@@ -18,6 +18,7 @@
 #include "toy-framework.h"
 
 using std::vector;
+using namespace Geom;
 
 extern unsigned total_steps, total_subs;
 

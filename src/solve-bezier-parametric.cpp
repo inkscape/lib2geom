@@ -2,6 +2,8 @@
 #include "point-fns.h"
 #include <algorithm>
 
+namespace  Geom{
+
 /*** Find the zeros of the parametric function in 2d defined by two beziers X(t), Y(t).  The code subdivides until it happy with the linearity of the bezier.  This requires an n^2 subdivision for each step, even when there is only one solution.
  * 
  * Perhaps it would be better to subdivide particularly around nodes with changing sign, rather than simply cutting in half.
@@ -208,6 +210,8 @@ Bezier(Geom::Point const *V, /* Control pts	*/
 
     return (Vtemp[degree][0]);
 }
+
+};
 
 /*
   Local Variables:

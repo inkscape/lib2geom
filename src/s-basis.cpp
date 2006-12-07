@@ -1,7 +1,9 @@
-#include <math.h>
+#include <cmath>
 
 #include "s-basis.h"
 #include "isnan.h"
+
+namespace Geom{
 
 /*** At some point we should work on tighter bounds for the error.  It is clear that the error is
  * bounded by the L1 norm over the tail of the series, but this is very loose, leading to far too
@@ -150,7 +152,7 @@ SBasis sqrt(SBasis const &a, int k) {
     if(a.empty())
         return c;
     c.resize(k, BezOrd(0,0));
-    c[0] = BezOrd(sqrt(a[0][0]), sqrt(a[0][1]));
+    c[0] = BezOrd(std::sqrt(a[0][0]), std::sqrt(a[0][1]));
     SBasis r = a - multiply(c, c); // remainder
     
     for(unsigned i = 1; i <= k and i<r.size(); i++) {
@@ -322,10 +324,10 @@ void SBasis::normalize() {
 }
 
 SBasis sin(BezOrd b, int k) {
-    SBasis s = BezOrd(sin(b[0]), sin(b[1]));
+    SBasis s = BezOrd(std::sin(b[0]), std::sin(b[1]));
     Tri tr(s[0]);
     double t2 = Tri(b);
-    s.push_back(BezOrd(cos(b[0])*t2 - tr, -cos(b[1])*t2 + tr));
+    s.push_back(BezOrd(std::cos(b[0])*t2 - tr, -std::cos(b[1])*t2 + tr));
     
     t2 *= t2;
     for(int i = 0; i < k; i++) {
@@ -353,6 +355,8 @@ SBasis reverse(SBasis const &c) {
         a.push_back(reverse(c[k]));
     return a;
 }
+
+};
 
 /*
   Local Variables:

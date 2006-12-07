@@ -14,6 +14,7 @@
 #include "toy-framework.h"
 
 using std::vector;
+using namespace Geom;
 
 const double w = 1./3;
 const double cwp = cos(w*M_PI);

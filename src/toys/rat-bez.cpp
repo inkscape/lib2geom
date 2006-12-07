@@ -13,6 +13,7 @@
 
 using std::string;
 using std::vector;
+using namespace Geom;
 
 class RatBez: public Toy {
 virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {

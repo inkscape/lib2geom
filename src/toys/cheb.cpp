@@ -22,6 +22,7 @@
 #include "toy-framework.h"
 
 using std::vector;
+using namespace Geom;
 
 SBasis cheb(unsigned n) {
     static std::vector<SBasis> basis;

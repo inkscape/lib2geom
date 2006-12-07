@@ -14,6 +14,7 @@
 #include "toy-framework.h"
 
 using std::vector;
+using namespace Geom;
 
 SBasis curvature(multidim_sbasis<2> & B) {
     multidim_sbasis<2> dB = derivative(B);

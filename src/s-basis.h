@@ -3,6 +3,9 @@
 #include <vector>
 #include <cassert>
 #include <algorithm>
+#include <iostream>
+
+namespace Geom{
 
 class Hat{
 public:
@@ -343,7 +346,6 @@ inline SBasis& operator*=(SBasis& a, SBasis const & b) {
     return a;
 }
 
-#include <iostream>
 // a(b(t))
 SBasis compose(SBasis const &a, SBasis const &b);
 SBasis compose(SBasis const &a, SBasis const &b, unsigned k);
@@ -375,6 +377,8 @@ SBasis reverse(SBasis const &s);
 void bounds(SBasis const & s, double &lo, double &hi);
 
 std::vector<double> roots(SBasis const & s);
+
+};
 
 /*
   Local Variables:

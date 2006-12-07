@@ -1,6 +1,8 @@
 #include "circle-circle.cpp"
 #include "toy-framework.cpp"
 
+using namespace Geom;
+
 class CircleIntersect : public Toy {
     void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         double r1 = Geom::L2(handles[0] - handles[1]);

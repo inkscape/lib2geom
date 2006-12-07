@@ -6,6 +6,8 @@
 #include "multidim-sbasis.h"
 #include "bezier-to-sbasis.h"
 
+namespace Geom{
+
 inline multidim_sbasis<2> elem_to_sbasis(Geom::Path::Elem const & elm) {
     return (*elm.op).to_sbasis(elm);
 /*    switch(elm.op) {
@@ -21,6 +23,8 @@ inline multidim_sbasis<2> elem_to_sbasis(Geom::Path::Elem const & elm) {
     return multidim_sbasis<2>();
 */
 }
+
+};
 
 #endif
 /*

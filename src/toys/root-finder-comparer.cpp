@@ -28,10 +28,9 @@
 
 using std::vector;
 using std::complex;
+using namespace Geom;
 
 //#define HAVE_GSL
-
-extern unsigned total_steps, total_subs;
 
 class RootFinderComparer: public Toy {
 public:
@@ -49,8 +48,6 @@ public:
         clock_t end_t = clock()+clock_t(timer_precision*CLOCKS_PER_SEC);
         unsigned iterations = 0;
         while(end_t > clock()) {
-            total_steps = 0;
-            total_subs = 0;
             solutions.resize(6);
             FindRoots(&trans[0], 5, &solutions[0], 0);
             iterations++;
@@ -158,7 +155,7 @@ public:
             find_parametric_bezier_roots(&trans[0], 5, solutions, 0);
             iterations++;
         }
-        *notify << "solver parametric subdivision " << total_steps << ", " << total_subs <<  ", time = " << timer_precision*units/iterations-overhead << std::endl;
+        *notify << "solver parametric time = " << timer_precision*units/iterations-overhead << std::endl;
     
         double ys[trans.size()];
         for(int i = 0; i < trans.size(); i++) {

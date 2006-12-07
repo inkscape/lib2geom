@@ -21,6 +21,7 @@
 
 #include "toy-framework.h"
 #include "path-cairo.h"
+using namespace Geom;
 
 class curve_min{
 public:

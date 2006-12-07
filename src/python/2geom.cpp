@@ -184,7 +184,7 @@ BOOST_PYTHON_MODULE(lib2geom_py)
         .def(self == self)
         .def(self != self)
         .def(self * self)
-        .def("reverse", &Geom::BezOrd::reverse)
+        //.def("reverse", &Geom::reverse)
     ;
     implicitly_convertible<Geom::BezOrd,tuple>();
 // TODO: explain why this gives a compile time error

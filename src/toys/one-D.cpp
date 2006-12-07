@@ -4,6 +4,7 @@
 #include "toy-framework.h"
 
 using std::vector;
+using namespace Geom;
 
 BezOrd z0(0.5,1.);
 

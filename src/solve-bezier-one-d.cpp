@@ -7,6 +7,8 @@
  * there is only one solution.
  */
 
+namespace Geom{
+
 template<class t>
 static int SGN(t x) { return (x > 0 ? 1 : (x < 0 ? -1 : 0)); } 
 
@@ -249,6 +251,8 @@ Bernstein(double const *V, /* Control pts	*/
         Right[degree-i] = Vtemp[i][degree-i];
     }
 }
+
+};
 
 /*
   Local Variables:

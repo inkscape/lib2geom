@@ -16,6 +16,7 @@
 #include "toy-framework.h"
 
 using std::vector;
+using namespace Geom;
 
 class NormalBundle : public std::vector<vector<SBasis2d> >{
 public:

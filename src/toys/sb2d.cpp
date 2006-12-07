@@ -15,6 +15,7 @@
 #include "toy-framework.h"
 
 using std::vector;
+using namespace Geom;
 
 unsigned total_pieces_sub;
 unsigned total_pieces_inc;

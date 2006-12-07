@@ -1,8 +1,10 @@
-#include <math.h>
+#include <cmath>
 
 #include "s-basis.h"
 #include "sbasis-to-bezier.h"
 #include "solver.h"
+
+namespace Geom{
 
 void bounds(SBasis const & s,
             double &lo, double &hi) {
@@ -62,9 +64,9 @@ double Laguerre_internal(SBasis const & p,
             quad_root = true;
         //std::cout << "radicand = " << radicand << std::endl;
         if(G.real() < 0) // here we try to maximise the denominator avoiding cancellation
-            a = - sqrt(radicand);
+            a = - std::sqrt(radicand);
         else
-            a = sqrt(radicand);
+            a = std::sqrt(radicand);
         //std::cout << "a = " << a << std::endl;
         a = n / (a + G);
         //std::cout << "a = " << a << std::endl;
@@ -101,7 +103,7 @@ std::vector<double> roots(SBasis const & s) {
     return r;
 }
 
-
+};
 
 /*
   Local Variables:

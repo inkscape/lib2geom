@@ -4,6 +4,8 @@
 #include "multidim-sbasis.h"
 #include "sbasis-to-bezier.h"
 
+using namespace Geom;
+
 void cairo_path(cairo_t *cr, Geom::Path const &p) {
     if(p.empty()) return;
     cairo_move_to(cr, p.initial_point()[0], p.initial_point()[1]);

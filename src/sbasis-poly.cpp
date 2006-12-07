@@ -1,5 +1,7 @@
 #include "sbasis-poly.h"
 
+namespace Geom{
+
 SBasis poly_to_sbasis(Poly const & p) {
     SBasis x = BezOrd(0, 1);
     SBasis r;
@@ -28,6 +30,8 @@ Poly sbasis_to_poly(SBasis const & sb) {
     r.normalize();
     return r;
 }
+
+};
 
 /*
   Local Variables:

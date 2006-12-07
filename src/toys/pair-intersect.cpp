@@ -16,6 +16,7 @@
 
 using std::vector;
 const unsigned bez_ord = 5;
+using namespace Geom;
 
 class PairIntersect: public Toy {
 virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {

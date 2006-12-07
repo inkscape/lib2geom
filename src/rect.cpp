@@ -63,6 +63,14 @@ void Rect::expandTo(Point p) {
 	}
 }
 
+/** Makes this rectangle large enough to include the rect r. */
+void Rect::expandTo(Rect const &r) {
+	for ( int i=0 ; i < 2 ; i++ ) {
+		_min[i] = MIN(_min[i], r._min[i]);
+		_max[i] = MAX(_max[i], r._max[i]);
+	}
+}
+
 /** Returns the set of points shared by both rectangles. */
 Maybe<Rect> Rect::intersection(const Rect &a, const Rect &b) {
 	Rect r;
