@@ -2,6 +2,9 @@
 #include "point-ops.h"
 #include "point-fns.h"
 #include "matrix.h"
+#include "scale.h"
+#include "translate.h"
+#include "rotate.h"
 
 #include <boost/python.hpp>
 #include <boost/python/implicit.hpp>
@@ -63,6 +66,7 @@ BOOST_PYTHON_MODULE(lib2geom_py)
         .def("from_tuple", tuple_to_point)
         .staticmethod("from_tuple")
         
+        //point.h
         .def("polar", &Geom::Point::polar)
         .staticmethod("polar")
 
@@ -111,6 +115,24 @@ BOOST_PYTHON_MODULE(lib2geom_py)
         .def("expansionX", &Geom::Matrix::expansionX)
         .def("expansionY", &Geom::Matrix::expansionY)
     ;
+
+    class_<Geom::scale>("Scale", init<double, double>())
+        .def(self == self)
+        .def(self != self)
+        .def("inverse", &Geom::scale::inverse)
+    ;
+
+    class_<Geom::translate>("Translate", init<double, double>());
+
+    class_<Geom::rotate>("Rotate", init<double>())
+        .def(self == self)
+        .def(self != self)
+//TODO: compile reports "not defined"
+//        .def(self *= self)
+        .def("inverse", &Geom::rotate::inverse)
+    ;
+
+
 }
 
 /*
