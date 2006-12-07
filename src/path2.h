@@ -204,6 +204,7 @@ private:
 };
 
 class ContinuityError : public std::runtime_error {
+public:
   ContinuityError() : runtime_error("non-contiguous path") {}
   ContinuityError(std::string const &message) : runtime_error(message) {}
 };
