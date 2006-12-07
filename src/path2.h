@@ -252,8 +252,8 @@ public:
   iterator begin() { return curves_.begin(); }
   iterator end() { return curves_.end()-1; }
 
-  Curve const &front() const { return curves_[0]; }
-  Curve const &back() const { return curves_[curves.size()-2]; }
+  Curve const &front() const { return *curves_[0]; }
+  Curve const &back() const { return *curves_[curves_.size()-2]; }
 
   const_iterator begin() const { return curves_.begin(); }
   const_iterator end() const { return curves_.end()-1; }
@@ -275,7 +275,7 @@ public:
   Rect boundsExact() const;
 
   void insert(iterator pos, Curve const &curve) {
-    Sequence source(1, &curve);
+    Sequence source(1, const_cast<Curve *>(&curve));
     do_update(pos.impl_, pos.impl_, source.begin(), source.end());
   }
 
@@ -300,14 +300,14 @@ public:
   }
 
   void replace(iterator replaced, Curve const &curve) {
-    Sequence source(1, &curve);
+    Sequence source(1, const_cast<Curve *>(&curve));
     do_update(replaced.impl_, replaced.impl_+1, source.begin(), source.end());
   }
 
   void replace(iterator first_replaced, iterator last_replaced,
                Curve const &curve)
   {
-    Sequence source(1, &curve);
+    Sequence source(1, const_cast<Curve *>(&curve));
     do_update(first_replaced.impl_, last_replaced.impl_,
               source.begin(), source.end());
   }
