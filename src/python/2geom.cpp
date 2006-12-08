@@ -91,6 +91,7 @@ BOOST_PYTHON_MODULE(lib2geom_py)
     class_<Geom::Point>("Point", init<double, double>())
         .def(self_ns::str(self))
         .def("__getitem__", point_getitem)
+        //.def("__getitem__", &Geom::Point::operator[])
         .def("tuple", point_to_tuple)
     
         .def("from_tuple", tuple_to_point)
@@ -190,7 +191,11 @@ BOOST_PYTHON_MODULE(lib2geom_py)
 // TODO: explain why this gives a compile time error
 //    implicitly_convertible<tuple,Geom::BezOrd>();
 
-    // TODO: some of these don't compile
+    // needed for roots
+    class_<std::vector<double> >("DoubleVec")
+        .def(vector_indexing_suite<std::vector<double> >())
+    ;
+    
     def("shift", (Geom::SBasis (*)(Geom::SBasis const &a, int sh))&Geom::shift);
     def("truncate", &Geom::truncate);
     def("multiply", &Geom::multiply);
@@ -209,7 +214,7 @@ BOOST_PYTHON_MODULE(lib2geom_py)
 
     class_<Geom::SBasis>("SBasis")
         .def(self_ns::str(self))
-//        .def(vector_indexing_suite<Geom::SBasis>())
+  //      .def(vector_indexing_suite<Geom::SBasis>())
         .def(self + self)
         .def(self - self)
         .def("clear", &Geom::SBasis::clear)

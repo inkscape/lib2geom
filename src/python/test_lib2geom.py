@@ -24,7 +24,11 @@ print bo.point_at(0.3)
 
 print bo.reverse()
 
-sn = g.sin(g.BezOrd(0.0,1.0),5)
+sn = g.sin(g.BezOrd(0.0,8.0),5)
 print sn
 print g.inverse(sn,10)
 print list(sn)
+
+r_sn = g.roots(sn)
+print len(r_sn)
+print list(r_sn)
