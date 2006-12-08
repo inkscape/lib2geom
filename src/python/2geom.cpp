@@ -86,7 +86,6 @@ BOOST_PYTHON_MODULE(lib2geom_py)
     def("distance", Geom::distance);
     def("dist_sq", Geom::dist_sq);
     def("cross", Geom::cross);
-// TODO: explain why this gives a load time time error
     def("abs", (Geom::Point (*)(Geom::Point const&))&Geom::abs);
     
     class_<Geom::Point>("Point", init<double, double>())
@@ -192,10 +191,10 @@ BOOST_PYTHON_MODULE(lib2geom_py)
 //    implicitly_convertible<tuple,Geom::BezOrd>();
 
     // TODO: some of these don't compile
-    //def("shift", &Geom::shift);
+    def("shift", (Geom::SBasis (*)(Geom::SBasis const &a, int sh))&Geom::shift);
     def("truncate", &Geom::truncate);
     def("multiply", &Geom::multiply);
-    //def("compose", &Geom::compose);
+    def("compose", (Geom::SBasis (*) (Geom::SBasis const &, Geom::SBasis const &))&Geom::compose);
     def("integral", &Geom::integral);
     def("derivative", &Geom::derivative);
     def("sqrt", &Geom::sqrt);
@@ -204,7 +203,7 @@ BOOST_PYTHON_MODULE(lib2geom_py)
     def("inverse", &Geom::inverse);
     def("sin", &Geom::sin);
     def("cos", &Geom::cos);
-    //def("reverse", &Geom::reverse);
+    def("reverse", (Geom::SBasis (*)(Geom::SBasis const &))&Geom::reverse);
     def("bounds", &Geom::bounds);
     def("roots", &Geom::roots);
 
