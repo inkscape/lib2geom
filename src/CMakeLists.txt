@@ -52,6 +52,7 @@ path2.h
 point-fns.cpp
 point-fns.h
 point.h
+point.cpp
 point-l.h
 point-matrix-ops.h
 point-ops.h
