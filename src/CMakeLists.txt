@@ -22,7 +22,6 @@ geom.cpp
 geom.h
 i-coord.h
 isnan.h
-#libnr.def
 macros.h
 matrix.cpp
 matrix.h
@@ -93,8 +92,6 @@ transformation-ops.cpp
 transformation-ops.h
 translate.h
 translate-ops.h
-types.cpp
-types.h
 )
 
 # make lib for 2geom

@@ -3,7 +3,7 @@
 
 namespace Geom {
 
-enum Dim2 { X=0, Y };
+enum Dim2 { X=0, Y=1 };
 
 } /* namespace Geom */
 

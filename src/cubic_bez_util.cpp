@@ -1,5 +1,5 @@
 #include "cubic_bez_util.h"
-
+//TODO: move unit testing into tests
 #ifdef UNIT_TEST
 int main(int argc, char** argv) {
 	Geom::Point handle[4] = {Geom::Point(0,1),

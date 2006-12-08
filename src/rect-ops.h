@@ -10,8 +10,6 @@
  * This code is licensed under the GNU GPL; see COPYING for more information.
  */
 
-#include <libnr/rect.h>
-
 namespace Geom {
 
 inline Rect expand(Rect const &r, double by) {
