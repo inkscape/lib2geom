@@ -43,6 +43,11 @@ double point_getitem(Geom::Point const& p, int const index)
     return p[i];
 }
 
+str point_repr(Geom::Point const& p)
+{
+    return str("(" + str(p[0]) + ", " + str(p[1]) + ")");
+}
+
 // helpers for bezord
 tuple bezord_to_tuple(Geom::BezOrd const& b)
 {
@@ -62,6 +67,11 @@ double bezord_getitem(Geom::BezOrd const& b, int const index)
         boost::python::throw_error_already_set();
     }
     return b[i];
+}
+
+str bezord_repr(Geom::BezOrd const& b)
+{
+    return str("<" + str(b[0]) + ", " + str(b[1]) + ">");
 }
 
 BOOST_PYTHON_MODULE(lib2geom_py)
@@ -89,7 +99,8 @@ BOOST_PYTHON_MODULE(lib2geom_py)
     def("abs", (Geom::Point (*)(Geom::Point const&))&Geom::abs);
     
     class_<Geom::Point>("Point", init<double, double>())
-        .def(self_ns::str(self))
+        .def("__str__", point_repr)
+        .def("__repr__", point_repr)
         .def("__getitem__", point_getitem)
         //.def("__getitem__", &Geom::Point::operator[])
         .def("tuple", point_to_tuple)
@@ -165,7 +176,8 @@ BOOST_PYTHON_MODULE(lib2geom_py)
     
     //s-basis.h
     class_<Geom::BezOrd>("BezOrd", init<double, double>())
-        .def(self_ns::str(self))
+        .def("__str__", bezord_repr)
+        .def("__repr__", bezord_repr)
         .def("__getitem__", bezord_getitem)
         .def("tuple", bezord_to_tuple)
     
