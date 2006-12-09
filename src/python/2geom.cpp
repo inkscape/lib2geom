@@ -37,7 +37,7 @@ double point_getitem(Geom::Point const& p, int const index)
 {
     int i = python_index(index);
     if (i > 1) {
-        PyErr_SetString(PyExc_StopIteration, "No more data.");
+        PyErr_SetString(PyExc_IndexError, "index out of range");
         boost::python::throw_error_already_set();
     }
     return p[i];
@@ -58,10 +58,21 @@ double bezord_getitem(Geom::BezOrd const& b, int const index)
 {
     int i = python_index(index);
     if (i > 1) {
-        PyErr_SetString(PyExc_StopIteration, "No more data.");
+        PyErr_SetString(PyExc_IndexError, "index out of range");
         boost::python::throw_error_already_set();
     }
     return b[i];
+}
+
+// helpers for sbasis
+Geom::BezOrd sbasis_getitem(Geom::SBasis const& sb, int const index)
+{
+    int i = python_index(index);
+    if (i >= sb.size()) {
+        PyErr_SetString(PyExc_IndexError, "index out of range");
+        boost::python::throw_error_already_set();
+    }
+    return sb[i];
 }
 
 BOOST_PYTHON_MODULE(lib2geom_py)
@@ -214,7 +225,10 @@ BOOST_PYTHON_MODULE(lib2geom_py)
 
     class_<Geom::SBasis>("SBasis")
         .def(self_ns::str(self))
-  //      .def(vector_indexing_suite<Geom::SBasis>())
+        .def("__getitem__", sbasis_getitem)
+// TODO: fix this. vector_indexing_suite should allow for very flexible 
+// and efficient access to the vector in python, but it won't compile
+//        .def(vector_indexing_suite<Geom::SBasis>())
         .def(self + self)
         .def(self - self)
         .def("clear", &Geom::SBasis::clear)
