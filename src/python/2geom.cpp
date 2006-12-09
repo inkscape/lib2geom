@@ -207,6 +207,9 @@ BOOST_PYTHON_MODULE(lib2geom_py)
     class_<std::vector<double> >("DoubleVec")
         .def(vector_indexing_suite<std::vector<double> >())
     ;
+    class_<std::vector<Geom::Point> >("PointVec")
+        .def(vector_indexing_suite<std::vector<Geom::Point> >())
+    ;
     // sbasis is a subclass of
     class_<std::vector<Geom::BezOrd> >("BezOrdVec")
         .def(vector_indexing_suite<std::vector<Geom::BezOrd> >())
