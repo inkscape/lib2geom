@@ -32,3 +32,10 @@ print list(sn)
 r_sn = g.roots(sn)
 print len(r_sn)
 print list(r_sn)
+
+bo = g.BezOrd(-1,1)
+sb = g.SBasis()
+print sb
+print list(g.roots(sb))
+sb.append(bo)
+print list(g.roots(sb))
