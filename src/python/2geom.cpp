@@ -64,17 +64,6 @@ double bezord_getitem(Geom::BezOrd const& b, int const index)
     return b[i];
 }
 
-// helpers for sbasis
-Geom::BezOrd sbasis_getitem(Geom::SBasis const& sb, int const index)
-{
-    int i = python_index(index);
-    if (i >= sb.size()) {
-        PyErr_SetString(PyExc_IndexError, "index out of range");
-        boost::python::throw_error_already_set();
-    }
-    return sb[i];
-}
-
 BOOST_PYTHON_MODULE(lib2geom_py)
 {
     def("point_to_tuple", point_to_tuple);
@@ -206,6 +195,10 @@ BOOST_PYTHON_MODULE(lib2geom_py)
     class_<std::vector<double> >("DoubleVec")
         .def(vector_indexing_suite<std::vector<double> >())
     ;
+    // sbasis is a subclass of
+    class_<std::vector<Geom::BezOrd> >("BezOrdVec")
+        .def(vector_indexing_suite<std::vector<Geom::BezOrd> >())
+    ;
     
     def("shift", (Geom::SBasis (*)(Geom::SBasis const &a, int sh))&Geom::shift);
     def("truncate", &Geom::truncate);
@@ -223,12 +216,8 @@ BOOST_PYTHON_MODULE(lib2geom_py)
     def("bounds", &Geom::bounds);
     def("roots", &Geom::roots);
 
-    class_<Geom::SBasis>("SBasis")
+    class_<Geom::SBasis, bases<std::vector<Geom::BezOrd> > >("SBasis")
         .def(self_ns::str(self))
-        .def("__getitem__", sbasis_getitem)
-// TODO: fix this. vector_indexing_suite should allow for very flexible 
-// and efficient access to the vector in python, but it won't compile
-//        .def(vector_indexing_suite<Geom::SBasis>())
         .def(self + self)
         .def(self - self)
         .def("clear", &Geom::SBasis::clear)
