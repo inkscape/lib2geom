@@ -11,9 +11,8 @@
 #include "choose.h"
 #include "convex-cover.h"
 
-#include "path.h"
+#include "path2.h"
 #include "path-cairo.h"
-#include "path-builder.h"
 
 #include <iterator>
 #include "translate.h"
@@ -65,11 +64,10 @@ class Sb1d: public Toy {
                     << B[1]
 //sbasis_to_poly(B[1]) 
                     << std::endl;
-            Geom::PathSetBuilder pb;
+            Geom::Path2::Path pb;
             B[1] = SBasis(BezOrd(2*width/4)) - (width/4)*B[1];
-            subpath_from_sbasis(pb, B, 0.001);
-            Geom::PathSet p = pb.peek();
-            cairo_PathSet(cr, p);
+            pb.append(B);
+            cairo_path(cr, pb);
             
             cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
             cairo_stroke(cr);

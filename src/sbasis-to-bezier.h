@@ -3,6 +3,7 @@
 
 #include "multidim-sbasis.h"
 #include "path-builder.h"
+#include "path2.h"
 
 namespace Geom{
 // this produces a degree k bezier from a degree k sbasis
@@ -19,6 +20,9 @@ void
 subpath_from_sbasis(Geom::PathSetBuilder &pb, multidim_sbasis<2> const &B, double tol, bool initial=true);
 void
 subpath_from_sbasis_incremental(Geom::PathSetBuilder &pb, multidim_sbasis<2> B, double tol, bool initial=true);
+
+void
+path_from_sbasis(Geom::Path2::Path &pb, multidim_sbasis<2> const &B, double tol);
 
 };
 #endif

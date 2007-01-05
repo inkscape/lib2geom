@@ -1,65 +1,57 @@
 #include "read-svgd.h"
-#include "path-builder.h"
+#include "sbasis-to-bezier.h"
 
 using std::FILE;
 using std::fgetc;
 using std::feof;
 
-char path_op_name(Geom::CurveType* ct) {
-    if(dynamic_cast<Geom::LineTo *>(ct))
-        return 'L';
-    else if(dynamic_cast<Geom::QuadTo *>(ct))
-        return 'Q';
-    else if(dynamic_cast<Geom::CubicTo *>(ct))
-        return 'C';
-    return 0;
-}
+void curve_to_svgd(FILE* f, Geom::Path2::Curve const* c) {
+    if(Geom::Path2::LineSegment const *line_segment = dynamic_cast<Geom::Path2::LineSegment const  *>(c)) {
+        fprintf(f, "L %g,%g ", (*line_segment)[1][0], (*line_segment)[1][1]);
+    }
+    else if(Geom::Path2::QuadraticBezier const *quadratic_bezier = dynamic_cast<Geom::Path2::QuadraticBezier const  *>(c)) {
+        fprintf(f, "Q %g,%g %g,%g ", 
+                (*quadratic_bezier)[1][0], (*quadratic_bezier)[1][0], 
+                (*quadratic_bezier)[2][0], (*quadratic_bezier)[2][1]);
+    }
+    else if(Geom::Path2::CubicBezier const *cubic_bezier = dynamic_cast<Geom::Path2::CubicBezier const  *>(c)) {
+        fprintf(f, "C %g,%g %g,%g %g,%g ", 
+                (*cubic_bezier)[1][0], (*cubic_bezier)[1][1], 
+                (*cubic_bezier)[2][0], (*cubic_bezier)[2][1], 
+                (*cubic_bezier)[3][0], (*cubic_bezier)[3][1]);
+    }
+//    else if(Geom::Path2::SVGEllipticalArc const *svg_elliptical_arc = dynamic_cast<Geom::Path2::SVGEllipticalArc *>(c)) {
+//        //get at the innards and spit them out as svgd
+//    }
+    else { 
+        //this case handles sbasis as well as all other curve types
+        Geom::Path2::Path sbasis_path;
+        path_from_sbasis(sbasis_path, c->sbasis(), 0.1);
 
-void write_svgd(FILE* f, Geom::Path const &p) {
-    //printf("size %d %d \n",  p.cmd.size(),  p.handles.size());
-    if(f == NULL)
-        f = stderr;
-    fprintf(f, "M %g,%g ", p.initial_point()[0], p.initial_point()[1]);
-    
-    for(Geom::Path::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
-        fprintf(f, "%c ",  path_op_name(iter.cmd()));
-        for(std::vector<Geom::Point>::const_iterator h(iter.begin()), e(iter.end());
-            h != e; ++h) {
-            Geom::Point pt(*h);
-            fprintf(f, "%g,%g ", pt[0], pt[1]);
+        //recurse to convert the new path resulting from the sbasis to svgd
+        for(Geom::Path2::Path::iterator iter = sbasis_path.begin(); iter != sbasis_path.end(); ++iter) {
+            curve_to_svgd(f, &(*iter));
         }
     }
-    if(p.is_closed())
+}
+
+void write_svgd(FILE* f, Geom::Path2::Path const &p) {
+    if(f == NULL)
+        f = stderr;
+    fprintf(f, "M %g,%g ", p.initialPoint()[0], p.initialPoint()[1]);
+    
+    for(Geom::Path2::Path::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
+        curve_to_svgd(f, &(*iter));
+    }
+    if(p.closed())
         fprintf(f, "Z ");
 }
 
-void write_svgd(FILE* f, Geom::PathSet const &p) {
-    for(Geom::PathSet::const_iterator it = p.begin(); it != p.end(); it++) {
+void write_svgd(FILE* f, std::vector<Geom::Path2::Path> const &p) {
+    std::vector<Geom::Path2::Path>::const_iterator it(p.begin());
+    for(; it != p.end(); it++) {
         write_svgd(f, *it);
     }
-}
-
-std::ostream &operator<< (std::ostream &out_file, const Geom::Path & p) {
-    out_file << "M " << p.initial_point()[0] << "," << p.initial_point()[1] << " ";
-    
-    for(Geom::Path::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
-        out_file << path_op_name(iter.cmd()) << " ";
-        for(std::vector<Geom::Point>::const_iterator h(iter.begin()), e(iter.end());
-            h != e; ++h) {
-            Geom::Point pt(*h);
-            out_file << pt[0] << "," << pt[1] << " ";
-        }
-    }
-    if(p.is_closed())
-        out_file << "Z ";
-            return out_file;
-}
-
-std::ostream &operator<< (std::ostream &out_file, const Geom::PathSet & p) {
-    for(Geom::PathSet::const_iterator it = p.begin(); it != p.end(); it++) {
-        out_file << *it;
-    }
-                                                                                   return out_file;
 }
 
 Geom::Point point(double d1, double d2) {
@@ -69,7 +61,8 @@ Geom::Point point(double d1, double d2) {
     return p;
 }
 
-Geom::PathSet read_svgd(FILE* f) {
+Geom::PathSet
+read_svgd(FILE* f) {
     assert(f);
 
     Geom::PathSetBuilder builder;
@@ -96,25 +89,25 @@ Geom::PathSet read_svgd(FILE* f) {
         switch(mode) {
         case 'm':
             if(cur >= 2) {
-                builder.start_subpath_rel(point(nums[0], nums[1]));
+                builder.start_subpath_rel(Geom::Point(nums[0], nums[1]));
                 cur = 0;
             }
             break;
         case 'M':
             if(cur >= 2) {
-                builder.start_subpath(point(nums[0], nums[1]));
+                builder.start_subpath(Geom::Point(nums[0], nums[1]));
                 cur = 0;
             }
             break;
         case 'l':
             if(cur >= 2) {
-                builder.push_line_rel(point(nums[0], nums[1]));
+                builder.push_line_rel(Geom::Point(nums[0], nums[1]));
                 cur = 0;
             }
             break;
         case 'L':
             if(cur >= 2) {
-                builder.push_line(point(nums[0], nums[1]));
+                builder.push_line(Geom::Point(nums[0], nums[1]));
                 cur = 0;
             }
             break;
@@ -144,25 +137,25 @@ Geom::PathSet read_svgd(FILE* f) {
             break;
         case 'c':
             if(cur >= 6) {
-                builder.push_cubic_rel(point(nums[0], nums[1]), point(nums[2], nums[3]), point(nums[4], nums[5]));
+                builder.push_cubic_rel(Geom::Point(nums[0], nums[1]), Geom::Point(nums[2], nums[3]), Geom::Point(nums[4], nums[5]));
                 cur = 0;
             }
             break;
         case 'C':
             if(cur >= 6) {
-                builder.push_cubic(point(nums[0], nums[1]), point(nums[2], nums[3]), point(nums[4], nums[5]));
+                builder.push_cubic(Geom::Point(nums[0], nums[1]), Geom::Point(nums[2], nums[3]), Geom::Point(nums[4], nums[5]));
                 cur = 0;
             }
             break;
         case 'q':
             if(cur >= 4) {
-                builder.push_quad_rel(point(nums[0], nums[1]), point(nums[2], nums[3]));
+                builder.push_quad_rel(Geom::Point(nums[0], nums[1]), Geom::Point(nums[2], nums[3]));
                 cur = 0;
             }
             break;
         case 'Q':
             if(cur >= 4) {
-                builder.push_quad(point(nums[0], nums[1]), point(nums[2], nums[3]));
+                builder.push_quad(Geom::Point(nums[0], nums[1]), Geom::Point(nums[2], nums[3]));
                 cur = 0;
             }
             break;
@@ -174,7 +167,7 @@ Geom::PathSet read_svgd(FILE* f) {
             break;
         case 'A':
             if(cur >= 7) {
-                builder.push_ellipse(point(nums[0], nums[1]), nums[2], nums[3] > 0, nums[4] > 0, point(nums[5], nums[6]));
+                builder.push_ellipse(Geom::Point(nums[0], nums[1]), nums[2], nums[3] > 0, nums[4] > 0, Geom::Point(nums[5], nums[6]));
                 cur = 0;
             }
             break;

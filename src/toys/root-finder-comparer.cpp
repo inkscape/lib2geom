@@ -11,9 +11,8 @@
 #include "choose.h"
 #include "convex-cover.h"
 
-#include "path.h"
+#include "path2.h"
 #include "path-cairo.h"
-#include "path-builder.h"
 
 #include <iterator>
 #include "translate.h"
@@ -195,10 +194,10 @@ public:
         std::copy(solutions.begin(), solutions.end(), std::ostream_iterator<double >(*notify, ","));
             
         multidim_sbasis<2> B = bezier_to_sbasis<2, 5>(handles.begin());
-        Geom::PathSetBuilder pb;
-        subpath_from_sbasis(pb, B, 0.1);
-        Geom::PathSet p = pb.peek();//*Geom::translate(1,1);
-        cairo_PathSet(cr, p);
+        Geom::Path2::Path pb;
+        pb.append(B);
+        pb.close(false);
+        cairo_path(cr, pb);
         
         B[0] = BezOrd(width/4, 3*width/4);
         cairo_md_sb(cr, B);

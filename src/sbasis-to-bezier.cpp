@@ -147,6 +147,22 @@ subpath_from_sbasis_incremental(Geom::PathSetBuilder &pb, multidim_sbasis<2> B, 
     }
 }
 
+void
+path_from_sbasis(Geom::Path2::Path &pb, multidim_sbasis<2> const &B, double tol) {
+    assert(B.is_finite());
+    if(B.tail_error(2) < tol || B.size() == 2) { // nearly cubic enough
+        if(B.size() == 1) {
+            pb.append(Geom::Path2::LineSegment(Geom::Point(B[0][0][0], B[1][0][0]),Geom::Point(B[0][0][1], B[1][0][1])));
+        } else {
+            std::vector<Geom::Point> bez = sbasis_to_bezier(B, 2);
+            pb.append(Geom::Path2::CubicBezier(bez[0], bez[1], bez[2], bez[3]));
+        }
+    } else {
+        path_from_sbasis(pb, compose(B, BezOrd(0, 0.5)), tol);
+        path_from_sbasis(pb, compose(B, BezOrd(0.5, 1)), tol);
+    }
+}
+
 };
 
 /*

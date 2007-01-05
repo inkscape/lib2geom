@@ -1,9 +1,10 @@
 #include "path.h"
+#include "path2.h"
 #include <cstdio>
 #include <cassert>
 
-void write_svgd(std::FILE* f, Geom::Path const &p);
-void write_svgd(std::FILE* f, Geom::PathSet const &p);
+void write_svgd(std::FILE* f, Geom::Path2::Path const &p);
+void write_svgd(std::FILE* f, std::vector<Geom::Path2::Path> const &p);
 
 Geom::PathSet read_svgd(std::FILE* f);
 

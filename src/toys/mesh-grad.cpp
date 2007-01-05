@@ -4,9 +4,8 @@
 #include "multidim-sbasis.h"
 #include "s-basis-2d.h"
 
-#include "path.h"
+#include "path2.h"
 #include "path-cairo.h"
-#include "path-builder.h"
 
 #include <iterator>
 #include "translate.h"
@@ -76,7 +75,7 @@ class Sb2d2: public Toy {
             for(int ui = 0; ui < u_subs; ui++) {
                 double tu = ui * inv_u_subs;
                 
-                Geom::PathSetBuilder pb;
+                Geom::Path2::Path pb;
                 multidim_sbasis<2> B;
                 multidim_sbasis<2> tB;
                 
@@ -84,27 +83,27 @@ class Sb2d2: public Toy {
                 B[1] = BezOrd(tv-fudge, tv-fudge);
                 tB = compose(sb2, B);
                 tB = (width/2) * tB + Geom::Point(width/4, width/4);
-                subpath_from_sbasis(pb, tB, .1);
+                pb.append(tB);
                 
                 B[0] = BezOrd(tu+fudge + inv_u_subs , tu+fudge + inv_u_subs);
                 B[1] = BezOrd(tv-fudge,               tv+fudge + inv_v_subs);
                 tB = compose(sb2, B);
                 tB = (width/2) * tB + Geom::Point(width/4, width/4);
-                subpath_from_sbasis(pb, tB, .1, false);
+                pb.append(tB);
                 
                 B[0] = BezOrd(tu+fudge + inv_u_subs, tu-fudge);
                 B[1] = BezOrd(tv+fudge + inv_v_subs, tv+fudge + inv_v_subs);
                 tB = compose(sb2, B);
                 tB = (width/2) * tB + Geom::Point(width/4, width/4);
-                subpath_from_sbasis(pb, tB, .1, false);
+                pb.append(tB);
                 
                 B[0] = BezOrd(tu-fudge,              tu-fudge);
                 B[1] = BezOrd(tv+fudge + inv_v_subs, tv-fudge);
                 tB = compose(sb2, B);
                 tB = (width/2) * tB + Geom::Point(width/4, width/4);
-                subpath_from_sbasis(pb, tB, .1, false);
+                pb.append(tB);
                 
-                cairo_PathSet(cr, pb.peek());
+                cairo_path(cr, pb);
                 
                 //std::cout <<  pb.peek().end() - pb.peek().begin() << std::endl;
                 cairo_set_source_rgba (cr, tu, tv, 0, 1);

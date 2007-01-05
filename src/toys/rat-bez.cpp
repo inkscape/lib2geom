@@ -2,10 +2,10 @@
 #include "point.h"
 #include "point-ops.h"
 #include "point-fns.h"
-#include "path-builder.h"
 
 #include "bezier-to-sbasis.h"
 #include "sbasis-to-bezier.h"
+#include "path2.h"
 #include "path-cairo.h"
 #include "multidim-sbasis.h"
 
@@ -22,10 +22,10 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
     cairo_stroke(cr);
     
     multidim_sbasis<2> Bz = bezier_to_sbasis<2, 3>(handles.begin());
-        Geom::PathSetBuilder pb;
-        subpath_from_sbasis(pb, Bz, 0.1);
-        Geom::PathSet p = pb.peek();
-        cairo_PathSet(cr, p);
+        Geom::Path2::Path pb;
+        pb.append(Bz);
+        pb.close(false);
+        cairo_path(cr, pb);
     cairo_stroke(cr);
         
     multidim_sbasis<3> B;
@@ -63,10 +63,10 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
 	    Bu[dim] = divide(Bp[dim], Bp[2], 1);
         }
         
-        Geom::PathSetBuilder pb;
-        subpath_from_sbasis(pb, Bu, 0.1);
-        Geom::PathSet p = pb.peek();
-        cairo_PathSet(cr, p);
+        Geom::Path2::Path pb;
+        pb.append(Bu);
+        pb.close(false);
+        cairo_path(cr, pb);
     }
     Toy::draw(cr, notify, width, height, save);
 }

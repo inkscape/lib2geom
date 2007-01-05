@@ -4,7 +4,7 @@
 #include "multidim-sbasis.h"
 #include "s-basis-2d.h"
 
-#include "path.h"
+#include "path2.h"
 #include "path-cairo.h"
 #include "path-builder.h"
 

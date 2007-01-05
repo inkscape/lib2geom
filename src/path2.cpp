@@ -2,7 +2,7 @@
 
 namespace Geom {
 
-namespace Path {
+namespace Path2 {
 
 Rect BezierHelpers::bounds(unsigned degree, Point const *points) {
   Point min=points[0];
@@ -74,7 +74,7 @@ Rect Path::boundsFast() const {
 }
 
 Rect Path::boundsExact() const {
-  Rect bounds=front().boundsFast();
+  Rect bounds=front().boundsExact();
   const_iterator iter=begin();
   for ( ++iter ; iter != end() ; ++iter ) {
     bounds.expandTo(iter->boundsExact());
@@ -87,6 +87,17 @@ void Path::append(Curve const &curve) {
     throw ContinuityError();
   }
   do_append(curve.duplicate());
+}
+
+void Path::append(multidim_sbasis<2> const &curve) {
+  if ( curves_.front() != &final_ ) {
+    for ( int i = 0 ; i < 2 ; ++i ) {
+      if ( curve[i][0][0] != final_[0][i] ) {
+        throw ContinuityError();
+      }
+    }
+  }
+  do_append(new SBasis(curve));
 }
 
 void Path::do_update(Sequence::iterator first_replaced,
@@ -151,6 +162,24 @@ void Path::check_continuity(Sequence::iterator first_replaced,
     }
   }
 }
+
+class Unimplemented{};
+
+Rect SBasis::boundsFast() const {
+    throw Unimplemented();
+    return Rect(Point(0,0), Point(0,0));
+}
+
+Rect SBasis::boundsExact() const {
+    throw Unimplemented();
+    return Rect(Point(0,0), Point(0,0));
+}
+
+Point SBasis::pointAndDerivativesAt(Coord t, unsigned n_derivs, Point *derivs) const {
+    throw Unimplemented();
+    return Point(0,0);
+}
+
 
 }
 

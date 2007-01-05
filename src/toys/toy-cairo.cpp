@@ -318,7 +318,7 @@ virtual void key_hit(GdkEventKey *e) {
     } else if (e->keyval == 'a') {
         equal_arc = !equal_arc;    
     } else if (e->keyval == 'd') {
-        write_svgd(stderr, display_path);
+        //write_svgd(stderr, display_path);
     }
 }
 

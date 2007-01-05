@@ -11,9 +11,8 @@
 #include "choose.h"
 #include "convex-cover.h"
 
-#include "path.h"
+#include "path2.h"
 #include "path-cairo.h"
-#include "path-builder.h"
 
 #include <iterator>
 #include "translate.h"
@@ -64,10 +63,10 @@ public:
 
     
         multidim_sbasis<2> B = bezier_to_sbasis<2, 5>(handles.begin());
-        Geom::PathSetBuilder pb;
-        subpath_from_sbasis(pb, B, 0.1);
-        Geom::PathSet p = pb.peek();
-        cairo_PathSet(cr, p);
+        Geom::Path2::Path pb;
+        pb.append(B);
+        pb.close(false);
+        cairo_path(cr, pb);
         cairo_stroke(cr);
         
         multidim_sbasis<2> m;
@@ -141,18 +140,18 @@ public:
         //draw_cross(cr, point_at(B, hi));
         draw_circ(cr, point_at(m, hi));
         {
-            Geom::PathSetBuilder pb;
-            subpath_from_sbasis(pb, m, 0.1);
-            Geom::PathSet p = pb.peek();
-            cairo_PathSet(cr, p);
+            Geom::Path2::Path pb;
+            pb.append(m);
+            pb.close(false);
+            cairo_path(cr, pb);
         }
         
         /*m = truncate(compose(B, BezOrd(0, hi*2)), 2);
         {
-            Geom::PathSetBuilder pb;
-            subpath_from_sbasis(pb, m, 0.1);
-            Geom::PathSet p = pb.peek();
-            cairo_PathSet(cr, p);
+            Geom::Path2::Path pb;
+            pb.append(m);
+            pb.close(false);
+            cairo_path(cr, pb);
             }*/
        
         cairo_stroke(cr);

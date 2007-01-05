@@ -1,10 +1,14 @@
 #ifndef PATH_CAIRO
 #define PATH_CAIRO
 #include "path.h"
+#include "path2.h"
 #include "s-basis-2d.h"
 #include <vector>
 
 typedef struct _cairo cairo_t;
+
+void cairo_path(cairo_t *cr, Geom::Path2::Path const &p);
+void cairo_path(cairo_t *cr, std::vector<Geom::Path2::Path> const &p);
 
 void cairo_path(cairo_t *cr, Geom::Path const &p);
 void cairo_PathSet(cairo_t *cr, Geom::PathSet const &p);

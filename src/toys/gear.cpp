@@ -3,9 +3,8 @@
 #include "sbasis-to-bezier.h"
 #include "multidim-sbasis.h"
 
-#include "path.h"
+#include "path2.h"
 #include "path-cairo.h"
-#include "path-builder.h"
 
 #include "toy-framework.h"
 
@@ -51,7 +50,7 @@ public:
     
     int number_of_teeth() {return _number_of_teeth;}
     
-    Geom::PathSet path();
+    Geom::Path2::Path path();
     Gear spawn(int N, double a);
     
     Gear(int n, double m, double phi) {
@@ -103,8 +102,8 @@ private:
         return (sqrt(R*R - base_radius()*base_radius())/base_radius()) - acos(base_radius()/R);
     }
 };
-Geom::PathSet Gear::path() {
-    Geom::PathSetBuilder pb;
+Geom::Path2::Path Gear::path() {
+    Geom::Path2::Path pb;
     
     // angle covered by a full tooth and fillet
     double tooth_rotation = 2.0 * tooth_thickness_angle();
@@ -120,44 +119,63 @@ Geom::PathSet Gear::path() {
     //rewind angle to start drawing from the leading edge of the tooth
     double first_tooth_angle = _angle - ((0.5 * tip_advance) + involute_advance);
     bool first = true;
+    Geom::Point last_point(0,0);
     for (int i=0; i < _number_of_teeth; i++)
     {
         double cursor = first_tooth_angle + (i * tooth_rotation);
-        
+
         multidim_sbasis<2> leading_I = compose(_involute(cursor, cursor + involute_swath_angle(outer_radius())), BezOrd(involute_t,1));
-        subpath_from_sbasis(pb, leading_I, 0.1, first);
+        if (!first) {
+            leading_I[X][0][0] = last_point[X];
+            leading_I[Y][0][0] = last_point[Y];
+        }        
         first = false;
+        pb.append(leading_I);
         cursor += involute_advance;
         
         multidim_sbasis<2> tip = _arc(cursor, cursor+tip_advance, outer_radius());
-        subpath_from_sbasis(pb, tip, 0.1, false);
+        tip[X][0][0] = leading_I[X][0][1];
+        tip[Y][0][0] = leading_I[Y][0][1];
+        pb.append(tip);
         cursor += tip_advance;
         
         cursor += involute_advance;
         multidim_sbasis<2> trailing_I = compose(_involute(cursor, cursor - involute_swath_angle(outer_radius())), BezOrd(1,involute_t));
-        subpath_from_sbasis(pb, trailing_I, 0.1, false);
-        
+        trailing_I[X][0][0] = tip[X][0][1];
+        trailing_I[Y][0][0] = tip[Y][0][1];
+        pb.append(trailing_I);
+       
+        Geom::Point leading_start;
+        Geom::Point leading_end;
         if (base_radius() > root_radius()) {
-            Geom::Point leading_start = point_at(trailing_I,1);
-            Geom::Point leading_end = (root_radius() * unit_vector(leading_start - _centre)) + _centre;
-            pb.push_line(leading_end);
+            leading_start = point_at(trailing_I,1);
+            leading_end = (root_radius() * unit_vector(leading_start - _centre)) + _centre;
+            pb.append(Geom::Path2::LineSegment(leading_start, leading_end));
         }
         
         multidim_sbasis<2> root = _arc(cursor, cursor+root_advance, root_radius());
-        subpath_from_sbasis(pb, root, 0.1, false);
+        if (base_radius() > root_radius()) {
+            root[X][0][0] = leading_end[X];
+            root[Y][0][0] = leading_end[Y];
+        } else {
+            root[X][0][0] = trailing_I[X][0][1];
+            root[Y][0][0] = trailing_I[Y][0][1];
+            last_point[X] = root[X][0][1];
+            last_point[Y] = root[Y][0][1];
+        }
+        pb.append(root);
         cursor += root_advance;
         
         if (base_radius() > root_radius()) {
             Geom::Point trailing_start = point_at(root,1);
             Geom::Point trailing_end = (base_radius() * unit_vector(trailing_start - _centre)) + _centre;
-            pb.push_line(trailing_end);
+            pb.append(Geom::Path2::LineSegment(trailing_start, trailing_end));
+            last_point = trailing_end;
         }
-        
     }
+    pb.close();
     
-    pb.close_subpath();
-    
-    return pb.peek();
+    return pb;
 }
 Gear Gear::spawn(int N, double a) {
     Gear gear(N, _module, _pressure_angle);
@@ -228,31 +246,29 @@ class GearToy: public Toy {
         cairo_stroke(cr);
         
         //draw gear
-        Geom::PathSet p = gear.path();
-        cairo_PathSet(cr, p);
+        Geom::Path2::Path p = gear.path();
+        cairo_path(cr, p);
         cairo_set_source_rgba (cr, 0., 0., 0., 0.5);
         cairo_set_line_width (cr, 2.0);
         cairo_stroke(cr);
         
-        //std::cout << p << std::endl;
-        
         Gear gear2 = gear.spawn(5, -2.0 * M_PI / 8.0);
-        Geom::PathSet p2 = gear2.path();
-        cairo_PathSet(cr, p2);
+        Geom::Path2::Path p2 = gear2.path();
+        cairo_path(cr, p2);
         cairo_set_source_rgba (cr, 0., 0., 0., 0.5);
         cairo_set_line_width (cr, 2.0);
         cairo_stroke(cr);
         
         Gear gear3 = gear2.spawn(8, 0.0 * M_PI / 8.0);
-        Geom::PathSet p3 = gear3.path();
-        cairo_PathSet(cr, p3);
+        Geom::Path2::Path p3 = gear3.path();
+        cairo_path(cr, p3);
         cairo_set_source_rgba (cr, 0., 0., 0., 0.5);
         cairo_set_line_width (cr, 2.0);
         cairo_stroke(cr);
         
         Gear gear4 = gear.spawn(6, 3.0 * M_PI / 4.0);
-        Geom::PathSet p4 = gear4.path();
-        cairo_PathSet(cr, p4);
+        Geom::Path2::Path p4 = gear4.path();
+        cairo_path(cr, p4);
         cairo_set_source_rgba (cr, 0., 0., 0., 0.5);
         cairo_set_line_width (cr, 2.0);
         cairo_stroke(cr);

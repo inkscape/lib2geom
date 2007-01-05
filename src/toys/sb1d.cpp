@@ -4,9 +4,8 @@
 #include "multidim-sbasis.h"
 #include "s-basis-2d.h"
 
-#include "path.h"
+#include "path2.h"
 #include "path-cairo.h"
-#include "path-builder.h"
 
 #include <iterator>
 #include "translate.h"
@@ -87,11 +86,11 @@ class Sb1d: public Toy {
         //B[1] = SBasis(BezOrd(3*width/4)) - B[1];
         *notify << B[0] << ", "; 
         *notify << B[1];
-        Geom::PathSetBuilder pb;
+        Geom::Path2::Path pb;
         B[1] = SBasis(BezOrd(3*width/4)) - B[1];
-        subpath_from_sbasis(pb, B, 0.001);
-        Geom::PathSet p = pb.peek();//*Geom::translate(1,1);
-        cairo_PathSet(cr, p);
+        pb.append(B);
+        pb.close(false);
+        cairo_path(cr, pb);
     
         cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
         cairo_stroke(cr);

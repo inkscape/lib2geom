@@ -47,7 +47,7 @@ path-to-polyline.cpp
 path-to-polyline.h
 path.cpp
 path.h
-#path2.cpp
+path2.cpp
 path2.h
 point-fns.cpp
 point-fns.h

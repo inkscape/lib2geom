@@ -12,7 +12,7 @@
 
 namespace Geom {
 
-namespace Path {
+namespace Path2 {
 
 class Curve {
 public:
@@ -101,7 +101,7 @@ public:
   }
 
   multidim_sbasis<2> sbasis() const {
-    return bezier_to_sbasis<2, bezier_degree>(c_);
+    return bezier_to_sbasis<2, bezier_degree, Geom::Point const *>(c_);
   }
 
 private:
@@ -206,11 +206,11 @@ public:
   Curve const &operator*() const { return **impl_; }
   Curve const *operator->() const { return *impl_; }
 
-  BaseIterator &operator++(int) {
+  BaseIterator &operator++() {
     ++impl_;
     return *this;
   }
-  BaseIterator operator++() {
+  BaseIterator operator++(int) {
     BaseIterator old=*this;
     ++(*this);
     return old;
@@ -240,11 +240,11 @@ public:
 
   Curve *operator*() const { return (*impl_)->duplicate(); }
 
-  DuplicatingIterator &operator++(int) {
+  DuplicatingIterator &operator++() {
     ++impl_;
     return *this;
   }
-  DuplicatingIterator operator++() {
+  DuplicatingIterator operator++(int) {
     DuplicatingIterator old=*this;
     ++(*this);
     return old;
@@ -417,7 +417,12 @@ public:
     final_[0] = final_[1] = p;
   }
 
+  Point initialPoint() const { return final_[1]; }
+  Point finalPoint() const { return final_[0]; }
+
   void append(Curve const &curve);
+
+  void append(multidim_sbasis<2> const &curve);
 
   template <typename CurveType, typename A>
   void appendNew(A a) {
@@ -505,7 +510,8 @@ private:
 namespace std {
 
 template <>
-void swap<Geom::Path::Path>(Geom::Path::Path &a, Geom::Path::Path &b) {
+inline void swap<Geom::Path2::Path>(Geom::Path2::Path &a, Geom::Path2::Path &b)
+{
   a.swap(b);
 }
 
