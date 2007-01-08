@@ -27,6 +27,7 @@ mesh-grad
 bez-grad
 draw-toy
 normal-bundle
+offset-test
 "${NEEDS_GSL}"
 )
 
