@@ -182,6 +182,23 @@ double arc_length(multidim_sbasis<2> const M,double tol=.1){
   return(L);
 }
 
+// incomplete.
+vector<multidim_sbasis<2> > curvature(multidim_sbasis<2> const M,
+                                      vector<double> &cuts,
+                                      double tol=.1){
+    vector<multidim_sbasis<2> > cv;
+    cv=unit_vector(derivative(M),cuts,tol);
+    double t0=0.,t1;
+    for (int i=0;i<cv.size();i++){
+        multidim_sbasis<2> dcv = derivative(cv[i]);
+        cv[i][0] *= -dcv[1];
+        cv[i][1] *= dcv[0];
+    }
+    return(cv);
+}
+
+
+
 
 class OffsetTester: public Toy {
 
@@ -226,6 +243,17 @@ class OffsetTester: public Toy {
       cairo_stroke(cr);
       t0=t1;
     }
+    vector<multidim_sbasis<2> > cV=curvature(B,cuts);
+    for(int i=0; i<cV.size();i++){
+      t1=cuts[i];
+      subB=compose(B,BezOrd(t0,t1));
+      N=-offset*rot90(cV[i])+subB;
+      cairo_md_sb(cr,N);
+      cairo_set_source_rgba (cr, 1, 0, 0.6, 0.5);
+      cairo_stroke(cr);
+
+      t0=t1;
+    }
     Ray[0]=SBasis(BezOrd(point_at1(subB)[0],point_at1(N)[0]));
     Ray[1]=SBasis(BezOrd(point_at1(subB)[1],point_at1(N)[1]));
     cairo_md_sb(cr,Ray);
@@ -248,7 +276,7 @@ public:
 
 int main(int argc, char **argv) {
   std::cout<<"testing sqrt..."<<std::endl;
-    init(argc, argv, "normal-bundle", new OffsetTester);
+    init(argc, argv, "offset-test", new OffsetTester);
     return 0;
 }
 

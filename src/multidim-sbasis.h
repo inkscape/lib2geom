@@ -233,6 +233,14 @@ rot90(multidim_sbasis<2> const & a) {
     return r;
 }
 
+inline multidim_sbasis<2>
+cross(multidim_sbasis<2> const & a, multidim_sbasis<2> const & b) {
+    multidim_sbasis<2> r;
+    r[0] = -multiply(a.f[0],b.f[1]);
+    r[1] = multiply(a.f[1],b.f[0]);
+    return r;
+}
+
 inline Geom::Point
 point_at(multidim_sbasis<2> const & a, double t) {
     return Geom::Point(a[0](t), a[1](t));
