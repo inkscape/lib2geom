@@ -57,8 +57,8 @@ will likely change quite a bit in the future.
 \section{Points}
 
 The mathematical concepts of points and vectors are merged into the
-2geom \verb|class| called \verb|Point|.  See Appendix A for a further discussion of
-this decision.
+2geom \verb|class| called \verb|Point|.  See Appendix A for a further
+discussion of this decision.
 
 2geom also breaks with the programming world's more traditional
 \verb|struct| with \verb|.x| and \verb|.y| fields.  Rather, each
@@ -69,9 +69,9 @@ to attempt to inline geometry operations rather than using operators
 (perhaps looking for a performance enhancement).  By using an array, we
 encourage people to think about \verb|Point|s as symmetrical objects
 and discourage direct use of the components.  We still provide direct
-access for the rare occasion that it is needed.  Even in these cases,
-the array method prevents bugs by encouraging iteration over the
-array rather than explicit element reference.
+access for the rare occasion that it is needed, and even in these
+cases, the array method prevents bugs by encouraging iteration over
+the array rather than explicit element reference.
 
 \section{Transformations}
 
