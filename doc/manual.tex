@@ -1,51 +1,78 @@
 \documentstyle{book}
 
+\title{Lib2geom Manual}
+
 \newcommand{\code}[1]{\textsf{#1}}
 
 \begin{document}
 
-\chapter{Basic design}
+\chapter{Overview}
 
-2Geom is written using a functional programming style\cite{}.
+\section{Introduction}
+
+This manual focuses on the lib2geom computational geometry framework.
+The main goal of this framework is the eventual replacement of
+Inkscape's halfhazard, shoddy geometry framework. As with any decent
+module or lib, it is designed to achieve the necessary functionality
+while maintaining a generality which allows useage within other
+applications.  The focus on robust, accurate algorithms, as well as
+utilization of newer and very useful representations makes the lib
+very attractive for many applications.
+
+Along the way we might learn a bit of computational geometry as well.
+
+\section{Design Considerations}
+
+2Geom is written with a functional programming style in mind.
 Generally data structures are considered immutable and rather than
-assignment we use labeling.  However, C++ can become unwieldly if this
-is taken to extreme and so a certain amount of pragmatism is used in
-practice.
+assignment we use labeling.  However, C++ can become unwieldly if
+this is taken to extreme and so a certain amount of pragmatism is
+used in practice.  In particular, usability is not forgotten in the
+mires of functional zeal.
 
 The code relies strongly on the type system and uses some of the more
-'tricky' elements of C++ to make the code more elegant.  However, as
-the intended use of 2Geom is a serious vector graphics application,
-where performance is still used as a quality metric, we consider
-performance a bug and have traded elegance for efficiency where it
-matters.
+'tricky' elements of C++ to make the code more elegant and 'correct'.
+Despite this, the intended use of 2Geom is a serious vector graphics
+application. In such domains, performance is still used as a quality
+metric, and as such we consider inefficiency to be a bug, and have
+traded elegance for efficiency where it matters.
 
-In general the data structures used in 2Geom are relatively 'flat' and
-require little from the memory management.  Currently most data
-structures are built on standard STL headers\cite{stl} and new and
+In general the data structures used in 2Geom are relatively 'flat'
+and require little from the memory management.  Currently most data
+structures are built on standard STL headers\cite{stl}, and new and
 delete are used sparingly.  It is intended for 2Geom to be fully
 compatible with Boehm garbage collector\cite{boehm} though this has
 not yet been tested.
 
+\chapter{Geometric Primitives}
+
+What good is a geometry library without geometric primitives?  By this
+I mean the basic stuff that every decent geometry library has -
+Points/Vectors, Matrices, etc.
+
+2geom's primitives are descendant from libNR's geometric primitives.
+They have been modified quite a bit since that initial import, and
+will likely change quite a bit in the future.
+
 \section{Points}
 
-2Geom uses the term Point rather loosely from a mathematical
-perspective.  Points are actually unbased vectors represented as a
-two-ple for X and Y.  People often ask why 2Geom uses a 2 element
-array rather than the more traditional \verb|struct| with \verb|.x|
-and \verb|.y|.  We originally chose this representation after noting
-the large number of copy and paste bugs introduced in code performing
-calculations using \verb|.x| and \verb|.y|.
+The mathematical concepts of points and vectors are merged into the
+2geom \verb|class| called \verb|Point|.  See Appendix A for a further discussion of
+this decision.
 
-We found that code using .x and .y encouraged people to attempt to
-inline geometry operations rather than using operators (perhaps
-looking for a performance enhancement), and to try and optimise
-operations (usually incorrectly).  By using a vector we encourage
-people to think about Points as symmetrical objects and discourage
-direct use of the components.  We still provide direct access for the
-rare occasion that these are needed.  When direct access is necessary,
-the following form is recommended:
+2geom also breaks with the programming world's more traditional
+\verb|struct| with \verb|.x| and \verb|.y| fields.  Rather, each
+point has a 2 element array of coordinates.
 
-\code
+We found that code using \verb|.x| and \verb|.y| encouraged people
+to attempt to inline geometry operations rather than using operators
+(perhaps looking for a performance enhancement), and to try and
+optimise operations (usually incorrectly).  By using an array, we
+encourage people to think about \verb|Point|s as symmetrical objects
+and discourage direct use of the components.  We still provide direct
+access for the rare occasion that it is needed.  Even in these cases,
+the array method prevents bugs by encouraging iteration over the
+array rather than explicit element reference.
 
 \section{Transformations}
 
@@ -304,5 +331,24 @@ Michael J. Wybrow,
 Michael Sloan,
 Nathan J. Hurst,
 Peter J. R. Moulder
+
+\chapter{Appendix}
+
+\section{A: Geometric Points}
+In standard geometry points and vectors are quite distinguished - a  
+point is a location, whereas a vector is an unbased direction and
+magnitude.  Allowed operations on vectors and points also vary:
+
+P  - P = V
+P +- V = P
+V +- V = V
+V */ S = V
+
+, where P represents points, V represents vectors, and S scalars.
+
+Ideally we would render these restrictions in code, as they would
+reinforce algorithm correctness.  This is because as far as arithmetic
+operations go, the above are all that you sanely require, unless you
+are prematurely optimizing.
 
 \end{document}
