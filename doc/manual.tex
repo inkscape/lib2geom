@@ -66,8 +66,7 @@ point has a 2 element array of coordinates.
 
 We found that code using \verb|.x| and \verb|.y| encouraged people
 to attempt to inline geometry operations rather than using operators
-(perhaps looking for a performance enhancement), and to try and
-optimise operations (usually incorrectly).  By using an array, we
+(perhaps looking for a performance enhancement).  By using an array, we
 encourage people to think about \verb|Point|s as symmetrical objects
 and discourage direct use of the components.  We still provide direct
 access for the rare occasion that it is needed.  Even in these cases,
