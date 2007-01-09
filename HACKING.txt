@@ -1,0 +1,41 @@
+Jabber Channel
+==============
+At the moment, communication about this project occurs on the jabber channel
+lib2geom@conference.gristle.org
+
+Help Wanted
+===========
+We greatly appreciate contributions.  You don't need to be a math-whiz or
+uber-hacker (though these are definitely appreciated :) ) to help.  The tasks of
+code cleanup, consistancy, testing, documentation, and toys mostly just require
+perserverance, and benefit the project greatly.
+
+As far as very specialized skill, we are always in need of mathy people, even if
+it is just for their insight on problems and techniques (as opposed to coding).
+
+Coding Style
+============
+Please refer to the Coding Style Guidelines
+(http://www.inkscape.org/doc/coding_style.php) if you have specific questions
+on the style to use for code.  If reading style guidelines doesn't interest
+you, just follow the general style of the surrounding code, so that it is at
+least internally consistent.
+
+Compiling
+=========
+For windows instructions, see README.win32
+
+For linux, the following are required:
+ cmake
+ make
+ libgsl0-dev (though eventually it will only be required in tests)
+ cairo-1.1.7 or better (from git), make as a deb and install over existing cairo package - nothing should need to change.
+
+ http://njhurst.com/programming/debian-cairo.tgz
+ grab that tar and tar xzvf it inside the cairo dir
+ so you can make a .deb for cairo and install it cleanly
+ configure --prefix=/usr
+
+ refblas3* on dapper
+
+If you have problems, just ask in the channel

@@ -119,7 +119,7 @@ public:
         double p0 = 0, p1 = 0;
         double sk = 1;
         int k = 0;
-// XXX rewrite as horner
+//TODO: rewrite as horner
         for(int k = 0; k < size(); k++) {
             p0 += sk*(*this)[k][0];
             p1 += sk*(*this)[k][1];

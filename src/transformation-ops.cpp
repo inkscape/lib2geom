@@ -7,11 +7,9 @@ namespace Geom {
 /** Multiplies two matrices together, effectively combining their transformations.*/
 Matrix operator*(Matrix const &m0, Matrix const &m1) {
     Matrix ret;
-    int n = 0;
     for(int a = 0; a < 5; a += 2) {
         for(int b = 0; b < 2; b++) {
-            ret[n] = m0[a] * m1[b] + m0[a + 1] * m1[b + 2];
-            n++;
+            ret[a + b] = m0[a] * m1[b] + m0[a + 1] * m1[b + 2];
         }
     }
     ret[4] += m1[4];
