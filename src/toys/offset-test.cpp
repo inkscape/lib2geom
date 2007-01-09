@@ -183,18 +183,18 @@ double arc_length(multidim_sbasis<2> const M,double tol=.1){
 }
 
 // incomplete.
-vector<multidim_sbasis<2> > curvature(multidim_sbasis<2> const M,
-                                      vector<double> &cuts,
-                                      double tol=.1){
+vector<SBasis > curvature(multidim_sbasis<2> const M,
+                          vector<double> &cuts,
+                          double tol=.1){
     vector<multidim_sbasis<2> > cv;
+    vector<SBasis > res;
     cv=unit_vector(derivative(M),cuts,tol);
     double t0=0.,t1;
     for (int i=0;i<cv.size();i++){
         multidim_sbasis<2> dcv = derivative(cv[i]);
-        cv[i][0] *= -dcv[1];
-        cv[i][1] *= dcv[0];
+        res.push_back(-cv[i][0]*dcv[1] + cv[i][1]*dcv[0]);
     }
-    return(cv);
+    return(res);
 }
 
 
@@ -243,11 +243,11 @@ class OffsetTester: public Toy {
       cairo_stroke(cr);
       t0=t1;
     }
-    vector<multidim_sbasis<2> > cV=curvature(B,cuts);
+    vector<SBasis > cV=curvature(B,cuts);
     for(int i=0; i<cV.size();i++){
       t1=cuts[i];
       subB=compose(B,BezOrd(t0,t1));
-      N=-offset*rot90(cV[i])+subB;
+      N=-offset*cV[i]*rot90(V[i])+subB;
       cairo_md_sb(cr,N);
       cairo_set_source_rgba (cr, 1, 0, 0.6, 0.5);
       cairo_stroke(cr);
