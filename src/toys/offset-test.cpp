@@ -190,9 +190,14 @@ vector<SBasis > curvature(multidim_sbasis<2> const M,
     vector<SBasis > res;
     cv=unit_vector(derivative(M),cuts,tol);
     double t0=0.,t1;
+    double base = 0;
+            
     for (int i=0;i<cv.size();i++){
+        t1=cuts[i];
         multidim_sbasis<2> dcv = derivative(cv[i]);
-        res.push_back(-cv[i][0]*dcv[1] + cv[i][1]*dcv[0]);
+        res.push_back(-cv[i][0]*dcv[1] + cv[i][1]*dcv[0]);// + BezOrd(base, base));
+        //base = res.back()[0][1] - base;
+        t0=t1;
     }
     return(res);
 }
@@ -244,6 +249,7 @@ class OffsetTester: public Toy {
       t0=t1;
     }
     vector<SBasis > cV=curvature(B,cuts);
+    t0 = 0;
     for(int i=0; i<cV.size();i++){
       t1=cuts[i];
       subB=compose(B,BezOrd(t0,t1));
