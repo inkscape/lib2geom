@@ -13,13 +13,11 @@
 This manual focuses on the lib2geom computational geometry framework.
 The main goal of this framework is the eventual replacement of
 Inkscape's halfhazard, shoddy geometry framework. As with any decent
-module or lib, it is designed to achieve the necessary functionality
+module or lib, 2geom is designed to achieve the necessary functionality
 while maintaining a generality which allows useage within other
 applications.  The focus on robust, accurate algorithms, as well as
 utilization of newer and very useful representations makes the lib
 very attractive for many applications.
-
-Along the way we might learn a bit of computational geometry as well.
 
 \section{Design Considerations}
 
@@ -78,6 +76,8 @@ the array rather than explicit element reference.
 Affine transformations are either represented with a cannonical 6
 element matrix, or special forms selected by the type system.
 
+TODO: Justify this design choice
+
 \subsection{scale}
 
 scale is a pair giving x and y scales.
@@ -119,21 +119,17 @@ clockwise direction.  Operations:
 
 \section{Path}
 
-A Path is an ordered set of \code{SubPath}s.  A \code{Path} in
+A Path is an ordered set of \code{Curve}s.  A \code{Path} in
 Inkscape is drawn in a single fill and stroke.
 
-\section{SubPath}
+\section{Curve}
 
+Curves define a continuous segments which yields points for values of t in
+the range of [0,1].  The startpoint is defined at t=0, and the endpoint
+defined at t=1.
 
-We assume that paths are made from $C^0$ continuous segments (called
-\code{SubPath::Element} in 2geom).  Because elements are $C^0$ continuous
-they can share endpoints.  For storage we have two arrays: handles and
-commands.  We assume that all commands define a segment using a number
-of \code{Points}, namely on canvas positions, and that affine
-transformation of the points will affine transform the segment.  To
-reconstruct a path we walk through handles and cmd in parallel,
-'eating' enough points for each element adding a handle without
-updating cmd would almost certainly make the path garbage.
+2Geom has a diversity of curve types and conversions between them, because
+certain representations do certain things better than others.  
 
 this has the property of taking only slightly more memory than a
 sequence of points in the poly line or poly bezier case, but allows us
