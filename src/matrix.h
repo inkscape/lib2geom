@@ -45,7 +45,7 @@ namespace Geom {
  * and the rows of the matrix correspond to columns (elements) of the "input").
  */
 class Matrix {
-    Geom::Coord _c[6];
+    Coord _c[6];
 
   public:
 
@@ -58,19 +58,15 @@ class Matrix {
         }
     }
 
-    Matrix(double c0, double c1, double c2, double c3, double c4, double c5) {
-        _c[0] = c0;
-        _c[1] = c1;
-        _c[2] = c2;
-        _c[3] = c3;
-        _c[4] = c4;
-        _c[5] = c5;
+    Matrix(Coord c0, Coord c1, Coord c2, Coord c3, Coord c4, Coord c5) {
+        _c[0] = c0; _c[1] = c1;
+        _c[2] = c2; _c[3] = c3;
+        _c[4] = c4; _c[5] = c5;
     }
 
     Matrix &operator=(Matrix const &m) {
-        for(int i = 0; i < 6; i++) {
+        for(int i = 0; i < 6; i++)
             _c[i] = m._c[i];
-        }
         return *this;
     }
 
@@ -78,13 +74,6 @@ class Matrix {
         _c[0] = sm[X];
         _c[3] = sm[Y];
     }
-
-    Point x_axis() const;
-    Point y_axis() const;
-    Point translation() const;
-    void set_x_axis(Point const &vec);
-    void set_y_axis(Point const &vec);
-    void set_translation(Point const &loc);
 
     explicit Matrix(rotate const &r) {
         set_x_axis(r.vec);
@@ -94,6 +83,13 @@ class Matrix {
     explicit Matrix(translate const &tm) {
         set_translation(tm.offset);
     }
+
+    Point x_axis() const;
+    Point y_axis() const;
+    Point translation() const;
+    void set_x_axis(Point const &vec);
+    void set_y_axis(Point const &vec);
+    void set_translation(Point const &loc);
 
     //TODO: Remove testing code from production code! matrix.cpp as well
     bool test_identity() const;
@@ -153,7 +149,7 @@ Matrix elliptic_quadratic_form(Matrix const &m);
 class Eigen{
 public:
     Point vectors[2];
-    Point values;
+    Point values;    //TODO: Shouldn't be Point?
     Eigen(Matrix const &m);
 };
 

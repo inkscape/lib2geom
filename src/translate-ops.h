@@ -6,24 +6,20 @@
 
 namespace Geom {
 
-inline bool operator==(translate const &a, translate const &b)
-{
+inline bool operator==(translate const &a, translate const &b) {
     return a.offset == b.offset;
 }
 
-inline bool operator!=(translate const &a, translate const &b)
-{
+inline bool operator!=(translate const &a, translate const &b) {
     return !( a == b );
 }
 
-inline translate operator*(translate const &a, translate const &b)
-{
-    return translate( a.offset + b.offset );
+inline Point operator*(Point const &v, translate const &t) {
+    return t.offset + v;
 }
 
-inline Point operator*(Point const &v, translate const &t)
-{
-    return t.offset + v;
+inline translate operator*(translate const &a, translate const &b) {
+    return translate( a.offset + b.offset );
 }
 
 } /* namespace Geom */

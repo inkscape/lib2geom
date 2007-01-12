@@ -14,8 +14,8 @@ private:
 
 public:
     explicit scale(Point const &p) : _p(p) {}
-    scale(double const x, double const y) : _p(x, y) {}
-    explicit scale(double const s) : _p(s, s) {}
+    scale(Coord const x, Coord const y) : _p(x, y) {}
+    explicit scale(Coord const s) : _p(s, s) {}
     inline Coord operator[](Dim2 const d) const { return _p[d]; }
     inline Coord operator[](unsigned const d) const { return _p[d]; }
     inline Coord &operator[](Dim2 const d) { return _p[d]; }
