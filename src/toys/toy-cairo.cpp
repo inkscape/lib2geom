@@ -123,8 +123,8 @@ void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool s
         Geom::Point cntr;
         double area;
         centroid(display_path, cntr, area);
-        Geom::Matrix m(Geom::translate(-cntr));
-        m = (m * Geom::rotate(0.01)) * Geom::translate(cntr);
+        Geom::Matrix m(Geom::Translate(-cntr));
+        m = (m * Geom::Rotate(0.01)) * Geom::Translate(cntr);
         display_path = display_path * m;
     }
     if(evolution) {
@@ -354,9 +354,9 @@ on_open_activate(GtkMenuItem *menuitem, gpointer user_data) {
         display_path = read_svgd(f).front();
         Geom::Rect r = display_path.bbox();
     
-        display_path = display_path*Geom::translate(-r.min());
-        Geom::scale sc(r.max() - r.min());
-        display_path = display_path*(sc.inverse()*Geom::scale(500,500));
+        display_path = display_path*Geom::Translate(-r.min());
+        Geom::Scale sc(r.max() - r.min());
+        display_path = display_path*(sc.inverse()*Geom::Scale(500,500));
         original_curve = display_path;
 
         handles.push_back(Geom::Point(20,20));

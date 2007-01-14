@@ -2,7 +2,7 @@
 #define __Geom_FORWARD_H__
 
 /*
- * Pixel buffer rendering library
+ * Originally part of the NR pixel buffer rendering library
  *
  * Authors:
  *   Lauris Kaplinski <lauris@kaplinski.com>
@@ -14,9 +14,9 @@ namespace Geom {
 class Matrix;
 class Point;
 class Rect;
-class rotate;
-class scale;
-class translate;
+class Rotate;
+class Scale;
+class Translate;
 }
 
 #endif

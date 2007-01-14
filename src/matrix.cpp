@@ -1,7 +1,7 @@
 #define __Geom_MATRIX_C__
 
 /** \file
- * Various matrix routines.  Currently includes some Geom::rotate etc. routines too.
+ * Various matrix routines.  Currently includes some Geom::Rotate etc. routines too.
  */
 
 /*
@@ -25,15 +25,15 @@ Matrix &Matrix::operator*=(Matrix const &o)
     return *this;
 }
 
-/** Scales a Matrix by multiplication with a scale transform. */
-Matrix &Matrix::operator*=(scale const &other) {
+/** Scales a Matrix by multiplication with a Scale transform. */
+Matrix &Matrix::operator*=(Scale const &other) {
     for(int i = 0; i < 6; i++)
         _c[i] *= other[i % 2];
     return *this;
 }
 
-/** Translates a Matrix by multiplication with a translate transform. */
-Matrix &Matrix::operator*=(translate const &other) {
+/** Translates a Matrix by multiplication with a Translate transform. */
+Matrix &Matrix::operator*=(Translate const &other) {
     for(int i = 0; i < 2; i++)
         _c[i + 4] += other[i];
     return *this;
@@ -97,17 +97,17 @@ Matrix from_basis(Point const x_basis, Point const y_basis, Point const offset) 
                   offset [X], offset [Y]);
 }
 
-/** Constructs a rotate transformation corresponding to an angle.
+/** Constructs a Rotate transformation corresponding to an angle.
  \param theta the rotation angle in radians about the origin
  *
- * \see Geom::rotate_degrees
+ * \see Geom::Rotate_degrees
  *
  * Angle direction in Inkscape code: If you use the traditional mathematics convention that y
  * increases upwards, then positive angles are anticlockwise as per the mathematics convention.  If
  * you take the common non-mathematical convention that y increases downwards, then positive angles
  * are clockwise, as is common outside of mathematics.
  */
-rotate::rotate(Geom::Coord const theta) :
+Rotate::Rotate(Geom::Coord const theta) :
     vec(cos(theta),
         sin(theta))
 {}
@@ -236,7 +236,7 @@ bool Matrix::is_translation(Coord const eps) const {
             fabs(_c[5])       > eps );
 }
 
-/** Answers the question "Does this matrix perform \em{only} a scale?"
+/** Answers the question "Does this matrix perform \em{only} a Scale?"
  \param eps an epsilon value defaulting to Geom_EPSILON
  \return A bool representing yes/no.
  */
@@ -249,7 +249,7 @@ bool Matrix::is_scale(Coord const eps) const {
             fabs(_c[5])       < eps );
 }
 
-/** Answers the question "Does this matrix perform a uniform scale?"
+/** Answers the question "Does this matrix perform a uniform Scale?"
  \param eps an epsilon value defaulting to Geom_EPSILON
  \return A bool representing yes/no.
  */
@@ -278,7 +278,7 @@ bool Matrix::is_rotation(Coord const eps) const {
 
 #define nr_matrix_test_equal(m0,m1,e) ((!(m0) && !(m1)) || ((m0) && (m1) && Geom_MATRIX_DF_TEST_CLOSE(m0, m1, e)))
 #define nr_matrix_test_transform_equal(m0,m1,e) ((!(m0) && !(m1)) || ((m0) && (m1) && Geom_MATRIX_DF_TEST_TRANSFORM_CLOSE(m0, m1, e)))
-#define nr_matrix_test_translate_equal(m0,m1,e) ((!(m0) && !(m1)) || ((m0) && (m1) && Geom_MATRIX_DF_TEST_TRANSLATE_CLOSE(m0, m1, e)))
+#define nr_matrix_test_Translate_equal(m0,m1,e) ((!(m0) && !(m1)) || ((m0) && (m1) && Geom_MATRIX_DF_TEST_Translate_CLOSE(m0, m1, e)))
 
 /**
  *
@@ -299,7 +299,7 @@ bool transform_equalp(Matrix const &m0, Matrix const &m1, Geom::Coord const epsi
 /**
  *
  */
-bool translate_equalp(Matrix const &m0, Matrix const &m1, Geom::Coord const epsilon) {
+bool Translate_equalp(Matrix const &m0, Matrix const &m1, Geom::Coord const epsilon) {
     return Geom_MATRIX_DF_TEST_TRANSLATE_CLOSE(&m0, &m1, epsilon);
 }
 
@@ -351,7 +351,7 @@ Eigen::Eigen(Matrix const &m) {
 }
 
 //TODO: possible others?
-/** Returns just the scale/rotate/skew part of the matrix without the translation part. */
+/** Returns just the Scale/Rotate/skew part of the matrix without the translation part. */
 Matrix without_translation(Matrix const &m) {
     Matrix const ret(m[0], m[1],
                      m[2], m[3],
@@ -359,9 +359,9 @@ Matrix without_translation(Matrix const &m) {
     return ret;
 }
 
-//TODO: Other methods for rotate/scale - make an actual method?
-translate to_translate(Matrix const &m) {
-    return translate(m[4], m[5]);
+//TODO: Other methods for Rotate/Scale - make an actual method?
+Translate to_Translate(Matrix const &m) {
+    return Translate(m[4], m[5]);
 }
 
 void matrix_print(const char *say, Matrix const &m)

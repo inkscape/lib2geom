@@ -6,19 +6,19 @@ Matrix operator*(Matrix const &m0, Matrix const &m1);
 Geom::Point operator/(Geom::Point const &, Geom::Matrix const &);
 Geom::Matrix operator/(Geom::Matrix const &, Geom::Matrix const &);
 
-Matrix operator*(translate const &t, scale const &s);
-Matrix operator*(translate const &t, rotate const &r);
-Matrix operator*(translate const &t, Matrix const &m);
+Matrix operator*(Translate const &t, Scale const &s);
+Matrix operator*(Translate const &t, Rotate const &r);
+Matrix operator*(Translate const &t, Matrix const &m);
 
-Matrix operator*(scale const &s, translate const &t);
-Matrix operator*(scale const &s, Matrix const &m);
+Matrix operator*(Scale const &s, Translate const &t);
+Matrix operator*(Scale const &s, Matrix const &m);
 
-Matrix operator*(rotate const &a, Matrix const &b);
+Matrix operator*(Rotate const &a, Matrix const &b);
 
-Matrix operator*(Matrix const &m, translate const &t);
-Matrix operator/(Matrix const &m, scale const &s);
-Matrix operator*(Matrix const &m, scale const &s);
-Matrix operator*(Matrix const &m, rotate const &r);
+Matrix operator*(Matrix const &m, Translate const &t);
+Matrix operator/(Matrix const &m, Scale const &s);
+Matrix operator*(Matrix const &m, Scale const &s);
+Matrix operator*(Matrix const &m, Rotate const &r);
 
 }
 

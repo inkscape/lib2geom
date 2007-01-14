@@ -70,17 +70,17 @@ class Matrix {
         return *this;
     }
 
-    explicit Matrix(scale const &sm) {
+    explicit Matrix(Scale const &sm) {
         _c[0] = sm[X];
         _c[3] = sm[Y];
     }
 
-    explicit Matrix(rotate const &r) {
+    explicit Matrix(Rotate const &r) {
         set_x_axis(r.vec);
         set_y_axis(r.vec.cw());
     }
 
-    explicit Matrix(translate const &tm) {
+    explicit Matrix(Translate const &tm) {
         set_translation(tm.offset);
     }
 
@@ -102,8 +102,8 @@ class Matrix {
     Matrix inverse() const;
 
     Matrix &operator*=(Matrix const &other);
-    Matrix &operator*=(scale const &other);
-    Matrix &operator*=(translate const &other);
+    Matrix &operator*=(Scale const &other);
+    Matrix &operator*=(Translate const &other);
 
     inline Coord &operator[](int const i) {
         return _c[i];
@@ -165,7 +165,7 @@ bool translate_equalp(Matrix const &m0, Matrix const &m1, Geom::Coord const epsi
 bool matrix_equalp(Matrix const &m0, Matrix const &m1, Geom::Coord const epsilon);
 
 Matrix without_translation(Matrix const &m);
-translate to_translate(Matrix const &m);
+Translate to_translate(Matrix const &m);
 
 void matrix_print(const char *say, Matrix const &m);
 

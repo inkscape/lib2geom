@@ -14,37 +14,37 @@ namespace Geom {
 /** Notionally an Geom::Matrix corresponding to rotation about the origin.
     Behaves like Geom::Matrix for multiplication.
 **/
-class rotate {
+class Rotate {
 public:
     Point vec;
 
 private:
-    rotate();
+    Rotate();
 
 public:
-    explicit rotate(Coord theta);
-    explicit rotate(Point const &p) : vec(p) {}
-    explicit rotate(Coord const x, Coord const y) : vec(x, y) {}
+    explicit Rotate(Coord theta);
+    explicit Rotate(Point const &p) : vec(p) {}
+    explicit Rotate(Coord const x, Coord const y) : vec(x, y) {}
 
-    bool operator==(rotate const &o) const {
+    bool operator==(Rotate const &o) const {
         return vec == o.vec;
     }
 
-    bool operator!=(rotate const &o) const {
+    bool operator!=(Rotate const &o) const {
         return vec != o.vec;
     }
 
-    inline rotate &operator*=(rotate const &b);
-    /* Defined in rotate-ops.h. */
+    inline Rotate &operator*=(Rotate const &b);
+    /* Defined in Rotate-ops.h. */
 
-    rotate inverse() const {
+    Rotate inverse() const {
         /** \todo
          * In the usual case that vec is a unit vector (within rounding error),
          * dividing by len_sq is either a noop or numerically harmful. 
-         * Make a unit_rotate class (or the like) that knows its length is 1.
+         * Make a unit_Rotate class (or the like) that knows its length is 1.
          */
         double const len_sq = dot(vec, vec);
-        return rotate( Point(vec[X], -vec[Y])
+        return Rotate( Point(vec[X], -vec[Y])
                        / len_sq );
     }
 };

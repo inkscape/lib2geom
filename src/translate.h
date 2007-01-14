@@ -5,14 +5,14 @@
 
 namespace Geom {
 
-class translate {
+class Translate {
 public:
     Point offset;
 private:
-    translate();
+    Translate();
 public:
-    explicit translate(Point const &p) : offset(p) {}
-    explicit translate(Coord const x, Coord const y) : offset(x, y) {}
+    explicit Translate(Point const &p) : offset(p) {}
+    explicit Translate(Coord const x, Coord const y) : offset(x, y) {}
     Coord operator[](Dim2 const dim) const { return offset[dim]; }
     Coord operator[](unsigned const dim) const { return offset[dim]; }
 };

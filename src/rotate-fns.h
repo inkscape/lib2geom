@@ -8,12 +8,12 @@
 #include "rotate.h"
 #include "point-fns.h"
 
-inline bool rotate_equalp(Geom::rotate const &a, Geom::rotate const &b, double const eps)
+inline bool Rotate_equalp(Geom::Rotate const &a, Geom::Rotate const &b, double const eps)
 {
     return point_equalp(a.vec, b.vec, eps);
 }
 
-Geom::rotate rotate_degrees(double degrees);
+Geom::Rotate Rotate_degrees(double degrees);
 
 #endif /* !SEEN_Geom_ROTATE_FNS_H */
 

@@ -16,21 +16,21 @@ int main(int argc, char *argv[])
     utest_start("rotate");
 
     Geom::Matrix const m_id(Geom::identity());
-    Geom::rotate const r_id(0.0);
-    Geom::rotate const rot234(.234);
+    Geom::Rotate const r_id(0.0);
+    Geom::Rotate const rot234(.234);
     UTEST_TEST("constructors, comparisons") {
         UTEST_ASSERT( r_id == r_id );
         UTEST_ASSERT( rot234 == rot234 );
         UTEST_ASSERT( rot234 != r_id );
-        UTEST_ASSERT( r_id == Geom::rotate(Geom::Point(1.0, 0.0)) );
+        UTEST_ASSERT( r_id == Geom::Rotate(Geom::Point(1.0, 0.0)) );
         UTEST_ASSERT( Geom::Matrix(r_id) == m_id );
         UTEST_ASSERT( Geom::Matrix(r_id).test_identity() );
 
-        UTEST_ASSERT(rotate_equalp(rot234, Geom::rotate(Geom::Point(cos(.234), sin(.234))), 1e-12));
+        UTEST_ASSERT(rotate_equalp(rot234, Geom::Rotate(Geom::Point(cos(.234), sin(.234))), 1e-12));
     }
 
     UTEST_TEST("operator=") {
-        Geom::rotate rot234_eq(r_id);
+        Geom::Rotate rot234_eq(r_id);
         rot234_eq = rot234;
         UTEST_ASSERT( rot234 == rot234_eq );
         UTEST_ASSERT( rot234_eq != r_id );
@@ -38,16 +38,16 @@ int main(int argc, char *argv[])
 
     UTEST_TEST("inverse") {
         UTEST_ASSERT( r_id.inverse() == r_id );
-        UTEST_ASSERT( rot234.inverse() == Geom::rotate(-.234) );
+        UTEST_ASSERT( rot234.inverse() == Geom::Rotate(-.234) );
     }
 
     Geom::Point const b(-2.0, 3.0);
-    Geom::rotate const rot180(Geom::Point(-1.0, 0.0));
+    Geom::Rotate const rot180(Geom::Point(-1.0, 0.0));
     UTEST_TEST("operator*(Point, rotate)") {
         UTEST_ASSERT( b * r_id == b );
         UTEST_ASSERT( b * rot180 == -b );
         UTEST_ASSERT( b * rot234 == b * Geom::Matrix(rot234) );
-        UTEST_ASSERT(point_equalp(b * Geom::rotate(M_PI / 2),
+        UTEST_ASSERT(point_equalp(b * Geom::Rotate(M_PI / 2),
                                   Geom::rot90(b),
                                   1e-14));
         UTEST_ASSERT( b * rotate_degrees(90.) == Geom::rot90(b) );
@@ -60,8 +60,8 @@ int main(int argc, char *argv[])
         UTEST_ASSERT( r_id * rot234 == rot234 );
         UTEST_ASSERT(rotate_equalp(rot234 * rot234.inverse(), r_id, 1e-14));
         UTEST_ASSERT(rotate_equalp(rot234.inverse() * rot234, r_id, 1e-14));
-        UTEST_ASSERT(rotate_equalp(( Geom::rotate(0.25) * Geom::rotate(.5) ),
-                                   Geom::rotate(.75),
+        UTEST_ASSERT(rotate_equalp(( Geom::Rotate(0.25) * Geom::Rotate(.5) ),
+                                   Geom::Rotate(.75),
                                    1e-10));
     }
 

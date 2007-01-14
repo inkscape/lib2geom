@@ -28,7 +28,7 @@ public:
         };
         for ( unsigned i = 0; i < G_N_ELEMENTS(d); ++i ) {
             double const degrees = d[i];
-            Geom::rotate const rot(rotate_degrees(degrees));
+            Geom::Rotate const rot(rotate_degrees(degrees));
             Geom::rotate const rot_approx( M_PI * ( degrees / 180. ) );
             TS_ASSERT( rotate_equalp(rot, rot_approx, 1e-12) );
 

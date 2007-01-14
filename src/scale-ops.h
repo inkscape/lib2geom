@@ -5,21 +5,21 @@
 
 namespace Geom {
 
-inline Point operator*(Point const &p, scale const &s)
+inline Point operator*(Point const &p, Scale const &s)
 {
     return Point(p[X] * s[X],
                  p[Y] * s[Y]);
 }
 
-inline scale operator*(scale const &a, scale const &b)
+inline Scale operator*(Scale const &a, Scale const &b)
 {
-    return scale(a[X] * b[X],
+    return Scale(a[X] * b[X],
                  a[Y] * b[Y]);
 }
 
-inline scale operator/(scale const &numer, scale const &denom)
+inline Scale operator/(Scale const &numer, Scale const &denom)
 {
-    return scale(numer[X] / denom[X],
+    return Scale(numer[X] / denom[X],
                  numer[Y] / denom[Y]);
 }
 

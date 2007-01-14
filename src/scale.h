@@ -5,31 +5,31 @@
 
 namespace Geom {
 
-class scale {
+class Scale {
 private:
     Point _p;
 
 private:
-    scale();
+    Scale();
 
 public:
-    explicit scale(Point const &p) : _p(p) {}
-    scale(Coord const x, Coord const y) : _p(x, y) {}
-    explicit scale(Coord const s) : _p(s, s) {}
+    explicit Scale(Point const &p) : _p(p) {}
+    Scale(Coord const x, Coord const y) : _p(x, y) {}
+    explicit Scale(Coord const s) : _p(s, s) {}
     inline Coord operator[](Dim2 const d) const { return _p[d]; }
     inline Coord operator[](unsigned const d) const { return _p[d]; }
     inline Coord &operator[](Dim2 const d) { return _p[d]; }
     inline Coord &operator[](unsigned const d) { return _p[d]; }
 
-    bool operator==(scale const &o) const {
+    bool operator==(Scale const &o) const {
         return _p == o._p;
     }
 
-    bool operator!=(scale const &o) const {
+    bool operator!=(Scale const &o) const {
         return _p != o._p;
     }
-    scale inverse() const {
-        return scale(1/_p[0], 1/_p[1]);
+    Scale inverse() const {
+        return Scale(1/_p[0], 1/_p[1]);
     }
 };
 

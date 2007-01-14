@@ -14,12 +14,12 @@ int main(int argc, char *argv[])
         };
         for (unsigned i = 0; i < G_N_ELEMENTS(d); ++i) {
             double const degrees = d[i];
-            Geom::rotate const rot(rotate_degrees(degrees));
-            Geom::rotate const rot_approx( M_PI * ( degrees / 180. ) );
+            Geom::Rotate const rot(rotate_degrees(degrees));
+            Geom::Rotate const rot_approx( M_PI * ( degrees / 180. ) );
             UTEST_ASSERT(rotate_equalp(rot, rot_approx, 1e-12));
 
-            Geom::rotate const rot_inv(rotate_degrees(-degrees));
-            Geom::rotate const rot_compl(rotate_degrees(360 - degrees));
+            Geom::Rotate const rot_inv(rotate_degrees(-degrees));
+            Geom::Rotate const rot_compl(rotate_degrees(360 - degrees));
             UTEST_ASSERT(rotate_equalp(rot_inv, rot_compl, 1e-12));
 
             UTEST_ASSERT(!rotate_equalp(rot, rotate_degrees(degrees + 1), 1e-5));

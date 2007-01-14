@@ -26,10 +26,10 @@ Matrix operator/(Matrix const &a, Matrix const &b) {
 }
 
 
-/** Multiplies a translate with a scale.
- \return a Matrix which not only translates by the scaled translation, but also includes the scaling.
+/** Multiplies a Translate with a Scale.
+ \return a Matrix which not only Translates by the Scaled translation, but also includes the scaling.
  */
-Matrix operator*(translate const &t, scale const &s) {
+Matrix operator*(Translate const &t, Scale const &s) {
     Matrix ret(s);
     ret[4] = t[X] * s[X];
     ret[5] = t[Y] * s[Y];
@@ -38,10 +38,10 @@ Matrix operator*(translate const &t, scale const &s) {
     return ret;
 }
 
-/** Multiplies a translate with a rotate.
- \return a Matrix which not only translates by the rotated translation, but also includes the rotation.
+/** Multiplies a Translate with a Rotate.
+ \return a Matrix which not only Translates by the Rotated translation, but also includes the rotation.
  */
-Matrix operator*(translate const &t, rotate const &r) {
+Matrix operator*(Translate const &t, Rotate const &r) {
     Matrix ret(r);
     ret.set_translation(t.offset * ret);
 
@@ -49,10 +49,10 @@ Matrix operator*(translate const &t, rotate const &r) {
     return ret;
 }
 
-/** Multiplies a translate with a Matrix.
- \return a Matrix which not only translates by the transformed translation, but also includes the matrix's transformation.
+/** Multiplies a Translate with a Matrix.
+ \return a Matrix which not only Translates by the transformed translation, but also includes the matrix's transformation.
  */
-Matrix operator*(translate const &t, Matrix const &m) {
+Matrix operator*(Translate const &t, Matrix const &m) {
     Matrix ret(m);
     ret[4] += m[0] * t[X] + m[2] * t[Y];
     ret[5] += m[1] * t[X] + m[3] * t[Y];
@@ -65,10 +65,10 @@ Matrix operator*(translate const &t, Matrix const &m) {
 //***************
 //Scale operators
 
-/** Multiplies a scale with a translate.
- \return a Matrix which scales, and then translates.
+/** Multiplies a Scale with a Translate.
+ \return a Matrix which Scales, and then Translates.
  */
-Matrix operator*(scale const &s, translate const &t) {
+Matrix operator*(Scale const &s, Translate const &t) {
     Matrix ret(s);
     ret.set_translation(t.offset);
 
@@ -76,10 +76,10 @@ Matrix operator*(scale const &s, translate const &t) {
     return ret;
 }
 
-/** Multiplies a scale with a Matrix.
- \return a Matrix where the x and y axii have been scaled.
+/** Multiplies a Scale with a Matrix.
+ \return a Matrix where the x and y axii have been Scaled.
  */
-Matrix operator*(scale const &s, Matrix const &m) {
+Matrix operator*(Scale const &s, Matrix const &m) {
     Matrix ret(m);
     ret[0] *= s[X];
     ret[1] *= s[X];
@@ -93,10 +93,10 @@ Matrix operator*(scale const &s, Matrix const &m) {
 
 //****************
 //Rotate operators
-//TODO: Rotate translate?
+//TODO: Rotate Translate?
 
 /** Multiplies a rotation with a Matrix. */
-Matrix operator*(rotate const &a, Matrix const &b) {
+Matrix operator*(Rotate const &a, Matrix const &b) {
     return Matrix(a) * b;
 }
 
@@ -105,7 +105,7 @@ Matrix operator*(rotate const &a, Matrix const &b) {
 //Matrix operators
 
 /** Multiplies a Matrix with a translation, effectively adding the translation to the matrix. */
-Matrix operator*(Matrix const &m, translate const &t) {
+Matrix operator*(Matrix const &m, Translate const &t) {
     Matrix ret(m);
     ret[4] += t[X];
     ret[5] += t[Y];
@@ -114,8 +114,8 @@ Matrix operator*(Matrix const &m, translate const &t) {
     return ret;
 }
 
-/** Divides a Matrix by a scale.  This is the same thing as multiplying by the inverse of the scale. */
-Matrix operator/(Matrix const &m, scale const &s) {
+/** Divides a Matrix by a Scale.  This is the same thing as multiplying by the inverse of the Scale. */
+Matrix operator/(Matrix const &m, Scale const &s) {
     Geom::Matrix ret(m);
     ret[0] /= s[X]; ret[1] /= s[Y];
     ret[2] /= s[X]; ret[3] /= s[Y];
@@ -125,8 +125,8 @@ Matrix operator/(Matrix const &m, scale const &s) {
     return ret;
 }
 
-/** Multiplies a Matrix with a scale, scaling up every aspect of the transformation. */ 
-Matrix operator*(Matrix const &m, scale const &s) {
+/** Multiplies a Matrix with a Scale, scaling up every aspect of the transformation. */ 
+Matrix operator*(Matrix const &m, Scale const &s) {
     Matrix ret(m);
     ret[0] *= s[X]; ret[1] *= s[Y];
     ret[2] *= s[X]; ret[3] *= s[Y];
@@ -137,7 +137,7 @@ Matrix operator*(Matrix const &m, scale const &s) {
 }
 
 /** Multiplies a Matrix with a rotation. */
-Matrix operator*(Matrix const &m, rotate const &r) {
+Matrix operator*(Matrix const &m, Rotate const &r) {
   return m * Matrix(r);
 }
 

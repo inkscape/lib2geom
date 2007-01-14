@@ -32,29 +32,26 @@ public:
     static void destroySuite( NrRotateTest *suite ) { delete suite; }
 
     Geom::Matrix const m_id;
-    Geom::rotate const r_id;
-    Geom::rotate const rot234;
+    Geom::Rotate const r_id;
+    Geom::Rotate const rot234;
     Geom::Point const b;
-    Geom::rotate const rot180;
-
-
-
+    Geom::Rotate const rot180;
 
     void testCtorsCompares(void)
     {
         TS_ASSERT_EQUALS( r_id, r_id );
         TS_ASSERT_EQUALS( rot234, rot234 );
         TS_ASSERT_DIFFERS( rot234, r_id );
-        TS_ASSERT_EQUALS( r_id, Geom::rotate(Geom::Point(1.0, 0.0)) );
+        TS_ASSERT_EQUALS( r_id, Geom::Rotate(Geom::Point(1.0, 0.0)) );
         TS_ASSERT_EQUALS( Geom::Matrix(r_id), m_id );
         TS_ASSERT( Geom::Matrix(r_id).test_identity() );
 
-        TS_ASSERT(rotate_equalp(rot234, Geom::rotate(Geom::Point(cos(.234), sin(.234))), 1e-12));
+        TS_ASSERT(rotate_equalp(rot234, Geom::Rotate(Geom::Point(cos(.234), sin(.234))), 1e-12));
     }
 
     void testAssignmentOp(void)
     {
-        Geom::rotate rot234_eq(r_id);
+        Geom::Rotate rot234_eq(r_id);
         rot234_eq = rot234;
         TS_ASSERT_EQUALS( rot234, rot234_eq );
         TS_ASSERT_DIFFERS( rot234_eq, r_id );
@@ -63,7 +60,7 @@ public:
     void testInverse(void)
     {
         TS_ASSERT_EQUALS( r_id.inverse(), r_id );
-        TS_ASSERT_EQUALS( rot234.inverse(), Geom::rotate(-.234) );
+        TS_ASSERT_EQUALS( rot234.inverse(), Geom::Rotate(-.234) );
     }
 
     void testOpStarPointRotate(void)
@@ -71,7 +68,7 @@ public:
         TS_ASSERT_EQUALS( b * r_id, b );
         TS_ASSERT_EQUALS( b * rot180, -b );
         TS_ASSERT_EQUALS( b * rot234, b * Geom::Matrix(rot234) );
-        TS_ASSERT(point_equalp(b * Geom::rotate(M_PI / 2),
+        TS_ASSERT(point_equalp(b * Geom::Rotate(M_PI / 2),
                                Geom::rot90(b),
                                1e-14));
         TS_ASSERT_EQUALS( b * rotate_degrees(90.), Geom::rot90(b) );
@@ -85,8 +82,8 @@ public:
         TS_ASSERT_EQUALS( r_id * rot234, rot234 );
         TS_ASSERT( rotate_equalp(rot234 * rot234.inverse(), r_id, 1e-14) );
         TS_ASSERT( rotate_equalp(rot234.inverse() * rot234, r_id, 1e-14) );
-        TS_ASSERT( rotate_equalp(( Geom::rotate(0.25) * Geom::rotate(.5) ),
-                                 Geom::rotate(.75),
+        TS_ASSERT( rotate_equalp(( Geom::Rotate(0.25) * Geom::Rotate(.5) ),
+                                 Geom::Rotate(.75),
                                  1e-10) );
     }
 

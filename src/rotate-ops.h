@@ -4,24 +4,24 @@
 
 namespace Geom {
 
-inline Point operator*(Point const &v, rotate const &r)
+inline Point operator*(Point const &v, Rotate const &r)
 {
     return Point(r.vec[X] * v[X] - r.vec[Y] * v[Y],
                  r.vec[Y] * v[X] + r.vec[X] * v[Y]);
 }
 
-inline rotate operator*(rotate const &a, rotate const &b)
+inline Rotate operator*(Rotate const &a, Rotate const &b)
 {
-    return rotate( a.vec * b );
+    return Rotate( a.vec * b );
 }
 
-inline rotate &rotate::operator*=(rotate const &b)
+inline Rotate &Rotate::operator*=(Rotate const &b)
 {
     *this = *this * b;
     return *this;
 }
 
-inline rotate operator/(rotate const &numer, rotate const &denom)
+inline Rotate operator/(Rotate const &numer, Rotate const &denom)
 {
     return numer * denom.inverse();
 }
