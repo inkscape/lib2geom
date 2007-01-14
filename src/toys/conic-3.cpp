@@ -50,7 +50,7 @@ class Conic3: public Toy {
         //e_a_h.resize(4);
         
         SBasis one = BezOrd(1, 1);
-        multidim_sbasis<2> B;
+        MultidimSBasis<2> B;
         double alpha = M_PI;
         SBasis C = cos(BezOrd(0, alpha), 10);
         SBasis S = sin(BezOrd(0, alpha), 10);

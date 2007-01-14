@@ -96,7 +96,7 @@ class Conic4: public Toy {
         arc_basis ab(1./3);
         //for(unsigned i  = 0; i < 5; i++)
         //    *notify << ab.basis[i] << std::endl;
-        multidim_sbasis<2> B;
+        MultidimSBasis<2> B;
         
         for(unsigned dim  = 0; dim < 2; dim++)
             for(unsigned i  = 0; i < 5; i++)

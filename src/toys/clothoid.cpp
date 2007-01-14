@@ -29,7 +29,7 @@ class Clothoid: public Toy {
         double a1 = ((handles[1][0]-width/4)*2)/width;
         *notify << "[" << a0 << ", " << a1 << "]";
         
-        multidim_sbasis<2> B;
+        MultidimSBasis<2> B;
         BezOrd bo = BezOrd(a0*6,a1*6);
         SBasis t2 = BezOrd(0,1);
         t2 = t2*t2;

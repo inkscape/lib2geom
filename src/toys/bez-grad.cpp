@@ -56,7 +56,7 @@ class BezGrad: public Toy {
         std::vector<Geom::Point> circulator_hack(handles);
         circulator_hack.push_back(handles[0]);
         
-        multidim_sbasis<2> side_B[4];
+        MultidimSBasis<2> side_B[4];
         
         for(int side = 0; side < 4; side++) {
             side_B[side] = bezier_to_sbasis<2, 3>(circulator_hack.begin() + 3*side);
@@ -98,8 +98,8 @@ class BezGrad: public Toy {
                 double tu = ui/10.;
                 
                 Geom::PathSetBuilder pb;
-                multidim_sbasis<2> B;
-                multidim_sbasis<2> tB;
+                MultidimSBasis<2> B;
+                MultidimSBasis<2> tB;
                 
                 B[0] = BezOrd(tu-fudge, tu+fudge+inv_u_subs);
                 B[1] = BezOrd(tv-fudge, tv-fudge);

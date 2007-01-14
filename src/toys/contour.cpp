@@ -25,13 +25,13 @@ using namespace Geom;
 
 class curve_min{
 public:
-    multidim_sbasis<2> &B;
-    multidim_sbasis<2> out;
+    MultidimSBasis<2> &B;
+    MultidimSBasis<2> out;
     SBasis2d& sb2;
     unsigned n;
     unsigned par;
     Geom::Point start;
-    curve_min(multidim_sbasis<2> &B,
+    curve_min(MultidimSBasis<2> &B,
               SBasis2d& sb2) :B(B), sb2(sb2) {}
 };
 
@@ -64,7 +64,7 @@ double fn1 (double x, void * params)
         for(int dim = 0; dim < 2; dim++) {
             p.out[dim] = p.B[dim] + shift(BezOrd(0,x), p.par/2 + 1);
         }
-    multidim_sbasis<2> dp = derivative(p.out);
+    MultidimSBasis<2> dp = derivative(p.out);
     SBasis ds = L2(dp, 5);
     //SBasis l = compose(p.sb2, p.out);
     SBasis l = integral( ds);
@@ -169,7 +169,7 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
         cairo_stroke(cr);
     }
     
-    multidim_sbasis<2> B = bezier_to_sbasis<2, 1>(handles.begin() + surface_handles+1);
+    MultidimSBasis<2> B = bezier_to_sbasis<2, 1>(handles.begin() + surface_handles+1);
     B += Geom::Point(-width/4., -width/4.);
     B *= (2./width);
 

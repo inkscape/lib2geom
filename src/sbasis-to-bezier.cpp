@@ -59,7 +59,7 @@ sbasis_to_bezier(SBasis const &B, unsigned q) {
 
 // this produces a 2q point bezier from a degree q sbasis
 std::vector<Geom::Point>
-sbasis_to_bezier(multidim_sbasis<2> const &B, unsigned qq) {
+sbasis_to_bezier(MultidimSBasis<2> const &B, unsigned qq) {
     std::vector<Geom::Point> result;
     unsigned n = qq*2;
     result.resize(n, Geom::Point(0,0));
@@ -81,7 +81,7 @@ sbasis_to_bezier(multidim_sbasis<2> const &B, unsigned qq) {
 //std::vector<Geom::Point>
 // mutating
 void
-subpath_from_sbasis(Geom::PathSetBuilder &pb, multidim_sbasis<2> const &B, double tol, bool initial) {
+subpath_from_sbasis(Geom::PathSetBuilder &pb, MultidimSBasis<2> const &B, double tol, bool initial) {
     assert(B.is_finite());
     if(B.tail_error(2) < tol || B.size() == 2) { // nearly cubic enough
         if(B.size() == 1) {
@@ -111,7 +111,7 @@ curve at $a$.  We keep biting off pieces until there is no more curve left.
 * tolerance tol $= e*A^k$ and invert getting $A = e^{1/k}$ and $a = 1/2 - \sqrt{1/4 - A}$
 */
 void
-subpath_from_sbasis_incremental(Geom::PathSetBuilder &pb, multidim_sbasis<2> B, double tol, bool initial) {
+subpath_from_sbasis_incremental(Geom::PathSetBuilder &pb, MultidimSBasis<2> B, double tol, bool initial) {
     const unsigned k = 2; // cubic bezier
     double te = B.tail_error(k);
     assert(B[0].is_finite());
@@ -130,7 +130,7 @@ subpath_from_sbasis_incremental(Geom::PathSetBuilder &pb, multidim_sbasis<2> B, 
         assert(a > 0);
         //std::cout << "te = " << te << std::endl;
         //std::cout << "A = " << A << "; a=" << a << std::endl;
-        multidim_sbasis<2> Bs = compose(B, BezOrd(0, a));
+        MultidimSBasis<2> Bs = compose(B, BezOrd(0, a));
         assert(Bs.tail_error(k));
         std::vector<Geom::Point> bez = sbasis_to_bezier(Bs, 2);
         reverse(bez.begin(), bez.end());
@@ -148,7 +148,7 @@ subpath_from_sbasis_incremental(Geom::PathSetBuilder &pb, multidim_sbasis<2> B, 
 }
 
 void
-path_from_sbasis(Geom::Path2::Path &pb, multidim_sbasis<2> const &B, double tol) {
+path_from_sbasis(Geom::Path2::Path &pb, MultidimSBasis<2> const &B, double tol) {
     assert(B.is_finite());
     if(B.tail_error(2) < tol || B.size() == 2) { // nearly cubic enough
         if(B.size() == 1) {

@@ -130,13 +130,13 @@ void cairo_PathSet_handles(cairo_t *cr, Geom::PathSet const &p) {
     }
 }
 
-void cairo_md_sb(cairo_t *cr, multidim_sbasis<2> const &B) {
+void cairo_md_sb(cairo_t *cr, MultidimSBasis<2> const &B) {
     Geom::PathSetBuilder pb;
     subpath_from_sbasis(pb, B, 0.1);
     cairo_PathSet(cr, pb.peek());
 }
 
-void cairo_md_sb_handles(cairo_t *cr, multidim_sbasis<2> const &B) {
+void cairo_md_sb_handles(cairo_t *cr, MultidimSBasis<2> const &B) {
     Geom::PathSetBuilder pb;
     subpath_from_sbasis(pb, B, 0.1);
     cairo_PathSet_handles(cr, pb.peek());
@@ -145,7 +145,7 @@ void cairo_md_sb_handles(cairo_t *cr, multidim_sbasis<2> const &B) {
 //TODO: what's the diff between the next two funcs?
 
 void cairo_sb2d(cairo_t* cr, std::vector<SBasis2d> const &sb2, Geom::Point dir, double width) {
-    multidim_sbasis<2> B;
+    MultidimSBasis<2> B;
     for(int ui = 0; ui <= 10; ui++) {
         double u = ui/10.;
         B[0] = extract_u(sb2[0], u);// + BezOrd(u);
@@ -167,7 +167,7 @@ void cairo_sb2d(cairo_t* cr, std::vector<SBasis2d> const &sb2, Geom::Point dir, 
 }
 
 void draw_sb2d(cairo_t* cr, SBasis2d const &sb2, Geom::Point dir, double width) {
-    multidim_sbasis<2> B;
+    MultidimSBasis<2> B;
     for(int ui = 0; ui <= 10; ui++) {
         double u = ui/10.;
         B[0] = dir[0]*extract_u(sb2, u) + BezOrd(u);

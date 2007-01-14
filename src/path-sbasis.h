@@ -8,7 +8,7 @@
 
 namespace Geom{
 
-inline multidim_sbasis<2> elem_to_sbasis(Geom::Path::Elem const & elm) {
+inline MultidimSBasis<2> elem_to_sbasis(Geom::Path::Elem const & elm) {
     return (*elm.op).to_sbasis(elm);
 /*    switch(elm.op) {
     case Geom::lineto:
@@ -20,7 +20,7 @@ inline multidim_sbasis<2> elem_to_sbasis(Geom::Path::Elem const & elm) {
     default:
         break;
     }
-    return multidim_sbasis<2>();
+    return MultidimSBasis<2>();
 */
 }
 

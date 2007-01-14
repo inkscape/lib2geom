@@ -171,28 +171,28 @@ public:
     unsigned const n_handles;
     
     virtual Point point_at(Geom::Path::Elem const & elm, double t)=0;
-    virtual multidim_sbasis<2> to_sbasis(Geom::Path::Elem const & elm)=0;
+    virtual MultidimSBasis<2> to_sbasis(Geom::Path::Elem const & elm)=0;
     CurveType(unsigned n_handles) : n_handles(n_handles) {}
 };
 
 class LineTo : public CurveType {
 public:
     virtual Point point_at(Geom::Path::Elem const & elm, double t);
-    virtual multidim_sbasis<2> to_sbasis(Geom::Path::Elem const & elm);
+    virtual MultidimSBasis<2> to_sbasis(Geom::Path::Elem const & elm);
     LineTo() : CurveType(1) {}
 };
 
 class QuadTo : public CurveType {
 public:
     virtual Point point_at(Geom::Path::Elem const & elm, double t);
-    virtual multidim_sbasis<2> to_sbasis(Geom::Path::Elem const & elm);
+    virtual MultidimSBasis<2> to_sbasis(Geom::Path::Elem const & elm);
     QuadTo() : CurveType(2) {}
 };
 
 class CubicTo : public CurveType {
 public:
     virtual Point point_at(Geom::Path::Elem const & elm, double t);
-    virtual multidim_sbasis<2> to_sbasis(Geom::Path::Elem const & elm);
+    virtual MultidimSBasis<2> to_sbasis(Geom::Path::Elem const & elm);
     CubicTo() : CurveType(3) {}
 };
 

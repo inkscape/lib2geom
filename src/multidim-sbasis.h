@@ -7,7 +7,7 @@
 namespace Geom{
 
 template <unsigned D>
-class multidim_sbasis{
+class MultidimSBasis{
 public:
     SBasis f[D];
     
@@ -41,92 +41,92 @@ public:
 };
 
 template <unsigned D>
-inline multidim_sbasis<D>
-operator +(multidim_sbasis<D> const & a, multidim_sbasis<D> const & b) {
-    multidim_sbasis<D> r;
+inline MultidimSBasis<D>
+operator +(MultidimSBasis<D> const & a, MultidimSBasis<D> const & b) {
+    MultidimSBasis<D> r;
     for(unsigned i = 0; i < D; i++)
         r.f[i] = a.f[i]+b.f[i];
     return r;
 }
 
-inline multidim_sbasis<2>
-operator +(multidim_sbasis<2> const & a, Geom::Point const & b) {
-    multidim_sbasis<2> r;
+inline MultidimSBasis<2>
+operator +(MultidimSBasis<2> const & a, Geom::Point const & b) {
+    MultidimSBasis<2> r;
     for(unsigned i = 0; i < 2; i++)
         r.f[i] = a.f[i]+BezOrd(b[i]);
     return r;
 }
 
 template <unsigned D>
-inline multidim_sbasis<D>
-operator -(multidim_sbasis<D> const & a, multidim_sbasis<D> const & b) {
-    multidim_sbasis<D> r;
+inline MultidimSBasis<D>
+operator -(MultidimSBasis<D> const & a, MultidimSBasis<D> const & b) {
+    MultidimSBasis<D> r;
     for(unsigned i = 0; i < D; i++)
         r.f[i] = a.f[i] - b.f[i];
     return r;
 }
 
-inline multidim_sbasis<2>
-operator -(multidim_sbasis<2> const & a, Geom::Point const & b) {
-    multidim_sbasis<2> r;
+inline MultidimSBasis<2>
+operator -(MultidimSBasis<2> const & a, Geom::Point const & b) {
+    MultidimSBasis<2> r;
     for(unsigned i = 0; i < 2; i++)
         r.f[i] = a.f[i] - BezOrd(b[i]);
     return r;
 }
 
 template <unsigned D>
-inline multidim_sbasis<D>
-operator *(double a, multidim_sbasis<D> const & b) {
-    multidim_sbasis<D> r;
+inline MultidimSBasis<D>
+operator *(double a, MultidimSBasis<D> const & b) {
+    MultidimSBasis<D> r;
     for(unsigned i = 0; i < D; i++)
         r.f[i] = a*b.f[i];
     return r;
 }
 
 template <unsigned D>
-inline multidim_sbasis<D>
-operator +=(multidim_sbasis<D> & a, multidim_sbasis<D> const & b) {
+inline MultidimSBasis<D>
+operator +=(MultidimSBasis<D> & a, MultidimSBasis<D> const & b) {
     for(unsigned i = 0; i < D; i++)
         a.f[i]+=b.f[i];
     return a;
 }
 
-inline multidim_sbasis<2>
-operator +=(multidim_sbasis<2> & a, Geom::Point const & b) {
+inline MultidimSBasis<2>
+operator +=(MultidimSBasis<2> & a, Geom::Point const & b) {
     for(unsigned i = 0; i < 2; i++)
         a.f[i]+= b[i];
     return a;
 }
 
 template <unsigned D>
-inline multidim_sbasis<D>
-operator *=(multidim_sbasis<D> & a, double b) {
+inline MultidimSBasis<D>
+operator *=(MultidimSBasis<D> & a, double b) {
     for(unsigned i = 0; i < D; i++)
         a.f[i]*=b;
     return a;
 }
 
 /*template <unsigned D>
-multidim_sbasis<D>
-operator -=(multidim_sbasis<D> & a, multidim_sbasis<D> const & b) {
+MultidimSBasis<D>
+operator -=(MultidimSBasis<D> & a, MultidimSBasis<D> const & b) {
     for(unsigned i = 0; i < D; i++)
         a.f[i]-=b.f[i];
     return a;
 }*/
 
 template <unsigned D>
-inline multidim_sbasis<D>
-derivative(multidim_sbasis<D> const & a) {
-    multidim_sbasis<D> r;
+inline MultidimSBasis<D>
+derivative(MultidimSBasis<D> const & a) {
+    MultidimSBasis<D> r;
     for(unsigned i = 0; i < D; i++)
         r.f[i]=derivative(a.f[i]);
     return r;
 }
 
 template <unsigned D>
-inline multidim_sbasis<D>
-integral(multidim_sbasis<D> const & a) {
-    multidim_sbasis<D> r;
+inline MultidimSBasis<D>
+integral(MultidimSBasis<D> const & a) {
+    MultidimSBasis<D> r;
     for(unsigned i = 0; i < D; i++)
         r.f[i]=integral(a.f[i]);
     return r;
@@ -134,7 +134,7 @@ integral(multidim_sbasis<D> const & a) {
 
 template <unsigned D>
 inline SBasis
-dot(multidim_sbasis<D> const & a, multidim_sbasis<D> const & b) {
+dot(MultidimSBasis<D> const & a, MultidimSBasis<D> const & b) {
     SBasis r;
     for(unsigned i = 0; i < D; i++)
         r += multiply(a.f[i],b.f[i]);
@@ -143,7 +143,7 @@ dot(multidim_sbasis<D> const & a, multidim_sbasis<D> const & b) {
 
 template <unsigned D>
 inline SBasis
-L2(multidim_sbasis<D> const & a, int k) {
+L2(MultidimSBasis<D> const & a, int k) {
     SBasis r;
     for(unsigned i = 0; i < D; i++)
         r += multiply(a.f[i],a.f[i]);
@@ -151,98 +151,98 @@ L2(multidim_sbasis<D> const & a, int k) {
 }
 
 template <unsigned D>
-inline multidim_sbasis<D>
-multiply(BezOrd const & a, multidim_sbasis<D> const & b) {
-    multidim_sbasis<D> r;
+inline MultidimSBasis<D>
+multiply(BezOrd const & a, MultidimSBasis<D> const & b) {
+    MultidimSBasis<D> r;
     for(unsigned i = 0; i < D; i++)
         r[i] = multiply(a,b.f[i]);
     return r;
 }
 
 template <unsigned D>
-inline multidim_sbasis<D>
-multiply(SBasis const & a, multidim_sbasis<D> const & b) {
-    multidim_sbasis<D> r;
+inline MultidimSBasis<D>
+multiply(SBasis const & a, MultidimSBasis<D> const & b) {
+    MultidimSBasis<D> r;
     for(unsigned i = 0; i < D; i++)
         r[i] = multiply(a,b.f[i]);
     return r;
 }
 
 template <unsigned D>
-inline multidim_sbasis<D>
-operator*(BezOrd const & a, multidim_sbasis<D> const & b) {
+inline MultidimSBasis<D>
+operator*(BezOrd const & a, MultidimSBasis<D> const & b) {
     return multiply(a, b);
 }
 
 template <unsigned D>
-inline multidim_sbasis<D>
-operator*(SBasis const & a, multidim_sbasis<D> const & b) {
+inline MultidimSBasis<D>
+operator*(SBasis const & a, MultidimSBasis<D> const & b) {
     return multiply(a, b);
 }
 
 template <unsigned D>
-inline multidim_sbasis<D>
-compose(SBasis const & a, multidim_sbasis<D> const & b) {
-    multidim_sbasis<D> r;
+inline MultidimSBasis<D>
+compose(SBasis const & a, MultidimSBasis<D> const & b) {
+    MultidimSBasis<D> r;
     for(unsigned i = 0; i < D; i++)
         r[i] = compose(a,b.f[i]);
     return r;
 }
 
 template <unsigned D>
-inline multidim_sbasis<D>
-compose(multidim_sbasis<D> const & a, BezOrd const & b) {
-    multidim_sbasis<D> r;
+inline MultidimSBasis<D>
+compose(MultidimSBasis<D> const & a, BezOrd const & b) {
+    MultidimSBasis<D> r;
     for(unsigned i = 0; i < D; i++)
         r[i] = compose(a.f[i],b);
     return r;
 }
 
 template <unsigned D>
-inline multidim_sbasis<D>
-compose(multidim_sbasis<D> const & a, SBasis const & b) {
-    multidim_sbasis<D> r;
+inline MultidimSBasis<D>
+compose(MultidimSBasis<D> const & a, SBasis const & b) {
+    MultidimSBasis<D> r;
     for(unsigned i = 0; i < D; i++)
         r[i] = compose(a.f[i],b);
     return r;
 }
 
 template <unsigned D>
-inline multidim_sbasis<D>
-compose(multidim_sbasis<D> const & a, multidim_sbasis<D> const & b) {
-    multidim_sbasis<D> r;
+inline MultidimSBasis<D>
+compose(MultidimSBasis<D> const & a, MultidimSBasis<D> const & b) {
+    MultidimSBasis<D> r;
     for(unsigned i = 0; i < D; i++)
         r[i] = compose(a.f[i],b.f[i]);
     return r;
 }
 
 template <unsigned D>
-inline multidim_sbasis<D>
-truncate(multidim_sbasis<D> const & a, unsigned terms) {
-    multidim_sbasis<D> r;
+inline MultidimSBasis<D>
+truncate(MultidimSBasis<D> const & a, unsigned terms) {
+    MultidimSBasis<D> r;
     for(unsigned i = 0; i < D; i++)
         r[i] = truncate(a.f[i],terms);
     return r;
 }
 
-inline multidim_sbasis<2> 
-rot90(multidim_sbasis<2> const & a) {
-    multidim_sbasis<2> r;
+inline MultidimSBasis<2> 
+rot90(MultidimSBasis<2> const & a) {
+    MultidimSBasis<2> r;
     r.f[0] = -a.f[1];
     r.f[1] = a.f[0];
     return r;
 }
 
-inline multidim_sbasis<2>
-cross(multidim_sbasis<2> const & a, multidim_sbasis<2> const & b) {
-    multidim_sbasis<2> r;
+inline MultidimSBasis<2>
+cross(MultidimSBasis<2> const & a, MultidimSBasis<2> const & b) {
+    MultidimSBasis<2> r;
     r[0] = -multiply(a.f[0],b.f[1]);
     r[1] = multiply(a.f[1],b.f[0]);
     return r;
 }
 
 inline Geom::Point
-point_at(multidim_sbasis<2> const & a, double t) {
+point_at(MultidimSBasis<2> const & a, double t) {
     return Geom::Point(a[0](t), a[1](t));
 }
 

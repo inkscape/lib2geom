@@ -36,9 +36,9 @@ SBasis extract_v(SBasis2d const &a, double v) {
     return sb;
 }
 
-SBasis compose(BezOrd2d const &a, multidim_sbasis<2> p) {
+SBasis compose(BezOrd2d const &a, MultidimSBasis<2> p) {
     SBasis sb;
-    multidim_sbasis<2> omp;
+    MultidimSBasis<2> omp;
     for(int dim = 0; dim < 2; dim++)
         omp[dim] = BezOrd(1) - p[dim];
     sb = a[0]*multiply(omp[0], omp[1]) +
@@ -49,7 +49,7 @@ SBasis compose(BezOrd2d const &a, multidim_sbasis<2> p) {
 }
 
 SBasis 
-compose(SBasis2d const &fg, multidim_sbasis<2> p) {
+compose(SBasis2d const &fg, MultidimSBasis<2> p) {
     SBasis B;
     SBasis s[2];
     SBasis ss[2];
@@ -69,9 +69,9 @@ compose(SBasis2d const &fg, multidim_sbasis<2> p) {
 }
 
 
-multidim_sbasis<2> 
-compose(std::vector<SBasis2d> const &fg, multidim_sbasis<2> p) {
-    multidim_sbasis<2> B;
+MultidimSBasis<2> 
+compose(std::vector<SBasis2d> const &fg, MultidimSBasis<2> p) {
+    MultidimSBasis<2> B;
     for(int dim = 0; dim < 2; dim++) {
         B[dim] = compose(fg[dim], p);
     }

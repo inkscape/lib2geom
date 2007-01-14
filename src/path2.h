@@ -30,7 +30,7 @@ public:
 
   Point pointAt(Coord t) const { return pointAndDerivativesAt(t, 0, NULL); }
   virtual Point pointAndDerivativesAt(Coord t, unsigned n, Point *ds) const = 0;
-  virtual multidim_sbasis<2> sbasis() const = 0;
+  virtual MultidimSBasis<2> sbasis() const = 0;
 };
 
 struct BezierHelpers {
@@ -100,7 +100,7 @@ public:
     return point_and_derivatives_at(t, bezier_degree, c_, n_derivs, derivs);
   }
 
-  multidim_sbasis<2> sbasis() const {
+  MultidimSBasis<2> sbasis() const {
     return bezier_to_sbasis<2, bezier_degree, Geom::Point const *>(c_);
   }
 
@@ -147,7 +147,7 @@ public:
   
   Point pointAndDerivativesAt(Coord t, unsigned n_derivs, Point *derivs) const;
 
-  multidim_sbasis<2> sbasis() const;
+  MultidimSBasis<2> sbasis() const;
 
 private:
   Point initial_;
@@ -163,7 +163,7 @@ class SBasis : public Curve {
 public:
   SBasis() {}
 
-  explicit SBasis(multidim_sbasis<2> const &coeffs)
+  explicit SBasis(MultidimSBasis<2> const &coeffs)
   : coeffs_(coeffs) {}
 
   Point initialPoint() const {
@@ -180,10 +180,10 @@ public:
 
   Point pointAndDerivativesAt(Coord t, unsigned n_derivs, Point *derivs) const;
 
-  multidim_sbasis<2> sbasis() const { return coeffs_; }
+  MultidimSBasis<2> sbasis() const { return coeffs_; }
   
 private:
-  multidim_sbasis<2> coeffs_;
+  MultidimSBasis<2> coeffs_;
 };
 
 template <typename IteratorImpl>
@@ -422,7 +422,7 @@ public:
 
   void append(Curve const &curve);
 
-  void append(multidim_sbasis<2> const &curve);
+  void append(MultidimSBasis<2> const &curve);
 
   template <typename CurveType, typename A>
   void appendNew(A a) {

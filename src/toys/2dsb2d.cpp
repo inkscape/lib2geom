@@ -69,7 +69,7 @@ class Sb2d2: public Toy {
         cairo_sb2d(cr, sb2, dir*0.1, width);
         cairo_set_source_rgba (cr, 0., 0., 0, 0.5);
         cairo_stroke(cr);
-        multidim_sbasis<2> B = bezier_to_sbasis<2, 3>(handles.begin() + surface_handles);
+        MultidimSBasis<2> B = bezier_to_sbasis<2, 3>(handles.begin() + surface_handles);
         cairo_md_sb(cr, B);
         for(int dim = 0; dim < 2; dim++) {
             std::vector<double> r = roots(B[dim]);
@@ -82,7 +82,7 @@ class Sb2d2: public Toy {
         cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
         cairo_stroke(cr);
         B *= (4./width);
-        multidim_sbasis<2> tB = compose(sb2, B);
+        MultidimSBasis<2> tB = compose(sb2, B);
         B = (width/2)*B + Geom::Point(width/4, width/4);
         //cairo_md_sb(cr, B);
         tB = (width/2)*tB + Geom::Point(width/4, width/4);

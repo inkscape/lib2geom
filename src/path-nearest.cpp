@@ -52,7 +52,7 @@ Geom::Path::Location find_nearest_location(Geom::Path const & p, Geom::Point pt)
         if(epd.d > best_guess)
             break; // early terminate
         Path::Elem elm = *epd.e;
-        multidim_sbasis<2> B = elem_to_sbasis(*epd.e) - pt;
+        MultidimSBasis<2> B = elem_to_sbasis(*epd.e) - pt;
         SBasis Bdist = dot(B, B);
         std::vector<double> r = roots(derivative(Bdist));
         for(unsigned i = 0; i < r.size(); i++) {

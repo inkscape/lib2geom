@@ -19,8 +19,8 @@ using namespace std;
 
 //-----------------------------------------------
 
-void plot_offset(cairo_t* cr, multidim_sbasis<2> const &M,Coord offset=10,int NbPts=10){
-  multidim_sbasis<2> dM=derivative(M);
+void plot_offset(cairo_t* cr, MultidimSBasis<2> const &M,Coord offset=10,int NbPts=10){
+  MultidimSBasis<2> dM=derivative(M);
   for (int i=0;i<NbPts;i++){
     double t=i*1./NbPts;
     Geom::Point V=point_at(dM,t);
@@ -30,7 +30,7 @@ void plot_offset(cairo_t* cr, multidim_sbasis<2> const &M,Coord offset=10,int Nb
 }
 
 //Usefull? Using point_at(M,0) is not much slower!...
-Point point_at0(multidim_sbasis<2> M){
+Point point_at0(MultidimSBasis<2> M){
   if (M.size()==0)
     return Point(0,0);
   else{
@@ -39,7 +39,7 @@ Point point_at0(multidim_sbasis<2> M){
     return Point(x,y);
   }
 }
-Point point_at1(multidim_sbasis<2> M){
+Point point_at1(MultidimSBasis<2> M){
   if (M.size()==0)
     return Point(0,0);
   else{
@@ -49,10 +49,10 @@ Point point_at1(multidim_sbasis<2> M){
   }
 }
 
-vector<multidim_sbasis<2> > unit_vector(multidim_sbasis<2> const vect, vector<double> &cuts,double tol=.1){
-  vector<multidim_sbasis<2> > uvect;
+vector<MultidimSBasis<2> > unit_vector(MultidimSBasis<2> const vect, vector<double> &cuts,double tol=.1){
+  vector<MultidimSBasis<2> > uvect;
   SBasis alpha,c,s;
-  multidim_sbasis<2> V,dV;
+  MultidimSBasis<2> V,dV;
   double alpha0,alpha1,dalpha0,dalpha1;
 
   V=vect;
@@ -130,7 +130,7 @@ vector<multidim_sbasis<2> > unit_vector(multidim_sbasis<2> const vect, vector<do
     return(uvect);
   }else{
     //TODO3: Use 'area' to find a better place to cut than 1/2?
-    vector<multidim_sbasis<2> > sub_uvect;
+    vector<MultidimSBasis<2> > sub_uvect;
     vector<double> sub_cuts;
     int NbSubdiv=2;
     for (int i=0;i<NbSubdiv;i++){
@@ -146,13 +146,13 @@ vector<multidim_sbasis<2> > unit_vector(multidim_sbasis<2> const vect, vector<do
   }
 }
 
-vector<multidim_sbasis<2> > unit_vector(multidim_sbasis<2> const vect,double tol=.1){
+vector<MultidimSBasis<2> > unit_vector(MultidimSBasis<2> const vect,double tol=.1){
   vector<double> cuts;
   return(unit_vector(vect,cuts,tol));
   }
 
-vector<multidim_sbasis<2> > uniform_speed(multidim_sbasis<2> const M,double tol=.1){
-  vector<multidim_sbasis<2> > uspeed;
+vector<MultidimSBasis<2> > uniform_speed(MultidimSBasis<2> const M,double tol=.1){
+  vector<MultidimSBasis<2> > uspeed;
   vector<double> cuts;
   uspeed=unit_vector(derivative(M),cuts,tol);
   double t0=0.,t1;
@@ -164,15 +164,15 @@ vector<multidim_sbasis<2> > uniform_speed(multidim_sbasis<2> const M,double tol=
   return(uspeed);
 }
 
-double arc_length(multidim_sbasis<2> const M,double tol=.1){
-  multidim_sbasis<2> dM=derivative(M);
-  vector<multidim_sbasis<2> > uspeed;
+double arc_length(MultidimSBasis<2> const M,double tol=.1){
+  MultidimSBasis<2> dM=derivative(M);
+  vector<MultidimSBasis<2> > uspeed;
   vector<double> cuts;
   uspeed=unit_vector(dM,cuts,tol);
   double t0=0.,t1, L=0.;
   for (int i=0;i<cuts.size();i++){
     t1=cuts[i];
-    multidim_sbasis<2> sub_dM=compose(dM,BezOrd(t0,t1));
+    MultidimSBasis<2> sub_dM=compose(dM,BezOrd(t0,t1));
     SBasis V=dot(uspeed[i],sub_dM);
 //FIXME: if the curve is a flat S, this is wrong: the absolute value of V should be used.
     V=integral(V);
@@ -183,10 +183,10 @@ double arc_length(multidim_sbasis<2> const M,double tol=.1){
 }
 
 // incomplete.
-vector<SBasis > curvature(multidim_sbasis<2> const M,
+vector<SBasis > curvature(MultidimSBasis<2> const M,
                           vector<double> &cuts,
                           double tol=.1){
-    vector<multidim_sbasis<2> > cv;
+    vector<MultidimSBasis<2> > cv;
     vector<SBasis > res;
     cv=unit_vector(derivative(M),cuts,tol);
     double t0=0.,t1;
@@ -194,7 +194,7 @@ vector<SBasis > curvature(multidim_sbasis<2> const M,
             
     for (int i=0;i<cv.size();i++){
         t1=cuts[i];
-        multidim_sbasis<2> dcv = derivative(cv[i]);
+        MultidimSBasis<2> dcv = derivative(cv[i]);
         res.push_back(-cv[i][0]*dcv[1] + cv[i][1]*dcv[0]);// + BezOrd(base, base));
         //base = res.back()[0][1] - base;
         t0=t1;
@@ -209,7 +209,7 @@ class OffsetTester: public Toy {
 
   void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
     
-    multidim_sbasis<2> B = bezier_to_sbasis<2, 3>(handles.begin());
+    MultidimSBasis<2> B = bezier_to_sbasis<2, 3>(handles.begin());
 
     cairo_set_line_width (cr, 1);
     cairo_set_source_rgba (cr, 0., 0.5, 0., 1);
@@ -227,9 +227,9 @@ class OffsetTester: public Toy {
 
 
     cairo_set_source_rgba (cr, 0.5, 0.2, 0., 0.8);
-    vector<multidim_sbasis<2> > V;
+    vector<MultidimSBasis<2> > V;
     vector<double> cuts;
-    multidim_sbasis<2> subB,N,Ray;
+    MultidimSBasis<2> subB,N,Ray;
     double t0=0,t1;
 
     V=unit_vector(derivative(B),cuts);

@@ -13,11 +13,9 @@
 ** modified by mwybrow, njh
 */
 
-/*	point_on_curve.c	*/		
-									
-#define SGN(a)      (((a)<0) ? -1 : 0)
+/*	point_on_curve.c	*/
 
-
+#include "math-utils.h"
 
 static double SquaredLength(const Geom::Point a) 
 {
@@ -218,9 +216,9 @@ static int CrossingCount(
     int 	n_crossings = 0;	/*  Number of zero-crossings	*/
     int		old_sign;		/*  Sign of coefficients	*/
     
-    old_sign = SGN(V[0][Geom::Y]);
+    old_sign = sgn(V[0][Geom::Y]);
     for (int i = 1; i <= degree; i++) {
-        int sign = SGN(V[i][Geom::Y]);
+        int sign = sgn(V[i][Geom::Y]);
         if (sign != old_sign)
             n_crossings++;
         old_sign = sign;

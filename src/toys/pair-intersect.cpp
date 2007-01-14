@@ -22,7 +22,7 @@ class PairIntersect: public Toy {
 virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
     cairo_set_line_width (cr, 0.5);
     
-    multidim_sbasis<2> B = bezier_to_sbasis<2, bez_ord-1>(handles.begin());
+    MultidimSBasis<2> B = bezier_to_sbasis<2, bez_ord-1>(handles.begin());
     cairo_md_sb(cr, B);
 
     B = bezier_to_sbasis<2, bez_ord-1>(handles.begin()+bez_ord);

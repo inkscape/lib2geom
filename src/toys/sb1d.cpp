@@ -58,7 +58,7 @@ class Sb1d: public Toy {
             }
         }
         
-        multidim_sbasis<2> B;
+        MultidimSBasis<2> B;
         B[0] = BezOrd(width/4, 3*width/4);
         B[1].resize(handles.size()/2);
         for(int i = 0; i < B[1].size(); i++) {

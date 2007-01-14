@@ -1,5 +1,5 @@
 #include "path.h"
-#include "cubic_bez_util.h"
+#include "bezier-utils.h"
 #include "s-basis.h"
 #include "multidim-sbasis.h"
 #include "bezier-to-sbasis.h"
@@ -14,17 +14,17 @@ QuadTo * const quadto=&_quadto;
 static CubicTo _cubicto;
 CubicTo * const cubicto=&_cubicto;
 
-multidim_sbasis<2>
+MultidimSBasis<2>
 LineTo::to_sbasis(Geom::Path::Elem const & elm) {
     return bezier_to_sbasis<2, 1>(elm.begin());
 }
 
-multidim_sbasis<2>
+MultidimSBasis<2>
 QuadTo::to_sbasis(Geom::Path::Elem const & elm) {
     return bezier_to_sbasis<2, 2>(elm.begin());
 }
 
-multidim_sbasis<2>
+MultidimSBasis<2>
 CubicTo::to_sbasis(Geom::Path::Elem const & elm) {
     return bezier_to_sbasis<2, 3>(elm.begin());
 }
@@ -115,7 +115,7 @@ Geom::Path::Elem::point_tangent_acc_at(double t,
                                            Geom::Point &tgt,
                                            Geom::Point &acc) const {
     // inelegant
-    multidim_sbasis<2> a = elem_to_sbasis(*this);
+    MultidimSBasis<2> a = elem_to_sbasis(*this);
     pos = Geom::Point(a[0](t), a[1](t));
     a = derivative(a);
     tgt = Geom::Point(a[0](t), a[1](t));

@@ -101,7 +101,7 @@ class Conic4: public Toy {
         arc_basis ab(1./3);       
         for(unsigned i  = 0; i < 5; i++)
 		*notify << ab.basis[i] << std::endl;
-        multidim_sbasis<2> B;
+        MultidimSBasis<2> B;
         
         for(unsigned dim  = 0; dim < 2; dim++)
             for(unsigned i  = 0; i < 5; i++)
@@ -131,8 +131,8 @@ class SBez: public Toy {
           void *params)
     {
         double mu = *(double *)params;
-        multidim_sbasis<2> B = bezier_to_sbasis<2, 3>(handles.begin());
-        multidim_sbasis<2> dB = derivative(B);
+        MultidimSBasis<2> B = bezier_to_sbasis<2, 3>(handles.begin());
+        MultidimSBasis<2> dB = derivative(B);
         Geom::Point tan = Geom::unit_vector(point_at(dB,y[0]));
         Geom::Point yp = point_at(B, y[0]);
         double dtau = -dot(tan, yp - handles[4])/10;
@@ -163,7 +163,7 @@ class SBez: public Toy {
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         cairo_set_line_width (cr, 0.5);
     
-        multidim_sbasis<2> B = bezier_to_sbasis<2, 3>(handles.begin());
+        MultidimSBasis<2> B = bezier_to_sbasis<2, 3>(handles.begin());
         //cairo_md_sb(cr, B);
     
         const gsl_odeiv_step_type * T 

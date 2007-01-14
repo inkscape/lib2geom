@@ -76,8 +76,8 @@ class Sb2d2: public Toy {
                 double tu = ui * inv_u_subs;
                 
                 Geom::Path2::Path pb;
-                multidim_sbasis<2> B;
-                multidim_sbasis<2> tB;
+                MultidimSBasis<2> B;
+                MultidimSBasis<2> tB;
                 
                 B[0] = BezOrd(tu-fudge, tu+fudge + inv_u_subs );
                 B[1] = BezOrd(tv-fudge, tv-fudge);

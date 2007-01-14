@@ -59,20 +59,20 @@ public:
         
         std::vector<double> solutions;
         
-        multidim_sbasis<2> test_sb = bezier_to_sbasis<2, 5>(handles.begin());
+        MultidimSBasis<2> test_sb = bezier_to_sbasis<2, 5>(handles.begin());
 
     
-        multidim_sbasis<2> B = bezier_to_sbasis<2, 5>(handles.begin());
+        MultidimSBasis<2> B = bezier_to_sbasis<2, 5>(handles.begin());
         Geom::Path2::Path pb;
         pb.append(B);
         pb.close(false);
         cairo_path(cr, pb);
         cairo_stroke(cr);
         
-        multidim_sbasis<2> m;
-        multidim_sbasis<2> dB = derivative(B);
-        multidim_sbasis<2> ddB = derivative(dB);
-        multidim_sbasis<2> dddB = derivative(ddB);
+        MultidimSBasis<2> m;
+        MultidimSBasis<2> dB = derivative(B);
+        MultidimSBasis<2> ddB = derivative(dB);
+        MultidimSBasis<2> dddB = derivative(ddB);
         
         Geom::Point pt = point_at(B, 0);
         Geom::Point tang = point_at(dB, 0);

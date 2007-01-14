@@ -30,7 +30,6 @@
 #endif
 
 #include "bezier-utils.h"
-#include "point.h"
 #include "point-fns.h"
 
 #include "isnan.h"

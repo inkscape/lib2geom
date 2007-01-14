@@ -3,7 +3,7 @@
 
 typedef std::complex<double> cdouble;
 
-cdouble Laguerre_internal_complex(Poly const & p,
+cdouble laguerre_internal_complex(Poly const & p,
                                   double x0,
                                   double tol,
                                   bool & quad_root) {
@@ -61,7 +61,7 @@ cdouble Laguerre_internal_complex(Poly const & p,
     return xk;
 }
 
-double Laguerre_internal(Poly const & p,
+double laguerre_internal(Poly const & p,
                          Poly const & pp,
                          Poly const & ppp,
                          double x0,
@@ -98,14 +98,14 @@ double Laguerre_internal(Poly const & p,
 
 
 std::vector<cdouble > 
-Laguerre(Poly p, const double tol) {
+laguerre(Poly p, const double tol) {
     std::vector<cdouble > solutions;
     //std::cout << "p = " << p << " = ";
     while(p.size() > 1)
     {
         double x0 = 0;
         bool quad_root = false;
-        cdouble sol = Laguerre_internal_complex(p, x0, tol, quad_root);
+        cdouble sol = laguerre_internal_complex(p, x0, tol, quad_root);
         //if(abs(sol) > 1) break;
         Poly dvs;
         if(quad_root) {
@@ -130,7 +130,7 @@ Laguerre(Poly p, const double tol) {
 }
 
 std::vector<double> 
-Laguerre_real_interval(Poly const & ply, 
+laguerre_real_interval(Poly const & ply, 
 		       const double lo, const double hi,
 		       const double tol) {
 }

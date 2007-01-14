@@ -15,8 +15,8 @@ void cairo_PathSet(cairo_t *cr, Geom::PathSet const &p);
 void cairo_PathSet_handles(cairo_t *cr, Geom::PathSet const &p);
 void cairo_path_handles(cairo_t *cr, Geom::PathSet const &p);
 
-void cairo_md_sb(cairo_t *cr, Geom::multidim_sbasis<2>  const &p);
-void cairo_md_sb_handles(cairo_t *cr, Geom::multidim_sbasis<2> const &p);
+void cairo_md_sb(cairo_t *cr, Geom::MultidimSBasis<2>  const &p);
+void cairo_md_sb_handles(cairo_t *cr, Geom::MultidimSBasis<2> const &p);
 void cairo_sb2d(cairo_t* cr, std::vector<Geom::SBasis2d> const &sb2, Geom::Point dir, double width);
 void draw_sb2d(cairo_t* cr, Geom::SBasis2d const &sb2, Geom::Point dir, double width);
 #endif

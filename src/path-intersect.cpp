@@ -6,13 +6,13 @@ namespace Geom{
 const double INV_EPS = (1L<<14);
     
 /*
- * Split the curve at the midpoint, returning an array with the two parts
+ * split the curve at the midpoint, returning an array with the two parts
  * Temporary storage is minimized by using part of the storage for the result
  * to hold an intermediate value until it is no longer needed.
  */
 #define left r[0]
 #define right r[1]
-Bezier *Bezier::Split() {
+Bezier *Bezier::split() {
     Bezier *r = new Bezier[2];
     left.p[0] = p[0];
     right.p[3] = p[3];
@@ -50,7 +50,7 @@ Bezier *Bezier::Split() {
  */
 
 // And then he discovered for loops...
-int IntersectBB( Bezier a, Bezier b )
+int intersect_BB( Bezier a, Bezier b )
 {
     // Compute bounding box for a
     double minax, maxax, minay, maxay;
@@ -150,45 +150,45 @@ int IntersectBB( Bezier a, Bezier b )
  * is robust: a near-tangential intersection will yield zero or two
  * intersections.
  */
-void RecursivelyIntersect( Bezier a, double t0, double t1, int deptha,
+void recursively_intersect( Bezier a, double t0, double t1, int deptha,
 			   Bezier b, double u0, double u1, int depthb,
 			   std::vector<std::pair<double, double> > &parameters)
 {
     if( deptha > 0 )
     {
-	Bezier *A = a.Split();
+	Bezier *A = a.split();
 	double tmid = (t0+t1)*0.5;
 	deptha--;
 	if( depthb > 0 )
         {
-	    Bezier *B = b.Split();
+	    Bezier *B = b.split();
 	    double umid = (u0+u1)*0.5;
 	    depthb--;
-	    if( IntersectBB( A[0], B[0] ) )
-		RecursivelyIntersect( A[0], t0, tmid, deptha,
+	    if( intersect_BB( A[0], B[0] ) )
+		recursively_intersect( A[0], t0, tmid, deptha,
 				      B[0], u0, umid, depthb,
 				      parameters );
-	    if( IntersectBB( A[1], B[0] ) )
-		RecursivelyIntersect( A[1], tmid, t1, deptha,
+	    if( intersect_BB( A[1], B[0] ) )
+		recursively_intersect( A[1], tmid, t1, deptha,
 				      B[0], u0, umid, depthb,
 				      parameters );
-	    if( IntersectBB( A[0], B[1] ) )
-		RecursivelyIntersect( A[0], t0, tmid, deptha,
+	    if( intersect_BB( A[0], B[1] ) )
+		recursively_intersect( A[0], t0, tmid, deptha,
 				      B[1], umid, u1, depthb,
 				      parameters );
-	    if( IntersectBB( A[1], B[1] ) )
-		RecursivelyIntersect( A[1], tmid, t1, deptha,
+	    if( intersect_BB( A[1], B[1] ) )
+		recursively_intersect( A[1], tmid, t1, deptha,
 				      B[1], umid, u1, depthb,
 				      parameters );
         }
 	else
         {
-	    if( IntersectBB( A[0], b ) )
-		RecursivelyIntersect( A[0], t0, tmid, deptha,
+	    if( intersect_BB( A[0], b ) )
+		recursively_intersect( A[0], t0, tmid, deptha,
 				      b, u0, u1, depthb,
 				      parameters );
-	    if( IntersectBB( A[1], b ) )
-		RecursivelyIntersect( A[1], tmid, t1, deptha,
+	    if( intersect_BB( A[1], b ) )
+		recursively_intersect( A[1], tmid, t1, deptha,
 				      b, u0, u1, depthb,
 				      parameters );
         }
@@ -196,15 +196,15 @@ void RecursivelyIntersect( Bezier a, double t0, double t1, int deptha,
     else
 	if( depthb > 0 )
         {
-	    Bezier *B = b.Split();
+	    Bezier *B = b.split();
 	    double umid = (u0 + u1)*0.5;
 	    depthb--;
-	    if( IntersectBB( a, B[0] ) )
-		RecursivelyIntersect( a, t0, t1, deptha,
+	    if( intersect_BB( a, B[0] ) )
+		recursively_intersect( a, t0, t1, deptha,
 				      B[0], u0, umid, depthb,
 				      parameters );
-	    if( IntersectBB( a, B[1] ) )
-		RecursivelyIntersect( a, t0, t1, deptha,
+	    if( intersect_BB( a, B[1] ) )
+		recursively_intersect( a, t0, t1, deptha,
 				      B[0], umid, u1, depthb,
 				      parameters );
         }
@@ -237,7 +237,7 @@ inline double log4( double x ) { return log(x)/log(4.); }
 /*
  * Wang's theorem is used to estimate the level of subdivision required,
  * but only if the bounding boxes interfere at the top level.
- * Assuming there is a possible intersection, RecursivelyIntersect is
+ * Assuming there is a possible intersection, recursively_intersect is
  * used to find all the parameters corresponding to intersection points.
  * these are then sorted and returned in an array.
  */
@@ -246,10 +246,10 @@ Point vabs(Point p) {
     return Point(fabs(p[X]), fabs(p[Y]));
 }
 
-std::vector<std::pair<double, double> > FindIntersections( Bezier a, Bezier b)
+std::vector<std::pair<double, double> > find_intersections( Bezier a, Bezier b)
 {
     std::vector<std::pair<double, double> > parameters;
-    if( IntersectBB( a, b ) )
+    if( intersect_BB( a, b ) )
     {
 	Point la1 = vabs( ( a.p[2] - a.p[1] ) - (a.p[1] - a.p[0]) );
 	Point la2 = vabs( ( a.p[3] - a.p[2] ) - (a.p[2] - a.p[1]) );
@@ -269,14 +269,14 @@ std::vector<std::pair<double, double> > FindIntersections( Bezier a, Bezier b)
 	    rb = 0;
 	else
 	    rb = (int)ceil(log4( M_SQRT2 * 6.0 / 8.0 * INV_EPS * l0 ) );
-	RecursivelyIntersect( a, 0., 1., ra, b, 0., 1., rb, parameters);
+	recursively_intersect( a, 0., 1., ra, b, 0., 1., rb, parameters);
     }
     std::sort(parameters.begin(), parameters.end());
     return parameters;
 }
 
 void
-Bezier::ParameterSplitLeft(double t, Bezier &left)
+Bezier::parameterSplitLeft(double t, Bezier &left)
 {
     left.p[0] = p[0];
     left.p[1] = Lerp(t, p[0], p[1]);

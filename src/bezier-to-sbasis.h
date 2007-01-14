@@ -7,7 +7,7 @@ namespace Geom{
 
 template <typename T, unsigned D, unsigned order>
 struct bezier_to_sbasis_impl {
-    static inline multidim_sbasis<D> compute(T const &handles) {
+    static inline MultidimSBasis<D> compute(T const &handles) {
         return multiply(BezOrd(1, 0), bezier_to_sbasis_impl<T, D, order-1>::compute(handles)) +
             multiply(BezOrd(0, 1), bezier_to_sbasis_impl<T, D, order-1>::compute(handles+1));
     }
@@ -15,8 +15,8 @@ struct bezier_to_sbasis_impl {
 
 template <typename T, unsigned D>
 struct bezier_to_sbasis_impl<T, D, 1> {
-    static inline multidim_sbasis<D> compute(T const &handles) {
-        multidim_sbasis<D> mdsb;
+    static inline MultidimSBasis<D> compute(T const &handles) {
+        MultidimSBasis<D> mdsb;
         for(unsigned d = 0 ; d < D; d++) {
             mdsb[d] = BezOrd(handles[0][d], handles[1][d]);
         }
@@ -26,8 +26,8 @@ struct bezier_to_sbasis_impl<T, D, 1> {
 
 template <typename T, unsigned D>
 struct bezier_to_sbasis_impl<T, D, 0> {
-    static inline multidim_sbasis<D> compute(T const &handles) {
-        multidim_sbasis<D> mdsb;
+    static inline MultidimSBasis<D> compute(T const &handles) {
+        MultidimSBasis<D> mdsb;
         for(unsigned d = 0 ; d < D; d++) {
             mdsb[d] = BezOrd(handles[0][d], handles[0][d]);
         }
@@ -36,7 +36,7 @@ struct bezier_to_sbasis_impl<T, D, 0> {
 };
 
 template <unsigned D, unsigned order, typename T>
-inline multidim_sbasis<D>
+inline MultidimSBasis<D>
 bezier_to_sbasis(T const &handles) {
     return bezier_to_sbasis_impl<T, D, order>::compute(handles);
 }

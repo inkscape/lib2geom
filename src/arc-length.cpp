@@ -1,5 +1,5 @@
 #include "path-find-points-of-interest.h"
-#include "cubic_bez_util.h"
+#include "bezier-utils.h"
 #include "poly.h"
 using namespace Geom;
 

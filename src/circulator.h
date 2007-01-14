@@ -1,12 +1,12 @@
-#ifndef SEEN_CIRCULATOR_H
-#define SEEN_CIRCULATOR_H
+#ifndef SEEN_Circulator_H
+#define SEEN_Circulator_H
 
 #include <iterator>
 
 namespace Geom {
 
 template <typename Iterator>
-class circulator {
+class Circulator {
 public:
     typedef std::random_access_iterator_tag std::iterator_category;
     typedef std::iterator_traits<Iterator>::value_type value_type;
@@ -14,7 +14,7 @@ public:
     typedef std::iterator_traits<Iterator>::pointer pointer;
     typedef std::iterator_traits<Iterator>::reference reference;
 
-    circulator(Iterator const &first,
+    Circulator(Iterator const &first,
                Iterator const &last,
                Iterator const &pos)
     : _first(first), _last(last), _pos(pos)
@@ -29,45 +29,45 @@ public:
         return &*_pos;
     }
     
-    circulator &operator++() {
+    Circulator &operator++() {
         if ( _first == _last ) return *this;
         ++_pos;
         if ( _pos == _last ) _pos = _first;
         return *this;
     }
-    circulator operator++(int) {
-        circulator saved=*this;
+    Circulator operator++(int) {
+        Circulator saved=*this;
         ++(*this);
         return saved;
     }
 
-    circulator &operator--() {
+    Circulator &operator--() {
         if ( _pos == _first ) _pos = _last;
         --_pos;
         return *this;
     }
-    circulator operator--(int) {
-        circulator saved=*this;
+    Circulator operator--(int) {
+        Circulator saved=*this;
         --(*this);
         return saved;
     }
 
-    circulator &operator+=(int n) {
+    Circulator &operator+=(int n) {
         _pos = _offset(n);
         return *this;
     }
-    circulator operator+(int n) const {
-        return circulator(_first, _last, _offset(n));
+    Circulator operator+(int n) const {
+        return Circulator(_first, _last, _offset(n));
     }
-    circulator &operator-=(int n) {
+    Circulator &operator-=(int n) {
         _pos = _offset(-n);
         return *this;
     }
-    circulator operator-(int n) const {
-        return circulator(_first, _last, _offset(-n));
+    Circulator operator-(int n) const {
+        return Circulator(_first, _last, _offset(-n));
     }
 
-    difference_type operator-(circulator const &other) {
+    difference_type operator-(Circulator const &other) {
         return _pos - other._pos;
     }
 
@@ -99,11 +99,11 @@ private:
 }
 
 template <typename T>
-Geom::circulator<T> operator+(int n, Geom::circulator<T> const &c) {
+Geom::Circulator<T> operator+(int n, Geom::Circulator<T> const &c) {
     return c + n;
 }
 
-#endif // SEEN_CIRCULATOR_H
+#endif // SEEN_Circulator_H
 
 /*
   Local Variables:

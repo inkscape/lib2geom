@@ -54,7 +54,7 @@ class Sb1d: public Toy {
         cairo_set_source_rgba (cr, 0., 0.5, 0, 1);
         cairo_set_line_width (cr, 1);
         
-        multidim_sbasis<2> B;
+        MultidimSBasis<2> B;
         B[0] = BezOrd(width/4, 3*width/4);
         for(unsigned i = 0;  i < 10; i++) {
             //B[1] = cheb(i);

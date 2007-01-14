@@ -89,7 +89,7 @@ void Path::append(Curve const &curve) {
   do_append(curve.duplicate());
 }
 
-void Path::append(multidim_sbasis<2> const &curve) {
+void Path::append(MultidimSBasis<2> const &curve) {
   if ( curves_.front() != &final_ ) {
     for ( int i = 0 ; i < 2 ; ++i ) {
       if ( curve[i][0][0] != final_[0][i] ) {

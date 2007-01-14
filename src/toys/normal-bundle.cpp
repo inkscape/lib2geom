@@ -22,18 +22,18 @@ class NormalBundle : public std::vector<vector<SBasis2d> >{
 public:
     vector<double> lengths;
     NormalBundle(){lengths.push_back(0.);}
-    void setBase(multidim_sbasis<2> const &B, double tol);
+    void setBase(MultidimSBasis<2> const &B, double tol);
     void draw(cairo_t* cr, int NbSections =5,int NbFibre=5);
 };
-vector<multidim_sbasis<2> > compose(NormalBundle const &NB, 
-				    multidim_sbasis<2> const &Binit,
+vector<MultidimSBasis<2> > compose(NormalBundle const &NB, 
+				    MultidimSBasis<2> const &Binit,
 				    Geom::Point Origin=Geom::Point(0,0));
 
 
 //--------------------------------------------
 
-void SBasis1d_to_2d(multidim_sbasis<2> C0,
-		    multidim_sbasis<2> C1,
+void SBasis1d_to_2d(MultidimSBasis<2> C0,
+		    MultidimSBasis<2> C1,
 		    vector<SBasis2d> &S){
     for(int dim = 0; dim < 2; dim++) {
 //**** C0 and C1 should have the same size...
@@ -51,8 +51,8 @@ void SBasis1d_to_2d(multidim_sbasis<2> C0,
     }
 }
 
-void NormalBundle::setBase(multidim_sbasis<2> const &B, double tol=0.1) {
-    multidim_sbasis<2> dB;
+void NormalBundle::setBase(MultidimSBasis<2> const &B, double tol=0.1) {
+    MultidimSBasis<2> dB;
     dB = derivative(B);
     SBasis arc = dot(dB, dB);
 
@@ -70,7 +70,7 @@ void NormalBundle::setBase(multidim_sbasis<2> const &B, double tol=0.1) {
         for(int subdivi = 0; subdivi < N; subdivi++) {
             double dsubu = 1./N;
             double subu = dsubu*subdivi;
-            multidim_sbasis<2> Bp;
+            MultidimSBasis<2> Bp;
             for(int dim = 0; dim < 2; dim++) 
                 Bp[dim] = compose(B[dim], BezOrd(subu, dsubu+subu));
             setBase(Bp, tol);
@@ -78,7 +78,7 @@ void NormalBundle::setBase(multidim_sbasis<2> const &B, double tol=0.1) {
     }
     else {
         arc = sqrt(arc, 2);
-        multidim_sbasis<2> offset;
+        MultidimSBasis<2> offset;
         double dist=-1.;
         //-- the two coordinates should have the same degree!!!
         for (int i=dB[0].size();i<dB[1].size(); i++)
@@ -97,8 +97,8 @@ void NormalBundle::setBase(multidim_sbasis<2> const &B, double tol=0.1) {
 }
 
 void NormalBundle::draw(cairo_t *cr, int NbLi, int NbCol) {
-    multidim_sbasis<2> B;
-    vector<multidim_sbasis<2> > tB;
+    MultidimSBasis<2> B;
+    vector<MultidimSBasis<2> > tB;
     Geom::Point Seg[2];
     B[1]=BezOrd(-100,100);
     double width=*(lengths.rbegin());
@@ -113,19 +113,19 @@ void NormalBundle::draw(cairo_t *cr, int NbLi, int NbCol) {
     for(int ui = 0; ui <= NbLi; ui++) {
         B[1]=BezOrd(-100+ui*200/NbLi);
         for(int i = 0; i <size(); i++) {
-            multidim_sbasis<2> section=compose( (*this)[i],B);
+            MultidimSBasis<2> section=compose( (*this)[i],B);
             cairo_md_sb(cr, section);
         }
     }
 }
 
 
-vector<multidim_sbasis<2> > compose(NormalBundle const &NB, 
-				    multidim_sbasis<2> const &Binit,
+vector<MultidimSBasis<2> > compose(NormalBundle const &NB, 
+				    MultidimSBasis<2> const &Binit,
 				    Geom::Point Origin){
-    vector<multidim_sbasis<2> > result;
-    multidim_sbasis<2> B=Binit;
-    multidim_sbasis<2> Bcut;
+    vector<MultidimSBasis<2> > result;
+    MultidimSBasis<2> B=Binit;
+    MultidimSBasis<2> Bcut;
     vector<double> Roots;
     std::map<double,int> Cuts;
     int idx;
@@ -188,15 +188,15 @@ vector<multidim_sbasis<2> > compose(NormalBundle const &NB,
 class NormalBundleToy: public Toy {
 
     void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
-        multidim_sbasis<2> B = bezier_to_sbasis<2, 3>(handles.begin());
-        multidim_sbasis<2> P = bezier_to_sbasis<2, 3>(handles.begin()+4);
+        MultidimSBasis<2> B = bezier_to_sbasis<2, 3>(handles.begin());
+        MultidimSBasis<2> P = bezier_to_sbasis<2, 3>(handles.begin()+4);
         Geom::Point O = *(handles.begin()+8);
     
         NormalBundle NBdle;
         NBdle.setBase(B);
         Geom::Point Oo(O[0]+*(NBdle.lengths.rbegin()),O[1]);
 
-        vector<multidim_sbasis<2> > Q=compose(NBdle,P,O);
+        vector<MultidimSBasis<2> > Q=compose(NBdle,P,O);
 
         cairo_set_line_width (cr, 0.5);
         //Base lines

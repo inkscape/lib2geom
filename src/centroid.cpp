@@ -50,11 +50,11 @@ int centroid(Path const &p, Point& centroid, double &area) {
     double atmp = 0;
     for(Path::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
         Path::Elem elm = *iter;
-        multidim_sbasis<2> B = (*elm.op).to_sbasis(elm);
-        multidim_sbasis<2> dB = rot90(derivative(B));
+        MultidimSBasis<2> B = (*elm.op).to_sbasis(elm);
+        MultidimSBasis<2> dB = rot90(derivative(B));
         SBasis curl = dot(B, dB);
         SBasis A = integral(curl);
-        multidim_sbasis<2> C = integral(multiply(curl, B));
+        MultidimSBasis<2> C = integral(multiply(curl, B));
         atmp += A(1) - A(0);
         centroid_tmp += point_at(C, 1)- point_at(C, 0); // first moment.
     }

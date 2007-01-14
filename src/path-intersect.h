@@ -4,13 +4,13 @@ namespace Geom{
 class Bezier {
 public:
     Geom::Point p[4];
-    Bezier * Split();
-    void ParameterSplitLeft( double t, Bezier &result );
+    Bezier * split();
+    void parameterSplitLeft( double t, Bezier &result );
     
     ~Bezier() {}
 };
 
-std::vector<std::pair<double, double> > FindIntersections( Bezier a, Bezier b);
+std::vector<std::pair<double, double> > find_intersections( Bezier a, Bezier b);
 };
 
 /*

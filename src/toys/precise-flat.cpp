@@ -16,9 +16,9 @@ class PreciseFlat: public Toy {
 virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
     cairo_set_line_width (cr, 0.5);
     
-    multidim_sbasis<2> B = bezier_to_sbasis<2, 3>(handles.begin());
-    multidim_sbasis<2> dB = derivative(B);
-    multidim_sbasis<2> ddB = derivative(dB);
+    MultidimSBasis<2> B = bezier_to_sbasis<2, 3>(handles.begin());
+    MultidimSBasis<2> dB = derivative(B);
+    MultidimSBasis<2> ddB = derivative(dB);
     cairo_md_sb(cr, B);
     
     // draw the longest chord that is no worse than tol from the curve.

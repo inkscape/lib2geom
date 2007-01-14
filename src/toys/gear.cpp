@@ -68,9 +68,9 @@ private:
     double _clearance;
     double _angle;
     Geom::Point _centre;
-    multidim_sbasis<2> _involute(double start, double stop) {
-        multidim_sbasis<2> B;
-        multidim_sbasis<2> I;
+    MultidimSBasis<2> _involute(double start, double stop) {
+        MultidimSBasis<2> B;
+        MultidimSBasis<2> I;
         BezOrd bo = BezOrd(start,stop);
         
         B[0] = cos(bo,2);
@@ -80,8 +80,8 @@ private:
         I = base_radius()*I + _centre;
         return I;
     }
-    multidim_sbasis<2> _arc(double start, double stop, double R) {
-        multidim_sbasis<2> B;
+    MultidimSBasis<2> _arc(double start, double stop, double R) {
+        MultidimSBasis<2> B;
         BezOrd bo = BezOrd(start,stop);
         
         B[0] = cos(bo,2);
@@ -124,7 +124,7 @@ Geom::Path2::Path Gear::path() {
     {
         double cursor = first_tooth_angle + (i * tooth_rotation);
 
-        multidim_sbasis<2> leading_I = compose(_involute(cursor, cursor + involute_swath_angle(outer_radius())), BezOrd(involute_t,1));
+        MultidimSBasis<2> leading_I = compose(_involute(cursor, cursor + involute_swath_angle(outer_radius())), BezOrd(involute_t,1));
         if (!first) {
             leading_I[X][0][0] = last_point[X];
             leading_I[Y][0][0] = last_point[Y];
@@ -133,14 +133,14 @@ Geom::Path2::Path Gear::path() {
         pb.append(leading_I);
         cursor += involute_advance;
         
-        multidim_sbasis<2> tip = _arc(cursor, cursor+tip_advance, outer_radius());
+        MultidimSBasis<2> tip = _arc(cursor, cursor+tip_advance, outer_radius());
         tip[X][0][0] = leading_I[X][0][1];
         tip[Y][0][0] = leading_I[Y][0][1];
         pb.append(tip);
         cursor += tip_advance;
         
         cursor += involute_advance;
-        multidim_sbasis<2> trailing_I = compose(_involute(cursor, cursor - involute_swath_angle(outer_radius())), BezOrd(1,involute_t));
+        MultidimSBasis<2> trailing_I = compose(_involute(cursor, cursor - involute_swath_angle(outer_radius())), BezOrd(1,involute_t));
         trailing_I[X][0][0] = tip[X][0][1];
         trailing_I[Y][0][0] = tip[Y][0][1];
         pb.append(trailing_I);
@@ -153,7 +153,7 @@ Geom::Path2::Path Gear::path() {
             pb.append(Geom::Path2::LineSegment(leading_start, leading_end));
         }
         
-        multidim_sbasis<2> root = _arc(cursor, cursor+root_advance, root_radius());
+        MultidimSBasis<2> root = _arc(cursor, cursor+root_advance, root_radius());
         if (base_radius() > root_radius()) {
             root[X][0][0] = leading_end[X];
             root[Y][0][0] = leading_end[Y];

@@ -21,14 +21,14 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
     cairo_set_line_width (cr, 0.5);
     cairo_stroke(cr);
     
-    multidim_sbasis<2> Bz = bezier_to_sbasis<2, 3>(handles.begin());
+    MultidimSBasis<2> Bz = bezier_to_sbasis<2, 3>(handles.begin());
         Geom::Path2::Path pb;
         pb.append(Bz);
         pb.close(false);
         cairo_path(cr, pb);
     cairo_stroke(cr);
         
-    multidim_sbasis<3> B;
+    MultidimSBasis<3> B;
     for(int dim = 0; dim < 2; dim++) {
         B[dim] = Bz[dim];
     }
@@ -53,12 +53,12 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
     for(int subdivi = 0; subdivi < N; subdivi++) {
         double dsubu = 1./N;
         double subu = dsubu*subdivi;
-        multidim_sbasis<3> Bp;
+        MultidimSBasis<3> Bp;
         for(int dim = 0; dim < 3; dim++) {
             Bp[dim] = compose(B[dim], BezOrd(subu, dsubu+subu));
         }
         
-        multidim_sbasis<2> Bu;
+        MultidimSBasis<2> Bu;
         for(int dim = 0; dim < 2; dim++) {
 	    Bu[dim] = divide(Bp[dim], Bp[2], 1);
         }

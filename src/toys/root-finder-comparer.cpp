@@ -58,7 +58,7 @@ public:
         std::cout << std::endl;
 #endif
         
-        multidim_sbasis<2> test_sb = bezier_to_sbasis<2, 5>(handles.begin());
+        MultidimSBasis<2> test_sb = bezier_to_sbasis<2, 5>(handles.begin());
         double lo, hi;
         bounds(test_sb[1], lo, hi);
         cairo_move_to(cr, test_sb[0](0), lo);
@@ -193,7 +193,7 @@ public:
         *notify << "found " << solutions.size() << "solutions at:\n";
         std::copy(solutions.begin(), solutions.end(), std::ostream_iterator<double >(*notify, ","));
             
-        multidim_sbasis<2> B = bezier_to_sbasis<2, 5>(handles.begin());
+        MultidimSBasis<2> B = bezier_to_sbasis<2, 5>(handles.begin());
         Geom::Path2::Path pb;
         pb.append(B);
         pb.close(false);

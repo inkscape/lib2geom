@@ -20,10 +20,10 @@ using namespace Geom;
 unsigned total_pieces_sub;
 unsigned total_pieces_inc;
 
-void draw_offset(cairo_t *cr, multidim_sbasis<2> const &B, double dist, double tol=0.1) {
+void draw_offset(cairo_t *cr, MultidimSBasis<2> const &B, double dist, double tol=0.1) {
     draw_handle(cr, Geom::Point(B[0].point_at(1), B[1].point_at(1)));
     
-    multidim_sbasis<2> dB;
+    MultidimSBasis<2> dB;
     dB = derivative(B);
     SBasis arc = dot(dB, dB);
     
@@ -45,7 +45,7 @@ void draw_offset(cairo_t *cr, multidim_sbasis<2> const &B, double dist, double t
         for(int subdivi = 0; subdivi < N; subdivi++) {
             double dsubu = 1./N;
             double subu = dsubu*subdivi;
-            multidim_sbasis<2> Bp;
+            MultidimSBasis<2> Bp;
             for(int dim = 0; dim < 2; dim++) {
                 Bp[dim] = compose(B[dim], BezOrd(subu, dsubu+subu));
             }
@@ -54,7 +54,7 @@ void draw_offset(cairo_t *cr, multidim_sbasis<2> const &B, double dist, double t
     } else {
         arc = sqrt(arc, 2);
     
-        multidim_sbasis<2> offset;
+        MultidimSBasis<2> offset;
     
         for(int dim = 0; dim < 2; dim++) {
             double sgn = dim?-1:1;
@@ -73,7 +73,7 @@ class SBez: public Toy {
 virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
     cairo_set_line_width (cr, 0.5);
     
-    multidim_sbasis<2> B = bezier_to_sbasis<2, 3>(handles.begin());
+    MultidimSBasis<2> B = bezier_to_sbasis<2, 3>(handles.begin());
     cairo_md_sb(cr, B);
     total_pieces_sub = 0;
     total_pieces_inc = 0;
