@@ -171,7 +171,7 @@ BOOST_PYTHON_MODULE(lib2geom_py)
         .def(self != self)
 //TODO: compile reports "not defined"
 //        .def(self *= self)
-        .def("inverse", &Geom::rotate::inverse)
+        .def("inverse", &Geom::Rotate::inverse)
     ;
     
     //s-basis.h
