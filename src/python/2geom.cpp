@@ -158,15 +158,15 @@ BOOST_PYTHON_MODULE(lib2geom_py)
         .def("expansionY", &Geom::Matrix::expansionY)
     ;
 
-    class_<Geom::scale>("Scale", init<double, double>())
+    class_<Geom::Scale>("Scale", init<double, double>())
         .def(self == self)
         .def(self != self)
-        .def("inverse", &Geom::scale::inverse)
+        .def("inverse", &Geom::Scale::inverse)
     ;
 
-    class_<Geom::translate>("Translate", init<double, double>());
+    class_<Geom::Translate>("Translate", init<double, double>());
 
-    class_<Geom::rotate>("Rotate", init<double>())
+    class_<Geom::Rotate>("Rotate", init<double>())
         .def(self == self)
         .def(self != self)
 //TODO: compile reports "not defined"

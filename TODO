@@ -2,8 +2,11 @@ Salient tasks:
 * Port code to path2
 * Generalize toys (eg, path2 rather than a single bezier)
 * Implement inkscape conversion functions
-* Cleanup the tests
-* Standardize naming, secondly, not so importantly, syntax
+* Cleanup the tests (add cubic_bez_util.cpp)
+* Standardize syntax
+* Remove Path1
+
+Remove macros.cpp
 
 for Inkscape:
   - "set" operations:
