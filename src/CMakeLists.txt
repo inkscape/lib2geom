@@ -27,6 +27,7 @@ math-utils.h
 math-utils.cpp
 maybe.h
 multidim-sbasis.h
+sb-geometric.h
 #nearestpoint.cpp
 path-builder.h
 #path-cubicto.cpp
@@ -77,6 +78,7 @@ s-basis-2d.cpp
 s-basis.cpp
 s-basis.h
 s-basis-roots.cpp
+sb-geometric.cpp
 sbasis-poly.cpp
 sbasis-poly.h
 sbasis-to-bezier.cpp
