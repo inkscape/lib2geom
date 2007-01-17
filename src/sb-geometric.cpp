@@ -34,6 +34,36 @@ Point point_at1(MultidimSBasis<2> M){
   }
 }
 
+static 
+Point deriv_at0(MultidimSBasis<2> M){
+  if (M.size()==0){
+    return Point(0,0);
+  }else{
+    Coord x0=(M[0].size()<1)?0:M[0][0][0];
+    Coord x1=(M[0].size()<1)?0:M[0][0][1];
+    Coord xx=(M[0].size()<2)?0:M[0][1][0];
+    Coord y0=(M[1].size()<1)?0:M[1][0][0];
+    Coord y1=(M[1].size()<1)?0:M[1][0][1];
+    Coord yy=(M[1].size()<2)?0:M[1][1][0];
+    return Point(xx+(x1-x0),yy+(y1-y0));
+  }
+}
+
+static 
+Point deriv_at1(MultidimSBasis<2> M){
+  if (M.size()==0){
+    return Point(0,0);
+  }else{
+    Coord x0=(M[0].size()<1)?0:M[0][0][0];
+    Coord x1=(M[0].size()<1)?0:M[0][0][1];
+    Coord xx=(M[0].size()<2)?0:M[0][1][1];
+    Coord y0=(M[1].size()<1)?0:M[1][0][0];
+    Coord y1=(M[1].size()<1)?0:M[1][0][1];
+    Coord yy=(M[1].size()<2)?0:M[1][1][1];
+    return Point(-xx+(x1-x0),-yy+(y1-y0));
+  }
+}
+
 std::vector<MultidimSBasis<2> > Geom::unit_vector(MultidimSBasis<2> const vect, std::vector<double> &cuts,double tol){
   std::vector<MultidimSBasis<2> > uvect;
   SBasis alpha,c,s;
@@ -51,18 +81,17 @@ std::vector<MultidimSBasis<2> > Geom::unit_vector(MultidimSBasis<2> const vect, 
   bool notfound0=true,notfound1=true;
   Point V0,dV0,V1,dV1;
   while (V.size()!=0&&(notfound0||notfound1)){
-    dV=derivative(V);
     if (notfound0){
       V0=point_at0(V);
-      dV0=point_at0(dV);
+      dV0=deriv_at0(V);
       notfound0=is_zero(point_at0(V));
     }
     if (notfound1){
       V1=point_at1(V);
-      dV1=point_at1(dV);
+      dV1=deriv_at1(V);
       notfound1=is_zero(V1);
     }
-    V=dV;
+    V=derivative(V);
     V[0].normalize();
     V[1].normalize();
   }
@@ -110,9 +139,34 @@ std::vector<MultidimSBasis<2> > Geom::unit_vector(MultidimSBasis<2> const vect, 
 
   SBasis area=SBasis(V[0]*vect[1]-V[1]*vect[0]);
   if (area.tail_error(0)<err){
-    uvect.push_back(V);
-    cuts.push_back(1);
-    return(uvect);
+    //Check angle range: if too big, cos an sin are not accurate.
+    // this can be solved either by using a range dependent degree for cos and sin,
+    // or by adding one more cut here.
+    //Notice that in the case of a flat half turn, subdivs wont reduce this range.
+    if (fabs(alpha1-alpha0)<M_PI*0.8){
+      uvect.push_back(V);
+      cuts.push_back(1);
+      return(uvect);
+    }else{
+      c=compose(cos(BezOrd(0.,alpha1-alpha0),3),compose(alpha,BezOrd(0,0.5)));
+      s=compose(sin(BezOrd(0.,alpha1-alpha0),3),compose(alpha,BezOrd(0,0.5)));
+      c.truncate(3);
+      s.truncate(3);
+      V[0]=std::cos(alpha0)*c-std::sin(alpha0)*s;
+      V[1]=std::sin(alpha0)*c+std::cos(alpha0)*s;
+      uvect.push_back(V);
+      cuts.push_back(.5);
+
+      c=compose(cos(BezOrd(0.,alpha1-alpha0),3),compose(alpha,BezOrd(0.5,1)));
+      s=compose(sin(BezOrd(0.,alpha1-alpha0),3),compose(alpha,BezOrd(0.5,1)));
+      c.truncate(3);
+      s.truncate(3);
+      V[0]=std::cos(alpha0)*c-std::sin(alpha0)*s;
+      V[1]=std::sin(alpha0)*c+std::cos(alpha0)*s;
+      uvect.push_back(V);
+      cuts.push_back(1);
+      return(uvect);      
+    }
   }else{
     //TODO3: Use 'area' to find a better place to cut than 1/2?
     std::vector<MultidimSBasis<2> > sub_uvect;
