@@ -91,9 +91,11 @@ std::vector<MultidimSBasis<2> > Geom::unit_vector(MultidimSBasis<2> const vect, 
       dV1=deriv_at1(V);
       notfound1=is_zero(V1);
     }
-    V=derivative(V);
-    V[0].normalize();
-    V[1].normalize();
+    if (notfound0||notfound1){
+      V=derivative(V);
+      V[0].normalize();
+      V[1].normalize();
+    }
   }
   alpha0=atan(V0[1]/V0[0]);
   if (V0[0]<0){alpha0+=M_PI;}
@@ -237,10 +239,10 @@ Geom::curvature(MultidimSBasis<2> const M,
     cv=unit_vector(derivative(M),cuts,tol);
     double t0=0.,t1;
     double base = 0;
-            
+
     for (int i=0;i<cv.size();i++){
         t1=cuts[i];
-        MultidimSBasis<2> dcv = derivative(cv[i]);
+        MultidimSBasis<2> dcv = 1/(t1-t0)*derivative(cv[i]);
         res.push_back(-cv[i][0]*dcv[1] + cv[i][1]*dcv[0]);// + BezOrd(base, base));
         //base = res.back()[0][1] - base;
         t0=t1;
