@@ -235,14 +235,18 @@ Geom::curvature(MultidimSBasis<2> const M,
                 std::vector<double> &cuts,
                 double tol){
     std::vector<MultidimSBasis<2> > cv;
+    MultidimSBasis<2> dM=derivative(M);
     std::vector<SBasis > res;
-    cv=unit_vector(derivative(M),cuts,tol);
+    cv=unit_vector(dM,cuts,tol);
     double t0=0.,t1;
     double base = 0;
 
     for (int i=0;i<cv.size();i++){
         t1=cuts[i];
-        MultidimSBasis<2> dcv = 1/(t1-t0)*derivative(cv[i]);
+	SBasis speed=(t1-t0)*dot(compose(dM,BezOrd(t0,t1)),cv[i]);
+        MultidimSBasis<2> dcv =derivative(cv[i]);
+        dcv[0]=divide(dcv[0],speed,3);
+        dcv[1]=divide(dcv[1],speed,3);
         res.push_back(-cv[i][0]*dcv[1] + cv[i][1]*dcv[0]);// + BezOrd(base, base));
         //base = res.back()[0][1] - base;
         t0=t1;
