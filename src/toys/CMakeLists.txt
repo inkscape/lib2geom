@@ -28,6 +28,7 @@ bez-grad
 draw-toy
 normal-bundle
 offset-test
+curvature-test
 "${NEEDS_GSL}"
 )
 
