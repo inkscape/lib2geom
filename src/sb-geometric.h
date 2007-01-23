@@ -10,7 +10,7 @@
  * These operators are built on a more 'polynomially robust'
  * transformation to map a function that takes a [0,1] parameter to a
  * 2d vector into a function that takes the same [0,1] parameter to a
- * unit vector.
+ * unit vector with the same direction.
  *
  * Rather that using (X/sqrt(X))(t) which involves two unstable
  * operations, sqrt and divide, this approach forms a curve directly

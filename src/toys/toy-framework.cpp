@@ -132,9 +132,14 @@ void open() {
         if(gtk_dialog_run(GTK_DIALOG(d)) == GTK_RESPONSE_ACCEPT) {
             const char* filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(d));
             FILE* f = fopen(filename, "r");
-            current_toy->handles.clear();
-            while(!feof(f))
-                current_toy->handles.push_back(read_point(f));
+            //current_toy->handles.clear();
+	    unsigned ix = 0;
+            while(!feof(f)) {
+		    if(ix >= current_toy->handles.size())
+			    current_toy->handles.resize(ix+1);
+		    current_toy->handles[ix] = read_point(f);
+		    ix++;
+	    }
             fclose(f);
         }
         gtk_widget_destroy(d);

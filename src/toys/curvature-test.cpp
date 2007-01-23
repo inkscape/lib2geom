@@ -50,7 +50,7 @@ class CurvatureTester: public Toy {
 	double t0=0,t1=cuts[0];
 	while (t1<t){t0=t1;t1=cuts[++i];}
 	double radius=K[i]((t-t0)/(t1-t0));
-	std::cout<<"K="<<radius<<std::endl;
+	*notify<<"K="<<radius<<std::endl;
 	if (fabs(radius)>1e-4){
 	  radius=1./radius;
 	  Geom::Point normal=unit_vector(point_at(derivative(B),t));
