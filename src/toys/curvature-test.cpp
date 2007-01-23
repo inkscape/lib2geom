@@ -49,8 +49,8 @@ class CurvatureTester: public Toy {
         
         for(int ix = 0; ix < K.size(); ix++) {
             MultidimSBasis<2> Kxy;
-            Kxy[1] = 300*K[ix] + BezOrd(300);
-            Kxy[0] = BezOrd(300*cuts[ix], 300*cuts[ix+1]);
+            Kxy[1] = BezOrd(400) - 300*K[ix];
+            Kxy[0] = BezOrd(300*cuts[ix] + 150, 300*cuts[ix+1] + 150);
             cairo_md_sb(cr, Kxy);
             cairo_stroke(cr);
         }
