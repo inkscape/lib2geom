@@ -46,6 +46,15 @@ class CurvatureTester: public Toy {
 	double t=std::max(0.,std::min(1.,(handles[4][0]-150)/300.));
 	vector<double> cuts;
         vector<SBasis> K=curvature(B,cuts);
+        
+        for(int ix = 0; ix < K.size(); ix++) {
+            MultidimSBasis<2> Kxy;
+            Kxy[1] = 300*K[ix] + BezOrd(300);
+            Kxy[0] = BezOrd(300*cuts[ix], 300*cuts[ix+1]);
+            cairo_md_sb(cr, Kxy);
+            cairo_stroke(cr);
+        }
+        
 	int i=0;
 	double t0=0,t1=cuts[0];
 	while (t1<t){t0=t1;t1=cuts[++i];}
