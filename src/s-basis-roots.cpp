@@ -25,12 +25,12 @@ namespace Geom{
 //     hi = std::max(std::max(hi, s[0][0]), s[0][1]);
 // }
 void bounds(SBasis const & s,
-	    double &lo, double &hi) {
+	    double &lo, double &hi, int order) {
     int imax=s.size()-1;
     lo=0;
     hi=0;
 
-    for(int i = imax; i >=0; i--) {
+    for(int i = imax; i >=order; i--) {
       double a=s[i][0];
       double b=s[i][1];
       double t;

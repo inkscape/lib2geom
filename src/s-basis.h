@@ -374,7 +374,8 @@ SBasis cos(BezOrd bo, int k);
 
 SBasis reverse(SBasis const &s);
 
-void bounds(SBasis const & s, double &lo, double &hi);
+//void bounds(SBasis const & s, double &lo, double &hi);
+void bounds(SBasis const & s, double &lo, double &hi,int order=0);
 
 std::vector<double> roots(SBasis const & s);
 

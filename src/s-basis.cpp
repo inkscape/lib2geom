@@ -10,6 +10,8 @@ namespace Geom{
  * many cubic beziers.  I've changed this to be \sum _i=tail ^\infty |hat a_i| 2^-i but I have no
  * evidence that this is correct.
  */
+
+/*
 double SBasis::tail_error(unsigned tail) const {
     double err = 0, s = 1./(1<<(2*tail)); // rough
     for(unsigned i = tail; i < size(); i++) {
@@ -17,6 +19,12 @@ double SBasis::tail_error(unsigned tail) const {
         s /= 4;
     }
     return err;
+}
+*/
+double SBasis::tail_error(unsigned tail) const {
+  double m,M;
+  bounds(*this,m,M,tail);
+  return std::max(fabs(m),fabs(M));
 }
 
 bool BezOrd::is_finite() const {
