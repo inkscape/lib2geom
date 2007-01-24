@@ -25,6 +25,12 @@
 #include "zroots.c"
 #endif
 
+namespace Geom{
+extern void subdiv_sbasis(SBasis const & s,
+                   std::vector<double> & roots, 
+                   double left, double right);
+};
+
 using std::vector;
 using std::complex;
 using namespace Geom;
@@ -35,6 +41,7 @@ class RootFinderComparer: public Toy {
 public:
     double timer_precision;
     double units;
+    std::string units_string;
     
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         std::vector<Geom::Point> trans;
@@ -51,7 +58,8 @@ public:
             FindRoots(&trans[0], 5, &solutions[0], 0);
             iterations++;
         }
-        *notify << "original time = " << timer_precision*units/iterations << std::endl;
+        *notify << "original time = " << timer_precision*units/iterations 
+                << units_string << std::endl;
 #if 0
         std::cout << "original: ";
         std::copy(solutions.begin(), solutions.end(), std::ostream_iterator<double>(std::cout, ",\t"));
@@ -109,7 +117,9 @@ public:
             solve(ply);
             iterations++;
         }
-        *notify << "gsl poly " << ", time = " << timer_precision*units/iterations-overhead << std::endl;
+        *notify << "gsl poly " 
+                << ", time = " << timer_precision*units/iterations-overhead 
+                << units_string << std::endl;
       #endif
   
     #if ZROOTS_TEST
@@ -120,7 +130,9 @@ public:
             iterations++;
         }
     
-        *notify << "zroots poly " << ", time = " << timer_precision*units/iterations-overhead << std::endl;
+        *notify << "zroots poly " 
+                << ", time = " << timer_precision*units/iterations-overhead 
+                << units_string << std::endl;
     #endif    
     
     #if LAGUERRE_TEST
@@ -132,19 +144,25 @@ public:
         }
         complex_solutions = Laguerre(ply);
     
-        *notify << "Laguerre poly " << ", time = " << timer_precision*units/iterations-overhead << std::endl;
+        *notify << "Laguerre poly " 
+                << ", time = " << timer_precision*units/iterations-overhead 
+                << units_string << std::endl;
     #endif    
     
-    #define SBASIS_SUBDIV_TEST 0
+    #define SBASIS_SUBDIV_TEST 1
     #if SBASIS_SUBDIV_TEST
         end_t = clock()+clock_t(timer_precision*CLOCKS_PER_SEC);
         iterations = 0;
         while(end_t > clock()) {
-            roots( -test_sb[1] + BezOrd(3*width/4));
+            std::vector<double> rts;
+            subdiv_sbasis(-test_sb[1] + BezOrd(3*width/4),
+                          rts, 0, 1);
             iterations++;
         }
     
-        *notify << "sbasis subdivision " << ", time = " << timer_precision*units/iterations-overhead << std::endl;
+        *notify << "sbasis subdivision " 
+                << ", time = " << timer_precision*units/iterations-overhead 
+                << units_string << std::endl;
     #endif    
     
         end_t = clock()+clock_t(timer_precision*CLOCKS_PER_SEC);
@@ -154,7 +172,9 @@ public:
             find_parametric_bezier_roots(&trans[0], 5, solutions, 0);
             iterations++;
         }
-        *notify << "solver parametric time = " << timer_precision*units/iterations-overhead << std::endl;
+        *notify << "solver parametric time = " 
+                << timer_precision*units/iterations-overhead 
+                << units_string << std::endl;
     
         double ys[trans.size()];
         for(int i = 0; i < trans.size(); i++) {
@@ -170,7 +190,9 @@ public:
             find_bernstein_roots(ys, 5, solutions, 0);
             iterations++;
         }
-        *notify << "solver 1d subdivision slns" << solutions.size() << ", time = " << timer_precision*units/iterations-overhead << std::endl;
+        *notify << "solver 1d subdivision slns" << solutions.size() 
+                << ", time = " << timer_precision*units/iterations-overhead 
+                << units_string << std::endl;
         solutions = roots( -test_sb[1] + BezOrd(3*width/4));
 #if 0
         std::cout << "sbasis sub: ";
@@ -203,7 +225,7 @@ public:
         cairo_md_sb(cr, B);
         Toy::draw(cr, notify, width, height, save);
     }
-    RootFinderComparer() : timer_precision(0.1), units(1e6) // microseconds
+    RootFinderComparer() : timer_precision(0.1), units(1e6), units_string("us") // microseconds
     {
         for(int i = 0; i < 6; i++) handles.push_back(Geom::Point(uniform()*400, uniform()*400));
     }
