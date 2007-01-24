@@ -6,24 +6,51 @@
 
 namespace Geom{
 
+// void bounds(SBasis const & s,
+//             double &lo, double &hi) {
+//     double ss = 0.25;
+//     double mid = s(0.5);
+//     lo = hi = mid;
+//     for(unsigned i = 1; i < s.size(); i++) {
+//         for(unsigned dim = 0; dim < 2; dim++) {
+//             double b = s[i][dim]*ss;
+//             if(b < 0)
+//                 lo += b;
+//             if(b > 0)
+//                 hi += b;
+//         }
+//         ss *= 0.25;
+//     }
+//     lo = std::min(std::min(lo, s[0][1]),s[0][0]);
+//     hi = std::max(std::max(hi, s[0][0]), s[0][1]);
+// }
 void bounds(SBasis const & s,
-            double &lo, double &hi) {
-    double ss = 0.25;
-    double mid = s(0.5);
-    lo = hi = mid;
-    for(unsigned i = 1; i < s.size(); i++) {
-        for(unsigned dim = 0; dim < 2; dim++) {
-            double b = s[i][dim]*ss;
-            if(b < 0)
-                lo += b;
-            if(b > 0)
-                hi += b;
-        }
-        ss *= 0.25;
+	    double &lo, double &hi) {
+    int imax=s.size()-1;
+    lo=0;
+    hi=0;
+
+    for(int i = imax; i >=0; i--) {
+      double a=s[i][0];
+      double b=s[i][1];
+      double t;
+
+      if (hi>0){t=((b-a)+hi)/2/hi;}
+      if (hi<=0||t<0||t>1){
+	hi=std::max(a,b);
+      }else{
+	hi=a*(1-t)+b*t+hi*t*(1-t);	  
+      }
+
+      if (lo<0){t=((b-a)+lo)/2/lo;}
+      if (lo>=0||t<0||t>1){
+	lo=std::min(a,b);
+      }else{
+	lo=a*(1-t)+b*t+lo*t*(1-t);	  
+      }
     }
-    lo = std::min(std::min(lo, s[0][1]),s[0][0]);
-    hi = std::max(std::max(hi, s[0][0]), s[0][1]);
 }
+
 
 #if 0
 double Laguerre_internal(SBasis const & p,
