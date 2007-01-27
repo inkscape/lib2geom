@@ -179,22 +179,22 @@ double svgd_number( char *str )
 		horizontal_lineto = ('H' @mode_abs| 'h' @mode_rel) wsp* horizontal_lineto_argument_sequence;
 
 		lineto_argument = coordinate_pair @emit_lineto;
-		lineto_argument_sequence = lineto_argument (comma_wsp? lineto_argument)*;
+		lineto_argument_sequence = lineto_argument (comma_wsp? lineto_argument )**;
 		lineto = ('L' @mode_abs| 'l' @mode_rel) wsp* lineto_argument_sequence;
 
 		closepath = ('Z' | 'z') @emit_closepath;
 
 		moveto_argument = coordinate_pair @emit_moveto;
-		moveto_argument_sequence = moveto_argument (comma_wsp? lineto_argument)*;
+		moveto_argument_sequence = moveto_argument (comma_wsp? lineto_argument)**;
 		moveto = ('M' @mode_abs| 'm' @mode_rel) wsp* moveto_argument_sequence;
 
 		drawto_command = closepath ;#| lineto ; #| horizontal_lineto | vertical_lineto
 #			| curveto | smooth_curveto | quadratic_bezier_curveto
 #			| smooth_quadratic_bezier_curveto | elliptical_arc;
 
-		drawto_commands = drawto_command (wsp* drawto_command)*;
+		drawto_commands = drawto_command wsp* (drawto_command wsp)**;
 		moveto_drawto_command_group = moveto wsp* drawto_commands?;
-		moveto_drawto_command_groups = moveto_drawto_command_group (wsp* moveto_drawto_command_group)*;
+		moveto_drawto_command_groups = moveto_drawto_command_group wsp* (moveto_drawto_command_group wsp*)**;
 
 		#main := wsp* moveto_drawto_command_groups wsp* '\n';
 		main := moveto_drawto_command_groups '\n';
