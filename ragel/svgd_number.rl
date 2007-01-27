@@ -254,9 +254,8 @@ void parse( char *str )
 			moveto_drawto_command_group wsp*
 			(wsp* moveto_drawto_command_group)*;
 
-		#main := wsp* moveto_drawto_command_groups wsp* '\n';
-		#main := moveto_drawto_command_groups '\n';
-                main := moveto '\n';
+		svg_path = wsp* moveto_drawto_command_groups? wsp*;
+                main := svg_path '\n';
 
 		# Inintialize and execute.
 		write init;
