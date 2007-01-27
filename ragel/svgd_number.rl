@@ -136,66 +136,108 @@ void parse( char *str )
 			>start_number %push_number;
 
 		coordinate = number;
-		coordinate_pair = number $(pair,1) comma_wsp? number >(pair,0);
+		coordinate_pair = coordinate $1 %0 comma_wsp? coordinate;
 		
-		elliptical_arc_argument = (nonnegative_number comma_wsp? nonnegative_number comma_wsp?
-			number comma_wsp flag comma_wsp flag comma_wsp coordinate_pair) @elliptical_arc;
+		elliptical_arc_argument =
+			(nonnegative_number $1 %0 comma_wsp?
+			 nonnegative_number $1 %0 comma_wsp?
+			 number comma_wsp
+			 flag comma_wsp flag comma_wsp
+			 coordinate_pair) @elliptical_arc;
 		elliptical_arc_argument_sequence = elliptical_arc_argument (comma_wsp? elliptical_arc_argument)*;
-		elliptical_arc = ('A' @mode_abs| 'a' @mode_rel) wsp* elliptical_arc_argument_sequence;
+		elliptical_arc = ('A' %mode_abs| 'a' %mode_rel) wsp* elliptical_arc_argument_sequence;
 		
-		smooth_quadratic_bezier_curveto_argument = coordinate_pair @smooth_quadratic_bezier_curveto;
-		smooth_quadratic_bezier_curveto_argument_sequence = smooth_quadratic_bezier_curveto_argument 
-			(comma_wsp? smooth_quadratic_bezier_curveto_argument)*;
-		smooth_quadratic_bezier_curveto = ('T' @mode_abs| 't' @mode_rel) wsp*
+		smooth_quadratic_bezier_curveto_argument =
+			coordinate_pair @smooth_quadratic_bezier_curveto;
+		smooth_quadratic_bezier_curveto_argument_sequence =
+			smooth_quadratic_bezier_curveto_argument $1 %0
+			(comma_wsp?
+			 smooth_quadratic_bezier_curveto_argument $1 %0)*;
+		smooth_quadratic_bezier_curveto =
+			('T' %mode_abs| 't' %mode_rel) wsp*
 			 smooth_quadratic_bezier_curveto_argument_sequence;
 
-		quadratic_bezier_curveto_argument = (coordinate_pair comma_wsp? coordinate_pair) 
+		quadratic_bezier_curveto_argument =
+			(coordinate_pair $1 %0 comma_wsp? coordinate_pair)
 			@quadratic_bezier_curveto;
-		quadratic_bezier_curveto_argument_sequence = quadratic_bezier_curveto_argument 
-			(comma_wsp? quadratic_bezier_curveto_argument)*;		
-		quadratic_bezier_curveto = ('Q' @mode_abs| 'q' @mode_rel) wsp* 
+		quadratic_bezier_curveto_argument_sequence =
+			quadratic_bezier_curveto_argument $1 %0
+			(comma_wsp? quadratic_bezier_curveto_argument $1 %0)*;
+		quadratic_bezier_curveto =
+			('Q' %mode_abs| 'q' %mode_rel) wsp* 
 			quadratic_bezier_curveto_argument_sequence;
 
-		smooth_curveto_argument = (coordinate_pair comma_wsp? coordinate_pair) @smooth_curveto;
-		smooth_curveto_argument_sequence = smooth_curveto_argument (comma_wsp? smooth_curveto_argument)*;
-		smooth_curveto = ('S' @mode_abs| 's' @mode_rel) wsp* smooth_curveto_argument_sequence;
+		smooth_curveto_argument =
+			(coordinate_pair $1 %0 comma_wsp? coordinate_pair)
+			@smooth_curveto;
+		smooth_curveto_argument_sequence =
+			smooth_curveto_argument $1 %0
+			(comma_wsp? smooth_curveto_argument $1 %0)*;
+		smooth_curveto =
+			('S' %mode_abs| 's' %mode_rel)
+			wsp* smooth_curveto_argument_sequence;
 
-		curveto_argument = (coordinate_pair comma_wsp? coordinate_pair comma_wsp? coordinate_pair) 
+		curveto_argument =
+			(coordinate_pair $1 %0 comma_wsp?
+			 coordinate_pair $1 %0 comma_wsp?
+			 coordinate_pair) 
 			@curveto;
-		curveto_argument_sequence = curveto_argument (comma_wsp? curveto_argument)*;
-		curveto = ('C' @mode_abs| 'c' @mode_rel) wsp* curveto_argument_sequence;
+		curveto_argument_sequence =
+			curveto_argument $1 %0
+			(comma_wsp? curveto_argument $1 %0)*;
+		curveto =
+			('C' %mode_abs| 'c' %mode_rel)
+			wsp* curveto_argument_sequence;
 
-		vertical_lineto_argument = coordinate @vertical_lineto;
-		vertical_lineto_argument_sequence = vertical_lineto_argument 
-			(comma_wsp? vertical_lineto_argument)*;
-		vertical_lineto = ('V' @mode_abs| 'v' @mode_rel) wsp* vertical_lineto_argument_sequence;
+		vertical_lineto_argument = coordinate %vertical_lineto;
+		vertical_lineto_argument_sequence =
+			vertical_lineto_argument $1 %0
+			(comma_wsp? vertical_lineto_argument $1 %0)*;
+		vertical_lineto =
+			('V' %mode_abs| 'v' %mode_rel)
+			wsp* vertical_lineto_argument_sequence;
 
-		horizontal_lineto_argument = coordinate @horizontal_lineto;
-		horizontal_lineto_argument_sequence = horizontal_lineto_argument 
-			(comma_wsp? horizontal_lineto_argument)*;
-		horizontal_lineto = ('H' @mode_abs| 'h' @mode_rel) wsp* horizontal_lineto_argument_sequence;
+		horizontal_lineto_argument = coordinate %horizontal_lineto;
+		horizontal_lineto_argument_sequence =
+			horizontal_lineto_argument $1 %0
+			(comma_wsp? horizontal_lineto_argument $1 %0)*;
+		horizontal_lineto =
+			('H' %mode_abs| 'h' %mode_rel)
+			wsp* horizontal_lineto_argument_sequence;
 
-		lineto_argument = coordinate_pair @lineto;
-		lineto_argument_sequence = lineto_argument (comma_wsp? lineto_argument )**;
-		lineto = ('L' @mode_abs| 'l' @mode_rel) wsp* lineto_argument_sequence;
+		lineto_argument = coordinate_pair %lineto;
+		lineto_argument_sequence =
+			lineto_argument $1 %0
+			(comma_wsp? lineto_argument $1 %0)*;
+		lineto = ('L' %mode_abs| 'l' %mode_rel) wsp* lineto_argument_sequence;
 
-		closepath = ('Z' | 'z') @closepath;
+		closepath = ('Z' | 'z') %closepath;
 
-		moveto_argument = coordinate_pair @moveto;
-		moveto_argument_sequence = moveto_argument (comma_wsp? lineto_argument)**;
-		moveto = ('M' @mode_abs| 'm' @mode_rel) wsp* moveto_argument_sequence;
+		moveto_argument = coordinate_pair %moveto;
+		moveto_argument_sequence =
+			moveto_argument $1 %0
+			(comma_wsp? lineto_argument $1 %0)*;
+		moveto =
+			('M' %mode_abs | 'm' %mode_rel)
+			wsp* moveto_argument_sequence;
 
-		drawto_command = closepath ;#| lineto ; #| horizontal_lineto | vertical_lineto
-#			| curveto | smooth_curveto | quadratic_bezier_curveto
-#			| smooth_quadratic_bezier_curveto | elliptical_arc;
+		drawto_command =
+			closepath | lineto |
+			horizontal_lineto | vertical_lineto |
+			curveto | smooth_curveto |
+			quadratic_bezier_curveto |
+			smooth_quadratic_bezier_curveto |
+			elliptical_arc;
 
-		drawto_commands = drawto_command wsp* (drawto_command wsp)**;
+		drawto_commands = drawto_command (wsp* drawto_command)*;
 		moveto_drawto_command_group = moveto wsp* drawto_commands?;
-		moveto_drawto_command_groups = moveto_drawto_command_group wsp* (moveto_drawto_command_group wsp*)**;
+		moveto_drawto_command_groups =
+			moveto_drawto_command_group wsp*
+			(wsp* moveto_drawto_command_group)*;
 
 		#main := wsp* moveto_drawto_command_groups wsp* '\n';
 		#main := moveto_drawto_command_groups '\n';
-                main := coordinate_pair '\n';
+                main := moveto '\n';
 
 		# Inintialize and execute.
 		write init;
