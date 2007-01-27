@@ -33,7 +33,7 @@ void parse( char *str )
 		action push_number {
 			char *end=p;
 			std::string buf(start, end);
-			std::cout << "Got number: " << buf << std::endl;
+			//std::cout << "Got number: " << buf << std::endl;
 			params.push_back(strtod(start, &end));
 			start = NULL;
 		}
@@ -55,7 +55,7 @@ void parse( char *str )
 		}
 	
 		action moveto {
-			std::cout << "m ";
+			std::cout << ( absolute ? "M " : "m ");
 			print_vec(params);
 			std::cout << std::endl;
 			params.clear();
@@ -67,44 +67,58 @@ void parse( char *str )
 		}
 
 		action lineto {
-			std::cout << "l ";
+			std::cout << (absolute ? "L " : "l ");
 			print_vec(params);
 			std::cout << std::endl;
 			params.clear();
 		}
 
 		action horizontal_lineto {
-			std::cout << "h" << std::endl;
+			std::cout << (absolute ? "H " : "h ");
+			print_vec(params);
+			std::cout << std::endl;
 			params.clear();
 		}
 
 		action vertical_lineto {
-			std::cout << "v" << std::endl;
+			std::cout << (absolute ? "V " : "v ");
+			print_vec(params);
+			std::cout << std::endl;
 			params.clear();
 		}
 
 		action curveto {
-			std::cout << "c" << std::endl;
+			std::cout << (absolute ? "C " : "c ");
+			print_vec(params);
+			std::cout << std::endl;
 			params.clear();
 		}
 
 		action smooth_curveto {
-			std::cout << "s" << std::endl;
+			std::cout << (absolute ? "S " : "s ");
+			print_vec(params);
+			std::cout << std::endl;
 			params.clear();
 		}
 
 		action quadratic_bezier_curveto {
-			std::cout << "q" << std::endl;
+			std::cout << (absolute ? "Q " : "q ");
+			print_vec(params);
+			std::cout << std::endl;
 			params.clear();
 		}
 
 		action smooth_quadratic_bezier_curveto {
-			std::cout << "t" << std::endl;
+			std::cout << (absolute ? "T " : "t ");
+			print_vec(params);
+			std::cout << std::endl;
 			params.clear();
 		}
 
 		action elliptical_arc {
-			std::cout << "a" << std::endl;
+			std::cout << (absolute ? "A " : "a ") << std::endl;
+			print_vec(params);
+			std::cout << std::endl;
 			params.clear();
 		}
 		
@@ -245,7 +259,7 @@ void parse( char *str )
 	}%%
 
 	if ( cs != svgd_first_final )
-		std::cerr << "there was an error at offset " << ( p - start ) << ", state " << cs << ", expected " << svgd_first_final << std::endl;
+		std::cerr << "state " << cs << ", but expected " << svgd_first_final << std::endl;
 }
 
 
