@@ -9,7 +9,7 @@ svgd_number: svgd_number.o
 	g++ -g -o svgd_number svgd_number.o 
 
 svgd_number.cpp: svgd_number.rl
-	$(RAGEL) svgd_number.rl | $(RLCODEGEN) -T0 -o svgd_number.cpp
+	$(RAGEL) svgd_number.rl | $(RLCODEGEN) -G2 -o svgd_number.cpp
 
 svgd_number.o: svgd_number.cpp
 	g++ -Wall -g -c -O3 -o $@ $<
