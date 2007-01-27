@@ -33,7 +33,6 @@ void parse( char *str )
 		action push_number {
 			char *end=p;
 			std::string buf(start, end);
-			//std::cout << "Got number: " << buf << std::endl;
 			params.push_back(strtod(start, &end));
 			start = NULL;
 		}
@@ -63,7 +62,6 @@ void parse( char *str )
 
 		action closepath {
 			std::cout << "z" << std::endl;
-			params.clear();
 		}
 
 		action lineto {
