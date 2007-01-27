@@ -155,12 +155,17 @@ void parse( char *str )
 			 nonnegative_number $1 %0 comma_wsp?
 			 number comma_wsp
 			 flag comma_wsp flag comma_wsp
-			 coordinate_pair) @elliptical_arc;
-		elliptical_arc_argument_sequence = elliptical_arc_argument (comma_wsp? elliptical_arc_argument)*;
-		elliptical_arc = ('A' %mode_abs| 'a' %mode_rel) wsp* elliptical_arc_argument_sequence;
+			 coordinate_pair)
+			%elliptical_arc;
+		elliptical_arc_argument_sequence =
+			elliptical_arc_argument $1 %0
+			(comma_wsp? elliptical_arc_argument $1 %0)*;
+		elliptical_arc =
+			('A' %mode_abs| 'a' %mode_rel) wsp*
+			elliptical_arc_argument_sequence;
 		
 		smooth_quadratic_bezier_curveto_argument =
-			coordinate_pair @smooth_quadratic_bezier_curveto;
+			coordinate_pair %smooth_quadratic_bezier_curveto;
 		smooth_quadratic_bezier_curveto_argument_sequence =
 			smooth_quadratic_bezier_curveto_argument $1 %0
 			(comma_wsp?
@@ -171,7 +176,7 @@ void parse( char *str )
 
 		quadratic_bezier_curveto_argument =
 			(coordinate_pair $1 %0 comma_wsp? coordinate_pair)
-			@quadratic_bezier_curveto;
+			%quadratic_bezier_curveto;
 		quadratic_bezier_curveto_argument_sequence =
 			quadratic_bezier_curveto_argument $1 %0
 			(comma_wsp? quadratic_bezier_curveto_argument $1 %0)*;
@@ -181,7 +186,7 @@ void parse( char *str )
 
 		smooth_curveto_argument =
 			(coordinate_pair $1 %0 comma_wsp? coordinate_pair)
-			@smooth_curveto;
+			%smooth_curveto;
 		smooth_curveto_argument_sequence =
 			smooth_curveto_argument $1 %0
 			(comma_wsp? smooth_curveto_argument $1 %0)*;
@@ -193,7 +198,7 @@ void parse( char *str )
 			(coordinate_pair $1 %0 comma_wsp?
 			 coordinate_pair $1 %0 comma_wsp?
 			 coordinate_pair) 
-			@curveto;
+			%curveto;
 		curveto_argument_sequence =
 			curveto_argument $1 %0
 			(comma_wsp? curveto_argument $1 %0)*;
@@ -221,7 +226,9 @@ void parse( char *str )
 		lineto_argument_sequence =
 			lineto_argument $1 %0
 			(comma_wsp? lineto_argument $1 %0)*;
-		lineto = ('L' %mode_abs| 'l' %mode_rel) wsp* lineto_argument_sequence;
+		lineto =
+			('L' %mode_abs| 'l' %mode_rel) wsp*
+			lineto_argument_sequence;
 
 		closepath = ('Z' | 'z') %closepath;
 
