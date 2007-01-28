@@ -51,6 +51,68 @@ void bounds(SBasis const & s,
     }
 }
 
+void slow_bounds(SBasis const & f_in,
+			double &m, 
+			double &M,
+			int order,
+			double tol
+			) {
+
+  assert (tol>0);
+  order=std::max(0,order);
+  SBasis f;
+  for (int i=order;i<f_in.size();i++){
+    f.push_back(f_in[i]);
+  }
+
+  double Mf,mf,Mdf,mdf,Md2f,md2f,t,h,err;
+  double step,step_min;
+  SBasis df=derivative(f);
+  SBasis d2f=derivative(df);
+  bounds(df,mdf,Mdf);
+  bounds(d2f,md2f,Md2f);
+  if (f.size()<=1||mdf>=0||Mdf<=0){
+    bounds(f,m,M);
+  }else{
+    bounds(f,mf,Mf);
+    err=tol*std::max(1.,Mf-mf);//Fix me: 
+    //1)Mf-mf should not be 0...
+    //2)tolerance relative to inaccurate bounds (but using
+    // the current value of M and m can be speed consuming).
+    double err_M=0,err_m=0;
+    step_min=err/std::max(Mdf,-mdf);
+    M=std::max(f[0][0],f[0][1]);
+    m=std::min(f[0][0],f[0][1]);
+    for (t=0;t<=1;){
+      double ft=f(t);
+      double dft=df(t);
+      M=std::max(M,ft);
+      m=std::min(m,ft);
+      if (M<ft){
+	M=ft;
+	err_M=dft*step_min;
+      }
+      if (m>ft){
+	m=ft;
+	err_m=-dft*step_min;
+      }
+      if (dft>0){
+	step=std::max(-dft/md2f,step_min);
+      }else if (dft<0){
+	step=std::max(-dft/Md2f,step_min);
+      }else{
+	step=step_min;
+      }
+      step=std::max(step,std::min((M-ft)/Mdf,(m-ft)/mdf));
+      t+=step;
+    }
+    M+=err_M;
+    m-=err_m;
+    M*=pow(.25,order);
+    m*=pow(.25,order);
+  }
+}
+
 
 #if 0
 double Laguerre_internal(SBasis const & p,
