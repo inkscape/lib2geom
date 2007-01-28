@@ -30,6 +30,7 @@ multidim-sbasis.h
 sb-geometric.h
 #nearestpoint.cpp
 path-builder.h
+path2-builder.h
 #path-cubicto.cpp
 path-find-points-of-interest.cpp
 path-find-points-of-interest.h

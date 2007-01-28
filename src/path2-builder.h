@@ -1,5 +1,5 @@
 /*
- * Path2SetBuilder - build Path2s according using SVG/PDF like API
+ * PathSetBuilder - build Path2s according using SVG/PDF like API
  *
  * Copyright 2006 MenTaLguY <mental@rydia.net>
  * Copyright 2007 Aaron Spike <acspike@ekips.org>
@@ -21,13 +21,13 @@
 namespace Geom {
 namespace Path2 {
 
-class Path2SetBuilder {
+class PathSetBuilder {
 public:
-    Path2SetBuilder() : _current_path(NULL) {}
+    PathSetBuilder() : _current_path(NULL) {}
 
     void start_path_rel(Point const &p0) { start_path(p0 + _current_point); }
     void start_path(Point const &p0) {
-        _pathset.push_back(Path2());
+        _pathset.push_back(Geom::Path2::Path());
         _current_path = &_pathset.back();
         _initial_point = _current_point = p0;
     }
@@ -35,7 +35,7 @@ public:
     void push_line_rel(Point const &p0) { push_line(p0 + _current_point); }
     void push_line(Point const &p1) {
         if (!_current_path) start_path(_current_point);
-        _current_path->appendNew(LineSegment, _current_point, p1);
+        _current_path->appendNew<LineSegment>(p1);
         _current_point = p1;
     }
 
@@ -61,7 +61,7 @@ public:
     void push_quad_rel(Point const &p1, Point const &p2) { push_quad(p1 + _current_point, p2 + _current_point); }
     void push_quad(Point const &p1, Point const &p2) {
         if (!_current_path) start_path(_current_point);
-        _current_path->appendNew(QuadraticBezier, _current_point, p1, p2);
+        _current_path->appendNew<QuadraticBezier>(p1, p2);
         _current_point = p2;
     }
 
@@ -79,7 +79,7 @@ public:
     }
     void push_cubic(Point const &p1, Point const &p2, Point const &p3) {
         if (!_current_path) start_path(_current_point);
-        _current_path->appendNew(CubicBezier, _current_point, p1, p2, p3);
+        _current_path->appendNew<CubicBezier>(p1, p2, p3);
         _current_point = p3;
     }
 
@@ -97,7 +97,7 @@ public:
     }
     void push_ellipse(Point const &radii, double rotation, bool large, bool sweep, Point const &end) {
         if (!_current_path) start_path(_current_point);
-        _current_path->appendNew(SVGEllipticalArc, _current_point, radii[0], radii[1], rotation, large, sweep, end);
+        _current_path->appendNew<SVGEllipticalArc>(radii[0], radii[1], rotation, large, sweep, end);
         _current_point = end;
     }
 
@@ -106,7 +106,7 @@ public:
     }
     void push_ellipse(Point const &initial, Point const &radii, double rotation, bool large, bool sweep, Point const &end) {
         if(initial != _current_point)
-            start_path(p0);
+            start_path(initial);
         push_ellipse(radii, rotation, large, sweep, end);
     }
     
@@ -117,11 +117,11 @@ public:
         }
     }
 
-    std::vector<Path2> const &peek() const { return _pathset; }
+    std::vector<Geom::Path2::Path> const &peek() const { return _pathset; }
 
 private:
-    std::vector<Path2> _pathset;
-    Path2 *_current_path;
+    std::vector<Geom::Path2::Path> _pathset;
+    Geom::Path2::Path *_current_path;
     Point _current_point;
     Point _initial_point;
 };
