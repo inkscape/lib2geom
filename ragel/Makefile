@@ -1,24 +1,24 @@
 RAGEL = ragel
 RLCODEGEN = rlcodegen
 
-all: svgd_path_parser
+all: svg_path_parser
 
-ps: svgd_path_parser.ps
+ps: svg_path_parser.ps
 
-svgd_path_parser: svgd_path_parser.o
-	g++ -g -o svgd_path_parser svgd_path_parser.o 
+svg_path_parser: svg_path_parser.o
+	g++ -g -o svg_path_parser svg_path_parser.o 
 
-svgd_path_parser.cpp: svgd_path_parser.rl
-	$(RAGEL) svgd_path_parser.rl | $(RLCODEGEN) -G2 -o svgd_path_parser.cpp
+svg_path_parser.cpp: svg_path_parser.rl
+	$(RAGEL) svg_path_parser.rl | $(RLCODEGEN) -G2 -o svg_path_parser.cpp
 
-svgd_path_parser.o: svgd_path_parser.cpp
+svg_path_parser.o: svg_path_parser.cpp
 	g++ -Wall -g -c -O3 -o $@ $<
 
-svgd_path_parser.svg: svgd_path_parser.rl
-	$(RAGEL) svgd_path_parser.rl | $(RLCODEGEN) -V | dot -Tsvg > svgd_path_parser.svg
+svg_path_parser.svg: svg_path_parser.rl
+	$(RAGEL) svg_path_parser.rl | $(RLCODEGEN) -V | dot -Tsvg > svg_path_parser.svg
 
-svgd_path_parser.ps: svgd_path_parser.rl
-	$(RAGEL) svgd_path_parser.rl | $(RLCODEGEN) -V | dot -Tps > svgd_path_parser.ps
+svg_path_parser.ps: svg_path_parser.rl
+	$(RAGEL) svg_path_parser.rl | $(RLCODEGEN) -V | dot -Tps > svg_path_parser.ps
 
 distclean clean:
-	rm -Rf *.o svgd_path_parser.cpp svgd_path_parser svgd_path_parser.ps
+	rm -Rf *.o svg_path_parser.cpp svg_path_parser svg_path_parser.ps svg_path_parser.svg
