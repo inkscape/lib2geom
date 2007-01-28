@@ -335,7 +335,7 @@ void SVGPathParser::parse(char const *str) throw(SVGPathParser::ParseError) {
         drawto_commands = drawto_command (wsp* drawto_command)*;
         moveto_drawto_command_group = moveto wsp* drawto_commands?;
         moveto_drawto_command_groups =
-            moveto_drawto_command_group wsp*
+            moveto_drawto_command_group
             (wsp* moveto_drawto_command_group)*;
 
         svg_path = wsp* moveto_drawto_command_groups? wsp*;
