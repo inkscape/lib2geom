@@ -3,7 +3,7 @@
 
 using namespace Geom;
 
-Point operator*(Point const &v, Rotate const &r) {
+Point Geom::operator*(Point const &v, Rotate const &r) {
     return Point(r.vec[X] * v[X] - r.vec[Y] * v[Y],
                  r.vec[Y] * v[X] + r.vec[X] * v[Y]);
 }
