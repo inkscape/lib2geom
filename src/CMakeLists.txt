@@ -47,15 +47,10 @@ path-to-polyline.cpp
 path-to-polyline.h
 path.cpp
 path.h
-path2.cpp
-path2.h
-point-fns.cpp
-point-fns.h
+#path2.cpp
+#path2.h
 point.h
 point.cpp
-point-l.h
-point-matrix-ops.h
-point-ops.h
 poly.cpp
 poly-dk-solve.cpp
 poly-dk-solve.h
@@ -70,10 +65,8 @@ rect.cpp
 rect.h
 rect-ops.h
 refcounted.h
-rotate-fns.cpp
-rotate-fns.h
 rotate.h
-rotate-ops.h
+rotate.cpp
 s-basis-2d.h
 s-basis-2d.cpp
 s-basis.cpp
@@ -85,15 +78,13 @@ sbasis-poly.h
 sbasis-to-bezier.cpp
 sbasis-to-bezier.h
 scale.h
-scale-ops.h
 solve-bezier-one-d.cpp
 solve-bezier-parametric.cpp
 solver.h
 sturm.h
-transformation-ops.cpp
-transformation-ops.h
+transforms.cpp
+transforms.h
 translate.h
-translate-ops.h
 )
 
 # make lib for 2geom

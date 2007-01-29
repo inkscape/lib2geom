@@ -1,7 +1,5 @@
 #include "s-basis.h"
 #include "point.h"
-#include "point-ops.h"
-#include "point-fns.h"
 
 #include "bezier-to-sbasis.h"
 #include "sbasis-to-bezier.h"

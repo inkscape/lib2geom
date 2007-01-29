@@ -3,7 +3,6 @@
 #include <vector>
 #include <cassert>
 
-#include "point-fns.h"
 #include "path-builder.h"
 
 class path_to_polyline{

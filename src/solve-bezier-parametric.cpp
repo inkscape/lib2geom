@@ -1,5 +1,5 @@
 #include "solver.h"
-#include "point-fns.h"
+#include "point.h"
 #include <algorithm>
 
 namespace  Geom{

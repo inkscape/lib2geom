@@ -1,5 +1,4 @@
 #include "toy-framework.h"
-#include "point-ops.h"
 
 static double alpha = 1;
 

@@ -1,6 +1,5 @@
 #include "interactive-bits.h"
 //#include <pango/pangocairo.h>
-#include "point-ops.h"
 
 void draw_line_seg(cairo_t *cr, Geom::Point a, Geom::Point b) {
     cairo_move_to(cr, a[0], a[1]);

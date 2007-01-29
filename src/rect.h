@@ -17,11 +17,9 @@
 #include <stdexcept>
 
 #include "point.h"
-#include "point-ops.h"
 #include "maybe.h"
 #include "macros.h"
-#include "matrix.h"
-#include "point-matrix-ops.h"
+#include "transforms.h"
 
 namespace Geom {
 

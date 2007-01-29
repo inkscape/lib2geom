@@ -8,8 +8,6 @@
 #endif
 #include "geom.h"
 #include "point.h"
-#include "point-ops.h"
-#include "point-fns.h"
 
 /**
  * Finds the intersection of the two (infinite) lines

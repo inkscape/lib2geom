@@ -6,8 +6,7 @@
  */
 
 #include "point.h"
-#include "point-fns.h"
-#include "point-ops.h"
+#include <cmath>
 
 namespace Geom {
 
@@ -15,26 +14,31 @@ namespace Geom {
     Behaves like Geom::Matrix for multiplication.
 **/
 class Rotate {
-public:
+  public:
     Point vec;
 
-private:
+  private:
     Rotate();
 
-public:
-    explicit Rotate(Coord theta);
+  public:
+   /** Constructs a Rotate transformation corresponding to an angle.
+    * \param theta the rotation angle in radians about the origin
+    *
+    * \see Geom::Rotate_degrees
+    *
+    * Angle direction in Inkscape code: If you use the traditional mathematics convention that y
+    * increases upwards, then positive angles are anticlockwise as per the mathematics convention.  If
+    * you take the common non-mathematical convention that y increases downwards, then positive angles
+    * are clockwise, as is common outside of mathematics.
+    */
+    explicit Rotate(Coord const theta) : vec(std::cos(theta), std::sin(theta)) {}
     explicit Rotate(Point const &p) : vec(p) {}
     explicit Rotate(Coord const x, Coord const y) : vec(x, y) {}
 
-    bool operator==(Rotate const &o) const {
-        return vec == o.vec;
-    }
+    inline bool operator==(Rotate const &o) const { return vec == o.vec; }
+    inline bool operator!=(Rotate const &o) const { return vec != o.vec; }
 
-    bool operator!=(Rotate const &o) const {
-        return vec != o.vec;
-    }
-
-    inline Rotate &operator*=(Rotate const &b);
+    Rotate &operator*=(Rotate const &b);
     /* Defined in Rotate-ops.h. */
 
     Rotate inverse() const {
@@ -48,6 +52,16 @@ public:
                        / len_sq );
     }
 };
+
+inline bool rotate_equalp(Geom::Rotate const &a, Geom::Rotate const &b, double const eps)
+{ return point_equalp(a.vec, b.vec, eps); }
+
+//Rotate rotate_degrees(double degrees);
+
+Point operator*(Point const &v, Rotate const &r);
+inline Point operator/(Point const &v, Rotate const &r) { return v * r.inverse(); }
+inline Rotate operator*(Rotate const &a, Rotate const &b) { return Rotate( a.vec * b ); }
+inline Rotate operator/(Rotate const &a, Rotate const &b) { return a * b.inverse(); }
 
 } /* namespace Geom */
 

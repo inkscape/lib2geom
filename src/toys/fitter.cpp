@@ -15,8 +15,6 @@
 #include <cairo-pdf.h>
 #include "s-basis.h"
 #include "point.h"
-#include "point-ops.h"
-#include "point-fns.h"
 #include "interactive-bits.h"
 #include "geom.h"
 

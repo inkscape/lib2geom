@@ -13,8 +13,7 @@
 
 #include "matrix.h"
 #include "point.h"
-#include "point-matrix-ops.h"
-#include "transformation-ops.h"
+#include "transforms.h"
 
 namespace Geom {
 
@@ -96,21 +95,6 @@ Matrix from_basis(Point const x_basis, Point const y_basis, Point const offset) 
                   y_basis[X], y_basis[Y],
                   offset [X], offset [Y]);
 }
-
-/** Constructs a Rotate transformation corresponding to an angle.
- \param theta the rotation angle in radians about the origin
- *
- * \see Geom::Rotate_degrees
- *
- * Angle direction in Inkscape code: If you use the traditional mathematics convention that y
- * increases upwards, then positive angles are anticlockwise as per the mathematics convention.  If
- * you take the common non-mathematical convention that y increases downwards, then positive angles
- * are clockwise, as is common outside of mathematics.
- */
-Rotate::Rotate(Geom::Coord const theta) :
-    vec(cos(theta),
-        sin(theta))
-{}
 
 /** Calculates the determinant of a Matrix. */
 Geom::Coord Matrix::det() const {

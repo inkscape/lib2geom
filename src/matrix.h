@@ -16,10 +16,7 @@
 
 //#include <glib/gmessages.h>
 
-#include "coord.h"
-#include "rotate.h"
-#include "scale.h"
-#include "translate.h"
+#include "transforms.h"
 #include "epsilon.h"
 
 namespace Geom {

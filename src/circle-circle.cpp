@@ -18,8 +18,6 @@
 #include <stdio.h>
 #include <math.h>
 #include "point.h"
-#include "point-ops.h"
-#include "point-fns.h"
 
 namespace Geom{
 

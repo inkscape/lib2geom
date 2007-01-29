@@ -9,10 +9,8 @@
 
 #include <iterator>
 #include "translate.h"
-#include "translate-ops.h"
 #include "choose.h"
 #include "convex-cover.h"
-
 
 #include "toy-framework.h"
 

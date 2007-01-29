@@ -10,7 +10,6 @@
 
 #include <iterator>
 #include "translate.h"
-#include "translate-ops.h"
 #include "quadtree.h"
 
 #include "toy-framework.h"

@@ -1,6 +1,4 @@
 #include "toy-framework.h"
-#include "point-ops.h"
-#include "point-fns.h"
 
 #include "cairo-features.h"
 #if CAIRO_HAS_PDF_SURFACE

@@ -10,8 +10,6 @@
 #include "path-builder.h"
 
 #include <iterator>
-#include "translate.h"
-#include "translate-ops.h"
 #include "solver.h"
 #include "nearestpoint.cpp"
 #include "sturm.h"
@@ -19,6 +17,8 @@
 #include "poly-laguerre-solve.h"
 #include "choose.h"
 #include "convex-cover.h"
+
+#include "transforms.h"
 
 #include "toy-framework.cpp"
 

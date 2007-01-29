@@ -11,8 +11,6 @@
 #include <vector>
 #include "maybe.h"
 #include "point.h"
-#include "point-ops.h"
-#include "point-fns.h"
 #include "geom.h"
 using std::string;
 using std::vector;

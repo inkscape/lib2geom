@@ -11,17 +11,15 @@
 #include <vector>
 #include "maybe.h"
 #include "point.h"
-#include "point-ops.h"
-#include "point-fns.h"
 #include "geom.h"
 #include "path.h"
 #include "path-to-polyline.h"
 #include "read-svgd.h"
 #include "path-find-points-of-interest.h"
 #include "rotate.h"
-#include "rotate-ops.h"
 #include "arc-length.h"
 #include "path-intersect.h"
+#include "transforms.h"
 
 using std::string;
 using std::vector;
@@ -282,11 +280,6 @@ delete_event_cb(GtkWidget* window, GdkEventAny* e, gpointer data)
     gtk_main_quit();
     return FALSE;
 }
-
-#include "translate-ops.h"
-#include "scale-ops.h"
-#include "translate-scale-ops.h"
-
 
 int main(int argc, char **argv) {
     char const *const filename = (argc >= 2
