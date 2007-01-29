@@ -1,10 +1,5 @@
 #include "point.h"
-#include "point-ops.h"
-#include "point-fns.h"
-#include "matrix.h"
-#include "scale.h"
-#include "translate.h"
-#include "rotate.h"
+#include "transforms.h"
 #include "s-basis.h"
 
 #include <boost/python.hpp>
