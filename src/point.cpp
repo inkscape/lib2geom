@@ -1,13 +1,10 @@
-/** \file
- * Implements Geom::Point::normalize()
- */
-
 #include "point.h"
 #include <assert.h>
 #include "coord.h"
 #include "isnan.h" //temporary fix for isnan()
 #include "matrix.h"
-using namespace Geom;
+
+namespace Geom {
 
 /** Scales this vector to make it a unit vector (within rounding error).
  *
@@ -143,7 +140,7 @@ Point abs(Point const &b)
     return ret;
 }
 
-Point Geom::operator*(Point const &v, Matrix const &m) {
+Point operator*(Point const &v, Matrix const &m) {
     Point ret;
     for(int i = 0; i < 2; i++) {
         ret[i] = v[X] * m[i] + v[Y] * m[i + 2] + m[i + 4];
@@ -151,13 +148,15 @@ Point Geom::operator*(Point const &v, Matrix const &m) {
     return ret;
 }
 
-Point Geom::operator/(Point const &p, Matrix const &m) { return p * m.inverse(); }
+Point operator/(Point const &p, Matrix const &m) { return p * m.inverse(); }
 
 Point &Point::operator*=(Matrix const &m)
 {
     *this = *this * m;
     return *this;
 }
+
+}  //Namespace Geom
 
 /*
   Local Variables:

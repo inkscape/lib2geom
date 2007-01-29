@@ -4,6 +4,7 @@
 #include "multidim-sbasis.h"
 #include "bezier-to-sbasis.h"
 #include "path-sbasis.h"
+#include "point.h"
 
 namespace Geom{
 
