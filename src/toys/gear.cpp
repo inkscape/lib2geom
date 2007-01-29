@@ -1,3 +1,18 @@
+/*
+ * GearToy - displays involute gears
+ *
+ * Copyright 2006 Michael G. Sloan <mgsloan@gmail.com>
+ * Copyright 2006 Aaron Spike <aaron@ekips.org>
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * See the file COPYING for details.
+ *
+ */
+
 #include "s-basis.h"
 #include "bezier-to-sbasis.h"
 #include "sbasis-to-bezier.h"

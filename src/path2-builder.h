@@ -2,7 +2,7 @@
  * PathSetBuilder - build Path2s according using SVG/PDF like API
  *
  * Copyright 2006 MenTaLguY <mental@rydia.net>
- * Copyright 2007 Aaron Spike <acspike@ekips.org>
+ * Copyright 2007 Aaron Spike <aaron@ekips.org>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
