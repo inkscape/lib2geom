@@ -14,6 +14,15 @@
  * This is a public domain work. 3/26/2005 Tim Voght
  * Ported to lib2geom, 2006 Nathan Hurst
  *
+ * Copyright 2006 Nathan Hurst <njh@mail.csse.monash.edu.au>
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * See the file COPYING for details.
+ * 
  */
 #include <stdio.h>
 #include <math.h>
