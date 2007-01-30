@@ -5,22 +5,12 @@
  * Cartesian point class.
  */
 
-//#include <math.h>
-//#include <stdexcept>
 #include <iostream>
-//#include <iomanip>
 
 #include "coord.h"
 #include "dim2.h"
 #include "macros.h"
 #include "math-utils.h"
-
-/// A NRPoint consists of x and y coodinates.
-/// \todo
-/// This class is deprecated in favour of Geom::Point.
-struct NRPoint {
-    Geom::Coord x, y;
-};
 
 namespace Geom {
 
@@ -37,11 +27,6 @@ class Point {
     inline Point(Coord x, Coord y) {
         _pt[X] = x;
         _pt[Y] = y;
-    }
-
-    inline Point(NRPoint const &p) {
-        _pt[X] = p.x;
-        _pt[Y] = p.y;
     }
 
     inline Point(Point const &p) {
