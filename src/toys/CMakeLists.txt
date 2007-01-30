@@ -44,6 +44,14 @@ path-cairo.h
 # make lib for toy
 ADD_LIBRARY(toy ${LIB_TYPE} ${2GEOM_TOY-FRAMEWORK_SRC})
 TARGET_LINK_LIBRARIES(toy 2geom "${GTK2_LINK_FLAGS} ${cairo_LINK_FLAGS}")
+INSTALL(TARGETS toy
+  RUNTIME DESTINATION bin/toys
+  LIBRARY DESTINATION lib/toys
+  ARCHIVE DESTINATION lib/toys
+)
+FILE(GLOB files "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
+INSTALL(FILES ${files} DESTINATION include/toys)
+
 
 OPTION(2GEOM_TOYS
   "Build the projects Toy files"
@@ -53,4 +61,10 @@ IF(2GEOM_TOYS)
         ADD_EXECUTABLE(${source} ${source}.cpp)
         TARGET_LINK_LIBRARIES(${source} toy 2geom "${GTK2_LINK_FLAGS} ${cairo_LINK_FLAGS} ${LINK_GSL}" )
     ENDFOREACH(source)
+    INSTALL(TARGETS ${2GEOM_TOYS_SRC}
+      RUNTIME DESTINATION bin/toys
+      LIBRARY DESTINATION lib/toys
+      ARCHIVE DESTINATION lib/toys
+    )
+
 ENDIF(2GEOM_TOYS)
