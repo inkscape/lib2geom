@@ -1,7 +1,7 @@
 /*
  * centroid.cpp
  *
- * Copyright 2006 Nathan Hurst <njh@mail.csse.monash.edu.au>
+ * Portions Copyright 2006 Nathan Hurst <njh@mail.csse.monash.edu.au>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -15,6 +15,9 @@
 #include "path.h"
 #include "multidim-sbasis.h"
 #include "arc-length.h"
+
+
+namespace Geom{
 
 /*
  * ANSI C code from the article
@@ -38,8 +41,6 @@
     * for now we require the path to be a polyline and assume it is closed.
 **/
 
-namespace Geom{
-
 int centroid(std::vector<Point> p, Point& centroid, double &area) {
     const unsigned n = p.size();
     if (n < 3)
@@ -58,6 +59,13 @@ int centroid(std::vector<Point> p, Point& centroid, double &area) {
     }
     return 2;
 }
+
+/** centroid using sbasis integration.
+ * This approach uses green's theorem to compute the area and centroid using integrals.  For curved
+ * shapes this is much faster than converting to polyline and using the above function.
+ *
+ * Copyright Nathan Hurst 2006
+ */
 
 int centroid(Path const &p, Point& centroid, double &area) {
     Point centroid_tmp(0,0);
