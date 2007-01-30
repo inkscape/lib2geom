@@ -347,7 +347,7 @@ void SVGPathParser::parse(char const *str) throw(SVGPathParser::ParseError) {
         write exec;
     }%%
 
-    if ( cs != svg_path_first_final ) {
+    if ( cs < svg_path_first_final ) {
         throw ParseError();
     }
 }
