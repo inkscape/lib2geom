@@ -1,0 +1,13 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: 2geom
+Description: A 2D geometry framework
+Version: @2GEOM_VERSION@
+
+Requires:
+Libs: -L${libdir} -l2geom
+Cflags: -I${includedir}/2geom
+

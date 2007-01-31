@@ -1,0 +1,13 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: toy
+Description: A library for creating toy apps for 2geom
+Version: @2GEOM_VERSION@
+
+Requires: 2geom
+Libs: -L${libdir} -l2geom
+Cflags: -I${includedir}/2geom
+
