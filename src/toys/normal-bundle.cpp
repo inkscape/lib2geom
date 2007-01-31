@@ -129,8 +129,7 @@ vector<MultidimSBasis<2> > compose(NormalBundle const &NB,
     std::map<double,int> Cuts;
     int idx;
 
-    B[0]-=Origin[0];
-    B[1]-=Origin[1];
+    B -= Origin;
 
     //--Find intersections with fibers over segment ends.
     for(int i=0; i<=NB.size();i++){

@@ -98,6 +98,13 @@ operator +=(MultidimSBasis<2> & a, Geom::Point const & b) {
     return a;
 }
 
+inline MultidimSBasis<2>
+operator -=(MultidimSBasis<2> & a, Geom::Point const & b) {
+    for(unsigned i = 0; i < 2; i++)
+        a.f[i] -= b[i];
+    return a;
+}
+
 template <unsigned D>
 inline MultidimSBasis<D>
 operator *=(MultidimSBasis<D> & a, double b) {
