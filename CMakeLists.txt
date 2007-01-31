@@ -14,7 +14,6 @@ IF(gsl_FOUND)
 # must have GSL
     SET(NEEDS_GSL 
     differential-constraint
-    DC-conic-4
     root-finder-comparer
     )
     SET(LINK_GSL ${gsl_LINK_FLAGS})

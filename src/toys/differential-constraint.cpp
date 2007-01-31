@@ -1,3 +1,7 @@
+/** Differential constraint solver hack
+ * based on idea from Michael Glissner
+ * (njh)
+ */
 #include "s-basis.h"
 #include "bezier-to-sbasis.h"
 #include "sbasis-to-bezier.h"

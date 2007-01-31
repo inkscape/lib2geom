@@ -1,3 +1,9 @@
+/**
+ * elliptics via C-curves. (njh)
+ * Limited to 180 degrees (by end point and tangent matching criteria)
+ * Also represents cycloids
+ */
+
 #include "s-basis.h"
 #include "bezier-to-sbasis.h"
 #include "sbasis-to-bezier.h"

@@ -1,3 +1,7 @@
+/** Fitting a conic to 5 points.  Uses gtk + gdk rather than cairo
+ * Copyright 2006 Nathan Hurst
+ */
+
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>

@@ -1,3 +1,7 @@
+/**
+ * circles via rational quadratic beziers. (njh)
+ */
+
 #include "maybe.h"
 
 #include "toy-framework.cpp"

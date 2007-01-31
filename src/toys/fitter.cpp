@@ -1,3 +1,8 @@
+/** Generates approximate metromap lines
+ * Copyright njh
+ * Copyright Tim Dwyer
+ */
+
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
@@ -754,17 +759,11 @@ void draw_everything(cairo_t* cr, int width, int height) {
     std::ostringstream notify;
     cairo_set_source_rgba (cr, 0., 0.5, 0, 1);
     cairo_set_line_width (cr, 1);
-    /*
-    for(int i = 0; i < handles.size(); i++) {
-        draw_circ(cr, *handles[i]);
-    }
-    */
     cairo_set_source_rgba (cr, 0., 0., 0, 0.8);
     cairo_set_line_width (cr, 1);
     
     unsigned N= paths.size();
     for(unsigned i=0;i<N;i++) {
-    //{   unsigned i = 8;
         double R,G,B;
         convertHSVtoRGB(360.*double(i)/double(N),0.7,1.,R,G,B);
         cairo_set_source_rgba (cr, R, G, B, 0.8);
@@ -776,13 +775,7 @@ void draw_everything(cairo_t* cr, int width, int height) {
         }
         cairo_stroke(cr);
     }
-    //f.simple_dp();
-    //f.draw(cr);
-    //cairo_set_source_rgba (cr, 0., 1., 0, 0.5);
-    //cairo_stroke(cr);
     cairo_set_source_rgba (cr, 0., 0., 0, 1);
-    //notify << f.solution.size();
-    //notify << "arc length = " << arc.point_at(1) - arc.point_at(0) << std::endl;
     {
         PangoLayout* layout = pango_cairo_create_layout (cr);
         pango_layout_set_text(layout, 

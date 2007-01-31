@@ -1,3 +1,10 @@
+/**
+ * elliptics via 5 point w-pi basis. (njh)
+ * Affine, endpoint, tangent, exact circle
+ * full circle.  Convex containment implies small circle.
+ * Also represents lumpy polar type curves
+ */
+
 #include "s-basis.h"
 #include "bezier-to-sbasis.h"
 #include "sbasis-to-bezier.h"
@@ -90,12 +97,10 @@ class Conic4: public Toy {
                 cairo_move_to(cr, p);
         }
         cairo_set_source_rgba (cr, 0., 0., 0, 1);
-        cairo_set_line_width (cr, 0.5);
+        cairo_set_line_width (cr, 1);
         cairo_stroke(cr);
         
         arc_basis ab(1./3);
-        //for(unsigned i  = 0; i < 5; i++)
-        //    *notify << ab.basis[i] << std::endl;
         MultidimSBasis<2> B;
         
         for(unsigned dim  = 0; dim < 2; dim++)
@@ -103,14 +108,14 @@ class Conic4: public Toy {
                 B[dim] += e_h[i][dim]*ab.basis[i];
         
         cairo_md_sb(cr, B);
-        cairo_set_source_rgba (cr, 0., 1., 0, 1);
+        cairo_set_source_rgba (cr, 1., 0.5, 0, 1);
         cairo_set_line_width (cr, 1);
         cairo_stroke(cr);
 
         Geom::PathSetBuilder pb;
         subpath_from_sbasis(pb, B, 1);
         Geom::PathSet pth = pb.peek();
-        *notify << pth;
+        //*notify << pth;
 
         Toy::draw(cr, notify, width, height, save);
     }

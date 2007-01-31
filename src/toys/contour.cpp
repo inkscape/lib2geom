@@ -1,3 +1,7 @@
+/**
+ * Contour fitting of arbitrary SB2ds using minimisation of varations.
+ * unstable - needs work (njh)
+ */
 #include "sbasis-to-bezier.h"
 #include "multidim-sbasis.h"
 #include "s-basis-2d.h"

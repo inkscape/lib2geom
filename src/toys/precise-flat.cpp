@@ -1,3 +1,7 @@
+/**
+ * efficient and precise flattening of curves.
+ * incomplete rewrite (njh)
+ */
 #include "s-basis.h"
 #include "bezier-to-sbasis.h"
 #include "sbasis-to-bezier.h"

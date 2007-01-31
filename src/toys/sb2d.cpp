@@ -38,9 +38,6 @@ class Sb2d: public Toy {
                                                  (2*(iv+vi)/(2.*vi+1)+1)*width/4.));
         
             handles.push_back(Geom::Point(3*width/4., width/4.) + 30*dir);
-            for(int i = 0; i < 4; i++)
-                handles.push_back(Geom::Point(uniform()*width/4.,
-                                              uniform()*width/4.));
         }
         dir = (handles[surface_handles] - Geom::Point(3*width/4., width/4.)) / 30;
         if(!save) {
@@ -60,11 +57,6 @@ class Sb2d: public Toy {
                sb2[i][corner] = dl*10/(width/2)*pow(4,ui+vi);
            }
         draw_sb2d(cr, sb2, dir*0.1, width);
-        MultidimSBasis<2> B = bezier_to_sbasis<2, 3>(handles.begin() + surface_handles+1);
-        cairo_md_sb(cr, B);
-        B *= 1./(width/4);
-        B = (width/2)*B + Geom::Point(width/4, width/4);
-        cairo_md_sb(cr, B);
     
         *notify << "bo = " << sb2.index(0,0); 
     

@@ -38,6 +38,12 @@ double
 arc_length(MultidimSBasis<2> const M, 
            double tol=.1);
 
+
+std::vector<SBasis >
+arc_length_sb(MultidimSBasis<2> const M, 
+              std::vector<double> &cuts, 
+              double tol=.1);
+
 // incomplete - pls check over
 std::vector<SBasis >
 curvature(MultidimSBasis<2> const M, 

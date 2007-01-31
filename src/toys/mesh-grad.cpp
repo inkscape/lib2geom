@@ -1,3 +1,7 @@
+/**
+ * Generate approximate mesh gradients for blurring technique suggested by bbyak.
+ * (njh)
+ */
 #include "s-basis.h"
 #include "bezier-to-sbasis.h"
 #include "sbasis-to-bezier.h"

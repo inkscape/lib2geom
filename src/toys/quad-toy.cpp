@@ -1,3 +1,7 @@
+/** 
+ * adaptive quad tree for display graph, search operations
+ * (njh)
+ */
 #include "s-basis.h"
 #include "bezier-to-sbasis.h"
 #include "sbasis-to-bezier.h"

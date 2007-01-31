@@ -6,7 +6,7 @@ circle-intersect
 clothoid
 conic-2
 conic-3
-#conic-4
+conic-4
 conic
 convex-toy
 contour
@@ -16,7 +16,6 @@ quad-toy
 rat-bez
 sb1d
 sb2d
-s-bez
 pair-intersect
 precise-flat
 toy-cairo
