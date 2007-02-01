@@ -6,7 +6,7 @@ using std::FILE;
 using std::fgetc;
 using std::feof;
 
-void curveToSVGd(FILE* f, Geom::Path2::Curve const* c) {
+void curve_to_svgd(FILE* f, Geom::Path2::Curve const* c) {
     if(Geom::Path2::LineSegment const *line_segment = dynamic_cast<Geom::Path2::LineSegment const  *>(c)) {
         fprintf(f, "L %g,%g ", (*line_segment)[1][0], (*line_segment)[1][1]);
     }
@@ -31,12 +31,12 @@ void curveToSVGd(FILE* f, Geom::Path2::Curve const* c) {
 
         //recurse to convert the new path resulting from the sbasis to svgd
         for(Geom::Path2::Path::iterator iter = sbasis_path.begin(); iter != sbasis_path.end(); ++iter) {
-            curveToSVGd(f, &(*iter));
+            curve_to_svgd(f, &(*iter));
         }
     }
 }
 
-void writeSVGd(FILE* f, Geom::Path2::Path const &p) {
+void write_svgd(FILE* f, Geom::Path2::Path const &p) {
     if(f == NULL)
         f = stderr;
     fprintf(f, "M %g,%g ", p.initialPoint()[0], p.initialPoint()[1]);
@@ -48,10 +48,10 @@ void writeSVGd(FILE* f, Geom::Path2::Path const &p) {
         fprintf(f, "Z ");
 }
 
-void writeSVGd(FILE* f, std::vector<Geom::Path2::Path> const &p) {
+void write_svgd(FILE* f, std::vector<Geom::Path2::Path> const &p) {
     std::vector<Geom::Path2::Path>::const_iterator it(p.begin());
     for(; it != p.end(); it++) {
-        writeSVGd(f, *it);
+        write_svgd(f, *it);
     }
 }
 
@@ -60,7 +60,7 @@ Geom::Point point(double *nums, int ix) {
 }
 
 std::vector<Geom::Path2::Path>
-readSVGd(FILE* f) {
+read_svgd(FILE* f) {
     assert(f);
 
     Geom::Path2::PathBuilder builder;

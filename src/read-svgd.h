@@ -33,10 +33,10 @@
 #include <cstdio>
 #include <cassert>
 
-void writeSVGd(std::FILE* f, Geom::Path2::Path const &p);
-void writeSVGd(std::FILE* f, std::vector<Geom::Path2::Path> const &p);
+void write_svgd(std::FILE* f, Geom::Path2::Path const &p);
+void write_svgd(std::FILE* f, std::vector<Geom::Path2::Path> const &p);
 
-std::vector<Geom::Path2::Path> readSVGd(std::FILE* f);
+std::vector<Geom::Path2::Path> read_svgd(std::FILE* f);
 
 /*
   Local Variables:
