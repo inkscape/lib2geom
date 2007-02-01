@@ -61,7 +61,6 @@ read-svgd.cpp
 read-svgd.h
 rect.cpp
 rect.h
-rect-ops.h
 refcounted.h
 rotate.h
 rotate.cpp
