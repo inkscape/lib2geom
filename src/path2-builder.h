@@ -37,107 +37,104 @@
 namespace Geom {
 namespace Path2 {
 
-class PathSetBuilder {
+class PathBuilder {
 public:
-    PathSetBuilder() : _current_path(NULL) {}
+    PathBuilder() : _current_path(NULL) {}
 
-    void start_path_rel(Point const &p0) { start_path(p0 + _current_point); }
-    void start_path(Point const &p0) {
+    void startPathRel(Point const &p0) { start_path(p0 + _current_point); }
+    void startPath(Point const &p0) {
         _pathset.push_back(Geom::Path2::Path());
         _current_path = &_pathset.back();
         _initial_point = _current_point = p0;
     }
 
-    void push_line_rel(Point const &p0) { push_line(p0 + _current_point); }
-    void push_line(Point const &p1) {
-        if (!_current_path) start_path(_current_point);
+    void pushLineRel(Point const &p0) { pushLine(p0 + _current_point); }
+    void pushLine(Point const &p1) {
+        if (!_current_path) startPath(_current_point);
         _current_path->appendNew<LineSegment>(p1);
         _current_point = p1;
     }
 
-    void push_line_rel(Point const &p0, Point const &p1) { push_line(p0 + _current_point, p1 + _current_point); }
-    void push_line(Point const &p0, Point const &p1) {
-        if(p0 != _current_point)
-            start_path(p0);
-        push_line(p1);
+    void pushLineRel(Point const &p0, Point const &p1) { pushLine(p0 + _current_point, p1 + _current_point); }
+    void pushLine(Point const &p0, Point const &p1) {
+        if(p0 != _current_point) startPath(p0);
+        pushLine(p1);
     }
 
-    void push_horizontal_rel(Coord y) { push_horizontal(y + _current_point[1]); }
-    void push_horizontal(Coord y) {
-        if (!_current_path) start_path(_current_point);
-        push_line(Point(_current_point[0], y));
+    void pushHorizontalRel(Coord y) { pushHorizontal(y + _current_point[1]); }
+    void pushHorizontal(Coord y) {
+        if (!_current_path) startPath(_current_point);
+        pushLine(Point(_current_point[0], y));
     }
 
-    void push_vertical_rel(Coord x) { push_vertical(x + _current_point[0]); }
-    void push_vertical(Coord x) {
-        if (!_current_path) start_path(_current_point);
-        push_line(Point(x, _current_point[1]));
+    void pushVerticalRel(Coord x) { pushVertical(x + _current_point[0]); }
+    void pushvertical(Coord x) {
+        if (!_current_path) startPath(_current_point);
+        pushLine(Point(x, _current_point[1]));
     }
 
-    void push_quad_rel(Point const &p1, Point const &p2) { push_quad(p1 + _current_point, p2 + _current_point); }
-    void push_quad(Point const &p1, Point const &p2) {
-        if (!_current_path) start_path(_current_point);
+    void pushQuadraticRel(Point const &p1, Point const &p2) { pushQuadratic(p1 + _current_point, p2 + _current_point); }
+    void pushQuadratic(Point const &p1, Point const &p2) {
+        if (!_current_path) startPath(_current_point);
         _current_path->appendNew<QuadraticBezier>(p1, p2);
         _current_point = p2;
     }
 
-    void push_quad_rel(Point const &p0, Point const &p1, Point const &p2) {
-        push_quad(p0 + _current_point, p1 + _current_point, p2 + _current_point);
+    void pushQuadraticRel(Point const &p0, Point const &p1, Point const &p2) {
+        pushQuadratic(p0 + _current_point, p1 + _current_point, p2 + _current_point);
     }
-    void push_quad(Point const &p0, Point const &p1, Point const &p2) {
-        if(p0 != _current_point)
-            start_path(p0);
-        push_quad(p1, p2);
+    void pushQuadratic(Point const &p0, Point const &p1, Point const &p2) {
+        if(p0 != _current_point) startPath(p0);
+        pushQuadratic(p1, p2);
     }
 
-    void push_cubic_rel(Point const &p1, Point const &p2, Point const &p3) {
-        push_cubic(p1 + _current_point, p2 + _current_point, p3 + _current_point);
+    void pushCubicRel(Point const &p1, Point const &p2, Point const &p3) {
+        pushCubic(p1 + _current_point, p2 + _current_point, p3 + _current_point);
     }
-    void push_cubic(Point const &p1, Point const &p2, Point const &p3) {
-        if (!_current_path) start_path(_current_point);
+    void pushCubic(Point const &p1, Point const &p2, Point const &p3) {
+        if (!_current_path) startPath(_current_point);
         _current_path->appendNew<CubicBezier>(p1, p2, p3);
         _current_point = p3;
     }
 
-    void push_cubic_rel(Point const &p0, Point const &p1, Point const &p2, Point const &p3) {
-        push_cubic(p0 + _current_point, p1 + _current_point, p2 + _current_point, p3 + _current_point);
+    void pushCubicRel(Point const &p0, Point const &p1, Point const &p2, Point const &p3) {
+        pushCubic(p0 + _current_point, p1 + _current_point, p2 + _current_point, p3 + _current_point);
     }
-    void push_cubic(Point const &p0, Point const &p1, Point const &p2, Point const &p3) {
-        if(p0 != _current_point)
-            start_path(p0);
-        push_cubic(p1, p2, p3);
+    void pushCubic(Point const &p0, Point const &p1, Point const &p2, Point const &p3) {
+        if(p0 != _current_point) startPath(p0);
+        pushCubic(p1, p2, p3);
     }
 
-    void push_ellipse_rel(Point const &radii, double rotation, bool large, bool sweep, Point const &end) {
-        push_ellipse(radii, rotation, large, sweep, end + _current_point);
+    void pushEllipseRel(Point const &radii, double rotation, bool large, bool sweep, Point const &end) {
+        pushEllipse(radii, rotation, large, sweep, end + _current_point);
     }
-    void push_ellipse(Point const &radii, double rotation, bool large, bool sweep, Point const &end) {
-        if (!_current_path) start_path(_current_point);
+    void pushEllipse(Point const &radii, double rotation, bool large, bool sweep, Point const &end) {
+        if (!_current_path) startPath(_current_point);
         _current_path->appendNew<SVGEllipticalArc>(radii[0], radii[1], rotation, large, sweep, end);
         _current_point = end;
     }
 
-    void push_ellipse_rel(Point const &initial, Point const &radii, double rotation, bool large, bool sweep, Point const &end) {
-        push_ellipse(initial + _current_point, radii, rotation, large, sweep, end + _current_point);
+    void pushEllipseRel(Point const &initial, Point const &radii, double rotation, bool large, bool sweep, Point const &end) {
+        pushEllipse(initial + _current_point, radii, rotation, large, sweep, end + _current_point);
     }
-    void push_ellipse(Point const &initial, Point const &radii, double rotation, bool large, bool sweep, Point const &end) {
-        if(initial != _current_point)
-            start_path(initial);
-        push_ellipse(radii, rotation, large, sweep, end);
+    void pushEllipse(Point const &initial, Point const &radii, double rotation, bool large, bool sweep, Point const &end) {
+        if(initial != _current_point) startPath(initial);
+        pushEllipse(radii, rotation, large, sweep, end);
     }
     
-    void close_path() {
+    void closePath() {
         if (_current_path) {
             _current_path->close(true);
             _current_path = NULL;
         }
+        _current_point = _initial_point = Point();
     }
 
-    std::vector<Geom::Path2::Path> const &peek() const { return _pathset; }
+    std::vector<Path> const &peek() const { return _pathset; }
 
 private:
-    std::vector<Geom::Path2::Path> _pathset;
-    Geom::Path2::Path *_current_path;
+    std::vector<Path> _pathset;
+    Path *_current_path;
     Point _current_point;
     Point _initial_point;
 };

@@ -1,10 +1,39 @@
 #ifndef MATH_UTILS_HEADER
 #define MATH_UTILS_HEADER
-#include <cmath>
 
 /** Math utilities scrounged from parts of 2geom as well as some code found via Krugle -
  *  Game Boy Xport's mathutils.h .
+ *
+ * Copyright 2006 Michael G. Sloan <mgsloan@gmail.com>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it either under the terms of the GNU Lesser General Public
+ * License version 2.1 as published by the Free Software Foundation
+ * (the "LGPL") or, at your option, under the terms of the Mozilla
+ * Public License Version 1.1 (the "MPL"). If you do not alter this
+ * notice, a recipient may use your version of this file under either
+ * the MPL or the LGPL.
+ *
+ * You should have received a copy of the LGPL along with this library
+ * in the file COPYING-LGPL-2.1; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * You should have received a copy of the MPL along with this library
+ * in the file COPYING-MPL-1.1
+ *
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.1 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY
+ * OF ANY KIND, either express or implied. See the LGPL or the MPL for
+ * the specific language governing rights and limitations.
+ *
  */
+
+#include <cmath>
+
+const double Geom_EPSILON = 1e-18; // taken from libnr.  Probably sqrt(MIN_FLOAT).
 
 /** Sign function - indicates the sign of a numeric type.  -1 indicates negative, 1 indicates
  *  positive, and 0 indicates, well, 0.  Mathsy people will know this is basically the derivative

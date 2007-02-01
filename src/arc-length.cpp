@@ -29,7 +29,7 @@
  *
  */
 
-#include "path-find-points-of-interest.h"
+#include "arc-length.h"
 #include "bezier-utils.h"
 #include "poly.h"
 using namespace Geom;

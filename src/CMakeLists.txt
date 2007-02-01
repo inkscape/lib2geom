@@ -33,7 +33,6 @@ path-intersect.cpp
 path-intersect.h
 path-metric.cpp
 path-metric.h
-path-sbasis.h
 path-to-polyline.cpp
 path-to-polyline.h
 path.cpp

@@ -5,7 +5,7 @@
 #include "bezier-to-sbasis.h"
 #include "path-sbasis.h"
 #include "convex-cover.h"
-#include "epsilon.h"
+#include "math-utils.h"
 
 using namespace Geom;
 

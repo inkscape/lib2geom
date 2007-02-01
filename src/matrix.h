@@ -20,7 +20,7 @@
 //#include <glib/gmessages.h>
 
 #include "transforms.h"
-#include "epsilon.h"
+#include "math-utils.h"
 
 namespace Geom {
 

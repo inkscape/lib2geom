@@ -29,15 +29,14 @@
  *
  */
 
-#include "path.h"
 #include "path2.h"
 #include <cstdio>
 #include <cassert>
 
-void write_svgd(std::FILE* f, Geom::Path2::Path const &p);
-void write_svgd(std::FILE* f, std::vector<Geom::Path2::Path> const &p);
+void writeSVGd(std::FILE* f, Geom::Path2::Path const &p);
+void writeSVGd(std::FILE* f, std::vector<Geom::Path2::Path> const &p);
 
-Geom::PathSet read_svgd(std::FILE* f);
+std::vector<Geom::Path2::Path> readSVGd(std::FILE* f);
 
 /*
   Local Variables:

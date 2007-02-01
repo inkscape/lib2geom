@@ -1,3 +1,4 @@
+#include "path2-builder.h"
 #include "read-svgd.h"
 #include "sbasis-to-bezier.h"
 
@@ -5,7 +6,7 @@ using std::FILE;
 using std::fgetc;
 using std::feof;
 
-void curve_to_svgd(FILE* f, Geom::Path2::Curve const* c) {
+void curveToSVGd(FILE* f, Geom::Path2::Curve const* c) {
     if(Geom::Path2::LineSegment const *line_segment = dynamic_cast<Geom::Path2::LineSegment const  *>(c)) {
         fprintf(f, "L %g,%g ", (*line_segment)[1][0], (*line_segment)[1][1]);
     }
@@ -30,12 +31,12 @@ void curve_to_svgd(FILE* f, Geom::Path2::Curve const* c) {
 
         //recurse to convert the new path resulting from the sbasis to svgd
         for(Geom::Path2::Path::iterator iter = sbasis_path.begin(); iter != sbasis_path.end(); ++iter) {
-            curve_to_svgd(f, &(*iter));
+            curveToSVGd(f, &(*iter));
         }
     }
 }
 
-void write_svgd(FILE* f, Geom::Path2::Path const &p) {
+void writeSVGd(FILE* f, Geom::Path2::Path const &p) {
     if(f == NULL)
         f = stderr;
     fprintf(f, "M %g,%g ", p.initialPoint()[0], p.initialPoint()[1]);
@@ -47,25 +48,22 @@ void write_svgd(FILE* f, Geom::Path2::Path const &p) {
         fprintf(f, "Z ");
 }
 
-void write_svgd(FILE* f, std::vector<Geom::Path2::Path> const &p) {
+void writeSVGd(FILE* f, std::vector<Geom::Path2::Path> const &p) {
     std::vector<Geom::Path2::Path>::const_iterator it(p.begin());
     for(; it != p.end(); it++) {
-        write_svgd(f, *it);
+        writeSVGd(f, *it);
     }
 }
 
-Geom::Point point(double d1, double d2) {
-    Geom::Point p;
-    p[0] = d1;
-    p[1] = d2;
-    return p;
+Geom::Point point(double *nums, int ix) {
+    return Geom::Point(nums[ix], nums[ix + 1]);
 }
 
-Geom::PathSet
-read_svgd(FILE* f) {
+std::vector<Geom::Path2::Path>
+readSVGd(FILE* f) {
     assert(f);
 
-    Geom::PathSetBuilder builder;
+    Geom::Path2::PathBuilder builder;
 
     char mode = 0;
 
@@ -87,93 +85,94 @@ read_svgd(FILE* f) {
         }
         
         switch(mode) {
+        //FIXME: "If a moveto is followed by multiple pairs of coordinates, the subsequent pairs are treated as implicit lineto commands."
         case 'm':
             if(cur >= 2) {
-                builder.start_subpath_rel(Geom::Point(nums[0], nums[1]));
+                builder.startPathRel(point(nums, 0));
                 cur = 0;
             }
             break;
         case 'M':
             if(cur >= 2) {
-                builder.start_subpath(Geom::Point(nums[0], nums[1]));
+                builder.startPath(point(nums, 0));
                 cur = 0;
             }
             break;
         case 'l':
             if(cur >= 2) {
-                builder.push_line_rel(Geom::Point(nums[0], nums[1]));
+                builder.pushLineRel(point(nums, 0));
                 cur = 0;
             }
             break;
         case 'L':
             if(cur >= 2) {
-                builder.push_line(Geom::Point(nums[0], nums[1]));
+                builder.pushLine(point(nums, 0));
                 cur = 0;
             }
             break;
         case 'h':
             if(cur >= 1) {
-                builder.push_horizontal_rel(nums[0]);
+                builder.pushHorizontalRel(nums[0]);
                 cur = 0;
             }
             break;
         case 'H':
             if(cur >= 1) {
-                builder.push_horizontal(nums[0]);
+                builder.pushHorizontal(nums[0]);
                 cur = 0;
             }
             break;
         case 'v':
             if(cur >= 1) {
-                builder.push_vertical_rel(nums[0]);
+                builder.pushVerticalRel(nums[0]);
                 cur = 0;
             }
             break;
         case 'V':
             if(cur >= 1) {
-                builder.push_vertical(nums[0]);
+                builder.pushVertical(nums[0]);
                 cur = 0;
             }
             break;
         case 'c':
             if(cur >= 6) {
-                builder.push_cubic_rel(Geom::Point(nums[0], nums[1]), Geom::Point(nums[2], nums[3]), Geom::Point(nums[4], nums[5]));
+                builder.pushCubicRel(point(nums, 0), point(nums, 2), point(nums, 4));
                 cur = 0;
             }
             break;
         case 'C':
             if(cur >= 6) {
-                builder.push_cubic(Geom::Point(nums[0], nums[1]), Geom::Point(nums[2], nums[3]), Geom::Point(nums[4], nums[5]));
+                builder.pushCubic(point(nums, 0), point(nums, 2), point(nums, 4));
                 cur = 0;
             }
             break;
         case 'q':
             if(cur >= 4) {
-                builder.push_quad_rel(Geom::Point(nums[0], nums[1]), Geom::Point(nums[2], nums[3]));
+                builder.pushQuadraticRel(point(nums, 0), point(nums, 2));
                 cur = 0;
             }
             break;
         case 'Q':
             if(cur >= 4) {
-                builder.push_quad(Geom::Point(nums[0], nums[1]), Geom::Point(nums[2], nums[3]));
+                builder.pushQuadratic(point(nums, 0), point(nums, 2));
                 cur = 0;
             }
             break;
         case 'a':
             if(cur >= 7) {
-                //TODO
+                pushEllipseRel(point(nums, 0), nums[2], nums[3] > 0, nums[4] > 0, point(nums, 5));
                 cur = 0;
             }
             break;
         case 'A':
             if(cur >= 7) {
-                builder.push_ellipse(Geom::Point(nums[0], nums[1]), nums[2], nums[3] > 0, nums[4] > 0, Geom::Point(nums[5], nums[6]));
+                builder.pushEllipse(point(nums, 0), nums[2], nums[3] > 0, nums[4] > 0, point(nums, 5));
                 cur = 0;
             }
             break;
         case 'z':
         case 'Z':
-            builder.close_subpath();
+            builder.closePath();
             break;
         }
     }
