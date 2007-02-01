@@ -8,6 +8,8 @@
  * Authors:
  *   Lauris Kaplinski <lauris@kaplinski.com>
  *
+ *   Michael G. Sloan <mgsloan@gmail.com>
+ *
  * This code is in public domain
  */
 

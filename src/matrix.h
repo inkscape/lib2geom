@@ -11,6 +11,9 @@
  *   Nathan Hurst <njh@mail.csse.monash.edu.au>:
  *     Geom::Matrix class version of the above.
  *
+ *   Michael G. Sloan <mgsloan@gmail.com>:
+ *     Reorganization and additions.
+ *
  * This code is in public domain.
  */
 
