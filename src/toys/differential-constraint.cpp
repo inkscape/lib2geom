@@ -7,9 +7,7 @@
 #include "sbasis-to-bezier.h"
 #include "multidim-sbasis.h"
 
-#include "path.h"
 #include "path-cairo.h"
-#include "path-builder.h"
 
 #include "toy-framework.h"
 

@@ -8,9 +8,7 @@
 #include "sbasis-poly.h"
 #include "bezier-to-sbasis.h"
 
-#include "path.h"
 #include "path-cairo.h"
-#include "path-builder.h"
 
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_math.h>

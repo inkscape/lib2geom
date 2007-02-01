@@ -4,9 +4,7 @@
 #include "sb-geometric.h"
 #include "multidim-sbasis.h"
 
-#include "path.h"
 #include "path-cairo.h"
-#include "path-builder.h"
 
 #include <iterator>
 #include "translate.h"

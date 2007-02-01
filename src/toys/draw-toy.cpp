@@ -1,6 +1,6 @@
-#include "path.h"
+#include "path2.h"
 #include "path-cairo.h"
-#include "path-builder.h"
+#include "path2-builder.h"
 
 #include "matrix.h"
 
@@ -14,11 +14,6 @@ path convenience constructors - eg, spline, poly, etc.
 Perhaps we should split the docs into useage/complexity levels.  eg, "basic", "advanced".  Not sure if there is a good way to doxy this.
 (L0, L1, L2 would be put in the advanced section)
 */
-
-Geom::Point reflect_about(Geom::Point pnt, Geom::Point line) {
-    Geom::Point norm = unit_vector(line);
-    return pnt * from_basis(norm.cw(), norm);
-}
 
 class DrawToy: public Toy {
     //Knot : Och : Och : Knot : Och : Och : Knot : Och : Och : ...
@@ -45,9 +40,9 @@ class DrawToy: public Toy {
         Geom::PathSetBuilder builder;
         if(handles.size() > 3) {
             Geom::Point mid = handles[0];
-            builder.start_subpath(handles[0]);
+            builder.startPath(handles[0]);
             for(int i = 0; i < handles.size() - 3; i+=3) {
-                builder.push_cubic(handles[i], handles[i+1], handles[i+2], handles[i+3]);
+                builder.pushCubic(handles[i], handles[i+1], handles[i+2], handles[i+3]);
             }
         }
         cairo_PathSet(cr, builder.peek());

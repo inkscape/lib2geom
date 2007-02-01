@@ -9,9 +9,7 @@
 #include "multidim-sbasis.h"
 #include "s-basis-2d.h"
 
-#include "path.h"
 #include "path-cairo.h"
-#include "path-builder.h"
 
 #include <iterator>
 #include "translate.h"

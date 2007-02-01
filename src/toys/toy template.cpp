@@ -1,24 +1,5 @@
-#include "s-basis.h"
-#include "bezier-to-sbasis.h"
-#include "sbasis-to-bezier.h"
-#include "multidim-sbasis.h"
-#include "s-basis-2d.h"
-#include "sbasis-poly.h"
-
-#include "path.h"
 #include "path-cairo.h"
-#include "path-builder.h"
-
 #include <iterator>
-#include "solver.h"
-#include "nearestpoint.cpp"
-#include "sturm.h"
-#include "poly-dk-solve.h"
-#include "poly-laguerre-solve.h"
-#include "choose.h"
-#include "convex-cover.h"
-
-#include "transforms.h"
 
 #include "toy-framework.cpp"
 
