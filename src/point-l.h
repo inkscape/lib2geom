@@ -2,21 +2,17 @@
 #define SEEN_Geom_POINT_L_H
 
 #include <stdexcept>
-#include "i-coord.h"
 #include "point.h"
 
-struct NRPointL {
-    Geom::ICoord x, y;
-};
-
 namespace Geom {
+
+typedef long ICoord;
 
 class IPoint {
     ICoord _pt[2];
 
   public:
-    IPoint()
-    { }
+    IPoint() { }
 
     IPoint(ICoord x, ICoord y) {
         _pt[X] = x;
@@ -46,16 +42,12 @@ class IPoint {
     }
 
     ICoord operator[](unsigned i) const throw(std::out_of_range) {
-        if ( i > Y ) {
-            throw std::out_of_range("index out of range");
-        }
+        if ( i > Y ) throw std::out_of_range("index out of range");
         return _pt[i];
     }
 
     ICoord &operator[](unsigned i) throw(std::out_of_range) {
-        if ( i > Y ) {
-            throw std::out_of_range("index out of range");
-        }
+        if ( i > Y ) throw std::out_of_range("index out of range");
         return _pt[i];
     }
 

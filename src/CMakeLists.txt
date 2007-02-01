@@ -13,13 +13,10 @@ conjugate_gradient.h
 convex-cover.cpp
 convex-cover.h
 coord.h
-dim2.h
 floating.h
 forward.h
 geom.cpp
 geom.h
-i-coord.h
-isnan.h
 macros.h
 matrix.cpp
 matrix.h

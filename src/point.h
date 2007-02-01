@@ -8,11 +8,12 @@
 #include <iostream>
 
 #include "coord.h"
-#include "dim2.h"
 #include "macros.h"
 #include "math-utils.h"
 
 namespace Geom {
+
+enum Dim2 { X=0, Y=1 };
 
 class Matrix;
 
