@@ -16,6 +16,7 @@ IF(gsl_FOUND)
     SET(NEEDS_GSL 
     differential-constraint
     root-finder-comparer
+    contour
     )
     SET(LINK_GSL ${gsl_LINK_FLAGS})
     SET(gsl_CFLAGS "${gsl_CFLAGS} -DHAVE_GDL")

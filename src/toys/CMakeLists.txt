@@ -9,7 +9,6 @@ conic-3
 conic-4
 conic
 convex-toy
-contour
 fitter
 one-D
 quad-toy
