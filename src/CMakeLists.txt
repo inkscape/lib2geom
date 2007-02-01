@@ -21,7 +21,6 @@ macros.h
 matrix.cpp
 matrix.h
 math-utils.h
-math-utils.cpp
 maybe.h
 multidim-sbasis.h
 sb-geometric.h

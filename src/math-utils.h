@@ -28,7 +28,14 @@ template <class T> inline const T& between (const T& min, const T& max, const T&
  *  Quake 3 source, this function is very very magic in its working, actually converting a float to
  *  integer form and back during the process.
  */
-float invSqrt (float x);
+inline float invSqrt (float x){
+   float xhalf = 0.5f*x;
+   int i = *(int*)&x;
+   i = 0x5f3759df - (i>>1);
+   x = *(float*)&i;
+   x = x*(1.5f - xhalf*x*x);
+   return x;
+}
 
 /** Returns x rounded to the nearest integer.  It is unspecified what happens
  *  if x is half way between two integers: we may in future use rint/round
