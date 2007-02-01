@@ -51,6 +51,7 @@ path2.cpp
 path2.h
 point.h
 point.cpp
+point-l.h
 poly.cpp
 poly-dk-solve.cpp
 poly-dk-solve.h
