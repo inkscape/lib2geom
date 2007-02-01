@@ -27,17 +27,12 @@ sb-geometric.h
 #nearestpoint.cpp
 path-builder.h
 path2-builder.h
-#path-cubicto.cpp
-path-find-points-of-interest.cpp
-path-find-points-of-interest.h
 path-nearest.cpp
 path-nearest.h
 path-intersect.cpp
 path-intersect.h
 path-metric.cpp
 path-metric.h
-path-ops.cpp
-path-ops.h
 path-sbasis.h
 path-to-polyline.cpp
 path-to-polyline.h
