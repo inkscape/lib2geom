@@ -45,7 +45,7 @@ class DrawToy: public Toy {
                 builder.pushCubic(handles[i], handles[i+1], handles[i+2], handles[i+3]);
             }
         }
-        cairo_PathSet(cr, builder);
+        cairo_path(cr, builder.peek());
         cairo_stroke(cr);
     }
     void mouse_pressed(GdkEventButton* e) {

@@ -41,7 +41,7 @@ class PathBuilder {
 public:
     PathBuilder() : _current_path(NULL) {}
 
-    void startPathRel(Point const &p0) { start_path(p0 + _current_point); }
+    void startPathRel(Point const &p0) { startPath(p0 + _current_point); }
     void startPath(Point const &p0) {
         _pathset.push_back(Geom::Path2::Path());
         _current_path = &_pathset.back();
@@ -68,7 +68,7 @@ public:
     }
 
     void pushVerticalRel(Coord x) { pushVertical(x + _current_point[0]); }
-    void pushvertical(Coord x) {
+    void pushVertical(Coord x) {
         if (!_current_path) startPath(_current_point);
         pushLine(Point(x, _current_point[1]));
     }
