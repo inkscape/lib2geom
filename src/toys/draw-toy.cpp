@@ -39,8 +39,6 @@ class DrawToy: public Toy {
         cairo_set_source_rgba (cr, 0, 0, 0, 1);
         Geom::Path2::PathBuilder builder;
         if(handles.size() > 3) {
-            Geom::Point mid = handles[0];
-            builder.startPath(handles[0]);
             for(int i = 0; i < handles.size() - 3; i+=3) {
                 builder.pushCubic(handles[i], handles[i+1], handles[i+2], handles[i+3]);
             }
