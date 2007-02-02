@@ -37,7 +37,7 @@ class DrawToy: public Toy {
         }
 
         cairo_set_source_rgba (cr, 0, 0, 0, 1);
-        Geom::PathSetBuilder builder;
+        Geom::Path2::PathBuilder builder;
         if(handles.size() > 3) {
             Geom::Point mid = handles[0];
             builder.startPath(handles[0]);
@@ -45,7 +45,7 @@ class DrawToy: public Toy {
                 builder.pushCubic(handles[i], handles[i+1], handles[i+2], handles[i+3]);
             }
         }
-        cairo_PathSet(cr, builder.peek());
+        cairo_PathSet(cr, builder);
         cairo_stroke(cr);
     }
     void mouse_pressed(GdkEventButton* e) {

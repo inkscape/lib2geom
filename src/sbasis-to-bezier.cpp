@@ -78,6 +78,7 @@ sbasis_to_bezier(MultidimSBasis<2> const &B, unsigned qq) {
     return result;
 }
 
+#if 0 // using old path
 //std::vector<Geom::Point>
 // mutating
 void
@@ -146,6 +147,8 @@ subpath_from_sbasis_incremental(Geom::PathSetBuilder &pb, MultidimSBasis<2> B, d
         te = B.tail_error(k);
     }
 }
+
+#endif
 
 void
 path_from_sbasis(Geom::Path2::Path &pb, MultidimSBasis<2> const &B, double tol) {

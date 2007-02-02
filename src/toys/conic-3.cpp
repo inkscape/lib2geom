@@ -76,10 +76,9 @@ class Conic3: public Toy {
             }
         }
         {
-            Geom::PathSetBuilder pb;
-            subpath_from_sbasis(pb, B, 1);
-            cairo_PathSet(cr, pb.peek());
-            cairo_PathSet_handles(cr, pb.peek());
+            Geom::Path2::Path pb;
+            path_from_sbasis(pb, B, 1);
+            cairo_path(cr, pb);
         }
         Toy::draw(cr, notify, width, height, save);
     }

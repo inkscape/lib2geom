@@ -99,32 +99,32 @@ class BezGrad: public Toy {
             for(int ui = 0; ui < 10; ui++) {
                 double tu = ui/10.;
                 
-                Geom::PathSetBuilder pb;
+                Geom::Path2::Path pb;
                 MultidimSBasis<2> B;
                 MultidimSBasis<2> tB;
                 
                 B[0] = BezOrd(tu-fudge, tu+fudge+inv_u_subs);
                 B[1] = BezOrd(tv-fudge, tv-fudge);
                 tB = compose(sb2, B);
-                subpath_from_sbasis(pb, tB, 0.1);
+                path_from_sbasis(pb, tB, 0.1);
                 
                 B[0] = BezOrd(tu+fudge+inv_u_subs, tu+fudge+inv_u_subs);
                 B[1] = BezOrd(tv-fudge,            tv+fudge+inv_v_subs);
                 tB = compose(sb2, B);
-                subpath_from_sbasis(pb, tB, 0.1, false);
+                path_from_sbasis(pb, tB, 0.1);
                 
                 B[0] = BezOrd(tu+fudge+inv_u_subs, tu-fudge);
                 B[1] = BezOrd(tv+fudge+inv_v_subs, tv+fudge+inv_v_subs);
                 tB = compose(sb2, B);
-                subpath_from_sbasis(pb, tB, 0.1, false);
+                path_from_sbasis(pb, tB, 0.1);
                 
                 B[0] = BezOrd(tu-fudge,            tu-fudge);
                 B[1] = BezOrd(tv+fudge+inv_v_subs, tv+fudge);
                 tB = compose(sb2, B);
-                subpath_from_sbasis(pb, tB, 0.1, false);
+                path_from_sbasis(pb, tB, 0.1);
                 
                 if(1) {
-                    cairo_PathSet(cr, pb.peek());
+                    cairo_path(cr, pb);
                 
                     cairo_set_source_rgba (cr, tu, tv, 0, 1);
                     cairo_fill(cr);

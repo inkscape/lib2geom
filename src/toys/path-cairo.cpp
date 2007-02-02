@@ -45,6 +45,16 @@ void cairo_path(cairo_t *cr, Path2::Path const &p) {
         cairo_close_path(cr);
 }
 
+void cairo_path_handles(cairo_t *cr, Path2::Path const &p) {
+    cairo_move_to(cr, p.initialPoint()[0], p.initialPoint()[1]);
+
+    for(Path2::Path::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
+        cairo_curve(cr, *iter);
+    }
+    if(p.closed())
+        cairo_close_path(cr);
+}
+
 void cairo_path(cairo_t *cr, std::vector<Path2::Path> const &p) {
     std::vector<Path2::Path>::const_iterator it;
     for(it = p.begin(); it != p.end(); it++) {
@@ -52,6 +62,7 @@ void cairo_path(cairo_t *cr, std::vector<Path2::Path> const &p) {
     }
 }
 
+#if 0
 void cairo_path(cairo_t *cr, Path const &p) {
     if(p.empty()) return;
     cairo_move_to(cr, p.initial_point()[0], p.initial_point()[1]);
@@ -129,17 +140,18 @@ void cairo_PathSet_handles(cairo_t *cr, PathSet const &p) {
         cairo_path_handles(cr, *it);
     }
 }
+#endif
 
 void cairo_md_sb(cairo_t *cr, MultidimSBasis<2> const &B) {
-    PathSetBuilder pb;
-    subpath_from_sbasis(pb, B, 0.1);
-    cairo_PathSet(cr, pb.peek());
+    Path2::Path pb;
+    path_from_sbasis(pb, B, 0.1);
+    cairo_path(cr, pb);
 }
 
 void cairo_md_sb_handles(cairo_t *cr, MultidimSBasis<2> const &B) {
-    PathSetBuilder pb;
-    subpath_from_sbasis(pb, B, 0.1);
-    cairo_PathSet_handles(cr, pb.peek());
+    Path2::Path pb;
+    path_from_sbasis(pb, B, 0.1);
+    cairo_path_handles(cr, pb);
 }
 
 //TODO: what's the diff between the next two funcs?

@@ -112,9 +112,9 @@ class Conic4: public Toy {
         cairo_set_line_width (cr, 1);
         cairo_stroke(cr);
 
-        Geom::PathSetBuilder pb;
-        subpath_from_sbasis(pb, B, 1);
-        Geom::PathSet pth = pb.peek();
+        Geom::Path2::Path pb;
+        path_from_sbasis(pb, B, 1);
+        Geom::Path2::Path pth = pb;
         //*notify << pth;
 
         Toy::draw(cr, notify, width, height, save);

@@ -1,7 +1,7 @@
 SET(2GEOM_TOYS_SRC 
 2dsb2d
 arc-bez
-b-spline
+#b-spline
 circle-intersect
 clothoid
 conic-2
@@ -17,12 +17,12 @@ sb1d
 sb2d
 pair-intersect
 precise-flat
-toy-cairo
+#toy-cairo
 gear
 cheb
 match-curve
 mesh-grad
-bez-grad
+#bez-grad
 draw-toy
 normal-bundle
 offset-test
