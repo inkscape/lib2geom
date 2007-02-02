@@ -270,7 +270,9 @@ public:
   typedef Sequence::size_type size_type;
   typedef Sequence::difference_type difference_type;
 
-  Path() {
+  Path()
+  : closed_(false)
+  {
     curves_.push_back(&final_);
   }
 
