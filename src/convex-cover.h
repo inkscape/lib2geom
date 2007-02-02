@@ -1,3 +1,6 @@
+#ifndef GEOM_CONVEX_COVER_H
+#define GEOM_CONVEX_COVER_H
+
 /*
  * convex-cover.h
  *
@@ -29,11 +32,12 @@
  *
  */
 
-#include "path.h"
-
 /** A convex cover is a sequence of convex polygons that completely cover the path.  For now a
  * convex hull class is included here (the convex-hull header is wrong)
  */
+
+#include "point.h"
+#include <vector>
 
 namespace Geom{
 
@@ -143,15 +147,18 @@ template <class T> ConvexHull operator*(ConvexHull const &p, T const &m) {
     return pr;
 }
 
-class ConvexCover{
+//TODO: reinstate
+/*class ConvexCover{
 public:
     Path const* path;
     std::vector<ConvexHull> cc;
     
     ConvexCover(Path const &sp);
-};
+};*/
 
 };
+
+#endif //2GEOM_CONVEX_COVER_H
 
 /*
   Local Variables:

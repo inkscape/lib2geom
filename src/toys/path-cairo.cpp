@@ -1,6 +1,5 @@
 #include <cairo.h>
 #include "path-cairo.h"
-#include "path-builder.h"
 #include "multidim-sbasis.h"
 #include "sbasis-to-bezier.h"
 
@@ -63,40 +62,6 @@ void cairo_path(cairo_t *cr, std::vector<Path2::Path> const &p) {
 }
 
 #if 0
-void cairo_path(cairo_t *cr, Path const &p) {
-    if(p.empty()) return;
-    cairo_move_to(cr, p.initial_point()[0], p.initial_point()[1]);
-    for(Path::const_iterator iter(p.begin()), end(p.end()); iter < end; ++iter) {
-        Path::Elem elm = *iter;
-        if(dynamic_cast<LineTo *>(iter.cmd())) {
-            cairo_line_to(cr, elm.last()[0], elm.last()[1]);
-        }  else if(dynamic_cast<QuadTo *>(iter.cmd())) {
-            Point b1 = elm[0] + (2./3) * (elm[1] - elm[0]);
-            Point b2 = b1 + (1./3) * (elm[2] - elm[0]);
-            cairo_curve_to(cr, b1[0], b1[1], 
-                           b2[0], b2[1], 
-                           elm[2][0], elm[2][1]);
-        }  else if(dynamic_cast<CubicTo *>(iter.cmd())) {
-            cairo_curve_to(cr, elm[1][0], elm[1][1], 
-                           elm[2][0], elm[2][1], 
-                           elm[3][0], elm[3][1]);
-        }
-    }
-    if(p.is_closed()) {
-        cairo_close_path(cr);
-    }
-}
-
-void cairo_PathSet(cairo_t *cr, PathSet const &p) {
-    std::vector<Path> subpaths;
-    
-    for (std::vector<Path>::const_iterator it(p.begin()),
-             iEnd(p.end());
-         it != iEnd; ++it) {
-        cairo_path(cr, *it);
-    }
-}
-
 /*** This is really just for debugging porpoises. */
 #include <sstream>
 #include <iostream>

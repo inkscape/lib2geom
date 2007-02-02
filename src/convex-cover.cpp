@@ -423,13 +423,13 @@ ConvexHull graham_merge(ConvexHull a, ConvexHull b) {
     
     return result;
 }
-
-ConvexCover::ConvexCover(Path const &sp) : path(&sp) {
+//TODO: reinstate
+/*ConvexCover::ConvexCover(Path const &sp) : path(&sp) {
     cc.reserve(sp.size());
     for(Geom::Path::const_iterator it(sp.begin()), end(sp.end()); it != end; ++it) {
         cc.push_back(ConvexHull((*it).begin(), (*it).end()));
     }
-}
+}*/
 
 
 };

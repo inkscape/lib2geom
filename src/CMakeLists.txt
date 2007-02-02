@@ -4,8 +4,8 @@ SET(2GEOM_SRC
 bezier-to-sbasis.h
 bezier-utils.cpp
 bezier-utils.h
-centroid.cpp
-centroid.h
+#centroid.cpp
+#centroid.h
 choose.h
 circulator.h
 conjugate_gradient.cpp
