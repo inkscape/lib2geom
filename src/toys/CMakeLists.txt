@@ -48,25 +48,10 @@ IF(2GEOM_TOYS)
     # make lib for toy
     ADD_LIBRARY(toy ${LIB_TYPE} ${2GEOM_TOY-FRAMEWORK_SRC})
     TARGET_LINK_LIBRARIES(toy 2geom "${GTK2_LINK_FLAGS} ${cairo_LINK_FLAGS}")
-    INSTALL(TARGETS toy
-      RUNTIME DESTINATION bin
-      LIBRARY DESTINATION lib
-      ARCHIVE DESTINATION lib
-    )
-    FILE(GLOB files "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
-    INSTALL(FILES ${files} DESTINATION include/2geom/2geom)
 
     FOREACH(source ${2GEOM_TOYS_SRC})
         ADD_EXECUTABLE(${source} ${source}.cpp)
         TARGET_LINK_LIBRARIES(${source} toy 2geom "${GTK2_LINK_FLAGS} ${cairo_LINK_FLAGS} ${LINK_GSL}" )
     ENDFOREACH(source)
-    INSTALL(TARGETS ${2GEOM_TOYS_SRC}
-      RUNTIME DESTINATION bin
-      LIBRARY DESTINATION lib
-      ARCHIVE DESTINATION lib
-    )
-    CONFIGURE_FILE( ${CMAKE_SOURCE_DIR}/toy.pc.in
-                    ${CMAKE_BINARY_DIR}/toy.pc @ONLY IMMEDIATE )
-    INSTALL(FILES "${CMAKE_BINARY_DIR}/toy.pc" DESTINATION lib/pkgconfig)
 
 ENDIF(2GEOM_TOYS)
