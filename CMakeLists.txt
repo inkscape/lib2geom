@@ -47,4 +47,13 @@ ADD_CUSTOM_TARGET(dist svn export --force -q ${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_
 		COMMAND tar -czf ${CMAKE_BINARY_DIR}/${2GEOM_DIST_PREFIX}.tar.gz -C ${CMAKE_BINARY_DIR} --exclude=".hidden" ${2GEOM_DIST_PREFIX}
 		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
+#make unistall target
+CONFIGURE_FILE(
+  "${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
+  IMMEDIATE @ONLY)
+
+ADD_CUSTOM_TARGET(uninstall
+  "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake")
+
 ADD_SUBDIRECTORY (src)
