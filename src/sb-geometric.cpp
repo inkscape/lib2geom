@@ -246,6 +246,18 @@ Geom::arc_length(MultidimSBasis<2> const M,
     return(L);
 }
 
+/***
+ * std::vector<SBasis > 
+ * Geom::arc_length_sb(MultidimSBasis<2> const M,
+                    std::vector<double> &cuts,
+                    double tol)
+ * returns a piecewise sbasis function which maps the t parameter of M(t) to the acr length at that point.
+ * In other words, it returns a function to compute the arc length at each point.
+ *
+ * Todo: replace the return value + cuts with a single class for handling piecewise sbasis
+ * functions.
+ **/
+
 std::vector<SBasis > 
 Geom::arc_length_sb(MultidimSBasis<2> const M,
                     std::vector<double> &cuts,

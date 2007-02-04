@@ -22,7 +22,7 @@ public:
     }
 
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
-        MultidimSBasis<2> B = bezier_to_sbasis<2, 2>(handles.begin());
+        MultidimSBasis<2> B = bezier_to_sbasis<2, 3>(handles.begin());
         cairo_md_sb(cr, B);
         cairo_stroke(cr);
         
