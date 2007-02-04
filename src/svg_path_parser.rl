@@ -19,7 +19,7 @@
 #include <cmath>
 #include <vector>
 
-#include "../src/point-ops.h"
+#include "point.h"
 
 #include "svg_path_parser.h"
 

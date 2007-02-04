@@ -1,4 +1,21 @@
+#generate parser file with ragel
+SET(SVG_PARSER_CPP "${CMAKE_CURRENT_SOURCE_DIR}/svg_path_parser.cpp")
+SET(SVG_PARSER_TMP "${CMAKE_CURRENT_SOURCE_DIR}/svg_path_parser.tmp")
+SET(SVG_PARSER_RL "${CMAKE_CURRENT_SOURCE_DIR}/svg_path_parser.rl")
+SET(GENERATE_SVG_PARSER NOT EXISTS "${SVG_PARSER_CPP}")
+SET(REGENERATE_SVG_PARSER "${SVG_PARSER_CPP}" IS_NEWER_THAN "${SVG_PARSER_RL}")
+IF(GENERATE_SVG_PARSER OR REGENERATE_SVG_PARSER)
+  ADD_CUSTOM_COMMAND(OUTPUT "${SVG_PARSER_CPP}"
+                     COMMAND ragel -o "${SVG_PARSER_TMP}" "${SVG_PARSER_RL}"
+                     COMMAND rlcodegen -T0 -o "${SVG_PARSER_CPP}" "${SVG_PARSER_TMP}"
+                     DEPENDS "${SVG_PARSER_RL}"
+                     WORKING_DIRECTORY "${CURRENT_SOURCE_DIR}"
+                     COMMENT "Generating svg_path_parser.cpp with ragel"
+                     VERBATIM)
+ENDIF(GENERATE_SVG_PARSER OR REGENERATE_SVG_PARSER)
+
 SET(2GEOM_SRC
+svg_path_parser.cpp
 #arc-length.cpp
 #arc-length.h
 bezier-to-sbasis.h
