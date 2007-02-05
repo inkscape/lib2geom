@@ -11,7 +11,7 @@ IF(GENERATE_SVG_PARSER OR REGENERATE_SVG_PARSER)
                      DEPENDS "${SVG_PARSER_RL}"
                      WORKING_DIRECTORY "${CURRENT_SOURCE_DIR}"
                      COMMENT "Generating svg_path_parser.cpp with ragel"
-                     VERBATIM)
+                     )
 ENDIF(GENERATE_SVG_PARSER OR REGENERATE_SVG_PARSER)
 
 SET(2GEOM_SRC
