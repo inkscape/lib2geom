@@ -3,7 +3,9 @@
 #include "sbasis-to-bezier.h"
 #include "multidim-sbasis.h"
 
+#include "path.h"
 #include "path-cairo.h"
+#include "path-builder.h"
 
 #include "toy-framework.h"
 
@@ -19,135 +21,97 @@ static void plot(cairo_t* cr, SBasis const &B,double vscale=1,double a=0,double 
       plot[1]=-vscale*B;
       plot[1]+=300;
       cairo_md_sb(cr, plot);
+      cairo_stroke(cr);
 }
 
-//---- Original version: ----
-static void original_bounds(SBasis const & s,
-            double &lo, double &hi) {
-    double ss = 0.25;
-    double mid = s(0.5);
-    lo = hi = mid;
-    for(unsigned i = 1; i < s.size(); i++) {
-        for(unsigned dim = 0; dim < 2; dim++) {
-            double b = s[i][dim]*ss;
-            if(b < 0)
-                lo += b;
-            if(b > 0)
-                hi += b;
-        }
-        ss *= 0.25;
-    }
-    lo = std::min(std::min(lo, s[0][1]),s[0][0]);
-    hi = std::max(std::max(hi, s[0][0]), s[0][1]);
-}
+static double upper_bound(SBasis f, unsigned NbCuts=3){
+  f.normalize();
+  if (f.size()==0){return(0);}
+  if (f.size()==1){return(max(f[0][0],f[0][1]));}
+  //  if (f.size()==2){return(max_BB(f[0],f[1]));}
 
-//---- A (slightly) more accurate version: ----
-//  ...
-//  (moved to 's-basis-roots.cpp')
-//  ...
+  double M=f[0][0];
+  BezOrd sb10_hi[3*NbCuts];
+  BezOrd sb10_lo[3*NbCuts];
+  BezOrd sb01_hi[3*NbCuts];
+  BezOrd sb01_lo[3*NbCuts];
+  //linearize s(t)*(1-t)
+  for (int i=0; i<NbCuts; i++){
+    double a,b,t,fa,fb,ft,vt;
+    a= i   /3./NbCuts;
+    b=(i+1)/3./NbCuts;
+    fa=a*(1-a)*(1-a);
+    fb=b*(1-b)*(1-b);
+    sb10_lo[i]=BezOrd(fa-(fb-fa)/(b-a)*a,fb+(fb-fa)/(b-a)*(1-b));
+    t=(a+b)/2;
+    ft=t*(1-t)*(1-t);
+    vt=(1-t)*(1-3*t);
+    sb10_hi[i]=BezOrd(ft-vt*t,ft+vt*(1-t));
 
-//---- A second layer: slower but sharper ----
-/* (moved to 's-basis-roots.cpp')
-static void slow_bounds(cairo_t *cr, //DEBUG
-			SBasis const & f_in,
-			double &m, 
-			double &M,
-			int order=0,
-			double tol=.01
-			) {
+    a+=1./3.;
+    b+=1./3.;
+    fa=a*(1-a)*(1-a);
+    fb=b*(1-b)*(1-b);
+    sb10_lo[i+NbCuts]=BezOrd(fa-(fb-fa)/(b-a)*a,fb+(fb-fa)/(b-a)*(1-b));
+    t=(a+b)/2;
+    ft=t*(1-t)*(1-t);
+    vt=(1-t)*(1-3*t);
+    sb10_hi[i+NbCuts]=BezOrd(ft-vt*t,ft+vt*(1-t));
 
-  assert (tol>0);
-  order=std::max(0,order);
-  SBasis f;
-  for (int i=order;i<f_in.size();i++){
-    f.push_back(f_in[i]);
+    a+=1./3.;
+    b+=1./3.;
+    fa=a*(1-a)*(1-a);
+    fb=b*(1-b)*(1-b);
+    sb10_hi[i+2*NbCuts]=BezOrd(fa-(fb-fa)/(b-a)*a,fb+(fb-fa)/(b-a)*(1-b));
+    t=(a+b)/2;
+    ft=t*(1-t)*(1-t);
+    vt=(1-t)*(1-3*t);
+    sb10_lo[i+2*NbCuts]=BezOrd(ft-vt*t,ft+vt*(1-t));
   }
 
-  double Mf,mf,Mdf,mdf,Md2f,md2f,t,h,err;
-  double step,step_min;
-  SBasis df=derivative(f);
-  SBasis d2f=derivative(df);
-  bounds(df,mdf,Mdf);
-  bounds(d2f,md2f,Md2f);
-  if (f.size()<=1||mdf>=0||Mdf<=0){
-    bounds(f,m,M);
-  }else{
-    bounds(f,mf,Mf);
-    err=tol*std::max(1.,Mf-mf);//Fix me: 
-    //1)Mf-mf should not be 0...
-    //2)tolerance relative to inaccurate bounds (but using
-    // the current value of M and m can be speed consuming).
-    double err_M=0,err_m=0;
-    step_min=err/std::max(Mdf,-mdf);
-    M=std::max(f[0][0],f[0][1]);
-    m=std::min(f[0][0],f[0][1]);
-    for (t=0;t<=1;){
-      double ft=f(t);
-      double dft=df(t);
-      M=std::max(M,ft);
-      m=std::min(m,ft);
-      if (M<ft){
-	M=ft;
-	err_M=dft*step_min;
-      }
-      if (m>ft){
-	m=ft;
-	err_m=-dft*step_min;
-      }
-      if (dft>0){
-	step=std::max(-dft/md2f,step_min);
-      }else if (dft<0){
-	step=std::max(-dft/Md2f,step_min);
+  //linearize s(t)*t...
+  for (int i=0; i<3*NbCuts; i++){
+    double x;
+    sb01_lo[i]=sb10_lo[3*NbCuts-i-1];
+    x=sb01_lo[i][0];sb01_lo[i][0]=sb01_lo[i][1];sb01_lo[i][1]=x;
+    sb01_hi[i]=sb10_hi[3*NbCuts-i-1];
+    x=sb01_hi[i][0];sb01_hi[i][0]=sb01_hi[i][1];sb01_hi[i][1]=x;
+  }
+
+  BezOrd tail[3*NbCuts];
+  BezOrd new_tail[3*NbCuts];
+  int deg_max=f.size()-1;
+  for (int i=0; i<3*NbCuts; i++){
+    tail[i]=f[deg_max];
+  }
+  for (int deg=deg_max;deg>0;deg--){
+    for (int i=0; i<3*NbCuts; i++){
+      if (tail[i][0]>0){
+	new_tail[i]=f[deg-1]+tail[i][0]*sb10_hi[i];
       }else{
-	step=step_min;
+	new_tail[i]=f[deg-1]+tail[i][0]*sb10_lo[i];
       }
-      step=std::max(step,std::min((M-ft)/Mdf,(m-ft)/mdf));
-      draw_handle(cr, Geom::Point(150+t*300,300));//DEBUG      
-      t+=step;
+      if (tail[i][1]>0){
+	new_tail[i]+=tail[i][1]*sb01_hi[i];
+      }else{
+	new_tail[i]+=tail[i][1]*sb01_lo[i];
+      }
+      tail[i]=new_tail[i];
     }
-    M+=err_M;
-    m-=err_m;
-    M*=pow(.25,order);
-    m*=pow(.25,order);
   }
-}
-*/
-
-//---- Another try: ----
-//seems to be slower than brutal evaluation anyway.
-void cut_bounds(SBasis const & f,
-		   double &m, double &M, int order=0) {
-  bounds(f,m,M,1);
-  double a=f[0][0];
-  double b=f[0][1];
-  double t,t_max,t_min;
-
-  if (M>0){t=((b-a)+M)/2/M;}
-  if (M<=0||t<0||t>1){
-    M=std::max(a,b);
-    t_max=(a>b)?0:1;
-  }else{
-    M=a*(1-t)+b*t+M*t*(1-t);	  
-    t_max=t;
+  for (int i=0; i<3*NbCuts; i++){
+    double a,b;
+    a= i   /3./NbCuts;
+    b=(i+1)/3./NbCuts;
+    M=max(M,max(tail[i](a),tail[i](b)));
   }
-  
-  if (m<0){t=((b-a)+m)/2/m;}
-  if (m>=0||t<0||t>1){
-    m=std::min(a,b);
-    t_min=(a<b)?0:1;
-  }else{
-    m=a*(1-t)+b*t+m*t*(1-t);	  
-    t_min=t;
-  }
-  if (f(t_max)-f(t_min)<0.99*(M-m)){
-    double M0,m0,M1,m1;
-    cut_bounds(compose(f,BezOrd(0,.5)),m0,M0,0);
-    cut_bounds(compose(f,BezOrd(.5,1)),m1,M1,0);
-    M=std::max(M0,M1);
-    m=std::min(m0,m1);
-  }
+  return(M);
 }
 
+static double cut_bounds(SBasis f,double &m, double &M, unsigned NbCuts=3){
+  M= upper_bound( f,NbCuts);
+  m=-upper_bound(-f,NbCuts);
+}
 
 class BoundsTester: public Toy {
 
@@ -173,78 +137,53 @@ class BoundsTester: public Toy {
 	for (int i=0;i<deg;i++){
 	  B.push_back(BezOrd(-(handles[i][1]-300)*pow(4.,i),-(handles[i+deg][1]-300)*pow(4.,i)));
 	}
+	B.normalize();
 	plot(cr,B,1);	
-        cairo_set_line_width (cr, 1);
         cairo_set_source_rgba (cr, 0., 0., 0.8, 1);
         cairo_stroke(cr);
         cairo_set_source_rgba (cr, 0., 0.5, 0., 1);
     
 	double m,M;
-	clock_t chrono;
-	int nbIter=1;
-
-	std::cout<<std::endl;
-	std::cout<<"--times (for "<<nbIter<<" iterations): --"<<std::endl;
-
-	chrono=clock();
-	for(int i=0;i<nbIter;i++){bounds(B,m,M);}
-	chrono-=clock();
-	std::cout<<"bounds: "<<-chrono<<std::endl;
-
-	cairo_move_to(cr, Geom::Point(150,-m+300));
-	cairo_line_to(cr, Geom::Point(450,-m+300));
-	cairo_move_to(cr, Geom::Point(150,-M+300));
-	cairo_line_to(cr, Geom::Point(450,-M+300));
-        cairo_set_line_width (cr, 1);
-        cairo_set_source_rgba (cr, 0., 0.5, 0.5, 1);
-        cairo_stroke(cr);
-
-	/*
-	chrono=clock();
-	for(int i=0;i<nbIter;i++){original_bounds(B,m,M);}
-	chrono-=clock();
-	std::cout<<"original: "<<-chrono<<std::endl;
-
-	cairo_move_to(cr, Geom::Point(150,-m+300));
-	cairo_line_to(cr, Geom::Point(450,-m+300));
-	cairo_move_to(cr, Geom::Point(150,-M+300));
-	cairo_line_to(cr, Geom::Point(450,-M+300));
-        cairo_set_line_width (cr, 1);
-        cairo_set_source_rgba (cr, 0.5, 0., 0., 1);
-        cairo_stroke(cr);
-	*/
-
-	chrono=clock();
-	for(int i=0;i<nbIter;i++){slow_bounds(B,m,M);}
-	chrono-=clock();
-	std::cout<<"eval: "<<-chrono<<std::endl;
-
-	cairo_move_to(cr, Geom::Point(150,-M+300));
-	cairo_line_to(cr, Geom::Point(450,-M+300));
-	cairo_move_to(cr, Geom::Point(150,-m+300));
-	cairo_line_to(cr, Geom::Point(450,-m+300));
-        cairo_set_line_width (cr, 1);
-        cairo_set_source_rgba (cr, .75, 0, 0, 1);
-        cairo_stroke(cr);
-
-	/*
-	chrono=clock();
-	for(int i=0;i<nbIter;i++){cut_bounds(B,m,M);}
-	chrono-=clock();
-	std::cout<<"cuts: "<<-chrono<<std::endl;
-
-	cairo_move_to(cr, Geom::Point(150,-M+300));
-	cairo_line_to(cr, Geom::Point(450,-M+300));
-	cairo_move_to(cr, Geom::Point(150,-m+300));
-	cairo_line_to(cr, Geom::Point(450,-m+300));
-        cairo_set_line_width (cr, 1);
-        cairo_set_source_rgba (cr, 1, .5, 0, 1);
-        cairo_stroke(cr);
-	*/
-
 	*notify<<"Use handles to set the coefficients of the s-basis."<<std::endl;
 	*notify<<"-Blue=basic bounds,"<<std::endl;
 	*notify<<"-Red =slower but sharper."<<std::endl;
+
+        clock_t end_t;
+        unsigned iterations = 0;
+
+        end_t = clock()+clock_t(0.1*CLOCKS_PER_SEC);
+        iterations = 0;
+        while(end_t > clock()) {
+	  bounds(B,m,M);
+	  iterations++;
+        }
+        *notify << 1000*0.1/iterations <<" ms = bounds time"<< std::endl;
+
+	//bounds(B,m,M);
+	cairo_move_to(cr, Geom::Point(150,-m+300));
+	cairo_line_to(cr, Geom::Point(450,-m+300));
+        cairo_set_source_rgba (cr, 0., 0.5, 0.5, 1);
+        cairo_stroke(cr);
+	cairo_move_to(cr, Geom::Point(150,-M+300));
+	cairo_line_to(cr, Geom::Point(450,-M+300));
+        cairo_set_source_rgba (cr, 0., 0.75, 0.75, 1);
+        cairo_stroke(cr);
+
+
+        end_t = clock()+clock_t(0.1*CLOCKS_PER_SEC);
+        iterations = 0;
+        while(end_t > clock()) {
+	  cut_bounds(B,m,M);
+	  iterations++;
+        }
+        *notify << 1000*0.1/iterations <<" ms = cut bounds time"<< std::endl;
+
+	cairo_move_to(cr, Geom::Point(150,-M+300));
+	cairo_line_to(cr, Geom::Point(450,-M+300));
+	cairo_move_to(cr, Geom::Point(150,-m+300));
+	cairo_line_to(cr, Geom::Point(450,-m+300));
+        cairo_set_source_rgba (cr, 0, .75, 0, 1);
+        cairo_stroke(cr);
 
         Toy::draw(cr, notify, width, height, save);
     }        
@@ -272,6 +211,6 @@ int main(int argc, char **argv) {
   fill-column:99
   End:
 */
-//vim:expandtab:shiftwidth = 4:tabstop = 8:softtabstop = 4:encoding = utf-8:textwidth = 99 :
+// vim: filetype = cpp:expandtab:shiftwidth = 4:tabstop = 8:softtabstop = 4:encoding = utf-8:textwidth = 99 :
 
  	  	 
