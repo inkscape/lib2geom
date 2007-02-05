@@ -62,8 +62,50 @@ class pw_sb {
     }
 };
 
-pw_sb operator+(pw_sb const &a, pw_sb const &b) {
+#define MapSB (op)                                                                      \
+    pw_sb ret = pw_sb();                                                                \
+    for(vector<SBasis>::const_iterator it = a.segs.begin(); it != a.segs.end(); it++) { \
+        ret.push_back(op);                                                              \
+    }                                                                                   \
+    return ret;
 
+pw_sb operator+(BezOrd b, SBasis a)
+
+pw_sb operator-(pw_sb const &a) { MapSB(- *it) }
+pw_sb operator-(pw_sb const &a) { MapSB(- *it) }
+pw_sb operator-(BezOrd const &b, const SBasis&a) { MapSB(b- *it) }
+
+#define InlineMapSB (op)                                                                \
+    for(vector<SBasis>::const_iterator it = a.segs.begin(); it != a.segs.end(); it++) { \
+        op;                                                                             \
+    }                                                                                   \
+    return a
+
+pw_sb operator+=(pw_sb& a, const BezOrd& b) { InlineMapSB(*it += b) }
+pw_sb operator-=(pw_sb& a, const BezOrd& b) { InlineMapSB(*it -= b) }
+pw_sb operator+=(pw_sb& a, double b) { InlineMapSB(*it += b) }
+pw_sb operator-=(pw_sb& a, double b) { InlineMapSB(*it -= b) }
+
+#define ZipSBWith (op)                                                         \
+    pw_sb pa = a.partition(b.cuts), pb = b.partition(a.cuts);                  \
+    vector<SBasis>::const_iterator ai = pa.segs.begin(), bi = pb.segs.begin(); \
+    pw_sb ret = pw_sb();                                                       \
+    while(ai!=pa.segs.end() && bi!=pb.segs.end()) {                            \
+        ret.push_back(op);                                                     \
+        ai++; bi++;                                                            \
+    }                                                                          \
+    return ret;
+
+pw_sb operator+(pw_sb const &a, pw_sb const &b) { ZipSBWith((*ai)+(*bi)) }
+pw_sb operator-(pw_sb const &a, pw_sb const &b) { ZipSBWith((*ai)-(*bi)) }
+
+pw_sb multiply(pw_sb const &a, pw_sb const &b) { ZipSBWith((*ai)*(*bi)) }
+pw_sb divide(pw_sb const &a, pw_sb const &b, int k) { ZipSBWith(divide(*ai,*bi,k)) }
+
+inline pw_sb operator*(pw_sb const &a, pw_sb const &b) { multiply(a, b); }
+inline pw_sb operator*=(pw_sb &a, pw_sb const &b) { 
+    a = multiply(a, b);
+    return a;
 }
 
 pw_sb compose(pw_sb const &a, pw_sb const &b) {

@@ -130,6 +130,7 @@ public:
     double operator()(double t) const {
         return point_at(t);
     }
+    //TODO: Why are these ops in the class while the others aren't? header even?
     SBasis operator+(const SBasis& p) const {
         SBasis result;
         const unsigned out_size = std::max(size(), p.size());
@@ -146,6 +147,7 @@ public:
         assert(result.size() == out_size);
         return result;
     }
+    //TODO: Why are these ops in the class while the others aren't? header even?
     SBasis operator-(const SBasis& p) const {
         SBasis result;
         const unsigned out_size = std::max(size(), p.size());
@@ -268,6 +270,7 @@ inline SBasis& operator+=(SBasis& a, double b) {
     return a;
 }
 
+//TODO: Mutates the SBasis?!?!
 inline SBasis operator+(BezOrd b, SBasis a) {
     if(a.empty())
         a.push_back(b);
@@ -277,6 +280,7 @@ inline SBasis operator+(BezOrd b, SBasis a) {
     return a;
 }
 
+//TODO: Mutates the SBasis?!?!
 inline SBasis operator+(double b, SBasis a) {
     if(a.empty())
         a.push_back(BezOrd(b,b));
@@ -315,6 +319,7 @@ inline SBasis& operator/=(SBasis& a, double b) {
 
 SBasis operator*(double k, SBasis const &a);
 SBasis operator*(SBasis const &a, SBasis const &b);
+//TODO: division equivalent?
 
 SBasis shift(SBasis const &a, int sh);
 
@@ -335,6 +340,7 @@ SBasis reciprocal(BezOrd const &a, int k);
 
 SBasis divide(SBasis const &a, SBasis const &b, int k);
 
+//TODO: remove above decleration of same function
 inline SBasis
 operator*(SBasis const & a, SBasis const & b) {
     return multiply(a, b);
