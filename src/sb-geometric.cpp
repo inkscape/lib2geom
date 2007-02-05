@@ -251,22 +251,22 @@ Geom::arc_length(MultidimSBasis<2> const M,
  * Geom::arc_length_sb(MultidimSBasis<2> const M,
                     std::vector<double> &cuts,
                     double tol)
- * returns a piecewise sbasis function which maps the t parameter of M(t) to the acr length at that point.
- * In other words, it returns a function to compute the arc length at each point.
+ * returns a piecewise sbasis function which maps the t parameter of M(t) to the arc length at that point.
+ * In other words, it returns a function to computes the arc length at each point.
  *
  * Todo: replace the return value + cuts with a single class for handling piecewise sbasis
  * functions.
  **/
 
-std::vector<SBasis > 
+std::vector<SBasis>
 Geom::arc_length_sb(MultidimSBasis<2> const M,
                     std::vector<double> &cuts,
                     double tol){
-    std::vector<SBasis > al;
+    std::vector<SBasis> al;
     MultidimSBasis<2> dM=derivative(M);
     std::vector<MultidimSBasis<2> > uspeed;
     uspeed=unit_vector(dM,cuts,tol);
-    double t0=0.,t1, L=0.;
+    double t0=0., t1, L=0.;
     for (int i=0;i<cuts.size();i++){
         t1=cuts[i];
         MultidimSBasis<2> sub_dM=compose(dM,BezOrd(t0,t1));
@@ -282,7 +282,7 @@ Geom::arc_length_sb(MultidimSBasis<2> const M,
 }
 
 // incomplete.
-std::vector<SBasis > 
+std::vector<SBasis>
 Geom::curvature(MultidimSBasis<2> const M,
                 std::vector<double> &cuts,
                 double tol){

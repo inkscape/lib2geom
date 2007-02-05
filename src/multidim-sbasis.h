@@ -30,8 +30,8 @@ public:
         for(unsigned i = 1; i < D; i++)
             s = std::max(s, f[i].tail_error(tail));
         return s;
-        
     }
+
     bool is_finite() const {
         for(unsigned i = 0; i < D; i++)
             if(!f[i].is_finite())

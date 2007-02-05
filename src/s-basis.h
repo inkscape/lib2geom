@@ -323,7 +323,6 @@ SBasis shift(BezOrd const &a, int sh);
 SBasis truncate(SBasis const &a, unsigned terms);
 
 SBasis multiply(SBasis const &a, SBasis const &b);
-SBasis compose(SBasis const &a, SBasis const &b);
 
 SBasis integral(SBasis const &c);
 
