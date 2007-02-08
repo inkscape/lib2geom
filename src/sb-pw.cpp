@@ -63,57 +63,62 @@ pw_sb partition(const pw_sb &t, vector<double> const &c) {
 pw_sb operator-(pw_sb const &a) { MapSB(- a.segs[i]) }
 pw_sb operator-(BezOrd const &b, const pw_sb&a) { MapSB(b- a.segs[i]) }
 
-/* This macro provides a mapping of mutation operations on pw_sb pieces
- * It assumes that it is the contents of a function, and there is a pw_sb parameter, a.
- */
-#define InlineMapSB(op)                       \
-    for(int i = 0; i < a.segs.size();i++) {   \
-        op;                                   \
-    }                                         \
-    return a;
-
-pw_sb operator+=(pw_sb& a, const BezOrd& b) { InlineMapSB(a.segs[i] += b) }
-pw_sb operator-=(pw_sb& a, const BezOrd& b) { InlineMapSB(a.segs[i] -= b) }
-pw_sb operator+=(pw_sb& a, double b) { InlineMapSB(a.segs[i] += b) }
-pw_sb operator-=(pw_sb& a, double b) { InlineMapSB(a.segs[i] -= b) }
-
-/* This macro provides zipping two pw_sbs together using an arbitrary operation.
- * It assumes that it is the contents of a function, and there are two pw_sbs, a and b.
- */
-#define ZipSBWith(op)                                          \
-    pw_sb pa = partition(a,b.cuts), pb = partition(b,a.cuts);  \
-    pw_sb ret = pw_sb();                                       \
-    for(int i=0;i<pa.segs.size() && i<pb.segs.size();i++) {    \
-        ret.segs.push_back(op);                                \
-        ret.cuts.push_back(pa.cuts[i]);                        \
-    }                                                          \
-    return ret;
-
-pw_sb operator+(pw_sb const &a, pw_sb const &b) { ZipSBWith(pa.segs[i]+pb.segs[i]) }
-pw_sb operator-(pw_sb const &a, pw_sb const &b) { ZipSBWith(pa.segs[i]-pb.segs[i]) }
-
-pw_sb multiply(pw_sb const &a, pw_sb const &b) { ZipSBWith(pa.segs[i] * pb.segs[i]) }
-pw_sb divide(pw_sb const &a, pw_sb const &b, int k) { ZipSBWith(divide(pa.segs[i],pb.segs[i],k)) }
-
-inline pw_sb operator*(pw_sb const &a, pw_sb const &b) { multiply(a, b); }
-inline pw_sb operator*=(pw_sb &a, pw_sb const &b) { 
-    a = multiply(a, b);
+pw_sb operator+=(pw_sb& a, const BezOrd& b) {
+    for(int i = 0; i < a.segs.size();i++) {
+        a.segs[i] += b;
+    }
     return a;
 }
+pw_sb operator+=(pw_sb& a, double b) {
+    for(int i = 0; i < a.segs.size();i++) {
+        a.segs[i] += b;
+    }
+    return a;
+}
+pw_sb operator-=(pw_sb& a, const BezOrd& b) {
+    for(int i = 0; i < a.segs.size();i++) {
+        a.segs[i] += b;
+    }
+    return a;
+}
+pw_sb operator-=(pw_sb& a, double b) {
+    for(int i = 0;i < a.segs.size();i++) {
+        a.segs[i] -= b;
+    }
+    return a;
+}
+
+// Semantically-correct zipping of pw_sbs, with an arbitrary operation
+template <typename F>
+inline pw_sb ZipSBWith(pw_sb const &a, pw_sb const &b) {
+  pw_sb pa = partition(a, b.cuts), pb = partition(b, a.cuts);
+  pw_sb ret = pw_sb();
+  for ( int i = 0 ; i < pa.segs.size() && i < pb.segs.size() ; i++ ) {
+    ret.segs.push_back(F::op(pa.segs[i], pb.segs[i]));
+    ret.cuts.push_back(pa.cuts[i]);
+  }
+  return ret;
+}
+
+//Dummy structs
+struct sbasis_add{static SBasis op(SBasis const &a, SBasis const &b) {return a + b;} };
+struct sbasis_sub{static SBasis op(SBasis const &a, SBasis const &b) {return a - b;} };
+struct sbasis_mul{static SBasis op(SBasis const &a, SBasis const &b) {return a * b;} };
+
+pw_sb operator+(pw_sb const &a, pw_sb const &b) { ZipSBWith<sbasis_add>(a, b); }
+pw_sb operator-(pw_sb const &a, pw_sb const &b) { ZipSBWith<sbasis_sub>(a, b); }
+
+pw_sb multiply(pw_sb const &a, pw_sb const &b) { ZipSBWith<sbasis_mul> (a, b); }
+
+/*TODO: should k really be necessary?
+template <int K>
+struct sbasis_div{static SBasis op(SBasis const &a, SBasis const &b) {return divide(a, b, K);} };
+pw_sb divide(pw_sb const &a, pw_sb const &b, int k) { ZipSBWith<sbasis_div<k> >(a, b);}
+*/
 
 pw_sb compose(pw_sb const &a, pw_sb const &b) {
 
 }
-
-/* Mid-coding I realized this would need to output the mythical md_pw_sb
-
-    explicit pw_sb(Path2::Path p) {
-        for ( Sequence::iterator iter=p.first; iter!=p.last; ++iter ) {
-            segs.push_back((*iter).sbasis());
-        }
-    }
-
-*/
 
 /*
 class pw_sb {

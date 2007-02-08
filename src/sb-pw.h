@@ -17,6 +17,26 @@ class pw_sb {
 
 pw_sb partition(vector<double> const &c);
 
+pw_sb operator-(pw_sb const &a);
+pw_sb operator-(BezOrd const &b, const pw_sb&a);
+
+pw_sb operator+=(pw_sb& a, const BezOrd& b);
+pw_sb operator+=(pw_sb& a, double b);
+pw_sb operator-=(pw_sb& a, const BezOrd& b);
+pw_sb operator-=(pw_sb& a, double b);
+
+pw_sb operator+(pw_sb const &a, pw_sb const &b);
+pw_sb operator-(pw_sb const &a, pw_sb const &b);
+pw_sb multiply(pw_sb const &a, pw_sb const &b);
+
+pw_sb compose(pw_sb const &a, pw_sb const &b);
+
+inline pw_sb operator*(pw_sb const &a, pw_sb const &b) { multiply(a, b); }
+inline pw_sb operator*=(pw_sb &a, pw_sb const &b) { 
+    a = multiply(a, b);
+    return a;
+}
+
 }
 
 #endif //SEEN_GEOM_SB_PW_H
