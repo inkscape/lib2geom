@@ -47,6 +47,9 @@ pw_sb partition(const pw_sb &t, vector<double> const &c) {
     return ret;
 }
 
+/* This macro provides a mapping of operations on pw_sb pieces
+ * It assumes that it is the contents of a function, and there is a pw_sb parameter, a.
+ */
 #define MapSB(op)                               \
     pw_sb ret = pw_sb();                        \
     for(int i = 0; i < ret.segs.size();i++) {   \
@@ -60,6 +63,9 @@ pw_sb partition(const pw_sb &t, vector<double> const &c) {
 pw_sb operator-(pw_sb const &a) { MapSB(- a.segs[i]) }
 pw_sb operator-(BezOrd const &b, const pw_sb&a) { MapSB(b- a.segs[i]) }
 
+/* This macro provides a mapping of mutation operations on pw_sb pieces
+ * It assumes that it is the contents of a function, and there is a pw_sb parameter, a.
+ */
 #define InlineMapSB(op)                       \
     for(int i = 0; i < a.segs.size();i++) {   \
         op;                                   \
@@ -71,6 +77,9 @@ pw_sb operator-=(pw_sb& a, const BezOrd& b) { InlineMapSB(a.segs[i] -= b) }
 pw_sb operator+=(pw_sb& a, double b) { InlineMapSB(a.segs[i] += b) }
 pw_sb operator-=(pw_sb& a, double b) { InlineMapSB(a.segs[i] -= b) }
 
+/* This macro provides zipping two pw_sbs together using an arbitrary operation.
+ * It assumes that it is the contents of a function, and there are two pw_sbs, a and b.
+ */
 #define ZipSBWith(op)                                          \
     pw_sb pa = partition(a,b.cuts), pb = partition(b,a.cuts);  \
     pw_sb ret = pw_sb();                                       \
