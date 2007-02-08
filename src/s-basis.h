@@ -356,6 +356,8 @@ SBasis compose(SBasis const &a, SBasis const &b);
 SBasis compose(SBasis const &a, SBasis const &b, unsigned k);
 SBasis inverse(SBasis a, int k);
 
+inline SBasis portion(const SBasis &t, double from, double to) { return compose(t, BezOrd(from, to)); }
+
 // compute f(g)
 inline SBasis
 SBasis::operator()(SBasis const & g) const {

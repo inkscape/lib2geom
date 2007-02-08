@@ -80,6 +80,7 @@ s-basis.cpp
 s-basis.h
 s-basis-roots.cpp
 sb-geometric.cpp
+sb-pw.cpp
 sbasis-poly.cpp
 sbasis-poly.h
 sbasis-to-bezier.cpp
