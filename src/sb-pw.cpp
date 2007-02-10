@@ -1,6 +1,22 @@
 #include "sb-pw.h"
 
 namespace Geom {
+
+/**
+ * returns true if the pw_sb meets some basic invariants.
+ */
+bool pw_sb::cheap_invariants() const {
+    // segs between cuts
+    if(segs.size() != cuts.size() + 1)
+        return false;
+    // cuts in order
+    for(int i = 0; i < cuts.size()-1; i++)
+        if(cuts[i] >= cuts[i+1])
+            return false;
+    return true;
+}
+
+
 SBasis elem_portion(const pw_sb &a, int i, double from, double to) {
     double rwidth = 1 / (a.cuts[i+1] - a.cuts[i]);
     return portion( a.segs[i], (from - a.cuts[i]) * rwidth, (to - a.cuts[i]) * rwidth );
@@ -210,3 +226,13 @@ class pw_piece {
     }*/
 
 }
+/*
+  Local Variables:
+  mode:c++
+  c-file-style:"stroustrup"
+  c-file-offsets:((innamespace . 0)(inline-open . 0)(case-label . +))
+  indent-tabs-mode:nil
+  fill-column:99
+  End:
+*/
+// vim: filetype=cpp:expandtab:shiftwidth=4:tabstop=8:softtabstop=4:encoding=utf-8:textwidth=99 :

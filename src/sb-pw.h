@@ -13,9 +13,11 @@ class pw_sb {
     vector<double> cuts;
     vector<SBasis> segs; 
     //segs[i] stretches from cuts[i] to cuts[i+1].
+
+    bool cheap_invariants() const;
 };
 
-pw_sb partition(vector<double> const &c);
+pw_sb partition(const pw_sb &t, vector<double> const &c);
 
 pw_sb operator-(pw_sb const &a);
 pw_sb operator-(BezOrd const &b, const pw_sb&a);
@@ -40,3 +42,13 @@ inline pw_sb operator*=(pw_sb &a, pw_sb const &b) {
 }
 
 #endif //SEEN_GEOM_SB_PW_H
+/*
+  Local Variables:
+  mode:c++
+  c-file-style:"stroustrup"
+  c-file-offsets:((innamespace . 0)(inline-open . 0)(case-label . +))
+  indent-tabs-mode:nil
+  fill-column:99
+  End:
+*/
+// vim: filetype=cpp:expandtab:shiftwidth=4:tabstop=8:softtabstop=4:encoding=utf-8:textwidth=99 :
