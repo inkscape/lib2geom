@@ -2,6 +2,7 @@
  * Python bindings for lib2geom
  *
  * Copyright 2006 Aaron Spike <aaron@ekips.org>
+ * Copyright 2007 Alex Mac <ajm@cs.nott.ac.uk>
  *
  * This library is free software; you can redistribute it and/or
  * modify it either under the terms of the GNU Lesser General Public
@@ -28,10 +29,11 @@
  *
  */
 
-
+#include "circle-circle.cpp"
 #include "point.h"
 #include "transforms.h"
 #include "s-basis.h"
+#include "geom.h"
 
 #include <boost/python.hpp>
 #include <boost/python/implicit.hpp>
@@ -104,6 +106,13 @@ BOOST_PYTHON_MODULE(lib2geom_py)
 {
     def("point_to_tuple", point_to_tuple);
     def("tuple_to_point", tuple_to_point);
+    
+	enum_<IntersectorKind>("IntersectorKind")
+		.value("intersects", intersects)
+		.value("parallel", parallel)
+		.value("coincident", coincident)
+		.value("no_intersection", no_intersection)
+		;
 
     //point-fns.h
     def("L1", Geom::L1);
@@ -123,6 +132,8 @@ BOOST_PYTHON_MODULE(lib2geom_py)
     def("dist_sq", Geom::dist_sq);
     def("cross", Geom::cross);
     def("abs", (Geom::Point (*)(Geom::Point const&))&Geom::abs);
+    def("segment_intersect", segment_intersect);
+    def("circle_circle_intersection", Geom::circle_circle_intersection);
     
     class_<Geom::Point>("Point", init<double, double>())
         .def("__str__", point_repr)
