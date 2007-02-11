@@ -7,7 +7,7 @@ namespace Geom {
  */
 bool pw_sb::cheap_invariants() const {
     // segs between cuts
-    if(segs.size() + 1 != cuts.size() || (segs.size()==0 && cuts.size()==0) )
+    if(segs.size() + 1 != cuts.size() || segs.size() != 0 || cuts.size() != 0)
         return false;
     // cuts in order
     for(int i = 0; i < segs.size(); i++)
