@@ -7,7 +7,7 @@ namespace Geom {
  */
 bool pw_sb::cheap_invariants() const {
     // segs between cuts
-    if(segs.size() != cuts.size() + 1)
+    if(segs.size() + 1 != cuts.size())
         return false;
     // cuts in order
     for(int i = 0; i < cuts.size()-1; i++)
@@ -22,6 +22,10 @@ SBasis elem_portion(const pw_sb &a, int i, double from, double to) {
     return portion( a.segs[i], (from - a.cuts[i]) * rwidth, (to - a.cuts[i]) * rwidth );
 }
 
+/**pw_sb partition(const pw_sb &t, vector<double> const &c);
+ * Cuts the pw_sb into pieces so that there is a cut at every value in c.
+ * Precondition: c sorted lower to higher.
+ */
 pw_sb partition(const pw_sb &t, vector<double> const &c) {
     pw_sb ret = pw_sb();
     //just a bit of optimizing reservation
@@ -67,6 +71,9 @@ pw_sb partition(const pw_sb &t, vector<double> const &c) {
     return ret;
 }
 
+/** pw_sb portion(const pw_sb &a, double from, double to);
+ * Returns a pw_sb with a defined domain of [from, to], cutting the end segments appropriately.
+ */
 pw_sb portion(const pw_sb &a, double from, double to) {
     int fi = 0, ti = 0; //from/to indexes
     for(int i = 0; i < a.segs.size(); i++) {
