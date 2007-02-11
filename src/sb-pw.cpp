@@ -7,24 +7,31 @@ namespace Geom {
  */
 bool pw_sb::cheap_invariants() const {
     // segs between cuts
-    if(segs.size() + 1 != cuts.size())
+    if(segs.size() + 1 != cuts.size() || (segs.size()==0 && cuts.size()==0) )
         return false;
     // cuts in order
-    for(int i = 0; i < cuts.size()-1; i++)
+    for(int i = 0; i < segs.size(); i++)
         if(cuts[i] >= cuts[i+1])
             return false;
     return true;
 }
 
-
+/**SBasis elem_portion(const pw_sb &a, int i, double from, double to);
+ * returns a portion of a piece of a pw_sb, given the piece's index and a to/from time.
+ */
 SBasis elem_portion(const pw_sb &a, int i, double from, double to) {
     double rwidth = 1 / (a.cuts[i+1] - a.cuts[i]);
     return portion( a.segs[i], (from - a.cuts[i]) * rwidth, (to - a.cuts[i]) * rwidth );
 }
 
 /**pw_sb partition(const pw_sb &t, vector<double> const &c);
- * Cuts the pw_sb into pieces so that there is a cut at every value in c.
+ * Further subdivides the pw_sb such that there is a cut at every value in c.
  * Precondition: c sorted lower to higher.
+ * 
+ * //Given pw_sb a and b:
+ * pw_sb ac = a.partition(b.cuts);
+ * pw_sb bc = b.partition(a.cuts);
+ * //ac.cuts should be equivalent to bc.cuts
  */
 pw_sb partition(const pw_sb &t, vector<double> const &c) {
     pw_sb ret = pw_sb();
@@ -71,8 +78,9 @@ pw_sb partition(const pw_sb &t, vector<double> const &c) {
     return ret;
 }
 
-/** pw_sb portion(const pw_sb &a, double from, double to);
+/**pw_sb portion(const pw_sb &a, double from, double to);
  * Returns a pw_sb with a defined domain of [from, to], cutting the end segments appropriately.
+ * If to - from is negative, then the order and pieces are reversed.
  */
 pw_sb portion(const pw_sb &a, double from, double to) {
     int fi = 0, ti = 0; //from/to indexes
@@ -158,47 +166,32 @@ pw_sb operator-=(pw_sb& a, double b) {
 
 // Semantically-correct zipping of pw_sbs, with an arbitrary operation
 template <typename F>
-inline pw_sb ZipSBWith(pw_sb const &a, pw_sb const &b) {
+inline pw_sb ZipSBWith(F f, pw_sb const &a, pw_sb const &b) {
   pw_sb pa = partition(a, b.cuts), pb = partition(b, a.cuts);
   pw_sb ret = pw_sb();
   for ( int i = 0 ; i < pa.segs.size() && i < pb.segs.size() ; i++ ) {
-    ret.segs.push_back(F::op(pa.segs[i], pb.segs[i]));
+    ret.segs.push_back(f.op(pa.segs[i], pb.segs[i]));
     ret.cuts.push_back(pa.cuts[i]);
   }
   return ret;
 }
 
 //Dummy structs
-struct sbasis_add{static SBasis op(SBasis const &a, SBasis const &b) {return a + b;} };
-struct sbasis_sub{static SBasis op(SBasis const &a, SBasis const &b) {return a - b;} };
-struct sbasis_mul{static SBasis op(SBasis const &a, SBasis const &b) {return a * b;} };
+struct sbasis_add{SBasis op(SBasis const &a, SBasis const &b) {return a+b;} };
+struct sbasis_sub{SBasis op(SBasis const &a, SBasis const &b) {return a-b;} };
+struct sbasis_mul{SBasis op(SBasis const &a, SBasis const &b) {return a*b;} };
+struct sbasis_div{
+    int k;
+    sbasis_div(int n) { k = n; }
+    SBasis op(SBasis const &a, SBasis const &b) {return divide(a, b, k);}
+};
 
-pw_sb operator+(pw_sb const &a, pw_sb const &b) { ZipSBWith<sbasis_add>(a, b); }
-pw_sb operator-(pw_sb const &a, pw_sb const &b) { ZipSBWith<sbasis_sub>(a, b); }
+pw_sb operator+(pw_sb const &a, pw_sb const &b) { ZipSBWith(sbasis_add(), a, b); }
+pw_sb operator-(pw_sb const &a, pw_sb const &b) { ZipSBWith(sbasis_sub(), a, b); }
 
-pw_sb multiply(pw_sb const &a, pw_sb const &b) { ZipSBWith<sbasis_mul> (a, b); }
+pw_sb multiply(pw_sb const &a, pw_sb const &b) { ZipSBWith(sbasis_mul(), a, b); }
+pw_sb divide(pw_sb const &a, pw_sb const &b, int k) {ZipSBWith(sbasis_div(k), a, b);}
 
-/*TODO: should k really be necessary?
-template <int K>
-struct sbasis_div{static SBasis op(SBasis const &a, SBasis const &b) {return divide(a, b, K);} };
-pw_sb divide(pw_sb const &a, pw_sb const &b, int k) { ZipSBWith<sbasis_div<k> >(a, b);}
-*/
-
-/* General Plan:
- * First, the range of b must be found.  One method for this might be roots of
- * the derivative in order to find extrema.  There's no need to worry about
- * the second derivative, as even in the cases of f''=0, it will just be an
- * intermediate value on the way to an actual extrema.  In the case of
- * consistant runs of f'=0, one representative point should be selected.
- * 
- * At this point, the domain of a which is outside the range of b may be ignored.
- * 
- * The roots of the derivative are once again used to find points of 'loopback'
- * where a is retraversed, in the opposite direction.
- *
- * Hmm, at this point its a bit fuzzy - compositions and manipulations on
- * individual sbasis.
- */
 pw_sb compose(pw_sb const &a, pw_sb const &b) {
     
 }

@@ -383,7 +383,7 @@ SBasis reverse(SBasis const &s);
 
 //void bounds(SBasis const & s, double &lo, double &hi);
 void bounds(SBasis const & s, double &lo, double &hi,int order=0);
- void slow_bounds(SBasis const & s, double &lo, double &hi,int order=0,double tol=0.01);
+void slow_bounds(SBasis const & s, double &lo, double &hi,int order=0,double tol=0.01);
 
 std::vector<double> roots(SBasis const & s);
 
