@@ -33,13 +33,16 @@
 #define GEOM_PATH2_BUILDER_H
 
 #include "path2.h"
+#include "math-utils.h"
 
 namespace Geom {
 namespace Path2 {
 
 class PathBuilder {
 public:
-    PathBuilder() : _current_path(NULL) {}
+    PathBuilder(double const &c = Geom_EPSILON) : _current_path(NULL) {
+        _continuity_tollerance = c;
+    }
 
     void startPathRel(Point const &p0) { startPath(p0 + _current_point); }
     void startPath(Point const &p0) {
@@ -122,6 +125,36 @@ public:
         pushEllipse(radii, rotation, large, sweep, end);
     }
     
+    void pushSBasis(SBasis &sb) {
+        pushSBasis(sb.sbasis());
+    }
+    void pushSBasis(MultidimSBasis<2> sb) {
+        Point initial = Point(sb[X][0][0], sb[Y][0][0]);
+        if (!_current_path) startPath(_current_point);
+        if (L2(initial - _current_point) > _continuity_tollerance) {
+            startPath(initial);
+        } else if (_current_point != initial) {
+            /* in this case there are three possible options
+               1. connect the points with tiny line segments
+                  this may well translate into bug reports from
+                  users claiming "duplicate or extraneous nodes"
+               2. fudge the initial point of the multidimsb
+                  we've chosen to do this here but question the 
+                  numerical stability of this decision
+               3. translate the whole sbasis so that initial is coincident
+                  with _current_point. this could very well lead
+                  to an accumulation of error for paths that expect 
+                  to meet in the end.
+               perhaps someday an option could be made to allow 
+               the user to choose between these alternatives
+               if the need arises
+            */
+            sb[X][0][0] = _current_point[X];
+            sb[Y][0][0] = _current_point[Y]; 
+        }
+        _current_path->append(sb);
+    }
+    
     void closePath() {
         if (_current_path) {
             _current_path->close(true);
@@ -137,6 +170,7 @@ private:
     Path *_current_path;
     Point _current_point;
     Point _initial_point;
+    double _continuity_tollerance;
 };
 
 }
