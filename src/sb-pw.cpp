@@ -122,22 +122,25 @@ pw_sb portion(const pw_sb &a, double from, double to) {
     }
 }
 
-
-/* This macro provides a mapping of operations on pw_sb pieces
- * It assumes that it is the contents of a function, and there is a pw_sb parameter, a.
- */
-#define MapSB(op)                               \
-    pw_sb ret = pw_sb();                        \
-    for(int i = 0; i < ret.segs.size();i++) {   \
-        ret.segs.push_back( op );               \
-        ret.cuts.push_back( a.cuts[i] );        \
-    }                                           \
-    return ret;
-
 //pw_sb operator+(BezOrd b, SBasis a)
 
-pw_sb operator-(pw_sb const &a) { MapSB(- a.segs[i]) }
-pw_sb operator-(BezOrd const &b, const pw_sb&a) { MapSB(b- a.segs[i]) }
+pw_sb operator-(pw_sb const &a) {
+    pw_sb ret = pw_sb();
+    for(int i = 0; i < a.segs.size();i++) {
+        ret.segs.push_back( -a[i] );
+        ret.cuts.push_back( a.cuts[i] );
+    }
+    return ret;
+}
+
+pw_sb operator-(BezOrd const &b, const pw_sb&a) {
+    pw_sb ret = pw_sb();
+    for(int i = 0; i < a.segs.size();i++) {
+        ret.segs.push_back( b - a[i] );
+        ret.cuts.push_back( a.cuts[i] );
+    }
+    return ret;
+}
 
 pw_sb operator+=(pw_sb& a, const BezOrd& b) {
     for(int i = 0; i < a.segs.size();i++) {
