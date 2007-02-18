@@ -34,6 +34,7 @@
 #include "transforms.h"
 #include "s-basis.h"
 #include "geom.h"
+//# include "multidim-sbasis.h"
 
 #include <boost/python.hpp>
 #include <boost/python/implicit.hpp>
@@ -292,6 +293,24 @@ BOOST_PYTHON_MODULE(_py2geom)
         .def(self *= float())
         .def(self /= float())
     ;
+
+/*
+// why doesn't this work?
+    class_<Geom::MultidimSBasis<2>>("MultidimSBasis2")
+        .def("size", &Geom::MultidimSBasis<2>::size)
+        .def("tail_error", &Geom::MultidimSBasis<2>::tail_error)
+        .def("is_finite", &Geom::MultidimSBasis<2>::is_finite)
+        .def(self + self)
+        .def(self - self)
+        .def(self + Geom::Point())
+        .def(self - Geom::Point())
+        .def(double() * self)
+        .def(self += self)
+        .def(self += Geom::Point())
+        .def(self -= Geom::Point())
+        .def(self *= double())
+    ;
+*/
 }
 
 /*
