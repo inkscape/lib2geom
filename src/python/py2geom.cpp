@@ -102,7 +102,7 @@ str bezord_repr(Geom::BezOrd const& b)
     return str("<" + str(b[0]) + ", " + str(b[1]) + ">");
 }
 
-BOOST_PYTHON_MODULE(lib2geom_py)
+BOOST_PYTHON_MODULE(_py2geom)
 {
     def("point_to_tuple", point_to_tuple);
     def("tuple_to_point", tuple_to_point);
