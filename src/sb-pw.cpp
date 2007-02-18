@@ -127,7 +127,7 @@ pw_sb portion(const pw_sb &a, double from, double to) {
 pw_sb operator-(pw_sb const &a) {
     pw_sb ret = pw_sb();
     for(int i = 0; i < a.segs.size();i++) {
-        ret.segs.push_back( -a[i] );
+        ret.segs.push_back( -a.segs[i] );
         ret.cuts.push_back( a.cuts[i] );
     }
     return ret;
@@ -136,7 +136,7 @@ pw_sb operator-(pw_sb const &a) {
 pw_sb operator-(BezOrd const &b, const pw_sb&a) {
     pw_sb ret = pw_sb();
     for(int i = 0; i < a.segs.size();i++) {
-        ret.segs.push_back( b - a[i] );
+        ret.segs.push_back( b - a.segs[i] );
         ret.cuts.push_back( a.cuts[i] );
     }
     return ret;
