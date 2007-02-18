@@ -167,11 +167,9 @@ std::vector<Geom::Path2::Path> Gear::path() {
         MultidimSBasis<2> trailing_I = compose(_involute(cursor, cursor - involute_swath_angle(outer_radius())), BezOrd(1,involute_t));
         pb.pushSBasis(trailing_I);
        
-        Geom::Point leading_start;
-        Geom::Point leading_end;
         if (base_radius() > root_radius()) {
-            leading_start = point_at(trailing_I,1);
-            leading_end = (root_radius() * unit_vector(leading_start - _centre)) + _centre;
+            Geom::Point leading_start = point_at(trailing_I,1);
+            Geom::Point leading_end = (root_radius() * unit_vector(leading_start - _centre)) + _centre;
             pb.pushLine(leading_end);
         }
         
