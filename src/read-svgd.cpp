@@ -179,6 +179,39 @@ read_svgd(FILE* f) {
     return builder.peek();
 }
 
+class SVGPathParserToPath2: public SVGPathParser {
+public:
+    SVGPathParserToPath2() {}
+    virtual ~SVGPathParserToPath2() {}
+
+    std::vector<Geom::Path2::Path> peek() {
+        return _pb.peek();
+    }
+
+protected:
+    virtual void moveTo(Geom::Point p) {
+        _pb.startPath(p);
+    }
+    virtual void lineTo(Geom::Point p) {
+        _pb.pushLine(p);
+    }
+    virtual void curveTo(Geom::Point c0, Geom::Point c1, Geom::Point p) {
+        _pb.pushCubic(c0, c1, p);
+    }
+    virtual void quadTo(Geom::Point c, Geom::Point p) {
+        _pb.pushQuadratic(c, p);
+    }
+    virtual void arcTo(double rx, double ry, double angle,
+                       bool large_arc, bool sweep, Geom::Point p) {
+        _pb.pushEllipse(Geom::Point(rx, ry), angle, large_arc, sweep, p);
+    }
+    virtual void closePath() {
+        _pb.closePath();
+    }
+
+private:
+    Geom::Path2::PathBuilder _pb;
+};
 
 /* Possibly useful function I wrote and then didn't use:
 const char* whitespace = " \t\r\n"
