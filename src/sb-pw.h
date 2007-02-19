@@ -14,6 +14,10 @@ class pw_sb {
     vector<SBasis> segs; 
     //segs[i] stretches from cuts[i] to cuts[i+1].
 
+    inline SBasis operator[](unsigned i) const { return segs[i]; }
+    inline SBasis &operator[](unsigned i) { return segs[i]; }
+    inline unsigned size() const { return segs.size(); }
+
     bool cheap_invariants() const;
 };
 

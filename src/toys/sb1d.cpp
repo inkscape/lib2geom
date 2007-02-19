@@ -65,10 +65,7 @@ class Sb1d: public Toy {
         for(int i = 0; i < handles.size(); i++) {
             handle_to_sb(i, handles.size(), B[1]) = 3*width/4 - handles[i][1];
         }
-        double s = 1;
         for(int i = 1; i < B[1].size(); i++) {
-            //B[1][i] = s*B[1][i];
-            //s *= 4;
             B[1][i] = choose<double>(2*i+1, i)*B[1][i];
         }
         double lo, hi;

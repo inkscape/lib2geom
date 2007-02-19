@@ -21,7 +21,7 @@ bool pw_sb::cheap_invariants() const {
  */
 SBasis elem_portion(const pw_sb &a, int i, double from, double to) {
     double rwidth = 1 / (a.cuts[i+1] - a.cuts[i]);
-    return portion( a.segs[i], (from - a.cuts[i]) * rwidth, (to - a.cuts[i]) * rwidth );
+    return portion( a[i], (from - a.cuts[i]) * rwidth, (to - a.cuts[i]) * rwidth );
 }
 
 /**pw_sb partition(const pw_sb &t, vector<double> const &c);
@@ -49,12 +49,12 @@ pw_sb partition(const pw_sb &t, vector<double> const &c) {
     }
     ret.cuts.push_back(t.cuts[0]);
     double prev = t.cuts[0];      //Previous cut made
-    while(si < t.segs.size() && ci < c.size()) {
+    while(si < t.size() && ci < c.size()) {
         if(c[ci] >= t.cuts[si + 1]) {  //no more cuts within this segment
             if(prev > t.cuts[si]) {
-                ret.segs.push_back(portion(t.segs[si], (prev - t.cuts[si]) / (t.cuts[si+1] - t.cuts[si]), 1.0));
+                ret.segs.push_back(portion(t[si], (prev - t.cuts[si]) / (t.cuts[si+1] - t.cuts[si]), 1.0));
             } else {
-                ret.segs.push_back(t.segs[si]);
+                ret.segs.push_back(t[si]);
             }
             si++;
             ret.cuts.push_back(t.cuts[si]);
@@ -84,12 +84,12 @@ pw_sb partition(const pw_sb &t, vector<double> const &c) {
  */
 pw_sb portion(const pw_sb &a, double from, double to) {
     int fi = 0, ti = 0; //from/to indexes
-    for(int i = 0; i < a.segs.size(); i++) {
+    for(int i = 0; i < a.size(); i++) {
 	if(a.cuts[i] < from && from < a.cuts[i+1]) fi = i; 
 	if(a.cuts[i] < to && to < a.cuts[i+1]) ti = i;
     }
-    if (fi > a.cuts[a.segs.size()]) fi = a.segs.size() - 1;
-    if (ti > a.cuts[a.segs.size()]) ti = a.segs.size() - 1;
+    if (fi > a.cuts[a.size()]) fi = a.segs.size() - 1;
+    if (ti > a.cuts[a.size()]) ti = a.segs.size() - 1;
 
     pw_sb ret = pw_sb();
     
@@ -98,13 +98,13 @@ pw_sb portion(const pw_sb &a, double from, double to) {
 	ret.cuts.reserve(ti - fi + 2);
 	//TODO: consider coincidince
 	ret.cuts.push_back(from);
-	ret.segs.push_back( portion(a.segs[fi], (from - a.cuts[fi]) / (a.cuts[fi+1] - a.cuts[fi]), 1.0) );
+	ret.segs.push_back( portion(a[fi], (from - a.cuts[fi]) / (a.cuts[fi+1] - a.cuts[fi]), 1.0) );
         for(int i = fi + 1; i < ti; i++) {
 	    ret.cuts.push_back(a.cuts[i]);
 	    ret.segs.push_back(a.segs[i]);
         }
 	ret.cuts.push_back(a.cuts[ti]);
-	ret.segs.push_back( portion(a.segs[ti], 0.0, (to - a.cuts[ti]) / (a.cuts[ti+1] - a.cuts[ti])) );
+	ret.segs.push_back( portion(a[ti], 0.0, (to - a.cuts[ti]) / (a.cuts[ti+1] - a.cuts[ti])) );
 	ret.cuts.push_back(a.cuts[ti + 1]);
     } else if (fi > ti) {
 	ret.segs.reserve(fi - ti + 1);
@@ -126,8 +126,8 @@ pw_sb portion(const pw_sb &a, double from, double to) {
 
 pw_sb operator-(pw_sb const &a) {
     pw_sb ret = pw_sb();
-    for(int i = 0; i < a.segs.size();i++) {
-        ret.segs.push_back( -a.segs[i] );
+    for(int i = 0; i < a.size();i++) {
+        ret.segs.push_back( - a[i] );
         ret.cuts.push_back( a.cuts[i] );
     }
     return ret;
@@ -136,7 +136,7 @@ pw_sb operator-(pw_sb const &a) {
 pw_sb operator-(BezOrd const &b, const pw_sb&a) {
     pw_sb ret = pw_sb();
     for(int i = 0; i < a.segs.size();i++) {
-        ret.segs.push_back( b - a.segs[i] );
+        ret.segs.push_back( b - a[i] );
         ret.cuts.push_back( a.cuts[i] );
     }
     return ret;
@@ -144,25 +144,25 @@ pw_sb operator-(BezOrd const &b, const pw_sb&a) {
 
 pw_sb operator+=(pw_sb& a, const BezOrd& b) {
     for(int i = 0; i < a.segs.size();i++) {
-        a.segs[i] += b;
+        a[i] += b;
     }
     return a;
 }
 pw_sb operator+=(pw_sb& a, double b) {
     for(int i = 0; i < a.segs.size();i++) {
-        a.segs[i] += b;
+        a[i] += b;
     }
     return a;
 }
 pw_sb operator-=(pw_sb& a, const BezOrd& b) {
     for(int i = 0; i < a.segs.size();i++) {
-        a.segs[i] += b;
+        a[i] += b;
     }
     return a;
 }
 pw_sb operator-=(pw_sb& a, double b) {
     for(int i = 0;i < a.segs.size();i++) {
-        a.segs[i] -= b;
+        a[i] -= b;
     }
     return a;
 }
@@ -172,8 +172,8 @@ template <typename F>
 inline pw_sb ZipSBWith(F f, pw_sb const &a, pw_sb const &b) {
   pw_sb pa = partition(a, b.cuts), pb = partition(b, a.cuts);
   pw_sb ret = pw_sb();
-  for ( int i = 0 ; i < pa.segs.size() && i < pb.segs.size() ; i++ ) {
-    ret.segs.push_back(f.op(pa.segs[i], pb.segs[i]));
+  for ( int i = 0 ; i < pa.size() && i < pb.size() ; i++ ) {
+    ret.segs.push_back(f.op(pa[i], pb[i]));
     ret.cuts.push_back(pa.cuts[i]);
   }
   return ret;

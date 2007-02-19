@@ -17,6 +17,7 @@ sb1d
 sb2d
 pair-intersect
 precise-flat
+pw-toy
 #toy-cairo
 gear
 cheb
