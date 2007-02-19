@@ -65,7 +65,7 @@ class PwToy: public Toy {
         pw_sb pw_out = partition(pws[0], new_cuts);
         cairo_pw_cuts(cr, pw_out);
         assert(pw_out.cheap_invariants()); */
-        cairo_pw(cr, pws[0] + pws[1]);
+        cairo_pw(cr, pws[0] - pws[1]);
         
         Toy::draw(cr, notify, width, height, save);
     }
@@ -79,7 +79,7 @@ class PwToy: public Toy {
         curves = 2;
         for(int a = 0; a < curves; a++)
             for(unsigned i = 0; i < 4 * segs; i++)
-                handles.push_back(Point(150 + 300*i/(4*segs), uniform() * 150 + 150 * a));
+                handles.push_back(Point(150 + 300*i/(4*segs), uniform() * 150 + 150 - 150 * a));
     }
 };
 
