@@ -18,6 +18,14 @@ void cairo_pw(cairo_t *cr, pw_sb p) {
     }
 }
 
+
+void cairo_pw_cuts(cairo_t *cr, pw_sb p) {
+    for(int i = 0; i < p.cuts.size(); i++) {
+        cairo_move_to(cr, p.cuts[i], 500);
+        cairo_rel_line_to(cr, 0, 10);
+    }
+}
+
 class PwToy: public Toy {
     unsigned handles_per_curve;
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
@@ -38,7 +46,7 @@ class PwToy: public Toy {
         }
         
         pw_sb pws[2];
-        for(int a = 0; a < 2; a++) {
+        for(int a = 0; a < 1; a++) {
             unsigned base = a*handles_per_curve;
             for(int i = 0; i < handles_per_curve; i+=4) {
                 pws[a].cuts.push_back(handles[i+base][0]);
@@ -46,10 +54,16 @@ class PwToy: public Toy {
                 pws[a].segs.push_back(foo);
             }
             pws[a].cuts.push_back(handles.back()[0]);
+            assert(pws[a].cheap_invariants());
             
             cairo_pw(cr, pws[a]);
         }
-        cairo_pw(cr, pws[0] + pws[1]);
+        vector<double> new_cuts;
+        new_cuts.push_back(50);
+        new_cuts.push_back(550);
+        pw_sb pw_out = partition(pws[0], new_cuts);
+        cairo_pw_cuts(cr, pw_out);
+        //cairo_pw(cr, pw_out);
         
         
         Toy::draw(cr, notify, width, height, save);
