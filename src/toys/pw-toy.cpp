@@ -37,18 +37,20 @@ class PwToy: public Toy {
             }
         }
         
+        pw_sb pws[2];
         for(int a = 0; a < 2; a++) {
-            pw_sb l_pw;
             unsigned base = a*handles_per_curve;
             for(int i = 0; i < handles_per_curve; i+=4) {
-                l_pw.cuts.push_back(handles[i+base][0]);
+                pws[a].cuts.push_back(handles[i+base][0]);
                 SBasis foo = Geom::bezier_to_sbasis<2,3>(handles.begin()+i+base)[1];
-                l_pw.segs.push_back(foo);
+                pws[a].segs.push_back(foo);
             }
-            l_pw.cuts.push_back(handles.back()[0]);
+            pws[a].cuts.push_back(handles.back()[0]);
             
-            cairo_pw(cr, l_pw);
+            cairo_pw(cr, pws[a]);
         }
+        cairo_pw(cr, pws[0] + pws[1]);
+        
         
         Toy::draw(cr, notify, width, height, save);
     }
