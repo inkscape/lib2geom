@@ -13,9 +13,8 @@ void cairo_pw(cairo_t *cr, pw_sb p, double start, double width) {
     double c = start;
     for(int i = 0; i < p.size(); i++) {
         MultidimSBasis<2> B;
-        B[0] = BezOrd(c, c + width * (p.cuts[i+1] - p.cuts[i]));
+        B[0] = BezOrd(p.cuts[i], p.cuts[i+1]);
         B[1] = p[i];
-        c += width * (p.cuts[i+1] - p.cuts[i]);
         cairo_md_sb(cr, B);
     }
 }
@@ -27,6 +26,8 @@ class PwToy: public Toy {
         if(!save) {
             cairo_move_to(cr, handles[0]);
             for(int i = 0; i < handles.size(); i+=4) {
+                if(i)
+                    handles[i-1][0] = handles[i][0];
                 for(int j = 1; j < 3; j++)
                     handles[i+j][0] = (1 - j*0.25)*handles[i][0] + (j*0.25)*handles[i+3][0];
                 //cairo_line_to(cr, handles[i]);
