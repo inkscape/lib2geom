@@ -64,7 +64,7 @@ class PwToy: public Toy {
         new_cuts.push_back(550);
         pw_sb pw_out = partition(pws[0], new_cuts);
         cairo_pw_cuts(cr, pw_out);
-        assert(pw_out.cheap_invariants());*/
+        assert(pw_out.cheap_invariants()); */
         cairo_pw(cr, pws[0] + pws[1]);
         
         Toy::draw(cr, notify, width, height, save);

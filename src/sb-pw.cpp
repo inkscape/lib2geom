@@ -48,37 +48,39 @@ pw_sb partition(const pw_sb &t, vector<double> const &c) {
     int si = 0, ci = 0;     //Segment index, Cut index
 
     //if the input cuts have something earlier than this pw_sb, add sections of zero
-    while(ci < c.size() && c[ci] < t.cuts[0]) {
+    while(c[ci] < t.cuts[0] && ci < c.size()) {
         ret.cuts.push_back(c[ci]);
         ret.segs.push_back(SBasis());
         ci++;
     }
     ret.cuts.push_back(t.cuts[0]);
     double prev = t.cuts[0];      //Previous cut made
-    while(si < t.size() && ci < c.size()) {
-        if(c[ci] >= t.cuts[si + 1]) {  //no more cuts within this segment
-            if(prev > t.cuts[si]) {
+    //Should have the cuts = segs + 1 invariant before/after every pass
+    while(si < t.size() && ci <= c.size()) {
+        if(ci == c.size() || c[ci] >= t.cuts[si + 1]) {  //no more cuts within this segment
+            if(prev > t.cuts[si]) {      //need to push final portion of segment
                 ret.segs.push_back(portion(t[si], (prev - t.cuts[si]) / (t.cuts[si+1] - t.cuts[si]), 1.0));
-            } else {
+            } else {                     //plain copy of last segment is fine
                 ret.segs.push_back(t[si]);
             }
+            ret.cuts.push_back(t.cuts[si + 1]);
+            prev = t.cuts[si + 1];
             si++;
-            ret.cuts.push_back(t.cuts[si]);
-            prev = t.cuts[si];
-        } else if(c[ci] == t.cuts[si]) { //coincident
+        } else if(c[ci] == t.cuts[si]){                  //coincident
             //Already finalized the seg with the code immediately above
             ci++;
-        } else {
+        } else {                                         //plain old subdivision
 	    ret.segs.push_back(elem_portion(t, si, prev, c[ci]));
             ret.cuts.push_back(c[ci]);
             prev = c[ci];
             ci++;
         }
     }
-    //if the input cuts extend further than this pw_sb, add sections of zero
-    while(ci < c.size()) {
-        ret.cuts.push_back(c[ci]);
-        ret.segs.push_back(SBasis());
+    while(ci < c.size()) { //input cuts extend further than this pw_sb, add sections of zero
+        if(c[ci] != prev) {
+            ret.segs.push_back(SBasis());
+            ret.cuts.push_back(c[ci]);
+        }
         ci++;
     }
     return ret;
@@ -178,8 +180,8 @@ template <typename F>
 inline pw_sb ZipSBWith(F f, pw_sb const &a, pw_sb const &b) {
     pw_sb pa = partition(a, b.cuts), pb = partition(b, a.cuts);
     pw_sb ret = pw_sb();
-    //assert(pa.size() == pb.size());
-    for (int i = 0; i < pa.size() && i < pb.size(); i++) {
+    assert(pa.size() == pb.size());
+    for (int i = 0; i < pa.size(); i++) {
         ret.segs.push_back(f.op(pa[i], pb[i]));
         ret.cuts.push_back(pa.cuts[i]);
     }
