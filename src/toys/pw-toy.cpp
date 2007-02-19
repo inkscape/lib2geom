@@ -25,21 +25,21 @@ class PwToy: public Toy {
         cairo_set_source_rgba (cr, 0., 0.5, 0, 1);
         cairo_set_line_width (cr, 1);
         if(!save) {
-            handles[0][0] = 150;
             cairo_move_to(cr, handles[0]);
-            for(int i = 1; i < handles.size(); i++) {
-                handles[i][0] = handles[i-1][0] + (i % 4 ? 100 / segs : 0);
+            for(int i = 0; i < handles.size(); i+=4) {
+                for(int j = 1; j < 3; j++)
+                    handles[i+j][0] = (1 - j*0.25)*handles[i][0] + (j*0.25)*handles[i+3][0];
                 //cairo_line_to(cr, handles[i]);
             }
         }
         
         pw_sb pw;
         for(int i = 0; i < handles.size(); i+=4) {
-            pw.cuts.push_back(i/4);
+            pw.cuts.push_back(handles[i][0]);
             SBasis foo = Geom::bezier_to_sbasis<2,3>(handles.begin()+i)[1];
             pw.segs.push_back(foo);
         }
-        pw.cuts.push_back(handles.size()/4);
+        pw.cuts.push_back(handles.back()[0]);
         
         cairo_pw(cr, pw, 150, 100 / segs * 3);
         
@@ -50,7 +50,7 @@ class PwToy: public Toy {
     PwToy () {
         segs = 3;
         for(unsigned i = 0; i < 4 * segs; i++)
-            handles.push_back(Point(0, uniform() * 150 + 300));
+            handles.push_back(Point(150 + 300*i/(4*segs), uniform() * 150 + 300));
     }
 };
 
