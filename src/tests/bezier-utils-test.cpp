@@ -1,11 +1,11 @@
-#include "../utest/utest.h"
+#include "utest.h"
 #include <glib.h>
 #include <libnr/macros.h> /* Geom_DF_TEST_CLOSE */
 
 /* mental disclaims all responsibility for this evil idea for testing
    static functions.  The main disadvantages are that we retain the
    #define's and `using' directives of the included file. */
-#include "bezier-utils.cpp"
+#include "../bezier-utils.cpp"
 
 using Geom::Point;
 
