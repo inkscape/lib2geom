@@ -9,13 +9,13 @@ using namespace Geom;
 
 int segs;
 
-void cairo_pw(cairo_t *cr, pw_sb p, int start, int width) {
-    int c = start;
+void cairo_pw(cairo_t *cr, pw_sb p, double start, double width) {
+    double c = start;
     for(int i = 0; i < p.size(); i++) {
         MultidimSBasis<2> B;
-        B[0] = BezOrd(c, c + width);
+        B[0] = BezOrd(c, c + width * (p.cuts[i+1] - p.cuts[i]));
         B[1] = p[i];
-        c += width;
+        c += width * (p.cuts[i+1] - p.cuts[i]);
         cairo_md_sb(cr, B);
     }
 }
@@ -35,11 +35,11 @@ class PwToy: public Toy {
         
         pw_sb pw;
         for(int i = 0; i < handles.size(); i+=4) {
-            pw.cuts.push_back(i);
+            pw.cuts.push_back(i/4);
             SBasis foo = Geom::bezier_to_sbasis<2,3>(handles.begin()+i)[1];
             pw.segs.push_back(foo);
         }
-        pw.cuts.push_back(handles.size());
+        pw.cuts.push_back(handles.size()/4);
         
         cairo_pw(cr, pw, 150, 100 / segs * 3);
         
