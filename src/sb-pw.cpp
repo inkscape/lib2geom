@@ -176,13 +176,15 @@ pw_sb operator-=(pw_sb& a, double b) {
 // Semantically-correct zipping of pw_sbs, with an arbitrary operation
 template <typename F>
 inline pw_sb ZipSBWith(F f, pw_sb const &a, pw_sb const &b) {
-  pw_sb pa = partition(a, b.cuts), pb = partition(b, a.cuts);
-  pw_sb ret = pw_sb();
-  for ( int i = 0 ; i < pa.size() && i < pb.size() ; i++ ) {
-    ret.segs.push_back(f.op(pa[i], pb[i]));
-    ret.cuts.push_back(pa.cuts[i]);
-  }
-  return ret;
+    pw_sb pa = partition(a, b.cuts), pb = partition(b, a.cuts);
+    pw_sb ret = pw_sb();
+    //assert(pa.size() == pb.size());
+    for (int i = 0; i < pa.size() && i < pb.size(); i++) {
+        ret.segs.push_back(f.op(pa[i], pb[i]));
+        ret.cuts.push_back(pa.cuts[i]);
+    }
+    ret.cuts.push_back(pa.cuts[pa.size()]);
+    return ret;
 }
 
 //Dummy structs
@@ -195,11 +197,12 @@ struct sbasis_div{
     SBasis op(SBasis const &a, SBasis const &b) {return divide(a, b, k);}
 };
 
-pw_sb operator+(pw_sb const &a, pw_sb const &b) { ZipSBWith(sbasis_add(), a, b); }
-pw_sb operator-(pw_sb const &a, pw_sb const &b) { ZipSBWith(sbasis_sub(), a, b); }
+pw_sb operator+(pw_sb const &a, pw_sb const &b) { return ZipSBWith(sbasis_add(), a, b); }
 
-pw_sb multiply(pw_sb const &a, pw_sb const &b) { ZipSBWith(sbasis_mul(), a, b); }
-pw_sb divide(pw_sb const &a, pw_sb const &b, int k) {ZipSBWith(sbasis_div(k), a, b);}
+pw_sb operator-(pw_sb const &a, pw_sb const &b) { return ZipSBWith(sbasis_sub(), a, b); }
+
+pw_sb multiply(pw_sb const &a, pw_sb const &b) { return ZipSBWith(sbasis_mul(), a, b); }
+pw_sb divide(pw_sb const &a, pw_sb const &b, int k) { return ZipSBWith(sbasis_div(k), a, b);}
 
 pw_sb compose(pw_sb const &a, pw_sb const &b) {
     

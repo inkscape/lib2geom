@@ -10,7 +10,7 @@ using namespace Geom;
 void cairo_pw(cairo_t *cr, pw_sb p) {
     for(int i = 0; i < p.size(); i++) {
         MultidimSBasis<2> B;
-        B[0] = BezOrd(p.cuts[i]+10, p.cuts[i+1]);
+        B[0] = BezOrd(p.cuts[i], p.cuts[i+1]);
         B[1] = p[i];
         cairo_md_sb(cr, B);
     }
@@ -45,27 +45,25 @@ class PwToy: public Toy {
         
         pw_sb pws[curves];
         for(int a = 0; a < curves; a++) {
-            unsigned base = a*handles_per_curve;
+            unsigned base = a * handles_per_curve;
             for(int i = 0; i < handles_per_curve; i+=4) {
                 pws[a].cuts.push_back(handles[i+base][0]);
                 SBasis foo = Geom::bezier_to_sbasis<2,3>(handles.begin()+i+base)[1];
                 pws[a].segs.push_back(foo);
             }
-            pws[a].cuts.push_back(handles.back()[0]);
+            pws[a].cuts.push_back(handles[base + handles_per_curve - 1][0]);
             assert(pws[a].cheap_invariants());
             
-            //cairo_pw(cr, pws[a]);
+            cairo_pw(cr, pws[a]);
         }
-        vector<double> new_cuts;
+        /*vector<double> new_cuts;
         new_cuts.push_back(50);
         new_cuts.push_back(175);
         new_cuts.push_back(550);
         pw_sb pw_out = partition(pws[0], new_cuts);
         cairo_pw_cuts(cr, pw_out);
-        assert(pw_out.cheap_invariants());
-        cairo_pw(cr,pw_out);
-        //cairo_pw(cr, pw_out);
-        
+        assert(pw_out.cheap_invariants());*/
+        cairo_pw(cr, pws[0] + pws[1]);
         
         Toy::draw(cr, notify, width, height, save);
     }
@@ -76,10 +74,10 @@ class PwToy: public Toy {
     PwToy () {
         segs = 3;
         handles_per_curve = 4 * segs;
-        curves = 1;
+        curves = 2;
         for(int a = 0; a < curves; a++)
             for(unsigned i = 0; i < 4 * segs; i++)
-                handles.push_back(Point(150 + 300*i/(4*segs), uniform() * 150 + 300));
+                handles.push_back(Point(150 + 300*i/(4*segs), uniform() * 150 + 150 * a));
     }
 };
 
