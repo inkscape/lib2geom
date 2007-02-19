@@ -65,6 +65,7 @@ poly-dk-solve.h
 poly.h
 poly-laguerre-solve.cpp
 poly-laguerre-solve.h
+pw-sb.cpp
 quadtree.cpp
 quadtree.h
 #read-svgd.cpp
@@ -80,7 +81,6 @@ s-basis.cpp
 s-basis.h
 s-basis-roots.cpp
 sb-geometric.cpp
-sb-pw.cpp
 sbasis-poly.cpp
 sbasis-poly.h
 sbasis-to-bezier.cpp
