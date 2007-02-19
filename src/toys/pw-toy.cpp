@@ -36,6 +36,8 @@ class PwToy: public Toy {
                 for(int i = 0; i < handles_per_curve; i+=4) {
                     if(i)
                         handles[i+base-1][0] = handles[i+base][0];
+                }
+                for(int i = 0; i < handles_per_curve; i+=4) {
                     for(int j = 1; j < 3; j++)
                         handles[i+base+j][0] = (1 - j*0.25)*handles[i+base][0] + (j*0.25)*handles[i+base+3][0];
                     //cairo_line_to(cr, handles[i]);
