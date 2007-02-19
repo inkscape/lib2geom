@@ -3,6 +3,7 @@
 #include "path-cairo.h"
 #include <iterator>
 #include "toy-framework.cpp"
+#include "bezier-to-sbasis.h"
 
 using namespace Geom;
 
@@ -35,8 +36,7 @@ class PwToy: public Toy {
         pw_sb pw;
         for(int i = 0; i < handles.size(); i+=4) {
             pw.cuts.push_back(i);
-            SBasis foo = BezOrd(handles[i][1], handles[i+3][1]);
-            foo.push_back(BezOrd(handles[i+1][1] - 300, handles[i+2][1] - 300));
+            SBasis foo = Geom::bezier_to_sbasis<2,3>(handles.begin()+i)[1];
             pw.segs.push_back(foo);
         }
         pw.cuts.push_back(handles.size());
