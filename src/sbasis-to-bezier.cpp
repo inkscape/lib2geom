@@ -154,7 +154,11 @@ void
 path_from_sbasis(Geom::Path2::Path &pb, MultidimSBasis<2> const &B, double tol) {
     assert(B.is_finite());
     if(B.tail_error(2) < tol || B.size() == 2) { // nearly cubic enough
-        if(B.size() == 1) {
+        if(B[0].size() == 0 && B[1].size() != 0) {
+            pb.append(Geom::Path2::LineSegment(Geom::Point(0, B[1][0][0]), Geom::Point(0, B[1][0][1])));
+        } else if(B[0].size() != 0 && B[1].size() == 0) {
+            pb.append(Geom::Path2::LineSegment(Geom::Point(B[0][0][0], 0), Geom::Point(B[0][0][1], 0)));
+        } else if(B.size() == 1) {
             pb.append(Geom::Path2::LineSegment(Geom::Point(B[0][0][0], B[1][0][0]),Geom::Point(B[0][0][1], B[1][0][1])));
         } else {
             std::vector<Geom::Point> bez = sbasis_to_bezier(B, 2);

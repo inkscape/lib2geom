@@ -19,6 +19,7 @@ class pw_sb {
     inline unsigned size() const { return segs.size(); }
 
     bool cheap_invariants() const;
+    bool invariants() const;
 };
 
 pw_sb partition(const pw_sb &t, vector<double> const &c);

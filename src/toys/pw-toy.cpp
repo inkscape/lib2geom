@@ -7,12 +7,10 @@
 
 using namespace Geom;
 
-int segs;
-
 void cairo_pw(cairo_t *cr, pw_sb p) {
     for(int i = 0; i < p.size(); i++) {
         MultidimSBasis<2> B;
-        B[0] = BezOrd(p.cuts[i], p.cuts[i+1]);
+        B[0] = BezOrd(p.cuts[i]+10, p.cuts[i+1]);
         B[1] = p[i];
         cairo_md_sb(cr, B);
     }
@@ -27,7 +25,7 @@ void cairo_pw_cuts(cairo_t *cr, pw_sb p) {
 }
 
 class PwToy: public Toy {
-    unsigned handles_per_curve;
+    unsigned segs, handles_per_curve, curves;
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         cairo_set_source_rgba (cr, 0., 0.5, 0, 1);
         cairo_set_line_width (cr, 1);
@@ -45,8 +43,8 @@ class PwToy: public Toy {
             }
         }
         
-        pw_sb pws[2];
-        for(int a = 0; a < 1; a++) {
+        pw_sb pws[curves];
+        for(int a = 0; a < curves; a++) {
             unsigned base = a*handles_per_curve;
             for(int i = 0; i < handles_per_curve; i+=4) {
                 pws[a].cuts.push_back(handles[i+base][0]);
@@ -56,24 +54,30 @@ class PwToy: public Toy {
             pws[a].cuts.push_back(handles.back()[0]);
             assert(pws[a].cheap_invariants());
             
-            cairo_pw(cr, pws[a]);
+            //cairo_pw(cr, pws[a]);
         }
         vector<double> new_cuts;
         new_cuts.push_back(50);
+        new_cuts.push_back(175);
         new_cuts.push_back(550);
         pw_sb pw_out = partition(pws[0], new_cuts);
         cairo_pw_cuts(cr, pw_out);
+        assert(pw_out.cheap_invariants());
+        cairo_pw(cr,pw_out);
         //cairo_pw(cr, pw_out);
         
         
         Toy::draw(cr, notify, width, height, save);
     }
 
+    bool should_draw_numbers() { return false; }
+        
     public:
     PwToy () {
         segs = 3;
         handles_per_curve = 4 * segs;
-        for(int a = 0; a < 2; a++)
+        curves = 1;
+        for(int a = 0; a < curves; a++)
             for(unsigned i = 0; i < 4 * segs; i++)
                 handles.push_back(Point(150 + 300*i/(4*segs), uniform() * 150 + 300));
     }

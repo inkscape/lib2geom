@@ -7,13 +7,19 @@ namespace Geom {
  */
 bool pw_sb::cheap_invariants() const {
     // segs between cuts
-    if(segs.size() + 1 != cuts.size() || segs.size() == 0 || cuts.size() == 0)
+    if(!(segs.size() + 1 == cuts.size() || size() == 0 || cuts.size() == 0))
         return false;
     // cuts in order
     for(int i = 0; i < segs.size(); i++)
         if(cuts[i] >= cuts[i+1])
             return false;
     return true;
+}
+
+bool pw_sb::invariants() const {
+    for(int i = 0; i<size(); i++) {
+        
+    }
 }
 
 /**SBasis elem_portion(const pw_sb &a, int i, double from, double to);
