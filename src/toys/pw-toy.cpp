@@ -9,8 +9,7 @@ using namespace Geom;
 
 int segs;
 
-void cairo_pw(cairo_t *cr, pw_sb p, double start, double width) {
-    double c = start;
+void cairo_pw(cairo_t *cr, pw_sb p) {
     for(int i = 0; i < p.size(); i++) {
         MultidimSBasis<2> B;
         B[0] = BezOrd(p.cuts[i], p.cuts[i+1]);
@@ -42,7 +41,7 @@ class PwToy: public Toy {
         }
         pw.cuts.push_back(handles.back()[0]);
         
-        cairo_pw(cr, pw, 150, 100 / segs * 3);
+        cairo_pw(cr, pw);
         
         Toy::draw(cr, notify, width, height, save);
     }
