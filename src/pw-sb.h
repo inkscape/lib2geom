@@ -16,7 +16,24 @@ class pw_sb {
 
     inline SBasis operator[](unsigned i) const { return segs[i]; }
     inline SBasis &operator[](unsigned i) { return segs[i]; }
+    inline double operator()(double t) const {
+        int n = segn(t);
+        return segs[n](segt(t, n));
+    }
     inline unsigned size() const { return segs.size(); }
+
+    inline int segn(double t) const {
+        if(t < cuts[0]) return 0;
+        if(t > cuts[size()]) return size() - 1;
+        for(int i = 0; i <= size(); i++) {
+            if(cuts[i] <= t && (i == size() || t < cuts[i+1])) return i;
+        }
+    }
+    
+    inline double segt(double t, int i = -1) const {
+        if(i == -1) i = segn(t);
+        return (t - cuts[i]) / (cuts[i+1] - cuts[i]);
+    }
 
     bool cheap_invariants() const;
     bool invariants() const;

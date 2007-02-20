@@ -16,7 +16,6 @@ void cairo_pw(cairo_t *cr, pw_sb p) {
     }
 }
 
-
 void cairo_pw_cuts(cairo_t *cr, pw_sb p) {
     for(int i = 0; i < p.cuts.size(); i++) {
         cairo_move_to(cr, p.cuts[i], 500);
@@ -50,8 +49,7 @@ class PwToy: public Toy {
             unsigned base = a * handles_per_curve;
             for(int i = 0; i < handles_per_curve; i+=4) {
                 pws[a].cuts.push_back(handles[i+base][0]);
-                SBasis foo = Geom::bezier_to_sbasis<2,3>(handles.begin()+i+base)[1];
-                pws[a].segs.push_back(foo);
+                pws[a].segs.push_back( Geom::bezier_to_sbasis<2,3>(handles.begin()+i+base)[1] );
             }
             pws[a].cuts.push_back(handles[base + handles_per_curve - 1][0]);
             assert(pws[a].cheap_invariants());
@@ -65,7 +63,7 @@ class PwToy: public Toy {
         pw_sb pw_out = partition(pws[0], new_cuts);
         cairo_pw_cuts(cr, pw_out);
         assert(pw_out.cheap_invariants()); */
-        cairo_pw(cr, pws[0] - pws[1]);
+        cairo_pw(cr, pws[0] + pws[1]);
         
         Toy::draw(cr, notify, width, height, save);
     }

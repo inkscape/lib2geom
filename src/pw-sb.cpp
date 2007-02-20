@@ -47,19 +47,19 @@ pw_sb partition(const pw_sb &t, vector<double> const &c) {
 
     int si = 0, ci = 0;     //Segment index, Cut index
 
-    //if the input cuts have something earlier than this pw_sb, add sections of zero
+    //if the input cuts have something earlier than this pw_sb, add portions of the first segment
     while(c[ci] < t.cuts[0] && ci < c.size()) {
         ret.cuts.push_back(c[ci]);
-        ret.segs.push_back(SBasis());
+        ret.segs.push_back(elem_portion(t, 0, c[ci], c[ci + 1] < t.cuts[0] ? c[ci + 1] : t.cuts[0]));
         ci++;
     }
     ret.cuts.push_back(t.cuts[0]);
-    double prev = t.cuts[0];      //Previous cut made
+    double prev = t.cuts[0];    //previous cut
     //Should have the cuts = segs + 1 invariant before/after every pass
     while(si < t.size() && ci <= c.size()) {
         if(ci == c.size() || c[ci] >= t.cuts[si + 1]) {  //no more cuts within this segment
             if(prev > t.cuts[si]) {      //need to push final portion of segment
-                ret.segs.push_back(portion(t[si], (prev - t.cuts[si]) / (t.cuts[si+1] - t.cuts[si]), 1.0));
+                ret.segs.push_back(portion(t[si], t.segt(prev, si), 1.0));
             } else {                     //plain copy of last segment is fine
                 ret.segs.push_back(t[si]);
             }
@@ -78,7 +78,7 @@ pw_sb partition(const pw_sb &t, vector<double> const &c) {
     }
     while(ci < c.size()) { //input cuts extend further than this pw_sb, add sections of zero
         if(c[ci] != prev) {
-            ret.segs.push_back(SBasis());
+            ret.segs.push_back(elem_portion(t, t.size() - 1, prev, c[ci]));
             ret.cuts.push_back(c[ci]);
         }
         ci++;
@@ -87,47 +87,31 @@ pw_sb partition(const pw_sb &t, vector<double> const &c) {
 }
 
 /**pw_sb portion(const pw_sb &a, double from, double to);
- * Returns a pw_sb with a defined domain of [from, to], cutting the end segments appropriately.
+ * Returns a pw_sb with a defined domain of [0, to-from], which is equivalent to the values found on [from, to] of the original.
  * If to - from is negative, then the order and pieces are reversed.
  */
 pw_sb portion(const pw_sb &a, double from, double to) {
-    int fi = 0, ti = 0; //from/to indexes
-    for(int i = 0; i < a.size(); i++) {
-	if(a.cuts[i] < from && from < a.cuts[i+1]) fi = i; 
-	if(a.cuts[i] < to && to < a.cuts[i+1]) ti = i;
+    bool flipped = from > to;
+    if(flipped) {
+        double temp = from;
+        from = to;
+        to = temp;
     }
-    if (fi > a.cuts[a.size()]) fi = a.segs.size() - 1;
-    if (ti > a.cuts[a.size()]) ti = a.segs.size() - 1;
 
-    pw_sb ret = pw_sb();
+    vector<double> cuts;
+    cuts.push_back(from); cuts.push_back(to);
+    pw_sb foo = partition(a, cuts);
+    pw_sb ret;
     
-    if (fi < ti) {
-	ret.segs.reserve(ti - fi + 1);
-	ret.cuts.reserve(ti - fi + 2);
-	//TODO: consider coincidince
-	ret.cuts.push_back(from);
-	ret.segs.push_back( portion(a[fi], (from - a.cuts[fi]) / (a.cuts[fi+1] - a.cuts[fi]), 1.0) );
-        for(int i = fi + 1; i < ti; i++) {
-	    ret.cuts.push_back(a.cuts[i]);
-	    ret.segs.push_back(a.segs[i]);
-        }
-	ret.cuts.push_back(a.cuts[ti]);
-	ret.segs.push_back( portion(a[ti], 0.0, (to - a.cuts[ti]) / (a.cuts[ti+1] - a.cuts[ti])) );
-	ret.cuts.push_back(a.cuts[ti + 1]);
-    } else if (fi > ti) {
-	ret.segs.reserve(fi - ti + 1);
-	ret.cuts.reserve(fi - ti + 2);
-	//TODO: use above as model.  Use SBasis reverse(SBasis) function
-        for(int i = fi - 1; i < ti; i--) {
-	    
-        }
-    } else {
-	ret.segs.reserve(1);
-	ret.cuts.reserve(2);
-        ret.cuts.push_back(from);
-	ret.segs.push_back(elem_portion(a, fi, from, to));
-	ret.cuts.push_back(to);
+    double sub = flipped ? to : from;
+    int toi = a.segn(to);
+    
+    for(int i = a.segn(from); i < toi; i++) {
+        ret.cuts.push_back(foo.cuts[i] - sub);
+        ret.segs.push_back(foo[i]);
     }
+    ret.cuts.push_back(foo.cuts[toi] - sub);
+    return ret;
 }
 
 //pw_sb operator+(BezOrd b, SBasis a)
@@ -143,7 +127,7 @@ pw_sb operator-(pw_sb const &a) {
 
 pw_sb operator-(BezOrd const &b, const pw_sb&a) {
     pw_sb ret = pw_sb();
-    for(int i = 0; i < a.segs.size();i++) {
+    for(int i = 0; i < a.size();i++) {
         ret.segs.push_back( b - a[i] );
         ret.cuts.push_back( a.cuts[i] );
     }
@@ -151,25 +135,25 @@ pw_sb operator-(BezOrd const &b, const pw_sb&a) {
 }
 
 pw_sb operator+=(pw_sb& a, const BezOrd& b) {
-    for(int i = 0; i < a.segs.size();i++) {
+    for(int i = 0; i < a.size();i++) {
         a[i] += b;
     }
     return a;
 }
 pw_sb operator+=(pw_sb& a, double b) {
-    for(int i = 0; i < a.segs.size();i++) {
+    for(int i = 0; i < a.size();i++) {
         a[i] += b;
     }
     return a;
 }
 pw_sb operator-=(pw_sb& a, const BezOrd& b) {
-    for(int i = 0; i < a.segs.size();i++) {
+    for(int i = 0; i < a.size();i++) {
         a[i] += b;
     }
     return a;
 }
 pw_sb operator-=(pw_sb& a, double b) {
-    for(int i = 0;i < a.segs.size();i++) {
+    for(int i = 0;i < a.size();i++) {
         a[i] -= b;
     }
     return a;
