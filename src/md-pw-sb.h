@@ -251,7 +251,7 @@ cross(md_pw_sb<2> const & a, md_pw_sb<2> const & b) {
 }
 */
 
-pw_sb compose(SBasis2d const &a, md_pw_sb<2> const &b) {
+inline pw_sb compose(SBasis2d const &a, md_pw_sb<2> const &b) {
     pw_sb ret, x = partition(b[0], b[1].cuts), y = partition(b[1], b[0].cuts);
     //TODO: extract this partition idiom
     assert(x.size() == y.size());
