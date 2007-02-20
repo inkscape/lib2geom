@@ -193,13 +193,13 @@ read_svgd(FILE* f) {
             break;
         case 'a':
             if(cur >= 7) {
-                pushEllipseRel(point(nums, 0), nums[2], nums[3] > 0, nums[4] > 0, point(nums, 5));
+                //builder.pushEllipseRel(point(nums, 0), nums[2], nums[3] > 0, nums[4] > 0, point(nums, 5));
                 cur = 0;
             }
             break;
         case 'A':
             if(cur >= 7) {
-                builder.pushEllipse(point(nums, 0), nums[2], nums[3] > 0, nums[4] > 0, point(nums, 5));
+                //builder.pushEllipse(point(nums, 0), nums[2], nums[3] > 0, nums[4] > 0, point(nums, 5));
                 cur = 0;
             }
             break;
@@ -211,8 +211,8 @@ read_svgd(FILE* f) {
     }
     return builder.peek();
 }
-
-class SVGPathParserToPath2: public SVGPathParser {
+/*TODO: What's this? ACSpike stuff mayhaps?
+class SVGPathParserToPath2 : public SVGPathParser {
 public:
     SVGPathParserToPath2() {}
     virtual ~SVGPathParserToPath2() {}
@@ -245,6 +245,7 @@ protected:
 private:
     Geom::Path2::PathBuilder _pb;
 };
+*/
 
 /* Possibly useful function I wrote and then didn't use:
 const char* whitespace = " \t\r\n"

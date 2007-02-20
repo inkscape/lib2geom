@@ -107,13 +107,13 @@ public:
         if(p0 != _current_point) startPath(p0);
         pushCubic(p1, p2, p3);
     }
-
+/*
     void pushEllipseRel(Point const &radii, double rotation, bool large, bool sweep, Point const &end) {
         pushEllipse(radii, rotation, large, sweep, end + _current_point);
     }
     void pushEllipse(Point const &radii, double rotation, bool large, bool sweep, Point const &end) {
         if (!_current_path) startPath(_current_point);
-        _current_path->appendNew<SVGEllipticalArc>(radii[0], radii[1], rotation, large, sweep, end);
+        _current_path->append(SVGEllipticalArc(_current_point, radii[0], radii[1], rotation, large, sweep, end));
         _current_point = end;
     }
 
@@ -123,7 +123,7 @@ public:
     void pushEllipse(Point const &initial, Point const &radii, double rotation, bool large, bool sweep, Point const &end) {
         if(initial != _current_point) startPath(initial);
         pushEllipse(radii, rotation, large, sweep, end);
-    }
+    }*/
     
     void pushSBasis(SBasis &sb) {
         pushSBasis(sb.sbasis());

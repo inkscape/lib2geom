@@ -69,8 +69,8 @@ poly-laguerre-solve.h
 pw-sb.cpp
 quadtree.cpp
 quadtree.h
-#read-svgd.cpp
-#read-svgd.h
+read-svgd.cpp
+read-svgd.h
 rect.cpp
 rect.h
 refcounted.h

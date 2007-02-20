@@ -14,6 +14,14 @@ class pw_sb {
     vector<SBasis> segs; 
     //segs[i] stretches from cuts[i] to cuts[i+1].
 
+    pw_sb() {}
+
+    explicit pw_sb(SBasis sb) {
+        cuts.push_back(0.);
+        segs.push_back(sb);
+        cuts.push_back(1.);
+    }
+
     inline SBasis operator[](unsigned i) const { return segs[i]; }
     inline SBasis &operator[](unsigned i) { return segs[i]; }
     inline double operator()(double t) const {
@@ -74,6 +82,7 @@ pw_sb operator-=(pw_sb& a, double b);
 pw_sb operator+(pw_sb const &a, pw_sb const &b);
 pw_sb operator-(pw_sb const &a, pw_sb const &b);
 pw_sb multiply(pw_sb const &a, pw_sb const &b);
+pw_sb multiply(BezOrd const &a, pw_sb const &b);
 pw_sb divide(pw_sb const &a, pw_sb const &b, int k);
 
 pw_sb compose(pw_sb const &a, pw_sb const &b);

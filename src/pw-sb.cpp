@@ -146,6 +146,15 @@ pw_sb operator-(BezOrd const &b, const pw_sb&a) {
     return ret;
 }
 
+pw_sb multiply(BezOrd const &b, const pw_sb&a) {
+    pw_sb ret = pw_sb();
+    for(int i = 0; i < a.size();i++) {
+        ret.segs.push_back( b * a[i] );
+        ret.cuts.push_back( a.cuts[i] );
+    }
+    return ret;
+}
+
 pw_sb operator+=(pw_sb& a, const BezOrd& b) {
     for(int i = 0; i < a.size();i++) {
         a[i] += b;
