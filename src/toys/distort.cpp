@@ -38,7 +38,7 @@ class DistortToy: public Toy {
 
     public:
     DistortToy () {
-        FILE* f = fopen("toy.svgd", "r");
+        FILE* f = fopen("banana.svgd", "r");
         p = read_svgd(f);
     }
 };
