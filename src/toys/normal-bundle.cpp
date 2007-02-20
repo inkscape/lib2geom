@@ -1,4 +1,5 @@
 #include "s-basis.h"
+#include "sb-geometric.h"
 #include "bezier-to-sbasis.h"
 #include "sbasis-to-bezier.h"
 #include "multidim-sbasis.h"
@@ -48,49 +49,25 @@ void SBasis1d_to_2d(MultidimSBasis<2> C0,
     }
 }
 
-void NormalBundle::setBase(MultidimSBasis<2> const &B, double tol=0.1) {
-    MultidimSBasis<2> dB;
-    dB = derivative(B);
-    SBasis arc = dot(dB, dB);
+void NormalBundle::setBase(MultidimSBasis<2> const &B, double tol=0.01) {
 
-    double err = 0;
-    double ss = 0.25;
-    for(int i = 1; i < arc.size(); i++) {
-        err += fabs(Hat(arc[i]))*ss;
-        ss *= 0.25;
-    }
-    double le = fabs(arc[0][0]) - err;
-    double re = fabs(arc[0][1]) - err;
-    err /= std::max(arc[0][0], arc[0][1]);
-    if(err > tol) {
-        const int N = 2;
-        for(int subdivi = 0; subdivi < N; subdivi++) {
-            double dsubu = 1./N;
-            double subu = dsubu*subdivi;
-            MultidimSBasis<2> Bp;
-            for(int dim = 0; dim < 2; dim++) 
-                Bp[dim] = compose(B[dim], BezOrd(subu, dsubu+subu));
-            setBase(Bp, tol);
-        }
-    }
-    else {
-        arc = sqrt(arc, 2);
-        MultidimSBasis<2> offset;
-        double dist=-1.;
-        //-- the two coordinates should have the same degree!!!
-        for (int i=dB[0].size();i<dB[1].size(); i++)
-            dB[0].push_back(BezOrd(0));
-        for (int i=dB[1].size();i<dB[0].size(); i++)
-            dB[1].push_back(BezOrd(0));
-        for (int dim = 0; dim < 2; dim++) {
-            double sgn = dim?-1:1;
-            offset[dim] = B[dim] + divide(dist*sgn*dB[1-dim],arc, 2);
-        }
-        vector<SBasis2d> S(2);
-        SBasis1d_to_2d(B, offset, S);
-        push_back(S);
-        lengths.push_back(*(lengths.rbegin())+(arc.point_at(0.)+arc.point_at(1.))/2);
-    }
+  MultidimSBasis<2> dB = derivative(B);
+  vector<double> cuts;
+  vector<MultidimSBasis<2> > unitV=unit_vector(dB,cuts,tol);
+  double t0=0,t1,L=0;
+  for(int i=0;i<cuts.size();i++){
+    t1=cuts[i];
+    MultidimSBasis<2> subB=compose(B,BezOrd(t0,t1));
+    vector<SBasis2d> S(2);
+    SBasis1d_to_2d(subB,subB+rot90(unitV[i]), S);
+    push_back(S);
+    
+    SBasis s=integral(dot(compose(dB,BezOrd(t0,t1)),unitV[i]));
+    L+=(s(1)-s(0))*(t1-t0);
+    lengths.push_back(L);
+    
+    t0=t1;
+  }
 }
 
 void NormalBundle::draw(cairo_t *cr, int NbLi, int NbCol) {
@@ -147,6 +124,7 @@ vector<MultidimSBasis<2> > compose(NormalBundle const &NB,
     B[0]+=*(NB.lengths.rbegin());
 
     //-- Compose each piece with the relevant sbasis2d.
+    // TODO: use a uniform parametrization of the base.
     std::map<double,int>::iterator cut=Cuts.begin();
     std::map<double,int>::iterator next=cut; next++;
     while(next!=Cuts.end()){
