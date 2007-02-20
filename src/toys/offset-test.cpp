@@ -85,12 +85,10 @@ class OffsetTester: public Toy {
         cairo_md_sb(cr,Ray);
         cairo_set_source_rgba (cr, 1, 0, 0, 0.2);
         cairo_stroke(cr);
-        vector<SBasis > cV = curvature(B,cuts);
-        t0 = 0;
+        pw_sb cV = curvature(B);
         for(int i = 0; i < cV.size();i++){
-            t1 = cuts[i];
-            subB = compose(B,BezOrd(t0,t1));
-            N = -offset*cV[i]*rot90(V[i])+subB;
+            subB = compose(B,BezOrd(cV.cuts[i],cV.cuts[i+1]));
+            N = -offset*cV.segs[i]*rot90(V[i])+subB;
             cairo_md_sb(cr,N);
             cairo_set_source_rgba (cr, 1, 0, 0.6, 0.5);
             cairo_stroke(cr);

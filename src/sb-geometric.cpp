@@ -260,7 +260,7 @@ Geom::arc_length(MultidimSBasis<2> const M,
 
 Geom::pw_sb
 Geom::arc_length_sb(MultidimSBasis<2> const M,
-                    double tol){
+                    double tol) {
     Geom::pw_sb result;
     MultidimSBasis<2> dM=derivative(M);
     std::vector<MultidimSBasis<2> > uspeed;
@@ -282,28 +282,26 @@ Geom::arc_length_sb(MultidimSBasis<2> const M,
 }
 
 // incomplete.
-std::vector<SBasis>
+Geom::pw_sb
 Geom::curvature(MultidimSBasis<2> const M,
-                std::vector<double> &cuts,
-                double tol){
-    std::vector<MultidimSBasis<2> > cv;
+                double tol) {
     MultidimSBasis<2> dM=derivative(M);
-    std::vector<SBasis > res;
-    cv=unit_vector(dM,cuts,tol);
+    pw_sb result;
+    std::vector<MultidimSBasis<2> > cv = unit_vector(dM,result.cuts,tol);
     double t0=0.,t1;
     double base = 0;
 
     for (int i=0;i<cv.size();i++){
-        t1=cuts[i];
-	SBasis speed=(t1-t0)*dot(compose(dM,BezOrd(t0,t1)),cv[i]);
-        MultidimSBasis<2> dcv =derivative(cv[i]);
-        dcv[0]=divide(dcv[0],speed,3);
-        dcv[1]=divide(dcv[1],speed,3);
-        res.push_back(-cv[i][0]*dcv[1] + cv[i][1]*dcv[0]);// + BezOrd(base, base));
-        //base = res.back()[0][1] - base;
+        t1=result.cuts[i];
+	SBasis speed = (t1-t0)*dot(compose(dM,BezOrd(t0,t1)),cv[i]);
+        MultidimSBasis<2> dcv = derivative(cv[i]);
+        dcv[0] = divide(dcv[0],speed,3);
+        dcv[1] = divide(dcv[1],speed,3);
+        result.segs.push_back(-cv[i][0]*dcv[1] + cv[i][1]*dcv[0]);// + BezOrd(base, base));
         t0=t1;
     }
-    return(res);
+    result.cuts.insert(result.cuts.begin(), 0);
+    return(result);
 }
 
 //}; // namespace

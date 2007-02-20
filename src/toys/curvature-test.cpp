@@ -42,21 +42,17 @@ class CurvatureTester: public Toy {
 	cairo_stroke(cr);
 
 	double t=std::max(0.,std::min(1.,(handles[4][0]-150)/300.));
-	vector<double> cuts;
-        vector<SBasis> K=curvature(B,cuts);
+        pw_sb K = curvature(B);
         
-        for(int ix = 0; ix < K.size(); ix++) {
+        for(int ix = 0; ix < K.segs.size(); ix++) {
             MultidimSBasis<2> Kxy;
-            Kxy[1] = BezOrd(400) - 300*K[ix];
-            Kxy[0] = BezOrd(300*cuts[ix] + 150, 300*cuts[ix+1] + 150);
+            Kxy[1] = BezOrd(400) - 300*K.segs[ix];
+            Kxy[0] = BezOrd(300*K.cuts[ix] + 150, 300*K.cuts[ix+1] + 150);
             cairo_md_sb(cr, Kxy);
             cairo_stroke(cr);
         }
         
-	int i=0;
-	double t0=0,t1=cuts[0];
-	while (t1<t){t0=t1;t1=cuts[++i];}
-	double radius=K[i]((t-t0)/(t1-t0));
+	double radius = K(t);
 	*notify<<"K="<<radius<<std::endl;
 	if (fabs(radius)>1e-4){
 	  radius=1./radius;
