@@ -27,7 +27,7 @@ class pw_sb {
         if(t < cuts[0]) return 0;
         if(t > cuts[size()]) return size() - 1;
         while(low < high) {
-            int mid = low + (high - low) / 2;
+            int mid = (high + low) / 2;
             double mv = cuts[mid];
             if(mv < t) {
                 if(t < cuts[mid + 1]) return mid; else low = mid + 1;

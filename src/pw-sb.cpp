@@ -87,13 +87,15 @@ pw_sb partition(const pw_sb &t, vector<double> const &c) {
 }
 
 /**pw_sb portion(const pw_sb &a, double from, double to);
- * Returns a pw_sb with a defined domain of [from, to].
- * If to - from is negative, then the order and pieces are reversed.
+ * Returns a pw_sb with a defined domain of [min(from, to), max(from, to)].
  */
-//TODO: reversal; consider this for the other portions, too.
 pw_sb portion(const pw_sb &a, double from, double to) {
     pw_sb ret;
 
+    double temp = from;
+    from = min(from, to);
+    to = max(temp, to);
+    
     int i = a.segn(from);
     ret.cuts.push_back(from);
     if(to < a.cuts[i + 1]) {
