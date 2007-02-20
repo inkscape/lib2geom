@@ -69,9 +69,14 @@ class PwToy: public Toy {
         cairo_horiz(cr, pw_out.cuts);
         assert(pw_out.cheap_invariants()); */
         //cairo_pw(cr, pws[0] + pws[1]);
+        cairo_stroke(cr);
+        
         cairo_horiz(cr, roots(pws[0]));
         pw_sb pw_out = portion(pws[0], handles[handles.size() - 2][0], handles[handles.size() - 1][0]);
+        cairo_set_source_rgba (cr, 0., 0.5, 0, .25);
+        cairo_set_line_width(cr, 3);
         cairo_pw(cr, pw_out);
+        cairo_stroke(cr);
         cairo_horiz(cr, pw_out.cuts);
 
         *notify << pws[0].segn(handles[handles.size() - 1][0]) << "; " << pws[0].segt(handles[handles.size() - 1][0]);
@@ -88,8 +93,8 @@ class PwToy: public Toy {
         for(int a = 0; a < curves; a++)
             for(unsigned i = 0; i < 4 * segs; i++)
                 handles.push_back(Point(150 + 300*i/(4*segs), uniform() * 150 + 150 - 150 * a));
-        handles.push_back(Point(100, 0));
-        handles.push_back(Point(300, 0));
+        handles.push_back(Point(100, 300));
+        handles.push_back(Point(300, 300));
     }
 };
 
