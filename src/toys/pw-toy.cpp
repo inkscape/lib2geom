@@ -68,17 +68,17 @@ class PwToy: public Toy {
         pw_sb pw_out = partition(pws[0], new_cuts);
         cairo_horiz(cr, pw_out.cuts);
         assert(pw_out.cheap_invariants()); */
-        //cairo_pw(cr, pws[0] + pws[1]);
+        cairo_pw(cr, pws[0] + pws[1]);
         cairo_stroke(cr);
         
-        cairo_horiz(cr, roots(pws[0]));
+       /* cairo_horiz(cr, roots(pws[0]));
         pw_sb pw_out = portion(pws[0], handles[handles.size() - 2][0], handles[handles.size() - 1][0]);
         cairo_set_source_rgba (cr, 0, .5, 0, .25);
         cairo_set_line_width(cr, 3);
         cairo_pw(cr, pw_out);
         cairo_stroke(cr);
         cairo_horiz(cr, pw_out.cuts);
-
+*/
         *notify << pws[0].segn(handles[handles.size() - 1][0]) << "; " << pws[0].segt(handles[handles.size() - 1][0]);
         Toy::draw(cr, notify, width, height, save);
     }
@@ -87,7 +87,7 @@ class PwToy: public Toy {
         
     public:
     PwToy () {
-        segs = 5;
+        segs = 1;
         handles_per_curve = 4 * segs;
         curves = 1;
         for(int a = 0; a < curves; a++)

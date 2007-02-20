@@ -3,6 +3,7 @@
 
 #include "pw-sb.h"
 #include "point.h"
+#include "s-basis-2d.h"
 
 namespace Geom{
 
@@ -249,13 +250,28 @@ cross(md_pw_sb<2> const & a, md_pw_sb<2> const & b) {
     return r;
 }
 */
+
+pw_sb compose(SBasis2d const &a, md_pw_sb<2> const &b) {
+    pw_sb ret, x = partition(b[0], b[1].cuts), y = partition(b[1], b[0].cuts);
+    //TODO: extract this partition idiom
+    assert(x.size() == y.size());
+    for(int i = 0; i < x.size(); i++) {
+        ret.cuts.push_back(x.cuts[i]);
+        MultidimSBasis<2> sb;
+        sb[0] = x[i]; sb[1] = y[i];
+        ret.segs.push_back(compose(a, sb));
+    }
+    ret.cuts.push_back(x.cuts[x.size()]);
+    return ret;
+}
+
 inline Geom::Point
 point_at(md_pw_sb<2> const & a, double t) {
     return Geom::Point(a[0](t), a[1](t));
 }
 
 };
-
+#endif
 /*
   Local Variables:
   mode:c++
@@ -266,4 +282,3 @@ point_at(md_pw_sb<2> const & a, double t) {
   End:
 */
 // vim: filetype=cpp:expandtab:shiftwidth=4:tabstop=8:softtabstop=4:encoding=utf-8:textwidth=99 :
-#endif
