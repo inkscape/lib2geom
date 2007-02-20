@@ -87,30 +87,46 @@ pw_sb partition(const pw_sb &t, vector<double> const &c) {
 }
 
 /**pw_sb portion(const pw_sb &a, double from, double to);
- * Returns a pw_sb with a defined domain of [0, to-from], which is equivalent to the values found on [from, to] of the original.
+ * Returns a pw_sb with a defined domain of [from, to].
  * If to - from is negative, then the order and pieces are reversed.
  */
+//TODO: reversal; consider this for the other portions, too.
 pw_sb portion(const pw_sb &a, double from, double to) {
-    bool flipped = from > to;
-    if(flipped) {
-        double temp = from;
-        from = to;
-        to = temp;
-    }
-
-    vector<double> cuts;
-    cuts.push_back(from); cuts.push_back(to);
-    pw_sb foo = partition(a, cuts);
     pw_sb ret;
-    
-    double sub = flipped ? to : from;
-    int toi = a.segn(to);
-    
-    for(int i = a.segn(from); i < toi; i++) {
-        ret.cuts.push_back(foo.cuts[i] - sub);
-        ret.segs.push_back(foo[i]);
+
+    int i = a.segn(from);
+    ret.cuts.push_back(from);
+    if(to < a.cuts[i + 1]) {
+        ret.segs.push_back(elem_portion(a, i, from, to));
+        ret.cuts.push_back(to);
+        return ret;
     }
-    ret.cuts.push_back(foo.cuts[toi] - sub);
+    ret.segs.push_back(portion(a[i], a.segt(from, i), 1.0));
+    ret.cuts.push_back(a.cuts[i + 1]);
+    i++;
+    while(i < a.size()) {
+        if(a.cuts[i + 1] > to) break;
+        ret.segs.push_back(a[i]);
+        ret.cuts.push_back(a.cuts[i + 1]);
+        i++;
+    }
+    if(i == a.size())
+        //TODO: slight inefficiency of creating two for the last seg
+        ret.segs.push_back(portion(a[i - 1], 1.0, a.segt(to, i - 1)));
+    else
+        ret.segs.push_back(portion(a[i], 0.0, a.segt(to, i)));
+    ret.cuts.push_back(to);
+
+    return ret;
+}
+
+vector<double> roots(const pw_sb &a) {
+    vector<double> ret;
+    for(int i = 0; i < a.size(); i++) {
+        vector<double> sr = roots(a[i]);
+        for (int j = 0; j < sr.size(); j++) sr[j] = sr[j] * (a.cuts[i + 1] - a.cuts[i]) + a.cuts[i];
+        ret.insert(ret.end(), sr.begin(), sr.end());
+    }
     return ret;
 }
 

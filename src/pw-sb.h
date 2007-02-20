@@ -23,11 +23,21 @@ class pw_sb {
     inline unsigned size() const { return segs.size(); }
 
     inline int segn(double t) const {
+        int low = 0, high = size();
         if(t < cuts[0]) return 0;
         if(t > cuts[size()]) return size() - 1;
-        for(int i = 0; i <= size(); i++) {
-            if(cuts[i] <= t && (i == size() || t < cuts[i+1])) return i;
+        while(low < high) {
+            int mid = low + (high - low) / 2;
+            double mv = cuts[mid];
+            if(mv < t) {
+                if(t < cuts[mid + 1]) return mid; else low = mid + 1;
+            } else if(t < mv) {
+                if(cuts[mid - 1] < t) return mid - 1; else high = mid - 1;
+            } else {
+                return mid;
+            }
         }
+        return low;
     }
     
     inline double segt(double t, int i = -1) const {
@@ -40,6 +50,9 @@ class pw_sb {
 };
 
 pw_sb partition(const pw_sb &t, vector<double> const &c);
+pw_sb portion(const pw_sb &a, double from, double to);
+
+vector<double> roots(const pw_sb &a);
 
 pw_sb operator-(pw_sb const &a);
 pw_sb operator-(BezOrd const &b, const pw_sb&a);

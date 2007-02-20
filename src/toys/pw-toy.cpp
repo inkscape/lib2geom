@@ -4,21 +4,23 @@
 #include <iterator>
 #include "toy-framework.cpp"
 #include "bezier-to-sbasis.h"
+#include <vector>
 
 using namespace Geom;
+using namespace std;
 
 void cairo_pw(cairo_t *cr, pw_sb p) {
     for(int i = 0; i < p.size(); i++) {
         MultidimSBasis<2> B;
         B[0] = BezOrd(p.cuts[i], p.cuts[i+1]);
-        B[1] = p[i];
+        B[1] = BezOrd(150) + p[i];
         cairo_md_sb(cr, B);
     }
 }
 
-void cairo_pw_cuts(cairo_t *cr, pw_sb p) {
-    for(int i = 0; i < p.cuts.size(); i++) {
-        cairo_move_to(cr, p.cuts[i], 500);
+void cairo_horiz(cairo_t *cr, vector<double> p) {
+    for(int i = 0; i < p.size(); i++) {
+        cairo_move_to(cr, p[i], 500);
         cairo_rel_line_to(cr, 0, 10);
     }
 }
@@ -30,7 +32,7 @@ class PwToy: public Toy {
         cairo_set_line_width (cr, 1);
         if(!save) {
             cairo_move_to(cr, handles[0]);
-            for(int a = 0; a < 2; a++) {
+            for(int a = 0; a < curves; a++) {
                 unsigned base = a*handles_per_curve;
                 for(int i = 0; i < handles_per_curve; i+=4) {
                     if(i)
@@ -49,7 +51,10 @@ class PwToy: public Toy {
             unsigned base = a * handles_per_curve;
             for(int i = 0; i < handles_per_curve; i+=4) {
                 pws[a].cuts.push_back(handles[i+base][0]);
+                //Bad hack to move 0 to 150
+                for(int j = base + i; j < base + i + 4; j++) handles[j] = Point(handles[j][0], handles[j][1] - 150);
                 pws[a].segs.push_back( Geom::bezier_to_sbasis<2,3>(handles.begin()+i+base)[1] );
+                for(int j = base + i; j < base + i + 4; j++) handles[j] = Point(handles[j][0], handles[j][1] + 150);
             }
             pws[a].cuts.push_back(handles[base + handles_per_curve - 1][0]);
             assert(pws[a].cheap_invariants());
@@ -61,10 +66,15 @@ class PwToy: public Toy {
         new_cuts.push_back(175);
         new_cuts.push_back(550);
         pw_sb pw_out = partition(pws[0], new_cuts);
-        cairo_pw_cuts(cr, pw_out);
+        cairo_horiz(cr, pw_out.cuts);
         assert(pw_out.cheap_invariants()); */
-        cairo_pw(cr, pws[0] + pws[1]);
-        
+        //cairo_pw(cr, pws[0] + pws[1]);
+        cairo_horiz(cr, roots(pws[0]));
+        pw_sb pw_out = portion(pws[0], handles[handles.size() - 2][0], handles[handles.size() - 1][0]);
+        cairo_pw(cr, pw_out);
+        cairo_horiz(cr, pw_out.cuts);
+
+        *notify << pws[0].segn(handles[handles.size() - 1][0]) << "; " << pws[0].segt(handles[handles.size() - 1][0]);
         Toy::draw(cr, notify, width, height, save);
     }
 
@@ -72,12 +82,14 @@ class PwToy: public Toy {
         
     public:
     PwToy () {
-        segs = 3;
+        segs = 5;
         handles_per_curve = 4 * segs;
-        curves = 2;
+        curves = 1;
         for(int a = 0; a < curves; a++)
             for(unsigned i = 0; i < 4 * segs; i++)
                 handles.push_back(Point(150 + 300*i/(4*segs), uniform() * 150 + 150 - 150 * a));
+        handles.push_back(Point(100, 0));
+        handles.push_back(Point(300, 0));
     }
 };
 
