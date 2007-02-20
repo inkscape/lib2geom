@@ -16,12 +16,6 @@ bool pw_sb::cheap_invariants() const {
     return true;
 }
 
-bool pw_sb::invariants() const {
-    for(int i = 0; i<size(); i++) {
-        
-    }
-}
-
 /**SBasis elem_portion(const pw_sb &a, int i, double from, double to);
  * returns a portion of a piece of a pw_sb, given the piece's index and a to/from time.
  */
@@ -98,7 +92,7 @@ pw_sb portion(const pw_sb &a, double from, double to) {
     
     int i = a.segn(from);
     ret.cuts.push_back(from);
-    if(to < a.cuts[i + 1]) {
+    if(to < a.cuts[i + 1]) {    //The 
         ret.segs.push_back(elem_portion(a, i, from, to));
         ret.cuts.push_back(to);
         return ret;

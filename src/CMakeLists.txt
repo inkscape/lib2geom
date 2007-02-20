@@ -39,6 +39,7 @@ matrix.cpp
 matrix.h
 math-utils.h
 maybe.h
+md-pw-sb.h
 multidim-sbasis.h
 sb-geometric.h
 #nearestpoint.cpp

@@ -9,6 +9,7 @@
 #include <stdexcept>
 #include "multidim-sbasis.h"
 #include "bezier-to-sbasis.h"
+#include "md-pw-sb.h"
 
 namespace Geom {
 
@@ -326,6 +327,23 @@ public:
 
   Rect boundsFast() const;
   Rect boundsExact() const;
+
+  md_pw_sb<2> toMdSb() const {
+    int i = 0;
+    pw_sb x, y;
+    for(const_iterator it = begin(); it != end(); ++it, i++) {
+      MultidimSBasis<2> foo = (*it).sbasis();
+      x.cuts.push_back(i);
+      x.segs.push_back(foo[0]);
+      y.cuts.push_back(i);
+      y.segs.push_back(foo[1]);
+    }
+    x.cuts.push_back(i);
+    y.cuts.push_back(i);
+    md_pw_sb<2> ret;
+    ret[0] = x; ret[1] = y;
+    return ret;
+  }
 
   void insert(iterator pos, Curve const &curve) {
     Sequence source(1, curve.duplicate());

@@ -52,7 +52,7 @@ class Sb2d: public Toy {
                (2*(iv+vi)/(2.*vi+1)+1)*width/4.);
                double dl = dot((handles[corner+4*i] - base), dir)/dot(dir,dir);
                display_handles[corner+4*i] = dl*dir + base;
-               sb2[i][corner] = dl*10/(width/2)*pow(4,ui+vi);
+               sb2[i][corner] = dl*10/(width/2)*pow(4.,ui+vi);
            }
         draw_sb2d(cr, sb2, dir*0.1, width);
     

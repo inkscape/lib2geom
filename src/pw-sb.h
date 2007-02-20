@@ -1,5 +1,5 @@
-#ifndef SEEN_GEOM_SB_PW_H
-#define SEEN_GEOM_SB_PW_H
+#ifndef SEEN_GEOM_PW_SB_H
+#define SEEN_GEOM_PW_SB_H
 
 #include "s-basis.h"
 #include <vector>
@@ -45,8 +45,17 @@ class pw_sb {
         return (t - cuts[i]) / (cuts[i+1] - cuts[i]);
     }
 
+    void offsetTs(double o) {
+        for(int i = 0; i <= size(); i++)
+            cuts[i] += o;
+    }
+
+    void scaleTs(double s) {
+        for(int i = 0; i <= size(); i++)
+            cuts[i] *= s;
+    }
+
     bool cheap_invariants() const;
-    bool invariants() const;
 };
 
 pw_sb partition(const pw_sb &t, vector<double> const &c);
@@ -77,7 +86,7 @@ inline pw_sb operator*=(pw_sb &a, pw_sb const &b) {
 
 }
 
-#endif //SEEN_GEOM_SB_PW_H
+#endif //SEEN_GEOM_PW_SB_H
 /*
   Local Variables:
   mode:c++
