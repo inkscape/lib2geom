@@ -165,6 +165,15 @@ void draw_sb2d(cairo_t* cr, SBasis2d const &sb2, Point dir, double width) {
     }
 }
 
+void cairo_md_pw(cairo_t *cr, md_pw_sb<2> const &p) {
+    pw_sb x = partition(p[0], p[1].cuts), y = partition(p[1], p[0].cuts);
+    for(int i = 0; i < x.size(); i++) {
+        MultidimSBasis<2> B;
+        B[0] = x[i]; B[1] = y[i];
+        cairo_md_sb(cr, B);
+    }
+}
+
 /*
   Local Variables:
   mode:c++

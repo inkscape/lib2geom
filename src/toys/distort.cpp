@@ -12,15 +12,6 @@
 
 using namespace Geom;
 
-void cairo_md_pw(cairo_t *cr, md_pw_sb<2> const &p) {
-    pw_sb x = partition(p[0], p[1].cuts), y = partition(p[1], p[0].cuts);
-    for(int i = 0; i < x.size(); i++) {
-        MultidimSBasis<2> B;
-        B[0] = x[i]; B[1] = y[i];
-        cairo_md_sb(cr, B);
-    }
-}
-
 class DistortToy: public Toy {
     std::vector<Geom::Path2::Path> p;
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
