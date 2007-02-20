@@ -11,6 +11,8 @@
 
 #include "toy-framework.h"
 
+#include "md-pw-sb.h"
+
 using std::vector;
 using namespace Geom;
 
@@ -53,19 +55,24 @@ public:
         {
             MultidimSBasis<2> plot;
 
-            vector<double> cuts;
-            vector<SBasis > als = arc_length_sb(B,cuts);
+            pw_sb als = arc_length_sb(B);
             double t0 = 0, t1;
-            for(int i = 0; i < als.size();i++){
-                t1 = cuts[i];
+            for(int i = 0; i < als.segs.size();i++){
+                t1 = als.cuts[i+1];
                 plot[0] = SBasis(width*BezOrd(t0,t1));
-                plot[1] = BezOrd(height-5) - als[i];
+                plot[1] = BezOrd(height-5) - als.segs[i];
                 cairo_md_sb(cr,plot);
                 cairo_set_source_rgba (cr, 1, 0, 0.6, 0.5);
                 cairo_stroke(cr);
 
                 t0 = t1;
             }
+            
+            Geom::md_pw_sb<2> grf;
+            grf.f[1] = als; // pw_sb(SBasis(BezOrd(height-5))) - 
+            grf.f[0] = pw_sb(SBasis(BezOrd(0, width)));
+            
+            cairo_md_pw(cr, grf);
         }
 
         cairo_set_source_rgba (cr, 0., 0.5, 0, 0.8);

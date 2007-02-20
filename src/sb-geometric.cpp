@@ -258,27 +258,27 @@ Geom::arc_length(MultidimSBasis<2> const M,
  * functions.
  **/
 
-std::vector<SBasis>
+Geom::pw_sb
 Geom::arc_length_sb(MultidimSBasis<2> const M,
-                    std::vector<double> &cuts,
                     double tol){
-    std::vector<SBasis> al;
+    Geom::pw_sb result;
     MultidimSBasis<2> dM=derivative(M);
     std::vector<MultidimSBasis<2> > uspeed;
-    uspeed=unit_vector(dM,cuts,tol);
+    uspeed=unit_vector(dM,result.cuts,tol);
     double t0=0., t1, L=0.;
-    for (int i=0;i<cuts.size();i++){
-        t1=cuts[i];
+    for (int i=0;i<result.cuts.size();i++){
+        t1=result.cuts[i];
         MultidimSBasis<2> sub_dM=compose(dM,BezOrd(t0,t1));
         SBasis V=dot(uspeed[i],sub_dM);
 //FIXME: if the curve is a flat S, this is wrong: the absolute value of V should be used.
         V=(t1-t0)*integral(V);
         V += L - V(0);
-        al.push_back(V); //  + BezOrd(L - V(0))
+        result.segs.push_back(V); //  + BezOrd(L - V(0))
         L=V(1);
         t0=t1;
     }
-    return(al);
+    result.cuts.insert(result.cuts.begin(), 0); // start
+    return result;
 }
 
 // incomplete.

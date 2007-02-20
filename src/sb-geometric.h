@@ -2,6 +2,7 @@
 #define _SBASIS_GEOMETRIC
 #include "multidim-sbasis.h"
 #include <vector>
+#include "pw-sb.h"
 
 /** two-dimensional geometric operators.  
  * Copyright 2007, JFBarraud
@@ -39,9 +40,8 @@ arc_length(MultidimSBasis<2> const M,
            double tol=.1);
 
 
-std::vector<SBasis >
+pw_sb
 arc_length_sb(MultidimSBasis<2> const M, 
-              std::vector<double> &cuts, 
               double tol=.1);
 
 // incomplete - pls check over
