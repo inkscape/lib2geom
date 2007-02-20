@@ -1,4 +1,6 @@
 #include "pw-sb.h"
+#include <iterator>
+#include <map>
 
 namespace Geom {
 
@@ -211,6 +213,95 @@ pw_sb operator-(pw_sb const &a, pw_sb const &b) { return ZipSBWith(sbasis_sub(),
 pw_sb multiply(pw_sb const &a, pw_sb const &b) { return ZipSBWith(sbasis_mul(), a, b); }
 pw_sb divide(pw_sb const &a, pw_sb const &b, int k) { return ZipSBWith(sbasis_div(k), a, b);}
 
+
+pw_sb compose(pw_sb const &f, SBasis  const &g){
+  pw_sb result;
+  
+  //first check bounds...
+  double M,m;
+  bounds(g,m,M);
+  if (M<f.cuts.front()||m>f.cuts.back()){
+    int idx=(M<f.cuts.front())?0:f.cuts.size()-2;
+    double t0=f.cuts[idx],width=f.cuts[idx+1]-t0;
+    SBasis rescaled_g=compose(BezOrd(-t0/width,(1-t0)/width),g);
+    result.cuts.push_back(0.);
+    result.cuts.push_back(1.);
+    result.segs.push_back(f.segs[idx](rescaled_g));
+    return(result);
+  }
+
+  //-- collect all t / g(t)=f.cuts[idx] for some idx.
+  // put them in a map:   t->idx.
+  // Notice that t=0,1 recieve a special treatment:
+  // 0->idx iff f.cuts[idx-1]<g(0)<=f.cuts[idx] (if out of range, f.cut[idx]=+/- infty)
+  // the same for 1.
+  std::map<double,int> cuts_pb; //pb stands for pullback
+  vector<double> sols;
+  for(int i=0; i<f.cuts.size();i++){
+    sols=roots(g-BezOrd(f.cuts[i]));
+    for (vector<double>::iterator root=sols.begin();root!=sols.end();root++)
+      cuts_pb[*root]=i;
+    if((cuts_pb.count(0.)==0) and (g[0][0]<=f.cuts[i]))
+      cuts_pb[0.]=i;
+    if((cuts_pb.count(1.)==0) and (g[0][1]<=f.cuts[i]))
+      cuts_pb[1.]=i;
+  }
+  if(cuts_pb.count(0.)==0) cuts_pb[0.]=f.cuts.size();
+  if(cuts_pb.count(1.)==0) cuts_pb[1.]=f.cuts.size();
+  
+  //-- Compose each piece with the relevant seg.
+  result.cuts.push_back(0.);
+  std::map<double,int>::iterator cut=cuts_pb.begin();
+  std::map<double,int>::iterator next=cut; next++;
+  while(next!=cuts_pb.end()){
+    double t0=(*cut).first;
+    int  idx0=(*cut).second;
+    double t1=(*next).first;
+    int  idx1=(*next).second;
+    int  idx; //idx of the relevant f.segs
+    if (std::max(idx0,idx1)==f.cuts.size()){ //g([t0,t1]) is above the top level,
+      idx=f.cuts.size()-2;
+    }else if (std::min(idx0,idx1)==-1){      //g([t0,t1]) is below the min level,
+      idx=0;
+    } else if (idx0 != idx1){                //g([t0,t1]) crosses from level idx0 to idx1,
+      idx=std::min(idx0,idx1);
+    } else if(g((t0+t1)/2) < f.cuts[idx0]) { //g([t0,t1]) is a 'U' under level idx0,
+      idx=idx0-1;
+    } else if(g((t0+t1)/2) > f.cuts[idx0]) { //g([t0,t1]) is a 'bump' over level idx0,
+      idx=idx0;
+    } else {                                 //g([t0,t1]) is contained in level idx0!...
+      idx = (idx0==f.cuts.size())? idx0-1:idx0;
+    }
+
+    if (idx==-1) idx=0;
+    if (idx>=f.cuts.size()-1) idx=f.cuts.size()-2;
+
+    if (idx>=0 and idx<f.cuts.size()) {
+      SBasis sub_g=compose(g, BezOrd(t0,t1));
+      sub_g=compose(BezOrd(-f.cuts[idx]/(f.cuts[idx+1]-f.cuts[idx]),
+			     (1-f.cuts[idx])/(f.cuts[idx+1]-f.cuts[idx])),sub_g);
+      sub_g=compose(f[idx],sub_g);
+      result.cuts.push_back(t1);
+      result.segs.push_back(sub_g);
+    }
+    cut++;
+    next++;
+  }
+  return(result);
+} 
+
+// pw_sb compose(pw_sb const &f, SBasis  const &g){
+//   pw_sb result;
+//   for (int i=0;i<g.segs.size();i++){
+//     pw_sb fgi=compose(f,g.segs[i]);
+//     double t0=g.cuts[i],t1=g.cuts[i+1];
+//     for (int j=0;j<fgi.cuts.size();j++){
+//       fgi.cuts[j]=t0+fgi.cuts[j]*(t1-t0);
+//     }
+//     //Hum!?! how do you concat two vectors?
+//     // append fgi to result...
+//     // we should define a concat operator for pw_sb...
+//   }
 pw_sb compose(pw_sb const &a, pw_sb const &b) {
     
 }

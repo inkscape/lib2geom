@@ -85,6 +85,7 @@ pw_sb multiply(pw_sb const &a, pw_sb const &b);
 pw_sb multiply(BezOrd const &a, pw_sb const &b);
 pw_sb divide(pw_sb const &a, pw_sb const &b, int k);
 
+pw_sb compose(pw_sb const &a, SBasis const &b);
 pw_sb compose(pw_sb const &a, pw_sb const &b);
 
 inline pw_sb operator*(pw_sb const &a, pw_sb const &b) { multiply(a, b); }
