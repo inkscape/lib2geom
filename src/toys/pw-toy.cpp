@@ -87,11 +87,11 @@ class PwToy: public Toy {
         
     public:
     PwToy () {
-        segs = 1;
+        segs = 3;
         handles_per_curve = 4 * segs;
-        curves = 1;
+        curves = 2;
         for(int a = 0; a < curves; a++)
-            for(unsigned i = 0; i < 4 * segs; i++)
+            for(unsigned i = 0; i < handles_per_curve; i++)
                 handles.push_back(Point(150 + 300*i/(4*segs), uniform() * 150 + 150 - 150 * a));
         handles.push_back(Point(100, 400));
         handles.push_back(Point(300, 400));
