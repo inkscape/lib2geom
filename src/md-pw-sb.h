@@ -27,6 +27,24 @@ public:
         return s;
     }
 
+    inline vector<MultidimSBasis<D> > sections(vector<double> &cuts) const {
+        pw_sb fe[D];
+        for(int i = 0; i < D; i++) {
+            for(int j = 0; j < D; j++) {
+                if(j != i) fe[i] = partition(f[i], f[j].cuts);
+            }
+            if(i) assert(fe[i].size() == fe[i - 1].size());
+        }
+        vector<MultidimSBasis<D> > ret;
+        for(int i = 0; i < fe[0].size(); i++) {
+            MultidimSBasis<D> sb;
+            for(int j = 0; j < D; j++) sb[j] = fe[j][i];
+            ret.push_back(sb);
+        }
+        cuts = fe[0].cuts;
+        return ret;
+    }
+
     /*TODO
     bool is_finite() const {
         for(unsigned i = 0; i < D; i++)
@@ -252,16 +270,11 @@ cross(md_pw_sb<2> const & a, md_pw_sb<2> const & b) {
 */
 
 inline pw_sb compose(SBasis2d const &a, md_pw_sb<2> const &b) {
-    pw_sb ret, x = partition(b[0], b[1].cuts), y = partition(b[1], b[0].cuts);
-    //TODO: extract this partition idiom
-    assert(x.size() == y.size());
-    for(int i = 0; i < x.size(); i++) {
-        ret.cuts.push_back(x.cuts[i]);
-        MultidimSBasis<2> sb;
-        sb[0] = x[i]; sb[1] = y[i];
-        ret.segs.push_back(compose(a, sb));
+    pw_sb ret;
+    vector<MultidimSBasis<2> > foo = b.sections(ret.cuts);
+    for(int i = 0; i < foo.size(); i++) {
+        ret.segs.push_back(compose(a, foo[i]));
     }
-    ret.cuts.push_back(x.cuts[x.size()]);
     return ret;
 }
 
