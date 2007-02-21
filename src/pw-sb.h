@@ -63,6 +63,11 @@ class pw_sb {
             cuts[i] *= s;
     }
 
+    inline void append(pw_sb other) {
+        cuts.insert(cuts.end(), other.cuts.begin() + 1, other.cuts.end());
+        segs.insert(segs.end(), other.segs.begin(), other.segs.end());
+    }
+
     bool cheap_invariants() const;
 };
 
