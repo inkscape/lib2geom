@@ -9,7 +9,7 @@ namespace Geom {
  */
 bool pw_sb::cheap_invariants() const {
     // segs between cuts
-    if(!(segs.size() + 1 == cuts.size() || size() == 0 || cuts.size() == 0))
+    if(!(segs.size() + 1 == cuts.size() || (segs.empty() && cuts.empty())))
         return false;
     // cuts in order
     for(int i = 0; i < segs.size(); i++)
@@ -36,27 +36,48 @@ SBasis elem_portion(const pw_sb &a, int i, double from, double to) {
  * //ac.cuts should be equivalent to bc.cuts
  */
 pw_sb partition(const pw_sb &t, vector<double> const &c) {
+    if(c.size() == 0) return pw_sb(t);
+
     pw_sb ret = pw_sb();
+
     //just a bit of optimizing reservation
     ret.cuts.reserve(c.size() + t.cuts.size());
     ret.segs.reserve(c.size() + t.cuts.size() - 1);
 
+    if(t.size() == 0) {
+        for(int i = 0; i < c.size() - 1; i++) {
+            ret.cuts.push_back(c[i]);
+            ret.segs.push_back(SBasis());
+        }
+        ret.cuts.push_back(c.back());
+        return ret;
+    }
+
     int si = 0, ci = 0;     //Segment index, Cut index
 
-    //if the input cuts have something earlier than this pw_sb, add portions of the first segment
-    while(c[ci] < t.cuts[0] && ci < c.size()) {
+    //if the cuts have something earlier than the pw_sb, add portions of the first segment
+    while(c[ci] < t.cuts.front() && ci < c.size()) {
         ret.cuts.push_back(c[ci]);
-        ret.segs.push_back(elem_portion(t, 0, c[ci], c[ci + 1] < t.cuts[0] ? c[ci + 1] : t.cuts[0]));
+        if(ci == c.size()-1 || c[ci + 1] >= t.cuts.front()) {
+            ret.segs.push_back(elem_portion(t, 0, c[ci], t.cuts.front()));
+        } else {
+            ret.segs.push_back(elem_portion(t, 0, c[ci], c[ci + 1]));
+        }
         ci++;
     }
+    if(ci == c.size()) {    //exhausted cuts
+        ret.append(t);
+        return ret;
+    }
+
     ret.cuts.push_back(t.cuts[0]);
     double prev = t.cuts[0];    //previous cut
     //Should have the cuts = segs + 1 invariant before/after every pass
     while(si < t.size() && ci <= c.size()) {
-        if(ci == c.size() || c[ci] >= t.cuts[si + 1]) {  //no more cuts within this segment
-            if(prev > t.cuts[si]) {      //need to push final portion of segment
+        if(ci == c.size() || c[ci] >= t.cuts[si + 1]) {  //no more cuts within this segment, finalize
+            if(prev > t.cuts[si]) {      //segment already has cuts, so portion is required
                 ret.segs.push_back(portion(t[si], t.segt(prev, si), 1.0));
-            } else {                     //plain copy of last segment is fine
+            } else {                     //plain copy is fine
                 ret.segs.push_back(t[si]);
             }
             ret.cuts.push_back(t.cuts[si + 1]);
@@ -220,9 +241,9 @@ pw_sb compose(pw_sb const &f, SBasis  const &g){
   //first check bounds...
   double M,m;
   bounds(g,m,M);
-  if (M<f.cuts.front()||m>f.cuts.back()){
-    int idx=(M<f.cuts.front())?0:f.cuts.size()-2;
-    double t0=f.cuts[idx],width=f.cuts[idx+1]-t0;
+  if (M < f.cuts.front() || m > f.cuts.back()){
+    int idx = (M < f.cuts.front()) ? 0 : f.cuts.size()-2;
+    double t0 = f.cuts[idx], width = f.cuts[idx+1]-t0;
     SBasis rescaled_g=compose(BezOrd(-t0/width,(1-t0)/width),g);
     result.cuts.push_back(0.);
     result.cuts.push_back(1.);
@@ -290,20 +311,16 @@ pw_sb compose(pw_sb const &f, SBasis  const &g){
   return(result);
 } 
 
-// pw_sb compose(pw_sb const &f, SBasis  const &g){
-//   pw_sb result;
-//   for (int i=0;i<g.segs.size();i++){
-//     pw_sb fgi=compose(f,g.segs[i]);
-//     double t0=g.cuts[i],t1=g.cuts[i+1];
-//     for (int j=0;j<fgi.cuts.size();j++){
-//       fgi.cuts[j]=t0+fgi.cuts[j]*(t1-t0);
-//     }
-//     //Hum!?! how do you concat two vectors?
-//     // append fgi to result...
-//     // we should define a concat operator for pw_sb...
-//   }
-pw_sb compose(pw_sb const &a, pw_sb const &b) {
-    
+pw_sb compose(pw_sb const &f, pw_sb const &g){
+  pw_sb result;
+  for(int i = 0; i < g.segs.size(); i++){
+    pw_sb fgi=compose(f, g.segs[i]);
+    double t0 = g.cuts[i], t1 = g.cuts[i+1];
+    for(int j = 0; j < fgi.cuts.size(); j++){
+      fgi.cuts[j]= t0 + fgi.cuts[j] * (t1-t0);
+    }
+    result.append(fgi);
+  }
 }
 
 /*
