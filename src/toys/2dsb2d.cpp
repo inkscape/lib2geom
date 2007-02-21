@@ -22,11 +22,11 @@ class Sb2d2: public Toy {
     void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         vector<SBasis2d> sb2(2);
         for(int dim = 0; dim < 2; dim++) {
-        sb2[dim].us = 2;
-        sb2[dim].vs = 2;
-        const int depth = sb2[dim].us*sb2[dim].vs;
-        const int surface_handles = 4*depth;
-        sb2[dim].resize(depth, BezOrd2d(0));
+            sb2[dim].us = 2;
+            sb2[dim].vs = 2;
+            const int depth = sb2[dim].us*sb2[dim].vs;
+            const int surface_handles = 4*depth;
+            sb2[dim].resize(depth, BezOrd2d(0));
         }
         const int depth = sb2[0].us*sb2[0].vs;
         const int surface_handles = 4*depth;
