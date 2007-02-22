@@ -60,7 +60,7 @@ inline md_pw_sb<D>
 operator +(md_pw_sb<D> const & a, md_pw_sb<D> const & b) {
     md_pw_sb<D> r;
     for(unsigned i = 0; i < D; i++)
-        r.f[i] = a.f[i]+b.f[i];
+        r[i] = a[i]+b[i];
     return r;
 }
 
@@ -69,7 +69,7 @@ inline md_pw_sb<2>
 operator +(md_pw_sb<2> const & a, Geom::Point const & b) {
     md_pw_sb<2> r;
     for(unsigned i = 0; i < 2; i++)
-        r.f[i] = a.f[i] + BezOrd(b[i]);
+        r[i] = a[i] + BezOrd(b[i]);
     return r;
 }*/
 
@@ -78,7 +78,7 @@ inline md_pw_sb<D>
 operator -(md_pw_sb<D> const & a, md_pw_sb<D> const & b) {
     md_pw_sb<D> r;
     for(unsigned i = 0; i < D; i++)
-        r.f[i] = a.f[i] - b.f[i];
+        r[i] = a[i] - b[i];
     return r;
 }
 
@@ -87,7 +87,7 @@ inline md_pw_sb<2>
 operator -(md_pw_sb<2> const & a, Geom::Point const & b) {
     md_pw_sb<2> r;
     for(unsigned i = 0; i < 2; i++)
-        r.f[i] = a.f[i] - BezOrd(b[i]);
+        r[i] = a[i] - BezOrd(b[i]);
     return r;
 }*/
 
@@ -96,7 +96,7 @@ inline md_pw_sb<D>
 operator *(double a, md_pw_sb<D> const & b) {
     md_pw_sb<D> r;
     for(unsigned i = 0; i < D; i++)
-        r.f[i] = a*b.f[i];
+        r[i] = a*b[i];
     return r;
 }
 
@@ -104,21 +104,21 @@ template <unsigned D>
 inline md_pw_sb<D>
 operator +=(md_pw_sb<D> & a, md_pw_sb<D> const & b) {
     for(unsigned i = 0; i < D; i++)
-        a.f[i]+=b.f[i];
+        a[i]+=b[i];
     return a;
 }
 
 inline md_pw_sb<2>
 operator +=(md_pw_sb<2> & a, Geom::Point const & b) {
     for(unsigned i = 0; i < 2; i++)
-        a.f[i]+= b[i];
+        a[i]+= b[i];
     return a;
 }
 
 inline md_pw_sb<2>
 operator -=(md_pw_sb<2> & a, Geom::Point const & b) {
     for(unsigned i = 0; i < 2; i++)
-        a.f[i] -= b[i];
+        a[i] -= b[i];
     return a;
 }
 
@@ -126,7 +126,7 @@ template <unsigned D>
 inline md_pw_sb<D>
 operator *=(md_pw_sb<D> & a, double b) {
     for(unsigned i = 0; i < D; i++)
-        a.f[i]*=b;
+        a[i]*=b;
     return a;
 }
 
@@ -134,7 +134,7 @@ operator *=(md_pw_sb<D> & a, double b) {
 md_pw_sb<D>
 operator -=(md_pw_sb<D> & a, md_pw_sb<D> const & b) {
     for(unsigned i = 0; i < D; i++)
-        a.f[i]-=b.f[i];
+        a[i]-=b[i];
     return a;
 }*/
 
@@ -144,7 +144,7 @@ inline md_pw_sb<D>
 derivative(md_pw_sb<D> const & a) {
     md_pw_sb<D> r;
     for(unsigned i = 0; i < D; i++)
-        r.f[i]=derivative(a.f[i]);
+        r[i]=derivative(a[i]);
     return r;
 }
 
@@ -153,7 +153,7 @@ inline md_pw_sb<D>
 integral(md_pw_sb<D> const & a) {
     md_pw_sb<D> r;
     for(unsigned i = 0; i < D; i++)
-        r.f[i]=integral(a.f[i]);
+        r[i]=integral(a[i]);
     return r;
 }
 
@@ -162,7 +162,7 @@ inline SBasis
 dot(md_pw_sb<D> const & a, md_pw_sb<D> const & b) {
     SBasis r;
     for(unsigned i = 0; i < D; i++)
-        r += multiply(a.f[i],b.f[i]);
+        r += multiply(a[i],b[i]);
     return r;
 }
 
@@ -171,7 +171,7 @@ inline SBasis
 L2(md_pw_sb<D> const & a, int k) {
     SBasis r;
     for(unsigned i = 0; i < D; i++)
-        r += multiply(a.f[i],a.f[i]);
+        r += multiply(a[i],a[i]);
     return sqrt(r,k);
 }
 */
@@ -181,7 +181,7 @@ inline md_pw_sb<D>
 multiply(BezOrd const & a, md_pw_sb<D> const & b) {
     md_pw_sb<D> r;
     for(unsigned i = 0; i < D; i++)
-        r[i] = multiply(a,b.f[i]);
+        r[i] = multiply(a,b[i]);
     return r;
 }
 
@@ -190,7 +190,7 @@ inline md_pw_sb<D>
 multiply(pw_sb const & a, md_pw_sb<D> const & b) {
     md_pw_sb<D> r;
     for(unsigned i = 0; i < D; i++)
-        r[i] = multiply(a,b.f[i]);
+        r[i] = multiply(a,b[i]);
     return r;
 }
 
@@ -212,7 +212,7 @@ inline md_pw_sb<D>
 compose(pw_sb const & a, md_pw_sb<D> const & b) {
     md_pw_sb<D> r;
     for(unsigned i = 0; i < D; i++)
-        r[i] = compose(a,b.f[i]);
+        r[i] = compose(a,b[i]);
     return r;
 }
 
@@ -221,25 +221,44 @@ inline md_pw_sb<D>
 compose(md_pw_sb<D> const & a, BezOrd const & b) {
     md_pw_sb<D> r;
     for(unsigned i = 0; i < D; i++)
-        r[i] = compose(a.f[i],b);
+        r[i] = compose(a[i],b);
+    return r;
+}*/
+
+template <unsigned D>
+inline md_pw_sb<D>
+composeEach(md_pw_sb<D> const &a, md_pw_sb<D> const &b) {
+    md_pw_sb<D> r;
+    for(unsigned i = 0; i < D; i++)
+        r[i] = compose(a[i], b[i]);
     return r;
 }
 
 template <unsigned D>
 inline md_pw_sb<D>
-compose(md_pw_sb<D> const & a, pw_sb const & b) {
+composeEach(md_pw_sb<D> const &a, pw_sb const &b) {
     md_pw_sb<D> r;
     for(unsigned i = 0; i < D; i++)
-        r[i] = compose(a.f[i],b);
+        r[i] = compose(a[i], b);
     return r;
 }
 
+template <unsigned D>
+inline md_pw_sb<D>
+composeEach(md_pw_sb<D> const &a, SBasis const &b) {
+    md_pw_sb<D> r;
+    for(unsigned i = 0; i < D; i++)
+        r[i] = compose(a[i], b);
+    return r;
+}
+
+/*
 template <unsigned D>
 inline md_pw_sb<D>
 compose(md_pw_sb<D> const & a, md_pw_sb<D> const & b) {
     md_pw_sb<D> r;
     for(unsigned i = 0; i < D; i++)
-        r[i] = compose(a.f[i],b.f[i]);
+        r[i] = compose(a[i],b[i]);
     return r;
 }
 
@@ -248,7 +267,7 @@ inline md_pw_sb<D>
 truncate(md_pw_sb<D> const & a, unsigned terms) {
     md_pw_sb<D> r;
     for(unsigned i = 0; i < D; i++)
-        r[i] = truncate(a.f[i],terms);
+        r[i] = truncate(a[i],terms);
     return r;
 }
 
