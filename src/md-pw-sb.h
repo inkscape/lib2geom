@@ -236,7 +236,7 @@ composeEach(md_pw_sb<D> const &a, md_pw_sb<D> const &b) {
 
 template <unsigned D>
 inline md_pw_sb<D>
-composeEach(md_pw_sb<D> const &a, pw_sb const &b) {
+compose(md_pw_sb<D> const &a, pw_sb const &b) {
     md_pw_sb<D> r;
     for(unsigned i = 0; i < D; i++)
         r[i] = compose(a[i], b);
@@ -245,7 +245,7 @@ composeEach(md_pw_sb<D> const &a, pw_sb const &b) {
 
 template <unsigned D>
 inline md_pw_sb<D>
-composeEach(md_pw_sb<D> const &a, SBasis const &b) {
+compose(md_pw_sb<D> const &a, SBasis const &b) {
     md_pw_sb<D> r;
     for(unsigned i = 0; i < D; i++)
         r[i] = compose(a[i], b);

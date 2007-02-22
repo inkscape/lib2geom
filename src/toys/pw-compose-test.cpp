@@ -24,7 +24,7 @@ class PwToy: public Toy {
         cairo_set_source_rgba (cr, 0., 0.5, 0, 1);
         cairo_set_line_width (cr, 1);
        
-        md_pw_sb pws<2>;
+        md_pw_sb<2> pws;
         int hdle_idx=0;
         for(int i = 0; i < segs; i++) {
             MultidimSBasis<2> foo = Geom::bezier_to_sbasis<2,3>(handles.begin()+hdle_idx);
@@ -53,18 +53,15 @@ class PwToy: public Toy {
         }
         cairo_stroke(cr);
 
-        for(int a = 0; a < curves; a++) {
-            cairo_pw2(cr, pws[2*a],pws[2*a+1]);
-        }
-
+        cairo_md_pw(cr, pws);
+        
         cairo_stroke(cr);
         cairo_set_source_rgba (cr, 0.9, 0., 0., 1);
-        pw_sb x= compose(pws[0],g);
-        pw_sb y= compose(pws[1],g);
-        cairo_md_pw_sb(cr, composeEach(pws, g));
+        md_pw_sb<2> res = compose(pws, g);
+        cairo_md_pw(cr, res);
         for(int i=0;i<20;i++){
-            double t=(x.cuts.back()-x.cuts.front())*i/20.;
-            draw_handle(cr, Point(x(t),y(t)));
+            double t=(res[0].cuts.back()-res[0].cuts.front())*i/20.;
+            draw_handle(cr, Point(res[0](t),res[1](t)));
         }
         cairo_stroke(cr);
 
