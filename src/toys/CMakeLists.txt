@@ -19,6 +19,7 @@ sb2d
 pair-intersect
 precise-flat
 pw-toy
+pw-compose-test
 #toy-cairo
 gear
 cheb
