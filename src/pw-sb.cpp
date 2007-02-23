@@ -71,7 +71,11 @@ pw_sb partition(const pw_sb &t, vector<double> const &c) {
     double prev = t.cuts[0];    //previous cut
     //Should have the cuts = segs + 1 invariant before/after every pass
     while(si < t.size() && ci <= c.size()) {
-        if(ci == c.size() || c[ci] >= t.cuts[si + 1]) {  //no more cuts within this segment, finalize
+        if(ci == c.size() && prev <= t.cuts[si]) { //cuts exhausted, straight copy the rest
+            ret.segs.insert(ret.segs.end(), t.segs.begin() + si, t.segs.end());
+            ret.cuts.insert(ret.cuts.end(), t.cuts.begin() + si + 1, t.cuts.end());
+            return ret;
+        }else if(ci == c.size() || c[ci] >= t.cuts[si + 1]) {  //no more cuts within this segment, finalize
             if(prev > t.cuts[si]) {      //segment already has cuts, so portion is required
                 ret.segs.push_back(portion(t[si], t.segt(prev, si), 1.0));
             } else {                     //plain copy is fine
@@ -88,11 +92,6 @@ pw_sb partition(const pw_sb &t, vector<double> const &c) {
             ret.cuts.push_back(c[ci]);
             prev = c[ci];
             ci++;
-        }  
-        if(ci == c.size() && prev <= t.cuts[si]) {
-            ret.segs.insert(ret.segs.end(), t.segs.begin() + si, t.segs.end());
-            ret.cuts.insert(ret.cuts.end(), t.cuts.begin() + si + 1, t.cuts.end());
-            return ret;
         }
     }
 
