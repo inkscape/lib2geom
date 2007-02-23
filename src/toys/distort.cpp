@@ -16,7 +16,7 @@ using namespace Geom;
 class DistortToy: public Toy {
     std::vector<Geom::Path2::Path> p;
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
-        /*vector<SBasis2d> sb2(2);
+        vector<SBasis2d> sb2(2);
         for(int dim = 0; dim < 2; dim++) {
             sb2[dim].us = 2;
             sb2[dim].vs = 2;
@@ -65,17 +65,17 @@ class DistortToy: public Toy {
         for(int dim = 0; dim < 2; dim++)
             for(int i = 0; i < sb2[dim].size(); i++)
                 for(int j = 0; j < 4; j++)
-                    sb2[dim][i][j] *= 3;*/
+                    sb2[dim][i][j] *= 3;
 
          //**** FRESH STARTS HERE
-        //Theoretically we could concatenate the md_pw_sb and do it in one go
+        //Theoretically we could concatenate a md_pw_sb and do it in one go
         for(int i = 0; i < p.size(); i++) {
-            md_pw_sb<2> foo = BezOrd(.5) * p[i].toMdSb();
-            foo[1] = foo[1] + (pw_sb)portion(sin(BezOrd(0,3.14), 4), 0, foo[0].cuts.back());
-            /*md_pw_sb<2> out;            
+            md_pw_sb<2> foo = multiply(BezOrd(1/200), p[i].toMdSb());
+            //foo[1] = foo[1] + (pw_sb)portion(sin(BezOrd(0,3.14), 4), 0, foo[0].cuts.back());
+            md_pw_sb<2> out;            
             out[0] = compose(sb2[0], foo);
-            out[1] = compose(sb2[1], foo);*/
-            cairo_md_pw(cr, foo);
+            out[1] = compose(sb2[1], foo);
+            cairo_md_pw(cr, out);
         }
         //**** AND ENDS HERE
 

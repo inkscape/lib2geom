@@ -36,6 +36,7 @@ SBasis elem_portion(const pw_sb &a, int i, double from, double to) {
  * //ac.cuts should be equivalent to bc.cuts
  */
 pw_sb partition(const pw_sb &pw, vector<double> const &c) {
+    assert(pw.cheap_invariants());
     if(c.size() == 0) return pw_sb(pw);
 
     pw_sb ret = pw_sb();
@@ -67,11 +68,11 @@ pw_sb partition(const pw_sb &pw, vector<double> const &c) {
     //Loop which handles cuts within the pw_sb domain
     //Should have the cuts = segs + 1 invariant
     while(si < pw.size() && ci <= c.size()) {
-        if(ci == c.size() && prev <= pw.cuts[si]) { //cuts exhausted, straight copy the rest
+        /*if(ci == c.size() && prev <= pw.cuts[si]) { //cuts exhausted, straight copy the rest
             ret.segs.insert(ret.segs.end(), pw.segs.begin() + si, pw.segs.end());
             ret.cuts.insert(ret.cuts.end(), pw.cuts.begin() + si + 1, pw.cuts.end());
             return ret;
-        }else if(ci == c.size() || c[ci] >= pw.cuts[si + 1]) {  //no more cuts within this segment, finalize
+        }else*/ if(ci == c.size() || c[ci] >= pw.cuts[si + 1]) {  //no more cuts within this segment, finalize
             if(prev > pw.cuts[si]) {      //segment already has cuts, so portion is required
                 ret.segs.push_back(portion(pw[si], pw.segt(prev, si), 1.0));
             } else {                     //plain copy is fine
@@ -91,7 +92,7 @@ pw_sb partition(const pw_sb &pw, vector<double> const &c) {
     }
 
     while(ci < c.size()) { //input cuts extend further than this pw_sb, add sections of zero
-        if(c[ci] != prev) {
+        if(c[ci] > prev) {
             ret.push_back(elem_portion(pw, pw.size() - 1, prev, c[ci]), c[ci]);
             prev = c[ci];
         }

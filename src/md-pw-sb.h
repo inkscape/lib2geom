@@ -41,7 +41,7 @@ public:
             for(int j = 0; j < D; j++) sb[j] = fe[j][i];
             ret.push_back(sb);
         }
-        cuts = fe[0].cuts;
+        cuts.insert(cuts.end(), fe[0].cuts.begin(), fe[0].cuts.end());
         return ret;
     }
 
@@ -290,7 +290,7 @@ cross(md_pw_sb<2> const & a, md_pw_sb<2> const & b) {
 
 inline pw_sb compose(SBasis2d const &a, md_pw_sb<2> const &b) {
     pw_sb ret;
-    vector<MultidimSBasis<2> > foo = b.sections(ret.cuts);
+    vector<MultidimSBasis<2> > foo = b.sections(ret.cuts); //note this! ret.cuts is filled out by sections
     for(int i = 0; i < foo.size(); i++) {
         ret.segs.push_back(compose(a, foo[i]));
     }

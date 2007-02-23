@@ -195,6 +195,7 @@ public:
 };
 
 inline SBasis operator-(const SBasis& p) {
+    if(p.empty()) return SBasis();
     SBasis result;
     result.reserve(p.size());
         
@@ -205,6 +206,7 @@ inline SBasis operator-(const SBasis& p) {
 }
 
 inline SBasis operator-(BezOrd const & bo, const SBasis& p) {
+    if(p.empty()) return bo;
     SBasis result;
     result.reserve(p.size());
         
