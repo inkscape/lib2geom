@@ -44,6 +44,7 @@ pw_sb partition(const pw_sb &t, vector<double> const &c) {
     ret.cuts.reserve(c.size() + t.cuts.size());
     ret.segs.reserve(c.size() + t.cuts.size() - 1);
 
+    //0-length pw_sb is like a 0-length sbasis - equal to 0!
     if(t.size() == 0) {
         for(int i = 0; i < c.size() - 1; i++) {
             ret.cuts.push_back(c[i]);
@@ -64,10 +65,6 @@ pw_sb partition(const pw_sb &t, vector<double> const &c) {
             ret.segs.push_back(elem_portion(t, 0, c[ci], c[ci + 1]));
         }
         ci++;
-    }
-    if(ci == c.size()) {    //exhausted cuts
-        ret.append(t);
-        return ret;
     }
 
     ret.cuts.push_back(t.cuts[0]);
@@ -91,12 +88,19 @@ pw_sb partition(const pw_sb &t, vector<double> const &c) {
             ret.cuts.push_back(c[ci]);
             prev = c[ci];
             ci++;
+        }  
+        if(ci == c.size() && prev <= t.cuts[si]) {
+            ret.segs.insert(ret.segs.end(), t.segs.begin() + si, t.segs.end());
+            ret.cuts.insert(ret.cuts.end(), t.cuts.begin() + si + 1, t.cuts.end());
+            return ret;
         }
     }
+
     while(ci < c.size()) { //input cuts extend further than this pw_sb, add sections of zero
         if(c[ci] != prev) {
             ret.segs.push_back(elem_portion(t, t.size() - 1, prev, c[ci]));
             ret.cuts.push_back(c[ci]);
+            prev = c[ci];
         }
         ci++;
     }
