@@ -16,27 +16,27 @@ static CubicTo _cubicto;
 CubicTo * const cubicto=&_cubicto;
 
 MultidimSBasis<2>
-LineTo::to_sbasis(Geom::Path::Elem const & elm) {
+LineTo::to_sbasis(Geom::OldPath::Elem const & elm) {
     return bezier_to_sbasis<2, 1>(elm.begin());
 }
 
 MultidimSBasis<2>
-QuadTo::to_sbasis(Geom::Path::Elem const & elm) {
+QuadTo::to_sbasis(Geom::OldPath::Elem const & elm) {
     return bezier_to_sbasis<2, 2>(elm.begin());
 }
 
 MultidimSBasis<2>
-CubicTo::to_sbasis(Geom::Path::Elem const & elm) {
+CubicTo::to_sbasis(Geom::OldPath::Elem const & elm) {
     return bezier_to_sbasis<2, 3>(elm.begin());
 }
 
 Point
-LineTo::point_at(Geom::Path::Elem const & elm, double t) {
+LineTo::point_at(Geom::OldPath::Elem const & elm, double t) {
     return Lerp(t, elm[0], elm[1]);
 }
 
 Point
-QuadTo::point_at(Geom::Path::Elem const & elm, double t) {
+QuadTo::point_at(Geom::OldPath::Elem const & elm, double t) {
     Geom::Point mid[2];
     for(int i = 0; i < 2; i++)
         mid[i] = Lerp(t, elm[i], elm[i+1]);
@@ -44,7 +44,7 @@ QuadTo::point_at(Geom::Path::Elem const & elm, double t) {
 }
 
 Point
-CubicTo::point_at(Geom::Path::Elem const & elm, double t) {
+CubicTo::point_at(Geom::OldPath::Elem const & elm, double t) {
     Geom::Point mid[3];
     for(int i = 0; i < 3; i++)
         mid[i] = Lerp(t, elm[i], elm[i+1]);
@@ -54,7 +54,7 @@ CubicTo::point_at(Geom::Path::Elem const & elm, double t) {
     return Lerp(t, midmid[0], midmid[1]);
 }
 
-Maybe<Rect> Path::bbox() const {
+Maybe<Rect> OldPath::bbox() const {
 // needs work for other elements.
     if(handles.size() > 0) {
         Rect r(handles[0], handles[0]);
@@ -73,7 +73,7 @@ Maybe<Rect> Path::bbox() const {
  * note that this operation modifies the path.
  */
 
-void Path::push_back(Elem e) {
+void OldPath::push_back(Elem e) {
     assert(e.begin() != e.end());
     if(!handles.empty() && *e.begin() != handles.back()) {
         handles.push_back(*e.begin());
@@ -83,12 +83,12 @@ void Path::push_back(Elem e) {
 }
 
 
-/*** Path::insert
+/*** OldPath::insert
  * copy elements from [s,e) to before before (as per vector.insert)
  * note that this operation modifies the path.
  * 
  */
-void Path::insert(ConstIter before, ConstIter s, ConstIter e) {
+void OldPath::insert(ConstIter before, ConstIter s, ConstIter e) {
     assert(0);
 /*
     if((*s).begin()[0] != ) {
@@ -100,18 +100,18 @@ void Path::insert(ConstIter before, ConstIter s, ConstIter e) {
 }
 
 
-/*Path Path::insert_node(Location at) {
-    Path p;
+/*OldPath OldPath::insert_node(Location at) {
+    OldPath p;
     
     p.insert(p.end(), begin(), at.it); // begining of path
     }*/
 
-Geom::Point Geom::Path::Elem::point_at(double t) const {
+Geom::Point Geom::OldPath::Elem::point_at(double t) const {
     return (*op).point_at(*this, t);
 }
 
 void
-Geom::Path::Elem::point_tangent_acc_at(double t, 
+Geom::OldPath::Elem::point_tangent_acc_at(double t, 
                                            Geom::Point &pos, 
                                            Geom::Point &tgt,
                                            Geom::Point &acc) const {
@@ -125,7 +125,7 @@ Geom::Path::Elem::point_tangent_acc_at(double t,
 }
 
 
-Point Path::point_at(Location at) const {
+Point OldPath::point_at(Location at) const {
     ptrdiff_t offset = at.it - begin();
     
     assert(offset >= 0);
@@ -133,7 +133,7 @@ Point Path::point_at(Location at) const {
     return (*at.it).point_at(at.t);
 }
 
-void Path::point_tangent_acc_at(Location at, Point &pos, Point & tgt, Point &acc) const {
+void OldPath::point_tangent_acc_at(Location at, Point &pos, Point & tgt, Point &acc) const {
     ptrdiff_t offset = at.it - begin();
     
     assert(offset >= 0);
@@ -143,7 +143,7 @@ void Path::point_tangent_acc_at(Location at, Point &pos, Point & tgt, Point &acc
 
 #include "nearestpoint.cpp"
 
-bool Path::Elem::nearest_location(Point p, double& dist, double& tt) const {
+bool OldPath::Elem::nearest_location(Point p, double& dist, double& tt) const {
     double new_dist, new_t;
     if(dynamic_cast<Geom::LineTo *>(op)) {
         new_dist = L2(p - s[1]);
@@ -170,7 +170,7 @@ bool Path::Elem::nearest_location(Point p, double& dist, double& tt) const {
     return false;
 }
 
-Path::Location Path::nearest_location(Point p, double &dist) const {
+OldPath::Location OldPath::nearest_location(Point p, double &dist) const {
     Location pl(begin(), 0);
     dist = INFINITY;
     double t = 0;
@@ -187,8 +187,8 @@ Path::Location Path::nearest_location(Point p, double &dist) const {
     return pl;
 }
 
-Path Path::subpath(ConstIter begin, ConstIter end) {
-    Path result;
+OldPath OldPath::subpath(ConstIter begin, ConstIter end) {
+    OldPath result;
     for(ConstIter iter(begin); iter != end; ++iter) {
         result.push_back(*iter);
     }
@@ -197,7 +197,7 @@ Path Path::subpath(ConstIter begin, ConstIter end) {
 
 
 // Perhaps this hash is not strong enough
-Path::operator HashCookie() {
+OldPath::operator HashCookie() {
     HashCookie hc;
     hc.value = (unsigned long)(&(*cmd.begin()));
     hc.value *= 0x101;
@@ -210,14 +210,14 @@ Path::operator HashCookie() {
 }
 
 unsigned 
-Path::total_segments() const {
+OldPath::total_segments() const {
     return cmd.size();
 }
 
 unsigned
-PathSet::total_segments() const {
+OldPathSet::total_segments() const {
     unsigned segs = 0;
-    for(PathSet::const_iterator it = begin(); it != end(); it++) {
+    for(OldPathSet::const_iterator it = begin(); it != end(); it++) {
         segs += (*it).total_segments();
     }
     return segs;

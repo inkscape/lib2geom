@@ -1,6 +1,7 @@
 #ifndef _SBASIS_GEOMETRIC
 #define _SBASIS_GEOMETRIC
 #include "multidim-sbasis.h"
+#include "pw-sb.h"
 #include <vector>
 #include "pw-sb.h"
 

@@ -5,13 +5,13 @@
 
 namespace Geom {
 
-class PathSetBuilder {
+class OldPathSetBuilder {
 public:
-    PathSetBuilder() : _current_subpath(NULL) {}
+    OldPathSetBuilder() : _current_subpath(NULL) {}
 
     void start_subpath_rel(Point const &p0) { start_subpath(p0 + _current_point); }
     void start_subpath(Point const &p0) {
-        _path._subpaths.push_back(Path());
+        _path._subpaths.push_back(OldPath());
         _current_subpath = &_path._subpaths.back();
         _current_subpath->closed = false;
         _current_subpath->handles.push_back(p0);
@@ -96,11 +96,11 @@ public:
         }
     }
 
-    PathSet const &peek() const { return _path; }
+    OldPathSet const &peek() const { return _path; }
 
 private:
-    PathSet _path;
-    Path *_current_subpath;
+    OldPathSet _path;
+    OldPath *_current_subpath;
     Point _current_point;
     Point _initial_point;
 };

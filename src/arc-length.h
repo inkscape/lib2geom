@@ -28,7 +28,7 @@
  *
  */
 
-#include "path.h"
+#include "path2.h"
 
 /*** Routines in this group return a path that looks the same, but
  * include extra knots for certain points of interest. */
@@ -37,12 +37,12 @@
  * extreme points . dir.
  */
 
-double arc_length_subdividing(Geom::Path const & p, double tol);
-double arc_length_integrating(Geom::Path const & p, double tol);
-double arc_length_integrating(Geom::Path const & p, Geom::Path::Location const & pl, double tol);
+double arc_length_subdividing(Geom::Path2::Path const & p, double tol);
+double arc_length_integrating(Geom::Path2::Path const & p, double tol);
+double arc_length_integrating(Geom::Path2::Path const & p, Geom::Path2::Path::Location const & pl, double tol);
 
 
-Geom::Path::Location natural_parameterisation(Geom::Path const & p, double s, double tol);
+Geom::Path2::Path::Location natural_parameterisation(Geom::Path2::Path const & p, double s, double tol);
 
 /*
   Local Variables:
