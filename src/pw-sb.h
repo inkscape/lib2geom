@@ -11,7 +11,7 @@ namespace Geom {
 class pw_sb {
   public:
     vector<double> cuts;
-    vector<SBasis> segs; 
+    vector<SBasis> segs;
     //segs[i] stretches from cuts[i] to cuts[i+1].
 
     pw_sb() {}
@@ -30,8 +30,37 @@ class pw_sb {
     }
     inline unsigned size() const { return segs.size(); }
 
-    inline int segn(double t) const {
-        int low = 0, high = size();
+    inline void push_back(double from, SBasis seg) {
+        if(cuts.size() == 0) {
+            cuts.push_back(from);
+        } else if(size() < cuts.size() - 1) {  //already have proper number of cuts
+            //FIXME: should we assert this? insert zero/continue (>) or move cut back (<)
+            assert(from == cuts.back());
+        }
+        segs.push_back(seg);
+    }
+
+    inline void push_back(SBasis seg, double to) {
+        assert(cuts.size() != 0);
+        assert(to > cuts.back());
+        segs.push_back(seg);
+        cuts.push_back(to);
+    }
+
+    inline void push_back(double from, SBasis seg, double to) {
+        if(cuts.size() == 0) {
+            cuts.push_back(from);
+        } else if(size() < cuts.size() - 1) {  //already have proper number of cuts
+            //FIXME: should we not assert this?
+            assert(from == cuts.back());
+        }
+        assert(to > cuts.back());
+        segs.push_back(seg);
+        cuts.push_back(to);
+    }
+
+    inline int segn(double t, int low = 0) const {
+        int high = size();
         if(t < cuts[0]) return 0;
         if(t > cuts[size()]) return size() - 1;
         while(low < high) {

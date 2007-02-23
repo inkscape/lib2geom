@@ -26,7 +26,7 @@ SBasis elem_portion(const pw_sb &a, int i, double from, double to) {
     return portion( a[i], (from - a.cuts[i]) * rwidth, (to - a.cuts[i]) * rwidth );
 }
 
-/**pw_sb partition(const pw_sb &t, vector<double> const &c);
+/**pw_sb partition(const pw_sb &pw, vector<double> const &c);
  * Further subdivides the pw_sb such that there is a cut at every value in c.
  * Precondition: c sorted lower to higher.
  * 
@@ -35,20 +35,19 @@ SBasis elem_portion(const pw_sb &a, int i, double from, double to) {
  * pw_sb bc = b.partition(a.cuts);
  * //ac.cuts should be equivalent to bc.cuts
  */
-pw_sb partition(const pw_sb &t, vector<double> const &c) {
-    if(c.size() == 0) return pw_sb(t);
+pw_sb partition(const pw_sb &pw, vector<double> const &c) {
+    if(c.size() == 0) return pw_sb(pw);
 
     pw_sb ret = pw_sb();
 
     //just a bit of optimizing reservation
-    ret.cuts.reserve(c.size() + t.cuts.size());
-    ret.segs.reserve(c.size() + t.cuts.size() - 1);
+    ret.cuts.reserve(c.size() + pw.cuts.size());
+    ret.segs.reserve(c.size() + pw.cuts.size() - 1);
 
     //0-length pw_sb is like a 0-length sbasis - equal to 0!
-    if(t.size() == 0) {
+    if(pw.size() == 0) {
         for(int i = 0; i < c.size() - 1; i++) {
-            ret.cuts.push_back(c[i]);
-            ret.segs.push_back(SBasis());
+            ret.push_back(c[i], SBasis());
         }
         ret.cuts.push_back(c.back());
         return ret;
@@ -57,39 +56,35 @@ pw_sb partition(const pw_sb &t, vector<double> const &c) {
     int si = 0, ci = 0;     //Segment index, Cut index
 
     //if the cuts have something earlier than the pw_sb, add portions of the first segment
-    while(c[ci] < t.cuts.front() && ci < c.size()) {
-        ret.cuts.push_back(c[ci]);
-        if(ci == c.size()-1 || c[ci + 1] >= t.cuts.front()) {
-            ret.segs.push_back(elem_portion(t, 0, c[ci], t.cuts.front()));
-        } else {
-            ret.segs.push_back(elem_portion(t, 0, c[ci], c[ci + 1]));
-        }
+    while(c[ci] < pw.cuts.front() && ci < c.size()) {
+        bool isLast = (ci == c.size()-1 || c[ci + 1] >= pw.cuts.front());
+        ret.push_back(c[ci], elem_portion(pw, 0, c[ci], isLast ? pw.cuts.front() : c[ci + 1]));
         ci++;
     }
 
-    ret.cuts.push_back(t.cuts[0]);
-    double prev = t.cuts[0];    //previous cut
-    //Should have the cuts = segs + 1 invariant before/after every pass
-    while(si < t.size() && ci <= c.size()) {
-        if(ci == c.size() && prev <= t.cuts[si]) { //cuts exhausted, straight copy the rest
-            ret.segs.insert(ret.segs.end(), t.segs.begin() + si, t.segs.end());
-            ret.cuts.insert(ret.cuts.end(), t.cuts.begin() + si + 1, t.cuts.end());
+    ret.cuts.push_back(pw.cuts[0]);
+    double prev = pw.cuts[0];    //previous cut
+    //Loop which handles cuts within the pw_sb domain
+    //Should have the cuts = segs + 1 invariant
+    while(si < pw.size() && ci <= c.size()) {
+        if(ci == c.size() && prev <= pw.cuts[si]) { //cuts exhausted, straight copy the rest
+            ret.segs.insert(ret.segs.end(), pw.segs.begin() + si, pw.segs.end());
+            ret.cuts.insert(ret.cuts.end(), pw.cuts.begin() + si + 1, pw.cuts.end());
             return ret;
-        }else if(ci == c.size() || c[ci] >= t.cuts[si + 1]) {  //no more cuts within this segment, finalize
-            if(prev > t.cuts[si]) {      //segment already has cuts, so portion is required
-                ret.segs.push_back(portion(t[si], t.segt(prev, si), 1.0));
+        }else if(ci == c.size() || c[ci] >= pw.cuts[si + 1]) {  //no more cuts within this segment, finalize
+            if(prev > pw.cuts[si]) {      //segment already has cuts, so portion is required
+                ret.segs.push_back(portion(pw[si], pw.segt(prev, si), 1.0));
             } else {                     //plain copy is fine
-                ret.segs.push_back(t[si]);
+                ret.segs.push_back(pw[si]);
             }
-            ret.cuts.push_back(t.cuts[si + 1]);
-            prev = t.cuts[si + 1];
+            ret.cuts.push_back(pw.cuts[si + 1]);
+            prev = pw.cuts[si + 1];
             si++;
-        } else if(c[ci] == t.cuts[si]){                  //coincident
+        } else if(c[ci] == pw.cuts[si]){                  //coincident
             //Already finalized the seg with the code immediately above
             ci++;
         } else {                                         //plain old subdivision
-	    ret.segs.push_back(elem_portion(t, si, prev, c[ci]));
-            ret.cuts.push_back(c[ci]);
+            ret.push_back(elem_portion(pw, si, prev, c[ci]), c[ci]);
             prev = c[ci];
             ci++;
         }
@@ -97,8 +92,7 @@ pw_sb partition(const pw_sb &t, vector<double> const &c) {
 
     while(ci < c.size()) { //input cuts extend further than this pw_sb, add sections of zero
         if(c[ci] != prev) {
-            ret.segs.push_back(elem_portion(t, t.size() - 1, prev, c[ci]));
-            ret.cuts.push_back(c[ci]);
+            ret.push_back(elem_portion(pw, pw.size() - 1, prev, c[ci]), c[ci]);
             prev = c[ci];
         }
         ci++;
@@ -106,47 +100,37 @@ pw_sb partition(const pw_sb &t, vector<double> const &c) {
     return ret;
 }
 
-/**pw_sb portion(const pw_sb &a, double from, double to);
+/**pw_sb portion(const pw_sb &pw, double from, double to);
  * Returns a pw_sb with a defined domain of [min(from, to), max(from, to)].
  */
-pw_sb portion(const pw_sb &a, double from, double to) {
+pw_sb portion(const pw_sb &pw, double from, double to) {
     pw_sb ret;
 
     double temp = from;
     from = min(from, to);
     to = max(temp, to);
     
-    int i = a.segn(from);
+    int i = pw.segn(from);
     ret.cuts.push_back(from);
-    if(to < a.cuts[i + 1]) {    //The 
-        ret.segs.push_back(elem_portion(a, i, from, to));
-        ret.cuts.push_back(to);
+    if(to < pw.cuts[i + 1]) {    //to/from inhabit the same segment
+        ret.push_back(from, elem_portion(pw, i, from, to), to);
         return ret;
     }
-    ret.segs.push_back(portion(a[i], a.segt(from, i), 1.0));
-    ret.cuts.push_back(a.cuts[i + 1]);
+    ret.push_back(from, portion( pw[i], pw.segt(from, i), 1.0 ), pw.cuts[i + 1]);
     i++;
-    while(i < a.size()) {
-        if(a.cuts[i + 1] > to) break;
-        ret.segs.push_back(a[i]);
-        ret.cuts.push_back(a.cuts[i + 1]);
-        i++;
-    }
-    if(i == a.size())
-        //TODO: slight inefficiency of creating two for the last seg
-        ret.segs.push_back(portion(a[i - 1], 1.0, a.segt(to, i - 1)));
-    else
-        ret.segs.push_back(portion(a[i], 0.0, a.segt(to, i)));
-    ret.cuts.push_back(to);
+    int fi = pw.segn(to, i);
 
+    ret.segs.insert(ret.segs.end(), pw.segs.begin() + i, pw.segs.begin() + fi - 1);  //copy cuts
+    ret.cuts.insert(ret.cuts.end(), pw.cuts.begin() + i + 1, pw.cuts.begin() + fi);  //and their ends
+    ret.push_back( portion(pw[fi], 0.0, pw.segt(to, fi)), to);
     return ret;
 }
 
-vector<double> roots(const pw_sb &a) {
+vector<double> roots(const pw_sb &pw) {
     vector<double> ret;
-    for(int i = 0; i < a.size(); i++) {
-        vector<double> sr = roots(a[i]);
-        for (int j = 0; j < sr.size(); j++) sr[j] = sr[j] * (a.cuts[i + 1] - a.cuts[i]) + a.cuts[i];
+    for(int i = 0; i < pw.size(); i++) {
+        vector<double> sr = roots(pw[i]);
+        for (int j = 0; j < sr.size(); j++) sr[j] = sr[j] * (pw.cuts[i + 1] - pw.cuts[i]) + pw.cuts[i];
         ret.insert(ret.end(), sr.begin(), sr.end());
     }
     return ret;
@@ -156,50 +140,55 @@ vector<double> roots(const pw_sb &a) {
 
 pw_sb operator-(pw_sb const &a) {
     pw_sb ret = pw_sb();
-    for(int i = 0; i < a.size();i++) {
-        ret.segs.push_back( - a[i] );
-        ret.cuts.push_back( a.cuts[i] );
-    }
+    for(int i = 0; i < a.size();i++)
+        ret.push_back(a.cuts[i], - a[i]);
+    ret.cuts.push_back(a.cuts.back());
     return ret;
 }
 
 pw_sb operator-(BezOrd const &b, const pw_sb&a) {
+    //TODO: handle 0 length
     pw_sb ret = pw_sb();
-    for(int i = 0; i < a.size();i++) {
-        ret.segs.push_back( b - a[i] );
-        ret.cuts.push_back( a.cuts[i] );
-    }
+    for(int i = 0; i < a.size();i++)
+        ret.push_back( a.cuts[i], b - a[i] );
+    ret.cuts.push_back(a.cuts.back());
     return ret;
 }
 
 pw_sb multiply(BezOrd const &b, const pw_sb&a) {
+    //TODO: handle 0 length
     pw_sb ret = pw_sb();
-    for(int i = 0; i < a.size();i++) {
-        ret.segs.push_back( b * a[i] );
-        ret.cuts.push_back( a.cuts[i] );
-    }
+    for(int i = 0; i < a.size();i++)
+        ret.push_back( a.cuts[i], b * a[i] );
+    ret.cuts.push_back( a.cuts.back() );
     return ret;
 }
 
 pw_sb operator+=(pw_sb& a, const BezOrd& b) {
+    //TODO: handle 0 length
     for(int i = 0; i < a.size();i++) {
         a[i] += b;
     }
     return a;
 }
 pw_sb operator+=(pw_sb& a, double b) {
+    if(a.size() == 0) a.push_back(0., BezOrd(b), 1.);
+
     for(int i = 0; i < a.size();i++) {
         a[i] += b;
     }
     return a;
 }
 pw_sb operator-=(pw_sb& a, const BezOrd& b) {
+    //TODO: handle 0 length
     for(int i = 0; i < a.size();i++) {
         a[i] += b;
     }
     return a;
 }
 pw_sb operator-=(pw_sb& a, double b) {
+    if(a.size() == 0) a.push_back(0., BezOrd(-b), 1.);
+
     for(int i = 0;i < a.size();i++) {
         a[i] -= b;
     }
@@ -242,16 +231,12 @@ pw_sb compose(pw_sb const &f, SBasis  const &g){
   pw_sb result;
   
   //first check bounds...
-  double M,m;
-  bounds(g,m,M);
+  double M, m;
+  bounds(g, m, M);
   if (M < f.cuts.front() || m > f.cuts.back()){
-    int idx = (M < f.cuts.front()) ? 0 : f.cuts.size()-2;
-    double t0 = f.cuts[idx], width = f.cuts[idx+1]-t0;
-    SBasis rescaled_g=compose(BezOrd(-t0/width,(1-t0)/width),g);
-    result.cuts.push_back(0.);
-    result.cuts.push_back(1.);
-    result.segs.push_back(f.segs[idx](rescaled_g));
-    return(result);
+    int idx = (M < f.cuts.front()) ? 0 : f.cuts.size() - 2;
+    double t0 = f.cuts[idx], width = f.cuts[idx+1] - t0;
+    return (pw_sb) compose(BezOrd(-t0 / width, (1-t0) / width), g);
   }
 
   //-- collect all t / g(t)=f.cuts[idx] for some idx.
@@ -325,35 +310,6 @@ pw_sb compose(pw_sb const &f, pw_sb const &g){
     result.append(fgi);
   }
 }
-
-/*
-class pw_sb {
-    vector<pw_piece> pieces;
-
-    const_iterator first() {pieces.begin();}
-    const_iterator last()  {pieces.end();}
-
-    pw_sb() : pieces() {}
-};
-
-class pw_piece {
-    double start, end;
-    SBasis seg;
-
-    pw_piece(SBasis s, double st)            : seg(s), start(st) { end = t + 1; }
-    pw_piece(SBasis s, double st, double en) : seg(s), start(st), end(en) {}
-}
-*/
-
-    /*splitSeg(int i, double t) {
-        SBasis a, b;
-        segs[i].split((t-cuts[i]) / (cuts[i+1]-cuts[i]), a, b);
-        vector<SBasis>::iterator it = segs.begin() + i
-        segs.remove(it);
-        segs.insert(it, a);
-        segs.insert(it+1, b);
-        cuts.insert(cuts.begin() + i + 1, c[ci]);
-    }*/
 
 }
 /*
