@@ -93,17 +93,22 @@ static void my_roots_internal(SBasis const &f,
 
   double m,M;
   local_bounds(df,a,b,m,M);
-  if (m>=0&&(fa> tol||fb<-tol)) return;
-  if (M<=0&&(fa<-tol||fb>tol)) return;
+  //if (m>=0&&(fa> tol||fb<-tol)) return;
+  //if (M<=0&&(fa<-tol||fb>tol)) return;
   
   double t0,t1,t,ft;
   t0=(fa<0)?a-fa/M:a-fa/m;
   t1=(fb>0)?b-fb/M:b-fb/m;
-  if (t0>t1) return;
-  t=(t0+t1)/2;
-  ft=f(t);
-  my_roots_internal(f,df,roots,tol,t0,f(t0),t ,ft   );
-  my_roots_internal(f,df,roots,tol,t ,ft   ,t1,f(t1));
+  if (t0<a||b<t1||t0>t1) return;
+      //!! do not collect roots twice!
+  if (t1-t0<tol){
+    my_roots_internal(f,df,roots,tol,t0,f(t0),t1,f(t1));
+  }else{
+    t=(t0+t1)/2;
+    ft=f(t);
+    my_roots_internal(f,df,roots,tol,t0,f(t0),t ,ft   );
+    my_roots_internal(f,df,roots,tol,t ,ft   ,t1,f(t1));
+  }
 }
 
 static void new_roots(SBasis const &f,
@@ -164,7 +169,7 @@ class BoundsTester: public Toy {
     for(int i=0;i<my_roots.size();i++){
       draw_cross(cr,Point(150+300*my_roots[i],300));
     }
-    //cout<<"nb roots: "<<my_roots.size()<<endl;
+    cout<<"nb roots: "<<my_roots.size()<<endl;
     
     clock_t end_t;
     unsigned iterations = 0;
