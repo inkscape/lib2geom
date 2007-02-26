@@ -19,7 +19,6 @@ sb2d
 pair-intersect
 precise-flat
 pw-toy
-pw-compose-test
 #toy-cairo
 gear
 cheb
@@ -30,6 +29,8 @@ draw-toy
 normal-bundle
 offset-test
 curvature-test
+bounds-test
+pw-compose-test
 "${NEEDS_GSL}"
 )
 
