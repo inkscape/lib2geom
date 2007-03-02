@@ -34,7 +34,7 @@
 #include "transforms.h"
 #include "s-basis.h"
 #include "geom.h"
-//# include "multidim-sbasis.h"
+#include "multidim-sbasis.h"
 
 #include <boost/python.hpp>
 #include <boost/python/implicit.hpp>
@@ -103,6 +103,15 @@ str bezord_repr(Geom::BezOrd const& b)
     return str("<" + str(b[0]) + ", " + str(b[1]) + ">");
 }
 
+Geom::Coord (*L2_point)(Geom::Point const &) = &Geom::L2;
+Geom::Point (*rot90_point)(Geom::Point const &) = &Geom::rot90;
+Geom::Coord (*dot_point)(Geom::Point const &, Geom::Point const &) = &Geom::dot;
+Geom::Coord (*cross_point)(Geom::Point const &, Geom::Point const &) = &Geom::cross;
+Geom::SBasis (*truncate_sbasis)(Geom::SBasis const &, unsigned) = &Geom::truncate;
+Geom::SBasis (*multiply_sbasis)(Geom::SBasis const &, Geom::SBasis const &) = &Geom::multiply;
+Geom::SBasis (*integral_sbasis)(Geom::SBasis const &) = &Geom::integral;
+Geom::SBasis (*derivative_sbasis)(Geom::SBasis const &) = &Geom::derivative;
+
 BOOST_PYTHON_MODULE(_py2geom)
 {
     def("point_to_tuple", point_to_tuple);
@@ -117,7 +126,7 @@ BOOST_PYTHON_MODULE(_py2geom)
 
     //point-fns.h
     def("L1", Geom::L1);
-    def("L2", Geom::L2);
+    def("L2", L2_point);
     def("L2sq", Geom::L2sq);
     def("LInfty", Geom::LInfty);
     def("is_zero", Geom::is_zero);
@@ -125,13 +134,13 @@ BOOST_PYTHON_MODULE(_py2geom)
     def("atan2", Geom::atan2);
     def("angle_between", Geom::angle_between);
     def("point_equalp", Geom::point_equalp);
-    def("rot90", Geom::rot90);
+    def("rot90", rot90_point);
     def("Lerp", Geom::Lerp);
     def("unit_vector", Geom::unit_vector);
-    def("dot", Geom::dot);
+    def("dot", dot_point);
     def("distance", Geom::distance);
     def("dist_sq", Geom::dist_sq);
-    def("cross", Geom::cross);
+    def("cross", cross_point);
     def("abs", (Geom::Point (*)(Geom::Point const&))&Geom::abs);
     def("segment_intersect", segment_intersect);
     def("circle_circle_intersection", Geom::circle_circle_intersection);
@@ -254,11 +263,11 @@ BOOST_PYTHON_MODULE(_py2geom)
     ;
     
     def("shift", (Geom::SBasis (*)(Geom::SBasis const &a, int sh))&Geom::shift);
-    def("truncate", &Geom::truncate);
-    def("multiply", &Geom::multiply);
+    def("truncate", truncate_sbasis);
+    def("multiply", multiply_sbasis);
     def("compose", (Geom::SBasis (*) (Geom::SBasis const &, Geom::SBasis const &))&Geom::compose);
-    def("integral", &Geom::integral);
-    def("derivative", &Geom::derivative);
+    def("integral", integral_sbasis);
+    def("derivative", derivative_sbasis);
     def("sqrt", &Geom::sqrt);
     def("reciprocal", &Geom::reciprocal);
     def("divide", &Geom::divide);
@@ -295,7 +304,6 @@ BOOST_PYTHON_MODULE(_py2geom)
     ;
 
 /*
-// why doesn't this work?
     class_<Geom::MultidimSBasis<2>>("MultidimSBasis2")
         .def("size", &Geom::MultidimSBasis<2>::size)
         .def("tail_error", &Geom::MultidimSBasis<2>::tail_error)
