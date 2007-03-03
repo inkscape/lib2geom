@@ -2,6 +2,7 @@ SET(2GEOM_BOOST_PYTHON_SRC
 point.cpp
 transforms.cpp
 sbasis.cpp
+multidimsbasis.cpp
 py2geom.cpp
 )
 
