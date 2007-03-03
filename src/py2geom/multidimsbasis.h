@@ -1,8 +1,5 @@
 /*
- * Python bindings for lib2geom
- *
  * Copyright 2006, 2007 Aaron Spike <aaron@ekips.org>
- * Copyright 2007 Alex Mac <ajm@cs.nott.ac.uk>
  *
  * This library is free software; you can redistribute it and/or
  * modify it either under the terms of the GNU Lesser General Public
@@ -29,48 +26,19 @@
  *
  */
 
-#include "circle-circle.cpp"
-#include "geom.cpp"
+#ifndef SEEN_PY2GEOM_MULTIDIMSBASIS_H
+#define SEEN_PY2GEOM_MULTIDIMSBASIS_H
 
+void wrap_multidimsbasis();
 
-#include "helpers.h"
-#include "point.h"
-#include "transforms.h"
-#include "sbasis.h"
-#include "multidimsbasis.h"
-
-#include <boost/python.hpp>
-#include <boost/python/implicit.hpp>
-#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
-using namespace boost::python;
-
-BOOST_PYTHON_MODULE(_py2geom)
-{
-    
-    enum_<IntersectorKind>("IntersectorKind")
-        .value("intersects", intersects)
-        .value("parallel", parallel)
-        .value("coincident", coincident)
-        .value("no_intersection", no_intersection)
-    ;
-    def("segment_intersect", segment_intersect);
-    def("circle_circle_intersection", Geom::circle_circle_intersection);
-    
-    wrap_point();
-    wrap_transforms();
-    wrap_sbasis();
-    wrap_multidimsbasis();
-    
-}
-
+#endif
 /*
   Local Variables:
   mode:c++
   c-file-style:"stroustrup"
-  c-file-offsets:((innamespace . 0)(substatement-open . 0))
+  c-file-offsets:((innamespace . 0)(inline-open . 0)(case-label . +))
   indent-tabs-mode:nil
-  c-brace-offset:0
   fill-column:99
   End:
-  vim: filetype=cpp:expandtab:shiftwidth=4:tabstop=8:softtabstop=4 :
 */
+// vim: filetype=cpp:expandtab:shiftwidth=4:tabstop=8:softtabstop=4:encoding=utf-8:textwidth=99 :
