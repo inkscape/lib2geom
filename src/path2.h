@@ -270,30 +270,29 @@ public:
   typedef Sequence::difference_type difference_type;
 
   Path()
-  : closed_(false)
+  : closed_(false), final_(new LineSegment())
   {
-    curves_.push_back(&final_);
+    curves_.push_back(final_);
   }
 
   Path(Path const &other)
-  : closed_(other.closed_)
+  : closed_(other.closed_), final_(new LineSegment())
   {
-    curves_.push_back(&final_);
+    curves_.push_back(final_);
     insert(begin(), other.begin(), other.end());
   }
 
   explicit Path(Point p)
-  : closed_(false)
+  : closed_(false), final_(new LineSegment(p, p))
   {
-    curves_.push_back(&final_);
-    final_[0] = final_[1] = p;
+    curves_.push_back(final_);
   }
 
   template <typename Impl>
   Path(BaseIterator<Impl> first, BaseIterator<Impl> last, bool closed=false)
-  : closed_(closed)
+  : closed_(closed), final_(new LineSegment())
   {
-    curves_.push_back(&final_);
+    curves_.push_back(final_);
     insert(begin(), first, last);
   }
 
@@ -432,11 +431,11 @@ public:
 
   void start(Point p) {
     clear();
-    final_[0] = final_[1] = p;
+    (*final_)[0] = (*final_)[1] = p;
   }
 
-  Point initialPoint() const { return final_[1]; }
-  Point finalPoint() const { return final_[0]; }
+  Point initialPoint() const { return (*final_)[1]; }
+  Point finalPoint() const { return (*final_)[0]; }
 
   void append(Curve const &curve);
 
@@ -444,56 +443,56 @@ public:
 
   template <typename CurveType, typename A>
   void appendNew(A a) {
-    do_append(new CurveType(final_[0], a));
+    do_append(new CurveType((*final_)[0], a));
   }
 
   template <typename CurveType, typename A, typename B>
   void appendNew(A a, B b) {
-    do_append(new CurveType(final_[0], a, b));
+    do_append(new CurveType((*final_)[0], a, b));
   }
 
   template <typename CurveType, typename A, typename B, typename C>
   void appendNew(A a, B b, C c) {
-    do_append(new CurveType(final_[0], a, b, c));
+    do_append(new CurveType((*final_)[0], a, b, c));
   }
 
   template <typename CurveType, typename A, typename B, typename C,
                                 typename D>
   void appendNew(A a, B b, C c, D d) {
-    do_append(new CurveType(final_[0], a, b, c, d));
+    do_append(new CurveType((*final_)[0], a, b, c, d));
   }
 
   template <typename CurveType, typename A, typename B, typename C,
                                 typename D, typename E>
   void appendNew(A a, B b, C c, D d, E e) {
-    do_append(new CurveType(final_[0], a, b, c, d, e));
+    do_append(new CurveType((*final_)[0], a, b, c, d, e));
   }
 
   template <typename CurveType, typename A, typename B, typename C,
                                 typename D, typename E, typename F>
   void appendNew(A a, B b, C c, D d, E e, F f) {
-    do_append(new CurveType(final_[0], a, b, c, d, e, f));
+    do_append(new CurveType((*final_)[0], a, b, c, d, e, f));
   }
 
   template <typename CurveType, typename A, typename B, typename C,
                                 typename D, typename E, typename F,
                                 typename G>
   void appendNew(A a, B b, C c, D d, E e, F f, G g) {
-    do_append(new CurveType(final_[0], a, b, c, d, e, f, g));
+    do_append(new CurveType((*final_)[0], a, b, c, d, e, f, g));
   }
 
   template <typename CurveType, typename A, typename B, typename C,
                                 typename D, typename E, typename F,
                                 typename G, typename H>
   void appendNew(A a, B b, C c, D d, E e, F f, G g, H h) {
-    do_append(new CurveType(final_[0], a, b, c, d, e, f, g, h));
+    do_append(new CurveType((*final_)[0], a, b, c, d, e, f, g, h));
   }
 
   template <typename CurveType, typename A, typename B, typename C,
                                 typename D, typename E, typename F,
                                 typename G, typename H, typename I>
   void appendNew(A a, B b, C c, D d, E e, F f, G g, H h, I i) {
-    do_append(new CurveType(final_[0], a, b, c, d, e, f, g, h, i));
+    do_append(new CurveType((*final_)[0], a, b, c, d, e, f, g, h, i));
   }
 
 private:
@@ -512,7 +511,7 @@ private:
                         Sequence::iterator last);
 
   Sequence curves_;
-  LineSegment final_;
+  LineSegment *final_;
   bool closed_;
 };
 

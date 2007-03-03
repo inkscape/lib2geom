@@ -54,14 +54,15 @@ BezierHelpers::subdivideArr(Coord t,              // Parameter value
 
 Path::~Path() {
   delete_range(curves_.begin(), curves_.end()-1);
+  delete final_;
 }
 
 void Path::swap(Path &other) {
   std::swap(curves_, other.curves_);
   std::swap(closed_, other.closed_);
-  std::swap(final_, other.final_);
-  curves_[curves_.size()-1] = &final_;
-  other.curves_[other.curves_.size()-1] = &other.final_;
+  std::swap(*final_, *other.final_);
+  curves_[curves_.size()-1] = final_;
+  other.curves_[other.curves_.size()-1] = other.final_;
 }
 
 Rect Path::boundsFast() const {
@@ -83,16 +84,16 @@ Rect Path::boundsExact() const {
 }
 
 void Path::append(Curve const &curve) {
-  if ( curves_.front() != &final_ && curve.initialPoint() != final_[0] ) {
+  if ( curves_.front() != final_ && curve.initialPoint() != (*final_)[0] ) {
     throw ContinuityError();
   }
   do_append(curve.duplicate());
 }
 
 void Path::append(MultidimSBasis<2> const &curve) {
-  if ( curves_.front() != &final_ ) {
+  if ( curves_.front() != final_ ) {
     for ( int i = 0 ; i < 2 ; ++i ) {
-      if ( curve[i][0][0] != final_[0][i] ) {
+      if ( curve[i][0][0] != (*final_)[0][i] ) {
         throw ContinuityError();
       }
     }
@@ -118,18 +119,18 @@ void Path::do_update(Sequence::iterator first_replaced,
     curves_.insert(first_replaced, first, last);
   }
 
-  if ( curves_.front() != &final_ ) {
-    final_[0] = back().finalPoint();
-    final_[1] = front().initialPoint();
+  if ( curves_.front() != final_ ) {
+    (*final_)[0] = back().finalPoint();
+    (*final_)[1] = front().initialPoint();
   }
 }
 
 void Path::do_append(Curve *curve) {
-  if ( curves_.front() == &final_ ) {
-    final_[1] = curve->initialPoint();
+  if ( curves_.front() == final_ ) {
+    (*final_)[1] = curve->initialPoint();
   }
   curves_.insert(curves_.end()-1, curve);
-  final_[0] = curve->finalPoint();
+  (*final_)[0] = curve->finalPoint();
 }
 
 void Path::delete_range(Sequence::iterator first, Sequence::iterator last) {
