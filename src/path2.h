@@ -29,7 +29,7 @@ public:
   virtual Rect boundsFast() const = 0;
   virtual Rect boundsExact() const = 0;
 
-  virtual Path &subdivide(Coord t, Path &out) const {
+  virtual Path const &subdivide(Coord t, Path &out) const {
     //TODO: require
     return out;
   }
@@ -95,7 +95,7 @@ public:
   Rect boundsFast() const { return bounds(bezier_degree, c_); }
   Rect boundsExact() const { return bounds(bezier_degree, c_); }
 
-  Path &subdivide(Coord t, Path &out) const;
+  Path const &subdivide(Coord t, Path &out) const;
   
   Point pointAndDerivativesAt(Coord t, unsigned n_derivs, Point *derivs)
   const
@@ -142,7 +142,7 @@ public:
   Rect boundsFast() const;
   Rect boundsExact() const;
 
-  Path &subdivide(Coord t, Path &out) const;
+  Path const &subdivide(Coord t, Path &out) const;
   
   Point pointAndDerivativesAt(Coord t, unsigned n_derivs, Point *derivs) const;
 
@@ -516,7 +516,7 @@ private:
 };
 
 template <unsigned bezier_degree>
-inline Path &Bezier<bezier_degree>::subdivide(Coord t, Path &out) const {
+inline Path const &Bezier<bezier_degree>::subdivide(Coord t, Path &out) const {
   Bezier a, b;
   subdivideArr(t, bezier_degree, c_, a.c_, b.c_);
   out.clear();
@@ -526,7 +526,7 @@ inline Path &Bezier<bezier_degree>::subdivide(Coord t, Path &out) const {
   return out;
 }
 
-inline Path &SVGEllipticalArc::subdivide(Coord t, Path &out) const {
+inline Path const &SVGEllipticalArc::subdivide(Coord t, Path &out) const {
   SVGEllipticalArc a;
   SVGEllipticalArc b;
   a.rx_ = b.rx_ = rx_;
