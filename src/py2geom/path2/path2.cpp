@@ -28,27 +28,45 @@
  *
  */
 
-#include "multidim-sbasis.h"
-#include "path2.h"
+#include "../../path2.h"
+#include "../helpers.h"
+
+#include "../../point.h"
+#include "../../rect.h"
+#include "../../multidim-sbasis.h"
 
 #include <boost/python.hpp>
-#include <boost/python/implicit.hpp>
-#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 using namespace boost::python;
 
-int python_index(int const index)
+/*
+struct CurveWrap : Geom::Path2::Curve, wrapper<Geom::Path2::Curve>
 {
-    if (index < 0) 
-    {
-        return -index - 1;
-    }
-    return index;
-}
-
-
+    Geom::Point initialPoint(){return this->get_override("initialPoint")();}
+    Geom::Point finalPoint(){return this->get_override("finalPoint")();}
+    CurveWrap *duplicate(){return this->get_override("duplicate")();}
+    Geom::Rect boundsFast(){return this->get_override("boundsFast")();}
+    Geom::Rect boundsExact(){return this->get_override("boundsExact")();}
+    void subdivide(Geom::Coord t, Geom::Path2::Curve& a, Geom::Path2::Curve& b){return this->get_override("subdivide")();}
+    Geom::Point pointAndDerivativesAt(Geom::Coord t, unsigned n, Geom::Point *ds){return this->get_override("pointAndDerivativesAt")();}
+    Geom::MultidimSBasis<2> sbasis(){return this->get_override("sbasis")();}
+};
+*/
 
 BOOST_PYTHON_MODULE(_path2)
 {
+/*
+    class_<CurveWrap>("Curve")
+        .def("initalPoint", pure_virtual(&Geom::Path2::Curve::initialPoint))
+        .def("finalPoint", pure_virtual(&CurveWrap::finalPoint))
+        .def("duplicate", pure_virtual(&CurveWrap::duplicate))
+        .def("boundsFast", pure_virtual(&CurveWrap::boundsFast))
+        .def("boundsExact", pure_virtual(&CurveWrap::boundsExact))
+        .def("subdivide", pure_virtual(&CurveWrap::subdivide))
+        .def("pointAt", &CurveWrap::pointAt)
+        .def("pointAndDerivativesAt", pure_virtual(&CurveWrap::PointAndDerivativesAt))
+        .def("sbasis", pure_virtual(&CurveWrap::sbasis))
+    ;
+*/
     class_<Geom::Path2::Path>("Path")
         .def("empty", &Geom::Path2::Path::empty)
         .def("closed", &Geom::Path2::Path::closed)
