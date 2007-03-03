@@ -15,6 +15,8 @@ namespace Geom {
 
 namespace Path2 {
 
+class Path;
+
 class Curve {
 public:
   virtual ~Curve() {}
@@ -27,7 +29,10 @@ public:
   virtual Rect boundsFast() const = 0;
   virtual Rect boundsExact() const = 0;
 
-  virtual void subdivide(Coord t, Curve& a, Curve& b) const {} //TODO: require
+  virtual Path &subdivide(Coord t, Path &out) const {
+    //TODO: require
+    return out;
+  }
 
   Point pointAt(Coord t) const { return pointAndDerivativesAt(t, 0, NULL); }
   virtual Point pointAndDerivativesAt(Coord t, unsigned n, Point *ds) const = 0;
@@ -90,10 +95,7 @@ public:
   Rect boundsFast() const { return bounds(bezier_degree, c_); }
   Rect boundsExact() const { return bounds(bezier_degree, c_); }
 
-  void subdivide(Coord t, Curve& a, Curve& b) const {
-      Point l[bezier_degree+1],r[bezier_degree+1];
-      subdivideArr(t, bezier_degree, c_, (dynamic_cast<Bezier*>(&a))->c_, (dynamic_cast<Bezier*>(&b))->c_);
-  }
+  Path &subdivide(Coord t, Path &out) const;
   
   Point pointAndDerivativesAt(Coord t, unsigned n_derivs, Point *derivs)
   const
@@ -103,6 +105,11 @@ public:
 
   MultidimSBasis<2> sbasis() const {
     return bezier_to_sbasis<2, bezier_degree, Geom::Point const *>(c_);
+  }
+
+protected:
+  Bezier(Point c[]) {
+    std::copy(c, c+bezier_degree+1, c_);
   }
 
 private:
@@ -135,16 +142,7 @@ public:
   Rect boundsFast() const;
   Rect boundsExact() const;
 
-  void subdivide(Coord t, Curve& ac, Curve& bc) const {
-    SVGEllipticalArc* a = dynamic_cast<SVGEllipticalArc*>(&ac);
-    SVGEllipticalArc* b = dynamic_cast<SVGEllipticalArc*>(&bc);
-    a->rx_ = b->rx_ = rx_;
-    a->ry_ = b->ry_ = ry_;
-    a->x_axis_rotation_ = b->x_axis_rotation_ = x_axis_rotation_;
-    a->initial_ = initial_;
-    a->final_ = b->initial_ = pointAt(t);
-    b->final_ = final_;
-  }
+  Path &subdivide(Coord t, Path &out) const;
   
   Point pointAndDerivativesAt(Coord t, unsigned n_derivs, Point *derivs) const;
 
@@ -517,6 +515,33 @@ private:
   LineSegment final_;
   bool closed_;
 };
+
+template <unsigned bezier_degree>
+inline Path &Bezier<bezier_degree>::subdivide(Coord t, Path &out) const {
+  Bezier a, b;
+  subdivideArr(t, bezier_degree, c_, a.c_, b.c_);
+  out.clear();
+  out.close(false);
+  out.append(a);
+  out.append(b);
+  return out;
+}
+
+inline Path &SVGEllipticalArc::subdivide(Coord t, Path &out) const {
+  SVGEllipticalArc a;
+  SVGEllipticalArc b;
+  a.rx_ = b.rx_ = rx_;
+  a.ry_ = b.ry_ = ry_;
+  a.x_axis_rotation_ = b.x_axis_rotation_ = x_axis_rotation_;
+  a.initial_ = initial_;
+  a.final_ = b.initial_ = pointAt(t);
+  b.final_ = final_;
+  out.clear();
+  out.close(false);
+  out.append(a);
+  out.append(b);
+  return out;
+}
 
 class Set {
 public:
