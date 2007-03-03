@@ -1,4 +1,5 @@
 #include <cmath>
+#include <map>
 
 #include "s-basis.h"
 #include "sbasis-to-bezier.h"
@@ -6,24 +7,6 @@
 
 namespace Geom{
 
-// void bounds(SBasis const & s,
-//             double &lo, double &hi) {
-//     double ss = 0.25;
-//     double mid = s(0.5);
-//     lo = hi = mid;
-//     for(unsigned i = 1; i < s.size(); i++) {
-//         for(unsigned dim = 0; dim < 2; dim++) {
-//             double b = s[i][dim]*ss;
-//             if(b < 0)
-//                 lo += b;
-//             if(b > 0)
-//                 hi += b;
-//         }
-//         ss *= 0.25;
-//     }
-//     lo = std::min(std::min(lo, s[0][1]),s[0][0]);
-//     hi = std::max(std::max(hi, s[0][0]), s[0][1]);
-// }
 void bounds(SBasis const & s,
 	    double &lo, double &hi, int order) {
     int imax=s.size()-1;
@@ -49,70 +32,163 @@ void bounds(SBasis const & s,
 	lo=a*(1-t)+b*t+lo*t*(1-t);	  
       }
     }
-}
-
-void slow_bounds(SBasis const & f_in,
-			double &m, 
-			double &M,
-			int order,
-			double tol
-			) {
-
-  assert (tol>0);
-  order=std::max(0,order);
-  SBasis f;
-  for (int i=order;i<f_in.size();i++){
-    f.push_back(f_in[i]);
-  }
-
-  double Mf,mf,Mdf,mdf,Md2f,md2f,t,h,err;
-  double step,step_min;
-  SBasis df=derivative(f);
-  SBasis d2f=derivative(df);
-  bounds(df,mdf,Mdf);
-  bounds(d2f,md2f,Md2f);
-  if (f.size()<=1||mdf>=0||Mdf<=0){
-    bounds(f,m,M);
-  }else{
-    bounds(f,mf,Mf);
-    err=tol*std::max(1.,Mf-mf);//Fix me: 
-    //1)Mf-mf should not be 0...
-    //2)tolerance relative to inaccurate bounds (but using
-    // the current value of M and m can be speed consuming).
-    double err_M=0,err_m=0;
-    step_min=err/std::max(Mdf,-mdf);
-    M=std::max(f[0][0],f[0][1]);
-    m=std::min(f[0][0],f[0][1]);
-    for (t=0;t<=1;){
-      double ft=f(t);
-      double dft=df(t);
-      M=std::max(M,ft);
-      m=std::min(m,ft);
-      if (M<ft){
-	M=ft;
-	err_M=dft*step_min;
-      }
-      if (m>ft){
-	m=ft;
-	err_m=-dft*step_min;
-      }
-      if (dft>0){
-	step=std::max(-dft/md2f,step_min);
-      }else if (dft<0){
-	step=std::max(-dft/Md2f,step_min);
-      }else{
-	step=step_min;
-      }
-      step=std::max(step,std::min((M-ft)/Mdf,(m-ft)/mdf));
-      t+=step;
+    if (order>0){
+        lo*=pow(.25,order);
+        hi*=pow(.25,order);
     }
-    M+=err_M;
-    m-=err_m;
-    M*=pow(.25,order);
-    m*=pow(.25,order);
-  }
 }
 
+void local_bounds(SBasis const & s,
+                  double t0,double t1,
+                  double &lo, double &hi,
+                  int order) {
+    int imax=s.size()-1;
+    lo=0;
+    hi=0;
+    
+    for(int i = imax; i >=order; i--) {
+        double a=s[i][0];
+        double b=s[i][1];
+        double t;
+        if (hi>0){t=((b-a)+hi)/2/hi;}
+        if (hi<=0||t<t0||t>t1){
+            hi=std::max(a*(1-t0)+b*t0+hi*t0*(1-t0),a*(1-t1)+b*t1+hi*t1*(1-t1));
+        }else{
+            hi=a*(1-t)+b*t+hi*t*(1-t);	  
+        }
+        if (lo<0){t=((b-a)+lo)/2/lo;}
+        if (lo>=0||t<t0||t>t1){
+            lo=std::min(a*(1-t0)+b*t0+lo*t0*(1-t0),a*(1-t1)+b*t1+lo*t1*(1-t1));
+        }else{
+            lo=a*(1-t)+b*t+lo*t*(1-t);	  
+        }
+    }
+    if (order>0){
+        lo*=pow(.25,order);
+        hi*=pow(.25,order);
+    }
+}
+
+//-- multi_roots ------------------------------------
+// goal: solve f(t)=c for several c at once.
+// algo: compute f at both ends of the given segment.
+//       compute bounds for df on the segment.
+//       deduce first and last times when a level can be reached. 
+//       if not empty, do the same with this smaller (and devided) segment. 
+//TODO: Make sure the code is "rounding-errors proof"!
+
+
+static int upper_level(vector<double> const &levels,double x,double tol=0.){
+    for (int i=0;i<levels.size();i++){
+        if (x<=levels[i]+tol) return(i);
+    }
+    return(levels.size());
+}
+
+static void multi_roots_internal(SBasis const &f,
+				 SBasis const &df,
+				 std::vector<double> const &levels,
+				 std::map<double,unsigned> &roots,
+				 double tol,
+				 double a,
+				 double fa,
+				 double b,
+				 double fb){
+    
+    if (f.size()==0){
+        int idx;
+        idx=upper_level(levels,0,tol);
+        if (idx<levels.size()&&fabs(levels[idx])<=tol){
+            roots[a]=idx;
+            roots[b]=idx;
+        }
+        return;
+    }
+////usefull? 
+//     if (f.size()==1){
+//         int idxa=upper_level(levels,fa);
+//         int idxb=upper_level(levels,fb);
+//         if (fa==fb){
+//             if (fa==levels[idxa]){
+//                 roots[a]=idxa;
+//                 roots[b]=idxa;
+//             }
+//             return;
+//         }
+//         int idx_min=std::min(idxa,idxb);
+//         int idx_max=std::max(idxa,idxb);
+//         if (idx_max==levels.size()) idx_max-=1;
+//         for(int i=idx_min;i<=idx_max; i++){
+//             double t=a+(b-a)*(levels[i]-fa)/(fb-fa);
+//             if(a<t&&t<b) roots[t]=i;
+//         }
+//         return;
+//     }
+    if ((b-a)<tol){
+        //TODO: use different tol for t and f ?
+        int idx=std::min(upper_level(levels,fa,tol),upper_level(levels,fb,tol));
+        if (idx==levels.size()) idx-=1;
+        double c=levels[idx];
+        if((fa-c)*(fb-c)<=0||fabs(fa-c)<tol||fabs(fb-c)<tol){
+            roots[(a+b)/2]=idx;
+        }
+        return;
+    }
+    
+    int idxa=upper_level(levels,fa,tol);
+    int idxb=upper_level(levels,fb,tol);
+    double m,M;
+    local_bounds(df,a,b,m,M);
+
+    //first times when a level (higher or lower) can be riched from a or b.
+    double ta_hi,tb_hi,ta_lo,tb_lo;
+    ta_hi=ta_lo=b+1;//default values => no root there.
+    tb_hi=tb_lo=a-1;//default values => no root there.
+
+    if (fabs(fa-levels[idxa])<tol){
+        ta_hi=ta_lo=a;
+    }else{
+        if (M>0 && idxa<levels.size())
+            ta_hi=a+(levels[idxa  ]-fa)/M;
+        if (m<0 && idxa>0)
+            ta_lo=a+(levels[idxa-1]-fa)/m;
+    }
+    if (fabs(fb-levels[idxb])<tol){
+        tb_hi=tb_lo=b;
+    }else{
+        if (m<0 && idxb<levels.size())
+            tb_hi=b+(levels[idxb  ]-fb)/m;
+        if (M>0 && idxb>0)
+            tb_lo=b+(levels[idxb-1]-fb)/M;
+    }
+    
+    double t0,t1;
+    t0=std::min(ta_hi,ta_lo);    
+    t1=std::max(tb_hi,tb_lo);
+    if (t0>t1) return;
+    
+    double t,ft;
+    if (t1-t0<tol){
+        multi_roots_internal(f,df,levels,roots,tol,t0,f(t0),t1,f(t1));
+    }else{
+        t=(t0+t1)/2;
+        ft=f(t);
+        multi_roots_internal(f,df,levels,roots,tol,t0,f(t0),t ,ft   );
+        multi_roots_internal(f,df,levels,roots,tol,t ,ft   ,t1,f(t1));
+    }
+}
+
+std::map<double,unsigned> multi_roots(SBasis const &f,
+                                      std::vector<double> const &levels,
+                                      double tol,
+                                      double a,
+                                      double b){
+    std::map<double,unsigned> roots;
+    SBasis df=derivative(f);
+    multi_roots_internal(f,df,levels,roots,tol,a,f(a),b,f(b));  
+    return(roots);
+}
+//-------------------------------------
 
 #if 0
 double Laguerre_internal(SBasis const & p,

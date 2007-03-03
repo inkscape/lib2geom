@@ -1,6 +1,7 @@
 #ifndef SEEN_SBASIS_H
 #define SEEN_SBASIS_H
 #include <vector>
+#include <map>
 #include <cassert>
 #include <algorithm>
 #include <iostream>
@@ -385,10 +386,16 @@ SBasis reverse(SBasis const &s);
 
 //void bounds(SBasis const & s, double &lo, double &hi);
 void bounds(SBasis const & s, double &lo, double &hi,int order=0);
-void slow_bounds(SBasis const & s, double &lo, double &hi,int order=0,double tol=0.01);
+void local_bounds(SBasis const & s, double t0, double t1, double &lo, double &hi,int order=0);
+//void slow_bounds(SBasis const & s, double &lo, double &hi,int order=0,double tol=0.01);
 
 std::vector<double> roots(SBasis const & s);
-
+std::map<double,unsigned> multi_roots(SBasis const &f,
+                                 std::vector<double> const &levels,
+                                 double tol=1e-7,
+                                 double a=0,
+                                 double b=1);
+    
 };
 
 /*
