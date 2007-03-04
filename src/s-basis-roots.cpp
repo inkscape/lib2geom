@@ -1,3 +1,46 @@
+/** root finding for sbasis functions.
+ * Copyright 2006 N Hurst
+ * Copyright 2007 JF Barraud
+ *
+ * It is more efficient to find roots of f(t) = c_0, c_1, ... all at once, rather than iterating.
+ *
+ * Todo/think about:
+ *  multi-roots using bernstein method, one approach would be:
+    sort c
+    take median and find roots of that
+    whenever a segment lies entirely on one side of the median, 
+    find the median of the half and recurse.
+
+    in essence we are implementing quicksort on a continuous function
+
+ *  the gsl poly roots finder is faster than bernstein too, but we don't use it for 3 reasons:
+
+ a) it requires convertion to poly, which is numerically unstable
+
+ b) it requires gsl (which is currently not a dependency, and would bring in a whole slew of unrelated stuff)
+
+ c) it finds all roots, even complex ones.  We don't want to accidently treat a nearly real root as a real root
+
+From memory gsl poly roots was about 10 times faster than bernstein in the case where all the roots
+are in [0,1] for polys of order 5.  I spent some time working out whether eigenvalue root finding
+could be done directly in sbasis space, but the maths was too hard for me. -- njh
+
+jfbarraud: eigenvalue root finding could be done directly in sbasis space ?
+
+njh: I don't know, I think it should.  You would make a matrix whose characteristic polynomial was
+correct, but do it by putting the sbasis terms in the right spots in the matrix.  normal eigenvalue
+root finding makes a matrix that is a diagonal + a row along the top.  This matrix has the property
+that its characteristic poly is just the poly whose coefficients are along the top row.
+
+Now an sbasis function is a linear combination of the poly coeffs.  So it seems to me that you
+should be able to put the sbasis coeffs directly into a matrix in the right spots so that the
+characteristic poly is the sbasis.  You'll still have problems b) and c).
+
+We might be able to lift an eigenvalue solver and include that directly into 2geom.  Eigenvalues
+also allow you to find intersections of multiple curves but require solving n*m x n*m matrices.
+
+ **/
+
 #include <cmath>
 #include <map>
 
