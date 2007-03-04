@@ -26,14 +26,68 @@
  *
  */
 
+#include "../s-basis.h"
+#include "../pw-sb.h"
+
 #include "pw-sb.h"
 #include "helpers.h"
 
 #include <boost/python.hpp>
 #include <boost/python/implicit.hpp>
+#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 using namespace boost::python;
 
+Geom::pw_sb (*portion_pwsb)(const Geom::pw_sb &, double, double) = &Geom::portion;
+std::vector<double> (*roots_pwsb)(const Geom::pw_sb &) = &Geom::roots;
+Geom::pw_sb (*multiply_pwsb)(Geom::pw_sb const &, Geom::pw_sb const &) = &Geom::multiply;
+Geom::pw_sb (*divide_pwsb)(Geom::pw_sb const &, Geom::pw_sb const &, int) = &Geom::divide;
+Geom::pw_sb (*compose_pwsb_sb)(Geom::pw_sb const &, Geom::SBasis const &) = &Geom::compose;
+Geom::pw_sb (*compose_pwsb)(Geom::pw_sb const &, Geom::pw_sb const &) = &Geom::compose;
+
 void wrap_pwsb() {
+    class_<std::vector<Geom::SBasis> >("SBasisVec")
+        .def(vector_indexing_suite<std::vector<Geom::SBasis> >())
+    ;
+
+    def("portion", portion_pwsb);
+    def("partition", &Geom::partition);
+    def("roots", roots_pwsb);
+    def("multiply", multiply_pwsb);
+    def("divide", divide_pwsb);
+    def("compose", compose_pwsb_sb);
+    def("compose", compose_pwsb);
+    
+    class_<Geom::pw_sb>("pw_sb")
+        .def_readonly("cuts", &Geom::pw_sb::cuts)
+        .def_readonly("segs", &Geom::pw_sb::segs)
+        .def("size", &Geom::pw_sb::size)
+        .def("empty", &Geom::pw_sb::empty)
+        .def("push", &Geom::pw_sb::push)
+        .def("push_cut", &Geom::pw_sb::push_cut)
+        .def("push_seg", &Geom::pw_sb::push_seg)
+
+        .def("segn", &Geom::pw_sb::segn)
+        .def("segt", &Geom::pw_sb::segt)
+        .def("offsetDomain", &Geom::pw_sb::offsetDomain)
+        .def("scaleDomain", &Geom::pw_sb::scaleDomain)
+        .def("setDomain", &Geom::pw_sb::setDomain)
+        .def("concat", &Geom::pw_sb::concat)
+        .def("continuousConcat", &Geom::pw_sb::continuousConcat)
+        .def("invariants", &Geom::pw_sb::invariants)
+       
+        .def(+self)
+        .def(self + double()) 
+        .def(-self)
+        .def(self += double())
+        .def(self -= double())
+        .def(self /= double())
+        .def(self *= double())
+        .def(self + self)
+        .def(self - self)
+        .def(self * self)
+        .def(self *= self)
+        
+    ;
 };
 
 /*
