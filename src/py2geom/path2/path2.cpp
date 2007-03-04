@@ -28,6 +28,8 @@
  *
  */
 
+#include <boost/python.hpp>
+
 #include "../../path2.h"
 #include "../helpers.h"
 
@@ -35,7 +37,6 @@
 #include "../../rect.h"
 #include "../../multidim-sbasis.h"
 
-#include <boost/python.hpp>
 using namespace boost::python;
 
 /*

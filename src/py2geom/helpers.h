@@ -29,15 +29,22 @@
 #ifndef SEEN_PY2GEOM_HELPERS_H
 #define SEEN_PY2GEOM_HELPERS_H
 
-inline int python_index(int const index)
-{
-    if (index < 0) 
-    {
-        return -index - 1;
-    }
-    return index;
-}
+#include <boost/python.hpp>
 
+template <typename T, typename R, unsigned D>
+R python_getitem(T const& p, int const index)
+{
+    int i = index;
+    if (index < 0)
+    {
+        i = D + index;
+    }
+    if (i < 0 || i > (D - 1)) {
+        PyErr_SetString(PyExc_IndexError, "index out of range");
+        boost::python::throw_error_already_set();
+    }
+    return p[i];
+}
 
 #endif
 /*

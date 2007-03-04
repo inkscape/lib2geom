@@ -26,11 +26,12 @@
  *
  */
 
+#include <boost/python.hpp>
+
 #include "transforms.h"
 
 #include "../transforms.h"
 
-#include <boost/python.hpp>
 using namespace boost::python;
 
 

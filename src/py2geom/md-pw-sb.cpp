@@ -26,11 +26,12 @@
  *
  */
 
+#include <boost/python.hpp>
+#include <boost/python/implicit.hpp>
+
 #include "md-pw-sb.h"
 #include "helpers.h"
 
-#include <boost/python.hpp>
-#include <boost/python/implicit.hpp>
 using namespace boost::python;
 
 void wrap_mdpwsb() {

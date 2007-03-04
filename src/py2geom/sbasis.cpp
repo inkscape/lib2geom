@@ -26,15 +26,16 @@
  *
  */
 
+#include <boost/python.hpp>
+#include <boost/python/implicit.hpp>
+#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
+
 #include "sbasis.h"
 #include "helpers.h"
 
 #include "s-basis.h"
 #include "../point.h"
 
-#include <boost/python.hpp>
-#include <boost/python/implicit.hpp>
-#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 using namespace boost::python;
 
 // helpers for bezord
@@ -46,16 +47,6 @@ tuple bezord_to_tuple(Geom::BezOrd const& b)
 Geom::BezOrd tuple_to_bezord(boost::python::tuple const& t)
 {
     return Geom::BezOrd(extract<double>(t[0]), extract<double>(t[1]));
-}
-
-double bezord_getitem(Geom::BezOrd const& b, int const index)
-{
-    int i = python_index(index);
-    if (i > 1) {
-        PyErr_SetString(PyExc_IndexError, "index out of range");
-        boost::python::throw_error_already_set();
-    }
-    return b[i];
 }
 
 str bezord_repr(Geom::BezOrd const& b)
@@ -73,7 +64,7 @@ void wrap_sbasis() {
     class_<Geom::BezOrd>("BezOrd", init<double, double>())
         .def("__str__", bezord_repr)
         .def("__repr__", bezord_repr)
-        .def("__getitem__", bezord_getitem)
+        .def("__getitem__", python_getitem<Geom::BezOrd,double,2>)
         .def("tuple", bezord_to_tuple)
 
         .def("from_tuple", tuple_to_bezord)

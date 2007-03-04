@@ -28,12 +28,13 @@
  * the specific language governing rights and limitations.
  *
  */
+#include <boost/python.hpp>
+#include <boost/python/implicit.hpp>
+#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 
 #include "circle-circle.cpp"
 #include "geom.cpp"
 
-
-#include "helpers.h"
 #include "point.h"
 #include "transforms.h"
 #include "sbasis.h"
@@ -41,9 +42,6 @@
 #include "pw-sb.h"
 #include "md-pw-sb.h"
 
-#include <boost/python.hpp>
-#include <boost/python/implicit.hpp>
-#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 using namespace boost::python;
 
 BOOST_PYTHON_MODULE(_py2geom)

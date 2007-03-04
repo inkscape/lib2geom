@@ -26,17 +26,20 @@
  *
  */
 
-
-#include "multidim-sbasis.h"
-
 #include <boost/python.hpp>
+
+#include "helpers.h"
+#include "../multidim-sbasis.h"
+
 using namespace boost::python;
 
 typedef Geom::MultidimSBasis<2> MultidimSBasis2;
 typedef Geom::MultidimSBasis<3> MultidimSBasis3;
 
+
 void wrap_multidimsbasis() {
     class_<MultidimSBasis2>("MultidimSBasis2")
+        .def("__getitem__", python_getitem<MultidimSBasis2,Geom::SBasis,2>)
         .def("size", &MultidimSBasis2::size)
         .def("tail_error", &MultidimSBasis2::tail_error)
         .def("is_finite", &MultidimSBasis2::is_finite)
@@ -51,6 +54,7 @@ void wrap_multidimsbasis() {
         .def(self *= double())
     ;
     class_<MultidimSBasis3>("MultidimSBasis3")
+        .def("__getitem__", python_getitem<MultidimSBasis2,Geom::SBasis,3>)
         .def("size", &MultidimSBasis3::size)
         .def("tail_error", &MultidimSBasis3::tail_error)
         .def("is_finite", &MultidimSBasis3::is_finite)

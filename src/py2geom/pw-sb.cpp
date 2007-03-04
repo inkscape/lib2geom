@@ -25,6 +25,9 @@
  * the specific language governing rights and limitations.
  *
  */
+#include <boost/python.hpp>
+#include <boost/python/implicit.hpp>
+#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 
 #include "../s-basis.h"
 #include "../pw-sb.h"
@@ -32,9 +35,6 @@
 #include "pw-sb.h"
 #include "helpers.h"
 
-#include <boost/python.hpp>
-#include <boost/python/implicit.hpp>
-#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 using namespace boost::python;
 
 Geom::pw_sb (*portion_pwsb)(const Geom::pw_sb &, double, double) = &Geom::portion;
@@ -43,6 +43,24 @@ Geom::pw_sb (*multiply_pwsb)(Geom::pw_sb const &, Geom::pw_sb const &) = &Geom::
 Geom::pw_sb (*divide_pwsb)(Geom::pw_sb const &, Geom::pw_sb const &, int) = &Geom::divide;
 Geom::pw_sb (*compose_pwsb_sb)(Geom::pw_sb const &, Geom::SBasis const &) = &Geom::compose;
 Geom::pw_sb (*compose_pwsb)(Geom::pw_sb const &, Geom::pw_sb const &) = &Geom::compose;
+
+Geom::SBasis getitem_pwsb(Geom::pw_sb const &p, int const index) {
+    unsigned D = p.size();
+    int i = index;
+    if (index < 0)
+    {
+        i = D + index;
+    }
+    if (i < 0 || i > (D - 1)) {
+        PyErr_SetString(PyExc_IndexError, "index out of range");
+        boost::python::throw_error_already_set();
+    }
+    return p[i];
+}
+
+double call_pwsb(Geom::pw_sb const &p, double t) {
+    return p(t);
+}
 
 void wrap_pwsb() {
     class_<std::vector<Geom::SBasis> >("SBasisVec")
@@ -58,6 +76,8 @@ void wrap_pwsb() {
     def("compose", compose_pwsb);
     
     class_<Geom::pw_sb>("pw_sb")
+        .def("__getitem__", getitem_pwsb)
+        .def("__call__", call_pwsb)
         .def_readonly("cuts", &Geom::pw_sb::cuts)
         .def_readonly("segs", &Geom::pw_sb::segs)
         .def("size", &Geom::pw_sb::size)

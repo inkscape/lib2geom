@@ -26,14 +26,16 @@
  *
  */
 
+#include <boost/python.hpp>
+#include <boost/python/implicit.hpp>
+
 #include "point.h"
 #include "helpers.h"
 
 #include "../point.h"
 
-#include <boost/python.hpp>
-#include <boost/python/implicit.hpp>
 using namespace boost::python;
+
 
 // helpers for point
 tuple point_to_tuple(Geom::Point const& p)
@@ -44,16 +46,6 @@ tuple point_to_tuple(Geom::Point const& p)
 Geom::Point tuple_to_point(boost::python::tuple const& t)
 {
     return Geom::Point(extract<double>(t[0]), extract<double>(t[1]));
-}
-
-double point_getitem(Geom::Point const& p, int const index)
-{
-    int i = python_index(index);
-    if (i > 1) {
-        PyErr_SetString(PyExc_IndexError, "index out of range");
-        boost::python::throw_error_already_set();
-    }
-    return p[i];
 }
 
 str point_repr(Geom::Point const& p)
@@ -92,8 +84,7 @@ void wrap_point() {
     class_<Geom::Point>("Point", init<double, double>())
         .def("__str__", point_repr)
         .def("__repr__", point_repr)
-        .def("__getitem__", point_getitem)
-        //.def("__getitem__", &Geom::Point::operator[])
+        .def("__getitem__", python_getitem<Geom::Point,double,2>)
         .def("tuple", point_to_tuple)
     
         .def("from_tuple", tuple_to_point)
