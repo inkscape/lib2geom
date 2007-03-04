@@ -27,6 +27,7 @@
  */
 
 #include <boost/python.hpp>
+#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 
 #include "helpers.h"
 #include "../multidim-sbasis.h"
@@ -38,6 +39,14 @@ typedef Geom::MultidimSBasis<3> MultidimSBasis3;
 
 
 void wrap_multidimsbasis() {
+/*
+    class_<std::vector<MultidimSBasis2> >("MultidimSBasis2Vec")
+        .def(vector_indexing_suite<std::vector<MultidimSBasis2> >())
+    ;
+    class_<std::vector<MultidimSBasis3> >("MultidimSBasis3Vec")
+        .def(vector_indexing_suite<std::vector<MultidimSBasis3> >())
+    ;
+*/
     class_<MultidimSBasis2>("MultidimSBasis2")
         .def("__getitem__", python_getitem<MultidimSBasis2,Geom::SBasis,2>)
         .def("size", &MultidimSBasis2::size)

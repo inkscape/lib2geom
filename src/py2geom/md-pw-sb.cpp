@@ -29,12 +29,27 @@
 #include <boost/python.hpp>
 #include <boost/python/implicit.hpp>
 
+#include "../md-pw-sb.h"
+
 #include "md-pw-sb.h"
 #include "helpers.h"
 
 using namespace boost::python;
 
+typedef Geom::md_pw_sb<2> mdpwsb2;
+typedef Geom::md_pw_sb<3> mdpwsb3;
+
 void wrap_mdpwsb() {
+    class_<mdpwsb2>("md_pw_sb2")
+        .def("__getitem__", python_getitem<mdpwsb2, Geom::pw_sb, 2>)
+        .def("size", &mdpwsb2::size)
+        .def("sections", &mdpwsb2::sections)
+    ;
+    class_<mdpwsb3>("md_pw_sb3")
+        .def("__getitem__", python_getitem<mdpwsb3, Geom::pw_sb, 3>)
+        .def("size", &mdpwsb3::size)
+        .def("sections", &mdpwsb3::sections)
+    ;
 };
 
 /*
