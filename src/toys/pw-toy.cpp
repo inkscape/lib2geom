@@ -50,14 +50,14 @@ class PwToy: public Toy {
         for(int a = 0; a < curves; a++) {
             unsigned base = a * handles_per_curve;
             for(int i = 0; i < handles_per_curve; i+=4) {
-                pws[a].cuts.push_back(handles[i+base][0]);
+                pws[a].push_cut(handles[i+base][0]);
                 //Bad hack to move 0 to 150
                 for(int j = base + i; j < base + i + 4; j++) handles[j] = Point(handles[j][0], handles[j][1] - 150);
-                pws[a].segs.push_back( Geom::bezier_to_sbasis<2,3>(handles.begin()+i+base)[1] );
+                pws[a].push_seg( Geom::bezier_to_sbasis<2,3>(handles.begin()+i+base)[1] );
                 for(int j = base + i; j < base + i + 4; j++) handles[j] = Point(handles[j][0], handles[j][1] + 150);
             }
-            pws[a].cuts.push_back(handles[base + handles_per_curve - 1][0]);
-            assert(pws[a].cheap_invariants());
+            pws[a].push_cut(handles[base + handles_per_curve - 1][0]);
+            assert(pws[a].invariants());
             
             cairo_pw(cr, pws[a]);
         }
@@ -67,7 +67,7 @@ class PwToy: public Toy {
         new_cuts.push_back(550);
         pw_sb pw_out = partition(pws[0], new_cuts);
         cairo_horiz(cr, pw_out.cuts);
-        assert(pw_out.cheap_invariants()); */
+        assert(pw_out.invariants()); */
         cairo_pw(cr, pws[0] + pws[1]);
         cairo_stroke(cr);
         

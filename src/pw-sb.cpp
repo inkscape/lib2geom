@@ -7,7 +7,7 @@ namespace Geom {
 /**
  * returns true if the pw_sb meets some basic invariants.
  */
-bool pw_sb::cheap_invariants() const {
+bool pw_sb::invariants() const {
     // segs between cuts
     if(!(segs.size() + 1 == cuts.size() || (segs.empty() && cuts.empty())))
         return false;
@@ -22,6 +22,7 @@ bool pw_sb::cheap_invariants() const {
  * returns a portion of a piece of a pw_sb, given the piece's index and a to/from time.
  */
 SBasis elem_portion(const pw_sb &a, int i, double from, double to) {
+    assert(i < a.size());
     double rwidth = 1 / (a.cuts[i+1] - a.cuts[i]);
     return portion( a[i], (from - a.cuts[i]) * rwidth, (to - a.cuts[i]) * rwidth );
 }
@@ -36,21 +37,18 @@ SBasis elem_portion(const pw_sb &a, int i, double from, double to) {
  * //ac.cuts should be equivalent to bc.cuts
  */
 pw_sb partition(const pw_sb &pw, vector<double> const &c) {
-    assert(pw.cheap_invariants());
-    if(c.size() == 0) return pw_sb(pw);
+    if(c.empty()) return pw_sb(pw);
 
     pw_sb ret = pw_sb();
-
     //just a bit of optimizing reservation
     ret.cuts.reserve(c.size() + pw.cuts.size());
     ret.segs.reserve(c.size() + pw.cuts.size() - 1);
 
     //0-length pw_sb is like a 0-length sbasis - equal to 0!
-    if(pw.size() == 0) {
-        for(int i = 0; i < c.size() - 1; i++) {
-            ret.push_back(c[i], SBasis());
-        }
-        ret.cuts.push_back(c.back());
+    if(pw.empty()) {
+        ret.cuts = c;
+        for(int i = 0; i < c.size() - 1; i++)
+            ret.push_seg(SBasis());
         return ret;
     }
 
@@ -59,33 +57,34 @@ pw_sb partition(const pw_sb &pw, vector<double> const &c) {
     //if the cuts have something earlier than the pw_sb, add portions of the first segment
     while(c[ci] < pw.cuts.front() && ci < c.size()) {
         bool isLast = (ci == c.size()-1 || c[ci + 1] >= pw.cuts.front());
-        ret.push_back(c[ci], elem_portion(pw, 0, c[ci], isLast ? pw.cuts.front() : c[ci + 1]));
+        ret.push_cut(c[ci]);
+        ret.push_seg( elem_portion(pw, 0, c[ci], isLast ? pw.cuts.front() : c[ci + 1]) );
         ci++;
     }
 
-    ret.cuts.push_back(pw.cuts[0]);
+    ret.push_cut(pw.cuts[0]);
     double prev = pw.cuts[0];    //previous cut
     //Loop which handles cuts within the pw_sb domain
     //Should have the cuts = segs + 1 invariant
     while(si < pw.size() && ci <= c.size()) {
-        /*if(ci == c.size() && prev <= pw.cuts[si]) { //cuts exhausted, straight copy the rest
+        if(ci == c.size() && prev <= pw.cuts[si]) { //cuts exhausted, straight copy the rest
             ret.segs.insert(ret.segs.end(), pw.segs.begin() + si, pw.segs.end());
             ret.cuts.insert(ret.cuts.end(), pw.cuts.begin() + si + 1, pw.cuts.end());
             return ret;
-        }else*/ if(ci == c.size() || c[ci] >= pw.cuts[si + 1]) {  //no more cuts within this segment, finalize
+        }else if(ci == c.size() || c[ci] >= pw.cuts[si + 1]) {  //no more cuts within this segment, finalize
             if(prev > pw.cuts[si]) {      //segment already has cuts, so portion is required
-                ret.segs.push_back(portion(pw[si], pw.segt(prev, si), 1.0));
+                ret.push_seg(portion(pw[si], pw.segt(prev, si), 1.0));
             } else {                     //plain copy is fine
-                ret.segs.push_back(pw[si]);
+                ret.push_seg(pw[si]);
             }
-            ret.cuts.push_back(pw.cuts[si + 1]);
+            ret.push_cut(pw.cuts[si + 1]);
             prev = pw.cuts[si + 1];
             si++;
         } else if(c[ci] == pw.cuts[si]){                  //coincident
             //Already finalized the seg with the code immediately above
             ci++;
         } else {                                         //plain old subdivision
-            ret.push_back(elem_portion(pw, si, prev, c[ci]), c[ci]);
+            ret.push(elem_portion(pw, si, prev, c[ci]), c[ci]);
             prev = c[ci];
             ci++;
         }
@@ -93,7 +92,7 @@ pw_sb partition(const pw_sb &pw, vector<double> const &c) {
 
     while(ci < c.size()) { //input cuts extend further than this pw_sb, add sections of zero
         if(c[ci] > prev) {
-            ret.push_back(elem_portion(pw, pw.size() - 1, prev, c[ci]), c[ci]);
+            ret.push(elem_portion(pw, pw.size() - 1, prev, c[ci]), c[ci]);
             prev = c[ci];
         }
         ci++;
@@ -105,6 +104,8 @@ pw_sb partition(const pw_sb &pw, vector<double> const &c) {
  * Returns a pw_sb with a defined domain of [min(from, to), max(from, to)].
  */
 pw_sb portion(const pw_sb &pw, double from, double to) {
+    if(pw.empty()) return pw_sb();
+
     pw_sb ret;
 
     double temp = from;
@@ -112,18 +113,20 @@ pw_sb portion(const pw_sb &pw, double from, double to) {
     to = max(temp, to);
     
     int i = pw.segn(from);
-    ret.cuts.push_back(from);
+    ret.push_cut(from);
     if(to < pw.cuts[i + 1]) {    //to/from inhabit the same segment
-        ret.push_back(from, elem_portion(pw, i, from, to), to);
+        ret.push(elem_portion(pw, i, from, to), to);
         return ret;
     }
-    ret.push_back(from, portion( pw[i], pw.segt(from, i), 1.0 ), pw.cuts[i + 1]);
+    ret.push(portion( pw[i], pw.segt(from, i), 1.0 ), pw.cuts[i + 1]);
     i++;
     int fi = pw.segn(to, i);
 
-    ret.segs.insert(ret.segs.end(), pw.segs.begin() + i, pw.segs.begin() + fi - 1);  //copy cuts
+    ret.segs.insert(ret.segs.end(), pw.segs.begin() + i, pw.segs.begin() + fi - 1);  //copy segs
     ret.cuts.insert(ret.cuts.end(), pw.cuts.begin() + i + 1, pw.cuts.begin() + fi);  //and their ends
-    ret.push_back( portion(pw[fi], 0.0, pw.segt(to, fi)), to);
+
+    ret.push( portion(pw[fi], 0.0, pw.segt(to, fi)), to);
+
     return ret;
 }
 
@@ -137,64 +140,52 @@ vector<double> roots(const pw_sb &pw) {
     return ret;
 }
 
-//pw_sb operator+(BezOrd b, SBasis a)
+pw_sb operator+(pw_sb const &a, double b) {
+    pw_sb ret = pw_sb();
+    ret.cuts = a.cuts;
+    for(int i = 0; i < a.size();i++)
+        ret.push_seg(b + a[i]);
+    return ret;
+}
 
 pw_sb operator-(pw_sb const &a) {
     pw_sb ret = pw_sb();
+    ret.cuts = a.cuts;
     for(int i = 0; i < a.size();i++)
-        ret.push_back(a.cuts[i], - a[i]);
-    ret.cuts.push_back(a.cuts.back());
+        ret.push_seg(- a[i]);
     return ret;
 }
 
-pw_sb operator-(BezOrd const &b, const pw_sb&a) {
-    //TODO: handle 0 length
-    pw_sb ret = pw_sb();
-    for(int i = 0; i < a.size();i++)
-        ret.push_back( a.cuts[i], b - a[i] );
-    ret.cuts.push_back(a.cuts.back());
-    return ret;
-}
-
-pw_sb multiply(BezOrd const &b, const pw_sb&a) {
-    //TODO: handle 0 length
-    pw_sb ret = pw_sb();
-    for(int i = 0; i < a.size();i++)
-        ret.push_back( a.cuts[i], b * a[i] );
-    ret.cuts.push_back( a.cuts.back() );
-    return ret;
-}
-
-pw_sb operator+=(pw_sb& a, const BezOrd& b) {
-    //TODO: handle 0 length
-    for(int i = 0; i < a.size();i++) {
-        a[i] += b;
-    }
-    return a;
-}
 pw_sb operator+=(pw_sb& a, double b) {
-    if(a.size() == 0) a.push_back(0., BezOrd(b), 1.);
+    if(a.empty()) { a.push_cut(0.); a.push(BezOrd(b), 1.); return a; }
 
-    for(int i = 0; i < a.size();i++) {
+    for(int i = 0; i < a.size();i++)
         a[i] += b;
-    }
-    return a;
-}
-pw_sb operator-=(pw_sb& a, const BezOrd& b) {
-    //TODO: handle 0 length
-    for(int i = 0; i < a.size();i++) {
-        a[i] += b;
-    }
     return a;
 }
 pw_sb operator-=(pw_sb& a, double b) {
-    if(a.size() == 0) a.push_back(0., BezOrd(-b), 1.);
+    if(a.empty()) { a.push_cut(0.); a.push(BezOrd(b), 1.); return a; }
 
-    for(int i = 0;i < a.size();i++) {
+    for(int i = 0;i < a.size();i++)
         a[i] -= b;
-    }
     return a;
 }
+pw_sb operator*=(pw_sb& a, double b) {
+    if(a.empty()) return pw_sb();
+
+    for(int i = 0; i < a.size();i++)
+        a[i] *= b;
+    return a;
+}
+pw_sb operator/=(pw_sb& a, double b) {
+    //FIXME: b == 0?
+    if(a.empty()) return pw_sb();
+
+    for(int i = 0; i < a.size();i++)
+        a[i] /= b;
+    return a;
+}
+
 
 // Semantically-correct zipping of pw_sbs, with an arbitrary operation
 template <typename F>
@@ -202,11 +193,9 @@ inline pw_sb ZipSBWith(F f, pw_sb const &a, pw_sb const &b) {
     pw_sb pa = partition(a, b.cuts), pb = partition(b, a.cuts);
     pw_sb ret = pw_sb();
     assert(pa.size() == pb.size());
-    for (int i = 0; i < pa.size(); i++) {
-        ret.segs.push_back(f.op(pa[i], pb[i]));
-        ret.cuts.push_back(pa.cuts[i]);
-    }
-    ret.cuts.push_back(pa.cuts[pa.size()]);
+    ret.cuts = pa.cuts;
+    for (int i = 0; i < pa.size(); i++)
+        ret.push_seg(f.op(pa[i], pb[i]));
     return ret;
 }
 
@@ -260,7 +249,7 @@ pw_sb compose(pw_sb const &f, SBasis  const &g){
   if(cuts_pb.count(1.)==0) cuts_pb[1.]=f.cuts.size();
   
   //-- Compose each piece with the relevant seg.
-  result.cuts.push_back(0.);
+  result.push_cut(0.);
   std::map<double,int>::iterator cut=cuts_pb.begin();
   std::map<double,int>::iterator next=cut; next++;
   while(next!=cuts_pb.end()){
@@ -291,8 +280,7 @@ pw_sb compose(pw_sb const &f, SBasis  const &g){
       sub_g=compose(BezOrd(-f.cuts[idx]/(f.cuts[idx+1]-f.cuts[idx]),
 			     (1-f.cuts[idx])/(f.cuts[idx+1]-f.cuts[idx])),sub_g);
       sub_g=compose(f[idx],sub_g);
-      result.cuts.push_back(t1);
-      result.segs.push_back(sub_g);
+      result.push(sub_g, t1);
     }
     cut++;
     next++;
@@ -308,7 +296,9 @@ pw_sb compose(pw_sb const &f, pw_sb const &g){
     for(int j = 0; j < fgi.cuts.size(); j++){
       fgi.cuts[j]= t0 + fgi.cuts[j] * (t1-t0);
     }
-    result.append(fgi);
+    //append
+    result.cuts.insert(result.cuts.end(), fgi.cuts.begin() + 1, fgi.cuts.end());
+    result.segs.insert(result.segs.end(), fgi.segs.begin(), fgi.segs.end());
   }
 }
 

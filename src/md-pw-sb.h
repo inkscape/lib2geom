@@ -92,7 +92,7 @@ operator -(md_pw_sb<2> const & a, Geom::Point const & b) {
 }*/
 
 template <unsigned D>
-inline md_pw_sb<D>
+inline md_pw_sb<D> &
 operator *(double a, md_pw_sb<D> const & b) {
     md_pw_sb<D> r;
     for(unsigned i = 0; i < D; i++)
@@ -100,22 +100,22 @@ operator *(double a, md_pw_sb<D> const & b) {
     return r;
 }
 
-template <unsigned D>
-inline md_pw_sb<D>
+template <unsigned D> 
+inline md_pw_sb<D> &
 operator +=(md_pw_sb<D> & a, md_pw_sb<D> const & b) {
     for(unsigned i = 0; i < D; i++)
         a[i]+=b[i];
     return a;
 }
 
-inline md_pw_sb<2>
+inline md_pw_sb<2> &
 operator +=(md_pw_sb<2> & a, Geom::Point const & b) {
     for(unsigned i = 0; i < 2; i++)
         a[i]+= b[i];
     return a;
 }
 
-inline md_pw_sb<2>
+inline md_pw_sb<2> &
 operator -=(md_pw_sb<2> & a, Geom::Point const & b) {
     for(unsigned i = 0; i < 2; i++)
         a[i] -= b[i];
@@ -123,10 +123,18 @@ operator -=(md_pw_sb<2> & a, Geom::Point const & b) {
 }
 
 template <unsigned D>
-inline md_pw_sb<D>
+inline md_pw_sb<D> &
 operator *=(md_pw_sb<D> & a, double b) {
     for(unsigned i = 0; i < D; i++)
         a[i]*=b;
+    return a;
+}
+
+template <unsigned D>
+inline md_pw_sb<D> &
+operator /=(md_pw_sb<D> & a, double b) {
+    for(unsigned i = 0; i < D; i++)
+        a[i]/=b;
     return a;
 }
 
@@ -174,7 +182,6 @@ L2(md_pw_sb<D> const & a, int k) {
         r += multiply(a[i],a[i]);
     return sqrt(r,k);
 }
-*/
 
 template <unsigned D>
 inline md_pw_sb<D>
@@ -184,6 +191,7 @@ multiply(BezOrd const & a, md_pw_sb<D> const & b) {
         r[i] = multiply(a,b[i]);
     return r;
 }
+*/
 
 template <unsigned D>
 inline md_pw_sb<D>

@@ -70,7 +70,8 @@ class DistortToy: public Toy {
          //**** FRESH STARTS HERE
         //Theoretically we could concatenate a md_pw_sb and do it in one go
         for(int i = 0; i < p.size(); i++) {
-            md_pw_sb<2> foo = multiply(BezOrd(1/200), p[i].toMdSb());
+            md_pw_sb<2> foo = p[i].toMdSb();
+            foo /= 20;
             //foo[1] = foo[1] + (pw_sb)portion(sin(BezOrd(0,3.14), 4), 0, foo[0].cuts.back());
             md_pw_sb<2> out;            
             out[0] = compose(sb2[0], foo);

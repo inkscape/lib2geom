@@ -328,15 +328,11 @@ public:
   md_pw_sb<2> toMdSb() const {
     int i = 0;
     pw_sb x, y;
+    x.push_cut(i); y.push_cut(i);
     for(const_iterator it = begin(); it != end(); ++it, i++) {
       MultidimSBasis<2> foo = (*it).sbasis();
-      x.cuts.push_back(i);
-      x.segs.push_back(foo[0]);
-      y.cuts.push_back(i);
-      y.segs.push_back(foo[1]);
+      x.push(foo[0], i + 1); y.push(foo[1], i + 1);
     }
-    x.cuts.push_back(i);
-    y.cuts.push_back(i);
     md_pw_sb<2> ret;
     ret[0] = x; ret[1] = y;
     return ret;
