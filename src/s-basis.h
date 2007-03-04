@@ -390,7 +390,7 @@ void local_bounds(SBasis const & s, double t0, double t1, double &lo, double &hi
 //void slow_bounds(SBasis const & s, double &lo, double &hi,int order=0,double tol=0.01);
 
 std::vector<double> roots(SBasis const & s);
-std::map<double,unsigned> multi_roots(SBasis const &f,
+std::vector<std::vector<double> > multi_roots(SBasis const &f,
                                  std::vector<double> const &levels,
                                  double tol=1e-7,
                                  double a=0,

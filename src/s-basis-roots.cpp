@@ -71,24 +71,26 @@ void local_bounds(SBasis const & s,
 
 //-- multi_roots ------------------------------------
 // goal: solve f(t)=c for several c at once.
-// algo: compute f at both ends of the given segment.
-//       compute bounds for df on the segment.
-//       deduce first and last times when a level can be reached. 
-//       if not empty, do the same with this smaller (and devided) segment. 
+/* algo: -compute f at both ends of the given segment [a,b].
+         -compute bounds m<df(t)<M for df on the segment.
+         let c and C be the levels below and above f(a):
+         going from f(a) down to c with slope m takes at least time (f(a)-c)/m
+         going from f(a)  up  to C with slope M takes at least time (C-f(a))/M
+         do the same, for b.
+         -Deduce a smaller segment [a',b'] out of which there are no roots 
+         -if not empty, repeat the process with [a',(a'+b')/2] and [(a'+b')/2,b']. 
+*/
 //TODO: Make sure the code is "rounding-errors proof"!
 
 
 static int upper_level(vector<double> const &levels,double x,double tol=0.){
-    for (int i=0;i<levels.size();i++){
-        if (x<=levels[i]+tol) return(i);
-    }
-    return(levels.size());
+    return(upper_bound(levels.begin(),levels.end(),x-tol)-levels.begin());
 }
 
 static void multi_roots_internal(SBasis const &f,
 				 SBasis const &df,
 				 std::vector<double> const &levels,
-				 std::map<double,unsigned> &roots,
+				 std::vector<std::vector<double> > &roots,
 				 double tol,
 				 double a,
 				 double fa,
@@ -99,8 +101,8 @@ static void multi_roots_internal(SBasis const &f,
         int idx;
         idx=upper_level(levels,0,tol);
         if (idx<levels.size()&&fabs(levels[idx])<=tol){
-            roots[a]=idx;
-            roots[b]=idx;
+            roots[idx].push_back(a);
+            roots[idx].push_back(b);
         }
         return;
     }
@@ -130,7 +132,7 @@ static void multi_roots_internal(SBasis const &f,
         if (idx==levels.size()) idx-=1;
         double c=levels[idx];
         if((fa-c)*(fb-c)<=0||fabs(fa-c)<tol||fabs(fb-c)<tol){
-            roots[(a+b)/2]=idx;
+            roots[idx].push_back((a+b)/2);
         }
         return;
     }
@@ -140,7 +142,7 @@ static void multi_roots_internal(SBasis const &f,
     double m,M;
     local_bounds(df,a,b,m,M);
 
-    //first times when a level (higher or lower) can be riched from a or b.
+    //first times when a level (higher or lower) can be reached from a or b.
     double ta_hi,tb_hi,ta_lo,tb_lo;
     ta_hi=ta_lo=b+1;//default values => no root there.
     tb_hi=tb_lo=a-1;//default values => no root there.
@@ -165,10 +167,10 @@ static void multi_roots_internal(SBasis const &f,
     double t0,t1;
     t0=std::min(ta_hi,ta_lo);    
     t1=std::max(tb_hi,tb_lo);
-    if (t0>t1) return;
-    
+    //hum, rounding errors frighten me! so I add this +tol...
+    if (t0>t1+tol) return;
     double t,ft;
-    if (t1-t0<tol){
+    if (fabs(t1-t0)<tol){
         multi_roots_internal(f,df,levels,roots,tol,t0,f(t0),t1,f(t1));
     }else{
         t=(t0+t1)/2;
@@ -178,12 +180,15 @@ static void multi_roots_internal(SBasis const &f,
     }
 }
 
-std::map<double,unsigned> multi_roots(SBasis const &f,
+std::vector<std::vector<double> > multi_roots(SBasis const &f,
                                       std::vector<double> const &levels,
                                       double tol,
                                       double a,
                                       double b){
-    std::map<double,unsigned> roots;
+    std::vector<std::vector<double> > roots;
+    for(int i=0;i<levels.size();i++){
+        roots.push_back(std::vector<double>());
+    }
     SBasis df=derivative(f);
     multi_roots_internal(f,df,levels,roots,tol,a,f(a),b,f(b));  
     return(roots);
