@@ -142,7 +142,8 @@ void SVGPathParser::parse(char const *str) throw(SVGPathParser::ParseError) {
             }
             params.clear();
             _current = points[2];
-            _quad_tangent = _cubic_tangent = Point(0, 0);
+            _cubic_tangent = points[2] - points[1];
+            _quad_tangent = Point(0, 0);
             curveTo(points[0], points[1], points[2]);
         }
 
