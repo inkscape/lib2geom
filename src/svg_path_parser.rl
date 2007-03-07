@@ -41,6 +41,9 @@
 #include "svg_path_parser.h"
 
 using Geom::Point;
+using Geom::Dim2;
+using Geom::X;
+using Geom::Y;
 
 %%{
     machine svg_path;
@@ -52,8 +55,6 @@ void SVGPathParser::parse(char const *str) throw(SVGPathParser::ParseError) {
     char const *pe = str + strlen(str);
     char const *start = NULL;
     int cs;
-    bool absolute = false;
-    std::vector<double> params;
 
     _reset();
 
@@ -65,128 +66,73 @@ void SVGPathParser::parse(char const *str) throw(SVGPathParser::ParseError) {
         action push_number {
             char const *end=p;
             std::string buf(start, end);
-            params.push_back(strtod(start, (char **)&end));
+            _push(strtod(start, (char **)&end));
             start = NULL;
         }
 
         action push_true {
-            params.push_back(1.0);
+            _push(1.0);
         }
 
         action push_false {
-            params.push_back(0.0);
+            _push(0.0);
         }
 
         action mode_abs {
-            absolute = true;
+            _absolute = true;
         }
     
         action mode_rel {
-            absolute = false;
+            _absolute = false;
         }
     
         action moveto {
-            Point point(params[0], params[1]);
-            params.clear();
-            if (!absolute) {
-                point = point + _current;
-            }
-            _moveTo(point);
+            _moveTo(_pop_point());
         }    
 
         action lineto {
-            Point point(params[0], params[1]);
-            params.clear();
-            if (!absolute) {
-                point = point + _current;
-            }
-            _lineTo(point);
+            _lineTo(_pop_point());
         }
 
         action horizontal_lineto {
-            double x=params[0];
-            params.clear();
-            if (!absolute) {
-                x = x + _current[0];
-            }
-            _lineTo(Point(x, _current[1]));
+            _lineTo(Point(_pop_coord(X), _current[Y]));
         }
 
         action vertical_lineto {
-            double y=params[0];
-            params.clear();
-            if (!absolute) {
-                y = y + _current[1];
-            }
-            _lineTo(Point(_current[0], y));
+            _lineTo(Point(_current[X], _pop_coord(Y)));
         }
 
         action curveto {
-            Point points[3];
-            for ( int i = 0 ; i < 3 ; i++ ) {
-                points[i] = Point(params[i*2], params[i*2+1]);
-                if (!absolute) {
-                    points[i] = points[i] + _current;
-                }
-            }
-            params.clear();
-            _curveTo(points[0], points[1], points[2]);
+            Point p = _pop_point();
+            Point c1 = _pop_point();
+            Point c0 = _pop_point();
+            _curveTo(c0, c1, p);
         }
 
         action smooth_curveto {
-            Point points[3];
-            for ( int i = 1 ; i < 3 ; i++ ) {
-                points[i] = Point(params[(i-1)*2], params[(i-1)*2+1]);
-                if (!absolute) {
-                    points[i] = points[i] + _current;
-                }
-            }
-            points[0] = _cubic_tangent;
-            params.clear();
-            _curveTo(points[0], points[1], points[2]);
+            Point p = _pop_point();
+            Point c1 = _pop_point();
+            _curveTo(_cubic_tangent, c1, p);
         }
 
         action quadratic_bezier_curveto {
-            Point points[2];
-            for ( int i = 0 ; i < 2 ; i++ ) {
-                points[i] = Point(params[i*2], params[i*2+1]);
-                if (!absolute) {
-                    points[i] = points[i] + _current;
-                }
-            }
-            params.clear();
-            _quadTo(points[0], points[1]);
+            Point p = _pop_point();
+            Point c = _pop_point();
+            _quadTo(c, p);
         }
 
         action smooth_quadratic_bezier_curveto {
-            Point points[2];
-            points[1] = Point(params[0], params[1]);
-            if (!absolute) {
-                points[1] = points[1] + _current;
-            }
-            points[0] = _quad_tangent;
-            params.clear();
-            _quadTo(points[0], points[1]);
+            Point p = _pop_point();
+            _quadTo(_quad_tangent, p);
         }
 
         action elliptical_arc {
-            double rx;
-            double ry;
-            double angle;
-            bool large_arc;
-            bool sweep;
-            Point point;
-
-            rx = params[0];
-            ry = params[1];
-            angle = params[2];
-            large_arc = params[3];
-            sweep = params[4];
-            point = Point(params[5], params[6]);
-
-            if (!absolute) {
-                point = point + _current;
-            }
+            Point point = _pop_point();
+            bool sweep = _pop_flag();
+            bool large_arc = _pop_flag();
+            double angle = _pop();
+            double ry = _pop();
+            double rx = _pop();
 
             _arcTo(rx, ry, angle, large_arc, sweep, point);
         }

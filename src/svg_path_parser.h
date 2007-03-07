@@ -57,14 +57,46 @@ protected:
     virtual void closePath() = 0;
 
 private:
+    bool _absolute;
     Geom::Point _current;
     Geom::Point _initial;
     Geom::Point _cubic_tangent;
     Geom::Point _quad_tangent;
+    std::vector<double> _params;
 
     void _reset() {
+        _absolute = false;
         _current = _initial = Geom::Point(0, 0);
         _quad_tangent = _cubic_tangent = Geom::Point(0, 0);
+        _params.clear();
+    }
+
+    void _push(double value) {
+        _params.push_back(value);
+    }
+
+    double _pop() {
+        double value = _params.back();
+        _params.pop_back();
+        return value;
+    }
+
+    bool _pop_flag() {
+        return _pop() != 0.0;
+    }
+
+    double _pop_coord(Geom::Dim2 axis) {
+        if (_absolute) {
+            return _pop();
+        } else {
+            return _pop() + _current[axis];
+        }
+    }
+
+    Geom::Point _pop_point() {
+        double y = _pop_coord(Geom::Y);
+        double x = _pop_coord(Geom::X);
+        return Geom::Point(x, y);
     }
 
     void _moveTo(Geom::Point p) {
