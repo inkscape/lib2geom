@@ -1,6 +1,6 @@
 #line 1 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
 /*
- * SVGPathParser - parse SVG path specifications
+ * parse SVG path specifications
  *
  * Copyright 2007 MenTaLguY <mental@rydia.net>
  * Copyright 2007 Aaron Spike <aaron@ekips.org>
@@ -31,9 +31,6 @@
  */
 
 
-#include <iostream>
-#include <stdlib.h>
-#include <stdio.h>
 #include <cmath>
 #include <vector>
 
@@ -41,13 +38,97 @@
 
 #include "svg_path_parser.h"
 
-using Geom::Point;
-using Geom::Dim2;
-using Geom::X;
-using Geom::Y;
+namespace Geom {
+
+namespace {
+
+class Parser {
+public:
+    Parser(SVGPathSink &sink) : _sink(sink) {}
+
+    void parse(char const *str) throw(SVGPathParseError);
+
+private:
+    bool _absolute;
+    Point _current;
+    Point _initial;
+    Point _cubic_tangent;
+    Point _quad_tangent;
+    std::vector<double> _params;
+    SVGPathSink &_sink;
+
+    void _reset() {
+        _absolute = false;
+        _current = _initial = Point(0, 0);
+        _quad_tangent = _cubic_tangent = Point(0, 0);
+        _params.clear();
+    }
+
+    void _push(double value) {
+        _params.push_back(value);
+    }
+
+    double _pop() {
+        double value = _params.back();
+        _params.pop_back();
+        return value;
+    }
+
+    bool _pop_flag() {
+        return _pop() != 0.0;
+    }
+
+    double _pop_coord(Geom::Dim2 axis) {
+        if (_absolute) {
+            return _pop();
+        } else {
+            return _pop() + _current[axis];
+        }
+    }
+
+    Point _pop_point() {
+        double y = _pop_coord(Geom::Y);
+        double x = _pop_coord(Geom::X);
+        return Point(x, y);
+    }
+
+    void _moveTo(Point p) {
+        _quad_tangent = _cubic_tangent = _current = _initial = p;
+        _sink.moveTo(p);
+    }
+
+    void _lineTo(Point p) {
+        _quad_tangent = _cubic_tangent = _current = p;
+        _sink.moveTo(p);
+    }
+
+    void _curveTo(Point c0, Point c1, Point p) {
+        _quad_tangent = _current = p;
+        _cubic_tangent = p + ( p - c1 );
+        _sink.curveTo(c0, c1, p);
+    }
+
+    void _quadTo(Point c, Point p) {
+        _cubic_tangent = _current = p;
+        _quad_tangent = p + ( p - c );
+        _sink.quadTo(c, p);
+    }
+
+    void _arcTo(double rx, double ry, double angle,
+                bool large_arc, bool sweep, Point p)
+    {
+        _quad_tangent = _cubic_tangent = _current = p;
+        _sink.arcTo(rx, ry, angle, large_arc, sweep, p);
+    }
+
+    void _closePath() {
+        _quad_tangent = _cubic_tangent = _current = _initial;
+        _sink.closePath();
+    }
+};
 
 
-#line 51 "/home/mental/trees/lib2geom/src/svg_path_parser.cpp"
+#line 132 "/home/mental/trees/lib2geom/src/svg_path_parser.cpp"
 static unsigned char _svg_path_a[] = {
 	0, 1, 0, 1, 1, 1, 2, 1, 
 	3, 1, 4, 1, 5, 1, 15, 2, 
@@ -1173,10 +1254,12 @@ static int svg_path_start = 272;
 
 static int svg_path_first_final = 272;
 
-#line 51 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
+#line 132 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
 
 
-void SVGPathParser::parse(char const *str) throw(SVGPathParser::ParseError) {
+void Parser::parse(char const *str)
+throw(SVGPathParseError)
+{
     char const *p = str;
     char const *pe = str + strlen(str);
     char const *start = NULL;
@@ -1185,7 +1268,7 @@ void SVGPathParser::parse(char const *str) throw(SVGPathParser::ParseError) {
     _reset();
 
     
-#line 1189 "/home/mental/trees/lib2geom/src/svg_path_parser.cpp"
+#line 1272 "/home/mental/trees/lib2geom/src/svg_path_parser.cpp"
 	{
 	cs = svg_path_start;
 	}
@@ -1267,13 +1350,13 @@ _match:
 		switch ( *_acts++ )
 		{
 	case 0:
-#line 62 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
+#line 145 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
 	{
             start = p;
         }
 	break;
 	case 1:
-#line 66 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
+#line 149 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
 	{
             char const *end=p;
             std::string buf(start, end);
@@ -1282,55 +1365,55 @@ _match:
         }
 	break;
 	case 2:
-#line 73 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
+#line 156 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
 	{
             _push(1.0);
         }
 	break;
 	case 3:
-#line 77 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
+#line 160 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
 	{
             _push(0.0);
         }
 	break;
 	case 4:
-#line 81 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
+#line 164 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
 	{
             _absolute = true;
         }
 	break;
 	case 5:
-#line 85 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
+#line 168 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
 	{
             _absolute = false;
         }
 	break;
 	case 6:
-#line 89 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
+#line 172 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
 	{
             _moveTo(_pop_point());
         }
 	break;
 	case 7:
-#line 93 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
+#line 176 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
 	{
             _lineTo(_pop_point());
         }
 	break;
 	case 8:
-#line 97 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
+#line 180 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
 	{
             _lineTo(Point(_pop_coord(X), _current[Y]));
         }
 	break;
 	case 9:
-#line 101 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
+#line 184 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
 	{
             _lineTo(Point(_current[X], _pop_coord(Y)));
         }
 	break;
 	case 10:
-#line 105 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
+#line 188 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
 	{
             Point p = _pop_point();
             Point c1 = _pop_point();
@@ -1339,7 +1422,7 @@ _match:
         }
 	break;
 	case 11:
-#line 112 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
+#line 195 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
 	{
             Point p = _pop_point();
             Point c1 = _pop_point();
@@ -1347,7 +1430,7 @@ _match:
         }
 	break;
 	case 12:
-#line 118 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
+#line 201 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
 	{
             Point p = _pop_point();
             Point c = _pop_point();
@@ -1355,14 +1438,14 @@ _match:
         }
 	break;
 	case 13:
-#line 124 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
+#line 207 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
 	{
             Point p = _pop_point();
             _quadTo(_quad_tangent, p);
         }
 	break;
 	case 14:
-#line 129 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
+#line 212 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
 	{
             Point point = _pop_point();
             bool sweep = _pop_flag();
@@ -1375,24 +1458,36 @@ _match:
         }
 	break;
 	case 15:
-#line 140 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
+#line 223 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
 	{
             _closePath();
         }
 	break;
-#line 1384 "/home/mental/trees/lib2geom/src/svg_path_parser.cpp"
+#line 1467 "/home/mental/trees/lib2geom/src/svg_path_parser.cpp"
 		}
 	}
 
 	goto _again;
 	_out: {}
 	}
-#line 284 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
+#line 367 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
 
 
     if ( cs < svg_path_first_final ) {
-        throw ParseError();
+        throw SVGPathParseError();
     }
+}
+
+}
+
+void parse_svg_path(char const *str, SVGPathSink &sink)
+throw(SVGPathParseError)
+{
+    Parser parser(sink);
+    parser.parse(str);
+    sink.finish();
+}
+
 }
 
 /*

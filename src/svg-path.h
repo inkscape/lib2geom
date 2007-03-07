@@ -37,14 +37,14 @@ namespace Geom {
 
 class SVGPathSink {
 public:
-    void moveTo(Point p) = 0;
-    void lineTo(Point p) = 0;
-    void curveTo(Point c0, Point c1, Point p) = 0;
-    void quadTo(Point c, Point p) = 0;
-    void arcTo(double rx, double ry, double angle,
-               bool large_arc, bool sweep, Point p) = 0;
-    void closePath() = 0;
-    void finish() = 0;
+    virtual void moveTo(Point p) = 0;
+    virtual void lineTo(Point p) = 0;
+    virtual void curveTo(Point c0, Point c1, Point p) = 0;
+    virtual void quadTo(Point c, Point p) = 0;
+    virtual void arcTo(double rx, double ry, double angle,
+                       bool large_arc, bool sweep, Point p) = 0;
+    virtual void closePath() = 0;
+    virtual void finish() = 0;
 };
 
 template <typename OutputIterator>
@@ -59,21 +59,22 @@ public:
     }
 
     void lineTo(Point p) {
-        _path.append<LineSegment>(p);
+        _path.appendNew<Path2::LineSegment>(p);
     }
 
     void curveTo(Point c0, Point c1, Point p) {
-        _path.append<CubicBezier>(c0, c1, p);
+        _path.appendNew<Path2::CubicBezier>(c0, c1, p);
     }
 
     void quadTo(Point c, Point p) {
-        _path.append<QuadraticBezier>(c, p);
+        _path.appendNew<Path2::QuadraticBezier>(c, p);
     }
 
     void arcTo(double rx, double ry, double angle,
                bool large_arc, bool sweep, Point p)
     {
-        _path.append<SVGEllipticalArc>(rx, ry, angle, large_arc, sweep, p);
+        _path.appendNew<Path2::SVGEllipticalArc>(rx, ry, angle,
+                                                 large_arc, sweep, p);
     }
 
     void closePath() {
@@ -93,7 +94,7 @@ public:
 private:
     bool _in_path;
     OutputIterator _out;
-    Geom::Path2::Path _path;
+    Path2::Path _path;
 };
 
 }

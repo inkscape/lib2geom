@@ -1,5 +1,5 @@
 /*
- * SVGPathParser - parse SVG path specifications
+ * parse SVG path specifications
  *
  * Copyright 2007 MenTaLguY <mental@rydia.net>
  * Copyright 2007 Aaron Spike <aaron@ekips.org>
@@ -34,106 +34,18 @@
 
 #include <vector>
 #include <exception>
-#include "../src/point.h"
+#include "point.h"
+#include "svg-path.h"
 
-class SVGPathParser {
-public:
-    SVGPathParser() {}
-    virtual ~SVGPathParser() {}
+namespace Geom {
 
-    struct ParseError : public std::exception {
-         char const *what() const throw() { return "parse error"; }
-    };
-
-    void parse(char const *str) throw(ParseError);
-
-protected:
-    virtual void moveTo(Geom::Point p) = 0;
-    virtual void lineTo(Geom::Point p) = 0;
-    virtual void curveTo(Geom::Point c0, Geom::Point c1, Geom::Point p) = 0;
-    virtual void quadTo(Geom::Point c, Geom::Point p) = 0;
-    virtual void arcTo(double rx, double ry, double angle,
-                       bool large_arc, bool sweep, Geom::Point p) = 0;
-    virtual void closePath() = 0;
-
-private:
-    bool _absolute;
-    Geom::Point _current;
-    Geom::Point _initial;
-    Geom::Point _cubic_tangent;
-    Geom::Point _quad_tangent;
-    std::vector<double> _params;
-
-    void _reset() {
-        _absolute = false;
-        _current = _initial = Geom::Point(0, 0);
-        _quad_tangent = _cubic_tangent = Geom::Point(0, 0);
-        _params.clear();
-    }
-
-    void _push(double value) {
-        _params.push_back(value);
-    }
-
-    double _pop() {
-        double value = _params.back();
-        _params.pop_back();
-        return value;
-    }
-
-    bool _pop_flag() {
-        return _pop() != 0.0;
-    }
-
-    double _pop_coord(Geom::Dim2 axis) {
-        if (_absolute) {
-            return _pop();
-        } else {
-            return _pop() + _current[axis];
-        }
-    }
-
-    Geom::Point _pop_point() {
-        double y = _pop_coord(Geom::Y);
-        double x = _pop_coord(Geom::X);
-        return Geom::Point(x, y);
-    }
-
-    void _moveTo(Geom::Point p) {
-        _quad_tangent = _cubic_tangent = _current = _initial = p;
-        moveTo(p);
-    }
-
-    void _lineTo(Geom::Point p) {
-        _quad_tangent = _cubic_tangent = _current = p;
-        moveTo(p);
-    }
-
-    void _curveTo(Geom::Point c0, Geom::Point c1, Geom::Point p) {
-        _quad_tangent = _current = p;
-        _cubic_tangent = p + ( p - c1 );
-        curveTo(c0, c1, p);
-    }
-
-    void _quadTo(Geom::Point c, Geom::Point p) {
-        _cubic_tangent = _current = p;
-        _quad_tangent = p + ( p - c );
-        quadTo(c, p);
-    }
-
-    void _arcTo(double rx, double ry, double angle,
-                bool large_arc, bool sweep, Geom::Point p)
-    {
-        _quad_tangent = _cubic_tangent = _current = p;
-        arcTo(rx, ry, angle, large_arc, sweep, p);
-    }
-
-    void _closePath() {
-        _quad_tangent = _cubic_tangent = _current = _initial;
-        closePath();
-    }
+struct SVGPathParseError : public std::exception {
+    char const *what() const throw() { return "parse error"; }
 };
 
+void parse_svg_path(char const *str, SVGPathSink &sink) throw(SVGPathParseError);
+
+}
 
 #endif
 /*
