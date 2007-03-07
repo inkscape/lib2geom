@@ -62,43 +62,42 @@ private:
     Geom::Point _cubic_tangent;
     Geom::Point _quad_tangent;
 
-    void _moveTo(Geom::Point p) {
-        _current = _initial = p;
+    void _reset() {
+        _current = _initial = Geom::Point(0, 0);
         _quad_tangent = _cubic_tangent = Geom::Point(0, 0);
+    }
+
+    void _moveTo(Geom::Point p) {
+        _quad_tangent = _cubic_tangent = _current = _initial = p;
         moveTo(p);
     }
 
     void _lineTo(Geom::Point p) {
-        _current = p;
-        _quad_tangent = _cubic_tangent = Geom::Point(0, 0);
+        _quad_tangent = _cubic_tangent = _current = p;
         moveTo(p);
     }
 
     void _curveTo(Geom::Point c0, Geom::Point c1, Geom::Point p) {
-        _current = p;
-        _quad_tangent = Geom::Point(0, 0);
-        _cubic_tangent = p - c1;
+        _quad_tangent = _current = p;
+        _cubic_tangent = p + ( p - c1 );
         curveTo(c0, c1, p);
     }
 
     void _quadTo(Geom::Point c, Geom::Point p) {
-        _current = p;
-        _quad_tangent = p - c;
-        _cubic_tangent = Geom::Point(0, 0);
+        _cubic_tangent = _current = p;
+        _quad_tangent = p + ( p - c );
         quadTo(c, p);
     }
 
     void _arcTo(double rx, double ry, double angle,
                 bool large_arc, bool sweep, Geom::Point p)
     {
-        _current = p;
-        _quad_tangent = _cubic_tangent = Geom::Point(0, 0);
+        _quad_tangent = _cubic_tangent = _current = p;
         arcTo(rx, ry, angle, large_arc, sweep, p);
     }
 
     void _closePath() {
-        _current = _initial;
-        _quad_tangent = _cubic_tangent = Geom::Point(0, 0);
+        _quad_tangent = _cubic_tangent = _current = _initial;
         closePath();
     }
 };

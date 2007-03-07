@@ -55,8 +55,7 @@ void SVGPathParser::parse(char const *str) throw(SVGPathParser::ParseError) {
     bool absolute = false;
     std::vector<double> params;
 
-    _current = _initial = Point(0, 0);
-    _cubic_tangent = _quad_tangent = Point(0, 0);
+    _reset();
 
     %%{
         action start_number {
@@ -110,8 +109,7 @@ void SVGPathParser::parse(char const *str) throw(SVGPathParser::ParseError) {
             if (!absolute) {
                 x = x + _current[0];
             }
-            Point point=Point(x, _current[1]);
-            _lineTo(point);
+            _lineTo(Point(x, _current[1]));
         }
 
         action vertical_lineto {
@@ -120,8 +118,7 @@ void SVGPathParser::parse(char const *str) throw(SVGPathParser::ParseError) {
             if (!absolute) {
                 y = y + _current[1];
             }
-            Point point=Point(_current[0], y);
-            _lineTo(point);
+            _lineTo(Point(_current[0], y));
         }
 
         action curveto {
@@ -144,23 +141,12 @@ void SVGPathParser::parse(char const *str) throw(SVGPathParser::ParseError) {
                     points[i] = points[i] + _current;
                 }
             }
-            points[0] = _cubic_tangent + _current;
+            points[0] = _cubic_tangent;
             params.clear();
             _curveTo(points[0], points[1], points[2]);
         }
 
         action quadratic_bezier_curveto {
-            Point points[2];
-            points[1] = Point(params[0], params[1]);
-            if (!absolute) {
-                points[1] = points[1] + _current;
-            }
-            points[0] = _quad_tangent + _current;
-            params.clear();
-            _quadTo(points[0], points[1]);
-        }
-
-        action smooth_quadratic_bezier_curveto {
             Point points[2];
             for ( int i = 0 ; i < 2 ; i++ ) {
                 points[i] = Point(params[i*2], params[i*2+1]);
@@ -168,6 +154,17 @@ void SVGPathParser::parse(char const *str) throw(SVGPathParser::ParseError) {
                     points[i] = points[i] + _current;
                 }
             }
+            params.clear();
+            _quadTo(points[0], points[1]);
+        }
+
+        action smooth_quadratic_bezier_curveto {
+            Point points[2];
+            points[1] = Point(params[0], params[1]);
+            if (!absolute) {
+                points[1] = points[1] + _current;
+            }
+            points[0] = _quad_tangent;
             params.clear();
             _quadTo(points[0], points[1]);
         }
