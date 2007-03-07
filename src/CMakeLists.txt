@@ -16,6 +16,7 @@ ENDIF(GENERATE_SVG_PARSER OR REGENERATE_SVG_PARSER)
 
 SET(2GEOM_SRC
 svg-path.h
+svg-path.cpp
 svg_path_parser.h
 svg_path_parser.cpp
 #arc-length.cpp

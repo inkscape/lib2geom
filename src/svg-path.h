@@ -47,6 +47,8 @@ public:
     virtual void finish() = 0;
 };
 
+void output_svg_path(Path2::Path &path, SVGPathSink &sink);
+
 template <typename OutputIterator>
 class SVGPathGenerator : public SVGPathSink {
 public:
