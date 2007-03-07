@@ -92,11 +92,7 @@ void SVGPathParser::parse(char const *str) throw(SVGPathParser::ParseError) {
             if (!absolute) {
                 point = point + _current;
             }
-            _initial = point;
-            _current = point;
-            _quad_tangent = Point(0, 0);
-            _cubic_tangent = Point(0, 0);
-            moveTo(point);
+            _moveTo(point);
         }    
 
         action lineto {
@@ -105,10 +101,7 @@ void SVGPathParser::parse(char const *str) throw(SVGPathParser::ParseError) {
             if (!absolute) {
                 point = point + _current;
             }
-            _current = point;
-            _quad_tangent = Point(0, 0);
-            _cubic_tangent = Point(0, 0);
-            lineTo(point);
+            _lineTo(point);
         }
 
         action horizontal_lineto {
@@ -118,10 +111,7 @@ void SVGPathParser::parse(char const *str) throw(SVGPathParser::ParseError) {
                 x = x + _current[0];
             }
             Point point=Point(x, _current[1]);
-            _current = point;
-            _quad_tangent = Point(0, 0);
-            _cubic_tangent = Point(0, 0);
-            lineTo(point);
+            _lineTo(point);
         }
 
         action vertical_lineto {
@@ -131,10 +121,7 @@ void SVGPathParser::parse(char const *str) throw(SVGPathParser::ParseError) {
                 y = y + _current[1];
             }
             Point point=Point(_current[0], y);
-            _current = point;
-            _quad_tangent = Point(0, 0);
-            _cubic_tangent = Point(0, 0);
-            lineTo(point);
+            _lineTo(point);
         }
 
         action curveto {
@@ -146,10 +133,7 @@ void SVGPathParser::parse(char const *str) throw(SVGPathParser::ParseError) {
                 }
             }
             params.clear();
-            _current = points[2];
-            _quad_tangent = Point(0, 0);
-            _cubic_tangent = points[2] - points[1];
-            curveTo(points[0], points[1], points[2]);
+            _curveTo(points[0], points[1], points[2]);
         }
 
         action smooth_curveto {
@@ -162,10 +146,7 @@ void SVGPathParser::parse(char const *str) throw(SVGPathParser::ParseError) {
             }
             points[0] = _cubic_tangent + _current;
             params.clear();
-            _current = points[2];
-            _quad_tangent = Point(0, 0);
-            _cubic_tangent = points[2] - points[1];
-            curveTo(points[0], points[1], points[2]);
+            _curveTo(points[0], points[1], points[2]);
         }
 
         action quadratic_bezier_curveto {
@@ -176,10 +157,7 @@ void SVGPathParser::parse(char const *str) throw(SVGPathParser::ParseError) {
             }
             points[0] = _quad_tangent + _current;
             params.clear();
-            _current = points[1];
-            _quad_tangent = points[1] - points[0];
-            _cubic_tangent = Point(0, 0);
-            quadTo(points[0], points[1]);
+            _quadTo(points[0], points[1]);
         }
 
         action smooth_quadratic_bezier_curveto {
@@ -191,10 +169,7 @@ void SVGPathParser::parse(char const *str) throw(SVGPathParser::ParseError) {
                 }
             }
             params.clear();
-            _current = points[1];
-            _quad_tangent = points[1] - points[0];
-            _cubic_tangent = Point(0, 0);
-            quadTo(points[0], points[1]);
+            _quadTo(points[0], points[1]);
         }
 
         action elliptical_arc {
@@ -216,17 +191,11 @@ void SVGPathParser::parse(char const *str) throw(SVGPathParser::ParseError) {
                 point = point + _current;
             }
 
-            _current = point;
-            _quad_tangent = Point(0, 0);
-            _cubic_tangent = Point(0, 0);
-            arcTo(rx, ry, angle, large_arc, sweep, point);
+            _arcTo(rx, ry, angle, large_arc, sweep, point);
         }
         
         action closepath {
-            _current = _initial;
-            _quad_tangent = Point(0, 0);
-            _cubic_tangent = Point(0, 0);
-            closePath();
+            _closePath();
         }
 
         wsp = (' ' | 9 | 10 | 13);
