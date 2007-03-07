@@ -92,8 +92,10 @@ void SVGPathParser::parse(char const *str) throw(SVGPathParser::ParseError) {
             if (!absolute) {
                 point = point + _current;
             }
-            _current = _initial = point;
-            _quad_tangent = _cubic_tangent = Point(0, 0);
+            _initial = point;
+            _current = point;
+            _quad_tangent = Point(0, 0);
+            _cubic_tangent = Point(0, 0);
             moveTo(point);
         }    
 
@@ -104,7 +106,8 @@ void SVGPathParser::parse(char const *str) throw(SVGPathParser::ParseError) {
                 point = point + _current;
             }
             _current = point;
-            _quad_tangent = _cubic_tangent = Point(0, 0);
+            _quad_tangent = Point(0, 0);
+            _cubic_tangent = Point(0, 0);
             lineTo(point);
         }
 
@@ -116,7 +119,8 @@ void SVGPathParser::parse(char const *str) throw(SVGPathParser::ParseError) {
             }
             Point point=Point(x, _current[1]);
             _current = point;
-            _quad_tangent = _cubic_tangent = Point(0, 0);
+            _quad_tangent = Point(0, 0);
+            _cubic_tangent = Point(0, 0);
             lineTo(point);
         }
 
@@ -128,7 +132,8 @@ void SVGPathParser::parse(char const *str) throw(SVGPathParser::ParseError) {
             }
             Point point=Point(_current[0], y);
             _current = point;
-            _quad_tangent = _cubic_tangent = Point(0, 0);
+            _quad_tangent = Point(0, 0);
+            _cubic_tangent = Point(0, 0);
             lineTo(point);
         }
 
@@ -142,8 +147,8 @@ void SVGPathParser::parse(char const *str) throw(SVGPathParser::ParseError) {
             }
             params.clear();
             _current = points[2];
-            _cubic_tangent = points[2] - points[1];
             _quad_tangent = Point(0, 0);
+            _cubic_tangent = points[2] - points[1];
             curveTo(points[0], points[1], points[2]);
         }
 
@@ -158,9 +163,8 @@ void SVGPathParser::parse(char const *str) throw(SVGPathParser::ParseError) {
             points[0] = _cubic_tangent + _current;
             params.clear();
             _current = points[2];
-            _cubic_tangent = points[2] - points[1];
             _quad_tangent = Point(0, 0);
-
+            _cubic_tangent = points[2] - points[1];
             curveTo(points[0], points[1], points[2]);
         }
 
@@ -213,13 +217,15 @@ void SVGPathParser::parse(char const *str) throw(SVGPathParser::ParseError) {
             }
 
             _current = point;
-            _quad_tangent = _cubic_tangent = Point(0, 0);
+            _quad_tangent = Point(0, 0);
+            _cubic_tangent = Point(0, 0);
             arcTo(rx, ry, angle, large_arc, sweep, point);
         }
         
         action closepath {
             _current = _initial;
-            _quad_tangent = _cubic_tangent = Point(0, 0);
+            _quad_tangent = Point(0, 0);
+            _cubic_tangent = Point(0, 0);
             closePath();
         }
 
