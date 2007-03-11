@@ -2,6 +2,7 @@
 #define SEEN_GEOM_PATH_H
 
 #include "point.h"
+#include "maybe.h"
 #include "rect.h"
 #include <iterator>
 #include <algorithm>
@@ -34,7 +35,7 @@ public:
   virtual Rect boundsFast() const = 0;
   virtual Rect boundsExact() const = 0;
 
-  virtual int winding(Point p) const = 0;
+  virtual Maybe<int> winding(Point p) const = 0;
 
   virtual Path const &subdivide(Coord t, Path &out) const = 0;
 
@@ -45,7 +46,7 @@ public:
 
 struct CurveHelpers {
 protected:
-  static int sbasis_winding(MultidimSBasis<2> const &sbasis, Point p);
+  static Maybe<int> sbasis_winding(MultidimSBasis<2> const &sbasis, Point p);
 };
 
 struct BezierHelpers {
@@ -104,7 +105,7 @@ public:
   Rect boundsFast() const { return bounds(bezier_degree, c_); }
   Rect boundsExact() const { return bounds(bezier_degree, c_); }
 
-  int winding(Point p) const {
+  Maybe<int> winding(Point p) const {
     return sbasis_winding(sbasis(), p);
   }
 
@@ -155,7 +156,7 @@ public:
   Rect boundsFast() const;
   Rect boundsExact() const;
 
-  int winding(Point p) const {
+  Maybe<int> winding(Point p) const {
     return sbasis_winding(sbasis(), p);
   }
 
@@ -194,7 +195,7 @@ public:
   Rect boundsFast() const;
   Rect boundsExact() const;
 
-  int winding(Point p) const {
+  Maybe<int> winding(Point p) const {
     return sbasis_winding(coeffs_, p);
   }
 

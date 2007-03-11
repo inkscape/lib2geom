@@ -4,10 +4,13 @@ namespace Geom {
 
 namespace Path2 {
 
-int CurveHelpers::sbasis_winding(MultidimSBasis<2> const &sb, Point p) {
+Maybe<int> CurveHelpers::sbasis_winding(MultidimSBasis<2> const &sb, Point p) {
+  if (sb[Y].empty()) {
+    return Nothing();
+  }
+
   SBasis fy = sb[Y];
   SBasis dy = derivative(fy);
-
   fy -= p[Y];
   std::vector<double> ts = roots(fy);
 
@@ -111,11 +114,14 @@ Rect Path::boundsExact() const {
 int Path::winding(Point p) const {
   int winding;
   for ( const_iterator iter = begin()
-      ; iter != end()
+      ; iter != end_closed()
       ; ++iter )
   {
     Curve const &curve = *iter;
-    winding += curve.winding(p);
+    Maybe<int> curve_winding = curve.winding(p);
+    if (curve_winding) {
+      winding += *curve_winding;
+    }
   }
   return winding;
 }
