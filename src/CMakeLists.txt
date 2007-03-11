@@ -85,6 +85,8 @@ s-basis-2d.cpp
 s-basis.cpp
 s-basis.h
 s-basis-roots.cpp
+basic-intersection.h
+basic-intersection.cpp
 sb-geometric.cpp
 sbasis-poly.cpp
 sbasis-poly.h

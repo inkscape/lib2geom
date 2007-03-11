@@ -319,7 +319,28 @@ pw_sb compose(pw_sb const &f, pw_sb const &g){
   }
 }
 
+pw_sb integral(pw_sb const &a) {
+    pw_sb result;
+    result.segs.resize(a.segs.size());
+    result.cuts.insert(result.cuts.end(), a.cuts.begin(), a.cuts.end());
+    for(int i = 0; i < a.segs.size(); i++){
+        result.segs[i] = integral(a.segs[i]);
+        // Need some kind off offset to share the constant over all segs
+    }
+    return result;
 }
+
+pw_sb derivative(pw_sb const &a) {
+    pw_sb result;
+    result.segs.resize(a.segs.size());
+    result.cuts.insert(result.cuts.end(), a.cuts.begin(), a.cuts.end());
+    for(int i = 0; i < a.segs.size(); i++){
+        result.segs[i] = derivative(a.segs[i]);
+    }
+    return result;
+}
+
+};
 /*
   Local Variables:
   mode:c++

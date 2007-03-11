@@ -61,6 +61,9 @@ sbasis_to_bezier(SBasis const &B, unsigned q) {
 std::vector<Geom::Point>
 sbasis_to_bezier(MultidimSBasis<2> const &B, unsigned qq) {
     std::vector<Geom::Point> result;
+    if(qq == 0) {
+        qq = B.size();
+    }
     unsigned n = qq*2;
     result.resize(n, Geom::Point(0,0));
     n--;

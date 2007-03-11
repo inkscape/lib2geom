@@ -129,6 +129,9 @@ inline pw_sb operator*=(pw_sb &a, pw_sb const &b) {
     return a;
 }
 
+pw_sb integral(pw_sb const &a);
+pw_sb derivative(pw_sb const &a);
+
 }
 
 #endif //SEEN_GEOM_PW_SB_H

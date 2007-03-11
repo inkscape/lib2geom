@@ -12,16 +12,12 @@
 #include "bezier-to-sbasis.h"
 #include "md-pw-sb.h"
 
+#include "not-implemented.h"
 namespace Geom {
 
 namespace Path2 {
 
 class Path;
-
-class NotImplemented : public std::logic_error {
-public:
-  NotImplemented() : std::logic_error("method not implemented") {}
-};
 
 class Curve {
 public:

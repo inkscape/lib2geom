@@ -10,6 +10,7 @@
 #include "translate.h"
 
 #include "toy-framework.h"
+#include "basic-intersection.h"
 
 using std::vector;
 const unsigned bez_ord = 10;
@@ -17,53 +18,41 @@ using namespace Geom;
 cairo_t *g_cr = 0;
 const double eps = 0.1;
 
-class Bezier {
-public:
-    std::vector<Geom::Point> p;
-    Bezier() {
-    }
-    Bezier * split(double t = 0.5);
-    
-    ~Bezier() {}
-
-    void bounds(double &minax, double &maxax, 
-                double &minay, double &maxay) {
-        // Compute bounding box for a
-        minax = p[0][X];	 // These are the most likely to be extremal
-        maxax = p.back()[X];
-        if( minax > maxax )
-            swap(minax, maxax);
-        for(unsigned i = 1; i < p.size()-1; i++) {
-            if( p[i][X] < minax )
-                minax = p[i][X];
-            else if( p[i][X] > maxax )
-                maxax = p[i][X];
-        }
-
-        minay = p[0][Y];	 // These are the most likely to be extremal
-        maxay = p.back()[Y];
-        if( minay > maxay )
-            swap(minay, maxay);
-        for(unsigned i = 1; i < p.size()-1; i++) {
-            if( p[i][Y] < minay )
-                minay = p[i][Y];
-            else if( p[i][Y] > maxay )
-                maxay = p[i][Y];
-        }
-
-    }
-    
-};
-
-std::vector<std::pair<double, double> > find_intersections( Bezier a, Bezier b);
-
 /** Given two linear md_sb(assume they are linear even if they're not)
     find the ts at the intersection. */
-void
+bool
 linear_pair_intersect(MultidimSBasis<2> A, double Al, double Ah, 
                       MultidimSBasis<2> B, double Bl, double Bh,
-                      double tA, double tB) {
+                      double &tA, double &tB) {
+    Rect Ar = local_bounds(A, Al, Ah);
+    cairo_rectangle(g_cr, Ar.min()[0], Ar.min()[1], Ar.max()[0], Ar.max()[1]);
+    cairo_stroke(g_cr);
+    cout << Al << ", " << Ah << "\n";
     // kramers rule here
+    Point A0 = point_at(A,Al);
+    Point A1 = point_at(A,Ah);
+    Point B0 = point_at(B,Bl);
+    Point B1 = point_at(B,Bh);
+    double xlk = A1[X] - A0[X];
+    double ylk = A1[Y] - A0[Y];
+    double xnm = B1[X] - B0[X];
+    double ynm = B1[Y] - B0[Y];
+    double xmk = B0[X] - A0[X];
+    double ymk = B0[Y] - A0[Y];
+    double det = xnm * ylk - ynm * xlk;
+    if( 1.0 + det == 1.0 )
+        return false;
+    else
+    {
+        double detinv = 1.0 / det;
+        double s = ( xnm * ymk - ynm *xmk ) * detinv;
+        double t = ( xlk * ymk - ylk * xmk ) * detinv;
+        if( ( s < 0.0 ) || ( s > 1.0 ) || ( t < 0.0 ) || ( t > 1.0 ) )
+            return false;
+        tA = Al + s * ( Ah - Al );
+        tB = Bl + t * ( Bh - Bl );
+        return true;
+    }
 }
 
 void pair_intersect(vector<double> &Asects,
@@ -71,19 +60,41 @@ void pair_intersect(vector<double> &Asects,
                     MultidimSBasis<2> A, double Al, double Ah, 
                     MultidimSBasis<2> B, double Bl, double Bh, int depth=0) {
     // we'll split only A, and swap args
-    if(depth > 5)
-        return;
     Rect Ar = local_bounds(A, Al, Ah);
     if(Ar.isEmpty()) return;
-    cairo_rectangle(g_cr, Ar.min()[0], Ar.min()[1], Ar.max()[0], Ar.max()[1]);
-    cairo_stroke(g_cr);
 
     Rect Br = local_bounds(B, Bl, Bh);
     if(Br.isEmpty()) return;
     
-    if(Ar.intersects(Br)) {
-        if((A.tail_error(2) < eps) && 
-           (B.tail_error(2) < eps)) {
+    if((depth > 12) || Ar.intersects(Br)) {
+        double Ate = 0;
+        double Bte = 0;
+        double lo, hi;
+        for(int d = 0; d < 2; d++) {
+            local_bounds(A[d],
+                         Al, Ah,
+                         lo, hi,
+                         1);
+            Ate = max(Ate, hi-lo);
+        }
+        for(int d = 0; d < 2; d++) {
+            local_bounds(B[d],
+                         Bl, Bh,
+                         lo, hi,
+                         1);
+            Bte = max(Bte, hi-lo);
+        }
+
+        if((depth > 12)  || ((Ate < eps) && 
+           (Bte < eps))) {
+            cout << "intersects\n" << Ate << "\n" << Bte;
+            double tA, tB;
+            if(linear_pair_intersect(A, Al, Ah, 
+                                     B, Bl, Bh, 
+                                     tA, tB)) {
+                Asects.push_back(tA);
+                Bsects.push_back(tB);
+            }
             
         } else {
             double mid = (Al + Ah)/2;
@@ -106,19 +117,17 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
     MultidimSBasis<2> A = bezier_to_sbasis<2, bez_ord-1>(handles.begin());
     cairo_md_sb(cr, A);
     
-    Rect Ar = local_bounds(A, 0, 1);
-    
     MultidimSBasis<2> B = bezier_to_sbasis<2, bez_ord-1>(handles.begin()+bez_ord);
     cairo_md_sb(cr, B);
-    
     vector<double> Asects, Bsects;
     g_cr = cr;
-    /*pair_intersect(Asects, Bsects,
-                    A, 0, 1, 
-                    B, 0, 1);*/
-    Bezier Ab, Bb;
-    Ab.p.insert(Ab.p.begin(), handles.begin(), handles.begin()+bez_ord);
-    Bb.p.insert(Bb.p.begin(), handles.begin()+bez_ord, handles.begin()+2*bez_ord);
+    if(0) pair_intersect(Asects, Bsects, A, 0, 1, 
+                   B, 0, 1);
+    
+    
+    vector<Geom::Point> Ab, Bb;
+    Ab.insert(Ab.begin(), handles.begin(), handles.begin()+bez_ord);
+    Bb.insert(Bb.begin(), handles.begin()+bez_ord, handles.begin()+2*bez_ord);
     std::vector<std::pair<double, double> > section = 
         find_intersections( Ab, Bb);
     cairo_stroke(cr);
@@ -141,238 +150,6 @@ int main(int argc, char **argv) {
     init(argc, argv, "Pair Intersect", new PairIntersect());
 
     return 0;
-}
-
-
-/* The value of 1.0 / (1L<<14) is enough for most applications */
-const double INV_EPS = (1L<<14);
-    
-/*
- * split the curve at the midpoint, returning an array with the two parts
- * Temporary storage is minimized by using part of the storage for the result
- * to hold an intermediate value until it is no longer needed.
- */
-#define left r[0]
-#define right r[1]
-Bezier *Bezier::split(double t) {
-    Bezier *r = new Bezier[2];
-    const unsigned sz = p.size();
-    Geom::Point Vtemp[sz][sz];
-
-    /* Copy control points	*/
-    std::copy(p.begin(), p.end(), Vtemp[0]);
-
-    /* Triangle computation	*/
-    for (unsigned i = 1; i < sz; i++) {	
-        for (unsigned j = 0; j < sz - i; j++) {
-            Vtemp[i][j] = Lerp(t, Vtemp[i-1][j], Vtemp[i-1][j+1]);
-        }
-    }
-    
-    r[0].p.resize(sz);
-    r[1].p.resize(sz);
-    for (unsigned j = 0; j < sz; j++)
-        r[0].p[j]  = Vtemp[j][0];
-    for (unsigned j = 0; j < sz; j++)
-        r[1].p[j] = Vtemp[sz-1-j][j];
-
-    return r;
-}
-#undef left
-#undef right
-
-    
-/*
- * Test the bounding boxes of two Bezier curves for interference.
- * Several observations:
- *	First, it is cheaper to compute the bounding box of the second curve
- *	and test its bounding box for interference than to use a more direct
- *	approach of comparing all control points of the second curve with 
- *	the various edges of the bounding box of the first curve to test
- * 	for interference.
- *	Second, after a few subdivisions it is highly probable that two corners
- *	of the bounding box of a given Bezier curve are the first and last 
- *	control point.  Once this happens once, it happens for all subsequent
- *	subcurves.  It might be worth putting in a test and then short-circuit
- *	code for further subdivision levels.
- *	Third, in the final comparison (the interference test) the comparisons
- *	should both permit equality.  We want to find intersections even if they
- *	occur at the ends of segments.
- *	Finally, there are tighter bounding boxes that can be derived. It isn't
- *	clear whether the higher probability of rejection (and hence fewer
- *	subdivisions and tests) is worth the extra work.
- */
-
-bool intersect_BB( Bezier a, Bezier b ) {
-    double minax, maxax, minay, maxay;
-    a.bounds(minax, maxax, minay, maxay);
-    double minbx, maxbx, minby, maxby;
-    b.bounds(minbx, maxbx, minby, maxby);
-    // Test bounding box of b against bounding box of a
-    // Not >= : need boundary case
-    return not( ( minax > maxbx ) || ( minay > maxby )
-                || ( minbx > maxax ) || ( minby > maxay ) );
-}
-	
-/* 
- * Recursively intersect two curves keeping track of their real parameters 
- * and depths of intersection.
- * The results are returned in a 2-D array of doubles indicating the parameters
- * for which intersections are found.  The parameters are in the order the
- * intersections were found, which is probably not in sorted order.
- * When an intersection is found, the parameter value for each of the two 
- * is stored in the index elements array, and the index is incremented.
- * 
- * If either of the curves has subdivisions left before it is straight
- *	(depth > 0)
- * that curve (possibly both) is (are) subdivided at its (their) midpoint(s).
- * the depth(s) is (are) decremented, and the parameter value(s) corresponding
- * to the midpoints(s) is (are) computed.
- * Then each of the subcurves of one curve is intersected with each of the 
- * subcurves of the other curve, first by testing the bounding boxes for
- * interference.  If there is any bounding box interference, the corresponding
- * subcurves are recursively intersected.
- * 
- * If neither curve has subdivisions left, the line segments from the first
- * to last control point of each segment are intersected.  (Actually the 
- * only the parameter value corresponding to the intersection point is found).
- *
- * The apriori flatness test is probably more efficient than testing at each
- * level of recursion, although a test after three or four levels would
- * probably be worthwhile, since many curves become flat faster than their 
- * asymptotic rate for the first few levels of recursion.
- *
- * The bounding box test fails much more frequently than it succeeds, providing
- * substantial pruning of the search space.
- *
- * Each (sub)curve is subdivided only once, hence it is not possible that for 
- * one final line intersection test the subdivision was at one level, while
- * for another final line intersection test the subdivision (of the same curve)
- * was at another.  Since the line segments share endpoints, the intersection
- * is robust: a near-tangential intersection will yield zero or two
- * intersections.
- */
-void recursively_intersect( Bezier a, double t0, double t1, int deptha,
-			   Bezier b, double u0, double u1, int depthb,
-			   std::vector<std::pair<double, double> > &parameters)
-{
-    if( deptha > 0 )
-    {
-	Bezier *A = a.split();
-	double tmid = (t0+t1)*0.5;
-	deptha--;
-	if( depthb > 0 )
-        {
-	    Bezier *B = b.split();
-	    double umid = (u0+u1)*0.5;
-	    depthb--;
-	    if( intersect_BB( A[0], B[0] ) )
-		recursively_intersect( A[0], t0, tmid, deptha,
-				      B[0], u0, umid, depthb,
-				      parameters );
-	    if( intersect_BB( A[1], B[0] ) )
-		recursively_intersect( A[1], tmid, t1, deptha,
-				      B[0], u0, umid, depthb,
-				      parameters );
-	    if( intersect_BB( A[0], B[1] ) )
-		recursively_intersect( A[0], t0, tmid, deptha,
-				      B[1], umid, u1, depthb,
-				      parameters );
-	    if( intersect_BB( A[1], B[1] ) )
-		recursively_intersect( A[1], tmid, t1, deptha,
-				      B[1], umid, u1, depthb,
-				      parameters );
-        }
-	else
-        {
-	    if( intersect_BB( A[0], b ) )
-		recursively_intersect( A[0], t0, tmid, deptha,
-				      b, u0, u1, depthb,
-				      parameters );
-	    if( intersect_BB( A[1], b ) )
-		recursively_intersect( A[1], tmid, t1, deptha,
-				      b, u0, u1, depthb,
-				      parameters );
-        }
-    }
-    else
-	if( depthb > 0 )
-        {
-	    Bezier *B = b.split();
-	    double umid = (u0 + u1)*0.5;
-	    depthb--;
-	    if( intersect_BB( a, B[0] ) )
-		recursively_intersect( a, t0, t1, deptha,
-				      B[0], u0, umid, depthb,
-				      parameters );
-	    if( intersect_BB( a, B[1] ) )
-		recursively_intersect( a, t0, t1, deptha,
-				      B[0], umid, u1, depthb,
-				      parameters );
-        }
-	else // Both segments are fully subdivided; now do line segments
-        {
-	    double xlk = a.p.back()[X] - a.p[0][X];
-	    double ylk = a.p.back()[Y] - a.p[0][Y];
-	    double xnm = b.p.back()[X] - b.p[0][X];
-	    double ynm = b.p.back()[Y] - b.p[0][Y];
-	    double xmk = b.p[0][X] - a.p[0][X];
-	    double ymk = b.p[0][Y] - a.p[0][Y];
-	    double det = xnm * ylk - ynm * xlk;
-	    if( 1.0 + det == 1.0 )
-		return;
-	    else
-            {
-		double detinv = 1.0 / det;
-		double s = ( xnm * ymk - ynm *xmk ) * detinv;
-		double t = ( xlk * ymk - ylk * xmk ) * detinv;
-		if( ( s < 0.0 ) || ( s > 1.0 ) || ( t < 0.0 ) || ( t > 1.0 ) )
-		    return;
-		parameters.push_back(std::pair<double, double>(t0 + s * ( t1 - t0 ),
-                                                         u0 + t * ( u1 - u0 )));
-            }
-        }
-}
-
-inline double log4( double x ) { return log(x)/log(4.); }
-    
-/*
- * Wang's theorem is used to estimate the level of subdivision required,
- * but only if the bounding boxes interfere at the top level.
- * Assuming there is a possible intersection, recursively_intersect is
- * used to find all the parameters corresponding to intersection points.
- * these are then sorted and returned in an array.
- */
-
-double Lmax(Point p) {
-    return std::max(fabs(p[X]), fabs(p[Y]));
-}
-
-unsigned wangs_theorem(Bezier a) {
-    return 12; // seems a good approximation!
-    double la1 = Lmax( ( a.p[2] - a.p[1] ) - (a.p[1] - a.p[0]) );
-    double la2 = Lmax( ( a.p[3] - a.p[2] ) - (a.p[2] - a.p[1]) );
-    double l0 = std::max(la1, la2);
-    int ra;
-    if( l0 * 0.75 * M_SQRT2 + 1.0 == 1.0 ) 
-        ra = 0;
-    else
-        ra = (int)ceil( log4( M_SQRT2 * 6.0 / 8.0 * INV_EPS * l0 ) );
-    cout << ra << std::endl;
-    return ra;
-}
-
-std::vector<std::pair<double, double> > find_intersections( Bezier a, Bezier b)
-{
-    std::vector<std::pair<double, double> > parameters;
-    if( intersect_BB( a, b ) )
-    {
-	recursively_intersect( a, 0., 1., wangs_theorem(a), 
-                               b, 0., 1., wangs_theorem(b), 
-                               parameters);
-    }
-    std::sort(parameters.begin(), parameters.end());
-    return parameters;
 }
 
 
