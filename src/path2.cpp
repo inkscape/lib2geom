@@ -220,6 +220,22 @@ Path const &SBasisCurve::subdivide(Coord t, Path &out) const {
   throw NotImplemented();
 }
 
+Rect SVGEllipticalArc::boundsFast() const {
+    throw NotImplemented();
+}
+Rect SVGEllipticalArc::boundsExact() const {
+    throw NotImplemented();
+}
+
+Point SVGEllipticalArc::pointAndDerivativesAt(Coord t, unsigned n_derivs, Point *derivs) const {
+    throw NotImplemented();
+}
+
+MultidimSBasis<2> SVGEllipticalArc::sbasis() const {
+    throw NotImplemented();
+}
+
+
 }
 
 }
