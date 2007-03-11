@@ -58,6 +58,13 @@ class Rect {
 public:
     Rect(Rect const &r) : _min(r._min), _max(r._max) {}
     Rect(Point const &p0, Point const &p1);
+    
+    static Rect define(Point const &p0, Point const &p1) {
+        Rect r;
+        r._min = p0;
+        r._max = p1;
+        return r;
+    }
 
     Point const &min() const { return _min; }
     Point const &max() const { return _max; }
