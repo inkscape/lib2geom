@@ -205,7 +205,7 @@ private:
     Point _min, _max;
 
     /* evil, but temporary */
-    friend class Maybe<Rect>;
+    friend class MaybeStorage<Rect>;
 };
 
 inline Rect expand(Rect const &r, double by) {

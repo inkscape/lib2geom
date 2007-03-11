@@ -1,13 +1,7 @@
-#ifndef __Geom_MAYBE_H__
-#define __Geom_MAYBE_H__
-
 /*
- * Functionalesque "Maybe" class
+ * Nullable values for C++
  *
- * Copyright 2004  MenTaLguY
- *
- * Authors:
- *   MenTaLguY <mental@rydia.net>
+ * Copyright 2004, 2007  MenTaLguY <mental@rydia.net>
  *
  * This library is free software; you can redistribute it and/or
  * modify it either under the terms of the GNU Lesser General Public
@@ -31,122 +25,183 @@
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY
  * OF ANY KIND, either express or implied. See the LGPL or the MPL for
  * the specific language governing rights and limitations.
- *
  */
 
-#if HAVE_CONFIG_H
-#include "config.h"
-#endif
+#ifndef SEEN_GEOM_MAYBE_H
+#define SEEN_GEOM_MAYBE_H
 
 #include <stdexcept>
-#include <typeinfo>
 #include <string>
 
 namespace Geom {
 
-/** An exception class for run-time type errors */
-template <typename T>
-class IsNot : public std::domain_error {
+class IsNothing : public std::domain_error {
 public:
-    IsNot() : domain_error(std::string("Is not ") + typeid(T).name()) {}
+    IsNothing() : domain_error(std::string("Is nothing")) {}
 };
 
-/** A type with only one value, which (in principle) is only equal to itself.
- *
- *  Types that may (at runtime) pretend to be Nothing need only provide an
- *  operator bool operator==(Type, Nothing); the rest of the operator
- *  definitions will be taken care of automatically.
- *
- *  Such types should also provide a casting operator to Nothing, obviously.
- */
-struct Nothing {
-    bool operator==(Nothing n) { return true; }
-    bool operator!=(Nothing n) { return false; }
-    template <typename T>
-    bool operator==(T t) { return t == *this; }
-    template <typename T>
-    bool operator!=(T t) { return t != *this; }
+struct Nothing {};
+
+template <typename T>
+class MaybeStorage {
+public:
+    MaybeStorage() : _is_nothing(true) {}
+    MaybeStorage(T const &value)
+    : _value(value), _is_nothing(false) {}
+
+    bool is_nothing() const { return _is_nothing; }
+    T &value() { return _value; }
+    T const &value() const { return _value; }
+
+private:
+    T _value;
+    bool _is_nothing;
 };
-
-template <typename T>
-bool operator==(T t, Nothing n) { return false; }
-template <typename T>
-bool operator!=(T t, Nothing n) { return !( t == n ); }
-
-template <typename T>
-struct MaybeTraits;
 
 template <typename T>
 class Maybe {
 public:
-    typedef MaybeTraits<T> traits;
-    typedef typename traits::storage storage;
-    typedef typename traits::reference reference;
-
-    Maybe(Nothing n) : _is_nothing(true), _t() {}
-
-    Maybe(const Maybe<T> &m) : _is_nothing(m._is_nothing), _t(m._t) {}
+    Maybe() {}
+    Maybe(Nothing) {}
+    Maybe(T const &t) : _storage(t) {}
+    Maybe(Maybe const &m) : _storage(m._storage) {}
 
     template <typename T2>
-    Maybe(const Maybe<T2> &m)
-    : _is_nothing(m._is_nothing),
-      _t(traits::to_storage(MaybeTraits<T2>::from_storage(m._t))) {}
+    Maybe(Maybe<T2> const &m) {
+        if (m) {
+            _storage = *m;
+        }
+    }
 
     template <typename T2>
-    Maybe(T2 t) : _is_nothing(false), _t(traits::to_storage(t)) {}
-
-    reference assume() const throw(IsNot<T>) {
-        if (_is_nothing) {
-            throw IsNot<T>();
-        } else {
-            return traits::from_storage(_t);
+    Maybe(Maybe<T2 const &> m) {
+        if (m) {
+            _storage = *m;
         }
     }
 
-    operator reference() const throw(IsNot<T>) {
-        if (_is_nothing) {
-            throw IsNot<T>();
+    operator bool() const { return !_storage.is_nothing(); }
+
+    T const &operator*() const throw(IsNothing) {
+        if (_storage.is_nothing()) {
+            throw IsNothing();
         } else {
-            return traits::from_storage(_t);
+            return _storage.value();
         }
     }
-    operator Nothing() const throw(IsNot<Nothing>) {
-        if (!_is_nothing) {
-            throw IsNot<Nothing>();
+    T &operator*() throw(IsNothing) {
+        if (_storage.is_nothing()) {
+            throw IsNothing();
         } else {
-            return Nothing();
+            return _storage.value();
         }
     }
 
-    bool operator==(Nothing n) { return _is_nothing; }
-    bool operator==(reference r) {
-        return traits::from_storage(_t) == r;
+    T const *operator->() const throw(IsNothing) {
+        if (_storage.is_nothing()) {
+            throw IsNothing();
+        } else {
+            return &_storage.value();
+        }
+    }
+    T *operator->() throw(IsNothing) {
+        if (_storage.is_nothing()) {
+            throw IsNothing();
+        } else {
+            return &_storage.value();
+        }
+    }
+
+    template <typename T2>
+    bool operator==(Maybe<T2> const &other) const {
+        bool is_nothing = _storage.is_nothing();
+        if ( is_nothing || !other ) {
+            return is_nothing && !other;
+        } else {
+            return _storage.value() == *other;
+        }
+    }
+    template <typename T2>
+    bool operator!=(Maybe<T2> const &other) const {
+        bool is_nothing = _storage.is_nothing();
+        if ( is_nothing || !other ) {
+            return !is_nothing || other;
+        } else {
+            return _storage.value() != *other;
+        }
     }
 
 private:
-    bool _is_nothing;
-    storage _t;
-};
-
-/* traits classes used by Maybe */
-
-template <typename T>
-struct MaybeTraits {
-    typedef T const storage;
-    typedef T const &reference;
-    static reference to_storage(reference t) { return t; }
-    static reference from_storage(reference t) { return t; }
+    MaybeStorage<T> _storage;
 };
 
 template <typename T>
-struct MaybeTraits<T&> {
-    typedef T *storage;
-    typedef T &reference;
-    static storage to_storage(reference t) { return &t; }
-    static reference from_storage(storage t) { return *t; }
+class Maybe<T &> {
+public:
+    Maybe() : _ref(NULL) {}
+    Maybe(Nothing) : _ref(NULL) {}
+    Maybe(T &t) : _ref(&t) {}
+
+    template <typename T2>
+    Maybe(Maybe<T2> const &m) {
+        if (m) {
+            _ref = &*m;
+        } 
+    }
+
+    template <typename T2>
+    Maybe(Maybe<T2 &> m) {
+        if (m) {
+            _ref = *m;
+        }
+    }
+
+    template <typename T2>
+    Maybe(Maybe<T2 const &> m) {
+        if (m) {
+            _ref = *m;
+        }
+    }
+
+    operator bool() const { return _ref; }
+
+    T &operator*() const throw(IsNothing) {
+        if (!_ref) {
+            throw IsNothing();
+        } else {
+            return *_ref;
+        }
+    }
+    T *operator->() const throw(IsNothing) {
+        if (!_ref) {
+            throw IsNothing();
+        } else {
+            return _ref;
+        }
+    }
+
+    template <typename T2>
+    bool operator==(Maybe<T2> const &other) const {
+        if ( !_ref || !other ) {
+            return !_ref && !other;
+        } else {
+            return *_ref == *other;
+        }
+    }
+    template <typename T2>
+    bool operator!=(Maybe <T2> const &other) const {
+        if ( !_ref || !other ) {
+            return _ref || other;
+        } else {
+            return *_ref != *other;
+        }
+    }
+
+private:
+    T *_ref;
 };
 
-} /* namespace Geom */
+}
 
 #endif
 
