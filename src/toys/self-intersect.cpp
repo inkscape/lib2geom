@@ -122,8 +122,8 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
 }
 public:
 PairIntersect () {
-    for(int j = 0; j < 2; j++)
-    for(unsigned i = 0; i < bez_ord; i++) handles.push_back(Geom::Point(uniform()*400, uniform()*400));
+    for(unsigned i = 0; i < bez_ord; i++)
+        handles.push_back(Geom::Point(uniform()*400, uniform()*400));
 }
 };
 
