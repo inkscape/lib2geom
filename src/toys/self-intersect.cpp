@@ -76,39 +76,34 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
     
     Rect Ar = local_bounds(A, 0, 1);
     std::vector<std::pair<double, double> > all_si;
-    Bezier Sb, Ab, Bb;
+    Bezier Sb;
     Sb.p.insert(Sb.p.begin(), handles.begin(), handles.begin()+bez_ord);
+    vector<Bezier> pieces;
     for(int i = 0; i < dxr.size()-1; i++) {
-        Bezier* r = Sb.split(dxr[i]);
-        r = r[1].split((dxr[i+1]-dxr[i]) / (1 - dxr[i]));
-        Ab = r[0];
-        
-        if(0) {
-        cairo_save(cr);
-        cairo_set_source_rgba (cr, 0.5, 0.25, 0, 1);
-        for(int ii = 0; ii < Ab.p.size(); ii++) {
-            draw_handle(cr, Ab.p[ii]);
-        }
-        cairo_stroke(cr);
-        cairo_restore(cr);
-        }
+        Bezier* r = Sb.split((dxr[i+1]-dxr[i]) / (1 - dxr[i]));
+        pieces.push_back(r[0]);
+        Sb = r[1];
+    }
+    for(int i = 0; i < dxr.size()-1; i++) {
+
         
         for(int j = i+1; j < dxr.size()-1; j++) {
-            Bezier* r = Sb.split(dxr[j]);
-            r = r[1].split((dxr[j+1]-dxr[j]) / (1 - dxr[j]));
-            Bb = r[0];
-            
             std::vector<std::pair<double, double> > section = 
-                find_intersections( Ab, Bb);
+                find_intersections( pieces[i], pieces[j]);
             for(int k = 0; k < section.size(); k++) {
                 double l = section[k].first;
                 double r = section[k].second;
-                //draw_handle(cr, point_at(A, l));
+                if(l == 1) continue;
+                if(r == 1) continue;
                 all_si.push_back(make_pair((1-l)*dxr[i] + l*dxr[i+1],
                                            (1-r)*dxr[j] + r*dxr[j+1]));
             }
         }
     }
+    
+    sort(all_si.begin(), all_si.end());
+    unique(all_si.begin(), all_si.end());
+    
     cairo_stroke(cr);
     if(0) {
         cairo_set_source_rgba (cr, 1., 0., 0, 1);
