@@ -148,8 +148,9 @@ class InverseTester: public Toy {
       pw_sb h=compose(g,f); 
       cairo_set_line_width (cr, 1);
       cairo_set_source_rgba (cr, 0., 0.8, 0., 1);
-      plot(cr,h,300);	
-      
+      plot(cr,h,300);
+
+      *notify<<g.size()<<" segments.";
 
       Toy::draw(cr, notify, width, height, save);
   }        
