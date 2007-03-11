@@ -17,6 +17,7 @@ rat-bez
 sb1d
 sb2d
 pair-intersect
+self-intersect
 precise-flat
 pw-toy
 #toy-cairo
