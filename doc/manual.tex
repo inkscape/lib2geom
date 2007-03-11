@@ -1,4 +1,4 @@
-\documentstyle{book}
+\documentclass{book}
 
 \title{Lib2geom Manual}
 
@@ -20,7 +20,6 @@ utilization of newer and very useful representations makes the lib
 very attractive for many applications.
 
 \section{Design Considerations}
-
 2Geom is written with a functional programming style in mind.
 Generally data structures are considered immutable and rather than
 assignment we use labeling.  However, C++ can become unwieldly if
@@ -42,6 +41,12 @@ delete are used sparingly.  It is intended for 2Geom to be fully
 compatible with Boehm garbage collector\cite{boehm} though this has
 not yet been tested.
 
+\section{Toy-Based-Development}
+We have managed to come up with a method of library development
+which is perfect for geometry - the development of toys exmplefiying
+a feature while the feature is perfected.  This has somewhat subsumed
+the role of tests, and provides immediate motivation/reward for work.
+
 \chapter{Geometric Primitives}
 
 What good is a geometry library without geometric primitives?  By this
@@ -50,62 +55,84 @@ Points/Vectors, Matrices, etc.
 
 2geom's primitives are descendant from libNR's geometric primitives.
 They have been modified quite a bit since that initial import, and
-will likely change quite a bit in the future.
+will likely change in the future.
 
 \section{Points}
 
 The mathematical concepts of points and vectors are merged into the
-2geom \verb|class| called \verb|Point|.  See Appendix A for a further
+2geom class called \code{Point}.  See Appendix A for a further
 discussion of this decision.
 
-2geom also breaks with the programming world's more traditional
-\verb|struct| with \verb|.x| and \verb|.y| fields.  Rather, each
-point has a 2 element array of coordinates.
+2geom also breaks with the more traditional point \code{struct} with
+\code{.x} and \code{.y} fields.  Rather, each 2geom point has a 2
+element array of coordinates.
 
-We found that code using \verb|.x| and \verb|.y| encouraged people
-to attempt to inline geometry operations rather than using operators
-(perhaps looking for a performance enhancement).  By using an array, we
-encourage people to think about \verb|Point|s as symmetrical objects
-and discourage direct use of the components.  We still provide direct
-access for the rare occasion that it is needed, and even in these
-cases, the array method prevents bugs by encouraging iteration over
-the array rather than explicit element reference.
+We found that the availability of \code{.x} and \code{.y} encouraged
+people to attempt to inline geometry operations rather than using the
+operators, perhaps in pursuit of a performance enhancement.  By using
+an array, we encourage people to think about \code{Point}s as
+symmetric objects and discourage direct use of the components.  We
+still provide direct access for the rare occasion that it is needed.
+Even in these cases, the array method prevents bugs by encouraging
+iteration over the array rather than explicit element reference.
 
 \section{Transformations}
 
 Affine transformations are either represented with a cannonical 6
-element matrix, or special forms selected by the type system.
+element matrix, or special forms.
 
-TODO: Justify this design choice
+\subsection{Scale}
 
-\subsection{scale}
+A \code{Scale} transformation stores x and y scaling factors.
 
-scale is a pair giving x and y scales.
+\subsection{Rotate}
 
-\subsection{rotate}
+A \code{Rotate} transformation uses a vector(\code{Point}) to store
+a rotation about the origin.
 
-rotate is a curl-like vector.
+In correspondance with mathematical convention (y increasing upwards),
+0 degrees is encoded as a vector pointing along the x axis, and positive
+angles indicate anticlockwise rotation.  So, for example, a vector along
+the y axis would encode a 90 degree anticlockwise rotation of 90 degrees.
 
-\subsection{translate}
+In the case that the computer convention of y increasing downwards,
+the \verb}Rotate} transformation works essentially the same, except
+that positive angles indicate clockwise rotation.
 
-translate is a simple vector.
+\subsection{Translate}
+
+A \code{Translate} transformation is a simple vector(\code{Point})
+which stores an offset.
 
 \subsection{Matrix}
 
-Matrix is a general affine transform.  code is provided for various
-decompositions (such as SVD to extract the rotation and scale terms).
+A \code{Matrix} is a general affine transform.  Code is provided for
+various decompositions, constructions, and manipulations.  A
+\code{Matrix} is composed of 6 coordinates, essentially storing the
+x axis, y axis, and offset of the transformation.  A detailed
+explanation for matrices is given in Appendix B.
+
+\section{Bounding Structures}
+
+2geom currently provides two classes for storing approximate bounding
+regions - \code{Rect} and \code{ConvexHull}.  These are mostly intended
+for use in optimization, however provide manipulations suitable for
+other uses.
 
 \section{Rect}
 
-Rectangles, also known as boxes, have all 4 sides parallel to the axes
-and are defined by the least point and the greatest point.
+\code{Rect}s are rectangles with all sides parallel to the axes. They
+are defined with two points, each an opposing corner.
 
 \section{ConvexHull}
 
-two files, convex-hull.h is the inkscape version using rectangles,
-convex-cover is partial implementation done with a set of points in
-clockwise direction.  Operations:
+Currently there are two implementations:
+\begin{description}
+\item[convex-hull.h] is the inkscape version using rectangles.
+\item[convex-cover.h] is partial implementation done with a set of points in clockwise direction.
+\end{description}
 
+\subsection{Operations}
 \begin{description}
 \item[empty:] contains no points
 \item[singular:] contains exactly one point
@@ -117,54 +144,197 @@ clockwise direction.  Operations:
 \item[merge:] find the convex hull of a set of convex hulls
 \end{description}
 
-\section{Path}
+\chapter{Paths}
 
-A Path is an ordered set of \code{Curve}s.  A \code{Path} in
+Our original attempt at a \code{Path} class was to store parralel
+lists of curve types and handles.  This turned out to be very clumsy,
+so MenTaLguY wrote a new path-framework, called Path2.  Currently the
+files are still called this, even though Path1 has been mostly
+removed.
+
+A \code{Path} is an ordered set of \code{Curve}s.  A \code{Path} in
 Inkscape is drawn in a single fill and stroke.
 
-\section{Curve}
+This allows us lots of flexibility with what sort of elements we can
+'understand', while only taking slightly more memory than a sequence
+of points in the poly line or poly bezier case. 
 
-Curves define a continuous segments which yields points for values of t in
-the range of [0,1].  The startpoint is defined at t=0, and the endpoint
-defined at t=1.
+\section{Curves}
+2Geom has a diversity of curve types and conversions between them.
 
-2Geom has a diversity of curve types and conversions between them, because
-certain representations do certain things better than others.  
+Curves define a continuous segments which yields points for values of
+t in the range of [0,1].  The start-point is at t=0, and the endpoint
+at t=1.
 
-this has the property of taking only slightly more memory than a
-sequence of points in the poly line or poly bezier case, but allows us
-lots of flexibility with what sort of elements we can 'understand'.
-To walk a SubPath an element a time use the SubPath::iterator.
-Inserting directly into \code{SubPath::handles} or \code{SubPath::cmd}
-will corrupt the SubPath.
+We require that each \code{Curve} implements virtual functions which
+allow for traversers of a path to perform generic operations.  All
+curves must provide functions which give a position and gradient of a
+$t \in [0,1]$, bounds functions, and conversion to s-basis.
 
-We require each Element provides a specific interface:
+\subsection{Bezier Curve}
+We use a \code{Bezier} curve class to store lines and quadratic/cubic
+beziers.  This flexibility is attained by templating by order -
+\code{Bezier$<1>$} is a line segment, \code{Bezier$<2>$} is a quadratic
+bezier, and \code{Bezier$<3>$} is a cubic bezier.
 
+Bezier curves have some nice properties:
 \begin{itemize}
-\item Affine transforming handles also affine transforms the path.
-\item The convex hull of element handles is the convex hull of the elements.
-\item The element has a parameterisation $t \in [0,1]$.
-\item It is possible split an Element at any $t$.
-\item The functions \code{point at} and \code{point and tangent at} exist
-\item The Element can be converted to an s-basis.
-\item A way to efficiently convert to polylines
+\item Affine transforming the handles also affine transforms the values.
+\item The convex hull of the handles encompasses the curve.
 \end{itemize}
 
-From these we get a number of useful properties:
+\subsection{SVG Elliptical Arc}
+The \code{SVGEllipticalArc} curve class is implemented for support of,
+you guessed it, the SVG elliptical arc!  See the svg documentation for
+details of this strange curve.
+
+\subsection{S-Basis Curve}
+The \code{SBasisCurve} wraps the \code{MultidimSBasis$<2>$} class
+described later.
+
+\subsection{Possible Future Curve Types}
 \begin{itemize}
-\item The convex hull of handles is the convex hull of the path.
-\item we can consider a path a single function mapping [0, n] to points.
+\item Clothoids / Raphoids
+\item NURBS
 \end{itemize}
 
-SubPathOps are 'line', 'quadratic bezier', 'cubic bezier', 'c-spline'.
+\chapter{S-Power-Basis Form}
 
-c-spline = funky elliptical representation.
+2Geom provides a very powerful algebra for modifying paths.  Although
+paths are kept in an extended SVG native form where possible, many
+operations require approximation.  To do this we can convert a path
+into a sequence of s-power basis polynomials, henceforth referred to
+as s-basis, perform the required operations and convert back,
+approximating to a requested tolerance as required.
 
-Neither NURBS, nor SVG elliptical arcs can be directly represented in this way.
+The details of the s-basis form are beyond the scope of this manual,
+the interested reader should consult \cite{SanchezReyes1997,SanchezReyes2000,SanchezReyes2001,SanchezReyes2003,SanchezReyes2004}.
 
-\section{Location}
+The most important properties of the s-basis form are:
+\begin{itemize}
+\item exact representation of bezier segments
+\item fast conversion from all svg elements
+\item basic arithmetic - $+$, $-$, $\times$, $\div$
+\item algebraic derivative and integral
+\item elementary trigonometric functions: $\sqrt{\cdot}$, $\sin(\cdot)$, $\cos(\cdot)$, $\exp(\cdot)$
+\item efficient degree elevation and reduction
+\item function inversion
+\item recovery of exact solutions for many non trivial operations
+\item strong convergence guarantees
+\item low condition number on bezier conversion.
+\item $C^0$ continuity guarantee
+\item root finding
+\item composition
+\end{itemize}
 
-\section{Location sequences}
+All these operations are fast.  For example, multiplication of two
+beziers by converting to s-basis form, multiplying and converting back
+takes roughly the same time as performing the bezier multiplication
+directly, and furthermore, subdivision and degree reduction are
+straightforward in this form.
+
+\section{Surfaces}
+
+2Geom also provides a multivariate form - functions of the form $f(u,v) \rightarrow z$.  These can be used for arbitrary distortion functions (take a path $p(t) \rightarrow (u,v)$ and a pair of surfaces $f(u,v),g(u,v)$ and compose: $q(t) = (f(p(t)), g(p(t)))$.
+
+Subdivision for surfaces are done with either quadtrees or kd-trees.
+
+\chapter{2D databases}
+
+2Geom provides an implementation of a 2D database using quad trees and
+using a list.  Quad trees aren't the best datastructure for queries,
+but they usually out perform the linear list.  We provide a
+standard interface for object databases with performance guarantees
+and provide a set of useful operations Operations:
+
+\begin{description}
+\item[Insert:] given a bounding box and a 'reference', insert into the db
+\item[Delete:] given a bounding box and a 'reference', delete from the db
+\item[Search:] given a box, find all objects that may interact with this box
+\item[Cast:] given a path (including rays) return a list of objects that interact with the path, roughly sorted by path order
+\item[Shape query:] given a closed path, find all objects whose bounding boxes intersect path.  (this and cast are nearly the same)
+\item[Nearest:] given a point (or maybe box) find the nearest objects, perhaps as a generator to get all objects in order.  To do this, we walk around the quad tree neighbourhood, pushing all the elements into a priority queue, while the queue is empty, move out a bit.  Nearest could be manhattan, max norm or euc?
+\item[Binary:] take two dbs, generate all pairs that have intersecting boxes.
+\item[Sweep:] traverse the tree in say y order, maintaining a y-range of relevant objects. (to implement sweepline algorithms)
+\item[Walk:] traverse the tree in an arbitrary order.
+\end{description}
+
+\chapter{Acknowledgements and history}
+
+2Geom is a group project, having many authors and contributors.  The
+original code was sketched out by Nathan Hurst and Peter Moulder for
+the Inkscape vector graphics program to provide well typed, correct
+and easy to use C++ classes.  Since then many people have refined and
+debugged the code.  One of the earliest C++ification projects for
+inkscape was replacing NRPoint with NR::Point.
+
+A conspicuous absence was a Path datatype, and indeed Inkscape
+developed at least 3 different internal path datatypes, plus several
+others in related projects.  Considering the core importance of path
+operations in vector graphics, this led to much reimplementation of
+algorithms, numerous bugs, and many round trips converting between
+forms.
+
+Many attempts have been made to try and develop a single path data
+structure, but all were fated to sit in random SCMs scattered across
+the web.
+
+Several unrelated projects had copied out various portions of the NR
+code from Inkscape and in 2006 MenTaLguY and Nathan felt that it was
+time to separate out the geometry portions of inkscape into a
+separate library for general use and improvement.  The namespace was
+changed from NR to Geom and a prototype for paths sketched out.
+Nathan studied the state of the art for computational geometry whilst
+mental focussed on the design of Paths.
+
+Before the remerging of 2Geom with the inkscape svn HEAD it was felt
+that a few smaller projects should be ported to use 2Geom.  Michael
+Wybrow's libavoid advanced connector routing system was ported first.
+
+--now.
+
+\pagebreak
+
+\section{People who have contributed to 2Geom}
+\begin{description}
+\item[Aaron C. Spike]
+\item[Alex Mac]
+\item[Fred:] livarot
+\item[Javier Sanchez-Reyes]
+\item[Jonathon Wright]
+\item[Joshua Blocher]
+\item[Kim Marriott]
+\item[MenTaLguY]
+\item[Michael J. Wybrow]
+\item[Michael G. Sloan]
+\item[Nathan J. Hurst]
+\item[Peter J. R. Moulder]
+\end{description}
+
+\chapter{Appendix}
+
+\section{A: Geometric Points}
+In standard geometry points and vectors are quite distinguished - a  
+point is a location, whereas a vector is an unbased direction and
+magnitude.  Allowed operations on vectors and points also vary:
+
+P  - P = V
+P +- V = P
+V +- V = V
+V */ S = V
+
+, where P represents points, V represents vectors, and S scalars.
+
+Ideally we would render these restrictions in code, as they would
+reinforce algorithm correctness.  This is because as far as arithmetic
+operations go, the above are all that you sanely require, unless you
+are prematurely optimizing.
+
+\section{B: Understanding Matrices}
+
+TODO
+
+\section{C: Location Sequences}
 
 Many algorithms are more efficient on a sorted sequence of locations,
 than calling the function repeatedly for each.  So we have algorithms
@@ -203,148 +373,5 @@ just n+100 steps.
 The downside is that I'll probably not provide a separate split
 routine that takes a single point, to discourage people from making
 exactly that mistake.
-
-\section{S power basis form}
-
-2Geom provides a very powerful algebra for modifying paths.  Although
-paths are kept in an extended SVG native form where possible, many
-operations require approximation.  To do this we can convert a path
-into a sequence of s-power basis polynomials, henceforth referred to
-as s-basis, perform the required operations and convert back,
-approximating to a requested tolerance as required.
-
-The details of the s-basis form are beyond the scope of this manual,
-the interested reader should consult \cite{SanchezReyes1997,SanchezReyes2000,SanchezReyes2001,SanchezReyes2003,SanchezReyes2004} for the details.
-
-The most important properties of the s-basis form are:
-\begin{itemize}
-\item exact representation of bezier segments
-\item fast conversion from all svg elements
-\item basic arithmetic - $+$, $-$, $\times$, $\div$
-\item algebraic derivative and integral
-\item elementary trigonometric functions: $\sqrt{\cdot}$, $\sin(\cdot)$, $\cos(\cdot)$, $\exp(\cdot)$
-\item efficient degree elevation and reduction
-\item function inversion
-\item recovery of exact solutions for many non trivial operations
-\item strong convergence guarantees
-\item low condition number on bezier conversion.
-\item $C^0$ continuity guarantee
-\item root finding
-\item composition
-\end{itemize}
-
-All these operations are fast.  For example, multiplication of two
-beziers by converting to s-basis form, multiplying and converting back
-takes roughly the same time as performing the bezier multiplication
-directly, and further more, subdivision and degree reduction are
-straightforward in this form.
-
-\subsection{Surfaces}
-
-2Geom also provides a multivariate form - functions of the form $f(u,v) \rightarrow z$.  These can be used for arbitrary distortion functions (take a path $p(t) \rightarrow (u,v)$ and a pair of surfaces $f(u,v),g(u,v)$ and compose: $q(t) = (f(p(t)), g(p(t)))$.
-
-Subdivision for surfaces are done with either quadtrees or kd-trees.
-
-\section{2D databases}
-
-2Geom provides an implementation of a 2D database using quad trees and
-using a list.  Quad trees aren't the best datastructure for queries,
-but they usually out perform the linear list.  We provide a
-standard interface for object databases with performance guarantees
-and provide a set of useful operations Operations:
-
-\begin{description}
-\item[Insert:] given a bounding box and a 'reference' insert into the db
-
-\item[Delete:] given a bounding box and a 'reference' delete from the db
-both of those should be linear worst case
-(quad trees don't guarantee this unless you consider 1024 a constant)
-
-\item[Search:] given a box, find all objects that may interact with this box
-
-\item[Cast:] given a path (including rays) return a list of objects that interact with the path, roughly sorted by path order
-
-\item[Shape query:] given a closed path, find all objects whose bounding boxes intersect path.  (this and cast are nearly the same)
-
-\item[Nearest:] given a point (or maybe box) find the nearest objects, perhaps as a generator to get all objects in order.  To do this, we walk around the quad tree neighbourhood, pushing all the elements into a priority queue, while the queue is empty, move out a bit.  Nearest could be manhattan, max norm or euc?
-
-\item[Binary:] take two dbs, generate all pairs that have intersecting boxes.
-
-\item[Sweep:] traverse the tree in say y order, maintaining a y-range of relevant objects. (to implement sweepline algorithms)
-
-\item[Walk:] traverse the tree in an arbitrary order.
-
-\end{description}
-
-
-\section{Acknowledgements and history}
-
-2Geom is a group project, having many authors and contributors.  The
-original code was sketched out by Nathan Hurst and Peter Moulder for
-the Inkscape vector graphics program to provide well typed, correct
-and easy to use C++ classes.  Since then many people have refined and
-debugged the code.  One of the earliest C++ification projects for
-inkscape was replacing NRPoint with NR::Point.
-
-A conspicuous absence was a Path datatype, and indeed Inkscape
-developed at least 3 different internal path datatypes, plus several
-others in related projects.  Considering the core importance of path
-operations in vector graphics this led to much reimplementation of
-algorithms, numerous bugs and many round trips converting between
-forms.
-
-Many attempts were made to try and develop a single path data
-structure, but all were fated to sit in random SCMs scattered across
-the web.
-
-Several unrelated projects had copied out various portions of the NR
-code from Inkscape and 
-
-In 2006 MenTaLguY and Nathan felt it was time to separate out
-the geometry portions of inkscape into a separate library for general
-use.  the namespace was changed from NR to Geom and a prototype for
-paths was sketched out.  Nathan studied the state of the art for
-computational geometry whilst mental focussed on the design of Paths.
-
-Before the remerging of 2Geom with the inkscape svn HEAD it was felt
-that a few smaller projects should be ported to use 2Geom.  Michael
-Wybrow's libavoid advanced connector routing system was ported first.
-
---now.
-
-\subsection{People who have contributed to 2Geom}
-
-%alphabetical
-Aaron C. Spike,
-Alex Mac,
-Fred (livarot),
-Javier Sanchez-Reyes,
-Jonathon Wright,
-Joshua Blocher,
-Kim Marriott,
-MenTaLguY,
-Michael J. Wybrow,
-Michael Sloan,
-Nathan J. Hurst,
-Peter J. R. Moulder
-
-\chapter{Appendix}
-
-\section{A: Geometric Points}
-In standard geometry points and vectors are quite distinguished - a  
-point is a location, whereas a vector is an unbased direction and
-magnitude.  Allowed operations on vectors and points also vary:
-
-P  - P = V
-P +- V = P
-V +- V = V
-V */ S = V
-
-, where P represents points, V represents vectors, and S scalars.
-
-Ideally we would render these restrictions in code, as they would
-reinforce algorithm correctness.  This is because as far as arithmetic
-operations go, the above are all that you sanely require, unless you
-are prematurely optimizing.
 
 \end{document}
