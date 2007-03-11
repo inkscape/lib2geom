@@ -125,7 +125,7 @@ public:
         pushEllipse(radii, rotation, large, sweep, end);
     }*/
     
-    void pushSBasis(SBasis &sb) {
+    void pushSBasis(SBasisCurve &sb) {
         pushSBasis(sb.sbasis());
     }
     void pushSBasis(MultidimSBasis<2> sb) {

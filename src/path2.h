@@ -17,6 +17,11 @@ namespace Path2 {
 
 class Path;
 
+class NotImplemented : public std::logic_error {
+public:
+  NotImplemented() : std::logic_error("method not implemented") {}
+};
+
 class Curve {
 public:
   virtual ~Curve() {}
@@ -29,14 +34,18 @@ public:
   virtual Rect boundsFast() const = 0;
   virtual Rect boundsExact() const = 0;
 
-  virtual Path const &subdivide(Coord t, Path &out) const {
-    //TODO: require
-    return out;
-  }
+  virtual int winding(Point p) const = 0;
+
+  virtual Path const &subdivide(Coord t, Path &out) const = 0;
 
   Point pointAt(Coord t) const { return pointAndDerivativesAt(t, 0, NULL); }
   virtual Point pointAndDerivativesAt(Coord t, unsigned n, Point *ds) const = 0;
   virtual MultidimSBasis<2> sbasis() const = 0;
+};
+
+struct CurveHelpers {
+protected:
+  static int sbasis_winding(MultidimSBasis<2> const &sbasis, Point p);
 };
 
 struct BezierHelpers {
@@ -51,7 +60,7 @@ protected:
 };
 
 template <unsigned bezier_degree>
-class Bezier : public Curve, private BezierHelpers {
+class Bezier : public Curve, private CurveHelpers, private BezierHelpers {
 public:
   template <unsigned required_degree>
   static void assert_degree(Bezier<required_degree> const *) {}
@@ -95,6 +104,10 @@ public:
   Rect boundsFast() const { return bounds(bezier_degree, c_); }
   Rect boundsExact() const { return bounds(bezier_degree, c_); }
 
+  int winding(Point p) const {
+    return sbasis_winding(sbasis(), p);
+  }
+
   Path const &subdivide(Coord t, Path &out) const;
   
   Point pointAndDerivativesAt(Coord t, unsigned n_derivs, Point *derivs)
@@ -123,7 +136,7 @@ typedef Bezier<1> LineSegment;
 typedef Bezier<2> QuadraticBezier;
 typedef Bezier<3> CubicBezier;
 
-class SVGEllipticalArc : public Curve {
+class SVGEllipticalArc : public Curve, private CurveHelpers {
 public:
   SVGEllipticalArc() {}
 
@@ -142,6 +155,10 @@ public:
   Rect boundsFast() const;
   Rect boundsExact() const;
 
+  int winding(Point p) const {
+    return sbasis_winding(sbasis(), p);
+  }
+
   Path const &subdivide(Coord t, Path &out) const;
   
   Point pointAndDerivativesAt(Coord t, unsigned n_derivs, Point *derivs) const;
@@ -158,11 +175,11 @@ private:
   Point final_;
 };
 
-class SBasis : public Curve {
+class SBasisCurve : public Curve, private CurveHelpers {
 public:
-  SBasis() {}
+  SBasisCurve() {}
 
-  explicit SBasis(MultidimSBasis<2> const &coeffs)
+  explicit SBasisCurve(MultidimSBasis<2> const &coeffs)
   : coeffs_(coeffs) {}
 
   Point initialPoint() const {
@@ -172,10 +189,16 @@ public:
     return Point(coeffs_[X][0][1], coeffs_[Y][0][1]);
   }
 
-  Curve *duplicate() const { return new SBasis(*this); }
+  Curve *duplicate() const { return new SBasisCurve(*this); }
 
   Rect boundsFast() const;
   Rect boundsExact() const;
+
+  int winding(Point p) const {
+    return sbasis_winding(coeffs_, p);
+  }
+
+  Path const &subdivide(Coord t, Path &out) const;
 
   Point pointAndDerivativesAt(Coord t, unsigned n_derivs, Point *derivs) const;
 
@@ -321,6 +344,8 @@ public:
   bool empty() const { return curves_.size() == 1; }
   bool closed() const { return closed_; }
   void close(bool closed=true) { closed_ = closed; }
+
+  int winding(Point p) const;
 
   Rect boundsFast() const;
   Rect boundsExact() const;
@@ -568,6 +593,5 @@ inline void swap<Geom::Path2::Path>(Geom::Path2::Path &a, Geom::Path2::Path &b)
   c-brace-offset:0
   fill-column:99
   End:
-  vim: filetype=cpp:expandtab:shiftwidth=4:tabstop=8:softtabstop=4 :
 */
-
+// vim: filetype=cpp:expandtab:shiftwidth=2:tabstop=8:softtabstop=2 :

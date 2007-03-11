@@ -4,6 +4,31 @@ namespace Geom {
 
 namespace Path2 {
 
+int CurveHelpers::sbasis_winding(MultidimSBasis<2> const &sb, Point p) {
+  SBasis fy = sb[Y];
+  SBasis dy = derivative(fy);
+
+  fy -= p[Y];
+  std::vector<double> ts = roots(fy);
+
+  int winding=0;
+  for ( std::vector<double>::iterator ti = ts.begin()
+      ; ti != ts.end()
+      ; ++ti )
+  { 
+    double t = *ti;
+    if ( sb[X](t) >= p[X] ) {
+      if ( dy(t) > 0 ) {
+        winding += 1;
+      } else if ( dy(t) < 0 ) {
+        winding -= 1;
+      }
+    } 
+  }
+
+  return winding;
+}
+
 Rect BezierHelpers::bounds(unsigned degree, Point const *points) {
   Point min=points[0];
   Point max=points[0];
@@ -83,6 +108,18 @@ Rect Path::boundsExact() const {
   return bounds;
 }
 
+int Path::winding(Point p) const {
+  int winding;
+  for ( const_iterator iter = begin()
+      ; iter != end()
+      ; ++iter )
+  {
+    Curve const &curve = *iter;
+    winding += curve.winding(p);
+  }
+  return winding;
+}
+
 void Path::append(Curve const &curve) {
   if ( curves_.front() != final_ && curve.initialPoint() != (*final_)[0] ) {
     throw ContinuityError();
@@ -98,7 +135,7 @@ void Path::append(MultidimSBasis<2> const &curve) {
       }
     }
   }
-  do_append(new SBasis(curve));
+  do_append(new SBasisCurve(curve));
 }
 
 void Path::do_update(Sequence::iterator first_replaced,
@@ -164,23 +201,24 @@ void Path::check_continuity(Sequence::iterator first_replaced,
   }
 }
 
-class Unimplemented{};
-
-Rect SBasis::boundsFast() const {
-    throw Unimplemented();
-    return Rect(Point(0,0), Point(0,0));
+Rect SBasisCurve::boundsFast() const {
+  throw NotImplemented();
+  return Rect(Point(0,0), Point(0,0));
 }
 
-Rect SBasis::boundsExact() const {
-    throw Unimplemented();
-    return Rect(Point(0,0), Point(0,0));
+Rect SBasisCurve::boundsExact() const {
+  throw NotImplemented();
+  return Rect(Point(0,0), Point(0,0));
 }
 
-Point SBasis::pointAndDerivativesAt(Coord t, unsigned n_derivs, Point *derivs) const {
-    throw Unimplemented();
-    return Point(0,0);
+Point SBasisCurve::pointAndDerivativesAt(Coord t, unsigned n_derivs, Point *derivs) const {
+  throw NotImplemented();
+  return Point(0,0);
 }
 
+Path const &SBasisCurve::subdivide(Coord t, Path &out) const {
+  throw NotImplemented();
+}
 
 }
 
@@ -195,6 +233,6 @@ Point SBasis::pointAndDerivativesAt(Coord t, unsigned n_derivs, Point *derivs) c
   c-brace-offset:0
   fill-column:99
   End:
-  vim: filetype=cpp:expandtab:shiftwidth=4:tabstop=8:softtabstop=4 :
+  vim: filetype=cpp:expandtab:shiftwidth=2:tabstop=8:softtabstop=2 :
 */
 
