@@ -11,6 +11,7 @@ conic
 convex-toy
 distort
 fitter
+inverse-test
 one-D
 quad-toy
 rat-bez

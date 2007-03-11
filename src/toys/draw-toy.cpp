@@ -18,24 +18,25 @@ Perhaps we should split the docs into useage/complexity levels.  eg, "basic", "a
 class DrawToy: public Toy {
     //Knot : Och : Och : Knot : Och : Och : Knot : Och : Och : ...
     void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
-        cairo_set_source_rgba (cr, 0, 0.5, 0, 1);
-        cairo_set_line_width (cr, 1);
-        for(int i = 0; i < handles.size(); i+=3) {
-            draw_circ(cr, handles[i]);
-            draw_number(cr, handles[i], i/3);
-        }
-        cairo_set_source_rgba (cr, 0, 0, 0.5, 1);
-        for(int i = 2; i < handles.size(); i+=3) {
-            draw_circ(cr, handles[i]);
-            draw_circ(cr, handles[i-1]);
-        }
+        if(!save) {
+            cairo_set_source_rgba (cr, 0, 0.5, 0, 1);
+            cairo_set_line_width (cr, 1);
+            for(int i = 0; i < handles.size(); i+=3) {
+                draw_circ(cr, handles[i]);
+                draw_number(cr, handles[i], i/3);
+            }
+            cairo_set_source_rgba (cr, 0, 0, 0.5, 1);
+            for(int i = 2; i < handles.size(); i+=3) {
+                draw_circ(cr, handles[i]);
+                draw_circ(cr, handles[i-1]);
+            }
 
-        cairo_set_source_rgba (cr, 0.5, 0, 0, 1);
-        for(int i = 3; i < handles.size(); i+=3) {
-            draw_line_seg(cr, handles[i-2], handles[i-3]);
-            draw_line_seg(cr, handles[i], handles[i-1]);
+            cairo_set_source_rgba (cr, 0.5, 0, 0, 1);
+            for(int i = 3; i < handles.size(); i+=3) {
+                draw_line_seg(cr, handles[i-2], handles[i-3]);
+                draw_line_seg(cr, handles[i], handles[i-1]);
+            }
         }
-
         cairo_set_source_rgba (cr, 0, 0, 0, 1);
         Geom::Path2::PathBuilder builder;
         if(handles.size() > 3) {

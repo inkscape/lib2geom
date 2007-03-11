@@ -98,7 +98,7 @@ static pw_sb pw_inverse(SBasis const &f, int order,double tol=.1,int depth=0){
             res1.segs[i]*=.5;
             res1.segs[i]+=.5;
         }
-        res.append(res1);
+        res.concat(res1);
     }
     return(res);
 }
@@ -180,4 +180,4 @@ int main(int argc, char **argv) {
   fill-column:99
   End:
 */
-// vim: filetype = cpp:expandtab:shiftwidth = 4:tabstop = 8:softtabstop = 4:encoding = utf-8:textwidth = 99 :
+//vim:filetype = cpp:expandtab:shiftwidth = 4:tabstop = 8:softtabstop = 4:encoding = utf-8:textwidth = 99 :
