@@ -1,10 +1,8 @@
 Salient tasks:
-* Port code to path2
 * Generalize toys (eg, path2 rather than a single bezier)
 * Implement inkscape conversion functions
 * Cleanup the tests (add cubic_bez_util.cpp)
-* Standardize syntax
-* Remove Path1
+* Standardize naming
 
 Remove macros.cpp
 
@@ -19,21 +17,17 @@ for Inkscape:
 - generate postscript stroke geometries
 - rewrite bezier-utils to use paths
 
-* pathlocations are perhaps too fragile - any change to the path can make the iterator invalid.
 * convert toy-cairo to gtkmm
-* make lineto, quadto and cubicto all beziers with the same code
 * skeletal strokes in the long run to
 * make a list of all bezier ops used in inkscape, implement list
 * porting existing algorithms from inkscape to the new path datastructure is probably the most valuable
 * improving the cairo backend
 * we also need to make better unit tests, and devise timing tests
 * checking the svg-d parser
-* writing conversion routines to and from existing inkscape types
 * attempting to write nodepath editing stuff in a more generic way
 * split? (given a list of locations, insert a node at each of those points, or convert each to a separate subpath)
 * convert a set of subpaths to a set of singleton paths
 * convert a set of paths to a single path
 * convex hull
-* logically redistribute/merge code
 * possible abstract transformation class
 * add toMatrix methods to non-matrix transformations
