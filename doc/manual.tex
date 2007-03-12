@@ -184,9 +184,9 @@ Bezier curves have some nice properties:
 \end{itemize}
 
 \subsection{SVG Elliptical Arc}
-The \code{SVGEllipticalArc} curve class is implemented for support of,
-you guessed it, the SVG elliptical arc!  See the svg documentation for
-details of this strange curve.
+The \code{SVGEllipticalArc} curve class is implemented for support of
+the SVG elliptical arc.  See the svg documentation for details on this
+curve.
 
 \subsection{S-Basis Curve}
 The \code{SBasisCurve} wraps the \code{MultidimSBasis$<2>$} class
@@ -207,37 +207,96 @@ into a sequence of s-power basis polynomials, henceforth referred to
 as s-basis, perform the required operations and convert back,
 approximating to a requested tolerance as required.
 
-The details of the s-basis form are beyond the scope of this manual,
-the interested reader should consult \cite{SanchezReyes1997,SanchezReyes2000,SanchezReyes2001,SanchezReyes2003,SanchezReyes2004}.
+The precise details of the s-basis form are beyond the scope of this
+manual, the interested reader should consult \cite{SanchezReyes1997,SanchezReyes2000,SanchezReyes2001,SanchezReyes2003,SanchezReyes2004}.
+An elementary, functional description is given in Appendix C.
 
-The most important properties of the s-basis form are:
+Geometrically important properties:
 \begin{itemize}
 \item exact representation of bezier segments
+\item low condition number on bezier conversion.
+\item strong convergence guarantees
+\item $C^0$ continuity guarantee
+\end{itemize}
+
+The following operations are directly implementable and very efficient:
+\begin{itemize}
 \item fast conversion from all svg elements
 \item basic arithmetic - $+$, $-$, $\times$, $\div$
 \item algebraic derivative and integral
 \item elementary trigonometric functions: $\sqrt{\cdot}$, $\sin(\cdot)$, $\cos(\cdot)$, $\exp(\cdot)$
 \item efficient degree elevation and reduction
 \item function inversion
-\item recovery of exact solutions for many non trivial operations
-\item strong convergence guarantees
-\item low condition number on bezier conversion.
-\item $C^0$ continuity guarantee
+\item exact solutions for many non trivial operations
 \item root finding
 \item composition
 \end{itemize}
 
-All these operations are fast.  For example, multiplication of two
+All of these operations are fast.  For example, multiplication of two
 beziers by converting to s-basis form, multiplying and converting back
 takes roughly the same time as performing the bezier multiplication
 directly, and furthermore, subdivision and degree reduction are
 straightforward in this form.
 
-\section{Surfaces}
+\section{Implementation}
+As described in Appendix C, SBasis functions have the form $f(t) \rightarrow y$.
+Just S-Basis functors (in the C++ sense) alone are not enough to perform
+useful geometric operations.  There are quite a few 2geom classes to
+address these needs.
 
-2Geom also provides a multivariate form - functions of the form $f(u,v) \rightarrow z$.  These can be used for arbitrary distortion functions (take a path $p(t) \rightarrow (u,v)$ and a pair of surfaces $f(u,v),g(u,v)$ and compose: $q(t) = (f(p(t)), g(p(t)))$.
+\subsection{SBasis}
+The \code{SBasis} class provides the most basic function form,
+$f(t) \rightarrow y$.  This is useful in its own right, as well as being an
+element of constructing more complicated forms.  \code{SBasis} are made
+up of \code{BezOrd}s, which store from/to values for each polynomial
+coefficient.
 
-Subdivision for surfaces are done with either quadtrees or kd-trees.
+\subsection{MultidimSBasis}
+The \code{MultidimSBasis$<>$} class provides a convenience wrapper
+around multiple sbasis at once, to produce multiple values for a t-value.
+$f(t) \rightarrow (v_0, v_1, .. v_d)$.  A special case is \code{MultidimSBasis$<2>$},
+a 2 diminsional curve.
+
+\subsection{SBasis2D}
+SBasis2D provides a multivariate form - functions of the form
+$f(u,v) \rightarrow z$.  These can be used for arbitrary distortion
+functions (take a path $p(t) \rightarrow (u,v)$ and a pair of surfaces
+$f(u,v),g(u,v)$ and compose: $q(t) = (f(p(t)), g(p(t)))$.
+
+Subdivision for surfaces may be done with either quadtrees or kd-trees.
+
+\subsection{Piecewise SBasis}
+The piecewise sbasis class, \verb#pw_sb#, manages a sequence of SBasis
+segments and the 'cuts' between them.  These cuts are time values which
+seperate the different SBasii.  This function representation allows for
+more interesting functions, as it provides a viable output for operations
+such as inversion, which may require multiple SBasis to properly invert
+the original.
+
+As for technical details, while the actual SBasis segments begin on the
+first cut and end on the last, the function is defined throughout all
+inputs by extending the first and last segments.  The exact switching
+between segments is arbitrarily such that beginnings (t=0) have
+preference over endings (t=1).  This only matters if it is discontinuous
+at the location.
+
+$$
+f(t) \rightarrow \left\{ 
+\begin{array}{cc}
+s_1,& t <= c_2 \\
+s_2,& c_2 <= t <= c_3\\
+\ldots
+s_n,& c_n <= t <= c_{n+1}
+\end{array}\right.
+$$
+
+As you can see from this, there is always one more cut than there are
+segments.
+
+\subsection{Multidim Piecewise SBasis}
+This is like Multidim SBasis, only for the piecewise type.  Multidim
+SBasis might be subsummed by this class, or they will both be replaced
+by a general Multidim template.
 
 \chapter{2D databases}
 
@@ -301,6 +360,7 @@ Wybrow's libavoid advanced connector routing system was ported first.
 \item[Alex Mac]
 \item[Fred:] livarot
 \item[Javier Sanchez-Reyes]
+\item[Jean-Francois Barraud]
 \item[Jonathon Wright]
 \item[Joshua Blocher]
 \item[Kim Marriott]
@@ -334,7 +394,9 @@ are prematurely optimizing.
 
 TODO
 
-\section{C: Location Sequences}
+\section{C: S-Power-Basis Explanation}
+
+\section{D: Location Sequences}
 
 Many algorithms are more efficient on a sorted sequence of locations,
 than calling the function repeatedly for each.  So we have algorithms
