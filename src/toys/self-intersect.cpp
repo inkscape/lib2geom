@@ -17,7 +17,7 @@ using std::vector;
 const unsigned bez_ord = 10;
 using namespace Geom;
 
-class PairIntersect: public Toy {
+class SelfIntersect: public Toy {
 virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
     cairo_set_line_width (cr, 0.5);
     cairo_set_source_rgba (cr, 0., 0., 0, 1);
@@ -40,14 +40,14 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
     Toy::draw(cr, notify, width, height, save);
 }
 public:
-PairIntersect () {
+SelfIntersect () {
     for(unsigned i = 0; i < bez_ord; i++)
         handles.push_back(Geom::Point(uniform()*400, uniform()*400));
 }
 };
 
 int main(int argc, char **argv) {   
-    init(argc, argv, "Pair Intersect", new PairIntersect());
+    init(argc, argv, "Self Intersect", new SelfIntersect());
 
     return 0;
 }

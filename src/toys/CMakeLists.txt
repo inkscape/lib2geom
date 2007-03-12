@@ -33,6 +33,7 @@ offset-test
 curvature-test
 bounds-test
 pw-compose-test
+inverse-test
 "${NEEDS_GSL}"
 )
 
