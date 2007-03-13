@@ -63,14 +63,14 @@ int CurveHelpers::sbasis_winding(MultidimSBasis<2> const &sb, Point p) {
     Maybe<SBasis> ds[MAX_DERIVATIVES];
     ds[0] = derivative(fy);
 
-    /* winding determined by signs of derivatives at intersections */
+    /* winding determined by summing signs of derivatives at intersections */
     int winding=0;
     for ( std::vector<double>::iterator ti = ts.begin()
         ; ti != ts.end()
         ; ++ti )
     { 
       double t = *ti;
-      if ( sb[X](t) >= p[X] ) {
+      if ( sb[X](t) >= p[X] ) { /* root is ray intersection */
         for ( Maybe<SBasis> *di = ds
             ; di != ( ds + MAX_DERIVATIVES )
             ; ++di )
