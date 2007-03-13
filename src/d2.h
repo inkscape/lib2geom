@@ -1,43 +1,18 @@
-#ifndef _MULTIDIM_SBASIS
-#define _MULTIDIM_SBASIS
+#ifndef _2GEOM_D2
+#define _2GEOM_D2
 
-#include "s-basis.h"
 #include "point.h"
+#include "s-basis.h"
 
 namespace Geom{
 
-template <typename T>
+template <class T>
 class D2{
 public:
     T f[2];
     
-    T& operator[](unsigned i) {
-        return f[i];
-    }
-    T const & operator[](unsigned i) const {
-        return f[i];
-    }
-
-    unsigned size() const {
-        unsigned s = f[0].size();
-        for(unsigned i = 1; i < 2; i++)
-            s = std::max(s, (unsigned) f[i].size());
-        return s;
-    }
-    
-    double tail_error(unsigned tail) const {
-        double s = f[0].tail_error(tail);
-        for(unsigned i = 1; i < 2; i++)
-            s = std::max(s, f[i].tail_error(tail));
-        return s;
-    }
-
-    bool is_finite() const {
-        for(unsigned i = 0; i < 2; i++)
-            if(!f[i].is_finite())
-                return false;
-        return true;
-    }
+    T& operator[](unsigned i)              { return f[i]; }
+    T const & operator[](unsigned i) const { return f[i]; }
 };
 
 template <typename T1, typename T2>
@@ -91,69 +66,13 @@ operator -=(D2<T> & a, D2<T> const & b) {
     return a;
 }*/
 
-inline D2<SBasis>
-derivative(D2<SBasis> const & a) {
-    D2<SBasis> r;
-    for(unsigned i = 0; i < 2; i++)
-        r.f[i]=derivative(a.f[i]);
-    return r;
-}
-
-inline D2<SBasis>
-integral(D2<SBasis> const & a) {
-    D2<SBasis> r;
-    for(unsigned i = 0; i < 2; i++)
-        r.f[i]=integral(a.f[i]);
-    return r;
-}
-
 template <typename T>
-inline SBasis
+inline T
 dot(D2<T> const & a, D2<T> const & b) {
     T r;
     for(unsigned i = 0; i < 2; i++)
         r += a.f[i] * b.f[i];
     return r;
-}
-
-//These two L2s are the same except the k param
-
-inline SBasis
-L2(D2<SBasis> const & a, int k) {
-    double r;
-    for(unsigned i = 0; i < 2; i++)
-        r += multiply(a.f[i], a.f[i]);
-    return sqrt(r,k);
-}
-
-inline double
-L2(D2<double> const & a) {
-    double r;
-    for(unsigned i = 0; i < 2; i++)
-        r += multiply(a.f[i], a.f[i]);
-    return sqrt(r);
-}
-
-inline D2<SBasis>
-multiply(BezOrd const & a, D2<SBasis> const & b) {
-    D2<SBasis> r;
-    for(unsigned i = 0; i < 2; i++)
-        r[i] = multiply(a, b.f[i]);
-    return r;
-}
-
-template <typename T>
-inline D2<T>
-multiply(T const & a, D2<T> const & b) {
-    D2<T> r;
-    for(unsigned i = 0; i < 2; i++)
-        r[i] = multiply(a, b.f[i]);
-    return r;
-}
-
-inline D2<SBasis>
-operator*(BezOrd const & a, D2<SBasis> const & b) {
-    return multiply(a, b);
 }
 
 template <typename T>
@@ -192,14 +111,7 @@ composeEach(D2<T> const & a, D2<T> const & b) {
     return r;
 }
 
-inline D2<SBasis>
-truncate(D2<SBasis> const & a, unsigned terms) {
-    D2<SBasis> r;
-    for(unsigned i = 0; i < 2; i++)
-        r[i] = truncate(a.f[i], terms);
-    return r;
-}
-
+template <typename T>
 inline D2<T>
 rot90(D2<T> const & a) {
     D2<T> r;
@@ -208,6 +120,7 @@ rot90(D2<T> const & a) {
     return r;
 }
 
+template <typename T>
 inline D2<T>
 cross(D2<T> const & a, D2<T> const & b) {
     D2<T> r;
@@ -216,12 +129,24 @@ cross(D2<T> const & a, D2<T> const & b) {
     return r;
 }
 
-//Only applies to (->Double) function types
-template <typename T>
-inline Point
-operator()(D2<T> const & a, double t) {
-    return Point(a[0](t), a[1](t);
-}
+//SBasis specific decls:
+
+Point point_at(D2<SBasis> const & a, double t);
+
+D2<SBasis> derivative(D2<SBasis> const & a);
+D2<SBasis> integral(D2<SBasis> const & a);
+
+SBasis L2(D2<SBasis> const & a, int k);
+double L2(D2<double> const & a);
+
+D2<SBasis> multiply(BezOrd const & a, D2<SBasis> const & b);
+D2<SBasis> operator*(BezOrd const & a, D2<SBasis> const & b);
+D2<SBasis> multiply(SBasis const & a, D2<SBasis> const & b);
+D2<SBasis> truncate(D2<SBasis> const & a, unsigned terms);
+
+unsigned sbasisSize(D2<SBasis> const & a);
+double tailError(D2<SBasis> const & a, unsigned tail);
+bool isFinite(D2<SBasis> const & a);
 
 };
 

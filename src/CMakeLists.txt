@@ -33,6 +33,8 @@ conjugate_gradient.h
 convex-cover.cpp
 convex-cover.h
 coord.h
+d2.h
+d2.cpp
 floating.h
 forward.h
 geom.cpp
