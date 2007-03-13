@@ -4,32 +4,101 @@ namespace Geom {
 
 namespace Path2 {
 
-Maybe<int> CurveHelpers::sbasis_winding(MultidimSBasis<2> const &sb, Point p) {
-  if (sb[Y].empty()) {
-    return Nothing();
+namespace {
+
+enum Cmp {
+  LESS_THAN=-1,
+  GREATER_THAN=1,
+  EQUAL_TO=0
+};
+
+template <typename T1, typename T2>
+inline Cmp cmp(T1 const &a, T2 const &b) {
+  if ( a < b ) {
+    return LESS_THAN;
+  } else if ( b < a ) {
+    return GREATER_THAN;
+  } else {
+    return EQUAL_TO;
+  }
+}
+
+}
+
+int CurveHelpers::sbasis_winding(MultidimSBasis<2> const &sb, Point p) {
+  double minx, maxx;
+  bounds(sb[X], minx, maxx);
+
+  if ( p[X] > maxx ) { /* ray does not intersect bbox */
+    return 0;
   }
 
   SBasis fy = sb[Y];
-  SBasis dy = derivative(fy);
   fy -= p[Y];
-  std::vector<double> ts = roots(fy);
 
-  int winding=0;
-  for ( std::vector<double>::iterator ti = ts.begin()
-      ; ti != ts.end()
-      ; ++ti )
-  { 
-    double t = *ti;
-    if ( sb[X](t) >= p[X] ) {
-      if ( dy(t) > 0 ) {
-        winding += 1;
-      } else if ( dy(t) < 0 ) {
-        winding -= 1;
-      }
-    } 
+  if (fy.empty()) { /* ignore empty segment */
+    return 0;
   }
 
-  return winding;
+  if ( p[X] < minx ) { /* ray does not originate in bbox */
+    double y = p[Y];
+    /* winding determined by position of endpoints */
+    Cmp initial_to_ray = cmp(fy[0][0], y);
+    Cmp final_to_ray = cmp(fy[0][1], y);
+    switch (cmp(final_to_ray, initial_to_ray)) {
+    case GREATER_THAN:
+      /* exclude lowermost endpoint */
+      return ( initial_to_ray != EQUAL_TO );
+    case LESS_THAN:
+      /* exclude lowermost endpoint */
+      return -( final_to_ray != EQUAL_TO );
+    default:
+      /* ignore horizontal segment */
+      return 0;
+    }
+  } else { /* ray originates in bbox */
+    std::vector<double> ts = roots(fy);
+
+    static const unsigned MAX_DERIVATIVES=8;
+    Maybe<SBasis> ds[MAX_DERIVATIVES];
+    ds[0] = derivative(fy);
+
+    /* winding determined by signs of derivatives at intersections */
+    int winding=0;
+    for ( std::vector<double>::iterator ti = ts.begin()
+        ; ti != ts.end()
+        ; ++ti )
+    { 
+      double t = *ti;
+      if ( sb[X](t) >= p[X] ) {
+        for ( Maybe<SBasis> *di = ds
+            ; di != ( ds + MAX_DERIVATIVES )
+            ; ++di )
+        {
+          if (!*di) {
+            *di = derivative(**(di-1));
+          }
+          switch (cmp((**di)(t), 0)) {
+          case GREATER_THAN:
+            if ( t > 0 ) { /* exclude lowermost endpoint */
+              winding += 1;
+            }
+            goto next_root;
+          case LESS_THAN:
+            if ( t < 1 ) { /* exclude lowermost endpoint */
+              winding -= 1;
+            }
+            goto next_root;
+          default: (void)0;
+            /* ignore horizontal segment */
+          };
+        }
+      } 
+next_root: (void)0;
+    }
+    
+    return winding;
+  }
 }
 
 Rect BezierHelpers::bounds(unsigned degree, Point const *points) {
@@ -117,11 +186,7 @@ int Path::winding(Point p) const {
       ; iter != end_closed()
       ; ++iter )
   {
-    Curve const &curve = *iter;
-    Maybe<int> curve_winding = curve.winding(p);
-    if (curve_winding) {
-      winding += *curve_winding;
-    }
+    winding += iter->winding(p);
   }
   return winding;
 }
