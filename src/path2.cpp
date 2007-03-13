@@ -36,7 +36,7 @@ int CurveHelpers::sbasis_winding(MultidimSBasis<2> const &sb, Point p) {
   SBasis fy = sb[Y];
   fy -= p[Y];
 
-  if (fy.empty()) { /* ignore empty segment */
+  if (fy.empty()) { /* ignore horizontal segment */
     return 0;
   }
 
@@ -53,7 +53,7 @@ int CurveHelpers::sbasis_winding(MultidimSBasis<2> const &sb, Point p) {
       /* exclude lowermost endpoint */
       return -( final_to_ray != EQUAL_TO );
     default:
-      /* ignore horizontal segment */
+      /* any intersections cancel out */
       return 0;
     }
   } else { /* ray originates in bbox */
@@ -90,7 +90,7 @@ int CurveHelpers::sbasis_winding(MultidimSBasis<2> const &sb, Point p) {
             }
             goto next_root;
           default: (void)0;
-            /* ignore horizontal segment */
+            /* give up */
           };
         }
       } 
