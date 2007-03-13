@@ -219,17 +219,6 @@ inline bool point_equalp(Point const &a, Point const &b, double const eps) {
              Geom_DF_TEST_CLOSE(a[Y], b[Y], eps) );
 }
 
-/** Returns p * Geom::rotate_degrees(90), but more efficient.
- *
- * Angle direction in Inkscape code: If you use the traditional mathematics convention that y
- * increases upwards, then positive angles are anticlockwise as per the mathematics convention.  If
- * you take the common non-mathematical convention that y increases downwards, then positive angles
- * are clockwise, as is common outside of mathematics.
- *
- * There is no rot_neg90 function: use -rot90(p) instead.
- */
-inline Point rot90(Point const &p) { return Point(-p[Y], p[X]); }
-
 /** Given two points and a parameter t \in [0, 1], return a point
  * proportionally from a to b by t.  Akin to 1 degree bezier.*/
 inline Point Lerp(double const t, Point const a, Point const b) { return ((1 - t) * a + t * b); }

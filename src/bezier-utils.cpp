@@ -825,8 +825,7 @@ darray_center_tangent(Point const d[],
     Point ret;
     if ( d[center + 1] == d[center - 1] ) {
         /* Rotate 90 degrees in an arbitrary direction. */
-        Point const diff = d[center] - d[center - 1];
-        ret = rot90(diff);
+        ret = (d[center] - d[center - 1]).cw();
     } else {
         ret = d[center - 1] - d[center + 1];
     }
