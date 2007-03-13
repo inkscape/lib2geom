@@ -3,10 +3,6 @@
 
 namespace Geom {
 
-Point point_at(D2<SBasis> const & a, double t) {
-    return Point(a[0](t), a[1](t));
-}
-
 D2<SBasis> derivative(D2<SBasis> const & a) {
     D2<SBasis> r;
     for(unsigned i = 0; i < 2; i++)

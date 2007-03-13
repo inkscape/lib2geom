@@ -3,16 +3,21 @@
 
 #include "point.h"
 #include "s-basis.h"
+#include "s-basis-2d.h"
+#include "pw-sb.h"
 
 namespace Geom{
 
-template <class T>
+template <typename T>
 class D2{
 public:
     T f[2];
     
     T& operator[](unsigned i)              { return f[i]; }
     T const & operator[](unsigned i) const { return f[i]; }
+
+    D2<double> operator()(double t) const;
+    D2<double> operator()(double x, double y) const;
 };
 
 template <typename T1, typename T2>
@@ -129,9 +134,27 @@ cross(D2<T> const & a, D2<T> const & b) {
     return r;
 }
 
-//SBasis specific decls:
+template<typename T>
+inline D2<double>
+D2<T>::operator()(double t) const {
+    D2<double> r;
+    for(int i = 0; i < 2; i++) {
+       r[i] = (*this)[i](t);
+    }
+    return r;
+}
 
-Point point_at(D2<SBasis> const & a, double t);
+template<typename T>
+inline D2<double>
+D2<T>::operator()(double x, double y) const {
+    D2<double> r;
+    for(int i = 0; i < 2; i++) {
+       r[i] = (*this)[i](x, y);
+    }
+    return r;
+}
+
+//SBasis specific decls:
 
 D2<SBasis> derivative(D2<SBasis> const & a);
 D2<SBasis> integral(D2<SBasis> const & a);
