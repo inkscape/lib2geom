@@ -89,7 +89,7 @@ int circle_circle_intersection(Point X0, double r0,
   /* Now determine the offsets of the intersection points from
    * point 2.
    */
-  Point r = (h/d) * D.cw();
+  Point r = (h/d)*rot90(D);
 
   /* Determine the absolute intersection points. */
   p0 = p2 + r;

@@ -58,7 +58,7 @@ line_intersection(Geom::Point const &n0, double const d0,
                   Geom::Point const &n1, double const d1,
                   Geom::Point &result)
 {
-    double denominator = dot(n0.cw(), n1);
+    double denominator = dot(Geom::rot90(n0), n1);
     double X = n1[Geom::Y] * d0 -
         n0[Geom::Y] * d1;
     /* X = (-d1, d0) dot (n0[Y], n1[Y]) */
@@ -91,7 +91,7 @@ intersector_ccw(const Geom::Point& p0, const Geom::Point& p1,
     Geom::Point d1 = p1 - p0;
     Geom::Point d2 = p2 - p0;
     /* compare slopes but avoid division operation */
-    double c = dot(d1.cw(), d2);
+    double c = dot(Geom::rot90(d1), d2);
     if(c > 0)
         return +1; // ccw - do these match def'n in header?
     if(c < 0)

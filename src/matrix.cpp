@@ -332,7 +332,7 @@ Eigen::Eigen(Matrix const &m) {
     double const delta = sqrt(B*B-4*C)/2.0;
     values = Point(center + delta, center - delta);
     for (int i = 0; i < 2; i++) {
-        vectors[i] = unit_vector(Point(m[0] - values[i], m[1]).cw());
+        vectors[i] = unit_vector(rot90(Point(m[0]-values[i], m[1])));
     }
 }
 
