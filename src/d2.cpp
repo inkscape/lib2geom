@@ -1,5 +1,5 @@
 #include "d2.h"
-#include "math-utils.h"
+#include "rect.h"
 
 namespace Geom {
 
@@ -58,6 +58,23 @@ bool isFinite(D2<SBasis> const & a) {
         if(!a[i].is_finite())
             return false;
     return true;
+}
+
+vector<D2<SBasis> > sectionize(D2<pw_sb> const &a, vector<double> &cuts) {
+    pw_sb x = partition(a[0], a[1].cuts), y = partition(a[1], a[0].cuts);
+    assert(x.size() == y.size());
+    vector<D2<SBasis> > ret;
+    for(int i = 0; i < x.size(); i++)
+        ret.push_back(D2<SBasis>(x[i], y[i]));
+    cuts.insert(cuts.end(), x.cuts.begin(), x.cuts.end());
+    return ret;
+}
+
+Rect local_bounds(D2<SBasis> const & s, double t0, double t1, int order) {
+    Point mn, mx;
+    for(int d = 0; d < 2; d++)
+        local_bounds(s[d], t0, t1, mn[d], mx[d], order);
+    return Rect::define(mn,mx);
 }
 
 };
