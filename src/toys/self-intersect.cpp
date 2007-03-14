@@ -36,6 +36,8 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
         draw_handle(cr, point_at(A, all_si[i].first));
     }
     cairo_stroke(cr);
+    
+    *notify << "total intersections: " << all_si.size();
 
     Toy::draw(cr, notify, width, height, save);
 }
