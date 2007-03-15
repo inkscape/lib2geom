@@ -25,7 +25,7 @@ inline Cmp cmp(T1 const &a, T2 const &b) {
 
 }
 
-int CurveHelpers::sbasis_winding(MultidimSBasis<2> const &sb, Point p) {
+Maybe<int> CurveHelpers::sbasis_winding(MultidimSBasis<2> const &sb, Point p) {
   double minx, maxx;
   bounds(sb[X], minx, maxx);
 
@@ -36,8 +36,8 @@ int CurveHelpers::sbasis_winding(MultidimSBasis<2> const &sb, Point p) {
   SBasis fy = sb[Y];
   fy -= p[Y];
 
-  if (fy.empty()) { /* ignore horizontal segment */
-    return 0;
+  if (fy.empty()) { /* coincident horizontal segment */
+    return Nothing();
   }
 
   if ( p[X] < minx ) { /* ray does not originate in bbox */
@@ -47,10 +47,10 @@ int CurveHelpers::sbasis_winding(MultidimSBasis<2> const &sb, Point p) {
     Cmp final_to_ray = cmp(fy[0][1], y);
     switch (cmp(final_to_ray, initial_to_ray)) {
     case GREATER_THAN:
-      /* exclude lowermost endpoint */
-      return ( initial_to_ray != EQUAL_TO );
+      /* exclude final endpoint */
+      return ( final_to_ray != EQUAL_TO );
     case LESS_THAN:
-      /* exclude lowermost endpoint */
+      /* exclude final endpoint */
       return -( final_to_ray != EQUAL_TO );
     default:
       /* any intersections cancel out */
@@ -80,12 +80,12 @@ int CurveHelpers::sbasis_winding(MultidimSBasis<2> const &sb, Point p) {
           }
           switch (cmp((**di)(t), 0)) {
           case GREATER_THAN:
-            if ( t > 0 ) { /* exclude lowermost endpoint */
+            if ( t < 1 ) { /* exclude final endpoint */
               winding += 1;
             }
             goto next_root;
           case LESS_THAN:
-            if ( t < 1 ) { /* exclude lowermost endpoint */
+            if ( t < 1 ) { /* exclude final endpoint */
               winding -= 1;
             }
             goto next_root;
@@ -181,12 +181,39 @@ Rect Path::boundsExact() const {
 }
 
 int Path::winding(Point p) const {
-  int winding;
+  int winding = 0;
+  Maybe<Cmp> ignore = Nothing();
   for ( const_iterator iter = begin()
       ; iter != end_closed()
       ; ++iter )
   {
-    winding += iter->winding(p);
+    Maybe<int> w = iter->winding(p);
+    if (w) {
+      winding += w;
+      ignore = Nothing();
+    } else {
+      Point initial = iter->initialPoint();
+      Point final = iter->finalPoint();
+      switch (cmp(initial[X], final[X])) {
+      case GREATER_THAN:
+        if ( !ignore || *ignore != GREATER_THAN ) { /* ignore repeated */
+          winding += 1;
+          ignore = GREATER_THAN;
+        }
+        break;
+      case LESS_THAN:
+        if ( !ignore || *ignore != LESS_THAN ) { /* ignore repeated */
+          if ( p[X] < final[X] ) { /* ignore final point */
+            winding -= 1;
+            ignore = LESS_THAN;
+          }
+        }
+        break;
+      case EQUAL_TO:
+        /* always ignore null segments */
+        break;
+      }
+    }
   }
   return winding;
 }
