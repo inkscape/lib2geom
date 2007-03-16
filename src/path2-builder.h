@@ -128,7 +128,7 @@ public:
     void pushSBasis(SBasisCurve &sb) {
         pushSBasis(sb.sbasis());
     }
-    void pushSBasis(MultidimSBasis<2> sb) {
+    void pushSBasis(D2<SBasis> sb) {
         Point initial = Point(sb[X][0][0], sb[Y][0][0]);
         if (!_current_path) startPath(_current_point);
         if (L2(initial - _current_point) > _continuity_tollerance) {

@@ -8,7 +8,8 @@
 
 #include "path2.h"
 #include "read-svgd.h"
-#include "md-pw-sb.h"
+#include "d2.h"
+#include "pw-sb.h"
 #include "s-basis-2d.h"
 
 using namespace Geom;
@@ -16,7 +17,7 @@ using namespace Geom;
 class DistortToy: public Toy {
     std::vector<Geom::Path2::Path> p;
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
-        vector<SBasis2d> sb2(2);
+        D2<SBasis2d> sb2;
         for(int dim = 0; dim < 2; dim++) {
             sb2[dim].us = 2;
             sb2[dim].vs = 2;
@@ -58,7 +59,7 @@ class DistortToy: public Toy {
             }
         }
         
-        cairo_sb2d(cr, sb2, dir*0.1, width);
+        cairo_2dsb2d(cr, sb2, dir*0.1, width);
         cairo_set_source_rgba (cr, 0., 0., 0, 0.5);
         cairo_stroke(cr);
 
@@ -70,13 +71,13 @@ class DistortToy: public Toy {
          //**** FRESH STARTS HERE
         //Theoretically we could concatenate a md_pw_sb and do it in one go
         for(int i = 0; i < p.size(); i++) {
-            md_pw_sb<2> foo = p[i].toMdSb();
-            foo /= 20;
+            D2<pw_sb> foo = p[i].toMdSb();
+            foo *= 1./20;
             //foo[1] = foo[1] + (pw_sb)portion(sin(BezOrd(0,3.14), 4), 0, foo[0].cuts.back());
-            md_pw_sb<2> out;            
-            out[0] = compose(sb2[0], foo);
-            out[1] = compose(sb2[1], foo);
-            cairo_md_pw(cr, out);
+            D2<pw_sb> out;          
+            //out[0] = compose(sb2[0], foo);
+            //out[1] = compose(sb2[1], foo);
+            //cairo_md_pw(cr, out);
         }
         //**** AND ENDS HERE
 

@@ -32,44 +32,44 @@
 #ifndef _BEZIER_TO_SBASIS
 #define _BEZIER_TO_SBASIS
 
-#include "multidim-sbasis.h"
+#include "d2.h"
 
 namespace Geom{
 
-template <typename T, unsigned D, unsigned order>
+template <typename T, unsigned order>
 struct bezier_to_sbasis_impl {
-    static inline MultidimSBasis<D> compute(T const &handles) {
-        return multiply(BezOrd(1, 0), bezier_to_sbasis_impl<T, D, order-1>::compute(handles)) +
-            multiply(BezOrd(0, 1), bezier_to_sbasis_impl<T, D, order-1>::compute(handles+1));
+    static inline D2<SBasis> compute(T const &handles) {
+        return multiply(BezOrd(1, 0), bezier_to_sbasis_impl<T, order-1>::compute(handles)) +
+               multiply(BezOrd(0, 1), bezier_to_sbasis_impl<T, order-1>::compute(handles+1));
     }
 };
 
-template <typename T, unsigned D>
-struct bezier_to_sbasis_impl<T, D, 1> {
-    static inline MultidimSBasis<D> compute(T const &handles) {
-        MultidimSBasis<D> mdsb;
-        for(unsigned d = 0 ; d < D; d++) {
+template <typename T>
+struct bezier_to_sbasis_impl<T, 1> {
+    static inline D2<SBasis> compute(T const &handles) {
+        D2<SBasis> mdsb;
+        for(unsigned d = 0 ; d < 2; d++) {
             mdsb[d] = BezOrd(handles[0][d], handles[1][d]);
         }
         return mdsb;
     }
 };
 
-template <typename T, unsigned D>
-struct bezier_to_sbasis_impl<T, D, 0> {
-    static inline MultidimSBasis<D> compute(T const &handles) {
-        MultidimSBasis<D> mdsb;
-        for(unsigned d = 0 ; d < D; d++) {
+template <typename T>
+struct bezier_to_sbasis_impl<T, 0> {
+    static inline D2<SBasis> compute(T const &handles) {
+        D2<SBasis> mdsb;
+        for(unsigned d = 0 ; d < 2; d++) {
             mdsb[d] = BezOrd(handles[0][d], handles[0][d]);
         }
         return mdsb;
     }
 };
 
-template <unsigned D, unsigned order, typename T>
-inline MultidimSBasis<D>
+template <unsigned order, typename T>
+inline D2<SBasis>
 bezier_to_sbasis(T const &handles) {
-    return bezier_to_sbasis_impl<T, D, order>::compute(handles);
+    return bezier_to_sbasis_impl<T, order>::compute(handles);
 }
 
 };

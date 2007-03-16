@@ -6,14 +6,14 @@ namespace Geom {
 D2<SBasis> derivative(D2<SBasis> const & a) {
     D2<SBasis> r;
     for(unsigned i = 0; i < 2; i++)
-        r.f[i]=derivative(a.f[i]);
+        r[i]=derivative(a[i]);
     return r;
 }
 
 D2<SBasis> integral(D2<SBasis> const & a) {
     D2<SBasis> r;
     for(unsigned i = 0; i < 2; i++)
-        r.f[i]=integral(a.f[i]);
+        r[i]=integral(a[i]);
     return r;
 }
 
@@ -23,7 +23,7 @@ double L2(D2<double> const & a) { return hypot(a[0], a[1]); }
 D2<SBasis> multiply(BezOrd const & a, D2<SBasis> const & b) {
     D2<SBasis> r;
     for(unsigned i = 0; i < 2; i++)
-        r[i] = multiply(a, b.f[i]);
+        r[i] = multiply(a, b[i]);
     return r;
 }
 
@@ -31,17 +31,24 @@ D2<SBasis> operator*(BezOrd const & a, D2<SBasis> const & b) {
     return multiply(a, b);
 }
 
+D2<SBasis> operator+(D2<SBasis> const & a, Point b) {
+    D2<SBasis> r;
+    for(unsigned i = 0; i < 2; i++)
+        r[i] = a[i] + BezOrd(b[i]);
+    return r;
+}
+
 D2<SBasis> multiply(SBasis const & a, D2<SBasis> const & b) {
     D2<SBasis> r;
     for(unsigned i = 0; i < 2; i++)
-        r[i] = multiply(a, b.f[i]);
+        r[i] = multiply(a, b[i]);
     return r;
 }
 
 D2<SBasis> truncate(D2<SBasis> const & a, unsigned terms) {
     D2<SBasis> r;
     for(unsigned i = 0; i < 2; i++)
-        r[i] = truncate(a.f[i], terms);
+        r[i] = truncate(a[i], terms);
     return r;
 }
 

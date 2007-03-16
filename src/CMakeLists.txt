@@ -44,9 +44,6 @@ matrix.cpp
 matrix.h
 math-utils.h
 maybe.h
-md-pw-sb.h
-multidim-sbasis.h
-multidim-sbasis-bounds.cpp
 sb-geometric.h
 #nearestpoint.cpp
 #path-builder.h

@@ -7,7 +7,7 @@
 #include "s-basis.h"
 #include "bezier-to-sbasis.h"
 #include "sbasis-to-bezier.h"
-#include "multidim-sbasis.h"
+#include "d2.h"
 
 #include "path-cairo.h"
 
@@ -54,7 +54,7 @@ class Conic3: public Toy {
         //e_a_h.resize(4);
         
         SBasis one = BezOrd(1, 1);
-        MultidimSBasis<2> B;
+        D2<SBasis> B;
         double alpha = M_PI;
         SBasis C = cos(BezOrd(0, alpha), 10);
         SBasis S = sin(BezOrd(0, alpha), 10);

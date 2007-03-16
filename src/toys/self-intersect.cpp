@@ -1,7 +1,7 @@
 #include "s-basis.h"
 #include "bezier-to-sbasis.h"
 #include "sbasis-to-bezier.h"
-#include "multidim-sbasis-bounds.h"
+#include "d2.h"
 #include "s-basis-2d.h"
 
 #include "path-cairo.h"
@@ -22,7 +22,7 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
     cairo_set_line_width (cr, 0.5);
     cairo_set_source_rgba (cr, 0., 0., 0, 1);
     
-    MultidimSBasis<2> A = bezier_to_sbasis<2, bez_ord-1>(handles.begin());
+    D2<SBasis> A = bezier_to_sbasis<bez_ord-1>(handles.begin());
     Rect Ar = local_bounds(A, 0, 1);
     cairo_md_sb(cr, A);
     cairo_stroke(cr);
@@ -33,7 +33,7 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
     cairo_stroke(cr);
     cairo_set_source_rgba (cr, 1., 0., 1, 1);
     for(int i = 0; i < all_si.size(); i++) {
-        draw_handle(cr, point_at(A, all_si[i].first));
+        draw_handle(cr, A(all_si[i].first));
     }
     cairo_stroke(cr);
     

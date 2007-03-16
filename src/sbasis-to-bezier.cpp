@@ -59,12 +59,12 @@ sbasis_to_bezier(SBasis const &B, unsigned q) {
 
 // this produces a 2q point bezier from a degree q sbasis
 std::vector<Geom::Point>
-sbasis_to_bezier(MultidimSBasis<2> const &B, unsigned qq) {
+sbasis_to_bezier(D2<SBasis> const &B, unsigned qq) {
     std::vector<Geom::Point> result;
     if(qq == 0) {
-        qq = B.size();
+        qq = sbasisSize(B);
     }
-    unsigned n = qq*2;
+    unsigned n = qq * 2;
     result.resize(n, Geom::Point(0,0));
     n--;
     for(int dim = 0; dim < 2; dim++) {
@@ -85,7 +85,7 @@ sbasis_to_bezier(MultidimSBasis<2> const &B, unsigned qq) {
 //std::vector<Geom::Point>
 // mutating
 void
-subpath_from_sbasis(Geom::OldPathSetBuilder &pb, MultidimSBasis<2> const &B, double tol, bool initial) {
+subpath_from_sbasis(Geom::OldPathSetBuilder &pb, D2<SBasis> const &B, double tol, bool initial) {
     assert(B.is_finite());
     if(B.tail_error(2) < tol || B.size() == 2) { // nearly cubic enough
         if(B.size() == 1) {
@@ -115,7 +115,7 @@ curve at $a$.  We keep biting off pieces until there is no more curve left.
 * tolerance tol $= e*A^k$ and invert getting $A = e^{1/k}$ and $a = 1/2 - \sqrt{1/4 - A}$
 */
 void
-subpath_from_sbasis_incremental(Geom::OldPathSetBuilder &pb, MultidimSBasis<2> B, double tol, bool initial) {
+subpath_from_sbasis_incremental(Geom::OldPathSetBuilder &pb, D2<SBasis> B, double tol, bool initial) {
     const unsigned k = 2; // cubic bezier
     double te = B.tail_error(k);
     assert(B[0].is_finite());
@@ -134,7 +134,7 @@ subpath_from_sbasis_incremental(Geom::OldPathSetBuilder &pb, MultidimSBasis<2> B
         assert(a > 0);
         //std::cout << "te = " << te << std::endl;
         //std::cout << "A = " << A << "; a=" << a << std::endl;
-        MultidimSBasis<2> Bs = compose(B, BezOrd(0, a));
+        D2<SBasis> Bs = compose(B, BezOrd(0, a));
         assert(Bs.tail_error(k));
         std::vector<Geom::Point> bez = sbasis_to_bezier(Bs, 2);
         reverse(bez.begin(), bez.end());
@@ -154,14 +154,14 @@ subpath_from_sbasis_incremental(Geom::OldPathSetBuilder &pb, MultidimSBasis<2> B
 #endif
 
 void
-path_from_sbasis(Geom::Path2::Path &pb, MultidimSBasis<2> const &B, double tol) {
-    assert(B.is_finite());
-    if(B.tail_error(2) < tol || B.size() == 2) { // nearly cubic enough
+path_from_sbasis(Geom::Path2::Path &pb, D2<SBasis> const &B, double tol) {
+    assert(isFinite(B));
+    if(tailError(B, 2) < tol || sbasisSize(B) == 2) { // nearly cubic enough
         if(B[0].size() == 0 && B[1].size() != 0) {
             pb.append(Geom::Path2::LineSegment(Geom::Point(0, B[1][0][0]), Geom::Point(0, B[1][0][1])));
         } else if(B[0].size() != 0 && B[1].size() == 0) {
             pb.append(Geom::Path2::LineSegment(Geom::Point(B[0][0][0], 0), Geom::Point(B[0][0][1], 0)));
-        } else if(B.size() == 1) {
+        } else if(sbasisSize(B) == 1) {
             pb.append(Geom::Path2::LineSegment(Geom::Point(B[0][0][0], B[1][0][0]),Geom::Point(B[0][0][1], B[1][0][1])));
         } else {
             std::vector<Geom::Point> bez = sbasis_to_bezier(B, 2);

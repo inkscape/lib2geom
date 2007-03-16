@@ -1,24 +1,24 @@
 #include "s-basis.h"
 #include "bezier-to-sbasis.h"
 #include "sbasis-to-bezier.h"
-#include "multidim-sbasis-bounds.h"
+#include "d2.h"
 
 namespace Geom {
 
 std::vector<std::pair<double, double> > 
-find_intersections( Geom::MultidimSBasis<2> const & A, 
-                    Geom::MultidimSBasis<2> const & B);
+find_intersections( D2<SBasis> const & A, 
+                    D2<SBasis> const & B);
 
 std::vector<std::pair<double, double> > 
-find_self_intersections(Geom::MultidimSBasis<2> const & A);
+find_self_intersections(D2<SBasis> const & A);
 
 // Bezier form
 std::vector<std::pair<double, double> > 
-find_intersections( vector<Geom::Point> const & A, 
-                    vector<Geom::Point> const & B);
+find_intersections( vector<Point> const & A, 
+                    vector<Point> const & B);
 
 std::vector<std::pair<double, double> > 
-find_self_intersections(vector<Geom::Point> const & A);
+find_self_intersections(vector<Point> const & A);
 
 };
 

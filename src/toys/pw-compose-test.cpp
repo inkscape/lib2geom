@@ -11,7 +11,7 @@ using namespace Geom;
 
 static void cairo_pw(cairo_t *cr, pw_sb p, double time_scale=1) {
     for(int i = 0; i < p.size(); i++) {
-        MultidimSBasis<2> B;
+        D2<SBasis> B;
         B[0] = BezOrd(p.cuts[i]*time_scale, p.cuts[i+1]*time_scale);
         B[1] = p[i];
         cairo_md_sb(cr, B);
@@ -24,10 +24,10 @@ class PwToy: public Toy {
         cairo_set_source_rgba (cr, 0., 0.5, 0, 1);
         cairo_set_line_width (cr, 1);
        
-        md_pw_sb<2> pws;
+        D2<pw_sb> pws;
         int hdle_idx=0;
         for(int i = 0; i < segs; i++) {
-            MultidimSBasis<2> foo = Geom::bezier_to_sbasis<2,3>(handles.begin()+hdle_idx);
+            D2<SBasis> foo = Geom::bezier_to_sbasis<3>(handles.begin()+hdle_idx);
             hdle_idx += 4;
             cairo_md_sb(cr, foo);
             for(int d = 0; d < 2; d++) {
@@ -44,12 +44,12 @@ class PwToy: public Toy {
         handles[hdle_idx+3][1]=450;
 	
         cairo_set_source_rgba (cr, 0.2, 0.2, 0.2, 1);
-        MultidimSBasis<2> foo = Geom::bezier_to_sbasis<2,3>(handles.begin()+hdle_idx);
+        D2<SBasis> foo = Geom::bezier_to_sbasis<3>(handles.begin()+hdle_idx);
         SBasis g = foo[0] - BezOrd(150);
         cairo_md_sb(cr, foo);
 	    for(int i=0;i<20;i++){
             double t=i/20.;
-            draw_handle(cr, point_at(foo,t));
+            draw_handle(cr, foo(t));
         }
         cairo_stroke(cr);
 
@@ -57,7 +57,7 @@ class PwToy: public Toy {
         
         cairo_stroke(cr);
         cairo_set_source_rgba (cr, 0.9, 0., 0., 1);
-        md_pw_sb<2> res = compose(pws, g);
+        D2<pw_sb> res = compose(pws, pw_sb(g));
         cairo_md_pw(cr, res);
         for(int i=0;i<20;i++){
             double t=(res[0].cuts.back()-res[0].cuts.front())*i/20.;

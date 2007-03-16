@@ -1,7 +1,6 @@
 #include "s-basis.h"
 #include "bezier-to-sbasis.h"
 #include "sbasis-to-bezier.h"
-#include "multidim-sbasis.h"
 #include "solver.h"
 #include "nearestpoint.cpp"
 #include "sbasis-poly.h"
@@ -9,7 +8,6 @@
 #include "poly-dk-solve.h"
 #include "poly-laguerre-solve.h"
 #include "choose.h"
-#include "convex-cover.h"
 
 #include "path2.h"
 #include "path-cairo.h"
@@ -65,7 +63,7 @@ public:
         std::cout << std::endl;
 #endif
         
-        MultidimSBasis<2> test_sb = bezier_to_sbasis<2, 5>(handles.begin());
+        D2<SBasis> test_sb = bezier_to_sbasis<5>(handles.begin());
         double lo, hi;
         bounds(test_sb[1], lo, hi);
         cairo_move_to(cr, test_sb[0](0), lo);
@@ -214,7 +212,7 @@ public:
         *notify << "found " << solutions.size() << "solutions at:\n";
         std::copy(solutions.begin(), solutions.end(), std::ostream_iterator<double >(*notify, ","));
             
-        MultidimSBasis<2> B = bezier_to_sbasis<2, 5>(handles.begin());
+        D2<SBasis> B = bezier_to_sbasis<5>(handles.begin());
         Geom::Path2::Path pb;
         pb.append(B);
         pb.close(false);

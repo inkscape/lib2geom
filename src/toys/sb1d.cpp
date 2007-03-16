@@ -1,7 +1,7 @@
 #include "s-basis.h"
 #include "bezier-to-sbasis.h"
 #include "sbasis-to-bezier.h"
-#include "multidim-sbasis.h"
+#include "d2.h"
 #include "s-basis-2d.h"
 
 #include "path2.h"
@@ -56,7 +56,7 @@ class Sb1d: public Toy {
             }
         }
         
-        MultidimSBasis<2> B;
+        D2<SBasis> B;
         B[0] = BezOrd(width/4, 3*width/4);
         B[1].resize(handles.size()/2);
         for(int i = 0; i < B[1].size(); i++) {

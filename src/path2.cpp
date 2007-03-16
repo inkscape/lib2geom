@@ -25,7 +25,7 @@ inline Cmp cmp(T1 const &a, T2 const &b) {
 
 }
 
-Maybe<int> CurveHelpers::sbasis_winding(MultidimSBasis<2> const &sb, Point p) {
+Maybe<int> CurveHelpers::sbasis_winding(D2<SBasis> const &sb, Point p) {
   double minx, maxx;
   bounds(sb[X], minx, maxx);
 
@@ -225,7 +225,7 @@ void Path::append(Curve const &curve) {
   do_append(curve.duplicate());
 }
 
-void Path::append(MultidimSBasis<2> const &curve) {
+void Path::append(D2<SBasis> const &curve) {
   if ( curves_.front() != final_ ) {
     for ( int i = 0 ; i < 2 ; ++i ) {
       if ( curve[i][0][0] != (*final_)[0][i] ) {
@@ -329,7 +329,7 @@ Point SVGEllipticalArc::pointAndDerivativesAt(Coord t, unsigned n_derivs, Point 
     throw NotImplemented();
 }
 
-MultidimSBasis<2> SVGEllipticalArc::sbasis() const {
+D2<SBasis> SVGEllipticalArc::sbasis() const {
     throw NotImplemented();
 }
 

@@ -1,9 +1,8 @@
 #ifndef _SBASIS_GEOMETRIC
 #define _SBASIS_GEOMETRIC
-#include "multidim-sbasis.h"
+#include "d2.h"
 #include "pw-sb.h"
 #include <vector>
-#include "pw-sb.h"
 
 /** two-dimensional geometric operators.  
  * Copyright 2007, JFBarraud
@@ -23,30 +22,30 @@
 
 namespace Geom{
 
-std::vector<MultidimSBasis<2> >
-unit_vector(MultidimSBasis<2> const vect, 
+std::vector<D2<SBasis> >
+unit_vector(D2<SBasis> const vect, 
             std::vector<double> &cuts, 
             double tol=.1);
 
-std::vector<MultidimSBasis<2> > 
-unit_vector(MultidimSBasis<2> const vect, 
+std::vector<D2<SBasis> > 
+unit_vector(D2<SBasis> const vect, 
             double tol=.1);
 
-std::vector<MultidimSBasis<2> >
-uniform_speed(MultidimSBasis<2> const M, 
+std::vector<D2<SBasis> >
+uniform_speed(D2<SBasis> const M, 
               double tol=.1);
 
 double
-arc_length(MultidimSBasis<2> const M, 
+arc_length(D2<SBasis> const M, 
            double tol=.1);
 
 
 pw_sb
-arc_length_sb(MultidimSBasis<2> const M, 
+arc_length_sb(D2<SBasis> const M, 
               double tol=.1);
 
 pw_sb
-curvature(MultidimSBasis<2> const M, 
+curvature(D2<SBasis> const M, 
           double tol=.1);
 
 };

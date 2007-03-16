@@ -1,7 +1,7 @@
 #include "s-basis.h"
+#include "d2.h"
 #include "bezier-to-sbasis.h"
 #include "sbasis-to-bezier.h"
-#include "multidim-sbasis.h"
 #include "s-basis-2d.h"
 
 #include "path-cairo.h"
@@ -18,9 +18,17 @@ using namespace Geom;
 unsigned total_pieces_sub;
 unsigned total_pieces_inc;
 
+//TODO: shtick somewhere in main
+D2<SBasis> composeEach(D2<SBasis2d> const & a, D2<SBasis> const & b) {
+    D2<SBasis> r;
+    for(unsigned i = 0; i < 2; i++)
+        r[i] = compose(a[i],b);
+    return r;
+}
+
 class Sb2d2: public Toy {
     void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
-        vector<SBasis2d> sb2(2);
+        D2<SBasis2d> sb2;
         for(int dim = 0; dim < 2; dim++) {
             sb2[dim].us = 2;
             sb2[dim].vs = 2;
@@ -63,23 +71,23 @@ class Sb2d2: public Toy {
                         sb2[dim][i][corner] = dl/(width/2)*pow(4.0,ui+vi);
                     }
         }
-        cairo_sb2d(cr, sb2, dir*0.1, width);
+        cairo_2dsb2d(cr, sb2, dir*0.1, width);
         cairo_set_source_rgba (cr, 0., 0., 0, 0.5);
         cairo_stroke(cr);
-        MultidimSBasis<2> B = bezier_to_sbasis<2, 3>(handles.begin() + surface_handles);
+        D2<SBasis> B = bezier_to_sbasis<3>(handles.begin() + surface_handles);
         cairo_md_sb(cr, B);
         for(int dim = 0; dim < 2; dim++) {
             std::vector<double> r = roots(B[dim]);
             for(int i = 0; i < r.size(); i++)
-                draw_cross(cr, point_at(B, r[i]));
+                draw_cross(cr, B(r[i]));
             r = roots(B[dim] - BezOrd(width/4));
             for(int i = 0; i < r.size(); i++)
-                draw_cross(cr, point_at(B, r[i]));
+                draw_cross(cr, B(r[i]));
         }
         cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
         cairo_stroke(cr);
         B *= (4./width);
-        MultidimSBasis<2> tB = compose(sb2, B);
+        D2<SBasis> tB = composeEach(sb2, B);
         B = (width/2)*B + Geom::Point(width/4, width/4);
         //cairo_md_sb(cr, B);
         tB = (width/2)*tB + Geom::Point(width/4, width/4);

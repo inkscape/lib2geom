@@ -3,7 +3,7 @@
  * unstable - needs work (njh)
  */
 #include "sbasis-to-bezier.h"
-#include "multidim-sbasis.h"
+#include "d2.h"
 #include "s-basis-2d.h"
 #include "sbasis-poly.h"
 #include "bezier-to-sbasis.h"
@@ -27,13 +27,13 @@ using namespace Geom;
 
 class curve_min{
 public:
-    MultidimSBasis<2> &B;
-    MultidimSBasis<2> out;
+    D2<SBasis> &B;
+    D2<SBasis> out;
     SBasis2d& sb2;
     unsigned n;
     unsigned par;
     Geom::Point start;
-    curve_min(MultidimSBasis<2> &B,
+    curve_min(D2<SBasis> &B,
               SBasis2d& sb2) :B(B), sb2(sb2) {}
 };
 
@@ -66,7 +66,7 @@ double fn1 (double x, void * params)
         for(int dim = 0; dim < 2; dim++) {
             p.out[dim] = p.B[dim] + shift(BezOrd(0,x), p.par/2 + 1);
         }
-    MultidimSBasis<2> dp = derivative(p.out);
+    D2<SBasis> dp = derivative(p.out);
     SBasis ds = L2(dp, 5);
     //SBasis l = compose(p.sb2, p.out);
     SBasis l = integral( ds);
@@ -138,7 +138,7 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
         display_handles[corner+4*i] = dl*dir + base;
         sb2[i][corner] = dl*10/(width/2)*pow(4.0,ui+vi);
     }
-    draw_sb2d(cr, sb2, dir*0.1, width);
+    cairo_sb2d(cr, sb2, dir*0.1, width);
     cairo_set_source_rgba (cr, 0., 0., 0, 0.7);
     cairo_stroke(cr);
     zero_handles.clear();
@@ -171,8 +171,8 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
         cairo_stroke(cr);
     }
     
-    MultidimSBasis<2> B = bezier_to_sbasis<2, 1>(handles.begin() + surface_handles+1);
-    B += Geom::Point(-width/4., -width/4.);
+    D2<SBasis> B = bezier_to_sbasis<1>(handles.begin() + surface_handles+1);
+    B = B + Geom::Point(-width/4., -width/4.);
     B *= (2./width);
 
     for(int dim = 0; dim < 2; dim++) {

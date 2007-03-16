@@ -2,7 +2,6 @@
 #include "bezier-to-sbasis.h"
 #include "sbasis-to-bezier.h"
 #include "sb-geometric.h"
-#include "multidim-sbasis.h"
 
 #include "path-cairo.h"
 
@@ -11,7 +10,7 @@
 
 #include "toy-framework.h"
 
-#include "md-pw-sb.h"
+#include "d2.h"
 
 using std::vector;
 using namespace Geom;
@@ -24,19 +23,19 @@ public:
     }
 
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
-        MultidimSBasis<2> B = bezier_to_sbasis<2, 3>(handles.begin());
+        D2<SBasis> B = bezier_to_sbasis<3>(handles.begin());
         cairo_md_sb(cr, B);
         cairo_stroke(cr);
         
         cairo_set_source_rgba (cr, 0.5, 0.5, 0, 0.8);
-        MultidimSBasis<2> dB = derivative(B);
+        D2<SBasis> dB = derivative(B);
         cairo_set_source_rgba (cr, 0.25, 0.5, 0, 0.8);
         {
-            MultidimSBasis<2> plot;
+            D2<SBasis> plot;
             plot[0] = SBasis(width*BezOrd(0.25,0.75));
 
-            MultidimSBasis<2> dB = derivative(B);
-            MultidimSBasis<2> ddB = derivative(dB);
+            D2<SBasis> dB = derivative(B);
+            D2<SBasis> ddB = derivative(dB);
             SBasis n = dB[0]*ddB[1] -dB[1]*ddB[0];
             SBasis den = dot(dB, dB);
 
@@ -46,14 +45,14 @@ public:
             cairo_md_sb(cr, plot);
             cairo_stroke(cr);
             for(int i = 0; i < r.size(); i++) {
-                draw_cross(cr, point_at(B, r[i]));
-                draw_cross(cr, point_at(plot, r[i]));
+                draw_cross(cr, B(r[i]));
+                draw_cross(cr, plot(r[i]));
             }
             *notify << plot[1].tail_error(0) << std::endl;
         }
 
         {
-            MultidimSBasis<2> plot;
+            D2<SBasis> plot;
 
             pw_sb als = arc_length_sb(B);
             double t0 = 0, t1;
@@ -68,7 +67,7 @@ public:
                 t0 = t1;
             }
             
-            Geom::md_pw_sb<2> grf;
+            D2<pw_sb> grf;
             grf.f[1] = als; // pw_sb(SBasis(BezOrd(height-5))) - 
             grf.f[0] = pw_sb(SBasis(BezOrd(0, width)));
             
@@ -82,13 +81,13 @@ public:
             double dsubu = 1./N;
             double subu = dsubu*subdivi;
             BezOrd dt(subu, dsubu + subu);
-            MultidimSBasis<2> dBp = compose(dB, dt);
+            D2<SBasis> dBp = compose(dB, dt);
             SBasis arc = L2(dBp, 2);
             arc = (1./N)*integral(arc);
             arc = arc - BezOrd(Hat(arc.point_at(0) - prev_seg));
-            prev_seg = arc.point_at(1);
+            prev_seg = arc(1);
         
-            MultidimSBasis<2> plot;
+            D2<SBasis> plot;
             plot[0] = SBasis(width*dt);
             plot[1] = BezOrd(height) - arc;
         

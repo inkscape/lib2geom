@@ -106,22 +106,20 @@ void cairo_PathSet_handles(cairo_t *cr, PathSet const &p) {
 }
 #endif
 
-void cairo_md_sb(cairo_t *cr, MultidimSBasis<2> const &B) {
+void cairo_md_sb(cairo_t *cr, D2<SBasis> const &B) {
     Path2::Path pb;
     path_from_sbasis(pb, B, 0.1);
     cairo_path(cr, pb);
 }
 
-void cairo_md_sb_handles(cairo_t *cr, MultidimSBasis<2> const &B) {
+void cairo_md_sb_handles(cairo_t *cr, D2<SBasis> const &B) {
     Path2::Path pb;
     path_from_sbasis(pb, B, 0.1);
     cairo_path_handles(cr, pb);
 }
 
-//TODO: what's the diff between the next two funcs?
-
-void cairo_sb2d(cairo_t* cr, std::vector<SBasis2d> const &sb2, Point dir, double width) {
-    MultidimSBasis<2> B;
+void cairo_2dsb2d(cairo_t* cr, D2<SBasis2d> const &sb2, Point dir, double width) {
+    D2<SBasis> B;
     for(int ui = 0; ui <= 10; ui++) {
         double u = ui/10.;
         B[0] = extract_u(sb2[0], u);// + BezOrd(u);
@@ -142,11 +140,11 @@ void cairo_sb2d(cairo_t* cr, std::vector<SBasis2d> const &sb2, Point dir, double
     }
 }
 
-void draw_sb2d(cairo_t* cr, SBasis2d const &sb2, Point dir, double width) {
-    MultidimSBasis<2> B;
+void cairo_sb2d(cairo_t* cr, SBasis2d const &sb2, Point dir, double width) {
+    D2<SBasis> B;
     for(int ui = 0; ui <= 10; ui++) {
         double u = ui/10.;
-        B[0] = dir[0]*extract_u(sb2, u) + BezOrd(u);
+        B[0] = dir[0] * extract_u(sb2, u) + BezOrd(u);
         B[1] = SBasis(BezOrd(0,1))+dir[1]*extract_u(sb2, u);
         for(unsigned i = 0; i < 2; i ++) {
             B[i] = (width/2)*B[i] + BezOrd(width/4);
@@ -164,12 +162,11 @@ void draw_sb2d(cairo_t* cr, SBasis2d const &sb2, Point dir, double width) {
     }
 }
 
-void cairo_md_pw(cairo_t *cr, md_pw_sb<2> const &p) {
-    pw_sb x = partition(p[0], p[1].cuts), y = partition(p[1], p[0].cuts);
-    for(int i = 0; i < x.size(); i++) {
-        MultidimSBasis<2> B;
-        B[0] = x[i]; B[1] = y[i];
-        cairo_md_sb(cr, B);
+void cairo_md_pw(cairo_t *cr, D2<pw_sb> const &p) {
+    vector<double> dumb;
+    vector<D2<SBasis> > foo = sectionize(p, dumb);
+    for(int i = 0; i < foo.size(); i++) {
+        cairo_md_sb(cr, foo[i]);
     }
 }
 

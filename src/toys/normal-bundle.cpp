@@ -2,7 +2,7 @@
 #include "sb-geometric.h"
 #include "bezier-to-sbasis.h"
 #include "sbasis-to-bezier.h"
-#include "multidim-sbasis.h"
+#include "d2.h"
 #include "s-basis-2d.h"
 
 #include "path-cairo.h"
@@ -16,23 +16,31 @@
 using std::vector;
 using namespace Geom;
 
-class NormalBundle : public std::vector<vector<SBasis2d> >{
+class NormalBundle : public std::vector<D2<SBasis2d> >{
 public:
     vector<double> lengths;
     NormalBundle(){lengths.push_back(0.);}
-    void setBase(MultidimSBasis<2> const &B, double tol);
+    void setBase(D2<SBasis> const &B, double tol);
     void draw(cairo_t* cr, int NbSections =5,int NbFibre=5);
 };
-vector<MultidimSBasis<2> > compose(NormalBundle const &NB, 
-				    MultidimSBasis<2> const &Binit,
+vector<D2<SBasis> > compose(NormalBundle const &NB, 
+				    D2<SBasis> const &Binit,
 				    Geom::Point Origin=Geom::Point(0,0));
 
 
+//TODO: shtick somewhere in main
+D2<SBasis> composeEach(D2<SBasis2d> const & a, D2<SBasis> const & b) {
+    D2<SBasis> r;
+    for(unsigned i = 0; i < 2; i++)
+        r[i] = compose(a[i],b);
+    return r;
+}
+
 //--------------------------------------------
 
-void SBasis1d_to_2d(MultidimSBasis<2> C0,
-		    MultidimSBasis<2> C1,
-		    vector<SBasis2d> &S){
+void SBasis1d_to_2d(D2<SBasis> C0,
+		    D2<SBasis> C1,
+		    D2<SBasis2d> &S){
     for(int dim = 0; dim < 2; dim++) {
 //**** C0 and C1 should have the same size...
         for (int i=C0[dim].size();i<C1[dim].size(); i++)
@@ -49,17 +57,17 @@ void SBasis1d_to_2d(MultidimSBasis<2> C0,
     }
 }
 
-void NormalBundle::setBase(MultidimSBasis<2> const &B, double tol=0.01) {
+void NormalBundle::setBase(D2<SBasis> const &B, double tol=0.01) {
 
-  MultidimSBasis<2> dB = derivative(B);
+  D2<SBasis> dB = derivative(B);
   vector<double> cuts;
-  vector<MultidimSBasis<2> > unitV=unit_vector(dB,cuts,tol);
+  vector<D2<SBasis> > unitV=unit_vector(dB,cuts,tol);
   double t0=0,t1,L=0;
   for(int i=0;i<cuts.size();i++){
     t1=cuts[i];
-    MultidimSBasis<2> subB=compose(B,BezOrd(t0,t1));
-    vector<SBasis2d> S(2);
-    SBasis1d_to_2d(subB,subB+rot90(unitV[i]), S);
+    D2<SBasis> subB=compose(B,BezOrd(t0,t1));
+    D2<SBasis2d> S;
+    SBasis1d_to_2d(subB, subB+rot90(unitV[i]), S);
     push_back(S);
     
     SBasis s=integral(dot(compose(dB,BezOrd(t0,t1)),unitV[i]));
@@ -71,8 +79,8 @@ void NormalBundle::setBase(MultidimSBasis<2> const &B, double tol=0.01) {
 }
 
 void NormalBundle::draw(cairo_t *cr, int NbLi, int NbCol) {
-    MultidimSBasis<2> B;
-    vector<MultidimSBasis<2> > tB;
+    D2<SBasis> B;
+    vector<D2<SBasis> > tB;
     Geom::Point Seg[2];
     B[1]=BezOrd(-100,100);
     double width=*(lengths.rbegin());
@@ -87,24 +95,24 @@ void NormalBundle::draw(cairo_t *cr, int NbLi, int NbCol) {
     for(int ui = 0; ui <= NbLi; ui++) {
         B[1]=BezOrd(-100+ui*200/NbLi);
         for(int i = 0; i <size(); i++) {
-            MultidimSBasis<2> section=compose( (*this)[i],B);
+            D2<SBasis> section=composeEach((*this)[i],B);
             cairo_md_sb(cr, section);
         }
     }
 }
 
 
-vector<MultidimSBasis<2> > compose(NormalBundle const &NB, 
-				    MultidimSBasis<2> const &Binit,
+vector<D2<SBasis> > compose(NormalBundle const &NB, 
+				    D2<SBasis> const &Binit,
 				    Geom::Point Origin){
-    vector<MultidimSBasis<2> > result;
-    MultidimSBasis<2> B=Binit;
-    MultidimSBasis<2> Bcut;
+    vector<D2<SBasis> > result;
+    D2<SBasis> B=Binit;
+    D2<SBasis> Bcut;
     vector<double> Roots;
     std::map<double,int> Cuts;
     int idx;
 
-    B -= Origin;
+    B = B + (-Origin);
 
     //--Find intersections with fibers over segment ends.
     for(int i=0; i<=NB.size();i++){
@@ -134,9 +142,9 @@ vector<MultidimSBasis<2> > compose(NormalBundle const &NB,
         int  idx1=(*next).second;
         if (idx0 != idx1){
             idx=std::min(idx0,idx1);
-        } else if(B[0].point_at((t0+t1)/2) < NB.lengths[idx0]) { // we have a left 'bump',
+        } else if(B[0]((t0+t1)/2) < NB.lengths[idx0]) { // we have a left 'bump',
             idx=idx0-1;
-        } else if(B[0].point_at((t0+t1)/2) == NB.lengths[idx0]) { //we have a vertical segment!...
+        } else if(B[0]((t0+t1)/2) == NB.lengths[idx0]) { //we have a vertical segment!...
             idx= (idx0==NB.size())? idx0-1:idx0;
         } else                                                  //we have a right 'bump'.
             idx=idx0;
@@ -148,7 +156,7 @@ vector<MultidimSBasis<2> > compose(NormalBundle const &NB,
             double width=NB.lengths[idx+1]-NB.lengths[idx];
             Bcut[0]=compose(BezOrd(-NB.lengths[idx]/width,
                                    (1-NB.lengths[idx])/width),Bcut[0]);
-            Bcut=compose(NB[idx],Bcut);
+            Bcut = composeEach(NB[idx], Bcut);
             result.push_back(Bcut);
         }
         cut++;
@@ -162,15 +170,15 @@ vector<MultidimSBasis<2> > compose(NormalBundle const &NB,
 class NormalBundleToy: public Toy {
 
     void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
-        MultidimSBasis<2> B = bezier_to_sbasis<2, 3>(handles.begin());
-        MultidimSBasis<2> P = bezier_to_sbasis<2, 3>(handles.begin()+4);
+        D2<SBasis> B = bezier_to_sbasis<3>(handles.begin());
+        D2<SBasis> P = bezier_to_sbasis<3>(handles.begin()+4);
         Geom::Point O = *(handles.begin()+8);
     
         NormalBundle NBdle;
         NBdle.setBase(B);
         Geom::Point Oo(O[0]+*(NBdle.lengths.rbegin()),O[1]);
 
-        vector<MultidimSBasis<2> > Q=compose(NBdle,P,O);
+        vector<D2<SBasis> > Q=compose(NBdle,P,O);
 
         cairo_set_line_width (cr, 0.5);
         //Base lines

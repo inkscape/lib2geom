@@ -1,7 +1,6 @@
 #include "s-basis.h"
 #include "bezier-to-sbasis.h"
 #include "sbasis-to-bezier.h"
-#include "multidim-sbasis.h"
 #include "s-basis-2d.h"
 
 #include "path-cairo.h"
@@ -54,7 +53,7 @@ class Sb2d: public Toy {
                display_handles[corner+4*i] = dl*dir + base;
                sb2[i][corner] = dl*10/(width/2)*pow(4.,ui+vi);
            }
-        draw_sb2d(cr, sb2, dir*0.1, width);
+        cairo_sb2d(cr, sb2, dir*0.1, width);
     
         *notify << "bo = " << sb2.index(0,0); 
     

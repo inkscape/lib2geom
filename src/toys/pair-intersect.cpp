@@ -1,7 +1,7 @@
 #include "s-basis.h"
 #include "bezier-to-sbasis.h"
 #include "sbasis-to-bezier.h"
-#include "multidim-sbasis-bounds.h"
+#include "d2.h"
 #include "s-basis-2d.h"
 
 #include "path-cairo.h"
@@ -21,18 +21,18 @@ const double eps = 0.1;
 /** Given two linear md_sb(assume they are linear even if they're not)
     find the ts at the intersection. */
 bool
-linear_pair_intersect(MultidimSBasis<2> A, double Al, double Ah, 
-                      MultidimSBasis<2> B, double Bl, double Bh,
+linear_pair_intersect(D2<SBasis> A, double Al, double Ah, 
+                      D2<SBasis> B, double Bl, double Bh,
                       double &tA, double &tB) {
     Rect Ar = local_bounds(A, Al, Ah);
     cairo_rectangle(g_cr, Ar.min()[0], Ar.min()[1], Ar.max()[0], Ar.max()[1]);
     cairo_stroke(g_cr);
     cout << Al << ", " << Ah << "\n";
     // kramers rule here
-    Point A0 = point_at(A,Al);
-    Point A1 = point_at(A,Ah);
-    Point B0 = point_at(B,Bl);
-    Point B1 = point_at(B,Bh);
+    Point A0 = A(Al);
+    Point A1 = A(Ah);
+    Point B0 = B(Bl);
+    Point B1 = B(Bh);
     double xlk = A1[X] - A0[X];
     double ylk = A1[Y] - A0[Y];
     double xnm = B1[X] - B0[X];
@@ -57,8 +57,8 @@ linear_pair_intersect(MultidimSBasis<2> A, double Al, double Ah,
 
 void pair_intersect(vector<double> &Asects,
                     vector<double> &Bsects,
-                    MultidimSBasis<2> A, double Al, double Ah, 
-                    MultidimSBasis<2> B, double Bl, double Bh, int depth=0) {
+                    D2<SBasis> A, double Al, double Ah, 
+                    D2<SBasis> B, double Bl, double Bh, int depth=0) {
     // we'll split only A, and swap args
     Rect Ar = local_bounds(A, Al, Ah);
     if(Ar.isEmpty()) return;
@@ -114,10 +114,10 @@ class PairIntersect: public Toy {
 virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
     cairo_set_line_width (cr, 0.5);
     
-    MultidimSBasis<2> A = bezier_to_sbasis<2, bez_ord-1>(handles.begin());
+    D2<SBasis> A = bezier_to_sbasis<bez_ord-1>(handles.begin());
     cairo_md_sb(cr, A);
     
-    MultidimSBasis<2> B = bezier_to_sbasis<2, bez_ord-1>(handles.begin()+bez_ord);
+    D2<SBasis> B = bezier_to_sbasis<bez_ord-1>(handles.begin()+bez_ord);
     cairo_md_sb(cr, B);
     vector<double> Asects, Bsects;
     g_cr = cr;
@@ -133,7 +133,7 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
     cairo_stroke(cr);
     cairo_set_source_rgba (cr, 1., 0., 0, 0.8);
     for(int i = 0; i < section.size(); i++) {
-        draw_handle(cr, point_at(A, section[i].first));
+        draw_handle(cr, A(section[i].first));
     }
     cairo_stroke(cr);
     

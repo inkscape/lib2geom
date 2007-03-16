@@ -8,9 +8,8 @@
 #include <algorithm>
 #include <exception>
 #include <stdexcept>
-#include "multidim-sbasis.h"
+#include "d2.h"
 #include "bezier-to-sbasis.h"
-#include "md-pw-sb.h"
 
 #include "not-implemented.h"
 namespace Geom {
@@ -37,12 +36,12 @@ public:
 
   Point pointAt(Coord t) const { return pointAndDerivativesAt(t, 0, NULL); }
   virtual Point pointAndDerivativesAt(Coord t, unsigned n, Point *ds) const = 0;
-  virtual MultidimSBasis<2> sbasis() const = 0;
+  virtual D2<SBasis> sbasis() const = 0;
 };
 
 struct CurveHelpers {
 protected:
-  static Maybe<int> sbasis_winding(MultidimSBasis<2> const &sbasis, Point p);
+  static Maybe<int> sbasis_winding(D2<SBasis> const &sbasis, Point p);
 };
 
 struct BezierHelpers {
@@ -113,8 +112,8 @@ public:
     return point_and_derivatives_at(t, bezier_degree, c_, n_derivs, derivs);
   }
 
-  MultidimSBasis<2> sbasis() const {
-    return bezier_to_sbasis<2, bezier_degree, Geom::Point const *>(c_);
+  D2<SBasis> sbasis() const {
+    return bezier_to_sbasis<bezier_degree, Geom::Point const *>(c_);
   }
 
 protected:
@@ -127,7 +126,7 @@ private:
 };
 
 // Bezier<0> is meaningless; specialize it out
-template <> class Bezier<0> { Bezier(); };
+template<> class Bezier<0> { Bezier(); };
 
 typedef Bezier<1> LineSegment;
 typedef Bezier<2> QuadraticBezier;
@@ -160,7 +159,7 @@ public:
   
   Point pointAndDerivativesAt(Coord t, unsigned n_derivs, Point *derivs) const;
 
-  MultidimSBasis<2> sbasis() const;
+  D2<SBasis> sbasis() const;
 
 private:
   Point initial_;
@@ -176,7 +175,7 @@ class SBasisCurve : public Curve, private CurveHelpers {
 public:
   SBasisCurve() {}
 
-  explicit SBasisCurve(MultidimSBasis<2> const &coeffs)
+  explicit SBasisCurve(D2<SBasis> const &coeffs)
   : coeffs_(coeffs) {}
 
   Point initialPoint() const {
@@ -199,10 +198,10 @@ public:
 
   Point pointAndDerivativesAt(Coord t, unsigned n_derivs, Point *derivs) const;
 
-  MultidimSBasis<2> sbasis() const { return coeffs_; }
+  D2<SBasis> sbasis() const { return coeffs_; }
   
 private:
-  MultidimSBasis<2> coeffs_;
+  D2<SBasis> coeffs_;
 };
 
 template <typename IteratorImpl>
@@ -347,17 +346,15 @@ public:
   Rect boundsFast() const;
   Rect boundsExact() const;
 
-  md_pw_sb<2> toMdSb() const {
+  D2<pw_sb> toMdSb() const {
     int i = 0;
     pw_sb x, y;
     x.push_cut(i); y.push_cut(i);
     for(const_iterator it = begin(); it != end(); ++it, i++) {
-      MultidimSBasis<2> foo = (*it).sbasis();
+      D2<SBasis> foo = (*it).sbasis();
       x.push(foo[0], i + 1); y.push(foo[1], i + 1);
     }
-    md_pw_sb<2> ret;
-    ret[0] = x; ret[1] = y;
-    return ret;
+    return D2<pw_sb>(x, y);
   }
 
   void insert(iterator pos, Curve const &curve) {
@@ -457,7 +454,7 @@ public:
 
   void append(Curve const &curve);
 
-  void append(MultidimSBasis<2> const &curve);
+  void append(D2<SBasis> const &curve);
 
   template <typename CurveType, typename A>
   void appendNew(A a) {

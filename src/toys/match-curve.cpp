@@ -1,7 +1,7 @@
 #include "s-basis.h"
 #include "bezier-to-sbasis.h"
 #include "sbasis-to-bezier.h"
-#include "multidim-sbasis.h"
+#include "d2.h"
 #include "solver.h"
 #include "nearestpoint.cpp"
 #include "sbasis-poly.h"
@@ -58,25 +58,25 @@ public:
         
         std::vector<double> solutions;
         
-        MultidimSBasis<2> test_sb = bezier_to_sbasis<2, 5>(handles.begin());
+        D2<SBasis> test_sb = bezier_to_sbasis<5>(handles.begin());
 
     
-        MultidimSBasis<2> B = bezier_to_sbasis<2, 5>(handles.begin());
+        D2<SBasis> B = bezier_to_sbasis<5>(handles.begin());
         Geom::Path2::Path pb;
         pb.append(B);
         pb.close(false);
         cairo_path(cr, pb);
         cairo_stroke(cr);
         
-        MultidimSBasis<2> m;
-        MultidimSBasis<2> dB = derivative(B);
-        MultidimSBasis<2> ddB = derivative(dB);
-        MultidimSBasis<2> dddB = derivative(ddB);
+        D2<SBasis> m;
+        D2<SBasis> dB = derivative(B);
+        D2<SBasis> ddB = derivative(dB);
+        D2<SBasis> dddB = derivative(ddB);
         
-        Geom::Point pt = point_at(B, 0);
-        Geom::Point tang = point_at(dB, 0);
-        Geom::Point dtang = point_at(ddB, 0);
-        Geom::Point ddtang = point_at(dddB, 0);
+        Geom::Point pt = B(0);
+        Geom::Point tang = dB(0);
+        Geom::Point dtang = ddB(0);
+        Geom::Point ddtang = dddB(0);
         double t = 1;
         for(int dim = 0; dim < 2; dim++) {
             m[dim] = BezOrd(pt[dim],pt[dim]+tang[dim]);
@@ -94,21 +94,21 @@ public:
             // perform golden section search
             double best_f = 0, best_x = 1;
             for(int n = 2; n < 4; n++) {
-            Geom::Point m_pt = point_at(m, double(n)/6);
+            Geom::Point m_pt = m(double(n)/6);
             double x0 = 0, x3 = 1.; // just a guess!
             const double R = 0.61803399;
             const double C = 1 - R;
             double x1 = C*x0 + R*x3;
             double x2 = C*x1 + R*x3;
-            double f1 = L2(point_at(B, x1) - m_pt);
-            double f2 = L2(point_at(B, x2) - m_pt);
+            double f1 = L2(B(x1) - m_pt);
+            double f2 = L2(B(x2) - m_pt);
             while(fabs(x3 - x0) > 1e-3*(fabs(x1) + fabs(x2))) {
                 if(f2 < f1) {
                     shift(x0, x1, x2, R*x1 + C*x3);
-                    shift(f1, f2, L2(point_at(B, x2) - m_pt));
+                    shift(f1, f2, L2(B(x2) - m_pt));
                 } else {
                     shift(x3, x2, x1, R*x2 + C*x0);
-                    shift(f2, f1, L2(point_at(B, x1) - m_pt));
+                    shift(f2, f1, L2(B(x1) - m_pt));
 
                 }
                 std::cout << x0 << "," 
@@ -137,7 +137,7 @@ public:
         }
         std::cout << std::endl;
         //draw_cross(cr, point_at(B, hi));
-        draw_circ(cr, point_at(m, hi));
+        draw_circ(cr, m(hi));
         {
             Geom::Path2::Path pb;
             pb.append(m);

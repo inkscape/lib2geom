@@ -1,7 +1,6 @@
 #include "s-basis.h"
 #include "bezier-to-sbasis.h"
 #include "sbasis-to-bezier.h"
-#include "multidim-sbasis.h"
 
 #include "path-cairo.h"
 

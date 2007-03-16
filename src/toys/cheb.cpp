@@ -1,7 +1,7 @@
 #include "s-basis.h"
 #include "bezier-to-sbasis.h"
 #include "sbasis-to-bezier.h"
-#include "multidim-sbasis.h"
+#include "d2.h"
 #include "solver.h"
 #include "nearestpoint.cpp"
 #include "sbasis-poly.h"
@@ -53,7 +53,7 @@ class Sb1d: public Toy {
         cairo_set_source_rgba (cr, 0., 0.5, 0, 1);
         cairo_set_line_width (cr, 1);
         
-        MultidimSBasis<2> B;
+        D2<SBasis> B;
         B[0] = BezOrd(width/4, 3*width/4);
         for(unsigned i = 0;  i < 10; i++) {
             //B[1] = cheb(i);

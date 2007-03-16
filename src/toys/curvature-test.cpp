@@ -2,7 +2,7 @@
 #include "bezier-to-sbasis.h"
 #include "sbasis-to-bezier.h"
 #include "solver.h"
-#include "multidim-sbasis.h"
+#include "d2.h"
 #include "s-basis-2d.h"
 #include "sb-geometric.h"
 
@@ -26,7 +26,7 @@ class CurvatureTester: public Toy {
 
     void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
     
-        MultidimSBasis<2> B = bezier_to_sbasis<2, 3>(handles.begin());
+        D2<SBasis> B = bezier_to_sbasis<3>(handles.begin());
 
         cairo_set_line_width (cr, 1);
         cairo_set_source_rgba (cr, 0., 0.5, 0., 1);
@@ -45,7 +45,7 @@ class CurvatureTester: public Toy {
         pw_sb K = curvature(B);
         
         for(int ix = 0; ix < K.segs.size(); ix++) {
-            MultidimSBasis<2> Kxy;
+            D2<SBasis> Kxy;
             Kxy[1] = BezOrd(400) - 300*K.segs[ix];
             Kxy[0] = BezOrd(300*K.cuts[ix] + 150, 300*K.cuts[ix+1] + 150);
             cairo_md_sb(cr, Kxy);
@@ -56,16 +56,16 @@ class CurvatureTester: public Toy {
 	*notify<<"K="<<radius<<std::endl;
 	if (fabs(radius)>1e-4){
 	  radius=1./radius;
-	  Geom::Point normal=unit_vector(point_at(derivative(B),t));
+	  Geom::Point normal=unit_vector(derivative(B)(t));
 	  normal=rot90(normal);
-	  Geom::Point center=point_at(B,t)-radius*normal;
+	  Geom::Point center=B(t)-radius*normal;
 	  
 	  cairo_arc(cr, center[0], center[1],fabs(radius), 0, M_PI*2);
 	  draw_handle(cr, center);
-	  draw_handle(cr, point_at(B,t));
+	  draw_handle(cr, B(t));
 	}else{
-	  Geom::Point p=point_at(B,t);
-	  Geom::Point v=point_at(derivative(B),t);
+	  Geom::Point p=B(t);
+	  Geom::Point v=derivative(B)(t);
 	  draw_handle(cr, p);
 	  cairo_move_to(cr, p-100*v);
 	  cairo_line_to(cr, p+100*v);

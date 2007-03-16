@@ -8,7 +8,7 @@
 #include "s-basis.h"
 #include "bezier-to-sbasis.h"
 #include "sbasis-to-bezier.h"
-#include "multidim-sbasis.h"
+#include "d2.h"
 
 #include "path-cairo.h"
 
@@ -98,7 +98,7 @@ class Conic4: public Toy {
         cairo_stroke(cr);
         
         arc_basis ab(1./3);
-        MultidimSBasis<2> B;
+        D2<SBasis> B;
         
         for(unsigned dim  = 0; dim < 2; dim++)
             for(unsigned i  = 0; i < 5; i++)

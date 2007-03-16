@@ -5,7 +5,7 @@
 #include "s-basis.h"
 #include "bezier-to-sbasis.h"
 #include "sbasis-to-bezier.h"
-#include "multidim-sbasis.h"
+#include "d2.h"
 #include "s-basis-2d.h"
 
 #include "path2.h"
@@ -29,9 +29,17 @@ const double u_subs = 5,
 const double inv_u_subs = 1 / u_subs,
              inv_v_subs = 1 / v_subs;
 
+//TODO: shtick somewhere in main
+D2<SBasis> composeEach(D2<SBasis2d> const & a, D2<SBasis> const & b) {
+    D2<SBasis> r;
+    for(unsigned i = 0; i < 2; i++)
+        r[i] = compose(a[i],b);
+    return r;
+}
+
 class Sb2d2: public Toy {
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
-        vector<SBasis2d> sb2(2);
+        D2<SBasis2d> sb2;
         for(int dim = 0; dim < 2; dim++) {
             sb2[dim].us = 2;
             sb2[dim].vs = 2;
@@ -70,7 +78,7 @@ class Sb2d2: public Toy {
                             sb2[dim][i][corner] = dl/(width/2)*pow(4.0,ui+vi);
                         }
         }
-        cairo_sb2d(cr, sb2, dir*0.1, width);
+        cairo_2dsb2d(cr, sb2, dir*0.1, width);
         cairo_set_source_rgba (cr, 0., 0., 0, 0.5);
         cairo_stroke(cr);
         for(int vi = 0; vi < v_subs; vi++) {
@@ -79,30 +87,30 @@ class Sb2d2: public Toy {
                 double tu = ui * inv_u_subs;
                 
                 Geom::Path2::Path pb;
-                MultidimSBasis<2> B;
-                MultidimSBasis<2> tB;
+                D2<SBasis> B;
+                D2<SBasis> tB;
                 
                 B[0] = BezOrd(tu-fudge, tu+fudge + inv_u_subs );
                 B[1] = BezOrd(tv-fudge, tv-fudge);
-                tB = compose(sb2, B);
+                tB = composeEach(sb2, B);
                 tB = (width/2) * tB + Geom::Point(width/4, width/4);
                 pb.append(tB);
                 
                 B[0] = BezOrd(tu+fudge + inv_u_subs , tu+fudge + inv_u_subs);
                 B[1] = BezOrd(tv-fudge,               tv+fudge + inv_v_subs);
-                tB = compose(sb2, B);
+                tB = composeEach(sb2, B);
                 tB = (width/2) * tB + Geom::Point(width/4, width/4);
                 pb.append(tB);
                 
                 B[0] = BezOrd(tu+fudge + inv_u_subs, tu-fudge);
                 B[1] = BezOrd(tv+fudge + inv_v_subs, tv+fudge + inv_v_subs);
-                tB = compose(sb2, B);
+                tB = composeEach(sb2, B);
                 tB = (width/2) * tB + Geom::Point(width/4, width/4);
                 pb.append(tB);
                 
                 B[0] = BezOrd(tu-fudge,              tu-fudge);
                 B[1] = BezOrd(tv+fudge + inv_v_subs, tv-fudge);
-                tB = compose(sb2, B);
+                tB = composeEach(sb2, B);
                 tB = (width/2) * tB + Geom::Point(width/4, width/4);
                 pb.append(tB);
                 

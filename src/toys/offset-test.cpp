@@ -2,7 +2,7 @@
 #include "bezier-to-sbasis.h"
 #include "sbasis-to-bezier.h"
 #include "solver.h"
-#include "multidim-sbasis.h"
+#include "d2.h"
 #include "s-basis-2d.h"
 #include "sb-geometric.h"
 
@@ -23,15 +23,15 @@ using namespace std;
 //-----------------------------------------------
 
 static void 
-plot_offset(cairo_t* cr, MultidimSBasis<2> const &M,
+plot_offset(cairo_t* cr, D2<SBasis> const &M,
             Coord offset = 10,
             int NbPts = 10){
-    MultidimSBasis<2> dM = derivative(M);
+    D2<SBasis> dM = derivative(M);
     for (int i = 0;i < NbPts;i++){
         double t = i*1./NbPts;
-        Geom::Point V = point_at(dM,t);
+        Geom::Point V = dM(t);
         V = offset*rot90(unit_vector(V));
-        draw_handle(cr, point_at(M,t)+V);
+        draw_handle(cr, M(t)+V);
     }
 }
 
@@ -40,8 +40,7 @@ plot_offset(cairo_t* cr, MultidimSBasis<2> const &M,
 class OffsetTester: public Toy {
 
     void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
-    
-        MultidimSBasis<2> B = bezier_to_sbasis<2, 3>(handles.begin());
+        D2<SBasis> B = bezier_to_sbasis<3>(handles.begin());
 
         cairo_set_line_width (cr, 1);
         cairo_set_source_rgba (cr, 0., 0.5, 0., 1);
@@ -59,9 +58,9 @@ class OffsetTester: public Toy {
 
 
         cairo_set_source_rgba (cr, 0.5, 0.2, 0., 0.8);
-        vector<MultidimSBasis<2> > V;
+        vector<D2<SBasis> > V;
         vector<double> cuts;
-        MultidimSBasis<2> subB,N,Ray;
+        D2<SBasis> subB, N, Ray;
         double t0 = 0,t1;
 
         V = unit_vector(derivative(B),cuts);
@@ -73,23 +72,23 @@ class OffsetTester: public Toy {
             cairo_set_source_rgba (cr, 1, 0, 0, 1);
             cairo_stroke(cr);
 
-            Ray[0] = SBasis(BezOrd(point_at(subB, 0)[0], point_at(N, 0)[0]));
-            Ray[1] = SBasis(BezOrd(point_at(subB, 0)[1], point_at(N, 0)[1]));
+            Ray[0] = SBasis(BezOrd(subB(0)[0], N(0)[0]));
+            Ray[1] = SBasis(BezOrd(subB(0)[1], N(0)[1]));
             cairo_md_sb(cr,Ray);
             cairo_set_source_rgba (cr, 1, 0, 0, 0.2);
             cairo_stroke(cr);
             t0 = t1;
         }
-        Ray[0] = SBasis(BezOrd(point_at(subB, 1)[0], point_at(N, 1)[0]));
-        Ray[1] = SBasis(BezOrd(point_at(subB, 1)[1], point_at(N, 1)[1]));
+        Ray[0] = SBasis(BezOrd(subB(1)[0], N(1)[0]));
+        Ray[1] = SBasis(BezOrd(subB(1)[1], N(1)[1]));
         cairo_md_sb(cr,Ray);
         cairo_set_source_rgba (cr, 1, 0, 0, 0.2);
         cairo_stroke(cr);
         pw_sb cV = curvature(B);
         for(int i = 0; i < cV.size();i++){
-            subB = compose(B,BezOrd(cV.cuts[i],cV.cuts[i+1]));
-            N = -offset*cV.segs[i]*rot90(V[i])+subB;
-            cairo_md_sb(cr,N);
+            subB = compose(B, BezOrd(cV.cuts[i], cV.cuts[i+1]));
+            N = multiply(-offset * cV[i], rot90(V[i])) + subB;
+            cairo_md_sb(cr, N);
             cairo_set_source_rgba (cr, 1, 0, 0.6, 0.5);
             cairo_stroke(cr);
 

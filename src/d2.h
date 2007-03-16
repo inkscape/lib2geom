@@ -20,8 +20,8 @@ public:
     T& operator[](unsigned i)              { return f[i]; }
     T const & operator[](unsigned i) const { return f[i]; }
 
-    D2<double> operator()(double t) const;
-    D2<double> operator()(double x, double y) const;
+    Point operator()(double t) const;
+    Point operator()(double x, double y) const;
 
     inline D2<T>
     operator +(D2<T> const & v) const {
@@ -35,7 +35,7 @@ public:
     operator -(D2<T> const & v) const {
         D2<T> r;
         for(unsigned i = 0; i < 2; i++)
-            r.f[i] = f[i] - v[i];
+            r[i] = f[i] - v[i];
         return r;
     }
 
@@ -66,7 +66,7 @@ inline D2<T>
 operator *(double a, D2<T> const & b) {
     D2<T> r;
     for(unsigned i = 0; i < 2; i++)
-        r.f[i] = a * b.f[i];
+        r[i] = a * b[i];
     return r;
 }
 
@@ -75,7 +75,7 @@ inline T
 dot(D2<T> const & a, D2<T> const & b) {
     T r;
     for(unsigned i = 0; i < 2; i++)
-        r += a.f[i] * b.f[i];
+        r += a[i] * b[i];
     return r;
 }
 
@@ -85,7 +85,7 @@ inline D2<T>
 compose(T const & a, D2<T> const & b) {
     D2<T> r;
     for(unsigned i = 0; i < 2; i++)
-        r[i] = compose(a,b.f[i]);
+        r[i] = compose(a,b[i]);
     return r;
 }
 */
@@ -94,8 +94,8 @@ template <typename T>
 inline D2<T>
 rot90(D2<T> const & a) {
     D2<T> r;
-    r.f[0] = -a.f[1];
-    r.f[1] = a.f[0];
+    r[0] = -a[1];
+    r[1] = a[0];
     return r;
 }
 
@@ -103,8 +103,8 @@ template <typename T>
 inline D2<T>
 cross(D2<T> const & a, D2<T> const & b) {
     D2<T> r;
-    r[0] = (-1) * a.f[0] * b.f[1];
-    r[1] = a.f[1] * b.f[0];
+    r[0] = (-1) * a[0] * b[1];
+    r[1] = a[1] * b[0];
     return r;
 }
 
@@ -114,7 +114,7 @@ inline D2<T>
 compose(D2<T> const & a, T const & b) {
     D2<T> r;
     for(unsigned i = 0; i < 2; i++)
-        r[i] = compose(a.f[i],b);
+        r[i] = compose(a[i],b);
     return r;
 }
 
@@ -123,28 +123,26 @@ inline D2<T>
 composeEach(D2<T> const & a, D2<T> const & b) {
     D2<T> r;
     for(unsigned i = 0; i < 2; i++)
-        r[i] = compose(a.f[i],b.f[i]);
+        r[i] = compose(a[i],b[i]);
     return r;
 }
 
 template<typename T>
-inline D2<double>
+inline Point
 D2<T>::operator()(double t) const {
-    D2<double> r;
-    for(int i = 0; i < 2; i++) {
-       r[i] = (*this)[i](t);
-    }
-    return r;
+    Point p;
+    for(int i = 0; i < 2; i++)
+       p[i] = (*this)[i](t);
+    return p;
 }
 
 template<typename T>
-inline D2<double>
+inline Point
 D2<T>::operator()(double x, double y) const {
-    D2<double> r;
-    for(int i = 0; i < 2; i++) {
-       r[i] = (*this)[i](x, y);
-    }
-    return r;
+    Point p;
+    for(int i = 0; i < 2; i++)
+       p[i] = (*this)[i](x, y);
+    return p;
 }
 
 };
@@ -157,6 +155,10 @@ D2<T>::operator()(double x, double y) const {
 
 namespace Geom {
 
+inline D2<SBasis> compose(D2<SBasis> const & a, SBasis const & b) {
+    compose(a, b);
+}
+
 D2<SBasis> derivative(D2<SBasis> const & a);
 D2<SBasis> integral(D2<SBasis> const & a);
 
@@ -165,6 +167,7 @@ double L2(D2<double> const & a);
 
 D2<SBasis> multiply(BezOrd const & a, D2<SBasis> const & b);
 D2<SBasis> operator*(BezOrd const & a, D2<SBasis> const & b);
+D2<SBasis> operator+(D2<SBasis> const & a, Point b);
 D2<SBasis> multiply(SBasis const & a, D2<SBasis> const & b);
 D2<SBasis> truncate(D2<SBasis> const & a, unsigned terms);
 

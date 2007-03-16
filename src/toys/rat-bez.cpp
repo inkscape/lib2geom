@@ -5,7 +5,7 @@
 #include "sbasis-to-bezier.h"
 #include "path2.h"
 #include "path-cairo.h"
-#include "multidim-sbasis.h"
+#include "d2.h"
 
 #include "toy-framework.h"
 
@@ -20,7 +20,7 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
     cairo_stroke(cr);
     
     // Convert 4 handles to md_sb
-    MultidimSBasis<2> Bz = bezier_to_sbasis<2, 3>(handles.begin());
+    D2<SBasis> Bz = bezier_to_sbasis<3>(handles.begin());
     
     // Draw it in orange
     Geom::Path2::Path pb;
@@ -72,7 +72,7 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
         // subdivided
         
         // find cubic approximation to division
-        MultidimSBasis<2> Bu;
+        D2<SBasis> Bu;
         for(int dim = 0; dim < 2; dim++) {
 	    Bu[dim] = divide(Bp[dim], Bp[2], 1);
         }

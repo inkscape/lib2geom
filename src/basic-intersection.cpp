@@ -45,7 +45,7 @@ static std::vector<std::pair<double, double> >
 find_intersections( Bezier a, Bezier b);
 
 static std::vector<std::pair<double, double> > 
-find_self_intersections(Bezier const &Sb, MultidimSBasis<2> const & A);
+find_self_intersections(Bezier const &Sb, D2<SBasis> const & A);
 
 std::vector<std::pair<double, double> >
 find_intersections( vector<Geom::Point> const & A, 
@@ -62,7 +62,7 @@ find_self_intersections(Bezier const &Sb) {
 }
 
 std::vector<std::pair<double, double> > 
-find_self_intersections(MultidimSBasis<2> const & A) {
+find_self_intersections(D2<SBasis> const & A) {
     Bezier Sb;
     Sb.p = sbasis_to_bezier(A);
     return find_self_intersections(Sb, A);
@@ -70,7 +70,7 @@ find_self_intersections(MultidimSBasis<2> const & A) {
 
 
 static std::vector<std::pair<double, double> > 
-find_self_intersections(Bezier const &Sb, MultidimSBasis<2> const & A) {
+find_self_intersections(Bezier const &Sb, D2<SBasis> const & A) {
 
     
     vector<double> dr = roots(derivative(A[X]));

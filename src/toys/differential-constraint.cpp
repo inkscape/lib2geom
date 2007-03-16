@@ -5,7 +5,7 @@
 #include "s-basis.h"
 #include "bezier-to-sbasis.h"
 #include "sbasis-to-bezier.h"
-#include "multidim-sbasis.h"
+#include "d2.h"
 
 #include "path-cairo.h"
 
@@ -16,12 +16,6 @@ using namespace Geom;
 
 unsigned total_pieces_sub;
 unsigned total_pieces_inc;
-
-void cairo_md_sb(cairo_t *cr, MultidimSBasis<2> const &B) {
-    std::vector<Geom::Point> bez = sbasis_to_bezier(B, 2);
-    cairo_move_to(cr, bez[0]);
-    cairo_curve_to(cr, bez[1], bez[2], bez[3]);
-}
 
 #include <stdio.h>
 #include <gsl/gsl_errno.h>
@@ -36,11 +30,11 @@ class SBez: public Toy {
           void *params)
     {
         double mu = *(double *)params;
-        MultidimSBasis<2> B = bezier_to_sbasis<2, 3>(handlesptr->begin());
-        MultidimSBasis<2> dB = derivative(B);
-        Geom::Point tan = point_at(dB,y[0]);//Geom::unit_vector();
+        D2<SBasis> B = bezier_to_sbasis<3>(handlesptr->begin());
+        D2<SBasis> dB = derivative(B);
+        Geom::Point tan = dB(y[0]);//Geom::unit_vector();
         tan /= dot(tan,tan);
-        Geom::Point yp = point_at(B, y[0]);
+        Geom::Point yp = B(y[0]);
         double dtau = -dot(tan, yp - (*handlesptr)[4]);
         f[0] = dtau;
         
@@ -70,7 +64,7 @@ class SBez: public Toy {
         handlesptr = &handles;
         cairo_set_line_width (cr, 0.5);
     
-        MultidimSBasis<2> B = bezier_to_sbasis<2, 3>(handles.begin());
+        D2<SBasis> B = bezier_to_sbasis<3>(handles.begin());
         cairo_md_sb(cr, B);
     
         const gsl_odeiv_step_type * T 
@@ -103,7 +97,7 @@ class SBez: public Toy {
             //printf ("%.5e %.5e %.5e\n", t, y[0], y[1]);
         }
     
-        draw_cross(cr, point_at(B, y[0]));
+        draw_cross(cr, B(y[0]));
      
         gsl_odeiv_evolve_free (e);
         gsl_odeiv_control_free (c);

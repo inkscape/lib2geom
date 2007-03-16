@@ -3,8 +3,8 @@
 #include <vector>
 #include <cassert>
 #include <algorithm>
+#include "d2.h"
 #include "s-basis.h"
-#include "multidim-sbasis.h"
 #include <iostream>
 
 namespace Geom{
@@ -291,13 +291,11 @@ SBasis2d inverse(SBasis2d const &a, int k);
 SBasis extract_u(SBasis2d const &a, double u);
 SBasis extract_v(SBasis2d const &a, double v);
 
-SBasis compose(BezOrd2d const &a, MultidimSBasis<2> p);
+SBasis compose(BezOrd2d const &a, D2<SBasis> p);
 
-SBasis 
-compose(SBasis2d const &fg, MultidimSBasis<2> p);
+SBasis compose(SBasis2d const &fg, D2<SBasis> p);
 
-MultidimSBasis<2> 
-compose(std::vector<SBasis2d> const &fg, MultidimSBasis<2> p);
+D2<SBasis> compose(std::vector<SBasis2d> const &fg, D2<SBasis> p);
 
 inline std::ostream &operator<< (std::ostream &out_file, const BezOrd2d &bo) {
     out_file << "{" << bo[0] << ", " << bo[1] << "}, ";

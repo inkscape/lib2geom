@@ -32,7 +32,7 @@
 #include "s-basis.h"
 #include "bezier-to-sbasis.h"
 #include "sbasis-to-bezier.h"
-#include "multidim-sbasis.h"
+#include "d2.h"
 
 #include "path2.h"
 #include "path2-builder.h"
@@ -100,9 +100,9 @@ private:
     double _clearance;
     double _angle;
     Geom::Point _centre;
-    MultidimSBasis<2> _involute(double start, double stop) {
-        MultidimSBasis<2> B;
-        MultidimSBasis<2> I;
+    D2<SBasis> _involute(double start, double stop) {
+        D2<SBasis> B;
+        D2<SBasis> I;
         BezOrd bo = BezOrd(start,stop);
         
         B[0] = cos(bo,2);
@@ -112,8 +112,8 @@ private:
         I = base_radius()*I + _centre;
         return I;
     }
-    MultidimSBasis<2> _arc(double start, double stop, double R) {
-        MultidimSBasis<2> B;
+    D2<SBasis> _arc(double start, double stop, double R) {
+        D2<SBasis> B;
         BezOrd bo = BezOrd(start,stop);
         
         B[0] = cos(bo,2);
@@ -155,30 +155,30 @@ std::vector<Geom::Path2::Path> Gear::path() {
     {
         double cursor = first_tooth_angle + (i * tooth_rotation);
 
-        MultidimSBasis<2> leading_I = compose(_involute(cursor, cursor + involute_swath_angle(outer_radius())), BezOrd(involute_t,1));
+        D2<SBasis> leading_I = compose(_involute(cursor, cursor + involute_swath_angle(outer_radius())), BezOrd(involute_t,1));
         pb.pushSBasis(leading_I);
         cursor += involute_advance;
         
-        MultidimSBasis<2> tip = _arc(cursor, cursor+tip_advance, outer_radius());
+        D2<SBasis> tip = _arc(cursor, cursor+tip_advance, outer_radius());
         pb.pushSBasis(tip);
         cursor += tip_advance;
         
         cursor += involute_advance;
-        MultidimSBasis<2> trailing_I = compose(_involute(cursor, cursor - involute_swath_angle(outer_radius())), BezOrd(1,involute_t));
+        D2<SBasis> trailing_I = compose(_involute(cursor, cursor - involute_swath_angle(outer_radius())), BezOrd(1,involute_t));
         pb.pushSBasis(trailing_I);
        
         if (base_radius() > root_radius()) {
-            Geom::Point leading_start = point_at(trailing_I,1);
+            Geom::Point leading_start = trailing_I(1);
             Geom::Point leading_end = (root_radius() * unit_vector(leading_start - _centre)) + _centre;
             pb.pushLine(leading_end);
         }
         
-        MultidimSBasis<2> root = _arc(cursor, cursor+root_advance, root_radius());
+        D2<SBasis> root = _arc(cursor, cursor+root_advance, root_radius());
         pb.pushSBasis(root);
         cursor += root_advance;
         
         if (base_radius() > root_radius()) {
-            Geom::Point trailing_start = point_at(root,1);
+            Geom::Point trailing_start = root(1);
             Geom::Point trailing_end = (base_radius() * unit_vector(trailing_start - _centre)) + _centre;
             pb.pushLine(trailing_end);
         }

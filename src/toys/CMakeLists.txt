@@ -14,7 +14,7 @@ fitter
 inverse-test
 one-D
 quad-toy
-rat-bez
+#rat-bez
 sb1d
 sb2d
 pair-intersect

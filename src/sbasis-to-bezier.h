@@ -1,8 +1,8 @@
 #ifndef _SBASIS_TO_BEZIER
 #define _SBASIS_TO_BEZIER
 
-#include "multidim-sbasis.h"
-#include "path-builder.h"
+#include "d2.h"
+#include "path2-builder.h"
 #include "path2.h"
 
 namespace Geom{
@@ -11,15 +11,9 @@ std::vector<double>
 sbasis_to_bezier(SBasis const &B, unsigned q = 0);
 
 std::vector<Geom::Point>
-sbasis_to_bezier(MultidimSBasis<2> const &B, unsigned q = 0);
+sbasis_to_bezier(D2<SBasis> const &B, unsigned q = 0);
 
-void
-subpath_from_sbasis(Geom::OldPathSetBuilder &pb, MultidimSBasis<2> const &B, double tol, bool initial=true);
-void
-subpath_from_sbasis_incremental(Geom::OldPathSetBuilder &pb, MultidimSBasis<2> B, double tol, bool initial=true);
-
-void
-path_from_sbasis(Geom::Path2::Path &pb, MultidimSBasis<2> const &B, double tol);
+void path_from_sbasis(Path2::Path &pb, D2<SBasis> const &B, double tol);
 
 };
 #endif

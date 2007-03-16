@@ -1,7 +1,7 @@
 #include "s-basis.h"
 #include "bezier-to-sbasis.h"
 #include "sbasis-to-bezier.h"
-#include "multidim-sbasis.h"
+#include "d2.h"
 
 #include "path-cairo.h"
 
@@ -27,7 +27,7 @@ class Clothoid: public Toy {
         double a1 = ((handles[1][0]-width/4)*2)/width;
         *notify << "[" << a0 << ", " << a1 << "]";
         
-        MultidimSBasis<2> B;
+        D2<SBasis> B;
         BezOrd bo = BezOrd(a0*6,a1*6);
         SBasis t2 = BezOrd(0,1);
         t2 = t2*t2;

@@ -1,11 +1,9 @@
 #include "s-basis.h"
 #include "bezier-to-sbasis.h"
 #include "sbasis-to-bezier.h"
-#include "multidim-sbasis.h"
+#include "d2.h"
 
-#include "path.h"
 #include "path-cairo.h"
-#include "path-builder.h"
 
 #include "toy-framework.h"
 
@@ -16,7 +14,7 @@ using namespace Geom;
 using namespace std;
 
 static void plot(cairo_t* cr, SBasis const &B,double vscale=1,double a=0,double b=1){
-    MultidimSBasis<2> plot;
+    D2<SBasis> plot;
     plot[0]=SBasis(BezOrd(150+a*300,150+b*300));
     plot[1]=-vscale*B;
     plot[1]+=300;

@@ -5,7 +5,6 @@
 #include "s-basis.h"
 #include "bezier-to-sbasis.h"
 #include "sbasis-to-bezier.h"
-#include "multidim-sbasis.h"
 #include "s-basis-2d.h"
 
 #include "path-cairo.h"
