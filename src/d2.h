@@ -156,7 +156,10 @@ D2<T>::operator()(double x, double y) const {
 namespace Geom {
 
 inline D2<SBasis> compose(D2<SBasis> const & a, SBasis const & b) {
-    compose(a, b);
+    D2<SBasis> r;
+    for(int i = 0; i < 2; i++)
+        r[i] = compose(a[i], b);
+    return r;
 }
 
 D2<SBasis> derivative(D2<SBasis> const & a);
