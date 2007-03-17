@@ -27,15 +27,6 @@ vector<D2<SBasis> > compose(NormalBundle const &NB,
 				    D2<SBasis> const &Binit,
 				    Geom::Point Origin=Geom::Point(0,0));
 
-
-//TODO: shtick somewhere in main
-D2<SBasis> composeEach(D2<SBasis2d> const & a, D2<SBasis> const & b) {
-    D2<SBasis> r;
-    for(unsigned i = 0; i < 2; i++)
-        r[i] = compose(a[i],b);
-    return r;
-}
-
 //--------------------------------------------
 
 void SBasis1d_to_2d(D2<SBasis> C0,
@@ -95,7 +86,7 @@ void NormalBundle::draw(cairo_t *cr, int NbLi, int NbCol) {
     for(int ui = 0; ui <= NbLi; ui++) {
         B[1]=BezOrd(-100+ui*200/NbLi);
         for(int i = 0; i <size(); i++) {
-            D2<SBasis> section=composeEach((*this)[i],B);
+            D2<SBasis> section=compose((*this)[i],B);
             cairo_md_sb(cr, section);
         }
     }
@@ -156,7 +147,7 @@ vector<D2<SBasis> > compose(NormalBundle const &NB,
             double width=NB.lengths[idx+1]-NB.lengths[idx];
             Bcut[0]=compose(BezOrd(-NB.lengths[idx]/width,
                                    (1-NB.lengths[idx])/width),Bcut[0]);
-            Bcut = composeEach(NB[idx], Bcut);
+            Bcut = compose(NB[idx], Bcut);
             result.push_back(Bcut);
         }
         cut++;

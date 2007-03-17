@@ -18,14 +18,6 @@ using namespace Geom;
 unsigned total_pieces_sub;
 unsigned total_pieces_inc;
 
-//TODO: shtick somewhere in main
-D2<SBasis> composeEach(D2<SBasis2d> const & a, D2<SBasis> const & b) {
-    D2<SBasis> r;
-    for(unsigned i = 0; i < 2; i++)
-        r[i] = compose(a[i],b);
-    return r;
-}
-
 class Sb2d2: public Toy {
     void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         D2<SBasis2d> sb2;
@@ -87,7 +79,7 @@ class Sb2d2: public Toy {
         cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
         cairo_stroke(cr);
         B *= (4./width);
-        D2<SBasis> tB = composeEach(sb2, B);
+        D2<SBasis> tB = compose(sb2, B);
         B = (width/2)*B + Geom::Point(width/4, width/4);
         //cairo_md_sb(cr, B);
         tB = (width/2)*tB + Geom::Point(width/4, width/4);

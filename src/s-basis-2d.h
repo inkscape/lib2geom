@@ -291,11 +291,11 @@ SBasis2d inverse(SBasis2d const &a, int k);
 SBasis extract_u(SBasis2d const &a, double u);
 SBasis extract_v(SBasis2d const &a, double v);
 
-SBasis compose(BezOrd2d const &a, D2<SBasis> p);
+SBasis compose(BezOrd2d const &a, D2<SBasis> const &p);
 
-SBasis compose(SBasis2d const &fg, D2<SBasis> p);
+SBasis compose(SBasis2d const &fg, D2<SBasis> const &p);
 
-D2<SBasis> compose(std::vector<SBasis2d> const &fg, D2<SBasis> p);
+D2<SBasis> compose(D2<SBasis2d> const &fg, D2<SBasis> const &p);
 
 inline std::ostream &operator<< (std::ostream &out_file, const BezOrd2d &bo) {
     out_file << "{" << bo[0] << ", " << bo[1] << "}, ";

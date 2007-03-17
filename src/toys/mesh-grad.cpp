@@ -29,14 +29,6 @@ const double u_subs = 5,
 const double inv_u_subs = 1 / u_subs,
              inv_v_subs = 1 / v_subs;
 
-//TODO: shtick somewhere in main
-D2<SBasis> composeEach(D2<SBasis2d> const & a, D2<SBasis> const & b) {
-    D2<SBasis> r;
-    for(unsigned i = 0; i < 2; i++)
-        r[i] = compose(a[i],b);
-    return r;
-}
-
 class Sb2d2: public Toy {
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         D2<SBasis2d> sb2;
@@ -92,25 +84,25 @@ class Sb2d2: public Toy {
                 
                 B[0] = BezOrd(tu-fudge, tu+fudge + inv_u_subs );
                 B[1] = BezOrd(tv-fudge, tv-fudge);
-                tB = composeEach(sb2, B);
+                tB = compose(sb2, B);
                 tB = (width/2) * tB + Geom::Point(width/4, width/4);
                 pb.append(tB);
                 
                 B[0] = BezOrd(tu+fudge + inv_u_subs , tu+fudge + inv_u_subs);
                 B[1] = BezOrd(tv-fudge,               tv+fudge + inv_v_subs);
-                tB = composeEach(sb2, B);
+                tB = compose(sb2, B);
                 tB = (width/2) * tB + Geom::Point(width/4, width/4);
                 pb.append(tB);
                 
                 B[0] = BezOrd(tu+fudge + inv_u_subs, tu-fudge);
                 B[1] = BezOrd(tv+fudge + inv_v_subs, tv+fudge + inv_v_subs);
-                tB = composeEach(sb2, B);
+                tB = compose(sb2, B);
                 tB = (width/2) * tB + Geom::Point(width/4, width/4);
                 pb.append(tB);
                 
                 B[0] = BezOrd(tu-fudge,              tu-fudge);
                 B[1] = BezOrd(tv+fudge + inv_v_subs, tv-fudge);
-                tB = composeEach(sb2, B);
+                tB = compose(sb2, B);
                 tB = (width/2) * tB + Geom::Point(width/4, width/4);
                 pb.append(tB);
                 
