@@ -44,13 +44,7 @@ void cairo_path(cairo_t *cr, Path2::Path const &p) {
 }
 
 void cairo_path_handles(cairo_t *cr, Path2::Path const &p) {
-    cairo_move_to(cr, p.initialPoint()[0], p.initialPoint()[1]);
-
-    for(Path2::Path::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
-        cairo_curve(cr, *iter);
-    }
-    if(p.closed())
-        cairo_close_path(cr);
+    //TODO
 }
 
 void cairo_path(cairo_t *cr, std::vector<Path2::Path> const &p) {
@@ -110,12 +104,6 @@ void cairo_md_sb(cairo_t *cr, D2<SBasis> const &B) {
     Path2::Path pb;
     path_from_sbasis(pb, B, 0.1);
     cairo_path(cr, pb);
-}
-
-void cairo_md_sb_handles(cairo_t *cr, D2<SBasis> const &B) {
-    Path2::Path pb;
-    path_from_sbasis(pb, B, 0.1);
-    cairo_path_handles(cr, pb);
 }
 
 void cairo_2dsb2d(cairo_t* cr, D2<SBasis2d> const &sb2, Point dir, double width) {

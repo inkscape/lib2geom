@@ -183,7 +183,6 @@ std::vector<Geom::Path2::Path> Gear::path() {
             pb.pushLine(trailing_end);
         }
     }
-    pb.closePath();
     
     return pb.peek();
 }
