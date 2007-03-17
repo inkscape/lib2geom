@@ -1,4 +1,5 @@
 \documentclass{book}
+\usepackage{tabularx}
 
 \title{Lib2geom Manual}
 
@@ -445,7 +446,7 @@ a scalar, and are defined over at least the interval $[0, 1]$.
 
 \subsubsection{Valid expressions}
 
-\begin{tabular}{l l l l}
+\begin{tabularx}{300pt}{X l X l}
   Name & Expression & Type requirements & Return type \\
   Evaluate & {\tt a(t)} & & {\tt double} \\
   Evaluate & {\tt a.valueAt(t)} & & {\tt double} \\
@@ -454,11 +455,11 @@ a scalar, and are defined over at least the interval $[0, 1]$.
   Range & {\tt a.exactRange()} & & {\tt Range} \\
   SBasis & {\tt a.sbasis()} & & {\tt SBasis} \\
   Subdivide & {\tt a.subdivide(start, end)} & & {\tt Piecewise<X>} \\
-\end{tabular}
+\end{tabularx}
 
 \subsubsection{Expression semantics}
 
-\begin{tabular}{l l l l l}
+\begin{tabularx}{300pt}{X l l X l}
   \bf{Name} & \bf{Expression} & \bf{Precondition} & \bf{Semantics} & \bf{Postcondition} \\
   Evaluate & {\tt a(t)} & $0\le t\le 1$ & Returns the value of the function at $t$; the function must be exact at $t = 0$ and $t = 1$ and defined over the interval $0\le t\le 1$ & \\
   Evaluate & {\tt a.valueAt(t)} & $0 \le t \le 1$ & Returns the value of the function at {\tt t}; the function must be exact at $t = 0$ and $t = 1$ and defined over the interval $0 \le t \le 1$ & \\
@@ -466,7 +467,7 @@ a scalar, and are defined over at least the interval $[0, 1]$.
   Range & {\tt a.fastRange()} & & The result should be a {\tt Range} which includes the function's range & \\
   Range & {\tt a.exactRange()} & & The result should be a {\tt Range} representing the exact range of the function & \\
   SBasis conversion & {\tt a.sbasis()} & & The result should be an sbasis approximation of the function & \\
-\end{tabular}
+\end{tabularx}
 
 \subsubsection{Complexity guarantees}
 
