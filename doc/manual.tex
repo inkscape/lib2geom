@@ -369,7 +369,7 @@ Wybrow's libavoid advanced connector routing system was ported first.
 \end{description}
 
 \chapter{Appendix}
-\renewcommand{\thesection}{\Alph{section}.}
+\renewcommand{\thesection}{\Alph{section}}
 
 \section{Geometric Points}
 In standard geometry points and vectors are quite distinguished - a  
@@ -406,6 +406,77 @@ are prematurely optimizing.
 TODO
 
 \section{S-Power-Basis Explanation}
+
+\section{Concepts}
+
+The C++ Standard Template Library\cite{stl} introduces the notion of
+\emph{concepts}\cite{stl_concepts}, which specify families of types related
+by a common interface.  In template-based programming with the STL, concepts
+serve a similar purpose to type classes in Haskell.  While, unlike Haskell's
+language-level support for type classes, concept-checking is not directly
+supported by the C++ compiler or language, C++ libraries have been written
+which use template techniques to provide compile-time checking and enforcement
+of concepts\cite{boost_concept_check}.
+
+There are several important lib2geom concepts in this sense:
+
+\subsection{ScalarFunction}
+
+\subsubsection{Description}
+
+Scalar functions are C++ function objects which behave like functions
+with type {\tt double (double)}.  They take a single time value and return
+a scalar, and are defined over at least the interval $[0, 1]$.
+
+\subsubsection{Refinement of}
+
+\subsubsection{Associated types}
+
+\subsubsection{Notation}
+
+\begin{tabular}{r l}
+  {\tt X} & A type which models ScalarFunction \\
+  {\tt a} & An object of type {\tt X} \\
+  {\tt t} & A time value of type {\tt double} \\
+  {\tt n} & A count of type {\tt unsigned int} \\
+\end{tabular}
+
+\subsubsection{Definitions}
+
+\subsubsection{Valid expressions}
+
+\begin{tabular}{l l l l}
+  Name & Expression & Type requirements & Return type \\
+  Evaluate & {\tt a(t)} & & {\tt double} \\
+  Evaluate & {\tt a.valueAt(t)} & & {\tt double} \\
+  Evaluate with derivatives & {\tt a.valueAndDerivativesAt(t, n, out)} & {\tt out} should be a model of OutputIterator whose {\tt value\_type} is convertible to & {\tt void} \\
+  Range & {\tt a.fastRange()} & & {\tt Range} \\
+  Range & {\tt a.exactRange()} & & {\tt Range} \\
+  SBasis & {\tt a.sbasis()} & & {\tt SBasis} \\
+  Subdivide & {\tt a.subdivide(start, end)} & & {\tt Piecewise<X>} \\
+\end{tabular}
+
+\subsubsection{Expression semantics}
+
+\begin{tabular}{l l l l l}
+  \bf{Name} & \bf{Expression} & \bf{Precondition} & \bf{Semantics} & \bf{Postcondition} \\
+  Evaluate & {\tt a(t)} & $0\le t\le 1$ & Returns the value of the function at $t$; the function must be exact at $t = 0$ and $t = 1$ and defined over the interval $0\le t\le 1$ & \\
+  Evaluate & {\tt a.valueAt(t)} & $0 \le t \le 1$ & Returns the value of the function at {\tt t}; the function must be exact at $t = 0$ and $t = 1$ and defined over the interval $0 \le t \le 1$ & \\
+  Evaluate with derivatives & {\tt a.valueAndDerivativesAt(t, n, out)} & $0 \le t \le 1$ & Evaluates the function and the first n derivatives at {\tt t}, writing them to {\tt out} & $n + 1$ values have been written to {\tt out} \\
+  Range & {\tt a.fastRange()} & & The result should be a {\tt Range} which includes the function's range & \\
+  Range & {\tt a.exactRange()} & & The result should be a {\tt Range} representing the exact range of the function & \\
+  SBasis conversion & {\tt a.sbasis()} & & The result should be an sbasis approximation of the function & \\
+\end{tabular}
+
+\subsubsection{Complexity guarantees}
+
+\subsubsection{Invariants}
+
+\subsubsection{Models}
+
+\subsection{Curve}
+
+\subsection{UVFunction}
 
 \section{Location Sequences}
 
