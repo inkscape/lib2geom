@@ -34,6 +34,7 @@ curvature-test
 bounds-test
 pw-compose-test
 inverse-test
+arc-length-param
 "${NEEDS_GSL}"
 )
 
