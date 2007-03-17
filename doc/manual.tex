@@ -13,7 +13,7 @@
 
 This manual focuses on the lib2geom computational geometry framework.
 The main goal of this framework is the eventual replacement of
-Inkscape's halfhazard, shoddy geometry framework. As with any decent
+Inkscape's multiple and shoddy geometry frameworks. As with any decent
 module or lib, 2geom is designed to achieve the necessary functionality
 while maintaining a generality which allows useage within other
 applications.  The focus on robust, accurate algorithms, as well as
@@ -23,7 +23,7 @@ very attractive for many applications.
 \section{Design Considerations}
 2Geom is written with a functional programming style in mind.
 Generally data structures are considered immutable and rather than
-assignment we use labeling.  However, C++ can become unwieldly if
+assignment we use labeling.  However, C++ can become unwieldy if
 this is taken to extreme and so a certain amount of pragmatism is
 used in practice.  In particular, usability is not forgotten in the
 mires of functional zeal.
@@ -44,7 +44,7 @@ not yet been tested.
 
 \section{Toy-Based Development}
 We have managed to come up with a method of library development
-which is perfect for geometry - the development of toys exmplefiying
+which is perfect for geometry - the development of toys exemplifying
 a feature while the feature is perfected.  This has somewhat subsumed
 the role of tests, and provides immediate motivation/reward for work.
 
@@ -79,7 +79,7 @@ iteration over the array rather than explicit element reference.
 
 \section{Transformations}
 
-Affine transformations are either represented with a cannonical 6
+Affine transformations are either represented with a canonical 6
 element matrix, or special forms.
 
 \subsection{Scale}
@@ -91,7 +91,7 @@ A \code{Scale} transformation stores x and y scaling factors.
 A \code{Rotate} transformation uses a vector(\code{Point}) to store
 a rotation about the origin.
 
-In correspondance with mathematical convention (y increasing upwards),
+In correspondence with mathematical convention (y increasing upwards),
 0 degrees is encoded as a vector pointing along the x axis, and positive
 angles indicate anticlockwise rotation.  So, for example, a vector along
 the y axis would encode a 90 degree anticlockwise rotation of 90 degrees.
@@ -139,7 +139,7 @@ Currently there are two implementations:
 \item[singular:] contains exactly one point
 \item[linear:] all points are on a line
 \item[area:] area of the convex hull
-\item[furthest:] furthest point in a direction (lg time)
+\item[furthest:] furthest point in a direction (log time)
 \item[intersect:] do two convex hulls intersect?
 \item[intersection:] find the convex hull intersection
 \item[merge:] find the convex hull of a set of convex hulls
@@ -147,7 +147,7 @@ Currently there are two implementations:
 
 \chapter{Paths}
 
-Our original attempt at a \code{Path} class was to store parralel
+Our original attempt at a \code{Path} class was to store parallel
 lists of curve types and handles.  This turned out to be very clumsy,
 so MenTaLguY wrote a new path-framework, called Path2.  Currently the
 files are still called this, even though Path1 has been mostly
@@ -174,7 +174,7 @@ $t \in [0,1]$, bounds functions, and conversion to s-basis.
 
 \subsection{Bezier Curve}
 We use a \code{Bezier} curve class to store lines and quadratic/cubic
-beziers.  This flexibility is attained by templating by order -
+beziers.  This flexibility is attained by templating on order -
 \code{Bezier$<1>$} is a line segment, \code{Bezier$<2>$} is a quadratic
 bezier, and \code{Bezier$<3>$} is a cubic bezier.
 
@@ -220,7 +220,7 @@ Geometrically important properties:
 \item $C^0$ continuity guarantee
 \end{itemize}
 
-The following operations are directly implementable and very efficient:
+The following operations are directly implementable and are very efficient:
 \begin{itemize}
 \item fast conversion from all svg elements
 \item basic arithmetic - $+$, $-$, $\times$, $\div$
@@ -269,7 +269,7 @@ Subdivision for surfaces may be done with either quadtrees or kd-trees.
 \subsection{Piecewise SBasis}
 The piecewise sbasis class, \verb#pw_sb#, manages a sequence of SBasis
 segments and the 'cuts' between them.  These cuts are time values which
-seperate the different SBasii.  This function representation allows for
+separate the different SBasii.  This function representation allows for
 more interesting functions, as it provides a viable output for operations
 such as inversion, which may require multiple SBasis to properly invert
 the original.
@@ -293,13 +293,13 @@ $$
 
 \subsection{Multidim Piecewise SBasis}
 This is like Multidim SBasis, only for the piecewise type.  Multidim
-SBasis might be subsummed by this class, or they will both be replaced
+SBasis might be subsumed by this class, or they will both be replaced
 by a general Multidim template.
 
 \chapter{2D databases}
 
 2Geom provides an implementation of a 2D database using quad trees and
-using a list.  Quad trees aren't the best datastructure for queries,
+using a list.  Quad trees aren't the best data-structure for queries,
 but they usually out perform the linear list.  We provide a
 standard interface for object databases with performance guarantees
 and provide a set of useful operations Operations:
@@ -506,9 +506,9 @@ length for many spots up to 100.
 
 Perhaps we then want to split the curve at each of those points.  To
 split a segment at a location first requires finding that segment,
-then spliting it and finally constructing a new path to output a whole
+then splitting it and finally constructing a new path to output a whole
 new path so we can fit the two new segments in.  If we started at the
-begining, and split at the first location, that would be n+1 steps - n
+beginning, and split at the first location, that would be n+1 steps - n
 segs in the original, plus an extra one.  If we wanted to split at 100
 points, it would be n+1 steps for the first, n+2 for the
 second... n+100 steps for the last, this would take a total of 100n +
