@@ -123,7 +123,7 @@ public:
     LengthTester(){
         if(handles.empty()) {
             for(int i = 0; i < SIZE; i++)
-                handles.push_back(Geom::Point(150+uniform()*30,150+uniform()*300));
+                handles.push_back(Geom::Point(150+uniform()*300,150+uniform()*300));
         }
     }
 };
