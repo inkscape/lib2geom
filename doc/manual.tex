@@ -369,16 +369,20 @@ Wybrow's libavoid advanced connector routing system was ported first.
 \end{description}
 
 \chapter{Appendix}
+\renewcommand{\thesection}{\Alph{section}.}
 
-\section{A: Geometric Points}
+\section{Geometric Points}
 In standard geometry points and vectors are quite distinguished - a  
 point is a location, whereas a vector is an unbased direction and
 magnitude.  Allowed operations on vectors and points also vary:
 
-P  - P = V
-P +- V = P
-V +- V = V
-V */ S = V
+$P  - P = V$
+
+$P +- V = P$
+
+$V +- V = V$
+
+$V */ S = V$
 
 , where P represents points, V represents vectors, and S scalars.
 
@@ -387,13 +391,13 @@ reinforce algorithm correctness.  This is because as far as arithmetic
 operations go, the above are all that you sanely require, unless you
 are prematurely optimizing.
 
-\section{B: Understanding Matrices}
+\section{Understanding Matrices}
 
 TODO
 
-\section{C: S-Power-Basis Explanation}
+\section{S-Power-Basis Explanation}
 
-\section{D: Location Sequences}
+\section{Location Sequences}
 
 Many algorithms are more efficient on a sorted sequence of locations,
 than calling the function repeatedly for each.  So we have algorithms
