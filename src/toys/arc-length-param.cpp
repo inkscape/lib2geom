@@ -2,9 +2,8 @@
 #include "sb-geometric.h"
 #include "bezier-to-sbasis.h"
 #include "sbasis-to-bezier.h"
-#include "multidim-sbasis.h"
 #include "s-basis-2d.h"
-#include "D2.h"
+#include "d2.h"
 
 #include "path-cairo.h"
 
@@ -17,18 +16,16 @@
 using std::vector;
 using namespace Geom;
 
-static void dot_plot(cairo_t *cr, D2<pw_sb> const &M,double space=10){
-    double t=M[0].cuts.front();
-    while (t<M[0].cuts.back()){
-        D2<double> p=M(t);
-        draw_handle(cr,Geom::Point(p[0],p[1]));
-        t+=space;
+static void dot_plot(cairo_t *cr, D2<pw_sb> const &M, double space=10){
+    double t = M[0].cuts.front();
+    while (t < M[0].cuts.back()){
+        draw_handle(cr, M(t));
+        t += space;
     }
-    for (int i=0;i<M[0].size();i++){
-        MultidimSBasis<2> mdsbM;
-        mdsbM[0]=M[0][i];
-        mdsbM[1]=M[1][i];
-        cairo_md_sb(cr, mdsbM);
+    vector<double> cuts;
+    vector<D2<SBasis> > sections = sectionize(M, cuts); 
+    for (int i=0; i < sections.size(); i++){
+        cairo_md_sb(cr, sections[i]);
     }
     cairo_stroke(cr);
 }
@@ -74,17 +71,17 @@ static bool compose_inverse(SBasis const &g,SBasis const & x, SBasis &f, int ord
     return(true);
 }
 
-static D2<pw_sb> arc_length_parametrization(MultidimSBasis<2> const &M){
+static D2<pw_sb> arc_length_parametrization(D2<SBasis> const &M){
     D2<pw_sb> u;
     u[0].push_cut(0);
     u[1].push_cut(0);
 
     pw_sb s = arc_length_sb(M);
     std::cout<<"nb pieces:"<<s.size()<<std::endl;
-    for (int i=0; i<s.size();i++){
+    for (int i=0; i < s.size();i++){
         double t0=s.cuts[i],t1=s.cuts[i+1];
-        MultidimSBasis<2> sub_M=compose(M,BezOrd(t0,t1));
-        MultidimSBasis<2> sub_u;
+        D2<SBasis> sub_M = compose(M,BezOrd(t0,t1));
+        D2<SBasis> sub_u;
         bool ok;
         ok=      compose_inverse(sub_M[0],1/(s(t1)-s(t0))*(s.segs[i]-BezOrd(s(t0))),sub_u[0],3);
         ok=ok && compose_inverse(sub_M[1],1/(s(t1)-s(t0))*(s.segs[i]-BezOrd(s(t0))),sub_u[1],3);
@@ -103,7 +100,7 @@ class LengthTester: public Toy {
 	      std::ostringstream *notify,
 	      int width, int height, bool save) {
     
-      MultidimSBasis<2> B = bezier_to_sbasis<2, SIZE-1>(handles.begin());
+      D2<SBasis> B = bezier_to_sbasis<SIZE-1>(handles.begin());
       D2<pw_sb>d2B;
       d2B[0]=pw_sb(B[0]);
       d2B[1]=pw_sb(B[1]);
@@ -126,7 +123,7 @@ public:
     LengthTester(){
         if(handles.empty()) {
             for(int i = 0; i < SIZE; i++)
-                handles.push_back(Geom::Point(150+uniform()*300,150+uniform()*300));
+                handles.push_back(Geom::Point(150+uniform()*30,150+uniform()*300));
         }
     }
 };
@@ -145,6 +142,4 @@ int main(int argc, char **argv) {
   fill-column:99
   End:
 */
-// vim: filetype = cpp:expandtab:shiftwidth = 4:tabstop = 8:softtabstop = 4:encoding = utf-8:textwidth = 99 :
-
- 	  	 
+//vim:filetype=cpp:expandtab:shiftwidth=4:tabstop=8:softtabstop=4:encoding=utf-8:textwidth=99:

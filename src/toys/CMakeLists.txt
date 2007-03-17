@@ -9,7 +9,7 @@ conic-3
 conic-4
 conic
 convex-toy
-distort
+#distort
 fitter
 inverse-test
 one-D
