@@ -376,15 +376,25 @@ In standard geometry points and vectors are quite distinguished - a
 point is a location, whereas a vector is an unbased direction and
 magnitude.  Allowed operations on vectors and points also vary:
 
-$P  - P = V$
+\begin{tabular}{r l}
+  $P - P$ & $= V$ \\
 
-$P +- V = P$
+  $P - P$ & $= V$ \\
 
-$V +- V = V$
+  $P + V$ & $= P$ \\
 
-$V */ S = V$
+  $P - V$ & $= P$ \\
 
-, where P represents points, V represents vectors, and S scalars.
+  $V + V$ & $= V$ \\
+
+  $V - V$ & $= V$ \\
+
+  $S \times V$ & $= V$ \\
+
+  $V / S$ & $= V$ \\
+\end{tabular}
+
+Here, $P$ represents points, $V$ represents vectors, and $S$ scalars.
 
 Ideally we would render these restrictions in code, as they would
 reinforce algorithm correctness.  This is because as far as arithmetic
