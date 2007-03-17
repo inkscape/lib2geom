@@ -46,7 +46,7 @@ class pw_sb {
     inline int segn(double t, int low = 0) const {
         int high = size();
         if(t < cuts[0]) return 0;
-        if(t > cuts[size()]) return size() - 1;
+        if(t >= cuts[size()]) return size() - 1;
         while(low < high) {
             int mid = (high + low) / 2;
             double mv = cuts[mid];
