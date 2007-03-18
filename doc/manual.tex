@@ -1,11 +1,13 @@
-\documentclass{book}
+\documentclass[openany]{book}
 \usepackage{tabularx}
+\usepackage{graphicx}
 
 \title{Lib2geom Manual}
 
 \newcommand{\code}[1]{\textsf{#1}}
 
 \begin{document}
+\maketitle{}
 
 \chapter{Overview}
 
@@ -48,6 +50,8 @@ which is perfect for geometry - the development of toys exemplifying
 a feature while the feature is perfected.  This has somewhat subsumed
 the role of tests, and provides immediate motivation/reward for work.
 
+\includegraphics[width=90mm]{media/gear.png}
+
 \chapter{Geometric Primitives}
 
 What good is a geometry library without geometric primitives?  By this
@@ -59,6 +63,8 @@ They have been modified quite a bit since that initial import, and
 will likely change in the future.
 
 \section{Points}
+
+\includegraphics[height=30mm]{media/point.png}
 
 The mathematical concepts of points and vectors are merged into the
 2geom class called \code{Point}.  See Appendix A for a further
@@ -84,9 +90,13 @@ element matrix, or special forms.
 
 \subsection{Scale}
 
+\includegraphics[height=50mm]{media/scale.png}
+
 A \code{Scale} transformation stores x and y scaling factors.
 
 \subsection{Rotate}
+
+\includegraphics[height=50mm]{media/rotate.png}
 
 A \code{Rotate} transformation uses a vector(\code{Point}) to store
 a rotation about the origin.
@@ -102,10 +112,14 @@ that positive angles indicate clockwise rotation.
 
 \subsection{Translate}
 
+\includegraphics[height=70mm]{media/translate.png}
+
 A \code{Translate} transformation is a simple vector(\code{Point})
 which stores an offset.
 
 \subsection{Matrix}
+
+\includegraphics[height=70mm]{media/matrix.png}
 
 A \code{Matrix} is a general affine transform.  Code is provided for
 various decompositions, constructions, and manipulations.  A
@@ -122,10 +136,14 @@ other uses.
 
 \subsection{Rect}
 
+\includegraphics[height=50mm]{media/rect.png}
+
 \code{Rect}s are rectangles with all sides parallel to the axes. They
 are defined with two points, each an opposing corner.
 
 \subsection{ConvexHull}
+
+\includegraphics[height=50mm]{media/convex.png}
 
 Currently there are two implementations:
 \begin{description}
@@ -390,9 +408,9 @@ magnitude.  Allowed operations on vectors and points also vary:
 
   $V - V$ & $= V$ \\
 
-  $S \times V$ & $= V$ \\
+  $V \times S$ & $= V$ \\
 
-  $V / S$ & $= V$ \\
+  $V \div S$ & $= V$ \\
 \end{tabular}
 
 Here, $P$ represents points, $V$ represents vectors, and $S$ scalars.
@@ -403,8 +421,6 @@ operations go, the above are all that you sanely require, unless you
 are prematurely optimizing.
 
 \section{Understanding Matrices}
-
-TODO
 
 \section{S-Power-Basis Explanation}
 
