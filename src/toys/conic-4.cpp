@@ -34,26 +34,26 @@ public:
     double w;
     int k;
     
-    SBasis phi(BezOrd const &d, double w) { 
+    SBasis phi(Linear const &d, double w) { 
         return sin(w*d, k) - w*sin(d, k); 
     }
-    SBasis phih(BezOrd const &d, double w) { 
+    SBasis phih(Linear const &d, double w) { 
         return sin(w*d, k) + w*sin(d, k); 
     }
-    SBasis b4(BezOrd const &d, double w) {
+    SBasis b4(Linear const &d, double w) {
         return (1./(swp*swp))*phi(0.5*d,w)*phih(0.5*d,w);
     }
-    SBasis b3(BezOrd const &d, double w) {
+    SBasis b3(Linear const &d, double w) {
         return (cwp/(2*swp))*phi(d,w) - cwp*cwp*b4(d,w); 
     }
 
-    SBasis b2(BezOrd const &d, double w) {
+    SBasis b2(Linear const &d, double w) {
         return 2*w*w*sin(0.5*d, k)*sin(0.5*d, k);
     }
-    SBasis b1(BezOrd const &d, double w) {
+    SBasis b1(Linear const &d, double w) {
         return b3(reverse(d), w);
     }
-    SBasis b0(BezOrd const &d, double w) {
+    SBasis b0(Linear const &d, double w) {
         return b4(reverse(d), w);
     }
     
@@ -61,7 +61,7 @@ public:
     arc_basis(double w) {
         //basis[5] = {b4, b3, b2, b1, b0};
         k = 2; // 2 seems roughly right
-        const BezOrd dom(0, 2*M_PI);
+        const Linear dom(0, 2*M_PI);
         basis[0] = b4(dom, w);
         basis[1] = b3(dom, w);
         basis[2] = b2(dom, w);

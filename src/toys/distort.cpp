@@ -23,7 +23,7 @@ class DistortToy: public Toy {
             sb2[dim].vs = 2;
             const int depth = sb2[dim].us*sb2[dim].vs;
             const int surface_handles = 4*depth;
-            sb2[dim].resize(depth, BezOrd2d(0));
+            sb2[dim].resize(depth, Linear2d(0));
         }
         const int depth = sb2[0].us*sb2[0].vs;
         const int surface_handles = 4*depth;
@@ -73,7 +73,7 @@ class DistortToy: public Toy {
         for(int i = 0; i < p.size(); i++) {
             D2<pw_sb> foo = p[i].toMdSb();
             foo *= 1./20;
-            //foo[1] = foo[1] + (pw_sb)portion(sin(BezOrd(0,3.14), 4), 0, foo[0].cuts.back());
+            //foo[1] = foo[1] + (pw_sb)portion(sin(Linear(0,3.14), 4), 0, foo[0].cuts.back());
             D2<pw_sb> out;          
             //out[0] = compose(sb2[0], foo);
             //out[1] = compose(sb2[1], foo);

@@ -24,17 +24,17 @@ public:
     double d;
 };
 
-class BezOrd{
+class Linear{
 public:
     double a[2];
-    BezOrd() {}
-    BezOrd(double aa, double b) {a[0] = aa; a[1] = b;}
-    BezOrd(Hat h, Tri t) {
+    Linear() {}
+    Linear(double aa, double b) {a[0] = aa; a[1] = b;}
+    Linear(Hat h, Tri t) {
         a[0] = double(h) - double(t)/2; 
         a[1] = double(h) + double(t)/2;
     }
 
-    BezOrd(Hat h) {
+    Linear(Hat h) {
         a[0] = double(h); 
         a[1] = double(h);
     }
@@ -68,50 +68,50 @@ public:
     bool is_finite() const;
 };
 
-inline BezOrd operator-(BezOrd const &a) {
-    return BezOrd(-a.a[0], -a.a[1]);
+inline Linear operator-(Linear const &a) {
+    return Linear(-a.a[0], -a.a[1]);
 }
-inline BezOrd operator+(BezOrd const & a, BezOrd const & b) {
-    return BezOrd(a[0] + b[0], a[1] + b[1]);
+inline Linear operator+(Linear const & a, Linear const & b) {
+    return Linear(a[0] + b[0], a[1] + b[1]);
 }
-inline BezOrd operator-(BezOrd const & a, BezOrd const & b) {
-    return BezOrd(a[0] - b[0], a[1] - b[1]);
+inline Linear operator-(Linear const & a, Linear const & b) {
+    return Linear(a[0] - b[0], a[1] - b[1]);
 }
-inline BezOrd& operator+=(BezOrd & a, BezOrd const & b) {
+inline Linear& operator+=(Linear & a, Linear const & b) {
     a[0] += b[0];
     a[1] += b[1];
     return a;
 }
-inline BezOrd& operator-=(BezOrd & a, BezOrd const & b) {
+inline Linear& operator-=(Linear & a, Linear const & b) {
     a[0] -= b[0];
     a[1] -= b[1];
     return a;
 }
-inline bool operator==(BezOrd const & a, BezOrd const & b) {
+inline bool operator==(Linear const & a, Linear const & b) {
     return a[0] == b[0] &&
         a[1] == b[1];
 }
-inline bool operator!=(BezOrd const & a, BezOrd const & b) {
+inline bool operator!=(Linear const & a, Linear const & b) {
     return a[0] != b[0] ||
         a[1] != b[1];
 }
-inline BezOrd operator*(double const a, BezOrd const & b) {
-    return BezOrd(a*b[0], a*b[1]);
+inline Linear operator*(double const a, Linear const & b) {
+    return Linear(a*b[0], a*b[1]);
 }
 
-inline BezOrd
-reverse(BezOrd const &b) {
-    return BezOrd(b[1], b[0]);
+inline Linear
+reverse(Linear const &b) {
+    return Linear(b[1], b[0]);
 }
 
 /*** An empty SBasis is identically 0. */
-class SBasis : public std::vector<BezOrd>{
+class SBasis : public std::vector<Linear>{
 public:
     SBasis() {}
     SBasis(SBasis const & a) :
-        std::vector<BezOrd>(a)
+        std::vector<Linear>(a)
     {}
-    SBasis(BezOrd const & bo) {
+    SBasis(Linear const & bo) {
         push_back(bo);
     }
     
@@ -167,7 +167,7 @@ public:
     }
 
     void clear() {
-        fill(begin(), end(), BezOrd(0,0));
+        fill(begin(), end(), Linear(0,0));
     }
     
     void normalize(); // remove extra zeros
@@ -180,17 +180,17 @@ public:
     SBasis
     operator()(SBasis const & g) const;
     
-    BezOrd&
+    Linear&
     operator[](unsigned i) {
         //assert(i < size());
         return this->at(i);
-        //return std::vector<BezOrd>::operator[](i);
+        //return std::vector<Linear>::operator[](i);
     }
     
-    BezOrd
+    Linear
     operator[](unsigned i) const {
         assert(i < size());
-        return std::vector<BezOrd>::operator[](i);
+        return std::vector<Linear>::operator[](i);
     }
     bool is_finite() const;
 };
@@ -206,7 +206,7 @@ inline SBasis operator-(const SBasis& p) {
     return result;
 }
 
-inline SBasis operator-(BezOrd const & bo, const SBasis& p) {
+inline SBasis operator-(Linear const & bo, const SBasis& p) {
     if(p.empty()) return bo;
     SBasis result;
     result.reserve(p.size());
@@ -247,7 +247,7 @@ inline SBasis& operator-=(SBasis& a, const SBasis& b) {
     return a;
 }
 
-inline SBasis& operator+=(SBasis& a, const BezOrd& b) {
+inline SBasis& operator+=(SBasis& a, const Linear& b) {
     if(a.empty())
         a.push_back(b);
     else
@@ -255,7 +255,7 @@ inline SBasis& operator+=(SBasis& a, const BezOrd& b) {
     return a;
 }
 
-inline SBasis& operator-=(SBasis& a, const BezOrd& b) {
+inline SBasis& operator-=(SBasis& a, const Linear& b) {
     if(a.empty())
         a.push_back(-b);
     else
@@ -265,7 +265,7 @@ inline SBasis& operator-=(SBasis& a, const BezOrd& b) {
 
 inline SBasis& operator+=(SBasis& a, double b) {
     if(a.empty())
-        a.push_back(BezOrd(b,b));
+        a.push_back(Linear(b,b));
     else {
         a[0][0] += double(b);
         a[0][1] += double(b);
@@ -274,7 +274,7 @@ inline SBasis& operator+=(SBasis& a, double b) {
 }
 
 //TODO: Mutates the SBasis?!?!
-inline SBasis operator+(BezOrd b, SBasis a) {
+inline SBasis operator+(Linear b, SBasis a) {
     if(a.empty())
         a.push_back(b);
     else {
@@ -286,7 +286,7 @@ inline SBasis operator+(BezOrd b, SBasis a) {
 //TODO: Mutates the SBasis?!?!
 inline SBasis operator+(double b, SBasis a) {
     if(a.empty())
-        a.push_back(BezOrd(b,b));
+        a.push_back(Linear(b,b));
     else {
         a[0][0] += double(b);
         a[0][1] += double(b);
@@ -296,7 +296,7 @@ inline SBasis operator+(double b, SBasis a) {
 
 inline SBasis& operator-=(SBasis& a, double b) {
     if(a.empty())
-        a.push_back(BezOrd(-b, -b));
+        a.push_back(Linear(-b, -b));
     else {
         a[0][0] -= double(b);
         a[0][1] -= double(b);
@@ -326,7 +326,7 @@ SBasis operator*(SBasis const &a, SBasis const &b);
 
 SBasis shift(SBasis const &a, int sh);
 
-SBasis shift(BezOrd const &a, int sh);
+SBasis shift(Linear const &a, int sh);
 
 SBasis truncate(SBasis const &a, unsigned terms);
 
@@ -339,7 +339,7 @@ SBasis derivative(SBasis const &a);
 SBasis sqrt(SBasis const &a, int k);
 
 // return a kth order approx to 1/a)
-SBasis reciprocal(BezOrd const &a, int k);
+SBasis reciprocal(Linear const &a, int k);
 
 SBasis divide(SBasis const &a, SBasis const &b, int k);
 
@@ -359,7 +359,7 @@ SBasis compose(SBasis const &a, SBasis const &b);
 SBasis compose(SBasis const &a, SBasis const &b, unsigned k);
 SBasis inverse(SBasis a, int k);
 
-inline SBasis portion(const SBasis &t, double from, double to) { return compose(t, BezOrd(from, to)); }
+inline SBasis portion(const SBasis &t, double from, double to) { return compose(t, Linear(from, to)); }
 
 // compute f(g)
 inline SBasis
@@ -367,7 +367,7 @@ SBasis::operator()(SBasis const & g) const {
     return compose(*this, g);
 }
  
-inline std::ostream &operator<< (std::ostream &out_file, const BezOrd &bo) {
+inline std::ostream &operator<< (std::ostream &out_file, const Linear &bo) {
     out_file << "{" << bo[0] << ", " << bo[1] << "}";
     return out_file;
 }
@@ -379,8 +379,8 @@ inline std::ostream &operator<< (std::ostream &out_file, const SBasis & p) {
     return out_file;
 }
 
-SBasis sin(BezOrd bo, int k);
-SBasis cos(BezOrd bo, int k);
+SBasis sin(Linear bo, int k);
+SBasis cos(Linear bo, int k);
 
 SBasis reverse(SBasis const &s);
 

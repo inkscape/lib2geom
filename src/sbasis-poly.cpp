@@ -3,11 +3,11 @@
 namespace Geom{
 
 SBasis poly_to_sbasis(Poly const & p) {
-    SBasis x = BezOrd(0, 1);
+    SBasis x = Linear(0, 1);
     SBasis r;
     
     for(int i = p.size()-1; i >= 0; i--) {
-        r = SBasis(BezOrd(p[i], p[i])) + multiply(x, r);
+        r = SBasis(Linear(p[i], p[i])) + multiply(x, r);
     }
     r.normalize();
     return r;

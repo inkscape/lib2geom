@@ -20,8 +20,8 @@ Poly lin_poly(double a, double b) { // ax + b
     return p;
 }
 
-BezOrd linear(double ax, double b) {
-    return BezOrd(b, ax+b);
+Linear linear(double ax, double b) {
+    return Linear(b, ax+b);
 }
 
 double uniform() {
@@ -108,7 +108,7 @@ main(int argc, char** argv) {
     double ave_rel = 0;
     cout << "split at first choice \t split at 0.5 \t\t err from exact\n";
     for(int i = 0; i < trials.size(); i++) {
-        SBasis B = BezOrd(1.,1);
+        SBasis B = Linear(1.,1);
         for(int j = 0; j < trials[i].size(); j++) {
             B = B*linear(1, -trials[i][j]);
         }

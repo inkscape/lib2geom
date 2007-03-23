@@ -66,27 +66,27 @@ class OffsetTester: public Toy {
         V = unit_vector(derivative(B),cuts);
         for(int i = 0; i < V.size();i++){
             t1 = cuts[i];
-            subB = compose(B,BezOrd(t0,t1));
+            subB = compose(B,Linear(t0,t1));
             N = offset*rot90(V[i])+subB;
             cairo_md_sb(cr,N);
             cairo_set_source_rgba (cr, 1, 0, 0, 1);
             cairo_stroke(cr);
 
-            Ray[0] = SBasis(BezOrd(subB(0)[0], N(0)[0]));
-            Ray[1] = SBasis(BezOrd(subB(0)[1], N(0)[1]));
+            Ray[0] = SBasis(Linear(subB(0)[0], N(0)[0]));
+            Ray[1] = SBasis(Linear(subB(0)[1], N(0)[1]));
             cairo_md_sb(cr,Ray);
             cairo_set_source_rgba (cr, 1, 0, 0, 0.2);
             cairo_stroke(cr);
             t0 = t1;
         }
-        Ray[0] = SBasis(BezOrd(subB(1)[0], N(1)[0]));
-        Ray[1] = SBasis(BezOrd(subB(1)[1], N(1)[1]));
+        Ray[0] = SBasis(Linear(subB(1)[0], N(1)[0]));
+        Ray[1] = SBasis(Linear(subB(1)[1], N(1)[1]));
         cairo_md_sb(cr,Ray);
         cairo_set_source_rgba (cr, 1, 0, 0, 0.2);
         cairo_stroke(cr);
         pw_sb cV = curvature(B);
         for(int i = 0; i < cV.size();i++){
-            subB = compose(B, BezOrd(cV.cuts[i], cV.cuts[i+1]));
+            subB = compose(B, Linear(cV.cuts[i], cV.cuts[i+1]));
             N = multiply(-offset * cV[i], rot90(V[i])) + subB;
             cairo_md_sb(cr, N);
             cairo_set_source_rgba (cr, 1, 0, 0.6, 0.5);

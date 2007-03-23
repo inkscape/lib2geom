@@ -45,7 +45,7 @@ my_f (const gsl_vector *v, void *params)
         p.out[dim] = p.B[dim];
         double s = 1;
         for(int i = 0; i < p.n; i++) {
-            p.out[dim] += shift(BezOrd(gsl_vector_get(v, 2*dim + 2*i)*s,
+            p.out[dim] += shift(Linear(gsl_vector_get(v, 2*dim + 2*i)*s,
                                        gsl_vector_get(v, 2*dim + 2*i + 1)*s), i+1);
             s *= 0.25;
         }
@@ -60,11 +60,11 @@ double fn1 (double x, void * params)
     curve_min &p = *(curve_min*)params;
     if((p.par &1) == 0)
         for(int dim = 0; dim < 2; dim++) {
-            p.out[dim] = p.B[dim] + shift(BezOrd(x,0), p.par/2 + 1);
+            p.out[dim] = p.B[dim] + shift(Linear(x,0), p.par/2 + 1);
         }
     else 
         for(int dim = 0; dim < 2; dim++) {
-            p.out[dim] = p.B[dim] + shift(BezOrd(0,x), p.par/2 + 1);
+            p.out[dim] = p.B[dim] + shift(Linear(0,x), p.par/2 + 1);
         }
     D2<SBasis> dp = derivative(p.out);
     SBasis ds = L2(dp, 5);
@@ -78,11 +78,11 @@ double fn2 (double x, void * params)
     curve_min &p = *(curve_min*)params;
     if((p.par &1) == 0)
         for(int dim = 0; dim < 2; dim++) {
-            p.out[dim] = p.B[dim] + shift(BezOrd(x), p.par/2 + 1);
+            p.out[dim] = p.B[dim] + shift(Linear(x), p.par/2 + 1);
         }
     else 
         for(int dim = 0; dim < 2; dim++) {
-            p.out[dim] = p.B[dim] + shift(BezOrd(Hat(0), Tri(x)), p.par/2 + 1);
+            p.out[dim] = p.B[dim] + shift(Linear(Hat(0), Tri(x)), p.par/2 + 1);
         }
     SBasis l = compose(p.sb2, p.out);// * L2(p.out, 3);
     l = integral(l*l);
@@ -121,7 +121,7 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
     sb2.vs = 2;
     const int depth = sb2.us*sb2.vs;
     const int surface_handles = 4*depth;
-    sb2.resize(depth, BezOrd2d(0));
+    sb2.resize(depth, Linear2d(0));
     vector<Geom::Point> display_handles(surface_handles);
     Geom::Point dir = (handles[surface_handles] - Geom::Point(3*width/4., width/4.)) / 30;
     cairo_move_to(cr, 3*width/4., width/4.);
@@ -176,7 +176,7 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
     B *= (2./width);
 
     for(int dim = 0; dim < 2; dim++) {
-        B[dim] += shift(BezOrd(0.1), 1);
+        B[dim] += shift(Linear(0.1), 1);
     }
 #if 0
 //  *** Minimiser
@@ -281,7 +281,7 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
     if(!r.empty()) {
     curve_min cm(B, sb2);
     double rt = r[0];
-    cm.start = Geom::Point(width/4, BezOrd(width/4, width*3/4)(rt));
+    cm.start = Geom::Point(width/4, Linear(width/4, width*3/4)(rt));
     cairo_move_to(cr, cm.start);
     
     const gsl_odeiv_step_type * T 
@@ -312,7 +312,7 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
             if (status != GSL_SUCCESS)
                 goto oops;
         }
-        cairo_line_to(cr, BezOrd(width/4, width*3/4)(y[0]), BezOrd(width/4, width*3/4)(y[1]));
+        cairo_line_to(cr, Linear(width/4, width*3/4)(y[0]), Linear(width/4, width*3/4)(y[1]));
             if(y[0] < 0 ||
                y[0] > 1 || 
                y[1] < 0 || 
@@ -342,7 +342,7 @@ Toy::draw(cr, notify, width, height, save);
         SBasis2d sb2;
         sb2.us = 2;
         sb2.vs = 2;
-        sb2.resize(4, BezOrd2d(0));
+        sb2.resize(4, Linear2d(0));
         Geom::Point dir(1,-2);
         for(int vi = 0; vi < sb2.vs; vi++)
         for(int ui = 0; ui < sb2.us; ui++)

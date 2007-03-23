@@ -168,8 +168,8 @@ D2<SBasis> integral(D2<SBasis> const & a);
 SBasis L2(D2<SBasis> const & a, int k);
 double L2(D2<double> const & a);
 
-D2<SBasis> multiply(BezOrd const & a, D2<SBasis> const & b);
-D2<SBasis> operator*(BezOrd const & a, D2<SBasis> const & b);
+D2<SBasis> multiply(Linear const & a, D2<SBasis> const & b);
+D2<SBasis> operator*(Linear const & a, D2<SBasis> const & b);
 D2<SBasis> operator+(D2<SBasis> const & a, Point b);
 D2<SBasis> multiply(SBasis const & a, D2<SBasis> const & b);
 D2<SBasis> truncate(D2<SBasis> const & a, unsigned terms);

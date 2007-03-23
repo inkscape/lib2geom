@@ -37,7 +37,7 @@ class Sb2d2: public Toy {
             sb2[dim].vs = 2;
             const int depth = sb2[dim].us*sb2[dim].vs;
             const int surface_handles = 4*depth;
-            sb2[dim].resize(depth, BezOrd2d(0));
+            sb2[dim].resize(depth, Linear2d(0));
         }
         const int depth = sb2[0].us*sb2[0].vs;
         const int surface_handles = 4*depth;
@@ -82,26 +82,26 @@ class Sb2d2: public Toy {
                 D2<SBasis> B;
                 D2<SBasis> tB;
                 
-                B[0] = BezOrd(tu-fudge, tu+fudge + inv_u_subs );
-                B[1] = BezOrd(tv-fudge, tv-fudge);
+                B[0] = Linear(tu-fudge, tu+fudge + inv_u_subs );
+                B[1] = Linear(tv-fudge, tv-fudge);
                 tB = compose(sb2, B);
                 tB = (width/2) * tB + Geom::Point(width/4, width/4);
                 pb.append(tB);
                 
-                B[0] = BezOrd(tu+fudge + inv_u_subs , tu+fudge + inv_u_subs);
-                B[1] = BezOrd(tv-fudge,               tv+fudge + inv_v_subs);
+                B[0] = Linear(tu+fudge + inv_u_subs , tu+fudge + inv_u_subs);
+                B[1] = Linear(tv-fudge,               tv+fudge + inv_v_subs);
                 tB = compose(sb2, B);
                 tB = (width/2) * tB + Geom::Point(width/4, width/4);
                 pb.append(tB);
                 
-                B[0] = BezOrd(tu+fudge + inv_u_subs, tu-fudge);
-                B[1] = BezOrd(tv+fudge + inv_v_subs, tv+fudge + inv_v_subs);
+                B[0] = Linear(tu+fudge + inv_u_subs, tu-fudge);
+                B[1] = Linear(tv+fudge + inv_v_subs, tv+fudge + inv_v_subs);
                 tB = compose(sb2, B);
                 tB = (width/2) * tB + Geom::Point(width/4, width/4);
                 pb.append(tB);
                 
-                B[0] = BezOrd(tu-fudge,              tu-fudge);
-                B[1] = BezOrd(tv+fudge + inv_v_subs, tv-fudge);
+                B[0] = Linear(tu-fudge,              tu-fudge);
+                B[1] = Linear(tv+fudge + inv_v_subs, tv-fudge);
                 tB = compose(sb2, B);
                 tB = (width/2) * tB + Geom::Point(width/4, width/4);
                 pb.append(tB);

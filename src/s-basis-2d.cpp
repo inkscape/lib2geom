@@ -8,7 +8,7 @@ SBasis extract_u(SBasis2d const &a, double u) {
     
     for(unsigned vi = 0; vi < a.vs; vi++) {
         double sk = 1;
-        BezOrd bo(0,0);
+        Linear bo(0,0);
         for(unsigned ui = 0; ui < a.us; ui++) {
             bo += sk*(extract_u(a.index(ui, vi), u));
             sk *= s;
@@ -25,7 +25,7 @@ SBasis extract_v(SBasis2d const &a, double v) {
     
     for(unsigned ui = 0; ui < a.us; ui++) {
         double sk = 1;
-        BezOrd bo(0,0);
+        Linear bo(0,0);
         for(unsigned vi = 0; vi < a.vs; vi++) {
             bo += sk*(extract_v(a.index(ui, vi), v));
             sk *= s;
@@ -36,11 +36,11 @@ SBasis extract_v(SBasis2d const &a, double v) {
     return sb;
 }
 
-SBasis compose(BezOrd2d const &a, D2<SBasis> const &p) {
+SBasis compose(Linear2d const &a, D2<SBasis> const &p) {
     SBasis sb;
     D2<SBasis> omp;
     for(int dim = 0; dim < 2; dim++)
-        omp[dim] = BezOrd(1) - p[dim];
+        omp[dim] = Linear(1) - p[dim];
     sb = a[0]*multiply(omp[0], omp[1]) +
          a[1]*multiply(p[0], omp[1]) +
          a[2]*multiply(omp[0], p[1]) +
@@ -54,8 +54,8 @@ compose(SBasis2d const &fg, D2<SBasis> const &p) {
     SBasis s[2];
     SBasis ss[2];
     for(int dim = 0; dim < 2; dim++) 
-        s[dim] = p[dim]*(BezOrd(1) - p[dim]);
-    ss[1] = BezOrd(1);
+        s[dim] = p[dim]*(Linear(1) - p[dim]);
+    ss[1] = Linear(1);
     for(int vi = 0; vi < fg.vs; vi++) {
         ss[0] = ss[1];
         for(int ui = 0; ui < fg.us; ui++) {

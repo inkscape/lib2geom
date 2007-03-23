@@ -12,8 +12,8 @@ using namespace std;
 void cairo_pw(cairo_t *cr, pw_sb p) {
     for(int i = 0; i < p.size(); i++) {
         D2<SBasis> B;
-        B[0] = BezOrd(p.cuts[i], p.cuts[i+1]);
-        B[1] = BezOrd(150) + p[i];
+        B[0] = Linear(p.cuts[i], p.cuts[i+1]);
+        B[1] = Linear(150) + p[i];
         cairo_md_sb(cr, B);
     }
 }

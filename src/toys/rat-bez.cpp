@@ -37,8 +37,8 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
         B[dim] = Bz[dim];
     }
     // last is weighting function.  This supposedly creates a bezier
-    B[2] =  (BezOrd(1, 0)*BezOrd(1, sqrt(2))) +
-        (BezOrd(0, 1)*BezOrd(sqrt(2), 1));
+    B[2] =  (Linear(1, 0)*Linear(1, sqrt(2))) +
+        (Linear(0, 1)*Linear(sqrt(2), 1));
     
     // draw a pointwise approximation - compute exact values for points and join with line segments
     for(int ti = 0; ti <= 30; ti++) {
@@ -67,7 +67,7 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
         double subu = dsubu*subdivi;
         MultidimSBasis<3> Bp;
         for(int dim = 0; dim < 3; dim++) {
-            Bp[dim] = compose(B[dim], BezOrd(subu, dsubu+subu));
+            Bp[dim] = compose(B[dim], Linear(subu, dsubu+subu));
         }
         // subdivided
         

@@ -114,21 +114,21 @@ std::vector<D2<SBasis> > Geom::unit_vector(D2<SBasis> const vect, std::vector<do
     //--Choose the smallest angle jump, and define alpha(t).
     while(alpha0>alpha1+M_PI) alpha0-=2*M_PI;
     while(alpha0<alpha1-M_PI) alpha0+=2*M_PI;
-    alpha.push_back(BezOrd(0, alpha1-alpha0));
-    alpha.push_back(BezOrd(dalpha0-(alpha1-alpha0), -dalpha1+(alpha1-alpha0)));
+    alpha.push_back(Linear(0, alpha1-alpha0));
+    alpha.push_back(Linear(dalpha0-(alpha1-alpha0), -dalpha1+(alpha1-alpha0)));
 
     //--Compute sin and cos of alpha(t): (I am lazy here. Should define cos(SBasis) and sin(SBasis)...)
     if(fabs(alpha1-alpha0) > 0.01) {
         alpha *= 1./(alpha1-alpha0);
-        c=compose(cos(BezOrd(0., alpha1-alpha0), 3), alpha);
-        s=compose(sin(BezOrd(0., alpha1-alpha0), 3), alpha);
+        c=compose(cos(Linear(0., alpha1-alpha0), 3), alpha);
+        s=compose(sin(Linear(0., alpha1-alpha0), 3), alpha);
         c.truncate(3);
         s.truncate(3);
 
     }else{
-        c = compose(cos(BezOrd(0., 1.), 3), alpha);
+        c = compose(cos(Linear(0., 1.), 3), alpha);
         c[0][1] = std::cos(alpha1-alpha0);
-        s = compose(sin(BezOrd(0., 1.), 3), alpha);
+        s = compose(sin(Linear(0., 1.), 3), alpha);
         s[0][1] = std::sin(alpha1-alpha0);
         c.truncate(3);
         s.truncate(3);
@@ -156,8 +156,8 @@ std::vector<D2<SBasis> > Geom::unit_vector(D2<SBasis> const vect, std::vector<do
             cuts.push_back(1);
             return(uvect);
         }else{
-            c=compose(cos(BezOrd(0., alpha1-alpha0), 3),compose(alpha, BezOrd(0,0.5)));
-            s=compose(sin(BezOrd(0., alpha1-alpha0), 3),compose(alpha, BezOrd(0,0.5)));
+            c=compose(cos(Linear(0., alpha1-alpha0), 3),compose(alpha, Linear(0,0.5)));
+            s=compose(sin(Linear(0., alpha1-alpha0), 3),compose(alpha, Linear(0,0.5)));
             c.truncate(3);
             s.truncate(3);
             V[0]=std::cos(alpha0)*c - std::sin(alpha0)*s;
@@ -165,8 +165,8 @@ std::vector<D2<SBasis> > Geom::unit_vector(D2<SBasis> const vect, std::vector<do
             uvect.push_back(V);
             cuts.push_back(.5);
 
-            c=compose(cos(BezOrd(0., alpha1-alpha0), 3), compose(alpha,BezOrd(0.5, 1)));
-            s=compose(sin(BezOrd(0., alpha1-alpha0), 3), compose(alpha,BezOrd(0.5, 1)));
+            c=compose(cos(Linear(0., alpha1-alpha0), 3), compose(alpha,Linear(0.5, 1)));
+            s=compose(sin(Linear(0., alpha1-alpha0), 3), compose(alpha,Linear(0.5, 1)));
             c.truncate(3);
             s.truncate(3);
             V[0]=std::cos(alpha0)*c - std::sin(alpha0)*s;
@@ -183,7 +183,7 @@ std::vector<D2<SBasis> > Geom::unit_vector(D2<SBasis> const vect, std::vector<do
         for (int i=0; i<NbSubdiv; i++){
             sub_uvect.clear();
             sub_cuts.clear();
-            sub_uvect=unit_vector(compose(vect, BezOrd(i*1./NbSubdiv, (i+1)*1./NbSubdiv) ), sub_cuts, tol);
+            sub_uvect=unit_vector(compose(vect, Linear(i*1./NbSubdiv, (i+1)*1./NbSubdiv) ), sub_cuts, tol);
             for(int idx=0; idx<sub_cuts.size(); idx++){
                 uvect.push_back(sub_uvect[idx]);
                 cuts.push_back((i+sub_cuts[idx])*1./NbSubdiv);
@@ -225,7 +225,7 @@ Geom::arc_length(D2<SBasis> const M,
     double t0=0.,t1, L=0.;
     for (int i=0;i<cuts.size();i++){
         t1=cuts[i];
-        D2<SBasis> sub_dM=compose(dM,BezOrd(t0,t1));
+        D2<SBasis> sub_dM=compose(dM,Linear(t0,t1));
         SBasis V=dot(uspeed[i],sub_dM);
 //FIXME: if the curve is a flat S, this is wrong: the absolute value of V should be used.
         V=integral(V);
@@ -257,12 +257,12 @@ Geom::arc_length_sb(D2<SBasis> const M,
     double t0=0., t1, L=0.;
     for (int i=0;i<result.cuts.size();i++){
         t1=result.cuts[i];
-        D2<SBasis> sub_dM=compose(dM,BezOrd(t0,t1));
+        D2<SBasis> sub_dM=compose(dM,Linear(t0,t1));
         SBasis V=dot(uspeed[i],sub_dM);
 //FIXME: if the curve is a flat S, this is wrong: the absolute value of V should be used.
         V=(t1-t0)*integral(V);
         V += L - V(0);
-        result.segs.push_back(V); //  + BezOrd(L - V(0))
+        result.segs.push_back(V); //  + Linear(L - V(0))
         L=V(1);
         t0=t1;
     }
@@ -282,11 +282,11 @@ Geom::curvature(D2<SBasis> const M,
 
     for (int i=0;i<cv.size();i++){
         t1=result.cuts[i];
-	SBasis speed = (t1-t0)*dot(compose(dM,BezOrd(t0,t1)),cv[i]);
+	SBasis speed = (t1-t0)*dot(compose(dM,Linear(t0,t1)),cv[i]);
         D2<SBasis> dcv = derivative(cv[i]);
         dcv[0] = divide(dcv[0],speed,3);
         dcv[1] = divide(dcv[1],speed,3);
-        result.segs.push_back(-cv[i][0]*dcv[1] + cv[i][1]*dcv[0]);// + BezOrd(base, base));
+        result.segs.push_back(-cv[i][0]*dcv[1] + cv[i][1]*dcv[0]);// + Linear(base, base));
         t0=t1;
     }
     result.cuts.insert(result.cuts.begin(), 0);

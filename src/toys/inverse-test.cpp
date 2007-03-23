@@ -15,7 +15,7 @@ using namespace std;
 
 static void plot(cairo_t* cr, SBasis const &B,double vscale=1,double a=0,double b=1){
   D2<SBasis> plot;
-  plot[0]=SBasis(BezOrd(150+a*300,150+b*300));
+  plot[0]=SBasis(Linear(150+a*300,150+b*300));
   plot[1]=-vscale*B;
   plot[1]+=450;
   cairo_md_sb(cr, plot);
@@ -23,7 +23,7 @@ static void plot(cairo_t* cr, SBasis const &B,double vscale=1,double a=0,double 
 }
 static void plot_flip(cairo_t* cr, SBasis const &B,double vscale=1,double a=0,double b=1){
   D2<SBasis> plot;
-  plot[1]=SBasis(BezOrd(450-a*300,450-b*300));
+  plot[1]=SBasis(Linear(450-a*300,450-b*300));
   plot[0]=150+vscale*B;
   cairo_md_sb(cr, plot);
   cairo_stroke(cr);
@@ -52,27 +52,27 @@ static SBasis my_inverse(SBasis f, int order){
         f /= a1;
     }
 
-    SBasis g=SBasis(BezOrd(0,1)),r;
+    SBasis g=SBasis(Linear(0,1)),r;
     double df0=derivative(f)(0);
     double df1=derivative(f)(1);
-    r=BezOrd(0,1)-g(f);
+    r=Linear(0,1)-g(f);
 
     for(int i=1; i<order; i++){
         //std::cout<<"i: "<<i<<std::endl;
-        r=BezOrd(0,1)-g(f);
+        r=Linear(0,1)-g(f);
         //std::cout<<"t-gof="<<r<<std::endl;
         r.normalize();
         if (r.size()==0) return(g);
         double a=r[i][0]/pow(df0,i);
         double b=r[i][1]/pow(df1,i);
-        g.push_back(BezOrd(a,b));
+        g.push_back(Linear(a,b));
     }
     
     return(g);
 }
 
 static pw_sb pw_inverse(SBasis const &f, int order,double tol=.1,int depth=0){
-    SBasis g=SBasis(BezOrd(0,1)),r;
+    SBasis g=SBasis(Linear(0,1)),r;
     pw_sb res,res1,res2;
     
     //std::cout<<"depth: "<<depth<<std::endl;
@@ -85,12 +85,12 @@ static pw_sb pw_inverse(SBasis const &f, int order,double tol=.1,int depth=0){
         res.cuts.push_back(f[0][1]);
     }else if (depth<200){
         SBasis ff;
-        ff=f(BezOrd(0,.5));
+        ff=f(Linear(0,.5));
         res=pw_inverse(ff,order,tol,depth+1);
         for (int i=0;i<res.size();i++){
             res.segs[i]*=.5;
         }
-        ff=f(BezOrd(.5,1));
+        ff=f(Linear(.5,1));
         res1=pw_inverse(ff,order,tol,depth+1);
         for (int i=0;i<res1.size();i++){
             res1.segs[i]*=.5;
@@ -108,7 +108,7 @@ class InverseTester: public Toy {
 
   void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
     
-      SBasis f;//=SBasis(BezOrd(0,.5));
+      SBasis f;//=SBasis(Linear(0,.5));
       for (int i=0;i<size;i++){
           handles[i    ][0]=150+15*(i-size);
           handles[i+size][0]=450+15*(i+1);
@@ -125,10 +125,10 @@ class InverseTester: public Toy {
       cairo_stroke(cr);
     
       for (int i=0;i<size;i++){
-          f.push_back(BezOrd(-(handles[i     ][1]-300)*pow(4.,i)/150,
+          f.push_back(Linear(-(handles[i     ][1]-300)*pow(4.,i)/150,
                              -(handles[i+size][1]-300)*pow(4.,i)/150 ));
       }
-      plot(cr,BezOrd(0,1),300);	
+      plot(cr,Linear(0,1),300);	
       
       f.normalize();
       cairo_set_line_width (cr, 2);

@@ -103,18 +103,18 @@ private:
     D2<SBasis> _involute(double start, double stop) {
         D2<SBasis> B;
         D2<SBasis> I;
-        BezOrd bo = BezOrd(start,stop);
+        Linear bo = Linear(start,stop);
         
         B[0] = cos(bo,2);
         B[1] = sin(bo,2);
         
-        I = B - BezOrd(0,1) * derivative(B);
+        I = B - Linear(0,1) * derivative(B);
         I = base_radius()*I + _centre;
         return I;
     }
     D2<SBasis> _arc(double start, double stop, double R) {
         D2<SBasis> B;
-        BezOrd bo = BezOrd(start,stop);
+        Linear bo = Linear(start,stop);
         
         B[0] = cos(bo,2);
         B[1] = sin(bo,2);
@@ -155,7 +155,7 @@ std::vector<Geom::Path2::Path> Gear::path() {
     {
         double cursor = first_tooth_angle + (i * tooth_rotation);
 
-        D2<SBasis> leading_I = compose(_involute(cursor, cursor + involute_swath_angle(outer_radius())), BezOrd(involute_t,1));
+        D2<SBasis> leading_I = compose(_involute(cursor, cursor + involute_swath_angle(outer_radius())), Linear(involute_t,1));
         pb.pushSBasis(leading_I);
         cursor += involute_advance;
         
@@ -164,7 +164,7 @@ std::vector<Geom::Path2::Path> Gear::path() {
         cursor += tip_advance;
         
         cursor += involute_advance;
-        D2<SBasis> trailing_I = compose(_involute(cursor, cursor - involute_swath_angle(outer_radius())), BezOrd(1,involute_t));
+        D2<SBasis> trailing_I = compose(_involute(cursor, cursor - involute_swath_angle(outer_radius())), Linear(1,involute_t));
         pb.pushSBasis(trailing_I);
        
         if (base_radius() > root_radius()) {

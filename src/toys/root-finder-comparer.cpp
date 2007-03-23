@@ -152,7 +152,7 @@ public:
         iterations = 0;
         while(end_t > clock()) {
             std::vector<double> rts;
-            subdiv_sbasis(-test_sb[1] + BezOrd(3*width/4),
+            subdiv_sbasis(-test_sb[1] + Linear(3*width/4),
                           rts, 0, 1);
             iterations++;
         }
@@ -190,7 +190,7 @@ public:
         *notify << "solver 1d subdivision slns" << solutions.size() 
                 << ", time = " << timer_precision*units/iterations-overhead 
                 << units_string << std::endl;
-        solutions = roots( -test_sb[1] + BezOrd(3*width/4));
+        solutions = roots( -test_sb[1] + Linear(3*width/4));
 #if 0
         std::cout << "sbasis sub: ";
         std::copy(solutions.begin(), solutions.end(), std::ostream_iterator<double>(std::cout, ",\t"));
@@ -218,7 +218,7 @@ public:
         pb.close(false);
         cairo_path(cr, pb);
         
-        B[0] = BezOrd(width/4, 3*width/4);
+        B[0] = Linear(width/4, 3*width/4);
         cairo_md_sb(cr, B);
         Toy::draw(cr, notify, width, height, save);
     }

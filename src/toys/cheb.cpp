@@ -25,11 +25,11 @@ using namespace Geom;
 SBasis cheb(unsigned n) {
     static std::vector<SBasis> basis;
     if(basis.empty()) {
-        basis.push_back(BezOrd(1,1));
-        basis.push_back(BezOrd(0,1));
+        basis.push_back(Linear(1,1));
+        basis.push_back(Linear(0,1));
     }
     for(int i = basis.size(); i <= n; i++) {
-        basis.push_back(BezOrd(0,2)*basis[i-1] - basis[i-2]);
+        basis.push_back(Linear(0,2)*basis[i-1] - basis[i-2]);
     }
     
     return basis[n];
@@ -38,11 +38,11 @@ SBasis cheb(unsigned n) {
 SBasis cheb01(unsigned n) {
     static std::vector<SBasis> basis;
     if(basis.empty()) {
-        basis.push_back(BezOrd(1,1));
-        basis.push_back(BezOrd(-1,1));
+        basis.push_back(Linear(1,1));
+        basis.push_back(Linear(-1,1));
     }
     for(int i = basis.size(); i <= n; i++) {
-        basis.push_back(2*(BezOrd(0,2)*basis[i-1] - basis[i-2]));
+        basis.push_back(2*(Linear(0,2)*basis[i-1] - basis[i-2]));
     }
     
     return basis[n];
@@ -54,17 +54,17 @@ class Sb1d: public Toy {
         cairo_set_line_width (cr, 1);
         
         D2<SBasis> B;
-        B[0] = BezOrd(width/4, 3*width/4);
+        B[0] = Linear(width/4, 3*width/4);
         for(unsigned i = 0;  i < 10; i++) {
             //B[1] = cheb(i);
-            B[1] = compose(cheb(i), BezOrd(-1,1));
+            B[1] = compose(cheb(i), Linear(-1,1));
             //B[1] = cheb01(i);
             *notify << "cheb(" << i << ") = "
                     << B[1]
 //sbasis_to_poly(B[1]) 
                     << std::endl;
             Geom::Path2::Path pb;
-            B[1] = SBasis(BezOrd(2*width/4)) - (width/4)*B[1];
+            B[1] = SBasis(Linear(2*width/4)) - (width/4)*B[1];
             pb.append(B);
             cairo_path(cr, pb);
             

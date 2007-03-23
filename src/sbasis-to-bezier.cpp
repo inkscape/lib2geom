@@ -101,8 +101,8 @@ subpath_from_sbasis(Geom::OldPathSetBuilder &pb, D2<SBasis> const &B, double tol
             pb.push_cubic(bez[1], bez[2], bez[3]);
         }
     } else {
-        subpath_from_sbasis(pb, compose(B, BezOrd(0, 0.5)), tol, initial);
-        subpath_from_sbasis(pb, compose(B, BezOrd(0.5, 1)), tol, false);
+        subpath_from_sbasis(pb, compose(B, Linear(0, 0.5)), tol, initial);
+        subpath_from_sbasis(pb, compose(B, Linear(0.5, 1)), tol, false);
     }
 }
 
@@ -134,7 +134,7 @@ subpath_from_sbasis_incremental(Geom::OldPathSetBuilder &pb, D2<SBasis> B, doubl
         assert(a > 0);
         //std::cout << "te = " << te << std::endl;
         //std::cout << "A = " << A << "; a=" << a << std::endl;
-        D2<SBasis> Bs = compose(B, BezOrd(0, a));
+        D2<SBasis> Bs = compose(B, Linear(0, a));
         assert(Bs.tail_error(k));
         std::vector<Geom::Point> bez = sbasis_to_bezier(Bs, 2);
         reverse(bez.begin(), bez.end());
@@ -146,7 +146,7 @@ subpath_from_sbasis_incremental(Geom::OldPathSetBuilder &pb, D2<SBasis> B, doubl
         
 // move to next piece of curve
         if(a >= 1) break;
-        B = compose(B, BezOrd(a, 1)); 
+        B = compose(B, Linear(a, 1)); 
         te = B.tail_error(k);
     }
 }
@@ -168,8 +168,8 @@ path_from_sbasis(Geom::Path2::Path &pb, D2<SBasis> const &B, double tol) {
             pb.append(Geom::Path2::CubicBezier(bez[0], bez[1], bez[2], bez[3]));
         }
     } else {
-        path_from_sbasis(pb, compose(B, BezOrd(0, 0.5)), tol);
-        path_from_sbasis(pb, compose(B, BezOrd(0.5, 1)), tol);
+        path_from_sbasis(pb, compose(B, Linear(0, 0.5)), tol);
+        path_from_sbasis(pb, compose(B, Linear(0.5, 1)), tol);
     }
 }
 

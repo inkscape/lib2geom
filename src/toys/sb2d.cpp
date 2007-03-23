@@ -23,7 +23,7 @@ class Sb2d: public Toy {
         sb2.vs = 2;
         const int depth = sb2.us*sb2.vs;
         const int surface_handles = 4*depth;
-        sb2.resize(depth, BezOrd2d(0));
+        sb2.resize(depth, Linear2d(0));
         vector<Geom::Point> display_handles(surface_handles);
         Geom::Point dir(1,-2);
         if(handles.empty()) {

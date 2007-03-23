@@ -57,10 +57,10 @@ class Sb1d: public Toy {
         }
         
         D2<SBasis> B;
-        B[0] = BezOrd(width/4, 3*width/4);
+        B[0] = Linear(width/4, 3*width/4);
         B[1].resize(handles.size()/2);
         for(int i = 0; i < B[1].size(); i++) {
-            B[1][i] = BezOrd(0);
+            B[1][i] = Linear(0);
         }
         for(int i = 0; i < handles.size(); i++) {
             handle_to_sb(i, handles.size(), B[1]) = 3*width/4 - handles[i][1];
@@ -78,11 +78,11 @@ class Sb1d: public Toy {
         cairo_line_to(cr, B[0](1), hi);
         cairo_stroke(cr);
         *notify << "sb bounds = "<<lo << ", " <<hi<<std::endl;
-        //B[1] = SBasis(BezOrd(3*width/4)) - B[1];
+        //B[1] = SBasis(Linear(3*width/4)) - B[1];
         *notify << B[0] << ", "; 
         *notify << B[1];
         Geom::Path2::Path pb;
-        B[1] = SBasis(BezOrd(3*width/4)) - B[1];
+        B[1] = SBasis(Linear(3*width/4)) - B[1];
         pb.append(B);
         pb.close(false);
         cairo_path(cr, pb);

@@ -41,14 +41,14 @@ static bool compose_inverse(SBasis const &g,SBasis const & x, SBasis &f, int ord
     double tol=1e-4;
     SBasis r=g;
     int val=0;
-    SBasis Pk=BezOrd(1,0),Qk=BezOrd(0,1);
+    SBasis Pk=Linear(1,0),Qk=Linear(0,1);
     
     for (int k=0; k<=order; k++){
         SBasis Pk_x=Pk(x),Qk_x=Qk(x);
         int v=std::min(valuation(Pk_x),valuation(Qk_x));
         
         if (v<valuation(r)){
-            f.push_back(BezOrd(0));
+            f.push_back(Linear(0));
         }else if (v==valuation(r)){
             double p10=Pk_x[v][0];
             double p01=Pk_x[v][1];
@@ -61,7 +61,7 @@ static bool compose_inverse(SBasis const &g,SBasis const & x, SBasis &f, int ord
             }
             double a=( q01*r10-q10*r01)/(p10*q01-p01*q10);
             double b=(-p01*r10+p10*r01)/(p10*q01-p01*q10);
-            f.push_back(BezOrd(a,b));
+            f.push_back(Linear(a,b));
             r=g-f(x);
         }
         if (valuation(r)==r.size()) return true;
@@ -80,11 +80,11 @@ static D2<pw_sb> arc_length_parametrization(D2<SBasis> const &M){
     std::cout<<"nb pieces:"<<s.size()<<std::endl;
     for (int i=0; i < s.size();i++){
         double t0=s.cuts[i],t1=s.cuts[i+1];
-        D2<SBasis> sub_M = compose(M,BezOrd(t0,t1));
+        D2<SBasis> sub_M = compose(M,Linear(t0,t1));
         D2<SBasis> sub_u;
         bool ok;
-        ok=      compose_inverse(sub_M[0],1/(s(t1)-s(t0))*(s.segs[i]-BezOrd(s(t0))),sub_u[0],3);
-        ok=ok && compose_inverse(sub_M[1],1/(s(t1)-s(t0))*(s.segs[i]-BezOrd(s(t0))),sub_u[1],3);
+        ok=      compose_inverse(sub_M[0],1/(s(t1)-s(t0))*(s.segs[i]-Linear(s(t0))),sub_u[0],3);
+        ok=ok && compose_inverse(sub_M[1],1/(s(t1)-s(t0))*(s.segs[i]-Linear(s(t0))),sub_u[1],3);
         if (!ok) std::cout<<"IMPOSSIBLE!!!!!!"<<std::endl;
         u[0].push(sub_u[0],s(t1));
         u[1].push(sub_u[1],s(t1));

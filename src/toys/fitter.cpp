@@ -36,7 +36,7 @@ using namespace Geom;
 static GtkWidget *canvas;
 
 
-BezOrd z0(0.5,1.);
+Linear z0(0.5,1.);
 
 std::vector<Geom::Point*> handles;
 Geom::Point *selected_handle;

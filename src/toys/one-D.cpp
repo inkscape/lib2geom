@@ -6,16 +6,16 @@
 using std::vector;
 using namespace Geom;
 
-BezOrd z0(0.5,1.);
+Linear z0(0.5,1.);
 
 class OneD: public Toy {
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         cairo_set_source_rgba (cr, 0., 0., 0, 0.8);
         cairo_set_line_width (cr, 0.5);
         cairo_stroke(cr);
-        SBasis one(BezOrd(1,1));
+        SBasis one(Linear(1,1));
         assert(one.size() == 1);
-        SBasis P0(z0), P1(BezOrd(3, 1));
+        SBasis P0(z0), P1(Linear(3, 1));
         SBasis Q = multiply(P0, P1);
         Q = multiply(Q, P1);
         cairo_set_source_rgba (cr, 0.5, 0., 0,1);

@@ -28,19 +28,19 @@ void draw_sb2d(cairo_t* cr, SBasis2d const &sb2, Geom::Point dir, double width) 
     multidim_sbasis<2> B;
     for(int ui = 0; ui <= 10; ui++) {
         double u = ui/10.;
-        B[0] = dir[0]*extract_u(sb2, u) + BezOrd(u);
-        B[1] = SBasis(BezOrd(0,1))+dir[1]*extract_u(sb2, u);
+        B[0] = dir[0]*extract_u(sb2, u) + Linear(u);
+        B[1] = SBasis(Linear(0,1))+dir[1]*extract_u(sb2, u);
         for(unsigned i = 0; i < 2; i ++) {
-            B[i] = (width/2)*B[i] + BezOrd(width/4);
+            B[i] = (width/2)*B[i] + Linear(width/4);
         }
         cairo_md_sb(cr, B);
     }
     for(int vi = 0; vi <= 10; vi++) {
         double v = vi/10.;
-        B[1] = dir[1]*extract_v(sb2, v) + BezOrd(v);
-        B[0] = SBasis(BezOrd(0,1)) + dir[0]*extract_v(sb2, v);
+        B[1] = dir[1]*extract_v(sb2, v) + Linear(v);
+        B[0] = SBasis(Linear(0,1)) + dir[0]*extract_v(sb2, v);
         for(unsigned i = 0; i < 2; i ++) {
-            B[i] = (width/2)*B[i] + BezOrd(width/4);
+            B[i] = (width/2)*B[i] + Linear(width/4);
         }
         cairo_md_sb(cr, B);
     }
@@ -116,8 +116,8 @@ public:
             render_mg_patch(cr, x0, y0, x1, y1, sb2);
         else {
             for(unsigned corner = 0; corner < 4; corner++) {
-                BezOrd split_s((corner % 2)/ 2., 0.5 + (corner % 2)/ 2.);
-                BezOrd split_t((corner / 2)/ 2., 0.5 + (corner / 2)/ 2.);
+                Linear split_s((corner % 2)/ 2., 0.5 + (corner % 2)/ 2.);
+                Linear split_t((corner / 2)/ 2., 0.5 + (corner / 2)/ 2.);
                 double mid_x = (x0 + x1) / 2;
                 double mid_y = (y0 + y1) / 2;
                 SBasis2d subd2(sb2);
@@ -155,7 +155,7 @@ public:
         sb2.vs = 2;
         const int depth = sb2.us*sb2.vs;
         const int surface_handles = 4*depth;
-        sb2.resize(depth, BezOrd2d(0));
+        sb2.resize(depth, Linear2d(0));
         vector<Geom::Point> display_handles(surface_handles);
         Geom::Point dir(1,-2);
         if(handles.empty()) {

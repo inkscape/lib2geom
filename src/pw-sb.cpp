@@ -157,14 +157,14 @@ pw_sb operator-(pw_sb const &a) {
 }
 
 pw_sb operator+=(pw_sb& a, double b) {
-    if(a.empty()) { a.push_cut(0.); a.push(BezOrd(b), 1.); return a; }
+    if(a.empty()) { a.push_cut(0.); a.push(Linear(b), 1.); return a; }
 
     for(int i = 0; i < a.size();i++)
         a[i] += b;
     return a;
 }
 pw_sb operator-=(pw_sb& a, double b) {
-    if(a.empty()) { a.push_cut(0.); a.push(BezOrd(b), 1.); return a; }
+    if(a.empty()) { a.push_cut(0.); a.push(Linear(b), 1.); return a; }
 
     for(int i = 0;i < a.size();i++)
         a[i] -= b;
@@ -237,7 +237,7 @@ pw_sb compose(pw_sb const &f, SBasis  const &g){
   if (f.size()==0) return result;
   if (f.size()==1){
       double t0 = f.cuts[0], width = f.cuts[1] - t0;
-      return (pw_sb) f.segs[0](compose(BezOrd(-t0 / width, (1-t0) / width), g));
+      return (pw_sb) f.segs[0](compose(Linear(-t0 / width, (1-t0) / width), g));
   }
 
   //first check bounds...
@@ -246,7 +246,7 @@ pw_sb compose(pw_sb const &f, SBasis  const &g){
   if (M < f.cuts.front() || m > f.cuts.back()){
       int idx = (M < f.cuts[1]) ? 0 : f.cuts.size()-2;
       double t0 = f.cuts[idx], width = f.cuts[idx+1] - t0;
-      return (pw_sb) f.segs[idx](compose(BezOrd(-t0 / width, (1-t0) / width), g));
+      return (pw_sb) f.segs[idx](compose(Linear(-t0 / width, (1-t0) / width), g));
   }
 
   //-- collect all t / g(t)=f.cuts[idx] for some idx (!= first and last).
@@ -293,8 +293,8 @@ pw_sb compose(pw_sb const &f, SBasis  const &g){
     //move idx back from levels f.cuts 
     idx+=1;
 
-    SBasis sub_g=compose(g, BezOrd(t0,t1));
-    sub_g=compose(BezOrd(-f.cuts[idx]/(f.cuts[idx+1]-f.cuts[idx]),
+    SBasis sub_g=compose(g, Linear(t0,t1));
+    sub_g=compose(Linear(-f.cuts[idx]/(f.cuts[idx+1]-f.cuts[idx]),
 			     (1-f.cuts[idx])/(f.cuts[idx+1]-f.cuts[idx])),sub_g);
     sub_g=compose(f[idx],sub_g);
     result.cuts.push_back(t1);

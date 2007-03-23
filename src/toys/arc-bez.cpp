@@ -32,7 +32,7 @@ public:
         cairo_set_source_rgba (cr, 0.25, 0.5, 0, 0.8);
         {
             D2<SBasis> plot;
-            plot[0] = SBasis(width*BezOrd(0.25,0.75));
+            plot[0] = SBasis(width*Linear(0.25,0.75));
 
             D2<SBasis> dB = derivative(B);
             D2<SBasis> ddB = derivative(dB);
@@ -41,7 +41,7 @@ public:
 
             plot[1] = derivative(divide(n, sqrt(den*den*den,5), 10));
             std::vector<double> r = roots(plot[1]);
-            plot[1] = BezOrd(width*3/4) - (1./1000)*plot[1];
+            plot[1] = Linear(width*3/4) - (1./1000)*plot[1];
             cairo_md_sb(cr, plot);
             cairo_stroke(cr);
             for(int i = 0; i < r.size(); i++) {
@@ -58,8 +58,8 @@ public:
             double t0 = 0, t1;
             for(int i = 0; i < als.segs.size();i++){
                 t1 = als.cuts[i+1];
-                plot[0] = SBasis(width*BezOrd(t0,t1));
-                plot[1] = BezOrd(height-5) - als.segs[i];
+                plot[0] = SBasis(width*Linear(t0,t1));
+                plot[1] = Linear(height-5) - als.segs[i];
                 cairo_md_sb(cr,plot);
                 cairo_set_source_rgba (cr, 1, 0, 0.6, 0.5);
                 cairo_stroke(cr);
@@ -68,8 +68,8 @@ public:
             }
             
             D2<pw_sb> grf;
-            grf.f[1] = als; // pw_sb(SBasis(BezOrd(height-5))) - 
-            grf.f[0] = pw_sb(SBasis(BezOrd(0, width)));
+            grf.f[1] = als; // pw_sb(SBasis(Linear(height-5))) - 
+            grf.f[0] = pw_sb(SBasis(Linear(0, width)));
             
             cairo_md_pw(cr, grf);
         }
@@ -80,16 +80,16 @@ public:
         for(int subdivi = 0; subdivi < N; subdivi++) {
             double dsubu = 1./N;
             double subu = dsubu*subdivi;
-            BezOrd dt(subu, dsubu + subu);
+            Linear dt(subu, dsubu + subu);
             D2<SBasis> dBp = compose(dB, dt);
             SBasis arc = L2(dBp, 2);
             arc = (1./N)*integral(arc);
-            arc = arc - BezOrd(Hat(arc.point_at(0) - prev_seg));
+            arc = arc - Linear(Hat(arc.point_at(0) - prev_seg));
             prev_seg = arc(1);
         
             D2<SBasis> plot;
             plot[0] = SBasis(width*dt);
-            plot[1] = BezOrd(height) - arc;
+            plot[1] = Linear(height) - arc;
         
             cairo_md_sb(cr, plot);
             cairo_stroke(cr);

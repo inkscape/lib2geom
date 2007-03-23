@@ -79,9 +79,9 @@ public:
         Geom::Point ddtang = dddB(0);
         double t = 1;
         for(int dim = 0; dim < 2; dim++) {
-            m[dim] = BezOrd(pt[dim],pt[dim]+tang[dim]);
-            m[dim] += (1./2)*BezOrd(0, 1)*BezOrd(0, 1*dtang[dim]);
-            m[dim] += (1./6)*BezOrd(0, 1)*BezOrd(0, 1)*BezOrd(0, ddtang[dim]);
+            m[dim] = Linear(pt[dim],pt[dim]+tang[dim]);
+            m[dim] += (1./2)*Linear(0, 1)*Linear(0, 1*dtang[dim]);
+            m[dim] += (1./6)*Linear(0, 1)*Linear(0, 1)*Linear(0, ddtang[dim]);
         }
         
         double lo = 0, hi = 1;
@@ -90,7 +90,7 @@ public:
             double mid = (hi + lo)/2;
             //double Bmid = (Bhi + Blo)/2;
             
-            m = truncate(compose(B, BezOrd(0, mid)), 2);
+            m = truncate(compose(B, Linear(0, mid)), 2);
             // perform golden section search
             double best_f = 0, best_x = 1;
             for(int n = 2; n < 4; n++) {
@@ -145,7 +145,7 @@ public:
             cairo_path(cr, pb);
         }
         
-        /*m = truncate(compose(B, BezOrd(0, hi*2)), 2);
+        /*m = truncate(compose(B, Linear(0, hi*2)), 2);
         {
             Geom::Path2::Path pb;
             pb.append(m);

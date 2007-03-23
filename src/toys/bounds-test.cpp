@@ -15,7 +15,7 @@ using namespace std;
 
 static void plot(cairo_t* cr, SBasis const &B,double vscale=1,double a=0,double b=1){
     D2<SBasis> plot;
-    plot[0]=SBasis(BezOrd(150+a*300,150+b*300));
+    plot[0]=SBasis(Linear(150+a*300,150+b*300));
     plot[1]=-vscale*B;
     plot[1]+=300;
     cairo_md_sb(cr, plot);
@@ -49,7 +49,7 @@ class BoundsTester: public Toy {
         cairo_stroke(cr);
         
         for (int i=0;i<size;i++){
-            B.push_back(BezOrd(-(handles[i     ][1]-300)*pow(4.,i),
+            B.push_back(Linear(-(handles[i     ][1]-300)*pow(4.,i),
                                -(handles[i+size][1]-300)*pow(4.,i) ));
         }
         B.normalize();
@@ -78,7 +78,7 @@ class BoundsTester: public Toy {
         cairo_set_source_rgba (cr, 0.9, 0., 0.8, 1);
         for (int i=0;i<levels.size();i++){
             my_roots.clear();
-            my_roots=roots(B-BezOrd(levels[i]));
+            my_roots=roots(B-Linear(levels[i]));
             for(int j=0;j<my_roots.size();j++){
                 draw_cross(cr,Point(150+300*my_roots[j],300-levels[i]));
             }
@@ -107,7 +107,7 @@ class BoundsTester: public Toy {
         while(end_t > clock()) {
             my_roots.clear();
             for (int i=0;i<levels.size();i++){
-                my_roots=roots(B-BezOrd(levels[i]));
+                my_roots=roots(B-Linear(levels[i]));
             }
             iterations++;
         }

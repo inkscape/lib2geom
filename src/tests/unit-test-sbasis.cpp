@@ -29,8 +29,8 @@ double uniform() {
 }
 
 int main() {
-    SBasis P0(BezOrd(0.5, -1)), P1(BezOrd(3, 1));
-    BezOrd one(1,1);
+    SBasis P0(Linear(0.5, -1)), P1(Linear(3, 1));
+    Linear one(1,1);
 
     std::cout << "round tripping of poly conversions\n";
     std::cout << P0 
@@ -99,41 +99,41 @@ int main() {
               << std::endl;
     
     std::cout << "composition\n";
-    std::cout << (compose(test,sbasis_to_poly(BezOrd(0.5,1))))
+    std::cout << (compose(test,sbasis_to_poly(Linear(0.5,1))))
               << "\n   ==   \n"
-              << sbasis_to_poly(compose(test_sb,BezOrd(0.5,1)))
+              << sbasis_to_poly(compose(test_sb,Linear(0.5,1)))
               << std::endl;
     std::cout << poly_to_sbasis(compose(test,test))
               << "\n   ==   \n"
               << compose(test_sb,test_sb)
               << std::endl
               << std::endl;
-    std::cout << (compose(sbasis_to_poly(BezOrd(1,2)),sbasis_to_poly(BezOrd(-1,0))))
+    std::cout << (compose(sbasis_to_poly(Linear(1,2)),sbasis_to_poly(Linear(-1,0))))
               << std::endl;
-    std::cout << (compose(SBasis(BezOrd(1,2)),SBasis(BezOrd(-1,0))))
+    std::cout << (compose(SBasis(Linear(1,2)),SBasis(Linear(-1,0))))
               << std::endl;
 
     std::cout << "inverse of x - 1\n";
-    std::cout << sbasis_to_poly(inverse(BezOrd(-1,0),2))
+    std::cout << sbasis_to_poly(inverse(Linear(-1,0),2))
               << "   ==   y + 1\n";
     std::cout << "f^-1(f(x)) = " 
-              << sbasis_to_poly(compose(inverse(BezOrd(-1,0),2), 
-                                        BezOrd(-1,0))) 
+              << sbasis_to_poly(compose(inverse(Linear(-1,0),2), 
+                                        Linear(-1,0))) 
               << std::endl
               << std::endl;
     
     std::cout << "inverse of 3x - 2\n";
-    std::cout << sbasis_to_poly(inverse(BezOrd(-2,1),2))
+    std::cout << sbasis_to_poly(inverse(Linear(-2,1),2))
               << "   ==   (y + 2)/3\n";
     std::cout << "f^-1(f(x)) = " 
-              << sbasis_to_poly(compose(inverse(BezOrd(-2,1),2), 
-                                        BezOrd(-2,1))) 
+              << sbasis_to_poly(compose(inverse(Linear(-2,1),2), 
+                                        Linear(-2,1))) 
               << std::endl
               << std::endl;
     
     
-    std::cout << "inverse of sqrt(" << sbasis_to_poly(BezOrd(1,4)) << ") - 1\n";
-    SBasis A = sqrt(BezOrd(1,4), 5) - one;
+    std::cout << "inverse of sqrt(" << sbasis_to_poly(Linear(1,4)) << ") - 1\n";
+    SBasis A = sqrt(Linear(1,4), 5) - one;
     Poly P;
     P.push_back(0);
     P.push_back(2./3);
@@ -160,7 +160,7 @@ int main() {
     std::cout << sbasis_to_poly(truncate(compose(I, A), 10))
               << "   ==   x\n"
               << std::endl;
-    std::cout << sbasis_to_poly(truncate(I - (sqrt(BezOrd(1,4), 10) - one), 10))
+    std::cout << sbasis_to_poly(truncate(I - (sqrt(Linear(1,4), 10) - one), 10))
               << std::endl;
     }
 #ifdef HAVE_GSL
@@ -179,7 +179,7 @@ int main() {
         for(int k = 1; k < 30; k++) {
             SBasis A = poly_to_sbasis(P);
             SBasis I = inverse(A,k);
-            SBasis err = compose(A, I) - BezOrd(0,1); // ideally is 0
+            SBasis err = compose(A, I) - Linear(0,1); // ideally is 0
             std::cout << truncate(err, k).tail_error(0)
                       << std::endl;
             /*std::cout << sbasis_to_poly(err)

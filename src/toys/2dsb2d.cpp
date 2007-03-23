@@ -26,7 +26,7 @@ class Sb2d2: public Toy {
             sb2[dim].vs = 2;
             const int depth = sb2[dim].us*sb2[dim].vs;
             const int surface_handles = 4*depth;
-            sb2[dim].resize(depth, BezOrd2d(0));
+            sb2[dim].resize(depth, Linear2d(0));
         }
         const int depth = sb2[0].us*sb2[0].vs;
         const int surface_handles = 4*depth;
@@ -72,7 +72,7 @@ class Sb2d2: public Toy {
             std::vector<double> r = roots(B[dim]);
             for(int i = 0; i < r.size(); i++)
                 draw_cross(cr, B(r[i]));
-            r = roots(B[dim] - BezOrd(width/4));
+            r = roots(B[dim] - Linear(width/4));
             for(int i = 0; i < r.size(); i++)
                 draw_cross(cr, B(r[i]));
         }

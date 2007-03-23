@@ -249,8 +249,8 @@ double Laguerre_internal(SBasis const & p,
     quad_root = false;
     while(a > tol) {
         //std::cout << "xk = " << xk << std::endl;
-        BezOrd b = p.back();
-        BezOrd d(0), f(0);
+        Linear b = p.back();
+        Linear d(0), f(0);
         double err = fabs(b);
         double abx = fabs(xk);
         for(int j = p.size()-2; j >= 0; j--) {
@@ -303,8 +303,8 @@ void subdiv_sbasis(SBasis const & s,
         return;
     }
     double middle = (left + right)/2;
-    subdiv_sbasis(compose(s, BezOrd(0, 0.5)), roots, left, middle);
-    subdiv_sbasis(compose(s, BezOrd(0.5, 1.)), roots, middle, right);
+    subdiv_sbasis(compose(s, Linear(0, 0.5)), roots, left, middle);
+    subdiv_sbasis(compose(s, Linear(0.5, 1.)), roots, middle, right);
 }
 
 // It is faster to use the bernstein root finder for small degree polynomials (<100?.

@@ -39,17 +39,17 @@
 using namespace boost::python;
 
 // helpers for bezord
-tuple bezord_to_tuple(Geom::BezOrd const& b)
+tuple bezord_to_tuple(Geom::Linear const& b)
 {
     return make_tuple(b[0], b[1]);
 }
 
-Geom::BezOrd tuple_to_bezord(boost::python::tuple const& t)
+Geom::Linear tuple_to_bezord(boost::python::tuple const& t)
 {
-    return Geom::BezOrd(extract<double>(t[0]), extract<double>(t[1]));
+    return Geom::Linear(extract<double>(t[0]), extract<double>(t[1]));
 }
 
-str bezord_repr(Geom::BezOrd const& b)
+str bezord_repr(Geom::Linear const& b)
 {
     return str("<" + str(b[0]) + ", " + str(b[1]) + ">");
 }
@@ -61,19 +61,19 @@ Geom::SBasis (*derivative_sbasis)(Geom::SBasis const &) = &Geom::derivative;
 
 void wrap_sbasis() {
     //s-basis.h
-    class_<Geom::BezOrd>("BezOrd", init<double, double>())
+    class_<Geom::Linear>("Linear", init<double, double>())
         .def("__str__", bezord_repr)
         .def("__repr__", bezord_repr)
-        .def("__getitem__", python_getitem<Geom::BezOrd,double,2>)
+        .def("__getitem__", python_getitem<Geom::Linear,double,2>)
         .def("tuple", bezord_to_tuple)
 
         .def("from_tuple", tuple_to_bezord)
         .staticmethod("from_tuple")
 
-        .def("point_at", &Geom::BezOrd::point_at)
-        .def("apply", &Geom::BezOrd::apply)
-        .def("zero", &Geom::BezOrd::zero)
-        .def("is_finite", &Geom::BezOrd::is_finite)
+        .def("point_at", &Geom::Linear::point_at)
+        .def("apply", &Geom::Linear::apply)
+        .def("zero", &Geom::Linear::zero)
+        .def("is_finite", &Geom::Linear::is_finite)
 
         .def(-self)
         .def(self + self)
@@ -83,11 +83,11 @@ void wrap_sbasis() {
         .def(self == self)
         .def(self != self)
         .def(self * self)
-        .def("reverse", ((Geom::BezOrd (*)(Geom::BezOrd const &b))&Geom::reverse))
+        .def("reverse", ((Geom::Linear (*)(Geom::Linear const &b))&Geom::reverse))
     ;
-    implicitly_convertible<Geom::BezOrd,tuple>();
+    implicitly_convertible<Geom::Linear,tuple>();
 // TODO: explain why this gives a compile time error
-//    implicitly_convertible<tuple,Geom::BezOrd>();
+//    implicitly_convertible<tuple,Geom::Linear>();
 
     // needed for roots
     class_<std::vector<double> >("DoubleVec")
@@ -97,8 +97,8 @@ void wrap_sbasis() {
         .def(vector_indexing_suite<std::vector<Geom::Point> >())
     ;
     // sbasis is a subclass of
-    class_<std::vector<Geom::BezOrd> >("BezOrdVec")
-        .def(vector_indexing_suite<std::vector<Geom::BezOrd> >())
+    class_<std::vector<Geom::Linear> >("LinearVec")
+        .def(vector_indexing_suite<std::vector<Geom::Linear> >())
     ;
 
     def("shift", (Geom::SBasis (*)(Geom::SBasis const &a, int sh))&Geom::shift);
@@ -117,7 +117,7 @@ void wrap_sbasis() {
     def("bounds", &Geom::bounds);
     def("roots", &Geom::roots);
 
-    class_<Geom::SBasis, bases<std::vector<Geom::BezOrd> > >("SBasis")
+    class_<Geom::SBasis, bases<std::vector<Geom::Linear> > >("SBasis")
         .def(self_ns::str(self))
         .def(self + self)
         .def(self - self)
@@ -126,14 +126,14 @@ void wrap_sbasis() {
         .def("tail_eror", &Geom::SBasis::tail_error)
         .def("truncate", &Geom::SBasis::truncate)
         .def("is_finite", &Geom::SBasis::is_finite)
-        .def(Geom::BezOrd() - self)
+        .def(Geom::Linear() - self)
         .def(self += self)
         .def(self -= self)
-        .def(self += Geom::BezOrd())
-        .def(self -= Geom::BezOrd())
+        .def(self += Geom::Linear())
+        .def(self -= Geom::Linear())
         .def(self += float())
         .def(self -= float())
-        .def(Geom::BezOrd() + self)
+        .def(Geom::Linear() + self)
         .def(float() + self)
         .def(self * self)
         .def(float() * self)

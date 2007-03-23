@@ -28,8 +28,8 @@ class Clothoid: public Toy {
         *notify << "[" << a0 << ", " << a1 << "]";
         
         D2<SBasis> B;
-        BezOrd bo = BezOrd(a0*6,a1*6);
-        SBasis t2 = BezOrd(0,1);
+        Linear bo = Linear(a0*6,a1*6);
+        SBasis t2 = Linear(0,1);
         t2 = t2*t2;
         B[0] = compose(cos(bo,6), t2);
         B[1] = compose(sin(bo,6), t2);

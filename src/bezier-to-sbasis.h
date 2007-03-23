@@ -39,8 +39,8 @@ namespace Geom{
 template <typename T, unsigned order>
 struct bezier_to_sbasis_impl {
     static inline D2<SBasis> compute(T const &handles) {
-        return multiply(BezOrd(1, 0), bezier_to_sbasis_impl<T, order-1>::compute(handles)) +
-               multiply(BezOrd(0, 1), bezier_to_sbasis_impl<T, order-1>::compute(handles+1));
+        return multiply(Linear(1, 0), bezier_to_sbasis_impl<T, order-1>::compute(handles)) +
+               multiply(Linear(0, 1), bezier_to_sbasis_impl<T, order-1>::compute(handles+1));
     }
 };
 
@@ -49,7 +49,7 @@ struct bezier_to_sbasis_impl<T, 1> {
     static inline D2<SBasis> compute(T const &handles) {
         D2<SBasis> mdsb;
         for(unsigned d = 0 ; d < 2; d++) {
-            mdsb[d] = BezOrd(handles[0][d], handles[1][d]);
+            mdsb[d] = Linear(handles[0][d], handles[1][d]);
         }
         return mdsb;
     }
@@ -60,7 +60,7 @@ struct bezier_to_sbasis_impl<T, 0> {
     static inline D2<SBasis> compute(T const &handles) {
         D2<SBasis> mdsb;
         for(unsigned d = 0 ; d < 2; d++) {
-            mdsb[d] = BezOrd(handles[0][d], handles[0][d]);
+            mdsb[d] = Linear(handles[0][d], handles[0][d]);
         }
         return mdsb;
     }

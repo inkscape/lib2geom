@@ -16,7 +16,7 @@
 using std::vector;
 using namespace Geom;
 
-BezOrd z0(0.5,1.);
+Linear z0(0.5,1.);
 
 unsigned total_pieces;
 
@@ -53,12 +53,12 @@ class Conic3: public Toy {
         e_a_h = handles;
         //e_a_h.resize(4);
         
-        SBasis one = BezOrd(1, 1);
+        SBasis one = Linear(1, 1);
         D2<SBasis> B;
         double alpha = M_PI;
-        SBasis C = cos(BezOrd(0, alpha), 10);
-        SBasis S = sin(BezOrd(0, alpha), 10);
-        SBasis X(BezOrd(0,alpha));
+        SBasis C = cos(Linear(0, alpha), 10);
+        SBasis S = sin(Linear(0, alpha), 10);
+        SBasis X(Linear(0,alpha));
         SBasis sinC = X - S;
         SBasis cosC = one - C;
         //SBasis tanC = divide(sinC, cosC, 10);
@@ -70,7 +70,7 @@ class Conic3: public Toy {
         SBasis Z[4] = {Z0, Z1, Z2, Z3};
         
         for(unsigned dim  = 0; dim < 2; dim++) {
-            B[dim] = BezOrd(0,0);
+            B[dim] = Linear(0,0);
             for(unsigned i  = 0; i < 4; i++) {
                 B[dim] += e_a_h[i][dim]*Z[i];
             }

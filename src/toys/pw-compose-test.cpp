@@ -12,7 +12,7 @@ using namespace Geom;
 static void cairo_pw(cairo_t *cr, pw_sb p, double time_scale=1) {
     for(int i = 0; i < p.size(); i++) {
         D2<SBasis> B;
-        B[0] = BezOrd(p.cuts[i]*time_scale, p.cuts[i+1]*time_scale);
+        B[0] = Linear(p.cuts[i]*time_scale, p.cuts[i+1]*time_scale);
         B[1] = p[i];
         cairo_md_sb(cr, B);
     }
@@ -45,7 +45,7 @@ class PwToy: public Toy {
 	
         cairo_set_source_rgba (cr, 0.2, 0.2, 0.2, 1);
         D2<SBasis> foo = Geom::bezier_to_sbasis<3>(handles.begin()+hdle_idx);
-        SBasis g = foo[0] - BezOrd(150);
+        SBasis g = foo[0] - Linear(150);
         cairo_md_sb(cr, foo);
 	    for(int i=0;i<20;i++){
             double t=i/20.;

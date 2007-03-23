@@ -20,21 +20,21 @@ D2<SBasis> integral(D2<SBasis> const & a) {
 SBasis L2(D2<SBasis> const & a, int k) { return sqrt(dot(a, a), k); }
 double L2(D2<double> const & a) { return hypot(a[0], a[1]); }
 
-D2<SBasis> multiply(BezOrd const & a, D2<SBasis> const & b) {
+D2<SBasis> multiply(Linear const & a, D2<SBasis> const & b) {
     D2<SBasis> r;
     for(unsigned i = 0; i < 2; i++)
         r[i] = multiply(a, b[i]);
     return r;
 }
 
-D2<SBasis> operator*(BezOrd const & a, D2<SBasis> const & b) {
+D2<SBasis> operator*(Linear const & a, D2<SBasis> const & b) {
     return multiply(a, b);
 }
 
 D2<SBasis> operator+(D2<SBasis> const & a, Point b) {
     D2<SBasis> r;
     for(unsigned i = 0; i < 2; i++)
-        r[i] = a[i] + BezOrd(b[i]);
+        r[i] = a[i] + Linear(b[i]);
     return r;
 }
 
