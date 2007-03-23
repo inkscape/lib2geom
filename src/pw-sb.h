@@ -8,15 +8,18 @@ using namespace std;
 
 namespace Geom {
 
-class pw_sb {
+template <typename T> class Piecewise;
+
+template <>
+class Piecewise<SBasis> {
   public:
     vector<double> cuts;
     vector<SBasis> segs;
     //segs[i] stretches from cuts[i] to cuts[i+1].
 
-    pw_sb() {}
+    Piecewise() {}
 
-    explicit pw_sb(const SBasis &sb) {
+    explicit Piecewise(const SBasis &sb) {
         push_cut(0.);
         push_seg(sb);
         push_cut(1.);
@@ -83,14 +86,14 @@ class pw_sb {
             cuts[i] = (cuts[i] - cf) * s + o;
     }
 
-    inline void concat(const pw_sb other) {
+    inline void concat(const Piecewise &other) {
         if(empty()) return;
         double t = cuts.back() - other.cuts.front();
         for(int i = 0; i < other.size(); i++)
             push(other[i], other.cuts[i + 1] + t);
     }
 
-    inline void continuousConcat(const pw_sb other) {
+    inline void continuousConcat(const Piecewise &other) {
         if(empty()) return;
         double t = cuts.back() - other.cuts.front(), y = segs.back()[0][1] - other.segs.front()[0][0];
         for(int i = 0; i < other.size(); i++)
@@ -99,6 +102,8 @@ class pw_sb {
 
     bool invariants() const;
 };
+
+typedef Piecewise<SBasis> pw_sb;
 
 pw_sb partition(const pw_sb &t, vector<double> const &c);
 pw_sb portion(const pw_sb &a, double from, double to);
