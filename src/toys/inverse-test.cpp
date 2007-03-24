@@ -28,13 +28,13 @@ static void plot_flip(cairo_t* cr, SBasis const &B,double vscale=1,double a=0,do
   cairo_md_sb(cr, plot);
   cairo_stroke(cr);
 }
-static void plot(cairo_t* cr, pw_sb const &f,double vscale=1){
+static void plot(cairo_t* cr, Piecewise<SBasis> const &f,double vscale=1){
   for (int i=0;i<f.size();i++){
       plot(cr,f.segs[i],vscale,f.cuts[i],f.cuts[i+1]);
       draw_cross(cr,Geom::Point(150+300*f.cuts[i],450-vscale*f.segs[i][0][0]));
   }
 }
-static void plot_flip(cairo_t* cr, pw_sb const &f,double vscale=1){
+static void plot_flip(cairo_t* cr, Piecewise<SBasis> const &f,double vscale=1){
   for (int i=0;i<f.size();i++){
       plot_flip(cr,f.segs[i],vscale,f.cuts[i],f.cuts[i+1]);
       draw_cross(cr,Geom::Point(150+vscale*f.segs[i][0][0],450-300*f.cuts[i]));
@@ -71,9 +71,9 @@ static SBasis my_inverse(SBasis f, int order){
     return(g);
 }
 
-static pw_sb pw_inverse(SBasis const &f, int order,double tol=.1,int depth=0){
+static Piecewise<SBasis> pw_inverse(SBasis const &f, int order,double tol=.1,int depth=0){
     SBasis g=SBasis(Linear(0,1)),r;
-    pw_sb res,res1,res2;
+    Piecewise<SBasis> res,res1,res2;
     
     //std::cout<<"depth: "<<depth<<std::endl;
     g=my_inverse(f,order);
@@ -139,11 +139,11 @@ class InverseTester: public Toy {
       *notify<<" (keep it monotonic!)"<<std::endl;
       *notify<<"red=flipped inverse; should be the same as the blue one."<<std::endl;
       
-      pw_sb g=pw_inverse(f,3);
+      Piecewise<SBasis> g=pw_inverse(f,3);
       cairo_set_line_width (cr, 1);
       cairo_set_source_rgba (cr, 0.8, 0., 0., 1);
       plot(cr,g,300);	
-      pw_sb h=compose(g,f); 
+      Piecewise<SBasis> h=compose(g,f); 
       cairo_set_line_width (cr, 1);
       cairo_set_source_rgba (cr, 0., 0.8, 0., 1);
       plot(cr,h,300);

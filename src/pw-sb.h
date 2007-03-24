@@ -103,39 +103,37 @@ class Piecewise<SBasis> {
     bool invariants() const;
 };
 
-typedef Piecewise<SBasis> pw_sb;
+Piecewise<SBasis> partition(const Piecewise<SBasis> &t, vector<double> const &c);
+Piecewise<SBasis> portion(const Piecewise<SBasis> &a, double from, double to);
 
-pw_sb partition(const pw_sb &t, vector<double> const &c);
-pw_sb portion(const pw_sb &a, double from, double to);
+vector<double> roots(const Piecewise<SBasis> &a);
 
-vector<double> roots(const pw_sb &a);
+inline Piecewise<SBasis> operator+(Piecewise<SBasis> const &a) { return a; }
 
-inline pw_sb operator+(pw_sb const &a) { return a; }
+Piecewise<SBasis> operator+(Piecewise<SBasis> const &a, double b);
+Piecewise<SBasis> operator-(Piecewise<SBasis> const &a);
 
-pw_sb operator+(pw_sb const &a, double b);
-pw_sb operator-(pw_sb const &a);
+Piecewise<SBasis> operator+=(Piecewise<SBasis>& a, double b);
+Piecewise<SBasis> operator-=(Piecewise<SBasis>& a, double b);
+Piecewise<SBasis> operator*=(Piecewise<SBasis>& a, double b);
+Piecewise<SBasis> operator/=(Piecewise<SBasis>& a, double b);
 
-pw_sb operator+=(pw_sb& a, double b);
-pw_sb operator-=(pw_sb& a, double b);
-pw_sb operator*=(pw_sb& a, double b);
-pw_sb operator/=(pw_sb& a, double b);
+Piecewise<SBasis> operator+(Piecewise<SBasis> const &a, Piecewise<SBasis> const &b);
+Piecewise<SBasis> operator-(Piecewise<SBasis> const &a, Piecewise<SBasis> const &b);
+Piecewise<SBasis> multiply(Piecewise<SBasis> const &a, Piecewise<SBasis> const &b);
+Piecewise<SBasis> divide(Piecewise<SBasis> const &a, Piecewise<SBasis> const &b, int k);
 
-pw_sb operator+(pw_sb const &a, pw_sb const &b);
-pw_sb operator-(pw_sb const &a, pw_sb const &b);
-pw_sb multiply(pw_sb const &a, pw_sb const &b);
-pw_sb divide(pw_sb const &a, pw_sb const &b, int k);
+Piecewise<SBasis> compose(Piecewise<SBasis> const &a, SBasis const &b);
+Piecewise<SBasis> compose(Piecewise<SBasis> const &a, Piecewise<SBasis> const &b);
 
-pw_sb compose(pw_sb const &a, SBasis const &b);
-pw_sb compose(pw_sb const &a, pw_sb const &b);
-
-inline pw_sb operator*(pw_sb const &a, pw_sb const &b) { multiply(a, b); }
-inline pw_sb operator*=(pw_sb &a, pw_sb const &b) { 
+inline Piecewise<SBasis> operator*(Piecewise<SBasis> const &a, Piecewise<SBasis> const &b) { multiply(a, b); }
+inline Piecewise<SBasis> operator*=(Piecewise<SBasis> &a, Piecewise<SBasis> const &b) { 
     a = multiply(a, b);
     return a;
 }
 
-pw_sb integral(pw_sb const &a);
-pw_sb derivative(pw_sb const &a);
+Piecewise<SBasis> integral(Piecewise<SBasis> const &a);
+Piecewise<SBasis> derivative(Piecewise<SBasis> const &a);
 
 }
 

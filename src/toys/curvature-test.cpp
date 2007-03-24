@@ -42,7 +42,7 @@ class CurvatureTester: public Toy {
 	cairo_stroke(cr);
 
 	double t=std::max(0.,std::min(1.,(handles[4][0]-150)/300.));
-        pw_sb K = curvature(B);
+        Piecewise<SBasis> K = curvature(B);
         
         for(int ix = 0; ix < K.segs.size(); ix++) {
             D2<SBasis> Kxy;

@@ -18,5 +18,5 @@ void cairo_md_sb_handles(cairo_t *cr, Geom::D2<Geom::SBasis> const &p);
 void cairo_2dsb2d(cairo_t* cr, Geom::D2<Geom::SBasis2d> const &sb2, Geom::Point dir, double width);
 void cairo_sb2d(cairo_t* cr, Geom::SBasis2d const &sb2, Geom::Point dir, double width);
 
-void cairo_md_pw(cairo_t *cr, Geom::D2<Geom::pw_sb> const &p);
+void cairo_md_pw(cairo_t *cr, Geom::D2<Geom::Piecewise<Geom::SBasis> > const &p);
 #endif

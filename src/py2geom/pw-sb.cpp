@@ -37,14 +37,14 @@
 
 using namespace boost::python;
 
-Geom::pw_sb (*portion_pwsb)(const Geom::pw_sb &, double, double) = &Geom::portion;
-std::vector<double> (*roots_pwsb)(const Geom::pw_sb &) = &Geom::roots;
-Geom::pw_sb (*multiply_pwsb)(Geom::pw_sb const &, Geom::pw_sb const &) = &Geom::multiply;
-Geom::pw_sb (*divide_pwsb)(Geom::pw_sb const &, Geom::pw_sb const &, int) = &Geom::divide;
-Geom::pw_sb (*compose_pwsb_sb)(Geom::pw_sb const &, Geom::SBasis const &) = &Geom::compose;
-Geom::pw_sb (*compose_pwsb)(Geom::pw_sb const &, Geom::pw_sb const &) = &Geom::compose;
+Geom::Piecewise<SBasis> (*portion_pwsb)(const Geom::Piecewise<SBasis> &, double, double) = &Geom::portion;
+std::vector<double> (*roots_pwsb)(const Geom::Piecewise<SBasis> &) = &Geom::roots;
+Geom::Piecewise<SBasis> (*multiply_pwsb)(Geom::Piecewise<SBasis> const &, Geom::Piecewise<SBasis> const &) = &Geom::multiply;
+Geom::Piecewise<SBasis> (*divide_pwsb)(Geom::Piecewise<SBasis> const &, Geom::Piecewise<SBasis> const &, int) = &Geom::divide;
+Geom::Piecewise<SBasis> (*compose_pwsb_sb)(Geom::Piecewise<SBasis> const &, Geom::SBasis const &) = &Geom::compose;
+Geom::Piecewise<SBasis> (*compose_pwsb)(Geom::Piecewise<SBasis> const &, Geom::Piecewise<SBasis> const &) = &Geom::compose;
 
-Geom::SBasis getitem_pwsb(Geom::pw_sb const &p, int const index) {
+Geom::SBasis getitem_pwsb(Geom::Piecewise<SBasis> const &p, int const index) {
     unsigned D = p.size();
     int i = index;
     if (index < 0)
@@ -58,7 +58,7 @@ Geom::SBasis getitem_pwsb(Geom::pw_sb const &p, int const index) {
     return p[i];
 }
 
-double call_pwsb(Geom::pw_sb const &p, double t) {
+double call_pwsb(Geom::Piecewise<SBasis> const &p, double t) {
     return p(t);
 }
 
@@ -75,25 +75,25 @@ void wrap_pwsb() {
     def("compose", compose_pwsb_sb);
     def("compose", compose_pwsb);
     
-    class_<Geom::pw_sb>("pw_sb")
+    class_<Geom::Piecewise<SBasis> >("Piecewise<SBasis>")
         .def("__getitem__", getitem_pwsb)
         .def("__call__", call_pwsb)
-        .def_readonly("cuts", &Geom::pw_sb::cuts)
-        .def_readonly("segs", &Geom::pw_sb::segs)
-        .def("size", &Geom::pw_sb::size)
-        .def("empty", &Geom::pw_sb::empty)
-        .def("push", &Geom::pw_sb::push)
-        .def("push_cut", &Geom::pw_sb::push_cut)
-        .def("push_seg", &Geom::pw_sb::push_seg)
+        .def_readonly("cuts", &Geom::Piecewise<SBasis>::cuts)
+        .def_readonly("segs", &Geom::Piecewise<SBasis>::segs)
+        .def("size", &Geom::Piecewise<SBasis>::size)
+        .def("empty", &Geom::Piecewise<SBasis>::empty)
+        .def("push", &Geom::Piecewise<SBasis>::push)
+        .def("push_cut", &Geom::Piecewise<SBasis>::push_cut)
+        .def("push_seg", &Geom::Piecewise<SBasis>::push_seg)
 
-        .def("segn", &Geom::pw_sb::segn)
-        .def("segt", &Geom::pw_sb::segt)
-        .def("offsetDomain", &Geom::pw_sb::offsetDomain)
-        .def("scaleDomain", &Geom::pw_sb::scaleDomain)
-        .def("setDomain", &Geom::pw_sb::setDomain)
-        .def("concat", &Geom::pw_sb::concat)
-        .def("continuousConcat", &Geom::pw_sb::continuousConcat)
-        .def("invariants", &Geom::pw_sb::invariants)
+        .def("segn", &Geom::Piecewise<SBasis>::segn)
+        .def("segt", &Geom::Piecewise<SBasis>::segt)
+        .def("offsetDomain", &Geom::Piecewise<SBasis>::offsetDomain)
+        .def("scaleDomain", &Geom::Piecewise<SBasis>::scaleDomain)
+        .def("setDomain", &Geom::Piecewise<SBasis>::setDomain)
+        .def("concat", &Geom::Piecewise<SBasis>::concat)
+        .def("continuousConcat", &Geom::Piecewise<SBasis>::continuousConcat)
+        .def("invariants", &Geom::Piecewise<SBasis>::invariants)
        
         .def(+self)
         .def(self + double()) 

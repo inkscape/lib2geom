@@ -178,7 +178,7 @@ unsigned sbasisSize(D2<SBasis> const & a);
 double tailError(D2<SBasis> const & a, unsigned tail);
 bool isFinite(D2<SBasis> const & a);
 
-vector<D2<SBasis> > sectionize(D2<pw_sb> const &a, vector<double> &cuts);
+vector<D2<SBasis> > sectionize(D2<Piecewise<SBasis> > const &a, vector<double> &cuts);
 
 class Rect;
 

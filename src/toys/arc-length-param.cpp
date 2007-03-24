@@ -16,7 +16,7 @@
 using std::vector;
 using namespace Geom;
 
-static void dot_plot(cairo_t *cr, D2<pw_sb> const &M, double space=10){
+static void dot_plot(cairo_t *cr, D2<Piecewise<SBasis> > const &M, double space=10){
     double t = M[0].cuts.front();
     while (t < M[0].cuts.back()){
         draw_handle(cr, M(t));
@@ -71,12 +71,12 @@ static bool compose_inverse(SBasis const &g,SBasis const & x, SBasis &f, int ord
     return(true);
 }
 
-static D2<pw_sb> arc_length_parametrization(D2<SBasis> const &M){
-    D2<pw_sb> u;
+static D2<Piecewise<SBasis> > arc_length_parametrization(D2<SBasis> const &M){
+    D2<Piecewise<SBasis> > u;
     u[0].push_cut(0);
     u[1].push_cut(0);
 
-    pw_sb s = arc_length_sb(M);
+    Piecewise<SBasis> s = arc_length_sb(M);
     std::cout<<"nb pieces:"<<s.size()<<std::endl;
     for (int i=0; i < s.size();i++){
         double t0=s.cuts[i],t1=s.cuts[i+1];
@@ -101,16 +101,16 @@ class LengthTester: public Toy {
 	      int width, int height, bool save) {
     
       D2<SBasis> B = bezier_to_sbasis<SIZE-1>(handles.begin());
-      D2<pw_sb>d2B;
-      d2B[0]=pw_sb(B[0]);
-      d2B[1]=pw_sb(B[1]);
+      D2<Piecewise<SBasis> >d2B;
+      d2B[0]=Piecewise<SBasis>(B[0]);
+      d2B[1]=Piecewise<SBasis>(B[1]);
 
       cairo_set_line_width (cr, .5);
       cairo_set_source_rgba (cr, 0., 0.5, 0., 1);
       cairo_md_sb(cr, B);
       cairo_stroke(cr);
 
-      D2<pw_sb> U = arc_length_parametrization(B);
+      D2<Piecewise<SBasis> > U = arc_length_parametrization(B);
       cairo_set_source_rgba (cr, 0., 0., 0.9, 1);
       dot_plot(cr,U);
       cairo_stroke(cr);

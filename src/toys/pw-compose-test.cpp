@@ -9,7 +9,7 @@
 
 using namespace Geom;
 
-static void cairo_pw(cairo_t *cr, pw_sb p, double time_scale=1) {
+static void cairo_pw(cairo_t *cr, Piecewise<SBasis> p, double time_scale=1) {
     for(int i = 0; i < p.size(); i++) {
         D2<SBasis> B;
         B[0] = Linear(p.cuts[i]*time_scale, p.cuts[i+1]*time_scale);
@@ -24,7 +24,7 @@ class PwToy: public Toy {
         cairo_set_source_rgba (cr, 0., 0.5, 0, 1);
         cairo_set_line_width (cr, 1);
        
-        D2<pw_sb> pws;
+        D2<Piecewise<SBasis> > pws;
         int hdle_idx=0;
         for(int i = 0; i < segs; i++) {
             D2<SBasis> foo = Geom::bezier_to_sbasis<3>(handles.begin()+hdle_idx);
@@ -57,7 +57,7 @@ class PwToy: public Toy {
         
         cairo_stroke(cr);
         cairo_set_source_rgba (cr, 0.9, 0., 0., 1);
-        D2<pw_sb> res = compose(pws, pw_sb(g));
+        D2<Piecewise<SBasis> > res = compose(pws, Piecewise<SBasis>(g));
         cairo_md_pw(cr, res);
         for(int i=0;i<20;i++){
             double t=(res[0].cuts.back()-res[0].cuts.front())*i/20.;

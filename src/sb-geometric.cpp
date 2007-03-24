@@ -247,10 +247,10 @@ Geom::arc_length(D2<SBasis> const M,
  * functions.
  **/
 
-Geom::pw_sb
+Geom::Piecewise<SBasis>
 Geom::arc_length_sb(D2<SBasis> const M,
                     double tol) {
-    Geom::pw_sb result;
+    Geom::Piecewise<SBasis> result;
     D2<SBasis> dM=derivative(M);
     std::vector<D2<SBasis> > uspeed;
     uspeed=unit_vector(dM,result.cuts,tol);
@@ -271,11 +271,11 @@ Geom::arc_length_sb(D2<SBasis> const M,
 }
 
 // incomplete.
-Geom::pw_sb
+Geom::Piecewise<SBasis>
 Geom::curvature(D2<SBasis> const M,
                 double tol) {
     D2<SBasis> dM=derivative(M);
-    pw_sb result;
+    Piecewise<SBasis> result;
     std::vector<D2<SBasis> > cv = unit_vector(dM,result.cuts,tol);
     double t0=0.,t1;
     double base = 0;

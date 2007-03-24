@@ -346,15 +346,15 @@ public:
   Rect boundsFast() const;
   Rect boundsExact() const;
 
-  D2<pw_sb> toMdSb() const {
+  D2<Piecewise<SBasis> > toMdSb() const {
     int i = 0;
-    pw_sb x, y;
+    Piecewise<SBasis> x, y;
     x.push_cut(i); y.push_cut(i);
     for(const_iterator it = begin(); it != end(); ++it, i++) {
       D2<SBasis> foo = (*it).sbasis();
       x.push(foo[0], i + 1); y.push(foo[1], i + 1);
     }
-    return D2<pw_sb>(x, y);
+    return D2<Piecewise<SBasis> >(x, y);
   }
 
   void insert(iterator pos, Curve const &curve) {

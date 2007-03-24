@@ -40,11 +40,11 @@ arc_length(D2<SBasis> const M,
            double tol=.1);
 
 
-pw_sb
+Piecewise<SBasis>
 arc_length_sb(D2<SBasis> const M, 
               double tol=.1);
 
-pw_sb
+Piecewise<SBasis>
 curvature(D2<SBasis> const M, 
           double tol=.1);
 

@@ -69,12 +69,12 @@ class DistortToy: public Toy {
                     sb2[dim][i][j] *= 3;
 
          //**** FRESH STARTS HERE
-        //Theoretically we could concatenate a md_pw_sb and do it in one go
+        //Theoretically we could concatenate a md_Piecewise<SBasis> and do it in one go
         for(int i = 0; i < p.size(); i++) {
-            D2<pw_sb> foo = p[i].toMdSb();
+            D2<Piecewise<SBasis> > foo = p[i].toMdSb();
             foo *= 1./20;
-            //foo[1] = foo[1] + (pw_sb)portion(sin(Linear(0,3.14), 4), 0, foo[0].cuts.back());
-            D2<pw_sb> out;          
+            //foo[1] = foo[1] + (Piecewise<SBasis>)portion(sin(Linear(0,3.14), 4), 0, foo[0].cuts.back());
+            D2<Piecewise<SBasis> > out;          
             //out[0] = compose(sb2[0], foo);
             //out[1] = compose(sb2[1], foo);
             //cairo_md_pw(cr, out);

@@ -9,7 +9,7 @@
 using namespace Geom;
 using namespace std;
 
-void cairo_pw(cairo_t *cr, pw_sb p) {
+void cairo_pw(cairo_t *cr, Piecewise<SBasis> p) {
     for(int i = 0; i < p.size(); i++) {
         D2<SBasis> B;
         B[0] = Linear(p.cuts[i], p.cuts[i+1]);
@@ -46,7 +46,7 @@ class PwToy: public Toy {
             }
         }
         
-        pw_sb pws[curves];
+        Piecewise<SBasis> pws[curves];
         for(int a = 0; a < curves; a++) {
             unsigned base = a * handles_per_curve;
             for(int i = 0; i < handles_per_curve; i+=4) {
@@ -65,14 +65,14 @@ class PwToy: public Toy {
         new_cuts.push_back(50);
         new_cuts.push_back(175);
         new_cuts.push_back(550);
-        pw_sb pw_out = partition(pws[0], new_cuts);
+        Piecewise<SBasis> pw_out = partition(pws[0], new_cuts);
         cairo_horiz(cr, pw_out.cuts);
         assert(pw_out.invariants()); */
         cairo_pw(cr, pws[0] + pws[1]);
         cairo_stroke(cr);
         
        /* cairo_horiz(cr, roots(pws[0]));
-        pw_sb pw_out = portion(pws[0], handles[handles.size() - 2][0], handles[handles.size() - 1][0]);
+        Piecewise<SBasis> pw_out = portion(pws[0], handles[handles.size() - 2][0], handles[handles.size() - 1][0]);
         cairo_set_source_rgba (cr, 0, .5, 0, .25);
         cairo_set_line_width(cr, 3);
         cairo_pw(cr, pw_out);

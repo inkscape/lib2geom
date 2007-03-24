@@ -54,7 +54,7 @@ public:
         {
             D2<SBasis> plot;
 
-            pw_sb als = arc_length_sb(B);
+            Piecewise<SBasis> als = arc_length_sb(B);
             double t0 = 0, t1;
             for(int i = 0; i < als.segs.size();i++){
                 t1 = als.cuts[i+1];
@@ -67,9 +67,9 @@ public:
                 t0 = t1;
             }
             
-            D2<pw_sb> grf;
-            grf.f[1] = als; // pw_sb(SBasis(Linear(height-5))) - 
-            grf.f[0] = pw_sb(SBasis(Linear(0, width)));
+            D2<Piecewise<SBasis> > grf;
+            grf.f[1] = als; // Piecewise<SBasis>(SBasis(Linear(height-5))) - 
+            grf.f[0] = Piecewise<SBasis>(SBasis(Linear(0, width)));
             
             cairo_md_pw(cr, grf);
         }

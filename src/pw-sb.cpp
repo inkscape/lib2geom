@@ -5,9 +5,9 @@
 namespace Geom {
 
 /**
- * returns true if the pw_sb meets some basic invariants.
+ * returns true if the Piecewise<SBasis> meets some basic invariants.
  */
-bool pw_sb::invariants() const {
+bool Piecewise<SBasis>::invariants() const {
     // segs between cuts
     if(!(segs.size() + 1 == cuts.size() || (segs.empty() && cuts.empty())))
         return false;
@@ -18,33 +18,33 @@ bool pw_sb::invariants() const {
     return true;
 }
 
-/**SBasis elem_portion(const pw_sb &a, int i, double from, double to);
- * returns a portion of a piece of a pw_sb, given the piece's index and a to/from time.
+/**SBasis elem_portion(const Piecewise<SBasis> &a, int i, double from, double to);
+ * returns a portion of a piece of a Piecewise<SBasis>, given the piece's index and a to/from time.
  */
-SBasis elem_portion(const pw_sb &a, int i, double from, double to) {
+SBasis elem_portion(const Piecewise<SBasis> &a, int i, double from, double to) {
     assert(i < a.size());
     double rwidth = 1 / (a.cuts[i+1] - a.cuts[i]);
     return portion( a[i], (from - a.cuts[i]) * rwidth, (to - a.cuts[i]) * rwidth );
 }
 
-/**pw_sb partition(const pw_sb &pw, vector<double> const &c);
- * Further subdivides the pw_sb such that there is a cut at every value in c.
+/**Piecewise<SBasis> partition(const Piecewise<SBasis> &pw, vector<double> const &c);
+ * Further subdivides the Piecewise<SBasis> such that there is a cut at every value in c.
  * Precondition: c sorted lower to higher.
  * 
- * //Given pw_sb a and b:
- * pw_sb ac = a.partition(b.cuts);
- * pw_sb bc = b.partition(a.cuts);
+ * //Given Piecewise<SBasis> a and b:
+ * Piecewise<SBasis> ac = a.partition(b.cuts);
+ * Piecewise<SBasis> bc = b.partition(a.cuts);
  * //ac.cuts should be equivalent to bc.cuts
  */
-pw_sb partition(const pw_sb &pw, vector<double> const &c) {
-    if(c.empty()) return pw_sb(pw);
+Piecewise<SBasis> partition(const Piecewise<SBasis> &pw, vector<double> const &c) {
+    if(c.empty()) return Piecewise<SBasis>(pw);
 
-    pw_sb ret = pw_sb();
+    Piecewise<SBasis> ret = Piecewise<SBasis>();
     //just a bit of optimizing reservation
     ret.cuts.reserve(c.size() + pw.cuts.size());
     ret.segs.reserve(c.size() + pw.cuts.size() - 1);
 
-    //0-length pw_sb is like a 0-length sbasis - equal to 0!
+    //0-length Piecewise<SBasis> is like a 0-length sbasis - equal to 0!
     if(pw.empty()) {
         ret.cuts = c;
         for(int i = 0; i < c.size() - 1; i++)
@@ -54,7 +54,7 @@ pw_sb partition(const pw_sb &pw, vector<double> const &c) {
 
     int si = 0, ci = 0;     //Segment index, Cut index
 
-    //if the cuts have something earlier than the pw_sb, add portions of the first segment
+    //if the cuts have something earlier than the Piecewise<SBasis>, add portions of the first segment
     while(c[ci] < pw.cuts.front() && ci < c.size()) {
         bool isLast = (ci == c.size()-1 || c[ci + 1] >= pw.cuts.front());
         ret.push_cut(c[ci]);
@@ -64,7 +64,7 @@ pw_sb partition(const pw_sb &pw, vector<double> const &c) {
 
     ret.push_cut(pw.cuts[0]);
     double prev = pw.cuts[0];    //previous cut
-    //Loop which handles cuts within the pw_sb domain
+    //Loop which handles cuts within the Piecewise<SBasis> domain
     //Should have the cuts = segs + 1 invariant
     while(si < pw.size() && ci <= c.size()) {
         if(ci == c.size() && prev <= pw.cuts[si]) { //cuts exhausted, straight copy the rest
@@ -90,7 +90,7 @@ pw_sb partition(const pw_sb &pw, vector<double> const &c) {
         }
     }
 
-    while(ci < c.size()) { //input cuts extend further than this pw_sb, add sections of zero
+    while(ci < c.size()) { //input cuts extend further than this Piecewise<SBasis>, add sections of zero
         if(c[ci] > prev) {
             ret.push(elem_portion(pw, pw.size() - 1, prev, c[ci]), c[ci]);
             prev = c[ci];
@@ -100,13 +100,13 @@ pw_sb partition(const pw_sb &pw, vector<double> const &c) {
     return ret;
 }
 
-/**pw_sb portion(const pw_sb &pw, double from, double to);
- * Returns a pw_sb with a defined domain of [min(from, to), max(from, to)].
+/**Piecewise<SBasis> portion(const Piecewise<SBasis> &pw, double from, double to);
+ * Returns a Piecewise<SBasis> with a defined domain of [min(from, to), max(from, to)].
  */
-pw_sb portion(const pw_sb &pw, double from, double to) {
-    if(pw.empty()) return pw_sb();
+Piecewise<SBasis> portion(const Piecewise<SBasis> &pw, double from, double to) {
+    if(pw.empty()) return Piecewise<SBasis>();
 
-    pw_sb ret;
+    Piecewise<SBasis> ret;
 
     double temp = from;
     from = min(from, to);
@@ -130,7 +130,7 @@ pw_sb portion(const pw_sb &pw, double from, double to) {
     return ret;
 }
 
-vector<double> roots(const pw_sb &pw) {
+vector<double> roots(const Piecewise<SBasis> &pw) {
     vector<double> ret;
     for(int i = 0; i < pw.size(); i++) {
         vector<double> sr = roots(pw[i]);
@@ -140,46 +140,46 @@ vector<double> roots(const pw_sb &pw) {
     return ret;
 }
 
-pw_sb operator+(pw_sb const &a, double b) {
-    pw_sb ret = pw_sb();
+Piecewise<SBasis> operator+(Piecewise<SBasis> const &a, double b) {
+    Piecewise<SBasis> ret = Piecewise<SBasis>();
     ret.cuts = a.cuts;
     for(int i = 0; i < a.size();i++)
         ret.push_seg(b + a[i]);
     return ret;
 }
 
-pw_sb operator-(pw_sb const &a) {
-    pw_sb ret = pw_sb();
+Piecewise<SBasis> operator-(Piecewise<SBasis> const &a) {
+    Piecewise<SBasis> ret = Piecewise<SBasis>();
     ret.cuts = a.cuts;
     for(int i = 0; i < a.size();i++)
         ret.push_seg(- a[i]);
     return ret;
 }
 
-pw_sb operator+=(pw_sb& a, double b) {
+Piecewise<SBasis> operator+=(Piecewise<SBasis>& a, double b) {
     if(a.empty()) { a.push_cut(0.); a.push(Linear(b), 1.); return a; }
 
     for(int i = 0; i < a.size();i++)
         a[i] += b;
     return a;
 }
-pw_sb operator-=(pw_sb& a, double b) {
+Piecewise<SBasis> operator-=(Piecewise<SBasis>& a, double b) {
     if(a.empty()) { a.push_cut(0.); a.push(Linear(b), 1.); return a; }
 
     for(int i = 0;i < a.size();i++)
         a[i] -= b;
     return a;
 }
-pw_sb operator*=(pw_sb& a, double b) {
-    if(a.empty()) return pw_sb();
+Piecewise<SBasis> operator*=(Piecewise<SBasis>& a, double b) {
+    if(a.empty()) return Piecewise<SBasis>();
 
     for(int i = 0; i < a.size();i++)
         a[i] *= b;
     return a;
 }
-pw_sb operator/=(pw_sb& a, double b) {
+Piecewise<SBasis> operator/=(Piecewise<SBasis>& a, double b) {
     //FIXME: b == 0?
-    if(a.empty()) return pw_sb();
+    if(a.empty()) return Piecewise<SBasis>();
 
     for(int i = 0; i < a.size();i++)
         a[i] /= b;
@@ -187,11 +187,11 @@ pw_sb operator/=(pw_sb& a, double b) {
 }
 
 
-// Semantically-correct zipping of pw_sbs, with an arbitrary operation
+// Semantically-correct zipping of Piecewise<SBasis>s, with an arbitrary operation
 template <typename F>
-inline pw_sb ZipSBWith(F f, pw_sb const &a, pw_sb const &b) {
-    pw_sb pa = partition(a, b.cuts), pb = partition(b, a.cuts);
-    pw_sb ret = pw_sb();
+inline Piecewise<SBasis> ZipSBWith(F f, Piecewise<SBasis> const &a, Piecewise<SBasis> const &b) {
+    Piecewise<SBasis> pa = partition(a, b.cuts), pb = partition(b, a.cuts);
+    Piecewise<SBasis> ret = Piecewise<SBasis>();
     assert(pa.size() == pb.size());
     ret.cuts = pa.cuts;
     for (int i = 0; i < pa.size(); i++)
@@ -209,12 +209,12 @@ struct sbasis_div{
     SBasis op(SBasis const &a, SBasis const &b) {return divide(a, b, k);}
 };
 
-pw_sb operator+(pw_sb const &a, pw_sb const &b) { return ZipSBWith(sbasis_add(), a, b); }
+Piecewise<SBasis> operator+(Piecewise<SBasis> const &a, Piecewise<SBasis> const &b) { return ZipSBWith(sbasis_add(), a, b); }
 
-pw_sb operator-(pw_sb const &a, pw_sb const &b) { return ZipSBWith(sbasis_sub(), a, b); }
+Piecewise<SBasis> operator-(Piecewise<SBasis> const &a, Piecewise<SBasis> const &b) { return ZipSBWith(sbasis_sub(), a, b); }
 
-pw_sb multiply(pw_sb const &a, pw_sb const &b) { return ZipSBWith(sbasis_mul(), a, b); }
-pw_sb divide(pw_sb const &a, pw_sb const &b, int k) { return ZipSBWith(sbasis_div(k), a, b);}
+Piecewise<SBasis> multiply(Piecewise<SBasis> const &a, Piecewise<SBasis> const &b) { return ZipSBWith(sbasis_mul(), a, b); }
+Piecewise<SBasis> divide(Piecewise<SBasis> const &a, Piecewise<SBasis> const &b, int k) { return ZipSBWith(sbasis_div(k), a, b);}
 
 //--Compose---------------
 /* Quiet ugly atm.
@@ -231,13 +231,13 @@ static std::map<double,unsigned> vect_of_vect_to_map(std::vector<std::vector<dou
     return(result);
 }
 
-pw_sb compose(pw_sb const &f, SBasis  const &g){
-  pw_sb result;
+Piecewise<SBasis> compose(Piecewise<SBasis> const &f, SBasis  const &g){
+  Piecewise<SBasis> result;
 
   if (f.size()==0) return result;
   if (f.size()==1){
       double t0 = f.cuts[0], width = f.cuts[1] - t0;
-      return (pw_sb) f.segs[0](compose(Linear(-t0 / width, (1-t0) / width), g));
+      return (Piecewise<SBasis>) f.segs[0](compose(Linear(-t0 / width, (1-t0) / width), g));
   }
 
   //first check bounds...
@@ -246,7 +246,7 @@ pw_sb compose(pw_sb const &f, SBasis  const &g){
   if (M < f.cuts.front() || m > f.cuts.back()){
       int idx = (M < f.cuts[1]) ? 0 : f.cuts.size()-2;
       double t0 = f.cuts[idx], width = f.cuts[idx+1] - t0;
-      return (pw_sb) f.segs[idx](compose(Linear(-t0 / width, (1-t0) / width), g));
+      return (Piecewise<SBasis>) f.segs[idx](compose(Linear(-t0 / width, (1-t0) / width), g));
   }
 
   //-- collect all t / g(t)=f.cuts[idx] for some idx (!= first and last).
@@ -305,10 +305,10 @@ pw_sb compose(pw_sb const &f, SBasis  const &g){
   return(result);
 } 
 
-pw_sb compose(pw_sb const &f, pw_sb const &g){
-  pw_sb result;
+Piecewise<SBasis> compose(Piecewise<SBasis> const &f, Piecewise<SBasis> const &g){
+  Piecewise<SBasis> result;
   for(int i = 0; i < g.segs.size(); i++){
-    pw_sb fgi=compose(f, g.segs[i]);
+    Piecewise<SBasis> fgi=compose(f, g.segs[i]);
     double t0 = g.cuts[i], t1 = g.cuts[i+1];
     for(int j = 0; j < fgi.cuts.size(); j++){
       fgi.cuts[j]= t0 + fgi.cuts[j] * (t1-t0);
@@ -319,8 +319,8 @@ pw_sb compose(pw_sb const &f, pw_sb const &g){
   }
 }
 
-pw_sb integral(pw_sb const &a) {
-    pw_sb result;
+Piecewise<SBasis> integral(Piecewise<SBasis> const &a) {
+    Piecewise<SBasis> result;
     result.segs.resize(a.segs.size());
     result.cuts.insert(result.cuts.end(), a.cuts.begin(), a.cuts.end());
     for(int i = 0; i < a.segs.size(); i++){
@@ -330,8 +330,8 @@ pw_sb integral(pw_sb const &a) {
     return result;
 }
 
-pw_sb derivative(pw_sb const &a) {
-    pw_sb result;
+Piecewise<SBasis> derivative(Piecewise<SBasis> const &a) {
+    Piecewise<SBasis> result;
     result.segs.resize(a.segs.size());
     result.cuts.insert(result.cuts.end(), a.cuts.begin(), a.cuts.end());
     for(int i = 0; i < a.segs.size(); i++){

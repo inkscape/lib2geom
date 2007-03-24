@@ -150,7 +150,7 @@ void cairo_sb2d(cairo_t* cr, SBasis2d const &sb2, Point dir, double width) {
     }
 }
 
-void cairo_md_pw(cairo_t *cr, D2<pw_sb> const &p) {
+void cairo_md_pw(cairo_t *cr, D2<Piecewise<SBasis> > const &p) {
     vector<double> dumb;
     vector<D2<SBasis> > foo = sectionize(p, dumb);
     for(int i = 0; i < foo.size(); i++) {
