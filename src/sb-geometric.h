@@ -1,7 +1,7 @@
 #ifndef _SBASIS_GEOMETRIC
 #define _SBASIS_GEOMETRIC
 #include "d2.h"
-#include "pw-sb.h"
+#include "pw.h"
 #include <vector>
 
 /** two-dimensional geometric operators.  

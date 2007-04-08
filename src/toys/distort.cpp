@@ -9,7 +9,7 @@
 #include "path2.h"
 #include "read-svgd.h"
 #include "d2.h"
-#include "pw-sb.h"
+#include "pw.h"
 #include "s-basis-2d.h"
 
 using namespace Geom;

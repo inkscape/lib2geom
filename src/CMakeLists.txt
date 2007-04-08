@@ -69,7 +69,7 @@ poly-dk-solve.h
 poly.h
 poly-laguerre-solve.cpp
 poly-laguerre-solve.h
-pw-sb.cpp
+pw.cpp
 quadtree.cpp
 quadtree.h
 read-svgd.cpp

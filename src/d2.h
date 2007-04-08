@@ -3,11 +3,51 @@
 
 #include "point.h"
 
+//#include <boost/concept_check.hpp>
+
+//using namespace boost;
+
 namespace Geom{
 
-template <typename T>
+/*template <class T>
+struct AlgGroupConcept {
+    T i, j;
+    void constraints() {
+        i += j; i = i + j;
+        i -= j; i = i - j;
+    }
+};
+
+template <class T>
+struct AlgRingConcept {
+    T i, j;
+    void constraints() {
+        i *= j; i = i * j;
+    }
+};
+
+template <class T>
+struct NegateableConcept {
+    T i;
+    void constraints() {
+        i = -i;
+    }
+};
+
+template <class T>
+struct ScaleableConcept {
+    T i;
+    double j;
+    void constraints() {
+        i *= j; i = j * i;
+    }
+};*/
+
+template <class T>
 class D2{
 public:
+    //BOOST_CLASS_REQUIRE(T, boost, AssignableConcept);
+
     T f[2];
     
     D2() {}
@@ -22,48 +62,66 @@ public:
 
     Point operator()(double t) const;
     Point operator()(double x, double y) const;
-
-    inline D2<T>
-    operator +(D2<T> const & v) const {
-        D2<T> r;
-        for(unsigned i = 0; i < 2; i++)
-            r[i] = f[i] + v[i];
-        return r;
-    }
-
-    inline D2<T>
-    operator -(D2<T> const & v) const {
-        D2<T> r;
-        for(unsigned i = 0; i < 2; i++)
-            r[i] = f[i] - v[i];
-        return r;
-    }
-
-    inline D2<T>
-    operator +=(D2<T> const & v) {
-        for(unsigned i = 0; i < 2; i++)
-            f[i] += v[i];
-        return (*this);
-    }
-
-    /*inline D2<T>
-    operator -=(D2<T> const & v) {
-        for(unsigned i = 0; i < 2; i++)
-            f[i] -= v[i];
-        return (*this);
-    }*/
-
-    inline D2<T>
-    operator *=(double v) {
-        for(unsigned i = 0; i < 2; i++)
-            f[i] *= v;
-        return (*this);
-    }
 };
 
 template <typename T>
 inline D2<T>
-operator *(double a, D2<T> const & b) {
+operator+(D2<T> const &a, D2<T> const &b) {
+    //function_requires<AlgGroupConcept<T> >();
+
+    D2<T> r;
+    for(unsigned i = 0; i < 2; i++)
+        r[i] = a[i] + b[i];
+    return r;
+}
+
+template <typename T>
+inline D2<T>
+operator-(D2<T> const &a, D2<T> const &b) {
+    //function_requires<AlgGroupConcept<T> >();
+
+    D2<T> r;
+    for(unsigned i = 0; i < 2; i++)
+        r[i] = a[i] - b[i];
+    return r;
+}
+
+template <typename T>
+inline D2<T>
+operator+=(D2<T> &a, D2<T> const &b) {
+    //function_requires<AlgGroupConcept<T> >();
+
+    for(unsigned i = 0; i < 2; i++)
+        a[i] += b[i];
+    return a;
+}
+
+/*
+template <typename T>
+inline D2<T>
+operator-=(D2<T> &a, D2<T> const & b) {
+    //function_requires<AlgGroupConcept<T> >();
+
+    for(unsigned i = 0; i < 2; i++)
+        a[i] -= v[i];
+    return a;
+}*/
+
+template <typename T>
+inline D2<T>
+operator*=(D2<T> &a, double v) {
+    //function_requires<ScaleableConcept<T> >();
+
+    for(unsigned i = 0; i < 2; i++)
+        a[i] *= v;
+    return a;
+}
+
+template <typename T>
+inline D2<T>
+operator*(double a, D2<T> const & b) {
+    //function_requires<ScaleableConcept<T> >();
+
     D2<T> r;
     for(unsigned i = 0; i < 2; i++)
         r[i] = a * b[i];
@@ -73,6 +131,9 @@ operator *(double a, D2<T> const & b) {
 template <typename T>
 inline T
 dot(D2<T> const & a, D2<T> const & b) {
+    //function_requires<AlgGroupConcept<T> >();
+    //function_requires<AlgRingConcept<T> >();
+
     T r;
     for(unsigned i = 0; i < 2; i++)
         r += a[i] * b[i];
@@ -93,6 +154,8 @@ compose(T const & a, D2<T> const & b) {
 template <typename T>
 inline D2<T>
 rot90(D2<T> const & a) {
+    //function_requires<NegateableConcept<T> >();
+
     D2<T> r;
     r[0] = -a[1];
     r[1] = a[0];
@@ -102,8 +165,11 @@ rot90(D2<T> const & a) {
 template <typename T>
 inline D2<T>
 cross(D2<T> const & a, D2<T> const & b) {
+    //function_requires<NegateableConcept<T> >();
+    //function_requires<AlgRingConcept<T> >();
+
     D2<T> r;
-    r[0] = (-1) * a[0] * b[1];
+    r[0] = -a[0] * b[1];
     r[1] = a[1] * b[0];
     return r;
 }
@@ -151,7 +217,7 @@ D2<T>::operator()(double x, double y) const {
 
 #include "s-basis.h"
 #include "s-basis-2d.h"
-#include "pw-sb.h"
+#include "pw.h"
 
 namespace Geom {
 
