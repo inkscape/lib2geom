@@ -293,6 +293,29 @@ Geom::curvature(D2<SBasis> const M,
     return(result);
 }
 
+Geom::D2<Piecewise<SBasis> >
+Geom::arc_length_parametrization(D2<SBasis> const &M,
+                           unsigned order,
+                           double tol){
+    D2<Piecewise<SBasis> > u;
+    u[0].push_cut(0);
+    u[1].push_cut(0);
+
+    Piecewise<SBasis> s = arc_length_sb(M);
+    //std::cout<<"nb pieces:"<<s.size()<<std::endl;
+    for (int i=0; i < s.size();i++){
+        double t0=s.cuts[i],t1=s.cuts[i+1];
+        D2<SBasis> sub_M = compose(M,Linear(t0,t1));
+        D2<SBasis> sub_u;
+        for (int dim=0;dim<2;dim++){
+            sub_u[dim]=compose_inverse(sub_M[dim],1/(s(t1)-s(t0))*(s.segs[i]-Linear(s(t0))),3);
+            u[dim].push(sub_u[dim],s(t1));
+        }
+    }
+    return(u);
+}
+
+
 //}; // namespace
 
 

@@ -5,6 +5,7 @@
 #include <cassert>
 #include <algorithm>
 #include <iostream>
+#include <math.h>
 
 namespace Geom{
 
@@ -354,10 +355,23 @@ inline SBasis& operator*=(SBasis& a, SBasis const & b) {
     return a;
 }
 
+//valuation: degree of the first non zero coefficient.
+inline unsigned 
+valuation(SBasis const &a, double tol=0){
+    int val=0;
+    while( val<a.size() && 
+           fabs(a[val][0])<tol &&
+           fabs(a[val][1])<tol )
+        val++;
+    return val;
+}
+
 // a(b(t))
 SBasis compose(SBasis const &a, SBasis const &b);
 SBasis compose(SBasis const &a, SBasis const &b, unsigned k);
 SBasis inverse(SBasis a, int k);
+//compose_inverse(f,g)=compose(f,inverse(g)), but is numerically more stable in some good cases...
+SBasis compose_inverse(SBasis const &f, SBasis const &g, unsigned order, double tol=1e-7);
 
 inline SBasis portion(const SBasis &t, double from, double to) { return compose(t, Linear(from, to)); }
 

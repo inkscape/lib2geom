@@ -364,6 +364,53 @@ SBasis reverse(SBasis const &c) {
     return a;
 }
 
+SBasis compose_inverse(SBasis const &f, SBasis const &g, unsigned order, double tol){
+    SBasis result; //result
+    SBasis r=f; //remainder
+    int val_g=valuation(g);
+    int val_r=valuation(f);
+    SBasis Pk=Linear(1)-g,Qk=g,sg=Pk*Qk;
+    Pk.truncate(order);
+    Qk.truncate(order);
+
+    for (int k=0; k<=order; k++){
+        int v=k*val_g;
+        assert(v<=val_r);
+        if (v<val_r){
+            result.push_back(Linear(0));
+        }else if (v==val_r){
+            double p10=Pk[v][0];
+            double p01=Pk[v][1];
+            double q10=Qk[v][0];
+            double q01=Qk[v][1];
+            double r10=r[v][0];
+            double r01=r[v][1];
+            if ( fabs(p10*q01-p01*q10)<tol ) {
+                if (fabs(r10)>tol || fabs(r01)>tol ){
+                    // f(g^-1) does not exist!
+                    assert(false);
+                }
+                //if val_r=valuation(r), we should not be there...
+                //but this might fail to be true if there are extra cancellations... 
+                result.push_back(Linear(0));
+                val_r+=1;
+            }
+            double a=( q01*r10-q10*r01)/(p10*q01-p01*q10);
+            double b=(-p01*r10+p10*r01)/(p10*q01-p01*q10);
+            result.push_back(Linear(a,b));
+            //r=f-resul(g);
+            r=r-a*Pk-b*Qk;
+            val_r+=1;//should be: val_r=valuation(r); irrelevant unless there extra cancellations...
+        }
+        //if (r.tail_error(0)<tol) return result;
+        Pk=Pk*sg;
+        Qk=Qk*sg;
+        Pk.truncate(order);
+        Qk.truncate(order);
+    }
+    return result;
+}
+
 };
 
 /*
