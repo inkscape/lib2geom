@@ -31,6 +31,8 @@
 #include "d2.h"
 #include "rect.h"
 
+//TODO: many should be members
+
 namespace Geom {
 
 D2<SBasis> derivative(D2<SBasis> const & a) {
@@ -85,14 +87,15 @@ D2<SBasis> truncate(D2<SBasis> const & a, unsigned terms) {
 unsigned sbasisSize(D2<SBasis> const & a) {
     return std::max((unsigned) a[0].size(), (unsigned) a[1].size());
 }
-    
+
+//TODO: Is this sensical? shouldn't it be like pythagorean or something?
 double tailError(D2<SBasis> const & a, unsigned tail) {
-    return std::max(a[0].tail_error(tail), a[1].tail_error(tail));
+    return std::max(a[0].tailError(tail), a[1].tailError(tail));
 }
 
 bool isFinite(D2<SBasis> const & a) {
     for(unsigned i = 0; i < 2; i++)
-        if(!a[i].is_finite())
+        if(!a[i].isFinite())
             return false;
     return true;
 }

@@ -146,7 +146,7 @@ std::vector<D2<SBasis> > Geom::unit_vector(D2<SBasis> const vect, std::vector<do
     //double err=tol;
 
     SBasis area = SBasis(V[0]*vect[1] - V[1]*vect[0]);
-    if(area.tail_error(0) < err){
+    if(area.tailError(0) < err){
         //Check angle range: if too big, cos an sin are not accurate.
         // this can be solved either by using a range dependent degree for cos and sin,
         // or by adding one more cut here.

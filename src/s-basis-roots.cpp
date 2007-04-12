@@ -297,7 +297,7 @@ void subdiv_sbasis(SBasis const & s,
     bounds(s, lo, hi);
     if(lo > 0 || hi < 0)
         return; // no roots here
-    if(s.tail_error(1) < 1e-7) {
+    if(s.tailError(1) < 1e-7) {
         double t = s[0][0] / (s[0][0] - s[0][1]);
         roots.push_back(left*(1-t) + t*right);
         return;

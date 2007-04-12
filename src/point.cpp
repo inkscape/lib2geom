@@ -16,61 +16,62 @@ namespace Geom {
  *  \post \f$-\epsilon<\left|this\right|-1<\epsilon\f$
  */
 void Point::normalize() {
-	double len = hypot(_pt[0], _pt[1]);
-	if(len == 0) return;
-	if(isNaN(len)) return;
-	static double const inf = 1e400;
-	if(len != inf) {
-		*this /= len;
-	} else {
-		unsigned n_inf_coords = 0;
-		/* Delay updating pt in case neither coord is infinite. */
-		Point tmp;
-		for ( unsigned i = 0 ; i < 2 ; ++i ) {
-			if ( _pt[i] == inf ) {
-				++n_inf_coords;
-				tmp[i] = 1.0;
-			} else if ( _pt[i] == -inf ) {
-				++n_inf_coords;
-				tmp[i] = -1.0;
-			} else {
-				tmp[i] = 0.0;
-			}
-		}
-		switch (n_inf_coords) {
-		case 0:
-			/* Can happen if both coords are near +/-DBL_MAX. */
-			*this /= 4.0;
-			len = hypot(_pt[0], _pt[1]);
-			assert(len != inf);
-			*this /= len;
-			break;
-
-		case 1:
-			*this = tmp;
-			break;
-
-		case 2:
-			*this = sqrt(0.5) * tmp;
-			break;
-		}
+    double len = hypot(_pt[0], _pt[1]);
+    if(len == 0) return;
+    if(is_nan(len)) return;
+    static double const inf = 1e400;
+    if(len != inf) {
+        *this /= len;
+    } else {
+        unsigned n_inf_coords = 0;
+        /* Delay updating pt in case neither coord is infinite. */
+        Point tmp;
+        for ( unsigned i = 0 ; i < 2 ; ++i ) {
+            if ( _pt[i] == inf ) {
+                ++n_inf_coords;
+                tmp[i] = 1.0;
+            } else if ( _pt[i] == -inf ) {
+                ++n_inf_coords;
+                tmp[i] = -1.0;
+            } else {
+                tmp[i] = 0.0;
+            }
+        }
+        switch (n_inf_coords) {
+        case 0: {
+            /* Can happen if both coords are near +/-DBL_MAX. */
+            *this /= 4.0;
+            len = hypot(_pt[0], _pt[1]);
+            assert(len != inf);
+            *this /= len;
+            break;
+        }
+        case 1: {
+            *this = tmp;
+            break;
+        }
+        case 2: {
+            *this = sqrt(0.5) * tmp;
+            break;
+        }
 	}
+    }
 }
 
 /** Compute the L1 norm, or manhattan distance, of \a p. */
 Coord L1(Point const &p) {
-	Coord d = 0;
-	for ( int i = 0 ; i < 2 ; i++ ) {
-		d += fabs(p[i]);
-	}
-	return d;
+    Coord d = 0;
+    for ( int i = 0 ; i < 2 ; i++ ) {
+        d += fabs(p[i]);
+    }
+    return d;
 }
 
 /** Compute the L infinity, or maximum, norm of \a p. */
 Coord LInfty(Point const &p) {
     Coord const a(fabs(p[0]));
     Coord const b(fabs(p[1]));
-    return ( a < b || isNaN(b)
+    return ( a < b || is_nan(b)
              ? b
              : a );
 }

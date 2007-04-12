@@ -48,7 +48,7 @@ public:
                 draw_cross(cr, B(r[i]));
                 draw_cross(cr, plot(r[i]));
             }
-            *notify << plot[1].tail_error(0) << std::endl;
+            *notify << plot[1].tailError(0) << std::endl;
         }
 
         {
@@ -84,7 +84,7 @@ public:
             D2<SBasis> dBp = compose(dB, dt);
             SBasis arc = L2(dBp, 2);
             arc = (1./N)*integral(arc);
-            arc = arc - Linear(Hat(arc.point_at(0) - prev_seg));
+            arc = arc - Linear(Hat(arc(0) - prev_seg));
             prev_seg = arc(1);
         
             D2<SBasis> plot;

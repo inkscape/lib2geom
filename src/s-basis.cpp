@@ -1,3 +1,36 @@
+/*
+ *  s-basis.cpp - S-power basis function class + supporting classes
+ *
+ *  Authors:
+ *   Nathan Hurst <njh@mail.csse.monash.edu.au>
+ *   Michael Sloan <mgsloan@gmail.com>
+ *
+ * Copyright (C) 2006-2007 authors
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it either under the terms of the GNU Lesser General Public
+ * License version 2.1 as published by the Free Software Foundation
+ * (the "LGPL") or, at your option, under the terms of the Mozilla
+ * Public License Version 1.1 (the "MPL"). If you do not alter this
+ * notice, a recipient may use your version of this file under either
+ * the MPL or the LGPL.
+ *
+ * You should have received a copy of the LGPL along with this library
+ * in the file COPYING-LGPL-2.1; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * You should have received a copy of the MPL along with this library
+ * in the file COPYING-MPL-1.1
+ *
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.1 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY
+ * OF ANY KIND, either express or implied. See the LGPL or the MPL for
+ * the specific language governing rights and limitations.
+ */
+
 #include <cmath>
 
 #include "s-basis.h"
@@ -21,25 +54,107 @@ double SBasis::tail_error(unsigned tail) const {
     return err;
 }
 */
-double SBasis::tail_error(unsigned tail) const {
-  double m,M;
+double SBasis::tailError(unsigned tail) const {
+  double m, M;
   bounds(*this,m,M,tail);
   return std::max(fabs(m),fabs(M));
 }
 
-bool Linear::is_finite() const {
-    return isFinite(a[0]) && isFinite(a[1]);
+bool Linear::isFinite() const {
+    return is_finite(a[0]) && is_finite(a[1]);
 }
 
-bool SBasis::is_finite() const {
+bool SBasis::isFinite() const {
     for(unsigned i = 0; i < size(); i++) {
-        if(!(*this)[i].is_finite())
+        if(!(*this)[i].isFinite())
             return false;
     }
     return true;
 }
 
+SBasis operator+(const SBasis& a, const SBasis& b) {
+    SBasis result;
+    const unsigned out_size = std::max(a.size(), b.size());
+    const unsigned min_size = std::min(a.size(), b.size());
+    result.reserve(out_size);
+    
+    for(unsigned i = 0; i < min_size; i++) {
+        result.push_back(a[i] + b[i]);
+    }
+    for(unsigned i = min_size; i < a.size(); i++)
+        result.push_back(a[i]);
+    for(unsigned i = min_size; i < b.size(); i++)
+        result.push_back(b[i]);
 
+    assert(result.size() == out_size);
+    return result;
+}
+
+SBasis operator-(const SBasis& a, const SBasis& b) {
+    SBasis result;
+    const unsigned out_size = std::max(a.size(), b.size());
+    const unsigned min_size = std::min(a.size(), b.size());
+    result.reserve(out_size);
+    
+    for(unsigned i = 0; i < min_size; i++) {
+        result.push_back(a[i] - b[i]);
+    }
+    for(unsigned i = min_size; i < a.size(); i++)
+        result.push_back(a[i]);
+    for(unsigned i = min_size; i < b.size(); i++)
+        result.push_back(-b[i]);
+
+    assert(result.size() == out_size);
+    return result;
+}
+
+SBasis& operator+=(SBasis& a, const SBasis& b) {
+    const unsigned out_size = std::max(a.size(), b.size());
+    const unsigned min_size = std::min(a.size(), b.size());
+    a.reserve(out_size);
+        
+    for(unsigned i = 0; i < min_size; i++)
+        a[i] += b[i];
+    for(unsigned i = min_size; i < b.size(); i++)
+        a.push_back(b[i]);
+    
+    assert(a.size() == out_size);
+    return a;
+}
+
+SBasis& operator-=(SBasis& a, const SBasis& b) {
+    const unsigned out_size = std::max(a.size(), b.size());
+    const unsigned min_size = std::min(a.size(), b.size());
+    a.reserve(out_size);
+        
+    for(unsigned i = 0; i < min_size; i++)
+        a[i] -= b[i];
+    for(unsigned i = min_size; i < b.size(); i++)
+        a.push_back(-b[i]);
+    
+    assert(a.size() == out_size);
+    return a;
+}
+
+SBasis& operator*=(SBasis& a, double b) {
+    if (a.isZero()) return a;
+    if (b == 0)
+        a.clear();
+    else
+        for(unsigned i = 0; i < a.size(); i++)
+            a[i] *= b;
+    return a;
+}
+
+SBasis& operator/=(SBasis& a, double b) {
+    if (a.isZero()) return a;
+    assert(b != 0);
+    for(unsigned i = 0; i < a.size(); i++) {
+        a[i][0] /= b;
+        a[i][1] /= b;
+    }
+    return a;
+}
 
 SBasis operator*(double k, SBasis const &a) {
     SBasis c;
@@ -56,7 +171,7 @@ SBasis shift(SBasis const &a, int sh) {
     if(sh > 0) {
         c.insert(c.begin(), sh, Linear(0,0));
     } else {
-        // truncate
+        //TODO: truncate
     }
     return c;
 }
@@ -67,24 +182,9 @@ SBasis shift(Linear const &a, int sh) {
         c.insert(c.begin(), sh, Linear(0,0));
         c.push_back(a);
     } else {
-        // truncate
+        //TODO: truncate
     }
     return c;
-}
-
-SBasis truncate(SBasis const &a, unsigned terms) {
-    SBasis c;
-    if(terms > a.size())
-        terms = a.size();
-    c.insert(c.begin(), a.begin(), a.begin() + terms);
-    return c;
-}
-
-void
-SBasis::truncate(unsigned k) {
-    if(k < size()) {
-        resize(k);
-    }
 }
 
 SBasis multiply(SBasis const &a, SBasis const &b) {
@@ -92,14 +192,14 @@ SBasis multiply(SBasis const &a, SBasis const &b) {
     
     // shift(1, a.Tri*b.Tri)
     SBasis c;
-    if(a.empty() || b.empty())
+    if(a.isZero() || b.isZero())
         return c;
     c.resize(a.size() + b.size(), Linear(0,0));
     c[0] = Linear(0,0);
     for(unsigned j = 0; j < b.size(); j++) {
         for(unsigned i = j; i < a.size()+j; i++) {
             double tri = Tri(b[j])*Tri(a[i-j]);
-            c[i+1/*shift*/] += Hat(-tri);
+            c[i+1/*shift*/] += Linear(Hat(-tri));
         }
     }
     for(unsigned j = 0; j < b.size(); j++) {
@@ -124,7 +224,7 @@ SBasis integral(SBasis const &c) {
     }
     double aTri = 0;
     for(int k = c.size()-1; k >= 0; k--) {
-        aTri = (Hat(c[k]) + (k+1)*aTri/2)/(2*k+1);
+        aTri = (Hat(c[k]).d + (k+1)*aTri/2)/(2*k+1);
         a[k][0] -= aTri/2;
         a[k][1] += aTri/2;
     }
@@ -154,10 +254,8 @@ SBasis derivative(SBasis const &a) {
 }
 
 SBasis sqrt(SBasis const &a, int k) {
-    if(k == 0)
-        return SBasis();
     SBasis c;
-    if(a.empty())
+    if(a.isZero() || k == 0)
         return c;
     c.resize(k, Linear(0,0));
     c[0] = Linear(std::sqrt(a[0][0]), std::sqrt(a[0][1]));
@@ -169,7 +267,7 @@ SBasis sqrt(SBasis const &a, int k) {
         r -= multiply(shift((2*c + cisi), i), SBasis(ci));
         r.truncate(k+1);
         c += cisi;
-        if(r.tail_error(i) == 0) // if exact
+        if(r.tailError(i) == 0) // if exact
             break;
     }
     
@@ -179,7 +277,7 @@ SBasis sqrt(SBasis const &a, int k) {
 // return a kth order approx to 1/a)
 SBasis reciprocal(Linear const &a, int k) {
     SBasis c;
-    assert(!a.zero());
+    assert(!a.isZero());
     c.resize(k, Linear(0,0));
     double r_s0 = (Tri(a)*Tri(a))/(-a[0]*a[1]);
     double r_s0k = 1;
@@ -192,8 +290,7 @@ SBasis reciprocal(Linear const &a, int k) {
 
 SBasis divide(SBasis const &a, SBasis const &b, int k) {
     SBasis c;
-    if(a.empty())
-        throw;
+    assert(!a.isZero());
     SBasis r = a; // remainder
     
     k++;
@@ -205,7 +302,7 @@ SBasis divide(SBasis const &a, SBasis const &b, int k) {
         c[i] += ci;
         r -= shift(multiply(ci,b), i);
         r.truncate(k+1);
-        if(r.tail_error(i) == 0) // if exact
+        if(r.tailError(i) == 0) // if exact
             break;
     }
     
@@ -311,7 +408,7 @@ SBasis inverse(SBasis a, int k) {
             // contribute to the result.
             r -= multiply(civ,ti);
             r.truncate(k);
-            if(r.tail_error(i) == 0)
+            if(r.tailError(i) == 0)
                 break; // yay!
             ti = multiply(ti,t);
         }
@@ -323,12 +420,6 @@ SBasis inverse(SBasis a, int k) {
     c -= a0; // invert the offset
     c /= a1; // invert the slope
     return c;
-}
-
-
-void SBasis::normalize() {
-    while(!empty() && 0 == back()[0] && 0 == back()[1])
-        pop_back();
 }
 
 SBasis sin(Linear b, int k) {
@@ -354,14 +445,6 @@ SBasis cos(Linear bo, int k) {
     return sin(Linear(bo[0] + M_PI/2,
                       bo[1] + M_PI/2),
                k);
-}
-
-SBasis reverse(SBasis const &c) {
-    SBasis a;
-    a.reserve(c.size());
-    for(unsigned k = 0; k < c.size(); k++)
-        a.push_back(reverse(c[k]));
-    return a;
 }
 
 SBasis compose_inverse(SBasis const &f, SBasis const &g, unsigned order, double tol){

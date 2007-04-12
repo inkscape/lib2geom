@@ -51,10 +51,10 @@ public:
         return 2*w*w*sin(0.5*d, k)*sin(0.5*d, k);
     }
     SBasis b1(Linear const &d, double w) {
-        return b3(reverse(d), w);
+        return b3(d.reverse(), w);
     }
     SBasis b0(Linear const &d, double w) {
-        return b4(reverse(d), w);
+        return b4(d.reverse(), w);
     }
     
     

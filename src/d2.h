@@ -33,9 +33,9 @@
 
 #include "point.h"
 
-#include <boost/concept_check.hpp>
+//#include <boost/concept_check.hpp>
 
-using namespace boost;
+//using namespace boost;
 
 namespace Geom{
 

@@ -79,7 +79,7 @@ static Piecewise<SBasis> pw_inverse(SBasis const &f, int order,double tol=.1,int
     g=my_inverse(f,order);
     r=g(f);
     //std::cout<<"error: "<<g.tail_error(1)<<std::endl;
-    if (g.tail_error(1)<tol){
+    if (g.tailError(1)<tol){
         res.segs.push_back(g);
         res.cuts.push_back(f[0][0]);
         res.cuts.push_back(f[0][1]);

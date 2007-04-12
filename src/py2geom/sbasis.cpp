@@ -70,20 +70,27 @@ void wrap_sbasis() {
         .def("from_tuple", tuple_to_bezord)
         .staticmethod("from_tuple")
 
-        .def("point_at", &Geom::Linear::point_at)
-        .def("apply", &Geom::Linear::apply)
-        .def("zero", &Geom::Linear::zero)
-        .def("is_finite", &Geom::Linear::is_finite)
+        .def("isZero", &Geom::Linear::isZero)
+        .def("isFinite", &Geom::Linear::isFinite)
+        .def("at0", &Geom::Linear::at0)
+        .def("at1", &Geom::Linear::at1)
+        .def("pointAt", &Geom::Linear::pointAt)
+        .def("toSBasis", &Geom::Linear::toSBasis)
+        .def("reverse", &Geom::Linear::reverse)
 
         .def(-self)
         .def(self + self)
         .def(self - self)
         .def(self += self)
         .def(self -= self)
+        .def(self + float())
+        .def(self - float())
+        .def(self += float())
+        .def(self -= float())
         .def(self == self)
         .def(self != self)
-        .def(self * self)
-        .def("reverse", ((Geom::Linear (*)(Geom::Linear const &b))&Geom::reverse))
+        .def(float() * self)
+        .def(self *= float())
     ;
     implicitly_convertible<Geom::Linear,tuple>();
 // TODO: explain why this gives a compile time error
@@ -113,28 +120,36 @@ void wrap_sbasis() {
     def("inverse", &Geom::inverse);
     def("sin", &Geom::sin);
     def("cos", &Geom::cos);
-    def("reverse", (Geom::SBasis (*)(Geom::SBasis const &))&Geom::reverse);
     def("bounds", &Geom::bounds);
     def("roots", &Geom::roots);
 
     class_<Geom::SBasis, bases<std::vector<Geom::Linear> > >("SBasis")
         .def(self_ns::str(self))
+        //TODO: add important vector funcs
+
+        .def("isZero", &Geom::SBasis::isZero)
+        .def("isFinite", &Geom::SBasis::isFinite)
+        .def("at0", &Geom::SBasis::at0)
+        .def("at1", &Geom::SBasis::at1)
+        .def("pointAt", &Geom::SBasis::pointAt)
+        .def("toSBasis", &Geom::SBasis::toSBasis)
+        .def("reverse", &Geom::SBasis::reverse)
+
+        .def("normalize", &Geom::SBasis::normalize)
+        .def("tailError", &Geom::SBasis::tailError)
+        .def("truncate", &Geom::SBasis::truncate)
         .def(self + self)
         .def(self - self)
-        .def("clear", &Geom::SBasis::clear)
-        .def("normalize", &Geom::SBasis::normalize)
-        .def("tail_eror", &Geom::SBasis::tail_error)
-        .def("truncate", &Geom::SBasis::truncate)
-        .def("is_finite", &Geom::SBasis::is_finite)
-        .def(Geom::Linear() - self)
         .def(self += self)
         .def(self -= self)
+        .def(Geom::Linear() + self)
+        .def(Geom::Linear() - self)
         .def(self += Geom::Linear())
         .def(self -= Geom::Linear())
+        .def(float() + self)
         .def(self += float())
         .def(self -= float())
-        .def(Geom::Linear() + self)
-        .def(float() + self)
+        
         .def(self * self)
         .def(float() * self)
         .def(self *= self)

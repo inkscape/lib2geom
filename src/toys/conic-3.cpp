@@ -63,9 +63,9 @@ class Conic3: public Toy {
         SBasis cosC = one - C;
         //SBasis tanC = divide(sinC, cosC, 10);
         SBasis Z3 = (1./(sinC(1)))*sinC;
-        SBasis Z0 = reverse(Z3);
+        SBasis Z0 = Z3.reverse();
         SBasis Z2 = (1./(cosC(1)))*cosC - Z3;
-        SBasis Z1 = reverse(Z2);
+        SBasis Z1 = Z2.reverse();
         
         SBasis Z[4] = {Z0, Z1, Z2, Z3};
         

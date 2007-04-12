@@ -112,10 +112,10 @@ vector<D2<SBasis> > compose(NormalBundle const &NB,
              root!=Roots.end();root++)
             Cuts[*root]=i;
         if((Cuts.count(0.)==0) and 
-           ((B[0].point_at(0.)<=0) or i==NB.size()))
+           ((B[0].pointAt(0.)<=0) or i==NB.size()))
             Cuts[0.]=i;
         if((Cuts.count(1.)==0) and 
-           ((B[0].point_at(1.)<=0) or i==NB.size()))
+           ((B[0].pointAt(1.)<=0) or i==NB.size()))
             Cuts[1.]=i;
         if (i<NB.size())
             B[0]-=(NB.lengths[i+1]-NB.lengths[i]);
