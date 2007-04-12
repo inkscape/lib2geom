@@ -315,6 +315,23 @@ Geom::arc_length_parametrization(D2<SBasis> const &M,
     return(u);
 }
 
+Geom::D2<Piecewise<SBasis> >
+Geom::arc_length_parametrization(D2<Piecewise<SBasis> > const &M,
+                                 unsigned order,
+                                 double tol){
+    D2<Piecewise<SBasis> > result;
+    vector<double> forget_me;
+    vector<D2<SBasis> > pieces=sectionize(M, forget_me);
+    result=arc_length_parametrization(pieces[0],order,tol);
+    for (int i=1; i<M[0].size(); i++ ){
+        D2<Piecewise<SBasis> > uniform_seg=arc_length_parametrization(pieces[i],order,tol);
+        result[0].concat(uniform_seg[0]);
+        result[1].concat(uniform_seg[1]);
+//        printf("output size %d: ",result[0].size());
+    }
+    return(result);
+}
+
 
 //}; // namespace
 

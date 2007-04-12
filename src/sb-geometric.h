@@ -48,6 +48,10 @@ D2<Piecewise<SBasis> >
 arc_length_parametrization(D2<SBasis> const &M,
                            unsigned order,
                            double tol=.1);
+D2<Piecewise<SBasis> >
+arc_length_parametrization(D2<Piecewise<SBasis> > const &M,
+                           unsigned order,
+                           double tol=.1);
 
 Piecewise<SBasis>
 curvature(D2<SBasis> const M, 
