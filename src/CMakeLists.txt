@@ -36,7 +36,6 @@ coord.h
 d2.h
 d2.cpp
 floating.h
-forward.h
 geom.cpp
 geom.h
 macros.h
