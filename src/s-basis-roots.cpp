@@ -115,11 +115,13 @@ Interval SBasis::boundsLocal(double t0, double t1, int order) const {
          let c and C be the levels below and above f(a):
          going from f(a) down to c with slope m takes at least time (f(a)-c)/m
          going from f(a)  up  to C with slope M takes at least time (C-f(a))/M
-         do the same, for b.
-         -Deduce a smaller segment [a',b'] out of which there are no roots 
-         -if not empty, repeat the process with [a',(a'+b')/2] and [(a'+b')/2,b']. 
+         From this we conclude there are no roots before a'=a+min((f(a)-c)/m,(C-f(a))/M).
+         Do the same for b: compute some b' such that there are no roots in (b',b].
+         -if [a',b'] is not empty, repeat the process with [a',(a'+b')/2] and [(a'+b')/2,b']. 
+  unfortunately, extra care is needed about rounding errors, and also to avoid the repetition of roots,
+  making things tricky and unpleasant...
 */
-//TODO: Make sure the code is "rounding-errors proof"!
+//TODO: Make sure the code is "rounding-errors proof" and take care about repetition of roots!
 
 
 static int upper_level(vector<double> const &levels,double x,double tol=0.){
@@ -186,16 +188,20 @@ static void multi_roots_internal(SBasis const &f,
     ta_hi=ta_lo=b+1;//default values => no root there.
     tb_hi=tb_lo=a-1;//default values => no root there.
 
-    if (fabs(fa-levels[idxa])<tol){
-        ta_hi=ta_lo=a;
+    if (fabs(fa-levels[idxa])<tol){//a can be considered a root.
+        //ta_hi=ta_lo=a;
+        roots[idxa].push_back(a);
+        ta_hi=ta_lo=a+tol;
     }else{
         if (bs.max()>0 && idxa<levels.size())
             ta_hi=a+(levels[idxa  ]-fa)/bs.max();
         if (bs.min()<0 && idxa>0)
             ta_lo=a+(levels[idxa-1]-fa)/bs.min();
     }
-    if (fabs(fb-levels[idxb])<tol){
-        tb_hi=tb_lo=b;
+    if (fabs(fb-levels[idxb])<tol){//b can be considered a root.
+        //tb_hi=tb_lo=b;
+        roots[idxb].push_back(b);
+        tb_hi=tb_lo=b-tol;
     }else{
         if (bs.min()<0 && idxb<levels.size())
             tb_hi=b+(levels[idxb  ]-fb)/bs.min();
@@ -207,15 +213,24 @@ static void multi_roots_internal(SBasis const &f,
     t0=std::min(ta_hi,ta_lo);    
     t1=std::max(tb_hi,tb_lo);
     //hum, rounding errors frighten me! so I add this +tol...
-    if (t0>t1+tol) return;
-    double t,ft;
+    if (t0>t1+tol) return;//no root here.
     if (fabs(t1-t0)<tol){
         multi_roots_internal(f,df,levels,roots,tol,t0,f(t0),t1,f(t1));
     }else{
-        t=(t0+t1)/2;
-        ft=f(t);
-        multi_roots_internal(f,df,levels,roots,tol,t0,f(t0),t ,ft   );
-        multi_roots_internal(f,df,levels,roots,tol,t ,ft   ,t1,f(t1));
+        double t,t_left,t_right,ft,ft_left,ft_right;
+        t_left =t_right =t =(t0+t1)/2;
+        ft_left=ft_right=ft=f(t);
+        int idx=upper_level(levels,ft,tol);
+        if (fabs(ft-levels[idx])<tol){//t can be considered a root.
+            roots[idx].push_back(t);
+            //we do not want to count it twice (from the left and from the right)
+            t_left =t-tol/2;
+            t_right=t+tol/2;
+            ft_left =f(t_left);
+            ft_right=f(t_right);
+        }
+        multi_roots_internal(f,df,levels,roots,tol,t0     ,f(t0)   ,t_left,ft_left);
+        multi_roots_internal(f,df,levels,roots,tol,t_right,ft_right,t1    ,f(t1)  );
     }
 }
 
