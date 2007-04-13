@@ -70,12 +70,12 @@ Piecewise<SBasis> compose(Piecewise<SBasis> const &f, SBasis  const &g){
   }
 
   //first check bounds...
-  double M, m;
-  bounds(g, m, M);
-  if (M < f.cuts.front() || m > f.cuts.back()){
-      int idx = (M < f.cuts[1]) ? 0 : f.cuts.size()-2;
+  Interval bs = bounds(g);
+  if (bs.max() < f.cuts.front() || bs.min() > f.cuts.back()){
+      //TODO: use segN
+      int idx = (bs.max() < f.cuts[1]) ? 0 : f.cuts.size()-2;
       double t0 = f.cuts[idx], width = f.cuts[idx+1] - t0;
-      return (Piecewise<SBasis>) f.segs[idx](compose(Linear(-t0 / width, (1-t0) / width), g));
+      return (Piecewise<SBasis>) f.segs[idx](compose(Linear(-t0 / width, (1-t0) / width), g));  //TODO rewrite with portion/subdivide/whatever
   }
 
   //-- collect all t / g(t)=f.cuts[idx] for some idx (!= first and last).
@@ -169,7 +169,7 @@ Piecewise<SBasis> derivative(Piecewise<SBasis> const &a) {
     return result;
 }
 
-};
+}
 /*
   Local Variables:
   mode:c++

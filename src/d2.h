@@ -32,7 +32,7 @@
 #define _2GEOM_D2
 
 #include "point.h"
-
+#include "interval.h"
 //#include <boost/concept_check.hpp>
 
 //using namespace boost;
@@ -278,6 +278,7 @@ vector<D2<SBasis> > sectionize(D2<Piecewise<SBasis> > const &a, vector<double> &
 
 class Rect;
 
+Rect bounds(D2<SBasis> const & s, int order=0);
 Rect local_bounds(D2<SBasis> const & s, double t0, double t1, int order=0);
 
 };

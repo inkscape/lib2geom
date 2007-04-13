@@ -64,14 +64,13 @@ public:
 #endif
         
         D2<SBasis> test_sb = bezier_to_sbasis<5>(handles.begin());
-        double lo, hi;
-        bounds(test_sb[1], lo, hi);
-        cairo_move_to(cr, test_sb[0](0), lo);
-        cairo_line_to(cr, test_sb[0](1), lo);
-        cairo_move_to(cr, test_sb[0](0), hi);
-        cairo_line_to(cr, test_sb[0](1), hi);
+        Interval bs = bounds(test_sb[1]);
+        cairo_move_to(cr, test_sb[0](0), bs.min());
+        cairo_line_to(cr, test_sb[0](1), bs.min());
+        cairo_move_to(cr, test_sb[0](0), bs.max());
+        cairo_line_to(cr, test_sb[0](1), bs.max());
         cairo_stroke(cr);
-        *notify << "sb bounds = "<<lo << ", " <<hi<<std::endl;
+        *notify << "sb bounds = "<<bs.min()<< ", " <<bs.max()<<std::endl;
         Poly ply = sbasis_to_poly(test_sb[1]);
         ply = Poly(3*width/4) - ply;
 #ifdef HAVE_GSL    

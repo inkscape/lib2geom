@@ -30,10 +30,10 @@
 #include <boost/python/implicit.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 
-#include "sbasis.h"
+#include "linear.h"
 #include "helpers.h"
 
-#include "../s-basis.h"
+#include "../linear.h"
 #include "../point.h"
 
 using namespace boost::python;
@@ -54,12 +54,7 @@ str bezord_repr(Geom::Linear const& b)
     return str("<" + str(b[0]) + ", " + str(b[1]) + ">");
 }
 
-Geom::SBasis (*truncate_sbasis)(Geom::SBasis const &, unsigned) = &Geom::truncate;
-Geom::SBasis (*multiply_sbasis)(Geom::SBasis const &, Geom::SBasis const &) = &Geom::multiply;
-Geom::SBasis (*integral_sbasis)(Geom::SBasis const &) = &Geom::integral;
-Geom::SBasis (*derivative_sbasis)(Geom::SBasis const &) = &Geom::derivative;
-
-void wrap_sbasis() {
+void wrap_linear() {
     //s-basis.h
     class_<Geom::Linear>("Linear", init<double, double>())
         .def("__str__", bezord_repr)
@@ -91,72 +86,8 @@ void wrap_sbasis() {
         .def(float() * self)
         .def(self *= float())
     ;
+    def("reverse", ((Geom::Linear (*)(Geom::Linear const &b))&Geom::reverse))
     implicitly_convertible<Geom::Linear,tuple>();
-// TODO: explain why this gives a compile time error
-//    implicitly_convertible<tuple,Geom::Linear>();
-
-    // needed for roots
-    class_<std::vector<double> >("DoubleVec")
-        .def(vector_indexing_suite<std::vector<double> >())
-    ;
-    class_<std::vector<Geom::Point> >("PointVec")
-        .def(vector_indexing_suite<std::vector<Geom::Point> >())
-    ;
-    // sbasis is a subclass of
-    class_<std::vector<Geom::Linear> >("LinearVec")
-        .def(vector_indexing_suite<std::vector<Geom::Linear> >())
-    ;
-
-    def("shift", (Geom::SBasis (*)(Geom::SBasis const &a, int sh))&Geom::shift);
-    def("truncate", truncate_sbasis);
-    def("multiply", multiply_sbasis);
-    def("compose", (Geom::SBasis (*) (Geom::SBasis const &, Geom::SBasis const &))&Geom::compose);
-    def("integral", integral_sbasis);
-    def("derivative", derivative_sbasis);
-    def("sqrt", &Geom::sqrt);
-    def("reciprocal", &Geom::reciprocal);
-    def("divide", &Geom::divide);
-    def("inverse", &Geom::inverse);
-    def("sin", &Geom::sin);
-    def("cos", &Geom::cos);
-    def("reverse", (Geom::SBasis (*)(Geom::SBasis const &))&Geom::reverse);
-    def("bounds", &Geom::bounds);
-    def("roots", &Geom::roots);
-
-    class_<Geom::SBasis, bases<std::vector<Geom::Linear> > >("SBasis")
-        .def(self_ns::str(self))
-        //TODO: add important vector funcs
-
-        .def("isZero", &Geom::SBasis::isZero)
-        .def("isFinite", &Geom::SBasis::isFinite)
-        .def("at0", &Geom::SBasis::at0)
-        .def("at1", &Geom::SBasis::at1)
-        .def("pointAt", &Geom::SBasis::pointAt)
-        .def("toSBasis", &Geom::SBasis::toSBasis)
-
-        .def("normalize", &Geom::SBasis::normalize)
-        .def("tailError", &Geom::SBasis::tailError)
-        .def("truncate", &Geom::SBasis::truncate)
-        .def(self + self)
-        .def(self - self)
-        .def(self += self)
-        .def(self -= self)
-        .def(Geom::Linear() + self)
-        .def(Geom::Linear() - self)
-        .def(self += Geom::Linear())
-        .def(self -= Geom::Linear())
-        .def(float() + self)
-        .def(self += float())
-        .def(self -= float())
-        
-        .def(self * self)
-        .def(float() * self)
-        .def(self *= self)
-        .def(self *= float())
-        .def(self /= float())
-    ;
-
-
 };
 
 /*

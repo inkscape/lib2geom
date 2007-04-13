@@ -55,13 +55,8 @@ double SBasis::tail_error(unsigned tail) const {
 }
 */
 double SBasis::tailError(unsigned tail) const {
-  double m, M;
-  bounds(*this,m,M,tail);
-  return std::max(fabs(m),fabs(M));
-}
-
-bool Linear::isFinite() const {
-    return is_finite(a[0]) && is_finite(a[1]);
+  Interval bs = bounds(*this, tail);
+  return std::max(fabs(bs.min()),fabs(bs.max()));
 }
 
 bool SBasis::isFinite() const {
@@ -494,7 +489,7 @@ SBasis compose_inverse(SBasis const &f, SBasis const &g, unsigned order, double 
     return result;
 }
 
-};
+}
 
 /*
   Local Variables:

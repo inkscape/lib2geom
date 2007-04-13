@@ -29,11 +29,8 @@
  */
 
 #include "svg-path.h"
-#include "path2.h"
 
 namespace Geom {
-
-namespace {
 
 void output(Path2::Curve const &curve, SVGPathSink &sink) {
     // FIXME -- convert to bezier from sbasis
@@ -64,8 +61,6 @@ bool output_as(Path2::Curve const &curve, SVGPathSink &sink) {
     } else {
         return false;
     }
-}
-
 }
 
 void output_svg_path(Path2::Path &path, SVGPathSink &sink) {

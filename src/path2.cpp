@@ -55,10 +55,9 @@ inline Cmp cmp(T1 const &a, T2 const &b) {
 }
 
 Maybe<int> CurveHelpers::sbasis_winding(D2<SBasis> const &sb, Point p) {
-  double minx, maxx;
-  bounds(sb[X], minx, maxx);
+  Interval ix = bounds(sb[X]);
 
-  if ( p[X] > maxx ) { /* ray does not intersect bbox */
+  if ( p[X] > ix.max() ) { /* ray does not intersect bbox */
     return 0;
   }
 
@@ -69,7 +68,7 @@ Maybe<int> CurveHelpers::sbasis_winding(D2<SBasis> const &sb, Point p) {
     return Nothing();
   }
 
-  if ( p[X] < minx ) { /* ray does not originate in bbox */
+  if ( p[X] < ix.min() ) { /* ray does not originate in bbox */
     double y = p[Y];
     /* winding determined by position of endpoints */
     Cmp initial_to_ray = cmp(fy[0][0], y);

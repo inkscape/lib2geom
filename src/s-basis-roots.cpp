@@ -50,18 +50,16 @@ also allow you to find intersections of multiple curves but require solving n*m 
 
 namespace Geom{
 
-void bounds(SBasis const & s,
-	    double &lo, double &hi, int order) {
+Interval bounds(SBasis const & s, int order) {
     int imax=s.size()-1;
-    lo=0;
-    hi=0;
+    double lo = 0.0, hi = 0.0;
 
     for(int i = imax; i >=order; i--) {
       double a=s[i][0];
       double b=s[i][1];
       double t;
 
-      if (hi>0){t=((b-a)+hi)/2/hi;}
+      if (hi > 0){ t=((b-a)+hi)/2/hi;}
       if (hi<=0||t<0||t>1){
 	hi=std::max(a,b);
       }else{
@@ -79,15 +77,14 @@ void bounds(SBasis const & s,
         lo*=pow(.25,order);
         hi*=pow(.25,order);
     }
+    return Interval(lo, hi);
 }
 
-void local_bounds(SBasis const & s,
-                  double t0,double t1,
-                  double &lo, double &hi,
-                  int order) {
+Interval local_bounds(SBasis const & s,
+                      double t0, double t1,
+                      int order) {
     int imax=s.size()-1;
-    lo=0;
-    hi=0;
+    double lo = 0.0, hi = 0.0;
     
     for(int i = imax; i >=order; i--) {
         double a=s[i][0];
@@ -110,6 +107,7 @@ void local_bounds(SBasis const & s,
         lo*=pow(.25,order);
         hi*=pow(.25,order);
     }
+    return Interval(lo, hi);
 }
 
 //-- multi_roots ------------------------------------
@@ -182,8 +180,8 @@ static void multi_roots_internal(SBasis const &f,
     
     int idxa=upper_level(levels,fa,tol);
     int idxb=upper_level(levels,fb,tol);
-    double m,M;
-    local_bounds(df,a,b,m,M);
+    
+    Interval bs = local_bounds(df,a,b);
 
     //first times when a level (higher or lower) can be reached from a or b.
     double ta_hi,tb_hi,ta_lo,tb_lo;
@@ -193,18 +191,18 @@ static void multi_roots_internal(SBasis const &f,
     if (fabs(fa-levels[idxa])<tol){
         ta_hi=ta_lo=a;
     }else{
-        if (M>0 && idxa<levels.size())
-            ta_hi=a+(levels[idxa  ]-fa)/M;
-        if (m<0 && idxa>0)
-            ta_lo=a+(levels[idxa-1]-fa)/m;
+        if (bs.max()>0 && idxa<levels.size())
+            ta_hi=a+(levels[idxa  ]-fa)/bs.max();
+        if (bs.min()<0 && idxa>0)
+            ta_lo=a+(levels[idxa-1]-fa)/bs.min();
     }
     if (fabs(fb-levels[idxb])<tol){
         tb_hi=tb_lo=b;
     }else{
-        if (m<0 && idxb<levels.size())
-            tb_hi=b+(levels[idxb  ]-fb)/m;
-        if (M>0 && idxb>0)
-            tb_lo=b+(levels[idxb-1]-fb)/M;
+        if (bs.min()<0 && idxb<levels.size())
+            tb_hi=b+(levels[idxb  ]-fb)/bs.min();
+        if (bs.max()>0 && idxb>0)
+            tb_lo=b+(levels[idxb-1]-fb)/bs.max();
     }
     
     double t0,t1;
@@ -293,9 +291,8 @@ double Laguerre_internal(SBasis const & p,
 void subdiv_sbasis(SBasis const & s,
                    std::vector<double> & roots, 
                    double left, double right) {
-    double lo, hi;
-    bounds(s, lo, hi);
-    if(lo > 0 || hi < 0)
+    Interval bs = bounds(s);
+    if(bs.min() > 0 || bs.max() < 0)
         return; // no roots here
     if(s.tailError(1) < 1e-7) {
         double t = s[0][0] / (s[0][0] - s[0][1]);

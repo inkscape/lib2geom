@@ -68,10 +68,11 @@ class Sb1d: public Toy {
         for(int i = 1; i < B[1].size(); i++) {
             B[1][i] = choose<double>(2*i+1, i)*B[1][i];
         }
+        
+        Interval bs = bounds(B[1]);
         double lo, hi;
-        bounds(B[1], lo, hi);
-        lo = 3*width/4 - lo;
-        hi = 3*width/4 - hi;
+        lo = 3*width/4 - bs.min();
+        hi = 3*width/4 - bs.max();
         cairo_move_to(cr, B[0](0), lo);
         cairo_line_to(cr, B[0](1), lo);
         cairo_move_to(cr, B[0](0), hi);

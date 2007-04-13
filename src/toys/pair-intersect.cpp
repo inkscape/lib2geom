@@ -69,20 +69,13 @@ void pair_intersect(vector<double> &Asects,
     if((depth > 12) || Ar.intersects(Br)) {
         double Ate = 0;
         double Bte = 0;
-        double lo, hi;
         for(int d = 0; d < 2; d++) {
-            local_bounds(A[d],
-                         Al, Ah,
-                         lo, hi,
-                         1);
-            Ate = max(Ate, hi-lo);
+            Interval bs = local_bounds(A[d], Al, Ah, 1); //only 1?
+            Ate = max(Ate, bs.size());
         }
         for(int d = 0; d < 2; d++) {
-            local_bounds(B[d],
-                         Bl, Bh,
-                         lo, hi,
-                         1);
-            Bte = max(Bte, hi-lo);
+            Interval bs = local_bounds(B[d], Bl, Bh, 1);
+            Bte = max(Bte, bs.size());
         }
 
         if((depth > 12)  || ((Ate < eps) && 
