@@ -6,16 +6,16 @@
 #include "s-basis-2d.h"
 #include "sb-geometric.h"
 
-/** Geometric operators on multidim_sbasis<2> (1D->2D).
+/** Geometric operators on D2<SBasis> (1D->2D).
  * Copyright 2007 JF Barraud
  * Copyright 2007 N Hurst
  *
  * The functions defined in this header related to 2d geometric operations such as arc length,
- * unit_vector and curvature.  Most are built on top of unit_vector, which takes an arbitrary md<2>
- * and returns an md<2> with unit length with the same direction.
+ * unit_vector, curvature, and centroid.  Most are built on top of unit_vector, which takes an
+ * arbitrary D2 and returns an D2 with unit length with the same direction.
  *
  * Todo/think about:
- *  arclength md<2> -> sbasis (giving arclength function)
+ *  arclength D2 -> sbasis (giving arclength function)
  *  does uniform_speed return natural parameterisation?
  *  integrate sb2d code from normal-bundle
  *  angle(md<2>) -> sbasis (gives angle from vector - discontinuous?)
@@ -331,6 +331,40 @@ Geom::arc_length_parametrization(D2<Piecewise<SBasis> > const &M,
     return(result);
 }
 
+/** centroid using sbasis integration.
+ * This approach uses green's theorem to compute the area and centroid using integrals.  For curved
+ * shapes this is much faster than converting to polyline and using the above function.
+
+ * Returned values: 
+    0 for normal execution;
+    2 if area is zero, meaning centroid is meaningless.
+
+ * Copyright Nathan Hurst 2006
+ */
+
+int centroid(Piecewise<D2<SBasis> > const &p, Point& centroid, double &area) {
+    Point centroid_tmp(0,0);
+    double atmp = 0;
+    for(int i = 0; i < p.size(); i++) {
+        SBasis curl = dot(p[i], rot90(derivative(p[i])));
+        SBasis A = integral(curl);
+        D2<SBasis> C = integral(multiply(curl, B));
+        atmp += A(1) - A(0);
+        centroid_tmp += point_at(C, 1)- point_at(C, 0); // first moment.
+    }
+// join ends
+    centroid_tmp *= 2;
+    const double ai = cross(p.final_point(), p.initial_point());
+    atmp += ai;
+    centroid_tmp += ai*(p.final_point(), p.initial_point()); // first moment.
+    
+    area = atmp / 2;
+    if (atmp != 0) {
+        centroid = centroid_tmp / (3 * atmp);
+        return 0;
+    }
+    return 2;
+}
 
 //}; // namespace
 

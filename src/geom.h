@@ -41,9 +41,6 @@ enum IntersectorKind {
     no_intersection
 };
 
-/* Define here various primatives, such as line, line segment, circle, bezier path etc. */
-
-
 int
 intersector_ccw(const Geom::Point& p0, const Geom::Point& p1,
 		const Geom::Point& p2);
@@ -64,3 +61,5 @@ IntersectorKind
 line_twopoint_intersect(Geom::Point const &p00, Geom::Point const &p01,
 			Geom::Point const &p10, Geom::Point const &p11,
 			Geom::Point &result);
+
+int centroid(std::vector<Point> p, Point& centroid, double &area);

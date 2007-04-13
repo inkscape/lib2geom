@@ -57,6 +57,8 @@ Piecewise<SBasis>
 curvature(D2<SBasis> const M, 
           double tol=.1);
 
+int centroid(Piecewise<D2<SBasis> > const &p, Point& centroid, double &area);
+
 };
 
 #endif
