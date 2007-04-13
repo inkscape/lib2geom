@@ -39,8 +39,9 @@ class Interval {
 private:
     Coord _min, _max;
 public:
-    Interval() : _min(0.0), _max(0.0) {}
-
+    //TODO: remove; required by maybe
+    Interval(): _min(0.0), _max(0.0) {}
+    Interval(Coord u): _min(u), _max(u) {}
     Interval(Coord u, Coord v) {
         if(u < v) {
             _min = u; _max = v;
@@ -88,6 +89,13 @@ public:
     inline void operator+(Coord amnt) {
         _min += amnt;
         _max += amnt;
+    }
+
+    static Interval fromArray(const Coord* c, int n) {
+        assert(n > 0);
+        Interval result(c[0]);
+        for(int i = 0; i < n; i++) result.extendTo(c[i]);
+        return result;
     }
 
     //TODO: evil, but temporary 

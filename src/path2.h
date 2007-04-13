@@ -142,7 +142,7 @@ public:
   }
 
   D2<SBasis> sbasis() const {
-    return bezier_to_sbasis<bezier_degree, Geom::Point const *>(c_);
+    return handles_to_sbasis<bezier_degree>(c_);
   }
 
 protected:

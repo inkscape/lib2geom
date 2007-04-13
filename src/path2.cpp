@@ -55,7 +55,7 @@ inline Cmp cmp(T1 const &a, T2 const &b) {
 }
 
 Maybe<int> CurveHelpers::sbasis_winding(D2<SBasis> const &sb, Point p) {
-  Interval ix = bounds(sb[X]);
+  Interval ix = sb[X].boundsFast();
 
   if ( p[X] > ix.max() ) { /* ray does not intersect bbox */
     return 0;

@@ -50,13 +50,13 @@ also allow you to find intersections of multiple curves but require solving n*m 
 
 namespace Geom{
 
-Interval bounds(SBasis const & s, int order) {
-    int imax=s.size()-1;
+Interval SBasis::boundsExact(int order) const {
+    int imax=size()-1;
     double lo = 0.0, hi = 0.0;
 
     for(int i = imax; i >=order; i--) {
-      double a=s[i][0];
-      double b=s[i][1];
+      double a=(*this)[i][0];
+      double b=(*this)[i][1];
       double t;
 
       if (hi > 0){ t=((b-a)+hi)/2/hi;}
@@ -80,15 +80,13 @@ Interval bounds(SBasis const & s, int order) {
     return Interval(lo, hi);
 }
 
-Interval local_bounds(SBasis const & s,
-                      double t0, double t1,
-                      int order) {
-    int imax=s.size()-1;
+Interval SBasis::boundsLocal(double t0, double t1, int order) const {
+    int imax=size()-1;
     double lo = 0.0, hi = 0.0;
     
     for(int i = imax; i >=order; i--) {
-        double a=s[i][0];
-        double b=s[i][1];
+        double a=(*this)[i][0];
+        double b=(*this)[i][1];
         double t;
         if (hi>0){t=((b-a)+hi)/2/hi;}
         if (hi<=0||t<t0||t>t1){
@@ -181,7 +179,7 @@ static void multi_roots_internal(SBasis const &f,
     int idxa=upper_level(levels,fa,tol);
     int idxb=upper_level(levels,fb,tol);
     
-    Interval bs = local_bounds(df,a,b);
+    Interval bs = df.boundsLocal(a,b);
 
     //first times when a level (higher or lower) can be reached from a or b.
     double ta_hi,tb_hi,ta_lo,tb_lo;
@@ -291,7 +289,7 @@ double Laguerre_internal(SBasis const & p,
 void subdiv_sbasis(SBasis const & s,
                    std::vector<double> & roots, 
                    double left, double right) {
-    Interval bs = bounds(s);
+    Interval bs = s.boundsFast();
     if(bs.min() > 0 || bs.max() < 0)
         return; // no roots here
     if(s.tailError(1) < 1e-7) {

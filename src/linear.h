@@ -94,10 +94,12 @@ public:
     }
     inline double operator()(double t) const { return pointAt(t); }
 
+    //defed in s-basis.h unfortunately
     inline SBasis toSBasis() const;
 
     inline Interval boundsExact() const { return Interval(a[0], a[1]); }
     inline Interval boundsFast() const { return boundsExact(); }
+    inline Interval boundsLocal(double u, double v) const { return Interval(pointAt(u), pointAt(v)); }
 
     operator Tri() const {
         return a[1] - a[0];

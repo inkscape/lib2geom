@@ -278,8 +278,8 @@ vector<D2<SBasis> > sectionize(D2<Piecewise<SBasis> > const &a, vector<double> &
 
 class Rect;
 
-Rect bounds(D2<SBasis> const & s, int order=0);
-Rect local_bounds(D2<SBasis> const & s, double t0, double t1, int order=0);
+Rect boundsExact(D2<SBasis> const & s, int order=0);
+Rect boundsLocal(D2<SBasis> const & s, double t0, double t1, int order=0);
 
 };
 

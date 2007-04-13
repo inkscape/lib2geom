@@ -140,7 +140,7 @@ std::vector<D2<SBasis> > Geom::unit_vector(D2<SBasis> const vect, std::vector<do
     //--Check how good it is:
     //TODO1: if the curve is a "flat S", the half turns are not seen!!
     //TODO2: Find a good and fast "relative" tolerance...
-    Interval bs = bounds(dot(vect, vect));
+    Interval bs = dot(vect, vect).boundsFast();
     double err = tol*std::sqrt(max(1., bs.min()));
     //double err=tol;
 
@@ -348,15 +348,18 @@ int centroid(Piecewise<D2<SBasis> > const &p, Point& centroid, double &area) {
     for(int i = 0; i < p.size(); i++) {
         SBasis curl = dot(p[i], rot90(derivative(p[i])));
         SBasis A = integral(curl);
-        D2<SBasis> C = integral(multiply(curl, B));
-        atmp += A(1) - A(0);
-        centroid_tmp += point_at(C, 1)- point_at(C, 0); // first moment.
+        D2<SBasis> C = integral(multiply(curl, p[i]));
+        atmp += A.at1() - A.at0();
+        //TODO: replace following with at0, at1
+        centroid_tmp += C(1)- C(0); // first moment.
     }
 // join ends
     centroid_tmp *= 2;
-    const double ai = cross(p.final_point(), p.initial_point());
+    //TODO: replace following with at0, at1
+    Geom::Point final = p[p.size()](1), initial = p[0](0);
+    const double ai = cross(final, initial);
     atmp += ai;
-    centroid_tmp += ai*(p.final_point(), p.initial_point()); // first moment.
+    centroid_tmp += ai*(final, initial); // first moment.
     
     area = atmp / 2;
     if (atmp != 0) {

@@ -38,22 +38,6 @@
 
 using namespace boost::python;
 
-// helpers for bezord
-tuple bezord_to_tuple(Geom::Linear const& b)
-{
-    return make_tuple(b[0], b[1]);
-}
-
-Geom::Linear tuple_to_bezord(boost::python::tuple const& t)
-{
-    return Geom::Linear(extract<double>(t[0]), extract<double>(t[1]));
-}
-
-str bezord_repr(Geom::Linear const& b)
-{
-    return str("<" + str(b[0]) + ", " + str(b[1]) + ">");
-}
-
 Geom::SBasis (*truncate_sbasis)(Geom::SBasis const &, unsigned) = &Geom::truncate;
 Geom::SBasis (*multiply_sbasis)(Geom::SBasis const &, Geom::SBasis const &) = &Geom::multiply;
 Geom::SBasis (*integral_sbasis)(Geom::SBasis const &) = &Geom::integral;
@@ -61,39 +45,6 @@ Geom::SBasis (*derivative_sbasis)(Geom::SBasis const &) = &Geom::derivative;
 
 void wrap_sbasis() {
     //s-basis.h
-    class_<Geom::Linear>("Linear", init<double, double>())
-        .def("__str__", bezord_repr)
-        .def("__repr__", bezord_repr)
-        .def("__getitem__", python_getitem<Geom::Linear,double,2>)
-        .def("tuple", bezord_to_tuple)
-
-        .def("from_tuple", tuple_to_bezord)
-        .staticmethod("from_tuple")
-
-        .def("isZero", &Geom::Linear::isZero)
-        .def("isFinite", &Geom::Linear::isFinite)
-        .def("at0", &Geom::Linear::at0)
-        .def("at1", &Geom::Linear::at1)
-        .def("pointAt", &Geom::Linear::pointAt)
-        .def("toSBasis", &Geom::Linear::toSBasis)
-
-        .def(-self)
-        .def(self + self)
-        .def(self - self)
-        .def(self += self)
-        .def(self -= self)
-        .def(self + float())
-        .def(self - float())
-        .def(self += float())
-        .def(self -= float())
-        .def(self == self)
-        .def(self != self)
-        .def(float() * self)
-        .def(self *= float())
-    ;
-    implicitly_convertible<Geom::Linear,tuple>();
-// TODO: explain why this gives a compile time error
-//    implicitly_convertible<tuple,Geom::Linear>();
 
     // needed for roots
     class_<std::vector<double> >("DoubleVec")
@@ -120,7 +71,6 @@ void wrap_sbasis() {
     def("sin", &Geom::sin);
     def("cos", &Geom::cos);
     def("reverse", (Geom::SBasis (*)(Geom::SBasis const &))&Geom::reverse);
-    def("bounds", &Geom::bounds);
     def("roots", &Geom::roots);
 
     class_<Geom::SBasis, bases<std::vector<Geom::Linear> > >("SBasis")
@@ -133,6 +83,9 @@ void wrap_sbasis() {
         .def("at1", &Geom::SBasis::at1)
         .def("pointAt", &Geom::SBasis::pointAt)
         .def("toSBasis", &Geom::SBasis::toSBasis)
+        .def("boundsFast", &Geom::SBasis::boundsFast)
+        .def("boundsExact", &Geom::SBasis::boundsExact)
+        .def("boundsLocal", &Geom::SBasis::boundsLocal)
 
         .def("normalize", &Geom::SBasis::normalize)
         .def("tailError", &Geom::SBasis::tailError)

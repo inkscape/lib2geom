@@ -2,7 +2,6 @@
  * bezier-to-sbasis.h
  *
  * Copyright 2006 Nathan Hurst <njh@mail.csse.monash.edu.au>
- * Copyright 2006 Michael G. Sloan <mgsloan@gmail.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it either under the terms of the GNU Lesser General Public
@@ -32,44 +31,48 @@
 #ifndef _BEZIER_TO_SBASIS
 #define _BEZIER_TO_SBASIS
 
+#include "coord.h"
+
 #include "d2.h"
+#include "point.h"
 
 namespace Geom{
 
-template <typename T, unsigned order>
+template <unsigned order>
 struct bezier_to_sbasis_impl {
-    static inline D2<SBasis> compute(T const &handles) {
-        return multiply(Linear(1, 0), bezier_to_sbasis_impl<T, order-1>::compute(handles)) +
-               multiply(Linear(0, 1), bezier_to_sbasis_impl<T, order-1>::compute(handles+1));
+    static inline SBasis compute(Coord const *handles) {
+        return multiply(Linear(1, 0), bezier_to_sbasis_impl<order-1>::compute(handles)) +
+               multiply(Linear(0, 1), bezier_to_sbasis_impl<order-1>::compute(handles+1));
     }
 };
 
-template <typename T>
-struct bezier_to_sbasis_impl<T, 1> {
-    static inline D2<SBasis> compute(T const &handles) {
-        D2<SBasis> mdsb;
-        for(unsigned d = 0 ; d < 2; d++) {
-            mdsb[d] = Linear(handles[0][d], handles[1][d]);
-        }
-        return mdsb;
+template <>
+struct bezier_to_sbasis_impl<1> {
+    static inline SBasis compute(Coord const *handles) {
+        return Linear(handles[0], handles[1]);
     }
 };
 
-template <typename T>
-struct bezier_to_sbasis_impl<T, 0> {
-    static inline D2<SBasis> compute(T const &handles) {
-        D2<SBasis> mdsb;
-        for(unsigned d = 0 ; d < 2; d++) {
-            mdsb[d] = Linear(handles[0][d], handles[0][d]);
-        }
-        return mdsb;
+template <>
+struct bezier_to_sbasis_impl<0> {
+    static inline SBasis compute(Coord const *handles) {
+        return Linear(handles[0], handles[0]);
     }
 };
+
+template <unsigned order>
+inline SBasis bezier_to_sbasis(Coord const *handles) {
+    return bezier_to_sbasis_impl<order>::compute(handles);
+}
 
 template <unsigned order, typename T>
-inline D2<SBasis>
-bezier_to_sbasis(T const &handles) {
-    return bezier_to_sbasis_impl<T, order>::compute(handles);
+inline D2<SBasis> handles_to_sbasis(T const &handles) {
+    double v[2][order+1];
+    for(int i = 0; i <= order; i++)
+        for(int j = 0; j < 2; j++)
+             v[j][i] = handles[i][j];
+    return D2<SBasis>(bezier_to_sbasis<order>(v[0]),
+                      bezier_to_sbasis<order>(v[1]));
 }
 
 };

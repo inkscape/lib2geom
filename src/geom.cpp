@@ -187,11 +187,11 @@ line_twopoint_intersect(Geom::Point const &p00, Geom::Point const &p01,
     * for now we require the path to be a polyline and assume it is closed.
 **/
 
-int centroid(std::vector<Point> p, Point& centroid, double &area) {
+int centroid(std::vector<Geom::Point> p, Geom::Point& centroid, double &area) {
     const unsigned n = p.size();
     if (n < 3)
         return 1;
-    Point centroid_tmp(0,0);
+    Geom::Point centroid_tmp(0,0);
     double atmp = 0;
     for (int i(n-1), j(0); j < n; i = j, j++) {
         const double ai = -cross(p[j], p[i]);

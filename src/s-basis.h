@@ -87,6 +87,12 @@ public:
     }
     SBasis toSBasis() const { return SBasis(*this); }
 
+    //TODO: boundsfast
+    Interval boundsFast() const { boundsExact(); }
+    //implemented in s-basis-roots.cpp
+    Interval boundsExact(int order = 0) const;
+    Interval boundsLocal(double t0, double t1, int order = 0) const;
+
     double tailError(unsigned tail) const;
 
 // compute f(g)
@@ -269,12 +275,6 @@ inline std::ostream &operator<< (std::ostream &out_file, const SBasis & p) {
 
 SBasis sin(Linear bo, int k);
 SBasis cos(Linear bo, int k);
-
-//void bounds(SBasis const & s, double &lo, double &hi);
-//implemented in s-basis-roots.cpp
-Interval bounds(SBasis const & s, int order=0);
-Interval local_bounds(SBasis const & s, double t0, double t1, int order=0);
-//void slow_bounds(SBasis const & s, double &lo, double &hi,int order=0,double tol=0.01);
 
 std::vector<double> roots(SBasis const & s);
 std::vector<std::vector<double> > multi_roots(SBasis const &f,

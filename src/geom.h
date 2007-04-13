@@ -32,7 +32,10 @@
  *
  */
 
-#include "forward.h"
+//TODO: move somewhere else
+
+#include <vector>
+#include "point.h"
 
 enum IntersectorKind {
     intersects = 0,
@@ -62,4 +65,4 @@ line_twopoint_intersect(Geom::Point const &p00, Geom::Point const &p01,
 			Geom::Point const &p10, Geom::Point const &p11,
 			Geom::Point &result);
 
-int centroid(std::vector<Point> p, Point& centroid, double &area);
+int centroid(std::vector<Geom::Point> p, Geom::Point& centroid, double &area);
