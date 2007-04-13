@@ -20,7 +20,7 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
     cairo_stroke(cr);
     
     // Convert 4 handles to md_sb
-    D2<SBasis> Bz = bezier_to_sbasis<3>(handles.begin());
+    D2<SBasis> Bz = handles_to_sbasis<3>(handles.begin());
     
     // Draw it in orange
     Geom::Path2::Path pb;

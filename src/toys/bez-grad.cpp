@@ -61,7 +61,7 @@ class BezGrad: public Toy {
         MultidimSBasis<2> side_B[4];
         
         for(int side = 0; side < 4; side++) {
-            side_B[side] = bezier_to_sbasis<2, 3>(circulator_hack.begin() + 3*side);
+            side_B[side] = handles_to_sbasis<2, 3>(circulator_hack.begin() + 3*side);
             side_B[side][0].resize(2);
             side_B[side][1].resize(2); // fix overzealous pruning
             std::cout << side_B[side][0].size() << ", " 

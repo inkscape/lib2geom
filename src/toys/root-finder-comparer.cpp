@@ -63,8 +63,8 @@ public:
         std::cout << std::endl;
 #endif
         
-        D2<SBasis> test_sb = bezier_to_sbasis<5>(handles.begin());
-        Interval bs = bounds(test_sb[1]);
+        D2<SBasis> test_sb = handles_to_sbasis<5>(handles.begin());
+        Interval bs = test_sb[1].boundsExact();
         cairo_move_to(cr, test_sb[0](0), bs.min());
         cairo_line_to(cr, test_sb[0](1), bs.min());
         cairo_move_to(cr, test_sb[0](0), bs.max());
@@ -211,7 +211,7 @@ public:
         *notify << "found " << solutions.size() << "solutions at:\n";
         std::copy(solutions.begin(), solutions.end(), std::ostream_iterator<double >(*notify, ","));
             
-        D2<SBasis> B = bezier_to_sbasis<5>(handles.begin());
+        D2<SBasis> B = handles_to_sbasis<5>(handles.begin());
         Geom::Path2::Path pb;
         pb.append(B);
         pb.close(false);

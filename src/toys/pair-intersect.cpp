@@ -24,7 +24,7 @@ bool
 linear_pair_intersect(D2<SBasis> A, double Al, double Ah, 
                       D2<SBasis> B, double Bl, double Bh,
                       double &tA, double &tB) {
-    Rect Ar = local_bounds(A, Al, Ah);
+    Rect Ar = boundsLocal(A, Al, Ah);
     cairo_rectangle(g_cr, Ar.min()[0], Ar.min()[1], Ar.max()[0], Ar.max()[1]);
     cairo_stroke(g_cr);
     cout << Al << ", " << Ah << "\n";
@@ -60,21 +60,21 @@ void pair_intersect(vector<double> &Asects,
                     D2<SBasis> A, double Al, double Ah, 
                     D2<SBasis> B, double Bl, double Bh, int depth=0) {
     // we'll split only A, and swap args
-    Rect Ar = local_bounds(A, Al, Ah);
+    Rect Ar = boundsLocal(A, Al, Ah);
     if(Ar.isEmpty()) return;
 
-    Rect Br = local_bounds(B, Bl, Bh);
+    Rect Br = boundsLocal(B, Bl, Bh);
     if(Br.isEmpty()) return;
     
     if((depth > 12) || Ar.intersects(Br)) {
         double Ate = 0;
         double Bte = 0;
         for(int d = 0; d < 2; d++) {
-            Interval bs = local_bounds(A[d], Al, Ah, 1); //only 1?
+            Interval bs = A[d].boundsLocal(Al, Ah, 1); //only 1?
             Ate = max(Ate, bs.size());
         }
         for(int d = 0; d < 2; d++) {
-            Interval bs = local_bounds(B[d], Bl, Bh, 1);
+            Interval bs = B[d].boundsLocal(Bl, Bh, 1);
             Bte = max(Bte, bs.size());
         }
 
@@ -107,10 +107,10 @@ class PairIntersect: public Toy {
 virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
     cairo_set_line_width (cr, 0.5);
     
-    D2<SBasis> A = bezier_to_sbasis<bez_ord-1>(handles.begin());
+    D2<SBasis> A = handles_to_sbasis<bez_ord-1>(handles.begin());
     cairo_md_sb(cr, A);
     
-    D2<SBasis> B = bezier_to_sbasis<bez_ord-1>(handles.begin()+bez_ord);
+    D2<SBasis> B = handles_to_sbasis<bez_ord-1>(handles.begin()+bez_ord);
     cairo_md_sb(cr, B);
     vector<double> Asects, Bsects;
     g_cr = cr;

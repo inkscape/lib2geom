@@ -40,7 +40,7 @@ plot_offset(cairo_t* cr, D2<SBasis> const &M,
 class OffsetTester: public Toy {
 
     void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
-        D2<SBasis> B = bezier_to_sbasis<3>(handles.begin());
+        D2<SBasis> B = handles_to_sbasis<3>(handles.begin());
 
         cairo_set_line_width (cr, 1);
         cairo_set_source_rgba (cr, 0., 0.5, 0., 1);

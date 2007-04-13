@@ -57,8 +57,8 @@ class LengthTester: public Toy {
 	      std::ostringstream *notify,
 	      int width, int height, bool save) {
     
-      D2<SBasis> B1 = bezier_to_sbasis<SIZE-1>(handles.begin());
-      D2<SBasis> B2 = bezier_to_sbasis<SIZE-1>(handles.begin()+SIZE);
+      D2<SBasis> B1 = handles_to_sbasis<SIZE-1>(handles.begin());
+      D2<SBasis> B2 = handles_to_sbasis<SIZE-1>(handles.begin()+SIZE);
       D2<Piecewise<SBasis> >B;
       for ( int dim=0; dim<2; dim++ ){
           B[dim].cuts.push_back(0);

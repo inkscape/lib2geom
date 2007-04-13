@@ -53,7 +53,7 @@ class PwToy: public Toy {
                 pws[a].push_cut(handles[i+base][0]);
                 //Bad hack to move 0 to 150
                 for(int j = base + i; j < base + i + 4; j++) handles[j] = Point(handles[j][0], handles[j][1] - 150);
-                pws[a].push_seg( Geom::bezier_to_sbasis<3>(handles.begin()+i+base)[1] );
+                pws[a].push_seg( Geom::handles_to_sbasis<3>(handles.begin()+i+base)[1] );
                 for(int j = base + i; j < base + i + 4; j++) handles[j] = Point(handles[j][0], handles[j][1] + 150);
             }
             pws[a].push_cut(handles[base + handles_per_curve - 1][0]);

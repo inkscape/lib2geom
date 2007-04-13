@@ -22,8 +22,8 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
     cairo_set_line_width (cr, 0.5);
     cairo_set_source_rgba (cr, 0., 0., 0, 1);
     
-    D2<SBasis> A = bezier_to_sbasis<bez_ord-1>(handles.begin());
-    Rect Ar = local_bounds(A, 0, 1);
+    D2<SBasis> A = handles_to_sbasis<bez_ord-1>(handles.begin());
+    Rect Ar = boundsLocal(A, 0, 1);
     cairo_md_sb(cr, A);
     cairo_stroke(cr);
 

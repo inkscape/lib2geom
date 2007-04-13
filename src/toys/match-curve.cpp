@@ -58,10 +58,10 @@ public:
         
         std::vector<double> solutions;
         
-        D2<SBasis> test_sb = bezier_to_sbasis<5>(handles.begin());
+        D2<SBasis> test_sb = handles_to_sbasis<5>(handles.begin());
 
     
-        D2<SBasis> B = bezier_to_sbasis<5>(handles.begin());
+        D2<SBasis> B = handles_to_sbasis<5>(handles.begin());
         Geom::Path2::Path pb;
         pb.append(B);
         pb.close(false);

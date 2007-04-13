@@ -161,8 +161,8 @@ vector<D2<SBasis> > compose(NormalBundle const &NB,
 class NormalBundleToy: public Toy {
 
     void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
-        D2<SBasis> B = bezier_to_sbasis<3>(handles.begin());
-        D2<SBasis> P = bezier_to_sbasis<3>(handles.begin()+4);
+        D2<SBasis> B = handles_to_sbasis<3>(handles.begin());
+        D2<SBasis> P = handles_to_sbasis<3>(handles.begin()+4);
         Geom::Point O = *(handles.begin()+8);
     
         NormalBundle NBdle;

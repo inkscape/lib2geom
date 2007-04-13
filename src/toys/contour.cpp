@@ -171,7 +171,7 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
         cairo_stroke(cr);
     }
     
-    D2<SBasis> B = bezier_to_sbasis<1>(handles.begin() + surface_handles+1);
+    D2<SBasis> B = handles_to_sbasis<1>(handles.begin() + surface_handles+1);
     B = B + Geom::Point(-width/4., -width/4.);
     B *= (2./width);
 

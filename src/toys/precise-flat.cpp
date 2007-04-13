@@ -20,7 +20,7 @@ class PreciseFlat: public Toy {
 virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
     cairo_set_line_width (cr, 0.5);
     
-    D2<SBasis> B = bezier_to_sbasis<3>(handles.begin());
+    D2<SBasis> B = handles_to_sbasis<3>(handles.begin());
     D2<SBasis> dB = derivative(B);
     D2<SBasis> ddB = derivative(dB);
     cairo_md_sb(cr, B);

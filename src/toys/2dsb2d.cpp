@@ -66,7 +66,7 @@ class Sb2d2: public Toy {
         cairo_2dsb2d(cr, sb2, dir*0.1, width);
         cairo_set_source_rgba (cr, 0., 0., 0, 0.5);
         cairo_stroke(cr);
-        D2<SBasis> B = bezier_to_sbasis<3>(handles.begin() + surface_handles);
+        D2<SBasis> B = handles_to_sbasis<3>(handles.begin() + surface_handles);
         cairo_md_sb(cr, B);
         for(int dim = 0; dim < 2; dim++) {
             std::vector<double> r = roots(B[dim]);
