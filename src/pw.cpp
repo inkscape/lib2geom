@@ -63,7 +63,7 @@ static std::map<double,unsigned> vect_of_vect_to_map(std::vector<std::vector<dou
 Piecewise<SBasis> compose(Piecewise<SBasis> const &f, SBasis  const &g){
   Piecewise<SBasis> result;
 
-  if (f.size()==0) return result;
+  if (f.size()==0) return result;//is this correct?
   if (f.size()==1){
       double t0 = f.cuts[0], width = f.cuts[1] - t0;
       return (Piecewise<SBasis>) f.segs[0](compose(Linear(-t0 / width, (1-t0) / width), g));
@@ -96,7 +96,7 @@ Piecewise<SBasis> compose(Piecewise<SBasis> const &f, SBasis  const &g){
       while (i<levels.size()&&(g[0][1]>levels[i])) i++;
       cuts_pb[1.]=i;
   }
- 
+
   //-- Compose each piece of g with the relevant seg of f.
   result.cuts.push_back(0.);
   std::map<double,unsigned>::iterator cut=cuts_pb.begin();
@@ -106,6 +106,7 @@ Piecewise<SBasis> compose(Piecewise<SBasis> const &f, SBasis  const &g){
     int  idx0=(*cut).second;
     double t1=(*next).first;
     int  idx1=(*next).second;
+    assert(t0<t1);
     int  idx; //idx of the relevant f.segs
     if (std::max(idx0,idx1)==levels.size()){ //g([t0,t1]) is above the top level,
       idx=levels.size()-1;
@@ -136,24 +137,26 @@ Piecewise<SBasis> compose(Piecewise<SBasis> const &f, SBasis  const &g){
 
 Piecewise<SBasis> compose(Piecewise<SBasis> const &f, Piecewise<SBasis> const &g){
   Piecewise<SBasis> result;
-  for(int i = 0; i < g.segs.size(); i++){
-    Piecewise<SBasis> fgi=compose(f, g.segs[i]);
-    double t0 = g.cuts[i], t1 = g.cuts[i+1];
-    for(int j = 0; j < fgi.cuts.size(); j++){
-      fgi.cuts[j]= t0 + fgi.cuts[j] * (t1-t0);
-    }
-    //append
-    result.cuts.insert(result.cuts.end(), fgi.cuts.begin() + 1, fgi.cuts.end());
-    result.segs.insert(result.segs.end(), fgi.segs.begin(), fgi.segs.end());
+  //Do the first step by hand (concat of empty pw<> not allowed). :-(  
+  result=compose(f, g.segs[0]);
+  result.setDomain(g.cuts[0],g.cuts[1]);
+  for(int i = 1; i < g.segs.size(); i++){
+      Piecewise<SBasis> fgi=compose(f, g.segs[i]);
+      fgi.setDomain(g.cuts[i],g.cuts[i+1]);
+      result.concat(fgi);
   }
+  return result;
 }
 
 Piecewise<SBasis> integral(Piecewise<SBasis> const &a) {
     Piecewise<SBasis> result;
     result.segs.resize(a.segs.size());
     result.cuts.insert(result.cuts.end(), a.cuts.begin(), a.cuts.end());
+    double c=0;
     for(int i = 0; i < a.segs.size(); i++){
-        result.segs[i] = integral(a.segs[i]);
+        result.segs[i] = (a.cuts[i+1]-a.cuts[i])*integral(a.segs[i]);
+        result.segs[i]+= Linear(c-result.segs[i][0][0]);
+        c = result.segs[i][0][1];
         // Need some kind off offset to share the constant over all segs
     }
     return result;
