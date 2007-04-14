@@ -58,6 +58,13 @@ public:
     bool contains(Coord val) const { return _min <= val && val <= _max; }
     bool contains(const Interval & val) const { return _min <= val._min && _max <= val._max; }
 
+    static Interval fromArray(const Coord* c, int n) {
+        assert(n > 0);
+        Interval result(c[0]);
+        for(int i = 0; i < n; i++) result.extendTo(c[i]);
+        return result;
+    }
+
 //MUTATOR PRISON
     //TODO: NaN handleage for the next two?
     //TODO: Evaluate if wrap behaviour is proper.
@@ -91,11 +98,9 @@ public:
         _max += amnt;
     }
 
-    static Interval fromArray(const Coord* c, int n) {
-        assert(n > 0);
-        Interval result(c[0]);
-        for(int i = 0; i < n; i++) result.extendTo(c[i]);
-        return result;
+    inline Interval unionWith(const Interval & a) {
+        if(a._min < _min) _min = a._min;
+        if(a._max > _max) _max = a._max;
     }
 
     //TODO: evil, but temporary 
@@ -103,13 +108,12 @@ public:
 };
 
 // 'union' conflicts with C keyword
-inline Interval interval_union(const Interval & a, const Interval & b) {
+inline Interval unify(const Interval & a, const Interval & b) {
     return Interval(std::min(a.min(), b.min()),
                     std::max(a.max(), b.max()));
 }
 
-// named for consistancy with above
-inline Maybe<Interval> interval_intersect(const Interval & a, const Interval & b) {
+inline Maybe<Interval> intersect(const Interval & a, const Interval & b) {
     Coord u = std::max(a.min(), b.min()),
           v = std::min(a.max(), b.max());
     if(u > v) return Nothing();            //TODO: presumes that 0 size disallowed

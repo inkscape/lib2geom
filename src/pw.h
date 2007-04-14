@@ -38,8 +38,6 @@ using namespace std;
 
 namespace Geom {
 
-//template <typename T> class Piecewise;
-
 template <typename T>
 class Piecewise {
   public:
@@ -58,8 +56,8 @@ class Piecewise {
     inline T operator[](unsigned i) const { return segs[i]; }
     inline T &operator[](unsigned i) { return segs[i]; }
     inline double operator()(double t) const {
-        int n = segn(t);
-        return segs[n](segt(t, n));
+        int n = segN(t);
+        return segs[n](segT(t, n));
     }
     inline unsigned size() const { return segs.size(); }
     inline bool empty() const { return segs.empty(); }
@@ -83,7 +81,7 @@ class Piecewise {
     /**Returns the segment index which corresponds to a 'global' piecewise time.
      * Also takes optional low/high parameters to expedite the search for the segment.
      */
-    inline int segn(double t, int low = 0, int high = -1) const {
+    inline int segN(double t, int low = 0, int high = -1) const {
         high = (high == -1) ? size() : high;
         if(t < cuts[0]) return 0;
         if(t >= cuts[size()]) return size() - 1;
@@ -103,10 +101,10 @@ class Piecewise {
 
     /**Returns the time within a segment, given the 'global' piecewise time.
      * Also takes an optional index parameter which may be used for efficiency or to find the time on a
-     * segment outside its range.  If it is left to its default, -1, it will call segn to find the index.
+     * segment outside its range.  If it is left to its default, -1, it will call segN to find the index.
      */
-    inline double segt(double t, int i = -1) const {
-        if(i == -1) i = segn(t);
+    inline double segT(double t, int i = -1) const {
+        if(i == -1) i = segN(t);
         return (t - cuts[i]) / (cuts[i+1] - cuts[i]);
     }
 
@@ -127,26 +125,44 @@ class Piecewise {
             cuts[i] *= s;
     }
 
-    //Convenient combination of offset and scaling
-    inline void setDomain(double from, double to) {
+    //Retrieves the domain in interval form
+    inline void domain() { return Interval(cuts.front(), cuts.back()); }
+
+    //Transforms the domain into another interval
+    inline void setDomain(Interval dom) {
         if(empty()) return;
-        double cf = cuts.front(), o = from - cf, s = (to - from) / (cuts.back() - cf);
+        double cf = cuts.front();
+        double o = dom.min() - cf, s = dom.size() / (cuts.back() - cf);
         for(int i = 0; i <= size(); i++)
             cuts[i] = (cuts[i] - cf) * s + o;
     }
 
     //Concatenates this Piecewise function with another, offseting time of the other to match the end.
     inline void concat(const Piecewise<T> &other) {
-        if(empty()) return;
-        double t = cuts.back() - other.cuts.front();
+        if(other.empty()) return;
+
+        segs.insert(segs.end(), other.segs.begin(), other.segs.end());
+
+        if(empty()) { cuts = other.cuts; return; }
+
+        double t = cuts.back() - other.cuts.front();        
         for(int i = 0; i < other.size(); i++)
-            push(other[i], other.cuts[i + 1] + t);
+            push_cut(other.cuts[i + 1] + t);
     }
 
-    //Like concat, but ensures continuity.  Might be removed if continuity becomes implied
+    //Like concat, but ensures continuity.
     inline void continuousConcat(const Piecewise<T> &other) {
-        if(empty()) return;
-        double t = cuts.back() - other.cuts.front(), y = segs.back()[0][1] - other.segs.front()[0][0];
+        if(other.empty()) return;
+        double y = segs.back()[0][1] - other.segs.front()[0][0];
+
+        if(empty()) {
+            for(int i = 0; i < other.size(); i++)
+                push_seg(y + other[i]);
+            cuts = other.cuts;
+            return;
+        }
+
+        double t = cuts.back() - other.cuts.front();
         for(int i = 0; i < other.size(); i++)
             push(y + other[i], other.cuts[i + 1] + t);
     }
@@ -161,6 +177,41 @@ class Piecewise {
             if(cuts[i] >= cuts[i+1])
                 return false;
         return true;
+    }
+
+    inline Interval boundsFast() {
+        //TODO: empty check
+        Interval ret(segs[0].boundsFast());
+        for(int i = 1; i < size(); i++)
+            ret.unionWith(segs[i].boundsFast()); 
+        return ret;
+    }
+
+    inline Interval boundsExact() {
+        //TODO: empty check
+        Interval ret(segs[0].boundsExact());
+        for(int i = 1; i < size(); i++)
+            ret.unionWith(segs[i].boundsExact()); 
+        return ret;
+    }
+
+    inline Interval boundsLocal(Interval m) {
+        boundsLocal(m.min(), m.max());
+    }
+    inline Interval boundsLocal(double f, double t) {
+        //TODO: empty check
+
+        int fi = segN(f), ti = segN(t);
+        double ft = segT(f, fi), tt = segT(t, ti);
+
+        if(fi == ti) return segs[fi].boundsLocal(ft, tt);
+
+        Interval ret(segs[fi].boundsLocal(ft, 1.));
+        for(int i = fi + 1; i < ti; i++)
+            ret.unionWith(segs[i].boundsExact());
+        if(tt != 0.) ret.unionWith(segs[ti].boundsLocal(0., tt));
+
+        return ret;
     }
 };
 
@@ -219,7 +270,7 @@ Piecewise<T> partition(const Piecewise<T> &pw, vector<double> const &c) {
             return ret;
         }else if(ci == c.size() || c[ci] >= pw.cuts[si + 1]) {  //no more cuts within this segment, finalize
             if(prev > pw.cuts[si]) {      //segment already has cuts, so portion is required
-                ret.push_seg(portion(pw[si], pw.segt(prev, si), 1.0));
+                ret.push_seg(portion(pw[si], pw.segT(prev, si), 1.0));
             } else {                     //plain copy is fine
                 ret.push_seg(pw[si]);
             }
@@ -260,20 +311,20 @@ Piecewise<T> portion(const Piecewise<T> &pw, double from, double to) {
     from = min(from, to);
     to = max(temp, to);
     
-    int i = pw.segn(from);
+    int i = pw.segN(from);
     ret.push_cut(from);
     if(to < pw.cuts[i + 1]) {    //to/from inhabit the same segment
         ret.push(elem_portion(pw, i, from, to), to);
         return ret;
     }
-    ret.push(portion( pw[i], pw.segt(from, i), 1.0 ), pw.cuts[i + 1]);
+    ret.push(portion( pw[i], pw.segT(from, i), 1.0 ), pw.cuts[i + 1]);
     i++;
-    int fi = pw.segn(to, i);
+    int fi = pw.segN(to, i);
 
     ret.segs.insert(ret.segs.end(), pw.segs.begin() + i, pw.segs.begin() + fi - 1);  //copy segs
     ret.cuts.insert(ret.cuts.end(), pw.cuts.begin() + i + 1, pw.cuts.begin() + fi);  //and their ends
 
-    ret.push( portion(pw[fi], 0.0, pw.segt(to, fi)), to);
+    ret.push( portion(pw[fi], 0.0, pw.segT(to, fi)), to);
 
     return ret;
 }

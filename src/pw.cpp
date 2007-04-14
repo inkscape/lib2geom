@@ -137,12 +137,9 @@ Piecewise<SBasis> compose(Piecewise<SBasis> const &f, SBasis  const &g){
 
 Piecewise<SBasis> compose(Piecewise<SBasis> const &f, Piecewise<SBasis> const &g){
   Piecewise<SBasis> result;
-  //Do the first step by hand (concat of empty pw<> not allowed). :-(  
-  result=compose(f, g.segs[0]);
-  result.setDomain(g.cuts[0],g.cuts[1]);
   for(int i = 1; i < g.segs.size(); i++){
       Piecewise<SBasis> fgi=compose(f, g.segs[i]);
-      fgi.setDomain(g.cuts[i],g.cuts[i+1]);
+      fgi.setDomain(Interval(g.cuts[i], g.cuts[i+1]));
       result.concat(fgi);
   }
   return result;
@@ -151,7 +148,7 @@ Piecewise<SBasis> compose(Piecewise<SBasis> const &f, Piecewise<SBasis> const &g
 Piecewise<SBasis> integral(Piecewise<SBasis> const &a) {
     Piecewise<SBasis> result;
     result.segs.resize(a.segs.size());
-    result.cuts.insert(result.cuts.end(), a.cuts.begin(), a.cuts.end());
+    result.cuts = a.cuts;
     double c=0;
     for(int i = 0; i < a.segs.size(); i++){
         result.segs[i] = (a.cuts[i+1]-a.cuts[i])*integral(a.segs[i]);
@@ -165,7 +162,7 @@ Piecewise<SBasis> integral(Piecewise<SBasis> const &a) {
 Piecewise<SBasis> derivative(Piecewise<SBasis> const &a) {
     Piecewise<SBasis> result;
     result.segs.resize(a.segs.size());
-    result.cuts.insert(result.cuts.end(), a.cuts.begin(), a.cuts.end());
+    result.cuts = a.cuts;
     for(int i = 0; i < a.segs.size(); i++){
         result.segs[i] = derivative(a.segs[i]);
     }

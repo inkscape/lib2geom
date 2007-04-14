@@ -18,17 +18,24 @@ void cairo_pw(cairo_t *cr, Piecewise<SBasis> p) {
     }
 }
 
-void cairo_horiz(cairo_t *cr, vector<double> p) {
+void cairo_horiz(cairo_t *cr, double y, vector<double> p) {
     for(int i = 0; i < p.size(); i++) {
-        cairo_move_to(cr, p[i], 500);
+        cairo_move_to(cr, p[i], y);
         cairo_rel_line_to(cr, 0, 10);
+    }
+}
+
+void cairo_vert(cairo_t *cr, double x, vector<double> p) {
+    for(int i = 0; i < p.size(); i++) {
+        cairo_move_to(cr, x, p[i]);
+        cairo_rel_line_to(cr, 10, 0);
     }
 }
 
 class PwToy: public Toy {
     unsigned segs, handles_per_curve, curves;
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
-        cairo_set_source_rgba (cr, 0., 0.5, 0, 1);
+        cairo_set_source_rgba (cr, 0., 0., 0., 1);
         cairo_set_line_width (cr, 1);
         if(!save) {
             cairo_move_to(cr, handles[0]);
@@ -61,25 +68,35 @@ class PwToy: public Toy {
             
             cairo_pw(cr, pws[a]);
         }
-        /*vector<double> new_cuts;
-        new_cuts.push_back(50);
-        new_cuts.push_back(175);
-        new_cuts.push_back(550);
-        Piecewise<SBasis> pw_out = partition(pws[0], new_cuts);
-        cairo_horiz(cr, pw_out.cuts);
-        assert(pw_out.invariants()); */
+        cairo_stroke(cr);
+
+        Piecewise<SBasis> pw_out = pws[0] + pws[1];
+
+        cairo_set_source_rgba (cr, 0., 0., .5, 1.);
+        cairo_horiz(cr, 500, pw_out.cuts);
+        cairo_stroke(cr);
+
+        cairo_set_source_rgba (cr, 0., 0., .5, 1.);
         cairo_pw(cr, pws[0] + pws[1]);
         cairo_stroke(cr);
         
-       /* cairo_horiz(cr, roots(pws[0]));
+
+        Interval bs = pw_out.boundsLocal(handles[handles.size() - 2][0], handles[handles.size() - 1][0]);
+        vector<double> vec;
+        vec.push_back(bs.min() + 150); vec.push_back(bs.max() + 150);
+        cairo_set_source_rgba (cr, .5, 0., 0., 1.);
+        cairo_vert(cr, 100, vec);
+        cairo_stroke(cr);
+
+       /*  Portion demonstration
         Piecewise<SBasis> pw_out = portion(pws[0], handles[handles.size() - 2][0], handles[handles.size() - 1][0]);
         cairo_set_source_rgba (cr, 0, .5, 0, .25);
         cairo_set_line_width(cr, 3);
         cairo_pw(cr, pw_out);
         cairo_stroke(cr);
-        cairo_horiz(cr, pw_out.cuts);
-*/
-        *notify << pws[0].segn(handles[handles.size() - 1][0]) << "; " << pws[0].segt(handles[handles.size() - 1][0]);
+        */
+
+        *notify << pws[0].segN(handles[handles.size() - 1][0]) << "; " << pws[0].segT(handles[handles.size() - 1][0]);
         Toy::draw(cr, notify, width, height, save);
     }
 
@@ -92,8 +109,8 @@ class PwToy: public Toy {
         curves = 2;
         for(int a = 0; a < curves; a++)
             for(unsigned i = 0; i < handles_per_curve; i++)
-                handles.push_back(Point(150 + 300*i/(4*segs), uniform() * 150 + 150 - 150 * a));
-        handles.push_back(Point(100, 400));
+                handles.push_back(Point(150 + 300*i/(4*segs), uniform() * 150 + 150 - 50 * a));
+        handles.push_back(Point(150, 400));
         handles.push_back(Point(300, 400));
     }
 };
