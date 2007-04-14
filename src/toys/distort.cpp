@@ -77,7 +77,7 @@ class DistortToy: public Toy {
             D2<Piecewise<SBasis> > out;          
             //out[0] = compose(sb2[0], foo);
             //out[1] = compose(sb2[1], foo);
-            //cairo_md_pw(cr, out);
+            //cairo_d2_pw(cr, out);
         }
         //**** AND ENDS HERE
 

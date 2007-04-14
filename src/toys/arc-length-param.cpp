@@ -16,23 +16,6 @@
 using std::vector;
 using namespace Geom;
 
-void cairo_pw(cairo_t *cr, D2<Piecewise<SBasis> > M) {
-    vector<double> cuts;
-    vector<D2<SBasis> > sections = sectionize(M, cuts); 
-    for (int i=0; i < sections.size(); i++){
-        cairo_md_sb(cr, sections[i]);
-    }
-    cairo_stroke(cr);
-//     partition(M[0],M[1].cuts);
-//     partition(M[1],M[0].cuts);
-//     for(int i = 0; i < M[0].size(); i++) {
-//         D2<SBasis> seg;
-//         seg[0]=M[0][i];
-//         seg[1]=M[1][i];
-//         cairo_md_sb(cr,seg);
-//     }
-}
-
 static void dot_plot(cairo_t *cr, D2<Piecewise<SBasis> > const &M, double space=10){
     //double dt=(M[0].cuts.back()-M[0].cuts.front())/space;
     double dt=space;
@@ -41,11 +24,7 @@ static void dot_plot(cairo_t *cr, D2<Piecewise<SBasis> > const &M, double space=
         draw_handle(cr, M(t));
         t += dt;
     }
-    vector<double> cuts;
-    vector<D2<SBasis> > sections = sectionize(M, cuts); 
-    for (int i=0; i < sections.size(); i++){
-        cairo_md_sb(cr, sections[i]);
-    }
+    cairo_d2_pw(cr, M);
     cairo_stroke(cr);
 }
 
@@ -69,7 +48,7 @@ class LengthTester: public Toy {
       cairo_set_line_width (cr, .5);
       cairo_set_source_rgba (cr, 0., 0.5, 0., 1);
       //cairo_md_sb(cr, B1);
-      cairo_pw(cr, B);
+      cairo_d2_pw(cr, B);
       cairo_stroke(cr);
 
 //       D2<Piecewise<SBasis> > uniform_B1 = arc_length_parametrization(B1,3,1e-7);

@@ -71,7 +71,7 @@ public:
             grf.f[1] = als; // Piecewise<SBasis>(SBasis(Linear(height-5))) - 
             grf.f[0] = Piecewise<SBasis>(SBasis(Linear(0, width)));
             
-            cairo_md_pw(cr, grf);
+            cairo_d2_pw(cr, grf);
         }
 
         cairo_set_source_rgba (cr, 0., 0.5, 0, 0.8);

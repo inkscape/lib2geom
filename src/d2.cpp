@@ -98,13 +98,13 @@ bool isFinite(D2<SBasis> const & a) {
     return true;
 }
 
-vector<D2<SBasis> > sectionize(D2<Piecewise<SBasis> > const &a, vector<double> &cuts) {
+Piecewise<D2<SBasis> > sectionize(D2<Piecewise<SBasis> > const &a) {
     Piecewise<SBasis> x = partition(a[0], a[1].cuts), y = partition(a[1], a[0].cuts);
     assert(x.size() == y.size());
-    vector<D2<SBasis> > ret;
+    Piecewise<D2<SBasis> > ret;
     for(int i = 0; i < x.size(); i++)
-        ret.push_back(D2<SBasis>(x[i], y[i]));
-    cuts.insert(cuts.end(), x.cuts.begin(), x.cuts.end());
+        ret.push_seg(D2<SBasis>(x[i], y[i]));
+    ret.cuts.insert(ret.cuts.end(), x.cuts.begin(), x.cuts.end());
     return ret;
 }
 

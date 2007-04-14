@@ -319,8 +319,8 @@ Geom::arc_length_parametrization(D2<Piecewise<SBasis> > const &M,
                                  unsigned order,
                                  double tol){
     D2<Piecewise<SBasis> > result;
-    vector<double> forget_me;
-    vector<D2<SBasis> > pieces=sectionize(M, forget_me);
+
+    Piecewise<D2<SBasis> > pieces = sectionize(M);
     result=arc_length_parametrization(pieces[0],order,tol);
     for (int i=1; i<M[0].size(); i++ ){
         D2<Piecewise<SBasis> > uniform_seg=arc_length_parametrization(pieces[i],order,tol);

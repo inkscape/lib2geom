@@ -53,12 +53,12 @@ class PwToy: public Toy {
         }
         cairo_stroke(cr);
 
-        cairo_md_pw(cr, pws);
+        cairo_d2_pw(cr, pws);
         
         cairo_stroke(cr);
         cairo_set_source_rgba (cr, 0.9, 0., 0., 1);
         D2<Piecewise<SBasis> > res = compose(pws, Piecewise<SBasis>(g));
-        cairo_md_pw(cr, res);
+        cairo_d2_pw(cr, res);
         for(int i=0;i<20;i++){
             double t=(res[0].cuts.back()-res[0].cuts.front())*i/20.;
             draw_handle(cr, Point(res[0](t),res[1](t)));
