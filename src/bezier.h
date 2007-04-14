@@ -89,6 +89,7 @@ public:
   inline bool isFinite() const {
     for(int i = 0; i <= order; i++) {
       if(!is_finite(c_[i])) return false;
+    }
     return true;
   }
   inline Coord at0() const { return c_[0]; }
@@ -98,8 +99,8 @@ public:
 
   inline Interval boundsFast() const { return Interval::fromArray(c_, order+1); }
   //TODO: better bounds exact
-  inline Interval boundsExact() const { return toSBasis().boundsExact() }
-  inline Interval boundsLocal(double u, double v) const { return toSBasis().boundsLocal(u, v) }
+  inline Interval boundsExact() const { return toSBasis().boundsExact(); }
+  inline Interval boundsLocal(double u, double v) const { return toSBasis().boundsLocal(u, v); }
 
   //Only mutator
   inline Coord &operator[](int index) { return c_[index]; }
