@@ -141,10 +141,13 @@ class Piecewise {
     inline void concat(const Piecewise<T> &other) {
         if(other.empty()) return;
 
+
+        if(empty()) { 
+            cuts = other.cuts;
+            segs = other.segs;
+            return; }
+
         segs.insert(segs.end(), other.segs.begin(), other.segs.end());
-
-        if(empty()) { cuts = other.cuts; return; }
-
         double t = cuts.back() - other.cuts.front();        
         for(int i = 0; i < other.size(); i++)
             push_cut(other.cuts[i + 1] + t);

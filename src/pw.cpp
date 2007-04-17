@@ -70,7 +70,7 @@ Piecewise<SBasis> compose(Piecewise<SBasis> const &f, SBasis  const &g){
   }
 
   //first check bounds...
-  Interval bs = g.boundsFast();
+  Interval bs = g.boundsFast(0);
   if (bs.max() < f.cuts.front() || bs.min() > f.cuts.back()){
       //TODO: use segN
       int idx = (bs.max() < f.cuts[1]) ? 0 : f.cuts.size()-2;
@@ -137,7 +137,7 @@ Piecewise<SBasis> compose(Piecewise<SBasis> const &f, SBasis  const &g){
 
 Piecewise<SBasis> compose(Piecewise<SBasis> const &f, Piecewise<SBasis> const &g){
   Piecewise<SBasis> result;
-  for(int i = 1; i < g.segs.size(); i++){
+  for(int i = 0; i < g.segs.size(); i++){
       Piecewise<SBasis> fgi=compose(f, g.segs[i]);
       fgi.setDomain(Interval(g.cuts[i], g.cuts[i+1]));
       result.concat(fgi);
