@@ -50,7 +50,7 @@ also allow you to find intersections of multiple curves but require solving n*m 
 
 namespace Geom{
 
-Interval SBasis::boundsExact(int order) const {
+Interval SBasis::boundsFast(int order) const {
     int imax=size()-1;
     double lo = 0.0, hi = 0.0;
 
