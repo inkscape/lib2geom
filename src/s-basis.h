@@ -88,9 +88,9 @@ public:
     SBasis toSBasis() const { return SBasis(*this); }
 
     //TODO: boundsfast
-    Interval boundsFast() const { boundsExact(); }
+    Interval boundsExact(int order = 0) const { boundsFast(); }
     //implemented in s-basis-roots.cpp
-    Interval boundsExact(int order = 0) const;
+    Interval boundsFast(int order = 0) const;
     Interval boundsLocal(double t0, double t1, int order = 0) const;
 
     double tailError(unsigned tail) const;
