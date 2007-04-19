@@ -443,45 +443,54 @@ SBasis cos(Linear bo, int k) {
                k);
 }
 
+//compute fog^-1.
+//TODO: compute order according to tol?
 SBasis compose_inverse(SBasis const &f, SBasis const &g, unsigned order, double tol){
     SBasis result; //result
     SBasis r=f; //remainder
+    SBasis Pk=Linear(1)-g,Qk=g,sg=Pk*Qk;
     int val_g=valuation(g);
     int val_r=valuation(f);
-    SBasis Pk=Linear(1)-g,Qk=g,sg=Pk*Qk;
     Pk.truncate(order);
     Qk.truncate(order);
 
     for (int k=0; k<=order; k++){
-        int v=k*val_g;
-        assert(v<=val_r);
+        
+        // v is min(valuation(Pk,tol),valuation(Qk,tol));
+        //TODO: are valuations really needed here?
+        //Certainly not. Only val_r is really used, and could be incremented instead of computed.
+        //However, assertions like 'assert(v<=val_r)' would be more tricky to state...
+        //v could also be incremented ( v ~ k*valuationl(sg)+v0 ).
+
+        unsigned v=std::min(valuation(Pk,tol),valuation(Qk,tol));
+
+        assert(v<=val_r);//otherwise f(g^-1) does not exist!
+
         if (v<val_r){
             result.push_back(Linear(0));
-        }else if (v==val_r){
-            double p10=Pk[v][0];
-            double p01=Pk[v][1];
-            double q10=Qk[v][0];
-            double q01=Qk[v][1];
-            double r10=r[v][0];
-            double r01=r[v][1];
+        }else if (v==val_r && val_r<r.size()){
+            double p10 = Pk.at(v)[0];
+            double p01 = Pk.at(v)[1];
+            double q10 = Qk.at(v)[0];
+            double q01 = Qk.at(v)[1];
+            double r10 =  r.at(v)[0];
+            double r01 =  r.at(v)[1];
             if ( fabs(p10*q01-p01*q10)<tol ) {
-                if (fabs(r10)>tol || fabs(r01)>tol ){
-                    // f(g^-1) does not exist!
-                    assert(false);
-                }
-                //if val_r=valuation(r), we should not be there...
-                //but this might fail to be true if there are extra cancellations... 
+                assert(fabs(r10)<tol && fabs(r01)<tol );//otherwise f(g^-1) does not exist!
+                //but we should not be there (val_r==valuation(r)!)...
                 result.push_back(Linear(0));
                 val_r+=1;
+            }else{
+                double a=( q01*r10-q10*r01)/(p10*q01-p01*q10);
+                double b=(-p01*r10+p10*r01)/(p10*q01-p01*q10);
+                result.push_back(Linear(a,b));
+                //r=f-result(g);
+                r=r-a*Pk-b*Qk;
+                //TODO: val_r+=1;
+                val_r=valuation(r,tol);
             }
-            double a=( q01*r10-q10*r01)/(p10*q01-p01*q10);
-            double b=(-p01*r10+p10*r01)/(p10*q01-p01*q10);
-            result.push_back(Linear(a,b));
-            //r=f-resul(g);
-            r=r-a*Pk-b*Qk;
-            val_r+=1;//should be: val_r=valuation(r); irrelevant unless there extra cancellations...
         }
-        //if (r.tail_error(0)<tol) return result;
+        if (val_r==r.size()) return result;
         Pk=Pk*sg;
         Qk=Qk*sg;
         Pk.truncate(order);

@@ -237,13 +237,15 @@ inline SBasis& operator*=(SBasis& a, SBasis const & b) {
 
 //valuation: degree of the first non zero coefficient.
 //TODO: perhaps -1 would be better for const 0?
+// Hum, valuation==size for const 0...
 inline unsigned 
 valuation(SBasis const &a, double tol=0){
-    if(a.empty()) return 0;
-    for(unsigned val = a.size() - 1; val != 0; val--)  //if no longer unsigned, val < 0 would be a better cond
-        for(int c = 0; c < 2; c++)
-            if(fabs(a[val][c]) < tol) return val;
-    return 0;
+    int val=0;
+    while( val<a.size() &&
+           fabs(a[val][0])<tol &&
+           fabs(a[val][1])<tol ) 
+        val++;
+    return val;
 }
 
 // a(b(t))

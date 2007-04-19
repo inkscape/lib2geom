@@ -36,8 +36,8 @@ Point point_at0(D2<SBasis> M){
 
 static 
 Point point_at1(D2<SBasis> M){
-    return Point((M[0].size()==0) ? 0 : M[0][0][0], 
-                 (M[1].size()==0) ? 0 : M[1][0][0]);
+    return Point((M[0].size()==0) ? 0 : M[0][0][1], 
+                 (M[1].size()==0) ? 0 : M[1][0][1]);
 }
 
 static 
@@ -136,6 +136,7 @@ std::vector<D2<SBasis> > Geom::unit_vector(D2<SBasis> const vect, std::vector<do
     //--Define what is supposed to be our unit vector:
     V[0] = std::cos(alpha0)*c - std::sin(alpha0)*s;
     V[1] = std::sin(alpha0)*c + std::cos(alpha0)*s;
+    
 
     //--Check how good it is:
     //TODO1: if the curve is a "flat S", the half turns are not seen!!
@@ -292,6 +293,7 @@ Geom::curvature(D2<SBasis> const M,
     return(result);
 }
 
+
 Geom::D2<Piecewise<SBasis> >
 Geom::arc_length_parametrization(D2<SBasis> const &M,
                            unsigned order,
@@ -301,13 +303,12 @@ Geom::arc_length_parametrization(D2<SBasis> const &M,
     u[1].push_cut(0);
 
     Piecewise<SBasis> s = arc_length_sb(M);
-    //std::cout<<"nb pieces:"<<s.size()<<std::endl;
     for (int i=0; i < s.size();i++){
         double t0=s.cuts[i],t1=s.cuts[i+1];
         D2<SBasis> sub_M = compose(M,Linear(t0,t1));
         D2<SBasis> sub_u;
         for (int dim=0;dim<2;dim++){
-            sub_u[dim]=compose_inverse(sub_M[dim],1/(s(t1)-s(t0))*(s.segs[i]-Linear(s(t0))),3);
+            sub_u[dim]=compose_inverse(sub_M[dim],1/(s(t1)-s(t0))*(s.segs[i]-Linear(s(t0))),order,tol);
             u[dim].push(sub_u[dim],s(t1));
         }
     }
@@ -326,7 +327,6 @@ Geom::arc_length_parametrization(D2<Piecewise<SBasis> > const &M,
         D2<Piecewise<SBasis> > uniform_seg=arc_length_parametrization(pieces[i],order,tol);
         result[0].concat(uniform_seg[0]);
         result[1].concat(uniform_seg[1]);
-//        printf("output size %d: ",result[0].size());
     }
     return(result);
 }
