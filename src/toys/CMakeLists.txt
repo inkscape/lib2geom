@@ -9,9 +9,9 @@ conic-3
 conic-4
 conic
 convex-toy
-#distort
+distort
 fitter
-inverse-test
+#inverse-test
 one-D
 quad-toy
 #rat-bez
@@ -33,8 +33,9 @@ offset-test
 curvature-test
 bounds-test
 pw-compose-test
-inverse-test
 arc-length-param
+sb-to-bez
+sb-calculus
 "${NEEDS_GSL}"
 )
 
