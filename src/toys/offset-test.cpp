@@ -104,7 +104,7 @@ public:
     OffsetTester(){
         if(handles.empty()) {
             for(int i = 0; i < 4; i++)
-                handles.push_back(Geom::Point(200+50*i,400));
+                handles.push_back(Geom::Point(200+50*i,300+70*uniform()));
         }
     }
 };
