@@ -160,13 +160,7 @@ static vector<Geom::Point> sb_seg_to_bez(D2<Piecewise<SBasis> > const &M,double 
             lambda1= a0*lambda0*lambda0 + c0;
         }else{
             //find lamda0 by solving a deg 4 equation d0+d1*X+...+d4*X^4=0
-            double d0,d1,d2,d3,d4;
-            d0=c1+a1*c0*c0;
-            d1=-1;
-            d2=2*a1*a0*c0;
-            d3=0;
-            d4=a1*a0*a0;
-            double a[5]={d0,d1,d2,d3,d4};
+            double a[5]={c1+a1*c0*c0,-1,2*a1*a0*c0,0,a1*a0*a0};
             vector<double> solns=solve_poly(a,5);
             lambda0=lambda1=0;
             for (int i=0;i<solns.size();i++){
