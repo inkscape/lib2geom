@@ -1,33 +1,47 @@
-Salient tasks:
-* Generalize toys (eg, path2 rather than a single bezier)
-* Implement inkscape conversion functions
-* Cleanup the tests (add cubic_bez_util.cpp)
-* Standardize naming
+Code Health:
+  - remove tests from main code
+  - remove macros.cpp
+  - standardize naming
+  - timing tests
+  - reinstate valuable unit tests (focus on corner testing)
+  - resolve standards for operator/cast overloads
+  - make singlular constructors explicit
 
-Remove macros.cpp
-
-for Inkscape:
-  - "set" operations:
-  - union
-  - difference
-  - intersection
-  - mutual exclusion
+Path:
+  - inkscape conversions
+  - booleans (union, difference, intersection, exclusion, etc)
   - cut
-- dilating/contracting shapes
-- generate postscript stroke geometries
-- rewrite bezier-utils to use paths
+  - dilation/contraction
+  - skeletal strokes
+  - port existing inkscape path/bezier algorithms
+  - implement pw concept
 
-* convert toy-cairo to gtkmm
-* skeletal strokes in the long run to
-* make a list of all bezier ops used in inkscape, implement list
-* porting existing algorithms from inkscape to the new path datastructure is probably the most valuable
-* improving the cairo backend
-* we also need to make better unit tests, and devise timing tests
-* checking the svg-d parser
-* attempting to write nodepath editing stuff in a more generic way
-* split? (given a list of locations, insert a node at each of those points, or convert each to a separate subpath)
-* convert a set of subpaths to a set of singleton paths
-* convert a set of paths to a single path
-* convex hull
-* possible abstract transformation class
-* add toMatrix methods to non-matrix transformations
+Bezier:
+  - implement functions inkscape uses/port existing algorithms
+  - move bezier specific code into bezier.h/bezier.cpp
+  - eliminate multiple representations (vector<point>, point*, double*, other bezier classes)
+
+D2:
+  - require concepts
+  - add additional useful functions
+
+Pw:
+  - require concepts
+  - add additional useful functions
+
+Toys:
+  - generalize to path2
+  - improve path-cairo
+  - improve toy framework (multiple handle lists, less hardcode)
+
+* generate postscript stroke geometries
+
+* check svg-d parser
+
+* attempt to write nodepath editing stuff in a more generic way
+
+* rewrite convex hull
+
+* replace/improve quadtree with a better spatial index
+
+* transformation concept/abstract class
