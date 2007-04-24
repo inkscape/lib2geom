@@ -66,7 +66,7 @@ class Sb1d: public Toy {
             handle_to_sb(i, handles.size(), B[1]) = 3*width/4 - handles[i][1];
         }
         for(int i = 1; i < B[1].size(); i++) {
-            B[1][i] = choose<double>(2*i+1, i)*B[1][i];
+            B[1][i] = B[1][i]*choose<double>(2*i+1, i);
         }
         
         Interval bs = B[1].boundsFast();

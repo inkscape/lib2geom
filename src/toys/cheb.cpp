@@ -42,7 +42,7 @@ SBasis cheb01(unsigned n) {
         basis.push_back(Linear(-1,1));
     }
     for(int i = basis.size(); i <= n; i++) {
-        basis.push_back(2*(Linear(0,2)*basis[i-1] - basis[i-2]));
+        basis.push_back((Linear(0,2)*basis[i-1] - basis[i-2])*2);
     }
     
     return basis[n];
@@ -64,7 +64,7 @@ class Sb1d: public Toy {
 //sbasis_to_poly(B[1]) 
                     << std::endl;
             Geom::Path2::Path pb;
-            B[1] = SBasis(Linear(2*width/4)) - (width/4)*B[1];
+            B[1] = SBasis(Linear(2*width/4)) - B[1]*(width/4);
             pb.append(B);
             cairo_path(cr, pb);
             

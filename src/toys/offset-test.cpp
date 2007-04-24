@@ -67,7 +67,7 @@ class OffsetTester: public Toy {
         for(int i = 0; i < V.size();i++){
             t1 = cuts[i];
             subB = compose(B,Linear(t0,t1));
-            N = offset*rot90(V[i])+subB;
+            N = rot90(V[i])*offset+subB;
             cairo_md_sb(cr,N);
             cairo_set_source_rgba (cr, 1, 0, 0, 1);
             cairo_stroke(cr);
@@ -87,7 +87,7 @@ class OffsetTester: public Toy {
         Piecewise<SBasis> cV = curvature(B);
         for(int i = 0; i < cV.size();i++){
             subB = compose(B, Linear(cV.cuts[i], cV.cuts[i+1]));
-            N = multiply(-offset * cV[i], rot90(V[i])) + subB;
+            N = multiply(cV[i]*(-offset), rot90(V[i])) + subB;
             cairo_md_sb(cr, N);
             cairo_set_source_rgba (cr, 1, 0, 0.6, 0.5);
             cairo_stroke(cr);

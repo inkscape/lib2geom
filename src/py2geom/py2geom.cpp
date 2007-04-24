@@ -39,9 +39,9 @@
 #include "transforms.h"
 #include "sbasis.h"
 #include "linear.h"
-#include "multidimsbasis.h"
 #include "pw-sb.h"
 #include "md-pw-sb.h"
+#include "multidimsbasis.h"
 
 using namespace boost::python;
 

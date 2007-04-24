@@ -46,7 +46,7 @@ class CurvatureTester: public Toy {
         
         for(int ix = 0; ix < K.segs.size(); ix++) {
             D2<SBasis> Kxy;
-            Kxy[1] = Linear(400) - 300*K.segs[ix];
+            Kxy[1] = Linear(400) - K.segs[ix]*300;
             Kxy[0] = Linear(300*K.cuts[ix] + 150, 300*K.cuts[ix+1] + 150);
             cairo_md_sb(cr, Kxy);
             cairo_stroke(cr);

@@ -152,7 +152,7 @@ SBasis& operator/=(SBasis& a, double b) {
     return a;
 }
 
-SBasis operator*(double k, SBasis const &a) {
+SBasis operator*(SBasis const &a, double k) {
     SBasis c;
     c.resize(a.size(), Linear(0,0));
     for(unsigned j = 0; j < a.size(); j++) {
@@ -260,7 +260,7 @@ SBasis sqrt(SBasis const &a, int k) {
     for(unsigned i = 1; i <= k and i<r.size(); i++) {
         Linear ci(r[i][0]/(2*c[0][0]), r[i][1]/(2*c[0][1]));
         SBasis cisi = shift(ci, i);
-        r -= multiply(shift((2*c + cisi), i), SBasis(ci));
+        r -= multiply(shift((c*2 + cisi), i), SBasis(ci));
         r.truncate(k+1);
         c += cisi;
         if(r.tailError(i) == 0) // if exact
@@ -312,7 +312,7 @@ SBasis compose(SBasis const &a, SBasis const &b) {
     SBasis r;
     
     for(int i = a.size()-1; i >= 0; i--) {
-        r = SBasis(Linear(Hat(a[i][0]))) - a[i][0]*b + a[i][1]*b + multiply(r,s);
+        r = SBasis(Linear(Hat(a[i][0]))) - b*a[i][0] + b*a[i][1] + multiply(r,s);
     }
     return r;
 }
@@ -324,7 +324,7 @@ SBasis compose(SBasis const &a, SBasis const &b, unsigned k) {
     SBasis r;
     
     for(int i = a.size()-1; i >= 0; i--) {
-        r = SBasis(Linear(Hat(a[i][0]))) - a[i][0]*b + a[i][1]*b + multiply(r,s);
+        r = SBasis(Linear(Hat(a[i][0]))) - b*a[i][0] + b*a[i][1] + multiply(r,s);
     }
     r.truncate(k);
     return r;
@@ -398,7 +398,7 @@ SBasis inverse(SBasis a, int k) {
                 t1i[dim] *= t1[dim];
             c[i] = ci; // c(v) := c(v) + c_i(v)*t^i
             // change from v to u parameterisation
-            SBasis civ = ci[0]*one_minus_a + ci[1]*a; 
+            SBasis civ = one_minus_a*ci[0] + a*ci[1]; 
             // r(u) := r(u) - c_i(u)*(t(u))^i
             // We can truncate this to the number of final terms, as no following terms can
             // contribute to the result.
@@ -428,10 +428,10 @@ SBasis sin(Linear b, int k) {
     for(int i = 0; i < k; i++) {
         Linear bo(4*(i+1)*s[i+1][0] - 2*s[i+1][1],
                   -2*s[i+1][0] + 4*(i+1)*s[i+1][1]);
-        bo -= (t2/(i+1))*s[i];
+        bo -= s[i]*(t2/(i+1));
         
         
-        s.push_back((1./(i+2))*bo);
+        s.push_back(bo/double(i+2));
     }
     
     return s;
@@ -485,7 +485,7 @@ SBasis compose_inverse(SBasis const &f, SBasis const &g, unsigned order, double 
                 double b=(-p01*r10+p10*r01)/(p10*q01-p01*q10);
                 result.push_back(Linear(a,b));
                 //r=f-result(g);
-                r=r-a*Pk-b*Qk;
+                r=r-Pk*b-Qk*b;
                 //TODO: val_r+=1;
                 val_r=valuation(r,tol);
             }

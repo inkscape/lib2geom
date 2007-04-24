@@ -113,7 +113,7 @@ void cairo_2dsb2d(cairo_t* cr, D2<SBasis2d> const &sb2, Point dir, double width)
         B[0] = extract_u(sb2[0], u);// + Linear(u);
         B[1] = extract_u(sb2[1], u);
         for(unsigned i = 0; i < 2; i ++) {
-            B[i] = (width/2)*B[i] + Linear(width/4);
+            B[i] = B[i]*(width/2) + Linear(width/4);
         }
         cairo_md_sb(cr, B);
     }
@@ -122,7 +122,7 @@ void cairo_2dsb2d(cairo_t* cr, D2<SBasis2d> const &sb2, Point dir, double width)
         B[1] = extract_v(sb2[1], v);// + Linear(v);
         B[0] = extract_v(sb2[0], v);
         for(unsigned i = 0; i < 2; i ++) {
-            B[i] = (width/2)*B[i] + Linear(width/4);
+            B[i] = B[i]*(width/2) + Linear(width/4);
         }
         cairo_md_sb(cr, B);
     }
@@ -132,19 +132,19 @@ void cairo_sb2d(cairo_t* cr, SBasis2d const &sb2, Point dir, double width) {
     D2<SBasis> B;
     for(int ui = 0; ui <= 10; ui++) {
         double u = ui/10.;
-        B[0] = dir[0] * extract_u(sb2, u) + Linear(u);
-        B[1] = SBasis(Linear(0,1))+dir[1]*extract_u(sb2, u);
+        B[0] = extract_u(sb2, u)*dir[0] + Linear(u);
+        B[1] = SBasis(Linear(0,1)) + extract_u(sb2, u)*dir[1];
         for(unsigned i = 0; i < 2; i ++) {
-            B[i] = (width/2)*B[i] + Linear(width/4);
+            B[i] = B[i]*(width/2) + Linear(width/4);
         }
         cairo_md_sb(cr, B);
     }
     for(int vi = 0; vi <= 10; vi++) {
         double v = vi/10.;
-        B[1] = dir[1]*extract_v(sb2, v) + Linear(v);
-        B[0] = SBasis(Linear(0,1)) + dir[0]*extract_v(sb2, v);
+        B[1] = extract_v(sb2, v)*dir[1] + Linear(v);
+        B[0] = SBasis(Linear(0,1)) + extract_v(sb2, v)*dir[0];
         for(unsigned i = 0; i < 2; i ++) {
-            B[i] = (width/2)*B[i] + Linear(width/4);
+            B[i] = B[i]*(width/2) + Linear(width/4);
         }
         cairo_md_sb(cr, B);
     }

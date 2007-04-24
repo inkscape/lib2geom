@@ -45,6 +45,7 @@
 #include "maybe.h"
 #include "macros.h"
 #include "transforms.h"
+#include "linear.h"
 
 namespace Geom {
 
@@ -59,6 +60,11 @@ public:
     Rect(Rect const &r) : _min(r._min), _max(r._max) {}
     Rect(Point const &p0, Point const &p1);
     
+    Rect(Interval const &x, Interval const &y) {
+        _min = Point(x.min(), y.min());
+        _max = Point(x.max(), y.max());
+    }
+
     static Rect define(Point const &p0, Point const &p1) {
         Rect r;
         r._min = p0;

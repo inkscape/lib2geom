@@ -85,25 +85,25 @@ class Sb2d2: public Toy {
                 B[0] = Linear(tu-fudge, tu+fudge + inv_u_subs );
                 B[1] = Linear(tv-fudge, tv-fudge);
                 tB = compose(sb2, B);
-                tB = (width/2) * tB + Geom::Point(width/4, width/4);
+                tB = tB*(width/2) + Geom::Point(width/4, width/4);
                 pb.append(tB);
                 
                 B[0] = Linear(tu+fudge + inv_u_subs , tu+fudge + inv_u_subs);
                 B[1] = Linear(tv-fudge,               tv+fudge + inv_v_subs);
                 tB = compose(sb2, B);
-                tB = (width/2) * tB + Geom::Point(width/4, width/4);
+                tB = tB*(width/2) + Geom::Point(width/4, width/4);
                 pb.append(tB);
                 
                 B[0] = Linear(tu+fudge + inv_u_subs, tu-fudge);
                 B[1] = Linear(tv+fudge + inv_v_subs, tv+fudge + inv_v_subs);
                 tB = compose(sb2, B);
-                tB = (width/2) * tB + Geom::Point(width/4, width/4);
+                tB = tB*(width/2) + Geom::Point(width/4, width/4);
                 pb.append(tB);
                 
                 B[0] = Linear(tu-fudge,              tu-fudge);
                 B[1] = Linear(tv+fudge + inv_v_subs, tv-fudge);
                 tB = compose(sb2, B);
-                tB = (width/2) * tB + Geom::Point(width/4, width/4);
+                tB = tB*(width/2) + Geom::Point(width/4, width/4);
                 pb.append(tB);
                 
                 cairo_path(cr, pb);

@@ -34,12 +34,18 @@
 #include "s-basis.h"
 #include <vector>
 
+#include <boost/concept_check.hpp>
+#include "fragment.h"
+
 using namespace std;
+using namespace boost;
 
 namespace Geom {
 
 template <typename T>
 class Piecewise {
+  BOOST_CLASS_REQUIRE(T, Geom, FragmentConcept);
+
   public:
     vector<double> cuts;
     vector<T> segs;
@@ -131,6 +137,10 @@ class Piecewise {
     //Transforms the domain into another interval
     inline void setDomain(Interval dom) {
         if(empty()) return;
+        if(dom.singular()) {
+            cuts.clear(); segs.clear();
+            return;
+        }
         double cf = cuts.front();
         double o = dom.min() - cf, s = dom.size() / (cuts.back() - cf);
         for(int i = 0; i <= size(); i++)
@@ -141,11 +151,10 @@ class Piecewise {
     inline void concat(const Piecewise<T> &other) {
         if(other.empty()) return;
 
-
         if(empty()) { 
-            cuts = other.cuts;
-            segs = other.segs;
-            return; }
+            cuts = other.cuts; segs = other.segs;
+            return;
+        }
 
         segs.insert(segs.end(), other.segs.begin(), other.segs.end());
         double t = cuts.back() - other.cuts.front();        
@@ -183,7 +192,7 @@ class Piecewise {
     }
 
     inline Interval boundsFast() {
-        //TODO: empty check
+        if(empty()) return Interval(0);
         Interval ret(segs[0].boundsFast());
         for(int i = 1; i < size(); i++)
             ret.unionWith(segs[i].boundsFast()); 
@@ -191,7 +200,7 @@ class Piecewise {
     }
 
     inline Interval boundsExact() {
-        //TODO: empty check
+        if(empty()) return Interval(0);
         Interval ret(segs[0].boundsExact());
         for(int i = 1; i < size(); i++)
             ret.unionWith(segs[i].boundsExact()); 
@@ -202,7 +211,8 @@ class Piecewise {
         boundsLocal(m.min(), m.max());
     }
     inline Interval boundsLocal(double f, double t) {
-        //TODO: empty check
+        if(empty()) return Interval(0);
+        if(f == t) return Interval((*this)(f));
 
         int fi = segN(f), ti = segN(t);
         double ft = segT(f, fi), tt = segT(t, ti);
@@ -240,11 +250,9 @@ Piecewise<T> partition(const Piecewise<T> &pw, vector<double> const &c) {
     if(c.empty()) return Piecewise<T>(pw);
 
     Piecewise<T> ret = Piecewise<T>();
-    //just a bit of optimizing reservation
     ret.cuts.reserve(c.size() + pw.cuts.size());
     ret.segs.reserve(c.size() + pw.cuts.size() - 1);
 
-    //0-length Piecewise<T> is like a 0-length T - equal to 0!
     if(pw.empty()) {
         ret.cuts = c;
         for(int i = 0; i < c.size() - 1; i++)
@@ -345,24 +353,30 @@ vector<double> roots(const Piecewise<T> &pw) {
 
 template<typename T>
 Piecewise<T> operator+(Piecewise<T> const &a, double b) {
+    function_requires<OffsetableConcept<T> >();
+
     Piecewise<T> ret = Piecewise<T>();
     ret.cuts = a.cuts;
     for(int i = 0; i < a.size();i++)
-        ret.push_seg(b + a[i]);
+        ret.push_seg(a[i] + b);
     return ret;
 }
 
 template<typename T>
-Piecewise<T> operator-(Piecewise<T> const &a) {
+Piecewise<T> operator-(Piecewise<T> const &a, double b) {
+    function_requires<OffsetableConcept<T> >();
+
     Piecewise<T> ret = Piecewise<T>();
     ret.cuts = a.cuts;
     for(int i = 0; i < a.size();i++)
-        ret.push_seg(- a[i]);
+        ret.push_seg(a[i] - b);
     return ret;
 }
 
 template<typename T>
 Piecewise<T> operator+=(Piecewise<T>& a, double b) {
+    function_requires<OffsetableConcept<T> >();
+
     if(a.empty()) { a.push_cut(0.); a.push(Linear(b), 1.); return a; }
 
     for(int i = 0; i < a.size();i++)
@@ -371,14 +385,56 @@ Piecewise<T> operator+=(Piecewise<T>& a, double b) {
 }
 template<typename T>
 Piecewise<T> operator-=(Piecewise<T>& a, double b) {
+    function_requires<OffsetableConcept<T> >();
+
     if(a.empty()) { a.push_cut(0.); a.push(Linear(b), 1.); return a; }
 
     for(int i = 0;i < a.size();i++)
         a[i] -= b;
     return a;
 }
+
+template<typename T>
+Piecewise<T> operator-(Piecewise<T> const &a) {
+    function_requires<ScalableConcept<T> >();
+
+    Piecewise<T> ret = Piecewise<T>();
+    ret.cuts = a.cuts;
+    for(int i = 0; i < a.size();i++)
+        ret.push_seg(- a[i]);
+    return ret;
+}
+
+template<typename T>
+Piecewise<T> operator*(Piecewise<T> const &a, double b) {
+    function_requires<ScalableConcept<T> >();
+
+    if(a.empty()) return Piecewise<T>();
+
+    Piecewise<T> ret = Piecewise<T>();
+    ret.cuts = a.cuts;
+    for(int i = 0; i < a.size();i++)
+        ret.push_seg(a[i] * b);
+    return ret;
+}
+template<typename T>
+Piecewise<T> operator/(Piecewise<T> const &a, double b) {
+    function_requires<ScalableConcept<T> >();
+
+    //FIXME: b == 0?
+    if(a.empty()) return Piecewise<T>();
+
+    Piecewise<T> ret = Piecewise<T>();
+    ret.cuts = a.cuts;
+    for(int i = 0; i < a.size();i++)
+        ret.push_seg(a[i] / b);
+    return ret;
+}
+
 template<typename T>
 Piecewise<T> operator*=(Piecewise<T>& a, double b) {
+    function_requires<ScalableConcept<T> >();
+
     if(a.empty()) return Piecewise<T>();
 
     for(int i = 0; i < a.size();i++)
@@ -387,6 +443,8 @@ Piecewise<T> operator*=(Piecewise<T>& a, double b) {
 }
 template<typename T>
 Piecewise<T> operator/=(Piecewise<T>& a, double b) {
+    function_requires<ScalableConcept<T> >();
+
     //FIXME: b == 0?
     if(a.empty()) return Piecewise<T>();
 
@@ -428,11 +486,15 @@ Piecewise<T> operator*(Piecewise<T> const &a, Piecewise<T> const &b) {
     return ret;
 }
 
+//TODO: operator/(pw, pw)
+
 template<typename T>
 inline Piecewise<T> operator*=(Piecewise<T> &a, Piecewise<T> const &b) { 
     a = a * b;
     return a;
 }
+
+//TODO: operator/=(pw, pw)
 
 Piecewise<SBasis> divide(Piecewise<SBasis> const &a, Piecewise<SBasis> const &b, unsigned k);
 

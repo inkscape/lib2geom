@@ -33,8 +33,9 @@
 
 #include "point.h"
 #include "interval.h"
-//#include <boost/concept_check.hpp>
 
+#include <boost/concept_check.hpp>
+#include "fragment.h"
 //using namespace boost;
 
 namespace Geom{
@@ -54,30 +55,12 @@ struct AlgRingConcept {
     void constraints() {
         i *= j; i = i * j;
     }
-};
-
-template <class T>
-struct NegateableConcept {
-    T i;
-    void constraints() {
-        i = -i;
-    }
-};
-
-template <class T>
-struct ScaleableConcept {
-    T i;
-    double j;
-    void constraints() {
-        i *= j; i = j * i;
-    }
 };*/
 
 template <class T>
 class D2{
 public:
     //BOOST_CLASS_REQUIRE(T, boost, AssignableConcept);
-
     T f[2];
     
     D2() {}
@@ -90,9 +73,60 @@ public:
     T& operator[](unsigned i)              { return f[i]; }
     T const & operator[](unsigned i) const { return f[i]; }
 
+    //Fragment implementation
+    typedef Point output_type;
+    //TODO: doesn't make much sense in d2 context
+    bool isZero() const {
+        function_requires<FragmentConcept<T> >();
+        return f[0].isZero() && f[1].isZero();
+    }
+    bool isFinite() const {
+        function_requires<FragmentConcept<T> >();
+        return f[0].isFinite() && f[1].isFinite();
+    }
+    Point at0() const { 
+        function_requires<FragmentConcept<T> >();
+        return Point(f[0].at0(), f[1].at0());
+    }
+    Point at1() const { 
+        function_requires<FragmentConcept<T> >();
+        return Point(f[0].at1(), f[1].at1());
+    }
+    Point pointAt(double t) const {
+        function_requires<FragmentConcept<T> >();
+        return (*this)(t);
+    }
+    D2<SBasis> toSBasis() const {
+        function_requires<FragmentConcept<T> >();
+        return D2<SBasis>(f[0].toSBasis(), f[1].toSBasis());
+    }
+    Rect boundsFast() const {
+        function_requires<FragmentConcept<T> >();        
+        return Rect(f[0].boundsFast(), f[1].boundsFast());
+    }
+    Rect boundsExact() const {
+        function_requires<FragmentConcept<T> >();        
+        return Rect(f[0].boundsExact(), f[1].boundsExact());
+    }
+    Rect boundsLocal(double t0, double t1) const {
+        function_requires<FragmentConcept<T> >();        
+        return Rect(f[0].boundsLocal(t0,t1), f[1].boundsLocal(t0,t1));
+    }
+
+    /*Rect reverse() const {
+        function_requires<FragmentConcept<T> >();
+        return D2<T>(f[0].reverse(), f[1].reverse());
+    }*/
+
     Point operator()(double t) const;
     Point operator()(double x, double y) const;
 };
+
+template <typename T>
+D2<T> reverse(const D2<T> &a) {
+    function_requires<FragmentConcept<T> >();
+    return D2<T>(reverse(a[0]), reverse(a[1]));
+}
 
 template <typename T>
 inline D2<T>
@@ -139,23 +173,44 @@ operator-=(D2<T> &a, D2<T> const & b) {
 
 template <typename T>
 inline D2<T>
-operator*=(D2<T> &a, double v) {
-    //function_requires<ScaleableConcept<T> >();
+operator*(D2<T> const & a, double b) {
+    function_requires<ScalableConcept<T> >();
+
+    D2<T> r;
+    for(unsigned i = 0; i < 2; i++)
+        r[i] = a[i] * b;
+    return r;
+}
+
+template <typename T>
+inline D2<T>
+operator/(D2<T> const & a, double b) {
+    function_requires<ScalableConcept<T> >();
+    //TODO: b==0?
+    D2<T> r;
+    for(unsigned i = 0; i < 2; i++)
+        r[i] = a[i] / b;
+    return r;
+}
+
+template <typename T>
+inline D2<T>
+operator*=(D2<T> &a, double b) {
+    function_requires<ScalableConcept<T> >();
 
     for(unsigned i = 0; i < 2; i++)
-        a[i] *= v;
+        a[i] *= b;
     return a;
 }
 
 template <typename T>
 inline D2<T>
-operator*(double a, D2<T> const & b) {
-    //function_requires<ScaleableConcept<T> >();
-
-    D2<T> r;
+operator/=(D2<T> &a, double b) {
+    function_requires<ScalableConcept<T> >();
+    //TODO: b==0?
     for(unsigned i = 0; i < 2; i++)
-        r[i] = a * b[i];
-    return r;
+        a[i] /= b;
+    return a;
 }
 
 template <typename T>
@@ -204,7 +259,7 @@ cross(D2<T> const & a, D2<T> const & b) {
     return r;
 }
 
-//Following only apply to func types, hard to encode this with templates
+//TODO: encode with concepts
 template <typename T>
 inline D2<T>
 compose(D2<T> const & a, T const & b) {
@@ -214,6 +269,7 @@ compose(D2<T> const & a, T const & b) {
     return r;
 }
 
+//TODO: encode with concepts
 template <typename T>
 inline D2<T>
 composeEach(D2<T> const & a, D2<T> const & b) {
@@ -226,6 +282,7 @@ composeEach(D2<T> const & a, D2<T> const & b) {
 template<typename T>
 inline Point
 D2<T>::operator()(double t) const {
+    //TODO: restrict to 1D pw or fragment
     Point p;
     for(int i = 0; i < 2; i++)
        p[i] = (*this)[i](t);
@@ -235,6 +292,7 @@ D2<T>::operator()(double t) const {
 template<typename T>
 inline Point
 D2<T>::operator()(double x, double y) const {
+    //TODO: restrict to 2D pw or fragment
     Point p;
     for(int i = 0; i < 2; i++)
        p[i] = (*this)[i](x, y);

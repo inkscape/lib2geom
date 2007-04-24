@@ -62,7 +62,7 @@ using namespace std;
 static void plot(cairo_t* cr, SBasis const &f,double vscale=1,double a=0,double b=1){
     D2<SBasis> plot;
     plot[0]=SBasis(Linear(150+a*300,150+b*300));
-    plot[1]=-vscale*f;
+    plot[1]=f*(-vscale);
     plot[1]+=300;
     cairo_md_sb(cr, plot);
     cairo_stroke(cr);
@@ -102,7 +102,7 @@ static Piecewise<SBasis> sqrtOnDomain(Interval range, double tol=1e-7){
     }  
     //double r=pow(2.,i0);
     while (a<b){
-        sqrt_fn.push(sqrt(a)*sqrt1_2,2*a);
+        sqrt_fn.push(sqrt1_2*sqrt(a),2*a);
         a*=2;
     }
 //     for (int i=i0;2*r<=b;i++){
@@ -202,7 +202,7 @@ static Piecewise<SBasis> ReciprocalOnDomain(Interval range, double tol=1e-7){
     }  
 
     while (a<b){
-        reciprocal_fn.push(1/a*reciprocal1_2,2*a);
+        reciprocal_fn.push(reciprocal1_2/a,2*a);
         a*=2;
     }
     if (range.min()<0 || range.max()<0){

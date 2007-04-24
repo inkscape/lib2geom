@@ -80,6 +80,12 @@ sbasis_to_bezier(D2<SBasis> const &B, unsigned qq) {
     }
     return result;
 }
+/*
+template <unsigned order>
+D2<Bezier<order> > sbasis_to_bezier(D2<SBasis> const &B) {
+    return D2<Bezier<order> >(sbasis_to_bezier<order>(B[0]), sbasis_to_bezier<order>(B[1]));
+}
+*/
 
 #if 0 // using old path
 //std::vector<Geom::Point>

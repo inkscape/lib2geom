@@ -32,7 +32,7 @@ public:
         cairo_set_source_rgba (cr, 0.25, 0.5, 0, 0.8);
         {
             D2<SBasis> plot;
-            plot[0] = SBasis(width*Linear(0.25,0.75));
+            plot[0] = SBasis(Linear(0.25,0.75)*width);
 
             D2<SBasis> dB = derivative(B);
             D2<SBasis> ddB = derivative(dB);
@@ -41,7 +41,7 @@ public:
 
             plot[1] = derivative(divide(n, sqrt(den*den*den,5), 10));
             std::vector<double> r = roots(plot[1]);
-            plot[1] = Linear(width*3/4) - (1./1000)*plot[1];
+            plot[1] = Linear(width*3/4) - plot[1]*0.001;
             cairo_md_sb(cr, plot);
             cairo_stroke(cr);
             for(int i = 0; i < r.size(); i++) {
@@ -58,7 +58,7 @@ public:
             double t0 = 0, t1;
             for(int i = 0; i < als.segs.size();i++){
                 t1 = als.cuts[i+1];
-                plot[0] = SBasis(width*Linear(t0,t1));
+                plot[0] = SBasis(Linear(t0,t1)*width);
                 plot[1] = Linear(height-5) - als.segs[i];
                 cairo_md_sb(cr,plot);
                 cairo_set_source_rgba (cr, 1, 0, 0.6, 0.5);
@@ -83,12 +83,12 @@ public:
             Linear dt(subu, dsubu + subu);
             D2<SBasis> dBp = compose(dB, dt);
             SBasis arc = L2(dBp, 2);
-            arc = (1./N)*integral(arc);
+            arc = integral(arc)/double(N);
             arc = arc - Linear(Hat(arc(0) - prev_seg));
             prev_seg = arc(1);
         
             D2<SBasis> plot;
-            plot[0] = SBasis(width*dt);
+            plot[0] = SBasis(dt*width);
             plot[1] = Linear(height) - arc;
         
             cairo_md_sb(cr, plot);

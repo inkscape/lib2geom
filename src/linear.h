@@ -83,6 +83,7 @@ public:
     }
 
     //Fragment implementation
+    typedef double output_type;
     inline bool isZero() const { return a[0] == 0 && a[1] == 0; }
     inline bool isFinite() const { return is_finite(a[0]) && is_finite(a[1]); }
 
@@ -148,14 +149,20 @@ inline bool operator==(Linear const & a, Linear const & b) {
 inline bool operator!=(Linear const & a, Linear const & b) {
     return a[0] != b[0] || a[1] != b[1];
 }
-inline Linear operator*(double const a, Linear const & b) {
-    return Linear(a*b[0], a*b[1]);
+inline Linear operator*(Linear const & a, double b) {
+    return Linear(a[0]*b, a[1]*b);
+}
+inline Linear operator/(Linear const & a, double b) {
+    return Linear(a[0]/b, a[1]/b);
 }
 inline Linear operator*=(Linear & a, double b) {
     a[0] *= b; a[1] *= b;
     return a;
 }
-
+inline Linear operator/=(Linear & a, double b) {
+    a[0] /= b; a[1] /= b;
+    return a;
+}
 };
 
 #endif //SEEN_LINEAR_H

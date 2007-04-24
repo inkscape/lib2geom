@@ -54,6 +54,7 @@ public:
     }
 
     //Fragment implementation
+    typedef double output_type;
     inline bool isZero() const {
         if(empty()) return true;
         for(unsigned i = 0; i < size(); i++) {
@@ -164,14 +165,19 @@ inline SBasis& operator-=(SBasis& a, const Linear& b) {
     return a;
 }
 
-inline SBasis operator+(double b, const SBasis & a) {
+inline SBasis operator+(const SBasis & a, double b) {
     if(a.isZero()) return Linear(b, b);
     SBasis result(a);
     result[0] += b;
     return a;
 }
 
-//TODO: no double - sbasis?
+inline SBasis operator-(const SBasis & a, double b) {
+    if(a.isZero()) return Linear(-b, -b);
+    SBasis result(a);
+    result[0] += b;
+    return a;
+}
 
 inline SBasis& operator+=(SBasis& a, double b) {
     if(a.isZero())
@@ -192,7 +198,8 @@ inline SBasis& operator-=(SBasis& a, double b) {
 SBasis& operator*=(SBasis& a, double b);
 SBasis& operator/=(SBasis& a, double b);
 
-SBasis operator*(double k, SBasis const &a);
+SBasis operator*(SBasis const &a, double k);
+inline SBasis operator/(SBasis const &a, double k) { return a*(1./k); }
 SBasis operator*(SBasis const &a, SBasis const &b);
 //TODO: division equivalent?
 

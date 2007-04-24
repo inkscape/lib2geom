@@ -109,7 +109,7 @@ private:
         B[1] = sin(bo,2);
         
         I = B - Linear(0,1) * derivative(B);
-        I = base_radius()*I + _centre;
+        I = I*base_radius() + _centre;
         return I;
     }
     D2<SBasis> _arc(double start, double stop, double R) {
@@ -119,7 +119,7 @@ private:
         B[0] = cos(bo,2);
         B[1] = sin(bo,2);
         
-        B = R*B + _centre;
+        B = B*R + _centre;
         return B;
     }
     // angle of the base circle used to create the involute to a certain radius

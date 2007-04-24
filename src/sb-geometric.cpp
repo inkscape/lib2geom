@@ -134,8 +134,8 @@ std::vector<D2<SBasis> > Geom::unit_vector(D2<SBasis> const vect, std::vector<do
         s.truncate(3);
     }
     //--Define what is supposed to be our unit vector:
-    V[0] = std::cos(alpha0)*c - std::sin(alpha0)*s;
-    V[1] = std::sin(alpha0)*c + std::cos(alpha0)*s;
+    V[0] = c*std::cos(alpha0) - s*std::sin(alpha0);
+    V[1] = c*std::sin(alpha0) + s*std::cos(alpha0);
     
 
     //--Check how good it is:
@@ -160,8 +160,8 @@ std::vector<D2<SBasis> > Geom::unit_vector(D2<SBasis> const vect, std::vector<do
             s=compose(sin(Linear(0., alpha1-alpha0), 3),compose(alpha, Linear(0,0.5)));
             c.truncate(3);
             s.truncate(3);
-            V[0]=std::cos(alpha0)*c - std::sin(alpha0)*s;
-            V[1]=std::sin(alpha0)*c + std::cos(alpha0)*s;
+            V[0]=c*std::cos(alpha0) - s*std::sin(alpha0)*s;
+            V[1]=c*std::sin(alpha0) + s*std::cos(alpha0)*s;
             uvect.push_back(V);
             cuts.push_back(.5);
 
@@ -169,8 +169,8 @@ std::vector<D2<SBasis> > Geom::unit_vector(D2<SBasis> const vect, std::vector<do
             s=compose(sin(Linear(0., alpha1-alpha0), 3), compose(alpha,Linear(0.5, 1)));
             c.truncate(3);
             s.truncate(3);
-            V[0]=std::cos(alpha0)*c - std::sin(alpha0)*s;
-            V[1]=std::sin(alpha0)*c + std::cos(alpha0)*s;
+            V[0]=c*std::cos(alpha0) - s*std::sin(alpha0);
+            V[1]=c*std::sin(alpha0) + s*std::cos(alpha0);
             uvect.push_back(V);
             cuts.push_back(1);
             return(uvect);      
@@ -260,7 +260,7 @@ Geom::arc_length_sb(D2<SBasis> const M,
         D2<SBasis> sub_dM=compose(dM,Linear(t0,t1));
         SBasis V=dot(uspeed[i],sub_dM);
 //FIXME: if the curve is a flat S, this is wrong: the absolute value of V should be used.
-        V=(t1-t0)*integral(V);
+        V=integral(V)*(t1-t0);
         V += L - V(0);
         result.segs.push_back(V); //  + Linear(L - V(0))
         L=V(1);
@@ -282,7 +282,7 @@ Geom::curvature(D2<SBasis> const M,
 
     for (int i=0;i<cv.size();i++){
         t1=result.cuts[i];
-	SBasis speed = (t1-t0)*dot(compose(dM,Linear(t0,t1)),cv[i]);
+	SBasis speed = dot(compose(dM,Linear(t0,t1)),cv[i]) * (t1-t0);
         D2<SBasis> dcv = derivative(cv[i]);
         dcv[0] = divide(dcv[0],speed,3);
         dcv[1] = divide(dcv[1],speed,3);
@@ -308,7 +308,7 @@ Geom::arc_length_parametrization(D2<SBasis> const &M,
         D2<SBasis> sub_M = compose(M,Linear(t0,t1));
         D2<SBasis> sub_u;
         for (int dim=0;dim<2;dim++){
-            sub_u[dim]=compose_inverse(sub_M[dim],1/(s(t1)-s(t0))*(s.segs[i]-Linear(s(t0))),order,tol);
+            sub_u[dim]=compose_inverse(sub_M[dim],(s.segs[i]-Linear(s(t0))) / (s(t1)-s(t0)),order,tol);
             u[dim].push(sub_u[dim],s(t1));
         }
     }

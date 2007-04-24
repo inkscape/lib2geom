@@ -35,20 +35,20 @@ public:
     int k;
     
     SBasis phi(Linear const &d, double w) { 
-        return sin(w*d, k) - w*sin(d, k); 
+        return sin(d*w, k) - sin(d, k)*w; 
     }
     SBasis phih(Linear const &d, double w) { 
-        return sin(w*d, k) + w*sin(d, k); 
+        return sin(d*w, k) + sin(d, k)*w; 
     }
     SBasis b4(Linear const &d, double w) {
-        return (1./(swp*swp))*phi(0.5*d,w)*phih(0.5*d,w);
+        return phi(d*.5,w)/(swp*swp)*phih(d*.5,w);
     }
     SBasis b3(Linear const &d, double w) {
-        return (cwp/(2*swp))*phi(d,w) - cwp*cwp*b4(d,w); 
+        return phi(d,w)*(cwp/(2*swp)) - b4(d,w)*(cwp*cwp); 
     }
 
     SBasis b2(Linear const &d, double w) {
-        return 2*w*w*sin(0.5*d, k)*sin(0.5*d, k);
+        return sin(d*.5, k)*(2*w*w)*sin(d*.5, k);
     }
     SBasis b1(Linear const &d, double w) {
         return b3(reverse(d), w);
@@ -102,7 +102,7 @@ class Conic4: public Toy {
         
         for(unsigned dim  = 0; dim < 2; dim++)
             for(unsigned i  = 0; i < 5; i++)
-                B[dim] += e_h[i][dim]*ab.basis[i];
+                B[dim] += ab.basis[i]*e_h[i][dim];
         
         cairo_md_sb(cr, B);
         cairo_set_source_rgba (cr, 1., 0.5, 0, 1);

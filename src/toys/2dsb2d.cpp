@@ -80,9 +80,9 @@ class Sb2d2: public Toy {
         cairo_stroke(cr);
         B *= (4./width);
         D2<SBasis> tB = compose(sb2, B);
-        B = (width/2)*B + Geom::Point(width/4, width/4);
+        B = B*(width/2) + Geom::Point(width/4, width/4);
         //cairo_md_sb(cr, B);
-        tB = (width/2)*tB + Geom::Point(width/4, width/4);
+        tB = tB*(width/2) + Geom::Point(width/4, width/4);
         
         cairo_md_sb(cr, tB);
         

@@ -60,7 +60,7 @@ void cairo_pw(cairo_t *cr, Piecewise<SBasis> p, double hscale=1., double vscale=
     for(int i = 0; i < p.size(); i++) {
         D2<SBasis> B;
         B[0] = Linear(150+p.cuts[i]*hscale, 150+p.cuts[i+1]*hscale);
-        B[1] = Linear(450) - vscale*p[i];
+        B[1] = Linear(450) - p[i]*vscale;
         cairo_md_sb(cr, B);
     }
 }
@@ -68,7 +68,7 @@ void cairo_pw(cairo_t *cr, Piecewise<SBasis> p, double hscale=1., double vscale=
 static void plot(cairo_t* cr, SBasis const &B,double vscale=1,double a=0,double b=1){
     D2<SBasis> plot;
     plot[0]=SBasis(Linear(150+a*300,150+b*300));
-    plot[1]=-vscale*B;
+    plot[1]=B*(-vscale);
     plot[1]+=300;
     cairo_md_sb(cr, plot);
     cairo_stroke(cr);

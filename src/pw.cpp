@@ -2,7 +2,7 @@
  * pw.cpp - Piecewise function class
  *
  * Copyright 2007 Michael Sloan <mgsloan@gmail.com>
- * Copyright 2007 J. F. Barraud
+ * Copyright 2007 JF Barraud
  *
  * This library is free software; you can redistribute it and/or
  * modify it either under the terms of the GNU Lesser General Public
@@ -63,7 +63,7 @@ static std::map<double,unsigned> vect_of_vect_to_map(std::vector<std::vector<dou
 Piecewise<SBasis> compose(Piecewise<SBasis> const &f, SBasis  const &g){
   Piecewise<SBasis> result;
 
-  if (f.size()==0) return result;//is this correct?
+  if (f.size()==0) return result; //TODO: is this correct?
   if (f.size()==1){
       double t0 = f.cuts[0], width = f.cuts[1] - t0;
       return (Piecewise<SBasis>) f.segs[0](compose(Linear(-t0 / width, (1-t0) / width), g));
@@ -151,7 +151,7 @@ Piecewise<SBasis> integral(Piecewise<SBasis> const &a) {
     result.cuts = a.cuts;
     double c=0;
     for(int i = 0; i < a.segs.size(); i++){
-        result.segs[i] = (a.cuts[i+1]-a.cuts[i])*integral(a.segs[i]);
+        result.segs[i] = integral(a.segs[i])*(a.cuts[i+1]-a.cuts[i]);
         result.segs[i]+= Linear(c-result.segs[i][0][0]);
         c = result.segs[i][0][1];
         // Need some kind off offset to share the constant over all segs

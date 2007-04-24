@@ -80,8 +80,8 @@ public:
         double t = 1;
         for(int dim = 0; dim < 2; dim++) {
             m[dim] = Linear(pt[dim],pt[dim]+tang[dim]);
-            m[dim] += (1./2)*Linear(0, 1)*Linear(0, 1*dtang[dim]);
-            m[dim] += (1./6)*Linear(0, 1)*Linear(0, 1)*Linear(0, ddtang[dim]);
+            m[dim] += Linear(0, 1)*Linear(0, 1*dtang[dim])/2;
+            m[dim] += Linear(0, 1)*Linear(0, 1)*Linear(0, ddtang[dim])/6;
         }
         
         double lo = 0, hi = 1;

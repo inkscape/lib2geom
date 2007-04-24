@@ -16,7 +16,7 @@ using namespace std;
 static void plot(cairo_t* cr, SBasis const &B,double vscale=1,double a=0,double b=1){
   D2<SBasis> plot;
   plot[0]=SBasis(Linear(150+a*300,150+b*300));
-  plot[1]=-vscale*B;
+  plot[1]=-B*vscale;
   plot[1]+=450;
   cairo_md_sb(cr, plot);
   cairo_stroke(cr);
@@ -24,20 +24,20 @@ static void plot(cairo_t* cr, SBasis const &B,double vscale=1,double a=0,double 
 static void plot_flip(cairo_t* cr, SBasis const &B,double vscale=1,double a=0,double b=1){
   D2<SBasis> plot;
   plot[1]=SBasis(Linear(450-a*300,450-b*300));
-  plot[0]=150+vscale*B;
+  plot[0]=150+B*vscale;
   cairo_md_sb(cr, plot);
   cairo_stroke(cr);
 }
 static void plot(cairo_t* cr, Piecewise<SBasis> const &f,double vscale=1){
   for (int i=0;i<f.size();i++){
       plot(cr,f.segs[i],vscale,f.cuts[i],f.cuts[i+1]);
-      draw_cross(cr,Geom::Point(150+300*f.cuts[i],450-vscale*f.segs[i][0][0]));
+      draw_cross(cr,Geom::Point(f.cuts[i]*300 + 150, f.segs[i][0][0]*(-vscale) + 450));
   }
 }
 static void plot_flip(cairo_t* cr, Piecewise<SBasis> const &f,double vscale=1){
   for (int i=0;i<f.size();i++){
       plot_flip(cr,f.segs[i],vscale,f.cuts[i],f.cuts[i+1]);
-      draw_cross(cr,Geom::Point(150+vscale*f.segs[i][0][0],450-300*f.cuts[i]));
+      draw_cross(cr,Geom::Point(f.segs[i][0][0]*vscale + 150, f.cuts[i]*-300 + 400));
   }
 }
 

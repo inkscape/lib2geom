@@ -36,7 +36,7 @@ class Clothoid: public Toy {
         for(int dim = 0; dim < 2; dim++) {
             B[dim] = integral(B[dim]);
             B[dim] -= B[dim](0);
-            B[dim] = 200 + 300*B[dim];
+            B[dim] = B[dim]*300 + 200;
         }
         cairo_md_sb(cr, B);
         Toy::draw(cr, notify, width, height, save);

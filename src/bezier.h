@@ -38,7 +38,6 @@
 namespace Geom {
 
 template <unsigned order>
-
 class Bezier {
 private:
   Coord c_[order+1];

@@ -33,31 +33,71 @@
 
 #include "s-basis.h"
 #include "interval.h"
+#include "point.h"
+#include "rect.h"
 
 #include <boost/concept_check.hpp>
 using namespace boost;
 
 namespace Geom {
 
+template <typename T> class D2;
+
+template <typename T> struct ResultTraits;
+
+template <> struct ResultTraits<double> {
+  typedef Interval bounds_type;
+  typedef SBasis sb_type;
+};
+
+template <> struct ResultTraits<Point > {
+  typedef Rect bounds_type;
+  typedef D2<SBasis> sb_type;
+};
+
 template <typename T>
 struct FragmentConcept {
+    typedef typename T::output_type                        OutputType;
+    typedef typename ResultTraits<OutputType>::bounds_type BoundsType;
+    typedef typename ResultTraits<OutputType>::sb_type     SbType;
     T t;
     double d;
+    OutputType o;
     bool b;
-    SBasis sb;
-    Interval i;
+    BoundsType i;
     void constraints() {
         b = t.isZero();
         b = t.isFinite();
-        d = t.at0();
-        d = t.at1();
-        d = t.pointAt(d);
-        d = t(d);
-        sb = t.toSBasis();
+        o = t.at0();
+        o = t.at1();
+        o = t.pointAt(d);
+        o = t(d);
+        SbType sb = t.toSBasis();
         t = reverse(t);
         i = t.boundsFast();
         i = t.boundsExact();
         i = t.boundsLocal(d, d);  //TODO: perhaps take an interval
+    }
+};
+
+template <typename T>
+struct OffsetableConcept {
+    T t;
+    double d;
+    void constraints() {
+        t = t + d; t += d;
+        t = t - d; t -= d;
+    }
+};
+
+template <typename T>
+struct ScalableConcept {
+    T t;
+    double d;
+    void constraints() {
+        t = -t;
+        t = t * d; t *= d;
+        t = t / d; t /= d;
     }
 };
 

@@ -62,9 +62,9 @@ class Conic3: public Toy {
         SBasis sinC = X - S;
         SBasis cosC = one - C;
         //SBasis tanC = divide(sinC, cosC, 10);
-        SBasis Z3 = (1./(sinC(1)))*sinC;
+        SBasis Z3 = sinC/sinC(1);
         SBasis Z0 = reverse(Z3);
-        SBasis Z2 = (1./(cosC(1)))*cosC - Z3;
+        SBasis Z2 = cosC/cosC(1) - Z3;
         SBasis Z1 = reverse(Z2);
         
         SBasis Z[4] = {Z0, Z1, Z2, Z3};
@@ -72,7 +72,7 @@ class Conic3: public Toy {
         for(unsigned dim  = 0; dim < 2; dim++) {
             B[dim] = Linear(0,0);
             for(unsigned i  = 0; i < 4; i++) {
-                B[dim] += e_a_h[i][dim]*Z[i];
+                B[dim] += Z[i]*e_a_h[i][dim];
             }
         }
         {

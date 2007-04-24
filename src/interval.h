@@ -41,7 +41,7 @@ private:
 public:
     //TODO: remove; required by maybe
     Interval(): _min(0.0), _max(0.0) {}
-    Interval(Coord u): _min(u), _max(u) {}
+    explicit Interval(Coord u): _min(u), _max(u) {}
     Interval(Coord u, Coord v) {
         if(u < v) {
             _min = u; _max = v;
@@ -57,11 +57,15 @@ public:
 
     bool contains(Coord val) const { return _min <= val && val <= _max; }
     bool contains(const Interval & val) const { return _min <= val._min && _max <= val._max; }
+    bool intersects(const Interval & val) const {
+        return contains(val._min) || contains(val._max) || val.contains(*this);
+    }
+    bool singular() const { return _min == _max; }
 
     static Interval fromArray(const Coord* c, int n) {
         assert(n > 0);
         Interval result(c[0]);
-        for(int i = 0; i < n; i++) result.extendTo(c[i]);
+        for(int i = 1; i < n; i++) result.extendTo(c[i]);
         return result;
     }
 
@@ -96,6 +100,11 @@ public:
     inline void operator+(Coord amnt) {
         _min += amnt;
         _max += amnt;
+    }
+
+    inline void operator-(Coord amnt) {
+        _min -= amnt;
+        _max -= amnt;
     }
 
     inline Interval unionWith(const Interval & a) {

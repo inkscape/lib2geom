@@ -34,6 +34,7 @@
 
 #include "../linear.h"
 #include "../point.h"
+#include "../s-basis.h"
 
 using namespace boost::python;
 
@@ -82,11 +83,14 @@ void wrap_linear() {
         .def(self -= float())
         .def(self == self)
         .def(self != self)
-        .def(float() * self)
+        .def(self * float())
+        .def(self / float())
         .def(self *= float())
+        .def(self /= float())
     ;
-    def("reverse", ((Geom::Linear (*)(Geom::Linear const &b))&Geom::reverse))
-    implicitly_convertible<Geom::Linear,tuple>();
+    def("reverse", ((Geom::Linear (*)(Geom::Linear const &b))&Geom::reverse));
+    //TODO: reinstate
+    //implicitly_convertible<Geom::Linear,tuple>();
 };
 
 /*

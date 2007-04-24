@@ -108,22 +108,4 @@ Piecewise<D2<SBasis> > sectionize(D2<Piecewise<SBasis> > const &a) {
     return ret;
 }
 
-Rect boundsExact(D2<SBasis> const & s, int order) {
-    Interval res[2];
-    for(int d = 0; d < 2; d++)
-        res[d] = s[d].boundsExact(order);
-    //TODO: rewrite with interval constructor
-    return Rect(Point(res[0].min(), res[1].min()),
-                Point(res[0].max(), res[1].max()));
-}
-
-Rect boundsLocal(D2<SBasis> const & s, double t0, double t1, int order) {
-    Interval res[2];
-    for(int d = 0; d < 2; d++)
-        res[d] = s[d].boundsLocal(t0, t1, order);
-    //TODO: rewrite with interval constructor
-    return Rect(Point(res[0].min(), res[1].min()),
-                Point(res[0].max(), res[1].max()));
-}
-
 };
