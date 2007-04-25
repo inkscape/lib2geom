@@ -29,6 +29,16 @@ Pw:
   - require concepts
   - add additional useful functions
 
+Point:
+  - Test the waters in regards to D2<double>
+
+Rect:
+  - Try out D2<Interval>
+
+Transformations:
+  - Concept/abstract class
+  - Lessen number of * definitions
+
 Toys:
   - generalize to path2
   - improve path-cairo
@@ -36,12 +46,8 @@ Toys:
 
 * generate postscript stroke geometries
 
-* check svg-d parser
-
 * attempt to write nodepath editing stuff in a more generic way
 
 * rewrite convex hull
 
 * replace/improve quadtree with a better spatial index
-
-* transformation concept/abstract class
