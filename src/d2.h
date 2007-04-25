@@ -35,27 +35,9 @@
 #include "interval.h"
 
 #include <boost/concept_check.hpp>
-#include "fragment.h"
-//using namespace boost;
+#include "concepts.h"
 
 namespace Geom{
-
-/*template <class T>
-struct AlgGroupConcept {
-    T i, j;
-    void constraints() {
-        i += j; i = i + j;
-        i -= j; i = i - j;
-    }
-};
-
-template <class T>
-struct AlgRingConcept {
-    T i, j;
-    void constraints() {
-        i *= j; i = i * j;
-    }
-};*/
 
 template <class T>
 class D2{
@@ -88,7 +70,7 @@ public:
         function_requires<FragmentConcept<T> >();
         return Point(f[0].at0(), f[1].at0());
     }
-    Point at1() const { 
+    Point at1() const {
         function_requires<FragmentConcept<T> >();
         return Point(f[0].at1(), f[1].at1());
     }
@@ -131,7 +113,7 @@ D2<T> reverse(const D2<T> &a) {
 template <typename T>
 inline D2<T>
 operator+(D2<T> const &a, D2<T> const &b) {
-    //function_requires<AlgGroupConcept<T> >();
+    function_requires<AddableConcept<T> >();
 
     D2<T> r;
     for(unsigned i = 0; i < 2; i++)
@@ -142,7 +124,7 @@ operator+(D2<T> const &a, D2<T> const &b) {
 template <typename T>
 inline D2<T>
 operator-(D2<T> const &a, D2<T> const &b) {
-    //function_requires<AlgGroupConcept<T> >();
+    function_requires<AddableConcept<T> >();
 
     D2<T> r;
     for(unsigned i = 0; i < 2; i++)
@@ -153,23 +135,22 @@ operator-(D2<T> const &a, D2<T> const &b) {
 template <typename T>
 inline D2<T>
 operator+=(D2<T> &a, D2<T> const &b) {
-    //function_requires<AlgGroupConcept<T> >();
+    function_requires<AddableConcept<T> >();
 
     for(unsigned i = 0; i < 2; i++)
         a[i] += b[i];
     return a;
 }
 
-/*
 template <typename T>
 inline D2<T>
 operator-=(D2<T> &a, D2<T> const & b) {
-    //function_requires<AlgGroupConcept<T> >();
+    function_requires<AddableConcept<T> >();
 
     for(unsigned i = 0; i < 2; i++)
-        a[i] -= v[i];
+        a[i] -= b[i];
     return a;
-}*/
+}
 
 template <typename T>
 inline D2<T>
@@ -239,7 +220,7 @@ compose(T const & a, D2<T> const & b) {
 template <typename T>
 inline D2<T>
 rot90(D2<T> const & a) {
-    //function_requires<NegateableConcept<T> >();
+    function_requires<NegatableConcept<T> >();
 
     D2<T> r;
     r[0] = -a[1];
@@ -250,8 +231,8 @@ rot90(D2<T> const & a) {
 template <typename T>
 inline D2<T>
 cross(D2<T> const & a, D2<T> const & b) {
-    //function_requires<NegateableConcept<T> >();
-    //function_requires<AlgRingConcept<T> >();
+    function_requires<NegatableConcept<T> >();
+    function_requires<MultiplicableConcept<T> >();
 
     D2<T> r;
     r[0] = -a[0] * b[1];

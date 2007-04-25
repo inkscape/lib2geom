@@ -22,11 +22,9 @@ Bezier:
   - eliminate multiple representations (vector<point>, point*, double*, other bezier classes)
 
 D2:
-  - require concepts
   - add additional useful functions
 
 Pw:
-  - require concepts
   - add additional useful functions
 
 Point:

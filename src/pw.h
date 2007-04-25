@@ -35,7 +35,7 @@
 #include <vector>
 
 #include <boost/concept_check.hpp>
-#include "fragment.h"
+#include "concepts.h"
 
 using namespace std;
 using namespace boost;
@@ -345,8 +345,8 @@ vector<double> roots(const Piecewise<T> &pw) {
     vector<double> ret;
     for(int i = 0; i < pw.size(); i++) {
         vector<double> sr = roots(pw[i]);
-        for (int j = 0; j < sr.size(); j++) sr[j] = sr[j] * (pw.cuts[i + 1] - pw.cuts[i]) + pw.cuts[i];
-        ret.insert(ret.end(), sr.begin(), sr.end());
+        for (int j = 0; j < sr.size(); j++) ret.push_back(sr[j] * (pw.cuts[i + 1] - pw.cuts[i]) + pw.cuts[i]);
+
     }
     return ret;
 }
@@ -455,6 +455,8 @@ Piecewise<T> operator/=(Piecewise<T>& a, double b) {
 
 template<typename T>
 Piecewise<T> operator+(Piecewise<T> const &a, Piecewise<T> const &b) {
+    function_requires<AddableConcept<T> >();
+
     Piecewise<T> pa = partition(a, b.cuts), pb = partition(b, a.cuts);
     Piecewise<T> ret = Piecewise<T>();
     assert(pa.size() == pb.size());
@@ -466,6 +468,8 @@ Piecewise<T> operator+(Piecewise<T> const &a, Piecewise<T> const &b) {
 
 template<typename T>
 Piecewise<T> operator-(Piecewise<T> const &a, Piecewise<T> const &b) {
+    function_requires<AddableConcept<T> >();
+
     Piecewise<T> pa = partition(a, b.cuts), pb = partition(b, a.cuts);
     Piecewise<T> ret = Piecewise<T>();
     assert(pa.size() == pb.size());
@@ -477,6 +481,8 @@ Piecewise<T> operator-(Piecewise<T> const &a, Piecewise<T> const &b) {
 
 template<typename T>
 Piecewise<T> operator*(Piecewise<T> const &a, Piecewise<T> const &b) {
+    function_requires<MultiplicableConcept<T> >();
+
     Piecewise<T> pa = partition(a, b.cuts), pb = partition(b, a.cuts);
     Piecewise<T> ret = Piecewise<T>();
     assert(pa.size() == pb.size());
@@ -489,7 +495,7 @@ Piecewise<T> operator*(Piecewise<T> const &a, Piecewise<T> const &b) {
 //TODO: operator/(pw, pw)
 
 template<typename T>
-inline Piecewise<T> operator*=(Piecewise<T> &a, Piecewise<T> const &b) { 
+inline Piecewise<T> operator*=(Piecewise<T> &a, Piecewise<T> const &b) {
     a = a * b;
     return a;
 }

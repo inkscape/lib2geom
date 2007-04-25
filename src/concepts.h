@@ -1,5 +1,5 @@
 /*
- * fragment.h - Declares a FragmentConcept outlining an interface for [0, 1] functions
+ * concepts.h - Declares various mathematical concepts, for restriction of template parameters
  *
  * Copyright 2007 Michael Sloan <mgsloan@gmail.com>
  *
@@ -28,8 +28,8 @@
  *
  */
 
-#ifndef SEEN_FRAGMENT_H
-#define SEEN_FRAGMENT_H
+#ifndef SEEN_CONCEPTS_H
+#define SEEN_CONCEPTS_H
 
 #include "s-basis.h"
 #include "interval.h"
@@ -55,6 +55,7 @@ template <> struct ResultTraits<Point > {
   typedef D2<SBasis> sb_type;
 };
 
+//A concept for one-dimensional functions defined on [0,1]
 template <typename T>
 struct FragmentConcept {
     typedef typename T::output_type                        OutputType;
@@ -101,6 +102,31 @@ struct ScalableConcept {
     }
 };
 
+template <class T>
+struct AddableConcept {
+    T i, j;
+    void constraints() {
+        i += j; i = i + j;
+        i -= j; i = i - j;
+    }
 };
 
-#endif //SEEN_FRAGMENT_H
+template <class T>
+struct MultiplicableConcept {
+    T i, j;
+    void constraints() {
+        i *= j; i = i * j;
+    }
+};
+
+template <class T>
+struct NegatableConcept {
+    T i, j;
+    void constraints() {
+        i = -j;
+    }
+};
+
+};
+
+#endif //SEEN_CONCEPTS_H
