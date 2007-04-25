@@ -104,9 +104,10 @@ void wrap_sbasis() {
         .def(self -= float())
         
         .def(self * self)
-        .def(self * float())
-        .def(self / float())
         .def(self *= self)
+        .def(self * float())
+        .def(float() * self)
+        .def(self / float())
         .def(self *= float())
         .def(self /= float())
     ;

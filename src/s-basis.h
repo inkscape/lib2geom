@@ -199,6 +199,7 @@ SBasis& operator*=(SBasis& a, double b);
 SBasis& operator/=(SBasis& a, double b);
 
 SBasis operator*(SBasis const &a, double k);
+inline SBasis operator*(double k, SBasis const &a) { return a*k; }
 inline SBasis operator/(SBasis const &a, double k) { return a*(1./k); }
 SBasis operator*(SBasis const &a, SBasis const &b);
 //TODO: division equivalent?
