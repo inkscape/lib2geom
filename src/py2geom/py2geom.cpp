@@ -39,7 +39,7 @@
 #include "transforms.h"
 #include "sbasis.h"
 #include "linear.h"
-#include "pw-sb.h"
+#include "pw.h"
 #include "md-pw-sb.h"
 #include "multidimsbasis.h"
 
@@ -60,8 +60,8 @@ BOOST_PYTHON_MODULE(_py2geom)
     wrap_point();
     wrap_transforms();
     wrap_sbasis();
+    wrap_pw();
     wrap_multidimsbasis();
-    wrap_pwsb();
     wrap_mdpwsb();
 
 }

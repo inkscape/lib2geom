@@ -26,10 +26,10 @@
  *
  */
 
-#ifndef SEEN_PY2GEOM_PWSB_H
-#define SEEN_PY2GEOM_PWSB_H
+#ifndef SEEN_PY2GEOM_PW_H
+#define SEEN_PY2GEOM_PW_H
 
-void wrap_pwsb();
+void wrap_pw();
 
 #endif
 /*

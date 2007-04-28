@@ -30,9 +30,9 @@
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 
 #include "../s-basis.h"
-#include "../pw-sb.h"
+#include "../pw.h"
 
-#include "pw-sb.h"
+#include "pw.h"
 #include "helpers.h"
 
 using namespace boost::python;

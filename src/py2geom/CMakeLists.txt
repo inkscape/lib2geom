@@ -3,7 +3,7 @@ point.cpp
 transforms.cpp
 sbasis.cpp
 linear.cpp
-pw-sb.cpp
+pw.cpp
 multidimsbasis.cpp
 md-pw-sb.cpp
 py2geom.cpp
