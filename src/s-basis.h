@@ -71,6 +71,9 @@ public:
     }
 
     double pointAt(double t) const {
+        if (empty()) return 0;
+        if(t==0.) return (*this)[0][0];
+        if(t==1.) return (*this)[0][1];
         double s = t*(1-t);
         double p0 = 0, p1 = 0;
         double sk = 1;
