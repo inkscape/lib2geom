@@ -78,7 +78,7 @@ public:
 
   inline unsigned degree() const { return order; }
 
-  //Fragment implementation
+  //IMPL: FragmentConcept
   inline bool isZero() const { 
      for(int i = 0; i <= order; i++) {
        if(c_[i] != 0) return false;

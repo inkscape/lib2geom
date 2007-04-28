@@ -55,7 +55,7 @@ public:
     T& operator[](unsigned i)              { return f[i]; }
     T const & operator[](unsigned i) const { return f[i]; }
 
-    //Fragment implementation
+    //TODO: implements a Fragment2D
     typedef Point output_type;
     //TODO: doesn't make much sense in d2 context
     bool isZero() const {
@@ -110,6 +110,7 @@ D2<T> reverse(const D2<T> &a) {
     return D2<T>(reverse(a[0]), reverse(a[1]));
 }
 
+//IMPL: AddableConcept
 template <typename T>
 inline D2<T>
 operator+(D2<T> const &a, D2<T> const &b) {
@@ -120,7 +121,6 @@ operator+(D2<T> const &a, D2<T> const &b) {
         r[i] = a[i] + b[i];
     return r;
 }
-
 template <typename T>
 inline D2<T>
 operator-(D2<T> const &a, D2<T> const &b) {
@@ -131,7 +131,6 @@ operator-(D2<T> const &a, D2<T> const &b) {
         r[i] = a[i] - b[i];
     return r;
 }
-
 template <typename T>
 inline D2<T>
 operator+=(D2<T> &a, D2<T> const &b) {
@@ -141,7 +140,6 @@ operator+=(D2<T> &a, D2<T> const &b) {
         a[i] += b[i];
     return a;
 }
-
 template <typename T>
 inline D2<T>
 operator-=(D2<T> &a, D2<T> const & b) {
@@ -152,45 +150,82 @@ operator-=(D2<T> &a, D2<T> const & b) {
     return a;
 }
 
+//IMPL: ScalableConcept
 template <typename T>
 inline D2<T>
-operator*(D2<T> const & a, double b) {
+operator*(D2<T> const & a, Point const & b) {
     function_requires<ScalableConcept<T> >();
 
     D2<T> r;
     for(unsigned i = 0; i < 2; i++)
-        r[i] = a[i] * b;
+        r[i] = a[i] * b[i];
     return r;
 }
-
 template <typename T>
 inline D2<T>
-operator/(D2<T> const & a, double b) {
+operator/(D2<T> const & a, Point const & b) {
     function_requires<ScalableConcept<T> >();
     //TODO: b==0?
     D2<T> r;
     for(unsigned i = 0; i < 2; i++)
-        r[i] = a[i] / b;
+        r[i] = a[i] / b[i];
     return r;
 }
-
 template <typename T>
 inline D2<T>
-operator*=(D2<T> &a, double b) {
+operator*=(D2<T> &a, Point const & b) {
     function_requires<ScalableConcept<T> >();
 
     for(unsigned i = 0; i < 2; i++)
-        a[i] *= b;
+        a[i] *= b[i];
     return a;
 }
-
 template <typename T>
 inline D2<T>
-operator/=(D2<T> &a, double b) {
+operator/=(D2<T> &a, Point b) {
     function_requires<ScalableConcept<T> >();
     //TODO: b==0?
     for(unsigned i = 0; i < 2; i++)
         a[i] /= b;
+    return a;
+}
+
+template <typename T> inline D2<T> operator*(D2<T> const & a, double b) { return a * Point(b,b); }
+template <typename T> inline D2<T> operator*=(D2<T> & a, double b) { return a *= Point(b,b); }
+
+//IMPL: OffsetableConcept
+template <typename T>
+inline D2<T>
+operator+(D2<T> const & a, Point b) {
+    function_requires<OffsetableConcept<T> >();
+    D2<T> r;
+    for(unsigned i = 0; i < 2; i++)
+        r[i] = a[i] + b[i];
+    return r;
+}
+template <typename T>
+inline D2<T>
+operator-(D2<T> const & a, Point b) {
+    function_requires<OffsetableConcept<T> >();
+    D2<T> r;
+    for(unsigned i = 0; i < 2; i++)
+        r[i] = a[i] - b[i];
+    return r;
+}
+template <typename T>
+inline D2<T>
+operator+=(D2<T> & a, Point b) {
+    function_requires<OffsetableConcept<T> >();
+    for(unsigned i = 0; i < 2; i++)
+        a[i] += b[i];
+    return a;
+}
+template <typename T>
+inline D2<T>
+operator-=(D2<T> & a, Point b) {
+    function_requires<OffsetableConcept<T> >();
+    for(unsigned i = 0; i < 2; i++)
+        a[i] -= b[i];
     return a;
 }
 
@@ -302,8 +337,7 @@ SBasis L2(D2<SBasis> const & a, int k);
 double L2(D2<double> const & a);
 
 D2<SBasis> multiply(Linear const & a, D2<SBasis> const & b);
-D2<SBasis> operator*(Linear const & a, D2<SBasis> const & b);
-D2<SBasis> operator+(D2<SBasis> const & a, Point b);
+inline D2<SBasis> operator*(Linear const & a, D2<SBasis> const & b) { return multiply(a, b); }
 D2<SBasis> multiply(SBasis const & a, D2<SBasis> const & b);
 D2<SBasis> truncate(D2<SBasis> const & a, unsigned terms);
 

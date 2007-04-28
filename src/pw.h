@@ -59,9 +59,11 @@ class Piecewise {
         push_cut(1.);
     }
 
+    typedef typename T::output_type output_type;
+
     inline T operator[](unsigned i) const { return segs[i]; }
     inline T &operator[](unsigned i) { return segs[i]; }
-    inline double operator()(double t) const {
+    inline typename T::output_type operator()(double t) const {
         int n = segN(t);
         return segs[n](segT(t, n));
     }
@@ -164,8 +166,9 @@ class Piecewise {
 
     //Like concat, but ensures continuity.
     inline void continuousConcat(const Piecewise<T> &other) {
+        function_requires<AddableConcept<typename T::output_type> >();
         if(other.empty()) return;
-        double y = segs.back()[0][1] - other.segs.front()[0][0];
+        typename T::output_type y = segs.back().at1() - other.segs.front().at0();
 
         if(empty()) {
             for(int i = 0; i < other.size(); i++)
@@ -477,6 +480,18 @@ Piecewise<T> operator-(Piecewise<T> const &a, Piecewise<T> const &b) {
     for (int i = 0; i < pa.size(); i++)
         ret.push_seg(pa[i] - pb[i]);
     return ret;
+}
+
+template<typename T>
+inline Piecewise<T> operator+=(Piecewise<T> &a, Piecewise<T> const &b) {
+    a = a+b;
+    return a;
+}
+
+template<typename T>
+inline Piecewise<T> operator-=(Piecewise<T> &a, Piecewise<T> const &b) {
+    a = a-b;
+    return a;
 }
 
 template<typename T>

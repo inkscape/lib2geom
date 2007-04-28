@@ -84,7 +84,7 @@ struct FragmentConcept {
 template <typename T>
 struct OffsetableConcept {
     T t;
-    double d;
+    typename T::output_type d;
     void constraints() {
         t = t + d; t += d;
         t = t - d; t -= d;
@@ -94,7 +94,7 @@ struct OffsetableConcept {
 template <typename T>
 struct ScalableConcept {
     T t;
-    double d;
+    typename T::output_type d;
     void constraints() {
         t = -t;
         t = t * d; t *= d;

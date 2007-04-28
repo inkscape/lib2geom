@@ -33,12 +33,9 @@ class Clothoid: public Toy {
         t2 = t2*t2;
         B[0] = compose(cos(bo,6), t2);
         B[1] = compose(sin(bo,6), t2);
-        for(int dim = 0; dim < 2; dim++) {
-            B[dim] = integral(B[dim]);
-            B[dim] -= B[dim](0);
-            B[dim] = B[dim]*300 + 200;
-        }
-        cairo_md_sb(cr, B);
+        B = integral(B);
+        B -= B(0);
+        cairo_md_sb(cr, B*300 + Point(200, 200));
         Toy::draw(cr, notify, width, height, save);
     }
 };

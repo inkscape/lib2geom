@@ -209,7 +209,7 @@ Geom::uniform_speed(D2<SBasis> const M,
     double t0=0.,t1;
     for (int i=0;i<cuts.size();i++){
         t1=cuts[i];
-        uspeed[i]*=1/(t1-t0);
+        uspeed[i] *= 1/(t1-t0);
         t0=t1;
     }
     return(uspeed);
