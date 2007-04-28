@@ -229,15 +229,13 @@ rot90(D2<T> const & a) {
 }
 
 template <typename T>
-inline D2<T>
+inline T
 cross(D2<T> const & a, D2<T> const & b) {
     function_requires<NegatableConcept<T> >();
     function_requires<MultiplicableConcept<T> >();
 
-    D2<T> r;
-    r[0] = -a[0] * b[1];
-    r[1] = a[1] * b[0];
-    return r;
+    //TODO: check sign conventions...
+    return a[0] * b[1] - a[1] * b[0];
 }
 
 //TODO: encode with concepts
