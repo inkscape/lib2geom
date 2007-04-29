@@ -82,7 +82,7 @@ class Piecewise {
     inline void push_cut(double c) {
         assert(cuts.empty() || c > cuts.back()); 
         cuts.push_back(c);
-    }//IMPL: OffsetableConcept
+    }
     //Convenience/implementation hiding function to add segments.
     inline void push_seg(const T &s) { segs.push_back(s); }
 
