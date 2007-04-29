@@ -50,6 +50,17 @@ also allow you to find intersections of multiple curves but require solving n*m 
 
 namespace Geom{
 
+//TODO: should optional "order" parameter be added here/removed from boundsFast?
+Interval SBasis::boundsExact() const {
+    Interval result = Interval((*this).at0(),(*this).at1());
+    SBasis df = derivative(*this);
+    vector<double>extrema = roots(df);
+    for (int i=0; i<extrema.size(); i++){
+        result.extendTo((*this)(extrema[i]));
+    }
+    return result;
+}
+
 Interval SBasis::boundsFast(int order) const {
     int imax=size()-1;
     double lo = 0.0, hi = 0.0;

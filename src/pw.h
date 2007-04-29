@@ -116,6 +116,11 @@ class Piecewise {
         return (t - cuts[i]) / (cuts[i+1] - cuts[i]);
     }
 
+    //TODO: is this usefull?
+    //inline double mapToDomain(int i, double t) const {
+    //    return (1-t)*cuts[i]+t*cuts[i+1];
+    //}    
+
     //Offsets the piecewise domain
     inline void offsetDomain(double o) {
         if(o != 0)
@@ -520,6 +525,8 @@ Piecewise<SBasis> compose(Piecewise<SBasis> const &a, Piecewise<SBasis> const &b
 
 Piecewise<SBasis> integral(Piecewise<SBasis> const &a);
 Piecewise<SBasis> derivative(Piecewise<SBasis> const &a);
+
+vector<double> roots(Piecewise<SBasis> const &f);
 
 }
 

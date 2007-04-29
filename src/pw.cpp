@@ -169,6 +169,18 @@ Piecewise<SBasis> derivative(Piecewise<SBasis> const &a) {
     return result;
 }
 
+vector<double> roots(Piecewise<SBasis> const &f){
+    vector<double> result;
+    for (int i=0; i<f.size(); i++){
+        vector<double> rts=roots(f.segs[i]);
+        rts=roots(f.segs[i]);
+        for (int r=0; r<rts.size(); r++){
+            result.push_back((1-rts[r])*f.cuts[i]+rts[r]*f.cuts[i+1]);
+        }
+    }
+    return result;
+}
+
 }
 /*
   Local Variables:
