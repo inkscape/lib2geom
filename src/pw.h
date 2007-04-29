@@ -116,10 +116,9 @@ class Piecewise {
         return (t - cuts[i]) / (cuts[i+1] - cuts[i]);
     }
 
-    //TODO: is this usefull?
-    //inline double mapToDomain(int i, double t) const {
-    //    return (1-t)*cuts[i]+t*cuts[i+1];
-    //}    
+    inline double mapToDomain(double t, int i) const {
+        return (1-t)*cuts[i] + t*cuts[i+1]; //same as: t * (cuts[i+1] - cuts[i]) + cuts[i]
+    }    
 
     //Offsets the piecewise domain
     inline void offsetDomain(double o) {

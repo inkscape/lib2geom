@@ -175,7 +175,7 @@ vector<double> roots(Piecewise<SBasis> const &f){
         vector<double> rts=roots(f.segs[i]);
         rts=roots(f.segs[i]);
         for (int r=0; r<rts.size(); r++){
-            result.push_back((1-rts[r])*f.cuts[i]+rts[r]*f.cuts[i+1]);
+            result.push_back(f.mapToDomain(rts[r], i));
         }
     }
     return result;
