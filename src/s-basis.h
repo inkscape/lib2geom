@@ -53,7 +53,7 @@ public:
         push_back(bo);
     }
 
-    //Fragment implementation
+    //IMPL: FragmentConcept
     typedef double output_type;
     inline bool isZero() const {
         if(empty()) return true;
@@ -118,6 +118,77 @@ public:
 //TODO: figure out how to stick this in linear, while not adding an sbasis dep
 inline SBasis Linear::toSBasis() const { return SBasis(*this); }
 
+inline SBasis reverse(SBasis const &a) {
+    SBasis result;
+    result.reserve(a.size());
+    for(unsigned k = 0; k < a.size(); k++)
+       result.push_back(reverse(a[k]));
+    return result;
+}
+
+//IMPL: AddableConcept
+SBasis operator+(const SBasis& a, const SBasis& b);
+SBasis operator-(const SBasis& a, const SBasis& b);
+SBasis& operator+=(SBasis& a, const SBasis& b);
+SBasis& operator-=(SBasis& a, const SBasis& b);
+
+//TODO: remove
+inline SBasis operator+(Linear const & b, const SBasis & a) {
+    if(b.isZero()) return a;
+    if(a.isZero()) return b;
+    SBasis result(a);
+    result[0] += b;
+    return result;
+}
+inline SBasis operator-(Linear const & b, const SBasis & a) {
+    if(a.isZero()) return b;
+    SBasis result = -a;
+    result[0] += b;
+    return result;
+}
+inline SBasis& operator+=(SBasis& a, const Linear& b) {
+    if(a.isZero())
+        a.push_back(b);
+    else
+        a[0] += b;
+    return a;
+}
+inline SBasis& operator-=(SBasis& a, const Linear& b) {
+    if(a.isZero())
+        a.push_back(-b);
+    else
+        a[0] -= b;
+    return a;
+}
+
+//IMPL: OffsetableConcept
+inline SBasis operator+(const SBasis & a, double b) {
+    if(a.isZero()) return Linear(b, b);
+    SBasis result(a);
+    result[0] += b;
+    return a;
+}
+inline SBasis operator-(const SBasis & a, double b) {
+    if(a.isZero()) return Linear(-b, -b);
+    SBasis result(a);
+    result[0] += b;
+    return a;
+}
+inline SBasis& operator+=(SBasis& a, double b) {
+    if(a.isZero())
+        a.push_back(Linear(b,b));
+    else
+        a[0] += b;
+    return a;
+}
+inline SBasis& operator-=(SBasis& a, double b) {
+    if(a.isZero())
+        a.push_back(Linear(b,b));
+    else
+        a[0] -= b;
+    return a;
+}
+
 inline SBasis operator-(const SBasis& p) {
     if(p.isZero()) return SBasis();
     SBasis result;
@@ -129,78 +200,13 @@ inline SBasis operator-(const SBasis& p) {
     return result;
 }
 
-SBasis operator+(const SBasis& a, const SBasis& b);
-SBasis operator-(const SBasis& a, const SBasis& b);
-SBasis& operator+=(SBasis& a, const SBasis& b);
-SBasis& operator-=(SBasis& a, const SBasis& b);
-
-inline SBasis operator+(Linear const & b, const SBasis & a) {
-    if(b.isZero()) return a;
-    if(a.isZero()) return b;
-    SBasis result(a);
-    result[0] += b;
-    return result;
-}
-
-inline SBasis operator-(Linear const & b, const SBasis & a) {
-    if(a.isZero()) return b;
-    SBasis result = -a;
-    result[0] += b;
-    return result;
-}
-
-inline SBasis& operator+=(SBasis& a, const Linear& b) {
-    if(a.isZero())
-        a.push_back(b);
-    else
-        a[0] += b;
-    return a;
-}
-
-inline SBasis& operator-=(SBasis& a, const Linear& b) {
-    if(a.isZero())
-        a.push_back(-b);
-    else
-        a[0] -= b;
-    return a;
-}
-
-inline SBasis operator+(const SBasis & a, double b) {
-    if(a.isZero()) return Linear(b, b);
-    SBasis result(a);
-    result[0] += b;
-    return a;
-}
-
-inline SBasis operator-(const SBasis & a, double b) {
-    if(a.isZero()) return Linear(-b, -b);
-    SBasis result(a);
-    result[0] += b;
-    return a;
-}
-
-inline SBasis& operator+=(SBasis& a, double b) {
-    if(a.isZero())
-        a.push_back(Linear(b,b));
-    else
-        a[0] += b;
-    return a;
-}
-
-inline SBasis& operator-=(SBasis& a, double b) {
-    if(a.isZero())
-        a.push_back(Linear(b,b));
-    else
-        a[0] -= b;
-    return a;
-}
-
-SBasis& operator*=(SBasis& a, double b);
-SBasis& operator/=(SBasis& a, double b);
-
+//IMPL: ScalableConcept
 SBasis operator*(SBasis const &a, double k);
 inline SBasis operator*(double k, SBasis const &a) { return a*k; }
 inline SBasis operator/(SBasis const &a, double k) { return a*(1./k); }
+SBasis& operator*=(SBasis& a, double b);
+SBasis& operator/=(SBasis& a, double b);
+
 SBasis operator*(SBasis const &a, SBasis const &b);
 //TODO: division equivalent?
 
@@ -211,14 +217,6 @@ inline SBasis truncate(SBasis const &a, unsigned terms) {
     SBasis c;
     c.insert(c.begin(), a.begin(), a.begin() + std::min(terms, a.size()));
     return c;
-}
-
-inline SBasis reverse(SBasis const &a) {
-    SBasis result;
-    result.reserve(a.size());
-    for(unsigned k = 0; k < a.size(); k++)
-       result.push_back(reverse(a[k]));
-    return result;
 }
 
 SBasis multiply(SBasis const &a, SBasis const &b);

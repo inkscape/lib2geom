@@ -82,7 +82,7 @@ public:
         return a[i];
     }
 
-    //Fragment implementation
+    //IMPL: FragmentConcept
     typedef double output_type;
     inline bool isZero() const { return a[0] == 0 && a[1] == 0; }
     inline bool isFinite() const { return is_finite(a[0]) && is_finite(a[1]); }
@@ -112,9 +112,7 @@ public:
 
 inline Linear reverse(Linear const &a) { return Linear(a[1], a[0]); }
 
-inline Linear operator-(Linear const &a) {
-    return Linear(-a[0], -a[1]);
-}
+//IMPL: AddableConcept
 inline Linear operator+(Linear const & a, Linear const & b) {
     return Linear(a[0] + b[0], a[1] + b[1]);
 }
@@ -129,6 +127,7 @@ inline Linear& operator-=(Linear & a, Linear const & b) {
     a[0] -= b[0]; a[1] -= b[1];
     return a;
 }
+//IMPL: OffsetableConcept
 inline Linear operator+(Linear const & a, double b) {
     return Linear(a[0] + b, a[1] + b);
 }
@@ -143,11 +142,16 @@ inline Linear& operator-=(Linear & a, double b) {
     a[0] -= b; a[1] -= b;
     return a;
 }
+//TODO: concept?
 inline bool operator==(Linear const & a, Linear const & b) {
     return a[0] == b[0] && a[1] == b[1];
 }
 inline bool operator!=(Linear const & a, Linear const & b) {
     return a[0] != b[0] || a[1] != b[1];
+}
+//IMPL: ScalableConcept
+inline Linear operator-(Linear const &a) {
+    return Linear(-a[0], -a[1]);
 }
 inline Linear operator*(Linear const & a, double b) {
     return Linear(a[0]*b, a[1]*b);

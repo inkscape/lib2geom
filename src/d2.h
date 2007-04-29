@@ -153,6 +153,15 @@ operator-=(D2<T> &a, D2<T> const & b) {
 //IMPL: ScalableConcept
 template <typename T>
 inline D2<T>
+operator-(D2<T> const & a) {
+    function_requires<ScalableConcept<T> >();
+    D2<T> r;
+    for(unsigned i = 0; i < 2; i++)
+        r[i] = -a[i];
+    return r;
+}
+template <typename T>
+inline D2<T>
 operator*(D2<T> const & a, Point const & b) {
     function_requires<ScalableConcept<T> >();
 

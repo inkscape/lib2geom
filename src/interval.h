@@ -69,6 +69,21 @@ public:
         return result;
     }
 
+    //IMPL: OffsetableConcept
+    //TODO: rename output_type to something else in the concept
+    typedef Coord output_type
+    inline Interval operator+(Coord amnt) {
+        return Interval(_min + amnt, _max + amnt);
+    }
+    inline Interval operator-(Coord amnt) {
+        return Interval(_min - amnt, _max - amnt);
+    }
+    inline void operator+=(Coord amnt) {
+        _min += amnt; _max += amnt;
+    }
+    inline void operator-=(Coord amnt) {
+        _min -= amnt; _max -= amnt;
+    }
 //MUTATOR PRISON
     //TODO: NaN handleage for the next two?
     //TODO: Evaluate if wrap behaviour is proper.
@@ -95,16 +110,6 @@ public:
     inline void extendTo(Coord val) {
        if(val < _min) _min = val;
        if(val > _max) _max = val;  //no else, as we want to handle NaN
-    }
-
-    inline void operator+(Coord amnt) {
-        _min += amnt;
-        _max += amnt;
-    }
-
-    inline void operator-(Coord amnt) {
-        _min -= amnt;
-        _max -= amnt;
     }
 
     inline Interval unionWith(const Interval & a) {

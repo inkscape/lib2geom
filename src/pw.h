@@ -82,7 +82,7 @@ class Piecewise {
     inline void push_cut(double c) {
         assert(cuts.empty() || c > cuts.back()); 
         cuts.push_back(c);
-    }
+    }//IMPL: OffsetableConcept
     //Convenience/implementation hiding function to add segments.
     inline void push_seg(const T &s) { segs.push_back(s); }
 
@@ -354,6 +354,7 @@ vector<double> roots(const Piecewise<T> &pw) {
     return ret;
 }
 
+//IMPL: OffsetableConcept
 template<typename T>
 Piecewise<T> operator+(Piecewise<T> const &a, double b) {
     function_requires<OffsetableConcept<T> >();
@@ -364,7 +365,6 @@ Piecewise<T> operator+(Piecewise<T> const &a, double b) {
         ret.push_seg(a[i] + b);
     return ret;
 }
-
 template<typename T>
 Piecewise<T> operator-(Piecewise<T> const &a, double b) {
     function_requires<OffsetableConcept<T> >();
@@ -375,7 +375,6 @@ Piecewise<T> operator-(Piecewise<T> const &a, double b) {
         ret.push_seg(a[i] - b);
     return ret;
 }
-
 template<typename T>
 Piecewise<T> operator+=(Piecewise<T>& a, double b) {
     function_requires<OffsetableConcept<T> >();
@@ -397,6 +396,7 @@ Piecewise<T> operator-=(Piecewise<T>& a, double b) {
     return a;
 }
 
+//IMPL: ScalableConcept
 template<typename T>
 Piecewise<T> operator-(Piecewise<T> const &a) {
     function_requires<ScalableConcept<T> >();
@@ -407,7 +407,6 @@ Piecewise<T> operator-(Piecewise<T> const &a) {
         ret.push_seg(- a[i]);
     return ret;
 }
-
 template<typename T>
 Piecewise<T> operator*(Piecewise<T> const &a, double b) {
     function_requires<ScalableConcept<T> >();
@@ -433,7 +432,6 @@ Piecewise<T> operator/(Piecewise<T> const &a, double b) {
         ret.push_seg(a[i] / b);
     return ret;
 }
-
 template<typename T>
 Piecewise<T> operator*=(Piecewise<T>& a, double b) {
     function_requires<ScalableConcept<T> >();
@@ -456,6 +454,7 @@ Piecewise<T> operator/=(Piecewise<T>& a, double b) {
     return a;
 }
 
+//IMPL: AddableConcept
 template<typename T>
 Piecewise<T> operator+(Piecewise<T> const &a, Piecewise<T> const &b) {
     function_requires<AddableConcept<T> >();
@@ -468,7 +467,6 @@ Piecewise<T> operator+(Piecewise<T> const &a, Piecewise<T> const &b) {
         ret.push_seg(pa[i] + pb[i]);
     return ret;
 }
-
 template<typename T>
 Piecewise<T> operator-(Piecewise<T> const &a, Piecewise<T> const &b) {
     function_requires<AddableConcept<T> >();
@@ -481,13 +479,11 @@ Piecewise<T> operator-(Piecewise<T> const &a, Piecewise<T> const &b) {
         ret.push_seg(pa[i] - pb[i]);
     return ret;
 }
-
 template<typename T>
 inline Piecewise<T> operator+=(Piecewise<T> &a, Piecewise<T> const &b) {
     a = a+b;
     return a;
 }
-
 template<typename T>
 inline Piecewise<T> operator-=(Piecewise<T> &a, Piecewise<T> const &b) {
     a = a-b;
