@@ -12,7 +12,6 @@
 #include "path-cairo.h"
 
 #include <iterator>
-#include "translate.h"
 
 #include "toy-framework.h"
 

@@ -5,7 +5,6 @@
 #include "rect.h"
 #include "maybe.h"
 #include <vector>
-#include "multidim-sbasis.h" //TODO: hide this
 
 /* Need some kind of efficient iterator / position reference. */
 

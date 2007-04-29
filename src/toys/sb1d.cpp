@@ -8,7 +8,6 @@
 #include "path-cairo.h"
 
 #include <iterator>
-#include "translate.h"
 #include "choose.h"
 #include "convex-cover.h"
 

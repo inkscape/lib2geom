@@ -9,7 +9,6 @@
 
 #include <map>
 #include <iterator>
-#include "translate.h"
 
 #include "toy-framework.h"
 

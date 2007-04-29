@@ -350,13 +350,11 @@ int centroid(Piecewise<D2<SBasis> > const &p, Point& centroid, double &area) {
         SBasis A = integral(curl);
         D2<SBasis> C = integral(multiply(curl, p[i]));
         atmp += A.at1() - A.at0();
-        //TODO: replace following with at0, at1
-        centroid_tmp += C(1)- C(0); // first moment.
+        centroid_tmp += C.at1()- C.at0(); // first moment.
     }
 // join ends
     centroid_tmp *= 2;
-    //TODO: replace following with at0, at1
-    Geom::Point final = p[p.size()](1), initial = p[0](0);
+    Geom::Point final = p[p.size()].at1(), initial = p[0].at0();
     const double ai = cross(final, initial);
     atmp += ai;
     centroid_tmp += ai*(final, initial); // first moment.

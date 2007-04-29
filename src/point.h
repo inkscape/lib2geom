@@ -26,30 +26,22 @@ class Point {
     { _pt[X] = _pt[Y] = 0; }
 
     inline Point(Coord x, Coord y) {
-        _pt[X] = x;
-        _pt[Y] = y;
+        _pt[X] = x; _pt[Y] = y;
     }
 
     inline Point(Point const &p) {
-        for (unsigned i = 0; i < 2; ++i) {
+        for (unsigned i = 0; i < 2; ++i)
             _pt[i] = p._pt[i];
-        }
     }
 
     inline Point &operator=(Point const &p) {
-        for (unsigned i = 0; i < 2; ++i) {
+        for (unsigned i = 0; i < 2; ++i)
             _pt[i] = p._pt[i];
-        }
         return *this;
     }
 
-    inline Coord operator[](unsigned i) const {
-        return _pt[i];
-    }
-
-    inline Coord &operator[](unsigned i) {
-        return _pt[i];
-    }
+    inline Coord operator[](unsigned i) const { return _pt[i]; }
+    inline Coord &operator[](unsigned i) { return _pt[i]; }
 
     Coord operator[](Dim2 d) const throw() { return _pt[d]; }
     Coord &operator[](Dim2 d) throw() { return _pt[d]; }
@@ -57,6 +49,8 @@ class Point {
     static inline Point polar(Coord angle, Coord radius) {
         return Point(radius * std::cos(angle), radius * std::sin(angle));
     }
+
+    inline Coord length() const { return hypot(_pt[0], _pt[1]); }
 
     /** Return a point like this point but rotated -90 degrees.
         (If the y axis grows downwards and the x axis grows to the
@@ -201,12 +195,12 @@ inline bool operator<=(Point const &a, Point const &b) {
 Coord L1(Point const &p);
 
 /** Compute the L2, or euclidean, norm of \a p. */
-inline Coord L2(Point const &p) { return hypot(p[0], p[1]); }
+inline Coord L2(Point const &p) { return p.length(); }
 
 /** Compute the square of L2 norm of \a p. Warning: this can overflow where L2 won't.*/
 inline Coord L2sq(Point const &p) { return p[0]*p[0] + p[1]*p[1]; }
 
-extern double LInfty(Point const &p);
+double LInfty(Point const &p);
 bool is_zero(Point const &p);
 bool is_unit_vector(Point const &p);
 

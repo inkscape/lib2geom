@@ -264,7 +264,7 @@ compose(T const & a, D2<T> const & b) {
 template <typename T>
 inline D2<T>
 rot90(D2<T> const & a) {
-    function_requires<NegatableConcept<T> >();
+    function_requires<ScalableConcept<T> >();
 
     D2<T> r;
     r[0] = -a[1];
@@ -275,7 +275,7 @@ rot90(D2<T> const & a) {
 template <typename T>
 inline T
 cross(D2<T> const & a, D2<T> const & b) {
-    function_requires<NegatableConcept<T> >();
+    function_requires<ScalableConcept<T> >();
     function_requires<MultiplicableConcept<T> >();
 
     //TODO: check sign conventions...

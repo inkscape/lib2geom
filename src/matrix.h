@@ -19,8 +19,8 @@
 
 //#include <glib/gmessages.h>
 
-#include "transforms.h"
 #include "math-utils.h"
+#include "point.h"
 
 namespace Geom {
 
@@ -45,12 +45,10 @@ namespace Geom {
  * and the rows of the matrix correspond to columns (elements) of the "input").
  */
 class Matrix {
+  private:
     Coord _c[6];
-
   public:
-
-    //TODO: I'd prefer it default to identity matrix - Botty
-    explicit Matrix() { }
+    Matrix() {}
 
     Matrix(Matrix const &m) {
         for(int i = 0; i < 6; i++) {
@@ -70,65 +68,33 @@ class Matrix {
         return *this;
     }
 
-    explicit Matrix(Scale const &sm) {
-        _c[0] = sm[X];
-        _c[3] = sm[Y];
-    }
-
-    explicit Matrix(Rotate const &r) {
-        set_x_axis(r.vec);
-        set_y_axis(r.vec.cw());
-    }
-
-    explicit Matrix(Translate const &tm) {
-        set_translation(tm.offset);
-    }
-
-    Point x_axis() const;
-    Point y_axis() const;
+    Point xAxis() const;
+    Point yAxis() const;
     Point translation() const;
-    void set_x_axis(Point const &vec);
-    void set_y_axis(Point const &vec);
-    void set_translation(Point const &loc);
+    void setXAxis(Point const &vec);
+    void setYAxis(Point const &vec);
+    void setTranslation(Point const &loc);
 
-    //TODO: Remove testing code from production code! matrix.cpp as well
-    bool test_identity() const;
-
-    bool is_translation(Coord const eps = Geom_EPSILON) const;
-    bool is_rotation(double const eps = Geom_EPSILON) const;
-    bool is_scale(double const eps = Geom_EPSILON) const;
-    bool is_uniform_scale(double const eps = Geom_EPSILON) const;
+    bool isIdentity(Coord eps = Geom_EPSILON) const;
+    bool isTranslation(Coord eps = Geom_EPSILON) const;
+    bool isRotation(double eps = Geom_EPSILON) const;
+    bool isScale(double eps = Geom_EPSILON) const;
+    bool isUniformScale(double eps = Geom_EPSILON) const;
 
     Matrix inverse() const;
 
-    Matrix &operator*=(Matrix const &other);
-    Matrix &operator*=(Scale const &other);
-    Matrix &operator*=(Translate const &other);
+    inline Coord operator[](unsigned const i) const { return _c[i]; }
+    inline Coord &operator[](unsigned const i) { return _c[i]; }
 
-    inline Coord &operator[](int const i) {
-        return _c[i];
-    }
-
-    inline Coord operator[](int const i) const {
-        return _c[i];
-    }
-
-    //TODO: change name to reset? just create a new matrix?
-    void set_identity();
+    void setIdentity();
 	
     Coord det() const;
     Coord descrim2() const;
     Coord descrim() const;
 
-    double expansion() const;
     //TODO: change to get/set_x/y_length?
     double expansionX() const;
     double expansionY() const;
-	
-    // legacy
-    //TODO: Remove
-    Matrix &assign(Coord const *array);
-    Coord *copyto(Coord *array) const;
 };
 
 /** A function to print out the Matrix (for debugging) */
@@ -156,18 +122,14 @@ public:
 // Matrix factories
 Matrix from_basis(const Point x_basis, const Point y_basis, const Point offset=Point(0,0));
 
-Matrix identity();
-
-double expansion(Matrix const &m);
-
-bool transform_equalp(Matrix const &m0, Matrix const &m1, Geom::Coord const epsilon);
-bool translate_equalp(Matrix const &m0, Matrix const &m1, Geom::Coord const epsilon);
-bool matrix_equalp(Matrix const &m0, Matrix const &m1, Geom::Coord const epsilon);
+/** Returns the Identity Matrix. */
+inline Matrix identity() {
+    return Matrix(1.0, 0.0,
+                  0.0, 1.0,
+                  0.0, 0.0);
+}
 
 Matrix without_translation(Matrix const &m);
-Translate to_translate(Matrix const &m);
-
-void matrix_print(const char *say, Matrix const &m);
 
 inline bool operator==(Matrix const &a, Matrix const &b) {
     for(unsigned i = 0; i < 6; ++i) {

@@ -119,14 +119,6 @@ struct MultiplicableConcept {
     }
 };
 
-template <class T>
-struct NegatableConcept {
-    T i, j;
-    void constraints() {
-        i = -j;
-    }
-};
-
 };
 
 #endif //SEEN_CONCEPTS_H

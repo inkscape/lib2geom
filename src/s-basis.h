@@ -148,7 +148,7 @@ SBasis operator-(const SBasis& a, const SBasis& b);
 SBasis& operator+=(SBasis& a, const SBasis& b);
 SBasis& operator-=(SBasis& a, const SBasis& b);
 
-//TODO: remove
+//TODO: remove?
 inline SBasis operator+(Linear const & b, const SBasis & a) {
     if(b.isZero()) return a;
     if(a.isZero()) return b;

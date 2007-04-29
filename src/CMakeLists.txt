@@ -24,8 +24,6 @@ svg_path_parser.cpp
 bezier-to-sbasis.h
 bezier-utils.cpp
 bezier-utils.h
-#centroid.cpp
-#centroid.h
 choose.h
 circulator.h
 conjugate_gradient.cpp
@@ -45,18 +43,7 @@ math-utils.h
 maybe.h
 sb-geometric.h
 #nearestpoint.cpp
-#path-builder.h
 path2-builder.h
-#path-nearest.cpp
-#path-nearest.h
-#path-intersect.cpp
-#path-intersect.h
-#path-metric.cpp
-#path-metric.h
-#path-to-polyline.cpp
-#path-to-polyline.h
-#path.cpp
-#path.h
 path2.cpp
 path2.h
 point.h
@@ -76,8 +63,6 @@ read-svgd.h
 rect.cpp
 rect.h
 refcounted.h
-rotate.h
-rotate.cpp
 s-basis-2d.h
 s-basis-2d.cpp
 s-basis.cpp
@@ -90,14 +75,12 @@ sbasis-poly.cpp
 sbasis-poly.h
 sbasis-to-bezier.cpp
 sbasis-to-bezier.h
-scale.h
 solve-bezier-one-d.cpp
 solve-bezier-parametric.cpp
 solver.h
 sturm.h
 transforms.cpp
 transforms.h
-translate.h
 )
 
 # make lib for 2geom
