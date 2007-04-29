@@ -71,7 +71,7 @@ public:
 
     //IMPL: OffsetableConcept
     //TODO: rename output_type to something else in the concept
-    typedef Coord output_type
+    typedef Coord output_type;
     inline Interval operator+(Coord amnt) {
         return Interval(_min + amnt, _max + amnt);
     }

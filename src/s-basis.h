@@ -126,6 +126,23 @@ inline SBasis reverse(SBasis const &a) {
     return result;
 }
 
+//IMPL: ScalableConcept
+inline SBasis operator-(const SBasis& p) {
+    if(p.isZero()) return SBasis();
+    SBasis result;
+    result.reserve(p.size());
+        
+    for(unsigned i = 0; i < p.size(); i++) {
+        result.push_back(-p[i]);
+    }
+    return result;
+}
+SBasis operator*(SBasis const &a, double k);
+inline SBasis operator*(double k, SBasis const &a) { return a*k; }
+inline SBasis operator/(SBasis const &a, double k) { return a*(1./k); }
+SBasis& operator*=(SBasis& a, double b);
+SBasis& operator/=(SBasis& a, double b);
+
 //IMPL: AddableConcept
 SBasis operator+(const SBasis& a, const SBasis& b);
 SBasis operator-(const SBasis& a, const SBasis& b);
@@ -188,24 +205,6 @@ inline SBasis& operator-=(SBasis& a, double b) {
         a[0] -= b;
     return a;
 }
-
-inline SBasis operator-(const SBasis& p) {
-    if(p.isZero()) return SBasis();
-    SBasis result;
-    result.reserve(p.size());
-        
-    for(unsigned i = 0; i < p.size(); i++) {
-        result.push_back(-p[i]);
-    }
-    return result;
-}
-
-//IMPL: ScalableConcept
-SBasis operator*(SBasis const &a, double k);
-inline SBasis operator*(double k, SBasis const &a) { return a*k; }
-inline SBasis operator/(SBasis const &a, double k) { return a*(1./k); }
-SBasis& operator*=(SBasis& a, double b);
-SBasis& operator/=(SBasis& a, double b);
 
 SBasis operator*(SBasis const &a, SBasis const &b);
 //TODO: division equivalent?
