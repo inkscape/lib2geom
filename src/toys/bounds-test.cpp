@@ -56,7 +56,21 @@ class BoundsTester: public Toy {
         plot(cr,B,1);   
         cairo_set_source_rgba (cr, 0., 0., 0.8, 1);
         cairo_stroke(cr);
+
+        Interval bnds = B.boundsFast();
+        plot_bar(cr,bnds.min());
+        plot_bar(cr,bnds.max());
+        cairo_set_source_rgba (cr, 0.4, 0., 0., 1);
+        cairo_stroke(cr);
+        bnds = B.boundsExact();
+        plot_bar(cr,bnds.min());
+        plot_bar(cr,bnds.max());
+        cairo_set_source_rgba (cr, 0.9, 0., 0., 1);
+        cairo_stroke(cr);
         
+/*
+This is a multi-root test...
+
         handles[2*size  ][0]=150;
         handles[2*size+1][0]=150;
         handles[2*size+2][0]=150;
@@ -122,7 +136,7 @@ class BoundsTester: public Toy {
             iterations++;
         }
         *notify << 1000*0.1/iterations <<" ms = multi roots time"<< std::endl;
-               
+*/               
         Toy::draw(cr, notify, width, height, save);
     }        
     
