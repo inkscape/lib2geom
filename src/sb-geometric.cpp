@@ -333,7 +333,7 @@ Geom::arc_length_parametrization(D2<Piecewise<SBasis> > const &M,
 
 /** centroid using sbasis integration.
  * This approach uses green's theorem to compute the area and centroid using integrals.  For curved
- * shapes this is much faster than converting to polyline and using the above function.
+ * shapes this is much faster than converting to polyline.
 
  * Returned values: 
     0 for normal execution;
