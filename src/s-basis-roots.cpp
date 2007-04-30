@@ -65,14 +65,22 @@ Interval boundsFast(const SBasis &sb, int order) {
     for(int j = sb.size()-1; j>=order; j--) {
         double a=sb[j][0];
         double b=sb[j][1];
-        for(int d = 0; d < 2; d++) {
-            double t, v = res[d];
-            if (v>0) t = ((b-a)/v+1)*0.5;
-            if (v<=0 || t<0 || t>1) {
-                res[d]=std::max(a,b);
-            }else{
-                res[d]=Lerp(t, a+v*t, b);
-            }
+
+        double t, v;
+        v = res[0];
+        if (v<0) t = ((b-a)/v+1)*0.5;
+        if (v>=0 || t<0 || t>1) {
+            res[0] = std::min(a,b);
+        }else{
+            res[0]=Lerp(t, a+v*t, b);
+        }
+
+        v = res[1];
+        if (v>0) t = ((b-a)/v+1)*0.5;
+        if (v<=0 || t<0 || t>1) {
+            res[1] = std::max(a,b);
+        }else{
+            res[1]=Lerp(t, a+v*t, b);
         }
     }
     if (order>0) res*=pow(.25,order);
