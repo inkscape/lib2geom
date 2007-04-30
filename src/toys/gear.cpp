@@ -229,7 +229,7 @@ class GearToy: public Toy {
         double pressure_angle = 20.0 * M_PI / 180;
         Gear gear(7,200.0,pressure_angle);
         Geom::Point gear_centre = handles[1];
-        gear.pitch_radius(L2(handles[0] - gear_centre));
+        gear.pitch_radius(Geom::distance(gear_centre, handles[0]));
         gear.angle(atan2(handles[0] - gear_centre));
         gear.centre(gear_centre);
         

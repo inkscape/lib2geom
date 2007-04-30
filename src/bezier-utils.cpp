@@ -215,9 +215,7 @@ bezier_fit_cubic_full(Point bezier[], int split_points[],
         /* We have 2 points, which can be fitted trivially. */
         bezier[0] = data[0];
         bezier[3] = data[len - 1];
-        double const dist = ( L2( data[len - 1]
-                                  - data[0] )
-                              / 3.0 );
+        double const dist = distance(bezier[0], bezier[3]) / 3.0;
         if (is_nan(dist)) {
             /* Numerical problem, fall back to straight line segment. */
             bezier[1] = bezier[0];
@@ -482,9 +480,7 @@ estimate_lengths(Point bezier[],
     if ( alpha_l < 1.0e-6 ||
          alpha_r < 1.0e-6   )
     {
-        alpha_l = alpha_r = ( L2( data[len - 1]
-                                  - data[0] )
-                              / 3.0 );
+        alpha_l = alpha_r = distance(data[0], data[len-1]) / 3.0;
     }
 
     /* Control points 1 and 2 are positioned an alpha distance out on the tangent vectors, left and
@@ -849,7 +845,7 @@ chord_length_parameterize(Point const d[], double u[], unsigned const len)
     /* First let u[i] equal the distance travelled along the path from d[0] to d[i]. */
     u[0] = 0.0;
     for (unsigned i = 1; i < len; i++) {
-        double const dist = L2( d[i] - d[i-1] );
+        double const dist = distance(d[i], d[i-1]);
         u[i] = u[i-1] + dist;
     }
 
@@ -981,12 +977,11 @@ compute_hook(Point const &a, Point const &b, double const u, BezierCurve const b
              double const tolerance)
 {
     Point const P = bezier_pt(3, bezCurve, u);
-    Point const diff = .5 * (a + b) - P;
-    double const dist = L2(diff);
+    double const dist = distance((a+b)*.5, P);
     if (dist < tolerance) {
         return 0;
     }
-    double const allowed = L2(b - a) + tolerance;
+    double const allowed = distance(a, b) + tolerance;
     return dist / allowed;
     /** \todo 
      * effic: Hooks are very rare.  We could start by comparing 

@@ -131,7 +131,7 @@ public:
     void pushSBasis(D2<SBasis> sb) {
         Point initial = Point(sb[X][0][0], sb[Y][0][0]);
         if (!_current_path) startPath(_current_point);
-        if (L2(initial - _current_point) > _continuity_tollerance) {
+        if (distance(initial, _current_point) > _continuity_tollerance) {
             startPath(initial);
         } else if (_current_point != initial) {
             /* in this case there are three possible options

@@ -232,7 +232,7 @@ static gint mouse_event(GtkWidget* window, GdkEventButton* e, gpointer data) {
     Geom::Point mouse(e->x, e->y);
     if(e->button == 1 || e->button == 3) {
         for(int i = 0; i < display_path.handles.size(); i++) {
-            if(Geom::L2(mouse - display_path.handles[i]) < 5) {
+            if(Geom::distance(mouse, display_path.handles[i]) < 5) {
                 selected_handle = &display_path.handles[i];
                 old_handle_pos = mouse - display_path.handles[i];
             }

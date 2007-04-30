@@ -99,16 +99,15 @@ public:
             const double C = 1 - R;
             double x1 = C*x0 + R*x3;
             double x2 = C*x1 + R*x3;
-            double f1 = L2(B(x1) - m_pt);
-            double f2 = L2(B(x2) - m_pt);
+            double f1 = Geom::distance(m_pt, B(x1));
+            double f2 = Geom::distance(m_pt, B(x2));
             while(fabs(x3 - x0) > 1e-3*(fabs(x1) + fabs(x2))) {
                 if(f2 < f1) {
                     shift(x0, x1, x2, R*x1 + C*x3);
-                    shift(f1, f2, L2(B(x2) - m_pt));
+                    shift(f1, f2, Geom::distance(m_pt, B(x2)));
                 } else {
                     shift(x3, x2, x1, R*x2 + C*x0);
-                    shift(f2, f1, L2(B(x1) - m_pt));
-
+                    shift(f2, f1, Geom::distance(m_pt, B(x2)));
                 }
                 std::cout << x0 << "," 
                           << x1 << ","

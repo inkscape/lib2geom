@@ -837,7 +837,7 @@ static gint mouse_event(GtkWidget* window, GdkEventButton* e, gpointer data) {
     Geom::Point mouse(e->x, e->y);
     if(e->button == 1 || e->button == 3) {
         for(int i = 0; i < handles.size(); i++) {
-            if(Geom::L2(mouse - *handles[i]) < 5) {
+            if(Geom::distance(mouse, *handles[i]) < 5) {
                 selected_handle = handles[i];
                 old_handle_pos = mouse - *handles[i];
             }

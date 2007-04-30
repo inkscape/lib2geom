@@ -88,7 +88,7 @@ void Toy::mouse_pressed(GdkEventButton* e) {
     Geom::Point mouse(e->x, e->y);
     if(e->button == 1) {
         for(int i = 0; i < handles.size(); i++) {
-            if(Geom::L2(mouse - handles[i]) < 5) selected = i;
+            if(Geom::distance(mouse, handles[i]) < 5) selected = i;
         }
         mouse_down = true;
     }

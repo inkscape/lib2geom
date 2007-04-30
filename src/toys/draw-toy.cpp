@@ -6,15 +6,6 @@
 
 #include "toy-framework.h"
 
-/*2geom crit:
-L2 = pythagorean distance. Its ok to call it L2 internally, but have a distance alias.  Maybe there is one.
-
-path convenience constructors - eg, spline, poly, etc.
-
-Perhaps we should split the docs into useage/complexity levels.  eg, "basic", "advanced".  Not sure if there is a good way to doxy this.
-(L0, L1, L2 would be put in the advanced section)
-*/
-
 class DrawToy: public Toy {
     //Knot : Och : Och : Knot : Och : Och : Knot : Och : Och : ...
     void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
@@ -52,8 +43,8 @@ class DrawToy: public Toy {
         int close_i = 0;
         float close_d = 1000;
         for(int i = 0; i < handles.size(); i+=1) {
-            if(Geom::L2(mouse - handles[i]) < close_d) {
-                close_d = Geom::L2(mouse - handles[i]);
+            if(Geom::distance(mouse, handles[i]) < close_d) {
+                close_d = Geom::distance(mouse, handles[i]);
                 close_i = i;
             }
         }

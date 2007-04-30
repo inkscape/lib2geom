@@ -37,32 +37,32 @@ using namespace Geom;
 /** Calculates the length of a cubic element through subdivision.
  *  The 'tol' parameter is the maximum error allowed.  This is used to subdivide the curve where necessary.
  */
-double cubic_length_subdividing(Geom::Path2::Path::Elem const & e, double tol) {
-    Geom::Point v[3];
+double cubic_length_subdividing(Path2::Path::Elem const & e, double tol) {
+    Point v[3];
     for(int i = 0; i < 3; i++)
         v[i] = e[i+1] - e[0];
-    Geom::Point orth = v[2]; // unit normal to path line
+    Point orth = v[2]; // unit normal to path line
     rot90(orth);
     orth.normalize();
     double err = fabs(dot(orth, v[1])) + fabs(dot(orth, v[0]));
     if(err < tol) {
-        return Geom::L2(e.last() - e.first()); // approximately a line
+        return distance(e.first(), e.last()); // approximately a line
     } else {
-        Geom::Point mid[3];
+        Point mid[3];
         double result;
         for(int i = 0; i < 3; i++)
             mid[i] = Lerp(0.5, e[i], e[i+1]);
-        Geom::Point midmid[2];
+        Point midmid[2];
         for(int i = 0; i < 2; i++)
             midmid[i] = Lerp(0.5, mid[i], mid[i+1]);
-        Geom::Point midmidmid = Lerp(0.5, midmid[0], midmid[1]);
+        Point midmidmid = Lerp(0.5, midmid[0], midmid[1]);
         {
-            Geom::Point curve[4] = {e[0], mid[0], midmid[0], midmidmid};
-            Geom::Path2::Path::Elem e0(Geom::cubicto, std::vector<Geom::Point>::const_iterator(curve), std::vector<Geom::Point>::const_iterator(curve) + 4);
+            Point curve[4] = {e[0], mid[0], midmid[0], midmidmid};
+            Path2::Path::Elem e0(cubicto, std::vector<Point>::const_iterator(curve), std::vector<Point>::const_iterator(curve) + 4);
             result = cubic_length_subdividing(e0, tol);
         } {
-            Geom::Point curve[4] = {midmidmid, midmid[1], mid[2], e[3]};
-            Geom::Path2::Path::Elem e1(Geom::cubicto, std::vector<Geom::Point>::const_iterator(curve), std::vector<Geom::Point>::const_iterator(curve) + 4);
+            Point curve[4] = {midmidmid, midmid[1], mid[2], e[3]};
+            Path2::Path::Elem e1(cubicto, std::vector<Point>::const_iterator(curve), std::vector<Point>::const_iterator(curve) + 4);
             return result + cubic_length_subdividing(e1, tol);
         }
     }
@@ -72,12 +72,12 @@ double cubic_length_subdividing(Geom::Path2::Path::Elem const & e, double tol) {
  *  Currently handles cubic curves and lines.
  *  The 'tol' parameter is the maximum error allowed.  This is used to subdivide the curve where necessary.
  */
-double arc_length_subdividing(Geom::Path const & p, double tol) {
+double arc_length_subdividing(Path const & p, double tol) {
     double result = 0;
 
-    for(Geom::Path2::Path::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
-        if(dynamic_cast<Geom::LineTo *>(iter.cmd()))
-            result += L2((*iter).first() - (*iter).last());
+    for(Path2::Path::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
+        if(dynamic_cast<LineTo *>(iter.cmd()))
+            result += distance((*iter).first(), (*iter).last());
         else if(dynamic_cast<CubicTo *>(iter.cmd()))
             result += cubic_length_subdividing(*iter, tol);
         else
@@ -102,9 +102,9 @@ static double poly_length_integrating(double t, void* param) {
  \param result variable to be incremented with the length of the path
  \param abs_error variable to be incremented with the estimated error
 */
-void arc_length_integrating(Geom::Path2::Path::Elem pe, double t, double tol, double &result, double &abs_error) {
+void arc_length_integrating(Path2::Path::Elem pe, double t, double tol, double &result, double &abs_error) {
     if(dynamic_cast<LineTo *>(iter.cmd()))
-        result += L2(pe.first() - pe.last())*t;
+        result += distance(pe.first(), pe.last()) * t;
     else if(dynamic_cast<QuadTo *>(iter.cmd()) ||
             dynamic_cast<CubicTo *>(iter.cmd())) {
         Poly B[2] = {get_parametric_poly(pe, X), get_parametric_poly(pe, Y)};
@@ -129,10 +129,10 @@ void arc_length_integrating(Geom::Path2::Path::Elem pe, double t, double tol, do
 }
 
 /** Calculates the length of a Path through gsl integration.  The parameter 'tol' is the maximum error allowed. */
-double arc_length_integrating(Geom::Path2::Path const & p, double tol) {
+double arc_length_integrating(Path2::Path const & p, double tol) {
     double result = 0, abserr = 0;
 
-    for(Geom::Path2::Path::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
+    for(Path2::Path::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
         arc_length_integrating(*iter, 1.0, tol, result, abserr);
     }
     //printf("got %g with err %g\n", result, abserr);
@@ -141,14 +141,14 @@ double arc_length_integrating(Geom::Path2::Path const & p, double tol) {
 }
 
 /** Calculates the arc length to a specific location on the path.  The parameter 'tol' is the maximum error allowed. */
-double arc_length_integrating(Geom::Path2::Path const & p, Geom::Path2::Path::Location const & pl, double tol) {
+double arc_length_integrating(Path2::Path const & p, Path2::Path::Location const & pl, double tol) {
     double result = 0, abserr = 0;
     ptrdiff_t offset = pl.it - p.begin();
     
     assert(offset >= 0);
     assert(offset < p.size());
     
-    for(Geom::Path2::Path::const_iterator iter(p.begin()), end(p.end()); 
+    for(Path2::Path::const_iterator iter(p.begin()), end(p.end()); 
         (iter != pl.it); ++iter) {
         arc_length_integrating(*iter, 1.0, tol, result, abserr);
     }
@@ -168,7 +168,7 @@ double arc_length_integrating(Geom::Path2::Path const & p, Geom::Path2::Path::Lo
      
 struct arc_length_params
 {
-    Geom::Path2::Path::Elem pe;
+    Path2::Path::Elem pe;
     double s,tol, result, abs_error;
     double left, right;
 };

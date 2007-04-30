@@ -5,8 +5,8 @@ using namespace Geom;
 
 class CircleIntersect : public Toy {
     void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
-        double r1 = Geom::L2(handles[0] - handles[1]);
-        double r2 = Geom::L2(handles[2] - handles[3]);
+        double r1 = distance(handles[0], handles[1]);
+        double r2 = distance(handles[2], handles[3]);
         Geom::Point i1, i2;
 
         cairo_set_line_width(cr,1.0);
