@@ -29,46 +29,30 @@
  */
 
 #include "d2.h"
-#include "rect.h"
 
 namespace Geom {
 
 D2<SBasis> derivative(D2<SBasis> const & a) {
-    D2<SBasis> r;
-    for(unsigned i = 0; i < 2; i++)
-        r[i]=derivative(a[i]);
-    return r;
+    return D2<SBasis>(derivative(a[X]), derivative(a[Y]));
 }
 
 D2<SBasis> integral(D2<SBasis> const & a) {
-    D2<SBasis> r;
-    for(unsigned i = 0; i < 2; i++)
-        r[i]=integral(a[i]);
-    return r;
+    return D2<SBasis>(integral(a[X]), integral(a[Y]));
 }
 
 SBasis L2(D2<SBasis> const & a, int k) { return sqrt(dot(a, a), k); }
 double L2(D2<double> const & a) { return hypot(a[0], a[1]); }
 
 D2<SBasis> multiply(Linear const & a, D2<SBasis> const & b) {
-    D2<SBasis> r;
-    for(unsigned i = 0; i < 2; i++)
-        r[i] = multiply(a, b[i]);
-    return r;
+    return D2<SBasis>(multiply(a, b[X]), multiply(a, b[Y]));
 }
 
 D2<SBasis> multiply(SBasis const & a, D2<SBasis> const & b) {
-    D2<SBasis> r;
-    for(unsigned i = 0; i < 2; i++)
-        r[i] = multiply(a, b[i]);
-    return r;
+    return D2<SBasis>(multiply(a, b[X]), multiply(a, b[Y]));
 }
 
 D2<SBasis> truncate(D2<SBasis> const & a, unsigned terms) {
-    D2<SBasis> r;
-    for(unsigned i = 0; i < 2; i++)
-        r[i] = truncate(a[i], terms);
-    return r;
+    return D2<SBasis>(truncate(a[X], terms), truncate(a[Y], terms));
 }
 
 unsigned sbasisSize(D2<SBasis> const & a) {

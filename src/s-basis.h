@@ -88,11 +88,6 @@ public:
     }
     SBasis toSBasis() const { return SBasis(*this); }
 
-    //implemented in s-basis-roots.cpp
-    Interval boundsExact() const;
-    Interval boundsFast(int order = 0) const;
-    Interval boundsLocal(double t0, double t1, int order = 0) const;
-
     double tailError(unsigned tail) const;
 
 // compute f(g)
@@ -116,6 +111,11 @@ public:
 
 //TODO: figure out how to stick this in linear, while not adding an sbasis dep
 inline SBasis Linear::toSBasis() const { return SBasis(*this); }
+
+//implemented in s-basis-roots.cpp
+Interval boundsExact(SBasis const &a);
+Interval boundsFast(SBasis const &a, int order = 0);
+Interval boundsLocal(SBasis const &a, const Interval &t, int order = 0);
 
 inline SBasis reverse(SBasis const &a) {
     SBasis result;
@@ -240,8 +240,6 @@ inline SBasis& operator*=(SBasis& a, SBasis const & b) {
 }
 
 //valuation: degree of the first non zero coefficient.
-//TODO: perhaps -1 would be better for const 0?
-// Hum, valuation==size for const 0...
 inline unsigned 
 valuation(SBasis const &a, double tol=0){
     int val=0;

@@ -55,7 +55,7 @@ inline Cmp cmp(T1 const &a, T2 const &b) {
 }
 
 Maybe<int> CurveHelpers::sbasis_winding(D2<SBasis> const &sb, Point p) {
-  Interval ix = sb[X].boundsFast();
+  Interval ix = boundsFast(sb[X]);
 
   if ( p[X] > ix.max() ) { /* ray does not intersect bbox */
     return 0;
@@ -192,18 +192,16 @@ void Path::swap(Path &other) {
 
 Rect Path::boundsFast() const {
   Rect bounds=front().boundsFast();
-  const_iterator iter=begin();
-  for ( ++iter ; iter != end() ; ++iter ) {
-    bounds.expandTo(iter->boundsFast());
+  for ( const_iterator iter=++begin(); iter != end() ; ++iter ) {
+    bounds.unionWith(iter->boundsFast());
   }
   return bounds;
 }
 
 Rect Path::boundsExact() const {
   Rect bounds=front().boundsExact();
-  const_iterator iter=begin();
-  for ( ++iter ; iter != end() ; ++iter ) {
-    bounds.expandTo(iter->boundsExact());
+  for ( const_iterator iter=++begin(); iter != end() ; ++iter ) {
+    bounds.unionWith(iter->boundsExact());
   }
   return bounds;
 }

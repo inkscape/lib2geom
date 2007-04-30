@@ -207,9 +207,9 @@ static double draw_non_parametric_approx(cairo_t *cr,
 
     Interval bb;
     double err=0;
-    bb=D[0].boundsFast();
+    bb=boundsFast(D[0]);
     err+=std::max(fabs(bb.min()),fabs(bb.max()));
-    bb=D[1].boundsFast();
+    bb=boundsFast(D[1]);
     err+=std::max(fabs(bb.min()),fabs(bb.max()));
 
     return( err );   
@@ -287,7 +287,7 @@ public:
 };
 
 int main(int argc, char **argv) {
-    init(argc, argv, "bounds-test", new SbToBezierTester);
+    init(argc, argv, "sb-to-bez", new SbToBezierTester);
     return 0;
 }
 

@@ -141,7 +141,7 @@ std::vector<D2<SBasis> > Geom::unit_vector(D2<SBasis> const vect, std::vector<do
     //--Check how good it is:
     //TODO1: if the curve is a "flat S", the half turns are not seen!!
     //TODO2: Find a good and fast "relative" tolerance...
-    Interval bs = dot(vect, vect).boundsFast();
+    Interval bs = boundsFast(dot(vect, vect));
     double err = tol*std::sqrt(max(1., bs.min()));
     //double err=tol;
 

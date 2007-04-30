@@ -50,73 +50,53 @@ also allow you to find intersections of multiple curves but require solving n*m 
 
 namespace Geom{
 
-//TODO: should optional "order" parameter be added here/removed from boundsFast?
-Interval SBasis::boundsExact() const {
-    Interval result = Interval((*this).at0(),(*this).at1());
-    SBasis df = derivative(*this);
+Interval boundsExact(SBasis const &a) {
+    Interval result = Interval(a.at0(), a.at1());
+    SBasis df = derivative(a);
     vector<double>extrema = roots(df);
     for (int i=0; i<extrema.size(); i++){
-        result.extendTo((*this)(extrema[i]));
+        result.extendTo(a(extrema[i]));
     }
     return result;
 }
 
-Interval SBasis::boundsFast(int order) const {
-    int imax=size()-1;
-    double lo = 0.0, hi = 0.0;
-
-    for(int i = imax; i >=order; i--) {
-      double a=(*this)[i][0];
-      double b=(*this)[i][1];
-      double t;
-
-      if (hi > 0){ t=((b-a)+hi)/2/hi;}
-      if (hi<=0||t<0||t>1){
-	hi=std::max(a,b);
-      }else{
-	hi=a*(1-t)+b*t+hi*t*(1-t);	  
-      }
-
-      if (lo<0){t=((b-a)+lo)/2/lo;}
-      if (lo>=0||t<0||t>1){
-	lo=std::min(a,b);
-      }else{
-	lo=a*(1-t)+b*t+lo*t*(1-t);	  
-      }
+Interval boundsFast(const SBasis &sb, int order) {
+    Interval res;
+    for(int j = sb.size()-1; j>=order; j--) {
+        double a=sb[j][0];
+        double b=sb[j][1];
+        for(int d = 0; d < 2; d++) {
+            double t, v = res[d];
+            if (v>0) t = ((b-a)/v+1)*0.5;
+            if (v<=0 || t<0 || t>1) {
+                res[d]=std::max(a,b);
+            }else{
+                res[d]=Lerp(t, a+v*t, b);
+            }
+        }
     }
-    if (order>0){
-        lo*=pow(.25,order);
-        hi*=pow(.25,order);
-    }
-    return Interval(lo, hi);
+    if (order>0) res*=pow(.25,order);
+    return res;
 }
 
-Interval SBasis::boundsLocal(double t0, double t1, int order) const {
-    int imax=size()-1;
-    double lo = 0.0, hi = 0.0;
-    
-    for(int i = imax; i >=order; i--) {
-        double a=(*this)[i][0];
-        double b=(*this)[i][1];
-        double t;
-        if (hi>0){t=((b-a)+hi)/2/hi;}
-        if (hi<=0||t<t0||t>t1){
-            hi=std::max(a*(1-t0)+b*t0+hi*t0*(1-t0),a*(1-t1)+b*t1+hi*t1*(1-t1));
-        }else{
-            hi=a*(1-t)+b*t+hi*t*(1-t);	  
-        }
-        if (lo<0){t=((b-a)+lo)/2/lo;}
-        if (lo>=0||t<t0||t>t1){
-            lo=std::min(a*(1-t0)+b*t0+lo*t0*(1-t0),a*(1-t1)+b*t1+lo*t1*(1-t1));
-        }else{
-            lo=a*(1-t)+b*t+lo*t*(1-t);	  
+Interval boundsLocal(const SBasis &sb, const Interval &i, int order) {
+    Interval res;
+    for(int j = sb.size()-1; j>=order; j--) {
+        double a=sb[j][0];
+        double b=sb[j][1];
+        for(int d = 0; d < 2; d++) {
+            double t, v = res[d];
+            if (v>0) t = ((b-a)/v+1)*0.5;
+            if (v<=0 || !i.contains(t)){
+                res[d]=std::max(Lerp(i.min(), a+v*i.min(), b),
+                                Lerp(i.max(), a+v*i.max(), b));
+            }else{
+                res[d]=Lerp(t, a+v*t, b);
+            }
         }
     }
-    if (order>0){
-        lo*=pow(.25,order);
-        hi*=pow(.25,order);
-    }
-    return Interval(lo, hi);
+    if (order>0) res*=pow(.25,order);
+    return res;
 }
 
 //-- multi_roots ------------------------------------
@@ -192,7 +172,7 @@ static void multi_roots_internal(SBasis const &f,
     int idxa=upper_level(levels,fa,tol);
     int idxb=upper_level(levels,fb,tol);
 
-    Interval bs = df.boundsLocal(a,b);
+    Interval bs = boundsLocal(df,Interval(a,b));
 
     //first times when a level (higher or lower) can be reached from a or b.
     double ta_hi,tb_hi,ta_lo,tb_lo;
@@ -318,7 +298,7 @@ double Laguerre_internal(SBasis const & p,
 void subdiv_sbasis(SBasis const & s,
                    std::vector<double> & roots, 
                    double left, double right) {
-    Interval bs = s.boundsFast();
+    Interval bs = boundsFast(s);
     if(bs.min() > 0 || bs.max() < 0)
         return; // no roots here
     if(s.tailError(1) < 1e-7) {

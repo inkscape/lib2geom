@@ -34,8 +34,8 @@
 #include "s-basis.h"
 #include <vector>
 
-#include <boost/concept_check.hpp>
 #include "concepts.h"
+#include <boost/concept_check.hpp>
 
 using namespace std;
 using namespace boost;
@@ -143,12 +143,12 @@ class Piecewise {
     //Transforms the domain into another interval
     inline void setDomain(Interval dom) {
         if(empty()) return;
-        if(dom.singular()) {
+        if(dom.isEmpty()) {
             cuts.clear(); segs.clear();
             return;
         }
         double cf = cuts.front();
-        double o = dom.min() - cf, s = dom.size() / (cuts.back() - cf);
+        double o = dom.min() - cf, s = dom.extent() / (cuts.back() - cf);
         for(int i = 0; i <= size(); i++)
             cuts[i] = (cuts[i] - cf) * s + o;
     }
@@ -198,42 +198,49 @@ class Piecewise {
         return true;
     }
 
-    inline Interval boundsFast() {
-        if(empty()) return Interval(0);
-        Interval ret(segs[0].boundsFast());
-        for(int i = 1; i < size(); i++)
-            ret.unionWith(segs[i].boundsFast()); 
-        return ret;
-    }
-
-    inline Interval boundsExact() {
-        if(empty()) return Interval(0);
-        Interval ret(segs[0].boundsExact());
-        for(int i = 1; i < size(); i++)
-            ret.unionWith(segs[i].boundsExact()); 
-        return ret;
-    }
-
-    inline Interval boundsLocal(Interval m) {
-        boundsLocal(m.min(), m.max());
-    }
-    inline Interval boundsLocal(double f, double t) {
-        if(empty()) return Interval(0);
-        if(f == t) return Interval((*this)(f));
-
-        int fi = segN(f), ti = segN(t);
-        double ft = segT(f, fi), tt = segT(t, ti);
-
-        if(fi == ti) return segs[fi].boundsLocal(ft, tt);
-
-        Interval ret(segs[fi].boundsLocal(ft, 1.));
-        for(int i = fi + 1; i < ti; i++)
-            ret.unionWith(segs[i].boundsExact());
-        if(tt != 0.) ret.unionWith(segs[ti].boundsLocal(0., tt));
-
-        return ret;
-    }
 };
+
+template<typename T>
+inline Interval boundsFast(const Piecewise<T> &f) {
+    function_requires<FragmentConcept<T> >();
+
+    if(f.empty()) return Interval(0);
+    Interval ret(boundsFast(f[0]));
+    for(int i = 1; i < f.size(); i++)
+        ret.unionWith(boundsFast(f[i])); 
+    return ret;
+}
+
+template<typename T>
+inline Interval boundsExact(const Piecewise<T> &f) {
+    function_requires<FragmentConcept<T> >();
+
+    if(f.empty()) return Interval(0);
+    Interval ret(boundsExact(f[0]));
+    for(int i = 1; i < f.size(); i++)
+        ret.unionWith(boundsExact(f[i])); 
+    return ret;
+}
+
+template<typename T>
+inline Interval boundsLocal(const Piecewise<T> &f, const Interval &m) {
+    function_requires<FragmentConcept<T> >();
+
+    if(f.empty()) return Interval(0);
+    if(m.isEmpty()) return Interval(f(m.min()));
+
+    int fi = f.segN(m.min()), ti = f.segN(m.max());
+    double ft = f.segT(m.min(), fi), tt = f.segT(m.max(), ti);
+
+    if(fi == ti) return boundsLocal(f[fi], Interval(ft, tt));
+
+    Interval ret(boundsLocal(f[fi], Interval(ft, 1.)));
+    for(int i = fi + 1; i < ti; i++)
+        ret.unionWith(boundsExact(f[i]));
+    if(tt != 0.) ret.unionWith(boundsLocal(f[ti], Interval(0., tt)));
+
+    return ret;
+}
 
 //returns a portion of a piece of a Piecewise<T>, given the piece's index and a to/from time.
 template<typename T>
@@ -405,7 +412,7 @@ template<typename T>
 Piecewise<T> operator-(Piecewise<T> const &a) {
     function_requires<ScalableConcept<T> >();
 
-    Piecewise<T> ret = Piecewise<T>();
+    Piecewise<T> ret;
     ret.cuts = a.cuts;
     for(int i = 0; i < a.size();i++)
         ret.push_seg(- a[i]);
@@ -417,7 +424,7 @@ Piecewise<T> operator*(Piecewise<T> const &a, double b) {
 
     if(a.empty()) return Piecewise<T>();
 
-    Piecewise<T> ret = Piecewise<T>();
+    Piecewise<T> ret;
     ret.cuts = a.cuts;
     for(int i = 0; i < a.size();i++)
         ret.push_seg(a[i] * b);
@@ -430,7 +437,7 @@ Piecewise<T> operator/(Piecewise<T> const &a, double b) {
     //FIXME: b == 0?
     if(a.empty()) return Piecewise<T>();
 
-    Piecewise<T> ret = Piecewise<T>();
+    Piecewise<T> ret;
     ret.cuts = a.cuts;
     for(int i = 0; i < a.size();i++)
         ret.push_seg(a[i] / b);

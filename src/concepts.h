@@ -34,14 +34,17 @@
 #include "s-basis.h"
 #include "interval.h"
 #include "point.h"
-#include "rect.h"
 
 #include <boost/concept_check.hpp>
 using namespace boost;
 
 namespace Geom {
 
+//forward decls
 template <typename T> class D2;
+class SBasis;
+class Interval;
+class Point;
 
 template <typename T> struct ResultTraits;
 
@@ -51,7 +54,7 @@ template <> struct ResultTraits<double> {
 };
 
 template <> struct ResultTraits<Point > {
-  typedef Rect bounds_type;
+  typedef D2<Interval> bounds_type;
   typedef D2<SBasis> sb_type;
 };
 
@@ -66,6 +69,7 @@ struct FragmentConcept {
     OutputType o;
     bool b;
     BoundsType i;
+    Interval dom;
     void constraints() {
         b = t.isZero();
         b = t.isFinite();
@@ -75,9 +79,9 @@ struct FragmentConcept {
         o = t(d);
         SbType sb = t.toSBasis();
         t = reverse(t);
-        i = t.boundsFast();
-        i = t.boundsExact();
-        i = t.boundsLocal(d, d);  //TODO: perhaps take an interval
+        i = boundsFast(t);
+        i = boundsExact(t);
+        i = boundsLocal(t, dom);
     }
 };
 

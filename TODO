@@ -30,13 +30,6 @@ Pw:
 Point:
   - Test the waters in regards to D2<double>
 
-Rect:
-  - Try out D2<Interval>
-
-Transformations:
-  - Concept/abstract class
-  - Lessen number of * definitions
-
 Toys:
   - generalize to path2
   - improve path-cairo

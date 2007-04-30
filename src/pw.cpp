@@ -70,7 +70,7 @@ Piecewise<SBasis> compose(Piecewise<SBasis> const &f, SBasis  const &g){
   }
 
   //first check bounds...
-  Interval bs = g.boundsFast();
+  Interval bs = boundsFast(g);
   if (bs.max() < f.cuts.front() || bs.min() > f.cuts.back()){
       //TODO: use segN
       int idx = (bs.max() < f.cuts[1]) ? 0 : f.cuts.size()-2;
@@ -174,9 +174,11 @@ vector<double> roots(Piecewise<SBasis> const &f){
     for (int i=0; i<f.size(); i++){
         vector<double> rts=roots(f.segs[i]);
         rts=roots(f.segs[i]);
-        for (int r=0; r<rts.size(); r++){
-            result.push_back(f.mapToDomain(rts[r], i));
-        }
+        //TODO: will roots pick up at1() == 0?
+        if(i != 0 && f[i-1].at1() == 0 && f[i].at0() == 0)
+            result.insert(result.end(), rts.begin()+1, rts.end());
+        else
+            result.insert(result.end(), rts.begin(), rts.end());
     }
     return result;
 }

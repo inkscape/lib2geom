@@ -2,7 +2,7 @@
 #define SEEN_PATH_H
 
 #include "point.h"
-#include "rect.h"
+#include "d2.h"
 #include "maybe.h"
 #include <vector>
 

@@ -62,15 +62,11 @@ public:
                 cairo_md_sb(cr,plot);
                 cairo_set_source_rgba (cr, 1, 0, 0.6, 0.5);
                 cairo_stroke(cr);
-
+    
                 t0 = t1;
             }
             
-            D2<Piecewise<SBasis> > grf;
-            grf.f[1] = als; // Piecewise<SBasis>(SBasis(Linear(height-5))) - 
-            grf.f[0] = Piecewise<SBasis>(SBasis(Linear(0, width)));
-            
-            cairo_d2_pw(cr, grf);
+            cairo_d2_pw(cr, D2<Piecewise<SBasis> >(Piecewise<SBasis>(als), Piecewise<SBasis>(SBasis(Linear(0, width))) ) );
         }
 
         cairo_set_source_rgba (cr, 0., 0.5, 0, 0.8);

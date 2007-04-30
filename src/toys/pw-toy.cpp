@@ -80,8 +80,7 @@ class PwToy: public Toy {
         cairo_pw(cr, pws[0] + pws[1]);
         cairo_stroke(cr);
         
-
-        Interval bs = pw_out.boundsLocal(handles[handles.size() - 2][0], handles[handles.size() - 1][0]);
+        Interval bs = boundsLocal(pw_out, Interval(handles[handles.size() - 2][0], handles[handles.size() - 1][0]));
         vector<double> vec;
         vec.push_back(bs.min() + 150); vec.push_back(bs.max() + 150);
         cairo_set_source_rgba (cr, .5, 0., 0., 1.);

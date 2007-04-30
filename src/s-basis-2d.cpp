@@ -37,15 +37,11 @@ SBasis extract_v(SBasis2d const &a, double v) {
 }
 
 SBasis compose(Linear2d const &a, D2<SBasis> const &p) {
-    SBasis sb;
-    D2<SBasis> omp;
-    for(int dim = 0; dim < 2; dim++)
-        omp[dim] = Linear(1) - p[dim];
-    sb = multiply(omp[0], omp[1])*a[0] +
-         multiply(p[0], omp[1])*a[1] +
-         multiply(omp[0], p[1])*a[2] +
-         multiply(p[0], p[1])*a[3];
-    return sb;
+    D2<SBasis> omp(-p[X] + 1, -p[Y] + 1);
+    return multiply(omp[0], omp[1])*a[0] +
+           multiply(p[0], omp[1])*a[1] +
+           multiply(omp[0], p[1])*a[2] +
+           multiply(p[0], p[1])*a[3];
 }
 
 SBasis 
@@ -68,13 +64,9 @@ compose(SBasis2d const &fg, D2<SBasis> const &p) {
     return B;
 }
 
-
 D2<SBasis>
 compose(D2<SBasis2d> const &fg, D2<SBasis> const &p) {
-    D2<SBasis> B;
-    for(int dim = 0; dim < 2; dim++)
-        B[dim] = compose(fg[dim], p);
-    return B;
+    return D2<SBasis>(compose(fg[X], p), compose(fg[Y], p));
 }
 
 };

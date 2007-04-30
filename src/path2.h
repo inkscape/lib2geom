@@ -32,7 +32,6 @@
 
 #include "point.h"
 #include "maybe.h"
-#include "rect.h"
 #include <iterator>
 #include <algorithm>
 #include <exception>
@@ -201,9 +200,9 @@ private:
 };
 
 class SBasisCurve : public Curve, private CurveHelpers {
+private:
+  SBasisCurve();
 public:
-  SBasisCurve() {}
-
   explicit SBasisCurve(D2<SBasis> const &coeffs)
   : coeffs_(coeffs) {}
 

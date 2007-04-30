@@ -113,14 +113,14 @@ static Piecewise<SBasis> sqrtOnDomain(Interval range, double tol=1e-7){
 }
 
 static Piecewise<SBasis> my_sqrt(SBasis const &f, double tol=1e-2, int order=3){
-    Piecewise<SBasis> sqrt_fn=sqrtOnDomain(f.boundsFast(), tol);
+    Piecewise<SBasis> sqrt_fn=sqrtOnDomain(boundsFast(f), tol);
     Piecewise<SBasis> result=compose(sqrt_fn,f);
     //TODO: define a truncated compose()!
     for (int k=0; k<result.segs.size(); k++){result.segs[k].truncate(order);}
     return(result);
 }
 static Piecewise<SBasis> my_sqrt(Piecewise<SBasis> f, double tol=1e-2, int order=3){
-    Piecewise<SBasis> sqrt_fn=sqrtOnDomain(f.boundsFast(), tol);
+    Piecewise<SBasis> sqrt_fn=sqrtOnDomain(boundsFast(f), tol);
     Piecewise<SBasis> result=compose(sqrt_fn,f);
     //TODO: define a truncated compose()!
     for (int k=0; k<result.segs.size(); k++){result.segs[k].truncate(order);}
@@ -156,23 +156,23 @@ static Piecewise<SBasis> cosOnDomain(Interval range){
 }
 
 static Piecewise<SBasis> cos(SBasis const &f, double tol=1e-2){
-    Piecewise<SBasis> cos_fn=cosOnDomain(f.boundsFast());
+    Piecewise<SBasis> cos_fn=cosOnDomain(boundsFast(f));
     return(compose(cos_fn,f));
 }
 static Piecewise<SBasis> cos(Piecewise<SBasis> f, double tol=1e-2){
-    Piecewise<SBasis> cos_fn=cosOnDomain(f.boundsFast());
+    Piecewise<SBasis> cos_fn=cosOnDomain(boundsFast(f));
     return(compose(cos_fn,f));
 }
 static Piecewise<SBasis> sin(SBasis const &f, double tol=1e-2){
     SBasis g=f;
     g+=M_PI/2;
-    Piecewise<SBasis> cos_fn=cosOnDomain(g.boundsFast());
+    Piecewise<SBasis> cos_fn=cosOnDomain(boundsFast(g));
     return(compose(cos_fn,g));
 }
 static Piecewise<SBasis> sin(Piecewise<SBasis> const &f, double tol=1e-2){
     Piecewise<SBasis> g=f;
     g+=M_PI/2;
-    Piecewise<SBasis> cos_fn=cosOnDomain(g.boundsFast());
+    Piecewise<SBasis> cos_fn=cosOnDomain(boundsFast(g));
     return(compose(cos_fn,g));
 }
 
@@ -224,14 +224,14 @@ static Piecewise<SBasis> ReciprocalOnDomain(Interval range, double tol=1e-7){
 }
 
 static Piecewise<SBasis> Reciprocal(SBasis const &f, double tol=1e-7, int order=3){
-    Piecewise<SBasis> reciprocal_fn=ReciprocalOnDomain(f.boundsFast(), tol);
+    Piecewise<SBasis> reciprocal_fn=ReciprocalOnDomain(boundsFast(f), tol);
     Piecewise<SBasis> result=compose(reciprocal_fn,f);
     //TODO: define a truncated compose() instead of computing useless coeffs!
     for (int k=0; k<result.segs.size(); k++){result.segs[k].truncate(order);}
     return(result);
 }
 static Piecewise<SBasis> Reciprocal(Piecewise<SBasis> f, double tol=1e-7, int order=3){
-    Piecewise<SBasis> reciprocal_fn=ReciprocalOnDomain(f.boundsFast(), tol);
+    Piecewise<SBasis> reciprocal_fn=ReciprocalOnDomain(boundsFast(f), tol);
     Piecewise<SBasis> result=compose(reciprocal_fn,f);
     //TODO: define a truncated compose()!
     for (int k=0; k<result.segs.size(); k++){result.segs[k].truncate(order);}
@@ -444,7 +444,7 @@ public:
 };
 
 int main(int argc, char **argv) {
-    init(argc, argv, "bounds-test", new SbCalculusToy);
+    init(argc, argv, "sb-calculus", new SbCalculusToy);
     return 0;
 }
 

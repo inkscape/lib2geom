@@ -38,6 +38,8 @@
 
 namespace Geom{
 
+inline double Lerp(double t, double a, double b) { return a*(1-t) + b*t; }
+
 class SBasis;
 
 class Hat{
@@ -90,9 +92,7 @@ public:
     inline double at0() const { return a[0]; }
     inline double at1() const { return a[1]; }
 
-    inline double pointAt(double t) const { 
-        return a[0]*(1-t) + a[1]*t;
-    }
+    inline double pointAt(double t) const { return Lerp(t, a[0], a[1]); }
     inline double operator()(double t) const { return pointAt(t); }
 
     //defed in s-basis.h unfortunately

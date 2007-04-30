@@ -55,7 +55,11 @@ str bezord_repr(Geom::Linear const& b)
 }
 
 void wrap_linear() {
-    //s-basis.h
+    def("reverse", (Geom::Linear (*)(Geom::Linear const &))&Geom::reverse);
+    def("boundsFast", (Geom::Interval (*)(Geom::Linear const &))&Geom::boundsFast);
+    def("boundsExact", (Geom::Interval (*)(Geom::Linear const &))&Geom::boundsExact);
+    def("boundsLocal", (Geom::Interval (*)(Geom::Linear const &))&Geom::boundsLocal);
+
     class_<Geom::Linear>("Linear", init<double, double>())
         .def("__str__", bezord_repr)
         .def("__repr__", bezord_repr)

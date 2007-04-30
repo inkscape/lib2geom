@@ -60,8 +60,6 @@ quadtree.cpp
 quadtree.h
 read-svgd.cpp
 read-svgd.h
-rect.cpp
-rect.h
 refcounted.h
 s-basis-2d.h
 s-basis-2d.cpp

@@ -63,7 +63,7 @@ public:
 #endif
         
         D2<SBasis> test_sb = handles_to_sbasis<5>(handles.begin());
-        Interval bs = test_sb[1].boundsExact();
+        Interval bs = boundsExact(test_sb[1]);
         cairo_move_to(cr, test_sb[0](0), bs.min());
         cairo_line_to(cr, test_sb[0](1), bs.min());
         cairo_move_to(cr, test_sb[0](0), bs.max());

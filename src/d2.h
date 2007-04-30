@@ -37,19 +37,22 @@
 #include <boost/concept_check.hpp>
 #include "concepts.h"
 
+using namespace boost;
+
 namespace Geom{
 
 template <class T>
 class D2{
-public:
     //BOOST_CLASS_REQUIRE(T, boost, AssignableConcept);
+  private:
     T f[2];
-    
+
+  public:
     D2() {}
 
     D2(T const &a, T const &b) {
-        f[0] = a;
-        f[1] = b;
+        f[X] = a;
+        f[Y] = b;
     }
 
     T& operator[](unsigned i)              { return f[i]; }
@@ -60,19 +63,19 @@ public:
     //TODO: doesn't make much sense in d2 context
     bool isZero() const {
         function_requires<FragmentConcept<T> >();
-        return f[0].isZero() && f[1].isZero();
+        return f[X].isZero() && f[Y].isZero();
     }
     bool isFinite() const {
         function_requires<FragmentConcept<T> >();
-        return f[0].isFinite() && f[1].isFinite();
+        return f[X].isFinite() && f[Y].isFinite();
     }
     Point at0() const { 
         function_requires<FragmentConcept<T> >();
-        return Point(f[0].at0(), f[1].at0());
+        return Point(f[X].at0(), f[Y].at0());
     }
     Point at1() const {
         function_requires<FragmentConcept<T> >();
-        return Point(f[0].at1(), f[1].at1());
+        return Point(f[X].at1(), f[Y].at1());
     }
     Point pointAt(double t) const {
         function_requires<FragmentConcept<T> >();
@@ -80,19 +83,7 @@ public:
     }
     D2<SBasis> toSBasis() const {
         function_requires<FragmentConcept<T> >();
-        return D2<SBasis>(f[0].toSBasis(), f[1].toSBasis());
-    }
-    Rect boundsFast() const {
-        function_requires<FragmentConcept<T> >();        
-        return Rect(f[0].boundsFast(), f[1].boundsFast());
-    }
-    Rect boundsExact() const {
-        function_requires<FragmentConcept<T> >();        
-        return Rect(f[0].boundsExact(), f[1].boundsExact());
-    }
-    Rect boundsLocal(double t0, double t1) const {
-        function_requires<FragmentConcept<T> >();        
-        return Rect(f[0].boundsLocal(t0,t1), f[1].boundsLocal(t0,t1));
+        return D2<SBasis>(f[X].toSBasis(), f[Y].toSBasis());
     }
 
     /*Rect reverse() const {
@@ -107,7 +98,7 @@ public:
 template <typename T>
 D2<T> reverse(const D2<T> &a) {
     function_requires<FragmentConcept<T> >();
-    return D2<T>(reverse(a[0]), reverse(a[1]));
+    return D2<T>(reverse(a[X]), reverse(a[Y]));
 }
 
 //IMPL: AddableConcept
@@ -191,11 +182,11 @@ operator*=(D2<T> &a, Point const & b) {
 }
 template <typename T>
 inline D2<T>
-operator/=(D2<T> &a, Point b) {
+operator/=(D2<T> &a, Point const & b) {
     function_requires<ScalableConcept<T> >();
     //TODO: b==0?
     for(unsigned i = 0; i < 2; i++)
-        a[i] /= b;
+        a[i] /= b[i];
     return a;
 }
 
@@ -241,8 +232,8 @@ operator-=(D2<T> & a, Point b) {
 template <typename T>
 inline T
 dot(D2<T> const & a, D2<T> const & b) {
-    //function_requires<AlgGroupConcept<T> >();
-    //function_requires<AlgRingConcept<T> >();
+    function_requires<AddableConcept<T> >();
+    function_requires<MultiplicableConcept<T> >();
 
     T r;
     for(unsigned i = 0; i < 2; i++)
@@ -265,11 +256,7 @@ template <typename T>
 inline D2<T>
 rot90(D2<T> const & a) {
     function_requires<ScalableConcept<T> >();
-
-    D2<T> r;
-    r[0] = -a[1];
-    r[1] = a[0];
-    return r;
+    return D2<T>(-a[Y], a[X]);
 }
 
 template <typename T>
@@ -322,21 +309,114 @@ D2<T>::operator()(double x, double y) const {
     return p;
 }
 
+} //end namespace Geom
+
+//D2<Interval> specialization:
+
+ /* Authors of original rect class:
+ *   Lauris Kaplinski <lauris@kaplinski.com>
+ *   Nathan Hurst <njh@mail.csse.monash.edu.au>
+ *   bulia byak <buliabyak@users.sf.net>
+ *   MenTaLguY <mental@rydia.net>
+ */
+
+#include "matrix.h"
+
+namespace Geom {
+
+typedef D2<Interval> Rect;
+
+template<>
+class D2<Interval> {
+  private:
+    Interval f[2];  
+    D2<Interval>();
+
+  public:
+    D2<Interval>(Interval const &a, Interval const &b) {
+        f[X] = a;
+        f[Y] = b;
+    }
+
+    D2<Interval>(Point const & a, Point const & b) {
+        f[X] = Interval(a[X], b[X]);
+        f[Y] = Interval(a[Y], b[Y]);
+    }
+
+    Interval& operator[](unsigned i)              { return f[i]; }
+    Interval const & operator[](unsigned i) const { return f[i]; }
+
+
+    inline Point min() const { return Point(f[X].min(), f[Y].min()); }
+    inline Point max() const { return Point(f[X].max(), f[Y].max()); }
+
+    /** returns the four corners of the rectangle in order
+     *  (clockwise if +Y is up, anticlockwise if +Y is down) */
+    Point corner(unsigned i) const {
+        switch(i % 4) {
+	case 0: return Point(f[X].min(), f[Y].min());
+	case 1: return Point(f[X].max(), f[Y].min());
+	case 2: return Point(f[X].max(), f[Y].max());
+	case 3: return Point(f[X].min(), f[Y].max());
+	}
+    }
+
+    /** returns a vector from min to max. */
+    Point dimensions() const { return Point(f[X].extent(), f[Y].extent()); }
+    Point midpoint() const { return Point(f[X].middle(), f[Y].middle()); }
+
+    double area() const { return f[X].extent() * f[Y].extent(); }
+    double maxExtent() const { return MAX(f[X].extent(), f[Y].extent()); }
+
+    bool isEmpty()                 const { return f[X].isEmpty()        && f[Y].isEmpty(); }
+    bool intersects(Rect const &r) const { return f[X].intersects(r[X]) && f[Y].intersects(r[Y]); }
+    bool contains(Rect const &r)   const { return f[X].contains(r[X])   && f[Y].contains(r[Y]); }
+    bool contains(Point const &p)  const { return f[X].contains(p[X])   && f[Y].contains(p[Y]); }
+
+    void expandTo(Point p)        { f[X].extendTo(p[X]);  f[Y].extendTo(p[Y]); }
+    void unionWith(Rect const &b) { f[X].unionWith(b[X]); f[Y].unionWith(b[Y]); }
+
+    void expandBy(double amnt)    { f[X].expandBy(amnt);  f[Y].expandBy(amnt); }
+    void expandBy(Point const p)  { f[X].expandBy(p[X]);  f[Y].expandBy(p[Y]); }
+
+    /** Transforms the rect by m. Note that it gives correct results only for scales and translates */
+    inline Rect operator*(Matrix const m) const { return Rect(min() * m, max() * m); }
+
+    inline bool operator==(Rect const &b) { return f[X] == b[X] && f[Y] == b[Y]; }
 };
 
-//SBasis specific decls:
+//TODO: implement intersect
+
+//D2 fragment usage of Rect:
+
+template <typename T>
+Rect boundsFast(const D2<T> &a) {
+    function_requires<FragmentConcept<T> >();        
+    return Rect(boundsFast(a[X]), boundsFast(a[Y]));
+}
+template <typename T>
+Rect boundsExact(const D2<T> &a) {
+    function_requires<FragmentConcept<T> >();        
+    return Rect(boundsExact(a[X]), boundsExact(a[Y]));
+}
+template <typename T>
+Rect boundsLocal(const D2<T> &a, const Interval &t) {
+    function_requires<FragmentConcept<T> >();        
+    return Rect(boundsLocal(a[X], t), boundsLocal(a[Y], t));
+}
+
+} //end namespace decl
+
+//D2<SBasis> specific decls:
 
 #include "s-basis.h"
 #include "s-basis-2d.h"
 #include "pw.h"
 
-namespace Geom {
+namespace Geom{
 
 inline D2<SBasis> compose(D2<SBasis> const & a, SBasis const & b) {
-    D2<SBasis> r;
-    for(int i = 0; i < 2; i++)
-        r[i] = compose(a[i], b);
-    return r;
+    return D2<SBasis>(compose(a[X], b), compose(a[Y], b));
 }
 
 D2<SBasis> derivative(D2<SBasis> const & a);
@@ -356,11 +436,14 @@ bool isFinite(D2<SBasis> const & a);
 
 Piecewise<D2<SBasis> > sectionize(D2<Piecewise<SBasis> > const &a);
 
-class Rect;
-
-Rect boundsExact(D2<SBasis> const & s, int order=0);
-Rect boundsLocal(D2<SBasis> const & s, double t0, double t1, int order=0);
-
+inline Rect boundsFast(D2<SBasis> const & s, int order=0) {
+    return Rect(boundsFast(s[X], order),
+                boundsFast(s[Y], order));
+}
+inline Rect boundsLocal(D2<SBasis> const & s, Interval i, int order=0) {
+    return Rect(boundsLocal(s[X], i, order),
+                boundsLocal(s[Y], i, order));
+}
 };
 
 /*
