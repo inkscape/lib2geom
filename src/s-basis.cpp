@@ -485,7 +485,7 @@ SBasis compose_inverse(SBasis const &f, SBasis const &g, unsigned order, double 
                 double b=(-p01*r10+p10*r01)/(p10*q01-p01*q10);
                 result.push_back(Linear(a,b));
                 //r=f-result(g);
-                r=r-Pk*b-Qk*b;
+                r=r-Pk*a-Qk*b;
                 //TODO: val_r+=1;
                 val_r=valuation(r,tol);
             }

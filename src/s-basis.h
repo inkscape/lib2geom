@@ -187,7 +187,7 @@ inline SBasis operator+(const SBasis & a, double b) {
 inline SBasis operator-(const SBasis & a, double b) {
     if(a.isZero()) return Linear(-b, -b);
     SBasis result(a);
-    result[0] += b;
+    result[0] -= b;
     return a;
 }
 inline SBasis& operator+=(SBasis& a, double b) {

@@ -160,8 +160,8 @@ std::vector<D2<SBasis> > Geom::unit_vector(D2<SBasis> const vect, std::vector<do
             s=compose(sin(Linear(0., alpha1-alpha0), 3),compose(alpha, Linear(0,0.5)));
             c.truncate(3);
             s.truncate(3);
-            V[0]=c*std::cos(alpha0) - s*std::sin(alpha0)*s;
-            V[1]=c*std::sin(alpha0) + s*std::cos(alpha0)*s;
+            V[0]=c*std::cos(alpha0) - s*std::sin(alpha0);
+            V[1]=c*std::sin(alpha0) + s*std::cos(alpha0);
             uvect.push_back(V);
             cuts.push_back(.5);
 
