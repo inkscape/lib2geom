@@ -77,7 +77,7 @@ void wrap_point() {
     def("unit_vector", Geom::unit_vector);
     def("dot", dot_point);
     def("distance", Geom::distance);
-    def("dist_sq", Geom::dist_sq);
+    def("distanceSq", Geom::dist_sq);
     def("cross", cross_point);
     def("abs", (Geom::Point (*)(Geom::Point const&))&Geom::abs);
 

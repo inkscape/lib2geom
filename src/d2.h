@@ -48,7 +48,7 @@ class D2{
     T f[2];
 
   public:
-    D2() {}
+    D2() {f[0] = f[1] = T();}
 
     D2(T const &a, T const &b) {
         f[X] = a;
@@ -162,7 +162,7 @@ operator*(D2<T> const & a, Point const & b) {
     return r;
 }
 template <typename T>
-inline D2<T>
+inline D2<T>&
 operator/(D2<T> const & a, Point const & b) {
     function_requires<ScalableConcept<T> >();
     //TODO: b==0?
@@ -172,7 +172,7 @@ operator/(D2<T> const & a, Point const & b) {
     return r;
 }
 template <typename T>
-inline D2<T>
+inline D2<T>&
 operator*=(D2<T> &a, Point const & b) {
     function_requires<ScalableConcept<T> >();
 
@@ -181,7 +181,7 @@ operator*=(D2<T> &a, Point const & b) {
     return a;
 }
 template <typename T>
-inline D2<T>
+inline D2<T>&
 operator/=(D2<T> &a, Point const & b) {
     function_requires<ScalableConcept<T> >();
     //TODO: b==0?
@@ -190,8 +190,8 @@ operator/=(D2<T> &a, Point const & b) {
     return a;
 }
 
-template <typename T> inline D2<T> operator*(D2<T> const & a, double b) { return a * Point(b,b); }
-template <typename T> inline D2<T> operator*=(D2<T> & a, double b) { return a *= Point(b,b); }
+template <typename T> inline D2<T> operator*(D2<T> const & a, double b) { return D2<T>(a[0]*b, a[1]*b); }
+template <typename T> inline D2<T>& operator*=(D2<T> & a, double b) { a[0] *= b; a[1] *= b; return a; }
 
 //IMPL: OffsetableConcept
 template <typename T>

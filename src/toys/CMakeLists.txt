@@ -12,11 +12,11 @@ convex-toy
 distort
 fitter
 #inverse-test
-one-D
 quad-toy
 #rat-bez
 sb1d
 sb2d
+sketch-toy
 pair-intersect
 self-intersect
 precise-flat

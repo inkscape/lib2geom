@@ -243,7 +243,7 @@ inline Coord dot(Point const &a, Point const &b) {
 inline Coord distance (Point const &a, Point const &b) { return L2(a - b); }
 
 /** compute the square of the distance between points a and b. */
-inline Coord dist_sq (Point const &a, Point const &b) { return L2sq(a - b); }
+inline Coord distanceSq (Point const &a, Point const &b) { return L2sq(a - b); }
 
 /** Defined as dot(a, b.cw()). */
 Coord cross(Point const &a, Point const &b);
