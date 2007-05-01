@@ -199,7 +199,7 @@ inline SBasis& operator+=(SBasis& a, double b) {
 }
 inline SBasis& operator-=(SBasis& a, double b) {
     if(a.isZero())
-        a.push_back(Linear(b,b));
+        a.push_back(Linear(-b,-b));
     else
         a[0] -= b;
     return a;
