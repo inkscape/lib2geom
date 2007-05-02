@@ -425,6 +425,10 @@ D2<SBasis> integral(D2<SBasis> const & a);
 SBasis L2(D2<SBasis> const & a, int k);
 double L2(D2<double> const & a);
 
+inline D2<SBasis> portion(D2<SBasis> const &M, double t0, double t1){
+    return D2<SBasis>(portion(M[0],t0,t1),portion(M[1],t0,t1));
+}
+
 D2<SBasis> multiply(Linear const & a, D2<SBasis> const & b);
 inline D2<SBasis> operator*(Linear const & a, D2<SBasis> const & b) { return multiply(a, b); }
 D2<SBasis> multiply(SBasis const & a, D2<SBasis> const & b);
@@ -435,6 +439,8 @@ double tailError(D2<SBasis> const & a, unsigned tail);
 bool isFinite(D2<SBasis> const & a);
 
 Piecewise<D2<SBasis> > sectionize(D2<Piecewise<SBasis> > const &a);
+//TODO: define the conversion in the other way also:
+//D2<Piecewise<SBasis> > makeCutsIndependant(Piecewise<D2<SBasis> > const &a);
 
 inline Rect boundsFast(D2<SBasis> const & s, int order=0) {
     return Rect(boundsFast(s[X], order),
