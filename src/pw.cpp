@@ -164,7 +164,7 @@ Piecewise<SBasis> derivative(Piecewise<SBasis> const &a) {
     result.segs.resize(a.segs.size());
     result.cuts = a.cuts;
     for(int i = 0; i < a.segs.size(); i++){
-        result.segs[i] = derivative(a.segs[i]);
+        result.segs[i] = derivative(a.segs[i])/(a.cuts[i+1]-a.cuts[i]);
     }
     return result;
 }
