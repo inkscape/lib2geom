@@ -276,16 +276,6 @@ rot90(Piecewise<D2<SBasis> > const &M){
     return result;
 }
 
-namespace Geom{
-static D2<SBasis> 
-portion(D2<SBasis> const &M, double t0, double t1){
-    D2<SBasis> result;
-    for (int dim=0; dim<2; dim++){
-        result[dim] = portion(M[dim],t0,t1);
-    }
-    return result;
-}
-}
 //=================================================================
 
 static vector<double> 
@@ -483,7 +473,9 @@ MyUnitVector(D2<SBasis> const &V_in, double tol=ZERO, int order=3,
     unitV[1] = -a;
 
     //is it good?
-    if (r_eqn1.tailError(order)>tol || r_eqn2.tailError(order)>tol){
+    double rel_tol = max(1.,max(V_in[0].tailError(0),V_in[1].tailError(0)))*tol;
+
+    if (r_eqn1.tailError(order)>rel_tol || r_eqn2.tailError(order)>tol){
         //if not: subdivide and concat results.
         Piecewise<D2<SBasis> > unitV0, unitV1;
         unitV0 = MyUnitVector(compose(V,Linear(0,.5)),tol,order,t0,(t0+t1)/2);
@@ -550,14 +542,14 @@ class SbCalculusToy: public Toy {
       Piecewise<D2<SBasis> > dg;
       dg=derivative(g);
 
-      Piecewise<D2<SBasis> >n = MyUnitVector(dg,.1,2);
+      Piecewise<D2<SBasis> >n = MyUnitVector(dg,.01,2);
 
 //      Piecewise<SBasis> k = curvature(g,.1);
       n = rot90(n);
-      n *= 50.;
+      n *= 150.;
       
       vector<double> cuts;
-      vector<D2<SBasis> >uv = unit_vector(derivative(gseg),cuts);
+      vector<D2<SBasis> >uv = unit_vector(derivative(gseg),cuts,.01);
       D2<Piecewise<SBasis> >nn;
       for (int dim=0; dim<2; dim++){
           nn[dim].push_cut(0.);
@@ -566,7 +558,7 @@ class SbCalculusToy: public Toy {
           }
       }
       nn = rot90(nn);
-      nn *= 48;
+      nn *= 148;
 
       D2<Piecewise<SBasis> > gsegpw;
       gsegpw[0]=Piecewise<SBasis>(gseg[0]);
