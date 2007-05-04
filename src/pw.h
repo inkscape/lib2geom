@@ -369,7 +369,7 @@ vector<double> roots(const Piecewise<T> &pw) {
 template<typename T>
 Piecewise<T> operator+(Piecewise<T> const &a, double b) {
     function_requires<OffsetableConcept<T> >();
-
+//TODO:empty
     Piecewise<T> ret = Piecewise<T>();
     ret.cuts = a.cuts;
     for(int i = 0; i < a.size();i++)
@@ -379,7 +379,7 @@ Piecewise<T> operator+(Piecewise<T> const &a, double b) {
 template<typename T>
 Piecewise<T> operator-(Piecewise<T> const &a, double b) {
     function_requires<OffsetableConcept<T> >();
-
+//TODO: empty
     Piecewise<T> ret = Piecewise<T>();
     ret.cuts = a.cuts;
     for(int i = 0; i < a.size();i++)

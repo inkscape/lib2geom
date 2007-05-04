@@ -439,8 +439,7 @@ double tailError(D2<SBasis> const & a, unsigned tail);
 bool isFinite(D2<SBasis> const & a);
 
 Piecewise<D2<SBasis> > sectionize(D2<Piecewise<SBasis> > const &a);
-//TODO: define the conversion in the other way also:
-//D2<Piecewise<SBasis> > makeCutsIndependant(Piecewise<D2<SBasis> > const &a);
+D2<Piecewise<SBasis> > makeCutsIndependant(Piecewise<D2<SBasis> > const &a);
 
 inline Rect boundsFast(D2<SBasis> const & s, int order=0) {
     return Rect(boundsFast(s[X], order),

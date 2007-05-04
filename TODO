@@ -34,10 +34,11 @@ Toys:
   - generalize to path2
   - improve path-cairo
   - improve toy framework (multiple handle lists, less hardcode)
+  - sketch toy
 
 * generate postscript stroke geometries
 
-* attempt to write nodepath editing stuff in a more generic way
+* attempt to write nodepath editing in a more generic way
 
 * rewrite convex hull
 
