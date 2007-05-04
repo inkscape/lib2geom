@@ -83,7 +83,7 @@ Piecewise<D2<SBasis> > sectionize(D2<Piecewise<SBasis> > const &a) {
 
 D2<Piecewise<SBasis> > makeCutsIndependant(Piecewise<D2<SBasis> > const &a) {
     D2<Piecewise<SBasis> > ret;
-    for(int i = 0; i < x.size(); i++) {
+    for(int i = 0; i < a.size(); i++) {
         for(int d = 0; d < 2; d++) 
             ret[d].push_seg(a[i][d]);
     }
