@@ -134,9 +134,9 @@ SBasis& operator-=(SBasis& a, const SBasis& b) {
 
 SBasis operator*(SBasis const &a, double k) {
     SBasis c;
-    c.resize(a.size(), Linear(0,0));
+    c.reserve(a.size());
     for(unsigned i = 0; i < a.size(); i++)
-        c[i] = a[i] * k;
+        c.push_back(a[i] * k);
     return c;
 }
 
