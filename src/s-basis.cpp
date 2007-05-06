@@ -132,26 +132,6 @@ SBasis& operator-=(SBasis& a, const SBasis& b) {
     return a;
 }
 
-SBasis& operator*=(SBasis& a, double b) {
-    if (a.isZero()) return a;
-    if (b == 0)
-        a.clear();
-    else
-        for(unsigned i = 0; i < a.size(); i++)
-            a[i] *= b;
-    return a;
-}
-
-SBasis& operator/=(SBasis& a, double b) {
-    if (a.isZero()) return a;
-    assert(b != 0);
-    for(unsigned i = 0; i < a.size(); i++) {
-        a[i][0] /= b;
-        a[i][1] /= b;
-    }
-    return a;
-}
-
 SBasis operator*(SBasis const &a, double k) {
     SBasis c;
     c.resize(a.size(), Linear(0,0));
@@ -160,6 +140,16 @@ SBasis operator*(SBasis const &a, double k) {
             c[j][dim] += k*a[j][dim];
     }
     return c;
+}
+
+SBasis& operator*=(SBasis& a, double b) {
+    if (a.isZero()) return a;
+    if (b == 0)
+        a.clear();
+    else
+        for(unsigned i = 0; i < a.size(); i++)
+            a[i] *= b;
+    return a;
 }
 
 SBasis shift(SBasis const &a, int sh) {

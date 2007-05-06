@@ -140,7 +140,7 @@ SBasis operator*(SBasis const &a, double k);
 inline SBasis operator*(double k, SBasis const &a) { return a*k; }
 inline SBasis operator/(SBasis const &a, double k) { return a*(1./k); }
 SBasis& operator*=(SBasis& a, double b);
-SBasis& operator/=(SBasis& a, double b);
+inline SBasis& operator/=(SBasis& a, double b) { return (a*=(1./b)); }
 
 //IMPL: AddableConcept
 SBasis operator+(const SBasis& a, const SBasis& b);
@@ -182,13 +182,13 @@ inline SBasis operator+(const SBasis & a, double b) {
     if(a.isZero()) return Linear(b, b);
     SBasis result(a);
     result[0] += b;
-    return a;
+    return result;
 }
 inline SBasis operator-(const SBasis & a, double b) {
     if(a.isZero()) return Linear(-b, -b);
     SBasis result(a);
     result[0] -= b;
-    return a;
+    return result;
 }
 inline SBasis& operator+=(SBasis& a, double b) {
     if(a.isZero())
