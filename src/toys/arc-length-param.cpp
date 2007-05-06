@@ -59,6 +59,8 @@ class LengthTester: public Toy {
       cairo_set_source_rgba (cr, 0., 0., 0.9, 1);
       dot_plot(cr,uniform_B);
       cairo_stroke(cr);
+      *notify << "pieces = " << uniform_B[0].size() << ", " 
+              << uniform_B[0].size() << ";\n";
 
       Toy::draw(cr, notify, width, height, save);
     }        
