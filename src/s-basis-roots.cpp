@@ -88,21 +88,27 @@ Interval boundsFast(const SBasis &sb, int order) {
 }
 
 Interval boundsLocal(const SBasis &sb, const Interval &i, int order) {
-    Interval res;
+    double t0=i.min(), t1=i.max(), lo=0., hi=0.;
     for(int j = sb.size()-1; j>=order; j--) {
         double a=sb[j][0];
         double b=sb[j][1];
-        for(int d = 0; d < 2; d++) {
-            double t, v = res[d];
-            if (v>0) t = ((b-a)/v+1)*0.5;
-            if (v<=0 || !i.contains(t)){
-                res[d]=std::max(Lerp(i.min(), a+v*i.min(), b),
-                                Lerp(i.max(), a+v*i.max(), b));
-            }else{
-                res[d]=Lerp(t, a+v*t, b);
-            }
+
+        double t;
+        if (lo<0) t = ((b-a)/lo+1)*0.5;
+        if (lo>=0 || t<t0 || t>t1) {
+            lo = std::min(a*(1-t0)+b*t0+lo*t0*(1-t0),a*(1-t1)+b*t1+lo*t1*(1-t1));
+        }else{
+            lo = Lerp(t, a+lo*t, b);
+        }
+
+        if (hi>0) t = ((b-a)/hi+1)*0.5;
+        if (hi<=0 || t<t0 || t>t1) {
+            hi = std::max(a*(1-t0)+b*t0+hi*t0*(1-t0),a*(1-t1)+b*t1+hi*t1*(1-t1));
+        }else{
+            hi = Lerp(t, a+hi*t, b);
         }
     }
+    Interval res = Interval(lo,hi);
     if (order>0) res*=pow(.25,order);
     return res;
 }
