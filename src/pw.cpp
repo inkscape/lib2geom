@@ -45,63 +45,41 @@ Piecewise<SBasis> divide(Piecewise<SBasis> const &a, Piecewise<SBasis> const &b,
     return ret;
 }
 
-//--Compose---------------
-/* Quiet ugly atm.
-   A vector<pairs<double,unsigned> > would be better than a map<double,unsigned>.
-   But all this gives me the 'missing ;' blues! --I am not brave enough today-- jfb.
+//-- compose(pw<T>,SBasis) ---------------
+/* 
+   the purpose of the following functions is only to reduce the code in pw.h
+   TODO: use a vector<pairs<double,unsigned> > instead of a map<double,unsigned>.
  */
-static std::map<double,unsigned> vect_of_vect_to_map(std::vector<std::vector<double> >roots ){
-    std::map<double,unsigned> result;
-    for(unsigned i=0; i<roots.size();i++){
-        for(unsigned j=0; j<roots[i].size();j++){
-            result[roots[i][j]]=i;
-        }
-    }
-    return(result);
+
+std::map<double,unsigned> compose_pullBack(std::vector<double> const &values, SBasis const &g){
+   std::map<double,unsigned> result;
+
+   for (int i=0;i<values.size(); i++) printf("level: %f\n",values[i]);
+   std::cout<<g<<"\n";
+   std::vector<std::vector<double> > roots = multi_roots(g, values);
+   for(unsigned i=0; i<roots.size(); i++){
+       for(unsigned j=0; j<roots[i].size();j++){
+           result[roots[i][j]]=i;
+       }
+   }
+  // Also map 0 and 1 to the first value above(or =) g(0) and g(1).
+  if(result.count(0.)==0){
+      int i=0;
+      while (i<values.size()&&(g.at0()>values[i])) i++;
+      result[0.]=i;
+  }
+  if(result.count(1.)==0){
+      int i=0;
+      while (i<values.size()&&(g.at1()>values[i])) i++;
+      result[1.]=i;
+  }
+  return(result);
 }
 
-Piecewise<SBasis> compose(Piecewise<SBasis> const &f, SBasis  const &g){
-  Piecewise<SBasis> result;
-
-  if (f.size()==0) return result; //TODO: is this correct?
-  if (f.size()==1){
-      double t0 = f.cuts[0], width = f.cuts[1] - t0;
-      return (Piecewise<SBasis>) f.segs[0](compose(Linear(-t0 / width, (1-t0) / width), g));
-  }
-
-  //first check bounds...
-  Interval bs = boundsFast(g);
-  if (bs.max() < f.cuts.front() || bs.min() > f.cuts.back()){
-      //TODO: use segN
-      int idx = (bs.max() < f.cuts[1]) ? 0 : f.cuts.size()-2;
-      double t0 = f.cuts[idx], width = f.cuts[idx+1] - t0;
-      return (Piecewise<SBasis>) f.segs[idx](compose(Linear(-t0 / width, (1-t0) / width), g));  //TODO rewrite with portion/subdivide/whatever
-  }
-
-  //-- collect all t / g(t)=f.cuts[idx] for some idx (!= first and last).
-  // put them in a map:   t->idx.
-  std::vector<double> levels;//we can forget first and last cuts of f...
-  levels.insert(levels.begin(),f.cuts.begin()+1,f.cuts.end()-1);
-  std::map<double,unsigned> cuts_pb; //pb stands for pullback
-  cuts_pb = vect_of_vect_to_map(multi_roots(g,levels));
-
-  // Also map 0 and 1 to the first level above(or =) f(0) and f(1).
-  if(cuts_pb.count(0.)==0){
-      int i=0;
-      while (i<levels.size()&&(g[0][0]>levels[i])) i++;
-      cuts_pb[0.]=i;
-  }
-  if(cuts_pb.count(1.)==0){
-      int i=0;
-      while (i<levels.size()&&(g[0][1]>levels[i])) i++;
-      cuts_pb[1.]=i;
-  }
-
-  //-- Compose each piece of g with the relevant seg of f.
-  result.cuts.push_back(0.);
-  std::map<double,unsigned>::iterator cut=cuts_pb.begin();
-  std::map<double,unsigned>::iterator next=cut; next++;
-  while(next!=cuts_pb.end()){
+int compose_findSegIdx(std::map<double,unsigned>::iterator  const &cut,
+                       std::map<double,unsigned>::iterator  const &next,
+                       std::vector<double>  const &levels,
+                       SBasis const &g){
     double t0=(*cut).first;
     int  idx0=(*cut).second;
     double t1=(*next).first;
@@ -122,28 +100,9 @@ Piecewise<SBasis> compose(Piecewise<SBasis> const &f, SBasis  const &g){
 
     //move idx back from levels f.cuts 
     idx+=1;
-
-    SBasis sub_g=compose(g, Linear(t0,t1));
-    sub_g=compose(Linear(-f.cuts[idx]/(f.cuts[idx+1]-f.cuts[idx]),
-			     (1-f.cuts[idx])/(f.cuts[idx+1]-f.cuts[idx])),sub_g);
-    sub_g=compose(f[idx],sub_g);
-    result.cuts.push_back(t1);
-    result.segs.push_back(sub_g);
-    cut++;
-    next++;
-  }
-  return(result);
-} 
-
-Piecewise<SBasis> compose(Piecewise<SBasis> const &f, Piecewise<SBasis> const &g){
-  Piecewise<SBasis> result;
-  for(int i = 0; i < g.segs.size(); i++){
-      Piecewise<SBasis> fgi=compose(f, g.segs[i]);
-      fgi.setDomain(Interval(g.cuts[i], g.cuts[i+1]));
-      result.concat(fgi);
-  }
-  return result;
+    return idx;
 }
+
 
 Piecewise<SBasis> integral(Piecewise<SBasis> const &a) {
     Piecewise<SBasis> result;

@@ -33,6 +33,7 @@
 
 #include "s-basis.h"
 #include <vector>
+#include <map>
 
 #include "concepts.h"
 #include <boost/concept_check.hpp>
@@ -67,6 +68,10 @@ class Piecewise {
         int n = segN(t);
         return segs[n](segT(t, n));
     }
+    //TODO: maybe it is not a good idea to have this?
+    Piecewise<T> operator()(SBasis f);
+    Piecewise<T> operator()(Piecewise<SBasis>f);
+
     inline unsigned size() const { return segs.size(); }
     inline bool empty() const { return segs.empty(); }
 
@@ -526,8 +531,78 @@ inline Piecewise<T> operator*=(Piecewise<T> &a, Piecewise<T> const &b) {
 
 Piecewise<SBasis> divide(Piecewise<SBasis> const &a, Piecewise<SBasis> const &b, unsigned k);
 
-Piecewise<SBasis> compose(Piecewise<SBasis> const &a, SBasis const &b);
-Piecewise<SBasis> compose(Piecewise<SBasis> const &a, Piecewise<SBasis> const &b);
+//Composition: functions called compose_foo are pieces of compose that are factored out in pw.cpp.
+std::map<double,unsigned> compose_pullBack(std::vector<double> const &cuts, SBasis const &g);
+int compose_findSegIdx(std::map<double,unsigned>::iterator  const &cut,
+                       std::map<double,unsigned>::iterator  const &next,
+                       std::vector<double>  const &levels,
+                       SBasis const &g);
+
+//TODO: add concept check
+template<typename T>
+Piecewise<T> compose(Piecewise<T> const &f, SBasis const &g){
+    Piecewise<T> result;
+
+    if (f.size()==0) return result; //TODO: is this correct? empty pw = 0?
+    if (f.size()==1){
+        double t0 = f.cuts[0], width = f.cuts[1] - t0;
+        return (Piecewise<T>) compose(f.segs[0],compose(Linear(-t0 / width, (1-t0) / width), g));
+    }
+    
+    //first check bounds...
+    Interval bs = boundsFast(g);
+    if (bs.max() < f.cuts.front() || bs.min() > f.cuts.back()){
+        //TODO: use segN.
+        int idx = (bs.max() < f.cuts[1]) ? 0 : f.cuts.size()-2;
+        double t0 = f.cuts[idx], width = f.cuts[idx+1] - t0;
+        //TODO rewrite with portion/subdivide/whatever
+        return (Piecewise<T>) compose(f.segs[idx],compose(Linear(-t0 / width, (1-t0) / width), g));  
+    }
+    
+    std::vector<double> levels;//we can forget first and last cuts...
+    levels.insert(levels.begin(),f.cuts.begin()+1,f.cuts.end()-1);
+    //TODO: use a vector<pairs<double,unsigned> > instead of a map<double,unsigned>.
+    std::map<double,unsigned> cuts_pb = compose_pullBack(levels,g);
+    
+    //-- Compose each piece of g with the relevant seg of f.
+    result.cuts.push_back(0.);
+    std::map<double,unsigned>::iterator cut=cuts_pb.begin();
+    std::map<double,unsigned>::iterator next=cut; next++;
+    while(next!=cuts_pb.end()){
+        int idx = compose_findSegIdx(cut,next,levels,g);
+        double t0=(*cut).first;
+        double t1=(*next).first;
+        
+        SBasis sub_g=compose(g, Linear(t0,t1));
+        sub_g=compose(Linear(-f.cuts[idx]/(f.cuts[idx+1]-f.cuts[idx]),
+                             (1-f.cuts[idx])/(f.cuts[idx+1]-f.cuts[idx])),sub_g);
+        result.push(compose(f[idx],sub_g),t1);
+        cut++;
+        next++;
+    }
+    return(result);
+} 
+
+//TODO: add concept check
+template<typename T>
+Piecewise<T> compose(Piecewise<T> const &f, Piecewise<SBasis> const &g){
+  Piecewise<T> result;
+  for(int i = 0; i < g.segs.size(); i++){
+      Piecewise<T> fgi=compose(f, g.segs[i]);
+      fgi.setDomain(Interval(g.cuts[i], g.cuts[i+1]));
+      result.concat(fgi);
+  }
+  return result;
+}
+
+//TODO: add concept check
+template <typename T>
+Piecewise<T> Piecewise<T>::operator()(SBasis f){return compose((*this),f);}
+//TODO: add concept check
+template <typename T>
+Piecewise<T> Piecewise<T>::operator()(Piecewise<SBasis>f){return compose((*this),f);}
+
+
 
 Piecewise<SBasis> integral(Piecewise<SBasis> const &a);
 Piecewise<SBasis> derivative(Piecewise<SBasis> const &a);
