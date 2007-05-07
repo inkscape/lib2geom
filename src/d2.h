@@ -190,8 +190,14 @@ operator/=(D2<T> &a, Point const & b) {
     return a;
 }
 
-template <typename T> inline D2<T> operator*(D2<T> const & a, double b) { return D2<T>(a[0]*b, a[1]*b); }
-template <typename T> inline D2<T> operator*=(D2<T> & a, double b) { a[0] *= b; a[1] *= b; return a; }
+template <typename T>
+inline D2<T> operator*(D2<T> const & a, double b) { return D2<T>(a[0]*b, a[1]*b); }
+template <typename T> 
+inline D2<T> operator*=(D2<T> & a, double b) { a[0] *= b; a[1] *= b; return a; }
+template <typename T>
+inline D2<T> operator/(D2<T> const & a, double b) { return D2<T>(a[0]/b, a[1]/b); }
+template <typename T> 
+inline D2<T> operator/=(D2<T> & a, double b) { a[0] /= b; a[1] /= b; return a; }
 
 //IMPL: OffsetableConcept
 template <typename T>
@@ -440,6 +446,9 @@ bool isFinite(D2<SBasis> const & a);
 
 Piecewise<D2<SBasis> > sectionize(D2<Piecewise<SBasis> > const &a);
 D2<Piecewise<SBasis> > makeCutsIndependant(Piecewise<D2<SBasis> > const &a);
+Piecewise<D2<SBasis> > rot90(Piecewise<D2<SBasis> > const &a);
+Piecewise<SBasis> dot(Piecewise<D2<SBasis> > const &a, Piecewise<D2<SBasis> > const &b);
+
 
 inline Rect boundsFast(D2<SBasis> const & s, int order=0) {
     return Rect(boundsFast(s[X], order),

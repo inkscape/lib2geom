@@ -92,4 +92,29 @@ D2<Piecewise<SBasis> > makeCutsIndependant(Piecewise<D2<SBasis> > const &a) {
     return ret;
 }
 
+Piecewise<D2<SBasis> > rot90(Piecewise<D2<SBasis> > const &M){
+  Piecewise<D2<SBasis> > result;
+  if (M.empty()) return M;
+  result.push_cut(M.cuts[0]);
+  for (int i=0; i<M.size(); i++){
+    result.push(rot90(M[i]),M.cuts[i+1]);
+  }
+  return result;
+}
+
+Piecewise<SBasis> dot(Piecewise<D2<SBasis> > const &a, 
+		      Piecewise<D2<SBasis> > const &b){
+  Piecewise<SBasis > result;
+  if (a.empty() || b.empty()) return result;
+  Piecewise<D2<SBasis> > aa = partition(a,b.cuts);
+  Piecewise<D2<SBasis> > bb = partition(b,a.cuts);
+
+  result.push_cut(aa.cuts.front());
+  for (int i=0; i<a.size(); i++){
+    result.push(dot(aa.segs[i],bb.segs[i]),aa.cuts[i+1]);
+  }
+  return result;
+}
+
+  
 };

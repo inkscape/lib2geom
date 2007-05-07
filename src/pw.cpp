@@ -103,31 +103,6 @@ int compose_findSegIdx(std::map<double,unsigned>::iterator  const &cut,
     return idx;
 }
 
-
-Piecewise<SBasis> integral(Piecewise<SBasis> const &a) {
-    Piecewise<SBasis> result;
-    result.segs.resize(a.segs.size());
-    result.cuts = a.cuts;
-    double c=0;
-    for(int i = 0; i < a.segs.size(); i++){
-        result.segs[i] = integral(a.segs[i])*(a.cuts[i+1]-a.cuts[i]);
-        result.segs[i]+= Linear(c-result.segs[i][0][0]);
-        c = result.segs[i][0][1];
-        // Need some kind off offset to share the constant over all segs
-    }
-    return result;
-}
-
-Piecewise<SBasis> derivative(Piecewise<SBasis> const &a) {
-    Piecewise<SBasis> result;
-    result.segs.resize(a.segs.size());
-    result.cuts = a.cuts;
-    for(int i = 0; i < a.segs.size(); i++){
-        result.segs[i] = derivative(a.segs[i])/(a.cuts[i+1]-a.cuts[i]);
-    }
-    return result;
-}
-
 vector<double> roots(Piecewise<SBasis> const &f){
     vector<double> result;
     for (int i=0; i<f.size(); i++){

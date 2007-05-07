@@ -604,8 +604,34 @@ Piecewise<T> Piecewise<T>::operator()(Piecewise<SBasis>f){return compose((*this)
 
 
 
-Piecewise<SBasis> integral(Piecewise<SBasis> const &a);
-Piecewise<SBasis> derivative(Piecewise<SBasis> const &a);
+//TODO: add concept check.
+template<typename T>
+Piecewise<T> integral(Piecewise<T> const &a) {
+    Piecewise<T> result;
+    result.segs.resize(a.segs.size());
+    result.cuts = a.cuts;
+    typename T::output_type c = a.segs[0].at0();
+    for(int i = 0; i < a.segs.size(); i++){
+        result.segs[i] = integral(a.segs[i])*(a.cuts[i+1]-a.cuts[i]);
+        result.segs[i]+= c-result.segs[i].at0();
+        c = result.segs[i].at1();
+    }
+    return result;
+}
+
+//TODO: add concept check.
+template<typename T>
+Piecewise<T> derivative(Piecewise<T> const &a) {
+    Piecewise<T> result;
+    result.segs.resize(a.segs.size());
+    result.cuts = a.cuts;
+    for(int i = 0; i < a.segs.size(); i++){
+        result.segs[i] = derivative(a.segs[i])/(a.cuts[i+1]-a.cuts[i]);
+    }
+    return result;
+}
+
+
 
 vector<double> roots(Piecewise<SBasis> const &f);
 
