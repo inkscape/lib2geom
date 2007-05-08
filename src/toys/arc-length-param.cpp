@@ -15,15 +15,15 @@
 using std::vector;
 using namespace Geom;
 
-static void dot_plot(cairo_t *cr, D2<Piecewise<SBasis> > const &M, double space=10){
+static void dot_plot(cairo_t *cr, Piecewise<D2<SBasis> > const &M, double space=10){
     //double dt=(M[0].cuts.back()-M[0].cuts.front())/space;
     double dt=space;
-    double t = M[0].cuts.front();
-    while (t < M[0].cuts.back()){
+    double t = M.cuts.front();
+    while (t < M.cuts.back()){
         draw_handle(cr, M(t));
         t += dt;
     }
-    cairo_d2_pw(cr, M);
+    cairo_pw_d2(cr, M);
     cairo_stroke(cr);
 }
 
@@ -37,30 +37,21 @@ class LengthTester: public Toy {
     
       D2<SBasis> B1 = handles_to_sbasis<SIZE-1>(handles.begin());
       D2<SBasis> B2 = handles_to_sbasis<SIZE-1>(handles.begin()+SIZE);
-      D2<Piecewise<SBasis> >B;
-      for ( int dim=0; dim<2; dim++ ){
-          B[dim].cuts.push_back(0);
-          B[dim].push(B1[dim],1);
-          B[dim].push(B2[dim],2);
-      }
+      Piecewise<D2<SBasis> >B;
+      B.concat(Piecewise<D2<SBasis> >(B1));
+      B.concat(Piecewise<D2<SBasis> >(B2));
       
       cairo_set_line_width (cr, .5);
       cairo_set_source_rgba (cr, 0., 0.5, 0., 1);
       //cairo_md_sb(cr, B1);
-      cairo_d2_pw(cr, B);
+      cairo_pw_d2(cr, B);
       cairo_stroke(cr);
 
-//       D2<Piecewise<SBasis> > uniform_B1 = arc_length_parametrization(B1,3,1e-7);
-//       cairo_set_source_rgba (cr, 0., 0., 0.9, 1);
-//       dot_plot(cr,uniform_B1);
-//       cairo_stroke(cr);
-
-      D2<Piecewise<SBasis> > uniform_B = arc_length_parametrization(B,3,1e-7);
+      Piecewise<D2<SBasis> > uniform_B = arc_length_parametrization(B);
       cairo_set_source_rgba (cr, 0., 0., 0.9, 1);
       dot_plot(cr,uniform_B);
       cairo_stroke(cr);
-      *notify << "pieces = " << uniform_B[0].size() << ", " 
-              << uniform_B[0].size() << ";\n";
+      *notify << "pieces = " << uniform_B.size() << ";\n";
 
       Toy::draw(cr, notify, width, height, save);
     }        

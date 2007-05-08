@@ -104,35 +104,31 @@ static vector<double>  solve_poly (double a[],int deg){
 }
 //===================================================================================
 
-static vector<Geom::Point> naive_sb_seg_to_bez(D2<Piecewise<SBasis> > const &M,double t0,double t1){
+static vector<Geom::Point> naive_sb_seg_to_bez(Piecewise<D2<SBasis> > const &M,double t0,double t1){
     vector<Geom::Point> result(4);
-    D2<Piecewise<SBasis> > dM;
-    for(int dim=0;dim<2;dim++){
-        dM[dim]=derivative(M[dim]);
-        result[0][dim]=M[dim](t0);
-        result[1][dim]=M[dim](t0)+dM[dim](t0)*(t1-t0)/3;
-        result[2][dim]=M[dim](t1)-dM[dim](t1)*(t1-t0)/3;
-        result[3][dim]=M[dim](t1);
-    }
+    Piecewise<D2<SBasis> > dM = derivative(M);
+    result[0]=M(t0);
+    result[1]=M(t0)+dM(t0)*(t1-t0)/3;
+    result[2]=M(t1)-dM(t1)*(t1-t0)/3;
+    result[3]=M(t1);
     return(result);
 }
 
-static vector<Geom::Point> sb_seg_to_bez(D2<Piecewise<SBasis> > const &M,double t0,double t1){
+static vector<Geom::Point> sb_seg_to_bez(Piecewise<D2<SBasis> > const &M,double t0,double t1){
     vector<Geom::Point> result(4);
-    D2<double> M0,dM0,d2M0,M1,dM1,d2M1,A0,V0,A1,V1;
-    D2<Piecewise<SBasis> > dM,d2M;
-    for(int dim=0;dim<2;dim++){
-        dM[dim]=derivative(M[dim]);
-        d2M[dim]=derivative(dM[dim]);
-        M0[dim]  =M[dim](t0);
-        M1[dim]  =M[dim](t1);
-        dM0[dim] =dM[dim](t0);
-        dM1[dim] =dM[dim](t1);
-        d2M0[dim]=d2M[dim](t0);
-        d2M1[dim]=d2M[dim](t1);
-        A0[dim]=M[dim](t0);
-        A1[dim]=M[dim](t1);
-    }
+    Point M0,dM0,d2M0,M1,dM1,d2M1,A0,V0,A1,V1;
+    Piecewise<D2<SBasis> > dM,d2M;
+        dM=derivative(M);
+        d2M=derivative(dM);
+        M0  =M(t0);
+        M1  =M(t1);
+        dM0 =dM(t0);
+        dM1 =dM(t1);
+        d2M0=d2M(t0);
+        d2M1=d2M(t1);
+        A0=M(t0);
+        A1=M(t1);
+
     //speed of bezier will be lambda0*dM0 and lambda1*dM1,
     //with lambda0 and lambda1 s.t. curvature at both ends is the same
     //as the curvature of the given curve.
@@ -184,7 +180,7 @@ static vector<Geom::Point> sb_seg_to_bez(D2<Piecewise<SBasis> > const &M,double 
 
 //TODO: only works for t0=0 atm...
 static double draw_non_parametric_approx(cairo_t *cr, 
-                             D2<Piecewise<SBasis> > const &M, 
+                             Piecewise<D2<SBasis> > const &M, 
                              double t0,
                              double t1){
     assert(t0==0);
@@ -193,34 +189,65 @@ static double draw_non_parametric_approx(cairo_t *cr,
     cairo_md_sb(cr, B);
     cairo_stroke(cr);
 
-    Piecewise<SBasis>s_B=arc_length_sb(B);
-    D2<Piecewise<SBasis> > Ms=arc_length_parametrization(M,3,.1);
+    Piecewise<SBasis>s_B=arcLengthSb(B);
+    Piecewise<D2<SBasis> > Ms=arc_length_parametrization(M,3,.1);
 
-    D2<Piecewise<SBasis> > D=compose(Ms,s_B);
-    D[0] = D[0] - (Piecewise<SBasis>)B[0];
-    D[1] = D[1] - (Piecewise<SBasis>)B[1];
+    Piecewise<D2<SBasis> > D=compose(Ms,s_B) - Piecewise<D2<SBasis> >(B);
     
-    cairo_pw(cr, D[0],300,10);
-    cairo_pw(cr, D[1],300,10);
+    //cairo_pw(cr, D[0],300,10);
+    //cairo_pw(cr, D[1],300,10);
     //cairo_pw(cr, s_B,300,1);
     cairo_stroke(cr);
 
-    Interval bb;
-    double err=0;
-    bb=boundsFast(D[0]);
-    err+=std::max(fabs(bb.min()),fabs(bb.max()));
-    bb=boundsFast(D[1]);
-    err+=std::max(fabs(bb.min()),fabs(bb.max()));
-
-    return( err );   
+    //return( boundsFast(D).maxExtent() );   
+    return -1.;
 }
 
-static void draw_bez_approx_at(cairo_t *cr,D2<Piecewise<SBasis> > M,double t){
+static void draw_bez_approx_at(cairo_t *cr,Piecewise<D2<SBasis> > M,double t){
     vector<Geom::Point> bez_pts=sb_seg_to_bez(M,0,t);
     D2<SBasis> MM=handles_to_sbasis<3>(bez_pts.begin());
     cairo_md_sb(cr, MM);
     cairo_stroke(cr);
 }
+
+//--------------------------------------------------------------
+
+static SBasis cubicL2Project(SBasis const b){
+    SBasis e1, e2;
+    e1.push_back(Linear(0));
+    e1.push_back(Linear(sqrt(30.)));
+    e2.push_back(Linear(0));
+    e2.push_back(Linear(sqrt(210.),-sqrt(210.)));
+
+    SBasis prod;
+    prod = integral(b*e1);
+    double a1 = prod.at1()-prod.at0();
+    prod = integral(b*e2);
+    double a2 = prod.at1()-prod.at0();
+
+    return a1*e1+a2*e2;
+}
+
+static D2<SBasis> L2_proj(Piecewise<D2<SBasis> > const &M, 
+                          D2<SBasis> b, 
+                          int depth=0){
+    D2<SBasis> result, db=derivative(b);
+    Piecewise<D2<SBasis> > udb = unitVector(db,.1);
+    Piecewise<SBasis> sb = arcLengthSb(b);
+    Piecewise<D2<SBasis> > v,h,n,nh;
+    v = compose(M-Piecewise<D2<SBasis> >(b),sb);
+    assert("sorry, not implemented yet!");
+    //argh... no division yet!
+    //h = dot(v,Piecewise<D2<SBasis> >(db))/dot(db,db);
+
+    //argh... no multiplication yet!
+    //n = dot(v,udb)*rot90(udb);
+
+    //nh= compose(n,Linear(0,1) - h);
+
+    //return b+cubicL2Project(nh);
+}
+
 
 
 #define SIZE 6
@@ -234,9 +261,6 @@ class SbToBezierTester: public Toy {
       handles[SIZE][1]=450;
       handles[SIZE][0]=max(handles[SIZE][0],150.);
       handles[SIZE][0]=min(handles[SIZE][0],450.);
-      //handles[SIZE+1][1]=450;
-      //handles[SIZE+1][0]=max(handles[SIZE+1][0],150.);
-      //handles[SIZE+1][0]=min(handles[SIZE+1][0],450.);
       double t0=0;//(handles[SIZE][0]-150)/300;
       double t1=(handles[SIZE][0]-150)/300;
       //if (t0>t1) {double temp=t0;t0=t1;t1=temp;}
@@ -246,27 +270,34 @@ class SbToBezierTester: public Toy {
       cairo_stroke(cr);
       if (t0==t1) return;//TODO: fix me...
 
-      D2<Piecewise<SBasis> >g;
-
-      g[0].cuts.push_back(0);
-      g[0].cuts.push_back(1);
-      g[0].segs.push_back(f[0]);
-
-      g[1].cuts.push_back(0);
-      g[1].cuts.push_back(1);
-      g[1].segs.push_back(f[1]);
-
-    
+      Piecewise<D2<SBasis> > g = Piecewise<D2<SBasis> >(f);
       //draw_bez_approx_at(cr,g,t0);      
       cairo_set_line_width (cr, 1);
-      cairo_set_source_rgba (cr, 0., 0., 0.9, 1);
+      cairo_set_source_rgba (cr, 0., 0., 0.9, .7);
       double error=draw_non_parametric_approx(cr,g,t0,t1);
 
       cairo_set_line_width (cr, 1);
-      cairo_set_source_rgba (cr, 0.9, 0., 0., 1);
+      cairo_set_source_rgba (cr, 0.9, 0., 0., .7);
       vector<Geom::Point> naive_bez_pts=naive_sb_seg_to_bez(g,0,t1);
       D2<SBasis> MM=handles_to_sbasis<3>(naive_bez_pts.begin());
       cairo_md_sb(cr, MM);
+      cairo_stroke(cr);
+
+      handles[SIZE+1][0]=150;
+      handles[SIZE+1][1]=min(max(handles[SIZE+1][1],150.),450.);
+      handles[SIZE+2][0]=450;
+      handles[SIZE+2][1]=min(max(handles[SIZE+2][1],150.),450.);
+
+      double scale0=(450-handles[SIZE+1][1])/150;
+      double scale1=(450-handles[SIZE+2][1])/150;
+
+      cairo_set_line_width (cr, 1);
+      cairo_set_source_rgba (cr, 0.7, 0., 0.7, .7);
+      vector<Geom::Point> bez_pts=sb_seg_to_bez(g,t0,t1);
+      bez_pts[1]=(1-scale0)*bez_pts[0]+scale0*bez_pts[1];
+      bez_pts[2]=(1-scale1)*bez_pts[3]+scale1*bez_pts[2];
+      D2<SBasis>human_approx=handles_to_sbasis<3>(bez_pts.begin());
+      cairo_md_sb(cr, human_approx);
       cairo_stroke(cr);
 
       *notify << "Move handle 6 to set the segment to be approximated by cubic bezier.\n";
@@ -282,6 +313,8 @@ public:
     if(handles.empty()) {
       for(int i = 0; i < SIZE+1; i++)
 	handles.push_back(Geom::Point(150+300*uniform(),150+300*uniform()));
+      handles.push_back(Geom::Point(150,300));
+      handles.push_back(Geom::Point(450,300));
     }
   }
 };

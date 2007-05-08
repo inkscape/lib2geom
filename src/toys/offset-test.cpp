@@ -41,6 +41,10 @@ class OffsetTester: public Toy {
 
     void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         D2<SBasis> B = handles_to_sbasis<3>(handles.begin());
+        *notify << "Curve offset:" << endl;
+        *notify << " -blue: pointwise plotted offset," << endl;
+        *notify << " -red:  sbasis approximation," << endl;
+        *notify << "Rays are drawn where the curve has been splitted" << endl;
 
         cairo_set_line_width (cr, 1);
         cairo_set_source_rgba (cr, 0., 0.5, 0., 1);
@@ -51,51 +55,36 @@ class OffsetTester: public Toy {
         plot_offset(cr,B,offset,11);
         cairo_set_source_rgba (cr, 0, 0, 1, 1);
         cairo_stroke(cr);
-        *notify << "Curve offset:" << endl;
-        *notify << " -blue: pointwise plotted offset," << endl;
-        *notify << " -red:  sbasis approximation," << endl;
-        *notify << "Rays are drawn where the curve has been splitted" << endl;
-
 
         cairo_set_source_rgba (cr, 0.5, 0.2, 0., 0.8);
-        vector<D2<SBasis> > V;
-        vector<double> cuts;
-        D2<SBasis> subB, N, Ray;
-        double t0 = 0,t1;
+        Piecewise<D2<SBasis> > n = rot90(unitVector(derivative(B)));
+        cairo_pw_d2(cr,Piecewise<D2<SBasis> >(B)+n*offset);
+        cairo_stroke(cr);
 
-        V = unit_vector(derivative(B),cuts);
-        for(int i = 0; i < V.size();i++){
-            t1 = cuts[i];
-            subB = compose(B,Linear(t0,t1));
-            N = rot90(V[i])*offset+subB;
-            cairo_md_sb(cr,N);
+        for(int i = 0; i < n.size()+1;i++){
+            Point ptA=B(n.cuts[i]), ptB;
+            if (i==n.size()) 
+                ptB=ptA+n.segs[i-1].at1()*offset;
+            else 
+                ptB=ptA+n.segs[i].at0()*offset;
+            cairo_move_to(cr,ptA);
+            cairo_line_to(cr,ptB);
             cairo_set_source_rgba (cr, 1, 0, 0, 1);
             cairo_stroke(cr);
-
-            Ray[0] = SBasis(Linear(subB(0)[0], N(0)[0]));
-            Ray[1] = SBasis(Linear(subB(0)[1], N(0)[1]));
-            cairo_md_sb(cr,Ray);
-            cairo_set_source_rgba (cr, 1, 0, 0, 0.2);
-            cairo_stroke(cr);
-            t0 = t1;
         }
-        Ray[0] = SBasis(Linear(subB(1)[0], N(1)[0]));
-        Ray[1] = SBasis(Linear(subB(1)[1], N(1)[1]));
-        cairo_md_sb(cr,Ray);
-        cairo_set_source_rgba (cr, 1, 0, 0, 0.2);
-        cairo_stroke(cr);
-        Piecewise<SBasis> cV = curvature(B);
-        for(int i = 0; i < cV.size();i++){
-            subB = compose(B, Linear(cV.cuts[i], cV.cuts[i+1]));
-            N = multiply(cV[i]*(-offset), rot90(V[i])) + subB;
-            cairo_md_sb(cr, N);
-            cairo_set_source_rgba (cr, 1, 0, 0.6, 0.5);
-            cairo_stroke(cr);
 
-            t0 = t1;
-        }
-        *notify << "Total length: " << arc_length(B) << endl;
-        *notify << "(nb of cuts: " << V.size()-1 << ")" << endl;
+//         Piecewise<SBasis> cV = curvature(B);
+//         for(int i = 0; i < cV.size();i++){
+//             subB = compose(B, Linear(cV.cuts[i], cV.cuts[i+1]));
+//             N = multiply(cV[i]*(-offset), rot90(V[i])) + subB;
+//             cairo_md_sb(cr, N);
+//             cairo_set_source_rgba (cr, 1, 0, 0.6, 0.5);
+//             cairo_stroke(cr);
+
+//             t0 = t1;
+//         }
+        *notify << "Total length: " << length(B) << endl;
+        *notify << "(nb of cuts: " << n.size()-1 << ")" << endl;
     
         Toy::draw(cr, notify, width, height, save);
     }        
@@ -110,7 +99,6 @@ public:
 };
 
 int main(int argc, char **argv) {
-    std::cout << "testing unit_normal(multidim_sbasis) based offset." << std::endl;
     init(argc, argv, "offset-test", new OffsetTester);
     return 0;
 }

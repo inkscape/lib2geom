@@ -53,7 +53,7 @@ public:
         {
             D2<SBasis> plot;
 
-            Piecewise<SBasis> als = arc_length_sb(B);
+            Piecewise<SBasis> als = arcLengthSb(B);
             double t0 = 0, t1;
             for(int i = 0; i < als.segs.size();i++){
                 t1 = als.cuts[i+1];

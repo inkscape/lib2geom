@@ -57,9 +57,9 @@ class BoundsTester: public Toy {
         cairo_set_source_rgba (cr, 0., 0., 0.8, 1);
         cairo_stroke(cr);
 
-        Interval bnds = boundsFast(B);
-        plot_bar(cr,bnds.min());
-        plot_bar(cr,bnds.max());
+        Interval bnds = boundsLocal(B,Interval(0.,.5));
+        plot_bar(cr,bnds.min(),1,.0,.5);
+        plot_bar(cr,bnds.max(),1,.0,.5);
         cairo_set_source_rgba (cr, 0.4, 0., 0., 1);
         cairo_stroke(cr);
         bnds = boundsExact(B);
@@ -70,7 +70,7 @@ class BoundsTester: public Toy {
         
 /*
 This is a multi-root test...
-
+*/
         handles[2*size  ][0]=150;
         handles[2*size+1][0]=150;
         handles[2*size+2][0]=150;
@@ -89,17 +89,18 @@ This is a multi-root test...
         double m,M;
         vector<double>my_roots;
         
-        cairo_set_source_rgba (cr, 0.9, 0., 0.8, 1);
-        for (int i=0;i<levels.size();i++){
-            my_roots.clear();
-            my_roots=roots(B-Linear(levels[i]));
-            for(int j=0;j<my_roots.size();j++){
-                draw_cross(cr,Point(150+300*my_roots[j],300-levels[i]));
-            }
-        }
+//         cairo_set_source_rgba (cr, 0.9, 0., 0.8, 1);
+//         for (int i=0;i<levels.size();i++){
+//             my_roots.clear();
+//             my_roots=roots(B-Linear(levels[i]));
+//             for(int j=0;j<my_roots.size();j++){
+//                 draw_cross(cr,Point(150+300*my_roots[j],300-levels[i]));
+//             }
+//         }
 
-        cairo_set_source_rgba (cr, 0.9, 0., 0.8, 1);
-        vector<vector<double> > sols=multi_roots(B,levels);
+//         cairo_set_source_rgba (cr, 0.9, 0., 0.8, 1);
+
+        vector<vector<double> > sols=multi_roots(B,levels,.001);
         //map<double,unsigned> sols=multi_roots(B,levels);
         //for(map<double,unsigned>::iterator sol=sols.begin();sol!=sols.end();sol++){
         //    draw_handle(cr,Point(150+300*(*sol).first,300-levels[(*sol).second]));
@@ -111,6 +112,8 @@ This is a multi-root test...
             }
         }
         cairo_set_source_rgba (cr, 0.9, 0., 0.8, 1);
+
+/*
         
         clock_t end_t;
         unsigned iterations = 0;

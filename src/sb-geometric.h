@@ -22,40 +22,38 @@
 
 namespace Geom{
 
-std::vector<D2<SBasis> >
-unit_vector(D2<SBasis> const vect, 
-            std::vector<double> &cuts, 
-            double tol=.1);
+Piecewise<D2<SBasis> > 
+cutAtRoots(Piecewise<D2<SBasis> > const &M);
 
-std::vector<D2<SBasis> > 
-unit_vector(D2<SBasis> const vect, 
-            double tol=.1);
+Piecewise<D2<SBasis> >
+unitVector(D2<SBasis> const &vect, 
+           double tol=.01, int order=3);
+Piecewise<D2<SBasis> >
+unitVector(Piecewise<D2<SBasis> > const &vect, 
+           double tol=.01, int order=3);
 
-std::vector<D2<SBasis> >
-uniform_speed(D2<SBasis> const M, 
-              double tol=.1);
+// Piecewise<D2<SBasis> >
+// uniform_speed(D2<SBasis> const M, 
+//               double tol=.1);
 
-double
-arc_length(D2<SBasis> const M, 
-           double tol=.1);
+Piecewise<SBasis> curvature(          D2<SBasis>   const &M, double tol=.01);
+Piecewise<SBasis> curvature(Piecewise<D2<SBasis> > const &M, double tol=.01);
 
+Piecewise<SBasis> arcLengthSb(          D2<SBasis>   const &M, double tol=.01);
+Piecewise<SBasis> arcLengthSb(Piecewise<D2<SBasis> > const &M, double tol=.01);
 
-Piecewise<SBasis>
-arc_length_sb(D2<SBasis> const M, 
-              double tol=.1);
+double length(          D2<SBasis>   const &M, double tol=.01);
+double length(Piecewise<D2<SBasis> > const &M, double tol=.01);
 
-D2<Piecewise<SBasis> >
-arc_length_parametrization(D2<SBasis> const &M,
-                           unsigned order,
-                           double tol=.1);
-D2<Piecewise<SBasis> >
-arc_length_parametrization(D2<Piecewise<SBasis> > const &M,
-                           unsigned order,
-                           double tol=.1);
+Piecewise<D2<SBasis> >
+arc_length_parametrization(D2<SBasis> const &M, 
+                           unsigned order=3, 
+                           double tol=.01);
+Piecewise<D2<SBasis> >
+arc_length_parametrization(Piecewise<D2<SBasis> > const &M,
+                           unsigned order=3,
+                           double tol=.01);
 
-Piecewise<SBasis>
-curvature(D2<SBasis> const M, 
-          double tol=.1);
 
 int centroid(Piecewise<D2<SBasis> > const &p, Point& centroid, double &area);
 

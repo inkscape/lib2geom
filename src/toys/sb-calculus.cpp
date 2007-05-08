@@ -38,6 +38,7 @@
 //there are also d2 functions, but this part is still moving a lot.
 
 #include "s-basis.h"
+#include "pw.h"
 #include "sb-geometric.h"
 #include "bezier-to-sbasis.h"
 #include "sbasis-to-bezier.h"
@@ -239,7 +240,7 @@ static Piecewise<SBasis> Reciprocal(Piecewise<SBasis> f, double tol=1e-7, int or
 
 //=================================================================
 /*
-hum! the D2 part is still moving a lot (and buggy).
+hum! the D2 part mostly moved to sb-geometric.
  */
 //--D2-------------------------------------------------------------
 
@@ -251,257 +252,6 @@ pwd2_to_d2pw(Piecewise<D2<SBasis> > M){
         for (int i=0; i<M.size(); i++){
             result[dim].push(M[i][dim],M.cuts[i+1]);
         }
-    }
-    return result;
-}
-//=================================================================
-static Piecewise<D2<SBasis> >
-derivative(Piecewise<D2<SBasis> > const &M){
-    Piecewise<D2<SBasis> > result;
-    if (M.empty()) return M;
-    result.push_cut(M.cuts[0]);
-    for (int i=0; i<M.size(); i++){
-        result.push(derivative(M.segs[i]),M.cuts[i+1]);
-    }
-    return result;
-}
-static Piecewise<D2<SBasis> >
-rot90(Piecewise<D2<SBasis> > const &M){
-    Piecewise<D2<SBasis> > result;
-    if (M.empty()) return M;
-    result.push_cut(M.cuts[0]);
-    for (int i=0; i<M.size(); i++){
-        result.push(rot90(M[i]),M.cuts[i+1]);
-    }
-    return result;
-}
-
-//=================================================================
-
-static vector<double> 
-intersect(vector<double> const &a, vector<double> const &b, double tol=0.){
-    vector<double> inter;
-    int i=0,j=0;
-    while ( i<a.size() && j<b.size() ){
-        if (fabs(a[i]-b[j])<tol){
-            inter.push_back(a[i]);
-            i+=1;
-            j+=1;
-        }else if (a[i]<b[j]){
-            i+=1;
-        }else if (a[i]>b[j]){
-            j+=1;
-        }
-    }
-    return inter;
-}
-
-
-static Piecewise<D2<SBasis> > 
-sectionizeAtCutsAndRoots(D2<Piecewise<SBasis> > const &M_in){
-    D2<Piecewise<SBasis> > M=M_in;
-    vector<double> x_rts=roots(M[0]);
-    vector<double> y_rts=roots(M[1]);
-    vector<double> rts=intersect(x_rts, y_rts, ZERO);
-    M[0] = partition(M[0],rts);
-    return sectionize(M);
-}
-
-static Piecewise<D2<SBasis> > 
-cutAtRoots(Piecewise<D2<SBasis> > const &M){
-    vector<double> rts;
-    for (int i=0; i<M.size(); i++){
-        vector<double> seg_rts = roots((M.segs[i])[0]);
-        seg_rts = intersect(seg_rts, roots((M.segs[i])[1]), ZERO);
-        Linear mapToDom = Linear(M.cuts[i],M.cuts[i+1]);
-        for (int r=0; r<seg_rts.size(); r++){
-            seg_rts[r]= mapToDom(seg_rts[r]);
-        }
-        rts.insert(rts.end(),seg_rts.begin(),seg_rts.end());
-    }
-    return partition(M,rts);
-}
-
-static Piecewise<D2<SBasis> > sectionizeAtRoots(D2<SBasis> const &M){
-    sectionizeAtCutsAndRoots(pwd2_to_d2pw(Piecewise<D2<SBasis> >(M)));
-}
-
-//=================================================================
-
-static SBasis divide_by_sk(SBasis const &a, int k) {
-    assert( k<a.size());
-    if(k < 0) return shift(a,-k);
-    SBasis c;
-    c.insert(c.begin(), a.begin()+k, a.end());
-    return c;
-}
-
-
-static SBasis divide_by_t0k(SBasis const &a, int k) {
-    if(k < 0) {
-        SBasis c = Linear(0,1);
-        for (int i=2; i<=-k; i++){
-            c*=c;
-        }
-        c*=a;
-        return(c);
-    }else{
-        SBasis c = Linear(1,0);
-        for (int i=2; i<=k; i++){
-            c*=c;
-        }
-        c*=a;
-        return(divide_by_sk(c,k));
-    }
-}
-
-static SBasis divide_by_t1k(SBasis const &a, int k) {
-    if(k < 0) {
-        SBasis c = Linear(1,0);
-        for (int i=2; i<=-k; i++){
-            c*=c;
-        }
-        c*=a;
-        return(c);
-    }else{
-        SBasis c = Linear(0,1);
-        for (int i=2; i<=k; i++){
-            c*=c;
-        }
-        c*=a;
-        return(divide_by_sk(c,k));
-    }
-}
-
-static D2<SBasis> RescaleForNonVanishingEnds(D2<SBasis> const &MM){
-    D2<SBasis> M = MM;
-    int val = min(valuation(M[0],ZERO),valuation(M[1],ZERO));
-
-    //if M is the constant 0, what should we do? return empty, atm.
-    if (val<0 || val>=max(M[0].size(),M[1].size())){
-        return D2<SBasis>(SBasis(),SBasis());
-    }
-
-    if (val<M[0].size()) M[0] = divide_by_sk(M[0],val);
-    if (val<M[1].size()) M[1] = divide_by_sk(M[1],val);
-    while (fabs(M[0].at0())<ZERO && fabs(M[1].at0())<ZERO){
-        M[0] = divide_by_t0k(M[0],1);
-        M[1] = divide_by_t0k(M[1],1);
-    }
-    while (M[0].at1()==0 && M[1].at1()==0){
-        M[0] = divide_by_t1k(M[0],1);
-        M[1] = divide_by_t1k(M[1],1);
-    }
-    return M;
-}
-
-//=================================================================
-static Piecewise<SBasis> 
-curvature(D2<Piecewise<SBasis> > V, double tol=ZERO){
-    Piecewise<SBasis> result;
-    Piecewise<D2<SBasis> > VV = sectionizeAtCutsAndRoots(V);
-    result.cuts.push_back(VV.cuts.front());
-    for (int i=0; i<VV.size(); i++){
-        Piecewise<SBasis> curv_seg;
-        curv_seg = curvature(VV.segs[i],tol);
-        curv_seg.setDomain(Interval(VV.cuts[i],VV.cuts[i+1]));
-        result.concat(curv_seg);
-    }
-    return result;
-}
-
-static Piecewise<SBasis> 
-curvature(Piecewise<D2<SBasis> > const &V, double tol=ZERO){
-    Piecewise<SBasis> result;
-    Piecewise<D2<SBasis> > VV = cutAtRoots(V);
-    result.cuts.push_back(VV.cuts.front());
-    for (int i=0; i<VV.size(); i++){
-        Piecewise<SBasis> curv_seg;
-        curv_seg = curvature(VV.segs[i],tol);
-        curv_seg.setDomain(Interval(VV.cuts[i],VV.cuts[i+1]));
-        result.concat(curv_seg);
-    }
-    return result;
-}
-//=================================================================
-
-static Piecewise<D2<SBasis> >
-MyUnitVector(D2<SBasis> const &V_in, double tol=ZERO, int order=3,
-             double t0=0,double t1=1){
-    //Unit vector(x,y) is (b,-a) where a and b are solutions of:
-    //     ax+by=0 (eqn1)   and   a^2+b^2=1 (eqn2)
-    D2<SBasis> V = RescaleForNonVanishingEnds(V_in);
-    if (V[0].empty() && V[1].empty())
-        return Piecewise<D2<SBasis> >(D2<SBasis>(Linear(1),SBasis()));
-    SBasis x = V[0], y = V[1], a, b;
-    SBasis r_eqn1, r_eqn2;
-
-    Point v0 = unit_vector(V.at0());
-    Point v1 = unit_vector(V.at1());
-    a.push_back(Linear(-v0[1],-v1[1]));
-    b.push_back(Linear( v0[0], v1[0]));
-
-    r_eqn1 = -(a*x+b*y);
-    r_eqn2 = Linear(1.)-(a*a+b*b);
-
-    for (int k=1; k<=order; k++){
-        double r0  = (k<r_eqn1.size())? r_eqn1.at(k).at0() : 0;
-        double r1  = (k<r_eqn1.size())? r_eqn1.at(k).at1() : 0;
-        double rr0 = (k<r_eqn2.size())? r_eqn2.at(k).at0() : 0;
-        double rr1 = (k<r_eqn2.size())? r_eqn2.at(k).at1() : 0;
-        double a0,a1,b0,b1;// coeffs in a[k] and b[k]
-
-        //the equations to solve at this point are:
-        // a0*x(0)+b0*y(0)=r0 & 2*a0*a(0)+2*b0*b(0)=rr0
-        //and
-        // a1*x(1)+b1*y(1)=r1 & 2*a1*a(1)+2*b1*b(1)=rr1
-        a0 = r0/dot(v0,V(0))*v0[0]-rr0/2*v0[1];
-        b0 = r0/dot(v0,V(0))*v0[1]+rr0/2*v0[0];
-        a1 = r1/dot(v1,V(1))*v1[0]-rr1/2*v1[1];
-        b1 = r1/dot(v1,V(1))*v1[1]+rr1/2*v1[0];
-
-        a.push_back(Linear(a0,a1));        
-        b.push_back(Linear(b0,b1));
-        //TODO: explicit formulas -- make them 'incremental'.
-        r_eqn1 = -(a*x+b*y);
-        r_eqn2 = Linear(1)-(a*a+b*b);
-    }
-    
-    //our candidat is:
-    D2<SBasis> unitV;
-    unitV[0] =  b;
-    unitV[1] = -a;
-
-    //is it good?
-    double rel_tol = max(1.,max(V_in[0].tailError(0),V_in[1].tailError(0)))*tol;
-
-    if (r_eqn1.tailError(order)>rel_tol || r_eqn2.tailError(order)>tol){
-        //if not: subdivide and concat results.
-        Piecewise<D2<SBasis> > unitV0, unitV1;
-        unitV0 = MyUnitVector(compose(V,Linear(0,.5)),tol,order,t0,(t0+t1)/2);
-        unitV1 = MyUnitVector(compose(V,Linear(.5,1)),tol,order,(t0+t1)/2,t1);
-        unitV0.setDomain(Interval(0.,.5));
-        unitV1.setDomain(Interval(.5,1.));
-        unitV0.concat(unitV1);
-        return(unitV0);
-    }else{
-        //if yes: return it as pw.
-        Piecewise<D2<SBasis> > result;
-        result=(Piecewise<D2<SBasis> >)unitV;
-        return result;
-    }
-}
-
-static Piecewise<D2<SBasis> >
-MyUnitVector(Piecewise<D2<SBasis> > V, double tol=ZERO, int order=3){
-    Piecewise<D2<SBasis> > result;
-    Piecewise<D2<SBasis> > VV = cutAtRoots(V);
-    result.cuts.push_back(VV.cuts.front());
-    for (int i=0; i<VV.size(); i++){
-        Piecewise<D2<SBasis> > unit_seg;
-        unit_seg = MyUnitVector(VV.segs[i],tol, order);
-        unit_seg.setDomain(Interval(VV.cuts[i],VV.cuts[i+1]));
-        result.concat(unit_seg);   
     }
     return result;
 }
@@ -527,13 +277,13 @@ class SbCalculusToy: public Toy {
       cairo_set_source_rgba (cr, 0.9, 0., 0., 1);
 
 //-- real->real functions------------------------------
-//       SBasis x=Linear(-M_PI/2,2*M_PI);
-//       f.cuts.push_back(0);
-//       f.push(x,1);
-//       plot(cr,cos(f),150);
-//       plot(cr,sin(f),150);
-//       plot(cr,Reciprocal(f,0.1),10);
-//       plot(cr,my_sqrt(f),50);
+      SBasis x=Linear(-M_PI/2,2*M_PI);
+      f.cuts.push_back(0);
+      f.push(x,1);
+      plot(cr,cos(f),150);
+      plot(cr,sin(f),150);
+      plot(cr,Reciprocal(f,0.1),10);
+      plot(cr,my_sqrt(f),50);
 
 //-- real->point functions------------------------------
       D2<SBasis> gseg=g.segs[0];
@@ -542,47 +292,23 @@ class SbCalculusToy: public Toy {
       Piecewise<D2<SBasis> > dg;
       dg=derivative(g);
 
-      Piecewise<D2<SBasis> >n = MyUnitVector(dg,.01,2);
+      Piecewise<D2<SBasis> >n = unitVector(dg,.01,2);
+      Piecewise<D2<SBasis> >foo = derivative(integral(g));
 
 //      Piecewise<SBasis> k = curvature(g,.1);
       n = rot90(n);
       n *= 150.;
-      
-      vector<double> cuts;
-      vector<D2<SBasis> >uv = unit_vector(derivative(gseg),cuts,.01);
-      D2<Piecewise<SBasis> >nn;
-      for (int dim=0; dim<2; dim++){
-          nn[dim].push_cut(0.);
-          for (int i=0; i<cuts.size(); i++){
-              nn[dim].push(uv[i][dim],cuts[i]);
-          }
-      }
-      nn = rot90(nn);
-      nn *= 148;
 
-      D2<Piecewise<SBasis> > gsegpw;
-      gsegpw[0]=Piecewise<SBasis>(gseg[0]);
-      gsegpw[1]=Piecewise<SBasis>(gseg[1]);
-
-      //cairo_d2_pw(cr, gsegpw);
       cairo_pw_d2(cr, g);
       cairo_set_source_rgba (cr, 0., 0.9, 0., .75);
       cairo_stroke(cr);
 
       cairo_set_source_rgba (cr, 0.9, 0., 0., .75);
       cairo_pw_d2(cr, g+n);
-      //cairo_d2_pw(cr, g-n);
+
       for (int i=0; i<n.cuts.size(); i++){
           double t=n.cuts[i];
           draw_line_seg(cr, gseg(t), gseg(t)+n(t));
-      }
-      cairo_stroke(cr);
-
-      cairo_set_source_rgba (cr, 0., 0., 0.9, .75);
-      cairo_d2_pw(cr, gsegpw+nn);
-      for (int i=0; i<nn[0].cuts.size(); i++){
-          double t=nn[0].cuts[i];
-          draw_line_seg(cr, gseg(t), gseg(t)+nn(t));
       }
       cairo_stroke(cr);
 

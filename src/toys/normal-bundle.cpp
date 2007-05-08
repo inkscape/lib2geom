@@ -51,9 +51,12 @@ void NormalBundle::setBase(D2<SBasis> const &B, double tol=0.01) {
 
   D2<SBasis> dB = derivative(B);
   vector<double> cuts;
-  vector<D2<SBasis> > unitV=unit_vector(dB,cuts,tol);
+  Piecewise<D2<SBasis> > unitV=unitVector(dB);
+
+  //TODO: clean this up, use arc_length_parametrization...
+  cuts=unitV.cuts;
   double t0=0,t1,L=0;
-  for(int i=0;i<cuts.size();i++){
+  for(int i=1;i<cuts.size();i++){
     t1=cuts[i];
     D2<SBasis> subB=compose(B,Linear(t0,t1));
     D2<SBasis2d> S;
