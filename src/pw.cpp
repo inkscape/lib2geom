@@ -54,8 +54,6 @@ Piecewise<SBasis> divide(Piecewise<SBasis> const &a, Piecewise<SBasis> const &b,
 std::map<double,unsigned> compose_pullBack(std::vector<double> const &values, SBasis const &g){
    std::map<double,unsigned> result;
 
-   for (int i=0;i<values.size(); i++) printf("level: %f\n",values[i]);
-   std::cout<<g<<"\n";
    std::vector<std::vector<double> > roots = multi_roots(g, values);
    for(unsigned i=0; i<roots.size(); i++){
        for(unsigned j=0; j<roots[i].size();j++){
