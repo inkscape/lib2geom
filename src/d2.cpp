@@ -110,8 +110,22 @@ Piecewise<SBasis> dot(Piecewise<D2<SBasis> > const &a,
   Piecewise<D2<SBasis> > bb = partition(b,a.cuts);
 
   result.push_cut(aa.cuts.front());
-  for (int i=0; i<a.size(); i++){
+  for (int i=0; i<aa.size(); i++){
     result.push(dot(aa.segs[i],bb.segs[i]),aa.cuts[i+1]);
+  }
+  return result;
+}
+
+Piecewise<SBasis> cross(Piecewise<D2<SBasis> > const &a, 
+			Piecewise<D2<SBasis> > const &b){
+  Piecewise<SBasis > result;
+  if (a.empty() || b.empty()) return result;
+  Piecewise<D2<SBasis> > aa = partition(a,b.cuts);
+  Piecewise<D2<SBasis> > bb = partition(b,a.cuts);
+
+  result.push_cut(aa.cuts.front());
+  for (int i=0; i<a.size(); i++){
+    result.push(cross(aa.segs[i],bb.segs[i]),aa.cuts[i+1]);
   }
   return result;
 }
