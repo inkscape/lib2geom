@@ -33,6 +33,7 @@
 #define SEEN_SVG_PATH_PARSER_H
 
 #include <vector>
+#include <iterator>
 #include <exception>
 #include "point.h"
 #include "svg-path.h"
@@ -44,6 +45,14 @@ struct SVGPathParseError : public std::exception {
 };
 
 void parse_svg_path(char const *str, SVGPathSink &sink) throw(SVGPathParseError);
+
+inline std::vector<Path2::Path> parse_svg_path(char const *str) throw(SVGPathParseError) {
+    std::vector<Path2::Path> subpaths;
+    std::back_insert_iterator<std::vector<Path2::Path> > iter(subpaths);
+    SVGPathGenerator<std::back_insert_iterator<std::vector<Path2::Path> > > generator(iter);
+    parse_svg_path(str, generator);
+    return subpaths;
+}
 
 }
 
