@@ -450,6 +450,37 @@ Piecewise<D2<SBasis> > rot90(Piecewise<D2<SBasis> > const &a);
 Piecewise<SBasis> dot(Piecewise<D2<SBasis> > const &a, Piecewise<D2<SBasis> > const &b);
 Piecewise<SBasis> cross(Piecewise<D2<SBasis> > const &a, Piecewise<D2<SBasis> > const &b);
 
+class CoordIterator
+: public std::iterator<std::input_iterator_tag, SBasis const>
+{
+public:
+  CoordIterator(vector<D2<SBasis> >::const_iterator const &iter, unsigned d) : impl_(iter), ix_(d) {}
+
+  inline bool operator==(CoordIterator const &other) { return other.impl_ == impl_; }
+  inline bool operator!=(CoordIterator const &other) { return other.impl_ != impl_; }
+
+  inline SBasis operator*() const {
+        return (*impl_)[ix_];
+  }
+
+  inline CoordIterator &operator++() {
+    ++impl_;
+    return *this;
+  }
+  inline CoordIterator operator++(int) {
+    CoordIterator old=*this;
+    ++(*this);
+    return old;
+  }
+
+private:
+  vector<D2<SBasis> >::const_iterator impl_;
+  unsigned ix_;
+};
+
+inline CoordIterator iterateCoord(Piecewise<D2<SBasis> > const &a, unsigned d) {
+    return CoordIterator(a.segs.begin(), d);
+}
 
 inline Rect boundsFast(D2<SBasis> const & s, int order=0) {
     return Rect(boundsFast(s[X], order),
