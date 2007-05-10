@@ -34,7 +34,7 @@ curvature-test
 bounds-test
 pw-compose-test
 arc-length-param
-sb-calculus
+sb-calc-test
 sketch-toy
 "${NEEDS_GSL}"
 )
