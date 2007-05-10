@@ -42,6 +42,8 @@ matrix.h
 math-utils.h
 maybe.h
 sb-geometric.h
+sb-calculus.h
+sb-calculus.cpp
 #nearestpoint.cpp
 path2-builder.h
 path2.cpp
