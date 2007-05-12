@@ -48,7 +48,10 @@ class D2{
     T f[2];
 
   public:
-    D2() {f[0] = f[1] = T();}
+    D2() {f[X] = f[Y] = T();}
+    explicit D2(Point const &a) {
+        f[X] = T(a[X]); f[Y] = T(a[Y]);
+    }
 
     D2(T const &a, T const &b) {
         f[X] = a;

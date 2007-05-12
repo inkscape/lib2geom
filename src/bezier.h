@@ -52,11 +52,8 @@ public:
   static void assert_order(Bezier<required_order> const *) {}
 
   Bezier() {}
-  
-  //TODO: default copy
-  //TODO: default assign
 
-  Bezier(Coord c0) {
+  explicit Bezier(Coord c0) {
     assert_order<0>(this);
     c_[0] = c0;
   }

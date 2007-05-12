@@ -46,6 +46,9 @@ namespace Geom {
 class SBasis : public std::vector<Linear>{
 public:
     SBasis() {}
+    explicit SBasis(double a) {
+        push_back(Linear(a,a));
+    }
     SBasis(SBasis const & a) :
         std::vector<Linear>(a)
     {}

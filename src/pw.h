@@ -62,9 +62,15 @@ class Piecewise {
 
     typedef typename T::output_type output_type;
 
+    explicit Piecewise(const output_type & v) {
+        push_cut(0.);
+        push_seg(T(v));
+        push_cut(1.);
+    }
+
     inline T operator[](unsigned i) const { return segs[i]; }
     inline T &operator[](unsigned i) { return segs[i]; }
-    inline typename T::output_type operator()(double t) const {
+    inline output_type operator()(double t) const {
         int n = segN(t);
         return segs[n](segT(t, n));
     }
@@ -372,7 +378,7 @@ vector<double> roots(const Piecewise<T> &pw) {
 
 //IMPL: OffsetableConcept
 template<typename T>
-Piecewise<T> operator+(Piecewise<T> const &a, double b) {
+Piecewise<T> operator+(Piecewise<T> const &a, typename T::output_type b) {
     function_requires<OffsetableConcept<T> >();
 //TODO:empty
     Piecewise<T> ret = Piecewise<T>();
@@ -382,7 +388,7 @@ Piecewise<T> operator+(Piecewise<T> const &a, double b) {
     return ret;
 }
 template<typename T>
-Piecewise<T> operator-(Piecewise<T> const &a, double b) {
+Piecewise<T> operator-(Piecewise<T> const &a, typename T::output_type b) {
     function_requires<OffsetableConcept<T> >();
 //TODO: empty
     Piecewise<T> ret = Piecewise<T>();
@@ -392,20 +398,20 @@ Piecewise<T> operator-(Piecewise<T> const &a, double b) {
     return ret;
 }
 template<typename T>
-Piecewise<T> operator+=(Piecewise<T>& a, double b) {
+Piecewise<T> operator+=(Piecewise<T>& a, typename T::output_type b) {
     function_requires<OffsetableConcept<T> >();
 
-    if(a.empty()) { a.push_cut(0.); a.push(Linear(b), 1.); return a; }
+    if(a.empty()) { a.push_cut(0.); a.push(T(b), 1.); return a; }
 
     for(int i = 0; i < a.size();i++)
         a[i] += b;
     return a;
 }
 template<typename T>
-Piecewise<T> operator-=(Piecewise<T>& a, double b) {
+Piecewise<T> operator-=(Piecewise<T>& a, typename T::output_type b) {
     function_requires<OffsetableConcept<T> >();
 
-    if(a.empty()) { a.push_cut(0.); a.push(Linear(b), 1.); return a; }
+    if(a.empty()) { a.push_cut(0.); a.push(T(b), 1.); return a; }
 
     for(int i = 0;i < a.size();i++)
         a[i] -= b;
@@ -543,7 +549,8 @@ template<typename T>
 Piecewise<T> compose(Piecewise<T> const &f, SBasis const &g){
     Piecewise<T> result;
 
-    if (f.size()==0) return result; //TODO: is this correct? empty pw = 0?
+    if (f.empty()) return result;
+    if (g.isZero()) return Piecewise<T>(f(0));
     if (f.size()==1){
         double t0 = f.cuts[0], width = f.cuts[1] - t0;
         return (Piecewise<T>) compose(f.segs[0],compose(Linear(-t0 / width, (1-t0) / width), g));
@@ -551,11 +558,9 @@ Piecewise<T> compose(Piecewise<T> const &f, SBasis const &g){
     
     //first check bounds...
     Interval bs = boundsFast(g);
-    if (bs.max() < f.cuts.front() || bs.min() > f.cuts.back()){
-        //TODO: use segN.
+    if (f.cuts.front() > bs.max()  || bs.min() > f.cuts.back()){
         int idx = (bs.max() < f.cuts[1]) ? 0 : f.cuts.size()-2;
         double t0 = f.cuts[idx], width = f.cuts[idx+1] - t0;
-        //TODO rewrite with portion/subdivide/whatever
         return (Piecewise<T>) compose(f.segs[idx],compose(Linear(-t0 / width, (1-t0) / width), g));  
     }
     
@@ -630,8 +635,6 @@ Piecewise<T> derivative(Piecewise<T> const &a) {
     }
     return result;
 }
-
-
 
 vector<double> roots(Piecewise<SBasis> const &f);
 
