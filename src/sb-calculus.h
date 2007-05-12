@@ -44,9 +44,7 @@
 
 #define ZERO 1e-3
 
-using std::vector;
-using namespace Geom;
-using namespace std;
+namespace Geom {
 
 //-Sqrt---------------------------------------------------------------
 Piecewise<SBasis> sqrtOnDomain(Interval range, double tol=ZERO);
@@ -64,6 +62,8 @@ Piecewise<SBasis> sin(Piecewise<SBasis> const &f);
 Piecewise<SBasis> reciprocalOnDomain(Interval range, double tol=ZERO);
 Piecewise<SBasis> reciprocal(          SBasis const &f, double tol=ZERO, int order=3);
 Piecewise<SBasis> reciprocal(Piecewise<SBasis>const &f, double tol=ZERO, int order=3);
+
+}
 
 #endif //SEEN_GEOM_PW_SB_CALCULUS_H
 /*

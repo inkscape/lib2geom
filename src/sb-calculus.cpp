@@ -38,8 +38,9 @@
 #define ZERO 1e-3
 
 using std::vector;
-using namespace Geom;
-using namespace std;
+
+namespace Geom {
+
 
 #include <stdio.h>
 #include <math.h>
@@ -56,14 +57,14 @@ Piecewise<SBasis> sqrtOnDomain(Interval range, double tol){
         a=2*tol*tol;
         i0=int(log(a)/log(2))-1;
         a=pow(2.,i0);
-        sqrt_fn.push(Linear(0,sqrt(a)),a);
+        sqrt_fn.push(Linear(0,std::sqrt(a)),a);
     }else{
         i0=int(log(a)/log(2))-1;
         a=pow(2.,i0);
         sqrt_fn.cuts.push_back(a);
     }  
     while (a<b){
-        sqrt_fn.push(sqrt1_2*sqrt(a),2*a);
+        sqrt_fn.push(sqrt1_2*std::sqrt(a),2*a);
         a*=2;
     }
     return(sqrt_fn);
@@ -193,6 +194,8 @@ Piecewise<SBasis> reciprocal(Piecewise<SBasis> const &f, double tol, int order){
     //TODO: define a truncated compose()!
     for (int k=0; k<result.segs.size(); k++){result.segs[k].truncate(order);}
     return(result);
+}
+
 }
 
 /*
