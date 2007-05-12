@@ -36,21 +36,23 @@ class SketchToy: public Toy {
                 double m = (poly[1][d] - poly[0][d]) / poly.size();
                 vector<double> diffs;
                 for(int i = 1; i < poly.size(); i++)
-                    diffs.push_back(poly[i][d] - poly[i-1][d] - m);
+                    diffs.push_back(poly[i][d] - poly[i-1][d] - m * i);
                 for(int o = 1; o < order; o++) {
                     double lavg = 0, ravg = 0, ltot = 0, rtot = 0;
-                    for(int i = 0; i < poly.size() - o; i++) {
-                        ltot += (1-double(i)/poly.size());
-                        lavg += diffs[i] * (1-double(i)/poly.size());
-                        rtot += double(i)/poly.size();
-                        ravg += diffs[i] * (double(i)/poly.size());
+                    for(int i = 1; i < poly.size() - o; i++) {
+                        double t = double(i)/poly.size();
+                        ltot += (1-t)/pow(t,o);
+                        lavg += diffs[i] * (1-t);
+                        rtot += t/pow(t,o);
+                        ravg += diffs[i] * t;
                     }
                     lavg /= ltot; ravg /= rtot;
-                    sb[d].push_back(Linear(lavg, ravg));
+                    sb[d].push_back(Linear(ltot*-1, rtot*-1));
                     vector<double> temp(diffs);
                     diffs.clear();
                     for(int i = 1; i < diffs.size(); i++)
                         diffs.push_back(temp[i] - temp[i-1]);
+                    
                 }
             }
             return sb;
@@ -72,8 +74,8 @@ class SketchToy: public Toy {
         }
         cairo_set_source_rgba (cr, 0, 0, 0, 1);
         cairo_pw_d2(cr, ink);
-        //for(int i = 1; i < poly.size(); i++)
-        //    draw_line_seg(cr, poly[i-1], poly[i]);
+        for(int i = 1; i < poly.size(); i++)
+            draw_line_seg(cr, poly[i-1], poly[i]);
         
         cairo_close_path(cr);
         
