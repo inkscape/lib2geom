@@ -46,8 +46,8 @@ class SketchToy: public Toy {
                         rtot += t/pow(t,o);
                         ravg += diffs[i] * t;
                     }
-                    lavg /= ltot; ravg /= rtot;
-                    sb[d].push_back(Linear(ltot*-1, rtot*-1));
+                    //lavg /= ltot; ravg /= rtot;
+                    sb[d].push_back(Linear(lavg*-1, ravg*-1));
                     vector<double> temp(diffs);
                     diffs.clear();
                     for(int i = 1; i < diffs.size(); i++)
