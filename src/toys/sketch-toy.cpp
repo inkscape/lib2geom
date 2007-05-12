@@ -68,12 +68,13 @@ class SketchToy: public Toy {
 
     
     void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
+        cairo_set_source_rgba (cr, 0, 0, 0, 1);
+        cairo_pw_d2(cr, ink);
+        cairo_set_line_width(cr,1);
         if(!save) {
             for(int i = 0; i < ink.size(); i++)
                 draw_cross(cr, ink[i].at0());
         }
-        cairo_set_source_rgba (cr, 0, 0, 0, 1);
-        cairo_pw_d2(cr, ink);
         for(int i = 1; i < poly.size(); i++)
             draw_line_seg(cr, poly[i-1], poly[i]);
         
@@ -84,6 +85,7 @@ class SketchToy: public Toy {
     void mouse_released(GdkEventButton* e) {
         if(e->state & (GDK_BUTTON1_MASK)) {
             smoothify();
+            poly.clear();
             redraw();
         }
     }
