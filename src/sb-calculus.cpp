@@ -37,7 +37,6 @@
 #include "sb-calculus.h"
 #define ZERO 1e-3
 
-using std::vector;
 
 namespace Geom {
 
@@ -45,100 +44,170 @@ namespace Geom {
 #include <stdio.h>
 #include <math.h>
 
-//-Sqrt---------------------------------------------------------------
-Piecewise<SBasis> sqrtOnDomain(Interval range, double tol){
-    Piecewise<SBasis> sqrt_fn;
-    SBasis sqrt1_2=sqrt(Linear(1,2),2);
-    double a=range.min(), b=range.max();
-    int i0;
-    if (a<=2*tol*tol){
-        sqrt_fn.cuts.push_back(-1);
-        sqrt_fn.push(Linear(0),0);
-        a=2*tol*tol;
-        i0=int(log(a)/log(2))-1;
-        a=pow(2.,i0);
-        sqrt_fn.push(Linear(0,std::sqrt(a)),a);
-    }else{
-        i0=int(log(a)/log(2))-1;
-        a=pow(2.,i0);
-        sqrt_fn.cuts.push_back(a);
-    }  
-    while (a<b){
-        sqrt_fn.push(sqrt1_2*std::sqrt(a),2*a);
-        a*=2;
+//-|x|-----------------------------------------------------------------------
+Piecewise<SBasis> abs(SBasis const &f){
+    return abs(Piecewise<SBasis>(f));
+}
+Piecewise<SBasis> abs(Piecewise<SBasis> const &f){
+    Piecewise<SBasis> absf=partition(f,roots(f));
+    for (int i=0; i<absf.size(); i++){
+        if (absf.segs[i](.5)<0) absf.segs[i]*=-1;
     }
-    return(sqrt_fn);
+    return absf;
+}
+
+//-maxSb(x,y), minSb(x,y)--------------------------------------------------------
+Piecewise<SBasis> maxSb(          SBasis  const &f,           SBasis  const &g){
+    return maxSb(Piecewise<SBasis>(f),Piecewise<SBasis>(g));
+}
+Piecewise<SBasis> maxSb(Piecewise<SBasis> const &f,           SBasis  const &g){
+    return maxSb(f,Piecewise<SBasis>(g));
+}
+Piecewise<SBasis> maxSb(          SBasis  const &f, Piecewise<SBasis> const &g){
+    return maxSb(Piecewise<SBasis>(f),g);
+}
+Piecewise<SBasis> maxSb(Piecewise<SBasis> const &f, Piecewise<SBasis> const &g){
+    Piecewise<SBasis> maxSb=partition(f,roots(f-g));
+    Piecewise<SBasis> gg =partition(g,maxSb.cuts);
+    maxSb = partition(maxSb,gg.cuts);
+    for (int i=0; i<maxSb.size(); i++){
+        if (maxSb.segs[i](.5)<gg.segs[i](.5)) maxSb.segs[i]=gg.segs[i];
+    }
+    return maxSb;
+}
+
+Piecewise<SBasis> 
+minSb(          SBasis  const &f,           SBasis  const &g){ return -maxSb(-f,-g); }
+Piecewise<SBasis> 
+minSb(Piecewise<SBasis> const &f,           SBasis  const &g){ return -maxSb(-f,-g); }
+Piecewise<SBasis> 
+minSb(          SBasis  const &f, Piecewise<SBasis> const &g){ return -maxSb(-f,-g); }
+Piecewise<SBasis> 
+minSb(Piecewise<SBasis> const &f, Piecewise<SBasis> const &g){ return -maxSb(-f,-g); }
+
+//-Sqrt----------------------------------------------------------
+static Piecewise<SBasis> sqrt_internal(SBasis const &f, 
+                                    double absolute_tol, 
+                                    int order){
+    double tol=absolute_tol;//I just want stress that this tol is not relative in the args...
+    SBasis sqrtf;
+    if(f.isZero() || order == 0){
+        return Piecewise<SBasis>(sqrtf);
+    }
+    if (f.at0()<-tol*tol && f.at1()<-tol*tol){
+        return sqrt_internal(-f,tol,order);
+    }else if (f.at0()>tol*tol && f.at1()>tol*tol){
+        sqrtf.resize(order, Linear(0,0));
+        sqrtf[0] = Linear(std::sqrt(f[0][0]), std::sqrt(f[0][1]));
+        SBasis r = f - multiply(sqrtf, sqrtf); // remainder    
+        for(unsigned i = 1; i <= order and i<r.size(); i++) {
+            Linear ci(r[i][0]/(2*sqrtf[0][0]), r[i][1]/(2*sqrtf[0][1]));
+            SBasis cisi = shift(ci, i);
+            r -= multiply(shift((sqrtf*2 + cisi), i), SBasis(ci));
+            r.truncate(order+1);
+            sqrtf += cisi;
+            if(r.tailError(i) == 0) // if exact
+                break;
+        }
+    }else{
+        sqrtf = Linear(std::sqrt(fabs(f.at0())), std::sqrt(fabs(f.at1())));
+    }
+
+    double err = (f - multiply(sqrtf, sqrtf)).tailError(0);
+    if (err<tol){
+        return Piecewise<SBasis>(sqrtf);
+    }
+
+    Piecewise<SBasis> sqrtf0,sqrtf1;
+    sqrtf0 = sqrt_internal(compose(f,Linear(0.,.5)),tol,order);
+    sqrtf1 = sqrt_internal(compose(f,Linear(.5,1.)),tol,order);
+    sqrtf0.setDomain(Interval(0.,.5));
+    sqrtf1.setDomain(Interval(.5,1.));
+    sqrtf0.concat(sqrtf1);
+    return sqrtf0;
 }
 
 Piecewise<SBasis> sqrt(SBasis const &f, double tol, int order){
-    Piecewise<SBasis> sqrt_fn=sqrtOnDomain(boundsFast(f), tol);
-    Piecewise<SBasis> result=compose(sqrt_fn,f);
-    //TODO: define a truncated compose()!
-    for (int k=0; k<result.segs.size(); k++){result.segs[k].truncate(order);}
-    return(result);
-}
-Piecewise<SBasis> sqrt(Piecewise<SBasis> const &f, double tol, int order){
-    Piecewise<SBasis> sqrt_fn=sqrtOnDomain(boundsFast(f), tol);
-    Piecewise<SBasis> result=compose(sqrt_fn,f);
-    //TODO: define a truncated compose()!
-    for (int k=0; k<result.segs.size(); k++){result.segs[k].truncate(order);}
-    return(result);
+    Interval bnds = boundsFast(f);
+    double absolute_tol = tol*std::max(fabs(bnds.max()),fabs(bnds.min()));
+    return sqrt_internal(f,absolute_tol,order);
 }
 
-//-sin/cos--------------------------------------------------------------
-Piecewise<SBasis> cosOnDomain(Interval range){
-    Piecewise<SBasis> cos_fn;
-    SBasis cos0_90=cos(Linear(0,M_PI/2),3);
-    int iMin=(int) floor(2*range.min()/M_PI);
-    int iMax=(int) ceil(2*range.max()/M_PI);
-    cos_fn.cuts.push_back(iMin*M_PI/2);
-    for (int i=iMin; i<iMax; i++){
-        double b=(i+1)*M_PI/2;
-        //what does that stupid % operator do for <0 numbers ?!?
-        switch ((i%4>=0)?i%4:i%4+4) {
-            case 0:
-                cos_fn.push(cos0_90,b);
-                break;
-            case 1:
-                cos_fn.push(-reverse(cos0_90),b);
-                break;
-            case 2:
-                cos_fn.push(-cos0_90,b);
-                break;
-            case 3:
-                cos_fn.push(reverse(cos0_90),b);
-                break;
+Piecewise<SBasis> sqrt(Piecewise<SBasis> const &f, double tol, int order){
+    Piecewise<SBasis> result;
+    Interval bnds = boundsFast(f);
+    double absolute_tol = tol*std::max(fabs(bnds.max()),fabs(bnds.min()));
+    for (int i=0; i<f.size(); i++){
+        Piecewise<SBasis> sqrtfi = sqrt(f.segs[i],tol,order);
+        sqrtfi.setDomain(Interval(f.cuts[i],f.cuts[i+1]));
+        result.concat(sqrtfi);
+    }
+    return result;
+}
+
+//-Yet another sin/cos--------------------------------------------------------------
+
+Piecewise<SBasis> sin(          SBasis  const &f, double tol, int order){return(cos(-f+M_PI/2,tol,order));}
+Piecewise<SBasis> sin(Piecewise<SBasis> const &f, double tol, int order){return(cos(-f+M_PI/2,tol,order));}
+
+Piecewise<SBasis> cos(Piecewise<SBasis> const &f, double tol, int order){
+    Piecewise<SBasis> result;
+    for (int i=0; i<f.size(); i++){
+        Piecewise<SBasis> cosfi = cos(f.segs[i],tol,order);
+        cosfi.setDomain(Interval(f.cuts[i],f.cuts[i+1]));
+        result.concat(cosfi);
+    }
+    return result;
+}
+
+Piecewise<SBasis> cos(          SBasis  const &f, double tol, int order){
+    double alpha = (f.at0()+f.at1())/2.;
+    SBasis x = f-alpha;
+    double d = x.tailError(0),err=1;
+    //estimate cos(x)-sum_0^order (-1)^k x^2k/2k! by the first neglicted term
+    for (int i=1; i<=2*order; i++) err*=d/i;
+    
+    if (err<tol){
+        SBasis xk=Linear(1), c=Linear(1), s=Linear(0);
+        for (int k=1; k<=2*order; k+=2){
+            xk*=x/k;
+            //take also truncature errors into account...
+            err+=xk.tailError(order);
+            xk.truncate(order);
+            s+=xk;
+            xk*=-x/(k+1);
+            //take also truncature errors into account...
+            err+=xk.tailError(order);
+            xk.truncate(order);
+            c+=xk;
+        }
+        if (err<tol){
+            return Piecewise<SBasis>(std::cos(alpha)*c-std::sin(alpha)*s);
         }
     }
-    return(cos_fn);
-}
-
-Piecewise<SBasis> cos(SBasis const &f){
-    Piecewise<SBasis> cos_fn=cosOnDomain(boundsFast(f));
-    return(compose(cos_fn,f));
-}
-Piecewise<SBasis> cos(Piecewise<SBasis> const &f){
-    Piecewise<SBasis> cos_fn=cosOnDomain(boundsFast(f));
-    return(compose(cos_fn,f));
-}
-Piecewise<SBasis> sin(SBasis const &f){
-    SBasis g=f;
-    g+=M_PI/2;
-    Piecewise<SBasis> cos_fn=cosOnDomain(boundsFast(g));
-    return(compose(cos_fn,g));
-}
-Piecewise<SBasis> sin(Piecewise<SBasis> const &f){
-    Piecewise<SBasis> g=f;
-    g+=M_PI/2;
-    Piecewise<SBasis> cos_fn=cosOnDomain(boundsFast(g));
-    return(compose(cos_fn,g));
+    Piecewise<SBasis> c0,c1;
+    c0 = cos(compose(f,Linear(0.,.5)),tol,order);
+    c1 = cos(compose(f,Linear(.5,1.)),tol,order);
+    c0.setDomain(Interval(0.,.5));
+    c1.setDomain(Interval(.5,1.));
+    c0.concat(c1);
+    return c0;
 }
 
 //--1/x------------------------------------------------------------
-
+void truncateResult(Piecewise<SBasis> &f, int order){
+    if (order>=0){
+        for (int k=0; k<f.segs.size(); k++){
+            f.segs[k].truncate(order);
+        }
+    }
+}
+//TODO: change every thing!...
 Piecewise<SBasis> reciprocalOnDomain(Interval range, double tol){
     Piecewise<SBasis> reciprocal_fn;
-    SBasis reciprocal1_2=reciprocal(Linear(1,2),3);
+    //TODO: deduce R from tol...
+    double R=2.;
+    SBasis reciprocal1_R=reciprocal(Linear(1,R),3);
     double a=range.min(), b=range.max();
     if (a*b<0){
         b=std::max(fabs(a),fabs(b));
@@ -150,18 +219,18 @@ Piecewise<SBasis> reciprocalOnDomain(Interval range, double tol){
 
     if (a<=tol){
         reciprocal_fn.push_cut(0);
-        int i0=(int) floor(log(tol)/log(2));
-        a=pow(2.,i0);
+        int i0=(int) floor(log(tol)/log(R));
+        a=pow(R,i0);
         reciprocal_fn.push(Linear(1/a),a);
     }else{
-        int i0=(int) floor(log(a)/log(2));
-        a=pow(2.,i0);
+        int i0=(int) floor(log(a)/log(R));
+        a=pow(R,i0);
         reciprocal_fn.cuts.push_back(a);
     }  
 
     while (a<b){
-        reciprocal_fn.push(reciprocal1_2/a,2*a);
-        a*=2;
+        reciprocal_fn.push(reciprocal1_R/a,R*a);
+        a*=R;
     }
     if (range.min()<0 || range.max()<0){
         Piecewise<SBasis>reciprocal_fn_neg;
@@ -184,15 +253,13 @@ Piecewise<SBasis> reciprocalOnDomain(Interval range, double tol){
 Piecewise<SBasis> reciprocal(SBasis const &f, double tol, int order){
     Piecewise<SBasis> reciprocal_fn=reciprocalOnDomain(boundsFast(f), tol);
     Piecewise<SBasis> result=compose(reciprocal_fn,f);
-    //TODO: define a truncated compose()!
-    for (int k=0; k<result.segs.size(); k++){result.segs[k].truncate(order);}
+    truncateResult(result,order);
     return(result);
 }
 Piecewise<SBasis> reciprocal(Piecewise<SBasis> const &f, double tol, int order){
     Piecewise<SBasis> reciprocal_fn=reciprocalOnDomain(boundsFast(f), tol);
     Piecewise<SBasis> result=compose(reciprocal_fn,f);
-    //TODO: define a truncated compose()!
-    for (int k=0; k<result.segs.size(); k++){result.segs[k].truncate(order);}
+    truncateResult(result,order);
     return(result);
 }
 

@@ -220,12 +220,13 @@ static SBasis cubicL2Project(SBasis const b){
     e2.push_back(Linear(sqrt(210.),-sqrt(210.)));
 
     SBasis prod;
-    prod = integral(b*e1);
+    prod = integral(multiply(b,e1));
     double a1 = prod.at1()-prod.at0();
-    prod = integral(b*e2);
+    prod = integral(multiply(b,e2));
     double a2 = prod.at1()-prod.at0();
 
-    return a1*e1+a2*e2;
+    //return a1*e1+a2*e2;
+    return e1*a1+e2*a2;
 }
 
 static D2<SBasis> L2_proj(Piecewise<D2<SBasis> > const &M, 

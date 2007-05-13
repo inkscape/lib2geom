@@ -1,16 +1,17 @@
 #include "s-basis.h"
 #include "bezier-to-sbasis.h"
 #include "sbasis-to-bezier.h"
-#include "solver.h"
 #include "d2.h"
-#include "s-basis-2d.h"
 #include "sb-geometric.h"
+#include "sb-calculus.h"
 
 #include "path-cairo.h"
 
 #include "toy-framework.h"
 
-#include <time.h>
+//#include "solver.h"
+//#include "s-basis-2d.h"
+//#include <time.h>
 
 using std::vector;
 using namespace Geom;
@@ -29,10 +30,27 @@ plot_offset(cairo_t* cr, D2<SBasis> const &M,
     D2<SBasis> dM = derivative(M);
     for (int i = 0;i < NbPts;i++){
         double t = i*1./NbPts;
-        Geom::Point V = dM(t);
+        Point V = dM(t);
         V = offset*rot90(unit_vector(V));
         draw_handle(cr, M(t)+V);
     }
+}
+
+static void plot(cairo_t* cr, Piecewise<SBasis> const &f,double vscale=1){
+    D2<Piecewise<SBasis> > plot;
+    plot[1]=-f*vscale;
+    plot[1]+=450;
+
+    plot[0].cuts.push_back(f.cuts.front());
+    plot[0].cuts.push_back(f.cuts.back());
+    plot[0].segs.push_back(Linear(150,450));
+
+    for (int i=1; i<f.size(); i++){
+        double t=f.cuts[i],ft=f.segs[i].at0();
+        cairo_move_to(cr, Point(150+t*300, 450));
+        cairo_line_to(cr, Point(150+t*300, 450-ft*vscale));
+    }
+    cairo_d2_pw(cr, plot);
 }
 
 
@@ -43,8 +61,8 @@ class OffsetTester: public Toy {
         D2<SBasis> B = handles_to_sbasis<3>(handles.begin());
         *notify << "Curve offset:" << endl;
         *notify << " -blue: pointwise plotted offset," << endl;
-        *notify << " -red:  sbasis approximation," << endl;
-        *notify << "Rays are drawn where the curve has been splitted" << endl;
+        *notify << " -red:  rot90(unitVector(derivative(.)))+rays at cut" << endl;
+        *notify << " -gray: cos(atan2),sin(atan2)" << endl;
 
         cairo_set_line_width (cr, 1);
         cairo_set_source_rgba (cr, 0., 0.5, 0., 1);
@@ -73,18 +91,22 @@ class OffsetTester: public Toy {
             cairo_stroke(cr);
         }
 
-//         Piecewise<SBasis> cV = curvature(B);
-//         for(int i = 0; i < cV.size();i++){
-//             subB = compose(B, Linear(cV.cuts[i], cV.cuts[i+1]));
-//             N = multiply(cV[i]*(-offset), rot90(V[i])) + subB;
-//             cairo_md_sb(cr, N);
-//             cairo_set_source_rgba (cr, 1, 0, 0.6, 0.5);
-//             cairo_stroke(cr);
+        Piecewise<SBasis> alpha = atan2(derivative(B),1e-2,3);
+        plot(cr,alpha,75/M_PI);
 
-//             t0 = t1;
-//         }
+        Piecewise<D2<SBasis> >n2 = sectionize(D2<Piecewise<SBasis> >(sin(alpha),cos(alpha)));
+        cairo_pw_d2(cr,Piecewise<D2<SBasis> >(B)+n2*offset*.9);
+        cairo_set_source_rgba (cr, 0.5, 0.2, 0.5, 0.8);
+        cairo_stroke(cr);
+
+        Piecewise<SBasis> k = curvature(B);
+        cairo_pw_d2(cr,Piecewise<D2<SBasis> >(B)+k*n*100);
+        cairo_set_source_rgba (cr, 0.5, 0.2, 0.5, 0.8);
+        cairo_stroke(cr);
+
         *notify << "Total length: " << length(B) << endl;
-        *notify << "(nb of cuts: " << n.size()-1 << ")" << endl;
+        *notify << "(nb of cuts of unitVector: " << n.size()-1 << ")" << endl;
+        *notify << "(nb of cuts of cos,sin(atan2): " << n2.size()-1 << ")" << endl;
     
         Toy::draw(cr, notify, width, height, save);
     }        
@@ -93,7 +115,7 @@ public:
     OffsetTester(){
         if(handles.empty()) {
             for(int i = 0; i < 4; i++)
-                handles.push_back(Geom::Point(200+50*i,300+70*uniform()));
+                handles.push_back(Point(200+50*i,300+70*uniform()));
         }
     }
 };

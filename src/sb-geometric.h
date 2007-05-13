@@ -23,7 +23,15 @@
 namespace Geom{
 
 Piecewise<D2<SBasis> > 
-cutAtRoots(Piecewise<D2<SBasis> > const &M);
+cutAtRoots(Piecewise<D2<SBasis> > const &M, double tol=1e-4);
+
+Piecewise<SBasis>
+atan2(D2<SBasis> const &vect, 
+           double tol=.01, int order=3);
+
+Piecewise<SBasis>
+atan2(Piecewise<D2<SBasis> >const &vect, 
+           double tol=.01, int order=3);
 
 Piecewise<D2<SBasis> >
 unitVector(D2<SBasis> const &vect, 

@@ -1,9 +1,7 @@
 #include "sb-geometric.h"
 #include "s-basis.h"
-#include "bezier-to-sbasis.h"
-#include "sbasis-to-bezier.h"
-#include "solver.h"
-#include "s-basis-2d.h"
+#include "sb-calculus.h"
+//#include "solver.h"
 #include "sb-geometric.h"
 
 /** Geometric operators on D2<SBasis> (1D->2D).
@@ -27,11 +25,10 @@
 using namespace Geom;
 using namespace std;
 
-#define ZERO 1e-7
-
 //Some utils first.
+//TODO: remove this!! 
 static vector<double> 
-my_vect_intersect(vector<double> const &a, vector<double> const &b, double tol=0.){
+vect_intersect(vector<double> const &a, vector<double> const &b, double tol=0.){
     vector<double> inter;
     int i=0,j=0;
     while ( i<a.size() && j<b.size() ){
@@ -92,10 +89,9 @@ static SBasis divide_by_t1k(SBasis const &a, int k) {
     }
 }
 
-static D2<SBasis> RescaleForNonVanishingEnds(D2<SBasis> const &MM){
+static D2<SBasis> RescaleForNonVanishingEnds(D2<SBasis> const &MM, double ZERO=1.e-4){
     D2<SBasis> M = MM;
-
-    //TODO:(?) use valuation...
+    //TODO: divide by all the s at once!!!
     while (fabs(M[0].at0())<ZERO && 
            fabs(M[1].at0())<ZERO &&
            fabs(M[0].at1())<ZERO && 
@@ -117,11 +113,11 @@ static D2<SBasis> RescaleForNonVanishingEnds(D2<SBasis> const &MM){
 //=================================================================
 
 Piecewise<D2<SBasis> > 
-Geom::cutAtRoots(Piecewise<D2<SBasis> > const &M){
+Geom::cutAtRoots(Piecewise<D2<SBasis> > const &M, double ZERO){
     vector<double> rts;
     for (int i=0; i<M.size(); i++){
         vector<double> seg_rts = roots((M.segs[i])[0]);
-        seg_rts = my_vect_intersect(seg_rts, roots((M.segs[i])[1]), ZERO);
+        seg_rts = vect_intersect(seg_rts, roots((M.segs[i])[1]), ZERO);
         Linear mapToDom = Linear(M.cuts[i],M.cuts[i+1]);
         for (int r=0; r<seg_rts.size(); r++){
             seg_rts[r]= mapToDom(seg_rts[r]);
@@ -131,10 +127,39 @@ Geom::cutAtRoots(Piecewise<D2<SBasis> > const &M){
     return partition(M,rts);
 }
 
+Piecewise<SBasis>
+Geom::atan2(Piecewise<D2<SBasis> > const &vect, double tol, int order){
+    Piecewise<SBasis> result;
+    Piecewise<D2<SBasis> > v = cutAtRoots(vect);
+    result.cuts.push_back(v.cuts.front());
+    for (int i=0; i<v.size(); i++){
+
+        D2<SBasis> vi = RescaleForNonVanishingEnds(v.segs[i]);
+        SBasis x=vi[0], y=vi[1];
+        Piecewise<SBasis> angle;
+        angle = divide (x*derivative(y)-y*derivative(x), x*x+y*y, tol, order);
+
+        //TODO: I don't understand this - sign.
+        angle = integral(-angle);
+        Point vi0 = vi.at0(); 
+        angle += -std::atan2(vi0[1],vi0[0]) - angle[0].at0();
+        //TODO: deal with 2*pi jumps form one seg to the other...
+        //TODO: not exact at t=1 because of the integral.
+        //TODO: force continuity?
+
+        angle.setDomain(Interval(v.cuts[i],v.cuts[i+1]));
+        result.concat(angle);   
+    }
+    return result;
+}
+Piecewise<SBasis>
+Geom::atan2(D2<SBasis> const &vect, double tol, int order){
+    return atan2(Piecewise<D2<SBasis> >(vect),tol,order);
+}
 
 //unitVector(x,y) is computed as (b,-a) where a and b are solutions of:
 //     ax+by=0 (eqn1)   and   a^2+b^2=1 (eqn2)
-Geom::Piecewise<D2<SBasis> >
+Piecewise<D2<SBasis> >
 Geom::unitVector(D2<SBasis> const &V_in, double tol, int order){
     D2<SBasis> V = RescaleForNonVanishingEnds(V_in);
     if (V[0].empty() && V[1].empty())
@@ -198,7 +223,7 @@ Geom::unitVector(D2<SBasis> const &V_in, double tol, int order){
     }
 }
 
-Geom::Piecewise<D2<SBasis> >
+Piecewise<D2<SBasis> >
 Geom::unitVector(Piecewise<D2<SBasis> > const &V, double tol, int order){
     Piecewise<D2<SBasis> > result;
     Piecewise<D2<SBasis> > VV = cutAtRoots(V);
@@ -214,7 +239,7 @@ Geom::unitVector(Piecewise<D2<SBasis> > const &V, double tol, int order){
 
 //TODO: what is going on here?
 // Piecewise<D2<SBasis> > 
-// Geom::uniform_speed(D2<SBasis> const &M,
+// uniform_speed(D2<SBasis> const &M,
 //                     double tol){
 //     Piecewise<D2<SBasis> > uspeed = unitVector(derivative(M),cuts,tol);
 //     double t0=0.,t1;
@@ -224,7 +249,7 @@ Geom::unitVector(Piecewise<D2<SBasis> > const &V, double tol, int order){
 //     return uspeed;
 // }
 
-Geom::Piecewise<SBasis> 
+Piecewise<SBasis> 
 Geom::arcLengthSb(Piecewise<D2<SBasis> > const &M, double tol){
     Piecewise<D2<SBasis> > dM = derivative(M);
     Piecewise<D2<SBasis> > uspeed = unitVector(dM,tol);
@@ -233,7 +258,7 @@ Geom::arcLengthSb(Piecewise<D2<SBasis> > const &M, double tol){
     length-=length.segs.front().at0();
     return length;
 }
-Geom::Piecewise<SBasis> 
+Piecewise<SBasis> 
 Geom::arcLengthSb(D2<SBasis> const &M, double tol){
     return arcLengthSb(Piecewise<D2<SBasis> >(M));
 }
@@ -254,7 +279,7 @@ Geom::length(Piecewise<D2<SBasis> > const &M,
 
 /***
  * std::vector<SBasis > 
- * Geom::arc_length_sb(D2<SBasis> const M,
+ * arc_length_sb(D2<SBasis> const M,
                     std::vector<double> &cuts,
                     double tol)
  * returns a piecewise sbasis function which maps the t parameter of M(t) to the arc length at that point.
@@ -266,20 +291,18 @@ Geom::length(Piecewise<D2<SBasis> > const &M,
 
 
 // incomplete.
-Geom::Piecewise<SBasis>
+Piecewise<SBasis>
 Geom::curvature(D2<SBasis> const &M, double tol) {
     D2<SBasis> dM=derivative(M);
     Piecewise<SBasis> result;
     Piecewise<D2<SBasis> > unitv = unitVector(dM,tol);
     Piecewise<SBasis> dMlength = dot(Piecewise<D2<SBasis> >(dM),unitv);
     Piecewise<SBasis> k = cross(derivative(unitv),unitv);
-    //TODO: finish the code...
-    assert("code still uncomplete!!!"=="");
-    //k/=dMlength;
+    k = divide(k,dMlength,tol,3);
     return(k);
 }
 
-Geom::Piecewise<SBasis> 
+Piecewise<SBasis> 
 Geom::curvature(Piecewise<D2<SBasis> > const &V, double tol){
     Piecewise<SBasis> result;
     Piecewise<D2<SBasis> > VV = cutAtRoots(V);
@@ -295,7 +318,7 @@ Geom::curvature(Piecewise<D2<SBasis> > const &V, double tol){
 
 //=================================================================
 
-Geom::Piecewise<D2<SBasis> >
+Piecewise<D2<SBasis> >
 Geom::arc_length_parametrization(D2<SBasis> const &M,
                            unsigned order,
                            double tol){
@@ -316,7 +339,7 @@ Geom::arc_length_parametrization(D2<SBasis> const &M,
     return u;
 }
 
-Geom::Piecewise<D2<SBasis> >
+Piecewise<D2<SBasis> >
 Geom::arc_length_parametrization(Piecewise<D2<SBasis> > const &M,
                                  unsigned order,
                                  double tol){
@@ -339,7 +362,7 @@ Geom::arc_length_parametrization(Piecewise<D2<SBasis> > const &M,
  * Copyright Nathan Hurst 2006
  */
 
-int centroid(Piecewise<D2<SBasis> > const &p, Point& centroid, double &area) {
+int Geom::centroid(Piecewise<D2<SBasis> > const &p, Point& centroid, double &area) {
     Point centroid_tmp(0,0);
     double atmp = 0;
     for(int i = 0; i < p.size(); i++) {
@@ -351,7 +374,7 @@ int centroid(Piecewise<D2<SBasis> > const &p, Point& centroid, double &area) {
     }
 // join ends
     centroid_tmp *= 2;
-    Geom::Point final = p[p.size()].at1(), initial = p[0].at0();
+    Point final = p[p.size()].at1(), initial = p[0].at0();
     const double ai = cross(final, initial);
     atmp += ai;
     centroid_tmp += ai*(final, initial); // first moment.
@@ -377,182 +400,3 @@ int centroid(Piecewise<D2<SBasis> > const &p, Point& centroid, double &area) {
   End:
 */
 // vim: filetype=cpp:expandtab:shiftwidth=4:tabstop=8:softtabstop=4:encoding=utf-8:textwidth=99 :
-
- 	  	 
-
-
-
-// //-------------------------------------------------
-
-// //Useful? Using point_at(M,0) is not much slower!...
-// static 
-// Point point_at0(D2<SBasis> M){
-//     return Point((M[0].size()==0) ? 0 : M[0][0][0], 
-//                  (M[1].size()==0) ? 0 : M[1][0][0]);
-// }
-
-// static 
-// Point point_at1(D2<SBasis> M){
-//     return Point((M[0].size()==0) ? 0 : M[0][0][1], 
-//                  (M[1].size()==0) ? 0 : M[1][0][1]);
-// }
-
-// static 
-// Point deriv_at0(D2<SBasis> M){
-//     if (sbasisSize(M) == 0) {
-//         return Point(0, 0);
-//     }else{
-//         Coord x0=(M[0].size()<1)?0:M[0][0][0];
-//         Coord x1=(M[0].size()<1)?0:M[0][0][1];
-//         Coord xx=(M[0].size()<2)?0:M[0][1][0];
-//         Coord y0=(M[1].size()<1)?0:M[1][0][0];
-//         Coord y1=(M[1].size()<1)?0:M[1][0][1];
-//         Coord yy=(M[1].size()<2)?0:M[1][1][0];
-//         return Point(xx+(x1-x0),yy+(y1-y0));
-//     }
-// }
-
-// static 
-// Point deriv_at1(D2<SBasis> M){
-//     if (sbasisSize(M) == 0){
-//         return Point(0, 0);
-//     }else{
-//         Coord x0=(M[0].size()<1)?0:M[0][0][0];
-//         Coord x1=(M[0].size()<1)?0:M[0][0][1];
-//         Coord xx=(M[0].size()<2)?0:M[0][1][1];
-//         Coord y0=(M[1].size()<1)?0:M[1][0][0];
-//         Coord y1=(M[1].size()<1)?0:M[1][0][1];
-//         Coord yy=(M[1].size()<2)?0:M[1][1][1];
-//         return Point(-xx+(x1-x0),-yy+(y1-y0));
-//     }
-// }
-
-// std::vector<D2<SBasis> > Geom::unit_vector(D2<SBasis> const vect, std::vector<double> &cuts, double tol){
-//     std::vector<D2<SBasis> > uvect;
-//     SBasis alpha, c, s;
-//     D2<SBasis> V, dV;
-//     double alpha0, alpha1, dalpha0, dalpha1;
-
-//     V=vect;
-//     V[0].normalize();
-//     V[1].normalize();
-//     if (sbasisSize(V) == 0){
-//         return(uvect);
-//     }
-
-//     //--Compute angle jet at 0 and 1.
-//     bool notfound0=true, notfound1=true;
-//     Point V0,dV0,V1,dV1;
-//     while(sbasisSize(V) != 0 && (notfound0 || notfound1)){
-//         if(notfound0){
-//             V0 = point_at0(V);
-//             dV0 = deriv_at0(V);
-//             notfound0 = is_zero(point_at0(V));
-//         }
-//         if(notfound1){
-//             V1 = point_at1(V);
-//             dV1 = deriv_at1(V);
-//             notfound1 = is_zero(V1);
-//         }
-//         if(notfound0 || notfound1){
-//             V = derivative(V);
-//             V[0].normalize();
-//             V[1].normalize();
-//         }
-//     }
-//     alpha0 = atan(V0[1]/V0[0]);
-//     if (V0[0] < 0) alpha0+=M_PI;
-//     dalpha0 = -cross(V0, dV0) / L2sq(V0);//?!?! strange sign convention...
-  
-//     alpha1 = atan(V1[1]/V1[0]);
-//     if (V1[0]<0) alpha1+=M_PI;
-//     dalpha1 = -cross(V1, dV1) / L2sq(V1);//?!?! strange sign convention...
-
-//     //--Choose the smallest angle jump, and define alpha(t).
-//     while(alpha0>alpha1+M_PI) alpha0-=2*M_PI;
-//     while(alpha0<alpha1-M_PI) alpha0+=2*M_PI;
-//     alpha.push_back(Linear(0, alpha1-alpha0));
-//     alpha.push_back(Linear(dalpha0-(alpha1-alpha0), -dalpha1+(alpha1-alpha0)));
-
-//     //--Compute sin and cos of alpha(t): (I am lazy here. Should define cos(SBasis) and sin(SBasis)...)
-//     if(fabs(alpha1-alpha0) > 0.01) {
-//         alpha *= 1./(alpha1-alpha0);
-//         c=compose(cos(Linear(0., alpha1-alpha0), 3), alpha);
-//         s=compose(sin(Linear(0., alpha1-alpha0), 3), alpha);
-//         c.truncate(3);
-//         s.truncate(3);
-
-//     }else{
-//         c = compose(cos(Linear(0., 1.), 3), alpha);
-//         c[0][1] = std::cos(alpha1-alpha0);
-//         s = compose(sin(Linear(0., 1.), 3), alpha);
-//         s[0][1] = std::sin(alpha1-alpha0);
-//         c.truncate(3);
-//         s.truncate(3);
-//     }
-//     //--Define what is supposed to be our unit vector:
-//     V[0] = c*std::cos(alpha0) - s*std::sin(alpha0);
-//     V[1] = c*std::sin(alpha0) + s*std::cos(alpha0);
-    
-
-//     //--Check how good it is:
-//     //TODO1: if the curve is a "flat S", the half turns are not seen!!
-//     //TODO2: Find a good and fast "relative" tolerance...
-//     Interval bs = boundsFast(dot(vect, vect));
-//     double err = tol*std::sqrt(max(1., bs.min()));
-//     //double err=tol;
-
-//     SBasis area = SBasis(V[0]*vect[1] - V[1]*vect[0]);
-//     if(area.tailError(0) < err){
-//         //Check angle range: if too big, cos an sin are not accurate.
-//         // this can be solved either by using a range dependent degree for cos and sin,
-//         // or by adding one more cut here.
-//         //Notice that in the case of a flat half turn, subdivs wont reduce this range.
-//         if(fabs(alpha1-alpha0) < M_PI*0.8){
-//             uvect.push_back(V);
-//             cuts.push_back(1);
-//             return(uvect);
-//         }else{
-//             c=compose(cos(Linear(0., alpha1-alpha0), 3),compose(alpha, Linear(0,0.5)));
-//             s=compose(sin(Linear(0., alpha1-alpha0), 3),compose(alpha, Linear(0,0.5)));
-//             c.truncate(3);
-//             s.truncate(3);
-//             V[0]=c*std::cos(alpha0) - s*std::sin(alpha0);
-//             V[1]=c*std::sin(alpha0) + s*std::cos(alpha0);
-//             uvect.push_back(V);
-//             cuts.push_back(.5);
-
-//             c=compose(cos(Linear(0., alpha1-alpha0), 3), compose(alpha,Linear(0.5, 1)));
-//             s=compose(sin(Linear(0., alpha1-alpha0), 3), compose(alpha,Linear(0.5, 1)));
-//             c.truncate(3);
-//             s.truncate(3);
-//             V[0]=c*std::cos(alpha0) - s*std::sin(alpha0);
-//             V[1]=c*std::sin(alpha0) + s*std::cos(alpha0);
-//             uvect.push_back(V);
-//             cuts.push_back(1);
-//             return(uvect);      
-//         }
-//     }else{
-//         //TODO3: Use 'area' to find a better place to cut than 1/2?
-//         std::vector<D2<SBasis> > sub_uvect;
-//         std::vector<double> sub_cuts;
-//         int NbSubdiv=2;
-//         for (int i=0; i<NbSubdiv; i++){
-//             sub_uvect.clear();
-//             sub_cuts.clear();
-//             sub_uvect=unit_vector(compose(vect, Linear(i*1./NbSubdiv, (i+1)*1./NbSubdiv) ), sub_cuts, tol);
-//             for(int idx=0; idx<sub_cuts.size(); idx++){
-//                 uvect.push_back(sub_uvect[idx]);
-//                 cuts.push_back((i+sub_cuts[idx])*1./NbSubdiv);
-//             }
-//         }
-//         return(uvect);
-//     }
-// }
-
-// std::vector<D2<SBasis> > 
-// Geom::unit_vector(D2<SBasis> const vect,
-//                   double tol){
-//     std::vector<double> cuts;
-//     return(unit_vector(vect,cuts,tol));
-// }

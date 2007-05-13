@@ -42,26 +42,36 @@
 #include "s-basis.h"
 #include "pw.h"
 
-#define ZERO 1e-3
+namespace Geom{
+//-|x|---------------------------------------------------------------
+Piecewise<SBasis> abs(          SBasis const &f);
+Piecewise<SBasis> abs(Piecewise<SBasis>const &f);
 
-namespace Geom {
+//- max(f,g), min(f,g) ----------------------------------------------
+Piecewise<SBasis> maxSb(          SBasis  const &f,           SBasis  const &g);
+Piecewise<SBasis> maxSb(Piecewise<SBasis> const &f,           SBasis  const &g);
+Piecewise<SBasis> maxSb(          SBasis  const &f, Piecewise<SBasis> const &g);
+Piecewise<SBasis> maxSb(Piecewise<SBasis> const &f, Piecewise<SBasis> const &g);
+Piecewise<SBasis> minSb(          SBasis  const &f,           SBasis  const &g);
+Piecewise<SBasis> minSb(Piecewise<SBasis> const &f,           SBasis  const &g);
+Piecewise<SBasis> minSb(          SBasis  const &f, Piecewise<SBasis> const &g);
+Piecewise<SBasis> minSb(Piecewise<SBasis> const &f, Piecewise<SBasis> const &g);
 
 //-Sqrt---------------------------------------------------------------
-Piecewise<SBasis> sqrtOnDomain(Interval range, double tol=ZERO);
-Piecewise<SBasis> sqrt(          SBasis const &f, double tol=ZERO, int order=3);
-Piecewise<SBasis> sqrt(Piecewise<SBasis>const &f, double tol=ZERO, int order=3);
+Piecewise<SBasis> sqrt(          SBasis const &f, double tol=1e-3, int order=3);
+Piecewise<SBasis> sqrt(Piecewise<SBasis>const &f, double tol=1e-3, int order=3);
 
 //-sin/cos--------------------------------------------------------------
-Piecewise<SBasis> cosOnDomain(Interval range);
-Piecewise<SBasis> cos(          SBasis  const &f);
-Piecewise<SBasis> cos(Piecewise<SBasis> const &f);
-Piecewise<SBasis> sin(          SBasis  const &f);
-Piecewise<SBasis> sin(Piecewise<SBasis> const &f);
+Piecewise<SBasis> cos(          SBasis  const &f, double tol=1e-3, int order=3);
+Piecewise<SBasis> cos(Piecewise<SBasis> const &f, double tol=1e-3, int order=3);
+Piecewise<SBasis> sin(          SBasis  const &f, double tol=1e-3, int order=3);
+Piecewise<SBasis> sin(Piecewise<SBasis> const &f, double tol=1e-3, int order=3);
 
 //--1/x------------------------------------------------------------
-Piecewise<SBasis> reciprocalOnDomain(Interval range, double tol=ZERO);
-Piecewise<SBasis> reciprocal(          SBasis const &f, double tol=ZERO, int order=3);
-Piecewise<SBasis> reciprocal(Piecewise<SBasis>const &f, double tol=ZERO, int order=3);
+//TODO: change this...
+Piecewise<SBasis> reciprocalOnDomain(Interval range, double tol=1e-3);
+Piecewise<SBasis> reciprocal(          SBasis const &f, double tol=1e-3, int order=3);
+Piecewise<SBasis> reciprocal(Piecewise<SBasis>const &f, double tol=1e-3, int order=3);
 
 }
 

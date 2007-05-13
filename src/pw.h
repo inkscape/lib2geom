@@ -509,12 +509,14 @@ inline Piecewise<T> operator-=(Piecewise<T> &a, Piecewise<T> const &b) {
     return a;
 }
 
-template<typename T>
-Piecewise<T> operator*(Piecewise<T> const &a, Piecewise<T> const &b) {
-    boost::function_requires<MultiplicableConcept<T> >();
+template<typename T1,typename T2>
+Piecewise<T2> operator*(Piecewise<T1> const &a, Piecewise<T2> const &b) {
+    //function_requires<MultiplicableConcept<T1> >();
+    //function_requires<MultiplicableConcept<T2> >();
 
-    Piecewise<T> pa = partition(a, b.cuts), pb = partition(b, a.cuts);
-    Piecewise<T> ret = Piecewise<T>();
+    Piecewise<T1> pa = partition(a, b.cuts);
+    Piecewise<T2> pb = partition(b, a.cuts);
+    Piecewise<T2> ret = Piecewise<T2>();
     assert(pa.size() == pb.size());
     ret.cuts = pa.cuts;
     for (int i = 0; i < pa.size(); i++)
@@ -533,6 +535,12 @@ inline Piecewise<T> operator*=(Piecewise<T> &a, Piecewise<T> const &b) {
 //TODO: operator/=(pw, pw)
 
 Piecewise<SBasis> divide(Piecewise<SBasis> const &a, Piecewise<SBasis> const &b, unsigned k);
+//TODO: replace divide(a,b,k) by divide(a,b,tol,k)?
+//TODO: atm, relative error is <(tol/a)%. Find a way to make it independant of a.
+Piecewise<SBasis> divide(Piecewise<SBasis> const &a, Piecewise<SBasis> const &b, double tol, unsigned k);
+Piecewise<SBasis> divide(          SBasis  const &a, Piecewise<SBasis> const &b, double tol, unsigned k);
+Piecewise<SBasis> divide(Piecewise<SBasis> const &a,           SBasis  const &b, double tol, unsigned k);
+Piecewise<SBasis> divide(          SBasis  const &a,           SBasis  const &b, double tol, unsigned k);
 
 //Composition: functions called compose_foo are pieces of compose that are factored out in pw.cpp.
 std::map<double,unsigned> compose_pullBack(std::vector<double> const &cuts, SBasis const &g);

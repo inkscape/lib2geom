@@ -439,6 +439,7 @@ inline D2<SBasis> portion(D2<SBasis> const &M, double t0, double t1){
 D2<SBasis> multiply(Linear const & a, D2<SBasis> const & b);
 inline D2<SBasis> operator*(Linear const & a, D2<SBasis> const & b) { return multiply(a, b); }
 D2<SBasis> multiply(SBasis const & a, D2<SBasis> const & b);
+inline D2<SBasis> operator*(SBasis const & a, D2<SBasis> const & b) { return multiply(a, b); }
 D2<SBasis> truncate(D2<SBasis> const & a, unsigned terms);
 
 unsigned sbasisSize(D2<SBasis> const & a);

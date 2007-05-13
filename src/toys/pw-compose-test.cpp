@@ -52,6 +52,9 @@ class PwToy: public Toy {
             draw_handle(cr, foo(t));
         }
         cairo_stroke(cr);
+        foo[1]=foo[0];
+        foo[0]=Linear(150,450);
+        cairo_md_sb(cr, foo);
 
         cairo_d2_pw(cr, pws);
         

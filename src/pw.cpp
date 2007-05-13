@@ -45,6 +45,51 @@ Piecewise<SBasis> divide(Piecewise<SBasis> const &a, Piecewise<SBasis> const &b,
     return ret;
 }
 
+Piecewise<SBasis> divide(Piecewise<SBasis> const &a, Piecewise<SBasis> const &b, double tol, unsigned k) {
+    Piecewise<SBasis> pa = partition(a, b.cuts), pb = partition(b, a.cuts);
+    Piecewise<SBasis> ret = Piecewise<SBasis>();
+    assert(pa.size() == pb.size());
+    for (int i = 0; i < pa.size(); i++){
+        Piecewise<SBasis> divi = divide(pa[i], pb[i], tol, k);
+        divi.setDomain(Interval(pa.cuts[i],pa.cuts[i+1]));
+        ret.concat(divi);
+    }
+    return ret;
+}
+Piecewise<SBasis> divide(Piecewise<SBasis> const &a, SBasis const &b, double tol, unsigned k){
+    return divide(a,Piecewise<SBasis>(b),tol,k);
+}
+Piecewise<SBasis> divide(SBasis const &a, Piecewise<SBasis> const &b, double tol, unsigned k){
+    return divide(Piecewise<SBasis>(a),b,tol,k);
+}
+Piecewise<SBasis> divide(SBasis const &a, SBasis const &b, double tol, unsigned k) {
+    SBasis c,r=a;
+    //TODO: what is a good relative tol? atm, c=a/b +/- (tol/a)%...
+
+    k+=1;
+    r.resize(k, Linear(0,0));
+    c.resize(k, Linear(0,0));
+
+    //TODO: if both a and b vansih at 0 or 1 we can still try to compute a/b...
+    assert(b.at0()!=0 && b.at1()!=0);
+    for (int i=0; i<k; i++){
+        Linear ci = Linear(r[i][0]/b[0][0],r[i][1]/b[0][1]);
+        c[i]=ci;
+        r-=shift(ci*b,i);
+    }
+
+    if (r.tailError(k)<tol) return Piecewise<SBasis>(c);
+    
+    Piecewise<SBasis> c0,c1;
+    c0 = divide(compose(a,Linear(0.,.5)),compose(b,Linear(0.,.5)),tol,k);
+    c1 = divide(compose(a,Linear(.5,1.)),compose(b,Linear(.5,1.)),tol,k);
+    c0.setDomain(Interval(0.,.5));
+    c1.setDomain(Interval(.5,1.));
+    c0.concat(c1);
+    return c0;
+}
+
+
 //-- compose(pw<T>,SBasis) ---------------
 /* 
    the purpose of the following functions is only to reduce the code in pw.h
