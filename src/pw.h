@@ -38,9 +38,6 @@
 #include "concepts.h"
 #include <boost/concept_check.hpp>
 
-using namespace std;
-using namespace boost;
-
 namespace Geom {
 
 template <typename T>
@@ -48,8 +45,8 @@ class Piecewise {
   BOOST_CLASS_REQUIRE(T, Geom, FragmentConcept);
 
   public:
-    vector<double> cuts;
-    vector<T> segs;
+    std::vector<double> cuts;
+    std::vector<T> segs;
     //segs[i] stretches from cuts[i] to cuts[i+1].
 
     Piecewise() {}
@@ -181,7 +178,7 @@ class Piecewise {
 
     //Like concat, but ensures continuity.
     inline void continuousConcat(const Piecewise<T> &other) {
-        function_requires<AddableConcept<typename T::output_type> >();
+        boost::function_requires<AddableConcept<typename T::output_type> >();
         if(other.empty()) return;
         typename T::output_type y = segs.back().at1() - other.segs.front().at0();
 
@@ -213,7 +210,7 @@ class Piecewise {
 
 template<typename T>
 inline Interval boundsFast(const Piecewise<T> &f) {
-    function_requires<FragmentConcept<T> >();
+    boost::function_requires<FragmentConcept<T> >();
 
     if(f.empty()) return Interval(0);
     Interval ret(boundsFast(f[0]));
@@ -224,7 +221,7 @@ inline Interval boundsFast(const Piecewise<T> &f) {
 
 template<typename T>
 inline Interval boundsExact(const Piecewise<T> &f) {
-    function_requires<FragmentConcept<T> >();
+    boost::function_requires<FragmentConcept<T> >();
 
     if(f.empty()) return Interval(0);
     Interval ret(boundsExact(f[0]));
@@ -235,7 +232,7 @@ inline Interval boundsExact(const Piecewise<T> &f) {
 
 template<typename T>
 inline Interval boundsLocal(const Piecewise<T> &f, const Interval &m) {
-    function_requires<FragmentConcept<T> >();
+    boost::function_requires<FragmentConcept<T> >();
 
     if(f.empty()) return Interval(0);
     if(m.isEmpty()) return Interval(f(m.min()));
@@ -261,7 +258,7 @@ T elem_portion(const Piecewise<T> &a, int i, double from, double to) {
     return portion( a[i], (from - a.cuts[i]) * rwidth, (to - a.cuts[i]) * rwidth );
 }
 
-/**Piecewise<T> partition(const Piecewise<T> &pw, vector<double> const &c);
+/**Piecewise<T> partition(const Piecewise<T> &pw, std::vector<double> const &c);
  * Further subdivides the Piecewise<T> such that there is a cut at every value in c.
  * Precondition: c sorted lower to higher.
  * 
@@ -271,7 +268,7 @@ T elem_portion(const Piecewise<T> &a, int i, double from, double to) {
  * //ac.cuts should be equivalent to bc.cuts
  */
 template<typename T>
-Piecewise<T> partition(const Piecewise<T> &pw, vector<double> const &c) {
+Piecewise<T> partition(const Piecewise<T> &pw, std::vector<double> const &c) {
     if(c.empty()) return Piecewise<T>(pw);
 
     Piecewise<T> ret = Piecewise<T>();
@@ -344,8 +341,8 @@ Piecewise<T> portion(const Piecewise<T> &pw, double from, double to) {
     Piecewise<T> ret;
 
     double temp = from;
-    from = min(from, to);
-    to = max(temp, to);
+    from = std::min(from, to);
+    to = std::max(temp, to);
     
     int i = pw.segN(from);
     ret.push_cut(from);
@@ -366,10 +363,10 @@ Piecewise<T> portion(const Piecewise<T> &pw, double from, double to) {
 }
 
 template<typename T>
-vector<double> roots(const Piecewise<T> &pw) {
-    vector<double> ret;
+std::vector<double> roots(const Piecewise<T> &pw) {
+    std::vector<double> ret;
     for(int i = 0; i < pw.size(); i++) {
-        vector<double> sr = roots(pw[i]);
+        std::vector<double> sr = roots(pw[i]);
         for (int j = 0; j < sr.size(); j++) ret.push_back(sr[j] * (pw.cuts[i + 1] - pw.cuts[i]) + pw.cuts[i]);
 
     }
@@ -379,7 +376,7 @@ vector<double> roots(const Piecewise<T> &pw) {
 //IMPL: OffsetableConcept
 template<typename T>
 Piecewise<T> operator+(Piecewise<T> const &a, typename T::output_type b) {
-    function_requires<OffsetableConcept<T> >();
+    boost::function_requires<OffsetableConcept<T> >();
 //TODO:empty
     Piecewise<T> ret = Piecewise<T>();
     ret.cuts = a.cuts;
@@ -389,7 +386,7 @@ Piecewise<T> operator+(Piecewise<T> const &a, typename T::output_type b) {
 }
 template<typename T>
 Piecewise<T> operator-(Piecewise<T> const &a, typename T::output_type b) {
-    function_requires<OffsetableConcept<T> >();
+    boost::function_requires<OffsetableConcept<T> >();
 //TODO: empty
     Piecewise<T> ret = Piecewise<T>();
     ret.cuts = a.cuts;
@@ -399,7 +396,7 @@ Piecewise<T> operator-(Piecewise<T> const &a, typename T::output_type b) {
 }
 template<typename T>
 Piecewise<T> operator+=(Piecewise<T>& a, typename T::output_type b) {
-    function_requires<OffsetableConcept<T> >();
+    boost::function_requires<OffsetableConcept<T> >();
 
     if(a.empty()) { a.push_cut(0.); a.push(T(b), 1.); return a; }
 
@@ -409,7 +406,7 @@ Piecewise<T> operator+=(Piecewise<T>& a, typename T::output_type b) {
 }
 template<typename T>
 Piecewise<T> operator-=(Piecewise<T>& a, typename T::output_type b) {
-    function_requires<OffsetableConcept<T> >();
+    boost::function_requires<OffsetableConcept<T> >();
 
     if(a.empty()) { a.push_cut(0.); a.push(T(b), 1.); return a; }
 
@@ -421,7 +418,7 @@ Piecewise<T> operator-=(Piecewise<T>& a, typename T::output_type b) {
 //IMPL: ScalableConcept
 template<typename T>
 Piecewise<T> operator-(Piecewise<T> const &a) {
-    function_requires<ScalableConcept<T> >();
+    boost::function_requires<ScalableConcept<T> >();
 
     Piecewise<T> ret;
     ret.cuts = a.cuts;
@@ -431,7 +428,7 @@ Piecewise<T> operator-(Piecewise<T> const &a) {
 }
 template<typename T>
 Piecewise<T> operator*(Piecewise<T> const &a, double b) {
-    function_requires<ScalableConcept<T> >();
+    boost::function_requires<ScalableConcept<T> >();
 
     if(a.empty()) return Piecewise<T>();
 
@@ -443,7 +440,7 @@ Piecewise<T> operator*(Piecewise<T> const &a, double b) {
 }
 template<typename T>
 Piecewise<T> operator/(Piecewise<T> const &a, double b) {
-    function_requires<ScalableConcept<T> >();
+    boost::function_requires<ScalableConcept<T> >();
 
     //FIXME: b == 0?
     if(a.empty()) return Piecewise<T>();
@@ -456,7 +453,7 @@ Piecewise<T> operator/(Piecewise<T> const &a, double b) {
 }
 template<typename T>
 Piecewise<T> operator*=(Piecewise<T>& a, double b) {
-    function_requires<ScalableConcept<T> >();
+    boost::function_requires<ScalableConcept<T> >();
 
     if(a.empty()) return Piecewise<T>();
 
@@ -466,7 +463,7 @@ Piecewise<T> operator*=(Piecewise<T>& a, double b) {
 }
 template<typename T>
 Piecewise<T> operator/=(Piecewise<T>& a, double b) {
-    function_requires<ScalableConcept<T> >();
+    boost::function_requires<ScalableConcept<T> >();
 
     //FIXME: b == 0?
     if(a.empty()) return Piecewise<T>();
@@ -479,7 +476,7 @@ Piecewise<T> operator/=(Piecewise<T>& a, double b) {
 //IMPL: AddableConcept
 template<typename T>
 Piecewise<T> operator+(Piecewise<T> const &a, Piecewise<T> const &b) {
-    function_requires<AddableConcept<T> >();
+    boost::function_requires<AddableConcept<T> >();
 
     Piecewise<T> pa = partition(a, b.cuts), pb = partition(b, a.cuts);
     Piecewise<T> ret = Piecewise<T>();
@@ -491,7 +488,7 @@ Piecewise<T> operator+(Piecewise<T> const &a, Piecewise<T> const &b) {
 }
 template<typename T>
 Piecewise<T> operator-(Piecewise<T> const &a, Piecewise<T> const &b) {
-    function_requires<AddableConcept<T> >();
+    boost::function_requires<AddableConcept<T> >();
 
     Piecewise<T> pa = partition(a, b.cuts), pb = partition(b, a.cuts);
     Piecewise<T> ret = Piecewise<T>();
@@ -514,7 +511,7 @@ inline Piecewise<T> operator-=(Piecewise<T> &a, Piecewise<T> const &b) {
 
 template<typename T>
 Piecewise<T> operator*(Piecewise<T> const &a, Piecewise<T> const &b) {
-    function_requires<MultiplicableConcept<T> >();
+    boost::function_requires<MultiplicableConcept<T> >();
 
     Piecewise<T> pa = partition(a, b.cuts), pb = partition(b, a.cuts);
     Piecewise<T> ret = Piecewise<T>();
@@ -566,7 +563,7 @@ Piecewise<T> compose(Piecewise<T> const &f, SBasis const &g){
     
     std::vector<double> levels;//we can forget first and last cuts...
     levels.insert(levels.begin(),f.cuts.begin()+1,f.cuts.end()-1);
-    //TODO: use a vector<pairs<double,unsigned> > instead of a map<double,unsigned>.
+    //TODO: use a std::vector<pairs<double,unsigned> > instead of a map<double,unsigned>.
     std::map<double,unsigned> cuts_pb = compose_pullBack(levels,g);
     
     //-- Compose each piece of g with the relevant seg of f.
@@ -607,8 +604,6 @@ Piecewise<T> Piecewise<T>::operator()(SBasis f){return compose((*this),f);}
 template <typename T>
 Piecewise<T> Piecewise<T>::operator()(Piecewise<SBasis>f){return compose((*this),f);}
 
-
-
 //TODO: add concept check.
 template<typename T>
 Piecewise<T> integral(Piecewise<T> const &a) {
@@ -636,7 +631,7 @@ Piecewise<T> derivative(Piecewise<T> const &a) {
     return result;
 }
 
-vector<double> roots(Piecewise<SBasis> const &f);
+std::vector<double> roots(Piecewise<SBasis> const &f);
 
 }
 

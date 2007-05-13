@@ -36,7 +36,6 @@
 #include "point.h"
 
 #include <boost/concept_check.hpp>
-using namespace boost;
 
 namespace Geom {
 
@@ -71,6 +70,7 @@ struct FragmentConcept {
     BoundsType i;
     Interval dom;
     void constraints() {
+        t = T(o);
         b = t.isZero();
         b = t.isFinite();
         o = t.at0();

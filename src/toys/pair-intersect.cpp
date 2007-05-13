@@ -26,7 +26,7 @@ linear_pair_intersect(D2<SBasis> A, double Al, double Ah,
     Rect Ar = boundsLocal(A, Interval(Al, Ah));
     cairo_rectangle(g_cr, Ar.min()[0], Ar.min()[1], Ar.max()[0], Ar.max()[1]);
     cairo_stroke(g_cr);
-    cout << Al << ", " << Ah << "\n";
+    std::cout << Al << ", " << Ah << "\n";
     // kramers rule here
     Point A0 = A(Al);
     Point A1 = A(Ah);
@@ -70,16 +70,16 @@ void pair_intersect(vector<double> &Asects,
         double Bte = 0;
         for(int d = 0; d < 2; d++) {
             Interval bs = boundsLocal(A[d], Interval(Al, Ah), 1); //only 1?
-            Ate = max(Ate, bs.extent());
+            Ate = std::max(Ate, bs.extent());
         }
         for(int d = 0; d < 2; d++) {
             Interval bs = boundsLocal(B[d], Interval(Bl, Bh), 1);
-            Bte = max(Bte, bs.extent());
+            Bte = std::max(Bte, bs.extent());
         }
 
         if((depth > 12)  || ((Ate < eps) && 
            (Bte < eps))) {
-            cout << "intersects\n" << Ate << "\n" << Bte;
+            std::cout << "intersects\n" << Ate << "\n" << Bte;
             double tA, tB;
             if(linear_pair_intersect(A, Al, Ah, 
                                      B, Bl, Bh, 

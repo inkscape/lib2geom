@@ -37,8 +37,6 @@
 #include <boost/concept_check.hpp>
 #include "concepts.h"
 
-using namespace boost;
-
 namespace Geom{
 
 template <class T>
@@ -65,32 +63,32 @@ class D2{
     typedef Point output_type;
     //TODO: doesn't make much sense in d2 context
     bool isZero() const {
-        function_requires<FragmentConcept<T> >();
+        boost::function_requires<FragmentConcept<T> >();
         return f[X].isZero() && f[Y].isZero();
     }
     bool isFinite() const {
-        function_requires<FragmentConcept<T> >();
+        boost::function_requires<FragmentConcept<T> >();
         return f[X].isFinite() && f[Y].isFinite();
     }
     Point at0() const { 
-        function_requires<FragmentConcept<T> >();
+        boost::function_requires<FragmentConcept<T> >();
         return Point(f[X].at0(), f[Y].at0());
     }
     Point at1() const {
-        function_requires<FragmentConcept<T> >();
+        boost::function_requires<FragmentConcept<T> >();
         return Point(f[X].at1(), f[Y].at1());
     }
     Point pointAt(double t) const {
-        function_requires<FragmentConcept<T> >();
+        boost::function_requires<FragmentConcept<T> >();
         return (*this)(t);
     }
     D2<SBasis> toSBasis() const {
-        function_requires<FragmentConcept<T> >();
+        boost::function_requires<FragmentConcept<T> >();
         return D2<SBasis>(f[X].toSBasis(), f[Y].toSBasis());
     }
 
     /*Rect reverse() const {
-        function_requires<FragmentConcept<T> >();
+        boost::function_requires<FragmentConcept<T> >();
         return D2<T>(f[0].reverse(), f[1].reverse());
     }*/
 
@@ -100,7 +98,7 @@ class D2{
 
 template <typename T>
 D2<T> reverse(const D2<T> &a) {
-    function_requires<FragmentConcept<T> >();
+    boost::function_requires<FragmentConcept<T> >();
     return D2<T>(reverse(a[X]), reverse(a[Y]));
 }
 
@@ -108,7 +106,7 @@ D2<T> reverse(const D2<T> &a) {
 template <typename T>
 inline D2<T>
 operator+(D2<T> const &a, D2<T> const &b) {
-    function_requires<AddableConcept<T> >();
+    boost::function_requires<AddableConcept<T> >();
 
     D2<T> r;
     for(unsigned i = 0; i < 2; i++)
@@ -118,7 +116,7 @@ operator+(D2<T> const &a, D2<T> const &b) {
 template <typename T>
 inline D2<T>
 operator-(D2<T> const &a, D2<T> const &b) {
-    function_requires<AddableConcept<T> >();
+    boost::function_requires<AddableConcept<T> >();
 
     D2<T> r;
     for(unsigned i = 0; i < 2; i++)
@@ -128,7 +126,7 @@ operator-(D2<T> const &a, D2<T> const &b) {
 template <typename T>
 inline D2<T>
 operator+=(D2<T> &a, D2<T> const &b) {
-    function_requires<AddableConcept<T> >();
+    boost::function_requires<AddableConcept<T> >();
 
     for(unsigned i = 0; i < 2; i++)
         a[i] += b[i];
@@ -137,7 +135,7 @@ operator+=(D2<T> &a, D2<T> const &b) {
 template <typename T>
 inline D2<T>
 operator-=(D2<T> &a, D2<T> const & b) {
-    function_requires<AddableConcept<T> >();
+    boost::function_requires<AddableConcept<T> >();
 
     for(unsigned i = 0; i < 2; i++)
         a[i] -= b[i];
@@ -148,7 +146,7 @@ operator-=(D2<T> &a, D2<T> const & b) {
 template <typename T>
 inline D2<T>
 operator-(D2<T> const & a) {
-    function_requires<ScalableConcept<T> >();
+    boost::function_requires<ScalableConcept<T> >();
     D2<T> r;
     for(unsigned i = 0; i < 2; i++)
         r[i] = -a[i];
@@ -157,7 +155,7 @@ operator-(D2<T> const & a) {
 template <typename T>
 inline D2<T>
 operator*(D2<T> const & a, Point const & b) {
-    function_requires<ScalableConcept<T> >();
+    boost::function_requires<ScalableConcept<T> >();
 
     D2<T> r;
     for(unsigned i = 0; i < 2; i++)
@@ -167,7 +165,7 @@ operator*(D2<T> const & a, Point const & b) {
 template <typename T>
 inline D2<T>
 operator/(D2<T> const & a, Point const & b) {
-    function_requires<ScalableConcept<T> >();
+    boost::function_requires<ScalableConcept<T> >();
     //TODO: b==0?
     D2<T> r;
     for(unsigned i = 0; i < 2; i++)
@@ -177,7 +175,7 @@ operator/(D2<T> const & a, Point const & b) {
 template <typename T>
 inline D2<T>
 operator*=(D2<T> &a, Point const & b) {
-    function_requires<ScalableConcept<T> >();
+    boost::function_requires<ScalableConcept<T> >();
 
     for(unsigned i = 0; i < 2; i++)
         a[i] *= b[i];
@@ -186,7 +184,7 @@ operator*=(D2<T> &a, Point const & b) {
 template <typename T>
 inline D2<T>
 operator/=(D2<T> &a, Point const & b) {
-    function_requires<ScalableConcept<T> >();
+    boost::function_requires<ScalableConcept<T> >();
     //TODO: b==0?
     for(unsigned i = 0; i < 2; i++)
         a[i] /= b[i];
@@ -206,7 +204,7 @@ inline D2<T> operator/=(D2<T> & a, double b) { a[0] /= b; a[1] /= b; return a; }
 template <typename T>
 inline D2<T>
 operator+(D2<T> const & a, Point b) {
-    function_requires<OffsetableConcept<T> >();
+    boost::function_requires<OffsetableConcept<T> >();
     D2<T> r;
     for(unsigned i = 0; i < 2; i++)
         r[i] = a[i] + b[i];
@@ -215,7 +213,7 @@ operator+(D2<T> const & a, Point b) {
 template <typename T>
 inline D2<T>
 operator-(D2<T> const & a, Point b) {
-    function_requires<OffsetableConcept<T> >();
+    boost::function_requires<OffsetableConcept<T> >();
     D2<T> r;
     for(unsigned i = 0; i < 2; i++)
         r[i] = a[i] - b[i];
@@ -224,7 +222,7 @@ operator-(D2<T> const & a, Point b) {
 template <typename T>
 inline D2<T>
 operator+=(D2<T> & a, Point b) {
-    function_requires<OffsetableConcept<T> >();
+    boost::function_requires<OffsetableConcept<T> >();
     for(unsigned i = 0; i < 2; i++)
         a[i] += b[i];
     return a;
@@ -232,7 +230,7 @@ operator+=(D2<T> & a, Point b) {
 template <typename T>
 inline D2<T>
 operator-=(D2<T> & a, Point b) {
-    function_requires<OffsetableConcept<T> >();
+    boost::function_requires<OffsetableConcept<T> >();
     for(unsigned i = 0; i < 2; i++)
         a[i] -= b[i];
     return a;
@@ -241,8 +239,8 @@ operator-=(D2<T> & a, Point b) {
 template <typename T>
 inline T
 dot(D2<T> const & a, D2<T> const & b) {
-    function_requires<AddableConcept<T> >();
-    function_requires<MultiplicableConcept<T> >();
+    boost::function_requires<AddableConcept<T> >();
+    boost::function_requires<MultiplicableConcept<T> >();
 
     T r;
     for(unsigned i = 0; i < 2; i++)
@@ -264,15 +262,15 @@ compose(T const & a, D2<T> const & b) {
 template <typename T>
 inline D2<T>
 rot90(D2<T> const & a) {
-    function_requires<ScalableConcept<T> >();
+    boost::function_requires<ScalableConcept<T> >();
     return D2<T>(-a[Y], a[X]);
 }
 
 template <typename T>
 inline T
 cross(D2<T> const & a, D2<T> const & b) {
-    function_requires<ScalableConcept<T> >();
-    function_requires<MultiplicableConcept<T> >();
+    boost::function_requires<ScalableConcept<T> >();
+    boost::function_requires<MultiplicableConcept<T> >();
 
     //TODO: check sign conventions...
     return a[0] * b[1] - a[1] * b[0];
@@ -400,17 +398,17 @@ class D2<Interval> {
 
 template <typename T>
 Rect boundsFast(const D2<T> &a) {
-    function_requires<FragmentConcept<T> >();        
+    boost::function_requires<FragmentConcept<T> >();        
     return Rect(boundsFast(a[X]), boundsFast(a[Y]));
 }
 template <typename T>
 Rect boundsExact(const D2<T> &a) {
-    function_requires<FragmentConcept<T> >();        
+    boost::function_requires<FragmentConcept<T> >();        
     return Rect(boundsExact(a[X]), boundsExact(a[Y]));
 }
 template <typename T>
 Rect boundsLocal(const D2<T> &a, const Interval &t) {
-    function_requires<FragmentConcept<T> >();        
+    boost::function_requires<FragmentConcept<T> >();        
     return Rect(boundsLocal(a[X], t), boundsLocal(a[Y], t));
 }
 
@@ -457,7 +455,7 @@ class CoordIterator
 : public std::iterator<std::input_iterator_tag, SBasis const>
 {
 public:
-  CoordIterator(vector<D2<SBasis> >::const_iterator const &iter, unsigned d) : impl_(iter), ix_(d) {}
+  CoordIterator(std::vector<D2<SBasis> >::const_iterator const &iter, unsigned d) : impl_(iter), ix_(d) {}
 
   inline bool operator==(CoordIterator const &other) { return other.impl_ == impl_; }
   inline bool operator!=(CoordIterator const &other) { return other.impl_ != impl_; }
@@ -477,7 +475,7 @@ public:
   }
 
 private:
-  vector<D2<SBasis> >::const_iterator impl_;
+  std::vector<D2<SBasis> >::const_iterator impl_;
   unsigned ix_;
 };
 

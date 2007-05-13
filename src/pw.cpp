@@ -101,10 +101,10 @@ int compose_findSegIdx(std::map<double,unsigned>::iterator  const &cut,
     return idx;
 }
 
-vector<double> roots(Piecewise<SBasis> const &f){
-    vector<double> result;
+std::vector<double> roots(Piecewise<SBasis> const &f){
+    std::vector<double> result;
     for (int i=0; i<f.size(); i++){
-        vector<double> rts=roots(f.segs[i]);
+        std::vector<double> rts=roots(f.segs[i]);
         rts=roots(f.segs[i]);
 
         for (int r=0; r<rts.size(); r++){

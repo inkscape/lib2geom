@@ -18,7 +18,7 @@ public:
         minax = p[0][X];	 // These are the most likely to be extremal
         maxax = p.back()[X];
         if( minax > maxax )
-            swap(minax, maxax);
+            std::swap(minax, maxax);
         for(unsigned i = 1; i < p.size()-1; i++) {
             if( p[i][X] < minax )
                 minax = p[i][X];
@@ -29,7 +29,7 @@ public:
         minay = p[0][Y];	 // These are the most likely to be extremal
         maxay = p.back()[Y];
         if( minay > maxay )
-            swap(minay, maxay);
+            std::swap(minay, maxay);
         for(unsigned i = 1; i < p.size()-1; i++) {
             if( p[i][Y] < minay )
                 minay = p[i][Y];
@@ -108,8 +108,8 @@ find_self_intersections(Bezier const &Sb, D2<SBasis> const & A) {
                 if(j == i+1)
                     if((l == 1) && (r == 0))
                         continue;
-                all_si.push_back(make_pair((1-l)*dr[i] + l*dr[i+1],
-                                           (1-r)*dr[j] + r*dr[j+1]));
+                all_si.push_back(std::make_pair((1-l)*dr[i] + l*dr[i+1],
+                                                (1-r)*dr[j] + r*dr[j+1]));
             }
         }
     }
@@ -331,7 +331,7 @@ unsigned wangs_theorem(Bezier a) {
         ra = 0;
     else
         ra = (int)ceil( log4( M_SQRT2 * 6.0 / 8.0 * INV_EPS * l0 ) );
-    cout << ra << std::endl;
+    std::cout << ra << std::endl;
     return ra;
 }
 

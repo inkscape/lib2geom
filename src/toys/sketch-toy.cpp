@@ -16,11 +16,13 @@ using namespace Geom;
 class SketchToy: public Toy {
     Piecewise<D2<SBasis> > ink;
     vector<Point> poly;
-
+    vector<Point> old;
+    
     void smoothify() {
-        if(poly.size() < 12) return;
+        if(poly.size()<4) return;
         ink.push(crapfit(3), ink.cuts.back() + 1);
         Point temp = poly.back();
+        old.insert(old.end(), poly.begin(), poly.end());
         poly.clear();
         poly.push_back(temp);
     }
@@ -47,7 +49,7 @@ class SketchToy: public Toy {
                         ravg += diffs[i] * t;
                     }
                     //lavg /= ltot; ravg /= rtot;
-                    sb[d].push_back(Linear(lavg*-1, ravg*-1));
+                    sb[d].push_back(Linear(lavg, -ravg));
                     vector<double> temp(diffs);
                     diffs.clear();
                     for(int i = 1; i < diffs.size(); i++)
@@ -77,7 +79,11 @@ class SketchToy: public Toy {
         }
         for(int i = 1; i < poly.size(); i++)
             draw_line_seg(cr, poly[i-1], poly[i]);
-        
+        cairo_close_path(cr);
+
+        cairo_set_line_width(cr,.5);
+        for(int i = 1; i < old.size(); i++)
+            draw_line_seg(cr, old[i-1], old[i]);
         cairo_close_path(cr);
         
         Toy::draw(cr, notify, width, height, save);
@@ -94,7 +100,7 @@ class SketchToy: public Toy {
         
         if(e->state & (GDK_BUTTON1_MASK)) {
             poly.push_back(mouse);
-            smoothify();
+            if(poly.size()>100) smoothify();
             redraw();
         }
     }

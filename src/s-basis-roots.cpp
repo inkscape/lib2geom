@@ -48,6 +48,8 @@ also allow you to find intersections of multiple curves but require solving n*m 
 #include "sbasis-to-bezier.h"
 #include "solver.h"
 
+using namespace std;
+
 namespace Geom{
 
 Interval boundsExact(SBasis const &a) {

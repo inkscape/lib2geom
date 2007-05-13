@@ -14,11 +14,11 @@ find_self_intersections(D2<SBasis> const & A);
 
 // Bezier form
 std::vector<std::pair<double, double> > 
-find_intersections( vector<Point> const & A, 
-                    vector<Point> const & B);
+find_intersections( std::vector<Point> const & A, 
+                    std::vector<Point> const & B);
 
 std::vector<std::pair<double, double> > 
-find_self_intersections(vector<Point> const & A);
+find_self_intersections(std::vector<Point> const & A);
 
 };
 
