@@ -68,8 +68,8 @@ inline SBasis bezier_to_sbasis(Coord const *handles) {
 template <unsigned order, typename T>
 inline D2<SBasis> handles_to_sbasis(T const &handles) {
     double v[2][order+1];
-    for(int i = 0; i <= order; i++)
-        for(int j = 0; j < 2; j++)
+    for(unsigned i = 0; i <= order; i++)
+        for(unsigned j = 0; j < 2; j++)
              v[j][i] = handles[i][j];
     return D2<SBasis>(bezier_to_sbasis<order>(v[0]),
                       bezier_to_sbasis<order>(v[1]));
