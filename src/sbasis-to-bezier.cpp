@@ -179,6 +179,18 @@ path_from_sbasis(Geom::Path2::Path &pb, D2<SBasis> const &B, double tol) {
     }
 }
 
+std::vector<Geom::Path2::Path>
+path_from_piecewise(Geom::Piecewise<Geom::D2<Geom::SBasis> > const &B, double tol) {
+    std::vector<Geom::Path2::Path> ret;
+    Geom::Path2::Path cur;
+    for(int i = 0; i < B.size(); i++) {
+        if(i && B[i].at0() != B[i-1].at1())
+            cur = Geom::Path2::Path();
+        path_from_sbasis(cur, B[i], tol);
+    }
+    return ret;
+}
+
 };
 
 /*

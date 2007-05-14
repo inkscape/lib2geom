@@ -13,6 +13,8 @@ sbasis_to_bezier(SBasis const &B, unsigned q = 0);
 std::vector<Geom::Point>
 sbasis_to_bezier(D2<SBasis> const &B, unsigned q = 0);
 
+std::vector<Path2::Path> path_from_piecewise(Piecewise<D2<SBasis> > const &B, double tol);
+
 void path_from_sbasis(Path2::Path &pb, D2<SBasis> const &B, double tol);
 
 };
