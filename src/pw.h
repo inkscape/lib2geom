@@ -536,11 +536,16 @@ inline Piecewise<T> operator*=(Piecewise<T> &a, Piecewise<T> const &b) {
 
 Piecewise<SBasis> divide(Piecewise<SBasis> const &a, Piecewise<SBasis> const &b, unsigned k);
 //TODO: replace divide(a,b,k) by divide(a,b,tol,k)?
-//TODO: atm, relative error is <(tol/a)%. Find a way to make it independant of a.
-Piecewise<SBasis> divide(Piecewise<SBasis> const &a, Piecewise<SBasis> const &b, double tol, unsigned k);
-Piecewise<SBasis> divide(          SBasis  const &a, Piecewise<SBasis> const &b, double tol, unsigned k);
-Piecewise<SBasis> divide(Piecewise<SBasis> const &a,           SBasis  const &b, double tol, unsigned k);
-Piecewise<SBasis> divide(          SBasis  const &a,           SBasis  const &b, double tol, unsigned k);
+//TODO: atm, relative error is ~(tol/a)%. Find a way to make it independant of a.
+//Nota: the result is 'truncated' where b is smaller than 'zero': ~ a/max(b,zero). 
+Piecewise<SBasis> 
+divide(Piecewise<SBasis> const &a, Piecewise<SBasis> const &b, double tol, unsigned k, double zero=1.e-3);
+Piecewise<SBasis> 
+divide(SBasis const &a, Piecewise<SBasis> const &b, double tol, unsigned k, double zero=1.e-3);
+Piecewise<SBasis> 
+divide(Piecewise<SBasis> const &a, SBasis const &b, double tol, unsigned k, double zero=1.e-3);
+Piecewise<SBasis> 
+divide(SBasis const &a, SBasis const &b, double tol, unsigned k, double zero=1.e-3);
 
 //Composition: functions called compose_foo are pieces of compose that are factored out in pw.cpp.
 std::map<double,unsigned> compose_pullBack(std::vector<double> const &cuts, SBasis const &g);

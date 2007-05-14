@@ -103,7 +103,7 @@ static D2<SBasis> RescaleForNonVanishingEnds(D2<SBasis> const &MM, double ZERO=1
         M[0] = divide_by_t0k(M[0],1);
         M[1] = divide_by_t0k(M[1],1);
     }
-    while (M[0].at1()==0 && M[1].at1()==0){
+    while (fabs(M[0].at1())<ZERO && fabs(M[1].at1())<ZERO){
         M[0] = divide_by_t1k(M[0],1);
         M[1] = divide_by_t1k(M[1],1);
     }

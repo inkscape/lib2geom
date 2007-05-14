@@ -57,6 +57,10 @@ Piecewise<SBasis> minSb(Piecewise<SBasis> const &f,           SBasis  const &g);
 Piecewise<SBasis> minSb(          SBasis  const &f, Piecewise<SBasis> const &g);
 Piecewise<SBasis> minSb(Piecewise<SBasis> const &f, Piecewise<SBasis> const &g);
 
+//-sign(x)---------------------------------------------------------------
+Piecewise<SBasis> signSb(          SBasis const &f);
+Piecewise<SBasis> signSb(Piecewise<SBasis>const &f);
+
 //-Sqrt---------------------------------------------------------------
 Piecewise<SBasis> sqrt(          SBasis const &f, double tol=1e-3, int order=3);
 Piecewise<SBasis> sqrt(Piecewise<SBasis>const &f, double tol=1e-3, int order=3);

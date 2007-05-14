@@ -29,6 +29,7 @@ mesh-grad
 #bez-grad
 draw-toy
 normal-bundle
+path-along-path
 offset-test
 curvature-test
 bounds-test

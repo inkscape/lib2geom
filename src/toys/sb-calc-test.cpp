@@ -65,7 +65,7 @@ static void plot(cairo_t* cr, SBasis const &f,double vscale=1,double a=0,double 
 }
 
 static void plot(cairo_t* cr, double (*f)(double), Piecewise<SBasis> const &x, double vscale=1){
-    int NbPts=50;
+    int NbPts=40;
     for(int i=0; i<NbPts; i++){
         double t=double(i)/NbPts;
         t=x.cuts.front()*(1-t) + x.cuts.back()*t;
@@ -143,6 +143,10 @@ class SbCalculusToy: public Toy {
       plot(cr,abs(f),1);
       cairo_stroke(cr);
 
+      cairo_set_source_rgba (cr, 0.3, 0.3, 0.3,.8);
+      plot(cr,signSb(f),75);
+      cairo_stroke(cr);
+
 //       cairo_set_source_rgba (cr, 0.3, 0.3, 0.3,.8);
 //       plot(cr,maxSb(f, -f+50),1);
 //       cairo_stroke(cr);
@@ -163,8 +167,8 @@ class SbCalculusToy: public Toy {
 //       cairo_stroke(cr);
       
       cairo_set_source_rgba (cr, 0.9, 0.0, 0.7, 1);
-      plot(cr,divide(Linear(1),abs(f)+1,.01,3),100);
-      plot(cr,&my_inv,abs(f)+1,100);
+      plot(cr,divide(Linear(1),f,.01,3),2);
+      plot(cr,&my_inv,f,10);
       cairo_stroke(cr);
       
       Toy::draw(cr, notify, width, height, save);

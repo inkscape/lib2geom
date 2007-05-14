@@ -35,7 +35,7 @@
 //TODO: in all these functions, compute 'order' according to 'tol'.
 
 #include "sb-calculus.h"
-#define ZERO 1e-3
+//#define ZERO 1e-3
 
 
 namespace Geom {
@@ -84,6 +84,19 @@ Piecewise<SBasis>
 minSb(          SBasis  const &f, Piecewise<SBasis> const &g){ return -maxSb(-f,-g); }
 Piecewise<SBasis> 
 minSb(Piecewise<SBasis> const &f, Piecewise<SBasis> const &g){ return -maxSb(-f,-g); }
+
+
+//-sign(x)---------------------------------------------------------------
+Piecewise<SBasis> signSb(SBasis const &f){
+    return signSb(Piecewise<SBasis>(f));
+}
+Piecewise<SBasis> signSb(Piecewise<SBasis> const &f){
+    Piecewise<SBasis> sign=partition(f,roots(f));
+    for (int i=0; i<sign.size(); i++){
+        sign.segs[i] = (sign.segs[i](.5)<0)? Linear(-1.):Linear(1.);
+    }
+    return sign;
+}
 
 //-Sqrt----------------------------------------------------------
 static Piecewise<SBasis> sqrt_internal(SBasis const &f, 
