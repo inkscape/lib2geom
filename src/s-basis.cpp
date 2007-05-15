@@ -207,7 +207,7 @@ SBasis integral(SBasis const &c) {
         a[k] = Hat(ahat);
     }
     double aTri = 0;
-    for(unsigned k = c.size()-1; k >= 0; k--) {
+    for(int k = c.size()-1; k >= 0; k--) {
         aTri = (Hat(c[k]).d + (k+1)*aTri/2)/(2*k+1);
         a[k][0] -= aTri/2;
         a[k][1] += aTri/2;
@@ -299,7 +299,7 @@ SBasis compose(SBasis const &a, SBasis const &b) {
     SBasis s = multiply((SBasis(Linear(1,1))-b), b);
     SBasis r;
     
-    for(unsigned i = a.size()-1; i >= 0; i--) {
+    for(int i = a.size()-1; i >= 0; i--) {
         r = SBasis(Linear(Hat(a[i][0]))) - b*a[i][0] + b*a[i][1] + multiply(r,s);
     }
     return r;
@@ -311,7 +311,7 @@ SBasis compose(SBasis const &a, SBasis const &b, unsigned k) {
     SBasis s = multiply((SBasis(Linear(1,1))-b), b);
     SBasis r;
     
-    for(unsigned i = a.size()-1; i >= 0; i--) {
+    for(int i = a.size()-1; i >= 0; i--) {
         r = SBasis(Linear(Hat(a[i][0]))) - b*a[i][0] + b*a[i][1] + multiply(r,s);
     }
     r.truncate(k);

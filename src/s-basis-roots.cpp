@@ -64,7 +64,7 @@ Interval boundsExact(SBasis const &a) {
 
 Interval boundsFast(const SBasis &sb, unsigned order) {
     Interval res;
-    for(unsigned j = sb.size()-1; j>=order; j--) {
+    for(int j = sb.size()-1; j>=order; j--) {
         double a=sb[j][0];
         double b=sb[j][1];
 
@@ -91,7 +91,7 @@ Interval boundsFast(const SBasis &sb, unsigned order) {
 
 Interval boundsLocal(const SBasis &sb, const Interval &i, unsigned order) {
     double t0=i.min(), t1=i.max(), lo=0., hi=0.;
-    for(unsigned j = sb.size()-1; j>=order; j--) {
+    for(int j = sb.size()-1; j>=order; j--) {
         double a=sb[j][0];
         double b=sb[j][1];
 
@@ -273,7 +273,7 @@ double Laguerre_internal(SBasis const & p,
         Linear d(0), f(0);
         double err = fabs(b);
         double abx = fabs(xk);
-        for(unsigned j = p.size()-2; j >= 0; j--) {
+        for(int j = p.size()-2; j >= 0; j--) {
             f = xk*f + d;
             d = xk*d + b;
             b = xk*b + p[j];
