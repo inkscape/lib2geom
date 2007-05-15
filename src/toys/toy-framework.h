@@ -23,6 +23,8 @@ public:
 
     Toy() { mouse_down = false; selected = -1;}
 
+    virtual ~Toy() {}
+
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int w, int h, bool save);
 
     virtual void mouse_moved(GdkEventMotion* e);

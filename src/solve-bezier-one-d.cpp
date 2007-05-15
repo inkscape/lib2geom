@@ -26,7 +26,7 @@ static unsigned
 control_poly_flat_enough(double const *V, unsigned degree,
 			 double left_t, double right_t);
 
-const int MAXDEPTH = 64;	/*  Maximum depth for recursion */
+const unsigned MAXDEPTH = 64;	/*  Maximum depth for recursion */
 
 const double EPSILON = ldexp(1.0,-MAXDEPTH-1); /*Flatness control value */
 
@@ -45,7 +45,7 @@ find_bernstein_roots(double *w, /* The control points  */
     
     double split = 0.5;
     int old_sign = SGN(w[0]);
-    for (int i = 1; i <= degree; i++) {
+    for (unsigned i = 1; i <= degree; i++) {
         int sign = SGN(w[i]);
         if (sign) {
             if (sign != old_sign && old_sign) {
@@ -114,7 +114,7 @@ find_bernstein_roots_buggy(double *w, /* The control points  */
     unsigned 	n_crossings = 0;	/*  Number of zero-crossings */
     
     int old_sign = SGN(w[0]);
-    for (int i = 1; i <= degree; i++) {
+    for (unsigned i = 1; i <= degree; i++) {
         int sign = SGN(w[i]);
         if (sign) {
             if (sign != old_sign && old_sign)

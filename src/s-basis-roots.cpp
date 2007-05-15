@@ -56,15 +56,15 @@ Interval boundsExact(SBasis const &a) {
     Interval result = Interval(a.at0(), a.at1());
     SBasis df = derivative(a);
     vector<double>extrema = roots(df);
-    for (int i=0; i<extrema.size(); i++){
+    for (unsigned i=0; i<extrema.size(); i++){
         result.extendTo(a(extrema[i]));
     }
     return result;
 }
 
-Interval boundsFast(const SBasis &sb, int order) {
+Interval boundsFast(const SBasis &sb, unsigned order) {
     Interval res;
-    for(int j = sb.size()-1; j>=order; j--) {
+    for(unsigned j = sb.size()-1; j>=order; j--) {
         double a=sb[j][0];
         double b=sb[j][1];
 
@@ -85,13 +85,13 @@ Interval boundsFast(const SBasis &sb, int order) {
             res[1]=Lerp(t, a+v*t, b);
         }
     }
-    if (order>0) res*=pow(.25,order);
+    if (order>0) res*=pow(.25,(int)order);
     return res;
 }
 
-Interval boundsLocal(const SBasis &sb, const Interval &i, int order) {
+Interval boundsLocal(const SBasis &sb, const Interval &i, unsigned order) {
     double t0=i.min(), t1=i.max(), lo=0., hi=0.;
-    for(int j = sb.size()-1; j>=order; j--) {
+    for(unsigned j = sb.size()-1; j>=order; j--) {
         double a=sb[j][0];
         double b=sb[j][1];
 
@@ -111,7 +111,7 @@ Interval boundsLocal(const SBasis &sb, const Interval &i, int order) {
         }
     }
     Interval res = Interval(lo,hi);
-    if (order>0) res*=pow(.25,order);
+    if (order>0) res*=pow(.25,(int)order);
     return res;
 }
 
@@ -131,7 +131,7 @@ Interval boundsLocal(const SBasis &sb, const Interval &i, int order) {
 //TODO: Make sure the code is "rounding-errors proof" and take care about repetition of roots!
 
 
-static int upper_level(vector<double> const &levels,double x,double tol=0.){
+static unsigned upper_level(vector<double> const &levels,double x,double tol=0.){
     return(upper_bound(levels.begin(),levels.end(),x-tol)-levels.begin());
 }
 
@@ -146,8 +146,7 @@ static void multi_roots_internal(SBasis const &f,
 				 double fb){
     
     if (f.size()==0){
-        int idx;
-        idx=upper_level(levels,0,tol);
+        unsigned idx = upper_level(levels,0,tol);
         if (idx<levels.size()&&fabs(levels.at(idx))<=tol){
             roots[idx].push_back(a);
             roots[idx].push_back(b);
@@ -156,8 +155,8 @@ static void multi_roots_internal(SBasis const &f,
     }
 ////usefull? 
 //     if (f.size()==1){
-//         int idxa=upper_level(levels,fa);
-//         int idxb=upper_level(levels,fb);
+//         unsigned idxa=upper_level(levels,fa);
+//         unsigned idxb=upper_level(levels,fb);
 //         if (fa==fb){
 //             if (fa==levels[idxa]){
 //                 roots[a]=idxa;
@@ -165,10 +164,10 @@ static void multi_roots_internal(SBasis const &f,
 //             }
 //             return;
 //         }
-//         int idx_min=std::min(idxa,idxb);
-//         int idx_max=std::max(idxa,idxb);
+//         unsigned idx_min=std::min(idxa,idxb);
+//         unsigned idx_max=std::max(idxa,idxb);
 //         if (idx_max==levels.size()) idx_max-=1;
-//         for(int i=idx_min;i<=idx_max; i++){
+//         for(unsigned i=idx_min;i<=idx_max; i++){
 //             double t=a+(b-a)*(levels[i]-fa)/(fb-fa);
 //             if(a<t&&t<b) roots[t]=i;
 //         }
@@ -176,7 +175,7 @@ static void multi_roots_internal(SBasis const &f,
 //     }
     if ((b-a)<tol){
         //TODO: use different tol for t and f ?
-        int idx=std::min(upper_level(levels,fa,tol),upper_level(levels,fb,tol));
+        unsigned idx=std::min(upper_level(levels,fa,tol),upper_level(levels,fb,tol));
         if (idx==levels.size()) idx-=1;
         double c=levels.at(idx);
         if((fa-c)*(fb-c)<=0||fabs(fa-c)<tol||fabs(fb-c)<tol){
@@ -185,8 +184,8 @@ static void multi_roots_internal(SBasis const &f,
         return;
     }
     
-    int idxa=upper_level(levels,fa,tol);
-    int idxb=upper_level(levels,fb,tol);
+    unsigned idxa=upper_level(levels,fa,tol);
+    unsigned idxb=upper_level(levels,fb,tol);
 
     Interval bs = boundsLocal(df,Interval(a,b));
 
@@ -228,7 +227,7 @@ static void multi_roots_internal(SBasis const &f,
         double t,t_left,t_right,ft,ft_left,ft_right;
         t_left =t_right =t =(t0+t1)/2;
         ft_left=ft_right=ft=f(t);
-        int idx=upper_level(levels,ft,tol);
+        unsigned idx=upper_level(levels,ft,tol);
         if (idx<levels.size() && fabs(ft-levels.at(idx))<tol){//t can be considered a root.
             roots[idx].push_back(t);
             //we do not want to count it twice (from the left and from the right)
@@ -249,7 +248,7 @@ std::vector<std::vector<double> > multi_roots(SBasis const &f,
                                       double b){
 
     std::vector<std::vector<double> > roots;
-    for(int i=0;i<levels.size();i++){
+    for(unsigned i=0;i<levels.size();i++){
         roots.push_back(std::vector<double>());
     }
     SBasis df=derivative(f);
@@ -274,7 +273,7 @@ double Laguerre_internal(SBasis const & p,
         Linear d(0), f(0);
         double err = fabs(b);
         double abx = fabs(xk);
-        for(int j = p.size()-2; j >= 0; j--) {
+        for(unsigned j = p.size()-2; j >= 0; j--) {
             f = xk*f + d;
             d = xk*d + b;
             b = xk*b + p[j];

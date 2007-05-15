@@ -46,7 +46,7 @@ class Sb1d: public Toy {
         cairo_set_line_width (cr, 1);
         
         if(!save) {
-            for(int i = 0; i < handles.size(); i++) {
+            for(unsigned i = 0; i < handles.size(); i++) {
                 handles[i][0] = width*handle_to_sb_t(i, handles.size())/2 + width/4;
                 if(i)
                     cairo_line_to(cr, handles[i]);
@@ -58,13 +58,13 @@ class Sb1d: public Toy {
         D2<SBasis> B;
         B[0] = Linear(width/4, 3*width/4);
         B[1].resize(handles.size()/2);
-        for(int i = 0; i < B[1].size(); i++) {
+        for(unsigned i = 0; i < B[1].size(); i++) {
             B[1][i] = Linear(0);
         }
-        for(int i = 0; i < handles.size(); i++) {
+        for(unsigned i = 0; i < handles.size(); i++) {
             handle_to_sb(i, handles.size(), B[1]) = 3*width/4 - handles[i][1];
         }
-        for(int i = 1; i < B[1].size(); i++) {
+        for(unsigned i = 1; i < B[1].size(); i++) {
             B[1][i] = B[1][i]*choose<double>(2*i+1, i);
         }
         
@@ -93,7 +93,7 @@ class Sb1d: public Toy {
         Geom::ConvexHull ch(handles);
     
         cairo_move_to(cr, ch.boundary.back());
-        for(int i = 0; i < ch.boundary.size(); i++) {
+        for(unsigned i = 0; i < ch.boundary.size(); i++) {
             cairo_line_to(cr, ch.boundary[i]);
         }
         Toy::draw(cr, notify, width, height, save);

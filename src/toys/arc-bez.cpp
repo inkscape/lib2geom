@@ -43,7 +43,7 @@ public:
             plot[1] = Linear(width*3/4) - plot[1]*0.001;
             cairo_md_sb(cr, plot);
             cairo_stroke(cr);
-            for(int i = 0; i < r.size(); i++) {
+            for(unsigned i = 0; i < r.size(); i++) {
                 draw_cross(cr, B(r[i]));
                 draw_cross(cr, plot(r[i]));
             }
@@ -55,7 +55,7 @@ public:
 
             Piecewise<SBasis> als = arcLengthSb(B);
             double t0 = 0, t1;
-            for(int i = 0; i < als.segs.size();i++){
+            for(unsigned i = 0; i < als.segs.size();i++){
                 t1 = als.cuts[i+1];
                 plot[0] = SBasis(Linear(t0,t1)*width);
                 plot[1] = Linear(height-5) - als.segs[i];
@@ -71,8 +71,8 @@ public:
 
         cairo_set_source_rgba (cr, 0., 0.5, 0, 0.8);
         double prev_seg = 0;
-        int N = 10;
-        for(int subdivi = 0; subdivi < N; subdivi++) {
+        unsigned N = 10;
+        for(unsigned subdivi = 0; subdivi < N; subdivi++) {
             double dsubu = 1./N;
             double subu = dsubu*subdivi;
             Linear dt(subu, dsubu + subu);

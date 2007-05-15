@@ -44,7 +44,7 @@ class CurvatureTester: public Toy {
 	double t=std::max(0.,std::min(1.,(handles[4][0]-150)/300.));
         Piecewise<SBasis> K = curvature(B);
         
-        for(int ix = 0; ix < K.segs.size(); ix++) {
+        for(unsigned ix = 0; ix < K.segs.size(); ix++) {
             D2<SBasis> Kxy;
             Kxy[1] = Linear(400) - K.segs[ix]*300;
             Kxy[0] = Linear(300*K.cuts[ix] + 150, 300*K.cuts[ix+1] + 150);
@@ -78,7 +78,7 @@ class CurvatureTester: public Toy {
 public:
     CurvatureTester(){
         if(handles.empty()) {
-            for(int i = 0; i < 4; i++)
+            for(unsigned i = 0; i < 4; i++)
 	      handles.push_back(Geom::Point(150+uniform()*300,150+uniform()*300));
 	      //handles.push_back(Geom::Point(200+50*i,300));
                 handles.push_back(Geom::Point(250,300));

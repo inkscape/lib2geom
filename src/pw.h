@@ -68,7 +68,7 @@ class Piecewise {
     inline T operator[](unsigned i) const { return segs[i]; }
     inline T &operator[](unsigned i) { return segs[i]; }
     inline output_type operator()(double t) const {
-        int n = segN(t);
+        unsigned n = segN(t);
         return segs[n](segT(t, n));
     }
     //TODO: maybe it is not a good idea to have this?
@@ -97,7 +97,7 @@ class Piecewise {
     /**Returns the segment index which corresponds to a 'global' piecewise time.
      * Also takes optional low/high parameters to expedite the search for the segment.
      */
-    inline int segN(double t, int low = 0, int high = -1) const {
+    inline unsigned segN(double t, int low = 0, int high = -1) const {
         high = (high == -1) ? size() : high;
         if(t < cuts[0]) return 0;
         if(t >= cuts[size()]) return size() - 1;
@@ -124,14 +124,14 @@ class Piecewise {
         return (t - cuts[i]) / (cuts[i+1] - cuts[i]);
     }
 
-    inline double mapToDomain(double t, int i) const {
+    inline double mapToDomain(double t, unsigned i) const {
         return (1-t)*cuts[i] + t*cuts[i+1]; //same as: t * (cuts[i+1] - cuts[i]) + cuts[i]
     }    
 
     //Offsets the piecewise domain
     inline void offsetDomain(double o) {
         if(o != 0)
-            for(int i = 0; i <= size(); i++)
+            for(unsigned i = 0; i <= size(); i++)
                 cuts[i] += o;
     }
 
@@ -141,7 +141,7 @@ class Piecewise {
             cuts.clear(); segs.clear();
             return;
         }
-        for(int i = 0; i <= size(); i++)
+        for(unsigned i = 0; i <= size(); i++)
             cuts[i] *= s;
     }
 
@@ -157,7 +157,7 @@ class Piecewise {
         }
         double cf = cuts.front();
         double o = dom.min() - cf, s = dom.extent() / (cuts.back() - cf);
-        for(int i = 0; i <= size(); i++)
+        for(unsigned i = 0; i <= size(); i++)
             cuts[i] = (cuts[i] - cf) * s + o;
     }
 
@@ -172,7 +172,7 @@ class Piecewise {
 
         segs.insert(segs.end(), other.segs.begin(), other.segs.end());
         double t = cuts.back() - other.cuts.front();        
-        for(int i = 0; i < other.size(); i++)
+        for(unsigned i = 0; i < other.size(); i++)
             push_cut(other.cuts[i + 1] + t);
     }
 
@@ -183,14 +183,14 @@ class Piecewise {
         typename T::output_type y = segs.back().at1() - other.segs.front().at0();
 
         if(empty()) {
-            for(int i = 0; i < other.size(); i++)
+            for(unsigned i = 0; i < other.size(); i++)
                 push_seg(y + other[i]);
             cuts = other.cuts;
             return;
         }
 
         double t = cuts.back() - other.cuts.front();
-        for(int i = 0; i < other.size(); i++)
+        for(unsigned i = 0; i < other.size(); i++)
             push(y + other[i], other.cuts[i + 1] + t);
     }
 
@@ -200,7 +200,7 @@ class Piecewise {
         if(!(segs.size() + 1 == cuts.size() || (segs.empty() && cuts.empty())))
             return false;
         // cuts in order
-        for(int i = 0; i < segs.size(); i++)
+        for(unsigned i = 0; i < segs.size(); i++)
             if(cuts[i] >= cuts[i+1])
                 return false;
         return true;
@@ -214,7 +214,7 @@ inline Interval boundsFast(const Piecewise<T> &f) {
 
     if(f.empty()) return Interval(0);
     Interval ret(boundsFast(f[0]));
-    for(int i = 1; i < f.size(); i++)
+    for(unsigned i = 1; i < f.size(); i++)
         ret.unionWith(boundsFast(f[i])); 
     return ret;
 }
@@ -225,7 +225,7 @@ inline Interval boundsExact(const Piecewise<T> &f) {
 
     if(f.empty()) return Interval(0);
     Interval ret(boundsExact(f[0]));
-    for(int i = 1; i < f.size(); i++)
+    for(unsigned i = 1; i < f.size(); i++)
         ret.unionWith(boundsExact(f[i])); 
     return ret;
 }
@@ -237,13 +237,13 @@ inline Interval boundsLocal(const Piecewise<T> &f, const Interval &m) {
     if(f.empty()) return Interval(0);
     if(m.isEmpty()) return Interval(f(m.min()));
 
-    int fi = f.segN(m.min()), ti = f.segN(m.max());
+    unsigned fi = f.segN(m.min()), ti = f.segN(m.max());
     double ft = f.segT(m.min(), fi), tt = f.segT(m.max(), ti);
 
     if(fi == ti) return boundsLocal(f[fi], Interval(ft, tt));
 
     Interval ret(boundsLocal(f[fi], Interval(ft, 1.)));
-    for(int i = fi + 1; i < ti; i++)
+    for(unsigned i = fi + 1; i < ti; i++)
         ret.unionWith(boundsExact(f[i]));
     if(tt != 0.) ret.unionWith(boundsLocal(f[ti], Interval(0., tt)));
 
@@ -252,7 +252,7 @@ inline Interval boundsLocal(const Piecewise<T> &f, const Interval &m) {
 
 //returns a portion of a piece of a Piecewise<T>, given the piece's index and a to/from time.
 template<typename T>
-T elem_portion(const Piecewise<T> &a, int i, double from, double to) {
+T elem_portion(const Piecewise<T> &a, unsigned i, double from, double to) {
     assert(i < a.size());
     double rwidth = 1 / (a.cuts[i+1] - a.cuts[i]);
     return portion( a[i], (from - a.cuts[i]) * rwidth, (to - a.cuts[i]) * rwidth );
@@ -277,12 +277,12 @@ Piecewise<T> partition(const Piecewise<T> &pw, std::vector<double> const &c) {
 
     if(pw.empty()) {
         ret.cuts = c;
-        for(int i = 0; i < c.size() - 1; i++)
+        for(unsigned i = 0; i < c.size() - 1; i++)
             ret.push_seg(T());
         return ret;
     }
 
-    int si = 0, ci = 0;     //Segment index, Cut index
+    unsigned si = 0, ci = 0;     //Segment index, Cut index
 
     //if the cuts have something earlier than the Piecewise<T>, add portions of the first segment
     while(c[ci] < pw.cuts.front() && ci < c.size()) {
@@ -344,7 +344,7 @@ Piecewise<T> portion(const Piecewise<T> &pw, double from, double to) {
     from = std::min(from, to);
     to = std::max(temp, to);
     
-    int i = pw.segN(from);
+    unsigned i = pw.segN(from);
     ret.push_cut(from);
     if(to < pw.cuts[i + 1]) {    //to/from inhabit the same segment
         ret.push(elem_portion(pw, i, from, to), to);
@@ -352,7 +352,7 @@ Piecewise<T> portion(const Piecewise<T> &pw, double from, double to) {
     }
     ret.push(portion( pw[i], pw.segT(from, i), 1.0 ), pw.cuts[i + 1]);
     i++;
-    int fi = pw.segN(to, i);
+    unsigned fi = pw.segN(to, i);
 
     ret.segs.insert(ret.segs.end(), pw.segs.begin() + i, pw.segs.begin() + fi - 1);  //copy segs
     ret.cuts.insert(ret.cuts.end(), pw.cuts.begin() + i + 1, pw.cuts.begin() + fi);  //and their ends
@@ -365,9 +365,9 @@ Piecewise<T> portion(const Piecewise<T> &pw, double from, double to) {
 template<typename T>
 std::vector<double> roots(const Piecewise<T> &pw) {
     std::vector<double> ret;
-    for(int i = 0; i < pw.size(); i++) {
+    for(unsigned i = 0; i < pw.size(); i++) {
         std::vector<double> sr = roots(pw[i]);
-        for (int j = 0; j < sr.size(); j++) ret.push_back(sr[j] * (pw.cuts[i + 1] - pw.cuts[i]) + pw.cuts[i]);
+        for (unsigned j = 0; j < sr.size(); j++) ret.push_back(sr[j] * (pw.cuts[i + 1] - pw.cuts[i]) + pw.cuts[i]);
 
     }
     return ret;
@@ -380,7 +380,7 @@ Piecewise<T> operator+(Piecewise<T> const &a, typename T::output_type b) {
 //TODO:empty
     Piecewise<T> ret = Piecewise<T>();
     ret.cuts = a.cuts;
-    for(int i = 0; i < a.size();i++)
+    for(unsigned i = 0; i < a.size();i++)
         ret.push_seg(a[i] + b);
     return ret;
 }
@@ -390,7 +390,7 @@ Piecewise<T> operator-(Piecewise<T> const &a, typename T::output_type b) {
 //TODO: empty
     Piecewise<T> ret = Piecewise<T>();
     ret.cuts = a.cuts;
-    for(int i = 0; i < a.size();i++)
+    for(unsigned i = 0; i < a.size();i++)
         ret.push_seg(a[i] - b);
     return ret;
 }
@@ -400,7 +400,7 @@ Piecewise<T> operator+=(Piecewise<T>& a, typename T::output_type b) {
 
     if(a.empty()) { a.push_cut(0.); a.push(T(b), 1.); return a; }
 
-    for(int i = 0; i < a.size();i++)
+    for(unsigned i = 0; i < a.size();i++)
         a[i] += b;
     return a;
 }
@@ -410,7 +410,7 @@ Piecewise<T> operator-=(Piecewise<T>& a, typename T::output_type b) {
 
     if(a.empty()) { a.push_cut(0.); a.push(T(b), 1.); return a; }
 
-    for(int i = 0;i < a.size();i++)
+    for(unsigned i = 0;i < a.size();i++)
         a[i] -= b;
     return a;
 }
@@ -422,7 +422,7 @@ Piecewise<T> operator-(Piecewise<T> const &a) {
 
     Piecewise<T> ret;
     ret.cuts = a.cuts;
-    for(int i = 0; i < a.size();i++)
+    for(unsigned i = 0; i < a.size();i++)
         ret.push_seg(- a[i]);
     return ret;
 }
@@ -434,7 +434,7 @@ Piecewise<T> operator*(Piecewise<T> const &a, double b) {
 
     Piecewise<T> ret;
     ret.cuts = a.cuts;
-    for(int i = 0; i < a.size();i++)
+    for(unsigned i = 0; i < a.size();i++)
         ret.push_seg(a[i] * b);
     return ret;
 }
@@ -447,7 +447,7 @@ Piecewise<T> operator/(Piecewise<T> const &a, double b) {
 
     Piecewise<T> ret;
     ret.cuts = a.cuts;
-    for(int i = 0; i < a.size();i++)
+    for(unsigned i = 0; i < a.size();i++)
         ret.push_seg(a[i] / b);
     return ret;
 }
@@ -457,7 +457,7 @@ Piecewise<T> operator*=(Piecewise<T>& a, double b) {
 
     if(a.empty()) return Piecewise<T>();
 
-    for(int i = 0; i < a.size();i++)
+    for(unsigned i = 0; i < a.size();i++)
         a[i] *= b;
     return a;
 }
@@ -468,7 +468,7 @@ Piecewise<T> operator/=(Piecewise<T>& a, double b) {
     //FIXME: b == 0?
     if(a.empty()) return Piecewise<T>();
 
-    for(int i = 0; i < a.size();i++)
+    for(unsigned i = 0; i < a.size();i++)
         a[i] /= b;
     return a;
 }
@@ -482,7 +482,7 @@ Piecewise<T> operator+(Piecewise<T> const &a, Piecewise<T> const &b) {
     Piecewise<T> ret = Piecewise<T>();
     assert(pa.size() == pb.size());
     ret.cuts = pa.cuts;
-    for (int i = 0; i < pa.size(); i++)
+    for (unsigned i = 0; i < pa.size(); i++)
         ret.push_seg(pa[i] + pb[i]);
     return ret;
 }
@@ -494,7 +494,7 @@ Piecewise<T> operator-(Piecewise<T> const &a, Piecewise<T> const &b) {
     Piecewise<T> ret = Piecewise<T>();
     assert(pa.size() == pb.size());
     ret.cuts = pa.cuts;
-    for (int i = 0; i < pa.size(); i++)
+    for (unsigned i = 0; i < pa.size(); i++)
         ret.push_seg(pa[i] - pb[i]);
     return ret;
 }
@@ -519,7 +519,7 @@ Piecewise<T2> operator*(Piecewise<T1> const &a, Piecewise<T2> const &b) {
     Piecewise<T2> ret = Piecewise<T2>();
     assert(pa.size() == pb.size());
     ret.cuts = pa.cuts;
-    for (int i = 0; i < pa.size(); i++)
+    for (unsigned i = 0; i < pa.size(); i++)
         ret.push_seg(pa[i] * pb[i]);
     return ret;
 }
@@ -602,7 +602,7 @@ Piecewise<T> compose(Piecewise<T> const &f, SBasis const &g){
 template<typename T>
 Piecewise<T> compose(Piecewise<T> const &f, Piecewise<SBasis> const &g){
   Piecewise<T> result;
-  for(int i = 0; i < g.segs.size(); i++){
+  for(unsigned i = 0; i < g.segs.size(); i++){
       Piecewise<T> fgi=compose(f, g.segs[i]);
       fgi.setDomain(Interval(g.cuts[i], g.cuts[i+1]));
       result.concat(fgi);
@@ -624,7 +624,7 @@ Piecewise<T> integral(Piecewise<T> const &a) {
     result.segs.resize(a.segs.size());
     result.cuts = a.cuts;
     typename T::output_type c = a.segs[0].at0();
-    for(int i = 0; i < a.segs.size(); i++){
+    for(unsigned i = 0; i < a.segs.size(); i++){
         result.segs[i] = integral(a.segs[i])*(a.cuts[i+1]-a.cuts[i]);
         result.segs[i]+= c-result.segs[i].at0();
         c = result.segs[i].at1();
@@ -638,7 +638,7 @@ Piecewise<T> derivative(Piecewise<T> const &a) {
     Piecewise<T> result;
     result.segs.resize(a.segs.size());
     result.cuts = a.cuts;
-    for(int i = 0; i < a.segs.size(); i++){
+    for(unsigned i = 0; i < a.segs.size(); i++){
         result.segs[i] = derivative(a.segs[i])/(a.cuts[i+1]-a.cuts[i]);
     }
     return result;

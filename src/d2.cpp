@@ -40,7 +40,7 @@ D2<SBasis> integral(D2<SBasis> const & a) {
     return D2<SBasis>(integral(a[X]), integral(a[Y]));
 }
 
-SBasis L2(D2<SBasis> const & a, int k) { return sqrt(dot(a, a), k); }
+SBasis L2(D2<SBasis> const & a, unsigned k) { return sqrt(dot(a, a), k); }
 double L2(D2<double> const & a) { return hypot(a[0], a[1]); }
 
 D2<SBasis> multiply(Linear const & a, D2<SBasis> const & b) {
@@ -75,7 +75,7 @@ Piecewise<D2<SBasis> > sectionize(D2<Piecewise<SBasis> > const &a) {
     Piecewise<SBasis> x = partition(a[0], a[1].cuts), y = partition(a[1], a[0].cuts);
     assert(x.size() == y.size());
     Piecewise<D2<SBasis> > ret;
-    for(int i = 0; i < x.size(); i++)
+    for(unsigned i = 0; i < x.size(); i++)
         ret.push_seg(D2<SBasis>(x[i], y[i]));
     ret.cuts.insert(ret.cuts.end(), x.cuts.begin(), x.cuts.end());
     return ret;
@@ -83,12 +83,11 @@ Piecewise<D2<SBasis> > sectionize(D2<Piecewise<SBasis> > const &a) {
 
 D2<Piecewise<SBasis> > makeCutsIndependant(Piecewise<D2<SBasis> > const &a) {
     D2<Piecewise<SBasis> > ret;
-    for(int i = 0; i < a.size(); i++) {
-        for(int d = 0; d < 2; d++) 
+    for(unsigned d = 0; d < 2; d++) {
+        for(unsigned i = 0; i < a.size(); i++)
             ret[d].push_seg(a[i][d]);
+        ret[d].cuts.insert(ret[d].cuts.end(), a.cuts.begin(), a.cuts.end());
     }
-    ret[X].cuts.insert(ret[X].cuts.end(), a.cuts.begin(), a.cuts.end());
-    ret[Y].cuts.insert(ret[Y].cuts.end(), a.cuts.begin(), a.cuts.end());
     return ret;
 }
 
@@ -96,7 +95,7 @@ Piecewise<D2<SBasis> > rot90(Piecewise<D2<SBasis> > const &M){
   Piecewise<D2<SBasis> > result;
   if (M.empty()) return M;
   result.push_cut(M.cuts[0]);
-  for (int i=0; i<M.size(); i++){
+  for (unsigned i=0; i<M.size(); i++){
     result.push(rot90(M[i]),M.cuts[i+1]);
   }
   return result;
@@ -110,7 +109,7 @@ Piecewise<SBasis> dot(Piecewise<D2<SBasis> > const &a,
   Piecewise<D2<SBasis> > bb = partition(b,a.cuts);
 
   result.push_cut(aa.cuts.front());
-  for (int i=0; i<aa.size(); i++){
+  for (unsigned i=0; i<aa.size(); i++){
     result.push(dot(aa.segs[i],bb.segs[i]),aa.cuts[i+1]);
   }
   return result;
@@ -124,7 +123,7 @@ Piecewise<SBasis> cross(Piecewise<D2<SBasis> > const &a,
   Piecewise<D2<SBasis> > bb = partition(b,a.cuts);
 
   result.push_cut(aa.cuts.front());
-  for (int i=0; i<a.size(); i++){
+  for (unsigned i=0; i<a.size(); i++){
     result.push(cross(aa.segs[i],bb.segs[i]),aa.cuts[i+1]);
   }
   return result;

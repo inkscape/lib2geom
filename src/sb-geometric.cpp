@@ -30,7 +30,7 @@ using namespace std;
 static vector<double> 
 vect_intersect(vector<double> const &a, vector<double> const &b, double tol=0.){
     vector<double> inter;
-    int i=0,j=0;
+    unsigned i=0,j=0;
     while ( i<a.size() && j<b.size() ){
         if (fabs(a[i]-b[j])<tol){
             inter.push_back(a[i]);
@@ -46,7 +46,7 @@ vect_intersect(vector<double> const &a, vector<double> const &b, double tol=0.){
 }
 
 static SBasis divide_by_sk(SBasis const &a, int k) {
-    assert( k<a.size());
+    assert( (unsigned)k<a.size());
     if(k < 0) return shift(a,-k);
     SBasis c;
     c.insert(c.begin(), a.begin()+k, a.end());
@@ -115,11 +115,11 @@ static D2<SBasis> RescaleForNonVanishingEnds(D2<SBasis> const &MM, double ZERO=1
 Piecewise<D2<SBasis> > 
 Geom::cutAtRoots(Piecewise<D2<SBasis> > const &M, double ZERO){
     vector<double> rts;
-    for (int i=0; i<M.size(); i++){
+    for (unsigned i=0; i<M.size(); i++){
         vector<double> seg_rts = roots((M.segs[i])[0]);
         seg_rts = vect_intersect(seg_rts, roots((M.segs[i])[1]), ZERO);
         Linear mapToDom = Linear(M.cuts[i],M.cuts[i+1]);
-        for (int r=0; r<seg_rts.size(); r++){
+        for (unsigned r=0; r<seg_rts.size(); r++){
             seg_rts[r]= mapToDom(seg_rts[r]);
         }
         rts.insert(rts.end(),seg_rts.begin(),seg_rts.end());
@@ -128,11 +128,11 @@ Geom::cutAtRoots(Piecewise<D2<SBasis> > const &M, double ZERO){
 }
 
 Piecewise<SBasis>
-Geom::atan2(Piecewise<D2<SBasis> > const &vect, double tol, int order){
+Geom::atan2(Piecewise<D2<SBasis> > const &vect, double tol, unsigned order){
     Piecewise<SBasis> result;
     Piecewise<D2<SBasis> > v = cutAtRoots(vect);
     result.cuts.push_back(v.cuts.front());
-    for (int i=0; i<v.size(); i++){
+    for (unsigned i=0; i<v.size(); i++){
 
         D2<SBasis> vi = RescaleForNonVanishingEnds(v.segs[i]);
         SBasis x=vi[0], y=vi[1];
@@ -153,14 +153,14 @@ Geom::atan2(Piecewise<D2<SBasis> > const &vect, double tol, int order){
     return result;
 }
 Piecewise<SBasis>
-Geom::atan2(D2<SBasis> const &vect, double tol, int order){
+Geom::atan2(D2<SBasis> const &vect, double tol, unsigned order){
     return atan2(Piecewise<D2<SBasis> >(vect),tol,order);
 }
 
 //unitVector(x,y) is computed as (b,-a) where a and b are solutions of:
 //     ax+by=0 (eqn1)   and   a^2+b^2=1 (eqn2)
 Piecewise<D2<SBasis> >
-Geom::unitVector(D2<SBasis> const &V_in, double tol, int order){
+Geom::unitVector(D2<SBasis> const &V_in, double tol, unsigned order){
     D2<SBasis> V = RescaleForNonVanishingEnds(V_in);
     if (V[0].empty() && V[1].empty())
         return Piecewise<D2<SBasis> >(D2<SBasis>(Linear(1),SBasis()));
@@ -175,7 +175,7 @@ Geom::unitVector(D2<SBasis> const &V_in, double tol, int order){
     r_eqn1 = -(a*x+b*y);
     r_eqn2 = Linear(1.)-(a*a+b*b);
 
-    for (int k=1; k<=order; k++){
+    for (unsigned k=1; k<=order; k++){
         double r0  = (k<r_eqn1.size())? r_eqn1.at(k).at0() : 0;
         double r1  = (k<r_eqn1.size())? r_eqn1.at(k).at1() : 0;
         double rr0 = (k<r_eqn2.size())? r_eqn2.at(k).at0() : 0;
@@ -224,11 +224,11 @@ Geom::unitVector(D2<SBasis> const &V_in, double tol, int order){
 }
 
 Piecewise<D2<SBasis> >
-Geom::unitVector(Piecewise<D2<SBasis> > const &V, double tol, int order){
+Geom::unitVector(Piecewise<D2<SBasis> > const &V, double tol, unsigned order){
     Piecewise<D2<SBasis> > result;
     Piecewise<D2<SBasis> > VV = cutAtRoots(V);
     result.cuts.push_back(VV.cuts.front());
-    for (int i=0; i<VV.size(); i++){
+    for (unsigned i=0; i<VV.size(); i++){
         Piecewise<D2<SBasis> > unit_seg;
         unit_seg = unitVector(VV.segs[i],tol, order);
         unit_seg.setDomain(Interval(VV.cuts[i],VV.cuts[i+1]));
@@ -243,7 +243,7 @@ Geom::unitVector(Piecewise<D2<SBasis> > const &V, double tol, int order){
 //                     double tol){
 //     Piecewise<D2<SBasis> > uspeed = unitVector(derivative(M),cuts,tol);
 //     double t0=0.,t1;
-//     for (int i=0; i<uspeed.size(); i++){
+//     for (unsigned i=0; i<uspeed.size(); i++){
 //         uspeed[i] /= uspeed.cuts[i+1]-uspeed.cuts[i];
 //     }
 //     return uspeed;
@@ -307,7 +307,7 @@ Geom::curvature(Piecewise<D2<SBasis> > const &V, double tol){
     Piecewise<SBasis> result;
     Piecewise<D2<SBasis> > VV = cutAtRoots(V);
     result.cuts.push_back(VV.cuts.front());
-    for (int i=0; i<VV.size(); i++){
+    for (unsigned i=0; i<VV.size(); i++){
         Piecewise<SBasis> curv_seg;
         curv_seg = curvature(VV.segs[i],tol);
         curv_seg.setDomain(Interval(VV.cuts[i],VV.cuts[i+1]));
@@ -326,11 +326,11 @@ Geom::arc_length_parametrization(D2<SBasis> const &M,
     u.push_cut(0);
 
     Piecewise<SBasis> s = arcLengthSb(M);
-    for (int i=0; i < s.size();i++){
+    for (unsigned i=0; i < s.size();i++){
         double t0=s.cuts[i],t1=s.cuts[i+1];
         D2<SBasis> sub_M = compose(M,Linear(t0,t1));
         D2<SBasis> sub_u;
-        for (int dim=0;dim<2;dim++){
+        for (unsigned dim=0;dim<2;dim++){
 	  //TODO: don't compute s(t0)/s(t1): t0 & t1 belong to s's cuts!!
 	  sub_u[dim]=compose_inverse(sub_M[dim],(s.segs[i]-Linear(s(t0))) / (s(t1)-s(t0)), order, tol);
         }
@@ -344,7 +344,7 @@ Geom::arc_length_parametrization(Piecewise<D2<SBasis> > const &M,
                                  unsigned order,
                                  double tol){
     Piecewise<D2<SBasis> > result;
-    for (int i=0; i<M.size(); i++ ){
+    for (unsigned i=0; i<M.size(); i++ ){
         Piecewise<D2<SBasis> > uniform_seg=arc_length_parametrization(M[i],order,tol);
         result.concat(uniform_seg);
     }
@@ -362,10 +362,10 @@ Geom::arc_length_parametrization(Piecewise<D2<SBasis> > const &M,
  * Copyright Nathan Hurst 2006
  */
 
-int Geom::centroid(Piecewise<D2<SBasis> > const &p, Point& centroid, double &area) {
+unsigned Geom::centroid(Piecewise<D2<SBasis> > const &p, Point& centroid, double &area) {
     Point centroid_tmp(0,0);
     double atmp = 0;
-    for(int i = 0; i < p.size(); i++) {
+    for(unsigned i = 0; i < p.size(); i++) {
         SBasis curl = dot(p[i], rot90(derivative(p[i])));
         SBasis A = integral(curl);
         D2<SBasis> C = integral(multiply(curl, p[i]));
@@ -377,6 +377,7 @@ int Geom::centroid(Piecewise<D2<SBasis> > const &p, Point& centroid, double &are
     Point final = p[p.size()].at1(), initial = p[0].at0();
     const double ai = cross(final, initial);
     atmp += ai;
+    //TODO: what's going on here? this is from the original code...
     centroid_tmp += ai*(final, initial); // first moment.
     
     area = atmp / 2;

@@ -207,7 +207,7 @@ SBasis integral(SBasis const &c) {
         a[k] = Hat(ahat);
     }
     double aTri = 0;
-    for(int k = c.size()-1; k >= 0; k--) {
+    for(unsigned k = c.size()-1; k >= 0; k--) {
         aTri = (Hat(c[k]).d + (k+1)*aTri/2)/(2*k+1);
         a[k][0] -= aTri/2;
         a[k][1] += aTri/2;
@@ -237,7 +237,7 @@ SBasis derivative(SBasis const &a) {
     return c;
 }
 
-SBasis sqrt(SBasis const &a, int k) {
+SBasis sqrt(SBasis const &a, unsigned k) {
     SBasis c;
     if(a.isZero() || k == 0)
         return c;
@@ -259,20 +259,20 @@ SBasis sqrt(SBasis const &a, int k) {
 }
 
 // return a kth order approx to 1/a)
-SBasis reciprocal(Linear const &a, int k) {
+SBasis reciprocal(Linear const &a, unsigned k) {
     SBasis c;
     assert(!a.isZero());
     c.resize(k, Linear(0,0));
     double r_s0 = (Tri(a)*Tri(a))/(-a[0]*a[1]);
     double r_s0k = 1;
-    for(int i = 0; i < k; i++) {
+    for(unsigned i = 0; i < k; i++) {
         c[i] = Linear(r_s0k/a[0], r_s0k/a[1]);
         r_s0k *= r_s0;
     }
     return c;
 }
 
-SBasis divide(SBasis const &a, SBasis const &b, int k) {
+SBasis divide(SBasis const &a, SBasis const &b, unsigned k) {
     SBasis c;
     assert(!a.isZero());
     SBasis r = a; // remainder
@@ -299,7 +299,7 @@ SBasis compose(SBasis const &a, SBasis const &b) {
     SBasis s = multiply((SBasis(Linear(1,1))-b), b);
     SBasis r;
     
-    for(int i = a.size()-1; i >= 0; i--) {
+    for(unsigned i = a.size()-1; i >= 0; i--) {
         r = SBasis(Linear(Hat(a[i][0]))) - b*a[i][0] + b*a[i][1] + multiply(r,s);
     }
     return r;
@@ -311,7 +311,7 @@ SBasis compose(SBasis const &a, SBasis const &b, unsigned k) {
     SBasis s = multiply((SBasis(Linear(1,1))-b), b);
     SBasis r;
     
-    for(int i = a.size()-1; i >= 0; i--) {
+    for(unsigned i = a.size()-1; i >= 0; i--) {
         r = SBasis(Linear(Hat(a[i][0]))) - b*a[i][0] + b*a[i][1] + multiply(r,s);
     }
     r.truncate(k);
@@ -333,7 +333,7 @@ endfor
 
 //#define DEBUG_INVERSION 1 
 
-SBasis inverse(SBasis a, int k) {
+SBasis inverse(SBasis a, unsigned k) {
     assert(a.size() > 0);
 // the function should have 'unit range'("a00 = 0 and a01 = 1") and be monotonic.
     double a0 = a[0][0];
@@ -382,7 +382,7 @@ SBasis inverse(SBasis a, int k) {
             std::cout << "t1i=" << t1i << std::endl;
             std::cout << "ci=" << ci << std::endl;
 #endif
-            for(int dim = 0; dim < 2; dim++) // t1^-i *= 1./t1
+            for(unsigned dim = 0; dim < 2; dim++) // t1^-i *= 1./t1
                 t1i[dim] *= t1[dim];
             c[i] = ci; // c(v) := c(v) + c_i(v)*t^i
             // change from v to u parameterisation
@@ -406,14 +406,14 @@ SBasis inverse(SBasis a, int k) {
     return c;
 }
 
-SBasis sin(Linear b, int k) {
+SBasis sin(Linear b, unsigned k) {
     SBasis s = Linear(std::sin(b[0]), std::sin(b[1]));
     Tri tr(s[0]);
     double t2 = Tri(b);
     s.push_back(Linear(std::cos(b[0])*t2 - tr, -std::cos(b[1])*t2 + tr));
     
     t2 *= t2;
-    for(int i = 0; i < k; i++) {
+    for(unsigned i = 0; i < k; i++) {
         Linear bo(4*(i+1)*s[i+1][0] - 2*s[i+1][1],
                   -2*s[i+1][0] + 4*(i+1)*s[i+1][1]);
         bo -= s[i]*(t2/(i+1));
@@ -425,7 +425,7 @@ SBasis sin(Linear b, int k) {
     return s;
 }
 
-SBasis cos(Linear bo, int k) {
+SBasis cos(Linear bo, unsigned k) {
     return sin(Linear(bo[0] + M_PI/2,
                       bo[1] + M_PI/2),
                k);
@@ -437,12 +437,12 @@ SBasis compose_inverse(SBasis const &f, SBasis const &g, unsigned order, double 
     SBasis result; //result
     SBasis r=f; //remainder
     SBasis Pk=Linear(1)-g,Qk=g,sg=Pk*Qk;
-    int val_g=valuation(g);
-    int val_r=valuation(f);
+    unsigned val_g=valuation(g);
+    unsigned val_r=valuation(f);
     Pk.truncate(order);
     Qk.truncate(order);
 
-    for (int k=0; k<=order; k++){
+    for (unsigned k=0; k<=order; k++){
         
         // v is min(valuation(Pk,tol),valuation(Qk,tol));
         //TODO: are valuations really needed here?

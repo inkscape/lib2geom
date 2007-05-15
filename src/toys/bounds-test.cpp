@@ -28,12 +28,12 @@ static void plot_bar(cairo_t* cr, double height, double vscale=1,double a=0,doub
 }
 
 class BoundsTester: public Toy {
-    int size;
+    unsigned size;
     
     void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         
         SBasis B;
-        for (int i=0;i<size;i++){
+        for (unsigned i=0;i<size;i++){
             handles[i    ][0]=150+15*(i-size);
             handles[i+size][0]=450+15*(i+1);
             cairo_move_to(cr, Geom::Point(handles[i    ][0],150));
@@ -48,9 +48,9 @@ class BoundsTester: public Toy {
         cairo_set_source_rgba (cr, 0.2, 0.2, 0.2, 1);
         cairo_stroke(cr);
         
-        for (int i=0;i<size;i++){
-            B.push_back(Linear(-(handles[i     ][1]-300)*pow(4.,i),
-                               -(handles[i+size][1]-300)*pow(4.,i) ));
+        for (unsigned i=0;i<size;i++){
+            B.push_back(Linear(-(handles[i     ][1]-300)*pow(4.,(int)i),
+                               -(handles[i+size][1]-300)*pow(4.,(int)i) ));
         }
         B.normalize();
         plot(cr,B,1);   
@@ -80,20 +80,19 @@ This is a multi-root test...
         levels.push_back((300-handles[2*size  ][1]));
         levels.push_back((300-handles[2*size+1][1]));
         levels.push_back((300-handles[2*size+2][1]));
-        for (int i=0;i<levels.size();i++) plot_bar(cr,levels[i]);
+        for (unsigned i=0;i<levels.size();i++) plot_bar(cr,levels[i]);
         
         cairo_set_source_rgba (cr, 0., 0.5, 0., 1);
         
         *notify<<"Use handles to set the coefficients of the s-basis."<<std::endl;
         
-        double m,M;
         vector<double>my_roots;
         
 //         cairo_set_source_rgba (cr, 0.9, 0., 0.8, 1);
-//         for (int i=0;i<levels.size();i++){
+//         for (unsigned i=0;i<levels.size();i++){
 //             my_roots.clear();
 //             my_roots=roots(B-Linear(levels[i]));
-//             for(int j=0;j<my_roots.size();j++){
+//             for(unsigned j=0;j<my_roots.size();j++){
 //                 draw_cross(cr,Point(150+300*my_roots[j],300-levels[i]));
 //             }
 //         }
@@ -106,8 +105,8 @@ This is a multi-root test...
         //    draw_handle(cr,Point(150+300*(*sol).first,300-levels[(*sol).second]));
         //}
 
-        for (int i=0;i<sols.size();i++){
-            for (int j=0;j<sols[i].size();j++){
+        for (unsigned i=0;i<sols.size();i++){
+            for (unsigned j=0;j<sols[i].size();j++){
                 draw_handle(cr,Point(150+300*sols[i][j],300-levels[i]));
             }
         }
@@ -123,7 +122,7 @@ This is a multi-root test...
         iterations = 0;
         while(end_t > clock()) {
             my_roots.clear();
-            for (int i=0;i<levels.size();i++){
+            for (unsigned i=0;i<levels.size();i++){
                 my_roots=roots(B-Linear(levels[i]));
             }
             iterations++;
@@ -147,7 +146,7 @@ public:
     BoundsTester(){
         size=5;
         if(handles.empty()) {
-            for(int i = 0; i < 2*size; i++)
+            for(unsigned i = 0; i < 2*size; i++)
                 handles.push_back(Geom::Point(0,150+150+uniform()*300*0));
         }
         handles.push_back(Geom::Point(150,300+ 50+uniform()*100));

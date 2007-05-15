@@ -13,7 +13,7 @@ using std::vector;
 class ConvexTest: public Toy {
     public:
     ConvexTest () {
-        for(int i = 0; i < 30; i++){
+        for(unsigned i = 0; i < 30; i++){
             handles.push_back(Geom::Point(uniform()*uniform()*400+200,
                                           uniform()*uniform()*400+200));
 	}
@@ -22,7 +22,7 @@ class ConvexTest: public Toy {
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         cairo_set_source_rgba (cr, 0., 0., 0, 0.8);
         cairo_set_line_width (cr, 0.5);
-        for(int i = 1; i < 4; i+=2) {
+        for(unsigned i = 1; i < 4; i+=2) {
             cairo_move_to(cr, 0, i*width/4);
             cairo_line_to(cr, width, i*width/4);
             cairo_move_to(cr, i*width/4, 0);
@@ -30,7 +30,7 @@ class ConvexTest: public Toy {
         }
     
         std::vector<Geom::Point> h1, h2;
-        for(int i = 0; i < 15; i++) {
+        for(unsigned i = 0; i < 15; i++) {
             h1.push_back(handles[i]);
             h2.push_back(handles[i + 15]);
         }
@@ -71,7 +71,7 @@ class ConvexTest: public Toy {
         if(gm.boundary.size() > 0) {
             cairo_move_to(cr, gm.boundary.back() + offset);
             cairo_set_source_rgba (cr, 0., 0., 0, 0.5);
-            for(int i = 0; i < gm.boundary.size(); i++) {
+            for(unsigned i = 0; i < gm.boundary.size(); i++) {
                 cairo_line_to(cr, gm.boundary[i] + offset);
                 draw_number(cr, gm.boundary[i] + offset, i);
             }
@@ -91,7 +91,7 @@ class ConvexTest: public Toy {
         if(m.boundary.size() > 0) {
             cairo_move_to(cr, m.boundary.back() + offset);
             cairo_set_source_rgba (cr, 0., 0., 0, 0.5);
-            for(int i = 0; i < m.boundary.size(); i++) {
+            for(unsigned i = 0; i < m.boundary.size(); i++) {
                 cairo_line_to(cr, m.boundary[i] + offset);
                 draw_number(cr, m.boundary[i] + offset, i);
             }
@@ -101,7 +101,7 @@ class ConvexTest: public Toy {
 
         cairo_set_source_rgba(cr, 0., 0., 1., 0.5);
         std::vector<Geom::Point> bs = bridge_points(ch1, ch2);
-        for(int i = 0; i < bs.size(); i+=2) {
+        for(unsigned i = 0; i < bs.size(); i+=2) {
             cairo_move_to(cr, bs[i]);
             cairo_line_to(cr, bs[i + 1]);
             //draw_number(cr, (bs[i] + bs[i + 1]) / 2, i / 2);
@@ -110,7 +110,7 @@ class ConvexTest: public Toy {
 
         cairo_set_source_rgba (cr, 1., 0., 0, 0.8);
         cairo_move_to(cr, ch1.boundary.back());
-        for(int i = 0; i < ch1.boundary.size(); i++) {
+        for(unsigned i = 0; i < ch1.boundary.size(); i++) {
             cairo_line_to(cr, ch1.boundary[i]);
             draw_number(cr, ch1.boundary[i], i);
         }
@@ -118,7 +118,7 @@ class ConvexTest: public Toy {
 
         cairo_move_to(cr, ch2.boundary.back());
         cairo_set_source_rgba (cr, 0., 1., 0, 0.8);
-        for(int i = 0; i < ch2.boundary.size(); i++) {
+        for(unsigned i = 0; i < ch2.boundary.size(); i++) {
             cairo_line_to(cr, ch2.boundary[i]);
             draw_number(cr, ch2.boundary[i], i);
         }

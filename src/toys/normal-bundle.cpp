@@ -20,7 +20,7 @@ public:
     vector<double> lengths;
     NormalBundle(){lengths.push_back(0.);}
     void setBase(D2<SBasis> const &B, double tol);
-    void draw(cairo_t* cr, int NbSections =5,int NbFibre=5);
+    void draw(cairo_t* cr, unsigned NbSections =5,unsigned NbFibre=5);
 };
 vector<D2<SBasis> > compose(NormalBundle const &NB, 
 				    D2<SBasis> const &Binit,
@@ -31,17 +31,17 @@ vector<D2<SBasis> > compose(NormalBundle const &NB,
 void SBasis1d_to_2d(D2<SBasis> C0,
 		    D2<SBasis> C1,
 		    D2<SBasis2d> &S){
-    for(int dim = 0; dim < 2; dim++) {
+    for(unsigned dim = 0; dim < 2; dim++) {
 //**** C0 and C1 should have the same size...
-        for (int i=C0[dim].size();i<C1[dim].size(); i++)
+        for (unsigned i=C0[dim].size();i<C1[dim].size(); i++)
             C0[dim].push_back(Linear(0));
-        for (int i=C1[dim].size();i<C0[dim].size(); i++)
+        for (unsigned i=C1[dim].size();i<C0[dim].size(); i++)
             C1[dim].push_back(Linear(0));
         S[dim].clear();
         S[dim].us = C0[dim].size();
         S[dim].vs = 1;
-        for(int v = 0; v < S[dim].vs; v++)
-            for(int u = 0; u < S[dim].us; u++)
+        for(unsigned v = 0; v < S[dim].vs; v++)
+            for(unsigned u = 0; u < S[dim].us; u++)
                 S[dim].push_back(Linear2d(C0[dim][u][0],C0[dim][u][1],
                                           C1[dim][u][0],C1[dim][u][1]));
     }
@@ -56,7 +56,7 @@ void NormalBundle::setBase(D2<SBasis> const &B, double tol=0.01) {
   //TODO: clean this up, use arc_length_parametrization...
   cuts=unitV.cuts;
   double t0=0,t1,L=0;
-  for(int i=1;i<cuts.size();i++){
+  for(unsigned i=1;i<cuts.size();i++){
     t1=cuts[i];
     D2<SBasis> subB=compose(B,Linear(t0,t1));
     D2<SBasis2d> S;
@@ -71,23 +71,23 @@ void NormalBundle::setBase(D2<SBasis> const &B, double tol=0.01) {
   }
 }
 
-void NormalBundle::draw(cairo_t *cr, int NbLi, int NbCol) {
+void NormalBundle::draw(cairo_t *cr, unsigned NbLi, unsigned NbCol) {
     D2<SBasis> B;
     vector<D2<SBasis> > tB;
     Geom::Point Seg[2];
     B[1]=Linear(-100,100);
     double width=*(lengths.rbegin());
     if (NbCol>0)
-        for(int ui = 0; ui <= NbCol; ui++) {
+        for(unsigned ui = 0; ui <= NbCol; ui++) {
             B[0]=Linear(ui*width/NbCol);
             tB = compose(*this,B);
             if (tB.size()>0) cairo_md_sb(cr, tB[0]);
         }
 
     B[0]=SBasis(Linear(0,1));
-    for(int ui = 0; ui <= NbLi; ui++) {
+    for(unsigned ui = 0; ui <= NbLi; ui++) {
         B[1]=Linear(-100+ui*200/NbLi);
-        for(int i = 0; i <size(); i++) {
+        for(unsigned i = 0; i <size(); i++) {
             D2<SBasis> section=composeEach((*this)[i],B);
             cairo_md_sb(cr, section);
         }
@@ -102,13 +102,13 @@ vector<D2<SBasis> > compose(NormalBundle const &NB,
     D2<SBasis> B=Binit;
     D2<SBasis> Bcut;
     vector<double> Roots;
-    std::map<double,int> Cuts;
-    int idx;
+    std::map<double,unsigned> Cuts;
+    unsigned idx;
 
     B = B + (-Origin);
 
     //--Find intersections with fibers over segment ends.
-    for(int i=0; i<=NB.size();i++){
+    for(unsigned i=0; i<=NB.size();i++){
         Roots=roots(B[0]);
         for (vector<double>::iterator root=Roots.begin();
              root!=Roots.end();root++)
@@ -126,13 +126,13 @@ vector<D2<SBasis> > compose(NormalBundle const &NB,
 
     //-- Compose each piece with the relevant sbasis2d.
     // TODO: use a uniform parametrization of the base.
-    std::map<double,int>::iterator cut=Cuts.begin();
-    std::map<double,int>::iterator next=cut; next++;
+    std::map<double,unsigned>::iterator cut=Cuts.begin();
+    std::map<double,unsigned>::iterator next=cut; next++;
     while(next!=Cuts.end()){
         double t0=(*cut).first;
-        int  idx0=(*cut).second;
+        unsigned  idx0=(*cut).second;
         double t1=(*next).first;
-        int  idx1=(*next).second;
+        unsigned  idx1=(*next).second;
         if (idx0 != idx1){
             idx=std::min(idx0,idx1);
         } else if(B[0]((t0+t1)/2) < NB.lengths[idx0]) { // we have a left 'bump',
@@ -144,7 +144,7 @@ vector<D2<SBasis> > compose(NormalBundle const &NB,
 
         //--trim version...
         if (idx>=0 and idx<NB.size()) {
-            for (int dim=0;dim<2;dim++)
+            for (unsigned dim=0;dim<2;dim++)
                 Bcut[dim]=compose(B[dim], Linear(t0,t1));
             double width=NB.lengths[idx+1]-NB.lengths[idx];
             Bcut[0]=compose(Linear(-NB.lengths[idx]/width,
@@ -183,7 +183,7 @@ class NormalBundleToy: public Toy {
         //Sections    
         cairo_set_source_rgba (cr, 0, 0, 0.9, 1);
         cairo_md_sb(cr, P);
-        for (int i=0;i<Q.size();i++){
+        for (unsigned i=0;i<Q.size();i++){
             cairo_md_sb(cr, Q[i]);
         }
         cairo_stroke(cr);
@@ -200,9 +200,9 @@ class NormalBundleToy: public Toy {
 public:
     NormalBundleToy(){
         if(handles.empty()) {
-            for(int i = 0; i < 4; i++)
+            for(unsigned i = 0; i < 4; i++)
                 handles.push_back(Geom::Point(200+50*i,400));
-            for(int i = 0; i < 4; i++)
+            for(unsigned i = 0; i < 4; i++)
                 handles.push_back(Geom::Point(100+uniform()*400,
                                               150+uniform()*100));
             handles.push_back(Geom::Point(200,200));

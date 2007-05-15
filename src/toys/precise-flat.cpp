@@ -33,7 +33,7 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
     SBasis inflect = dot(dB, rot90(ddB));
     std::vector<double> rts = roots(inflect);
     double f = 3;
-    for(int i = 0; i < rts.size(); i++) {
+    for(unsigned i = 0; i < rts.size(); i++) {
         draw_handle(cr, B(rts[i]));
         
         double tp = rts[i];
@@ -59,7 +59,7 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
 
 public:
 PreciseFlat () {
-    for(int i = 0; i < 4; i++) handles.push_back(Geom::Point(uniform()*400, uniform()*400));
+    for(unsigned i = 0; i < 4; i++) handles.push_back(Geom::Point(uniform()*400, uniform()*400));
 }
 
 };

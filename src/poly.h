@@ -92,9 +92,9 @@ public:
         return result;
     }
 // equivalent to multiply by x^terms, discard negative terms
-    Poly shifted(int terms) const { 
+    Poly shifted(unsigned terms) const { 
         Poly result;
-        const unsigned out_size = std::max(0, int(size())+terms);
+        const unsigned out_size = std::max(unsigned(0), size()+terms);
         result.reserve(out_size);
         
         if(terms < 0) {

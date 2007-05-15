@@ -37,6 +37,8 @@ namespace Geom {
 
 class SVGPathSink {
 public:
+    virtual ~SVGPathSink();
+
     virtual void moveTo(Point p) = 0;
     virtual void lineTo(Point p) = 0;
     virtual void curveTo(Point c0, Point c1, Point p) = 0;

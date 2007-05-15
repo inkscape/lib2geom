@@ -27,7 +27,7 @@ SBasis cheb(unsigned n) {
         basis.push_back(Linear(1,1));
         basis.push_back(Linear(0,1));
     }
-    for(int i = basis.size(); i <= n; i++) {
+    for(unsigned i = basis.size(); i <= n; i++) {
         basis.push_back(Linear(0,2)*basis[i-1] - basis[i-2]);
     }
     
@@ -40,7 +40,7 @@ SBasis cheb01(unsigned n) {
         basis.push_back(Linear(1,1));
         basis.push_back(Linear(-1,1));
     }
-    for(int i = basis.size(); i <= n; i++) {
+    for(unsigned i = basis.size(); i <= n; i++) {
         basis.push_back((Linear(0,2)*basis[i-1] - basis[i-2])*2);
     }
     

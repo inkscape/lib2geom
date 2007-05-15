@@ -49,12 +49,12 @@ compose(SBasis2d const &fg, D2<SBasis> const &p) {
     SBasis B;
     SBasis s[2];
     SBasis ss[2];
-    for(int dim = 0; dim < 2; dim++) 
+    for(unsigned dim = 0; dim < 2; dim++) 
         s[dim] = p[dim]*(Linear(1) - p[dim]);
     ss[1] = Linear(1);
-    for(int vi = 0; vi < fg.vs; vi++) {
+    for(unsigned vi = 0; vi < fg.vs; vi++) {
         ss[0] = ss[1];
-        for(int ui = 0; ui < fg.us; ui++) {
+        for(unsigned ui = 0; ui < fg.us; ui++) {
             unsigned i = ui + vi*fg.us;
             B += ss[0]*compose(fg[i], p);
             ss[0] *= s[0];

@@ -40,7 +40,7 @@ Piecewise<SBasis> divide(Piecewise<SBasis> const &a, Piecewise<SBasis> const &b,
     Piecewise<SBasis> ret = Piecewise<SBasis>();
     assert(pa.size() == pb.size());
     ret.cuts = pa.cuts;
-    for (int i = 0; i < pa.size(); i++)
+    for (unsigned i = 0; i < pa.size(); i++)
         ret.push_seg(divide(pa[i], pb[i], k));
     return ret;
 }
@@ -50,7 +50,7 @@ divide(Piecewise<SBasis> const &a, Piecewise<SBasis> const &b, double tol, unsig
     Piecewise<SBasis> pa = partition(a, b.cuts), pb = partition(b, a.cuts);
     Piecewise<SBasis> ret = Piecewise<SBasis>();
     assert(pa.size() == pb.size());
-    for (int i = 0; i < pa.size(); i++){
+    for (unsigned i = 0; i < pa.size(); i++){
         Piecewise<SBasis> divi = divide(pa[i], pb[i], tol, k, zero);
         divi.setDomain(Interval(pa.cuts[i],pa.cuts[i+1]));
         ret.concat(divi);
@@ -79,7 +79,7 @@ Piecewise<SBasis> divide(SBasis const &a, SBasis const &b, double tol, unsigned 
         c.resize(k, Linear(0,0));
         
         //assert(b.at0()!=0 && b.at1()!=0);
-        for (int i=0; i<k; i++){
+        for (unsigned i=0; i<k; i++){
             Linear ci = Linear(r[i][0]/b[0][0],r[i][1]/b[0][1]);
             c[i]=ci;
             r-=shift(ci*b,i);
@@ -115,12 +115,12 @@ std::map<double,unsigned> compose_pullBack(std::vector<double> const &values, SB
    }
   // Also map 0 and 1 to the first value above(or =) g(0) and g(1).
   if(result.count(0.)==0){
-      int i=0;
+      unsigned i=0;
       while (i<values.size()&&(g.at0()>values[i])) i++;
       result[0.]=i;
   }
   if(result.count(1.)==0){
-      int i=0;
+      unsigned i=0;
       while (i<values.size()&&(g.at1()>values[i])) i++;
       result[1.]=i;
   }
@@ -131,10 +131,10 @@ int compose_findSegIdx(std::map<double,unsigned>::iterator  const &cut,
                        std::map<double,unsigned>::iterator  const &next,
                        std::vector<double>  const &levels,
                        SBasis const &g){
-    double t0=(*cut).first;
-    int  idx0=(*cut).second;
-    double t1=(*next).first;
-    int  idx1=(*next).second;
+    double     t0=(*cut).first;
+    unsigned idx0=(*cut).second;
+    double     t1=(*next).first;
+    unsigned idx1=(*next).second;
     assert(t0<t1);
     int  idx; //idx of the relevant f.segs
     if (std::max(idx0,idx1)==levels.size()){ //g([t0,t1]) is above the top level,
@@ -156,11 +156,11 @@ int compose_findSegIdx(std::map<double,unsigned>::iterator  const &cut,
 
 std::vector<double> roots(Piecewise<SBasis> const &f){
     std::vector<double> result;
-    for (int i=0; i<f.size(); i++){
+    for (unsigned i=0; i<f.size(); i++){
         std::vector<double> rts=roots(f.segs[i]);
         rts=roots(f.segs[i]);
 
-        for (int r=0; r<rts.size(); r++){
+        for (unsigned r=0; r<rts.size(); r++){
             result.push_back(f.mapToDomain(rts[r], i));
         }
     }

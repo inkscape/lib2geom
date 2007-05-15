@@ -301,7 +301,7 @@ inline Point
 D2<T>::operator()(double t) const {
     //TODO: restrict to 1D pw or fragment
     Point p;
-    for(int i = 0; i < 2; i++)
+    for(unsigned i = 0; i < 2; i++)
        p[i] = (*this)[i](t);
     return p;
 }
@@ -311,7 +311,7 @@ inline Point
 D2<T>::operator()(double x, double y) const {
     //TODO: restrict to 2D pw or fragment
     Point p;
-    for(int i = 0; i < 2; i++)
+    for(unsigned i = 0; i < 2; i++)
        p[i] = (*this)[i](x, y);
     return p;
 }
@@ -429,7 +429,7 @@ inline D2<SBasis> compose(D2<SBasis> const & a, SBasis const & b) {
 D2<SBasis> derivative(D2<SBasis> const & a);
 D2<SBasis> integral(D2<SBasis> const & a);
 
-SBasis L2(D2<SBasis> const & a, int k);
+SBasis L2(D2<SBasis> const & a, unsigned k);
 double L2(D2<double> const & a);
 
 inline D2<SBasis> portion(D2<SBasis> const &M, double t0, double t1){
@@ -484,11 +484,11 @@ inline CoordIterator iterateCoord(Piecewise<D2<SBasis> > const &a, unsigned d) {
     return CoordIterator(a.segs.begin(), d);
 }
 
-inline Rect boundsFast(D2<SBasis> const & s, int order=0) {
+inline Rect boundsFast(D2<SBasis> const & s, unsigned order=0) {
     return Rect(boundsFast(s[X], order),
                 boundsFast(s[Y], order));
 }
-inline Rect boundsLocal(D2<SBasis> const & s, Interval i, int order=0) {
+inline Rect boundsLocal(D2<SBasis> const & s, Interval i, unsigned order=0) {
     return Rect(boundsLocal(s[X], i, order),
                 boundsLocal(s[Y], i, order));
 }

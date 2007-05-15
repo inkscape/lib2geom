@@ -27,18 +27,18 @@ cutAtRoots(Piecewise<D2<SBasis> > const &M, double tol=1e-4);
 
 Piecewise<SBasis>
 atan2(D2<SBasis> const &vect, 
-           double tol=.01, int order=3);
+           double tol=.01, unsigned order=3);
 
 Piecewise<SBasis>
 atan2(Piecewise<D2<SBasis> >const &vect, 
-           double tol=.01, int order=3);
+           double tol=.01, unsigned order=3);
 
 Piecewise<D2<SBasis> >
 unitVector(D2<SBasis> const &vect, 
-           double tol=.01, int order=3);
+           double tol=.01, unsigned order=3);
 Piecewise<D2<SBasis> >
 unitVector(Piecewise<D2<SBasis> > const &vect, 
-           double tol=.01, int order=3);
+           double tol=.01, unsigned order=3);
 
 // Piecewise<D2<SBasis> >
 // uniform_speed(D2<SBasis> const M, 
@@ -63,7 +63,7 @@ arc_length_parametrization(Piecewise<D2<SBasis> > const &M,
                            double tol=.01);
 
 
-int centroid(Piecewise<D2<SBasis> > const &p, Point& centroid, double &area);
+unsigned centroid(Piecewise<D2<SBasis> > const &p, Point& centroid, double &area);
 
 };
 

@@ -202,13 +202,13 @@ Gear Gear::spawn(int N, double a) {
 class GearToy: public Toy {
     public:
     GearToy () {
-        for(int i = 0; i < 2; i++)
+        for(unsigned i = 0; i < 2; i++)
             handles.push_back(Geom::Point(uniform()*400, uniform()*400));
     }
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         cairo_set_source_rgba (cr, 0., 0.5, 0, 1);
         cairo_set_line_width (cr, 1);
-        for(int i = 0; i < handles.size(); i++) {
+        for(unsigned i = 0; i < handles.size(); i++) {
             draw_circ(cr, handles[i]);
         }
         cairo_set_source_rgba (cr, 0., 0., 0, 0.8);
@@ -218,7 +218,7 @@ class GearToy: public Toy {
         
         Geom::Point centre = Geom::Point(width/2,height/2);
         /* draw cross hairs
-        for(int i = 1; i < 2; i++) {
+        for(unsigned i = 1; i < 2; i++) {
             cairo_move_to(cr, centre[0]-minor_dim/4, centre[1]);
             cairo_line_to(cr, centre[0]+minor_dim/4, centre[1]);
             cairo_move_to(cr, centre[0], centre[1]-minor_dim/4);

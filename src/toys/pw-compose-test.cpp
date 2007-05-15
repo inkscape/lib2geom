@@ -9,15 +9,6 @@
 
 using namespace Geom;
 
-static void cairo_pw(cairo_t *cr, Piecewise<SBasis> p, double time_scale=1) {
-    for(int i = 0; i < p.size(); i++) {
-        D2<SBasis> B;
-        B[0] = Linear(p.cuts[i]*time_scale, p.cuts[i+1]*time_scale);
-        B[1] = p[i];
-        cairo_md_sb(cr, B);
-    }
-}
-
 class PwToy: public Toy {
     unsigned segs, handles_per_seg, handles_per_curve, curves;
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
@@ -25,17 +16,17 @@ class PwToy: public Toy {
         cairo_set_line_width (cr, 1);
        
         D2<Piecewise<SBasis> > pws;
-        int hdle_idx=0;
-        for(int i = 0; i < segs; i++) {
+        unsigned hdle_idx=0;
+        for(unsigned i = 0; i < segs; i++) {
             D2<SBasis> foo = Geom::handles_to_sbasis<3>(handles.begin()+hdle_idx);
             hdle_idx += 4;
             cairo_md_sb(cr, foo);
-            for(int d = 0; d < 2; d++) {
+            for(unsigned d = 0; d < 2; d++) {
                 pws[d].cuts.push_back(150*i);
                 pws[d].segs.push_back(foo[d]);
             }
         }
-        for(int d = 0; d < 2; d++)
+        for(unsigned d = 0; d < 2; d++)
             pws[d].cuts.push_back(150*segs);
         
         handles[hdle_idx  ][1]=450;
@@ -47,7 +38,7 @@ class PwToy: public Toy {
         D2<SBasis> foo = Geom::handles_to_sbasis<3>(handles.begin()+hdle_idx);
         SBasis g = foo[0] - Linear(150);
         cairo_md_sb(cr, foo);
-	    for(int i=0;i<20;i++){
+	    for(unsigned i=0;i<20;i++){
             double t=i/20.;
             draw_handle(cr, foo(t));
         }
@@ -62,7 +53,7 @@ class PwToy: public Toy {
         cairo_set_source_rgba (cr, 0.9, 0., 0., 1);
         D2<Piecewise<SBasis> > res = compose(pws, Piecewise<SBasis>(g));
         cairo_d2_pw(cr, res);
-        for(int i=0;i<20;i++){
+        for(unsigned i=0;i<20;i++){
             double t=(res[0].cuts.back()-res[0].cuts.front())*i/20.;
             draw_handle(cr, Point(res[0](t),res[1](t)));
         }
@@ -79,7 +70,7 @@ class PwToy: public Toy {
         handles_per_seg = 4;
         handles_per_curve = handles_per_seg * segs;
         curves = 1;
-        for(int a = 0; a < curves; a++)
+        for(unsigned a = 0; a < curves; a++)
             for(unsigned i = 0; i < handles_per_curve; i++)
                 handles.push_back(Point(150 + 300*i/(4*segs), uniform() * 150 + 150 - 150 * a));
         for(unsigned i = 0; i < 4; i++)

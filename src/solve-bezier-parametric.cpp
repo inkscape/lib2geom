@@ -28,7 +28,7 @@ control_poly_flat_enough(Geom::Point const *V, unsigned degree);
 static double
 compute_x_intercept(Geom::Point const *V, unsigned degree);
 
-const int MAXDEPTH = 64;	/*  Maximum depth for recursion */
+const unsigned MAXDEPTH = 64;	/*  Maximum depth for recursion */
 
 const double EPSILON = ldexp(1.0,-MAXDEPTH-1); /*Flatness control value */
 
@@ -91,7 +91,7 @@ crossing_count(Geom::Point const *V,	/*  Control pts of Bezier curve	*/
     unsigned 	n_crossings = 0;	/*  Number of zero-crossings */
     
     int old_sign = SGN(V[0][Geom::Y]);
-    for (int i = 1; i <= degree; i++) {
+    for (unsigned i = 1; i <= degree; i++) {
         int sign = SGN(V[i][Geom::Y]);
         if (sign != old_sign)
             n_crossings++;

@@ -7,7 +7,7 @@ std::complex<double> evalu(Poly const & p, std::complex<double> x) {
     std::complex<double> result = 0;
     std::complex<double> xx = 1;
     
-    for(int i = 0; i < p.size(); i++) {
+    for(unsigned i = 0; i < p.size(); i++) {
         result += p[i]*xx;
         xx *= x;
     }

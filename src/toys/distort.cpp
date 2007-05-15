@@ -18,7 +18,7 @@ class DistortToy: public Toy {
     std::vector<Geom::Path2::Path> p;
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         D2<SBasis2d> sb2;
-        for(int dim = 0; dim < 2; dim++) {
+        for(unsigned dim = 0; dim < 2; dim++) {
             sb2[dim].us = 2;
             sb2[dim].vs = 2;
             const int depth = sb2[dim].us*sb2[dim].vs;
@@ -29,21 +29,21 @@ class DistortToy: public Toy {
         const int surface_handles = 4*depth;
         Geom::Point dir(1,-2);
         if(handles.empty()) {
-            for(int vi = 0; vi < sb2[0].vs; vi++)
-                for(int ui = 0; ui < sb2[0].us; ui++)
-                for(int iv = 0; iv < 2; iv++)
-                        for(int iu = 0; iu < 2; iu++)
+            for(unsigned vi = 0; vi < sb2[0].vs; vi++)
+                for(unsigned ui = 0; ui < sb2[0].us; ui++)
+                for(unsigned iv = 0; iv < 2; iv++)
+                        for(unsigned iu = 0; iu < 2; iu++)
                         handles.push_back(Geom::Point((2*(iu+ui)/(2.*ui+1)+1)*width/4.,
                                                         (2*(iv+vi)/(2.*vi+1)+1)*width/4.));
         }
         
-        for(int dim = 0; dim < 2; dim++) {
+        for(unsigned dim = 0; dim < 2; dim++) {
             Geom::Point dir(0,0);
             dir[dim] = 1;
-            for(int vi = 0; vi < sb2[dim].vs; vi++) {
-                for(int ui = 0; ui < sb2[dim].us; ui++) {
-                    for(int iv = 0; iv < 2; iv++) {
-                        for(int iu = 0; iu < 2; iu++) {
+            for(unsigned vi = 0; vi < sb2[dim].vs; vi++) {
+                for(unsigned ui = 0; ui < sb2[dim].us; ui++) {
+                    for(unsigned iv = 0; iv < 2; iv++) {
+                        for(unsigned iu = 0; iu < 2; iu++) {
                             unsigned corner = iu + 2*iv;
                             unsigned i = ui + vi*sb2[dim].us;
                             Geom::Point base((2*(iu+ui)/(2.*ui+1)+1)*width/4.,
@@ -63,14 +63,14 @@ class DistortToy: public Toy {
         cairo_set_source_rgba (cr, 0., 0., 0, 0.5);
         cairo_stroke(cr);
 
-        for(int dim = 0; dim < 2; dim++)
-            for(int i = 0; i < sb2[dim].size(); i++)
-                for(int j = 0; j < 4; j++)
+        for(unsigned dim = 0; dim < 2; dim++)
+            for(unsigned i = 0; i < sb2[dim].size(); i++)
+                for(unsigned j = 0; j < 4; j++)
                     sb2[dim][i][j] *= 3;
 
          //**** FRESH STARTS HERE
         //Theoretically we could concatenate a md_Piecewise<SBasis> and do it in one go
-        for(int i = 0; i < p.size(); i++) {
+        for(unsigned i = 0; i < p.size(); i++) {
             D2<Piecewise<SBasis> > foo = p[i].toMdSb();
             foo *= 1./20;
             //foo[1] = foo[1] + (Piecewise<SBasis>)portion(sin(Linear(0,3.14), 4), 0, foo[0].cuts.back());

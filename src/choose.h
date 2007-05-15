@@ -51,7 +51,7 @@ T choose(unsigned n, unsigned k) {
         while(rows_done <= n) {
             unsigned p = pascals_triangle.size() - rows_done;
             pascals_triangle.push_back(1);
-            for(int i = 0; i < rows_done-1; i++) {
+            for(unsigned i = 0; i < rows_done-1; i++) {
                 pascals_triangle.push_back(pascals_triangle[p] 
                                            + pascals_triangle[p+1]);
 		p++;

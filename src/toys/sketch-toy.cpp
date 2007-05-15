@@ -28,20 +28,20 @@ class SketchToy: public Toy {
     }
 
     //most rediculous 'curve fitting' function ever
-    D2<SBasis> crapfit(int order) {
+    D2<SBasis> crapfit(unsigned order) {
         /*D2<SBasis> best;
         double bestfit = 1000;
-        for(int i = poly.size()-1; i>=order*2-1; i++) {*/
+        for(unsigned i = poly.size()-1; i>=order*2-1; i++) {*/
             D2<SBasis> sb;
-            for(int d = 0; d<2; d++) {
+            for(unsigned d = 0; d<2; d++) {
                 sb[d].push_back(Linear(poly[0][d], poly[poly.size()-1][d]));
                 double m = (poly[1][d] - poly[0][d]) / poly.size();
                 vector<double> diffs;
-                for(int i = 1; i < poly.size(); i++)
+                for(unsigned i = 1; i < poly.size(); i++)
                     diffs.push_back(poly[i][d] - poly[i-1][d] - m * i);
-                for(int o = 1; o < order; o++) {
+                for(unsigned o = 1; o < order; o++) {
                     double lavg = 0, ravg = 0, ltot = 0, rtot = 0;
-                    for(int i = 1; i < poly.size() - o; i++) {
+                    for(unsigned i = 1; i < poly.size() - o; i++) {
                         double t = double(i)/poly.size();
                         ltot += (1-t)/pow(t,o);
                         lavg += diffs[i] * (1-t);
@@ -52,14 +52,14 @@ class SketchToy: public Toy {
                     sb[d].push_back(Linear(lavg, -ravg));
                     vector<double> temp(diffs);
                     diffs.clear();
-                    for(int i = 1; i < diffs.size(); i++)
+                    for(unsigned i = 1; i < diffs.size(); i++)
                         diffs.push_back(temp[i] - temp[i-1]);
                     
                 }
             }
             return sb;
             /*err = 0;
-            for(int j = 0; j<ink.size(); j++) {
+            for(unsigned j = 0; j<ink.size(); j++) {
                 err += distanceSq(sb(double(j)/ink.size()), ink[j]); 
             }
             if(err*i<bestfit)
@@ -74,15 +74,15 @@ class SketchToy: public Toy {
         cairo_pw_d2(cr, ink);
         cairo_set_line_width(cr,1);
         if(!save) {
-            for(int i = 0; i < ink.size(); i++)
+            for(unsigned i = 0; i < ink.size(); i++)
                 draw_cross(cr, ink[i].at0());
         }
-        for(int i = 1; i < poly.size(); i++)
+        for(unsigned i = 1; i < poly.size(); i++)
             draw_line_seg(cr, poly[i-1], poly[i]);
         cairo_close_path(cr);
 
         cairo_set_line_width(cr,.5);
-        for(int i = 1; i < old.size(); i++)
+        for(unsigned i = 1; i < old.size(); i++)
             draw_line_seg(cr, old[i-1], old[i]);
         cairo_close_path(cr);
         

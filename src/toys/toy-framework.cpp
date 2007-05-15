@@ -40,7 +40,7 @@ void Toy::draw(cairo_t *cr, std::ostringstream *notify, int width, int height, b
     if(should_draw_bounds()) {
         cairo_set_source_rgba (cr, 0., 0., 0, 0.8);
         cairo_set_line_width (cr, 0.5);
-        for(int i = 1; i < 4; i+=2) {
+        for(unsigned i = 1; i < 4; i+=2) {
             cairo_move_to(cr, 0, i*width/4);
             cairo_line_to(cr, width, i*width/4);
             cairo_move_to(cr, i*width/4, 0);
@@ -50,7 +50,7 @@ void Toy::draw(cairo_t *cr, std::ostringstream *notify, int width, int height, b
 
     cairo_set_source_rgba (cr, 0., 0.5, 0, 1);
     cairo_set_line_width (cr, 1);
-    for(int i = 0; i < handles.size(); i++) {
+    for(unsigned i = 0; i < handles.size(); i++) {
         draw_circ(cr, handles[i]);
         if(should_draw_numbers()) draw_number(cr, handles[i], i);
     }
@@ -87,7 +87,7 @@ void Toy::mouse_moved(GdkEventMotion* e)
 void Toy::mouse_pressed(GdkEventButton* e) {
     Geom::Point mouse(e->x, e->y);
     if(e->button == 1) {
-        for(int i = 0; i < handles.size(); i++) {
+        for(unsigned i = 0; i < handles.size(); i++) {
             if(Geom::distance(mouse, handles[i]) < 5) selected = i;
         }
         mouse_down = true;
@@ -119,7 +119,7 @@ void make_about() {
 
 Geom::Point read_point(FILE* f) {
     Geom::Point p;
-    for(int i = 0; i < 2; i++)
+    for(unsigned i = 0; i < 2; i++)
         assert(fscanf(f, " %lf ", &p[i]));
     return p;
 }
@@ -150,8 +150,8 @@ void save() {
         if(gtk_dialog_run(GTK_DIALOG(d)) == GTK_RESPONSE_ACCEPT) {
             const char* filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(d));
             FILE* f = fopen(filename, "w");
-            int l = current_toy->handles.size();
-            for(int i = 0; i < l; i++)
+            unsigned l = current_toy->handles.size();
+            for(unsigned i = 0; i < l; i++)
                 fprintf(f, "%lf %lf\n", current_toy->handles[i][0], current_toy->handles[i][1]);
             fclose(f);
         }
@@ -164,7 +164,7 @@ void save_cairo() {
     if(gtk_dialog_run(GTK_DIALOG(d)) == GTK_RESPONSE_ACCEPT) {
         const char* filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(d));
         cairo_surface_t* cr_s;
-        int l = strlen(filename);
+        unsigned l = strlen(filename);
         #if CAIRO_HAS_PDF_SURFACE
         if (l >= 4 && strcmp(filename + l - 4, ".pdf") == 0)
             cr_s = cairo_pdf_surface_create(filename, 600., 600.);

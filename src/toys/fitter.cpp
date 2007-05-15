@@ -163,7 +163,7 @@ public:
         if(solution.size() > 1) {
             //cairo_set_line_width (cr, 1);
             cairo_move_to(cr, solution[0]);
-            for(int i = 1; i < solution.size(); i++) {
+            for(unsigned i = 1; i < solution.size(); i++) {
                 cairo_line_to(cr, solution[i]);
             }
         }
@@ -212,7 +212,7 @@ public:
         double dist = dot(n, input[from]); // distance from origin
         double error = 0;
         mean = 0;
-        for(int l = from; l <= to; l++) {
+        for(unsigned l = from; l <= to; l++) {
             double d = dot(input[l], n) - dist;
             mean += dot(input[l], n);
             error += d*d;
@@ -326,7 +326,7 @@ void extremePoints(vector<Point> const & pts, Point const & dir,
 void fit::test() {
     sufficient_stats ss;
     const unsigned N = input.size();
-    for(int i = 0; i < N; i++) {
+    for(unsigned i = 0; i < N; i++) {
         ss += input[i];
     }
     double best_bl = DBL_MAX;
@@ -359,13 +359,13 @@ void fit::schematised_merging() {
     const double link_cost = 0;
     const unsigned N = input.size()-1;
     blocks.resize(N);
-    int C=4;
-    for(int i = 0; i<C ; i++) {
+    unsigned C=4;
+    for(unsigned i = 0; i<C ; i++) {
         double t = M_PI*i/float(C);
         angles.push_back(Point(cos(t),sin(t)));
     }
     // pairs
-    for(int i = 0; i < N; i++) {
+    for(unsigned i = 0; i < N; i++) {
         block b;
         sufficient_stats ss;
         ss += input[i];
@@ -472,7 +472,7 @@ void fit::merging_version() {
     const unsigned N = input.size();
     blocks.resize(N);
     // pairs
-    for(int i = 0; i < N; i++) {
+    for(unsigned i = 0; i < N; i++) {
         block b;
         sufficient_stats ss;
         ss.Sx = ss.Sy = ss.Sxx = ss.Sxy = ss.Syy = 0;
@@ -547,16 +547,16 @@ void fit::arbitrary() {
     
     double best_error = INFINITY;
     double best_mean = 0;
-    int best_angle = 0;
-    for(int i = 0; i < angles.size(); i++) {
+    unsigned best_angle = 0;
+    for(unsigned i = 0; i < angles.size(); i++) {
         Point angle = angles[i];
         double mean = 0;
         double error = 0;
-        for(int l = 0; l < input.size(); l++) {
+        for(unsigned l = 0; l < input.size(); l++) {
             mean += dot(input[i], angle);
         }
         mean /= input.size();
-        for(int l = 0; l < input.size(); l++) {
+        for(unsigned l = 0; l < input.size(); l++) {
             double d = dot(input[i], angle) - mean;
             error += d*d;
         }
@@ -770,7 +770,7 @@ void draw_everything(cairo_t* cr, int width, int height) {
         fit f(paths[i]);
         f.schematised_merging();
         f.draw(cr);
-        for(int j = 0; j < paths[i].size(); j++) {
+        for(unsigned j = 0; j < paths[i].size(); j++) {
             draw_circ(cr, paths[i][j]);
         }
         cairo_stroke(cr);
@@ -783,7 +783,7 @@ void draw_everything(cairo_t* cr, int width, int height) {
 
         PangoFontDescription *font_desc = pango_font_description_new();
         pango_font_description_set_family(font_desc, "Sans");
-        const int size_px = 10;
+        const unsigned size_px = 10;
         pango_font_description_set_absolute_size(font_desc, size_px * 1024.0);
         pango_layout_set_font_description(layout, font_desc);
         PangoRectangle logical_extent;
@@ -836,7 +836,7 @@ static gint mouse_motion_event(GtkWidget* widget, GdkEventMotion* e, gpointer da
 static gint mouse_event(GtkWidget* window, GdkEventButton* e, gpointer data) {
     Geom::Point mouse(e->x, e->y);
     if(e->button == 1 || e->button == 3) {
-        for(int i = 0; i < handles.size(); i++) {
+        for(unsigned i = 0; i < handles.size(); i++) {
             if(Geom::distance(mouse, *handles[i]) < 5) {
                 selected_handle = handles[i];
                 old_handle_pos = mouse - *handles[i];
@@ -925,12 +925,12 @@ int main(int argc, char **argv) {
 /*
     vector<Point> ps;
     double step = 50;
-    for(int i = 0; i < 3; i++) {
+    for(unsigned i = 0; i < 3; i++) {
         ps.push_back(start_point);
         start_point += Geom::Point(uniform()*step, 0.5*uniform()*step);
     }
     paths.push_back(ps);
-    for(int i = 0; i < 10; i++) {
+    for(unsigned i = 0; i < 10; i++) {
         handles.push_back(start_point);
         start_point += Geom::Point(0.5*uniform()*step, uniform()*step);
         }*/

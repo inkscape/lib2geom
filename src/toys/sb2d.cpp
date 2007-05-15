@@ -26,10 +26,10 @@ class Sb2d: public Toy {
         vector<Geom::Point> display_handles(surface_handles);
         Geom::Point dir(1,-2);
         if(handles.empty()) {
-            for(int vi = 0; vi < sb2.vs; vi++)
-             for(int ui = 0; ui < sb2.us; ui++)
-              for(int iv = 0; iv < 2; iv++)
-               for(int iu = 0; iu < 2; iu++)
+            for(unsigned vi = 0; vi < sb2.vs; vi++)
+             for(unsigned ui = 0; ui < sb2.us; ui++)
+              for(unsigned iv = 0; iv < 2; iv++)
+               for(unsigned iu = 0; iu < 2; iu++)
                    handles.push_back(Geom::Point((2*(iu+ui)/(2.*ui+1)+1)*width/4.,
                                                  (2*(iv+vi)/(2.*vi+1)+1)*width/4.));
         
@@ -40,10 +40,10 @@ class Sb2d: public Toy {
             cairo_move_to(cr, 3*width/4., width/4.);
             cairo_line_to(cr, handles[surface_handles]);
         }
-        for(int vi = 0; vi < sb2.vs; vi++)
-         for(int ui = 0; ui < sb2.us; ui++)
-          for(int iv = 0; iv < 2; iv++)
-           for(int iu = 0; iu < 2; iu++) {
+        for(unsigned vi = 0; vi < sb2.vs; vi++)
+         for(unsigned ui = 0; ui < sb2.us; ui++)
+          for(unsigned iv = 0; iv < 2; iv++)
+           for(unsigned iu = 0; iu < 2; iu++) {
                unsigned corner = iu + 2*iv;
                unsigned i = ui + vi*sb2.us;
                Geom::Point base((2*(iu+ui)/(2.*ui+1)+1)*width/4.,
@@ -59,7 +59,7 @@ class Sb2d: public Toy {
         cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
         cairo_stroke(cr);
         if(!save)
-            for(int i = 0; i < display_handles.size(); i++)
+            for(unsigned i = 0; i < display_handles.size(); i++)
                 draw_circ(cr, display_handles[i]);
         Toy::draw(cr, notify, width, height, save);
     }

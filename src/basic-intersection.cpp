@@ -89,19 +89,17 @@ find_self_intersections(Bezier const &Sb, D2<SBasis> const & A) {
     vector<Bezier> pieces;
     {
         Bezier in = Sb, l, r;
-        for(int i = 0; i < dr.size()-1; i++) {
+        for(unsigned i = 0; i < dr.size()-1; i++) {
             in.split((dr[i+1]-dr[i]) / (1 - dr[i]), l, r);
             pieces.push_back(l);
             in = r;
         }
     }
-    for(int i = 0; i < dr.size()-1; i++) {
-
-        
-        for(int j = i+1; j < dr.size()-1; j++) {
+    for(unsigned i = 0; i < dr.size()-1; i++) {
+        for(unsigned j = i+1; j < dr.size()-1; j++) {
             std::vector<std::pair<double, double> > section = 
                 find_intersections( pieces[i], pieces[j]);
-            for(int k = 0; k < section.size(); k++) {
+            for(unsigned k = 0; k < section.size(); k++) {
                 double l = section[k].first;
                 double r = section[k].second;
 // XXX: This condition will prune out false positives, but it might create some false negatives.  Todo: Confirm it is correct.
@@ -326,11 +324,11 @@ unsigned wangs_theorem(Bezier a) {
     double la1 = Lmax( ( a.p[2] - a.p[1] ) - (a.p[1] - a.p[0]) );
     double la2 = Lmax( ( a.p[3] - a.p[2] ) - (a.p[2] - a.p[1]) );
     double l0 = std::max(la1, la2);
-    int ra;
+    unsigned ra;
     if( l0 * 0.75 * M_SQRT2 + 1.0 == 1.0 ) 
         ra = 0;
     else
-        ra = (int)ceil( log4( M_SQRT2 * 6.0 / 8.0 * INV_EPS * l0 ) );
+        ra = (unsigned)ceil( log4( M_SQRT2 * 6.0 / 8.0 * INV_EPS * l0 ) );
     std::cout << ra << std::endl;
     return ra;
 }

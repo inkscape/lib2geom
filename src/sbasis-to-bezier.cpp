@@ -48,8 +48,8 @@ sbasis_to_bezier(SBasis const &B, unsigned q) {
     if(q > B.size())
         q = B.size();
     n--;
-    for(int k = 0; k < q; k++) {
-        for(int j = 0; j <= n-k; j++) {
+    for(unsigned k = 0; k < q; k++) {
+        for(unsigned j = 0; j <= n-k; j++) {
             result[j] += (W(n, j, k)*B[k][0] +
                           W(n, n-j, k)*B[k][1]);
         }
@@ -67,12 +67,12 @@ sbasis_to_bezier(D2<SBasis> const &B, unsigned qq) {
     unsigned n = qq * 2;
     result.resize(n, Geom::Point(0,0));
     n--;
-    for(int dim = 0; dim < 2; dim++) {
+    for(unsigned dim = 0; dim < 2; dim++) {
         unsigned q = qq;
         if(q > B[dim].size())
             q = B[dim].size();
-        for(int k = 0; k < q; k++) {
-            for(int j = 0; j <= n-k; j++) {
+        for(unsigned k = 0; k < q; k++) {
+            for(unsigned j = 0; j <= n-k; j++) {
                 result[j][dim] += (W(n, j, k)*B[dim][k][0] +
                              W(n, n-j, k)*B[dim][k][1]);
                 }
@@ -112,9 +112,9 @@ subpath_from_sbasis(Geom::OldPathSetBuilder &pb, D2<SBasis> const &B, double tol
     }
 }
 
-/***
-/* This version works by inverting a reasonable upper bound on the error term after subdividing the
-curve at $a$.  We keep biting off pieces until there is no more curve left.
+/*
+* This version works by inverting a reasonable upper bound on the error term after subdividing the
+* curve at $a$.  We keep biting off pieces until there is no more curve left.
 * 
 * Derivation: The tail of the power series is $a_ks^k + a_{k+1}s^{k+1} + \ldots = e$.  A
 * subdivision at $a$ results in a tail error of $e*A^k, A = (1-a)a$.  Let this be the desired
@@ -183,7 +183,7 @@ std::vector<Geom::Path2::Path>
 path_from_piecewise(Geom::Piecewise<Geom::D2<Geom::SBasis> > const &B, double tol) {
     std::vector<Geom::Path2::Path> ret;
     Geom::Path2::Path cur;
-    for(int i = 0; i < B.size(); i++) {
+    for(unsigned i = 0; i < B.size(); i++) {
         if(i && B[i].at0() != B[i-1].at1())
             cur = Geom::Path2::Path();
         path_from_sbasis(cur, B[i], tol);

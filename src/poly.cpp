@@ -1,11 +1,8 @@
 #include "poly.h"
 
 Poly Poly::operator*(const Poly& p) const {
-    Poly result;
-    const unsigned out_size = degree() +  p.degree()+1;
-    const unsigned min_size = std::max(size(), p.size());
-    
-    result.resize(out_size);
+    Poly result; 
+    result.resize(degree() +  p.degree()+1);
     
     for(unsigned i = 0; i < size(); i++) {
         for(unsigned j = 0; j < p.size(); j++) {
@@ -93,7 +90,7 @@ Poly integral(Poly const & p) {
     
     result.reserve(p.size()+1);
     result.push_back(0); // arbitrary const
-    for(int i = 0; i < p.size(); i++) {
+    for(unsigned i = 0; i < p.size(); i++) {
         result.push_back(p[i]/(i+1));
     }
     return result;
@@ -106,7 +103,7 @@ Poly derivative(Poly const & p) {
     if(p.size() <= 1)
         return Poly(0);
     result.reserve(p.size()-1);
-    for(int i = 1; i < p.size(); i++) {
+    for(unsigned i = 1; i < p.size(); i++) {
         result.push_back(i*p[i]);
     }
     return result;
@@ -115,7 +112,7 @@ Poly derivative(Poly const & p) {
 Poly compose(Poly const & a, Poly const & b) {
     Poly result;
     
-    for(int i = a.size()-1; i >=0; i--) {
+    for(unsigned i = a.size()-1; i >=0; i--) {
         result = Poly(a[i]) + result * b;
     }
     return result;
@@ -148,11 +145,11 @@ Poly divide(Poly const &a, Poly const &b, Poly &r) {
     r = a; // remainder
     assert(b.size() > 0);
     
-    const int k = a.degree();
-    const int l = b.degree();
+    const unsigned k = a.degree();
+    const unsigned l = b.degree();
     c.resize(k, 0.);
     
-    for(int i = k; i >= l; i--) {
+    for(unsigned i = k; i >= l; i--) {
         assert(i >= 0);
         double ci = r.back()/b.back();
         c[i-l] += ci;

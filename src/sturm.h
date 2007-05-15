@@ -27,7 +27,7 @@ public:
         const double big = 1e20; // a number such that practical polys would overflow on evaluation
         if(t >= big) {
             int old_sign = sgn((*this)[0].back());
-            for (int i = 1; i < size(); i++) {
+            for (unsigned i = 1; i < size(); i++) {
                 int sign = sgn((*this)[i].back());
                 if (sign != old_sign)
                     n_signs++;
@@ -35,7 +35,7 @@ public:
             }
         } else {
             int old_sign = sgn((*this)[0].eval(t));
-            for (int i = 1; i < size(); i++) {
+            for (unsigned i = 1; i < size(); i++) {
                 int sign = sgn((*this)[i].eval(t));
                 if (sign != old_sign)
                     n_signs++;

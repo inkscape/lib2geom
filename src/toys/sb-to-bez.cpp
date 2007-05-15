@@ -57,7 +57,7 @@ using namespace std;
 #include <gsl/gsl_poly.h>
 
 void cairo_pw(cairo_t *cr, Piecewise<SBasis> p, double hscale=1., double vscale=1.) {
-    for(int i = 0; i < p.size(); i++) {
+    for(unsigned i = 0; i < p.size(); i++) {
         D2<SBasis> B;
         B[0] = Linear(150+p.cuts[i]*hscale, 150+p.cuts[i+1]*hscale);
         B[1] = Linear(450) - p[i]*vscale;
@@ -75,10 +75,10 @@ static void plot(cairo_t* cr, SBasis const &B,double vscale=1,double a=0,double 
 }
      
 //==================================================================
-static vector<double>  solve_poly (double a[],int deg){
+static vector<double>  solve_poly (double a[],unsigned deg){
     double tol=1e-7;
     vector<double> result;
-    int i;
+    unsigned i;
 
     i=deg;
     while( i>=0 && fabs(a[i])<tol ) i--;
@@ -159,7 +159,7 @@ static vector<Geom::Point> sb_seg_to_bez(Piecewise<D2<SBasis> > const &M,double 
             double a[5]={c1+a1*c0*c0,-1,2*a1*a0*c0,0,a1*a0*a0};
             vector<double> solns=solve_poly(a,5);
             lambda0=lambda1=0;
-            for (int i=0;i<solns.size();i++){
+            for (unsigned i=0;i<solns.size();i++){
                 double lbda0=solns[i];
                 double lbda1=c0+a0*lbda0*lbda0;
                 if (lbda0>=0. && lbda1>=0.){
@@ -169,7 +169,7 @@ static vector<Geom::Point> sb_seg_to_bez(Piecewise<D2<SBasis> > const &M,double 
             }
         }
     }
-    for(int dim=0;dim<2;dim++){
+    for(unsigned dim=0;dim<2;dim++){
         result[0][dim]=A0[dim];
         result[1][dim]=A0[dim]+lambda0*dM0[dim]/3;
         result[2][dim]=A1[dim]-lambda1*dM1[dim]/3;
@@ -231,7 +231,7 @@ static SBasis cubicL2Project(SBasis const b){
 
 static D2<SBasis> L2_proj(Piecewise<D2<SBasis> > const &M, 
                           D2<SBasis> b, 
-                          int depth=0){
+                          unsigned depth=0){
     D2<SBasis> result, db=derivative(b);
     Piecewise<D2<SBasis> > udb = unitVector(db,.1);
     Piecewise<SBasis> sb = arcLengthSb(b);
@@ -312,7 +312,7 @@ class SbToBezierTester: public Toy {
 public:
   SbToBezierTester(){
     if(handles.empty()) {
-      for(int i = 0; i < SIZE+1; i++)
+      for(unsigned i = 0; i < SIZE+1; i++)
 	handles.push_back(Geom::Point(150+300*uniform(),150+300*uniform()));
       handles.push_back(Geom::Point(150,300));
       handles.push_back(Geom::Point(450,300));

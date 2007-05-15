@@ -317,20 +317,20 @@ public:
   typedef Sequence::difference_type difference_type;
 
   Path()
-  : closed_(false), final_(new LineSegment())
+  : final_(new LineSegment()), closed_(false)
   {
     curves_.push_back(final_);
   }
 
   Path(Path const &other)
-  : closed_(other.closed_), final_(new LineSegment())
+  : final_(new LineSegment()), closed_(other.closed_)
   {
     curves_.push_back(final_);
     insert(begin(), other.begin(), other.end());
   }
 
   explicit Path(Point p)
-  : closed_(false), final_(new LineSegment(p, p))
+  : final_(new LineSegment(p, p)), closed_(false)
   {
     curves_.push_back(final_);
   }

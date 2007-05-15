@@ -26,9 +26,9 @@ using namespace std;
 static void 
 plot_offset(cairo_t* cr, D2<SBasis> const &M,
             Coord offset = 10,
-            int NbPts = 10){
+            unsigned NbPts = 10){
     D2<SBasis> dM = derivative(M);
-    for (int i = 0;i < NbPts;i++){
+    for (unsigned i = 0;i < NbPts;i++){
         double t = i*1./NbPts;
         Point V = dM(t);
         V = offset*rot90(unit_vector(V));
@@ -45,7 +45,7 @@ static void plot(cairo_t* cr, Piecewise<SBasis> const &f,double vscale=1){
     plot[0].cuts.push_back(f.cuts.back());
     plot[0].segs.push_back(Linear(150,450));
 
-    for (int i=1; i<f.size(); i++){
+    for (unsigned i=1; i<f.size(); i++){
         double t=f.cuts[i],ft=f.segs[i].at0();
         cairo_move_to(cr, Point(150+t*300, 450));
         cairo_line_to(cr, Point(150+t*300, 450-ft*vscale));
@@ -79,7 +79,7 @@ class OffsetTester: public Toy {
         cairo_pw_d2(cr,Piecewise<D2<SBasis> >(B)+n*offset);
         cairo_stroke(cr);
 
-        for(int i = 0; i < n.size()+1;i++){
+        for(unsigned i = 0; i < n.size()+1;i++){
             Point ptA=B(n.cuts[i]), ptB;
             if (i==n.size()) 
                 ptB=ptA+n.segs[i-1].at1()*offset;
@@ -114,7 +114,7 @@ class OffsetTester: public Toy {
 public:
     OffsetTester(){
         if(handles.empty()) {
-            for(int i = 0; i < 4; i++)
+            for(unsigned i = 0; i < 4; i++)
                 handles.push_back(Point(200+50*i,300+70*uniform()));
         }
     }

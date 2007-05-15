@@ -35,7 +35,7 @@ void draw_quad_tree(cairo_t* cr, Quad *q, double x, double y, double d) {
 bool clean_quad_tree(Quad *q) { 
     if(q) {
         bool all_clean = q->data.empty();
-        for(int i = 0; i < 4; i++)
+        for(unsigned i = 0; i < 4; i++)
             if(clean_quad_tree(q->children[i])) {
                 delete q->children[i];
                 q->children[i] = 0;
@@ -52,7 +52,7 @@ class QuadToy: public Toy {
     void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         cairo_set_source_rgba (cr, 0., 0.5, 0, 1);
         cairo_set_line_width (cr, 1);
-        for(int i = 0; i < handles.size(); i++) {
+        for(unsigned i = 0; i < handles.size(); i++) {
             std::ostringstream notify;
             notify << i;
             draw_circ(cr, handles[i]);
@@ -63,7 +63,7 @@ class QuadToy: public Toy {
     
             PangoFontDescription *font_desc = pango_font_description_new();
             pango_font_description_set_family(font_desc, "Sans");
-            const int size_px = 10;
+            const unsigned size_px = 10;
             pango_font_description_set_absolute_size(font_desc, size_px * 1024.0);
             pango_layout_set_font_description(layout, font_desc);
             PangoRectangle logical_extent;
@@ -74,7 +74,7 @@ class QuadToy: public Toy {
         }
         cairo_set_source_rgba (cr, 0., 0., 0, 0.8);
         cairo_set_line_width (cr, 0.5);
-        for(int i = 1; i < 4; i+=2) {
+        for(unsigned i = 1; i < 4; i+=2) {
             cairo_move_to(cr, 0, i*height/4);
             cairo_line_to(cr, width, i*height/4);
             cairo_move_to(cr, i*width/4, 0);
@@ -116,7 +116,7 @@ class QuadToy: public Toy {
 
     public:
     QuadToy() {
-        for(int i = 0; i < 100; i++) {
+        for(unsigned i = 0; i < 100; i++) {
             Geom::Point p(uniform() * 400, uniform() * 400);
             handles.push_back(p);
             handles.push_back(p + Geom::Point(uniform() * 40, uniform() * 40));

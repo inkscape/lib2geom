@@ -304,7 +304,7 @@ inline std::ostream &operator<< (std::ostream &out_file, const Linear2d &bo) {
 }
 
 inline std::ostream &operator<< (std::ostream &out_file, const SBasis2d & p) {
-    for(int i = 0; i < p.size(); i++) {
+    for(unsigned i = 0; i < p.size(); i++) {
         out_file << p[i] << "s^" << i << " + ";
     }
     return out_file;

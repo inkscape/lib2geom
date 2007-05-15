@@ -84,14 +84,14 @@ public:
         
 #if ZROOTS_TEST
         fcomplex a[ply.size()];
-        for(int i = 0; i < ply.size(); i++) {
+        for(unsigned i = 0; i < ply.size(); i++) {
             a[i] = ply[i];
         }
         //copy(a, a+ply.size(), ply.begin());
         fcomplex rts[ply.size()];
         
         zroots(a, ply.size(), rts, true);
-        for(int i = 0; i < ply.size(); i++) {
+        for(unsigned i = 0; i < ply.size(); i++) {
             if(! a[i].imag())
                 solutions[i] = a[i].real();
         }
@@ -172,7 +172,7 @@ public:
                 << units_string << std::endl;
     
         double ys[trans.size()];
-        for(int i = 0; i < trans.size(); i++) {
+        for(unsigned i = 0; i < trans.size(); i++) {
             ys[i] = trans[i][1];
             double x = double(i)/(trans.size()-1);
             x = (1-x)*width/4 + x*width*3/4;
@@ -222,7 +222,7 @@ public:
     }
     RootFinderComparer() : timer_precision(0.1), units(1e6), units_string("us") // microseconds
     {
-        for(int i = 0; i < 6; i++) handles.push_back(Geom::Point(uniform()*400, uniform()*400));
+        for(unsigned i = 0; i < 6; i++) handles.push_back(Geom::Point(uniform()*400, uniform()*400));
     }
 };
 

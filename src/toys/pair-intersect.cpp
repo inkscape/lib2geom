@@ -57,7 +57,7 @@ linear_pair_intersect(D2<SBasis> A, double Al, double Ah,
 void pair_intersect(vector<double> &Asects,
                     vector<double> &Bsects,
                     D2<SBasis> A, double Al, double Ah, 
-                    D2<SBasis> B, double Bl, double Bh, int depth=0) {
+                    D2<SBasis> B, double Bl, double Bh, unsigned depth=0) {
     // we'll split only A, and swap args
     Rect Ar = boundsLocal(A, Interval(Al, Ah));
     if(Ar.isEmpty()) return;
@@ -68,11 +68,11 @@ void pair_intersect(vector<double> &Asects,
     if((depth > 12) || Ar.intersects(Br)) {
         double Ate = 0;
         double Bte = 0;
-        for(int d = 0; d < 2; d++) {
+        for(unsigned d = 0; d < 2; d++) {
             Interval bs = boundsLocal(A[d], Interval(Al, Ah), 1); //only 1?
             Ate = std::max(Ate, bs.extent());
         }
-        for(int d = 0; d < 2; d++) {
+        for(unsigned d = 0; d < 2; d++) {
             Interval bs = boundsLocal(B[d], Interval(Bl, Bh), 1);
             Bte = std::max(Bte, bs.extent());
         }
@@ -124,7 +124,7 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
         find_intersections( Ab, Bb);
     cairo_stroke(cr);
     cairo_set_source_rgba (cr, 1., 0., 0, 0.8);
-    for(int i = 0; i < section.size(); i++) {
+    for(unsigned i = 0; i < section.size(); i++) {
         draw_handle(cr, A(section[i].first));
     }
     cairo_stroke(cr);
@@ -135,7 +135,7 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
 }
 public:
 PairIntersect () {
-    for(int j = 0; j < 2; j++)
+    for(unsigned j = 0; j < 2; j++)
     for(unsigned i = 0; i < bez_ord; i++) handles.push_back(Geom::Point(uniform()*400, uniform()*400));
 }
 };

@@ -72,7 +72,7 @@ void
 conjugate_gradient(double **A, 
 		   double *x, 
 		   double *b, 
-		   int n, 
+		   unsigned n, 
 		   double tol,
                    int max_iterations, 
 		   bool ortho1) {
