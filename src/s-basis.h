@@ -77,8 +77,9 @@ public:
         double s = t*(1-t);
         double p0 = 0, p1 = 0;
         double sk = 1;
+        int k = 0;
 //TODO: rewrite as horner
-        for(unsigned k = 0; k < size(); k++) {
+        for(int k = 0; k < size(); k++) {
             p0 += sk*(*this)[k][0];
             p1 += sk*(*this)[k][1];
             sk *= s;
@@ -116,8 +117,8 @@ inline SBasis Linear::toSBasis() const { return SBasis(*this); }
 
 //implemented in s-basis-roots.cpp
 Interval boundsExact(SBasis const &a);
-Interval boundsFast(SBasis const &a, unsigned order = 0);
-Interval boundsLocal(SBasis const &a, const Interval &t, unsigned order = 0);
+Interval boundsFast(SBasis const &a, int order = 0);
+Interval boundsLocal(SBasis const &a, const Interval &t, int order = 0);
 
 inline SBasis reverse(SBasis const &a) {
     SBasis result;
@@ -224,11 +225,11 @@ SBasis multiply(SBasis const &a, SBasis const &b);
 SBasis integral(SBasis const &c);
 SBasis derivative(SBasis const &a);
 
-SBasis sqrt(SBasis const &a, unsigned k);
+SBasis sqrt(SBasis const &a, int k);
 
 // return a kth order approx to 1/a)
-SBasis reciprocal(Linear const &a, unsigned k);
-SBasis divide(SBasis const &a, SBasis const &b, unsigned k);
+SBasis reciprocal(Linear const &a, int k);
+SBasis divide(SBasis const &a, SBasis const &b, int k);
 
 //TODO: remove above decleration of same function
 inline SBasis
@@ -244,7 +245,7 @@ inline SBasis& operator*=(SBasis& a, SBasis const & b) {
 //valuation: degree of the first non zero coefficient.
 inline unsigned 
 valuation(SBasis const &a, double tol=0){
-    unsigned val=0;
+    int val=0;
     while( val<a.size() &&
            fabs(a[val][0])<tol &&
            fabs(a[val][1])<tol ) 
@@ -255,7 +256,7 @@ valuation(SBasis const &a, double tol=0){
 // a(b(t))
 SBasis compose(SBasis const &a, SBasis const &b);
 SBasis compose(SBasis const &a, SBasis const &b, unsigned k);
-SBasis inverse(SBasis a, unsigned k);
+SBasis inverse(SBasis a, int k);
 //compose_inverse(f,g)=compose(f,inverse(g)), but is numerically more stable in some good cases...
 SBasis compose_inverse(SBasis const &f, SBasis const &g, unsigned order, double tol=1e-7);
 
@@ -273,14 +274,14 @@ inline std::ostream &operator<< (std::ostream &out_file, const Linear &bo) {
 }
 
 inline std::ostream &operator<< (std::ostream &out_file, const SBasis & p) {
-    for(unsigned i = 0; i < p.size(); i++) {
+    for(int i = 0; i < p.size(); i++) {
         out_file << p[i] << "s^" << i << " + ";
     }
     return out_file;
 }
 
-SBasis sin(Linear bo, unsigned k);
-SBasis cos(Linear bo, unsigned k);
+SBasis sin(Linear bo, int k);
+SBasis cos(Linear bo, int k);
 
 std::vector<double> roots(SBasis const & s);
 std::vector<std::vector<double> > multi_roots(SBasis const &f,
