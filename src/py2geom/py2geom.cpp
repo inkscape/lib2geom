@@ -35,13 +35,7 @@
 #include "circle-circle.cpp"
 #include "geom.cpp"
 
-#include "point.h"
-#include "transforms.h"
-#include "sbasis.h"
-#include "linear.h"
-#include "pw.h"
-#include "md-pw-sb.h"
-#include "multidimsbasis.h"
+#include "py2geom.h"
 
 using namespace boost::python;
 

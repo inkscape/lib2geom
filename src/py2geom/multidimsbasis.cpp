@@ -29,6 +29,7 @@
 #include <boost/python.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 
+#include "py2geom.h"
 #include "helpers.h"
 #include "../multidim-sbasis.h"
 

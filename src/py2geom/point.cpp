@@ -29,7 +29,7 @@
 #include <boost/python.hpp>
 #include <boost/python/implicit.hpp>
 
-#include "point.h"
+#include "py2geom.h"
 #include "helpers.h"
 
 #include "../point.h"
@@ -77,7 +77,7 @@ void wrap_point() {
     def("unit_vector", Geom::unit_vector);
     def("dot", dot_point);
     def("distance", Geom::distance);
-    def("distanceSq", Geom::dist_sq);
+    def("distanceSq", Geom::distanceSq);
     def("cross", cross_point);
     def("abs", (Geom::Point (*)(Geom::Point const&))&Geom::abs);
 

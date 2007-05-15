@@ -28,7 +28,7 @@
 
 #include <boost/python.hpp>
 
-#include "transforms.h"
+#include "py2geom.h"
 
 #include "../transforms.h"
 

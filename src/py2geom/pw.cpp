@@ -32,7 +32,7 @@
 #include "../s-basis.h"
 #include "../pw.h"
 
-#include "pw.h"
+#include "py2geom.h"
 #include "helpers.h"
 
 using namespace boost::python;

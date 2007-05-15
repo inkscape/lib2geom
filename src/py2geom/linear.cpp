@@ -29,7 +29,7 @@
 #include <boost/python.hpp>
 #include <boost/python/implicit.hpp>
 
-#include "linear.h"
+#include "py2geom.h"
 #include "helpers.h"
 
 #include "../linear.h"

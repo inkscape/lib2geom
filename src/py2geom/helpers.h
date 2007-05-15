@@ -32,9 +32,9 @@
 #include <boost/python.hpp>
 
 template <typename T, typename R, unsigned D>
-R python_getitem(T const& p, int const index)
+R python_getitem(T const& p, unsigned const index)
 {
-    int i = index;
+    unsigned i = index;
     if (index < 0)
     {
         i = D + index;

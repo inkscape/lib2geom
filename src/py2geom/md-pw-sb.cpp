@@ -31,7 +31,7 @@
 
 #include "../md-pw-sb.h"
 
-#include "md-pw-sb.h"
+#include "py2geom.h"
 #include "helpers.h"
 
 using namespace boost::python;
