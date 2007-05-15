@@ -77,9 +77,8 @@ public:
         double s = t*(1-t);
         double p0 = 0, p1 = 0;
         double sk = 1;
-        int k = 0;
 //TODO: rewrite as horner
-        for(int k = 0; k < size(); k++) {
+        for(unsigned k = 0; k < size(); k++) {
             p0 += sk*(*this)[k][0];
             p1 += sk*(*this)[k][1];
             sk *= s;
@@ -245,7 +244,7 @@ inline SBasis& operator*=(SBasis& a, SBasis const & b) {
 //valuation: degree of the first non zero coefficient.
 inline unsigned 
 valuation(SBasis const &a, double tol=0){
-    int val=0;
+    unsigned val=0;
     while( val<a.size() &&
            fabs(a[val][0])<tol &&
            fabs(a[val][1])<tol ) 
@@ -274,7 +273,7 @@ inline std::ostream &operator<< (std::ostream &out_file, const Linear &bo) {
 }
 
 inline std::ostream &operator<< (std::ostream &out_file, const SBasis & p) {
-    for(int i = 0; i < p.size(); i++) {
+    for(unsigned i = 0; i < p.size(); i++) {
         out_file << p[i] << "s^" << i << " + ";
     }
     return out_file;

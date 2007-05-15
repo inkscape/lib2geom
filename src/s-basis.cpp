@@ -237,6 +237,7 @@ SBasis derivative(SBasis const &a) {
     return c;
 }
 
+//TODO: convert int k to unsigned k, and remove cast
 SBasis sqrt(SBasis const &a, int k) {
     SBasis c;
     if(a.isZero() || k == 0)
@@ -245,7 +246,7 @@ SBasis sqrt(SBasis const &a, int k) {
     c[0] = Linear(std::sqrt(a[0][0]), std::sqrt(a[0][1]));
     SBasis r = a - multiply(c, c); // remainder
     
-    for(unsigned i = 1; i <= k and i<r.size(); i++) {
+    for(unsigned i = 1; i <= (unsigned)k and i<r.size(); i++) {
         Linear ci(r[i][0]/(2*c[0][0]), r[i][1]/(2*c[0][1]));
         SBasis cisi = shift(ci, i);
         r -= multiply(shift((c*2 + cisi), i), SBasis(ci));
@@ -265,7 +266,7 @@ SBasis reciprocal(Linear const &a, int k) {
     c.resize(k, Linear(0,0));
     double r_s0 = (Tri(a)*Tri(a))/(-a[0]*a[1]);
     double r_s0k = 1;
-    for(int i = 0; i < k; i++) {
+    for(unsigned i = 0; i < (unsigned)k; i++) {
         c[i] = Linear(r_s0k/a[0], r_s0k/a[1]);
         r_s0k *= r_s0;
     }
@@ -281,7 +282,7 @@ SBasis divide(SBasis const &a, SBasis const &b, int k) {
     r.resize(k, Linear(0,0));
     c.resize(k, Linear(0,0));
 
-    for(unsigned i = 0; i < k; i++) {
+    for(unsigned i = 0; i < (unsigned)k; i++) {
         Linear ci(r[i][0]/b[0][0], r[i][1]/b[0][1]); //H0
         c[i] += ci;
         r -= shift(multiply(ci,b), i);
@@ -367,7 +368,7 @@ SBasis inverse(SBasis a, int k) {
 #endif
     
         c.resize(k+1, Linear(0,0));
-        for(unsigned i = 0; i < k; i++) {   // for i:=0 to k do
+        for(unsigned i = 0; i < (unsigned)k; i++) {   // for i:=0 to k do
 #ifdef DEBUG_INVERSION
             std::cout << "-------" << i << ": ---------" <<std::endl;
             std::cout << "r=" << r << std::endl
@@ -437,12 +438,11 @@ SBasis compose_inverse(SBasis const &f, SBasis const &g, unsigned order, double 
     SBasis result; //result
     SBasis r=f; //remainder
     SBasis Pk=Linear(1)-g,Qk=g,sg=Pk*Qk;
-    int val_g=valuation(g);
-    int val_r=valuation(f);
+    unsigned val_g=valuation(g), val_r=valuation(f);
     Pk.truncate(order);
     Qk.truncate(order);
 
-    for (int k=0; k<=order; k++){
+    for (unsigned k=0; k<=order; k++){
         
         // v is min(valuation(Pk,tol),valuation(Qk,tol));
         //TODO: are valuations really needed here?
