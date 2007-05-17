@@ -285,7 +285,8 @@ SBasis cos(Linear bo, int k);
 std::vector<double> roots(SBasis const & s);
 std::vector<std::vector<double> > multi_roots(SBasis const &f,
                                  std::vector<double> const &levels,
-                                 double tol=1e-7,
+                                 double htol=1e-7,
+                                 double vtol=1e-7,
                                  double a=0,
                                  double b=1);
     

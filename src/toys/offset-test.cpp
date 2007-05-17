@@ -3,7 +3,7 @@
 #include "sbasis-to-bezier.h"
 #include "d2.h"
 #include "sb-geometric.h"
-#include "sb-calculus.h"
+#include "sb-math.h"
 
 #include "path-cairo.h"
 

@@ -99,7 +99,7 @@ This is a multi-root test...
 
 //         cairo_set_source_rgba (cr, 0.9, 0., 0.8, 1);
 
-        vector<vector<double> > sols=multi_roots(B,levels,.001);
+        vector<vector<double> > sols=multi_roots(B,levels,.001,.001);
         //map<double,unsigned> sols=multi_roots(B,levels);
         //for(map<double,unsigned>::iterator sol=sols.begin();sol!=sols.end();sol++){
         //    draw_handle(cr,Point(150+300*(*sol).first,300-levels[(*sol).second]));

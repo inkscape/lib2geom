@@ -139,7 +139,8 @@ static void multi_roots_internal(SBasis const &f,
 				 SBasis const &df,
 				 std::vector<double> const &levels,
 				 std::vector<std::vector<double> > &roots,
-				 double tol,
+				 double htol,
+				 double vtol,
 				 double a,
 				 double fa,
 				 double b,
@@ -147,8 +148,8 @@ static void multi_roots_internal(SBasis const &f,
     
     if (f.size()==0){
         int idx;
-        idx=upper_level(levels,0,tol);
-        if (idx<(int)levels.size()&&fabs(levels.at(idx))<=tol){
+        idx=upper_level(levels,0,vtol);
+        if (idx<(int)levels.size()&&fabs(levels.at(idx))<=vtol){
             roots[idx].push_back(a);
             roots[idx].push_back(b);
         }
@@ -174,20 +175,20 @@ static void multi_roots_internal(SBasis const &f,
 //         }
 //         return;
 //     }
-    if ((b-a)<tol){
+    if ((b-a)<htol){
         //TODO: use different tol for t and f ?
         //TODO: unsigned idx ? (remove int casts when fixed)
-        int idx=std::min(upper_level(levels,fa,tol),upper_level(levels,fb,tol));
+        int idx=std::min(upper_level(levels,fa,vtol),upper_level(levels,fb,vtol));
         if (idx==(int)levels.size()) idx-=1;
         double c=levels.at(idx);
-        if((fa-c)*(fb-c)<=0||fabs(fa-c)<tol||fabs(fb-c)<tol){
+        if((fa-c)*(fb-c)<=0||fabs(fa-c)<vtol||fabs(fb-c)<vtol){
             roots[idx].push_back((a+b)/2);
         }
         return;
     }
     
-    int idxa=upper_level(levels,fa,tol);
-    int idxb=upper_level(levels,fb,tol);
+    int idxa=upper_level(levels,fa,vtol);
+    int idxb=upper_level(levels,fb,vtol);
 
     Interval bs = boundsLocal(df,Interval(a,b));
 
@@ -196,20 +197,20 @@ static void multi_roots_internal(SBasis const &f,
     ta_hi=ta_lo=b+1;//default values => no root there.
     tb_hi=tb_lo=a-1;//default values => no root there.
 
-    if (idxa<(int)levels.size() && fabs(fa-levels.at(idxa))<tol){//a can be considered a root.
+    if (idxa<(int)levels.size() && fabs(fa-levels.at(idxa))<vtol){//a can be considered a root.
         //ta_hi=ta_lo=a;
         roots[idxa].push_back(a);
-        ta_hi=ta_lo=a+tol;
+        ta_hi=ta_lo=a+htol;
     }else{
         if (bs.max()>0 && idxa<(int)levels.size())
             ta_hi=a+(levels.at(idxa  )-fa)/bs.max();
         if (bs.min()<0 && idxa>0)
             ta_lo=a+(levels.at(idxa-1)-fa)/bs.min();
     }
-    if (idxb<(int)levels.size() && fabs(fb-levels.at(idxb))<tol){//b can be considered a root.
+    if (idxb<(int)levels.size() && fabs(fb-levels.at(idxb))<vtol){//b can be considered a root.
         //tb_hi=tb_lo=b;
         roots[idxb].push_back(b);
-        tb_hi=tb_lo=b-tol;
+        tb_hi=tb_lo=b-htol;
     }else{
         if (bs.min()<0 && idxb<(int)levels.size())
             tb_hi=b+(levels.at(idxb  )-fb)/bs.min();
@@ -221,38 +222,39 @@ static void multi_roots_internal(SBasis const &f,
     t0=std::min(ta_hi,ta_lo);    
     t1=std::max(tb_hi,tb_lo);
     //hum, rounding errors frighten me! so I add this +tol...
-    if (t0>t1+tol) return;//no root here.
+    if (t0>t1+htol) return;//no root here.
 
-    if (fabs(t1-t0)<tol){
-        multi_roots_internal(f,df,levels,roots,tol,t0,f(t0),t1,f(t1));
+    if (fabs(t1-t0)<htol){
+        multi_roots_internal(f,df,levels,roots,htol,vtol,t0,f(t0),t1,f(t1));
     }else{
         double t,t_left,t_right,ft,ft_left,ft_right;
         t_left =t_right =t =(t0+t1)/2;
         ft_left=ft_right=ft=f(t);
-        int idx=upper_level(levels,ft,tol);
-        if (idx<(int)levels.size() && fabs(ft-levels.at(idx))<tol){//t can be considered a root.
+        int idx=upper_level(levels,ft,vtol);
+        if (idx<(int)levels.size() && fabs(ft-levels.at(idx))<vtol){//t can be considered a root.
             roots[idx].push_back(t);
             //we do not want to count it twice (from the left and from the right)
-            t_left =t-tol/2;
-            t_right=t+tol/2;
+            t_left =t-htol/2;
+            t_right=t+htol/2;
             ft_left =f(t_left);
             ft_right=f(t_right);
         }
-        multi_roots_internal(f,df,levels,roots,tol,t0     ,f(t0)   ,t_left,ft_left);
-        multi_roots_internal(f,df,levels,roots,tol,t_right,ft_right,t1    ,f(t1)  );
+        multi_roots_internal(f,df,levels,roots,htol,vtol,t0     ,f(t0)   ,t_left,ft_left);
+        multi_roots_internal(f,df,levels,roots,htol,vtol,t_right,ft_right,t1    ,f(t1)  );
     }
 }
 
 std::vector<std::vector<double> > multi_roots(SBasis const &f,
                                       std::vector<double> const &levels,
-                                      double tol,
+                                      double htol,
+                                      double vtol,
                                       double a,
                                       double b){
 
     std::vector<std::vector<double> > roots(levels.size(), std::vector<double>());
 
     SBasis df=derivative(f);
-    multi_roots_internal(f,df,levels,roots,tol,a,f(a),b,f(b));  
+    multi_roots_internal(f,df,levels,roots,htol,vtol,a,f(a),b,f(b));  
 
     return(roots);
 }

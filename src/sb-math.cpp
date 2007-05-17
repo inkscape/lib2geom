@@ -1,5 +1,5 @@
 /*
- *  sb-calculus.cpp - some std functions to work with (pw)s-basis
+ *  sb-math.cpp - some std functions to work with (pw)s-basis
  *
  *  Authors:
  *   Jean-Francois Barraud
@@ -34,7 +34,7 @@
 //TODO: define a truncated compose(sb,sb, order) and extend it to pw<sb>.
 //TODO: in all these functions, compute 'order' according to 'tol'.
 
-#include "sb-calculus.h"
+#include "sb-math.h"
 //#define ZERO 1e-3
 
 
@@ -50,7 +50,7 @@ Piecewise<SBasis> abs(SBasis const &f){
 }
 Piecewise<SBasis> abs(Piecewise<SBasis> const &f){
     Piecewise<SBasis> absf=partition(f,roots(f));
-    for (int i=0; i<absf.size(); i++){
+    for (unsigned i=0; i<absf.size(); i++){
         if (absf.segs[i](.5)<0) absf.segs[i]*=-1;
     }
     return absf;
@@ -70,7 +70,7 @@ Piecewise<SBasis> maxSb(Piecewise<SBasis> const &f, Piecewise<SBasis> const &g){
     Piecewise<SBasis> maxSb=partition(f,roots(f-g));
     Piecewise<SBasis> gg =partition(g,maxSb.cuts);
     maxSb = partition(maxSb,gg.cuts);
-    for (int i=0; i<maxSb.size(); i++){
+    for (unsigned i=0; i<maxSb.size(); i++){
         if (maxSb.segs[i](.5)<gg.segs[i](.5)) maxSb.segs[i]=gg.segs[i];
     }
     return maxSb;
@@ -92,7 +92,7 @@ Piecewise<SBasis> signSb(SBasis const &f){
 }
 Piecewise<SBasis> signSb(Piecewise<SBasis> const &f){
     Piecewise<SBasis> sign=partition(f,roots(f));
-    for (int i=0; i<sign.size(); i++){
+    for (unsigned i=0; i<sign.size(); i++){
         sign.segs[i] = (sign.segs[i](.5)<0)? Linear(-1.):Linear(1.);
     }
     return sign;
@@ -102,7 +102,7 @@ Piecewise<SBasis> signSb(Piecewise<SBasis> const &f){
 static Piecewise<SBasis> sqrt_internal(SBasis const &f, 
                                     double absolute_tol, 
                                     int order){
-    double tol=absolute_tol;//I just want stress that this tol is not relative in the args...
+    double tol=absolute_tol;//use a shorter name, but remember it is absolute...
     SBasis sqrtf;
     if(f.isZero() || order == 0){
         return Piecewise<SBasis>(sqrtf);
@@ -113,7 +113,7 @@ static Piecewise<SBasis> sqrt_internal(SBasis const &f,
         sqrtf.resize(order, Linear(0,0));
         sqrtf[0] = Linear(std::sqrt(f[0][0]), std::sqrt(f[0][1]));
         SBasis r = f - multiply(sqrtf, sqrtf); // remainder    
-        for(unsigned i = 1; i <= order and i<r.size(); i++) {
+        for(unsigned i = 1; int(i) <= order and i<r.size(); i++) {
             Linear ci(r[i][0]/(2*sqrtf[0][0]), r[i][1]/(2*sqrtf[0][1]));
             SBasis cisi = shift(ci, i);
             r -= multiply(shift((sqrtf*2 + cisi), i), SBasis(ci));
@@ -143,15 +143,20 @@ static Piecewise<SBasis> sqrt_internal(SBasis const &f,
 Piecewise<SBasis> sqrt(SBasis const &f, double tol, int order){
     Interval bnds = boundsFast(f);
     double absolute_tol = tol*std::max(fabs(bnds.max()),fabs(bnds.min()));
-    return sqrt_internal(f,absolute_tol,order);
+
+//    return sqrt_internal(f,absolute_tol,order);
+    return sqrt(maxSb(f,Linear(tol)),absolute_tol,order);
 }
 
 Piecewise<SBasis> sqrt(Piecewise<SBasis> const &f, double tol, int order){
     Piecewise<SBasis> result;
     Interval bnds = boundsFast(f);
     double absolute_tol = tol*std::max(fabs(bnds.max()),fabs(bnds.min()));
-    for (int i=0; i<f.size(); i++){
-        Piecewise<SBasis> sqrtfi = sqrt(f.segs[i],tol,order);
+
+    Piecewise<SBasis> ff=maxSb(f,Linear(tol));
+
+    for (unsigned i=0; i<ff.size(); i++){
+        Piecewise<SBasis> sqrtfi = sqrt_internal(ff.segs[i],tol,order);
         sqrtfi.setDomain(Interval(f.cuts[i],f.cuts[i+1]));
         result.concat(sqrtfi);
     }
@@ -165,7 +170,7 @@ Piecewise<SBasis> sin(Piecewise<SBasis> const &f, double tol, int order){return(
 
 Piecewise<SBasis> cos(Piecewise<SBasis> const &f, double tol, int order){
     Piecewise<SBasis> result;
-    for (int i=0; i<f.size(); i++){
+    for (unsigned i=0; i<f.size(); i++){
         Piecewise<SBasis> cosfi = cos(f.segs[i],tol,order);
         cosfi.setDomain(Interval(f.cuts[i],f.cuts[i+1]));
         result.concat(cosfi);
@@ -210,7 +215,7 @@ Piecewise<SBasis> cos(          SBasis  const &f, double tol, int order){
 //--1/x------------------------------------------------------------
 void truncateResult(Piecewise<SBasis> &f, int order){
     if (order>=0){
-        for (int k=0; k<f.segs.size(); k++){
+        for (unsigned k=0; k<f.segs.size(); k++){
             f.segs[k].truncate(order);
         }
     }
@@ -249,7 +254,7 @@ Piecewise<SBasis> reciprocalOnDomain(Interval range, double tol){
         Piecewise<SBasis>reciprocal_fn_neg;
         //TODO: define reverse(pw<sb>);
         reciprocal_fn_neg.cuts.push_back(-reciprocal_fn.cuts.back());
-        for (int i=0; i<reciprocal_fn.size(); i++){
+        for (unsigned i=0; i<reciprocal_fn.size(); i++){
             int idx=reciprocal_fn.segs.size()-1-i;
             reciprocal_fn_neg.push_seg(-reverse(reciprocal_fn.segs.at(idx)));
             reciprocal_fn_neg.push_cut(-reciprocal_fn.cuts.at(idx));

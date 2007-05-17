@@ -32,7 +32,7 @@
 
 #include "s-basis.h"
 #include "pw.h"
-#include "sb-calculus.h"
+#include "sb-math.h"
 #include "bezier-to-sbasis.h"
 #include "sbasis-to-bezier.h"
 #include "d2.h"
@@ -65,8 +65,8 @@ static void plot(cairo_t* cr, SBasis const &f,double vscale=1,double a=0,double 
 }
 
 static void plot(cairo_t* cr, double (*f)(double), Piecewise<SBasis> const &x, double vscale=1){
-    unsigned NbPts=40;
-    for(unsigned i=0; i<NbPts; i++){
+    int NbPts=40;
+    for(int i=0; i<NbPts; i++){
         double t=double(i)/NbPts;
         t=x.cuts.front()*(1-t) + x.cuts.back()*t;
         draw_handle(cr, Point(150+i*300./NbPts,300-(*f)(x(t))*vscale));
@@ -86,7 +86,7 @@ static void plot(cairo_t* cr, Piecewise<SBasis> const &f,double vscale=1){
 
     cairo_d2_pw(cr, plot);
 
-    for (unsigned i=1; i<f.size(); i++){
+    for (int i=1; i<f.size(); i++){
         cairo_move_to(cr, Point(150+f.cuts[i]*300,300));
         cairo_line_to(cr, Point(150+f.cuts[i]*300,300-vscale*f.segs[i].at0()));
     }
@@ -102,7 +102,7 @@ class SbCalculusToy: public Toy {
 
       //Let the user input sbasis coefs.
       SBasis B;
-      for (unsigned i=0;i<SIZE;i++){
+      for (int i=0;i<SIZE;i++){
           handles[i    ][0]=150+15*(i-SIZE);
           handles[i+SIZE][0]=450+15*(i+1);
           cairo_move_to(cr, Geom::Point(handles[i    ][0],150));
@@ -117,9 +117,9 @@ class SbCalculusToy: public Toy {
       cairo_set_source_rgba (cr, 0.2, 0.2, 0.2, 1);
       cairo_stroke(cr);
       
-      for (unsigned i=0;i<SIZE;i++){
-          B.push_back(Linear(-(handles[i     ][1]-300)*pow(4.,(int)i),
-                             -(handles[i+SIZE][1]-300)*pow(4.,(int)i) ));
+      for (int i=0;i<SIZE;i++){
+          B.push_back(Linear(-(handles[i     ][1]-300)*pow(4.,i),
+                             -(handles[i+SIZE][1]-300)*pow(4.,i) ));
       }
       Piecewise<SBasis> f = Piecewise<SBasis>(B);
 
@@ -177,7 +177,7 @@ class SbCalculusToy: public Toy {
 public:
   SbCalculusToy(){
       if(handles.empty()) {
-          for(unsigned i = 0; i < 2*SIZE; i++)
+          for(int i = 0; i < 2*SIZE; i++)
               handles.push_back(Geom::Point(0,150+150+uniform()*300*0));
       }
   }

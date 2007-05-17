@@ -439,6 +439,8 @@ SBasis compose_inverse(SBasis const &f, SBasis const &g, unsigned order, double 
     SBasis r=f; //remainder
     SBasis Pk=Linear(1)-g,Qk=g,sg=Pk*Qk;
     unsigned val_g=valuation(g), val_r=valuation(f);
+    if (val_g==g.size()) return Linear(f.at0());
+    if (val_r==f.size()) return Linear(0.);
     Pk.truncate(order);
     Qk.truncate(order);
 
@@ -452,7 +454,7 @@ SBasis compose_inverse(SBasis const &f, SBasis const &g, unsigned order, double 
 
         unsigned v=std::min(valuation(Pk,tol),valuation(Qk,tol));
 
-        assert(v<=val_r);//otherwise f(g^-1) does not exist!
+        //assert(v<=val_r);//otherwise f(g^-1) does not exist!
 
         if (v<val_r){
             result.push_back(Linear(0));
@@ -464,10 +466,29 @@ SBasis compose_inverse(SBasis const &f, SBasis const &g, unsigned order, double 
             double r10 =  r.at(v)[0];
             double r01 =  r.at(v)[1];
             if ( fabs(p10*q01-p01*q10)<tol ) {
-                assert(fabs(r10)<tol && fabs(r01)<tol );//otherwise f(g^-1) does not exist!
-                //but we should not be there (val_r==valuation(r)!)...
-                result.push_back(Linear(0));
-                val_r+=1;
+                assert( fabs(p10*r01-p01*r10)<tol );//otherwise f(g^-1) does not exist!
+                double a, b;
+                if (fabs(p10)+fabs(q10)>fabs(p10)+fabs(q10)){
+                    if (fabs(p10)>fabs(q10)){
+                        a=(r10-q10)/p10;
+                        b=1.;
+                    }else{
+                        a=1.;
+                        b=(r01-p10)/q10;
+                    }
+                }else{
+                    if (fabs(p01)>fabs(q01)){
+                        a=(r01-q01)/p01;
+                        b=1.;
+                    }else{
+                        a=1.;
+                        b=(r01-p01)/q01;
+                    }
+                }
+                result.push_back(Linear(a,b));
+                r=r-Pk*a-Qk*b;
+                //TODO: val_r+=1;
+                val_r=valuation(r,tol);
             }else{
                 double a=( q01*r10-q10*r01)/(p10*q01-p01*q10);
                 double b=(-p01*r10+p10*r01)/(p10*q01-p01*q10);

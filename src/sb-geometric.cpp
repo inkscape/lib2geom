@@ -1,6 +1,6 @@
 #include "sb-geometric.h"
 #include "s-basis.h"
-#include "sb-calculus.h"
+#include "sb-math.h"
 //#include "solver.h"
 #include "sb-geometric.h"
 
@@ -252,8 +252,9 @@ Geom::unitVector(Piecewise<D2<SBasis> > const &V, double tol, unsigned order){
 Piecewise<SBasis> 
 Geom::arcLengthSb(Piecewise<D2<SBasis> > const &M, double tol){
     Piecewise<D2<SBasis> > dM = derivative(M);
-    Piecewise<D2<SBasis> > uspeed = unitVector(dM,tol);
-    Piecewise<SBasis> dMlength = dot(dM,uspeed);
+    //Piecewise<D2<SBasis> > uspeed = unitVector(dM,tol);
+    //Piecewise<SBasis> dMlength = dot(dM,uspeed);
+    Piecewise<SBasis> dMlength = sqrt(dot(dM,dM),1.e-4,3);
     Piecewise<SBasis> length = integral(dMlength);
     length-=length.segs.front().at0();
     return length;

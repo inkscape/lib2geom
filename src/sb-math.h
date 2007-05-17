@@ -1,5 +1,5 @@
 /*
- *  sb-calculus.cpp - some std functions to work with (pw)s-basis
+ *  sb-math.h - some std functions to work with (pw)s-basis
  *
  *  Authors:
  *   Jean-Francois Barraud

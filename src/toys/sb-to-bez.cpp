@@ -28,12 +28,9 @@
  *
  */
 
-// This is a draft test for convertion from sb to cubic bezier.
-// I am not sure about what to do next; the improved method can be used
-//   -to reduce the number of segments: same error, less segs.
-//       this requires to find the best places to cut.
-//   -to improve the approximation error on comparable segments.
-// ...
+// mainly experimental atm...
+// do not expect to find anything understandable here atm. 
+
 
 #include "s-basis.h"
 #include "sb-geometric.h"
@@ -212,41 +209,40 @@ static void draw_bez_approx_at(cairo_t *cr,Piecewise<D2<SBasis> > M,double t){
 
 //--------------------------------------------------------------
 
-static SBasis cubicL2Project(SBasis const b){
+//L2 proj of a general sb onto {f/ deg(f)=3, f(0)=f(1)=0}
+static SBasis cubicL2Project(Piecewise<SBasis> const &f){
     SBasis e1, e2;
     e1.push_back(Linear(0));
     e1.push_back(Linear(sqrt(30.)));
     e2.push_back(Linear(0));
     e2.push_back(Linear(sqrt(210.),-sqrt(210.)));
 
-    SBasis prod;
-    prod = integral(multiply(b,e1));
-    double a1 = prod.at1()-prod.at0();
-    prod = integral(multiply(b,e2));
-    double a2 = prod.at1()-prod.at0();
+    Piecewise<SBasis> prod;
+    prod = integral(f*Piecewise<SBasis>(e1));
+    double a1 = prod.segs.back().at1()-prod.segs.front().at0();
+    prod = integral(f*Piecewise<SBasis>(e2));
+    double a2 = prod.segs.back().at1()-prod.segs.front().at0();
 
     //return a1*e1+a2*e2;
     return e1*a1+e2*a2;
 }
 
+
+//L2 approximation of M as b+n, where n is a section of the normal bundle.
+// M is supposed to be parametrized by arc length.
 static D2<SBasis> L2_proj(Piecewise<D2<SBasis> > const &M, 
                           D2<SBasis> b, 
                           unsigned depth=0){
     D2<SBasis> result, db=derivative(b);
     Piecewise<D2<SBasis> > udb = unitVector(db,.1);
-    Piecewise<SBasis> sb = arcLengthSb(b);
-    Piecewise<D2<SBasis> > v,h,n,nh;
-    v = compose(M-Piecewise<D2<SBasis> >(b),sb);
-    assert("sorry, not implemented yet!");
-    //argh... no division yet!
-    //h = dot(v,Piecewise<D2<SBasis> >(db))/dot(db,db);
-
-    //argh... no multiplication yet!
-    //n = dot(v,udb)*rot90(udb);
-
-    //nh= compose(n,Linear(0,1) - h);
-
-    //return b+cubicL2Project(nh);
+    Piecewise<SBasis> sb = arcLengthSb(b);//TODO: don't compute unit vector twice!!
+    Piecewise<D2<SBasis> > v = compose(M,sb)-Piecewise<D2<SBasis> >(b);
+    Piecewise<SBasis> n = dot(v,rot90(udb));
+    Piecewise<SBasis> h =divide( dot(v,Piecewise<D2<SBasis> >(db)), dot(db,db), .01, 3);
+    n = compose(n,Piecewise<SBasis>(Linear(0,1)) - h);
+   
+    D2<Piecewise<SBasis> > nn = makeCutsIndependant(n*rot90(udb));
+    return (b+D2<SBasis>(cubicL2Project(nn[0]),cubicL2Project(nn[1])) );
 }
 
 
@@ -275,7 +271,16 @@ class SbToBezierTester: public Toy {
       //draw_bez_approx_at(cr,g,t0);      
       cairo_set_line_width (cr, 1);
       cairo_set_source_rgba (cr, 0., 0., 0.9, .7);
-      double error=draw_non_parametric_approx(cr,g,t0,t1);
+      //double error=draw_non_parametric_approx(cr,g,t0,t1);
+      double error=0;
+
+      Piecewise<D2<SBasis> > ug = arc_length_parametrization(g);
+      vector<Geom::Point> bez_pts_init=sb_seg_to_bez(g,t0,t1);
+      D2<SBasis>b=handles_to_sbasis<3>(bez_pts_init.begin());
+      D2<SBasis>L2_approx=L2_proj(ug,b);
+      cairo_set_source_rgba (cr, 0., 0.9, 0., .7);
+      cairo_md_sb(cr, L2_approx);
+      cairo_stroke(cr);
 
       cairo_set_line_width (cr, 1);
       cairo_set_source_rgba (cr, 0.9, 0., 0., .7);
