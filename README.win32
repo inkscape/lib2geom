@@ -1,10 +1,12 @@
 - Download the latest mingw, gsl, and gtk bundles from http://inkscape.modevia.com/win32libs/?C=M;O=D
+- Also download Boost from SourceForge and unpack it in a directory of your choice (you specify it's path later on)
 - Obtain, compile and install Inkscape svn following these instructions http://inkscape.org/win32/win32buildnotes.html
 - unpackage the gsl bundle into the directory with the gtk bundle
 - download cmake; install at C:\cmake
+- check the directories in mingwenv.bat. Are they set correctly for you?
 - make a build directory
 - open cmd.exe
     - mingwenv.bat
-    - cmake -g "MinGW Makefiles" c:\path\to\2geom\source
+    - cmake -G "MinGW Makefiles" c:\path\to\2geom    (be sure you have a CAPITAL '-G' there!)
     - make
 - copy the resulting *.exe files into the inkscape install directory
