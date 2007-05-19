@@ -1,4 +1,4 @@
-#line 1 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
+#line 1 "/home/michael/2geom/trunk/src/svg-path-parser.rl"
 /*
  * parse SVG path specifications
  *
@@ -36,7 +36,7 @@
 
 #include "point.h"
 
-#include "svg_path_parser.h"
+#include "svg-path-parser.h"
 
 namespace Geom {
 
@@ -128,7 +128,7 @@ private:
 };
 
 
-#line 132 "/home/mental/trees/lib2geom/src/svg_path_parser.cpp"
+#line 132 "/home/michael/2geom/trunk/src/svg-path-parser.cpp"
 static unsigned char _svg_path_a[] = {
 	0, 1, 0, 1, 1, 1, 2, 1, 
 	3, 1, 4, 1, 5, 1, 15, 2, 
@@ -1254,7 +1254,7 @@ static int svg_path_start = 272;
 
 static int svg_path_first_final = 272;
 
-#line 132 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
+#line 132 "/home/michael/2geom/trunk/src/svg-path-parser.rl"
 
 
 void Parser::parse(char const *str)
@@ -1268,7 +1268,7 @@ throw(SVGPathParseError)
     _reset();
 
     
-#line 1272 "/home/mental/trees/lib2geom/src/svg_path_parser.cpp"
+#line 1272 "/home/michael/2geom/trunk/src/svg-path-parser.cpp"
 	{
 	cs = svg_path_start;
 	}
@@ -1280,10 +1280,10 @@ throw(SVGPathParseError)
 	char *_keys;
 
 	p -= 1;
-	goto _resume;
+	goto resume;
 
-_again:
-_resume:
+again:
+resume:
 	if ( ++p == pe )
 		goto _out;
 	_keys = _svg_path_k + _svg_path_ko[cs];
@@ -1305,7 +1305,7 @@ _resume:
 				_lower = _mid + 1;
 			else {
 				_trans += (_mid - _keys);
-				goto _match;
+				goto match;
 			}
 		}
 		_keys += _slen;
@@ -1328,7 +1328,7 @@ _resume:
 				_lower = _mid + 2;
 			else {
 				_trans += ((_mid - _keys)>>1);
-				goto _match;
+				goto match;
 			}
 		}
 		_trans += _rlen;
@@ -1336,12 +1336,12 @@ _resume:
 
 	if ( cs == 0 )
 		goto _out;
-_match:
+match:
 	_trans = _svg_path_i[_trans];
 	cs = _svg_path_tt[_trans];
 
 	if ( _svg_path_ta[_trans] == 0 )
-		goto _again;
+		goto again;
 
 	_acts = _svg_path_a + _svg_path_ta[_trans];
 	_nacts = (unsigned int) *_acts++;
@@ -1350,13 +1350,13 @@ _match:
 		switch ( *_acts++ )
 		{
 	case 0:
-#line 145 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
+#line 145 "/home/michael/2geom/trunk/src/svg-path-parser.rl"
 	{
             start = p;
         }
 	break;
 	case 1:
-#line 149 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
+#line 149 "/home/michael/2geom/trunk/src/svg-path-parser.rl"
 	{
             char const *end=p;
             std::string buf(start, end);
@@ -1365,55 +1365,55 @@ _match:
         }
 	break;
 	case 2:
-#line 156 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
+#line 156 "/home/michael/2geom/trunk/src/svg-path-parser.rl"
 	{
             _push(1.0);
         }
 	break;
 	case 3:
-#line 160 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
+#line 160 "/home/michael/2geom/trunk/src/svg-path-parser.rl"
 	{
             _push(0.0);
         }
 	break;
 	case 4:
-#line 164 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
+#line 164 "/home/michael/2geom/trunk/src/svg-path-parser.rl"
 	{
             _absolute = true;
         }
 	break;
 	case 5:
-#line 168 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
+#line 168 "/home/michael/2geom/trunk/src/svg-path-parser.rl"
 	{
             _absolute = false;
         }
 	break;
 	case 6:
-#line 172 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
+#line 172 "/home/michael/2geom/trunk/src/svg-path-parser.rl"
 	{
             _moveTo(_pop_point());
         }
 	break;
 	case 7:
-#line 176 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
+#line 176 "/home/michael/2geom/trunk/src/svg-path-parser.rl"
 	{
             _lineTo(_pop_point());
         }
 	break;
 	case 8:
-#line 180 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
+#line 180 "/home/michael/2geom/trunk/src/svg-path-parser.rl"
 	{
             _lineTo(Point(_pop_coord(X), _current[Y]));
         }
 	break;
 	case 9:
-#line 184 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
+#line 184 "/home/michael/2geom/trunk/src/svg-path-parser.rl"
 	{
             _lineTo(Point(_current[X], _pop_coord(Y)));
         }
 	break;
 	case 10:
-#line 188 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
+#line 188 "/home/michael/2geom/trunk/src/svg-path-parser.rl"
 	{
             Point p = _pop_point();
             Point c1 = _pop_point();
@@ -1422,7 +1422,7 @@ _match:
         }
 	break;
 	case 11:
-#line 195 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
+#line 195 "/home/michael/2geom/trunk/src/svg-path-parser.rl"
 	{
             Point p = _pop_point();
             Point c1 = _pop_point();
@@ -1430,7 +1430,7 @@ _match:
         }
 	break;
 	case 12:
-#line 201 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
+#line 201 "/home/michael/2geom/trunk/src/svg-path-parser.rl"
 	{
             Point p = _pop_point();
             Point c = _pop_point();
@@ -1438,14 +1438,14 @@ _match:
         }
 	break;
 	case 13:
-#line 207 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
+#line 207 "/home/michael/2geom/trunk/src/svg-path-parser.rl"
 	{
             Point p = _pop_point();
             _quadTo(_quad_tangent, p);
         }
 	break;
 	case 14:
-#line 212 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
+#line 212 "/home/michael/2geom/trunk/src/svg-path-parser.rl"
 	{
             Point point = _pop_point();
             bool sweep = _pop_flag();
@@ -1458,19 +1458,19 @@ _match:
         }
 	break;
 	case 15:
-#line 223 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
+#line 223 "/home/michael/2geom/trunk/src/svg-path-parser.rl"
 	{
             _closePath();
         }
 	break;
-#line 1467 "/home/mental/trees/lib2geom/src/svg_path_parser.cpp"
+#line 1467 "/home/michael/2geom/trunk/src/svg-path-parser.cpp"
 		}
 	}
 
-	goto _again;
+	goto again;
 	_out: {}
 	}
-#line 367 "/home/mental/trees/lib2geom/src/svg_path_parser.rl"
+#line 367 "/home/michael/2geom/trunk/src/svg-path-parser.rl"
 
 
     if ( cs < svg_path_first_final ) {

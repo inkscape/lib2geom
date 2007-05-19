@@ -35,7 +35,7 @@
 
 #include "point.h"
 
-#include "svg_path_parser.h"
+#include "svg-path-parser.h"
 
 namespace Geom {
 

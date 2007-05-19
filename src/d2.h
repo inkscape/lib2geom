@@ -33,6 +33,7 @@
 
 #include "point.h"
 #include "interval.h"
+#include "matrix.h"
 
 #include <boost/concept_check.hpp>
 #include "concepts.h"
@@ -314,6 +315,16 @@ D2<T>::operator()(double x, double y) const {
     for(unsigned i = 0; i < 2; i++)
        p[i] = (*this)[i](x, y);
     return p;
+}
+
+template<typename T>
+T operator*(D2<T> const &v, Matrix const &m) {
+    boost::function_requires<AddableConcept<T> >();
+    boost::function_requires<ScalableConcept<T> >();
+    D2<T> ret;
+    for(unsigned i = 0; i < 2; i++)
+        ret[i] = v[X] * m[i] + v[Y] * m[i + 2] + m[i + 4];
+    return ret;
 }
 
 } //end namespace Geom

@@ -56,7 +56,7 @@ public:
     }
 
     double operator[](unsigned i) const {
-        assert(i >= 0 && i < 2);
+        assert(i < 2);
         return _b[i];
     }
     double& operator[](unsigned i) { return _b[i]; }  //Trust the user...

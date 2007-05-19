@@ -37,9 +37,6 @@ namespace Geom {
 
 class SVGPathSink {
 public:
-// FIXME: mgsloan added this to get rid of a compiler warning, but it breaks compilation.
-//    virtual ~SVGPathSink();
-
     virtual void moveTo(Point p) = 0;
     virtual void lineTo(Point p) = 0;
     virtual void curveTo(Point c0, Point c1, Point p) = 0;

@@ -1,7 +1,7 @@
 #generate parser file with ragel
-SET(SVG_PARSER_CPP "${CMAKE_CURRENT_SOURCE_DIR}/svg_path_parser.cpp")
-SET(SVG_PARSER_TMP "${CMAKE_CURRENT_SOURCE_DIR}/svg_path_parser.tmp")
-SET(SVG_PARSER_RL "${CMAKE_CURRENT_SOURCE_DIR}/svg_path_parser.rl")
+SET(SVG_PARSER_CPP "${CMAKE_CURRENT_SOURCE_DIR}/svg-path-parser.cpp")
+SET(SVG_PARSER_TMP "${CMAKE_CURRENT_SOURCE_DIR}/svg-path-parser.tmp")
+SET(SVG_PARSER_RL "${CMAKE_CURRENT_SOURCE_DIR}/svg-path-parser.rl")
 SET(GENERATE_SVG_PARSER NOT EXISTS "${SVG_PARSER_CPP}")
 SET(REGENERATE_SVG_PARSER "${SVG_PARSER_CPP}" IS_NEWER_THAN "${SVG_PARSER_RL}")
 IF(GENERATE_SVG_PARSER OR REGENERATE_SVG_PARSER)
@@ -17,8 +17,8 @@ ENDIF(GENERATE_SVG_PARSER OR REGENERATE_SVG_PARSER)
 SET(2GEOM_SRC
 svg-path.h
 svg-path.cpp
-svg_path_parser.h
-svg_path_parser.cpp
+svg-path-parser.h
+svg-path-parser.cpp
 #arc-length.cpp
 #arc-length.h
 bezier-to-sbasis.h
