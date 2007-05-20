@@ -218,15 +218,10 @@ Gear Gear::spawn(int N, double a) {
 class GearToy: public Toy {
     public:
     GearToy () {
-        for(unsigned i = 0; i < 2; i++)
+        for(unsigned i = 0; i < 4; i++)
             handles.push_back(Geom::Point(uniform()*400, uniform()*400));
     }
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
-        cairo_set_source_rgba (cr, 0., 0.5, 0, 1);
-        cairo_set_line_width (cr, 1);
-        for(unsigned i = 0; i < handles.size(); i++) {
-            draw_circ(cr, handles[i]);
-        }
         cairo_set_source_rgba (cr, 0., 0., 0, 0.8);
         cairo_set_line_width (cr, 0.5);
         double dominant_dim = std::max(width,height);
@@ -242,8 +237,8 @@ class GearToy: public Toy {
         }
         cairo_stroke(cr);*/
         
-        double pressure_angle = 20.0 * M_PI / 180;
-        Gear gear(7,200.0,pressure_angle);
+        double pressure_angle = (handles[3][0] / 10) * M_PI / 180;
+        Gear gear(handles[2][0] / 10,200.0,pressure_angle);
         Geom::Point gear_centre = handles[1];
         gear.pitch_radius(Geom::distance(gear_centre, handles[0]));
         gear.angle(atan2(handles[0] - gear_centre));
