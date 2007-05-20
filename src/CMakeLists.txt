@@ -45,7 +45,6 @@ sb-geometric.h
 sb-math.h
 sb-math.cpp
 #nearestpoint.cpp
-path2-builder.h
 path2.cpp
 path2.h
 point.h
@@ -60,8 +59,6 @@ poly-laguerre-solve.h
 pw.cpp
 quadtree.cpp
 quadtree.h
-read-svgd.cpp
-read-svgd.h
 refcounted.h
 s-basis-2d.h
 s-basis-2d.cpp

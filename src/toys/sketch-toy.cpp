@@ -1,6 +1,5 @@
 #include "path2.h"
 #include "path-cairo.h"
-#include "path2-builder.h"
 
 #include "matrix.h"
 

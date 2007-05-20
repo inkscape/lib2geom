@@ -32,6 +32,7 @@
 #define SEEN_SVG_PATH_H
 
 #include "path2.h"
+#include <iterator>
 
 namespace Geom {
 
@@ -59,7 +60,7 @@ public:
         finish();
         _path.start(p);
     }
-
+//TODO: what if _in_path = false?
     void lineTo(Point p) {
         _path.appendNew<Path2::LineSegment>(p);
     }
@@ -98,6 +99,76 @@ private:
     OutputIterator _out;
     Path2::Path _path;
 };
+
+typedef std::back_insert_iterator<std::vector<Path2::Path> > iter;
+
+class PathBuilder : public SVGPathGenerator<iter> {
+private:
+    std::vector<Path2::Path> _pathset;
+public:
+    PathBuilder() : SVGPathGenerator<iter>(iter(_pathset)) {}
+    std::vector<Path2::Path> const &peek() const { return _pathset; }
+};
+
+/*
+class PathBuilder {
+private:
+    SVGPathGenerator<iter> _gen;
+    std::vector<Path2::Path> _pathset;
+    double _tol;
+    Point _cur;
+public:
+    explicit PathBuilder(double const &c = Geom_EPSILON) : _gen(iter(_pathset)) {
+        _tol = c;
+    }
+
+    void moveTo(Point p) { _gen.moveTo(p); }
+    void lineTo(Point p) { _gen.lineTo(p); }
+    void curveTo(Point p0, Point p1, Point p2) { _gen.curveTo(p0, p1, p2); }
+    void quadTo(Point p0, Point p1) { _gen.quadTo(p0, p1); }
+    void arcTo(double rx, double ry, double angle,
+               bool large_arc, bool sweep, Point p) {
+        _gen.arcTo(rx, ry, angle, large_arc, sweep, p);
+    }
+
+    void moveToRel(Point p) { moveTo(_cur+p); }
+    void lineToRel(Point p) { lineTo(_cur+p); }
+    void curveToRel(Point p0, Point p1, Point p2) {
+        curveTo(_cur+p0, _cur+p1, _cur+p2);
+    }
+    void quadToRel(Point p0, Point p1) {
+        quadTo(_cur+p0, _cur+p1);
+    }
+    void arcToRel(double rx, double ry, double angle,
+               bool large_arc, bool sweep, Point p) {
+        arcTo(rx, ry, angle, large_arc, sweep, _cur+p);
+    }
+
+    void line(Point p0, Point p1) {
+        if(LInfty(p0 - _cur) > _tol)
+            moveTo(p0);
+        lineTo(p1);
+    }
+    void curve(Point p0, Point p1, Point p2, Point p3) {
+        if(LInfty(p0 - _cur) > _tol)
+            moveTo(p0);
+        curveTo(p1, p2, p3);
+    }
+    void quad(Point p0, Point p1, Point p2) {
+        if(LInfty(p0 - _cur) > _tol)
+            moveTo(p0);
+        quadTo(p1, p2);
+    }
+    void arc(Point from, double rx, double ry, double angle,
+               bool large_arc, bool sweep, Point p) {
+        if(LInfty(from - _cur) > _tol)
+            moveTo(from);
+        arcTo(rx, ry, angle, large_arc, sweep, _cur+p);
+    }
+
+    std::vector<Path2::Path> const &peek() const { return _pathset; }
+};
+*/
 
 }
 

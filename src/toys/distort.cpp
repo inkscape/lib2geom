@@ -7,7 +7,7 @@
 #include "toy-framework.cpp"
 
 #include "path2.h"
-#include "read-svgd.h"
+#include "svg-path-parser.h"
 #include "d2.h"
 #include "pw.h"
 #include "s-basis-2d.h"
@@ -87,7 +87,9 @@ class DistortToy: public Toy {
     public:
     DistortToy () {
         FILE* f = fopen("banana.svgd", "r");
-        p = read_svgd(f);
+        char string[1000];
+        fgets(string, 1000, f);
+        p = parse_svg_path(string);
     }
 };
 

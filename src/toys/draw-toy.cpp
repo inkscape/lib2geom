@@ -1,6 +1,5 @@
 #include "path2.h"
 #include "path-cairo.h"
-#include "path2-builder.h"
 
 #include "matrix.h"
 
@@ -29,13 +28,14 @@ class DrawToy: public Toy {
             }
         }
         cairo_set_source_rgba (cr, 0, 0, 0, 1);
-        Geom::Path2::PathBuilder builder;
+        Geom::Path2::Path pb;
         if(handles.size() > 3) {
-            for(unsigned i = 0; i < handles.size() - 3; i+=3) {
-                builder.pushCubic(handles[i], handles[i+1], handles[i+2], handles[i+3]);
+            pb.start(handles[0]);
+            for(unsigned i = 1; i < handles.size() - 3; i+=3) {
+                pb.appendNew<Geom::Path2::CubicBezier>(handles[i], handles[i+1], handles[i+2]);
             }
         }
-        cairo_path(cr, builder.peek());
+        cairo_path(cr, pb);
         cairo_stroke(cr);
     }
     void mouse_pressed(GdkEventButton* e) {

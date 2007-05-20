@@ -2,7 +2,6 @@
 #define _SBASIS_TO_BEZIER
 
 #include "d2.h"
-#include "path2-builder.h"
 #include "path2.h"
 
 namespace Geom{
