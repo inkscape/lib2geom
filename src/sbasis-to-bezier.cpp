@@ -182,16 +182,22 @@ path_from_sbasis(Geom::Path2::Path &pb, D2<SBasis> const &B, double tol) {
 std::vector<Geom::Path2::Path>
 path_from_piecewise(Geom::Piecewise<Geom::D2<Geom::SBasis> > const &B, double tol) {
     std::vector<Geom::Path2::Path> ret;
-    Geom::Path2::Path cur;
-    for(unsigned i = 0; i < B.size(); i++) {
-        if(i && B[i].at0() != B[i-1].at1()) {
-            ret.push_back(cur);
-            cur = Geom::Path2::Path();
-        }
+    if(B.size() == 0) return ret;
+    Geom::Path2::Path *cur = new Geom::Path2::Path();
+    unsigned i = 0;
+    while(true) {
         path_from_sbasis(cur, B[i], tol);
+        if(i >= B.size()-1) {
+            ret.push_back(*cur);
+            return ret;
+        }
+        i++;
+        if(B[i].at0() != B[i-1].at1()) {
+            ret.push_back(*cur);
+            delete cur;
+            cur = new Geom::Path2::Path();
+        }
     }
-    ret.push_back(cur);
-    return ret;
 }
 
 };
