@@ -186,9 +186,10 @@ path_from_piecewise(Geom::Piecewise<Geom::D2<Geom::SBasis> > const &B, double to
     Geom::Path2::Path *cur = new Geom::Path2::Path();
     unsigned i = 0;
     while(true) {
-        path_from_sbasis(cur, B[i], tol);
+        path_from_sbasis(*cur, B[i], tol);
         if(i >= B.size()-1) {
             ret.push_back(*cur);
+            delete cur;
             return ret;
         }
         i++;
