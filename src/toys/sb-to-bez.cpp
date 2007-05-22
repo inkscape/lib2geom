@@ -195,7 +195,7 @@ static double draw_non_parametric_approx(cairo_t *cr,
     //cairo_pw(cr, s_B,300,1);
     cairo_stroke(cr);
 
-    //return( boundsFast(D).maxExtent() );   
+    //return( bounds_fast(D).maxExtent() );   
     return -1.;
 }
 

@@ -23,7 +23,7 @@ bool
 linear_pair_intersect(D2<SBasis> A, double Al, double Ah, 
                       D2<SBasis> B, double Bl, double Bh,
                       double &tA, double &tB) {
-    Rect Ar = boundsLocal(A, Interval(Al, Ah));
+    Rect Ar = bounds_local(A, Interval(Al, Ah));
     cairo_rectangle(g_cr, Ar.min()[0], Ar.min()[1], Ar.max()[0], Ar.max()[1]);
     cairo_stroke(g_cr);
     std::cout << Al << ", " << Ah << "\n";
@@ -59,21 +59,21 @@ void pair_intersect(vector<double> &Asects,
                     D2<SBasis> A, double Al, double Ah, 
                     D2<SBasis> B, double Bl, double Bh, unsigned depth=0) {
     // we'll split only A, and swap args
-    Rect Ar = boundsLocal(A, Interval(Al, Ah));
+    Rect Ar = bounds_local(A, Interval(Al, Ah));
     if(Ar.isEmpty()) return;
 
-    Rect Br = boundsLocal(B, Interval(Bl, Bh));
+    Rect Br = bounds_local(B, Interval(Bl, Bh));
     if(Br.isEmpty()) return;
     
     if((depth > 12) || Ar.intersects(Br)) {
         double Ate = 0;
         double Bte = 0;
         for(unsigned d = 0; d < 2; d++) {
-            Interval bs = boundsLocal(A[d], Interval(Al, Ah), 1); //only 1?
+            Interval bs = bounds_local(A[d], Interval(Al, Ah), 1); //only 1?
             Ate = std::max(Ate, bs.extent());
         }
         for(unsigned d = 0; d < 2; d++) {
-            Interval bs = boundsLocal(B[d], Interval(Bl, Bh), 1);
+            Interval bs = bounds_local(B[d], Interval(Bl, Bh), 1);
             Bte = std::max(Bte, bs.extent());
         }
 

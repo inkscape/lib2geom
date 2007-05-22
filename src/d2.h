@@ -408,19 +408,19 @@ class D2<Interval> {
 //D2 fragment usage of Rect:
 
 template <typename T>
-Rect boundsFast(const D2<T> &a) {
+Rect bounds_fast(const D2<T> &a) {
     boost::function_requires<FragmentConcept<T> >();        
-    return Rect(boundsFast(a[X]), boundsFast(a[Y]));
+    return Rect(bounds_fast(a[X]), bounds_fast(a[Y]));
 }
 template <typename T>
-Rect boundsExact(const D2<T> &a) {
+Rect bounds_exact(const D2<T> &a) {
     boost::function_requires<FragmentConcept<T> >();        
-    return Rect(boundsExact(a[X]), boundsExact(a[Y]));
+    return Rect(bounds_exact(a[X]), bounds_exact(a[Y]));
 }
 template <typename T>
-Rect boundsLocal(const D2<T> &a, const Interval &t) {
+Rect bounds_local(const D2<T> &a, const Interval &t) {
     boost::function_requires<FragmentConcept<T> >();        
-    return Rect(boundsLocal(a[X], t), boundsLocal(a[Y], t));
+    return Rect(bounds_local(a[X], t), bounds_local(a[Y], t));
 }
 
 } //end namespace decl
@@ -495,13 +495,13 @@ inline CoordIterator iterateCoord(Piecewise<D2<SBasis> > const &a, unsigned d) {
     return CoordIterator(a.segs.begin(), d);
 }
 
-inline Rect boundsFast(D2<SBasis> const & s, unsigned order=0) {
-    return Rect(boundsFast(s[X], order),
-                boundsFast(s[Y], order));
+inline Rect bounds_fast(D2<SBasis> const & s, unsigned order=0) {
+    return Rect(bounds_fast(s[X], order),
+                bounds_fast(s[Y], order));
 }
-inline Rect boundsLocal(D2<SBasis> const & s, Interval i, unsigned order=0) {
-    return Rect(boundsLocal(s[X], i, order),
-                boundsLocal(s[Y], i, order));
+inline Rect bounds_local(D2<SBasis> const & s, Interval i, unsigned order=0) {
+    return Rect(bounds_local(s[X], i, order),
+                bounds_local(s[Y], i, order));
 }
 };
 

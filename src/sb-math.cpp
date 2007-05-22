@@ -141,7 +141,7 @@ static Piecewise<SBasis> sqrt_internal(SBasis const &f,
 }
 
 Piecewise<SBasis> sqrt(SBasis const &f, double tol, int order){
-    Interval bnds = boundsFast(f);
+    Interval bnds = bounds_fast(f);
     double absolute_tol = tol*std::max(fabs(bnds.max()),fabs(bnds.min()));
 
 //    return sqrt_internal(f,absolute_tol,order);
@@ -150,7 +150,7 @@ Piecewise<SBasis> sqrt(SBasis const &f, double tol, int order){
 
 Piecewise<SBasis> sqrt(Piecewise<SBasis> const &f, double tol, int order){
     Piecewise<SBasis> result;
-    Interval bnds = boundsFast(f);
+    Interval bnds = bounds_fast(f);
     double absolute_tol = tol*std::max(fabs(bnds.max()),fabs(bnds.min()));
 
     Piecewise<SBasis> ff=maxSb(f,Linear(tol));
@@ -269,13 +269,13 @@ Piecewise<SBasis> reciprocalOnDomain(Interval range, double tol){
 }
 
 Piecewise<SBasis> reciprocal(SBasis const &f, double tol, int order){
-    Piecewise<SBasis> reciprocal_fn=reciprocalOnDomain(boundsFast(f), tol);
+    Piecewise<SBasis> reciprocal_fn=reciprocalOnDomain(bounds_fast(f), tol);
     Piecewise<SBasis> result=compose(reciprocal_fn,f);
     truncateResult(result,order);
     return(result);
 }
 Piecewise<SBasis> reciprocal(Piecewise<SBasis> const &f, double tol, int order){
-    Piecewise<SBasis> reciprocal_fn=reciprocalOnDomain(boundsFast(f), tol);
+    Piecewise<SBasis> reciprocal_fn=reciprocalOnDomain(bounds_fast(f), tol);
     Piecewise<SBasis> result=compose(reciprocal_fn,f);
     truncateResult(result,order);
     return(result);

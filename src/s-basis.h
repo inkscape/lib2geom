@@ -115,9 +115,9 @@ public:
 inline SBasis Linear::toSBasis() const { return SBasis(*this); }
 
 //implemented in s-basis-roots.cpp
-Interval boundsExact(SBasis const &a);
-Interval boundsFast(SBasis const &a, int order = 0);
-Interval boundsLocal(SBasis const &a, const Interval &t, int order = 0);
+Interval bounds_exact(SBasis const &a);
+Interval bounds_fast(SBasis const &a, int order = 0);
+Interval bounds_local(SBasis const &a, const Interval &t, int order = 0);
 
 inline SBasis reverse(SBasis const &a) {
     SBasis result;

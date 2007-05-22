@@ -93,10 +93,10 @@ public:
 
   inline SBasis toSBasis() const { return bezier_to_sbasis<order>(c_); }
 
-  inline Interval boundsFast() const { return Interval::fromArray(c_, order+1); }
+  inline Interval bounds_fast() const { return Interval::fromArray(c_, order+1); }
   //TODO: better bounds exact
-  inline Interval boundsExact() const { return toSBasis().boundsExact(); }
-  inline Interval boundsLocal(double u, double v) const { return toSBasis().boundsLocal(u, v); }
+  inline Interval bounds_exact() const { return toSBasis().bounds_exact(); }
+  inline Interval bounds_local(double u, double v) const { return toSBasis().bounds_local(u, v); }
 
   //Only mutator
   inline Coord &operator[](int index) { return c_[index]; }

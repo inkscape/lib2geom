@@ -52,7 +52,7 @@ using namespace std;
 
 namespace Geom{
 
-Interval boundsExact(SBasis const &a) {
+Interval bounds_exact(SBasis const &a) {
     Interval result = Interval(a.at0(), a.at1());
     SBasis df = derivative(a);
     vector<double>extrema = roots(df);
@@ -62,7 +62,7 @@ Interval boundsExact(SBasis const &a) {
     return result;
 }
 
-Interval boundsFast(const SBasis &sb, int order) {
+Interval bounds_fast(const SBasis &sb, int order) {
     Interval res;
     for(int j = sb.size()-1; j>=order; j--) {
         double a=sb[j][0];
@@ -89,7 +89,7 @@ Interval boundsFast(const SBasis &sb, int order) {
     return res;
 }
 
-Interval boundsLocal(const SBasis &sb, const Interval &i, int order) {
+Interval bounds_local(const SBasis &sb, const Interval &i, int order) {
     double t0=i.min(), t1=i.max(), lo=0., hi=0.;
     for(int j = sb.size()-1; j>=order; j--) {
         double a=sb[j][0];
@@ -190,7 +190,7 @@ static void multi_roots_internal(SBasis const &f,
     int idxa=upper_level(levels,fa,vtol);
     int idxb=upper_level(levels,fb,vtol);
 
-    Interval bs = boundsLocal(df,Interval(a,b));
+    Interval bs = bounds_local(df,Interval(a,b));
 
     //first times when a level (higher or lower) can be reached from a or b.
     double ta_hi,tb_hi,ta_lo,tb_lo;
@@ -315,7 +315,7 @@ double Laguerre_internal(SBasis const & p,
 void subdiv_sbasis(SBasis const & s,
                    std::vector<double> & roots, 
                    double left, double right) {
-    Interval bs = boundsFast(s);
+    Interval bs = bounds_fast(s);
     if(bs.min() > 0 || bs.max() < 0)
         return; // no roots here
     if(s.tailError(1) < 1e-7) {

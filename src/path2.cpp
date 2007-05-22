@@ -55,7 +55,7 @@ inline Cmp cmp(T1 const &a, T2 const &b) {
 }
 
 Maybe<int> CurveHelpers::sbasis_winding(D2<SBasis> const &sb, Point p) {
-  Interval ix = boundsFast(sb[X]);
+  Interval ix = bounds_fast(sb[X]);
 
   if ( p[X] > ix.max() ) { /* ray does not intersect bbox */
     return 0;
@@ -190,18 +190,18 @@ void Path::swap(Path &other) {
   other.curves_[other.curves_.size()-1] = other.final_;
 }
 
-Rect Path::boundsFast() const {
-  Rect bounds=front().boundsFast();
+Rect Path::bounds_fast() const {
+  Rect bounds=front().bounds_fast();
   for ( const_iterator iter=++begin(); iter != end() ; ++iter ) {
-    bounds.unionWith(iter->boundsFast());
+    bounds.unionWith(iter->bounds_fast());
   }
   return bounds;
 }
 
-Rect Path::boundsExact() const {
-  Rect bounds=front().boundsExact();
+Rect Path::bounds_exact() const {
+  Rect bounds=front().bounds_exact();
   for ( const_iterator iter=++begin(); iter != end() ; ++iter ) {
-    bounds.unionWith(iter->boundsExact());
+    bounds.unionWith(iter->bounds_exact());
   }
   return bounds;
 }
@@ -325,12 +325,12 @@ void Path::check_continuity(Sequence::iterator first_replaced,
   }
 }
 
-Rect SBasisCurve::boundsFast() const {
+Rect SBasisCurve::bounds_fast() const {
   throw NotImplemented();
   return Rect(Point(0,0), Point(0,0));
 }
 
-Rect SBasisCurve::boundsExact() const {
+Rect SBasisCurve::bounds_exact() const {
   throw NotImplemented();
   return Rect(Point(0,0), Point(0,0));
 }
@@ -344,10 +344,10 @@ Path const &SBasisCurve::subdivide(Coord t, Path &out) const {
   throw NotImplemented();
 }
 
-Rect SVGEllipticalArc::boundsFast() const {
+Rect SVGEllipticalArc::bounds_fast() const {
     throw NotImplemented();
 }
-Rect SVGEllipticalArc::boundsExact() const {
+Rect SVGEllipticalArc::bounds_exact() const {
     throw NotImplemented();
 }
 

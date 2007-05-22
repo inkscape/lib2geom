@@ -209,29 +209,29 @@ class Piecewise {
 };
 
 template<typename T>
-inline Interval boundsFast(const Piecewise<T> &f) {
+inline Interval bounds_fast(const Piecewise<T> &f) {
     boost::function_requires<FragmentConcept<T> >();
 
     if(f.empty()) return Interval(0);
-    Interval ret(boundsFast(f[0]));
+    Interval ret(bounds_fast(f[0]));
     for(unsigned i = 1; i < f.size(); i++)
-        ret.unionWith(boundsFast(f[i])); 
+        ret.unionWith(bounds_fast(f[i])); 
     return ret;
 }
 
 template<typename T>
-inline Interval boundsExact(const Piecewise<T> &f) {
+inline Interval bounds_exact(const Piecewise<T> &f) {
     boost::function_requires<FragmentConcept<T> >();
 
     if(f.empty()) return Interval(0);
-    Interval ret(boundsExact(f[0]));
+    Interval ret(bounds_exact(f[0]));
     for(unsigned i = 1; i < f.size(); i++)
-        ret.unionWith(boundsExact(f[i])); 
+        ret.unionWith(bounds_exact(f[i])); 
     return ret;
 }
 
 template<typename T>
-inline Interval boundsLocal(const Piecewise<T> &f, const Interval &m) {
+inline Interval bounds_local(const Piecewise<T> &f, const Interval &m) {
     boost::function_requires<FragmentConcept<T> >();
 
     if(f.empty()) return Interval(0);
@@ -240,12 +240,12 @@ inline Interval boundsLocal(const Piecewise<T> &f, const Interval &m) {
     unsigned fi = f.segN(m.min()), ti = f.segN(m.max());
     double ft = f.segT(m.min(), fi), tt = f.segT(m.max(), ti);
 
-    if(fi == ti) return boundsLocal(f[fi], Interval(ft, tt));
+    if(fi == ti) return bounds_local(f[fi], Interval(ft, tt));
 
-    Interval ret(boundsLocal(f[fi], Interval(ft, 1.)));
+    Interval ret(bounds_local(f[fi], Interval(ft, 1.)));
     for(unsigned i = fi + 1; i < ti; i++)
-        ret.unionWith(boundsExact(f[i]));
-    if(tt != 0.) ret.unionWith(boundsLocal(f[ti], Interval(0., tt)));
+        ret.unionWith(bounds_exact(f[i]));
+    if(tt != 0.) ret.unionWith(bounds_local(f[ti], Interval(0., tt)));
 
     return ret;
 }
@@ -567,7 +567,7 @@ Piecewise<T> compose(Piecewise<T> const &f, SBasis const &g){
     }
     
     //first check bounds...
-    Interval bs = boundsFast(g);
+    Interval bs = bounds_fast(g);
     if (f.cuts.front() > bs.max()  || bs.min() > f.cuts.back()){
         int idx = (bs.max() < f.cuts[1]) ? 0 : f.cuts.size()-2;
         double t0 = f.cuts[idx], width = f.cuts[idx+1] - t0;

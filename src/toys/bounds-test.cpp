@@ -57,12 +57,12 @@ class BoundsTester: public Toy {
         cairo_set_source_rgba (cr, 0., 0., 0.8, 1);
         cairo_stroke(cr);
 
-        Interval bnds = boundsLocal(B,Interval(0.,.5));
+        Interval bnds = bounds_local(B,Interval(0.,.5));
         plot_bar(cr,bnds.min(),1,.0,.5);
         plot_bar(cr,bnds.max(),1,.0,.5);
         cairo_set_source_rgba (cr, 0.4, 0., 0., 1);
         cairo_stroke(cr);
-        bnds = boundsExact(B);
+        bnds = bounds_exact(B);
         plot_bar(cr,bnds.min());
         plot_bar(cr,bnds.max());
         cairo_set_source_rgba (cr, 0.9, 0., 0., 1);

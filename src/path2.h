@@ -55,8 +55,8 @@ public:
 
   virtual Curve *duplicate() const = 0;
 
-  virtual Rect boundsFast() const = 0;
-  virtual Rect boundsExact() const = 0;
+  virtual Rect bounds_fast() const = 0;
+  virtual Rect bounds_exact() const = 0;
 
   virtual Maybe<int> winding(Point p) const = 0;
 
@@ -125,8 +125,8 @@ public:
   Point &operator[](int index) { return c_[index]; }
   Point const &operator[](int index) const { return c_[index]; }
 
-  Rect boundsFast() const { return bounds(bezier_degree, c_); }
-  Rect boundsExact() const { return bounds(bezier_degree, c_); }
+  Rect bounds_fast() const { return bounds(bezier_degree, c_); }
+  Rect bounds_exact() const { return bounds(bezier_degree, c_); }
 
   Maybe<int> winding(Point p) const {
     return sbasis_winding(sbasis(), p);
@@ -176,8 +176,8 @@ public:
   Point initialPoint() const { return initial_; }
   Point finalPoint() const { return final_; }
 
-  Rect boundsFast() const;
-  Rect boundsExact() const;
+  Rect bounds_fast() const;
+  Rect bounds_exact() const;
 
   Maybe<int> winding(Point p) const {
     return sbasis_winding(sbasis(), p);
@@ -215,8 +215,8 @@ public:
 
   Curve *duplicate() const { return new SBasisCurve(*this); }
 
-  Rect boundsFast() const;
-  Rect boundsExact() const;
+  Rect bounds_fast() const;
+  Rect bounds_exact() const;
 
   Maybe<int> winding(Point p) const {
     return sbasis_winding(coeffs_, p);
@@ -371,8 +371,8 @@ public:
 
   int winding(Point p) const;
 
-  Rect boundsFast() const;
-  Rect boundsExact() const;
+  Rect bounds_fast() const;
+  Rect bounds_exact() const;
 
   D2<Piecewise<SBasis> > toMdSb() const {
     int i = 0;

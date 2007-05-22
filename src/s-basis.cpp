@@ -56,7 +56,7 @@ double SBasis::tail_error(unsigned tail) const {
 */
 //TODO: what exactly is going on here?
 double SBasis::tailError(unsigned tail) const {
-  Interval bs = boundsFast(*this, tail);
+  Interval bs = bounds_fast(*this, tail);
   return std::max(fabs(bs.min()),fabs(bs.max()));
 }
 

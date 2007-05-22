@@ -79,9 +79,9 @@ struct FragmentConcept {
         o = t(d);
         SbType sb = t.toSBasis();
         t = reverse(t);
-        i = boundsFast(t);
-        i = boundsExact(t);
-        i = boundsLocal(t, dom);
+        i = bounds_fast(t);
+        i = bounds_exact(t);
+        i = bounds_local(t, dom);
     }
 };
 
