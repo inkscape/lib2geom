@@ -42,8 +42,6 @@
 #include "not-implemented.h"
 namespace Geom {
 
-namespace Path2 {
-
 class Path;
 
 class Curve {
@@ -343,7 +341,10 @@ public:
     insert(begin(), first, last);
   }
 
-  ~Path();
+  ~Path() {
+      delete_range(curves_.begin(), curves_.end()-1);
+      delete final_;
+  }
 
   void swap(Path &other);
 
@@ -592,12 +593,10 @@ private:
 
 }
 
-}
-
 namespace std {
 
 template <>
-inline void swap<Geom::Path2::Path>(Geom::Path2::Path &a, Geom::Path2::Path &b)
+inline void swap<Geom::Path>(Geom::Path &a, Geom::Path &b)
 {
   a.swap(b);
 }

@@ -31,7 +31,7 @@ static Geom::Point *ConvertToBezierForm( Geom::Point 	P, Geom::Point 	*V);
 static double ComputeXIntercept( Geom::Point 	*V, int		degree);
 static int ControlPolygonFlatEnough( Geom::Point	*V, int 	degree);
 static int CrossingCount(Geom::Point *V, int degree);
-static Geom::Point Bezier(Geom::Point *V, int degree, double t, Geom::Point *Left,
+static Geom::Point Bez(Geom::Point *V, int degree, double t, Geom::Point *Left,
                      Geom::Point *Right);
 
 int		MAXDEPTH = 64;	/*  Maximum depth for recursion */
@@ -67,7 +67,7 @@ double NearestPointOnCurve(Geom::Point P, Geom::Point *V)
 
     /* Find distances for candidate points	*/
     for (int i = 0; i < n_solutions; i++) {
-        Geom::Point p = Bezier(V, DEGREE, t_candidate[i], NULL, NULL);
+        Geom::Point p = Bez(V, DEGREE, t_candidate[i], NULL, NULL);
         double new_dist = SquaredLength(P - p);
         if (new_dist < dist) {
             dist = new_dist;
@@ -185,7 +185,7 @@ static int FindRoots(
 
     /* Otherwise, solve recursively after	*/
     /* subdividing control polygon		*/
-    Bezier(w, degree, 0.5, Left, Right);
+    Bez(w, degree, 0.5, Left, Right);
     left_count  = FindRoots(Left,  degree, left_t, depth+1);
     right_count = FindRoots(Right, degree, right_t, depth+1);
 
@@ -352,13 +352,13 @@ static double ComputeXIntercept(
 
 
 /*
- *  Bezier : 
+ *  Bez : 
  *	Evaluate a Bezier curve at a particular parameter value
  *      Fill in control points for resulting sub-curves if "Left" and
  *	"Right" are non-null.
  * 
  */
-static Geom::Point Bezier(
+static Geom::Point Bez(
     Geom::Point 	*V,			/* Control pts			*/
     int 	degree,		/* Degree of bezier curve	*/
     double 	t,			/* Parameter value		*/

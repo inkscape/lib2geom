@@ -31,8 +31,6 @@
 
 namespace Geom {
 
-namespace Path2 {
-
 namespace {
 
 enum Cmp {
@@ -175,11 +173,6 @@ BezierHelpers::subdivideArr(Coord t,              // Parameter value
         Right[j] = Vtemp[degree-j][j];
 
     return (Vtemp[degree][0]);
-}
-
-Path::~Path() {
-  delete_range(curves_.begin(), curves_.end()-1);
-  delete final_;
 }
 
 void Path::swap(Path &other) {
@@ -357,9 +350,6 @@ Point SVGEllipticalArc::pointAndDerivativesAt(Coord t, unsigned n_derivs, Point 
 
 D2<SBasis> SVGEllipticalArc::sbasis() const {
     throw NotImplemented();
-}
-
-
 }
 
 }

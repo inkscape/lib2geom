@@ -3,14 +3,14 @@
 using std::vector;
 namespace Geom {
 
-class Bezier {
+class OldBezier {
 public:
     std::vector<Geom::Point> p;
-    Bezier() {
+    OldBezier() {
     }
-    void split(double t, Bezier &a, Bezier &b) const;
+    void split(double t, OldBezier &a, OldBezier &b) const;
     
-    ~Bezier() {}
+    ~OldBezier() {}
 
     void bounds(double &minax, double &maxax, 
                 double &minay, double &maxay) {
@@ -42,35 +42,35 @@ public:
 };
 
 static std::vector<std::pair<double, double> >
-find_intersections( Bezier a, Bezier b);
+find_intersections( OldBezier a, OldBezier b);
 
 static std::vector<std::pair<double, double> > 
-find_self_intersections(Bezier const &Sb, D2<SBasis> const & A);
+find_self_intersections(OldBezier const &Sb, D2<SBasis> const & A);
 
 std::vector<std::pair<double, double> >
 find_intersections( vector<Geom::Point> const & A, 
                     vector<Geom::Point> const & B) {
-    Bezier a, b;
+    OldBezier a, b;
     a.p = A;
     b.p = B;
     return find_intersections(a,b);
 }
 
 std::vector<std::pair<double, double> > 
-find_self_intersections(Bezier const &Sb) {
+find_self_intersections(OldBezier const &Sb) {
     throw NotImplemented();
 }
 
 std::vector<std::pair<double, double> > 
 find_self_intersections(D2<SBasis> const & A) {
-    Bezier Sb;
+    OldBezier Sb;
     Sb.p = sbasis_to_bezier(A);
     return find_self_intersections(Sb, A);
 }
 
 
 static std::vector<std::pair<double, double> > 
-find_self_intersections(Bezier const &Sb, D2<SBasis> const & A) {
+find_self_intersections(OldBezier const &Sb, D2<SBasis> const & A) {
 
     
     vector<double> dr = roots(derivative(A[X]));
@@ -86,9 +86,9 @@ find_self_intersections(Bezier const &Sb, D2<SBasis> const & A) {
     
     std::vector<std::pair<double, double> > all_si;
     
-    vector<Bezier> pieces;
+    vector<OldBezier> pieces;
     {
-        Bezier in = Sb, l, r;
+        OldBezier in = Sb, l, r;
         for(unsigned i = 0; i < dr.size()-1; i++) {
             in.split((dr[i+1]-dr[i]) / (1 - dr[i]), l, r);
             pieces.push_back(l);
@@ -127,7 +127,7 @@ const double INV_EPS = (1L<<14);
  * Temporary storage is minimized by using part of the storage for the result
  * to hold an intermediate value until it is no longer needed.
  */
-void Bezier::split(double t, Bezier &left, Bezier &right) const {
+void OldBezier::split(double t, OldBezier &left, OldBezier &right) const {
     const unsigned sz = p.size();
     Geom::Point Vtemp[sz][sz];
 
@@ -151,7 +151,7 @@ void Bezier::split(double t, Bezier &left, Bezier &right) const {
 
     
 /*
- * Test the bounding boxes of two Bezier curves for interference.
+ * Test the bounding boxes of two OldBezier curves for interference.
  * Several observations:
  *	First, it is cheaper to compute the bounding box of the second curve
  *	and test its bounding box for interference than to use a more direct
@@ -159,7 +159,7 @@ void Bezier::split(double t, Bezier &left, Bezier &right) const {
  *	the various edges of the bounding box of the first curve to test
  * 	for interference.
  *	Second, after a few subdivisions it is highly probable that two corners
- *	of the bounding box of a given Bezier curve are the first and last 
+ *	of the bounding box of a given OldBezier curve are the first and last 
  *	control point.  Once this happens once, it happens for all subsequent
  *	subcurves.  It might be worth putting in a test and then short-circuit
  *	code for further subdivision levels.
@@ -171,7 +171,7 @@ void Bezier::split(double t, Bezier &left, Bezier &right) const {
  *	subdivisions and tests) is worth the extra work.
  */
 
-bool intersect_BB( Bezier a, Bezier b ) {
+bool intersect_BB( OldBezier a, OldBezier b ) {
     double minax, maxax, minay, maxay;
     a.bounds(minax, maxax, minay, maxay);
     double minbx, maxbx, minby, maxby;
@@ -220,19 +220,19 @@ bool intersect_BB( Bezier a, Bezier b ) {
  * is robust: a near-tangential intersection will yield zero or two
  * intersections.
  */
-void recursively_intersect( Bezier a, double t0, double t1, int deptha,
-			   Bezier b, double u0, double u1, int depthb,
+void recursively_intersect( OldBezier a, double t0, double t1, int deptha,
+			   OldBezier b, double u0, double u1, int depthb,
 			   std::vector<std::pair<double, double> > &parameters)
 {
     if( deptha > 0 )
     {
-        Bezier A[2];
+        OldBezier A[2];
         a.split(0.5, A[0], A[1]);
 	double tmid = (t0+t1)*0.5;
 	deptha--;
 	if( depthb > 0 )
         {
-	    Bezier B[2];
+	    OldBezier B[2];
             b.split(0.5, B[0], B[1]);
 	    double umid = (u0+u1)*0.5;
 	    depthb--;
@@ -268,7 +268,7 @@ void recursively_intersect( Bezier a, double t0, double t1, int deptha,
     else
 	if( depthb > 0 )
         {
-	    Bezier B[2];
+	    OldBezier B[2];
             b.split(0.5, B[0], B[1]);
 	    double umid = (u0 + u1)*0.5;
 	    depthb--;
@@ -319,7 +319,7 @@ double Lmax(Point p) {
     return std::max(fabs(p[X]), fabs(p[Y]));
 }
 
-unsigned wangs_theorem(Bezier a) {
+unsigned wangs_theorem(OldBezier a) {
     return 12; // seems a good approximation!
     double la1 = Lmax( ( a.p[2] - a.p[1] ) - (a.p[1] - a.p[0]) );
     double la2 = Lmax( ( a.p[3] - a.p[2] ) - (a.p[2] - a.p[1]) );
@@ -333,7 +333,7 @@ unsigned wangs_theorem(Bezier a) {
     return ra;
 }
 
-std::vector<std::pair<double, double> > find_intersections( Bezier a, Bezier b)
+std::vector<std::pair<double, double> > find_intersections( OldBezier a, OldBezier b)
 {
     std::vector<std::pair<double, double> > parameters;
     if( intersect_BB( a, b ) )
