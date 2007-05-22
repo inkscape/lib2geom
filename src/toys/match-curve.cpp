@@ -61,7 +61,7 @@ public:
 
     
         D2<SBasis> B = handles_to_sbasis<5>(handles.begin());
-        Geom::Path2::Path pb;
+        Geom::Path pb;
         pb.append(B);
         pb.close(false);
         cairo_path(cr, pb);
@@ -137,7 +137,7 @@ public:
         //draw_cross(cr, point_at(B, hi));
         draw_circ(cr, m(hi));
         {
-            Geom::Path2::Path pb;
+            Geom::Path pb;
             pb.append(m);
             pb.close(false);
             cairo_path(cr, pb);
@@ -145,7 +145,7 @@ public:
         
         /*m = truncate(compose(B, Linear(0, hi*2)), 2);
         {
-            Geom::Path2::Path pb;
+            Geom::Path pb;
             pb.append(m);
             pb.close(false);
             cairo_path(cr, pb);

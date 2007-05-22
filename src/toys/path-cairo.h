@@ -10,8 +10,8 @@
 
 typedef struct _cairo cairo_t;
 
-void cairo_path(cairo_t *cr, Geom::Path2::Path const &p);
-void cairo_path(cairo_t *cr, std::vector<Geom::Path2::Path> const &p);
+void cairo_path(cairo_t *cr, Geom::Path const &p);
+void cairo_path(cairo_t *cr, std::vector<Geom::Path> const &p);
 
 void cairo_md_sb(cairo_t *cr, Geom::D2<Geom::SBasis> const &p);
 void cairo_md_sb_handles(cairo_t *cr, Geom::D2<Geom::SBasis> const &p);

@@ -4,51 +4,51 @@
 
 using namespace Geom;
 
-void cairo_curve(cairo_t *cr, Path2::Curve const& c) {
-    if(Path2::LineSegment const* line_segment = dynamic_cast<Path2::LineSegment const*>(&c)) {
+void cairo_curve(cairo_t *cr, Curve const& c) {
+    if(LineSegment const* line_segment = dynamic_cast<LineSegment const*>(&c)) {
         cairo_line_to(cr, (*line_segment)[1][0], (*line_segment)[1][1]);
     }
-    else if(Path2::QuadraticBezier const *quadratic_bezier = dynamic_cast<Path2::QuadraticBezier const*>(&c)) {
+    else if(QuadraticBezier const *quadratic_bezier = dynamic_cast<QuadraticBezier const*>(&c)) {
         Point b1 = (*quadratic_bezier)[0] + (2./3) * ((*quadratic_bezier)[1] - (*quadratic_bezier)[0]);
         Point b2 = b1 + (1./3) * ((*quadratic_bezier)[2] - (*quadratic_bezier)[0]);
         cairo_curve_to(cr, b1[0], b1[1], 
                        b2[0], b2[1], 
                        (*quadratic_bezier)[2][0], (*quadratic_bezier)[2][1]);
     }
-    else if(Path2::CubicBezier const *cubic_bezier = dynamic_cast<Path2::CubicBezier const*>(&c)) {
+    else if(CubicBezier const *cubic_bezier = dynamic_cast<CubicBezier const*>(&c)) {
         cairo_curve_to(cr, (*cubic_bezier)[1][0], (*cubic_bezier)[1][1], (*cubic_bezier)[2][0], (*cubic_bezier)[2][1], (*cubic_bezier)[3][0], (*cubic_bezier)[3][1]);
     }
-//    else if(Path2::SVGEllipticalArc const *svg_elliptical_arc = dynamic_cast<Path2::SVGEllipticalArc *>(c)) {
+//    else if(SVGEllipticalArc const *svg_elliptical_arc = dynamic_cast<SVGEllipticalArc *>(c)) {
 //        //get at the innards and spit them out to cairo
 //    }
     else {
         //this case handles sbasis as well as all other curve types
-        Path2::Path sbasis_path;
+        Path sbasis_path;
         path_from_sbasis(sbasis_path, c.sbasis(), 0.1);
 
         //recurse to convert the new path resulting from the sbasis to svgd
-        for(Path2::Path::iterator iter = sbasis_path.begin(); iter != sbasis_path.end(); ++iter) {
+        for(Path::iterator iter = sbasis_path.begin(); iter != sbasis_path.end(); ++iter) {
             cairo_curve(cr, *iter);
         }
     }
 }
 
-void cairo_path(cairo_t *cr, Path2::Path const &p) {
+void cairo_path(cairo_t *cr, Path const &p) {
     cairo_move_to(cr, p.initialPoint()[0], p.initialPoint()[1]);
 
-    for(Path2::Path::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
+    for(Path::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
         cairo_curve(cr, *iter);
     }
     if(p.closed())
         cairo_close_path(cr);
 }
 
-void cairo_path_handles(cairo_t *cr, Path2::Path const &p) {
+void cairo_path_handles(cairo_t *cr, Path const &p) {
     //TODO
 }
 
-void cairo_path(cairo_t *cr, std::vector<Path2::Path> const &p) {
-    std::vector<Path2::Path>::const_iterator it;
+void cairo_path(cairo_t *cr, std::vector<Path> const &p) {
+    std::vector<Path>::const_iterator it;
     for(it = p.begin(); it != p.end(); it++) {
         cairo_path(cr, *it);
     }
@@ -101,7 +101,7 @@ void cairo_PathSet_handles(cairo_t *cr, PathSet const &p) {
 #endif
 
 void cairo_md_sb(cairo_t *cr, D2<SBasis> const &B) {
-    Path2::Path pb;
+    Path pb;
     path_from_sbasis(pb, B, 0.1);
     cairo_path(cr, pb);
 }

@@ -48,7 +48,7 @@ public:
     virtual void finish() = 0;
 };
 
-void output_svg_path(Path2::Path &path, SVGPathSink &sink);
+void output_svg_path(Path &path, SVGPathSink &sink);
 
 template <typename OutputIterator>
 class SVGPathGenerator : public SVGPathSink {
@@ -62,21 +62,21 @@ public:
     }
 //TODO: what if _in_path = false?
     void lineTo(Point p) {
-        _path.appendNew<Path2::LineSegment>(p);
+        _path.appendNew<LineSegment>(p);
     }
 
     void curveTo(Point c0, Point c1, Point p) {
-        _path.appendNew<Path2::CubicBezier>(c0, c1, p);
+        _path.appendNew<CubicBezier>(c0, c1, p);
     }
 
     void quadTo(Point c, Point p) {
-        _path.appendNew<Path2::QuadraticBezier>(c, p);
+        _path.appendNew<QuadraticBezier>(c, p);
     }
 
     void arcTo(double rx, double ry, double angle,
                bool large_arc, bool sweep, Point p)
     {
-        _path.appendNew<Path2::SVGEllipticalArc>(rx, ry, angle,
+        _path.appendNew<SVGEllipticalArc>(rx, ry, angle,
                                                  large_arc, sweep, p);
     }
 
@@ -97,24 +97,24 @@ public:
 private:
     bool _in_path;
     OutputIterator _out;
-    Path2::Path _path;
+    Path _path;
 };
 
-typedef std::back_insert_iterator<std::vector<Path2::Path> > iter;
+typedef std::back_insert_iterator<std::vector<Path> > iter;
 
 class PathBuilder : public SVGPathGenerator<iter> {
 private:
-    std::vector<Path2::Path> _pathset;
+    std::vector<Path> _pathset;
 public:
     PathBuilder() : SVGPathGenerator<iter>(iter(_pathset)) {}
-    std::vector<Path2::Path> const &peek() const { return _pathset; }
+    std::vector<Path> const &peek() const { return _pathset; }
 };
 
 /*
 class PathBuilder {
 private:
     SVGPathGenerator<iter> _gen;
-    std::vector<Path2::Path> _pathset;
+    std::vector<Path> _pathset;
     double _tol;
     Point _cur;
 public:
@@ -166,7 +166,7 @@ public:
         arcTo(rx, ry, angle, large_arc, sweep, _cur+p);
     }
 
-    std::vector<Path2::Path> const &peek() const { return _pathset; }
+    std::vector<Path> const &peek() const { return _pathset; }
 };
 */
 

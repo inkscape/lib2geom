@@ -81,7 +81,7 @@ public:
     
     int number_of_teeth() {return _number_of_teeth;}
     
-    Geom::Path2::Path path();
+    Geom::Path path();
     Gear spawn(int N, double a);
     
     Gear(int n, double m, double phi) {
@@ -139,8 +139,8 @@ void makeContinuous(D2<SBasis> &a, Point const b) {
         a[d][0][0] = b[d];
 }
 
-Geom::Path2::Path Gear::path() {
-    Geom::Path2::Path pb;
+Geom::Path Gear::path() {
+    Geom::Path pb;
     
     // angle covered by a full tooth and fillet
     double tooth_rotation = 2.0 * tooth_thickness_angle();
@@ -163,39 +163,39 @@ Geom::Path2::Path Gear::path() {
 
         D2<SBasis> leading_I = compose(_involute(cursor, cursor + involute_swath_angle(outer_radius())), Linear(involute_t,1));
         if(i != 0) makeContinuous(leading_I, prev);
-        pb.append(Path2::SBasisCurve(leading_I));
+        pb.append(SBasisCurve(leading_I));
         cursor += involute_advance;
         prev = leading_I.at1();
 
         D2<SBasis> tip = _arc(cursor, cursor+tip_advance, outer_radius());
         makeContinuous(tip, prev);
-        pb.append(Path2::SBasisCurve(tip));
+        pb.append(SBasisCurve(tip));
         cursor += tip_advance;
         prev = tip.at1();
 
         cursor += involute_advance;
         D2<SBasis> trailing_I = compose(_involute(cursor, cursor - involute_swath_angle(outer_radius())), Linear(1,involute_t));
         makeContinuous(trailing_I, prev);
-        pb.append(Path2::SBasisCurve(trailing_I));
+        pb.append(SBasisCurve(trailing_I));
         prev = trailing_I.at1();
 
         if (base_radius() > root_radius()) {
             Geom::Point leading_start = trailing_I.at1();
             Geom::Point leading_end = (root_radius() * unit_vector(leading_start - _centre)) + _centre;
             prev = leading_end;
-            pb.appendNew<Path2::LineSegment>(leading_end);
+            pb.appendNew<LineSegment>(leading_end);
         }
         
         D2<SBasis> root = _arc(cursor, cursor+root_advance, root_radius());
         makeContinuous(root, prev);
-        pb.append(Path2::SBasisCurve(root));
+        pb.append(SBasisCurve(root));
         cursor += root_advance;
         prev = root.at1();
         
         if (base_radius() > root_radius()) {
             Geom::Point trailing_start = root.at1();
             Geom::Point trailing_end = (base_radius() * unit_vector(trailing_start - _centre)) + _centre;
-            pb.appendNew<Path2::LineSegment>(trailing_end);
+            pb.appendNew<LineSegment>(trailing_end);
             prev = trailing_end;
         }
     }
@@ -266,28 +266,28 @@ class GearToy: public Toy {
         cairo_stroke(cr);
         
         //draw gear
-        Geom::Path2::Path p = gear.path();
+        Geom::Path p = gear.path();
         cairo_path(cr, p);
         cairo_set_source_rgba (cr, 0., 0., 0., 0.5);
         cairo_set_line_width (cr, 2.0);
         cairo_stroke(cr);
         
         Gear gear2 = gear.spawn(5, -2.0 * M_PI / 8.0);
-        Geom::Path2::Path p2 = gear2.path();
+        Geom::Path p2 = gear2.path();
         cairo_path(cr, p2);
         cairo_set_source_rgba (cr, 0., 0., 0., 0.5);
         cairo_set_line_width (cr, 2.0);
         cairo_stroke(cr);
         
         Gear gear3 = gear2.spawn(8, 0.0 * M_PI / 8.0);
-        Geom::Path2::Path p3 = gear3.path();
+        Geom::Path p3 = gear3.path();
         cairo_path(cr, p3);
         cairo_set_source_rgba (cr, 0., 0., 0., 0.5);
         cairo_set_line_width (cr, 2.0);
         cairo_stroke(cr);
         
         Gear gear4 = gear.spawn(6, 3.0 * M_PI / 4.0);
-        Geom::Path2::Path p4 = gear4.path();
+        Geom::Path p4 = gear4.path();
         cairo_path(cr, p4);
         cairo_set_source_rgba (cr, 0., 0., 0., 0.5);
         cairo_set_line_width (cr, 2.0);

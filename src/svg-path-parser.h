@@ -46,10 +46,10 @@ struct SVGPathParseError : public std::exception {
 
 void parse_svg_path(char const *str, SVGPathSink &sink) throw(SVGPathParseError);
 
-inline std::vector<Path2::Path> parse_svg_path(char const *str) throw(SVGPathParseError) {
-    std::vector<Path2::Path> subpaths;
-    std::back_insert_iterator<std::vector<Path2::Path> > iter(subpaths);
-    SVGPathGenerator<std::back_insert_iterator<std::vector<Path2::Path> > > generator(iter);
+inline std::vector<Path> parse_svg_path(char const *str) throw(SVGPathParseError) {
+    std::vector<Path> subpaths;
+    std::back_insert_iterator<std::vector<Path> > iter(subpaths);
+    SVGPathGenerator<std::back_insert_iterator<std::vector<Path> > > generator(iter);
     parse_svg_path(str, generator);
     return subpaths;
 }

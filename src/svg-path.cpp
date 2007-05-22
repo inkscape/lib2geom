@@ -32,28 +32,28 @@
 
 namespace Geom {
 
-void output(Path2::Curve const &curve, SVGPathSink &sink) {
+void output(Curve const &curve, SVGPathSink &sink) {
     // FIXME -- convert to bezier from sbasis
 }
 
-void output(Path2::LineSegment const &curve, SVGPathSink &sink) {
+void output(LineSegment const &curve, SVGPathSink &sink) {
     sink.lineTo(curve[1]);
 }
 
-void output(Path2::CubicBezier const &curve, SVGPathSink &sink) {
+void output(CubicBezier const &curve, SVGPathSink &sink) {
     sink.curveTo(curve[1], curve[2], curve[3]);
 }
 
-void output(Path2::QuadraticBezier const &curve, SVGPathSink &sink) {
+void output(QuadraticBezier const &curve, SVGPathSink &sink) {
     sink.quadTo(curve[1], curve[2]);
 }
 
-void output(Path2::SVGEllipticalArc const &curve, SVGPathSink &sink) {
+void output(SVGEllipticalArc const &curve, SVGPathSink &sink) {
     // FIXME
 }
 
 template <typename T>
-bool output_as(Path2::Curve const &curve, SVGPathSink &sink) {
+bool output_as(Curve const &curve, SVGPathSink &sink) {
     T const *t = dynamic_cast<T const *>(&curve);
     if (t) {
         output(*t, sink);
@@ -63,16 +63,16 @@ bool output_as(Path2::Curve const &curve, SVGPathSink &sink) {
     }
 }
 
-void output_svg_path(Path2::Path &path, SVGPathSink &sink) {
+void output_svg_path(Path &path, SVGPathSink &sink) {
     sink.moveTo(path.front().initialPoint());
 
-    Path2::Path::iterator iter;
+    Path::iterator iter;
     for ( iter = path.begin() ; iter != path.end() ; ++iter ) {
-        output_as<Path2::LineSegment>(*iter, sink) ||
-        output_as<Path2::CubicBezier>(*iter, sink) ||
-        output_as<Path2::QuadraticBezier>(*iter, sink) ||
-        output_as<Path2::SVGEllipticalArc>(*iter, sink) ||
-        output_as<Path2::Curve>(*iter, sink);
+        output_as<LineSegment>(*iter, sink) ||
+        output_as<CubicBezier>(*iter, sink) ||
+        output_as<QuadraticBezier>(*iter, sink) ||
+        output_as<SVGEllipticalArc>(*iter, sink) ||
+        output_as<Curve>(*iter, sink);
     }
 
     if (path.closed()) {

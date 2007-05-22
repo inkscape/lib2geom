@@ -109,9 +109,9 @@ class Conic4: public Toy {
         cairo_set_line_width (cr, 1);
         cairo_stroke(cr);
 
-        Geom::Path2::Path pb;
+        Geom::Path pb;
         path_from_sbasis(pb, B, 1);
-        Geom::Path2::Path pth = pb;
+        Geom::Path pth = pb;
         //*notify << pth;
 
         Toy::draw(cr, notify, width, height, save);

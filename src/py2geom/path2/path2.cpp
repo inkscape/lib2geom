@@ -40,14 +40,14 @@
 using namespace boost::python;
 
 /*
-struct CurveWrap : Geom::Path2::Curve, wrapper<Geom::Path2::Curve>
+struct CurveWrap : Geom::Curve, wrapper<Geom::Curve>
 {
     Geom::Point initialPoint(){return this->get_override("initialPoint")();}
     Geom::Point finalPoint(){return this->get_override("finalPoint")();}
     CurveWrap *duplicate(){return this->get_override("duplicate")();}
     Geom::Rect boundsFast(){return this->get_override("boundsFast")();}
     Geom::Rect boundsExact(){return this->get_override("boundsExact")();}
-    void subdivide(Geom::Coord t, Geom::Path2::Curve& a, Geom::Path2::Curve& b){return this->get_override("subdivide")();}
+    void subdivide(Geom::Coord t, Geom::Curve& a, Geom::Curve& b){return this->get_override("subdivide")();}
     Geom::Point pointAndDerivativesAt(Geom::Coord t, unsigned n, Geom::Point *ds){return this->get_override("pointAndDerivativesAt")();}
     Geom::MultidimSBasis<2> sbasis(){return this->get_override("sbasis")();}
 };
@@ -57,7 +57,7 @@ BOOST_PYTHON_MODULE(_path2)
 {
 /*
     class_<CurveWrap>("Curve")
-        .def("initalPoint", pure_virtual(&Geom::Path2::Curve::initialPoint))
+        .def("initalPoint", pure_virtual(&Geom::Curve::initialPoint))
         .def("finalPoint", pure_virtual(&CurveWrap::finalPoint))
         .def("duplicate", pure_virtual(&CurveWrap::duplicate))
         .def("boundsFast", pure_virtual(&CurveWrap::boundsFast))
@@ -68,10 +68,10 @@ BOOST_PYTHON_MODULE(_path2)
         .def("sbasis", pure_virtual(&CurveWrap::sbasis))
     ;
 */
-    class_<Geom::Path2::Path>("Path")
-        .def("empty", &Geom::Path2::Path::empty)
-        .def("closed", &Geom::Path2::Path::closed)
-        .def("close", &Geom::Path2::Path::closed)
+    class_<Geom::Path>("Path")
+        .def("empty", &Geom::Path::empty)
+        .def("closed", &Geom::Path::closed)
+        .def("close", &Geom::Path::closed)
     ;
 }
 

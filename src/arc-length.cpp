@@ -37,7 +37,7 @@ using namespace Geom;
 /** Calculates the length of a cubic element through subdivision.
  *  The 'tol' parameter is the maximum error allowed.  This is used to subdivide the curve where necessary.
  */
-double cubic_length_subdividing(Path2::Path::Elem const & e, double tol) {
+double cubic_length_subdividing(Path::Elem const & e, double tol) {
     Point v[3];
     for(int i = 0; i < 3; i++)
         v[i] = e[i+1] - e[0];
@@ -58,11 +58,11 @@ double cubic_length_subdividing(Path2::Path::Elem const & e, double tol) {
         Point midmidmid = Lerp(0.5, midmid[0], midmid[1]);
         {
             Point curve[4] = {e[0], mid[0], midmid[0], midmidmid};
-            Path2::Path::Elem e0(cubicto, std::vector<Point>::const_iterator(curve), std::vector<Point>::const_iterator(curve) + 4);
+            Path::Elem e0(cubicto, std::vector<Point>::const_iterator(curve), std::vector<Point>::const_iterator(curve) + 4);
             result = cubic_length_subdividing(e0, tol);
         } {
             Point curve[4] = {midmidmid, midmid[1], mid[2], e[3]};
-            Path2::Path::Elem e1(cubicto, std::vector<Point>::const_iterator(curve), std::vector<Point>::const_iterator(curve) + 4);
+            Path::Elem e1(cubicto, std::vector<Point>::const_iterator(curve), std::vector<Point>::const_iterator(curve) + 4);
             return result + cubic_length_subdividing(e1, tol);
         }
     }
@@ -75,7 +75,7 @@ double cubic_length_subdividing(Path2::Path::Elem const & e, double tol) {
 double arc_length_subdividing(Path const & p, double tol) {
     double result = 0;
 
-    for(Path2::Path::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
+    for(Path::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
         if(dynamic_cast<LineTo *>(iter.cmd()))
             result += distance((*iter).first(), (*iter).last());
         else if(dynamic_cast<CubicTo *>(iter.cmd()))
@@ -102,7 +102,7 @@ static double poly_length_integrating(double t, void* param) {
  \param result variable to be incremented with the length of the path
  \param abs_error variable to be incremented with the estimated error
 */
-void arc_length_integrating(Path2::Path::Elem pe, double t, double tol, double &result, double &abs_error) {
+void arc_length_integrating(Path::Elem pe, double t, double tol, double &result, double &abs_error) {
     if(dynamic_cast<LineTo *>(iter.cmd()))
         result += distance(pe.first(), pe.last()) * t;
     else if(dynamic_cast<QuadTo *>(iter.cmd()) ||
@@ -129,10 +129,10 @@ void arc_length_integrating(Path2::Path::Elem pe, double t, double tol, double &
 }
 
 /** Calculates the length of a Path through gsl integration.  The parameter 'tol' is the maximum error allowed. */
-double arc_length_integrating(Path2::Path const & p, double tol) {
+double arc_length_integrating(Path const & p, double tol) {
     double result = 0, abserr = 0;
 
-    for(Path2::Path::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
+    for(Path::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
         arc_length_integrating(*iter, 1.0, tol, result, abserr);
     }
     //printf("got %g with err %g\n", result, abserr);
@@ -141,14 +141,14 @@ double arc_length_integrating(Path2::Path const & p, double tol) {
 }
 
 /** Calculates the arc length to a specific location on the path.  The parameter 'tol' is the maximum error allowed. */
-double arc_length_integrating(Path2::Path const & p, Path2::Path::Location const & pl, double tol) {
+double arc_length_integrating(Path const & p, Path::Location const & pl, double tol) {
     double result = 0, abserr = 0;
     ptrdiff_t offset = pl.it - p.begin();
     
     assert(offset >= 0);
     assert(offset < p.size());
     
-    for(Path2::Path::const_iterator iter(p.begin()), end(p.end()); 
+    for(Path::const_iterator iter(p.begin()), end(p.end()); 
         (iter != pl.it); ++iter) {
         arc_length_integrating(*iter, 1.0, tol, result, abserr);
     }
@@ -168,7 +168,7 @@ double arc_length_integrating(Path2::Path const & p, Path2::Path::Location const
      
 struct arc_length_params
 {
-    Path2::Path::Elem pe;
+    Path::Elem pe;
     double s,tol, result, abs_error;
     double left, right;
 };

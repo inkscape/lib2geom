@@ -76,7 +76,7 @@ class Conic3: public Toy {
             }
         }
         {
-            Geom::Path2::Path pb;
+            Geom::Path pb;
             path_from_sbasis(pb, B, 1);
             cairo_path(cr, pb);
         }

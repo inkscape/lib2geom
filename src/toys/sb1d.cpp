@@ -81,7 +81,7 @@ class Sb1d: public Toy {
         //B[1] = SBasis(Linear(3*width/4)) - B[1];
         *notify << B[0] << ", "; 
         *notify << B[1];
-        Geom::Path2::Path pb;
+        Geom::Path pb;
         B[1] = SBasis(Linear(3*width/4)) - B[1];
         pb.append(B);
         pb.close(false);

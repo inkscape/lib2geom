@@ -98,7 +98,7 @@ class BezGrad: public Toy {
             for(int ui = 0; ui < 10; ui++) {
                 double tu = ui/10.;
                 
-                Geom::Path2::Path pb;
+                Geom::Path pb;
                 MultidimSBasis<2> B;
                 MultidimSBasis<2> tB;
                 

@@ -160,18 +160,18 @@ subpath_from_sbasis_incremental(Geom::OldPathSetBuilder &pb, D2<SBasis> B, doubl
 #endif
 
 void
-path_from_sbasis(Geom::Path2::Path &pb, D2<SBasis> const &B, double tol) {
+path_from_sbasis(Geom::Path &pb, D2<SBasis> const &B, double tol) {
     assert(isFinite(B));
     if(tailError(B, 2) < tol || sbasisSize(B) == 2) { // nearly cubic enough
         if(B[0].size() == 0 && B[1].size() != 0) {
-            pb.append(Geom::Path2::LineSegment(Geom::Point(0, B[1][0][0]), Geom::Point(0, B[1][0][1])));
+            pb.append(Geom::LineSegment(Geom::Point(0, B[1][0][0]), Geom::Point(0, B[1][0][1])));
         } else if(B[0].size() != 0 && B[1].size() == 0) {
-            pb.append(Geom::Path2::LineSegment(Geom::Point(B[0][0][0], 0), Geom::Point(B[0][0][1], 0)));
+            pb.append(Geom::LineSegment(Geom::Point(B[0][0][0], 0), Geom::Point(B[0][0][1], 0)));
         } else if(sbasisSize(B) == 1) {
-            pb.append(Geom::Path2::LineSegment(Geom::Point(B[0][0][0], B[1][0][0]),Geom::Point(B[0][0][1], B[1][0][1])));
+            pb.append(Geom::LineSegment(Geom::Point(B[0][0][0], B[1][0][0]),Geom::Point(B[0][0][1], B[1][0][1])));
         } else {
             std::vector<Geom::Point> bez = sbasis_to_bezier(B, 2);
-            pb.append(Geom::Path2::CubicBezier(bez[0], bez[1], bez[2], bez[3]));
+            pb.append(Geom::CubicBezier(bez[0], bez[1], bez[2], bez[3]));
         }
     } else {
         path_from_sbasis(pb, compose(B, Linear(0, 0.5)), tol);
@@ -179,11 +179,11 @@ path_from_sbasis(Geom::Path2::Path &pb, D2<SBasis> const &B, double tol) {
     }
 }
 
-std::vector<Geom::Path2::Path>
+std::vector<Geom::Path>
 path_from_piecewise(Geom::Piecewise<Geom::D2<Geom::SBasis> > const &B, double tol) {
-    std::vector<Geom::Path2::Path> ret;
+    std::vector<Geom::Path> ret;
     if(B.size() == 0) return ret;
-    Geom::Path2::Path *cur = new Geom::Path2::Path();
+    Geom::Path *cur = new Geom::Path();
     unsigned i = 0;
     while(true) {
         path_from_sbasis(*cur, B[i], tol);
@@ -196,7 +196,7 @@ path_from_piecewise(Geom::Piecewise<Geom::D2<Geom::SBasis> > const &B, double to
         if(B[i].at0() != B[i-1].at1()) {
             ret.push_back(*cur);
             delete cur;
-            cur = new Geom::Path2::Path();
+            cur = new Geom::Path();
         }
     }
 }

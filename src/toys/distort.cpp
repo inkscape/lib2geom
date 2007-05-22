@@ -15,7 +15,7 @@
 using namespace Geom;
 
 class DistortToy: public Toy {
-    std::vector<Geom::Path2::Path> p;
+    std::vector<Geom::Path> p;
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         D2<SBasis2d> sb2;
         for(unsigned dim = 0; dim < 2; dim++) {

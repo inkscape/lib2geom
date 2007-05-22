@@ -77,7 +77,7 @@ class Sb2d2: public Toy {
             for(unsigned ui = 0; ui < u_subs; ui++) {
                 double tu = ui * inv_u_subs;
                 
-                Geom::Path2::Path pb;
+                Geom::Path pb;
                 D2<SBasis> B;
                 D2<SBasis> tB;
                 

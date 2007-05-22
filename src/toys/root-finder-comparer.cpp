@@ -211,7 +211,7 @@ public:
         std::copy(solutions.begin(), solutions.end(), std::ostream_iterator<double >(*notify, ","));
             
         D2<SBasis> B = handles_to_sbasis<5>(handles.begin());
-        Geom::Path2::Path pb;
+        Geom::Path pb;
         pb.append(B);
         pb.close(false);
         cairo_path(cr, pb);

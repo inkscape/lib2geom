@@ -23,7 +23,7 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
     D2<SBasis> Bz = handles_to_sbasis<3>(handles.begin());
     
     // Draw it in orange
-    Geom::Path2::Path pb;
+    Geom::Path pb;
     pb.append(Bz);
     pb.close(false);
     cairo_path(cr, pb);
@@ -78,7 +78,7 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
         }
         
         // draw it
-        Geom::Path2::Path pb;
+        Geom::Path pb;
         pb.append(Bu);
         pb.close(false);
         cairo_path(cr, pb);
