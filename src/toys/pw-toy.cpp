@@ -1,9 +1,10 @@
 #include "pw.h"
+#include "s-basis.h"
+#include "bezier-to-sbasis.h"
 
 #include "path-cairo.h"
-#include <iterator>
 #include "toy-framework.cpp"
-#include "bezier-to-sbasis.h"
+
 #include <vector>
 
 using namespace Geom;

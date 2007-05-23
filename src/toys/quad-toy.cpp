@@ -2,16 +2,10 @@
  * adaptive quad tree for display graph, search operations
  * (njh)
  */
-#include "s-basis.h"
-#include "bezier-to-sbasis.h"
-#include "sbasis-to-bezier.h"
-#include "s-basis-2d.h"
 
-#include "path-cairo.h"
-
-#include <iterator>
 #include "quadtree.h"
 
+#include "path-cairo.h"
 #include "toy-framework.h"
 
 using std::vector;

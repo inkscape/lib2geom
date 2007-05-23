@@ -1,14 +1,12 @@
-#include "path-cairo.h"
-
-#include "matrix.h"
-
-#include <vector>
-#include "s-basis.h"
 #include "pw.h"
 #include "d2.h"
+#include "s-basis.h"
+#include "matrix.h"
 
+#include "path-cairo.h"
 #include "toy-framework.h"
 
+#include <vector>
 using namespace Geom;
 
 class SketchToy: public Toy {

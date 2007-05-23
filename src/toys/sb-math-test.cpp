@@ -30,11 +30,11 @@
  * the specific language governing rights and limitations.
  */
 
-#include "s-basis.h"
-#include "pw.h"
 #include "sb-math.h"
-#include "bezier-to-sbasis.h"
+#include "pw.h"
 #include "d2.h"
+#include "s-basis.h"
+#include "bezier-to-sbasis.h"
 
 #include "path.h"
 #include "path-cairo.h"

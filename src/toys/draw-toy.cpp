@@ -1,8 +1,6 @@
 #include "path.h"
+
 #include "path-cairo.h"
-
-#include "matrix.h"
-
 #include "toy-framework.h"
 
 class DrawToy: public Toy {

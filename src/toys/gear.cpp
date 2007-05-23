@@ -29,13 +29,12 @@
  *
  */
 
-#include "s-basis.h"
 #include "d2.h"
+#include "s-basis.h"
 #include "bezier-to-sbasis.h"
-
 #include "path.h"
-#include "path-cairo.h"
 
+#include "path-cairo.h"
 #include "toy-framework.h"
 
 using std::vector;

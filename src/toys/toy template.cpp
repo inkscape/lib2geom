@@ -1,7 +1,11 @@
-#include "path-cairo.h"
-#include <iterator>
+#include "d2.h"
+#include "d2.cpp"
+#include "s-basis.h"
 
+#include "path-cairo.h"
 #include "toy-framework.cpp"
+
+using namespace Geom;
 
 class MyToy: public Toy {
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {

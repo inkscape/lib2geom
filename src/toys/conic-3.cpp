@@ -4,13 +4,12 @@
  * Also represents cycloids
  */
 
+#include "d2.h"
 #include "s-basis.h"
 #include "bezier-to-sbasis.h"
 #include "sbasis-to-bezier.h"
-#include "d2.h"
 
 #include "path-cairo.h"
-
 #include "toy-framework.h"
 
 using std::vector;
@@ -75,11 +74,7 @@ class Conic3: public Toy {
                 B[dim] += Z[i]*e_a_h[i][dim];
             }
         }
-        {
-            Geom::Path pb;
-            path_from_sbasis(pb, B, 1);
-            cairo_path(cr, pb);
-        }
+        cairo_md_sb(cr, B);
         Toy::draw(cr, notify, width, height, save);
     }
 };

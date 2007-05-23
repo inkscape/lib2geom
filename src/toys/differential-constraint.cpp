@@ -2,13 +2,11 @@
  * based on idea from Michael Glissner
  * (njh)
  */
+#include "d2.h"
 #include "s-basis.h"
 #include "bezier-to-sbasis.h"
-#include "sbasis-to-bezier.h"
-#include "d2.h"
 
 #include "path-cairo.h"
-
 #include "toy-framework.h"
 
 using std::vector;

@@ -5,13 +5,11 @@
  * Also represents lumpy polar type curves
  */
 
+#include "d2.h"
 #include "s-basis.h"
 #include "bezier-to-sbasis.h"
-#include "sbasis-to-bezier.h"
-#include "d2.h"
 
 #include "path-cairo.h"
-
 #include "toy-framework.cpp"
 
 using std::vector;
@@ -109,10 +107,7 @@ class Conic4: public Toy {
         cairo_set_line_width (cr, 1);
         cairo_stroke(cr);
 
-        Geom::Path pb;
-        path_from_sbasis(pb, B, 1);
-        Geom::Path pth = pb;
-        //*notify << pth;
+        cairo_md_sb(cr, B);
 
         Toy::draw(cr, notify, width, height, save);
     }

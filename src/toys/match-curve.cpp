@@ -1,12 +1,9 @@
+#include "d2.h"
 #include "s-basis.h"
 #include "bezier-to-sbasis.h"
-#include "d2.h"
-
 #include "path.h"
+
 #include "path-cairo.h"
-
-#include <vector>
-
 #include "toy-framework.h"
 
 #define ZROOTS_TEST 0
@@ -14,6 +11,7 @@
 #include "zroots.c"
 #endif
 
+#include <vector>
 using std::vector;
 using namespace Geom;
 

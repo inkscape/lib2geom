@@ -1,11 +1,6 @@
-#include "s-basis.h"
-#include "bezier-to-sbasis.h"
-#include "sbasis-to-bezier.h"
-
-#include "path-cairo.h"
-
 #include "convex-cover.h"
 
+#include "path-cairo.h"
 #include "toy-framework.h"
 
 using std::vector;
@@ -35,7 +30,7 @@ class ConvexTest: public Toy {
             h2.push_back(handles[i + 15]);
         }
 
-        clock_t end_t = clock()+clock_t(0.1*CLOCKS_PER_SEC);
+        clock_t end_t = clock()+clock_t(0.025*CLOCKS_PER_SEC);
         unsigned iterations = 0;
         while(end_t > clock()) {
             Geom::ConvexHull ch(handles);
@@ -47,7 +42,7 @@ class ConvexTest: public Toy {
         Geom::ConvexHull ch1(h1);
         Geom::ConvexHull ch2(h2);
 
-        end_t = clock()+clock_t(0.1*CLOCKS_PER_SEC);
+        end_t = clock()+clock_t(0.025*CLOCKS_PER_SEC);
         iterations = 0;
         while(end_t > clock()) {
             graham_merge(ch1, ch2);

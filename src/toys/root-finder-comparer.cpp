@@ -6,12 +6,9 @@
 #include "nearestpoint.cpp"
 #include "poly-dk-solve.h"
 #include "poly-laguerre-solve.h"
-
 #include "path.h"
+
 #include "path-cairo.h"
-
-#include <vector>
-
 #include "toy-framework.h"
 
 #define ZROOTS_TEST 0
@@ -19,12 +16,14 @@
 #include "zroots.c"
 #endif
 
+
 namespace Geom{
 extern void subdiv_sbasis(SBasis const & s,
                    std::vector<double> & roots, 
                    double left, double right);
 };
 
+#include <vector>
 using std::vector;
 using namespace Geom;
 

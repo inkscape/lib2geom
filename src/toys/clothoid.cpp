@@ -1,12 +1,11 @@
+#include "d2.h"
 #include "s-basis.h"
 #include "bezier-to-sbasis.h"
-#include "sbasis-to-bezier.h"
-#include "d2.h"
 
 #include "path-cairo.h"
-
 #include "toy-framework.h"
 
+#include <vector>
 using std::vector;
 using namespace Geom;
 

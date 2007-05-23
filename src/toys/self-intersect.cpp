@@ -1,16 +1,11 @@
-#include "s-basis.h"
-#include "bezier-to-sbasis.h"
-#include "sbasis-to-bezier.h"
+#include "basic-intersection.h"
 #include "d2.h"
+#include "s-basis.h"
 #include "s-basis-2d.h"
+#include "bezier-to-sbasis.h"
 
 #include "path-cairo.h"
-
-#include <iterator>
-
 #include "toy-framework.h"
-
-#include "basic-intersection.h"
 
 using std::vector;
 const unsigned bez_ord = 10;

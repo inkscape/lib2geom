@@ -1,12 +1,10 @@
+#include "d2.h"
 #include "s-basis.h"
+#include "bezier-to-sbasis.h"
+#include "path.h"
 #include "point.h"
 
-#include "bezier-to-sbasis.h"
-#include "sbasis-to-bezier.h"
-#include "path2.h"
 #include "path-cairo.h"
-#include "d2.h"
-
 #include "toy-framework.h"
 
 using std::string;

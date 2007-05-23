@@ -1,17 +1,12 @@
-#include "s-basis.h"
-#include "bezier-to-sbasis.h"
-#include "sbasis-to-bezier.h"
 #include "d2.h"
+#include "s-basis.h"
+#include "s-basis-2d.h"
 #include "sb-geometric.h"
 #include "sb-math.h"
+#include "bezier-to-sbasis.h"
 
 #include "path-cairo.h"
-
 #include "toy-framework.h"
-
-//#include "solver.h"
-//#include "s-basis-2d.h"
-//#include <time.h>
 
 using std::vector;
 using namespace Geom;

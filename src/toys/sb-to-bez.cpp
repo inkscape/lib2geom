@@ -31,14 +31,12 @@
 // mainly experimental atm...
 // do not expect to find anything understandable here atm. 
 
-
+#include "d2.h"
 #include "s-basis.h"
 #include "sb-geometric.h"
 #include "bezier-to-sbasis.h"
-#include "d2.h"
 
 #include "path-cairo.h"
-
 #include "toy-framework.h"
 
 #define ZERO 1e-7
