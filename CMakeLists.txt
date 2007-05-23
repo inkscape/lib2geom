@@ -1,5 +1,5 @@
 PROJECT(lib2geom CXX)
-SET(2GEOM_VERSION 0.0.1)
+SET(2GEOM_VERSION 0.1.0)
 SET(CMAKE_BACKWARDS_COMPATIBILITY 2.4)
 SET(CMAKE_INCLUDE_CURRENT_DIR TRUE)
 
@@ -17,7 +17,7 @@ IF(gsl_FOUND)
     SET(NEEDS_GSL 
     differential-constraint
     root-finder-comparer
-    contour
+#   contour
     sb-to-bez
     )
     SET(LINK_GSL ${gsl_LINK_FLAGS})
