@@ -16,13 +16,12 @@ class NormalBundleToy: public Toy {
         D2<SBasis> pattern  = handles_to_sbasis<3>(handles.begin()+4);
         Geom::Point O = *(handles.begin()+8);
     
-        printf("ici\n");
         Piecewise<D2<SBasis> > uskeleton = arc_length_parametrization(Piecewise<D2<SBasis> >(skeleton));
         //TODO: add linear/cutoff extension...
         Piecewise<D2<SBasis> > n = rot90(derivative(uskeleton));
 
-        Piecewise<SBasis> x=Piecewise<SBasis>(pattern[0]-O[0]), y=Piecewise<SBasis>(pattern[1]-O[1]);
-        printf("la\n");
+        Piecewise<SBasis> x=Piecewise<SBasis>(pattern[0]-O[0]);
+        Piecewise<SBasis> y=Piecewise<SBasis>(pattern[1]-O[1]);
         Piecewise<D2<SBasis> >output = compose(uskeleton,x)+y*compose(n,x);
         
         cairo_set_line_width(cr,1.);

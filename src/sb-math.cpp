@@ -110,7 +110,7 @@ static Piecewise<SBasis> sqrt_internal(SBasis const &f,
     if (f.at0()<-tol*tol && f.at1()<-tol*tol){
         return sqrt_internal(-f,tol,order);
     }else if (f.at0()>tol*tol && f.at1()>tol*tol){
-        sqrtf.resize(order, Linear(0,0));
+        sqrtf.resize(order+1, Linear(0,0));
         sqrtf[0] = Linear(std::sqrt(f[0][0]), std::sqrt(f[0][1]));
         SBasis r = f - multiply(sqrtf, sqrtf); // remainder    
         for(unsigned i = 1; int(i) <= order and i<r.size(); i++) {
@@ -118,7 +118,7 @@ static Piecewise<SBasis> sqrt_internal(SBasis const &f,
             SBasis cisi = shift(ci, i);
             r -= multiply(shift((sqrtf*2 + cisi), i), SBasis(ci));
             r.truncate(order+1);
-            sqrtf += cisi;
+            sqrtf[i] = ci;
             if(r.tailError(i) == 0) // if exact
                 break;
         }
@@ -157,7 +157,7 @@ Piecewise<SBasis> sqrt(Piecewise<SBasis> const &f, double tol, int order){
 
     for (unsigned i=0; i<ff.size(); i++){
         Piecewise<SBasis> sqrtfi = sqrt_internal(ff.segs[i],tol,order);
-        sqrtfi.setDomain(Interval(f.cuts[i],f.cuts[i+1]));
+        sqrtfi.setDomain(Interval(ff.cuts[i],ff.cuts[i+1]));
         result.concat(sqrtfi);
     }
     return result;
@@ -213,6 +213,8 @@ Piecewise<SBasis> cos(          SBasis  const &f, double tol, int order){
 }
 
 //--1/x------------------------------------------------------------
+//TODO: this implementation is just wrong. Remove or redo!
+
 void truncateResult(Piecewise<SBasis> &f, int order){
     if (order>=0){
         for (unsigned k=0; k<f.segs.size(); k++){
@@ -220,7 +222,7 @@ void truncateResult(Piecewise<SBasis> &f, int order){
         }
     }
 }
-//TODO: change every thing!...
+
 Piecewise<SBasis> reciprocalOnDomain(Interval range, double tol){
     Piecewise<SBasis> reciprocal_fn;
     //TODO: deduce R from tol...

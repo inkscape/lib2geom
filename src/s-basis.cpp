@@ -432,79 +432,44 @@ SBasis cos(Linear bo, int k) {
                k);
 }
 
-//compute fog^-1.
+
+//compute fog^-1. ("zero" = double comparison treshold. *!*we might divide by "zero"*!*)
 //TODO: compute order according to tol?
-SBasis compose_inverse(SBasis const &f, SBasis const &g, unsigned order, double tol){
+SBasis compose_inverse(SBasis const &f, SBasis const &g, unsigned order, double zero){
     SBasis result; //result
     SBasis r=f; //remainder
     SBasis Pk=Linear(1)-g,Qk=g,sg=Pk*Qk;
-    unsigned val_g=valuation(g), val_r=valuation(f);
-    if (val_g==g.size()) return Linear(f.at0());
-    if (val_r==f.size()) return Linear(0.);
     Pk.truncate(order);
     Qk.truncate(order);
+    Pk.resize(order,Linear(0.));
+    Qk.resize(order,Linear(0.));
+    r.resize(order,Linear(0.));
 
-    for (unsigned k=0; k<=order; k++){
+    for (unsigned k=0; k<order; k++){
+        double p10 = Pk.at(k)[0];// we have to solve the linear system:
+        double p01 = Pk.at(k)[1];//
+        double q10 = Qk.at(k)[0];//   p10*a + q10*b = r10
+        double q01 = Qk.at(k)[1];// &                    
+        double r10 =  r.at(k)[0];//   p01*a + q01*b = r01
+        double r01 =  r.at(k)[1];//
+        double a,b;
+        double det = p10*q01-p01*q10;
+
+        //TODO: handle det~0!! 
+        if (fabs(det)<zero)
+            det = zero;
+        a=( q01*r10-q10*r01)/det;
+        b=(-p01*r10+p10*r01)/det;
+        result.push_back(Linear(a,b));
+        r=r-Pk*a-Qk*b;
         
-        // v is min(valuation(Pk,tol),valuation(Qk,tol));
-        //TODO: are valuations really needed here?
-        //Certainly not. Only val_r is really used, and could be incremented instead of computed.
-        //However, assertions like 'assert(v<=val_r)' would be more tricky to state...
-        //v could also be incremented ( v ~ k*valuationl(sg)+v0 ).
-
-        unsigned v=std::min(valuation(Pk,tol),valuation(Qk,tol));
-
-        //assert(v<=val_r);//otherwise f(g^-1) does not exist!
-
-        if (v<val_r){
-            result.push_back(Linear(0));
-        }else if (v==val_r && val_r<r.size()){
-            double p10 = Pk.at(v)[0];
-            double p01 = Pk.at(v)[1];
-            double q10 = Qk.at(v)[0];
-            double q01 = Qk.at(v)[1];
-            double r10 =  r.at(v)[0];
-            double r01 =  r.at(v)[1];
-            if ( fabs(p10*q01-p01*q10)<tol ) {
-                assert( fabs(p10*r01-p01*r10)<tol );//otherwise f(g^-1) does not exist!
-                double a, b;
-                if (fabs(p10)+fabs(q10)>fabs(p10)+fabs(q10)){
-                    if (fabs(p10)>fabs(q10)){
-                        a=(r10-q10)/p10;
-                        b=1.;
-                    }else{
-                        a=1.;
-                        b=(r01-p10)/q10;
-                    }
-                }else{
-                    if (fabs(p01)>fabs(q01)){
-                        a=(r01-q01)/p01;
-                        b=1.;
-                    }else{
-                        a=1.;
-                        b=(r01-p01)/q01;
-                    }
-                }
-                result.push_back(Linear(a,b));
-                r=r-Pk*a-Qk*b;
-                //TODO: val_r+=1;
-                val_r=valuation(r,tol);
-            }else{
-                double a=( q01*r10-q10*r01)/(p10*q01-p01*q10);
-                double b=(-p01*r10+p10*r01)/(p10*q01-p01*q10);
-                result.push_back(Linear(a,b));
-                //r=f-result(g);
-                r=r-Pk*a-Qk*b;
-                //TODO: val_r+=1;
-                val_r=valuation(r,tol);
-            }
-        }
-        if (val_r==r.size()) return result;
         Pk=Pk*sg;
         Qk=Qk*sg;
         Pk.truncate(order);
         Qk.truncate(order);
+        r.truncate(order);
     }
+    result.normalize();
     return result;
 }
 
