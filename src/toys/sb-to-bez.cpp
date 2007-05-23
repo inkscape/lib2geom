@@ -269,13 +269,13 @@ class SbToBezierTester: public Toy {
       //double error=draw_non_parametric_approx(cr,g,t0,t1);
       double error=0;
 
-      Piecewise<D2<SBasis> > ug = arc_length_parametrization(g);
+      /*Piecewise<D2<SBasis> > ug = arc_length_parametrization(g);
       vector<Geom::Point> bez_pts_init=sb_seg_to_bez(g,t0,t1);
       D2<SBasis>b=handles_to_sbasis<3>(bez_pts_init.begin());
       D2<SBasis>L2_approx=L2_proj(ug,b);
       cairo_set_source_rgba (cr, 0., 0.9, 0., .7);
       cairo_md_sb(cr, L2_approx);
-      cairo_stroke(cr);
+      cairo_stroke(cr);*/
 
       cairo_set_line_width (cr, 1);
       cairo_set_source_rgba (cr, 0.9, 0., 0., .7);
