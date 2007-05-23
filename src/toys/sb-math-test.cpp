@@ -34,10 +34,9 @@
 #include "pw.h"
 #include "sb-math.h"
 #include "bezier-to-sbasis.h"
-#include "sbasis-to-bezier.h"
 #include "d2.h"
 
-#include "path2.h"
+#include "path.h"
 #include "path-cairo.h"
 
 #include "toy-framework.h"

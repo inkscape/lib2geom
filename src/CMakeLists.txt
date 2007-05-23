@@ -45,8 +45,8 @@ sb-geometric.h
 sb-math.h
 sb-math.cpp
 #nearestpoint.cpp
-path2.cpp
-path2.h
+path.cpp
+path.h
 point.h
 point.cpp
 point-l.h

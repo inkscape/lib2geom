@@ -1,4 +1,4 @@
-#include "path2.h"
+#include "path.h"
 #include "path-cairo.h"
 
 #include "matrix.h"

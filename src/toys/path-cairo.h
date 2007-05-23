@@ -5,7 +5,7 @@
 #include "s-basis-2d.h"
 #include "d2.h"
 #include "pw.h"
-#include "path2.h"
+#include "path.h"
 #include <vector>
 
 typedef struct _cairo cairo_t;

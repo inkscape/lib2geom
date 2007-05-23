@@ -1,12 +1,11 @@
 #include "s-basis.h"
 #include "d2.h"
 #include "bezier-to-sbasis.h"
-#include "sbasis-to-bezier.h"
 #include "s-basis-2d.h"
 
 #include "path-cairo.h"
 
-#include <iterator>
+#include <vector>
 
 #include "toy-framework.h"
 

@@ -1,12 +1,9 @@
 #include "path-cairo.h"
 
-#include <iterator>
-#include <iostream>
 #include <vector>
 
 #include "toy-framework.cpp"
 
-#include "path2.h"
 #include "svg-path-parser.h"
 #include "d2.h"
 #include "pw.h"

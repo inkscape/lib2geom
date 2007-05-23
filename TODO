@@ -2,11 +2,11 @@ Code Health:
   - remove tests from main code
   - remove macros.cpp
   - standardize naming
-    - bounds static function naming
   - timing tests
   - reinstate valuable unit tests (focus on corner testing)
   - resolve standards for operator/cast overloads
   - make singlular constructors explicit
+  - remove unecessary #include s
 
 Path:
   - inkscape conversions
@@ -32,7 +32,7 @@ Point:
   - Test the waters in regards to D2<double>
 
 Toys:
-  - generalize to path2
+  - generalize to path
   - improve path-cairo
   - improve toy framework (multiple handle lists, less hardcode)
   - sketch toy

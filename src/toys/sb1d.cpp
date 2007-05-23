@@ -1,15 +1,14 @@
 #include "s-basis.h"
 #include "bezier-to-sbasis.h"
-#include "sbasis-to-bezier.h"
 #include "d2.h"
 #include "s-basis-2d.h"
-
-#include "path2.h"
-#include "path-cairo.h"
-
-#include <iterator>
 #include "choose.h"
 #include "convex-cover.h"
+
+#include "path.h"
+#include "path-cairo.h"
+
+#include <vector>
 
 #include "toy-framework.h"
 

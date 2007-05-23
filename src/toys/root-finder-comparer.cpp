@@ -1,18 +1,16 @@
 #include "s-basis.h"
 #include "bezier-to-sbasis.h"
-#include "sbasis-to-bezier.h"
 #include "solver.h"
-#include "nearestpoint.cpp"
-#include "sbasis-poly.h"
 #include "sturm.h"
+#include "sbasis-poly.h"
+#include "nearestpoint.cpp"
 #include "poly-dk-solve.h"
 #include "poly-laguerre-solve.h"
-#include "choose.h"
 
-#include "path2.h"
+#include "path.h"
 #include "path-cairo.h"
 
-#include <iterator>
+#include <vector>
 
 #include "toy-framework.h"
 
@@ -28,7 +26,6 @@ extern void subdiv_sbasis(SBasis const & s,
 };
 
 using std::vector;
-using std::complex;
 using namespace Geom;
 
 //#define HAVE_GSL

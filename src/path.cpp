@@ -1,5 +1,5 @@
 /*
- * Path2 
+ * Path - Series of continuous curves
  *   
  * Copyright 2007  MenTaLguY <mental@rydia.net>
  *     
@@ -27,7 +27,7 @@
  * the specific language governing rights and limitations.
  */
 
-#include "path2.h"
+#include "path.h"
 
 namespace Geom {
 

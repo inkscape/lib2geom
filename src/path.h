@@ -1,5 +1,5 @@
 /*
- * Path2
+ * Path - Series of continuous curves
  *
  * Copyright 2007  MenTaLguY <mental@rydia.net>
  *
