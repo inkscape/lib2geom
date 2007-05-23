@@ -4,6 +4,7 @@ transforms.cpp
 sbasis.cpp
 linear.cpp
 pw.cpp
+d2.cpp
 multidimsbasis.cpp
 md-pw-sb.cpp
 py2geom.cpp
