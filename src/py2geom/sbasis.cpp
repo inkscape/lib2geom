@@ -72,9 +72,9 @@ void wrap_sbasis() {
     def("cos", &Geom::cos);
     def("reverse", (Geom::SBasis (*)(Geom::SBasis const &))&Geom::reverse);
     def("roots", &Geom::roots);
-    def("boundsFast", (Geom::Interval (*)(Geom::SBasis const &))&Geom::boundsFast);
-    def("boundsExact", (Geom::Interval (*)(Geom::SBasis const &))&Geom::boundsExact);
-    def("boundsLocal", (Geom::Interval (*)(Geom::SBasis const &))&Geom::boundsLocal);
+    def("bounds_fast", (Geom::Interval (*)(Geom::SBasis const &))&Geom::bounds_fast);
+    def("bounds_exact", (Geom::Interval (*)(Geom::SBasis const &))&Geom::bounds_exact);
+    def("bounds_local", (Geom::Interval (*)(Geom::SBasis const &))&Geom::bounds_local);
 
     class_<Geom::SBasis, bases<std::vector<Geom::Linear> > >("SBasis")
         .def(self_ns::str(self))

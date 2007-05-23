@@ -30,12 +30,12 @@
 
 #include <boost/python.hpp>
 
-#include "../../path2.h"
-#include "../helpers.h"
+#include "../path.h"
+#include "helpers.h"
 
-#include "../../point.h"
-#include "../../rect.h"
-#include "../../multidim-sbasis.h"
+#include "../point.h"
+#include "../rect.h"
+#include "../d2.h"
 
 using namespace boost::python;
 

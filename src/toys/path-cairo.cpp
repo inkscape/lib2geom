@@ -155,7 +155,7 @@ void cairo_d2_pw(cairo_t *cr, D2<Piecewise<SBasis> > const &p) {
 }
 
 void cairo_pw_d2(cairo_t *cr, Piecewise<D2<SBasis> > const &p) {
-    for(int i = 0; i < p.size(); i++)
+    for(unsigned i = 0; i < p.size(); i++)
         cairo_md_sb(cr, p[i]);
 }
 

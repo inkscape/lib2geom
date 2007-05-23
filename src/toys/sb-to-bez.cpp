@@ -57,15 +57,6 @@ void cairo_pw(cairo_t *cr, Piecewise<SBasis> p, double hscale=1., double vscale=
     }
 }
 
-static void plot(cairo_t* cr, SBasis const &B,double vscale=1,double a=0,double b=1){
-    D2<SBasis> plot;
-    plot[0]=SBasis(Linear(150+a*300,150+b*300));
-    plot[1]=B*(-vscale);
-    plot[1]+=300;
-    cairo_md_sb(cr, plot);
-    cairo_stroke(cr);
-}
-     
 //==================================================================
 static vector<double>  solve_poly (double a[],unsigned deg){
     double tol=1e-7;

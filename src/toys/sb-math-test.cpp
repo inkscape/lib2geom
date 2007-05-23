@@ -53,15 +53,6 @@ using namespace std;
 
 
 //-Plot---------------------------------------------------------------
-static void plot(cairo_t* cr, SBasis const &f,double vscale=1,double a=0,double b=1){
-    D2<SBasis> plot;
-    plot[0]=SBasis(Linear(150+a*300,150+b*300));
-    plot[1]=f*(-vscale);
-    plot[1]+=300;
-    cairo_md_sb(cr, plot);
-    cairo_stroke(cr);
-}
-
 static void plot(cairo_t* cr, double (*f)(double), Piecewise<SBasis> const &x, double vscale=1){
     int NbPts=40;
     for(int i=0; i<NbPts; i++){
@@ -84,7 +75,7 @@ static void plot(cairo_t* cr, Piecewise<SBasis> const &f,double vscale=1){
 
     cairo_d2_pw(cr, plot);
 
-    for (int i=1; i<f.size(); i++){
+    for (unsigned i=1; i<f.size(); i++){
         cairo_move_to(cr, Point(150+f.cuts[i]*300,300));
         cairo_line_to(cr, Point(150+f.cuts[i]*300,300-vscale*f.segs[i].at0()));
     }

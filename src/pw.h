@@ -184,14 +184,14 @@ class Piecewise {
 
         if(empty()) {
             for(unsigned i = 0; i < other.size(); i++)
-                push_seg(y + other[i]);
+                push_seg(other[i] + y);
             cuts = other.cuts;
             return;
         }
 
         double t = cuts.back() - other.cuts.front();
         for(unsigned i = 0; i < other.size(); i++)
-            push(y + other[i], other.cuts[i + 1] + t);
+            push(other[i] + y, other.cuts[i + 1] + t);
     }
 
     //returns true if the Piecewise<T> meets some basic invariants.

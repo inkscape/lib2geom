@@ -34,54 +34,42 @@
 #include "../d2.h"
 
 using namespace boost::python;
+using namespace Geom;
 
-typedef Geom::D2<Geom::SBasis> SBasis2D;
-typedef Geom::D2<Geom::Piecewise<Geom::SBasis> > d2pwsb;
-
+typedef D2<SBasis> SBasis2D;
+typedef D2<Piecewise<SBasis> > d2pwsb;
 
 void wrap_d2() {
     class_<SBasis2D>("SBasis2D")
-        .def("__getitem__", python_getitem<SBasis2D,Geom::SBasis,2>)
+        .def("__getitem__", python_getitem<SBasis2D,SBasis,2>)
 
-        .def("isZero", &Geom::Linear::isZero)
-        .def("isFinite", &Geom::Linear::isFinite)
-        .def("at0", &Geom::Linear::at0)
-        .def("at1", &Geom::Linear::at1)
-        .def("pointAt", &Geom::Linear::pointAt)
-        .def("toSBasis", &Geom::Linear::toSBasis)
+        .def("isZero", &Linear::isZero)
+        .def("isFinite", &Linear::isFinite)
+        .def("at0", &Linear::at0)
+        .def("at1", &Linear::at1)
+        .def("pointAt", &Linear::pointAt)
+        .def("toSBasis", &Linear::toSBasis)
 
         .def(-self)
         .def(self + self)
         .def(self - self)
         .def(self += self)
         .def(self -= self)
-        .def(self + Geom::Point)
-        .def(self - Geom::Point)
-        .def(self += Geom::Point)
-        .def(self -= Geom::Point)
-        .def(self * Geom::Point)
-        .def(self / Geom::Point)
-        .def(self *= Geom::Point)
-        .def(self /= Geom::Point)
+        .def(self + Point)
+        .def(self - Point)
+        .def(self += Point)
+        .def(self -= Point)
+        .def(self * Point)
+        .def(self / Point)
+        .def(self *= Point)
+        .def(self /= Point)
         .def(self * float())
         .def(self / float())
         .def(self *= float())
         .def(self /= float())
     ;
-    def("reverse", ((SBasis2D (*)(SBasis2D const &b))&Geom::reverse));
+    def("reverse", ((SBasis2D (*)(SBasis2D const &b))&reverse));
     //TODO: dot, rot90, cross, compose, composeEach, eval ops, derivative, integral, L2, portion, multiply ops, 
-    
-    class_<MultidimSBasis3>("MultidimSBasis3")
-        .def("__getitem__", python_getitem<MultidimSBasis2,Geom::SBasis,3>)
-        .def("size", &MultidimSBasis3::size)
-        .def("tail_error", &MultidimSBasis3::tail_error)
-        .def("is_finite", &MultidimSBasis3::is_finite)
-        .def(self + self)
-        .def(self - self)
-        .def(double() * self)
-        .def(self += self)
-        .def(self *= double())
-    ;
 };
 
 /*
