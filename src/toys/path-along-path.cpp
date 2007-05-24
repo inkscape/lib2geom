@@ -9,20 +9,34 @@
 using std::vector;
 using namespace Geom;
 
-class NormalBundleToy: public Toy {
+class PathAlongPathToy: public Toy {
+    bool should_draw_numbers(){return false;}
 
     void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         D2<SBasis> skeleton = handles_to_sbasis<3>(handles.begin());
         D2<SBasis> pattern  = handles_to_sbasis<3>(handles.begin()+4);
+
+        handles[8][0]=150;
         Geom::Point O = *(handles.begin()+8);
-    
+        
         Piecewise<D2<SBasis> > uskeleton = arc_length_parametrization(Piecewise<D2<SBasis> >(skeleton));
         //TODO: add linear/cutoff extension...
         Piecewise<D2<SBasis> > n = rot90(derivative(uskeleton));
 
         Piecewise<SBasis> x=Piecewise<SBasis>(pattern[0]-O[0]);
         Piecewise<SBasis> y=Piecewise<SBasis>(pattern[1]-O[1]);
-        Piecewise<D2<SBasis> >output = compose(uskeleton,x)+y*compose(n,x);
+
+        Interval pattBnds = bounds_exact(x);
+        int nbCopies = int(uskeleton.cuts.back()/pattBnds.extent());
+        double pattWidth = uskeleton.cuts.back()/nbCopies;
+        x-=pattBnds.min();
+        x*=pattWidth/pattBnds.extent();
+        Piecewise<D2<SBasis> >output;
+        for (int i=0; i<nbCopies; i++){
+            output.concat(compose(uskeleton,x)+y*compose(n,x));
+            x+=pattWidth;
+        }
+        //Piecewise<D2<SBasis> >output = compose(uskeleton,x)+y*compose(n,x);
         
         cairo_set_line_width(cr,1.);
 
@@ -43,20 +57,26 @@ class NormalBundleToy: public Toy {
     }        
 
 public:
-    NormalBundleToy(){
+    PathAlongPathToy(){
         if(handles.empty()) {
             for(int i = 0; i < 4; i++)
                 handles.push_back(Geom::Point(200+50*i,400));
             for(int i = 0; i < 4; i++)
                 handles.push_back(Geom::Point(100+uniform()*400,
                                               150+uniform()*100));
-            handles.push_back(Geom::Point(200,200));
+            handles[4] = Geom::Point(280,150);
+            handles[5] = Geom::Point(290,170);
+            handles[6] = Geom::Point(300,130);
+            handles[7] = Geom::Point(310,150);
+
+            handles.push_back(Geom::Point(150,150));
         }
     }
 };
 
+
 int main(int argc, char **argv) {
-    init(argc, argv, "normal-bundle", new NormalBundleToy);
+    init(argc, argv, "normal-bundle", new PathAlongPathToy);
     return 0;
 }
 
