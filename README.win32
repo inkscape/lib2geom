@@ -8,5 +8,6 @@
 - open cmd.exe
     - mingwenv.bat
     - cmake -G "MinGW Makefiles" c:\path\to\2geom    (be sure you have a CAPITAL '-G' there!)
+    - cmake -i     (especially mind to set the install dir to where you want it installed (probably the gtk folder, e.g. c:/gtk210))
     - make
 - copy the resulting *.exe files into the inkscape install directory
