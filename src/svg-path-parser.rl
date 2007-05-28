@@ -135,7 +135,6 @@ void Parser::parse(char const *str)
 throw(SVGPathParseError)
 {
     char const *p = str;
-    char const *pe = str + strlen(str);
     char const *start = NULL;
     int cs;
 
@@ -357,13 +356,16 @@ throw(SVGPathParseError)
             moveto_drawto_command_group
             (wsp* moveto_drawto_command_group)*;
 
-        svg_path = wsp* moveto_drawto_command_groups? wsp*;
+        end_of_string = 0 @{fbreak;};
+
+        svg_path = wsp* moveto_drawto_command_groups? wsp* end_of_string;
+                
 
         main := svg_path;
 
         # Inintialize and execute.
         write init;
-        write exec;
+        write exec noend;
     }%%
 
     if ( cs < svg_path_first_final ) {
