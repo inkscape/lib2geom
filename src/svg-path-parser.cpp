@@ -99,7 +99,7 @@ private:
 
     void _lineTo(Point p) {
         _quad_tangent = _cubic_tangent = _current = p;
-        _sink.moveTo(p);
+        _sink.lineTo(p);
     }
 
     void _curveTo(Point c0, Point c1, Point p) {
