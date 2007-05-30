@@ -3,7 +3,7 @@
 - Obtain, compile and install Inkscape svn following these instructions http://inkscape.org/win32/win32buildnotes.html
 - unpackage the gsl bundle into the directory with the gtk bundle
 - download cmake; install at C:\cmake
-- check the directories in mingwenv.bat. Are they set correctly for you?
+- check the directories in mingwenv.bat. Are they set correctly for you?  (ignore RAGEL_BIN)
 - make a build directory
 - open cmd.exe
     - mingwenv.bat
@@ -11,3 +11,11 @@
     - cmake -i     (especially mind to set the install dir to where you want it installed (probably the gtk folder, e.g. c:/gtk210))
     - make
 - copy the resulting *.exe files into the inkscape install directory
+
+If you want to be able to compile the ragel defined svg-parser aswell, 
+you must download ragel from http://www.cs.queensu.ca/~thurston/ragel/
+Unpack the windows binary package into a dir of your own choice. 
+Check whether ragel's dir is set correctly in mingwenv.bat (RAGEL_BIN).
+Make sure you have ragel.exe and rlcodegen.exe in the dir you specify. 
+If your package does not contain rlcodegen.exe you can copy rlgen-cd.exe
+and rename it to rlcodegen.exe :-)
