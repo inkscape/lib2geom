@@ -148,7 +148,7 @@ throw(SVGPathParseError)
         action push_number {
             char const *end=p;
             std::string buf(start, end);
-            _push(strtod(start, (char **)&end));
+            _push(strtod(buf.c_str(), NULL));
             start = NULL;
         }
 
