@@ -250,7 +250,7 @@ throw(SVGPathParseError)
             >start_number %push_number;
 
         coordinate = number;
-        coordinate_pair = coordinate $1 %0 comma_wsp? coordinate;
+        coordinate_pair = (coordinate $(coordinate_pair_a,1) %(coordinate_pair_a,0) comma_wsp? coordinate $(coordinate_pair_b,1) %(coordinate_pair_b,0)) $(coordinate_pair,1) %(coordinate_pair,0);
         
         elliptical_arc_argument =
             (nonnegative_number $1 %0 comma_wsp?
