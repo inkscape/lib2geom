@@ -21,6 +21,7 @@ mesh-grad
 #normal-bundle
 offset-test
 pair-intersect
+parametrics
 parser
 path-along-path
 precise-flat

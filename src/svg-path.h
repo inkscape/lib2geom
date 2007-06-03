@@ -94,7 +94,7 @@ public:
         }
     }
 
-private:
+protected:
     bool _in_path;
     OutputIterator _out;
     Path _path;
@@ -107,7 +107,7 @@ private:
     std::vector<Path> _pathset;
 public:
     PathBuilder() : SVGPathGenerator<iter>(iter(_pathset)) {}
-    std::vector<Path> const &peek() const { return _pathset; }
+    std::vector<Path> const &peek() const {return _pathset;}
 };
 
 /*

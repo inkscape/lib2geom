@@ -47,11 +47,23 @@ struct SVGPathParseError : public std::exception {
 void parse_svg_path(char const *str, SVGPathSink &sink) throw(SVGPathParseError);
 
 inline std::vector<Path> parse_svg_path(char const *str) throw(SVGPathParseError) {
+    /*PathBuilder b;
+    parse_svg_path(str, b);
+    return b.peek();*/
     std::vector<Path> subpaths;
     std::back_insert_iterator<std::vector<Path> > iter(subpaths);
     SVGPathGenerator<std::back_insert_iterator<std::vector<Path> > > generator(iter);
     parse_svg_path(str, generator);
     return subpaths;
+}
+
+inline std::vector<Path> read_svgd(char const * name) throw(SVGPathParseError) {
+    FILE* fi = fopen(name, "r");
+    if(fi == NULL) throw(std::runtime_error("Error opening file"));
+    char input[1024 * 10];
+    fgets(input, 1024 * 10, fi);
+    fclose(fi);
+    return parse_svg_path(input);
 }
 
 }
