@@ -150,7 +150,7 @@ public:
 };
 
 int main(int argc, char **argv) {
-    init(argc, argv, "root-finder-comparer", new RootFinderComparer());
+    init(argc, argv, new RootFinderComparer());
 
     return 0;
 }

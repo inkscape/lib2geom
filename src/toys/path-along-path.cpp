@@ -76,7 +76,7 @@ public:
 
 
 int main(int argc, char **argv) {
-    init(argc, argv, "normal-bundle", new PathAlongPathToy);
+    init(argc, argv, new PathAlongPathToy);
     return 0;
 }
 

@@ -62,7 +62,7 @@ public:
 };
 
 int main(int argc, char **argv) {
-    init(argc, argv, argv[0], new LengthTester);
+    init(argc, argv, new LengthTester);
     return 0;
 }
 

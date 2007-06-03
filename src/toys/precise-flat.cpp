@@ -64,7 +64,7 @@ PreciseFlat () {
 };
 
 int main(int argc, char **argv) {
-    init(argc, argv, "precise-flat", new PreciseFlat());
+    init(argc, argv, new PreciseFlat());
 
     return 0;
 }

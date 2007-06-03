@@ -116,7 +116,7 @@ class Sb2d2: public Toy {
 };
 
 int main(int argc, char **argv) {
-    init(argc, argv, "mesh-grad", new Sb2d2);
+    init(argc, argv, new Sb2d2);
     return 0;
 }
 

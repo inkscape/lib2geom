@@ -173,7 +173,7 @@ public:
 };
 
 int main(int argc, char **argv) {
-    init(argc, argv, "sb-calculus", new SbCalculusToy);
+    init(argc, argv, new SbCalculusToy);
     return 0;
 }
 

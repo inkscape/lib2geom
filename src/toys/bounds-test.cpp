@@ -154,7 +154,7 @@ public:
 };
 
 int main(int argc, char **argv) {
-    init(argc, argv, "bounds-test", new BoundsTester);
+    init(argc, argv, new BoundsTester);
     return 0;
 }
 

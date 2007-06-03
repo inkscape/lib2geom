@@ -91,7 +91,7 @@ RatBez () {
 };
 
 int main(int argc, char **argv) {
-    init(argc, argv, "Converting NURBs to sbasis", new RatBez());
+    init(argc, argv, new RatBez());
 
     return 0;
 }

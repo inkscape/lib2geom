@@ -312,7 +312,7 @@ public:
 };
 
 int main(int argc, char **argv) {
-    init(argc, argv, "sb-to-bez", new SbToBezierTester);
+    init(argc, argv, new SbToBezierTester);
     return 0;
 }
 

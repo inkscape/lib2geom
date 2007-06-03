@@ -40,7 +40,7 @@ class Clothoid: public Toy {
 };
 
 int main(int argc, char **argv) {
-    init(argc, argv, "clothoid", new Clothoid());
+    init(argc, argv, new Clothoid());
     
     return 0;
 }

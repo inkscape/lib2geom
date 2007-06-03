@@ -116,7 +116,7 @@ public:
 };
 
 int main(int argc, char **argv) {
-    init(argc, argv, "offset-test", new OffsetTester);
+    init(argc, argv, new OffsetTester);
     return 0;
 }
 

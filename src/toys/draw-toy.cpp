@@ -85,7 +85,7 @@ class DrawToy: public Toy {
 };
 
 int main(int argc, char **argv) {
-    init(argc, argv, "draw-toy", new DrawToy());
+    init(argc, argv, new DrawToy());
     return 0;
 }
 

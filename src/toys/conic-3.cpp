@@ -80,7 +80,7 @@ class Conic3: public Toy {
 };
 
 int main(int argc, char **argv) {
-    init(argc, argv, "conic-3", new Conic3());
+    init(argc, argv, new Conic3());
 
     return 0;
 }

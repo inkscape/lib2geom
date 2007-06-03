@@ -40,4 +40,4 @@ public:
 
 //Framework Accesors
 void redraw();
-void init(int argc, char **argv, char *title, Toy *t);
+void init(int argc, char **argv, Toy *t);

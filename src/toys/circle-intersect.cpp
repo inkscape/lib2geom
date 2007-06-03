@@ -37,7 +37,7 @@ class CircleIntersect : public Toy {
 };
 
 int main(int argc, char **argv) {
-    init(argc, argv, "Circle-Intersect", new CircleIntersect());
+    init(argc, argv, new CircleIntersect());
     return 0;
 }
 

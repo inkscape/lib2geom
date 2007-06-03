@@ -92,7 +92,7 @@ public:
 };
 
 int main(int argc, char **argv) {
-    init(argc, argv, "arc-bez", new ArcBez());
+    init(argc, argv, new ArcBez());
 
     return 0;
 }

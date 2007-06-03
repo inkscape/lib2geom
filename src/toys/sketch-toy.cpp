@@ -110,7 +110,7 @@ class SketchToy: public Toy {
 };
 
 int main(int argc, char **argv) {
-    init(argc, argv, "sketch-toy", new SketchToy());
+    init(argc, argv, new SketchToy());
     return 0;
 }
 

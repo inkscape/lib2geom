@@ -385,7 +385,7 @@ on_open_activate(GtkMenuItem *menuitem, gpointer user_data) {
 }*/
 
 int main(int argc, char **argv) {
-    init(argc, argv, "Contour", new Contour());
+    init(argc, argv, new Contour());
     return 0;
 }
 

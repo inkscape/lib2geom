@@ -163,7 +163,7 @@ public:
 };
 
 int main(int argc, char **argv) {
-    init(argc, argv, "bounds-test", new InverseTester);
+    init(argc, argv, new InverseTester);
     return 0;
 }
 

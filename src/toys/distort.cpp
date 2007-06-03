@@ -90,7 +90,7 @@ class DistortToy: public Toy {
 };
 
 int main(int argc, char **argv) {
-    init(argc, argv, "Distort Toy", new DistortToy());
+    init(argc, argv, new DistortToy());
     return 0;
 }
 

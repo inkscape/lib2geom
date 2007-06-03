@@ -114,7 +114,7 @@ class Conic4: public Toy {
 };
 
 int main(int argc, char **argv) {
-    init(argc, argv, "conic-4.cpp", new Conic4());
+    init(argc, argv, new Conic4());
 
     return 0;
 }

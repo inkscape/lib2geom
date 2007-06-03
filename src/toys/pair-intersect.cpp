@@ -137,7 +137,7 @@ PairIntersect () {
 };
 
 int main(int argc, char **argv) {   
-    init(argc, argv, "Pair Intersect", new PairIntersect());
+    init(argc, argv, new PairIntersect());
 
     return 0;
 }

@@ -106,7 +106,7 @@ Sb1d () {
 };
 
 int main(int argc, char **argv) {
-    init(argc, argv, "sb1d", new Sb1d());
+    init(argc, argv, new Sb1d());
     return 0;
 }
 

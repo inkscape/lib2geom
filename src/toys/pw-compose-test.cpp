@@ -77,7 +77,7 @@ class PwToy: public Toy {
 };
 
 int main(int argc, char **argv) {
-    init(argc, argv, "Piecewise Toy", new PwToy());
+    init(argc, argv, new PwToy());
     return 0;
 }
 

@@ -281,13 +281,18 @@ GtkItemFactoryEntry menu_items[] = {
 };
 gint nmenu_items = 10;
 
-void init(int argc, char **argv, char *title, Toy* t) {
+void init(int argc, char **argv, Toy* t) {
     current_toy = t;
     gtk_init (&argc, &argv);
     
     gdk_rgb_init();
 
     window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
+    
+    //Find last slash - remainder is title
+    char* title = 0;
+    for(char* ch = argv[0]; *ch != '\0'; ch++)
+        if(*ch == '/') title = ch+1;
 
     gtk_window_set_title(GTK_WINDOW(window), title);
 

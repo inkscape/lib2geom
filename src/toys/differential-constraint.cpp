@@ -115,7 +115,7 @@ public:
 };
 
 int main(int argc, char **argv) {
-    init(argc, argv, "s-bez", new SBez());
+    init(argc, argv, new SBez());
 
     return 0;
 }

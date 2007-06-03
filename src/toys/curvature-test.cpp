@@ -84,7 +84,7 @@ public:
 
 int main(int argc, char **argv) {
     std::cout << "testing unit_normal(multidim_sbasis) based offset." << std::endl;
-    init(argc, argv, "offset-test", new CurvatureTester);
+    init(argc, argv, new CurvatureTester);
     return 0;
 }
 
