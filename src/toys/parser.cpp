@@ -72,6 +72,9 @@ int main(int argc, char **argv) {
     if (argc > 1) {
         SVGPathTestPrinter sink;
         Geom::parse_svg_path(&*argv[1], sink);
+        std::cout << "Try real pathsink:";
+        std::vector<Geom::Path> testpath = Geom::parse_svg_path(&*argv[1]);
+        std::cout << "success!" << std::endl;
     }
     return 0;
 };

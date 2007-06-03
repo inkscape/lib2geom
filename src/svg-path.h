@@ -59,6 +59,7 @@ public:
     void moveTo(Point p) {
         finish();
         _path.start(p);
+        _in_path = true;
     }
 //TODO: what if _in_path = false?
     void lineTo(Point p) {
@@ -88,7 +89,7 @@ public:
     void finish() {
         if (_in_path) {
             _in_path = false;
-            *_out++ = _path;
+            *_out = _path;
             _path.clear();
             _path.close(false);
         }

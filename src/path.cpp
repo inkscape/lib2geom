@@ -264,7 +264,7 @@ void Path::do_update(Sequence::iterator first_replaced,
 
   check_continuity(first_replaced, last_replaced, first, last);
   delete_range(first_replaced, last_replaced);
-
+printf("test");
   if ( ( last - first ) == ( last_replaced - first_replaced ) ) {
     std::copy(first, last, first_replaced);
   } else {
