@@ -309,7 +309,7 @@ void Path::check_continuity(Sequence::iterator first_replaced,
         throw ContinuityError();
       }
     }
-  } else if ( first_replaced != last_replaced ) {
+  } else if ( first_replaced != last_replaced && first_replaced != curves_.begin() && last_replaced != curves_.end()-1) {
     if ( (*first_replaced)->initialPoint() !=
          (*(last_replaced-1))->finalPoint() )
     {
