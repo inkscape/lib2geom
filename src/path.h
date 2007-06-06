@@ -557,6 +557,14 @@ private:
   bool closed_;
 };
 
+inline static Piecewise<D2<SBasis> > paths_to_pw(vector<Path> paths) {
+    Piecewise<D2<SBasis> > ret = paths[0].toPwSb();
+    for(unsigned i = 1; i < paths.size(); i++) {
+        ret.concat(paths[i].toPwSb());
+    }
+    return ret;
+}
+
 template <unsigned bezier_degree>
 inline Path const &Bezier<bezier_degree>::subdivide(Coord t, Path &out) const {
   Bezier a, b;

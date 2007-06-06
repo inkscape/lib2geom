@@ -24,14 +24,6 @@ static void dot_plot(cairo_t *cr, Piecewise<D2<SBasis> > const &M, double space=
     cairo_stroke(cr);
 }
 
-static Piecewise<D2<SBasis> > paths_to_pw(vector<Path> paths) {
-    Piecewise<D2<SBasis> > ret = paths[0].toPwSb();
-    for(unsigned i = 1; i < paths.size(); i++) {
-        ret.concat(paths[i].toPwSb());
-    }
-    return ret;
-}
-
 class Parametrics: public Toy {
     Piecewise<D2<SBasis> > cat, alcat;
     void draw(cairo_t *cr,
