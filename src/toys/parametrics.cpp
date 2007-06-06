@@ -43,13 +43,14 @@ class Parametrics: public Toy {
     Piecewise<D2<SBasis> > cat, alcat;
     void draw(cairo_t *cr,
 	      std::ostringstream *notify,
-	      int width, int height, bool save) {    
+	      int width, int height, bool save) {
+
+      double t = handles[0][0] / 5.;
+  
       cairo_set_line_width (cr, .5);
       cairo_set_source_rgba (cr, 0., 0.5, 0., 1);
-      cairo_pw_d2(cr, cat);
+      cairo_pw_d2(cr, portion(cat, 0, t));
       cairo_stroke(cr);
-
-      double t = handles[0][0] / 5;
 
       cairo_set_source_rgba (cr, 0.9, 0., 0., 1);
       draw_axis(cr, cat, 0, Point(0, 450), t);
@@ -63,6 +64,8 @@ class Parametrics: public Toy {
       draw_line_seg(cr, cat(t), Point(cat(t)[0], 450));
       draw_line_seg(cr, cat(t), Point(450, cat(t)[1]));
       cairo_stroke(cr);
+
+      *notify << cat.segN(t) << " / " << cat.size();
 
       /*cairo_set_source_rgba (cr, 0., 0., 0.9, 1);
       dot_plot(cr,alcat);
