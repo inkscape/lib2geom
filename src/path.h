@@ -557,7 +557,7 @@ private:
   bool closed_;
 };
 
-inline static Piecewise<D2<SBasis> > paths_to_pw(vector<Path> paths) {
+inline static Piecewise<D2<SBasis> > paths_to_pw(std::vector<Path> paths) {
     Piecewise<D2<SBasis> > ret = paths[0].toPwSb();
     for(unsigned i = 1; i < paths.size(); i++) {
         ret.concat(paths[i].toPwSb());
