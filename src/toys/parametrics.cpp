@@ -58,6 +58,7 @@ public:
       cat = paths_to_pw(read_svgd("parametrics.svgd"));
       cat *= .3;
       cat += Point(150, 150);
+	handles.push_back(Point(100, 100));
     }
 };
 
