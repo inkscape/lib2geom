@@ -26,37 +26,39 @@ static void dot_plot(cairo_t *cr, Piecewise<D2<SBasis> > const &M, double space=
     cairo_stroke(cr);
 }
 
-class Parametrics: public Toy {
+static Piecewise<D2<SBasis> > paths_to_pw(vector<Path> paths) {
+    Piecewise<D2<SBasis> > ret = paths[0].toPwSb();
+    for(unsigned i = 1; i < paths.size(); i++) {
+        ret.concat(paths[i].toPwSb());
+    }
+    return ret;
+}
 
+class Parametrics: public Toy {
+    Piecewise<D2<SBasis> > cat;
     void draw(cairo_t *cr,
 	      std::ostringstream *notify,
-	      int width, int height, bool save) {
-      vector<Path> ps = read_svgd("parametrics.svgd");
-      std::cerr << "woo";
-      std::cerr << ps.size();
-      //Piecewise<D2<SBasis> > B = ps[0].toMdSb();
-     /* for(unsigned i = 1; i < ps.size(); i++) {
-          B.concat(ps[i].toMdSb());
-      }*/
-     /*
+	      int width, int height, bool save) {    
       cairo_set_line_width (cr, .5);
       cairo_set_source_rgba (cr, 0., 0.5, 0., 1);
-      //cairo_md_sb(cr, B1);
-      cairo_pw_d2(cr, B);
+      cairo_pw_d2(cr, cat);
       cairo_stroke(cr);
 
-      Piecewise<D2<SBasis> > uniform_B = arc_length_parametrization(B);
+      Piecewise<D2<SBasis> > uniform_B = arc_length_parametrization(cat);
       cairo_set_source_rgba (cr, 0., 0., 0.9, 1);
       dot_plot(cr,uniform_B);
       cairo_stroke(cr);
       *notify << "pieces = " << uniform_B.size() << ";\n";
-*/
+
       Toy::draw(cr, notify, width, height, save);
     }        
-/*
+
 public:
     Parametrics(){
-    }*/
+      cat = paths_to_pw(read_svgd("parametrics.svgd"));
+      cat *= .3;
+      cat += Point(150, 150);
+    }
 };
 
 int main(int argc, char **argv) {

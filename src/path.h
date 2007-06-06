@@ -375,12 +375,11 @@ public:
   Rect bounds_fast() const;
   Rect bounds_exact() const;
 
-  Piecewise<D2<SBasis> > toMdSb() const {
-    int i = 0;
+  Piecewise<D2<SBasis> > toPwSb() const {
     Piecewise<D2<SBasis> > ret;
-    ret.push_cut(i);
-    for(const_iterator it = begin(); it != end(); ++it, i++) {
-      ret.push(it->sbasis(), i);
+    ret.push_cut(0);
+    for(unsigned i = 0; i < size() + (closed_ ? 1 : 0); i++) {
+      ret.push(curves_[i]->sbasis(), i+1);
     }
     return ret;
   }
