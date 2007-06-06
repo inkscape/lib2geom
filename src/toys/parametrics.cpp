@@ -16,13 +16,11 @@ using namespace Geom;
 
 static void dot_plot(cairo_t *cr, Piecewise<D2<SBasis> > const &M, double space=10){
     //double dt=(M[0].cuts.back()-M[0].cuts.front())/space;
-    double dt=space;
-    double t = M.cuts.front();
-    while (t < M.cuts.back()){
-        draw_handle(cr, M(t));
-        t += dt;
+    Piecewise<D2<SBasis> > Mperp = rot90(derivative(M)) * 2;
+    for( double t = M.cuts.front(); t < M.cuts.back(); t += space) {
+        Point pos = M(t), perp = Mperp(t);
+        draw_line_seg(cr, pos + perp, pos - perp);
     }
-    cairo_pw_d2(cr, M);
     cairo_stroke(cr);
 }
 
@@ -35,7 +33,7 @@ static Piecewise<D2<SBasis> > paths_to_pw(vector<Path> paths) {
 }
 
 class Parametrics: public Toy {
-    Piecewise<D2<SBasis> > cat;
+    Piecewise<D2<SBasis> > cat, alcat;
     void draw(cairo_t *cr,
 	      std::ostringstream *notify,
 	      int width, int height, bool save) {    
@@ -44,11 +42,10 @@ class Parametrics: public Toy {
       cairo_pw_d2(cr, cat);
       cairo_stroke(cr);
 
-      Piecewise<D2<SBasis> > uniform_B = arc_length_parametrization(cat);
       cairo_set_source_rgba (cr, 0., 0., 0.9, 1);
-      dot_plot(cr,uniform_B);
+      dot_plot(cr,alcat);
       cairo_stroke(cr);
-      *notify << "pieces = " << uniform_B.size() << ";\n";
+      *notify << "pieces = " << alcat.size() << ";\n";
 
       Toy::draw(cr, notify, width, height, save);
     }        
@@ -58,6 +55,7 @@ public:
       cat = paths_to_pw(read_svgd("parametrics.svgd"));
       cat *= .3;
       cat += Point(150, 150);
+	alcat = arc_length_parametrization(cat);
 	handles.push_back(Point(100, 100));
     }
 };

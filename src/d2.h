@@ -327,6 +327,16 @@ T operator*(D2<T> const &v, Matrix const &m) {
     return ret;
 }
 
+template<typename T>
+D2<T> derivative(D2<T> const & a) {
+    return D2<T>(derivative(a[X]), derivative(a[Y]));
+}
+
+template<typename T>
+D2<T> integral(D2<T> const & a) {
+    return D2<T>(integral(a[X]), integral(a[Y]));
+}
+
 } //end namespace Geom
 
 //D2<Interval> specialization:
@@ -436,9 +446,6 @@ namespace Geom{
 inline D2<SBasis> compose(D2<SBasis> const & a, SBasis const & b) {
     return D2<SBasis>(compose(a[X], b), compose(a[Y], b));
 }
-
-D2<SBasis> derivative(D2<SBasis> const & a);
-D2<SBasis> integral(D2<SBasis> const & a);
 
 SBasis L2(D2<SBasis> const & a, unsigned k);
 double L2(D2<double> const & a);

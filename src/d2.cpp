@@ -32,14 +32,6 @@
 
 namespace Geom {
 
-D2<SBasis> derivative(D2<SBasis> const & a) {
-    return D2<SBasis>(derivative(a[X]), derivative(a[Y]));
-}
-
-D2<SBasis> integral(D2<SBasis> const & a) {
-    return D2<SBasis>(integral(a[X]), integral(a[Y]));
-}
-
 SBasis L2(D2<SBasis> const & a, unsigned k) { return sqrt(dot(a, a), k); }
 double L2(D2<double> const & a) { return hypot(a[0], a[1]); }
 
