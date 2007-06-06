@@ -347,7 +347,7 @@ Piecewise<T> portion(const Piecewise<T> &pw, double from, double to) {
     unsigned i = pw.segN(from);
     ret.push_cut(from);
     if(to < pw.cuts[i + 1]) {    //to/from inhabit the same segment
-        ret.push(elem_portion(pw, i, from, to), to);
+        ret.push(elem_portion(pw, i, pw.segT(from, i), pw.segT(to, i)), to);
         return ret;
     }
     ret.push(portion( pw[i], pw.segT(from, i), 1.0 ), pw.cuts[i + 1]);
