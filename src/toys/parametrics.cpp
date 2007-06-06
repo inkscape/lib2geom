@@ -24,6 +24,21 @@ static void dot_plot(cairo_t *cr, Piecewise<D2<SBasis> > const &M, double space=
     cairo_stroke(cr);
 }
 
+static void draw_axis(cairo_t *cr, Piecewise<D2<SBasis> > const &M, unsigned ax, Point offset, double st=0) {
+    Piecewise<D2<SBasis> > pw(M);
+    if(st != 0) {
+	if(st>pw.cuts.back()) return;
+        pw = portion(M, st, pw.cuts.back());
+        pw.offsetDomain(-st);
+    }
+    for(unsigned i = 0; i < pw.size(); i++) {
+        if(!ax)
+            cairo_md_sb(cr, D2<SBasis>(pw[i][0], Linear(pw.cuts[i],pw.cuts[i+1])*5) + offset);
+        else
+            cairo_md_sb(cr, D2<SBasis>(Linear(pw.cuts[i],pw.cuts[i+1])*5, pw[i][1]) + offset);
+    }
+}
+
 class Parametrics: public Toy {
     Piecewise<D2<SBasis> > cat, alcat;
     void draw(cairo_t *cr,
@@ -34,11 +49,26 @@ class Parametrics: public Toy {
       cairo_pw_d2(cr, cat);
       cairo_stroke(cr);
 
+      double t = handles[0][0] / 5;
+
+      cairo_set_source_rgba (cr, 0.9, 0., 0., 1);
+      draw_axis(cr, cat, 0, Point(0, 450), t);
+      cairo_stroke(cr);
+
       cairo_set_source_rgba (cr, 0., 0., 0.9, 1);
+      draw_axis(cr, cat, 1, Point(450, 0), t);
+      cairo_stroke(cr);
+
+      cairo_set_source_rgba (cr, 0., 0., 0., 1);
+      draw_line_seg(cr, cat(t), Point(cat(t)[0], 450));
+      draw_line_seg(cr, cat(t), Point(450, cat(t)[1]));
+      cairo_stroke(cr);
+
+      /*cairo_set_source_rgba (cr, 0., 0., 0.9, 1);
       dot_plot(cr,alcat);
       cairo_stroke(cr);
       *notify << "pieces = " << alcat.size() << ";\n";
-
+*/
       Toy::draw(cr, notify, width, height, save);
     }        
 
