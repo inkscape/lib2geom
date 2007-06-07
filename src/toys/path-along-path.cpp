@@ -6,6 +6,7 @@
 #include "path-cairo.h"
 #include "toy-framework.h"
 
+#include <algorithm>
 using std::vector;
 using namespace Geom;
 
@@ -27,17 +28,28 @@ class PathAlongPathToy: public Toy {
         Piecewise<SBasis> y=Piecewise<SBasis>(pattern[1]-O[1]);
 
         Interval pattBnds = bounds_exact(x);
+        double offs = 0;
+        x -= pattBnds.min();
         int nbCopies = int(uskeleton.cuts.back()/pattBnds.extent());
-        double pattWidth = uskeleton.cuts.back()/nbCopies;
-        x-=pattBnds.min();
-        x*=pattWidth/pattBnds.extent();
         Piecewise<D2<SBasis> >output;
         for (int i=0; i<nbCopies; i++){
-            output.concat(compose(uskeleton,x)+y*compose(n,x));
-            x+=pattWidth;
+            output.concat(compose(uskeleton,x+offs)+y*compose(n,x+offs));
+            offs+=pattBnds.extent();
         }
-        //Piecewise<D2<SBasis> >output = compose(uskeleton,x)+y*compose(n,x);
-        
+        //Perform cut for last segment
+        double tt = uskeleton.cuts.back() - offs;
+        if(tt > 0.) {
+            vector<double> rs = roots(x - tt);
+            rs.push_back(0); rs.push_back(1);  //regard endpoints
+            std::sort(rs.begin(), rs.end());
+            std::unique(rs.begin(), rs.end());
+            //enumerate indices of sections to the left of the line
+            for(unsigned i = (x[0].at0()>tt ? 1 : 0); i < rs.size()-1; i+=2) {
+                Piecewise<SBasis> port = portion(x+offs, rs[i], rs[i+1]);
+                output.concat(compose(uskeleton,port)+portion(y, rs[i], rs[i+1])*compose(n,port));
+            }
+        }
+
         cairo_set_line_width(cr,1.);
 
         cairo_pw_d2(cr, Piecewise<D2<SBasis> >(skeleton));
