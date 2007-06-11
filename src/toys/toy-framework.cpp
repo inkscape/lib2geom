@@ -18,18 +18,22 @@ double uniform() {
     return double(rand()) / RAND_MAX;
 }
 
+void draw_text(cairo_t *cr, Geom::Point loc, const char* txt, bool bottom) {
+        PangoLayout* layout = pango_cairo_create_layout (cr);
+          pango_layout_set_text(layout, txt, -1);
+          /*PangoFontDescription *font_desc = pango_font_description_new();
+            pango_font_description_set_family(font_desc, "Sans");
+          pango_layout_set_font_description(layout, font_desc);*/
+        PangoRectangle logical_extent;
+        pango_layout_get_pixel_extents(layout, NULL, &logical_extent);
+        cairo_move_to(cr, loc - Geom::Point(0, bottom ? logical_extent.height : 0));
+        pango_cairo_show_layout(cr, layout);
+}
+
 void draw_number(cairo_t *cr, Geom::Point pos, int num) {
     std::ostringstream number;
     number << num;
-    cairo_move_to(cr, pos);
-    PangoLayout* layout = pango_cairo_create_layout (cr);
-      pango_layout_set_text(layout, number.str().c_str(), -1);
-      PangoFontDescription *font_desc = pango_font_description_new();
-        pango_font_description_set_family(font_desc, "Sans");
-      pango_layout_set_font_description(layout, font_desc);
-    PangoRectangle logical_extent;
-    pango_layout_get_pixel_extents(layout, NULL, &logical_extent);
-    pango_cairo_show_layout(cr, layout); 
+    draw_text(cr, pos, number.str().c_str(), true);
 }
 
 //Framework Accessors
@@ -65,11 +69,7 @@ void Toy::draw(cairo_t *cr, std::ostringstream *notify, int width, int height, b
     cairo_set_source_rgba (cr, 0., 0.5, 0, 0.8);
     {
         *notify << std::ends;
-        PangoLayout *layout = gtk_widget_create_pango_layout(GTK_WIDGET(window), notify->str().c_str());
-        PangoRectangle logical_extent;
-        pango_layout_get_pixel_extents(layout, NULL, &logical_extent);
-        cairo_move_to(cr, 0, height-logical_extent.height);
-        pango_cairo_show_layout(cr, layout);
+        draw_text(cr, Geom::Point(0, height), notify->str().c_str());
     }
 }
 
@@ -187,20 +187,27 @@ void save_cairo() {
     gtk_widget_destroy(d);
 }
 
+void take_screenshot(const char* filename) {
+    int width = 256;
+    int height = 256;
+    gdk_drawable_get_size(canvas->window, &width, &height);
+
+    cairo_surface_t* cr_s = cairo_image_surface_create ( CAIRO_FORMAT_ARGB32, width, height );
+    cairo_t* cr = cairo_create(cr_s);
+        
+    if(current_toy != NULL)
+       current_toy->draw(cr, new std::ostringstream, width, height, true);
+
+    cairo_show_page(cr);
+    cairo_surface_write_to_png(cr_s, filename);
+    cairo_destroy (cr);
+    cairo_surface_destroy (cr_s);
+}
+
 void save_image() {
     GtkWidget* d = gtk_file_chooser_dialog_new("Save file as png", window, GTK_FILE_CHOOSER_ACTION_SAVE, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT, NULL);
     if(gtk_dialog_run(GTK_DIALOG(d)) == GTK_RESPONSE_ACCEPT) {
-        const char* filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(d));
-        cairo_surface_t* cr_s = cairo_image_surface_create ( CAIRO_FORMAT_ARGB32, 600, 600 );
-        cairo_t* cr = cairo_create(cr_s);
-        
-        if(current_toy != NULL)
-            current_toy->draw(cr, new std::ostringstream, 600, 600, true);
-
-        cairo_show_page(cr);
-        cairo_surface_write_to_png(cr_s, filename);
-        cairo_destroy (cr);
-        cairo_surface_destroy (cr_s);
+        take_screenshot(gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(d)));
     }
     gtk_widget_destroy(d);
 }
@@ -281,7 +288,7 @@ GtkItemFactoryEntry menu_items[] = {
 };
 gint nmenu_items = 10;
 
-void init(int argc, char **argv, Toy* t) {
+void init(int argc, char **argv, Toy* t, int width, int height) {
     current_toy = t;
     gtk_init (&argc, &argv);
     
@@ -331,7 +338,7 @@ void init(int argc, char **argv, Toy* t) {
     gtk_box_pack_start(GTK_BOX(box), pain, TRUE, TRUE, 0);
     gtk_paned_add1(GTK_PANED(pain), canvas);
 
-    gtk_window_set_default_size(GTK_WINDOW(window), 600, 600);
+    gtk_window_set_default_size(GTK_WINDOW(window), width, height);
 
     gtk_widget_show_all(GTK_WIDGET(window));
 

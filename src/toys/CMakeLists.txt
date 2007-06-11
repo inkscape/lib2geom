@@ -15,6 +15,7 @@ curvature-test
 draw-toy
 fitter
 gear
+vid-intro
 #inverse-test
 match-curve
 mesh-grad

@@ -12,6 +12,7 @@ using std::vector;
 
 //Utility functions
 double uniform();
+void draw_text(cairo_t *cr, Geom::Point pos, const char* txt, bool bottom = false);
 void draw_number(cairo_t *cr, Geom::Point pos, int num);
 
 class Toy {
@@ -40,4 +41,5 @@ public:
 
 //Framework Accesors
 void redraw();
-void init(int argc, char **argv, Toy *t);
+void take_screenshot(const char* file);
+void init(int argc, char **argv, Toy *t, int width=600, int height=600);

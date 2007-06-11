@@ -27,6 +27,7 @@ D2:
 
 Pw:
   - add additional useful functions
+  - check for 0-width in portion, etc
 
 Point:
   - Test the waters in regards to D2<double>

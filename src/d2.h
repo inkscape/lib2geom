@@ -318,7 +318,7 @@ D2<T>::operator()(double x, double y) const {
 }
 
 template<typename T>
-T operator*(D2<T> const &v, Matrix const &m) {
+D2<T> operator*(D2<T> const &v, Matrix const &m) {
     boost::function_requires<AddableConcept<T> >();
     boost::function_requires<ScalableConcept<T> >();
     D2<T> ret;
