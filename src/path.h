@@ -346,6 +346,12 @@ public:
       delete final_;
   }
 
+  Path &operator=(Path const &other) {
+    clear();
+    insert(begin(), other.begin(), other.end());
+    close(other.closed_);
+  }
+
   void swap(Path &other);
 
   Curve const &operator[](unsigned i) const { return *curves_[i]; 
