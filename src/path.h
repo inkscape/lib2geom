@@ -348,7 +348,7 @@ public:
 
   void swap(Path &other);
 
-  Curve const &operator[](unsigned i) const { return *curves_[i]; }
+  Curve const &operator[](unsigned i) const { return *curves_[i]; 
 
   iterator begin() { return curves_.begin(); }
   iterator end() { return curves_.end()-1; }
