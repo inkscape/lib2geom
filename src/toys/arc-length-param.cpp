@@ -1,6 +1,5 @@
 #include "d2.h"
 #include "s-basis.h"
-#include "s-basis-2d.h"
 #include "bezier-to-sbasis.h"
 #include "sb-geometric.h"
 
@@ -56,6 +55,10 @@ public:
         if(handles.empty()) {
             for(int i = 0; i < 2*SIZE; i++)
                 handles.push_back(Geom::Point(150+uniform()*300,150+uniform()*300));
+            handles[0] = Geom::Point(150,150);
+            handles[1] = Geom::Point(150,150);
+            handles[2] = Geom::Point(150,450);
+            handles[3] = Geom::Point(450,150);
         }
     }
 };

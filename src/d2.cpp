@@ -121,5 +121,62 @@ Piecewise<SBasis> cross(Piecewise<D2<SBasis> > const &a,
   return result;
 }
 
+//this recursively removes the shortest cut interval until none is shorter than tol.
+//TODO: code this in a more efficient way!
+Piecewise<D2<SBasis> > remove_short_cuts(Piecewise<D2<SBasis> > const &f, double tol){
+    double min = tol;
+    unsigned idx = f.size();
+    for(unsigned i=0; i<f.size(); i++){
+        if (min > f.cuts[i+1]-f.cuts[i]){
+            min = f.cuts[i+1]-f.cuts[i];
+            idx = int(i);
+        }
+    }
+    if (idx==f.size()){
+        return f;
+    }
+    if (f.size()==1) {
+        //removing this seg would result in an empty pw<d2<sb>>...
+        return f;
+    }
+    Piecewise<D2<SBasis> > new_f=f;
+    for (int dim=0; dim<2; dim++){
+        double v = Hat(f.segs.at(idx)[dim][0]);
+        //TODO: what about closed curves?
+        if (idx>0 && f.segs.at(idx-1).at1()==f.segs.at(idx).at0()) 
+            new_f.segs.at(idx-1)[dim][0][1] = v;
+        if (idx<f.size() && f.segs.at(idx+1).at0()==f.segs.at(idx).at1()) 
+            new_f.segs.at(idx+1)[dim][0][0] = v;
+    }
+    double t = (f.cuts.at(idx)+f.cuts.at(idx+1))/2;
+    new_f.cuts.at(idx+1) = t;    
+    
+    new_f.segs.erase(new_f.segs.begin()+idx);
+    new_f.cuts.erase(new_f.cuts.begin()+idx);        
+    return remove_short_cuts(new_f, tol);
+}
+
+//if tol>0, only force continuity where the jump is smaller than tol.
+Piecewise<D2<SBasis> > force_continuity(Piecewise<D2<SBasis> > const &f, 
+                                        double tol,
+                                        bool closed){
+    if (f.size()==0) return f;
+    Piecewise<D2<SBasis> > result=f;
+    unsigned cur   = (closed)? 0:1;
+    unsigned prev  = (closed)? f.size()-1:0;
+    while(cur<f.size()){
+        Point pt0 = f.segs[prev].at1();
+        Point pt1 = f.segs[cur ].at0();
+        if (tol<=0 || L2sq(pt0-pt1)<tol*tol){
+            pt0 = (pt0+pt1)/2;
+            for (unsigned dim=0; dim<2; dim++){
+                result.segs[prev][dim][0][1]=pt0[dim];
+                result.segs[cur ][dim][0][0]=pt0[dim];
+            }
+        }
+        prev = cur++;
+    }
+    return result;
+}
   
 };

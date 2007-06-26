@@ -470,6 +470,14 @@ Piecewise<D2<SBasis> > rot90(Piecewise<D2<SBasis> > const &a);
 Piecewise<SBasis> dot(Piecewise<D2<SBasis> > const &a, Piecewise<D2<SBasis> > const &b);
 Piecewise<SBasis> cross(Piecewise<D2<SBasis> > const &a, Piecewise<D2<SBasis> > const &b);
 
+Piecewise<D2<SBasis> > remove_short_cuts(Piecewise<D2<SBasis> > const &f, 
+                                         double tol);
+Piecewise<D2<SBasis> > force_continuity(Piecewise<D2<SBasis> > const &f, 
+                                        double tol=0,
+                                        bool closed=false);
+
+
+
 class CoordIterator
 : public std::iterator<std::input_iterator_tag, SBasis const>
 {

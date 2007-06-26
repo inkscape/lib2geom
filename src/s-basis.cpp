@@ -435,6 +435,7 @@ SBasis cos(Linear bo, int k) {
 
 //compute fog^-1. ("zero" = double comparison treshold. *!*we might divide by "zero"*!*)
 //TODO: compute order according to tol?
+//TODO: requires g(0)=0 & g(1)=1 atm... adaptation to other cases should be obvious!
 SBasis compose_inverse(SBasis const &f, SBasis const &g, unsigned order, double zero){
     SBasis result; //result
     SBasis r=f; //remainder
@@ -445,7 +446,9 @@ SBasis compose_inverse(SBasis const &f, SBasis const &g, unsigned order, double 
     Qk.resize(order,Linear(0.));
     r.resize(order,Linear(0.));
 
-    for (unsigned k=0; k<order; k++){
+    int vs= valuation(sg,zero);
+    
+    for (unsigned k=0; k<order; k+=vs){
         double p10 = Pk.at(k)[0];// we have to solve the linear system:
         double p01 = Pk.at(k)[1];//
         double q10 = Qk.at(k)[0];//   p10*a + q10*b = r10
@@ -456,10 +459,13 @@ SBasis compose_inverse(SBasis const &f, SBasis const &g, unsigned order, double 
         double det = p10*q01-p01*q10;
 
         //TODO: handle det~0!! 
-        if (fabs(det)<zero)
+        if (fabs(det)<zero){
             det = zero;
-        a=( q01*r10-q10*r01)/det;
-        b=(-p01*r10+p10*r01)/det;
+            a=b=0;
+        }else{
+            a=( q01*r10-q10*r01)/det;
+            b=(-p01*r10+p10*r01)/det;
+        }
         result.push_back(Linear(a,b));
         r=r-Pk*a-Qk*b;
         

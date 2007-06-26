@@ -257,7 +257,8 @@ SBasis compose(SBasis const &a, SBasis const &b);
 SBasis compose(SBasis const &a, SBasis const &b, unsigned k);
 SBasis inverse(SBasis a, int k);
 //compose_inverse(f,g)=compose(f,inverse(g)), but is numerically more stable in some good cases...
-SBasis compose_inverse(SBasis const &f, SBasis const &g, unsigned order, double tol=1e-3);
+//TODO: requires g(0)=0 & g(1)=1 atm. generalization should be obvious.
+SBasis compose_inverse(SBasis const &f, SBasis const &g, unsigned order=2, double tol=1e-3);
 
 inline SBasis portion(const SBasis &t, double from, double to) { return compose(t, Linear(from, to)); }
 

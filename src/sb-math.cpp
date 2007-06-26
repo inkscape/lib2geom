@@ -100,9 +100,8 @@ Piecewise<SBasis> signSb(Piecewise<SBasis> const &f){
 
 //-Sqrt----------------------------------------------------------
 static Piecewise<SBasis> sqrt_internal(SBasis const &f, 
-                                    double absolute_tol, 
+                                    double tol, 
                                     int order){
-    double tol=absolute_tol;//use a shorter name, but remember it is absolute...
     SBasis sqrtf;
     if(f.isZero() || order == 0){
         return Piecewise<SBasis>(sqrtf);
@@ -141,19 +140,12 @@ static Piecewise<SBasis> sqrt_internal(SBasis const &f,
 }
 
 Piecewise<SBasis> sqrt(SBasis const &f, double tol, int order){
-    Interval bnds = bounds_fast(f);
-    double absolute_tol = tol*std::max(fabs(bnds.max()),fabs(bnds.min()));
-
-//    return sqrt_internal(f,absolute_tol,order);
-    return sqrt(maxSb(f,Linear(tol)),absolute_tol,order);
+    return sqrt(maxSb(f,Linear(tol*tol)),tol,order);
 }
 
 Piecewise<SBasis> sqrt(Piecewise<SBasis> const &f, double tol, int order){
     Piecewise<SBasis> result;
-    Interval bnds = bounds_fast(f);
-    double absolute_tol = tol*std::max(fabs(bnds.max()),fabs(bnds.min()));
-
-    Piecewise<SBasis> ff=maxSb(f,Linear(tol));
+    Piecewise<SBasis> ff=maxSb(f,Linear(tol*tol));
 
     for (unsigned i=0; i<ff.size(); i++){
         Piecewise<SBasis> sqrtfi = sqrt_internal(ff.segs[i],tol,order);

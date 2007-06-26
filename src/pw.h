@@ -559,7 +559,6 @@ int compose_findSegIdx(std::map<double,unsigned>::iterator  const &cut,
 template<typename T>
 Piecewise<T> compose(Piecewise<T> const &f, SBasis const &g){
     Piecewise<T> result;
-
     if (f.empty()) return result;
     if (g.isZero()) return Piecewise<T>(f(0));
     if (f.size()==1){
@@ -585,6 +584,9 @@ Piecewise<T> compose(Piecewise<T> const &f, SBasis const &g){
     std::map<double,unsigned>::iterator cut=cuts_pb.begin();
     std::map<double,unsigned>::iterator next=cut; next++;
     while(next!=cuts_pb.end()){
+        assert(std::abs(int((*cut).second-(*next).second))<1);
+        //TODO: find a way to recover from this error? the root finder missed some root;
+        //  the levels/variations of f might be too close/fast...
         int idx = compose_findSegIdx(cut,next,levels,g);
         double t0=(*cut).first;
         double t1=(*next).first;

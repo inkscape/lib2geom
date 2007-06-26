@@ -46,7 +46,7 @@ vect_intersect(vector<double> const &a, vector<double> const &b, double tol=0.){
 }
 
 static SBasis divide_by_sk(SBasis const &a, int k) {
-    assert( (unsigned)k<a.size());
+    assert( k<(int)a.size());
     if(k < 0) return shift(a,-k);
     SBasis c;
     c.insert(c.begin(), a.begin()+k, a.end());
@@ -237,31 +237,17 @@ Geom::unitVector(Piecewise<D2<SBasis> > const &V, double tol, unsigned order){
     return result;
 }
 
-//TODO: what is going on here?
-// Piecewise<D2<SBasis> > 
-// uniform_speed(D2<SBasis> const &M,
-//                     double tol){
-//     Piecewise<D2<SBasis> > uspeed = unitVector(derivative(M),cuts,tol);
-//     double t0=0.,t1;
-//     for (unsigned i=0; i<uspeed.size(); i++){
-//         uspeed[i] /= uspeed.cuts[i+1]-uspeed.cuts[i];
-//     }
-//     return uspeed;
-// }
-
 Piecewise<SBasis> 
 Geom::arcLengthSb(Piecewise<D2<SBasis> > const &M, double tol){
     Piecewise<D2<SBasis> > dM = derivative(M);
-    //Piecewise<D2<SBasis> > uspeed = unitVector(dM,tol);
-    //Piecewise<SBasis> dMlength = dot(dM,uspeed);
-    Piecewise<SBasis> dMlength = sqrt(dot(dM,dM),1.e-4,3);
+    Piecewise<SBasis> dMlength = sqrt(dot(dM,dM),tol,3);
     Piecewise<SBasis> length = integral(dMlength);
     length-=length.segs.front().at0();
     return length;
 }
 Piecewise<SBasis> 
 Geom::arcLengthSb(D2<SBasis> const &M, double tol){
-    return arcLengthSb(Piecewise<D2<SBasis> >(M));
+    return arcLengthSb(Piecewise<D2<SBasis> >(M), tol);
 }
 
 double
@@ -276,19 +262,6 @@ Geom::length(Piecewise<D2<SBasis> > const &M,
     Piecewise<SBasis> length = arcLengthSb(M, tol);
     return length.segs.back().at1();
 }
-
-
-/***
- * std::vector<SBasis > 
- * arc_length_sb(D2<SBasis> const M,
-                    std::vector<double> &cuts,
-                    double tol)
- * returns a piecewise sbasis function which maps the t parameter of M(t) to the arc length at that point.
- * In other words, it returns a function to computes the arc length at each point.
- *
- * Todo: replace the return value + cuts with a single class for handling piecewise sbasis
- * functions.
- **/
 
 
 // incomplete.
@@ -326,16 +299,18 @@ Geom::arc_length_parametrization(D2<SBasis> const &M,
     Piecewise<D2<SBasis> > u;
     u.push_cut(0);
 
-    Piecewise<SBasis> s = arcLengthSb(M);
+    Piecewise<SBasis> s = arcLengthSb(Piecewise<D2<SBasis> >(M),tol);
     for (unsigned i=0; i < s.size();i++){
         double t0=s.cuts[i],t1=s.cuts[i+1];
         D2<SBasis> sub_M = compose(M,Linear(t0,t1));
         D2<SBasis> sub_u;
         for (unsigned dim=0;dim<2;dim++){
-	  //TODO: don't compute s(t0)/s(t1): t0 & t1 belong to s's cuts!!
-	  sub_u[dim]=compose_inverse(sub_M[dim],(s.segs[i]-Linear(s(t0))) / (s(t1)-s(t0)), order, tol);
+            SBasis sub_s = s.segs[i];
+            sub_s-=sub_s.at0();
+            sub_s/=sub_s.at1();
+            sub_u[dim]=compose_inverse(sub_M[dim],sub_s, order, tol);
         }
-	u.push(sub_u,s(t1));
+        u.push(sub_u,s(t1));
     }
     return u;
 }
