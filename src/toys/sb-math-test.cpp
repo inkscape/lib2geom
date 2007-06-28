@@ -31,7 +31,7 @@
  */
 
 #include "sb-math.h"
-#include "pw.h"
+#include "piecewise.h"
 #include "d2.h"
 #include "s-basis.h"
 #include "bezier-to-sbasis.h"

@@ -4,7 +4,7 @@
 #include "s-basis.h"
 #include "s-basis-2d.h"
 #include "d2.h"
-#include "pw.h"
+#include "piecewise.h"
 #include "path.h"
 #include <vector>
 

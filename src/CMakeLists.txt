@@ -56,7 +56,8 @@ poly-dk-solve.h
 poly.h
 poly-laguerre-solve.cpp
 poly-laguerre-solve.h
-pw.cpp
+piecewise.h
+piecewise.cpp
 quadtree.cpp
 quadtree.h
 refcounted.h

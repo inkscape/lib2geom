@@ -121,6 +121,7 @@ Piecewise<SBasis> cross(Piecewise<D2<SBasis> > const &a,
   return result;
 }
 
+/* Replaced by remove_short_cuts in piecewise.h
 //this recursively removes the shortest cut interval until none is shorter than tol.
 //TODO: code this in a more efficient way!
 Piecewise<D2<SBasis> > remove_short_cuts(Piecewise<D2<SBasis> > const &f, double tol){
@@ -155,6 +156,7 @@ Piecewise<D2<SBasis> > remove_short_cuts(Piecewise<D2<SBasis> > const &f, double
     new_f.cuts.erase(new_f.cuts.begin()+idx);        
     return remove_short_cuts(new_f, tol);
 }
+*/
 
 //if tol>0, only force continuity where the jump is smaller than tol.
 Piecewise<D2<SBasis> > force_continuity(Piecewise<D2<SBasis> > const &f, 

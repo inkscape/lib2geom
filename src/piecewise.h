@@ -1,5 +1,5 @@
 /*
- * pw.h - Piecewise function class
+ * piecewise.h - Piecewise function class
  *
  * Copyright 2007 Michael Sloan <mgsloan@gmail.com>
  *
@@ -364,6 +364,32 @@ Piecewise<T> portion(const Piecewise<T> &pw, double from, double to) {
 }
 
 template<typename T>
+Piecewise<T> remove_short_cuts(Piecewise<T> const &f, double tol) {
+    Piecewise<T> ret;
+    ret.push_cut(f.cuts[0]);
+    for(unsigned i=0; i<f.size(); i++){
+        if (f.cuts[i+1]-f.cuts[i] >= tol) {
+            ret.push(f[i], f.cuts[i+1]);
+        }
+    }
+    return ret;
+}
+
+template<typename T>
+Piecewise<T> remove_short_cuts_extending(Piecewise<T> const &f, double tol) {
+    Piecewise<T> ret;
+    ret.push_cut(f.cuts[0]);
+    double last = f.cuts[0]; // last cut included
+    for(unsigned i=0; i<f.size(); i++){
+        if (f.cuts[i+1]-f.cuts[i] >= tol) {
+            ret.push(elem_portion(f, i, last, f.cuts[i+1]), f.cuts[i+1]);
+            last = f.cuts[i+1];
+        }
+    }
+    return ret;
+}
+
+template<typename T>
 std::vector<double> roots(const Piecewise<T> &pw) {
     std::vector<double> ret;
     for(unsigned i = 0; i < pw.size(); i++) {
@@ -549,7 +575,7 @@ Piecewise<SBasis>
 divide(SBasis const &a, SBasis const &b, double tol, unsigned k, double zero=1.e-3);
 
 //Composition: functions called compose_foo are pieces of compose that are factored out in pw.cpp.
-std::map<double,unsigned> compose_pullBack(std::vector<double> const &cuts, SBasis const &g);
+std::map<double,unsigned> compose_pullback(std::vector<double> const &cuts, SBasis const &g);
 int compose_findSegIdx(std::map<double,unsigned>::iterator  const &cut,
                        std::map<double,unsigned>::iterator  const &next,
                        std::vector<double>  const &levels,
@@ -577,7 +603,7 @@ Piecewise<T> compose(Piecewise<T> const &f, SBasis const &g){
     std::vector<double> levels;//we can forget first and last cuts...
     levels.insert(levels.begin(),f.cuts.begin()+1,f.cuts.end()-1);
     //TODO: use a std::vector<pairs<double,unsigned> > instead of a map<double,unsigned>.
-    std::map<double,unsigned> cuts_pb = compose_pullBack(levels,g);
+    std::map<double,unsigned> cuts_pb = compose_pullback(levels,g);
     
     //-- Compose each piece of g with the relevant seg of f.
     result.cuts.push_back(0.);

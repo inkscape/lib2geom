@@ -35,6 +35,7 @@ static void draw_axis(cairo_t *cr, Piecewise<D2<SBasis> > const &pw, unsigned d,
     if(abs(mode)==3) mult = 100;
     if(abs(mode)==4) mult = 20;
     if(abs(mode)==5) mult = 20;
+    if(abs(mode)==6) mult = 100;
     for(unsigned i = 0; i < pw.size(); i++) {
         cairo_md_sb(cr, D2<SBasis>(Linear(pw.cuts[i]-pw.cuts[0],pw.cuts[i+1]-pw.cuts[0])*mult, pw[i][d])*m);
     }
@@ -58,7 +59,7 @@ void dump_latex(vector<Path> ps) {
 }
 
 class Parametrics: public Toy {
-    Piecewise<D2<SBasis> > cat, alcat, box, arc, monk;
+    Piecewise<D2<SBasis> > cat, alcat, box, arc, monk, traj;
 #ifdef USE_TIME
     GTimer* time;
     bool st;
@@ -81,6 +82,7 @@ class Parametrics: public Toy {
       if(mode==3) inc = .01;
       if(mode==4) inc = .04;
       if(mode==5) inc = .1;
+      if(mode==6) inc = .01;
       if(mode<0) inc = .01*M_PI;
       if(!save && !waitt) {
           t += inc;
@@ -94,6 +96,7 @@ class Parametrics: public Toy {
       if(abs(mode)==3) obj = arc;
       if(abs(mode)==4) obj = box;
       if(abs(mode)==5) obj = monk;
+      if(abs(mode)==6) obj = traj;
       if(t==obj.cuts.back()) t += inc/2;
       cairo_set_source_rgb(cr, 1,1,1);
       if(save) {
@@ -152,7 +155,7 @@ class Parametrics: public Toy {
       if(!save) {
       char file[10];
       sprintf(file, "output/%04d.png", count);
-      //take_screenshot(file);
+      take_screenshot(file);
       count++;
       }
      // *notify << "pieces = " << alcat.size() << ";\n";
@@ -174,7 +177,7 @@ class Parametrics: public Toy {
 
   public:
     Parametrics(){
-      mode = -5;
+      mode = -6;
       vector<Path> cp = read_svgd("parametrics.svgd");
       //dump_latex(cp);
       cat = paths_to_pw(cp);
@@ -196,6 +199,10 @@ class Parametrics: public Toy {
       box.push(D2<SBasis>(Linear(300,100),Linear(300)), 3);
       box.push(D2<SBasis>(Linear(100),Linear(300,100)), 4);
       //handles.push_back(Point(100, 100));
+      traj = Piecewise<D2<SBasis> >();
+      SBasis quad = Linear(0,1)*Linear(0,1)*256-Linear(0,256)+200;
+      traj.push_cut(0);
+      traj.push(D2<SBasis>(Linear(100,300),quad), 1);
 #ifdef USE_TIME
       time = g_timer_new();
       g_timer_reset(time);

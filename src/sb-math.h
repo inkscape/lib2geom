@@ -40,7 +40,7 @@
 
 
 #include "s-basis.h"
-#include "pw.h"
+#include "piecewise.h"
 
 namespace Geom{
 //-|x|---------------------------------------------------------------

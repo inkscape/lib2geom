@@ -1,5 +1,5 @@
 /*
- * pw.cpp - Piecewise function class
+ * piecewise.cpp - Piecewise function class
  *
  * Copyright 2007 Michael Sloan <mgsloan@gmail.com>
  * Copyright 2007 JF Barraud
@@ -29,7 +29,7 @@
  *
  */
 
-#include "pw.h"
+#include "piecewise.h"
 #include <iterator>
 #include <map>
 
@@ -100,11 +100,11 @@ Piecewise<SBasis> divide(SBasis const &a, SBasis const &b, double tol, unsigned 
 
 //-- compose(pw<T>,SBasis) ---------------
 /* 
-   the purpose of the following functions is only to reduce the code in pw.h
+   the purpose of the following functions is only to reduce the code in piecewise.h
    TODO: use a vector<pairs<double,unsigned> > instead of a map<double,unsigned>.
  */
 
-std::map<double,unsigned> compose_pullBack(std::vector<double> const &values, SBasis const &g){
+std::map<double,unsigned> compose_pullback(std::vector<double> const &values, SBasis const &g){
    std::map<double,unsigned> result;
 
    std::vector<std::vector<double> > roots = multi_roots(g, values);

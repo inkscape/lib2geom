@@ -1,5 +1,5 @@
 #include "d2.h"
-#include "pw.h"
+#include "piecewise.h"
 #include "s-basis.h"
 #include "s-basis-2d.h"
 #include "svg-path-parser.h"
