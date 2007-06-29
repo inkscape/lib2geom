@@ -1,0 +1,134 @@
+h1. *Piecewise*
+
+In order to represent functions with a complex shape, it is necessary
+to define functions in a piecewise manner.  In the graphics world this
+sort of function, when parametric, is often referred to as a 'spline'.
+Even beyond the representation of paths, it is also often necessary
+for mathematical operations to return piecewise functions, as otherwise
+the single-fragment versions would require an inordinate degree to
+still be accurate.  An example of this is the *inverse* function.
+
+In the world of lib2geom, this is implemented as the *Piecewise*
+template class.  It manages a sequence of fragment 'segments' and the
+cuts between them.  These cuts are the various t-values which seperate
+the different segments.
+
+h2. Cuts
+
+The first and last cuts of a piecewise define it's intended range, and
+the intermediary cuts seperate the segments.  With indices, segment i
+is always bordered on the left with cut i and on the right with cut i+1.
+In general, c = s+1, where c is the number of cuts and s is the number
+of segments.  These invariants are checked by the
+@bool Piecewise<T>::invariants();@ method.
+
+The cuts essentially define the position and scale of each segment.
+For example, if the left and right cuts are 0.5 apart, the segment is
+half its regular size; the derivative will be twice as big.
+
+h4. Cut Query Functions
+
+<pre><code>
+unsigned Piecewise<T>::segN(double, int low = 0, int high = -1) const;
+double Piecewise<T>::segT(double, int = -1) const;
+double mapToDomain(double t, unsigned i) const;
+</code></pre>
+
+These functions use the cut information to ascertain which segment a
+t-value lies within ( *segN* ), and what the t-value is for that segment
+at that particular point ( *segT* ).  *segN* takes two optional parameters
+which limit the range of the search, and are used internally as it is
+defined as a recursive binary search.  These may be used if you are sure
+that the desired segment index lies within the range.  *segT* takes an
+optional parameter for the case where you already know the segment number.
+
+mapToDomain is the inverse of segT, as it takes a t-value for a particular
+segment, and returns the global piecewise time for that point.
+
+h4. @ Interval Piecewise<T>::domain() const; @
+
+The *domain* function returns the Interval of the intended domain of the
+function, from the first cut to the last cut.
+
+h4. Cut Modification Functions
+
+<pre><code>
+void Piecewise<T>::offsetDomain(double o) 
+void Piecewise<T>::scaleDomain(double s)
+void Piecewise<T>::setDomain(Interval dom)
+</code></pre>
+
+These functions very simply transform the cuts with linear transformations.
+
+h3. Technical Details
+
+As the cuts are simply a public std::vector, they may also be accessed as
+@pw.cuts@.
+
+While the actual segments begin on the first cut and end on the last, 
+the function is defined throughout all inputs by extending the first
+and last segments.  The exact switching between segments is arbitrarily
+such that beginnings (t=0) have priority over endings (t=1).  This only
+really matters if it is discontinuous at that location.
+
+In the context of 2d parametrically defined curves, the usefulness of cuts
+becomes less apparrent, as they make no real difference for the display
+of the curves.  Rather, cuts become more of an agreement between various
+functions such that the proper data aligns.  
+
+h2. Construction
+
+Most of the time there is no need for raw construction of *Piecewise*
+functions, as they are usually obtained from operations and other sources. 
+
+The following constructors defined for *Piecewise*:
+* The blank constructor
+* A constructor which explicitly lifts a fragment to a *Piecewise* on [0,1]
+* A constructor which takes the *output_type*, and creates a constant function
+
+<pre><code>
+void Piecewise<T>::push_seg(T);
+void Piecewise<T>::push_cut(double);
+void Piecewise<T>::push(T, double);
+</code></pre>
+
+The usual method for raw construction is to construct a blank *Piecewise*
+function, and use these push methods to load the content.  *push_seg* and
+*push_cut* simply add to the segment and cut lists, although *push_cut*
+also checks that the cut time is larger than the last cut.  The current
+recommended method for calling these functions is to have one initial
+*push_cut*, followed by successive calls to *push*, as this will guarantee
+that the cuts and segments properly align.
+
+h2. Operations
+
+h3. Arithmetic
+
+*Piecewise* has many arithmetic operations, and implements
+*OffsetableConcept*, *ScalableConcept*, *AddableConcept*, and 
+*MultiplicableConcept*.  The operations which operate on two Piecewise
+functions (Addable and Multiplicable) work by interleaving the cuts using
+mutual *partition* calls, and iterating the resulting segments.
+
+h3. Fragment Wrapping
+
+While *Piecewise* is not a fragment (it does not have the [0,1] domain),
+it has many functions reminiscient of *FragmentConcept*, including the
+bounds functions, () and valueAt.
+
+(TODO: reverse function?)
+
+h3. Concatenation
+
+<pre><code>
+void Piecewise<T>::concat(const Piecewise<T> &other);
+void Piecewise<T>::continuousConcat(const Piecewise<T> &other);
+</code></pre>
+
+These functions efficiently append another *Piecewise* to the end of a
+*Piecewise*.  They offset the _other_ *Piecewise* in time such that it is
+flush with the end of this *Piecewise*.  *continuousConcat* is basically
+the same except that it also offsets in space so the functions also match
+in value.
+
+(TODO: compose/derivative/integral)

@@ -1,0 +1,47 @@
+h1. Acknowledgements and Hostory
+2Geom is a group project, having many authors and contributors.  The
+original code was sketched out by Nathan Hurst and Peter Moulder for
+the Inkscape vector graphics program to provide well typed, correct
+and easy to use C++ classes.  Since then many people have refined and
+debugged the code.  One of the earliest C++ification projects for
+inkscape was replacing NRPoint with NR::Point.
+
+A conspicuous absence was a Path datatype, and indeed Inkscape
+developed at least 3 different internal path datatypes, plus several
+others in related projects.  Considering the core importance of path
+operations in vector graphics, this led to much reimplementation of
+algorithms, numerous bugs, and many round trips converting between
+forms.
+
+Many attempts have been made to try and develop a single path data
+structure, but all were fated to sit in random SCMs scattered across
+the web.
+
+Several unrelated projects had copied out various portions of the NR
+code from Inkscape and in 2006 MenTaLguY and Nathan felt that it was
+time to separate out the geometry portions of inkscape into a
+separate library for general use and improvement.  The namespace was
+changed from NR to Geom and a prototype for paths sketched out.
+Nathan studied the state of the art for computational geometry whilst
+mental focussed on the design of Paths.
+
+Before the remerging of 2Geom with the inkscape svn HEAD it was felt
+that a few smaller projects should be ported to use 2Geom.  Michael
+Wybrow's libavoid advanced connector routing system was ported first.
+
+(TODO: did this happen? also, add the rest of history..)
+
+h2. People who have contributed to 2Geom
+* Aaron C. Spike
+* Alex Mac
+* Fred: livarot
+* Javier Sanchez-Reyes
+* Jean-Francois Barraud
+* Jonathon Wright
+* Joshua Blocher
+* Kim Marriott
+* MenTaLguY
+* Michael J. Wybrow
+* Michael G. Sloan
+* Nathan J. Hurst
+* Peter J. R. Moulder

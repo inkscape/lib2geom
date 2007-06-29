@@ -1,0 +1,91 @@
+h1. S-Power-Basis-Forms
+
+2Geom provides a very powerful algebra for modifying paths.  Although
+paths are kept in an extended SVG native form where possible, many
+operations require a more mathematical form.  Our prefferred form is
+a sequence of s-power basis polynomials, henceforth referred to as
+s-basis.  We may convert to this form, perform the required operations
+and convert back, approximating to a requested tolerance as required.
+
+The precise details of the s-basis form are beyond the scope of this
+manual - the interested reader should consult \cite{SanchezReyes1997,SanchezReyes2000,SanchezReyes2001,SanchezReyes2003,SanchezReyes2004}.
+An elementary, functional description is given in Appendix C.
+
+(TODO: work out textile citations, math inclusion)
+
+Geometrically important properties:
+* exact representation of bezier segments
+* low condition number on bezier conversion.
+* strong convergence guarantees
+* $C^0$ continuity guarantee
+
+The following operations are directly implementable and are very efficient:
+* fast conversion from all svg elements
+* basic arithmetic - @+@, @-@, $\times$, $\div$
+* algebraic derivative and integral
+* elementary trigonometric functions: $\sqrt{\cdot}$, $\sin(\cdot)$, $\cos(\cdot)$, $\exp(\cdot)$
+* efficient degree elevation and reduction
+* function inversion
+* exact solutions for many non trivial operations
+* root finding
+* composition
+
+All of these operations are fast.  For example, multiplication of two
+beziers by converting to s-basis form, multiplying and converting back
+takes roughly the same time as performing the bezier multiplication
+directly, and furthermore, subdivision and degree reduction are
+straightforward in this form.
+
+h2. Implementation
+
+h3. *Linear*
+
+The *Linear* class represents a linear function, mostly for use as a
+building block for *SBasis*.  *Linear* fully implements *AddableConcept*,
+*OffsetableConcept*, and *ScalableConcept* yielding the following operators:
+
+<pre><code>
+    AddableConcept:    x + y, x - y, x += y, x -= y
+    OffsetableConcept: x + d, x - d, x += d, x -= d 
+    ScalableConcept:   x * d, x / d, x *= d, x /= d, -x
+</code></pre>
+
+(where @x@ and @y@ are *Linear*, d is *Coord*, and all return *Linear*)
+
+As *Linear* is a basic function type, it also implements the *FragmentConcept*.
+
+The main *Linear* constructor accepts two *Coord* values, one for the Linear's
+value at 0, and one for its value at 1.  These may then later be accessed and
+modified with the indexing operator, @[]@, with a value of 0 or 1.
+
+h3. *SBasis*
+
+The *SBasis* class provides the most basic function form,
+$f(t) \rightarrow y$.  *SBasis* are made up of multiple *Linear* elements,
+which store to/from values for each polynomial coefficient.
+
+*SBasis*, like *Linear*, above, fully implements *AddableConcept*,
+*OffsetableConcept*, and *ScalableConcept*.
+
+As *SBasis* is a basic function type, it implements the *FragmentConcept*.
+
+Usually you do not have to directly construct SBasis, as they are obtained
+one way or another, and many of the operations are defined, however, *SBasis*
+may be constructed as an implicit *Linear* cast, as a copy, or as a blank.
+The class is actually an extension of @std::vector<Linear>@.  This provides
+the primary method of raw *SBasis* construction -- @push_back(Linear)@, which
+adds another coefficient to the *SBasis*.
+
+*SBasis* also provides the indexing accessor/mutator, and due to its vector
+nature, iteration.
+
+(TODO: wouldn't the indexing be provided by vector any way?)
+
+h3. *SBasis2D*
+
+SBasis2D provides a multivariate form - functions of the form
+$f(u,v) \rightarrow z$.  These can be used for arbitrary distortion
+functions (take a path $p(t) \rightarrow (u,v)$ and a pair of surfaces
+$f(u,v),g(u,v)$ and compose: $q(t) = (f(p(t)), g(p(t)))$.
+
+(TODO: flesh out this section)

@@ -1,0 +1,41 @@
+h1. Introduction
+
+This manual focuses on the lib2geom computational geometry framework.
+The main goal of this framework is the eventual replacement of
+Inkscape's multiple and shoddy geometry frameworks. As with any decent
+module or lib, 2geom is designed to achieve the desired functionality
+while maintaining a generality encouraging usage within other
+applications.  The focus on robust, accurate algorithms, as well as
+utilization of newer and better representations makes the lib
+very attractive for many applications.
+
+h2. Design Considerations
+
+2Geom is written with a functional programming style in mind.
+Generally data structures are considered immutable and rather than
+assignment we use labeling.  However, C++ can become unwieldy if
+this is taken to extreme and so a certain amount of pragmatism is
+used in practice.  In particular, usability is not forgotten in the
+mires of functional zeal.
+
+The code relies strongly on the type system and uses some of the more
+'tricky' elements of C++ to make the code more elegant and 'correct'.
+Despite this, the intended use of 2Geom is a serious vector graphics
+application. In such domains, performance is still used as a quality
+metric, and as such we consider inefficiency to be a bug, and have
+traded elegance for efficiency where it matters.
+
+In general the data structures used in 2Geom are relatively 'flat'
+and require little from the memory management.  Currently most data
+structures are built on standard STL headers, and new and delete are
+used sparingly.  It is intended for 2Geom to be fully compatible with
+Boehm garbage collector though this has not yet been tested.
+
+h2. Toy-Based Development
+
+We have managed to come up with a method of library development
+which is perfect for geometry - the development of toys exemplifying
+a feature while the feature is perfected.  This has somewhat subsumed
+the role of tests, and provides immediate motivation/reward for work.
+
+!media/gear.png!

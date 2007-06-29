@@ -1,0 +1,128 @@
+h1. Concept Checking
+
+The C++ Standard Template Library introduces the notion of _concepts_,
+which specify families of types related by a common interface.  In
+template-based programming with the STL, concepts serve a similar
+purpose to type classes in Haskell.  While, unlike Haskell's language-level
+support for type classes, concept-checking is not directly supported by the
+C++ compiler or language, C++ libraries have been written which use template
+techniques to provide compile-time checking and enforcement of concepts.
+We use the Boost Concept Checking library.
+
+h2. Lib2geom's 'Concepts'
+
+There are several important lib2geom 'concepts'.
+
+h3. *FragmentConcept*
+
+This is perhaps the most important concept within lib2geom, as it defines
+the interface for the basic, one-dimensional functions.  Fragments are
+defined on the interval [0,1], which is referred to as the _intended domain_
+of the function.  Functions may be well defined for all values (many are),
+but the 0-to-1 domain has signifigant semantic value.  When the functions
+are used to represent a *Curve*, 0 is the start and 1 is the end.
+
+h4. @ T::output_type @
+
+Every fragment must typedef an *output_type*.  This is usually *Coord*, however,
+in order to support considering @D2<T>@ a fragment, this typedef was added.
+This information is also used by the compiler to infer the proper bounds and
+sbasis types.
+
+h4. Value Query
+
+<pre><code>
+output_type T::valueAt(double);
+output_type T::operator()(double);
+output_type T::at0();
+output_type T::at1();
+</code></pre>
+
+*FragmentConcept* defines several methods for retrieving the value at a point.
+One method is to use the *valueAt* function, which returns output_type given
+a t-value.  Fragments are also functors, which in C++ lingo means they look
+like function calls, as they overload the () operator.  This is essentially
+the same as calling valueAt.  The functions *at0* and *at1* are also
+provided, and should be used whenever the start or end of the function is
+required, as many functions directly store this information.
+
+h4. @ sbasis_type T::toSBasis() @
+
+As *SBasis* will be the main function representation, it is desirable to always
+be able to approximate and deal with other functions in this way.  Therefore,
+the *toSBasis* function is required.  When *output_type* is @double@,
+@sbasis_type@ is *SBasis*.  When *output_type* is *Point*, @sbasis_type@ is
+*SBasisCurve*.
+
+(TODO: in writing this it occurs to me that toSBasis should take a tolerance)
+
+h4. @ T reverse(T) @
+
+As most of the implementors of fragment consider functions in a fairly
+symmetric way, the *reverse* function was included in the *FragmentConcept*.
+*reverse* flips the function's domain on 0.5, such that f'(t) = f(1-t).
+
+h4. Bounds
+
+<code><pre>
+bounds_type bounds_fast(T);
+bounds_type bounds_exact(T);
+bounds_type bounds_local(T, Interval);
+</pre></code>
+
+Finding the bounds of a function is essential for many optimizations and
+algorithms.  This is why we provide 3 functions to do it. *bounds_fast*
+provides a quick bounds which contains the actual bounds of the function.
+This form is ideal for optimization, as it hopefully does not require too
+much computation.  *bounds_exact*, on the other hand, provides the exact
+bounds of the function.  *bounds_local* only returns the bounds of an
+interval on the function - at the moment it is unclear if this is exact.
+When *output_type* is @double@, @bounds_type@ is *Interval*.  When
+*output_type* is @Point@, @bounds_type@ is *Rect*.
+
+See the linear.h code for an example of an implementation of *FragmentConcept*.
+
+h3. *OffsetableConcept*
+
+*OffsetableConcept* defines what it means to be offsetable.  Like
+*FragmentConcept*, this concept requires an output_type, which is used
+as the offset type.  This still makes since when the implementor is
+also a fragment, as in pretty much all cases you would want to offset
+a function using the same type it outputs.
+
+The following operators are defined by *OffsetableConcept*:
+
+@T + output_type, T - output_type, T += output_type, T -= output_type@,
+
+h3. *ScalableConcept*
+
+*ScalableConcept* defines what it means to be scalable.  Like
+*OffsetableConcept*, it requires an output_type, which is used as the
+scalar-type.  This is an assumption that may not pan out in the future,
+however, for all function types we've used this always applies.
+Technically points should not be multiplicable, however, they provide a
+convenient storage mechanism for non-uniform scaling.  If this changes
+in the future, the implementations will remain the same, while the
+concept definitions are loosened.
+
+The following operators are defined by *ScalableConcept*:
+@T * scalar_type, T / scalar_type, T *= scalar_type, T /= scalar_type, -x@,
+
+h3. *AddableConcept*
+
+*AddableConcept* defines a concept for classes which are closed under
+addition (the classes may be added to themselves, and the result is the
+same type).  The following operators are included:
+
+@x + y, x - y, x += y, x -= y@
+
+h3. *MultiplicableConcept*
+
+*MultiplicableConcept* defines a concept for classes which are closed under
+multiplication (the classes may be multiplied by themselves, and the result
+is the same type).  The following operators are included:
+
+@x * y, x *= y@
+
+At some point a DividableConcept may be implemented, however, at the moment
+it is not very useful.

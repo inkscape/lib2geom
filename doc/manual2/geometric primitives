@@ -1,0 +1,65 @@
+h1. Geometric Primitives
+
+What good is a geometry library without geometric primitives?  By this
+I mean the very basic stuff, Points/Vectors, Matrices, etc.
+
+2geom's primitives are descendant from libNR's geometric primitives.
+They have been modified quite a bit since that initial import.
+
+h2. Point
+
+!media/point.png!
+
+The mathematical concepts of points and vectors are merged into the
+2geom class called *Point*.  See Appendix A for a further
+discussion of this decision.
+
+Point may be interpreted as a D2<double> with some additional operations.
+
+(TODO: document these ops.)
+
+\section{Transformations}
+
+Affine transformations are either represented with a canonical 6
+element matrix, or special forms.
+
+\subsection{Scale}
+
+\includegraphics[height=50mm]{media/scale.png}
+
+A \code{Scale} transformation stores a vector representing a scaling
+transformation.
+
+\subsection{Rotate}
+
+\includegraphics[height=50mm]{media/rotate.png}
+
+A \code{Rotate} transformation uses a vector(\code{Point}) to store
+a rotation about the origin.
+
+In correspondence with mathematical convention (y increasing upwards),
+0 degrees is encoded as a vector pointing along the x axis, and positive
+angles indicate anticlockwise rotation.  So, for example, a vector along
+the y axis would encode a 90 degree anticlockwise rotation of 90 degrees.
+
+In the case that the computer convention of y increasing downwards,
+the \verb}Rotate} transformation works essentially the same, except
+that positive angles indicate clockwise rotation.
+
+\subsection{Translate}
+
+\includegraphics[height=70mm]{media/translate.png}
+
+A \code{Translate} transformation is a simple vector(\code{Point})
+which stores an offset.
+
+\subsection{Matrix}
+
+\includegraphics[height=70mm]{media/matrix.png}
+
+A \code{Matrix} is a general affine transform.  Code is provided for
+various decompositions, constructions, and manipulations.  A
+\code{Matrix} is composed of 6 coordinates, essentially storing the
+x axis, y axis, and offset of the transformation.  A detailed
+explanation for matrices is given in Appendix B.
+

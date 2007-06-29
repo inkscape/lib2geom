@@ -1,0 +1,106 @@
+h1. Dealing with two Dimensions: *D2*
+
+After writing a few classes for two dimensional objects, we realized
+that there is a lot of boilerplate associated with what is essentially
+lifting one dimensional concepts into two.  Instead of frequently
+rewriting this code, we instead created the *D2* template class.
+
+For example, a point in space might be represented by *D2<double>*.
+This may, in fact, become the actual representation for Point.
+We have not yet replaced Point with this, as not all of Points
+operations have been ported (or are applicable), and we are not
+yet sure if there is 0 performance loss.
+
+(TODO remove previous stuff if D2<double> becomes point repr)
+
+h2. Component Access
+
+One might expect such an object to have @.x@ and @.y@ fields, however,
+it instead consists of 2 element array.  With LibNR, it was found that
+the availability of @.x@ and @.y@ encouraged people to attempt to
+inline operations rather than using the operators, perhaps in (vain)
+pursuit of a performance enhancement.  By using an array, we encourage
+people to think about points as symmetric objects and discourage
+direct use of the components.  However, we still provide direct access
+for the rare occasion that it is needed. Even in these cases, the array
+method reduces bugs by encouraging iteration over the array rather than
+explicit element reference.
+
+The components of a *D2* are accessed through the indexing operator, [].
+The input value to the index operator is the @enum@ *Dim2*, which
+defines *X* = 0 and *Y* = 1. This is to encourage using the
+@for(int d=0; i<2; i++)@ idiom when normal operations do not suffice.
+
+h2. Arithmetic Operators
+
+@D2<T>@ implements the *AddableConcept*, *OffsetableConcept*, and
+*ScalableConcept* (if @T@ implements them as well) yielding the
+following operators:
+
+<pre><code>
+AddableConcept:    x + y, x - y, x += y, x -= y
+OffsetableConcept: x + p, x - p, x += p, x -= p 
+ScalableConcept:   x * p, x / p, x *= p, x /= p, -x
+                   x * d, x / d, x *= d, x /= d
+</code></pre>
+
+(where @x@ and @y@ are *D2*, d is *Coord*, and @p@ is a *Point* and all
+return @D2<T>@)
+
+These operators all just apply the operation on @T@ to the components.
+So, @a + b@ just returns @D2<T>(a[X] + b[X], a[Y] + b[Y])@, though the
+actual code uses a loop (which is unrolled) in order to avoid
+bugs.
+
+h2. Geometric Operations
+
+<pre><code>
+T dot(D2<T> const &, D2<T> const &);
+T cross(D2<T> const &, D2<T> const &);
+</code></pre>
+
+The *dot*:http://en.wikipedia.org/wiki/Dot@product and
+*cross*:http://en.wikipedia.org/wiki/Cross@product products are defined
+on D2<T> when T implements *AddableConcept* and *MultiplicableConcept.
+The cross function returns the length of the resultant 3d vector
+perpendicular to the 2d plane.
+
+@ D2<T> operator*(D2<T> const &, Matrix const &)@
+
+This operation applies an affine transformation to the 2d object.
+
+h2. Fragment Lifting
+
+*D2<T>* also implements FragmentConcept if T implements it as well,
+allowing *D2* to lift one dimensional functions into two-dimensional
+parametric curves.  As a fragment, a *D2* will represent a function
+from a double to a Point.
+
+h3. Fragment Operations
+
+In addition to the normal set of Fragment methods, D2 has the following
+functions:
+
+h4. @ D2<T> compose(D2<T> const &a, T const &b); @
+
+The *compose* function is defined when @T@ is a function representation which
+supports composition.  The only forms in 2geom are *SBasis* and *SBasis2d*.
+The *D2* *compose* function composes @b@ on both components of @a@.  This
+makes sense, as a D2<SBasis> is double -> D2<double> and the function for
+composition is double -> double.  One way to think of composition is that
+the output is equivalent to applying @b@ to the input, and then applying a
+to @b@'s output.
+
+h4. @ D2<T> compose_each(D2<T> const &a, D2<T> &b); @
+
+The *compose_each* function is similar to the *compose* function, except that
+@b@ is also a *D2*, so instead of composing the same function on each component,
+the two functions in @b@ are used.
+
+
+h4. @ Point D2<T>::operator()(double x, double y) const @
+
+*D2* wraps this operator for when @T@ is a function taking a 2 component input.
+The only case of this currently within 2geom is SBasis2d.
+
+(TODO: derivative/integral)
