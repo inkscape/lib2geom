@@ -62,7 +62,6 @@ class D2{
 
     //TODO: implements a Fragment2D
     typedef Point output_type;
-    //TODO: doesn't make much sense in d2 context
     bool isZero() const {
         boost::function_requires<FragmentConcept<T> >();
         return f[X].isZero() && f[Y].isZero();
@@ -79,7 +78,7 @@ class D2{
         boost::function_requires<FragmentConcept<T> >();
         return Point(f[X].at1(), f[Y].at1());
     }
-    Point pointAt(double t) const {
+    Point valueAt(double t) const {
         boost::function_requires<FragmentConcept<T> >();
         return (*this)(t);
     }
@@ -260,6 +259,7 @@ compose(T const & a, D2<T> const & b) {
 }
 */
 
+//TODO: remove/change to cw/ccw?
 template <typename T>
 inline D2<T>
 rot90(D2<T> const & a) {
@@ -290,7 +290,7 @@ compose(D2<T> const & a, T const & b) {
 //TODO: encode with concepts
 template <typename T>
 inline D2<T>
-composeEach(D2<T> const & a, D2<T> const & b) {
+compose_each(D2<T> const & a, D2<T> const & b) {
     D2<T> r;
     for(unsigned i = 0; i < 2; i++)
         r[i] = compose(a[i],b[i]);
@@ -307,6 +307,7 @@ D2<T>::operator()(double t) const {
     return p;
 }
 
+//TODO: we might want to have this take a Point as the parameter.
 template<typename T>
 inline Point
 D2<T>::operator()(double x, double y) const {
@@ -373,7 +374,6 @@ class D2<Interval> {
 
     Interval& operator[](unsigned i)              { return f[i]; }
     Interval const & operator[](unsigned i) const { return f[i]; }
-
 
     inline Point min() const { return Point(f[X].min(), f[Y].min()); }
     inline Point max() const { return Point(f[X].max(), f[Y].max()); }

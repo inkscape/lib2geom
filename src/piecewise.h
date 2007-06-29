@@ -67,7 +67,8 @@ class Piecewise {
 
     inline T operator[](unsigned i) const { return segs[i]; }
     inline T &operator[](unsigned i) { return segs[i]; }
-    inline output_type operator()(double t) const {
+    inline output_type operator()(double t) const { return valueAt(t); }
+    inline output_type valueAt(double t) const {
         unsigned n = segN(t);
         return segs[n](segT(t, n));
     }
@@ -137,6 +138,7 @@ class Piecewise {
 
     //Scales the domain of the function by a value. 0 will result in an empty Piecewise.
     inline void scaleDomain(double s) {
+        assert(s > 0);
         if(s == 0) {
             cuts.clear(); segs.clear();
             return;
@@ -146,7 +148,7 @@ class Piecewise {
     }
 
     //Retrieves the domain in interval form
-    inline void domain() { return Interval(cuts.front(), cuts.back()); }
+    inline Interval domain() const { return Interval(cuts.front(), cuts.back()); }
 
     //Transforms the domain into another interval
     inline void setDomain(Interval dom) {

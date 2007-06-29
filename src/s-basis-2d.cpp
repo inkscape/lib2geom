@@ -65,7 +65,7 @@ compose(SBasis2d const &fg, D2<SBasis> const &p) {
 }
 
 D2<SBasis>
-composeEach(D2<SBasis2d> const &fg, D2<SBasis> const &p) {
+compose_each(D2<SBasis2d> const &fg, D2<SBasis> const &p) {
     return D2<SBasis>(compose(fg[X], p), compose(fg[Y], p));
 }
 

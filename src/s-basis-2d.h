@@ -295,7 +295,7 @@ SBasis compose(Linear2d const &a, D2<SBasis> const &p);
 
 SBasis compose(SBasis2d const &fg, D2<SBasis> const &p);
 
-D2<SBasis> composeEach(D2<SBasis2d> const &fg, D2<SBasis> const &p);
+D2<SBasis> compose_each(D2<SBasis2d> const &fg, D2<SBasis> const &p);
 
 inline std::ostream &operator<< (std::ostream &out_file, const Linear2d &bo) {
     out_file << "{" << bo[0] << ", " << bo[1] << "}, ";

@@ -74,7 +74,7 @@ Interval bounds_fast(const SBasis &sb, int order) {
         if (v>=0 || t<0 || t>1) {
             res[0] = std::min(a,b);
         }else{
-            res[0]=Lerp(t, a+v*t, b);
+            res[0]=lerp(t, a+v*t, b);
         }
 
         v = res[1];
@@ -82,7 +82,7 @@ Interval bounds_fast(const SBasis &sb, int order) {
         if (v<=0 || t<0 || t>1) {
             res[1] = std::max(a,b);
         }else{
-            res[1]=Lerp(t, a+v*t, b);
+            res[1]=lerp(t, a+v*t, b);
         }
     }
     if (order>0) res*=pow(.25,order);
@@ -100,14 +100,14 @@ Interval bounds_local(const SBasis &sb, const Interval &i, int order) {
         if (lo>=0 || t<t0 || t>t1) {
             lo = std::min(a*(1-t0)+b*t0+lo*t0*(1-t0),a*(1-t1)+b*t1+lo*t1*(1-t1));
         }else{
-            lo = Lerp(t, a+lo*t, b);
+            lo = lerp(t, a+lo*t, b);
         }
 
         if (hi>0) t = ((b-a)/hi+1)*0.5;
         if (hi<=0 || t<t0 || t>t1) {
             hi = std::max(a*(1-t0)+b*t0+hi*t0*(1-t0),a*(1-t1)+b*t1+hi*t1*(1-t1));
         }else{
-            hi = Lerp(t, a+hi*t, b);
+            hi = lerp(t, a+hi*t, b);
         }
     }
     Interval res = Interval(lo,hi);

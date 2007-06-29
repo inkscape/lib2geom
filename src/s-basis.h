@@ -73,7 +73,7 @@ public:
         if(empty()) return 0; else return (*this)[0][1];
     }
 
-    double pointAt(double t) const {
+    double valueAt(double t) const {
         double s = t*(1-t);
         double p0 = 0, p1 = 0;
         double sk = 1;
@@ -86,7 +86,7 @@ public:
         return (1-t)*p0 + t*p1;
     }
     double operator()(double t) const {
-        return pointAt(t);
+        return valueAt(t);
     }
     SBasis toSBasis() const { return SBasis(*this); }
 

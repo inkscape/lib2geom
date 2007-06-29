@@ -111,7 +111,7 @@ static D2<SBasis> RescaleForNonVanishingEnds(D2<SBasis> const &MM, double ZERO=1
 }
 
 //=================================================================
-
+//TODO: what's this for?!?!
 Piecewise<D2<SBasis> > 
 Geom::cutAtRoots(Piecewise<D2<SBasis> > const &M, double ZERO){
     vector<double> rts;

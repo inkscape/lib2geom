@@ -58,6 +58,7 @@ template <> struct ResultTraits<Point > {
 };
 
 //A concept for one-dimensional functions defined on [0,1]
+//TODO: add portion/split
 template <typename T>
 struct FragmentConcept {
     typedef typename T::output_type                        OutputType;
@@ -75,7 +76,7 @@ struct FragmentConcept {
         b = t.isFinite();
         o = t.at0();
         o = t.at1();
-        o = t.pointAt(d);
+        o = t.valueAt(d);
         o = t(d);
         SbType sb = t.toSBasis();
         t = reverse(t);

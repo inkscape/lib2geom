@@ -38,7 +38,7 @@
 
 namespace Geom{
 
-inline double Lerp(double t, double a, double b) { return a*(1-t) + b*t; }
+inline double lerp(double t, double a, double b) { return a*(1-t) + b*t; }
 
 class SBasis;
 
@@ -92,15 +92,15 @@ public:
     inline double at0() const { return a[0]; }
     inline double at1() const { return a[1]; }
 
-    inline double pointAt(double t) const { return Lerp(t, a[0], a[1]); }
-    inline double operator()(double t) const { return pointAt(t); }
+    inline double valueAt(double t) const { return lerp(t, a[0], a[1]); }
+    inline double operator()(double t) const { return valueAt(t); }
 
     //defed in s-basis.h unfortunately
     inline SBasis toSBasis() const;
 
     inline Interval bounds_exact() const { return Interval(a[0], a[1]); }
     inline Interval bounds_fast() const { return bounds_exact(); }
-    inline Interval bounds_local(double u, double v) const { return Interval(pointAt(u), pointAt(v)); }
+    inline Interval bounds_local(double u, double v) const { return Interval(valueAt(u), valueAt(v)); }
 
     operator Tri() const {
         return a[1] - a[0];
