@@ -2,7 +2,6 @@
  * ciculator.h
  *
  * Copyright 2006 MenTaLguY <mental@rydia.net>
- * Copyright 2006 Michael G. Sloan <mgsloan@gmail.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it either under the terms of the GNU Lesser General Public

@@ -95,7 +95,7 @@ public:
     inline double valueAt(double t) const { return lerp(t, a[0], a[1]); }
     inline double operator()(double t) const { return valueAt(t); }
 
-    //defed in s-basis.h unfortunately
+    //defined in s-basis.h
     inline SBasis toSBasis() const;
 
     inline Interval bounds_exact() const { return Interval(a[0], a[1]); }
@@ -142,7 +142,7 @@ inline Linear& operator-=(Linear & a, double b) {
     a[0] -= b; a[1] -= b;
     return a;
 }
-//TODO: concept?
+//IMPL: boost::EqualityComparableConcept
 inline bool operator==(Linear const & a, Linear const & b) {
     return a[0] == b[0] && a[1] == b[1];
 }

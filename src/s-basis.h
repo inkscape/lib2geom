@@ -151,17 +151,17 @@ SBasis& operator+=(SBasis& a, const SBasis& b);
 SBasis& operator-=(SBasis& a, const SBasis& b);
 
 //TODO: remove?
-inline SBasis operator+(Linear const & b, const SBasis & a) {
+inline SBasis operator+(const SBasis & a, Linear const & b) {
     if(b.isZero()) return a;
     if(a.isZero()) return b;
     SBasis result(a);
     result[0] += b;
     return result;
 }
-inline SBasis operator-(Linear const & b, const SBasis & a) {
-    if(a.isZero()) return b;
-    SBasis result = -a;
-    result[0] += b;
+inline SBasis operator-(const SBasis & a, Linear const & b) {
+    if(b.isZero()) return a;
+    SBasis result(a);
+    result[0] -= b;
     return result;
 }
 inline SBasis& operator+=(SBasis& a, const Linear& b) {
@@ -207,9 +207,6 @@ inline SBasis& operator-=(SBasis& a, double b) {
     return a;
 }
 
-SBasis operator*(SBasis const &a, SBasis const &b);
-//TODO: division equivalent?
-
 SBasis shift(SBasis const &a, int sh);
 SBasis shift(Linear const &a, int sh);
 
@@ -230,9 +227,7 @@ SBasis sqrt(SBasis const &a, int k);
 SBasis reciprocal(Linear const &a, int k);
 SBasis divide(SBasis const &a, SBasis const &b, int k);
 
-//TODO: remove above decleration of same function
-inline SBasis
-operator*(SBasis const & a, SBasis const & b) {
+inline SBasis operator*(SBasis const & a, SBasis const & b) {
     return multiply(a, b);
 }
 

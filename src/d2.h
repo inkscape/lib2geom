@@ -60,7 +60,7 @@ class D2{
     T& operator[](unsigned i)              { return f[i]; }
     T const & operator[](unsigned i) const { return f[i]; }
 
-    //TODO: implements a Fragment2D
+    //IMPL: FragmentConcept
     typedef Point output_type;
     bool isZero() const {
         boost::function_requires<FragmentConcept<T> >();
@@ -87,11 +87,6 @@ class D2{
         return D2<SBasis>(f[X].toSBasis(), f[Y].toSBasis());
     }
 
-    /*Rect reverse() const {
-        boost::function_requires<FragmentConcept<T> >();
-        return D2<T>(f[0].reverse(), f[1].reverse());
-    }*/
-
     Point operator()(double t) const;
     Point operator()(double x, double y) const;
 };
@@ -100,6 +95,20 @@ template <typename T>
 D2<T> reverse(const D2<T> &a) {
     boost::function_requires<FragmentConcept<T> >();
     return D2<T>(reverse(a[X]), reverse(a[Y]));
+}
+
+//IMPL: boost::EqualityComparableConcept
+template <typename T>
+inline bool
+operator==(D2<T> const &a, D2<T> const &b) {
+    boost::function_requires<boost::EqualityComparableConcept<T> >();
+    return a[0]==b[0] && a[1]==b[1];
+}
+template <typename T>
+inline bool
+operator!=(D2<T> const &a, D2<T> const &b) {
+    boost::function_requires<boost::EqualityComparableConcept<T> >();
+    return a[0]!=b[0] || a[1]!=b[1];
 }
 
 //IMPL: AddableConcept
@@ -200,6 +209,16 @@ inline D2<T> operator/(D2<T> const & a, double b) { return D2<T>(a[0]/b, a[1]/b)
 template <typename T> 
 inline D2<T> operator/=(D2<T> & a, double b) { a[0] /= b; a[1] /= b; return a; }
 
+template<typename T>
+D2<T> operator*(D2<T> const &v, Matrix const &m) {
+    boost::function_requires<AddableConcept<T> >();
+    boost::function_requires<ScalableConcept<T> >();
+    D2<T> ret;
+    for(unsigned i = 0; i < 2; i++)
+        ret[i] = v[X] * m[i] + v[Y] * m[i + 2] + m[i + 4];
+    return ret;
+}
+
 //IMPL: OffsetableConcept
 template <typename T>
 inline D2<T>
@@ -248,25 +267,6 @@ dot(D2<T> const & a, D2<T> const & b) {
     return r;
 }
 
-/* Doesn't match composition
-template <typename T>
-inline D2<T>
-compose(T const & a, D2<T> const & b) {
-    D2<T> r;
-    for(unsigned i = 0; i < 2; i++)
-        r[i] = compose(a,b[i]);
-    return r;
-}
-*/
-
-//TODO: remove/change to cw/ccw?
-template <typename T>
-inline D2<T>
-rot90(D2<T> const & a) {
-    boost::function_requires<ScalableConcept<T> >();
-    return D2<T>(-a[Y], a[X]);
-}
-
 template <typename T>
 inline T
 cross(D2<T> const & a, D2<T> const & b) {
@@ -277,7 +277,16 @@ cross(D2<T> const & a, D2<T> const & b) {
     return a[0] * b[1] - a[1] * b[0];
 }
 
-//TODO: encode with concepts
+
+//TODO: remove/change to cw/ccw?
+template <typename T>
+inline D2<T>
+rot90(D2<T> const & a) {
+    boost::function_requires<ScalableConcept<T> >();
+    return D2<T>(-a[Y], a[X]);
+}
+
+//TODO: concepterize the following functions
 template <typename T>
 inline D2<T>
 compose(D2<T> const & a, T const & b) {
@@ -287,7 +296,6 @@ compose(D2<T> const & a, T const & b) {
     return r;
 }
 
-//TODO: encode with concepts
 template <typename T>
 inline D2<T>
 compose_each(D2<T> const & a, D2<T> const & b) {
@@ -297,10 +305,19 @@ compose_each(D2<T> const & a, D2<T> const & b) {
     return r;
 }
 
+template <typename T>
+inline D2<T>
+compose_each(T const & a, D2<T> const & b) {
+    D2<T> r;
+    for(unsigned i = 0; i < 2; i++)
+        r[i] = compose(a,b[i]);
+    return r;
+}
+
+
 template<typename T>
 inline Point
 D2<T>::operator()(double t) const {
-    //TODO: restrict to 1D pw or fragment
     Point p;
     for(unsigned i = 0; i < 2; i++)
        p[i] = (*this)[i](t);
@@ -311,22 +328,11 @@ D2<T>::operator()(double t) const {
 template<typename T>
 inline Point
 D2<T>::operator()(double x, double y) const {
-    //TODO: restrict to 2D pw or fragment
     Point p;
     for(unsigned i = 0; i < 2; i++)
        p[i] = (*this)[i](x, y);
     return p;
-}
-
-template<typename T>
-D2<T> operator*(D2<T> const &v, Matrix const &m) {
-    boost::function_requires<AddableConcept<T> >();
-    boost::function_requires<ScalableConcept<T> >();
-    D2<T> ret;
-    for(unsigned i = 0; i < 2; i++)
-        ret[i] = v[X] * m[i] + v[Y] * m[i + 2] + m[i + 4];
-    return ret;
-}
+}
 
 template<typename T>
 D2<T> derivative(D2<T> const & a) {

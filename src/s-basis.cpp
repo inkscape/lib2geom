@@ -54,7 +54,7 @@ double SBasis::tail_error(unsigned tail) const {
     return err;
 }
 */
-//TODO: what exactly is going on here?
+
 double SBasis::tailError(unsigned tail) const {
   Interval bs = bounds_fast(*this, tail);
   return std::max(fabs(bs.min()),fabs(bs.max()));
@@ -165,8 +165,6 @@ SBasis shift(Linear const &a, int sh) {
     if(sh > 0) {
         c.insert(c.begin(), sh, Linear(0,0));
         c.push_back(a);
-    } else {
-        //TODO: truncate
     }
     return c;
 }
@@ -432,8 +430,7 @@ SBasis cos(Linear bo, int k) {
                k);
 }
 
-
-//compute fog^-1. ("zero" = double comparison treshold. *!*we might divide by "zero"*!*)
+//compute fog^-1. ("zero" = double comparison threshold. *!*we might divide by "zero"*!*)
 //TODO: compute order according to tol?
 //TODO: requires g(0)=0 & g(1)=1 atm... adaptation to other cases should be obvious!
 SBasis compose_inverse(SBasis const &f, SBasis const &g, unsigned order, double zero){
