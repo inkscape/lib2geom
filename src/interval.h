@@ -43,11 +43,14 @@
 
 namespace Geom {
 
+//
 class Interval {
-public:
+private:
     Coord _b[2];
-    //TODO: remove; required by maybe
-    Interval() { _b[0] = _b[1] = 0; }
+
+public:
+    //TODO: I just know this'll pop up somewhere, starting off someone's interval at 0...  I can't see how to avoid this.
+    explicit Interval() { _b[0] = _b[1] = 0; }    
     explicit Interval(Coord u) { _b[0] = _b[1] = u; }
     Interval(Coord u, Coord v) {
         if(u < v) {
@@ -81,6 +84,9 @@ public:
         for(int i = 1; i < n; i++) result.extendTo(c[i]);
         return result;
     }
+
+    inline bool operator==(Interval other) { return _b[0] == other._b[0] && _b[1] == other._b[1]; }
+    inline bool operator!=(Interval other) { return _b[0] != other._b[0] || _b[1] != other._b[1]; }
 
     //IMPL: OffsetableConcept
     //TODO: rename output_type to something else in the concept
@@ -119,17 +125,13 @@ public:
         //TODO: what about s=0?
         if(s < 0) {
             Coord temp = _b[0];
-            _b[0] = _b[1]*s;
-            _b[1] = temp*s;
+            _b[0] = _b[1]/s;
+            _b[1] = temp/s;
         } else {
-            _b[0] *= s;
-            _b[1] *= s;
+            _b[0] /= s;
+            _b[1] /= s;
         }
         return *this;
-    }
-
-    inline bool operator==(Interval other) {
-        return _b[0] == other._b[0] && _b[1] == other._b[1];
     }
 
     //TODO: NaN handleage for the next two?
@@ -168,9 +170,6 @@ public:
         if(a._b[0] < _b[0]) _b[0] = a._b[0];
         if(a._b[1] > _b[1]) _b[1] = a._b[1];
     }
-
-    //TODO: evil, but temporary 
-    //friend class MaybeStorage<Rect>;
 };
 
 //IMPL: AddableConcept
@@ -212,7 +211,7 @@ inline Interval unify(const Interval & a, const Interval & b) {
 inline boost::optional<Interval> intersect(const Interval & a, const Interval & b) {
     Coord u = std::max(a.min(), b.min()),
           v = std::min(a.max(), b.max());
-    //technically >= might be incorrect, but singulars suc
+    //technically >= might be incorrect, but singulars suck
     return u >= v ? boost::optional<Interval>()
                   : boost::optional<Interval>(Interval(u, v));
 }

@@ -28,7 +28,7 @@
  *
  */
 
-#ifndef _2GEOM_D2
+#ifndef _2GEOM_D2  //If this is change, change the guard in rect.h as well.
 #define _2GEOM_D2
 
 #include "point.h"
@@ -116,7 +116,7 @@ template <typename T>
 inline bool
 near(D2<T> const &a, D2<T> const &b, double tol) {
     boost::function_requires<NearConcept<T> >();
-    return a[0]==b[0] && a[1]==b[1];
+    return near(a[0], b[0]) && near(a[1], b[1]);
 }
 
 //IMPL: AddableConcept
@@ -354,83 +354,18 @@ D2<T> integral(D2<T> const & a) {
 
 } //end namespace Geom
 
-//D2<Interval> specialization:
 
- /* Authors of original rect class:
- *   Lauris Kaplinski <lauris@kaplinski.com>
- *   Nathan Hurst <njh@mail.csse.monash.edu.au>
- *   bulia byak <buliabyak@users.sf.net>
- *   MenTaLguY <mental@rydia.net>
- */
 
-#include "matrix.h"
+//TODO: implement intersect
 
-namespace Geom {
+#include "rect.h"
+#include "s-basis.h"
+#include "s-basis-2d.h"
+#include "piecewise.h"
 
-typedef D2<Interval> Rect;
+namespace Geom{
 
-template<>
-class D2<Interval> {
-  private:
-    Interval f[2];  
-    D2<Interval>();
-
-  public:
-    D2<Interval>(Interval const &a, Interval const &b) {
-        f[X] = a;
-        f[Y] = b;
-    }
-
-    D2<Interval>(Point const & a, Point const & b) {
-        f[X] = Interval(a[X], b[X]);
-        f[Y] = Interval(a[Y], b[Y]);
-    }
-
-    Interval& operator[](unsigned i)              { return f[i]; }
-    Interval const & operator[](unsigned i) const { return f[i]; }
-
-    inline Point min() const { return Point(f[X].min(), f[Y].min()); }
-    inline Point max() const { return Point(f[X].max(), f[Y].max()); }
-
-    /** returns the four corners of the rectangle in order
-     *  (clockwise if +Y is up, anticlockwise if +Y is down) */
-    Point corner(unsigned i) const {
-        switch(i % 4) {
-	case 0: return Point(f[X].min(), f[Y].min());
-	case 1: return Point(f[X].max(), f[Y].min());
-	case 2: return Point(f[X].max(), f[Y].max());
-	case 3: return Point(f[X].min(), f[Y].max());
-	}
-    }
-
-    /** returns a vector from min to max. */
-    Point dimensions() const { return Point(f[X].extent(), f[Y].extent()); }
-    Point midpoint() const { return Point(f[X].middle(), f[Y].middle()); }
-
-    double area() const { return f[X].extent() * f[Y].extent(); }
-    double maxExtent() const { return std::max(f[X].extent(), f[Y].extent()); }
-
-    bool isEmpty()                 const { return f[X].isEmpty()        && f[Y].isEmpty(); }
-    bool intersects(Rect const &r) const { return f[X].intersects(r[X]) && f[Y].intersects(r[Y]); }
-    bool contains(Rect const &r)   const { return f[X].contains(r[X])   && f[Y].contains(r[Y]); }
-    bool contains(Point const &p)  const { return f[X].contains(p[X])   && f[Y].contains(p[Y]); }
-
-    void expandTo(Point p)        { f[X].extendTo(p[X]);  f[Y].extendTo(p[Y]); }
-    void unionWith(Rect const &b) { f[X].unionWith(b[X]); f[Y].unionWith(b[Y]); }
-
-    void expandBy(double amnt)    { f[X].expandBy(amnt);  f[Y].expandBy(amnt); }
-    void expandBy(Point const p)  { f[X].expandBy(p[X]);  f[Y].expandBy(p[Y]); }
-
-    /** Transforms the rect by m. Note that it gives correct results only for scales and translates */
-    inline Rect operator*(Matrix const m) const { return Rect(min() * m, max() * m); }
-
-    inline bool operator==(Rect const &b) { return f[X] == b[X] && f[Y] == b[Y]; }
-};
-
-//TODO: implement intersect
-
-//D2 fragment usage of Rect:
-
+//Some D2 Fragment implementation which requires rect:
 template <typename T>
 Rect bounds_fast(const D2<T> &a) {
     boost::function_requires<FragmentConcept<T> >();        
@@ -447,15 +382,7 @@ Rect bounds_local(const D2<T> &a, const Interval &t) {
     return Rect(bounds_local(a[X], t), bounds_local(a[Y], t));
 }
 
-} //end namespace decl
-
 //D2<SBasis> specific decls:
-
-#include "s-basis.h"
-#include "s-basis-2d.h"
-#include "piecewise.h"
-
-namespace Geom{
 
 inline D2<SBasis> compose(D2<SBasis> const & a, SBasis const & b) {
     return D2<SBasis>(compose(a[X], b), compose(a[Y], b));
@@ -478,6 +405,8 @@ unsigned sbasisSize(D2<SBasis> const & a);
 double tailError(D2<SBasis> const & a, unsigned tail);
 bool isFinite(D2<SBasis> const & a);
 
+//Piecewise<D2<SBasis> > specific decls:
+
 Piecewise<D2<SBasis> > sectionize(D2<Piecewise<SBasis> > const &a);
 D2<Piecewise<SBasis> > makeCutsIndependant(Piecewise<D2<SBasis> > const &a);
 Piecewise<D2<SBasis> > rot90(Piecewise<D2<SBasis> > const &a);
@@ -486,8 +415,7 @@ Piecewise<SBasis> cross(Piecewise<D2<SBasis> > const &a, Piecewise<D2<SBasis> > 
 
 Piecewise<D2<SBasis> > force_continuity(Piecewise<D2<SBasis> > const &f, 
                                         double tol=0,
-                                        bool closed=false);
-
+                                        bool closed=false);
 class CoordIterator
 : public std::iterator<std::input_iterator_tag, SBasis const>
 {
@@ -520,6 +448,7 @@ inline CoordIterator iterateCoord(Piecewise<D2<SBasis> > const &a, unsigned d) {
     return CoordIterator(a.segs.begin(), d);
 }
 
+//bounds specializations with order
 inline Rect bounds_fast(D2<SBasis> const & s, unsigned order=0) {
     return Rect(bounds_fast(s[X], order),
                 bounds_fast(s[Y], order));

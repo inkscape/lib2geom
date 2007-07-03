@@ -59,6 +59,7 @@ piecewise.h
 piecewise.cpp
 quadtree.cpp
 quadtree.h
+rect.h
 refcounted.h
 s-basis-2d.h
 s-basis-2d.cpp
