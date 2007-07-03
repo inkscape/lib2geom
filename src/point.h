@@ -8,7 +8,6 @@
 #include <iostream>
 
 #include "coord.h"
-#include "macros.h"
 #include "math-utils.h"
 
 namespace Geom {
@@ -208,9 +207,8 @@ extern double atan2(Point const p);
 /** compute the angle turning from a to b (signed). */
 extern double angle_between(Point const a, Point const b);
 
-inline bool point_equalp(Point const &a, Point const &b, double const eps) {
-    return ( Geom_DF_TEST_CLOSE(a[X], b[X], eps) &&
-             Geom_DF_TEST_CLOSE(a[Y], b[Y], eps) );
+inline bool near(Point const &a, Point const &b, double const eps=EPSILON) {
+    return ( near(a[X],b[X],eps) && near(a[Y],b[Y],eps) );
 }
 
 /** Returns p * Geom::rotate_degrees(90), but more efficient.
@@ -239,7 +237,7 @@ inline Coord dot(Point const &a, Point const &b) {
     return ret;
 }
 
-/** compute the euclidean distance between points a and b.  XXX: hypot safer/faster? */
+/** compute the euclidean distance between points a and b.  TODO: hypot safer/faster? */
 inline Coord distance (Point const &a, Point const &b) { return L2(a - b); }
 
 /** compute the square of the distance between points a and b. */

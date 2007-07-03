@@ -111,6 +111,14 @@ operator!=(D2<T> const &a, D2<T> const &b) {
     return a[0]!=b[0] || a[1]!=b[1];
 }
 
+//IMPL: NearConcept
+template <typename T>
+inline bool
+near(D2<T> const &a, D2<T> const &b, double tol) {
+    boost::function_requires<NearConcept<T> >();
+    return a[0]==b[0] && a[1]==b[1];
+}
+
 //IMPL: AddableConcept
 template <typename T>
 inline D2<T>
@@ -400,7 +408,7 @@ class D2<Interval> {
     Point midpoint() const { return Point(f[X].middle(), f[Y].middle()); }
 
     double area() const { return f[X].extent() * f[Y].extent(); }
-    double maxExtent() const { return MAX(f[X].extent(), f[Y].extent()); }
+    double maxExtent() const { return std::max(f[X].extent(), f[Y].extent()); }
 
     bool isEmpty()                 const { return f[X].isEmpty()        && f[Y].isEmpty(); }
     bool intersects(Rect const &r) const { return f[X].intersects(r[X]) && f[Y].intersects(r[Y]); }

@@ -31,6 +31,8 @@
 #ifndef SEEN_Geom_COORD_H
 #define SEEN_Geom_COORD_H
 
+#include <cmath>
+
 namespace Geom {
 
 /**
@@ -41,6 +43,11 @@ namespace Geom {
  * differences of on-canvas points.
  */
 typedef double Coord;
+
+const Coord EPSILON = 1e-5; //1e-18;
+
+//IMPL: NearConcept
+inline bool near(Coord a, Coord b, double eps=EPSILON) { return fabs(a-b) <= eps; }
 
 } /* namespace Geom */
 

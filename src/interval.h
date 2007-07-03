@@ -36,8 +36,10 @@
 #ifndef SEEN_INTERVAL_H
 #define SEEN_INTERVAL_H
 
+#include <assert.h>
 #include "coord.h"
-#include "maybe.h"
+
+#include <boost/optional/optional.hpp>
 
 namespace Geom {
 
@@ -190,6 +192,7 @@ inline Interval operator*(const Interval & a, const Interval & b) {
     return res;
 }
 inline Interval operator*=(Interval & a, const Interval & b) { a = a * b; return a; }
+
 /* reinstate if useful (doesn't do the proper thing for 0 inclusion)
 inline Interval operator/(const Interval & a, const Interval & b) {
     Interval res(a.min() / b.min());
@@ -206,12 +209,12 @@ inline Interval unify(const Interval & a, const Interval & b) {
     return Interval(std::min(a.min(), b.min()),
                     std::max(a.max(), b.max()));
 }
-//TODO: use boost maybe thing
-inline Maybe<Interval> intersect(const Interval & a, const Interval & b) {
+inline boost::optional<Interval> intersect(const Interval & a, const Interval & b) {
     Coord u = std::max(a.min(), b.min()),
           v = std::min(a.max(), b.max());
-    if(u > v) return Nothing();            //TODO: presumes that 0 size disallowed
-    return Interval(u, v);
+    //technically >= might be incorrect, but singulars suc
+    return u >= v ? boost::optional<Interval>()
+                  : boost::optional<Interval>(Interval(u, v));
 }
 
 }

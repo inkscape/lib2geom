@@ -36,7 +36,6 @@ d2.cpp
 floating.h
 geom.cpp
 geom.h
-macros.h
 matrix.cpp
 matrix.h
 math-utils.h

@@ -58,7 +58,6 @@ template <> struct ResultTraits<Point > {
 };
 
 //A concept for one-dimensional functions defined on [0,1]
-//TODO: add portion/split
 template <typename T>
 struct FragmentConcept {
     typedef typename T::output_type                        OutputType;
@@ -83,6 +82,26 @@ struct FragmentConcept {
         i = bounds_fast(t);
         i = bounds_exact(t);
         i = bounds_local(t, dom);
+        /*With portion, Interval makes some sense, but instead I'm opting for
+          doubles, for the following reasons:
+          A) This way a reversed portion may be specified
+          B) Performance might be a bit better for piecewise and such
+          C) Interval version provided below
+         */
+        t = portion(t, d, d);
+    }
+};
+
+template <typename T>
+inline T portion(const T& t, const Interval& i) { return portion(t, i.min(), i.max()); }
+
+template <typename T>
+struct NearConcept {
+    T a, b;
+    double tol;
+    bool res;
+    void constraints() {
+        res = near(a, b, tol);
     }
 };
 

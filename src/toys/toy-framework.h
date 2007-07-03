@@ -4,6 +4,7 @@
 #include <cairo.h>
 #include <vector>
 
+#include "assert.h"
 #include "interactive-bits.h"
 #include "point.h"
 #include "geom.h"

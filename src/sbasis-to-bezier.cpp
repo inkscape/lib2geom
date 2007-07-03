@@ -36,14 +36,13 @@ double W(unsigned n, unsigned j, unsigned k) {
 std::vector<double>
 sbasis_to_bezier(SBasis const &B, unsigned q) {
     std::vector<double> result;
-    unsigned n = q*2;
     if(q == 0) {
         q = B.size();
-        n = q*2;
         /*if(B.back()[0] == B.back()[1]) {
             n--;
             }*/
     }
+    unsigned n = q*2;
     result.resize(n, 0);
     if(q > B.size())
         q = B.size();

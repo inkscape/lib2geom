@@ -30,7 +30,7 @@ compute_x_intercept(Geom::Point const *V, unsigned degree);
 
 const unsigned MAXDEPTH = 64;	/*  Maximum depth for recursion */
 
-const double EPSILON = ldexp(1.0,-MAXDEPTH-1); /*Flatness control value */
+const double BEPSILON = ldexp(1.0,-MAXDEPTH-1); /*Flatness control value */
 
 unsigned total_steps, total_subs;
 
@@ -140,9 +140,9 @@ control_poly_flat_enough(Geom::Point const *V, /* Control points	*/
     for (unsigned i = 0; i < degree-1; i++) {
         const double d = distance[i];
         if (d < 0.0)
-            max_distance_below = MIN(max_distance_below, d);
+            max_distance_below = std::min(max_distance_below, d);
         if (d > 0.0)
-            max_distance_above = MAX(max_distance_above, d);
+            max_distance_above = std::max(max_distance_above, d);
     }
 
     const double intercept_1 = (c + max_distance_above) / -a;
@@ -154,7 +154,7 @@ control_poly_flat_enough(Geom::Point const *V, /* Control points	*/
 
     const double error = 0.5 * (right_intercept - left_intercept);
     
-    if (error < EPSILON)
+    if (error < BEPSILON)
         return 1;
     
     return 0;

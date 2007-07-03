@@ -19,7 +19,6 @@
 
 //#include <glib/gmessages.h>
 
-#include "math-utils.h"
 #include "point.h"
 
 namespace Geom {
@@ -68,6 +67,10 @@ class Matrix {
         return *this;
     }
 
+    inline Coord operator[](unsigned const i) const { return _c[i]; }
+    inline Coord &operator[](unsigned const i) { return _c[i]; }
+
+
     Point xAxis() const;
     Point yAxis() const;
     Point translation() const;
@@ -75,27 +78,29 @@ class Matrix {
     void setYAxis(Point const &vec);
     void setTranslation(Point const &loc);
 
-    bool isIdentity(Coord eps = Geom_EPSILON) const;
-    bool isTranslation(Coord eps = Geom_EPSILON) const;
-    bool isRotation(double eps = Geom_EPSILON) const;
-    bool isScale(double eps = Geom_EPSILON) const;
-    bool isUniformScale(double eps = Geom_EPSILON) const;
+    double expansionX() const;
+    double expansionY() const;
+    void setExpansionX(double val);
+    void setExpansionY(double val);
+
+    void setIdentity();
+
+    bool isIdentity(Coord eps = EPSILON) const;
+    bool isTranslation(Coord eps = EPSILON) const;
+    bool isRotation(double eps = EPSILON) const;
+    bool isScale(double eps = EPSILON) const;
+    bool isUniformScale(double eps = EPSILON) const;
+
+    Matrix without_translation() const;
 
     Matrix inverse() const;
 
-    inline Coord operator[](unsigned const i) const { return _c[i]; }
-    inline Coord &operator[](unsigned const i) { return _c[i]; }
-
-    void setIdentity();
-	
     Coord det() const;
     Coord descrim2() const;
     Coord descrim() const;
-
-    //TODO: change to get/set_x/y_length?
-    double expansionX() const;
-    double expansionY() const;
 };
+
+Matrix operator*(Matrix const &a, Matrix const &b);
 
 /** A function to print out the Matrix (for debugging) */
 inline std::ostream &operator<< (std::ostream &out_file, const Geom::Matrix &m) {
@@ -103,8 +108,6 @@ inline std::ostream &operator<< (std::ostream &out_file, const Geom::Matrix &m) 
     out_file << "B: " << m[1] << "  D: " << m[3] << "  F: " << m[5] << "\n";
     return out_file;
 }
-
-extern void assert_close(Matrix const &a, Matrix const &b);
 
 /** Given a matrix m such that unit_circle = m*x, this returns the
  * quadratic form x*A*x = 1. */
@@ -115,7 +118,7 @@ Matrix elliptic_quadratic_form(Matrix const &m);
 class Eigen{
 public:
     Point vectors[2];
-    Point values;    //TODO: Shouldn't be Point?
+    double values[2];
     Eigen(Matrix const &m);
 };
 
@@ -129,19 +132,15 @@ inline Matrix identity() {
                   0.0, 0.0);
 }
 
-Matrix without_translation(Matrix const &m);
-
 inline bool operator==(Matrix const &a, Matrix const &b) {
     for(unsigned i = 0; i < 6; ++i) {
-        if ( a[i] != b[i] ) {
-            return false;
-        }
+        if ( a[i] != b[i] ) return false;
     }
     return true;
 }
-
 inline bool operator!=(Matrix const &a, Matrix const &b) { return !( a == b ); }
-Matrix operator*(Matrix const &a, Matrix const &b);
+
+
 
 } /* namespace Geom */
 

@@ -28,12 +28,14 @@
  *
  */
 
+#include "sbasis-to-bezier.h"
 #include "svg-path.h"
 
 namespace Geom {
 
 void output(Curve const &curve, SVGPathSink &sink) {
-    // FIXME -- convert to bezier from sbasis
+    std::vector<Point> pts = sbasis_to_bezier(curve.sbasis(), 2); //TODO: use something better!
+    sink.curveTo(pts[0], pts[1], pts[2]);
 }
 
 void output(LineSegment const &curve, SVGPathSink &sink) {

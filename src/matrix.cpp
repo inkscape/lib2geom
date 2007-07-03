@@ -12,42 +12,11 @@
  * This code is in public domain
  */
 
+#include "math-utils.h"
 #include "matrix.h"
 #include "point.h"
 
 namespace Geom {
-
-/** Attempts to calculate the inverse of a matrix.
- *  This is a Matrix such that m * m.inverse() is very near (hopefully < epsilon difference) the identity Matrix.
- *  \textbf{The Identity Matrix is returned if the matrix has no inverse.}
- \return The inverse of the Matrix if defined, otherwise the Identity Matrix.
- */
-Matrix Matrix::inverse() const {
-    Matrix d;
-
-    Geom::Coord const determ = det();
-    if (!Geom_DF_TEST_CLOSE(determ, 0.0, Geom_EPSILON)) {
-        Geom::Coord const ideterm = 1.0 / determ;
-
-        d._c[0] =  _c[3] * ideterm;
-        d._c[1] = -_c[1] * ideterm;
-        d._c[2] = -_c[2] * ideterm;
-        d._c[3] =  _c[0] * ideterm;
-        d._c[4] = -_c[4] * d._c[0] - _c[5] * d._c[2];
-        d._c[5] = -_c[4] * d._c[1] - _c[5] * d._c[3];
-    } else {
-        d.setIdentity();
-    }
-
-    return d;
-}
-
-/** Sets this matrix to be the Identity Matrix. */
-void Matrix::setIdentity() {
-    _c[0] = 1.0; _c[1] = 0.0;
-    _c[2] = 0.0; _c[3] = 1.0;
-    _c[4] = 0.0; _c[5] = 0.0;
-}
 
 /** Creates a Matrix given an axis and origin point.
  *  The axis is represented as two vectors, which represent skew, rotation, and scaling in two dimensions.
@@ -64,6 +33,152 @@ Matrix from_basis(Point const x_basis, Point const y_basis, Point const offset) 
     return Matrix(x_basis[X], x_basis[Y],
                   y_basis[X], y_basis[Y],
                   offset [X], offset [Y]);
+}
+
+Point Matrix::xAxis() const {
+    return Point(_c[0], _c[1]);
+}
+
+Point Matrix::yAxis() const {
+    return Point(_c[2], _c[3]);
+}
+
+/** Gets the translation imparted by the Matrix.
+ */
+Point Matrix::translation() const {
+    return Point(_c[4], _c[5]);
+}
+
+void Matrix::setXAxis(Point const &vec) {
+    for(int i = 0; i < 2; i++)
+        _c[i] = vec[i];
+}
+
+void Matrix::setYAxis(Point const &vec) {
+    for(int i = 0; i < 2; i++)
+        _c[i + 2] = vec[i];
+}
+
+/** Sets the translation imparted by the Matrix.
+ */
+void Matrix::setTranslation(Point const &loc) {
+    for(int i = 0; i < 2; i++)
+        _c[i + 4] = loc[i];
+}
+
+/** Calculates the amount of x-scaling imparted by the Matrix.  This is the scaling applied to
+ *  the original x-axis region.  It is \emph{not} the overall x-scaling of the transformation.
+ *  Equivalent to L2(m.xAxis())
+ */
+double Matrix::expansionX() const {
+    return sqrt(_c[0] * _c[0] + _c[1] * _c[1]);
+}
+
+/** Calculates the amount of y-scaling imparted by the Matrix.  This is the scaling applied before
+ *  the other transformations.  It is \emph{not} the overall y-scaling of the transformation. 
+ *  Equivalent to L2(m.yAxis())
+ */
+double Matrix::expansionY() const {
+    return sqrt(_c[2] * _c[2] + _c[3] * _c[3]);
+}
+
+void Matrix::setExpansionX(double val) {
+    double exp_x = expansionX();
+    if(!near(exp_x, 0.0)) {  //TODO: best way to deal with it is to skip op?
+        double coef = val / expansionX();
+        for(unsigned i=0;i<2;i++) _c[i] *= coef;
+    }
+}
+
+void Matrix::setExpansionY(double val) {
+    double exp_y = expansionY();
+    if(!near(exp_y, 0.0)) {  //TODO: best way to deal with it is to skip op?
+        double coef = val / expansionY();
+        for(unsigned i=2;i<4;i++) _c[i] *= coef;
+    }
+}
+
+/** Sets this matrix to be the Identity Matrix. */
+void Matrix::setIdentity() {
+    _c[0] = 1.0; _c[1] = 0.0;
+    _c[2] = 0.0; _c[3] = 1.0;
+    _c[4] = 0.0; _c[5] = 0.0;
+}
+
+bool Matrix::isIdentity(Coord const eps) const {
+    return near(_c[0], 1.0) && near(_c[1], 0.0) &&
+           near(_c[2], 0.0) && near(_c[3], 1.0) &&
+           near(_c[4], 0.0) && near(_c[5], 0.0);
+}
+
+/** Answers the question "Does this matrix perform a translation, and \em{only} a translation?"
+ \param eps an epsilon value defaulting to EPSILON
+ \return A bool representing yes/no.
+ */
+bool Matrix::isTranslation(Coord const eps) const {
+    return near(_c[0], 1.0) && near(_c[1], 0.0) &&
+           near(_c[2], 0.0) && near(_c[3], 1.0) &&
+           !near(_c[4], 0.0) && !near(_c[5], 0.0);
+}
+
+/** Answers the question "Does this matrix perform a scale, and \em{only} a Scale?"
+ \param eps an epsilon value defaulting to EPSILON
+ \return A bool representing yes/no.
+ */
+bool Matrix::isScale(Coord const eps) const {
+    return !near(_c[0], 1.0) || !near(_c[3], 1.0) &&  //NOTE: these are the diags, and the next line opposite diags
+           near(_c[1], 0.0) && near(_c[2], 0.0) && 
+           near(_c[4], 0.0) && near(_c[5], 0.0);
+}
+
+/** Answers the question "Does this matrix perform a uniform scale, and \em{only} a uniform scale?"
+ \param eps an epsilon value defaulting to EPSILON
+ \return A bool representing yes/no.
+ */
+bool Matrix::isUniformScale(Coord const eps) const {
+    return !near(_c[0], 1.0) && near(_c[0], _c[3]) &&
+           near(_c[1], 0.0) && near(_c[2], 0.0) &&  
+           near(_c[4], 0.0) && near(_c[5], 0.0);
+}
+
+/** Answers the question "Does this matrix perform a rotation, and \em{only} a rotation?"
+ \param eps an epsilon value defaulting to EPSILON
+ \return A bool representing yes/no.
+ */
+bool Matrix::isRotation(Coord const eps) const {
+    return !near(_c[0], _c[3]) && near(_c[1], -_c[2]) &&
+           near(_c[4], 0.0) && near(_c[5], 0.0) &&
+           near(_c[0]*_c[0] + _c[1]*_c[1], 1.0);
+}
+
+/** Returns the Scale/Rotate/skew part of the matrix without the translation part. */
+Matrix Matrix::without_translation() const {
+    return Matrix(_c[0], _c[1], _c[2], _c[3], 0, 0);
+}
+
+/** Attempts to calculate the inverse of a matrix.
+ *  This is a Matrix such that m * m.inverse() is very near (hopefully < epsilon difference) the identity Matrix.
+ *  \textbf{The Identity Matrix is returned if the matrix has no inverse.}
+ \return The inverse of the Matrix if defined, otherwise the Identity Matrix.
+ */
+Matrix Matrix::inverse() const {
+    Matrix d;
+
+    Geom::Coord const determ = det();
+    if (!near(determ, 0.0)) {
+        Geom::Coord const ideterm = 1.0 / determ;
+
+        d._c[0] =  _c[3] * ideterm;
+        d._c[1] = -_c[1] * ideterm;
+        d._c[2] = -_c[2] * ideterm;
+        d._c[3] =  _c[0] * ideterm;
+        d._c[4] = -_c[4] * d._c[0] - _c[5] * d._c[2];
+        d._c[5] = -_c[4] * d._c[1] - _c[5] * d._c[3];
+    } else {
+        d.setIdentity();
+    }
+
+    return d;
 }
 
 /** Calculates the determinant of a Matrix. */
@@ -83,138 +198,24 @@ Geom::Coord Matrix::descrim() const {
     return sqrt(descrim2());
 }
 
-Point Matrix::xAxis() const {
-    return Point(_c[0], _c[1]);
-}
-
-Point Matrix::yAxis() const {
-    return Point(_c[2], _c[3]);
-}
-
-void Matrix::setXAxis(Point const &vec) {
-    for(int i = 0; i < 2; i++)
-        _c[i] = vec[i];
-}
-
-void Matrix::setYAxis(Point const &vec) {
-    for(int i = 0; i < 2; i++)
-        _c[i + 2] = vec[i];
-}
-
-/** Calculates the amount of x-scaling imparted by the Matrix.  This is the scaling applied before
- *  the other transformations.  It is \emph{not} the overall x-scaling of the transformation.
- *  Equivalent to L2(m.expansionX())
- */
-double Matrix::expansionX() const {
-    return sqrt(_c[0] * _c[0] + _c[1] * _c[1]);
-}
-
-/** Calculates the amount of y-scaling imparted by the Matrix.  This is the scaling applied before
- *  the other transformations.  It is \emph{not} the overall y-scaling of the transformation. 
- */
-double Matrix::expansionY() const {
-    return sqrt(_c[2] * _c[2] + _c[3] * _c[3]);
-}
-
-/** Gets the translation imparted by the Matrix.
- */
-Point Matrix::translation() const {
-    return Point(_c[4], _c[5]);
-}
-
-/** Sets the translation imparted by the Matrix.
- */
-void Matrix::setTranslation(Point const &loc) {
-    for(int i = 0; i < 2; i++)
-        _c[i + 4] = loc[i];
-}
-
-bool Matrix::isIdentity(Coord const eps) const {
-    return (fabs(_c[0] - 1.0) < eps &&
-            fabs(_c[1])       < eps &&
-            fabs(_c[2])       < eps &&
-            fabs(_c[3] - 1.0) < eps &&
-            fabs(_c[4])       < eps &&
-            fabs(_c[5])       < eps );
-}
-
-/** Answers the question "Does this matrix perform a translation, and \em{only} a translation?"
- \param eps an epsilon value defaulting to Geom_EPSILON
- \return A bool representing yes/no.
- */
-bool Matrix::isTranslation(Coord const eps) const {
-    return (fabs(_c[0] - 1.0) < eps &&
-            fabs(_c[1])       < eps &&
-            fabs(_c[2])       < eps &&
-            fabs(_c[3] - 1.0) < eps &&
-            fabs(_c[4])       > eps &&
-            fabs(_c[5])       > eps );
-}
-
-/** Answers the question "Does this matrix perform a scale, and \em{only} a Scale?"
- \param eps an epsilon value defaulting to Geom_EPSILON
- \return A bool representing yes/no.
- */
-bool Matrix::isScale(Coord const eps) const {
-    return (fabs(_c[0] - 1.0) > eps && 
-            fabs(_c[1])       < eps &&
-            fabs(_c[2])       < eps &&
-            fabs(_c[3] - 1.0) > eps &&
-            fabs(_c[4])       < eps &&
-            fabs(_c[5])       < eps );
-}
-
-/** Answers the question "Does this matrix perform a uniform scale, and \em{only} a uniform scale?"
- \param eps an epsilon value defaulting to Geom_EPSILON
- \return A bool representing yes/no.
- */
-bool Matrix::isUniformScale(Coord const eps) const {
-    return (fabs(_c[0] - 1.0) > eps &&
-            fabs(_c[0]-_c[3]) < eps &&
-            fabs(_c[1])       < eps &&
-            fabs(_c[2])       < eps &&
-            fabs(_c[4])       < eps &&
-            fabs(_c[5])       < eps);
-}
-
-/** Answers the question "Does this matrix perform a rotation, and \em{only} a rotation?"
- \param eps an epsilon value defaulting to Geom_EPSILON
- \return A bool representing yes/no.
- */
-bool Matrix::isRotation(Coord const eps) const {
-    return ( fabs(_c[0] - _c[3]) < eps &&
-             fabs(_c[1] + _c[2]) < eps &&
-             fabs(_c[4])         < eps &&
-             fabs(_c[5])         < eps &&
-             fabs(xAxis().length() - 1) < eps &&
-             fabs(yAxis().length() - 1) < eps);
-}
-
-/**
- *  A home-made assertion.  Stop if the two matrixes are not 'close' to
- *  each other.
- */
-void assert_close(Matrix const &a, Matrix const &b) {
-    for(int i = 0; i < 6; i++) {
-        if(fabs(a[i] - b[i]) > 1e-3) {
-            fprintf(stderr,
-              "a = | %g %g |,\tb = | %g %g |\n"
-              "    | %g %g | \t    | %g %g |\n"
-              "    | %g %g | \t    | %g %g |\n",
-             a[0], a[1], b[0], b[1],
-             a[2], a[3], b[2], b[3],
-             a[4], a[5], b[4], b[5]);
-            abort();
+Matrix operator*(Matrix const &m0, Matrix const &m1) {
+    Matrix ret;
+    for(int a = 0; a < 5; a += 2) {
+        for(int b = 0; b < 2; b++) {
+            ret[a + b] = m0[a] * m1[b] + m0[a + 1] * m1[b + 2];
         }
     }
+    ret[4] += m1[4];
+    ret[5] += m1[5];
+    return ret;
 }
 
+//TODO: What's this!?!
 Matrix elliptic_quadratic_form(Matrix const &m) {
     double const od = m[0] * m[1]  +  m[2] * m[3];
     return Matrix(m[0]*m[0] + m[1]*m[1], od,
                   od, m[2]*m[2] + m[3]*m[3],
                   0, 0);
-    //TODO: include position?
 }
 
 Eigen::Eigen(Matrix const &m) {
@@ -222,19 +223,10 @@ Eigen::Eigen(Matrix const &m) {
     double const C = m[0]*m[3] - m[1]*m[2];
     double const center = -B/2.0;
     double const delta = sqrt(B*B-4*C)/2.0;
-    values = Point(center + delta, center - delta);
+    values[0] = center + delta; values[1] = center - delta;
     for (int i = 0; i < 2; i++) {
         vectors[i] = unit_vector(rot90(Point(m[0]-values[i], m[1])));
     }
-}
-
-//TODO: possibly others?
-/** Returns just the Scale/Rotate/skew part of the matrix without the translation part. */
-Matrix without_translation(Matrix const &m) {
-    Matrix const ret(m[0], m[1],
-                     m[2], m[3],
-                     0, 0);
-    return ret;
 }
 
 }  //namespace Geom
