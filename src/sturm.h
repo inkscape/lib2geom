@@ -1,5 +1,5 @@
 #include "poly.h"
-#include "math-utils.h"
+#include "utils.h"
 
 class sturm : public std::vector<Poly>{
 public:

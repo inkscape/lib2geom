@@ -1,8 +1,7 @@
 #ifndef MATH_UTILS_HEADER
 #define MATH_UTILS_HEADER
 
-/** Math utilities scrounged from parts of 2geom as well as some code found via Krugle -
- *  Game Boy Xport's mathutils.h .
+/** Various utility functions.
  *
  * Copyright 2006 Michael G. Sloan <mgsloan@gmail.com>
  *
@@ -32,6 +31,12 @@
  */
 
 #include <cmath>
+#include <stdexcept>
+
+class NotImplemented : public std::logic_error {
+public:
+  NotImplemented() : std::logic_error("method not implemented") {}
+};
 
 /** Sign function - indicates the sign of a numeric type.  -1 indicates negative, 1 indicates
  *  positive, and 0 indicates, well, 0.  Mathsy people will know this is basically the derivative
@@ -43,7 +48,7 @@ template <class T> inline T sqr(const T& x) {return x * x;}
 template <class T> inline T cube(const T& x) {return x * x * x;}
 
 /** Between function - returns true if a number x is within a range. The values delimiting the
- *  range, as well as the number must have the same type.
+ *  range and the number must have the same type.
  */
 template <class T> inline const T& between (const T& min, const T& max, const T& x)
     { return min < x && max > x; }

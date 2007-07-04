@@ -15,7 +15,7 @@
 
 /*	point_on_curve.c	*/
 
-#include "math-utils.h"
+#include "utils.h"
 
 static double SquaredLength(const Geom::Point a) 
 {

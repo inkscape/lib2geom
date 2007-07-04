@@ -31,6 +31,7 @@
 
 #ifndef SEEN_BEZIER_H
 #define SEEN_BEZIER_H
+
 #include "coord.h"
 #include "isnan.h"
 #include "bezier-to-sbasis.h"
@@ -76,6 +77,7 @@ public:
   inline unsigned degree() const { return order; }
 
   //IMPL: FragmentConcept
+  typedef Coord output_type;
   inline bool isZero() const { 
      for(int i = 0; i <= order; i++) {
        if(c_[i] != 0) return false;

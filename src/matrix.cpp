@@ -12,7 +12,7 @@
  * This code is in public domain
  */
 
-#include "math-utils.h"
+#include "utils.h"
 #include "matrix.h"
 #include "point.h"
 

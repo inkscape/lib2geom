@@ -38,8 +38,8 @@
 #include <stdexcept>
 #include "d2.h"
 #include "bezier-to-sbasis.h"
+#include "utils.h"
 
-#include "not-implemented.h"
 namespace Geom {
 
 class Path;

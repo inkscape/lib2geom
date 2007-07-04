@@ -8,7 +8,7 @@
 #include <iostream>
 
 #include "coord.h"
-#include "math-utils.h"
+#include "utils.h"
 
 namespace Geom {
 
