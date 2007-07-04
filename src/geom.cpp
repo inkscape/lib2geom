@@ -196,7 +196,7 @@ int centroid(std::vector<Geom::Point> p, Geom::Point& centroid, double &area) {
     for (unsigned i = n-1, j = 0; j < n; i = j, j++) {
         const double ai = -cross(p[j], p[i]);
         atmp += ai;
-        centroid_tmp += ai*(p[j] + p[i]); // first moment.
+        centroid_tmp += (p[j] + p[i])*ai; // first moment.
     }
     area = atmp / 2;
     if (atmp != 0) {

@@ -41,9 +41,6 @@ namespace Geom {
 
 //forward decls
 template <typename T> class D2;
-class SBasis;
-class Interval;
-class Point;
 
 template <typename T> struct ResultTraits;
 

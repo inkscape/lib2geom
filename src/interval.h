@@ -66,10 +66,10 @@ public:
     }
     double& operator[](unsigned i) { return _b[i]; }  //Trust the user...
 
-    inline Coord min() const { return _b[0]; }
-    inline Coord max() const { return _b[1]; }
-    inline Coord extent() const { return _b[1] - _b[0]; }
-    inline Coord middle() const { return (_b[1] + _b[0]) * 0.5; }
+    Coord min() const { return _b[0]; }
+    Coord max() const { return _b[1]; }
+    Coord extent() const { return _b[1] - _b[0]; }
+    Coord middle() const { return (_b[1] + _b[0]) * 0.5; }
 
     bool isEmpty() const { return _b[0] == _b[1]; }
     bool contains(Coord val) const { return _b[0] <= val && val <= _b[1]; }
@@ -85,32 +85,32 @@ public:
         return result;
     }
 
-    inline bool operator==(Interval other) { return _b[0] == other._b[0] && _b[1] == other._b[1]; }
-    inline bool operator!=(Interval other) { return _b[0] != other._b[0] || _b[1] != other._b[1]; }
+    bool operator==(Interval other) { return _b[0] == other._b[0] && _b[1] == other._b[1]; }
+    bool operator!=(Interval other) { return _b[0] != other._b[0] || _b[1] != other._b[1]; }
 
     //IMPL: OffsetableConcept
     //TODO: rename output_type to something else in the concept
     typedef Coord output_type;
-    inline Interval operator+(Coord amnt) {
+    Interval operator+(Coord amnt) {
         return Interval(_b[0] + amnt, _b[1] + amnt);
     }
-    inline Interval operator-(Coord amnt) {
+    Interval operator-(Coord amnt) {
         return Interval(_b[0] - amnt, _b[1] - amnt);
     }
-    inline Interval operator+=(Coord amnt) {
+    Interval operator+=(Coord amnt) {
         _b[0] += amnt; _b[1] += amnt;
         return *this;
     }
-    inline Interval operator-=(Coord amnt) {
+    Interval operator-=(Coord amnt) {
         _b[0] -= amnt; _b[1] -= amnt;
         return *this;
     }
 
     //IMPL: ScalableConcept
-    inline Interval operator-() const { return Interval(*this); }
-    inline Interval operator*(Coord s) const { return Interval(_b[0]*s, _b[1]*s); }
-    inline Interval operator/(Coord s) const { return Interval(_b[0]/s, _b[1]/s); }
-    inline Interval operator*=(Coord s) {
+    Interval operator-() const { return Interval(*this); }
+    Interval operator*(Coord s) const { return Interval(_b[0]*s, _b[1]*s); }
+    Interval operator/(Coord s) const { return Interval(_b[0]/s, _b[1]/s); }
+    Interval operator*=(Coord s) {
         if(s < 0) {
             Coord temp = _b[0];
             _b[0] = _b[1]*s;
@@ -121,7 +121,7 @@ public:
         }
         return *this;
     }
-    inline Interval operator/=(Coord s) {
+    Interval operator/=(Coord s) {
         //TODO: what about s=0?
         if(s < 0) {
             Coord temp = _b[0];
@@ -137,7 +137,7 @@ public:
     //TODO: NaN handleage for the next two?
     //TODO: Evaluate if wrap behaviour is proper.
     //If val > max, then rather than becoming a min==max range, it 'wraps' over
-    inline void setMin(Coord val) {
+    void setMin(Coord val) {
         if(val > _b[1]) {
             _b[0] = _b[1];
             _b[1] = val;
@@ -145,9 +145,8 @@ public:
             _b[0] = val;
         }
     }
-
     //If val < min, then rather than becoming a min==max range, it 'wraps' over
-    inline void setMax(Coord val) {
+    void setMax(Coord val) {
         if(val < _b[0]) {
             _b[1] = _b[0];
             _b[0] = val;
@@ -156,17 +155,17 @@ public:
         }
     }
 
-    inline void extendTo(Coord val) {
+    void extendTo(Coord val) {
        if(val < _b[0]) _b[0] = val;
        if(val > _b[1]) _b[1] = val;  //no else, as we want to handle NaN
     }
 
-    inline void expandBy(double amnt) {
+    void expandBy(double amnt) {
         _b[0] -= amnt;
         _b[1] += amnt;
     }
 
-    inline void unionWith(const Interval & a) {
+    void unionWith(const Interval & a) {
         if(a._b[0] < _b[0]) _b[0] = a._b[0];
         if(a._b[1] > _b[1]) _b[1] = a._b[1];
     }

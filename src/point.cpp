@@ -51,7 +51,7 @@ void Point::normalize() {
             break;
         }
         case 2: {
-            *this = sqrt(0.5) * tmp;
+            *this = tmp * sqrt(0.5);
             break;
         }
 	}
@@ -122,13 +122,6 @@ Point unit_vector(Point const &a)
 {
     Point ret(a);
     ret.normalize();
-    return ret;
-}
-
-Coord cross(Point const &a, Point const &b) {
-    Coord ret = 0;
-    ret -= a[0] * b[1];
-    ret += a[1] * b[0];
     return ret;
 }
 

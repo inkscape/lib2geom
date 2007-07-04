@@ -353,8 +353,7 @@ unsigned Geom::centroid(Piecewise<D2<SBasis> > const &p, Point& centroid, double
     Point final = p[p.size()].at1(), initial = p[0].at0();
     const double ai = cross(final, initial);
     atmp += ai;
-    //TODO: what's going on here? this is from the original code...
-    centroid_tmp += ai*(final, initial); // first moment.
+    centroid_tmp += (final + initial)*ai; // first moment.
     
     area = atmp / 2;
     if (atmp != 0) {

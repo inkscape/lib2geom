@@ -57,6 +57,8 @@ class D2{
         f[Y] = b;
     }
 
+    //TODO: ask mental about operator= as seen in Point
+
     T& operator[](unsigned i)              { return f[i]; }
     T const & operator[](unsigned i) const { return f[i]; }
 
@@ -281,12 +283,11 @@ cross(D2<T> const & a, D2<T> const & b) {
     boost::function_requires<ScalableConcept<T> >();
     boost::function_requires<MultiplicableConcept<T> >();
 
-    //TODO: check sign conventions...
-    return a[0] * b[1] - a[1] * b[0];
+    return a[1] * b[0] - a[0] * b[1];
 }
 
 
-//TODO: remove/change to cw/ccw?
+//equivalent to cw/ccw, for use in situations where rotation direction doesn't matter.
 template <typename T>
 inline D2<T>
 rot90(D2<T> const & a) {

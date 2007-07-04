@@ -80,31 +80,42 @@ class Point {
 
     void normalize();
 
+    inline Point operator+(Point const &o) const {
+        return Point(_pt[X] + o._pt[X], _pt[Y] + o._pt[Y]);
+    }
+    inline Point operator-(Point const &o) const {
+        return Point(_pt[X] - o._pt[X], _pt[Y] - o._pt[Y]);
+    }
     inline Point &operator+=(Point const &o) {
         for ( unsigned i = 0 ; i < 2 ; ++i ) {
             _pt[i] += o._pt[i];
         }
         return *this;
-    }
-  
+    }  
     inline Point &operator-=(Point const &o) {
         for ( unsigned i = 0 ; i < 2 ; ++i ) {
             _pt[i] -= o._pt[i];
         }
         return *this;
     }
-  
-    inline Point &operator/=(double const s) {
-        for ( unsigned i = 0 ; i < 2 ; ++i ) {
-            _pt[i] /= s;
-        }
+
+    inline Point operator-() const {
+        return Point(-_pt[X], -_pt[Y]);
+    }
+    inline Point operator*(double const s) const {
+        return Point(_pt[X] * s, _pt[Y] * s);
+    }
+    inline Point operator/(double const s) const {
+        //TODO: s == 0?
+        return Point(_pt[X] / s, _pt[Y] / s);
+    }
+    inline Point &operator*=(double const s) {
+        for ( unsigned i = 0 ; i < 2 ; ++i ) _pt[i] *= s;
         return *this;
     }
-
-    inline Point &operator*=(double const s) {
-        for ( unsigned i = 0 ; i < 2 ; ++i ) {
-            _pt[i] *= s;
-        }
+    inline Point &operator/=(double const s) {
+        //TODO: s == 0?
+        for ( unsigned i = 0 ; i < 2 ; ++i ) _pt[i] /= s;
         return *this;
     }
 
@@ -117,24 +128,13 @@ class Point {
     friend inline std::ostream &operator<< (std::ostream &out_file, const Geom::Point &in_pnt);
 };
 
+inline Point operator*(double const s, Point const &p) { return p * s; }
+
 /** A function to print out the Point.  It just prints out the coords
     on the given output stream */
 inline std::ostream &operator<< (std::ostream &out_file, const Geom::Point &in_pnt) {
     out_file << "X: " << in_pnt[X] << "  Y: " << in_pnt[Y];
     return out_file;
-}
-
-
-inline Point operator+(Point const &a, Point const &b) {
-    Point ret(a);
-    ret += b;
-    return ret;
-}
-
-inline Point operator-(Point const &a, Point const &b) {
-    Point ret(a);
-    ret -= b;
-    return ret;
 }
 
 /** This is a rotation (sort of). */
@@ -144,48 +144,15 @@ inline Point operator^(Point const &a, Point const &b) {
     return ret;
 }
 
-inline Point operator-(Point const &a) {
-    Point ret;
-    for(unsigned i = 0; i < 2; i++) {
-        ret[i] = -a[i];
-    }
-    return ret;
+//IMPL: boost::EqualityComparableConcept
+inline bool operator==(Point const &a, Point const &b) {
+    return (a[X] == b[X]) && (a[Y] == b[Y]);
+}
+inline bool operator!=(Point const &a, Point const &b) {
+    return (a[X] != b[X]) || (a[Y] != b[Y]);
 }
 
-inline Point operator*(double const s, Point const &p) {
-    Point ret(p);
-    ret *= s;
-    return ret;
-}
-
-inline Point operator*(Point const &p, double const s) {
-    Point ret(p);
-    ret *= s;
-    return ret;
-}
-
-inline Point operator/(Point const &p, double const s) {
-    Point ret(p);
-    ret /= s;
-    return ret;
-}
-
-inline Point operator/(double const s, Point const &p) {
-    Point ret;
-    for(int i = 0; i < 2; i++) {
-        ret[i] = s / p[i];
-    }
-    return ret;
-}
-
-inline bool operator==(Point const &a, Point const &b)
-{ return ( ( a[X] == b[X] ) && ( a[Y] == b[Y] ) ); }
-
-inline bool operator!=(Point const &a, Point const &b)
-{ return ( ( a[X] != b[X] ) || ( a[Y] != b[Y] ) ); }
-
-/** This is a lexicographical ordering for points.  It is remarkably useful for sweepline
- * algorithms*/
+/** This is a lexicographical ordering for points.  It is remarkably useful for sweepline algorithms*/
 inline bool operator<=(Point const &a, Point const &b) {
     return ( ( a[Y] < b[Y] ) ||
              (( a[Y] == b[Y] ) && ( a[X] < b[X] )));
@@ -207,6 +174,7 @@ extern double atan2(Point const p);
 /** compute the angle turning from a to b (signed). */
 extern double angle_between(Point const a, Point const b);
 
+//IMPL: NearConcept
 inline bool near(Point const &a, Point const &b, double const eps=EPSILON) {
     return ( near(a[X],b[X],eps) && near(a[Y],b[Y],eps) );
 }
@@ -224,27 +192,20 @@ inline Point rot90(Point const &p) { return Point(-p[Y], p[X]); }
 
 /** Given two points and a parameter t \in [0, 1], return a point
  * proportionally from a to b by t.  Akin to 1 degree bezier.*/
-inline Point Lerp(double const t, Point const a, Point const b) { return ((1 - t) * a + t * b); }
+inline Point Lerp(double const t, Point const a, Point const b) { return (a * (1 - t) + b * t); }
 
 Point unit_vector(Point const &a);
 
 /** compute the dot product (inner product) between the vectors a and b. */
-inline Coord dot(Point const &a, Point const &b) {
-    Coord ret = 0;
-    for ( int i = 0 ; i < 2 ; i++ ) {
-        ret += a[i] * b[i];
-    }
-    return ret;
-}
+inline Coord dot(Point const &a, Point const &b) { return a[0] * b[0] + a[1] * b[1]; }
+/** Defined as dot(a, b.cw()). */
+inline Coord cross(Point const &a, Point const &b) { return dot(a, b.cw()); }
 
 /** compute the euclidean distance between points a and b.  TODO: hypot safer/faster? */
 inline Coord distance (Point const &a, Point const &b) { return L2(a - b); }
 
 /** compute the square of the distance between points a and b. */
 inline Coord distanceSq (Point const &a, Point const &b) { return L2sq(a - b); }
-
-/** Defined as dot(a, b.cw()). */
-Coord cross(Point const &a, Point const &b);
 
 Point abs(Point const &b);
 
