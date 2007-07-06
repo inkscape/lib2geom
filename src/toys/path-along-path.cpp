@@ -29,15 +29,15 @@ class PathAlongPathToy: public Toy {
         cairo_stroke(cr);
 
         handles[8][0]=150;
-        Geom::Point O = *(handles.begin()+8);
+        Geom::Point origin = *(handles.begin()+8);
 
         Piecewise<D2<SBasis> > uskeleton = arc_length_parametrization(Piecewise<D2<SBasis> >(skeleton),2,.1);
         uskeleton = remove_short_cuts(uskeleton,.01);
         Piecewise<D2<SBasis> > n = rot90(derivative(uskeleton));
         n = force_continuity(remove_short_cuts(n,.1));
         
-        Piecewise<SBasis> x=Piecewise<SBasis>(pattern[0]-O[0]);
-        Piecewise<SBasis> y=Piecewise<SBasis>(pattern[1]-O[1]);
+        Piecewise<SBasis> x=Piecewise<SBasis>(pattern[0]-origin[0]);
+        Piecewise<SBasis> y=Piecewise<SBasis>(pattern[1]-origin[1]);
         Interval pattBnds = bounds_exact(x);
         int nbCopies = int(uskeleton.cuts.back()/pattBnds.extent());
 

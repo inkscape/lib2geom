@@ -19,3 +19,12 @@ Check whether ragel's dir is set correctly in mingwenv.bat (RAGEL_BIN).
 Make sure you have ragel.exe and rlcodegen.exe in the dir you specify. 
 If your package does not contain rlcodegen.exe you can copy rlgen-cd.exe
 and rename it to rlcodegen.exe :-)
+
+TROUBLESHOOTING
+If things don't work out, here is a list of things you can try.
+1. Type  'make --version'. It should display:
+        E:\inkscapelpe>make --version
+        GNU Make 3.80
+        Copyright (C) 2002  Free Software Foundation, Inc.
+   Or something very similar. If it does not, probably windows finds a different make (Borland's or another?).
+   Type 'set path=', then start again with mingwenv.bat etc...
