@@ -36,6 +36,7 @@
 #include <map>
 
 #include "concepts.h"
+#include "isnan.h"
 #include <boost/concept_check.hpp>
 
 namespace Geom {
@@ -122,6 +123,7 @@ class Piecewise {
      */
     inline double segT(double t, int i = -1) const {
         if(i == -1) i = segN(t);
+        assert(i >= 0);
         return (t - cuts[i]) / (cuts[i+1] - cuts[i]);
     }
 
@@ -131,6 +133,7 @@ class Piecewise {
 
     //Offsets the piecewise domain
     inline void offsetDomain(double o) {
+        assert(is_finite(o));
         if(o != 0)
             for(unsigned i = 0; i <= size(); i++)
                 cuts[i] += o;
@@ -367,10 +370,11 @@ Piecewise<T> portion(const Piecewise<T> &pw, double from, double to) {
 
 template<typename T>
 Piecewise<T> remove_short_cuts(Piecewise<T> const &f, double tol) {
+    if(f.empty()) return f;
     Piecewise<T> ret;
     ret.push_cut(f.cuts[0]);
     for(unsigned i=0; i<f.size(); i++){
-        if (f.cuts[i+1]-f.cuts[i] >= tol) {
+        if (f.cuts[i+1]-f.cuts[i] >= tol || i==f.size()-1) {
             ret.push(f[i], f.cuts[i+1]);
         }
     }
@@ -379,6 +383,7 @@ Piecewise<T> remove_short_cuts(Piecewise<T> const &f, double tol) {
 
 template<typename T>
 Piecewise<T> remove_short_cuts_extending(Piecewise<T> const &f, double tol) {
+    if(f.empty()) return f;
     Piecewise<T> ret;
     ret.push_cut(f.cuts[0]);
     double last = f.cuts[0]; // last cut included
@@ -553,15 +558,11 @@ Piecewise<T2> operator*(Piecewise<T1> const &a, Piecewise<T2> const &b) {
     return ret;
 }
 
-//TODO: operator/(pw, pw)
-
 template<typename T>
 inline Piecewise<T> operator*=(Piecewise<T> &a, Piecewise<T> const &b) {
     a = a * b;
     return a;
 }
-
-//TODO: operator/=(pw, pw)
 
 Piecewise<SBasis> divide(Piecewise<SBasis> const &a, Piecewise<SBasis> const &b, unsigned k);
 //TODO: replace divide(a,b,k) by divide(a,b,tol,k)?
@@ -576,7 +577,7 @@ divide(Piecewise<SBasis> const &a, SBasis const &b, double tol, unsigned k, doub
 Piecewise<SBasis> 
 divide(SBasis const &a, SBasis const &b, double tol, unsigned k, double zero=1.e-3);
 
-//Composition: functions called compose_foo are pieces of compose that are factored out in pw.cpp.
+//Composition: functions called compose_* are pieces of compose that are factored out in pw.cpp.
 std::map<double,unsigned> compose_pullback(std::vector<double> const &cuts, SBasis const &g);
 int compose_findSegIdx(std::map<double,unsigned>::iterator  const &cut,
                        std::map<double,unsigned>::iterator  const &next,
@@ -612,7 +613,7 @@ Piecewise<T> compose(Piecewise<T> const &f, SBasis const &g){
     std::map<double,unsigned>::iterator cut=cuts_pb.begin();
     std::map<double,unsigned>::iterator next=cut; next++;
     while(next!=cuts_pb.end()){
-        assert(std::abs(int((*cut).second-(*next).second))<1);
+        //assert(std::abs(int((*cut).second-(*next).second))<1);
         //TODO: find a way to recover from this error? the root finder missed some root;
         //  the levels/variations of f might be too close/fast...
         int idx = compose_findSegIdx(cut,next,levels,g);
@@ -629,7 +630,7 @@ Piecewise<T> compose(Piecewise<T> const &f, SBasis const &g){
     return(result);
 } 
 
-//TODO: add concept check
+//TODO: add concept check for following composition functions
 template<typename T>
 Piecewise<T> compose(Piecewise<T> const &f, Piecewise<SBasis> const &g){
   Piecewise<T> result;
@@ -641,14 +642,11 @@ Piecewise<T> compose(Piecewise<T> const &f, Piecewise<SBasis> const &g){
   return result;
 }
 
-//TODO: add concept check
 template <typename T>
 Piecewise<T> Piecewise<T>::operator()(SBasis f){return compose((*this),f);}
-//TODO: add concept check
 template <typename T>
 Piecewise<T> Piecewise<T>::operator()(Piecewise<SBasis>f){return compose((*this),f);}
 
-//TODO: add concept check.
 template<typename T>
 Piecewise<T> integral(Piecewise<T> const &a) {
     Piecewise<T> result;
@@ -663,7 +661,6 @@ Piecewise<T> integral(Piecewise<T> const &a) {
     return result;
 }
 
-//TODO: add concept check.
 template<typename T>
 Piecewise<T> derivative(Piecewise<T> const &a) {
     Piecewise<T> result;

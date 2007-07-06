@@ -33,7 +33,6 @@ convex-cover.h
 coord.h
 d2.h
 d2.cpp
-floating.h
 geom.cpp
 geom.h
 matrix.cpp

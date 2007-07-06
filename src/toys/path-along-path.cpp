@@ -34,9 +34,7 @@ class PathAlongPathToy: public Toy {
         Piecewise<D2<SBasis> > uskeleton = arc_length_parametrization(Piecewise<D2<SBasis> >(skeleton),2,.1);
         uskeleton = remove_short_cuts(uskeleton,.01);
         Piecewise<D2<SBasis> > n = rot90(derivative(uskeleton));
-        n = remove_short_cuts(n,.1);
-        n = force_continuity(n);
-
+        n = force_continuity(remove_short_cuts(n,.1));
         
         Piecewise<SBasis> x=Piecewise<SBasis>(pattern[0]-O[0]);
         Piecewise<SBasis> y=Piecewise<SBasis>(pattern[1]-O[1]);
@@ -46,17 +44,18 @@ class PathAlongPathToy: public Toy {
         //double pattWidth = uskeleton.cuts.back()/nbCopies;
         double pattWidth = pattBnds.extent();
         
+        double offs = 0;
         x-=pattBnds.min();
         //x*=pattWidth/pattBnds.extent();
         
         Piecewise<D2<SBasis> >output;
         for (int i=0; i<nbCopies; i++){
-            output.concat(compose(uskeleton,x)+y*compose(n,x));
-            x+=pattWidth;
+            output.concat(compose(uskeleton,x+offs)+y*compose(n,x+offs));
+            offs+=pattWidth;
         }
 
         //Perform cut for last segment
-        double tt = uskeleton.cuts.back();
+        double tt = uskeleton.cuts.back() - offs;
         if(tt > 0.) {
             vector<double> rs = roots(x - tt);
             rs.push_back(0); rs.push_back(1);  //regard endpoints
@@ -64,7 +63,7 @@ class PathAlongPathToy: public Toy {
             std::unique(rs.begin(), rs.end());
             //enumerate indices of sections to the left of the line
             for(unsigned i = (x[0].at0()>tt ? 1 : 0); i < rs.size()-1; i+=2) {
-                Piecewise<SBasis> port = portion(x, rs[i], rs[i+1]);
+                Piecewise<SBasis> port = portion(x+offs, rs[i], rs[i+1]);
                 output.concat(compose(uskeleton,port)+portion(y, rs[i], rs[i+1])*compose(n,port));
             }
         }
@@ -85,7 +84,7 @@ public:
                 handles.push_back(Geom::Point(100+uniform()*400,
                                               150+uniform()*100));
 
-            handles[0] = Geom::Point(150,150);
+            /*handles[0] = Geom::Point(150,150);
             handles[1] = Geom::Point(450,450);
             handles[2] = Geom::Point(150,450);
             handles[3] = Geom::Point(450,150);
@@ -93,7 +92,7 @@ public:
             handles[4] = Geom::Point(280,150);
             handles[5] = Geom::Point(290,170);
             handles[6] = Geom::Point(300,130);
-            handles[7] = Geom::Point(310,150);
+            handles[7] = Geom::Point(310,150);*/
 
             handles.push_back(Geom::Point(150,150));
         }

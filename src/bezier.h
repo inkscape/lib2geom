@@ -54,21 +54,25 @@ public:
 
   Bezier() {}
 
+  //Construct an order-0 bezier (constant Bézier)
   explicit Bezier(Coord c0) {
     assert_order<0>(this);
     c_[0] = c0;
   }
 
+  //Construct an order-1 bezier (linear Bézier)
   Bezier(Coord c0, Coord c1) {
     assert_order<1>(this);
     c_[0] = c0; c_[1] = c1;
   }
 
+  //Construct an order-2 bezier (quadratic Bézier)
   Bezier(Coord c0, Coord c1, Coord c2) {
     assert_order<2>(this);
     c_[0] = c0; c_[1] = c1; c_[2] = c2;
   }
 
+  //Construct an order-3 bezier (cubic Bézier)
   Bezier(Coord c0, Coord c1, Coord c2, Coord c3) {
     assert_order<3>(this);
     c_[0] = c0; c_[1] = c1; c_[2] = c2; c_[3] = c3;
@@ -119,6 +123,17 @@ Bezier<order> reverse(const Bezier<order> & a) {
   Bezier<order> result;
   for(int i = 0; i <= order; i++)
     result[i] = a[order - i];
+  return result;
+}
+
+template<unsigned order>
+vector<Point> bezier_points(const D2<Bezier<order> > & a) {
+  vector<Point> result;
+  for(int i = 0; i <= order; i++) {
+    Point p;
+    for(unsigned d = 0; d < 2; d++) p[d] = a[d][i];
+    result[i] = p;
+  }
   return result;
 }
 
