@@ -38,7 +38,6 @@ geom.cpp
 geom.h
 matrix.cpp
 matrix.h
-math-utils.h
 maybe.h
 sb-geometric.h
 sb-math.h
@@ -79,6 +78,7 @@ solver.h
 sturm.h
 transforms.cpp
 transforms.h
+utils.h
 )
 
 # make lib for 2geom
