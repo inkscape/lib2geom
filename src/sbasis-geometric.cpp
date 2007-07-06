@@ -1,8 +1,8 @@
-#include "sb-geometric.h"
-#include "s-basis.h"
-#include "sb-math.h"
+#include "sbasis-geometric.h"
+#include "sbasis.h"
+#include "sbasis-math.h"
 //#include "solver.h"
-#include "sb-geometric.h"
+#include "sbasis-geometric.h"
 
 /** Geometric operators on D2<SBasis> (1D->2D).
  * Copyright 2007 JF Barraud

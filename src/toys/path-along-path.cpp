@@ -1,7 +1,7 @@
 #include "d2.h"
 #include "piecewise.h"
-#include "s-basis.h"
-#include "sb-geometric.h"
+#include "sbasis.h"
+#include "sbasis-geometric.h"
 #include "bezier-to-sbasis.h"
 
 #include "path-cairo.h"

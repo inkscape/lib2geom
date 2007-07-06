@@ -1,6 +1,6 @@
 #include "d2.h"
 #include "d2.cpp"
-#include "s-basis.h"
+#include "sbasis.h"
 
 #include "path-cairo.h"
 #include "toy-framework.cpp"

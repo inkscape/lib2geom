@@ -1,7 +1,7 @@
 #ifndef _SOLVE_SBASIS_H
 #define _SOLVE_SBASIS_H
 #include "point.h"
-#include "s-basis.h"
+#include "sbasis.h"
 
 namespace Geom{
 

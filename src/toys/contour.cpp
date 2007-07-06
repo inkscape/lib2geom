@@ -4,7 +4,7 @@
  */
 #include "sbasis-to-bezier.h"
 #include "d2.h"
-#include "s-basis-2d.h"
+#include "sbasis-2d.h"
 #include "sbasis-poly.h"
 #include "bezier-to-sbasis.h"
 

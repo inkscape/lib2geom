@@ -1,5 +1,5 @@
 /*
- *  sb-calculus.cpp - some std functions to work with (pw)s-basis
+ *  sb-math-test.cpp - some std functions to work with (pw)s-basis
  *
  *  Authors:
  *   Jean-Francois Barraud
@@ -30,10 +30,10 @@
  * the specific language governing rights and limitations.
  */
 
-#include "sb-math.h"
+#include "sbasis-math.h"
 #include "piecewise.h"
 #include "d2.h"
-#include "s-basis.h"
+#include "sbasis.h"
 #include "bezier-to-sbasis.h"
 
 #include "path.h"

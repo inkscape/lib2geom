@@ -1,5 +1,5 @@
 /*
- *  sb-math.cpp - some std functions to work with (pw)s-basis
+ *  sbasis-math.cpp - some std functions to work with (pw)s-basis
  *
  *  Authors:
  *   Jean-Francois Barraud
@@ -34,7 +34,7 @@
 //TODO: define a truncated compose(sb,sb, order) and extend it to pw<sb>.
 //TODO: in all these functions, compute 'order' according to 'tol'.
 
-#include "sb-math.h"
+#include "sbasis-math.h"
 //#define ZERO 1e-3
 
 

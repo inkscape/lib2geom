@@ -6,7 +6,7 @@
  */
 
 #include "d2.h"
-#include "s-basis.h"
+#include "sbasis.h"
 #include "bezier-to-sbasis.h"
 
 #include "path-cairo.h"

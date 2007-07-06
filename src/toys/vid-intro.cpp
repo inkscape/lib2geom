@@ -1,9 +1,9 @@
 #include "d2.h"
 #include "d2.cpp"
-#include "s-basis.h"
-#include "sb-geometric.h"
+#include "sbasis.h"
+#include "sbasis-geometric.h"
 #include "svg-path-parser.h"
-#include "sb-math.h"
+#include "sbasis-math.h"
 
 #include "path-cairo.h"
 #include "toy-framework.cpp"

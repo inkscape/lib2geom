@@ -1,5 +1,5 @@
 /*
- *  s-basis.cpp - S-power basis function class + supporting classes
+ *  sbasis.cpp - S-power basis function class + supporting classes
  *
  *  Authors:
  *   Nathan Hurst <njh@mail.csse.monash.edu.au>
@@ -33,7 +33,7 @@
 
 #include <cmath>
 
-#include "s-basis.h"
+#include "sbasis.h"
 #include "isnan.h"
 
 namespace Geom{

@@ -31,7 +31,7 @@
 #ifndef SEEN_CONCEPTS_H
 #define SEEN_CONCEPTS_H
 
-#include "s-basis.h"
+#include "sbasis.h"
 #include "interval.h"
 #include "point.h"
 

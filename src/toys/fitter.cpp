@@ -18,7 +18,7 @@
 #include <string>
 #include <map>
 #include <cairo-pdf.h>
-#include "s-basis.h"
+#include "sbasis.h"
 #include "point.h"
 #include "interactive-bits.h"
 #include "geom.h"

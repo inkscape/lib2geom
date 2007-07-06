@@ -31,7 +31,7 @@
 #ifndef SEEN_GEOM_PW_SB_H
 #define SEEN_GEOM_PW_SB_H
 
-#include "s-basis.h"
+#include "sbasis.h"
 #include <vector>
 #include <map>
 

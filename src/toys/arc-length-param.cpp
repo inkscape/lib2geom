@@ -1,7 +1,7 @@
 #include "d2.h"
-#include "s-basis.h"
+#include "sbasis.h"
 #include "bezier-to-sbasis.h"
-#include "sb-geometric.h"
+#include "sbasis-geometric.h"
 
 #include "path-cairo.h"
 #include "toy-framework.h"

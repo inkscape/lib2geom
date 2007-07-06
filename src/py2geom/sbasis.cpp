@@ -33,7 +33,7 @@
 #include "py2geom.h"
 #include "helpers.h"
 
-#include "../s-basis.h"
+#include "../sbasis.h"
 #include "../point.h"
 
 using namespace boost::python;
@@ -44,7 +44,7 @@ Geom::SBasis (*integral_sbasis)(Geom::SBasis const &) = &Geom::integral;
 Geom::SBasis (*derivative_sbasis)(Geom::SBasis const &) = &Geom::derivative;
 
 void wrap_sbasis() {
-    //s-basis.h
+    //sbasis.h
 
     // needed for roots
     class_<std::vector<double> >("DoubleVec")

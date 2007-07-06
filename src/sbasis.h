@@ -1,5 +1,5 @@
 /*
- *  s-basis.h - S-power basis function class
+ *  sbasis.h - S-power basis function class
  *
  *  Authors:
  *   Nathan Hurst <njh@mail.csse.monash.edu.au>
@@ -114,7 +114,7 @@ public:
 //TODO: figure out how to stick this in linear, while not adding an sbasis dep
 inline SBasis Linear::toSBasis() const { return SBasis(*this); }
 
-//implemented in s-basis-roots.cpp
+//implemented in sbasis-roots.cpp
 Interval bounds_exact(SBasis const &a);
 Interval bounds_fast(SBasis const &a, int order = 0);
 Interval bounds_local(SBasis const &a, const Interval &t, int order = 0);

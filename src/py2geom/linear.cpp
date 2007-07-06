@@ -34,7 +34,7 @@
 
 #include "../linear.h"
 #include "../point.h"
-#include "../s-basis.h"
+#include "../sbasis.h"
 
 using namespace boost::python;
 

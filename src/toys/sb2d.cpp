@@ -1,5 +1,5 @@
-#include "s-basis.h"
-#include "s-basis-2d.h"
+#include "sbasis.h"
+#include "sbasis-2d.h"
 #include "bezier-to-sbasis.h"
 
 #include "path-cairo.h"

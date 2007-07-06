@@ -95,7 +95,7 @@ public:
     inline double valueAt(double t) const { return lerp(t, a[0], a[1]); }
     inline double operator()(double t) const { return valueAt(t); }
 
-    //defined in s-basis.h
+    //defined in sbasis.h
     inline SBasis toSBasis() const;
 
     inline Interval bounds_exact() const { return Interval(a[0], a[1]); }

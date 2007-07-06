@@ -1,6 +1,6 @@
 #include "piecewise.h"
 #include "d2.h"
-#include "s-basis.h"
+#include "sbasis.h"
 #include "matrix.h"
 
 #include "path-cairo.h"

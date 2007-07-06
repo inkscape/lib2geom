@@ -1,5 +1,5 @@
 /*
- *  sb-math.h - some std functions to work with (pw)s-basis
+ *  sbasis-math.h - some std functions to work with (pw)s-basis
  *
  *  Authors:
  *   Jean-Francois Barraud
@@ -39,7 +39,7 @@
 #define SEEN_GEOM_SB_CALCULS_H
 
 
-#include "s-basis.h"
+#include "sbasis.h"
 #include "piecewise.h"
 
 namespace Geom{

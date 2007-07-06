@@ -1,8 +1,8 @@
 #include "d2.h"
-#include "s-basis.h"
-#include "s-basis-2d.h"
-#include "sb-geometric.h"
-#include "sb-math.h"
+#include "sbasis.h"
+#include "sbasis-2d.h"
+#include "sbasis-geometric.h"
+#include "sbasis-math.h"
 #include "bezier-to-sbasis.h"
 
 #include "path-cairo.h"

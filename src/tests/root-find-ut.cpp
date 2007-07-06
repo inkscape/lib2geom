@@ -5,7 +5,7 @@
 #include "poly-dk-solve.h"
 #include "poly-laguerre-solve.h"
 #include "sturm.h"
-#include "s-basis.h"
+#include "sbasis.h"
 #include "sbasis-poly.h"
 #include "sbasis-to-bezier.h"
 #include "solver.h"

@@ -1,4 +1,4 @@
-#include "s-basis.h"
+#include "sbasis.h"
 #include "bezier-to-sbasis.h"
 #include "solver.h"
 #include "sturm.h"

@@ -1,8 +1,8 @@
 #ifndef PATH_CAIRO
 #define PATH_CAIRO
 
-#include "s-basis.h"
-#include "s-basis-2d.h"
+#include "sbasis.h"
+#include "sbasis-2d.h"
 #include "d2.h"
 #include "piecewise.h"
 #include "path.h"

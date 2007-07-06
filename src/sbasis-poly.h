@@ -2,7 +2,7 @@
 #define _SBASIS_TO_POLY
 
 #include "poly.h"
-#include "s-basis.h"
+#include "sbasis.h"
 
 /*** Conversion between SBasis and Poly.  Not recommended for general
  * use due to instability.

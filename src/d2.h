@@ -360,8 +360,8 @@ D2<T> integral(D2<T> const & a) {
 //TODO: implement intersect
 
 #include "rect.h"
-#include "s-basis.h"
-#include "s-basis-2d.h"
+#include "sbasis.h"
+#include "sbasis-2d.h"
 #include "piecewise.h"
 
 namespace Geom{

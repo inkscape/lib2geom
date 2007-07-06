@@ -29,7 +29,7 @@
 #include <boost/python/implicit.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 
-#include "../s-basis.h"
+#include "../sbasis.h"
 #include "../pw.h"
 
 #include "py2geom.h"

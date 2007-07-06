@@ -4,7 +4,7 @@
 #include <cassert>
 #include <algorithm>
 #include "d2.h"
-#include "s-basis.h"
+#include "sbasis.h"
 #include <iostream>
 
 namespace Geom{

@@ -1,4 +1,4 @@
-#include "s-basis-2d.h"
+#include "sbasis-2d.h"
 
 namespace Geom{
 
