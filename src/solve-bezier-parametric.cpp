@@ -199,7 +199,7 @@ Bezier(Geom::Point const *V, /* Control pts	*/
     /* Triangle computation	*/
     for (unsigned i = 1; i <= degree; i++) {	
         for (unsigned j = 0; j <= degree - i; j++) {
-            Vtemp[i][j] = Lerp(t, Vtemp[i-1][j], Vtemp[i-1][j+1]);
+            Vtemp[i][j] = lerp(t, Vtemp[i-1][j], Vtemp[i-1][j+1]);
         }
     }
     

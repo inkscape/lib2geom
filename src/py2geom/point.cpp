@@ -53,32 +53,41 @@ str point_repr(Geom::Point const& p)
     return str("(" + str(p[0]) + ", " + str(p[1]) + ")");
 }
 
-Geom::Coord (*L2_point)(Geom::Point const &) = &Geom::L2;
+//Specifications of overloads
+Geom::Coord (*L2_point)   (Geom::Point const &) = &Geom::L2;
 Geom::Point (*rot90_point)(Geom::Point const &) = &Geom::rot90;
-Geom::Coord (*dot_point)(Geom::Point const &, Geom::Point const &) = &Geom::dot;
+Geom::Coord (*dot_point)  (Geom::Point const &, Geom::Point const &) = &Geom::dot;
 Geom::Coord (*cross_point)(Geom::Point const &, Geom::Point const &) = &Geom::cross;
+
+bool near_point1(Geom::Point const &a, Geom::Point const &b) { return near(a,b); }
+bool near_point2(Geom::Point const &a, Geom::Point const &b, double eps) { return near(a,b,eps); }
 
 void wrap_point() {
     def("point_to_tuple", point_to_tuple);
     def("tuple_to_point", tuple_to_point);
 
-    //point-fns.h
     def("L1", Geom::L1);
     def("L2", L2_point);
     def("L2sq", Geom::L2sq);
     def("LInfty", Geom::LInfty);
+
+    def("unit_vector", Geom::unit_vector);
     def("is_zero", Geom::is_zero);
     def("is_unit_vector", Geom::is_unit_vector);
-    def("atan2", Geom::atan2);
-    def("angle_between", Geom::angle_between);
-    def("point_equalp", Geom::point_equalp);
-    def("rot90", rot90_point);
-    def("Lerp", Geom::Lerp);
-    def("unit_vector", Geom::unit_vector);
+
     def("dot", dot_point);
+    def("cross", cross_point);
     def("distance", Geom::distance);
     def("distanceSq", Geom::distanceSq);
-    def("cross", cross_point);
+    def("lerp", Geom::lerp);
+
+    def("atan2", Geom::atan2);
+    def("angle_between", Geom::angle_between);
+
+    def("near", near_point1);
+    def("near", near_point2);
+
+    def("rot90", rot90_point);
     def("abs", (Geom::Point (*)(Geom::Point const&))&Geom::abs);
 
     class_<Geom::Point>("Point", init<double, double>())
@@ -99,23 +108,24 @@ void wrap_point() {
         .def("round", &Geom::Point::round)
         .def("normalize", &Geom::Point::normalize)
 
-        .def(self += self)
-        .def(self -= self)
-        .def(self /= float())
-        .def(self *= float())
+        .def("length", &Geom::Point::length)
 
-        .def(self == self)
-
-        //point-ops.h
         .def(self + self)
         .def(self - self)
+        .def(self += self)
+        .def(self -= self)
+
         .def(self ^ self)
+
         .def(-self)
-        .def(float() * self)
-        .def(self * float())
+        .def(self * float()).def(float() * self)
         .def(self / float())
-        .def(float() / self)
+        .def(self *= float())
+        .def(self /= float())
+
+        .def(self == self)
         .def(self != self)
+
         .def(self <= self)
     ;
     implicitly_convertible<Geom::Point,tuple>();

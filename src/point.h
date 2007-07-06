@@ -192,7 +192,7 @@ inline Point rot90(Point const &p) { return Point(-p[Y], p[X]); }
 
 /** Given two points and a parameter t \in [0, 1], return a point
  * proportionally from a to b by t.  Akin to 1 degree bezier.*/
-inline Point Lerp(double const t, Point const a, Point const b) { return (a * (1 - t) + b * t); }
+inline Point lerp(double const t, Point const a, Point const b) { return (a * (1 - t) + b * t); }
 
 Point unit_vector(Point const &a);
 

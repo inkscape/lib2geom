@@ -84,25 +84,29 @@ void wrap_sbasis() {
         .def("isFinite", &Geom::SBasis::isFinite)
         .def("at0", &Geom::SBasis::at0)
         .def("at1", &Geom::SBasis::at1)
-        .def("pointAt", &Geom::SBasis::pointAt)
+        .def("valueAt", &Geom::SBasis::valueAt)
         .def("toSBasis", &Geom::SBasis::toSBasis)
 
         .def("normalize", &Geom::SBasis::normalize)
         .def("tailError", &Geom::SBasis::tailError)
         .def("truncate", &Geom::SBasis::truncate)
+
         .def(self + self)
         .def(self - self)
         .def(self += self)
         .def(self -= self)
-        .def(Geom::Linear() + self)
-        .def(Geom::Linear() - self)
+
+        .def(self + Geom::Linear())
+        .def(self - Geom::Linear())
         .def(self += Geom::Linear())
         .def(self -= Geom::Linear())
+
         .def(self + float())
         .def(self - float())
         .def(self += float())
         .def(self -= float())
-        
+
+        .def(-self)
         .def(self * self)
         .def(self *= self)
         .def(self * float())

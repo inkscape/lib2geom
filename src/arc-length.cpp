@@ -51,11 +51,11 @@ double cubic_length_subdividing(Path::Elem const & e, double tol) {
         Point mid[3];
         double result;
         for(int i = 0; i < 3; i++)
-            mid[i] = Lerp(0.5, e[i], e[i+1]);
+            mid[i] = lerp(0.5, e[i], e[i+1]);
         Point midmid[2];
         for(int i = 0; i < 2; i++)
-            midmid[i] = Lerp(0.5, mid[i], mid[i+1]);
-        Point midmidmid = Lerp(0.5, midmid[0], midmid[1]);
+            midmid[i] = lerp(0.5, mid[i], mid[i+1]);
+        Point midmidmid = lerp(0.5, midmid[0], midmid[1]);
         {
             Point curve[4] = {e[0], mid[0], midmid[0], midmidmid};
             Path::Elem e0(cubicto, std::vector<Point>::const_iterator(curve), std::vector<Point>::const_iterator(curve) + 4);

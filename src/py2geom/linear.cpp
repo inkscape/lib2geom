@@ -55,6 +55,7 @@ str bezord_repr(Geom::Linear const& b)
 }
 
 void wrap_linear() {
+    def("lerp", (double (*)(double, double, double))&Geom::lerp);
     def("reverse", (Geom::Linear (*)(Geom::Linear const &))&Geom::reverse);
     def("bounds_fast", (Geom::Interval (*)(Geom::Linear const &))&Geom::bounds_fast);
     def("bounds_exact", (Geom::Interval (*)(Geom::Linear const &))&Geom::bounds_exact);
@@ -73,7 +74,7 @@ void wrap_linear() {
         .def("isFinite", &Geom::Linear::isFinite)
         .def("at0", &Geom::Linear::at0)
         .def("at1", &Geom::Linear::at1)
-        .def("pointAt", &Geom::Linear::pointAt)
+        .def("valueAt", &Geom::Linear::valueAt)
         .def("toSBasis", &Geom::Linear::toSBasis)
 
         .def(-self)
