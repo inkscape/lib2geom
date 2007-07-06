@@ -52,7 +52,7 @@ inline Cmp cmp(T1 const &a, T2 const &b) {
 
 }
 
-Maybe<int> CurveHelpers::sbasis_winding(D2<SBasis> const &sb, Point p) {
+boost::optional<int> CurveHelpers::sbasis_winding(D2<SBasis> const &sb, Point p) {
   Interval ix = bounds_fast(sb[X]);
 
   if ( p[X] > ix.max() ) { /* ray does not intersect bbox */
@@ -63,7 +63,7 @@ Maybe<int> CurveHelpers::sbasis_winding(D2<SBasis> const &sb, Point p) {
   fy -= p[Y];
 
   if (fy.empty()) { /* coincident horizontal segment */
-    return Nothing();
+    return boost::optional<int>();
   }
 
   if ( p[X] < ix.min() ) { /* ray does not originate in bbox */
@@ -86,7 +86,7 @@ Maybe<int> CurveHelpers::sbasis_winding(D2<SBasis> const &sb, Point p) {
     std::vector<double> ts = roots(fy);
 
     static const unsigned MAX_DERIVATIVES=8;
-    Maybe<SBasis> ds[MAX_DERIVATIVES];
+    boost::optional<SBasis> ds[MAX_DERIVATIVES];
     ds[0] = derivative(fy);
 
     /* winding determined by summing signs of derivatives at intersections */
@@ -97,7 +97,7 @@ Maybe<int> CurveHelpers::sbasis_winding(D2<SBasis> const &sb, Point p) {
     { 
       double t = *ti;
       if ( sb[X](t) >= p[X] ) { /* root is ray intersection */
-        for ( Maybe<SBasis> *di = ds
+        for ( boost::optional<SBasis> *di = ds
             ; di != ( ds + MAX_DERIVATIVES )
             ; ++di )
         {
@@ -201,15 +201,15 @@ Rect Path::bounds_exact() const {
 
 int Path::winding(Point p) const {
   int winding = 0;
-  Maybe<Cmp> ignore = Nothing();
+  boost::optional<Cmp> ignore = boost::optional<Cmp>();
   for ( const_iterator iter = begin()
       ; iter != end_closed()
       ; ++iter )
   {
-    Maybe<int> w = iter->winding(p);
+    boost::optional<int> w = iter->winding(p);
     if (w) {
-      winding += w;
-      ignore = Nothing();
+      winding += *w;
+      ignore = boost::optional<Cmp>();
     } else {
       Point initial = iter->initialPoint();
       Point final = iter->finalPoint();

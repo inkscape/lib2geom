@@ -31,11 +31,11 @@
 #define SEEN_GEOM_PATH_H
 
 #include "point.h"
-#include "maybe.h"
 #include <iterator>
 #include <algorithm>
 #include <exception>
 #include <stdexcept>
+#include <boost/optional/optional.hpp>
 #include "d2.h"
 #include "bezier-to-sbasis.h"
 #include "utils.h"
@@ -56,7 +56,7 @@ public:
   virtual Rect bounds_fast() const = 0;
   virtual Rect bounds_exact() const = 0;
 
-  virtual Maybe<int> winding(Point p) const = 0;
+  virtual boost::optional<int> winding(Point p) const = 0;
 
   virtual Path const &subdivide(Coord t, Path &out) const = 0;
 
@@ -67,7 +67,7 @@ public:
 
 struct CurveHelpers {
 protected:
-  static Maybe<int> sbasis_winding(D2<SBasis> const &sbasis, Point p);
+  static boost::optional<int> sbasis_winding(D2<SBasis> const &sbasis, Point p);
 };
 
 struct BezierHelpers {
@@ -126,7 +126,7 @@ public:
   Rect bounds_fast() const { return bounds(bezier_degree, c_); }
   Rect bounds_exact() const { return bounds(bezier_degree, c_); }
 
-  Maybe<int> winding(Point p) const {
+  boost::optional<int> winding(Point p) const {
     return sbasis_winding(sbasis(), p);
   }
 
@@ -177,7 +177,7 @@ public:
   Rect bounds_fast() const;
   Rect bounds_exact() const;
 
-  Maybe<int> winding(Point p) const {
+  boost::optional<int> winding(Point p) const {
     return sbasis_winding(sbasis(), p);
   }
 
@@ -216,7 +216,7 @@ public:
   Rect bounds_fast() const;
   Rect bounds_exact() const;
 
-  Maybe<int> winding(Point p) const {
+  boost::optional<int> winding(Point p) const {
     return sbasis_winding(coeffs_, p);
   }
 

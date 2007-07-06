@@ -24,7 +24,6 @@ svg-path-parser.cpp
 #nearestpoint.cpp
 path.cpp
 path.h
-maybe.h
 
 poly.cpp
 poly.h
