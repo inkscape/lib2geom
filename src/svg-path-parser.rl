@@ -32,6 +32,7 @@
 
 #include <cmath>
 #include <vector>
+#include <glib.h>
 
 #include "point.h"
 
@@ -148,7 +149,7 @@ throw(SVGPathParseError)
         action push_number {
             char const *end=p;
             std::string buf(start, end);
-            _push(strtod(buf.c_str(), NULL));
+            _push(g_ascii_strtod(buf.c_str(), NULL));
             start = NULL;
         }
 
