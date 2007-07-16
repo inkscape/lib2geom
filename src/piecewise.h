@@ -274,6 +274,7 @@ T elem_portion(const Piecewise<T> &a, unsigned i, double from, double to) {
  */
 template<typename T>
 Piecewise<T> partition(const Piecewise<T> &pw, std::vector<double> const &c) {
+    assert(pw.invariants());
     if(c.empty()) return Piecewise<T>(pw);
 
     Piecewise<T> ret = Piecewise<T>();
