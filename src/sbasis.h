@@ -39,6 +39,7 @@
 
 #include "linear.h"
 #include "interval.h"
+#include "utils.h"
 
 namespace Geom {
 
