@@ -140,17 +140,17 @@ control_poly_flat_enough(Geom::Point const *V, /* Control points	*/
     for (unsigned i = 0; i < degree-1; i++) {
         const double d = distance[i];
         if (d < 0.0)
-            max_distance_below = std::min(max_distance_below, d);
+            max_distance_below = Min(max_distance_below, d);
         if (d > 0.0)
-            max_distance_above = std::max(max_distance_above, d);
+            max_distance_above = Max(max_distance_above, d);
     }
 
     const double intercept_1 = (c + max_distance_above) / -a;
     const double intercept_2 = (c + max_distance_below) / -a;
 
     /* Compute bounding interval*/
-    const double left_intercept = std::min(intercept_1, intercept_2);
-    const double right_intercept = std::max(intercept_1, intercept_2);
+    const double left_intercept = Min(intercept_1, intercept_2);
+    const double right_intercept = Max(intercept_1, intercept_2);
 
     const double error = 0.5 * (right_intercept - left_intercept);
     

@@ -47,7 +47,7 @@ class Intro: public Toy {
         }
         for(int i = 0; i <= std::pow(2.7,t/1000.); i++) {
             cairo_set_source_rgb(cr, 0., 1., 0.);
-            Piecewise<D2<SBasis> > port = portion(walkers[i], std::max(0.,t-200), t);
+            Piecewise<D2<SBasis> > port = portion(walkers[i], Max(0.,t-200), t);
             cairo_pw_d2(cr, port);
             cairo_stroke(cr);
             cairo_set_source_rgb(cr, 0., 0., 1.);
@@ -64,7 +64,7 @@ class Intro: public Toy {
         /*
         for(int i = 0; i <= stayers.size()*(t/1000.); i++) {
             cairo_set_source_rgb(cr, 0., 1., 0.);
-            Piecewise<D2<SBasis> > port = portion(stayers[i], std::max(0.,t-200), t);
+            Piecewise<D2<SBasis> > port = portion(stayers[i], Max(0.,t-200), t);
             cairo_pw_d2(cr, port);
             cairo_stroke(cr);
             cairo_set_source_rgb(cr, 0., 0., 1.);

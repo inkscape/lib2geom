@@ -198,7 +198,7 @@ void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool s
             double c_angle = atan2(kurv_vector)+M_PI;
             kurv_vector += pos;
             kurvature = fabs(kurvature);
-            double angle_delta = std::min(100*kurvature, M_PI);
+            double angle_delta = Min(100*kurvature, M_PI);
             cairo_arc(cr, kurv_vector[0], kurv_vector[1], (1./kurvature), c_angle-angle_delta, c_angle+angle_delta);
             
         } else // just normal

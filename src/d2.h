@@ -402,9 +402,8 @@ D2<SBasis> multiply(SBasis const & a, D2<SBasis> const & b);
 inline D2<SBasis> operator*(SBasis const & a, D2<SBasis> const & b) { return multiply(a, b); }
 D2<SBasis> truncate(D2<SBasis> const & a, unsigned terms);
 
-unsigned sbasisSize(D2<SBasis> const & a);
-double tailError(D2<SBasis> const & a, unsigned tail);
-bool isFinite(D2<SBasis> const & a);
+unsigned sbasis_size(D2<SBasis> const & a);
+double tail_error(D2<SBasis> const & a, unsigned tail);
 
 //Piecewise<D2<SBasis> > specific decls:
 

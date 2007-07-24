@@ -33,6 +33,7 @@
 #include <valarray>
 #include <cassert>
 #include "conjugate_gradient.h"
+#include "utils.h"
 
 /* lifted wholely from wikipedia. */
 
@@ -56,7 +57,7 @@ matrix_times_vector(valarray<double> const &matrix, /* m * n */
 }
 
 static double Linfty(valarray<double> const &vec) {
-    return std::max(vec.max(), -vec.min());
+    return Max(vec.max(), -vec.min());
 }
 
 double
@@ -119,7 +120,7 @@ conjugate_gradient(valarray<double> const &A,
         r_r = r_r_new;
     }
     //printf("njh: %d iters, Linfty = %g L2 = %g\n", k, 
-    //std::max(-r.min(), r.max()), sqrt(r_r));
+    //Max(-r.min(), r.max()), sqrt(r_r));
     // x is solution
 }
 /*

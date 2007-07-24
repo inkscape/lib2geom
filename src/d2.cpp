@@ -47,20 +47,13 @@ D2<SBasis> truncate(D2<SBasis> const & a, unsigned terms) {
     return D2<SBasis>(truncate(a[X], terms), truncate(a[Y], terms));
 }
 
-unsigned sbasisSize(D2<SBasis> const & a) {
-    return std::max((unsigned) a[0].size(), (unsigned) a[1].size());
+unsigned sbasis_size(D2<SBasis> const & a) {
+    return Max((unsigned) a[0].size(), (unsigned) a[1].size());
 }
 
 //TODO: Is this sensical? shouldn't it be like pythagorean or something?
-double tailError(D2<SBasis> const & a, unsigned tail) {
-    return std::max(a[0].tailError(tail), a[1].tailError(tail));
-}
-
-bool isFinite(D2<SBasis> const & a) {
-    for(unsigned i = 0; i < 2; i++)
-        if(!a[i].isFinite())
-            return false;
-    return true;
+double tail_error(D2<SBasis> const & a, unsigned tail) {
+    return Max(a[0].tailError(tail), a[1].tailError(tail));
 }
 
 Piecewise<D2<SBasis> > sectionize(D2<Piecewise<SBasis> > const &a) {
@@ -73,7 +66,7 @@ Piecewise<D2<SBasis> > sectionize(D2<Piecewise<SBasis> > const &a) {
     return ret;
 }
 
-D2<Piecewise<SBasis> > makeCutsIndependant(Piecewise<D2<SBasis> > const &a) {
+D2<Piecewise<SBasis> > make_cuts_independant(Piecewise<D2<SBasis> > const &a) {
     D2<Piecewise<SBasis> > ret;
     for(unsigned d = 0; d < 2; d++) {
         for(unsigned i = 0; i < a.size(); i++)

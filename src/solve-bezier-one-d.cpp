@@ -197,9 +197,9 @@ control_poly_flat_enough(double const *V, /* Control points	*/
         double dist = d*d;
     // Find the largest distance
         if (d < 0.0)
-            max_distance_below = std::min(max_distance_below, -dist);
+            max_distance_below = Min(max_distance_below, -dist);
         else
-            max_distance_above = std::max(max_distance_above, dist);
+            max_distance_above = Max(max_distance_above, dist);
     }
     
     const double abSquared = (a * a) + (b * b);
@@ -208,8 +208,8 @@ control_poly_flat_enough(double const *V, /* Control points	*/
     const double intercept_2 = -(c + max_distance_below / abSquared);
 
     /* Compute bounding interval*/
-    const double left_intercept = std::min(intercept_1, intercept_2);
-    const double right_intercept = std::max(intercept_1, intercept_2);
+    const double left_intercept = Min(intercept_1, intercept_2);
+    const double right_intercept = Max(intercept_1, intercept_2);
 
     const double error = 0.5 * (right_intercept - left_intercept);
     

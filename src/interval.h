@@ -38,6 +38,7 @@
 
 #include <assert.h>
 #include "coord.h"
+#include "utils.h"
 
 #include <boost/optional/optional.hpp>
 
@@ -204,12 +205,12 @@ inline Interval operator/=(Interval & a, const Interval & b) { a = a / b; return
 
 // 'union' conflicts with C keyword
 inline Interval unify(const Interval & a, const Interval & b) {
-    return Interval(std::min(a.min(), b.min()),
-                    std::max(a.max(), b.max()));
+    return Interval(Min(a.min(), b.min()),
+                    Max(a.max(), b.max()));
 }
 inline boost::optional<Interval> intersect(const Interval & a, const Interval & b) {
-    Coord u = std::max(a.min(), b.min()),
-          v = std::min(a.max(), b.max());
+    Coord u = Max(a.min(), b.min()),
+          v = Min(a.max(), b.max());
     //technically >= might be incorrect, but singulars suck
     return u >= v ? boost::optional<Interval>()
                   : boost::optional<Interval>(Interval(u, v));

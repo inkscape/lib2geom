@@ -72,8 +72,8 @@ This is a multi-root test...
         handles[2*size  ][0]=150;
         handles[2*size+1][0]=150;
         handles[2*size+2][0]=150;
-        handles[2*size  ][1]=std::max(handles[2*size  ][1],handles[2*size+1][1]);
-        handles[2*size+1][1]=std::max(handles[2*size+1][1],handles[2*size+2][1]);
+        handles[2*size  ][1]=Max(handles[2*size  ][1],handles[2*size+1][1]);
+        handles[2*size+1][1]=Max(handles[2*size+1][1],handles[2*size+2][1]);
         vector<double> levels;
         levels.push_back((300-handles[2*size  ][1]));
         levels.push_back((300-handles[2*size+1][1]));

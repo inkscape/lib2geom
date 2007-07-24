@@ -20,6 +20,8 @@ class Shape {
 	friend Shape unify(const Shape & a, const Shape & b);
 };
 
+typedef std::vector<Shape> Shapes;
+
 struct Crossing {
     bool dir; //True: along a, a becomes outside.
     double ta, tb;  //time on a and b of crossing
@@ -43,6 +45,11 @@ bool inside(const Path & inner, const Path & outer);
 Path portion(const Path & p, double from, double to);
 
 Shape unify(const Shape & a, const Shape & b);
+
+enum BoolOp { UNION, SUBTRACT, INTERSECT };
+
+Shapes path_boolean(BoolOp bo, const Path & a, const Path & b, CrossingsA & cr_a, CrossingsB & cr_b);
+
 Path path_union(const Path & a, const Path & b, CrossingsA & cr_a, CrossingsB & cr_b );
 Paths path_subtract(const Path & a, const Path & b, CrossingsA & cr_a, CrossingsB & cr_b );
 Paths path_subtract_reverse(const Path & a, const Path & b, CrossingsA & cr_a, CrossingsB & cr_b );

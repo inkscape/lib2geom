@@ -242,8 +242,8 @@ class SbToBezierTester: public Toy {
       D2<SBasis> f;//=SBasis(Linear(0,.5));
       f=handles_to_sbasis<SIZE-1>(handles.begin());
       handles[SIZE][1]=450;
-      handles[SIZE][0]=max(handles[SIZE][0],150.);
-      handles[SIZE][0]=min(handles[SIZE][0],450.);
+      handles[SIZE][0]=Max(handles[SIZE][0],150.);
+      handles[SIZE][0]=Min(handles[SIZE][0],450.);
       double t0=0;//(handles[SIZE][0]-150)/300;
       double t1=(handles[SIZE][0]-150)/300;
       //if (t0>t1) {double temp=t0;t0=t1;t1=temp;}
@@ -276,9 +276,9 @@ class SbToBezierTester: public Toy {
       cairo_stroke(cr);
 
       handles[SIZE+1][0]=150;
-      handles[SIZE+1][1]=min(max(handles[SIZE+1][1],150.),450.);
+      handles[SIZE+1][1]=Min(Max(handles[SIZE+1][1],150.),450.);
       handles[SIZE+2][0]=450;
-      handles[SIZE+2][1]=min(max(handles[SIZE+2][1],150.),450.);
+      handles[SIZE+2][1]=Min(Max(handles[SIZE+2][1],150.),450.);
 
       double scale0=(450-handles[SIZE+1][1])/150;
       double scale1=(450-handles[SIZE+2][1])/150;

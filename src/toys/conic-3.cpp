@@ -41,7 +41,7 @@ class Conic3: public Toy {
         Geom::Point a[2] = {handles[0] - handles[1],
                         handles[2] - handles[1]};
         double angle = Geom::angle_between(a[0], a[1]);
-        double len = std::max(Geom::L2(a[0]),
+        double len = Max(Geom::L2(a[0]),
                                 Geom::L2(a[1]));
         for(int i = 0; i < 2; i++) 
         a[i] = len*unit_vector(a[i]);

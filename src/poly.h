@@ -5,6 +5,7 @@
 #include <iostream>
 #include <algorithm>
 #include <complex>
+#include "utils.h"
 
 class Poly : public std::vector<double>{
 public:
@@ -18,8 +19,8 @@ public:
     
     Poly operator+(const Poly& p) const {
         Poly result;
-        const unsigned out_size = std::max(size(), p.size());
-        const unsigned min_size = std::min(size(), p.size());
+        const unsigned out_size = Max(size(), p.size());
+        const unsigned min_size = Min(size(), p.size());
         //result.reserve(out_size);
         
         for(unsigned i = 0; i < min_size; i++) {
@@ -34,8 +35,8 @@ public:
     }
     Poly operator-(const Poly& p) const {
         Poly result;
-        const unsigned out_size = std::max(size(), p.size());
-        const unsigned min_size = std::min(size(), p.size());
+        const unsigned out_size = Max(size(), p.size());
+        const unsigned min_size = Min(size(), p.size());
         result.reserve(out_size);
         
         for(unsigned i = 0; i < min_size; i++) {
@@ -49,8 +50,8 @@ public:
         return result;
     }
     Poly operator-=(const Poly& p) {
-        const unsigned out_size = std::max(size(), p.size());
-        const unsigned min_size = std::min(size(), p.size());
+        const unsigned out_size = Max(size(), p.size());
+        const unsigned min_size = Min(size(), p.size());
         resize(out_size);
         
         for(unsigned i = 0; i < min_size; i++) {
@@ -94,7 +95,7 @@ public:
 // equivalent to multiply by x^terms, discard negative terms
     Poly shifted(unsigned terms) const { 
         Poly result;
-        const unsigned out_size = std::max(unsigned(0), size()+terms);
+        const unsigned out_size = Max(unsigned(0), size()+terms);
         result.reserve(out_size);
         
         if(terms < 0) {
@@ -143,7 +144,7 @@ public:
         for(unsigned j = 1; j < pd.size(); j++)
             pd[j] = 0.0;
         for(int i = nc -1; i >= 0; i--) {
-            int nnd = std::min(nd, nc-i);
+            int nnd = Min(nd, nc-i);
             for(int j = nnd; j >= 1; j--)
                 pd[j] = pd[j]*x + operator[](i);
             pd[0] = pd[0]*x + operator[](i);

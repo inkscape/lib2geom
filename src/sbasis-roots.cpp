@@ -72,7 +72,7 @@ Interval bounds_fast(const SBasis &sb, int order) {
         v = res[0];
         if (v<0) t = ((b-a)/v+1)*0.5;
         if (v>=0 || t<0 || t>1) {
-            res[0] = std::min(a,b);
+            res[0] = Min(a,b);
         }else{
             res[0]=lerp(t, a+v*t, b);
         }
@@ -80,7 +80,7 @@ Interval bounds_fast(const SBasis &sb, int order) {
         v = res[1];
         if (v>0) t = ((b-a)/v+1)*0.5;
         if (v<=0 || t<0 || t>1) {
-            res[1] = std::max(a,b);
+            res[1] = Max(a,b);
         }else{
             res[1]=lerp(t, a+v*t, b);
         }
@@ -98,14 +98,14 @@ Interval bounds_local(const SBasis &sb, const Interval &i, int order) {
         double t;
         if (lo<0) t = ((b-a)/lo+1)*0.5;
         if (lo>=0 || t<t0 || t>t1) {
-            lo = std::min(a*(1-t0)+b*t0+lo*t0*(1-t0),a*(1-t1)+b*t1+lo*t1*(1-t1));
+            lo = Min(a*(1-t0)+b*t0+lo*t0*(1-t0),a*(1-t1)+b*t1+lo*t1*(1-t1));
         }else{
             lo = lerp(t, a+lo*t, b);
         }
 
         if (hi>0) t = ((b-a)/hi+1)*0.5;
         if (hi<=0 || t<t0 || t>t1) {
-            hi = std::max(a*(1-t0)+b*t0+hi*t0*(1-t0),a*(1-t1)+b*t1+hi*t1*(1-t1));
+            hi = Max(a*(1-t0)+b*t0+hi*t0*(1-t0),a*(1-t1)+b*t1+hi*t1*(1-t1));
         }else{
             hi = lerp(t, a+hi*t, b);
         }
@@ -166,8 +166,8 @@ static void multi_roots_internal(SBasis const &f,
 //             }
 //             return;
 //         }
-//         int idx_min=std::min(idxa,idxb);
-//         int idx_max=std::max(idxa,idxb);
+//         int idx_min=Min(idxa,idxb);
+//         int idx_max=Max(idxa,idxb);
 //         if (idx_max==levels.size()) idx_max-=1;
 //         for(int i=idx_min;i<=idx_max; i++){
 //             double t=a+(b-a)*(levels[i]-fa)/(fb-fa);
@@ -178,7 +178,7 @@ static void multi_roots_internal(SBasis const &f,
     if ((b-a)<htol){
         //TODO: use different tol for t and f ?
         //TODO: unsigned idx ? (remove int casts when fixed)
-        int idx=std::min(upper_level(levels,fa,vtol),upper_level(levels,fb,vtol));
+        int idx=Min(upper_level(levels,fa,vtol),upper_level(levels,fb,vtol));
         if (idx==(int)levels.size()) idx-=1;
         double c=levels.at(idx);
         if((fa-c)*(fb-c)<=0||fabs(fa-c)<vtol||fabs(fb-c)<vtol){
@@ -219,8 +219,8 @@ static void multi_roots_internal(SBasis const &f,
     }
     
     double t0,t1;
-    t0=std::min(ta_hi,ta_lo);    
-    t1=std::max(tb_hi,tb_lo);
+    t0=Min(ta_hi,ta_lo);    
+    t1=Max(tb_hi,tb_lo);
     //hum, rounding errors frighten me! so I add this +tol...
     if (t0>t1+htol) return;//no root here.
 

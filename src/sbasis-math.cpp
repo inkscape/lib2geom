@@ -222,7 +222,7 @@ Piecewise<SBasis> reciprocalOnDomain(Interval range, double tol){
     SBasis reciprocal1_R=reciprocal(Linear(1,R),3);
     double a=range.min(), b=range.max();
     if (a*b<0){
-        b=std::max(fabs(a),fabs(b));
+        b=Max(fabs(a),fabs(b));
         a=0;
     }else if (b<0){
         a=-range.max();

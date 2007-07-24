@@ -174,8 +174,8 @@ inline SBasis2d operator-(const SBasis2d& p) {
 
 inline SBasis2d operator+(const SBasis2d& a, const SBasis2d& b) {
     SBasis2d result;
-    result.us = std::max(a.us, b.us);
-    result.vs = std::max(a.vs, b.vs);
+    result.us = Max(a.us, b.us);
+    result.vs = Max(a.vs, b.vs);
     const unsigned out_size = result.us*result.vs;
     result.resize(out_size);
         
@@ -194,8 +194,8 @@ inline SBasis2d operator+(const SBasis2d& a, const SBasis2d& b) {
 
 inline SBasis2d operator-(const SBasis2d& a, const SBasis2d& b) {
     SBasis2d result;
-    result.us = std::max(a.us, b.us);
-    result.vs = std::max(a.vs, b.vs);
+    result.us = Max(a.us, b.us);
+    result.vs = Max(a.vs, b.vs);
     const unsigned out_size = result.us*result.vs;
     result.resize(out_size);
         

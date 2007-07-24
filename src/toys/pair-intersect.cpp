@@ -66,11 +66,11 @@ void pair_intersect(vector<double> &Asects,
         double Bte = 0;
         for(unsigned d = 0; d < 2; d++) {
             Interval bs = bounds_local(A[d], Interval(Al, Ah), 1); //only 1?
-            Ate = std::max(Ate, bs.extent());
+            Ate = Max(Ate, bs.extent());
         }
         for(unsigned d = 0; d < 2; d++) {
             Interval bs = bounds_local(B[d], Interval(Bl, Bh), 1);
-            Bte = std::max(Bte, bs.extent());
+            Bte = Max(Bte, bs.extent());
         }
 
         if((depth > 12)  || ((Ate < eps) && 

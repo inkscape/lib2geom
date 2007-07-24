@@ -47,6 +47,9 @@ template <class T> inline int sgn(const T& x) {return (x < 0 ? -1 : (x > 0 ? 1 :
 template <class T> inline T sqr(const T& x) {return x * x;}
 template <class T> inline T cube(const T& x) {return x * x * x;}
 
+template <class T> inline const T& Max (const T& a, const T& b) {return (a < b) ? b : a;}
+template <class T> inline const T& Min (const T& a, const T& b) {return (a < b) ? a : b;}
+
 /** Between function - returns true if a number x is within a range. The values delimiting the
  *  range and the number must have the same type.
  */

@@ -61,7 +61,7 @@ std::vector<Geom::Point>
 sbasis_to_bezier(D2<SBasis> const &B, unsigned qq) {
     std::vector<Geom::Point> result;
     if(qq == 0) {
-        qq = sbasisSize(B);
+        qq = sbasis_size(B);
     }
     unsigned n = qq * 2;
     result.resize(n, Geom::Point(0,0));
@@ -131,7 +131,7 @@ subpath_from_sbasis_incremental(Geom::OldPathSetBuilder &pb, D2<SBasis> B, doubl
         double A = std::sqrt(tol/te); // pow(te, 1./k)
         double a = A;
         if(A < 1) {
-            A = std::min(A, 0.25);
+            A = Min(A, 0.25);
             a = 0.5 - std::sqrt(0.25 - A); // quadratic formula
             if(a > 1) a = 1; // clamp to the end of the segment
         } else
@@ -160,13 +160,13 @@ subpath_from_sbasis_incremental(Geom::OldPathSetBuilder &pb, D2<SBasis> B, doubl
 
 void
 path_from_sbasis(Geom::Path &pb, D2<SBasis> const &B, double tol) {
-    assert(isFinite(B));
-    if(tailError(B, 2) < tol || sbasisSize(B) == 2) { // nearly cubic enough
+    assert(B.isFinite());
+    if(tail_error(B, 2) < tol || sbasis_size(B) == 2) { // nearly cubic enough
         if(B[0].size() == 0 && B[1].size() != 0) {
             pb.append(Geom::LineSegment(Geom::Point(0, B[1][0][0]), Geom::Point(0, B[1][0][1])));
         } else if(B[0].size() != 0 && B[1].size() == 0) {
             pb.append(Geom::LineSegment(Geom::Point(B[0][0][0], 0), Geom::Point(B[0][0][1], 0)));
-        } else if(sbasisSize(B) == 1) {
+        } else if(sbasis_size(B) == 1) {
             pb.append(Geom::LineSegment(Geom::Point(B[0][0][0], B[1][0][0]),Geom::Point(B[0][0][1], B[1][0][1])));
         } else {
             std::vector<Geom::Point> bez = sbasis_to_bezier(B, 2);

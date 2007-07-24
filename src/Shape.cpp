@@ -51,6 +51,73 @@ Shape unify(const Shape & a, const Shape & b) {
     return ret;
 }
 
+bool logical_xor (bool a, bool b) { return (a || b) && !(a && b); }
+
+Paths path_boolean(BoolOp btype,
+                   const Path & a, const Path & b,
+                   CrossingsA & cr_a, CrossingsB & cr_b) {
+    Shapes ret;
+    if(cr_a.empty()) {
+        //Handle the cases where there are no actual boundary intersections:
+        Shape s;
+        switch btype {
+        case UNION:
+            if(inside(b, a)) {      s.outer = a; ret.push_back(s); }
+            else if(inside(a, b)) { s.outer = b; ret.push_back(s); }
+            else {                  s.outer = a; ret.push_back(s);
+                                    s.outer = b; ret.push_back(s); }
+            return ret;
+        case SUBTRACT:
+            if(inside(a, b)) { return ret; } else
+            if(inside(b, a)) {
+                s.outer = a;
+                s.inner.push_back(b);
+                ret.push_back(s);
+            } else {
+                s.outer = a;
+                ret.push_back(s);
+            }
+            return ret;
+        case INTERSECT:
+            if(inside(a, b)) {      s.outer = a; ret.push_back(s); }
+            else if(inside(b, a)) { s.outer = b; ret.push_back(s); }
+            return ret;
+        }
+    }
+    for(CrossIterator it = cr_a.begin(); it == cr_a.end(); it++) {
+        Path res;
+        CrossIterator i = it;
+        do {
+            //next is after oit
+            CrossIterator oit, next;
+            
+            /* This logical_xor basically switches the behavior of the if when
+             * doing an intersection */
+            if(logical_xor(it -> dir, btype == INTERSECT)) {
+                oit = cr_a.lower_bound(*it);
+                next = oit; next++;
+                if(next == cr_a.end()) next = cr_a.begin();
+                ret.concat(portion(a, it->ta, next->ta));
+            } else {
+                oit = cr_b.lower_bound(*it);
+                next = oit; next++;
+                if(next == cr_b.end()) next = cr_b.begin();
+                ret.concat(portion(b, it->tb, next->tb));
+            }
+            
+            //Remove all but the first crossing
+            //This way the function doesn't return duplicate paths
+            if (i != it) {
+                cr_a.erase(*oit);
+                cr_b.erase(*it);
+            }
+            it = next;
+        } while (!(*it == *i));
+    }
+    
+    return ret;
+}
+
 //The following path_* functions only work on simple paths with the same winding
 
 Path path_union(const Path & a, const Path & b,
@@ -132,6 +199,7 @@ Paths path_intersect(const Path & a, const Path & b,
             }
             it = next;
         } while (!(*i == *it));
+        ret.push_back(res);
     }
     
     return ret;
@@ -201,6 +269,7 @@ Paths path_subtract_reverse(const Path & a, const Path & b,
             }
             it = next;
         } while (!(*it == *i));
+        ret.push_back(res);
     }
     
     return ret;

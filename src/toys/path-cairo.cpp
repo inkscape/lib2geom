@@ -1,6 +1,7 @@
 #include <cairo.h>
 #include "path-cairo.h"
 #include "sbasis-to-bezier.h"
+#include "utils.h"
 
 using namespace Geom;
 

@@ -35,6 +35,7 @@ sb1d
 sb2d
 self-intersect
 #sketch-toy
+sweep
 #toy-cairo
 "${NEEDS_GSL}"
 )

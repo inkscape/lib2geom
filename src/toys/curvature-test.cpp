@@ -30,14 +30,14 @@ class CurvatureTester: public Toy {
         cairo_stroke(cr);
 
 	handles[4][1]=400;
-	handles[4][0]=std::max(150.,handles[4][0]);
-	handles[4][0]=std::min(450.,handles[4][0]);
+	handles[4][0]=Max(150.,handles[4][0]);
+	handles[4][0]=Min(450.,handles[4][0]);
 	cairo_move_to(cr, Geom::Point(150,400));
 	cairo_line_to(cr, Geom::Point(450,400));
 	cairo_set_source_rgba (cr, 0., 0., 0.5, 0.8);
 	cairo_stroke(cr);
 
-	double t=std::max(0.,std::min(1.,(handles[4][0]-150)/300.));
+	double t=Max(0.,Min(1.,(handles[4][0]-150)/300.));
         Piecewise<SBasis> K = curvature(B);
         
         for(unsigned ix = 0; ix < K.segs.size(); ix++) {
