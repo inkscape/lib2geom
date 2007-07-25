@@ -54,6 +54,9 @@ class D2<Interval> {
       }
     }
 
+    inline double width() const { return f[X].extent(); }
+    inline double height() const { return f[Y].extent(); }
+
     /** returns a vector from min to max. */
     inline Point dimensions() const { return Point(f[X].extent(), f[Y].extent()); }
     inline Point midpoint() const { return Point(f[X].middle(), f[Y].middle()); }

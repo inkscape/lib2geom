@@ -17,8 +17,6 @@ struct Crossing {
     bool operator==(const Crossing & other) const { return dir == other.dir && ta == other.ta && tb == other.tb; }
 };
 
-Crossing dummyCross(double t) { return Crossing(t, t, true); }
-
 struct OrderA { bool operator()(Crossing a, Crossing b) { return a.ta < b. ta; } };
 struct OrderB { bool operator()(Crossing a, Crossing b) { return a.tb < b. tb; } };
 
@@ -27,10 +25,8 @@ typedef std::set<Crossing, OrderA> CrossingsA;
 typedef std::set<Crossing, OrderB> CrossingsB;
 typedef CrossingsA::iterator CrossIterator;
 
-
-
 Crossings crossings(const Path & a, const Path & b);
-bool contains(const Path & p, Point i);
+bool contains(const Path & p, Point i) { return p.winding(i) != 0; }
 Path portion(const Path & p, double from, double to);
 
 //Shape unify(const Shape & a, const Shape & b);
@@ -43,6 +39,7 @@ class Shape {
     friend Shape unify(const Shape &, const Shape &);
     friend std::vector<Shape> path_boolean(BoolOp bo, const Path &, const Path &,
                                            CrossingsA &, CrossingsB &);
+    friend Paths shapes_to_paths(const std::vector<Shape> &);
   public:
 	Path getOuter() { return outer; }
 	Paths getHoles() { return holes; }
