@@ -7,7 +7,7 @@ bool disjoint(const Path & a, const Path & b) {
 }
 
 //Assumes that the shapes follow the invariants, and ccw outer, cw inner
-Shapes unify(BoolOp btype, const Shape & a, const Shape & b) {
+Shapes shape_boolean(BoolOp btype, const Shape & a, const Shape & b) {
     //Get sorted sets of crossings
     Crossings cr = crossings(a.outer, b.outer);
     CrossingsA cr_a(cr.begin(), cr.end());
@@ -30,6 +30,9 @@ Shapes unify(BoolOp btype, const Shape & a, const Shape & b) {
         ret = path_boolean(INTERSECT, a.outer, b.outer, cr_a, cr_b);
         break;
     }
+    
+    //Var used a bit later in SUBTRACT routines
+    unsigned initial_count = ret.size();
     
     //Copies of the holes, so that some may be removed / replaced by portions
     Paths holes[] = { a.holes, b.holes };
@@ -76,41 +79,60 @@ Shapes unify(BoolOp btype, const Shape & a, const Shape & b) {
                     }
                 }
             }
+            for(unsigned p = 0; p < 2; p++)
+            ret.holes.insert(ret.holes.end(), holes[p].begin(), holes[p].end());
             break;
         }
         case SUBTRACT: {
-            Paths withins[2];
-            for(unsigned p = 0; p < 2; p++) {
-                for ( Paths::iterator holei = holes[p].begin();
-                        holei != holes[p].end(); holei++ ) {
-                    Crossings hcr = crossings(*inner, *holei);
-                    if(hcr.empty()) {
-                        if(contains(*inner, holei->initialPoint())) {
-                            withins[p*2].push_back(*holei);
-                        }
-                    } else {
-                        CrossingsA hcr_a(hcr.begin(), hcr.end());
-                        CrossingsB hcr_b(hcr_a.begin(), hcr_a.end());
-                        Paths ps = path_intersect(*inner, *holei, hcr_a, hcr_b);
-                        withins[p*2+1].insert(withins[p*2+1].end(), ps.start(), ps.end());
+            //Appends the holes in the subtractor that are within A to the result
+            for ( Paths::iterator holei = holes[1].begin();
+                    holei != holes[1].end(); holei++ ) {
+                Crossings hcr = crossings(*inner, *holei);
+                if(hcr.empty()) {
+                    if(contains(*inner, holei->initialPoint())) {
+                        Shape s;
+                        s.outer = *holei;
+                        res.push_back(s);
                     }
+                } else {
+                    CrossingsA hcr_a(hcr.begin(), hcr.end());
+                    CrossingsB hcr_b(hcr_a.begin(), hcr_a.end());
+                    Shapes ps = path_boolean(INTERSECT, *inner, *holei, hcr_a, hcr_b);
+                    res.insert(res.end(), ps.start(), ps.end());
                 }
             }
-            for(unsigned p = 0; p < 2; p++) {
-                for(unsigned add = 0; add < 2; add++) {
-                    unsigned n = p + add;
-                    
-                }
+            
+            Shapes returns;
+            for ( unsigned i = 0; i < ret.size(); i++) {
+                for ( Paths::iterator j = holes[0].begin();
+                         j != holes[0].end(); j++ ) {
+                    Crossings hcr = crossings(i, ret[i].outer);
+                    CrossingsA hcr_a(hcr.begin(), hcr.end());
+                    CrossingsB hcr_b(hcr_a.begin(), hcr_a.end());
+                    Shapes ps = shape_boolean(ret[i], *j, hcr_a, hcr_b);
+                    returns.insert(returns.end(), ps.start(), ps.end());
             }
-            break;
+            return returns;
         }
     }
-    for(unsigned p = 0; p < 2; p++)
-        ret.holes.insert(ret.holes.end(), holes[p].begin(), holes[p].end());
+
     return ret;
 }
 
 bool logical_xor (bool a, bool b) { return (a || b) && !(a && b); }
+
+Shapes path_boolean(BoolOp btype, const Path & a, const Path & b) {
+    Crossings cr = crossings(a, b);
+    CrossingsA cr_a(cr.begin(), cr.end());
+    CrossingsB cr_b(cr_a.begin(), cr_a.end());
+    return path_boolean(btype, a, b, cr_a, cr_b);
+}
+Shapes path_subtract(const Path & a, const Path & b) {
+    Crossings cr = crossings(a, b);
+    CrossingsA cr_a(cr.begin(), cr.end());
+    CrossingsB cr_b(cr_a.begin(), cr_a.end());
+    return path_subtract(a, b, cr_a, cr_b);
+}
 
 /*This just reverses b and calls path_boolean(SUBTRACT, ...).
   It turns out path_subtract_reverse is used much more often anyway. */
@@ -125,6 +147,7 @@ Shapes path_subtract(const Path & a, const Path & b,
     }
     return path_subtract_reverse(a, b.reverse(), cr_a, new_cr_b);
 }
+
 
 /* This handles all the boolean ops in one function.  The middle function
  * is the main area of similarity between each.  The initial and ending

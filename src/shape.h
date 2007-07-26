@@ -53,15 +53,35 @@ inline Paths shapes_to_paths(const Shapes & s) {
     return ret;
 }
 
-Shapes path_boolean(BoolOp bo, const Path & a, const Path & b, CrossingsA & cr_a, CrossingsB & cr_b);
+Shapes path_boolean(BoolOp bo, const Path & a);
+Shapes path_boolean(BoolOp bo, const Path & a, const Path & b,
+                               CrossingsA & cr_a, CrossingsB & cr_b);
 
-Shapes path_subtract(const Path & a, const Path & b, CrossingsA & cr_a, CrossingsB & cr_b);
+Shapes path_subtract(const Path & a, const Path & b);
+Shapes path_subtract(const Path & a, const Path & b,
+                     CrossingsA & cr_a, CrossingsB & cr_b);
 
-inline Shapes path_union(const Path & a, const Path & b, CrossingsA & cr_a, CrossingsB & cr_b)
-{ return path_boolean(UNION, a, b, cr_a, cr_b); }
-inline Shapes path_subtract_reverse(const Path & a, const Path & b, CrossingsA & cr_a, CrossingsB & cr_b )
-{ return path_boolean(SUBTRACT, a, b, cr_a, cr_b); }
-inline Paths path_intersect(const Path & a, const Path & b, CrossingsA & cr_a, CrossingsB & cr_b ) {
+inline Shapes path_union(const Path & a, const Path & b) {
+    return path_boolean(UNION, a, b);
+}
+inline Shapes path_union(const Path & a, const Path & b, 
+                         CrossingsA & cr_a, CrossingsB & cr_b) {
+    return path_boolean(UNION, a, b, cr_a, cr_b);
+}
+
+inline Shapes path_subtract_reverse(const Path & a, const Path & b) {
+    return path_boolean(SUBTRACT, a, b);
+}
+inline Shapes path_subtract_reverse(const Path & a, const Path & b,
+                                    CrossingsA & cr_a, CrossingsB & cr_b ) {
+    return path_boolean(SUBTRACT, a, b, cr_a, cr_b);
+}
+
+inline Paths path_intersect(const Path & a, const Path & b) {
+    return shapes_to_paths(path_boolean(INTERSECT, a, b);
+}
+inline Paths path_intersect(const Path & a, const Path & b,
+                            CrossingsA & cr_a, CrossingsB & cr_b ) {
     return shapes_to_paths(path_boolean(INTERSECT, a, b, cr_a, cr_b));
 }
 
