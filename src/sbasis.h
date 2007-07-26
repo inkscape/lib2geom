@@ -213,7 +213,7 @@ SBasis shift(Linear const &a, int sh);
 
 inline SBasis truncate(SBasis const &a, unsigned terms) {
     SBasis c;
-    c.insert(c.begin(), a.begin(), a.begin() + Min(terms, a.size()));
+    c.insert(c.begin(), a.begin(), a.begin() + Min(terms, (unsigned)a.size()));
     return c;
 }
 

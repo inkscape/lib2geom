@@ -1,62 +1,108 @@
 #include "shape.h"
 
-namespace Geom 
+namespace Geom {
 
-
+bool disjoint(const Path & a, const Path & b) {
+    return !contains(a, b.initialPoint()) && !contains(b, a.initialPoint());
+}
 
 //Assumes that the shapes follow the invariants, and ccw outer, cw inner
-Shape unify(const Shape & a, const Shape & b) {
+Shapes unify(BoolOp btype, const Shape & a, const Shape & b) {
     //Get sorted sets of crossings
     Crossings cr = crossings(a.outer, b.outer);
     CrossingsA cr_a(cr.begin(), cr.end());
     CrossingsB cr_b(cr_a.begin(), cr_a.end());
     
-    Shape ret = path_union(a.outer, b.outer, cr_a, cr_b).front();
+    Shapes ret;
+    Shape main;
     
-    //Copies of the holes, so that some may be removed
-    Paths holes[] = { a.holes, b.holes };
-    
-    //Stores groups of possibly intersecting holes
-    std::vector<std::pair<Paths, Paths> > inner_holes;
-    
-    Paths inters = path_intersect(a.outer, b.outer, cr_a, cr_b);
-    for(Paths::iterator inner = inters.begin(); inner != inters.end(); inner++) {
-        Paths withins[2];
-        for(unsigned p = 0; p < 2; p++) {
-            for ( Paths::iterator holei = holes[p].begin();
-                    holei != holes[p].end(); holei++ ) {
-                Crossings hcr = crossings(*inner, *holei);
-                CrossingsA hcr_a(hcr.begin(), hcr.end());
-                CrossingsB hcr_b(hcr_a.begin(), hcr_a.end());
-                
-                Paths innards = path_intersect(*holei, *inner, hcr_a, hcr_b);
-                withins[p].insert(withins[p].end(), innards.begin(), innards.end());
-                
-                //replaces the original holes entry with the remaing fragments
-                Paths remains = shapes_to_paths(path_subtract_reverse(*holei, *inner, hcr_a, hcr_b));
-                holes[p].insert(holei, remains.begin(), remains.end());
-                holes[p].erase(holei);
-            }
-        }
-        inner_holes.push_back(std::pair<Paths, Paths>(withins[0], withins[1]));
+    switch(btype) {
+    case UNION:
+        if(cr.empty() && disjoint(a, b)) { ret.push_back(a); ret.push_back(b); return ret; }
+        ret = path_union(a.outer, b.outer, cr_a, cr_b);
+        break;
+    case SUBTRACT:
+        if(cr.empty() && disjoint(a, b)) { ret.push_back(a); return a; }
+        ret = path_subtract(a.outer, b.outer, cr_a, cr_b);
+        break;
+    case INTERSECT:
+        if(cr.empty() && disjoint(a, b)) { return ret; }
+        ret = path_boolean(INTERSECT, a.outer, b.outer, cr_a, cr_b);
+        break;
     }
     
-    //intersect the holes
-    for(unsigned i = 0; i < inner_holes.size(); i++) {
-        unsigned mj = inner_holes[i].first.size(), mk = inner_holes[i].second.size();
-        for(Paths::iterator j = inner_holes[i].first.begin();
-                            j!= inner_holes[i].first.end(); j++) {
-            for(Paths::iterator k = inner_holes[i].second.begin();
-                                k!= inner_holes[i].second.end(); k++) {
-                Crossings hcr = crossings(*j, *k);
-                if(!hcr.empty()) {
+    //Copies of the holes, so that some may be removed / replaced by portions
+    Paths holes[] = { a.holes, b.holes };
+    
+    Paths inters = btype == INTERSECT ? shapes_to_path(ret) :
+                   path_intersect(a.outer, b.outer, cr_a, cr_b);
+    for(Paths::iterator inner = inters.begin(); inner != inters.end(); inner++) {
+        switch(btype) {
+                Paths on_edge[2];
+                    
+                            Shapes ps = path_subtract(*k, *j, hcr_a, hcr_b);
+                            for(unsigned si = 0; si < ps.size(); si++) {
+                                ret.push_back();
+                            }
+        case UNION: {
+            Paths withins[2];
+            for(unsigned p = 0; p < 2; p++) {
+                for ( Paths::iterator holei = holes[p].begin();
+                        holei != holes[p].end(); holei++ ) {
+                    Crossings hcr = crossings(*inner, *holei);
                     CrossingsA hcr_a(hcr.begin(), hcr.end());
                     CrossingsB hcr_b(hcr_a.begin(), hcr_a.end());
+                    Paths innards = path_intersect(*holei, *inner, hcr_a, hcr_b);
+                    if(!innards.empty()) {
+                        withins[p].insert(withins[p].end(), innards.begin(), innards.end());
                     
-                    Paths ps = path_intersect(*j, *k, hcr_a, hcr_b);
-                    ret.holes.insert(ret.holes.end(), ps.begin(), ps.end());
+                        //replaces the original holes entry with the remaing fragments
+                        Paths remains = shapes_to_paths(path_subtract_reverse(*holei, *inner, hcr_a, hcr_b));
+                        holes[p].insert(holei, remains.begin(), remains.end());
+                        holes[p].erase(holei);
+                    }
                 }
             }
+            unsigned mj = withins[0].size(), mk = withins[1].size();
+            for(Paths::iterator j = withins[0].begin(); j!= withins[0].end(); j++) {
+                for(Paths::iterator k = withins[1].begin(); k!= withins[1].end(); k++) {
+                    Crossings hcr = crossings(*j, *k);
+                    if(!hcr.empty()) {
+                        CrossingsA hcr_a(hcr.begin(), hcr.end());
+                        CrossingsB hcr_b(hcr_a.begin(), hcr_a.end());
+                        //By the nature of intersect, we don't need to accumulate
+                        Paths ps = path_intersect(*j, *k, hcr_a, hcr_b);
+                        ret.holes.insert(ret.holes.end(), ps.begin(), ps.end());
+                    }
+                }
+            }
+            break;
+        }
+        case SUBTRACT: {
+            Paths withins[2];
+            for(unsigned p = 0; p < 2; p++) {
+                for ( Paths::iterator holei = holes[p].begin();
+                        holei != holes[p].end(); holei++ ) {
+                    Crossings hcr = crossings(*inner, *holei);
+                    if(hcr.empty()) {
+                        if(contains(*inner, holei->initialPoint())) {
+                            withins[p*2].push_back(*holei);
+                        }
+                    } else {
+                        CrossingsA hcr_a(hcr.begin(), hcr.end());
+                        CrossingsB hcr_b(hcr_a.begin(), hcr_a.end());
+                        Paths ps = path_intersect(*inner, *holei, hcr_a, hcr_b);
+                        withins[p*2+1].insert(withins[p*2+1].end(), ps.start(), ps.end());
+                    }
+                }
+            }
+            for(unsigned p = 0; p < 2; p++) {
+                for(unsigned add = 0; add < 2; add++) {
+                    unsigned n = p + add;
+                    
+                }
+            }
+            break;
         }
     }
     for(unsigned p = 0; p < 2; p++)
