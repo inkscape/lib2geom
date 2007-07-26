@@ -29,14 +29,14 @@ Crossings crossings(const Path & a, const Path & b);
 bool contains(const Path & p, Point i) { return p.winding(i) != 0; }
 Path portion(const Path & p, double from, double to);
 
-//Shape unify(const Shape & a, const Shape & b);
-
 enum BoolOp { UNION, SUBTRACT, INTERSECT };
 
 class Shape {
 	Path outer;
 	Paths holes;
-    friend Shape unify(const Shape &, const Shape &);
+    friend std::vector<Shape> shape_union(const Shape &, const Shape &);
+    friend std::vector<Shape> shape_subtract(const Shape &, const Shape &);
+    friend std::vector<Shape> shape_intersect(const Shape &, const Shape &);
     friend std::vector<Shape> path_boolean(BoolOp bo, const Path &, const Path &,
                                            CrossingsA &, CrossingsB &);
     friend Paths shapes_to_paths(const std::vector<Shape> &);
@@ -53,7 +53,7 @@ inline Paths shapes_to_paths(const Shapes & s) {
     return ret;
 }
 
-Shapes path_boolean(BoolOp bo, const Path & a);
+Shapes path_boolean(BoolOp bo, const Path & a, const Path & b);
 Shapes path_boolean(BoolOp bo, const Path & a, const Path & b,
                                CrossingsA & cr_a, CrossingsB & cr_b);
 
@@ -78,7 +78,7 @@ inline Shapes path_subtract_reverse(const Path & a, const Path & b,
 }
 
 inline Paths path_intersect(const Path & a, const Path & b) {
-    return shapes_to_paths(path_boolean(INTERSECT, a, b);
+    return shapes_to_paths(path_boolean(INTERSECT, a, b));
 }
 inline Paths path_intersect(const Path & a, const Path & b,
                             CrossingsA & cr_a, CrossingsB & cr_b ) {
