@@ -341,7 +341,8 @@ D2<T>::operator()(double x, double y) const {
     for(unsigned i = 0; i < 2; i++)
        p[i] = (*this)[i](x, y);
     return p;
-}
+}
+
 
 template<typename T>
 D2<T> derivative(D2<T> const & a) {
@@ -357,7 +358,8 @@ D2<T> integral(D2<T> const & a) {
 
 
 
-//TODO: implement intersect
+//TODO: implement intersect
+
 
 #include "rect.h"
 #include "sbasis.h"
@@ -408,14 +410,15 @@ double tail_error(D2<SBasis> const & a, unsigned tail);
 //Piecewise<D2<SBasis> > specific decls:
 
 Piecewise<D2<SBasis> > sectionize(D2<Piecewise<SBasis> > const &a);
-D2<Piecewise<SBasis> > makeCutsIndependant(Piecewise<D2<SBasis> > const &a);
+D2<Piecewise<SBasis> > make_cuts_independant(Piecewise<D2<SBasis> > const &a);
 Piecewise<D2<SBasis> > rot90(Piecewise<D2<SBasis> > const &a);
 Piecewise<SBasis> dot(Piecewise<D2<SBasis> > const &a, Piecewise<D2<SBasis> > const &b);
 Piecewise<SBasis> cross(Piecewise<D2<SBasis> > const &a, Piecewise<D2<SBasis> > const &b);
 
 Piecewise<D2<SBasis> > force_continuity(Piecewise<D2<SBasis> > const &f, 
                                         double tol=0,
-                                        bool closed=false);
+                                        bool closed=false);
+
 class CoordIterator
 : public std::iterator<std::input_iterator_tag, SBasis const>
 {
