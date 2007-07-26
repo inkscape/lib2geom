@@ -38,7 +38,6 @@
 #include <boost/optional/optional.hpp>
 #include "d2.h"
 #include "bezier-to-sbasis.h"
-#include "utils.h"
 
 namespace Geom {
 

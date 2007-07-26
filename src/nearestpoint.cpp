@@ -15,8 +15,6 @@
 
 /*	point_on_curve.c	*/
 
-#include "utils.h"
-
 static double SquaredLength(const Geom::Point a) 
 {
     return dot(a, a);
@@ -131,8 +129,8 @@ static Geom::Point *ConvertToBezierForm(
     const int n = DEGREE;
     const int m = DEGREE-1;
     for (int k = 0; k <= n + m; k++) {
-        const int lb = Max(0, k - m);
-        const int ub = Min(k, n);
+        const int lb = std::max(0, k - m);
+        const int ub = std::min(k, n);
         for (int i = lb; i <= ub; i++) {
             int j = k - i;
             w[i+j][Geom::Y] += cdTable[j][i] * z[j][i];
@@ -284,10 +282,10 @@ static int ControlPolygonFlatEnough(
     max_distance_below = 0.0;
     for (i = 1; i < degree; i++) {
         if (distance[i] < 0.0) {
-            max_distance_below = Min(max_distance_below, distance[i]);
+            max_distance_below = std::min(max_distance_below, distance[i]);
         };
         if (distance[i] > 0.0) {
-            max_distance_above = Max(max_distance_above, distance[i]);
+            max_distance_above = std::max(max_distance_above, distance[i]);
         }
     }
     free((char *)distance);
@@ -321,8 +319,8 @@ static int ControlPolygonFlatEnough(
     }
 
     /* Compute intercepts of bounding box	*/
-    left_intercept = Min(intercept_1, intercept_2);
-    right_intercept = Max(intercept_1, intercept_2);
+    left_intercept = std::min(intercept_1, intercept_2);
+    right_intercept = std::max(intercept_1, intercept_2);
 
     error = 0.5 * (right_intercept-left_intercept);    
     if (error < EPSILON) {

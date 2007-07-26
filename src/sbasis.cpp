@@ -57,7 +57,7 @@ double SBasis::tail_error(unsigned tail) const {
 
 double SBasis::tailError(unsigned tail) const {
   Interval bs = bounds_fast(*this, tail);
-  return Max(fabs(bs.min()),fabs(bs.max()));
+  return std::max(fabs(bs.min()),fabs(bs.max()));
 }
 
 bool SBasis::isFinite() const {
@@ -70,8 +70,8 @@ bool SBasis::isFinite() const {
 
 SBasis operator+(const SBasis& a, const SBasis& b) {
     SBasis result;
-    const unsigned out_size = Max(a.size(), b.size());
-    const unsigned min_size = Min(a.size(), b.size());
+    const unsigned out_size = std::max(a.size(), b.size());
+    const unsigned min_size = std::min(a.size(), b.size());
     result.reserve(out_size);
     
     for(unsigned i = 0; i < min_size; i++) {
@@ -88,8 +88,8 @@ SBasis operator+(const SBasis& a, const SBasis& b) {
 
 SBasis operator-(const SBasis& a, const SBasis& b) {
     SBasis result;
-    const unsigned out_size = Max(a.size(), b.size());
-    const unsigned min_size = Min(a.size(), b.size());
+    const unsigned out_size = std::max(a.size(), b.size());
+    const unsigned min_size = std::min(a.size(), b.size());
     result.reserve(out_size);
     
     for(unsigned i = 0; i < min_size; i++) {
@@ -105,8 +105,8 @@ SBasis operator-(const SBasis& a, const SBasis& b) {
 }
 
 SBasis& operator+=(SBasis& a, const SBasis& b) {
-    const unsigned out_size = Max(a.size(), b.size());
-    const unsigned min_size = Min(a.size(), b.size());
+    const unsigned out_size = std::max(a.size(), b.size());
+    const unsigned min_size = std::min(a.size(), b.size());
     a.reserve(out_size);
         
     for(unsigned i = 0; i < min_size; i++)
@@ -119,8 +119,8 @@ SBasis& operator+=(SBasis& a, const SBasis& b) {
 }
 
 SBasis& operator-=(SBasis& a, const SBasis& b) {
-    const unsigned out_size = Max(a.size(), b.size());
-    const unsigned min_size = Min(a.size(), b.size());
+    const unsigned out_size = std::max(a.size(), b.size());
+    const unsigned min_size = std::min(a.size(), b.size());
     a.reserve(out_size);
         
     for(unsigned i = 0; i < min_size; i++)

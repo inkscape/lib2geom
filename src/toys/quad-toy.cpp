@@ -88,10 +88,10 @@ class QuadToy: public Toy {
             //cairo_move_to(cr, p0);
             //cairo_line_to(cr, p1);
             cairo_stroke(cr);
-            double x0 = centre[0]-rad;//Min(p0[0], p1[0]);
-            double x1 = centre[0]+rad;//Max(p0[0], p1[0]);
-            double y0 = centre[1]-rad;//Min(p0[1], p1[1]);
-            double y1 = centre[1]+rad;//Max(p0[1], p1[1]);
+            double x0 = centre[0]-rad;//std::min(p0[0], p1[0]);
+            double x1 = centre[0]+rad;//std::max(p0[0], p1[0]);
+            double y0 = centre[1]-rad;//std::min(p0[1], p1[1]);
+            double y1 = centre[1]+rad;//std::max(p0[1], p1[1]);
             qt.insert(x0, y0, x1, y1, i);
         }
         clean_quad_tree(qt.root);

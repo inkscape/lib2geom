@@ -137,10 +137,10 @@ int compose_findSegIdx(std::map<double,unsigned>::iterator  const &cut,
     unsigned idx1=(*next).second;
     assert(t0<t1);
     int  idx; //idx of the relevant f.segs
-    if (Max(idx0,idx1)==levels.size()){ //g([t0,t1]) is above the top level,
+    if (std::max(idx0,idx1)==levels.size()){ //g([t0,t1]) is above the top level,
       idx=levels.size()-1;
     } else if (idx0 != idx1){                //g([t0,t1]) crosses from level idx0 to idx1,
-      idx=Min(idx0,idx1);
+      idx=std::min(idx0,idx1);
     } else if(g((t0+t1)/2) < levels[idx0]) { //g([t0,t1]) is a 'U' under level idx0,
       idx=idx0-1;
     } else if(g((t0+t1)/2) > levels[idx0]) { //g([t0,t1]) is a 'bump' over level idx0,

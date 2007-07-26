@@ -347,8 +347,8 @@ Piecewise<T> portion(const Piecewise<T> &pw, double from, double to) {
     Piecewise<T> ret;
 
     double temp = from;
-    from = Min(from, to);
-    to = Max(temp, to);
+    from = std::min(from, to);
+    to = std::max(temp, to);
     
     unsigned i = pw.segN(from);
     ret.push_cut(from);

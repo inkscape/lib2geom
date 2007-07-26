@@ -131,7 +131,7 @@ subpath_from_sbasis_incremental(Geom::OldPathSetBuilder &pb, D2<SBasis> B, doubl
         double A = std::sqrt(tol/te); // pow(te, 1./k)
         double a = A;
         if(A < 1) {
-            A = Min(A, 0.25);
+            A = std::min(A, 0.25);
             a = 0.5 - std::sqrt(0.25 - A); // quadratic formula
             if(a > 1) a = 1; // clamp to the end of the segment
         } else

@@ -132,8 +132,8 @@ Rect BezierHelpers::bounds(unsigned degree, Point const *points) {
   Point max=points[0];
   for ( unsigned i = 1 ; i <= degree ; ++i ) {
     for ( unsigned axis = 0 ; axis < 2 ; ++axis ) {
-      min[axis] = Min(min[axis], points[i][axis]);
-      max[axis] = Max(max[axis], points[i][axis]);
+      min[axis] = std::min(min[axis], points[i][axis]);
+      max[axis] = std::max(max[axis], points[i][axis]);
     }
   }
   return Rect(min, max);

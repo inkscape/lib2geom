@@ -48,12 +48,12 @@ D2<SBasis> truncate(D2<SBasis> const & a, unsigned terms) {
 }
 
 unsigned sbasis_size(D2<SBasis> const & a) {
-    return Max((unsigned) a[0].size(), (unsigned) a[1].size());
+    return std::max((unsigned) a[0].size(), (unsigned) a[1].size());
 }
 
 //TODO: Is this sensical? shouldn't it be like pythagorean or something?
 double tail_error(D2<SBasis> const & a, unsigned tail) {
-    return Max(a[0].tailError(tail), a[1].tailError(tail));
+    return std::max(a[0].tailError(tail), a[1].tailError(tail));
 }
 
 Piecewise<D2<SBasis> > sectionize(D2<Piecewise<SBasis> > const &a) {

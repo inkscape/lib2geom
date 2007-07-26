@@ -130,7 +130,7 @@ vector<D2<SBasis> > compose(NormalBundle const &NB,
         double t1=(*next).first;
         unsigned  idx1=(*next).second;
         if (idx0 != idx1){
-            idx=Min(idx0,idx1);
+            idx=std::min(idx0,idx1);
         } else if(B[0]((t0+t1)/2) < NB.lengths[idx0]) { // we have a left 'bump',
             idx=idx0-1;
         } else if(B[0]((t0+t1)/2) == NB.lengths[idx0]) { //we have a vertical segment!...

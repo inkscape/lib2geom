@@ -222,8 +222,8 @@ class GearToy: public Toy {
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         cairo_set_source_rgba (cr, 0., 0., 0, 0.8);
         cairo_set_line_width (cr, 0.5);
-        double dominant_dim = Max(width,height);
-        double minor_dim = Min(width,height);
+        double dominant_dim = std::max(width,height);
+        double minor_dim = std::min(width,height);
         
         Geom::Point centre = Geom::Point(width/2,height/2);
         /* draw cross hairs

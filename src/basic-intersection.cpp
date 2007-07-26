@@ -316,14 +316,14 @@ inline double log4( double x ) { return log(x)/log(4.); }
  */
 
 double Lmax(Point p) {
-    return Max(fabs(p[X]), fabs(p[Y]));
+    return std::max(fabs(p[X]), fabs(p[Y]));
 }
 
 unsigned wangs_theorem(OldBezier a) {
     return 12; // seems a good approximation!
     double la1 = Lmax( ( a.p[2] - a.p[1] ) - (a.p[1] - a.p[0]) );
     double la2 = Lmax( ( a.p[3] - a.p[2] ) - (a.p[2] - a.p[1]) );
-    double l0 = Max(la1, la2);
+    double l0 = std::max(la1, la2);
     unsigned ra;
     if( l0 * 0.75 * M_SQRT2 + 1.0 == 1.0 ) 
         ra = 0;

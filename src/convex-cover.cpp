@@ -348,7 +348,7 @@ ConvexHull sweepline_intersection(ConvexHull const &a, ConvexHull const &b) {
         bl++;
     }
     // al and bl now point to the top of the first pair of edges that overlap in y value
-    double sweep_y = Min(a.boundary[al][Y],
+    double sweep_y = std::min(a.boundary[al][Y],
                               b.boundary[bl][Y]);
 }
 
