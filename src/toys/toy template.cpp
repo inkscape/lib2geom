@@ -20,7 +20,7 @@ class MyToy: public Toy {
 };
 
 int main(int argc, char **argv) {
-    init(argc, argv, argv[0], new MyToy());
+    init(argc, argv, new MyToy());
     return 0;
 }
 
