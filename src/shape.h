@@ -1,3 +1,6 @@
+#ifndef __2GEOM_SHAPE_H
+#define __2GEOM_SHAPE_H
+
 #include <vector>
 #include <list>
 #include <set>
@@ -86,3 +89,5 @@ inline Paths path_intersect(const Path & a, const Path & b,
 }
 
 }
+
+#endif

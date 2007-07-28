@@ -37,7 +37,7 @@
 #include <stdexcept>
 #include <boost/optional/optional.hpp>
 #include "d2.h"
-#include "bezier-to-sbasis.h"
+#include "bezier.h"
 
 namespace Geom {
 
@@ -52,16 +52,14 @@ public:
 
   virtual Curve *duplicate() const = 0;
 
-  virtual Rect bounds_fast() const = 0;
-  virtual Rect bounds_exact() const = 0;
+  virtual Rect boundsFast() const = 0;
+  virtual Rect boundsExact() const = 0;
 
   virtual boost::optional<int> winding(Point p) const = 0;
 
-  virtual Path const &subdivide(Coord t, Path &out) const = 0;
-
-  Point pointAt(Coord t) const { return pointAndDerivativesAt(t, 0, NULL); }
-  virtual Point pointAndDerivativesAt(Coord t, unsigned n, Point *ds) const = 0;
-  virtual D2<SBasis> sbasis() const = 0;
+  virtual Point valueAt(Coord t) const { return valueAndDerivatives(t, 1).front(); }
+  virtual std::vector<Point> valueAndDerivatives(Coord t, unsigned n) const = 0;
+  virtual D2<SBasis> toSBasis() const = 0;
 };
 
 struct CurveHelpers {
@@ -69,93 +67,86 @@ protected:
   static boost::optional<int> sbasis_winding(D2<SBasis> const &sbasis, Point p);
 };
 
-struct BezierHelpers {
-protected:
-  static Rect bounds(unsigned degree, Point const *points);
-  static Point point_and_derivatives_at(Coord t,
-                                        unsigned degree, Point const *points,
-                                        unsigned n_derivs, Point *derivs);
-  static Point subdivideArr(Coord t, unsigned degree, Point const *V,
-                         Point *Left, Point *Right);
-
-};
-
-template <unsigned bezier_degree>
-class Bezier : public Curve, private CurveHelpers, private BezierHelpers {
+template <unsigned order>
+class BezierCurve : public Curve, private CurveHelpers {
+private:
+  D2<Bezier<order> > inner;
 public:
   template <unsigned required_degree>
-  static void assert_degree(Bezier<required_degree> const *) {}
+  static void assert_degree(BezierCurve<required_degree> const *) {}
 
-  Bezier() {}
+  BezierCurve() {}
+
+  BezierCurve(D2<Bezier<order> > const & x) { inner = x; }
 
   // default copy
   // default assign
 
-  Bezier(Point c0, Point c1) {
+  BezierCurve(Point c0, Point c1) {
     assert_degree<1>(this);
-    c_[0] = c0;
-    c_[1] = c1;
+    for(unsigned d = 0; d < 2; d++)
+        inner[d] = Bezier<order>(c0[d], c1[d]);
   }
 
-  Bezier(Point c0, Point c1, Point c2) {
+  BezierCurve(Point c0, Point c1, Point c2) {
     assert_degree<2>(this);
-    c_[0] = c0;
-    c_[1] = c1;
-    c_[2] = c2;
+    for(unsigned d = 0; d < 2; d++)
+        inner[d] = Bezier<order>(c0[d], c1[d], c2[d]);
   }
 
-  Bezier(Point c0, Point c1, Point c2, Point c3) {
+  BezierCurve(Point c0, Point c1, Point c2, Point c3) {
     assert_degree<3>(this);
-    c_[0] = c0;
-    c_[1] = c1;
-    c_[2] = c2;
-    c_[3] = c3;
+    for(unsigned d = 0; d < 2; d++)
+        inner[d] = Bezier<order>(c0[d], c1[d], c2[d], c3[d]);
   }
 
-  unsigned degree() const { return bezier_degree; }
+  unsigned degree() const { return order; }
 
-  Curve *duplicate() const { return new Bezier(*this); }
+  Curve *duplicate() const { return new BezierCurve(*this); }
 
-  Point initialPoint() const { return c_[0]; }
-  Point finalPoint() const { return c_[bezier_degree]; }
+  Point initialPoint() const { return inner.at0(); }
+  Point finalPoint() const { return inner.at1(); }
 
-  Point &operator[](int index) { return c_[index]; }
-  Point const &operator[](int index) const { return c_[index]; }
-
-  Rect bounds_fast() const { return bounds(bezier_degree, c_); }
-  Rect bounds_exact() const { return bounds(bezier_degree, c_); }
+  void setPoint(unsigned ix, Point v) { inner[X][ix] = v[X]; inner[Y][ix] = v[Y]; }
+  Point operator[](unsigned ix) const { return Point(inner[X][ix], inner[Y][ix]); }
+  
+  Rect boundsFast() const { return bounds_fast(inner); }
+  Rect boundsExact() const { return bounds_exact(inner); }
+//TODO: local
 
   boost::optional<int> winding(Point p) const {
-    return sbasis_winding(sbasis(), p);
+    return sbasis_winding(toSBasis(), p);
   }
-
-  Path const &subdivide(Coord t, Path &out) const;
   
-  Point pointAndDerivativesAt(Coord t, unsigned n_derivs, Point *derivs)
-  const
-  {
-    return point_and_derivatives_at(t, bezier_degree, c_, n_derivs, derivs);
+  std::pair<BezierCurve<order>, BezierCurve<order> > subdivide(Coord t) const {
+    Bezier<order> sx = inner[X].subdivide(t), sy = inner[Y].subdivide(t);
+    return std::pair<BezierCurve<order>, BezierCurve<order> >(
+               BezierCurve<order>(sx.first, sy.first),
+               BezierCurve<order>(sx.second, sy.second));
   }
+  
+  //Curve portion(Interval i) const;
+  
+  std::vector<Point> valueAndDerivatives(Coord t, unsigned n) const { return inner.valueAndDerivatives(t, n); }
 
-  D2<SBasis> sbasis() const {
-    return handles_to_sbasis<bezier_degree>(c_);
-  }
+  D2<SBasis> toSBasis() const {return inner.toSBasis(); }
 
 protected:
-  Bezier(Point c[]) {
-    std::copy(c, c+bezier_degree+1, c_);
+  BezierCurve(Point c[]) {
+    Coord x[order+1], y[order+1];
+    for(unsigned i = 0; i <= order; i++) {
+        x[i] = c[i][X]; y[i] = c[i][Y];
+    }
+    inner = Bezier<order>(x, y);
   }
-
-private:
-  Point c_[bezier_degree+1];
 };
 
-// Bezier<0> is meaningless; specialize it out
-template<> class Bezier<0> { Bezier(); };
+// BezierCurve<0> is meaningless; specialize it out
+template<> class BezierCurve<0> { BezierCurve(); };
 
-typedef Bezier<1> LineSegment;
-typedef Bezier<2> QuadraticBezier;
-typedef Bezier<3> CubicBezier;
+typedef BezierCurve<1> LineSegment;
+typedef BezierCurve<2> QuadraticBezier;
+typedef BezierCurve<3> CubicBezier;
 
 class SVGEllipticalArc : public Curve, private CurveHelpers {
 public:
@@ -173,18 +164,18 @@ public:
   Point initialPoint() const { return initial_; }
   Point finalPoint() const { return final_; }
 
-  Rect bounds_fast() const;
-  Rect bounds_exact() const;
+  Rect boundsFast() const;
+  Rect boundsExact() const;
 
   boost::optional<int> winding(Point p) const {
-    return sbasis_winding(sbasis(), p);
+    return sbasis_winding(toSBasis(), p);
   }
 
-  Path const &subdivide(Coord t, Path &out) const;
+  Path portion(Interval i) const;
   
-  Point pointAndDerivativesAt(Coord t, unsigned n_derivs, Point *derivs) const;
+  std::vector<Point> valueAndDerivatives(Coord t, unsigned n) const;
 
-  D2<SBasis> sbasis() const;
+  D2<SBasis> toSBasis() const;
 
 private:
   Point initial_;
@@ -194,40 +185,47 @@ private:
   bool large_arc_;
   bool sweep_;
   Point final_;
+  
+  friend std::pair<SVGEllipticalArc, SVGEllipticalArc> subdivide(SVGEllipticalArc const & x, Coord t);
 };
+
+inline std::pair<SVGEllipticalArc, SVGEllipticalArc>
+subdivide(SVGEllipticalArc const & x, Coord t) {
+  SVGEllipticalArc a(x), b(x);
+  a.final_ = b.initial_ = x.valueAt(t);
+  return std::pair<SVGEllipticalArc, SVGEllipticalArc>(a, b);
+}
 
 class SBasisCurve : public Curve, private CurveHelpers {
 private:
   SBasisCurve();
+  D2<SBasis> inner;
 public:
-  explicit SBasisCurve(D2<SBasis> const &coeffs)
-  : coeffs_(coeffs) {}
-
-  Point initialPoint() const {
-    return Point(coeffs_[X][0][0], coeffs_[Y][0][0]);
-  }
-  Point finalPoint() const {
-    return Point(coeffs_[X][0][1], coeffs_[Y][0][1]);
-  }
-
+  explicit SBasisCurve(D2<SBasis> const &sb) : inner(sb) {}
   Curve *duplicate() const { return new SBasisCurve(*this); }
 
-  Rect bounds_fast() const;
-  Rect bounds_exact() const;
+  Point initialPoint() const    { return inner.at0(); }
+  Point finalPoint() const      { return inner.at1(); }
+  Point valueAt(Coord t) const  { return inner.valueAt(t); }
+  std::vector<Point> valueAndDerivatives(Coord t, unsigned n) const {
+      return inner.valueAndDerivatives(t, n);
+  }
+  
+  Rect boundsFast() const            { return bounds_fast(inner); }
+  Rect boundsExact() const           { return bounds_exact(inner); }
+  Rect boundsLocal(Interval t) const { return bounds_local(inner, t); }
 
   boost::optional<int> winding(Point p) const {
-    return sbasis_winding(coeffs_, p);
+    return sbasis_winding(inner, p);
   }
 
-  Path const &subdivide(Coord t, Path &out) const;
+  D2<SBasis> toSBasis() const { return inner; }
 
-  Point pointAndDerivativesAt(Coord t, unsigned n_derivs, Point *derivs) const;
-
-  D2<SBasis> sbasis() const { return coeffs_; }
-  
-private:
-  D2<SBasis> coeffs_;
 };
+
+inline SBasisCurve portion(const SBasisCurve & sb, double f, double t) {
+    return SBasisCurve(Geom::portion(sb.toSBasis(), f, t));
+}
 
 template <typename IteratorImpl>
 class BaseIterator
@@ -380,14 +378,14 @@ public:
 
   int winding(Point p) const;
 
-  Rect bounds_fast() const;
-  Rect bounds_exact() const;
+  Rect boundsFast() const;
+  Rect boundsExact() const;
 
   Piecewise<D2<SBasis> > toPwSb() const {
     Piecewise<D2<SBasis> > ret;
     ret.push_cut(0);
     for(unsigned i = 0; i < size() + (closed_ ? 1 : 0); i++) {
-      ret.push(curves_[i]->sbasis(), i+1);
+      ret.push(curves_[i]->toSBasis(), i+1);
     }
     return ret;
   }
@@ -481,7 +479,8 @@ public:
 
   void start(Point p) {
     clear();
-    (*final_)[0] = (*final_)[1] = p;
+    final_->setPoint(0, p);
+    final_->setPoint(1, p);
   }
 
   Point initialPoint() const { return (*final_)[1]; }
@@ -571,33 +570,6 @@ inline static Piecewise<D2<SBasis> > paths_to_pw(std::vector<Path> paths) {
         ret.concat(paths[i].toPwSb());
     }
     return ret;
-}
-
-template <unsigned bezier_degree>
-inline Path const &Bezier<bezier_degree>::subdivide(Coord t, Path &out) const {
-  Bezier a, b;
-  subdivideArr(t, bezier_degree, c_, a.c_, b.c_);
-  out.clear();
-  out.close(false);
-  out.append(a);
-  out.append(b);
-  return out;
-}
-
-inline Path const &SVGEllipticalArc::subdivide(Coord t, Path &out) const {
-  SVGEllipticalArc a;
-  SVGEllipticalArc b;
-  a.rx_ = b.rx_ = rx_;
-  a.ry_ = b.ry_ = ry_;
-  a.x_axis_rotation_ = b.x_axis_rotation_ = x_axis_rotation_;
-  a.initial_ = initial_;
-  a.final_ = b.initial_ = pointAt(t);
-  b.final_ = final_;
-  out.clear();
-  out.close(false);
-  out.append(a);
-  out.append(b);
-  return out;
 }
 
 class Set {

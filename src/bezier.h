@@ -35,46 +35,77 @@
 #include "coord.h"
 #include "isnan.h"
 #include "bezier-to-sbasis.h"
-
+#include "d2.h"
+#include <boost/optional/optional.hpp>
 namespace Geom {
+
+template<unsigned order>
+Coord subdivideArr(Coord t, Coord const *v, Coord *left, Coord *right) {
+    Coord vtemp[order+1][order+1];
+
+    /* Copy control points	*/
+    std::copy(v, v+order+1, vtemp[0]);
+
+    /* Triangle computation	*/
+    for (unsigned i = 1; i <= order; i++) {	
+        for (unsigned j = 0; j <= order - i; j++) {
+            vtemp[i][j] = lerp(t, vtemp[i-1][j], vtemp[i-1][j+1]);
+        }
+    }
+    if(left != NULL)
+        for (unsigned j = 0; j <= order; j++)
+            left[j]  = vtemp[j][0];
+    if(right != NULL)
+        for (unsigned j = 0; j <= order; j++)
+            right[j] = vtemp[order-j][j];
+
+    return (vtemp[order][0]);
+}
 
 template <unsigned order>
 class Bezier {
 private:
   Coord c_[order+1];
 
+  template<unsigned ord>
+  friend Bezier<ord> portion(const Bezier<ord> & a, Coord from, Coord to);
+
+  template<unsigned ord>
+  friend Interval bounds_fast(Bezier<ord> const & b);
 protected:
   Bezier(Coord c[]) {
     std::copy(c, c+order+1, c_);
   }
 
 public:
-  template <unsigned required_order>
-  static void assert_order(Bezier<required_order> const *) {}
+
+  //TODO: fix this assert - get it compiling!
+  //template <unsigned required_order>
+  //static void assert_order(Bezier<required_order> const *) {}
 
   Bezier() {}
 
   //Construct an order-0 bezier (constant Bézier)
   explicit Bezier(Coord c0) {
-    assert_order<0>(this);
+    //assert_order<0>(this);
     c_[0] = c0;
   }
 
   //Construct an order-1 bezier (linear Bézier)
   Bezier(Coord c0, Coord c1) {
-    assert_order<1>(this);
+    //assert_order<1>(this);
     c_[0] = c0; c_[1] = c1;
   }
 
   //Construct an order-2 bezier (quadratic Bézier)
   Bezier(Coord c0, Coord c1, Coord c2) {
-    assert_order<2>(this);
+    //assert_order<2>(this);
     c_[0] = c0; c_[1] = c1; c_[2] = c2;
   }
 
   //Construct an order-3 bezier (cubic Bézier)
   Bezier(Coord c0, Coord c1, Coord c2, Coord c3) {
-    assert_order<3>(this);
+    //assert_order<3>(this);
     c_[0] = c0; c_[1] = c1; c_[2] = c2; c_[3] = c3;
   }
 
@@ -83,13 +114,13 @@ public:
   //IMPL: FragmentConcept
   typedef Coord output_type;
   inline bool isZero() const { 
-     for(int i = 0; i <= order; i++) {
+     for(unsigned i = 0; i <= order; i++) {
        if(c_[i] != 0) return false;
      }
      return true;
   }
   inline bool isFinite() const {
-    for(int i = 0; i <= order; i++) {
+    for(unsigned i = 0; i <= order; i++) {
       if(!is_finite(c_[i])) return false;
     }
     return true;
@@ -97,45 +128,68 @@ public:
   inline Coord at0() const { return c_[0]; }
   inline Coord at1() const { return c_[order]; }
 
-  inline SBasis toSBasis() const { return bezier_to_sbasis<order>(c_); }
+  inline Coord valueAt(double t) const { return subdivideArr<order>(t, c_, NULL, NULL); }
+  inline Coord operator()(double t) const { return valueAt(t); }
 
-  inline Interval bounds_fast() const { return Interval::fromArray(c_, order+1); }
-  //TODO: better bounds exact
-  inline Interval bounds_exact() const { return toSBasis().bounds_exact(); }
-  inline Interval bounds_local(double u, double v) const { return toSBasis().bounds_local(u, v); }
+  inline SBasis toSBasis() const { return bezier_to_sbasis<order>(c_); }
 
   //Only mutator
   inline Coord &operator[](int index) { return c_[index]; }
   inline Coord const &operator[](int index) const { return c_[index]; }
 
-  Maybe<int> winding(Point p) const {
-    return sbasis_winding(toSBasis(), p);
+  std::vector<Coord> valueAndDerivatives(Coord t, unsigned n_derivs) const {
+    throw NotImplemented();
   }
   
-  Point pointAndDerivativesAt(Coord t, unsigned n_derivs, Point *derivs) const {
-    //TODO
-    return Point(0,0);
+  std::pair<Bezier<order>, Bezier<order> > subdivide(Coord t) const {
+    Bezier<order> a, b;
+    subdivideArr(t, order, c_, a.c_, b.c_);
+    return std::pair<Bezier<order>, Bezier<order> >(a, b);
   }
 };
 
 template<unsigned order>
 Bezier<order> reverse(const Bezier<order> & a) {
   Bezier<order> result;
-  for(int i = 0; i <= order; i++)
+  for(unsigned i = 0; i <= order; i++)
     result[i] = a[order - i];
   return result;
 }
 
 template<unsigned order>
-vector<Point> bezier_points(const D2<Bezier<order> > & a) {
-  vector<Point> result;
-  for(int i = 0; i <= order; i++) {
+Bezier<order> portion(const Bezier<order> & a, Coord from, Coord to) {
+    //TODO: implement better?
+    Coord res[order];
+    if(from == 0) {
+        subdivideArr<order>(to, a.c_, res, NULL);
+        return Bezier<order>(res);
+    }
+    subdivideArr<order>(from, a.c_, NULL, res);
+    if(to == 1) return Bezier<order>(res);
+    Coord res2[order];
+    subdivideArr<order>((to - from)/(1 - from), res, res2, NULL);
+    return Bezier<order>(res2);
+}
+
+
+template<unsigned order>
+std::vector<Point> bezier_points(const D2<Bezier<order> > & a) {
+  std::vector<Point> result;
+  for(unsigned i = 0; i <= order; i++) {
     Point p;
     for(unsigned d = 0; d < 2; d++) p[d] = a[d][i];
     result[i] = p;
   }
   return result;
 }
+
+template<unsigned order>
+inline Interval bounds_fast(Bezier<order> const & b) { return Interval::fromArray(b.c_, order+1); }
+//TODO: better bounds exact
+template<unsigned order>
+inline Interval bounds_exact(Bezier<order> const & b) { return bounds_exact(b.toSBasis()); }
+template<unsigned order>
+inline Interval bounds_local(Bezier<order> const & b, Interval i) { return bounds_local(b.toSBasis(), i); }
 
 }
 #endif //SEEN_BEZIER_H

@@ -47,7 +47,8 @@ point-l.h
 coord.h
 
 d2.h
-d2.cpp
+d2-sbasis.h
+d2-sbasis.cpp
 rect.h
 
 piecewise.h

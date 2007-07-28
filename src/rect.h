@@ -1,4 +1,32 @@
-//D2<Interval> specialization to Rect:
+/*
+ * rect.h - D2<Interval> specialization to Rect
+ *
+ * Copyright 2007 Michael Sloan <mgsloan@gmail.com>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it either under the terms of the GNU Lesser General Public
+ * License version 2.1 as published by the Free Software Foundation
+ * (the "LGPL") or, at your option, under the terms of the Mozilla
+ * Public License Version 1.1 (the "MPL"). If you do not alter this
+ * notice, a recipient may use your version of this file under either
+ * the MPL or the LGPL.
+ *
+ * You should have received a copy of the LGPL along with this library
+ * in the file COPYING-LGPL-2.1; if not, output to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * You should have received a copy of the MPL along with this library
+ * in the file COPYING-MPL-1.1
+ *
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.1 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY
+ * OF ANY KIND, either express or implied. See the LGPL or the MPL for
+ * the specific language governing rights and limitations.
+ *
+ */
 
  /* Authors of original rect class:
  *   Lauris Kaplinski <lauris@kaplinski.com>
@@ -8,7 +36,8 @@
  */
 
 #ifdef _2GEOM_D2  /*This is intentional: we don't actually want anyone to
-                    include this, other than D2.h */
+                    include this, other than D2.h.  If somone else tries, D2
+                    won't be defined.  If it is, this will already be included. */
 #ifndef _2GEOM_RECT
 #define _2GEOM_RECT
 
@@ -81,11 +110,11 @@ class D2<Interval> {
                                                                Rect(corner(1) * m, corner(3) * m)); }
 };
 
-inline Rect unify(const Rect & a, const Rect & b) {
+inline Rect unify(Rect const & a, Rect const & b) {
     return Rect(unify(a[X], b[X]), unify(a[Y], b[Y]));
 }
 
-inline boost::optional<Rect> intersect(const Rect & a, const Rect & b) {
+inline boost::optional<Rect> intersect(Rect const & a, Rect const & b) {
     boost::optional<Interval> x = intersect(a[X], b[X]);
     boost::optional<Interval> y = intersect(a[Y], b[Y]);
     return x && y ? boost::optional<Rect>(Rect(*x, *y)) : boost::optional<Rect>();

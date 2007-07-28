@@ -127,54 +127,6 @@ next_root: (void)0;
   }
 }
 
-Rect BezierHelpers::bounds(unsigned degree, Point const *points) {
-  Point min=points[0];
-  Point max=points[0];
-  for ( unsigned i = 1 ; i <= degree ; ++i ) {
-    for ( unsigned axis = 0 ; axis < 2 ; ++axis ) {
-      min[axis] = std::min(min[axis], points[i][axis]);
-      max[axis] = std::max(max[axis], points[i][axis]);
-    }
-  }
-  return Rect(min, max);
-}
-
-Point BezierHelpers::point_and_derivatives_at(Coord t,
-                                              unsigned degree,
-                                              Point const *points,
-                                              unsigned n_derivs,
-                                              Point *derivs)
-{
-  return Point(0,0); // TODO
-}
-
-Geom::Point
-BezierHelpers::subdivideArr(Coord t,              // Parameter value
-                            unsigned degree,      // Degree of bezier curve
-                            Geom::Point const *V, // Control pts
-                            Geom::Point *Left,    // RETURN left half ctl pts
-                            Geom::Point *Right)   // RETURN right half ctl pts
-{
-    Geom::Point Vtemp[degree+1][degree+1];
-
-    /* Copy control points	*/
-    std::copy(V, V+degree+1, Vtemp[0]);
-
-    /* Triangle computation	*/
-    for (unsigned i = 1; i <= degree; i++) {	
-        for (unsigned j = 0; j <= degree - i; j++) {
-            Vtemp[i][j] = lerp(t, Vtemp[i-1][j], Vtemp[i-1][j+1]);
-        }
-    }
-    
-    for (unsigned j = 0; j <= degree; j++)
-        Left[j]  = Vtemp[j][0];
-    for (unsigned j = 0; j <= degree; j++)
-        Right[j] = Vtemp[degree-j][j];
-
-    return (Vtemp[degree][0]);
-}
-
 void Path::swap(Path &other) {
   std::swap(curves_, other.curves_);
   std::swap(closed_, other.closed_);
@@ -183,18 +135,18 @@ void Path::swap(Path &other) {
   other.curves_[other.curves_.size()-1] = other.final_;
 }
 
-Rect Path::bounds_fast() const {
-  Rect bounds=front().bounds_fast();
+Rect Path::boundsFast() const {
+  Rect bounds=front().boundsFast();
   for ( const_iterator iter=++begin(); iter != end() ; ++iter ) {
-    bounds.unionWith(iter->bounds_fast());
+    bounds.unionWith(iter->boundsFast());
   }
   return bounds;
 }
 
-Rect Path::bounds_exact() const {
-  Rect bounds=front().bounds_exact();
+Rect Path::boundsExact() const {
+  Rect bounds=front().boundsExact();
   for ( const_iterator iter=++begin(); iter != end() ; ++iter ) {
-    bounds.unionWith(iter->bounds_exact());
+    bounds.unionWith(iter->boundsExact());
   }
   return bounds;
 }
@@ -317,37 +269,18 @@ void Path::check_continuity(Sequence::iterator first_replaced,
   }
 }
 
-Rect SBasisCurve::bounds_fast() const {
-  throw NotImplemented();
-  return Rect(Point(0,0), Point(0,0));
-}
-
-Rect SBasisCurve::bounds_exact() const {
-  throw NotImplemented();
-  return Rect(Point(0,0), Point(0,0));
-}
-
-Point SBasisCurve::pointAndDerivativesAt(Coord t, unsigned n_derivs, Point *derivs) const {
-  throw NotImplemented();
-  return Point(0,0);
-}
-
-Path const &SBasisCurve::subdivide(Coord t, Path &out) const {
-  throw NotImplemented();
-}
-
-Rect SVGEllipticalArc::bounds_fast() const {
+Rect SVGEllipticalArc::boundsFast() const {
     throw NotImplemented();
 }
-Rect SVGEllipticalArc::bounds_exact() const {
+Rect SVGEllipticalArc::boundsExact() const {
     throw NotImplemented();
 }
 
-Point SVGEllipticalArc::pointAndDerivativesAt(Coord t, unsigned n_derivs, Point *derivs) const {
+std::vector<Point> SVGEllipticalArc::valueAndDerivatives(Coord t, unsigned n) const {
     throw NotImplemented();
 }
 
-D2<SBasis> SVGEllipticalArc::sbasis() const {
+D2<SBasis> SVGEllipticalArc::toSBasis() const {
     throw NotImplemented();
 }
 

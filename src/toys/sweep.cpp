@@ -1,5 +1,4 @@
 #include "d2.h"
-#include "d2.cpp"
 #include "sbasis.h"
 
 #include "path-cairo.h"
@@ -23,16 +22,15 @@ class Sweep: public Toy {
         for(int j = 0; j <= 5; j++) {
             for(unsigned d = 0; d < 2; d++) {
                 std::vector<double> r = roots(make_cuts_independant(s[j])[d]);
-                for(int k = 0; k < r.size(); k++) e.push_back(B.valueAt(r[k]));
+                for(unsigned k = 0; k < r.size(); k++) e.push_back(B.valueAt(r[k]));
             }
         }
-        for(int i = 0; i < e.size(); i++) draw_cross(cr, e[i]);
+        for(unsigned i = 0; i < e.size(); i++) draw_cross(cr, e[i]);
         
-             cairo_set_line_width (cr, .5);
-      cairo_set_source_rgba (cr, 0., 0.5, 0., 1);
-      //cairo_md_sb(cr, B1);
-      cairo_pw_d2(cr, B);
-      cairo_stroke(cr);
+        cairo_set_line_width (cr, .5);
+        cairo_set_source_rgba (cr, 0., 0.5, 0., 1);
+        cairo_pw_d2(cr, B);
+        cairo_stroke(cr);
         Toy::draw(cr, notify, width, height, save);
     }
 

@@ -40,7 +40,7 @@ static void draw_axis(cairo_t *cr, Piecewise<D2<SBasis> > const &pw, unsigned d,
         cairo_md_sb(cr, D2<SBasis>(Linear(pw.cuts[i]-pw.cuts[0],pw.cuts[i+1]-pw.cuts[0])*mult, pw[i][d])*m);
     }
 }
-
+/*
 void dump_latex(vector<Path> ps) {
     for(unsigned d = 0; d < 2; d++) {
         std::cout << "$$\n" << (d?"y":"x") << "(t) = \\left\\{\n\\begin{array}{ll}\n";
@@ -57,7 +57,7 @@ void dump_latex(vector<Path> ps) {
         std::cout << "\\end{array}\n$$\n";
     }
 }
-
+*/
 class Parametrics: public Toy {
     Piecewise<D2<SBasis> > cat, alcat, box, arc, monk, traj;
 #ifdef USE_TIME

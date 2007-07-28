@@ -36,19 +36,18 @@
 using namespace boost::python;
 using namespace Geom;
 
-typedef D2<SBasis> SBasis2D;
-typedef D2<Piecewise<SBasis> > d2pwsb;
-
 void wrap_d2() {
-    class_<SBasis2D>("SBasis2D")
-        .def("__getitem__", python_getitem<SBasis2D,SBasis,2>)
+    class_<D2<SBasis> >("D2SBasis")
+        .def("__getitem__", python_getitem<D2<SBasis>,SBasis,2>)
 
-        .def("isZero", &Linear::isZero)
-        .def("isFinite", &Linear::isFinite)
-        .def("at0", &Linear::at0)
-        .def("at1", &Linear::at1)
-        .def("pointAt", &Linear::pointAt)
-        .def("toSBasis", &Linear::toSBasis)
+        .def("isZero", &D2<SBasis>::isZero)
+        .def("isFinite", &D2<SBasis>::isFinite)
+        .def("at0", &D2<SBasis>::at0)
+        .def("at1", &D2<SBasis>::at1)
+        .def("pointAt", &D2<SBasis>::valueAt)
+	.def("valueAndDerivatives", &D2<SBasis>::valueAndDerivatives)
+	.def("portion", &D2<SBasis>::portion)
+        .def("toSBasis", &D2<SBasis>::toSBasis)
 
         .def(-self)
         .def(self + self)
@@ -68,7 +67,7 @@ void wrap_d2() {
         .def(self *= float())
         .def(self /= float())
     ;
-    def("reverse", ((SBasis2D (*)(SBasis2D const &b))&reverse));
+    def("reverse", ((D2<SBasis> (*)(D2<SBasis> const &b))&reverse));
     //TODO: dot, rot90, cross, compose, composeEach, eval ops, derivative, integral, L2, portion, multiply ops, 
 };
 
