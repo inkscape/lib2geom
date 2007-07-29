@@ -106,8 +106,8 @@ public:
   Point initialPoint() const { return inner.at0(); }
   Point finalPoint() const { return inner.at1(); }
 
-  void setPoint(unsigned ix, Point v) { inner[X][ix] = v[X]; inner[Y][ix] = v[Y]; }
-  Point operator[](unsigned ix) const { return Point(inner[X][ix], inner[Y][ix]); }
+  void setPoint(unsigned ix, Point v) { inner[X].setPoint(ix, v[X]); inner[Y].setPoint(ix, v[Y]); }
+  Point const operator[](unsigned ix) const { return Point(inner[X][ix], inner[Y][ix]); }
   
   Rect boundsFast() const { return bounds_fast(inner); }
   Rect boundsExact() const { return bounds_exact(inner); }
@@ -116,6 +116,8 @@ public:
   int winding(Point p) const {
     return sbasis_winding(toSBasis(), p);
   }
+  
+  std::vector<Point> points() const { return bezier_points(inner); }
   
   std::pair<BezierCurve<order>, BezierCurve<order> > subdivide(Coord t) const {
     Bezier<order> sx = inner[X].subdivide(t), sy = inner[Y].subdivide(t);

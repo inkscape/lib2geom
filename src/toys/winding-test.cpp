@@ -11,22 +11,24 @@ using namespace Geom;
 int winding(vector<Path> ps, Point p) {
     int wind = 0;
     for(unsigned i = 0; i < ps.size(); i++) {
-        wind += abs(ps[i].winding(p));
+        wind += ps[i].winding(p);
     }
     return wind;
 }
 
 class WindingTest: public Toy {
     vector<Path> path;
+    Piecewise<D2<SBasis> > pw;
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
-        cairo_path(cr, path);
-        std::cout << "width:" << winding(path, handles[0]) << "\n";
+        cairo_pw_d2(cr, pw);
+        *notify << "winding:" << winding(path, handles[0]) << "\n";
         Toy::draw(cr, notify, width, height, save);
     }
 
     public:
     WindingTest () {
-        path = read_svgd("parametrics.svgd");
+        path = read_svgd("winding.svgd");
+        pw = paths_to_pw(path);
         handles.push_back(Point(300,300));
     }
 };

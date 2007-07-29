@@ -3,6 +3,8 @@
 #include "sbasis-to-bezier.h"
 #include "utils.h"
 
+#include <iostream>
+
 using namespace Geom;
 
 void cairo_curve(cairo_t *cr, Curve const& c) {
@@ -10,17 +12,19 @@ void cairo_curve(cairo_t *cr, Curve const& c) {
         cairo_line_to(cr, (*line_segment)[1][0], (*line_segment)[1][1]);
     }
     else if(QuadraticBezier const *quadratic_bezier = dynamic_cast<QuadraticBezier const*>(&c)) {
-        Point b1 = (*quadratic_bezier)[0] + (2./3) * ((*quadratic_bezier)[1] - (*quadratic_bezier)[0]);
-        Point b2 = b1 + (1./3) * ((*quadratic_bezier)[2] - (*quadratic_bezier)[0]);
+        std::vector<Point> points = quadratic_bezier->points();
+        Point b1 = points[0] + (2./3) * (points[1] - points[0]);
+        Point b2 = b1 + (1./3) * (points[2] - points[0]);
         cairo_curve_to(cr, b1[0], b1[1], 
                        b2[0], b2[1], 
-                       (*quadratic_bezier)[2][0], (*quadratic_bezier)[2][1]);
+                       points[2][0], points[2][1]);
     }
     else if(CubicBezier const *cubic_bezier = dynamic_cast<CubicBezier const*>(&c)) {
-        cairo_curve_to(cr, (*cubic_bezier)[1][0], (*cubic_bezier)[1][1], (*cubic_bezier)[2][0], (*cubic_bezier)[2][1], (*cubic_bezier)[3][0], (*cubic_bezier)[3][1]);
+        std::vector<Point> points = cubic_bezier->points();
+        cairo_curve_to(cr, points[1][0], points[1][1], points[2][0], points[2][1], points[3][0], points[3][1]);
     }
 //    else if(SVGEllipticalArc const *svg_elliptical_arc = dynamic_cast<SVGEllipticalArc *>(c)) {
-//        //get at the innards and spit them out to cairo
+//        //TODO: get at the innards and spit them out to cairo
 //    }
     else {
         //this case handles sbasis as well as all other curve types

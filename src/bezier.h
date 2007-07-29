@@ -134,9 +134,10 @@ public:
   inline SBasis toSBasis() const { return bezier_to_sbasis<order>(c_); }
 
   //Only mutator
-  inline Coord &operator[](int index) { return c_[index]; }
-  inline Coord const &operator[](int index) const { return c_[index]; }
-
+  inline Coord &operator[](unsigned ix) { return c_[ix]; }
+  inline Coord const &operator[](unsigned ix) const { return c_[ix]; }
+  inline void setPoint(unsigned ix, double val) { c_[ix] = val; }
+  
   std::vector<Coord> valueAndDerivatives(Coord t, unsigned n_derivs) const {
     throw NotImplemented();
   }
@@ -171,14 +172,13 @@ Bezier<order> portion(const Bezier<order> & a, Coord from, Coord to) {
     return Bezier<order>(res2);
 }
 
-
 template<unsigned order>
 std::vector<Point> bezier_points(const D2<Bezier<order> > & a) {
   std::vector<Point> result;
   for(unsigned i = 0; i <= order; i++) {
     Point p;
     for(unsigned d = 0; d < 2; d++) p[d] = a[d][i];
-    result[i] = p;
+    result.push_back(p);
   }
   return result;
 }

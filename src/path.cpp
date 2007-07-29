@@ -269,17 +269,17 @@ void Path::do_update(Sequence::iterator first_replaced,
   }
 
   if ( curves_.front() != final_ ) {
-    (*final_)[0] = back().finalPoint();
-    (*final_)[1] = front().initialPoint();
+    final_->setPoint(0, back().finalPoint());
+    final_->setPoint(1, front().initialPoint());
   }
 }
 
 void Path::do_append(Curve *curve) {
   if ( curves_.front() == final_ ) {
-    (*final_)[1] = curve->initialPoint();
+    final_->setPoint(1, curve->initialPoint());
   }
   curves_.insert(curves_.end()-1, curve);
-  (*final_)[0] = curve->finalPoint();
+  final_->setPoint(0, curve->finalPoint());
 }
 
 void Path::delete_range(Sequence::iterator first, Sequence::iterator last) {
