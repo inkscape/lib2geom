@@ -37,6 +37,7 @@ self-intersect
 #sketch-toy
 sweep
 #toy-cairo
+winding-test
 "${NEEDS_GSL}"
 )
 

@@ -83,6 +83,11 @@ class D2<Interval> {
       }
     }
 
+    inline double top() const { return f[Y].min(); }
+    inline double bottom() const { return f[Y].max(); }
+    inline double left() const { return f[X].min(); }
+    inline double right() const { return f[X].max(); }
+    
     inline double width() const { return f[X].extent(); }
     inline double height() const { return f[Y].extent(); }
 

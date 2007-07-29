@@ -35,7 +35,6 @@
 #include <algorithm>
 #include <exception>
 #include <stdexcept>
-#include <boost/optional/optional.hpp>
 #include "d2.h"
 #include "bezier.h"
 
@@ -55,7 +54,7 @@ public:
   virtual Rect boundsFast() const = 0;
   virtual Rect boundsExact() const = 0;
 
-  virtual boost::optional<int> winding(Point p) const = 0;
+  virtual int winding(Point p) const = 0;
 
   virtual Point valueAt(Coord t) const { return valueAndDerivatives(t, 1).front(); }
   virtual std::vector<Point> valueAndDerivatives(Coord t, unsigned n) const = 0;
@@ -64,7 +63,7 @@ public:
 
 struct CurveHelpers {
 protected:
-  static boost::optional<int> sbasis_winding(D2<SBasis> const &sbasis, Point p);
+  static int sbasis_winding(D2<SBasis> const &sbasis, Point p);
 };
 
 template <unsigned order>
@@ -114,7 +113,7 @@ public:
   Rect boundsExact() const { return bounds_exact(inner); }
 //TODO: local
 
-  boost::optional<int> winding(Point p) const {
+  int winding(Point p) const {
     return sbasis_winding(toSBasis(), p);
   }
   
@@ -167,7 +166,7 @@ public:
   Rect boundsFast() const;
   Rect boundsExact() const;
 
-  boost::optional<int> winding(Point p) const {
+  int winding(Point p) const {
     return sbasis_winding(toSBasis(), p);
   }
 
@@ -215,7 +214,7 @@ public:
   Rect boundsExact() const           { return bounds_exact(inner); }
   Rect boundsLocal(Interval t) const { return bounds_local(inner, t); }
 
-  boost::optional<int> winding(Point p) const {
+  int winding(Point p) const {
     return sbasis_winding(inner, p);
   }
 

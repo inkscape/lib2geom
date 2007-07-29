@@ -1,5 +1,4 @@
 #include "d2.h"
-#include "d2.cpp"
 #include "sbasis.h"
 
 #include "path-cairo.h"
