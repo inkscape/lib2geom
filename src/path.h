@@ -56,9 +56,21 @@ public:
 
   virtual int winding(Point p) const = 0;
 
+  virtual Path portion(double f, double t) const = 0;
+
   virtual Point valueAt(Coord t) const { return valueAndDerivatives(t, 1).front(); }
   virtual std::vector<Point> valueAndDerivatives(Coord t, unsigned n) const = 0;
   virtual D2<SBasis> toSBasis() const = 0;
+};
+
+class CurvePortion {
+protected:
+  double from, to;
+  Curve *c;
+public:
+  Interval getInterval() const { return Interval(from, to); }
+  Curve const &parentCurve() const { return *c; }
+  virtual Curve const &operator()() const = 0;
 };
 
 struct CurveHelpers {
@@ -120,13 +132,22 @@ public:
   std::vector<Point> points() const { return bezier_points(inner); }
   
   std::pair<BezierCurve<order>, BezierCurve<order> > subdivide(Coord t) const {
-    Bezier<order> sx = inner[X].subdivide(t), sy = inner[Y].subdivide(t);
+    std::pair<Bezier<order>, Bezier<order> > sx = inner[X].subdivide(t), sy = inner[Y].subdivide(t);
     return std::pair<BezierCurve<order>, BezierCurve<order> >(
                BezierCurve<order>(sx.first, sy.first),
                BezierCurve<order>(sx.second, sy.second));
   }
   
-  //Curve portion(Interval i) const;
+  struct BezierPortion : public CurvePortion {
+    BezierPortion(BezierCurve const *cu, double f, double t) : c(cu), from(f), to(t) {}
+    Curve operator()() const {
+      D2<Bezier> bc = BezierCurve(*c).inner;
+      return BezierCurve(portion(bc[X], from, to),
+                         portion(bc[Y], from, to));
+    }
+  };
+  
+  CurvePortion portion(double f, double t) { return BezierPortion(this, f, t); }
   
   std::vector<Point> valueAndDerivatives(Coord t, unsigned n) const { return inner.valueAndDerivatives(t, n); }
 
@@ -172,7 +193,26 @@ public:
     return sbasis_winding(toSBasis(), p);
   }
 
-  Path portion(Interval i) const;
+  inline std::pair<SVGEllipticalArc, SVGEllipticalArc>
+  subdivide(Coord t) {
+    SVGEllipticalArc a(*this), b(*this);
+    a.final_ = b.initial_ = valueAt(t);
+    return std::pair<SVGEllipticalArc, SVGEllipticalArc>(a, b);
+  }
+  
+  struct ArcPortion : public CurvePortion {
+    ArcPortion(SVGEllipticalArc const *cu, double f, double t) : c(cu), from(f), to(t) {}
+    Curve operator()() const {
+      SVGEllipticalArc ret(*c);
+      ret.initial_ = c->valueAt(from);
+      ret.final_ = c->valueAt(to);
+      return ret;
+    }
+  };
+  
+  friend class ArcPortion;
+  
+  CurvePortion portion(double f, double t) { return ArcPortion(this, f, t); }
   
   std::vector<Point> valueAndDerivatives(Coord t, unsigned n) const;
 
@@ -186,16 +226,8 @@ private:
   bool large_arc_;
   bool sweep_;
   Point final_;
-  
-  friend std::pair<SVGEllipticalArc, SVGEllipticalArc> subdivide(SVGEllipticalArc const & x, Coord t);
 };
 
-inline std::pair<SVGEllipticalArc, SVGEllipticalArc>
-subdivide(SVGEllipticalArc const & x, Coord t) {
-  SVGEllipticalArc a(x), b(x);
-  a.final_ = b.initial_ = x.valueAt(t);
-  return std::pair<SVGEllipticalArc, SVGEllipticalArc>(a, b);
-}
 
 class SBasisCurve : public Curve, private CurveHelpers {
 private:
@@ -216,9 +248,18 @@ public:
   Rect boundsExact() const           { return bounds_exact(inner); }
   Rect boundsLocal(Interval t) const { return bounds_local(inner, t); }
 
-  int winding(Point p) const {
+  inline int winding(Point p) const {
     return sbasis_winding(inner, p);
   }
+  
+  struct SBasisPortion : public CurvePortion {
+    SBasisPortion(SBasisCurve const *cu, double f, double t) : c(cu), from(f), to(t) {}
+    Curve operator()() const {
+        return SBasisCurve(portion(cu->inner, from, to));
+    }
+  };
+  
+  CurvePortion portion(double f, double t) const { return SBasisPortion(this, f, t); }
 
   D2<SBasis> toSBasis() const { return inner; }
 
@@ -281,7 +322,7 @@ public:
   }
 
   Curve *operator*() const { return (*impl_)->duplicate(); }
-
+  
   DuplicatingIterator &operator++() {
     ++impl_;
     return *this;
@@ -377,8 +418,6 @@ public:
   bool closed() const { return closed_; }
   void close(bool closed=true) { closed_ = closed; }
 
-  int winding(Point p) const;
-
   Rect boundsFast() const;
   Rect boundsExact() const;
 
@@ -391,6 +430,14 @@ public:
     return ret;
   }
 
+  void appendPortionTo(Path &p, double f, double t) const;
+  Path portion(double f, double t) const {
+    Path ret;
+    appendPortionTo(ret, f, t);
+    return ret;
+  }
+  Path portion(Interval i) const { return portion(i.min(), i.max()); }
+  
   void insert(iterator pos, Curve const &curve) {
     Sequence source(1, curve.duplicate());
     try {
@@ -488,7 +535,6 @@ public:
   Point finalPoint() const { return (*final_)[0]; }
 
   void append(Curve const &curve);
-
   void append(D2<SBasis> const &curve);
 
   template <typename CurveType, typename A>

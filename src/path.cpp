@@ -29,42 +29,11 @@
 
 #include "path.h"
 
+#include "ord.h"
+
 #include <iostream>
 
-namespace Geom {
-
-namespace {
-
-enum Cmp {
-  LESS_THAN=-1,
-  GREATER_THAN=1,
-  EQUAL_TO=0
-};
-
-inline Cmp operator-(Cmp x) {
-  switch(x) {
-  case LESS_THAN:
-    return GREATER_THAN;
-  case GREATER_THAN:
-    return LESS_THAN;
-  case EQUAL_TO:
-    return EQUAL_TO;
-  }
-}
-
-template <typename T1, typename T2>
-inline Cmp cmp(T1 const &a, T2 const &b) {
-  if ( a < b ) {
-    return LESS_THAN;
-  } else if ( b < a ) {
-    return GREATER_THAN;
-  } else {
-    return EQUAL_TO;
-  }
-}
-
-}
-
+namespace Geom {
 int CurveHelpers::sbasis_winding(D2<SBasis> const &sb, Point p) {
     SBasis fy = sb[Y];
     fy -= p[Y];
@@ -72,10 +41,12 @@ int CurveHelpers::sbasis_winding(D2<SBasis> const &sb, Point p) {
     std::vector<double> ts = roots(fy);
     if(ts.empty()) return 0;
 
+    double const fudge = 0.01; //fudge factor used on first and last
+
     // winding determined by crossings at roots
     int wind=0;
     // previous time
-    double pt = 0;
+    double pt = ts.front() - fudge;
     for ( std::vector<double>::iterator ti = ts.begin()
         ; ti != ts.end()
         ; ++ti )
@@ -87,7 +58,7 @@ int CurveHelpers::sbasis_winding(D2<SBasis> const &sb, Point p) {
             std::vector<double>::iterator next = ti;
             next++;
             double nt;
-            if(next == ts.end()) nt = 1; else nt = *next;
+            if(next == ts.end()) nt = t + fudge; else nt = *next;
             
             // Check before in time and after in time for positions
             // Currently we're using the average times between next and previous segs
@@ -126,121 +97,22 @@ Rect Path::boundsExact() const {
     bounds.unionWith(iter->boundsExact());
   }
   return bounds;
-}
-
-int Path::winding(Point p) const {
-  //start on a segment which is not a horizontal line with y = p[y]
-  const_iterator start;
-  for(const_iterator iter = begin(); ; ++iter) {
-    if(iter == end_closed()) { return 0; }
-    if(iter->initialPoint()[Y]!=p[Y])  { start = iter; break; }
-    if(iter->finalPoint()[Y]!=p[Y])    { start = iter; break; }
-    if(iter->boundsFast().height()!=0.){ start = iter; break; }
+}
+void Path::appendPortionTo(Path &ret, double from, double to) const {
+  assert(from >= 0 && to >= 0);
+  if(from == to) return ret;
+  double fi, ti;
+  double ff = modf(from, *fid), tf = modf(to, *tid);
+  const_iterator fromi = begin() + unsigned(fi),
+                 toi   = begin() + unsigned(ti);
+  ret.insert(ret.end(), fromi->portion(ff, 1.);
+  if(from > to) {
+    ret.insert(ret.end(), fromi, end_closing());
+    ret.insert(ret.end(), begin(), toi);
+  } else {
+    ret.insert(ret.end(), fromi, toi);
   }
-  int wind = 0;
-  const_iterator iter = start;
-  bool temp = true;
-  for (; iter != start || temp
-       ; ++iter, iter = (iter == end_closed()) ? begin() : iter )
-  {
-    temp = false;
-    Rect bounds = iter->boundsFast();
-    Coord x = p[X], y = p[Y];
-    if(x > bounds.right() || !bounds[Y].contains(y)) continue;
-    Point final = iter->finalPoint();
-    Point initial = iter->initialPoint();
-    Cmp final_to_ray = cmp(final[Y], y);
-    Cmp initial_to_ray = cmp(initial[Y], y);
-    // if y is included, these will have opposite values, giving order.
-    Cmp c = cmp(final_to_ray, initial_to_ray); 
-    if(x < bounds.left()) {    //ray goes through bbox
-        // winding determined by position of endpoints
-        if(final_to_ray != EQUAL_TO) {
-            wind += int(c); // GT = counter-clockwise = 1; LT = clockwise = -1; EQ = not-included = 0
-            std::cout << int(c) << "\n";
-            goto cont;
-        }
-    } else {
-        //inside bbox, use custom per-curve winding thingie
-        int delt = iter->winding(p);
-        wind += delt;
-        std::cout << "n " << delt << "\n";
-    }
-    //Handling the special case of an endpoint on the ray:
-    if(final[Y] == y) {
-        //Traverse segments until it breaks away from y
-        //99.9% of the time this will happen the first go
-        const_iterator next = iter;
-        next++;
-        for(; next != iter; next++) {
-            if(next == end_closed()) next = begin();
-            Rect bnds = next->boundsFast();
-            //TODO: X considerations
-            if(bnds.height() > 0) {
-                //It has diverged
-                if(bnds.contains(p)) {
-                    const double fudge = 0.01;
-                    if(cmp(y, next->valueAt(fudge)[Y]) == initial_to_ray) {
-                        wind += int(c);
-                        std::cout << "!!!!!" << " " << int(c) << "\n";
-                    }
-                    iter = next; // No increment, as the rest of the thing hasn't been counted.
-                } else {
-                    Coord ny = next->initialPoint()[Y];
-                    if(cmp(y, ny) == initial_to_ray) {
-                        //Is a continuation through the ray, so counts windingwise
-                        wind += int(c);
-                        std::cout << "!!!!!" << " " << int(c) << "\n";
-                    }
-                    iter = ++next;
-                }
-                
-                goto cont;
-            }
-            if(next==start) return wind;
-        }
-        //Looks like it looped, which means everything's flat
-        return wind;
-    }
-    
-    cont:(void)0;
-  }
-  return wind;
-  
-    /* OLD CODE never checked in
-    
-        Point initial = iter->initialPoint();
-        Point final = iter->finalPoint();
-    Cmp c = cmp(final[Y], initial[Y]);
-    if(initial[Y] < p[Y] && p[Y] <= final[Y] ||
-       final[Y] < p[Y] && p[Y] <= initial[Y]) {
-        
-            //At this point we know it intersects our vertical ray an odd number of times, yielding a wind of 1 or -1
-            //c now represents the overall direction of the curve, LT is ccw, GT is cw.
-            if(c != EQUAL_TO) {
-                if(final[Y] != p[Y]) {
-                    if(c == LESS_THAN) wind++; else wind--;
-                    goto skip;
-                } else {
-                    //Looks like we'll have to take into account the next segment
-                    const_iterator next = iter+1;
-                    if(next == end_closed()) next = begin();
-                    Rect bnds = iter->boundsFast();
-                    if(bnds.bottom() > p[Y]) {
-                        Cmp c2 = cmp(next->finalPoint(), p[X])
-                        //If the next segment continues the trend, count it
-                        if(c2 == c)
-                            if(c == LESS_THAN) wind++ else wind--;
-                        goto skip;
-                    }
-                    //Looks like the next seg isn't such an elementary case.
-                }
-            }
-        }
-    } else {
-        //No way it can affect winding at this point (unless it breaks continuity)
-        if(bounds.bottom() > p[Y]) goto skip;
-    }*/
+  ret.insert(ret.end(), toi->portion(0., tf);
 }
 
 void Path::append(Curve const &curve) {

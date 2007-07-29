@@ -234,12 +234,12 @@ Shapes path_boolean(BoolOp btype,
                 oit = cr_a.lower_bound(*it);
                 next = oit; next++;
                 if(next == cr_a.end()) next = cr_a.begin();
-                res.concat(portion(a, it->ta, next->ta));
+                a.appendPortionTo(res, it->ta, next->ta);
             } else {
                 oit = cr_b.lower_bound(*it);
                 next = oit; next++;
                 if(next == cr_b.end()) next = cr_b.begin();
-                res.concat(portion(b, it->tb, next->tb));
+                b.appendPortionTo(res, it->tb, next->tb);
             }
             
             //Remove all but the first crossing

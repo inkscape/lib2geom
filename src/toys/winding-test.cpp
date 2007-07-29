@@ -1,5 +1,6 @@
 #include "path.h"
 #include "svg-path-parser.h"
+#include "path-intersection.h"
 
 #include <iostream>
 #include <cstdlib>
@@ -38,7 +39,7 @@ void mark_verts(cairo_t *cr, vector<Path> ps) {
 int winding(vector<Path> ps, Point p) {
     int wind = 0;
     for(unsigned i = 0; i < ps.size(); i++)
-        wind += ps[i].winding(p);
+        wind += winding(ps[i],p);
     return wind;
 }
 

@@ -4,33 +4,14 @@
 #include <vector>
 #include <list>
 #include <set>
-#include <utility>
-#include "path.h"
 
+#include "path.h"
+#include "path-intersection"
 //TODO: BBOX optimizations
 
 namespace Geom { 
 
 typedef std::list<Path> Paths;
-
-struct Crossing {
-    bool dir; //True: along a, a becomes outside.
-    double ta, tb;  //time on a and b of crossing
-    Crossing(double t_a, double t_b, bool direction) : ta(t_a), tb(t_b), dir(direction) {}
-    bool operator==(const Crossing & other) const { return dir == other.dir && ta == other.ta && tb == other.tb; }
-};
-
-struct OrderA { bool operator()(Crossing a, Crossing b) { return a.ta < b. ta; } };
-struct OrderB { bool operator()(Crossing a, Crossing b) { return a.tb < b. tb; } };
-
-typedef std::list<Crossing> Crossings;
-typedef std::set<Crossing, OrderA> CrossingsA;
-typedef std::set<Crossing, OrderB> CrossingsB;
-typedef CrossingsA::iterator CrossIterator;
-
-Crossings crossings(const Path & a, const Path & b);
-bool contains(const Path & p, Point i) { return p.winding(i) != 0; }
-Path portion(const Path & p, double from, double to);
 
 enum BoolOp { UNION, SUBTRACT, INTERSECT };
 
