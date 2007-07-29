@@ -29,6 +29,8 @@
 
 #include "path.h"
 
+#include <iostream>
+
 namespace Geom {
 
 namespace {
@@ -136,10 +138,12 @@ int Path::winding(Point p) const {
     if(iter->boundsFast().height()!=0.){ start = iter; break; }
   }
   int wind = 0;
-  for ( const_iterator iter = start
-      ; iter != start
-      ; ++iter, iter = (iter == end_closed()) ? begin() : iter )
+  const_iterator iter = start;
+  bool temp = true;
+  for (; iter != start || temp
+       ; ++iter, iter = (iter == end_closed()) ? begin() : iter )
   {
+    temp = false;
     Rect bounds = iter->boundsFast();
     Coord x = p[X], y = p[Y];
     if(x > bounds.right() || !bounds[Y].contains(y)) continue;
@@ -153,11 +157,14 @@ int Path::winding(Point p) const {
         // winding determined by position of endpoints
         if(final_to_ray != EQUAL_TO) {
             wind += int(c); // GT = counter-clockwise = 1; LT = clockwise = -1; EQ = not-included = 0
+            std::cout << int(c) << "\n";
             goto cont;
         }
     } else {
         //inside bbox, use custom per-curve winding thingie
-        wind += iter->winding(p);
+        int delt = iter->winding(p);
+        wind += delt;
+        std::cout << "n " << delt << "\n";
     }
     //Handling the special case of an endpoint on the ray:
     if(final[Y] == y) {
@@ -175,6 +182,7 @@ int Path::winding(Point p) const {
                     const double fudge = 0.01;
                     if(cmp(y, next->valueAt(fudge)[Y]) == initial_to_ray) {
                         wind += int(c);
+                        std::cout << "!!!!!" << " " << int(c) << "\n";
                     }
                     iter = next; // No increment, as the rest of the thing hasn't been counted.
                 } else {
@@ -182,9 +190,11 @@ int Path::winding(Point p) const {
                     if(cmp(y, ny) == initial_to_ray) {
                         //Is a continuation through the ray, so counts windingwise
                         wind += int(c);
+                        std::cout << "!!!!!" << " " << int(c) << "\n";
                     }
                     iter = ++next;
                 }
+                
                 goto cont;
             }
             if(next==start) return wind;

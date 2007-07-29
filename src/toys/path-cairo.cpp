@@ -3,8 +3,6 @@
 #include "sbasis-to-bezier.h"
 #include "utils.h"
 
-#include <iostream>
-
 using namespace Geom;
 
 void cairo_curve(cairo_t *cr, Curve const& c) {
