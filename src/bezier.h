@@ -158,7 +158,7 @@ Bezier<order> reverse(const Bezier<order> & a) {
 }
 
 template<unsigned order>
-Bezier<order> portion(const Bezier<order> & a, Coord from, Coord to) {
+Bezier<order> portion(const Bezier<order> & a, double from, double to) {
     //TODO: implement better?
     Coord res[order];
     if(from == 0) {

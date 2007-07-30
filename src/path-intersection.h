@@ -9,13 +9,13 @@ namespace Geom {
 int winding(Path const &path, Point p);
 
 inline bool contains(const Path & p, Point i, bool evenodd = false) {
-    return (evenodd ? p.winding(i) % 2 : p.winding()) != 0;
+    return (evenodd ? winding(p, i) % 2 : winding(p, i)) != 0;
 }
 
 struct Crossing {
     bool dir; //True: along a, a becomes outside.
     double ta, tb;  //time on a and b of crossing
-    Crossing(double t_a, double t_b, bool direction) : ta(t_a), tb(t_b), dir(direction) {}
+    Crossing(double t_a, double t_b, bool direction) : dir(direction), ta(t_a), tb(t_b) {}
     bool operator==(const Crossing & other) const { return dir == other.dir && ta == other.ta && tb == other.tb; }
 };
 

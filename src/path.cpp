@@ -97,22 +97,31 @@ Rect Path::boundsExact() const {
     bounds.unionWith(iter->boundsExact());
   }
   return bounds;
-}
+}
+template<typename iter>
+iter inc(iter const &x, unsigned n) {
+  iter ret = x;
+  for(unsigned i = 0; i < n; i++)
+    ret++;
+  return ret;
+}
+
 void Path::appendPortionTo(Path &ret, double from, double to) const {
   assert(from >= 0 && to >= 0);
-  if(from == to) return ret;
+  if(from == to) { return; }
   double fi, ti;
-  double ff = modf(from, *fid), tf = modf(to, *tid);
-  const_iterator fromi = begin() + unsigned(fi),
-                 toi   = begin() + unsigned(ti);
-  ret.insert(ret.end(), fromi->portion(ff, 1.);
+  double ff = modf(from, &fi), tf = modf(to, &ti);
+  const_iterator fromi = inc(begin(), (unsigned)fi);
+  const_iterator toi   = inc(begin(), (unsigned)ti);
+  //TODO: perhaps we need to delete the returns of portion?
+  ret.insert(ret.end(), *fromi->portion(ff, 1.));
   if(from > to) {
-    ret.insert(ret.end(), fromi, end_closing());
+    ret.insert(ret.end(), fromi, end_closed());
     ret.insert(ret.end(), begin(), toi);
   } else {
     ret.insert(ret.end(), fromi, toi);
   }
-  ret.insert(ret.end(), toi->portion(0., tf);
+  ret.insert(ret.end(), *toi->portion(0., tf));
 }
 
 void Path::append(Curve const &curve) {

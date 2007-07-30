@@ -56,21 +56,11 @@ public:
 
   virtual int winding(Point p) const = 0;
 
-  virtual Path portion(double f, double t) const = 0;
+  virtual Curve *portion(double f, double t) const = 0;
 
   virtual Point valueAt(Coord t) const { return valueAndDerivatives(t, 1).front(); }
   virtual std::vector<Point> valueAndDerivatives(Coord t, unsigned n) const = 0;
   virtual D2<SBasis> toSBasis() const = 0;
-};
-
-class CurvePortion {
-protected:
-  double from, to;
-  Curve *c;
-public:
-  Interval getInterval() const { return Interval(from, to); }
-  Curve const &parentCurve() const { return *c; }
-  virtual Curve const &operator()() const = 0;
 };
 
 struct CurveHelpers {
@@ -88,7 +78,9 @@ public:
 
   BezierCurve() {}
 
-  BezierCurve(D2<Bezier<order> > const & x) { inner = x; }
+  explicit BezierCurve(D2<Bezier<order> > const &x) : inner(x) {}
+  
+  BezierCurve(Bezier<order> x, Bezier<order> y) : inner(x, y) {}
 
   // default copy
   // default assign
@@ -138,16 +130,10 @@ public:
                BezierCurve<order>(sx.second, sy.second));
   }
   
-  struct BezierPortion : public CurvePortion {
-    BezierPortion(BezierCurve const *cu, double f, double t) : c(cu), from(f), to(t) {}
-    Curve operator()() const {
-      D2<Bezier> bc = BezierCurve(*c).inner;
-      return BezierCurve(portion(bc[X], from, to),
-                         portion(bc[Y], from, to));
-    }
-  };
-  
-  CurvePortion portion(double f, double t) { return BezierPortion(this, f, t); }
+  virtual Curve *portion(double f, double t) const {
+    return new BezierCurve(Geom::portion(inner[X], f, t),
+                           Geom::portion(inner[Y], f, t));
+  }
   
   std::vector<Point> valueAndDerivatives(Coord t, unsigned n) const { return inner.valueAndDerivatives(t, n); }
 
@@ -200,19 +186,12 @@ public:
     return std::pair<SVGEllipticalArc, SVGEllipticalArc>(a, b);
   }
   
-  struct ArcPortion : public CurvePortion {
-    ArcPortion(SVGEllipticalArc const *cu, double f, double t) : c(cu), from(f), to(t) {}
-    Curve operator()() const {
-      SVGEllipticalArc ret(*c);
-      ret.initial_ = c->valueAt(from);
-      ret.final_ = c->valueAt(to);
-      return ret;
-    }
-  };
-  
-  friend class ArcPortion;
-  
-  CurvePortion portion(double f, double t) { return ArcPortion(this, f, t); }
+  Curve *portion(double f, double t) const {
+    SVGEllipticalArc *ret = new SVGEllipticalArc (*this);
+    ret->initial_ = valueAt(f);
+    ret->final_ = valueAt(t);
+    return ret;
+  }
   
   std::vector<Point> valueAndDerivatives(Coord t, unsigned n) const;
 
@@ -252,22 +231,13 @@ public:
     return sbasis_winding(inner, p);
   }
   
-  struct SBasisPortion : public CurvePortion {
-    SBasisPortion(SBasisCurve const *cu, double f, double t) : c(cu), from(f), to(t) {}
-    Curve operator()() const {
-        return SBasisCurve(portion(cu->inner, from, to));
-    }
-  };
+  virtual Curve *portion(double f, double t) const {
+    return new SBasisCurve(Geom::portion(inner, f, t));
+  }
   
-  CurvePortion portion(double f, double t) const { return SBasisPortion(this, f, t); }
-
   D2<SBasis> toSBasis() const { return inner; }
 
 };
-
-inline SBasisCurve portion(const SBasisCurve & sb, double f, double t) {
-    return SBasisCurve(Geom::portion(sb.toSBasis(), f, t));
-}
 
 template <typename IteratorImpl>
 class BaseIterator
@@ -293,6 +263,7 @@ public:
     ++impl_;
     return *this;
   }
+  
   BaseIterator operator++(int) {
     BaseIterator old=*this;
     ++(*this);
