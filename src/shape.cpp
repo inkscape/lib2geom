@@ -9,8 +9,10 @@ bool disjoint(const Path & a, const Path & b) {
 }
 
 Shapes shape_union(const Shape & a, const Shape & b) {
+    std::cout << "inter:\n";
     //Get sorted sets of crossings
     Crossings cr = crossings(a.outer, b.outer);
+    std::cout << "got crossings\n";
     if(cr.empty() && disjoint(a.outer, b.outer)) {
         Shapes returns;
         returns.push_back(a); returns.push_back(b);

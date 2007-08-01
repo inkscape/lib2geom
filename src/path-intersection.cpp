@@ -110,6 +110,88 @@ Crossings crossings_recurse(Curve const &a, Curve const &b,
 }
 */
 
+//pair intersect code copied from njh's pair-intersect
+
+/** Given two linear md_sb(assume they are linear even if they're not)
+    find the ts at the intersection. */
+bool
+linear_pair_intersect(D2<SBasis> A, double Al, double Ah, 
+                      D2<SBasis> B, double Bl, double Bh,
+                      double &tA, double &tB) {
+    Rect Ar = bounds_local(A, Interval(Al, Ah));
+    std::cout << Al << ", " << Ah << "\n";
+    // kramers rule here
+    Point A0 = A(Al);
+    Point A1 = A(Ah);
+    Point B0 = B(Bl);
+    Point B1 = B(Bh);
+    double xlk = A1[X] - A0[X];
+    double ylk = A1[Y] - A0[Y];
+    double xnm = B1[X] - B0[X];
+    double ynm = B1[Y] - B0[Y];
+    double xmk = B0[X] - A0[X];
+    double ymk = B0[Y] - A0[Y];
+    double det = xnm * ylk - ynm * xlk;
+    if( 1.0 + det == 1.0 )
+        return false;
+    else
+    {
+        double detinv = 1.0 / det;
+        double s = ( xnm * ymk - ynm *xmk ) * detinv;
+        double t = ( xlk * ymk - ylk * xmk ) * detinv;
+        if( ( s < 0.0 ) || ( s > 1.0 ) || ( t < 0.0 ) || ( t > 1.0 ) )
+            return false;
+        tA = Al + s * ( Ah - Al );
+        tB = Bl + t * ( Bh - Bl );
+        return true;
+    }
+}
+
+void pair_intersect(std::vector<std::pair<double, double> > &ret,
+                    D2<SBasis> A, double Al, double Ah, 
+                    D2<SBasis> B, double Bl, double Bh, unsigned depth=0) {
+
+    // we'll split only A, and swap args
+    Rect Ar = bounds_local(A, Interval(Al, Ah));
+    if(Ar.isEmpty()) return;
+
+    Rect Br = bounds_local(B, Interval(Bl, Bh));
+    if(Br.isEmpty()) return;
+    
+    if((depth > 12) || Ar.intersects(Br)) {
+        double Ate = 0;
+        double Bte = 0;
+        for(unsigned d = 0; d < 2; d++) {
+            Interval bs = bounds_local(A[d], Interval(Al, Ah), 1); //only 1?
+            Ate = std::max(Ate, bs.extent());
+        }
+        for(unsigned d = 0; d < 2; d++) {
+            Interval bs = bounds_local(B[d], Interval(Bl, Bh), 1);
+            Bte = std::max(Bte, bs.extent());
+        }
+
+        if((depth > 12)  || ((Ate < 0.1) && 
+           (Bte < 0.1))) {
+            std::cout << "intersects\n" << Ate << "\n" << Bte;
+            double tA, tB;
+            if(linear_pair_intersect(A, Al, Ah, 
+                                     B, Bl, Bh, 
+                                     tA, tB)) {
+                ret.push_back(std::pair<double, double>(tA, tB));
+            }
+            
+        } else {
+            double mid = (Al + Ah)/2;
+            pair_intersect(ret,
+                           B, Bl, Bh,
+                           A, Al, mid, depth+1);
+            pair_intersect(ret,
+                           B, Bl, Bh,
+                           A, mid, Ah, depth+1);
+        }
+    }
+}
+
 Crossings to_crossings(std::vector<std::pair<double, double> > ts, Curve const &a, Curve const &b) { 
     Crossings ret;
     for(unsigned i = 0; i < ts.size(); i++) {
@@ -120,50 +202,37 @@ Crossings to_crossings(std::vector<std::pair<double, double> > ts, Curve const &
         ret.push_back(Crossing(at, ts[i].second, std::abs(b.winding(a.pointAt(at + .01))) <
                                                  std::abs(b.winding(a.pointAt(at - .01)))));
     }
+    return ret;
 }
 
 Crossings Curve::crossingsWith(Curve const &c) const {
-    std::vector<Point> a_points, b_points;
-    
-    if(LineSegment const* bez = dynamic_cast<LineSegment const*>(&c))
-        a_points = bez->points();
-    else if(QuadraticBezier const* bez = dynamic_cast<QuadraticBezier const*>(&c))
-        a_points = bez->points();
-    else if(CubicBezier const* bez = dynamic_cast<CubicBezier const*>(&c))
-        a_points = bez->points();
-    else
-        a_points = sbasis_to_bezier(toSBasis());
-        
-    if(LineSegment const* bez = dynamic_cast<LineSegment const*>(&c))
-        b_points = bez->points();
-    else if(QuadraticBezier const* bez = dynamic_cast<QuadraticBezier const*>(&c))
-        b_points = bez->points();
-    else if(CubicBezier const* bez = dynamic_cast<CubicBezier const*>(&c))
-        b_points = bez->points();
-    else
-        b_points = sbasis_to_bezier(c.toSBasis());
-    
-    return to_crossings(find_intersections(a_points, b_points), *this, c);
+    std::vector<std::pair<double, double> > sects;
+    pair_intersect(sects, toSBasis(), 0, 1, c.toSBasis(), 0, 1);
+    return to_crossings(sects, *this, c);
 }
 
 std::vector<Rect> curve_bounds(Path const &x) {
     std::vector<Rect> ret;
-    for(Path::const_iterator it = x.begin(); it != x.end_closed(); it++)
+    for(Path::const_iterator it = x.begin(); it != x.end_closed(); ++it)
         ret.push_back(it->boundsFast());
+    return ret;
 }
 
 Crossings crossings(Path const &a, Path const &b) {
-    Crossings crossings;
+    Crossings ret;
 
     std::vector<Rect> bounds_a = curve_bounds(a), bounds_b = curve_bounds(b);
     for(unsigned i = 0; i < bounds_a.size(); i++) {
         for(unsigned j = 0; j < bounds_b.size(); j++) {
+            std::cout << i << " " << j << "\n";
             if(bounds_a[i].intersects(bounds_b[j])) {
+                std::cout << "!!!\n";
                 Crossings curve_crossings = a[i].crossingsWith(b[j]);
-                crossings.insert(crossings.end(), curve_crossings.begin(), curve_crossings.end());
+                ret.insert(ret.end(), curve_crossings.begin(), curve_crossings.end());
             }
         }
     }
+    return ret;
 }
 
 }
