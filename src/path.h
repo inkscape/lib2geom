@@ -37,12 +37,18 @@
 #include <stdexcept>
 #include "d2.h"
 #include "bezier.h"
+#include "crossing.h"
 
 namespace Geom {
 
-class Path;
+class Curve;
 
-class Curve {
+struct CurveHelpers {
+protected:
+  static int root_winding(Curve const &c, Point p);
+};
+
+class Curve : private CurveHelpers {
 public:
   virtual ~Curve() {}
 
@@ -53,23 +59,54 @@ public:
 
   virtual Rect boundsFast() const = 0;
   virtual Rect boundsExact() const = 0;
+  virtual Rect boundsLocal(Interval i) const = 0;
 
-  virtual int winding(Point p) const = 0;
+  virtual std::vector<double> roots(double v, Dim2 d) const = 0;
+
+  virtual int winding(Point p) const { return root_winding(*this, p); }
 
   virtual Curve *portion(double f, double t) const = 0;
 
-  virtual Point valueAt(Coord t) const { return valueAndDerivatives(t, 1).front(); }
-  virtual std::vector<Point> valueAndDerivatives(Coord t, unsigned n) const = 0;
+  virtual Crossings crossingsWith(Curve const & other) const;
+
+  virtual Point pointAt(Coord t) const { return pointAndDerivatives(t, 1).front(); }
+  virtual Coord valueAt(Coord t, Dim2 d) const { return pointAt(t)[d]; }
+  virtual std::vector<Point> pointAndDerivatives(Coord t, unsigned n) const = 0;
   virtual D2<SBasis> toSBasis() const = 0;
 };
 
-struct CurveHelpers {
-protected:
-  static int sbasis_winding(D2<SBasis> const &sbasis, Point p);
+class SBasisCurve : public Curve {
+private:
+  SBasisCurve();
+  D2<SBasis> inner;
+public:
+  explicit SBasisCurve(D2<SBasis> const &sb) : inner(sb) {}
+  Curve *duplicate() const { return new SBasisCurve(*this); }
+
+  Point initialPoint() const    { return inner.at0(); }
+  Point finalPoint() const      { return inner.at1(); }
+  Point pointAt(Coord t) const  { return inner.valueAt(t); }
+  std::vector<Point> pointAndDerivatives(Coord t, unsigned n) const {
+      return inner.valueAndDerivatives(t, n);
+  }
+  double valueAt(Coord t, Dim2 d) const { return inner[d].valueAt(t); }
+  
+  Rect boundsFast() const            { return bounds_fast(inner); }
+  Rect boundsExact() const           { return bounds_exact(inner); }
+  Rect boundsLocal(Interval i) const { return bounds_local(inner, i); }
+
+  std::vector<double> roots(double v, Dim2 d) const { return Geom::roots(inner[d] - v); }
+
+  virtual Curve *portion(double f, double t) const {
+    return new SBasisCurve(Geom::portion(inner, f, t));
+  }
+  
+  D2<SBasis> toSBasis() const { return inner; }
+
 };
 
 template <unsigned order>
-class BezierCurve : public Curve, private CurveHelpers {
+class BezierCurve : public Curve {
 private:
   D2<Bezier<order> > inner;
 public:
@@ -115,11 +152,15 @@ public:
   
   Rect boundsFast() const { return bounds_fast(inner); }
   Rect boundsExact() const { return bounds_exact(inner); }
+  Rect boundsLocal(Interval i) const { return bounds_local(inner, i); }
 //TODO: local
 
+//TODO: implement next 3 natively
   int winding(Point p) const {
-    return sbasis_winding(toSBasis(), p);
+    return SBasisCurve(toSBasis()).winding(p);
   }
+
+  std::vector<double> roots(double v, Dim2 d) const { return Geom::roots(inner[d].toSBasis() - v); }
   
   std::vector<Point> points() const { return bezier_points(inner); }
   
@@ -134,9 +175,12 @@ public:
     return new BezierCurve(Geom::portion(inner[X], f, t),
                            Geom::portion(inner[Y], f, t));
   }
-  
-  std::vector<Point> valueAndDerivatives(Coord t, unsigned n) const { return inner.valueAndDerivatives(t, n); }
 
+  Point pointAt(double t) const { return inner.valueAt(t); } 
+  std::vector<Point> pointAndDerivatives(Coord t, unsigned n) const { return inner.valueAndDerivatives(t, n); }
+
+  double valueAt(double t, Dim2 d) const { return inner[d].valueAt(t); }
+  
   D2<SBasis> toSBasis() const {return inner.toSBasis(); }
 
 protected:
@@ -156,7 +200,7 @@ typedef BezierCurve<1> LineSegment;
 typedef BezierCurve<2> QuadraticBezier;
 typedef BezierCurve<3> CubicBezier;
 
-class SVGEllipticalArc : public Curve, private CurveHelpers {
+class SVGEllipticalArc : public Curve {
 public:
   SVGEllipticalArc() {}
 
@@ -172,28 +216,33 @@ public:
   Point initialPoint() const { return initial_; }
   Point finalPoint() const { return final_; }
 
+  //TODO: implement funcs
+
   Rect boundsFast() const;
   Rect boundsExact() const;
+  Rect boundsLocal(Interval i) const;
 
   int winding(Point p) const {
-    return sbasis_winding(toSBasis(), p);
+    return SBasisCurve(toSBasis()).winding(p);
   }
+  
+  std::vector<double> roots(double v, Dim2 d) const;
 
   inline std::pair<SVGEllipticalArc, SVGEllipticalArc>
   subdivide(Coord t) {
     SVGEllipticalArc a(*this), b(*this);
-    a.final_ = b.initial_ = valueAt(t);
+    a.final_ = b.initial_ = pointAt(t);
     return std::pair<SVGEllipticalArc, SVGEllipticalArc>(a, b);
   }
   
   Curve *portion(double f, double t) const {
     SVGEllipticalArc *ret = new SVGEllipticalArc (*this);
-    ret->initial_ = valueAt(f);
-    ret->final_ = valueAt(t);
+    ret->initial_ = pointAt(f);
+    ret->final_ = pointAt(t);
     return ret;
   }
   
-  std::vector<Point> valueAndDerivatives(Coord t, unsigned n) const;
+  std::vector<Point> pointAndDerivatives(Coord t, unsigned n) const;
 
   D2<SBasis> toSBasis() const;
 
@@ -205,38 +254,6 @@ private:
   bool large_arc_;
   bool sweep_;
   Point final_;
-};
-
-
-class SBasisCurve : public Curve, private CurveHelpers {
-private:
-  SBasisCurve();
-  D2<SBasis> inner;
-public:
-  explicit SBasisCurve(D2<SBasis> const &sb) : inner(sb) {}
-  Curve *duplicate() const { return new SBasisCurve(*this); }
-
-  Point initialPoint() const    { return inner.at0(); }
-  Point finalPoint() const      { return inner.at1(); }
-  Point valueAt(Coord t) const  { return inner.valueAt(t); }
-  std::vector<Point> valueAndDerivatives(Coord t, unsigned n) const {
-      return inner.valueAndDerivatives(t, n);
-  }
-  
-  Rect boundsFast() const            { return bounds_fast(inner); }
-  Rect boundsExact() const           { return bounds_exact(inner); }
-  Rect boundsLocal(Interval t) const { return bounds_local(inner, t); }
-
-  inline int winding(Point p) const {
-    return sbasis_winding(inner, p);
-  }
-  
-  virtual Curve *portion(double f, double t) const {
-    return new SBasisCurve(Geom::portion(inner, f, t));
-  }
-  
-  D2<SBasis> toSBasis() const { return inner; }
-
 };
 
 template <typename IteratorImpl>
@@ -395,19 +412,33 @@ public:
   Piecewise<D2<SBasis> > toPwSb() const {
     Piecewise<D2<SBasis> > ret;
     ret.push_cut(0);
-    for(unsigned i = 0; i < size() + (closed_ ? 1 : 0); i++) {
-      ret.push(curves_[i]->toSBasis(), i+1);
+    unsigned i = 0;
+    for(const_iterator it = begin(); it != end_default(); it++, i++) { 
+      ret.push(it->toSBasis(), i+1);
     }
     return ret;
   }
 
   void appendPortionTo(Path &p, double f, double t) const;
+  
   Path portion(double f, double t) const {
     Path ret;
+    ret.close(false);
     appendPortionTo(ret, f, t);
     return ret;
   }
   Path portion(Interval i) const { return portion(i.min(), i.max()); }
+  
+  Path reverse() const {
+    Path ret;
+    ret.close(closed_);
+    for(unsigned i = size() - (closed_ ? 0 : 1); i >= 0; i++) {
+      Curve *temp = (*this)[i].portion(1,0);
+      ret.append(*temp);
+      delete temp;
+    }
+    return ret;
+  } 
   
   void insert(iterator pos, Curve const &curve) {
     Sequence source(1, curve.duplicate());

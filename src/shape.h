@@ -6,7 +6,7 @@
 #include <set>
 
 #include "path.h"
-#include "path-intersection"
+#include "path-intersection.h"
 //TODO: BBOX optimizations
 
 namespace Geom { 
@@ -24,9 +24,12 @@ class Shape {
     friend std::vector<Shape> path_boolean(BoolOp bo, const Path &, const Path &,
                                            CrossingsA &, CrossingsB &);
     friend Paths shapes_to_paths(const std::vector<Shape> &);
+    
+    Shape() {}
   public:
 	Path getOuter() { return outer; }
 	Paths getHoles() { return holes; }
+	Shape(Path out, Paths in) : outer(out), holes(in) {}
 };
 
 typedef std::vector<Shape> Shapes;

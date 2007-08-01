@@ -3,6 +3,7 @@ SET(2GEOM_TOYS_SRC
 arc-bez
 arc-length-param
 #b-spline
+boolops
 bounds-test
 cheb
 circle-intersect

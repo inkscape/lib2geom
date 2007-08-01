@@ -1,5 +1,7 @@
 #include "path-intersection.h"
 
+#include "basic-intersection.h"
+#include "bezier-to-sbasis.h"
 #include "ord.h"
 
 namespace Geom {
@@ -56,7 +58,7 @@ int winding(Path const &path, Point p) {
                 //It has diverged
                 if(bnds.contains(p)) {
                     const double fudge = 0.01;
-                    if(cmp(y, next->valueAt(fudge)[Y]) == initial_to_ray) {
+                    if(cmp(y, next->valueAt(fudge, Y)) == initial_to_ray) {
                         wind += int(c);
                         std::cout << "!!!!!" << " " << int(c) << "\n";
                     }
@@ -75,12 +77,93 @@ int winding(Path const &path, Point p) {
             if(next==start) return wind;
         }
         //Looks like it looped, which means everything's flat
-        return wind;
+        return 0;
     }
     
     cont:(void)0;
   }
   return wind;
+}
+
+/*
+//Finds intervals larger than a particular width, which contain a crossing
+std::vector<std::pair<Interval, Interval> > break_down(Curve const & a, Curve const & b, double width) {
+    std::vector<std::pair<Interval, Interval> > res;
+    int prev = b.winding(a.initialPoint());
+    for(double t = width; t <= 1; t += width) {
+        int val = b.winding(a.valueAt(t)
+        if(val != prev) res.push_back(std::pair<Interval, Interval>(Interval(t-width,t),
+                                     Interval();
+    }
+}
+*/
+/*
+Crossings crossings_recurse(Curve const &a, Curve const &b,
+                            std::vector<Interval> a_i, std::vector<Interval> b_i) {
+    Crossings ret;
+    a_bounds = a.boundsFast(); 
+    b_bounds = b.boundsFast();
+    if(a_bounds.intersects(b_bounds)) {
+        
+    }
+    return ret;
+}
+*/
+
+Crossings to_crossings(std::vector<std::pair<double, double> > ts, Curve const &a, Curve const &b) { 
+    Crossings ret;
+    for(unsigned i = 0; i < ts.size(); i++) {
+        /* If the absolute value of the winding is less on the increased t,
+           then the dir is outside (true) */
+        double at = ts[i].first;
+        //TODO: better way to decide direction
+        ret.push_back(Crossing(at, ts[i].second, std::abs(b.winding(a.pointAt(at + .01))) <
+                                                 std::abs(b.winding(a.pointAt(at - .01)))));
+    }
+}
+
+Crossings Curve::crossingsWith(Curve const &c) const {
+    std::vector<Point> a_points, b_points;
+    
+    if(LineSegment const* bez = dynamic_cast<LineSegment const*>(&c))
+        a_points = bez->points();
+    else if(QuadraticBezier const* bez = dynamic_cast<QuadraticBezier const*>(&c))
+        a_points = bez->points();
+    else if(CubicBezier const* bez = dynamic_cast<CubicBezier const*>(&c))
+        a_points = bez->points();
+    else
+        a_points = sbasis_to_bezier(toSBasis());
+        
+    if(LineSegment const* bez = dynamic_cast<LineSegment const*>(&c))
+        b_points = bez->points();
+    else if(QuadraticBezier const* bez = dynamic_cast<QuadraticBezier const*>(&c))
+        b_points = bez->points();
+    else if(CubicBezier const* bez = dynamic_cast<CubicBezier const*>(&c))
+        b_points = bez->points();
+    else
+        b_points = sbasis_to_bezier(c.toSBasis());
+    
+    return to_crossings(find_intersections(a_points, b_points), *this, c);
+}
+
+std::vector<Rect> curve_bounds(Path const &x) {
+    std::vector<Rect> ret;
+    for(Path::const_iterator it = x.begin(); it != x.end_closed(); it++)
+        ret.push_back(it->boundsFast());
+}
+
+Crossings crossings(Path const &a, Path const &b) {
+    Crossings crossings;
+
+    std::vector<Rect> bounds_a = curve_bounds(a), bounds_b = curve_bounds(b);
+    for(unsigned i = 0; i < bounds_a.size(); i++) {
+        for(unsigned j = 0; j < bounds_b.size(); j++) {
+            if(bounds_a[i].intersects(bounds_b[j])) {
+                Crossings curve_crossings = a[i].crossingsWith(b[j]);
+                crossings.insert(crossings.end(), curve_crossings.begin(), curve_crossings.end());
+            }
+        }
+    }
 }
 
 }

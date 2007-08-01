@@ -21,11 +21,16 @@ svg-path.cpp
 svg-path-parser.h
 svg-path-parser.cpp
 
+ord.h
+
 #nearestpoint.cpp
 path.cpp
 path.h
 path-intersection.cpp
 path-intersection.h
+
+shape.cpp
+shape.h
 
 poly.cpp
 poly.h

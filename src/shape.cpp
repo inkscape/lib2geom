@@ -1,5 +1,7 @@
 #include "shape.h"
 
+#include <iostream>
+
 namespace Geom {
 
 bool disjoint(const Path & a, const Path & b) {
@@ -16,9 +18,9 @@ Shapes shape_union(const Shape & a, const Shape & b) {
     }
     CrossingsA cr_a(cr.begin(), cr.end());
     CrossingsB cr_b(cr_a.begin(), cr_a.end());
-    
+    std::cout << "foo\n";
     Shape ret = path_union(a.outer, b.outer, cr_a, cr_b).front();
-    
+    std::cout << "bar\n";
     //Copies of the holes, so that some may be removed / replaced by portions
     Paths holes[] = { a.holes, b.holes };
     
@@ -42,7 +44,6 @@ Shapes shape_union(const Shape & a, const Shape & b) {
                 }
             }
         }
-        unsigned mj = withins[0].size(), mk = withins[1].size();
         for(Paths::iterator j = withins[0].begin(); j!= withins[0].end(); j++) {
             for(Paths::iterator k = withins[1].begin(); k!= withins[1].end(); k++) {
                 Crossings hcr = crossings(*j, *k);
@@ -258,7 +259,7 @@ Shapes path_boolean(BoolOp btype,
     if(chunks.empty()) { return ret; }
     
     //If we are doing a union, the result may have multiple holes
-    if(btype = UNION) {
+    if(btype == UNION) {
         //First, find the outer path index
         unsigned ix;
         if(chunks.size() == 1 || contains(chunks[1], chunks[0].initialPoint())) {
@@ -295,12 +296,3 @@ Shapes path_boolean(BoolOp btype,
 }
 
 }
-
-    /*Find a crossing which is certainly on the exterior
-    ValueAndTime tv_a = maxX(a.outer), tv_b = maxX(b.outer);
-    CrossIterator starti;
-    if(tv_b < tv_a) {
-        starti = cr_a.lower_bound(dummyCross(tv_a.second));
-    } else {
-        starti = cr_b.lower_bound(dummyCross(tv_b.second));
-    }*/

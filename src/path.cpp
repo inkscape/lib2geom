@@ -34,11 +34,8 @@
 #include <iostream>
 
 namespace Geom {
-int CurveHelpers::sbasis_winding(D2<SBasis> const &sb, Point p) {
-    SBasis fy = sb[Y];
-    fy -= p[Y];
-
-    std::vector<double> ts = roots(fy);
+int CurveHelpers::root_winding(Curve const &c, Point p) {
+    std::vector<double> ts = c.roots(p[Y], Y);
     if(ts.empty()) return 0;
 
     double const fudge = 0.01; //fudge factor used on first and last
@@ -53,7 +50,7 @@ int CurveHelpers::sbasis_winding(D2<SBasis> const &sb, Point p) {
     {
         double t = *ti;
         if ( t <= 0. || t >= 1. ) continue; //skip endpoint roots 
-        if ( sb[X](t) > p[X] ) { // root is ray intersection
+        if ( c.valueAt(t, X) > p[X] ) { // root is ray intersection
             // Get t of next:
             std::vector<double>::iterator next = ti;
             next++;
@@ -62,8 +59,8 @@ int CurveHelpers::sbasis_winding(D2<SBasis> const &sb, Point p) {
             
             // Check before in time and after in time for positions
             // Currently we're using the average times between next and previous segs
-            Cmp after_to_ray = cmp(sb[Y]((t + nt) / 2), p[Y]);
-            Cmp before_to_ray = cmp(sb[Y]((t + pt) / 2 ), p[Y]);
+            Cmp after_to_ray =  cmp(c.valueAt((t + nt) / 2, Y), p[Y]);
+            Cmp before_to_ray = cmp(c.valueAt((t + pt) / 2, Y), p[Y]);
             // if y is included, these will have opposite values, giving order.
             Cmp c = cmp(after_to_ray, before_to_ray);
             if(c != EQUAL_TO) //Should always be true, but yah never know..
@@ -210,8 +207,15 @@ Rect SVGEllipticalArc::boundsFast() const {
 Rect SVGEllipticalArc::boundsExact() const {
     throw NotImplemented();
 }
+Rect SVGEllipticalArc::boundsLocal(Interval i ) const {
+    throw NotImplemented();
+}
 
-std::vector<Point> SVGEllipticalArc::valueAndDerivatives(Coord t, unsigned n) const {
+std::vector<Point> SVGEllipticalArc::pointAndDerivatives(Coord t, unsigned n) const {
+    throw NotImplemented();
+}
+
+std::vector<double> SVGEllipticalArc::roots(double v, Dim2 d) const {
     throw NotImplemented();
 }
 

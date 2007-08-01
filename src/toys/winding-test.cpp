@@ -20,6 +20,7 @@ void draw_rect(cairo_t *cr, Point tl, Point br) {
 
 double rand_d() { return rand() % 100 / 100.0; }
 void draw_bounds(cairo_t *cr, vector<Path> ps) {
+    srand(0); 
     for(unsigned i = 0; i < ps.size(); i++) {
         for(Path::iterator it = ps[i].begin(); it != ps[i].end(); it++) {
             Rect bounds = it->boundsFast();
@@ -45,12 +46,10 @@ int winding(vector<Path> ps, Point p) {
 
 class WindingTest: public Toy {
     vector<Path> path;
-    Piecewise<D2<SBasis> > pw;
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
-        cairo_pw_d2(cr, pw);
+        cairo_path(cr, path);
         cairo_stroke(cr);
         
-        srand(0); 
         draw_bounds(cr, path); mark_verts(cr, path);
         
         std::streambuf* cout_buffer = std::cout.rdbuf();
@@ -64,7 +63,6 @@ class WindingTest: public Toy {
     public:
     WindingTest () {
         path = read_svgd("winding.svgd");
-        pw = paths_to_pw(path);
         handles.push_back(Point(300,300));
     }
 };
