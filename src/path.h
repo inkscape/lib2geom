@@ -68,7 +68,10 @@ public:
   virtual Curve *portion(double f, double t) const = 0;
 
   virtual Crossings crossingsWith(Curve const & other) const;
-
+  
+  virtual void setInitial(Point v) = 0;
+  virtual void setFinal(Point v) = 0;
+  
   virtual Point pointAt(Coord t) const { return pointAndDerivatives(t, 1).front(); }
   virtual Coord valueAt(Coord t, Dim2 d) const { return pointAt(t)[d]; }
   virtual std::vector<Point> pointAndDerivatives(Coord t, unsigned n) const = 0;
@@ -91,6 +94,9 @@ public:
   }
   double valueAt(Coord t, Dim2 d) const { return inner[d].valueAt(t); }
   
+  virtual void setInitial(Point v) { for(unsigned d = 0; d < 2; d++) { inner[d][0][0] = v[d]; } }
+  virtual void setFinal(Point v)   { for(unsigned d = 0; d < 2; d++) { inner[d][0][1] = v[d]; } }
+
   Rect boundsFast() const            { return bounds_fast(inner); }
   Rect boundsExact() const           { return bounds_exact(inner); }
   Rect boundsLocal(Interval i) const { return bounds_local(inner, i); }
@@ -146,6 +152,9 @@ public:
 
   Point initialPoint() const { return inner.at0(); }
   Point finalPoint() const { return inner.at1(); }
+
+  virtual void setInitial(Point v) { setPoint(0, v); }
+  virtual void setFinal(Point v)   { setPoint(1, v); }
 
   void setPoint(unsigned ix, Point v) { inner[X].setPoint(ix, v[X]); inner[Y].setPoint(ix, v[Y]); }
   Point const operator[](unsigned ix) const { return Point(inner[X][ix], inner[Y][ix]); }
@@ -215,6 +224,9 @@ public:
 
   Point initialPoint() const { return initial_; }
   Point finalPoint() const { return final_; }
+
+  void setInitial(Point v) { initial_ = v; }
+  void setFinal(Point v) { final_ = v; }
 
   //TODO: implement funcs
 

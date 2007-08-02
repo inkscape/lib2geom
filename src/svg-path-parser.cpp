@@ -1,4 +1,4 @@
-#line 1 "/home/michael/2geom/src/svg-path-parser.rl"
+#line 1 "/home/michael/lib2geom/src/svg-path-parser.rl"
 /*
  * parse SVG path specifications
  *
@@ -129,7 +129,7 @@ private:
 };
 
 
-#line 133 "/home/michael/2geom/src/svg-path-parser.cpp"
+#line 133 "/home/michael/lib2geom/src/svg-path-parser.cpp"
 static const char _svg_path_actions[] = {
 	0, 1, 0, 1, 1, 1, 2, 1, 
 	3, 1, 4, 1, 5, 1, 15, 1, 
@@ -1356,7 +1356,7 @@ static const int svg_path_start = 0;
 
 static const int svg_path_first_final = 326;
 
-#line 133 "/home/michael/2geom/src/svg-path-parser.rl"
+#line 133 "/home/michael/lib2geom/src/svg-path-parser.rl"
 
 
 void Parser::parse(char const *str)
@@ -1369,7 +1369,7 @@ throw(SVGPathParseError)
     _reset();
 
     
-#line 1373 "/home/michael/2geom/src/svg-path-parser.cpp"
+#line 1373 "/home/michael/lib2geom/src/svg-path-parser.cpp"
 	{
 	cs = svg_path_start;
 	}
@@ -1445,13 +1445,13 @@ _match:
 		switch ( *_acts++ )
 		{
 	case 0:
-#line 145 "/home/michael/2geom/src/svg-path-parser.rl"
+#line 145 "/home/michael/lib2geom/src/svg-path-parser.rl"
 	{
             start = p;
         }
 	break;
 	case 1:
-#line 149 "/home/michael/2geom/src/svg-path-parser.rl"
+#line 149 "/home/michael/lib2geom/src/svg-path-parser.rl"
 	{
             char const *end=p;
             std::string buf(start, end);
@@ -1460,55 +1460,55 @@ _match:
         }
 	break;
 	case 2:
-#line 156 "/home/michael/2geom/src/svg-path-parser.rl"
+#line 156 "/home/michael/lib2geom/src/svg-path-parser.rl"
 	{
             _push(1.0);
         }
 	break;
 	case 3:
-#line 160 "/home/michael/2geom/src/svg-path-parser.rl"
+#line 160 "/home/michael/lib2geom/src/svg-path-parser.rl"
 	{
             _push(0.0);
         }
 	break;
 	case 4:
-#line 164 "/home/michael/2geom/src/svg-path-parser.rl"
+#line 164 "/home/michael/lib2geom/src/svg-path-parser.rl"
 	{
             _absolute = true;
         }
 	break;
 	case 5:
-#line 168 "/home/michael/2geom/src/svg-path-parser.rl"
+#line 168 "/home/michael/lib2geom/src/svg-path-parser.rl"
 	{
             _absolute = false;
         }
 	break;
 	case 6:
-#line 172 "/home/michael/2geom/src/svg-path-parser.rl"
+#line 172 "/home/michael/lib2geom/src/svg-path-parser.rl"
 	{
             _moveTo(_pop_point());
         }
 	break;
 	case 7:
-#line 176 "/home/michael/2geom/src/svg-path-parser.rl"
+#line 176 "/home/michael/lib2geom/src/svg-path-parser.rl"
 	{
             _lineTo(_pop_point());
         }
 	break;
 	case 8:
-#line 180 "/home/michael/2geom/src/svg-path-parser.rl"
+#line 180 "/home/michael/lib2geom/src/svg-path-parser.rl"
 	{
             _lineTo(Point(_pop_coord(X), _current[Y]));
         }
 	break;
 	case 9:
-#line 184 "/home/michael/2geom/src/svg-path-parser.rl"
+#line 184 "/home/michael/lib2geom/src/svg-path-parser.rl"
 	{
             _lineTo(Point(_current[X], _pop_coord(Y)));
         }
 	break;
 	case 10:
-#line 188 "/home/michael/2geom/src/svg-path-parser.rl"
+#line 188 "/home/michael/lib2geom/src/svg-path-parser.rl"
 	{
             Point p = _pop_point();
             Point c1 = _pop_point();
@@ -1517,7 +1517,7 @@ _match:
         }
 	break;
 	case 11:
-#line 195 "/home/michael/2geom/src/svg-path-parser.rl"
+#line 195 "/home/michael/lib2geom/src/svg-path-parser.rl"
 	{
             Point p = _pop_point();
             Point c1 = _pop_point();
@@ -1525,7 +1525,7 @@ _match:
         }
 	break;
 	case 12:
-#line 201 "/home/michael/2geom/src/svg-path-parser.rl"
+#line 201 "/home/michael/lib2geom/src/svg-path-parser.rl"
 	{
             Point p = _pop_point();
             Point c = _pop_point();
@@ -1533,14 +1533,14 @@ _match:
         }
 	break;
 	case 13:
-#line 207 "/home/michael/2geom/src/svg-path-parser.rl"
+#line 207 "/home/michael/lib2geom/src/svg-path-parser.rl"
 	{
             Point p = _pop_point();
             _quadTo(_quad_tangent, p);
         }
 	break;
 	case 14:
-#line 212 "/home/michael/2geom/src/svg-path-parser.rl"
+#line 212 "/home/michael/lib2geom/src/svg-path-parser.rl"
 	{
             Point point = _pop_point();
             bool sweep = _pop_flag();
@@ -1553,16 +1553,16 @@ _match:
         }
 	break;
 	case 15:
-#line 223 "/home/michael/2geom/src/svg-path-parser.rl"
+#line 223 "/home/michael/lib2geom/src/svg-path-parser.rl"
 	{
             _closePath();
         }
 	break;
 	case 16:
-#line 360 "/home/michael/2geom/src/svg-path-parser.rl"
+#line 360 "/home/michael/lib2geom/src/svg-path-parser.rl"
 	{goto _out;}
 	break;
-#line 1566 "/home/michael/2geom/src/svg-path-parser.cpp"
+#line 1566 "/home/michael/lib2geom/src/svg-path-parser.cpp"
 		}
 	}
 
@@ -1571,7 +1571,7 @@ _again:
 	goto _resume;
 	_out: {}
 	}
-#line 370 "/home/michael/2geom/src/svg-path-parser.rl"
+#line 370 "/home/michael/lib2geom/src/svg-path-parser.rl"
 
 
     if ( cs < svg_path_first_final ) {

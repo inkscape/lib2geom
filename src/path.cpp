@@ -102,6 +102,7 @@ iter inc(iter const &x, unsigned n) {
   return ret;
 }
 
+//This assumes that you can't be perfect in your t-vals, and as such, tweaks the start
 void Path::appendPortionTo(Path &ret, double from, double to) const {
   assert(from >= 0 && to >= 0);
   if(from == to) { return; }
@@ -117,6 +118,7 @@ void Path::appendPortionTo(Path &ret, double from, double to) const {
   const_iterator toi   = ti == 0 ? begin() : inc(begin(), (unsigned)ti - 1);
   //TODO: do we really need to delete the portion returns?
   Curve *fromv = fromi->portion(ff, 1.);
+  fromv->setInitial(ret.back().finalPoint());
   ret.append(*fromv);
   delete fromv;
   if(from > to) {
@@ -130,8 +132,10 @@ void Path::appendPortionTo(Path &ret, double from, double to) const {
   delete tov;
 }
 
+const double eps = 1;
+
 void Path::append(Curve const &curve) {
-  if ( curves_.front() != final_ && curve.initialPoint() != (*final_)[0] ) {
+  if ( curves_.front() != final_ && !near(curve.initialPoint(), (*final_)[0], eps) ) {
     throw ContinuityError();
   }
   do_append(curve.duplicate());
@@ -140,7 +144,7 @@ void Path::append(Curve const &curve) {
 void Path::append(D2<SBasis> const &curve) {
   if ( curves_.front() != final_ ) {
     for ( int i = 0 ; i < 2 ; ++i ) {
-      if ( curve[i][0][0] != (*final_)[0][i] ) {
+      if ( !near(curve[i][0][0], (*final_)[0][i], eps) ) {
         throw ContinuityError();
       }
     }
@@ -192,19 +196,17 @@ void Path::check_continuity(Sequence::iterator first_replaced,
 {
   if ( first != last ) {
     if ( first_replaced != curves_.begin() ) {
-      if ( (*first_replaced)->initialPoint() != (*first)->initialPoint() ) {
+      if ( !near( (*first_replaced)->initialPoint(), (*first)->initialPoint(), eps ) ) {
         throw ContinuityError();
       }
     }
     if ( last_replaced != (curves_.end()-1) ) {
-      if ( (*(last_replaced-1))->finalPoint() != (*(last-1))->finalPoint() ) {
+      if ( !near( (*(last_replaced-1))->finalPoint(), (*(last-1))->finalPoint(), eps ) ) {
         throw ContinuityError();
       }
     }
   } else if ( first_replaced != last_replaced && first_replaced != curves_.begin() && last_replaced != curves_.end()-1) {
-    if ( (*first_replaced)->initialPoint() !=
-         (*(last_replaced-1))->finalPoint() )
-    {
+    if ( !near((*first_replaced)->initialPoint(), (*(last_replaced-1))->finalPoint(), eps ) ) {
       throw ContinuityError();
     }
   }

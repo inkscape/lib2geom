@@ -4,6 +4,39 @@
 
 namespace Geom {
 
+template<typename It>
+class circ {
+    typedef typename It::value_type value_type;
+    It begin;
+    It end;
+    It iter;
+    
+public:
+    circ() {}
+    circ(It b, It e)       : begin(b), end(e), iter(b) {}
+    circ(It b, It e, It i) : begin(b), end(e), iter(i) {}
+    
+    circ<It> &operator++() {    
+        iter++;
+        if (iter == end) iter = begin;
+        return *this;
+    }
+
+    circ<It> operator++(int) {
+        circ<It> prev(*this);
+        ++(*this);
+        return(prev);
+    }
+    
+    It inner() const { return iter; }
+    void setOther(It& x) const { x = iter; }
+    value_type const operator*() const { return *iter; }
+    bool operator==(circ<It> const &x) const {return iter == x.iter;}
+    bool operator==(It const &x) const {return iter == x;}
+    bool operator!=(circ<It> const &x) const {return iter != x.iter; }
+    bool operator!=(It const &x) const {return iter != x; }
+};
+
 bool disjoint(const Path & a, const Path & b) {
     return !contains(a, b.initialPoint()) && !contains(b, a.initialPoint());
 }
@@ -19,7 +52,9 @@ Shapes shape_union(const Shape & a, const Shape & b) {
     CrossingsA cr_a(cr.begin(), cr.end());
     CrossingsB cr_b(cr_a.begin(), cr_a.end());
     std::cout << "foo\n";
-    Shape ret = path_union(a.outer, b.outer, cr_a, cr_b).front();
+    CrossingsA cr_a_copy(cr_a);
+    CrossingsB cr_b_copy(cr_b);
+    Shape ret = path_union(a.outer, b.outer, cr_a_copy, cr_b_copy).front();
     std::cout << "bar\n";
     //Copies of the holes, so that some may be removed / replaced by portions
     Paths holes[] = { a.holes, b.holes };
@@ -219,40 +254,39 @@ Shapes path_boolean(BoolOp btype,
             return ret;
         }
     }
-    std::cout << "hi!\n";
-    //Process the crossings into path chunks:
     
+    //Process the crossings into path chunks:
     std::vector<Path> chunks;
     for(CrossIterator it = cr_a.begin(); it != cr_a.end(); it++) {
         Path res;
-        CrossIterator i = it;
+        circ<CrossIterator> i = circ<CrossIterator>(cr_a.begin(), cr_a.end(), it);
         do {
             std::cout << "hmm\n";
             //next is after oit
-            CrossIterator oit, next;
+            circ<CrossIterator> next;
             
             /* This logical_xor basically switches the behavior of the if when
-             * doing an intersection */
+             * doing an intersection rather than subtraction/union */
             if(logical_xor(it -> dir, btype == INTERSECT)) {
-                oit = it;
-                next = oit; next++;
-                if(next == cr_a.end()) next = cr_a.begin();
-                a.appendPortionTo(res, it->ta, next->ta);
+                next = circ<CrossIterator>(cr_a.begin(), cr_a.end(), cr_a.find(*it));
+                if(next == cr_a.end()) break;
+                next++;
+                a.appendPortionTo(res, it->ta, (*next).ta);
             } else {
-                oit = cr_b.find(*it);
-                next = oit; next++;
-                if(next == cr_b.end()) next = cr_b.begin();
-                b.appendPortionTo(res, it->tb, next->tb);
+                next = circ<CrossIterator>(cr_b.begin(), cr_b.end(), cr_b.find(*it));
+                if(next == cr_b.end()) break;
+                next++;
+                b.appendPortionTo(res, it->tb, (*next).tb);
             }
-            std::cout << "fooble\n";
-            //Remove all but the first crossing
-            //This way the function doesn't return duplicate paths
-            if (btype != UNION && i != it) {
-                cr_a.erase(*oit);
+            //Remove all but the first crossing, This way the function doesn't return duplicate paths
+            if (i != it) {
+                cr_a.erase(*it);
                 cr_b.erase(*it);
             }
-            it = next;
+            next.setOther(it);
+            std::cout << it->ta << "\n";
         } while (*it != *i);
+        std::cout << "baz\n";
         chunks.push_back(res);
     }
     std::cout << "wow!\n";
