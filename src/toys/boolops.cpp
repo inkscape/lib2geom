@@ -26,13 +26,18 @@ class BoolOps: public Toy {
         cairo_path(cr, a);
         cairo_path(cr, b);
         cairo_stroke(cr);
+        
+        Path port = a.portion(handles[1][X] / 100., handles[2][X] / 100.);
+        cairo_set_source_rgba(cr, 0., 1., 0., 1.);
+        cairo_path(cr, port);
+        cairo_stroke(cr);
+        
         //std::streambuf* cout_buffer = std::cout.rdbuf();
         //std::cout.rdbuf(notify->rdbuf());
         Shapes res = path_union(a, b);
-        cairo_set_source_rgba(cr, 1., 0., 0., 1.);
+        cairo_set_source_rgba(cr, 1., 0., 0., .5);
         cairo_shape(cr, res);
         cairo_stroke(cr);
-        std::cout << "yes!!!";
         //std::cout.rdbuf(cout_buffer);
 
         Toy::draw(cr, notify, width, height, save);
@@ -43,6 +48,8 @@ class BoolOps: public Toy {
         path_a = read_svgd("winding.svgd");
         path_b = read_svgd("monk.svgd");
         handles.push_back(Point(300,300));
+        handles.push_back(Point(200,300));
+        handles.push_back(Point(250,300));
     }
 };
 
