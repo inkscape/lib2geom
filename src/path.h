@@ -457,15 +457,21 @@ public:
     return ret;
   }
   
-  Path operator*(Matrix const &m) {
+  Path operator*(Matrix const &m) const {
     Path ret;
-    for(iterator it = curves_.begin(); it != curves_.end(); it++) {
+    for(const_iterator it = begin(); it != end(); it++) {
       Curve *temp = it->transformed(m);
       //Possible point of discontinuity?
       ret.append(*temp);
       delete temp;
     }
     return ret;
+  }
+
+  Point pointAt(double t) const {
+    double i;
+    double f = modf(t, &i);
+    return (*this)[unsigned(i)].pointAt(f);
   }
 
   void appendPortionTo(Path &p, double f, double t) const;

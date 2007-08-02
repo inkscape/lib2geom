@@ -17,6 +17,14 @@ void cairo_shape(cairo_t *cr, Shapes s) {
     }
 }
 
+void mark_crossings(cairo_t *cr, Path const &a, Path const &b) {
+    Crossings c = crossings(a, b);
+    for(Crossings::iterator i = c.begin(); i != c.end(); i++) {
+        draw_cross(cr, a.pointAt(i->ta));
+        draw_cross(cr, Point(i->ta * 10, i->ta * 10));
+    }
+}
+
 class BoolOps: public Toy {
     vector<Path> path_a, path_b;
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
@@ -32,10 +40,12 @@ class BoolOps: public Toy {
         cairo_path(cr, port);
         cairo_stroke(cr);
         
+        mark_crossings(cr, a, b);
+        
         //std::streambuf* cout_buffer = std::cout.rdbuf();
         //std::cout.rdbuf(notify->rdbuf());
         Shapes res = path_union(a, b);
-        cairo_set_source_rgba(cr, 1., 0., 0., .5);
+        cairo_set_source_rgba(cr, 1., 0., 0., 1);
         cairo_shape(cr, res);
         cairo_stroke(cr);
         //std::cout.rdbuf(cout_buffer);

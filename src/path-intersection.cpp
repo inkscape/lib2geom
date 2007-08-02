@@ -147,7 +147,8 @@ linear_pair_intersect(D2<SBasis> A, double Al, double Ah,
     }
 }
 
-void pair_intersect(std::vector<std::pair<double, double> > &ret,
+void pair_intersect(std::vector<double> &Asects,
+                    std::vector<double> &Bsects,
                     D2<SBasis> A, double Al, double Ah, 
                     D2<SBasis> B, double Bl, double Bh, unsigned depth=0) {
 
@@ -177,15 +178,16 @@ void pair_intersect(std::vector<std::pair<double, double> > &ret,
             if(linear_pair_intersect(A, Al, Ah, 
                                      B, Bl, Bh, 
                                      tA, tB)) {
-                ret.push_back(std::pair<double, double>(tA, tB));
+                Asects.push_back(tA);
+                Bsects.push_back(tB);
             }
             
         } else {
             double mid = (Al + Ah)/2;
-            pair_intersect(ret,
+            pair_intersect(Bsects, Asects,
                            B, Bl, Bh,
                            A, Al, mid, depth+1);
-            pair_intersect(ret,
+            pair_intersect(Bsects, Asects,
                            B, Bl, Bh,
                            A, mid, Ah, depth+1);
         }
@@ -205,10 +207,18 @@ Crossings to_crossings(std::vector<std::pair<double, double> > ts, Curve const &
     return ret;
 }
 
+template<typename A, typename B>
+std::vector<std::pair<A, B> > zip(std::vector<A> const &a, std::vector<B> &b) {
+    std::vector<std::pair<A, B> > ret;
+    for(unsigned i = 0; i < a.size() && i < b.size(); i++)
+        ret.push_back(std::pair<A, B>(a[i], b[i]));
+    return ret;
+}
+
 Crossings Curve::crossingsWith(Curve const &c) const {
-    std::vector<std::pair<double, double> > sects;
-    pair_intersect(sects, toSBasis(), 0, 1, c.toSBasis(), 0, 1);
-    return to_crossings(sects, *this, c);
+    std::vector<double> asects, bsects;
+    pair_intersect(asects, bsects, toSBasis(), 0, 1, c.toSBasis(), 0, 1);
+    return to_crossings(zip(asects, bsects), *this, c);
 }
 
 std::vector<Rect> curve_bounds(Path const &x) {
@@ -225,9 +235,10 @@ Crossings crossings(Path const &a, Path const &b) {
     for(unsigned i = 0; i < bounds_a.size(); i++) {
         for(unsigned j = 0; j < bounds_b.size(); j++) {
             if(bounds_a[i].intersects(bounds_b[j])) {
-                std::cout << i << " " << j << "\n";
-                Crossings curve_crossings = a[i].crossingsWith(b[j]);
-                ret.insert(ret.end(), curve_crossings.begin(), curve_crossings.end());
+                Crossings cc = a[i].crossingsWith(b[j]);
+                for(Crossings::iterator it = cc.begin(); it != cc.end(); it++) {
+                    ret.push_back(Crossing(it->ta + i, it->tb + j, it->dir));
+                }
             }
         }
     }
