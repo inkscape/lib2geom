@@ -11,18 +11,27 @@
 
 using namespace Geom;
 
+void cairo_shape(cairo_t *cr, Shapes s) {
+    for(unsigned i = 0; i < s.size(); i++) {
+        cairo_path(cr, s[i].getOuter());
+    }
+}
+
 class BoolOps: public Toy {
     vector<Path> path_a, path_b;
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
-        Paths none;
-        Shape a(path_a.front(), none), b(path_b.front(), none);
-        
-        cairo_path(cr, path_a.front());
-        cairo_path(cr, path_b.front());
+        //Paths none;
+        //Shape a(path_a.front(), none), b(path_b.front(), none);
+        Path a(path_a.front()), b(path_b.front() * Matrix(1, 0, 0, 1, handles[0][X], handles[0][Y]));
+        cairo_path(cr, a);
+        cairo_path(cr, b);
         cairo_stroke(cr);
         //std::streambuf* cout_buffer = std::cout.rdbuf();
         //std::cout.rdbuf(notify->rdbuf());
-        Shapes res = shape_union(a, b);
+        Shapes res = path_union(a, b);
+        cairo_set_source_rgba(cr, 1., 0., 0., 1.);
+        cairo_shape(cr, res);
+        cairo_stroke(cr);
         std::cout << "yes!!!";
         //std::cout.rdbuf(cout_buffer);
 

@@ -36,6 +36,7 @@
 #include <exception>
 #include <stdexcept>
 #include "d2.h"
+#include "matrix.h"
 #include "bezier.h"
 #include "crossing.h"
 
@@ -72,6 +73,8 @@ public:
   virtual void setInitial(Point v) = 0;
   virtual void setFinal(Point v) = 0;
   
+  virtual Curve *transformed(Matrix const &m) const = 0;
+  
   virtual Point pointAt(Coord t) const { return pointAndDerivatives(t, 1).front(); }
   virtual Coord valueAt(Coord t, Dim2 d) const { return pointAt(t)[d]; }
   virtual std::vector<Point> pointAndDerivatives(Coord t, unsigned n) const = 0;
@@ -94,8 +97,8 @@ public:
   }
   double valueAt(Coord t, Dim2 d) const { return inner[d].valueAt(t); }
   
-  virtual void setInitial(Point v) { for(unsigned d = 0; d < 2; d++) { inner[d][0][0] = v[d]; } }
-  virtual void setFinal(Point v)   { for(unsigned d = 0; d < 2; d++) { inner[d][0][1] = v[d]; } }
+  void setInitial(Point v) { for(unsigned d = 0; d < 2; d++) { inner[d][0][0] = v[d]; } }
+  void setFinal(Point v)   { for(unsigned d = 0; d < 2; d++) { inner[d][0][1] = v[d]; } }
 
   Rect boundsFast() const            { return bounds_fast(inner); }
   Rect boundsExact() const           { return bounds_exact(inner); }
@@ -103,8 +106,12 @@ public:
 
   std::vector<double> roots(double v, Dim2 d) const { return Geom::roots(inner[d] - v); }
 
-  virtual Curve *portion(double f, double t) const {
+  Curve *portion(double f, double t) const {
     return new SBasisCurve(Geom::portion(inner, f, t));
+  }
+  
+  Curve *transformed(Matrix const &m) const {
+    return new SBasisCurve(inner * m);
   }
   
   D2<SBasis> toSBasis() const { return inner; }
@@ -153,8 +160,8 @@ public:
   Point initialPoint() const { return inner.at0(); }
   Point finalPoint() const { return inner.at1(); }
 
-  virtual void setInitial(Point v) { setPoint(0, v); }
-  virtual void setFinal(Point v)   { setPoint(1, v); }
+  void setInitial(Point v) { setPoint(0, v); }
+  void setFinal(Point v)   { setPoint(1, v); }
 
   void setPoint(unsigned ix, Point v) { inner[X].setPoint(ix, v[X]); inner[Y].setPoint(ix, v[Y]); }
   Point const operator[](unsigned ix) const { return Point(inner[X][ix], inner[Y][ix]); }
@@ -171,6 +178,11 @@ public:
 
   std::vector<double> roots(double v, Dim2 d) const { return Geom::roots(inner[d].toSBasis() - v); }
   
+  void setPoints(std::vector<Point> ps) {
+    for(unsigned i = 0; i <= order; i++) {
+      setPoint(i, ps[i]);
+    }
+  }
   std::vector<Point> points() const { return bezier_points(inner); }
   
   std::pair<BezierCurve<order>, BezierCurve<order> > subdivide(Coord t) const {
@@ -180,9 +192,16 @@ public:
                BezierCurve<order>(sx.second, sy.second));
   }
   
-  virtual Curve *portion(double f, double t) const {
-    return new BezierCurve(Geom::portion(inner[X], f, t),
-                           Geom::portion(inner[Y], f, t));
+  Curve *portion(double f, double t) const {
+    return new BezierCurve(Geom::portion(inner, f, t));
+  }
+
+  Curve *transformed(Matrix const &m) const {
+    BezierCurve *ret = new BezierCurve();
+    std::vector<Point> ps = points();
+    for(unsigned i = 0;  i <= order; i++) ps[i] = ps[i] * m;
+    ret->setPoints(ps);
+    return ret;
   }
 
   Point pointAt(double t) const { return inner.valueAt(t); } 
@@ -251,6 +270,13 @@ public:
     SVGEllipticalArc *ret = new SVGEllipticalArc (*this);
     ret->initial_ = pointAt(f);
     ret->final_ = pointAt(t);
+    return ret;
+  }
+  
+  Curve *transformed(Matrix const & m) const {
+    SVGEllipticalArc *ret = new SVGEllipticalArc (*this);
+    ret->initial_ = initial_ * m;
+    ret->final_ = final_ * m;
     return ret;
   }
   
@@ -427,6 +453,17 @@ public:
     unsigned i = 0;
     for(const_iterator it = begin(); it != end_default(); it++, i++) { 
       ret.push(it->toSBasis(), i+1);
+    }
+    return ret;
+  }
+  
+  Path operator*(Matrix const &m) {
+    Path ret;
+    for(iterator it = curves_.begin(); it != curves_.end(); it++) {
+      Curve *temp = it->transformed(m);
+      //Possible point of discontinuity?
+      ret.append(*temp);
+      delete temp;
     }
     return ret;
   }

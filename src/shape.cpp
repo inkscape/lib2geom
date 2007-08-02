@@ -269,17 +269,17 @@ Shapes path_boolean(BoolOp btype,
              * doing an intersection rather than subtraction/union */
             if(logical_xor(it -> dir, btype == INTERSECT)) {
                 next = circ<CrossIterator>(cr_a.begin(), cr_a.end(), cr_a.find(*it));
-                if(next == cr_a.end()) break;
+                if(next == cr_a.end()) goto aus;  //really these should never happen...
                 next++;
                 a.appendPortionTo(res, it->ta, (*next).ta);
             } else {
                 next = circ<CrossIterator>(cr_b.begin(), cr_b.end(), cr_b.find(*it));
-                if(next == cr_b.end()) break;
+                if(next == cr_b.end()) goto aus;
                 next++;
                 b.appendPortionTo(res, it->tb, (*next).tb);
             }
             //Remove all but the first crossing, This way the function doesn't return duplicate paths
-            if (i != it) {
+            if (*i != *it) {
                 cr_a.erase(*it);
                 cr_b.erase(*it);
             }
@@ -287,8 +287,10 @@ Shapes path_boolean(BoolOp btype,
             std::cout << it->ta << "\n";
         } while (*it != *i);
         std::cout << "baz\n";
+        
         chunks.push_back(res);
     }
+    aus:
     std::cout << "wow!\n";
     //Process the chunks into shapes output
     
