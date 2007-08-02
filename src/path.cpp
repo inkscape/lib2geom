@@ -31,8 +31,6 @@
 
 #include "ord.h"
 
-#include <iostream>
-
 namespace Geom {
 int CurveHelpers::root_winding(Curve const &c, Point p) {
     std::vector<double> ts = c.roots(p[Y], Y);
@@ -95,6 +93,7 @@ Rect Path::boundsExact() const {
   }
   return bounds;
 }
+
 template<typename iter>
 iter inc(iter const &x, unsigned n) {
   iter ret = x;
@@ -109,16 +108,26 @@ void Path::appendPortionTo(Path &ret, double from, double to) const {
   double fi, ti;
   double ff = modf(from, &fi), tf = modf(to, &ti);
   const_iterator fromi = inc(begin(), (unsigned)fi);
-  const_iterator toi   = inc(begin(), (unsigned)ti);
-  //TODO: perhaps we need to delete the returns of portion?
-  ret.insert(ret.end(), *fromi->portion(ff, 1.));
-  if(from > to) {
-    ret.insert(ret.end(), fromi, end_closed());
-    ret.insert(ret.end(), begin(), toi);
-  } else {
-    ret.insert(ret.end(), fromi, toi);
+  if(fi == ti) {
+    Curve *v = fromi->portion(ff, tf);
+    ret.append(*v);
+    delete v;
+    return;
   }
-  ret.insert(ret.end(), *toi->portion(0., tf));
+  const_iterator toi   = ti == 0 ? begin() : inc(begin(), (unsigned)ti - 1);
+  //TODO: do we really need to delete the portion returns?
+  Curve *fromv = fromi->portion(ff, 1.);
+  ret.append(*fromv);
+  delete fromv;
+  if(from > to) {
+    ret.replace(ret.end(), inc(fromi, 1), end_closed());
+    ret.replace(ret.end(), begin(), toi);
+  } else {
+    ret.replace(ret.end(), fromi, toi);
+  }
+  Curve *tov = inc(toi, 1)->portion(0., tf);
+  ret.append(*tov);
+  delete tov;
 }
 
 void Path::append(Curve const &curve) {

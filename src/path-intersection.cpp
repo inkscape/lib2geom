@@ -224,9 +224,8 @@ Crossings crossings(Path const &a, Path const &b) {
     std::vector<Rect> bounds_a = curve_bounds(a), bounds_b = curve_bounds(b);
     for(unsigned i = 0; i < bounds_a.size(); i++) {
         for(unsigned j = 0; j < bounds_b.size(); j++) {
-            std::cout << i << " " << j << "\n";
             if(bounds_a[i].intersects(bounds_b[j])) {
-                std::cout << "!!!\n";
+                std::cout << i << " " << j << "\n";
                 Crossings curve_crossings = a[i].crossingsWith(b[j]);
                 ret.insert(ret.end(), curve_crossings.begin(), curve_crossings.end());
             }

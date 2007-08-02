@@ -37,6 +37,7 @@
 #include "bezier-to-sbasis.h"
 #include "d2.h"
 #include <boost/optional/optional.hpp>
+
 namespace Geom {
 
 template<unsigned order>
@@ -160,14 +161,14 @@ Bezier<order> reverse(const Bezier<order> & a) {
 template<unsigned order>
 Bezier<order> portion(const Bezier<order> & a, double from, double to) {
     //TODO: implement better?
-    Coord res[order];
+    Coord res[order+1];
     if(from == 0) {
         subdivideArr<order>(to, a.c_, res, NULL);
         return Bezier<order>(res);
     }
     subdivideArr<order>(from, a.c_, NULL, res);
     if(to == 1) return Bezier<order>(res);
-    Coord res2[order];
+    Coord res2[order+1];
     subdivideArr<order>((to - from)/(1 - from), res, res2, NULL);
     return Bezier<order>(res2);
 }

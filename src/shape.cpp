@@ -9,10 +9,8 @@ bool disjoint(const Path & a, const Path & b) {
 }
 
 Shapes shape_union(const Shape & a, const Shape & b) {
-    std::cout << "inter:\n";
     //Get sorted sets of crossings
     Crossings cr = crossings(a.outer, b.outer);
-    std::cout << "got crossings\n";
     if(cr.empty() && disjoint(a.outer, b.outer)) {
         Shapes returns;
         returns.push_back(a); returns.push_back(b);
@@ -185,6 +183,7 @@ bool logical_xor (bool a, bool b) { return (a || b) && !(a && b); }
 Shapes path_boolean(BoolOp btype,
                     const Path & a, const Path & b,
                     CrossingsA & cr_a, CrossingsB & cr_b) {
+    assert(cr_a.size() == cr_b.size());
     Shapes ret;
     //Handle the cases where there are no actual boundary intersections:
     if(cr_a.empty()) {
@@ -220,42 +219,43 @@ Shapes path_boolean(BoolOp btype,
             return ret;
         }
     }
-    
+    std::cout << "hi!\n";
     //Process the crossings into path chunks:
     
     std::vector<Path> chunks;
-    for(CrossIterator it = cr_a.begin(); it == cr_a.end(); it++) {
+    for(CrossIterator it = cr_a.begin(); it != cr_a.end(); it++) {
         Path res;
         CrossIterator i = it;
         do {
+            std::cout << "hmm\n";
             //next is after oit
             CrossIterator oit, next;
             
             /* This logical_xor basically switches the behavior of the if when
              * doing an intersection */
             if(logical_xor(it -> dir, btype == INTERSECT)) {
-                oit = cr_a.lower_bound(*it);
+                oit = it;
                 next = oit; next++;
                 if(next == cr_a.end()) next = cr_a.begin();
                 a.appendPortionTo(res, it->ta, next->ta);
             } else {
-                oit = cr_b.lower_bound(*it);
+                oit = cr_b.find(*it);
                 next = oit; next++;
                 if(next == cr_b.end()) next = cr_b.begin();
                 b.appendPortionTo(res, it->tb, next->tb);
             }
-            
+            std::cout << "fooble\n";
             //Remove all but the first crossing
             //This way the function doesn't return duplicate paths
-            if (i != it) {
+            if (btype != UNION && i != it) {
                 cr_a.erase(*oit);
                 cr_b.erase(*it);
             }
             it = next;
-        } while (!(*it == *i));
+        } while (*it != *i);
         chunks.push_back(res);
     }
-    
+    std::cout << "wow!\n";
     //Process the chunks into shapes output
     
     if(chunks.empty()) { return ret; }
@@ -269,13 +269,14 @@ Shapes path_boolean(BoolOp btype,
         } else {
            /* This should work since we've already shown that chunks[0] is
             * not the outer_path, so can be used as an exemplar inner. */
-            for(unsigned i = 0; i < chunks.size(); i++) {
+            for(unsigned i = 1; i < chunks.size(); i++) {
                 if(contains(chunks[0], chunks[i].initialPoint())) {
                     ix = i;
                     break;
                 }
             }
         }
+
         //Now we may construct the shape
         Shape s;
         s.outer = chunks[ix];
