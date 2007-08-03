@@ -87,7 +87,7 @@ class BoolOps: public Toy {
          Paths inte = path_intersect(a, b);
         cairo_set_source_rgba(cr, 0., 1., 0., .5);
         cairo_paths(cr, inte);
-        cairo_stroke(cr); 
+        cairo_stroke(cr);
         //std::cout.rdbuf(cout_buffer);
 
         cairo_set_line_width(cr, 1);

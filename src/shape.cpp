@@ -288,9 +288,20 @@ Shapes path_boolean(BoolOp btype,
         } while (*it != *i);
         std::cout << btype << " c " << res.size() << "\n";
         chunks.push_back(res);
-        if(it == cr_a.end() || it == cr_b.end()) break;
+        /* I probably should use some sort of circular iterator for the
+          following, but it would have to support circular iteration of
+          different paths.. perhaps supportable by circ... */
+        if(it == cr_a.end()) {
+            it = cr_a.begin();
+            continue;
+        } else if(it == cr_b.end()) {
+            it = cr_b.begin();
+            continue;
+        }
+        //These were originally preserved in order to complete the loops, now erase.
         cr_a.erase(*it);
         cr_b.erase(*it);
+        it++;
     }
     aus:
 
