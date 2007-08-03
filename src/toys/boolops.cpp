@@ -9,6 +9,8 @@
 #include "path-cairo.h"
 #include "toy-framework.cpp"
 
+#include <cstdlib>
+
 using namespace Geom;
 
 void cairo_shape(cairo_t *cr, Shapes s) {
@@ -22,6 +24,26 @@ void mark_crossings(cairo_t *cr, Path const &a, Path const &b) {
     for(Crossings::iterator i = c.begin(); i != c.end(); i++) {
         draw_cross(cr, a.pointAt(i->ta));
         draw_cross(cr, Point(i->ta * 10, i->ta * 10));
+        draw_text(cr, a.pointAt(i->ta), i->dir ? "T" : "F");
+    }
+}
+
+void draw_rect(cairo_t *cr, Point tl, Point br) {
+    cairo_move_to(cr, tl[X], tl[Y]);
+    cairo_line_to(cr, br[X], tl[Y]);
+    cairo_line_to(cr, br[X], br[Y]);
+    cairo_line_to(cr, tl[X], br[Y]);
+    cairo_close_path(cr);
+}
+
+double rand_d() { return rand() % 100 / 100.0; }
+void draw_bounds(cairo_t *cr, Path p) {
+    srand(0); 
+    for(Path::iterator it = p.begin(); it != p.end(); it++) {
+        Rect bounds = it->boundsFast();
+        cairo_set_source_rgba(cr, rand_d(), rand_d(), rand_d(), .5);
+        draw_rect(cr, bounds.min(), bounds.max());
+        cairo_stroke(cr);
     }
 }
 
@@ -41,7 +63,8 @@ class BoolOps: public Toy {
         cairo_stroke(cr);
         
         mark_crossings(cr, a, b);
-        
+        draw_bounds(cr, a);
+        draw_bounds(cr, b);
         //std::streambuf* cout_buffer = std::cout.rdbuf();
         //std::cout.rdbuf(notify->rdbuf());
         Shapes res = path_union(a, b);
