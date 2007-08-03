@@ -117,6 +117,7 @@ class BoolOps: public Toy {
         double area;
         Piecewise<D2<SBasis> > pw = path_b[0].toPwSb();
         Geom::centroid(pw, centre, area);
+        std::cout << "monk area = " << area << std::endl;
     }
 };
 
