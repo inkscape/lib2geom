@@ -257,7 +257,7 @@ Shapes path_boolean(BoolOp btype,
     
     //Process the crossings into path chunks:
     std::vector<Path> chunks;
-    for(CrossIterator it = cr_a.begin(); it != cr_a.end(); it++) {
+    for(CrossIterator it = cr_a.begin(); it != cr_a.end(); ) {
         Path res;
         circ<CrossIterator> i = circ<CrossIterator>(cr_a.begin(), cr_a.end(), it);
         do {
@@ -286,12 +286,14 @@ Shapes path_boolean(BoolOp btype,
             next.setOther(it);
             std::cout << it->ta << "\n";
         } while (*it != *i);
-        std::cout << "baz\n";
-        
+        std::cout << btype << " c " << res.size() << "\n";
         chunks.push_back(res);
+        if(it == cr_a.end() || it == cr_b.end()) break;
+        cr_a.erase(*it);
+        cr_b.erase(*it);
     }
     aus:
-    std::cout << "wow!\n";
+
     //Process the chunks into shapes output
     
     if(chunks.empty()) { return ret; }
@@ -300,13 +302,13 @@ Shapes path_boolean(BoolOp btype,
     if(btype == UNION) {
         //First, find the outer path index
         unsigned ix;
-        if(chunks.size() == 1 || contains(chunks[1], chunks[0].initialPoint())) {
+        if(chunks.size() == 1 || contains(chunks[0], chunks[1].initialPoint())) {
             ix = 0;
         } else {
            /* This should work since we've already shown that chunks[0] is
             * not the outer_path, so can be used as an exemplar inner. */
             for(unsigned i = 1; i < chunks.size(); i++) {
-                if(contains(chunks[0], chunks[i].initialPoint())) {
+                if(contains(chunks[i], chunks[0].initialPoint())) {
                     ix = i;
                     break;
                 }

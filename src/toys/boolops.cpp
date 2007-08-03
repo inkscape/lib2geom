@@ -21,8 +21,12 @@ void cairo_paths(cairo_t *cr, Paths p) {
 
 void cairo_shapes(cairo_t *cr, Shapes s) {
     for(unsigned i = 0; i < s.size(); i++) {
+        cairo_set_source_rgba(cr, 1., 0., 0., .5);
         cairo_path(cr, s[i].getOuter());
+        cairo_stroke(cr);
+        cairo_set_source_rgba(cr, 0., 0., 1., .5);
         cairo_paths(cr, s[i].getHoles());
+        cairo_stroke(cr);
     }
 }
 
@@ -80,10 +84,10 @@ class BoolOps: public Toy {
         cairo_shapes(cr, uni);
         cairo_stroke(cr);
         
-        Paths inte = path_intersect(a, b);
+         Paths inte = path_intersect(a, b);
         cairo_set_source_rgba(cr, 0., 1., 0., .5);
         cairo_paths(cr, inte);
-        cairo_stroke(cr);
+        cairo_stroke(cr); 
         //std::cout.rdbuf(cout_buffer);
 
         cairo_set_line_width(cr, 1);
