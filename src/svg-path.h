@@ -46,6 +46,7 @@ public:
                        bool large_arc, bool sweep, Point p) = 0;
     virtual void closePath() = 0;
     virtual void finish() = 0;
+    virtual ~SVGPathSink() {}
 };
 
 void output_svg_path(Path &path, SVGPathSink &sink);

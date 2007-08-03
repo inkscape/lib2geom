@@ -8,6 +8,8 @@
 
 #include "path-cairo.h"
 #include "toy-framework.cpp"
+#include "transforms.h"
+#include "sbasis-geometric.h"
 
 #include <cstdlib>
 
@@ -58,11 +60,12 @@ void draw_bounds(cairo_t *cr, Path p) {
 }
 
 class BoolOps: public Toy {
+    Point centre;
     vector<Path> path_a, path_b;
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         //Paths none;
         //Shape a(path_a.front(), none), b(path_b.front(), none);
-        Path a(path_a.front()), b(path_b.front() * Matrix(3, 0, 0, 3, handles[0][X]-550, handles[0][Y]-250));
+        Path a(path_a.front()), b(path_b.front() * Geom::Matrix(1, 0, 0, 1, handles[0][X]-centre[X], handles[0][Y]-centre[Y]));
         cairo_path(cr, a);
         cairo_path(cr, b);
         cairo_stroke(cr);
@@ -110,6 +113,10 @@ class BoolOps: public Toy {
         handles.push_back(Point(300,300));
         //handles.push_back(Point(200,300));
         //handles.push_back(Point(250,300));
+        double area;
+        centre = Point(530/3, 250/3);
+        Piecewise<D2<SBasis> > pw = path_b[0].toPwSb();
+        Geom::centroid(pw, centre, area);
     }
 };
 
