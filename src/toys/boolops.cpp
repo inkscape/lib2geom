@@ -92,9 +92,17 @@ class BoolOps: public Toy {
     }
 
     public:
-    BoolOps () {
-        path_a = read_svgd("winding.svgd");
-        path_b = read_svgd("monk.svgd");
+    BoolOps () {}
+
+    void first_time(int argc, char** argv) {
+        char *path_a_name="winding.svgd";
+        char *path_b_name="monk.svgd";
+        if(argc > 1)
+            path_a_name = argv[1];
+        if(argc > 2)
+            path_b_name = argv[2];
+        path_a = read_svgd(path_a_name);
+        path_b = read_svgd(path_b_name);
         handles.push_back(Point(300,300));
         //handles.push_back(Point(200,300));
         //handles.push_back(Point(250,300));

@@ -348,5 +348,7 @@ void init(int argc, char **argv, Toy* t, int width, int height) {
     gtk_widget_grab_focus(canvas);
     assert(gtk_widget_is_focus(canvas));
 
+    t->first_time(argc, argv);
+    
     gtk_main();
 }
