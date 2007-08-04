@@ -59,6 +59,19 @@ void draw_bounds(cairo_t *cr, Path p) {
     }
 }
 
+Shapes operator*(Shapes const & sh, Matrix const &m) {
+    Shapes ret;
+    for(unsigned i = 0; i < sh.size(); i++) {
+        Paths holes, h = sh[i].getHoles();
+        for(Paths::iterator j = h.begin(); j != h.end(); j++) {
+            holes.push_back((*j) * m);
+        }
+        Shape s(sh[i].getOuter() * m, holes);
+        ret.push_back(s);
+    }
+    return ret;
+}
+
 class BoolOps: public Toy {
     Point centre;
     vector<Path> path_a, path_b;
@@ -75,7 +88,7 @@ class BoolOps: public Toy {
         cairo_set_source_rgba(cr, 0., 1., 0., 1.);
         cairo_path(cr, port);
         cairo_stroke(cr); */
-        
+             
         mark_crossings(cr, a, b);
         draw_bounds(cr, a);
         draw_bounds(cr, b);
@@ -88,11 +101,19 @@ class BoolOps: public Toy {
         cairo_shapes(cr, uni);
         cairo_stroke(cr);
         
-         Paths inte = path_intersect(a, b);
+        Shapes sub = path_subtract(a, b);
+        cairo_set_source_rgba(cr, 0., 0., 0., .5);
+        cairo_shapes(cr, sub * Translate(Point(20, 20)));
+        cairo_stroke(cr);
+        
+        Paths inte = path_intersect(a, b);
         cairo_set_source_rgba(cr, 0., 1., 0., .5);
         cairo_paths(cr, inte);
         cairo_stroke(cr);
+        
         //std::cout.rdbuf(cout_buffer);
+
+        *notify << "Red = Union exterior, Blue = Holes in union\n Green = Intersection\nSubtraction is meant to be shifted.\n";
 
         cairo_set_line_width(cr, 1);
 
@@ -115,6 +136,7 @@ class BoolOps: public Toy {
         //handles.push_back(Point(200,300));
         //handles.push_back(Point(250,300));
         double area;
+        path_b[0] = path_b[0] * Scale(3,3);
         Piecewise<D2<SBasis> > pw = path_b[0].toPwSb();
         Geom::centroid(pw, centre, area);
         std::cout << "monk area = " << area << std::endl;

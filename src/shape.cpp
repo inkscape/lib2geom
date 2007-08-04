@@ -107,8 +107,11 @@ Shapes shape_subtract(const Shape & a, const Shape & b) {
     if(cr.empty() && disjoint(a.outer, b.outer)) { ret.push_back(a); return ret; }
     CrossingsA cr_a(cr.begin(), cr.end());
     CrossingsB cr_b(cr_a.begin(), cr_a.end());
-    
-    ret = path_subtract(a.outer, b.outer, cr_a, cr_b);
+
+    //copies, as path booleans modify their crossing lists
+    CrossingsA cr_a_copy(cr_a);
+    CrossingsB cr_b_copy(cr_b);
+    ret = path_subtract(a.outer, b.outer, cr_a_copy, cr_b_copy);
     
     //Copies of the holes, so that some may be removed / replaced by portions
     Paths holes[] = { a.holes, b.holes };
@@ -190,24 +193,30 @@ Shapes path_boolean(BoolOp btype, const Path & a, const Path & b) {
     return path_boolean(btype, a, b, cr_a, cr_b);
 }
 Shapes path_subtract(const Path & a, const Path & b) {
-    Crossings cr = crossings(a, b);
+    /* Reversing A while keeping direction data the same would result in b - a,
+       but the directions are also reversed, causing it to be a - b */
+    Path new_a = a.reverse();
+    Crossings cr = crossings(new_a, b);
     CrossingsA cr_a(cr.begin(), cr.end());
     CrossingsB cr_b(cr_a.begin(), cr_a.end());
-    return path_subtract(a, b, cr_a, cr_b);
+    return path_subtract_reverse(new_a, b, cr_a, cr_b);
 }
 
-/*This just reverses b and calls path_boolean(SUBTRACT, ...).
+/*This just reverses b and the crossings and calls path_boolean(SUBTRACT, ...).
   It turns out path_subtract_reverse is used much more often anyway. */
 Shapes path_subtract(const Path & a, const Path & b,
                      CrossingsA & cr_a, CrossingsB & cr_b ) {
-    CrossingsB new_cr_b;
+    Crossings new_cr;
     double max = b.size();
-    for(CrossIterator it = cr_b.begin(); it != cr_b.end(); it++) {
+    for(CrossIterator it = cr_a.begin(); it != cr_a.end(); it++) {
         Crossing x = *it;
-        x.tb = max - x.tb;
-        new_cr_b.insert(x);
+        if(x.tb > max) x.tb = 1 - (x.tb - max) + max; // on the last seg - flip it about
+        else x.tb = max - x.tb;
+        new_cr.push_back(x);
     }
-    return path_subtract_reverse(a, b.reverse(), cr_a, new_cr_b);
+    CrossingsA new_cr_a(new_cr.begin(), new_cr.end());
+    CrossingsB new_cr_b(new_cr_a.begin(), new_cr_a.end());
+    return path_subtract_reverse(a, b.reverse(), new_cr_a, new_cr_b);
 }
 
 bool logical_xor (bool a, bool b) { return (a || b) && !(a && b); }
@@ -234,7 +243,7 @@ Shapes path_boolean(BoolOp btype,
             return ret;
         case SUBTRACT:
             //Return an empty list when b includes a
-            if(contains(b, a.initialPoint())) { return ret; } else
+            if(contains(b, a.initialPoint())) { } else
             //Return a shape with an outer formed by a, and a hole formed by b
             if(contains(a, b.initialPoint())) {
                 s.outer = a;
@@ -254,14 +263,13 @@ Shapes path_boolean(BoolOp btype,
             return ret;
         }
     }
-    
-    //Process the crossings into path chunks:
+    //Traverse the crossings, creating path chunks:
     std::vector<Path> chunks;
     for(CrossIterator it = cr_a.begin(); it != cr_a.end(); ) {
         Path res;
-        circ<CrossIterator> i = circ<CrossIterator>(cr_a.begin(), cr_a.end(), it);
+        CrossIterator i = it;
+        //this loop collects a single continuous Path (res) which is part of the result.
         do {
-            std::cout << "hmm\n";
             //next is after oit
             circ<CrossIterator> next;
             
@@ -269,13 +277,14 @@ Shapes path_boolean(BoolOp btype,
              * doing an intersection rather than subtraction/union */
             if(logical_xor(it -> dir, btype == INTERSECT)) {
                 next = circ<CrossIterator>(cr_a.begin(), cr_a.end(), cr_a.find(*it));
-                if(next == cr_a.end()) goto aus;  //really these should never happen...
+                if(next == cr_a.end()) goto aus; //break;  //really these should never happen...
                 next++;
                 a.appendPortionTo(res, it->ta, (*next).ta);
             } else {
                 next = circ<CrossIterator>(cr_b.begin(), cr_b.end(), cr_b.find(*it));
-                if(next == cr_b.end()) goto aus;
+                if(next == cr_b.end()) goto aus; //break;
                 next++;
+                std::cout << "B: " << it->tb << " to " << (*next).tb << "\n";
                 b.appendPortionTo(res, it->tb, (*next).tb);
             }
             //Remove all but the first crossing, This way the function doesn't return duplicate paths
@@ -284,9 +293,10 @@ Shapes path_boolean(BoolOp btype,
                 cr_b.erase(*it);
             }
             next.setOther(it);
-            std::cout << it->ta << "\n";
         } while (*it != *i);
+        
         std::cout << btype << " c " << res.size() << "\n";
+
         chunks.push_back(res);
         /* I probably should use some sort of circular iterator for the
           following, but it would have to support circular iteration of

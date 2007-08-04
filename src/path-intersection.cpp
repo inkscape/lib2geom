@@ -7,6 +7,7 @@
 namespace Geom {
 
 int winding(Path const &path, Point p) {
+  std::cout << "winding: ";
   //start on a segment which is not a horizontal line with y = p[y]
   Path::const_iterator start;
   for(Path::const_iterator iter = path.begin(); ; ++iter) {
@@ -35,14 +36,14 @@ int winding(Path const &path, Point p) {
         // winding determined by position of endpoints
         if(final_to_ray != EQUAL_TO) {
             wind += int(c); // GT = counter-clockwise = 1; LT = clockwise = -1; EQ = not-included = 0
-            std::cout << int(c) << "\n";
+            std::cout << int(c);
             goto cont;
         }
     } else {
         //inside bbox, use custom per-curve winding thingie
         int delt = iter->winding(p);
         wind += delt;
-        std::cout << "n " << delt << "\n";
+        std::cout << "n" << delt;
     }
     //Handling the special case of an endpoint on the ray:
     if(final[Y] == y) {
@@ -60,7 +61,7 @@ int winding(Path const &path, Point p) {
                     const double fudge = 0.01;
                     if(cmp(y, next->valueAt(fudge, Y)) == initial_to_ray) {
                         wind += int(c);
-                        std::cout << "!!!!!" << " " << int(c) << "\n";
+                        std::cout << "!!!!!" << int(c);
                     }
                     iter = next; // No increment, as the rest of the thing hasn't been counted.
                 } else {
@@ -68,7 +69,7 @@ int winding(Path const &path, Point p) {
                     if(cmp(y, ny) == initial_to_ray) {
                         //Is a continuation through the ray, so counts windingwise
                         wind += int(c);
-                        std::cout << "!!!!!" << " " << int(c) << "\n";
+                        std::cout << "!!!!!" << int(c);
                     }
                     iter = ++next;
                 }
@@ -77,11 +78,13 @@ int winding(Path const &path, Point p) {
             if(next==start) return wind;
         }
         //Looks like it looped, which means everything's flat
+        std::cout << "\n";
         return 0;
     }
     
     cont:(void)0;
   }
+  std::cout << "\n";
   return wind;
 }
 

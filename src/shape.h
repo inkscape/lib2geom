@@ -27,8 +27,8 @@ class Shape {
     
     Shape() {}
   public:
-	Path getOuter() { return outer; }
-	Paths getHoles() { return holes; }
+	Path getOuter() const { return outer; }
+	Paths getHoles() const { return holes; }
 	Shape(Path out, Paths in) : outer(out), holes(in) {}
 };
 

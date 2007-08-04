@@ -67,6 +67,7 @@ public:
   virtual int winding(Point p) const { return root_winding(*this, p); }
 
   virtual Curve *portion(double f, double t) const = 0;
+  virtual Curve *reverse() const { return portion(1, 0); }
 
   virtual Crossings crossingsWith(Curve const & other) const;
   
@@ -196,6 +197,10 @@ public:
     return new BezierCurve(Geom::portion(inner, f, t));
   }
 
+  Curve *reverse() const {
+    return new BezierCurve(Geom::reverse(inner));
+  }
+
   Curve *transformed(Matrix const &m) const {
     BezierCurve *ret = new BezierCurve();
     std::vector<Point> ps = points();
@@ -273,6 +278,14 @@ public:
     return ret;
   }
   
+  Curve *reverse(double f, double t) const {
+    SVGEllipticalArc *ret = new SVGEllipticalArc (*this);
+    ret->initial_ = final_;
+    ret->final_ = initial_;
+    return ret;
+  }
+  
+  //TODO: this next def isn't right
   Curve *transformed(Matrix const & m) const {
     SVGEllipticalArc *ret = new SVGEllipticalArc (*this);
     ret->initial_ = initial_ * m;
@@ -487,8 +500,9 @@ public:
   Path reverse() const {
     Path ret;
     ret.close(closed_);
-    for(unsigned i = size() - (closed_ ? 0 : 1); i >= 0; i++) {
-      Curve *temp = (*this)[i].portion(1,0);
+    for(int i = size() - (closed_ ? 0 : 1); i >= 0; i--) {
+      //TODO: do we really delete?
+      Curve *temp = (*this)[i].reverse();
       ret.append(*temp);
       delete temp;
     }
