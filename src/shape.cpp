@@ -64,18 +64,24 @@ Shapes shape_union(const Shape & a, const Shape & b) {
         Paths withins[2];
         for(unsigned p = 0; p < 2; p++) {
             for ( Paths::iterator holei = holes[p].begin();
-                    holei != holes[p].end(); holei++ ) {
-                Crossings hcr = crossings(*inter, *holei);
+                    holei != holes[p].end();) {
+                Crossings hcr = crossings(*holei, *inter);
                 CrossingsA hcr_a(hcr.begin(), hcr.end());
                 CrossingsB hcr_b(hcr_a.begin(), hcr_a.end());
-                Paths innards = path_intersect(*holei, *inter, hcr_a, hcr_b);
+                CrossingsA new_hcr_a(hcr_a);
+                CrossingsB new_hcr_b(hcr_b);
+                Paths innards = path_intersect_reverse(*holei, *inter, hcr_a, hcr_b);
                 if(!innards.empty()) {
                     withins[p].insert(withins[p].end(), innards.begin(), innards.end());
-                
                     //replaces the original holes entry with the remaing fragments
-                    Paths remains = shapes_to_paths(path_subtract_reverse(*holei, *inter, hcr_a, hcr_b));
+                    
+                    Paths remains = shapes_to_paths(path_subtract_reverse(*holei, *inter, new_hcr_a, new_hcr_b));
                     holes[p].insert(holei, remains.begin(), remains.end());
-                    holes[p].erase(holei);
+                    Paths::iterator temp = holei;
+                    holei++;
+                    holes[p].erase(temp);
+                } else {
+                    holei++;
                 }
             }
         }
@@ -202,18 +208,30 @@ Shapes path_subtract(const Path & a, const Path & b) {
     return path_subtract_reverse(new_a, b, cr_a, cr_b);
 }
 
-/*This just reverses b and the crossings and calls path_boolean(SUBTRACT, ...).
-  It turns out path_subtract_reverse is used much more often anyway. */
-Shapes path_subtract(const Path & a, const Path & b,
-                     CrossingsA & cr_a, CrossingsB & cr_b ) {
+Crossings reverse_crossings_b(CrossingsA cr, double max) {
     Crossings new_cr;
-    double max = b.size();
-    for(CrossIterator it = cr_a.begin(); it != cr_a.end(); it++) {
+    for(CrossIterator it = cr.begin(); it != cr.end(); it++) {
         Crossing x = *it;
         if(x.tb > max) x.tb = 1 - (x.tb - max) + max; // on the last seg - flip it about
         else x.tb = max - x.tb;
         new_cr.push_back(x);
     }
+    return new_cr;
+}
+
+Paths path_intersect_reverse(const Path & a, const Path & b,
+                             CrossingsA & cr_a, CrossingsB & cr_b ) {
+    Crossings new_cr = reverse_crossings_b(cr_a, b.size());
+    CrossingsA new_cr_a(new_cr.begin(), new_cr.end());
+    CrossingsB new_cr_b(new_cr_a.begin(), new_cr_a.end());
+    return path_intersect(a, b.reverse(), new_cr_a, new_cr_b);
+}
+
+/*This just reverses b and the crossings and calls path_boolean(SUBTRACT, ...).
+  It turns out path_subtract_reverse is used much more often anyway. */
+Shapes path_subtract(const Path & a, const Path & b,
+                     CrossingsA & cr_a, CrossingsB & cr_b ) {
+    Crossings new_cr = reverse_crossings_b(cr_a, b.size());
     CrossingsA new_cr_a(new_cr.begin(), new_cr.end());
     CrossingsB new_cr_b(new_cr_a.begin(), new_cr_a.end());
     return path_subtract_reverse(a, b.reverse(), new_cr_a, new_cr_b);
@@ -284,7 +302,6 @@ Shapes path_boolean(BoolOp btype,
                 next = circ<CrossIterator>(cr_b.begin(), cr_b.end(), cr_b.find(*it));
                 if(next == cr_b.end()) goto aus; //break;
                 next++;
-                std::cout << "B: " << it->tb << " to " << (*next).tb << "\n";
                 b.appendPortionTo(res, it->tb, (*next).tb);
             }
             //Remove all but the first crossing, This way the function doesn't return duplicate paths

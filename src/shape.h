@@ -48,6 +48,9 @@ Shapes path_subtract(const Path & a, const Path & b);
 Shapes path_subtract(const Path & a, const Path & b,
                      CrossingsA & cr_a, CrossingsB & cr_b);
 
+inline Paths path_intersect_reverse(const Path & a, const Path & b,
+                            CrossingsA & cr_a, CrossingsB & cr_b );
+                     
 inline Shapes path_union(const Path & a, const Path & b) {
     return path_boolean(UNION, a, b);
 }

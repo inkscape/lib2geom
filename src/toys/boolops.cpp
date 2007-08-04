@@ -21,14 +21,18 @@ void cairo_paths(cairo_t *cr, Paths p) {
     }
 }
 
+void cairo_shape(cairo_t *cr, Shape s) {
+    cairo_set_source_rgba(cr, 1., 0., 0., .5);
+    cairo_path(cr, s.getOuter());
+    cairo_stroke(cr);
+    cairo_set_source_rgba(cr, 0., 0., 1., .5);
+    cairo_paths(cr, s.getHoles());
+    cairo_stroke(cr);
+}
+
 void cairo_shapes(cairo_t *cr, Shapes s) {
     for(unsigned i = 0; i < s.size(); i++) {
-        cairo_set_source_rgba(cr, 1., 0., 0., .5);
-        cairo_path(cr, s[i].getOuter());
-        cairo_stroke(cr);
-        cairo_set_source_rgba(cr, 0., 0., 1., .5);
-        cairo_paths(cr, s[i].getHoles());
-        cairo_stroke(cr);
+        cairo_shape(cr, s[i]);
     }
 }
 
@@ -76,11 +80,13 @@ class BoolOps: public Toy {
     Point centre;
     vector<Path> path_a, path_b;
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
-        //Paths none;
+        Paths none;
+        Shape as = Shape(path_a.front(), Paths(++path_a.begin(), path_a.end() ));
         //Shape a(path_a.front(), none), b(path_b.front(), none);
-        Path a(path_a.front());
+        //Path a(path_a.front());
         Path b(path_b.front() * Geom::Translate(handles[0]-centre));
-        cairo_path(cr, a);
+        cairo_shape(cr, as);
+        cairo_set_source_rgba(cr, 0., 0., 0., .5);
         cairo_path(cr, b);
         cairo_stroke(cr);
         
@@ -89,19 +95,19 @@ class BoolOps: public Toy {
         cairo_path(cr, port);
         cairo_stroke(cr); */
              
-        mark_crossings(cr, a, b);
-        draw_bounds(cr, a);
-        draw_bounds(cr, b);
+        //mark_crossings(cr, a, b);
+        //draw_bounds(cr, a);
+        //draw_bounds(cr, b);
         //std::streambuf* cout_buffer = std::cout.rdbuf();
         //std::cout.rdbuf(notify->rdbuf());
         cairo_set_line_width(cr, 5);
         
-        Shapes uni = path_union(a, b);
+        Shapes uni = shape_union(as, Shape(b, none)); //path_union(a, b);
         cairo_set_source_rgba(cr, 1., 0., 0., .5);
         cairo_shapes(cr, uni);
         cairo_stroke(cr);
         
-        Shapes sub = path_subtract(a, b);
+        /*Shapes sub = path_subtract(a, b);
         cairo_set_source_rgba(cr, 0., 0., 0., .5);
         cairo_shapes(cr, sub * Translate(Point(20, 20)));
         cairo_stroke(cr);
@@ -110,7 +116,7 @@ class BoolOps: public Toy {
         cairo_set_source_rgba(cr, 0., 1., 0., .5);
         cairo_paths(cr, inte);
         cairo_stroke(cr);
-        
+        */
         //std::cout.rdbuf(cout_buffer);
 
         *notify << "Red = Union exterior, Blue = Holes in union\n Green = Intersection\nSubtraction is meant to be shifted.\n";
