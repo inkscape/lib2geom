@@ -147,6 +147,7 @@ class BoolOps: public Toy {
         Geom::centroid(pw, centre, area);
         std::cout << "monk area = " << area << std::endl;
     }
+    bool should_draw_bounds() {return false;}
 };
 
 int main(int argc, char **argv) {
