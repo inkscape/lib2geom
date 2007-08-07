@@ -23,8 +23,10 @@ void cairo_paths(cairo_t *cr, Paths p) {
 
 void cairo_shape(cairo_t *cr, Shape s) {
     cairo_set_source_rgba(cr, 1., 0., 0., .5);
+    cairo_set_line_width(cr, 3);
     cairo_path(cr, s.getOuter());
     cairo_stroke(cr);
+    cairo_set_line_width(cr, 1);
     cairo_set_source_rgba(cr, 0., 0., 1., .5);
     cairo_paths(cr, s.getHoles());
     cairo_stroke(cr);
@@ -77,50 +79,73 @@ Shapes operator*(Shapes const & sh, Matrix const &m) {
     return ret;
 }
 
-class BoolOps: public Toy {
+//true = clockwise, false = counter-clock
+Path set_winding(Path const &p, bool dir) {
+    Piecewise<D2<SBasis> > pw = p.toPwSb();
+    double area;
     Point centre;
-    vector<Path> path_a, path_b;
-    Shape bs;
+    Geom::centroid(pw, centre, area);
+    if(area < 0 && !dir) return p.reverse();
+    if(area > 0 && dir) return p.reverse();
+    return p; 
+}
+
+Shape cleanup(std::vector<Path> const &ps) {
+    unsigned ix = outer_index(ps);
+    
+    Path outer = set_winding(ps[ix], false);
+
+    Piecewise<D2<SBasis> > pw = outer.toPwSb();
+    double area;
+    Point centre;
+    Geom::centroid(pw, centre, area);
+    
+
+    
+    Paths holes;
+    for(unsigned i = 0; i < ps.size(); i++) {
+        if(i != ix && contains(outer, ps[i].initialPoint()))
+            holes.push_back(set_winding(ps[i], true));
+    }
+    return Shape(outer, holes) * Geom::Translate(-centre);
+}
+
+class BoolOps: public Toy {
+    Path a, b;
+    Shape as, bs;
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
-        Paths none;
-        Shape as = Shape(path_a.front(), Paths(++path_a.begin(), path_a.end() ));
-        //Shape a(path_a.front(), none), b(path_b.front(), none);
-        //Path a(path_a.front());
-        //Path b(path_b.front() * Geom::Translate(handles[0]-centre));
         Shape bst = bs * Geom::Translate(handles[0]);
-        cairo_shape(cr, as);
-        cairo_set_source_rgba(cr, 0., 0., 0., .5);
-        cairo_shape(cr, bst);
-        //cairo_path(cr, b);
-        cairo_stroke(cr);
+        Path bt = bst.getOuter();
+        //cairo_shape(cr, as);
+        //cairo_shape(cr, bst);
         
-        /*Path port = a.portion(handles[1][X] / 100., handles[2][X] / 100.);
-        cairo_set_source_rgba(cr, 0., 1., 0., 1.);
-        cairo_path(cr, port);
-        cairo_stroke(cr); */
-             
-        //mark_crossings(cr, a, b);
+        cairo_set_line_width(cr, 1);
+        cairo_set_source_rgba(cr, 0., 0., 0., 1);
+        mark_crossings(cr, a, bt);
+        cairo_stroke(cr);
         //draw_bounds(cr, a);
         //draw_bounds(cr, b);
         //std::streambuf* cout_buffer = std::cout.rdbuf();
         //std::cout.rdbuf(notify->rdbuf());
-        cairo_set_line_width(cr, 5);
         
-        Shapes uni = shape_subtract(as, bst); //path_union(a, b);
+        Shapes suni = shape_subtract(as, bst); //path_union(a, b);
+        cairo_shapes(cr, suni);
+        
+        /*
+        Shapes uni = path_union(a, bt);
         cairo_set_source_rgba(cr, 1., 0., 0., .5);
         cairo_shapes(cr, uni);
-        cairo_stroke(cr);
-        
-        /*Shapes sub = path_subtract(path_a.front(), b);
+  
+        Shapes sub = path_union_reverse(a, bt);
         cairo_set_source_rgba(cr, 0., 0., 0., .5);
-        cairo_shapes(cr, sub * Translate(Point(20, 20)));
+        cairo_shapes(cr, sub);
         cairo_stroke(cr);
         
-        Paths inte = path_intersect(a, b);
+        Paths inte = path_intersect(a, bt);
         cairo_set_source_rgba(cr, 0., 1., 0., .5);
         cairo_paths(cr, inte);
-        cairo_stroke(cr);
         */
+        
         //std::cout.rdbuf(cout_buffer);
 
         *notify << "Red = Union exterior, Blue = Holes in union\n Green = Intersection\nSubtraction is meant to be shifted.\n";
@@ -135,22 +160,21 @@ class BoolOps: public Toy {
 
     void first_time(int argc, char** argv) {
         char *path_a_name="winding.svgd";
-        char *path_b_name="monk.svgd";
+        char *path_b_name="star.svgd";
         if(argc > 1)
             path_a_name = argv[1];
         if(argc > 2)
             path_b_name = argv[2];
-        path_a = read_svgd(path_a_name);
-        path_b = read_svgd(path_b_name);
-        handles.push_back(Point(0,0));
-        //handles.push_back(Point(200,300));
-        //handles.push_back(Point(250,300));
-        double area;
-        path_b[0] = path_b[0] * Scale(3,3);
-        Piecewise<D2<SBasis> > pw = path_b[0].toPwSb();
-        Geom::centroid(pw, centre, area);
-        std::cout << "monk area = " << area << std::endl;
-        bs = path_subtract(path_b[0] * Geom::Translate(-centre), path_b[0] * Geom::Translate(-centre) * Scale(.5, .5)).front();
+        std::vector<Path> paths_a = read_svgd(path_a_name);
+        std::vector<Path> paths_b = read_svgd(path_b_name);
+        
+        handles.push_back(Point(300,300));
+        
+        as = cleanup(paths_a) * Geom::Translate(Point(300, 300));
+        bs = cleanup(paths_b); //path_subtract(path_b[0] * Geom::Translate(-centre), path_b[0] * Geom::Translate(-centre) * Scale(.5, .5)).front();
+        
+        a = as.getOuter();
+        b = bs.getOuter();
     }
     bool should_draw_bounds() {return false;}
 };

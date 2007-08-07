@@ -79,16 +79,17 @@ Shapes shape_union(Shape const & a, Shape const & b) {
         for(unsigned p = 0; p < 2; p++) {
             for ( Paths::iterator holei = holes[p].begin();
                     holei != holes[p].end();) {
-                Crossings hcr = crossings(*holei, *inter);
+                Crossings hcr = crossings(*inter, *holei);
                 if(!hcr.empty()) {
                     CrossingsA hcr_a(hcr.begin(), hcr.end());
                     CrossingsB hcr_b(hcr_a.begin(), hcr_a.end());
-                    Paths innards = path_intersect_reverse(*holei, *inter, hcr);
+                    Paths innards = path_intersect_reverse(*inter, *holei, hcr);
                     if(!innards.empty()) {
+                        //stash the stuff which is inside the intersection
                         withins[p].insert(withins[p].end(), innards.begin(), innards.end());
-                        //replaces the original holes entry with the remaining fragments
                         
-                        Paths remains = shapes_to_paths<Shapes>(path_subtract_reverse(*holei, *inter, hcr_a, hcr_b));
+                        //replaces the original holes entry with the remaining fragments
+                        Paths remains = shapes_to_paths<Shapes>(path_subtract_reverse(*inter, *holei, hcr_a, hcr_b));
                         holes[p].insert(holei, remains.begin(), remains.end());
                         
                         Paths::iterator temp = holei;
@@ -146,8 +147,8 @@ Shapes shape_subtract(Shape const & ac, Shape const & b) {
     bool flag_inside = false;
     if(cr.empty()) {
         if(contains(b.outer, ac.outer.initialPoint())) {
-            // the subtractor contains everything
-            return ret;
+            // the subtractor contains everything - need to continue though, to evaluate the holes.
+            flag_inside = false;
         } else if(contains(ac.outer, b.outer.initialPoint())) {
             // the subtractor is contained within
             flag_inside = true;
@@ -218,6 +219,11 @@ Shapes shape_subtract(Shape const & ac, Shape const & b) {
                         continue;
                     } else if(contains(j->outer, i->initialPoint())) {
                         j->holes.push_back(*i);
+                    } else if(contains(*i, j->outer.initialPoint())) {
+                        std::list<Shape>::iterator temp = j;
+                        j++;
+                        new_islands.erase(temp);
+                        continue;
                     }
                     j++;
                 }
@@ -360,6 +366,24 @@ Shapes path_boolean_reverse(BoolOp btype, Path const & a, Path const & b, Crossi
     return path_boolean(btype, a, b.reverse(), new_cr);
 }
 
+unsigned outer_index(std::vector<Path> const &ps) {
+    unsigned ix = 0;
+    if(ps.size() == 1 || contains(ps[0], ps[1].initialPoint())) {
+        return ix;
+    } else {
+        /* Since we've already shown that chunks[0] is not the outer_path,
+           it can be used as an exemplar inner. */
+        Point exemplar = ps[0].initialPoint();
+        for(unsigned i = 1; i < ps.size(); i++) {
+            if(contains(ps[i], exemplar)) {
+                ix = i;
+                break;
+            }
+        }
+    }
+    return ix;
+}
+
 bool logical_xor (bool a, bool b) { return (a || b) && !(a && b); }
 
 /* This handles all the boolean ops in one function.  The middle function
@@ -449,9 +473,10 @@ Shapes path_boolean(BoolOp btype,
             continue;
         }
         //These were originally preserved in order to complete the loops, now erase.
-        cr_a.erase(*it);
-        cr_b.erase(*it);
+        CrossIterator temp = it;
         it++;
+        cr_a.erase(*temp);
+        cr_b.erase(*temp);
     }
     aus:
 
@@ -461,28 +486,15 @@ Shapes path_boolean(BoolOp btype,
     
     //If we are doing a union, the result may have multiple holes
     if(btype == UNION) {
-        //First, find the outer path index
-        unsigned ix;
-        if(chunks.size() == 1 || contains(chunks[0], chunks[1].initialPoint())) {
-            ix = 0;
-        } else {
-           /* This should work since we've already shown that chunks[0] is
-            * not the outer_path, so can be used as an exemplar inner. */
-            for(unsigned i = 1; i < chunks.size(); i++) {
-                if(contains(chunks[i], chunks[0].initialPoint())) {
-                    ix = i;
-                    break;
-                }
-            }
-        }
+        unsigned ix = outer_index(chunks);
 
-        //Now we may construct the shape
         Shape s;
         s.outer = chunks[ix];
-        for(unsigned i = 0; i < chunks.size(); i++) {
+        for(unsigned i = 0; i < chunks.size(); i++) {        std::cout << "allo\n";
             /* If everything is functioning properly, these should all
              * have clockwise winding. TODO: stick some assertions in here*/
-            if(i != ix) s.holes.push_back(chunks[i]);
+            if(i != ix && contains(s.outer, chunks[i].initialPoint()))
+                s.holes.push_back(chunks[i]);
         }
         ret.push_back(s);
     } else {

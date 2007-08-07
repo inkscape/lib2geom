@@ -107,6 +107,10 @@ inline Shapes paths_to_shapes(T const & p) {
     return ret;
 } 
 
+void add_holes(Shapes &x, Paths const &h);
+
+unsigned outer_index(std::vector<Path> const &ps);
+
 //These are the various helper functions for path intersection.
 //They are all just convenience wrappers to the main path_boolean.
 

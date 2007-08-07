@@ -48,6 +48,12 @@ void check_boolops(std::vector<std::pair<Shape, Shape> > s) {
     }
 }
 
+/*
+xor(A, xor(A, B)) = B
+union(not A, not B) = not intersection(A,B)
+intersection(A,B) = union(A,B) - (A-B) - (B-A)
+*/
+
 int main(int argc, char** argv) {
     cout << "Testing winding:";
     //Test by example and val?
