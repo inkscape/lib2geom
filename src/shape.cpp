@@ -384,6 +384,7 @@ unsigned outer_index(std::vector<Path> const &ps) {
     return ix;
 }
 
+// what about a != b ?
 bool logical_xor (bool a, bool b) { return (a || b) && !(a && b); }
 
 /* This handles all the boolean ops in one function.  The middle function
@@ -442,12 +443,12 @@ Shapes path_boolean(BoolOp btype,
              * doing an intersection rather than subtraction/union */
             if(logical_xor(it -> dir, btype != UNION)) {
                 next = circ<CrossIterator>(cr_a.begin(), cr_a.end(), cr_a.find(*it));
-                if(next == cr_a.end()) goto aus; //break;  //really these should never happen...
+                assert(!(next == cr_a.end()));// goto aus; //break;  //really these should never happen...
                 next++;
                 a.appendPortionTo(res, it->ta, (*next).ta);
             } else {
                 next = circ<CrossIterator>(cr_b.begin(), cr_b.end(), cr_b.find(*it));
-                if(next == cr_b.end()) goto aus; //break;
+                assert(!(next == cr_b.end()));// goto aus; //break;
                 next++;
                 b.appendPortionTo(res, it->tb, (*next).tb);
             }
@@ -478,7 +479,7 @@ Shapes path_boolean(BoolOp btype,
         cr_a.erase(*temp);
         cr_b.erase(*temp);
     }
-    aus:
+    //aus:
 
     //Process the chunks into shapes output
     
