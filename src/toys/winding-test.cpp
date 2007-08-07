@@ -54,7 +54,7 @@ class WindingTest: public Toy {
         
         std::streambuf* cout_buffer = std::cout.rdbuf();
         std::cout.rdbuf(notify->rdbuf());
-        *notify << "winding:" << winding(path, handles[0]) << "\n";
+        *notify << "\nwinding:" << winding(path, handles[0]) << "\n";
         std::cout.rdbuf(cout_buffer);
 
         Toy::draw(cr, notify, width, height, save);

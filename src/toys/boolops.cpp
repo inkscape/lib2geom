@@ -63,31 +63,35 @@ void draw_bounds(cairo_t *cr, Path p) {
     }
 }
 
+Shape operator*(Shape const & sh, Matrix const &m) {
+    Paths holes, h = sh.getHoles();
+    for(Paths::iterator j = h.begin(); j != h.end(); j++) {
+        holes.push_back((*j) * m);
+    }
+    return Shape(sh.getOuter() * m, holes);
+}
+
 Shapes operator*(Shapes const & sh, Matrix const &m) {
     Shapes ret;
-    for(unsigned i = 0; i < sh.size(); i++) {
-        Paths holes, h = sh[i].getHoles();
-        for(Paths::iterator j = h.begin(); j != h.end(); j++) {
-            holes.push_back((*j) * m);
-        }
-        Shape s(sh[i].getOuter() * m, holes);
-        ret.push_back(s);
-    }
+    for(unsigned i = 0; i < sh.size(); i++) ret.push_back(sh[i] * m);
     return ret;
 }
 
 class BoolOps: public Toy {
     Point centre;
     vector<Path> path_a, path_b;
+    Shape bs;
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         Paths none;
         Shape as = Shape(path_a.front(), Paths(++path_a.begin(), path_a.end() ));
         //Shape a(path_a.front(), none), b(path_b.front(), none);
         //Path a(path_a.front());
-        Path b(path_b.front() * Geom::Translate(handles[0]-centre));
+        //Path b(path_b.front() * Geom::Translate(handles[0]-centre));
+        Shape bst = bs * Geom::Translate(handles[0]);
         cairo_shape(cr, as);
         cairo_set_source_rgba(cr, 0., 0., 0., .5);
-        cairo_path(cr, b);
+        cairo_shape(cr, bst);
+        //cairo_path(cr, b);
         cairo_stroke(cr);
         
         /*Path port = a.portion(handles[1][X] / 100., handles[2][X] / 100.);
@@ -102,12 +106,12 @@ class BoolOps: public Toy {
         //std::cout.rdbuf(notify->rdbuf());
         cairo_set_line_width(cr, 5);
         
-        Shapes uni = shape_union(as, Shape(b, none)); //path_union(a, b);
+        Shapes uni = shape_subtract(as, bst); //path_union(a, b);
         cairo_set_source_rgba(cr, 1., 0., 0., .5);
         cairo_shapes(cr, uni);
         cairo_stroke(cr);
         
-        /*Shapes sub = path_subtract(a, b);
+        /*Shapes sub = path_subtract(path_a.front(), b);
         cairo_set_source_rgba(cr, 0., 0., 0., .5);
         cairo_shapes(cr, sub * Translate(Point(20, 20)));
         cairo_stroke(cr);
@@ -138,7 +142,7 @@ class BoolOps: public Toy {
             path_b_name = argv[2];
         path_a = read_svgd(path_a_name);
         path_b = read_svgd(path_b_name);
-        handles.push_back(Point(300,300));
+        handles.push_back(Point(0,0));
         //handles.push_back(Point(200,300));
         //handles.push_back(Point(250,300));
         double area;
@@ -146,6 +150,7 @@ class BoolOps: public Toy {
         Piecewise<D2<SBasis> > pw = path_b[0].toPwSb();
         Geom::centroid(pw, centre, area);
         std::cout << "monk area = " << area << std::endl;
+        bs = path_subtract(path_b[0] * Geom::Translate(-centre), path_b[0] * Geom::Translate(-centre) * Scale(.5, .5)).front();
     }
     bool should_draw_bounds() {return false;}
 };

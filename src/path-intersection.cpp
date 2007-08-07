@@ -7,7 +7,6 @@
 namespace Geom {
 
 int winding(Path const &path, Point p) {
-  std::cout << "winding: ";
   //start on a segment which is not a horizontal line with y = p[y]
   Path::const_iterator start;
   for(Path::const_iterator iter = path.begin(); ; ++iter) {
@@ -17,9 +16,8 @@ int winding(Path const &path, Point p) {
     if(iter->boundsFast().height()!=0.){ start = iter; break; }
   }
   int wind = 0;
-  Path::const_iterator iter = start;
   bool temp = true;
-  for (; iter != start || temp
+  for (Path::const_iterator iter = start; iter != start || temp
        ; ++iter, iter = (iter == path.end_closed()) ? path.begin() : iter )
   {
     temp = false;
@@ -78,15 +76,22 @@ int winding(Path const &path, Point p) {
             if(next==start) return wind;
         }
         //Looks like it looped, which means everything's flat
-        std::cout << "\n";
         return 0;
     }
     
     cont:(void)0;
   }
-  std::cout << "\n";
   return wind;
 }
+
+/*
+int path_direction(Path p) {
+    int wind = 0, max = 0;
+    for (Path::const_iterator iter = p.begin(); iter != p.end(); ++iter) {
+        iter->initialPoint()
+        
+    }
+}*/
 
 /*
 //Finds intervals larger than a particular width, which contain a crossing
