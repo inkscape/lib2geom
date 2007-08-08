@@ -61,7 +61,6 @@ struct Eraser {
     pointer operator->() const { return &(*x)[i]; }
     
     Eraser &operator++() {
-        std::cout << "size: " << x->end() - x->begin() << "\n";
         if(skip != true) {
             if(o != i) (*x)[o] = (*x)[i];
             ++o;

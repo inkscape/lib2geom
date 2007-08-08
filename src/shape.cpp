@@ -82,7 +82,7 @@ Shapes shape_union(Shape const & a, Shape const & b) {
         
         //Take holes from both operands and 
         for(unsigned p = 0; p < 2; p++) {
-            for (Replacer<Paths> holei(&holes[p]); !holei.ended(); holei++) {
+            for (Replacer<Paths> holei(&holes[p]); !holei.ended(); ++holei) {
                 Crossings hcr = crossings(*inter, *holei);
                 if(!hcr.empty()) {
                     Crossings hcr_a = hcr, hcr_b = hcr;
@@ -163,7 +163,7 @@ Shapes shape_subtract(Shape const & ac, Shape const & b) {
     //First, we deal with the outer-path - add intersecting holes in a to it 
     Paths remains;  //holes which intersected - needed later to remove from islands (holes in subtractor)
     Paths a_holes = a.holes;
-    for(Eraser<Paths> i(&a_holes); !i.ended(); i++) {std::cout << "eins\n";
+    for(Eraser<Paths> i(&a_holes); !i.ended(); ++i) {std::cout << "eins\n";
         Crossings hcr = crossings(sub_outer, *i);
         //TODO: use crosses predicate
         if(!hcr.empty()) {
@@ -192,7 +192,7 @@ Shapes shape_subtract(Shape const & ac, Shape const & b) {
             
             //We've already culled out the intersectors in the above loop
             if(on_remains || contains(sub_outer, i->initialPoint())) {
-                for(Replacer<Shapes> j(&new_islands); !j.ended(); j++) { // iterate the islands
+                for(Replacer<Shapes> j(&new_islands); !j.ended(); ++j) { // iterate the islands
                             std::cout << "vier\n";
                     //since the holes are disjoint, we don't need to do a recursive shape_subtract
                     Crossings hcr = crossings(j->outer, *i);
@@ -215,7 +215,7 @@ Shapes shape_subtract(Shape const & ac, Shape const & b) {
     }
     
     //remove a's holes which are within the subtractor
-    for(Eraser<Paths> i(&a.holes); !i.ended(); i++) {
+    for(Eraser<Paths> i(&a.holes); !i.ended(); ++i) {
                 std::cout << "funf\n";
         if(contains(sub_outer, i->initialPoint())) i.erase();
     }
