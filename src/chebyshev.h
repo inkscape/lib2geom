@@ -10,7 +10,8 @@
 
 namespace Geom{
 
-SBasis chebyshev_approximant (double (*f)(double,void*), int order, Interval in);
+SBasis chebyshev_approximant (double (*f)(double,void*), int order, Interval in, void* p=0);
+SBasis chebyshev_approximant_interpolating (double (*f)(double,void*), int order, Interval in, void* p=0);
 SBasis chebyshev(unsigned n);
 
 };

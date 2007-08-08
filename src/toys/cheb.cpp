@@ -32,8 +32,8 @@ class Sb1d: public Toy {
         D2<SBasis> B;
         B[0] = Linear(width/4, 3*width/4);
         for(unsigned i = 0; i < 40; i+=5) {
-            B[1] = compose(chebyshev_approximant(f, i, Interval(-1,1)),
-                           Linear(-1,1));
+            Interval in(-1,1);
+            B[1] = chebyshev_approximant(f, i, in);
             
             Geom::Path pb;
             B[1] = SBasis(Linear(2*width/4)) - B[1]*(width/4);

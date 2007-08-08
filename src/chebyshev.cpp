@@ -53,23 +53,50 @@ SBasis clenshaw_series(unsigned m, double* cheb_coeff) {
         dd = sv;
     }
     
-    return y*d - dd + cheb_coeff[0];
+    return y*d - dd + 0.5*cheb_coeff[0];
 }
 
-SBasis chebyshev_approximant (double (*f)(double,void*), int order, Interval in) {
+SBasis chebyshev_approximant (double (*f)(double,void*), int order, Interval in, void* p) {
     gsl_cheb_series *cs = gsl_cheb_alloc (order+2);
 
     gsl_function F;
 
     F.function = f;
-    F.params = 0;
+    F.params = p;
 
-    gsl_cheb_init (cs, &F, 0.0, 1.0);
+    gsl_cheb_init (cs, &F, in[0], in[1]);
     
-    SBasis r = clenshaw_series(order, cs->c);
+    SBasis r = compose(clenshaw_series(order, cs->c), Linear(-1,1));
         
     gsl_cheb_free (cs);
     return r;
+}
+
+struct wrap {
+    double (*f)(double,void*);
+    void* pp;
+    double fa, fb;
+    Interval in;
+};
+
+double f_interp(double x, void* p) {
+    struct wrap *wr = (struct wrap *)p;
+    double z = (x - wr->in[0]) / (wr->in[1] - wr->in[0]);
+    return (wr->f)(x, wr->pp) - ((1 - z)*wr->fa + z*wr->fb);
+}
+
+SBasis chebyshev_approximant_interpolating (double (*f)(double,void*), 
+                                            int order, Interval in, void* p) {
+    double fa = f(in[0], p);
+    double fb = f(in[1], p);
+    struct wrap wr;
+    wr.fa = fa;
+    wr.fb = fb;
+    wr.in = in;
+    printf("%f %f\n", fa, fb);
+    wr.f = f;
+    wr.pp = p;
+    return compose(Linear(in[0], in[1]), Linear(fa, fb)) + chebyshev_approximant(f_interp, order, in, &wr) + Linear(fa, fb);
 }
 
 SBasis chebyshev(unsigned n) {
