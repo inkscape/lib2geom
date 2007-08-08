@@ -127,7 +127,6 @@ linear_pair_intersect(D2<SBasis> A, double Al, double Ah,
                       D2<SBasis> B, double Bl, double Bh,
                       double &tA, double &tB) {
     Rect Ar = bounds_local(A, Interval(Al, Ah));
-    std::cout << Al << ", " << Ah << "\n";
     // kramers rule here
     Point A0 = A(Al);
     Point A1 = A(Ah);
@@ -181,11 +180,11 @@ void pair_intersect(std::vector<double> &Asects,
 
         if((depth > 12)  || ((Ate < 0.1) && 
            (Bte < 0.1))) {
-            std::cout << "intersects\n" << Ate << "\n" << Bte;
             double tA, tB;
             if(linear_pair_intersect(A, Al, Ah, 
                                      B, Bl, Bh, 
                                      tA, tB)) {
+                std::cout << "intersects " << tA << ", " << tB << "\n";
                 Asects.push_back(tA);
                 Bsects.push_back(tB);
             }

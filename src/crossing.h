@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <set>
-
+#include <iostream>
 namespace Geom {
 
 struct Crossing {
@@ -15,11 +15,12 @@ struct Crossing {
     bool operator!=(const Crossing & other) const { return !(*this == other); }
 };
 
-inline bool near(Crossing a, Crossing b) {
+/*inline bool near(Crossing a, Crossing b) {
     return near(a.ta, b.ta) && near(a.tb, b.tb);
 }
 
 struct NearF { bool operator()(Crossing a, Crossing b) { return near(a, b); } };
+*/
 
 struct OrderA { bool operator()(Crossing a, Crossing b) { return a.ta < b. ta; } };
 struct OrderB { bool operator()(Crossing a, Crossing b) { return a.tb < b. tb; } };
@@ -39,29 +40,33 @@ inline void sortB(Crossings &cr) {
 template<typename T>
 struct Eraser {
     T *x;
-    typename T::iterator i, o;
+    unsigned i, o;
     bool skip;
     
-    Eraser(T *t) : x(t), skip(false) { i = o = t->begin(); }
+    Eraser(T *t) : x(t), i(0), o(0), skip(false) {}
     ~Eraser() { finish(); }
     
-    bool operator==(Eraser const &other) { return other.i == i; }
-    bool operator!=(Eraser const &other) { return other.i != i; }
-    bool operator==(typename T::iterator const &it) { return it == i; }
+    bool operator==(Eraser const &other) const { return other.i == i; }
+    bool operator!=(Eraser const &other) const { return other.i != i; }
+    /* bool operator==(typename T::iterator const &it) { return it == i; }
     bool operator!=(typename T::iterator const &it) { return it != i; }
+    */
+    
+    bool ended() const { return i >= x->size(); }
     
     typedef typename T::iterator::value_type value_type;
     typedef typename T::iterator::pointer pointer;
     
-    value_type const operator*() const { return *i; }
-    pointer operator->() const { return &(*i); }
+    value_type const operator*() const { return (*x)[i]; }
+    pointer operator->() const { return &(*x)[i]; }
     
     Eraser &operator++() {
+        std::cout << "size: " << x->end() - x->begin() << "\n";
         if(skip != true) {
-            if(o != i) *o = *i;
+            if(o != i) (*x)[o] = (*x)[i];
             ++o;
-        }
-        ++i; 
+        } else skip = false;
+        ++i;
         return *this;
     }
     
@@ -73,33 +78,70 @@ struct Eraser {
     
     void erase() { skip = true; }
     
+    void replace(value_type const &a) {
+        skip = true;
+        (*x)[o] = a;
+        ++o;
+    }
+    
+    void finish() { x->resize(o); }
+};
+
+template<typename T>
+struct Replacer {
+    T *x;
+    T o;
+    unsigned i;
+    bool skip;
+    
+    Replacer(T *t) : x(t), i(0), skip(false) { o = T(); }
+    ~Replacer() { finish(); }
+    
+    bool ended() const { return i >= x->size(); }
+    
+    typedef typename T::iterator::value_type value_type;
+    typedef typename T::iterator::pointer pointer;
+    
+    value_type const operator*() const { return (*x)[i]; }
+    pointer operator->() const { return &(*x)[i]; }
+    
+    Replacer &operator++() {
+        if(!skip) o.push_back((*x)[i]); else skip = false;
+        ++i;
+        return *this;
+    }
+    
+    Replacer operator++(int) {
+        Replacer old=*this;
+        ++(*this);
+        return old;
+    }
+    
+    void erase() { skip = true; }
+    
     template<class InputIterator>
     void replace(InputIterator first, InputIterator last) {
         skip = true;
-        const int siz = last - first;
-        unsigned io = i - x->begin(), oo = o - x->begin();
-        x->resize(x->size() + siz);
-        i = x->begin() + io;
-        o = x->begin() + oo;
-        std::copy(first, last, o);
-        o += siz;
+        o.insert(o.end(), first, last);
     }
     void replace(T const &a) { replace(a.begin(), a.end()); }
     void replace(value_type const &a) {
         skip = true;
-        *o = a;
-        o++;
+        o.push_back(a);
     }
     
-    void finish() { x->resize(o - x->begin()); }
+    void finish() {
+        x->resize(o.size());
+        std::copy(o.begin(), o.end(), x->begin());
+    }
 };
-
+/*
 inline void clean(Crossings &cr_a, Crossings &cr_b) {
     if(cr_a.empty()) return;
     
     //Remove anything with dupes
     
-    for(Eraser<Crossings> i(&cr_a); i != cr_a.end(); i++) {
+    for(Eraser<Crossings> i(&cr_a); !i.ended(); i++) {
         const Crossing cur = *i;
         Eraser<Crossings> next(i);
         next++;
@@ -112,7 +154,7 @@ inline void clean(Crossings &cr_a, Crossings &cr_b) {
         }
     }
 }
-
+*/
 }
 
 #endif

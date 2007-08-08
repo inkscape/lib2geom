@@ -126,10 +126,10 @@ class BoolOps: public Toy {
         //std::streambuf* cout_buffer = std::cout.rdbuf();
         //std::cout.rdbuf(notify->rdbuf());
         
-        //Shapes suni = shape_union(as, bst); //path_union(a, b);
-        //cairo_shapes(cr, suni);
+        Shapes suni = shape_subtract(as, bst); //path_union(a, b);
+        cairo_shapes(cr, suni);
         
-        Shapes uni = path_union(a, bt);
+        /*Shapes uni = path_union(a, bt);
         cairo_set_source_rgba(cr, 1., 0., 0., .5);
         cairo_shapes(cr, uni);
         
@@ -141,7 +141,7 @@ class BoolOps: public Toy {
         Paths inte = path_intersect(a, bt);
         cairo_set_source_rgba(cr, 0., 1., 0., .5);
         cairo_paths(cr, inte);
-        
+        */
         
         //std::cout.rdbuf(cout_buffer);
 
@@ -169,6 +169,11 @@ class BoolOps: public Toy {
         
         as = cleanup(paths_a) * Geom::Translate(Point(300, 300));
         bs = cleanup(paths_b); //path_subtract(path_b[0] * Geom::Translate(-centre), path_b[0] * Geom::Translate(-centre) * Scale(.5, .5)).front();
+        
+        Paths holes = bs.getHoles();
+        holes.push_back(bs.getOuter() * Geom::Scale(.5, .5));
+        
+        bs = Shape(bs.getOuter(), holes);
         
         a = as.getOuter();
         b = bs.getOuter();

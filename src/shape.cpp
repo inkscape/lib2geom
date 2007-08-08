@@ -79,9 +79,10 @@ Shapes shape_union(Shape const & a, Shape const & b) {
     Paths inters = path_intersect(a.outer, b.outer, cr_a, cr_b);
     for(Paths::iterator inter = inters.begin(); inter != inters.end(); inter++) {
         Paths withins[2];  //These are the portions of holes that are inside the intersection
+        
+        //Take holes from both operands and 
         for(unsigned p = 0; p < 2; p++) {
-            for ( Paths::iterator holei = holes[p].begin();
-                    holei != holes[p].end();) {
+            for (Replacer<Paths> holei(&holes[p]); !holei.ended(); holei++) {
                 Crossings hcr = crossings(*inter, *holei);
                 if(!hcr.empty()) {
                     Crossings hcr_a = hcr, hcr_b = hcr;
@@ -93,33 +94,22 @@ Shapes shape_union(Shape const & a, Shape const & b) {
                         
                         //replaces the original holes entry with the remaining fragments
                         Paths remains = shapes_to_paths<Shapes>(path_subtract_reverse(*inter, *holei, hcr_a, hcr_b));
-                        holes[p].insert(holei, remains.begin(), remains.end());
-                        
-                        Paths::iterator temp = holei;
-                        holei++;
-                        holes[p].erase(temp);
-                        continue;
+                        holei.replace(remains);
                     }
                 } else if(contains(*inter, holei->initialPoint())) {
                     withins[p].push_back(*holei);
-                    
-                    Paths::iterator temp = holei;
-                    holei++;
-                    holes[p].erase(temp);
-                    continue; 
+                    holei.erase();
                 }
-                holei++;
             }
         }
+        
         for(Paths::iterator j = withins[0].begin(); j!= withins[0].end(); j++) {
             for(Paths::iterator k = withins[1].begin(); k!= withins[1].end(); k++) {
                 Crossings hcr = crossings(*j, *k);
                 //TODO: use crosses predicate
                 if(!hcr.empty()) {
-                    Crossings hcr_a = hcr, hcr_b = hcr;
-                    sortA(hcr_a); sortB(hcr_b);
                     //By the nature of intersect, we don't need to accumulate
-                    Paths ps = path_intersect(*j, *k, hcr_a, hcr_b);
+                    Paths ps = path_intersect(*j, *k, hcr);
                     ret.holes.insert(ret.holes.end(), ps.begin(), ps.end());
                 }
             }
@@ -169,44 +159,41 @@ Shapes shape_subtract(Shape const & ac, Shape const & b) {
     for(Paths::const_iterator i = b.holes.begin(); i != b.holes.end(); i++) {
         sub_holes.push_back(i->reverse());
     }
-    
+
     //First, we deal with the outer-path - add intersecting holes in a to it 
     Paths remains;  //holes which intersected - needed later to remove from islands (holes in subtractor)
-    for(Paths::iterator i = a.holes.begin(); i != a.holes.end();) {
+    Paths a_holes = a.holes;
+    for(Eraser<Paths> i(&a_holes); !i.ended(); i++) {std::cout << "eins\n";
         Crossings hcr = crossings(sub_outer, *i);
         //TODO: use crosses predicate
         if(!hcr.empty()) {
             //I'm sure this is quite reassuring to the reader, but I have no idea why the following must be subtract - union should be the one to use
             Shape new_sub = path_boolean(SUBTRACT, sub_outer, *i).front(); //path_union(sub_outer, *i, hcr).front();
-            new_sub.holes.insert(new_sub.holes.end(), sub_holes.begin(), sub_holes.end());
             
             sub_outer = new_sub.outer;
-            sub_holes = new_sub.holes;
+            sub_holes.insert(sub_holes.end(), new_sub.holes.begin(), new_sub.holes.end());
             
             remains.push_back(*i);
             
-            //I wish I could avoid this pattern.
-            //Anyway, this removes the current hole. As the increment is sometimes performed here, it can't be in the for-loop.
-            Paths::iterator temp = i;
-            i++;
-            a.holes.erase(temp);
-            continue;
+            i.erase();
         }
-        i++;
     }
+    a.holes = a_holes;
 
     //Next, intersect the subtractor holes with a's outer path, and subtract a's holes from the result
     //This yields the 'islands'
-    for(Paths::iterator hole = sub_holes.begin(); hole != sub_holes.end(); hole++) {
+    for(Paths::iterator hole = sub_holes.begin(); hole != sub_holes.end(); hole++) {    std::cout << "zwei\n";
         Shapes new_islands = path_boolean(INTERSECT, a.outer, hole->reverse());
         bool on_remains = false;
         for(Paths::iterator i = a.holes.begin(); ; i++) {  //iterate a's holes / remains
+            std::cout << "drei\n";
             if(i == a.holes.end()) { i = remains.begin(); on_remains = true; }
             if(i == remains.end()) break;
             
             //We've already culled out the intersectors in the above loop
             if(on_remains || contains(sub_outer, i->initialPoint())) {
-                for(Eraser<Shapes> j(&new_islands); j != new_islands.end(); j++) { // iterate the islands
+                for(Replacer<Shapes> j(&new_islands); !j.ended(); j++) { // iterate the islands
+                            std::cout << "vier\n";
                     //since the holes are disjoint, we don't need to do a recursive shape_subtract
                     Crossings hcr = crossings(j->outer, *i);
                     //TODO: use crosses predicate
@@ -228,7 +215,8 @@ Shapes shape_subtract(Shape const & ac, Shape const & b) {
     }
     
     //remove a's holes which are within the subtractor
-    for(Eraser<Paths> i(&a.holes); i != a.holes.end(); i++) {
+    for(Eraser<Paths> i(&a.holes); !i.ended(); i++) {
+                std::cout << "funf\n";
         if(contains(sub_outer, i->initialPoint())) i.erase();
     }
     
@@ -415,7 +403,7 @@ Shapes path_boolean(BoolOp btype,
 
         Shape s;
         s.outer = chunks[ix];
-        for(unsigned i = 0; i < chunks.size(); i++) {        std::cout << "allo\n";
+        for(unsigned i = 0; i < chunks.size(); i++) {
             /* If everything is functioning properly, these should all
              * have clockwise winding. TODO: stick some assertions in here*/
             if(i != ix && contains(s.outer, chunks[i].initialPoint()))
