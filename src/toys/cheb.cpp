@@ -1,37 +1,27 @@
 #include "d2.h"
 #include "sbasis.h"
+#include "sbasis-poly.h"
 
 #include "path-cairo.h"
 #include "toy-framework.h"
+#include "chebyshev.h"
 
 #include <vector>
 using std::vector;
 using namespace Geom;
 
-SBasis cheb(unsigned n) {
-    static std::vector<SBasis> basis;
-    if(basis.empty()) {
-        basis.push_back(Linear(1,1));
-        basis.push_back(Linear(0,1));
-    }
-    for(unsigned i = basis.size(); i <= n; i++) {
-        basis.push_back(Linear(0,2)*basis[i-1] - basis[i-2]);
-    }
-    
-    return basis[n];
-}
+#include <gsl/gsl_math.h>
+#include <gsl/gsl_chebyshev.h>
 
-SBasis cheb01(unsigned n) {
-    static std::vector<SBasis> basis;
-    if(basis.empty()) {
-        basis.push_back(Linear(1,1));
-        basis.push_back(Linear(-1,1));
-    }
-    for(unsigned i = basis.size(); i <= n; i++) {
-        basis.push_back((Linear(0,2)*basis[i-1] - basis[i-2])*2);
-    }
-    
-    return basis[n];
+vector<double> cheb_coeff;
+
+double
+f (double x, void *p)
+{
+	if (x < 0.5)
+		return 1;
+	else
+		return -1;
 }
 
 class Sb1d: public Toy {
@@ -41,14 +31,10 @@ class Sb1d: public Toy {
         
         D2<SBasis> B;
         B[0] = Linear(width/4, 3*width/4);
-        for(unsigned i = 0;  i < 10; i++) {
-            //B[1] = cheb(i);
-            B[1] = compose(cheb(i), Linear(-1,1));
-            //B[1] = cheb01(i);
-            *notify << "cheb(" << i << ") = "
-                    << B[1]
-//sbasis_to_poly(B[1]) 
-                    << std::endl;
+        for(unsigned i = 0; i < 40; i+=5) {
+            B[1] = compose(chebyshev_approximant(f, i, Interval(-1,1)),
+                           Linear(-1,1));
+            
             Geom::Path pb;
             B[1] = SBasis(Linear(2*width/4)) - B[1]*(width/4);
             pb.append(B);
@@ -58,6 +44,9 @@ class Sb1d: public Toy {
             cairo_stroke(cr);
         }
         Toy::draw(cr, notify, width, height, save);
+    }
+
+    virtual void first_time(int argc, char **argv) {
     }
 };
 
