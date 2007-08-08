@@ -22,12 +22,12 @@ void cairo_paths(cairo_t *cr, Paths p) {
 }
 
 void cairo_shape(cairo_t *cr, Shape s) {
-    cairo_set_source_rgba(cr, 1., 0., 0., .5);
+    //cairo_set_source_rgba(cr, 1., 0., 0., .5);
     cairo_set_line_width(cr, 3);
     cairo_path(cr, s.getOuter());
     cairo_stroke(cr);
     cairo_set_line_width(cr, 1);
-    cairo_set_source_rgba(cr, 0., 0., 1., .5);
+    //cairo_set_source_rgba(cr, 0., 0., 1., .5);
     cairo_paths(cr, s.getHoles());
     cairo_stroke(cr);
 }
@@ -100,8 +100,6 @@ Shape cleanup(std::vector<Path> const &ps) {
     Point centre;
     Geom::centroid(pw, centre, area);
     
-
-    
     Paths holes;
     for(unsigned i = 0; i < ps.size(); i++) {
         if(i != ix && contains(outer, ps[i].initialPoint()))
@@ -128,23 +126,22 @@ class BoolOps: public Toy {
         //std::streambuf* cout_buffer = std::cout.rdbuf();
         //std::cout.rdbuf(notify->rdbuf());
         
-        Shapes suni = shape_subtract(as, bst); //path_union(a, b);
-        cairo_shapes(cr, suni);
+        //Shapes suni = shape_union(as, bst); //path_union(a, b);
+        //cairo_shapes(cr, suni);
         
-        /*
         Shapes uni = path_union(a, bt);
         cairo_set_source_rgba(cr, 1., 0., 0., .5);
         cairo_shapes(cr, uni);
-  
-        Shapes sub = path_union_reverse(a, bt);
+        
+        Shapes sub = path_subtract(a, bt);
         cairo_set_source_rgba(cr, 0., 0., 0., .5);
-        cairo_shapes(cr, sub);
+        cairo_shapes(cr, sub * Geom::Translate(Point(10, 10)));
         cairo_stroke(cr);
         
         Paths inte = path_intersect(a, bt);
         cairo_set_source_rgba(cr, 0., 1., 0., .5);
         cairo_paths(cr, inte);
-        */
+        
         
         //std::cout.rdbuf(cout_buffer);
 
@@ -168,7 +165,7 @@ class BoolOps: public Toy {
         std::vector<Path> paths_a = read_svgd(path_a_name);
         std::vector<Path> paths_b = read_svgd(path_b_name);
         
-        handles.push_back(Point(300,300));
+        handles.push_back(Point(100,100));
         
         as = cleanup(paths_a) * Geom::Translate(Point(300, 300));
         bs = cleanup(paths_b); //path_subtract(path_b[0] * Geom::Translate(-centre), path_b[0] * Geom::Translate(-centre) * Scale(.5, .5)).front();

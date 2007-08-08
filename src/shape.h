@@ -2,7 +2,6 @@
 #define __2GEOM_SHAPE_H
 
 #include <vector>
-#include <list>
 #include <set>
 
 #include "path.h"
@@ -11,7 +10,7 @@
 
 namespace Geom { 
 
-typedef std::list<Path> Paths;
+typedef std::vector<Path> Paths;
 
 enum BoolOp { UNION, SUBTRACT, INTERSECT };
 
@@ -76,7 +75,7 @@ class Shape {
     friend std::vector<Shape> shape_subtract(Shape const &, Shape const &);
     friend std::vector<Shape> shape_intersect(Shape const &, Shape const &);
     friend std::vector<Shape> path_boolean(BoolOp, Path const &, Path const &,
-                                           CrossingsA &, CrossingsB &);
+                                           Crossings &, Crossings &);
     friend void add_holes(std::vector<Shape> &x, Paths const &h);
     
   public:
@@ -119,20 +118,22 @@ inline Shapes path_boolean(BoolOp bo, Path const & a, Path const & b) {
     return path_boolean(bo, a, b, crossings(a, b));
 }
 Shapes path_boolean(BoolOp bo, Path const & a, Path const & b,
-                               CrossingsA & cr_a, CrossingsB & cr_b);
+                               Crossings & cr_a, Crossings & cr_b);
 Shapes path_boolean_reverse(BoolOp bo, Path const & a, Path const & b, Crossings const &cr);
 
 // wrappers which encode the boolops enum in the call
 
 inline Shapes path_subtract_reverse(Path const & a, Path const & b) { return path_boolean(SUBTRACT, a, b); }
 inline Shapes path_subtract_reverse(Path const & a, Path const & b,
-                              CrossingsA & cr_a, CrossingsB & cr_b) { return path_boolean(SUBTRACT, a, b, cr_a, cr_b); }
+                                               Crossings const &cr) { return path_boolean(SUBTRACT, a, b, cr); }
+inline Shapes path_subtract_reverse(Path const & a, Path const & b,
+                                Crossings & cr_a, Crossings & cr_b) { return path_boolean(SUBTRACT, a, b, cr_a, cr_b); }
 
 inline Shapes path_union(Path const & a, Path const & b) { return path_boolean(UNION, a, b); }
 inline Shapes path_union(Path const & a, Path const & b,
                                     Crossings const &cr) { return path_boolean(UNION, a, b, cr); }
 inline Shapes path_union(Path const & a, Path const & b, 
-                   CrossingsA & cr_a, CrossingsB & cr_b) { return path_boolean(UNION, a, b, cr_a, cr_b); }
+                     Crossings & cr_a, Crossings & cr_b) { return path_boolean(UNION, a, b, cr_a, cr_b); }
 
 inline Paths path_intersect(Path const & a, Path const & b) {
     return shapes_to_paths<Shapes>(path_boolean(INTERSECT, a, b));
@@ -140,7 +141,7 @@ inline Paths path_intersect(Path const & a, Path const & b) {
 inline Paths path_intersect(Path const & a, Path const & b, Crossings const &cr) {
     return shapes_to_paths<Shapes>(path_boolean(INTERSECT, a, b, cr));
 }
-inline Paths path_intersect(Path const & a, Path const & b, CrossingsA & cr_a, CrossingsB & cr_b ) {
+inline Paths path_intersect(Path const & a, Path const & b, Crossings & cr_a, Crossings & cr_b ) {
     return shapes_to_paths<Shapes>(path_boolean(INTERSECT, a, b, cr_a, cr_b));
 }
 

@@ -1,6 +1,7 @@
 #include "shape.h"
 
 #include <iostream>
+#include <algorithm>
 
 namespace Geom {
 
@@ -15,6 +16,7 @@ class circ {
     
 public:
     circ() {}
+    circ(circ<It> const &other) : begin(other.begin), end(other.end), iter(other.iter) {}
     circ(It b, It e)       : begin(b), end(e), iter(b) {}
     circ(It b, It e, It i) : begin(b), end(e), iter(i) {}
     
@@ -31,7 +33,6 @@ public:
     }
     
     It inner() const           { return iter; }
-    void setOther(It& x) const { x = iter; }  //TODO: get the above working - this is ugly as hell!
     value_type const operator*() const       { return *iter; }
     bool operator==(circ<It> const &x) const { return iter == x.iter;}
     bool operator==(It const &x) const       { return iter == x;}
@@ -59,15 +60,17 @@ void sweep_box(std::vector<std::pair<Rect, T> > const & a, F f) {
 Shapes shape_union(Shape const & a, Shape const & b) {
     //Get sorted sets of crossings
     Crossings cr = crossings(a.outer, b.outer);
+    
     if(cr.empty() && disjoint(a.outer, b.outer)) {
         Shapes returns;
         returns.push_back(a); returns.push_back(b);
         return returns;
     }
-    CrossingsA cr_a(cr.begin(), cr.end());
-    CrossingsB cr_b(cr_a.begin(), cr_a.end());
-    CrossingsA cr_a_copy(cr_a);
-    CrossingsB cr_b_copy(cr_b);
+    
+    Crossings cr_a = cr, cr_b = cr;
+    sortA(cr_a); sortB(cr_b);
+    Crossings cr_a_copy = cr_a, cr_b_copy = cr_b;
+    
     Shape ret = path_union(a.outer, b.outer, cr_a_copy, cr_b_copy).front();
     //Copies of the holes, so that some may be removed / replaced by portions
     Paths holes[] = { a.holes, b.holes };
@@ -81,8 +84,8 @@ Shapes shape_union(Shape const & a, Shape const & b) {
                     holei != holes[p].end();) {
                 Crossings hcr = crossings(*inter, *holei);
                 if(!hcr.empty()) {
-                    CrossingsA hcr_a(hcr.begin(), hcr.end());
-                    CrossingsB hcr_b(hcr_a.begin(), hcr_a.end());
+                    Crossings hcr_a = hcr, hcr_b = hcr;
+                    sortA(hcr_a); sortB(hcr_b);
                     Paths innards = path_intersect_reverse(*inter, *holei, hcr);
                     if(!innards.empty()) {
                         //stash the stuff which is inside the intersection
@@ -113,8 +116,8 @@ Shapes shape_union(Shape const & a, Shape const & b) {
                 Crossings hcr = crossings(*j, *k);
                 //TODO: use crosses predicate
                 if(!hcr.empty()) {
-                    CrossingsA hcr_a(hcr.begin(), hcr.end());
-                    CrossingsB hcr_b(hcr_a.begin(), hcr_a.end());
+                    Crossings hcr_a = hcr, hcr_b = hcr;
+                    sortA(hcr_a); sortB(hcr_b);
                     //By the nature of intersect, we don't need to accumulate
                     Paths ps = path_intersect(*j, *k, hcr_a, hcr_b);
                     ret.holes.insert(ret.holes.end(), ps.begin(), ps.end());
@@ -195,8 +198,7 @@ Shapes shape_subtract(Shape const & ac, Shape const & b) {
     //Next, intersect the subtractor holes with a's outer path, and subtract a's holes from the result
     //This yields the 'islands'
     for(Paths::iterator hole = sub_holes.begin(); hole != sub_holes.end(); hole++) {
-        Shapes temp = path_boolean(INTERSECT, a.outer, hole->reverse());
-        std::list<Shape> new_islands = std::list<Shape>(temp.begin(), temp.end());
+        Shapes new_islands = path_boolean(INTERSECT, a.outer, hole->reverse());
         bool on_remains = false;
         for(Paths::iterator i = a.holes.begin(); ; i++) {  //iterate a's holes / remains
             if(i == a.holes.end()) { i = remains.begin(); on_remains = true; }
@@ -204,28 +206,21 @@ Shapes shape_subtract(Shape const & ac, Shape const & b) {
             
             //We've already culled out the intersectors in the above loop
             if(on_remains || contains(sub_outer, i->initialPoint())) {
-                for(std::list<Shape>::iterator j = new_islands.begin(); j != new_islands.end(); ) { // iterate the islands
+                for(Eraser<Shapes> j(&new_islands); j != new_islands.end(); j++) { // iterate the islands
                     //since the holes are disjoint, we don't need to do a recursive shape_subtract
                     Crossings hcr = crossings(j->outer, *i);
                     //TODO: use crosses predicate
                     if(!hcr.empty()) {
-                        Shapes split = path_subtract_reverse(j->outer, *i);
+                        Shapes split = path_subtract_reverse(j->outer, *i, hcr);
                         add_holes(split, j->holes);
-                        new_islands.insert(j, split.begin(), split.end());
-                        
-                        std::list<Shape>::iterator temp = j;
-                        j++;
-                        new_islands.erase(temp);
-                        continue;
+                        j.replace(split);
                     } else if(contains(j->outer, i->initialPoint())) {
-                        j->holes.push_back(*i);
+                        Shape x = *j;
+                        x.holes.push_back(*i);
+                        j.replace(x);
                     } else if(contains(*i, j->outer.initialPoint())) {
-                        std::list<Shape>::iterator temp = j;
-                        j++;
-                        new_islands.erase(temp);
-                        continue;
+                        j.erase();
                     }
-                    j++;
                 }
             }
         }
@@ -233,17 +228,10 @@ Shapes shape_subtract(Shape const & ac, Shape const & b) {
     }
     
     //remove a's holes which are within the subtractor
-    for(Paths::iterator i = a.holes.begin(); i != a.holes.end(); ) {
-        if(contains(sub_outer, i->initialPoint())) {
-            Paths::iterator temp = i;
-            i++;
-            a.holes.erase(temp);
-            continue;
-        }
-        i++;
+    for(Eraser<Paths> i(&a.holes); i != a.holes.end(); i++) {
+        if(contains(sub_outer, i->initialPoint())) i.erase();
     }
     
-    std::cout << "vier\n";
     if(flag_inside) {
         a.holes.push_back(sub_outer);
         ret.push_back(a);
@@ -256,71 +244,14 @@ Shapes shape_subtract(Shape const & ac, Shape const & b) {
     return ret;
 }
 
-/*
-Shapes shape_subtract(Shape const & a, Shape const & b) {
-    Shapes ret;
-
-    //Get sorted sets of crossings
-    Crossings cr = crossings(a.outer, b.outer);
-    if(cr.empty() && disjoint(a.outer, b.outer)) { ret.push_back(a); return ret; }
-    CrossingsA cr_a(cr.begin(), cr.end());
-    CrossingsB cr_b(cr_a.begin(), cr_a.end());
-
-    //copies, as path booleans modify their crossing lists
-    CrossingsA cr_a_copy(cr_a);
-    CrossingsB cr_b_copy(cr_b);
-    ret = path_subtract(a.outer, b.outer, cr_a_copy, cr_b_copy);
-    
-    //Copies of the holes, so that some may be removed / replaced by portions
-    Paths holes[] = { a.holes, b.holes };
-    std::cout << "ello\n";
-    Paths inters = path_intersect(a.outer, b.outer, cr_a, cr_b);
-    Shapes returns;
-    for(Paths::iterator inter = inters.begin(); inter != inters.end(); inter++) {
-        //Appends to the result the holes in the subtractor that are within the intersection
-        for ( Paths::iterator holei = holes[1].begin();
-                holei != holes[1].end(); holei++ ) {
-            Crossings hcr = crossings(*inter, *holei);
-            //TODO: use crosses predicate
-            if(hcr.empty()) {
-                if(contains(*inter, holei->initialPoint())) {
-                    Shape s;
-                    s.outer = *holei;
-                    ret.push_back(s);
-                }
-            } else {
-                hcr = reverse_crossings_b(hcr, holei->size());
-                CrossingsA hcr_a(hcr.begin(), hcr.end());
-                CrossingsB hcr_b(hcr_a.begin(), hcr_a.end());
-                Shapes ps = path_boolean(INTERSECT, *inter, (*holei).reverse(), hcr_a, hcr_b);
-                ret.insert(ret.end(), ps.begin(), ps.end());
-            }
-        }
-        //Subtract A's holes from the result shapes
-        for ( Paths::iterator j = holes[0].begin();
-              j != holes[0].end(); j++ ) {
-            for ( unsigned i = 0; i < ret.size(); i++) {
-
-                Shape s; 
-                s.outer = *j;
-                Shapes ps = shape_subtract(ret[i], s);
-                returns.insert(returns.end(), ps.begin(), ps.end());
-            }
-        }
-    }
-    return returns;
-}
-*/
 Shapes shape_intersect(Shape const & a, Shape const & b) {
     Shapes ret;
 
     //Get sorted sets of crossings
     Crossings cr = crossings(a.outer, b.outer);
     if(cr.empty() && disjoint(a.outer, b.outer)) { return ret; }
-    CrossingsA cr_a(cr.begin(), cr.end());
-    CrossingsB cr_b(cr_a.begin(), cr_a.end());
     
-    ret = path_boolean(INTERSECT, a.outer, b.outer, cr_a, cr_b);
+    ret = path_boolean(INTERSECT, a.outer, b.outer, cr);
     
     //Copies of the holes, so that some may be removed / replaced by portions
     Paths holes[] = { a.holes, b.holes };
@@ -348,8 +279,8 @@ Shapes shape_intersect(Shape const & a, Shape const & b) {
 }
 
 Shapes path_boolean(BoolOp btype, Path const & a, Path const & b, Crossings const & cr) {
-    CrossingsA cr_a(cr.begin(), cr.end());
-    CrossingsB cr_b(cr_a.begin(), cr_a.end());
+    Crossings cr_a = cr, cr_b = cr;
+    sortA(cr_a); sortB(cr_b);
     return path_boolean(btype, a, b, cr_a, cr_b);
 }
 
@@ -384,15 +315,18 @@ unsigned outer_index(std::vector<Path> const &ps) {
     return ix;
 }
 
-// what about a != b ?
 bool logical_xor (bool a, bool b) { return (a || b) && !(a && b); }
+
+unsigned find_crossing(Crossings const &cr, Crossing x) {
+    return std::find(cr.begin(), cr.end(), x) - cr.begin();
+}
 
 /* This handles all the boolean ops in one function.  The middle function
  * is the main area of similarity between each.  The initial and ending
  * code is custom for each. */
 Shapes path_boolean(BoolOp btype,
                     Path const & a, Path const & b,
-                    CrossingsA & cr_a, CrossingsB & cr_b) {
+                    Crossings & cr_a, Crossings & cr_b) {
     assert(cr_a.size() == cr_b.size());
     Shapes ret;
     //Handle the cases where there are no actual boundary intersections:
@@ -430,56 +364,46 @@ Shapes path_boolean(BoolOp btype,
         }
     }
     //Traverse the crossings, creating path chunks:
-    std::vector<Path> chunks;
-    for(CrossIterator it = cr_a.begin(); it != cr_a.end(); ) {
+    Paths chunks;
+    std::vector<bool> visited_a(cr_a.size(), false), visited_b = visited_a;
+    unsigned start_i = 0;
+    while(true) {
+        bool on_a = true;
         Path res;
-        CrossIterator i = it;
+        unsigned i = start_i;
         //this loop collects a single continuous Path (res) which is part of the result.
         do {
-            //next is after oit
-            circ<CrossIterator> next;
-            
-            /* This logical_xor basically switches the behavior of the if when
-             * doing an intersection rather than subtraction/union */
-            if(logical_xor(it -> dir, btype != UNION)) {
-                next = circ<CrossIterator>(cr_a.begin(), cr_a.end(), cr_a.find(*it));
-                assert(!(next == cr_a.end()));// goto aus; //break;  //really these should never happen...
-                next++;
-                a.appendPortionTo(res, it->ta, (*next).ta);
+            Crossing prev;
+            if(on_a) {
+                prev = cr_a[i];
+                visited_a[i] = true;
             } else {
-                next = circ<CrossIterator>(cr_b.begin(), cr_b.end(), cr_b.find(*it));
-                assert(!(next == cr_b.end()));// goto aus; //break;
-                next++;
-                b.appendPortionTo(res, it->tb, (*next).tb);
+                prev = cr_b[i];
+                visited_b[i] = true;
             }
-            //Remove all but the first crossing, This way the function doesn't return duplicate paths
-            if (*i != *it) {
-                cr_a.erase(*it);
-                cr_b.erase(*it);
+            /* This logical_xor reverses the behavior of the if when
+             * doing something other than union */
+            if(logical_xor(prev.dir, btype != UNION)) {
+                if(on_a) i++; else i = find_crossing(cr_a, cr_b[i]);
+                if(i >= cr_a.size()) i = 0;
+                a.appendPortionTo(res, prev.ta, cr_a[i].ta);
+                on_a = true;
+            } else {
+                if(!on_a) i++; else i = find_crossing(cr_b, cr_a[i]);
+                if(i >= cr_b.size()) i = 0;
+                b.appendPortionTo(res, prev.tb, cr_b[i].tb);
+                on_a = false;
             }
-            next.setOther(it);
-        } while (*it != *i);
+        } while (on_a ? (!visited_a[i]) : (!visited_b[i]));
         
         std::cout << btype << " c " << res.size() << "\n";
 
         chunks.push_back(res);
-        /* I probably should use some sort of circular iterator for the
-          following, but it would have to support circular iteration of
-          different paths.. perhaps supportable by circ... */
-        if(it == cr_a.end()) {
-            it = cr_a.begin();
-            continue;
-        } else if(it == cr_b.end()) {
-            it = cr_b.begin();
-            continue;
-        }
-        //These were originally preserved in order to complete the loops, now erase.
-        CrossIterator temp = it;
-        it++;
-        cr_a.erase(*temp);
-        cr_b.erase(*temp);
-    }
-    //aus:
+        
+        std::vector<bool>::iterator unvisited = std::find(visited_a.begin(), visited_a.end(), false);
+        if(unvisited == visited_a.end()) break; //visited all crossings
+        start_i = unvisited - visited_a.begin();
+    } 
 
     //Process the chunks into shapes output
     
