@@ -105,7 +105,7 @@ class QuadToy: public Toy {
         Toy::draw(cr, notify, width, height, save);
     }
 
-    virtual bool should_draw_bounds () { return false; }
+    virtual int should_draw_bounds () { return 0; }
     virtual bool should_draw_numbers () { return false; }
 
     public:

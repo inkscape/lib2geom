@@ -53,7 +53,6 @@ class Intro: public Toy {
             dot_plot(cr, port, t);
         }
         Piecewise<D2<SBasis> > output;
-        double temp = 0;
         for (double offs=walkers[0].segT(t)*20; offs<title.cuts.back(); offs+=20){
             output.concat(compose(title,Linear(offs,offs+20))+patt*compose(norms,Linear(offs,offs+20)));
         }
@@ -74,7 +73,7 @@ class Intro: public Toy {
         redraw();
     }
 
-    virtual bool should_draw_bounds() { return false; }
+    virtual int should_draw_bounds() { return 0; }
     
     public:
     Intro () {

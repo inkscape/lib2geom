@@ -37,7 +37,7 @@ public:
 
     //Cheapo way of informing the framework what the toy would like drawn for it.
     virtual bool should_draw_numbers() { return true; }
-    virtual bool should_draw_bounds() { return true; }
+    virtual int should_draw_bounds() { return 1; }
     
     virtual void first_time(int argc, char** argv) {}
 };

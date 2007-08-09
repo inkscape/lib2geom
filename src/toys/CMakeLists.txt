@@ -29,6 +29,7 @@ path-along-path
 precise-flat
 pw-compose-test
 pw-toy
+pw-funcs
 quad-toy
 #rat-bez
 sb-math-test

@@ -41,7 +41,7 @@ void redraw() { gtk_widget_queue_draw(GTK_WIDGET(window)); }
 
 void Toy::draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save)
 {
-    if(should_draw_bounds()) {
+    if(should_draw_bounds() == 1) {
         cairo_set_source_rgba (cr, 0., 0., 0, 0.8);
         cairo_set_line_width (cr, 0.5);
         for(unsigned i = 1; i < 4; i+=2) {
@@ -50,6 +50,14 @@ void Toy::draw(cairo_t *cr, std::ostringstream *notify, int width, int height, b
             cairo_move_to(cr, i*width/4, 0);
             cairo_line_to(cr, i*width/4, height);
         }
+    }
+    else if(should_draw_bounds() == 2) {
+        cairo_set_source_rgba (cr, 0., 0., 0, 0.8);
+        cairo_set_line_width (cr, 0.5);
+	cairo_move_to(cr, 0, width/2);
+	cairo_line_to(cr, width, width/2);
+	cairo_move_to(cr, width/2, 0);
+	cairo_line_to(cr, width/2, height);
     }
 
     cairo_set_source_rgba (cr, 0., 0.5, 0, 1);

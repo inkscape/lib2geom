@@ -164,7 +164,7 @@ class Parametrics: public Toy {
       redraw();
     }
 
-    virtual bool should_draw_bounds() { return false; }
+    virtual int should_draw_bounds() { return 0; }
 #ifdef USE_TIME
     virtual void mouse_moved(GdkEventMotion* e) {
         if(st) {

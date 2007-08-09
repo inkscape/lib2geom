@@ -178,7 +178,7 @@ class BoolOps: public Toy {
         a = as.getOuter();
         b = bs.getOuter();
     }
-    bool should_draw_bounds() {return false;}
+    int should_draw_bounds() {return 0;}
 };
 
 int main(int argc, char **argv) {
