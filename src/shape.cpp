@@ -133,10 +133,16 @@ void add_holes(Shapes &x, Paths const &h) {
     }
 }
 
+void reverse_crossings_direction(Crossings &cr) {
+    for(unsigned i = 0; i < cr.size(); i++) {
+        cr[i].dir = !cr[i].dir;
+    }
+}
+
 Shapes shape_subtract(Shape const & ac, Shape const & b) {
     //TODO: use crosses predicate
     Crossings cr = crossings(ac.outer, b.outer);
-    Shapes ret;
+    Shapes returns;
     bool flag_inside = false;
     if(cr.empty()) {
         if(contains(b.outer, ac.outer.initialPoint())) {
@@ -147,89 +153,71 @@ Shapes shape_subtract(Shape const & ac, Shape const & b) {
             flag_inside = true;
         } else {
             // disjoint
-            ret.push_back(ac);
-            return ret;
+            returns.push_back(ac);
+            return returns;
         }
     }
     Shape a = ac;
     
     //subtractor accumulator
-    Path sub_outer = b.outer.reverse();
-    Paths sub_holes;
-    for(Paths::const_iterator i = b.holes.begin(); i != b.holes.end(); i++) {
-        sub_holes.push_back(i->reverse());
-    }
+    Shape sub = b;
 
     //First, we deal with the outer-path - add intersecting holes in a to it 
     Paths remains;  //holes which intersected - needed later to remove from islands (holes in subtractor)
-    Paths a_holes = a.holes;
-    for(Eraser<Paths> i(&a_holes); !i.ended(); ++i) {std::cout << "eins\n";
-        Crossings hcr = crossings(sub_outer, *i);
+    for(Eraser<Paths> i(&a.holes); !i.ended(); ++i) {std::cout << "eins\n";
+        Crossings hcr = crossings(sub.outer, *i);
         //TODO: use crosses predicate
         if(!hcr.empty()) {
-            //I'm sure this is quite reassuring to the reader, but I have no idea why the following must be subtract - union should be the one to use
-            Shape new_sub = path_boolean(SUBTRACT, sub_outer, *i).front(); //path_union(sub_outer, *i, hcr).front();
-            
-            sub_outer = new_sub.outer;
-            sub_holes.insert(sub_holes.end(), new_sub.holes.begin(), new_sub.holes.end());
+            //Paths old_holes = sub.holes;
+            sub = path_union_reverse(sub.outer, *i).front();
             
             remains.push_back(*i);
-            
+            i.erase();
+        } else if(contains(sub.outer, i->initialPoint())) {
+            remains.push_back(*i);
             i.erase();
         }
     }
-    a.holes = a_holes;
 
     //Next, intersect the subtractor holes with a's outer path, and subtract a's holes from the result
     //This yields the 'islands'
-    for(Paths::iterator hole = sub_holes.begin(); hole != sub_holes.end(); hole++) {    std::cout << "zwei\n";
-        Shapes new_islands = path_boolean(INTERSECT, a.outer, hole->reverse());
-        bool on_remains = false;
-        for(Paths::iterator i = a.holes.begin(); ; i++) {  //iterate a's holes / remains
-            std::cout << "drei\n";
-            if(i == a.holes.end()) { i = remains.begin(); on_remains = true; }
-            if(i == remains.end()) break;
-            
-            //We've already culled out the intersectors in the above loop
-            if(on_remains || contains(sub_outer, i->initialPoint())) {
-                for(Replacer<Shapes> j(&new_islands); !j.ended(); ++j) { // iterate the islands
-                            std::cout << "vier\n";
-                    //since the holes are disjoint, we don't need to do a recursive shape_subtract
-                    Crossings hcr = crossings(j->outer, *i);
-                    //TODO: use crosses predicate
-                    if(!hcr.empty()) {
-                        Shapes split = path_subtract_reverse(j->outer, *i, hcr);
-                        add_holes(split, j->holes);
-                        j.replace(split);
-                    } else if(contains(j->outer, i->initialPoint())) {
-                        Shape x = *j;
-                        x.holes.push_back(*i);
-                        j.replace(x);
-                    } else if(contains(*i, j->outer.initialPoint())) {
-                        j.erase();
-                    }
+    for(Paths::iterator i = sub.holes.begin(); i != sub.holes.end(); i++) {
+        std::cout << "\n*";
+        Shapes new_islands = path_boolean(INTERSECT, a.outer, i->reverse());
+        for(Paths::iterator hole = remains.begin(); hole != remains.end(); hole++) {  //iterate a's holes that are inside/intersected by the subtractor
+            std::cout << "\n *";
+            for(Replacer<Shapes> isle(&new_islands); !isle.ended(); ++isle) { // iterate the islands
+                std::cout << "\n  *";
+                //since the holes are disjoint, we don't need to do a recursive shape_subtract
+                Crossings hcr = crossings(isle->outer, *hole);
+                //TODO: use crosses predicate
+                if(!hcr.empty()) {
+                    Shapes split = path_subtract(isle->outer, *hole, hcr);
+                    add_holes(split, isle->holes);
+                    isle.replace(split);
+                } else if(contains(isle->outer, hole->initialPoint())) {
+                    Shape x = *isle;
+                    x.holes.push_back(*hole);
+                    isle.replace(x);
+                } else if(contains(*hole, isle->outer.initialPoint())) {
+                    isle.erase();
                 }
             }
         }
-        ret.insert(ret.end(), new_islands.begin(), new_islands.end());
-    }
-    
-    //remove a's holes which are within the subtractor
-    for(Eraser<Paths> i(&a.holes); !i.ended(); ++i) {
-                std::cout << "funf\n";
-        if(contains(sub_outer, i->initialPoint())) i.erase();
+        returns.insert(returns.end(), new_islands.begin(), new_islands.end());
     }
     
     if(flag_inside) {
-        a.holes.push_back(sub_outer);
-        ret.push_back(a);
+        a.holes.push_back(sub.outer.reverse());
+        returns.push_back(a);
     } else {
-        Shapes outers = path_subtract_reverse(a.outer, sub_outer);
+        Shapes outers = path_subtract(a.outer, sub.outer);
         add_holes(outers, a.holes);
-        ret.insert(ret.end(), outers.begin(), outers.end());
+        
+        returns.insert(returns.end(), outers.begin(), outers.end());
     }
     
-    return ret;
+    return returns;
 }
 
 Shapes shape_intersect(Shape const & a, Shape const & b) {

@@ -22,14 +22,14 @@ void cairo_paths(cairo_t *cr, Paths p) {
 }
 
 void cairo_shape(cairo_t *cr, Shape s) {
-    //cairo_set_source_rgba(cr, 1., 0., 0., .5);
+    cairo_set_source_rgb(cr, 0., 0., 0.);
     cairo_set_line_width(cr, 3);
     cairo_path(cr, s.getOuter());
-    cairo_stroke(cr);
+    cairo_fill(cr);
     cairo_set_line_width(cr, 1);
-    //cairo_set_source_rgba(cr, 0., 0., 1., .5);
+    cairo_set_source_rgb(cr, 1., 1., 1.);
     cairo_paths(cr, s.getHoles());
-    cairo_stroke(cr);
+    cairo_fill(cr);//cairo_stroke(cr);
 }
 
 void cairo_shapes(cairo_t *cr, Shapes s) {
@@ -112,8 +112,9 @@ class BoolOps: public Toy {
     Path a, b;
     Shape as, bs;
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
-        Shape bst = bs * Geom::Translate(handles[0]);
-        Path bt = bst.getOuter();
+        Geom::Translate t(handles[0]);
+        Shape bst = bs * t;
+        Path bt = b * t;
         //cairo_shape(cr, as);
         //cairo_shape(cr, bst);
         
@@ -126,22 +127,22 @@ class BoolOps: public Toy {
         //std::streambuf* cout_buffer = std::cout.rdbuf();
         //std::cout.rdbuf(notify->rdbuf());
         
-        Shapes suni = shape_subtract(as, bst); //path_union(a, b);
-        cairo_shapes(cr, suni);
+        //Shapes suni = shape_subtract(as, bst); //path_union(a, b);
+        //cairo_shapes(cr, suni);
         
         /*Shapes uni = path_union(a, bt);
         cairo_set_source_rgba(cr, 1., 0., 0., .5);
         cairo_shapes(cr, uni);
-        
+        */
         Shapes sub = path_subtract(a, bt);
         cairo_set_source_rgba(cr, 0., 0., 0., .5);
-        cairo_shapes(cr, sub * Geom::Translate(Point(10, 10)));
+        cairo_shapes(cr, sub);
         cairo_stroke(cr);
         
         Paths inte = path_intersect(a, bt);
         cairo_set_source_rgba(cr, 0., 1., 0., .5);
         cairo_paths(cr, inte);
-        */
+        cairo_stroke(cr);
         
         //std::cout.rdbuf(cout_buffer);
 
@@ -151,7 +152,10 @@ class BoolOps: public Toy {
 
         Toy::draw(cr, notify, width, height, save);
     }
-
+    virtual void key_hit(GdkEventKey *e) {
+        if(e->keyval == 'a') a = a.reverse();
+        if(e->keyval == 'b') b = b.reverse();
+    }
     public:
     BoolOps () {}
 
@@ -165,13 +169,15 @@ class BoolOps: public Toy {
         std::vector<Path> paths_a = read_svgd(path_a_name);
         std::vector<Path> paths_b = read_svgd(path_b_name);
         
+        paths_b[0] = paths_b[0] * Geom::Scale(Point(.75, -.75));
+        
         handles.push_back(Point(100,100));
         
         as = cleanup(paths_a) * Geom::Translate(Point(300, 300));
         bs = cleanup(paths_b); //path_subtract(path_b[0] * Geom::Translate(-centre), path_b[0] * Geom::Translate(-centre) * Scale(.5, .5)).front();
         
         Paths holes = bs.getHoles();
-        holes.push_back(bs.getOuter() * Geom::Scale(.5, .5));
+        //holes.push_back(bs.getOuter() * Geom::Scale(.5, .5));
         
         bs = Shape(bs.getOuter(), holes);
         
