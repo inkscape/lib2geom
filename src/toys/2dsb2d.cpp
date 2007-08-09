@@ -20,7 +20,6 @@ class Sb2d2: public Toy {
             sb2[dim].us = 2;
             sb2[dim].vs = 2;
             const int depth = sb2[dim].us*sb2[dim].vs;
-            const int surface_handles = 4*depth;
             sb2[dim].resize(depth, Linear2d(0));
         }
         const int depth = sb2[0].us*sb2[0].vs;

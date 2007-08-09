@@ -25,11 +25,13 @@ struct Portion {
 class Region {
     virtual Path getBoundary() const;
     virtual Rect boundsFast() const;
+public:
+    virtual ~Region() {}
 };
 class PathRegion : public Region {
     Path boundary;
     boost::optional<Rect> box;
-  public:
+public:
     PathRegion(Path const &p) : boundary(p) {}
     PathRegion(Path const &p, boost::optional<Rect> const &b) : boundary(p), box(b) {}
     
@@ -42,7 +44,7 @@ class PathRegion : public Region {
 class PortionRegion : public Region {
     std::vector<Portion> portions;
     boost::optional<Rect> box;
-  public:
+public:
     PortionRegion(std::vector<Portion> ps) : portions(ps) {}
     
     Path getBoundary() const {
@@ -57,11 +59,11 @@ class PortionRegion : public Region {
     Rect boundsFast() {
         if(!box) {
 /*            const Portion p = portions.front();
-            box = p.source->boundsLocal(p.i));
-            for(unsigned i = 0; i < portions.size(); i++) {
-                p = portions[i];
-                box.unionWith(p.source->boundsLocal(p.i));
-            }*/
+              box = p.source->boundsLocal(p.i));
+              for(unsigned i = 0; i < portions.size(); i++) {
+              p = portions[i];
+              box.unionWith(p.source->boundsLocal(p.i));
+              }*/
             box = boost::optional<Rect>(getBoundary().boundsFast());
         }
         return *box;
@@ -69,8 +71,8 @@ class PortionRegion : public Region {
 };
 
 class Shape {
-	Path outer;
-	Paths holes;
+    Path outer;
+    Paths holes;
     friend std::vector<Shape> shape_union(Shape const &, Shape const &);
     friend std::vector<Shape> shape_subtract(Shape const &, Shape const &);
     friend std::vector<Shape> shape_intersect(Shape const &, Shape const &);
@@ -78,15 +80,15 @@ class Shape {
                                            Crossings &, Crossings &);
     friend void add_holes(std::vector<Shape> &x, Paths const &h);
     
-  public:
-	Path getOuter() const { return outer; }
-	Paths getHoles() const { return holes; }
+public:
+    Path getOuter() const { return outer; }
+    Paths getHoles() const { return holes; }
 	
-	Shape() {}
-	explicit Shape(Path out) : outer(out) {}
-	Shape(Path out, Paths in) : outer(out), holes(in) {}
+    Shape() {}
+    explicit Shape(Path out) : outer(out) {}
+    Shape(Path out, Paths in) : outer(out), holes(in) {}
 	
-	bool isEmpty() const { return outer.size() == 0 && holes.size() == 0; }
+    bool isEmpty() const { return outer.size() == 0 && holes.size() == 0; }
 };
 
 typedef std::vector<Shape> Shapes;
@@ -118,22 +120,22 @@ inline Shapes path_boolean(BoolOp bo, Path const & a, Path const & b) {
     return path_boolean(bo, a, b, crossings(a, b));
 }
 Shapes path_boolean(BoolOp bo, Path const & a, Path const & b,
-                               Crossings & cr_a, Crossings & cr_b);
+                    Crossings & cr_a, Crossings & cr_b);
 Shapes path_boolean_reverse(BoolOp bo, Path const & a, Path const & b, Crossings const &cr);
 
 // wrappers which encode the boolops enum in the call
 
 inline Shapes path_subtract_reverse(Path const & a, Path const & b) { return path_boolean(SUBTRACT, a, b); }
 inline Shapes path_subtract_reverse(Path const & a, Path const & b,
-                                               Crossings const &cr) { return path_boolean(SUBTRACT, a, b, cr); }
+                                    Crossings const &cr) { return path_boolean(SUBTRACT, a, b, cr); }
 inline Shapes path_subtract_reverse(Path const & a, Path const & b,
-                                Crossings & cr_a, Crossings & cr_b) { return path_boolean(SUBTRACT, a, b, cr_a, cr_b); }
+                                    Crossings & cr_a, Crossings & cr_b) { return path_boolean(SUBTRACT, a, b, cr_a, cr_b); }
 
 inline Shapes path_union(Path const & a, Path const & b) { return path_boolean(UNION, a, b); }
 inline Shapes path_union(Path const & a, Path const & b,
-                                    Crossings const &cr) { return path_boolean(UNION, a, b, cr); }
+                         Crossings const &cr) { return path_boolean(UNION, a, b, cr); }
 inline Shapes path_union(Path const & a, Path const & b, 
-                     Crossings & cr_a, Crossings & cr_b) { return path_boolean(UNION, a, b, cr_a, cr_b); }
+                         Crossings & cr_a, Crossings & cr_b) { return path_boolean(UNION, a, b, cr_a, cr_b); }
 
 inline Paths path_intersect(Path const & a, Path const & b) {
     return shapes_to_paths<Shapes>(path_boolean(INTERSECT, a, b));
@@ -149,11 +151,11 @@ inline Paths path_intersect(Path const & a, Path const & b, Crossings & cr_a, Cr
  
 inline Shapes path_subtract(Path const & a, Path const & b)      { return path_subtract_reverse(a, b.reverse()); }
 inline Shapes path_subtract(Path const & a, Path const & b,
-                                      Crossings const &cr)       { return path_boolean_reverse(SUBTRACT, a, b, cr); }
+                            Crossings const &cr)       { return path_boolean_reverse(SUBTRACT, a, b, cr); }
                                       
 inline Shapes path_union_reverse(Path const & a, Path const & b) { return path_union(a, b.reverse()); }
 inline Shapes path_union_reverse(Path const & a, Path const & b,
-                                      Crossings const & cr)      { return path_boolean_reverse(UNION, a, b, cr); }
+                                 Crossings const & cr)      { return path_boolean_reverse(UNION, a, b, cr); }
 
 inline Paths path_intersect_reverse(Path const & a, Path const & b)     { return path_intersect(a, b.reverse()); }
 inline Paths path_intersect_reverse(Path const & a, Path const & b, Crossings const &cr) {
@@ -163,3 +165,14 @@ inline Paths path_intersect_reverse(Path const & a, Path const & b, Crossings co
 }
 
 #endif
+
+/*
+  Local Variables:
+  mode:c++
+  c-file-style:"stroustrup"
+  c-file-offsets:((innamespace . 0)(inline-open . 0)(case-label . +))
+  indent-tabs-mode:nil
+  fill-column:99
+  End:
+*/
+// vim: filetype=cpp:expandtab:shiftwidth=4:tabstop=4:softtabstop=4:encoding=utf-8:textwidth=99 :

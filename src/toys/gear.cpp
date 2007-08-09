@@ -222,11 +222,11 @@ class GearToy: public Toy {
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         cairo_set_source_rgba (cr, 0., 0., 0, 0.8);
         cairo_set_line_width (cr, 0.5);
-        double dominant_dim = std::max(width,height);
-        double minor_dim = std::min(width,height);
         
         Geom::Point centre = Geom::Point(width/2,height/2);
         /* draw cross hairs
+        double dominant_dim = std::max(width,height);
+        double minor_dim = std::min(width,height);
         for(unsigned i = 1; i < 2; i++) {
             cairo_move_to(cr, centre[0]-minor_dim/4, centre[1]);
             cairo_line_to(cr, centre[0]+minor_dim/4, centre[1]);
@@ -236,7 +236,7 @@ class GearToy: public Toy {
         cairo_stroke(cr);*/
         
         double pressure_angle = (handles[3][0] / 10) * M_PI / 180;
-        Gear gear(handles[2][0] / 10,200.0,pressure_angle);
+        Gear gear(int(handles[2][0] / 10),200.0,pressure_angle);
         Geom::Point gear_centre = handles[1];
         gear.pitch_radius(Geom::distance(gear_centre, handles[0]));
         gear.angle(atan2(handles[0] - gear_centre));
