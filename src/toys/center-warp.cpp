@@ -1,5 +1,6 @@
 #include "d2.h"
 #include "sbasis.h"
+#include "sbasis-geometric.h"
 #include "sbasis-2d.h"
 #include "bezier-to-sbasis.h"
 #include "transforms.h"
@@ -48,21 +49,20 @@ class Sb2d2: public Toy {
 
 	//D2<Piecewise<SBasis> > tB(cos(B[0]*0.1)*(handles[0][0]/100) + B[0], 
 	//			  cos(B[1]*0.1)*(handles[0][1]/100) + B[1]);
-	Piecewise<SBasis> pw;
-	pw.push_cut(-30);
-	pw.push(SBasis(Linear(0, 0)), -2);
-	pw.push(SBasis(Linear(0, -1)*Linear(0, 1)), -1);
-	pw.push(SBasis(Linear(-1, 1)), 1);
-	pw.push(SBasis(Linear(1, 0)*Linear(1, 0)), 2);
-	pw.push(SBasis(Linear(0, 0)), 30);
-	pw *= 10;
-        pw.scaleDomain(50);
-        pw.offsetDomain(handles[0][0]);
-        cairo_pw(cr, pw + (height - 100));
 	
-	
-	D2<Piecewise<SBasis> > tB(compose(pw, B[0]) + B[0], 
-				  B[1]);
+	Piecewise<SBasis> r2 = (dot(path_a_pw - handles[0], path_a_pw - handles[0]));
+	Piecewise<SBasis> rc;
+	rc.push_cut(0);
+	rc.push(SBasis(Linear(1, 1)), 2);
+	rc.push(SBasis(Linear(1, 0)), 4);
+	rc.push(SBasis(Linear(0, 0)), 30);
+	rc *= 10;
+        rc.scaleDomain(1000);
+        cairo_pw(cr, rc + (height - 100));
+        D2<Piecewise<SBasis> >  uB = make_cuts_independant(unitVector(path_a_pw - handles[0]));
+        
+	D2<Piecewise<SBasis> > tB(compose(rc, (r2))*uB[0] + B[0], 
+				  compose(rc, (r2))*uB[1] + B[1]);
 	
 	cairo_d2_pw(cr, tB);
 	cairo_stroke(cr);
@@ -91,7 +91,7 @@ class Sb2d2: public Toy {
         
     }
     virtual void resize_canvas(Geom::Rect const & s) {
-        double width = s[0].extent();
+        //double width = s[0].extent();
     }
     int should_draw_bounds() {return 1;}
 };
