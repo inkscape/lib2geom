@@ -56,6 +56,9 @@ class PwToy: public Toy {
         //pws = Geom::cos(Linear(0,100)) + 3;
         //pws = Geom::sqrt(Linear(0,100));
         //pws = log(Interval(1,8));
+        //Piecewise<SBasis> l(Linear(-100,100));
+        //Piecewise<SBasis> one(Linear(1,1));
+        //pws = Geom::reciprocal(l*l + one)*l + l;
         pws = xlogx(Interval(0.5,3));
         //pws = Geom::reciprocal(pws);
         //pws = -integral(Geom::reciprocal(Linear(1,2)))*Piecewise<SBasis>(Linear(1,2));

@@ -7,6 +7,7 @@ boolops
 bounds-test
 cheb
 circle-intersect
+center-warp
 clothoid
 conic-3
 conic-4
