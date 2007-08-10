@@ -64,7 +64,6 @@ public:
         Geom::Point tang = dB(0);
         Geom::Point dtang = ddB(0);
         Geom::Point ddtang = dddB(0);
-        double t = 1;
         for(int dim = 0; dim < 2; dim++) {
             m[dim] = Linear(pt[dim],pt[dim]+tang[dim]);
             m[dim] += Linear(0, 1)*Linear(0, 1*dtang[dim])/2;

@@ -27,7 +27,7 @@ class SBez: public Toy {
     func (double t, const double y[], double f[],
           void *params)
     {
-        double mu = *(double *)params;
+        //double mu = *(double *)params;
         D2<SBasis> B = handles_to_sbasis<3>(handlesptr->begin());
         D2<SBasis> dB = derivative(B);
         Geom::Point tan = dB(y[0]);//Geom::unit_vector();

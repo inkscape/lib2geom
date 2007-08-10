@@ -239,7 +239,15 @@ static gboolean expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer 
     gdk_drawable_get_size(widget->window, &width, &height);
 
     std::ostringstream notify;
-
+    
+    static bool resized = false;
+    if(!resized) {
+	    Geom::Rect alloc_size(Geom::Interval(0, width),
+				  Geom::Interval(0, height));
+	    if(current_toy != NULL)
+		    current_toy->resize_canvas(alloc_size);
+	    resized = true;
+    }
     if(current_toy != NULL) current_toy->draw(cr, &notify, width, height, false);
     cairo_destroy(cr);
 
@@ -282,6 +290,17 @@ static gint key_release_event(GtkWidget *widget, GdkEventKey *e, gpointer data) 
     return FALSE;
 }
 
+static gint size_allocate_event(GtkWidget* widget, GtkAllocation *allocation, gpointer data) {
+    (void)(data);
+    (void)(widget);
+
+    Geom::Rect alloc_size(Geom::Interval(allocation->x, allocation->x+ allocation->width),
+		    Geom::Interval(allocation->y, allocation->y+allocation->height));
+    if(current_toy != NULL) current_toy->resize_canvas(alloc_size);
+
+    return FALSE;
+}
+
 GtkItemFactoryEntry menu_items[] = {
     { "/_File",             NULL,           NULL,           0,  "<Branch>"                    },
     { "/File/_Open Handles","<CTRL>O",      open,           0,  "<StockItem>", GTK_STOCK_OPEN },
@@ -302,6 +321,8 @@ void init(int argc, char **argv, Toy* t, int width, int height) {
     
     gdk_rgb_init();
 
+    t->first_time(argc, argv);
+    
     window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
     
     //Find last slash - remainder is title
@@ -333,6 +354,7 @@ void init(int argc, char **argv, Toy* t, int width, int height) {
     gtk_signal_connect(GTK_OBJECT (canvas), "button_release_event", GTK_SIGNAL_FUNC(mouse_release_event), 0);
     gtk_signal_connect(GTK_OBJECT (canvas), "motion_notify_event", GTK_SIGNAL_FUNC(mouse_motion_event), 0);
     gtk_signal_connect(GTK_OBJECT(canvas), "key_press_event", GTK_SIGNAL_FUNC(key_release_event), 0);
+    gtk_signal_connect(GTK_OBJECT(canvas), "size-allocate", GTK_SIGNAL_FUNC(size_allocate_event), 0);
 
     gtk_widget_pop_colormap();
     gtk_widget_pop_visual();
@@ -356,7 +378,5 @@ void init(int argc, char **argv, Toy* t, int width, int height) {
     gtk_widget_grab_focus(canvas);
     assert(gtk_widget_is_focus(canvas));
 
-    t->first_time(argc, argv);
-    
     gtk_main();
 }

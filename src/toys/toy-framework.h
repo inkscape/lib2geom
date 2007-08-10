@@ -8,6 +8,7 @@
 #include "interactive-bits.h"
 #include "point.h"
 #include "geom.h"
+#include "d2.h"
 
 using std::vector;
 
@@ -40,6 +41,8 @@ public:
     virtual int should_draw_bounds() { return 1; }
     
     virtual void first_time(int argc, char** argv) {}
+    
+    virtual void resize_canvas(Geom::Rect const & s) {}
 };
 
 //Framework Accesors
