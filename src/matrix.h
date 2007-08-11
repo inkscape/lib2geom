@@ -91,6 +91,8 @@ class Matrix {
     bool isScale(double eps = EPSILON) const;
     bool isUniformScale(double eps = EPSILON) const;
 
+    bool flips() const;
+
     Matrix without_translation() const;
 
     Matrix inverse() const;

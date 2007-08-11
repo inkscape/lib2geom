@@ -5,71 +5,190 @@
 
 namespace Geom {
 
-//TODO: BBox optimization
+bool logical_xor (bool a, bool b) { return (a || b) && !(a && b); }
 
-template<typename It>
-class circ {
-    typedef typename It::value_type value_type;
-    It begin;
-    It end;
-    It iter;
-    
-public:
-    circ() {}
-    circ(circ<It> const &other) : begin(other.begin), end(other.end), iter(other.iter) {}
-    circ(It b, It e)       : begin(b), end(e), iter(b) {}
-    circ(It b, It e, It i) : begin(b), end(e), iter(i) {}
-    
-    circ<It> &operator++() {    
-        iter++;
-        if (iter == end) iter = begin;
-        return *this;
-    }
+Region Region::operator*(Matrix const &m) const {
+    Region ret;
+    return Region(_boundary * m, logical_xor(m.flips(), _fill));
+}
 
-    circ<It> operator++(int) {
-        circ<It> prev(*this);
-        ++(*this);
-        return(prev);
+Shape Shape::operator*(Matrix const &m) const {
+    Regions ret;
+    for(Regions::const_iterator i = content.begin(); i != content.end(); i++) {
+        ret.push_back((*i) * m);
     }
-    
-    It inner() const           { return iter; }
-    value_type const operator*() const       { return *iter; }
-    bool operator==(circ<It> const &x) const { return iter == x.iter;}
-    bool operator==(It const &x) const       { return iter == x;}
-    bool operator!=(circ<It> const &x) const { return iter != x.iter; }
-    bool operator!=(It const &x) const       { return iter != x; }
-};
+    return Shape(ret);
+}
 
 bool disjoint(Path const & a, Path const & b) {
     return !contains(a, b.initialPoint()) && !contains(b, a.initialPoint());
 }
 
-/*
-class event {
-    bool opening;
-    double x;
+struct SweepObject {
+    unsigned ix;
+    bool on_a;
+    std::vector<unsigned> intersects;
+    
+    SweepObject(unsigned i, bool a) : ix(i), on_a(a) {}
 };
 
-template<typename T, typename F>
-void sweep_box(std::vector<std::pair<Rect, T> > const & a, F f) {
+struct Event {
+    double x;
+    SweepObject *val;
+    bool closing;
     
-    for(unsigned i = 0; i < a.size(); i++)
-        a[i]
+    friend std::vector<SweepObject> region_pairs(std::vector<Event> const & es);
+    
+    Event(double t, SweepObject *v, bool c) : x(t), val(v), closing(c) {}
+    
+    bool operator<(Event const &other) {
+        if(x < other.x) return true;
+        if(x > other.x) return false;
+        return closing < other.closing;
+    }
+};
+
+typedef std::vector<Event> Events;
+
+std::vector<SweepObject> sweep(Events const & es) {
+    std::vector<SweepObject> returns;
+    
+    std::vector<SweepObject*> open[2];
+    for(Events::const_iterator e = es.begin(); e != es.end(); ++e) {
+        unsigned ix = e->val->on_a ? 0 : 1;
+        if(e->closing) {
+            for(int i = open[ix].size()-1; i >= 0; --i) {
+                if(open[ix][i] == e->val) {
+                    open[ix].erase(open[ix].begin() + i);
+                    break;
+                }
+            }
+        } else {
+            open[ix].push_back(e->val);
+        }
+        if(e->val->on_a) {
+            if(e->closing) {
+                SweepObject *p = e->val;
+                returns.push_back(*p);
+                delete p;
+            } else {
+                for(unsigned i = 0; i < open[1].size(); i++) {
+                    e->val->intersects.push_back(open[1][i]->ix);
+                }
+            }
+        } else {
+            if(!e->closing) {
+                for(unsigned i = 0; i < open[0].size(); i++) {
+                    open[0][i]->intersects.push_back(e->val->ix);
+                }
+            }
+        }
+    }
+    
+    return returns;
+}
+
+template <typename T>
+Events events(Regions const & a, Regions const & b) {
+    Events ret;
+    for(unsigned i = 0; i < a.size(); i++) {
+        Rect bounds = a[i].boundsFast();
+        SweepObject *obj = new SweepObject(i, true);
+        ret.push_back(Event(bounds.left, obj, false));
+        ret.push_back(Event(bounds.right, obj, true));
+    }
+    for(unsigned i = 0; i < b.size(); i++) {
+        Rect bounds = b[i].boundsFast();
+        SweepObject *obj = new SweepObject(i, false);
+        ret.push_back(Event(bounds.left, obj, false));
+        ret.push_back(Event(bounds.right, obj, true));
+    }
+    std::sort(ret.begin(), ret.end());
+    return ret;
+}
+
+Shape shape_region_boolean(bool rev, Shape const & a, Region const & b) {
+    Shape ret;
+    
+    Path pb = b.boundary();
+    
+    for(Regions::const_iterator i = a.content.begin(); i != a.content.end(); ++i) {
+        Crossings cr = crossings(i->boundary(), pb);
+        if(!cr.empty()) {
+            ret = path_boolean(rev, *i, b, cr);
+        }
+    }
+    return ret;
+}
+
+std::vector<SweepObject> fake_cull(Regions const &a, Regions const &b) {
+    std::vector<SweepObject> ret;
+    std::vector<unsigned> all;
+    for(unsigned j = 0; j < b.size(); j++) {
+        all.push_back(j);
+    }
+    
+    for(unsigned i = 0; i < a.size(); i++) {
+        SweepObject res(i, true);
+        res.intersects = all;
+        ret.push_back(res);
+    }
+    
+    return ret;
+}
+
+//union = (Ao + Bo) - (Ah + Bh)
+/*Shape shape_union(Shape const & a, Shape const & b) {
+    std::vector<SweepObject> es = fake_cull(a.content, b.content); //sweep(events(a.fills, b.fills));
+    
+    Regions const &ac = a.content, bc = b.content;
+    
+    Shape ret;
+    for(unsigned i = 0; i < es.size(); i++) {
+        SweepObject cur = es[i];
+        std::vector<unsigned> ints = cur.intersects;
+        if(ints.size() > 0) {
+            Shape acc(a.content[cur.ix]);
+            for(unsigned j = 0; j < es[i].intersects.size(); j++) {
+            
+                if(es[i].fill == b.content[es[i].intersects[j]].fill
+                acc = shape_region_boolean(false, acc, b.content[es[i].intersects[j]]);
+            }
+            ret.mergeWith(acc);
+        }
+    }
+    
+    return ret;
 }*/
 
-Shapes shape_union(Shape const & a, Shape const & b) {
+/*    
+
+    bool on_holes = 
+    for(Paths::iterator i = a.fills.begin(); ; ++i) {
+        if(i == a.fills.end()) i = a;
+        if(i == a.holes.end()) break;
+        for(Paths::iterator j = b.fills.begin(); j != b.fills.end(); ++j) {
+            Crossings cr = crossings(*i, *j);
+            if(!cr.empty) {
+                path_boolean(false, *i, *j, cr);
+            } else if(contains(*i, j->initialPoint())) {
+                
+            } 
+        }
+    }
+
     //Get sorted sets of crossings
     Crossings cr = crossings(a.outer, b.outer);
     
     if(cr.empty() && disjoint(a.outer, b.outer)) {
-        Shapes returns;
-        returns.push_back(a); returns.push_back(b);
+        Shape ret(a);
+        ret.fills.insert(b.
+        ret.holes.
         return returns;
     }
     
     Crossings cr_a = cr, cr_b = cr;
     sortA(cr_a); sortB(cr_b);
-    Crossings cr_a_copy = cr_a, cr_b_copy = cr_b;
     
     Shape ret = path_union(a.outer, b.outer, cr_a_copy, cr_b_copy).front();
     //Copies of the holes, so that some may be removed / replaced by portions
@@ -132,7 +251,8 @@ void add_holes(Shapes &x, Paths const &h) {
         }
     }
 }
-
+*/
+/*
 void reverse_crossings_direction(Crossings &cr) {
     for(unsigned i = 0; i < cr.size(); i++) {
         cr[i].dir = !cr[i].dir;
@@ -254,15 +374,10 @@ Shapes shape_intersect(Shape const & a, Shape const & b) {
     return returns;
 }
 
-Shapes path_boolean(BoolOp btype, Path const & a, Path const & b, Crossings const & cr) {
-    Crossings cr_a = cr, cr_b = cr;
-    sortA(cr_a); sortB(cr_b);
-    return path_boolean(btype, a, b, cr_a, cr_b);
-}
-
-Shapes path_boolean_reverse(BoolOp btype, Path const & a, Path const & b, Crossings const &cr) {
+Shape path_boolean_reverse(bool btype, Region const & a, Region const & b, Crossings const &cr) {
     Crossings new_cr;
-    double max = b.size();
+    Path bp = b.boundary();
+    double max = bp.size();
     for(Crossings::const_iterator i = cr.begin(); i != cr.end(); i++) {
         Crossing x = *i;
         if(x.tb > max) x.tb = 1 - (x.tb - max) + max; // on the last seg - flip it about
@@ -270,77 +385,118 @@ Shapes path_boolean_reverse(BoolOp btype, Path const & a, Path const & b, Crossi
         x.dir = !x.dir;
         new_cr.push_back(x);
     }
-    return path_boolean(btype, a, b.reverse(), new_cr);
+    return path_boolean(btype, a, bp.reverse(), new_cr);
+}
+*/
+
+Shape path_boolean(bool btype, Region const & a, Region const & b, Crossings const & cr) {
+    Crossings cr_a = cr, cr_b = cr;
+    sortA(cr_a); sortB(cr_b);
+    return path_boolean(btype, a, b, cr_a, cr_b);
 }
 
-unsigned outer_index(std::vector<Path> const &ps) {
-    unsigned ix = 0;
-    if(ps.size() == 1 || contains(ps[0], ps[1].initialPoint())) {
-        return ix;
+unsigned outer_index(Regions const &ps) {
+
+    if(ps.size() <= 1 || contains(ps[0].boundary(), ps[1].boundary().initialPoint())) {
+        return 0;
     } else {
-        /* Since we've already shown that chunks[0] is not the outer_path,
+        /* Since we've already shown that chunks[0] is not outside
            it can be used as an exemplar inner. */
-        Point exemplar = ps[0].initialPoint();
+        Point exemplar = ps[0].boundary().initialPoint();
         for(unsigned i = 1; i < ps.size(); i++) {
-            if(contains(ps[i], exemplar)) {
-                ix = i;
-                break;
+            if(contains(ps[i].boundary(), exemplar)) {
+                return i;
             }
         }
     }
-    return ix;
+    return ps.size();
 }
-
-bool logical_xor (bool a, bool b) { return (a || b) && !(a && b); }
 
 unsigned find_crossing(Crossings const &cr, Crossing x) {
     return std::find(cr.begin(), cr.end(), x) - cr.begin();
 }
 
-/* This handles all the boolean ops in one function.  The middle function
- * is the main area of similarity between each.  The initial and ending
- * code is custom for each. */
-Shapes path_boolean(BoolOp btype,
-                    Path const & a, Path const & b,
-                    Crossings & cr_a, Crossings & cr_b) {
+
+/* This function handles boolean ops on regions of fill or hole.  The first parameter is a bool
+ * which determines its behavior in each combination of these cases.  When false it corresponds
+ * to the operations necessary for union, when true it corresponds to the operations necessary
+ * for intersection.  For proper fill information and noncrossing behavior, the fill data of the
+ * regions must be correct.  Here is a chart of the behavior under various circumstances:
+ * 
+ * rev = false
+ *            A
+ *       F       H
+ * F  A+B->FH  B-A->F
+ *B
+ * H  A-B->F   AxB->H
+ *
+ * rev = true
+ *            A
+ *       F       H
+ * F  AxB->F   A-B->H
+ *B
+ * H  B-A->H   A+B->HF
+ *
+ * F/H = Fill/Hole
+ * A/B specify operands
+ * + = union, - = subtraction, x = intersection
+ * -> read as "produces"
+ * FH = Fill surrounding holes
+ * HF = Holes surrounding fill
+ */
+Shape path_boolean( bool rev,
+                    Region const & a, Region const & b,
+                    Crossings const & cr_a, Crossings const & cr_b) {
     assert(cr_a.size() == cr_b.size());
-    Shapes ret;
-    //Handle the cases where there are no actual boundary intersections:
+    
+    //If we are on the subtraction diagonal
+    bool on_sub = logical_xor(a._fill, b._fill);
+
+    //This essentially corresponds to the result portions of the chart above
+    bool default_fill = logical_xor(on_sub, rev);
+    
+    //The inversion of decision in the main loop.  Happens to be the same as default fill.
+    bool decision = default_fill;
+    
+    Path ap = a.boundary(), bp = b.boundary();
     if(cr_a.empty()) {
-        Shape s;
-        switch(btype) {
-        case UNION:
-            //For inclusion, return the outside path
-            if(contains(a, b.initialPoint())) {      s.outer = a; ret.push_back(s); }
-            else if(contains(b, a.initialPoint())) { s.outer = b; ret.push_back(s); }
-            //For disjoint, return both
-            else {                  s.outer = a; ret.push_back(s);
-                                    s.outer = b; ret.push_back(s); }
-            return ret;
-        case SUBTRACT:
-            //Return an empty list when b includes a
-            if(contains(b, a.initialPoint())) { } else
-            //Return a shape with an outer formed by a, and a hole formed by b
-            if(contains(a, b.initialPoint())) {
-                s.outer = a;
-                s.holes.push_back(b.reverse());
-                ret.push_back(s);
-            //Otherwise, they are disjoint, just return a
+        Regions ret;
+        if(on_sub) {
+            //is a subtraction
+            if(logical_xor(a._fill, rev)) {
+                //is A-B
+                if(a.contains(bp.initialPoint())) {
+                    ret.push_back(a);
+                    ret.push_back(b);
+                } else if(!b.contains(ap.initialPoint())) {
+                    ret.push_back(a);
+                }
             } else {
-                s.outer = a;
-                ret.push_back(s);
+                //is B-A
+                if(b.contains(ap.initialPoint())) {
+                    ret.push_back(a);
+                    ret.push_back(b);
+                } else if(!a.contains(bp.initialPoint())) {
+                    ret.push_back(b);
+                }
             }
-            return ret;
-        case INTERSECT:
-            //For inclusion, return the inside path
-            if(contains(b, a.initialPoint())) {      s.outer = a; ret.push_back(s); }
-            else if(contains(a, b.initialPoint())) { s.outer = b; ret.push_back(s); }
-            //For disjoint, none
-            return ret;
+        } else if(logical_xor(a._fill, rev)) {
+            //is A+B
+            if(a.contains(bp.initialPoint())) ret.push_back(a); else
+            if(b.contains(ap.initialPoint())) ret.push_back(b); else {
+                ret.push_back(a);
+                ret.push_back(b);
+            }
+        } else {
+            //is AxB
+            if(a.contains(bp.initialPoint())) ret.push_back(b); else
+            if(b.contains(ap.initialPoint())) ret.push_back(a);
         }
+        return Shape(ret);
     }
+
     //Traverse the crossings, creating path chunks:
-    Paths chunks;
+    Regions chunks;
     std::vector<bool> visited_a(cr_a.size(), false), visited_b = visited_a;
     unsigned start_i = 0;
     while(true) {
@@ -355,54 +511,43 @@ Shapes path_boolean(BoolOp btype,
                 visited_a[i] = true;
             } else {
                 prev = cr_b[i];
-                visited_b[i] = true;
+                visited_b[i] = true; 
             }
-            /* This logical_xor reverses the behavior of the if when
-             * doing something other than union */
-            if(logical_xor(prev.dir, btype != UNION)) {
+            if(logical_xor(prev.dir, decision)) {
                 if(on_a) i++; else i = find_crossing(cr_a, cr_b[i]);
                 if(i >= cr_a.size()) i = 0;
-                a.appendPortionTo(res, prev.ta, cr_a[i].ta);
+                ap.appendPortionTo(res, prev.ta, cr_a[i].ta);
                 on_a = true;
             } else {
                 if(!on_a) i++; else i = find_crossing(cr_b, cr_a[i]);
                 if(i >= cr_b.size()) i = 0;
-                b.appendPortionTo(res, prev.tb, cr_b[i].tb);
+                bp.appendPortionTo(res, prev.tb, cr_b[i].tb);
                 on_a = false;
             }
         } while (on_a ? (!visited_a[i]) : (!visited_b[i]));
         
-        std::cout << btype << " c " << res.size() << "\n";
+        std::cout << rev << " c " << res.size() << "\n";
 
-        chunks.push_back(res);
+        chunks.push_back(Region(res, default_fill));
         
         std::vector<bool>::iterator unvisited = std::find(visited_a.begin(), visited_a.end(), false);
         if(unvisited == visited_a.end()) break; //visited all crossings
         start_i = unvisited - visited_a.begin();
-    } 
-
-    //Process the chunks into shapes output
-    
-    if(chunks.empty()) { return ret; }
-    
-    //If we are doing a union, the result may have multiple holes
-    if(btype == UNION) {
-        unsigned ix = outer_index(chunks);
-
-        Shape s;
-        s.outer = chunks[ix];
-        for(unsigned i = 0; i < chunks.size(); i++) {
-            /* If everything is functioning properly, these should all
-             * have clockwise winding. TODO: stick some assertions in here*/
-            if(i != ix && contains(s.outer, chunks[i].initialPoint()))
-                s.holes.push_back(chunks[i]);
-        }
-        ret.push_back(s);
-    } else {
-        // Intersection and non-inclusion subtraction will result in disjoint paths
-        return paths_to_shapes(chunks);
     }
-    return ret;
+    
+    //the fill of the container.  Similar to default_fill, but with exceptions on FH/HF.
+    bool c_fill;
+    if(!rev && (a._fill || b._fill)) c_fill = true; else
+    if(rev && !(a._fill && b._fill)) c_fill = false; else c_fill = default_fill;
+    
+    if(chunks.size() > 1) {
+        unsigned ix = outer_index(chunks);
+        if(ix != chunks.size())
+            chunks[ix]._fill = c_fill;
+    } else if(chunks.size() == 1) {
+        chunks[0]._fill = c_fill;
+    }
+    return Shape(chunks);
 }
 
 }

@@ -15,29 +15,15 @@
 
 using namespace Geom;
 
-void cairo_paths(cairo_t *cr, Paths p) {
-    for(Paths::iterator j = p.begin(); j != p.end(); j++) {
-        cairo_path(cr, *j);
+void cairo_regions(cairo_t *cr, Regions p) {
+    for(Regions::iterator j = p.begin(); j != p.end(); j++) {
+        if(j->fill()) cairo_set_source_rgb(cr, 1., 0., 0.); else cairo_set_source_rgb(cr, 0., 0., 1.);
+        cairo_path(cr, j->boundary());
+        cairo_stroke(cr);
     }
 }
 
-void cairo_shape(cairo_t *cr, Shape s) {
-    cairo_set_source_rgb(cr, 0., 0., 0.);
-    cairo_set_line_width(cr, 3);
-    cairo_path(cr, s.getOuter());
-    cairo_fill(cr);
-    cairo_set_line_width(cr, 1);
-    cairo_set_source_rgb(cr, 1., 1., 1.);
-    cairo_paths(cr, s.getHoles());
-    cairo_fill(cr);//cairo_stroke(cr);
-}
-
-void cairo_shapes(cairo_t *cr, Shapes s) {
-    for(unsigned i = 0; i < s.size(); i++) {
-        cairo_shape(cr, s[i]);
-    }
-}
-
+/*
 void mark_crossings(cairo_t *cr, Path const &a, Path const &b) {
     Crossings c = crossings(a, b);
     for(Crossings::iterator i = c.begin(); i != c.end(); i++) {
@@ -65,62 +51,40 @@ void draw_bounds(cairo_t *cr, Path p) {
     }
 }
 
-Shape operator*(Shape const & sh, Matrix const &m) {
-    Paths holes, h = sh.getHoles();
-    for(Paths::iterator j = h.begin(); j != h.end(); j++) {
-        holes.push_back((*j) * m);
-    }
-    return Shape(sh.getOuter() * m, holes);
-}
-
-Shapes operator*(Shapes const & sh, Matrix const &m) {
-    Shapes ret;
-    for(unsigned i = 0; i < sh.size(); i++) ret.push_back(sh[i] * m);
-    return ret;
-}
+*/
 
 //true = clockwise, false = counter-clock
-Path set_winding(Path const &p, bool dir) {
-    Piecewise<D2<SBasis> > pw = p.toPwSb();
-    double area;
-    Point centre;
-    Geom::centroid(pw, centre, area);
-    if(area < 0 && !dir) return p.reverse();
-    if(area > 0 && dir) return p.reverse();
-    return p; 
-}
 
 Shape cleanup(std::vector<Path> const &ps) {
-    unsigned ix = outer_index(ps);
-    
-    Path outer = set_winding(ps[ix], false);
+    Regions rs = regions_from_paths(ps);
 
-    Piecewise<D2<SBasis> > pw = outer.toPwSb();
+    unsigned ix = outer_index(rs);
+    if(ix == rs.size()) ix = 0;
+
+    if(!rs[ix].fill()) rs[ix] = Region(rs[ix].boundary().reverse(), !rs[ix].fill());
+
+    Piecewise<D2<SBasis> > pw = rs[ix].boundary().toPwSb();
     double area;
     Point centre;
     Geom::centroid(pw, centre, area);
     
-    Paths holes;
-    for(unsigned i = 0; i < ps.size(); i++) {
-        if(i != ix && contains(outer, ps[i].initialPoint()))
-            holes.push_back(set_winding(ps[i], true));
-    }
-    return Shape(outer, holes) * Geom::Translate(-centre);
+    return Shape(rs) * Geom::Translate(-centre);
 }
 
 class BoolOps: public Toy {
-    Path a, b;
+    Region a, b;
+    bool rev;
     Shape as, bs;
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         Geom::Translate t(handles[0]);
         Shape bst = bs * t;
-        Path bt = b * t;
+        Region bt = Region(b.boundary() * t, b.fill());
         //cairo_shape(cr, as);
         //cairo_shape(cr, bst);
         
         cairo_set_line_width(cr, 1);
         cairo_set_source_rgba(cr, 0., 0., 0., 1);
-        mark_crossings(cr, a, bt);
+        //mark_crossings(cr, a, bt);
         cairo_stroke(cr);
         //draw_bounds(cr, a);
         //draw_bounds(cr, b);
@@ -130,31 +94,46 @@ class BoolOps: public Toy {
         //Shapes suni = shape_subtract(as, bst); //path_union(a, b);
         //cairo_shapes(cr, suni);
         
+        Shape res = path_boolean(rev, a, bt);
+        Regions cont = res.getContent();
+        cairo_regions(cr, cont);
+        
+        //used to check if it's right
+        for(int i = 0; i < cont.size(); i++) {
+            if(path_direction(cont[i].boundary()) != cont[i].fill()) std::cout << "wrong!\n";
+        }
+        
         /*Shapes uni = path_union(a, bt);
         cairo_set_source_rgba(cr, 1., 0., 0., .5);
         cairo_shapes(cr, uni);
         */
-        Shapes sub = path_subtract(a, bt);
+        /*Shapes sub = path_subtract(a, bt);
         cairo_set_source_rgba(cr, 0., 0., 0., .5);
         cairo_shapes(cr, sub);
         cairo_stroke(cr);
         
-        Paths inte = path_intersect(a, bt);
+        std::vector<Path> inte = path_intersect(a, bt);
         cairo_set_source_rgba(cr, 0., 1., 0., .5);
         cairo_paths(cr, inte);
         cairo_stroke(cr);
-        
+        */
         //std::cout.rdbuf(cout_buffer);
 
-        *notify << "Red = Union exterior, Blue = Holes in union\n Green = Intersection\nSubtraction is meant to be shifted.\n";
+        //*notify << "Red = Union exterior, Blue = Holes in union\n Green = Intersection\nSubtraction is meant to be shifted.\n";
 
+        *notify << "a " << (a.fill() ? "" : "not") << " filled\n";
+        *notify << "b " << (b.fill() ? "" : "not") << " filled\n";
+        *notify << "rev = " << (rev ? "true" : "false") << "\n";
+        
         cairo_set_line_width(cr, 1);
 
         Toy::draw(cr, notify, width, height, save);
     }
-    virtual void key_hit(GdkEventKey *e) {
-        if(e->keyval == 'a') a = a.reverse();
-        if(e->keyval == 'b') b = b.reverse();
+    void key_hit(GdkEventKey *e) {
+        if(e->keyval == 'a') a = Region(a.boundary().reverse(), !a.fill());
+        if(e->keyval == 'b') b = Region(b.boundary().reverse(), !b.fill());
+        if(e->keyval == 'r') rev = !rev;
+        redraw();
     }
     public:
     BoolOps () {}
@@ -169,20 +148,21 @@ class BoolOps: public Toy {
         std::vector<Path> paths_a = read_svgd(path_a_name);
         std::vector<Path> paths_b = read_svgd(path_b_name);
         
-        paths_b[0] = paths_b[0] * Geom::Scale(Point(.75, -.75));
-        
+        paths_b[0] = paths_b[0] * Geom::Scale(Point(.75, .75));
+        rev = false;
         handles.push_back(Point(100,100));
+              
+        //Paths holes = bs.getHoles();
+        //holes.push_back(bs.getOuter() * Geom::Scale(.5, .5));
         
+        //bs = Shape(bs.getOuter(), holes);
+        Geom::Matrix m = Geom::Translate(Point(300, 300));
+        std::cout << m.flips() << "\n";
         as = cleanup(paths_a) * Geom::Translate(Point(300, 300));
         bs = cleanup(paths_b); //path_subtract(path_b[0] * Geom::Translate(-centre), path_b[0] * Geom::Translate(-centre) * Scale(.5, .5)).front();
         
-        Paths holes = bs.getHoles();
-        //holes.push_back(bs.getOuter() * Geom::Scale(.5, .5));
-        
-        bs = Shape(bs.getOuter(), holes);
-        
-        a = as.getOuter();
-        b = bs.getOuter();
+        a = as.getContent().front();
+        b = bs.getContent().front();
     }
     int should_draw_bounds() {return 0;}
 };

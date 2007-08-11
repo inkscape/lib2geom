@@ -463,9 +463,9 @@ public:
   Piecewise<D2<SBasis> > toPwSb() const {
     Piecewise<D2<SBasis> > ret;
     ret.push_cut(0);
-    unsigned i = 0;
+    unsigned i = 1;
     for(const_iterator it = begin(); it != end_default(); it++, i++) { 
-      ret.push(it->toSBasis(), i+1);
+      ret.push(it->toSBasis(), i);
     }
     return ret;
   }
@@ -690,10 +690,52 @@ inline static Piecewise<D2<SBasis> > paths_to_pw(std::vector<Path> paths) {
     return ret;
 }
 
-class Set {
-public:
-private:
+/*
+class PathPortion : public Curve {
+  Path *source;
+  double f, t;
+  boost::optional<Path> result;
+  
+  public:
+  double from() const { return f; }
+  double to() const { return t; }
+    
+  explicit PathPortion(Path *s, double fp, double tp) : source(s), f(fp), t(tp) {}
+  Curve *duplicate() const { return new PathPortion(*this); }
+  
+  Point initialPoint() const { return source->pointAt(f); }
+  Point finalPoint() const { return source->pointAt(t); }
+  
+  Path actualPath() {
+    if(!result) *result = source->portion(f, t);
+    return *result;
+  }
+  
+  Rect boundsFast() const { return actualPath().boundsFast; }
+  Rect boundsExact() const { return actualPath().boundsFast; }
+  Rect boundsLocal(Interval i) const { throw NotImplemented(); }
+
+  std::vector<double> roots(double v, Dim2 d) const = 0;
+
+  virtual int winding(Point p) const { return root_winding(*this, p); }
+
+  virtual Curve *portion(double f, double t) const = 0;
+  virtual Curve *reverse() const { return portion(1, 0); }
+
+  virtual Crossings crossingsWith(Curve const & other) const;
+  
+  virtual void setInitial(Point v) = 0;
+  virtual void setFinal(Point v) = 0;
+  
+  virtual Curve *transformed(Matrix const &m) const = 0;
+  
+  virtual Point pointAt(Coord t) const { return pointAndDerivatives(t, 1).front(); }
+  virtual Coord valueAt(Coord t, Dim2 d) const { return pointAt(t)[d]; }
+  virtual std::vector<Point> pointAndDerivatives(Coord t, unsigned n) const = 0;
+  virtual D2<SBasis> toSBasis() const = 0;
+    
 };
+*/
 
 }
 

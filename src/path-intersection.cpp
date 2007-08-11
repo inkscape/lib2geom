@@ -207,8 +207,8 @@ Crossings to_crossings(std::vector<std::pair<double, double> > ts, Curve const &
         /* If the absolute value of the winding is less on the increased t,
            then the dir is outside (true) */
         double at = ts[i].first, bt = ts[i].second;
-        ret.push_back(Crossing(at, bt, cross(a.pointAt(at) - a.pointAt(at + .05),
-                                             b.pointAt(bt) - b.pointAt(bt + .05)) > 0));
+        ret.push_back(Crossing(at, bt, cross(a.pointAt(at) - a.pointAt(at + .01),
+                                             b.pointAt(bt) - b.pointAt(bt + .01)) > 0));
     }
     return ret;
 }
