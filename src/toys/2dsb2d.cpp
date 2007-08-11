@@ -54,7 +54,7 @@ class Sb2d2: public Toy {
                 std::vector<double> r = roots(B[dim]);
                 for(unsigned i = 0; i < r.size(); i++)
                     draw_cross(cr, B(r[i]));
-                r = roots(B[dim] - Linear(width/4));
+                r = roots(Linear(width/4) - B[dim]);
                 for(unsigned i = 0; i < r.size(); i++)
                     draw_cross(cr, B(r[i]));
             }
