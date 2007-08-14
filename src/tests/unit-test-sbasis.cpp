@@ -1,11 +1,14 @@
 #include <iostream>
 #include <math.h>
 #include <cassert>
+#include "sbasis.h"
 #include "sbasis-poly.h"
 #include <iterator>
 #include "point.h"
 #include "sbasis-to-bezier.h"
 #include "solver.h"
+
+using namespace Geom;
 
 Poly roots_to_poly(double *a, unsigned n) {
     Poly r;
