@@ -53,22 +53,29 @@ void draw_bounds(cairo_t *cr, Path p) {
 
 */
 
-//true = clockwise, false = counter-clock
-
 Shape cleanup(std::vector<Path> const &ps) {
     Regions rs = regions_from_paths(ps);
 
     unsigned ix = outer_index(rs);
     if(ix == rs.size()) ix = 0;
 
-    if(!rs[ix].fill()) rs[ix] = Region(rs[ix].boundary().reverse(), !rs[ix].fill());
+    Region outer;
+    for(int i = 0; i < rs.size(); i++) {
+        if(i == ix) {
+            outer = !rs[i].fill() ? rs[i].inverse() : rs[i];
+            rs.erase(rs.begin() + i);
+            i--;
+        } else {
+            rs[i] = rs[i].fill() ? rs[i].inverse() : rs[i];
+        }
+    }
 
-    Piecewise<D2<SBasis> > pw = rs[ix].boundary().toPwSb();
+    Piecewise<D2<SBasis> > pw = outer.boundary().toPwSb();
     double area;
     Point centre;
     Geom::centroid(pw, centre, area);
     
-    return Shape(rs) * Geom::Translate(-centre);
+    return Shape(outer, rs) * Geom::Translate(-centre);
 }
 
 class BoolOps: public Toy {
@@ -94,8 +101,7 @@ class BoolOps: public Toy {
         //Shapes suni = shape_subtract(as, bst); //path_union(a, b);
         //cairo_shapes(cr, suni);
         
-        Shape res = path_boolean(rev, a, bt);
-        Regions cont = res.getContent();
+        Regions cont = region_boolean(rev, a, bt);
         cairo_regions(cr, cont);
         
         //used to check if it's right
@@ -161,8 +167,8 @@ class BoolOps: public Toy {
         as = cleanup(paths_a) * Geom::Translate(Point(300, 300));
         bs = cleanup(paths_b); //path_subtract(path_b[0] * Geom::Translate(-centre), path_b[0] * Geom::Translate(-centre) * Scale(.5, .5)).front();
         
-        a = as.getContent().front();
-        b = bs.getContent().front();
+        a = as.getOuter();
+        b = bs.getOuter();
     }
     int should_draw_bounds() {return 0;}
 };
