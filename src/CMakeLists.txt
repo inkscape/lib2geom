@@ -31,6 +31,8 @@ path-intersection.h
 
 shape.cpp
 shape.h
+region.cpp
+region.h
 
 poly.cpp
 poly.h

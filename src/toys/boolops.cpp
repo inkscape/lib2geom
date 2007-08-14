@@ -15,12 +15,24 @@
 
 using namespace Geom;
 
-void cairo_regions(cairo_t *cr, Regions p) {
-    for(Regions::iterator j = p.begin(); j != p.end(); j++) {
-        if(j->fill()) cairo_set_source_rgb(cr, 1., 0., 0.); else cairo_set_source_rgb(cr, 0., 0., 1.);
-        cairo_path(cr, j->boundary());
-        cairo_stroke(cr);
-    }
+void cairo_region(cairo_t *cr, Region const &r) {
+    if(r.fill()) cairo_set_source_rgb(cr, 1., 0., 0.); else cairo_set_source_rgb(cr, 0., 0., 1.);
+    cairo_path(cr, r.boundary());
+    cairo_stroke(cr);
+}
+
+void cairo_regions(cairo_t *cr, Regions const &p) {
+    for(Regions::const_iterator j = p.begin(); j != p.end(); j++)
+        cairo_region(cr, *j);
+}
+
+void cairo_shape(cairo_t *cr, Shape const &s) {
+    cairo_region(cr, s.getOuter()); cairo_regions(cr, s.getInners());
+}
+
+void cairo_shapes(cairo_t *cr, Shapes const &s) {
+    for(Shapes::const_iterator j = s.begin(); j != s.end(); j++)
+        cairo_shape(cr, *j);
 }
 
 /*
@@ -56,26 +68,26 @@ void draw_bounds(cairo_t *cr, Path p) {
 Shape cleanup(std::vector<Path> const &ps) {
     Regions rs = regions_from_paths(ps);
 
+
     unsigned ix = outer_index(rs);
     if(ix == rs.size()) ix = 0;
 
+    Regions inners;
     Region outer;
     for(int i = 0; i < rs.size(); i++) {
         if(i == ix) {
             outer = !rs[i].fill() ? rs[i].inverse() : rs[i];
-            rs.erase(rs.begin() + i);
-            i--;
         } else {
-            rs[i] = rs[i].fill() ? rs[i].inverse() : rs[i];
+            inners.push_back(rs[i].fill() ? rs[i].inverse() : rs[i]);
         }
     }
-
+    
     Piecewise<D2<SBasis> > pw = outer.boundary().toPwSb();
     double area;
     Point centre;
     Geom::centroid(pw, centre, area);
     
-    return Shape(outer, rs) * Geom::Translate(-centre);
+    return Shape(outer, inners) * Geom::Translate(-centre);
 }
 
 class BoolOps: public Toy {
@@ -101,13 +113,13 @@ class BoolOps: public Toy {
         //Shapes suni = shape_subtract(as, bst); //path_union(a, b);
         //cairo_shapes(cr, suni);
         
-        Regions cont = region_boolean(rev, a, bt);
-        cairo_regions(cr, cont);
+        Shapes s = shape_subtract(as, bst);
+        cairo_shapes(cr, s);
         
         //used to check if it's right
-        for(int i = 0; i < cont.size(); i++) {
-            if(path_direction(cont[i].boundary()) != cont[i].fill()) std::cout << "wrong!\n";
-        }
+        //for(int i = 0; i < cont.size(); i++) {
+        //    if(path_direction(cont[i].boundary()) != cont[i].fill()) std::cout << "wrong!\n";
+        //}
         
         /*Shapes uni = path_union(a, bt);
         cairo_set_source_rgba(cr, 1., 0., 0., .5);

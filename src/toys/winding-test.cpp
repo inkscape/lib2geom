@@ -61,8 +61,12 @@ class WindingTest: public Toy {
     }
 
     public:
-    WindingTest () {
-        path = read_svgd("winding.svgd");
+    WindingTest () {}
+    void first_time(int argc, char** argv) {
+        char *path_name="winding.svgd";
+        if(argc > 1)
+            path_name = argv[1];
+        path = read_svgd(path_name);
         handles.push_back(Point(300,300));
     }
 };

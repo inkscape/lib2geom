@@ -31,12 +31,15 @@
 
 #include "ord.h"
 
-namespace Geom {
+namespace Geom {
 int CurveHelpers::root_winding(Curve const &c, Point p) {
     std::vector<double> ts = c.roots(p[Y], Y);
+
     if(ts.empty()) return 0;
 
     double const fudge = 0.01; //fudge factor used on first and last
+
+    std::sort(ts.begin(), ts.end());
 
     // winding determined by crossings at roots
     int wind=0;
@@ -46,7 +49,7 @@ int CurveHelpers::root_winding(Curve const &c, Point p) {
         ; ti != ts.end()
         ; ++ti )
     {
-        double t = *ti;
+        double t = fabs(*ti);   //todo: remove fabs once this is fixed elsewhere
         if ( t <= 0. || t >= 1. ) continue; //skip endpoint roots 
         if ( c.valueAt(t, X) > p[X] ) { // root is ray intersection
             // Get t of next:
@@ -60,9 +63,9 @@ int CurveHelpers::root_winding(Curve const &c, Point p) {
             Cmp after_to_ray =  cmp(c.valueAt((t + nt) / 2, Y), p[Y]);
             Cmp before_to_ray = cmp(c.valueAt((t + pt) / 2, Y), p[Y]);
             // if y is included, these will have opposite values, giving order.
-            Cmp c = cmp(after_to_ray, before_to_ray);
-            if(c != EQUAL_TO) //Should always be true, but yah never know..
-                wind += c;
+            Cmp dt = cmp(after_to_ray, before_to_ray);
+            if(dt != EQUAL_TO) //Should always be true, but yah never know..
+                wind += dt;
             pt = t;
         }
     }

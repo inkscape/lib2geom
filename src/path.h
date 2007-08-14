@@ -177,7 +177,11 @@ public:
     return SBasisCurve(toSBasis()).winding(p);
   }
 
-  std::vector<double> roots(double v, Dim2 d) const { return Geom::roots(inner[d].toSBasis() - v); }
+  std::vector<double> roots(double v, Dim2 d) const {
+        std::vector<double> levels;
+        levels.push_back(v);
+        return Geom::multi_roots(inner[d].toSBasis() - v, levels, 0., 0.5, 0., 1).front();
+  }
   
   void setPoints(std::vector<Point> ps) {
     for(unsigned i = 0; i <= order; i++) {
