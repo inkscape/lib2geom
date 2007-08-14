@@ -12,6 +12,7 @@
 #include <time.h>
 
 using namespace std;
+using namespace Geom;
 
 Poly lin_poly(double a, double b) { // ax + b
     Poly p;

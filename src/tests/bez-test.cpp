@@ -1,5 +1,4 @@
 #include "point.h"
-#include "point-ops.h"
 
 template <unsigned order> 
 inline Geom::Point Bez(double t, Geom::Point* b) {
@@ -14,10 +13,10 @@ inline Geom::Point Bez<0>(double t, Geom::Point* b) { return *b;}
 
 
 
-#include <stdio.h>
+#include <iostream>
 int main(int argc, char** argv) {
 	Geom::Point a[] = {Geom::Point(1,0),Geom::Point(2,3),Geom::Point(2,5)};
 	Geom::Point p = Bez<1>(0.5, a);
 	
-	printf("%g %g\n", p[0], p[1]);
+	std::cout << p << std::endl;
 }
