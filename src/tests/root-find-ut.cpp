@@ -29,17 +29,10 @@ double uniform() {
     return double(rand()) / RAND_MAX;
 }
 
-std::vector<double> roots_buggy(SBasis const & s) {
-    std::vector<double> b = sbasis_to_bezier(s), r;
-    
-    find_bernstein_roots_buggy(&b[0], b.size()-1, r, 0, 0., 1.);
-    return r;
-}
-
 int
 main(int argc, char** argv) {
     Poly a, b, r;
-    double timer_precision = 0.1;
+    double timer_precision = 0.01;
     double units = 1e6; // us
     
     a = Poly::linear(1, -0.3)*Poly::linear(1, -0.25)*Poly::linear(1, -0.2);
@@ -107,21 +100,14 @@ main(int argc, char** argv) {
     double ave_left = 0;
     double ave_right = 0;
     double ave_rel = 0;
-    cout << "split at first choice \t split at 0.5 \t\t err from exact\n";
+    cout << "err from exact\n";
     for(int i = 0; i < trials.size(); i++) {
         SBasis B = Linear(1.,1);
+        sort(trials[i].begin(), trials[i].end());
         for(int j = 0; j < trials[i].size(); j++) {
             B = B*linear(1, -trials[i][j]);
         }
         int N = B.size()*2;
-        if(B.back()[0] == B.back()[1])
-            N--;
-        //std::cout << sbasis_to_poly(B) <<std::endl;
-        //std::cout << B << std::endl;
-        /*std::vector<double> bez = sbasis_to_bezier(B);
-          for(int i = 0; i < N; i++) 
-          printf("%g %g\n", (i/10.), bez[i]);
-          cout << endl;*/
         double left_time, right_time;
         clock_t end_t = clock()+clock_t(timer_precision*CLOCKS_PER_SEC);
         unsigned iterations = 0;
@@ -130,23 +116,7 @@ main(int argc, char** argv) {
             iterations++;
         }
         left_time = timer_precision*units/iterations;
-        cout << left_time;
-        {
-	    clock_t end_t = clock()+clock_t(timer_precision*CLOCKS_PER_SEC);
-	    unsigned iterations = 0;
-	    while(end_t > clock()) {
-                roots_buggy(B);
-                iterations++;
-	    }
-    
-            right_time = timer_precision*units/iterations;
-	    cout <<"\t\t\t" <<  right_time;
-        }
-        std::vector<double> rt = roots(B);
-        /*cout <<" roots = ";
-          copy(rt.begin(), rt.end(), ostream_iterator<double>(cout, ", "));
-          cout << endl;*/
-	    
+        vector<double> rt = roots(B);
         double err = 0;
         for(int k = 0; k < rt.size(); k++) {
             double r = rt[k];
@@ -157,14 +127,24 @@ main(int argc, char** argv) {
             }
             err += best;
         }
-        cout << "\t\t e: " << err << std::endl;
+        if(err > 1e-8){
+            for(int j = 0; j < trials[i].size(); j++) {
+                cout << trials[i][j] << ", ";
+            }
+            cout << endl;
+        }
+        cout << " e: " << err << std::endl;
         ave_left += left_time;
-        ave_right += right_time;
-        ave_rel += left_time / right_time;
     }
-    cout << "average time left = " << ave_left/trials.size() << std::endl;
-    cout << "average time right = " << ave_right/trials.size() << std::endl;
-    cout << "average relative time increase left/right= " << ave_rel/trials.size() << std::endl;
+    cout << "average time = " << ave_left/trials.size() << std::endl;
+    
+    for(int i = 10; i >= 0; i--) {
+        vector<double> rt = roots(Linear(i,-1));
+        for(int j = 0; j < rt.size(); j++) {
+            cout << rt[j] << ", ";
+        }
+        cout << endl;
+    }
 }
 
 
