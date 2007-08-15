@@ -46,7 +46,7 @@ unsigned outer_index(Regions const &ps) {
            it can be used as an exemplar inner. */
         Point exemplar = ps[0].boundary().initialPoint();
         for(unsigned i = 1; i < ps.size(); i++) {
-            if(contains(ps[i].boundary(), exemplar)) {
+            if(ps[i].contains(exemplar)) {
                 std::cout << "oi: " << i << "\n";
                 return i;
             }
@@ -180,7 +180,7 @@ Regions region_boolean( bool rev,
     if(rev && (!a._fill && !b._fill)) c_fill = false; else return chunks;
     if(chunks.size() > 1) {
         unsigned ix = outer_index(chunks);
-        if(ix != chunks.size()) {
+        if(ix != chunks.size() && ix != 0) {
             Region temp = chunks[0];
             chunks[ix]._fill = c_fill;
             chunks[0] = chunks[ix];

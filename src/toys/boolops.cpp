@@ -35,6 +35,24 @@ void cairo_shapes(cairo_t *cr, Shapes const &s) {
         cairo_shape(cr, *j);
 }
 
+std::vector<Path> desanitize(Shape const & s) {
+    std::vector<Path> ret;
+    ret.push_back(s.getOuter().boundary());
+    Regions inners = s.getInners();
+    for(Regions::const_iterator j = inners.begin(); j != inners.end(); j++)
+        ret.push_back(j->boundary());
+    return ret;
+}
+
+std::vector<Path> desanitize(Shapes const & s) {
+    std::vector<Path> ret;
+    for(Shapes::const_iterator j = s.begin(); j != s.end(); j++) {
+        std::vector<Path> res = desanitize(*j);
+        ret.insert(ret.end(), res.begin(), res.end());
+    }
+    return ret;
+}
+
 /*
 void mark_crossings(cairo_t *cr, Path const &a, Path const &b) {
     Crossings c = crossings(a, b);
@@ -91,7 +109,7 @@ Shape cleanup(std::vector<Path> const &ps) {
 
 class BoolOps: public Toy {
     Region a, b;
-    bool rev;
+    unsigned mode;
     Shape as, bs;
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         Geom::Translate t(handles[0]);
@@ -112,13 +130,24 @@ class BoolOps: public Toy {
         //Shapes suni = shape_subtract(as, bst); //path_union(a, b);
         //cairo_shapes(cr, suni);
         
-        Shapes s = shape_exclusion(as, bst);
-        if(rev) {
-            for(unsigned i = 0; i < s.size(); i++) {
-                s[i] = s[i].inverse();
-            }
+        Shapes s;
+        switch(mode) {
+        case 0:
+            s = shape_union(as, bst);
+            break;
+        case 1:
+            s = shape_subtract(as, bst);
+            break;
+        case 2:
+            s = shape_intersect(as, bst);
+            break;
+        case 3:
+            s = shape_exclude(as, bst);
+            break;
         }
         cairo_shapes(cr, s);
+        //cairo_path(cr, desanitize(s));
+        cairo_fill(cr);
         
         //used to check if it's right
         //for(int i = 0; i < cont.size(); i++) {
@@ -143,18 +172,18 @@ class BoolOps: public Toy {
 
         //*notify << "Red = Union exterior, Blue = Holes in union\n Green = Intersection\nSubtraction is meant to be shifted.\n";
 
-        *notify << "a " << (as.getOuter().fill() ? "" : "not") << " filled\n";
-        *notify << "b " << (bs.getOuter().fill() ? "" : "not") << " filled\n";
-        *notify << "rev = " << (rev ? "true" : "false") << "\n";
+        *notify << "Operation: " << (mode ? (mode == 1 ? "subtract" : (mode == 2 ? "intersect" : "exclude")) : "union");
+        *notify << "\nKeys:\n u = Union   s = Subtract   i = intersect   e = exclude";
         
         cairo_set_line_width(cr, 1);
 
         Toy::draw(cr, notify, width, height, save);
     }
     void key_hit(GdkEventKey *e) {
-        if(e->keyval == 'a') as = as.inverse();//a = Region(a.boundary().reverse(), !a.fill());
-        if(e->keyval == 'b') bs = bs.inverse();//b = Region(b.boundary().reverse(), !b.fill());
-        if(e->keyval == 'r') rev = !rev;
+        if(e->keyval == 'u') mode = 0; else
+        if(e->keyval == 's') mode = 1; else
+        if(e->keyval == 'i') mode = 2; else
+        if(e->keyval == 'e') mode = 3;
         redraw();
     }
     public:
@@ -171,15 +200,14 @@ class BoolOps: public Toy {
         std::vector<Path> paths_b = read_svgd(path_b_name);
         
         //paths_b[0] = paths_b[0] * Geom::Scale(Point(.75, .75));
-        rev = false;
-        handles.push_back(Point(100,100));
+        mode = 0;
+        handles.push_back(Point(200,200));
               
         //Paths holes = bs.getHoles();
         //holes.push_back(bs.getOuter() * Geom::Scale(.5, .5));
         
         //bs = Shape(bs.getOuter(), holes);
         Geom::Matrix m = Geom::Translate(Point(300, 300));
-        std::cout << m.flips() << "\n";
         as = cleanup(paths_a) * Geom::Translate(Point(300, 300));
         bs = cleanup(paths_b); //path_subtract(path_b[0] * Geom::Translate(-centre), path_b[0] * Geom::Translate(-centre) * Scale(.5, .5)).front();
         

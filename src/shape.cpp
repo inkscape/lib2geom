@@ -184,7 +184,10 @@ Shapes shape_union(Shape const & a, Shape const & b) {
         outers = region_boolean(false, a.outer, b.outer, cr);
     }
     
-    Regions holes(++outers.begin(), outers.end());
+    Regions holes;
+    
+    for(unsigned i = 1; i < outers.size(); i++)
+        holes.push_back(outers[i]);
     
     //Ai - Bo
     for(unsigned i = 0; i < a.inners.size(); i++)
@@ -344,7 +347,7 @@ Shapes shape_intersect(Shape const & a, Shape const & b) {
     return do_holes(outers, acc); //shapes_from_regions(outers);
 }
 
-Shapes shape_exclusion(Shape const & a, Shape const & b) {
+Shapes shape_exclude(Shape const & a, Shape const & b) {
     Shapes results = shape_subtract(a, b);
     append(results, shape_subtract(b, a));
     return results;
