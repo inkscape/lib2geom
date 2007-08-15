@@ -49,7 +49,7 @@ int CurveHelpers::root_winding(Curve const &c, Point p) {
         ; ti != ts.end()
         ; ++ti )
     {
-        double t = fabs(*ti);   //todo: remove fabs once this is fixed elsewhere
+        double t = *ti;
         if ( t <= 0. || t >= 1. ) continue; //skip endpoint roots 
         if ( c.valueAt(t, X) > p[X] ) { // root is ray intersection
             // Get t of next:

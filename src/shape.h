@@ -18,7 +18,8 @@ class Shape {
     friend std::vector<Shape> do_holes(Regions const &, Regions const &);
     friend std::vector<Shape> shape_subtract(Shape const &, Shape const &);
     friend std::vector<Shape> shape_intersect(Shape const & a, Shape const & b);
-    
+    friend std::vector<Shape> shape_exclusion(Shape const & a, Shape const & b);
+    friend void add_holes(std::vector<Shape> &x, Regions const &h);
   public:
     Region getOuter() const { return outer; }
     Regions getInners() const { return inners; }

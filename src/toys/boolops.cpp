@@ -16,9 +16,9 @@
 using namespace Geom;
 
 void cairo_region(cairo_t *cr, Region const &r) {
-    if(r.fill()) cairo_set_source_rgb(cr, 1., 0., 0.); else cairo_set_source_rgb(cr, 0., 0., 1.);
+    if(r.fill()) cairo_set_source_rgb(cr, 0., 0., 0.); else cairo_set_source_rgb(cr, 1., 1., 1.);
     cairo_path(cr, r.boundary());
-    cairo_stroke(cr);
+    cairo_fill(cr);
 }
 
 void cairo_regions(cairo_t *cr, Regions const &p) {
@@ -68,13 +68,12 @@ void draw_bounds(cairo_t *cr, Path p) {
 Shape cleanup(std::vector<Path> const &ps) {
     Regions rs = regions_from_paths(ps);
 
-
     unsigned ix = outer_index(rs);
     if(ix == rs.size()) ix = 0;
 
     Regions inners;
     Region outer;
-    for(int i = 0; i < rs.size(); i++) {
+    for(unsigned i = 0; i < rs.size(); i++) {
         if(i == ix) {
             outer = !rs[i].fill() ? rs[i].inverse() : rs[i];
         } else {
@@ -113,7 +112,12 @@ class BoolOps: public Toy {
         //Shapes suni = shape_subtract(as, bst); //path_union(a, b);
         //cairo_shapes(cr, suni);
         
-        Shapes s = shape_subtract(as, bst);
+        Shapes s = shape_exclusion(as, bst);
+        if(rev) {
+            for(unsigned i = 0; i < s.size(); i++) {
+                s[i] = s[i].inverse();
+            }
+        }
         cairo_shapes(cr, s);
         
         //used to check if it's right
@@ -139,8 +143,8 @@ class BoolOps: public Toy {
 
         //*notify << "Red = Union exterior, Blue = Holes in union\n Green = Intersection\nSubtraction is meant to be shifted.\n";
 
-        *notify << "a " << (a.fill() ? "" : "not") << " filled\n";
-        *notify << "b " << (b.fill() ? "" : "not") << " filled\n";
+        *notify << "a " << (as.getOuter().fill() ? "" : "not") << " filled\n";
+        *notify << "b " << (bs.getOuter().fill() ? "" : "not") << " filled\n";
         *notify << "rev = " << (rev ? "true" : "false") << "\n";
         
         cairo_set_line_width(cr, 1);
@@ -148,8 +152,8 @@ class BoolOps: public Toy {
         Toy::draw(cr, notify, width, height, save);
     }
     void key_hit(GdkEventKey *e) {
-        if(e->keyval == 'a') a = Region(a.boundary().reverse(), !a.fill());
-        if(e->keyval == 'b') b = Region(b.boundary().reverse(), !b.fill());
+        if(e->keyval == 'a') as = as.inverse();//a = Region(a.boundary().reverse(), !a.fill());
+        if(e->keyval == 'b') bs = bs.inverse();//b = Region(b.boundary().reverse(), !b.fill());
         if(e->keyval == 'r') rev = !rev;
         redraw();
     }
@@ -166,7 +170,7 @@ class BoolOps: public Toy {
         std::vector<Path> paths_a = read_svgd(path_a_name);
         std::vector<Path> paths_b = read_svgd(path_b_name);
         
-        paths_b[0] = paths_b[0] * Geom::Scale(Point(.75, .75));
+        //paths_b[0] = paths_b[0] * Geom::Scale(Point(.75, .75));
         rev = false;
         handles.push_back(Point(100,100));
               

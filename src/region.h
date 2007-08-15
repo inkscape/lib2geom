@@ -4,7 +4,6 @@
 #include "path.h"
 #include "path-intersection.h"
 
-
 //for path_direction:
 #include "sbasis-geometric.h"
 
@@ -29,9 +28,9 @@ class Region {
 
     Region() {}
     Region(Path const &p) : _boundary(p) { _fill = path_direction(p); }
-    Region(Path const &p, bool dir) : _fill(dir), _boundary(p) {}
+    Region(Path const &p, bool dir) : _boundary(p), _fill(dir) {}
     Region(Path const &p, boost::optional<Rect> const &b) : _boundary(p), box(b) { _fill = path_direction(p); }
-    Region(Path const &p, boost::optional<Rect> const &b, bool dir) : _fill(dir), _boundary(p), box(b) {}
+    Region(Path const &p, boost::optional<Rect> const &b, bool dir) : _boundary(p), box(b), _fill(dir) {}
     
     bool fill() const { return _fill; }    
     Path boundary() const { return _boundary; }
@@ -40,7 +39,8 @@ class Region {
         return *box;
     }
     bool contains(Point const &p) const {
-        return Geom::contains(boundary(), p);
+        bool temp = Geom::contains(boundary(), p);
+        return temp;
     }
     
     Region inverse() const { return Region(_boundary.reverse(), box, !_fill); }

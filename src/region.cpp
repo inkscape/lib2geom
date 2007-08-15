@@ -86,6 +86,8 @@ unsigned find_crossing(Crossings const &cr, Crossing x) {
  * -> read as "produces"
  * FH = Fill surrounding holes
  * HF = Holes surrounding fill
+ *
+ * The operation of this function isn't very complicated.  It just traverses the crossings, and uses the crossing direction to decide whether the next segment should be from A or from B.
  */
 Regions region_boolean( bool rev,
                       Region const & a, Region const & b,
@@ -163,7 +165,7 @@ Regions region_boolean( bool rev,
             }
         } while (on_a ? (!visited_a[i]) : (!visited_b[i]));
         
-        std::cout << rev << " c " << res.size() << "\n";
+        //std::cout << rev << " c " << res.size() << "\n";
 
         chunks.push_back(Region(res, rev));
         
@@ -178,7 +180,6 @@ Regions region_boolean( bool rev,
     if(rev && (!a._fill && !b._fill)) c_fill = false; else return chunks;
     if(chunks.size() > 1) {
         unsigned ix = outer_index(chunks);
-            std::cout << "cfill " << ix << " with " << c_fill << "\n";
         if(ix != chunks.size()) {
             Region temp = chunks[0];
             chunks[ix]._fill = c_fill;

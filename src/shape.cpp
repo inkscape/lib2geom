@@ -12,6 +12,11 @@ bool disjoint(Path const & a, Path const & b) {
     return !contains(a, b.initialPoint()) && !contains(b, a.initialPoint());
 }
 
+template<typename T>
+void append(T &a, T const &b) {
+    a.insert(a.end(), b.begin(), b.end());
+}
+
 Shape Shape::operator*(Matrix const &m) const {
     Regions hs;
     for(Regions::const_iterator i = inners.begin(); i != inners.end(); i++)
@@ -129,6 +134,7 @@ Shape shape_region_boolean(bool rev, Shape const & a, Region const & b) {
 
 std::vector<SweepObject> fake_cull(Regions const &a, Regions const &b) {
     std::vector<SweepObject> ret;
+    
     std::vector<unsigned> all;
     for(unsigned j = 0; j < b.size(); j++) {
         all.push_back(j);
@@ -158,74 +164,111 @@ Shape subtract_merge(Regions const & a, Regions const & x, Regions const & y) {
 }*/
 
 // Ro = Ao + Bo
-// Rh = (Ai - Bo) + (Bi - Ao) + (Ai x Bi)
+// Rh = (Ai - Bo) ++ (Bi - Ao) ++ (Ai x Bi)
 Shapes shape_union(Shape const & a, Shape const & b) {
-    //Ao + Ab
-    Regions outers = region_boolean(false, a.outer, b.outer);
-    
     Shapes ret;
-    if(outers.size() == 0) return ret;
+    
+    //Ao + Ab
+    Crossings cr = crossings(a.outer.boundary(), b.outer.boundary());
+    Regions outers;
+    if(cr.empty()) {
+        if(a.outer.contains(b.outer.boundary().initialPoint())) {
+            outers.push_back(a.outer);
+        } else if(b.outer.contains(a.outer.boundary().initialPoint())) {
+            outers.push_back(b.outer);
+        } else {
+            ret.push_back(a); ret.push_back(b);
+            return ret;
+        }
+    } else {
+        outers = region_boolean(false, a.outer, b.outer, cr);
+    }
     
     Regions holes(++outers.begin(), outers.end());
+    
     //Ai - Bo
-    for(unsigned i = 0; i < a.inners.size(); i++) {
-        Regions res = region_boolean(false, a.inners[i], b.outer);
-        holes.insert(holes.end(), res.begin(), res.end());
-    }
+    for(unsigned i = 0; i < a.inners.size(); i++)
+        append(holes, region_boolean(false, a.inners[i], b.outer));
     //Bi - Ao
-    for(unsigned i = 0; i < b.inners.size(); i++) {
-        Regions res = region_boolean(false, b.inners[i], a.outer);
-        holes.insert(holes.end(), res.begin(), res.end());
-    }
+    for(unsigned i = 0; i < b.inners.size(); i++)
+        append(holes, region_boolean(false, b.inners[i], a.outer));
     
     //Ai x Bi
     std::vector<SweepObject> es = fake_cull(a.inners, b.inners);
-    for(std::vector<SweepObject>::iterator i = es.begin(); i != es.end(); i++) {
-        for(std::vector<unsigned>::iterator j = i->intersects.begin(); j != i->intersects.end(); j++) {
-            Regions res = region_boolean(false, a.inners[i->ix], b.inners[*j]);
-            holes.insert(holes.end(), res.begin(), res.end());
-        }
-    }
+    for(std::vector<SweepObject>::iterator i = es.begin(); i != es.end(); i++)
+        for(std::vector<unsigned>::iterator j = i->intersects.begin(); j != i->intersects.end(); j++)
+            append(holes, region_boolean(false, a.inners[i->ix], b.inners[*j]));
     
     ret.push_back(Shape(outers.front(), holes));
     return ret;
 }
 
+void add_holes(Shapes &x, Regions const &h) {
+    for(Regions::const_iterator j = h.begin(); j != h.end(); j++) {
+        for(Shapes::iterator i = x.begin(); i != x.end(); i++) {
+            if(i->outer.contains(j->boundary().initialPoint())) {
+                i->inners.push_back(*j);
+                break;
+            }
+        }
+    }
+}
+
 //outers - inners
 Shapes do_holes(Regions const & outers, Regions const & inners) {
-    Shapes results;
+    //Shapes results;
     
     std::vector<bool> used(false, inners.size()); //marks 'used' inners
-    std::vector<SweepObject> es = fake_cull(outers, inners);
-    for(std::vector<SweepObject>::iterator i = es.begin(); i != es.end(); i++) {
+
+    Shapes results = shapes_from_regions(outers);
+    for(unsigned j = 0; j < inners.size(); j++) {
+        if(inners[j].fill()) {
+            results.push_back(Shape(inners[j]));
+            used[j] = true;
+            continue;
+        }
+        Shapes new_results;
+        bool changed = false;
+        for(unsigned k = 0; k < results.size(); k++) { 
+            Crossings cr = crossings(results[k].outer.boundary(), inners[j].boundary());
+            if(cr.empty()) {
+                new_results.push_back(results[k]);
+            } else {
+                append(new_results, shapes_from_regions(region_boolean(true, results[k].outer, inners[j], cr)));
+                changed = true;
+                used[j] = true;
+            }
+        }
+        if(changed) results = new_results;
+    }
+    //std::vector<SweepObject> es = fake_cull(outers, inners);
+    //for(unsigned ip = 0; ip < es.size(); ip++) {
+    /*for(unsigned i = 0; i < outers.size(); i++) { //es[ip].ix;
+        std::cout << "i2: " << i << "\n";
         Shapes res;
-        res.push_back(Shape(outers[i->ix]));
-        for(std::vector<unsigned>::iterator j = i->intersects.begin(); j != i->intersects.end(); j++) {
-            if(!used[*j]) {
-                Shapes new_res;
-                bool changed = false;
-                for(unsigned k = 0; k < res.size(); k++) {
-                    Crossings cr = crossings(res[k].outer.boundary(), inners[*j].boundary());
-                    if(cr.empty()) {
-                        if(res[k].outer.contains(inners[*j].boundary().initialPoint())) {
-                            //Shape neu = res[k];
-                            //neu.inners.push_back(inners[*j]);
-                            //new_res.push_back(neu);
-                            //changed = true;
-                            //used[*j] = true;
-                        }
-                    } else {
-                        Shapes s = shapes_from_regions(region_boolean(true, res[k].outer, inners[*j], cr));
-                        new_res.insert(new_res.end(), s.begin(), s.end());
-                        changed = true;
-                        //the inner might intersect other things, so it's not 'used'
-                    }
+        res.push_back(Shape(outers[i]));
+        //for(unsigned jp = 0; jp < es[ip].intersects.size(); jp++) {
+        for(unsigned j = 0; j < inners.size(); j++) { //es[ip].intersects[jp];
+            Shapes new_res;
+            bool changed = false;
+            for(unsigned k = 0; k < res.size(); k++) {
+                Crossings cr = crossings(res[k].outer.boundary(), inners[j].boundary());
+                if(cr.empty()) {
+                    //new_res.push_back(res[k]);
+                } else {
+                    Shapes s = shapes_from_regions(region_boolean(true, res[k].outer, inners[j], cr));
+                    new_res.insert(new_res.end(), s.begin(), s.end());
+                    changed = true;
+                    used[j] = true;
                 }
                 if(changed) res = new_res;
+                if(res.empty()) break;
             }
         }
         results.insert(results.end(), res.begin(), res.end());
-    }
+    }*/
+
+    add_holes(results, inners);
     return results;
 }
 
@@ -242,6 +285,69 @@ Shapes shape_subtract(Shape const & a, Shape const & b) {
     
     //outers - Ai
     return do_holes(outers, a.inners);
+}
+
+Shapes shape_intersect(Shape const & a, Shape const & b) {
+    Regions outers = region_boolean(true, a.outer, b.outer);
+    
+    //Ah + Bh
+    std::vector<bool> used(false, b.inners.size());
+    Regions acc;
+    std::vector<SweepObject> es = fake_cull(a.inners, b.inners);
+    //TODO: one possible optimization might be to use the bbox crossing list to narrow down possible acc matches
+    for(std::vector<SweepObject>::iterator i = es.begin(); i != es.end(); i++) {
+        Regions changed;         //new or changed this iteration
+        Regions leftovers;       //not changed this iteration
+        changed.push_back(a.inners[i->ix]);
+        
+        //add this inner to already accumulated inners
+        for(unsigned j = 0; j < acc.size(); j++) {
+            bool used_acc = false;
+            Regions new_changed;
+            for(unsigned k = 0; k < changed.size(); k++) {
+                Crossings cr = crossings(changed[k].boundary(), acc[j].boundary());
+                if(!cr.empty()) {
+                    Regions res = region_boolean(true, changed[k], acc[j], cr);
+                    new_changed.insert(new_changed.end(), res.begin(), res.end());
+                    used_acc = true;
+                } else {
+                    new_changed.push_back(changed[k]);
+                }
+            }
+            if(used_acc) changed = new_changed; else leftovers.push_back(acc[j]);
+        }
+        
+        //Add b inners which are so-far unused.
+        //This is similar to the above loop, though must be done seperately to use the cull data.
+        for(std::vector<unsigned>::iterator j = i->intersects.begin(); j != i->intersects.end(); j++) {
+            if(!used[*j]) {
+                Regions new_changed;
+                for(unsigned k = 0; k < changed.size(); k++) {
+                    Crossings cr = crossings(changed[k].boundary(), b.inners[*j].boundary());
+                    if(!cr.empty()) {
+                        Regions res = region_boolean(true, changed[k], b.inners[*j], cr);
+                        new_changed.insert(new_changed.end(), res.begin(), res.end());
+                        used[*j] = true;
+                        continue;
+                    }
+                    new_changed.push_back(changed[k]);
+                }
+                changed = new_changed;
+            }
+        }
+        leftovers.insert(leftovers.end(), changed.begin(), changed.end());
+        acc = leftovers;
+    }
+    
+    //outers - subs
+    //outers.insert(outers.end(), acc.begin(), acc.end());
+    return do_holes(outers, acc); //shapes_from_regions(outers);
+}
+
+Shapes shape_exclusion(Shape const & a, Shape const & b) {
+    Shapes results = shape_subtract(a, b);
+    append(results, shape_subtract(b, a));
+    return results;
 }
 
 /*
@@ -342,11 +448,7 @@ Shapes shape_subtract(Shape const & a, Shape const & b) {
     }
     
     return ret;
-}*/
-
-
-
-/*    
+} 
 
     bool on_holes = 
     for(Paths::iterator i = a.fills.begin(); ; ++i) {
@@ -361,8 +463,7 @@ Shapes shape_subtract(Shape const & a, Shape const & b) {
             } 
         }
     }
-*/
-/*
+    
 Shape regions_boolean(bool rev, Regions const &a, Regions const &b) {
     std::vector<SweepObject> es = fake_cull(a, b);
     
@@ -387,8 +488,6 @@ Shape shape_union(Shape const & a, Shape const & b) {
         }
     }
 }
-*/
-/*
     //Get sorted sets of crossings
     Crossings cr = crossings(a.outer, b.outer);
     
@@ -453,137 +552,10 @@ Shape shape_union(Shape const & a, Shape const & b) {
     return returns;
 }
 
-void add_holes(Shapes &x, Paths const &h) {
-    for(Paths::const_iterator j = h.begin(); j != h.end(); j++) {
-        for(Shapes::iterator i = x.begin(); i != x.end(); i++) {
-            if(contains(i->outer, j->initialPoint())) {
-                i->holes.push_back(*j);
-                break;
-            }
-        }
-    }
-}
-*/
-/*
 void reverse_crossings_direction(Crossings &cr) {
     for(unsigned i = 0; i < cr.size(); i++) {
         cr[i].dir = !cr[i].dir;
     }
-}
-
-Shapes shape_subtract(Shape const & ac, Shape const & b) {
-    //TODO: use crosses predicate
-    Crossings cr = crossings(ac.outer, b.outer);
-    Shapes returns;
-    bool flag_inside = false;
-    if(cr.empty()) {
-        if(contains(b.outer, ac.outer.initialPoint())) {
-            // the subtractor contains everything - need to continue though, to evaluate the holes.
-            flag_inside = false;
-        } else if(contains(ac.outer, b.outer.initialPoint())) {
-            // the subtractor is contained within
-            flag_inside = true;
-        } else {
-            // disjoint
-            returns.push_back(ac);
-            return returns;
-        }
-    }
-    Shape a = ac;
-    
-    //subtractor accumulator
-    Shape sub = b;
-
-    //First, we deal with the outer-path - add intersecting holes in a to it 
-    Paths remains;  //holes which intersected - needed later to remove from islands (holes in subtractor)
-    for(Eraser<Paths> i(&a.holes); !i.ended(); ++i) {std::cout << "eins\n";
-        Crossings hcr = crossings(sub.outer, *i);
-        //TODO: use crosses predicate
-        if(!hcr.empty()) {
-            //Paths old_holes = sub.holes;
-            sub = path_union_reverse(sub.outer, *i).front();
-            
-            remains.push_back(*i);
-            i.erase();
-        } else if(contains(sub.outer, i->initialPoint())) {
-            remains.push_back(*i);
-            i.erase();
-        }
-    }
-
-    //Next, intersect the subtractor holes with a's outer path, and subtract a's holes from the result
-    //This yields the 'islands'
-    for(Paths::iterator i = sub.holes.begin(); i != sub.holes.end(); i++) {
-        std::cout << "\n*";
-        Shapes new_islands = path_boolean(INTERSECT, a.outer, i->reverse());
-        for(Paths::iterator hole = remains.begin(); hole != remains.end(); hole++) {  //iterate a's holes that are inside/intersected by the subtractor
-            std::cout << "\n *";
-            for(Replacer<Shapes> isle(&new_islands); !isle.ended(); ++isle) { // iterate the islands
-                std::cout << "\n  *";
-                //since the holes are disjoint, we don't need to do a recursive shape_subtract
-                Crossings hcr = crossings(isle->outer, *hole);
-                //TODO: use crosses predicate
-                if(!hcr.empty()) {
-                    Shapes split = path_subtract(isle->outer, *hole, hcr);
-                    add_holes(split, isle->holes);
-                    isle.replace(split);
-                } else if(contains(isle->outer, hole->initialPoint())) {
-                    Shape x = *isle;
-                    x.holes.push_back(*hole);
-                    isle.replace(x);
-                } else if(contains(*hole, isle->outer.initialPoint())) {
-                    isle.erase();
-                }
-            }
-        }
-        returns.insert(returns.end(), new_islands.begin(), new_islands.end());
-    }
-    
-    if(flag_inside) {
-        a.holes.push_back(sub.outer.reverse());
-        returns.push_back(a);
-    } else {
-        Shapes outers = path_subtract(a.outer, sub.outer);
-        add_holes(outers, a.holes);
-        
-        returns.insert(returns.end(), outers.begin(), outers.end());
-    }
-    
-    return returns;
-}
-
-Shapes shape_intersect(Shape const & a, Shape const & b) {
-    Shapes ret;
-
-    //Get sorted sets of crossings
-    Crossings cr = crossings(a.outer, b.outer);
-    if(cr.empty() && disjoint(a.outer, b.outer)) { return ret; }
-    
-    ret = path_boolean(INTERSECT, a.outer, b.outer, cr);
-    
-    //Copies of the holes, so that some may be removed / replaced by portions
-    Paths holes[] = { a.holes, b.holes };
-    
-    Shapes returns;
-    for(Shapes::iterator inter = ret.begin(); inter != ret.end(); inter++) {
-        //TODO: use replacement within list
-        Shapes cur;
-        cur.push_back(*inter);
-        for(unsigned p = 0; p < 2; p++) {
-            for(Paths::iterator i = holes[p].begin(); i != holes[p].end(); i++) {
-                Shape s;
-                s.outer = i->reverse();
-                Shapes rep;
-                for(Shapes::iterator j = cur.begin(); j != cur.end(); j++) {
-                    Shapes ps = shape_subtract(*j, s);
-                    rep.insert(rep.end(), ps.begin(), ps.end());
-                }
-                cur = rep;
-            }
-        } 
-        returns.insert(returns.end(), cur.begin(), cur.end());
-    }
-    return returns;
 }
 
 Shape path_boolean_reverse(bool btype, Region const & a, Region const & b, Crossings const &cr) {

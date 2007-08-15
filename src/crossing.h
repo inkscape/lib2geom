@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <set>
-#include <iostream>
+
 namespace Geom {
 
 struct Crossing {

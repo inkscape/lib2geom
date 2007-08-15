@@ -34,14 +34,14 @@ int winding(Path const &path, Point p) {
         // winding determined by position of endpoints
         if(final_to_ray != EQUAL_TO) {
             wind += int(c); // GT = counter-clockwise = 1; LT = clockwise = -1; EQ = not-included = 0
-            std::cout << int(c) << " ";
+            //std::cout << int(c) << " ";
             goto cont;
         }
     } else {
         //inside bbox, use custom per-curve winding thingie
         int delt = iter->winding(p);
         wind += delt;
-        std::cout << "n" << delt << " ";
+        //std::cout << "n" << delt << " ";
     }
     //Handling the special case of an endpoint on the ray:
     if(final[Y] == y) {
@@ -184,7 +184,7 @@ void pair_intersect(std::vector<double> &Asects,
             if(linear_pair_intersect(A, Al, Ah, 
                                      B, Bl, Bh, 
                                      tA, tB)) {
-                std::cout << "intersects " << tA << ", " << tB << "\n";
+                //std::cout << "intersects " << tA << ", " << tB << "\n";
                 Asects.push_back(tA);
                 Bsects.push_back(tB);
             }
