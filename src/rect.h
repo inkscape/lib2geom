@@ -28,7 +28,7 @@
  *
  */
 
- /* Authors of original rect class:
+/* Authors of original rect class:
  *   Lauris Kaplinski <lauris@kaplinski.com>
  *   Nathan Hurst <njh@mail.csse.monash.edu.au>
  *   bulia byak <buliabyak@users.sf.net>
@@ -52,11 +52,11 @@ Rect unify(const Rect &, const Rect &);
 
 template<>
 class D2<Interval> {
-  private:
+private:
     Interval f[2];
     D2<Interval>();// { f[X] = f[Y] = Interval(0, 0); }
 
-  public:
+public:
     D2<Interval>(Interval const &a, Interval const &b) {
         f[X] = a;
         f[Y] = b;
@@ -73,14 +73,15 @@ class D2<Interval> {
     inline Point min() const { return Point(f[X].min(), f[Y].min()); }
     inline Point max() const { return Point(f[X].max(), f[Y].max()); }
 
-    /** returns the four corners of the rectangle in order
+    /** returns the four corners of the rectangle in positive order
      *  (clockwise if +Y is up, anticlockwise if +Y is down) */
     Point corner(unsigned i) const {
-      switch(i % 4) {
-        case 0: return Point(f[X].min(), f[Y].min());
-        case 1: return Point(f[X].max(), f[Y].min());
-        case 2: return Point(f[X].max(), f[Y].max());        case 3: return Point(f[X].min(), f[Y].max());
-      }
+        switch(i % 4) {
+            case 0: return Point(f[X].min(), f[Y].min());
+            case 1: return Point(f[X].max(), f[Y].min());
+            case 2: return Point(f[X].max(), f[Y].max());
+            case 3: return Point(f[X].min(), f[Y].max());
+        }
     }
 
     inline double top() const { return f[Y].min(); }
@@ -98,21 +99,39 @@ class D2<Interval> {
     inline double area() const { return f[X].extent() * f[Y].extent(); }
     inline double maxExtent() const { return std::max(f[X].extent(), f[Y].extent()); }
 
-    inline bool isEmpty()                 const { return f[X].isEmpty()        && f[Y].isEmpty(); }
-    inline bool intersects(Rect const &r) const { return f[X].intersects(r[X]) && f[Y].intersects(r[Y]); }
-    inline bool contains(Rect const &r)   const { return f[X].contains(r[X])   && f[Y].contains(r[Y]); }
-    inline bool contains(Point const &p)  const { return f[X].contains(p[X])   && f[Y].contains(p[Y]); }
+    inline bool isEmpty()                 const { 
+	return f[X].isEmpty()        && f[Y].isEmpty(); 
+    }
+    inline bool intersects(Rect const &r) const { 
+	return f[X].intersects(r[X]) && f[Y].intersects(r[Y]); 
+    }
+    inline bool contains(Rect const &r)   const { 
+	return f[X].contains(r[X])   && f[Y].contains(r[Y]); 
+    }
+    inline bool contains(Point const &p)  const {
+	return f[X].contains(p[X])   && f[Y].contains(p[Y]);
+    }
 
-    inline void expandTo(Point p)        { f[X].extendTo(p[X]);  f[Y].extendTo(p[Y]); }
-    inline void unionWith(Rect const &b) { f[X].unionWith(b[X]); f[Y].unionWith(b[Y]); }
+    inline void expandTo(Point p)        { 
+	f[X].extendTo(p[X]);  f[Y].extendTo(p[Y]); 
+    }
+    inline void unionWith(Rect const &b) { 
+	f[X].unionWith(b[X]); f[Y].unionWith(b[Y]); 
+    }
 
-    inline void expandBy(double amnt)    { f[X].expandBy(amnt);  f[Y].expandBy(amnt); }
-    inline void expandBy(Point const p)  { f[X].expandBy(p[X]);  f[Y].expandBy(p[Y]); }
+    inline void expandBy(double amnt)    { 
+	f[X].expandBy(amnt);  f[Y].expandBy(amnt); 
+    }
+    inline void expandBy(Point const p)  { 
+	f[X].expandBy(p[X]);  f[Y].expandBy(p[Y]); 
+    }
 
     /** Transforms the rect by m. Note that it gives correct results only for scales and translates,
         in the case of rotations, the area of the rect will grow as it cannot rotate. */
-    inline Rect operator*(Matrix const m) const { return unify(Rect(corner(0) * m, corner(2) * m),
-                                                               Rect(corner(1) * m, corner(3) * m)); }
+    inline Rect operator*(Matrix const m) const { 
+        return unify(Rect(corner(0) * m, corner(2) * m),
+                     Rect(corner(1) * m, corner(3) * m));
+    }
 };
 
 inline Rect unify(Rect const & a, Rect const & b) {
@@ -129,3 +148,13 @@ inline boost::optional<Rect> intersect(Rect const & a, Rect const & b) {
 
 #endif //_2GEOM_RECT
 #endif //_2GEOM_D2
+/*
+  Local Variables:
+  mode:c++
+  c-file-style:"stroustrup"
+  c-file-offsets:((innamespace . 0)(inline-open . 0)(case-label . +))
+  indent-tabs-mode:nil
+  fill-column:99
+  End:
+*/
+// vim: filetype=cpp:expandtab:shiftwidth=4:tabstop=8:softtabstop=4:encoding=utf-8:textwidth=99 :

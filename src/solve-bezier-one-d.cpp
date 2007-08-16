@@ -35,7 +35,7 @@ const double BEPSILON = ldexp(1.0,-MAXDEPTH-1); /*Flatness control value */
  *    of the roots in the open interval (0, 1).  Return the number of roots found.
  */
 void
-find_bernstein_roots(double *w, /* The control points  */
+find_bernstein_roots(double const *w, /* The control points  */
                      unsigned degree,	/* The degree of the polynomial */
                      std::vector<double> &solutions, /* RETURN candidate t-values */
                      unsigned depth,	/* The depth of the recursion */

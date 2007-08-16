@@ -178,9 +178,11 @@ public:
   }
 
   std::vector<double> roots(double v, Dim2 d) const {
-        std::vector<double> levels;
-        levels.push_back(v);
-        return Geom::multi_roots(inner[d].toSBasis() - v, levels, 0., 0.5, 0., 1).front();
+      return inner[d].roots();
+      /*std::vector<double> levels;
+      levels.push_back(v);
+      return Geom::multi_roots(inner[d].toSBasis() - v, levels, 
+      0., 0.5, 0., 1).front();*/
   }
   
   void setPoints(std::vector<Point> ps) {
