@@ -248,9 +248,6 @@ Shapes do_holes(Regions const & outers, Regions const & inners) {
         (void)0;
     }
     
-    std::cout << extra_fills.size() << "n";
-    
-    
     Regions result_outers;
 
     //subtract the crossers

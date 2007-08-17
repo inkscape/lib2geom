@@ -147,8 +147,7 @@ class BoolOps: public Toy {
             s = shape_exclude(as, bst);
             break;
         }
-        cairo_shapes(cr, s);
-        //cairo_path(cr, desanitize(s));
+        if(mode<3) cairo_shapes(cr, s); else cairo_path(cr, desanitize(s));
         cairo_fill(cr);
         
         //used to check if it's right
