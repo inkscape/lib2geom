@@ -16,9 +16,10 @@
 using namespace Geom;
 
 void cairo_region(cairo_t *cr, Region const &r) {
-    if(r.fill()) cairo_set_source_rgb(cr, 0., 0., 0.); else cairo_set_source_rgb(cr, 1., 1., 1.);
+    cairo_set_source_rgb(cr, 0., 0., 0.);
+    if(r.fill()) cairo_set_dash(cr, new double, 0, 0); else cairo_set_dash(cr, new double(5.), 1, 0);
     cairo_path(cr, r.boundary());
-    cairo_fill(cr);
+    cairo_stroke(cr);
 }
 
 void cairo_regions(cairo_t *cr, Regions const &p) {

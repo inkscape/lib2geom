@@ -219,34 +219,168 @@ void add_holes(Shapes &x, Regions const &h) {
 
 //outers - inners
 Shapes do_holes(Regions const & outers, Regions const & inners) {
-    //Shapes results;
+    //classifies the holes
+    Regions extra_fills, crossers, non_crossers;
     
-    std::vector<bool> used(false, inners.size()); //marks 'used' inners
-
-    Shapes results = shapes_from_regions(outers);
-    for(unsigned j = 0; j < inners.size(); j++) {
-        if(inners[j].fill()) {
-            results.push_back(Shape(inners[j]));
-            used[j] = true;
+    //info on crossers:
+    std::vector<Crossings> crs;
+    std::vector<std::vector<unsigned> > ixs; //relates outer indices to inner intersectors
+    for(unsigned j = 0; j < outers.size(); j++) ixs.push_back(std::vector<unsigned>());
+    
+    unsigned crix = 0;
+    for(unsigned i = 0; i < inners.size(); i++) {
+        if(inners[i].fill()) {
+            extra_fills.push_back(inners[i]);
             continue;
         }
-        Shapes new_results;
-        bool changed = false;
-        for(unsigned k = 0; k < results.size(); k++) { 
+        for(unsigned j = 0; j < outers.size(); j++) {
+            Crossings cr = crossings(outers[j].boundary(), inners[i].boundary());
+            if(!cr.empty()) {
+                crossers.push_back(inners[i]);
+                crs.push_back(cr);
+                ixs[j].push_back(crix);
+                crix++;
+                goto skip;
+            } 
+        }
+        non_crossers.push_back(inners[i]);
+        skip:
+        (void)0;
+    }
+    
+    std::cout << extra_fills.size() << "n";
+    
+    
+    Regions result_outers;
+
+    //subtract the crossers
+    for(unsigned i = 0; i < outers.size(); i++) {
+        if(ixs[i].size() > 1) {
+            Regions repl;
+            append(repl, region_boolean(true, outers[i], crossers[ixs[i][0]], crs[ixs[i][0]]));
+            for(unsigned jp = 1; jp < ixs[i].size(); jp++) {
+                unsigned j = ixs[i][jp];
+                Regions new_repl;
+                for(unsigned k = 0; k < repl.size(); k++) {
+                    append(new_repl, region_boolean(true, repl[k], crossers[j]));
+                }
+                repl = new_repl;
+            }
+            append(result_outers, repl);
+        }
+    }
+
+    Shapes results = shapes_from_regions(result_outers);
+    
+    //distribute the non-crossers
+    for(unsigned j = 0; j < non_crossers.size(); j++) {
+        for(Shapes::iterator i = results.begin(); i != results.end(); i++) {
+            if(i->outer.contains(non_crossers[j].boundary().initialPoint())) {
+                i->inners.push_back(non_crossers[j]);
+                break;
+            }
+        }
+    }
+    
+    //add the extra fills
+    for(unsigned i = 0; i < extra_fills.size(); i++) {
+        results.push_back(Shape(extra_fills[i]));
+    }
+    
+    return results;
+
+/*
+    Shapes results = shapes_from_regions(outers);
+        for(unsigned j = 0; j < results.size(); j++) {
+            Shapes new_entry;
+            bool changed = false;
+            for(unsigned k = 0; k < results[j].size(); k++) {
+                Crossings cr = crossings(results[j][k].outer.boundary(), inners[i].boundary());
+                if(cr.empty()) {
+                    if(results[j][k].outer.contains(inners[i].boundary().initialPoint())) {
+                        results[j][k].inners.push_back(inners[i]);
+                        goto next_inner;
+                    }
+                    new_entry.push_back(results[j][k]);
+                } else {
+                    Shapes res = shapes_from_regions(region_boolean(true, results[j][k].outer, inners[j], cr));
+                    for(unsigned l = 0; l < results[j][k].inners.size(); l++) {
+                        for(unsigned m = 0; m < res.size(); m++) {
+                            if(res[m].outer.contains(results[j][k].inners[l].boundary().initialPoint())) {
+                                res[m].inners.push_back(results[j][k].inners[l]);
+                                break;
+                            }
+                        }
+                    }
+                    append(new_entry, res);
+                    changed = true;
+                }
+            }
+            if(changed) results[j] = new_entry;
+        }
+        next_inner:
+        (void)0;
+    }
+    
+    //concatenate
+    Shapes new_results;
+    
+    for(unsigned i = 0; i < results.size(); i++)
+        append(new_results, results[i]);
+    
+    append(new_results, extra_fills); 
+    return new_results;
+    
+    for(unsigned i = 0; i < inners.size(); i++) {
+        for(unsigned j = 0; j < results.size(); j++) {
+            Shapes res = shapes_from_regions(region_boolean(true, results[j].outer, inners[i]));
+            if(res.size() > 0) {
+                for(unsigned l = 0; l < results[j].inners.size(); l++) {
+                    for(unsigned k = 1; k < res.size(); k++) {
+                        if(res[k].outer.contains(results[j].inners[l].boundary().initialPoint())) {
+                            res[k].inners.push_back(results[j].inners[l]);
+                        }
+                    }
+                }
+            }
+            append(new_results, res);
+        }
+    }*/
+
+    /*
+    Shapes new_results;
+    for(unsigned k = 0; k < results.size(); k++) {
+        std::vector<bool> used(false, inners.size()); //marks 'used' inners
+        Shapes repl;
+        for(unsigned j = 0; j < inners2.size(); j++) {
             Crossings cr = crossings(results[k].outer.boundary(), inners[j].boundary());
             if(cr.empty()) {
-                new_results.push_back(results[k]);
+                if(results[k].outer.contains(inners[j].boundary().initialPoint())) {
+                    results[k].inners.push_back(inners[j]);
+                    used[j] = true;
+                } else {
+                    new_results.push_back(results[k]);
+                }
             } else {
                 append(new_results, shapes_from_regions(region_boolean(true, results[k].outer, inners[j], cr)));
                 changed = true;
-                used[j] = true;
             }
         }
         if(changed) results = new_results;
     }
+    for(unsigned j = 0; j < inners.size(); j++) {
+        if(used[j]) continue;
+        for(Shapes::iterator i = results.begin(); i != results.end(); i++) {
+            if(i->outer.contains(inners[j].boundary().initialPoint())) {
+                i->inners.push_back(inners[j]);
+                break;
+            }
+        }
+    }
+    
     //std::vector<SweepObject> es = fake_cull(outers, inners);
     //for(unsigned ip = 0; ip < es.size(); ip++) {
-    /*for(unsigned i = 0; i < outers.size(); i++) { //es[ip].ix;
+    for(unsigned i = 0; i < outers.size(); i++) { //es[ip].ix;
         std::cout << "i2: " << i << "\n";
         Shapes res;
         res.push_back(Shape(outers[i]));
@@ -270,19 +404,16 @@ Shapes do_holes(Regions const & outers, Regions const & inners) {
         }
         results.insert(results.end(), res.begin(), res.end());
     }*/
-
-    add_holes(results, inners);
-    return results;
 }
 
 Shapes shape_subtract(Shape const & a, Shape const & b) {
-    Shape bi = b.inverse();
+    Shape br = b.inverse();
     //Ao - Bo
-    Regions outers = region_boolean(true, a.outer, bi.outer);
+    Regions outers = region_boolean(true, a.outer, br.outer);
     
     //Ao x Bi
-    for(unsigned i = 0; i < bi.inners.size(); i++) {
-        Regions res = region_boolean(true, a.outer, bi.inners[i]);
+    for(unsigned i = 0; i < br.inners.size(); i++) {
+        Regions res = region_boolean(true, a.outer, br.inners[i]);
         outers.insert(outers.end(), res.begin(), res.end());
     }
     

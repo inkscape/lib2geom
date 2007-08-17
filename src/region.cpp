@@ -182,13 +182,11 @@ Regions region_boolean( bool rev,
         unsigned ix = outer_index(chunks);
         if(ix != chunks.size() && ix != 0) {
             Region temp = chunks[0];
-            chunks[ix]._fill = c_fill;
             chunks[0] = chunks[ix];
             chunks[ix] = temp;
         }
-    } else if(chunks.size() == 1) {
-        chunks[0]._fill = c_fill;
     }
+    if(chunks.size() > 0) chunks[0]._fill = c_fill;
     
     return chunks;
 }
