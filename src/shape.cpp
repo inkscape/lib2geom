@@ -211,11 +211,10 @@ Shapes do_holes(Regions const & outers, Regions const & inners) {
         if(ixs[i].size() > 1) {
             Regions repl;
             append(repl, region_boolean(true, outers[i], crossers[ixs[i][0]], crs[ixs[i][0]]));
-            for(unsigned jp = 1; jp < ixs[i].size(); jp++) {
-                unsigned j = ixs[i][jp];
+            for(unsigned j = 1; j < ixs[i].size(); j++) {
                 Regions new_repl;
                 for(unsigned k = 0; k < repl.size(); k++) {
-                    append(new_repl, region_boolean(true, repl[k], crossers[j]));
+                    append(new_repl, region_boolean(true, repl[k], crossers[ixs[i][j]]));
                 }
                 repl = new_repl;
             }
@@ -247,8 +246,10 @@ Shapes do_holes(Regions const & outers, Regions const & inners) {
     return results;
 }
 
+//R = (Ao - Bo) - (Ao x Bi)
 Shapes shape_subtract(Shape const & a, Shape const & b) {
     Shape br = b.inverse();
+    
     //Ao - Bo
     Regions outers = region_boolean(true, a.outer, br.outer);
     
@@ -258,67 +259,28 @@ Shapes shape_subtract(Shape const & a, Shape const & b) {
         outers.insert(outers.end(), res.begin(), res.end());
     }
     
-    //outers - Ai
+    //- Ai
     return do_holes(outers, a.inners);
 }
 
-Shapes shape_intersect(Shape const & a, Shape const & b) {
-    Regions outers = region_boolean(true, a.outer, b.outer);
-    
-    //Ah + Bh
-    std::vector<bool> used(false, b.inners.size());
-    Regions acc;
-    std::vector<SweepObject> es = fake_cull(a.inners, b.inners);
-    //TODO: one possible optimization might be to use the bbox crossing list to narrow down possible acc matches
-    for(std::vector<SweepObject>::iterator i = es.begin(); i != es.end(); i++) {
-        Regions changed;         //new or changed this iteration
-        Regions leftovers;       //not changed this iteration
-        changed.push_back(a.inners[i->ix]);
-        
-        //add this inner to already accumulated inners
-        for(unsigned j = 0; j < acc.size(); j++) {
-            bool used_acc = false;
-            Regions new_changed;
-            for(unsigned k = 0; k < changed.size(); k++) {
-                Crossings cr = crossings(changed[k].boundary(), acc[j].boundary());
-                if(!cr.empty()) {
-                    Regions res = region_boolean(true, changed[k], acc[j], cr);
-                    new_changed.insert(new_changed.end(), res.begin(), res.end());
-                    used_acc = true;
-                } else {
-                    new_changed.push_back(changed[k]);
-                }
-            }
-            if(used_acc) changed = new_changed; else leftovers.push_back(acc[j]);
-        }
-        
-        //Add b inners which are so-far unused.
-        //This is similar to the above loop, though must be done seperately to use the cull data.
-        for(std::vector<unsigned>::iterator j = i->intersects.begin(); j != i->intersects.end(); j++) {
-            if(!used[*j]) {
-                Regions new_changed;
-                for(unsigned k = 0; k < changed.size(); k++) {
-                    Crossings cr = crossings(changed[k].boundary(), b.inners[*j].boundary());
-                    if(!cr.empty()) {
-                        Regions res = region_boolean(true, changed[k], b.inners[*j], cr);
-                        new_changed.insert(new_changed.end(), res.begin(), res.end());
-                        used[*j] = true;
-                        continue;
-                    }
-                    new_changed.push_back(changed[k]);
-                }
-                changed = new_changed;
-            }
-        }
-        leftovers.insert(leftovers.end(), changed.begin(), changed.end());
-        acc = leftovers;
+Regions merge_holes(Regions const & a, Regions const & b) {
+    Shapes inners = do_holes(a, b);
+    Regions as_regions;
+    for(unsigned i = 0; i < inners.size(); i++) {
+        as_regions.push_back(inners[i].getOuter());
     }
-    
-    //outers - subs
-    //outers.insert(outers.end(), acc.begin(), acc.end());
-    return do_holes(outers, acc); //shapes_from_regions(outers);
 }
 
+//R = (Ao x Bo) - (Ai + Bi)
+Shapes shape_intersect(Shape const & a, Shape const & b) {
+    //Ao x Bo
+    Regions outers = region_boolean(true, a.outer, b.outer);
+
+    //- (Ai + Bi)
+    return do_holes(outers, merge_holes(a.inners, b.inners));
+}
+
+//R = (A-B) ++ (B-A) or R = (A+B) - (AxB)
 Shapes shape_exclude(Shape const & a, Shape const & b) {
     Shapes results = shape_subtract(a, b);
     append(results, shape_subtract(b, a));

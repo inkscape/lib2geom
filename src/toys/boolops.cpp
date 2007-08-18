@@ -211,8 +211,8 @@ class BoolOps: public Toy {
         //bs = Shape(bs.getOuter(), holes);
         Geom::Matrix m = Geom::Translate(Point(300, 300));
         as = cleanup(paths_a) * Geom::Translate(Point(300, 300));
-        bs = cleanup(paths_b); //path_subtract(path_b[0] * Geom::Translate(-centre), path_b[0] * Geom::Translate(-centre) * Scale(.5, .5)).front();
-        
+        bs = cleanup(paths_b);
+        //bs = shape_subtract(bs, bs * Scale(.5, .5)).front();
         a = as.getOuter();
         b = bs.getOuter();
     }
