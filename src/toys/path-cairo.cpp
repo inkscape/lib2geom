@@ -26,8 +26,7 @@ void cairo_curve(cairo_t *cr, Curve const& c) {
 //    }
     else {
         //this case handles sbasis as well as all other curve types
-        Path sbasis_path;
-        path_from_sbasis(sbasis_path, c.toSBasis(), 0.1);
+        Path sbasis_path = path_from_sbasis(c.toSBasis(), 0.1);
 
         //recurse to convert the new path resulting from the sbasis to svgd
         for(Path::iterator iter = sbasis_path.begin(); iter != sbasis_path.end(); ++iter) {
@@ -104,9 +103,7 @@ void cairo_PathSet_handles(cairo_t *cr, PathSet const &p) {
 #endif
 
 void cairo_md_sb(cairo_t *cr, D2<SBasis> const &B) {
-    Path pb;
-    path_from_sbasis(pb, B, 0.1);
-    cairo_path(cr, pb);
+    cairo_path(cr, path_from_sbasis(B, 0.1));
 }
 
 void cairo_2dsb2d(cairo_t* cr, D2<SBasis2d> const &sb2, Point dir, double width) {
