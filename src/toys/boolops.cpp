@@ -17,7 +17,7 @@ using namespace Geom;
 
 double rand_d() { return rand() % 100 / 100.0; }
 void cairo_region(cairo_t *cr, Region const &r) {
-    cairo_set_source_rgba(cr, rand_d(), rand_d(), rand_d(), .75);
+    cairo_set_source_rgba(cr, 0, 0, 0, 1); //rand_d(), rand_d(), rand_d(), .75);
     double d = 5.;
     if(!r.fill()) cairo_set_dash(cr, &d, 1, 0);
     cairo_path(cr, r.boundary());
@@ -138,10 +138,11 @@ class BoolOps: public Toy {
         //Shapes suni = shape_subtract(as, bst); //path_union(a, b);
         //cairo_shapes(cr, suni);
         
-
-        
-        Regions x, y, insies = as.inverse().getInners();
-        x.push_back(a.inverse()); x.insert(x.end(), insies.begin(), insies.end()); y.push_back(bt.inverse());
+        Regions x, y, insies = as.getInners();
+        x.push_back(a);
+        x.insert(x.end(), insies.begin(), insies.end());
+        y.push_back(bt.inverse());
+        y.push_back(b * (Geom::Scale(.5, .5) * t));
         mark_crossings(cr, x, y);
         Regions r = regions_boolean(true, x, y);
         cairo_regions(cr, r);
