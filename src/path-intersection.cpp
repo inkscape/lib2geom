@@ -3,6 +3,7 @@
 #include "basic-intersection.h"
 #include "bezier-to-sbasis.h"
 #include "ord.h"
+#include "sweep.h"
 
 namespace Geom {
 
@@ -204,8 +205,6 @@ void pair_intersect(std::vector<double> &Asects,
 Crossings to_crossings(std::vector<std::pair<double, double> > ts, Curve const &a, Curve const &b) { 
     Crossings ret;
     for(unsigned i = 0; i < ts.size(); i++) {
-        /* If the absolute value of the winding is less on the increased t,
-           then the dir is outside (true) */
         double at = ts[i].first, bt = ts[i].second;
         ret.push_back(Crossing(at, bt, cross(a.pointAt(at) - a.pointAt(at + .01),
                                              b.pointAt(bt) - b.pointAt(bt + .01)) > 0));
@@ -237,11 +236,31 @@ std::vector<Rect> curve_bounds(Path const &x) {
 Crossings crossings(Path const &a, Path const &b) {
     Crossings ret;
 
-    std::vector<Rect> bounds_a = curve_bounds(a), bounds_b = curve_bounds(b);
-    for(unsigned i = 0; i < bounds_a.size(); i++) {
-        for(unsigned j = 0; j < bounds_b.size(); j++) {
-            if(bounds_a[i].intersects(bounds_b[j])) {
-                Crossings cc = a[i].crossingsWith(b[j]);
+    std::vector<std::vector<unsigned> > ixs = fake_cull(a.size(), b.size());
+    for(unsigned i = 0; i < a.size(); i++) {
+        for(std::vector<unsigned>::iterator jp = ixs[i].begin(); jp != ixs[i].end(); jp++) {
+            Crossings cc = a[i].crossingsWith(b[*jp]);
+            for(Crossings::iterator it = cc.begin(); it != cc.end(); it++) {
+                ret.push_back(Crossing(it->ta + i, it->tb + *jp, it->dir));
+            }
+        }
+    }
+    return ret;
+}
+
+Crossings self_crossings(Path const &a) {
+    Crossings ret;
+    
+    //TODO: sweep
+    std::vector<Rect> bounds = curve_bounds(a);
+    for(unsigned i = 0; i < bounds.size(); i++) {
+        Crossings cc = to_crossings(find_self_intersections(a[i].toSBasis()), a[i], a[i]);
+        for(Crossings::iterator it = cc.begin(); it != cc.end(); it++) {
+            ret.push_back(Crossing(it->ta + i, it->tb + i, it->dir));
+        }
+        for(unsigned j = i+1; j < bounds.size(); j++) {
+            if(bounds[i].intersects(bounds[j])) {
+                cc = a[i].crossingsWith(a[j]);
                 for(Crossings::iterator it = cc.begin(); it != cc.end(); it++) {
                     ret.push_back(Crossing(it->ta + i, it->tb + j, it->dir));
                 }
@@ -249,6 +268,36 @@ Crossings crossings(Path const &a, Path const &b) {
         }
     }
     return ret;
+}
+
+std::vector<Crossings> crossings_among(std::vector<Path> const &ps) {
+    std::vector<Crossings> results(ps.size(), Crossings());
+    
+    //TODO: sweep
+    for(unsigned i = 0; i < ps.size(); i++) {
+        Crossings cr = self_crossings(ps[i]);
+        for(unsigned k = 0; k < cr.size(); k++) cr[k].a = cr[k].b = i;
+        //Sort & add crossings
+        sort_crossings(cr, i);
+        Crossings n(results[i].size() + cr.size());
+        std::merge(results[i].begin(), results[i].end(), cr.begin(), cr.end(), n.begin(), CrossingOrder(i));
+        results[i] = n;
+        for(unsigned j = i+1; j < ps.size(); j++) {
+            cr = crossings(ps[i], ps[j]);
+            for(unsigned k = 0; k < cr.size(); k++) { cr[k].a = i; cr[k].b = j; }
+            //Sort & add I crossings
+            sort_crossings(cr, i);
+            n.resize(results[i].size() + cr.size());
+            std::merge(results[i].begin(), results[i].end(), cr.begin(), cr.end(), n.begin(), CrossingOrder(i));
+            results[i] = n;
+            //Sort & add J crossings
+            sort_crossings(cr, j);
+            n.resize(results[j].size() + cr.size());
+            std::merge(results[j].begin(), results[j].end(), cr.begin(), cr.end(), n.begin(), CrossingOrder(j));
+            results[j] = n;
+        }
+    }
+    return results;
 }
 
 }

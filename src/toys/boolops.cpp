@@ -15,8 +15,9 @@
 
 using namespace Geom;
 
+double rand_d() { return rand() % 100 / 100.0; }
 void cairo_region(cairo_t *cr, Region const &r) {
-    cairo_set_source_rgb(cr, 0., 0., 0.);
+    cairo_set_source_rgba(cr, rand_d(), rand_d(), rand_d(), .75);
     double d = 5.;
     if(!r.fill()) cairo_set_dash(cr, &d, 1, 0);
     cairo_path(cr, r.boundary());
@@ -25,6 +26,7 @@ void cairo_region(cairo_t *cr, Region const &r) {
 }
 
 void cairo_regions(cairo_t *cr, Regions const &p) {
+    srand(0); 
     for(Regions::const_iterator j = p.begin(); j != p.end(); j++)
         cairo_region(cr, *j);
 }
@@ -56,15 +58,18 @@ std::vector<Path> desanitize(Shapes const & s) {
     return ret;
 }
 
-/*
-void mark_crossings(cairo_t *cr, Path const &a, Path const &b) {
-    Crossings c = crossings(a, b);
-    for(Crossings::iterator i = c.begin(); i != c.end(); i++) {
-        draw_cross(cr, a.pointAt(i->ta));
-        draw_text(cr, a.pointAt(i->ta), i->dir ? "T" : "F");
+
+void mark_crossings(cairo_t *cr, Regions const &a, Regions const &b) {
+    std::vector<Crossings> cc = crossings_between(a, b);
+    for(unsigned j = 0; j < cc.size(); j++) {
+        Crossings c = cc[j];
+        for(Crossings::iterator i = c.begin(); i != c.end(); i++) {
+            draw_cross(cr, a[i->a].boundary().pointAt(i->ta));
+            draw_text(cr, a[i->a].boundary().pointAt(i->ta), i->dir ? "T" : "F");
+        }
     }
 }
-
+/*
 void draw_rect(cairo_t *cr, Point tl, Point br) {
     cairo_move_to(cr, tl[X], tl[Y]);
     cairo_line_to(cr, br[X], tl[Y]);
@@ -133,6 +138,15 @@ class BoolOps: public Toy {
         //Shapes suni = shape_subtract(as, bst); //path_union(a, b);
         //cairo_shapes(cr, suni);
         
+
+        
+        Regions x, y, insies = as.inverse().getInners();
+        x.push_back(a.inverse()); x.insert(x.end(), insies.begin(), insies.end()); y.push_back(bt.inverse());
+        mark_crossings(cr, x, y);
+        Regions r = regions_boolean(true, x, y);
+        cairo_regions(cr, r);
+        
+        /*
         Shapes s;
         switch(mode) {
         case 0:
@@ -150,6 +164,7 @@ class BoolOps: public Toy {
         }
         if(mode<3) cairo_shapes(cr, s); else cairo_path(cr, desanitize(s));
         cairo_fill(cr);
+        */
         
         //used to check if it's right
         //for(int i = 0; i < cont.size(); i++) {
@@ -215,6 +230,7 @@ class BoolOps: public Toy {
         //bs = shape_subtract(bs, bs * Scale(.5, .5)).front();
         a = as.getOuter();
         b = bs.getOuter();
+        //std::cout << "hi\n";
     }
     int should_draw_bounds() {return 0;}
 };

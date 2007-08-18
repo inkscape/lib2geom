@@ -21,6 +21,7 @@ inline bool path_direction(Path const &p) {
 class Region {
     friend std::vector<Region> region_boolean(bool rev, Region const &, Region const &,
                                               Crossings const &, Crossings const &);
+    friend std::vector<Region> regions_boolean(bool rev, std::vector<Region> const & a, std::vector<Region> const & b);
     Path _boundary;
     boost::optional<Rect> box;
     bool _fill;
@@ -49,6 +50,8 @@ class Region {
 };
 
 typedef std::vector<Region> Regions;
+
+std::vector<Crossings> crossings_between(Regions const &a, Regions const &b);
 
 unsigned outer_index(Regions const &ps);
 

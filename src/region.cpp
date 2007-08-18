@@ -34,7 +34,7 @@ Regions path_exclude(Region const & a, Region const & b, bool typ) {
 
 Regions region_boolean(bool btype, Region const & a, Region const & b, Crossings const & cr) {
     Crossings cr_a = cr, cr_b = cr;
-    sortA(cr_a); sortB(cr_b);
+    sort_crossings(cr_a, 0); sort_crossings(cr_b, 1);
     return region_boolean(btype, a, b, cr_a, cr_b);
 }
 
@@ -55,8 +55,120 @@ unsigned outer_index(Regions const &ps) {
     return ps.size();
 }
 
+//Returns a vector of crossings, such that those associated with B are in the range [a.size(), a.size() + b.size())
+std::vector<Crossings> crossings_between(Regions const &a, Regions const &b) {
+    std::vector<Crossings> results(a.size() + b.size(), Crossings());
+
+    //TODO: sweep
+    for(unsigned i = 0; i < a.size(); i++) {
+        for(unsigned jx = 0; jx < b.size(); jx++) {
+            unsigned j = jx + a.size();
+            Crossings cr = crossings(a[i].boundary(), b[jx].boundary());
+            for(unsigned k = 0; k < cr.size(); k++) { cr[k].a = i; cr[k].b = j; }
+            //Sort & add I crossings
+            sort_crossings(cr, i);
+            Crossings n(results[i].size() + cr.size());
+            std::merge(results[i].begin(), results[i].end(), cr.begin(), cr.end(), n.begin(), CrossingOrder(i));
+            results[i] = n;
+            //Sort & add J crossings
+            sort_crossings(cr, j);
+            n.resize(results[j].size() + cr.size());
+            std::merge(results[j].begin(), results[j].end(), cr.begin(), cr.end(), n.begin(), CrossingOrder(j));
+            results[j] = n;
+        }
+    }
+    return results;
+}
+
+void first_false(std::vector<std::vector<bool> > visited, unsigned &i, unsigned &j) {
+    for(i = 0, j = 0; i < visited.size(); i++) {
+        std::vector<bool>::iterator unvisited = std::find(visited[i].begin(), visited[i].end(), false);
+        if(unvisited != visited[i].end()) {
+            j = unvisited - visited[i].begin();
+            break;
+        }
+    }
+}
+
 unsigned find_crossing(Crossings const &cr, Crossing x) {
     return std::find(cr.begin(), cr.end(), x) - cr.begin();
+}
+
+Regions regions_boolean(bool rev, Regions const & a, Regions const & b) {
+    std::vector<Crossings> crs = crossings_between(a, b);
+    
+    /* for(unsigned i = 0; i < crs.size(); i++) {
+        std::cout << i << "\n";
+        for(unsigned j = 0; j < crs[i].size(); j++) {
+            std::cout << " " << crs[i][j].a << " " << crs[i][j].b << " :" << crs[i][j].ta << " to " << crs[i][j].tb << "\n";
+        }
+    } */
+    
+    //Keep track of which crossings we've hit.
+    std::vector<std::vector<bool> > visited;
+    for(unsigned i = 0; i < crs.size(); i++)
+        visited.push_back(std::vector<bool>(crs[i].size(), false));
+    
+    //Traverse the crossings, creating chunks
+    Regions chunks;
+    while(true) {
+        unsigned i, j;
+        first_false(visited, i, j);
+        if(i == visited.size()) break;
+        std::cout << "starting traverse on " << i << ", " << j << "\n";
+        Path res;
+        do {
+            Crossing cur = crs[i][j];
+            visited[i][j] = true;
+            std::cout << i << ", " << j << ": " << (cur.dir ? "true" : "false") << "\n";
+            if(logical_xor(cur.dir, rev)) {
+                if(i >= a.size()) {
+                    i = cur.a;
+                    j = find_crossing(crs[i], cur);
+                    visited[i][j] = true;
+                }
+                j++;
+                if(j >= crs[i].size()) j = 0;
+                Crossing next = crs[i][j];
+                a[next.a]._boundary.appendPortionTo(res, cur.ta, next.ta);
+            } else {
+                if(i < a.size()) {
+                    i = cur.b;
+                    j = find_crossing(crs[i], cur);
+                    visited[i][j] = true;
+                }
+                j++;
+                if(j >= crs[i].size()) j = 0;
+                Crossing next = crs[i][j];
+                b[next.b - a.size()]._boundary.appendPortionTo(res, cur.tb, next.tb);
+
+            }
+            
+        } while (!visited[i][j]);
+        chunks.push_back(Region(res));
+    }
+    
+    //Handle unintersecting portions
+    for(unsigned i = 0; i < crs.size(); i++) {
+        if(crs[i].size() == 0) {
+            Region r = i < a.size() ? a[i] : b[i - a.size()];
+            Point exemplar = r.boundary().initialPoint();
+            for(unsigned j = 0; j < chunks.size(); j++) {
+                if(chunks[j].contains(exemplar) && logical_xor(r.fill(), chunks[j].fill())) {
+                    chunks.push_back(r);
+                    goto skip;
+                }
+            }
+            //disjoint
+            if(r.fill() && !rev) {
+                //and should be included
+                chunks.push_back(r);
+            }
+            skip: (void)0;
+        }
+    }
+    
+    return chunks;
 }
 
 /* This function handles boolean ops on regions of fill or hole.  The first parameter is a bool
@@ -89,9 +201,9 @@ unsigned find_crossing(Crossings const &cr, Crossing x) {
  *
  * The operation of this function isn't very complicated.  It just traverses the crossings, and uses the crossing direction to decide whether the next segment should be from A or from B.
  */
-Regions region_boolean( bool rev,
-                      Region const & a, Region const & b,
-                      Crossings const & cr_a, Crossings const & cr_b) {
+Regions region_boolean(bool rev,
+                       Region const & a, Region const & b,
+                       Crossings const & cr_a, Crossings const & cr_b) {
     assert(cr_a.size() == cr_b.size());
     
     //If we are on the subtraction diagonal

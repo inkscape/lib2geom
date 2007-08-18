@@ -9,11 +9,14 @@ namespace Geom {
 struct Crossing {
     bool dir; //True: along a, a becomes outside.
     double ta, tb;  //time on a and b of crossing
-    Crossing() : dir(false), ta(0), tb(0) {}
-    Crossing(double t_a, double t_b, bool direction) : dir(direction), ta(t_a), tb(t_b) {}
-    bool operator==(const Crossing & other) const { return dir == other.dir && ta == other.ta && tb == other.tb; }
+    unsigned a, b;  //storage of indices
+    Crossing() : dir(false), ta(0), tb(1), a(0), b(1) {}
+    Crossing(double t_a, double t_b, bool direction) : dir(direction), ta(t_a), tb(t_b), a(0), b(1) {}
+    Crossing(double t_a, double t_b, unsigned ai, unsigned bi, bool direction) : dir(direction), ta(t_a), tb(t_b), a(ai), b(bi) {}
+    bool operator==(const Crossing & other) const { return a == other.a && b == other.b && dir == other.dir && ta == other.ta && tb == other.tb; }
     bool operator!=(const Crossing & other) const { return !(*this == other); }
 };
+
 
 /*inline bool near(Crossing a, Crossing b) {
     return near(a.ta, b.ta) && near(a.tb, b.tb);
@@ -22,20 +25,17 @@ struct Crossing {
 struct NearF { bool operator()(Crossing a, Crossing b) { return near(a, b); } };
 */
 
-struct OrderA { bool operator()(Crossing a, Crossing b) { return a.ta < b. ta; } };
-struct OrderB { bool operator()(Crossing a, Crossing b) { return a.tb < b. tb; } };
+struct CrossingOrder {
+    unsigned ix;
+    CrossingOrder(unsigned i) : ix(i) {}
+    bool operator()(Crossing a, Crossing b) {
+        return (ix == a.a ? a.ta < b.ta : a.tb < b.tb);
+    }
+};
 
 typedef std::vector<Crossing> Crossings;
 
-inline void sortA(Crossings &cr) {
-    OrderA f;
-    std::sort(cr.begin(), cr.end(), f);
-}
-
-inline void sortB(Crossings &cr) {
-    OrderB f;
-    std::sort(cr.begin(), cr.end(), f);
-}
+inline void sort_crossings(Crossings &cr, unsigned ix) { std::sort(cr.begin(), cr.end(), CrossingOrder(ix)); }
 
 template<typename T>
 struct Eraser {

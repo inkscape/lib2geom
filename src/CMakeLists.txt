@@ -33,6 +33,8 @@ shape.cpp
 shape.h
 region.cpp
 region.h
+sweep.cpp
+sweep.h
 
 poly.cpp
 poly.h

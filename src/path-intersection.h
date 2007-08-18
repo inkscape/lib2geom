@@ -14,6 +14,7 @@ inline bool contains(const Path & p, Point i, bool evenodd = false) {
 }
 
 Crossings crossings(const Path & a, const Path & b);
+Crossings self_crossings(const Path &a);
 
 }
 

@@ -43,6 +43,8 @@ class Shape {
 
 typedef std::vector<Shape> Shapes;
 
+Shapes sanitize_paths(std::vector<Path> ps);
+
 inline Shapes shapes_from_regions(Regions const &rs) {
     Shapes res;
     for(unsigned i = 0; i < rs.size(); i++) {

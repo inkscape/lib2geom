@@ -1,5 +1,6 @@
 #include "shape.h"
 #include "utils.h"
+#include "sweep.h"
 
 #include <iostream>
 #include <algorithm>
@@ -24,112 +25,12 @@ Shape Shape::operator*(Matrix const &m) const {
     return Shape(outer * m, hs);
 }
 
-struct SweepObject {
-    unsigned ix;
-    bool on_a;
-    std::vector<unsigned> intersects;
-    
-    SweepObject(unsigned i, bool a) : ix(i), on_a(a) {}
-};
-
-struct Event {
-    double x;
-    SweepObject *val;
-    bool closing;
-    
-    friend std::vector<SweepObject> region_pairs(std::vector<Event> const & es);
-    
-    Event(double t, SweepObject *v, bool c) : x(t), val(v), closing(c) {}
-    
-    bool operator<(Event const &other) {
-        if(x < other.x) return true;
-        if(x > other.x) return false;
-        return closing < other.closing;
-    }
-};
-
-typedef std::vector<Event> Events;
-
-std::vector<SweepObject> sweep(Events const & es) {
-    std::vector<SweepObject> returns;
-    
-    std::vector<SweepObject*> open[2];
-    for(Events::const_iterator e = es.begin(); e != es.end(); ++e) {
-        unsigned ix = e->val->on_a ? 0 : 1;
-        if(e->closing) {
-            for(int i = open[ix].size()-1; i >= 0; --i) {
-                if(open[ix][i] == e->val) {
-                    open[ix].erase(open[ix].begin() + i);
-                    break;
-                }
-            }
-        } else {
-            open[ix].push_back(e->val);
-        }
-        if(e->val->on_a) {
-            if(e->closing) {
-                SweepObject *p = e->val;
-                returns.push_back(*p);
-                delete p;
-            } else {
-                for(unsigned i = 0; i < open[1].size(); i++) {
-                    e->val->intersects.push_back(open[1][i]->ix);
-                }
-            }
-        } else {
-            if(!e->closing) {
-                for(unsigned i = 0; i < open[0].size(); i++) {
-                    open[0][i]->intersects.push_back(e->val->ix);
-                }
-            }
-        }
-    }
-    
-    return returns;
-}
-
-template <typename T>
-Events events(Regions const & a, Regions const & b) {
-    Events ret;
-    for(unsigned i = 0; i < a.size(); i++) {
-        Rect bounds = a[i].boundsFast();
-        SweepObject *obj = new SweepObject(i, true);
-        ret.push_back(Event(bounds.left, obj, false));
-        ret.push_back(Event(bounds.right, obj, true));
-    }
-    for(unsigned i = 0; i < b.size(); i++) {
-        Rect bounds = b[i].boundsFast();
-        SweepObject *obj = new SweepObject(i, false);
-        ret.push_back(Event(bounds.left, obj, false));
-        ret.push_back(Event(bounds.right, obj, true));
-    }
-    std::sort(ret.begin(), ret.end());
-    return ret;
-}
-
 // inverse is a boolean not.
 Shape Shape::inverse() const {
     Shape ret(outer.inverse());
     for(unsigned i = 0; i < inners.size(); i++) {
         ret.inners.push_back(inners[i].inverse());
     }
-    return ret;
-}
-
-std::vector<SweepObject> fake_cull(Regions const &a, Regions const &b) {
-    std::vector<SweepObject> ret;
-    
-    std::vector<unsigned> all;
-    for(unsigned j = 0; j < b.size(); j++) {
-        all.push_back(j);
-    }
-    
-    for(unsigned i = 0; i < a.size(); i++) {
-        SweepObject res(i, true);
-        res.intersects = all;
-        ret.push_back(res);
-    }
-    
     return ret;
 }
 
@@ -167,10 +68,10 @@ Shapes shape_union(Shape const & a, Shape const & b) {
         append(holes, region_boolean(false, b.inners[i], a.outer));
     
     //Ai x Bi
-    std::vector<SweepObject> es = fake_cull(a.inners, b.inners);
-    for(std::vector<SweepObject>::iterator i = es.begin(); i != es.end(); i++)
-        for(std::vector<unsigned>::iterator j = i->intersects.begin(); j != i->intersects.end(); j++)
-            append(holes, region_boolean(false, a.inners[i->ix], b.inners[*j]));
+    std::vector<std::vector<unsigned> > es = fake_cull(a.inners.size(), b.inners.size());
+    for(unsigned i = 0; i < a.inners.size(); i++)
+        for(unsigned j = 0; j < es[i].size(); j++)
+            append(holes, region_boolean(false, a.inners[i], b.inners[es[i][j]]));
     
     ret.push_back(Shape(outers.front(), holes));
     return ret;
@@ -183,8 +84,7 @@ Shapes do_holes(Regions const & outers, Regions const & inners) {
     
     //info on crossers:
     std::vector<Crossings> crs;
-    std::vector<std::vector<unsigned> > ixs; //relates outer indices to inner intersectors
-    for(unsigned j = 0; j < outers.size(); j++) ixs.push_back(std::vector<unsigned>());
+    std::vector<std::vector<unsigned> > ixs(outers.size(), std::vector<unsigned>()); //relates outer indices to inner intersectors
     
     for(unsigned i = 0; i < inners.size(); i++) {
         if(inners[i].fill()) {
@@ -285,6 +185,15 @@ Shapes shape_exclude(Shape const & a, Shape const & b) {
     Shapes results = shape_subtract(a, b);
     append(results, shape_subtract(b, a));
     return results;
+}
+
+Shapes sanitize_path(Path const &ps) {
+    Crossings cr = self_crossings(ps);
+    
+}
+
+Shapes sanitize_paths(std::vector<Path> const &ps) {
+    
 }
 
 /*
