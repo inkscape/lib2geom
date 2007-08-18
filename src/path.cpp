@@ -31,7 +31,8 @@
 
 #include "ord.h"
 
-namespace Geom {
+namespace Geom {
+
 int CurveHelpers::root_winding(Curve const &c, Point p) {
     std::vector<double> ts = c.roots(p[Y], Y);
 
@@ -136,7 +137,7 @@ void Path::appendPortionTo(Path &ret, double from, double to) const {
   delete tov;
 }
 
-const double eps = 1;
+const double eps = .1;
 
 void Path::append(Curve const &curve) {
   if ( curves_.front() != final_ && !near(curve.initialPoint(), (*final_)[0], eps) ) {
