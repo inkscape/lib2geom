@@ -204,9 +204,9 @@ path_from_piecewise(Geom::Piecewise<Geom::D2<Geom::SBasis> > const &B, double to
             if(i+1 >= B.size()) break;
             start = B[i+1].at0();
             pb.moveTo(start);
-            i++;
+        } else {
+            build_from_sbasis(pb, B[i], tol);
         }
-        build_from_sbasis(pb, B[i], tol);
     }
     pb.finish();
     return pb.peek();
