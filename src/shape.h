@@ -11,47 +11,44 @@
 namespace Geom {
 
 class Shape {
-    Region outer;
-    Regions inners;
+    Regions content;
+    bool fill;
     //friend Shape shape_region_boolean(bool rev, Shape const & a, Region const & b);
-    friend std::vector<Shape> shape_union(Shape const &, Shape const &);
-    friend std::vector<Shape> do_holes(Regions const &, Regions const &);
-    friend std::vector<Shape> shape_subtract(Shape const &, Shape const &);
-    friend std::vector<Shape> shape_intersect(Shape const & a, Shape const & b);
-    friend std::vector<Shape> shape_exclude(Shape const & a, Shape const & b);
-    friend void add_holes(std::vector<Shape> &x, Regions const &h);
+    friend CrossingSet crossings_between(Shape const &a, Shape const &b);
+    friend Shape shape_boolean(bool rev, Shape const &, Shape const &, CrossingSet const &);
   public:
-    Region getOuter() const { return outer; }
-    Regions getInners() const { return inners; }
-    
     Shape() {}
-    explicit Shape(Region const & r) : outer(r) {}
-    Shape(Region const & c, Regions const & h) : outer(c), inners(h) {}
+    explicit Shape(Region const & r) {
+        content = Regions(1, r);
+        fill = r.fill;
+    }
+    explicit Shape(Regions const & r) : content(r) {
+        fill = r[outer_index(r)].fill;
+    }
+    Shape(Regions const & r, bool f) : content(r), fill(f) {}
     
+    Regions getContent() const { return content; }
+    bool isFill() const { return fill; }
+
     Shape inverse() const;
-    
     Shape operator*(Matrix const &m) const;
     
-    bool fill_invariants() const;  //fast
-    bool cont_invariants() const;  //semi-slow
-    bool cross_invariants() const; //slow
+    bool contains(Point const &p) const;
     
-    bool invariants() const {
-        return fill_invariants() && cont_invariants() && cross_invariants();
-    }
+    bool inside_invariants() const;  //semi-slow & easy to violate : checks that the insides are inside, the outsides are outside
+    bool region_invariants() const; //semi-slow                    : checks for self crossing
+    bool cross_invariants() const; //slow                          : checks that everything is disjoint
+    bool invariants() const;      //vera slow (combo rombo, checks the above)
 };
 
-typedef std::vector<Shape> Shapes;
+CrossingSet crossings_between(Shape const &a, Shape const &b);
 
-Shapes sanitize_paths(std::vector<Path> ps);
+Shape shape_boolean(bool rev, Shape const & a, Shape const & b);
+inline Shape shape_union(Shape const &a, Shape const &b) { return shape_boolean(false, a, b); }
+inline Shape shape_intersect(Shape const &a, Shape const &b) { return shape_boolean(true, a, b); }
+inline Shape shape_subtract(Shape const &a, Shape const &b) { return shape_boolean(true, a, b.inverse()); }
 
-inline Shapes shapes_from_regions(Regions const &rs) {
-    Shapes res;
-    for(unsigned i = 0; i < rs.size(); i++) {
-        res.push_back(Shape(rs[i]));
-    }
-    return res;
-}
+Shape sanitize_paths(std::vector<Path> ps);
 
 }
 

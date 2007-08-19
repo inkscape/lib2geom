@@ -18,40 +18,48 @@ inline bool path_direction(Path const &p) {
     return area > 0;
 }
 
+class Shape;
+
 class Region {
-    friend std::vector<Region> region_boolean(bool rev, Region const &, Region const &,
-                                              Crossings const &, Crossings const &);
-    friend std::vector<Region> regions_boolean(bool rev, std::vector<Region> const & a, std::vector<Region> const & b);
-    Path _boundary;
+    friend Crossings crossings(Region const &a, Region const &b);
+    friend class Shape;
+    friend Shape shape_boolean(bool rev, Shape const & a, Shape const & b, CrossingSet const & crs);
+
+    Path boundary;
     boost::optional<Rect> box;
-    bool _fill;
+    bool fill;
   public:
 
     Region() {}
-    Region(Path const &p) : _boundary(p) { _fill = path_direction(p); }
-    Region(Path const &p, bool dir) : _boundary(p), _fill(dir) {}
-    Region(Path const &p, boost::optional<Rect> const &b) : _boundary(p), box(b) { _fill = path_direction(p); }
-    Region(Path const &p, boost::optional<Rect> const &b, bool dir) : _boundary(p), box(b), _fill(dir) {}
+    Region(Path const &p) : boundary(p) { fill = path_direction(p); }
+    Region(Path const &p, bool dir) : boundary(p), fill(dir) {}
+    Region(Path const &p, boost::optional<Rect> const &b) : boundary(p), box(b) { fill = path_direction(p); }
+    Region(Path const &p, boost::optional<Rect> const &b, bool dir) : boundary(p), box(b), fill(dir) {}
     
-    bool fill() const { return _fill; }    
-    Path boundary() const { return _boundary; }
+    bool isFill() const { return fill; }    
+    Path getBoundary() const { return boundary; }
     Rect boundsFast() {
-        if(!box) box = boost::optional<Rect>(boundary().boundsFast());
+        if(!box) box = boost::optional<Rect>(boundary.boundsFast());
         return *box;
     }
     bool contains(Point const &p) const {
-        bool temp = Geom::contains(boundary(), p);
+        bool temp = Geom::contains(boundary, p);
         return temp;
     }
+    bool contains(Region const &other) const { return contains(other.getBoundary().initialPoint()); }
     
-    Region inverse() const { return Region(_boundary.reverse(), box, !_fill); }
+    Region inverse() const { return Region(boundary.reverse(), box, !fill); }
     
     Region operator*(Matrix const &m) const;
+    
+    bool invariants() const;
 };
 
 typedef std::vector<Region> Regions;
 
-std::vector<Crossings> crossings_between(Regions const &a, Regions const &b);
+inline Crossings crossings(Region const &a, Region const &b) {
+    return crossings(a.boundary, b.boundary);
+}
 
 unsigned outer_index(Regions const &ps);
 
@@ -64,11 +72,19 @@ inline Regions regions_from_paths(std::vector<Path> const &ps) {
     return res;
 }
 
+inline std::vector<Path> paths_from_regions(Regions const &rs) {
+    std::vector<Path> res;
+    for(unsigned i = 0; i < rs.size(); i++) {
+        res.push_back(rs[i].getBoundary());
+    }
+    return res;
+}
+
 Regions region_boolean(bool rev, Region const & a, Region const & b, Crossings const &cr);
 Regions region_boolean(bool rev, Region const & a, Region const & b, Crossings const & cr_a, Crossings const & cr_b);
 
 inline Regions region_boolean(bool rev, Region const & a, Region const & b) {
-    return region_boolean(rev, a, b, crossings(a.boundary(), b.boundary()));
+    return region_boolean(rev, a, b, crossings(a.getBoundary(), b.getBoundary()));
 }
 
 Regions path_union(Region const & a, Region const & b, bool typ);

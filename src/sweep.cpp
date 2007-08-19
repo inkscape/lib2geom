@@ -12,7 +12,8 @@ SweepObjects sweep(Events const & es) {
         unsigned ix = e->val->on_a ? 1 : 0;
         if(e->closing) {
             //since this is the closing event, remove the object from the open list
-            open[ix].erase(std::find(open[ix].begin(), open[ix].end(), e->val));
+            std::vector<SweepObject*>::iterator it = std::lower_bound(open[ix].begin(), open[ix].end(), e->val);
+            open[ix].erase(it);
         } else {
             open[ix].push_back(e->val);
         }

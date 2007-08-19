@@ -270,8 +270,8 @@ Crossings self_crossings(Path const &a) {
     return ret;
 }
 
-std::vector<Crossings> crossings_among(std::vector<Path> const &ps) {
-    std::vector<Crossings> results(ps.size(), Crossings());
+CrossingSet crossings_among(std::vector<Path> const &ps) {
+    CrossingSet results(ps.size(), Crossings());
     
     //TODO: sweep
     for(unsigned i = 0; i < ps.size(); i++) {

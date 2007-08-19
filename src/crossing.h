@@ -15,6 +15,7 @@ struct Crossing {
     Crossing(double t_a, double t_b, unsigned ai, unsigned bi, bool direction) : dir(direction), ta(t_a), tb(t_b), a(ai), b(bi) {}
     bool operator==(const Crossing & other) const { return a == other.a && b == other.b && dir == other.dir && ta == other.ta && tb == other.tb; }
     bool operator!=(const Crossing & other) const { return !(*this == other); }
+    unsigned getOther(unsigned cur) { return a == cur ? b : a; }
 };
 
 
@@ -34,106 +35,10 @@ struct CrossingOrder {
 };
 
 typedef std::vector<Crossing> Crossings;
+typedef std::vector<Crossings> CrossingSet;
 
 inline void sort_crossings(Crossings &cr, unsigned ix) { std::sort(cr.begin(), cr.end(), CrossingOrder(ix)); }
 
-template<typename T>
-struct Eraser {
-    T *x;
-    unsigned i, o;
-    bool skip;
-    
-    Eraser(T *t) : x(t), i(0), o(0), skip(false) {}
-    ~Eraser() { finish(); }
-    
-    bool operator==(Eraser const &other) const { return other.i == i; }
-    bool operator!=(Eraser const &other) const { return other.i != i; }
-    /* bool operator==(typename T::iterator const &it) { return it == i; }
-    bool operator!=(typename T::iterator const &it) { return it != i; }
-    */
-    
-    bool ended() const { return i >= x->size(); }
-    
-    typedef typename T::iterator::value_type value_type;
-    typedef typename T::iterator::pointer pointer;
-    
-    value_type const operator*() const { return (*x)[i]; }
-    pointer operator->() const { return &(*x)[i]; }
-    
-    Eraser &operator++() {
-        if(skip != true) {
-            if(o != i) (*x)[o] = (*x)[i];
-            ++o;
-        } else skip = false;
-        ++i;
-        return *this;
-    }
-    
-    Eraser operator++(int) {
-        Eraser old=*this;
-        ++(*this);
-        return old;
-    }
-    
-    void erase() { skip = true; }
-    
-    void replace(value_type const &a) {
-        skip = true;
-        (*x)[o] = a;
-        ++o;
-    }
-    
-    void finish() { x->resize(o); }
-};
-
-template<typename T>
-struct Replacer {
-    T *x;
-    T o;
-    unsigned i;
-    bool skip;
-    
-    Replacer(T *t) : x(t), i(0), skip(false) { o = T(); }
-    ~Replacer() { finish(); }
-    
-    bool ended() const { return i >= x->size(); }
-    
-    typedef typename T::iterator::value_type value_type;
-    typedef typename T::iterator::pointer pointer;
-    
-    value_type const operator*() const { return (*x)[i]; }
-    pointer operator->() const { return &(*x)[i]; }
-    
-    Replacer &operator++() {
-        if(!skip) o.push_back((*x)[i]); else skip = false;
-        ++i;
-        return *this;
-    }
-    
-    Replacer operator++(int) {
-        Replacer old=*this;
-        ++(*this);
-        return old;
-    }
-    
-    void erase() { skip = true; }
-    
-    template<class InputIterator>
-    void replace(InputIterator first, InputIterator last) {
-        skip = true;
-        o.insert(o.end(), first, last);
-    }
-    void replace(T const &a) { replace(a.begin(), a.end()); }
-    void replace(value_type const &a) {
-        skip = true;
-        o.push_back(a);
-    }
-    
-    void finish() {
-        x->resize(o.size());
-        std::copy(o.begin(), o.end(), x->begin());
-    }
-};
 /*
 inline void clean(Crossings &cr_a, Crossings &cr_b) {
     if(cr_a.empty()) return;

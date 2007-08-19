@@ -9,12 +9,13 @@ namespace Geom {
 
 int winding(Path const &path, Point p);
 
-inline bool contains(const Path & p, Point i, bool evenodd = false) {
+inline bool contains(Path const & p, Point i, bool evenodd = false) {
     return (evenodd ? winding(p, i) % 2 : winding(p, i)) != 0;
 }
 
-Crossings crossings(const Path & a, const Path & b);
-Crossings self_crossings(const Path &a);
+Crossings crossings(Path const & a, Path const & b);
+Crossings self_crossings(Path const &a);
+CrossingSet crossings_among(std::vector<Path> const & a);
 
 }
 
