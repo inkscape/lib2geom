@@ -76,8 +76,12 @@ private:
 
     template<unsigned ord>
     friend Interval bounds_fast(Bezier<ord> const & b);
+
+    template<unsigned ord>
+    friend Bezier<ord-1> derivative(const Bezier<ord> & a);
+
 protected:
-    Bezier(Coord c[]) {
+    Bezier(Coord const c[]) {
         std::copy(c, c+order+1, c_);
     }
 
@@ -171,6 +175,15 @@ public:
     }
 };
 
+//TODO: implement others
+template<unsigned order>
+Bezier<order> operator-(const Bezier<order> & a, double v) {
+    Bezier<order> result;
+    for(unsigned i = 0; i <= order; i++)
+        result[i] = a[i] - v;
+    return result;
+}
+
 template<unsigned order>
 Bezier<order> reverse(const Bezier<order> & a) {
     Bezier<order> result;
@@ -184,6 +197,7 @@ Bezier<order> portion(const Bezier<order> & a, double from, double to) {
     //TODO: implement better?
     Coord res[order+1];
     if(from == 0) {
+        if(to == 1) { return Bezier<order>(a.c_); }
         subdivideArr<order>(to, a.c_, res, NULL);
         return Bezier<order>(res);
     }
@@ -228,7 +242,7 @@ inline Interval bounds_exact(Bezier<order> const & b) {
 
 template<unsigned order>
 inline Interval bounds_local(Bezier<order> const & b, Interval i) {
-    return bounds_local(b.toSBasis(), i);
+    return bounds_fast(portion(b, i.min(), i.max())); //bounds_local(b.toSBasis(), i);
 }
 
 }

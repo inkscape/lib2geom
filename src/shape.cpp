@@ -7,6 +7,7 @@
 
 namespace Geom {
 
+//Utility funcs
 bool logical_xor (bool a, bool b) { return (a || b) && !(a && b); }
 
 bool disjoint(Path const & a, Path const & b) {
@@ -16,107 +17,6 @@ bool disjoint(Path const & a, Path const & b) {
 template<typename T>
 void append(T &a, T const &b) {
     a.insert(a.end(), b.begin(), b.end());
-}
-
-Shape Shape::operator*(Matrix const &m) const {
-    Shape ret;
-    for(unsigned i = 0; i < content.size(); i++)
-        ret.content.push_back(content[i] * m);
-    return ret;
-}
-
-// inverse is a boolean not
-Shape Shape::inverse() const {
-    Shape ret;
-    for(unsigned i = 0; i < content.size(); i++)
-        ret.content.push_back(content[i].inverse());
-    return ret;
-}
-
-struct ContainmentOrder {
-    std::vector<Region> const *rs;
-    explicit ContainmentOrder(std::vector<Region> const *r) : rs(r) {}
-    bool operator()(unsigned a, unsigned b) const { return (*rs)[b].contains((*rs)[a]); }
-};
-
-bool Shape::contains(Point const &p) const {
-    std::vector<unsigned> ixs;
-    //TODO: sweep
-    for(unsigned i = 0; i < content.size(); i++)
-        if(content[i].contains(p)) ixs.push_back(i);
-    if(ixs.size() == 0) return false;
-    return content[*min_element(ixs.begin(), ixs.end(), ContainmentOrder(&content))].isFill();
-}
-
-bool Shape::inside_invariants() const {  //semi-slow & easy to violate
-    for(unsigned i = 0; i < content.size(); i++) {
-        Point exemplar = content[i].boundary.initialPoint();
-        if(content[i].isFill() == fill) {
-            //disjoint?
-            for(unsigned j = 0; j < content.size(); j++)
-                if(j != i && content[j].isFill() == content[i].isFill() && content[j].contains(exemplar)) goto check; 
-            goto next;
-        } check:
-        //gotta be inside
-        for(unsigned j = 0; j < content.size(); j++)
-            if(j != i && content[j].isFill() != content[i].isFill() && content[j].contains(exemplar)) goto next;
-        return false;
-        next: (void)0;
-    }
-    return true;
-}
-bool Shape::region_invariants() const { //semi-slow
-    for(unsigned i = 0; i < content.size(); i++)
-        if(!content[i].invariants()) return false;
-    return true;
-}
-bool Shape::cross_invariants() const { //slow
-    CrossingSet crs = crossings_among(paths_from_regions(content));
-    for(unsigned i = 0; i < crs.size(); i++)
-        if(!crs[i].empty()) return false;
-    return true;
-}
-
-bool Shape::invariants() const {
-    return inside_invariants() && region_invariants() && cross_invariants();
-}
-
-//Returns a vector of crossings, such that those associated with B are in the range [a.size(), a.size() + b.size())
-CrossingSet crossings_between(Shape const &a, Shape const &b) { 
-    CrossingSet results(a.content.size() + b.content.size(), Crossings());
-    
-    //TODO: sweep
-    for(unsigned i = 0; i < a.content.size(); i++) {
-        for(unsigned jx = 0; jx < b.content.size(); jx++) {
-            unsigned j = jx + a.content.size();
-            Crossings cr = crossings(a.content[i].getBoundary(), b.content[jx].getBoundary());
-            for(unsigned k = 0; k < cr.size(); k++) { cr[k].a = i; cr[k].b = j; }
-            //Sort & add I crossings
-            sort_crossings(cr, i);
-            Crossings n(results[i].size() + cr.size());
-            std::merge(results[i].begin(), results[i].end(), cr.begin(), cr.end(), n.begin(), CrossingOrder(i));
-            results[i] = n;
-            //Sort & add J crossings
-            sort_crossings(cr, j);
-            n.resize(results[j].size() + cr.size());
-            std::merge(results[j].begin(), results[j].end(), cr.begin(), cr.end(), n.begin(), CrossingOrder(j));
-            results[j] = n;
-        }
-    }
-    return results;
-}
-
-Shape shape_boolean(bool rev, Shape const & a, Shape const & b) {
-    CrossingSet crs = crossings_between(a, b);
-    
-    /* for(unsigned i = 0; i < crs.size(); i++) {
-        std::cout << i << "\n";
-        for(unsigned j = 0; j < crs[i].size(); j++) {
-            std::cout << " " << crs[i][j].a << " " << crs[i][j].b << " :" << crs[i][j].ta << " to " << crs[i][j].tb << "\n";
-        }
-    } */
-    
-    return shape_boolean(rev, a, b, crs);
 }
 
 void first_false(std::vector<std::vector<bool> > visited, unsigned &i, unsigned &j) {
@@ -238,6 +138,44 @@ Shape shape_boolean(bool rev, Shape const & a, Shape const & b, CrossingSet cons
     return Shape(chunks);
 }
 
+//Returns a vector of crossings, such that those associated with B are in the range [a.size(), a.size() + b.size())
+CrossingSet crossings_between(Shape const &a, Shape const &b) { 
+    CrossingSet results(a.content.size() + b.content.size(), Crossings());
+    
+    //TODO: sweep
+    for(unsigned i = 0; i < a.content.size(); i++) {
+        for(unsigned jx = 0; jx < b.content.size(); jx++) {
+            unsigned j = jx + a.content.size();
+            Crossings cr = crossings(a.content[i].getBoundary(), b.content[jx].getBoundary());
+            for(unsigned k = 0; k < cr.size(); k++) { cr[k].a = i; cr[k].b = j; }
+            //Sort & add I crossings
+            sort_crossings(cr, i);
+            Crossings n(results[i].size() + cr.size());
+            std::merge(results[i].begin(), results[i].end(), cr.begin(), cr.end(), n.begin(), CrossingOrder(i));
+            results[i] = n;
+            //Sort & add J crossings
+            sort_crossings(cr, j);
+            n.resize(results[j].size() + cr.size());
+            std::merge(results[j].begin(), results[j].end(), cr.begin(), cr.end(), n.begin(), CrossingOrder(j));
+            results[j] = n;
+        }
+    }
+    return results;
+}
+
+Shape shape_boolean(bool rev, Shape const & a, Shape const & b) {
+    CrossingSet crs = crossings_between(a, b);
+    
+    /* for(unsigned i = 0; i < crs.size(); i++) {
+        std::cout << i << "\n";
+        for(unsigned j = 0; j < crs[i].size(); j++) {
+            std::cout << " " << crs[i][j].a << " " << crs[i][j].b << " :" << crs[i][j].ta << " to " << crs[i][j].tb << "\n";
+        }
+    } */
+    
+    return shape_boolean(rev, a, b, crs);
+}
+
 /*sanitize
 Shape sanitize_paths(std::vector<Path> const &ps, bool evenodd) {
     Crossings crs = crossings_among(ps);
@@ -266,5 +204,60 @@ Shape sanitize_paths(std::vector<Path> const &ps, bool evenodd) {
                 
 
 } */
+
+Shape Shape::operator*(Matrix const &m) const {
+    Shape ret;
+    for(unsigned i = 0; i < content.size(); i++)
+        ret.content.push_back(content[i] * m);
+    if(m.flips()) ret.fill = !fill;
+    return ret;
+}
+
+// inverse is a boolean not
+Shape Shape::inverse() const {
+    Shape ret;
+    for(unsigned i = 0; i < content.size(); i++)
+        ret.content.push_back(content[i].inverse());
+    ret.fill = !fill;
+    return ret;
+}
+
+struct ContainmentOrder {
+    std::vector<Region> const *rs;
+    explicit ContainmentOrder(std::vector<Region> const *r) : rs(r) {}
+    bool operator()(unsigned a, unsigned b) const { return (*rs)[b].contains((*rs)[a]); }
+};
+
+bool Shape::contains(Point const &p) const {
+    std::vector<unsigned> ixs;
+    //TODO: sweep
+    for(unsigned i = 0; i < content.size(); i++) {
+        if(content[i].boundary.initialPoint() == p) continue; //bad hack for inside_invariants
+        if(content[i].contains(p)) ixs.push_back(i);
+    }
+    if(ixs.size() == 0) return !fill;
+    return content[*min_element(ixs.begin(), ixs.end(), ContainmentOrder(&content))].isFill();
+}
+
+bool Shape::inside_invariants() const {  //semi-slow & easy to violate
+    for(unsigned i = 0; i < content.size(); i++)
+        if( logical_xor(content[i].isFill(), contains(content[i].boundary.initialPoint())) ) return false;
+    return true;
+}
+bool Shape::region_invariants() const { //semi-slow
+    for(unsigned i = 0; i < content.size(); i++)
+        if(!content[i].invariants()) return false;
+    return true;
+}
+bool Shape::cross_invariants() const { //slow
+    CrossingSet crs = crossings_among(paths_from_regions(content));
+    for(unsigned i = 0; i < crs.size(); i++)
+        if(!crs[i].empty()) return false;
+    return true;
+}
+
+bool Shape::invariants() const {
+    return inside_invariants() && region_invariants() && cross_invariants();
+}
 
 }

@@ -60,16 +60,15 @@ public:
 
   virtual Rect boundsFast() const = 0;
   virtual Rect boundsExact() const = 0;
-  virtual Rect boundsLocal(Interval i) const = 0;
-
+  virtual Rect boundsLocal(Interval i, unsigned deg) const = 0;
+  Rect boundsLocal(Interval i) const { return boundsLocal(i, 0); }
+  
   virtual std::vector<double> roots(double v, Dim2 d) const = 0;
 
   virtual int winding(Point p) const { return root_winding(*this, p); }
 
   virtual Curve *portion(double f, double t) const = 0;
   virtual Curve *reverse() const { return portion(1, 0); }
-
-  virtual Crossings crossingsWith(Curve const & other) const;
   
   virtual void setInitial(Point v) = 0;
   virtual void setFinal(Point v) = 0;
@@ -88,6 +87,7 @@ private:
   D2<SBasis> inner;
 public:
   explicit SBasisCurve(D2<SBasis> const &sb) : inner(sb) {}
+  explicit SBasisCurve(Curve const &other) : inner(other.toSBasis()) {}
   Curve *duplicate() const { return new SBasisCurve(*this); }
 
   Point initialPoint() const    { return inner.at0(); }
@@ -101,9 +101,9 @@ public:
   void setInitial(Point v) { for(unsigned d = 0; d < 2; d++) { inner[d][0][0] = v[d]; } }
   void setFinal(Point v)   { for(unsigned d = 0; d < 2; d++) { inner[d][0][1] = v[d]; } }
 
-  Rect boundsFast() const            { return bounds_fast(inner); }
-  Rect boundsExact() const           { return bounds_exact(inner); }
-  Rect boundsLocal(Interval i) const { return bounds_local(inner, i); }
+  Rect boundsFast() const  { return bounds_fast(inner); }
+  Rect boundsExact() const { return bounds_exact(inner); }
+  Rect boundsLocal(Interval i, unsigned deg) const { return bounds_local(inner, i, deg); }
 
   std::vector<double> roots(double v, Dim2 d) const { return Geom::roots(inner[d] - v); }
 
@@ -169,7 +169,13 @@ public:
   
   Rect boundsFast() const { return bounds_fast(inner); }
   Rect boundsExact() const { return bounds_exact(inner); }
-  Rect boundsLocal(Interval i) const { return bounds_local(inner, i); }
+  Rect boundsLocal(Interval i, unsigned deg) const {
+      if(deg == 0) return bounds_local(inner, i);
+      // TODO: UUUUUUGGGLLY
+      if(deg == 1 && order > 1) return Rect(bounds_local(derivative(inner[X]), i),
+                                            bounds_local(derivative(inner[Y]), i));
+      return Rect(Interval(0,0), Interval(0,0));
+  }
 //TODO: local
 
 //TODO: implement next 3 natively
@@ -177,12 +183,9 @@ public:
     return SBasisCurve(toSBasis()).winding(p);
   }
 
-  std::vector<double> roots(double v, Dim2 d) const {
-      return inner[d].roots();
-      /*std::vector<double> levels;
-      levels.push_back(v);
-      return Geom::multi_roots(inner[d].toSBasis() - v, levels, 
-      0., 0.5, 0., 1).front();*/
+  std::vector<double>
+  roots(double v, Dim2 d) const {
+      return (inner[d] - v).roots();
   }
   
   void setPoints(std::vector<Point> ps) {
@@ -262,7 +265,7 @@ public:
 
   Rect boundsFast() const;
   Rect boundsExact() const;
-  Rect boundsLocal(Interval i) const;
+  Rect boundsLocal(Interval i, unsigned deg) const;
 
   int winding(Point p) const {
     return SBasisCurve(toSBasis()).winding(p);

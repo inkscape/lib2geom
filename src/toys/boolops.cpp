@@ -86,7 +86,9 @@ class BoolOps: public Toy {
         Region bt = Region(b.getBoundary() * t, b.isFill());
         
         cairo_set_line_width(cr, 1);
+        mark_crossings(cr, as, bst);
         
+        /*
         Shape s;
         switch(mode) {
         case 0:
@@ -101,9 +103,9 @@ class BoolOps: public Toy {
         case 3:
             //s = shape_exclude(as, bst);
             break;
-        }
+        }*/
         //if(mode<3) cairo_shapes(cr, s); else cairo_path(cr, desanitize(s));
-        cairo_shape(cr, s);
+        //cairo_shape(cr, s);
         cairo_fill(cr);
         
         *notify << "Operation: " << (mode ? (mode == 1 ? "subtract" : (mode == 2 ? "intersect" : "exclude")) : "union");
@@ -141,7 +143,7 @@ class BoolOps: public Toy {
         
         mode = 0; rev = false;
         
-        handles.push_back(Point(200,200));      
+        handles.push_back(Point(700,700));
 
         as = cleanup(paths_a) * Geom::Translate(Point(300, 300));
         bs = cleanup(paths_b);

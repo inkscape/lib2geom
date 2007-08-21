@@ -223,8 +223,8 @@ Rect SVGEllipticalArc::boundsFast() const {
 Rect SVGEllipticalArc::boundsExact() const {
     throw NotImplemented();
 }
-Rect SVGEllipticalArc::boundsLocal(Interval i ) const {
-    throw NotImplemented();
+Rect SVGEllipticalArc::boundsLocal(Interval i, unsigned deg) const {
+    //throw NotImplemented();
 }
 
 std::vector<Point> SVGEllipticalArc::pointAndDerivatives(Coord t, unsigned n) const {
@@ -232,7 +232,7 @@ std::vector<Point> SVGEllipticalArc::pointAndDerivatives(Coord t, unsigned n) co
 }
 
 std::vector<double> SVGEllipticalArc::roots(double v, Dim2 d) const {
-    throw NotImplemented();
+    //throw NotImplemented();
 }
 
 D2<SBasis> SVGEllipticalArc::toSBasis() const {

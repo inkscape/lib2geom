@@ -4,19 +4,7 @@
 #include "path.h"
 #include "path-intersection.h"
 
-//for path_direction:
-#include "sbasis-geometric.h"
-
 namespace Geom {
-
-//returns true for ccw, false for cw
-inline bool path_direction(Path const &p) {
-    Piecewise<D2<SBasis> > pw = p.toPwSb();
-    double area;
-    Point centre;
-    Geom::centroid(pw, centre, area);
-    return area > 0;
-}
 
 class Shape;
 

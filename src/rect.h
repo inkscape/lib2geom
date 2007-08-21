@@ -83,7 +83,8 @@ public:
             case 3: return Point(f[X].min(), f[Y].max());
         }
     }
-
+        
+    //We should probably remove these - they're coord sys gnostic
     inline double top() const { return f[Y].min(); }
     inline double bottom() const { return f[Y].max(); }
     inline double left() const { return f[X].min(); }
