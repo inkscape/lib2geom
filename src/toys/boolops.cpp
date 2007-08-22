@@ -46,7 +46,8 @@ void mark_crossings(cairo_t *cr, Shape const &a, Shape const &b) {
         Crossings c = cc[j];
         for(Crossings::iterator i = c.begin(); i != c.end(); i++) {
             draw_cross(cr, ac[i->a].getBoundary().pointAt(i->ta));
-            draw_text(cr, ac[i->a].getBoundary().pointAt(i->ta), i->dir ? "T" : "F");
+            cairo_stroke(cr);
+            //draw_text(cr, ac[i->a].getBoundary().pointAt(i->ta), i->dir ? "T" : "F");
         }
     }
 }
@@ -88,9 +89,8 @@ class BoolOps: public Toy {
         cairo_set_line_width(cr, 1);
         mark_crossings(cr, as, bst);
         
-        /*
         Shape s;
-        switch(mode) {
+        /*switch(mode) {
         case 0:
             s = shape_union(as, bst);
             break;
@@ -103,11 +103,12 @@ class BoolOps: public Toy {
         case 3:
             //s = shape_exclude(as, bst);
             break;
-        }*/
+        }
         //if(mode<3) cairo_shapes(cr, s); else cairo_path(cr, desanitize(s));
-        //cairo_shape(cr, s);
+        cairo_shape(cr, s);
         cairo_fill(cr);
-        
+        */ cairo_shape(cr, as);
+        cairo_shape(cr, bst);
         *notify << "Operation: " << (mode ? (mode == 1 ? "subtract" : (mode == 2 ? "intersect" : "exclude")) : "union");
         *notify << "\nKeys:\n u = Union   s = Subtract   i = intersect   e = exclude";
         

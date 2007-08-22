@@ -25,6 +25,9 @@ class Region {
     Region(Path const &p, boost::optional<Rect> const &b, bool dir) : boundary(p), box(b), fill(dir) {}
     
     bool isFill() const { return fill; }    
+    Region asFill() const { if(fill) return Region(*this); else return inverse(); } 
+    Region asHole() const { if(fill) return inverse(); else return Region(*this); }
+    
     Path getBoundary() const { return boundary; }
     Rect boundsFast() {
         if(!box) box = boost::optional<Rect>(boundary.boundsFast());
@@ -75,10 +78,10 @@ inline Regions region_boolean(bool rev, Region const & a, Region const & b) {
     return region_boolean(rev, a, b, crossings(a.getBoundary(), b.getBoundary()));
 }
 
-Regions path_union(Region const & a, Region const & b, bool typ);
-Regions path_subtract(Region const & a, Region const & b, bool typ);
-Regions path_intersect(Region const & a, Region const & b, bool typ);
-Regions path_exclude(Region const & a, Region const & b, bool typ);
+Regions path_union(Region const & a, Region const & b);
+Regions path_subtract(Region const & a, Region const & b);
+Regions path_intersect(Region const & a, Region const & b);
+Regions path_exclude(Region const & a, Region const & b);
 
 }
 

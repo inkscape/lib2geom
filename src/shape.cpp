@@ -176,11 +176,20 @@ Shape shape_boolean(bool rev, Shape const & a, Shape const & b) {
     return shape_boolean(rev, a, b, crs);
 }
 
-/*sanitize
+int paths_winding(std::vector<Path> const &ps, Point p) {
+    int ret;
+    for(unsigned i = 0; i < ps.size(); i++)
+        ret += winding(ps[i], p);
+    return ret;
+}
+
+//sanitize
+//We have two phases, one for each winding direction.
 Shape sanitize_paths(std::vector<Path> const &ps, bool evenodd) {
-    Crossings crs = crossings_among(ps);
+    CrossingSet crs = crossings_among(ps);
     
     //two-phase process - g
+    Regions chunks;
     for(bool phase = 0; phase < 2; phase++) {
         
         //Keep track of which crossings we've hit.
@@ -193,17 +202,37 @@ Shape sanitize_paths(std::vector<Path> const &ps, bool evenodd) {
             first_false(visited, i, j);
             if(i == visited.size()) break;
             
+            bool use = paths_winding(ps, ps[i].initialPoint()) % 2 == 1;
             Path res;
             do {
                 Crossing cur = crs[i][j];
                 visited[i][j] = true;
                 
                 //get indices of the dual:
-                unsigned io = cur.getOther(i), jo = find_crossing(crs[io], cur, io);
-                if(jo < visited[io].size()) visited[io][jo] = true;
+                i = cur.getOther(i), j = find_crossing(crs[i], cur, i);
+                if(j < visited[i].size()) visited[i][j] = true;
                 
-
-} */
+                if(logical_xor(phase, cur.dir)) {
+                    // forwards
+                    j++;
+                    if(j >= crs[i].size()) j = 0;
+                } else {
+                    // backwards
+                    if(j == 0) j = crs[i].size() - 1; else j--;
+                }
+                if(use) {
+                    Crossing next = crs[i][j];
+                    ps[i].appendPortionTo(res, cur.ta, next.ta);
+                }
+            } while(!visited[i][j]);
+            
+            if(use) {
+                chunks.push_back(Region(res, true));
+            }
+        }
+    }
+    return Shape(chunks);
+}
 
 Shape Shape::operator*(Matrix const &m) const {
     Shape ret;

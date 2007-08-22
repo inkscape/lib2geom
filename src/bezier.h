@@ -177,10 +177,31 @@ public:
 
 //TODO: implement others
 template<unsigned order>
+Bezier<order> operator+(const Bezier<order> & a, double v) {
+    Bezier<order> result;
+    for(unsigned i = 0; i <= order; i++)
+        result[i] = a[i] + v;
+    return result;
+}
+template<unsigned order>
 Bezier<order> operator-(const Bezier<order> & a, double v) {
     Bezier<order> result;
     for(unsigned i = 0; i <= order; i++)
         result[i] = a[i] - v;
+    return result;
+}
+template<unsigned order>
+Bezier<order> operator*(const Bezier<order> & a, double v) {
+    Bezier<order> result;
+    for(unsigned i = 0; i <= order; i++)
+        result[i] = a[i] * v;
+    return result;
+}
+template<unsigned order>
+Bezier<order> operator/(const Bezier<order> & a, double v) {
+    Bezier<order> result;
+    for(unsigned i = 0; i <= order; i++)
+        result[i] = a[i] / v;
     return result;
 }
 
@@ -197,7 +218,7 @@ Bezier<order> portion(const Bezier<order> & a, double from, double to) {
     //TODO: implement better?
     Coord res[order+1];
     if(from == 0) {
-        if(to == 1) { return Bezier<order>(a.c_); }
+        if(to == 1) { std::cout << "huh\n"; return Bezier<order>(a); }
         subdivideArr<order>(to, a.c_, res, NULL);
         return Bezier<order>(res);
     }
@@ -242,7 +263,8 @@ inline Interval bounds_exact(Bezier<order> const & b) {
 
 template<unsigned order>
 inline Interval bounds_local(Bezier<order> const & b, Interval i) {
-    return bounds_fast(portion(b, i.min(), i.max())); //bounds_local(b.toSBasis(), i);
+    return bounds_fast(portion(b, i.min(), i.max()));
+    //return bounds_local(b.toSBasis(), i);
 }
 
 }

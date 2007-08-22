@@ -122,7 +122,7 @@ void Path::appendPortionTo(Path &ret, double from, double to) const {
   const_iterator toi   = inc(begin(), (unsigned)ti);
   //TODO: do we really need to delete the portion returns?
   Curve *fromv = fromi->portion(ff, 1.);
-  //fromv->setInitial(ret.back().finalPoint());
+  fromv->setInitial(ret.finalPoint());
   ret.append(*fromv);
   delete fromv;
 

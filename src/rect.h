@@ -107,10 +107,10 @@ public:
 	return f[X].intersects(r[X]) && f[Y].intersects(r[Y]); 
     }
     inline bool contains(Rect const &r)   const { 
-	return f[X].contains(r[X])   && f[Y].contains(r[Y]); 
+	return f[X].contains(r[X]) && f[Y].contains(r[Y]); 
     }
     inline bool contains(Point const &p)  const {
-	return f[X].contains(p[X])   && f[Y].contains(p[Y]);
+	return f[X].contains(p[X]) && f[Y].contains(p[Y]);
     }
 
     inline void expandTo(Point p)        { 

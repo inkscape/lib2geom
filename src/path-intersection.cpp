@@ -94,12 +94,12 @@ bool path_direction(Path const &p) {
     double y = p.initialPoint()[Y];
     double x = p.initialPoint()[X];
     Cmp res = EQUAL_TO;
+    goto doh;
     for(unsigned i = 1; i < p.size(); i++) {
         Cmp final_to_ray = cmp(p[i].finalPoint()[Y], y);
         Cmp initial_to_ray = cmp(p[i].initialPoint()[Y], y);
         // if y is included, these will have opposite values, giving order.
         Cmp c = cmp(final_to_ray, initial_to_ray);
-        std::cout << c << "\n";
         if(c != EQUAL_TO) {
             std::vector<double> rs = p[i].roots(y, Y);
             for(unsigned j = 0; j < rs.size(); j++) {
@@ -113,7 +113,6 @@ bool path_direction(Path const &p) {
             goto doh;
         }
     }
-    std::cout << "res\n";
     return res > 0;
     
     doh:
@@ -161,130 +160,124 @@ Crossings crossings_recurse(Curve const &a, Curve const &b,
 
 //pair intersect code based on njh's pair-intersect
 
-/*
-bool
-linear_pair_intersect(Curve const & A, double Al, double Ah, 
-                      Curve const & B, double Bl, double Bh,
-                      double &tA, double &tB) {
-    // Cramers rule as cross products
-    Point A0 = A.pointAt(Al);
-    Point A1 = A.pointAt(Ah);
-    Point B0 = B.pointAt(Bl);
-    Point B1 = B.pointAt(Bh);
-    Point Ad = A1 - A0; //lk These                were used
-    Point Bd = B1 - B0; //nm    three   abbreviations    in the   non-cross-product
-    Point  d = B0 - A0; //mk       two-letter                original            code
-    double det = cross(Ad, Bd);
-    if( 1.0 + det == 1.0 )
-        return false;
-    else
-    {
-        double detinv = 1.0 / det;
-        double s = cross(Bd, d) * detinv;
-        double t = cross(Ad, d) * detinv;
-        if( ( s < 0.0 ) || ( s > 1.0 ) || ( t < 0.0 ) || ( t > 1.0 ) )
-            return false;
-        tA = Al + s * ( Ah - Al );
-        tB = Bl + t * ( Bh - Bl );
-        return true;
-    }
-}
-*/
-
-bool
-linear_pair_intersect(Curve const &A, double Al, double Ah, 
-                      Curve const &B, double Bl, double Bh,
-                      double &tA, double &tB) {
-    // kramers rule here
-    Point A0 = A.pointAt(Al);
-    Point A1 = A.pointAt(Ah);
-    Point B0 = B.pointAt(Bl);
-    Point B1 = B.pointAt(Bh);
-    double xlk = A1[X] - A0[X];
-    double ylk = A1[Y] - A0[Y];
-    double xnm = B1[X] - B0[X];
-    double ynm = B1[Y] - B0[Y];
-    double xmk = B0[X] - A0[X];
-    double ymk = B0[Y] - A0[Y];
-    double det = xnm * ylk - ynm * xlk;
-    if( 1.0 + det == 1.0 )
-        return false;
-    else
-    {
-        double detinv = 1.0 / det;
-        double s = ( xnm * ymk - ynm *xmk ) * detinv;
-        double t = ( xlk * ymk - ylk * xmk ) * detinv;
-        if( ( s < 0.0 ) || ( s > 1.0 ) || ( t < 0.0 ) || ( t > 1.0 ) )
-            return false;
-        tA = Al + s * ( Ah - Al );
-        tB = Bl + t * ( Bh - Bl );
-        return true;
-    }
-}
 
 template<typename T>
 void append(T &a, T const &b) {
     a.insert(a.end(), b.begin(), b.end());
 }
 
+bool
+linear_intersect(Point A0, Point A1, Point B0, Point B1,
+                 double &tA, double &tB, double &det) {
+    // kramers rule as cross products
+    Point Ad = A1 - A0,
+          Bd = B1 - B0,
+           d = B0 - A0;
+    det = cross(Ad, Bd);
+    if( 1.0 + det == 1.0 )
+        return false;
+    else
+    {
+        double detinv = 1.0 / det;
+        tA = cross(d, Bd) * detinv;
+        tB = cross(d, Ad) * detinv;
+        return tA > 0. && tA < 1. && tB > 0. && tB < 1.;
+    }
+}
+
+void pair_intersect(std::vector<double> &Asects,
+                    std::vector<double> &Bsects,
+                    Curve const & A, double Al, double Ah, 
+                    Curve const & B, double Bl, double Bh, unsigned depth=0) {
+   // std::cout << depth << "(" << Al << ", " << Ah << ")\n";
+    Rect Ar = SBasisCurve(A).boundsLocal(Interval(Al, Ah),0);
+    if(Ar.isEmpty()) return;
+
+    Rect Br = SBasisCurve(B).boundsLocal(Interval(Bl, Bh),0);
+    if(Br.isEmpty()) return;
+    
+    if((depth > 12) || Ar.intersects(Br)) {
+        if((depth > 12)) {
+            double tA, tB, c;
+            if(linear_intersect(A.pointAt(Al), A.pointAt(Ah), 
+                                     B.pointAt(Bl), B.pointAt(Bh), 
+                                     tA, tB, c)) {
+                tA = tA * (Ah - Al) + Al;
+                tB = tB * (Bh - Bl) + Bl;
+                //std::cout << "intersects " << tA << ", " << tB << "\n";
+                Asects.push_back(tA);
+                Bsects.push_back(tB);
+            }
+            
+        } else {
+            double mid = (Al + Ah)/2;
+            pair_intersect(Bsects, Asects,
+                           B, Bl, Bh,
+                           A, Al, mid, depth+1);
+            pair_intersect(Bsects, Asects,
+                           B, Bl, Bh,
+                           A, mid, Ah, depth+1);
+        }
+    }
+}
+/*
+
 void pair_intersect(std::vector<double> &Asects,
                     std::vector<double> &Bsects,
                     Curve const & A, double Al, double Ah, 
                     Curve const & B, double Bl, double Bh, unsigned depth=0) {
     std::cout << depth << "(" << Al << ", " << Ah << ")\n";
-    if(depth <= 12) {
-        if(Ah - Al > 0.01 && Bh - Bl > 0.01) goto recurse;
-    }
-    double tA, tB;
-    if(linear_pair_intersect(A, Al, Ah, 
-                    B, Bl, Bh, 
-                    tA, tB)) {
-        std::cout << "PARTY PARTY PARTY\n";
-        Asects.push_back(tA);
-        Bsects.push_back(tB);
-    }
-    std::cout << ":(\n";
-    return;
-    
-    recurse:
-    // We'll split B with A's bounds, and swap every recursion
+
     Rect Ar = A.boundsLocal(Interval(Al, Ah));
-
     if(Ar.isEmpty()) return;
-    std::vector<double> rs = B.roots(Ar.left(), X), sr = B.roots(Ar.right(), X),
-                        st = B.roots(Ar.top(), Y), sb = B.roots(Ar.bottom(), Y);
-    unsigned size = rs.size() + sr.size() + st.size() + sb.size();
+    Rect Br = B.boundsLocal(Interval(Bl, Bh));
+    if(Br.isEmpty()) return;
+    if(!Ar.intersects(Br)) return;
     
-    if(size == 0) {
-        if(Ar.contains(B.initialPoint())) {
-            std::cout << "crashy?\n";
-            //If B is inside A, we need to try again, cutting with B's rect
-            pair_intersect(Bsects, Asects,
-                            B, Bl, Bh,
-                            A, Al, Ah, depth);
-        }
-        return;
-    }
+    if(depth <= 12 && Ah - Al > 0.1 && Bh - Bl > 0.1) {
+        // We'll split B, and swap every recursion
+        pair_intersect(Bsects, Asects,
+                    B, Bl, (Bl+Bh)/2,
+                    A, Al, Ah, depth+1);
+        pair_intersect(Bsects, Asects,
+                    B, (Bl+Bh)/2, Bh,
+                    A, Al, Ah, depth+1);
 
-    rs.reserve(size+2);
-    rs.push_back(0.); rs.push_back(1.);
-    append(rs, sr); append(rs, st); append(rs, sb);
-    std::sort(rs.begin(), rs.end());
-    
-    for(unsigned i = 1; i < rs.size(); i++) {
-        if(rs[i-1] < Bl) continue;
-        if(rs[i] > Bh) break;
-        double mid = (rs[i] + rs[i-1]) / 2;
-        if(Ar.contains(B.pointAt(mid))) {
-             pair_intersect(Bsects, Asects,
-                            B, mid, rs[i],
-                            A, Al, Ah, depth+1);
-             pair_intersect(Bsects, Asects,
-                            B, rs[i-1], mid,
-                            A, Al, Ah, depth+1);
+    } else {
+        double tA, tB;
+        if(linear_pair_intersect(A, Al, Ah, 
+                        B, Bl, Bh, 
+                        tA, tB)) {
+            std::cout << "Intersected\n";
+            Asects.push_back(tA);
+            Bsects.push_back(tB);
         }
     }
-}
+  
+    //Make a bit of a guess for a split point in B
+    double mid;
+    Dim2 dim = Br.height() > Br.width() ? Y : X;
+    double weight = (B.valueAt(Bh,dim) - B.valueAt(Bl,dim)) / Br[dim].extent();
+    double ma = Ar[dim].middle(), mb = Br[dim].middle();
+    if(!Br[dim].contains(ma)) {
+        if(fabs(Ar[dim].min() - mb) < fabs(Ar[dim].max() - mb)) {
+            if(Br[dim].contains(Ar[dim].min())) {
+                ma = Ar[dim].min();
+            } else {
+                mid = 0.5; goto skipper;
+            }
+        } else {
+            if(Br[dim].contains(Ar[dim].max())) {
+                ma = Ar[dim].max();
+            } else {
+                mid = 0.5; goto skipper;
+            }
+        }
+    }
+    mid = ((ma - Br[dim].min()) / Br[dim].extent() * weight + .5) / (1 + fabs(weight));    mid = 0.5;
+    mid = (Bh - Bl) * mid + Bl;
+    std::cout << "weight: " << weight << " mid: " << mid << "\n";
+} */
 
 Crossings to_crossings(std::vector<std::pair<double, double> > ts, Curve const &a, Curve const &b) { 
     Crossings ret;
@@ -310,10 +303,80 @@ Crossings SBCrosser::operator()(Curve const &a, Curve const &b) {
     return to_crossings(zip(asects, bsects), a, b);
 }
 
+int cnt;
 
-
-Crossings BezCrosser::operator()(Curve const &a, Curve const &b) {
+void mono_pair(Curve const &A, double Al, double Ah,
+               Curve const &B, double Bl, double Bh,
+               unsigned depth, Crossings &ret, double tol) {
+    if(depth >13 || Al > Ah || Bl > Bh) return;
+    //std::cout << depth << "[" << Al << ", " << Ah << "]" << "[" << Bl << ", " << Bh << "]\n";
+    cnt++;
+    //std::cout << cnt << "\n";
+    //Split B
+    Point A0 = A.pointAt(Al), A1 = A.pointAt(Ah),
+          B0 = B.pointAt(Bl), B1 = B.pointAt(Bh);
+    //inline code that this implies? (without rect/interval construction)
+    if(!Rect(A0, A1).intersects(Rect(B0, B1))) return;
     
+    double tA, tB, c;
+
+    if(linear_intersect(A0, A1, B0, B1, tA, tB, c)) {
+        tA = tA * (Ah - Al) + Al;
+        tB = tB * (Bh - Bl) + Bl;
+        double dist = LInfty(A.pointAt(tA) - A.pointAt(tB));
+        std::cout << dist;
+        if(depth >= 12 || dist <= tol) {
+            ret.push_back(Crossing(tA, tB, c > 0));
+            return;
+        }
+        double hwidth = 0.1;
+        if(tB - hwidth*2 <= 0) tB += hwidth; else
+        if(tB + hwidth*2 >= 1) tB -= hwidth; else {
+            mono_pair(B, Bl, tB - hwidth,
+                      A, Al, Ah,
+                      depth+1, ret, tol);
+            mono_pair(B, tB - hwidth, tB + hwidth,
+                      A, Al, Ah,
+                      depth+1, ret, tol);
+            mono_pair(B, tB + hwidth, Bh,
+                      A, Al, Ah,
+                      depth+1, ret, tol);
+            return;
+        }
+        
+    } //else
+     tB = (Bl + Bh) / 2;
+    mono_pair(B, Bl, tB,
+              A, Al, Ah,
+              depth+1, ret, tol);
+    mono_pair(B, tB, Bh,
+              A, Al, Ah,
+              depth+1, ret, tol);
+}
+
+std::vector<double> mono_splits(Curve const &d) {
+    std::vector<double> rs = d.roots(0, X);
+    append(rs, d.roots(0, Y));
+    rs.push_back(0); rs.push_back(1);
+    std::sort(rs.begin(), rs.end());
+    return rs;
+}
+
+Crossings NewCrosser::operator()(Curve const &a, Curve const &b) {
+    Crossings ret;
+    //Curve *da = a.derivative(), *db = b.derivative();
+    //std::vector<double> sa = mono_splits(*da), sb = mono_splits(*db);
+    std::vector<double> sa,sb; sa.push_back(1); sb.push_back(1);
+    //delete da; delete db;
+    for(unsigned i = 0; i < sa.size(); i++) {
+        for(unsigned j = 0; j < sb.size(); j++) {
+            //ret.push_back(Crossing(sa[i], sb[j], false));
+            mono_pair(a, sa[i-1], sa[i],
+                      b, sb[i-1], sb[i],
+                      0, ret, .01);
+        }
+    }
+    return ret;
 }
 
 std::vector<Rect> curve_bounds(Path const &x) {
@@ -331,7 +394,7 @@ Crossings crossings(Path const &a, Path const &b, Crosser &c) {
     for(unsigned i = 0; i < a.size(); i++) {
         for(std::vector<unsigned>::iterator jp = ixs[i].begin(); jp != ixs[i].end(); jp++) {
             if(bounds_a[i].intersects(bounds_b[*jp])) {
-                Crossings cc = bounds_a[i].area() < bounds_b[*jp].area() ? c(a[i], b[*jp]) : c(a[*jp], b[i]);
+                Crossings cc = bounds_a[i].area() < bounds_b[*jp].area() ? c(a[i], b[*jp]) : c(b[*jp], a[i]);
                 //TODO: remove this loop and pass in some indicators
                 for(Crossings::iterator it = cc.begin(); it != cc.end(); it++) {
                     ret.push_back(Crossing(it->ta + i, it->tb + *jp, it->dir));
@@ -341,6 +404,7 @@ Crossings crossings(Path const &a, Path const &b, Crosser &c) {
     }
     return ret;
 }
+
 
 Crossings self_crossings(Path const &a, Crosser &c) {
     Crossings ret;
@@ -362,7 +426,7 @@ Crossings self_crossings(Path const &a, Crosser &c) {
         }
     }
     return ret;
-}
+}   
 
 CrossingSet crossings_among(std::vector<Path> const &ps, Crosser &c) {
     CrossingSet results(ps.size(), Crossings());

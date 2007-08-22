@@ -67,8 +67,10 @@ public:
 
   virtual int winding(Point p) const { return root_winding(*this, p); }
 
+  //mental: review these
   virtual Curve *portion(double f, double t) const = 0;
   virtual Curve *reverse() const { return portion(1, 0); }
+  virtual Curve *derivative() const = 0;
   
   virtual void setInitial(Point v) = 0;
   virtual void setFinal(Point v) = 0;
@@ -113,6 +115,10 @@ public:
   
   Curve *transformed(Matrix const &m) const {
     return new SBasisCurve(inner * m);
+  }
+  
+  Curve *derivative() const {
+    return new SBasisCurve(Geom::derivative(inner));
   }
   
   D2<SBasis> toSBasis() const { return inner; }
@@ -172,8 +178,8 @@ public:
   Rect boundsLocal(Interval i, unsigned deg) const {
       if(deg == 0) return bounds_local(inner, i);
       // TODO: UUUUUUGGGLLY
-      if(deg == 1 && order > 1) return Rect(bounds_local(derivative(inner[X]), i),
-                                            bounds_local(derivative(inner[Y]), i));
+      if(deg == 1 && order > 1) return Rect(bounds_local(Geom::derivative(inner[X]), i),
+                                            bounds_local(Geom::derivative(inner[Y]), i));
       return Rect(Interval(0,0), Interval(0,0));
   }
 //TODO: local
@@ -218,6 +224,19 @@ public:
     return ret;
   }
 
+  Curve *derivative() const {
+     if(order > 1)
+        return new BezierCurve<order-1>(Geom::derivative(inner[X]), Geom::derivative(inner[Y]));
+     else if (order == 1) {
+        double dx = inner[X][1] - inner[X][0], dy = inner[Y][1] - inner[Y][0];
+        if(dx == 0) return new BezierCurve(*this);
+        double slope = dy / dx;
+        Geom::Point pnt;
+        if(slope == 0) pnt = Geom::Point(0, 0); else pnt = Geom::Point(slope, 1./slope);
+        return new BezierCurve<1>(pnt, pnt);
+     }
+  }
+
   Point pointAt(double t) const { return inner.valueAt(t); } 
   std::vector<Point> pointAndDerivatives(Coord t, unsigned n) const { return inner.valueAndDerivatives(t, n); }
 
@@ -236,7 +255,7 @@ protected:
 };
 
 // BezierCurve<0> is meaningless; specialize it out
-template<> class BezierCurve<0> { BezierCurve(); };
+template<> class BezierCurve<0> : public BezierCurve<1> { public: BezierCurve(); BezierCurve(Bezier<0> x, Bezier<0> y); };
 
 typedef BezierCurve<1> LineSegment;
 typedef BezierCurve<2> QuadraticBezier;
@@ -301,6 +320,8 @@ public:
     ret->final_ = final_ * m;
     return ret;
   }
+  
+  Curve *derivative() const { throw NotImplemented(); }
   
   std::vector<Point> pointAndDerivatives(Coord t, unsigned n) const;
 
