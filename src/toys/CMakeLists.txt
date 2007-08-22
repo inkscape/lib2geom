@@ -19,6 +19,7 @@ fitter
 gear
 vid-intro
 #inverse-test
+load-svgd
 match-curve
 mesh-grad
 #normal-bundle
