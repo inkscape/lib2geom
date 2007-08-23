@@ -9,26 +9,29 @@
 
 namespace Geom {
 
-int winding(Path const &path, Point p) {
+int winding(Path const &p, Point pnt) {
   //start on a segment which is not a horizontal line with y = p[y]
-  Path::const_iterator start;
-  for(Path::const_iterator iter = path.begin(); ; ++iter) {
-    if(iter == path.end_closed()) { return 0; }
-    if(iter->initialPoint()[Y]!=p[Y])  { start = iter; break; }
-    if(iter->finalPoint()[Y]!=p[Y])    { start = iter; break; }
-    if(iter->boundsFast().height()!=0.){ start = iter; break; }
+  int cnt = 0;
+  unsigned start;
+  for(unsigned i = 0; ; ++i) {
+    if(i >= p.size()) { return 0; }
+    if(p[i].initialPoint()[Y]!=pnt[Y])  { start = i; break; }
+    if(p[i].finalPoint()[Y]!=pnt[Y])    { start = i; break; }
+    if(p[i].boundsFast().height()!=0.){ start = i; break; }
   }
   int wind = 0;
-  bool temp = true;
-  for (Path::const_iterator iter = start; iter != start || temp
-       ; ++iter, iter = (iter == path.end_closed()) ? path.begin() : iter )
+  bool starting = true;
+  for (unsigned i = start; i != start || starting;
+       ++i, i = (i <= p.size()) ? i : 0 )
   {
-    temp = false;
-    Rect bounds = iter->boundsFast();
-    Coord x = p[X], y = p[Y];
+    cnt++;
+    if(cnt > p.size()) return 0; //TODO: ehrm, yeah, fix the problem that requires this...
+    starting = false;
+    Rect bounds = p[i].boundsFast();
+    Coord x = pnt[X], y = pnt[Y];
     if(x > bounds.right() || !bounds[Y].contains(y)) continue;
-    Point final = iter->finalPoint();
-    Point initial = iter->initialPoint();
+    Point final = p[i].finalPoint();
+    Point initial = p[i].initialPoint();
     Cmp final_to_ray = cmp(final[Y], y);
     Cmp initial_to_ray = cmp(initial[Y], y);
     // if y is included, these will have opposite values, giving order.
@@ -42,7 +45,7 @@ int winding(Path const &path, Point p) {
         }
     } else {
         //inside bbox, use custom per-curve winding thingie
-        int delt = iter->winding(p);
+        int delt = p[i].winding(pnt);
         wind += delt;
         //std::cout << "n" << delt << " ";
     }
@@ -50,38 +53,36 @@ int winding(Path const &path, Point p) {
     if(final[Y] == y) {
         //Traverse segments until it breaks away from y
         //99.9% of the time this will happen the first go
-        Path::const_iterator next = iter;
-        next++;
+        unsigned next = i+1;
         for(; ; next++) {
-            if(next == path.end_closed()) next = path.begin();
-            Rect bnds = next->boundsFast();
+            if(next >= p.size()) next = 0;
+            Rect bnds = p[next].boundsFast();
             //TODO: X considerations
             if(bnds.height() > 0) {
                 //It has diverged
-                if(bnds.contains(p)) {
+                if(bnds.contains(pnt)) {
                     const double fudge = 0.01;
-                    if(cmp(y, next->valueAt(fudge, Y)) == initial_to_ray) {
+                    if(cmp(y, p[next].valueAt(fudge, Y)) == initial_to_ray) {
                         wind += int(c);
                         std::cout << "!!!!!" << int(c) << " ";
                     }
-                    iter = next; // No increment, as the rest of the thing hasn't been counted.
+                    i = next; // No increment, as the rest of the thing hasn't been counted.
                 } else {
-                    Coord ny = next->initialPoint()[Y];
+                    double ny = p[next].initialPoint()[Y];
                     if(cmp(y, ny) == initial_to_ray) {
                         //Is a continuation through the ray, so counts windingwise
                         wind += int(c);
                         std::cout << "!!!!!" << int(c) << " ";
                     }
-                    iter = ++next;
+                    i = ++next;
                 }
                 goto cont;
             }
-            if(next==start) return wind;
+            if(next == start) return wind;
         }
         //Looks like it looped, which means everything's flat
         return 0;
     }
-    
     cont:(void)0;
   }
   return wind;
@@ -180,14 +181,13 @@ linear_intersect(Point A0, Point A1, Point B0, Point B1,
         double detinv = 1.0 / det;
         tA = cross(d, Bd) * detinv;
         tB = cross(d, Ad) * detinv;
-        return tA > 0. && tA < 1. && tB > 0. && tB < 1.;
+        return tA >= 0. && tA <= 1. && tB >= 0. && tB <= 1.;
     }
 }
 
-void pair_intersect(std::vector<double> &Asects,
-                    std::vector<double> &Bsects,
-                    Curve const & A, double Al, double Ah, 
-                    Curve const & B, double Bl, double Bh, unsigned depth=0) {
+void pair_intersect(Curve const & A, double Al, double Ah, 
+                    Curve const & B, double Bl, double Bh,
+                    Crossings &ret,  unsigned depth=0, bool rev = false) {
    // std::cout << depth << "(" << Al << ", " << Ah << ")\n";
     Rect Ar = A.boundsLocal(Interval(Al, Ah));
     if(Ar.isEmpty()) return;
@@ -196,28 +196,34 @@ void pair_intersect(std::vector<double> &Asects,
     if(Br.isEmpty()) return;
     
     if((depth > 12) || Ar.intersects(Br)) {
-        if((depth > 12) || A.boundsLocal(Interval(Al, Ah), 1).maxExtent() < 0.1 
-                        || B.boundsLocal(Interval(Bl, Bh), 1).maxExtent() < 0.1) {
+        if((depth > 12) || (A.boundsLocal(Interval(Al, Ah), 1).maxExtent() < 0.1 
+                        &&  B.boundsLocal(Interval(Bl, Bh), 1).maxExtent() < 0.1)) {
             double tA, tB, c;
             if(linear_intersect(A.pointAt(Al), A.pointAt(Ah), 
-                                     B.pointAt(Bl), B.pointAt(Bh), 
-                                     tA, tB, c)) {
-                tA = tA * (Ah - Al) + Al;
-                tB = tB * (Bh - Bl) + Bl;
-                //std::cout << "intersects " << tA << ", " << tB << "\n";
-                Asects.push_back(tA);
-                Bsects.push_back(tB);
+                                B.pointAt(Bl), B.pointAt(Bh), 
+                                tA, tB, c)) {
+                ret.push_back(Crossing(tA * (Ah - Al) + Al, tB * (Bh - Bl) + Bl, c > 0));
                 return;
             }
         }
         if(depth > 12) return;
-        double mid = (Al + Ah)/2;
-        pair_intersect(Bsects, Asects,
-                        B, Bl, Bh,
-                        A, Al, mid, depth+1);
-        pair_intersect(Bsects, Asects,
-                        B, Bl, Bh,
-                        A, mid, Ah, depth+1);
+        if(rev) {
+            double mid = (Al + Ah)/2;
+            pair_intersect(A, Al, mid,
+                           B, Bl, Bh,
+                           ret, depth+1);
+            pair_intersect(A, mid, Ah,
+                           B, Bl, Bh,
+                           ret, depth+1);
+        } else {
+            double mid = (Bl + Bh)/2;
+            pair_intersect(A, Al, Ah,
+                           B, Bl, mid,
+                           ret, depth+1, true);
+            pair_intersect(A, Al, Ah,
+                           B, mid, Bh,
+                           ret, depth+1, true);
+        }
     }
 }
 /*
@@ -299,9 +305,9 @@ std::vector<std::pair<A, B> > zip(std::vector<A> const &a, std::vector<B> &b) {
 
 struct SimpleCurveIntersector {
     Crossings operator()(Curve const &a, Curve const &b) {
-        std::vector<double> asects, bsects;
-        pair_intersect(asects, bsects, a, 0, 1, b, 0, 1);
-        return to_crossings(zip(asects, bsects), a, b);
+        Crossings ret;
+        pair_intersect(a, 0, 1, b, 0, 1, ret);
+        return ret;
     }
 };
 

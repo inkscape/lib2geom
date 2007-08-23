@@ -8,6 +8,7 @@
 namespace Geom {
 
 //Utility funcs
+//yes, xor is !=, but I'm pretty sure this is safer in the event of strange bools
 bool logical_xor (bool a, bool b) { return (a || b) && !(a && b); }
 
 bool disjoint(Path const & a, Path const & b) {
@@ -42,26 +43,24 @@ unsigned find_crossing(Crossings const &cr, Crossing x, unsigned i) {
  *
  * Here is a chart of the behavior under various circumstances:
  * 
- * rev = false
+ * rev = false (union)
  *            A
- *       F       H
- * F  A+B->FH  A-B->H
+ *        F         H
+ * F  A+B -> F  A-B -> H
  *B
- * H  B-A->H   AxB->H
+ * H  B-A -> H  AxB -> H
  *
- * rev = true
+ * rev = true (intersect)
  *            A
- *       F       H
- * F  AxB->F   B-A->F
+ *        F         H
+ * F  AxB -> F  B-A -> F
  *B
- * H  A-B->F   A+B->HF
+ * H  A-B -> F  A+B -> H
  *
- * F/H = Fill/Hole
+ * F/H = Fill outer / Hole outer
  * A/B specify operands
  * + = union, - = subtraction, x = intersection
  * -> read as "produces"
- * FH = Fill surrounding holes
- * HF = Holes surrounding fill
  *
  * The operation of this function isn't very complicated.  It just traverses the crossings, and uses the crossing direction to decide whether the next segment should be from A or from B.
  */
@@ -87,7 +86,7 @@ Shape shape_boolean(bool rev, Shape const & a, Shape const & b, CrossingSet cons
             //get indices of the dual:
             unsigned io = cur.getOther(i), jo = find_crossing(crs[io], cur, io);
             if(jo < visited[io].size()) visited[io][jo] = true;
-
+            
             if(logical_xor(cur.dir, rev)) {
                 if(i >= ac.size()) { i = io; j = jo; }
                 j++;
@@ -105,29 +104,38 @@ Shape shape_boolean(bool rev, Shape const & a, Shape const & b, CrossingSet cons
         chunks.push_back(Region(res));
     }
     
+    //If true, then holes must be outside intersection, if false, they must be inside
+    bool hole_type = logical_xor(a.fill && b.fill, !rev);
+    
     //Handle unintersecting portions
     for(unsigned i = 0; i < crs.size(); i++) {
         if(crs[i].size() == 0) {
             Region r = i < ac.size() ? ac[i] : bc[i - ac.size()];
-            Point exemplar = r.boundary.initialPoint();
-            for(unsigned j = 0; j < chunks.size(); j++) {
-                if(chunks[j].contains(exemplar) && logical_xor(r.fill, chunks[j].fill)) {
-                    if(!rev && !r.isFill()) {
-                        //hole in a union - don't include those which are inside both
-                        if(i < ac.size()) {
-                            for(unsigned k = 0; k < bc.size(); k++)
-                                if(bc[k].contains(exemplar)) goto skip;
-                        } else {
-                            for(unsigned k = 0; k < ac.size(); k++)
-                                if(ac[k].contains(exemplar)) goto skip;
+            if(r.fill == hole_type) {
+                Point exemplar = r.boundary.initialPoint();
+                for(unsigned j = 0; j < chunks.size(); j++) {
+                    if(chunks[j].contains(exemplar)) {
+                        //The chunks are disjoint, so this is the direct parent
+                        if(logical_xor(r.fill, chunks[j].fill)) {
+                            //opposite fill, so it is a hole some way or another
+                            if(hole_type) {
+                                //hole must be from outside
+                                if(i < ac.size()) {
+                                    for(unsigned k = 0; k < bc.size(); k++)
+                                        if(bc[k].contains(exemplar)) goto skip;
+                                } else {
+                                    for(unsigned k = 0; k < ac.size(); k++)
+                                        if(ac[k].contains(exemplar)) goto skip;
+                                }
+                            }
+                            chunks.push_back(r);
                         }
+                        goto skip;
                     }
-                    chunks.push_back(r);
-                    goto skip;
                 }
             }
             //disjoint
-            if(r.fill && !rev) {
+            if(hole_type && r.fill) {
                 //and should be included
                 chunks.push_back(r);
             }
@@ -137,6 +145,18 @@ Shape shape_boolean(bool rev, Shape const & a, Shape const & b, CrossingSet cons
     
     return Shape(chunks);
 }
+
+/*
+Union
+FF inners outside intersection
+FH inners from intersection
+HH inners from intersection 
+
+Intersect
+FF inners from intersection
+FH inners from outside
+HH inners outside
+*/
 
 //Returns a vector of crossings, such that those associated with B are in the range [a.size(), a.size() + b.size())
 CrossingSet crossings_between(Shape const &a, Shape const &b) { 
@@ -174,6 +194,12 @@ Shape shape_boolean(bool rev, Shape const & a, Shape const & b) {
     } */
     
     return shape_boolean(rev, a, b, crs);
+}
+
+Shape shape_exclude(Shape const &a, Shape const &b) {
+    Shape res = shape_subtract(a, b);
+    append(res.content, shape_subtract(b, a).content);
+    return res;
 }
 
 int paths_winding(std::vector<Path> const &ps, Point p) {
@@ -238,7 +264,6 @@ Shape Shape::operator*(Matrix const &m) const {
     Shape ret;
     for(unsigned i = 0; i < content.size(); i++)
         ret.content.push_back(content[i] * m);
-    if(m.flips()) ret.fill = !fill;
     return ret;
 }
 

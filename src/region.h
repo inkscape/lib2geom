@@ -57,17 +57,15 @@ unsigned outer_index(Regions const &ps);
 //assumes they're already sanitized somewhat
 inline Regions regions_from_paths(std::vector<Path> const &ps) {
     Regions res;
-    for(unsigned i = 0; i < ps.size(); i++) {
+    for(unsigned i = 0; i < ps.size(); i++)
         res.push_back(Region(ps[i]));
-    }
     return res;
 }
 
 inline std::vector<Path> paths_from_regions(Regions const &rs) {
     std::vector<Path> res;
-    for(unsigned i = 0; i < rs.size(); i++) {
+    for(unsigned i = 0; i < rs.size(); i++)
         res.push_back(rs[i].getBoundary());
-    }
     return res;
 }
 

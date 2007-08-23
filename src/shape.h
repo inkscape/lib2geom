@@ -16,6 +16,7 @@ class Shape {
     //friend Shape shape_region_boolean(bool rev, Shape const & a, Region const & b);
     friend CrossingSet crossings_between(Shape const &a, Shape const &b);
     friend Shape shape_boolean(bool rev, Shape const &, Shape const &, CrossingSet const &);
+    friend Shape shape_exclude(Shape const &a, Shape const &b);
   public:
     Shape() {}
     explicit Shape(Region const & r) {
@@ -26,7 +27,7 @@ class Shape {
         unsigned ix = outer_index(r);
         if(ix < r.size())
             fill = r[outer_index(r)].fill;
-        else
+        else if(r.size() > 0)
             fill = r.front().fill;
     }
     Shape(Regions const & r, bool f) : content(r), fill(f) {}
@@ -47,10 +48,12 @@ class Shape {
 
 CrossingSet crossings_between(Shape const &a, Shape const &b);
 
+Shape shape_boolean(bool rev, Shape const &, Shape const &, CrossingSet const &);
 Shape shape_boolean(bool rev, Shape const & a, Shape const & b);
 inline Shape shape_union(Shape const &a, Shape const &b) { return shape_boolean(false, a, b); }
 inline Shape shape_intersect(Shape const &a, Shape const &b) { return shape_boolean(true, a, b); }
 inline Shape shape_subtract(Shape const &a, Shape const &b) { return shape_boolean(true, a, b.inverse()); }
+Shape shape_exclude(Shape const &a, Shape const &b);
 
 Shape sanitize_paths(std::vector<Path> ps);
 

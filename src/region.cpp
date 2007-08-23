@@ -6,7 +6,7 @@
 namespace Geom {
 
 Region Region::operator*(Matrix const &m) const {
-    return Region(boundary * m, logical_xor(m.flips(), fill));
+    return Region((m.flips() ? boundary.reverse() : boundary) * m, fill);
 }
 
 bool Region::invariants() const {

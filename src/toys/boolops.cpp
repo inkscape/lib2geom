@@ -55,8 +55,7 @@ void mark_crossings(cairo_t *cr, Shape const &a, Shape const &b) {
 Shape cleanup(std::vector<Path> const &ps) {
     Regions rs = regions_from_paths(ps);
     
-    /*
-    for(unsigned i = 0; i < rs.size(); i++) {
+    /* for(unsigned i = 0; i < rs.size(); i++) {
         Point exemplar = rs[i].getBoundary().initialPoint();
         for(unsigned j = 0; j < rs.size(); j++) {
             if(i != j && rs[j].contains(exemplar)) {
@@ -91,27 +90,29 @@ class BoolOps: public Toy {
         mark_crossings(cr, as, bst);
         
         Shape s;
-        /*switch(mode) {
+        switch(mode) {
         case 0:
+            cairo_shape(cr, as);
+            cairo_shape(cr, bst);
+            goto skip;
+        case 1:
             s = shape_union(as, bst);
             break;
-        case 1:
+        case 2:
             s = shape_subtract(as, bst);
             break;
-        case 2:
+        case 3:
             s = shape_intersect(as, bst);
             break;
-        case 3:
-            //s = shape_exclude(as, bst);
+        case 4:
+            s = shape_exclude(as, bst);
             break;
         }
-        //if(mode<3) cairo_shapes(cr, s); else cairo_path(cr, desanitize(s));
-        cairo_shape(cr, s);
+        if(mode<4) cairo_shape(cr, s); else cairo_path(cr, desanitize(s));
         cairo_fill(cr);
-        */ cairo_shape(cr, as);
-        cairo_shape(cr, bst);
-        *notify << "Operation: " << (mode ? (mode == 1 ? "subtract" : (mode == 2 ? "intersect" : "exclude")) : "union");
-        *notify << "\nKeys:\n u = Union   s = Subtract   i = intersect   e = exclude";
+        skip:
+        *notify << "Operation: " << (mode ? (mode == 1 ? "union" : (mode == 2 ? "subtract" : (mode == 3 ? "intersect" : "exclude"))) : "none");
+        *notify << "\nKeys:\n u = Union   s = Subtract   i = intersect   e = exclude   0 = none";
         
         //*notify << "A " << (as.isFill() ? "" : "not") << " filled, B " << (bs.isFill() ? "" : "not") << " filled..\n";
         //*notify << "rev = " << (rev ? "true" : "false");
@@ -124,10 +125,11 @@ class BoolOps: public Toy {
         //if(e->keyval == 'r') rev = !rev; else
         //if(e->keyval == 'a') as = as.inverse(); else
         //if(e->keyval == 'b') bs = bs.inverse();
-        if(e->keyval == 'u') mode = 0; else
-        if(e->keyval == 's') mode = 1; else
-        if(e->keyval == 'i') mode = 2; else
-        if(e->keyval == 'e') mode = 3;
+        if(e->keyval == '0') mode = 0; else
+        if(e->keyval == 'u') mode = 1; else
+        if(e->keyval == 's') mode = 2; else
+        if(e->keyval == 'i') mode = 3; else
+        if(e->keyval == 'e') mode = 4;
         redraw();
     }
     public:
@@ -148,7 +150,7 @@ class BoolOps: public Toy {
         handles.push_back(Point(700,700));
 
         as = cleanup(paths_a) * Geom::Translate(Point(300, 300));
-        bs = cleanup(paths_b);
+        bs = cleanup(paths_b).inverse();
         //bs = shape_subtract(bs, bs * Scale(.5, .5)).front();
         a = as.getContent().front();
         b = bs.getContent().front();
