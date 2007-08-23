@@ -5,6 +5,7 @@ arc-length-param
 #b-spline
 boolops
 bounds-test
+box3d
 cheb
 circle-intersect
 center-warp
