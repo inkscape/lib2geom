@@ -218,7 +218,7 @@ Bezier<order> portion(const Bezier<order> & a, double from, double to) {
     //TODO: implement better?
     Coord res[order+1];
     if(from == 0) {
-        if(to == 1) { std::cout << "huh\n"; return Bezier<order>(a); }
+        if(to == 1) { return Bezier<order>(a); }
         subdivideArr<order>(to, a.c_, res, NULL);
         return Bezier<order>(res);
     }

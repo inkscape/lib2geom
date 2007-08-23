@@ -229,7 +229,7 @@ public:
         return new BezierCurve<order-1>(Geom::derivative(inner[X]), Geom::derivative(inner[Y]));
      else if (order == 1) {
         double dx = inner[X][1] - inner[X][0], dy = inner[Y][1] - inner[Y][0];
-        if(dx == 0) return new BezierCurve(*this);
+        if(dx == 0) return new BezierCurve<1>(Point(0,0), Point(0,0));
         double slope = dy / dx;
         Geom::Point pnt;
         if(slope == 0) pnt = Geom::Point(0, 0); else pnt = Geom::Point(slope, 1./slope);
@@ -512,9 +512,19 @@ public:
   }
 
   Point pointAt(double t) const {
-    double i;
-    double f = modf(t, &i);
+    if(empty()) return Point(0,0);
+    double i, f = modf(t, &i);
+    if(i == size() && f == 0) { i--; }
+    assert(i >= 0 && i <= size()); 
     return (*this)[unsigned(i)].pointAt(f);
+  }
+
+  double valueAt(double t, Dim2 d) const {
+    if(empty()) return 0;
+    double i, f = modf(t, &i);
+    if(i == size() && f == 0) { i--; }
+    assert(i >= 0 && i <= size());
+    return (*this)[unsigned(i)].valueAt(f, d);
   }
 
   void appendPortionTo(Path &p, double f, double t) const;

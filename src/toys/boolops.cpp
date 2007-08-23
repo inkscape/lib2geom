@@ -55,6 +55,7 @@ void mark_crossings(cairo_t *cr, Shape const &a, Shape const &b) {
 Shape cleanup(std::vector<Path> const &ps) {
     Regions rs = regions_from_paths(ps);
     
+    /*
     for(unsigned i = 0; i < rs.size(); i++) {
         Point exemplar = rs[i].getBoundary().initialPoint();
         for(unsigned j = 0; j < rs.size(); j++) {
@@ -66,7 +67,7 @@ Shape cleanup(std::vector<Path> const &ps) {
         }
         if(!rs[i].isFill()) rs[i] = rs[i].inverse();
         next: (void)0;
-    }
+    }*/
     
     Piecewise<D2<SBasis> > pw = paths_to_pw(ps);
     double area;

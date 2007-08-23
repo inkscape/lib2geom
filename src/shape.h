@@ -23,8 +23,11 @@ class Shape {
         fill = r.fill;
     }
     explicit Shape(Regions const & r) : content(r) {
-        if(r.size() > 0)
+        unsigned ix = outer_index(r);
+        if(ix < r.size())
             fill = r[outer_index(r)].fill;
+        else
+            fill = r.front().fill;
     }
     Shape(Regions const & r, bool f) : content(r), fill(f) {}
     
