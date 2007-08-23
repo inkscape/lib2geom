@@ -43,9 +43,8 @@ double tmat[3][4];
 double c[8][4];
 Geom::Point corners[8];
 
-class Sb2d2: public Toy {
+class Box3d: public Toy {
     Path path_a;
-    D2<SBasis2d> sb2;
     Piecewise<D2<SBasis> >  path_a_pw;
     
     void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
@@ -125,7 +124,6 @@ class Sb2d2: public Toy {
         double preimages[4][4];
         preimages_of_curve_handles (curve_handles, preimages);
         Geom::Point proj_handles[4];
-        double pt[4];
         for (int i = 0; i < 4; ++i) {
             proj_image (cr, preimages[i], handles, proj_handles[i]);
             draw_handle(cr, proj_handles[i]);
@@ -150,12 +148,6 @@ class Sb2d2: public Toy {
         
 	path_a.close(true);
         path_a_pw = path_a.toPwSb();
-        for(unsigned dim = 0; dim < 2; dim++) {
-            sb2[dim].us = 2;
-            sb2[dim].vs = 2;
-            const int depth = sb2[dim].us*sb2[dim].vs;
-            sb2[dim].resize(depth, Linear2d(0));
-        }
 
         // Finite images of the three vanishing points and the origin
         handles.push_back(Point(150,300));
@@ -189,7 +181,7 @@ class Sb2d2: public Toy {
 };
 
 int main(int argc, char **argv) {
-    init(argc, argv, new Sb2d2);
+    init(argc, argv, new Box3d);
     return 0;
 }
 
