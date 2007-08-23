@@ -35,7 +35,7 @@ Geom::Point orig;
 
 static void draw_box (cairo_t *cr, Geom::Point corners[8]);
 static void draw_slider_lines (cairo_t *cr);
-static void proj_image (cairo_t *cr, const double pt[4], const vector<Geom::Point> &handles, Geom::Point &result);
+static Geom::Point proj_image (cairo_t *cr, const double pt[4], const vector<Geom::Point> &handles);
 static void preimage_of_curve_pt (Geom::Point const pt, double preimage[4]);
 static void preimages_of_curve_handles (vector<Geom::Point> const curve_handles, double preimages[4][4]);
 
@@ -88,7 +88,7 @@ class Box3d: public Toy {
 
         // draw the projective images of the box's corners
         for (int i = 0; i < 8; ++i) {
-            proj_image (cr, c[i], handles, corners[i]);
+            corners[i] = proj_image (cr, c[i], handles);
         }
         draw_box(cr, corners);
         cairo_set_line_width (cr, 2);
@@ -105,7 +105,7 @@ class Box3d: public Toy {
             t = (double) i/(double) segments;
             Geom::Point pt = curve (t);
             preimage_of_curve_pt (pt, preimage);
-            proj_image (cr, preimage, handles, image);
+            image = proj_image (cr, preimage, handles);
             draw_handle (cr, image);
         }
 
@@ -121,11 +121,32 @@ class Box3d: public Toy {
         curve_handles.push_back (handles[9]);
         curve_handles.push_back (handles[10]);
 
+        {
+            D2<Piecewise<SBasis> > B = make_cuts_independant(path_a_pw);
+            Piecewise<SBasis> preimage[4];
+                
+            preimage[1] = -(B[1] - orig[1]) / 100;
+            preimage[2] =  (B[0] - orig[0]) / 100;
+            Piecewise<SBasis> res[3];
+            for (int j = 0; j < 3; ++j) {
+                res[j] =
+                    (preimage[1] - ((handles[5][1]-300)/100)) * tmat[j][1]
+                    + (preimage[2] - ((handles[6][1]-300)/100)) * tmat[j][2]
+                    +( - (handles[4][1]-300)/100) * tmat[j][0] + tmat[j][3];
+            }
+            //if (fabs (res[2]) > 0.000001) {
+            D2<Piecewise<SBasis> > result(divide(res[0],res[2],2), 
+                                          divide(res[1],res[2], 2));
+            
+            cairo_d2_pw(cr, result);
+            cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
+            cairo_stroke(cr);
+        }
         double preimages[4][4];
         preimages_of_curve_handles (curve_handles, preimages);
         Geom::Point proj_handles[4];
         for (int i = 0; i < 4; ++i) {
-            proj_image (cr, preimages[i], handles, proj_handles[i]);
+            proj_handles[i] = proj_image (cr, preimages[i], handles);
             draw_handle(cr, proj_handles[i]);
         }
 
@@ -229,7 +250,7 @@ void draw_slider_lines (cairo_t *cr) {
     cairo_stroke(cr);
 }
 
-static void proj_image (cairo_t *cr, const double pt[4], const vector<Geom::Point> &handles, Geom::Point &result)
+static Geom::Point proj_image (cairo_t *cr, const double pt[4], const vector<Geom::Point> &handles)
 {
     double res[3];
     for (int j = 0; j < 3; ++j) {
@@ -240,9 +261,12 @@ static void proj_image (cairo_t *cr, const double pt[4], const vector<Geom::Poin
             + tmat[j][3] * pt[3];
     }
     if (fabs (res[2]) > 0.000001) {
-        result = Geom::Point (res[0]/res[2], res[1]/res[2]);
+        Geom::Point result = Geom::Point (res[0]/res[2], res[1]/res[2]);
         draw_handle(cr, result);
+        return result;
     }
+    assert(0); // unclipped point
+    return Geom::Point(0,0);
 }
 
 static void
