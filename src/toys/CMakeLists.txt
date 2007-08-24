@@ -42,6 +42,7 @@ sb2d
 self-intersect
 #sketch-toy
 sweep
+svg-arc
 #toy-cairo
 winding-test
 "${NEEDS_GSL}"
