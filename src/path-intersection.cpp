@@ -9,29 +9,29 @@
 
 namespace Geom {
 
-int winding(Path const &p, Point pnt) {
+int winding(Path const &path, Point p) {
   //start on a segment which is not a horizontal line with y = p[y]
-  int cnt = 0;
-  unsigned start;
-  for(unsigned i = 0; ; ++i) {
-    if(i >= p.size()) { return 0; }
-    if(p[i].initialPoint()[Y]!=pnt[Y])  { start = i; break; }
-    if(p[i].finalPoint()[Y]!=pnt[Y])    { start = i; break; }
-    if(p[i].boundsFast().height()!=0.){ start = i; break; }
+  Path::const_iterator start;
+  for(Path::const_iterator iter = path.begin(); ; ++iter) {
+    if(iter == path.end_closed()) { return 0; }
+    if(iter->initialPoint()[Y]!=p[Y])  { start = iter; break; }
+    if(iter->finalPoint()[Y]!=p[Y])    { start = iter; break; }
+    if(iter->boundsFast().height()!=0.){ start = iter; break; }
   }
   int wind = 0;
   bool starting = true;
-  for (unsigned i = start; i != start || starting;
-       ++i, i = (i <= p.size()) ? i : 0 )
+  int cnt = 0;
+  for (Path::const_iterator iter = start; iter != start || starting
+       ; ++iter, iter = (iter == path.end_closed()) ? path.begin() : iter )
   {
-    cnt++;
-    if(cnt > p.size()) return 0; //TODO: ehrm, yeah, fix the problem that requires this...
     starting = false;
-    Rect bounds = p[i].boundsFast();
-    Coord x = pnt[X], y = pnt[Y];
+    cnt++;
+    if(cnt > path.size()) return wind; //TODO: ehrm, yeah, fix the problem that requires this...
+    Rect bounds = iter->boundsFast();
+    Coord x = p[X], y = p[Y];
     if(x > bounds.right() || !bounds[Y].contains(y)) continue;
-    Point final = p[i].finalPoint();
-    Point initial = p[i].initialPoint();
+    Point final = iter->finalPoint();
+    Point initial = iter->initialPoint();
     Cmp final_to_ray = cmp(final[Y], y);
     Cmp initial_to_ray = cmp(initial[Y], y);
     // if y is included, these will have opposite values, giving order.
@@ -45,7 +45,7 @@ int winding(Path const &p, Point pnt) {
         }
     } else {
         //inside bbox, use custom per-curve winding thingie
-        int delt = p[i].winding(pnt);
+        int delt = iter->winding(p);
         wind += delt;
         //std::cout << "n" << delt << " ";
     }
@@ -53,36 +53,38 @@ int winding(Path const &p, Point pnt) {
     if(final[Y] == y) {
         //Traverse segments until it breaks away from y
         //99.9% of the time this will happen the first go
-        unsigned next = i+1;
+        Path::const_iterator next = iter;
+        next++;
         for(; ; next++) {
-            if(next >= p.size()) next = 0;
-            Rect bnds = p[next].boundsFast();
+            if(next == path.end_closed()) next = path.begin();
+            Rect bnds = next->boundsFast();
             //TODO: X considerations
             if(bnds.height() > 0) {
                 //It has diverged
-                if(bnds.contains(pnt)) {
+                if(bnds.contains(p)) {
                     const double fudge = 0.01;
-                    if(cmp(y, p[next].valueAt(fudge, Y)) == initial_to_ray) {
+                    if(cmp(y, next->valueAt(fudge, Y)) == initial_to_ray) {
                         wind += int(c);
                         std::cout << "!!!!!" << int(c) << " ";
                     }
-                    i = next; // No increment, as the rest of the thing hasn't been counted.
+                    iter = next; // No increment, as the rest of the thing hasn't been counted.
                 } else {
-                    double ny = p[next].initialPoint()[Y];
+                    Coord ny = next->initialPoint()[Y];
                     if(cmp(y, ny) == initial_to_ray) {
                         //Is a continuation through the ray, so counts windingwise
                         wind += int(c);
                         std::cout << "!!!!!" << int(c) << " ";
                     }
-                    i = ++next;
+                    iter = ++next;
                 }
                 goto cont;
             }
-            if(next == start) return wind;
+            if(next==start) return wind;
         }
         //Looks like it looped, which means everything's flat
         return 0;
     }
+    
     cont:(void)0;
   }
   return wind;

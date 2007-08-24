@@ -112,10 +112,9 @@ class BoolOps: public Toy {
         cairo_fill(cr);
         skip:
         *notify << "Operation: " << (mode ? (mode == 1 ? "union" : (mode == 2 ? "subtract" : (mode == 3 ? "intersect" : "exclude"))) : "none");
-        *notify << "\nKeys:\n u = Union   s = Subtract   i = intersect   e = exclude   0 = none";
+        *notify << "\nKeys:\n u = Union   s = Subtract   i = intersect   e = exclude   0 = none   a = invert A   b = invert B \n";
         
-        //*notify << "A " << (as.isFill() ? "" : "not") << " filled, B " << (bs.isFill() ? "" : "not") << " filled..\n";
-        //*notify << "rev = " << (rev ? "true" : "false");
+        *notify << "A " << (as.isFill() ? "" : "not") << " filled, B " << (bs.isFill() ? "" : "not") << " filled..\n";
         
         cairo_set_line_width(cr, 1);
 
@@ -123,8 +122,8 @@ class BoolOps: public Toy {
     }
     void key_hit(GdkEventKey *e) {
         //if(e->keyval == 'r') rev = !rev; else
-        //if(e->keyval == 'a') as = as.inverse(); else
-        //if(e->keyval == 'b') bs = bs.inverse();
+        if(e->keyval == 'a') as = as.inverse(); else
+        if(e->keyval == 'b') bs = bs.inverse();
         if(e->keyval == '0') mode = 0; else
         if(e->keyval == 'u') mode = 1; else
         if(e->keyval == 's') mode = 2; else
@@ -151,7 +150,7 @@ class BoolOps: public Toy {
 
         as = cleanup(paths_a) * Geom::Translate(Point(300, 300));
         bs = cleanup(paths_b).inverse();
-        //bs = shape_subtract(bs, bs * Scale(.5, .5)).front();
+        bs = shape_subtract(bs, bs * Scale(.5, .5));
         a = as.getContent().front();
         b = bs.getContent().front();
     }

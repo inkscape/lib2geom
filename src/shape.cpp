@@ -104,59 +104,44 @@ Shape shape_boolean(bool rev, Shape const & a, Shape const & b, CrossingSet cons
         chunks.push_back(Region(res));
     }
     
-    //If true, then holes must be outside intersection, if false, they must be inside
-    bool hole_type = logical_xor(a.fill && b.fill, !rev);
-    
+    //If true, then the hole must be inside the other to be included
+    bool const on_sub = logical_xor(a.fill, b.fill);
+    bool const a_mode = logical_xor(logical_xor(!rev, a.fill), on_sub),
+               b_mode = logical_xor(logical_xor(!rev, b.fill), on_sub);
+        std::cout << rev << " " << a.fill << " " << a_mode << "\n";
     //Handle unintersecting portions
     for(unsigned i = 0; i < crs.size(); i++) {
         if(crs[i].size() == 0) {
-            Region r = i < ac.size() ? ac[i] : bc[i - ac.size()];
-            if(r.fill == hole_type) {
+            Region r;
+            bool mode;
+            if(i < ac.size()) {
+                r = ac[i];
+                mode = a_mode;
+            } else {
+                r = bc[i - ac.size()];
+                mode = b_mode;
+            }
+            
+            if(logical_xor(r.fill, i < ac.size() ? a.fill : b.fill)) {
+                //is an inner
                 Point exemplar = r.boundary.initialPoint();
-                for(unsigned j = 0; j < chunks.size(); j++) {
-                    if(chunks[j].contains(exemplar)) {
-                        //The chunks are disjoint, so this is the direct parent
-                        if(logical_xor(r.fill, chunks[j].fill)) {
-                            //opposite fill, so it is a hole some way or another
-                            if(hole_type) {
-                                //hole must be from outside
-                                if(i < ac.size()) {
-                                    for(unsigned k = 0; k < bc.size(); k++)
-                                        if(bc[k].contains(exemplar)) goto skip;
-                                } else {
-                                    for(unsigned k = 0; k < ac.size(); k++)
-                                        if(ac[k].contains(exemplar)) goto skip;
-                                }
-                            }
-                            chunks.push_back(r);
-                        }
+                Regions const & others = i < ac.size() ? bc : ac;
+                for(unsigned j = 0; j < others.size(); j++) {
+                    if(others[j].contains(exemplar)) {
+                        //contained in other
+                        if(mode) chunks.push_back(r);
                         goto skip;
                     }
                 }
             }
             //disjoint
-            if(hole_type && r.fill) {
-                //and should be included
-                chunks.push_back(r);
-            }
+            if(!mode) chunks.push_back(r);
             skip: (void)0;
         }
     }
     
     return Shape(chunks);
 }
-
-/*
-Union
-FF inners outside intersection
-FH inners from intersection
-HH inners from intersection 
-
-Intersect
-FF inners from intersection
-FH inners from outside
-HH inners outside
-*/
 
 //Returns a vector of crossings, such that those associated with B are in the range [a.size(), a.size() + b.size())
 CrossingSet crossings_between(Shape const &a, Shape const &b) { 
@@ -264,6 +249,7 @@ Shape Shape::operator*(Matrix const &m) const {
     Shape ret;
     for(unsigned i = 0; i < content.size(); i++)
         ret.content.push_back(content[i] * m);
+    ret.fill = fill;
     return ret;
 }
 

@@ -14,11 +14,11 @@ class Region {
     friend Shape shape_boolean(bool rev, Shape const & a, Shape const & b, CrossingSet const & crs);
 
     Path boundary;
-    boost::optional<Rect> box;
+    mutable boost::optional<Rect> box;
     bool fill;
   public:
 
-    Region() {}
+    Region() : fill(true) {}
     Region(Path const &p) : boundary(p) { fill = path_direction(p); }
     Region(Path const &p, bool dir) : boundary(p), fill(dir) {}
     Region(Path const &p, boost::optional<Rect> const &b) : boundary(p), box(b) { fill = path_direction(p); }
@@ -29,15 +29,15 @@ class Region {
     Region asHole() const { if(fill) return inverse(); else return Region(*this); }
     
     Path getBoundary() const { return boundary; }
-    Rect boundsFast() {
+    Rect boundsFast() const {
         if(!box) box = boost::optional<Rect>(boundary.boundsFast());
         return *box;
     }
     bool contains(Point const &p) const {
-        bool temp = Geom::contains(boundary, p);
-        return temp;
+        //if(box) if(!box->contains(p)) return false;
+        return Geom::contains(boundary, p);
     }
-    bool contains(Region const &other) const { return contains(other.getBoundary().initialPoint()); }
+    bool contains(Region const &other) const { return contains(other.boundary.initialPoint()); }
     
     Region inverse() const { return Region(boundary.reverse(), box, !fill); }
     
