@@ -36,8 +36,7 @@ class Sb2d2: public Toy {
         Geom::Point dir(1,-2);
 
 	D2<Piecewise<SBasis> > B = make_cuts_independant(path_a_pw);
-	
-	
+
 	cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
 	//B *= (4./width);
 	/*
@@ -93,11 +92,6 @@ class Sb2d2: public Toy {
         }
         
         handles.push_back(Point(100,100));
-        
-        
-    }
-    virtual void resize_canvas(Geom::Rect const & s) {
-        //double width = s[0].extent();
     }
     int should_draw_bounds() {return 1;}
 };

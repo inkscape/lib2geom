@@ -18,13 +18,12 @@ void draw_rect(cairo_t *cr, Point tl, Point br) {
     cairo_close_path(cr);
 }
 
-double rand_d() { return rand() % 100 / 100.0; }
 void draw_bounds(cairo_t *cr, vector<Path> ps) {
     srand(0); 
     for(unsigned i = 0; i < ps.size(); i++) {
         for(Path::iterator it = ps[i].begin(); it != ps[i].end(); it++) {
             Rect bounds = it->boundsFast();
-            cairo_set_source_rgba(cr, rand_d(), rand_d(), rand_d(), .5);
+            cairo_set_source_rgba(cr, uniform(), uniform(), uniform(), .5);
             draw_rect(cr, bounds.min(), bounds.max());
             cairo_stroke(cr);
         }

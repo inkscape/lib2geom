@@ -87,7 +87,6 @@ class BoolOps: public Toy {
         bs = cleanup(paths_b);
         b = bs.getContent().front();
     }
-    int should_draw_bounds() {return 0;}
 };
 
 int main(int argc, char **argv) {

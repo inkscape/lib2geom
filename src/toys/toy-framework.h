@@ -14,6 +14,7 @@ using std::vector;
 
 //Utility functions
 double uniform();
+
 void draw_text(cairo_t *cr, Geom::Point pos, const char* txt, bool bottom = false);
 void draw_number(cairo_t *cr, Geom::Point pos, int num);
 
@@ -38,7 +39,7 @@ public:
 
     //Cheapo way of informing the framework what the toy would like drawn for it.
     virtual bool should_draw_numbers() { return true; }
-    virtual int should_draw_bounds() { return 1; }
+    virtual int should_draw_bounds() { return 0; }
     
     virtual void first_time(int argc, char** argv) {}
     

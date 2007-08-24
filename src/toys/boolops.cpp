@@ -15,9 +15,7 @@
 
 using namespace Geom;
 
-double rand_d() { return rand() % 100 / 100.0; }
 void cairo_region(cairo_t *cr, Region const &r) {
-    cairo_set_source_rgba(cr, 0, 0, 0, 1); //rand_d(), rand_d(), rand_d(), .75);
     double d = 5.;
     if(!r.isFill()) cairo_set_dash(cr, &d, 1, 0);
     cairo_path(cr, r.getBoundary());
@@ -26,7 +24,6 @@ void cairo_region(cairo_t *cr, Region const &r) {
 }
 
 void cairo_regions(cairo_t *cr, Regions const &p) {
-    srand(0); 
     for(Regions::const_iterator j = p.begin(); j != p.end(); j++)
         cairo_region(cr, *j);
 }
@@ -91,7 +88,7 @@ class BoolOps: public Toy {
         if(ff) ttl += 4;
         if(hh) ttl += 8;
         Shape s = shape_boolean(as, bst, ttl);
-        cairo_set_source_rgba(cr, 170./255, 238./255, 1, 1);
+        cairo_set_source_rgba(cr, 182./255, 200./255, 183./255, 1);
         if(!s.isFill()) {
             cairo_rectangle(cr, 0, 0, width, height);
             cairo_fill(cr);
@@ -102,14 +99,35 @@ class BoolOps: public Toy {
         cairo_set_source_rgba(cr, 0, 0, 0, 1);
         cairo_shape(cr, s);
         
-        draw_line_seg(cr, Point(width - 50, height - 50), Point(width - 50, height));
-        draw_line_seg(cr, Point(width - 25, height - 50), Point(width - 25, height));
-        draw_line_seg(cr, Point(width - 50, height - 50), Point(width, height - 50));
-        draw_line_seg(cr, Point(width - 50, height - 25), Point(width, height - 25));
-        if(ff) draw_text(cr, Point(width - 45, height - 45), "X" );
-        if(fh) draw_text(cr, Point(width - 20, height - 45), "X" );
-        if(hf) draw_text(cr, Point(width - 45, height - 20), "X" );
-        if(hh) draw_text(cr, Point(width - 20, height - 20), "X" );
+        double x = width - 60, y = height - 60;
+        
+        //Draw the info
+        cairo_rectangle(cr, x,     y,       25, 25);
+        if(ff) cairo_fill(cr); else cairo_stroke(cr);
+        cairo_rectangle(cr, x + 25, y,      25, 25);
+        if(fh) cairo_fill(cr); else cairo_stroke(cr);
+        cairo_rectangle(cr, x,      y + 25, 25, 25);
+        if(hf) cairo_fill(cr); else cairo_stroke(cr);
+        cairo_rectangle(cr, x + 25, y + 25, 25, 25);
+        if(hh) cairo_fill(cr); else cairo_stroke(cr);
+        
+        draw_text(cr, Point(x + 20, y - 34), "A");
+        draw_text(cr, Point(x + 5, y - 18), "F");
+        draw_text(cr, Point(x + 32, y - 18), "H");
+        
+        draw_text(cr, Point(x - 25, y + 17), "B");
+        draw_text(cr, Point(x - 15, y + 2), "F");
+        draw_text(cr, Point(x - 15, y + 28), "H");
+        
+        if(ff) cairo_set_source_rgba(cr,1,1,1,1); else cairo_set_source_rgba(cr,0,0,0,1);
+        draw_text(cr, Point(x + 5, y + 2),  "Q");
+        if(fh) cairo_set_source_rgba(cr,1,1,1,1); else cairo_set_source_rgba(cr,0,0,0,1);
+        draw_text(cr, Point(x + 30, y + 2),  "W");
+        if(hf) cairo_set_source_rgba(cr,1,1,1,1); else cairo_set_source_rgba(cr,0,0,0,1);
+        draw_text(cr, Point(x + 5, y + 28), "A");
+        if(hh) cairo_set_source_rgba(cr,1,1,1,1); else cairo_set_source_rgba(cr,0,0,0,1);
+        draw_text(cr, Point(x + 32, y + 28), "S");
+
         //*notify << "Operation: " << (mode ? (mode == 1 ? "union" : (mode == 2 ? "subtract" : (mode == 3 ? "intersect" : "exclude"))) : "none");
         //*notify << "\nKeys:\n u = Union   s = Subtract   i = intersect   e = exclude   0 = none   a = invert A   b = invert B \n";
         
@@ -139,7 +157,7 @@ class BoolOps: public Toy {
         std::vector<Path> paths_a = read_svgd(path_a_name);
         std::vector<Path> paths_b = read_svgd(path_b_name);
              
-        handles.push_back(Point(700,700));
+        handles.push_back(Point(400,400));
 
         ff = fh = hf = true;
         hh = false;
@@ -147,7 +165,7 @@ class BoolOps: public Toy {
         as = cleanup(paths_a) * Geom::Translate(Point(300, 300));
         bs = cleanup(paths_b);
     }
-    int should_draw_bounds() {return 0;}
+    virtual bool should_draw_numbers() {return false;}
 };
 
 int main(int argc, char **argv) {

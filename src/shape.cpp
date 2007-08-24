@@ -108,7 +108,6 @@ Shape shape_boolean(bool rev, Shape const & a, Shape const & b, CrossingSet cons
     bool const on_sub = logical_xor(a.fill, b.fill);
     bool const a_mode = logical_xor(logical_xor(!rev, a.fill), on_sub),
                b_mode = logical_xor(logical_xor(!rev, b.fill), on_sub);
-        std::cout << rev << " " << a.fill << " " << a_mode << "\n";
     //Handle unintersecting portions
     for(unsigned i = 0; i < crs.size(); i++) {
         if(crs[i].size() == 0) {
@@ -183,7 +182,6 @@ Shape shape_boolean(bool rev, Shape const & a, Shape const & b) {
 
 Shape shape_boolean(Shape const &a, Shape const &b, unsigned flags) {
     flags &= 15;
-    std::cout << flags << "\n";
     if(flags > SHAPE_UNION) return shape_boolean(a, b, ~flags).inverse();
     //trivial cases
     switch(flags) {

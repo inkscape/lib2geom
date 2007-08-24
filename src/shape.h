@@ -37,7 +37,7 @@ class Shape {
     friend Shape shape_boolean(Shape const &a, Shape const &b, unsigned);
 
   public:
-    Shape() {}
+    Shape() : fill(true) {}
     explicit Shape(Region const & r) {
         content = Regions(1, r);
         fill = r.fill;

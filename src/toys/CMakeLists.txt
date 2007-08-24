@@ -36,6 +36,7 @@ pw-funcs
 quad-toy
 #rat-bez
 sb-math-test
+sb-zeros
 sb1d
 sb2d
 self-intersect

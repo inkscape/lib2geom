@@ -195,9 +195,6 @@ class Box3d: public Toy {
 
         orig = handles[7];
     }
-    virtual void resize_canvas(Geom::Rect const & s) {
-        //double width = s[0].extent();
-    }
     int should_draw_bounds() {return 1;}
 };
 

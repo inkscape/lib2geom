@@ -54,10 +54,10 @@ void Toy::draw(cairo_t *cr, std::ostringstream *notify, int width, int height, b
     else if(should_draw_bounds() == 2) {
         cairo_set_source_rgba (cr, 0., 0., 0, 0.8);
         cairo_set_line_width (cr, 0.5);
-	cairo_move_to(cr, 0, width/2);
-	cairo_line_to(cr, width, width/2);
-	cairo_move_to(cr, width/2, 0);
-	cairo_line_to(cr, width/2, height);
+    cairo_move_to(cr, 0, width/2);
+    cairo_line_to(cr, width, width/2);
+    cairo_move_to(cr, width/2, 0);
+    cairo_line_to(cr, width/2, height);
     }
 
     cairo_set_source_rgba (cr, 0., 0.5, 0, 1);

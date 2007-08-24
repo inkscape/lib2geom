@@ -340,12 +340,10 @@ void mono_pair(Path const &A, double Al, double Ah,
         double dist = LInfty(A.pointAt(tA) - A.pointAt(tB));
         //std::cout << dist;
         if(depth >= 12 || dist <= tol) {
-            std::cout << "    yey\n";
             ret.push_back(Crossing(tA, tB, c > 0));
             return;
         }
         double hwidth = .1; //(Bh - Bl) * (.3 - fabs(c) / (4 * distance(A0, A1) * distance(B0, B1)));
-        std::cout << hwidth << "\n";
         if(tB - hwidth*2 <= Bl) {
             if(tB + hwidth >= Bh) tB += hwidth;
         } else if(tB + hwidth*2 >= Bh) {

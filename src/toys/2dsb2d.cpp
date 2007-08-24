@@ -108,7 +108,6 @@ class Sb2d2: public Toy {
                                                     (2*(iv+vi)/(2.*vi+1)+1)*width/4.);
         
     }
-    int should_draw_bounds() {return 1;}
 };
 
 int main(int argc, char **argv) {

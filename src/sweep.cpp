@@ -9,11 +9,17 @@ SweepObjects sweep(Events const & es) {
     
     std::vector<SweepObject*> open[2];
     for(Events::const_iterator e = es.begin(); e != es.end(); ++e) {
-        unsigned ix = e->val->on_a ? 1 : 0;
+        unsigned ix = e->val->on_a ? 0 : 1;
         if(e->closing) {
             //since this is the closing event, remove the object from the open list
-            std::vector<SweepObject*>::iterator it = std::lower_bound(open[ix].begin(), open[ix].end(), e->val);
-            open[ix].erase(it);
+            //std::vector<SweepObject*>::iterator it = std::lower_bound(open[ix].begin(), open[ix].end(), e->val);
+            //if(it != open[ix].end()) open[ix].erase(it);
+            for(unsigned i = 0; i < open[ix].size(); i++) {
+                if(open[ix][i] == e->val) {
+                    open[ix].erase(open[ix].begin() + i);
+                    std::cout << "erased!\n";
+                }
+            }
         } else {
             open[ix].push_back(e->val);
         }
@@ -38,6 +44,35 @@ SweepObjects sweep(Events const & es) {
     }
     
     return returns;
+}
+
+
+std::vector<std::vector<unsigned> > sweep_bounds(std::vector<Rect> const & a, std::vector<Rect> const & b) {
+    Events es;
+    for(unsigned i = 0; i < a.size(); i++) {
+        SweepObject *obj = new SweepObject(i, true);
+        es.push_back(Event(a[i].left(), obj, false));
+        es.push_back(Event(a[i].right(), obj, true));
+    }
+    for(unsigned i = 0; i < b.size(); i++) {
+        SweepObject *obj = new SweepObject(i, false);
+        es.push_back(Event(b[i].left(), obj, false));
+        es.push_back(Event(b[i].right(), obj, true));
+    }
+    std::sort(es.begin(), es.end());
+    SweepObjects objs = sweep(es);
+    
+    std::vector<std::vector<unsigned> > ret(a.size(), std::vector<unsigned>());
+    for(std::vector<SweepObject>::iterator ix = objs.begin(); ix != objs.end(); ix++) {
+        unsigned i = ix->ix;
+        ret[i].resize(ix->intersects.size());
+        for(unsigned jp = 0; jp < ix->intersects.size(); jp++) {
+            unsigned j = ix->intersects[jp];
+            //if(a[i][Y].intersects(b[j][Y]))
+            ret[i].push_back(j);
+        }
+    }
+    return ret;
 }
 
 //Fake cull, until the switch to the real sweep is made.

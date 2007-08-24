@@ -1,43 +1,50 @@
-#include "d2.h"
-#include "sbasis.h"
+#include "sweep.h"
 
 #include "path-cairo.h"
 #include "toy-framework.cpp"
 
 using namespace Geom;
 
-#define SIZE 4
-
 class Sweep: public Toy {
+    unsigned count_a, count_b;
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
-        D2<SBasis> B1 = handles_to_sbasis<SIZE-1>(handles.begin());
-        D2<SBasis> B2 = handles_to_sbasis<SIZE-1>(handles.begin()+SIZE);
-        Piecewise<D2<SBasis> >B;
-        B.concat(Piecewise<D2<SBasis> >(B1));
-        B.concat(Piecewise<D2<SBasis> >(B2));
-        std::vector<Point> e;
-        std::vector<Piecewise<D2<SBasis> > > s;
-        s.push_back(derivative(B));
-        for(int j = 0; j < 5; j++) s.push_back(derivative(s.back()));
-        for(int j = 0; j <= 5; j++) {
-            for(unsigned d = 0; d < 2; d++) {
-                std::vector<double> r = roots(make_cuts_independant(s[j])[d]);
-                for(unsigned k = 0; k < r.size(); k++) e.push_back(B.valueAt(r[k]));
+        std::vector<Rect> rects_a, rects_b;
+
+        for(unsigned i = 0; i < count_a; i++)
+            rects_a.push_back(Rect(handles[i*2], handles[i*2+1]));
+
+        for(unsigned i = 0; i < count_b; i++)
+            rects_b.push_back(Rect(handles[i*2 + count_a*2], handles[i*2+1 + count_a*2]));
+        
+        std::vector<std::vector<unsigned> > res = sweep_bounds(rects_a, rects_b);
+        for(unsigned i = 0; i < res.size(); i++) {
+            for(unsigned j = 0; j < res[i].size(); j++) {
+                draw_line_seg(cr, rects_a[i].midpoint(), rects_b[j].midpoint());
+                cairo_stroke(cr);
             }
         }
-        for(unsigned i = 0; i < e.size(); i++) draw_cross(cr, e[i]);
-        
-        cairo_set_line_width (cr, .5);
-        cairo_set_source_rgba (cr, 0., 0.5, 0., 1);
-        cairo_pw_d2(cr, B);
+        cairo_set_source_rgba(cr,1,0,0,1);
+        for(unsigned i = 0; i < count_a; i++)
+            cairo_rectangle(cr, rects_a[i].left(), rects_a[i].top(), rects_a[i].width(), rects_a[i].height());
         cairo_stroke(cr);
+        
+        cairo_set_source_rgba(cr,0,0,1,1);
+        for(unsigned i = 0; i < count_a; i++)
+            cairo_rectangle(cr, rects_b[i].left(), rects_b[i].top(), rects_b[i].width(), rects_b[i].height());
+        cairo_stroke(cr);
+        
         Toy::draw(cr, notify, width, height, save);
     }
 
     public:
     Sweep () {
-        for(int i = 0; i < 2*SIZE; i++)
-            handles.push_back(Geom::Point(150+uniform()*300,150+uniform()*300));
+        count_a = count_b = 20;
+        for(unsigned i = 0; i < (count_a + count_b); i++) {
+            Point dim(uniform() * 90 + 10, uniform() * 90 + 10),
+                  pos(uniform() * 500 + 50, uniform() * 500 + 50);
+            handles.push_back(pos - dim/2);
+            handles.push_back(pos + dim/2);
+        }
     }
 };
 
