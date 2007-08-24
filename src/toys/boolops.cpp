@@ -77,58 +77,53 @@ Shape cleanup(std::vector<Path> const &ps) {
 }
 
 class BoolOps: public Toy {
-    Region a, b;
-    unsigned mode;
-    bool rev;
+    bool ff, fh, hf, hh;
     Shape as, bs;
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         Geom::Translate t(handles[0]);
         Shape bst = bs * t;
-        Region bt = Region(b.getBoundary() * t, b.isFill());
         
         cairo_set_line_width(cr, 1);
-        mark_crossings(cr, as, bst);
-        
-        Shape s;
-        switch(mode) {
-        case 0:
-            cairo_shape(cr, as);
-            cairo_shape(cr, bst);
-            goto skip;
-        case 1:
-            s = shape_union(as, bst);
-            break;
-        case 2:
-            s = shape_subtract(as, bst);
-            break;
-        case 3:
-            s = shape_intersect(as, bst);
-            break;
-        case 4:
-            s = shape_exclude(as, bst);
-            break;
+        //mark_crossings(cr, as, bst);
+        unsigned ttl = 0;
+        if(fh) ttl += 1;
+        if(hf) ttl += 2;
+        if(ff) ttl += 4;
+        if(hh) ttl += 8;
+        Shape s = shape_boolean(as, bst, ttl);
+        cairo_set_source_rgba(cr, 170./255, 238./255, 1, 1);
+        if(!s.isFill()) {
+            cairo_rectangle(cr, 0, 0, width, height);
+            cairo_fill(cr);
+            cairo_set_source_rgba(cr, 1, 1, 1, 1);
         }
-        if(mode<4) cairo_shape(cr, s); else cairo_path(cr, desanitize(s));
+        cairo_path(cr, desanitize(s));
         cairo_fill(cr);
-        skip:
-        *notify << "Operation: " << (mode ? (mode == 1 ? "union" : (mode == 2 ? "subtract" : (mode == 3 ? "intersect" : "exclude"))) : "none");
-        *notify << "\nKeys:\n u = Union   s = Subtract   i = intersect   e = exclude   0 = none   a = invert A   b = invert B \n";
+        cairo_set_source_rgba(cr, 0, 0, 0, 1);
+        cairo_shape(cr, s);
         
-        *notify << "A " << (as.isFill() ? "" : "not") << " filled, B " << (bs.isFill() ? "" : "not") << " filled..\n";
+        draw_line_seg(cr, Point(width - 50, height - 50), Point(width - 50, height));
+        draw_line_seg(cr, Point(width - 25, height - 50), Point(width - 25, height));
+        draw_line_seg(cr, Point(width - 50, height - 50), Point(width, height - 50));
+        draw_line_seg(cr, Point(width - 50, height - 25), Point(width, height - 25));
+        if(ff) draw_text(cr, Point(width - 45, height - 45), "X" );
+        if(fh) draw_text(cr, Point(width - 20, height - 45), "X" );
+        if(hf) draw_text(cr, Point(width - 45, height - 20), "X" );
+        if(hh) draw_text(cr, Point(width - 20, height - 20), "X" );
+        //*notify << "Operation: " << (mode ? (mode == 1 ? "union" : (mode == 2 ? "subtract" : (mode == 3 ? "intersect" : "exclude"))) : "none");
+        //*notify << "\nKeys:\n u = Union   s = Subtract   i = intersect   e = exclude   0 = none   a = invert A   b = invert B \n";
+        
+        //*notify << "A " << (as.isFill() ? "" : "not") << " filled, B " << (bs.isFill() ? "" : "not") << " filled..\n";
         
         cairo_set_line_width(cr, 1);
 
         Toy::draw(cr, notify, width, height, save);
     }
     void key_hit(GdkEventKey *e) {
-        //if(e->keyval == 'r') rev = !rev; else
-        if(e->keyval == 'a') as = as.inverse(); else
-        if(e->keyval == 'b') bs = bs.inverse();
-        if(e->keyval == '0') mode = 0; else
-        if(e->keyval == 'u') mode = 1; else
-        if(e->keyval == 's') mode = 2; else
-        if(e->keyval == 'i') mode = 3; else
-        if(e->keyval == 'e') mode = 4;
+        if(e->keyval == 'q') ff = !ff; else
+        if(e->keyval == 'w') fh = !fh; else
+        if(e->keyval == 'a') hf = !hf; else
+        if(e->keyval == 's') hh = !hh;
         redraw();
     }
     public:
@@ -143,16 +138,14 @@ class BoolOps: public Toy {
             path_b_name = argv[2];
         std::vector<Path> paths_a = read_svgd(path_a_name);
         std::vector<Path> paths_b = read_svgd(path_b_name);
-        
-        mode = 0; rev = false;
-        
+             
         handles.push_back(Point(700,700));
 
+        ff = fh = hf = true;
+        hh = false;
+        paths_b[0] = paths_b[0].reverse();
         as = cleanup(paths_a) * Geom::Translate(Point(300, 300));
-        bs = cleanup(paths_b).inverse();
-        bs = shape_subtract(bs, bs * Scale(.5, .5));
-        a = as.getContent().front();
-        b = bs.getContent().front();
+        bs = cleanup(paths_b);
     }
     int should_draw_bounds() {return 0;}
 };

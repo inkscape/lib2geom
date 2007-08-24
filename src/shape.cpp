@@ -181,10 +181,25 @@ Shape shape_boolean(bool rev, Shape const & a, Shape const & b) {
     return shape_boolean(rev, a, b, crs);
 }
 
-Shape shape_exclude(Shape const &a, Shape const &b) {
-    Shape res = shape_subtract(a, b);
-    append(res.content, shape_subtract(b, a).content);
-    return res;
+Shape shape_boolean(Shape const &a, Shape const &b, unsigned flags) {
+    flags &= 15;
+    std::cout << flags << "\n";
+    if(flags > SHAPE_UNION) return shape_boolean(a, b, ~flags).inverse();
+    //trivial cases
+    switch(flags) {
+        case SHAPE_NULL:         return Shape();
+        case SHAPE_INTERSECT:    return shape_boolean(true, a, b);
+        case SHAPE_SUBTRACT_A_B: return shape_boolean(true, a, b.inverse());
+        case SHAPE_IDENTITY_A:   return a;
+        case SHAPE_SUBTRACT_B_A: return shape_boolean(true, b, a.inverse());
+        case SHAPE_IDENTITY_B:   return b;
+        case SHAPE_EXCLUSION: {
+            Shape res = shape_boolean(true, a, b.inverse());
+            append(res.content, shape_boolean(true, b, a.inverse()).content);
+            return res;
+        }
+        case SHAPE_UNION:        return shape_boolean(false, a, b);
+    }
 }
 
 int paths_winding(std::vector<Path> const &ps, Point p) {

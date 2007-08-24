@@ -34,7 +34,7 @@ class Shape {
     //friend Shape shape_region_boolean(bool rev, Shape const & a, Region const & b);
     friend CrossingSet crossings_between(Shape const &a, Shape const &b);
     friend Shape shape_boolean(bool rev, Shape const &, Shape const &, CrossingSet const &);
-    friend Shape shape_exclude(Shape const &a, Shape const &b);
+    friend Shape shape_boolean(Shape const &a, Shape const &b, unsigned);
 
   public:
     Shape() {}
@@ -76,12 +76,7 @@ CrossingSet crossings_between(Shape const &a, Shape const &b);
 Shape shape_boolean(bool rev, Shape const &, Shape const &, CrossingSet const &);
 Shape shape_boolean(bool rev, Shape const &, Shape const &);
 
-Shape shape_boolean(unsigned flags, Shape const &, Shape const &);
-
-inline Shape shape_union(Shape const &a, Shape const &b) { return shape_boolean(false, a, b); }
-inline Shape shape_intersect(Shape const &a, Shape const &b) { return shape_boolean(true, a, b); }
-inline Shape shape_subtract(Shape const &a, Shape const &b) { return shape_boolean(true, a, b.inverse()); }
-Shape shape_exclude(Shape const &a, Shape const &b);
+Shape shape_boolean(Shape const &, Shape const &, unsigned flags);
 
 Shape sanitize_paths(std::vector<Path> ps);
 
