@@ -73,7 +73,7 @@ class Intro: public Toy {
         redraw();
     }
 
-    virtual bool should_draw_bounds() { return false; }
+    virtual int should_draw_bounds() { return 0; }
     
     public:
     Intro () {
