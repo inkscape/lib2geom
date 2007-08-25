@@ -26,27 +26,25 @@ std::vector<std::vector<unsigned> > sweep1(std::vector<Rect> rs) {
         events.push_back(Event(rs[i].right(), i, true));
     }
     std::sort(events.begin(), events.end());
-    
-    pairs.resize(events.size());
-    for(unsigned i = 0; i < events.size()-1; i++) {
-        pairs[events[i].ix].push_back(events[i+1].ix);
-    }
 
-    
-    /*std::vector<unsigned> open;
+    std::vector<unsigned> open;
     for(unsigned i = 0; i < events.size(); i++) {
         unsigned ix = events[i].ix;
         if(events[i].closing) {
             std::vector<unsigned>::iterator iter = std::find(open.begin(), open.end(), ix);
-            if(iter != open.end()) open.erase(iter);
+            //if(iter != open.end())
+            open.erase(iter);
         } else {
-            //for(unsigned j = 0; j < open.size(); j++)
-            //    pairs[open[j]].push_back(ix);
-            pairs[ix].insert(pairs[ix].end(), open.begin(), open.end());
-            //open.clear();
+            for(unsigned j = 0; j < open.size(); j++) {
+                unsigned jx = open[j];
+                if(rs[jx][Y].intersects(rs[ix][Y])) {
+                    pairs[jx].push_back(ix);
+                    pairs[ix].push_back(jx);
+                }
+            }
             open.push_back(ix);
         }
-        }*/
+    }
     return pairs;
 }
 
@@ -85,19 +83,17 @@ class Sweep: public Toy {
             cairo_rectangle(cr, rects_a[i].left(), rects_a[i].top(), rects_a[i].width(), rects_a[i].height());
         cairo_stroke(cr);
         
-        /*
         cairo_set_source_rgba(cr,0,0,1,1);
         for(unsigned i = 0; i < count_b; i++)
             cairo_rectangle(cr, rects_b[i].left(), rects_b[i].top(), rects_b[i].width(), rects_b[i].height());
         cairo_stroke(cr);
-        */
         
         Toy::draw(cr, notify, width, height, save);
     }
 
     public:
     Sweep () {
-        count_a = 5;
+        count_a = 20;
         count_b = 0;
         for(unsigned i = 0; i < (count_a + count_b); i++) {
             Point dim(uniform() * 90 + 10, uniform() * 90 + 10),
