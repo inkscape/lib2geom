@@ -29,7 +29,7 @@ std::vector<std::vector<unsigned> > sweep1(std::vector<Rect> rs) {
     
     pairs.resize(events.size());
     for(unsigned i = 0; i < events.size()-1; i++) {
-        pairs[i].push_back(i+1);
+        pairs[events[i].ix].push_back(events[i+1].ix);
     }
 
     
@@ -40,9 +40,10 @@ std::vector<std::vector<unsigned> > sweep1(std::vector<Rect> rs) {
             std::vector<unsigned>::iterator iter = std::find(open.begin(), open.end(), ix);
             if(iter != open.end()) open.erase(iter);
         } else {
-            for(unsigned j = 0; j < open.size(); j++)
-                pairs[open[j]].push_back(ix);
+            //for(unsigned j = 0; j < open.size(); j++)
+            //    pairs[open[j]].push_back(ix);
             pairs[ix].insert(pairs[ix].end(), open.begin(), open.end());
+            //open.clear();
             open.push_back(ix);
         }
         }*/
