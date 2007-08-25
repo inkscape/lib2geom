@@ -1,52 +1,9 @@
+#include "sweep.h"
 
 #include "path-cairo.h"
 #include "toy-framework.cpp"
 
 using namespace Geom;
-
-struct Event {
-    double x;
-    unsigned ix;
-    bool closing;
-    Event(double pos, unsigned i, bool c) : x(pos), ix(i), closing(c) {}
-// Lexicographic ordering by x then closing
-    bool operator<(Event const &other) const {
-        if(x < other.x) return true;
-        if(x > other.x) return false;
-        return closing < other.closing;
-    }
-};
-
-std::vector<std::vector<unsigned> > sweep1(std::vector<Rect> rs) {
-    std::vector<Event> events; events.reserve(rs.size()*2);
-    std::vector<std::vector<unsigned> > pairs(rs.size());
-    
-    for(unsigned i = 0; i < rs.size(); i++) {
-        events.push_back(Event(rs[i].left(), i, false));
-        events.push_back(Event(rs[i].right(), i, true));
-    }
-    std::sort(events.begin(), events.end());
-
-    std::vector<unsigned> open;
-    for(unsigned i = 0; i < events.size(); i++) {
-        unsigned ix = events[i].ix;
-        if(events[i].closing) {
-            std::vector<unsigned>::iterator iter = std::find(open.begin(), open.end(), ix);
-            //if(iter != open.end())
-            open.erase(iter);
-        } else {
-            for(unsigned j = 0; j < open.size(); j++) {
-                unsigned jx = open[j];
-                if(rs[jx][Y].intersects(rs[ix][Y])) {
-                    pairs[jx].push_back(ix);
-                    pairs[ix].push_back(jx);
-                }
-            }
-            open.push_back(ix);
-        }
-    }
-    return pairs;
-}
 
 class Sweep: public Toy {
     unsigned count_a, count_b;
@@ -58,21 +15,12 @@ class Sweep: public Toy {
 
         for(unsigned i = 0; i < count_b; i++)
             rects_b.push_back(Rect(handles[i*2 + count_a*2], handles[i*2+1 + count_a*2]));
-        
-        /*std::vector<std::vector<unsigned> > res = sweep_bounds(rects_a, rects_b);
+                
+        std::vector<std::vector<unsigned> > res = sweep_bounds(rects_a, rects_b);
         cairo_set_line_width(cr,0.5);
         for(unsigned i = 0; i < res.size(); i++) {
             for(unsigned j = 0; j < res[i].size(); j++) {
-                draw_line_seg(cr, rects_a[i].midpoint(), rects_b[j].midpoint());
-                cairo_stroke(cr);
-            }
-        }*/
-        
-        std::vector<std::vector<unsigned> > res = sweep1(rects_a);
-        cairo_set_line_width(cr,0.5);
-        for(unsigned i = 0; i < res.size(); i++) {
-            for(unsigned j = 0; j < res[i].size(); j++) {
-                draw_line_seg(cr, rects_a[i].midpoint(), rects_a[res[i][j]].midpoint());
+                draw_line_seg(cr, rects_a[i].midpoint(), rects_b[res[i][j]].midpoint());
                 cairo_stroke(cr);
             }
         }
@@ -90,11 +38,11 @@ class Sweep: public Toy {
         
         Toy::draw(cr, notify, width, height, save);
     }
-
+    bool should_draw_numbers() { return false; }
     public:
     Sweep () {
         count_a = 20;
-        count_b = 0;
+        count_b = 20;
         for(unsigned i = 0; i < (count_a + count_b); i++) {
             Point dim(uniform() * 90 + 10, uniform() * 90 + 10),
                   pos(uniform() * 500 + 50, uniform() * 500 + 50);
