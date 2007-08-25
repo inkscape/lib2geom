@@ -73,7 +73,7 @@ class Sweep: public Toy {
         cairo_set_line_width(cr,0.5);
         for(unsigned i = 0; i < res.size(); i++) {
             for(unsigned j = 0; j < res[i].size(); j++) {
-                draw_line_seg(cr, rects_a[i].midpoint(), rects_a[j].midpoint());
+                draw_line_seg(cr, rects_a[i].midpoint(), rects_a[res[i][j]].midpoint());
                 cairo_stroke(cr);
             }
         }
@@ -96,7 +96,8 @@ class Sweep: public Toy {
 
     public:
     Sweep () {
-        count_a = count_b = 20;
+        count_a = 5;
+        count_b = 0;
         for(unsigned i = 0; i < (count_a + count_b); i++) {
             Point dim(uniform() * 90 + 10, uniform() * 90 + 10),
                   pos(uniform() * 500 + 50, uniform() * 500 + 50);
