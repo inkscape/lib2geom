@@ -4,6 +4,37 @@
 
 namespace Geom {
 
+std::vector<std::vector<unsigned> > sweep_bounds(std::vector<Rect> rs) {
+    std::vector<Event> events; events.reserve(rs.size()*2);
+    std::vector<std::vector<unsigned> > pairs(rs.size());
+    
+    for(unsigned i = 0; i < rs.size(); i++) {
+        events.push_back(Event(rs[i].left(), i, false));
+        events.push_back(Event(rs[i].right(), i, true));
+    }
+    std::sort(events.begin(), events.end());
+
+    std::vector<unsigned> open;
+    for(unsigned i = 0; i < events.size(); i++) {
+        unsigned ix = events[i].ix;
+        if(events[i].closing) {
+            std::vector<unsigned>::iterator iter = std::find(open.begin(), open.end(), ix);
+            //if(iter != open.end())
+            open.erase(iter);
+        } else {
+            for(unsigned j = 0; j < open.size(); j++) {
+                unsigned jx = open[j];
+                if(rs[jx][Y].intersects(rs[ix][Y])) {
+                    pairs[jx].push_back(ix);
+                    pairs[ix].push_back(jx);
+                }
+            }
+            open.push_back(ix);
+        }
+    }
+    return pairs;
+}
+
 std::vector<std::vector<unsigned> > sweep_bounds(std::vector<Rect> a, std::vector<Rect> b) {
     std::vector<std::vector<unsigned> > pairs(a.size());
     if(a.empty() || b.empty()) return pairs;
