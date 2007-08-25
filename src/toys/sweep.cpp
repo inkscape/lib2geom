@@ -9,6 +9,7 @@ struct Event {
     unsigned ix;
     bool closing;
     Event(double pos, unsigned i, bool c) : x(pos), ix(i), closing(c) {}
+// Lexicographic ordering by x then closing
     bool operator<(Event const &other) const {
         if(x < other.x) return true;
         if(x > other.x) return false;
@@ -25,8 +26,14 @@ std::vector<std::vector<unsigned> > sweep1(std::vector<Rect> rs) {
         events.push_back(Event(rs[i].right(), i, true));
     }
     std::sort(events.begin(), events.end());
+    
+    pairs.resize(events.size());
+    for(unsigned i = 0; i < events.size()-1; i++) {
+        pairs[i].push_back(i+1);
+    }
 
-    std::vector<unsigned> open;
+    
+    /*std::vector<unsigned> open;
     for(unsigned i = 0; i < events.size(); i++) {
         unsigned ix = events[i].ix;
         if(events[i].closing) {
@@ -38,7 +45,7 @@ std::vector<std::vector<unsigned> > sweep1(std::vector<Rect> rs) {
             pairs[ix].insert(pairs[ix].end(), open.begin(), open.end());
             open.push_back(ix);
         }
-    }
+        }*/
     return pairs;
 }
 
