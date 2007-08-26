@@ -136,17 +136,21 @@ class BoolOps: public Toy {
         //Draw the info
         
         draw_text(cr, Point(x + 20, y - 34), "A");
-        draw_text(cr, Point(x + 5, y - 18), "F");
-        draw_text(cr, Point(x + 32, y - 18), "H");
+        draw_text(cr, Point(x + 5, y - 18),  "T");
+        draw_text(cr, Point(x + 32, y - 18), "F");
         
         draw_text(cr, Point(x - 25, y + 17), "B");
-        draw_text(cr, Point(x - 15, y + 2), "F");
-        draw_text(cr, Point(x - 15, y + 28), "H");
+        draw_text(cr, Point(x - 15, y + 2),  "T");
+        draw_text(cr, Point(x - 15, y + 28), "F");
 
+        draw_text(cr, Point(width - 425, height - 70), "KEY:");
+        draw_text(cr, Point(width - 425, height - 50), "T/F = Containment/Non-containment,");
+        draw_text(cr, Point(width - 425, height - 30), "Q/W/A/S = The keys on the keyboard");
+        
         Point p(x, y), d(25,25), xo(25,0), yo(0,25);
         togs[2].bounds = Rect(p,     p + d);
-        togs[0].bounds = Rect(p + yo, p + yo + d);
-        togs[1].bounds = Rect(p + xo, p + xo + d);
+        togs[0].bounds = Rect(p + xo, p + xo + d);
+        togs[1].bounds = Rect(p + yo, p + yo + d);
         togs[3].bounds = Rect(p + d, p + d + d);
 
         draw_toggles(cr, togs);
@@ -161,9 +165,9 @@ class BoolOps: public Toy {
         Toy::draw(cr, notify, width, height, save);
     }
     void key_hit(GdkEventKey *e) {
-        if(e->keyval == 'q') togs[2].toggle(); else
         if(e->keyval == 'w') togs[0].toggle(); else
         if(e->keyval == 'a') togs[1].toggle(); else
+        if(e->keyval == 'q') togs[2].toggle(); else
         if(e->keyval == 's') togs[3].toggle();
         redraw();
     }
@@ -186,8 +190,9 @@ class BoolOps: public Toy {
              
         handles.push_back(Point(400,400));
         
-        togs.push_back(Toggle("A", true));
+
         togs.push_back(Toggle("W", true));
+        togs.push_back(Toggle("A", true));
         togs.push_back(Toggle("Q", true));
         togs.push_back(Toggle("S", false));
         
