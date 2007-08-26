@@ -143,6 +143,12 @@ class BoolOps: public Toy {
         draw_text(cr, Point(x - 15, y + 2), "F");
         draw_text(cr, Point(x - 15, y + 28), "H");
 
+        Point p(x, y), d(25,25), xo(25,0), yo(0,25);
+        togs[2].bounds = Rect(p,     p + d);
+        togs[0].bounds = Rect(p + yo, p + yo + d);
+        togs[1].bounds = Rect(p + xo, p + xo + d);
+        togs[3].bounds = Rect(p + d, p + d + d);
+
         draw_toggles(cr, togs);
 
         //*notify << "Operation: " << (mode ? (mode == 1 ? "union" : (mode == 2 ? "subtract" : (mode == 3 ? "intersect" : "exclude"))) : "none");
@@ -164,13 +170,6 @@ class BoolOps: public Toy {
     void mouse_pressed(GdkEventButton* e) {
         toggle_events(togs, e);
         Toy::mouse_pressed(e);
-    }
-    void resize_canvas(Geom::Rect const & r) {
-        Point p = r.corner(2), d = Point(25,25), s = Point(60, 60), x = Point(25,0), y = Point(0,25);
-        togs[2].bounds = Rect(p - s, p - s + d);
-        togs[0].bounds = Rect(p - s + y, p - s + y + d);
-        togs[1].bounds = Rect(p - s + x, p - s + x + d);
-        togs[3].bounds = Rect(p - s + d, p - s + d + d);
     }
     public:
     BoolOps () {}

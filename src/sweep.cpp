@@ -43,6 +43,7 @@ std::vector<std::vector<unsigned> > sweep_bounds(std::vector<Rect> a, std::vecto
     events[1].reserve(b.size()*2);
     
     for(unsigned n = 0; n < 2; n++) {
+        events[n].reserve(n ? b.size()*2 : a.size()*2);
         for(unsigned i = 0; i < a.size(); i++) {
             events[n].push_back(Event(n ? b[i].left() : a[i].left(), i, false));
             events[n].push_back(Event(n ? b[i].right() : a[i].right(), i, true));
@@ -52,15 +53,17 @@ std::vector<std::vector<unsigned> > sweep_bounds(std::vector<Rect> a, std::vecto
 
     std::vector<unsigned> open[2];
     bool n = (events[0].back() < events[1].back()) ? 0 : 1;
-    for(unsigned i[] = {0,0}; i[n] < events[n].size(); i[n]++) {
+    for(unsigned i[] = {0,0}; i[n] < events[n].size();) {
         unsigned ix = events[n][i[n]].ix;
         bool closing = events[n][i[n]].closing;
         if(closing) {
             std::vector<unsigned>::iterator iter = std::find(open[n].begin(), open[n].end(), ix);
-            if(iter != open[n].end()) open[n].erase(iter);
+            if(iter == open[n].end()) std::cout << n << " " << ix << " " << open[n].size() << "\n";
+            else open[n].erase(iter);
         } else {
             if(n) {
-                //add to all open a
+                //n = 1
+                //opening a B, add to all open a
                 for(unsigned j = 0; j < open[0].size(); j++) {
                     unsigned jx = open[0][j];
                     if(a[jx][Y].intersects(b[ix][Y])) {
@@ -68,7 +71,8 @@ std::vector<std::vector<unsigned> > sweep_bounds(std::vector<Rect> a, std::vecto
                     }
                 }
             } else {
-                //add all open b
+                //n = 0
+                //opening an A, add all open b
                 for(unsigned j = 0; j < open[1].size(); j++) {
                     unsigned jx = open[1][j];
                     if(b[jx][Y].intersects(a[ix][Y])) {
@@ -78,6 +82,7 @@ std::vector<std::vector<unsigned> > sweep_bounds(std::vector<Rect> a, std::vecto
             }
             open[n].push_back(ix);
         }
+        i[n]++;
         n = (events[!n][i[!n]] < events[n][i[n]]) ? !n : n;
     }
     return pairs;
