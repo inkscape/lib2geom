@@ -23,6 +23,8 @@ class Region {
     Region(Path const &p, boost::optional<Rect> const &b) : boundary(p), box(b) { fill = path_direction(p); }
     Region(Path const &p, boost::optional<Rect> const &b, bool dir) : boundary(p), box(b), fill(dir) {}
     
+    unsigned size() const { return boundary.size(); }
+    
     bool isFill() const { return fill; }    
     Region asFill() const { if(fill) return Region(*this); else return inverse(); } 
     Region asHole() const { if(fill) return inverse(); else return Region(*this); }

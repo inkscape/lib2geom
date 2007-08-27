@@ -39,6 +39,46 @@ typedef std::vector<Crossings> CrossingSet;
 
 inline void sort_crossings(Crossings &cr, unsigned ix) { std::sort(cr.begin(), cr.end(), CrossingOrder(ix)); }
 
+inline Crossings reverse_ta(Crossings const &cr, std::vector<double> max) {
+    Crossings ret;
+    for(Crossings::const_iterator i = cr.begin(); i != cr.end(); ++i) {
+        double mx = max[i->a];
+        ret.push_back(Crossing(i->ta > mx ? (1 - (i->ta - mx) + mx) : mx - i->ta,
+                               i->tb, !i->dir));
+    }
+    return ret;
+}
+
+inline Crossings reverse_tb(Crossings const &cr, unsigned split, std::vector<double> max) {
+    Crossings ret;
+    for(Crossings::const_iterator i = cr.begin(); i != cr.end(); ++i) {
+        double mx = max[i->b - split];
+        ret.push_back(Crossing(i->ta, i->tb > mx ? (1 - (i->tb - mx) + mx) : mx - i->tb,
+                               !i->dir));
+    }
+    return ret;
+}
+
+inline CrossingSet reverse_ta(CrossingSet const &cr, unsigned split, std::vector<double> max) {
+    CrossingSet ret;
+    for(unsigned i = 0; i < cr.size(); i++) {
+        Crossings res = reverse_ta(cr[i], max);
+        if(i < split) std::reverse(res.begin(), res.end());
+        ret.push_back(res);
+    }
+    return ret;
+}
+
+inline CrossingSet reverse_tb(CrossingSet const &cr, unsigned split, std::vector<double> max) {
+    CrossingSet ret;
+    for(unsigned i = 0; i < cr.size(); i++) {
+        Crossings res = reverse_tb(cr[i], split, max);
+        if(i >= split) std::reverse(res.begin(), res.end());
+        ret.push_back(res);
+    }
+    return ret;
+}
+
 /*
 inline void clean(Crossings &cr_a, Crossings &cr_b) {
     if(cr_a.empty()) return;
@@ -59,6 +99,7 @@ inline void clean(Crossings &cr_a, Crossings &cr_b) {
     }
 }
 */
+
 }
 
 #endif

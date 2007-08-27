@@ -414,8 +414,8 @@ std::vector<double> path_mono_splits(Path const &p) {
 }
 
 Rect path_bounds_fast(Path const &p, double from, double to) {
-    double fid; modf(from, &fid); unsigned fi = fid;
-    double tid; modf(to, &tid); unsigned ti = tid;
+    double fid = modf(from, &fid); unsigned fi = fid;
+    double tid = modf(to, &tid); unsigned ti = tid;
     Rect ret = p[fi].boundsFast();
     for(unsigned i = fi+1; i <= ti; i++) {
         ret.unionWith(p[i].boundsFast());
@@ -426,7 +426,7 @@ Rect path_bounds_fast(Path const &p, double from, double to) {
 std::vector<Rect> mono_bounds(Path const &p, std::vector<double> splits) {
     std::vector<Rect> results;
     for(unsigned i = 1; i < splits.size(); i++) {
-        results.push_back(Rect(p.pointAt(splits[i-1]), p.pointAt(splits[i]));
+        results.push_back(Rect(p.pointAt(splits[i-1]), p.pointAt(splits[i])));
     }
     return results;
 }
@@ -451,15 +451,14 @@ Crossings MonoCrosser::operator()(Path const &a, Path const &b) {
 Crossings self_crossings(Path const &p) {
     Crossings ret;
     
-    //TODO: sweep
-    std::vector<double> splits = path_mono_splits(a);
+    std::vector<double> splits = path_mono_splits(p);
     std::vector<std::vector<unsigned> > cull = sweep_bounds(mono_bounds(p, splits));
     
     for(unsigned i = 0; i < cull.size(); i++) {
         for(unsigned jx = 0; jx < cull[i].size(); jx++) {
             unsigned j = cull[i][jx];
-            mono_pair(a, splits[i], splits[i+1],
-                      b, splits[j], splits[j+1],
+            mono_pair(p, splits[i], splits[i+1],
+                      p, splits[j], splits[j+1],
                       0, ret, .1);
         }
     }

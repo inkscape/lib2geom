@@ -35,7 +35,7 @@ class Shape {
     friend CrossingSet crossings_between(Shape const &a, Shape const &b);
     friend Shape shape_boolean(bool rev, Shape const &, Shape const &, CrossingSet const &);
     friend Shape shape_boolean(Shape const &a, Shape const &b, unsigned);
-
+    friend Shape shape_boolean(Shape const &a, Shape const &b, unsigned, CrossingSet const &);
     std::vector<Rect> bounds() const;
 
   public:
@@ -50,7 +50,10 @@ class Shape {
     
     Regions getContent() const { return content; }
     bool isFill() const { return fill; }
-
+    
+    unsigned size() const { return content.size(); }
+    const Region &operator[](unsigned ix) const { return content[ix]; }
+    
     Shape inverse() const;
     Shape operator*(Matrix const &m) const;
     
@@ -64,9 +67,9 @@ class Shape {
   private:     
     void update_fill() const {
         unsigned ix = outer_index(content);
-        if(ix < content.size())
+        if(ix < size())
             fill = content[ix].fill;
-        else if(content.size() > 0)
+        else if(size() > 0)
             fill = content.front().fill;
         else
             fill = true;
@@ -79,6 +82,7 @@ Shape shape_boolean(bool rev, Shape const &, Shape const &, CrossingSet const &)
 Shape shape_boolean(bool rev, Shape const &, Shape const &);
 
 Shape shape_boolean(Shape const &, Shape const &, unsigned flags);
+Shape shape_boolean(Shape const &, Shape const &, unsigned flags, CrossingSet &);
 
 Shape sanitize_paths(std::vector<Path> ps);
 
