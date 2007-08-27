@@ -1,7 +1,5 @@
 #include "path-intersection.h"
 
-#include "basic-intersection.h"
-#include "bezier-to-sbasis.h"
 #include "ord.h"
 
 //for path_direction:
@@ -340,7 +338,10 @@ void mono_pair(Path const &A, double Al, double Ah,
         double dist = LInfty(A.pointAt(tA) - A.pointAt(tB));
         //std::cout << dist;
         if(depth >= 12 || dist <= tol) {
-            ret.push_back(Crossing(tA, tB, c > 0));
+            if(depth % 2)
+                ret.push_back(Crossing(tB, tA, c > 0));
+            else
+                ret.push_back(Crossing(tA, tB, c > 0));
             return;
         }
         double hwidth = .1; //(Bh - Bl) * (.3 - fabs(c) / (4 * distance(A0, A1) * distance(B0, B1)));
@@ -422,78 +423,48 @@ Rect path_bounds_fast(Path const &p, double from, double to) {
     return ret;
 }
 
+std::vector<Rect> mono_bounds(Path const &p, std::vector<double> splits) {
+    std::vector<Rect> results;
+    for(unsigned i = 1; i < splits.size(); i++) {
+        results.push_back(Rect(p.pointAt(splits[i-1]), p.pointAt(splits[i]));
+    }
+    return results;
+}
+
 Crossings MonoCrosser::operator()(Path const &a, Path const &b) {
     Crossings ret;
     std::vector<double> sa = path_mono_splits(a), sb = path_mono_splits(b);
-
-    for(unsigned i = 0; i < sa.size(); i++) {
-        for(unsigned j = 0; j < sb.size(); j++) {
-            //ret.push_back(Crossing(sa[i], sb[j], false));
-            if(Rect(a.pointAt(sa[i-1]), a.pointAt(sa[i])).intersects(
-               Rect(b.pointAt(sb[j-1]), b.pointAt(sb[j])) )) {
-            //if(path_bounds_fast(a, sa[i-1], sa[i]).intersects(
-            //   path_bounds_fast(b, sb[i-1], sb[i]))) {
-                mono_pair(a, sa[i-1], sa[i],
-                          b, sb[j-1], sb[j],
-                          0, ret, .1);
-            }
+    
+    std::vector<std::vector<unsigned> > cull = sweep_bounds(mono_bounds(a, sa), mono_bounds(b, sb));
+    
+    for(unsigned i = 0; i < cull.size(); i++) {
+        for(unsigned jx = 0; jx < cull[i].size(); jx++) {
+            unsigned j = cull[i][jx];
+            mono_pair(a, sa[i-1], sa[i],
+                      b, sb[j-1], sb[j],
+                      0, ret, .1);
         }
     }
     return ret;
 }
-Crossings self_crossings(Path const &a, Crosser &c) {
+
+Crossings self_crossings(Path const &p) {
     Crossings ret;
     
     //TODO: sweep
-    /*
-    std::vector<Rect> bounds = curve_bounds(a);
-    for(unsigned i = 0; i < bounds.size(); i++) {
-        Crossings cc = to_crossings(find_self_intersections(a[i].toSBasis()), a[i], a[i]);
-        for(Crossings::iterator it = cc.begin(); it != cc.end(); it++) {
-            ret.push_back(Crossing(it->ta + i, it->tb + i, it->dir));
-        }
-        for(unsigned j = i+1; j < bounds.size(); j++) {
-            if(bounds[i].intersects(bounds[j])) {
-                cc = bounds[i].area() < bounds[j].area() ? c(a[i], a[j]) : c(a[j], a[i]);
-                for(Crossings::iterator it = cc.begin(); it != cc.end(); it++) {
-                    ret.push_back(Crossing(it->ta + i, it->tb + j, it->dir));
-                }
-            }
+    std::vector<double> splits = path_mono_splits(a);
+    std::vector<std::vector<unsigned> > cull = sweep_bounds(mono_bounds(p, splits));
+    
+    for(unsigned i = 0; i < cull.size(); i++) {
+        for(unsigned jx = 0; jx < cull[i].size(); jx++) {
+            unsigned j = cull[i][jx];
+            mono_pair(a, splits[i], splits[i+1],
+                      b, splits[j], splits[j+1],
+                      0, ret, .1);
         }
     }
-    */
+    
     return ret;
-}   
-
-CrossingSet crossings_among(std::vector<Path> const &ps, Crosser &c) {
-    CrossingSet results(ps.size(), Crossings());
-    
-    //TODO: sweep
-    for(unsigned i = 0; i < ps.size(); i++) {
-        Crossings cr = self_crossings(ps[i], c);
-        for(unsigned k = 0; k < cr.size(); k++) cr[k].a = cr[k].b = i;
-        //Sort & add crossings
-        sort_crossings(cr, i);
-        Crossings n(results[i].size() + cr.size());
-        std::merge(results[i].begin(), results[i].end(), cr.begin(), cr.end(), n.begin(), CrossingOrder(i));
-        results[i] = n;
-        for(unsigned j = i+1; j < ps.size(); j++) {
-            cr = c(ps[i], ps[j]);
-            for(unsigned k = 0; k < cr.size(); k++) { cr[k].a = i; cr[k].b = j; }
-            //Sort & add I crossings
-            sort_crossings(cr, i);
-            n.resize(results[i].size() + cr.size());
-            std::merge(results[i].begin(), results[i].end(), cr.begin(), cr.end(), n.begin(), CrossingOrder(i));
-            results[i] = n;
-            //Sort & add J crossings
-            sort_crossings(cr, j);
-            n.resize(results[j].size() + cr.size());
-            std::merge(results[j].begin(), results[j].end(), cr.begin(), cr.end(), n.begin(), CrossingOrder(j));
-            results[j] = n;
-        }
-    }
-    
-    return results;
 }
 
 }

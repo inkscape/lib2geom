@@ -21,8 +21,7 @@ struct Crosser { virtual Crossings operator()(Path const &a, Path const&b) = 0; 
 struct SimpleCrosser : Crosser { Crossings operator()(Path const &a, Path const &b); };
 struct MonoCrosser : Crosser { Crossings operator()(Path const &a, Path const &b); };
 
-Crossings self_crossings(Path const &a, Crosser &c);
-CrossingSet crossings_among(std::vector<Path> const & a, Crosser &c);
+
 
 typedef SimpleCrosser DefaultCrosser;
 
@@ -50,20 +49,13 @@ Crossings curve_sweep(Path const &a, Path const &b, T t) {
     return ret;
 }
 
+Crossings self_crossings(Path const & a);
+
 inline Crossings crossings(Path const & a, Path const & b) {
     DefaultCrosser c = DefaultCrosser();
     return c(a, b);
 }
-inline Crossings self_crossings(Path const & a) {
-    DefaultCrosser c = DefaultCrosser();
-    return self_crossings(a, c);
-}
-inline CrossingSet crossings_among(std::vector<Path> const & a) {
-    DefaultCrosser c = DefaultCrosser();
-    return crossings_among(a, c);
-}
 
-Path monotone(Path const &p);
 
 }
 

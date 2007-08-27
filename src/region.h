@@ -33,7 +33,7 @@ class Region {
         return *box;
     }
     bool contains(Point const &p) const {
-        //if(box) if(!box->contains(p)) return false;
+        if(box && !box->contains(p)) return false;
         return Geom::contains(boundary, p);
     }
     bool contains(Region const &other) const { return contains(other.boundary.initialPoint()); }
@@ -67,6 +67,8 @@ inline std::vector<Path> paths_from_regions(Regions const &rs) {
         res.push_back(rs[i].getBoundary());
     return res;
 }
+
+Regions sanitize_path(Path const &p);
 
 Regions region_boolean(bool rev, Region const & a, Region const & b, Crossings const &cr);
 Regions region_boolean(bool rev, Region const & a, Region const & b, Crossings const & cr_a, Crossings const & cr_b);

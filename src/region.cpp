@@ -5,9 +5,17 @@
 
 namespace Geom {
 
+Regions sanitize_path(Path const &p) {
+    Regions results;
+    Crossings crs = self_crossings(p);
+    for(unsigned i = 0; i < crs.size(); i++) {
+        
+    }
+}
+
 Region Region::operator*(Matrix const &m) const {
     Region r((m.flips() ? boundary.reverse() : getBoundary()) * m, fill);
-    if(m.onlyScaleAndTranslation() && box) *r.box = (*box) * m;
+    if(box && m.onlyScaleAndTranslation()) r.box = (*box) * m;
     return r;
 }
 

@@ -26,7 +26,6 @@ std::vector<std::vector<unsigned> > sweep_bounds(std::vector<Rect> rs) {
                 unsigned jx = open[j];
                 if(rs[jx][Y].intersects(rs[ix][Y])) {
                     pairs[jx].push_back(ix);
-                    pairs[ix].push_back(jx);
                 }
             }
             open.push_back(ix);
