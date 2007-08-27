@@ -380,3 +380,31 @@ void init(int argc, char **argv, Toy* t, int width, int height) {
 
     gtk_main();
 }
+
+
+void Toggle::draw(cairo_t *cr) {
+  cairo_set_source_rgba(cr,0,0,0,1);
+  cairo_rectangle(cr, bounds.left(), bounds.top(),
+		  bounds.width(), bounds.height());
+  if(on) {
+    cairo_fill(cr);
+    cairo_set_source_rgba(cr,1,1,1,1);
+  } else cairo_stroke(cr);
+  draw_text(cr, bounds.corner(0) + Geom::Point(5,2), text);
+}
+
+void Toggle::toggle() {
+  on = !on;
+}
+
+void Toggle::handle_click(GdkEventButton* e) {
+  if(bounds.contains(Geom::Point(e->x, e->y)) && e->button == 1) toggle();
+}
+
+void toggle_events(std::vector<Toggle> &ts, GdkEventButton* e) {
+    for(unsigned i = 0; i < ts.size(); i++) ts[i].handle_click(e);
+}
+
+void draw_toggles(cairo_t *cr, std::vector<Toggle> &ts) {
+    for(unsigned i = 0; i < ts.size(); i++) ts[i].draw(cr);
+}

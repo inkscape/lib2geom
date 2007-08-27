@@ -16,7 +16,10 @@ inline bool contains(Path const & p, Point i, bool evenodd = true) {
     return (evenodd ? winding(p, i) % 2 : winding(p, i)) != 0;
 }
 
-struct Crosser { virtual Crossings operator()(Path const &a, Path const&b) = 0; };
+struct Crosser { 
+  virtual Crossings operator()(Path const &a, Path const&b) = 0;
+  virtual ~Crosser() {}
+};
 
 struct SimpleCrosser : Crosser { Crossings operator()(Path const &a, Path const &b); };
 struct MonoCrosser : Crosser { Crossings operator()(Path const &a, Path const &b); };

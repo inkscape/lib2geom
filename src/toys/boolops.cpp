@@ -15,36 +15,6 @@
 
 using namespace Geom;
 
-struct Toggle {
-    Rect bounds;
-    char* text;
-    bool on;
-    Toggle(char* txt, bool v) : bounds(Point(0,0),Point(0,0)), text(txt), on(v) {}
-    Toggle(Rect bnds, char* txt, bool v) : bounds(bnds), text(txt), on(v) {}
-    void draw(cairo_t *cr) {
-        cairo_set_source_rgba(cr,0,0,0,1);
-        cairo_rectangle(cr, bounds.left(), bounds.top(),
-                            bounds.width(), bounds.height());
-        if(on) {
-            cairo_fill(cr);
-            cairo_set_source_rgba(cr,1,1,1,1);
-        } else cairo_stroke(cr);
-        draw_text(cr, bounds.corner(0) + Point(5,2), text);
-    }
-    void toggle() { on = !on; }
-    void handle_click(GdkEventButton* e) {
-        if(bounds.contains(Point(e->x, e->y)) && e->button == 1) toggle();
-    }
-    
-};
-
-void toggle_events(std::vector<Toggle> &ts, GdkEventButton* e) {
-    for(unsigned i = 0; i < ts.size(); i++) ts[i].handle_click(e);
-}
-
-void draw_toggles(cairo_t *cr, std::vector<Toggle> &ts) {
-    for(unsigned i = 0; i < ts.size(); i++) ts[i].draw(cr);
-}
 
 void cairo_region(cairo_t *cr, Region const &r) {
     double d = 5.;

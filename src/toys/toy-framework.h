@@ -50,3 +50,17 @@ public:
 void redraw();
 void take_screenshot(const char* file);
 void init(int argc, char **argv, Toy *t, int width=600, int height=600);
+
+struct Toggle {
+  Geom::Rect bounds;
+  char* text;
+  bool on;
+  Toggle(char* txt, bool v) : bounds(Geom::Point(0,0), Geom::Point(0,0)), text(txt), on(v) {}
+  Toggle(Geom::Rect bnds, char* txt, bool v) : bounds(bnds), text(txt), on(v) {}
+  void draw(cairo_t *cr);
+  void toggle();
+  void handle_click(GdkEventButton* e);
+};
+
+void toggle_events(std::vector<Toggle> &ts, GdkEventButton* e);
+void draw_toggles(cairo_t *cr, std::vector<Toggle> &ts);
