@@ -18,7 +18,7 @@ class Region {
     bool fill;
   public:
     Region() : fill(true) {}
-    Region(Path const &p) : boundary(p) { fill = path_direction(p); }
+    explicit Region(Path const &p) : boundary(p) { fill = path_direction(p); }
     Region(Path const &p, bool dir) : boundary(p), fill(dir) {}
     Region(Path const &p, boost::optional<Rect> const &b) : boundary(p), box(b) { fill = path_direction(p); }
     Region(Path const &p, boost::optional<Rect> const &b, bool dir) : boundary(p), box(b), fill(dir) {}
@@ -29,7 +29,7 @@ class Region {
     Region asFill() const { if(fill) return Region(*this); else return inverse(); } 
     Region asHole() const { if(fill) return inverse(); else return Region(*this); }
     
-    Path getBoundary() const { return boundary; }
+    operator Path() const { return boundary; }
     Rect boundsFast() const {
         if(!box) box = boost::optional<Rect>(boundary.boundsFast());
         return *box;
@@ -49,10 +49,6 @@ class Region {
 
 typedef std::vector<Region> Regions;
 
-inline Crossings crossings(Region const &a, Region const &b) {
-    return crossings(a.boundary, b.boundary);
-}
-
 unsigned outer_index(Regions const &ps);
 
 //assumes they're already sanitized somewhat
@@ -66,7 +62,7 @@ inline Regions regions_from_paths(std::vector<Path> const &ps) {
 inline std::vector<Path> paths_from_regions(Regions const &rs) {
     std::vector<Path> res;
     for(unsigned i = 0; i < rs.size(); i++)
-        res.push_back(rs[i].getBoundary());
+        res.push_back(rs[i]);
     return res;
 }
 
@@ -76,7 +72,7 @@ Regions region_boolean(bool rev, Region const & a, Region const & b, Crossings c
 Regions region_boolean(bool rev, Region const & a, Region const & b, Crossings const & cr_a, Crossings const & cr_b);
 
 inline Regions region_boolean(bool rev, Region const & a, Region const & b) {
-    return region_boolean(rev, a, b, crossings(a.getBoundary(), b.getBoundary()));
+    return region_boolean(rev, a, b, crossings(a, b));
 }
 
 }

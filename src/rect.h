@@ -139,6 +139,14 @@ inline Rect unify(Rect const & a, Rect const & b) {
     return Rect(unify(a[X], b[X]), unify(a[Y], b[Y]));
 }
 
+inline Rect union_list(std::vector<Rect> const &r) {
+    if(r.empty()) return Rect(Interval(0,0), Interval(0,0));
+    Rect ret = r[0];
+    for(unsigned i = 1; i < r.size(); i++)
+        ret.unionWith(r[i]);
+    return ret;
+}
+
 inline boost::optional<Rect> intersect(Rect const & a, Rect const & b) {
     boost::optional<Interval> x = intersect(a[X], b[X]);
     boost::optional<Interval> y = intersect(a[Y], b[Y]);

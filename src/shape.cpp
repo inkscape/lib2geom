@@ -135,41 +135,6 @@ Shape shape_boolean(bool rev, Shape const & a, Shape const & b, CrossingSet cons
     return Shape(chunks);
 }
 
-std::vector<Rect> Shape::bounds() const {
-    std::vector<Rect> rs;
-    for(unsigned i = 0; i < size(); i++) rs.push_back(content[i].boundsFast());
-    return rs; 
-}
-
-//Returns a vector of crossings, such that those associated with B are in the range [a.size(), a.size() + b.size())
-CrossingSet crossings_between(Shape const &a, Shape const &b) { 
-    CrossingSet results(a.size() + b.size(), Crossings());
-    
-    std::vector<std::vector<unsigned> > cull = sweep_bounds(a.bounds(), b.bounds());
-    for(unsigned i = 0; i < cull.size(); i++) {
-        for(unsigned jx = 0; jx < cull[i].size(); jx++) {
-            std::cout << i << " " << jx << "\n";
-            unsigned j = cull[i][jx];
-            unsigned jc = j + a.size();
-            Crossings cr = crossings(a.content[i].getBoundary(), b.content[j].getBoundary());
-            for(unsigned k = 0; k < cr.size(); k++) { cr[k].a = i; cr[k].b = jc; }
-            
-            //Sort & add A-sorted crossings
-            sort_crossings(cr, i);
-            Crossings n(results[i].size() + cr.size());
-            std::merge(results[i].begin(), results[i].end(), cr.begin(), cr.end(), n.begin(), CrossingOrder(i));
-            results[i] = n;
-            
-            //Sort & add B-sorted crossings
-            sort_crossings(cr, jc);
-            n.resize(results[jc].size() + cr.size());
-            std::merge(results[jc].begin(), results[jc].end(), cr.begin(), cr.end(), n.begin(), CrossingOrder(jc));
-            results[jc] = n;
-        }
-    }
-    return results;
-}
-
 Shape shape_boolean(bool rev, Shape const & a, Shape const & b) {
     CrossingSet crs = crossings_between(a, b);
     
@@ -337,7 +302,7 @@ struct ContainmentOrder {
 bool Shape::contains(Point const &p) const {
     std::vector<Rect> pnt;
     pnt.push_back(Rect(p, p));
-    std::vector<std::vector<unsigned> > cull = sweep_bounds(pnt, bounds());
+    std::vector<std::vector<unsigned> > cull = sweep_bounds(pnt, bounds(*this));
     if(cull[0].size() == 0) return !fill;
     return content[*min_element(cull[0].begin(), cull[0].end(), ContainmentOrder(&content))].isFill();
 }

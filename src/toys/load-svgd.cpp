@@ -18,7 +18,7 @@ void cairo_region(cairo_t *cr, Region const &r) {
     cairo_set_source_rgba(cr, 0, 0, 0, 1); //rand_d(), rand_d(), rand_d(), .75);
     double d = 5.;
     if(!r.isFill()) cairo_set_dash(cr, &d, 1, 0);
-    cairo_path(cr, r.getBoundary());
+    cairo_path(cr, r);
     cairo_stroke(cr);
     cairo_set_dash(cr, &d, 0, 0);
 }
@@ -37,7 +37,7 @@ Shape cleanup(std::vector<Path> const &ps) {
     Regions rs = regions_from_paths(ps);
     
     for(unsigned i = 0; i < rs.size(); i++) {
-        Point exemplar = rs[i].getBoundary().initialPoint();
+        Point exemplar = Path(rs[i]).initialPoint();
         for(unsigned j = 0; j < rs.size(); j++) {
             if(i != j && rs[j].contains(exemplar)) {
                 if(rs[i].isFill()) rs[i] = rs[i].inverse();
@@ -63,7 +63,7 @@ class BoolOps: public Toy {
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         Geom::Translate t(handles[0]);
         Shape bst = bs * t;
-        Region bt = Region(b.getBoundary() * t, b.isFill());
+        Region bt = Region(b * t, b.isFill());
         
         cairo_set_line_width(cr, 1);
         

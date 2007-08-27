@@ -3,7 +3,8 @@
 
 #include <vector>
 #include <set>
-
+#include "rect.h"
+#include "sweep.h"
 namespace Geom {
 
 struct Crossing {
@@ -37,68 +38,54 @@ struct CrossingOrder {
 typedef std::vector<Crossing> Crossings;
 typedef std::vector<Crossings> CrossingSet;
 
+template<typename C>
+std::vector<Rect> bounds(C const &a) {
+    std::vector<Rect> rs;
+    for(unsigned i = 0; i < a.size(); i++) rs.push_back(a[i].boundsFast());
+    return rs;
+}
+
 inline void sort_crossings(Crossings &cr, unsigned ix) { std::sort(cr.begin(), cr.end(), CrossingOrder(ix)); }
 
-inline Crossings reverse_ta(Crossings const &cr, std::vector<double> max) {
-    Crossings ret;
-    for(Crossings::const_iterator i = cr.begin(); i != cr.end(); ++i) {
-        double mx = max[i->a];
-        ret.push_back(Crossing(i->ta > mx ? (1 - (i->ta - mx) + mx) : mx - i->ta,
-                               i->tb, !i->dir));
-    }
-    return ret;
-}
-
-inline Crossings reverse_tb(Crossings const &cr, unsigned split, std::vector<double> max) {
-    Crossings ret;
-    for(Crossings::const_iterator i = cr.begin(); i != cr.end(); ++i) {
-        double mx = max[i->b - split];
-        ret.push_back(Crossing(i->ta, i->tb > mx ? (1 - (i->tb - mx) + mx) : mx - i->tb,
-                               !i->dir));
-    }
-    return ret;
-}
-
-inline CrossingSet reverse_ta(CrossingSet const &cr, unsigned split, std::vector<double> max) {
-    CrossingSet ret;
-    for(unsigned i = 0; i < cr.size(); i++) {
-        Crossings res = reverse_ta(cr[i], max);
-        if(i < split) std::reverse(res.begin(), res.end());
-        ret.push_back(res);
-    }
-    return ret;
-}
-
-inline CrossingSet reverse_tb(CrossingSet const &cr, unsigned split, std::vector<double> max) {
-    CrossingSet ret;
-    for(unsigned i = 0; i < cr.size(); i++) {
-        Crossings res = reverse_tb(cr[i], split, max);
-        if(i >= split) std::reverse(res.begin(), res.end());
-        ret.push_back(res);
-    }
-    return ret;
-}
-
-/*
-inline void clean(Crossings &cr_a, Crossings &cr_b) {
-    if(cr_a.empty()) return;
+template<typename T>
+struct Crosser {
+    virtual Crossings crossings(T const &a, T const &b) { return crossings(std::vector<T>(1,a), std::vector<T>(1,b))[0]; }
+    virtual CrossingSet crossings(std::vector<T> const &a, std::vector<T> const &b) {
+        CrossingSet results(a.size() + b.size(), Crossings());
     
-    //Remove anything with dupes
-    
-    for(Eraser<Crossings> i(&cr_a); !i.ended(); i++) {
-        const Crossing cur = *i;
-        Eraser<Crossings> next(i);
-        next++;
-        if(near(cur, *next)) {
-            cr_b.erase(std::find(cr_b.begin(), cr_b.end(), cur));
-            for(i = next; near(*i, cur); i++) {
-                cr_b.erase(std::find(cr_b.begin(), cr_b.end(), *i));
+        std::vector<std::vector<unsigned> > cull = sweep_bounds(bounds(a), bounds(b));
+        for(unsigned i = 0; i < cull.size(); i++) {
+            for(unsigned jx = 0; jx < cull[i].size(); jx++) {
+                unsigned j = cull[i][jx];
+                unsigned jc = j + a.size();
+                Crossings cr = crossings(a[i], b[j]);
+                for(unsigned k = 0; k < cr.size(); k++) { cr[k].a = i; cr[k].b = jc; }
+                
+                //Sort & add A-sorted crossings
+                sort_crossings(cr, i);
+                Crossings n(results[i].size() + cr.size());
+                std::merge(results[i].begin(), results[i].end(), cr.begin(), cr.end(), n.begin(), CrossingOrder(i));
+                results[i] = n;
+                
+                //Sort & add B-sorted crossings
+                sort_crossings(cr, jc);
+                n.resize(results[jc].size() + cr.size());
+                std::merge(results[jc].begin(), results[jc].end(), cr.begin(), cr.end(), n.begin(), CrossingOrder(jc));
+                results[jc] = n;
             }
-            continue;
         }
+        return results;
     }
-}
-*/
+};
+void merge_crossings(Crossings &a, Crossings &b, unsigned i);
+void offset_crossings(Crossings &cr, double a, double b);
+
+Crossings reverse_ta(Crossings const &cr, std::vector<double> max);
+Crossings reverse_tb(Crossings const &cr, unsigned split, std::vector<double> max);
+CrossingSet reverse_ta(CrossingSet const &cr, unsigned split, std::vector<double> max);
+CrossingSet reverse_tb(CrossingSet const &cr, unsigned split, std::vector<double> max);
+
+void clean(Crossings &cr_a, Crossings &cr_b);
 
 }
 

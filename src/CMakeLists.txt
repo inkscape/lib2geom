@@ -33,6 +33,8 @@ shape.cpp
 shape.h
 region.cpp
 region.h
+crossing.h
+crossing.cpp
 sweep.cpp
 sweep.h
 

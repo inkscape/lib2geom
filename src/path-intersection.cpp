@@ -18,7 +18,7 @@ int winding(Path const &path, Point p) {
   }
   int wind = 0;
   bool starting = true;
-  int cnt = 0;
+  unsigned cnt = 0;
   for (Path::const_iterator iter = start; iter != start || starting
        ; ++iter, iter = (iter == path.end_closed()) ? path.begin() : iter )
   {
@@ -124,42 +124,7 @@ bool path_direction(Path const &p) {
         return area > 0;
 }
 
-/*
-int path_direction(Path p) {
-    int wind = 0, max = 0;
-    for (Path::const_iterator iter = p.begin(); iter != p.end(); ++iter) {
-        iter->initialPoint()
-        
-    }
-}*/
-
-/*
-//Finds intervals larger than a particular width, which contain a crossing
-std::vector<std::pair<Interval, Interval> > break_down(Curve const & a, Curve const & b, double width) {
-    std::vector<std::pair<Interval, Interval> > res;
-    int prev = b.winding(a.initialPoint());
-    for(double t = width; t <= 1; t += width) {
-        int val = b.winding(a.valueAt(t)
-        if(val != prev) res.push_back(std::pair<Interval, Interval>(Interval(t-width,t),
-                                     Interval();
-    }
-}
-*/
-/*
-Crossings crossings_recurse(Curve const &a, Curve const &b,
-                            std::vector<Interval> a_i, std::vector<Interval> b_i) {
-    Crossings ret;
-    a_bounds = a.boundsFast(); 
-    b_bounds = b.boundsFast();
-    if(a_bounds.intersects(b_bounds)) {
-        
-    }
-    return ret;
-}
-*/
-
 //pair intersect code based on njh's pair-intersect
-
 
 template<typename T>
 void append(T &a, T const &b) {
@@ -226,93 +191,11 @@ void pair_intersect(Curve const & A, double Al, double Ah,
         }
     }
 }
-/*
 
-void pair_intersect(std::vector<double> &Asects,
-                    std::vector<double> &Bsects,
-                    Curve const & A, double Al, double Ah, 
-                    Curve const & B, double Bl, double Bh, unsigned depth=0) {
-    std::cout << depth << "(" << Al << ", " << Ah << ")\n";
-
-    Rect Ar = A.boundsLocal(Interval(Al, Ah));
-    if(Ar.isEmpty()) return;
-    Rect Br = B.boundsLocal(Interval(Bl, Bh));
-    if(Br.isEmpty()) return;
-    if(!Ar.intersects(Br)) return;
-    
-    if(depth <= 12 && Ah - Al > 0.1 && Bh - Bl > 0.1) {
-        // We'll split B, and swap every recursion
-        pair_intersect(Bsects, Asects,
-                    B, Bl, (Bl+Bh)/2,
-                    A, Al, Ah, depth+1);
-        pair_intersect(Bsects, Asects,
-                    B, (Bl+Bh)/2, Bh,
-                    A, Al, Ah, depth+1);
-
-    } else {
-        double tA, tB;
-        if(linear_pair_intersect(A, Al, Ah, 
-                        B, Bl, Bh, 
-                        tA, tB)) {
-            std::cout << "Intersected\n";
-            Asects.push_back(tA);
-            Bsects.push_back(tB);
-        }
-    }
-  
-    //Make a bit of a guess for a split point in B
-    double mid;
-    Dim2 dim = Br.height() > Br.width() ? Y : X;
-    double weight = (B.valueAt(Bh,dim) - B.valueAt(Bl,dim)) / Br[dim].extent();
-    double ma = Ar[dim].middle(), mb = Br[dim].middle();
-    if(!Br[dim].contains(ma)) {
-        if(fabs(Ar[dim].min() - mb) < fabs(Ar[dim].max() - mb)) {
-            if(Br[dim].contains(Ar[dim].min())) {
-                ma = Ar[dim].min();
-            } else {
-                mid = 0.5; goto skipper;
-            }
-        } else {
-            if(Br[dim].contains(Ar[dim].max())) {
-                ma = Ar[dim].max();
-            } else {
-                mid = 0.5; goto skipper;
-            }
-        }
-    }
-    mid = ((ma - Br[dim].min()) / Br[dim].extent() * weight + .5) / (1 + fabs(weight));    mid = 0.5;
-    mid = (Bh - Bl) * mid + Bl;
-    std::cout << "weight: " << weight << " mid: " << mid << "\n";
-} */
-
-Crossings to_crossings(std::vector<std::pair<double, double> > ts, Curve const &a, Curve const &b) { 
+Crossings SimpleCrosser::crossings(Curve const &a, Curve const &b) {
     Crossings ret;
-    for(unsigned i = 0; i < ts.size(); i++) {
-        double at = ts[i].first, bt = ts[i].second;
-        ret.push_back(Crossing(at, bt, cross(a.pointAt(at) - a.pointAt(at + .01),
-                                             b.pointAt(bt) - b.pointAt(bt + .01)) > 0));
-    }
+    pair_intersect(a, 0, 1, b, 0, 1, ret);
     return ret;
-}
-
-template<typename A, typename B>
-std::vector<std::pair<A, B> > zip(std::vector<A> const &a, std::vector<B> &b) {
-    std::vector<std::pair<A, B> > ret;
-    for(unsigned i = 0; i < a.size() && i < b.size(); i++)
-        ret.push_back(std::pair<A, B>(a[i], b[i]));
-    return ret;
-}
-
-struct SimpleCurveIntersector {
-    Crossings operator()(Curve const &a, Curve const &b) {
-        Crossings ret;
-        pair_intersect(a, 0, 1, b, 0, 1, ret);
-        return ret;
-    }
-};
-
-Crossings SimpleCrosser::operator()(Path const &a, Path const &b) {
-    return curve_sweep(a, b, SimpleCurveIntersector());
 }
 
 int cnt;
@@ -335,34 +218,17 @@ void mono_pair(Path const &A, double Al, double Ah,
     if(linear_intersect(A0, A1, B0, B1, ltA, ltB, c)) {
         tA = ltA * (Ah - Al) + Al;
         tB = ltB * (Bh - Bl) + Bl;
-        double dist = LInfty(A.pointAt(tA) - A.pointAt(tB));
+        double dist = LInfty(A.pointAt(tA) - B.pointAt(tB));
         //std::cout << dist;
         if(depth >= 12 || dist <= tol) {
             if(depth % 2)
-                ret.push_back(Crossing(tB, tA, c > 0));
+                ret.push_back(Crossing(tB, tA, c < 0));
             else
                 ret.push_back(Crossing(tA, tB, c > 0));
             return;
         }
-        double hwidth = .1; //(Bh - Bl) * (.3 - fabs(c) / (4 * distance(A0, A1) * distance(B0, B1)));
-        if(tB - hwidth*2 <= Bl) {
-            if(tB + hwidth >= Bh) tB += hwidth;
-        } else if(tB + hwidth*2 >= Bh) {
-            if(tB - hwidth <= Bl) tB -= hwidth;
-        } else {
-            mono_pair(B, Bl, tB - hwidth,
-                      A, Al, Ah,
-                      depth+1, ret, tol);
-            mono_pair(B, tB - hwidth, tB + hwidth,
-                      A, Al, Ah,
-                      depth+1, ret, tol);
-            mono_pair(B, tB + hwidth, Bh,
-                      A, Al, Ah,
-                      depth+1, ret, tol);
-            return;
-        }
-        tB = ltB * (Bh - Bl) + Bl;
-    } else tB = (Bl + Bh) / 2;
+    }
+    tB = (Bl + Bh) / 2;
     if(depth < 12) {
         mono_pair(B, Bl, tB,
                   A, Al, Ah,
@@ -413,57 +279,97 @@ std::vector<double> path_mono_splits(Path const &p) {
     return ret;
 }
 
-Rect path_bounds_fast(Path const &p, double from, double to) {
-    double fid = modf(from, &fid); unsigned fi = fid;
-    double tid = modf(to, &tid); unsigned ti = tid;
-    Rect ret = p[fi].boundsFast();
-    for(unsigned i = fi+1; i <= ti; i++) {
-        ret.unionWith(p[i].boundsFast());
+std::vector<std::vector<double> > paths_mono_splits(std::vector<Path> const &ps) {
+    std::vector<std::vector<double> > ret;
+    for(unsigned i = 0; i < ps.size(); i++)
+        ret.push_back(path_mono_splits(ps[i]));
+    return ret;
+}
+
+std::vector<std::vector<Rect> > split_bounds(std::vector<Path> const &p, std::vector<std::vector<double> > splits) {
+    std::vector<std::vector<Rect> > ret;
+    for(unsigned i = 0; i < p.size(); i++) {
+        std::vector<Rect> res;
+        for(unsigned j = 1; j < splits[i].size(); j++)
+            res.push_back(Rect(p[i].pointAt(splits[i][j-1]), p[i].pointAt(splits[i][j])));
+        ret.push_back(res);
     }
     return ret;
 }
 
-std::vector<Rect> mono_bounds(Path const &p, std::vector<double> splits) {
-    std::vector<Rect> results;
-    for(unsigned i = 1; i < splits.size(); i++) {
-        results.push_back(Rect(p.pointAt(splits[i-1]), p.pointAt(splits[i])));
+CrossingSet MonoCrosser::crossings(std::vector<Path> const &a, std::vector<Path> const &b) {
+    if(b.empty()) return CrossingSet(a.size(), Crossings());
+    CrossingSet results(a.size() + b.size(), Crossings());
+    if(a.empty()) return results;
+
+    std::vector<std::vector<double> > sa = paths_mono_splits(a), sb = paths_mono_splits(b);
+    std::vector<std::vector<Rect> > ba = split_bounds(a, sa), bb = split_bounds(b, sb);
+    
+    std::vector<Rect> bau, bbu; 
+    for(unsigned i = 0; i < ba.size(); i++) bau.push_back(union_list(ba[i]));
+    for(unsigned i = 0; i < bb.size(); i++) bbu.push_back(union_list(bb[i]));
+    
+    //Sorry for the mess
+    std::vector<std::vector<unsigned> > cull = sweep_bounds(bau, bbu);
+    Crossings n;
+    for(unsigned i = 0; i < cull.size(); i++) {
+        for(unsigned jx = 0; jx < cull[i].size(); jx++) {
+            unsigned j = cull[i][jx];
+            unsigned jc = j + a.size();
+            Crossings res;
+            std::vector<std::vector<unsigned> > cull2 = sweep_bounds(ba[i], bb[j]);
+            for(unsigned k = 0; k < cull2.size(); k++) {
+                for(unsigned lx = 0; lx < cull2[k].size(); lx++) {
+                    unsigned l = cull2[k][lx];
+                    mono_pair(a[i], sa[i][k-1], sa[i][k],
+                              b[j], sb[j][l-1], sb[j][l],
+                              0, res, .1);
+                }
+            }
+            
+            for(unsigned k = 0; k < res.size(); k++) { res[k].a = i; res[k].b = jc; }
+            
+            merge_crossings(results[i], res, i);
+            merge_crossings(results[i], res, jc);
+        }
     }
+
     return results;
 }
 
-Crossings MonoCrosser::operator()(Path const &a, Path const &b) {
-    Crossings ret;
-    std::vector<double> sa = path_mono_splits(a), sb = path_mono_splits(b);
+CrossingSet crossings_among(std::vector<Path> const &p) {
+    CrossingSet results(p.size(), Crossings());
+    if(p.empty()) return results;
     
-    std::vector<std::vector<unsigned> > cull = sweep_bounds(mono_bounds(a, sa), mono_bounds(b, sb));
+    std::vector<std::vector<double> > splits = paths_mono_splits(p);
+    std::vector<std::vector<Rect> > prs = split_bounds(p, splits);
+    std::vector<Rect> rs;
+    for(unsigned i = 0; i < prs.size(); i++) rs.push_back(union_list(prs[i]));
     
-    for(unsigned i = 0; i < cull.size(); i++) {
-        for(unsigned jx = 0; jx < cull[i].size(); jx++) {
-            unsigned j = cull[i][jx];
-            mono_pair(a, sa[i-1], sa[i],
-                      b, sb[j-1], sb[j],
-                      0, ret, .1);
-        }
-    }
-    return ret;
-}
+    std::vector<std::vector<unsigned> > cull = sweep_bounds(rs);
 
-Crossings self_crossings(Path const &p) {
-    Crossings ret;
-    
-    std::vector<double> splits = path_mono_splits(p);
-    std::vector<std::vector<unsigned> > cull = sweep_bounds(mono_bounds(p, splits));
-    
     for(unsigned i = 0; i < cull.size(); i++) {
         for(unsigned jx = 0; jx < cull[i].size(); jx++) {
             unsigned j = cull[i][jx];
-            mono_pair(p, splits[i], splits[i+1],
-                      p, splits[j], splits[j+1],
-                      0, ret, .1);
+            Crossings res;
+            std::vector<std::vector<unsigned> > cull2 = sweep_bounds(prs[i], prs[j]);
+            for(unsigned k = 0; k < cull2.size(); k++) {
+                for(unsigned lx = 0; lx < cull2[k].size(); lx++) {
+                    unsigned l = cull2[k][lx];
+                    mono_pair(p[i], splits[i][k-1], splits[i][k],
+                              p[j], splits[j][l-1], splits[j][l],
+                              0, res, .1);
+                }
+            }
+            
+            for(unsigned k = 0; k < res.size(); k++) { res[k].a = i; res[k].b = j; }
+            
+            merge_crossings(results[i], res, i);
+            merge_crossings(results[j], res, j);
         }
     }
     
-    return ret;
+    return results;
 }
 
 }

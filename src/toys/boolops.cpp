@@ -19,7 +19,7 @@ using namespace Geom;
 void cairo_region(cairo_t *cr, Region const &r) {
     double d = 5.;
     if(!r.isFill()) cairo_set_dash(cr, &d, 1, 0);
-    cairo_path(cr, r.getBoundary());
+    cairo_path(cr, r);
     cairo_stroke(cr);
     cairo_set_dash(cr, &d, 0, 0);
 }
@@ -43,7 +43,7 @@ void mark_crossings(cairo_t *cr, Shape const &a, Shape const &b) {
     for(unsigned j = 0; j < cc.size(); j++) {
         Crossings c = cc[j];
         for(Crossings::iterator i = c.begin(); i != c.end(); i++) {
-            draw_cross(cr, ac[i->a].getBoundary().pointAt(i->ta));
+            draw_cross(cr, Path(ac[i->a]).pointAt(i->ta));
             cairo_stroke(cr);
             //draw_text(cr, ac[i->a].getBoundary().pointAt(i->ta), i->dir ? "T" : "F");
         }
@@ -82,12 +82,12 @@ class BoolOps: public Toy {
         Shape bst = bs * t;
         
         cairo_set_line_width(cr, 1);
-        //mark_crossings(cr, as, bst);
+        mark_crossings(cr, as, bst);
         
         unsigned ttl = 0, v = 1;
         for(unsigned i = 0; i < 4; i++, v*=2)
             if(togs[i].on) ttl += v; 
-        
+        /*
         Shape s = shape_boolean(as, bst, ttl);
         
         cairo_set_source_rgba(cr, 182./255, 200./255, 183./255, 1);
@@ -100,8 +100,10 @@ class BoolOps: public Toy {
         cairo_fill(cr);
         cairo_set_source_rgba(cr, 0, 0, 0, 1);
         cairo_shape(cr, s);
-        
+        */
         double x = width - 60, y = height - 60;
+        
+        cairo_shape(cr, as); cairo_shape(cr, bst);
         
         //Draw the info
         
@@ -158,7 +160,7 @@ class BoolOps: public Toy {
         std::vector<Path> paths_a = read_svgd(path_a_name);
         std::vector<Path> paths_b = read_svgd(path_b_name);
              
-        handles.push_back(Point(400,400));
+        handles.push_back(Point(700,700));
         
 
         togs.push_back(Toggle("W", true));

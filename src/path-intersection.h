@@ -16,49 +16,47 @@ inline bool contains(Path const & p, Point i, bool evenodd = true) {
     return (evenodd ? winding(p, i) % 2 : winding(p, i)) != 0;
 }
 
-struct Crosser { 
-  virtual Crossings operator()(Path const &a, Path const&b) = 0;
-  virtual ~Crosser() {}
-};
-
-struct SimpleCrosser : Crosser { Crossings operator()(Path const &a, Path const &b); };
-struct MonoCrosser : Crosser { Crossings operator()(Path const &a, Path const &b); };
-
-
-
-typedef SimpleCrosser DefaultCrosser;
-
-inline std::vector<Rect> curve_bounds(Path const &x) {
-    std::vector<Rect> ret;
-    for(Path::const_iterator it = x.begin(); it != x.end_closed(); ++it)
-        ret.push_back(it->boundsFast());
-    return ret;
-}
-
 template<typename T>
-Crossings curve_sweep(Path const &a, Path const &b, T t) {
+Crossings curve_sweep(Path const &a, Path const &b) {
+    T t;
     Crossings ret;
-    std::vector<Rect> bounds_a = curve_bounds(a), bounds_b = curve_bounds(b);
+    std::vector<Rect> bounds_a = bounds(a), bounds_b = bounds(b);
     std::vector<std::vector<unsigned> > ixs = sweep_bounds(bounds_a, bounds_b);
     for(unsigned i = 0; i < a.size(); i++) {
         for(std::vector<unsigned>::iterator jp = ixs[i].begin(); jp != ixs[i].end(); jp++) {
-            Crossings cc = t(a[i], b[*jp]);
-            //TODO: remove this loop and pass in some indicators
-            for(Crossings::iterator it = cc.begin(); it != cc.end(); it++) {
-                ret.push_back(Crossing(it->ta + i, it->tb + *jp, it->dir));
-            }
+            Crossings cc = t.crossings(a[i], b[*jp]);
+            offset_crossings(cc, i, *jp);
+            ret.insert(ret.end(), cc.begin(), cc.end());
         }
     }
     return ret;
 }
 
-Crossings self_crossings(Path const & a);
+struct SimpleCrosser : public Crosser<Path> {
+    Crossings crossings(Curve const &a, Curve const &b);
+    Crossings crossings(Path const &a, Path const &b) { return curve_sweep<SimpleCrosser>(a, b); }
+    CrossingSet crossings(std::vector<Path> const &a, std::vector<Path> const &b) { return Crosser<Path>::crossings(a, b); }
+};
+
+struct MonoCrosser : public Crosser<Path> {
+    Crossings crossings(Path const &a, Path const &b) { return crossings(std::vector<Path>(1,a), std::vector<Path>(1,b))[0]; }
+    CrossingSet crossings(std::vector<Path> const &a, std::vector<Path> const &b);
+};
+
+typedef MonoCrosser DefaultCrosser;
+
+CrossingSet crossings_among(std::vector<Path> const & p);
+inline Crossings self_crossings(Path const & a) { return crossings_among(std::vector<Path>(1, a))[0]; }
 
 inline Crossings crossings(Path const & a, Path const & b) {
     DefaultCrosser c = DefaultCrosser();
-    return c(a, b);
+    return c.crossings(a, b);
 }
 
+inline CrossingSet crossings(std::vector<Path> const & a, std::vector<Path> const & b) {
+    DefaultCrosser c = DefaultCrosser();
+    return c.crossings(a, b);
+}
 
 }
 

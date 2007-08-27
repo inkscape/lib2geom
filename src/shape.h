@@ -36,7 +36,6 @@ class Shape {
     friend Shape shape_boolean(bool rev, Shape const &, Shape const &, CrossingSet const &);
     friend Shape shape_boolean(Shape const &a, Shape const &b, unsigned);
     friend Shape shape_boolean(Shape const &a, Shape const &b, unsigned, CrossingSet const &);
-    std::vector<Rect> bounds() const;
 
   public:
     Shape() : fill(true) {}
@@ -76,7 +75,7 @@ class Shape {
     }
 };
 
-CrossingSet crossings_between(Shape const &a, Shape const &b);
+inline CrossingSet crossings_between(Shape const &a, Shape const &b) { return crossings(paths_from_regions(a.content), paths_from_regions(b.content)); }
 
 Shape shape_boolean(bool rev, Shape const &, Shape const &, CrossingSet const &);
 Shape shape_boolean(bool rev, Shape const &, Shape const &);
