@@ -18,14 +18,14 @@ enum {
 };
 
 enum {
-  SHAPE_NULL         = 0,
-  SHAPE_INTERSECT    = BOOLOP_BOTH,
-  SHAPE_SUBTRACT_A_B = BOOLOP_JUST_B,
-  SHAPE_IDENTITY_A   = BOOLOP_JUST_A | BOOLOP_BOTH,
-  SHAPE_SUBTRACT_B_A = BOOLOP_JUST_A,
-  SHAPE_IDENTITY_B   = BOOLOP_JUST_B | BOOLOP_BOTH,
-  SHAPE_EXCLUSION    = BOOLOP_JUST_A | BOOLOP_JUST_B,
-  SHAPE_UNION        = BOOLOP_JUST_A | BOOLOP_JUST_B | BOOLOP_BOTH
+  BOOLOP_NULL         = 0,
+  BOOLOP_INTERSECT    = BOOLOP_BOTH,
+  BOOLOP_SUBTRACT_A_B = BOOLOP_JUST_B,
+  BOOLOP_IDENTITY_A   = BOOLOP_JUST_A | BOOLOP_BOTH,
+  BOOLOP_SUBTRACT_B_A = BOOLOP_JUST_A,
+  BOOLOP_IDENTITY_B   = BOOLOP_JUST_B | BOOLOP_BOTH,
+  BOOLOP_EXCLUSION    = BOOLOP_JUST_A | BOOLOP_JUST_B,
+  BOOLOP_UNION        = BOOLOP_JUST_A | BOOLOP_JUST_B | BOOLOP_BOTH
 };
 
 class Shape {
@@ -35,6 +35,8 @@ class Shape {
     friend CrossingSet crossings_between(Shape const &a, Shape const &b);
     friend Shape shape_boolean(bool rev, Shape const &, Shape const &, CrossingSet const &);
     friend Shape shape_boolean(Shape const &a, Shape const &b, unsigned);
+
+    std::vector<Rect> bounds() const;
 
   public:
     Shape() : fill(true) {}

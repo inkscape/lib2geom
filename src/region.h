@@ -17,7 +17,6 @@ class Region {
     mutable boost::optional<Rect> box;
     bool fill;
   public:
-
     Region() : fill(true) {}
     Region(Path const &p) : boundary(p) { fill = path_direction(p); }
     Region(Path const &p, bool dir) : boundary(p), fill(dir) {}
@@ -75,11 +74,6 @@ Regions region_boolean(bool rev, Region const & a, Region const & b, Crossings c
 inline Regions region_boolean(bool rev, Region const & a, Region const & b) {
     return region_boolean(rev, a, b, crossings(a.getBoundary(), b.getBoundary()));
 }
-
-Regions path_union(Region const & a, Region const & b);
-Regions path_subtract(Region const & a, Region const & b);
-Regions path_intersect(Region const & a, Region const & b);
-Regions path_exclude(Region const & a, Region const & b);
 
 }
 

@@ -105,6 +105,8 @@ void Matrix::setIdentity() {
     _c[4] = 0.0; _c[5] = 0.0;
 }
 
+//TODO: use eps
+
 bool Matrix::isIdentity(Coord const eps) const {
     return near(_c[0], 1.0) && near(_c[1], 0.0) &&
            near(_c[2], 0.0) && near(_c[3], 1.0) &&
@@ -149,6 +151,10 @@ bool Matrix::isRotation(Coord const eps) const {
     return !near(_c[0], _c[3]) && near(_c[1], -_c[2]) &&
            near(_c[4], 0.0) && near(_c[5], 0.0) &&
            near(_c[0]*_c[0] + _c[1]*_c[1], 1.0);
+}
+
+bool Matrix::onlyScaleAndTranslation(Coord const eps) const {
+    return near(_c[0], _c[3]) && near(_c[1], 0) && near(_c[2], 0);
 }
 
 bool Matrix::flips() const {

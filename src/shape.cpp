@@ -101,7 +101,7 @@ Shape shape_boolean(bool rev, Shape const & a, Shape const & b, CrossingSet cons
                 bc[next.b - ac.size()].boundary.appendPortionTo(res, cur.tb, next.tb);
             }
         } while (!visited[i][j]);
-        chunks.push_back(Region(res));
+        if(res.size() > 0) chunks.push_back(Region(res));
     }
     
     //If true, then the hole must be inside the other to be included
@@ -111,15 +111,8 @@ Shape shape_boolean(bool rev, Shape const & a, Shape const & b, CrossingSet cons
     //Handle unintersecting portions
     for(unsigned i = 0; i < crs.size(); i++) {
         if(crs[i].size() == 0) {
-            Region r;
-            bool mode;
-            if(i < ac.size()) {
-                r = ac[i];
-                mode = a_mode;
-            } else {
-                r = bc[i - ac.size()];
-                mode = b_mode;
-            }
+            Region    r(i < ac.size() ? ac[i] : bc[i - ac.size()]);
+            bool mode = i < ac.size() ? a_mode : b_mode;
             
             if(logical_xor(r.fill, i < ac.size() ? a.fill : b.fill)) {
                 //is an inner
@@ -143,10 +136,9 @@ Shape shape_boolean(bool rev, Shape const & a, Shape const & b, CrossingSet cons
 }
 
 //Returns a vector of crossings, such that those associated with B are in the range [a.size(), a.size() + b.size())
-CrossingSet crossings_between(Shape const &a, Shape const &b) { 
+/*CrossingSet crossings_between(Shape const &a, Shape const &b) { 
     CrossingSet results(a.content.size() + b.content.size(), Crossings());
     
-    //TODO: sweep
     for(unsigned i = 0; i < a.content.size(); i++) {
         for(unsigned jx = 0; jx < b.content.size(); jx++) {
             unsigned j = jx + a.content.size();
@@ -165,38 +157,65 @@ CrossingSet crossings_between(Shape const &a, Shape const &b) {
         }
     }
     return results;
+}*/
+
+std::vector<Rect> Shape::bounds() const {
+    std::vector<Rect> rs;
+    for(unsigned i = 0; i < content.size(); i++) rs.push_back(content[i].boundsFast());
+    return rs; 
+}
+
+CrossingSet crossings_between(Shape const &a, Shape const &b) { 
+    CrossingSet results(a.content.size() + b.content.size(), Crossings());
+    
+    std::vector<std::vector<unsigned> > cull = sweep_bounds(a.bounds(), b.bounds());
+    for(unsigned i = 0; i < cull.size(); i++) {
+        for(unsigned jx = 0; jx < cull[i].size(); jx++) {
+            std::cout << i << " " << jx << "\n";
+            unsigned j = cull[i][jx];
+            unsigned jc = j + a.content.size();
+            Crossings cr = crossings(a.content[i].getBoundary(), b.content[j].getBoundary());
+            for(unsigned k = 0; k < cr.size(); k++) { cr[k].a = i; cr[k].b = jc; }
+            
+            //Sort & add A-sorted crossings
+            sort_crossings(cr, i);
+            Crossings n(results[i].size() + cr.size());
+            std::merge(results[i].begin(), results[i].end(), cr.begin(), cr.end(), n.begin(), CrossingOrder(i));
+            results[i] = n;
+            
+            //Sort & add B-sorted crossings
+            sort_crossings(cr, jc);
+            n.resize(results[jc].size() + cr.size());
+            std::merge(results[jc].begin(), results[jc].end(), cr.begin(), cr.end(), n.begin(), CrossingOrder(jc));
+            results[jc] = n;
+        }
+    }
+    return results;
 }
 
 Shape shape_boolean(bool rev, Shape const & a, Shape const & b) {
     CrossingSet crs = crossings_between(a, b);
-    
-    /* for(unsigned i = 0; i < crs.size(); i++) {
-        std::cout << i << "\n";
-        for(unsigned j = 0; j < crs[i].size(); j++) {
-            std::cout << " " << crs[i][j].a << " " << crs[i][j].b << " :" << crs[i][j].ta << " to " << crs[i][j].tb << "\n";
-        }
-    } */
     
     return shape_boolean(rev, a, b, crs);
 }
 
 Shape shape_boolean(Shape const &a, Shape const &b, unsigned flags) {
     flags &= 15;
-    if(flags > SHAPE_UNION) return shape_boolean(a, b, ~flags).inverse();
+    if(flags > BOOLOP_UNION) return shape_boolean(a, b, ~flags).inverse();
     //trivial cases
     switch(flags) {
-        case SHAPE_NULL:         return Shape();
-        case SHAPE_INTERSECT:    return shape_boolean(true, a, b);
-        case SHAPE_SUBTRACT_A_B: return shape_boolean(true, a, b.inverse());
-        case SHAPE_IDENTITY_A:   return a;
-        case SHAPE_SUBTRACT_B_A: return shape_boolean(true, b, a.inverse());
-        case SHAPE_IDENTITY_B:   return b;
-        case SHAPE_EXCLUSION: {
+        case BOOLOP_NULL:         return Shape();
+        case BOOLOP_INTERSECT:    return shape_boolean(true, a, b);
+        case BOOLOP_SUBTRACT_A_B: return shape_boolean(true, a, b.inverse());
+        case BOOLOP_IDENTITY_A:   return a;
+        case BOOLOP_SUBTRACT_B_A: return shape_boolean(true, b, a.inverse());
+        case BOOLOP_IDENTITY_B:   return b;
+        case BOOLOP_EXCLUSION: {
             Shape res = shape_boolean(true, a, b.inverse());
             append(res.content, shape_boolean(true, b, a.inverse()).content);
             return res;
         }
-        case SHAPE_UNION:        return shape_boolean(false, a, b);
+        case BOOLOP_UNION:        return shape_boolean(false, a, b);
     }
 }
 
@@ -282,14 +301,11 @@ struct ContainmentOrder {
 };
 
 bool Shape::contains(Point const &p) const {
-    std::vector<unsigned> ixs;
-    //TODO: sweep
-    for(unsigned i = 0; i < content.size(); i++) {
-        if(content[i].boundary.initialPoint() == p) continue; //bad hack for inside_invariants
-        if(content[i].contains(p)) ixs.push_back(i);
-    }
-    if(ixs.size() == 0) return !fill;
-    return content[*min_element(ixs.begin(), ixs.end(), ContainmentOrder(&content))].isFill();
+    std::vector<Rect> pnt;
+    pnt.push_back(Rect(p, p));
+    std::vector<std::vector<unsigned> > cull = sweep_bounds(pnt, bounds());
+    if(cull[0].size() == 0) return !fill;
+    return content[*min_element(cull[0].begin(), cull[0].end(), ContainmentOrder(&content))].isFill();
 }
 
 bool Shape::inside_invariants() const {  //semi-slow & easy to violate

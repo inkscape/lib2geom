@@ -90,6 +90,7 @@ class Matrix {
     bool isRotation(double eps = EPSILON) const;
     bool isScale(double eps = EPSILON) const;
     bool isUniformScale(double eps = EPSILON) const;
+    bool onlyScaleAndTranslation(double eps = EPSILON) const;
 
     bool flips() const;
 

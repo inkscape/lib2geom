@@ -113,6 +113,7 @@ void Path::appendPortionTo(Path &ret, double from, double to) const {
   if(from == to) { return; }
   double fi, ti;
   double ff = modf(from, &fi), tf = modf(to, &ti);
+  if(tf == 0) { ti--; tf = 1; }
   const_iterator fromi = inc(begin(), (unsigned)fi);
   if(fi == ti && from < to) {
     Curve *v = fromi->portion(ff, tf);
@@ -122,18 +123,19 @@ void Path::appendPortionTo(Path &ret, double from, double to) const {
   }
   const_iterator toi   = inc(begin(), (unsigned)ti);
   //TODO: do we really need to delete the portion returns?
-  Curve *fromv = fromi->portion(ff, 1.);
-  //fromv->setInitial(ret.finalPoint());
-  ret.append(*fromv);
-  delete fromv;
-
+  if(ff != 1.) {
+    Curve *fromv = fromi->portion(ff, 1.);
+    //fromv->setInitial(ret.finalPoint());
+    ret.append(*fromv);
+    delete fromv;
+  }
   if(from > to) {
     const_iterator ender = end();
     if(ender->initialPoint() == ender->finalPoint()) ender++;
-    for(const_iterator it = ++fromi; it != ender; it++) ret.append(*it);
-    for(const_iterator it = begin(); it != toi; it++) ret.append(*it);
+    ret.insert(ret.end(), ++fromi, ender);
+    ret.insert(ret.end(), begin(), toi);
   } else {
-    for(const_iterator it = ++fromi; it != toi; it++) ret.append(*it);
+    ret.insert(ret.end(), ++fromi, toi);
   }
   Curve *tov = toi->portion(0., tf);
   ret.append(*tov);

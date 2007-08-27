@@ -176,6 +176,7 @@ public:
   Rect boundsFast() const { return bounds_fast(inner); }
   Rect boundsExact() const { return bounds_exact(inner); }
   Rect boundsLocal(Interval i, unsigned deg) const {
+      if(i.min() == 0 && i.max() == 1) return boundsFast();
       if(deg == 0) return bounds_local(inner, i);
       // TODO: UUUUUUGGGLLY
       if(deg == 1 && order > 1) return Rect(bounds_local(Geom::derivative(inner[X]), i),

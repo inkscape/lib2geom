@@ -42,7 +42,7 @@ class Sweep: public Toy {
     public:
     Sweep () {
         count_a = 20;
-        count_b = 20;
+        count_b = 10;
         for(unsigned i = 0; i < (count_a + count_b); i++) {
             Point dim(uniform() * 90 + 10, uniform() * 90 + 10),
                   pos(uniform() * 500 + 50, uniform() * 500 + 50);
