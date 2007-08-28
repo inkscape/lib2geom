@@ -241,7 +241,7 @@ std::vector<double> SVGEllipticalArc::roots(double v, Dim2 d) const {
 }
 
 D2<SBasis> SVGEllipticalArc::toSBasis() const {
-    throw NotImplemented();
+    return D2<SBasis>(Linear(initial_[X], final_[X]), Linear(initial_[Y], final_[Y]));
 }
 
 }
