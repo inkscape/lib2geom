@@ -37,10 +37,10 @@ bool draw_axis_hints = true;
 static void draw_box (cairo_t *cr, Geom::Point corners[8]);
 static void draw_slider_lines (cairo_t *cr);
 static Geom::Point proj_image (cairo_t *cr, const double pt[4], const vector<Geom::Point> &handles);
-static void preimage_of_curve_pt (Geom::Point const pt, double preimage[4], const vector<Geom::Point> &handles);
 
 double tmat[3][4];
-double c[8][4];
+const int num_boxes = 2; // values other than 1 or 2 are possible but will clutter the canvas
+double c[num_boxes][8][4];
 Geom::Point corners[8];
 
 class Box3d: public Toy {
@@ -54,17 +54,11 @@ class Box3d: public Toy {
 
         // draw vertical lines for the VP sliders and keep the sliders at their horizontal positions
         draw_slider_lines (cr);
-        handles[4][0] = 30;
-        handles[5][0] = 45;
-        handles[6][0] = 60;
-
-        // draw the curve that is supposed to be projected on the box's front face
-        vector<Geom::Point>::iterator it = handles.begin();
-        for (int j = 0; j < 7; ++j) ++it;
-        D2<SBasis> B = handles_to_sbasis<3>(it);
-        Piecewise<D2<SBasis> > curve = Piecewise<D2<SBasis> > (B);
-        cairo_pw_d2(cr, curve);
-        cairo_stroke(cr);
+        for (int j = 0; j < num_boxes; ++j) {
+            handles[4+3*j][0] = 30+60*j;
+            handles[5+3*j][0] = 45+60*j;
+            handles[6+3*j][0] = 60+60*j;
+        }
 
         /* create the transformation matrix for the map  P^3 --> P^2 that has the following effect:
               (1 : 0 : 0 : 0) --> vanishing point in x direction (= handle #0)
@@ -88,59 +82,46 @@ class Box3d: public Toy {
 
 
         // Box corners
-        for (int i = 0; i < 8; ++i) {
-            c[i][0] = ((i & 1) ? 1 : 0) + (-1)*(handles[4][1]-300)/100;
-            c[i][1] = ((i & 2) ? 1 : 0) + (-1)*(handles[5][1]-300)/100;
-            c[i][2] = ((i & 4) ? 1 : 0) + (-1)*(handles[6][1]-300)/100;
-            c[i][3] = 1;
+        for (int j = 0; j < num_boxes; ++j) {
+            for (int i = 0; i < 8; ++i) {
+                c[j][i][0] = ((i & 1) ? 1 : 0) + (-1)*(handles[4+3*j][1]-300)/100;
+                c[j][i][1] = ((i & 2) ? 1 : 0) + (-1)*(handles[5+3*j][1]-300)/100;
+                c[j][i][2] = ((i & 4) ? 1 : 0) + (-1)*(handles[6+3*j][1]-300)/100 + 2*j;
+                c[j][i][3] = 1;
+            }
         }
 
         // draw the projective images of the box's corners
-        for (int i = 0; i < 8; ++i) {
-            corners[i] = proj_image (cr, c[i], handles);
+        for (int j = 0; j < num_boxes; j++) {
+            for (int i = 0; i < 8; ++i) {
+                corners[i] = proj_image (cr, c[j][i], handles);
+            }
+            draw_box(cr, corners);
+            cairo_set_line_width (cr, 2);
+            cairo_stroke(cr);
         }
-        draw_box(cr, corners);
-        cairo_set_line_width (cr, 2);
-	cairo_stroke(cr);
-
-        // the curve is divided into a number of segments; we project the endpoints of these segments
-        // and draw them as dots on the canvas; simply projecting the handles of the curve and using
-        // these as the handles of a new Bezier curve obviously yields a wrong result; but what is
-        // the perspective image of a Bezier curve, from a mathematical point of view?
-        double preimage[4];
-        double t;
-        Geom::Point image;
-        for (int i = 0; i <= segments; ++i) {
-            t = (double) i/(double) segments;
-            Geom::Point pt = curve (t);
-            preimage_of_curve_pt (pt, preimage, handles);
-            image = proj_image (cr, preimage, handles);
-            draw_handle (cr, image);
-        }
-
-	cairo_set_source_rgba (cr, 0.75, 0, 0, 1);
-        cairo_pw_d2(cr, curve);
-	cairo_stroke(cr);
 
         /* draw auxiliary lines parallel to the axes to indicate the box's position relative to the origin */
         if (draw_axis_hints) {
-            double pt0[4] = {0, 0, 0, 1};
-            double pt1[4] = {c[0][0], 0, 0, 1};
-            double pt2[4] = {c[0][0], c[0][1], 0, 1};
-            double pt3[4] = {c[0][0], c[0][1], c[0][2], 1};
-            Geom::Point pt0_proj, pt1_proj, pt2_proj, pt3_proj;
+            for (int j = 0; j < num_boxes; ++j) {
+                double pt0[4] = {0, 0, 0, 1};
+                double pt1[4] = {c[j][0][0], 0, 0, 1};
+                double pt2[4] = {c[j][0][0], c[j][0][1], 0, 1};
+                double pt3[4] = {c[j][0][0], c[j][0][1], c[j][0][2], 1};
+                Geom::Point pt0_proj, pt1_proj, pt2_proj, pt3_proj;
 
-            pt0_proj = proj_image(cr, pt0, handles);
-            pt1_proj = proj_image(cr, pt1, handles);
-            pt2_proj = proj_image(cr, pt2, handles);
-            pt3_proj = proj_image(cr, pt3, handles);
+                pt0_proj = proj_image(cr, pt0, handles);
+                pt1_proj = proj_image(cr, pt1, handles);
+                pt2_proj = proj_image(cr, pt2, handles);
+                pt3_proj = proj_image(cr, pt3, handles);
 
-            cairo_move_to(cr, pt0_proj);
-            cairo_line_to(cr, pt1_proj);
-            cairo_line_to(cr, pt2_proj);
-            cairo_line_to(cr, pt3_proj);
-            cairo_set_source_rgba (cr, 0, 0, 0.8, 1);
-            cairo_stroke(cr);
+                cairo_move_to(cr, pt0_proj);
+                cairo_line_to(cr, pt1_proj);
+                cairo_line_to(cr, pt2_proj);
+                cairo_line_to(cr, pt3_proj);
+                cairo_set_source_rgba (cr, (j == 0 ? 0 : 0.8), 0, (j == 0 ? 0.8 : 0), 1);
+                cairo_stroke(cr);
+            }
         }
 
 
@@ -175,23 +156,29 @@ class Box3d: public Toy {
         handles.push_back(Point(340,450));
 
         // Handles for moving in axes directions
-        handles.push_back(Point(30,300));
-        handles.push_back(Point(45,300));
-        handles.push_back(Point(60,300));
+        for (int j = 0; j < num_boxes; ++j) {
+            handles.push_back(Point(30+60*j,300));
+            handles.push_back(Point(45+60*j,300));
+            handles.push_back(Point(60+60*j,300));
+        }
         
         // Box corners
-        for (int i = 0; i < 8; ++i) {
-            c[i][0] = ((i & 1) ? 1 : 0);
-            c[i][1] = ((i & 2) ? 1 : 0);
-            c[i][2] = ((i & 4) ? 1 : 0);
-            c[i][3] = 1;
+        for (int j = 0; j < num_boxes; ++j) {
+            for (int i = 0; i < 8; ++i) {
+                c[j][i][0] = ((i & 1) ? 1 : 0);
+                c[j][i][1] = ((i & 2) ? 1 : 0);
+                c[j][i][2] = ((i & 4) ? 1 : 0) + 2*j;
+                c[j][i][3] = 1;
+            }
         }
 
+        /***
         // Curve handles
         for(unsigned i = 0; i < 4; i++)
             handles.push_back(Point(180+50*i,450+70*uniform()));
 
-        orig = handles[7];
+        orig = handles[13];
+        ***/
     }
     int should_draw_bounds() {return 1;}
 };
@@ -228,19 +215,21 @@ void draw_box (cairo_t *cr, Geom::Point corners[8]) {
 }
 
 void draw_slider_lines (cairo_t *cr) {
-    cairo_move_to(cr, Geom::Point(20,300));
-    cairo_line_to(cr, Geom::Point(70,300));
+    for (int j = 0; j < num_boxes; ++j) {
+        cairo_move_to(cr, Geom::Point(20+60*j,300));
+        cairo_line_to(cr, Geom::Point(70+60*j,300));
 
-    cairo_move_to(cr, Geom::Point(30,00));
-    cairo_line_to(cr, Geom::Point(30,450));
+        cairo_move_to(cr, Geom::Point(30+60*j,00));
+        cairo_line_to(cr, Geom::Point(30+60*j,450));
 
-    cairo_move_to(cr, Geom::Point(45,00));
-    cairo_line_to(cr, Geom::Point(45,450));
+        cairo_move_to(cr, Geom::Point(45+60*j,00));
+        cairo_line_to(cr, Geom::Point(45+60*j,450));
 
-    cairo_move_to(cr, Geom::Point(60,00));
-    cairo_line_to(cr, Geom::Point(60,450));
+        cairo_move_to(cr, Geom::Point(60+60*j,00));
+        cairo_line_to(cr, Geom::Point(60+60*j,450));
+    }
         
-    cairo_set_line_width (cr, 1);
+    cairo_set_line_width (cr, 0.5);
     cairo_set_source_rgba (cr, 0.2, 0.2, 0.2, 1);
     cairo_stroke(cr);
 }
@@ -263,15 +252,6 @@ static Geom::Point proj_image (cairo_t *cr, const double pt[4], const vector<Geo
     }
     //assert(0); // unclipped point
     return Geom::Point(0,0);
-}
-
-static void
-preimage_of_curve_pt (Geom::Point const pt, double preimage[4], const vector<Geom::Point> &handles)
-{
-    preimage[0] = 0 + (-1)*(handles[4][1]-300)/100;;
-    preimage[1] = -(pt[1] - orig[1]) / 100 + (-1)*(handles[5][1]-300)/100;;
-    preimage[2] =  (pt[0] - orig[0]) / 100 + (-1)*(handles[6][1]-300)/100;;
-    preimage[3] = 1;
 }
 
 /*
