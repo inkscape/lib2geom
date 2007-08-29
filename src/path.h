@@ -495,7 +495,7 @@ public:
     Piecewise<D2<SBasis> > ret;
     ret.push_cut(0);
     unsigned i = 1;
-    for(const_iterator it = begin(); it != end_default(); it++, i++) { 
+    for(const_iterator it = begin(); it != end_default(); ++it, i++) { 
       ret.push(it->toSBasis(), i);
     }
     return ret;
@@ -503,7 +503,7 @@ public:
   
   Path operator*(Matrix const &m) const {
     Path ret;
-    for(const_iterator it = begin(); it != end(); it++) {
+    for(const_iterator it = begin(); it != end(); ++it) {
       Curve *temp = it->transformed(m);
       //Possible point of discontinuity?
       ret.append(*temp);
@@ -526,6 +526,15 @@ public:
     if(i == size() && f == 0) { i--; }
     assert(i >= 0 && i <= size());
     return (*this)[unsigned(i)].valueAt(f, d);
+  }
+
+  std::vector<double> roots(double v, Dim2 d) const {
+    std::vector<double> res;
+    for(const_iterator it = begin(); it != end_closed(); ++it) {
+      std::vector<double> temp = it->roots(v, d);
+      res.insert(res.end(), temp.begin(), temp.end());
+    }
+    return res;
   }
 
   void appendPortionTo(Path &p, double f, double t) const;

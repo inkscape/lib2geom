@@ -37,11 +37,11 @@ unsigned find_crossing(Crossings const &cr, Crossing x, unsigned i) {
 }
 
 /* This function handles boolean ops on shapes.  The first parameter is a bool
- * which determines its behavior in each combination of these cases.  For proper
- * output fill information and noncrossing behavior, the fill data of the regions
- * must be correct.  The boolean parameter determines whether the operation is a
- * union or a subtraction.  Reversed paths represent inverse regions, where
- * everything is included in the fill except for the insides.
+ * which determines its behavior in each combination of cases.  For proper
+ * fill information and noncrossing behavior, the fill data of the regions
+ * must be correct.  The boolean parameter determines whether the operation
+ * is a union or a subtraction.  Reversed paths represent inverse regions,
+ * where everything is included in the fill except for the insides.
  *
  * Here is a chart of the behavior under various circumstances:
  * 
@@ -64,10 +64,10 @@ unsigned find_crossing(Crossings const &cr, Crossing x, unsigned i) {
  * + = union, - = subtraction, x = intersection
  * -> read as "produces"
  *
- * This is the main function of boolops, yet its operation  isn't very complicated.
- * It just traverses the crossings, and uses the crossing direction to decide whether
- * the next segment should be taken from A or from B.  The second half of the function
- * deals with figuring out what to do with bits that have no intersection.
+ * This is the main function of boolops, yet its operation isn't very complicated.
+ * It traverses the crossings, and uses the crossing direction to decide whether
+ * the next segment should be taken from A or from B.  The second half of the
+ * function deals with figuring out what to do with bits that have no intersection.
  */
 Shape shape_boolean(bool rev, Shape const & a, Shape const & b, CrossingSet const & crs) {
     const Regions ac = a.content, bc = b.content;
@@ -252,6 +252,17 @@ int paths_winding(std::vector<Path> const &ps, Point p) {
     return ret;
 }
 
+std::vector<double> y_of_roots(std::vector<Path> const & ps, double x) {
+    std::vector<double> res;
+    for(unsigned i = 0; i < ps.size(); i++) {
+        std::vector<double> temp = ps[i].roots(x, X);
+        for(unsigned i = 0; i < temp.size(); i++)
+            res.push_back(ps[i].valueAt(temp[i], Y));
+    }
+    std::sort(res.begin(), res.end());
+    return res;
+}
+
 struct Edge {
     unsigned ix;
     double from, to;
@@ -260,12 +271,30 @@ struct Edge {
     Edge(unsigned i, double ft, double tt, bool r, unsigned w) : ix(i), from(ft), to(tt), rev(r), wind(w) {}
     Edge(unsigned i, double ft, double tt, bool r, std::vector<Path> const &ps) : ix(i), from(ft), to(tt), rev(r) {
         //TODO: get the edge wind data some other way
-        Point p1 = ps[i].pointAt(ft+.5), p2 = ps[i].pointAt(ft+.6), pd = rev ? (p2 - p1).cw() : (p2 - p1).ccw();
-        wind = paths_winding(ps, p1);
+        Point p = ps[i].pointAt(ft);
+        std::vector<double> rs = y_of_roots(ps, p[X]);
+        unsigned interv = std::lower_bound(rs.begin(), rs.end(), p[Y]) - rs.begin();
+        wind = interv % 2;
+    }
+    double initial() { return rev ? to : from; }
+    double final() { return rev ? from : to; }
+    void addTo(Path &res, std::vector<Path> const &ps) {
+        if(rev) {
+            Path p = ps[ix].portion(to, from).reverse();
+            for(unsigned i = 0; i < p.size(); i++)
+                res.append(p[i]);
+        } else {
+            ps[ix].appendPortionTo(res, from, to);
+        }
     }
 };
 
 typedef std::vector<Edge> Edges;
+
+double point_cosine(Point a, Point b, Point c) {
+    Point db = b - a, dc = c - a;
+    return cross(db, dc) / (db.length() * dc.length());
+}
 
 //sanitize
 Regions regionize_paths(std::vector<Path> const &ps, bool evenodd) {
@@ -273,7 +302,6 @@ Regions regionize_paths(std::vector<Path> const &ps, bool evenodd) {
     
     Edges es;
     
-    const double fudge = 0.01;
     for(unsigned i = 0; i < crs.size(); i++) {
         for(unsigned j = 0; j < crs[i].size(); j++) {
             Crossing cur = crs[i][j];
@@ -299,10 +327,20 @@ Regions regionize_paths(std::vector<Path> const &ps, bool evenodd) {
     for(unsigned i = 0; i<crs.size(); i++) {
         if(crs[i].empty()) {
             es.push_back(Edge(i, 0, ps[i].size(), false, ps));
+            es.push_back(Edge(i, ps[i].size(), 0, true, ps));
         }
     }
     
+    Edges es2;
+    //filter
+    for(unsigned i = 0; i < es.size(); i++) {
+        if(true) //(evenodd && es[i].wind % 2 == 0) || (!evenodd && es[i].wind == 0))
+            es2.push_back(es[i]);
+    }
+    es = es2;
+    
     std::cout << es.size() << " edges\n";
+    
     Regions chunks;
     for(unsigned i = 0; i < es.size(); i++) {
         Edge cur = es[i];
@@ -313,51 +351,37 @@ Regions regionize_paths(std::vector<Path> const &ps, bool evenodd) {
     }
     return chunks;
     
-    Edges es2;
-    for(unsigned i = 0; i<es.size(); i++) {
-        if((evenodd && es[i].wind % 2) || (!evenodd && es[i].wind != 0))
-            es2.push_back(es[i]);
-    }
-    
-    
-    
-    /*
-
+    //Regions chunks;
+    std::vector<bool> used(es2.size(), false);
     while(true) {
-        unsigned i, j;
-        first_false(visited, i, j);
-        if(i == visited.size()) break;
-        
-        bool use = paths_winding(ps, ps[i].initialPoint()) % 2 == 1;
+        unsigned i = std::find(used.begin(), used.end(), false) - used.begin();
+        if(i == used.size()) break;
         Path res;
         do {
-            Crossing cur = crs[i][j];
-            visited[i][j] = true;
-            
-            //get indices of the dual:
-            i = cur.getOther(i);
-            j = std::lower_bound(crs[i].begin(), crs[i].end(), cur, CrossingOrder(i)) - crs[i].begin();
-            if(j < visited[i].size()) visited[i][j] = true;
-            
-            if(logical_xor(phase, cur.dir)) {
-                // forwards
-                j++;
-                if(j >= crs[i].size()) j = 0;
-            } else {
-                // backwards
-                if(j == 0) j = crs[i].size() - 1; else j--;
+            es2[i].addTo(res, ps);
+            Point pnt = res.finalPoint();
+            std::vector<unsigned> poss;
+            for(unsigned j = 0; j < es2.size(); j++)
+                if(near(pnt, ps[es2[j].ix].pointAt(es2[j].initial()))) poss.push_back(j);
+            if(poss.empty()) break;
+            unsigned best = 0;
+            if(poss.size() > 1) {
+                double crossval = 10;
+                Point along = ps[i].pointAt(es2[i].final()+0.1);
+                for(unsigned j = 0; j < poss.size(); j++) {
+                    unsigned ix = poss[j];
+                    double val = point_cosine(pnt, along, ps[ix].pointAt(es2[ix].initial()+.01));
+                    if(val < crossval) {
+                        crossval = val;
+                        best = j;
+                    }
+                }
             }
-            if(use) {
-                Crossing next = crs[i][j];
-                ps[i].appendPortionTo(res, cur.ta, next.ta);
-            }
-        } while(!visited[i][j]);
-        
-        if(use) {
-            chunks.push_back(Region(res, true));
-        }
+            i = poss[best];
+        } while(!used[i]);
+        chunks.push_back(Region(res));
     }
-    return chunks; */
+    return chunks;
 }
 
 /* This transforms a shape by a matrix.  In the case that the matrix flips

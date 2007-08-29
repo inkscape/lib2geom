@@ -101,7 +101,7 @@ class BoolOps: public Toy {
         std::vector<Path> ap = paths_from_regions(as.getContent());
         ps.insert(ps.end(), ap.begin(), ap.end());
         
-        //mark_crossings(cr, ps);
+        mark_crossings(cr, ps);
         
         Regions rgs = regionize_paths(ps);
         //for(unsigned i = 0; i < rgs.size(); i++)

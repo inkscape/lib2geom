@@ -126,7 +126,6 @@ bool path_direction(Path const &p) {
             }
         } else if(final_to_ray == EQUAL_TO) goto doh;
     }
-    std::cout << "doh\n";
     return res < 0;
     
     doh:
@@ -437,6 +436,104 @@ Crossings curve_self_crossings(Curve const &a) {
             pair_intersect(a, spl[i-1], spl[i], a, spl[j-1], spl[j], res);
     return res;
 }
+
+/*
+void mono_curve_intersect(Curve const & A, double Al, double Ah, 
+                          Curve const & B, double Bl, double Bh,
+                          Crossings &ret,  unsigned depth=0) {
+   // std::cout << depth << "(" << Al << ", " << Ah << ")\n";
+    Point A0 = A.pointAt(Al), A1 = A.pointAt(Ah),
+          B0 = B.pointAt(Bl), B1 = B.pointAt(Bh);
+    //inline code that this implies? (without rect/interval construction)
+    if(!Rect(A0, A1).intersects(Rect(B0, B1)) || A0 == A1 || B0 == B1) return;
+     
+    //Checks the general linearity of the function
+    if((depth > 12) || (A.boundsLocal(Interval(Al, Ah), 1).maxExtent() < 0.1 
+                    &&  B.boundsLocal(Interval(Bl, Bh), 1).maxExtent() < 0.1)) {
+        double tA, tB, c;
+        if(linear_intersect(A0, A1, B0, B1, tA, tB, c)) {
+            tA = tA * (Ah - Al) + Al;
+            tB = tB * (Bh - Bl) + Bl;
+            if(depth % 2)
+                ret.push_back(Crossing(tB, tA, c < 0));
+            else
+                ret.push_back(Crossing(tA, tB, c > 0));
+            return;
+        }
+    }
+    if(depth > 12) return;
+    double mid = (Bl + Bh)/2;
+    mono_curve_intersect(B, Bl, mid,
+                         A, Al, Ah,
+                         ret, depth+1);
+    mono_curve_intersect(B, mid, Bh,
+                         A, Al, Ah,
+                         ret, depth+1);
+}
+
+std::vector<std::vector<double> > curves_mono_splits(Path const &p) {
+    std::vector<std::vector<double> > ret;
+    for(unsigned i = 0; i <= p.size(); i++) {
+        std::vector<double> spl;
+        spl.push_back(0);
+        append(spl, curve_mono_splits(p[i]));
+        spl.push_back(1);
+        ret.push_back(spl);
+    }
+}
+
+std::vector<std::vector<Rect> > curves_split_bounds(Path const &p, std::vector<std::vector<double> > splits) {
+    std::vector<std::vector<Rect> > ret;
+    for(unsigned i = 0; i < splits.size(); i++) {
+        std::vector<Rect> res;
+        for(unsigned j = 1; j < splits[i].size(); j++)
+            res.push_back(Rect(p.pointAt(splits[i][j-1]+i), p.pointAt(splits[i][j]+i)));
+        ret.push_back(res);
+    }
+    return ret;
+}
+
+
+Crossings path_self_crossings(Path const &p) {
+    Crossings ret;
+    std::vector<std::vector<unsigned> > cull = sweep_bounds(bounds(p));
+    std::vector<std::vector<double> > spl = curves_mono_splits(p);
+    std::vector<std::vector<Rect> > bnds = curves_split_bounds(p, spl);
+    for(unsigned i = 0; i < cull.size(); i++) {
+        Crossings res;
+        for(unsigned k = 1; k < spl[i].size(); k++)
+            for(unsigned l = k+1; l < spl[i].size(); l++)
+                mono_curve_intersect(p[i], spl[i][k-1], spl[i][k], p[i], spl[i][l-1], spl[i][l], res);
+        offset_crossings(res, i, i);
+        append(ret, res);
+        for(unsigned jx = 0; jx < cull[i].size(); jx++) {
+            unsigned j = cull[i][jx];
+            res.clear();
+            
+            std::vector<std::vector<unsigned> > cull2 = sweep_bounds(bnds[i], bnds[j]);
+            for(unsigned k = 0; k < cull2.size(); k++) {
+                for(unsigned lx = 0; lx < cull2[k].size(); lx++) {
+                    unsigned l = cull2[k][lx];
+                    mono_curve_intersect(p[i], spl[i][k-1], spl[i][k], p[j], spl[j][l-1], spl[j][l], res);
+                }
+            }
+            
+            //if(fabs(int(i)-j) == 1 || fabs(int(i)-j) == p.size()-1) {
+                Crossings res2;
+                for(unsigned k = 0; k < res.size(); k++) {
+                    if(res[k].ta != 0 && res[k].ta != 1 && res[k].tb != 0 && res[k].tb != 1) {
+                        res.push_back(res[k]);
+                    }
+                }
+                res = res2;
+            //}
+            offset_crossings(res, i, j);
+            append(ret, res);
+        }
+    }
+    return ret;
+}
+*/
 
 Crossings path_self_crossings(Path const &p) {
     Crossings ret;
