@@ -34,8 +34,8 @@ class Shape {
     //friend Shape shape_region_boolean(bool rev, Shape const & a, Region const & b);
     friend CrossingSet crossings_between(Shape const &a, Shape const &b);
     friend Shape shape_boolean(bool rev, Shape const &, Shape const &, CrossingSet const &);
-    friend Shape shape_boolean(Shape const &a, Shape const &b, unsigned);
-    friend Shape shape_boolean(Shape const &a, Shape const &b, unsigned, CrossingSet const &);
+    friend Shape boolop(Shape const &a, Shape const &b, unsigned);
+    friend Shape boolop(Shape const &a, Shape const &b, unsigned, CrossingSet const &);
 
   public:
     Shape() : fill(true) {}
@@ -80,10 +80,10 @@ inline CrossingSet crossings_between(Shape const &a, Shape const &b) { return cr
 Shape shape_boolean(bool rev, Shape const &, Shape const &, CrossingSet const &);
 Shape shape_boolean(bool rev, Shape const &, Shape const &);
 
-Shape shape_boolean(Shape const &, Shape const &, unsigned flags);
-Shape shape_boolean(Shape const &, Shape const &, unsigned flags, CrossingSet &);
+Shape boolop(Shape const &, Shape const &, unsigned flags);
+Shape boolop(Shape const &, Shape const &, unsigned flags, CrossingSet &);
 
-Shape sanitize_paths(std::vector<Path> ps);
+Regions regionize_paths(std::vector<Path> const &ps, bool evenodd=true);
 
 }
 

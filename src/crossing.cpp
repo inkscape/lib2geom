@@ -21,7 +21,7 @@ Crossings reverse_ta(Crossings const &cr, std::vector<double> max) {
     Crossings ret;
     for(Crossings::const_iterator i = cr.begin(); i != cr.end(); ++i) {
         double mx = max[i->a];
-        ret.push_back(Crossing(i->ta > mx ? (1 - (i->ta - mx) + mx) : mx - i->ta,
+        ret.push_back(Crossing(i->ta > mx+0.01 ? (1 - (i->ta - mx) + mx) : mx - i->ta,
                                i->tb, !i->dir));
     }
     return ret;
@@ -31,7 +31,8 @@ Crossings reverse_tb(Crossings const &cr, unsigned split, std::vector<double> ma
     Crossings ret;
     for(Crossings::const_iterator i = cr.begin(); i != cr.end(); ++i) {
         double mx = max[i->b - split];
-        ret.push_back(Crossing(i->ta, i->tb > mx ? (1 - (i->tb - mx) + mx) : mx - i->tb,
+        std::cout << i->b << "\n";
+        ret.push_back(Crossing(i->ta, i->tb > mx+0.01 ? (1 - (i->tb - mx) + mx) : mx - i->tb,
                                !i->dir));
     }
     return ret;

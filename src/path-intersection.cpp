@@ -25,10 +25,13 @@ int winding(Path const &path, Point p) {
     if(iter->boundsFast().height()!=0.){ start = iter; break; }
   }
   int wind = 0;
+  int cnt = 0;
   bool starting = true;
   for (Path::const_iterator iter = start; iter != start || starting
        ; ++iter, iter = (iter == path.end_closed()) ? path.begin() : iter )
   {
+    cnt++;
+    if(cnt > path.size()) return wind;  //some bug makes this required
     starting = false;
     Rect bounds = iter->boundsFast();
     Coord x = p[X], y = p[Y];
@@ -106,7 +109,8 @@ bool path_direction(Path const &p) {
     double y = p.initialPoint()[Y];
     double x = p.initialPoint()[X];
     Cmp res = cmp(p[0].finalPoint()[Y], y);
-    for(unsigned i = 1; i < p.size(); i++) {
+    goto doh;
+    for(unsigned i = 1; i <= p.size(); i++) {
         Cmp final_to_ray = cmp(p[i].finalPoint()[Y], y);
         Cmp initial_to_ray = cmp(p[i].initialPoint()[Y], y);
         // if y is included, these will have opposite values, giving order.
@@ -120,14 +124,14 @@ bool path_direction(Path const &p) {
                     res = c;
                 }
             }
-        } else if(final_to_ray == EQUAL_TO) {
-            goto doh;
-        }
+        } else if(final_to_ray == EQUAL_TO) goto doh;
     }
-    return res > 0;
+    std::cout << "doh\n";
+    return res < 0;
     
     doh:
         //Otherwise fallback on area
+        
         Piecewise<D2<SBasis> > pw = p.toPwSb();
         double area;
         Point centre;
@@ -219,7 +223,7 @@ Crossings SimpleCrosser::crossings(Curve const &a, Curve const &b) {
 /* Takes two paths and time ranges on them, with the invariant that the
  * paths are monotonic on the range.  Splits A when the linear intersection
  * doesn't exist or is inaccurate.  Uses the fact that it is monotonic to
- * do very fast bounds. 
+ * do very fast local bounds.
  */
 void mono_pair(Path const &A, double Al, double Ah,
                Path const &B, double Bl, double Bh,
@@ -227,36 +231,34 @@ void mono_pair(Path const &A, double Al, double Ah,
     if( Al >= Ah || Bl >= Bh) return;
     std::cout << " " << depth << "[" << Al << ", " << Ah << "]" << "[" << Bl << ", " << Bh << "]";
 
-    //Split B
     Point A0 = A.pointAt(Al), A1 = A.pointAt(Ah),
           B0 = B.pointAt(Bl), B1 = B.pointAt(Bh);
     //inline code that this implies? (without rect/interval construction)
     if(!Rect(A0, A1).intersects(Rect(B0, B1)) || A0 == A1 || B0 == B1) return;
     
-    double ltA, ltB, c;
-    double tA, tB;
-    if(linear_intersect(A0, A1, B0, B1, ltA, ltB, c)) {
-        tA = ltA * (Ah - Al) + Al;
-        tB = ltB * (Bh - Bl) + Bl;
-        double dist = LInfty(A.pointAt(tA) - B.pointAt(tB));
-        //std::cout << dist;
-        if(depth >= 12 || dist <= tol) {
+    //Checks the general linearity of the function
+    //if((depth > 12) || (A.boundsLocal(Interval(Al, Ah), 1).maxExtent() < 0.1 
+    //                &&  B.boundsLocal(Interval(Bl, Bh), 1).maxExtent() < 0.1)) {
+        double tA, tB, c;
+        if(linear_intersect(A0, A1, B0, B1,
+                            tA, tB, c)) {
+            tA = tA * (Ah - Al) + Al;
+            tB = tB * (Bh - Bl) + Bl;
             if(depth % 2)
                 ret.push_back(Crossing(tB, tA, c < 0));
             else
                 ret.push_back(Crossing(tA, tB, c > 0));
             return;
         }
-    }
-    tB = (Bl + Bh) / 2;
-    if(depth < 12) {
-        mono_pair(B, Bl, tB,
-                  A, Al, Ah,
-                  ret, tol, depth+1);
-        mono_pair(B, tB, Bh,
-                  A, Al, Ah,
-                  ret, tol, depth+1);
-    }
+    //}
+    if(depth > 12) return;
+    double mid = (Bl + Bh)/2;
+    mono_pair(B, Bl, mid,
+              A, Al, Ah,
+              ret, depth+1);
+    mono_pair(B, mid, Bh,
+              A, Al, Ah,
+              ret, depth+1);
 }
 
 // This returns the times when the x or y derivative is 0 in the curve.
@@ -288,14 +290,14 @@ std::vector<double> path_mono_splits(Path const &p) {
     append(ret, curve_mono_splits(*deriv));
     delete deriv;
     
-    bool pdx, pdy;  //Previous derivative direction
+    bool pdx=2, pdy=2;  //Previous derivative direction
     for(unsigned i = 0; i <= p.size(); i++) {
         deriv = p[i].derivative();
         std::vector<double> spl = offset_doubles(curve_mono_splits(*deriv), i);
         delete deriv;
-        bool dx = p[i].initialPoint()[0] > (spl.empty()? p[i].finalPoint()[X] :
+        bool dx = p[i].initialPoint()[X] > (spl.empty()? p[i].finalPoint()[X] :
                                                          p.valueAt(spl.front(), X));
-        bool dy = p[i].initialPoint()[1] > (spl.empty()? p[i].finalPoint()[Y] :
+        bool dy = p[i].initialPoint()[Y] > (spl.empty()? p[i].finalPoint()[Y] :
                                                          p.valueAt(spl.front(), Y));
         //The direction changed, include the split time
         if(dx != pdx || dy != pdy) {
@@ -317,6 +319,10 @@ std::vector<std::vector<double> > paths_mono_splits(std::vector<Path> const &ps)
     return ret;
 }
 
+/* Processes the bounds for a list of paths and a list of splits on them, yielding a list of rects for each.
+ * Each entry i corresponds to path i of the input.  The number of rects in each entry is guaranteed to be the
+ * number of splits for that path, subtracted by one.
+ */
 std::vector<std::vector<Rect> > split_bounds(std::vector<Path> const &p, std::vector<std::vector<double> > splits) {
     std::vector<std::vector<Rect> > ret;
     for(unsigned i = 0; i < p.size(); i++) {
@@ -328,25 +334,35 @@ std::vector<std::vector<Rect> > split_bounds(std::vector<Path> const &p, std::ve
     return ret;
 }
 
+/* This is the main routine of "MonoCrosser", and implements a monotonic strategy on multiple curves.
+ * Finds crossings between two sets of paths, yielding a CrossingSet.  [0, a.size()) of the return correspond
+ * to the sorted crossings of a with paths of b.  The rest of the return, [a.size(), a.size() + b.size()],
+ * corresponds to the sorted crossings of b with paths of a.
+ *
+ * This function does two sweeps, one on the bounds of each path, and after that cull, one on the curves within.
+ * This leads to a certain amount of code complexity, however, most of that is factored into the above functions
+ */
 CrossingSet MonoCrosser::crossings(std::vector<Path> const &a, std::vector<Path> const &b) {
     if(b.empty()) return CrossingSet(a.size(), Crossings());
     CrossingSet results(a.size() + b.size(), Crossings());
     if(a.empty()) return results;
-
+    
     std::vector<std::vector<double> > splits_a = paths_mono_splits(a), splits_b = paths_mono_splits(b);
     std::vector<std::vector<Rect> > bounds_a = split_bounds(a, splits_a), bounds_b = split_bounds(b, splits_b);
     
     std::vector<Rect> bounds_a_union, bounds_b_union; 
-    for(unsigned i = 0; i < bounds_a.size(); i++) bounds_b_union.push_back(union_list(bounds_a[i]));
+    for(unsigned i = 0; i < bounds_a.size(); i++) bounds_a_union.push_back(union_list(bounds_a[i]));
     for(unsigned i = 0; i < bounds_b.size(); i++) bounds_b_union.push_back(union_list(bounds_b[i]));
-
-    std::vector<std::vector<unsigned> > cull = sweep_bounds(bounds_b_union, bounds_b_union);
+    
+    std::vector<std::vector<unsigned> > cull = sweep_bounds(bounds_a_union, bounds_b_union);
     Crossings n;
     for(unsigned i = 0; i < cull.size(); i++) {
         for(unsigned jx = 0; jx < cull[i].size(); jx++) {
             unsigned j = cull[i][jx];
             unsigned jc = j + a.size();
             Crossings res;
+            
+            //Sweep of the monotonic portions
             std::vector<std::vector<unsigned> > cull2 = sweep_bounds(bounds_a[i], bounds_b[j]);
             for(unsigned k = 0; k < cull2.size(); k++) {
                 for(unsigned lx = 0; lx < cull2[k].size(); lx++) {
@@ -367,6 +383,8 @@ CrossingSet MonoCrosser::crossings(std::vector<Path> const &a, std::vector<Path>
     return results;
 }
 
+/* This function is similar codewise to the MonoCrosser, the main difference is that it deals with
+ * only one set of paths and includes self intersection
 CrossingSet crossings_among(std::vector<Path> const &p) {
     CrossingSet results(p.size(), Crossings());
     if(p.empty()) return results;
@@ -377,11 +395,16 @@ CrossingSet crossings_among(std::vector<Path> const &p) {
     for(unsigned i = 0; i < prs.size(); i++) rs.push_back(union_list(prs[i]));
     
     std::vector<std::vector<unsigned> > cull = sweep_bounds(rs);
-
+    
+    //we actually want to do the self-intersections, so add em in:
+    for(unsigned i = 0; i < cull.size(); i++) cull[i].push_back(i);
+    
     for(unsigned i = 0; i < cull.size(); i++) {
         for(unsigned jx = 0; jx < cull[i].size(); jx++) {
             unsigned j = cull[i][jx];
             Crossings res;
+            
+            //Sweep of the monotonic portions
             std::vector<std::vector<unsigned> > cull2 = sweep_bounds(prs[i], prs[j]);
             for(unsigned k = 0; k < cull2.size(); k++) {
                 for(unsigned lx = 0; lx < cull2[k].size(); lx++) {
@@ -400,6 +423,69 @@ CrossingSet crossings_among(std::vector<Path> const &p) {
     }
     
     return results;
+}
+*/
+
+Crossings curve_self_crossings(Curve const &a) {
+    Crossings res;
+    std::vector<double> spl;
+    spl.push_back(0);
+    append(spl, curve_mono_splits(a));
+    spl.push_back(1);
+    for(unsigned i = 1; i < spl.size(); i++)
+        for(unsigned j = i+1; j < spl.size(); j++)
+            pair_intersect(a, spl[i-1], spl[i], a, spl[j-1], spl[j], res);
+    return res;
+}
+
+Crossings path_self_crossings(Path const &p) {
+    Crossings ret;
+    std::vector<std::vector<unsigned> > cull = sweep_bounds(bounds(p));
+    for(unsigned i = 0; i < cull.size(); i++) {
+        Crossings res = curve_self_crossings(p[i]);
+        offset_crossings(res, i, i);
+        append(ret, res);
+        for(unsigned jx = 0; jx < cull[i].size(); jx++) {
+            unsigned j = cull[i][jx];
+            res.clear();
+            pair_intersect(p[i], 0, 1, p[j], 0, 1, res);
+            
+            //if(fabs(int(i)-j) == 1 || fabs(int(i)-j) == p.size()-1) {
+                Crossings res2;
+                for(unsigned k = 0; k < res.size(); k++) {
+                    if(res[k].ta != 0 && res[k].ta != 1 && res[k].tb != 0 && res[k].tb != 1) {
+                        res.push_back(res[k]);
+                    }
+                }
+                res = res2;
+            //}
+            offset_crossings(res, i, j);
+            append(ret, res);
+        }
+    }
+    return ret;
+}
+
+CrossingSet crossings_among(std::vector<Path> const &p) {
+    CrossingSet results(p.size(), Crossings());
+    if(p.empty()) return results;
+    
+    SimpleCrosser cc;
+    
+    std::vector<std::vector<unsigned> > cull = sweep_bounds(bounds(p));
+    for(unsigned i = 0; i < cull.size(); i++) {
+        Crossings res = path_self_crossings(p[i]);
+        for(unsigned k = 0; k < res.size(); k++) { res[k].a = res[k].b = i; }
+        merge_crossings(results[i], res, i);
+        for(unsigned jx = 0; jx < cull[i].size(); jx++) {
+            unsigned j = cull[i][jx];
+            
+            Crossings res = cc.crossings(p[i], p[j]);
+            for(unsigned k = 0; k < res.size(); k++) { res[k].a = i; res[k].b = j; }
+            merge_crossings(results[i], res, i);
+            merge_crossings(results[j], res, j);
+        }
+    }
 }
 
 }

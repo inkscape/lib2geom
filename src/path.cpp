@@ -109,7 +109,7 @@ iter inc(iter const &x, unsigned n) {
 //This assumes that you can't be perfect in your t-vals, and as such, tweaks the start
 void Path::appendPortionTo(Path &ret, double from, double to) const {
   assert(from >= 0 && to >= 0);
-  if(to == 0) to = size()+1.9999;
+  if(to == 0) to = size()+0.999999;
   if(from == to) { return; }
   double fi, ti;
   double ff = modf(from, &fi), tf = modf(to, &ti);
@@ -122,7 +122,6 @@ void Path::appendPortionTo(Path &ret, double from, double to) const {
     return;
   }
   const_iterator toi   = inc(begin(), (unsigned)ti);
-  //TODO: do we really need to delete the portion returns?
   if(ff != 1.) {
     Curve *fromv = fromi->portion(ff, 1.);
     //fromv->setInitial(ret.finalPoint());

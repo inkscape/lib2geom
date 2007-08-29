@@ -43,7 +43,9 @@ struct MonoCrosser : public Crosser<Path> {
     CrossingSet crossings(std::vector<Path> const &a, std::vector<Path> const &b);
 };
 
-typedef MonoCrosser DefaultCrosser;
+typedef SimpleCrosser DefaultCrosser;
+
+std::vector<double> path_mono_splits(Path const &p);
 
 CrossingSet crossings_among(std::vector<Path> const & p);
 inline Crossings self_crossings(Path const & a) { return crossings_among(std::vector<Path>(1, a))[0]; }

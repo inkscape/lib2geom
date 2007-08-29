@@ -7,19 +7,20 @@
 
 namespace Geom {
 
-//Utility funcs
-//yes, xor is !=, but I'm pretty sure this is safer in the event of strange bools
+// Utility funcs
+
+// Yes, xor is !=, but I'm pretty sure this is safer in the event of strange bools
 bool logical_xor (bool a, bool b) { return (a || b) && !(a && b); }
 
-bool disjoint(Path const & a, Path const & b) {
-    return !contains(a, b.initialPoint()) && !contains(b, a.initialPoint());
-}
-
+// A little sugar for appending a list to another
 template<typename T>
 void append(T &a, T const &b) {
     a.insert(a.end(), b.begin(), b.end());
 }
 
+/* Used within shape_boolean and related functions, as the name describes, finds the
+ * first false within the list of lists of booleans.
+ */
 void first_false(std::vector<std::vector<bool> > visited, unsigned &i, unsigned &j) {
     for(i = 0, j = 0; i < visited.size(); i++) {
         std::vector<bool>::iterator unvisited = std::find(visited[i].begin(), visited[i].end(), false);
@@ -30,14 +31,15 @@ void first_false(std::vector<std::vector<bool> > visited, unsigned &i, unsigned 
     }
 }
 
+// Finds a crossing in a list of them, given the sorting index.
 unsigned find_crossing(Crossings const &cr, Crossing x, unsigned i) {
     return std::lower_bound(cr.begin(), cr.end(), x, CrossingOrder(i)) - cr.begin();
 }
 
 /* This function handles boolean ops on shapes.  The first parameter is a bool
  * which determines its behavior in each combination of these cases.  For proper
- * fill information and noncrossing behavior, the fill data of the regions must
- * be correct.  The boolean parameter determines whether the operation is a
+ * output fill information and noncrossing behavior, the fill data of the regions
+ * must be correct.  The boolean parameter determines whether the operation is a
  * union or a subtraction.  Reversed paths represent inverse regions, where
  * everything is included in the fill except for the insides.
  *
@@ -62,7 +64,10 @@ unsigned find_crossing(Crossings const &cr, Crossing x, unsigned i) {
  * + = union, - = subtraction, x = intersection
  * -> read as "produces"
  *
- * The operation of this function isn't very complicated.  It just traverses the crossings, and uses the crossing direction to decide whether the next segment should be from A or from B.
+ * This is the main function of boolops, yet its operation  isn't very complicated.
+ * It just traverses the crossings, and uses the crossing direction to decide whether
+ * the next segment should be taken from A or from B.  The second half of the function
+ * deals with figuring out what to do with bits that have no intersection.
  */
 Shape shape_boolean(bool rev, Shape const & a, Shape const & b, CrossingSet const & crs) {
     const Regions ac = a.content, bc = b.content;
@@ -71,22 +76,26 @@ Shape shape_boolean(bool rev, Shape const & a, Shape const & b, CrossingSet cons
     std::vector<std::vector<bool> > visited;
     for(unsigned i = 0; i < crs.size(); i++)
         visited.push_back(std::vector<bool>(crs[i].size(), false));
-
+    
+    //bool const exception = 
+    
     //Traverse the crossings, creating chunks
     Regions chunks;
     while(true) {
         unsigned i, j;
         first_false(visited, i, j);
         if(i == visited.size()) break;
-
+        
         Path res;
         do {
             Crossing cur = crs[i][j];
             visited[i][j] = true;
+            
             //get indices of the dual:
             unsigned io = cur.getOther(i), jo = find_crossing(crs[io], cur, io);
             if(jo < visited[io].size()) visited[io][jo] = true;
             
+            //main driving logic
             if(logical_xor(cur.dir, rev)) {
                 if(i >= ac.size()) { i = io; j = jo; }
                 j++;
@@ -104,23 +113,25 @@ Shape shape_boolean(bool rev, Shape const & a, Shape const & b, CrossingSet cons
         if(res.size() > 0) chunks.push_back(Region(res));
     }
     
-    //If true, then the hole must be inside the other to be included
+    //If true, then we are on the 'subtraction diagonal'
     bool const on_sub = logical_xor(a.fill, b.fill);
+    //If true, then the hole must be inside the other to be included
     bool const a_mode = logical_xor(logical_xor(!rev, a.fill), on_sub),
                b_mode = logical_xor(logical_xor(!rev, b.fill), on_sub);
+    
     //Handle unintersecting portions
     for(unsigned i = 0; i < crs.size(); i++) {
         if(crs[i].size() == 0) {
             Region    r(i < ac.size() ? ac[i] : bc[i - ac.size()]);
-            bool mode = i < ac.size() ? a_mode : b_mode;
+            bool   mode(i < ac.size() ? a_mode : b_mode);
             
             if(logical_xor(r.fill, i < ac.size() ? a.fill : b.fill)) {
-                //is an inner
+                //is an inner (fill is opposite the outside fill)
                 Point exemplar = r.boundary.initialPoint();
                 Regions const & others = i < ac.size() ? bc : ac;
                 for(unsigned j = 0; j < others.size(); j++) {
                     if(others[j].contains(exemplar)) {
-                        //contained in other
+                        //contained in another
                         if(mode) chunks.push_back(r);
                         goto skip;
                     }
@@ -135,13 +146,74 @@ Shape shape_boolean(bool rev, Shape const & a, Shape const & b, CrossingSet cons
     return Shape(chunks);
 }
 
+// Just a convenience wrapper for shape_boolean, which handles the crossings
 Shape shape_boolean(bool rev, Shape const & a, Shape const & b) {
     CrossingSet crs = crossings_between(a, b);
     
     return shape_boolean(rev, a, b, crs);
 }
 
-Shape shape_boolean(Shape const &a, Shape const &b, unsigned flags) {
+
+// Some utility functions for boolop:
+
+std::vector<double> region_sizes(Shape const &a) {
+    std::vector<double> ret;
+    for(unsigned i = 0; i < a.size(); i++) {
+        ret.push_back(double(a[i].size()));
+    }
+    return ret;
+}
+
+Shape shape_boolean_ra(bool rev, Shape const &a, Shape const &b, CrossingSet const &crs) {
+    return shape_boolean(rev, a.inverse(), b, reverse_ta(crs, a.size(), region_sizes(a)));
+}
+
+Shape shape_boolean_rb(bool rev, Shape const &a, Shape const &b, CrossingSet const &crs) {
+    return shape_boolean(rev, a, b.inverse(), reverse_tb(crs, a.size(), region_sizes(b)));
+}
+
+/* This is a function based on shape_boolean which allows boolean operations
+ * to be specified as a logic table.  This logic table is 4 bit-flags, which
+ * correspond to the elements of the 'truth table' for a particular operation.
+ * These flags are defined with the enums starting with BOOLOP_ .
+ */
+Shape boolop(Shape const &a, Shape const &b, unsigned flags, CrossingSet const &crs) {
+    flags &= 15;
+    if(flags <= BOOLOP_UNION) {
+        switch(flags) {
+            case BOOLOP_INTERSECT:    return shape_boolean(true, a, b, crs);
+            case BOOLOP_SUBTRACT_A_B: return shape_boolean_rb(true, a, b, crs);
+            case BOOLOP_IDENTITY_A:   return a;
+            case BOOLOP_SUBTRACT_B_A: return shape_boolean_ra(true, a, b, crs);
+            case BOOLOP_IDENTITY_B:   return b;
+            case BOOLOP_EXCLUSION: {
+                Shape res = shape_boolean_rb(true, a, b, crs);
+                append(res.content, shape_boolean_ra(true, a, b, crs).content);
+                return res;
+            }
+            case BOOLOP_UNION:        return shape_boolean(false, a, b);
+        }
+    } else {
+        switch(flags - BOOLOP_NEITHER) {
+            case BOOLOP_SUBTRACT_A_B: return shape_boolean_ra(false, a, b, crs);
+            case BOOLOP_SUBTRACT_B_A: return shape_boolean_rb(false, a, b, crs);
+            case BOOLOP_EXCLUSION: {
+                Shape res = shape_boolean_ra(false, a, b, CrossingSet(crs));
+                append(res.content, shape_boolean_rb(false, a, b, CrossingSet(crs)).content);
+                return res;
+            }
+        }
+        return boolop(a, b, ~flags, crs).inverse();
+    }
+    return Shape();
+}
+
+/* This version of the boolop function doesn't require a set of crossings, as
+ * it computes them for you.  This is more efficient in some cases, as the
+ * shape can be inverted before finding crossings.  In the special case of
+ * exclusion it uses the other version of boolop.
+ */
+Shape boolop(Shape const &a, Shape const &b, unsigned flags) {
     flags &= 15;
     if(flags <= BOOLOP_UNION) {
         switch(flags) {
@@ -154,7 +226,7 @@ Shape shape_boolean(Shape const &a, Shape const &b, unsigned flags) {
                 Shape res = shape_boolean(true, a, b.inverse());
                 append(res.content, shape_boolean(true, b, a.inverse()).content);
                 return res;
-            }
+            } //return boolop(a, b, flags,  crossings_between(a, b));
             case BOOLOP_UNION:        return shape_boolean(false, a, b);
         }
     } else {
@@ -162,61 +234,16 @@ Shape shape_boolean(Shape const &a, Shape const &b, unsigned flags) {
             case BOOLOP_SUBTRACT_A_B: return shape_boolean(false, b, a.inverse());
             case BOOLOP_SUBTRACT_B_A: return shape_boolean(false, a, b.inverse());
             case BOOLOP_EXCLUSION: {
-                Shape res = shape_boolean(false, b, a.inverse());
-                append(res.content, shape_boolean(false, a, b.inverse()).content);
+                Shape res = shape_boolean(false, a, b.inverse());
+                append(res.content, shape_boolean(false, b, a.inverse()).content);
                 return res;
-            }
+            } //return boolop(a, b, flags, crossings_between(a, b));
         }
-        return shape_boolean(a, b, ~flags).inverse();
+        return boolop(a, b, ~flags).inverse();
     }
     return Shape();
 }
 
-std::vector<double> region_sizes(Shape const &a) {
-    std::vector<double> ret;
-    for(unsigned i = 0; i < a.size(); i++)
-        ret.push_back(a[i].size());
-    return ret;
-}
-
-Shape shape_boolean_ra(bool rev, Shape const &a, Shape const &b, CrossingSet const &crs) {
-    return shape_boolean(rev, a.inverse(), b, reverse_ta(crs, a.size(), region_sizes(a)));
-}
-
-Shape shape_boolean_rb(bool rev, Shape const &a, Shape const &b, CrossingSet const &crs) {
-    return shape_boolean(rev, a, b.inverse(), reverse_ta(crs, a.size(), region_sizes(b)));
-}
-
-Shape shape_boolean(Shape const &a, Shape const &b, unsigned flags, CrossingSet const &crs) {
-    flags &= 15;
-    if(flags <= BOOLOP_UNION) {
-        switch(flags) {
-            case BOOLOP_INTERSECT:    return shape_boolean(true, a, b, crs);
-            case BOOLOP_SUBTRACT_A_B: return shape_boolean_rb(true, a, b, crs);
-            case BOOLOP_IDENTITY_A:   return a;
-            case BOOLOP_SUBTRACT_B_A: return shape_boolean_ra(true, a, b, crs);
-            case BOOLOP_IDENTITY_B:   return b;
-            case BOOLOP_EXCLUSION: {
-                Shape res = shape_boolean_rb(true, a, b, CrossingSet(crs));
-                append(res.content, shape_boolean_ra(true, a, b, CrossingSet(crs)).content);
-                return res;
-            }
-            case BOOLOP_UNION:        return shape_boolean(false, a, b);
-        }
-    } else {
-        switch(flags - BOOLOP_NEITHER) {
-            case BOOLOP_SUBTRACT_A_B: return shape_boolean_ra(false, a, b, CrossingSet(crs));
-            case BOOLOP_SUBTRACT_B_A: return shape_boolean_rb(false, a, b, CrossingSet(crs));
-            case BOOLOP_EXCLUSION: {
-                Shape res = shape_boolean_ra(false, a, b, CrossingSet(crs));
-                append(res.content, shape_boolean_rb(false, a, b, CrossingSet(crs)).content);
-                return res;
-            }
-        }
-        return shape_boolean(a, b, ~flags).inverse();
-    }
-    return Shape();
-}
 
 int paths_winding(std::vector<Path> const &ps, Point p) {
     int ret;
@@ -225,57 +252,117 @@ int paths_winding(std::vector<Path> const &ps, Point p) {
     return ret;
 }
 
-//sanitize
-//We have two phases, one for each winding direction.
-Shape sanitize_paths(std::vector<Path> const &ps, bool evenodd) {
-    CrossingSet crs;// = crossings_among(ps);
-    
-    //two-phase process - g
-    Regions chunks;
-    for(bool phase = 0; phase < 2; phase++) {
-        
-        //Keep track of which crossings we've hit.
-        std::vector<std::vector<bool> > visited;
-        for(unsigned i = 0; i < crs.size(); i++)
-            visited.push_back(std::vector<bool>(crs[i].size(), false));
+struct Edge {
+    unsigned ix;
+    double from, to;
+    bool rev;
+    int wind;
+    Edge(unsigned i, double ft, double tt, bool r, unsigned w) : ix(i), from(ft), to(tt), rev(r), wind(w) {}
+    Edge(unsigned i, double ft, double tt, bool r, std::vector<Path> const &ps) : ix(i), from(ft), to(tt), rev(r) {
+        //TODO: get the edge wind data some other way
+        Point p1 = ps[i].pointAt(ft+.5), p2 = ps[i].pointAt(ft+.6), pd = rev ? (p2 - p1).cw() : (p2 - p1).ccw();
+        wind = paths_winding(ps, p1);
+    }
+};
 
-        while(true) {
-            unsigned i, j;
-            first_false(visited, i, j);
-            if(i == visited.size()) break;
+typedef std::vector<Edge> Edges;
+
+//sanitize
+Regions regionize_paths(std::vector<Path> const &ps, bool evenodd) {
+    CrossingSet crs = crossings_among(ps);
+    
+    Edges es;
+    
+    const double fudge = 0.01;
+    for(unsigned i = 0; i < crs.size(); i++) {
+        for(unsigned j = 0; j < crs[i].size(); j++) {
+            Crossing cur = crs[i][j];
+            int io = i, jo = j;
             
-            bool use = paths_winding(ps, ps[i].initialPoint()) % 2 == 1;
-            Path res;
-            do {
-                Crossing cur = crs[i][j];
-                visited[i][j] = true;
-                
-                //get indices of the dual:
-                i = cur.getOther(i), j = find_crossing(crs[i], cur, i);
-                if(j < visited[i].size()) visited[i][j] = true;
-                
-                if(logical_xor(phase, cur.dir)) {
-                    // forwards
-                    j++;
-                    if(j >= crs[i].size()) j = 0;
-                } else {
-                    // backwards
-                    if(j == 0) j = crs[i].size() - 1; else j--;
-                }
-                if(use) {
-                    Crossing next = crs[i][j];
-                    ps[i].appendPortionTo(res, cur.ta, next.ta);
-                }
-            } while(!visited[i][j]);
+            jo++;
+            if(jo >= crs[io].size()) jo = 0;
+            //std::cout << io << ", " << jo << "\n";
+            if(cur.a == i)
+                es.push_back(Edge(i, cur.ta, crs[io][jo].ta, false, ps));
+            else
+                es.push_back(Edge(i, cur.tb, crs[io][jo].tb, false, ps));
             
-            if(use) {
-                chunks.push_back(Region(res, true));
-            }
+            jo-=2;
+            if(jo < 0) jo += crs[io].size();
+            // std::cout << io << ", " << jo << "\n";
+            if(cur.a == i)
+                es.push_back(Edge(i, crs[io][jo].ta, cur.ta, true, ps));
+            else
+                es.push_back(Edge(i, crs[io][jo].tb, cur.tb, true, ps));
         }
     }
-    return Shape(chunks);
+    for(unsigned i = 0; i<crs.size(); i++) {
+        if(crs[i].empty()) {
+            es.push_back(Edge(i, 0, ps[i].size(), false, ps));
+        }
+    }
+    
+    std::cout << es.size() << " edges\n";
+    Regions chunks;
+    for(unsigned i = 0; i < es.size(); i++) {
+        Edge cur = es[i];
+        if(cur.rev)
+            chunks.push_back(Region(ps[cur.ix].portion(cur.from, cur.to).reverse(), cur.wind % 2 != 0));
+        else
+            chunks.push_back(Region(ps[cur.ix].portion(cur.from, cur.to), cur.wind % 2 != 0));
+    }
+    return chunks;
+    
+    Edges es2;
+    for(unsigned i = 0; i<es.size(); i++) {
+        if((evenodd && es[i].wind % 2) || (!evenodd && es[i].wind != 0))
+            es2.push_back(es[i]);
+    }
+    
+    
+    
+    /*
+
+    while(true) {
+        unsigned i, j;
+        first_false(visited, i, j);
+        if(i == visited.size()) break;
+        
+        bool use = paths_winding(ps, ps[i].initialPoint()) % 2 == 1;
+        Path res;
+        do {
+            Crossing cur = crs[i][j];
+            visited[i][j] = true;
+            
+            //get indices of the dual:
+            i = cur.getOther(i);
+            j = std::lower_bound(crs[i].begin(), crs[i].end(), cur, CrossingOrder(i)) - crs[i].begin();
+            if(j < visited[i].size()) visited[i][j] = true;
+            
+            if(logical_xor(phase, cur.dir)) {
+                // forwards
+                j++;
+                if(j >= crs[i].size()) j = 0;
+            } else {
+                // backwards
+                if(j == 0) j = crs[i].size() - 1; else j--;
+            }
+            if(use) {
+                Crossing next = crs[i][j];
+                ps[i].appendPortionTo(res, cur.ta, next.ta);
+            }
+        } while(!visited[i][j]);
+        
+        if(use) {
+            chunks.push_back(Region(res, true));
+        }
+    }
+    return chunks; */
 }
 
+/* This transforms a shape by a matrix.  In the case that the matrix flips
+ * the shape, it reverses the paths in order to preserve the fill.
+ */
 Shape Shape::operator*(Matrix const &m) const {
     Shape ret;
     for(unsigned i = 0; i < size(); i++)
@@ -284,7 +371,7 @@ Shape Shape::operator*(Matrix const &m) const {
     return ret;
 }
 
-// inverse is a boolean not
+// Inverse is a boolean not, and simply reverses all the paths & fill flags
 Shape Shape::inverse() const {
     Shape ret;
     for(unsigned i = 0; i < size(); i++)

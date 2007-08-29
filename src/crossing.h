@@ -31,7 +31,8 @@ struct CrossingOrder {
     unsigned ix;
     CrossingOrder(unsigned i) : ix(i) {}
     bool operator()(Crossing a, Crossing b) {
-        return (ix == a.a ? a.ta < b.ta : a.tb < b.tb);
+        return (ix == a.a ? a.ta : a.tb) <
+               (ix == b.a ? b.ta : b.tb);
     }
 };
 

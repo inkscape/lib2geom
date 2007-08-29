@@ -7,7 +7,7 @@
 
 #include "path-cairo.h"
 #include "toy-framework.cpp"
-
+#include "ord.h"
 using namespace Geom;
 
 void draw_rect(cairo_t *cr, Point tl, Point br) {
@@ -49,7 +49,7 @@ class WindingTest: public Toy {
         cairo_path(cr, path);
         cairo_stroke(cr);
         
-        draw_bounds(cr, path); mark_verts(cr, path);
+        //draw_bounds(cr, path); mark_verts(cr, path);
         
         std::streambuf* cout_buffer = std::cout.rdbuf();
         std::cout.rdbuf(notify->rdbuf());

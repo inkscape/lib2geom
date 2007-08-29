@@ -33,6 +33,18 @@ void cairo_shape(cairo_t *cr, Shape const &s) {
     cairo_regions(cr, s.getContent());
 }
 
+
+void mark_mono(cairo_t *cr, Shape const &a) {
+    for(unsigned j = 0; j < a.size(); j++) {
+        Path p = Path(a[j]);
+        std::vector<double> sp = path_mono_splits(p);
+        for(unsigned i = 0; i < sp.size(); i++) {
+            draw_cross(cr, p.pointAt(sp[i]));
+            cairo_stroke(cr);
+        }
+    }
+}
+
 Shape cleanup(std::vector<Path> const &ps) {
     Regions rs = regions_from_paths(ps);
     
@@ -68,7 +80,7 @@ class BoolOps: public Toy {
         cairo_set_line_width(cr, 1);
         
         cairo_shape(cr, bst);
-
+        mark_mono(cr, bst);
         Toy::draw(cr, notify, width, height, save);
     }
     public:

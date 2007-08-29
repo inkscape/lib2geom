@@ -18,6 +18,7 @@ using namespace Geom;
 
 void cairo_region(cairo_t *cr, Region const &r) {
     double d = 5.;
+    cairo_set_source_rgba(cr, uniform(), uniform(), uniform(), .25);
     if(!r.isFill()) cairo_set_dash(cr, &d, 1, 0);
     cairo_path(cr, r);
     cairo_stroke(cr);
@@ -39,13 +40,24 @@ std::vector<Path> desanitize(Shape const & s) {
 
 void mark_crossings(cairo_t *cr, Shape const &a, Shape const &b) {
     const Regions ac = a.getContent();
-    CrossingSet cc = crossings_between(a, b);
-    for(unsigned j = 0; j < cc.size(); j++) {
-        Crossings c = cc[j];
+    Crossings c = crossings(Path(a[0]), Path(b[0]));
+    //for(unsigned j = 0; j < cc.size(); j++) {
+        //Crossings c = cc[j];
         for(Crossings::iterator i = c.begin(); i != c.end(); i++) {
             draw_cross(cr, Path(ac[i->a]).pointAt(i->ta));
             cairo_stroke(cr);
             //draw_text(cr, ac[i->a].getBoundary().pointAt(i->ta), i->dir ? "T" : "F");
+        }
+    //}
+}
+
+void mark_crossings(cairo_t* cr, std::vector<Path> &a) {
+    CrossingSet crs = crossings_among(a);
+    for(unsigned i = 0; i < crs.size(); i++) {
+        for(unsigned j = 0; j < crs[i].size(); j++) {
+            Crossing cur = crs[i][j];
+            draw_cross(cr, a[i].pointAt(cur.a == i ? cur.ta : cur.tb));
+            cairo_stroke(cr);
         }
     }
 }
@@ -81,14 +93,27 @@ class BoolOps: public Toy {
         Geom::Translate t(handles[0]);
         Shape bst = bs * t;
         
-        cairo_set_line_width(cr, 1);
-        mark_crossings(cr, as, bst);
+        cairo_set_line_width(cr, 5);
+        //mark_crossings(cr, as, bst);
+        
+        std::vector<Path> ps;
+        ps.push_back(bst[0]);
+        std::vector<Path> ap = paths_from_regions(as.getContent());
+        ps.insert(ps.end(), ap.begin(), ap.end());
+        
+        //mark_crossings(cr, ps);
+        
+        Regions rgs = regionize_paths(ps);
+        //for(unsigned i = 0; i < rgs.size(); i++)
+        //    draw_cross(cr, Path(rgs[i]).initialPoint());
+        srand(0);
+        cairo_regions(cr, rgs);
         
         unsigned ttl = 0, v = 1;
         for(unsigned i = 0; i < 4; i++, v*=2)
             if(togs[i].on) ttl += v; 
-        /*
-        Shape s = shape_boolean(as, bst, ttl);
+        
+        /* Shape s = boolop(as, bst, ttl);
         
         cairo_set_source_rgba(cr, 182./255, 200./255, 183./255, 1);
         if(!s.isFill()) {
@@ -99,11 +124,14 @@ class BoolOps: public Toy {
         cairo_path(cr, desanitize(s));
         cairo_fill(cr);
         cairo_set_source_rgba(cr, 0, 0, 0, 1);
-        cairo_shape(cr, s);
-        */
+        cairo_shape(cr, s); */
+        
         double x = width - 60, y = height - 60;
         
-        cairo_shape(cr, as); cairo_shape(cr, bst);
+        //cairo_shape(cr, as);
+        cairo_set_source_rgba(cr, 0, 0, 0, 1);
+        cairo_set_line_width(cr, 1);
+        // cairo_shape(cr, bst);
         
         //Draw the info
         
