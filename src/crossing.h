@@ -17,6 +17,9 @@ struct Crossing {
     bool operator==(const Crossing & other) const { return a == other.a && b == other.b && dir == other.dir && ta == other.ta && tb == other.tb; }
     bool operator!=(const Crossing & other) const { return !(*this == other); }
     unsigned getOther(unsigned cur) { return a == cur ? b : a; }
+    double getTime(unsigned cur) { return a == cur ? ta : tb; }
+    double getOtherTime(unsigned cur) { return a == cur ? tb : ta; }
+    bool onIx(unsigned ix) { return a == ix || b == ix; }
 };
 
 

@@ -530,9 +530,10 @@ public:
 
   std::vector<double> roots(double v, Dim2 d) const {
     std::vector<double> res;
-    for(const_iterator it = begin(); it != end_closed(); ++it) {
-      std::vector<double> temp = it->roots(v, d);
-      res.insert(res.end(), temp.begin(), temp.end());
+    for(unsigned i = 0; i <= size(); i++) {
+      std::vector<double> temp = (*this)[i].roots(v, d);
+      for(unsigned j = 0; j < temp.size(); j++)
+        res.push_back(temp[j] + i);
     }
     return res;
   }

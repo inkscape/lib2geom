@@ -244,144 +244,146 @@ Shape boolop(Shape const &a, Shape const &b, unsigned flags) {
     return Shape();
 }
 
-
 int paths_winding(std::vector<Path> const &ps, Point p) {
-    int ret;
+    int ret = 0;
     for(unsigned i = 0; i < ps.size(); i++)
         ret += winding(ps[i], p);
     return ret;
 }
 
-std::vector<double> y_of_roots(std::vector<Path> const & ps, double x) {
-    std::vector<double> res;
-    for(unsigned i = 0; i < ps.size(); i++) {
-        std::vector<double> temp = ps[i].roots(x, X);
-        for(unsigned i = 0; i < temp.size(); i++)
-            res.push_back(ps[i].valueAt(temp[i], Y));
-    }
-    std::sort(res.begin(), res.end());
-    return res;
+void add_to_shape(Shape &s, Path const &p) {
+    s.content.push_back(Region(p));
+    /* if(s.contains(p.initialPoint()))
+        s.content.push_back(Region(p).asHole());
+    else
+        s.content.push_back(Region(p).asFill());
+    */
 }
 
-struct Edge {
-    unsigned ix;
-    double from, to;
-    bool rev;
-    int wind;
-    Edge(unsigned i, double ft, double tt, bool r, unsigned w) : ix(i), from(ft), to(tt), rev(r), wind(w) {}
-    Edge(unsigned i, double ft, double tt, bool r, std::vector<Path> const &ps) : ix(i), from(ft), to(tt), rev(r) {
-        //TODO: get the edge wind data some other way
-        Point p = ps[i].pointAt(ft);
-        std::vector<double> rs = y_of_roots(ps, p[X]);
-        unsigned interv = std::lower_bound(rs.begin(), rs.end(), p[Y]) - rs.begin();
-        wind = interv % 2;
-    }
-    double initial() { return rev ? to : from; }
-    double final() { return rev ? from : to; }
-    void addTo(Path &res, std::vector<Path> const &ps) {
-        if(rev) {
-            Path p = ps[ix].portion(to, from).reverse();
-            for(unsigned i = 0; i < p.size(); i++)
-                res.append(p[i]);
-        } else {
-            ps[ix].appendPortionTo(res, from, to);
-        }
-    }
-};
-
-typedef std::vector<Edge> Edges;
-
-double point_cosine(Point a, Point b, Point c) {
+double point_sine(Point a, Point b, Point c) {
     Point db = b - a, dc = c - a;
     return cross(db, dc) / (db.length() * dc.length());
 }
 
-//sanitize
-Regions regionize_paths(std::vector<Path> const &ps, bool evenodd) {
-    CrossingSet crs = crossings_among(ps);
-    
-    Edges es;
-    
-    for(unsigned i = 0; i < crs.size(); i++) {
-        for(unsigned j = 0; j < crs[i].size(); j++) {
-            Crossing cur = crs[i][j];
-            int io = i, jo = j;
-            
-            jo++;
-            if(jo >= crs[io].size()) jo = 0;
-            //std::cout << io << ", " << jo << "\n";
-            if(cur.a == i)
-                es.push_back(Edge(i, cur.ta, crs[io][jo].ta, false, ps));
-            else
-                es.push_back(Edge(i, cur.tb, crs[io][jo].tb, false, ps));
-            
-            jo-=2;
-            if(jo < 0) jo += crs[io].size();
-            // std::cout << io << ", " << jo << "\n";
-            if(cur.a == i)
-                es.push_back(Edge(i, crs[io][jo].ta, cur.ta, true, ps));
-            else
-                es.push_back(Edge(i, crs[io][jo].tb, cur.tb, true, ps));
-        }
-    }
-    for(unsigned i = 0; i<crs.size(); i++) {
-        if(crs[i].empty()) {
-            es.push_back(Edge(i, 0, ps[i].size(), false, ps));
-            es.push_back(Edge(i, ps[i].size(), 0, true, ps));
-        }
-    }
-    
-    Edges es2;
-    //filter
-    for(unsigned i = 0; i < es.size(); i++) {
-        if(true) //(evenodd && es[i].wind % 2 == 0) || (!evenodd && es[i].wind == 0))
-            es2.push_back(es[i]);
-    }
-    es = es2;
-    
-    std::cout << es.size() << " edges\n";
-    
-    Regions chunks;
-    for(unsigned i = 0; i < es.size(); i++) {
-        Edge cur = es[i];
-        if(cur.rev)
-            chunks.push_back(Region(ps[cur.ix].portion(cur.from, cur.to).reverse(), cur.wind % 2 != 0));
-        else
-            chunks.push_back(Region(ps[cur.ix].portion(cur.from, cur.to), cur.wind % 2 != 0));
-    }
-    return chunks;
-    
-    //Regions chunks;
-    std::vector<bool> used(es2.size(), false);
+//Non-public, recursive function to turn paths into a shape
+//Handles coincidence, yet not coincidence of derivative & crossing
+void inner_sanitize(Shape &ret, std::vector<Path> const & ps, CrossingSet const & cr_in, unsigned depth = 0) {
+    CrossingSet crs = cr_in;
     while(true) {
-        unsigned i = std::find(used.begin(), used.end(), false) - used.begin();
-        if(i == used.size()) break;
-        Path res;
-        do {
-            es2[i].addTo(res, ps);
-            Point pnt = res.finalPoint();
-            std::vector<unsigned> poss;
-            for(unsigned j = 0; j < es2.size(); j++)
-                if(near(pnt, ps[es2[j].ix].pointAt(es2[j].initial()))) poss.push_back(j);
-            if(poss.empty()) break;
-            unsigned best = 0;
-            if(poss.size() > 1) {
-                double crossval = 10;
-                Point along = ps[i].pointAt(es2[i].final()+0.1);
-                for(unsigned j = 0; j < poss.size(); j++) {
-                    unsigned ix = poss[j];
-                    double val = point_cosine(pnt, along, ps[ix].pointAt(es2[ix].initial()+.01));
-                    if(val < crossval) {
-                        crossval = val;
-                        best = j;
+        //Find a path with crossings
+        unsigned has_cross = 0;
+        for(; has_cross < crs.size(); has_cross++) {
+            if(!crs[has_cross].empty()) break;
+        }
+        if(has_cross == crs.size()) return;
+        
+        //locate a crossing on the outside, by casting a ray through the middle
+        double ry = ps[has_cross].boundsFast()[Y].middle();
+        unsigned max_ix = has_cross;
+        double max_val = ps[has_cross].initialPoint()[X], max_t = 0;
+        for(unsigned i = 0; i < ps.size(); i++) {
+            if(!crs[i].empty()) {
+                std::vector<double> rts = ps[i].roots(ry, Y);
+                for(unsigned j = 0; j < rts.size(); j++) {
+                    double val = ps[i].valueAt(rts[j], X);
+                    if(val > max_val) {
+                        max_ix = i;
+                        max_val = val;
+                        max_t = rts[j];
                     }
                 }
             }
-            i = poss[best];
-        } while(!used[i]);
-        chunks.push_back(Region(res));
+        }
+        std::vector<Crossing>::iterator lb = std::lower_bound(crs[max_ix].begin(), crs[max_ix].end(),
+                                                              Crossing(max_t, max_t, max_ix, max_ix, false), CrossingOrder(max_ix));
+        unsigned i = max_ix, j = (lb == crs[max_ix].end()) ? 0 : lb - crs[max_ix].begin();
+        if(crs[i][j].getTime(i) != max_t) j++;
+        if(j >= crs[max_ix].size()) j = 0;
+        Crossing cur = crs[i][j];
+        
+        //Keep track of which crossings we've hit.
+        std::vector<std::vector<bool> > visited;
+        for(unsigned i = 0; i < crs.size(); i++)
+            visited.push_back(std::vector<bool>(crs[i].size(), false));
+        
+        //starting from this crossing, traverse the outer path
+        Path res;
+        bool rev = true;
+        do {
+            visited[i][j] = true;
+            //std::cout << i << ", " << j << " -> ";
+            //get indices of the next crossing:
+            double otime = crs[i][j].getTime(i);
+            Point pnt = ps[i].pointAt(otime);
+            Point along = ps[i].pointAt(otime + (rev ? -0.01 : 0.01));
+            
+            i = cur.getOther(i);
+            
+            unsigned first = std::lower_bound(crs[i].begin(), crs[i].end(), cur, CrossingOrder(i)) - crs[i].begin();
+            double first_time = crs[i][first].getTime(i);
+            unsigned ex_ix = first;
+            double ex_val = 0;
+            bool ex_dir = false;
+            for(unsigned k = first; k < crs[i].size() && near(first_time, crs[i][k].getTime(i)); k++) {
+                if(!visited[i][k]) {
+                    for(unsigned dir = 0; dir < 2; dir++) {
+                        double val = point_sine(pnt, along, ps[i].pointAt(crs[i][k].getTime(i) + (dir ? -0.01 : 0.01)));
+                        if(val > ex_val) {
+                            ex_val = val; ex_ix = k; ex_dir = dir;
+                        }
+                    }
+                }
+            }
+
+            j = ex_ix;
+            rev = ex_dir;
+            //std::cout << i << ", " << j << ": " << rev << "\n";
+            double curt = cur.getTime(i);
+
+            if(rev) {
+                // backwards
+                if(j == 0) j = crs[i].size() - 1; else j--;
+                cur = crs[i][j];
+                std::cout << "r" << i << "[" << cur.getTime(i) << ", " << curt << "]\n";
+                Path p = ps[i].portion(cur.getTime(i), curt).reverse();
+                for(unsigned k = 0; k < p.size(); k++)
+                    res.append(p[k]);
+            } else {
+                // forwards
+                j++;
+                if(j >= crs[i].size()) j = 0;
+                cur = crs[i][j];
+                std::cout << "f" << i << "[" << curt << ", " << cur.getTime(i) << "]\n";
+                ps[i].appendPortionTo(res, curt, cur.getTime(i));
+            }
+        
+        } while(!visited[i][j]);
+        
+        add_to_shape(ret, res);
+       
+        CrossingSet new_crs(crs.size(), Crossings());
+        CrossingSet inner_crs(crs.size(), Crossings());
+        for(unsigned k = 0; k < crs.size(); k++) {
+            for(unsigned l = 0; l < crs[k].size(); l++) {
+                Crossing c = crs[k][l];
+                if(!visited[k][l]) {
+                    if(contains(res, ps[c.a].pointAt(c.ta))) inner_crs[k].push_back(c); else new_crs[k].push_back(c);
+                }
+            }
+        }
+        inner_sanitize(ret, ps, inner_crs, depth+1);
+        crs = new_crs;
     }
-    return chunks;
+}
+
+Shape sanitize(std::vector<Path> const & ps) {
+    CrossingSet crs(crossings_among(ps));
+    Shape ret;
+    inner_sanitize(ret, ps, crs);
+    for(unsigned i = 0; i < crs.size(); i++) {
+        if(crs[i].empty()) add_to_shape(ret, ps[i]);
+    }
+    return ret;
 }
 
 /* This transforms a shape by a matrix.  In the case that the matrix flips
@@ -415,7 +417,10 @@ bool Shape::contains(Point const &p) const {
     pnt.push_back(Rect(p, p));
     std::vector<std::vector<unsigned> > cull = sweep_bounds(pnt, bounds(*this));
     if(cull[0].size() == 0) return !fill;
-    return content[*min_element(cull[0].begin(), cull[0].end(), ContainmentOrder(&content))].isFill();
+    std::vector<unsigned> containers;
+    for(unsigned i = 0; i < cull[0].size(); i++)
+        if(content[cull[0][i]].contains(p)) containers.push_back(cull[0][i]);
+    return content[*min_element(containers.begin(), containers.end(), ContainmentOrder(&content))].isFill();
 }
 
 bool Shape::inside_invariants() const {  //semi-slow & easy to violate

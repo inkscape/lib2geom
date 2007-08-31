@@ -36,7 +36,7 @@ class Shape {
     friend Shape shape_boolean(bool rev, Shape const &, Shape const &, CrossingSet const &);
     friend Shape boolop(Shape const &a, Shape const &b, unsigned);
     friend Shape boolop(Shape const &a, Shape const &b, unsigned, CrossingSet const &);
-
+    friend void add_to_shape(Shape &s, Path const &p);
   public:
     Shape() : fill(true) {}
     explicit Shape(Region const & r) {
@@ -83,7 +83,7 @@ Shape shape_boolean(bool rev, Shape const &, Shape const &);
 Shape boolop(Shape const &, Shape const &, unsigned flags);
 Shape boolop(Shape const &, Shape const &, unsigned flags, CrossingSet &);
 
-Regions regionize_paths(std::vector<Path> const &ps, bool evenodd=true);
+Shape sanitize(std::vector<Path> const &ps);
 
 }
 

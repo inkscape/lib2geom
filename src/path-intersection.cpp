@@ -425,6 +425,7 @@ CrossingSet crossings_among(std::vector<Path> const &p) {
 }
 */
 
+
 Crossings curve_self_crossings(Curve const &a) {
     Crossings res;
     std::vector<double> spl;
@@ -492,7 +493,6 @@ std::vector<std::vector<Rect> > curves_split_bounds(Path const &p, std::vector<s
     }
     return ret;
 }
-
 
 Crossings path_self_crossings(Path const &p) {
     Crossings ret;

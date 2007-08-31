@@ -18,7 +18,8 @@ using namespace Geom;
 
 void cairo_region(cairo_t *cr, Region const &r) {
     double d = 5.;
-    cairo_set_source_rgba(cr, uniform(), uniform(), uniform(), .25);
+    //cairo_set_source_rgba(cr, uniform(), uniform(), uniform(), .25);
+    //if(!r.isFill()) cairo_set_source_rgba(cr, 1, 1, 1, .25); else cairo_set_source_rgba(cr, 0, 0, 0, .25);
     if(!r.isFill()) cairo_set_dash(cr, &d, 1, 0);
     cairo_path(cr, r);
     cairo_stroke(cr);
@@ -93,7 +94,7 @@ class BoolOps: public Toy {
         Geom::Translate t(handles[0]);
         Shape bst = bs * t;
         
-        cairo_set_line_width(cr, 5);
+        cairo_set_line_width(cr, 1);
         //mark_crossings(cr, as, bst);
         
         std::vector<Path> ps;
@@ -103,12 +104,12 @@ class BoolOps: public Toy {
         
         mark_crossings(cr, ps);
         
-        Regions rgs = regionize_paths(ps);
+        Shape rgs = sanitize(ps);
         //for(unsigned i = 0; i < rgs.size(); i++)
         //    draw_cross(cr, Path(rgs[i]).initialPoint());
         srand(0);
-        cairo_regions(cr, rgs);
-        
+        cairo_shape(cr, rgs);
+               
         unsigned ttl = 0, v = 1;
         for(unsigned i = 0; i < 4; i++, v*=2)
             if(togs[i].on) ttl += v; 
