@@ -36,7 +36,7 @@ class Shape {
     friend Shape shape_boolean(bool rev, Shape const &, Shape const &, CrossingSet const &);
     friend Shape boolop(Shape const &a, Shape const &b, unsigned);
     friend Shape boolop(Shape const &a, Shape const &b, unsigned, CrossingSet const &);
-    friend void add_to_shape(Shape &s, Path const &p);
+    friend void add_to_shape(Shape &s, Path const &p, bool);
   public:
     Shape() : fill(true) {}
     explicit Shape(Region const & r) {

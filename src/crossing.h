@@ -16,10 +16,10 @@ struct Crossing {
     Crossing(double t_a, double t_b, unsigned ai, unsigned bi, bool direction) : dir(direction), ta(t_a), tb(t_b), a(ai), b(bi) {}
     bool operator==(const Crossing & other) const { return a == other.a && b == other.b && dir == other.dir && ta == other.ta && tb == other.tb; }
     bool operator!=(const Crossing & other) const { return !(*this == other); }
-    unsigned getOther(unsigned cur) { return a == cur ? b : a; }
-    double getTime(unsigned cur) { return a == cur ? ta : tb; }
-    double getOtherTime(unsigned cur) { return a == cur ? tb : ta; }
-    bool onIx(unsigned ix) { return a == ix || b == ix; }
+    unsigned getOther(unsigned cur) const { return a == cur ? b : a; }
+    double getTime(unsigned cur) const { return a == cur ? ta : tb; }
+    double getOtherTime(unsigned cur) const { return a == cur ? tb : ta; }
+    bool onIx(unsigned ix) const { return a == ix || b == ix; }
 };
 
 

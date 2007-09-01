@@ -535,7 +535,7 @@ Crossings path_self_crossings(Path const &p) {
 }
 */
 
-Crossings path_self_crossings(Path const &p) {
+Crossings self_crossings(Path const &p) {
     Crossings ret;
     std::vector<std::vector<unsigned> > cull = sweep_bounds(bounds(p));
     for(unsigned i = 0; i < cull.size(); i++) {
@@ -571,7 +571,7 @@ CrossingSet crossings_among(std::vector<Path> const &p) {
     
     std::vector<std::vector<unsigned> > cull = sweep_bounds(bounds(p));
     for(unsigned i = 0; i < cull.size(); i++) {
-        Crossings res = path_self_crossings(p[i]);
+        Crossings res = self_crossings(p[i]);
         for(unsigned k = 0; k < res.size(); k++) { res[k].a = res[k].b = i; }
         merge_crossings(results[i], res, i);
         for(unsigned jx = 0; jx < cull[i].size(); jx++) {
