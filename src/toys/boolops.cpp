@@ -104,6 +104,23 @@ class BoolOps: public Toy {
         
         mark_crossings(cr, ps);
         
+        CrossingSet crs = crossings_among(ps);
+        unsigned ix = 0, jx = 0; bool dir = false;
+        outer_crossing(ix, jx, dir, ps, crs);
+        if(ix != ps.size()) {
+
+            draw_cross(cr, ps[ix].pointAt(crs[ix][jx].getTime(ix)));
+            cairo_stroke(cr);
+            //crossing_dual(ix, jx, crs);
+                        jx = crossing_along(crs[ix][jx].getTime(ix), ix, jx, false, crs[ix]);
+            cairo_set_source_rgba(cr, 1, 0, 0, 1);
+            draw_cross(cr, ps[ix].pointAt(crs[ix][jx].getTime(ix)));
+            cairo_stroke(cr);
+            cairo_set_source_rgba(cr, 0, 0, 0, 1);
+        }
+        
+        std::cout << (dir? "T" : "F") << "\n";
+        
         Shape rgs = sanitize(ps);
         //for(unsigned i = 0; i < rgs.size(); i++)
         //    draw_cross(cr, Path(rgs[i]).initialPoint());
@@ -132,7 +149,7 @@ class BoolOps: public Toy {
         //cairo_shape(cr, as);
         cairo_set_source_rgba(cr, 0, 0, 0, 1);
         cairo_set_line_width(cr, 1);
-        // cairo_shape(cr, bst);
+        //cairo_shape(cr, bst);
         
         //Draw the info
         

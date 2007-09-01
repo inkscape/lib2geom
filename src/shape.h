@@ -80,6 +80,10 @@ inline CrossingSet crossings_between(Shape const &a, Shape const &b) { return cr
 Shape shape_boolean(bool rev, Shape const &, Shape const &, CrossingSet const &);
 Shape shape_boolean(bool rev, Shape const &, Shape const &);
 
+void outer_crossing(unsigned &ix, unsigned &jx, bool & dir, std::vector<Path> const & ps, CrossingSet const & crs);
+void crossing_dual(unsigned &i, unsigned &j, CrossingSet const & crs);
+unsigned crossing_along(double t, unsigned ix, unsigned jx, bool dir, Crossings const & crs);
+
 Shape boolop(Shape const &, Shape const &, unsigned flags);
 Shape boolop(Shape const &, Shape const &, unsigned flags, CrossingSet &);
 

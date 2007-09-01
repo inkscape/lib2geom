@@ -263,154 +263,7 @@ double point_sine(Point a, Point b, Point c) {
     return cross(db, dc) / (db.length() * dc.length());
 }
 
-enum CrStatus {
-    FWD_A = 1,
-    BACK_A = 2,
-    FWD_B = 4,
-    BACK_B = 8
-};
-
-unsigned used_count(CrStatus st) {
-    unsigned ret = 0;
-    if(st & FWD_A) ret++;
-    if(st & BACK_A) ret++;
-    if(st & FWD_B) ret++;
-    if(st & BACK_B) ret++;
-    return ret;
-}
-
-typedef std::vector<std::vector<CrStatus> > StatusSet;
-
-bool used_crossing_fwd(unsigned i, Crossing const &c, CrStatus const &s) {
-    if(c.a == i) return s & FWD_A; else return s & FWD_B;
-}
-
-bool used_crossing_back(unsigned i, Crossing const &c, CrStatus const &s) {
-    if(c.a == i) return s & BACK_A; else return s & BACK_B;
-}
-
-void next_crossing(unsigned &i, unsigned &j, bool &rev, std::vector<Path> ps, CrossingSet const & crs, StatusSet const & stat) {
-    std::cout << i << "\n";
-    Crossing cur = crs[i][j];
-    
-    double otime = cur.getTime(i);
-    Point pnt = ps[i].pointAt(otime),
-        along = ps[i].pointAt(otime + (rev ? -0.01 : 0.01));
-    
-    i = cur.getOther(i);
-    
-    unsigned first;
-    if(!rev) {
-        first = std::upper_bound(crs[i].begin(), crs[i].end(), cur, CrossingOrder(i)) - crs[i].begin();
-    } else {
-        first = std::lower_bound(crs[i].begin(), crs[i].end(), cur, CrossingOrder(i)) - crs[i].begin();
-        if(first == 0) first = crs[i].size() - 1; else first--;
-        first = std::lower_bound(crs[i].begin(), crs[i].end(), crs[i][first], CrossingOrder(i)) - crs[i].begin();
-    }
-    if(first == crs.size()) first = 0;
-    double first_time = crs[i][first].getTime(i);
-    
-    unsigned ex_ix = first;
-    double ex_val = 0;
-    bool ex_dir = false;
-    for(unsigned k = first; k < crs[i].size() && near(first_time, crs[i][k].getTime(i)); k++) {
-        for(unsigned dir = 0; dir < 2; dir++) {
-            if((!dir && used_crossing_fwd (i, crs[i][k], stat[i][k])) &&
-               (dir  && used_crossing_back(i, crs[i][k], stat[i][k]))) {
-                double val = point_sine(pnt, along, ps[i].pointAt(crs[i][k].getTime(i) + (dir ? -0.01 : 0.01)));
-                if(val > ex_val) {
-                    ex_val = val; ex_ix = k; ex_dir = dir;
-                }
-            }
-        }
-    }
-    j = ex_ix;
-    rev = ex_dir;
-}
-
-//Non-public, recursive function to turn paths into a shape
-//Handles coincidence, yet not coincidence of derivative & crossing
-void inner_sanitize(Shape &ret, std::vector<Path> const & ps, CrossingSet const & crs, StatusSet const & st, unsigned depth = 0) {
-    StatusSet stat(st);
-    while(true) {
-        //Find a path with unused crossings
-        unsigned has_cross = 0;
-        for(; has_cross < crs.size(); has_cross++) {
-            if(!crs[has_cross].empty()) break;
-        }
-        if(has_cross == crs.size()) return;
-        
-        //locate a crossing on the outside, by casting a ray through the middle of the bbox
-        double ry = ps[has_cross].boundsFast()[Y].middle();
-        unsigned max_ix = has_cross;
-        double max_val = ps[has_cross].initialPoint()[X], max_t = 0;
-        for(unsigned i = 0; i < ps.size(); i++) {
-            if(!crs[i].empty()) {
-                std::vector<double> rts = ps[i].roots(ry, Y);
-                for(unsigned j = 0; j < rts.size(); j++) {
-                    double val = ps[i].valueAt(rts[j], X);
-                    if(val > max_val) {
-                        max_ix = i;
-                        max_val = val;
-                        max_t = rts[j];
-                    }
-                }
-            }
-        }
-        std::vector<Crossing>::const_iterator lb = std::lower_bound(crs[max_ix].begin(), crs[max_ix].end(),
-                                                              Crossing(max_t, max_t, max_ix, max_ix, false), CrossingOrder(max_ix));
-        unsigned i = max_ix, j = (lb == crs[max_ix].end()) ? 0 : lb - crs[max_ix].begin();
-
-        Crossing cur = crs[i][j];
-        
-        //Keep track of which crossings we've hit
-        std::vector<std::vector<bool> > visited;
-        for(unsigned k = 0; k < crs.size(); k++)
-            visited.push_back(std::vector<bool>(crs[i].size(), false));
-        
-        //starting from this crossing, traverse the outer path
-        Path res;
-        bool rev = ps[i].valueAt(max_t + 0.01, Y) >
-                   ps[i].valueAt(max_t - 0.01, Y);
-        
-        do {
-            visited[i][j] = true;
-            //std::cout << i << ", " << j << " -> ";
-            
-            if(rev)
-                stat[i][j] = stat[i][j] | (i == cur.a) ? BACK_A : BACK_B;
-            else
-                stat[i][j] = stat[i][j] | (i == cur.a) ? FWD_A : FWD_B;
-            
-            double curt = cur.getTime(i);
-            bool old_rev = rev;
-            next_crossing(i, j, rev, ps, crs, stat);
-            
-            if(old_rev) {
-                // backwards
-                cur = crs[i][j];
-                std::cout << "r" << i << "[" << cur.getTime(i) << ", " << curt << "]\n";
-                Path p = ps[i].portion(cur.getTime(i), curt).reverse();
-                for(unsigned k = 0; k < p.size(); k++)
-                    res.append(p[k]);
-                stat[i][j] = stat[i][j] | (i == cur.a) ? FWD_A : FWD_B;
-            } else {
-                // forwards
-                cur = crs[i][j];
-                std::cout << "f" << i << "[" << curt << ", " << cur.getTime(i) << "]\n";
-                ps[i].appendPortionTo(res, curt, cur.getTime(i));
-                stat[i][j] = stat[i][j] | (i == cur.a) ? BACK_A : BACK_B;
-            }
-        } while(!visited[i][j]);
-        
-        add_to_shape(ret, res, depth%2==0);
-       
-        //inner_sanitize(ret, ps, crs, stat, depth+1);
-        
-        next: (void)0;
-    }
-}
-
+/*
 Shape sanitize(std::vector<Path> const & ps) {
     CrossingSet crs(crossings_among(ps));
     Shape ret;
@@ -421,6 +274,127 @@ Shape sanitize(std::vector<Path> const & ps) {
     for(unsigned i = 0; i < crs.size(); i++) {
         if(crs[i].empty()) add_to_shape(ret, ps[i], ret.contains(Path(ps[i]).initialPoint()));
     }
+    return ret;
+} ?*/
+
+unsigned crossing_along(double t, unsigned ix, unsigned jx, bool dir, Crossings const & crs) {
+    Crossing cur = Crossing(t, t, ix, ix, false);
+    if(jx < crs.size()) {
+        double ct = crs[jx].getTime(ix);
+        if( t == ct) cur = crs[jx];
+    }
+    if(!dir) {
+        jx = std::upper_bound(crs.begin(), crs.end(), cur, CrossingOrder(ix)) - crs.begin();
+
+    } else {
+        jx = std::lower_bound(crs.begin(), crs.end(), cur, CrossingOrder(ix)) - crs.begin();
+        if(jx == 0) jx = crs.size() - 1; else jx--;
+        jx = std::lower_bound(crs.begin(), crs.end(), crs[jx], CrossingOrder(ix)) - crs.begin();
+    }
+    if(jx >= crs.size()) jx = 0;
+    return jx;
+}
+
+void crossing_dual(unsigned &i, unsigned &j, CrossingSet const & crs) {
+    Crossing cur = crs[i][j];
+    i = cur.getOther(i);
+    if(crs[i].empty())
+        j = 0;
+    else
+        j = std::lower_bound(crs[i].begin(), crs[i].end(), cur, CrossingOrder(i)) - crs[i].begin();
+}
+
+//locate a crossing on the outside, by casting a ray through the middle of the bbox
+void outer_crossing(unsigned &ix, unsigned &jx, bool & dir, std::vector<Path> const & ps, CrossingSet const & crs) {
+    double ry = ps[ix].boundsFast()[Y].middle();
+    double max_val = ps[ix].initialPoint()[X], max_t = 0;
+    ix = ps.size();
+    for(unsigned i = 0; i < ps.size(); i++) {
+        if(!crs[i].empty()) {
+            std::vector<double> rts = ps[i].roots(ry, Y);
+            for(unsigned j = 0; j < rts.size(); j++) {
+                double val = ps[i].valueAt(rts[j], X);
+                if(val > max_val) {
+                    ix = i;
+                    max_val = val;
+                    max_t = rts[j];
+                }
+            }
+        }
+    }
+    if(ix != ps.size()) {
+        dir = ps[ix].valueAt(max_t + 0.01, Y) >
+              ps[ix].valueAt(max_t - 0.01, Y);
+        jx = crossing_along(max_t, ix, jx, dir, crs[ix]);
+    }
+}
+
+void inner_sanitize(Shape &ret, std::vector<Path> const & ps, unsigned depth = 0) {
+    CrossingSet crs(crossings_among(ps));
+    
+    Regions chunks;
+    
+    std::vector<std::vector<bool> > visited, switches;
+    for(unsigned i = 0; i < crs.size(); i++) {
+        visited.push_back(std::vector<bool>(crs[i].size(), false));
+        switches.push_back(std::vector<bool>(crs[i].size(), false));
+    }
+    
+    while(true) {
+        unsigned ix = 0, jx = 0;
+        bool dir;
+        //find an outer crossing by trying various paths and checking if the crossings are used
+        for(; ix < crs.size(); ix++) {
+            bool cont = true;
+            for(unsigned j = 0; j < crs[ix].size(); j++) {
+                if(!visited[ix][j]) { cont = false; break; }
+            }
+            if(cont) continue;
+            unsigned rix = ix;
+            outer_crossing(rix, jx, dir, ps, crs);
+            if(rix == crs.size() || visited[rix][jx]) continue;
+            ix = rix;
+            break;
+        }
+        if(ix == crs.size()) return;
+        
+        dir = !dir;
+        
+        Path res;
+        do {
+            visited[ix][jx] = true;
+            double curt = crs[ix][jx].getOtherTime(ix);
+            
+            jx = crossing_along(crs[ix][jx].getTime(ix), ix, jx, dir, crs[ix]);
+            
+            switches[ix][jx] = crs[ix][jx].dir;
+            dir = !logical_xor(crs[ix][jx].dir, dir);
+            
+            //TODO: deal with coincident crossings
+            crossing_dual(ix, jx, crs);
+            std::cout << dir << "\n";
+            if(dir) {
+                // backwards
+                std::cout << "r" << ix << "[" << crs[ix][jx].getTime(ix)  << ", " << curt << "]\n";
+                Path p = ps[ix].portion(crs[ix][jx].getTime(ix), curt).reverse();
+                for(unsigned i = 0; i < p.size(); i++)
+                    res.append(p[i]);
+            } else {
+                // forwards
+                std::cout << "f" << ix << "[" << curt << ", " << crs[ix][jx].getTime(ix) << "]\n";
+                ps[ix].appendPortionTo(res, curt, crs[ix][jx].getTime(ix));
+            }
+        } while(!visited[ix][jx]);
+        add_to_shape(ret, res, depth%2==0);
+    }
+    //std::vector<Path> nxt;
+    //while(true) {
+    //}
+}
+
+Shape sanitize(std::vector<Path> const & ps) {
+    Shape ret;
+    inner_sanitize(ret, ps);
     return ret;
 }
 

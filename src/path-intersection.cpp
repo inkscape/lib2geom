@@ -551,7 +551,7 @@ Crossings self_crossings(Path const &p) {
                 Crossings res2;
                 for(unsigned k = 0; k < res.size(); k++) {
                     if(res[k].ta != 0 && res[k].ta != 1 && res[k].tb != 0 && res[k].tb != 1) {
-                        res.push_back(res[k]);
+                        res2.push_back(res[k]);
                     }
                 }
                 res = res2;
