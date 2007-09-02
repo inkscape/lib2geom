@@ -11,6 +11,8 @@
 #include "transforms.h"
 #include "sbasis-geometric.h"
 
+#include "ord.h"
+
 #include <cstdlib>
 
 using namespace Geom;
@@ -18,7 +20,8 @@ using namespace Geom;
 
 void cairo_region(cairo_t *cr, Region const &r) {
     double d = 5.;
-    cairo_set_source_rgba(cr, uniform(), uniform(), uniform(), .25);
+    //cairo_set_source_rgba(cr, uniform(), uniform(), uniform(), .25);
+    cairo_set_line_width(cr, uniform()*4 + 2);
     //if(!r.isFill()) cairo_set_source_rgba(cr, 1, 1, 1, .25); else cairo_set_source_rgba(cr, 0, 0, 0, .25);
     if(!r.isFill()) cairo_set_dash(cr, &d, 1, 0);
     cairo_path(cr, r);
@@ -102,6 +105,14 @@ class BoolOps: public Toy {
         std::vector<Path> ap = paths_from_regions(as.getContent());
         ps.insert(ps.end(), ap.begin(), ap.begin()+1);
         
+        /* Cmp to_prev = cmp(cross(handles[1] - handles[0], handles[2] - handles[0]), 0);
+        Cmp from_along = cmp(cross(handles[3] - handles[0], handles[1] - handles[0]), 0);
+        Cmp c = cmp(from_along, to_prev);
+        if(c == EQUAL_TO) {
+            *notify << "eq " << (from_along == LESS_THAN) << "\n";
+        } else *notify << "neq\n";
+        */
+        
         //mark_crossings(cr, ps);
         
         CrossingSet crs = crossings_among(ps);
@@ -116,10 +127,10 @@ class BoolOps: public Toy {
             cairo_set_source_rgba(cr, 1, 0, 0, 1);
             draw_cross(cr, ps[ix].pointAt(crs[ix][jx].getTime(ix)));
             cairo_stroke(cr);
-            cairo_set_source_rgba(cr, .3, 0, 0, .5);
+            cairo_set_source_rgba(cr, 0, 0, 0, .5);
         }
         
-        std::cout << (dir? "T" : "F") << "\n";
+        //std::cout << (dir? "T" : "F") << "\n";
         
         Shape rgs = sanitize(ps);
         //for(unsigned i = 0; i < rgs.size(); i++)
@@ -207,18 +218,20 @@ class BoolOps: public Toy {
         std::vector<Path> paths_b = read_svgd(path_b_name);
              
         handles.push_back(Point(700,700));
+        //handles.push_back(Point(705,700));
+        //handles.push_back(Point(700,705));
+        //handles.push_back(Point(710,710));
         
-
         togs.push_back(Toggle("W", true));
         togs.push_back(Toggle("A", true));
         togs.push_back(Toggle("Q", true));
         togs.push_back(Toggle("S", false));
         
-        paths_b[0] = paths_b[0].reverse();
+        //paths_b[0] = paths_b[0].reverse();
         as = cleanup(paths_a) * Geom::Translate(Point(300, 300));
         bs = cleanup(paths_b);
     }
-    virtual bool should_draw_numbers() {return false;}
+    //virtual bool should_draw_numbers() {return false;}
 };
 
 int main(int argc, char **argv) {
