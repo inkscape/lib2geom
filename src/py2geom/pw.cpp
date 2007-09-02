@@ -96,7 +96,6 @@ void wrap_pwsb() {
         .def("continuousConcat", &Piecewise<SBasis>::continuousConcat)
         .def("invariants", &Piecewise<SBasis>::invariants)
        
-        .def(+self)
         .def(self + double()) 
         .def(-self)
         .def(self += double())
