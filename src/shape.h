@@ -61,7 +61,7 @@ class Shape {
     bool inside_invariants() const;  //semi-slow & easy to violate : checks that the insides are inside, the outsides are outside
     bool region_invariants() const; //semi-slow                    : checks for self crossing
     bool cross_invariants() const; //slow                          : checks that everything is disjoint
-    bool invariants() const;      //vera slow (combo rombo, checks the above)
+    bool invariants() const;      //vera slow (combo, checks the above)
 
   private:     
     void update_fill() const {
@@ -80,6 +80,7 @@ inline CrossingSet crossings_between(Shape const &a, Shape const &b) { return cr
 Shape shape_boolean(bool rev, Shape const &, Shape const &, CrossingSet const &);
 Shape shape_boolean(bool rev, Shape const &, Shape const &);
 
+unsigned pick_coincident(unsigned ix, unsigned jx, bool &rev, std::vector<Path> const &ps, CrossingSet const &crs);
 void outer_crossing(unsigned &ix, unsigned &jx, bool & dir, std::vector<Path> const & ps, CrossingSet const & crs);
 void crossing_dual(unsigned &i, unsigned &j, CrossingSet const & crs);
 unsigned crossing_along(double t, unsigned ix, unsigned jx, bool dir, Crossings const & crs);

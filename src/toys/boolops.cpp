@@ -18,7 +18,7 @@ using namespace Geom;
 
 void cairo_region(cairo_t *cr, Region const &r) {
     double d = 5.;
-    //cairo_set_source_rgba(cr, uniform(), uniform(), uniform(), .25);
+    cairo_set_source_rgba(cr, uniform(), uniform(), uniform(), .25);
     //if(!r.isFill()) cairo_set_source_rgba(cr, 1, 1, 1, .25); else cairo_set_source_rgba(cr, 0, 0, 0, .25);
     if(!r.isFill()) cairo_set_dash(cr, &d, 1, 0);
     cairo_path(cr, r);
@@ -100,23 +100,23 @@ class BoolOps: public Toy {
         std::vector<Path> ps;
         ps.push_back(bst[0]);
         std::vector<Path> ap = paths_from_regions(as.getContent());
-        ps.insert(ps.end(), ap.begin(), ap.end());
+        ps.insert(ps.end(), ap.begin(), ap.begin()+1);
         
-        mark_crossings(cr, ps);
+        //mark_crossings(cr, ps);
         
         CrossingSet crs = crossings_among(ps);
         unsigned ix = 0, jx = 0; bool dir = false;
         outer_crossing(ix, jx, dir, ps, crs);
         if(ix != ps.size()) {
-
             draw_cross(cr, ps[ix].pointAt(crs[ix][jx].getTime(ix)));
             cairo_stroke(cr);
             //crossing_dual(ix, jx, crs);
                         jx = crossing_along(crs[ix][jx].getTime(ix), ix, jx, false, crs[ix]);
+                        jx = pick_coincident(ix, jx, dir, ps, crs);
             cairo_set_source_rgba(cr, 1, 0, 0, 1);
             draw_cross(cr, ps[ix].pointAt(crs[ix][jx].getTime(ix)));
             cairo_stroke(cr);
-            cairo_set_source_rgba(cr, 0, 0, 0, 1);
+            cairo_set_source_rgba(cr, .3, 0, 0, .5);
         }
         
         std::cout << (dir? "T" : "F") << "\n";
