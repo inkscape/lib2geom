@@ -90,6 +90,8 @@ Shape boolop(Shape const &, Shape const &, unsigned flags, CrossingSet &);
 
 Shape sanitize(std::vector<Path> const &ps);
 
+Shape stopgap_cleaner(std::vector<Path> const &ps);
+
 inline std::vector<Path> desanitize(Shape const & s) {
     return paths_from_regions(s.getContent());
 }

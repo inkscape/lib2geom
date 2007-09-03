@@ -526,6 +526,22 @@ bool Shape::contains(Point const &p) const {
     return content[*min_element(containers.begin(), containers.end(), ContainmentOrder(&content))].isFill();
 }
 
+int inner_winding(Path const & p, std::vector<Path> const &ps) {
+    Rect bounds = p.boundsFast();
+    Point pnt = bounds.midpoint();
+    return paths_winding(ps, pnt);
+}
+
+Shape stopgap_cleaner(std::vector<Path> const &ps) {
+    Shape ret;
+    for(unsigned i = 0; i < ps.size(); i++) {
+        //Shape cur;
+        add_to_shape(ret, ps[i], inner_winding(ps[i], ps) % 2 != 0);
+        //ret = shape_boolean(false, ret, cur);
+    }
+    return ret;
+}
+
 bool Shape::inside_invariants() const {  //semi-slow & easy to violate
     for(unsigned i = 0; i < size(); i++)
         if( logical_xor(content[i].isFill(), contains(content[i].boundary.initialPoint())) ) return false;

@@ -63,27 +63,12 @@ void mark_crossings(cairo_t* cr, std::vector<Path> &a) {
 }
 
 Shape cleanup(std::vector<Path> const &ps) {
-    Regions rs = regions_from_paths(ps);
-    
-    /* for(unsigned i = 0; i < rs.size(); i++) {
-        Point exemplar = rs[i].getBoundary().initialPoint();
-        for(unsigned j = 0; j < rs.size(); j++) {
-            if(i != j && rs[j].contains(exemplar)) {
-                if(rs[i].isFill()) rs[i] = rs[i].inverse();
-                if(!rs[j].isFill()) rs[j] = rs[j].inverse();
-                goto next;
-            }
-        }
-        if(!rs[i].isFill()) rs[i] = rs[i].inverse();
-        next: (void)0;
-    }*/
-    
     Piecewise<D2<SBasis> > pw = paths_to_pw(ps);
     double area;
     Point centre;
     Geom::centroid(pw, centre, area);
     
-    return Shape(rs) * Geom::Translate(-centre);
+    return stopgap_cleaner(ps) * Geom::Translate(-centre);
 }
 
 class BoolOps: public Toy {
@@ -99,7 +84,7 @@ class BoolOps: public Toy {
         std::vector<Path> ps;
         ps.push_back(bst[0]);
         std::vector<Path> ap = paths_from_regions(as.getContent());
-        ps.insert(ps.end(), ap.begin(), ap.begin()+1);
+        ps.insert(ps.end(), ap.begin(), ap.end());
         
         /* Cmp to_prev = cmp(cross(handles[1] - handles[0], handles[2] - handles[0]), 0);
         Cmp from_along = cmp(cross(handles[3] - handles[0], handles[1] - handles[0]), 0);
@@ -109,7 +94,7 @@ class BoolOps: public Toy {
         } else *notify << "neq\n";
         */
         
-        mark_crossings(cr, ps);
+        //mark_crossings(cr, ps);
         
         /*CrossingSet crs = crossings_among(ps);
         unsigned ix = 0, jx = 0; bool dir = false;
@@ -128,17 +113,17 @@ class BoolOps: public Toy {
         
         //std::cout << (dir? "T" : "F") << "\n";
         
-        Shape rgs = sanitize(ps);
+        //Shape rgs = stopgap_cleaner(ps);
         //for(unsigned i = 0; i < rgs.size(); i++)
         //    draw_cross(cr, Path(rgs[i]).initialPoint());
-        srand(0);
-        cairo_shape(cr, rgs);
+        //srand(0);
+        //cairo_shape(cr, rgs);
                
         unsigned ttl = 0, v = 1;
         for(unsigned i = 0; i < 4; i++, v*=2)
             if(togs[i].on) ttl += v; 
         
-        /* Shape s = boolop(as, bst, ttl);
+        Shape s = boolop(as, bst, ttl);
         
         cairo_set_source_rgba(cr, 182./255, 200./255, 183./255, 1);
         if(!s.isFill()) {
@@ -149,7 +134,7 @@ class BoolOps: public Toy {
         cairo_path(cr, desanitize(s));
         cairo_fill(cr);
         cairo_set_source_rgba(cr, 0, 0, 0, 1);
-        cairo_shape(cr, s); */
+        cairo_shape(cr, s);
         
         double x = width - 60, y = height - 60;
         
