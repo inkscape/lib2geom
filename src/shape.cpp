@@ -355,14 +355,16 @@ void outer_crossing(unsigned &ix, unsigned &jx, bool & dir, std::vector<Path> co
 }
 
 void inner_sanitize(Shape &ret, std::vector<Path> const & ps, unsigned depth = 0) {
+    std::cout << depth << "\n";
     CrossingSet crs(crossings_among(ps));
     
     Regions chunks;
     
-    std::vector<std::vector<bool> > visited, switches;
+    std::vector<bool> used_path(ps.size(), false);
+    std::vector<std::vector<bool> > visited, inner_dir;
     for(unsigned i = 0; i < crs.size(); i++) {
         visited.push_back(std::vector<bool>(crs[i].size(), false));
-        switches.push_back(std::vector<bool>(crs[i].size(), false));
+        inner_dir.push_back(std::vector<bool>(crs[i].size(), 2));
     }
     
     while(true) {
@@ -370,7 +372,7 @@ void inner_sanitize(Shape &ret, std::vector<Path> const & ps, unsigned depth = 0
         bool dir = false;
         //find an outer crossing by trying various paths and checking if the crossings are used
         for(; ix < crs.size(); ix++) {
-            //TODO: optimize so it doesn't unecessarily do the initial segs.
+            //TODO: optimize so it doesn't unecessarily check stuff
             bool cont = true;
             for(unsigned j = 0; j < crs[ix].size(); j++) {
                 if(!visited[ix][j]) { cont = false; break; }
@@ -382,37 +384,45 @@ void inner_sanitize(Shape &ret, std::vector<Path> const & ps, unsigned depth = 0
             ix = rix; jx = rjx;
             break;
         }
-        if(ix == crs.size()) return;
+        if(ix == crs.size()) break;
         
         crossing_dual(ix, jx, crs);
+
         dir = !dir;
+        inner_dir[ix][jx] = dir;
+
         Path res;
         do {
             visited[ix][jx] = true;
-            double curt = crs[ix][jx].getOtherTime(ix);
-            
-            jx = crossing_along(crs[ix][jx].getTime(ix), ix, jx, dir, crs[ix]);
-            
-            crossing_dual(ix, jx, crs);
+            unsigned fix = ix, fjx = jx;
             
             bool new_dir = dir;
-            jx = pick_coincident(ix, jx, new_dir, ps, crs);
-            switches[ix][jx] = logical_xor(new_dir, dir);
             
+            jx = crossing_along(crs[ix][jx].getTime(ix), ix, jx, dir, crs[ix]);
+            crossing_dual(ix, jx, crs);
+            jx = pick_coincident(ix, jx, new_dir, ps, crs);
+            
+            unsigned nix = ix, njx = jx;
+            crossing_dual(nix, njx, crs);
+            
+            inner_dir[fix][fjx] = inner_dir[nix][njx] = dir;
+            
+            Crossing from = crs[fix][fjx],
+                     to = crs[ix][jx];
             if(dir) {
                 // backwards
-                std::cout << "r" << ix << "[" << crs[ix][jx].getTime(ix)  << ", " << curt << "]\n";
-                Path p = ps[ix].portion(crs[ix][jx].getTime(ix), curt).reverse();
+                std::cout << "r" << ix << "[" << to.getTime(ix)  << ", " << from.getTime(ix) << "]\n";
+                Path p = ps[ix].portion(to.getTime(ix), from.getTime(ix)).reverse();
                 for(unsigned i = 0; i < p.size(); i++)
                     res.append(p[i]);
             } else {
                 // forwards
-                std::cout << "f" << ix << "[" << curt << ", " << crs[ix][jx].getTime(ix) << "]\n";
-                ps[ix].appendPortionTo(res, curt, crs[ix][jx].getTime(ix));
+                std::cout << "f" << ix << "[" << from.getTime(ix) << ", " << to.getTime(ix) << "]\n";
+                ps[ix].appendPortionTo(res, from.getTime(ix), to.getTime(ix));
             }
             dir = new_dir;
         } while(!visited[ix][jx]);
-        std::cout << "added " << res.size() << "\n\n";
+        std::cout << "added " << res.size() << "\n";
         add_to_shape(ret, res, depth%2==0);
         //break;
         std::vector<Path> nxt;
@@ -421,42 +431,54 @@ void inner_sanitize(Shape &ret, std::vector<Path> const & ps, unsigned depth = 0
             visited2.push_back(std::vector<bool>(crs[i].size(), false));
         while(true) {
             ix = 0; jx = 0;
-            for(; ix < crs.size(); ix++) {
-                bool cont = true;
-                for(jx = 0; jx < crs[ix].size(); jx++) {
-                    if(visited[ix][jx] && !visited2[ix][jx]) { cont = false; break; }
-                }
-                if(!cont) break;
-            }
+            for(; ix < crs.size(); ix++)
+                for(jx = 0; jx < crs[ix].size(); jx++)
+                    if(visited[ix][jx] && !visited2[ix][jx]) goto found;
+            found:
             if(ix == crs.size()) break;
+            
+            dir = inner_dir[ix][jx];
+            
             Path res2;
             do {
-                visited2[ix][jx] = true;
-                double curt = crs[ix][jx].getOtherTime(ix);
-                jx = crossing_along(crs[ix][jx].getTime(ix), ix, jx, dir, crs[ix]);
-                crossing_dual(ix, jx, crs);
+                visited[ix][jx] = visited2[ix][jx] = true;
+                unsigned fix = ix, fjx = jx;
+                if(visited[ix][jx]) {
+                    crossing_dual(ix, jx, crs);
+                    jx = crossing_along(crs[ix][jx].getTime(ix), ix, jx, dir, crs[ix]);
+                    
+                    dir = inner_dir[ix][jx];
+                    if(dir == 2) std::cout << "unset\n";
+                } else {
+                    jx = crossing_along(crs[ix][jx].getTime(ix), ix, jx, dir, crs[ix]);
+                }
                 
-                //TODO: need something like pick_coincident here
-
-                if(switches[ix][jx]) dir = !dir;
-                
+                Crossing from = crs[fix][fjx],
+                         to = crs[ix][jx];
                 if(dir) {
                     // backwards
-                    std::cout << "r" << ix << "[" << crs[ix][jx].getTime(ix)  << ", " << curt << "]\n";
-                    Path p = ps[ix].portion(crs[ix][jx].getTime(ix), curt).reverse();
+                    std::cout << "r" << ix << "[" << to.getTime(ix)  << ", " << from.getTime(ix) << "]\n";
+                    Path p = ps[ix].portion(to.getTime(ix), from.getTime(ix)).reverse();
                     for(unsigned i = 0; i < p.size(); i++)
                         res2.append(p[i]);
                 } else {
                     // forwards
-                    std::cout << "f" << ix << "[" << curt << ", " << crs[ix][jx].getTime(ix) << "]\n";
-                    ps[ix].appendPortionTo(res2, curt, crs[ix][jx].getTime(ix));
+                    std::cout << "f" << ix << "[" << from.getTime(ix) << ", " << to.getTime(ix) << "]\n";
+                    ps[ix].appendPortionTo(res2, from.getTime(ix), to.getTime(ix));
                 }
-               // dir = new_dir;
             } while(!visited2[ix][jx]);
-            add_to_shape(ret, res2, depth%2==0);
+            add_to_shape(ret, res2, depth%2==1);
+            //nxt.push_back(res2);
             break;
         }
+        std::cout << "\n";
+        //inner_sanitize(ret, nxt, depth+1);
+        
         break;
+    }
+    for(unsigned i = 0; i < crs.size(); i++) {
+        if(crs[i].empty() && !used_path[i])
+            add_to_shape(ret, ps[i], depth%2==0);
     }
 }
 

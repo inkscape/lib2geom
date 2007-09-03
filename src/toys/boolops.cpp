@@ -21,7 +21,7 @@ using namespace Geom;
 void cairo_region(cairo_t *cr, Region const &r) {
     double d = 5.;
     //cairo_set_source_rgba(cr, uniform(), uniform(), uniform(), .25);
-    cairo_set_line_width(cr, uniform()*4 + 2);
+    //cairo_set_line_width(cr, uniform()*4 + 2);
     //if(!r.isFill()) cairo_set_source_rgba(cr, 1, 1, 1, .25); else cairo_set_source_rgba(cr, 0, 0, 0, .25);
     if(!r.isFill()) cairo_set_dash(cr, &d, 1, 0);
     cairo_path(cr, r);
@@ -36,10 +36,6 @@ void cairo_regions(cairo_t *cr, Regions const &p) {
 
 void cairo_shape(cairo_t *cr, Shape const &s) {
     cairo_regions(cr, s.getContent());
-}
-
-std::vector<Path> desanitize(Shape const & s) {
-    return paths_from_regions(s.getContent());
 }
 
 void mark_crossings(cairo_t *cr, Shape const &a, Shape const &b) {
@@ -113,9 +109,9 @@ class BoolOps: public Toy {
         } else *notify << "neq\n";
         */
         
-        //mark_crossings(cr, ps);
+        mark_crossings(cr, ps);
         
-        CrossingSet crs = crossings_among(ps);
+        /*CrossingSet crs = crossings_among(ps);
         unsigned ix = 0, jx = 0; bool dir = false;
         outer_crossing(ix, jx, dir, ps, crs);
         if(ix != ps.size()) {
@@ -128,7 +124,7 @@ class BoolOps: public Toy {
             draw_cross(cr, ps[ix].pointAt(crs[ix][jx].getTime(ix)));
             cairo_stroke(cr);
             cairo_set_source_rgba(cr, 0, 0, 0, .5);
-        }
+        }*/
         
         //std::cout << (dir? "T" : "F") << "\n";
         
