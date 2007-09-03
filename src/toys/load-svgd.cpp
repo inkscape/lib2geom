@@ -48,39 +48,26 @@ void mark_mono(cairo_t *cr, Shape const &a) {
 Shape cleanup(std::vector<Path> const &ps) {
     Regions rs = regions_from_paths(ps);
     
-    for(unsigned i = 0; i < rs.size(); i++) {
-        Point exemplar = Path(rs[i]).initialPoint();
-        for(unsigned j = 0; j < rs.size(); j++) {
-            if(i != j && rs[j].contains(exemplar)) {
-                if(rs[i].isFill()) rs[i] = rs[i].inverse();
-                if(!rs[j].isFill()) rs[j] = rs[j].inverse();
-                goto next;
-            }
-        }
-        if(!rs[i].isFill()) rs[i] = rs[i].inverse();
-        next: (void)0;
-    }
+    //Piecewise<D2<SBasis> > pw = paths_to_pw(ps);
+    //double area;
+    //Point centre;
+    //Geom::centroid(pw, centre, area);
     
-    Piecewise<D2<SBasis> > pw = paths_to_pw(ps);
-    double area;
-    Point centre;
-    Geom::centroid(pw, centre, area);
-    
-    return Shape(rs) * Geom::Translate(-centre);
+    return Shape(rs);// * Geom::Translate(-centre);
 }
 
 class BoolOps: public Toy {
-    Region b;
+    //Region b;
     Shape bs;
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         Geom::Translate t(handles[0]);
         Shape bst = bs * t;
-        Region bt = Region(b * t, b.isFill());
+        //Region bt = Region(b * t, b.isFill());
         
         cairo_set_line_width(cr, 1);
         
         cairo_shape(cr, bst);
-        mark_mono(cr, bst);
+        
         Toy::draw(cr, notify, width, height, save);
     }
     public:
@@ -93,11 +80,11 @@ class BoolOps: public Toy {
         std::vector<Path> paths_b = read_svgd(path_b_name);
         
 	Rect bounds = paths_b[0].boundsExact();
-	
-        handles.push_back(bounds.midpoint());
+	    std::cout << crossings_among(paths_b)[0].size() << "\n";
+        handles.push_back(bounds.midpoint() - bounds.corner(0));
 
-        bs = cleanup(paths_b);
-        b = bs.getContent().front();
+        bs = sanitize(paths_b);
+        //bs = cleanup(paths_b);
     }
 };
 

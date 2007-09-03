@@ -105,6 +105,7 @@ int winding(Path const &path, Point p) {
  * hole.  Defaults to using the sign of area when it reaches funny cases.
  */
 bool path_direction(Path const &p) {
+    if(p.empty()) return false;
     //could probably be more efficient, but this is a quick job
     double y = p.initialPoint()[Y];
     double x = p.initialPoint()[X];

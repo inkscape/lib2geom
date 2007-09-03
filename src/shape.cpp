@@ -331,8 +331,9 @@ void crossing_dual(unsigned &i, unsigned &j, CrossingSet const & crs) {
 
 //locate a crossing on the outside, by casting a ray through the middle of the bbox
 void outer_crossing(unsigned &ix, unsigned &jx, bool & dir, std::vector<Path> const & ps, CrossingSet const & crs) {
-    double ry = ps[ix].boundsFast()[Y].middle();
-    double max_val = ps[ix].initialPoint()[X], max_t = 0;
+    Rect bounds = ps[ix].boundsFast();
+    double ry = bounds[Y].middle();
+    double max_val = bounds.left(), max_t = 0;
     ix = ps.size();
     for(unsigned i = 0; i < ps.size(); i++) {
         if(!crs[i].empty()) {
@@ -370,6 +371,7 @@ void inner_sanitize(Shape &ret, std::vector<Path> const & ps, unsigned depth = 0
     while(true) {
         unsigned ix = 0, jx = 0;
         bool dir = false;
+
         //find an outer crossing by trying various paths and checking if the crossings are used
         for(; ix < crs.size(); ix++) {
             //TODO: optimize so it doesn't unecessarily check stuff
@@ -380,12 +382,11 @@ void inner_sanitize(Shape &ret, std::vector<Path> const & ps, unsigned depth = 0
             if(cont) continue;
             unsigned rix = ix, rjx = jx;
             outer_crossing(rix, rjx, dir, ps, crs);
-            if(rix == crs.size() || visited[rix][rjx]) continue;
+            if(rix >= crs.size() || visited[rix][rjx]) continue;
             ix = rix; jx = rjx;
             break;
         }
         if(ix == crs.size()) break;
-        
         crossing_dual(ix, jx, crs);
 
         dir = !dir;
@@ -412,19 +413,19 @@ void inner_sanitize(Shape &ret, std::vector<Path> const & ps, unsigned depth = 0
             if(dir) {
                 // backwards
                 std::cout << "r" << ix << "[" << to.getTime(ix)  << ", " << from.getTime(ix) << "]\n";
-                Path p = ps[ix].portion(to.getTime(ix), from.getTime(ix)).reverse();
+                Path p = ps[ix].portion(to.getTime(ix) + 0.001, from.getTime(ix)).reverse();
                 for(unsigned i = 0; i < p.size(); i++)
                     res.append(p[i]);
             } else {
                 // forwards
                 std::cout << "f" << ix << "[" << from.getTime(ix) << ", " << to.getTime(ix) << "]\n";
-                ps[ix].appendPortionTo(res, from.getTime(ix), to.getTime(ix));
+                ps[ix].appendPortionTo(res, from.getTime(ix) + 0.001, to.getTime(ix));
             }
             dir = new_dir;
         } while(!visited[ix][jx]);
         std::cout << "added " << res.size() << "\n";
         add_to_shape(ret, res, depth%2==0);
-        //break;
+        goto skipper;{
         std::vector<Path> nxt;
         std::vector<std::vector<bool> > visited2;
         for(unsigned i = 0; i < crs.size(); i++)
@@ -473,8 +474,8 @@ void inner_sanitize(Shape &ret, std::vector<Path> const & ps, unsigned depth = 0
         }
         std::cout << "\n";
         //inner_sanitize(ret, nxt, depth+1);
-        
-        break;
+        }
+        skipper: (void)0;
     }
     for(unsigned i = 0; i < crs.size(); i++) {
         if(crs[i].empty() && !used_path[i])
