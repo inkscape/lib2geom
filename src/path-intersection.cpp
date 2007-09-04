@@ -188,8 +188,8 @@ void pair_intersect(Curve const & A, double Al, double Ah,
     if(!Ar.intersects(Br)) return;
     
     //Checks the general linearity of the function
-    if((depth > 12) || (A.boundsLocal(Interval(Al, Ah), 1).maxExtent() < 0.1 
-                    &&  B.boundsLocal(Interval(Bl, Bh), 1).maxExtent() < 0.1)) {
+    if((depth > 12)) { // || (A.boundsLocal(Interval(Al, Ah), 1).maxExtent() < 0.1 
+                    //&&  B.boundsLocal(Interval(Bl, Bh), 1).maxExtent() < 0.1)) {
         double tA, tB, c;
         if(linear_intersect(A.pointAt(Al), A.pointAt(Ah), 
                             B.pointAt(Bl), B.pointAt(Bh), 

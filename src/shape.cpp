@@ -5,18 +5,33 @@
 
 #include <iostream>
 #include <algorithm>
+#include <cstdlib>
 
 namespace Geom {
-
-// Utility funcs
-
-// Yes, xor is !=, but I'm pretty sure this is safer in the event of strange bools
-bool logical_xor (bool a, bool b) { return (a || b) && !(a && b); }
 
 // A little sugar for appending a list to another
 template<typename T>
 void append(T &a, T const &b) {
     a.insert(a.end(), b.begin(), b.end());
+}
+
+//Orders a list of indices according to their containment within eachother.
+struct ContainmentOrder {
+    std::vector<Region> const *rs;
+    explicit ContainmentOrder(std::vector<Region> const *r) : rs(r) {}
+    bool operator()(unsigned a, unsigned b) const { return (*rs)[b].contains((*rs)[a]); }
+};
+
+//Returns the list of regions containing a particular point.  Useful in tandem with ContainmentOrder
+std::vector<unsigned> Shape::containment_list(Point p) const {
+    std::vector<Rect> pnt;
+    pnt.push_back(Rect(p, p));
+    std::vector<std::vector<unsigned> > cull = sweep_bounds(pnt, bounds(*this));
+    std::vector<unsigned> containers;
+    if(cull[0].size() == 0) return containers;
+    for(unsigned i = 0; i < cull[0].size(); i++)
+        if(content[cull[0][i]].contains(p)) containers.push_back(cull[0][i]);
+    return containers;
 }
 
 /* Used within shape_boolean and related functions, as the name describes, finds the
@@ -78,8 +93,6 @@ Shape shape_boolean(bool rev, Shape const & a, Shape const & b, CrossingSet cons
     for(unsigned i = 0; i < crs.size(); i++)
         visited.push_back(std::vector<bool>(crs[i].size(), false));
     
-    //bool const exception = 
-    
     //Traverse the crossings, creating chunks
     Regions chunks;
     while(true) {
@@ -116,35 +129,32 @@ Shape shape_boolean(bool rev, Shape const & a, Shape const & b, CrossingSet cons
     
     //If true, then we are on the 'subtraction diagonal'
     bool const on_sub = logical_xor(a.fill, b.fill);
-    //If true, then the hole must be inside the other to be included
-    bool const a_mode = logical_xor(logical_xor(!rev, a.fill), on_sub),
-               b_mode = logical_xor(logical_xor(!rev, b.fill), on_sub);
+    //If true, outer paths are filled
+    bool const res_fill = rev ? (on_sub || (a.fill && b.fill)) : (a.fill && b.fill);
     
     //Handle unintersecting portions
     for(unsigned i = 0; i < crs.size(); i++) {
         if(crs[i].size() == 0) {
-            Region    r(i < ac.size() ? ac[i] : bc[i - ac.size()]);
-            bool   mode(i < ac.size() ? a_mode : b_mode);
+            bool env;
+            bool on_a = i < ac.size();
+            Region const & r(on_a ? ac[i] : bc[i - ac.size()]);
+            Shape const & other(on_a ? b : a);
             
-            if(logical_xor(r.fill, i < ac.size() ? a.fill : b.fill)) {
-                //is an inner (fill is opposite the outside fill)
-                Point exemplar = r.boundary.initialPoint();
-                Regions const & others = i < ac.size() ? bc : ac;
-                for(unsigned j = 0; j < others.size(); j++) {
-                    if(others[j].contains(exemplar)) {
-                        //contained in another
-                        if(mode) chunks.push_back(r);
-                        goto skip;
-                    }
-                }
+            std::vector<unsigned> containers = other.containment_list(r.boundary.initialPoint());
+            if(containers.empty()) {
+                //not included in any container, the environment fill is the opposite of the outer fill
+                env = !res_fill;
+                if(on_sub && logical_xor(other.fill, res_fill)) env = !env;  //If on the subtractor, invert the environment fill
+            } else {
+                //environment fill is the same as the inner-most container
+                std::vector<unsigned>::iterator cit = std::min_element(containers.begin(), containers.end(), ContainmentOrder(&other.content));
+                env = other[*cit].isFill();
             }
-            //disjoint
-            if(!mode) chunks.push_back(r);
-            skip: (void)0;
+            if(!logical_xor(rev, env)) chunks.push_back(r); //When unioning, environment must be hole for inclusion, when intersecting, it must be filled
         }
     }
     
-    return Shape(chunks);
+    return Shape(chunks, res_fill);
 }
 
 // Just a convenience wrapper for shape_boolean, which handles the crossings
@@ -195,6 +205,7 @@ Shape boolop(Shape const &a, Shape const &b, unsigned flags, CrossingSet const &
             case BOOLOP_UNION:        return shape_boolean(false, a, b);
         }
     } else {
+        flags = ~flags & 15;
         switch(flags - BOOLOP_NEITHER) {
             case BOOLOP_SUBTRACT_A_B: return shape_boolean_ra(false, a, b, crs);
             case BOOLOP_SUBTRACT_B_A: return shape_boolean_rb(false, a, b, crs);
@@ -204,7 +215,7 @@ Shape boolop(Shape const &a, Shape const &b, unsigned flags, CrossingSet const &
                 return res;
             }
         }
-        return boolop(a, b, ~flags, crs).inverse();
+        return boolop(a, b, flags, crs).inverse();
     }
     return Shape();
 }
@@ -231,7 +242,8 @@ Shape boolop(Shape const &a, Shape const &b, unsigned flags) {
             case BOOLOP_UNION:        return shape_boolean(false, a, b);
         }
     } else {
-        switch(flags - BOOLOP_NEITHER) {
+        flags = ~flags & 15;
+        switch(flags) {
             case BOOLOP_SUBTRACT_A_B: return shape_boolean(false, b, a.inverse());
             case BOOLOP_SUBTRACT_B_A: return shape_boolean(false, a, b.inverse());
             case BOOLOP_EXCLUSION: {
@@ -240,7 +252,7 @@ Shape boolop(Shape const &a, Shape const &b, unsigned flags) {
                 return res;
             } //return boolop(a, b, flags, crossings_between(a, b));
         }
-        return boolop(a, b, ~flags).inverse();
+        return boolop(a, b, flags).inverse();
     }
     return Shape();
 }
@@ -259,20 +271,12 @@ void add_to_shape(Shape &s, Path const &p, bool fill) {
         s.content.push_back(Region(p).asHole());
 }
 
-/*
-Shape sanitize(std::vector<Path> const & ps) {
-    CrossingSet crs(crossings_among(ps));
-    Shape ret;
-    StatusSet stat;
-    for(unsigned i = 0; i < crs.size(); i++)
-        stat.push_back(std::vector<CrStatus>(crs[i].size(), CrStatus(0)));
-    inner_sanitize(ret, ps, crs, stat);
-    for(unsigned i = 0; i < crs.size(); i++) {
-        if(crs[i].empty()) add_to_shape(ret, ps[i], ret.contains(Path(ps[i]).initialPoint()));
-    }
-    return ret;
-} ?*/
+int inner_winding(Path const & p, std::vector<Path> const &ps) {
+    Point pnt = p.initialPoint();
+    return paths_winding(ps, pnt) - winding(p, pnt) + 1;
+}
 
+/*
 unsigned pick_coincident(unsigned ix, unsigned jx, bool &rev, std::vector<Path> const &ps, CrossingSet const &crs) {
     unsigned ex_jx = jx;
     unsigned oix = crs[ix][jx].getOther(ix);
@@ -302,6 +306,8 @@ unsigned pick_coincident(unsigned ix, unsigned jx, bool &rev, std::vector<Path> 
     return ex_jx;
 }
 
+*/
+
 unsigned crossing_along(double t, unsigned ix, unsigned jx, bool dir, Crossings const & crs) {
     Crossing cur = Crossing(t, t, ix, ix, false);
     if(jx < crs.size()) {
@@ -329,6 +335,8 @@ void crossing_dual(unsigned &i, unsigned &j, CrossingSet const & crs) {
         j = std::lower_bound(crs[i].begin(), crs[i].end(), cur, CrossingOrder(i)) - crs[i].begin();
 }
 
+/*
+
 //locate a crossing on the outside, by casting a ray through the middle of the bbox
 void outer_crossing(unsigned &ix, unsigned &jx, bool & dir, std::vector<Path> const & ps, CrossingSet const & crs) {
     Rect bounds = ps[ix].boundsFast();
@@ -354,6 +362,8 @@ void outer_crossing(unsigned &ix, unsigned &jx, bool & dir, std::vector<Path> co
         jx = crossing_along(max_t, ix, jx, dir, crs[ix]);
     }
 }
+
+
 
 void inner_sanitize(Shape &ret, std::vector<Path> const & ps, unsigned depth = 0) {
     std::cout << depth << "\n";
@@ -481,12 +491,120 @@ void inner_sanitize(Shape &ret, std::vector<Path> const & ps, unsigned depth = 0
         if(crs[i].empty() && !used_path[i])
             add_to_shape(ret, ps[i], depth%2==0);
     }
+} */
+
+unsigned pick_coincident(unsigned ix, unsigned jx, bool pref, bool &rev, std::vector<Path> const &ps, CrossingSet const &crs) {
+    unsigned ex_jx = jx;
+    unsigned oix = crs[ix][jx].getOther(ix);
+    double otime = crs[ix][jx].getTime(oix);
+    Point cross_point = ps[oix].pointAt(otime),
+          along = ps[oix].pointAt(otime + (rev ? -0.01 : 0.01)) - cross_point,
+          prev = -along;
+    bool ex_dir = rev;
+    for(unsigned k = jx; k < crs[ix].size(); k++) {
+        unsigned koix = crs[ix][k].getOther(ix);
+        if(koix == oix) {
+            if(!near(otime, crs[ix][k].getTime(oix))) break;
+            for(unsigned dir = 0; dir < 2; dir++) {
+                Point val = ps[ix].pointAt(crs[ix][k].getTime(ix) + (dir ? -0.01 : 0.01)) - cross_point;
+                Cmp to_prev = cmp(cross(val, prev), 0);
+                Cmp from_along = cmp(cross(along, val), 0);
+                Cmp c = cmp(from_along, to_prev);
+                if(c == EQUAL_TO && (from_along == LESS_THAN) == pref) {
+                    ex_jx = k;
+                    prev = val;
+                    ex_dir = dir;
+                }
+            }
+        }
+    }
+    rev = ex_dir;
+    return ex_jx;
+}
+
+unsigned corner_index(unsigned &i) {
+    div_t div_res = div(i, 4);
+    i = div_res.quot;
+    return div_res.rem;
+}
+
+bool corner_direction(unsigned ix, unsigned jc, unsigned corner, CrossingSet const &crs) {
+    if(crs[ix][jc].a == ix) return corner > 1; else return corner %2 == 1;
 }
 
 Shape sanitize(std::vector<Path> const & ps) {
-    Shape ret;
-    inner_sanitize(ret, ps);
-    return ret;
+    CrossingSet crs = crossings_among(ps);
+    
+    //Keep track of which CORNERS we've hit.
+    // FF FR RF RR, first is A dir, second B dir
+    std::vector<std::vector<bool> > visited;
+    for(unsigned i = 0; i < crs.size(); i++)
+        visited.push_back(std::vector<bool>(crs[i].size()*4, false));
+    
+    Regions chunks;
+    while(true) {
+        unsigned i, j;
+        first_false(visited, i, j);
+        unsigned corner = corner_index(j);
+        
+        if(i == visited.size()) break;
+        
+        bool dir = corner_direction(i, j, corner, crs);
+        
+        //Figure out whether we hug the path cw or ccw, based on the orientation of the initial corner:        
+        unsigned oix = crs[i][j].getOther(i);
+        double otime = crs[i][j].getTime(oix);
+        bool odir = (oix == crs[i][j].a) ? corner > 1 : corner % 2 == 1;
+        Point cross_point = ps[oix].pointAt(otime),
+              along = ps[oix].pointAt(otime + (odir ? -0.01 : 0.01)) - cross_point,
+                val = ps[i].pointAt(crs[i][j].getTime(i) + (dir ? -0.01 : 0.01)) - cross_point;
+        
+        Cmp from_along = cmp(cross(along, val), 0);
+        bool cw = from_along == LESS_THAN;
+        std::cout << "cw = " << cw << "\n";
+        Path res;
+        do {
+            Crossing cur = crs[i][j];
+            visited[i][j*4+corner] = true;
+            
+            unsigned fix = i, fjx = j;
+            crossing_dual(i, j, crs);
+            visited[i][j*4+corner] = true;
+            i = fix; j = fjx;
+            
+            j = crossing_along(crs[i][j].getTime(i), i, j, dir, crs[i]);
+            
+            crossing_dual(i, j, crs);
+            
+            bool new_dir = dir;
+            pick_coincident(i, j, cw, new_dir, ps, crs);
+            
+            Crossing from = crs[fix][fjx],
+                     to = crs[i][j];
+            if(dir) {
+                // backwards
+                std::cout << "r" << i << "[" << to.getTime(i)  << ", " << from.getTime(i) << "]\n";
+                Path p = ps[i].portion(to.getTime(i) + 0.001, from.getTime(i)).reverse();
+                for(unsigned k = 0; k < p.size(); k++)
+                    res.append(p[k]);
+            } else {
+                // forwards
+                std::cout << "f" << i << "[" << from.getTime(i) << ", " << to.getTime(i) << "]\n";
+                ps[i].appendPortionTo(res, from.getTime(i) + 0.001, to.getTime(i));
+            }
+            if(i == to.a)
+                corner = (new_dir ? 2 : 0) + (dir ? 1 : 0);
+            else
+                corner = (new_dir ? 1 : 0) + (dir ? 2 : 0);
+            dir = new_dir;
+        } while(!visited[i][j*4+corner]);
+        chunks.push_back(Region(res));
+//        if(use) {
+//            chunks.push_back(Region(res, true));
+//        }
+    }
+    return Shape(chunks);
+//    return ret;
 }
 
 /* This transforms a shape by a matrix.  In the case that the matrix flips
@@ -509,36 +627,18 @@ Shape Shape::inverse() const {
     return ret;
 }
 
-struct ContainmentOrder {
-    std::vector<Region> const *rs;
-    explicit ContainmentOrder(std::vector<Region> const *r) : rs(r) {}
-    bool operator()(unsigned a, unsigned b) const { return (*rs)[b].contains((*rs)[a]); }
-};
-
 bool Shape::contains(Point const &p) const {
-    std::vector<Rect> pnt;
-    pnt.push_back(Rect(p, p));
-    std::vector<std::vector<unsigned> > cull = sweep_bounds(pnt, bounds(*this));
-    if(cull[0].size() == 0) return !fill;
-    std::vector<unsigned> containers;
-    for(unsigned i = 0; i < cull[0].size(); i++)
-        if(content[cull[0][i]].contains(p)) containers.push_back(cull[0][i]);
-    return content[*min_element(containers.begin(), containers.end(), ContainmentOrder(&content))].isFill();
-}
-
-int inner_winding(Path const & p, std::vector<Path> const &ps) {
-    Rect bounds = p.boundsFast();
-    Point pnt = bounds.midpoint();
-    return paths_winding(ps, pnt);
+    std::vector<unsigned> containers = containment_list(p);
+    if(containers.empty()) return !isFill();
+    unsigned ix = *min_element(containers.begin(), containers.end(), ContainmentOrder(&content));
+    return content[ix].isFill();
 }
 
 Shape stopgap_cleaner(std::vector<Path> const &ps) {
+    if(ps.empty()) return Shape(false);
     Shape ret;
-    for(unsigned i = 0; i < ps.size(); i++) {
-        //Shape cur;
+    for(unsigned i = 0; i < ps.size(); i++)
         add_to_shape(ret, ps[i], inner_winding(ps[i], ps) % 2 != 0);
-        //ret = shape_boolean(false, ret, cur);
-    }
     return ret;
 }
 

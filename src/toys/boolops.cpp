@@ -81,47 +81,18 @@ class BoolOps: public Toy {
         cairo_set_line_width(cr, 1);
         //mark_crossings(cr, as, bst);
         
-        std::vector<Path> ps;
+        /* std::vector<Path> ps;
         ps.push_back(bst[0]);
         std::vector<Path> ap = paths_from_regions(as.getContent());
-        ps.insert(ps.end(), ap.begin(), ap.end());
+        ps.insert(ps.end(), ap.begin(), ap.begin()+1);
         
-        /* Cmp to_prev = cmp(cross(handles[1] - handles[0], handles[2] - handles[0]), 0);
-        Cmp from_along = cmp(cross(handles[3] - handles[0], handles[1] - handles[0]), 0);
-        Cmp c = cmp(from_along, to_prev);
-        if(c == EQUAL_TO) {
-            *notify << "eq " << (from_along == LESS_THAN) << "\n";
-        } else *notify << "neq\n";
-        */
-        
-        //mark_crossings(cr, ps);
-        
-        /*CrossingSet crs = crossings_among(ps);
-        unsigned ix = 0, jx = 0; bool dir = false;
-        outer_crossing(ix, jx, dir, ps, crs);
-        if(ix != ps.size()) {
-            draw_cross(cr, ps[ix].pointAt(crs[ix][jx].getTime(ix)));
-            cairo_stroke(cr);
-            //crossing_dual(ix, jx, crs);
-                        jx = crossing_along(crs[ix][jx].getTime(ix), ix, jx, false, crs[ix]);
-                        jx = pick_coincident(ix, jx, dir, ps, crs);
-            cairo_set_source_rgba(cr, 1, 0, 0, 1);
-            draw_cross(cr, ps[ix].pointAt(crs[ix][jx].getTime(ix)));
-            cairo_stroke(cr);
-            cairo_set_source_rgba(cr, 0, 0, 0, .5);
-        }*/
-        
-        //std::cout << (dir? "T" : "F") << "\n";
-        
-        //Shape rgs = stopgap_cleaner(ps);
-        //for(unsigned i = 0; i < rgs.size(); i++)
-        //    draw_cross(cr, Path(rgs[i]).initialPoint());
-        //srand(0);
-        //cairo_shape(cr, rgs);
+        Shape rgs = sanitize(ps);
+        cairo_shape(cr, rgs); */
                
         unsigned ttl = 0, v = 1;
         for(unsigned i = 0; i < 4; i++, v*=2)
             if(togs[i].on) ttl += v; 
+        
         
         Shape s = boolop(as, bst, ttl);
         
@@ -139,8 +110,6 @@ class BoolOps: public Toy {
         double x = width - 60, y = height - 60;
         
         //cairo_shape(cr, as);
-        cairo_set_source_rgba(cr, 0, 0, 0, 1);
-        cairo_set_line_width(cr, 1);
         //cairo_shape(cr, bst);
         
         //Draw the info
@@ -169,7 +138,6 @@ class BoolOps: public Toy {
         //*notify << "\nKeys:\n u = Union   s = Subtract   i = intersect   e = exclude   0 = none   a = invert A   b = invert B \n";
         
         //*notify << "A " << (as.isFill() ? "" : "not") << " filled, B " << (bs.isFill() ? "" : "not") << " filled..\n";
-        
         cairo_set_line_width(cr, 1);
 
         Toy::draw(cr, notify, width, height, save);
@@ -199,18 +167,20 @@ class BoolOps: public Toy {
         std::vector<Path> paths_b = read_svgd(path_b_name);
              
         handles.push_back(Point(700,700));
-        //handles.push_back(Point(705,700));
-        //handles.push_back(Point(700,705));
-        //handles.push_back(Point(710,710));
         
         togs.push_back(Toggle("W", true));
         togs.push_back(Toggle("A", true));
         togs.push_back(Toggle("Q", true));
         togs.push_back(Toggle("S", false));
         
-        //paths_b[0] = paths_b[0].reverse();
         as = cleanup(paths_a) * Geom::Translate(Point(300, 300));
+        Regions foo = as.getContent();
+        Region temp = foo[0];
+        foo[0] = foo[foo.size() - 1];
+        foo[foo.size() -1 ] = temp;
+        as = Shape(foo);
         bs = cleanup(paths_b);
+        bs = boolop(bs, bs * Geom::Scale(.5), BOOLOP_SUBTRACT_A_B);
     }
     //virtual bool should_draw_numbers() {return false;}
 };
