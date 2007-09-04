@@ -19,7 +19,7 @@ void cairo_region(cairo_t *cr, Region const &r) {
     double d = 5.;
     if(!r.isFill()) cairo_set_dash(cr, &d, 1, 0);
     cairo_path(cr, r);
-    cairo_stroke(cr);
+    cairo_fill(cr);
     cairo_set_dash(cr, &d, 0, 0);
 }
 
@@ -46,14 +46,15 @@ void mark_mono(cairo_t *cr, Shape const &a) {
 }
 
 Shape cleanup(std::vector<Path> const &ps) {
-    Regions rs = regions_from_paths(ps);
-    
-    //Piecewise<D2<SBasis> > pw = paths_to_pw(ps);
-    //double area;
-    //Point centre;
-    //Geom::centroid(pw, centre, area);
-    
-    return Shape(rs);// * Geom::Translate(-centre);
+    Piecewise<D2<SBasis> > pw = paths_to_pw(ps);
+    double area;
+    Point centre;
+    Geom::centroid(pw, centre, area);
+    std::cout << area << "\n";
+    if(area > 1)
+        return sanitize(ps) * Geom::Translate(-centre);
+    else
+        return sanitize(ps);
 }
 
 class BoolOps: public Toy {
@@ -83,8 +84,7 @@ class BoolOps: public Toy {
 	    std::cout << crossings_among(paths_b)[0].size() << "\n";
         handles.push_back(bounds.midpoint() - bounds.corner(0));
 
-        bs = sanitize(paths_b);
-        //bs = cleanup(paths_b);
+        bs = cleanup(paths_b);
     }
 };
 

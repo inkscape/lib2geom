@@ -68,7 +68,10 @@ Shape cleanup(std::vector<Path> const &ps) {
     Point centre;
     Geom::centroid(pw, centre, area);
     
-    return stopgap_cleaner(ps) * Geom::Translate(-centre);
+    if(fabs(area) > 1)
+        return sanitize(ps) * Geom::Translate(-centre);
+    else
+        return sanitize(ps);
 }
 
 class BoolOps: public Toy {
@@ -166,7 +169,7 @@ class BoolOps: public Toy {
         std::vector<Path> paths_a = read_svgd(path_a_name);
         std::vector<Path> paths_b = read_svgd(path_b_name);
              
-        handles.push_back(Point(700,700));
+        handles.push_back(Point(300,300));
         
         togs.push_back(Toggle("W", true));
         togs.push_back(Toggle("A", true));
@@ -174,13 +177,8 @@ class BoolOps: public Toy {
         togs.push_back(Toggle("S", false));
         
         as = cleanup(paths_a) * Geom::Translate(Point(300, 300));
-        Regions foo = as.getContent();
-        Region temp = foo[0];
-        foo[0] = foo[foo.size() - 1];
-        foo[foo.size() -1 ] = temp;
-        as = Shape(foo);
         bs = cleanup(paths_b);
-        bs = boolop(bs, bs * Geom::Scale(.5), BOOLOP_SUBTRACT_A_B);
+        //bs = boolop(bs, bs * Geom::Scale(.5), BOOLOP_SUBTRACT_A_B);
     }
     //virtual bool should_draw_numbers() {return false;}
 };

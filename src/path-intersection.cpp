@@ -564,6 +564,11 @@ Crossings self_crossings(Path const &p) {
     return ret;
 }
 
+void flip_crossings(Crossings &crs) {
+    for(unsigned i = 0; i < crs.size(); i++)
+        crs[i] = Crossing(crs[i].tb, crs[i].ta, crs[i].b, crs[i].a, !crs[i].dir);
+}
+
 CrossingSet crossings_among(std::vector<Path> const &p) {
     CrossingSet results(p.size(), Crossings());
     if(p.empty()) return results;
@@ -575,6 +580,8 @@ CrossingSet crossings_among(std::vector<Path> const &p) {
         Crossings res = self_crossings(p[i]);
         for(unsigned k = 0; k < res.size(); k++) { res[k].a = res[k].b = i; }
         merge_crossings(results[i], res, i);
+        flip_crossings(res);
+        merge_crossings(results[i], res, i);
         for(unsigned jx = 0; jx < cull[i].size(); jx++) {
             unsigned j = cull[i][jx];
             
@@ -584,6 +591,7 @@ CrossingSet crossings_among(std::vector<Path> const &p) {
             merge_crossings(results[j], res, j);
         }
     }
+    return results;
 }
 
 }
