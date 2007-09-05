@@ -135,8 +135,8 @@ class Box3d: public Toy {
                     +( - (handles[4][1]-300)/100) * tmat[j][0] + tmat[j][3];
             }
             //if (fabs (res[2]) > 0.000001) {
-            D2<Piecewise<SBasis> > result(divide(res[0],res[2],2), 
-                                          divide(res[1],res[2], 2));
+            D2<Piecewise<SBasis> > result(divide(res[0],res[2], 4), 
+                                          divide(res[1],res[2], 4));
             
             cairo_d2_pw(cr, result);
             cairo_set_source_rgba (cr, 0., 0.125, 0, 1);

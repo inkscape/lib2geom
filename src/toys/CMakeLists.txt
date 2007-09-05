@@ -30,6 +30,7 @@ pair-intersect
 parametrics
 parser
 path-along-path
+plane3d
 precise-flat
 pw-compose-test
 pw-toy
