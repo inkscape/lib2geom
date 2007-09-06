@@ -14,7 +14,7 @@ clothoid
 conic-3
 conic-4
 convex-toy
-curve-toy
+#curve-toy
 curvature-test
 #distort
 draw-toy
