@@ -102,10 +102,10 @@ main(int argc, char** argv) {
     double ave_right = 0;
     double ave_rel = 0;
     cout << "err from exact\n";
-    for(int i = 0; i < trials.size(); i++) {
+    for(unsigned i = 0; i < trials.size(); i++) {
         SBasis B = Linear(1.,1);
         sort(trials[i].begin(), trials[i].end());
-        for(int j = 0; j < trials[i].size(); j++) {
+        for(unsigned j = 0; j < trials[i].size(); j++) {
             B = B*linear(1, -trials[i][j]);
         }
         int N = B.size()*2;
@@ -119,17 +119,17 @@ main(int argc, char** argv) {
         left_time = timer_precision*units/iterations;
         vector<double> rt = roots(B);
         double err = 0;
-        for(int k = 0; k < rt.size(); k++) {
+        for(unsigned k = 0; k < rt.size(); k++) {
             double r = rt[k];
             double best = fabs(r - trials[i][0]);
-            for(int j = 1; j < trials[i].size(); j++) {
+            for(unsigned j = 1; j < trials[i].size(); j++) {
                 if(fabs(r - trials[i][j]) < best)
                     best = fabs(r - trials[i][j]);
             }
             err += best;
         }
         if(err > 1e-8){
-            for(int j = 0; j < trials[i].size(); j++) {
+            for(unsigned j = 0; j < trials[i].size(); j++) {
                 cout << trials[i][j] << ", ";
             }
             cout << endl;
@@ -141,7 +141,7 @@ main(int argc, char** argv) {
     
     for(int i = 10; i >= 0; i--) {
         vector<double> rt = roots(Linear(i,-1));
-        for(int j = 0; j < rt.size(); j++) {
+        for(unsigned j = 0; j < rt.size(); j++) {
             cout << rt[j] << ", ";
         }
         cout << endl;
