@@ -6,8 +6,8 @@ using std::valarray;
 
 valarray<double> outer_prod(valarray<double> x, valarray<double> y) {
     valarray<double> result(x.size()*y.size());
-    for(int j = 0; j < x.size(); j++) {
-        for(int i = 0; i < y.size(); i++) {
+    for(unsigned j = 0; j < x.size(); j++) {
+        for(unsigned i = 0; i < y.size(); i++) {
             result[j*y.size() + i] = x[j]*y[i];
         }
     }
@@ -26,18 +26,18 @@ main (void)
         const unsigned  N = unsigned(uniform()*40) + 1;
         double A_data[N*N];
         printf("%ux%u matrix\n", N,N);
-        for(int r = 0; r < N; r++) {
-            for(int c = 0; c <= r; c++) {
+        for(unsigned r = 0; r < N; r++) {
+            for(unsigned c = 0; c <= r; c++) {
                 A_data[r*N + c] = A_data[c*N + r] = fabs(uniform());
             }
         }
 	
         double * A_c[N];
-        for(int i = 0; i < N; i++)
+        for(unsigned i = 0; i < N; i++)
             A_c[i] = &A_data[N*i];
 		
         double b_data[N];
-        for(int i = 0; i < N; i++)
+        for(unsigned i = 0; i < N; i++)
             b_data[i] = uniform()*3;
         std::valarray<double> b(b_data, N), xx(0.0, N);
         std::valarray<double> A(A_data, N*N);
@@ -67,8 +67,8 @@ main (void)
         err = sqrt(err);
         printf ("sqrt((xx-nxgsl)^2) = %g\n", err);
         if(err > tolerance) {
-            for(int r = 0; r < N; r++) {
-                for(int c = 0; c < N; c++) {
+            for(unsigned r = 0; r < N; r++) {
+                for(unsigned c = 0; c < N; c++) {
                     printf("%g ", A_data[r*N + c]);
                 }
                 printf("\n");
