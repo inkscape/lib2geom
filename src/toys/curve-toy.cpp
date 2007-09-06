@@ -13,7 +13,7 @@ using namespace Geom;
 
 class ArcBez: public Toy {
 public:
-    virtual void first_time() {
+    void first_time(int argc, char** argv) {
       for(int i = 0; i < 4; i++)
 	handles.push_back(Geom::Point(uniform()*400, uniform()*400));
     }
