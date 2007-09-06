@@ -58,7 +58,7 @@ public:
         std::cout << std::endl;
 #endif
         
-        D2<SBasis> test_sb = handles_to_sbasis<5>(handles.begin());
+        D2<SBasis> test_sb = handles_to_sbasis(handles.begin(),5);
         Interval bs = bounds_exact(test_sb[1]);
         cairo_move_to(cr, test_sb[0](0), bs.min());
         cairo_line_to(cr, test_sb[0](1), bs.min());
@@ -206,7 +206,7 @@ public:
         *notify << "found " << solutions.size() << "solutions at:\n";
         std::copy(solutions.begin(), solutions.end(), std::ostream_iterator<double >(*notify, ","));
             
-        D2<SBasis> B = handles_to_sbasis<5>(handles.begin());
+        D2<SBasis> B = handles_to_sbasis(handles.begin(), 5);
         Geom::Path pb;
         pb.append(B);
         pb.close(false);

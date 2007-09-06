@@ -53,7 +53,7 @@ static void plot(cairo_t* cr, Piecewise<SBasis> const &f,double vscale=1){
 class OffsetTester: public Toy {
 
     void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
-        D2<SBasis> B = handles_to_sbasis<3>(handles.begin());
+        D2<SBasis> B = handles_to_sbasis(handles.begin(), 3);
         *notify << "Curve offset:" << endl;
         *notify << " -blue: pointwise plotted offset," << endl;
         *notify << " -red:  rot90(unitVector(derivative(.)))+rays at cut" << endl;

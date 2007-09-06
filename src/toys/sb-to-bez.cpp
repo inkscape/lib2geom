@@ -168,7 +168,7 @@ static double draw_non_parametric_approx(cairo_t *cr,
                              double t1){
     assert(t0==0);
     vector<Geom::Point> bez_pts=sb_seg_to_bez(M,t0,t1);
-    D2<SBasis>B=handles_to_sbasis<3>(bez_pts.begin());
+    D2<SBasis>B=handles_to_sbasis(bez_pts.begin(), 3);
     cairo_md_sb(cr, B);
     cairo_stroke(cr);
 
@@ -188,7 +188,7 @@ static double draw_non_parametric_approx(cairo_t *cr,
 
 static void draw_bez_approx_at(cairo_t *cr,Piecewise<D2<SBasis> > M,double t){
     vector<Geom::Point> bez_pts=sb_seg_to_bez(M,0,t);
-    D2<SBasis> MM=handles_to_sbasis<3>(bez_pts.begin());
+    D2<SBasis> MM=handles_to_sbasis(bez_pts.begin(), 3);
     cairo_md_sb(cr, MM);
     cairo_stroke(cr);
 }
@@ -240,7 +240,7 @@ class SbToBezierTester: public Toy {
   void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
     
       D2<SBasis> f;//=SBasis(Linear(0,.5));
-      f=handles_to_sbasis<SIZE-1>(handles.begin());
+      f=handles_to_sbasis(handles.begin(), SIZE-1);
       handles[SIZE][1]=450;
       handles[SIZE][0]=std::max(handles[SIZE][0],150.);
       handles[SIZE][0]=std::min(handles[SIZE][0],450.);
@@ -262,7 +262,7 @@ class SbToBezierTester: public Toy {
 
       /*Piecewise<D2<SBasis> > ug = arc_length_parametrization(g);
       vector<Geom::Point> bez_pts_init=sb_seg_to_bez(g,t0,t1);
-      D2<SBasis>b=handles_to_sbasis<3>(bez_pts_init.begin());
+      D2<SBasis>b=handles_to_sbasis(bez_pts_init.begin(), 3);
       D2<SBasis>L2_approx=L2_proj(ug,b);
       cairo_set_source_rgba (cr, 0., 0.9, 0., .7);
       cairo_md_sb(cr, L2_approx);
@@ -271,7 +271,7 @@ class SbToBezierTester: public Toy {
       cairo_set_line_width (cr, 1);
       cairo_set_source_rgba (cr, 0.9, 0., 0., .7);
       vector<Geom::Point> naive_bez_pts=naive_sb_seg_to_bez(g,0,t1);
-      D2<SBasis> MM=handles_to_sbasis<3>(naive_bez_pts.begin());
+      D2<SBasis> MM=handles_to_sbasis(naive_bez_pts.begin(), 3);
       cairo_md_sb(cr, MM);
       cairo_stroke(cr);
 
@@ -288,7 +288,7 @@ class SbToBezierTester: public Toy {
       vector<Geom::Point> bez_pts=sb_seg_to_bez(g,t0,t1);
       bez_pts[1]=(1-scale0)*bez_pts[0]+scale0*bez_pts[1];
       bez_pts[2]=(1-scale1)*bez_pts[3]+scale1*bez_pts[2];
-      D2<SBasis>human_approx=handles_to_sbasis<3>(bez_pts.begin());
+      D2<SBasis>human_approx=handles_to_sbasis(bez_pts.begin(), 3);
       cairo_md_sb(cr, human_approx);
       cairo_stroke(cr);
 

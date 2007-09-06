@@ -61,7 +61,7 @@ class Box3d: public Toy {
         // draw the curve that is supposed to be projected on the box's front face
         vector<Geom::Point>::iterator it = handles.begin();
         for (int j = 0; j < 7; ++j) ++it;
-        D2<SBasis> B = handles_to_sbasis<3>(it);
+        D2<SBasis> B = handles_to_sbasis(it, 3);
         Piecewise<D2<SBasis> > curve = Piecewise<D2<SBasis> > (B);
         cairo_pw_d2(cr, curve);
         cairo_stroke(cr);
@@ -150,7 +150,7 @@ class Box3d: public Toy {
             draw_handle(cr, proj_handles[i]);
         }
 
-        D2<SBasis> B_proj = handles_to_sbasis<3>(proj_handles);
+        D2<SBasis> B_proj = handles_to_sbasis(proj_handles, 3);
         Piecewise<D2<SBasis> > curve_proj = Piecewise<D2<SBasis> > (B_proj);
 
 	cairo_set_source_rgba (cr, 0, 0, 0.5, 1);

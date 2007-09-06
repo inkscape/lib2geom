@@ -102,10 +102,10 @@ class PairIntersect: public Toy {
 virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
     cairo_set_line_width (cr, 0.5);
     
-    D2<SBasis> A = handles_to_sbasis<bez_ord-1>(handles.begin());
+    D2<SBasis> A = handles_to_sbasis(handles.begin(), bez_ord-1);
     cairo_md_sb(cr, A);
     
-    D2<SBasis> B = handles_to_sbasis<bez_ord-1>(handles.begin()+bez_ord);
+    D2<SBasis> B = handles_to_sbasis(handles.begin()+bez_ord, bez_ord-1);
     cairo_md_sb(cr, B);
     vector<double> Asects, Bsects;
     g_cr = cr;

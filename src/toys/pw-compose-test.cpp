@@ -16,7 +16,7 @@ class PwToy: public Toy {
         D2<Piecewise<SBasis> > pws;
         unsigned hdle_idx=0;
         for(unsigned i = 0; i < segs; i++) {
-            D2<SBasis> foo = Geom::handles_to_sbasis<3>(handles.begin()+hdle_idx);
+            D2<SBasis> foo = Geom::handles_to_sbasis(handles.begin()+hdle_idx, 3);
             hdle_idx += 4;
             cairo_md_sb(cr, foo);
             for(unsigned d = 0; d < 2; d++) {
@@ -33,7 +33,7 @@ class PwToy: public Toy {
         handles[hdle_idx+3][1]=450;
 	
         cairo_set_source_rgba (cr, 0.2, 0.2, 0.2, 1);
-        D2<SBasis> foo = Geom::handles_to_sbasis<3>(handles.begin()+hdle_idx);
+        D2<SBasis> foo = Geom::handles_to_sbasis(handles.begin()+hdle_idx, 3);
         SBasis g = foo[0] - Linear(150);
         cairo_md_sb(cr, foo);
 	    for(unsigned i=0;i<20;i++){

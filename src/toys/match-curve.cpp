@@ -45,10 +45,10 @@ public:
         
         std::vector<double> solutions;
         
-        D2<SBasis> test_sb = handles_to_sbasis<5>(handles.begin());
+        D2<SBasis> test_sb = handles_to_sbasis(handles.begin(), 5);
 
     
-        D2<SBasis> B = handles_to_sbasis<5>(handles.begin());
+        D2<SBasis> B = handles_to_sbasis(handles.begin(), 5);
         Geom::Path pb;
         pb.append(B);
         pb.close(false);
