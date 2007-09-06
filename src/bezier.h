@@ -100,7 +100,7 @@ public:
         c_[0] = c0;
         }*/
     //Construct an arbitrary order bezier
-    explicit Bezier(unsigned ord) : c_(ord+1) {
+    explicit Bezier(unsigned ord) : c_(0., ord+1) {
         assert(ord ==  order());
     }
 
