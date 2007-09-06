@@ -90,7 +90,9 @@ public:
 
     struct Order {
         unsigned order;
+        explicit Order(Bezier const &b) : order(b.order()) {}
         explicit Order(unsigned o) : order(o) {}
+        operator unsigned() const { return order; }
     };
 
     //Construct an arbitrary order bezier
@@ -167,7 +169,7 @@ public:
     }
   
     std::pair<Bezier, Bezier > subdivide(Coord t) const {
-        Bezier a(order()), b(order());
+        Bezier a(Bezier::Order(*this)), b(Bezier::Order(*this));
         subdivideArr(t, &c_[0], &a.c_[0], &b.c_[0], order());
         return std::pair<Bezier, Bezier >(a, b);
     }
@@ -181,35 +183,35 @@ public:
 
 //TODO: implement others
 inline Bezier operator+(const Bezier & a, double v) {
-    Bezier result(a.order());
+    Bezier result = Bezier(Bezier::Order(a));
     for(unsigned i = 0; i <= a.order(); i++)
         result[i] = a[i] + v;
     return result;
 }
 
 inline Bezier operator-(const Bezier & a, double v) {
-    Bezier result(a.order());
+    Bezier result = Bezier(Bezier::Order(a));
     for(unsigned i = 0; i <= a.order(); i++)
         result[i] = a[i] - v;
     return result;
 }
 
 inline Bezier operator*(const Bezier & a, double v) {
-    Bezier result(a.order());
+    Bezier result = Bezier(Bezier::Order(a));
     for(unsigned i = 0; i <= a.order(); i++)
         result[i] = a[i] * v;
     return result;
 }
 
 inline Bezier operator/(const Bezier & a, double v) {
-    Bezier result(a.order());
+    Bezier result = Bezier(Bezier::Order(a));
     for(unsigned i = 0; i <= a.order(); i++)
         result[i] = a[i] / v;
     return result;
 }
 
 inline Bezier reverse(const Bezier & a) {
-    Bezier result(a.order());
+    Bezier result = Bezier(Bezier::Order(a));
     for(unsigned i = 0; i <= a.order(); i++)
         result[i] = a[a.order() - i];
     return result;
@@ -242,8 +244,8 @@ inline std::vector<Point> bezier_points(const D2<Bezier > & a) {
 }
 
 inline Bezier derivative(const Bezier & a) {
-    if(a.order() == 1) return Bezier::constant(0.0);
-    Bezier der(a.order()-1);
+    if(a.order() == 1) return Bezier(0.0);
+    Bezier der(Bezier::Order(a.order()-1));
     
     for(unsigned i = 0; i < a.order(); i++) {
         der.c_[i] = a.order()*(a.c_[i+1] - a.c_[i]);
@@ -252,7 +254,7 @@ inline Bezier derivative(const Bezier & a) {
 }
 
 inline Bezier integral(const Bezier & a) {
-    Bezier inte(a.order()+1);
+    Bezier inte(Bezier::Order(a.order()+1));
     
     inte[0] = 0;
     for(unsigned i = 0; i < inte.order(); i++) {
