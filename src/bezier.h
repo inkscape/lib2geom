@@ -163,16 +163,21 @@ public:
      * evaluate roughly in situ. */
     
     std::vector<Coord> valueAndDerivatives(Coord t, unsigned n_derivs) const {
-        throw NotImplemented();
-        // Can't be implemented without a dynamic version of subdivide.
-        /*std::vector<Coord> val_n_der;
+        std::vector<Coord> val_n_der;
         Coord d_[order()+1];
-        for(int di = n_derivs; di > 0; di--) {
-            val_n_der.push_back(subdivideArr(t, d_, NULL, NULL, di));
-            for(unsigned i = 0; i < di; i++) {
-                d[i] = order()*(a._c[i+1] - a._c[i]);
+        unsigned nn = n_derivs;
+        if(nn > order())
+            nn = order();
+        for(unsigned i = 0; i < size(); i++)
+            d_[i] = c_[i];
+        for(unsigned di = 0; di < nn; di++) {
+            val_n_der.push_back(subdivideArr(t, d_, NULL, NULL, order() - di));
+            for(unsigned i = 0; i < order() - di; i++) {
+                d_[i] = (order()-di)*(d_[i+1] - d_[i]);
             }
-            }*/
+        }
+        val_n_der.resize(n_derivs);
+        return val_n_der;
     }
   
     std::pair<Bezier, Bezier > subdivide(Coord t) const {

@@ -108,7 +108,18 @@ Coord subdivideArr(Coord t, Coord const *v, Coord *left, Coord *right, unsigned 
         bigun[i] = double(rand() % 20) - 10;
     cout <<  bigun << endl;
     
-//std::vector<Coord> valueAndDerivatives(Coord t, unsigned n_derivs);
+    cout << "std::vector<Coord> valueAndDerivatives(Coord t, unsigned n_derivs);\n";
+    //wiggle = Bezier(1,-3,4,5);
+    cout << "value at 0.5 = " << wiggle.valueAt(0.5) << endl;
+    cout << wiggle.valueAndDerivatives(0.5, 5) << endl;
+    Bezier w = wiggle;
+    while(w.size()) {
+        cout << w.valueAt(0.5) << ", ";
+        w = derivative(w);
+    }
+    cout << endl;
+    
+    
 //std::pair<Bezier, Bezier > subdivide(Coord t);
 
     cout << "std::vector<double> roots();\n";
