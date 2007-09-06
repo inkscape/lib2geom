@@ -90,7 +90,7 @@ public:
 
     struct Order {
         unsigned order;
-        explicit Order(unsigned order) : order(o) {}
+        explicit Order(unsigned o) : order(o) {}
     };
 
     //Construct an arbitrary order bezier
