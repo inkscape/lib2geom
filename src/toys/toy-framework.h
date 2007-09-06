@@ -59,6 +59,7 @@ struct Toggle {
   Toggle(Geom::Rect bnds, char* txt, bool v) : bounds(bnds), text(txt), on(v) {}
   void draw(cairo_t *cr);
   void toggle();
+  void set(bool state);
   void handle_click(GdkEventButton* e);
 };
 

@@ -42,6 +42,7 @@ double c[8][4];
 Geom::Point corners[8];
 
 class Box3d: public Toy {
+    std::vector<Toggle> togs;
     Path path_a;
     Piecewise<D2<SBasis> >  path_a_pw;
     
@@ -93,11 +94,20 @@ class Box3d: public Toy {
         {
             D2<Piecewise<SBasis> > B = make_cuts_independant(path_a_pw);
             Piecewise<SBasis> preimage[4];
-                
-            preimage[0] = sin((B[0] - orig[0]) / 100);
-            preimage[1] = -(B[1] - orig[1]) / 100;
-            preimage[2] = cos((B[0] - orig[0]) / 100);
-            Piecewise<SBasis> res[3];
+	    
+	    if(togs[0].on) {
+		    preimage[0] = sin((B[0] - orig[0]) / 100);
+		    preimage[1] = -(B[1] - orig[1]) / 100;
+		    preimage[2] = cos((B[0] - orig[0]) / 100);
+	    } else { //if(togs[1].state) {
+		    Piecewise<SBasis> sphi = sin((B[0] - orig[0]) / 200);
+		    Piecewise<SBasis> cphi = cos((B[0] - orig[0]) / 200);
+		    
+		    preimage[0] = -sphi*sin((B[1] - orig[1]) / 200);
+		    preimage[1] = -sphi*cos((B[1] - orig[1]) / 200);
+		    preimage[2] = -cphi;
+	    }
+	    Piecewise<SBasis> res[3];
             for (int j = 0; j < 3; ++j) {
                 res[j] =
                     (preimage[0]) * tmat[j][0]
@@ -113,6 +123,7 @@ class Box3d: public Toy {
             cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
             cairo_stroke(cr);
         }
+        draw_toggles(cr, togs);
         
         Toy::draw(cr, notify, width, height, save);
     }
@@ -148,8 +159,17 @@ class Box3d: public Toy {
 
         // Origin handle
 	handles.push_back(Point(180,70));
+        togs.push_back(Toggle("S", true));
     }
-    int should_draw_bounds() {return 1;}
+    void key_hit(GdkEventKey *e) {
+        if(e->keyval == 'c') togs[0].set(1); else
+        if(e->keyval == 's') togs[0].set(0);
+        redraw();
+    }
+    void mouse_pressed(GdkEventButton* e) {
+        toggle_events(togs, e);
+        Toy::mouse_pressed(e);
+    }
 };
 
 int main(int argc, char **argv) {

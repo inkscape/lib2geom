@@ -396,6 +396,10 @@ void Toggle::draw(cairo_t *cr) {
 void Toggle::toggle() {
   on = !on;
 }
+void Toggle::set(bool state) {
+  on = state;
+}
+
 
 void Toggle::handle_click(GdkEventButton* e) {
   if(bounds.contains(Geom::Point(e->x, e->y)) && e->button == 1) toggle();
