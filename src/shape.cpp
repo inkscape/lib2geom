@@ -339,7 +339,6 @@ unsigned crossing_along(double t, unsigned ix, unsigned jx, bool dir, Crossings 
 
 void crossing_dual(unsigned &i, unsigned &j, CrossingSet const & crs) {
     Crossing cur = crs[i][j];
-    unsigned oi = i;
     i = cur.getOther(i);
     std::cout << i << "\n";
     if(crs[i].empty())
