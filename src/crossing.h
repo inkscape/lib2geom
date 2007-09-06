@@ -53,6 +53,7 @@ inline void sort_crossings(Crossings &cr, unsigned ix) { std::sort(cr.begin(), c
 
 template<typename T>
 struct Crosser {
+    virtual ~Crosser() {}
     virtual Crossings crossings(T const &a, T const &b) { return crossings(std::vector<T>(1,a), std::vector<T>(1,b))[0]; }
     virtual CrossingSet crossings(std::vector<T> const &a, std::vector<T> const &b) {
         CrossingSet results(a.size() + b.size(), Crossings());
