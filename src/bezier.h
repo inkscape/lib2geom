@@ -85,8 +85,15 @@ public:
     unsigned int order() const { return c_.size()-1;}
     unsigned int size() const { return c_.size();}
     
-    Bezier() {}
+    Bezier() :c_(0., 32) {}
     Bezier(const Bezier& b) :c_(b.c_) {}
+    Bezier &operator=(Bezier const &other) {
+        if ( c_.size() != other.c_.size() ) {
+            c_.resize(other.c_.size());
+        }
+        c_ = other.c_;
+        return *this;
+    }
 
     struct Order {
         unsigned order;

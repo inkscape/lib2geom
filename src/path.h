@@ -133,7 +133,7 @@ public:
   template <unsigned required_degree>
   static void assert_degree(BezierCurve<required_degree> const *) {}
 
-  BezierCurve() : inner(Bezier(Bezier::Order(order)), Bezier(Bezier::Order(order))) {
+  BezierCurve() : inner(Bezier::Order(order), Bezier::Order(order)) {
       printf("hmmpf %d %d\n", order , inner[0].order());
       assert(order == inner[0].order());
       assert(order == inner[1].order());
