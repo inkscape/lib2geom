@@ -6,7 +6,7 @@ lib2geom@conference.gristle.org
 Help Wanted
 ===========
 We greatly appreciate contributions.  You don't need to be a math-whiz or
-uber-hacker (though these are definitely appreciated :) ) to help.  The tasks of
+über-hacker (though these are definitely appreciated :) ) to help.  The tasks of
 code cleanup, consistancy, testing, documentation, and toys mostly just require
 perserverance, and benefit the project greatly.
 
@@ -29,13 +29,7 @@ For linux, the following are required:
  cmake
  make
  libgsl0-dev (though eventually it will only be required in tests)
- cairo-1.1.7 or better (from git), make as a deb and install over existing cairo package - nothing should need to change.
-
- http://njhurst.com/programming/debian-cairo.tgz
- grab that tar and tar xzvf it inside the cairo dir
- so you can make a .deb for cairo and install it cleanly
- configure --prefix=/usr
-
+ cairo-1.1.7 or later
  refblas3* on dapper
 
 If you have problems, just ask in the channel
