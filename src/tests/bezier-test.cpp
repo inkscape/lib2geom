@@ -104,7 +104,7 @@ Coord subdivideArr(Coord t, Coord const *v, Coord *left, Coord *right, unsigned 
     bigun.setPoint(5,10.0);
     cout << bigun << endl;
     
-    for(int i = 0; i < bigun.size(); i++)
+    for(unsigned i = 0; i < bigun.size(); i++)
         bigun[i] = double(rand() % 20) - 10;
     cout <<  bigun << endl;
     
