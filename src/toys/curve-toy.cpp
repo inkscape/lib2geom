@@ -3,6 +3,7 @@
 #include "sbasis.h"
 #include "bezier-to-sbasis.h"
 #include "sbasis-geometric.h"
+#include "sbasis-to-bezier.h"
 
 #include "path-cairo.h"
 #include "toy-framework.h"
@@ -14,13 +15,18 @@ using namespace Geom;
 class ArcBez: public Toy {
 public:
     void first_time(int argc, char** argv) {
-      for(int i = 0; i < 4; i++)
-	handles.push_back(Geom::Point(uniform()*400, uniform()*400));
+        unsigned order = 3;
+        if(argc > 1)
+            sscanf(argv[1], "%u", &order);
+        for(int i = 0; i < order; i++)
+            handles.push_back(Geom::Point(uniform()*400, uniform()*400));
     }
 
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
-        D2<SBasis> B = handles_to_sbasis(handles.begin(), 3);
-        cairo_md_sb(cr, B);
+        D2<SBasis> B = handles_to_sbasis(handles.begin(), handles.size()-1);
+        Path P = path_from_sbasis(B, 1);
+        *notify << P.size();
+        cairo_path(cr, P);
         cairo_stroke(cr);
         
         Toy::draw(cr, notify, width, height, save);

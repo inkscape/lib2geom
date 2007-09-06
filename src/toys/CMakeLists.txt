@@ -16,6 +16,7 @@ conic-4
 convex-toy
 curve-toy
 curvature-test
+cylinder3d
 #distort
 draw-toy
 fitter
