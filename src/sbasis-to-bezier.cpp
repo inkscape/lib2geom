@@ -41,7 +41,7 @@ sbasis_to_bezier(SBasis const &B, unsigned q) {
             }*/
     }
     unsigned n = q*2;
-    Bezier result(n);
+    Bezier result = Bezier(Bezier::Order(n-1));
     if(q > B.size())
         q = B.size();
     n--;

@@ -60,38 +60,37 @@ Coord subdivideArr(Coord t, Coord const *v, Coord *left, Coord *right, unsigned 
 */
     cout << Bezier(0,2,4,5).order() << endl;
 
-// Bezier::Bezier(const Bezier& b);
-    cout << Bezier(hump) << endl;
+    cout << " Bezier::Bezier(const Bezier& b);\n";
+    cout << Bezier(wiggle) << " == " << wiggle << endl;
     
-// explicit Bezier(unsigned ord);
+    cout << "explicit Bezier(unsigned ord);\n";
     cout << Bezier(10) << endl;
     
-// Bezier(Coord c0, Coord c1);
+    cout << "Bezier(Coord c0, Coord c1);\n";
     cout << Bezier(0.0,1.0) << endl;
     
-//Bezier(Coord c0, Coord c1, Coord c2);
+    cout << "Bezier(Coord c0, Coord c1, Coord c2);\n";
     cout << Bezier(0,1, 2) << endl;
 
-//Bezier(Coord c0, Coord c1, Coord c2, Coord c3);
+    cout << "Bezier(Coord c0, Coord c1, Coord c2, Coord c3);\n";
     cout << Bezier(0,1,2,3) << endl;
 
-//unsigned degree();
+    cout << "unsigned degree();\n";
     cout << hump.degree() << " == 2\n";
 
-//unsigned size();
+    cout << "unsigned size();\n";
     cout << hump.size() << " == 3\n";
 
-// Coord at0();
-// Coord at1();
+    cout << "Coord at0();  Coord at1();\n";
     cout << wiggle.at0() << "..." << wiggle.at1() << endl;
 
-// Coord valueAt(double t);
+    cout << "Coord valueAt(double t);\n";
     cout << wiggle.valueAt(0.5) << endl;
     
-//Coord operator()(double t);
+    cout << "Coord operator()(double t);\n";
     cout << wiggle(0.5) << endl;
     
-//SBasis toSBasis();
+    cout << "SBasis toSBasis();\n";
     cout << unit.toSBasis() << endl;
     cout << hump.toSBasis() << endl;
     cout << wiggle.toSBasis() << endl;
@@ -99,8 +98,9 @@ Coord subdivideArr(Coord t, Coord const *v, Coord *left, Coord *right, unsigned 
 //Only mutator
 //Coord &operator[](unsigned ix);
 //Coord const &operator[](unsigned ix);
-//void setPoint(unsigned ix, double val);
-    Bezier bigun(10);
+//void setPoint(unsigned ix double val);
+    cout << "bigun\n";
+    Bezier bigun(Bezier::Order(30));
     bigun.setPoint(5,10.0);
     cout << bigun << endl;
     
@@ -112,6 +112,7 @@ Coord subdivideArr(Coord t, Coord const *v, Coord *left, Coord *right, unsigned 
 //std::pair<Bezier, Bezier > subdivide(Coord t);
 
     cout << "std::vector<double> roots();\n";
+    cout << wiggle.roots() << endl;
     cout << bigun.roots() << endl;
     
 /*
@@ -120,12 +121,13 @@ Bezier operator-(const Bezier & a, double v);
 Bezier operator*(const Bezier & a, double v);
 Bezier operator/(const Bezier & a, double v)k
 */
+    cout << "scalar operators\n";
     cout << hump + 3 << endl;
     cout << hump - 3 << endl;
     cout << hump*3 << endl;
     cout << hump/3 << endl;
 
-// Bezier reverse(const Bezier & a)
+    cout << "Bezier reverse(const Bezier & a);\n";
     cout << reverse(Bezier(0,1,2,3)) << endl;
 
     cout << "Bezier portion(const Bezier & a, double from, double to);\n";
@@ -137,16 +139,16 @@ Bezier operator/(const Bezier & a, double v)k
     std::cout << derivative(hump) <<std::endl;
     std::cout << integral(hump) <<std::endl;
     std::cout << derivative(integral(hump)) <<std::endl;
+    std::cout << derivative(hump).roots() <<std::endl;
 
-// Interval bounds_fast(Bezier const & b) {
+    cout << "Interval bounds_fast(Bezier const & b);\n";
     std::cout << bounds_fast(hump) << endl;
 
-// Interval bounds_exact(Bezier const & b) {
+    cout << "Interval bounds_exact(Bezier const & b);\n";
     cout << bounds_exact(hump) << " == [0, " << hump.valueAt(0.5) << "]\n";
 
-// Interval bounds_local(Bezier const & b, Interval i) {
+    cout << "Interval bounds_local(Bezier const & b, Interval i);\n";
     cout << bounds_local(hump, Interval(0.3, 0.6)) << endl;
-    
 }
 
 
