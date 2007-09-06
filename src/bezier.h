@@ -82,26 +82,24 @@ protected:
     }
 
 public:
-
     unsigned int order() const { return c_.size()-1;}
     unsigned int size() const { return c_.size();}
     
     Bezier() {}
     Bezier(const Bezier& b) :c_(b.c_) {}
 
-    //Construct an order-0 bezier (constant Bézier)
-    static Bezier constant(Coord c0) {
-        Bezier b(1);
-        b[0] = c0;
-        return b;
+    struct Order {
+        unsigned order;
+        explicit Order(unsigned order) : order(o) {}
+    };
+
+    //Construct an arbitrary order bezier
+    Bezier(Order ord) : c_(0., ord.order+1) {
+        assert(ord.order ==  order());
     }
 
-    /*explicit Bezier(Coord c0) : c_(0., 1) {
+    explicit Bezier(Coord c0) : c_(0., 1) {
         c_[0] = c0;
-        }*/
-    //Construct an arbitrary order bezier
-    explicit Bezier(unsigned ord) : c_(0., ord+1) {
-        assert(ord ==  order());
     }
 
     //Construct an order-1 bezier (linear Bézier)
