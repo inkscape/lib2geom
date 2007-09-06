@@ -46,7 +46,7 @@ not yet been tested.
 
 \section{Toy-Based Development}
 We have managed to come up with a method of library development
-which is perfect for geometry - the development of toys exemplifying
+that is perfect for geometry: the development of toys exemplifying
 a feature while the feature is perfected.  This has somewhat subsumed
 the role of tests, and provides immediate motivation/reward for work.
 
@@ -55,7 +55,7 @@ the role of tests, and provides immediate motivation/reward for work.
 \chapter{Geometric Primitives}
 
 What good is a geometry library without geometric primitives?  By this
-I mean the basic stuff that every decent geometry library has -
+I mean the basic stuff that every decent geometry library has:
 Points/Vectors, Matrices, etc.
 
 2geom's primitives are descendant from libNR's geometric primitives.
@@ -130,7 +130,7 @@ explanation for matrices is given in Appendix B.
 \section{Bounding Structures}
 
 2geom currently provides two classes for storing approximate bounding
-regions - \code{Rect} and \code{ConvexHull}.  These are mostly intended
+regions: \code{Rect} and \code{ConvexHull}.  These are mostly intended
 for use in optimization, however provide manipulations suitable for
 other uses.
 
@@ -192,7 +192,7 @@ $t \in [0,1]$, bounds functions, and conversion to s-basis.
 
 \subsection{Bezier Curve}
 We use a \code{Bezier} curve class to store lines and quadratic/cubic
-beziers.  This flexibility is attained by templating on order -
+beziers.  This flexibility is attained by templating on order:
 \code{Bezier$<1>$} is a line segment, \code{Bezier$<2>$} is a quadratic
 bezier, and \code{Bezier$<3>$} is a cubic bezier.
 
@@ -241,7 +241,7 @@ Geometrically important properties:
 The following operations are directly implementable and are very efficient:
 \begin{itemize}
 \item fast conversion from all svg elements
-\item basic arithmetic - $+$, $-$, $\times$, $\div$
+\item basic arithmetic --- $+$, $-$, $\times$, $\div$
 \item algebraic derivative and integral
 \item elementary trigonometric functions: $\sqrt{\cdot}$, $\sin(\cdot)$, $\cos(\cdot)$, $\exp(\cdot)$
 \item efficient degree elevation and reduction
@@ -277,7 +277,7 @@ $f(t) \rightarrow (v_0, v_1, .. v_d)$.  A special case is \code{MultidimSBasis$<
 a 2 diminsional curve.
 
 \subsection{SBasis2D}
-SBasis2D provides a multivariate form - functions of the form
+SBasis2D provides a multivariate form --- functions of the form
 $f(u,v) \rightarrow z$.  These can be used for arbitrary distortion
 functions (take a path $p(t) \rightarrow (u,v)$ and a pair of surfaces
 $f(u,v),g(u,v)$ and compose: $q(t) = (f(p(t)), g(p(t)))$.
@@ -372,7 +372,7 @@ Wybrow's libavoid advanced connector routing system was ported first.
 
 \section{People who have contributed to 2Geom}
 \begin{description}
-\item[Aaron C. Spike]
+\item[Aaron C.\ Spike]
 \item[Alex Mac]
 \item[Fred:] livarot
 \item[Javier Sanchez-Reyes]
@@ -381,17 +381,17 @@ Wybrow's libavoid advanced connector routing system was ported first.
 \item[Joshua Blocher]
 \item[Kim Marriott]
 \item[MenTaLguY]
-\item[Michael J. Wybrow]
-\item[Michael G. Sloan]
-\item[Nathan J. Hurst]
-\item[Peter J. R. Moulder]
+\item[Michael J.\ Wybrow]
+\item[Michael G.\ Sloan]
+\item[Nathan J.\ Hurst]
+\item[Peter J.\ R.\ Moulder]
 \end{description}
 
 \chapter{Appendix}
 \renewcommand{\thesection}{\Alph{section}}
 
 \section{Geometric Points}
-In standard geometry points and vectors are quite distinguished - a  
+In standard geometry, points and vectors are quite distinguished: a
 point is a location, whereas a vector is an unbased direction and
 magnitude.  Allowed operations on vectors and points also vary:
 
@@ -507,16 +507,25 @@ working out the arc length for a location is about the same amount of
 work as working out the arc length for 1000 locations on that path.
 
 Many operations are best described as returning an ordered set of
-locations - for example, we have a function which returns
-intersections between two paths.  rather than return just one
+locations.  For example, we have a function that returns
+intersections between two paths.  Rather than return just one
 intersection, we might return all intersections, either in order along
 the path, or in order of distance along other path.
+% I don't understand the distinction between "order along the path" and "order
+% of distance along the path".  As for the case of a path that goes back on
+% itself, e.g. a path whose y coordinate is unchanging and whose x coordinate
+% goes from 0 to 10 then back to 5 then to 15, I think most callers (including
+% the dashes case below) want it to behave the same as if the y coordinate did
+% change, i.e. want the same point reported three times if there's an
+% intersection at x=7.  Whereas the case of a "stationary path" (bezier whose
+% control points are all coincident) is considered to have just one point and
+% zero length. -- pjrm.
 
 Think about dashes: a dash is a fixed arclength offset.  So rather
 than getting the location for a point at arc length 1, at arc length
-2, 3, 4.. to the length of the curve, instead we just ask for all of
+2, 3, 4, $\ldots$, up to the length of the curve, instead we just ask for all of
 these, and the algorithm can chug along the curve outputting the
-answer for each.  the reason it is faster is because to work out the
+answer for each.  The reason it is faster is because to work out the
 location at arc length say 100, we basically need to work out the
 length for many spots up to 100.
 
@@ -524,12 +533,12 @@ Perhaps we then want to split the curve at each of those points.  To
 split a segment at a location first requires finding that segment,
 then splitting it and finally constructing a new path to output a whole
 new path so we can fit the two new segments in.  If we started at the
-beginning, and split at the first location, that would be n+1 steps - n
+beginning, and split at the first location, then that would be $n+1$ steps: $n$
 segs in the original, plus an extra one.  If we wanted to split at 100
-points, it would be n+1 steps for the first, n+2 for the
-second... n+100 steps for the last, this would take a total of 100n +
-100*101/2 steps!  Whereas, if we split as we went along, it would take
-just n+100 steps.
+points, it would be $n+1$ steps for the first, $n+2$ for the
+second, $\ldots$, $n+100$ steps for the last, this would take a total of $100n +
+100*101/2$ steps!  Whereas, if we split as we went along, it would take
+just $n+100$ steps.
 
 The downside is that I'll probably not provide a separate split
 routine that takes a single point, to discourage people from making
