@@ -128,16 +128,20 @@ public:
 template <unsigned order>
 class BezierCurve : public Curve {
 private:
-  D2<Bezier<order> > inner;
+  D2<Bezier > inner;
 public:
   template <unsigned required_degree>
   static void assert_degree(BezierCurve<required_degree> const *) {}
 
-  BezierCurve() {}
+  BezierCurve() : inner(Bezier(order), Bezier(order)) {
+      printf("hmmpf %d %d\n", order , inner[0].order());
+      assert(order == inner[0].order());
+      assert(order == inner[1].order());
+}
 
-  explicit BezierCurve(D2<Bezier<order> > const &x) : inner(x) {}
+  explicit BezierCurve(D2<Bezier > const &x) : inner(x) {}
   
-  BezierCurve(Bezier<order> x, Bezier<order> y) : inner(x, y) {}
+  BezierCurve(Bezier x, Bezier y) : inner(x, y) {}
 
   // default copy
   // default assign
@@ -145,19 +149,19 @@ public:
   BezierCurve(Point c0, Point c1) {
     assert_degree<1>(this);
     for(unsigned d = 0; d < 2; d++)
-        inner[d] = Bezier<order>(c0[d], c1[d]);
+        inner[d] = Bezier(c0[d], c1[d]);
   }
 
   BezierCurve(Point c0, Point c1, Point c2) {
     assert_degree<2>(this);
     for(unsigned d = 0; d < 2; d++)
-        inner[d] = Bezier<order>(c0[d], c1[d], c2[d]);
+        inner[d] = Bezier(c0[d], c1[d], c2[d]);
   }
 
   BezierCurve(Point c0, Point c1, Point c2, Point c3) {
     assert_degree<3>(this);
     for(unsigned d = 0; d < 2; d++)
-        inner[d] = Bezier<order>(c0[d], c1[d], c2[d], c3[d]);
+        inner[d] = Bezier(c0[d], c1[d], c2[d], c3[d]);
   }
 
   unsigned degree() const { return order; }
@@ -203,7 +207,7 @@ public:
   std::vector<Point> points() const { return bezier_points(inner); }
   
   std::pair<BezierCurve<order>, BezierCurve<order> > subdivide(Coord t) const {
-    std::pair<Bezier<order>, Bezier<order> > sx = inner[X].subdivide(t), sy = inner[Y].subdivide(t);
+    std::pair<Bezier, Bezier > sx = inner[X].subdivide(t), sy = inner[Y].subdivide(t);
     return std::pair<BezierCurve<order>, BezierCurve<order> >(
                BezierCurve<order>(sx.first, sy.first),
                BezierCurve<order>(sx.second, sy.second));
@@ -251,12 +255,12 @@ protected:
     for(unsigned i = 0; i <= order; i++) {
         x[i] = c[i][X]; y[i] = c[i][Y];
     }
-    inner = Bezier<order>(x, y);
+    inner = Bezier(x, y);
   }
 };
 
 // BezierCurve<0> is meaningless; specialize it out
-template<> class BezierCurve<0> : public BezierCurve<1> { public: BezierCurve(); BezierCurve(Bezier<0> x, Bezier<0> y); };
+template<> class BezierCurve<0> : public BezierCurve<1> { public: BezierCurve(); BezierCurve(Bezier x, Bezier y); };
 
 typedef BezierCurve<1> LineSegment;
 typedef BezierCurve<2> QuadraticBezier;

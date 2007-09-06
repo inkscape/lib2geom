@@ -15,8 +15,8 @@ class PathAlongPathToy: public Toy {
     bool should_draw_numbers(){return false;}
 
     void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
-        D2<SBasis> skeleton = handles_to_sbasis<3>(handles.begin());
-        D2<SBasis> pattern  = handles_to_sbasis<3>(handles.begin()+4);
+        D2<SBasis> skeleton = handles_to_sbasis(handles.begin(), 3);
+        D2<SBasis> pattern  = handles_to_sbasis(handles.begin()+4, 3);
 
 
         cairo_set_line_width(cr,1.);

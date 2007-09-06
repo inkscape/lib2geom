@@ -22,18 +22,20 @@ unsigned total_pieces_inc;
 
 vector<Geom::Point> *handlesptr = NULL;
 
+const unsigned order = 6;
+
 class SBez: public Toy {
     static int
     func (double t, const double y[], double f[],
           void *params)
     {
         //double mu = *(double *)params;
-        D2<SBasis> B = handles_to_sbasis<3>(handlesptr->begin());
+        D2<SBasis> B = handles_to_sbasis<order>(handlesptr->begin());
         D2<SBasis> dB = derivative(B);
         Geom::Point tan = dB(y[0]);//Geom::unit_vector();
         tan /= dot(tan,tan);
         Geom::Point yp = B(y[0]);
-        double dtau = -dot(tan, yp - (*handlesptr)[4]);
+        double dtau = -dot(tan, yp - (*handlesptr)[order+1]);
         f[0] = dtau;
         
         return GSL_SUCCESS;
@@ -62,7 +64,7 @@ class SBez: public Toy {
         handlesptr = &handles;
         cairo_set_line_width (cr, 0.5);
     
-        D2<SBasis> B = handles_to_sbasis<3>(handles.begin());
+        D2<SBasis> B = handles_to_sbasis<order>(handles.begin());
         cairo_md_sb(cr, B);
     
         const gsl_odeiv_step_type * T 
@@ -106,11 +108,9 @@ class SBez: public Toy {
 public:
     SBez() {
         y[0] = 0;
-        handles.push_back(Geom::Point(uniform()*400, uniform()*400));
-        handles.push_back(Geom::Point(uniform()*400, uniform()*400));
-        handles.push_back(Geom::Point(uniform()*400, uniform()*400));
-        handles.push_back(Geom::Point(uniform()*400, uniform()*400));
-        handles.push_back(Geom::Point(uniform()*400, uniform()*400));
+        for(unsigned i = 0; i <= order+1; i++) {
+            handles.push_back(Geom::Point(uniform()*400, uniform()*400));
+        }
     }
 };
 

@@ -19,7 +19,7 @@ public:
     }
 
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
-        D2<SBasis> B = handles_to_sbasis<3>(handles.begin());
+        D2<SBasis> B = handles_to_sbasis(handles.begin(), 3);
         cairo_md_sb(cr, B);
         cairo_stroke(cr);
         

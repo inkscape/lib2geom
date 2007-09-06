@@ -46,7 +46,7 @@ class Sb2d2: public Toy {
 	tB = tB*(width/2) + Geom::Point(width/4, width/4);
 	*/
 
-        if(1) {
+        if(0) {
             D2<Piecewise<SBasis> > tB(cos(B[0]*0.1)*(handles[0][0]/100) + B[0], 
                                       cos(B[1]*0.1)*(handles[0][1]/100) + B[1]);
 	
@@ -60,15 +60,22 @@ class Sb2d2: public Toy {
             rc.push(SBasis(Linear(0, 0)), 30);
             rc *= 10;
             rc.scaleDomain(1000);
-            cairo_pw(cr, rc + (height - 100));
+            Piecewise<SBasis> swr;
+            swr.push_cut(0);
+            swr.push(SBasis(Linear(0, 1)), 2);
+            swr.push(SBasis(Linear(1, 0)), 4);
+            swr.push(SBasis(Linear(0, 0)), 30);
+            swr *= 10;
+            swr.scaleDomain(1000);
+            cairo_pw(cr, swr + (height - 100));
             D2<Piecewise<SBasis> >  uB = make_cuts_independant(unitVector(path_a_pw - handles[0]));
         
             D2<Piecewise<SBasis> > tB(compose(rc, (r2))*uB[0] + B[0], 
                                       compose(rc, (r2))*uB[1] + B[1]);
             cairo_d2_pw(cr, tB);
+            //path_a_pw = sectionize(tB);
 	}
 	cairo_stroke(cr);
-        //path_a_pw = sectionize(tB);
         
         *notify << path_a_pw.size();
         

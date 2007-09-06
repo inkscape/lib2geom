@@ -64,8 +64,8 @@ class Box3d: public Toy {
             }
             
             //if (fabs (res[2]) > 0.000001) {
-            D2<Piecewise<SBasis> > result(divide(res[0],res[2], 4), 
-                                          divide(res[1],res[2], 4));
+            D2<Piecewise<SBasis> > result(divide(res[0],res[2], 2), 
+                                          divide(res[1],res[2], 2));
             
             cairo_d2_pw(cr, result);
             cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
@@ -75,7 +75,7 @@ class Box3d: public Toy {
         Toy::draw(cr, notify, width, height, save);
     }
     void first_time(int argc, char** argv) {
-        char *path_a_name="star.svgd";
+        char *path_a_name="ptitle.svgd";
         if(argc > 1)
             path_a_name = argv[1];
         paths_a = read_svgd(path_a_name);

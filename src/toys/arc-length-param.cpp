@@ -29,8 +29,8 @@ class LengthTester: public Toy {
 	      std::ostringstream *notify,
 	      int width, int height, bool save) {
     
-      D2<SBasis> B1 = handles_to_sbasis<SIZE-1>(handles.begin());
-      D2<SBasis> B2 = handles_to_sbasis<SIZE-1>(handles.begin()+SIZE);
+      D2<SBasis> B1 = handles_to_sbasis(handles.begin(), SIZE-1);
+      D2<SBasis> B2 = handles_to_sbasis(handles.begin()+SIZE, SIZE-1);
       Piecewise<D2<SBasis> >B;
       B.concat(Piecewise<D2<SBasis> >(B1));
       B.concat(Piecewise<D2<SBasis> >(B2));

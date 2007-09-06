@@ -1,10 +1,10 @@
 SET(2GEOM_TESTS_SRC
 #bezier-utils-test
-bez-test
+bezier-test
 choose-test
 #matrix-test
 #point-fns-test
-#poly-test
+poly-test
 #rotate-test
 #rotate-test.h
 #scale-test

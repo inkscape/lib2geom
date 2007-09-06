@@ -8,7 +8,7 @@
 #include "toy-framework.h"
 
 using std::vector;
-const unsigned bez_ord = 10;
+const unsigned bez_ord = 6;
 using namespace Geom;
 
 class SelfIntersect: public Toy {
@@ -16,7 +16,7 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
     cairo_set_line_width (cr, 0.5);
     cairo_set_source_rgba (cr, 0., 0., 0, 1);
     
-    D2<SBasis> A = handles_to_sbasis<bez_ord-1>(handles.begin());
+    D2<SBasis> A = handles_to_sbasis(handles.begin(), bez_ord);
     Rect Ar = bounds_fast(A);
     cairo_md_sb(cr, A);
     cairo_stroke(cr);
