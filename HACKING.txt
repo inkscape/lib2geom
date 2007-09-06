@@ -25,11 +25,14 @@ Compiling
 =========
 For windows instructions, see README.win32
 
-For linux, the following are required:
+For Debian-like platforms, the following packages are required:
+ cairo v1.1.7 or later (Debian package libcairo2-dev)
  cmake
  make
+ libboost-dev
  libgsl0-dev (though eventually it will only be required in tests)
- cairo-1.1.7 or later
  refblas3* on dapper
 
-If you have problems, just ask in the channel
+To compile, type ‘cmake .’ and then ‘make’.
+
+If you have problems, just ask in the channel.
