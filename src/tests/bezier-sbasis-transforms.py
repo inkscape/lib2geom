@@ -37,8 +37,13 @@ def inver(q):
     q2 = q/2+1
     for i in range(q2):
         for j in range(i+1):
-            result[q/2-j][q/2-i] = T(i, j)
-            result[q/2+j+2][q/2-i-1] = -T(i, j)
+            val = T(i,j)
+            result[q/2-j][q/2-i] = val
+            result[q/2+j+2][q/2+i+2] = val
+            result[q/2+j+2][q/2-i-1] = -val
+            if q/2+i+3 < q+2:
+                result[q/2-j][q/2+i+3] = -val
+            
     for i in range(q+2):
         result[q2][i] = [1,-1][(i-q2)%2]
     return result
