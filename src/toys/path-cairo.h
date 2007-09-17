@@ -10,6 +10,7 @@
 
 typedef struct _cairo cairo_t;
 
+void cairo_curve(cairo_t *cr, Geom::Curve const &c);
 void cairo_path(cairo_t *cr, Geom::Path const &p);
 void cairo_path(cairo_t *cr, std::vector<Geom::Path> const &p);
 
