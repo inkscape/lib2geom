@@ -13,6 +13,9 @@ const unsigned bez_ord = 10;
 cairo_t *g_cr = 0;
 const double eps = 0.1;
 
+extern unsigned intersect_steps;
+
+#if 0
 /** Given two linear md_sb(assume they are linear even if they're not)
     find the ts at the intersection. */
 bool
@@ -98,6 +101,8 @@ void pair_intersect(vector<double> &Asects,
     }
 }
 
+#endif
+
 class PairIntersect: public Toy {
 virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
     cairo_set_line_width (cr, 0.5);
@@ -109,9 +114,11 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
     cairo_md_sb(cr, B);
     vector<double> Asects, Bsects;
     g_cr = cr;
-    if(0) pair_intersect(Asects, Bsects, A, 0, 1, 
-                   B, 0, 1);
+    //if(0) pair_intersect(Asects, Bsects, A, 0, 1, 
+    //               B, 0, 1);
     
+    
+    intersect_steps = 0;
     
     vector<Geom::Point> Ab, Bb;
     Ab.insert(Ab.begin(), handles.begin(), handles.begin()+bez_ord);
@@ -125,7 +132,8 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
     }
     cairo_stroke(cr);
     
-    *notify << "total intersections: " << section.size();
+    *notify << "total intersections: " << section.size() << std::endl;
+    *notify << "steps to find: " << intersect_steps;
     
     Toy::draw(cr, notify, width, height, save);
 }
