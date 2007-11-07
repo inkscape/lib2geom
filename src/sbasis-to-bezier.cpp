@@ -54,6 +54,28 @@ sbasis_to_bezier(SBasis const &B, unsigned q) {
     return result;
 }
 
+double mopi(int i) {
+    return (i&1)?-1:1;
+}
+
+// this produces a degree k sbasis from a degree 2q bezier
+SBasis
+bezier_to_sbasis(Bezier const &B) {
+    unsigned n = B.size();
+    unsigned q = (n+1)/2;
+    SBasis result;
+    result.resize(q+1);
+    for(unsigned k = 0; k < q; k++) {
+        result[k][0] = result[k][1] = 0;
+        for(unsigned j = 0; j <= n-k; j++) {
+            result[k][0] += mopi(int(j)-int(k))*W(n, j, k)*B[j];
+            result[k][1] += mopi(int(j)-int(k))*W(n, j, k)*B[j];
+            //W(n, n-j, k)*B[k][1]);
+        }
+    }
+    return result;
+}
+
 // this produces a 2q point bezier from a degree q sbasis
 std::vector<Geom::Point>
 sbasis_to_bezier(D2<SBasis> const &B, unsigned qq) {

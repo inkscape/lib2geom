@@ -48,7 +48,7 @@ class Box3d: public Toy {
             *notify << endl;
         }
 
-        for(int i = 0; i < paths_a.size(); i++) {
+        for(unsigned i = 0; i < paths_a.size(); i++) {
             Piecewise<D2<SBasis> >  path_a_pw = paths_a[i].toPwSb();
 
             D2<Piecewise<SBasis> > B = make_cuts_independant(path_a_pw);

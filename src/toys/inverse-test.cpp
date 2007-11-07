@@ -18,23 +18,10 @@ static void plot(cairo_t* cr, SBasis const &B,double vscale=1,double a=0,double 
   cairo_md_sb(cr, plot);
   cairo_stroke(cr);
 }
-static void plot_flip(cairo_t* cr, SBasis const &B,double vscale=1,double a=0,double b=1){
-  D2<SBasis> plot;
-  plot[1]=SBasis(Linear(450-a*300,450-b*300));
-  plot[0]=150+B*vscale;
-  cairo_md_sb(cr, plot);
-  cairo_stroke(cr);
-}
 static void plot(cairo_t* cr, Piecewise<SBasis> const &f,double vscale=1){
-  for (int i=0;i<f.size();i++){
+  for (unsigned i=0;i<f.size();i++){
       plot(cr,f.segs[i],vscale,f.cuts[i],f.cuts[i+1]);
       draw_cross(cr,Geom::Point(f.cuts[i]*300 + 150, f.segs[i][0][0]*(-vscale) + 450));
-  }
-}
-static void plot_flip(cairo_t* cr, Piecewise<SBasis> const &f,double vscale=1){
-  for (int i=0;i<f.size();i++){
-      plot_flip(cr,f.segs[i],vscale,f.cuts[i],f.cuts[i+1]);
-      draw_cross(cr,Geom::Point(f.segs[i][0][0]*vscale + 150, f.cuts[i]*-300 + 400));
   }
 }
 
@@ -44,7 +31,9 @@ static SBasis my_inverse(SBasis f, int order){
         f -= a0;
     }
     double a1 = f[0][1];
-    assert(a1 != 0);// not invertable.
+    if(a1 == 0)
+        throw NotInvertible();
+    //assert(a1 != 0);// not invertible.
     if(a1 != 1) {
         f /= a1;
     }
@@ -84,12 +73,12 @@ static Piecewise<SBasis> pw_inverse(SBasis const &f, int order,double tol=.1,int
         SBasis ff;
         ff=f(Linear(0,.5));
         res=pw_inverse(ff,order,tol,depth+1);
-        for (int i=0;i<res.size();i++){
+        for (unsigned i=0;i<res.size();i++){
             res.segs[i]*=.5;
         }
         ff=f(Linear(.5,1));
         res1=pw_inverse(ff,order,tol,depth+1);
-        for (int i=0;i<res1.size();i++){
+        for (unsigned i=0;i<res1.size();i++){
             res1.segs[i]*=.5;
             res1.segs[i]+=.5;
         }
@@ -136,16 +125,19 @@ class InverseTester: public Toy {
       *notify<<" (keep it monotonic!)"<<std::endl;
       *notify<<"red=flipped inverse; should be the same as the blue one."<<std::endl;
       
-      Piecewise<SBasis> g=pw_inverse(f,3);
-      cairo_set_line_width (cr, 1);
-      cairo_set_source_rgba (cr, 0.8, 0., 0., 1);
-      plot(cr,g,300);	
-      Piecewise<SBasis> h=compose(g,f); 
-      cairo_set_line_width (cr, 1);
-      cairo_set_source_rgba (cr, 0., 0.8, 0., 1);
-      plot(cr,h,300);
-
-      *notify<<g.size()<<" segments.";
+      try {
+          Piecewise<SBasis> g=pw_inverse(f,3);
+          cairo_set_line_width (cr, 1);
+          cairo_set_source_rgba (cr, 0.8, 0., 0., 1);
+          plot(cr,g,300);	
+          Piecewise<SBasis> h=compose(g,f); 
+          cairo_set_line_width (cr, 1);
+          cairo_set_source_rgba (cr, 0., 0.8, 0., 1);
+          plot(cr,h,300);
+          *notify<<g.size()<<" segments.";
+      } catch(NotInvertible) {
+          *notify << "function not invertible!" << std::endl;
+      }
 
       Toy::draw(cr, notify, width, height, save);
   }        

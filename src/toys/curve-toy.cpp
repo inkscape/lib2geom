@@ -18,12 +18,15 @@ public:
         unsigned order = 3;
         if(argc > 1)
             sscanf(argv[1], "%u", &order);
-        for(int i = 0; i < order; i++)
+        for(unsigned i = 0; i < order; i++)
             handles.push_back(Geom::Point(uniform()*400, uniform()*400));
     }
 
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
-        D2<SBasis> B = handles_to_sbasis(handles.begin(), handles.size()-1);
+        Bezier x(Bezier::Order(handles.size()-1)),y(Bezier::Order(handles.size()-1));
+        
+        //D2<SBasis> B = handles_to_sbasis(handles.begin(), handles.size()-1);
+        D2<SBasis> B(bezier_to_sbasis(x), bezier_to_sbasis(y));
         Path P = path_from_sbasis(B, 1);
         *notify << P.size();
         cairo_path(cr, P);

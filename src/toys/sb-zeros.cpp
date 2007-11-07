@@ -36,7 +36,7 @@ class SBZeros: public Toy {
 
     public:
     SBZeros () {
-        for(int i = 0; i < 2*SIZE; i++)
+        for(unsigned i = 0; i < 2*SIZE; i++)
             handles.push_back(Geom::Point(150+uniform()*300,150+uniform()*300));
     }
 };

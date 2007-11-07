@@ -23,7 +23,7 @@ fitter
 gear
 vid-intro
 inner-product-clip
-#inverse-test
+inverse-test
 load-svgd
 match-curve
 mesh-grad

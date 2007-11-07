@@ -38,6 +38,11 @@ public:
   NotImplemented() : std::logic_error("method not implemented") {}
 };
 
+class NotInvertible : public std::range_error {
+ public:
+  NotInvertible() : std::range_error("function does not have a unique inverse") {}
+};
+
 // proper logical xor
 inline bool logical_xor (bool a, bool b) { return (a || b) && !(a && b); }
 
