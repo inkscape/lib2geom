@@ -99,8 +99,6 @@ main(int argc, char** argv) {
         trials.push_back(r);
     }
     double ave_left = 0;
-    double ave_right = 0;
-    double ave_rel = 0;
     cout << "err from exact\n";
     for(unsigned i = 0; i < trials.size(); i++) {
         SBasis B = Linear(1.,1);
@@ -108,8 +106,7 @@ main(int argc, char** argv) {
         for(unsigned j = 0; j < trials[i].size(); j++) {
             B = B*linear(1, -trials[i][j]);
         }
-        int N = B.size()*2;
-        double left_time, right_time;
+        double left_time;
         clock_t end_t = clock()+clock_t(timer_precision*CLOCKS_PER_SEC);
         unsigned iterations = 0;
         while(end_t > clock()) {

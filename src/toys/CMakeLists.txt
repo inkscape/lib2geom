@@ -7,7 +7,7 @@ boolops
 bounds-test
 box3d
 box3d-2
-cheb
+#cheb
 circle-intersect
 center-warp
 clothoid

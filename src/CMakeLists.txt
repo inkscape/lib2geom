@@ -77,8 +77,8 @@ sbasis-math.h
 sbasis-math.cpp
 sbasis-poly.cpp
 sbasis-poly.h
-chebyshev.cpp
-chebyshev.h
+#chebyshev.cpp # requires gsl, not useful, I think
+#chebyshev.h
 sbasis-roots.cpp
 sbasis-to-bezier.cpp
 sbasis-to-bezier.h
