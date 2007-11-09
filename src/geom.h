@@ -31,8 +31,8 @@
  * the specific language governing rights and limitations.
  *
  */
-#ifndef SEEN_GEOM_H
-#define SEEN_GEOM_H
+#ifndef SEEN_2Geom_GEOM_H
+#define SEEN_2Geom_GEOM_H
 
 //TODO: move somewhere else
 
