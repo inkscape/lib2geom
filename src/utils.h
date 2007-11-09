@@ -1,5 +1,5 @@
-#ifndef UTILS_HEADER
-#define UTILS_HEADER
+#ifndef LIB2GEOM_UTILS_HEADER
+#define LIB2GEOM_UTILS_HEADER
 
 /** Various utility functions.
  *
@@ -32,6 +32,8 @@
 
 #include <cmath>
 #include <stdexcept>
+
+namespace Geom {
 
 class NotImplemented : public std::logic_error {
 public:
@@ -82,6 +84,8 @@ inline double decimal_round(double const x, int const places) {
     //TODO: possibly implement with modulus instead?
     double const multiplier = std::pow(10.0, places);
     return round( x * multiplier ) / multiplier;
+}
+
 }
 
 #endif

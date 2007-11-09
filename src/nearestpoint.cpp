@@ -214,9 +214,9 @@ static int CrossingCount(
     int 	n_crossings = 0;	/*  Number of zero-crossings	*/
     int		old_sign;		/*  Sign of coefficients	*/
     
-    old_sign = sgn(V[0][Geom::Y]);
+    old_sign = Geom::sgn(V[0][Geom::Y]);
     for (int i = 1; i <= degree; i++) {
-        int sign = sgn(V[i][Geom::Y]);
+        int sign = Geom::sgn(V[i][Geom::Y]);
         if (sign != old_sign)
             n_crossings++;
         old_sign = sign;
