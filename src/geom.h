@@ -31,6 +31,8 @@
  * the specific language governing rights and limitations.
  *
  */
+#ifndef SEEN_GEOM_H
+#define SEEN_GEOM_H
 
 //TODO: move somewhere else
 
@@ -66,3 +68,5 @@ line_twopoint_intersect(Geom::Point const &p00, Geom::Point const &p01,
 			Geom::Point &result);
 
 int centroid(std::vector<Geom::Point> p, Geom::Point& centroid, double &area);
+
+#endif
