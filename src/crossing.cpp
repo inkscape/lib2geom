@@ -35,7 +35,7 @@ CrossingGraph create_crossing_graph(std::vector<Path> const &p, Crossings const 
         Point pnt = p[crs[i].a].pointAt(crs[i].ta);
         unsigned j = 0;
         for(; j < locs.size(); j++) {
-            if(near(pnt, locs[j])) break;
+            if(are_near(pnt, locs[j])) break;
         }
         if(j == locs.size()) {
             ret.push_back(CrossingNode());
@@ -106,7 +106,7 @@ CrossingGraph create_crossing_graph(std::vector<Path> const &p, Crossings const 
     for(unsigned j = 0; j < edges.size(); ) {
         CrossingNode cn;
         double t = edges[j].time;
-        while(j < edges.size() && near(edges[j].time, t)) {
+        while(j < edges.size() && are_near(edges[j].time, t)) {
             cn.edges.push_back(edges[j]);
         }
     }
@@ -178,7 +178,7 @@ void clean(Crossings &cr_a, Crossings &cr_b) {
         const Crossing cur = *i;
         Eraser<Crossings> next(i);
         next++;
-        if(near(cur, *next)) {
+        if(are_near(cur, *next)) {
             cr_b.erase(std::find(cr_b.begin(), cr_b.end(), cur));
             for(i = next; near(*i, cur); i++) {
                 cr_b.erase(std::find(cr_b.begin(), cr_b.end(), *i));

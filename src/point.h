@@ -175,8 +175,8 @@ extern double atan2(Point const p);
 extern double angle_between(Point const a, Point const b);
 
 //IMPL: NearConcept
-inline bool near(Point const &a, Point const &b, double const eps=EPSILON) {
-    return ( near(a[X],b[X],eps) && near(a[Y],b[Y],eps) );
+inline bool are_near(Point const &a, Point const &b, double const eps=EPSILON) {
+    return ( are_near(a[X],b[X],eps) && are_near(a[Y],b[Y],eps) );
 }
 
 /** Returns p * Geom::rotate_degrees(90), but more efficient.

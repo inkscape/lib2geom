@@ -47,7 +47,7 @@ typedef double Coord;
 const Coord EPSILON = 1e-5; //1e-18;
 
 //IMPL: NearConcept
-inline bool near(Coord a, Coord b, double eps=EPSILON) { return fabs(a-b) <= eps; }
+inline bool are_near(Coord a, Coord b, double eps=EPSILON) { return fabs(a-b) <= eps; }
 
 } /* namespace Geom */
 

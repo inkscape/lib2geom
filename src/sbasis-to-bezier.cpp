@@ -210,9 +210,9 @@ path_from_piecewise(Geom::Piecewise<Geom::D2<Geom::SBasis> > const &B, double to
     Geom::Point start = B[0].at0();
     pb.moveTo(start);
     for(unsigned i = 0; ; i++) {
-        if(i+1 == B.size() || !near(B[i+1].at0(), B[i].at1(), tol)) {
+        if(i+1 == B.size() || !are_near(B[i+1].at0(), B[i].at1(), tol)) {
             //start of a new path
-            if(near(start, B[i].at1())) {
+            if(are_near(start, B[i].at1())) {
                 //it's closed
                 pb.closePath();
                 if(sbasis_size(B[i]) <= 1) {

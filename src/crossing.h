@@ -62,11 +62,11 @@ struct TimeOrder {
 class Path;
 CrossingGraph create_crossing_graph(std::vector<Path> const &p, Crossings const &crs);
 
-/*inline bool near(Crossing a, Crossing b) {
-    return near(a.ta, b.ta) && near(a.tb, b.tb);
+/*inline bool are_near(Crossing a, Crossing b) {
+    return are_near(a.ta, b.ta) && are_near(a.tb, b.tb);
 }
 
-struct NearF { bool operator()(Crossing a, Crossing b) { return near(a, b); } };
+struct NearF { bool operator()(Crossing a, Crossing b) { return are_near(a, b); } };
 */
 
 struct CrossingOrder {

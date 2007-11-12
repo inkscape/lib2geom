@@ -59,8 +59,8 @@ Geom::Point (*rot90_point)(Geom::Point const &) = &Geom::rot90;
 Geom::Coord (*dot_point)  (Geom::Point const &, Geom::Point const &) = &Geom::dot;
 Geom::Coord (*cross_point)(Geom::Point const &, Geom::Point const &) = &Geom::cross;
 
-bool near_point1(Geom::Point const &a, Geom::Point const &b) { return near(a,b); }
-bool near_point2(Geom::Point const &a, Geom::Point const &b, double eps) { return near(a,b,eps); }
+bool near_point1(Geom::Point const &a, Geom::Point const &b) { return are_near(a,b); }
+bool near_point2(Geom::Point const &a, Geom::Point const &b, double eps) { return are_near(a,b,eps); }
 
 void wrap_point() {
     def("point_to_tuple", point_to_tuple);
