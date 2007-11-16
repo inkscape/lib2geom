@@ -30,6 +30,7 @@ mesh-grad
 #normal-bundle
 offset-test
 pair-intersect
+paptest
 parametrics
 parser
 path-along-path
