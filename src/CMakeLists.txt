@@ -92,6 +92,7 @@ geom.cpp
 geom.h
 
 utils.h
+exception.h
 
 bezier-utils.cpp
 bezier-utils.h

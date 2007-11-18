@@ -33,12 +33,12 @@
 #include "point.h"
 #include <iterator>
 #include <algorithm>
-#include <exception>
-#include <stdexcept>
+#include "exception.h"
 #include "d2.h"
 #include "matrix.h"
 #include "bezier.h"
 #include "crossing.h"
+#include "utils.h"
 
 namespace Geom {
 
@@ -325,7 +325,7 @@ public:
     return ret;
   }
 
-  Curve *derivative() const { throw NotImplemented(); }
+  Curve *derivative() const { throwNotImplemented(); }
 
   std::vector<Point> pointAndDerivatives(Coord t, unsigned n) const;
 
@@ -408,12 +408,6 @@ public:
 
 private:
   Iterator impl_;
-};
-
-class ContinuityError : public std::runtime_error {
-public:
-  ContinuityError() : runtime_error("non-contiguous path") {}
-  ContinuityError(std::string const &message) : runtime_error(message) {}
 };
 
 class Path {
@@ -767,7 +761,7 @@ class PathPortion : public Curve {
 
   Rect boundsFast() const { return actualPath().boundsFast; }
   Rect boundsExact() const { return actualPath().boundsFast; }
-  Rect boundsLocal(Interval i) const { throw NotImplemented(); }
+  Rect boundsLocal(Interval i) const { throwNotImplemented(); }
 
   std::vector<double> roots(double v, Dim2 d) const = 0;
 

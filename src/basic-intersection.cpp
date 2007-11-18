@@ -1,4 +1,5 @@
 #include "basic-intersection.h"
+#include "exception.h"
 
 unsigned intersect_steps = 0;
 
@@ -60,7 +61,7 @@ find_intersections( vector<Geom::Point> const & A,
 
 std::vector<std::pair<double, double> > 
 find_self_intersections(OldBezier const &Sb) {
-    throw NotImplemented();
+    throwNotImplemented();
 }
 
 std::vector<std::pair<double, double> > 

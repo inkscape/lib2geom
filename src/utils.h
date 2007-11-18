@@ -3,6 +3,7 @@
 
 /** Various utility functions.
  *
+ * Copyright 2007 Johan Engelen <goejendaagh@zonnet.nl>
  * Copyright 2006 Michael G. Sloan <mgsloan@gmail.com>
  *
  * This library is free software; you can redistribute it and/or
@@ -31,19 +32,8 @@
  */
 
 #include <cmath>
-#include <stdexcept>
 
 namespace Geom {
-
-class NotImplemented : public std::logic_error {
-public:
-  NotImplemented() : std::logic_error("method not implemented") {}
-};
-
-class NotInvertible : public std::range_error {
- public:
-  NotInvertible() : std::range_error("function does not have a unique inverse") {}
-};
 
 // proper logical xor
 inline bool logical_xor (bool a, bool b) { return (a || b) && !(a && b); }
