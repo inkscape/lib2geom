@@ -93,6 +93,7 @@ geom.h
 
 utils.h
 exception.h
+angle.h
 
 bezier-utils.cpp
 bezier-utils.h
