@@ -9,7 +9,6 @@
 using std::vector;
 using namespace Geom;
 
-const unsigned bez_ord = 10;
 cairo_t *g_cr = 0;
 const double eps = 0.1;
 
@@ -104,13 +103,15 @@ void pair_intersect(vector<double> &Asects,
 #endif
 
 class PairIntersect: public Toy {
+unsigned A_bez_ord;
+unsigned B_bez_ord;
 virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
     cairo_set_line_width (cr, 0.5);
     
-    D2<SBasis> A = handles_to_sbasis(handles.begin(), bez_ord-1);
+    D2<SBasis> A = handles_to_sbasis(handles.begin(), A_bez_ord-1);
     cairo_md_sb(cr, A);
     
-    D2<SBasis> B = handles_to_sbasis(handles.begin()+bez_ord, bez_ord-1);
+    D2<SBasis> B = handles_to_sbasis(handles.begin()+A_bez_ord, B_bez_ord-1);
     cairo_md_sb(cr, B);
     vector<double> Asects, Bsects;
     g_cr = cr;
@@ -121,8 +122,8 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
     intersect_steps = 0;
     
     vector<Geom::Point> Ab, Bb;
-    Ab.insert(Ab.begin(), handles.begin(), handles.begin()+bez_ord);
-    Bb.insert(Bb.begin(), handles.begin()+bez_ord, handles.begin()+2*bez_ord);
+    Ab.insert(Ab.begin(), handles.begin(), handles.begin()+A_bez_ord);
+    Bb.insert(Bb.begin(), handles.begin()+A_bez_ord, handles.begin()+A_bez_ord + B_bez_ord);
     std::vector<std::pair<double, double> > section = 
         find_intersections( Ab, Bb);
     cairo_stroke(cr);
@@ -138,14 +139,20 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
     Toy::draw(cr, notify, width, height, save);
 }
 public:
-PairIntersect () {
-    for(unsigned j = 0; j < 2; j++)
-    for(unsigned i = 0; i < bez_ord; i++) handles.push_back(Geom::Point(uniform()*400, uniform()*400));
+    PairIntersect (unsigned A_bez_ord, unsigned B_bez_ord) :
+        A_bez_ord(A_bez_ord), B_bez_ord(B_bez_ord) {
+    for(unsigned i = 0; i < A_bez_ord + B_bez_ord; i++) handles.push_back(Geom::Point(uniform()*400, uniform()*400));
 }
 };
 
-int main(int argc, char **argv) {   
-    init(argc, argv, new PairIntersect());
+int main(int argc, char **argv) {
+unsigned A_bez_ord=10;
+unsigned B_bez_ord=3;
+    if(argc > 2)
+        sscanf(argv[2], "%d", &B_bez_ord);
+    if(argc > 1)
+        sscanf(argv[1], "%d", &A_bez_ord);
+    init(argc, argv, new PairIntersect(A_bez_ord, B_bez_ord));
 
     return 0;
 }
