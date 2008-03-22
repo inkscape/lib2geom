@@ -157,6 +157,10 @@ bool Matrix::onlyScaleAndTranslation(Coord const eps) const {
     return are_near(_c[0], _c[3]) && are_near(_c[1], 0) && are_near(_c[2], 0);
 }
 
+bool Matrix::isSingular(Coord const eps) const {
+    return are_near(det(), 0.0);
+}
+
 bool Matrix::flips() const {
     return cross(xAxis(), yAxis()) > 0;
 }
