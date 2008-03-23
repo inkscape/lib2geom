@@ -89,6 +89,10 @@ class Piecewise {
 
     inline unsigned size() const { return segs.size(); }
     inline bool empty() const { return segs.empty(); }
+    inline void clear() {
+        segs.clear();
+        cuts.clear();
+    }
 
     /**Convenience/implementation hiding function to add segment/cut pairs.
      * Asserts that basic size and order invariants are correct
