@@ -24,18 +24,25 @@ D2<SBasis> random_d2() {
     ret[0].push_back(Linear(uniform()*720, uniform()*720));
     ret[1].push_back(Linear(uniform()*480, uniform()*480));
     
+    int mul = 1;
     for(int i = 0; i < 5; i++) {
-        ret[0].push_back(Linear(uniform()*2000 - 1000, uniform()*2000 - 1000));
-        ret[1].push_back(Linear(uniform()*2000 - 1000, uniform()*2000 - 1000));
+        ret[0].push_back(Linear(uniform()*2000*mul - 1000, uniform()*2000*mul - 1000));
+        ret[1].push_back(Linear(uniform()*2000*mul - 1000, uniform()*2000*mul - 1000));
+        mul*=2;
     }
     return ret;
 }
 
-class Walker {
+class Worm {
     Piecewise<D2<SBasis> > path;
     int spawn_time, last_time;
     double red, green, blue, length;
   public:
+    void tele(int t) {
+        Piecewise<D2<SBasis> > new_path(portion(path, 0, t - last_time));
+        new_path.push(random_d2(), path.domain().max()+1);
+        path = arc_length_parametrization(new_path);
+    }
     void add_section(const D2<SBasis> x) {
         Piecewise<D2<SBasis> > new_path(path);
         D2<SBasis> seg(x);
@@ -44,7 +51,7 @@ class Walker {
         new_path.push(seg, path.domain().max()+1);
         path = arc_length_parametrization(new_path);
     }
-    Walker (int t, double r, double g, double b, double l) : spawn_time(t), last_time(t), red(r), green(g), blue(b), length(l) {
+    Worm (int t, double r, double g, double b, double l) : spawn_time(t), last_time(t), red(r), green(g), blue(b), length(l) {
         path = Piecewise<D2<SBasis> >(random_d2());
         add_section(random_d2());
     }
@@ -63,23 +70,44 @@ class Walker {
         Piecewise<D2<SBasis> > port = portion(path, std::max(t - last_time - length, 0.), t - last_time);
         cairo_pw_d2(cr, port);
         cairo_stroke(cr);
+        
+        double d = 4;
+        cairo_set_dash(cr, &d, 1, 0);
+        for(unsigned i = 1; i < path.size(); i++) {
+            if(path[i].at0() != path[i-1].at1()) {
+                draw_line_seg(cr, path[i].at0(), path[i-1].at1());
+            }
+        }
+        cairo_stroke(cr);
+        cairo_set_dash(cr, &d, 0, 0);
+        
         cairo_set_source_rgb(cr, 0., 0., 1.);
         dot_plot(cr, path, std::max(t - last_time - length, 0.), t - last_time);
+    }
+    void reverse_direction(int t) {
+        path = portion(path, 0, t - last_time);
+        D2<SBasis> seg = random_d2(), last = path[path.size()-1];
+        for(unsigned c = 0; c < 2; c++)
+            for(unsigned d = 1; d < seg[c].size() && d < last[c].size(); d++)
+                seg[c][d][0] = -last[c][d][1];
+        add_section(seg);
     }
 };
 
 class Intro: public Toy {
     int t;
-    vector<Walker> walkers;
+    vector<Worm> worms;
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         t++;
         if(t < 40 && t % 2 == 0) {
-            walkers.push_back(Walker(t, uniform(), uniform(), uniform(), uniform() * 100));
-        }
-        for(unsigned i = 0; i < walkers.size(); i++) {
-            walkers[i].draw(cr, t);
+            worms.push_back(Worm(t, uniform(), uniform(), uniform(), uniform() * 200 + 50));
         }
 
+        for(unsigned i = 0; i < worms.size(); i++) {
+            worms[i].draw(cr, t);
+            if(uniform() > .999) worms[i].tele(t);
+        }
+        
         Toy::draw(cr, notify, width, height, save);
         redraw();
     }

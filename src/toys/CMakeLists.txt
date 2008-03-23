@@ -21,7 +21,7 @@ cylinder3d
 draw-toy
 fitter
 gear
-vid-intro
+worms
 inner-product-clip
 inverse-test
 load-svgd
