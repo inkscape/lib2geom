@@ -49,6 +49,7 @@ self-intersect
 #sketch-toy
 sweep
 svg-arc
+svg_elliptical_arc
 #toy-cairo
 winding-test
 "${NEEDS_GSL}"
