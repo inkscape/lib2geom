@@ -22,6 +22,7 @@ FOREACH(dep ${2GEOM_DEPENDS})
 ENDFOREACH(dep)
 # end Dependencies
 
+INCLUDE(FindBoost)
 
 INCLUDE (CheckIncludeFiles)
 # usage: CHECK_INCLUDE_FILES (<header> <RESULT_VARIABLE> )
