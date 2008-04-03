@@ -28,6 +28,7 @@ path.cpp
 path.h
 path-intersection.cpp
 path-intersection.h
+svg-elliptical-arc.h
 
 shape.cpp
 shape.h
