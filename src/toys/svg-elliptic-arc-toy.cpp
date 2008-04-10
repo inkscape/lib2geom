@@ -39,8 +39,8 @@ class EllipticToy: public Toy
         centers( calculate_ellipse_centers( start_point, end_point, rx, ry, rot_angle ) );
         if ( centers.get() == NULL )
         {
-        	//*notify << "< Ellipse Toy >" 
-        	//		<< " No Ellipse Arc satisfies the given geometric constraints ";
+            *notify << "< Ellipse Toy >" 
+                    << " No Ellipse Arc satisfies the given geometric constraints \n";
         	draw_controls(cr, width, height, notify);
         	Toy::draw(cr, notify, width, height, save);
         	return;
@@ -227,7 +227,7 @@ class EllipticToy: public Toy
         toggles[1].bounds = Rect( T + Point(105,0), T + Point(205,25) );
         draw_toggles(cr, toggles);
         
-        *notify << "  rx: " << rx << std::endl
+        *notify << std::endl << "  rx: " << rx << std::endl
                 << "  ry: " << ry << std::endl
                 << "  angle: " << decimal_round(rad_to_deg(rot_angle),2) << std::endl; 
 
