@@ -1,5 +1,5 @@
 
-#include "svg-elliptical-arc.h"
+#include "path.h"
 #include "path-cairo.h"
 #include "toy-framework.h"
 
@@ -25,11 +25,13 @@ class EllipticToy: public Toy
         rx = 2 * (handles[2][X] - slider_x_min);
         ry = 2 * (handles[3][X] - slider_x_min);
         rot_angle = deg_to_rad( 2 * (handles[4][X] - slider_x_min) );
-
+        from_t = (handles[5][X] - slider_x_min) / 100.0;
+        to_t = (handles[6][X] - slider_x_min) / 100.0;
         
         if ( are_near(start_point, end_point) )
         {
         	draw_controls(cr, width, height, notify);
+        	draw_text(cr, Point(10,10), "there are infinite eclipses passing for one point");
         	Toy::draw(cr, notify, width, height, save);
         	return;
         }
@@ -39,17 +41,22 @@ class EllipticToy: public Toy
         centers( calculate_ellipse_centers( start_point, end_point, rx, ry, rot_angle ) );
         if ( centers.get() == NULL )
         {
-            *notify << "< Ellipse Toy >" 
-                    << " No Ellipse Arc satisfies the given geometric constraints \n";
+            //*notify << "< Ellipse Toy >" 
+            //        << " No Ellipse Arc satisfies the given geometric constraints \n";
         	draw_controls(cr, width, height, notify);
+        	draw_text(cr, Point(10,10), "there is no eclipse satisfying the given constraints");
         	Toy::draw(cr, notify, width, height, save);
         	return;
         }
         
-        EllipticalArc ea( start_point, end_point, rx, ry, large_arc, sweep, rot_angle );
-        //EllipticalArc* eap = ea.portion(2.0/3.0, 1.0/3.0);
-        //EllipticalArc& elliptic_arc = *eap;
-        EllipticalArc& elliptic_arc = ea;
+        // init elliptical arc
+        SVGEllipticalArc ea( start_point, rx, ry, rot_angle, large_arc, sweep, end_point );
+        SVGEllipticalArc* eap = NULL;
+        if ( toggles[2].on )
+        {
+        	eap = static_cast<SVGEllipticalArc*>(ea.portion(from_t, to_t));
+        }
+        SVGEllipticalArc& elliptic_arc = ea;
         start_angle = elliptic_arc.start_angle();
         end_angle = elliptic_arc.end_angle();
         cx = elliptic_arc.center(X);
@@ -65,27 +72,27 @@ class EllipticToy: public Toy
         // draw the the 2 ellipse with rays rx, ry passing through 
         // the 2 given point and with the x-axis inclined of rot_angle
         draw_elliptical_arc_with_cairo( cr,	centers->first[X], centers->first[Y],	
-        							    rx, ry, 0, M_2PI, rot_angle );
+        							    rx, ry, 0, 2*M_PI, rot_angle );
         cairo_stroke(cr);
         draw_elliptical_arc_with_cairo( cr,	centers->second[X], centers->second[Y],	
-        							    rx, ry, 0, M_2PI, rot_angle );
+        							    rx, ry, 0, 2*M_PI, rot_angle );
         cairo_stroke(cr);
         
         
         // draw the arc with cairo in order to make a visual comparison
-        cairo_set_line_width(cr, 0.3);
-        cairo_set_source_rgba(cr, 1.0, 0.0, 0.0, 1.0);
-        if ( elliptic_arc.sweep_flag() )
-        {
-        	draw_elliptical_arc_with_cairo(	cr,	cx, cy,	rx, ry, 
-        									start_angle, end_angle,	rot_angle );
-    	}
-    	else
-    	{
-        	draw_elliptical_arc_with_cairo(	cr,	cx, cy,	rx, ry, 
-        									end_angle, start_angle,	rot_angle );   		
-    	}
-        cairo_stroke(cr);
+//        cairo_set_line_width(cr, 0.3);
+//        cairo_set_source_rgba(cr, 1.0, 0.0, 0.0, 1.0);
+//        if ( elliptic_arc.sweep_flag() )
+//        {
+//        	draw_elliptical_arc_with_cairo(	cr,	cx, cy,	rx, ry, 
+//        									start_angle, end_angle,	rot_angle );
+//    	}
+//    	else
+//    	{
+//        	draw_elliptical_arc_with_cairo(	cr,	cx, cy,	rx, ry, 
+//        									end_angle, start_angle,	rot_angle );   		
+//    	}
+//        cairo_stroke(cr);
         
         
         // convert the elliptical arc to a sbasis path and draw it
@@ -95,11 +102,29 @@ class EllipticToy: public Toy
         cairo_md_sb(cr, arc);
         cairo_stroke(cr);
         
+        if ( toggles[2].on and eap != NULL )
+        {
+        	
+        	cairo_set_line_width(cr, 0.4);
+        	cairo_set_source_rgba(cr, 0.0, 1.0, 1.0, 1.0);
+        	cairo_move_to(cr, eap->center(X), eap->center(Y));
+        	cairo_line_to(cr, eap->initialPoint()[X], eap->initialPoint()[Y]);
+        	cairo_move_to(cr, eap->center(X), eap->center(Y));
+        	cairo_line_to(cr, eap->finalPoint()[X], eap->finalPoint()[Y]);
+        	cairo_stroke(cr);
+        	D2<SBasis> sub_arc = eap->toSBasis();
+            cairo_md_sb(cr, sub_arc);
+            cairo_stroke(cr);
+        }
         
         draw_controls(cr, width, height, notify);
         
         Toy::draw(cr, notify, width, height, save);
-      
+        
+        if ( toggles[2].on and eap != NULL )
+        {
+        	delete eap;
+        }
     }
 
 
@@ -107,24 +132,25 @@ class EllipticToy: public Toy
     EllipticToy() 
     {
         // change these parameters to get all the possible elliptical arc variants
-        start_angle = (0.0/6.0) * M_PI;
+        start_angle = (11.0/6.0) * M_PI;
         sweep_angle = (2.0/6.0) * M_PI;
         end_angle = start_angle + sweep_angle;
-        rot_angle = (2.0/6.0) * M_PI;
+        rot_angle = (0.0/6.0) * M_PI;
         rx = 200;
         ry = 150;
         cx = 300;
         cy = 300;
     
-
         start_point = Point(cx + rx * std::cos(start_angle), cy + ry * std::sin(start_angle) );
         end_point = Point( cx + rx * std::cos(end_angle), cy + ry * std::sin(end_angle) );
-        std::cerr << "start_point : " << start_point << std::endl;
-        std::cerr << "end_point : " << end_point << std::endl;
-        std::cerr << "d(sp, ep) = " << L2(start_point- end_point) << std::endl;
 
         large_arc = false;
         sweep = true;
+        
+        // parameters for portion method
+        from_t = 0;
+        to_t = 1;
+        
         
         slider_x_min = 130;
         double rot_angle_deg = decimal_round(rad_to_deg(rot_angle),2);
@@ -134,13 +160,14 @@ class EllipticToy: public Toy
         handles.push_back(Point(rx/2 + slider_x_min , 0));
         handles.push_back(Point(ry/2 + slider_x_min, 0));
         handles.push_back(Point(rot_angle_deg/2 + slider_x_min, 0));
+        handles.push_back(Point(100 * from_t + slider_x_min, 0));
+        handles.push_back(Point(100 * to_t + slider_x_min, 0));
         
-        
-        toggles.push_back( Toggle("Large Arc",false) );
-        toggles.push_back( Toggle("Clockwise",true) );
+        toggles.push_back( Toggle("Large Arc", large_arc) );
+        toggles.push_back( Toggle("Clockwise", sweep) );
+        toggles.push_back( Toggle("Enable Portion",false) );
     }
 
-    
   private:
 	  
     void mouse_pressed(GdkEventButton* e) 
@@ -192,13 +219,18 @@ class EllipticToy: public Toy
     
     void draw_controls(cairo_t* cr, int width, int height, std::ostringstream *notify)
     {
-        double rx_slider_y = height - 70;
+        double rx_slider_y = height - 110;
         double ry_slider_y = rx_slider_y + 20;
         double angle_slider_y = ry_slider_y + 20;
+        double from_slider_y = angle_slider_y + 20;
+        double to_slider_y = from_slider_y + 20;
         double ray_slider_len = 250;
         double angle_slider_len = 180;
+        double from_to_slider_len = 100;
         double ray_slider_x_max = slider_x_min + ray_slider_len;
         double angle_slider_x_max = slider_x_min + angle_slider_len;
+        double from_to_slider_x_max = slider_x_min + from_to_slider_len;
+
         
         handles[2][Y] = rx_slider_y;
         if ( handles[2][X] < slider_x_min) handles[2][X] = slider_x_min;
@@ -209,7 +241,14 @@ class EllipticToy: public Toy
         handles[4][Y] = angle_slider_y;
         if ( handles[4][X] < slider_x_min) handles[4][X] = slider_x_min;
         if ( handles[4][X] > angle_slider_x_max) handles[4][X] = angle_slider_x_max;
+        handles[5][Y] = from_slider_y;
+        if ( handles[5][X] < slider_x_min) handles[5][X] = slider_x_min;
+        if ( handles[5][X] > from_to_slider_x_max) handles[5][X] = from_to_slider_x_max;
+        handles[6][Y] = to_slider_y;
+        if ( handles[6][X] < slider_x_min) handles[6][X] = slider_x_min;
+        if ( handles[6][X] > from_to_slider_x_max) handles[6][X] = from_to_slider_x_max;
        
+        
         cairo_set_source_rgba(cr, 0.1, 0.1, 0.1, 1.0);
         cairo_set_line_width(cr, 0.4);
         cairo_move_to(cr, slider_x_min, rx_slider_y);
@@ -218,6 +257,10 @@ class EllipticToy: public Toy
         cairo_rel_line_to(cr, ray_slider_len, 0);
         cairo_move_to(cr, slider_x_min, angle_slider_y);
         cairo_rel_line_to(cr, angle_slider_len, 0);
+        cairo_move_to(cr, slider_x_min, from_slider_y);
+        cairo_rel_line_to(cr, from_to_slider_len, 0);
+        cairo_move_to(cr, slider_x_min, to_slider_y);
+        cairo_rel_line_to(cr, from_to_slider_len, 0);
         cairo_stroke(cr);
         
         
@@ -225,11 +268,14 @@ class EllipticToy: public Toy
         
         toggles[0].bounds = Rect( T, T + Point(100,25) );
         toggles[1].bounds = Rect( T + Point(105,0), T + Point(205,25) );
+        toggles[2].bounds = Rect( T + Point(0,30), T + Point(160,55) );
         draw_toggles(cr, toggles);
         
         *notify << std::endl << "  rx: " << rx << std::endl
                 << "  ry: " << ry << std::endl
-                << "  angle: " << decimal_round(rad_to_deg(rot_angle),2) << std::endl; 
+                << "  angle: " << decimal_round(rad_to_deg(rot_angle),2) << std::endl
+                << "  from: " << decimal_round(from_t,2) << std::endl
+                << "  to: " << decimal_round(to_t,2) << std::endl; 
 
     }
     
@@ -239,9 +285,6 @@ class EllipticToy: public Toy
                                double _rot_angle = 0
                              ) const
     {
-        const double M_HPI = M_PI/2;
-        const double M_2PI = 2*M_PI;
-
         double sin_rot_angle = std::sin(_rot_angle);
         double cos_rot_angle = std::cos(_rot_angle);
 
@@ -255,7 +298,7 @@ class EllipticToy: public Toy
         Point sol = (ep - sp) * im;
         double half_sum_angle = std::atan2(-sol[X], sol[Y]);
         double half_diff_angle;
-        if ( are_near(std::fabs(half_sum_angle), M_HPI) )
+        if ( are_near(std::fabs(half_sum_angle), M_PI/2) )
         {
             double anti_sgn_hsa = (half_sum_angle > 0) ? -1 : 1;
             double arg = anti_sgn_hsa * sol[X] / 2;
@@ -272,16 +315,16 @@ class EllipticToy: public Toy
                 // => there is no ellipse that satisfies the given constraints
                 half_diff_angle = std::acos( arg );
             }
-            half_diff_angle = M_HPI - half_diff_angle;
+            half_diff_angle = M_PI/2 - half_diff_angle;
         }
         else
         {
             double  arg = sol[Y] / ( 2 * std::cos(half_sum_angle) );
             // if |arg| is a little bit > 1 asin returns nan
             if ( are_near(arg, 1) ) 
-                half_diff_angle = M_HPI;
+                half_diff_angle = M_PI/2;
             else if ( are_near(arg, -1) )
-                half_diff_angle = -M_HPI;
+                half_diff_angle = -M_PI/2;
             else
             {
             	if ( !(-1 < arg && arg < 1) ) return NULL;
@@ -294,13 +337,13 @@ class EllipticToy: public Toy
 
         std::pair<Point,Point>* centers = new std::pair<Point,Point>();
 
-        if ( half_sum_angle < 0 ) half_sum_angle += M_2PI;
+        if ( half_sum_angle < 0 ) half_sum_angle += 2*M_PI;
         
         double hda = half_diff_angle;
         if ( hda < 0 ) hda += M_PI;
         double sa = half_sum_angle - hda;
         // 0 <= start_angle < 2PI
-        if ( sa < 0 ) sa += M_2PI;
+        if ( sa < 0 ) sa += 2*M_PI;
         sol[0] = std::cos(sa);
         sol[1] = std::sin(sa);
         centers->first = sp - sol * m;
@@ -308,7 +351,7 @@ class EllipticToy: public Toy
         hda = -half_diff_angle;
         if ( hda < 0 ) hda +=  M_PI;
         sa = half_sum_angle - hda;
-        if ( sa < 0 ) sa += M_2PI;
+        if ( sa < 0 ) sa += 2*M_PI;
         sol[0] = std::cos(sa);
         sol[1] = std::sin(sa);
         centers->second = sp - sol * m;
@@ -318,13 +361,12 @@ class EllipticToy: public Toy
 
   private:
 	std::vector<Toggle> toggles;
-	const static double M_HPI = 0.5*M_PI;
-	const static double M_2PI = 2*M_PI;
 	double slider_x_min;
     double start_angle, sweep_angle, end_angle, rot_angle;
     double rx, ry, cx, cy;
     Point start_point, end_point;
     bool large_arc, sweep;
+    double from_t, to_t;
     
     
 };
