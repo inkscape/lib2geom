@@ -5,14 +5,23 @@ SET(SVG_PARSER_RL "${CMAKE_CURRENT_SOURCE_DIR}/svg-path-parser.rl")
 SET(GENERATE_SVG_PARSER NOT EXISTS "${SVG_PARSER_CPP}")
 SET(REGENERATE_SVG_PARSER "${SVG_PARSER_CPP}" IS_NEWER_THAN "${SVG_PARSER_RL}")
 IF(GENERATE_SVG_PARSER OR REGENERATE_SVG_PARSER)
+  EXECUTE_PROCESS(COMMAND ragel --version	OUTPUT_VARIABLE CMD_OUTPUT ERROR_QUIET)
+  STRING(REGEX MATCH "version [0-9]+[.]*[0-9]*" RALEG_VERSION ${CMD_OUTPUT})
+  STRING(REGEX MATCH "[0-9]+$" RALEG_MINOR ${RALEG_VERSION})
+  IF( ${RALEG_MINOR} LESS 18 )
+    SET(RLCODEGEN_CMD  rlcodegen)
+  ELSE( ${RALEG_MINOR} LESS 18 )
+    SET(RLCODEGEN_CMD rlgen-cd)
+  ENDIF( ${RALEG_MINOR} LESS 18 )
   ADD_CUSTOM_COMMAND(OUTPUT "${SVG_PARSER_CPP}"
                      COMMAND ragel -o "${SVG_PARSER_TMP}" "${SVG_PARSER_RL}"
-                     COMMAND rlcodegen -T0 -o "${SVG_PARSER_CPP}" "${SVG_PARSER_TMP}"
+                     COMMAND ${RLCODEGEN_CMD} -T0 -o "${SVG_PARSER_CPP}" "${SVG_PARSER_TMP}"
                      DEPENDS "${SVG_PARSER_RL}"
                      WORKING_DIRECTORY "${CURRENT_SOURCE_DIR}"
                      COMMENT "Generating svg_path_parser.cpp with ragel"
                      )
 ENDIF(GENERATE_SVG_PARSER OR REGENERATE_SVG_PARSER)
+
 
 SET(2GEOM_SRC
 
@@ -25,10 +34,11 @@ ord.h
 
 #nearestpoint.cpp
 path.cpp
+svg-elliptical-arc.cpp
 path.h
 path-intersection.cpp
 path-intersection.h
-svg-elliptical-arc.h
+
 
 shape.cpp
 shape.h
@@ -110,6 +120,8 @@ solver.h
 sturm.h
 #arc-length.cpp
 #arc-length.h
+
+#line.h
 )
 
 # make lib for 2geom
