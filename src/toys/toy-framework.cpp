@@ -77,7 +77,7 @@ void Toy::draw(cairo_t *cr, std::ostringstream *notify, int width, int height, b
     cairo_set_source_rgba (cr, 0., 0.5, 0, 0.8);
     {
         *notify << std::ends;
-        draw_text(cr, Geom::Point(0, height), notify->str().c_str(), true);
+        draw_text(cr, Geom::Point(0, height-notify_offset), notify->str().c_str(), true);
     }
 }
 

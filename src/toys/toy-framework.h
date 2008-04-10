@@ -24,8 +24,9 @@ public:
     bool mouse_down;
     Geom::Point old_mouse_point;
     int selected;
+    double notify_offset;
 
-    Toy() { mouse_down = false; selected = -1;}
+    Toy() { mouse_down = false; selected = -1; notify_offset = 0;}
 
     virtual ~Toy() {}
 
