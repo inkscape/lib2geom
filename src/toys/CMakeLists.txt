@@ -46,6 +46,7 @@ sb-zeros
 sb1d
 sb2d
 self-intersect
+shuttle
 #sketch-toy
 sweep
 svg-arc
