@@ -44,6 +44,10 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
             if(L2(P - closest) > L2(P - Dom(rts[i])))
                 closest = Dom(rts[i]);
         }
+        if( L2(P - closest) > L2(P - Dom.at0()) )
+        	closest = Dom.at0();
+        if( L2(P - closest) > L2(P - Dom.at1()) )
+        	closest = Dom.at1();
         P = closest;
         cairo_line_to(cr, P);
         dom = !dom;
