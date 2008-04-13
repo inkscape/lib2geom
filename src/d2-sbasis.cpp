@@ -130,7 +130,7 @@ Piecewise<D2<SBasis> > force_continuity(Piecewise<D2<SBasis> > const &f, double 
 }
 
 std::vector<Geom::Piecewise<Geom::D2<Geom::SBasis> > > 
-split_at_discontinuities (Geom::Piecewise<Geom::D2<Geom::SBasis> > const & pwsbin, double tol = .0001)
+split_at_discontinuities (Geom::Piecewise<Geom::D2<Geom::SBasis> > const & pwsbin, double tol)
 {
     using namespace Geom;
     std::vector<Piecewise<D2<SBasis> > > ret;
