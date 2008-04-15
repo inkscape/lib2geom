@@ -6,7 +6,7 @@
 #include <cstdlib>
 
 #include "path-cairo.h"
-#include "toy-framework.cpp"
+#include "toy-framework.h"
 #include "ord.h"
 using namespace Geom;
 

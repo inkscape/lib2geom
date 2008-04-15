@@ -5,9 +5,9 @@
 #include "sbasis-math.h"
 
 #include "path-cairo.h"
-#include "toy-framework.cpp"
+#include "toy-framework.h"
 
-//Random walkers toy, written by mgsloan for a school video proj.
+//Random walkers toy, written by mgsloan, initially for a school video proj.
 
 using namespace Geom;
 

@@ -5,7 +5,7 @@
 #include "svg-path-parser.h"
 
 #include "path-cairo.h"
-#include "toy-framework.cpp"
+#include "toy-framework."
 
 #include <vector>
 using namespace Geom;

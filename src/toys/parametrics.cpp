@@ -124,8 +124,7 @@ class Parametrics: public Toy {
           cairo_pw_d2(cr, port);
           cairo_stroke(cr);
       }
-      std::cout << t << "\n";
-      assert(mode<0 || t<obj.cuts.back()+inc);
+      if(mode>=0 && t>=obj.cuts.back()+inc) t = 0;
       cairo_set_source_rgba (cr, 0.9, 0., 0., 1);
       if(mode<0) {
           draw_axis(cr, obj, 0, from_basis(Point(cos(t),sin(t)),Point(sin(t),-cos(t)),Point(0, 350)));
@@ -155,7 +154,7 @@ class Parametrics: public Toy {
       if(!save) {
       char file[10];
       sprintf(file, "output/%04d.png", count);
-      take_screenshot(file);
+      //take_screenshot(file);
       count++;
       }
      // *notify << "pieces = " << alcat.size() << ";\n";
@@ -176,7 +175,7 @@ class Parametrics: public Toy {
 
   public:
     Parametrics(){
-      mode = -6;
+      mode = 2;
       vector<Path> cp = read_svgd("parametrics.svgd");
       //dump_latex(cp);
       cat = paths_to_pw(cp);

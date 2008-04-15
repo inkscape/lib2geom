@@ -6,7 +6,7 @@
 #include "svg-path-parser.h"
 
 #include "path-cairo.h"
-#include "toy-framework.cpp"
+#include "toy-framework.h"
 #include "transforms.h"
 #include "sbasis-geometric.h"
 

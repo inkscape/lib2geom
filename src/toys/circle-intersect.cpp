@@ -1,5 +1,5 @@
 #include "circle-circle.cpp"
-#include "toy-framework.cpp"
+#include "toy-framework.h"
 
 using namespace Geom;
 
