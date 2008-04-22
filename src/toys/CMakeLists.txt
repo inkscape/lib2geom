@@ -27,6 +27,7 @@ inverse-test
 load-svgd
 match-curve
 mesh-grad
+nearest-points
 #normal-bundle
 offset-test
 pair-intersect
@@ -51,6 +52,7 @@ shuttle
 sweep
 svg-arc
 svg-elliptic-arc-toy
+#line-toy
 #toy-cairo
 winding-test
 "${NEEDS_GSL}"
