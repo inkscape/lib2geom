@@ -87,8 +87,6 @@ std::vector<double> SBasis::valueAndDerivatives(double t, unsigned n) const {
         n--;
     }
     return ret;
-    //TODO
-    throwNotImplemented();
 }
 
 
