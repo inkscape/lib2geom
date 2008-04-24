@@ -28,6 +28,7 @@ load-svgd
 match-curve
 mesh-grad
 nearest-points
+nearest-points2
 #normal-bundle
 offset-test
 pair-intersect
