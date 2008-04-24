@@ -12,6 +12,52 @@ using namespace Geom;
 cairo_t *g_cr = 0;
 const double eps = 0.1;
 
+double nearest(Point& P, D2<SBasis> Dom) {
+    D2<SBasis> dst = Dom - P;
+    SBasis dst2 = derivative(dot(dst, dst));
+    std::vector<double> rts = roots(dst2);
+    Point closest = Dom.at0();
+    double t = 0;
+    for(unsigned i = 0; i < rts.size(); i++) {
+        if(L2(P - closest) > L2(P - Dom(rts[i]))) {
+            closest = Dom(rts[i]);
+            t = rts[i];
+        }
+    }
+    if( L2(P - closest) > L2(P - Dom.at1()) ) {
+        closest = Dom.at1();
+        t = 1;
+    }
+    P = closest; // stupid lack of tuples :)
+    return t;
+}
+
+class Circle{
+public:
+    Point center;
+    double radius;
+    Circle(D2<SBasis> c, double t) {
+        std::vector<Point > ders = c.valueAndDerivatives(t, 3);
+        std::cout << ders[0] << ", "
+                  << ders[1] << ", "
+                  << ders[2] << "\n";
+        double num = cross(ders[1], ders[2]);
+        double den = L2(ders[1]);
+        //curvature = num /den^1.5;
+        printf("%g %g\n", num, den);
+        radius = -den*den*den / num;
+        center = ders[0] + rot90(unit_vector(ders[1])) * radius;
+        std::cout << radius << center <<std::endl;
+    }
+    void draw(cairo_t* cr) {
+        if (radius < 1e5) {
+            cairo_new_sub_path(cr);
+            cairo_arc(cr, center[0], center[1], fabs(radius), 0, M_PI*2);
+            cairo_stroke(cr);
+        }
+    }
+};
+
 class PairShuttle: public Toy {
 unsigned A_bez_ord;
 unsigned B_bez_ord;
@@ -27,39 +73,38 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
     g_cr = cr;
     //if(0) pair_intersect(Asects, Bsects, A, 0, 1, 
     //               B, 0, 1);
-    Point P = handles.back();
-    bool dom = false;
-    cairo_move_to(cr, P);
-    for(int i = 0 ; i < 100; i++) {
-        D2<SBasis> Dom = A;
-        if(dom)
-            Dom = B;
-        D2<SBasis> dst = Dom - P;
-        SBasis dst2 = derivative(dot(dst, dst));
-        std::vector<double> rts = roots(dst2);
-        if(rts.empty()) break;
-        Point closest = Dom(rts[0]);
-        for(unsigned i = 1; i < rts.size(); i++) {
-            //draw_cross(cr, A(rts[i]));
-            if(L2(P - closest) > L2(P - Dom(rts[i])))
-                closest = Dom(rts[i]);
-        }
-        if( L2(P - closest) > L2(P - Dom.at0()) )
-        	closest = Dom.at0();
-        if( L2(P - closest) > L2(P - Dom.at1()) )
-        	closest = Dom.at1();
-        P = closest;
-        cairo_line_to(cr, P);
-        dom = !dom;
-    }
-    cairo_stroke(cr);
+    double pt = nearest(handles[A_bez_ord + B_bez_ord], A);
+    double qt = nearest(handles[A_bez_ord + B_bez_ord + 1], B);
+    Point P = handles[A_bez_ord + B_bez_ord];
+    //Point Q = handles[A_bez_ord + B_bez_ord+1];
     
+    Circle pc(A, pt);
+    Circle qc(B, qt);
+    pc.draw(cr);
+    qc.draw(cr);
+    cairo_move_to(cr, pc.center);
+    cairo_line_to(cr, qc.center);
+
+    if (0) {
+        bool dom = false;
+        cairo_move_to(cr, P);
+        for(int i = 0 ; i < 100; i++) {
+            D2<SBasis> Dom = A;
+            if(dom)
+                Dom = B;
+            
+            double t = nearest(P, Dom);
+            cairo_line_to(cr, P);
+            dom = !dom;
+        }
+        cairo_stroke(cr);
+    }
     Toy::draw(cr, notify, width, height, save);
 }
 public:
     PairShuttle (unsigned A_bez_ord, unsigned B_bez_ord) :
         A_bez_ord(A_bez_ord), B_bez_ord(B_bez_ord) {
-    for(unsigned i = 0; i < A_bez_ord + B_bez_ord+1; i++) handles.push_back(Geom::Point(uniform()*400, uniform()*400));
+    for(unsigned i = 0; i < A_bez_ord + B_bez_ord+2; i++) handles.push_back(Geom::Point(uniform()*400, uniform()*400));
 }
 };
 
