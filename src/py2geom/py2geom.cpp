@@ -47,8 +47,8 @@ BOOST_PYTHON_MODULE(_py2geom)
         .value("parallel", parallel)
         .value("coincident", coincident)
         .value("no_intersection", no_intersection)
-    ;*/
-    def("segment_intersect", segment_intersect);
+    ;
+    def("segment_intersect", segment_intersect);*/
     def("circle_circle_intersection", Geom::circle_circle_intersection);
     
     wrap_point();
