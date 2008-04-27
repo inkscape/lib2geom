@@ -33,7 +33,7 @@
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 
 #include "circle-circle.cpp"
-#include "geom.cpp"
+#include "geom.h"
 
 #include "py2geom.h"
 
@@ -42,12 +42,12 @@ using namespace boost::python;
 BOOST_PYTHON_MODULE(_py2geom)
 {
     
-    enum_<IntersectorKind>("IntersectorKind")
+    /*enum_<IntersectorKind>("IntersectorKind")
         .value("intersects", intersects)
         .value("parallel", parallel)
         .value("coincident", coincident)
         .value("no_intersection", no_intersection)
-    ;
+    ;*/
     def("segment_intersect", segment_intersect);
     def("circle_circle_intersection", Geom::circle_circle_intersection);
     
