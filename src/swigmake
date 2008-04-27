@@ -1,0 +1,21 @@
+CPPFLAGS=-I. $(COMMONCPPFLAGS)
+CFLAGS=-Wall -Wno-unknown-pragmas
+CXXFLAGS=-Wall -Wno-unknown-pragmas
+
+OBJS = lib2geom.so
+
+all:	_lib2geom.so
+
+libvpsc.a: $(OBJS)
+	$(AR) crs libvpsc.a $(OBJS)
+	gcc -shared -o libvpsc.so $(OBJS)
+
+clean:
+	rm -f _lib2geom.so swig_wrap.cxx swig_wrap.o
+
+distclean: clean
+
+_lib2geom.so: lib2geom.so swig.i
+	swig -python -c++ swig.i
+	g++ -c swig_wrap.cxx -I/usr/include/python2.5/
+	g++ -shared $(OBJS) swig_wrap.o -o _lib2geom.so
