@@ -34,6 +34,8 @@ svg-path-parser.cpp
 ord.h
 
 #nearestpoint.cpp
+nearest-point.cpp
+nearest-point.h
 path.cpp
 svg-elliptical-arc.cpp
 path.h
