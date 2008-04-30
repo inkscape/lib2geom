@@ -47,10 +47,10 @@
 using namespace Geom;
 
 
-class nearest_points
+class np_finder
 {
 public:
-	nearest_points(cairo_t* _cr, D2<SBasis> const& _c1, D2<SBasis> const& _c2)
+	np_finder(cairo_t* _cr, D2<SBasis> const& _c1, D2<SBasis> const& _c2)
 		: cr(_cr), c1(_c1), c2(_c2)
 	{
 		dc1 = derivative(c1);
@@ -262,7 +262,7 @@ class NearestPoints : public Toy
         cairo_md_sb(cr, B);
         
         
-        nearest_points np(cr, A, B);
+        np_finder np(cr, A, B);
         np();
         cairo_move_to(cr, np.firstPoint());
         cairo_line_to(cr, np.secondPoint());

@@ -27,8 +27,8 @@ inverse-test
 load-svgd
 match-curve
 mesh-grad
-nearest-points
-nearest-points2
+#nearest-points
+#nearest-points2
 nearest-points3
 #normal-bundle
 offset-test
