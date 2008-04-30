@@ -83,11 +83,10 @@ double LineSegment::nearestPoint(Point const& p, double from, double to) const
 	Point ip = pointAt(from);
 	Point fp = pointAt(to);
 	Point v = fp - ip;
-	double l2sqv = L2sq(v);
 	double t = dot( p - ip, v ) / L2sq(v);
 	if ( t <= 0 )  		return from;
 	else if ( t >= 1 )  return to;
-	else 				return from + t;
+	else 				return from + t*(to-from);
 }
 
 
