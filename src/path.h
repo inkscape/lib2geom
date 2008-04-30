@@ -265,7 +265,10 @@ public:
       return (inner[d] - v).roots();
   }
   
-  //double nearestPoint( Point const& p, double from = 0, double to = 1 ) const;
+  double nearestPoint( Point const& p, double from = 0, double to = 1 ) const
+  {
+	  return Curve::nearestPoint(p, from, to);
+  }
   
   void setPoints(std::vector<Point> ps) {
     for(unsigned i = 0; i <= order; i++) {
@@ -330,7 +333,8 @@ typedef BezierCurve<1> LineSegment;
 typedef BezierCurve<2> QuadraticBezier;
 typedef BezierCurve<3> CubicBezier;
 
-
+template<>
+double LineSegment::nearestPoint(Point const& p, double from, double to) const;
 
 
 class SVGEllipticalArc : public Curve

@@ -76,18 +76,19 @@ int CurveHelpers::root_winding(Curve const &c, Point p) {
 }
 
 
-//template<>
-//double LineSegment::nearestPoint(Point const& p, double from, double to) const
-//{
-//	Point ip = pointAt(from);
-//	Point fp = pointAt(to);
-//	Point v = fp - ip;
-//	double l2v = L2(v);
-//	double t = dot( p - ip, v ) / l2v;
-//	if ( t <= 0 )  		  return from;
-//	else if ( t >= l2v )  return to;
-//	else 				  return t;
-//}
+template<>
+inline
+double LineSegment::nearestPoint(Point const& p, double from, double to) const
+{
+	Point ip = pointAt(from);
+	Point fp = pointAt(to);
+	Point v = fp - ip;
+	double l2sqv = L2sq(v);
+	double t = dot( p - ip, v ) / L2sq(v);
+	if ( t <= 0 )  		return from;
+	else if ( t >= 1 )  return to;
+	else 				return from + t;
+}
 
 
 void Path::swap(Path &other) {
