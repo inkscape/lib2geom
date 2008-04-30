@@ -36,7 +36,7 @@
 
 namespace Geom {
 
-// Base exception class, all 2geom exceptions should be derrived from this one.
+// Base exception class, all 2geom exceptions should be derived from this one.
 class Exception : public std::exception {
 public:
     Exception(const char * message, const char *file, const int line) {
