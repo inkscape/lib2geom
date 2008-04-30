@@ -84,27 +84,29 @@ public:
   virtual void setFinal(Point v) = 0;
   
   virtual
-  double nearestPoint(Point const& p, Curve const& dc, double from = 0, double to = 1) const
+  double nearestPoint( Point const& p, Curve const& dc, 
+		               double from = 0, double to = 1 ) const
   {
 	  return nearest_point(p, toSBasis(), dc.toSBasis(), from, to);
   }
 
   virtual
-  double nearestPoint(Point const& p, double from = 0, double to = 1) const
+  double nearestPoint( Point const& p, double from = 0, double to = 1 ) const
   {
 	  return nearest_point(p, toSBasis(), from, to);
   }
   
   virtual
   std::vector<double> 
-  allNearestPoints(Point const& p, Curve const& dc, double from = 0, double to = 1) const
+  allNearestPoints( Point const& p, Curve const& dc, 
+		            double from = 0, double to = 1 ) const
   {
 	  return all_nearest_points(p, toSBasis(), dc.toSBasis(), from, to);
   }
 
   virtual
   std::vector<double> 
-  allNearestPoints(Point const& p, double from = 0, double to = 1) const
+  allNearestPoints( Point const& p, double from = 0, double to = 1 ) const
   {
 	  return all_nearest_points(p, toSBasis(), from, to);
   }
@@ -118,9 +120,11 @@ public:
 };
 
 class SBasisCurve : public Curve {
+	
 private:
   SBasisCurve();
   D2<SBasis> inner;
+  
 public:
   explicit SBasisCurve(D2<SBasis> const &sb) : inner(sb) {}
   explicit SBasisCurve(Curve const &other) : inner(other.toSBasis()) {}
@@ -144,26 +148,28 @@ public:
 
   std::vector<double> roots(double v, Dim2 d) const { return Geom::roots(inner[d] - v); }
   
-  double nearestPoint(Point const& p, Curve const& dc, double from = 0, double to = 1) const
+  double nearestPoint( Point const& p, Curve const& dc, 
+		               double from = 0, double to = 1 ) const
   {
 	  const SBasisCurve & dsbc = static_cast<const SBasisCurve &>( dc );
 	  return nearest_point(p, inner, dsbc.inner, from, to);
   }
   
-  double nearestPoint(Point const& p, double from = 0, double to = 1) const
+  double nearestPoint( Point const& p, double from = 0, double to = 1 ) const
   {
 	  return nearest_point(p, inner, from, to);
   }
   
   std::vector<double> 
-  allNearestPoints(Point const& p, Curve const& dc, double from = 0, double to = 1) const
+  allNearestPoints( Point const& p, Curve const& dc, 
+		            double from = 0, double to = 1 ) const
   {
 	  const SBasisCurve & dsbc = static_cast<const SBasisCurve &>( dc );
 	  return all_nearest_points(p, inner, dsbc.inner, from, to);
   }
 
   std::vector<double> 
-  allNearestPoints(Point const& p, double from = 0, double to = 1) const
+  allNearestPoints( Point const& p, double from = 0, double to = 1 ) const
   {
 	  return all_nearest_points(p, inner, from, to);
   }
@@ -186,8 +192,10 @@ public:
 
 template <unsigned order>
 class BezierCurve : public Curve {
+	
 private:
   D2<Bezier > inner;
+  
 public:
   template <unsigned required_degree>
   static void assert_degree(BezierCurve<required_degree> const *) {}
@@ -256,7 +264,9 @@ public:
   roots(double v, Dim2 d) const {
       return (inner[d] - v).roots();
   }
-      
+  
+  //double nearestPoint( Point const& p, double from = 0, double to = 1 ) const;
+  
   void setPoints(std::vector<Point> ps) {
     for(unsigned i = 0; i <= order; i++) {
       setPoint(i, ps[i]);
@@ -732,7 +742,7 @@ public:
     }
     return res;
   }
-
+   
   void appendPortionTo(Path &p, double f, double t) const;
 
   Path portion(double f, double t) const {
@@ -754,7 +764,7 @@ public:
     }
     return ret;
   }
-
+  
   void insert(iterator pos, Curve const &curve) {
     Sequence source(1, curve.duplicate());
     try {

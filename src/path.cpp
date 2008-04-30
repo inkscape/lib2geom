@@ -33,6 +33,7 @@
 
 namespace Geom {
 
+
 int CurveHelpers::root_winding(Curve const &c, Point p) {
     std::vector<double> ts = c.roots(p[Y], Y);
 
@@ -73,6 +74,21 @@ int CurveHelpers::root_winding(Curve const &c, Point p) {
     
     return wind;
 }
+
+
+//template<>
+//double LineSegment::nearestPoint(Point const& p, double from, double to) const
+//{
+//	Point ip = pointAt(from);
+//	Point fp = pointAt(to);
+//	Point v = fp - ip;
+//	double l2v = L2(v);
+//	double t = dot( p - ip, v ) / l2v;
+//	if ( t <= 0 )  		  return from;
+//	else if ( t >= l2v )  return to;
+//	else 				  return t;
+//}
+
 
 void Path::swap(Path &other) {
   std::swap(curves_, other.curves_);

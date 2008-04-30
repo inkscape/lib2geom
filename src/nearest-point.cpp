@@ -52,6 +52,11 @@ double nearest_point( Point const& p,
 					  D2<SBasis> const& dc, 
 		              double from, double to )
 {
+	if ( from < 0 || to > 1 )
+	{
+		throwRangeError("[from,to] interval out of bounds");
+	}
+
 	SBasis dd = dot(c - p, dc);	
 	std::vector<double> zeros = Geom::roots(dd);
 	
@@ -85,6 +90,11 @@ all_nearest_points( Point const& p,
 		            D2<SBasis> const& dc, 
 		            double from, double to )
 {
+	if ( from < 0 || to > 1 )
+	{
+		throwRangeError("[from,to] interval out of bounds");
+	}
+
 	std::vector<double> result;
 	SBasis dd = dot(c - p, Geom::derivative(c));
 	
@@ -129,33 +139,48 @@ double nearest_point( Point const& p,
 					  Piecewise< D2<SBasis> > const& dc,
 		              double from, double to )
 {
+	if ( from < c.cuts[0] || to > c.cuts[c.size()] )
+	{
+		throwRangeError("[from,to] interval out of bounds");
+	}
 	if ( c.size() != dc.size() )
 	{
 		throwRangeError("the passed piecewise curve and its derivative have "
 				        "a mismatching number of pieces");
 	}
+	
 	unsigned int si = c.segN(from);
 	unsigned int ei = c.segN(to);
 	if ( si == ei )
 	{
-		return nearest_point(p, c[si], dc[si], c.segT(from, si), c.segT(to, si));
+		double nearest=
+			nearest_point(p, c[si], dc[si], c.segT(from, si), c.segT(to, si));
+		return c.mapToDomain(nearest, si);
 	}
 	double t;
 	double nearest = nearest_point(p, c[si], dc[si], c.segT(from, si));
+	unsigned int ni = si;
+	double dsq;
+	double mindistsq = distanceSq(p, c[si](nearest));
 	for ( unsigned int i = si + 1; i < ei; ++i )
 	{
 		t = nearest_point(p, c[i], dc[i]);
-		if ( nearest > t )
+		dsq = distanceSq(p, c[i](t));
+		if ( mindistsq > dsq )
 		{
 			nearest = t;
+			ni = i;
+			mindistsq = dsq;
 		}
 	}
 	t = nearest_point(p, c[ei], dc[ei], 0, c.segT(to, ei));
-	if ( nearest > t )
+	dsq = distanceSq(p, c[ei](t));
+	if ( mindistsq > dsq )
 	{
 		nearest = t;
+		ni = ei;
 	}
-	return nearest;
+	return c.mapToDomain(nearest, ni);
 }
 
 std::vector<double> 
@@ -164,41 +189,74 @@ all_nearest_points( Point const& p,
 		            Piecewise< D2<SBasis> > const& dc, 
 		            double from, double to )
 {
+	if ( from < c.cuts[0] || to > c.cuts[c.size()] )
+	{
+		throwRangeError("[from,to] interval out of bounds");
+	}
 	if ( c.size() != dc.size() )
 	{
 		throwRangeError("the passed piecewise curve and its derivative have "
 				        "a mismatching number of pieces");
 	}
+	
 	unsigned int si = c.segN(from);
 	unsigned int ei = c.segN(to);
 	if ( si == ei )
 	{
-		return 
-		all_nearest_points(p, c[si], dc[si], c.segT(from, si), c.segT(to, si));
+		std::vector<double>	all_nearest = 
+			all_nearest_points(p, c[si], dc[si], c.segT(from, si), c.segT(to, si));
+		for ( unsigned int i = 0; i < all_nearest.size(); ++i )
+		{
+			all_nearest[i] = c.mapToDomain(all_nearest[i], si);
+		}
+		return all_nearest;
 	}
 	std::vector<double> all_t;
-	std::vector<double> all_nearest 
-		= all_nearest_points(p, c[si], dc[si], c.segT(from, si));
+	std::vector< std::vector<double> > all_np;
+	all_np.push_back( all_nearest_points(p, c[si], dc[si], c.segT(from, si)) );
+	std::vector<unsigned int> ni;
+	ni.push_back(si);
+	double dsq;
+	double mindistsq = distanceSq( p, c[si](all_np.front().front()) );
 	for ( unsigned int i = si + 1; i < ei; ++i )
 	{
 		all_t = all_nearest_points(p, c[i], dc[i]);
-		if ( all_nearest.front() > all_t.front() )
+		dsq = distanceSq( p, c[i](all_t.front()) );
+		if ( mindistsq > dsq )
 		{
-			all_nearest = all_t;
+			all_np.clear();
+			all_np.push_back(all_t);
+			ni.clear();
+			ni.push_back(i);
+			mindistsq = dsq;
 		}
-		else if ( all_nearest.front() == all_t.front() )
+		else if ( mindistsq == dsq )
 		{
-			all_nearest.insert(all_nearest.end(), all_t.begin(), all_t.end());
+			all_np.push_back(all_t);
+			ni.push_back(i);
 		}
 	}
 	all_t = all_nearest_points(p, c[ei], dc[ei], 0, c.segT(to, ei));
-	if ( all_nearest.front() > all_t.front() )
+	if ( mindistsq > dsq )
 	{
-		all_nearest = all_t;
+		for ( unsigned int i = 0; i < all_t.size(); ++i )
+		{
+			all_t[i] = c.mapToDomain(all_t[i], ei);
+		}
+		return all_t;
 	}
-	else if ( all_nearest.front() == all_t.front() )
+	else if ( mindistsq == dsq )
 	{
-		all_nearest.insert(all_nearest.end(), all_t.begin(), all_t.end());
+		all_np.push_back(all_t);
+		ni.push_back(ei);
+	}
+	std::vector<double> all_nearest;
+	for ( unsigned int i = 0; i < all_np.size(); ++i )
+	{
+		for ( unsigned int j = 0; j < all_np[i].size(); ++j )
+		{
+			all_nearest.push_back( c.mapToDomain(all_np[i][j], ni[i]) );
+		}
 	}
 	return all_nearest;
 }

@@ -95,29 +95,60 @@ all_nearest_points( Point const& p,
 double nearest_point( Point const& p, 
 		              Piecewise< D2<SBasis> > const& c, 
 					  Piecewise< D2<SBasis> > const& dc, 
-		              double from = 0, double to = 1 );
+		              double from, double to );
 
 inline
 double nearest_point( Point const& p, 
 		              Piecewise< D2<SBasis> > const& c, 
-		              double from = 0, double to = 1 )
+		              double from, double to )
 {
 	return nearest_point(p, c, Geom::derivative(c), from, to);
 }
+
+inline
+double nearest_point( Point const& p,  
+					  Piecewise< D2<SBasis> > const& c, 
+					  Piecewise< D2<SBasis> > const& dc )
+{
+	return nearest_point(p, c, dc, c.cuts[0], c.cuts[c.size()]);
+}
+
+inline
+double nearest_point( Point const& p, Piecewise< D2<SBasis> > const& c ) 
+{
+	return nearest_point(p, c, c.cuts[0], c.cuts[c.size()]);
+}
+
 
 std::vector<double> 
 all_nearest_points( Point const& p, 
 		            Piecewise< D2<SBasis> > const& c, 
 		            Piecewise< D2<SBasis> > const& dc, 
-		            double from = 0, double to = 1 );
+		            double from, double to );
 
 inline
 std::vector<double> 
 all_nearest_points( Point const& p, 
 					Piecewise< D2<SBasis> > const& c, 
-		            double from = 0, double to = 1 )
+		            double from, double to )
 {
 	return all_nearest_points(p, c,  Geom::derivative(c), from, to);
+}
+
+inline
+std::vector<double> 
+all_nearest_points( Point const& p, 
+		            Piecewise< D2<SBasis> > const& c, 
+		            Piecewise< D2<SBasis> > const& dc )
+{
+	return all_nearest_points(p, c, dc, c.cuts[0], c.cuts[c.size()]);
+}
+
+inline
+std::vector<double> 
+all_nearest_points( Point const& p, Piecewise< D2<SBasis> > const& c ) 
+{
+	return all_nearest_points(p, c, c.cuts[0], c.cuts[c.size()]);
 }
 
 } // end namespace Geom
