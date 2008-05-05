@@ -60,6 +60,8 @@ class NearestPoints : public Toy
         cairo_md_sb(cr, A);
         D2<SBasis> B = handles_to_sbasis(handles.begin()+A_bez_ord, B_bez_ord-1);
         cairo_md_sb(cr, B);
+        D2<SBasis> C = handles_to_sbasis(handles.begin()+A_bez_ord+B_bez_ord-1, C_bez_ord-1);
+        cairo_md_sb(cr, C);
         LineSegment seg(*(handles.end() - 5), *(handles.end() - 4));
         cairo_move_to(cr, *(handles.end() - 5));
         cairo_curve(cr, seg);
@@ -83,7 +85,12 @@ class NearestPoints : public Toy
         t= Geom::nearest_point(handles.back(), A);
         cairo_move_to(cr, handles.back());
         cairo_line_to(cr, A(t));
-        Piecewise< D2<SBasis> > pwB(B);
+        Piecewise< D2<SBasis> > pwB;
+        pwB.push_cut(0);
+        pwB.push_seg(B);
+        pwB.push_cut(0.5);
+        pwB.push_seg(C);
+        pwB.push_cut(1);
         t = Geom::nearest_point(handles.back(), pwB);
         cairo_move_to(cr, handles.back());
         cairo_line_to(cr, pwB(t));
@@ -119,10 +126,10 @@ class NearestPoints : public Toy
     }
 	
   public:
-	NearestPoints(unsigned int _A_bez_ord, unsigned int _B_bez_ord)
-		: A_bez_ord(_A_bez_ord), B_bez_ord(_B_bez_ord)
+	NearestPoints(unsigned int _A_bez_ord, unsigned int _B_bez_ord, unsigned int _C_bez_ord)
+		: A_bez_ord(_A_bez_ord), B_bez_ord(_B_bez_ord), C_bez_ord(_C_bez_ord)
 	{
-		unsigned int total_handles = A_bez_ord + B_bez_ord + 5;
+		unsigned int total_handles = A_bez_ord + B_bez_ord + C_bez_ord - 1 + 5;
 		for ( unsigned int i = 0; i < total_handles; ++i )
 			handles.push_back(Geom::Point(uniform()*400, uniform()*400));
         *(handles.end() - 3) = Point(150, 150);
@@ -132,6 +139,7 @@ class NearestPoints : public Toy
   private:
 	unsigned int A_bez_ord;
 	unsigned int B_bez_ord;
+	unsigned int C_bez_ord;
 };
 
 
@@ -140,12 +148,13 @@ class NearestPoints : public Toy
 int main(int argc, char **argv) 
 {	
 	unsigned int A_bez_ord=8;
-	unsigned int B_bez_ord=5;
+	unsigned int B_bez_ord=4;
+	unsigned int C_bez_ord=4;
     if(argc > 2)
         sscanf(argv[2], "%d", &B_bez_ord);
     if(argc > 1)
         sscanf(argv[1], "%d", &A_bez_ord);
-    init( argc, argv, new NearestPoints(A_bez_ord, B_bez_ord));
+    init( argc, argv, new NearestPoints(A_bez_ord, B_bez_ord, C_bez_ord));
     return 0;
 }
 
