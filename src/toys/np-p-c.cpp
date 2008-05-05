@@ -33,6 +33,7 @@
 #include "d2.h"
 #include "sbasis.h"
 #include "path.h"
+#include "angle.h"
 #include "bezier-to-sbasis.h"
 #include "sbasis-geometric.h"
 #include "piecewise.h"
@@ -41,11 +42,10 @@
 #include "path-cairo.h"
 #include "toy-framework.h"
 
+
 #include <algorithm>
 
-
 using namespace Geom;
-
 
 
 
@@ -60,13 +60,27 @@ class NearestPoints : public Toy
         cairo_md_sb(cr, A);
         D2<SBasis> B = handles_to_sbasis(handles.begin()+A_bez_ord, B_bez_ord-1);
         cairo_md_sb(cr, B);
-        LineSegment seg(*(handles.end() - 3), *(handles.end() - 2));
-        cairo_move_to(cr, *(handles.end() - 3));
+        LineSegment seg(*(handles.end() - 5), *(handles.end() - 4));
+        cairo_move_to(cr, *(handles.end() - 5));
         cairo_curve(cr, seg);
-        cairo_stroke(cr);
+        SVGEllipticalArc earc;
+        bool earc_constraints_satisfied = true;
+        try
+        {
+        	earc.set(*(handles.end() - 3), 200, 150, 0, true, true, *(handles.end() - 2));
+        }
+        catch( RangeError e)
+        {
+        	earc_constraints_satisfied = false;
+        }
+        if ( earc_constraints_satisfied )
+        {
+        	cairo_md_sb(cr, earc.toSBasis());
+        	cairo_stroke(cr);
+        }
         
-        
-        double t = Geom::nearest_point(handles.back(), A);
+        double t;
+        t= Geom::nearest_point(handles.back(), A);
         cairo_move_to(cr, handles.back());
         cairo_line_to(cr, A(t));
         Piecewise< D2<SBasis> > pwB(B);
@@ -76,6 +90,30 @@ class NearestPoints : public Toy
         t = seg.nearestPoint(handles.back());
         cairo_move_to(cr, handles.back());
         cairo_line_to(cr, seg.pointAt(t));
+        if ( earc_constraints_satisfied )
+        {
+        	std::vector<double> times;
+        	try
+        	{
+        		times = earc.allNearestPoints( handles.back() );
+        	}
+        	catch( Geom::Exception e )
+        	{
+        		std::cerr << e.what() << std::endl;
+        	}
+	        for ( unsigned int i = 0; i < times.size(); ++i )
+	        {
+	        	cairo_move_to(cr, handles.back());
+	        	cairo_line_to( cr, earc.pointAt(times[i]) );
+	        }
+        }
+//        std::vector<double> times = Geom::all_nearest_points(handles.back(), pwB);
+//        for ( unsigned int i = 0; i < times.size(); ++i )
+//        {
+//        	cairo_move_to(cr, handles.back());
+//        	cairo_line_to(cr, pwB(times[i]));
+//        }
+
         cairo_stroke(cr);
     	Toy::draw(cr, notify, width, height, save);
     }
@@ -84,9 +122,11 @@ class NearestPoints : public Toy
 	NearestPoints(unsigned int _A_bez_ord, unsigned int _B_bez_ord)
 		: A_bez_ord(_A_bez_ord), B_bez_ord(_B_bez_ord)
 	{
-		unsigned int total_handles = A_bez_ord + B_bez_ord + 3;
+		unsigned int total_handles = A_bez_ord + B_bez_ord + 5;
 		for ( unsigned int i = 0; i < total_handles; ++i )
 			handles.push_back(Geom::Point(uniform()*400, uniform()*400));
+        *(handles.end() - 3) = Point(150, 150);
+        *(handles.end() - 2) = Point(152, 300);
 	}
 	
   private:
@@ -105,7 +145,6 @@ int main(int argc, char **argv)
         sscanf(argv[2], "%d", &B_bez_ord);
     if(argc > 1)
         sscanf(argv[1], "%d", &A_bez_ord);
-
     init( argc, argv, new NearestPoints(A_bez_ord, B_bez_ord));
     return 0;
 }

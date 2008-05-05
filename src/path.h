@@ -337,11 +337,18 @@ template<>
 double LineSegment::nearestPoint(Point const& p, double from, double to) const;
 
 
+
 class SVGEllipticalArc : public Curve
 {
   public:
 	SVGEllipticalArc()
-	{}
+		: m_initial_point(Point(0,0)), m_final_point(Point(0,0)),
+		  m_rx(0), m_ry(0), m_rot_angle(0),
+		  m_large_arc(true), m_sweep(true)
+	{
+		m_start_angle = m_end_angle = 0;
+		m_center = Point(0,0);
+	}
 	
     SVGEllipticalArc( Point _initial_point, double _rx, double _ry,
                       double _rot_angle, bool _large_arc, bool _sweep,
@@ -351,24 +358,30 @@ class SVGEllipticalArc : public Curve
           m_rx(_rx), m_ry(_ry), m_rot_angle(_rot_angle),
           m_large_arc(_large_arc), m_sweep(_sweep)
     {
-        //assert( (ray(X) >= 0) && (ray(Y) >= 0) );
-        if ( are_near(initialPoint(), finalPoint()) )
-        {
-            m_start_angle = m_end_angle = 0;
-            m_center = initialPoint();
-        }
-        else
-        {
             calculate_center_and_extreme_angles();
-        }
     }
 	  
+    void set( Point _initial_point, double _rx, double _ry,
+              double _rot_angle, bool _large_arc, bool _sweep,
+              Point _final_point
+             )
+    {
+    	m_initial_point = _initial_point;
+    	m_final_point = _final_point;
+    	m_rx = _rx;
+    	m_ry = _ry;
+    	m_rot_angle = _rot_angle;
+    	m_large_arc = _large_arc;
+    	m_sweep = _sweep;
+    	calculate_center_and_extreme_angles();
+    }
+
 	Curve* duplicate() const
 	{
 		return new SVGEllipticalArc(*this);
 	}
 	
-    double center(Dim2 i) const
+    double center(unsigned int i) const
     {
         return m_center[i];
     }
@@ -398,7 +411,7 @@ class SVGEllipticalArc : public Curve
         return m_end_angle;
     }
 
-    double ray(Dim2 i) const
+    double ray(unsigned int i) const
     {
         return (i == 0) ? m_rx : m_ry;
     }
@@ -439,7 +452,7 @@ class SVGEllipticalArc : public Curve
 
     bool isDegenerate() const
     {
-        return are_near(initialPoint(), finalPoint());
+        return ( are_near(ray(X), 0) || are_near(ray(Y), 0) );
     }
     
     // TODO: native implementation of the following methods
@@ -458,9 +471,18 @@ class SVGEllipticalArc : public Curve
     	return SBasisCurve(toSBasis()).boundsLocal(i, deg);
     }
     
-    std::vector<double> roots(double v, Dim2 d) const
+    std::vector<double> roots(double v, Dim2 d) const;
+    
+    std::vector<double> 
+    allNearestPoints( Point const& p, double from = 0, double to = 1 ) const;
+    
+    double nearestPoint( Point const& p, double from = 0, double to = 1 ) const
     {
-    	return SBasisCurve(toSBasis()).roots(v, d);
+    	if ( are_near(ray(X), ray(Y)) && are_near(center(), p) )
+    	{
+    		return from;
+    	}
+    	return allNearestPoints(p, from, to).front();
     }
     
     int winding(Point p) const
@@ -468,35 +490,42 @@ class SVGEllipticalArc : public Curve
     	return SBasisCurve(toSBasis()).winding(p);
     }
     
-    Curve *derivative() const
-    {
-    	return SBasisCurve(toSBasis()).derivative();
-    }
+    Curve *derivative() const;
     
     Curve *transformed(Matrix const &m) const
     {
     	return SBasisCurve(toSBasis()).transformed(m);
     }
     
-    std::vector<Point> pointAndDerivatives(Coord t, unsigned n) const
-    {
-    	return SBasisCurve(toSBasis()).pointAndDerivatives(t, n);
-    }
+    std::vector<Point> pointAndDerivatives(Coord t, unsigned int n) const;
     
     D2<SBasis> toSBasis() const;
     
-    double valueAt(Coord t, Dim2 d) const;
-
-    Point pointAt(Coord t) const
+    bool containsAngle(Coord angle) const;
+    
+    double valueAtAngle(Coord t, Dim2 d) const;
+    
+    Point pointAtAngle(Coord t) const
     {
-        Coord tt = from_01_to_02PI(t);
         double sin_rot_angle = std::sin(rotation_angle());
         double cos_rot_angle = std::cos(rotation_angle());
         Matrix m( ray(X) * cos_rot_angle, ray(X) * sin_rot_angle,
                  -ray(Y) * sin_rot_angle, ray(Y) * cos_rot_angle,
                   center(X),              center(Y) );
-        Point p( std::cos(tt), std::sin(tt) );
+        Point p( std::cos(t), std::sin(t) );
         return p * m;
+    }
+    
+    double valueAt(Coord t, Dim2 d) const
+    {
+    	Coord tt = map_to_02PI(t);
+    	return valueAtAngle(tt, d);
+    }
+
+    Point pointAt(Coord t) const
+    {
+        Coord tt = map_to_02PI(t);
+        return pointAtAngle(tt);
     }
 
     std::pair<SVGEllipticalArc, SVGEllipticalArc>
@@ -525,7 +554,6 @@ class SVGEllipticalArc : public Curve
         return rarc;
     }
 
-  private:
     double sweep_angle() const
     {
         Coord d = end_angle() - start_angle();
@@ -534,10 +562,11 @@ class SVGEllipticalArc : public Curve
             d += 2*M_PI;
         return d;
     }
-
-    Coord from_01_to_02PI(Coord t) const;
-
-    void calculate_center_and_extreme_angles() throw(RangeError);
+    
+  private:
+    Coord map_to_02PI(Coord t) const;
+    Coord map_to_01(Coord angle) const; 
+    void calculate_center_and_extreme_angles();
   private:
     Point m_initial_point, m_final_point;
     double m_rx, m_ry, m_rot_angle;
