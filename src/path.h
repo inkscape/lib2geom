@@ -84,26 +84,11 @@ public:
   virtual void setFinal(Point v) = 0;
   
   virtual
-  double nearestPoint( Point const& p, Curve const& dc, 
-		               double from = 0, double to = 1 ) const
-  {
-	  return nearest_point(p, toSBasis(), dc.toSBasis(), from, to);
-  }
-
-  virtual
   double nearestPoint( Point const& p, double from = 0, double to = 1 ) const
   {
 	  return nearest_point(p, toSBasis(), from, to);
   }
   
-  virtual
-  std::vector<double> 
-  allNearestPoints( Point const& p, Curve const& dc, 
-		            double from = 0, double to = 1 ) const
-  {
-	  return all_nearest_points(p, toSBasis(), dc.toSBasis(), from, to);
-  }
-
   virtual
   std::vector<double> 
   allNearestPoints( Point const& p, double from = 0, double to = 1 ) const
@@ -148,26 +133,11 @@ public:
 
   std::vector<double> roots(double v, Dim2 d) const { return Geom::roots(inner[d] - v); }
   
-  double nearestPoint( Point const& p, Curve const& dc, 
-		               double from = 0, double to = 1 ) const
-  {
-	  const SBasisCurve & dsbc = static_cast<const SBasisCurve &>( dc );
-	  return nearest_point(p, inner, dsbc.inner, from, to);
-  }
-  
   double nearestPoint( Point const& p, double from = 0, double to = 1 ) const
   {
 	  return nearest_point(p, inner, from, to);
   }
   
-  std::vector<double> 
-  allNearestPoints( Point const& p, Curve const& dc, 
-		            double from = 0, double to = 1 ) const
-  {
-	  const SBasisCurve & dsbc = static_cast<const SBasisCurve &>( dc );
-	  return all_nearest_points(p, inner, dsbc.inner, from, to);
-  }
-
   std::vector<double> 
   allNearestPoints( Point const& p, double from = 0, double to = 1 ) const
   {
