@@ -132,7 +132,7 @@ Path::allNearestPoints(Point const& _point, double from, double to) const
 	if ( _path.closed() ) ++sz;
 	if ( from < 0 || to > sz )
 	{
-		throwRangeError("[from,to] interval out of bounds");
+		THROW_RANGEERROR("[from,to] interval out of bounds");
 	}
 	double sif, st = modf(from, &sif);
 	double eif, et = modf(to, &eif);
@@ -227,7 +227,7 @@ double Path::nearestPoint(Point const& _point, double from, double to) const
 	if ( _path.closed() ) ++sz;
 	if ( from < 0 || to > sz )
 	{
-		throwRangeError("[from,to] interval out of bounds");
+		THROW_RANGEERROR("[from,to] interval out of bounds");
 	}
 	double sif, st = modf(from, &sif);
 	double eif, et = modf(to, &eif);
@@ -323,7 +323,7 @@ const double eps = .1;
 
 void Path::append(Curve const &curve) {
   if ( curves_.front() != final_ && !are_near(curve.initialPoint(), (*final_)[0], eps) ) {
-    throwContinuityError();
+    THROW_CONTINUITYERROR();
   }
   do_append(curve.duplicate());
 }
@@ -332,7 +332,7 @@ void Path::append(D2<SBasis> const &curve) {
   if ( curves_.front() != final_ ) {
     for ( int i = 0 ; i < 2 ; ++i ) {
       if ( !are_near(curve[i][0][0], (*final_)[0][i], eps) ) {
-        throwContinuityError();
+        THROW_CONTINUITYERROR();
       }
     }
   }
@@ -384,17 +384,17 @@ void Path::check_continuity(Sequence::iterator first_replaced,
   if ( first != last ) {
     if ( first_replaced != curves_.begin() ) {
       if ( !are_near( (*first_replaced)->initialPoint(), (*first)->initialPoint(), eps ) ) {
-        throwContinuityError();
+        THROW_CONTINUITYERROR();
       }
     }
     if ( last_replaced != (curves_.end()-1) ) {
       if ( !are_near( (*(last_replaced-1))->finalPoint(), (*(last-1))->finalPoint(), eps ) ) {
-        throwContinuityError();
+        THROW_CONTINUITYERROR();
       }
     }
   } else if ( first_replaced != last_replaced && first_replaced != curves_.begin() && last_replaced != curves_.end()-1) {
     if ( !are_near((*first_replaced)->initialPoint(), (*(last_replaced-1))->finalPoint(), eps ) ) {
-      throwContinuityError();
+      THROW_CONTINUITYERROR();
     }
   }
 }

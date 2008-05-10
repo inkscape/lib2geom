@@ -415,7 +415,7 @@ private:
 		{
 			pt = ct;
 			double angle = angle_between( n1(ct), evl2(s) - evl1(ct) );
-			assert( !is_nan(angle) );
+			assert( !IS_NAN(angle) );
 			angle = (angle > 0) ? angle - M_PI : angle + M_PI;
 			if ( std::fabs(angle) < M_PI/12 )
 			{
@@ -429,7 +429,7 @@ private:
 				ct = ct + angle / r_dcn1(ct);
 				s = nearest_point(c1(ct), cc2, dc2, cd2);
 //				angle = angle_between( n2(s), evl1(ct) - evl2(s) );
-//				assert( !is_nan(angle) );
+//				assert( !IS_NAN(angle) );
 //				angle = (angle > 0) ? angle - M_PI : angle + M_PI;
 //				s = s + angle / (dcn2(s) * k2(s));
 			}

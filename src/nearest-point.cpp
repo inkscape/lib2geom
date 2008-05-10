@@ -55,7 +55,7 @@ double nearest_point( Point const& p,
 	if ( from > to ) std::swap(from, to);
 	if ( from < 0 || to > 1 )
 	{
-		throwRangeError("[from,to] interval out of bounds");
+		THROW_RANGEERROR("[from,to] interval out of bounds");
 	}
 
 	SBasis dd = dot(c - p, dc);	
@@ -95,7 +95,7 @@ all_nearest_points( Point const& p,
 	if ( from > to ) std::swap(from, to);
 	if ( from < 0 || to > 1 )
 	{
-		throwRangeError("[from,to] interval out of bounds");
+		THROW_RANGEERROR("[from,to] interval out of bounds");
 	}
 
 	std::vector<double> result;
@@ -144,7 +144,7 @@ double nearest_point( Point const& p,
 	if ( from > to ) std::swap(from, to);
 	if ( from < c.cuts[0] || to > c.cuts[c.size()] )
 	{
-		throwRangeError("[from,to] interval out of bounds");
+		THROW_RANGEERROR("[from,to] interval out of bounds");
 	}
 	
 	unsigned int si = c.segN(from);
@@ -198,7 +198,7 @@ all_nearest_points( Point const& p,
 	if ( from > to ) std::swap(from, to);
 	if ( from < c.cuts[0] || to > c.cuts[c.size()] )
 	{
-		throwRangeError("[from,to] interval out of bounds");
+		THROW_RANGEERROR("[from,to] interval out of bounds");
 	}
 	
 	unsigned int si = c.segN(from);

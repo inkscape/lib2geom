@@ -723,7 +723,7 @@ public:
 	  if ( closed() ) ++sz;
 	  if ( t < 0 || t > sz  )
 	  {
-		  throwRangeError("parameter t out of bounds");
+		  THROW_RANGEERROR("parameter t out of bounds");
 	  }
 	  if ( empty() ) return Point(0,0);
 	  double k, lt = modf(t, &k);
@@ -742,7 +742,7 @@ public:
 	  if ( closed() ) ++sz;
 	  if ( t < 0 || t > sz  )
 	  {
-		  throwRangeError("parameter t out of bounds");
+		  THROW_RANGEERROR("parameter t out of bounds");
 	  }
 	  if ( empty() ) return 0;
 	  double k, lt = modf(t, &k);
@@ -1012,7 +1012,7 @@ class PathPortion : public Curve {
 
   Rect boundsFast() const { return actualPath().boundsFast; }
   Rect boundsExact() const { return actualPath().boundsFast; }
-  Rect boundsLocal(Interval i) const { throwNotImplemented(); }
+  Rect boundsLocal(Interval i) const { THROW_NOTIMPLEMENTED(); }
 
   std::vector<double> roots(double v, Dim2 d) const = 0;
 

@@ -32,7 +32,7 @@ static SBasis my_inverse(SBasis f, int order){
     }
     double a1 = f[0][1];
     if(a1 == 0)
-        throwNotInvertible();
+        THROW_NOTINVERTIBLE();
     //assert(a1 != 0);// not invertible.
     if(a1 != 1) {
         f /= a1;

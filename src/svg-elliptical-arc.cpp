@@ -124,7 +124,7 @@ SVGEllipticalArc::roots(double v, Dim2 d) const
 {
 	if ( d > Y )
 	{
-		throwRangeError("dimention out of range");
+		THROW_RANGEERROR("dimention out of range");
 	}
 	
 	std::vector<double> sol;
@@ -160,7 +160,7 @@ SVGEllipticalArc::roots(double v, Dim2 d) const
 			
 			if ( initialPoint()[d] == v && finalPoint()[d] == v )
 			{
-				throwException("infinite solutions");
+				THROW_EXCEPTION("infinite solutions");
 			}
 			if ( (initialPoint()[d] < finalPoint()[d])
 				 && (initialPoint()[d] > v || finalPoint()[d] < v) )
@@ -198,7 +198,7 @@ SVGEllipticalArc::roots(double v, Dim2 d) const
 			double s = (v - center(d)) / ray_prj;
 			if ( s < -1 || s > 1 )
 			{
-				throwLogicalError(msg[d][dim]);
+				THROW_LOGICALERROR(msg[d][dim]);
 			}
 			switch(dim)
 			{	
@@ -417,7 +417,7 @@ double SVGEllipticalArc::valueAtAngle(Coord t, Dim2 d) const
                 + ray(Y) * cos_rot_angle * std::sin(t) 
                 + center(Y);
     }
-    throwRangeError("dimension parameter out of range");
+    THROW_RANGEERROR("dimension parameter out of range");
 }
 
 
@@ -469,12 +469,12 @@ void SVGEllipticalArc::calculate_center_and_extreme_angles()
     	}
     	else
     	{
-    		throwRangeError("initial and final point are the same");
+    		THROW_RANGEERROR("initial and final point are the same");
     	}
     }
 	if ( are_near(ray(X), 0) && are_near(ray(Y), 0) )
 	{ // but initialPoint != finalPoint
-		throwRangeError(
+		THROW_RANGEERROR(
 			"there is no ellipse that satisfies the given constraints: "
 			"ray(X) == 0 && ray(Y) == 0 but initialPoint != finalPoint"
 		);
@@ -502,7 +502,7 @@ void SVGEllipticalArc::calculate_center_and_extreme_angles()
 				m_center = v/2 + finalPoint();
 				return;
 			}
-			throwRangeError(
+			THROW_RANGEERROR(
 				"there is no ellipse that satisfies the given constraints: "
 				"ray(Y) == 0 "
 				"and slope(initialPoint - finalPoint) != rotation_angle "
@@ -511,14 +511,14 @@ void SVGEllipticalArc::calculate_center_and_extreme_angles()
 		}
 		if ( L2sq(v) > 4*ray(X)*ray(X) )
 		{
-			throwRangeError(
+			THROW_RANGEERROR(
 				"there is no ellipse that satisfies the given constraints: "
 				"ray(Y) == 0 and distance(initialPoint, finalPoint) > 2*ray(X)"
 			);
 		}
 		else
 		{
-			throwRangeError(
+			THROW_RANGEERROR(
 				"there is infinite ellipses that satisfy the given constraints: "
 				"ray(Y) == 0  and distance(initialPoint, finalPoint) < 2*ray(X)"
 			);
@@ -551,7 +551,7 @@ void SVGEllipticalArc::calculate_center_and_extreme_angles()
 				m_center = v/2 + finalPoint();
 				return;
 			}
-			throwRangeError(
+			THROW_RANGEERROR(
 				"there is no ellipse that satisfies the given constraints: "
 				"ray(X) == 0 "
 				"and slope(initialPoint - finalPoint) != rotation_angle + PI/2 "
@@ -560,14 +560,14 @@ void SVGEllipticalArc::calculate_center_and_extreme_angles()
 		}
 		if ( L2sq(v) > 4*ray(Y)*ray(Y) )
 		{
-			throwRangeError(
+			THROW_RANGEERROR(
 				"there is no ellipse that satisfies the given constraints: "
 				"ray(X) == 0 and distance(initialPoint, finalPoint) > 2*ray(Y)"
 			);
 		}
 		else
 		{
-			throwRangeError(
+			THROW_RANGEERROR(
 				"there is infinite ellipses that satisfy the given constraints: "
 				"ray(X) == 0  and distance(initialPoint, finalPoint) < 2*ray(Y)"
 			);
@@ -600,7 +600,7 @@ void SVGEllipticalArc::calculate_center_and_extreme_angles()
         else
         {
         	if ( !(-1 < arg && arg < 1) )
-        		throwRangeError(
+        		THROW_RANGEERROR(
         			"there is no ellipse that satisfies the given constraints"
         		);
             // assert( -1 < arg && arg < 1 );
@@ -622,7 +622,7 @@ void SVGEllipticalArc::calculate_center_and_extreme_angles()
         else
         {
         	if ( !(-1 < arg && arg < 1) )
-        		throwRangeError(
+        		THROW_RANGEERROR(
         			"there is no ellipse that satisfies the given constraints"
         		);
             // assert( -1 < arg && arg < 1 );
@@ -686,7 +686,7 @@ allNearestPoints( Point const& p, double from, double to ) const
 	if ( from > to ) std::swap(from, to);
 	if ( from < 0 || to > 1 )
 	{
-		throwRangeError("[from,to] interval out of range");
+		THROW_RANGEERROR("[from,to] interval out of range");
 	}
 	std::vector<double> result;
 	if ( ( are_near(ray(X), 0) && are_near(ray(Y), 0) )  || are_near(from, to) )
@@ -729,7 +729,7 @@ allNearestPoints( Point const& p, double from, double to ) const
 		Point r = p - center();
 		if ( are_near(r, Point(0,0)) )
 		{
-			throwException("infinite nearest points");
+			THROW_EXCEPTION("infinite nearest points");
 		}
 		// TODO: implement case r != 0
 //		Point np = ray(X) * unit_vector(r);
