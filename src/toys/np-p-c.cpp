@@ -51,110 +51,270 @@ using namespace Geom;
 
 class NearestPoints : public Toy
 {
+	enum menu_item_t
+	{
+		FIRST_ITEM = 1,
+		LINE_SEGMENT = FIRST_ITEM,
+		ELLIPTICAL_ARC,
+		SBASIS_CURVE,
+		PIECEWISE,
+		PATH,
+		TOTAL_ITEMS
+	};
+	
+	static const char* menu_items[TOTAL_ITEMS];
+	
   private:
     void draw( cairo_t *cr,	std::ostringstream *notify, 
     		   int width, int height, bool save ) 
     {
+    	
+    	Point p = handles.back();
+    	Point np = p;
+    	std::vector<Point> nps;
+    	
     	cairo_set_line_width (cr, 0.3);
-        D2<SBasis> A = handles_to_sbasis(handles.begin(), A_bez_ord-1);
-        cairo_md_sb(cr, A);
-        D2<SBasis> B = handles_to_sbasis(handles.begin()+A_bez_ord, B_bez_ord-1);
-        cairo_md_sb(cr, B);
-        D2<SBasis> C = handles_to_sbasis(handles.begin()+A_bez_ord+B_bez_ord-1, C_bez_ord-1);
-        cairo_md_sb(cr, C);
-        LineSegment seg(*(handles.end() - 5), *(handles.end() - 4));
-        cairo_move_to(cr, *(handles.end() - 5));
-        cairo_curve(cr, seg);
-        SVGEllipticalArc earc;
-        bool earc_constraints_satisfied = true;
-        try
-        {
-        	earc.set(*(handles.end() - 3), 200, 150, 0, true, true, *(handles.end() - 2));
-        }
-        catch( RangeError e)
-        {
-        	earc_constraints_satisfied = false;
-        }
-        if ( earc_constraints_satisfied )
-        {
-        	cairo_md_sb(cr, earc.toSBasis());
-        	cairo_stroke(cr);
-        }
-        
-        double t;
-        t= Geom::nearest_point(handles.back(), A);
-        cairo_move_to(cr, handles.back());
-        cairo_line_to(cr, A(t));
-        Piecewise< D2<SBasis> > pwB;
-        pwB.push_cut(0);
-        pwB.push_seg(B);
-        pwB.push_cut(0.5);
-        pwB.push_seg(C);
-        pwB.push_cut(1);
-        t = Geom::nearest_point(handles.back(), pwB);
-        cairo_move_to(cr, handles.back());
-        cairo_line_to(cr, pwB(t));
-        t = seg.nearestPoint(handles.back());
-        cairo_move_to(cr, handles.back());
-        cairo_line_to(cr, seg.pointAt(t));
-        if ( earc_constraints_satisfied )
-        {
-        	std::vector<double> times;
-        	try
-        	{
-        		times = earc.allNearestPoints( handles.back() );
-        	}
-        	catch( Geom::Exception e )
-        	{
-        		std::cerr << e.what() << std::endl;
-        	}
-	        for ( unsigned int i = 0; i < times.size(); ++i )
-	        {
-	        	cairo_move_to(cr, handles.back());
-	        	cairo_line_to( cr, earc.pointAt(times[i]) );
-	        }
-        }
-//        std::vector<double> times = Geom::all_nearest_points(handles.back(), pwB);
-//        for ( unsigned int i = 0; i < times.size(); ++i )
-//        {
-//        	cairo_move_to(cr, handles.back());
-//        	cairo_line_to(cr, pwB(times[i]));
-//        }
-
+    	switch ( choice )
+    	{
+    		case '1': 
+    		{
+    			LineSegment seg(handles[0], handles[1]);
+    			cairo_move_to(cr, handles[0]);
+    			cairo_curve(cr, seg);
+    			double t = seg.nearestPoint(p);
+    			np = seg.pointAt(t);
+    			if ( toggles[0].on )
+    			{
+    				nps.push_back(np);
+    			}
+    			break;
+    		}
+    		case '2':
+    		{
+    	        SVGEllipticalArc earc;
+    	        bool earc_constraints_satisfied = true;
+    	        try
+    	        {
+    	        	earc.set(handles[0], 200, 150, 0, true, true, handles[1]);
+    	        }
+    	        catch( RangeError e )
+    	        {
+    	        	earc_constraints_satisfied = false;
+    	        }
+    	        if ( earc_constraints_satisfied )
+    	        {
+    	        	cairo_md_sb(cr, earc.toSBasis());
+    	        	if ( toggles[0].on )
+    	        	{
+    	        		std::vector<double> t = earc.allNearestPoints(p);
+    	        		for ( unsigned int i = 0; i < t.size(); ++i )
+    	        			nps.push_back(earc.pointAt(t[i])); 
+    	        	}
+    	        	else
+    	        	{
+    	        		double t = earc.nearestPoint(p);
+    	        		np = earc.pointAt(t);
+    	        	}
+    	        } 
+    	        break;
+    		}
+    		case '3':
+    		{
+    			D2<SBasis> A = handles_to_sbasis(handles.begin(), total_handles-1);
+    			cairo_md_sb(cr, A);
+    	        if ( toggles[0].on )
+    	        {
+    	        	std::vector<double> t = Geom::all_nearest_points(p, A);
+    	        	for ( unsigned int i = 0; i < t.size(); ++i )
+    	        		nps.push_back(A(t[i])); 
+    	        }
+    	        else
+    	        {
+    	        	double t = nearest_point(p, A);
+    	        	np = A(t);
+    	        }
+    			break;
+    		}
+    		case '4':
+    		{
+    			D2<SBasis> A = handles_to_sbasis(handles.begin(), 3);
+    			D2<SBasis> B = handles_to_sbasis(handles.begin() + 3, 3);
+    			D2<SBasis> C = handles_to_sbasis(handles.begin() + 6, 3);
+    			D2<SBasis> D = handles_to_sbasis(handles.begin() + 9, 3);
+    			cairo_md_sb(cr, A);
+    			cairo_md_sb(cr, B);
+    			cairo_md_sb(cr, C);
+    			cairo_md_sb(cr, D);
+    	        Piecewise< D2<SBasis> > pwc;
+    	        pwc.push_cut(0);
+    	        pwc.push_seg(A);
+    	        pwc.push_cut(0.25);
+    	        pwc.push_seg(B);
+    	        pwc.push_cut(0.50);
+    	        pwc.push_seg(C);
+    	        pwc.push_cut(0.75);
+    	        pwc.push_seg(D);
+    	        pwc.push_cut(1);
+    	        if ( toggles[0].on )
+    	        {
+    	        	std::vector<double> t = Geom::all_nearest_points(p, pwc);
+    	        	for ( unsigned int i = 0; i < t.size(); ++i )
+    	        		nps.push_back(pwc(t[i])); 
+    	        }
+    	        else
+    	        {
+    	        	double t = Geom::nearest_point(p, pwc);
+    	        	np = pwc(t);
+    	        }
+    			break;
+    		}
+    		case '5':
+    		{
+    			closed_toggle = true;
+    			BezierCurve<2> A(handles[0], handles[1], handles[2]);
+    			BezierCurve<3> B(handles[2], handles[3], handles[4], handles[5]);
+    			BezierCurve<3> C(handles[5], handles[6], handles[7], handles[8]);
+    			Path path;
+    	        path.append(A);
+    	        path.append(B);
+    	        path.append(C);
+    	        SVGEllipticalArc D;    	        
+    	        bool earc_constraints_satisfied = true;
+    	        try
+    	        {
+    	        	D.set(handles[8], 160, 80, 0, true, true, handles[9]);
+    	        }
+    	        catch( RangeError e )
+    	        {
+    	        	earc_constraints_satisfied = false;
+    	        }
+    	        if ( earc_constraints_satisfied ) path.append(D);
+    	        if ( toggles[1].on ) path.close(true);
+    	        cairo_path(cr, path);
+    	        if ( path.closed() )
+    	        {
+    	        	cairo_line_to( cr, path[0].initialPoint() );
+    	        }
+    	        if ( toggles[0].on )
+    	        {
+    	        	std::vector<double> t = path.allNearestPoints(p);
+    	        	for ( unsigned int i = 0; i < t.size(); ++i )
+    	        		nps.push_back(path.pointAt(t[i])); 
+    	        }
+    	        else
+    	        {
+    	        	double t = path.nearestPoint(p);
+    	        	np = path.pointAt(t);
+    	        }
+    			break;
+    		}
+    		default:
+    		{
+    			*notify << std::endl;
+				for (int i = FIRST_ITEM; i < TOTAL_ITEMS; ++i)
+				{
+					*notify << "   " << i << " -  " <<  menu_items[i] << std::endl;
+				}
+				Toy::draw(cr, notify, width, height, save);
+				return;
+    		}
+    	}
+   	
+    	if ( toggles[0].on )
+    	{
+    		for ( unsigned int i = 0; i < nps.size(); ++i )
+    		{
+    			cairo_move_to(cr, p);
+    			cairo_line_to(cr, nps[i]);
+    		}
+    	}
+    	else
+    	{
+    		cairo_move_to(cr, p);
+    		cairo_line_to(cr, np);
+    	}
         cairo_stroke(cr);
+        
+    	toggles[0].bounds = Rect( Point(10, height - 50), Point(10, height - 50) + Point(80,25) );
+    	toggles[0].draw(cr);
+    	if ( closed_toggle )
+    	{
+    		toggles[1].bounds = Rect( Point(100, height - 50), Point(100, height - 50) + Point(80,25) );
+    		toggles[1].draw(cr);
+    		closed_toggle = false;
+    	}
+    	
     	Toy::draw(cr, notify, width, height, save);
     }
-	
+    
+    void key_hit(GdkEventKey *e)
+    {
+    	choice = e->keyval;
+    	switch ( choice )
+    	{
+    		case '1': 
+    			total_handles = 2;
+    			break;
+    		case '2':
+    			total_handles = 2;
+    			break;
+    		case '3':
+    			total_handles = 6;
+    			break;
+    		case '4':
+    			total_handles = 13;
+    			break;    
+    		case '5':
+    			total_handles = 10;
+    			break;    
+    		default:
+    			total_handles = 0;
+    	}
+    	handles.clear();
+    	for ( unsigned int i = 0; i <= total_handles; ++i )
+    	{
+    		handles.push_back(Geom::Point(uniform()*400, uniform()*400));
+    	}
+    	redraw();
+    }
+    
+    void mouse_pressed(GdkEventButton* e) 
+    {
+        toggle_events(toggles, e);
+        Toy::mouse_pressed(e);
+    }
+
   public:
-	NearestPoints(unsigned int _A_bez_ord, unsigned int _B_bez_ord, unsigned int _C_bez_ord)
-		: A_bez_ord(_A_bez_ord), B_bez_ord(_B_bez_ord), C_bez_ord(_C_bez_ord)
+	NearestPoints()
+		: total_handles(0), choice('0'), closed_toggle(false)
 	{
-		unsigned int total_handles = A_bez_ord + B_bez_ord + C_bez_ord - 1 + 5;
-		for ( unsigned int i = 0; i < total_handles; ++i )
-			handles.push_back(Geom::Point(uniform()*400, uniform()*400));
-        *(handles.end() - 3) = Point(150, 150);
-        *(handles.end() - 2) = Point(152, 300);
+		handles.push_back(Geom::Point(uniform()*400, uniform()*400));
+		toggles.push_back( Toggle("ALL NP", false) );
+		toggles.push_back( Toggle("CLOSED", false) );
 	}
 	
   private:
-	unsigned int A_bez_ord;
-	unsigned int B_bez_ord;
-	unsigned int C_bez_ord;
+	std::vector<Toggle> toggles;
+	unsigned int total_handles;
+	char choice;
+	bool closed_toggle;
 };
 
+const char* NearestPoints::menu_items[] = 
+{
+	"",
+	"LineSegment",
+	"EllipticalArc",
+	"SBasisCurve",
+	"Piecewise",
+	"Path"
+};
 
 
 
 int main(int argc, char **argv) 
 {	
-	unsigned int A_bez_ord=8;
-	unsigned int B_bez_ord=4;
-	unsigned int C_bez_ord=4;
-    if(argc > 2)
-        sscanf(argv[2], "%d", &B_bez_ord);
-    if(argc > 1)
-        sscanf(argv[1], "%d", &A_bez_ord);
-    init( argc, argv, new NearestPoints(A_bez_ord, B_bez_ord, C_bez_ord));
+    init( argc, argv, new NearestPoints() );
     return 0;
 }
 

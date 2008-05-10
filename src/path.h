@@ -428,13 +428,10 @@ class SVGEllipticalArc : public Curve
     // TODO: native implementation of the following methods
     Rect boundsFast() const
     {
-    	return SBasisCurve(toSBasis()).boundsFast();
+    	return boundsExact();
     }
   
-    Rect boundsExact() const
-    {
-    	return SBasisCurve(toSBasis()).boundsExact();
-    }
+    Rect boundsExact() const;
     
     Rect boundsLocal(Interval i, unsigned int deg) const
     {
@@ -720,20 +717,42 @@ public:
     return ret;
   }
 
-  Point pointAt(double t) const {
-    if(empty()) return Point(0,0);
-    double i, f = modf(t, &i);
-    if(i == size() && f == 0) { i--; }
-    assert(i >= 0 && i <= size());
-    return (*this)[unsigned(i)].pointAt(f);
+  Point pointAt(double t) const 
+  {
+	  unsigned int sz = size();
+	  if ( closed() ) ++sz;
+	  if ( t < 0 || t > sz  )
+	  {
+		  throwRangeError("parameter t out of bounds");
+	  }
+	  if ( empty() ) return Point(0,0);
+	  double k, lt = modf(t, &k);
+	  unsigned int i = static_cast<unsigned int>(k);
+	  if ( i == sz ) 
+	  { 
+		  --i;
+		  lt = 1;
+	  }
+	  return (*this)[i].pointAt(lt);
   }
 
-  double valueAt(double t, Dim2 d) const {
-    if(empty()) return 0;
-    double i, f = modf(t, &i);
-    if(i == size() && f == 0) { i--; }
-    assert(i >= 0 && i <= size());
-    return (*this)[unsigned(i)].valueAt(f, d);
+  double valueAt(double t, Dim2 d) const 
+  {
+	  unsigned int sz = size();
+	  if ( closed() ) ++sz;
+	  if ( t < 0 || t > sz  )
+	  {
+		  throwRangeError("parameter t out of bounds");
+	  }
+	  if ( empty() ) return 0;
+	  double k, lt = modf(t, &k);
+	  unsigned int i = static_cast<unsigned int>(k);
+	  if ( i == sz ) 
+	  { 
+		  --i;
+		  lt = 1;
+	  }
+	  return (*this)[i].valueAt(lt, d);
   }
 
   std::vector<double> roots(double v, Dim2 d) const {
@@ -744,6 +763,27 @@ public:
         res.push_back(temp[j] + i);
     }
     return res;
+  }
+  
+  std::vector<double> 
+  allNearestPoints(Point const& _point, double from, double to) const;
+  
+  std::vector<double>
+  allNearestPoints(Point const& _point) const
+  {
+	  unsigned int sz = size();
+	  if ( closed() ) ++sz;
+	  return allNearestPoints(_point, 0, sz);
+  }
+  
+  
+  double nearestPoint(Point const& _point, double from, double to) const;
+  
+  double nearestPoint(Point const& _point) const
+  {
+	  unsigned int sz = size();
+	  if ( closed() ) ++sz;
+	  return nearestPoint(_point, 0, sz);
   }
    
   void appendPortionTo(Path &p, double f, double t) const;

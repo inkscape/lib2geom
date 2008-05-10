@@ -40,6 +40,85 @@
 
 namespace Geom
 {
+
+
+Rect SVGEllipticalArc::boundsExact() const
+{
+	std::vector<double> extremes(4);
+	double cosrot = std::cos(rotation_angle());
+	double sinrot = std::sin(rotation_angle());
+	extremes[0] = std::atan2( -ray(Y) * sinrot, ray(X) * cosrot );
+	extremes[1] = extremes[0] + M_PI;
+	if ( extremes[0] < 0 ) extremes[0] += 2*M_PI;	
+	extremes[2] = std::atan2( ray(Y) * cosrot, ray(X) * sinrot );
+	extremes[3] = extremes[2] + M_PI;
+	if ( extremes[2] < 0 ) extremes[2] += 2*M_PI;
+	
+	
+	std::vector<double>arc_extremes(4);
+	arc_extremes[0] = initialPoint()[X];
+	arc_extremes[1] = finalPoint()[X];
+	if ( arc_extremes[0] < arc_extremes[1] ) 
+		std::swap(arc_extremes[0], arc_extremes[1]);
+	arc_extremes[2] = initialPoint()[Y];
+	arc_extremes[3] = finalPoint()[Y];
+	if ( arc_extremes[2] < arc_extremes[3] ) 
+		std::swap(arc_extremes[2], arc_extremes[3]);
+	
+	
+	if ( start_angle() < end_angle() )
+	{
+		if ( sweep_flag() )
+		{
+			for ( unsigned int i = 0; i < extremes.size(); ++i )
+			{
+				if ( start_angle() < extremes[i] && extremes[i] < end_angle() )
+				{
+					arc_extremes[i] = pointAtAngle(extremes[i])[i >> 1];
+				}
+			}
+		}
+		else
+		{
+			for ( unsigned int i = 0; i < extremes.size(); ++i )
+			{
+				if ( start_angle() > extremes[i] || extremes[i] > end_angle() )
+				{
+					arc_extremes[i] = pointAtAngle(extremes[i])[i >> 1];
+				}
+			}
+		}
+	}
+	else
+	{
+		if ( sweep_flag() )
+		{
+			for ( unsigned int i = 0; i < extremes.size(); ++i )
+			{
+				if ( start_angle() < extremes[i] || extremes[i] < end_angle() )
+				{
+					arc_extremes[i] = pointAtAngle(extremes[i])[i >> 1];
+				}
+			}
+		}
+		else
+		{
+			for ( unsigned int i = 0; i < extremes.size(); ++i )
+			{
+				if ( start_angle() > extremes[i] && extremes[i] > end_angle() )
+				{
+					arc_extremes[i] = pointAtAngle(extremes[i])[i >> 1];
+				}
+			}		
+		}
+	}
+	
+	return Rect( Point(arc_extremes[1], arc_extremes[3]) , 
+			     Point(arc_extremes[0], arc_extremes[2]) );
+
+}
+
+
 std::vector<double> 
 SVGEllipticalArc::roots(double v, Dim2 d) const
 {
@@ -604,6 +683,7 @@ Coord SVGEllipticalArc::map_to_01(Coord angle) const
 std::vector<double> SVGEllipticalArc::
 allNearestPoints( Point const& p, double from, double to ) const
 {
+	if ( from > to ) std::swap(from, to);
 	if ( from < 0 || to > 1 )
 	{
 		throwRangeError("[from,to] interval out of range");

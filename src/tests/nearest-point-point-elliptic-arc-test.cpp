@@ -1,10 +1,12 @@
 
+#include <vector>
+#include <iostream>
 
 #include "d2.h"
 #include "sbasis.h"
 #include "path.h"
 
-
+using namespace Geom;
 
 double fake_fun( double x, unsigned int i)
 {
