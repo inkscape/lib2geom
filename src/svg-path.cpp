@@ -30,6 +30,7 @@
 
 #include "sbasis-to-bezier.h"
 #include "svg-path.h"
+#include "exception.h"
 
 namespace Geom {
 
@@ -50,8 +51,9 @@ void output(QuadraticBezier const &curve, SVGPathSink &sink) {
     sink.quadTo(curve[1], curve[2]);
 }
 
-void output(SVGEllipticalArc const &curve, SVGPathSink &sink) {
+void output(SVGEllipticalArc const &/*curve*/, SVGPathSink &/*sink*/) {
     // FIXME
+    THROW_NOTIMPLEMENTED();
 }
 
 template <typename T>
