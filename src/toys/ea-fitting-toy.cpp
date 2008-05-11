@@ -158,7 +158,7 @@ bool sbasis_to_svg_elliptical_arc( D2<SBasis> const& curve,
 			std::cerr 
 				<< "tolerance error" << std::endl
 				<< "at point: " << k << std::endl
-				<< "error value: "<< err << std::endl;
+				<< "error value: "<< err << std::endl
 			    << "bound: " << bound << std::endl;	
 			return false;
 		}
