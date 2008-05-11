@@ -19,6 +19,7 @@ curvature-test
 cylinder3d
 #distort
 draw-toy
+ea-fitting-toy
 fitter
 gear
 worms
