@@ -58,6 +58,8 @@ public:
     }
 };
 
+#include "numeric/linear_system.h"
+
 class PairShuttle: public Toy {
 unsigned A_bez_ord;
 unsigned B_bez_ord;
@@ -71,18 +73,55 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
     cairo_md_sb(cr, B);
     vector<double> Asects, Bsects;
     g_cr = cr;
-    
+    // cubic system
+    int sample_size = 100;
+    int order = 6;
+    NL::Matrix m(sample_size, order, 0);
+    NL::Vector v(sample_size);
+    int i = 0;
+    double od = 0, ot = 0;
     for(double t = 0; t < 1; t+= 0.003) {
         Point P = A(t);
         double pt = nearest(P, B);
         double d = distance(A(t), P);
+        if((i > 14) && (i < (14+sample_size))) {
+            cairo_set_source_rgb(cr, 1,0,0);
+            double tp = 1;
+            for(int j = 0; j < order; j++) {
+                m(i-14, j) = tp;
+                tp *= t;
+            }
+            v[i-14] = d;
+        } else{
+            cairo_set_source_rgb(cr, 0,0,0);
+        }
+        if (t > 0) {
+            cairo_move_to(cr, ot*width, od*100);
+            cairo_line_to(cr, t*width, d*100);
+            cairo_stroke(cr);
+        }
+        od = d;
+        ot = t;
+        i++;
+    }
+    cairo_stroke(cr);
+    if(1) {
+    NL::LinearSystem ls(m, v);
+    NL::Vector coeff = ls.SV_solve();
+    for(double t = 0; t < 1; t+= 0.003) {
+        double d = 0;
+        double tp = 1;
+        for(int j = 0; j < order; j++) {
+            d += coeff[j]*tp;
+            tp *= t;
+        }
         if (t == 0)
             cairo_move_to(cr, t*width, d*100);
         else
             cairo_line_to(cr, t*width, d*100);
     }
     cairo_stroke(cr);
-
+    }
     Toy::draw(cr, notify, width, height, save);
 }
 public:
