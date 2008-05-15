@@ -906,6 +906,7 @@ public:
 
   void append(Curve const &curve);
   void append(D2<SBasis> const &curve);
+  void append(Path const &other);
 
   template <typename CurveType, typename A>
   void appendNew(A a) {

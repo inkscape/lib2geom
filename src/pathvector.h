@@ -44,6 +44,8 @@ typedef std::vector<Geom::Path> PathVector;
 
 PathVector operator* (PathVector const & path_in, Matrix const &m);
 
+PathVector reverse_paths_and_order (PathVector const & path_in);
+
 }
 
 #endif // SEEN_GEOM_PATHVECTOR_H

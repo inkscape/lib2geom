@@ -42,12 +42,25 @@
 
 namespace Geom {
 
+// TODO: see which of these functions can be inlined for optimization
 
 PathVector operator* (PathVector const & path_in, Matrix const &m)
 {
     PathVector path_out;
     for(PathVector::const_iterator it = path_in.begin(); it != path_in.end(); ++it) {
         path_out.push_back( (*it) * m );
+    }
+    return path_out;
+}
+
+/**
+ * Reverses all Paths and the order of paths in the vector as well
+ **/
+PathVector reverse_paths_and_order (PathVector const & path_in)
+{
+    PathVector path_out;
+    for (PathVector::const_reverse_iterator it = path_in.rbegin(); it != path_in.rend(); it++) {
+        path_out.push_back( (*it).reverse() );
     }
     return path_out;
 }
