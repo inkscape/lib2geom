@@ -32,21 +32,30 @@
  * the specific language governing rights and limitations.
  */
 
-#ifndef SEEN_GEOM_PATHVECTOR_H
-#define SEEN_GEOM_PATHVECTOR_H
+#ifndef SEEN_GEOM_PATHVECTOR_CPP
+#define SEEN_GEOM_PATHVECTOR_CPP
 
-#include "forward.h"
+#include "pathvector.h"
+
+#include "path.h"
+#include "matrix.h"
 
 namespace Geom {
 
-typedef std::vector<Geom::Path> PathVector;
 
-
-PathVector operator* (PathVector const & path_in, Matrix const &m);
-
+PathVector operator* (PathVector const & path_in, Matrix const &m)
+{
+    PathVector path_out;
+    for(PathVector::const_iterator it = path_in.begin(); it != path_in.end(); ++it) {
+        path_out.push_back( (*it) * m );
+    }
+    return path_out;
 }
 
-#endif // SEEN_GEOM_PATHVECTOR_H
+
+} // namespace Geom
+
+#endif // SEEN_GEOM_PATHVECTOR_CPP
 
 /*
   Local Variables:

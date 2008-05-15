@@ -41,6 +41,7 @@ svg-elliptical-arc.cpp
 path.h
 path-intersection.cpp
 path-intersection.h
+pathvector.cpp
 pathvector.h
 
 forward.h

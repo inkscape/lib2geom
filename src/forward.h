@@ -33,15 +33,54 @@
 #ifndef SEEN_GEOM_FORWARD_H
 #define SEEN_GEOM_FORWARD_H
 
-#include <vector>
+#include <vector>   // include this dependency so PathVector can be defined more explicitly
 
 namespace Geom {
 
-class Path;
-class Curve;
+template <unsigned> class BezierCurve;
+template<> class BezierCurve<0>;
+typedef BezierCurve<2> QuadraticBezier;
+typedef BezierCurve<1> LineSegment;
+typedef BezierCurve<3> CubicBezier;
+
+typedef double Coord;
 class Point;
 
-class PathVector;
+class Exception;
+class LogicalError;
+class RangeError;
+class NotImplemented;
+class InvariantsViolation;
+class NotInvertible;
+class ContinuityError;
+
+class Interval;
+class Linear;
+class Hat;
+class Tri;
+
+class Matrix;
+class Translate;
+class Rotate;
+class Scale;
+
+class Curve;
+class Path;
+typedef std::vector<Path> PathVector;
+
+template <class> class D2;
+template <typename> class Piecewise;
+class SBasis;
+class SBasisCurve;
+
+typedef D2<Interval> Rect;
+
+class Shape;
+class Region;
+
+class SVGEllipticalArc;
+class SVGPathSink;
+template <typename> class SVGPathGenerator;
 
 }
 
