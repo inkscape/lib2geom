@@ -714,6 +714,7 @@ public:
       ret.append(*temp);
       delete temp;
     }
+    ret.closed_ = closed_;
     return ret;
   }
 
@@ -842,6 +843,11 @@ public:
 
   void erase(iterator first, iterator last) {
     do_update(first.impl_, last.impl_, curves_.begin(), curves_.begin());
+  }
+
+  // erase last segment of path
+  void erase_last() {
+    erase(curves_.end()-2);
   }
 
   void replace(iterator replaced, Curve const &curve) {
