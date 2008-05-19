@@ -1,3 +1,9 @@
+
+#ifndef _2GEOM_TOY_FRAMEWORK_H_
+#define _2GEOM_TOY_FRAMEWORK_H_
+
+
+
 #include <iostream>
 #include <sstream>
 #include <gtk/gtk.h>
@@ -66,3 +72,5 @@ struct Toggle {
 
 void toggle_events(std::vector<Toggle> &ts, GdkEventButton* e);
 void draw_toggles(cairo_t *cr, std::vector<Toggle> &ts);
+
+#endif // _2GEOM_TOY_FRAMEWORK_H_
