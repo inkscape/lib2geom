@@ -17,6 +17,7 @@ convex-toy
 curve-toy
 curvature-test
 cylinder3d
+dcc-toy
 #distort
 draw-toy
 ea-fitting-toy
