@@ -577,6 +577,17 @@ public:
     return old;
   }
 
+  BaseIterator &operator--() {
+    --impl_;
+    return *this;
+  }
+
+  BaseIterator operator--(int) {
+    BaseIterator old=*this;
+    --(*this);
+    return old;
+  }
+
 private:
   BaseIterator(IteratorImpl const &pos) : impl_(pos) {}
 
