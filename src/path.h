@@ -208,7 +208,7 @@ public:
   bool isDegenerate() const { return inner.isConstant(); }
 
   void setInitial(Point v) { setPoint(0, v); }
-  void setFinal(Point v)   { setPoint(1, v); }
+  void setFinal(Point v)   { setPoint(order, v); }
 
   void setPoint(unsigned ix, Point v) { inner[X].setPoint(ix, v[X]); inner[Y].setPoint(ix, v[Y]); }
   Point const operator[](unsigned ix) const { return Point(inner[X][ix], inner[Y][ix]); }
