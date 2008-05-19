@@ -58,7 +58,7 @@ interpolate ( D2<SBasis> const& A, D2<SBasis> const& B,
 				double interpolation_st, double interval_st, double interval_et, 
 				double step )
 {
-	SBasis piece(0);
+	SBasis piece(0.0);
 	const unsigned int piece_degree = 3;
 	const unsigned int samples_per_piece = interpolation_ei - interpolation_si;
 	if (samples_per_piece == 2)
@@ -299,7 +299,7 @@ private:
 	  }
 	  cairo_set_source_rgb(cr, 0.7,0,0);
 	  cairo_pw_d2(cr, pwc);
-	  draw_handle(cr, pwc(0));
+	  draw_handle(cr, pwc(0.0));
 	  draw_handle(cr, pwc(0.25));
 	  draw_handle(cr, pwc(0.5));
 	  draw_handle(cr, pwc(0.75));
