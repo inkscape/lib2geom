@@ -7,26 +7,11 @@ pascals_triangle = []
 rows_done = 0
 
 def choose(n, k):
-    # indexing is (0,0,), (1,0), (1,1), (2, 0)...
-    # to get (i, j) i*(i+1)/2 + j
-    global rows_done,pascals_triangle
-    if(k < 0 or k > n):
-        return 0;
-    if(rows_done <= n):
-        if(rows_done == 0):
-            pascals_triangle.append(1);
-            rows_done = 1;
-        while(rows_done <= n):
-            p = len(pascals_triangle) - rows_done;
-            pascals_triangle.append(1);
-            for i in range(rows_done-1):
-                pascals_triangle.append(pascals_triangle[p] 
-                                        + pascals_triangle[p+1]);
-		p+=1
-            pascals_triangle.append(1);
-            rows_done +=1;
-    row = (n*(n+1))/2;
-    return pascals_triangle[row+k];
+    r = 1
+    for i in range(1,k+1):
+        r *= n-k+i
+        r /= i
+    return r
 
 # http://www.research.att.com/~njas/sequences/A109954
 def T(n, k):
@@ -59,10 +44,10 @@ def simple(q):
 
 print "The aim of the game is to work out the correct indexing to make the two matrices match :)"
 
-s = simple(7)
+s = simple(4)
 si = floor(inverse(s)+0.5)
 print si.astype(Int)
-print inver(7)
+print inver(4)
 exit(0)
 print "<html><head><title></title></head><body>"
 
