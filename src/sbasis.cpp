@@ -69,22 +69,15 @@ bool SBasis::isFinite() const {
 }
 
 std::vector<double> SBasis::valueAndDerivatives(double t, unsigned n) const {
-    std::vector<double> ret;
+    std::vector<double> ret(n);
     if(n==1) {
         ret.push_back(valueAt(t));
         return ret;
     }
-    if(n==2) {
-        double der;
-        ret.push_back(valueAndDerivative(t, der));
-        ret.push_back(der);
-        return ret;
-    }
     SBasis tmp = *this;
-    while(n > 0) {
-        ret.push_back(tmp.valueAt(t));
-        tmp = derivative(tmp);
-        n--;
+    for(unsigned i = 0; i < n; i++) {
+        ret[i] = tmp.valueAt(t);
+        tmp.derive();
     }
     return ret;
 }
@@ -240,21 +233,39 @@ SBasis derivative(SBasis const &a) {
     SBasis c;
     c.resize(a.size(), Linear(0,0));
 
-    for(unsigned k = 0; k < a.size(); k++) {
-        double d = (2*k+1)*Tri(a[k]);
-
-        for(unsigned dim = 0; dim < 2; dim++) {
-            c[k][dim] = d;
-            if(k+1 < a.size()) {
-                if(dim)
-                    c[k][dim] = d - (k+1)*a[k+1][dim];
-                else
-                    c[k][dim] = d + (k+1)*a[k+1][dim];
-            }
-        }
+    for(unsigned k = 0; k < a.size()-1; k++) {
+        double d = (2*k+1)*(a[k][1] - a[k][0]);
+        
+        c[k][0] = d + (k+1)*a[k+1][0];
+        c[k][1] = d - (k+1)*a[k+1][1];
+    }
+    int k = a.size()-1;
+    double d = (2*k+1)*(a[k][1] - a[k][0]);
+    if(d == 0)
+        c.pop_back();
+    else {
+        c[k][0] = d;
+        c[k][1] = d;
     }
 
     return c;
+}
+
+void SBasis::derive() { // in place version
+    for(unsigned k = 0; k < size()-1; k++) {
+        double d = (2*k+1)*((*this)[k][1] - (*this)[k][0]);
+        
+        (*this)[k][0] = d + (k+1)*(*this)[k+1][0];
+        (*this)[k][1] = d - (k+1)*(*this)[k+1][1];
+    }
+    int k = size()-1;
+    double d = (2*k+1)*((*this)[k][1] - (*this)[k][0]);
+    if(d == 0)
+        pop_back();
+    else {
+        (*this)[k][0] = d;
+        (*this)[k][1] = d;
+    }
 }
 
 //TODO: convert int k to unsigned k, and remove cast
