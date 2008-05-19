@@ -668,14 +668,13 @@ public:
 
   Curve const &operator[](unsigned i) const { return *curves_[i]; }
 
-  iterator begin() { return curves_.begin(); }
-  iterator end() { return curves_.end()-1; }
-
   Curve const &front() const { return *curves_[0]; }
   Curve const &back() const { return *curves_[curves_.size()-2]; }
 
   const_iterator begin() const { return curves_.begin(); }
   const_iterator end() const { return curves_.end()-1; }
+  iterator begin() { return curves_.begin(); }
+  iterator end() { return curves_.end()-1; }
 
   const_iterator end_open() const { return curves_.end()-1; }
   const_iterator end_closed() const { return curves_.end(); }
@@ -909,6 +908,18 @@ public:
 
   Point initialPoint() const { return (*final_)[1]; }
   Point finalPoint() const { return (*final_)[0]; }
+
+  void setInitial(Point const& p)
+  {
+     curves_[0]->setInitial(p);
+     final_->setFinal(p);
+  }
+
+  void setFinal(Point const& p)
+  {
+     curves_[curves_.size()-2]->setFinal(p);
+     final_->setInitial(p);
+  }
 
   void append(Curve const &curve);
   void append(D2<SBasis> const &curve);
