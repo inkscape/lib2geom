@@ -18,9 +18,9 @@ double fake_fun( double x, unsigned int i)
 void ea_np_test()
 {
 	static const unsigned int N = 3000000;
-	std::vector<SVGEllipticalArc> eas;
+	std::vector<EllipticalArc> eas;
 	//std::vector< D2<SBasis> > easb;
-	SVGEllipticalArc ea;
+	EllipticalArc ea;
 	double rx, ry, rot;
 	bool large_flag, sweep_flag;
 	Point p1, p2;
@@ -38,7 +38,7 @@ void ea_np_test()
 		p2 = Point(400 * uniform(), 400 * uniform());
 		try
 		{
-			ea = SVGEllipticalArc(p1, rx, ry, rot, large_flag, sweep_flag, p2);
+			ea = EllipticalArc(p1, rx, ry, rot, large_flag, sweep_flag, p2);
 			
 		}
 		catch ( RangeError e )

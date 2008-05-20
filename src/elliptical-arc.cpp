@@ -42,7 +42,7 @@ namespace Geom
 {
 
 
-Rect SVGEllipticalArc::boundsExact() const
+Rect EllipticalArc::boundsExact() const
 {
 	std::vector<double> extremes(4);
 	double cosrot = std::cos(rotation_angle());
@@ -120,7 +120,7 @@ Rect SVGEllipticalArc::boundsExact() const
 
 
 std::vector<double> 
-SVGEllipticalArc::roots(double v, Dim2 d) const
+EllipticalArc::roots(double v, Dim2 d) const
 {
 	if ( d > Y )
 	{
@@ -303,9 +303,9 @@ SVGEllipticalArc::roots(double v, Dim2 d) const
 }
 
 // D(E(t,C),t) = E(t+PI/2,O)
-Curve* SVGEllipticalArc::derivative() const
+Curve* EllipticalArc::derivative() const
 {
-	SVGEllipticalArc* result = new SVGEllipticalArc(*this);
+	EllipticalArc* result = new EllipticalArc(*this);
 	result->m_center[X] = result->m_center[Y] = 0;
 	result->m_start_angle += M_PI/2;
 	if( !( result->m_start_angle < 2*M_PI ) )
@@ -324,13 +324,13 @@ Curve* SVGEllipticalArc::derivative() const
 }
 
 std::vector<Point> 
-SVGEllipticalArc::pointAndDerivatives(Coord t, unsigned int n) const
+EllipticalArc::pointAndDerivatives(Coord t, unsigned int n) const
 {
 	std::vector<Point> result;
 	result.reserve(n);
 	double angle = map_unit_interval_on_circular_arc(t, start_angle(), 
 			                                         end_angle(), sweep_flag());
-	SVGEllipticalArc ea(*this);
+	EllipticalArc ea(*this);
 	ea.m_center = Point(0,0);
 	unsigned int m = std::min(n, 4u);
 	for ( unsigned int i = 0; i < m; ++i )
@@ -355,7 +355,7 @@ SVGEllipticalArc::pointAndDerivatives(Coord t, unsigned int n) const
 	return result;
 }
 
-D2<SBasis> SVGEllipticalArc::toSBasis() const
+D2<SBasis> EllipticalArc::toSBasis() const
 {
     // the interval of parametrization has to be [0,1]
     Coord et = start_angle() + ( sweep_flag() ? sweep_angle() : -sweep_angle() );
@@ -374,7 +374,7 @@ D2<SBasis> SVGEllipticalArc::toSBasis() const
 }
 
 
-bool SVGEllipticalArc::containsAngle(Coord angle) const
+bool EllipticalArc::containsAngle(Coord angle) const
 {
 	if ( sweep_flag() )
 		if ( start_angle() < end_angle() )
@@ -401,7 +401,7 @@ bool SVGEllipticalArc::containsAngle(Coord angle) const
 }
 
 
-double SVGEllipticalArc::valueAtAngle(Coord t, Dim2 d) const
+double EllipticalArc::valueAtAngle(Coord t, Dim2 d) const
 {
     double sin_rot_angle = std::sin(rotation_angle());
     double cos_rot_angle = std::cos(rotation_angle());
@@ -421,7 +421,7 @@ double SVGEllipticalArc::valueAtAngle(Coord t, Dim2 d) const
 }
 
 
-Curve* SVGEllipticalArc::portion(double f, double t) const 
+Curve* EllipticalArc::portion(double f, double t) const 
 {
 	if (f < 0) f = 0;
 	if (f > 1) f = 1;
@@ -429,14 +429,14 @@ Curve* SVGEllipticalArc::portion(double f, double t) const
 	if (t > 1) t = 1;
 	if ( are_near(f, t) )
 	{
-		SVGEllipticalArc* arc = new SVGEllipticalArc();
+		EllipticalArc* arc = new EllipticalArc();
 		arc->m_center = arc->m_initial_point = arc->m_final_point = pointAt(f);
 		arc->m_start_angle = arc->m_end_angle = m_start_angle;
 		arc->m_rot_angle = m_rot_angle;
 		arc->m_sweep = m_sweep;
 		arc->m_large_arc = m_large_arc;
 	}
-    SVGEllipticalArc* arc = new SVGEllipticalArc( *this );
+    EllipticalArc* arc = new EllipticalArc( *this );
     arc->m_initial_point = pointAt(f);
     arc->m_final_point = pointAt(t);
     double sa = sweep_flag() ? sweep_angle() : -sweep_angle();
@@ -457,7 +457,7 @@ Curve* SVGEllipticalArc::portion(double f, double t) const
 }
 
 // NOTE: doesn't work with 360 deg arcs
-void SVGEllipticalArc::calculate_center_and_extreme_angles()
+void EllipticalArc::calculate_center_and_extreme_angles()
 {
     if ( are_near(initialPoint(), finalPoint()) )
     {
@@ -656,7 +656,7 @@ void SVGEllipticalArc::calculate_center_and_extreme_angles()
     }
 }
 
-Coord SVGEllipticalArc::map_to_02PI(Coord t) const
+Coord EllipticalArc::map_to_02PI(Coord t) const
 {
     if ( sweep_flag() )
     {
@@ -673,14 +673,14 @@ Coord SVGEllipticalArc::map_to_02PI(Coord t) const
     }
 }
 
-Coord SVGEllipticalArc::map_to_01(Coord angle) const 
+Coord EllipticalArc::map_to_01(Coord angle) const 
 {
 	return map_circular_arc_on_unit_interval(angle, start_angle(), 
 			                                 end_angle(), sweep_flag());
 }
 
 
-std::vector<double> SVGEllipticalArc::
+std::vector<double> EllipticalArc::
 allNearestPoints( Point const& p, double from, double to ) const
 {
 	if ( from > to ) std::swap(from, to);

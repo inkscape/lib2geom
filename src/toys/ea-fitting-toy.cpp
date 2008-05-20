@@ -84,7 +84,7 @@ class elliptiarc_converter
   public:
 	typedef D2<SBasis> curve_type;
 
-	elliptiarc_converter( SVGEllipticalArc& _ea,
+	elliptiarc_converter( EllipticalArc& _ea,
 						  curve_type const& _curve,
 						  unsigned int _N,
 						  double _tolerance )
@@ -346,7 +346,7 @@ class elliptiarc_converter
 		// finally we're going to create the elliptical arc!
 		try
 		{
-			ea = SVGEllipticalArc( initial_point,
+			ea = EllipticalArc( initial_point,
 					               rx, ry, rot,
 					               large_arc_flag, 
 					               sweep_flag,
@@ -408,7 +408,7 @@ class elliptiarc_converter
 		return true;
 	}
 	
-	SVGEllipticalArc& result()
+	EllipticalArc& result()
 		{ return ea; }
 
 
@@ -448,7 +448,7 @@ class elliptiarc_converter
 		{ return angle_err; }
 
 private:
-	SVGEllipticalArc& ea;
+	EllipticalArc& ea;
 	const curve_type & curve;
 	Piecewise<D2<SBasis> > dcurve;
 	double tolerance, tol_at_extr, tol_at_center, angle_tol;
@@ -482,7 +482,7 @@ class EAFittingToy : public Toy
     	cairo_set_source_rgba(cr, 0.0, 0.0, 0.7, 1.0);
     	try
     	{
-    		SVGEllipticalArc EA;
+    		EllipticalArc EA;
     		elliptiarc_converter convert(EA, SB, 10, tolerance);
     		if ( !convert() ) 
     		{

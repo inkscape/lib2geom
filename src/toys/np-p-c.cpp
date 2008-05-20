@@ -91,7 +91,7 @@ class NearestPoints : public Toy
     		}
     		case '2':
     		{
-    	        SVGEllipticalArc earc;
+    	        EllipticalArc earc;
     	        bool earc_constraints_satisfied = true;
     	        try
     	        {
@@ -178,7 +178,7 @@ class NearestPoints : public Toy
     	        path.append(A);
     	        path.append(B);
     	        path.append(C);
-    	        SVGEllipticalArc D;    	        
+    	        EllipticalArc D;    	        
     	        bool earc_constraints_satisfied = true;
     	        try
     	        {

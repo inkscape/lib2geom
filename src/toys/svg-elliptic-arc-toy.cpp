@@ -50,13 +50,13 @@ class EllipticToy: public Toy
         }
         
         // init elliptical arc
-        SVGEllipticalArc ea( start_point, rx, ry, rot_angle, large_arc, sweep, end_point );
-        SVGEllipticalArc* eap = NULL;
+        EllipticalArc ea( start_point, rx, ry, rot_angle, large_arc, sweep, end_point );
+        EllipticalArc* eap = NULL;
         if ( toggles[2].on )
         {
-        	eap = static_cast<SVGEllipticalArc*>(ea.portion(from_t, to_t));
+        	eap = static_cast<EllipticalArc*>(ea.portion(from_t, to_t));
         }
-        SVGEllipticalArc& elliptic_arc = ea;
+        EllipticalArc& elliptic_arc = ea;
         start_angle = elliptic_arc.start_angle();
         end_angle = elliptic_arc.end_angle();
         cx = elliptic_arc.center(X);

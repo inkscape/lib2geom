@@ -308,10 +308,10 @@ double LineSegment::nearestPoint(Point const& p, double from, double to) const;
 
 
 
-class SVGEllipticalArc : public Curve
+class EllipticalArc : public Curve
 {
   public:
-	SVGEllipticalArc()
+	EllipticalArc()
 		: m_initial_point(Point(0,0)), m_final_point(Point(0,0)),
 		  m_rx(0), m_ry(0), m_rot_angle(0),
 		  m_large_arc(true), m_sweep(true)
@@ -320,10 +320,10 @@ class SVGEllipticalArc : public Curve
 		m_center = Point(0,0);
 	}
 	
-    SVGEllipticalArc( Point _initial_point, double _rx, double _ry,
-                      double _rot_angle, bool _large_arc, bool _sweep,
-                      Point _final_point
-                    )
+    EllipticalArc( Point _initial_point, double _rx, double _ry,
+                   double _rot_angle, bool _large_arc, bool _sweep,
+                   Point _final_point
+                  )
         : m_initial_point(_initial_point), m_final_point(_final_point),
           m_rx(_rx), m_ry(_ry), m_rot_angle(_rot_angle),
           m_large_arc(_large_arc), m_sweep(_sweep)
@@ -348,7 +348,7 @@ class SVGEllipticalArc : public Curve
 
 	Curve* duplicate() const
 	{
-		return new SVGEllipticalArc(*this);
+		return new EllipticalArc(*this);
 	}
 	
     double center(unsigned int i) const
@@ -495,13 +495,13 @@ class SVGEllipticalArc : public Curve
         return pointAtAngle(tt);
     }
 
-    std::pair<SVGEllipticalArc, SVGEllipticalArc>
+    std::pair<EllipticalArc, EllipticalArc>
     subdivide(Coord t) const
     {
-        SVGEllipticalArc* arc1 = static_cast<SVGEllipticalArc*>(portion(0, t));
-        SVGEllipticalArc* arc2 = static_cast<SVGEllipticalArc*>(portion(t, 1));
+        EllipticalArc* arc1 = static_cast<EllipticalArc*>(portion(0, t));
+        EllipticalArc* arc2 = static_cast<EllipticalArc*>(portion(t, 1));
         assert( arc1 != NULL && arc2 != NULL);
-        std::pair<SVGEllipticalArc, SVGEllipticalArc> arc_pair(*arc1, *arc2);        
+        std::pair<EllipticalArc, EllipticalArc> arc_pair(*arc1, *arc2);        
         delete arc1;
         delete arc2;
         return arc_pair;
@@ -512,7 +512,7 @@ class SVGEllipticalArc : public Curve
     // the arc is the same but traversed in the opposite direction
     Curve* reverse() const
     {
-        SVGEllipticalArc* rarc = new SVGEllipticalArc( *this );
+        EllipticalArc* rarc = new EllipticalArc( *this );
         rarc->m_sweep = !m_sweep;
         rarc->m_initial_point = m_final_point;
         rarc->m_final_point = m_initial_point;
@@ -541,7 +541,7 @@ class SVGEllipticalArc : public Curve
     double m_start_angle, m_end_angle;
     Point m_center;
     
-}; // end class SVGEllipticalArc
+}; // end class EllipticalArc
 
 
 

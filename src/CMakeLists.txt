@@ -37,7 +37,7 @@ ord.h
 nearest-point.cpp
 nearest-point.h
 path.cpp
-svg-elliptical-arc.cpp
+elliptical-arc.cpp
 path.h
 path-intersection.cpp
 path-intersection.h
@@ -127,7 +127,6 @@ sturm.h
 #arc-length.cpp
 #arc-length.h
 
-#line.h
 )
 
 # make lib for 2geom
@@ -149,3 +148,4 @@ INSTALL(FILES "${CMAKE_BINARY_DIR}/2geom.pc" DESTINATION lib/pkgconfig)
 ADD_SUBDIRECTORY (toys)
 ADD_SUBDIRECTORY (tests)
 ADD_SUBDIRECTORY (py2geom)
+

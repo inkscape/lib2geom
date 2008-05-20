@@ -21,7 +21,7 @@ void cairo_curve(cairo_t *cr, Curve const& c) {
         std::vector<Point> points = cubic_bezier->points();
         cairo_curve_to(cr, points[1][0], points[1][1], points[2][0], points[2][1], points[3][0], points[3][1]);
     }
-//    else if(SVGEllipticalArc const *svg_elliptical_arc = dynamic_cast<SVGEllipticalArc *>(c)) {
+//    else if(EllipticalArc const *svg_elliptical_arc = dynamic_cast<EllipticalArc *>(c)) {
 //        //TODO: get at the innards and spit them out to cairo
 //    }
     else {
