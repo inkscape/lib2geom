@@ -27,7 +27,11 @@ extern void subdiv_sbasis(SBasis const & s,
 using std::vector;
 using namespace Geom;
 
-//#define HAVE_GSL
+#define HAVE_GSL
+#ifdef HAVE_GSL
+#include <complex>
+using std::complex;
+#endif
 
 class RootFinderComparer: public Toy {
 public:
