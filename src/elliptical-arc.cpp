@@ -378,26 +378,14 @@ bool EllipticalArc::containsAngle(Coord angle) const
 {
 	if ( sweep_flag() )
 		if ( start_angle() < end_angle() )
-			if ( !( angle < start_angle() || angle > end_angle() ) )
-				return true;
-			else
-				return false;
+			return ( !( angle < start_angle() || angle > end_angle() ) );
 		else
-			if ( !( angle < start_angle() && angle > end_angle() ) )
-				return true;
-			else
-				return false;
+			return ( !( angle < start_angle() && angle > end_angle() ) );
 	else
 		if ( start_angle() > end_angle() )
-			if ( !( angle > start_angle() || angle < end_angle() ) )
-				return true;
-			else
-				return false;
+			return ( !( angle > start_angle() || angle < end_angle() ) );
 		else
-			if ( !( angle > start_angle() && angle < end_angle() ) )
-				return true;
-			else
-				return false;
+			return ( !( angle > start_angle() && angle < end_angle() ) );
 }
 
 
