@@ -236,6 +236,8 @@ inline SBasis truncate(SBasis const &a, unsigned terms) {
 }
 
 SBasis multiply(SBasis const &a, SBasis const &b);
+// This performs a multiply and accumulate operation in about the same time as multiply.  return a*b + c
+SBasis multiply_add(SBasis const &a, SBasis const &b, SBasis c);
 
 SBasis integral(SBasis const &c);
 SBasis derivative(SBasis const &a);

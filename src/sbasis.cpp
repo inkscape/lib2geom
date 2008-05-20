@@ -184,6 +184,7 @@ SBasis shift(Linear const &a, int sh) {
     return c;
 }
 
+#if 0
 SBasis multiply(SBasis const &a, SBasis const &b) {
     // c = {a0*b0 - shift(1, a.Tri*b.Tri), a1*b1 - shift(1, a.Tri*b.Tri)}
 
@@ -192,7 +193,28 @@ SBasis multiply(SBasis const &a, SBasis const &b) {
     if(a.isZero() || b.isZero())
         return c;
     c.resize(a.size() + b.size(), Linear(0,0));
-    c[0] = Linear(0,0);
+    for(unsigned j = 0; j < b.size(); j++) {
+        for(unsigned i = j; i < a.size()+j; i++) {
+            double tri = Tri(b[j])*Tri(a[i-j]);
+            c[i+1/*shift*/] += Linear(Hat(-tri));
+        }
+    }
+    for(unsigned j = 0; j < b.size(); j++) {
+        for(unsigned i = j; i < a.size()+j; i++) {
+            for(unsigned dim = 0; dim < 2; dim++)
+                c[i][dim] += b[j][dim]*a[i-j][dim];
+        }
+    }
+    c.normalize();
+    //assert(!(0 == c.back()[0] && 0 == c.back()[1]));
+    return c;
+}
+#else
+
+SBasis multiply_add(SBasis const &a, SBasis const &b, SBasis c) {
+    if(a.isZero() || b.isZero())
+        return c;
+    c.resize(a.size() + b.size(), Linear(0,0));
     for(unsigned j = 0; j < b.size(); j++) {
         for(unsigned i = j; i < a.size()+j; i++) {
             double tri = Tri(b[j])*Tri(a[i-j]);
@@ -210,6 +232,13 @@ SBasis multiply(SBasis const &a, SBasis const &b) {
     return c;
 }
 
+SBasis multiply(SBasis const &a, SBasis const &b) {
+    SBasis c;
+    if(a.isZero() || b.isZero())
+        return c;
+    return multiply_add(a, b, c);
+}
+#endif 
 SBasis integral(SBasis const &c) {
     SBasis a;
     a.resize(c.size() + 1, Linear(0,0));
@@ -332,7 +361,7 @@ SBasis compose(SBasis const &a, SBasis const &b) {
     SBasis r;
 
     for(int i = a.size()-1; i >= 0; i--) {
-        r = SBasis(Linear(Hat(a[i][0]))) - b*a[i][0] + b*a[i][1] + multiply(r,s);
+        r = multiply_add(r, s, SBasis(Linear(Hat(a[i][0]))) - b*a[i][0] + b*a[i][1]);
     }
     return r;
 }
@@ -344,7 +373,7 @@ SBasis compose(SBasis const &a, SBasis const &b, unsigned k) {
     SBasis r;
 
     for(int i = a.size()-1; i >= 0; i--) {
-        r = SBasis(Linear(Hat(a[i][0]))) - b*a[i][0] + b*a[i][1] + multiply(r,s);
+        r = multiply_add(r, s, SBasis(Linear(Hat(a[i][0]))) - b*a[i][0] + b*a[i][1]);
     }
     r.truncate(k);
     return r;
