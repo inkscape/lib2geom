@@ -922,14 +922,38 @@ public:
 
   void setInitial(Point const& p)
   {
-     curves_[0]->setInitial(p);
-     final_->setFinal(p);
+	  if ( empty() ) return;
+	  Curve* head = front().duplicate();
+	  head->setInitial(p);
+	  Sequence::iterator replaced = curves_.begin();
+	  Sequence source(1, head);
+	  try 
+	  {
+		  do_update(replaced, replaced + 1, source.begin(), source.end());
+	  } 
+	  catch (...) 
+	  {
+		  delete_range(source.begin(), source.end());
+		  throw;
+	  }
   }
 
   void setFinal(Point const& p)
   {
-     curves_[curves_.size()-2]->setFinal(p);
-     final_->setInitial(p);
+	  if ( empty() ) return;
+	  Curve* tail = back().duplicate();
+	  tail->setFinal(p);
+	  Sequence::iterator replaced = curves_.end() - 2;
+	  Sequence source(1, tail);
+	  try 
+	  {
+		  do_update(replaced, replaced + 1, source.begin(), source.end());
+	  } 
+	  catch (...) 
+	  {
+		  delete_range(source.begin(), source.end());
+		  throw;
+	  }	 
   }
 
   void append(Curve const &curve);
