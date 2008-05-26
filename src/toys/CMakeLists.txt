@@ -23,6 +23,7 @@ draw-toy
 ea-fitting-toy
 fitter
 gear
+hvlineseg-toy
 worms
 inner-product-clip
 inverse-test

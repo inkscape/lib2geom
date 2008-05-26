@@ -36,8 +36,16 @@ ord.h
 #nearestpoint.cpp
 nearest-point.cpp
 nearest-point.h
-path.cpp
+
+bezier-curve.h
+curve.h
+curves.h
+curve-helpers.cpp
 elliptical-arc.cpp
+elliptical-arc.h
+hvlinesegment.h
+sbasis-curve.h
+path.cpp
 path.h
 path-intersection.cpp
 path-intersection.h
