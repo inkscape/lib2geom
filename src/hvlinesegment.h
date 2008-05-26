@@ -130,7 +130,7 @@ class HLineSegment : public Curve
 		return m_line_seg.boundsLocal(i, deg);
 	}
 	
-	int winding(Point p)
+	int winding(Point p) const
 	{
 		return m_line_seg.winding(p);
 	}
@@ -355,7 +355,7 @@ class VLineSegment : public Curve
 		return m_line_seg.boundsLocal(i, deg);
 	}
 	
-	int winding(Point p)
+	int winding(Point p) const
 	{
 		return m_line_seg.winding(p);
 	}
