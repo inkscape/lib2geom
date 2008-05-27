@@ -260,7 +260,7 @@ throw(SVGPathParseError)
             | floating_point_constant)
             >start_number %push_number;
 
-        coordinate = number;
+        coordinate = number $(number,1) %(number,0);
         coordinate_pair = (coordinate $(coordinate_pair_a,1) %(coordinate_pair_a,0) comma_wsp? coordinate $(coordinate_pair_b,1) %(coordinate_pair_b,0)) $(coordinate_pair,1) %(coordinate_pair,0);
         elliptical_arc_argument =
             (nonnegative_number $1 %0 comma_wsp?
@@ -320,16 +320,16 @@ throw(SVGPathParseError)
 
         vertical_lineto_argument = coordinate %vertical_lineto;
         vertical_lineto_argument_sequence =
-            vertical_lineto_argument $1 %0
-            (comma_wsp? vertical_lineto_argument $1 %0)*;
+            vertical_lineto_argument $(vertical_lineto_argument_a,1) %(vertical_lineto_argument_a,0)
+            (comma_wsp? vertical_lineto_argument $(vertical_lineto_argument_b,1) %(vertical_lineto_argument_b,0))*;
         vertical_lineto =
             ('V' %mode_abs| 'v' %mode_rel)
             wsp* vertical_lineto_argument_sequence;
 
         horizontal_lineto_argument = coordinate %horizontal_lineto;
         horizontal_lineto_argument_sequence =
-            horizontal_lineto_argument $1 %0
-            (comma_wsp? horizontal_lineto_argument $1 %0)*;
+            horizontal_lineto_argument $(horizontal_lineto_argument_a,1) %(horizontal_lineto_argument_a,0)
+            (comma_wsp? horizontal_lineto_argument $(horizontal_lineto_argument_b,1) %(horizontal_lineto_argument_b,0))*;
         horizontal_lineto =
             ('H' %mode_abs| 'h' %mode_rel)
             wsp* horizontal_lineto_argument_sequence;
