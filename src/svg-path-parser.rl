@@ -263,8 +263,8 @@ throw(SVGPathParseError)
         coordinate = number $(number,1) %(number,0);
         coordinate_pair = (coordinate $(coordinate_pair_a,1) %(coordinate_pair_a,0) comma_wsp? coordinate $(coordinate_pair_b,1) %(coordinate_pair_b,0)) $(coordinate_pair,1) %(coordinate_pair,0);
         elliptical_arc_argument =
-            (nonnegative_number $1 %0 comma_wsp?
-             nonnegative_number $1 %0 comma_wsp?
+            (nonnegative_number $(elliptical_arg_a,1) %(elliptical_arg_a,0) comma_wsp?
+             nonnegative_number $(elliptical_arg_b,1) %(elliptical_arg_b,0) comma_wsp?
              number comma_wsp
              flag comma_wsp flag comma_wsp
              coordinate_pair)
