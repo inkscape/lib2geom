@@ -82,7 +82,7 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
     double od = 0, ot = 0;
     for(double t = 0; t < 1; t+= 0.003) {
         Point P = A(t);
-        double pt = nearest(P, B);
+        nearest(P, B);
         double d = distance(A(t), P);
         if((i > 14) && (i < (14+sample_size))) {
             cairo_set_source_rgb(cr, 1,0,0);

@@ -38,6 +38,14 @@ public:
     void moveTo(Geom::Point p) {
         std::cout << "M " << p << std::endl;
     }
+    
+    void hlineTo(Geom::Coord v) {
+        std::cout << "H " << v << std::endl;
+    }
+    
+    void vlineTo(Geom::Coord v) {
+        std::cout << "V " << v << std::endl;
+    }
 
     void lineTo(Geom::Point p) {
         std::cout << "L " << p << std::endl;

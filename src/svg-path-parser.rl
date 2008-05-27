@@ -96,6 +96,16 @@ private:
         _quad_tangent = _cubic_tangent = _current = _initial = p;
         _sink.moveTo(p);
     }
+    
+    void _hlineTo(Point p) {
+        _quad_tangent = _cubic_tangent = _current = p;
+        _sink.hlineTo(p[Geom::X]);
+    }
+    
+    void _vlineTo(Point p) {
+        _quad_tangent = _cubic_tangent = _current = p;
+        _sink.vlineTo(p[Geom::Y]);
+    }
 
     void _lineTo(Point p) {
         _quad_tangent = _cubic_tangent = _current = p;
@@ -178,11 +188,11 @@ throw(SVGPathParseError)
         }
 
         action horizontal_lineto {
-            _lineTo(Point(_pop_coord(X), _current[Y]));
+            _hlineTo(Point(_pop_coord(X), _current[Y]));
         }
 
         action vertical_lineto {
-            _lineTo(Point(_current[X], _pop_coord(Y)));
+            _vlineTo(Point(_current[X], _pop_coord(Y)));
         }
 
         action curveto {
@@ -252,7 +262,6 @@ throw(SVGPathParseError)
 
         coordinate = number;
         coordinate_pair = (coordinate $(coordinate_pair_a,1) %(coordinate_pair_a,0) comma_wsp? coordinate $(coordinate_pair_b,1) %(coordinate_pair_b,0)) $(coordinate_pair,1) %(coordinate_pair,0);
-        
         elliptical_arc_argument =
             (nonnegative_number $1 %0 comma_wsp?
              nonnegative_number $1 %0 comma_wsp?
