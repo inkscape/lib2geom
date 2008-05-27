@@ -75,7 +75,7 @@ class BoolOps: public Toy {
     BoolOps () {}
 
     void first_time(int argc, char** argv) {
-        char *path_b_name="star.svgd";
+        const char *path_b_name="star.svgd";
         if(argc > 1)
             path_b_name = argv[1];
         std::vector<Path> paths_b = read_svgd(path_b_name);

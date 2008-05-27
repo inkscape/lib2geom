@@ -60,9 +60,9 @@ void init(int argc, char **argv, Toy *t, int width=600, int height=600);
 
 struct Toggle {
   Geom::Rect bounds;
-  char* text;
+  const char* text;
   bool on;
-  Toggle(char* txt, bool v) : bounds(Geom::Point(0,0), Geom::Point(0,0)), text(txt), on(v) {}
+  Toggle(const char* txt, bool v) : bounds(Geom::Point(0,0), Geom::Point(0,0)), text(txt), on(v) {}
   Toggle(Geom::Rect bnds, char* txt, bool v) : bounds(bnds), text(txt), on(v) {}
   void draw(cairo_t *cr);
   void toggle();

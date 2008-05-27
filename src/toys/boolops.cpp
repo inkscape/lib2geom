@@ -160,8 +160,8 @@ class BoolOps: public Toy {
     BoolOps () {}
 
     void first_time(int argc, char** argv) {
-        char *path_a_name="winding.svgd";
-        char *path_b_name="star.svgd";
+        const char *path_a_name="winding.svgd";
+        const char *path_b_name="star.svgd";
         if(argc > 1)
             path_a_name = argv[1];
         if(argc > 2)

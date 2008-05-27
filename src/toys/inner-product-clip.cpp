@@ -128,7 +128,7 @@ class InnerProductClip: public Toy {
         Toy::mouse_pressed(e);
     }
     void first_time(int argc, char** argv) {
-        char *path_a_name="star.svgd";
+        const char *path_a_name="star.svgd";
         if(argc > 1)
             path_a_name = argv[1];
         std::vector<Path> paths_a = read_svgd(path_a_name);

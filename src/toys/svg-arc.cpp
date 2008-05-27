@@ -27,7 +27,7 @@ public:
     SVGArc () {}
 
     void first_time(int argc, char** argv) {
-        char *path_a_name="winding.svgd";
+        const char *path_a_name="winding.svgd";
         if(argc > 1)
             path_a_name = argv[1];
         std::vector<Path> paths_a = read_svgd(path_a_name);
