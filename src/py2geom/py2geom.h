@@ -38,6 +38,7 @@ void wrap_linear();
 //void wrap_path();
 //void wrap_multidimsbasis();
 //void wrap_mdpwsb();
+void wrap_parser();
 
 #endif
 /*

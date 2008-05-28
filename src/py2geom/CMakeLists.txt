@@ -7,6 +7,7 @@ pw.cpp
 #d2.cpp
 #multidimsbasis.cpp
 #md-pw-sb.cpp
+parser.cpp
 py2geom.cpp
 )
 
