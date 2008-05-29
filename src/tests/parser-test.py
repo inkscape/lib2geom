@@ -54,7 +54,7 @@ class TestSink(py2geom.SVGPathSink):
         self.data.append('Q %s, %s %s, %s' % (cx,cy,x,y))
     def arcTo(self, rx, ry, angle, large_arc, sweep, p): 
         x,y = p
-        self.data.append('A %s, %s %s %s %s %s, %s' % (rx,ry,angle,large_arc,sweep,x,y))
+        self.data.append('A %s, %s %s %i %i %s, %s' % (rx,ry,angle,large_arc,sweep,x,y))
     def closePath(self): 
         self.data.append('Z')
     def finish(self): 
@@ -91,6 +91,6 @@ if __name__=='__main__':
         ('lineto', 'M 10,10 L 4,4', 'M 10.0, 10.0 L 4.0, 4.0'),
         ('implicit lineto', 'M 10,10 L 4,4 5,5 6,6', 'M 10.0, 10.0 L 4.0, 4.0 L 5.0, 5.0 L 6.0, 6.0'),
         ('implicit lineto after moveto', 'M1.2.3.4.5.6.7', 'M 1.2, 0.3 L 0.4, 0.5 L 0.6, 0.7'),
-        ('arcto', 'M 300 150 A 150, 120, 30, 1, 0, 200 100', 'M 300.0, 150.0 A 150.0, 120.0 30.0 True False 200.0, 100.0')
+        ('arcto', 'M 300 150 A 150, 120, 30, 1, 0, 200 100', 'M 300.0, 150.0 A 150.0, 120.0 30.0 1 0 200.0, 100.0')
     ]
     run_tests(tests)
