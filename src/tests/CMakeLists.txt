@@ -2,6 +2,7 @@ SET(2GEOM_TESTS_SRC
 #bezier-utils-test
 bezier-test
 choose-test
+#lin_alg_test
 #matrix-test
 #point-fns-test
 poly-test
