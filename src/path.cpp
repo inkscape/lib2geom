@@ -50,8 +50,11 @@ void Path::swap(Path &other) {
 
 Rect Path::boundsFast() const {
   Rect bounds=front().boundsFast();
-  for ( const_iterator iter=++begin(); iter != end() ; ++iter ) {
-    bounds.unionWith(iter->boundsFast());
+  const_iterator iter = begin();
+  if ( iter != end() ) {
+	  for ( ++iter; iter != end() ; ++iter ) {
+	    bounds.unionWith(iter->boundsFast());
+	  }
   }
   return bounds;
 }
