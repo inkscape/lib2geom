@@ -326,6 +326,7 @@ class Vector : public detail::VectorImpl
 }; // end class Vector
 
 
+// warning! this operation invalidates any view of the passed vector objects
 void swap(Vector & v1, Vector & v2)
 {
 	assert( v1.size() == v2.size() );

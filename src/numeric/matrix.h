@@ -382,6 +382,7 @@ class Matrix: public detail::MatrixImpl
 };  // end class Matrix
 
 
+// warning! this operation invalidates any view of the passed matrix objects
 void swap(Matrix & m1, Matrix & m2)
 {
 	assert( m1.rows() == m2.rows() && m1.columns() ==  m2.columns() );
