@@ -266,6 +266,12 @@ public:
 	  return (*this)[i].valueAt(lt, d);
   }
 
+  
+  Point operator() (double t) const
+  {
+	  return pointAt(t);
+  }
+  
   std::vector<double> roots(double v, Dim2 d) const {
     std::vector<double> res;
     for(unsigned i = 0; i <= size(); i++) {
@@ -541,6 +547,12 @@ inline static Piecewise<D2<SBasis> > paths_to_pw(std::vector<Path> paths) {
         ret.concat(paths[i].toPwSb());
     }
     return ret;
+}
+
+inline
+Coord nearest_point(Point const& p, Path const& c)
+{
+	return c.nearestPoint(p);
 }
 
 /*
