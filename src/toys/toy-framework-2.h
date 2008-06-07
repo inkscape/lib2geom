@@ -58,6 +58,17 @@ public:
     virtual void move_to(void* hit, Geom::Point om, Geom::Point m);
 };
 
+class PointSetHandle : public Handle{
+public:
+    PointSetHandle() {}
+    std::vector<Geom::Point> pts;
+    virtual void draw(cairo_t *cr, bool annotes = false);
+  
+    virtual void* hit(Geom::Point mouse);
+    virtual void move_to(void* hit, Geom::Point om, Geom::Point m);
+    void push_back(double x, double y) {pts.push_back(Geom::Point(x,y));}
+};
+
 class Toy {
 public:
     vector<Handle*> handles;

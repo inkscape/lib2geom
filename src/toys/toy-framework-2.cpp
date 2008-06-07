@@ -443,6 +443,26 @@ void PointHandle::move_to(void* hit, Geom::Point om, Geom::Point m) {
     pos = m;
 }
 
+void PointSetHandle::draw(cairo_t *cr, bool annotes) {
+    for(unsigned i = 0; i < pts.size(); i++) {
+	draw_circ(cr, pts[i]);
+    }
+}
+
+void* PointSetHandle::hit(Geom::Point mouse) {
+    for(unsigned i = 0; i < pts.size(); i++) {
+	if(Geom::distance(mouse, pts[i]) < 5)
+	    return (void*)(&pts[i]);
+    }
+    return 0;
+}
+
+void PointSetHandle::move_to(void* hit, Geom::Point om, Geom::Point m) {
+    if(hit) {
+	*(Geom::Point*)hit = m;
+    }
+}
+
 #if 1
 #include "d2.h"
 #include "sbasis.h"
@@ -486,24 +506,25 @@ double handle_to_sb_t(unsigned i, unsigned n) {
 }
 
 class Sb1d: public Toy {
+    PointSetHandle psh;
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         cairo_set_source_rgba (cr, 0., 0.5, 0, 1);
         cairo_set_line_width (cr, 1);
         
         if(!save) {
-            for(unsigned i = 0; i < handles.size(); i++) {
-                dynamic_cast<PointHandle*>(handles[i])->pos[0] = width*handle_to_sb_t(i, handles.size())/2 + width/4;
+            for(unsigned i = 0; i < psh.pts.size(); i++) {
+                psh.pts[i][0] = width*handle_to_sb_t(i, psh.pts.size())/2 + width/4;
             }
         }
         
         D2<SBasis> B;
         B[0] = Linear(width/4, 3*width/4);
-        B[1].resize(handles.size()/2);
+        B[1].resize(psh.pts.size()/2);
         for(unsigned i = 0; i < B[1].size(); i++) {
             B[1][i] = Linear(0);
         }
-        for(unsigned i = 0; i < handles.size(); i++) {
-            handle_to_sb(i, handles.size(), B[1]) = 3*width/4 - dynamic_cast<PointHandle*>(handles[i])->pos[1];
+        for(unsigned i = 0; i < psh.pts.size(); i++) {
+            handle_to_sb(i, psh.pts.size(), B[1]) = 3*width/4 - psh.pts[i][1];
         }
         for(unsigned i = 1; i < B[1].size(); i++) {
             B[1][i] = B[1][i]*choose<double>(2*i+1, i);
@@ -533,11 +554,12 @@ class Sb1d: public Toy {
         Toy::draw(cr, notify, width, height, save);
     }
 public:
-    Sb1d () {
-	handles.push_back(new PointHandle(0,450));
+Sb1d () : psh(PointSetHandle()) {
+    psh.push_back(0,450);
+	handles.push_back(&psh );
 	for(unsigned i = 0; i < 4; i++)
-	    handles.push_back(new PointHandle(uniform()*400, uniform()*400));
-	handles.push_back(new PointHandle(0,450));
+	    psh.push_back(uniform()*400, uniform()*400);
+	psh.push_back(0,450);
     }
 };
 
