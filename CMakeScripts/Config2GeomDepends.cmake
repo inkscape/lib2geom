@@ -1,4 +1,4 @@
-SET(2GEOM_DEPENDS gtk+-2.0 cairo gsl blas)
+SET(2GEOM_DEPENDS gtk+-2.0 gtkmm-2.4 cairomm-1.0 cairo gsl blas)
 include(UsePkgConfig)
 
 # Dependencies Packages
