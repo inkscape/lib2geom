@@ -55,7 +55,7 @@ namespace detail
 {
 
 // this wrapper class is an helper to make up a curve portion and access it
-// in an omogenous way 
+// in an homogenous way 
 template< typename Curve01T >
 class CurvePortion
 {
@@ -105,11 +105,11 @@ class distance_impl
 	typedef Curve01T curveA_type;
 	typedef CurveT curveB_type;
 	// determine how near a distance sample and the value computed through 
-	// the interpoleted function have to be
+	// the interpolated function have to be
 	double accuracy;
 	// determine the recursion limit
 	double adaptive_limit;
-	// picees of the initial subdivision  
+	// pieces of the initial subdivision  
 	unsigned int pieces;
 	// degree of the polynomial used to interpolate a piece
 	unsigned int piece_degree;
@@ -292,12 +292,12 @@ class distance_impl
 		}
 	}
 	
-	// recursive routine: if the interpolated piece is enough accurate 
-	// it's returned in the out-parameter pwc, else the computation of 
-	// two new pieces is performed using the half of the current step
-	// so the samples per piece is always the same, while the interpolation 
-	// of one piece is splitted in the computation of two new pieces when 
-	// needed
+	// recursive routine: if the interpolated piece is accurate enough 
+	// it's returned in the out-parameter pwc, otherwise the computation of 
+	// two new pieces is performed using half of the current step so the 
+	// number of samples per piece is always the same, while the interpolation
+	// of one piece is split into the computation of two new pieces when 
+	// needed.
 	void evaluate_piece_rec( Piecewise<SBasis> & pwc, 
 							 curveA_type const& A, 
 							 curveB_type const& B,
