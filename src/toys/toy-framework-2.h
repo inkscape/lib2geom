@@ -25,27 +25,37 @@ void draw_text(cairo_t *cr, Geom::Point pos, const char* txt, bool bottom = fals
 void draw_number(cairo_t *cr, Geom::Point pos, int num);
 
 class Handle{
- public:
-  virtual void draw(cairo_t *cr, bool annotes = false);
+public:
+    Handle() {}
+    virtual ~Handle() {}
+    virtual void draw(cairo_t *cr, bool annotes=false);
   
-  virtual void* hit(Geom::Point pos);
-  virtual void move_to(void* hit, Geom::Point om, Geom::Point m);
+    virtual void* hit(Geom::Point pos);
+    virtual void move_to(void* hit, Geom::Point om, Geom::Point m);
 };
 
 class Toggle : public Handle{
-  Geom::Rect bounds;
-  const char* text;
-  bool on;
-  Toggle(const char* txt, bool v) : bounds(Geom::Point(0,0), Geom::Point(0,0)), text(txt), on(v) {}
-  Toggle(Geom::Rect bnds, char* txt, bool v) : bounds(bnds), text(txt), on(v) {}
-  void draw(cairo_t *cr);
-  void toggle();
-  void set(bool state);
-  void handle_click(GdkEventButton* e);
+public:
+    Geom::Rect bounds;
+    const char* text;
+    bool on;
+    Toggle(const char* txt, bool v) : bounds(Geom::Point(0,0), Geom::Point(0,0)), text(txt), on(v) {}
+    Toggle(Geom::Rect bnds, char* txt, bool v) : bounds(bnds), text(txt), on(v) {}
+    void draw(cairo_t *cr);
+    void toggle();
+    void set(bool state);
+    void handle_click(GdkEventButton* e);
 };
 
 class PointHandle : public Handle{
- public:
+public:
+    PointHandle(double x, double y) : pos(x,y) {}
+    PointHandle(Geom::Point pt) : pos(pt) {}
+    Geom::Point pos;
+    virtual void draw(cairo_t *cr, bool annotes = false);
+  
+    virtual void* hit(Geom::Point mouse);
+    virtual void move_to(void* hit, Geom::Point om, Geom::Point m);
 };
 
 class Toy {
@@ -54,9 +64,10 @@ public:
     bool mouse_down;
     Geom::Point old_mouse_point;
     Handle* selected;
+    void* hit_data;
     double notify_offset;
 
-    Toy() { mouse_down = false; selected = -1; notify_offset = 0;}
+    Toy() : hit_data(0){ mouse_down = false; selected = NULL; notify_offset = 0;}
 
     virtual ~Toy() {}
 
