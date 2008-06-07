@@ -1,5 +1,6 @@
 SET(2GEOM_TOYS_SRC 
 2dsb2d
+arcurvature
 arc-bez
 arc-length-param
 #b-spline
