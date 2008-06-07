@@ -23,6 +23,29 @@ extern void subdiv_sbasis(SBasis const & s,
                    double left, double right);
 };
 
+double eval_bernstein(double* w, double t, unsigned N) {
+    double Vtemp[2*N];
+    //const int degree = N-1;
+    for (unsigned i = 0; i < N; i++)
+        Vtemp[i] = w[i];
+
+    /* Triangle computation	*/
+    const double omt = (1-t);
+    //Left[0] = Vtemp[0];
+    //Right[degree] = Vtemp[degree];
+    double *prev_row = Vtemp;
+    double *row = Vtemp + N;
+    for (unsigned i = 1; i < N; i++) {
+        for (unsigned j = 0; j < N - i; j++) {
+            row[j] = omt*prev_row[j] + t*prev_row[j+1];
+        }
+        //Left[i] = row[0];
+        //Right[degree-i] = row[degree-i];
+        std::swap(prev_row, row);
+    }
+    return prev_row[0];
+}
+
 #include <vector>
 using std::vector;
 using namespace Geom;
@@ -43,7 +66,7 @@ public:
         std::vector<Geom::Point> trans;
         trans.resize(handles.size());
         for(unsigned i = 0; i < handles.size(); i++) {
-            trans[i] = handles[i] - Geom::Point(0, 3*width/4);
+            trans[i] = handles[i] - Geom::Point(0, height/2);
         }
         
         std::vector<double> solutions;
@@ -71,7 +94,7 @@ public:
         cairo_stroke(cr);
         *notify << "sb bounds = "<<bs.min()<< ", " <<bs.max()<<std::endl;
         Poly ply = sbasis_to_poly(test_sb[1]);
-        ply = Poly(3*width/4) - ply;
+        ply = Poly(height/2) - ply;
 #ifdef HAVE_GSL    
         vector<complex<double> > complex_solutions;
         complex_solutions = solve(ply);
@@ -144,7 +167,7 @@ public:
                 << units_string << std::endl;
     #endif    
     
-    #define SBASIS_SUBDIV_TEST 1
+    #define SBASIS_SUBDIV_TEST 0
     #if SBASIS_SUBDIV_TEST
         end_t = clock()+clock_t(timer_precision*CLOCKS_PER_SEC);
         iterations = 0;
@@ -159,7 +182,7 @@ public:
                 << ", time = " << timer_precision*units/iterations-overhead 
                 << units_string << std::endl;
     #endif    
-    
+    #if 0
         end_t = clock()+clock_t(timer_precision*CLOCKS_PER_SEC);
         iterations = 0;
         while(end_t > clock()) {
@@ -170,13 +193,13 @@ public:
         *notify << "solver parametric time = " 
                 << timer_precision*units/iterations-overhead 
                 << units_string << std::endl;
-    
+    #endif
         double ys[trans.size()];
         for(unsigned i = 0; i < trans.size(); i++) {
             ys[i] = trans[i][1];
             double x = double(i)/(trans.size()-1);
-            x = (1-x)*width/4 + x*width*3/4;
-            draw_handle(cr, Geom::Point(x, 3*width/4 + ys[i]));
+            x = (1-x)*height/4 + x*height*3/4;
+            draw_handle(cr, Geom::Point(x, height/2 + ys[i]));
         }
         end_t = clock()+clock_t(timer_precision*CLOCKS_PER_SEC);
         iterations = 0;
@@ -185,10 +208,15 @@ public:
             find_bernstein_roots(ys, 5, solutions, 0);
             iterations++;
         }
-        *notify << "solver 1d subdivision slns" << solutions.size() 
+        *notify << "solver 1d bernstein subdivision slns" << solutions.size() 
                 << ", time = " << timer_precision*units/iterations-overhead 
                 << units_string << std::endl;
-        solutions = roots( -test_sb[1] + Linear(3*width/4));
+        *notify << "solver 1d bernstein subdivision accuracy:"
+                << units_string << std::endl;
+        for(unsigned i = 0; i < solutions.size(); i++) {
+            *notify << eval_bernstein(ys, solutions[i], trans.size()) << ",";
+        }
+        solutions = roots( -test_sb[1] + Linear(height/2));
 #if 0
         std::cout << "sbasis sub: ";
         std::copy(solutions.begin(), solutions.end(), std::ostream_iterator<double>(std::cout, ",\t"));
@@ -196,7 +224,7 @@ public:
 #endif        
         for(unsigned i = 0; i < solutions.size(); i++) {
             double x = test_sb[0](solutions[i]);
-            draw_cross(cr, Geom::Point(x, 3*width/4));
+            draw_cross(cr, Geom::Point(x, height/2));
             
         }
     /*

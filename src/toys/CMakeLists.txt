@@ -1,4 +1,6 @@
 SET(2GEOM_TOYS_SRC 
+toy-framework-2
+
 2dsb2d
 arcurvature
 arc-bez

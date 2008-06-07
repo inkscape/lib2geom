@@ -74,7 +74,7 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
     vector<double> Asects, Bsects;
     g_cr = cr;
     // cubic system
-    int sample_size = 100;
+    int sample_size = 250;
     int order = 6;
     NL::Matrix m(sample_size, order, 0);
     NL::Vector v(sample_size);
@@ -105,7 +105,7 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
         i++;
     }
     cairo_stroke(cr);
-    if(1) {
+    if(0) {
     NL::LinearSystem ls(m, v);
     NL::Vector coeff = ls.SV_solve();
     for(double t = 0; t < 1; t+= 0.003) {
