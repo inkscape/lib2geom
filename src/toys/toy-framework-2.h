@@ -34,6 +34,8 @@ public:
   
     virtual void* hit(Geom::Point pos) = 0;
     virtual void move_to(void* hit, Geom::Point om, Geom::Point m) = 0;
+    virtual void load(FILE* f)=0;
+    virtual void save(FILE* f)=0;
 };
 
 class Toggle : public Handle{
@@ -58,6 +60,8 @@ public:
   
     virtual void* hit(Geom::Point mouse);
     virtual void move_to(void* hit, Geom::Point om, Geom::Point m);
+    virtual void load(FILE* f);
+    virtual void save(FILE* f);
 };
 
 class PointSetHandle : public Handle{
@@ -72,6 +76,8 @@ public:
     void push_back(Geom::Point pt) {pts.push_back(pt);}
     unsigned size() {return pts.size();}
     Geom::D2<Geom::SBasis> asBezier();
+    virtual void load(FILE* f);
+    virtual void save(FILE* f);
 };
 
 class Toy {
@@ -102,6 +108,8 @@ public:
     virtual void first_time(int argc, char** argv) {}
     
     virtual void resize_canvas(Geom::Rect const & s) {}
+    virtual void load(FILE* f);
+    virtual void save(FILE* f);
 };
 
 //Framework Accesors
@@ -111,5 +119,6 @@ void init(int argc, char **argv, Toy *t, int width=600, int height=600);
 
 void toggle_events(std::vector<Toggle> &ts, GdkEventButton* e);
 void draw_toggles(cairo_t *cr, std::vector<Toggle> &ts);
+Geom::Point read_point(FILE* f);
 
 #endif // _2GEOM_TOY_FRAMEWORK_H_

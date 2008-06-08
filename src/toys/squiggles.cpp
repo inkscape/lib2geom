@@ -61,6 +61,8 @@ public:
 	assert(pws.invariants());
 	return pws;
     }
+    virtual void load(FILE* f);
+    virtual void save(FILE* f);
 };
 
 void PWSBHandle::draw(cairo_t *cr, bool annotes) {
@@ -90,6 +92,23 @@ void PWSBHandle::move_to(void* hit, Geom::Point om, Geom::Point m) {
 		base[i+j][0] = (1 - t)*base[i][0] + t*base[i+curve_size-1][0];
             }
 	}
+    }
+}
+
+void PWSBHandle::load(FILE* f) {
+    unsigned n = 0;
+    assert(3 == fscanf(f, "%d %d %d\n", &curve_size, &segs, &n));
+    assert(n == curve_size*segs);
+    pts.clear();
+    for(unsigned i = 0; i < n; i++) {
+	pts.push_back(read_point(f));
+    }
+}
+
+void PWSBHandle::save(FILE* f) {
+    fprintf(f, "%d %d %d\n", curve_size, segs, pts.size());
+    for(unsigned i = 0; i < pts.size(); i++) {
+	fprintf(f, "%lf %lf\n", pts[i][0], pts[i][1]);
     }
 }
 

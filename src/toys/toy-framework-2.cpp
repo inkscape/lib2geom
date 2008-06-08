@@ -120,6 +120,16 @@ void Toy::mouse_released(GdkEventButton* e) {
     redraw();
 }
 
+void Toy::load(FILE* f) {
+    for(unsigned i = 0; i < handles.size(); i++)
+	handles[i]->load(f);
+}
+
+void Toy::save(FILE* f) {
+    for(unsigned i = 0; i < handles.size(); i++)
+	handles[i]->save(f);
+}
+
 //Gui Event Callbacks
 
 void make_about() {
@@ -143,42 +153,29 @@ Geom::Point read_point(FILE* f) {
 }
 
 void open() {
-    /*
     if(current_toy != NULL) {
 	GtkWidget* d = gtk_file_chooser_dialog_new("Open handle configuration", window, GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, NULL);
         if(gtk_dialog_run(GTK_DIALOG(d)) == GTK_RESPONSE_ACCEPT) {
             const char* filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(d));
             FILE* f = fopen(filename, "r");
-            //current_toy->handles.clear();
-	    unsigned ix = 0;
-            while(!feof(f)) {
-		if(ix >= current_toy->handles.size())
-		    current_toy->handles.resize(ix+1);
-		current_toy->handles[ix] = read_point(f);
-		ix++;
-	    }
+	    current_toy->load(f);
             fclose(f);
         }
         gtk_widget_destroy(d);
     }
-    */
 }
 
 void save() {
-    /*
     if(current_toy != NULL) {
         GtkWidget* d = gtk_file_chooser_dialog_new("Save handle configuration", window, GTK_FILE_CHOOSER_ACTION_SAVE, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT, NULL);
         if(gtk_dialog_run(GTK_DIALOG(d)) == GTK_RESPONSE_ACCEPT) {
             const char* filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(d));
             FILE* f = fopen(filename, "w");
-            unsigned l = current_toy->handles.size();
-            for(unsigned i = 0; i < l; i++)
-                fprintf(f, "%lf %lf\n", current_toy->handles[i][0], current_toy->handles[i][1]);
+	    current_toy->save(f);
             fclose(f);
         }
         gtk_widget_destroy(d);
     }
-    */
 }
 
 void save_cairo() {
@@ -442,6 +439,14 @@ void PointHandle::move_to(void* hit, Geom::Point om, Geom::Point m) {
     pos = m;
 }
 
+void PointHandle::load(FILE* f) {
+    pos = read_point(f);
+}
+
+void PointHandle::save(FILE* f) {
+    fprintf(f, "%lf %lf\n", pos[0], pos[1]);
+}
+
 void PointSetHandle::draw(cairo_t *cr, bool annotes) {
     for(unsigned i = 0; i < pts.size(); i++) {
 	draw_circ(cr, pts[i]);
@@ -460,6 +465,22 @@ void* PointSetHandle::hit(Geom::Point mouse) {
 void PointSetHandle::move_to(void* hit, Geom::Point om, Geom::Point m) {
     if(hit) {
 	*(Geom::Point*)hit = m;
+    }
+}
+
+void PointSetHandle::load(FILE* f) {
+    int n = 0;
+    assert(1 == fscanf(f, "%d\n", &n));
+    pts.clear();
+    for(int i = 0; i < n; i++) {
+	pts.push_back(read_point(f));
+    }
+}
+
+void PointSetHandle::save(FILE* f) {
+    fprintf(f, "%d\n", pts.size());
+    for(unsigned i = 0; i < pts.size(); i++) {
+	fprintf(f, "%lf %lf\n", pts[i][0], pts[i][1]);
     }
 }
 
