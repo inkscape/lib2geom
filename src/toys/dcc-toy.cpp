@@ -799,11 +799,17 @@ class DCCToy : public Toy
         }
         cairo_set_source_rgb(cr, 0.7,0,0);
         cairo_pw_d2(cr, pwc);
-        draw_handle(cr, pwc(0.0));
-        draw_handle(cr, pwc(0.25));
-        draw_handle(cr, pwc(0.5));
-        draw_handle(cr, pwc(0.75));
-        draw_handle(cr, pwc(1));
+        for (unsigned int i = 0; i < pwc.cuts.size(); ++i)
+        {
+            draw_handle(cr, pwc(pwc.cuts[i]));
+        }
+        *notify << "total cuts: " << pwc.cuts.size();
+        
+//        draw_handle(cr, pwc(0.0));
+//        draw_handle(cr, pwc(0.25));
+//        draw_handle(cr, pwc(0.5));
+//        draw_handle(cr, pwc(0.75));
+//        draw_handle(cr, pwc(1));
         draw_circ(cr, pwc(npt));
         cairo_stroke(cr);
         Toy::draw(cr, notify, width, height, save);
