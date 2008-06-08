@@ -25,3 +25,4 @@
 
  //%template(PwSb) Geom::Piecewise<Geom::SBasis>;
  //%template(PwD2Sb) Geom::Piecewise<Geom::D2<Geom::SBasis> >;
+%apply const Linear & { Linear &v };

@@ -108,12 +108,6 @@ class PwToy: public Toy {
         }
         cairo_stroke(cr);
         
-        cairo_save(cr);
-        cairo_set_source_rgba (cr, 1., 0., 0., 1);
-        cairo_pw(cr, reverse(pws[0]));
-        cairo_stroke(cr);
-        cairo_restore(cr);
-
         Piecewise<SBasis> acpw = (pws[0] - pws[0].valueAt(pws[0].cuts[0]))/10;
 	Piecewise< D2<SBasis> > pwc = sectionize(integral(tan2(acpw)));
 	pwc -= pwc.valueAt(pwc.cuts[0]);
