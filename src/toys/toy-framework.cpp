@@ -302,16 +302,16 @@ static gint size_allocate_event(GtkWidget* widget, GtkAllocation *allocation, gp
 }
 
 GtkItemFactoryEntry menu_items[] = {
-    { "/_File",             NULL,           NULL,           0,  "<Branch>"                    },
-    { "/File/_Open Handles","<CTRL>O",      open,           0,  "<StockItem>", GTK_STOCK_OPEN },
-    { "/File/_Save Handles","<CTRL>S",      save,           0,  "<StockItem>", GTK_STOCK_SAVE_AS },
-    { "/File/sep",          NULL,           NULL,           0,  "<Separator>"                 },
-    { "/File/Save SVG/PDF", NULL,           save_cairo,     0,  "<StockItem>", GTK_STOCK_SAVE },
-    { "/File/Save PNG",     NULL,           save_image,     0,  "<StockItem>", GTK_STOCK_SELECT_COLOR }, 
-    { "/File/sep",          NULL,           NULL,           0,  "<Separator>"                 },
-    { "/File/_Quit",        "<CTRL>Q",      gtk_main_quit,  0,  "<StockItem>", GTK_STOCK_QUIT },
-    { "/_Help",             NULL,           NULL,           0,  "<LastBranch>"                },
-    { "/Help/About",        NULL,           make_about,     0,  "<StockItem>", GTK_STOCK_ABOUT}
+    { (gchar*)"/_File",             NULL,           NULL,           0,  (gchar*)"<Branch>"                    },
+    { (gchar*)"/File/_Open Handles",(gchar*)"<CTRL>O",      open,           0,  (gchar*)"<StockItem>", GTK_STOCK_OPEN },
+    { (gchar*)"/File/_Save Handles",(gchar*)"<CTRL>S",      save,           0,  (gchar*)"<StockItem>", GTK_STOCK_SAVE_AS },
+    { (gchar*)"/File/sep",          NULL,           NULL,           0,  (gchar*)"<Separator>"                 },
+    { (gchar*)"/File/Save SVG/PDF", NULL,           save_cairo,     0,  (gchar*)"<StockItem>", GTK_STOCK_SAVE },
+    { (gchar*)"/File/Save PNG",     NULL,           save_image,     0,  (gchar*)"<StockItem>", GTK_STOCK_SELECT_COLOR }, 
+    { (gchar*)"/File/sep",          NULL,           NULL,           0,  (gchar*)"<Separator>"                 },
+    { (gchar*)"/File/_Quit",        (gchar*)"<CTRL>Q",      gtk_main_quit,  0,  (gchar*)"<StockItem>", GTK_STOCK_QUIT },
+    { (gchar*)"/_Help",             NULL,           NULL,           0,  (gchar*)"<LastBranch>"                },
+    { (gchar*)"/Help/About",        NULL,           make_about,     0,  (gchar*)"<StockItem>", GTK_STOCK_ABOUT}
 };
 gint nmenu_items = 10;
 

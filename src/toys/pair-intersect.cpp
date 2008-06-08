@@ -4,7 +4,7 @@
 #include "bezier-to-sbasis.h"
 
 #include "path-cairo.h"
-#include "toy-framework.h"
+#include "toy-framework-2.h"
 
 using std::vector;
 using namespace Geom;
@@ -103,15 +103,15 @@ void pair_intersect(vector<double> &Asects,
 #endif
 
 class PairIntersect: public Toy {
-unsigned A_bez_ord;
-unsigned B_bez_ord;
+    PointSetHandle A_handles;
+    PointSetHandle B_handles;
 virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
     cairo_set_line_width (cr, 0.5);
     
-    D2<SBasis> A = handles_to_sbasis(handles.begin(), A_bez_ord-1);
+    D2<SBasis> A = A_handles.asBezier();
     cairo_md_sb(cr, A);
     
-    D2<SBasis> B = handles_to_sbasis(handles.begin()+A_bez_ord, B_bez_ord-1);
+    D2<SBasis> B = B_handles.asBezier();
     cairo_md_sb(cr, B);
     vector<double> Asects, Bsects;
     g_cr = cr;
@@ -121,11 +121,9 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
     
     intersect_steps = 0;
     
-    vector<Geom::Point> Ab, Bb;
-    Ab.insert(Ab.begin(), handles.begin(), handles.begin()+A_bez_ord);
-    Bb.insert(Bb.begin(), handles.begin()+A_bez_ord, handles.begin()+A_bez_ord + B_bez_ord);
+    vector<Geom::Point> Ab = A_handles.pts, Bb = B_handles.pts;
     std::vector<std::pair<double, double> > section = 
-        find_intersections( Ab, Bb);
+        find_intersections( A_handles.pts, B_handles.pts);
     cairo_stroke(cr);
     cairo_set_source_rgba (cr, 1., 0., 0, 0.8);
     for(unsigned i = 0; i < section.size(); i++) {
@@ -139,9 +137,15 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
     Toy::draw(cr, notify, width, height, save);
 }
 public:
-    PairIntersect (unsigned A_bez_ord, unsigned B_bez_ord) :
-        A_bez_ord(A_bez_ord), B_bez_ord(B_bez_ord) {
-    for(unsigned i = 0; i < A_bez_ord + B_bez_ord; i++) handles.push_back(Geom::Point(uniform()*400, uniform()*400));
+    PairIntersect (unsigned A_bez_ord, unsigned B_bez_ord) {
+        handles.push_back(&A_handles);
+        handles.push_back(&B_handles);
+        A_handles.name = "A";
+        B_handles.name = "B";
+    for(unsigned i = 0; i < A_bez_ord; i++)
+        A_handles.push_back(uniform()*400, uniform()*400);
+    for(unsigned i = 0; i < B_bez_ord; i++)
+        B_handles.push_back(uniform()*400, uniform()*400);
 }
 };
 

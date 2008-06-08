@@ -5,18 +5,19 @@
 #include "bezier-to-sbasis.h"
 
 #include "path-cairo.h"
-#include "toy-framework.h"
+#include "toy-framework-2.h"
 
 using std::vector;
 const unsigned bez_ord = 6;
 using namespace Geom;
 
 class SelfIntersect: public Toy {
+    PointSetHandle psh;
 virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
     cairo_set_line_width (cr, 0.5);
     cairo_set_source_rgba (cr, 0., 0., 0, 1);
     
-    D2<SBasis> A = handles_to_sbasis(handles.begin(), bez_ord);
+    D2<SBasis> A = psh.asBezier();
     Rect Ar = bounds_fast(A);
     cairo_md_sb(cr, A);
     cairo_stroke(cr);
@@ -37,8 +38,9 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
 }
 public:
 SelfIntersect () {
+    handles.push_back(&psh);
     for(unsigned i = 0; i < bez_ord; i++)
-        handles.push_back(Geom::Point(uniform()*400, uniform()*400));
+        psh.push_back(uniform()*400, uniform()*400);
 }
 };
 

@@ -12,11 +12,7 @@ box3d-2
 #cheb
 circle-intersect
 center-warp
-clothoid
-conic-3
-conic-4
 convex-toy
-curve-toy
 curvature-test
 cylinder3d
 dcc-toy
@@ -26,24 +22,19 @@ ea-fitting-toy
 fitter
 gear
 hvlineseg-toy
-worms
 inner-product-clip
 inverse-test
 load-svgd
-match-curve
 mesh-grad
 np-p-c
-npp
 #nearest-points
 #nearest-points2
 nearest-points3
 #normal-bundle
 offset-test
-pair-intersect
 paptest
 parametrics
 parser
-path-along-path
 plane3d
 precise-flat
 pw-compose-test
@@ -55,11 +46,9 @@ sb-math-test
 sb-zeros
 sb1d
 sb2d
-self-intersect
 shuttle
 #sketch-toy
 sweep
-svg-arc
 svg-elliptic-arc-toy
 
 #toy-cairo
@@ -88,7 +77,14 @@ path-cairo.h
 
 SET(2GEOM_TOYS-2_SRC 
 toy-framework-2
+conic-3
+conic-4
+match-curve
+pair-intersect
+path-along-path
+self-intersect
 squiggles
+worms
 )
 
 OPTION(2GEOM_TOYS

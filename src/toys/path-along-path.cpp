@@ -5,18 +5,20 @@
 #include "bezier-to-sbasis.h"
 
 #include "path-cairo.h"
-#include "toy-framework.h"
+#include "toy-framework-2.h"
 
 #include <algorithm>
 using std::vector;
 using namespace Geom;
 
 class PathAlongPathToy: public Toy {
+    PointSetHandle skel_handles, pat_handles;
+    PointHandle origin_handle;
     bool should_draw_numbers(){return false;}
 
     void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
-        D2<SBasis> skeleton = handles_to_sbasis(handles.begin(), 3);
-        D2<SBasis> pattern  = handles_to_sbasis(handles.begin()+4, 3);
+        D2<SBasis> skeleton = skel_handles.asBezier();
+        D2<SBasis> pattern  = pat_handles.asBezier();
 
 
         cairo_set_line_width(cr,1.);
@@ -28,8 +30,8 @@ class PathAlongPathToy: public Toy {
         cairo_set_source_rgba(cr,1.0,0.0,1.0,1.0);
         cairo_stroke(cr);
 
-        handles[8][0]=150;
-        Geom::Point origin = *(handles.begin()+8);
+        origin_handle.pos[0]=150;
+        Geom::Point origin = origin_handle.pos;
 
         Piecewise<D2<SBasis> > uskeleton = arc_length_parametrization(Piecewise<D2<SBasis> >(skeleton),2,.1);
         uskeleton = remove_short_cuts(uskeleton,.01);
@@ -76,25 +78,17 @@ class PathAlongPathToy: public Toy {
     }        
 
 public:
-    PathAlongPathToy(){
+    PathAlongPathToy() : origin_handle(150,150) {
         if(handles.empty()) {
+            handles.push_back(&skel_handles);
+            handles.push_back(&pat_handles);
+            for(int i = 0; i < 8; i++)
+                skel_handles.push_back(200+50*i,400);
             for(int i = 0; i < 4; i++)
-                handles.push_back(Geom::Point(200+50*i,400));
-            for(int i = 0; i < 4; i++)
-                handles.push_back(Geom::Point(100+uniform()*400,
-                                              150+uniform()*100));
+                pat_handles.push_back(100+uniform()*400,
+                                      150+uniform()*100);
 
-            /*handles[0] = Geom::Point(150,150);
-            handles[1] = Geom::Point(450,450);
-            handles[2] = Geom::Point(150,450);
-            handles[3] = Geom::Point(450,150);
-
-            handles[4] = Geom::Point(280,150);
-            handles[5] = Geom::Point(290,170);
-            handles[6] = Geom::Point(300,130);
-            handles[7] = Geom::Point(310,150);*/
-
-            handles.push_back(Geom::Point(150,150));
+            handles.push_back(&origin_handle);
         }
     }
 };

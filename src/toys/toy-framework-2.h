@@ -14,6 +14,7 @@
 #include "interactive-bits.h"
 #include "point.h"
 #include "geom.h"
+#include "sbasis.h"
 #include "d2.h"
 
 using std::vector;
@@ -26,12 +27,13 @@ void draw_number(cairo_t *cr, Geom::Point pos, int num);
 
 class Handle{
 public:
+    std::string name;
     Handle() {}
     virtual ~Handle() {}
-    virtual void draw(cairo_t *cr, bool annotes=false);
+    virtual void draw(cairo_t *cr, bool annotes=false) = 0;
   
-    virtual void* hit(Geom::Point pos);
-    virtual void move_to(void* hit, Geom::Point om, Geom::Point m);
+    virtual void* hit(Geom::Point pos) = 0;
+    virtual void move_to(void* hit, Geom::Point om, Geom::Point m) = 0;
 };
 
 class Toggle : public Handle{
@@ -67,6 +69,9 @@ public:
     virtual void* hit(Geom::Point mouse);
     virtual void move_to(void* hit, Geom::Point om, Geom::Point m);
     void push_back(double x, double y) {pts.push_back(Geom::Point(x,y));}
+    void push_back(Geom::Point pt) {pts.push_back(pt);}
+    unsigned size() {return pts.size();}
+    Geom::D2<Geom::SBasis> asBezier();
 };
 
 class Toy {

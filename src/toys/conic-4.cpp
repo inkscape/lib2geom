@@ -7,10 +7,11 @@
 
 #include "d2.h"
 #include "sbasis.h"
+#include "sbasis-math.h"
 #include "bezier-to-sbasis.h"
 
 #include "path-cairo.h"
-#include "toy-framework.h"
+#include "toy-framework-2.h"
 
 using std::vector;
 using namespace Geom;
@@ -18,48 +19,45 @@ using namespace Geom;
 const double w = 1./3;
 const double cwp = cos(w*M_PI);
 const double swp = sin(w*M_PI);
-double phi(double t, double w) { return sin(w*t) - w*sin(t); }
+/*double phi(double t, double w) { return sin(w*t) - w*sin(t); }
 double phih(double t, double w) { return sin(w*t) + w*sin(t); }
 double b4(double t, double w) {return phi(t/2,w)*phih(t/2,w)/(swp*swp);}
 double b3(double t, double w) {return cwp*phi(t,w)/(2*swp) - cwp*cwp*b4(t,w); }
 double b2(double t, double w) {return 2*w*w*sin(t/2)*sin(t/2);}
 double b1(double t, double w) {return b3(2*M_PI - t, w);}
-double b0(double t, double w) {return b4(2*M_PI - t, w);}
+double b0(double t, double w) {return b4(2*M_PI - t, w);}*/
 
 class arc_basis{
 public:
-    SBasis basis[5];
+    Piecewise<SBasis> basis[5];
     double w;
-    int k;
     
-    SBasis phi(Linear const &d, double w) { 
-        return sin(d*w, k) - sin(d, k)*w; 
+    Piecewise<SBasis> phi(Piecewise<SBasis> const &d, double w) { 
+        return sin(d*w) - sin(d)*w; 
     }
-    SBasis phih(Linear const &d, double w) { 
-        return sin(d*w, k) + sin(d, k)*w; 
+    Piecewise<SBasis> phih(Piecewise<SBasis> const &d, double w) { 
+        return sin(d*w) + sin(d)*w; 
     }
-    SBasis b4(Linear const &d, double w) {
+    Piecewise<SBasis> b4(Piecewise<SBasis> const &d, double w) {
         return phi(d*.5,w)/(swp*swp)*phih(d*.5,w);
     }
-    SBasis b3(Linear const &d, double w) {
+    Piecewise<SBasis> b3(Piecewise<SBasis> const &d, double w) {
         return phi(d,w)*(cwp/(2*swp)) - b4(d,w)*(cwp*cwp); 
     }
 
-    SBasis b2(Linear const &d, double w) {
-        return sin(d*.5, k)*(2*w*w)*sin(d*.5, k);
+    Piecewise<SBasis> b2(Piecewise<SBasis> const &d, double w) {
+        return sin(d*.5)*(2*w*w)*sin(d*.5);
     }
-    SBasis b1(Linear const &d, double w) {
+    Piecewise<SBasis> b1(Piecewise<SBasis> const &d, double w) {
         return b3(reverse(d), w);
     }
-    SBasis b0(Linear const &d, double w) {
+    Piecewise<SBasis> b0(Piecewise<SBasis> const &d, double w) {
         return b4(reverse(d), w);
     }
     
     
     arc_basis(double w) {
-        //basis[5] = {b4, b3, b2, b1, b0};
-        k = 2; // 2 seems roughly right
-        const Linear dom(0, 2*M_PI);
+        Piecewise<SBasis> dom(Linear(0, 2*M_PI));
         basis[0] = b4(dom, w);
         basis[1] = b3(dom, w);
         basis[2] = b2(dom, w);
@@ -70,19 +68,21 @@ public:
 };
 
 class Conic4: public Toy {
+    PointSetHandle psh;
     public:
     Conic4 () {
         double sc = 30;
         Geom::Point c(6*sc, 6*sc);
-        handles.push_back(sc*Geom::Point(0,0)+c);
-        handles.push_back(sc*Geom::Point(tan(w*M_PI)/w, 0)+c);
-        handles.push_back(sc*Geom::Point(0, 1/(w*w))+c);
-        handles.push_back(sc*Geom::Point(-tan(w*M_PI)/w, 0)+c);
-        handles.push_back(sc*Geom::Point(0,0)+c);
+        psh.push_back(sc*Geom::Point(0,0)+c);
+        psh.push_back(sc*Geom::Point(tan(w*M_PI)/w, 0)+c);
+        psh.push_back(sc*Geom::Point(0, 1/(w*w))+c);
+        psh.push_back(sc*Geom::Point(-tan(w*M_PI)/w, 0)+c);
+        psh.push_back(sc*Geom::Point(0,0)+c);
+        handles.push_back(&psh);
     }
 
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
-        std::vector<Geom::Point> e_h = handles;
+        std::vector<Geom::Point> e_h = psh.pts;
         for(int i = 0; i < 5; i++) {
             Geom::Point p = e_h[i];
         
@@ -96,18 +96,16 @@ class Conic4: public Toy {
         cairo_stroke(cr);
         
         arc_basis ab(1./3);
-        D2<SBasis> B;
+        D2<Piecewise<SBasis> > B;
         
         for(unsigned dim  = 0; dim < 2; dim++)
             for(unsigned i  = 0; i < 5; i++)
                 B[dim] += ab.basis[i]*e_h[i][dim];
         
-        cairo_md_sb(cr, B);
+        cairo_d2_pw(cr, B);
         cairo_set_source_rgba (cr, 1., 0.5, 0, 1);
         cairo_set_line_width (cr, 1);
         cairo_stroke(cr);
-
-        cairo_md_sb(cr, B);
 
         Toy::draw(cr, notify, width, height, save);
     }

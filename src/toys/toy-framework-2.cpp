@@ -30,8 +30,10 @@ void draw_text(cairo_t *cr, Geom::Point loc, const char* txt, bool bottom) {
     pango_cairo_show_layout(cr, layout);
 }
 
-void draw_number(cairo_t *cr, Geom::Point pos, int num) {
+void draw_number(cairo_t *cr, Geom::Point pos, int num, std::string name=std::string()) {
     std::ostringstream number;
+    if (name.size())
+	number << name;
     number << num;
     draw_text(cr, pos, number.str().c_str(), true);
 }
@@ -425,9 +427,6 @@ void draw_toggles(cairo_t *cr, std::vector<Toggle> &ts) {
     for(unsigned i = 0; i < ts.size(); i++) ts[i].draw(cr);
 }
 
-void Handle::draw(cairo_t *cr, bool annotes) {}
-void* Handle::hit(Geom::Point pos) {return 0;}
-void Handle::move_to(void* hit, Geom::Point om, Geom::Point m) {}
 
 void PointHandle::draw(cairo_t *cr, bool annotes) {
     draw_circ(cr, pos);
@@ -446,6 +445,7 @@ void PointHandle::move_to(void* hit, Geom::Point om, Geom::Point m) {
 void PointSetHandle::draw(cairo_t *cr, bool annotes) {
     for(unsigned i = 0; i < pts.size(); i++) {
 	draw_circ(cr, pts[i]);
+        if(annotes) draw_number(cr, pts[i], i, name);
     }
 }
 
@@ -461,6 +461,12 @@ void PointSetHandle::move_to(void* hit, Geom::Point om, Geom::Point m) {
     if(hit) {
 	*(Geom::Point*)hit = m;
     }
+}
+
+#include "bezier-to-sbasis.h"
+
+Geom::D2<Geom::SBasis> PointSetHandle::asBezier() {
+    return handles_to_sbasis(pts.begin(), size()-1);
 }
 
 #if 1

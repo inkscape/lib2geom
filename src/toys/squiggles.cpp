@@ -2,6 +2,7 @@
 #include "sbasis.h"
 #include "bezier-to-sbasis.h"
 #include "sbasis-math.h"
+#include "sbasis-geometric.h"
 
 #include "path-cairo.h"
 #include "toy-framework-2.h"
@@ -36,8 +37,8 @@ void cairo_vert(cairo_t *cr, double x, vector<double> p) {
 
 class PWSBHandle : public Handle{
 public:
-    unsigned handles_per_curve;
-    PWSBHandle(unsigned handles_per_curve) :handles_per_curve(handles_per_curve) {}
+    unsigned handles_per_curve, curve_size, segs;
+    PWSBHandle(unsigned cs, unsigned segs) :handles_per_curve(cs*segs),curve_size(cs), segs(segs) {}
     std::vector<Geom::Point> pts;
     virtual void draw(cairo_t *cr, bool annotes = false);
   
@@ -47,13 +48,13 @@ public:
     Piecewise<SBasis> value() {
         Piecewise<SBasis> pws;
 	Point* base = &pts[0];
-	for(unsigned i = 0; i < handles_per_curve; i+=4) {
+	for(unsigned i = 0; i < handles_per_curve; i+=curve_size) {
 	    pws.push_cut(base[i][0]);
 	    //Bad hack to move 0 to 150
-	    for(unsigned j = i; j < i + 4; j++)
+	    for(unsigned j = i; j < i + curve_size; j++)
 		base[j] = Point(base[j][0], base[j][1] - 150);
-	    pws.push_seg( Geom::handles_to_sbasis(base+i, 3)[1]);
-	    for(unsigned j = i; j < i + 4; j++)
+	    pws.push_seg( Geom::handles_to_sbasis(base+i, curve_size-1)[1]);
+	    for(unsigned j = i; j < i + curve_size; j++)
 		base[j] = Point(base[j][0], base[j][1] + 150);
 	}
 	pws.push_cut(base[handles_per_curve - 1][0]);
@@ -80,12 +81,14 @@ void PWSBHandle::move_to(void* hit, Geom::Point om, Geom::Point m) {
     if(hit) {
 	*(Geom::Point*)hit = m;
 	Point* base = &pts[0];
-	for(unsigned i = 4; i < handles_per_curve; i+=4) {
+	for(unsigned i = curve_size; i < handles_per_curve; i+=curve_size) {
 	    base[i-1][0] = base[i][0];
 	}
-	for(unsigned i = 0; i < handles_per_curve; i+=4) {
-	    for(unsigned j = 1; j < 3; j++)
-		base[i+j][0] = (1 - j*0.25)*base[i][0] + (j*0.25)*base[i+3][0];
+	for(unsigned i = 0; i < handles_per_curve; i+=curve_size) {
+	    for(unsigned j = 1; j < (curve_size-1); j++) {
+                double t = float(j)/(curve_size-1);
+		base[i+j][0] = (1 - t)*base[i][0] + t*base[i+curve_size-1][0];
+            }
 	}
     }
 }
@@ -104,16 +107,15 @@ class PwToy: public Toy {
             cairo_pw(cr, pws[a]);
         }
         cairo_stroke(cr);
+        
+        cairo_save(cr);
+        cairo_set_source_rgba (cr, 1., 0., 0., 1);
+        cairo_pw(cr, reverse(pws[0]));
+        cairo_stroke(cr);
+        cairo_restore(cr);
 
         Piecewise<SBasis> acpw = (pws[0] - pws[0].valueAt(pws[0].cuts[0]))/10;
-	if (0) {
-	    acpw.push_cut(0);
-	    acpw.push_seg( SBasis(Linear(0,M_PI))*SBasis(Linear(0,M_PI)));
-	    acpw.push_cut(1);
-	}
-	D2<Piecewise<SBasis> > arcurv(cos(acpw),sin(acpw));
-	Piecewise< D2<SBasis> > pwc = sectionize(arcurv);
-	pwc = integral(pwc);
+	Piecewise< D2<SBasis> > pwc = sectionize(integral(tan2(acpw)));
 	pwc -= pwc.valueAt(pwc.cuts[0]);
 	pwc += Point(width/2, height/2);
 	D2<Interval> r = bounds_exact(pwc);
@@ -125,7 +127,6 @@ class PwToy: public Toy {
         cairo_set_source_rgba (cr, 0., 0., 0, 1);
         cairo_stroke(cr);
 
-        *notify << pws[0].segN(dynamic_cast<PointHandle*>(handles[handles.size() - 1])->pos[0]) << "; " << pws[0].segT(dynamic_cast<PointHandle*>(handles[handles.size() - 1])->pos[0]);
         Toy::draw(cr, notify, width, height, save);
     }
 
@@ -133,20 +134,16 @@ class PwToy: public Toy {
         
 public:
     PwToy () {
-        segs = 3;
-        handles_per_curve = 4 * segs;
         curves = 1;
         for(unsigned a = 0; a < curves; a++) {
-	    PWSBHandle*psh = new PWSBHandle(handles_per_curve);
+	    PWSBHandle*psh = new PWSBHandle(5, 3);
 	    handles.push_back(psh);
-	    for(unsigned i = 0; i < handles_per_curve; i++) {
+	    for(unsigned i = 0; i < psh->handles_per_curve; i++) {
 	    
-		psh->push_back(150 + 300*i/(4*segs), 
+		psh->push_back(150 + 300*i/(psh->curve_size*psh->segs), 
 			       uniform() * 150 + 150 - 50 * a);
 	    }
 	}
-        handles.push_back(new PointHandle(150, 400));
-        handles.push_back(new PointHandle(300, 400));
     }
 };
 

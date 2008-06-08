@@ -4,7 +4,7 @@
 #include "path.h"
 
 #include "path-cairo.h"
-#include "toy-framework.h"
+#include "toy-framework-2.h"
 
 #define ZROOTS_TEST 0
 #if ZROOTS_TEST
@@ -31,24 +31,26 @@ void shift(T &a, T &b, T &c, T const &d) {
 
 extern unsigned total_steps, total_subs;
 
-class RootFinderComparer: public Toy {
+class MatchCurve: public Toy {
 public:
     double timer_precision;
     double units;
+    PointSetHandle psh;
     
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
+        cairo_set_line_width (cr, 1);
         std::vector<Geom::Point> trans;
-        trans.resize(handles.size());
-        for(unsigned i = 0; i < handles.size(); i++) {
-            trans[i] = handles[i] - Geom::Point(0, 3*width/4);
+        trans.resize(psh.size());
+        for(unsigned i = 0; i < psh.size(); i++) {
+            trans[i] = psh.pts[i] - Geom::Point(0, 3*width/4);
         }
         
         std::vector<double> solutions;
         
-        D2<SBasis> test_sb = handles_to_sbasis(handles.begin(), 5);
+        D2<SBasis> test_sb = psh.asBezier();
 
     
-        D2<SBasis> B = handles_to_sbasis(handles.begin(), 5);
+        D2<SBasis> B = psh.asBezier();
         Geom::Path pb;
         pb.append(B);
         pb.close(false);
@@ -130,26 +132,19 @@ public:
             cairo_path(cr, pb);
         }
         
-        /*m = truncate(compose(B, Linear(0, hi*2)), 2);
-        {
-            Geom::Path pb;
-            pb.append(m);
-            pb.close(false);
-            cairo_path(cr, pb);
-            }*/
-       
         cairo_stroke(cr);
         Toy::draw(cr, notify, width, height, save);
     }
-    RootFinderComparer() : timer_precision(0.1), units(1e6) // microseconds
+    MatchCurve() : timer_precision(0.1), units(1e6) // microseconds
     {
+        handles.push_back(&psh);
         for(int i = 0; i < 6; i++)
-            handles.push_back(Geom::Point(uniform()*400, uniform()*400));
+            psh.push_back(uniform()*400, uniform()*400);
     }
 };
 
 int main(int argc, char **argv) {
-    init(argc, argv, new RootFinderComparer());
+    init(argc, argv, new MatchCurve());
 
     return 0;
 }

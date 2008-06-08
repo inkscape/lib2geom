@@ -8,9 +8,10 @@
 #include "sbasis.h"
 #include "bezier-to-sbasis.h"
 #include "sbasis-to-bezier.h"
+#include "sbasis-math.h"
 
 #include "path-cairo.h"
-#include "toy-framework.h"
+#include "toy-framework-2.h"
 
 using std::vector;
 using namespace Geom;
@@ -24,12 +25,14 @@ double cosC(double t) { return 1 - cos(t);}
 double tanC(double t) { return sinC(t) / cosC(t);}
 
 class Conic3: public Toy {
+    PointSetHandle psh;
     public:
     Conic3 () {
-        handles.push_back(Geom::Point(100, 500));
-        handles.push_back(Geom::Point(100, 500 - 200*M_PI/2));
-        handles.push_back(Geom::Point(500, 500 - 200*M_PI/2));
-        handles.push_back(Geom::Point(500, 500));
+        psh.push_back(100, 500);
+        psh.push_back(100, 500 - 200*M_PI/2);
+        psh.push_back(500, 500 - 200*M_PI/2);
+        psh.push_back(500, 500);
+        handles.push_back(&psh);
     }
 
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
@@ -37,9 +40,8 @@ class Conic3: public Toy {
         cairo_set_line_width (cr, 0.5);
         cairo_stroke(cr);
         
-        vector<Geom::Point> e_a_h;
-        Geom::Point a[2] = {handles[0] - handles[1],
-                        handles[2] - handles[1]};
+        Geom::Point a[2] = {psh.pts[0] - psh.pts[1],
+                        psh.pts[2] - psh.pts[1]};
         double angle = Geom::angle_between(a[0], a[1]);
         double len = std::max(Geom::L2(a[0]),
                                 Geom::L2(a[1]));
@@ -49,32 +51,29 @@ class Conic3: public Toy {
         *notify << " sinC = " << sinC(angle);
         *notify << " cosC = " << cosC(angle);
         *notify << " tanC = " << tanC(angle);
-        e_a_h = handles;
-        //e_a_h.resize(4);
+        vector<Geom::Point> e_a_h = psh.pts;
         
-        SBasis one = Linear(1, 1);
-        D2<SBasis> B;
         double alpha = M_PI;
-        SBasis C = cos(Linear(0, alpha), 10);
-        SBasis S = sin(Linear(0, alpha), 10);
-        SBasis X(Linear(0,alpha));
-        SBasis sinC = X - S;
-        SBasis cosC = one - C;
-        //SBasis tanC = divide(sinC, cosC, 10);
-        SBasis Z3 = sinC/sinC(1);
-        SBasis Z0 = reverse(Z3);
-        SBasis Z2 = cosC/cosC(1) - Z3;
-        SBasis Z1 = reverse(Z2);
+        Piecewise<SBasis> pw(Linear(0, alpha));
+        Piecewise<SBasis> C = cos(pw);
+        Piecewise<SBasis> S = sin(pw);
+        Piecewise<SBasis> sinC = pw - S;
+        Piecewise<SBasis> cosC = Piecewise<SBasis>(1) - C;
+        Piecewise<SBasis> Z3 = sinC/sinC(1);
+        Piecewise<SBasis> Z0 = reverse(Z3);
+        Piecewise<SBasis> Z2 = cosC/cosC(1) - Z3;
+        Piecewise<SBasis> Z1 = reverse(Z2);
         
-        SBasis Z[4] = {Z0, Z1, Z2, Z3};
+        Piecewise<SBasis> Z[4] = {Z0, Z1, Z2, Z3};
         
+        D2<Piecewise<SBasis> > B;
         for(unsigned dim  = 0; dim < 2; dim++) {
-            B[dim] = Linear(0,0);
+            B[dim] = Piecewise<SBasis>(0);
             for(unsigned i  = 0; i < 4; i++) {
                 B[dim] += Z[i]*e_a_h[i][dim];
             }
         }
-        cairo_md_sb(cr, B);
+        cairo_d2_pw(cr, B);
         Toy::draw(cr, notify, width, height, save);
     }
 };
