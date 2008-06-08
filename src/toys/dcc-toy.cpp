@@ -746,6 +746,11 @@ class DCCToy : public Toy
     void draw( cairo_t *cr, std::ostringstream *notify, 
                int width, int height, bool save ) 
     {
+        Point ulc(width - 300, height - 60 );
+        toggles[0].bounds = Rect(ulc , ulc + Point(160,25) );
+        draw_toggles(cr, toggles);
+        
+        cairo_set_source_rgba(cr, 0.3, 0.3, 0.3, 1.0);
         cairo_set_line_width (cr, 0.3);
         D2<SBasis> A = handles_to_sbasis(handles.begin(), A_order-1);
         //SBasisCurve A(A0);
@@ -781,7 +786,15 @@ class DCCToy : public Toy
         cairo_move_to(cr, handles.back());
         cairo_line_to(cr, B(nptB));
         cairo_stroke(cr);
-        Piecewise<SBasis> d = distance(A, B, 40);
+        Piecewise<SBasis> d;
+        if (!toggles[0].on)
+        {
+             d = distance(A, B, 40);
+        }
+        else
+        {
+            d = distance(B, A, 40);
+        }
         // uncomment following lines to view errors in computing the distance
 //        unsigned int total_error = dist_test(d, A, B, 0.0004);
 //        *notify << "total error: " << total_error;
@@ -814,6 +827,12 @@ class DCCToy : public Toy
         cairo_stroke(cr);
         Toy::draw(cr, notify, width, height, save);
     }
+    
+    void mouse_pressed(GdkEventButton* e) 
+    {
+        toggle_events(toggles, e);
+        Toy::mouse_pressed(e);
+    }
 
   public:
     DCCToy()
@@ -826,10 +845,13 @@ class DCCToy : public Toy
         {
             handles.push_back(Geom::Point(uniform()*400, uniform()*400));
         }
+        
+        toggles.push_back(Toggle("d(A,B) <-> d(B,A)", false));
 
     }
   private:
     unsigned int A_order, B0_order, B1_order, total_handles;
+    std::vector<Toggle> toggles;
 };
 
 
