@@ -78,7 +78,7 @@ class PathAlongPathToy: public Toy {
     }        
 
 public:
-    PathAlongPathToy() : Toy(__FUNCTION__), origin_handle(150,150) {
+    PathAlongPathToy() : origin_handle(150,150) {
         if(handles.empty()) {
             handles.push_back(&skel_handles);
             handles.push_back(&pat_handles);

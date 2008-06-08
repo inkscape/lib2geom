@@ -71,7 +71,7 @@ class Squiggles: public Toy {
     bool should_draw_numbers() { return false; }
         
 public:
-    Squiggles () : Toy(__FUNCTION__){
+    Squiggles () {
         curves = 1;
         for(unsigned a = 0; a < curves; a++) {
 	    PWSBHandle*psh = new PWSBHandle(5, 3);

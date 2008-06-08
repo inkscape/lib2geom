@@ -41,6 +41,15 @@ void draw_number(cairo_t *cr, Geom::Point pos, int num, std::string name=std::st
 //Framework Accessors
 void redraw() { gtk_widget_queue_draw(GTK_WIDGET(window)); }
 
+#include <typeinfo>
+
+Toy::Toy() : hit_data(0) {
+    mouse_down = false; 
+    selected = NULL; 
+    notify_offset = 0;
+}
+
+
 void Toy::draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save)
 {
     if(should_draw_bounds() == 1) {
@@ -394,6 +403,7 @@ void init(int argc, char **argv, Toy* t, int width, int height) {
     gtk_widget_grab_focus(canvas);
     assert(gtk_widget_is_focus(canvas));
 
+    t->name = typeid(*t).name();
     gtk_main();
 }
 

@@ -108,7 +108,7 @@ class OffsetTester: public Toy {
     }        
   
 public:
-    OffsetTester() : Toy(__FUNCTION__){
+    OffsetTester() {
         handles.push_back(&psh);
         for(unsigned i = 0; i < 6; i++)
             psh.push_back(200+50*i,300+70*uniform());

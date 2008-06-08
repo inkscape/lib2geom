@@ -141,7 +141,7 @@ class SbCalculusToy: public Toy {
   }
   
 public:
-    SbCalculusToy() :Toy(__FUNCTION__), pwsbh(4,1){
+    SbCalculusToy() : pwsbh(4,1){
       for(int i = 0; i < 2*SIZE; i++)
           pwsbh.push_back(i*100,150+150+uniform()*300*0);
       handles.push_back(&pwsbh);

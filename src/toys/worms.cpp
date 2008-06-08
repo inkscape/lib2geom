@@ -115,7 +115,7 @@ class Intro: public Toy {
     virtual int should_draw_bounds() { return 0; }
     
     public:
-    Intro () : Toy(__FUNCTION__) {
+    Intro () {
         t = 0;
     }
 };

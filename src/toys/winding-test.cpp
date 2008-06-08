@@ -61,7 +61,7 @@ class WindingTest: public Toy {
     }
 
     public:
-    WindingTest () : Toy(__FUNCTION__), test_pt_handle(300,300) {}
+    WindingTest () : test_pt_handle(300,300) {}
     void first_time(int argc, char** argv) {
         const char *path_name="winding.svgd";
         if(argc > 1)

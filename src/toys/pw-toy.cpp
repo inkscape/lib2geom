@@ -83,7 +83,7 @@ class PwToy: public Toy {
     bool should_draw_numbers() { return false; }
         
     public:
-    PwToy () :Toy(__FUNCTION__) {
+    PwToy () {
         segs = 3;
         handles_per_curve = 4 * segs;
         curves = 2;

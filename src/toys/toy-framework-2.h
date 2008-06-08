@@ -91,7 +91,7 @@ public:
     double notify_offset;
     std::string name;
 
-    Toy(std::string name = "") : hit_data(0), name(name) { mouse_down = false; selected = NULL; notify_offset = 0;}
+    Toy();
 
     virtual ~Toy() {}
 

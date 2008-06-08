@@ -30,7 +30,7 @@ class CircleIntersect : public Toy {
     }
 
     public:
-    CircleIntersect() : Toy(__FUNCTION__){
+    CircleIntersect(){
         psh[0].push_back(200,200); psh[0].push_back(250,200);
         psh[1].push_back(150,150); psh[1].push_back(250,150);
         handles.push_back(&psh[0]);
