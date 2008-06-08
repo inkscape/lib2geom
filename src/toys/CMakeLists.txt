@@ -16,7 +16,6 @@ cylinder3d
 dcc-toy
 #distort
 draw-toy
-ea-fitting-toy
 fitter
 gear
 hvlineseg-toy
@@ -74,6 +73,7 @@ toy-framework-2
 circle-intersect
 conic-3
 conic-4
+ea-fitting-toy
 match-curve
 offset-test
 pair-intersect

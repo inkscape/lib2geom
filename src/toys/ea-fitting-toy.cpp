@@ -40,7 +40,7 @@
 #include "numeric/linear_system.h"
 
 #include "path-cairo.h"
-#include "toy-framework.h"
+#include "toy-framework-2.h"
 
 
 
@@ -474,7 +474,8 @@ class EAFittingToy : public Toy
   	      	   int width, int height, bool save ) 
     {
     	cairo_set_line_width (cr, 0.2);
-    	D2<SBasis> SB = handles_to_sbasis(handles.begin(), total_handles - 1);
+    	//D2<SBasis> SB = handles_to_sbasis(handles.begin(), total_handles - 1);
+    	D2<SBasis> SB = psh.asBezier();
     	cairo_md_sb(cr, SB);
     	cairo_stroke(cr);
     	
@@ -511,13 +512,15 @@ class EAFittingToy : public Toy
 	EAFittingToy( double _tolerance )
 		: tolerance(_tolerance)
 	{
+	    handles.push_back(&psh);
 		total_handles = 6;
 		for ( unsigned int i = 0; i < total_handles; ++i )
 		{
-			handles.push_back(Point(uniform()*400, uniform()*400));
+			psh.push_back(uniform()*400, uniform()*400);
 		}
 	}
 	
+	PointSetHandle psh;
 	unsigned int total_handles;
 	double tolerance;
 };
