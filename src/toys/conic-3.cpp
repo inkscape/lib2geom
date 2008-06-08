@@ -27,7 +27,7 @@ double tanC(double t) { return sinC(t) / cosC(t);}
 class Conic3: public Toy {
     PointSetHandle psh;
     public:
-    Conic3 () {
+    Conic3 () : Toy(__FUNCTION__) {
         psh.push_back(100, 500);
         psh.push_back(100, 500 - 200*M_PI/2);
         psh.push_back(500, 500 - 200*M_PI/2);

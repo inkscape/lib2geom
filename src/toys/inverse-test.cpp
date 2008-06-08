@@ -143,7 +143,7 @@ class InverseTester: public Toy {
   }        
   
 public:
-  InverseTester(){
+    InverseTester() {
     size=4;
     if(handles.empty()) {
       for(int i = 0; i < 2*size; i++)

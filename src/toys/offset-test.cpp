@@ -6,7 +6,7 @@
 #include "bezier-to-sbasis.h"
 
 #include "path-cairo.h"
-#include "toy-framework.h"
+#include "toy-framework-2.h"
 
 using std::vector;
 using namespace Geom;
@@ -51,9 +51,10 @@ static void plot(cairo_t* cr, Piecewise<SBasis> const &f,double vscale=1){
 
 
 class OffsetTester: public Toy {
+    PointSetHandle psh;
 
     void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
-        D2<SBasis> B = handles_to_sbasis(handles.begin(), 3);
+        D2<SBasis> B = psh.asBezier();
         *notify << "Curve offset:" << endl;
         *notify << " -blue: pointwise plotted offset," << endl;
         *notify << " -red:  rot90(unitVector(derivative(.)))+rays at cut" << endl;
@@ -107,11 +108,10 @@ class OffsetTester: public Toy {
     }        
   
 public:
-    OffsetTester(){
-        if(handles.empty()) {
-            for(unsigned i = 0; i < 4; i++)
-                handles.push_back(Point(200+50*i,300+70*uniform()));
-        }
+    OffsetTester() : Toy(__FUNCTION__){
+        handles.push_back(&psh);
+        for(unsigned i = 0; i < 6; i++)
+            psh.push_back(200+50*i,300+70*uniform());
     }
 };
 

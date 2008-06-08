@@ -37,7 +37,7 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
     Toy::draw(cr, notify, width, height, save);
 }
 public:
-SelfIntersect () {
+SelfIntersect () : Toy(__FUNCTION__) {
     handles.push_back(&psh);
     for(unsigned i = 0; i < bez_ord; i++)
         psh.push_back(uniform()*400, uniform()*400);

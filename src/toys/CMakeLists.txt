@@ -1,7 +1,6 @@
 SET(2GEOM_TOYS_SRC 
 
 2dsb2d
-arcurvature
 arc-bez
 arc-length-param
 #b-spline
@@ -10,7 +9,6 @@ bounds-test
 box3d
 box3d-2
 #cheb
-circle-intersect
 center-warp
 convex-toy
 curvature-test
@@ -31,18 +29,15 @@ np-p-c
 #nearest-points2
 nearest-points3
 #normal-bundle
-offset-test
 paptest
 parametrics
 parser
 plane3d
 precise-flat
 pw-compose-test
-pw-toy
 pw-funcs
 quad-toy
 #rat-bez
-sb-math-test
 sb-zeros
 sb1d
 sb2d
@@ -52,7 +47,6 @@ sweep
 svg-elliptic-arc-toy
 
 #toy-cairo
-winding-test
 "${NEEDS_GSL}"
 )
 
@@ -77,14 +71,19 @@ path-cairo.h
 
 SET(2GEOM_TOYS-2_SRC 
 toy-framework-2
+circle-intersect
 conic-3
 conic-4
 match-curve
+offset-test
 pair-intersect
 path-along-path
+pw-toy
+sb-math-test
 self-intersect
 squiggles
 worms
+winding-test
 )
 
 OPTION(2GEOM_TOYS

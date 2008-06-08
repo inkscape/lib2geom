@@ -70,7 +70,7 @@ public:
 class Conic4: public Toy {
     PointSetHandle psh;
     public:
-    Conic4 () {
+    Conic4 () : Toy(__FUNCTION__) {
         double sc = 30;
         Geom::Point c(6*sc, 6*sc);
         psh.push_back(sc*Geom::Point(0,0)+c);

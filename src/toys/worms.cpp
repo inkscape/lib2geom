@@ -5,7 +5,7 @@
 #include "sbasis-math.h"
 
 #include "path-cairo.h"
-#include "toy-framework.h"
+#include "toy-framework-2.h"
 
 //Random walkers toy, written by mgsloan, initially for a school video proj.
 
@@ -115,7 +115,7 @@ class Intro: public Toy {
     virtual int should_draw_bounds() { return 0; }
     
     public:
-    Intro () {
+    Intro () : Toy(__FUNCTION__) {
         t = 0;
     }
 };

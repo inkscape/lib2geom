@@ -39,7 +39,7 @@
 #include "path.h"
 #include "path-cairo.h"
 
-#include "toy-framework.h"
+#include "toy-framework-2.h"
 
 
 #define ZERO 1e-3
@@ -51,6 +51,7 @@ using namespace std;
 #include <stdio.h>
 #include <math.h>
 
+#include "pwsbhandle.cpp"
 
 //-Plot---------------------------------------------------------------
 static void plot(cairo_t* cr, double (*f)(double), Piecewise<SBasis> const &x, double vscale=1){
@@ -86,19 +87,11 @@ double my_inv(double x){return (1./x);}
 #define SIZE 4
 
 class SbCalculusToy: public Toy {
+    PWSBHandle pwsbh;
 
   void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
 
       //Let the user input sbasis coefs.
-      SBasis B;
-      for (int i=0;i<SIZE;i++){
-          handles[i    ][0]=150+15*(i-SIZE);
-          handles[i+SIZE][0]=450+15*(i+1);
-          cairo_move_to(cr, Geom::Point(handles[i    ][0],150));
-          cairo_line_to(cr, Geom::Point(handles[i    ][0],450));
-          cairo_move_to(cr, Geom::Point(handles[i+SIZE][0],150));
-          cairo_line_to(cr, Geom::Point(handles[i+SIZE][0],450));
-      }
       cairo_move_to(cr, Geom::Point(0,300));
       cairo_line_to(cr, Geom::Point(600,300));
       
@@ -106,35 +99,19 @@ class SbCalculusToy: public Toy {
       cairo_set_source_rgba (cr, 0.2, 0.2, 0.2, 1);
       cairo_stroke(cr);
       
-      for (int i=0;i<SIZE;i++){
-          B.push_back(Linear(-(handles[i     ][1]-300)*pow(4.,i),
-                             -(handles[i+SIZE][1]-300)*pow(4.,i) ));
-      }
-      Piecewise<SBasis> f = Piecewise<SBasis>(B);
-
-//       cairo_set_line_width (cr, .5);
-//       cairo_move_to(cr, Point(  0,300));
-//       cairo_line_to(cr, Point(600,300));
-//       cairo_move_to(cr, Point(210,  0));
-//       cairo_line_to(cr, Point(210,600));
-//       cairo_set_source_rgba (cr, 0.3, 0.3, 0.3, 1);
-//       cairo_stroke(cr);
-
-//      cairo_set_line_width (cr, 1.);
-      
-//plot relevant functions:
+      Piecewise<SBasis> f = pwsbh.value(300);
 
       cairo_set_source_rgba (cr, 0.0, 0.0, 0.0, .8);
       plot(cr,f,1);
       cairo_stroke(cr);
       
-      cairo_set_source_rgba (cr, 0.3, 0.3, 0.3,.8);
+/*      cairo_set_source_rgba (cr, 0.3, 0.3, 0.3,.8);
       plot(cr,abs(f),1);
       cairo_stroke(cr);
 
       cairo_set_source_rgba (cr, 0.3, 0.3, 0.3,.8);
       plot(cr,signSb(f),75);
-      cairo_stroke(cr);
+      cairo_stroke(cr);*/
 
 //       cairo_set_source_rgba (cr, 0.3, 0.3, 0.3,.8);
 //       plot(cr,maxSb(f, -f+50),1);
@@ -164,11 +141,10 @@ class SbCalculusToy: public Toy {
   }
   
 public:
-  SbCalculusToy(){
-      if(handles.empty()) {
-          for(int i = 0; i < 2*SIZE; i++)
-              handles.push_back(Geom::Point(0,150+150+uniform()*300*0));
-      }
+    SbCalculusToy() :Toy(__FUNCTION__), pwsbh(4,1){
+      for(int i = 0; i < 2*SIZE; i++)
+          pwsbh.push_back(i*100,150+150+uniform()*300*0);
+      handles.push_back(&pwsbh);
   }
 };
 

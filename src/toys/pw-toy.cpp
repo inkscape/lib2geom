@@ -3,7 +3,7 @@
 #include "bezier-to-sbasis.h"
 
 #include "path-cairo.h"
-#include "toy-framework.h"
+#include "toy-framework-2.h"
 
 #include <vector>
 
@@ -33,40 +33,19 @@ void cairo_vert(cairo_t *cr, double x, vector<double> p) {
     }
 }
 
+#include "pwsbhandle.cpp"
+
 class PwToy: public Toy {
     unsigned segs, handles_per_curve, curves;
+    PWSBHandle pwsbh[2];
+    PointHandle interval_test[2];
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         cairo_set_source_rgba (cr, 0., 0., 0., 1);
         cairo_set_line_width (cr, 1);
-        if(!save) {
-            cairo_move_to(cr, handles[0]);
-            for(unsigned a = 0; a < curves; a++) {
-                unsigned base = a*handles_per_curve;
-                for(unsigned i = 0; i < handles_per_curve; i+=4) {
-                    if(i)
-                        handles[i+base-1][0] = handles[i+base][0];
-                }
-                for(unsigned i = 0; i < handles_per_curve; i+=4) {
-                    for(unsigned j = 1; j < 3; j++)
-                        handles[i+base+j][0] = (1 - j*0.25)*handles[i+base][0] + (j*0.25)*handles[i+base+3][0];
-                    //cairo_line_to(cr, handles[i]);
-                }
-            }
-        }
         
         Piecewise<SBasis> pws[curves];
         for(unsigned a = 0; a < curves; a++) {
-            unsigned base = a * handles_per_curve;
-            for(unsigned i = 0; i < handles_per_curve; i+=4) {
-                pws[a].push_cut(handles[i+base][0]);
-                //Bad hack to move 0 to 150
-                for(unsigned j = base + i; j < base + i + 4; j++) handles[j] = Point(handles[j][0], handles[j][1] - 150);
-                pws[a].push_seg( Geom::handles_to_sbasis(handles.begin()+i+base, 3)[1]);
-                for(unsigned j = base + i; j < base + i + 4; j++) handles[j] = Point(handles[j][0], handles[j][1] + 150);
-            }
-            pws[a].push_cut(handles[base + handles_per_curve - 1][0]);
-            assert(pws[a].invariants());
-            
+            pws[a] = pwsbh[a].value();
             cairo_pw(cr, pws[a]);
         }
         cairo_stroke(cr);
@@ -81,7 +60,8 @@ class PwToy: public Toy {
         cairo_pw(cr, pws[0] + pws[1]);
         cairo_stroke(cr);
         
-        Interval bs = bounds_local(pw_out, Interval(handles[handles.size() - 2][0], handles[handles.size() - 1][0]));
+        Interval bs = bounds_local(pw_out, Interval(interval_test[0].pos[0], 
+                                                    interval_test[1].pos[0]));
         vector<double> vec;
         vec.push_back(bs.min() + 150); vec.push_back(bs.max() + 150);
         cairo_set_source_rgba (cr, .5, 0., 0., 1.);
@@ -96,22 +76,27 @@ class PwToy: public Toy {
         cairo_stroke(cr);
         */
 
-        *notify << pws[0].segN(handles[handles.size() - 1][0]) << "; " << pws[0].segT(handles[handles.size() - 1][0]);
+        *notify << pws[0].segN(interval_test[0].pos[0]) << "; " << pws[0].segT(interval_test[0].pos[0]);
         Toy::draw(cr, notify, width, height, save);
     }
 
     bool should_draw_numbers() { return false; }
         
     public:
-    PwToy () {
+    PwToy () :Toy(__FUNCTION__) {
         segs = 3;
         handles_per_curve = 4 * segs;
         curves = 2;
-        for(unsigned a = 0; a < curves; a++)
+        for(unsigned a = 0; a < curves; a++) {
+            pwsbh[a] = PWSBHandle(4, 3);
+            handles.push_back(&pwsbh[a]);
             for(unsigned i = 0; i < handles_per_curve; i++)
-                handles.push_back(Point(150 + 300*i/(4*segs), uniform() * 150 + 150 - 50 * a));
-        handles.push_back(Point(150, 400));
-        handles.push_back(Point(300, 400));
+                pwsbh[a].push_back(150 + 300*i/(4*segs), uniform() * 150 + 150 - 50 * a);
+        }
+        interval_test[0].pos = Point(150, 400);
+        interval_test[1].pos = Point(300, 400);
+        handles.push_back(&interval_test[0]);
+        handles.push_back(&interval_test[1]);
     }
 };
 

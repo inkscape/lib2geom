@@ -6,7 +6,7 @@
 #include <cstdlib>
 
 #include "path-cairo.h"
-#include "toy-framework.h"
+#include "toy-framework-2.h"
 #include "ord.h"
 using namespace Geom;
 
@@ -45,6 +45,7 @@ int winding(vector<Path> ps, Point p) {
 
 class WindingTest: public Toy {
     vector<Path> path;
+    PointHandle test_pt_handle;
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         cairo_path(cr, path);
         cairo_stroke(cr);
@@ -53,20 +54,21 @@ class WindingTest: public Toy {
         
         std::streambuf* cout_buffer = std::cout.rdbuf();
         std::cout.rdbuf(notify->rdbuf());
-        *notify << "\nwinding:" << winding(path, handles[0]) << "\n";
+        *notify << "\nwinding:" << winding(path, test_pt_handle.pos) << "\n";
         std::cout.rdbuf(cout_buffer);
 
         Toy::draw(cr, notify, width, height, save);
     }
 
     public:
-    WindingTest () {}
+    WindingTest () : Toy(__FUNCTION__), test_pt_handle(300,300) {}
     void first_time(int argc, char** argv) {
         const char *path_name="winding.svgd";
         if(argc > 1)
             path_name = argv[1];
         path = read_svgd(path_name);
-        handles.push_back(Point(300,300));
+        
+        handles.push_back(&test_pt_handle);
     }
 };
 

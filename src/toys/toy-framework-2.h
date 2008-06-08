@@ -55,6 +55,7 @@ class PointHandle : public Handle{
 public:
     PointHandle(double x, double y) : pos(x,y) {}
     PointHandle(Geom::Point pt) : pos(pt) {}
+    PointHandle() {}
     Geom::Point pos;
     virtual void draw(cairo_t *cr, bool annotes = false);
   
@@ -88,8 +89,9 @@ public:
     Handle* selected;
     void* hit_data;
     double notify_offset;
+    std::string name;
 
-    Toy() : hit_data(0){ mouse_down = false; selected = NULL; notify_offset = 0;}
+    Toy(std::string name = "") : hit_data(0), name(name) { mouse_down = false; selected = NULL; notify_offset = 0;}
 
     virtual ~Toy() {}
 
