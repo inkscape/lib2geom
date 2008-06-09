@@ -45,10 +45,14 @@ public:
     bool on;
     Toggle(const char* txt, bool v) : bounds(Geom::Point(0,0), Geom::Point(0,0)), text(txt), on(v) {}
     Toggle(Geom::Rect bnds, char* txt, bool v) : bounds(bnds), text(txt), on(v) {}
-    void draw(cairo_t *cr);
+    void draw(cairo_t *cr, bool annotes = false);
     void toggle();
     void set(bool state);
     void handle_click(GdkEventButton* e);
+    void* hit(Geom::Point pos) { /* not implemented */ return 0; }
+    void move_to(void* hit, Geom::Point om, Geom::Point m) { /* not implemented */ }
+    void load(FILE* f) { /* not implemented */ }
+    void save(FILE* f) { /* not implemented */ }
 };
 
 class PointHandle : public Handle{

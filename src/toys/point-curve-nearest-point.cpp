@@ -40,7 +40,7 @@
 
 
 #include "path-cairo.h"
-#include "toy-framework.h"
+#include "toy-framework-2.h"
 
 
 #include <algorithm>
@@ -69,7 +69,7 @@ class NearestPoints : public Toy
     		   int width, int height, bool save ) 
     {
     	
-    	Point p = handles.back();
+    	Point p = ph.pos;
     	Point np = p;
     	std::vector<Point> nps;
     	
@@ -78,8 +78,8 @@ class NearestPoints : public Toy
     	{
     		case '1': 
     		{
-    			LineSegment seg(handles[0], handles[1]);
-    			cairo_move_to(cr, handles[0]);
+    			LineSegment seg(psh.pts[0], psh.pts[1]);
+    			cairo_move_to(cr, psh.pts[0]);
     			cairo_curve(cr, seg);
     			double t = seg.nearestPoint(p);
     			np = seg.pointAt(t);
@@ -95,7 +95,7 @@ class NearestPoints : public Toy
     	        bool earc_constraints_satisfied = true;
     	        try
     	        {
-    	        	earc.set(handles[0], 200, 150, 0, true, true, handles[1]);
+    	        	earc.set(psh.pts[0], 200, 150, 0, true, true, psh.pts[1]);
     	        }
     	        catch( RangeError e )
     	        {
@@ -120,7 +120,7 @@ class NearestPoints : public Toy
     		}
     		case '3':
     		{
-    			D2<SBasis> A = handles_to_sbasis(handles.begin(), total_handles-1);
+    			D2<SBasis> A = psh.asBezier();
     			cairo_md_sb(cr, A);
     	        if ( toggles[0].on )
     	        {
@@ -137,10 +137,10 @@ class NearestPoints : public Toy
     		}
     		case '4':
     		{
-    			D2<SBasis> A = handles_to_sbasis(handles.begin(), 3);
-    			D2<SBasis> B = handles_to_sbasis(handles.begin() + 3, 3);
-    			D2<SBasis> C = handles_to_sbasis(handles.begin() + 6, 3);
-    			D2<SBasis> D = handles_to_sbasis(handles.begin() + 9, 3);
+    			D2<SBasis> A = handles_to_sbasis(psh.pts.begin(), 3);
+    			D2<SBasis> B = handles_to_sbasis(psh.pts.begin() + 3, 3);
+    			D2<SBasis> C = handles_to_sbasis(psh.pts.begin() + 6, 3);
+    			D2<SBasis> D = handles_to_sbasis(psh.pts.begin() + 9, 3);
     			cairo_md_sb(cr, A);
     			cairo_md_sb(cr, B);
     			cairo_md_sb(cr, C);
@@ -171,9 +171,9 @@ class NearestPoints : public Toy
     		case '5':
     		{
     			closed_toggle = true;
-    			BezierCurve<2> A(handles[0], handles[1], handles[2]);
-    			BezierCurve<3> B(handles[2], handles[3], handles[4], handles[5]);
-    			BezierCurve<3> C(handles[5], handles[6], handles[7], handles[8]);
+    			BezierCurve<2> A(psh.pts[0], psh.pts[1], psh.pts[2]);
+    			BezierCurve<3> B(psh.pts[2], psh.pts[3], psh.pts[4], psh.pts[5]);
+    			BezierCurve<3> C(psh.pts[5], psh.pts[6], psh.pts[7], psh.pts[8]);
     			Path path;
     	        path.append(A);
     	        path.append(B);
@@ -182,7 +182,7 @@ class NearestPoints : public Toy
     	        bool earc_constraints_satisfied = true;
     	        try
     	        {
-    	        	D.set(handles[8], 160, 80, 0, true, true, handles[9]);
+    	        	D.set(psh.pts[8], 160, 80, 0, true, true, psh.pts[9]);
     	        }
     	        catch( RangeError e )
     	        {
@@ -270,11 +270,12 @@ class NearestPoints : public Toy
     		default:
     			total_handles = 0;
     	}
-    	handles.clear();
-    	for ( unsigned int i = 0; i <= total_handles; ++i )
+    	psh.pts.clear();
+    	for ( unsigned int i = 0; i < total_handles; ++i )
     	{
-    		handles.push_back(Geom::Point(uniform()*400, uniform()*400));
+    		psh.push_back(uniform()*400, uniform()*400);
     	}
+    	ph.pos = Point(uniform()*400, uniform()*400);
     	redraw();
     }
     
@@ -288,12 +289,16 @@ class NearestPoints : public Toy
 	NearestPoints()
 		: total_handles(0), choice('0'), closed_toggle(false)
 	{
-		handles.push_back(Geom::Point(uniform()*400, uniform()*400));
+	    handles.push_back(&psh);
+	    handles.push_back(&ph);
+		ph.pos = Point(uniform()*400, uniform()*400);
 		toggles.push_back( Toggle("ALL NP", false) );
 		toggles.push_back( Toggle("CLOSED", false) );
 	}
 	
   private:
+    PointSetHandle psh;
+    PointHandle ph;
 	std::vector<Toggle> toggles;
 	unsigned int total_handles;
 	char choice;

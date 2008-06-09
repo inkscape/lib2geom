@@ -41,7 +41,7 @@
 #include "path-intersection.h"
 
 #include "path-cairo.h"
-#include "toy-framework.h"
+#include "toy-framework-2.h"
 
 #include <algorithm>
 
@@ -541,9 +541,9 @@ class NearestPoints : public Toy
     		   int width, int height, bool save ) 
     {
     	cairo_set_line_width (cr, 0.3);
-        D2<SBasis> A = handles_to_sbasis(handles.begin(), A_bez_ord-1);
+        D2<SBasis> A = pshA.asBezier();
         cairo_md_sb(cr, A);
-        D2<SBasis> B = handles_to_sbasis(handles.begin()+A_bez_ord, B_bez_ord-1);
+        D2<SBasis> B = pshB.asBezier();
         cairo_md_sb(cr, B);
         cairo_stroke(cr);
         
@@ -568,12 +568,17 @@ class NearestPoints : public Toy
 	NearestPoints(unsigned int _A_bez_ord, unsigned int _B_bez_ord)
 		: A_bez_ord(_A_bez_ord), B_bez_ord(_B_bez_ord)
 	{
-		unsigned int total_handles = A_bez_ord + B_bez_ord;
-		for ( unsigned int i = 0; i < total_handles; ++i )
-			handles.push_back(Geom::Point(uniform()*400, uniform()*400));
+	    handles.push_back(&pshA);
+	    handles.push_back(&pshB);
+		for ( unsigned int i = 0; i < A_bez_ord; ++i )
+		    pshA.push_back(Geom::Point(uniform()*400, uniform()*400));
+	    for ( unsigned int i = 0; i < B_bez_ord; ++i )
+	        pshB.push_back(Geom::Point(uniform()*400, uniform()*400));
+
 	}
 	
   private:
+    PointSetHandle pshA, pshB;
 	unsigned int A_bez_ord;
 	unsigned int B_bez_ord;
 };

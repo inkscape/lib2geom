@@ -408,7 +408,7 @@ void init(int argc, char **argv, Toy* t, int width, int height) {
 }
 
 
-void Toggle::draw(cairo_t *cr) {
+void Toggle::draw(cairo_t *cr, bool annotes) {
     cairo_set_source_rgba(cr,0,0,0,1);
     cairo_rectangle(cr, bounds.left(), bounds.top(),
 		    bounds.width(), bounds.height());

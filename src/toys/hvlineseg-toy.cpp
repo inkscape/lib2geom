@@ -1,7 +1,7 @@
 
 
 #include "path-cairo.h"
-#include "toy-framework.h"
+#include "toy-framework-2.h"
 #include "hvlinesegment.h"
 
 using namespace Geom;
@@ -30,7 +30,7 @@ class Slider
 	  
 	typedef  double (*formatter_t) (double );
 	
-	Slider( Geom::Point& _handle, double _min, double _max,	double _value, const char * _label = "" )
+	Slider( PointHandle& _handle, double _min, double _max,	double _value, const char * _label = "" )
 		: m_handle(&_handle), m_pos(Geom::Point(0,0)), m_length(1.0), 
 		  m_min(_min), m_max(_max), m_dir(Geom::X), 
 		  m_label(_label), m_formatter(&default_formatter)
@@ -40,14 +40,14 @@ class Slider
 	
 	double value() const
 	{
-		return ((m_max - m_min) / m_length) * ((*m_handle)[m_dir] - m_pos[m_dir]) + m_min; 
+		return ((m_max - m_min) / m_length) * ((m_handle->pos)[m_dir] - m_pos[m_dir]) + m_min; 
 	}
 	
 	void value(double _value)
 	{
 		if ( _value < m_min ) _value = m_min;
 		if ( _value > m_max ) _value = m_max;
-		(*m_handle)[m_dir] 
+		(m_handle->pos)[m_dir] 
 		            = (m_length / (m_max - m_min)) * (_value - m_min) + m_pos[m_dir];
 	}
 	
@@ -63,10 +63,10 @@ class Slider
 	void draw(cairo_t* cr)
 	{
 		Geom::Dim2 fix_dir = static_cast<Geom::Dim2>( (m_dir + 1) % 2 );
-		(*m_handle)[fix_dir] = m_pos[fix_dir];
-		double diff = (*m_handle)[m_dir] - m_pos[m_dir];
-		if ( diff < 0 )	(*m_handle)[m_dir] = m_pos[m_dir];
-		if ( diff > m_length ) (*m_handle)[m_dir] = m_pos[m_dir] + m_length;
+		(m_handle->pos)[fix_dir] = m_pos[fix_dir];
+		double diff = (m_handle->pos)[m_dir] - m_pos[m_dir];
+		if ( diff < 0 )	(m_handle->pos)[m_dir] = m_pos[m_dir];
+		if ( diff > m_length ) (m_handle->pos)[m_dir] = m_pos[m_dir] + m_length;
 		
 		std::ostringstream os;
 		os << m_label << ": " << (*m_formatter)(value());
@@ -90,7 +90,7 @@ class Slider
 	}
 	
  private:
-	Geom::Point* m_handle;
+	PointHandle* m_handle;
 	Geom::Point m_pos;
 	double m_length;
 	double m_min, m_max;
@@ -107,8 +107,8 @@ class HLineSegToy : public Toy
     {
     	draw_controls(cr, notify, width, height);
     	
-    	handles[1][Y] = handles[0][Y];
-    	HLineSegment hls(handles[0][X], handles[1][X], handles[0][Y]);
+    	pts[1][Y] = pts[0][Y];
+    	HLineSegment hls(pts[0][X], pts[1][X], pts[0][Y]);
     	if (toggles[0].on)  
     	{
     		Curve* c = hls.reverse();
@@ -117,16 +117,16 @@ class HLineSegToy : public Toy
     	}
     	
     	HLineSegment hls2;
-    	hls2.setInitial(handles[2]);
-    	hls2.setFinal(handles[3]);
-    	hls2.setY(handles[2][Y]);
+    	hls2.setInitial(pts[2]);
+    	hls2.setFinal(pts[3]);
+    	hls2.setY(pts[2][Y]);
     	
-    	std::vector<double> xroot = hls.roots(handles[4][X], X);
+    	std::vector<double> xroot = hls.roots(pts[4][X], X);
     	assert( xroot.size() < 2 );
     	
     	try
     	{
-    		std::vector<double> yroot = hls.roots(handles[4][Y], Y);
+    		std::vector<double> yroot = hls.roots(pts[4][Y], Y);
     		assert( yroot.empty() );
     	}
     	catch (InfiniteSolutions e)
@@ -135,7 +135,7 @@ class HLineSegToy : public Toy
     	}
     	
     	
-    	double t = hls.nearestPoint(handles[5], 1.0/4, 3.0/4);
+    	double t = hls.nearestPoint(pts[5], 1.0/4, 3.0/4);
     	
     	double tt = sliders[0].value();
     	
@@ -188,7 +188,7 @@ class HLineSegToy : public Toy
     		Point prj = hls.pointAt(xroot.front());
     		draw_handle(cr, prj);
     	}
-    	cairo_move_to(cr, handles[5]);
+    	cairo_move_to(cr, pts[5]);
     	cairo_line_to(cr, hls.valueAt(t,X), hls.valueAt(t,Y));
     	draw_circ(cr, hls3.initialPoint());
     	cairo_stroke(cr);
@@ -224,21 +224,29 @@ class HLineSegToy : public Toy
   public:
 	HLineSegToy()
 	{
-		handles.push_back(Point(300, 50));
-		handles.push_back(Point(300, 250));
-		handles.push_back(Point(50, 100));
-		handles.push_back(Point(150, 200));
-		handles.push_back(Point(50, 150));
-		handles.push_back(Point(150, 250));
-		handles.push_back(Point(100, 100));
+	    handles.push_back(&psh);
+	    handles.push_back(&ph);
+	    
+		psh.push_back(Point(300, 50));
+		psh.push_back(Point(300, 250));
+		psh.push_back(Point(50, 100));
+		psh.push_back(Point(150, 200));
+		psh.push_back(Point(50, 150));
+		psh.push_back(Point(150, 250));
+		psh.push_back(Point(100, 100));
 		
-		handles.push_back(Point());
-		sliders.push_back(Slider(handles.back(), 0, 1, 0, "t"));
+		pts = & (psh.pts[0]);
+		
+		ph.pos = Point(0,0);
+		sliders.push_back(Slider(ph, 0, 1, 0, "t"));
 		
 		toggles.push_back(Toggle("Reverse", false));
 	}
 	
   private:
+    PointSetHandle psh;
+    Point* pts;
+    PointHandle ph;
 	std::vector<Slider> sliders;
 	std::vector<Toggle> toggles;
 };
@@ -250,8 +258,8 @@ class VLineSegToy : public Toy
     {
     	draw_controls(cr, notify, width, height);
     	
-    	handles[1][X] = handles[0][X];
-    	VLineSegment hls(handles[0][X], handles[0][Y], handles[1][Y]);
+    	pts[1][X] = pts[0][X];
+    	VLineSegment hls(pts[0][X], pts[0][Y], pts[1][Y]);
     	if (toggles[0].on)  
     	{
     		Curve* c = hls.reverse();
@@ -260,16 +268,16 @@ class VLineSegToy : public Toy
     	}
     	
     	VLineSegment hls2;
-    	hls2.setInitial(handles[2]);
-    	hls2.setFinal(handles[3]);
-    	hls2.setX(handles[2][X]);
+    	hls2.setInitial(pts[2]);
+    	hls2.setFinal(pts[3]);
+    	hls2.setX(pts[2][X]);
     	
-    	std::vector<double> yroot = hls.roots(handles[4][Y], Y);
+    	std::vector<double> yroot = hls.roots(pts[4][Y], Y);
     	assert( yroot.size() < 2 );
     	
     	try
     	{
-    		std::vector<double> xroot = hls.roots(handles[4][X], X);
+    		std::vector<double> xroot = hls.roots(pts[4][X], X);
     		assert( xroot.empty() );
     	}
     	catch (InfiniteSolutions e)
@@ -278,7 +286,7 @@ class VLineSegToy : public Toy
     	}
     	
     	
-    	double t = hls.nearestPoint(handles[5], 1.0/4, 3.0/4);
+    	double t = hls.nearestPoint(pts[5], 1.0/4, 3.0/4);
     	
     	double tt = sliders[0].value();
     	
@@ -331,7 +339,7 @@ class VLineSegToy : public Toy
     		Point prj = hls.pointAt(yroot.front());
     		draw_handle(cr, prj);
     	}
-    	cairo_move_to(cr, handles[5]);
+    	cairo_move_to(cr, pts[5]);
     	cairo_line_to(cr, hls.valueAt(t,X), hls.valueAt(t,Y));
     	draw_circ(cr, hls3.initialPoint());
     	cairo_stroke(cr);
@@ -367,21 +375,29 @@ class VLineSegToy : public Toy
   public:
 	VLineSegToy()
 	{
-		handles.push_back(Point(300, 50));
-		handles.push_back(Point(300, 250));
-		handles.push_back(Point(50, 100));
-		handles.push_back(Point(150, 200));
-		handles.push_back(Point(50, 150));
-		handles.push_back(Point(150, 250));
-		handles.push_back(Point(100, 100));
+	    handles.push_back(&psh);
+	    handles.push_back(&ph);
+
+		psh.push_back(Point(300, 50));
+		psh.push_back(Point(300, 250));
+		psh.push_back(Point(50, 100));
+		psh.push_back(Point(150, 200));
+		psh.push_back(Point(50, 150));
+		psh.push_back(Point(150, 250));
+		psh.push_back(Point(100, 100));
 		
-		handles.push_back(Point());
-		sliders.push_back(Slider(handles.back(), 0, 1, 0, "t"));
+		pts = & (psh.pts[0]);
+		
+		ph.pos = Point(0,0);
+		sliders.push_back(Slider(ph, 0, 1, 0, "t"));
 		
 		toggles.push_back(Toggle("Reverse", false));
 	}
 	
   private:
+    PointSetHandle psh;
+    Point* pts;
+    PointHandle ph;
 	std::vector<Slider> sliders;
 	std::vector<Toggle> toggles;
 };

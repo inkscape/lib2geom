@@ -1,5 +1,4 @@
 SET(2GEOM_TOYS_SRC 
-
 2dsb2d
 arc-bez
 arc-length-param
@@ -18,15 +17,12 @@ dcc-toy
 draw-toy
 fitter
 gear
-hvlineseg-toy
 inner-product-clip
 inverse-test
 load-svgd
 mesh-grad
-np-p-c
 #nearest-points
 #nearest-points2
-nearest-points3
 #normal-bundle
 paptest
 parametrics
@@ -43,8 +39,6 @@ sb2d
 shuttle
 #sketch-toy
 sweep
-svg-elliptic-arc-toy
-
 #toy-cairo
 "${NEEDS_GSL}"
 )
@@ -73,8 +67,11 @@ toy-framework-2
 circle-intersect
 conic-3
 conic-4
-ea-fitting-toy
+curve-curve-nearest-point-3
+elliptiarc-curve-fitting
+hvlineseg-toy
 match-curve
+point-curve-nearest-point
 offset-test
 pair-intersect
 path-along-path
@@ -82,9 +79,11 @@ pw-toy
 sb-math-test
 self-intersect
 squiggles
+svg-elliptic-arc-toy
 worms
 winding-test
 )
+
 
 OPTION(2GEOM_TOYS
   "Build the projects Toy files"

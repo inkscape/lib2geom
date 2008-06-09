@@ -1,7 +1,7 @@
 
 #include "path.h"
 #include "path-cairo.h"
-#include "toy-framework.h"
+#include "toy-framework-2.h"
 
 
 using namespace Geom;
@@ -17,16 +17,16 @@ class EllipticToy: public Toy
     			bool save
     		) 
     {
-        start_point = handles[0];
-        end_point = handles[1];
+        start_point = extremes.pts[0];
+        end_point = extremes.pts[1];
         large_arc = toggles[0].on;
         sweep = toggles[1].on;
         
-        rx = 2 * (handles[2][X] - slider_x_min);
-        ry = 2 * (handles[3][X] - slider_x_min);
-        rot_angle = deg_to_rad( 2 * (handles[4][X] - slider_x_min) );
-        from_t = (handles[5][X] - slider_x_min) / 100.0;
-        to_t = (handles[6][X] - slider_x_min) / 100.0;
+        rx = 2 * (cursors.pts[0][X] - slider_x_min);
+        ry = 2 * (cursors.pts[1][X] - slider_x_min);
+        rot_angle = deg_to_rad( 2 * (cursors.pts[2][X] - slider_x_min) );
+        from_t = (cursors.pts[3][X] - slider_x_min) / 100.0;
+        to_t = (cursors.pts[4][X] - slider_x_min) / 100.0;
         
         if ( are_near(start_point, end_point) )
         {
@@ -155,13 +155,16 @@ class EllipticToy: public Toy
         slider_x_min = 130;
         double rot_angle_deg = decimal_round(rad_to_deg(rot_angle),2);
         
-        handles.push_back(start_point);
-        handles.push_back(end_point);
-        handles.push_back(Point(rx/2 + slider_x_min , 0));
-        handles.push_back(Point(ry/2 + slider_x_min, 0));
-        handles.push_back(Point(rot_angle_deg/2 + slider_x_min, 0));
-        handles.push_back(Point(100 * from_t + slider_x_min, 0));
-        handles.push_back(Point(100 * to_t + slider_x_min, 0));
+        handles.push_back(&extremes);
+        handles.push_back(&cursors);
+        
+        extremes.pts.push_back(start_point);
+        extremes.pts.push_back(end_point);
+        cursors.pts.push_back(Point(rx/2 + slider_x_min , 0));
+        cursors.pts.push_back(Point(ry/2 + slider_x_min, 0));
+        cursors.pts.push_back(Point(rot_angle_deg/2 + slider_x_min, 0));
+        cursors.pts.push_back(Point(100 * from_t + slider_x_min, 0));
+        cursors.pts.push_back(Point(100 * to_t + slider_x_min, 0));
         
         toggles.push_back( Toggle("Large Arc", large_arc) );
         toggles.push_back( Toggle("Clockwise", sweep) );
@@ -232,21 +235,21 @@ class EllipticToy: public Toy
         double from_to_slider_x_max = slider_x_min + from_to_slider_len;
 
         
-        handles[2][Y] = rx_slider_y;
-        if ( handles[2][X] < slider_x_min) handles[2][X] = slider_x_min;
-        if ( handles[2][X] > ray_slider_x_max) handles[2][X] = ray_slider_x_max;
-        handles[3][Y] = ry_slider_y;
-        if ( handles[3][X] < slider_x_min) handles[3][X] = slider_x_min;
-        if ( handles[3][X] > ray_slider_x_max) handles[3][X] = ray_slider_x_max;
-        handles[4][Y] = angle_slider_y;
-        if ( handles[4][X] < slider_x_min) handles[4][X] = slider_x_min;
-        if ( handles[4][X] > angle_slider_x_max) handles[4][X] = angle_slider_x_max;
-        handles[5][Y] = from_slider_y;
-        if ( handles[5][X] < slider_x_min) handles[5][X] = slider_x_min;
-        if ( handles[5][X] > from_to_slider_x_max) handles[5][X] = from_to_slider_x_max;
-        handles[6][Y] = to_slider_y;
-        if ( handles[6][X] < slider_x_min) handles[6][X] = slider_x_min;
-        if ( handles[6][X] > from_to_slider_x_max) handles[6][X] = from_to_slider_x_max;
+        cursors.pts[0][Y] = rx_slider_y;
+        if ( cursors.pts[0][X] < slider_x_min) cursors.pts[0][X] = slider_x_min;
+        if ( cursors.pts[0][X] > ray_slider_x_max) cursors.pts[0][X] = ray_slider_x_max;
+        cursors.pts[1][Y] = ry_slider_y;
+        if ( cursors.pts[1][X] < slider_x_min) cursors.pts[1][X] = slider_x_min;
+        if ( cursors.pts[1][X] > ray_slider_x_max) cursors.pts[1][X] = ray_slider_x_max;
+        cursors.pts[2][Y] = angle_slider_y;
+        if ( cursors.pts[2][X] < slider_x_min) cursors.pts[2][X] = slider_x_min;
+        if ( cursors.pts[2][X] > angle_slider_x_max) cursors.pts[2][X] = angle_slider_x_max;
+        cursors.pts[3][Y] = from_slider_y;
+        if ( cursors.pts[3][X] < slider_x_min) cursors.pts[3][X] = slider_x_min;
+        if ( cursors.pts[3][X] > from_to_slider_x_max) cursors.pts[3][X] = from_to_slider_x_max;
+        cursors.pts[4][Y] = to_slider_y;
+        if ( cursors.pts[4][X] < slider_x_min) cursors.pts[4][X] = slider_x_min;
+        if ( cursors.pts[4][X] > from_to_slider_x_max) cursors.pts[4][X] = from_to_slider_x_max;
        
         
         cairo_set_source_rgba(cr, 0.1, 0.1, 0.1, 1.0);
@@ -360,6 +363,8 @@ class EllipticToy: public Toy
     }
 
   private:
+    PointSetHandle extremes;
+    PointSetHandle cursors;
 	std::vector<Toggle> toggles;
 	double slider_x_min;
     double start_angle, sweep_angle, end_angle, rot_angle;
