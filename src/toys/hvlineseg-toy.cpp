@@ -215,18 +215,10 @@ class HLineSegToy : public Toy
         cairo_stroke(cr);
     }
     
-    void mouse_pressed(GdkEventButton* e) 
-    {
-        toggle_events(toggles, e);
-        Toy::mouse_pressed(e);
-    }
 
   public:
 	HLineSegToy()
-	{
-	    handles.push_back(&psh);
-	    handles.push_back(&ph);
-	    
+	{	    
 		psh.push_back(Point(300, 50));
 		psh.push_back(Point(300, 250));
 		psh.push_back(Point(50, 100));
@@ -241,6 +233,10 @@ class HLineSegToy : public Toy
 		sliders.push_back(Slider(ph, 0, 1, 0, "t"));
 		
 		toggles.push_back(Toggle("Reverse", false));
+		
+        handles.push_back(&psh);
+        handles.push_back(&ph);
+        handles.push_back(&(toggles[0]));
 	}
 	
   private:
@@ -366,11 +362,6 @@ class VLineSegToy : public Toy
         cairo_stroke(cr);
     }
     
-    void mouse_pressed(GdkEventButton* e) 
-    {
-        toggle_events(toggles, e);
-        Toy::mouse_pressed(e);
-    }
 
   public:
 	VLineSegToy()
@@ -392,6 +383,10 @@ class VLineSegToy : public Toy
 		sliders.push_back(Slider(ph, 0, 1, 0, "t"));
 		
 		toggles.push_back(Toggle("Reverse", false));
+		
+	    handles.push_back(&psh);
+	    handles.push_back(&ph);
+	    handles.push_back(&(toggles[0]));
 	}
 	
   private:

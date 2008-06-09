@@ -49,7 +49,7 @@ public:
     void toggle();
     void set(bool state);
     void handle_click(GdkEventButton* e);
-    void* hit(Geom::Point pos) { /* not implemented */ return 0; }
+    void* hit(Geom::Point pos);
     void move_to(void* hit, Geom::Point om, Geom::Point m) { /* not implemented */ }
     void load(FILE* f) { /* not implemented */ }
     void save(FILE* f) { /* not implemented */ }

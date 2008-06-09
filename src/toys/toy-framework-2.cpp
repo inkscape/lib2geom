@@ -109,11 +109,11 @@ void Toy::mouse_pressed(GdkEventButton* e) {
     hit_data = NULL;
     if(e->button == 1) {
         for(unsigned i = 0; i < handles.size(); i++) {
-	    void * hit = handles[i]->hit(mouse);
-	    if(hit) {
-		selected = handles[i];
-		hit_data = hit;
-	    }
+    	    void * hit = handles[i]->hit(mouse);
+    	    if(hit) {
+    		selected = handles[i];
+    		hit_data = hit;
+    	    }
         }
         mouse_down = true;
     }
@@ -429,6 +429,16 @@ void Toggle::set(bool state) {
 
 void Toggle::handle_click(GdkEventButton* e) {
     if(bounds.contains(Geom::Point(e->x, e->y)) && e->button == 1) toggle();
+}
+
+void* Toggle::hit(Geom::Point mouse)
+{
+    if (bounds.contains(mouse)) 
+    { 
+        toggle();
+        return this;
+    }
+    return 0;
 }
 
 void toggle_events(std::vector<Toggle> &ts, GdkEventButton* e) {
