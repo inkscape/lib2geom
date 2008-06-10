@@ -516,7 +516,7 @@ Geom::D2<Geom::SBasis> PointSetHandle::asBezier() {
     return handles_to_sbasis(pts.begin(), size()-1);
 }
 
-#if 1
+#if 0 // It was a nice idea to have self testing c++ files, but g++ 4.3 complains
 #include "d2.h"
 #include "sbasis.h"
 #include "sbasis-2d.h"

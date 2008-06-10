@@ -63,7 +63,6 @@ path-cairo.h
 
 
 SET(2GEOM_TOYS-2_SRC 
-toy-framework-2
 circle-intersect
 conic-3
 conic-4
