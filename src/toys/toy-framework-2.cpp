@@ -1,3 +1,4 @@
+#include <string.h>
 #include "toy-framework-2.h"
 
 #include "cairo-features.h"
