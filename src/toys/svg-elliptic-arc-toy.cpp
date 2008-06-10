@@ -1,4 +1,4 @@
-
+#include <memory>
 #include "path.h"
 #include "path-cairo.h"
 #include "toy-framework-2.h"
