@@ -25,6 +25,10 @@ public:
                 return Rect(Interval(x, x+dd), Interval(y+dd, y+d));
             case 3:
                 return Rect(Interval(x+dd, x+d), Interval(y+dd, y+d));
+            default: 
+                /* just to suppress warning message
+                 * this case should be never reached */
+                assert(false);
         }        
     }
 };
