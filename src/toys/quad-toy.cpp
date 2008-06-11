@@ -13,7 +13,7 @@ using std::vector;
 unsigned total_pieces_sub;
 unsigned total_pieces_inc;
 
-void draw_quad_tree(cairo_t* cr, Quad *q, double x, double y, double d) {
+void draw_quad_tree(cairo_t* cr, Geom::Quad *q, double x, double y, double d) {
     if(q) {
         cairo_rectangle(cr, x, y, d, d);
         cairo_stroke(cr);
@@ -26,7 +26,7 @@ void draw_quad_tree(cairo_t* cr, Quad *q, double x, double y, double d) {
 }
 
 // returns true if the subtree is empty, and deletes any empty subtrees.
-bool clean_quad_tree(Quad *q) { 
+bool clean_quad_tree(Geom::Quad *q) { 
     if(q) {
         bool all_clean = q->data.empty();
         for(unsigned i = 0; i < 4; i++)
@@ -75,7 +75,7 @@ class QuadToy: public Toy {
             cairo_line_to(cr, i*width/4, height);
         }
         
-        QuadTree qt;
+        Geom::QuadTree qt;
         
         cairo_new_sub_path(cr);
         

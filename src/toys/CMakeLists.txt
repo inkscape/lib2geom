@@ -17,7 +17,6 @@ dcc-toy
 draw-toy
 fitter
 gear
-inner-product-clip
 inverse-test
 load-svgd
 mesh-grad
@@ -69,6 +68,8 @@ conic-4
 curve-curve-nearest-point-3
 elliptiarc-curve-fitting
 hvlineseg-toy
+inner-product-clip
+mesh-warp
 match-curve
 point-curve-nearest-point
 offset-test

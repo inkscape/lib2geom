@@ -7,7 +7,7 @@
 #include "sbasis-math.h"
 
 #include "path-cairo.h"
-#include "toy-framework.h"
+#include "toy-framework-2.h"
 #include "path.h"
 #include "svg-path-parser.h"
 
@@ -41,6 +41,7 @@ class InnerProductClip: public Toy {
     Path path_a;
     Piecewise<D2<SBasis> >  path_a_pw;
     std::vector<Toggle> togs;
+    PointHandle start_handle, end_handle;
     
     void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
 	cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
@@ -57,10 +58,10 @@ class InnerProductClip: public Toy {
         draw_toggles(cr, togs);
         }
         if(togs[0].on)
-            d = L2(handles[1] - handles[0]);
+            d = L2(end_handle.pos - start_handle.pos);
         else {
-            n = unit_vector(rot90(handles[1] - handles[0]));
-            d = dot(n, handles[0]);
+            n = unit_vector(rot90(end_handle.pos - start_handle.pos));
+            d = dot(n, start_handle.pos);
             draw_line(cr, n, d);
         }
         //printf("%g\n", d);
@@ -71,7 +72,7 @@ class InnerProductClip: public Toy {
             D2<SBasis> curpw = path_a[i].toSBasis();
             SBasis inner;
             if(togs[0].on) {
-                D2<SBasis> test = curpw - handles[0];
+                D2<SBasis> test = curpw - start_handle.pos;
                 inner = test[0]*test[0] + test[1]*test[1] - d*d;
             } else {
                 inner = n[0]*curpw[0] + n[1]*curpw[1] - d;
@@ -88,7 +89,7 @@ class InnerProductClip: public Toy {
                 Point s = curpw(lr[j]);
                 Point m = curpw((lr[j] + lr[j+1])/2);
                 if(togs[0].on)
-                    m -= handles[0];
+                    m -= start_handle.pos;
                 Point e = curpw(lr[j+1]);
                 double dd;
                 if(togs[0].on) 
@@ -139,12 +140,15 @@ class InnerProductClip: public Toy {
         path_a_pw = path_a.toPwSb();
 
         // Finite images of the three vanishing points and the origin
-        handles.push_back(Point(150,300));
-        handles.push_back(Point(380,40));
+        handles.push_back(&start_handle);
+        handles.push_back(&end_handle);
         togs.push_back(Toggle("C", true));
         togs.push_back(Toggle("S", true));
     }
     int should_draw_bounds() {return 1;}
+public:
+    InnerProductClip() : start_handle(150,300),
+           end_handle(380,40)  {}
 };
 
 int main(int argc, char **argv) {
