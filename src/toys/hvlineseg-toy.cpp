@@ -17,95 +17,16 @@ void draw_each( cairo_t* cr, std::vector<T>& _controls)
 	}
 }
 
-
-double default_formatter(double x)
-{
-	return x;
-}
-
-
-class Slider
-{
-  public:
-	  
-	typedef  double (*formatter_t) (double );
-	
-	Slider( PointHandle& _handle, double _min, double _max,	double _value, const char * _label = "" )
-		: m_handle(&_handle), m_pos(Geom::Point(0,0)), m_length(1.0), 
-		  m_min(_min), m_max(_max), m_dir(Geom::X), 
-		  m_label(_label), m_formatter(&default_formatter)
-	{
-		value(_value);
-	}
-	
-	double value() const
-	{
-		return ((m_max - m_min) / m_length) * ((m_handle->pos)[m_dir] - m_pos[m_dir]) + m_min; 
-	}
-	
-	void value(double _value)
-	{
-		if ( _value < m_min ) _value = m_min;
-		if ( _value > m_max ) _value = m_max;
-		(m_handle->pos)[m_dir] 
-		            = (m_length / (m_max - m_min)) * (_value - m_min) + m_pos[m_dir];
-	}
-	
-	void geometry(Geom::Point _pos, double _length, Geom::Dim2 _dir = X)
-	{
-		double v = value();
-		m_pos = _pos;
-		m_length = _length;
-		m_dir = _dir;
-		value(v);
-	}
-	
-	void draw(cairo_t* cr)
-	{
-		Geom::Dim2 fix_dir = static_cast<Geom::Dim2>( (m_dir + 1) % 2 );
-		(m_handle->pos)[fix_dir] = m_pos[fix_dir];
-		double diff = (m_handle->pos)[m_dir] - m_pos[m_dir];
-		if ( diff < 0 )	(m_handle->pos)[m_dir] = m_pos[m_dir];
-		if ( diff > m_length ) (m_handle->pos)[m_dir] = m_pos[m_dir] + m_length;
-		
-		std::ostringstream os;
-		os << m_label << ": " << (*m_formatter)(value());
-		
-		cairo_set_source_rgba(cr, 0.1, 0.1, 0.1, 1.0);
-		cairo_set_line_width(cr, 0.4);
-		cairo_move_to(cr, m_pos[X], m_pos[Y]);
-		if ( m_dir == X )
-			cairo_rel_line_to(cr, m_length, 0);
-		else
-			cairo_rel_line_to(cr, m_length, 0);
-		//cairo_stroke(cr);
-        cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 1.0);
-        draw_text(cr, m_pos + Point(0,5), os.str().c_str());
-        //cairo_stroke(cr);
-	}
-	
-	void formatter( formatter_t _formatter)
-	{
-		m_formatter = _formatter;
-	}
-	
- private:
-	PointHandle* m_handle;
-	Geom::Point m_pos;
-	double m_length;
-	double m_min, m_max;
-	int m_dir;
-	const char* m_label;
-	formatter_t m_formatter;
-};
-
-
 class HLineSegToy : public Toy
 {
     void draw( cairo_t *cr,	std::ostringstream *notify, 
     		   int width, int height, bool save ) 
     {
-    	draw_controls(cr, notify, width, height);
+        if (first_time)
+        {
+            first_time = false;
+            init_controls(notify, width, height);
+        }
     	
     	pts[1][Y] = pts[0][Y];
     	HLineSegment hls(pts[0][X], pts[1][X], pts[0][Y]);
@@ -202,23 +123,20 @@ class HLineSegToy : public Toy
     	Toy::draw(cr, notify, width, height, save);
     }
 
-    void draw_controls(cairo_t* cr, std::ostringstream *notify, int width, int height)
+    void init_controls(std::ostringstream *notify, int width, int height)
     {
     	Point time_sp = Point(10, height - 80);
     	sliders[0].geometry(time_sp, 200);
     	
         Point toggle_sp( 300, height - 80); 
-        toggles[0].bounds = Rect( toggle_sp, toggle_sp + Point(100,25) );
-        
-        draw_each(cr, toggles);
-        sliders[0].draw(cr);
-        cairo_stroke(cr);
+        toggles[0].bounds = Rect( toggle_sp, toggle_sp + Point(100,25) );        
     }
     
 
   public:
 	HLineSegToy()
 	{	    
+	    first_time = true;
 		psh.push_back(Point(300, 50));
 		psh.push_back(Point(300, 250));
 		psh.push_back(Point(50, 100));
@@ -229,21 +147,20 @@ class HLineSegToy : public Toy
 		
 		pts = & (psh.pts[0]);
 		
-		ph.pos = Point(0,0);
-		sliders.push_back(Slider(ph, 0, 1, 0, "t"));
+		sliders.push_back(Slider(0.0, 1.0, 0.1, 0.0, "t"));
 		
 		toggles.push_back(Toggle("Reverse", false));
 		
         handles.push_back(&psh);
-        handles.push_back(&ph);
+        handles.push_back(&(sliders[0]));
         handles.push_back(&(toggles[0]));
 	}
 	
   private:
+    bool first_time;
     PointSetHandle psh;
     Point* pts;
-    PointHandle ph;
-	std::vector<Slider> sliders;
+	std::vector< Slider > sliders;
 	std::vector<Toggle> toggles;
 };
 
@@ -252,7 +169,11 @@ class VLineSegToy : public Toy
     void draw( cairo_t *cr,	std::ostringstream *notify, 
     		   int width, int height, bool save ) 
     {
-    	draw_controls(cr, notify, width, height);
+        if (first_time)
+        {
+            first_time = false;
+            init_controls(notify, width, height);
+        }
     	
     	pts[1][X] = pts[0][X];
     	VLineSegment hls(pts[0][X], pts[0][Y], pts[1][Y]);
@@ -349,26 +270,21 @@ class VLineSegToy : public Toy
     	Toy::draw(cr, notify, width, height, save);
     }
 
-    void draw_controls(cairo_t* cr, std::ostringstream *notify, int width, int height)
+    void init_controls(std::ostringstream *notify, int width, int height)
     {
     	Point time_sp = Point(10, height - 80);
     	sliders[0].geometry(time_sp, 200);
     	
         Point toggle_sp( 300, height - 80); 
         toggles[0].bounds = Rect( toggle_sp, toggle_sp + Point(100,25) );
-        
-        draw_each(cr, toggles);
-        sliders[0].draw(cr);
-        cairo_stroke(cr);
     }
     
 
   public:
 	VLineSegToy()
 	{
-	    handles.push_back(&psh);
-	    handles.push_back(&ph);
-
+	    first_time = true;
+	    
 		psh.push_back(Point(300, 50));
 		psh.push_back(Point(300, 250));
 		psh.push_back(Point(50, 100));
@@ -379,21 +295,20 @@ class VLineSegToy : public Toy
 		
 		pts = & (psh.pts[0]);
 		
-		ph.pos = Point(0,0);
-		sliders.push_back(Slider(ph, 0, 1, 0, "t"));
+		sliders.push_back(Slider(0.0, 1.0, 0.0, 0.0, "t"));
 		
 		toggles.push_back(Toggle("Reverse", false));
 		
 	    handles.push_back(&psh);
-	    handles.push_back(&ph);
+	    handles.push_back(&(sliders[0]));
 	    handles.push_back(&(toggles[0]));
 	}
 	
   private:
+    bool first_time;
     PointSetHandle psh;
     Point* pts;
-    PointHandle ph;
-	std::vector<Slider> sliders;
+    std::vector< Slider  > sliders;
 	std::vector<Toggle> toggles;
 };
 

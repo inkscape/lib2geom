@@ -90,7 +90,7 @@ public:
 };
 
 
-
+// used by Slider 
 double default_formatter(double x)
 {
     return x;
@@ -103,6 +103,7 @@ class Slider : public Handle
     typedef double (*formatter_t) (double );
     typedef double value_type;
     
+    // pass step = 0 for having a continuos value variation
     Slider( value_type _min, value_type _max, value_type _step, 
             value_type _value, const char * _label = "" )
         : m_handle(),m_pos(Geom::Point(0,0)), m_length(1), 
@@ -116,6 +117,7 @@ class Slider : public Handle
     
     void value(value_type _value);
     
+    // dir = X horizontal slider dir = Y vertical slider
     void geometry(Geom::Point _pos, value_type _length, Geom::Dim2 _dir = Geom::X);
     
     void draw(cairo_t* cr, bool annotate = false);

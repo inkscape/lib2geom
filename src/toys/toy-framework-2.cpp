@@ -482,6 +482,7 @@ void Slider::value(Slider::value_type _value)
            = (m_length / (m_max - m_min)) * (_value - m_min) + m_pos[m_dir];
 }
 
+// dir = X horizontal slider dir = Y vertical slider
 void Slider::geometry( Geom::Point _pos, 
                        Slider::value_type _length, 
                        Geom::Dim2 _dir )
@@ -515,6 +516,7 @@ void Slider::draw(cairo_t* cr, bool annotate)
 
 void Slider::move_to(void* hit, Geom::Point om, Geom::Point m)
 {
+    // fix_dir == ! m_dir
     Geom::Dim2 fix_dir = static_cast<Geom::Dim2>( (m_dir + 1) % 2 );
     m[fix_dir] = m_pos[fix_dir];
     double diff = m[m_dir] - m_pos[m_dir];
