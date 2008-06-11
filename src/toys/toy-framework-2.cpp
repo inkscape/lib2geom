@@ -416,7 +416,8 @@ void Toggle::draw(cairo_t *cr, bool annotes) {
     if(on) {
 	cairo_fill(cr);
 	cairo_set_source_rgba(cr,1,1,1,1);
-    } else cairo_stroke(cr);
+    } //else cairo_stroke(cr);
+    cairo_stroke(cr);
     draw_text(cr, bounds.corner(0) + Geom::Point(5,2), text);
 }
 
@@ -449,6 +450,86 @@ void toggle_events(std::vector<Toggle> &ts, GdkEventButton* e) {
 void draw_toggles(cairo_t *cr, std::vector<Toggle> &ts) {
     for(unsigned i = 0; i < ts.size(); i++) ts[i].draw(cr);
 }
+
+
+
+Slider::value_type Slider::value() const
+{
+    Slider::value_type v = m_handle.pos[m_dir] - m_pos[m_dir];
+    v =  ((m_max - m_min) / m_length) * v;
+    //std::cerr << "v : " << v << std::endl; 
+    if (m_step != 0)
+    {
+        int k = std::floor(v / m_step);
+        v = k * m_step;
+    }
+    v = v + m_min;
+    //std::cerr << "v : " << v << std::endl; 
+    return v;
+}
+
+void Slider::value(Slider::value_type _value)
+{
+    if ( _value < m_min ) _value = m_min;
+    if ( _value > m_max ) _value = m_max;
+    if (m_step != 0)
+    {
+        _value = _value - m_min;
+        int k = std::floor(_value / m_step);
+        _value = k * m_step + m_min;
+    }
+    m_handle.pos[m_dir] 
+           = (m_length / (m_max - m_min)) * (_value - m_min) + m_pos[m_dir];
+}
+
+void Slider::geometry( Geom::Point _pos, 
+                       Slider::value_type _length, 
+                       Geom::Dim2 _dir )
+{
+    Slider::value_type v = value();
+    m_pos = _pos;
+    m_length = _length;
+    m_dir = _dir;
+    Geom::Dim2 fix_dir = static_cast<Geom::Dim2>( (m_dir + 1) % 2 );
+    m_handle.pos[fix_dir] = m_pos[fix_dir];
+    value(v);
+}
+
+void Slider::draw(cairo_t* cr, bool annotate)
+{
+    m_handle.draw(cr, annotate);
+    std::ostringstream os;
+    os << m_label << ": " << (*m_formatter)(value());
+    
+    cairo_set_source_rgba(cr, 0.1, 0.1, 0.1, 1.0);
+    cairo_set_line_width(cr, 0.4);
+    cairo_move_to(cr, m_pos[Geom::X], m_pos[Geom::Y]);
+    if ( m_dir == Geom::X )
+        cairo_rel_line_to(cr, m_length, 0);
+    else
+        cairo_rel_line_to(cr, m_length, 0);
+    cairo_stroke(cr);
+    cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 1.0);
+    draw_text(cr, m_pos + Geom::Point(0,5), os.str().c_str());
+}
+
+void Slider::move_to(void* hit, Geom::Point om, Geom::Point m)
+{
+    Geom::Dim2 fix_dir = static_cast<Geom::Dim2>( (m_dir + 1) % 2 );
+    m[fix_dir] = m_pos[fix_dir];
+    double diff = m[m_dir] - m_pos[m_dir];
+//        if (m_step != 0)
+//        {
+//            double step =  (m_step * m_length) / (m_max - m_min) ;
+//            int k = std::floor(diff / step);
+//            double v = k * step;
+//            m[m_dir] = v + m_pos[m_dir];
+//        }
+    if ( diff < 0 ) m[m_dir] = m_pos[m_dir];
+    if ( diff > m_length ) m[m_dir] = m_pos[m_dir] + m_length;
+    m_handle.move_to(hit, om, m);
+}
+
 
 
 void PointHandle::draw(cairo_t *cr, bool annotes) {

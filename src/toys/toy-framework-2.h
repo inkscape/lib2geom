@@ -55,6 +55,10 @@ public:
     void save(FILE* f) { /* not implemented */ }
 };
 
+
+
+
+
 class PointHandle : public Handle{
 public:
     PointHandle(double x, double y) : pos(x,y) {}
@@ -84,6 +88,72 @@ public:
     virtual void load(FILE* f);
     virtual void save(FILE* f);
 };
+
+
+
+double default_formatter(double x)
+{
+    return x;
+}
+
+class Slider : public Handle
+{
+  public:
+      
+    typedef double (*formatter_t) (double );
+    typedef double value_type;
+    
+    Slider( value_type _min, value_type _max, value_type _step, 
+            value_type _value, const char * _label = "" )
+        : m_handle(),m_pos(Geom::Point(0,0)), m_length(1), 
+          m_min(_min), m_max(_max), m_step(_step), m_dir(Geom::X), 
+          m_label(_label), m_formatter(&default_formatter)
+    {
+        value(_value);
+    }
+    
+    value_type value() const;
+    
+    void value(value_type _value);
+    
+    void geometry(Geom::Point _pos, value_type _length, Geom::Dim2 _dir = Geom::X);
+    
+    void draw(cairo_t* cr, bool annotate = false);
+    
+    void formatter( formatter_t _formatter )
+    {
+        m_formatter = _formatter;
+    }
+    
+    void* hit(Geom::Point pos)
+    {
+        return m_handle.hit(pos);
+    }
+    
+    void move_to(void* hit, Geom::Point om, Geom::Point m);
+    
+    void load(FILE* f) 
+    {
+        m_handle.load(f);
+    }
+    
+    void save(FILE* f) 
+    { 
+        m_handle.save(f);
+    }
+
+  private:
+    PointHandle m_handle;
+    Geom::Point m_pos;
+    value_type m_length;
+    value_type m_min, m_max, m_step;
+    int m_dir;
+    const char* m_label;
+    formatter_t m_formatter;
+};
+
+
+
 
 class Toy {
 public:
