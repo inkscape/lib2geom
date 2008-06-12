@@ -505,13 +505,20 @@ void Slider::draw(cairo_t* cr, bool annotate)
     cairo_set_source_rgba(cr, 0.1, 0.1, 0.1, 1.0);
     cairo_set_line_width(cr, 0.4);
     cairo_move_to(cr, m_pos[Geom::X], m_pos[Geom::Y]);
+    Geom::Point offset;
     if ( m_dir == Geom::X )
+    {
         cairo_rel_line_to(cr, m_length, 0);
+        offset = Geom::Point(0,5);
+    }
     else
-        cairo_rel_line_to(cr, m_length, 0);
+    {
+        cairo_rel_line_to(cr, 0, m_length);
+        offset = Geom::Point(5,0);
+    }
     cairo_stroke(cr);
     cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 1.0);
-    draw_text(cr, m_pos + Geom::Point(0,5), os.str().c_str());
+    draw_text(cr, m_pos + offset, os.str().c_str());
 }
 
 void Slider::move_to(void* hit, Geom::Point om, Geom::Point m)

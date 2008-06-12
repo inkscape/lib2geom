@@ -239,6 +239,56 @@ double Path::nearestPoint(Point const& _point, double from, double to) const
 	return ni + nearest;
 }
 
+Rect Path::boundsFast()
+{
+    Rect bound;
+    if (empty()) return bound;
+    
+    bound = begin()->boundsFast();
+    double top = bound.top();
+    double bottom = bound.bottom();
+    double left = bound.left();
+    double right = bound.right();
+    for (iterator it = ++begin(); it != end(); ++it)
+    {
+        bound = it->boundsFast();
+        if ( top > bound.top() )           top = bound.top();
+        if ( bottom < bound.bottom() )     bottom = bound.bottom();
+        if ( left > bound.left() )         left = bound.left();
+        if ( right < bound.right() )       right = bound.right();
+    }
+    bound[0][0] = left;
+    bound[0][1] = right;
+    bound[1][0] = top;
+    bound[1][1] = bottom;
+    return bound;
+}
+
+Rect Path::boundsExact()
+{
+    Rect bound;
+    if (empty()) return bound;
+    
+    bound = begin()->boundsExact();
+    double top = bound.top();
+    double bottom = bound.bottom();
+    double left = bound.left();
+    double right = bound.right();
+    for (iterator it = ++begin(); it != end(); ++it)
+    {
+        bound = it->boundsExact();
+        if ( top > bound.top() )           top = bound.top();
+        if ( bottom < bound.bottom() )     bottom = bound.bottom();
+        if ( left > bound.left() )         left = bound.left();
+        if ( right < bound.right() )       right = bound.right();
+    }
+    bound[0][0] = left;
+    bound[0][1] = right;
+    bound[1][0] = top;
+    bound[1][1] = bottom;
+    return bound;
+}
+
 //This assumes that you can't be perfect in your t-vals, and as such, tweaks the start
 void Path::appendPortionTo(Path &ret, double from, double to) const {
   assert(from >= 0 && to >= 0);

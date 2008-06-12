@@ -61,11 +61,14 @@ path-cairo.h
 )
 
 
-SET(2GEOM_TOYS-2_SRC 
+SET(2GEOM_TOYS-2_SRC
+bound-path
 circle-intersect
 conic-3
 conic-4
 curve-curve-nearest-point-3
+elliptiarc-3point-center-fitting
+elliptiarc-5points-fitting
 elliptiarc-curve-fitting
 hvlineseg-toy
 inner-product-clip

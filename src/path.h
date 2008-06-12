@@ -303,6 +303,9 @@ public:
 	  return nearestPoint(_point, 0, sz);
   }
    
+  Rect boundsFast();
+  Rect boundsExact();
+  
   void appendPortionTo(Path &p, double f, double t) const;
 
   Path portion(double f, double t) const {
@@ -554,6 +557,7 @@ Coord nearest_point(Point const& p, Path const& c)
 {
 	return c.nearestPoint(p);
 }
+
 
 /*
 class PathPortion : public Curve {

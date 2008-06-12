@@ -9,6 +9,7 @@
 #include <gtk/gtk.h>
 #include <cairo.h>
 #include <vector>
+#include <string>
 
 #include "assert.h"
 #include "interactive-bits.h"
@@ -44,7 +45,7 @@ public:
     const char* text;
     bool on;
     Toggle(const char* txt, bool v) : bounds(Geom::Point(0,0), Geom::Point(0,0)), text(txt), on(v) {}
-    Toggle(Geom::Rect bnds, char* txt, bool v) : bounds(bnds), text(txt), on(v) {}
+    Toggle(Geom::Rect bnds, const char* txt, bool v) : bounds(bnds), text(txt), on(v) {}
     void draw(cairo_t *cr, bool annotes = false);
     void toggle();
     void set(bool state);
@@ -91,16 +92,18 @@ public:
 
 
 // used by Slider 
-double default_formatter(double x)
+std::string default_formatter(double x)
 {
-    return x;
+    std::ostringstream os;
+    os << x;
+    return os.str();
 }
 
 class Slider : public Handle
 {
   public:
       
-    typedef double (*formatter_t) (double );
+    typedef std::string (*formatter_t) (double );
     typedef double value_type;
     
     // pass step = 0 for having a continuos value variation
