@@ -183,6 +183,9 @@ class distance_impl
         junction_step = samples_per_junction * step;
         interval_si = samples_per_junction;
         interval_ei = interval_si + samples_per_piece;
+        portion_st = (double)(samples_per_junction) / samples_per_interpolation;
+        portion_et = portion_st 
+                     + (double)(samples_per_piece) / samples_per_interpolation;
 
         // recursive routine parameters
         rec_pieces = 2;
@@ -261,20 +264,17 @@ class distance_impl
     }
     
     void interpolate( SBasis & piece, 
-                      NL::Matrix & power_matrix,
+                      NL::Matrix & psdinv_matrix,
                       NL::Vector & sample_distances,
                       double interpolation_si, double interpolation_samples, 
                       double _portion_st, double _portion_et )
     {
         piece.resize(2);
-        NL::MatrixView m( power_matrix, 
-                          interpolation_si, 0, 
-                          interpolation_samples, piece_size );
+        
         NL::VectorView v( sample_distances, 
                           interpolation_samples, 
                           interpolation_si );
-        NL::LinearSystem ls(m, v);
-        const NL::Vector & coeff = ls.SV_solve();
+        NL::Vector coeff = psdinv_matrix * v;
         for (unsigned int i = 0, k = 0; i < piece_size; i+=2, ++k)
         {
             piece[k][0] = coeff[i];
@@ -290,7 +290,6 @@ class distance_impl
     {
         Point At;
         double nptime;
-        //double u0, u1, s;
         for (unsigned int i = evaluation_si; i < evaluation_ei; ++i)
         {
             At = A(t);
@@ -303,8 +302,9 @@ class distance_impl
     void evaluate_piece_rec( Piecewise<SBasis> & pwc, 
                              curveA_type const& A, 
                              curveB_type const& B,
-                             NL::Matrix & power_matrix,
-                             NL::Matrix & curr_matrix,
+                             NL::Matrix & psdinv_matrix,
+                             NL::Matrix & fpi_matrix,
+                             NL::Matrix & lpi_matrix,
                              NL::Vector & curr_vector,
                              NL::Vector & sample_distances,
                              bool adaptive,
@@ -316,7 +316,7 @@ class distance_impl
     {
         SBasis piece;
         double _interpolation_samples = _interpolation_ei - _interpolation_si;
-        interpolate( piece, curr_matrix, curr_vector,
+        interpolate( piece, psdinv_matrix, curr_vector,
                      _interpolation_si, _interpolation_samples,
                      _interval_st, _interval_et );       
         if (adaptive)
@@ -330,7 +330,8 @@ class distance_impl
                 evaluate_rec( spwc, 
                               cp.get_curve(), 
                               B, 
-                              power_matrix,
+                              fpi_matrix,
+                              lpi_matrix,
                               sample_distances, 
                               half_real_step );
                 append(pwc, spwc, _interval_st, rec_piece_step);
@@ -356,7 +357,8 @@ class distance_impl
     void evaluate_rec( Piecewise<SBasis> & pwc, 
                        curveA_type const& A, 
                        curveB_type const& B,
-                       NL::Matrix & power_matrix,
+                       NL::Matrix & fpi_matrix,
+                       NL::Matrix & lpi_matrix,
                        NL::Vector & sample_distances,
                        double real_step )
     {
@@ -408,15 +410,11 @@ class distance_impl
             }
         }
 
-        // current matrix
-        NL::Matrix curr_matrix(power_matrix.rows(), power_matrix.columns());
-        // make a copy of power_matrix
-        curr_matrix = power_matrix;
-
         // first piece
         evaluate_piece_rec( pwc, A, B,
-                            power_matrix,
-                            curr_matrix,
+                            fpi_matrix,
+                            fpi_matrix,
+                            lpi_matrix,                           
                             sample_distances,
                             sample_distances_1,
                             adaptive,
@@ -436,28 +434,12 @@ class distance_impl
             sd_view_2[i] = sd2_view_0[i];
         }
 
-        // copy [shared_si, shared_si+samples_per_2junctions] rows of 
-        // power_matrix to the same rows of curr_matrix, because 
-        // the interpolate routine modifies them
-        // middle sub-matrix view source
-        NL::MatrixView mmvs( power_matrix, 
-                             shared_si, 
-                             0, 
-                             samples_per_2junctions, 
-                             piece_degree );
-        // middle sub-matrix view destination
-        NL::MatrixView mmvd( curr_matrix, 
-                             shared_si, 
-                             0, 
-                             samples_per_2junctions, 
-                             piece_degree );
-
-        mmvd = mmvs;
 
         // last piece
         evaluate_piece_rec( pwc, A, B, 
-                            power_matrix,
-                            curr_matrix,
+                            lpi_matrix,
+                            fpi_matrix,
+                            lpi_matrix,
                             sample_distances,
                             sample_distances_2,
                             adaptive,
@@ -472,9 +454,9 @@ class distance_impl
     void evaluate_piece( Piecewise<SBasis> & pwc, 
                          curveA_type const& A, 
                          curveB_type const& B,
-                         NL::Matrix & power_matrix,
-                         NL::MatrixView & power_matrix_view,
-                         NL::Matrix & curr_matrix,
+                         NL::Matrix & psdinv_matrix,
+                         NL::Matrix & fpi_matrix,
+                         NL::Matrix & lpi_matrix,
                          NL::Vector & curr_vector,
                          NL::Vector & sample_distances,		
                          NL::Vector & end_junction,
@@ -511,20 +493,20 @@ class distance_impl
         }
         //std::cerr << "sample_distances: " << sample_distances << std::endl;
         end_junction = end_junction_view;
-        curr_matrix = power_matrix_view;
-        interpolate( piece, curr_matrix, curr_vector, 
+        interpolate( piece, psdinv_matrix, curr_vector, 
                      interpolation_si, interpolation_samples, 
                      portion_st, portion_et );
         good = check_accuracy( piece, sample_distances, rec_step );
         //std::cerr << "good: " << good << std::endl;
-        //good = false;
+        //good = true;
         if (!good)
         {
             CurvePortion<curveA_type> cp(A, interval_st, interval_et);
             evaluate_rec( spwc, 
                           cp.get_curve(), 
                           B,
-                          power_matrix,
+                          fpi_matrix,
+                          lpi_matrix,
                           sample_distances, 
                           half_step );
             append(pwc, spwc, interval_st, piece_step);
@@ -556,7 +538,18 @@ class distance_impl
         pwc.push_cut(0);
         NL::Matrix power_matrix(rec_total_samples, piece_size);
         init_power_matrix(power_matrix);
+        
+        NL::MatrixView rec_fmv( power_matrix, 
+                                0, 0, 
+                                shared_ei, piece_size );
+        NL::Matrix rec_fpim = NL::pseudo_inverse(rec_fmv);
+        NL::MatrixView rec_lmv( power_matrix, 
+                                shared_si, 0, 
+                                rec_total_samples - shared_si, piece_size );
+        NL::Matrix rec_lpim = NL::pseudo_inverse(rec_lmv);
+        
 
+        
         NL::Vector curr_vector(samples_per_interpolation);
         NL::Vector sample_distances(rec_total_samples);
         NL::Vector end_junction(samples_per_junction);
@@ -570,12 +563,6 @@ class distance_impl
                            samples_per_junction, 
                            samples_per_junction + samples_per_piece );
 
-        NL::Matrix curr_matrix(samples_per_interpolation, piece_size);
-        NL::MatrixView power_matrix_view( power_matrix, 
-                                          0, 
-                                          0, 
-                                          curr_matrix.rows(), 
-                                          curr_matrix.columns() );
         double t = 0;
 
         // first piece
@@ -586,10 +573,13 @@ class distance_impl
         interpolation_samples = interpolation_ei - interpolation_si;
         interval_st = 0;
         interval_et = 0;
-        portion_st = 0.0;
-        portion_et = (double)(samples_per_piece) / samples_per_interpolation;
-        evaluate_piece( pwc, A, B, power_matrix,
-                        power_matrix_view, curr_matrix, 
+        NL::MatrixView fmv( power_matrix, 
+                            interpolation_si, 0, 
+                            interpolation_samples, piece_size );
+        NL::Matrix fpim = NL::pseudo_inverse(fmv);
+
+        evaluate_piece( pwc, A, B, fpim,
+                        rec_fpim, rec_lpim, 
                         curr_vector, sample_distances, end_junction,
                         start_junction_view, end_junction_view,
                         t );
@@ -600,14 +590,17 @@ class distance_impl
         interpolation_si = 0;
         interpolation_ei = evaluation_ei;
         interpolation_samples = interpolation_ei - interpolation_si;
-        portion_st = (double)(samples_per_junction) / samples_per_interpolation;
-        portion_et = portion_st + portion_et;        
+        NL::MatrixView gmv( power_matrix, 
+                            interpolation_si, 0, 
+                            interpolation_samples, piece_size );
+        NL::Matrix gpim = NL::pseudo_inverse(gmv);
+
         for ( unsigned int piece_index = 1; 
               piece_index < piecees - 1; 
               ++piece_index )
         {
-            evaluate_piece( pwc, A, B, power_matrix,
-                            power_matrix_view, curr_matrix, 
+            evaluate_piece( pwc, A, B, gpim,
+                            rec_fpim, rec_lpim, 
                             curr_vector, sample_distances, end_junction,
                             start_junction_view, end_junction_view,					
                             t );
@@ -619,8 +612,13 @@ class distance_impl
         interpolation_si = 0;
         interpolation_ei = evaluation_ei;
         interpolation_samples = interpolation_ei -interpolation_si;
-        evaluate_piece( pwc, A, B, power_matrix,
-                        power_matrix_view, curr_matrix,
+        NL::MatrixView lmv( power_matrix, 
+                            interpolation_si, 0, 
+                            interpolation_samples, piece_size );
+        NL::Matrix lpim = NL::pseudo_inverse(lmv);
+        
+        evaluate_piece( pwc, A, B, lpim,
+                        rec_fpim, rec_lpim, 
                         curr_vector, sample_distances, end_junction,
                         start_junction_view, end_junction_view,			
                         t );
@@ -796,9 +794,13 @@ class DCCToy : public Toy
         {
             d = distance(B, A, 40);
         }
-        // uncomment following lines to view errors in computing the distance
-//        unsigned int total_error = dist_test(d, A, B, 0.0004);
-//        *notify << "total error: " << total_error;
+        // uncomment following lines to view errors in computing the distance 
+//        unsigned int total_error;
+//        if (!toggles[0].on)
+//            total_error = dist_test(d, A, B, 0.0004);
+//        else
+//            total_error = dist_test(d, B, A, 0.0004);
+//        *notify << "total error: " << total_error;        
         Piecewise< D2<SBasis> > pwc;
         pwc.cuts = d.cuts;
         pwc.segs.resize(d.size());

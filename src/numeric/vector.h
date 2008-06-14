@@ -45,7 +45,7 @@
 
 
 #include <gsl/gsl_vector.h>
-
+#include <gsl/gsl_blas.h>
 
 namespace Geom { namespace NL {
 
@@ -161,7 +161,12 @@ std::string BaseVectorImpl::str() const
 	return oss.str();
 }
 
-
+double dot(BaseVectorImpl const& v1, BaseVectorImpl const& v2)
+{
+    double result;
+    gsl_blas_ddot(v1.get_gsl_vector(), v2.get_gsl_vector(), &result);
+    return result;
+}
 
 
 class VectorImpl : public BaseVectorImpl
@@ -321,19 +326,24 @@ class Vector : public detail::VectorImpl
 	
 	friend
 	void swap(Vector & v1, Vector & v2);
-
+	friend
+	void swap_any(Vector & v1, Vector & v2);
 	
 }; // end class Vector
 
 
-// warning! this operation invalidates any view of the passed vector objects
+// warning! these operations invalidate any view of the passed vector objects
 void swap(Vector & v1, Vector & v2)
 {
 	assert( v1.size() == v2.size() );
 	std::swap(v1.m_vector, v2.m_vector);
 }
 
-
+void swap_any(Vector & v1, Vector & v2)
+{
+    std::swap(v1.m_vector, v2.m_vector);
+    std::swap(v1.m_size, v2.m_size);
+}
 
 
 class ConstVectorView : public detail::BaseVectorImpl
