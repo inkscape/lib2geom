@@ -47,7 +47,7 @@
 #include <string>
 
 #include <gsl/gsl_matrix.h>
-
+#include <gsl/gsl_linalg.h>
 
 
 namespace Geom { namespace NL {
