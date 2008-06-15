@@ -39,7 +39,7 @@
 #include "piecewise.h"
 
 #include "path-cairo.h"
-#include "toy-framework.h"
+#include "toy-framework-2.h"
 
 #include "nearest-point.h"
 #include "numeric/linear_system.h"
@@ -745,62 +745,117 @@ class DCCToy : public Toy
                int width, int height, bool save ) 
     {
         Point ulc(width - 300, height - 60 );
-        toggles[0].bounds = Rect(ulc , ulc + Point(160,25) );
+        toggles[0].bounds = Rect(ulc, ulc + Point(160,25) );
         toggles[1].bounds = Rect(ulc + Point(0,30), ulc + Point(160,55) );
-        draw_toggles(cr, toggles);
+        sliders[0].geometry(ulc - Point(450,0), 400);
+        if (toggle0_status != toggles[0].on)
+        {
+            toggle0_status = toggles[0].on;
+            std::swap(sliders[0], sliders[1]);
+        }
         
         cairo_set_source_rgba(cr, 0.3, 0.3, 0.3, 1.0);
         cairo_set_line_width (cr, 0.3);
-        D2<SBasis> A = handles_to_sbasis(handles.begin(), A_order-1);
-        //SBasisCurve A(A0);
-        cairo_md_sb(cr, A);
-        D2<SBasis> B0 = handles_to_sbasis(handles.begin() + A_order, B0_order-1);
-        cairo_md_sb(cr, B0);
-        D2<SBasis> B(B0);
-        //D2<SBasis> B1 = handles_to_sbasis(handles.begin() + A_order + B0_order-1, B1_order-1);
-        //cairo_md_sb(cr, B1);
-//        CubicBezier B1( handles[A_order + B0_order-1], handles[A_order + B0_order], 
-//                        handles[A_order + B0_order + 1], handles[A_order + B0_order + 2] );
-//        cairo_md_sb(cr, B1.toSBasis());
-//        EllipticalArc B2;
-//        try
-//        {
-//            B2.set( handles[A_order + B0_order + B1_order-2],
-//                    200, 100, 30, false, false,
-//                    handles[A_order + B0_order + B1_order-1]);
-//        }
-//        catch(RangeError e)
-//        {
-//        }
-//        cairo_md_sb(cr, B2.toSBasis());
-        //Piecewise< D2<SBasis> > B;
-        //B.push_cut(0); B.push(B0, 0.5); B.push(B1, 1);
-//        Path B;
-//        B.append(SBasisCurve(B0));
-//        B.append(B1);
-//        B.append(B2);
-        double npt = nearest_point(handles.back(), A);
-        handles.back() = A(npt);
-        double nptB = nearest_point(handles.back(), B);
-        cairo_move_to(cr, handles.back());
-        cairo_line_to(cr, B(nptB));
-        cairo_stroke(cr);
+        
+        if (choice == 0)
+        {
+            A = single_curve_psh.asBezier();
+            cairo_md_sb(cr, A);
+        }
+        else if (choice == 1)
+        {
+            pA.clear();
+            for (unsigned int k = 0; k < path_curves; ++k)
+            {
+                PointSetHandle psh;
+                psh.pts.resize(path_handles_per_curve);
+                for (unsigned int h = 0; h < path_handles_per_curve; ++h)
+                {
+                    unsigned int kk = k * (path_handles_per_curve-1) + h;
+                    psh.pts[h] = path_psh.pts[kk];
+                }
+                pA.append(psh.asBezier());
+            }
+            cairo_path(cr, pA);
+        }
+        else if (choice == 2)
+        {
+            for (unsigned int i = 0; i < pwc_curves; ++i)
+            {
+                pwA.segs[i] = pwc_psh[i].asBezier(); 
+            }
+            cairo_pw_d2(cr, pwA);
+        }
+        
+        D2<SBasis> B = B_psh.asBezier();
+        cairo_md_sb(cr, B);
+        
+        double t = sliders[0].value();
         Piecewise<SBasis> d;
+        unsigned int total_error = 0;
+        Point cursor;
+        
         if (!toggles[0].on)
         {
-             d = distance(A, B, 40);
+            if (choice == 0)
+            {
+                cursor = A(t);
+                d = distance(A, B, 40);
+                // uncomment following lines to view errors in computing the distance 
+                //total_error = dist_test(d, A, B, 0.0004);
+            }
+            else if (choice == 1)
+            {
+                cursor = pA(t);
+                d = distance(pA, B, 40);
+                // uncomment following lines to view errors in computing the distance 
+                //total_error = dist_test(d, pA, B, 0.0004);                
+            }
+            else if (choice == 2)
+            {
+                cursor = pwA(t);
+                d = distance(pwA, B, 40);
+                // uncomment following lines to view errors in computing the distance 
+                //total_error = dist_test(d, pwA, B, 0.0004);                
+            }
+            
+            double nptB = nearest_point(cursor, B);
+            draw_circ(cr, cursor);
+            cairo_move_to(cr, cursor);
+            cairo_line_to(cr, B(nptB));
+            cairo_stroke(cr);
         }
         else
         {
-            d = distance(B, A, 40);
+            Point np(0,0);
+            cursor = B(t);
+            if (choice == 0)
+            {        
+                double nptA = nearest_point(cursor, A);
+                np = A(nptA);
+                d = distance(B, A, 40);
+                // uncomment following lines to view errors in computing the distance 
+                //total_error = dist_test(d, B, A, 0.0004);            
+            }
+            else if (choice == 1)
+            {
+                double nptA = nearest_point(cursor, pA);
+                np = pA(nptA);
+                d = distance(B, pA, 40);
+                // uncomment following lines to view errors in computing the distance 
+                //total_error = dist_test(d, B, pA, 0.0004);                
+            }
+            draw_circ(cr, cursor);
+            cairo_move_to(cr, cursor);
+            cairo_line_to(cr, np);
+            cairo_stroke(cr);
         }
-        // uncomment following lines to view errors in computing the distance 
-//        unsigned int total_error;
-//        if (!toggles[0].on)
-//            total_error = dist_test(d, A, B, 0.0004);
-//        else
-//            total_error = dist_test(d, B, A, 0.0004);
-//        *notify << "total error: " << total_error;        
+        
+        if (total_error != 0)
+            *notify << "total error: " << total_error << "   ";
+        
+        
+        // draw distance function
         Piecewise< D2<SBasis> > pwc;
         pwc.cuts = d.cuts;
         pwc.segs.resize(d.size());
@@ -831,36 +886,95 @@ class DCCToy : public Toy
             draw_handle(cr, pwc(0.75));
             draw_handle(cr, pwc(1));
         }
-        draw_circ(cr, pwc(npt));
+        draw_circ(cr, pwc(t));
         cairo_stroke(cr);
         Toy::draw(cr, notify, width, height, save);
     }
-    
-    void mouse_pressed(GdkEventButton* e) 
-    {
-        toggle_events(toggles, e);
-        Toy::mouse_pressed(e);
-    }
 
+    
   public:
     DCCToy()
     {
-        A_order = 6;
-        B0_order = 4;
-        B1_order = 0;
-        total_handles = A_order + B0_order + B1_order + 1;;
-        for ( unsigned int i = 0; i < total_handles; ++i )
+        toggle0_status = false;
+        choice = 0;
+        
+        single_curve_handles = 6;
+        path_curves = 3;
+        path_handles_per_curve = 4;
+        path_total_handles = path_curves * (path_handles_per_curve - 1) + 1;
+        pwc_curves = 3;
+        pwc_handles_per_curve = 4;
+        pwc_total_handles = pwc_curves * pwc_handles_per_curve;
+        B_handles = 4;
+        
+        if (choice == 0)
         {
-            handles.push_back(Geom::Point(uniform()*400, uniform()*400));
+            for (unsigned int i = 0; i < single_curve_handles; ++i)
+            {
+                single_curve_psh.push_back(700*uniform(), 500*uniform());
+            }
+            handles.push_back(&single_curve_psh);
+            sliders.push_back(Slider(0.0, 1.0, 0.0, 0.0, "t"));
         }
+        else if (choice == 1)
+        {
+            for (unsigned int i = 0; i < path_total_handles; ++i)
+            {
+                path_psh.push_back(700*uniform(), 500*uniform());
+            }
+            handles.push_back(&path_psh);
+            sliders.push_back(Slider(0.0, path_curves, 0.0, 0.0, "t"));
+        }
+        else if (choice == 2)
+        {
+            pwc_psh.resize(pwc_curves);
+            pwA.segs.resize(pwc_curves);
+            pwA.cuts.resize(pwc_curves+1);
+            pwA.cuts[0] = 0;
+            double length = 1.0 / pwc_curves; 
+            for (unsigned int i = 0; i < pwc_curves; ++i)
+            {
+                for (unsigned int j = 0; j < pwc_handles_per_curve; ++j)
+                {
+                    pwc_psh[i].push_back(700*uniform(), 500*uniform());
+                }
+                handles.push_back(&(pwc_psh[i]));
+                pwA.cuts[i+1] = pwA.cuts[i] + length;
+            }
+            sliders.push_back(Slider(0.0, 1.0, 0.0, 0.0, "t"));
+        }
+        
+        for (unsigned int i = 0; i < B_handles; ++i)
+        {
+            B_psh.push_back(700*uniform(), 500*uniform());
+        }
+        handles.push_back(&B_psh);
+        sliders.push_back(Slider(0.0, 1.0, 0.0, 0.0, "t"));
         
         toggles.push_back(Toggle("d(A,B) <-> d(B,A)", false));
         toggles.push_back(Toggle("Show/Hide cuts", false));
+        
+        handles.push_back(&(toggles[0]));
+        handles.push_back(&(toggles[1]));
+        handles.push_back(&(sliders[0]));
 
     }
+    
   private:
-    unsigned int A_order, B0_order, B1_order, total_handles;
+    bool toggle0_status;
+    unsigned int choice;
+    unsigned int single_curve_handles, B_handles;
+    unsigned int path_curves, path_handles_per_curve, path_total_handles;
+    unsigned int pwc_curves, pwc_handles_per_curve, pwc_total_handles;
+    PointSetHandle single_curve_psh;
+    PointSetHandle path_psh;
+    std::vector<PointSetHandle> pwc_psh;
+    PointSetHandle B_psh;
     std::vector<Toggle> toggles;
+    std::vector<Slider> sliders;
+    D2<SBasis> A;
+    Path pA;
+    Piecewise< D2<SBasis> > pwA;
 };
 
 

@@ -12,7 +12,6 @@ center-warp
 convex-toy
 curvature-test
 cylinder3d
-dcc-toy
 #distort
 draw-toy
 fitter
@@ -66,6 +65,7 @@ bound-path
 circle-intersect
 conic-3
 conic-4
+curve-curve-distance
 curve-curve-nearest-point-3
 elliptiarc-3point-center-fitting
 elliptiarc-5points-fitting
