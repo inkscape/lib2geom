@@ -410,6 +410,9 @@ void init(int argc, char **argv, Toy* t, int width, int height) {
 
 
 void Toggle::draw(cairo_t *cr, bool annotes) {
+    cairo_pattern_t* source = cairo_get_source(cr);
+    double rc, gc, bc, aa;
+    cairo_pattern_get_rgba(source, &rc, &gc, &bc, &aa);
     cairo_set_source_rgba(cr,0,0,0,1);
     cairo_rectangle(cr, bounds.left(), bounds.top(),
 		    bounds.width(), bounds.height());
@@ -419,6 +422,7 @@ void Toggle::draw(cairo_t *cr, bool annotes) {
     } //else cairo_stroke(cr);
     cairo_stroke(cr);
     draw_text(cr, bounds.corner(0) + Geom::Point(5,2), text);
+    cairo_set_source_rgba(cr, rc, gc, bc, aa);
 }
 
 void Toggle::toggle() {
@@ -498,12 +502,19 @@ void Slider::geometry( Geom::Point _pos,
 
 void Slider::draw(cairo_t* cr, bool annotate)
 {
-    m_handle.draw(cr, annotate);
+    cairo_pattern_t* source = cairo_get_source(cr);
+    double rc, gc, bc, aa;
+    cairo_pattern_get_rgba(source, &rc, &gc, &bc, &aa);
+    double lw = cairo_get_line_width(cr);
     std::ostringstream os;
     os << m_label << ": " << (*m_formatter)(value());
-    
+    cairo_set_source_rgba(cr, 0.1, 0.1, 0.7, 1.0);
+    cairo_set_line_width(cr, 0.7);    
+    m_handle.draw(cr, annotate);
+    cairo_stroke(cr);
     cairo_set_source_rgba(cr, 0.1, 0.1, 0.1, 1.0);
     cairo_set_line_width(cr, 0.4);
+    m_handle.draw(cr, annotate);
     cairo_move_to(cr, m_pos[Geom::X], m_pos[Geom::Y]);
     Geom::Point offset;
     if ( m_dir == Geom::X )
@@ -519,6 +530,8 @@ void Slider::draw(cairo_t* cr, bool annotate)
     cairo_stroke(cr);
     cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 1.0);
     draw_text(cr, m_pos + offset, os.str().c_str());
+    cairo_set_source_rgba(cr, rc, gc, bc, aa);
+    cairo_set_line_width(cr, lw);
 }
 
 void Slider::move_to(void* hit, Geom::Point om, Geom::Point m)
