@@ -32,5 +32,8 @@ sb = poly_to_sbasis(trial)
 
 pwsb = PiecewiseSBasis()
 pwsb.push_seg(sb)
+pwsb.push_cut(0)
+pwsb.push_cut(1)
 print pwsb.size()
+print "invariants:", pwsb.invariants()
 print pwsb(0)
