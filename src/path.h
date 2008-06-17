@@ -126,6 +126,21 @@ private:
   Iterator impl_;
 };
 
+/*
+ * Open and closed paths: all paths, whether open or closed, store a final
+ * segment which connects the initial and final endpoints of the "real"
+ * path data.  While similar to the "z" in an SVG path, it exists for
+ * both open and closed paths, and is not considered part of the "normal"
+ * path data, which is always covered by the range [begin(), end_open()).
+ * Conversely, the range [begin(), end_closed()) always contains the "extra"
+ * closing segment.
+ *
+ * The only difference between a closed and an open path is whether end()
+ * returns end_closed() or end_open().  The idea behind this is to let
+ * any path be stroked using [begin(), end()), and filled using
+ * [begin(), end_closed()), without requiring a separate "filled" version
+ * of the path to use for filling.
+ */
 class Path {
 private:
   typedef std::vector<Curve *> Sequence;
