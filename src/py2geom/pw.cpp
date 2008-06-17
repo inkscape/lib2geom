@@ -58,10 +58,6 @@ Geom::SBasis getitem_pwsb(Geom::Piecewise<Geom::SBasis> const &p, unsigned const
     return p[i];
 }
 
-double call_pwsb(Geom::Piecewise<Geom::SBasis> const &p, double t) {
-    return p(t);
-}
-
 void wrap_pw() {
     class_<std::vector<Geom::SBasis> >("SBasisVec")
         .def(vector_indexing_suite<std::vector<Geom::SBasis> >())
@@ -77,9 +73,10 @@ void wrap_pw() {
 
     class_<Geom::Piecewise<Geom::SBasis> >("PiecewiseSBasis")
         .def("__getitem__", getitem_pwsb)
-        .def("__call__", call_pwsb)
+        .def("__call__", &Geom::Piecewise<Geom::SBasis>::valueAt)
         .def_readonly("cuts", &Geom::Piecewise<Geom::SBasis>::cuts)
         .def_readonly("segs", &Geom::Piecewise<Geom::SBasis>::segs)
+        .def("valueAt", &Geom::Piecewise<Geom::SBasis>::valueAt)
         .def("size", &Geom::Piecewise<Geom::SBasis>::size)
         .def("empty", &Geom::Piecewise<Geom::SBasis>::empty)
         .def("push", &Geom::Piecewise<Geom::SBasis>::push)
