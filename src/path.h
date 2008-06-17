@@ -137,7 +137,7 @@ private:
  *
  * The only difference between a closed and an open path is whether end()
  * returns end_closed() or end_open().  The idea behind this is to let
- * any path be stroked using [begin(), end()), and filled using
+ * any path be stroked using [begin(), end_default()), and filled using
  * [begin(), end_closed()), without requiring a separate "filled" version
  * of the path to use for filling.
  */
