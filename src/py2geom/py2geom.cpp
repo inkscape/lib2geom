@@ -55,8 +55,8 @@ BOOST_PYTHON_MODULE(_py2geom)
     wrap_transforms();
     wrap_sbasis();
     wrap_linear();
-    //wrap_pw();
-    //wrap_d2();
+    wrap_pw();
+    wrap_d2();
     //wrap_multidimsbasis();
     //wrap_mdpwsb();
     wrap_parser();

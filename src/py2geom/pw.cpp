@@ -36,16 +36,15 @@
 #include "helpers.h"
 
 using namespace boost::python;
-using namespace Geom;
 
-Piecewise<SBasis> (*portion_pwsb)(const Piecewise<SBasis> &, double, double) = &portion;
-std::vector<double> (*roots_pwsb)(const Piecewise<SBasis> &) = &roots;
-//Piecewise<SBasis> (*multiply_pwsb)(Piecewise<SBasis> const &, Piecewise<SBasis> const &) = &multiply;
-Piecewise<SBasis> (*divide_pwsb)(Piecewise<SBasis> const &, Piecewise<SBasis> const &, unsigned) = &divide;
-Piecewise<SBasis> (*compose_pwsb_sb)(Piecewise<SBasis> const &, SBasis const &) = &compose;
-Piecewise<SBasis> (*compose_pwsb)(Piecewise<SBasis> const &, Piecewise<SBasis> const &) = &compose;
+Geom::Piecewise<Geom::SBasis> (*portion_pwsb)(const Geom::Piecewise<Geom::SBasis> &, double, double) = &Geom::portion;
+std::vector<double> (*roots_pwsb)(const Geom::Piecewise<Geom::SBasis> &) = &Geom::roots;
+//Geom::Piecewise<Geom::SBasis> (*multiply_pwsb)(Geom::Piecewise<Geom::SBasis> const &, Geom::Piecewise<Geom::SBasis> const &) = &Geom::multiply;
+Geom::Piecewise<Geom::SBasis> (*divide_pwsb)(Geom::Piecewise<Geom::SBasis> const &, Geom::Piecewise<Geom::SBasis> const &, unsigned) = &Geom::divide;
+Geom::Piecewise<Geom::SBasis> (*compose_pwsb_sb)(Geom::Piecewise<Geom::SBasis> const &, Geom::SBasis const &) = &Geom::compose;
+Geom::Piecewise<Geom::SBasis> (*compose_pwsb)(Geom::Piecewise<Geom::SBasis> const &, Geom::Piecewise<Geom::SBasis> const &) = &Geom::compose;
 
-SBasis getitem_pwsb(Piecewise<SBasis> const &p, unsigned const index) {
+Geom::SBasis getitem_pwsb(Geom::Piecewise<Geom::SBasis> const &p, unsigned const index) {
     unsigned D = p.size();
     unsigned i = index;
     if (index < 0)
@@ -59,13 +58,13 @@ SBasis getitem_pwsb(Piecewise<SBasis> const &p, unsigned const index) {
     return p[i];
 }
 
-double call_pwsb(Piecewise<SBasis> const &p, double t) {
+double call_pwsb(Geom::Piecewise<Geom::SBasis> const &p, double t) {
     return p(t);
 }
 
-void wrap_pwsb() {
-    class_<std::vector<SBasis> >("SBasisVec")
-        .def(vector_indexing_suite<std::vector<SBasis> >())
+void wrap_pw() {
+    class_<std::vector<Geom::SBasis> >("SBasisVec")
+        .def(vector_indexing_suite<std::vector<Geom::SBasis> >())
     ;
 
     def("portion", portion_pwsb);
@@ -76,25 +75,25 @@ void wrap_pwsb() {
     def("compose", compose_pwsb_sb);
     def("compose", compose_pwsb);
 
-    class_<Piecewise<SBasis> >("Piecewise<SBasis>")
+    class_<Geom::Piecewise<Geom::SBasis> >("PiecewiseSBasis")
         .def("__getitem__", getitem_pwsb)
         .def("__call__", call_pwsb)
-        .def_readonly("cuts", &Piecewise<SBasis>::cuts)
-        .def_readonly("segs", &Piecewise<SBasis>::segs)
-        .def("size", &Piecewise<SBasis>::size)
-        .def("empty", &Piecewise<SBasis>::empty)
-        .def("push", &Piecewise<SBasis>::push)
-        .def("push_cut", &Piecewise<SBasis>::push_cut)
-        .def("push_seg", &Piecewise<SBasis>::push_seg)
+        .def_readonly("cuts", &Geom::Piecewise<Geom::SBasis>::cuts)
+        .def_readonly("segs", &Geom::Piecewise<Geom::SBasis>::segs)
+        .def("size", &Geom::Piecewise<Geom::SBasis>::size)
+        .def("empty", &Geom::Piecewise<Geom::SBasis>::empty)
+        .def("push", &Geom::Piecewise<Geom::SBasis>::push)
+        .def("push_cut", &Geom::Piecewise<Geom::SBasis>::push_cut)
+        .def("push_seg", &Geom::Piecewise<Geom::SBasis>::push_seg)
 
-        .def("segN", &Piecewise<SBasis>::segN)
-        .def("segT", &Piecewise<SBasis>::segT)
-        .def("offsetDomain", &Piecewise<SBasis>::offsetDomain)
-        .def("scaleDomain", &Piecewise<SBasis>::scaleDomain)
-        .def("setDomain", &Piecewise<SBasis>::setDomain)
-        .def("concat", &Piecewise<SBasis>::concat)
-        .def("continuousConcat", &Piecewise<SBasis>::continuousConcat)
-        .def("invariants", &Piecewise<SBasis>::invariants)
+        .def("segN", &Geom::Piecewise<Geom::SBasis>::segN)
+        .def("segT", &Geom::Piecewise<Geom::SBasis>::segT)
+        .def("offsetDomain", &Geom::Piecewise<Geom::SBasis>::offsetDomain)
+        .def("scaleDomain", &Geom::Piecewise<Geom::SBasis>::scaleDomain)
+        .def("setDomain", &Geom::Piecewise<Geom::SBasis>::setDomain)
+        .def("concat", &Geom::Piecewise<Geom::SBasis>::concat)
+        .def("continuousConcat", &Geom::Piecewise<Geom::SBasis>::continuousConcat)
+        .def("invariants", &Geom::Piecewise<Geom::SBasis>::invariants)
        
         .def(self + double()) 
         .def(-self)

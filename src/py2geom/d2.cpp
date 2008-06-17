@@ -31,43 +31,44 @@
 
 #include "py2geom.h"
 #include "helpers.h"
+#include "../point.h"
+#include "../sbasis.h"
 #include "../d2.h"
 
 using namespace boost::python;
-using namespace Geom;
 
 void wrap_d2() {
-    class_<D2<SBasis> >("D2SBasis")
-        .def("__getitem__", python_getitem<D2<SBasis>,SBasis,2>)
+    class_<Geom::D2<Geom::SBasis> >("D2SBasis")
+        .def("__getitem__", python_getitem<Geom::D2<Geom::SBasis>,Geom::SBasis,2>)
 
-        .def("isZero", &D2<SBasis>::isZero)
-        .def("isFinite", &D2<SBasis>::isFinite)
-        .def("at0", &D2<SBasis>::at0)
-        .def("at1", &D2<SBasis>::at1)
-        .def("pointAt", &D2<SBasis>::valueAt)
-	.def("valueAndDerivatives", &D2<SBasis>::valueAndDerivatives)
-	.def("portion", &D2<SBasis>::portion)
-        .def("toSBasis", &D2<SBasis>::toSBasis)
+        .def("isZero", &Geom::D2<Geom::SBasis>::isZero)
+        .def("isFinite", &Geom::D2<Geom::SBasis>::isFinite)
+        .def("at0", &Geom::D2<Geom::SBasis>::at0)
+        .def("at1", &Geom::D2<Geom::SBasis>::at1)
+        .def("pointAt", &Geom::D2<Geom::SBasis>::valueAt)
+	.def("valueAndDerivatives", &Geom::D2<Geom::SBasis>::valueAndDerivatives)
+        .def("toSBasis", &Geom::D2<Geom::SBasis>::toSBasis)
 
         .def(-self)
         .def(self + self)
         .def(self - self)
         .def(self += self)
         .def(self -= self)
-        .def(self + Point)
-        .def(self - Point)
-        .def(self += Point)
-        .def(self -= Point)
-        .def(self * Point)
-        .def(self / Point)
-        .def(self *= Point)
-        .def(self /= Point)
+        .def(self + Geom::Point())
+        .def(self - Geom::Point())
+        .def(self += Geom::Point())
+        .def(self -= Geom::Point())
+        .def(self * Geom::Point())
+        .def(self / Geom::Point())
+        .def(self *= Geom::Point())
+        .def(self /= Geom::Point())
         .def(self * float())
         .def(self / float())
         .def(self *= float())
         .def(self /= float())
     ;
-    def("reverse", ((D2<SBasis> (*)(D2<SBasis> const &b))&reverse));
+    def("reverse", ((Geom::D2<Geom::SBasis> (*)(Geom::D2<Geom::SBasis> const &b))&Geom::reverse));
+    def("portion", ((Geom::D2<Geom::SBasis> (*)(Geom::D2<Geom::SBasis> const &a, Geom::Coord f, Geom::Coord t))&Geom::portion));
     //TODO: dot, rot90, cross, compose, composeEach, eval ops, derivative, integral, L2, portion, multiply ops, 
 };
 
