@@ -34,6 +34,7 @@
 #include "../point.h"
 #include "../sbasis.h"
 #include "../d2.h"
+#include "../piecewise.h"
 
 using namespace boost::python;
 
@@ -70,6 +71,19 @@ void wrap_d2() {
     def("reverse", ((Geom::D2<Geom::SBasis> (*)(Geom::D2<Geom::SBasis> const &b))&Geom::reverse));
     def("portion", ((Geom::D2<Geom::SBasis> (*)(Geom::D2<Geom::SBasis> const &a, Geom::Coord f, Geom::Coord t))&Geom::portion));
     //TODO: dot, rot90, cross, compose, composeEach, eval ops, derivative, integral, L2, portion, multiply ops, 
+    
+    class_<Geom::D2<Geom::Piecewise<Geom::SBasis> > >("D2SBasis")
+        .def("__getitem__", python_getitem<Geom::D2<Geom::Piecewise<Geom::SBasis> >,Geom::Piecewise<Geom::SBasis>,2>)
+
+        //.def("isZero", &Geom::D2<Geom::Piecewise<Geom::SBasis> >::isZero)
+        //.def("isFinite", &Geom::D2<Geom::Piecewise<Geom::SBasis> >::isFinite)
+        //.def("at0", &Geom::D2<Geom::Piecewise<Geom::SBasis> >::at0)
+        //.def("at1", &Geom::D2<Geom::Piecewise<Geom::SBasis> >::at1)
+        //.def("pointAt", &Geom::D2<Geom::Piecewise<Geom::SBasis> >::valueAt)
+        //.def("valueAndDerivatives", &Geom::D2<Geom::Piecewise<Geom::SBasis> >::valueAndDerivatives)
+        //.def("toSBasis", &Geom::D2<Geom::Piecewise<Geom::SBasis> >::toSBasis)
+
+    ;
 };
 
 /*

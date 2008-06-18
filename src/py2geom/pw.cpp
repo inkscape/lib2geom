@@ -31,6 +31,7 @@
 
 #include "../sbasis.h"
 #include "../piecewise.h"
+#include "../d2.h"
 
 #include "py2geom.h"
 #include "helpers.h"
@@ -104,6 +105,41 @@ void wrap_pw() {
         .def(self *= self)
         
     ;
+
+    class_<Geom::Piecewise<Geom::D2<Geom::SBasis> > >("PiecewiseD2SBasis")
+        .def("__getitem__", getitem_pwsb)
+        .def("__call__", &Geom::Piecewise<Geom::D2<Geom::SBasis> >::valueAt)
+        .def_readonly("cuts", &Geom::Piecewise<Geom::D2<Geom::SBasis> >::cuts)
+        .def_readonly("segs", &Geom::Piecewise<Geom::D2<Geom::SBasis> >::segs)
+        .def("valueAt", &Geom::Piecewise<Geom::D2<Geom::SBasis> >::valueAt)
+        .def("size", &Geom::Piecewise<Geom::D2<Geom::SBasis> >::size)
+        .def("empty", &Geom::Piecewise<Geom::D2<Geom::SBasis> >::empty)
+        .def("push", &Geom::Piecewise<Geom::D2<Geom::SBasis> >::push)
+        .def("push_cut", &Geom::Piecewise<Geom::D2<Geom::SBasis> >::push_cut)
+        .def("push_seg", &Geom::Piecewise<Geom::D2<Geom::SBasis> >::push_seg)
+
+        .def("segN", &Geom::Piecewise<Geom::D2<Geom::SBasis> >::segN)
+        .def("segT", &Geom::Piecewise<Geom::D2<Geom::SBasis> >::segT)
+        .def("offsetDomain", &Geom::Piecewise<Geom::D2<Geom::SBasis> >::offsetDomain)
+        .def("scaleDomain", &Geom::Piecewise<Geom::D2<Geom::SBasis> >::scaleDomain)
+        .def("setDomain", &Geom::Piecewise<Geom::D2<Geom::SBasis> >::setDomain)
+        .def("concat", &Geom::Piecewise<Geom::D2<Geom::SBasis> >::concat)
+        .def("continuousConcat", &Geom::Piecewise<Geom::D2<Geom::SBasis> >::continuousConcat)
+        .def("invariants", &Geom::Piecewise<Geom::D2<Geom::SBasis> >::invariants)
+
+        //.def(self + double())
+        //.def(-self)
+        //.def(self += double())
+        //.def(self -= double())
+        //.def(self /= double())
+        //.def(self *= double())
+        //.def(self + self)
+        //.def(self - self)
+        //.def(self * self)
+        //.def(self *= self)
+
+    ;
+
 };
 
 /*
