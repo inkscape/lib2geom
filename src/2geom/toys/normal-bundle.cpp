@@ -5,7 +5,7 @@
 #include "bezier-to-sbasis.h"
 
 #include "path-cairo.h"
-#include "toy-framework.h"
+#include "toy-framework-2.h"
 
 #include <vector>
 using std::vector;
@@ -70,7 +70,7 @@ void NormalBundle::setBase(D2<SBasis> const &B, double tol=0.01) {
 void NormalBundle::draw(cairo_t *cr, unsigned NbLi, unsigned NbCol) {
     D2<SBasis> B;
     vector<D2<SBasis> > tB;
-    Geom::Point Seg[2];
+    //Geom::Point Seg[2];
     B[1]=Linear(-100,100);
     double width=*(lengths.rbegin());
     if (NbCol>0)
@@ -110,10 +110,10 @@ vector<D2<SBasis> > compose(NormalBundle const &NB,
              root!=Roots.end();root++)
             Cuts[*root]=i;
         if((Cuts.count(0.)==0) and 
-           ((B[0].pointAt(0.)<=0) or i==NB.size()))
+           ((B[0].valueAt(0.)<=0) or i==NB.size()))
             Cuts[0.]=i;
         if((Cuts.count(1.)==0) and 
-           ((B[0].pointAt(1.)<=0) or i==NB.size()))
+           ((B[0].valueAt(1.)<=0) or i==NB.size()))
             Cuts[1.]=i;
         if (i<NB.size())
             B[0]-=(NB.lengths[i+1]-NB.lengths[i]);
@@ -157,11 +157,13 @@ vector<D2<SBasis> > compose(NormalBundle const &NB,
 
 
 class NormalBundleToy: public Toy {
-
+    PointSetHandle B_handle;
+    PointSetHandle P_handle;
+    PointHandle O_handle;
     void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
-        D2<SBasis> B = handles_to_sbasis<3>(handles.begin());
-        D2<SBasis> P = handles_to_sbasis<3>(handles.begin()+4);
-        Geom::Point O = *(handles.begin()+8);
+        D2<SBasis> B = B_handle.asBezier();
+        D2<SBasis> P = P_handle.asBezier();
+        Geom::Point O = O_handle.pos;
     
         NormalBundle NBdle;
         NBdle.setBase(B);
@@ -196,12 +198,15 @@ class NormalBundleToy: public Toy {
 public:
     NormalBundleToy(){
         if(handles.empty()) {
+            handles.push_back(&B_handle);
+            handles.push_back(&P_handle);
+            handles.push_back(&O_handle);
             for(unsigned i = 0; i < 4; i++)
-                handles.push_back(Geom::Point(200+50*i,400));
+                B_handle.push_back(200+50*i,400);
             for(unsigned i = 0; i < 4; i++)
-                handles.push_back(Geom::Point(100+uniform()*400,
-                                              150+uniform()*100));
-            handles.push_back(Geom::Point(200,200));
+                P_handle.push_back(100+uniform()*400,
+                                   150+uniform()*100);
+            O_handle.pos = Geom::Point(200,200);
         }
     }
 };

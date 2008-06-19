@@ -1,16 +1,11 @@
 SET(2GEOM_TOYS_SRC 
 2dsb2d
-#b-spline
 boolops
 bounds-test
-box3d
-box3d-2
-#cheb
 center-warp
 convex-toy
 curvature-test
 cylinder3d
-#distort
 draw-toy
 gear
 inverse-test
@@ -18,14 +13,12 @@ load-svgd
 mesh-grad
 #nearest-points
 #nearest-points2
-#normal-bundle
 paptest
 parser
 precise-flat
 pw-compose-test
 pw-funcs
 quad-toy
-#rat-bez
 sb-zeros
 sb1d
 sb2d
@@ -59,6 +52,7 @@ SET(2GEOM_TOYS-2_SRC
 arc-bez
 arc-length-param
 bound-path
+box3d
 circle-intersect
 conic-3
 conic-4
@@ -72,6 +66,7 @@ hvlineseg-toy
 inner-product-clip
 mesh-warp
 match-curve
+#normal-bundle
 point-curve-nearest-point
 offset-test
 pair-intersect
