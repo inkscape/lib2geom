@@ -5,7 +5,7 @@
 #include "sbasis-geometric.h"
 
 #include "path-cairo.h"
-#include "toy-framework.h"
+#include "toy-framework-2.h"
 
 #include <time.h>
 using std::vector;
@@ -19,25 +19,26 @@ using namespace std;
 //-----------------------------------------------
 
 class CurvatureTester: public Toy {
-
+    PointSetHandle curve_handle;
+    PointHandle sample_point;
     void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
     
-        D2<SBasis> B = handles_to_sbasis(handles.begin(), 3);
+        D2<SBasis> B = curve_handle.asBezier();
 
         cairo_set_line_width (cr, 1);
         cairo_set_source_rgba (cr, 0., 0.5, 0., 1);
         cairo_md_sb(cr, B);
         cairo_stroke(cr);
 
-	handles[4][1]=400;
-	handles[4][0]=std::max(150.,handles[4][0]);
-	handles[4][0]=std::min(450.,handles[4][0]);
+	sample_point.pos[1]=400;
+	sample_point.pos[0]=std::max(150.,sample_point.pos[0]);
+	sample_point.pos[0]=std::min(450.,sample_point.pos[0]);
 	cairo_move_to(cr, Geom::Point(150,400));
 	cairo_line_to(cr, Geom::Point(450,400));
 	cairo_set_source_rgba (cr, 0., 0., 0.5, 0.8);
 	cairo_stroke(cr);
 
-	double t=std::max(0.,std::min(1.,(handles[4][0]-150)/300.));
+	double t=std::max(0.,std::min(1.,(sample_point.pos[0]-150)/300.));
         Piecewise<SBasis> K = curvature(B);
         
         for(unsigned ix = 0; ix < K.segs.size(); ix++) {
@@ -74,10 +75,11 @@ class CurvatureTester: public Toy {
 public:
     CurvatureTester(){
         if(handles.empty()) {
+            handles.push_back(&curve_handle);
+            handles.push_back(&sample_point);
             for(unsigned i = 0; i < 4; i++)
-	      handles.push_back(Geom::Point(150+uniform()*300,150+uniform()*300));
-	      //handles.push_back(Geom::Point(200+50*i,300));
-                handles.push_back(Geom::Point(250,300));
+                curve_handle.push_back(150+uniform()*300,150+uniform()*300);
+            sample_point.pos = Geom::Point(250,300);
         }
     }
 };

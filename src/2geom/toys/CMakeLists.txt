@@ -2,14 +2,11 @@ SET(2GEOM_TOYS_SRC
 2dsb2d
 boolops
 bounds-test
-center-warp
 convex-toy
-curvature-test
 cylinder3d
 draw-toy
 gear
 inverse-test
-load-svgd
 mesh-grad
 #nearest-points
 #nearest-points2
@@ -53,9 +50,11 @@ arc-bez
 arc-length-param
 bound-path
 box3d
+center-warp
 circle-intersect
 conic-3
 conic-4
+curvature-test
 curve-curve-distance
 curve-curve-nearest-point-3
 elliptiarc-3point-center-fitting
@@ -64,6 +63,7 @@ elliptiarc-curve-fitting
 fitter
 hvlineseg-toy
 inner-product-clip
+load-svgd
 mesh-warp
 match-curve
 #normal-bundle

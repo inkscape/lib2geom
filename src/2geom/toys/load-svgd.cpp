@@ -6,7 +6,7 @@
 #include "svg-path-parser.h"
 
 #include "path-cairo.h"
-#include "toy-framework.h"
+#include "toy-framework-2.h"
 #include "transforms.h"
 #include "sbasis-geometric.h"
 
@@ -60,8 +60,9 @@ Shape cleanup(std::vector<Path> const &ps) {
 class BoolOps: public Toy {
     //Region b;
     Shape bs;
+    PointHandle offset_handle;
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
-        Geom::Translate t(handles[0]);
+        Geom::Translate t(offset_handle.pos);
         Shape bst = bs * t;
         //Region bt = Region(b * t, b.isFill());
         
@@ -81,8 +82,9 @@ class BoolOps: public Toy {
         std::vector<Path> paths_b = read_svgd(path_b_name);
         
 	Rect bounds = paths_b[0].boundsExact();
-	    std::cout << crossings_among(paths_b)[0].size() << "\n";
-        handles.push_back(bounds.midpoint() - bounds.corner(0));
+        std::cout << crossings_among(paths_b)[0].size() << "\n";
+        handles.push_back(&offset_handle);
+        offset_handle.pos = bounds.midpoint() - bounds.corner(0);
 
         bs = cleanup(paths_b);
     }

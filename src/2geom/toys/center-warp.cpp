@@ -7,7 +7,7 @@
 #include "sbasis-math.h"
 
 #include "path-cairo.h"
-#include "toy-framework.h"
+#include "toy-framework-2.h"
 #include "path.h"
 #include "svg-path-parser.h"
 
@@ -27,32 +27,25 @@ void cairo_pw(cairo_t *cr, Piecewise<SBasis> p) {
     }
 }
 
-class Sb2d2: public Toy {
+class CentreWarp: public Toy {
     Path path_a;
     D2<SBasis2d> sb2;
     Piecewise<D2<SBasis> >  path_a_pw;
-    
+    PointHandle brush_handle;
     void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         Geom::Point dir(1,-2);
 
 	D2<Piecewise<SBasis> > B = make_cuts_independant(path_a_pw);
 
 	cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
-	//B *= (4./width);
-	/*
-	SBasis one(Linear(1,1));
-	Piecewise<SBasis> pws = Geom::reciprocal(Piecewise<SBasis>(B[0]*B[0] + one))*Piecewise<SBasis>(B[0]) + B[0];
-	D2<SBasis> tB(pws, B[1]);
-	tB = tB*(width/2) + Geom::Point(width/4, width/4);
-	*/
 
         if(0) {
-            D2<Piecewise<SBasis> > tB(cos(B[0]*0.1)*(handles[0][0]/100) + B[0], 
-                                      cos(B[1]*0.1)*(handles[0][1]/100) + B[1]);
+            D2<Piecewise<SBasis> > tB(cos(B[0]*0.1)*(brush_handle.pos[0]/100) + B[0], 
+                                      cos(B[1]*0.1)*(brush_handle.pos[1]/100) + B[1]);
 	
             cairo_d2_pw(cr, tB);
         } else  {
-            Piecewise<SBasis> r2 = (dot(path_a_pw - handles[0], path_a_pw - handles[0]));
+            Piecewise<SBasis> r2 = (dot(path_a_pw - brush_handle.pos, path_a_pw - brush_handle.pos));
             Piecewise<SBasis> rc;
             rc.push_cut(0);
             rc.push(SBasis(Linear(1, 1)), 2);
@@ -67,8 +60,8 @@ class Sb2d2: public Toy {
             swr.push(SBasis(Linear(0, 0)), 30);
             swr *= 10;
             swr.scaleDomain(1000);
-            cairo_pw(cr, swr + (height - 100));
-            D2<Piecewise<SBasis> >  uB = make_cuts_independant(unitVector(path_a_pw - handles[0]));
+            cairo_pw(cr, swr);// + (height - 100));
+            D2<Piecewise<SBasis> >  uB = make_cuts_independant(unitVector(path_a_pw - brush_handle.pos));
         
             D2<Piecewise<SBasis> > tB(compose(rc, (r2))*uB[0] + B[0], 
                                       compose(rc, (r2))*uB[1] + B[1]);
@@ -98,13 +91,13 @@ class Sb2d2: public Toy {
             sb2[dim].resize(depth, Linear2d(0));
         }
         
-        handles.push_back(Point(100,100));
+        handles.push_back(&brush_handle);
+        brush_handle.pos = Point(100,100);
     }
-    int should_draw_bounds() {return 1;}
 };
 
 int main(int argc, char **argv) {
-    init(argc, argv, new Sb2d2);
+    init(argc, argv, new CentreWarp);
     return 0;
 }
 
