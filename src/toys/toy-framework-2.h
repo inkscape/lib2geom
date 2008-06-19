@@ -92,7 +92,7 @@ public:
 
 
 // used by Slider 
-std::string default_formatter(double x)
+inline std::string default_formatter(double x)
 {
     std::ostringstream os;
     os << x;
