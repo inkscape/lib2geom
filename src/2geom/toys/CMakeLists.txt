@@ -1,7 +1,5 @@
 SET(2GEOM_TOYS_SRC 
 2dsb2d
-arc-bez
-arc-length-param
 #b-spline
 boolops
 bounds-test
@@ -23,7 +21,6 @@ mesh-grad
 #nearest-points2
 #normal-bundle
 paptest
-parametrics
 parser
 plane3d
 precise-flat
@@ -61,6 +58,8 @@ path-cairo.h
 
 
 SET(2GEOM_TOYS-2_SRC
+arc-bez
+arc-length-param
 bound-path
 circle-intersect
 conic-3
@@ -77,6 +76,7 @@ match-curve
 point-curve-nearest-point
 offset-test
 pair-intersect
+parametrics
 path-along-path
 pw-toy
 sb-math-test

@@ -5,21 +5,23 @@
 #include "sbasis-geometric.h"
 
 #include "path-cairo.h"
-#include "toy-framework.h"
+#include "toy-framework-2.h"
 
 #include <vector>
 using std::vector;
 using namespace Geom;
 
 class ArcBez: public Toy {
+    PointSetHandle bez_handle;
 public:
     ArcBez() {
-        for(int i = 0; i < 4; i++)
-            handles.push_back(Geom::Point(uniform()*400, uniform()*400));
+        for(int i = 0; i < 6; i++)
+            bez_handle.push_back(uniform()*400, uniform()*400);
+        handles.push_back(&bez_handle);
     }
 
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
-        D2<SBasis> B = handles_to_sbasis(handles.begin(), 3);
+        D2<SBasis> B = bez_handle.asBezier();
         cairo_md_sb(cr, B);
         cairo_stroke(cr);
         

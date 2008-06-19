@@ -8,7 +8,7 @@
 #include "sbasis-math.h"
 
 #include "path-cairo.h"
-#include "toy-framework.h"
+#include "toy-framework-2.h"
 #include "matrix.h"
 
 #include <glib.h>
