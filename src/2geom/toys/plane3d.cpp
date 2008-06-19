@@ -7,7 +7,7 @@
 #include "sbasis-math.h"
 
 #include "path-cairo.h"
-#include "toy-framework.h"
+#include "toy-framework-2.h"
 #include "path.h"
 #include "svg-path-parser.h"
 
@@ -20,12 +20,13 @@ using namespace std;
 
 class Box3d: public Toy {
     double tmat[3][4];
-    
+    PointHandle origin_handle;
+    PointSetHandle vanishing_points_handles;
     std::vector<Path> paths_a;
     
     void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
 
-        Geom::Point orig = handles[4];
+        Geom::Point orig = origin_handle.pos;
 	cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
 
         /* create the transformation matrix for the map  P^3 --> P^2 that has the following effect:
@@ -35,8 +36,8 @@ class Box3d: public Toy {
               (0 : 0 : 0 : 1) --> origin (= handle #3)
         */
         for (int j = 0; j < 4; ++j) {
-            tmat[0][j] = handles[j][0];
-            tmat[1][j] = handles[j][1];
+            tmat[0][j] = vanishing_points_handles.pts[j][0];
+            tmat[1][j] = vanishing_points_handles.pts[j][1];
             tmat[2][j] = 1;
         }
 
@@ -82,15 +83,16 @@ class Box3d: public Toy {
         assert(paths_a.size() > 0);
 
         // Finite images of the three vanishing points and the origin
-        handles.push_back(Point(550,350));
-        handles.push_back(Point(150,300));
-        handles.push_back(Point(380,40));
-        handles.push_back(Point(340,450));
-
+        handles.push_back(&origin_handle);
+        handles.push_back(&vanishing_points_handles);
+        vanishing_points_handles.push_back(550,350);
+        vanishing_points_handles.push_back(150,300);
+        vanishing_points_handles.push_back(380,40);
+        vanishing_points_handles.push_back(340,450);
         // plane origin
-	handles.push_back(Point(180,65));
+        origin_handle.pos = Point(180,65);
     }
-    int should_draw_bounds() {return 1;}
+    //int should_draw_bounds() {return 1;}
     
     Geom::Point proj_image (cairo_t *cr, const double pt[4], const vector<Geom::Point> &handles)
     {

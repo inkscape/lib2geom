@@ -12,7 +12,6 @@ curvature-test
 cylinder3d
 #distort
 draw-toy
-fitter
 gear
 inverse-test
 load-svgd
@@ -22,7 +21,6 @@ mesh-grad
 #normal-bundle
 paptest
 parser
-plane3d
 precise-flat
 pw-compose-test
 pw-funcs
@@ -69,6 +67,7 @@ curve-curve-nearest-point-3
 elliptiarc-3point-center-fitting
 elliptiarc-5points-fitting
 elliptiarc-curve-fitting
+fitter
 hvlineseg-toy
 inner-product-clip
 mesh-warp
@@ -78,6 +77,7 @@ offset-test
 pair-intersect
 parametrics
 path-along-path
+plane3d
 pw-toy
 sb-math-test
 self-intersect
