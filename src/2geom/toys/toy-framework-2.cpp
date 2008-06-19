@@ -31,7 +31,7 @@ void draw_text(cairo_t *cr, Geom::Point loc, const char* txt, bool bottom) {
     pango_cairo_show_layout(cr, layout);
 }
 
-void draw_number(cairo_t *cr, Geom::Point pos, int num, std::string name=std::string()) {
+void draw_number(cairo_t *cr, Geom::Point pos, int num, std::string name) {
     std::ostringstream number;
     if (name.size())
 	number << name;
@@ -607,7 +607,7 @@ void PointSetHandle::load(FILE* f) {
 }
 
 void PointSetHandle::save(FILE* f) {
-    fprintf(f, "%d\n", pts.size());
+    fprintf(f, "%d\n", (int)pts.size());
     for(unsigned i = 0; i < pts.size(); i++) {
 	fprintf(f, "%lf %lf\n", pts[i][0], pts[i][1]);
     }

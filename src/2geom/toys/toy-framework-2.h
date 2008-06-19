@@ -24,7 +24,7 @@ using std::vector;
 double uniform();
 
 void draw_text(cairo_t *cr, Geom::Point pos, const char* txt, bool bottom = false);
-void draw_number(cairo_t *cr, Geom::Point pos, int num);
+void draw_number(cairo_t *cr, Geom::Point pos, int num, std::string name=std::string());
 
 class Handle{
 public:

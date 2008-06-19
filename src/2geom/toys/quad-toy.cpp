@@ -6,7 +6,7 @@
 #include "quadtree.h"
 
 #include "path-cairo.h"
-#include "toy-framework.h"
+#include "toy-framework-2.h"
 
 using std::vector;
 
@@ -43,14 +43,15 @@ bool clean_quad_tree(Geom::Quad *q) {
 }
 
 class QuadToy: public Toy {
+    PointSetHandle psh;
     void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         cairo_set_source_rgba (cr, 0., 0.5, 0, 1);
         cairo_set_line_width (cr, 1);
-        for(unsigned i = 0; i < handles.size(); i++) {
+        for(unsigned i = 0; i < psh.pts.size(); i++) {
             std::ostringstream notify;
             notify << i;
-            draw_circ(cr, handles[i]);
-            cairo_move_to(cr, handles[i]);
+            draw_circ(cr, psh.pts[i]);
+            cairo_move_to(cr, psh.pts[i]);
             PangoLayout* layout = pango_cairo_create_layout (cr);
             pango_layout_set_text(layout, 
                                   notify.str().c_str(), -1);
@@ -79,9 +80,9 @@ class QuadToy: public Toy {
         
         cairo_new_sub_path(cr);
         
-        for(unsigned i = 0; i < handles.size()/2; i++) {
-            Geom::Point p0 = handles[i*2];
-            Geom::Point p1 = handles[i*2+1];
+        for(unsigned i = 0; i < psh.pts.size()/2; i++) {
+            Geom::Point p0 = psh.pts[i*2];
+            Geom::Point p1 = psh.pts[i*2+1];
             Geom::Point centre = (p0 + p1)/2;
             double rad = Geom::L2(p0 - centre);
             cairo_arc (cr, centre[0], centre[1], rad, 0., 2 * M_PI);
@@ -110,10 +111,11 @@ class QuadToy: public Toy {
 
     public:
     QuadToy() {
+        handles.push_back(&psh);
         for(unsigned i = 0; i < 100; i++) {
             Geom::Point p(uniform() * 400, uniform() * 400);
-            handles.push_back(p);
-            handles.push_back(p + Geom::Point(uniform() * 40, uniform() * 40));
+            psh.push_back(p);
+            psh.push_back(p + Geom::Point(uniform() * 40, uniform() * 40));
         }
     }
 };

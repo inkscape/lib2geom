@@ -2,7 +2,6 @@ SET(2GEOM_TOYS_SRC
 2dsb2d
 boolops
 bounds-test
-convex-toy
 cylinder3d
 draw-toy
 gear
@@ -11,18 +10,13 @@ mesh-grad
 #nearest-points
 #nearest-points2
 paptest
-parser
 precise-flat
 pw-compose-test
-pw-funcs
-quad-toy
 sb-zeros
 sb1d
 sb2d
 shuttle
-#sketch-toy
 sweep
-#toy-cairo
 "${NEEDS_GSL}"
 )
 
@@ -54,6 +48,7 @@ center-warp
 circle-intersect
 conic-3
 conic-4
+convex-toy
 curvature-test
 curve-curve-distance
 curve-curve-nearest-point-3
@@ -71,9 +66,12 @@ point-curve-nearest-point
 offset-test
 pair-intersect
 parametrics
+parser
 path-along-path
 plane3d
+pw-funcs
 pw-toy
+quad-toy
 sb-math-test
 self-intersect
 squiggles

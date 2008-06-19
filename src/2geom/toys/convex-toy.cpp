@@ -1,16 +1,22 @@
 #include "convex-cover.h"
 
 #include "path-cairo.h"
-#include "toy-framework.h"
+#include "toy-framework-2.h"
 
 using std::vector;
+using namespace Geom;
 
 class ConvexTest: public Toy {
+    PointSetHandle psh[2];
     public:
     ConvexTest () {
-        for(unsigned i = 0; i < 30; i++){
-            handles.push_back(Geom::Point(uniform()*uniform()*400+200,
-                                          uniform()*uniform()*400+200));
+        handles.push_back(&psh[0]);
+        handles.push_back(&psh[1]);
+        for(unsigned i = 0; i < 15; i++){
+            psh[0].push_back(uniform()*uniform()*400+200,
+                          uniform()*uniform()*400+200);
+            psh[1].push_back(uniform()*uniform()*400+200,
+                          uniform()*uniform()*400+200);
 	}
     }
 
@@ -24,23 +30,19 @@ class ConvexTest: public Toy {
             cairo_line_to(cr, i*width/4, width);
         }
     
-        std::vector<Geom::Point> h1, h2;
-        for(unsigned i = 0; i < 15; i++) {
-            h1.push_back(handles[i]);
-            h2.push_back(handles[i + 15]);
-        }
-
+        vector<Point> all_hands = psh[0].pts;
+        all_hands.insert(all_hands.end(), psh[1].pts.begin(), psh[1].pts.end());
         clock_t end_t = clock()+clock_t(0.025*CLOCKS_PER_SEC);
         unsigned iterations = 0;
         while(end_t > clock()) {
-            Geom::ConvexHull ch(handles);
+            Geom::ConvexHull ch(all_hands);
             iterations++;
         }
         *notify << "constructor time = " << 1000*0.1/iterations << std::endl;
 
 
-        Geom::ConvexHull ch1(h1);
-        Geom::ConvexHull ch2(h2);
+        Geom::ConvexHull ch1(psh[0].pts);
+        Geom::ConvexHull ch2(psh[1].pts);
 
         end_t = clock()+clock_t(0.025*CLOCKS_PER_SEC);
         iterations = 0;
