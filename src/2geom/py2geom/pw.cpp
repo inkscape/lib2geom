@@ -32,6 +32,7 @@
 #include "../sbasis.h"
 #include "../piecewise.h"
 #include "../d2.h"
+#include "../sbasis-math.h"
 
 #include "py2geom.h"
 #include "helpers.h"
@@ -44,6 +45,21 @@ std::vector<double> (*roots_pwsb)(const Geom::Piecewise<Geom::SBasis> &) = &Geom
 Geom::Piecewise<Geom::SBasis> (*divide_pwsb)(Geom::Piecewise<Geom::SBasis> const &, Geom::Piecewise<Geom::SBasis> const &, unsigned) = &Geom::divide;
 Geom::Piecewise<Geom::SBasis> (*compose_pwsb_sb)(Geom::Piecewise<Geom::SBasis> const &, Geom::SBasis const &) = &Geom::compose;
 Geom::Piecewise<Geom::SBasis> (*compose_pwsb)(Geom::Piecewise<Geom::SBasis> const &, Geom::Piecewise<Geom::SBasis> const &) = &Geom::compose;
+
+Geom::Piecewise<Geom::SBasis> (*abs_pwsb)(Geom::Piecewise<Geom::SBasis> const &) = &Geom::abs;
+
+Geom::Piecewise<Geom::SBasis> (*min_pwsb)(Geom::Piecewise<Geom::SBasis> const &, Geom::Piecewise<Geom::SBasis> const &) = &Geom::min;
+Geom::Piecewise<Geom::SBasis> (*max_pwsb)(Geom::Piecewise<Geom::SBasis> const &, Geom::Piecewise<Geom::SBasis> const &) = &Geom::max;
+Geom::Piecewise<Geom::SBasis> (*signSb_pwsb)(Geom::Piecewise<Geom::SBasis> const &) = &Geom::signSb;
+
+Geom::Piecewise<Geom::SBasis> (*sqrt_pwsb)(Geom::Piecewise<Geom::SBasis> const &, double, int) = &Geom::sqrt;
+
+Geom::Piecewise<Geom::SBasis> (*sin_pwsb)(Geom::Piecewise<Geom::SBasis> const &, double, int) = &Geom::sin;
+Geom::Piecewise<Geom::SBasis> (*cos_pwsb)(Geom::Piecewise<Geom::SBasis> const &, double, int) = &Geom::cos;
+
+//Geom::Piecewise<Geom::SBasis> (*log_pwsb)(Geom::Piecewise<Geom::SBasis> const &, double, int) = &Geom::log;
+Geom::Piecewise<Geom::SBasis> (*reciprocal_pwsb)(Geom::Piecewise<Geom::SBasis> const &, double, int) = &Geom::reciprocal;
+
 
 Geom::SBasis getitem_pwsb(Geom::Piecewise<Geom::SBasis> const &p, unsigned const index) {
     unsigned D = p.size();
@@ -71,6 +87,15 @@ void wrap_pw() {
     def("divide", divide_pwsb);
     def("compose", compose_pwsb_sb);
     def("compose", compose_pwsb);
+    def("abs", abs_pwsb);
+    def("min", min_pwsb);
+    def("max", max_pwsb);
+    def("signSb", signSb_pwsb);
+    def("sqrt", sqrt_pwsb);
+    def("cos", cos_pwsb);
+    def("sin", sin_pwsb);
+    //def("log", log_pwsb);
+    def("reciprocal", reciprocal_pwsb);
 
     class_<Geom::Piecewise<Geom::SBasis> >("PiecewiseSBasis")
         .def("__getitem__", getitem_pwsb)
