@@ -42,6 +42,8 @@ bezier-curve.h
 curve.h
 curves.h
 curve-helpers.cpp
+ellipse.cpp
+ellipse.h
 elliptical-arc.cpp
 elliptical-arc.h
 hvlinesegment.h
@@ -153,7 +155,6 @@ INSTALL(FILES ${files} DESTINATION include/2geom/2geom)
 CONFIGURE_FILE( ${CMAKE_SOURCE_DIR}/2geom.pc.in
                 ${CMAKE_BINARY_DIR}/2geom.pc @ONLY IMMEDIATE )
 INSTALL(FILES "${CMAKE_BINARY_DIR}/2geom.pc" DESTINATION lib/pkgconfig)
-
 ADD_SUBDIRECTORY (toys)
 ADD_SUBDIRECTORY (tests)
 ADD_SUBDIRECTORY (py2geom)

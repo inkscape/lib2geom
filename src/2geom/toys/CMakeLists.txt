@@ -52,6 +52,8 @@ convex-toy
 curvature-test
 curve-curve-distance
 curve-curve-nearest-point-3
+d2sbasis-fitting
+ellipse-fitting
 elliptiarc-3point-center-fitting
 elliptiarc-5points-fitting
 elliptiarc-curve-fitting
