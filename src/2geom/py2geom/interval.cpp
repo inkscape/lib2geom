@@ -1,0 +1,127 @@
+/*
+ * Copyright 2008 Aaron Spike <aaron@ekips.org>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it either under the terms of the GNU Lesser General Public
+ * License version 2.1 as published by the Free Software Foundation
+ * (the "LGPL") or, at your option, under the terms of the Mozilla
+ * Public License Version 1.1 (the "MPL"). If you do not alter this
+ * notice, a recipient may use your version of this file under either
+ * the MPL or the LGPL.
+ *
+ * You should have received a copy of the LGPL along with this library
+ * in the file COPYING-LGPL-2.1; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * You should have received a copy of the MPL along with this library
+ * in the file COPYING-MPL-1.1
+ *
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.1 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY
+ * OF ANY KIND, either express or implied. See the LGPL or the MPL for
+ * the specific language governing rights and limitations.
+ *
+ */
+
+#include <boost/python.hpp>
+#include <boost/python/implicit.hpp>
+
+#include "py2geom.h"
+#include "helpers.h"
+
+#include "../interval.h"
+
+using namespace boost::python;
+
+
+// helpers for interval
+tuple interval_to_tuple(Geom::Interval const& p)
+{
+    return make_tuple(p[0], p[1]);
+}
+
+Geom::Interval tuple_to_interval(boost::python::tuple const& t)
+{
+    return Geom::Interval(extract<double>(t[0]), extract<double>(t[1]));
+}
+
+str interval_repr(Geom::Interval const& p)
+{
+    return str("(" + str(p[0]) + ", " + str(p[1]) + ")");
+}
+
+
+void wrap_interval() {
+    def("interval_to_tuple", interval_to_tuple);
+    def("tuple_to_interval", tuple_to_interval);
+
+    def("unify", Geom::unify);
+    def("intersect", Geom::intersect);
+
+    //TODO: add overloaded constructors
+    class_<Geom::Interval>("Interval", init<double, double>())
+        .def("__str__", interval_repr)
+        .def("__repr__", interval_repr)
+        .def("__getitem__", python_getitem<Geom::Interval,double,2>)
+        .def("tuple", interval_to_tuple)
+    
+        .def("from_tuple", tuple_to_interval)
+        .staticmethod("from_tuple")
+        
+        .def("min", &Geom::Interval::min)
+        .def("max", &Geom::Interval::max)
+        .def("middle", &Geom::Interval::middle)
+        .def("extent", &Geom::Interval::extent)
+        .def("isEmpty", &Geom::Interval::isEmpty)
+        //TODO: fix for overloading
+        //.def("contains", &Geom::Interval::contains)
+        .def("intersects", &Geom::Interval::intersects)
+
+        .def("setMin", &Geom::Interval::setMin)
+        .def("setMax", &Geom::Interval::setMax)
+        .def("extendTo", &Geom::Interval::extendTo)
+        .def("fromArray", &Geom::Interval::fromArray)
+        .def("expandBy", &Geom::Interval::expandBy)
+        .def("unionWith", &Geom::Interval::unionWith)
+
+        .def(self == self)
+        .def(self != self)
+
+        .def(self + float())
+        .def(self - float())
+        .def(self += float())
+        .def(self -= float())
+
+        .def(-self)
+
+        .def(self * float())
+        .def(self / float())
+        .def(self *= float())
+        .def(self /= float())
+
+        .def(self + self)
+        .def(self - self)
+        .def(self += self)
+        .def(self -= self)
+        .def(self * self)
+        .def(self *= self)
+    ;
+    implicitly_convertible<Geom::Interval,tuple>();
+// TODO: is this possible?
+//    implicitly_convertible<tuple,Geom::Interval>();
+
+};
+
+/*
+  Local Variables:
+  mode:c++
+  c-file-style:"stroustrup"
+  c-file-offsets:((innamespace . 0)(inline-open . 0)(case-label . +))
+  indent-tabs-mode:nil
+  fill-column:99
+  End:
+*/
+// vim: filetype=cpp:expandtab:shiftwidth=4:tabstop=8:softtabstop=4:encoding=utf-8:textwidth=99 :
