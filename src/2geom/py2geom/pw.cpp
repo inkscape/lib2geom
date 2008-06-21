@@ -60,6 +60,9 @@ Geom::Piecewise<Geom::SBasis> (*cos_pwsb)(Geom::Piecewise<Geom::SBasis> const &,
 //Geom::Piecewise<Geom::SBasis> (*log_pwsb)(Geom::Piecewise<Geom::SBasis> const &, double, int) = &Geom::log;
 Geom::Piecewise<Geom::SBasis> (*reciprocal_pwsb)(Geom::Piecewise<Geom::SBasis> const &, double, int) = &Geom::reciprocal;
 
+Geom::FragmentConcept<Geom::SBasis>::BoundsType (*bounds_fast_pwsb)(Geom::Piecewise<Geom::SBasis> const &) = &Geom::bounds_fast;
+Geom::FragmentConcept<Geom::SBasis>::BoundsType (*bounds_exact_pwsb)(Geom::Piecewise<Geom::SBasis> const &) = &Geom::bounds_exact;
+Geom::FragmentConcept<Geom::SBasis>::BoundsType (*bounds_local_pwsb)(Geom::Piecewise<Geom::SBasis> const &, const Geom::Interval &) = &Geom::bounds_local;
 
 Geom::SBasis getitem_pwsb(Geom::Piecewise<Geom::SBasis> const &p, unsigned const index) {
     unsigned D = p.size();
@@ -96,6 +99,9 @@ void wrap_pw() {
     def("sin", sin_pwsb);
     //def("log", log_pwsb);
     def("reciprocal", reciprocal_pwsb);
+    def("bounds_fast", bounds_fast_pwsb);
+    def("bounds_exact", bounds_exact_pwsb);
+    def("bounds_local", bounds_local_pwsb);
 
     class_<Geom::Piecewise<Geom::SBasis> >("PiecewiseSBasis")
         .def("__getitem__", getitem_pwsb)

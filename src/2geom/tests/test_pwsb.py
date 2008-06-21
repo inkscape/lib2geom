@@ -4,6 +4,7 @@ from  py2geom import *
 import py2geom
 import numpy
 import random
+from py2geom_glue import *
 
 def poly_to_sbasis(p):
     sb = SBasis()
@@ -37,3 +38,27 @@ pwsb.push_cut(1)
 print pwsb.size()
 print "invariants:", pwsb.invariants()
 print pwsb(0)
+
+def l2s(l):
+    sb = py2geom.SBasis()
+    sb.append(l)
+    return sb
+
+X = l2s(py2geom.Linear(0, 1))
+OmX = l2s(py2geom.Linear(1, 0))
+def bezier_to_sbasis(handles, order):
+    print "b2s:", handles, order
+    if(order == 0):
+        return l2s(py2geom.Linear(handles[0]))
+    elif(order == 1):
+        return l2s(py2geom.Linear(handles[0], handles[1]))
+    else:
+        return (py2geom.multiply(OmX, bezier_to_sbasis(handles[:-1], order-1)) +
+                py2geom.multiply(X, bezier_to_sbasis(handles[1:], order-1)))
+
+
+for bz in [[0,1,0], [0,1,2,3]]:
+    sb = bezier_to_sbasis(bz, len(bz)-1)
+    print bz
+    print sb
+    print sbasis_to_bezier(sb,0)

@@ -131,7 +131,7 @@ class PwToy(toyframework.Toy):
     def sb_changed(self, sb):
         self.func = sb.get_text()
         self.redraw()
-    def draw(self, cr, notify, pos):
+    def draw(self, cr, pos, save):
         cr.set_source_rgba (0., 0., 0., 1)
         cr.set_line_width (1)
         
@@ -140,33 +140,36 @@ class PwToy(toyframework.Toy):
             cairo_pw(cr, p)
         cr.stroke()
         
-        if 1:
-            d = locals().copy()
-            for i in dir(py2geom):
-                d[i] = py2geom.__dict__[i]
-            d['l2s'] = l2s
-            d['constant'] = constant
-            pw_out = eval(self.func, d)
+        d = locals().copy()
+        for i in dir(py2geom):
+            d[i] = py2geom.__dict__[i]
+        d['l2s'] = l2s
+        d['constant'] = constant
+        pw_out = eval(self.func, d)
 
-            cr.set_source_rgba (0., 0., .5, 1.);
-            cairo_horiz(cr, 500, pw_out.cuts);
-            cr.stroke()
+        bs = py2geom.bounds_local(pw_out, 
+                          py2geom.Interval(self.interval_test[0].pos[0], 
+                                           self.interval_test[1].pos[0]));
+        for ph in self.interval_test:
+            ph.pos= py2geom.Point(ph.pos[0], bs.middle())
+        cr.save()
+        cr.set_source_rgba (.0, 0.25, 0.5, 1.)
+        cr.rectangle(self.interval_test[0].pos[0], bs.min(),
+                     self.interval_test[1].pos[0]-self.interval_test[0].pos[0], bs.extent())
+        cr.stroke()
+        cr.set_source_rgba (0.25, 0.25, .5, 1.);
+        bs = py2geom.bounds_exact(pw_out);
+        cairo_horiz(cr, bs.middle(), pw_out.cuts);
+        cr.stroke()
+        cr.restore()
 
-            cr.set_source_rgba (0., 0., .5, 1.);
-            cairo_pw(cr, pw_out)
-            cr.stroke()
-        
-        if 0:
-            bs = bounds_local(pw_out, 
-                              py2geom.Interval(self.interval_test[0].pos[0], 
-                                               self.interval_test[1].pos[0]));
-            vec = [bs.min() + 150, bs.max() + 150]
-            cr.set_source_rgba (.5, 0., 0., 1.)
-            cairo_vert(cr, 100, vec)
-            cr.stroke()
+        cr.set_source_rgba (0., 0., .5, 1.);
+        cairo_pw(cr, pw_out)
+        cr.stroke()
 
-        #notify = pws[0].segN(self.interval_test[0].pos[0]) << "; " << pws[0].segT(self.interval_test[0].pos[0]);
-        toyframework.Toy.draw(self, cr, notify, pos)
+
+        self.notify = str(bs)
+        toyframework.Toy.draw(self, cr, pos, save)
         
 t = PwToy()
 import sys
