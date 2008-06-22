@@ -2,6 +2,7 @@ SET(2GEOM_BOOST_PYTHON_SRC
 point.cpp
 interval.cpp
 transforms.cpp
+rect.cpp
 sbasis.cpp
 linear.cpp
 pw.cpp

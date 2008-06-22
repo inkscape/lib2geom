@@ -54,6 +54,7 @@ BOOST_PYTHON_MODULE(_py2geom)
     wrap_point();
     wrap_interval();
     wrap_transforms();
+    wrap_rect();
     wrap_sbasis();
     wrap_linear();
     wrap_pw();
