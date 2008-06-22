@@ -40,6 +40,7 @@
 
 #include <cassert>
 #include <algorithm> // for std::swap
+#include <vector>
 #include <sstream>
 #include <string>
 
@@ -366,6 +367,20 @@ class ConstVectorView : public detail::BaseVectorImpl
 		m_vector = const_cast<gsl_vector*>( &(m_vector_view.vector) );
 	}
 	
+    ConstVectorView(const double* _vector, size_t n, size_t offset = 0)
+        : m_vector_view( gsl_vector_const_view_array(_vector + offset, n) )
+    {
+        m_size = n;
+        m_vector = const_cast<gsl_vector*>( &(m_vector_view.vector) );
+    }
+    
+    ConstVectorView(const double* _vector, size_t n, size_t offset, size_t stride)
+        : m_vector_view( gsl_vector_const_view_array_with_stride(_vector + offset, stride, n) )
+    {
+        m_size = n;
+        m_vector = const_cast<gsl_vector*>( &(m_vector_view.vector) );
+    }
+	
 	explicit
 	ConstVectorView(gsl_vector_const_view  _gsl_vector_view)
 		: m_vector_view(_gsl_vector_view)
@@ -373,6 +388,14 @@ class ConstVectorView : public detail::BaseVectorImpl
 		m_vector = const_cast<gsl_vector*>( &(m_vector_view.vector) );
 		m_size = m_vector->size;
 	}
+	
+    explicit
+    ConstVectorView(const std::vector<double>&  _vector)
+        : m_vector_view( gsl_vector_const_view_array(&(_vector[0]), _vector.size()) )
+    {
+        m_vector = const_cast<gsl_vector*>( &(m_vector_view.vector) );
+        m_size = _vector.size();
+    }
 
 	ConstVectorView(const ConstVectorView & _vector)
 		: m_vector_view(_vector.m_vector_view)
@@ -418,6 +441,24 @@ class VectorView : public detail::VectorImpl
 			m_vector = &(m_vector_view.vector);
 		}
 	}
+	
+    VectorView(double* _vector, size_t n, size_t offset = 0, size_t stride = 1)
+    {
+        m_size = n;
+        if (stride == 1)
+        {
+            m_vector_view
+                = gsl_vector_view_array(_vector + offset, n);
+            m_vector = &(m_vector_view.vector);
+        }
+        else
+        {
+            m_vector_view
+                = gsl_vector_view_array_with_stride(_vector + offset, stride, n);
+            m_vector = &(m_vector_view.vector);
+        }
+        
+    }
 		
 	VectorView(const VectorView & _vector)
 	{
@@ -440,7 +481,15 @@ class VectorView : public detail::VectorImpl
 		m_vector = &(m_vector_view.vector);
 		m_size = m_vector->size;
 	}
-
+	
+	explicit
+	VectorView(std::vector<double> & _vector)
+	{
+	    m_size = _vector.size();
+	    m_vector_view = gsl_vector_view_array(&(_vector[0]), _vector.size());
+	    m_vector = &(m_vector_view.vector);
+	}
+	
 	VectorView & operator=(VectorView const& _vector)
 	{
 		assert( size() == _vector.size() );

@@ -146,7 +146,8 @@ public:
     solution_type& result(VectorT const& sample_values)
     {
         assert(sample_values.size() == total_samples());
-        m_solution = (*m_psdinv_matrix) * sample_values;
+        ConstVectorView sv(sample_values);
+        m_solution = (*m_psdinv_matrix) * sv;
         return m_solution;
     }
     
@@ -154,7 +155,7 @@ public:
     // in order to minimize computation
     // prerequisite: 
     //     old_sample_values.size() == new_sample_values.size()
-    //     no update() call can to be performed between two result invocations
+    //     no update() call can be performed between two result invocations
     template< typename VectorT >
     solution_type& result( VectorT const& old_sample_values, 
                            VectorT const& new_sample_values )
