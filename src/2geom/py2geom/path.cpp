@@ -29,9 +29,11 @@
  */
 
 #include <boost/python.hpp>
+#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 
 #include "../curve.h"
 #include "../path.h"
+#include "../pathvector.h"
 #include "helpers.h"
 
 #include "../point.h"
@@ -103,13 +105,43 @@ void wrap_path()
         .def("toSBasis", pure_virtual(&Geom::Curve::toSBasis))
     ;
     */
-    /*
     class_<Geom::Path>("Path")
         .def("empty", &Geom::Path::empty)
         .def("closed", &Geom::Path::closed)
-        .def("close", &Geom::Path::closed)
+        .def("close", &Geom::Path::close)
+        .def("boundsFast", &Geom::Path::boundsFast)
+        .def("boundsExact", &Geom::Path::boundsExact)
+        .def("toPwSb", &Geom::Path::toPwSb)
+        .def(self * Geom::Matrix())
+        .def("pointAt", &Geom::Path::pointAt)
+        .def("valueAt", &Geom::Path::valueAt)
+        .def("__call__", &Geom::Path::pointAt)
+        .def("roots", &Geom::Path::roots)
+        //.def("allNearestPoints", &Geom::Path::allNearestPoints)
+        //.def("nearestPoint", &Geom::Path::nearestPoint)
+        .def("appendPortionTo", &Geom::Path::appendPortionTo)
+        //.def("portion", &Geom::Path::portion)
+        .def("reverse", &Geom::Path::reverse)
+        //.def("insert", &Geom::Path::insert)
+        .def("clear", &Geom::Path::clear)
+        //.def("erase", &Geom::Path::erase)
+        .def("erase_last", &Geom::Path::erase_last)
+        //.def("replace", &Geom::Path::replace)
+        .def("start", &Geom::Path::start)
+        .def("initialPoint", &Geom::Path::initialPoint)
+        .def("finalPoint", &Geom::Path::finalPoint)
+        .def("setInitial", &Geom::Path::setInitial)
+        .def("setFinal", &Geom::Path::setFinal)
+        //.def("append", &Geom::Path::append)
+        //.def("appendNew", &Geom::Path::appendNew)
     ;
-    */
+    class_<std::vector<Geom::Path> >("PathVector")
+        //.def(vector_indexing_suite<std::vector<Geom::Path> >())
+        .def(self * Geom::Matrix())
+    ;
+    def("reverse_paths_and_order", Geom::reverse_paths_and_order);
+    //def("bounds_fast", Geom::bounds_fast);
+    //def("bounds_exact", Geom::bounds_exact);
 }
 
 /*
