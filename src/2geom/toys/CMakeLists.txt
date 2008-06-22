@@ -75,6 +75,7 @@ pw-funcs
 pw-toy
 quad-toy
 sb-math-test
+sbasis-fitting
 self-intersect
 squiggles
 svg-elliptic-arc-toy
