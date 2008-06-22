@@ -2,6 +2,8 @@
 #include "path2.h"
 #include "libnr/nr-path.h"
 
+/* a better and tested version of this method can be found in Inkscape's source: /src/libnr/n-art-bpath-2geom.cpp */
+
 Geom::Path NR2Geom(NRBPath) {
     Geom::Path ret = Geom::Path();
     int i = 0;
