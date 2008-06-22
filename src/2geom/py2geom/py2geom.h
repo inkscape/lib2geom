@@ -37,7 +37,7 @@ void wrap_sbasis();
 void wrap_linear();
 void wrap_pw();
 void wrap_d2();
-//void wrap_path();
+void wrap_path();
 void wrap_parser();
 
 #endif

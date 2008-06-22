@@ -8,6 +8,7 @@ linear.cpp
 pw.cpp
 d2.cpp
 parser.cpp
+path.cpp
 py2geom.cpp
 )
 
