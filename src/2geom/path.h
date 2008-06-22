@@ -223,6 +223,9 @@ public:
   Rect boundsFast() const;
   Rect boundsExact() const;
 
+    //Rect boundsFast();
+    //Rect boundsExact();
+  
   Piecewise<D2<SBasis> > toPwSb() const {
     Piecewise<D2<SBasis> > ret;
     ret.push_cut(0);
@@ -323,9 +326,6 @@ public:
 	  return nearestPoint(_point, 0, sz);
   }
    
-  Rect boundsFast();
-  Rect boundsExact();
-  
   void appendPortionTo(Path &p, double f, double t) const;
 
   Path portion(double f, double t) const {

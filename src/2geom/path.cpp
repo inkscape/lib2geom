@@ -49,7 +49,9 @@ void Path::swap(Path &other) {
 }
 
 Rect Path::boundsFast() const {
-  Rect bounds=front().boundsFast();
+  Rect bounds;
+  if (empty()) return bounds;
+  bounds=front().boundsFast();
   const_iterator iter = begin();
   if ( iter != end() ) {
 	  for ( ++iter; iter != end() ; ++iter ) {
@@ -60,7 +62,9 @@ Rect Path::boundsFast() const {
 }
 
 Rect Path::boundsExact() const {
-  Rect bounds=front().boundsExact();
+  Rect bounds;
+  if (empty()) return bounds;
+  bounds=front().boundsExact();
   const_iterator iter = begin();
   if ( iter != end() ) {
     for ( ++iter; iter != end() ; ++iter ) {
@@ -69,6 +73,33 @@ Rect Path::boundsExact() const {
   }
   return bounds;
 }
+
+/*
+Rect Path::boundsFast()
+{
+    Rect bound;
+    if (empty()) return bound;
+    
+    bound = begin()->boundsFast();
+    for (iterator it = ++begin(); it != end(); ++it)
+    {
+        bound.unionWith(it->boundsFast());
+    }
+    return bound;
+}
+
+Rect Path::boundsExact()
+{
+    Rect bound;
+    if (empty()) return bound;
+    
+    bound = begin()->boundsExact();
+    for (iterator it = ++begin(); it != end(); ++it)
+    {
+        bound.unionWith(it->boundsExact());
+    }
+    return bound;
+    }*/
 
 template<typename iter>
 iter inc(iter const &x, unsigned n) {
@@ -237,32 +268,6 @@ double Path::nearestPoint(Point const& _point, double from, double to) const
 		}
 	}
 	return ni + nearest;
-}
-
-Rect Path::boundsFast()
-{
-    Rect bound;
-    if (empty()) return bound;
-    
-    bound = begin()->boundsFast();
-    for (iterator it = ++begin(); it != end(); ++it)
-    {
-        bound.unionWith(it->boundsFast());
-    }
-    return bound;
-}
-
-Rect Path::boundsExact()
-{
-    Rect bound;
-    if (empty()) return bound;
-    
-    bound = begin()->boundsExact();
-    for (iterator it = ++begin(); it != end(); ++it)
-    {
-        bound.unionWith(it->boundsExact());
-    }
-    return bound;
 }
 
 //This assumes that you can't be perfect in your t-vals, and as such, tweaks the start
