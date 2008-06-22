@@ -37,6 +37,8 @@
 
 #include "d2.h"
 #include "sbasis.h"
+#include "bezier.h"
+#include "bezier-curve.h"
 #include "poly.h"
 #include "ellipse.h"
 
@@ -316,6 +318,89 @@ class LFMD2SBasis
     LFMSBasis mosb;
 };
 
+    
+// this model generates Bezier objects
+class LFMBezier
+    : public LinearFittingModel<double, double, Bezier>
+{
+  public:
+    LFMBezier( size_t _order )
+        : m_size(_order + 1),
+          m_order(_order)
+    {    
+    }
+    
+    // TODO: incomplete
+    void feed( VectorView & coeff, double t ) const
+    {
+        double s = 1;
+        for (size_t i = 0; i < size(); ++i)
+        {
+            coeff[i] = s; // coeff[i] = s * binomial_coeff(size(), i);
+            s *= t;
+        }
+        double u = 1-t;
+        s = 1;
+        for (size_t i = size()-1; i >= 0; --i)
+        {
+            coeff[i] *= s;
+            s *= u;
+        }
+    }
+    
+    size_t size() const
+    {
+        return m_size;
+    }
+    
+    void instance(Bezier & b, ConstVectorView const& raw_data) const
+    {
+        assert(b.size() == raw_data.size());
+        for (unsigned int i = 0; i < raw_data.size(); ++i)
+        {
+            b[i] = raw_data[i];
+        }        
+    }
+    
+  private:
+    size_t m_size;
+    size_t m_order;
+};
+
+    
+// this model generates Bezier curves
+template< unsigned int N >
+class LFMBezierCurve
+    : public LinearFittingModel< double, Point, BezierCurve<N> >
+{
+  public:
+    LFMBezierCurve( size_t _order )
+        : mob(_order)
+    {    
+    }
+    
+    void feed( VectorView & coeff, double t ) const
+    {
+        mob.feed(coeff, t);
+    }
+    
+    size_t size() const
+    {
+        return mob.size();
+    }
+    
+    void instance(BezierCurve<N> & bc, ConstMatrixView const& raw_data) const
+    {
+        Bezier bx(size()-1);
+        Bezier by(size()-1);
+        mob.instance(bx, raw_data.column_const_view(X));
+        mob.instance(by, raw_data.column_const_view(Y));
+        bc = BezierCurve<N>(bx, by);
+    }
+    
+  private:
+    LFMBezier mob;
+};
     
 }  // end namespace NL
 }  // end namespace Geom
