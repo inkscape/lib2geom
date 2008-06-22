@@ -91,7 +91,7 @@ struct CurveWrap : Geom::Curve, wrapper<Geom::Curve>
 void wrap_path()
 {
     /*
-    class_<CurveWrap>("Curve")
+    class_<CurveWrap, boost::noncopyable>("Curve")
         .def("initalPoint", pure_virtual(&Geom::Curve::initialPoint))
         .def("finalPoint", pure_virtual(&Geom::Curve::finalPoint))
         .def("duplicate", pure_virtual(&Geom::Curve::duplicate))
