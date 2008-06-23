@@ -40,7 +40,9 @@ class LoadSVGD(toyframework.Toy):
     def draw(self, cr, pos, save):
         t = py2geom.Translate(*self.offset_handle.pos)
         #self.paths_b[0] * t
-        bst = self.bs * (py2geom.Matrix() * t)
+        m = py2geom.Matrix()
+        m.setIdentity()
+        bst = self.bs * (m * t)
         #bt = Region(b * t, b.isFill())
         
         cr.set_line_width(1)
