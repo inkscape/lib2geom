@@ -7,7 +7,7 @@ from py2geom_glue import *
 
 def cairo_region(cr, r):
     cr.save()
-    cr.set_source_rgba(cr, 0, 0, 0, 1);
+    cr.set_source_rgba(0, 0, 0, 1);
     if not r.isFill():
         pass#cr.set_dash([]1, 0)
     cairo_path(cr, r)

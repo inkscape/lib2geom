@@ -40,6 +40,12 @@
 #include "../shape.h"
 
 using namespace boost::python;
+namespace Geom{
+//XXX: FIXME: TODO: This is just here to satisfy the vector indexing suite
+bool operator==(Geom::Region const &r1,Geom::Region const &r2){
+    return false;
+}
+}
 
 void wrap_shape()
 {
@@ -56,7 +62,7 @@ void wrap_shape()
         .def("invariants", &Geom::Region::invariants)
     ;
     class_<Geom::Regions>("Regions")
-        //.def(vector_indexing_suite<Geom::Regions>())
+        .def(vector_indexing_suite<Geom::Regions>())
     ;
     def("regions_from_paths", Geom::regions_from_paths);
     def("paths_from_regions", Geom::paths_from_regions);
