@@ -41,6 +41,7 @@
 #include "bezier-curve.h"
 #include "poly.h"
 #include "ellipse.h"
+#include "utils.h"
 
 
 namespace Geom { namespace NL {
@@ -327,25 +328,26 @@ class LFMBezier
     LFMBezier( size_t _order )
         : m_size(_order + 1),
           m_order(_order)
-    {    
+    {
+        binomial_coefficients(m_bc, m_order);
     }
     
-    // TODO: incomplete
     void feed( VectorView & coeff, double t ) const
     {
         double s = 1;
         for (size_t i = 0; i < size(); ++i)
         {
-            coeff[i] = s; // coeff[i] = s * binomial_coeff(size(), i);
+            coeff[i] = s * m_bc[i];
             s *= t;
         }
         double u = 1-t;
         s = 1;
-        for (size_t i = size()-1; i >= 0; --i)
+        for (size_t i = size()-1; i > 0; --i)
         {
             coeff[i] *= s;
             s *= u;
         }
+        coeff[0] *= s;
     }
     
     size_t size() const
@@ -365,6 +367,7 @@ class LFMBezier
   private:
     size_t m_size;
     size_t m_order;
+    std::vector<size_t> m_bc;
 };
 
     

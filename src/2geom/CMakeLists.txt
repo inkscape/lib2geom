@@ -119,6 +119,7 @@ basic-intersection.cpp
 geom.cpp
 geom.h
 
+utils.cpp
 utils.h
 exception.h
 angle.h
@@ -158,4 +159,3 @@ INSTALL(FILES "${CMAKE_BINARY_DIR}/2geom.pc" DESTINATION lib/pkgconfig)
 ADD_SUBDIRECTORY (toys)
 ADD_SUBDIRECTORY (tests)
 ADD_SUBDIRECTORY (py2geom)
-
