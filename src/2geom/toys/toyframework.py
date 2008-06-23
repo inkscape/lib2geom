@@ -37,6 +37,27 @@ class PointHandle(Handle):
     def move_to(self, hit, om, m):
         self.pos = m
 
+class PointSetHandle(Handle):
+    def __init__(self, name=""):
+        Handle.__init__(self)
+        self.pts = []
+        self.name = name
+    def append(self, x,y):
+        self.pts.append((x,y))
+    def draw(self, cr, annotes):
+        for i,p in enumerate(self.pts):
+            draw_circ(cr, p)
+            if annotes:
+                draw_text(cr, p, str(self.name)+str(i))
+    def hit(self, mouse):
+        for i,p in enumerate(self.pts):
+            if math.hypot(mouse[0] - p[0], mouse[1] - p[1]) < 5:
+                return i
+        return None
+    def move_to(self, hit, om, m):
+        if hit != None:
+            self.pts[hit[1]] = m
+
 class Toy:
     def __init__(self):
         self.handles = []

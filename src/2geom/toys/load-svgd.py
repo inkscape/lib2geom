@@ -39,6 +39,7 @@ class LoadSVGD(toyframework.Toy):
         self.handles.append(self.offset_handle)
     def draw(self, cr, pos, save):
         t = py2geom.Translate(*self.offset_handle.pos)
+        self.paths_b[0] * t
         #bst = self.bs * t
         #bt = Region(b * t, b.isFill())
         
@@ -52,7 +53,7 @@ class LoadSVGD(toyframework.Toy):
         path_b_name="star.svgd"
         if len(argv) > 1:
             path_b_name = argv[1]
-        paths_b = py2geom.read_svgd(path_b_name)
+        self.paths_b = py2geom.read_svgd(path_b_name)
         
 	#bounds = paths_b.boundsExact()
         #self.offset_handle.pos = bounds.midpoint() - bounds.corner(0)
