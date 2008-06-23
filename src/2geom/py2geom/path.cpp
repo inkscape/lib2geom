@@ -137,7 +137,7 @@ void wrap_path()
     ;
     def("paths_to_pw",Geom::paths_to_pw);
     class_<std::vector<Geom::Path> >("PathVector")
-        //.def(vector_indexing_suite<std::vector<Geom::Path> >())
+        .def(vector_indexing_suite<std::vector<Geom::Path> >())
         .def(self * Geom::Matrix())
     ;
     def("reverse_paths_and_order", Geom::reverse_paths_and_order);
