@@ -239,6 +239,18 @@ public:
     return ret;
   }
 
+  bool operator==(Path const &m) const {
+      const_iterator it2 = m.curves_.begin();
+    for(const_iterator it = curves_.begin(); it != curves_.end(); ++it) {
+        const Curve& a = (*it);
+        const Curve& b = (*it2);
+        if(!(a == b))
+            return false;
+        ++it2;
+    }
+    return true;
+  }
+
   Path operator*(Matrix const &m) const {
     Path ret;
     for(const_iterator it = begin(); it != end(); ++it) {

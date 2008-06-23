@@ -129,6 +129,7 @@ public:
   };
 
   virtual D2<SBasis> toSBasis() const = 0;
+  virtual bool operator==(Curve const &c) const { return this == &c;}
 };
 
 inline
