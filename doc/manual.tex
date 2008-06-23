@@ -127,6 +127,12 @@ various decompositions, constructions, and manipulations.  A
 x axis, y axis, and offset of the transformation.  A detailed
 explanation for matrices is given in Appendix B.
 
+\subsection{D2}
+The \code{D2} class takes two instances of a scalar data type and treats them like a point.  All operations which make sense on a point are defined for D2.
+
+A \verb|D2<double>| is a \code{Point}.  A \verb|D2<Interval>| is a standard axis aligned rectangle.
+\verb|D2<SBasis>| provides a 2d parametric function which maps $t$ to a point $x(t), y(t)$
+
 \section{Bounding Structures}
 
 2geom currently provides two classes for storing approximate bounding
@@ -134,12 +140,16 @@ regions: \code{Rect} and \code{ConvexHull}.  These are mostly intended
 for use in optimization, however provide manipulations suitable for
 other uses.
 
+\subsection{Interval}
+
+An interval is simply a pair of Coords which define a closed interval.
+
 \subsection{Rect}
 
 \includegraphics[height=50mm]{media/rect.png}
 
-\code{Rect}s are rectangles with all sides parallel to the axes. They
-are defined with two points, each an opposing corner.
+\code{Rect}s are rectangles with all sides parallel to the axes. 
+\code{Rect}s are in fact defined as a \verb|D2<Interval>|.
 
 \subsection{ConvexHull}
 
@@ -163,20 +173,42 @@ Currently there are two implementations:
 \item[merge:] find the convex hull of a set of convex hulls
 \end{description}
 
+\subsection{Piecewise}
+The \code{Piecewise} class manages a sequence of elements of a type as
+segments and the 'cuts' between them.  These cuts are time values which
+separate the pieces.  This function representation allows for
+more interesting functions, as it provides a viable output for operations
+such as inversion, which may require multiple SBasis to properly invert
+the original.
+
+As for technical details, while the actual SBasis segments begin on the
+first cut and end on the last, the function is defined throughout all
+inputs by extending the first and last segments.  The exact switching
+between segments is arbitrarily such that beginnings (t=0) have
+preference over endings (t=1).  This only matters if it is discontinuous
+at the location.
+
+$$
+f(t) \rightarrow \left\{ 
+\begin{array}{cc}
+s_1,& t <= c_2 \\
+s_2,& c_2 <= t <= c_3\\
+\ldots
+s_n,& c_n <= t
+\end{array}\right.
+$$
+
 \chapter{Paths}
 
-Our original attempt at a \code{Path} class was to store parallel
-lists of curve types and handles.  This turned out to be very clumsy,
-so MenTaLguY wrote a new path-framework, called Path2.  Currently the
-files are still called this, even though Path1 has been mostly
-removed.
+A \code{Path} is an ordered set of \code{Curve}s.  Each \code{Path} is $C0$ continuous.  To make multiple contours for a region, use \code{PathVector}. 
 
-A \code{Path} is an ordered set of \code{Curve}s.  A \code{Path} in
-Inkscape is drawn in a single fill and stroke.
+A \code{PathVector} in Inkscape is drawn in a single fill and stroke.  
 
 This allows us lots of flexibility with what sort of elements we can
 'understand', while only taking slightly more memory than a sequence
 of points in the poly line or poly bezier case. 
+
+The Curves themselves are immutable, which means that they can be shared between Paths.
 
 \section{Curves}
 2Geom has a diversity of curve types and conversions between them.
@@ -222,9 +254,9 @@ described later.
 2Geom provides a very powerful algebra for modifying paths.  Although
 paths are kept in an extended SVG native form where possible, many
 operations require approximation.  To do this we can convert a path
-into a sequence of s-power basis polynomials, henceforth referred to
-as s-basis, perform the required operations and convert back,
-approximating to a requested tolerance as required.
+into a sequence of symmetric power basis polynomials, henceforth
+referred to as s-basis, perform the required operations and convert
+back, approximating to a requested tolerance as required.
 
 The precise details of the s-basis form are beyond the scope of this
 manual, the interested reader should consult \cite{SanchezReyes1997,SanchezReyes2000,SanchezReyes2001,SanchezReyes2003,SanchezReyes2004}.
@@ -238,7 +270,7 @@ Geometrically important properties:
 \item $C^0$ continuity guarantee
 \end{itemize}
 
-The following operations are directly implementable and are very efficient:
+The following operations are implemented and are very efficient:
 \begin{itemize}
 \item fast conversion from all svg elements
 \item basic arithmetic --- $+$, $-$, $\times$, $\div$
@@ -270,49 +302,15 @@ element of constructing more complicated forms.  \code{SBasis} are made
 up of \code{BezOrd}s, which store from/to values for each polynomial
 coefficient.
 
-\subsection{MultidimSBasis}
-The \code{MultidimSBasis$<>$} class provides a convenience wrapper
-around multiple sbasis at once, to produce multiple values for a t-value.
-$f(t) \rightarrow (v_0, v_1, .. v_d)$.  A special case is \code{MultidimSBasis$<2>$},
-a 2 diminsional curve.
-
 \subsection{SBasis2D}
-SBasis2D provides a multivariate form --- functions of the form
+SBasis2D provides multivariate form --- functions of the form
 $f(u,v) \rightarrow z$.  These can be used for arbitrary distortion
 functions (take a path $p(t) \rightarrow (u,v)$ and a pair of surfaces
 $f(u,v),g(u,v)$ and compose: $q(t) = (f(p(t)), g(p(t)))$.
 
 Subdivision for surfaces may be done with either quadtrees or kd-trees.
 
-\subsection{Piecewise SBasis}
-The piecewise sbasis class, \verb#pw_sb#, manages a sequence of SBasis
-segments and the 'cuts' between them.  These cuts are time values which
-separate the different SBasii.  This function representation allows for
-more interesting functions, as it provides a viable output for operations
-such as inversion, which may require multiple SBasis to properly invert
-the original.
-
-As for technical details, while the actual SBasis segments begin on the
-first cut and end on the last, the function is defined throughout all
-inputs by extending the first and last segments.  The exact switching
-between segments is arbitrarily such that beginnings (t=0) have
-preference over endings (t=1).  This only matters if it is discontinuous
-at the location.
-
-$$
-f(t) \rightarrow \left\{ 
-\begin{array}{cc}
-s_1,& t <= c_2 \\
-s_2,& c_2 <= t <= c_3\\
-\ldots
-s_n,& c_n <= t
-\end{array}\right.
-$$
-
-\subsection{Multidim Piecewise SBasis}
-This is like Multidim SBasis, only for the piecewise type.  Multidim
-SBasis might be subsumed by this class, or they will both be replaced
-by a general Multidim template.
+In general it is recommended to use the \verb|Piecewise<SBasis>| type rather than the SBasis type directly, as it manages the domain arithmetic automatically.  It also automatically subdivides when necessary to improve accuracy/convergence.
 
 \chapter{2D databases}
 
@@ -333,6 +331,104 @@ and provide a set of useful operations Operations:
 \item[Sweep:] traverse the tree in say y order, maintaining a y-range of relevant objects. (to implement sweepline algorithms)
 \item[Walk:] traverse the tree in an arbitrary order.
 \end{description}
+
+\chapter{Topological operations: sweepline, boolops, sanitize}
+\section{Layer 1: Path Intersection}
+
+\begin{verbatim}
+src/path-intersection.cpp
+src/path-intersection.h
+src/crossing.h
+src/crossing.h
+src/toys/winding-test.cpp
+\end{verbatim}
+
+\subsection{Winding Number:}
+ the number of times the path goes around a particular point. Since paths are closed, the result is always integral. A counter-clockwise rotation corresponds to a positive wind, whereas a clockwise rotation is represented as a negative wind. Here, and throughout, the terms clockwise and counter-clockwise refer to the standard mathematical coordinate system rather than the computer, inverted y-axis, coordinate system.
+
+\subsection{Crossing:}
+ a location where two paths cross. This is a subset of the intersections of the paths, with the requirement that the winding must change. Crossings are stored as two time values and a boolean indicating the relationship between the curves at the crossing. A particular time value corresponds to the point on curve i at f, where i is the integral part, and f is the fractional part. This boolean is useful for making decisions during a traversal of crossings. It is defined as the sign of the cross product of the derivatives. When the paths are regions with the same winding, this indicates that along B, A crosses 'outside'.
+
+\subsection{Winding functions:}
+
+\verb|int winding(Path, Point);|
+\verb|bool path_direction(Path);|  —  assumes the path is simple (like a region)
+\verb|bool contains(Path, Point, bool even-odd = true);|  —  convenience wrapper around winding
+
+There are a few convenience typedefs for the popular crossing collections:
+\verb|typedef std::vector<Crossing> Crossings;|
+\verb|typedef std::vector<Crossings> CrossingSet;|
+
+The intersection system is designed to be modular, so that different algorithms may be used. The current algorithms are generic, and apply to anything that implements Curve. A custom curve type might provide an algorithm with special cases, and default to the generic algorithms. The following crossing functions use the DefaultCrosser, which is currently a simple binary search.
+
+\verb|Crossings crossings(Path, Path);|  —  finds the crossings between two paths
+\verb|CrossingSet crossings(std::vector<Path>, std::vector<Path>);|  —  finds the crossings between two sets of paths.
+Layer 2: Regions
+
+\begin{verbatim}
+src/region.cpp
+src/region.h
+\end{verbatim}
+
+\subsection{Region:}
+A limited point-set, defined by a boundary. This boundary is stored as a simple (non-self-crossing) path. Regions with positive winding (counter-clockwise) include points which are inside the boundary (fills), whereas Regions with negative winding include all points outside the boundary (holes). It also caches information such as winding direction and bounding box.
+
+Most of the public api for region simply wraps and caches queries to a Path. It also provides various convenience functions such as \verb|as_fill| and \verb|as_hole|. Region should usually only be used by clients of this library when dealing with paths with the same invariants as regions.
+\section{Layer 3: Shapes}
+
+\begin{verbatim}
+src/shape.cpp
+src/shape.h
+src/toys/boolops.cpp
+\end{verbatim}
+
+\subsection{Shape:}
+A point-set upon which boolean operations may be performed. Shapes are defined by a list of regions, where the resulting point-set is the cumulative intersection. Though it may be figured out from the regions, shapes also store whether the most outer paths are fill or hole. In other words, it stores the value of all the points completely outside the boundary of all its constituent regions. Shapes have the following invariants:
+
+\begin{itemize}
+\item{ The regions must not cross, or intersect for more than a point.}
+\item{ Filled regions only contain 'hole' regions, and vice-versa.}
+\item{ The 'top level' regions are all the same type (fill or hole).}
+\end{itemize}
+
+The shape files really constitutes the main body of my work, while the other stuff is peripheral support. It contains the algorithms which perform boolean operations and sanitization on shapes.
+
+The most important function looks like this:
+
+\verb|Shape shape_boolean(bool, Shape, Shape, CrossingSet);|
+
+If the initial boolean is false, the function unions the shapes. If it is true, it intersects them. The CrossingSet contains the crossings between the regions of the two shapes (an overload of this function allows omission of this parameter). The functions operation is actually surprisingly simple. It traverses the crossings, keeping track of which it has hit, collecting portions of path as it goes, until it reaches a crossing it has already visited, at which point it stores the path and starts again at an unvisited crossing.
+
+The real magic happens in the traversal. It took me quite a long time to really figure it out, but eventually I realized that quite simple logic would allow for traversing intersecting sets of regions correctly. If the boolean input doesn't equal the direction of the crossing, path A is followed, if they are equal, the path B is followed. I actually figured this particular bit fairly early on, but it was with a pair of regions. At the time I had no idea it could also work for doing boolean operations on sets of regions.
+
+While the previous function contains the main code, the actual public function intended for public use is quite different.
+\verb|Shape boolop(Shape, Shape, unsigned)|
+
+It takes the two shapes, and a flag integer specifying which of 16 boolean operations to perform. These flags use the first 4 bits to represent a boolean truth table. This is the function which is used in the boolops toy. Half of the operations, the complements, deal with cases where the output shape is filled in areas where neither of the input shapes are. The binary complement operation(~) applied to the flags, will yield flags specifying the complementary boolean operation. 6 of the combinations of flags don't even call \verb|shape_boolean| - the various identity, inversion, and none/all operations.
+
+\begin{verbatim}
+src/sweep.cpp
+src/sweep.h
+src/toys/sweep.cpp
+src/tests/intersection-test.cpp
+\end{verbatim}
+
+These are some support algorithms which provide a sweep on bounds, for efficient intersections between sets of bounded objects.
+\section{Current Issues}
+
+The main current deficiency is the sanitizer. I've only recently managed to get a path uncrosser somewhat working. I have a variety of sanitization methods implemented to various degrees, yet have only recently figured out the real reasons I haven't yet gotten it fully functioning. I hope to fix it soon, so that boolops may be used as a live-path-effect within inkscape (the live-path-effects project is a Summer-of-Code project). I think this is a good way to introduce the new boolean operations, and I definitely want my work to be used.
+
+There's also some code which is currently unused:
+
+I have an implementation of intersection routines which splits paths into monotonic portions, and uses the properties of these sections to perform very fast intersection. It works somewhat, but there are bugs I haven't had time to work out, which make the current implementation unstable. This intersection algorithm is especially valuable for self intersections, as monotonic splits are already required.
+
+\section{Possible Future Design Changes}
+
+It may be possible for the boolean operations to return a set of portions. When the actual path data is required, the portion operations would be applied. The actual boolean operations would take no time to execute, as all the computational load would be in the crossing-finder and path synthesizer. This would also work for the sanitization step, saving many spurious portions. The portions found in the boolean operations could be composed onto those produced by the sanitization routine, so that the unnecessary intermediary paths between sanitization and boolean operations are never generated.
+
+The current representation of crossings between sets of paths is fairly awkward. The main core of the data structure, storing times and the direction boolean is fine, the main issue is the storage methods of collections of these crossings. I've come to realize it's actually one of the main reasons that sanitization is as hard as it has been. I've figured out that a better representation would be for each crossing to store pointers to the next and previous crossings along both its participating paths. This would form a connectivity graph, where each vertex has a degree of 4. A dedicated structure such as this would likely be worth it, as algorithms that use it would be more efficient, simpler, and less buggy.
+
+Without too much work, it should also be possible to do boolean operations with non-filled paths. The main change would be to have \verb|shape_boolean| handle coincident crossings, and to derive the resultant region fill from the fill of the contributing regions. This would allow all combinations of boolean operations between filled regions and paths. 
 
 \chapter{Acknowledgements and history}
 
