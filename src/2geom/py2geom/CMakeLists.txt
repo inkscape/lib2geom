@@ -9,6 +9,7 @@ pw.cpp
 d2.cpp
 parser.cpp
 path.cpp
+shape.cpp
 py2geom.cpp
 )
 

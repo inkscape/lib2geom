@@ -1,8 +1,7 @@
 /*
  * Python bindings for lib2geom
  *
- * Copyright 2006, 2007 Aaron Spike <aaron@ekips.org>
- * Copyright 2007 Alex Mac <ajm@cs.nott.ac.uk>
+ * Copyright 2008 Aaron Spike <aaron@ekips.org>
  *
  * This library is free software; you can redistribute it and/or
  * modify it either under the terms of the GNU Lesser General Public
@@ -28,41 +27,53 @@
  * the specific language governing rights and limitations.
  *
  */
+
 #include <boost/python.hpp>
-#include <boost/python/implicit.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 
-#include "circle-circle.cpp"
-#include "geom.h"
+#include "../path.h"
+#include "../pathvector.h"
+#include "../transforms.h"
+#include "helpers.h"
 
-#include "py2geom.h"
+#include "../region.h"
+#include "../shape.h"
 
 using namespace boost::python;
 
-BOOST_PYTHON_MODULE(_py2geom)
+void wrap_shape()
 {
-    
-    /*enum_<IntersectorKind>("IntersectorKind")
-        .value("intersects", intersects)
-        .value("parallel", parallel)
-        .value("coincident", coincident)
-        .value("no_intersection", no_intersection)
+    class_<Geom::Region>("Region")
+        .def("size", &Geom::Region::size)
+        .def("isFill", &Geom::Region::isFill)
+        .def("asFill", &Geom::Region::asFill)
+        .def("asHole", &Geom::Region::asHole)
+        .def("boundsFast", &Geom::Region::boundsFast)
+        //.def("contains", &Geom::Region::contains)
+        .def("includes", &Geom::Region::includes)
+        .def("inverse", &Geom::Region::inverse)
+        .def(self * Geom::Matrix())
+        .def("invariants", &Geom::Region::invariants)
     ;
-    def("segment_intersect", segment_intersect);*/
-    def("circle_circle_intersection", Geom::circle_circle_intersection);
-    
-    wrap_point();
-    wrap_interval();
-    wrap_transforms();
-    wrap_rect();
-    wrap_sbasis();
-    wrap_linear();
-    wrap_pw();
-    wrap_d2();
-    wrap_parser();
-    wrap_path();
-    wrap_shape();
-
+    class_<Geom::Regions>("Regions")
+        //.def(vector_indexing_suite<Geom::Regions>())
+    ;
+    def("regions_from_paths", Geom::regions_from_paths);
+    def("paths_from_regions", Geom::paths_from_regions);
+    def("sanitize_path", Geom::sanitize_path);
+    class_<Geom::Shape>("Shape")
+        .def("getContent", &Geom::Shape::getContent)
+        .def("isFill", &Geom::Shape::isFill)
+        .def("size", &Geom::Shape::size)
+        .def("inverse", &Geom::Shape::inverse)
+        .def(self * Geom::Matrix())
+        .def("contains", &Geom::Shape::contains)
+        .def("inside_invariants", &Geom::Shape::inside_invariants)
+        .def("region_invariants", &Geom::Shape::region_invariants)
+        .def("cross_invariants", &Geom::Shape::cross_invariants)
+        .def("invariants", &Geom::Shape::invariants)
+    ;
+    def("sanitize", Geom::sanitize);
 }
 
 /*

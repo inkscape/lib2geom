@@ -135,13 +135,14 @@ void wrap_path()
         //.def("append", &Geom::Path::append)
         //.def("appendNew", &Geom::Path::appendNew)
     ;
+    def("paths_to_pw",Geom::paths_to_pw);
     class_<std::vector<Geom::Path> >("PathVector")
         //.def(vector_indexing_suite<std::vector<Geom::Path> >())
         .def(self * Geom::Matrix())
     ;
     def("reverse_paths_and_order", Geom::reverse_paths_and_order);
-    //def("bounds_fast", Geom::bounds_fast);
-    //def("bounds_exact", Geom::bounds_exact);
+    def("bounds_fast", (Geom::Rect (*)(Geom::PathVector const &))&Geom::bounds_fast);
+    def("bounds_exact", (Geom::Rect (*)(Geom::PathVector const &))&Geom::bounds_exact);
 }
 
 /*

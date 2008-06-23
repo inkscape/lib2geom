@@ -33,11 +33,23 @@
 #include "../piecewise.h"
 #include "../d2.h"
 #include "../sbasis-math.h"
+#include "../sbasis-geometric.h"
 
 #include "py2geom.h"
 #include "helpers.h"
 
 using namespace boost::python;
+
+// helpers for point
+tuple pwd2sb_centroid(Geom::Piecewise<Geom::D2<Geom::SBasis> > const &pw)
+{
+    unsigned u;
+    Geom::Point p;
+    double a;
+    u = Geom::centroid(pw, p, a);
+    return make_tuple(p, a);
+}
+     
 
 Geom::Piecewise<Geom::SBasis> (*portion_pwsb)(const Geom::Piecewise<Geom::SBasis> &, double, double) = &Geom::portion;
 std::vector<double> (*roots_pwsb)(const Geom::Piecewise<Geom::SBasis> &) = &Geom::roots;
@@ -170,6 +182,7 @@ void wrap_pw() {
         //.def(self *= self)
 
     ;
+    def("centroid", pwd2sb_centroid);
 
 };
 

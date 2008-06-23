@@ -39,6 +39,7 @@ void wrap_pw();
 void wrap_d2();
 void wrap_path();
 void wrap_parser();
+void wrap_shape();
 
 #endif
 /*
