@@ -38,6 +38,7 @@
 using namespace boost::python;
 
 void (*parse_svg_path_str_sink) (char const *, Geom::SVGPathSink &) = &Geom::parse_svg_path;
+std::vector<Geom::Path> (*parse_svg_path_str) (char const *) = &Geom::parse_svg_path;
 
 class SVGPathSinkWrap: public Geom::SVGPathSink, public wrapper<Geom::SVGPathSink> {
     void moveTo(Geom::Point p) {this->get_override("moveTo")(p);}
@@ -53,6 +54,8 @@ class SVGPathSinkWrap: public Geom::SVGPathSink, public wrapper<Geom::SVGPathSin
 
 void wrap_parser() {
     def("parse_svg_path", parse_svg_path_str_sink);
+    def("parse_svg_path", parse_svg_path_str);
+    def("read_svgd", Geom::read_svgd);
 
     class_<SVGPathSinkWrap, boost::noncopyable>("SVGPathSink")
         .def("moveTo", pure_virtual(&Geom::SVGPathSink::moveTo))
