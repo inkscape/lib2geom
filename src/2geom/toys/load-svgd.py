@@ -24,12 +24,12 @@ def cairo_shape(cr, s):
 
 
 def cleanup(ps):
-    pw = paths_to_pw(ps)
+    pw = py2geom.paths_to_pw(ps)
     centre, area = py2geom.centroid(pw)
     if(area > 1):
-        return sanitize(ps) * py2geom.Translate(-centre)
+        return py2geom.sanitize(ps) * py2geom.Translate(-centre)
     else:
-        return sanitize(ps)
+        return py2geom.sanitize(ps)
 
 class LoadSVGD(toyframework.Toy):
     def __init__(self):
@@ -39,13 +39,13 @@ class LoadSVGD(toyframework.Toy):
         self.handles.append(self.offset_handle)
     def draw(self, cr, pos, save):
         t = py2geom.Translate(*self.offset_handle.pos)
-        self.paths_b[0] * t
-        #bst = self.bs * t
+        #self.paths_b[0] * t
+        bst = self.bs * (py2geom.Matrix() * t)
         #bt = Region(b * t, b.isFill())
         
         cr.set_line_width(1)
         
-        #cairo_shape(cr, bst)
+        cairo_shape(cr, bst)
         
         toyframework.Toy.draw(self, cr, pos, save)
         
@@ -55,10 +55,10 @@ class LoadSVGD(toyframework.Toy):
             path_b_name = argv[1]
         self.paths_b = py2geom.read_svgd(path_b_name)
         
-	#bounds = paths_b.boundsExact()
-        #self.offset_handle.pos = bounds.midpoint() - bounds.corner(0)
+	bounds = py2geom.bounds_exact(self.paths_b)
+        self.offset_handle.pos = bounds.midpoint() - bounds.corner(0)
 
-        #bs = cleanup(paths_b)
+        self.bs = cleanup(self.paths_b)
 t = LoadSVGD()
 import sys
 

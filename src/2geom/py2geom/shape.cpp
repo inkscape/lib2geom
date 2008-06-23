@@ -60,7 +60,7 @@ void wrap_shape()
     ;
     def("regions_from_paths", Geom::regions_from_paths);
     def("paths_from_regions", Geom::paths_from_regions);
-    def("sanitize_path", Geom::sanitize_path);
+    //def("sanitize_path", Geom::sanitize_path);
     class_<Geom::Shape>("Shape")
         .def("getContent", &Geom::Shape::getContent)
         .def("isFill", &Geom::Shape::isFill)

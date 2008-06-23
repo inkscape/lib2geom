@@ -38,6 +38,7 @@ using namespace boost::python;
 
 void wrap_transforms() {
     class_<Geom::Matrix>("Matrix", init<double, double, double, double, double, double>())
+        .def(init<>())
         .def(self_ns::str(self))
         .add_property("xAxis",&Geom::Matrix::xAxis,&Geom::Matrix::setXAxis)
         .add_property("yAxis",&Geom::Matrix::yAxis,&Geom::Matrix::setYAxis)
@@ -52,22 +53,40 @@ void wrap_transforms() {
         .def("descrim", &Geom::Matrix::descrim)
         .def("expansionX", &Geom::Matrix::expansionX)
         .def("expansionY", &Geom::Matrix::expansionY)
+        .def(self * self)
+        .def(self * other<Geom::Translate>())
+        .def(self * other<Geom::Scale>())
+        .def(self * other<Geom::Rotate>())
     ;
 
     class_<Geom::Scale>("Scale", init<double, double>())
         .def(self == self)
         .def(self != self)
         .def("inverse", &Geom::Scale::inverse)
+        .def(Geom::Point() * self)
+        .def(self * self)
+        .def(self * Geom::Matrix())
     ;
 
-    class_<Geom::Translate>("Translate", init<double, double>());
+    class_<Geom::Translate>("Translate", init<double, double>())
+        .def(self == self)
+        .def(self != self)
+        .def("inverse", &Geom::Translate::inverse)
+        .def(Geom::Point() * self)
+        .def(self * self)
+        .def(self * other<Geom::Rotate>())
+        .def(self * other<Geom::Scale>())
+    ;
 
     class_<Geom::Rotate>("Rotate", init<double>())
         .def(self == self)
         .def(self != self)
-//TODO: compile reports "not defined"
-//        .def(self *= self)
         .def("inverse", &Geom::Rotate::inverse)
+        .def("from_degrees", &Geom::Rotate::from_degrees)
+        .staticmethod("from_degrees")
+        .def(Geom::Point() * self)
+        .def(self * self)
+        .def(Geom::Matrix() * self)
     ;
 };
 
