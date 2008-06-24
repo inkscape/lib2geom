@@ -454,6 +454,7 @@ class least_squeares_fitter<ModelT, double, true>
     typedef typename base_type::solution_type           solution_type;
     
     using base_type::m_vector_view;
+    using base_type::result;
     
   public:
     least_squeares_fitter<ModelT, double, true>( model_type const& _model, 
@@ -487,6 +488,7 @@ class least_squeares_fitter<ModelT, Point, true>
     typedef typename base_type::solution_type           solution_type;
 
     using base_type::m_vector_view;    
+    using base_type::result;
     
   public:
     least_squeares_fitter<ModelT, Point, true>( model_type const& _model, 

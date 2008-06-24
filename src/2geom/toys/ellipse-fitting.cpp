@@ -55,17 +55,22 @@ class EllipseFitting : public Toy
             first_time = false;
             Point toggle_sp( 300, height - 50);
             toggles[0].bounds = Rect( toggle_sp, toggle_sp + Point(120,25) );
+            sliders[0].geometry(Point(50, height - 50), 100);
         }
         
-        elsf.clear();
-        for (size_t i = 0; i < 5; ++i)
+        size_t n = (size_t)(sliders[0].value()) + 5;
+        if (n < psh.pts.size())
         {
-            elsf.append(psh.pts[i]);
+            psh.pts.resize(n);
         }
-        elsf.update();
+        else if (n > psh.pts.size())
+        {
+            psh.push_back(400*uniform()+50, 300*uniform()+50);
+        }
+        
         try
         {
-            fme.instance(e, elsf.result(z));
+            e.set(psh.pts);
         }
         catch(LogicalError exc)
         {
@@ -136,9 +141,6 @@ class EllipseFitting : public Toy
     
   public:
     EllipseFitting()
-        : fme(),
-          elsf(fme, 5),
-          z(5, 0.0)
     {
         first_time = true;
         
@@ -149,36 +151,22 @@ class EllipseFitting : public Toy
         psh.pts[3] = Point(400, 320);
         psh.pts[4] = Point(50, 250);
         
+        
         toggles.push_back(Toggle(" arc / ellipse ", false));
+        sliders.push_back(Slider(0, 5, 1, 0, "more handles"));
         
         handles.push_back(&psh);
         handles.push_back(&(toggles[0]));
-
-        
-        for (size_t i = 0; i < 5; ++i)
-        {
-            elsf.append(psh.pts[i]);
-        }
-        elsf.update();
-        try
-        {
-            fme.instance(e, elsf.result(z));
-        }
-        catch(LogicalError exc)
-        {
-            std::cerr << exc.what() << std::endl;
-        }
+        handles.push_back(&(sliders[0]));
     }
     
   private:
-    NL::LFMEllipse fme;
-    NL::least_squeares_fitter<NL::LFMEllipse> elsf;
-    NL::Vector z;
     Ellipse e;
     EllipticalArc ea;
     bool first_time;
     PointSetHandle psh;
     std::vector<Toggle> toggles;
+    std::vector<Slider> sliders;
 };
 
 

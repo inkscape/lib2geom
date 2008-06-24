@@ -54,7 +54,34 @@ class Ellipse
     {
     }
     
-    Ellipse(double A, double B, double C, double D, double E, double F);
+    // build an ellipse by its implicit equation:
+    // Ax^2 + Bxy + Cy^2 + Dx + Ey + F = 0
+    Ellipse(double A, double B, double C, double D, double E, double F)
+    {
+        set(A, B, C, D, E, F);
+    }
+    
+    Ellipse(std::vector<Point> const& points)
+    {
+        set(points);
+    }
+    
+    void set(double cx, double cy, double rx, double ry, double a)
+    {
+        m_centre[X] = cx;
+        m_centre[Y] = cy;
+        m_ray[X] = rx;
+        m_ray[Y] = ry;
+        m_angle = a;
+    }
+    
+    // build an ellipse by its implicit equation:
+    // Ax^2 + Bxy + Cy^2 + Dx + Ey + F = 0
+    void set(double A, double B, double C, double D, double E, double F);
+    
+    // biuld up the best fitting ellipse wrt the passed points
+    // prerequisite: at least 5 points must be passed
+    void set(std::vector<Point> const& points);
     
     EllipticalArc 
     arc(Point const& initial, Point const& inner, Point const& final);

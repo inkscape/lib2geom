@@ -32,13 +32,14 @@
 
 
 #include "ellipse.h"
-
+#include "numeric/fitting-tool.h"
+#include "numeric/fitting-model.h"
 
 
 namespace Geom
 {
 
-Ellipse::Ellipse(double A, double B, double C, double D, double E, double F)
+void Ellipse::set(double A, double B, double C, double D, double E, double F)
 {
     double den = 4*A*C - B*B;
     if ( den == 0 )
@@ -115,6 +116,27 @@ Ellipse::Ellipse(double A, double B, double C, double D, double E, double F)
     m_ray[X] = rx;
     m_ray[Y] = ry;
     m_angle = rot;
+}
+
+
+void Ellipse::set(std::vector<Point> const& points)
+{
+    size_t sz = points.size();
+    if (sz < 5)
+    {
+        THROW_RANGEERROR("fitting error: too few points passed");
+    }
+    NL::LFMEllipse model;
+    NL::least_squeares_fitter<NL::LFMEllipse> fitter(model, sz);
+    
+    for (size_t i = 0; i < sz; ++i)
+    {
+        fitter.append(points[i]);
+    }
+    fitter.update();
+
+    NL::Vector z(sz, 0.0);
+    model.instance(*this, fitter.result(z));
 }
 
 

@@ -234,8 +234,7 @@ class LFMEllipse
   public:
     void instance(Ellipse & e, ConstVectorView const& coeff) const
     {
-        Ellipse ee(1, coeff[0], coeff[1], coeff[2], coeff[3], coeff[4]);
-        e = ee;
+        e.set(1, coeff[0], coeff[1], coeff[2], coeff[3], coeff[4]);
     }    
 };
 
