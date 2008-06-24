@@ -98,7 +98,7 @@ class elliptiarc_converter
           tolerance(_tolerance), tol_at_extr(tolerance/2), 
           tol_at_center(0.1), angle_tol(0.1),
           initial_point(curve.at0()), final_point(curve.at1()),
-          N(_N), partitions(N-1), p(N)
+          N(_N), last(N-1), partitions(N-1), p(N)
     {
     }
     
