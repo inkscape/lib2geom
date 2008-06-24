@@ -46,6 +46,16 @@
 namespace Geom
 {
 
+// Conditional expression for types. If true, first, if false, second.
+template<bool _Cond, typename _Iftrue, typename _Iffalse>
+  struct __conditional_type
+  { typedef _Iftrue __type; };
+
+template<typename _Iftrue, typename _Iffalse>
+  struct __conditional_type<false, _Iftrue, _Iffalse>
+  { typedef _Iffalse __type; };
+
+
 template <typename IteratorImpl>
 class BaseIterator
 : public std::iterator<std::forward_iterator_tag, Curve const>
@@ -55,6 +65,18 @@ public:
 
   // default construct
   // default copy
+
+  // Allow Sequence::iterator to Sequence::const_iterator conversion
+  // unfortunately I do not know how to imitate the way __normal_iterator does it, because I don't see a way to get the typename of the container IteratorImpl is pointing at...
+  typedef std::vector<Curve *> Sequence;
+  BaseIterator (  typename __conditional_type<
+                    (std::__are_same<IteratorImpl, Sequence::const_iterator >::__value),  // check if this instantiation is of const_iterator type
+                    const BaseIterator< Sequence::iterator >,     // if true:  accept iterator in const_iterator instantiation
+                    const BaseIterator<IteratorImpl> > ::__type   // if false: default to standard copy constructor
+                  & __other)
+    : impl_(__other.impl_) { }
+  friend class BaseIterator< Sequence::const_iterator >;
+
 
   bool operator==(BaseIterator const &other) {
     return other.impl_ == impl_;
