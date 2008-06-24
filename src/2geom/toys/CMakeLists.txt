@@ -1,6 +1,5 @@
 SET(2GEOM_TOYS_SRC 
 2dsb2d
-boolops
 bounds-test
 cylinder3d
 draw-toy
@@ -42,6 +41,7 @@ path-cairo.h
 SET(2GEOM_TOYS-2_SRC
 arc-bez
 arc-length-param
+boolops
 bound-path
 box3d
 center-warp

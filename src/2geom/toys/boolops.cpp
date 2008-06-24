@@ -7,7 +7,7 @@
 #include "path-intersection.h"
 
 #include "path-cairo.h"
-#include "toy-framework.h"
+#include "toy-framework-2.h"
 #include "transforms.h"
 #include "sbasis-geometric.h"
 
@@ -75,10 +75,11 @@ Shape cleanup(std::vector<Path> const &ps) {
 }
 
 class BoolOps: public Toy {
-    std::vector<Toggle> togs;
+    std::vector<Toggle> toggles;
     Shape as, bs;
+    PointHandle p;
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
-        Geom::Translate t(handles[0]);
+        Geom::Translate t(p.pos);
         Shape bst = bs * t;
         
         cairo_set_line_width(cr, 1);
@@ -94,7 +95,7 @@ class BoolOps: public Toy {
                
         unsigned ttl = 0, v = 1;
         for(unsigned i = 0; i < 4; i++, v*=2)
-            if(togs[i].on) ttl += v; 
+            if(toggles[i].on) ttl += v; 
         
         
         Shape s = boolop(as, bst, ttl);
@@ -130,12 +131,12 @@ class BoolOps: public Toy {
         draw_text(cr, Point(width - 425, height - 30), "Q/W/A/S = The keys on the keyboard");
         
         Point p(x, y), d(25,25), xo(25,0), yo(0,25);
-        togs[2].bounds = Rect(p,     p + d);
-        togs[0].bounds = Rect(p + xo, p + xo + d);
-        togs[1].bounds = Rect(p + yo, p + yo + d);
-        togs[3].bounds = Rect(p + d, p + d + d);
+        toggles[2].bounds = Rect(p,     p + d);
+        toggles[0].bounds = Rect(p + xo, p + xo + d);
+        toggles[1].bounds = Rect(p + yo, p + yo + d);
+        toggles[3].bounds = Rect(p + d, p + d + d);
 
-        draw_toggles(cr, togs);
+        draw_toggles(cr, toggles);
 
         //*notify << "Operation: " << (mode ? (mode == 1 ? "union" : (mode == 2 ? "subtract" : (mode == 3 ? "intersect" : "exclude"))) : "none");
         //*notify << "\nKeys:\n u = Union   s = Subtract   i = intersect   e = exclude   0 = none   a = invert A   b = invert B \n";
@@ -146,14 +147,14 @@ class BoolOps: public Toy {
         Toy::draw(cr, notify, width, height, save);
     }
     void key_hit(GdkEventKey *e) {
-        if(e->keyval == 'w') togs[0].toggle(); else
-        if(e->keyval == 'a') togs[1].toggle(); else
-        if(e->keyval == 'q') togs[2].toggle(); else
-        if(e->keyval == 's') togs[3].toggle();
+        if(e->keyval == 'w') toggles[0].toggle(); else
+        if(e->keyval == 'a') toggles[1].toggle(); else
+        if(e->keyval == 'q') toggles[2].toggle(); else
+        if(e->keyval == 's') toggles[3].toggle();
         redraw();
     }
     void mouse_pressed(GdkEventButton* e) {
-        toggle_events(togs, e);
+        toggle_events(toggles, e);
         Toy::mouse_pressed(e);
     }
     public:
@@ -169,12 +170,13 @@ class BoolOps: public Toy {
         std::vector<Path> paths_a = read_svgd(path_a_name);
         std::vector<Path> paths_b = read_svgd(path_b_name);
              
-        handles.push_back(Point(300,300));
+        p = PointHandle(Point(300,300));
+        handles.push_back(&p);
         
-        togs.push_back(Toggle("W", true));
-        togs.push_back(Toggle("A", true));
-        togs.push_back(Toggle("Q", true));
-        togs.push_back(Toggle("S", false));
+        toggles.push_back(Toggle("W", true));
+        toggles.push_back(Toggle("A", true));
+        toggles.push_back(Toggle("Q", true));
+        toggles.push_back(Toggle("S", false));
         
         as = cleanup(paths_a) * Geom::Translate(Point(300, 300));
         bs = cleanup(paths_b);

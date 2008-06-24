@@ -1,6 +1,6 @@
 
-#ifndef _2GEOM_TOY_FRAMEWORK_H_
-#define _2GEOM_TOY_FRAMEWORK_H_
+#ifndef _2GEOM_TOY_FRAMEWORK2_H_
+#define _2GEOM_TOY_FRAMEWORK2_H_
 
 
 
@@ -202,4 +202,4 @@ void toggle_events(std::vector<Toggle> &ts, GdkEventButton* e);
 void draw_toggles(cairo_t *cr, std::vector<Toggle> &ts);
 Geom::Point read_point(FILE* f);
 
-#endif // _2GEOM_TOY_FRAMEWORK_H_
+#endif // _2GEOM_TOY_FRAMEWORK2_H_
