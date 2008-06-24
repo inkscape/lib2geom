@@ -240,6 +240,8 @@ public:
   }
 
   bool operator==(Path const &m) const {
+      if (size() != m.size() || closed() != m.closed())
+          return false;
       const_iterator it2 = m.curves_.begin();
     for(const_iterator it = curves_.begin(); it != curves_.end(); ++it) {
         const Curve& a = (*it);
