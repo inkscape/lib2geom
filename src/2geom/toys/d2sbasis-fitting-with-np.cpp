@@ -91,7 +91,7 @@ class D2SBasisFitting : public Toy
   public:
     D2SBasisFitting()
         : sb_curve(),
-          total_handles(5),
+          total_handles(8),
           order(total_handles / 2 - 1),
           fmd2sb(order),
           lsf_2dsb(fmd2sb, total_handles),
