@@ -255,6 +255,7 @@ public:
 
   Path operator*(Matrix const &m) const {
     Path ret;
+    ret.curves_.reserve(curves_.size());
     for(const_iterator it = begin(); it != end(); ++it) {
       Curve *temp = it->transformed(m);
       //Possible point of discontinuity?
