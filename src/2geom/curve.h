@@ -101,6 +101,14 @@ public:
 	  return all_nearest_points(p, toSBasis(), from, to);
   }
 
+  /*
+  Path operator*=(Matrix)
+  This is not possible, because:
+  A Curve can be many things, for example a HLineSegment.
+  Such a segment cannot be transformed and stay a HLineSegment in general (take for example rotations).
+  This means that these curves become a different type of curve, hence one should use "transformed(Matrix).
+  */
+
   virtual Curve *transformed(Matrix const &m) const = 0;
 
   virtual Point pointAt(Coord t) const { return pointAndDerivatives(t, 0).front(); }

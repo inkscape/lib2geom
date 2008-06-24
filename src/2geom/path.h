@@ -253,6 +253,15 @@ public:
     return true;
   }
 
+  /*
+  Path operator*=(Matrix)
+  This is not possible without at least partly regenerating the curves of the path, because:
+  A path can consist of many types of curves, e.g. a HLineSegment.
+  Such a segment cannot be transformed and stay a HLineSegment in general (take for example rotations).
+  This means that these curves of the path have to be replaced with LineSegments: new Curves.
+  So an implementation of this method should check the curve's type to see whether operator*= is doable for that curve type, ...
+  */
+
   Path operator*(Matrix const &m) const {
     Path ret;
     ret.curves_.reserve(curves_.size());
