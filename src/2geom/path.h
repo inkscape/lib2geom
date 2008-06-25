@@ -292,12 +292,11 @@ public:
   Path operator*(Matrix const &m) const {
     Path ret;
     ret.curves_.reserve(curves_.size());
-    const double eps = 0.1;
     for(const_iterator it = begin(); it != end(); ++it) {
       Curve *curve = it->transformed(m);
       // Possible point of discontinuity?
-      if ( ret.curves_.front() != ret.final_ 
-              && !are_near(curve->initialPoint(), (*ret.final_)[0], eps) ) 
+      if ( ret.curves_.front() != ret.final_ &&
+           curve->initialPoint() != (*ret.final_)[0] )
       {
         THROW_CONTINUITYERROR();
       }
@@ -320,9 +319,7 @@ public:
       for (size_t i = 1; i < sz; ++i)
       {
           result.curves_[i] = (curves_[i])->transformed(m);
-          if ( !are_near( (result.curves_[i])->initialPoint(), 
-                          (result.curves_[i-1])->finalPoint(), 0.1 ) )
-          {
+          if ( result.curves_[i]->initialPoint() != result.curves_[i-1]->finalPoint() ) {
               THROW_CONTINUITYERROR();
           }
       }
