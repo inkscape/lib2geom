@@ -67,7 +67,9 @@ public:
   // default copy
 
   // Allow Sequence::iterator to Sequence::const_iterator conversion
-  // unfortunately I do not know how to imitate the way __normal_iterator does it, because I don't see a way to get the typename of the container IteratorImpl is pointing at...
+  // unfortunately I do not know how to imitate the way __normal_iterator 
+  // does it, because I don't see a way to get the typename of the container 
+  // IteratorImpl is pointing at...
   typedef std::vector<Curve *> Sequence;
   BaseIterator (  typename __conditional_type<
                     (std::__are_same<IteratorImpl, Sequence::const_iterator >::__value),  // check if this instantiation is of const_iterator type
@@ -276,27 +278,61 @@ public:
   }
 
   /*
-  Path operator*=(Matrix)
-  This is not possible without at least partly regenerating the curves of the path, because:
-  A path can consist of many types of curves, e.g. a HLineSegment.
-  Such a segment cannot be transformed and stay a HLineSegment in general (take for example rotations).
-  This means that these curves of the path have to be replaced with LineSegments: new Curves.
-  So an implementation of this method should check the curve's type to see whether operator*= is doable for that curve type, ...
+     Path operator*=(Matrix)
+     This is not possible without at least partly regenerating the curves of 
+     the path, because a path can consist of many types of curves, 
+     e.g. a HLineSegment.
+     Such a segment cannot be transformed and stay a HLineSegment in general 
+     (take for example rotations).
+     This means that these curves of the path have to be replaced with 
+     LineSegments: new Curves.
+     So an implementation of this method should check the curve's type to see 
+     whether operator*= is doable for that curve type, ...
   */
-
   Path operator*(Matrix const &m) const {
     Path ret;
     ret.curves_.reserve(curves_.size());
+    const double eps = 0.1;
     for(const_iterator it = begin(); it != end(); ++it) {
-      Curve *temp = it->transformed(m);
-      //Possible point of discontinuity?
-      ret.append(*temp);
-      delete temp;
+      Curve *curve = it->transformed(m);
+      // Possible point of discontinuity?
+      if ( ret.curves_.front() != ret.final_ 
+              && !are_near(curve->initialPoint(), (*ret.final_)[0], eps) ) 
+      {
+        THROW_CONTINUITYERROR();
+      }
+      ret.do_append(curve);
     }
     ret.closed_ = closed_;
     return ret;
   }
 
+  /*
+  // this should be even quickier but it works at low level
+  Path operator*(Matrix const &m) const
+  {
+      Path result;
+      size_t sz = curves_.size() - 1;
+      if (sz == 0) return result;
+      result.curves_.resize(curves_.size());
+      result.curves_.back() = result.final_;
+      result.curves_[0] = (curves_[0])->transformed(m);
+      for (size_t i = 1; i < sz; ++i)
+      {
+          result.curves_[i] = (curves_[i])->transformed(m);
+          if ( !are_near( (result.curves_[i])->initialPoint(), 
+                          (result.curves_[i-1])->finalPoint(), 0.1 ) )
+          {
+              THROW_CONTINUITYERROR();
+          }
+      }
+      result.final_->setInitial( (result.curves_[sz])->finalPoint() );
+      result.final_->setFinal( (result.curves_[0])->initialPoint() );
+      result.closed_ = closed_;
+      return result;
+  }
+  */
+  
   Point pointAt(double t) const 
   {
 	  unsigned int sz = size();
