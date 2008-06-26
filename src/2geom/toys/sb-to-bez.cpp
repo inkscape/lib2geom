@@ -227,7 +227,7 @@ static D2<SBasis> L2_proj(Piecewise<D2<SBasis> > const &M,
     Piecewise<SBasis> h =divide( dot(v,Piecewise<D2<SBasis> >(db)), dot(db,db), .01, 3);
     n = compose(n,Piecewise<SBasis>(Linear(0,1)) - h);
    
-    D2<Piecewise<SBasis> > nn = make_cuts_independant(n*rot90(udb));
+    D2<Piecewise<SBasis> > nn = make_cuts_independent(n*rot90(udb));
     return (b+D2<SBasis>(cubicL2Project(nn[0]),cubicL2Project(nn[1])) );
 }
 

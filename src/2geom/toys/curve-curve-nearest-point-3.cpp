@@ -504,7 +504,7 @@ private:
 	Piecewise< D2<SBasis> >
 	divide( Piecewise< D2<SBasis> > const& a, Piecewise<SBasis> const& b, double tol, unsigned int k, double zero=1.e-3)
 	{
-		D2< Piecewise<SBasis> > aa = make_cuts_independant(a);
+		D2< Piecewise<SBasis> > aa = make_cuts_independent(a);
 		D2< Piecewise<SBasis> > q(Geom::divide(aa[0], b, tol, k, zero), Geom::divide(aa[1], b, tol, k, zero));
 		return sectionize(q);
 	}

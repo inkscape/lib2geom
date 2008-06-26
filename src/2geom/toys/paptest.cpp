@@ -49,7 +49,7 @@ doEffect_pwd2 (Geom::Piecewise<Geom::D2<Geom::SBasis> > & pwd2_in, Geom::Piecewi
     Piecewise<D2<SBasis> > n = rot90(derivative(uskeleton));
     n = force_continuity(remove_short_cuts(n,.1));
 
-    D2<Piecewise<SBasis> > patternd2 = make_cuts_independant(pattern);
+    D2<Piecewise<SBasis> > patternd2 = make_cuts_independent(pattern);
     Piecewise<SBasis> x = Piecewise<SBasis>(patternd2[0]);
     Piecewise<SBasis> y = Piecewise<SBasis>(patternd2[1]);
     Interval pattBnds = bounds_exact(x);

@@ -35,7 +35,7 @@ class CentreWarp: public Toy {
     void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         Geom::Point dir(1,-2);
 
-	D2<Piecewise<SBasis> > B = make_cuts_independant(path_a_pw);
+	D2<Piecewise<SBasis> > B = make_cuts_independent(path_a_pw);
 
 	cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
 
@@ -61,7 +61,7 @@ class CentreWarp: public Toy {
             swr *= 10;
             swr.scaleDomain(1000);
             cairo_pw(cr, swr);// + (height - 100));
-            D2<Piecewise<SBasis> >  uB = make_cuts_independant(unitVector(path_a_pw - brush_handle.pos));
+            D2<Piecewise<SBasis> >  uB = make_cuts_independent(unitVector(path_a_pw - brush_handle.pos));
         
             D2<Piecewise<SBasis> > tB(compose(rc, (r2))*uB[0] + B[0], 
                                       compose(rc, (r2))*uB[1] + B[1]);

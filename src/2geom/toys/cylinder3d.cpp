@@ -92,7 +92,7 @@ class Box3d: public Toy {
 	cairo_stroke(cr);
 
         {
-            D2<Piecewise<SBasis> > B = make_cuts_independant(path_a_pw);
+            D2<Piecewise<SBasis> > B = make_cuts_independent(path_a_pw);
             Piecewise<SBasis> preimage[4];
 	    
 	    if(togs[0].on) {

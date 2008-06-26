@@ -52,7 +52,7 @@ class Box3d: public Toy {
         for(unsigned i = 0; i < paths_a.size(); i++) {
             Piecewise<D2<SBasis> >  path_a_pw = paths_a[i].toPwSb();
 
-            D2<Piecewise<SBasis> > B = make_cuts_independant(path_a_pw);
+            D2<Piecewise<SBasis> > B = make_cuts_independent(path_a_pw);
             Piecewise<SBasis> preimage[4];
                 
             preimage[0] =  (B[0] - orig[0]) / 100;

@@ -21,7 +21,7 @@ class SBZeros: public Toy {
         for(int j = 0; j < 5; j++) s.push_back(derivative(s.back()));
         for(int j = 0; j <= 5; j++) {
             for(unsigned d = 0; d < 2; d++) {
-                std::vector<double> r = roots(make_cuts_independant(s[j])[d]);
+                std::vector<double> r = roots(make_cuts_independent(s[j])[d]);
                 for(unsigned k = 0; k < r.size(); k++) e.push_back(B.valueAt(r[k]));
             }
         }

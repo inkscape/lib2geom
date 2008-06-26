@@ -32,7 +32,7 @@ double tail_error(D2<SBasis> const & a, unsigned tail);
 //Piecewise<D2<SBasis> > specific decls:
 
 Piecewise<D2<SBasis> > sectionize(D2<Piecewise<SBasis> > const &a);
-D2<Piecewise<SBasis> > make_cuts_independant(Piecewise<D2<SBasis> > const &a);
+D2<Piecewise<SBasis> > make_cuts_independent(Piecewise<D2<SBasis> > const &a);
 Piecewise<D2<SBasis> > rot90(Piecewise<D2<SBasis> > const &a);
 Piecewise<SBasis> dot(Piecewise<D2<SBasis> > const &a, Piecewise<D2<SBasis> > const &b);
 Piecewise<SBasis> cross(Piecewise<D2<SBasis> > const &a, Piecewise<D2<SBasis> > const &b);

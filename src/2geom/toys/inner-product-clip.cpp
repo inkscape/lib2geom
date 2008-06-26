@@ -46,7 +46,7 @@ class InnerProductClip: public Toy {
     void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
 	cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
 
-	D2<Piecewise<SBasis> > B = make_cuts_independant(path_a_pw);
+	D2<Piecewise<SBasis> > B = make_cuts_independent(path_a_pw);
 	
 	Point n;
 	double d;

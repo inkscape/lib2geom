@@ -38,7 +38,7 @@ Piecewise<D2<SBasis> > sectionize(D2<Piecewise<SBasis> > const &a) {
     return ret;
 }
 
-D2<Piecewise<SBasis> > make_cuts_independant(Piecewise<D2<SBasis> > const &a) {
+D2<Piecewise<SBasis> > make_cuts_independent(Piecewise<D2<SBasis> > const &a) {
     D2<Piecewise<SBasis> > ret;
     for(unsigned d = 0; d < 2; d++) {
         for(unsigned i = 0; i < a.size(); i++)

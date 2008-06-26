@@ -183,7 +183,7 @@ void wrap_pw() {
 
     ;
     def("centroid", pwd2sb_centroid);
-    def("make_cuts_independant", Geom::make_cuts_independant);
+    def("make_cuts_independent", Geom::make_cuts_independent);
 
 };
 
