@@ -190,11 +190,9 @@ class NearestPoints : public Toy
     	        }
     	        if ( earc_constraints_satisfied ) path.append(D);
     	        if ( toggles[1].on ) path.close(true);
+    	            	        
     	        cairo_path(cr, path);
-    	        if ( path.closed() )
-    	        {
-    	        	cairo_line_to( cr, path[0].initialPoint() );
-    	        }
+    	        
     	        if ( toggles[0].on )
     	        {
     	        	std::vector<double> t = path.allNearestPoints(p);
