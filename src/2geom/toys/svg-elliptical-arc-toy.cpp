@@ -40,6 +40,14 @@
 using namespace Geom;
 
 
+
+std::string angle_formatter(double angle)
+{
+    return default_formatter(decimal_round(rad_to_deg(angle),2));
+}
+
+
+
 class SVGEllipticToy: public Toy
 {
   public:
@@ -64,10 +72,31 @@ class SVGEllipticToy: public Toy
                 toggles[0].on,
                 toggles[1].on,
                 final_point.pos );
+
+        std::pair<Point,Point> centers
+            = calculate_ellipse_centers( ea.initialPoint(), ea.finalPoint(),
+                                         ea.ray(X), ea.ray(Y), ea.rotation_angle(),
+                                         ea.large_arc_flag(), ea.sweep_flag() );
+        // draw the the 2 ellipse with rays rx, ry passing through
+        // the 2 given point and with the x-axis inclined of rot_angle
+        if ( !(are_near(ea.ray(X), 0) || are_near(ea.ray(Y), 0)) )
+        {
+            draw_elliptical_arc_with_cairo( cr, centers.first[X], centers.first[Y],
+                                            ea.ray(X), ea.ray(Y), 0, 2*M_PI, ea.rotation_angle() );
+            cairo_stroke(cr);
+            draw_elliptical_arc_with_cairo( cr, centers.second[X], centers.second[Y],
+                                            ea.ray(X), ea.ray(Y), 0, 2*M_PI, ea.rotation_angle() );
+            cairo_stroke(cr);
+        }
+
         D2<SBasis> easb = ea.toSBasis();
         cairo_set_line_width(cr, 0.2);
         cairo_set_source_rgba(cr, 0.0, 0.0, 1.0, 1.0);
         cairo_md_sb(cr, easb);
+        cairo_stroke(cr);
+
+        draw_text(cr, ea.initialPoint() + Point(5, -15), "initial");
+        draw_text(cr, ea.finalPoint() + Point(5, 0), "final");
         cairo_stroke(cr);
 
         Toy::draw(cr, notify, width, height, save);
@@ -87,6 +116,7 @@ class SVGEllipticToy: public Toy
         sliders.push_back(Slider(0, 500, 0, ea.ray(X), "ray X"));
         sliders.push_back(Slider(0, 500, 0, ea.ray(Y), "ray Y"));
         sliders.push_back(Slider(0, 2*M_PI, 0, ea.rotation_angle(), "rot angle"));
+        sliders[2].formatter(&angle_formatter);
 
         handles.push_back(&initial_point);
         handles.push_back(&final_point);
@@ -150,7 +180,72 @@ class SVGEllipticToy: public Toy
         toggles[1].bounds = Rect(Point(400, height-50), Point(520, height-25));
     }
 
+    std::pair<Point,Point>
+    calculate_ellipse_centers( Point _initial_point, Point _final_point,
+                               double m_rx,           double m_ry,
+                               double m_rot_angle,
+                               bool m_large_arc, bool m_sweep
+                             )
+    {
+        std::pair<Point,Point> result;
+        if ( _initial_point == _final_point )
+        {
+            result.first = result.second = _initial_point;
+            return result;
+        }
 
+        m_rx = std::fabs(m_rx);
+        m_ry = std::fabs(m_ry);
+
+        Point d = _initial_point - _final_point;
+
+        if ( are_near(m_rx, 0) || are_near(m_ry, 0) )
+        {
+            result.first = result.second
+                = middle_point(_initial_point, _final_point);
+        }
+
+        double sin_rot_angle = std::sin(m_rot_angle);
+        double cos_rot_angle = std::cos(m_rot_angle);
+
+
+        Matrix m( cos_rot_angle, -sin_rot_angle,
+                  sin_rot_angle, cos_rot_angle,
+                  0,             0              );
+
+        Point p = (d / 2) * m;
+        double rx2 = m_rx * m_rx;
+        double ry2 = m_ry * m_ry;
+        double rxpy = m_rx * p[Y];
+        double rypx = m_ry * p[X];
+        double rx2py2 = rxpy * rxpy;
+        double ry2px2 = rypx * rypx;
+        double num = rx2 * ry2;
+        double den = rx2py2 + ry2px2;
+        assert(den != 0);
+        double rad = num / den;
+        Point c(0,0);
+        if (rad > 1)
+        {
+            rad -= 1;
+            rad = std::sqrt(rad);
+
+            if (m_large_arc == m_sweep) rad = -rad;
+            c = rad * Point(rxpy / m_ry, -rypx / m_rx);
+
+            m[1] = -m[1];
+            m[2] = -m[2];
+
+            c = c * m;
+        }
+
+        d = middle_point(_initial_point, _final_point);
+
+        result.first = c + d;
+        result.second = -c + d;
+        return result;
+
+    }
   private:
       PointHandle initial_point, final_point;
       std::vector<Toggle> toggles;

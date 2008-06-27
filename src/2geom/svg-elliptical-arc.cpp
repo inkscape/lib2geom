@@ -252,15 +252,28 @@ void SVGEllipticalArc::calculate_center_and_extreme_angles()
     double num = rx2 * ry2;
     double den = rx2py2 + ry2px2;
     assert(den != 0);
-    double rad = (num / den) - 1;
-    assert(rad >= 0);
-    rad = std::sqrt(rad);
-    if (m_large_arc == m_sweep) rad = -rad;
-    Point c = rad * Point(rxpy / m_ry, -rypx / m_rx);
+    double rad = num / den;
+    Point c(0,0);
+    if (rad > 1)
+    {
+        rad -= 1;
+        rad = std::sqrt(rad);
 
-    m[1] = -m[1];
-    m[2] = -m[2];
-    m_center = c * m + middle_point(initialPoint(), finalPoint());
+        if (m_large_arc == m_sweep) rad = -rad;
+        c = rad * Point(rxpy / m_ry, -rypx / m_rx);
+
+        m[1] = -m[1];
+        m[2] = -m[2];
+
+        m_center = c * m + middle_point(initialPoint(), finalPoint());
+    }
+    else
+    {
+        double lamda = std::sqrt(1 / rad);
+        m_rx *= lamda;
+        m_ry *= lamda;
+        m_center = middle_point(initialPoint(), finalPoint());
+    }
 
     Point sp((p[X] - c[X]) / m_rx, (p[Y] - c[Y]) / m_ry);
     Point ep((-p[X] - c[X]) / m_rx, (-p[Y] - c[Y]) / m_ry);
