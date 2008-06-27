@@ -162,6 +162,7 @@ std::string BaseVectorImpl::str() const
 	return oss.str();
 }
 
+inline
 double dot(BaseVectorImpl const& v1, BaseVectorImpl const& v2)
 {
     double result;
@@ -334,12 +335,14 @@ class Vector : public detail::VectorImpl
 
 
 // warning! these operations invalidate any view of the passed vector objects
+inline 
 void swap(Vector & v1, Vector & v2)
 {
 	assert( v1.size() == v2.size() );
 	std::swap(v1.m_vector, v2.m_vector);
 }
 
+inline
 void swap_any(Vector & v1, Vector & v2)
 {
     std::swap(v1.m_vector, v2.m_vector);
@@ -533,6 +536,7 @@ class VectorView : public detail::VectorImpl
 }; // end class VectorView
 
 
+inline
 void swap_view(VectorView & v1, VectorView & v2)
 {
 	assert( v1.size() == v2.size() );

@@ -139,6 +139,8 @@ sturm.h
 #arc-length.cpp
 #arc-length.h
 
+numeric/matrix.cpp
+
 )
 
 # make lib for 2geom

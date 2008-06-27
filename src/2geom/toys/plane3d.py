@@ -50,7 +50,7 @@ class Box3d(toyframework.Toy):
             self.notify += '\n'
 
         for p in self.paths_a:
-            B = make_cuts_independant(p.toPwSb())
+            B = py2geom.make_cuts_independant(p.toPwSb())
             preimage = [None]*4
                 
             preimage[0] =  (B[0] - orig[0]) / 100;
