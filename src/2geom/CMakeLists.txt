@@ -136,6 +136,9 @@ solve-bezier-one-d.cpp
 solve-bezier-parametric.cpp
 solver.h
 sturm.h
+svg-elliptical-arc.cpp
+svg-elliptical-arc.h
+
 #arc-length.cpp
 #arc-length.h
 
@@ -161,3 +164,4 @@ INSTALL(FILES "${CMAKE_BINARY_DIR}/2geom.pc" DESTINATION lib/pkgconfig)
 ADD_SUBDIRECTORY (toys)
 ADD_SUBDIRECTORY (tests)
 ADD_SUBDIRECTORY (py2geom)
+

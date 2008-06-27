@@ -80,6 +80,7 @@ sbasis-fitting
 self-intersect
 squiggles
 svg-elliptic-arc-toy
+svg-elliptical-arc-toy
 worms
 winding-test
 )
