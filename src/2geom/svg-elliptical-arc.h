@@ -39,6 +39,7 @@
 #include "curve.h"
 #include "angle.h"
 #include "utils.h"
+#include "bezier-curve.h"
 #include "sbasis-curve.h"  // for non-native methods
 
 #include <algorithm>
@@ -176,7 +177,10 @@ class SVGEllipticalArc : public Curve
     // TODO: native implementation of the following methods
     Rect boundsLocal(Interval i, unsigned int deg) const
     {
-        return SBasisCurve(toSBasis()).boundsLocal(i, deg);
+        if (isDegenerate())
+            return chord().boundsLocal(i, deg);
+        else
+            return SBasisCurve(toSBasis()).boundsLocal(i, deg);
     }
 
     std::vector<double> roots(double v, Dim2 d) const;
@@ -196,7 +200,10 @@ class SVGEllipticalArc : public Curve
     // TODO: native implementation of the following methods
     int winding(Point p) const
     {
-        return SBasisCurve(toSBasis()).winding(p);
+        if (isDegenerate())
+            return chord().winding(p);
+        else
+            return SBasisCurve(toSBasis()).winding(p);
     }
 
     Curve *derivative() const;
@@ -228,12 +235,18 @@ class SVGEllipticalArc : public Curve
 
     double valueAt(Coord t, Dim2 d) const
     {
+        if (isDegenerate())
+            return chord().valueAt(t, d);
+
         Coord tt = map_to_02PI(t);
         return valueAtAngle(tt, d);
     }
 
     Point pointAt(Coord t) const
     {
+        if (isDegenerate())
+            return chord().pointAt(t);
+
         Coord tt = map_to_02PI(t);
         return pointAtAngle(tt);
     }
@@ -273,6 +286,11 @@ class SVGEllipticalArc : public Curve
         return d;
     }
 
+    LineSegment chord() const
+    {
+        return LineSegment(initialPoint(), finalPoint());
+    }
+
   private:
     Coord map_to_02PI(Coord t) const;
     Coord map_to_01(Coord angle) const;
@@ -287,6 +305,20 @@ class SVGEllipticalArc : public Curve
 
 }; // end class SVGEllipticalArc
 
+template< class charT >
+inline
+std::basic_ostream<charT> &
+operator<< (std::basic_ostream<charT> & os, const SVGEllipticalArc & ea)
+{
+    os << "{ cx: " << ea.center(X) << ", cy: " <<  ea.center(Y)
+       << ", rx: " << ea.ray(X) << ", ry: " << ea.ray(Y)
+       << ", rot angle: " << decimal_round(rad_to_deg(ea.rotation_angle()),2)
+       << ", start angle: " << decimal_round(rad_to_deg(ea.start_angle()),2)
+       << ", end angle: " << decimal_round(rad_to_deg(ea.end_angle()),2)
+       << " }";
+
+    return os;
+}
 
 } // end namespace Geom
 

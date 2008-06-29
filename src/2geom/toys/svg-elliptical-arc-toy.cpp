@@ -29,7 +29,6 @@
 
 
 
-#include <memory>
 #include "path.h"
 #include "svg-elliptical-arc.h"
 #include "path-cairo.h"

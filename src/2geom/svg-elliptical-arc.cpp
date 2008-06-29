@@ -44,8 +44,80 @@ namespace Geom
 
 Rect SVGEllipticalArc::boundsExact() const
 {
-    Rect result;
-    return result;
+    if (isDegenerate())
+        return chord().boundsExact();
+
+    std::vector<double> extremes(4);
+    double cosrot = std::cos(rotation_angle());
+    double sinrot = std::sin(rotation_angle());
+    extremes[0] = std::atan2( -ray(Y) * sinrot, ray(X) * cosrot );
+    extremes[1] = extremes[0] + M_PI;
+    if ( extremes[0] < 0 ) extremes[0] += 2*M_PI;
+    extremes[2] = std::atan2( ray(Y) * cosrot, ray(X) * sinrot );
+    extremes[3] = extremes[2] + M_PI;
+    if ( extremes[2] < 0 ) extremes[2] += 2*M_PI;
+
+
+    std::vector<double>arc_extremes(4);
+    arc_extremes[0] = initialPoint()[X];
+    arc_extremes[1] = finalPoint()[X];
+    if ( arc_extremes[0] < arc_extremes[1] )
+        std::swap(arc_extremes[0], arc_extremes[1]);
+    arc_extremes[2] = initialPoint()[Y];
+    arc_extremes[3] = finalPoint()[Y];
+    if ( arc_extremes[2] < arc_extremes[3] )
+        std::swap(arc_extremes[2], arc_extremes[3]);
+
+
+    if ( start_angle() < end_angle() )
+    {
+        if ( sweep_flag() )
+        {
+            for ( unsigned int i = 0; i < extremes.size(); ++i )
+            {
+                if ( start_angle() < extremes[i] && extremes[i] < end_angle() )
+                {
+                    arc_extremes[i] = pointAtAngle(extremes[i])[i >> 1];
+                }
+            }
+        }
+        else
+        {
+            for ( unsigned int i = 0; i < extremes.size(); ++i )
+            {
+                if ( start_angle() > extremes[i] || extremes[i] > end_angle() )
+                {
+                    arc_extremes[i] = pointAtAngle(extremes[i])[i >> 1];
+                }
+            }
+        }
+    }
+    else
+    {
+        if ( sweep_flag() )
+        {
+            for ( unsigned int i = 0; i < extremes.size(); ++i )
+            {
+                if ( start_angle() < extremes[i] || extremes[i] < end_angle() )
+                {
+                    arc_extremes[i] = pointAtAngle(extremes[i])[i >> 1];
+                }
+            }
+        }
+        else
+        {
+            for ( unsigned int i = 0; i < extremes.size(); ++i )
+            {
+                if ( start_angle() > extremes[i] && extremes[i] > end_angle() )
+                {
+                    arc_extremes[i] = pointAtAngle(extremes[i])[i >> 1];
+                }
+            }
+        }
+    }
+
+    return Rect( Point(arc_extremes[1], arc_extremes[3]) ,
+                 Point(arc_extremes[0], arc_extremes[2]) );
 }
 
 
@@ -77,15 +149,84 @@ SVGEllipticalArc::roots(double v, Dim2 d) const
         THROW_RANGEERROR("dimention out of range");
     }
 
+    if (isDegenerate())
+        return chord().roots(v, d);
+
     std::vector<double> sol;
 
-    return sol;
+    double rotx, roty;
+    switch(d)
+    {
+        case X:
+            rotx = std::cos(rotation_angle());
+            roty = -std::sin(rotation_angle());
+            break;
+        case Y:
+            rotx = std::sin(rotation_angle());
+            roty = std::cos(rotation_angle());
+            break;
+    }
+    double rxrotx = ray(X) * rotx;
+    double c_v = center(d) - v;
+
+    double a = -rxrotx + c_v;
+    double b = ray(Y) * roty;
+    double c = rxrotx + c_v;
+    //std::cerr << "a = " << a << std::endl;
+    //std::cerr << "b = " << b << std::endl;
+    //std::cerr << "c = " << c << std::endl;
+
+    if ( are_near(a,0) )
+    {
+        sol.push_back(M_PI);
+        if ( !are_near(b,0) )
+        {
+            double s = 2 * std::atan(-c/(2*b));
+            if ( s < 0 ) s += 2*M_PI;
+            sol.push_back(s);
+        }
+    }
+    else
+    {
+        double delta = b * b - a * c;
+        //std::cerr << "delta = " << delta << std::endl;
+        if ( are_near(delta, 0) )
+        {
+            double s = 2 * std::atan(-b/a);
+            if ( s < 0 ) s += 2*M_PI;
+            sol.push_back(s);
+        }
+        else if ( delta > 0 )
+        {
+            double sq = std::sqrt(delta);
+            double s = 2 * std::atan( (-b - sq) / a );
+            if ( s < 0 ) s += 2*M_PI;
+            sol.push_back(s);
+            s = 2 * std::atan( (-b + sq) / a );
+            if ( s < 0 ) s += 2*M_PI;
+            sol.push_back(s);
+        }
+    }
+
+    std::vector<double> arc_sol;
+    for (unsigned int i = 0; i < sol.size(); ++i )
+    {
+        //std::cerr << "s = " << rad_to_deg(sol[i]);
+        sol[i] = map_to_01(sol[i]);
+        //std::cerr << " -> t: " << sol[i] << std::endl;
+        if ( !(sol[i] < 0 || sol[i] > 1) )
+            arc_sol.push_back(sol[i]);
+    }
+    return arc_sol;
 }
 
 
 // D(E(t,C),t) = E(t+PI/2,O)
 Curve* SVGEllipticalArc::derivative() const
 {
+    if (isDegenerate())
+            return chord().derivative();
+
     SVGEllipticalArc* result = new SVGEllipticalArc(*this);
     result->m_center[X] = result->m_center[Y] = 0;
     result->m_start_angle += M_PI/2;
@@ -101,13 +242,15 @@ Curve* SVGEllipticalArc::derivative() const
     result->m_initial_point = result->pointAtAngle( result->start_angle() );
     result->m_final_point = result->pointAtAngle( result->end_angle() );
     return result;
-
 }
 
 
 std::vector<Point>
 SVGEllipticalArc::pointAndDerivatives(Coord t, unsigned int n) const
 {
+    if (isDegenerate())
+            return chord().pointAndDerivatives(t, n);
+
     unsigned int nn = n+1; // nn represents the size of the result vector.
     std::vector<Point> result;
     result.reserve(nn);
@@ -191,12 +334,233 @@ Curve* SVGEllipticalArc::portion(double f, double t) const
 std::vector<double> SVGEllipticalArc::
 allNearestPoints( Point const& p, double from, double to ) const
 {
+    std::vector<double> result;
+    if (isDegenerate())
+    {
+        result.push_back( chord().nearestPoint(p, from, to) );
+        return result;
+    }
+
     if ( from > to ) std::swap(from, to);
     if ( from < 0 || to > 1 )
     {
         THROW_RANGEERROR("[from,to] interval out of range");
     }
-    std::vector<double> result;
+
+    if ( ( are_near(ray(X), 0) && are_near(ray(Y), 0) )  || are_near(from, to) )
+    {
+        result.push_back(from);
+        return result;
+    }
+    else if ( are_near(ray(X), 0) || are_near(ray(Y), 0) )
+    {
+        LineSegment seg(pointAt(from), pointAt(to));
+        Point np = seg.pointAt( seg.nearestPoint(p) );
+        if ( are_near(ray(Y), 0) )
+        {
+            if ( are_near(rotation_angle(), M_PI/2)
+                 || are_near(rotation_angle(), 3*M_PI/2) )
+            {
+                result = roots(np[Y], Y);
+            }
+            else
+            {
+                result = roots(np[X], X);
+            }
+        }
+        else
+        {
+            if ( are_near(rotation_angle(), M_PI/2)
+                 || are_near(rotation_angle(), 3*M_PI/2) )
+            {
+                result = roots(np[X], X);
+            }
+            else
+            {
+                result = roots(np[Y], Y);
+            }
+        }
+        return result;
+    }
+    else if ( are_near(ray(X), ray(Y)) )
+    {
+        Point r = p - center();
+        if ( are_near(r, Point(0,0)) )
+        {
+            THROW_INFINITESOLUTIONS(0);
+        }
+        // TODO: implement case r != 0
+//      Point np = ray(X) * unit_vector(r);
+//      std::vector<double> solX = roots(np[X],X);
+//      std::vector<double> solY = roots(np[Y],Y);
+//      double t;
+//      if ( are_near(solX[0], solY[0]) || are_near(solX[0], solY[1]))
+//      {
+//          t = solX[0];
+//      }
+//      else
+//      {
+//          t = solX[1];
+//      }
+//      if ( !(t < from || t > to) )
+//      {
+//          result.push_back(t);
+//      }
+//      else
+//      {
+//
+//      }
+    }
+
+    // solve the equation <D(E(t),t)|E(t)-p> == 0
+    // that provides min and max distance points
+    // on the ellipse E wrt the point p
+    // after the substitutions:
+    // cos(t) = (1 - s^2) / (1 + s^2)
+    // sin(t) = 2t / (1 + s^2)
+    // where s = tan(t/2)
+    // we get a 4th degree equation in s
+    /*
+     *  ry s^4 ((-cy + py) Cos[Phi] + (cx - px) Sin[Phi]) +
+     *  ry ((cy - py) Cos[Phi] + (-cx + px) Sin[Phi]) +
+     *  2 s^3 (rx^2 - ry^2 + (-cx + px) rx Cos[Phi] + (-cy + py) rx Sin[Phi]) +
+     *  2 s (-rx^2 + ry^2 + (-cx + px) rx Cos[Phi] + (-cy + py) rx Sin[Phi])
+     */
+
+    Point p_c = p - center();
+    double rx2_ry2 = (ray(X) - ray(Y)) * (ray(X) + ray(Y));
+    double cosrot = std::cos( rotation_angle() );
+    double sinrot = std::sin( rotation_angle() );
+    double expr1 = ray(X) * (p_c[X] * cosrot + p_c[Y] * sinrot);
+    Poly coeff;
+    coeff.resize(5);
+    coeff[4] = ray(Y) * ( p_c[Y] * cosrot - p_c[X] * sinrot );
+    coeff[3] = 2 * ( rx2_ry2 + expr1 );
+    coeff[2] = 0;
+    coeff[1] = 2 * ( -rx2_ry2 + expr1 );
+    coeff[0] = -coeff[4];
+
+//  for ( unsigned int i = 0; i < 5; ++i )
+//      std::cerr << "c[" << i << "] = " << coeff[i] << std::endl;
+
+    std::vector<double> real_sol;
+    // gsl_poly_complex_solve raises an error
+    // if the leading coefficient is zero
+    if ( are_near(coeff[4], 0) )
+    {
+        real_sol.push_back(0);
+        if ( !are_near(coeff[3], 0) )
+        {
+            double sq = -coeff[1] / coeff[3];
+            if ( sq > 0 )
+            {
+                double s = std::sqrt(sq);
+                real_sol.push_back(s);
+                real_sol.push_back(-s);
+            }
+        }
+    }
+    else
+    {
+        real_sol = solve_reals(coeff);
+    }
+
+    for ( unsigned int i = 0; i < real_sol.size(); ++i )
+    {
+        real_sol[i] = 2 * std::atan(real_sol[i]);
+        if ( real_sol[i] < 0 ) real_sol[i] += 2*M_PI;
+    }
+    // when s -> Infinity then <D(E)|E-p> -> 0 iff coeff[4] == 0
+    // so we add M_PI to the solutions being lim arctan(s) = PI when s->Infinity
+    if ( (real_sol.size() % 2) != 0 )
+    {
+        real_sol.push_back(M_PI);
+    }
+
+    double mindistsq1 = std::numeric_limits<double>::max();
+    double mindistsq2 = std::numeric_limits<double>::max();
+    double dsq;
+    unsigned int mi1, mi2;
+    for ( unsigned int i = 0; i < real_sol.size(); ++i )
+    {
+        dsq = distanceSq(p, pointAtAngle(real_sol[i]));
+        if ( mindistsq1 > dsq )
+        {
+            mindistsq2 = mindistsq1;
+            mi2 = mi1;
+            mindistsq1 = dsq;
+            mi1 = i;
+        }
+        else if ( mindistsq2 > dsq )
+        {
+            mindistsq2 = dsq;
+            mi2 = i;
+        }
+    }
+
+    double t = map_to_01( real_sol[mi1] );
+    if ( !(t < from || t > to) )
+    {
+        result.push_back(t);
+    }
+
+    bool second_sol = false;
+    t = map_to_01( real_sol[mi2] );
+    if ( real_sol.size() == 4 && !(t < from || t > to) )
+    {
+        if ( result.empty() || are_near(mindistsq1, mindistsq2) )
+        {
+            result.push_back(t);
+            second_sol = true;
+        }
+    }
+
+    // we need to test extreme points too
+    double dsq1 = distanceSq(p, pointAt(from));
+    double dsq2 = distanceSq(p, pointAt(to));
+    if ( second_sol )
+    {
+        if ( mindistsq2 > dsq1 )
+        {
+            result.clear();
+            result.push_back(from);
+            mindistsq2 = dsq1;
+        }
+        else if ( are_near(mindistsq2, dsq) )
+        {
+            result.push_back(from);
+        }
+        if ( mindistsq2 > dsq2 )
+        {
+            result.clear();
+            result.push_back(to);
+        }
+        else if ( are_near(mindistsq2, dsq2) )
+        {
+            result.push_back(to);
+        }
+
+    }
+    else
+    {
+        if ( result.empty() )
+        {
+            if ( are_near(dsq1, dsq2) )
+            {
+                result.push_back(from);
+                result.push_back(to);
+            }
+            else if ( dsq2 > dsq1 )
+            {
+                result.push_back(from);
+            }
+            else
+            {
+                result.push_back(to);
+            }
+        }
+    }
+
     return result;
 }
 
@@ -292,11 +656,11 @@ void SVGEllipticalArc::calculate_center_and_extreme_angles()
 
 D2<SBasis> SVGEllipticalArc::toSBasis() const
 {
+
+    if (isDegenerate())
+        return chord().toSBasis();
+
     D2<SBasis> arc;
-    if ( initialPoint() == finalPoint() )
-    {
-        return D2<SBasis>(center());
-    }
     // the interval of parametrization has to be [0,1]
     Coord et = start_angle() + ( sweep_flag() ? sweep_angle() : -sweep_angle() );
     Linear param(start_angle(), et);
