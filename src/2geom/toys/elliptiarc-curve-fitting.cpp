@@ -3,7 +3,7 @@
  *
  * Authors:
  * 		Marco Cecchetti <mrcekets at gmail.com>
- * 
+ *
  * Copyright 2008  authors
  *
  * This library is free software; you can redistribute it and/or
@@ -57,28 +57,28 @@ struct ellipse_equation
 		: A(a), B(b), C(c), D(d), E(e), F(f)
 	{
 	}
-	
+
 	double operator()(double x, double y) const
 	{
 		return A * x * x + B * x * y + C * y * y + D * x + E * y + F;
 	}
-	
+
 	double operator()(Point const& p) const
 	{
 		return (*this)(p[X], p[Y]);
 	}
-	
+
 	Point normal(double x, double y) const
 	{
 		Point n( 2 * A * x + B * y + D, 2 * C * y + B * x + E );
 		return unit_vector(n);
 	}
-	
+
 	Point normal(Point const& p) const
 	{
 		return normal(p[X], p[Y]);
 	}
-	
+
 	double A, B, C, D, E, F;
 };
 
@@ -88,22 +88,22 @@ class elliptiarc_converter
   public:
     typedef D2<SBasis> curve_type;
 
-    elliptiarc_converter( EllipticalArc& _ea,
+    elliptiarc_converter( SVGEllipticalArc& _ea,
                           curve_type const& _curve,
                           unsigned int _N,
                           double _tolerance )
-        : ea(_ea), curve(_curve), 
+        : ea(_ea), curve(_curve),
           dcurve( unitVector(derivative(curve)) ),
           model(), fitter(model, _N),
-          tolerance(_tolerance), tol_at_extr(tolerance/2), 
+          tolerance(_tolerance), tol_at_extr(tolerance/2),
           tol_at_center(0.1), angle_tol(0.1),
           initial_point(curve.at0()), final_point(curve.at1()),
           N(_N), last(N-1), partitions(N-1), p(N)
     {
     }
-    
+
   private:
-    bool bound_exceeded( unsigned int k, ellipse_equation const & ee, 
+    bool bound_exceeded( unsigned int k, ellipse_equation const & ee,
                          double e1x, double e1y, double e2 )
     {
         dist_err = std::fabs( ee(p[k]) );
@@ -112,12 +112,12 @@ class elliptiarc_converter
         //angle_err *= angle_err;
         return ( dist_err  > dist_bound || angle_err > angle_tol );
     }
-    
+
     bool check_bound(double A, double B, double C, double D, double E, double F)
-    {       
+    {
         // check error magnitude
         ellipse_equation ee(A, B, C, D, E, F);
-        
+
         double e1x = (2*A + B) * tol_at_extr;
         double e1y = (B + 2*C) * tol_at_extr;
         double e2 = ((D + E)  + (A + B + C) * tol_at_extr) * tol_at_extr;
@@ -150,20 +150,20 @@ class elliptiarc_converter
 
         return true;
     }
-    
+
     void fit()
     {
         for (unsigned int k = 0; k < N; ++k)
         {
             p[k] = curve( k / partitions );
             fitter.append(p[k]);
-        }        
+        }
         fitter.update();
-        
+
         NL::Vector z(N, 0.0);
         fitter.result(z);
     }
-    
+
     bool make_elliptiarc()
     {
         const NL::Vector & coeff = fitter.result();
@@ -177,26 +177,28 @@ class elliptiarc_converter
             return false;
         }
         Point inner_point = curve(0.5);
-        try
-        {
-            ea = e.arc(initial_point, inner_point, final_point);
-        }
-        catch(RangeError exc)
-        {
-            return false;
-        }            
-        
-        if ( !are_near( e.center(), 
-                        ea.center(), 
-                        tol_at_center * std::min(e.ray(X),e.ray(Y)) 
-                      ) 
+//        try
+//        {
+//            ea = e.arc(initial_point, inner_point, final_point);
+//        }
+//        catch(RangeError exc)
+//        {
+//            return false;
+//        }
+
+        ea = e.arc(initial_point, inner_point, final_point);
+
+        if ( !are_near( e.center(),
+                        ea.center(),
+                        tol_at_center * std::min(e.ray(X),e.ray(Y))
+                      )
            )
         {
             return false;
         }
-        return true; 
+        return true;
     }
-    
+
     void print_bound_error(unsigned int k)
     {
         std::cerr
@@ -204,10 +206,10 @@ class elliptiarc_converter
             << "at point: " << k << std::endl
             << "error value: "<< dist_err << std::endl
             << "bound: " << dist_bound << std::endl
-            << "angle error: " << angle_err 
+            << "angle error: " << angle_err
             << " (" << angle_tol << ")" << std::endl;
     }
-    
+
   public:
     bool operator()()
     {
@@ -218,9 +220,9 @@ class elliptiarc_converter
         if ( !(make_elliptiarc()) ) return false;
         return true;
     }
-    
+
   private:
-      EllipticalArc& ea;
+      SVGEllipticalArc& ea;
       const curve_type & curve;
       Piecewise<D2<SBasis> > dcurve;
       NL::LFMEllipse model;
@@ -240,27 +242,27 @@ class elliptiarc_converter
 class EAFittingToy : public Toy
 {
   private:
-    void draw( cairo_t *cr,	std::ostringstream *notify, 
-  	      	   int width, int height, bool save ) 
+    void draw( cairo_t *cr,	std::ostringstream *notify,
+  	      	   int width, int height, bool save )
     {
     	cairo_set_line_width (cr, 0.2);
     	//D2<SBasis> SB = handles_to_sbasis(handles.begin(), total_handles - 1);
     	D2<SBasis> SB = psh.asBezier();
     	cairo_md_sb(cr, SB);
     	cairo_stroke(cr);
-    	
+
     	cairo_set_line_width (cr, 0.4);
     	cairo_set_source_rgba(cr, 0.0, 0.0, 0.7, 1.0);
     	try
     	{
-    		EllipticalArc EA;
+    		SVGEllipticalArc EA;
     		elliptiarc_converter convert(EA, SB, 10, tolerance);
-    		if ( !convert() ) 
+    		if ( !convert() )
     		{
-//    			*notify << "distance error: " << convert.get_error() 
+//    			*notify << "distance error: " << convert.get_error()
 //    			        << " ( " << convert.get_bound() << " )" << std::endl
 //    			        << "angle error: " << convert.get_angle_error()
-//    			        << " ( " << convert.get_angle_tolerance() << " )"; 
+//    			        << " ( " << convert.get_angle_tolerance() << " )";
     			Toy::draw(cr, notify, width, height, save);
     			return;
     		}
@@ -273,7 +275,7 @@ class EAFittingToy : public Toy
         	std::cerr << e.what() << std::endl;
         	Toy::draw(cr, notify, width, height, save);
         	return;
-        } 	
+        }
 
     	Toy::draw(cr, notify, width, height, save);
     }
@@ -289,7 +291,7 @@ class EAFittingToy : public Toy
 			psh.push_back(uniform()*400, uniform()*400);
 		}
 	}
-	
+
 	PointSetHandle psh;
 	unsigned int total_handles;
 	double tolerance;
@@ -297,8 +299,8 @@ class EAFittingToy : public Toy
 
 
 
-int main(int argc, char **argv) 
-{	
+int main(int argc, char **argv)
+{
 	double tolerance = 8;
 	if(argc > 1)
 	        sscanf(argv[1], "%lf", &tolerance);

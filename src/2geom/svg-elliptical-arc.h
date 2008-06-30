@@ -52,10 +52,11 @@ namespace Geom
 class SVGEllipticalArc : public Curve
 {
   public:
-    SVGEllipticalArc()
+    SVGEllipticalArc(bool _svg_compliant = true)
         : m_initial_point(Point(0,0)), m_final_point(Point(0,0)),
           m_rx(0), m_ry(0), m_rot_angle(0),
-          m_large_arc(true), m_sweep(true)
+          m_large_arc(true), m_sweep(true),
+          m_svg_compliant(_svg_compliant)
     {
         m_start_angle = m_end_angle = 0;
         m_center = Point(0,0);
@@ -63,11 +64,13 @@ class SVGEllipticalArc : public Curve
 
     SVGEllipticalArc( Point _initial_point, double _rx, double _ry,
                       double _rot_angle, bool _large_arc, bool _sweep,
-                      Point _final_point
+                      Point _final_point,
+                      bool _svg_compliant = true
                     )
         : m_initial_point(_initial_point), m_final_point(_final_point),
           m_rx(_rx), m_ry(_ry), m_rot_angle(_rot_angle),
-          m_large_arc(_large_arc), m_sweep(_sweep)
+          m_large_arc(_large_arc), m_sweep(_sweep),
+          m_svg_compliant(_svg_compliant)
     {
             calculate_center_and_extreme_angles();
     }
@@ -166,6 +169,10 @@ class SVGEllipticalArc : public Curve
         return ( are_near(ray(X), 0) || are_near(ray(Y), 0) );
     }
 
+    bool is_svg_compliant() const
+    {
+        return m_svg_compliant;
+    }
 
     Rect boundsFast() const
     {
@@ -177,7 +184,7 @@ class SVGEllipticalArc : public Curve
     // TODO: native implementation of the following methods
     Rect boundsLocal(Interval i, unsigned int deg) const
     {
-        if (isDegenerate())
+        if (isDegenerate() && is_svg_compliant())
             return chord().boundsLocal(i, deg);
         else
             return SBasisCurve(toSBasis()).boundsLocal(i, deg);
@@ -200,7 +207,7 @@ class SVGEllipticalArc : public Curve
     // TODO: native implementation of the following methods
     int winding(Point p) const
     {
-        if (isDegenerate())
+        if (isDegenerate() && is_svg_compliant())
             return chord().winding(p);
         else
             return SBasisCurve(toSBasis()).winding(p);
@@ -235,7 +242,7 @@ class SVGEllipticalArc : public Curve
 
     double valueAt(Coord t, Dim2 d) const
     {
-        if (isDegenerate())
+        if (isDegenerate() && is_svg_compliant())
             return chord().valueAt(t, d);
 
         Coord tt = map_to_02PI(t);
@@ -244,7 +251,7 @@ class SVGEllipticalArc : public Curve
 
     Point pointAt(Coord t) const
     {
-        if (isDegenerate())
+        if (isDegenerate() && is_svg_compliant())
             return chord().pointAt(t);
 
         Coord tt = map_to_02PI(t);
@@ -302,6 +309,7 @@ class SVGEllipticalArc : public Curve
     bool m_large_arc, m_sweep;
     double m_start_angle, m_end_angle;
     Point m_center;
+    bool m_svg_compliant;
 
 }; // end class SVGEllipticalArc
 

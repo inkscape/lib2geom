@@ -3,7 +3,7 @@
  *
  * Authors:
  *      Marco Cecchetti <mrcekets at gmail.com>
- * 
+ *
  * Copyright 2008  authors
  *
  * This library is free software; you can redistribute it and/or
@@ -48,16 +48,16 @@ void Ellipse::set(double A, double B, double C, double D, double E, double F)
     }
     m_centre[X] = (B*E - 2*C*D) / den;
     m_centre[Y] = (B*D - 2*A*E) / den;
-    
+
     // evaluate the a coefficient of the ellipse equation in normal form
     // E(x,y) = a*(x-cx)^2 + b*(x-cx)*(y-cy) + c*(y-cy)^2 = 1
     // where b = a*B , c = a*C, (cx,cy) == centre
-    double num =   A * sqr(m_centre[X]) 
-                 + B * m_centre[X] * m_centre[Y] 
-                 + C * sqr(m_centre[Y]) 
+    double num =   A * sqr(m_centre[X])
+                 + B * m_centre[X] * m_centre[Y]
+                 + C * sqr(m_centre[Y])
                  - A * F;
-    
-    
+
+
     //evaluate ellipse rotation angle
     double rot = std::atan2( -B, -(A - C) )/2;
 //      std::cerr << "rot = " << rot << std::endl;
@@ -67,14 +67,14 @@ void Ellipse::set(double A, double B, double C, double D, double E, double F)
     {
         swap_axes = true;
     }
-    
-    // evaluate the length of the ellipse rays  
+
+    // evaluate the length of the ellipse rays
     double cosrot = std::cos(rot);
     double sinrot = std::sin(rot);
     double cos2 = cosrot * cosrot;
     double sin2 = sinrot * sinrot;
     double cossin = cosrot * sinrot;
-    
+
     den = A * cos2 + B * cossin + C * sin2;
     if ( den == 0 )
     {
@@ -98,12 +98,12 @@ void Ellipse::set(double A, double B, double C, double D, double E, double F)
         THROW_LOGICALERROR("ry2 < 0, while computing 'rx' coefficient");
     }
     double ry = std::sqrt(ry2);
-    
-    // the solution is not unique so we choose always the ellipse 
+
+    // the solution is not unique so we choose always the ellipse
     // with a rotation angle between 0 and PI/2
     if ( swap_axes ) std::swap(rx, ry);
-    if (    are_near(rot,  M_PI/2) 
-         || are_near(rot, -M_PI/2) 
+    if (    are_near(rot,  M_PI/2)
+         || are_near(rot, -M_PI/2)
          || are_near(rx, ry)       )
     {
         rot = 0;
@@ -112,7 +112,7 @@ void Ellipse::set(double A, double B, double C, double D, double E, double F)
     {
         rot += M_PI/2;
     }
-    
+
     m_ray[X] = rx;
     m_ray[Y] = ry;
     m_angle = rot;
@@ -128,7 +128,7 @@ void Ellipse::set(std::vector<Point> const& points)
     }
     NL::LFMEllipse model;
     NL::least_squeares_fitter<NL::LFMEllipse> fitter(model, sz);
-    
+
     for (size_t i = 0; i < sz; ++i)
     {
         fitter.append(points[i]);
@@ -140,20 +140,21 @@ void Ellipse::set(std::vector<Point> const& points)
 }
 
 
-EllipticalArc 
-Ellipse::arc(Point const& initial, Point const& inner, Point const& final)
+SVGEllipticalArc
+Ellipse::arc(Point const& initial, Point const& inner, Point const& final,
+             bool _svg_compliant)
 {
     Point sp_cp = initial - center();
     Point ep_cp = final   - center();
     Point ip_cp = inner   - center();
-    
+
     double angle1 = angle_between(sp_cp, ep_cp);
     double angle2 = angle_between(sp_cp, ip_cp);
     double angle3 = angle_between(ip_cp, ep_cp);
 
     bool large_arc_flag = true;
     bool sweep_flag = true;
-    
+
     if ( angle1 > 0 )
     {
         if ( angle2 > 0 && angle3 > 0 )
@@ -181,8 +182,8 @@ Ellipse::arc(Point const& initial, Point const& inner, Point const& final)
         }
     }
 
-    EllipticalArc ea( initial, ray(X), ray(Y), rot_angle(), 
-                      large_arc_flag, sweep_flag, final );
+    SVGEllipticalArc ea( initial, ray(X), ray(Y), rot_angle(),
+                      large_arc_flag, sweep_flag, final, _svg_compliant);
     return ea;
 }
 

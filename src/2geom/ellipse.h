@@ -3,7 +3,7 @@
  *
  * Authors:
  *      Marco Cecchetti <mrcekets at gmail.com>
- * 
+ *
  * Copyright 2008  authors
  *
  * This library is free software; you can redistribute it and/or
@@ -36,7 +36,7 @@
 
 
 #include "point.h"
-#include "elliptical-arc.h"
+#include "svg-elliptical-arc.h"
 #include "exception.h"
 
 
@@ -48,24 +48,24 @@ class Ellipse
   public:
     Ellipse()
     {}
-    
+
     Ellipse(double cx, double cy, double rx, double ry, double a)
         : m_centre(cx, cy), m_ray(rx, ry), m_angle(a)
     {
     }
-    
+
     // build an ellipse by its implicit equation:
     // Ax^2 + Bxy + Cy^2 + Dx + Ey + F = 0
     Ellipse(double A, double B, double C, double D, double E, double F)
     {
         set(A, B, C, D, E, F);
     }
-    
+
     Ellipse(std::vector<Point> const& points)
     {
         set(points);
     }
-    
+
     void set(double cx, double cy, double rx, double ry, double a)
     {
         m_centre[X] = cx;
@@ -74,38 +74,39 @@ class Ellipse
         m_ray[Y] = ry;
         m_angle = a;
     }
-    
+
     // build an ellipse by its implicit equation:
     // Ax^2 + Bxy + Cy^2 + Dx + Ey + F = 0
     void set(double A, double B, double C, double D, double E, double F);
-    
+
     // biuld up the best fitting ellipse wrt the passed points
     // prerequisite: at least 5 points must be passed
     void set(std::vector<Point> const& points);
-    
-    EllipticalArc 
-    arc(Point const& initial, Point const& inner, Point const& final);
-    
+
+    SVGEllipticalArc
+    arc(Point const& initial, Point const& inner, Point const& final,
+        bool _svg_compliant = true);
+
     Point center() const
     {
         return m_centre;
     }
-    
+
     Coord center(Dim2 d) const
     {
         return m_centre[d];
     }
-    
+
     Coord ray(Dim2 d) const
     {
         return m_ray[d];
     }
-    
+
     Coord rot_angle() const
     {
         return m_angle;
     }
-    
+
   private:
     Point m_centre, m_ray;
     double m_angle;

@@ -44,7 +44,7 @@ namespace Geom
 
 Rect SVGEllipticalArc::boundsExact() const
 {
-    if (isDegenerate())
+    if (isDegenerate() && is_svg_compliant())
         return chord().boundsExact();
 
     std::vector<double> extremes(4);
@@ -149,10 +149,119 @@ SVGEllipticalArc::roots(double v, Dim2 d) const
         THROW_RANGEERROR("dimention out of range");
     }
 
-    if (isDegenerate())
-        return chord().roots(v, d);
-
     std::vector<double> sol;
+
+    if (isDegenerate() && is_svg_compliant())
+    {
+        return chord().roots(v, d);
+    }
+    else
+    {
+        if ( are_near(ray(X), 0) && are_near(ray(Y), 0) )
+        {
+            if ( center(d) == v )
+                sol.push_back(0);
+            return sol;
+        }
+
+        const char* msg[2][2] =
+        {
+            { "d == X; ray(X) == 0; "
+              "s = (v - center(X)) / ( -ray(Y) * std::sin(rotation_angle()) ); "
+              "s should be contained in [-1,1]",
+              "d == X; ray(Y) == 0; "
+              "s = (v - center(X)) / ( ray(X) * std::cos(rotation_angle()) ); "
+              "s should be contained in [-1,1]"
+            },
+            { "d == Y; ray(X) == 0; "
+              "s = (v - center(X)) / ( ray(Y) * std::cos(rotation_angle()) ); "
+              "s should be contained in [-1,1]",
+              "d == Y; ray(Y) == 0; "
+              "s = (v - center(X)) / ( ray(X) * std::sin(rotation_angle()) ); "
+              "s should be contained in [-1,1]"
+            },
+        };
+
+        for ( unsigned int dim = 0; dim < 2; ++dim )
+        {
+            if ( are_near(ray(dim), 0) )
+            {
+                if ( initialPoint()[d] == v && finalPoint()[d] == v )
+                {
+                    THROW_INFINITESOLUTIONS(0);
+                }
+                if ( (initialPoint()[d] < finalPoint()[d])
+                     && (initialPoint()[d] > v || finalPoint()[d] < v) )
+                {
+                    return sol;
+                }
+                if ( (initialPoint()[d] > finalPoint()[d])
+                     && (finalPoint()[d] > v || initialPoint()[d] < v) )
+                {
+                    return sol;
+                }
+                double ray_prj;
+                switch(d)
+                {
+                    case X:
+                        switch(dim)
+                        {
+                            case X: ray_prj = -ray(Y) * std::sin(rotation_angle());
+                                    break;
+                            case Y: ray_prj = ray(X) * std::cos(rotation_angle());
+                                    break;
+                        }
+                        break;
+                    case Y:
+                        switch(dim)
+                        {
+                            case X: ray_prj = ray(Y) * std::cos(rotation_angle());
+                                    break;
+                            case Y: ray_prj = ray(X) * std::sin(rotation_angle());
+                                    break;
+                        }
+                        break;
+                }
+
+                double s = (v - center(d)) / ray_prj;
+                if ( s < -1 || s > 1 )
+                {
+                    THROW_LOGICALERROR(msg[d][dim]);
+                }
+                switch(dim)
+                {
+                    case X:
+                        s = std::asin(s); // return a value in [-PI/2,PI/2]
+                        if ( logical_xor( sweep_flag(), are_near(start_angle(), M_PI/2) )  )
+                        {
+                            if ( s < 0 ) s += 2*M_PI;
+                        }
+                        else
+                        {
+                            s = M_PI - s;
+                            if (!(s < 2*M_PI) ) s -= 2*M_PI;
+                        }
+                        break;
+                    case Y:
+                        s = std::acos(s); // return a value in [0,PI]
+                        if ( logical_xor( sweep_flag(), are_near(start_angle(), 0) ) )
+                        {
+                            s = 2*M_PI - s;
+                            if ( !(s < 2*M_PI) ) s -= 2*M_PI;
+                        }
+                        break;
+                }
+
+                //std::cerr << "s = " << rad_to_deg(s);
+                s = map_to_01(s);
+                //std::cerr << " -> t: " << s << std::endl;
+                if ( !(s < 0 || s > 1) )
+                    sol.push_back(s);
+                return sol;
+            }
+        }
+
+    }
 
     double rotx, roty;
     switch(d)
@@ -224,7 +333,7 @@ SVGEllipticalArc::roots(double v, Dim2 d) const
 // D(E(t,C),t) = E(t+PI/2,O)
 Curve* SVGEllipticalArc::derivative() const
 {
-    if (isDegenerate())
+    if (isDegenerate() && is_svg_compliant())
             return chord().derivative();
 
     SVGEllipticalArc* result = new SVGEllipticalArc(*this);
@@ -248,7 +357,7 @@ Curve* SVGEllipticalArc::derivative() const
 std::vector<Point>
 SVGEllipticalArc::pointAndDerivatives(Coord t, unsigned int n) const
 {
-    if (isDegenerate())
+    if (isDegenerate() && is_svg_compliant())
             return chord().pointAndDerivatives(t, n);
 
     unsigned int nn = n+1; // nn represents the size of the result vector.
@@ -335,7 +444,7 @@ std::vector<double> SVGEllipticalArc::
 allNearestPoints( Point const& p, double from, double to ) const
 {
     std::vector<double> result;
-    if (isDegenerate())
+    if (isDegenerate() && is_svg_compliant())
     {
         result.push_back( chord().nearestPoint(p, from, to) );
         return result;
@@ -571,31 +680,153 @@ allNearestPoints( Point const& p, double from, double to ) const
  */
 void SVGEllipticalArc::calculate_center_and_extreme_angles()
 {
-    if ( initialPoint() == finalPoint() )
-    {
-        m_rx = m_ry = m_rot_angle = m_start_angle = m_end_angle = 0;
-        m_center = initialPoint();
-        m_large_arc = m_sweep = false;
-        return;
-    }
-
-    m_rx = std::fabs(m_rx);
-    m_ry = std::fabs(m_ry);
-
     Point d = initialPoint() - finalPoint();
 
-    if ( are_near(ray(X), 0) || are_near(ray(Y), 0) )
+    if (is_svg_compliant())
     {
-        m_rx = L2(d) / 2;
-        m_ry = 0;
-        m_rot_angle = std::atan2(d[Y], d[X]);
-        if (m_rot_angle < 0) m_rot_angle += 2*M_PI;
-        m_start_angle = 0;
-        m_end_angle = M_PI;
-        m_center = middle_point(initialPoint(), finalPoint());
-        m_large_arc = false;
-        m_sweep = false;
-        return;
+        if ( initialPoint() == finalPoint() )
+        {
+            m_rx = m_ry = m_rot_angle = m_start_angle = m_end_angle = 0;
+            m_center = initialPoint();
+            m_large_arc = m_sweep = false;
+            return;
+        }
+
+        m_rx = std::fabs(m_rx);
+        m_ry = std::fabs(m_ry);
+
+        if ( are_near(ray(X), 0) || are_near(ray(Y), 0) )
+        {
+            m_rx = L2(d) / 2;
+            m_ry = 0;
+            m_rot_angle = std::atan2(d[Y], d[X]);
+            if (m_rot_angle < 0) m_rot_angle += 2*M_PI;
+            m_start_angle = 0;
+            m_end_angle = M_PI;
+            m_center = middle_point(initialPoint(), finalPoint());
+            m_large_arc = false;
+            m_sweep = false;
+            return;
+        }
+    }
+    else
+    {
+        if ( are_near(initialPoint(), finalPoint()) )
+        {
+            if ( are_near(ray(X), 0) && are_near(ray(Y), 0) )
+            {
+                m_start_angle = m_end_angle = 0;
+                m_center = initialPoint();
+                return;
+            }
+            else
+            {
+                THROW_RANGEERROR("initial and final point are the same");
+            }
+        }
+        if ( are_near(ray(X), 0) && are_near(ray(Y), 0) )
+        { // but initialPoint != finalPoint
+            THROW_RANGEERROR(
+                "there is no ellipse that satisfies the given constraints: "
+                "ray(X) == 0 && ray(Y) == 0 but initialPoint != finalPoint"
+            );
+        }
+        if ( are_near(ray(Y), 0) )
+        {
+            Point v = initialPoint() - finalPoint();
+            if ( are_near(L2sq(v), 4*ray(X)*ray(X)) )
+            {
+                double angle = std::atan2(v[Y], v[X]);
+                if (angle < 0) angle += 2*M_PI;
+                if ( are_near( angle, rotation_angle() ) )
+                {
+                    m_start_angle = 0;
+                    m_end_angle = M_PI;
+                    m_center = v/2 + finalPoint();
+                    return;
+                }
+                angle -= M_PI;
+                if ( angle < 0 ) angle += 2*M_PI;
+                if ( are_near( angle, rotation_angle() ) )
+                {
+                    m_start_angle = M_PI;
+                    m_end_angle = 0;
+                    m_center = v/2 + finalPoint();
+                    return;
+                }
+                THROW_RANGEERROR(
+                    "there is no ellipse that satisfies the given constraints: "
+                    "ray(Y) == 0 "
+                    "and slope(initialPoint - finalPoint) != rotation_angle "
+                    "and != rotation_angle + PI"
+                );
+            }
+            if ( L2sq(v) > 4*ray(X)*ray(X) )
+            {
+                THROW_RANGEERROR(
+                    "there is no ellipse that satisfies the given constraints: "
+                    "ray(Y) == 0 and distance(initialPoint, finalPoint) > 2*ray(X)"
+                );
+            }
+            else
+            {
+                THROW_RANGEERROR(
+                    "there is infinite ellipses that satisfy the given constraints: "
+                    "ray(Y) == 0  and distance(initialPoint, finalPoint) < 2*ray(X)"
+                );
+            }
+
+        }
+
+        if ( are_near(ray(X), 0) )
+        {
+            Point v = initialPoint() - finalPoint();
+            if ( are_near(L2sq(v), 4*ray(Y)*ray(Y)) )
+            {
+                double angle = std::atan2(v[Y], v[X]);
+                if (angle < 0) angle += 2*M_PI;
+                double rot_angle = rotation_angle() + M_PI/2;
+                if ( !(rot_angle < 2*M_PI) ) rot_angle -= 2*M_PI;
+                if ( are_near( angle, rot_angle ) )
+                {
+                    m_start_angle = M_PI/2;
+                    m_end_angle = 3*M_PI/2;
+                    m_center = v/2 + finalPoint();
+                    return;
+                }
+                angle -= M_PI;
+                if ( angle < 0 ) angle += 2*M_PI;
+                if ( are_near( angle, rot_angle ) )
+                {
+                    m_start_angle = 3*M_PI/2;
+                    m_end_angle = M_PI/2;
+                    m_center = v/2 + finalPoint();
+                    return;
+                }
+                THROW_RANGEERROR(
+                    "there is no ellipse that satisfies the given constraints: "
+                    "ray(X) == 0 "
+                    "and slope(initialPoint - finalPoint) != rotation_angle + PI/2 "
+                    "and != rotation_angle + (3/2)*PI"
+                );
+            }
+            if ( L2sq(v) > 4*ray(Y)*ray(Y) )
+            {
+                THROW_RANGEERROR(
+                    "there is no ellipse that satisfies the given constraints: "
+                    "ray(X) == 0 and distance(initialPoint, finalPoint) > 2*ray(Y)"
+                );
+            }
+            else
+            {
+                THROW_RANGEERROR(
+                    "there is infinite ellipses that satisfy the given constraints: "
+                    "ray(X) == 0  and distance(initialPoint, finalPoint) < 2*ray(Y)"
+                );
+            }
+
+        }
+
     }
 
     double sin_rot_angle = std::sin(rotation_angle());
@@ -631,12 +862,18 @@ void SVGEllipticalArc::calculate_center_and_extreme_angles()
 
         m_center = c * m + middle_point(initialPoint(), finalPoint());
     }
-    else
+    else if (is_svg_compliant())
     {
         double lamda = std::sqrt(1 / rad);
         m_rx *= lamda;
         m_ry *= lamda;
         m_center = middle_point(initialPoint(), finalPoint());
+    }
+    else
+    {
+        THROW_RANGEERROR(
+            "there is no ellipse that satisfies the given constraints"
+        );
     }
 
     Point sp((p[X] - c[X]) / m_rx, (p[Y] - c[Y]) / m_ry);
@@ -657,7 +894,7 @@ void SVGEllipticalArc::calculate_center_and_extreme_angles()
 D2<SBasis> SVGEllipticalArc::toSBasis() const
 {
 
-    if (isDegenerate())
+    if (isDegenerate() && is_svg_compliant())
         return chord().toSBasis();
 
     D2<SBasis> arc;
