@@ -862,7 +862,7 @@ void SVGEllipticalArc::calculate_center_and_extreme_angles()
 
         m_center = c * m + middle_point(initialPoint(), finalPoint());
     }
-    else if (is_svg_compliant())
+    else if (rad == 1 || is_svg_compliant())
     {
         double lamda = std::sqrt(1 / rad);
         m_rx *= lamda;
