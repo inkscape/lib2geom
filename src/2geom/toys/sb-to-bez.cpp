@@ -160,6 +160,9 @@ static vector<Geom::Point> sb_seg_to_bez(Piecewise<D2<SBasis> > const &M,double 
     return(result);
 }
 
+/**
+// this function is only used in commented code below
+
 //TODO: only works for t0=0 atm...
 static double draw_non_parametric_approx(cairo_t *cr, 
                              Piecewise<D2<SBasis> > const &M, 
@@ -184,13 +187,17 @@ static double draw_non_parametric_approx(cairo_t *cr,
     //return( bounds_fast(D).maxExtent() );   
     return -1.;
 }
+**/
 
+/**
+// this function is only used in commented code below
 static void draw_bez_approx_at(cairo_t *cr,Piecewise<D2<SBasis> > M,double t){
     vector<Geom::Point> bez_pts=sb_seg_to_bez(M,0,t);
     D2<SBasis> MM=handles_to_sbasis(bez_pts.begin(), 3);
     cairo_md_sb(cr, MM);
     cairo_stroke(cr);
 }
+**/
 
 //--------------------------------------------------------------
 
@@ -212,12 +219,14 @@ static SBasis cubicL2Project(Piecewise<SBasis> const &f){
     return e1*a1+e2*a2;
 }
 
+/**
+// this function is only used in commented code below
 
 //L2 approximation of M as b+n, where n is a section of the normal bundle.
 // M is supposed to be parametrized by arc length.
 static D2<SBasis> L2_proj(Piecewise<D2<SBasis> > const &M, 
                           D2<SBasis> b, 
-                          unsigned /*depth=0*/){
+                          unsigned depth=0){
     D2<SBasis> result, db=derivative(b);
     Piecewise<D2<SBasis> > udb = unitVector(db,.1);
     Piecewise<SBasis> sb = arcLengthSb(b);//TODO: don't compute unit vector twice!!
@@ -229,7 +238,7 @@ static D2<SBasis> L2_proj(Piecewise<D2<SBasis> > const &M,
     D2<Piecewise<SBasis> > nn = make_cuts_independent(n*rot90(udb));
     return (b+D2<SBasis>(cubicL2Project(nn[0]),cubicL2Project(nn[1])) );
 }
-
+**/
 
 
 #define SIZE 6
