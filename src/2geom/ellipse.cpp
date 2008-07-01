@@ -32,6 +32,7 @@
 
 
 #include "ellipse.h"
+#include "svg-elliptical-arc.h"
 #include "numeric/fitting-tool.h"
 #include "numeric/fitting-model.h"
 

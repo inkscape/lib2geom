@@ -41,6 +41,10 @@
 #include "utils.h"
 #include "bezier-curve.h"
 #include "sbasis-curve.h"  // for non-native methods
+#include "numeric/vector.h"
+#include "numeric/fitting-tool.h"
+#include "numeric/fitting-model.h"
+
 
 #include <algorithm>
 
@@ -327,6 +331,89 @@ operator<< (std::basic_ostream<charT> & os, const SVGEllipticalArc & ea)
 
     return os;
 }
+
+
+
+
+namespace detail
+{
+    struct ellipse_equation;
+}
+
+
+class make_elliptical_arc
+{
+  public:
+    typedef D2<SBasis> curve_type;
+
+    make_elliptical_arc( SVGEllipticalArc& _ea,
+                         curve_type const& _curve,
+                         unsigned int _total_samples,
+                         double _tolerance );
+
+  private:
+    bool bound_exceeded( unsigned int k, detail::ellipse_equation const & ee,
+                         double e1x, double e1y, double e2 );
+
+    bool check_bound(double A, double B, double C, double D, double E, double F);
+
+    void fit();
+
+    bool make_elliptiarc();
+
+    void print_bound_error(unsigned int k)
+    {
+        std::cerr
+            << "tolerance error" << std::endl
+            << "at point: " << k << std::endl
+            << "error value: "<< dist_err << std::endl
+            << "bound: " << dist_bound << std::endl
+            << "angle error: " << angle_err
+            << " (" << angle_tol << ")" << std::endl;
+    }
+
+  public:
+    bool operator()()
+    {
+        const NL::Vector & coeff = fitter.result();
+        fit();
+        if ( !check_bound(1, coeff[0], coeff[1], coeff[2], coeff[3], coeff[4]) )
+            return false;
+        if ( !(make_elliptiarc()) ) return false;
+        return true;
+    }
+
+    bool svg_compliant_flag() const
+    {
+        return svg_compliant;
+    }
+
+    void svg_compliant_on()
+    {
+        svg_compliant = true;
+    }
+
+    void svg_compliant_off()
+    {
+        svg_compliant = false;
+    }
+
+  private:
+      SVGEllipticalArc& ea;
+      const curve_type & curve;
+      Piecewise<D2<SBasis> > dcurve;
+      NL::LFMEllipse model;
+      NL::least_squeares_fitter<NL::LFMEllipse> fitter;
+      double tolerance, tol_at_extr, tol_at_center, angle_tol;
+      Point initial_point, final_point;
+      unsigned int N;
+      unsigned int last; // N-1
+      double partitions; // N-1
+      std::vector<Point> p; // sample points
+      double dist_err, dist_bound, angle_err;
+      bool svg_compliant;
+};
+
 
 } // end namespace Geom
 

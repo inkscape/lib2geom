@@ -36,12 +36,13 @@
 
 
 #include "point.h"
-#include "svg-elliptical-arc.h"
 #include "exception.h"
 
 
 namespace Geom
 {
+
+class SVGEllipticalArc;
 
 class Ellipse
 {
