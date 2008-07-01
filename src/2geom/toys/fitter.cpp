@@ -86,7 +86,7 @@ public:
     /*** Returns the index to the angle in angles that has the line of best fit
      * passing through mean */
     unsigned best_schematised_line(vector<Point>& angles, Point p,
-            double & mean, double & cost) {
+                                   double & /*mean*/, double & cost) {
         cost = DBL_MAX;
         unsigned bestAngle;
         for(unsigned i=0;i<angles.size();i++) {
@@ -755,7 +755,7 @@ void convertHSVtoRGB(const double H, const double S, const double V,
         case 5: R=V, G=p, B=q; break;
     }
 }
-void draw_everything(cairo_t* cr, int width, int height) {
+void draw_everything(cairo_t* cr, int /*width*/, int height) {
     std::ostringstream notify;
     cairo_set_source_rgba (cr, 0., 0.5, 0, 1);
     cairo_set_line_width (cr, 1);
@@ -795,7 +795,7 @@ void draw_everything(cairo_t* cr, int width, int height) {
     }
 }
 static gboolean
-expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
+expose_event(GtkWidget *widget, GdkEventExpose */*event*/, gpointer /*data*/)
 {
     cairo_t *cr = gdk_cairo_create (widget->window);
     
@@ -813,7 +813,7 @@ static void handle_mouse(GtkWidget* widget) {
     gtk_widget_queue_draw (widget);
 }
 
-static gint mouse_motion_event(GtkWidget* widget, GdkEventMotion* e, gpointer data) {
+static gint mouse_motion_event(GtkWidget* widget, GdkEventMotion* e, gpointer /*data*/) {
     Geom::Point mouse(e->x, e->y);
     
     if(e->state & (GDK_BUTTON1_MASK | GDK_BUTTON3_MASK)) {
@@ -833,7 +833,7 @@ static gint mouse_motion_event(GtkWidget* widget, GdkEventMotion* e, gpointer da
     return FALSE;
 }
 
-static gint mouse_event(GtkWidget* window, GdkEventButton* e, gpointer data) {
+static gint mouse_event(GtkWidget* window, GdkEventButton* e, gpointer /*data*/) {
     Geom::Point mouse(e->x, e->y);
     if(e->button == 1 || e->button == 3) {
         for(unsigned i = 0; i < handles.size(); i++) {
@@ -851,7 +851,7 @@ static gint mouse_event(GtkWidget* window, GdkEventButton* e, gpointer data) {
     return FALSE;
 }
 
-static gint mouse_release_event(GtkWidget* window, GdkEventButton* e, gpointer data) {
+static gint mouse_release_event(GtkWidget* /*window*/, GdkEventButton* /*e*/, gpointer /*data*/) {
     selected_handle = 0;
     return FALSE;
 }
@@ -889,14 +889,14 @@ static gint key_release_event(GtkWidget *widget, GdkEventKey *event, gpointer) {
 }
 
 static gint
-delete_event_cb(GtkWidget* window, GdkEventAny* e, gpointer data)
+delete_event_cb(GtkWidget* /*window*/, GdkEventAny* /*e*/, gpointer /*data*/)
 {
     gtk_main_quit();
     return FALSE;
 }
 
 static void
-on_open_activate(GtkMenuItem *menuitem, gpointer user_data) {
+on_open_activate(GtkMenuItem */*menuitem*/, gpointer /*user_data*/) {
     //TODO: show open dialog, get filename
     
     char const *const filename = "banana.svgd";
@@ -911,7 +911,7 @@ on_open_activate(GtkMenuItem *menuitem, gpointer user_data) {
 }
 
 static void
-on_about_activate(GtkMenuItem *menuitem, gpointer user_data) {
+on_about_activate(GtkMenuItem */*menuitem*/, gpointer /*user_data*/) {
     
 }
 

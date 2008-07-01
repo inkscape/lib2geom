@@ -130,9 +130,9 @@ laguerre(Poly p, const double tol) {
 }
 
 std::vector<double>
-laguerre_real_interval(Poly const & ply,
-                       const double lo, const double hi,
-                       const double tol) 
+laguerre_real_interval(Poly const & /*ply*/,
+                       const double /*lo*/, const double /*hi*/,
+                       const double /*tol*/) 
 {
     /* not implemented*/
     assert(false);

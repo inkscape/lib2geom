@@ -56,7 +56,7 @@ class Box3d: public Toy {
 
         Toy::draw(cr, notify, width, height, save);
     }
-    void first_time(int argc, char** argv) {
+    void first_time(int /*argc*/, char** /*argv*/) {
         // Finite images of the three vanishing points and the origin
         handles.push_back(&origin_handle);
         handles.push_back(&vanishing_points_handles);

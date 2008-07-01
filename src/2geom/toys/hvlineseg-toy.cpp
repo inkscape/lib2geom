@@ -123,7 +123,7 @@ class HLineSegToy : public Toy
     	Toy::draw(cr, notify, width, height, save);
     }
 
-    void init_controls(std::ostringstream *notify, int width, int height)
+    void init_controls(std::ostringstream */*notify*/, int /*width*/, int height)
     {
     	Point time_sp = Point(10, height - 80);
     	sliders[0].geometry(time_sp, 200);
@@ -270,7 +270,7 @@ class VLineSegToy : public Toy
     	Toy::draw(cr, notify, width, height, save);
     }
 
-    void init_controls(std::ostringstream *notify, int width, int height)
+    void init_controls(std::ostringstream */*notify*/, int /*width*/, int height)
     {
     	Point time_sp = Point(10, height - 80);
     	sliders[0].geometry(time_sp, 200);

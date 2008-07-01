@@ -40,7 +40,7 @@ void draw_number(cairo_t *cr, Geom::Point pos, int num) {
 //Framework Accessors
 void redraw() { gtk_widget_queue_draw(GTK_WIDGET(window)); }
 
-void Toy::draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save)
+void Toy::draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool /*save*/)
 {
     if(should_draw_bounds() == 1) {
         cairo_set_source_rgba (cr, 0., 0., 0, 0.8);
@@ -230,7 +230,7 @@ static gint delete_event(GtkWidget* window, GdkEventAny* e, gpointer data) {
     return FALSE;
 }
 
-static gboolean expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
+static gboolean expose_event(GtkWidget *widget, GdkEventExpose */*event*/, gpointer data)
 {
     (void)(data);
     cairo_t *cr = gdk_cairo_create(widget->window);

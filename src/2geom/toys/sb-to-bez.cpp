@@ -218,7 +218,7 @@ static SBasis cubicL2Project(Piecewise<SBasis> const &f){
 // M is supposed to be parametrized by arc length.
 static D2<SBasis> L2_proj(Piecewise<D2<SBasis> > const &M, 
                           D2<SBasis> b, 
-                          unsigned depth=0){
+                          unsigned /*depth=0*/){
     D2<SBasis> result, db=derivative(b);
     Piecewise<D2<SBasis> > udb = unitVector(db,.1);
     Piecewise<SBasis> sb = arcLengthSb(b);//TODO: don't compute unit vector twice!!

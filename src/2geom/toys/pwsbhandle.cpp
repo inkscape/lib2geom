@@ -29,7 +29,7 @@ public:
     virtual void save(FILE* f);
 };
 
-void PWSBHandle::draw(cairo_t *cr, bool annotes) {
+void PWSBHandle::draw(cairo_t *cr, bool /*annotes*/) {
     for(unsigned i = 0; i < pts.size(); i++) {
 	draw_circ(cr, pts[i]);
     }
@@ -43,7 +43,7 @@ void* PWSBHandle::hit(Geom::Point mouse) {
     return 0;
 }
 
-void PWSBHandle::move_to(void* hit, Geom::Point om, Geom::Point m) {
+void PWSBHandle::move_to(void* hit, Geom::Point /*om*/, Geom::Point m) {
     if(hit) {
 	*(Geom::Point*)hit = m;
 	Point* base = &pts[0];

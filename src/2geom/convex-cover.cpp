@@ -358,7 +358,7 @@ ConvexHull sweepline_intersection(ConvexHull const &a, ConvexHull const &b) {
  * (Proof: take any two points both in a and in b.  Any point between them is in a by convexity,
  * and in b by convexity, thus in both.  Need to prove still finite bounds.)
  */
-ConvexHull intersection(ConvexHull a, ConvexHull b) {
+ConvexHull intersection(ConvexHull /*a*/, ConvexHull /*b*/) {
     ConvexHull ret;
     /*
     int ai = 0, bi = 0;

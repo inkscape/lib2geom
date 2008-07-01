@@ -227,7 +227,7 @@ Crossings SimpleCrosser::crossings(Curve const &a, Curve const &b) {
  */
 void mono_pair(Path const &A, double Al, double Ah,
                Path const &B, double Bl, double Bh,
-               Crossings &ret, double tol, unsigned depth = 0) {
+               Crossings &ret, double /*tol*/, unsigned depth = 0) {
     if( Al >= Ah || Bl >= Bh) return;
     std::cout << " " << depth << "[" << Al << ", " << Ah << "]" << "[" << Bl << ", " << Bh << "]";
 

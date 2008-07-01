@@ -94,7 +94,7 @@ class Box3d: public Toy {
     }
     //int should_draw_bounds() {return 1;}
     
-    Geom::Point proj_image (cairo_t *cr, const double pt[4], const vector<Geom::Point> &handles)
+    Geom::Point proj_image (cairo_t *cr, const double pt[4], const vector<Geom::Point> &/*handles*/)
     {
         double res[3];
         for (int j = 0; j < 3; ++j) {

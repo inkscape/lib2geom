@@ -26,8 +26,8 @@ const unsigned order = 6;
 
 class SBez: public Toy {
     static int
-    func (double t, const double y[], double f[],
-          void *params)
+    func (double /*t*/, const double y[], double f[],
+          void */*params*/)
     {
         //double mu = *(double *)params;
         D2<SBasis> B = handles_to_sbasis(handlesptr->begin(), order);
@@ -42,7 +42,7 @@ class SBez: public Toy {
     }
      
     static int
-    jac (double t, const double y[], double *dfdy, 
+    jac (double /*t*/, const double y[], double *dfdy, 
          double dfdt[], void *params)
     {
         double mu = *(double *)params;

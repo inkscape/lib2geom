@@ -169,7 +169,7 @@ class SVGEllipticToy: public Toy
         cairo_restore(cr);
     }
 
-    void draw_controls(cairo_t* cr, int width, int height, std::ostringstream *notify)
+    void draw_controls(cairo_t* /*cr*/, int /*width*/, int height, std::ostringstream */*notify*/)
     {
         sliders[0].geometry(Point(50, height-100), 250);
         sliders[1].geometry(Point(50, height-70), 250);

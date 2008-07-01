@@ -5,7 +5,7 @@
 
 class DrawToy: public Toy {
     //Knot : Och : Och : Knot : Och : Och : Knot : Och : Och : ...
-    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
+    void draw(cairo_t *cr, std::ostringstream */*notify*/, int /*width*/, int /*height*/, bool save) {
         if(!save) {
             cairo_set_source_rgba (cr, 0, 0.5, 0, 1);
             cairo_set_line_width (cr, 1);

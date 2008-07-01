@@ -88,9 +88,9 @@ crop(Rect const &r, PathVector in) {
 					    half_plane(r[1].max(), Point(0,1), in))));
 }
 
-void split_to_quad_tree(Geom::QuadTree & qt, 
-			PathVector pv) {
-  
+void split_to_quad_tree(Geom::QuadTree & /*qt*/, 
+			PathVector /*pv*/) {
+    // not implemented
 }
 
 class QuadToy: public Toy {

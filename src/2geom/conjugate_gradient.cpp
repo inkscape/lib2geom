@@ -96,7 +96,7 @@ conjugate_gradient(valarray<double> const &A,
 		   valarray<double> &x, 
 		   valarray<double> const &b, 
 		   unsigned n, double tol,
-		   unsigned max_iterations, bool ortho1) {
+		   unsigned max_iterations, bool /*ortho1*/) {
     valarray<double> Ap(n), p(n), r(n);
     matrix_times_vector(A,x,Ap);
     r=b-Ap; 

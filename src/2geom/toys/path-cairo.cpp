@@ -45,7 +45,7 @@ void cairo_path(cairo_t *cr, Path const &p) {
         cairo_close_path(cr);
 }
 
-void cairo_path_handles(cairo_t *cr, Path const &p) {
+void cairo_path_handles(cairo_t */*cr*/, Path const &/*p*/) {
     //TODO
 }
 
@@ -106,7 +106,7 @@ void cairo_md_sb(cairo_t *cr, D2<SBasis> const &B) {
     cairo_path(cr, path_from_sbasis(B, 0.1));
 }
 
-void cairo_2dsb2d(cairo_t* cr, D2<SBasis2d> const &sb2, Point dir, double width) {
+void cairo_2dsb2d(cairo_t* cr, D2<SBasis2d> const &sb2, Point /*dir*/, double width) {
     D2<SBasis> B;
     for(int ui = 0; ui <= 10; ui++) {
         double u = ui/10.;

@@ -42,15 +42,15 @@ public:
     virtual void mouse_pressed(GdkEventButton* e);
     virtual void mouse_released(GdkEventButton* e);
 
-    virtual void key_hit(GdkEventKey *e) {}
+    virtual void key_hit(GdkEventKey */*e*/) {}
 
     //Cheapo way of informing the framework what the toy would like drawn for it.
     virtual bool should_draw_numbers() { return true; }
     virtual int should_draw_bounds() { return 0; }
     
-    virtual void first_time(int argc, char** argv) {}
+    virtual void first_time(int /*argc*/, char** /*argv*/) {}
     
-    virtual void resize_canvas(Geom::Rect const & s) {}
+    virtual void resize_canvas(Geom::Rect const & /*s*/) {}
 };
 
 //Framework Accesors

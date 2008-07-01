@@ -51,7 +51,7 @@ Toy::Toy() : hit_data(0) {
 }
 
 
-void Toy::draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save)
+void Toy::draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool /*save*/)
 {
     if(should_draw_bounds() == 1) {
         cairo_set_source_rgba (cr, 0., 0., 0, 0.8);
@@ -255,7 +255,7 @@ static gint delete_event(GtkWidget* window, GdkEventAny* e, gpointer data) {
     return FALSE;
 }
 
-static gboolean expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
+static gboolean expose_event(GtkWidget *widget, GdkEventExpose */*event*/, gpointer data)
 {
     (void)(data);
     cairo_t *cr = gdk_cairo_create(widget->window);
@@ -409,7 +409,7 @@ void init(int argc, char **argv, Toy* t, int width, int height) {
 }
 
 
-void Toggle::draw(cairo_t *cr, bool annotes) {
+void Toggle::draw(cairo_t *cr, bool /*annotes*/) {
     cairo_pattern_t* source = cairo_get_source(cr);
     double rc, gc, bc, aa;
     cairo_pattern_get_rgba(source, &rc, &gc, &bc, &aa);
@@ -554,7 +554,7 @@ void Slider::move_to(void* hit, Geom::Point om, Geom::Point m)
 
 
 
-void PointHandle::draw(cairo_t *cr, bool annotes) {
+void PointHandle::draw(cairo_t *cr, bool /*annotes*/) {
     draw_circ(cr, pos);
 }
 
@@ -564,7 +564,7 @@ void* PointHandle::hit(Geom::Point mouse) {
     return 0;
 }
 
-void PointHandle::move_to(void* hit, Geom::Point om, Geom::Point m) {
+void PointHandle::move_to(void* /*hit*/, Geom::Point /*om*/, Geom::Point m) {
     pos = m;
 }
 
@@ -591,7 +591,7 @@ void* PointSetHandle::hit(Geom::Point mouse) {
     return 0;
 }
 
-void PointSetHandle::move_to(void* hit, Geom::Point om, Geom::Point m) {
+void PointSetHandle::move_to(void* hit, Geom::Point /*om*/, Geom::Point m) {
     if(hit) {
 	*(Geom::Point*)hit = m;
     }

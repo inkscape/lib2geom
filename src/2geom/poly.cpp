@@ -167,7 +167,7 @@ Poly divide(Poly const &a, Poly const &b, Poly &r) {
     return c;
 }
 
-Poly gcd(Poly const &a, Poly const &b, const double tol) {
+Poly gcd(Poly const &a, Poly const &b, const double /*tol*/) {
     if(a.size() < b.size())
         return gcd(b, a);
     if(b.size() <= 0)

@@ -51,9 +51,9 @@ public:
     void set(bool state);
     void handle_click(GdkEventButton* e);
     void* hit(Geom::Point pos);
-    void move_to(void* hit, Geom::Point om, Geom::Point m) { /* not implemented */ }
-    void load(FILE* f) { /* not implemented */ }
-    void save(FILE* f) { /* not implemented */ }
+    void move_to(void* /*hit*/, Geom::Point /*om*/, Geom::Point /*m*/) { /* not implemented */ }
+    void load(FILE* /*f*/) { /* not implemented */ }
+    void save(FILE* /*f*/) { /* not implemented */ }
 };
 
 
@@ -180,15 +180,15 @@ public:
     virtual void mouse_pressed(GdkEventButton* e);
     virtual void mouse_released(GdkEventButton* e);
 
-    virtual void key_hit(GdkEventKey *e) {}
+    virtual void key_hit(GdkEventKey */*e*/) {}
 
     //Cheapo way of informing the framework what the toy would like drawn for it.
     virtual bool should_draw_numbers() { return true; }
     virtual int should_draw_bounds() { return 0; }
     
-    virtual void first_time(int argc, char** argv) {}
+    virtual void first_time(int /*argc*/, char** /*argv*/) {}
     
-    virtual void resize_canvas(Geom::Rect const & s) {}
+    virtual void resize_canvas(Geom::Rect const & /*s*/) {}
     virtual void load(FILE* f);
     virtual void save(FILE* f);
 };
