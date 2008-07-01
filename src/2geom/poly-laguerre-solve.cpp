@@ -50,8 +50,8 @@ cdouble laguerre_internal_complex(Poly const & p,
         //std::cout << "a = " << a << std::endl;
         a = n / (a + G);
         //std::cout << "a = " << a << std::endl;
-        if(shuffle_counter % shuffle_rate == 0)
-            ;//a *= shuffle[shuffle_counter / shuffle_rate];
+        //if(shuffle_counter % shuffle_rate == 0)
+            //a *= shuffle[shuffle_counter / shuffle_rate];
         xk -= a;
         shuffle_counter++;
         if(shuffle_counter >= 90)
@@ -132,7 +132,7 @@ laguerre(Poly p, const double tol) {
 std::vector<double>
 laguerre_real_interval(Poly const & /*ply*/,
                        const double /*lo*/, const double /*hi*/,
-                       const double /*tol*/) 
+                       const double /*tol*/)
 {
     /* not implemented*/
     assert(false);
