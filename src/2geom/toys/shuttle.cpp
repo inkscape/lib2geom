@@ -93,7 +93,6 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
             if(dom)
                 Dom = B;
             
-            double t = nearest(P, Dom);
             cairo_line_to(cr, P);
             dom = !dom;
         }

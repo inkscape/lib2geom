@@ -130,7 +130,6 @@ static vector<Geom::Point> sb_seg_to_bez(Piecewise<D2<SBasis> > const &M,double 
         c0= 3*((M1[0]-M0[0])*dM0[1]-(M1[1]-M0[1])*dM0[0])/dM1xdM0;
         a1=-(d2M1[0]*dM1[1]-d2M1[1]*dM1[0])/2/dM1xdM0;
         c1=-3*((M1[0]-M0[0])*dM1[1]-(M1[1]-M0[1])*dM1[0])/dM1xdM0;
-        double lbda0_max;
         if (fabs(a0)<ZERO){
             lambda1=c0;
             lambda0= a1*lambda1*lambda1 + c1;
