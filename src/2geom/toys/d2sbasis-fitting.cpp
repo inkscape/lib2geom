@@ -31,14 +31,14 @@
  */
 
 
-#include "numeric/fitting-tool.h"
-#include "numeric/fitting-model.h"
+#include <2geom/numeric/fitting-tool.h>
+#include <2geom/numeric/fitting-model.h>
 
-#include "d2.h"
-#include "sbasis.h"
+#include <2geom/d2.h>
+#include <2geom/sbasis.h>
 
-#include "path-cairo.h"
-#include "toy-framework-2.h"
+#include <2geom/toys/path-cairo.h>
+#include <2geom/toys/toy-framework-2.h>
 
 
 using namespace Geom;

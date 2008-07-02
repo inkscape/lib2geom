@@ -1,11 +1,11 @@
 #ifndef PATH_CAIRO
 #define PATH_CAIRO
 
-#include "sbasis.h"
-#include "sbasis-2d.h"
-#include "d2.h"
-#include "piecewise.h"
-#include "path.h"
+#include <2geom/sbasis.h>
+#include <2geom/sbasis-2d.h>
+#include <2geom/d2.h>
+#include <2geom/piecewise.h>
+#include <2geom/path.h>
 #include <vector>
 
 typedef struct _cairo cairo_t;

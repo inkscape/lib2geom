@@ -1,10 +1,10 @@
-#include "piecewise.h"
-#include "sbasis.h"
-#include "sbasis-math.h"
-#include "bezier-to-sbasis.h"
+#include <2geom/piecewise.h>
+#include <2geom/sbasis.h>
+#include <2geom/sbasis-math.h>
+#include <2geom/bezier-to-sbasis.h>
 
-#include "path-cairo.h"
-#include "toy-framework-2.h"
+#include <2geom/toys/path-cairo.h>
+#include <2geom/toys/toy-framework-2.h>
 
 #include <vector>
 

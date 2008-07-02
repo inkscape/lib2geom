@@ -1,14 +1,14 @@
-#include "d2.h"
-#include "sbasis.h"
-#include "bezier-to-sbasis.h"
-#include "path.h"
+#include <2geom/d2.h>
+#include <2geom/sbasis.h>
+#include <2geom/bezier-to-sbasis.h>
+#include <2geom/path.h>
 
-#include "path-cairo.h"
-#include "toy-framework-2.h"
+#include <2geom/toys/path-cairo.h>
+#include <2geom/toys/toy-framework-2.h>
 
 #define ZROOTS_TEST 0
 #if ZROOTS_TEST
-#include "zroots.c"
+#include <2geom/zroots.c"
 #endif
 
 #include <vector>

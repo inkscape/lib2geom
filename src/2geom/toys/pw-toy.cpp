@@ -1,9 +1,9 @@
-#include "piecewise.h"
-#include "sbasis.h"
-#include "bezier-to-sbasis.h"
+#include <2geom/piecewise.h>
+#include <2geom/sbasis.h>
+#include <2geom/bezier-to-sbasis.h>
 
-#include "path-cairo.h"
-#include "toy-framework-2.h"
+#include <2geom/toys/path-cairo.h>
+#include <2geom/toys/toy-framework-2.h>
 
 #include <vector>
 
@@ -33,7 +33,7 @@ void cairo_vert(cairo_t *cr, double x, vector<double> p) {
     }
 }
 
-#include "pwsbhandle.cpp"
+#include <2geom/toys/pwsbhandle.cpp>  // FIXME: This looks like it may give problems later, (including a .cpp file)
 
 class PwToy: public Toy {
     unsigned segs, handles_per_curve, curves;

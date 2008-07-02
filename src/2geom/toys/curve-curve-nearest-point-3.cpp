@@ -32,16 +32,16 @@
  */
 
 
-#include "d2.h"
-#include "sbasis.h"
-#include "path.h"
-#include "bezier-to-sbasis.h"
-#include "sbasis-geometric.h"
-#include "piecewise.h"
-#include "path-intersection.h"
+#include <2geom/d2.h>
+#include <2geom/sbasis.h>
+#include <2geom/path.h>
+#include <2geom/bezier-to-sbasis.h>
+#include <2geom/sbasis-geometric.h>
+#include <2geom/piecewise.h>
+#include <2geom/path-intersection.h>
 
-#include "path-cairo.h"
-#include "toy-framework-2.h"
+#include <2geom/toys/path-cairo.h>
+#include <2geom/toys/toy-framework-2.h>
 
 #include <algorithm>
 

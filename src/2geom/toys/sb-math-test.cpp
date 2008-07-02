@@ -30,16 +30,16 @@
  * the specific language governing rights and limitations.
  */
 
-#include "sbasis-math.h"
-#include "piecewise.h"
-#include "d2.h"
-#include "sbasis.h"
-#include "bezier-to-sbasis.h"
+#include <2geom/sbasis-math.h>
+#include <2geom/piecewise.h>
+#include <2geom/d2.h>
+#include <2geom/sbasis.h>
+#include <2geom/bezier-to-sbasis.h>
 
-#include "path.h"
-#include "path-cairo.h"
+#include <2geom/path.h>
+#include <2geom/toys/path-cairo.h>
 
-#include "toy-framework-2.h"
+#include <2geom/toys/toy-framework-2.h>
 
 
 #define ZERO 1e-3
@@ -51,7 +51,7 @@ using namespace std;
 #include <stdio.h>
 #include <math.h>
 
-#include "pwsbhandle.cpp"
+#include <2geom/toys/pwsbhandle.cpp>  // FIXME: This looks like it may give problems later, (including a .cpp file)
 
 //-Plot---------------------------------------------------------------
 static void plot(cairo_t* cr, double (*f)(double), Piecewise<SBasis> const &x, double vscale=1){

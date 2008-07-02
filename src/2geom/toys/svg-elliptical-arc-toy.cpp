@@ -29,10 +29,10 @@
 
 
 
-#include "path.h"
-#include "svg-elliptical-arc.h"
-#include "path-cairo.h"
-#include "toy-framework-2.h"
+#include <2geom/path.h>
+#include <2geom/svg-elliptical-arc.h>
+#include <2geom/toys/path-cairo.h>
+#include <2geom/toys/toy-framework-2.h>
 #include <vector>
 
 

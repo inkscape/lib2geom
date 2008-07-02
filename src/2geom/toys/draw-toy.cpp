@@ -1,7 +1,7 @@
-#include "path.h"
+#include <2geom/path.h>
 
-#include "path-cairo.h"
-#include "toy-framework.h"
+#include <2geom/toys/path-cairo.h>
+#include <2geom/toys/toy-framework.h>
 
 class DrawToy: public Toy {
     //Knot : Och : Och : Knot : Och : Och : Knot : Och : Och : ...

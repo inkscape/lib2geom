@@ -30,13 +30,13 @@
  * the specific language governing rights and limitations.
  */
 
-#include "d2.h"
-#include "sbasis.h"
-#include "path.h"
-#include "pathvector.h"
+#include <2geom/d2.h>
+#include <2geom/sbasis.h>
+#include <2geom/path.h>
+#include <2geom/pathvector.h>
 
-#include "path-cairo.h"
-#include "toy-framework-2.h"
+#include <2geom/toys/path-cairo.h>
+#include <2geom/toys/toy-framework-2.h>
 
 
 using namespace Geom;

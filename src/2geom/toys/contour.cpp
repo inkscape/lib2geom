@@ -2,13 +2,13 @@
  * Contour fitting of arbitrary SB2ds using minimisation of varations.
  * unstable - needs work (njh)
  */
-#include "sbasis-to-bezier.h"
-#include "d2.h"
-#include "sbasis-2d.h"
-#include "sbasis-poly.h"
-#include "bezier-to-sbasis.h"
+#include <2geom/sbasis-to-bezier.h>
+#include <2geom/d2.h>
+#include <2geom/sbasis-2d.h>
+#include <2geom/sbasis-poly.h>
+#include <2geom/bezier-to-sbasis.h>
 
-#include "path-cairo.h"
+#include <2geom/toys/path-cairo.h>
 
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_math.h>
@@ -21,8 +21,8 @@
 #include <iostream>
 #include <iterator>
 
-#include "toy-framework.h"
-#include "path-cairo.h"
+#include <2geom/toys/toy-framework.h>
+#include <2geom/toys/path-cairo.h>
 using namespace Geom;
 
 class curve_min{

@@ -1,19 +1,19 @@
-#include "sbasis.h"
-#include "bezier-to-sbasis.h"
-#include "solver.h"
-#include "sturm.h"
-#include "sbasis-poly.h"
-#include "nearestpoint.cpp"
-#include "poly-dk-solve.h"
-#include "poly-laguerre-solve.h"
-#include "path.h"
+#include <2geom/sbasis.h>
+#include <2geom/bezier-to-sbasis.h>
+#include <2geom/solver.h>
+#include <2geom/sturm.h>
+#include <2geom/sbasis-poly.h>
+#include <2geom/nearestpoint.cpp>  // FIXME: This looks like it may give problems later, (including a .cpp file)
+#include <2geom/poly-dk-solve.h>
+#include <2geom/poly-laguerre-solve.h>
+#include <2geom/path.h>
 
-#include "path-cairo.h"
-#include "toy-framework.h"
+#include <2geom/toys/path-cairo.h>
+#include <2geom/toys/toy-framework.h>
 
 #define ZROOTS_TEST 0
 #if ZROOTS_TEST
-#include "zroots.c"
+#include <2geom/zroots.c>
 #endif
 
 

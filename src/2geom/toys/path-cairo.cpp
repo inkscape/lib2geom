@@ -1,7 +1,7 @@
 #include <cairo.h>
-#include "path-cairo.h"
-#include "sbasis-to-bezier.h"
-#include "utils.h"
+#include <2geom/toys/path-cairo.h>
+#include <2geom/sbasis-to-bezier.h>
+#include <2geom/utils.h>
 
 using namespace Geom;
 
@@ -60,7 +60,7 @@ void cairo_path(cairo_t *cr, std::vector<Path> const &p) {
 /*** This is really just for debugging porpoises. */
 #include <sstream>
 #include <iostream>
-#include "interactive-bits.h"
+#include <2geom/toys/interactive-bits.h>
 #include <pango/pango.h>
 #include <pango/pangocairo.h>
 void cairo_path_handles(cairo_t *cr, Path const &p) {

@@ -1,14 +1,14 @@
-#include "d2.h"
-#include "sbasis.h"
+#include <2geom/d2.h>
+#include <2geom/sbasis.h>
 
-#include "shape.h"
-#include "path.h"
-#include "svg-path-parser.h"
+#include <2geom/shape.h>
+#include <2geom/path.h>
+#include <2geom/svg-path-parser.h>
 
-#include "path-cairo.h"
-#include "toy-framework-2.h"
-#include "transforms.h"
-#include "sbasis-geometric.h"
+#include <2geom/toys/path-cairo.h>
+#include <2geom/toys/toy-framework-2.h>
+#include <2geom/transforms.h>
+#include <2geom/sbasis-geometric.h>
 
 #include <cstdlib>
 

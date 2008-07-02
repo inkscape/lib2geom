@@ -1,12 +1,12 @@
 #include <string.h>
-#include "toy-framework-2.h"
+#include <2geom/toys/toy-framework-2.h>
 
-#include "cairo-features.h"
+#include <cairo-features.h>
 #if CAIRO_HAS_PDF_SURFACE
-#include "cairo-pdf.h"
+#include <cairo-pdf.h>
 #endif
 #if CAIRO_HAS_SVG_SURFACE
-#include "cairo-svg.h"
+#include <cairo-svg.h>
 #endif
 
 GtkWindow* window;
@@ -613,25 +613,25 @@ void PointSetHandle::save(FILE* f) {
     }
 }
 
-#include "bezier-to-sbasis.h"
+#include <2geom/bezier-to-sbasis.h>
 
 Geom::D2<Geom::SBasis> PointSetHandle::asBezier() {
     return handles_to_sbasis(pts.begin(), size()-1);
 }
 
 #if 0 // It was a nice idea to have self testing c++ files, but g++ 4.3 complains
-#include "d2.h"
-#include "sbasis.h"
-#include "sbasis-2d.h"
-#include "bezier-to-sbasis.h"
-#include "choose.h"
-#include "convex-cover.h"
+#include <2geom/d2.h>
+#include <2geom/sbasis.h>
+#include <2geom/sbasis-2d.h>
+#include <2geom/bezier-to-sbasis.h>
+#include <2geom/choose.h>
+#include <2geom/convex-cover.h>
 
-#include "path.h"
+#include <2geom/path.h>
 
-#include "path-cairo.h"
-#include "toy-framework.h"
-#include "sbasis-math.h"
+#include <2geom/toys/path-cairo.h>
+#include <2geom/toys/toy-framework.h>
+#include <2geom/sbasis-math.h>
 
 #include <vector>
 using std::vector;

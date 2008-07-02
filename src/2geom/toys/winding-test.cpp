@@ -1,13 +1,13 @@
-#include "path.h"
-#include "svg-path-parser.h"
-#include "path-intersection.h"
+#include <2geom/path.h>
+#include <2geom/svg-path-parser.h>
+#include <2geom/path-intersection.h>
 
 #include <iostream>
 #include <cstdlib>
 
-#include "path-cairo.h"
-#include "toy-framework-2.h"
-#include "ord.h"
+#include <2geom/toys/path-cairo.h>
+#include <2geom/toys/toy-framework-2.h>
+#include <2geom/ord.h>
 using namespace Geom;
 
 void draw_rect(cairo_t *cr, Point tl, Point br) {

@@ -1,12 +1,12 @@
 #include <string.h>
-#include "toy-framework.h"
+#include <2geom/toys/toy-framework.h>
 
-#include "cairo-features.h"
+#include <cairo-features.h>
 #if CAIRO_HAS_PDF_SURFACE
-#include "cairo-pdf.h"
+#include <cairo-pdf.h>
 #endif
 #if CAIRO_HAS_SVG_SURFACE
-#include "cairo-svg.h"
+#include <cairo-svg.h>
 #endif
 
 GtkWindow* window;

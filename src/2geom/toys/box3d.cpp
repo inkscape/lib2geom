@@ -1,4 +1,4 @@
-#include "toy-framework-2.h"
+#include <2geom/toys/toy-framework-2.h>
 
 #include <vector>
 using std::vector;

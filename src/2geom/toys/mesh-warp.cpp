@@ -3,19 +3,19 @@
  * (njh)
  */
 
-#include "quadtree.h"
-#include "path.h"
-#include "path-cairo.h"
-#include "toy-framework-2.h"
-#include "svg-path-parser.h"
+#include <2geom/quadtree.h>
+#include <2geom/path.h>
+#include <2geom/toys/path-cairo.h>
+#include <2geom/toys/toy-framework-2.h>
+#include <2geom/svg-path-parser.h>
 
-#include "sbasis.h"
-#include "sbasis-geometric.h"
-#include "sbasis-2d.h"
-#include "bezier-to-sbasis.h"
-#include "transforms.h"
-#include "sbasis-math.h"
-#include "pathvector.h"
+#include <2geom/sbasis.h>
+#include <2geom/sbasis-geometric.h>
+#include <2geom/sbasis-2d.h>
+#include <2geom/bezier-to-sbasis.h>
+#include <2geom/transforms.h>
+#include <2geom/sbasis-math.h>
+#include <2geom/pathvector.h>
 
 
 using std::vector;

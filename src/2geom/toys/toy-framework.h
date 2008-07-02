@@ -10,11 +10,11 @@
 #include <cairo.h>
 #include <vector>
 
-#include "assert.h"
-#include "interactive-bits.h"
-#include "point.h"
-#include "geom.h"
-#include "d2.h"
+#include <assert.h>
+#include <2geom/toys/interactive-bits.h>
+#include <2geom/point.h>
+#include <2geom/geom.h>
+#include <2geom/d2.h>
 
 using std::vector;
 

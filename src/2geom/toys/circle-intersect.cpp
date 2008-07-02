@@ -1,5 +1,5 @@
-#include "circle-circle.cpp"
-#include "toy-framework-2.h"
+#include <2geom/circle-circle.cpp>  // FIXME: This looks like it may give problems later, (including a .cpp file)
+#include <2geom/toys/toy-framework-2.h>
 
 using namespace Geom;
 

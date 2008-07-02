@@ -30,8 +30,8 @@
 
 
 #include <iostream>
-#include "svg-path.h"
-#include "svg-path-parser.h"
+#include <2geom/svg-path.h>
+#include <2geom/svg-path-parser.h>
 
 class SVGPathTestPrinter : public Geom::SVGPathSink {
 public:

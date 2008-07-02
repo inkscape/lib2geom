@@ -31,11 +31,11 @@
  * the specific language governing rights and limitations.
  */
 
-#include "path-cairo.h"
-#include "toy-framework-2.h"
+#include <2geom/toys/path-cairo.h>
+#include <2geom/toys/toy-framework-2.h>
 
-#include "elliptical-arc.h"
-#include "numeric/linear_system.h"
+#include <2geom/elliptical-arc.h>
+#include <2geom/numeric/linear_system.h>
 
 
 

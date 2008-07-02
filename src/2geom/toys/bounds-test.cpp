@@ -1,9 +1,9 @@
-#include "d2.h"
-#include "sbasis.h"
-#include "bezier-to-sbasis.h"
+#include <2geom/d2.h>
+#include <2geom/sbasis.h>
+#include <2geom/bezier-to-sbasis.h>
 
-#include "path-cairo.h"
-#include "toy-framework.h"
+#include <2geom/toys/path-cairo.h>
+#include <2geom/toys/toy-framework.h>
 
 #include <time.h>
 #include <vector>

@@ -1,7 +1,7 @@
-#include "sweep.h"
+#include <2geom/sweep.h>
 
-#include "path-cairo.h"
-#include "toy-framework.h"
+#include <2geom/toys/path-cairo.h>
+#include <2geom/toys/toy-framework.h>
 
 using namespace Geom;
 

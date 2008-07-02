@@ -1,4 +1,4 @@
-#include "interactive-bits.h"
+#include <2geom/toys/interactive-bits.h>
 //#include <pango/pangocairo.h>
 
 void draw_line_seg(cairo_t *cr, Geom::Point a, Geom::Point b) {

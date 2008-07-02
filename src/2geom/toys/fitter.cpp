@@ -18,10 +18,10 @@
 #include <string>
 #include <map>
 #include <cairo-pdf.h>
-#include "sbasis.h"
-#include "point.h"
-#include "interactive-bits.h"
-#include "geom.h"
+#include <2geom/sbasis.h>
+#include <2geom/point.h>
+#include <2geom/toys/interactive-bits.h>
+#include <2geom/geom.h>
 
 using std::string;
 using std::vector;

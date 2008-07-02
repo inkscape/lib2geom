@@ -30,14 +30,14 @@
 
 
 #include <iostream>
-#include "svg-path.h"
-#include "svg-path-parser.h"
-#include "sbasis.h"
-#include "sbasis-geometric.h"
-#include "bezier-to-sbasis.h"
-#include "sbasis-to-bezier.h"
-#include "d2.h"
-#include "piecewise.h"
+#include <2geom/svg-path.h>
+#include <2geom/svg-path-parser.h>
+#include <2geom/sbasis.h>
+#include <2geom/sbasis-geometric.h>
+#include <2geom/bezier-to-sbasis.h>
+#include <2geom/sbasis-to-bezier.h>
+#include <2geom/d2.h>
+#include <2geom/piecewise.h>
 
 Geom::Piecewise<Geom::D2<Geom::SBasis> >
 doEffect_pwd2 (Geom::Piecewise<Geom::D2<Geom::SBasis> > & pwd2_in, Geom::Piecewise<Geom::D2<Geom::SBasis> > & pattern)

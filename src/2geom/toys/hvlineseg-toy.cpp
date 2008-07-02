@@ -1,8 +1,8 @@
 
 
-#include "path-cairo.h"
-#include "toy-framework-2.h"
-#include "hvlinesegment.h"
+#include <2geom/toys/path-cairo.h>
+#include <2geom/toys/toy-framework-2.h>
+#include <2geom/hvlinesegment.h>
 
 using namespace Geom;
 

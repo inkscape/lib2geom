@@ -30,19 +30,19 @@
  * the specific language governing rights and limitations.
  */
 
-#include "d2.h"
-#include "sbasis.h"
-#include "path.h"
-#include "angle.h"
-#include "bezier-to-sbasis.h"
-#include "sbasis-geometric.h"
-#include "piecewise.h"
+#include <2geom/d2.h>
+#include <2geom/sbasis.h>
+#include <2geom/path.h>
+#include <2geom/angle.h>
+#include <2geom/bezier-to-sbasis.h>
+#include <2geom/sbasis-geometric.h>
+#include <2geom/piecewise.h>
 
-#include "path-cairo.h"
-#include "toy-framework-2.h"
+#include <2geom/toys/path-cairo.h>
+#include <2geom/toys/toy-framework-2.h>
 
-#include "nearest-point.h"
-#include "numeric/linear_system.h"
+#include <2geom/nearest-point.h>
+#include <2geom/numeric/linear_system.h>
 
 #include <algorithm>
 

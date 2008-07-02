@@ -1,14 +1,14 @@
-#include "d2.h"
-#include "sbasis.h"
-#include "sbasis-2d.h"
-#include "bezier-to-sbasis.h"
-#include "choose.h"
-#include "convex-cover.h"
+#include <2geom/d2.h>
+#include <2geom/sbasis.h>
+#include <2geom/sbasis-2d.h>
+#include <2geom/bezier-to-sbasis.h>
+#include <2geom/choose.h>
+#include <2geom/convex-cover.h>
 
-#include "path.h"
+#include <2geom/path.h>
 
-#include "path-cairo.h"
-#include "toy-framework.h"
+#include <2geom/toys/path-cairo.h>
+#include <2geom/toys/toy-framework.h>
 
 #include <vector>
 using std::vector;
