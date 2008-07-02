@@ -35,9 +35,9 @@
 #include <vector>
 #include <glib.h>
 
-#include "point.h"
+#include <2geom/point.h>
 
-#include "svg-path-parser.h"
+#include <2geom/svg-path-parser.h>
 
 namespace Geom {
 

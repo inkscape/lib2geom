@@ -28,18 +28,18 @@
  */
 
 
-#include "svg-elliptical-arc.h"
-#include "ellipse.h"
-#include "sbasis-geometric.h"
-#include "bezier-curve.h"
-#include "poly.h"
+#include <2geom/svg-elliptical-arc.h>
+#include <2geom/ellipse.h>
+#include <2geom/sbasis-geometric.h>
+#include <2geom/bezier-curve.h>
+#include <2geom/poly.h>
 
 #include <cfloat>
 #include <limits>
 
-#include "numeric/vector.h"
-#include "numeric/fitting-tool.h"
-#include "numeric/fitting-model.h"
+#include <2geom/numeric/vector.h>
+#include <2geom/numeric/fitting-tool.h>
+#include <2geom/numeric/fitting-model.h>
 
 
 

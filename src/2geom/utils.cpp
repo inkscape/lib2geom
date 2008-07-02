@@ -30,7 +30,7 @@
  */
 
 
-#include "utils.h"
+#include <2geom/utils.h>
 
 
 namespace Geom 

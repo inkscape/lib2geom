@@ -36,14 +36,14 @@
 #define _2GEOM_SVG_ELLIPTICAL_ARC_H_
 
 
-#include "curve.h"
-#include "angle.h"
-#include "utils.h"
-#include "bezier-curve.h"
-#include "sbasis-curve.h"  // for non-native methods
-#include "numeric/vector.h"
-#include "numeric/fitting-tool.h"
-#include "numeric/fitting-model.h"
+#include <2geom/curve.h>
+#include <2geom/angle.h>
+#include <2geom/utils.h>
+#include <2geom/bezier-curve.h>
+#include <2geom/sbasis-curve.h>  // for non-native methods
+#include <2geom/numeric/vector.h>
+#include <2geom/numeric/fitting-tool.h>
+#include <2geom/numeric/fitting-model.h>
 
 
 #include <algorithm>

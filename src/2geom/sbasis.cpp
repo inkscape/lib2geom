@@ -33,8 +33,8 @@
 
 #include <cmath>
 
-#include "sbasis.h"
-#include "isnan.h"
+#include <2geom/sbasis.h>
+#include <2geom/isnan.h>
 
 namespace Geom{
 
