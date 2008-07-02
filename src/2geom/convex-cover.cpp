@@ -29,7 +29,7 @@
  *
  */
 
-#include "convex-cover.h"
+#include <2geom/convex-cover.h>
 #include <algorithm>
 #include <map>
 /** Todo:

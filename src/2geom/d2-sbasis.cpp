@@ -1,4 +1,4 @@
-#include "d2.h"
+#include <2geom/d2.h>
 /* One would think that we would include d2-sbasis.h, however,
  * you cannot actually include it in anything - only d2 may import it.
  * This is due to the trickinesses of template submatching. */

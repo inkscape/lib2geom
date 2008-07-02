@@ -1,7 +1,7 @@
-#include "chebyshev.h"
+#include <2geom/chebyshev.h>
 
-#include "sbasis.h"
-#include "sbasis-poly.h"
+#include <2geom/sbasis.h>
+#include <2geom/sbasis-poly.h>
 
 #include <vector>
 using std::vector;

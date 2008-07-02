@@ -32,7 +32,7 @@
 #include <stdlib.h>
 #include <valarray>
 #include <cassert>
-#include "conjugate_gradient.h"
+#include <2geom/conjugate_gradient.h>
 
 /* lifted wholely from wikipedia. */
 

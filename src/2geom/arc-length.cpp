@@ -29,9 +29,9 @@
  *
  */
 
-#include "arc-length.h"
-#include "bezier-utils.h"
-#include "poly.h"
+#include <2geom/arc-length.h>
+#include <2geom/bezier-utils.h>
+#include <2geom/poly.h>
 using namespace Geom;
 
 /** Calculates the length of a cubic element through subdivision.

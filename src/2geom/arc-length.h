@@ -28,7 +28,7 @@
  *
  */
 
-#include "path2.h"
+#include <2geom/path2.h>
 
 /*** Routines in this group return a path that looks the same, but
  * include extra knots for certain points of interest. */

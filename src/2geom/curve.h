@@ -38,14 +38,14 @@
 #define _2GEOM_CURVE_H_
 
 
-#include "coord.h"
-#include "point.h"
-#include "interval.h"
-#include "nearest-point.h"
-#include "sbasis.h"
-#include "d2.h"
-#include "matrix.h"
-#include "exception.h"
+#include <2geom/coord.h>
+#include <2geom/point.h>
+#include <2geom/interval.h>
+#include <2geom/nearest-point.h>
+#include <2geom/sbasis.h>
+#include <2geom/d2.h>
+#include <2geom/matrix.h>
+#include <2geom/exception.h>
 
 #include <vector>
 

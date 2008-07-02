@@ -1,5 +1,5 @@
-#include "basic-intersection.h"
-#include "exception.h"
+#include <2geom/basic-intersection.h>
+#include <2geom/exception.h>
 
 unsigned intersect_steps = 0;
 

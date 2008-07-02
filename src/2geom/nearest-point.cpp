@@ -32,7 +32,7 @@
  */
 
 
-#include "nearest-point.h"
+#include <2geom/nearest-point.h>
 
 namespace Geom
 {

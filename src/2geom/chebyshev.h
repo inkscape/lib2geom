@@ -1,8 +1,8 @@
 #ifndef _CHEBYSHEV
 #define _CHEBYSHEV
 
-#include "sbasis.h"
-#include "interval.h"
+#include <2geom/sbasis.h>
+#include <2geom/interval.h>
 
 /*** Conversion between Chebyshev approximation and SBasis.
  * 

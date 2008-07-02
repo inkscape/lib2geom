@@ -35,8 +35,8 @@
 #define _2GEOM_ELLIPSE_H_
 
 
-#include "point.h"
-#include "exception.h"
+#include <2geom/point.h>
+#include <2geom/exception.h>
 
 
 namespace Geom

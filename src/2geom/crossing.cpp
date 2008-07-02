@@ -1,5 +1,5 @@
-#include "crossing.h"
-#include "path.h"
+#include <2geom/crossing.h>
+#include <2geom/path.h>
 
 namespace Geom {
 

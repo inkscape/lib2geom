@@ -4,10 +4,10 @@
 #ifndef __2GEOM_SBASIS_CURVE_H
 #define __2GEOM_SBASIS_CURVE_H
 
-#include "sbasis.h"
-#include "sbasis-2d.h"
-#include "piecewise.h"
-#include "matrix.h"
+#include <2geom/sbasis.h>
+#include <2geom/sbasis-2d.h>
+#include <2geom/piecewise.h>
+#include <2geom/matrix.h>
 
 //TODO: implement intersect
 
