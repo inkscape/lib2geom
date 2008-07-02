@@ -35,10 +35,10 @@
 #define _2GEOM_FITTING_TOOL_H_
 
 
-#include "matrix.h"
-#include "vector.h"
+#include <2geom/numeric/matrix.h>
+#include <2geom/numeric/vector.h>
 
-#include "point.h"
+#include <2geom/point.h>
 
 #include <vector>
 

@@ -1,4 +1,4 @@
-#include "poly-laguerre-solve.h"
+#include <2geom/poly-laguerre-solve.h>
 #include <iterator>
 
 typedef std::complex<double> cdouble;

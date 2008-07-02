@@ -29,7 +29,7 @@
  *
  */
 
-#include "piecewise.h"
+#include <2geom/piecewise.h>
 #include <iterator>
 #include <map>
 

@@ -1,4 +1,4 @@
-#include "poly.h"
+#include <2geom/poly.h>
 
 Poly Poly::operator*(const Poly& p) const {
     Poly result; 

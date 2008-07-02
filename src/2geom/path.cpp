@@ -34,7 +34,7 @@
 
 
 
-#include "path.h"
+#include <2geom/path.h>
 
 
 namespace Geom 

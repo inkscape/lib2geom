@@ -373,8 +373,8 @@ D2<T> integral(D2<T> const & a) {
 
 } //end namespace Geom
 
-#include "rect.h"
-#include "d2-sbasis.h"
+#include <2geom/rect.h>
+#include <2geom/d2-sbasis.h>
 
 namespace Geom{
 

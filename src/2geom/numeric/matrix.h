@@ -38,7 +38,7 @@
 #ifndef _NL_MATRIX_H_
 #define _NL_MATRIX_H_
 
-#include "vector.h"
+#include <2geom/numeric/vector.h>
 
 #include <cassert>
 #include <utility>    // for std::pair

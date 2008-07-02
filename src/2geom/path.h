@@ -38,7 +38,7 @@
 #define SEEN_GEOM_PATH_H
 
 
-#include "curves.h"
+#include <2geom/curves.h>
 
 #include <iterator>
 

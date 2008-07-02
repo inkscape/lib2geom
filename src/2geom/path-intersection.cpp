@@ -1,9 +1,9 @@
-#include "path-intersection.h"
+#include <2geom/path-intersection.h>
 
-#include "ord.h"
+#include <2geom/ord.h>
 
 //for path_direction:
-#include "sbasis-geometric.h"
+#include <2geom/sbasis-geometric.h>
 
 namespace Geom {
 

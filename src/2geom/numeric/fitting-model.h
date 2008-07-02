@@ -35,13 +35,13 @@
 #define _2GEOM_FITTING_MODEL_H_
 
 
-#include "d2.h"
-#include "sbasis.h"
-#include "bezier.h"
-#include "bezier-curve.h"
-#include "poly.h"
-#include "ellipse.h"
-#include "utils.h"
+#include <2geom/d2.h>
+#include <2geom/sbasis.h>
+#include <2geom/bezier.h>
+#include <2geom/bezier-curve.h>
+#include <2geom/poly.h>
+#include <2geom/ellipse.h>
+#include <2geom/utils.h>
 
 
 namespace Geom { namespace NL {

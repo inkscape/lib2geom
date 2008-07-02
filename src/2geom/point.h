@@ -7,8 +7,8 @@
 
 #include <iostream>
 
-#include "coord.h"
-#include "utils.h"
+#include <2geom/coord.h>
+#include <2geom/utils.h>
 
 namespace Geom {
 
