@@ -20,9 +20,6 @@ using namespace Geom;
 
 void cairo_region(cairo_t *cr, Region const &r) {
     double d = 5.;
-    //cairo_set_source_rgba(cr, uniform(), uniform(), uniform(), .25);
-    //cairo_set_line_width(cr, uniform()*4 + 2);
-    //if(!r.isFill()) cairo_set_source_rgba(cr, 1, 1, 1, .25); else cairo_set_source_rgba(cr, 0, 0, 0, .25);
     if(!r.isFill()) cairo_set_dash(cr, &d, 1, 0);
     cairo_path(cr, r);
     cairo_stroke(cr);
@@ -36,6 +33,15 @@ void cairo_regions(cairo_t *cr, Regions const &p) {
 
 void cairo_shape(cairo_t *cr, Shape const &s) {
     cairo_regions(cr, s.getContent());
+}
+
+void show_stitches(cairo_t *cr, Shape const &s) {
+    Regions const &p = s.getContent();
+    cairo_set_source_rgb(cr, 1, 0, 0);
+    for (Regions::const_iterator j = p.begin(); j != p.end() ; ++j ) {
+        cairo_path_stitches(cr, *j);
+        cairo_stroke(cr);
+    }
 }
 
 void mark_crossings(cairo_t *cr, Shape const &a, Shape const &b) {
@@ -99,8 +105,12 @@ class BoolOps: public Toy {
         
         
         Shape s = boolop(as, bst, ttl);
+
+        cairo_set_line_cap(cr, CAIRO_LINE_CAP_SQUARE);
+        cairo_set_line_join(cr, CAIRO_LINE_JOIN_BEVEL);
         
         cairo_set_source_rgba(cr, 182./255, 200./255, 183./255, 1);
+        cairo_set_line_width(cr, 1);
         if(!s.isFill()) {
             cairo_rectangle(cr, 0, 0, width, height);
             cairo_fill(cr);
@@ -110,13 +120,24 @@ class BoolOps: public Toy {
         cairo_fill(cr);
         cairo_set_source_rgba(cr, 0, 0, 0, 1);
         cairo_shape(cr, s);
-        
+
+        cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
+        cairo_set_line_join(cr, CAIRO_LINE_JOIN_ROUND);
+        cairo_set_source_rgb(cr, 1, 0, 0);
+        cairo_set_line_width(cr, 8);
+        show_stitches(cr, s);
+
         double x = width - 60, y = height - 60;
         
         //cairo_shape(cr, as);
         //cairo_shape(cr, bst);
         
         //Draw the info
+
+        cairo_set_source_rgb(cr, 0, 0, 0);
+        cairo_set_line_width(cr, 1);
+        cairo_set_line_cap(cr, CAIRO_LINE_CAP_SQUARE);
+        cairo_set_line_join(cr, CAIRO_LINE_JOIN_MITER);
         
         draw_text(cr, Point(x + 20, y - 34), "A");
         draw_text(cr, Point(x + 5, y - 18),  "T");

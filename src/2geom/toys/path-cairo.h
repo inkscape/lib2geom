@@ -13,6 +13,8 @@ typedef struct _cairo cairo_t;
 void cairo_curve(cairo_t *cr, Geom::Curve const &c);
 void cairo_path(cairo_t *cr, Geom::Path const &p);
 void cairo_path(cairo_t *cr, std::vector<Geom::Path> const &p);
+void cairo_path_stitches(cairo_t *cr, Geom::Path const &p);
+void cairo_path_stitches(cairo_t *cr, std::vector<Geom::Path> const &p);
 
 void cairo_md_sb(cairo_t *cr, Geom::D2<Geom::SBasis> const &p);
 void cairo_md_sb_handles(cairo_t *cr, Geom::D2<Geom::SBasis> const &p);

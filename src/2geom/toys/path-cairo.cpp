@@ -45,6 +45,17 @@ void cairo_path(cairo_t *cr, Path const &p) {
         cairo_close_path(cr);
 }
 
+void cairo_path_stitches(cairo_t *cr, Path const &p) {
+    Path::const_iterator iter;
+    for ( iter = p.begin() ; iter != p.end() ; ++iter ) {
+        Curve const &c=*iter;
+        if (dynamic_cast<Path::StitchSegment const *>(&c)) {
+            cairo_move_to(cr, c.initialPoint()[X], c.initialPoint()[Y]);
+            cairo_line_to(cr, c.finalPoint()[X], c.finalPoint()[Y]);
+        }
+    }
+}
+
 void cairo_path_handles(cairo_t */*cr*/, Path const &/*p*/) {
     //TODO
 }
@@ -53,6 +64,13 @@ void cairo_path(cairo_t *cr, std::vector<Path> const &p) {
     std::vector<Path>::const_iterator it;
     for(it = p.begin(); it != p.end(); it++) {
         cairo_path(cr, *it);
+    }
+}
+
+void cairo_path_stitches(cairo_t *cr, std::vector<Path> const &p) {
+    std::vector<Path>::const_iterator it;
+    for ( it = p.begin() ; it != p.end() ; it++ ) {
+        cairo_path_stitches(cr, *it);
     }
 }
 
