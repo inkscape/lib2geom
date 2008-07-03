@@ -175,28 +175,35 @@ public:
   typedef Sequence::size_type size_type;
   typedef Sequence::difference_type difference_type;
 
+  class ClosingSegment : public LineSegment {
+  public:
+    ClosingSegment() : LineSegment() {}
+    ClosingSegment(Point const &p1, Point const &p2) : LineSegment(p1, p2) {}
+    virtual Curve *duplicate() const { return new ClosingSegment(*this); }
+  };
+
   Path()
-  : final_(new LineSegment()), closed_(false)
+  : final_(new ClosingSegment()), closed_(false)
   {
     curves_.push_back(final_);
   }
 
   Path(Path const &other)
-  : final_(new LineSegment()), closed_(other.closed_)
+  : final_(new ClosingSegment()), closed_(other.closed_)
   {
     curves_.push_back(final_);
     insert(begin(), other.begin(), other.end());
   }
 
   explicit Path(Point p)
-  : final_(new LineSegment(p, p)), closed_(false)
+  : final_(new ClosingSegment(p, p)), closed_(false)
   {
     curves_.push_back(final_);
   }
 
   template <typename Impl>
   Path(BaseIterator<Impl> first, BaseIterator<Impl> last, bool closed=false)
-  : closed_(closed), final_(new LineSegment())
+  : closed_(closed), final_(new ClosingSegment())
   {
     curves_.push_back(final_);
     insert(begin(), first, last);
@@ -638,7 +645,7 @@ private:
                         Sequence::iterator last);
 
   Sequence curves_;
-  LineSegment *final_;
+  ClosingSegment *final_;
   bool closed_;
   
 };  // end class Path
