@@ -61,3 +61,12 @@ print sb
 sb = sb*sb
 print sb
 print sb[0]
+
+print "terms"
+for i in range(6):
+    sb = SBasis()
+    for j in range(3):
+        sb.append(Linear(i==2*j,i==2*j+1))
+    print sb
+    
+    print sbasis_to_poly(sb)

@@ -324,7 +324,7 @@ double Lmax(Point p) {
 }
 
 unsigned wangs_theorem(OldBezier a) {
-    return 12; // seems a good approximation!
+    return 6; // seems a good approximation!
     double la1 = Lmax( ( a.p[2] - a.p[1] ) - (a.p[1] - a.p[0]) );
     double la2 = Lmax( ( a.p[3] - a.p[2] ) - (a.p[2] - a.p[1]) );
     double l0 = std::max(la1, la2);
