@@ -48,6 +48,7 @@
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_blas.h>
 
+
 namespace Geom { namespace NL {
 
 namespace detail

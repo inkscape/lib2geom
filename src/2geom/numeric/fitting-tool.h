@@ -3,7 +3,7 @@
  *
  * Authors:
  *      Marco Cecchetti <mrcekets at gmail.com>
- * 
+ *
  * Copyright 2008  authors
  *
  * This library is free software; you can redistribute it and/or
@@ -31,12 +31,12 @@
  */
 
 
-#ifndef _2GEOM_FITTING_TOOL_H_
-#define _2GEOM_FITTING_TOOL_H_
+#ifndef _NL_FITTING_TOOL_H_
+#define _NL_FITTING_TOOL_H_
 
 
-#include <2geom/numeric/matrix.h>
 #include <2geom/numeric/vector.h>
+#include <2geom/numeric/matrix.h>
 
 #include <2geom/point.h>
 
@@ -55,7 +55,7 @@ class lsf_base
     typedef ModelT                                   model_type;
     typedef typename model_type::parameter_type      parameter_type;
     typedef typename model_type::value_type          value_type;
-    
+
     lsf_base( model_type const& _model, size_t forecasted_samples )
         : m_model(_model),
           m_total_samples(0),
@@ -63,7 +63,7 @@ class lsf_base
           m_psdinv_matrix(NULL)
     {
     }
-          
+
     // compute pseudo inverse
     void update()
     {
@@ -76,12 +76,12 @@ class lsf_base
         m_psdinv_matrix = new Matrix( pseudo_inverse(mv) );
         assert(m_psdinv_matrix != NULL);
     }
-        
+
     size_t total_samples() const
     {
         return m_total_samples;
     }
- 
+
     bool is_full() const
     {
         return (total_samples() == m_matrix.rows());
@@ -91,8 +91,8 @@ class lsf_base
     {
         m_total_samples = 0;
     }
-    
-    virtual 
+
+    virtual
     ~lsf_base()
     {
         if (m_psdinv_matrix != NULL)
@@ -100,13 +100,13 @@ class lsf_base
             delete m_psdinv_matrix;
         }
     }
-    
+
   protected:
     const model_type &      m_model;
     size_t                  m_total_samples;
     Matrix                  m_matrix;
     Matrix*                 m_psdinv_matrix;
-    
+
 };  // end class lsf_base
 
 
@@ -114,10 +114,10 @@ class lsf_base
 
 template< typename ModelT, typename ValueType = typename ModelT::value_type>
 class lsf_solution
-{    
+{
 };
 
-// a fitting process on samples with value of type double 
+// a fitting process on samples with value of type double
 // produces a solution of type Vector
 template< typename ModelT>
 class lsf_solution<ModelT, double>
@@ -129,19 +129,19 @@ public:
     typedef typename model_type::value_type         value_type;
     typedef Vector                                  solution_type;
     typedef lsf_base<model_type>                    base_type;
-    
+
     using base_type::m_model;
     using base_type::m_psdinv_matrix;
     using base_type::total_samples;
 
 public:
-    lsf_solution<ModelT, double>( model_type const& _model, 
+    lsf_solution<ModelT, double>( model_type const& _model,
                                   size_t forecasted_samples )
         : base_type(_model, forecasted_samples),
           m_solution(_model.size())
     {
     }
-    
+
     template< typename VectorT >
     solution_type& result(VectorT const& sample_values)
     {
@@ -150,14 +150,14 @@ public:
         m_solution = (*m_psdinv_matrix) * sv;
         return m_solution;
     }
-    
+
     // a comparison between old sample values and the new ones is performed
     // in order to minimize computation
-    // prerequisite: 
+    // prerequisite:
     //     old_sample_values.size() == new_sample_values.size()
     //     no update() call can be performed between two result invocations
     template< typename VectorT >
-    solution_type& result( VectorT const& old_sample_values, 
+    solution_type& result( VectorT const& old_sample_values,
                            VectorT const& new_sample_values )
     {
         assert(old_sample_values.size() == total_samples());
@@ -186,14 +186,14 @@ public:
     {
         return m_solution;
     }
-    
+
 private:
     solution_type m_solution;
-    
+
 }; // end class lsf_solution<ModelT, double>
 
 
-// a fitting process on samples with value of type Point 
+// a fitting process on samples with value of type Point
 // produces a solution of type Matrix (with 2 columns)
 template< typename ModelT>
 class lsf_solution<ModelT, Point>
@@ -205,19 +205,19 @@ public:
     typedef typename model_type::value_type         value_type;
     typedef Matrix                                  solution_type;
     typedef lsf_base<model_type>                    base_type;
-    
+
     using base_type::m_model;
     using base_type::m_psdinv_matrix;
     using base_type::total_samples;
-    
+
 public:
-    lsf_solution<ModelT, Point>( model_type const& _model, 
+    lsf_solution<ModelT, Point>( model_type const& _model,
                                  size_t forecasted_samples )
         : base_type(_model, forecasted_samples),
           m_solution(_model.size(), 2)
     {
     }
-    
+
     solution_type& result(std::vector<Point> const& sample_values)
     {
         assert(sample_values.size() == total_samples());
@@ -230,13 +230,13 @@ public:
         m_solution = (*m_psdinv_matrix) * svm;
         return m_solution;
     }
-    
+
     // a comparison between old sample values and the new ones is performed
     // in order to minimize computation
-    // prerequisite: 
+    // prerequisite:
     //     old_sample_values.size() == new_sample_values.size()
     //     no update() call can to be performed between two result invocations
-    solution_type& result( std::vector<Point> const& old_sample_values, 
+    solution_type& result( std::vector<Point> const& old_sample_values,
                            std::vector<Point> const& new_sample_values )
     {
         assert(old_sample_values.size() == total_samples());
@@ -269,15 +269,15 @@ public:
         m_solution += delta;
         return m_solution;
     }
-    
+
     solution_type& result()
     {
         return m_solution;
     }
-    
+
 private:
     solution_type m_solution;
-    
+
 }; // end class lsf_solution<ModelT, Point>
 
 
@@ -301,20 +301,20 @@ class lsf_with_fixed_terms<ModelT, false>
     typedef typename model_type::value_type             value_type;
     typedef lsf_solution<model_type>                    base_type;
     typedef typename base_type::solution_type           solution_type;
-    
+
     using base_type::total_samples;
     using base_type::is_full;
     using base_type::m_matrix;
     using base_type::m_total_samples;
     using base_type::m_model;
-    
+
   public:
-      lsf_with_fixed_terms<ModelT, false>( model_type const& _model, 
+      lsf_with_fixed_terms<ModelT, false>( model_type const& _model,
                                            size_t forecasted_samples )
         : base_type(_model, forecasted_samples)
     {
     }
-    
+
     void append(parameter_type const& sample_parameter)
     {
         assert(!is_full());
@@ -322,7 +322,7 @@ class lsf_with_fixed_terms<ModelT, false>
         m_model.feed(row, sample_parameter);
         ++m_total_samples;
     }
-    
+
     void append_copy(size_t sample_index)
     {
         assert(!is_full());
@@ -332,13 +332,13 @@ class lsf_with_fixed_terms<ModelT, false>
         dest_row = source_row;
         ++m_total_samples;
     }
-    
+
 }; // end class lsf_with_fixed_terms<ModelT, false>
 
 
 // fitting tool for partially known models
 template< typename ModelT>
-class lsf_with_fixed_terms<ModelT, true> 
+class lsf_with_fixed_terms<ModelT, true>
     : public lsf_solution<ModelT>
 {
   public:
@@ -346,16 +346,16 @@ class lsf_with_fixed_terms<ModelT, true>
     typedef typename model_type::parameter_type         parameter_type;
     typedef typename model_type::value_type             value_type;
     typedef lsf_solution<model_type>                    base_type;
-    typedef typename base_type::solution_type           solution_type;    
-    
+    typedef typename base_type::solution_type           solution_type;
+
     using base_type::total_samples;
     using base_type::is_full;
     using base_type::m_matrix;
     using base_type::m_total_samples;
     using base_type::m_model;
-    
+
   public:
-    lsf_with_fixed_terms<ModelT, true>( model_type const& _model, 
+    lsf_with_fixed_terms<ModelT, true>( model_type const& _model,
                                         size_t forecasted_samples )
         : base_type(_model, forecasted_samples),
           m_vector(forecasted_samples),
@@ -369,7 +369,7 @@ class lsf_with_fixed_terms<ModelT, true>
         m_model.feed(row, m_vector[total_samples()], sample_parameter);
         ++m_total_samples;
     }
-    
+
     void append_copy(size_t sample_index)
     {
         assert(!is_full());
@@ -380,7 +380,7 @@ class lsf_with_fixed_terms<ModelT, true>
         m_vector[total_samples()] = m_vector[sample_index];
         ++m_total_samples;
     }
-    
+
     void update()
     {
         base_type::update();
@@ -392,8 +392,8 @@ class lsf_with_fixed_terms<ModelT, true>
         m_vector_view = new VectorView(m_vector, base_type::total_samples());
         assert(m_vector_view != NULL);
     }
-            
-    virtual 
+
+    virtual
     ~lsf_with_fixed_terms<model_type, true>()
     {
         if (m_vector_view != NULL)
@@ -401,12 +401,12 @@ class lsf_with_fixed_terms<ModelT, true>
             delete m_vector_view;
         }
     }
-    
+
   protected:
     Vector          m_vector;
     VectorView*     m_vector_view;
-    
-}; // end class lsf_with_fixed_terms<ModelT, true> 
+
+}; // end class lsf_with_fixed_terms<ModelT, true>
 
 
 } // end namespace detail
@@ -432,9 +432,9 @@ class least_squeares_fitter<ModelT, ValueType, false>
     typedef typename base_type::parameter_type          parameter_type;
     typedef typename base_type::value_type              value_type;
     typedef typename base_type::solution_type           solution_type;
-  
+
   public:
-    least_squeares_fitter<ModelT, ValueType, false>( model_type const& _model, 
+    least_squeares_fitter<ModelT, ValueType, false>( model_type const& _model,
                                                      size_t forecasted_samples )
           : base_type(_model, forecasted_samples)
   {
@@ -452,17 +452,17 @@ class least_squeares_fitter<ModelT, double, true>
     typedef typename base_type::parameter_type          parameter_type;
     typedef typename base_type::value_type              value_type;
     typedef typename base_type::solution_type           solution_type;
-    
+
     using base_type::m_vector_view;
     using base_type::result;
-    
+
   public:
-    least_squeares_fitter<ModelT, double, true>( model_type const& _model, 
+    least_squeares_fitter<ModelT, double, true>( model_type const& _model,
                                                  size_t forecasted_samples )
         : base_type(_model, forecasted_samples)
     {
     }
-    
+
     template< typename VectorT >
     solution_type& result(VectorT const& sample_values)
     {
@@ -472,7 +472,7 @@ class least_squeares_fitter<ModelT, double, true>
             sv[i] = sample_values[i] - (*m_vector_view)[i];
         return base_type::result(sv);
     }
-    
+
 }; // end class least_squeares_fitter<ModelT, double, true>
 
 
@@ -487,16 +487,16 @@ class least_squeares_fitter<ModelT, Point, true>
     typedef typename base_type::value_type              value_type;
     typedef typename base_type::solution_type           solution_type;
 
-    using base_type::m_vector_view;    
+    using base_type::m_vector_view;
     using base_type::result;
-    
+
   public:
-    least_squeares_fitter<ModelT, Point, true>( model_type const& _model, 
+    least_squeares_fitter<ModelT, Point, true>( model_type const& _model,
                                                 size_t forecasted_samples )
         : base_type(_model, forecasted_samples)
     {
     }
-    
+
     solution_type& result(std::vector<Point> const& sample_values)
     {
         assert(sample_values.size() == m_vector_view->size());
@@ -508,7 +508,7 @@ class least_squeares_fitter<ModelT, Point, true>
         }
         return base_type::result(sv);
     }
-    
+
 };  // end class least_squeares_fitter<ModelT, Point, true>
 
 
@@ -517,7 +517,7 @@ class least_squeares_fitter<ModelT, Point, true>
 
 
 
-#endif  // _2GEOM_FITTING_TOOL_H_
+#endif  // _NL_FITTING_TOOL_H_
 
 
 /*
