@@ -182,6 +182,18 @@ public:
     virtual Curve *duplicate() const { return new ClosingSegment(*this); }
   };
 
+  enum Stitching {
+    NO_STITCHING=0,
+    STITCH_DISCONTINUOUS
+  };
+
+  class StitchSegment : public LineSegment {
+  public:
+    StitchSegment() : LineSegment() {}
+    StitchSegment(Point const &p1, Point const &p2) : LineSegment(p1, p2) {}
+    virtual Curve *duplicate() const { return new StitchSegment(*this); }
+  };
+
   Path()
   : final_(new ClosingSegment()), closed_(false)
   {
@@ -254,9 +266,6 @@ public:
   Rect boundsFast() const;
   Rect boundsExact() const;
 
-    //Rect boundsFast();
-    //Rect boundsExact();
-  
   Piecewise<D2<SBasis> > toPwSb() const {
     Piecewise<D2<SBasis> > ret;
     ret.push_cut(0);
@@ -301,15 +310,9 @@ public:
     ret.curves_.reserve(curves_.size());
     for(const_iterator it = begin(); it != end(); ++it) {
       Curve *curve = it->transformed(m);
-      // Possible point of discontinuity?
-      if ( ret.curves_.front() != ret.final_ &&
-           curve->initialPoint() != (*ret.final_)[0] )
-      {
-        THROW_CONTINUITYERROR();
-      }
       ret.do_append(curve);
     }
-    ret.closed_ = closed_;
+    ret.close(closed_);
     return ret;
   }
 
@@ -426,17 +429,18 @@ public:
     Path ret;
     ret.close(closed_);
     for(int i = size() - (closed_ ? 0 : 1); i >= 0; i--) {
-      //TODO: do we really delete?
       Curve *temp = (*this)[i].reverse();
       ret.append(*temp);
+      // delete since append makes a copy
       delete temp;
     }
     return ret;
   }
-  
-  void insert(iterator pos, Curve const &curve) {
+
+  void insert(iterator pos, Curve const &curve, Stitching stitching=NO_STITCHING) {
     Sequence source(1, curve.duplicate());
     try {
+      if (stitching) stitch(pos.impl_, pos.impl_, source);
       do_update(pos.impl_, pos.impl_, source.begin(), source.end());
     } catch (...) {
       delete_range(source.begin(), source.end());
@@ -445,11 +449,12 @@ public:
   }
 
   template <typename Impl>
-  void insert(iterator pos, BaseIterator<Impl> first, BaseIterator<Impl> last)
+  void insert(iterator pos, BaseIterator<Impl> first, BaseIterator<Impl> last, Stitching stitching=NO_STITCHING)
   {
     Sequence source(DuplicatingIterator<Impl>(first.impl_),
                     DuplicatingIterator<Impl>(last.impl_));
     try {
+      if (stitching) stitch(pos.impl_, pos.impl_, source);
       do_update(pos.impl_, pos.impl_, source.begin(), source.end());
     } catch (...) {
       delete_range(source.begin(), source.end());
@@ -462,12 +467,34 @@ public:
               curves_.begin(), curves_.begin());
   }
 
-  void erase(iterator pos) {
-    do_update(pos.impl_, pos.impl_+1, curves_.begin(), curves_.begin());
+  void erase(iterator pos, Stitching stitching=NO_STITCHING) {
+    if (stitching) {
+      Sequence stitched;
+      stitch(pos.impl_, pos.impl_+1, stitched);
+      try {
+        do_update(pos.impl_, pos.impl_+1, stitched.begin(), stitched.end());
+      } catch (...) {
+        delete_range(stitched.begin(), stitched.end());
+        throw;
+      }
+    } else {
+      do_update(pos.impl_, pos.impl_+1, curves_.begin(), curves_.begin());
+    }
   }
 
-  void erase(iterator first, iterator last) {
-    do_update(first.impl_, last.impl_, curves_.begin(), curves_.begin());
+  void erase(iterator first, iterator last, Stitching stitching=NO_STITCHING) {
+    if (stitching) {
+      Sequence stitched;
+      stitch(first.impl_, last.impl_, stitched);
+      try {
+        do_update(first.impl_, last.impl_, stitched.begin(), stitched.end());
+      } catch (...) {
+        delete_range(stitched.begin(), stitched.end());
+        throw;
+      }
+    } else {
+      do_update(first.impl_, last.impl_, curves_.begin(), curves_.begin());
+    }
   }
 
   // erase last segment of path
@@ -475,9 +502,10 @@ public:
     erase(curves_.end()-2);
   }
 
-  void replace(iterator replaced, Curve const &curve) {
+  void replace(iterator replaced, Curve const &curve, Stitching stitching=NO_STITCHING) {
     Sequence source(1, curve.duplicate());
     try {
+      if (stitching) stitch(replaced.impl_, replaced.impl_+1, source);
       do_update(replaced.impl_, replaced.impl_+1, source.begin(), source.end());
     } catch (...) {
       delete_range(source.begin(), source.end());
@@ -486,10 +514,11 @@ public:
   }
 
   void replace(iterator first_replaced, iterator last_replaced,
-               Curve const &curve)
+               Curve const &curve, Stitching stitching=NO_STITCHING)
   {
     Sequence source(1, curve.duplicate());
     try {
+      if (stitching) stitch(first_replaced.impl_, last_replaced.impl_, source);
       do_update(first_replaced.impl_, last_replaced.impl_,
                 source.begin(), source.end());
     } catch (...) {
@@ -500,11 +529,13 @@ public:
 
   template <typename Impl>
   void replace(iterator replaced,
-               BaseIterator<Impl> first, BaseIterator<Impl> last)
+               BaseIterator<Impl> first, BaseIterator<Impl> last,
+               Stitching stitching=NO_STITCHING)
   {
     Sequence source(DuplicatingIterator<Impl>(first.impl_),
                     DuplicatingIterator<Impl>(last.impl_));
     try {
+      if (stitching) stitch(replaced.impl_, replaced.impl_+1, source);
       do_update(replaced.impl_, replaced.impl_+1, source.begin(), source.end());
     } catch (...) {
       delete_range(source.begin(), source.end());
@@ -514,10 +545,12 @@ public:
 
   template <typename Impl>
   void replace(iterator first_replaced, iterator last_replaced,
-               BaseIterator<Impl> first, BaseIterator<Impl> last)
+               BaseIterator<Impl> first, BaseIterator<Impl> last,
+               Stitching stitching=NO_STITCHING)
   {
     Sequence source(first.impl_, last.impl_);
     try {
+      if (stitching) stitch(first_replaced.impl_, last_replaced.impl_, source);
       do_update(first_replaced.impl_, last_replaced.impl_,
                 source.begin(), source.end());
     } catch (...) {
@@ -571,65 +604,83 @@ public:
 	  }	 
   }
 
-  void append(Curve const &curve);
-  void append(D2<SBasis> const &curve);
-  void append(Path const &other);
+  void append(Curve const &curve, Stitching stitching=NO_STITCHING) {
+    if (stitching) stitchTo(curve.initialPoint());
+    do_append(curve.duplicate());
+  }
+  void append(D2<SBasis> const &curve, Stitching stitching=NO_STITCHING) {
+    if (stitching) stitchTo(Point(curve[X][0][0], curve[Y][0][0]));
+    do_append(new SBasisCurve(curve));
+  }
+  void append(Path const &other, Stitching stitching=NO_STITCHING) {
+    insert(end(), other.begin(), other.end(), stitching);
+  }
+
+  void stitchTo(Point const &p) {
+    if (!empty() && finalPoint() != p) {
+      do_append(new StitchSegment(finalPoint(), p));
+    }
+  }
 
   template <typename CurveType, typename A>
   void appendNew(A a) {
-    do_append(new CurveType((*final_)[0], a));
+    do_append(new CurveType(finalPoint(), a));
   }
 
   template <typename CurveType, typename A, typename B>
   void appendNew(A a, B b) {
-    do_append(new CurveType((*final_)[0], a, b));
+    do_append(new CurveType(finalPoint(), a, b));
   }
 
   template <typename CurveType, typename A, typename B, typename C>
   void appendNew(A a, B b, C c) {
-    do_append(new CurveType((*final_)[0], a, b, c));
+    do_append(new CurveType(finalPoint(), a, b, c));
   }
 
   template <typename CurveType, typename A, typename B, typename C,
                                 typename D>
   void appendNew(A a, B b, C c, D d) {
-    do_append(new CurveType((*final_)[0], a, b, c, d));
+    do_append(new CurveType(finalPoint(), a, b, c, d));
   }
 
   template <typename CurveType, typename A, typename B, typename C,
                                 typename D, typename E>
   void appendNew(A a, B b, C c, D d, E e) {
-    do_append(new CurveType((*final_)[0], a, b, c, d, e));
+    do_append(new CurveType(finalPoint(), a, b, c, d, e));
   }
 
   template <typename CurveType, typename A, typename B, typename C,
                                 typename D, typename E, typename F>
   void appendNew(A a, B b, C c, D d, E e, F f) {
-    do_append(new CurveType((*final_)[0], a, b, c, d, e, f));
+    do_append(new CurveType(finalPoint(), a, b, c, d, e, f));
   }
 
   template <typename CurveType, typename A, typename B, typename C,
                                 typename D, typename E, typename F,
                                 typename G>
   void appendNew(A a, B b, C c, D d, E e, F f, G g) {
-    do_append(new CurveType((*final_)[0], a, b, c, d, e, f, g));
+    do_append(new CurveType(finalPoint(), a, b, c, d, e, f, g));
   }
 
   template <typename CurveType, typename A, typename B, typename C,
                                 typename D, typename E, typename F,
                                 typename G, typename H>
   void appendNew(A a, B b, C c, D d, E e, F f, G g, H h) {
-    do_append(new CurveType((*final_)[0], a, b, c, d, e, f, g, h));
+    do_append(new CurveType(finalPoint(), a, b, c, d, e, f, g, h));
   }
 
   template <typename CurveType, typename A, typename B, typename C,
                                 typename D, typename E, typename F,
                                 typename G, typename H, typename I>
   void appendNew(A a, B b, C c, D d, E e, F f, G g, H h, I i) {
-    do_append(new CurveType((*final_)[0], a, b, c, d, e, f, g, h, i));
+    do_append(new CurveType(finalPoint(), a, b, c, d, e, f, g, h, i));
   }
 
 private:
+  void stitch(Sequence::iterator first_replaced,
+              Sequence::iterator last_replaced,
+              Sequence &sequence);
+
   void do_update(Sequence::iterator first_replaced,
                  Sequence::iterator last_replaced,
                  Sequence::iterator first,
@@ -637,7 +688,7 @@ private:
 
   void do_append(Curve *curve);
 
-  void delete_range(Sequence::iterator first, Sequence::iterator last);
+  static void delete_range(Sequence::iterator first, Sequence::iterator last);
 
   void check_continuity(Sequence::iterator first_replaced,
                         Sequence::iterator last_replaced,
@@ -663,54 +714,6 @@ Coord nearest_point(Point const& p, Path const& c)
 {
 	return c.nearestPoint(p);
 }
-
-
-/*
-class PathPortion : public Curve {
-  Path *source;
-  double f, t;
-  boost::optional<Path> result;
-
-  public:
-  double from() const { return f; }
-  double to() const { return t; }
-
-  explicit PathPortion(Path *s, double fp, double tp) : source(s), f(fp), t(tp) {}
-  Curve *duplicate() const { return new PathPortion(*this); }
-
-  Point initialPoint() const { return source->pointAt(f); }
-  Point finalPoint() const { return source->pointAt(t); }
-
-  Path actualPath() {
-    if(!result) *result = source->portion(f, t);
-    return *result;
-  }
-
-  Rect boundsFast() const { return actualPath().boundsFast; }
-  Rect boundsExact() const { return actualPath().boundsFast; }
-  Rect boundsLocal(Interval i) const { THROW_NOTIMPLEMENTED(); }
-
-  std::vector<double> roots(double v, Dim2 d) const = 0;
-
-  virtual int winding(Point p) const { return root_winding(*this, p); }
-
-  virtual Curve *portion(double f, double t) const = 0;
-  virtual Curve *reverse() const { return portion(1, 0); }
-
-  virtual Crossings crossingsWith(Curve const & other) const;
-
-  virtual void setInitial(Point v) = 0;
-  virtual void setFinal(Point v) = 0;
-
-  virtual Curve *transformed(Matrix const &m) const = 0;
-
-  virtual Point pointAt(Coord t) const { return pointAndDerivatives(t, 0).front(); }
-  virtual Coord valueAt(Coord t, Dim2 d) const { return pointAt(t)[d]; }
-  virtual std::vector<Point> pointAndDerivatives(Coord t, unsigned n) const = 0;
-  virtual D2<SBasis> toSBasis() const = 0;
-
-};
-*/
 
 }  // end namespace Geom
 
