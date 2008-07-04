@@ -151,7 +151,7 @@ Poly divide(Poly const &a, Poly const &b, Poly &r) {
     c.resize(k, 0.);
     
     for(unsigned i = k; i >= l; i--) {
-        assert(i >= 0);
+        //assert(i >= 0);
         double ci = r.back()/b.back();
         c[i-l] += ci;
         Poly bb = ci*b;

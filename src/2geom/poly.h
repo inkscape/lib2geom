@@ -93,18 +93,15 @@ public:
         return result;
     }
     // equivalent to multiply by x^terms, negative terms are disallowed
-    Poly shifted(unsigned terms) const { 
+﻿    /** Equivalent to multiply by x^terms. */
+    Poly shifted(unsigned const terms) const {
         Poly result;
-        const size_type out_size = size() + terms;
+        size_type const out_size = size() + terms;
         result.reserve(out_size);
-        
-        for(unsigned i = 0; i < terms; i++) {
-            result.push_back(0.0);
-        }
-        for(unsigned i = 0; i < size(); i++) {
-            result.push_back((*this)[i]);
-        }
-        
+
+        result.resize(terms, 0.0);
+        result.insert(result.end(), this->begin(), this->end());
+
         assert(result.size() == out_size);
         return result;
     }
