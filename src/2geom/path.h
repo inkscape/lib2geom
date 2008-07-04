@@ -51,7 +51,7 @@ class Path;
 
 namespace PathInternal {
 
-typedef std::vector<boost::shared_ptr<Curve> > Sequence;
+typedef std::vector<boost::shared_ptr<Curve const> > Sequence;
 
 // Conditional expression for types. If true, first, if false, second.
 template<bool _Cond, typename _Iftrue, typename _Iffalse>
