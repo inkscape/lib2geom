@@ -124,39 +124,6 @@ private:
   friend class ::Geom::Path;
 };
 
-template <typename Iterator>
-class DuplicatingIterator
-: public std::iterator<std::input_iterator_tag, Curve *>
-{
-public:
-  DuplicatingIterator() {}
-  DuplicatingIterator(Iterator const &iter) : impl_(iter) {}
-
-  bool operator==(DuplicatingIterator const &other) {
-    return other.impl_ == impl_;
-  }
-  bool operator!=(DuplicatingIterator const &other) {
-    return other.impl_ != impl_;
-  }
-
-  boost::shared_ptr<Curve> operator*() const {
-    return boost::shared_ptr<Curve>((*impl_)->duplicate());
-  }
-
-  DuplicatingIterator &operator++() {
-    ++impl_;
-    return *this;
-  }
-  DuplicatingIterator operator++(int) {
-    DuplicatingIterator old=*this;
-    ++(*this);
-    return old;
-  }
-
-private:
-  Iterator impl_;
-};
-
 }
 
 /*
@@ -299,18 +266,6 @@ public:
     return true;
   }
 
-  /*
-     Path operator*=(Matrix)
-     This is not possible without at least partly regenerating the curves of 
-     the path, because a path can consist of many types of curves, 
-     e.g. a HLineSegment.
-     Such a segment cannot be transformed and stay a HLineSegment in general 
-     (take for example rotations).
-     This means that these curves of the path have to be replaced with 
-     LineSegments: new Curves.
-     So an implementation of this method should check the curve's type to see 
-     whether operator*= is doable for that curve type, ...
-  */
   Path operator*(Matrix const &m) const {
     Path ret;
     ret.curves_.reserve(curves_.size());
@@ -321,29 +276,19 @@ public:
     return ret;
   }
 
-  /*
-  // this should be even quickier but it works at low level
-  Path operator*(Matrix const &m) const
-  {
-      Path result;
-      size_t sz = curves_.size() - 1;
-      if (sz == 0) return result;
-      result.curves_.resize(curves_.size());
-      result.curves_.back() = result.final_;
-      result.curves_[0] = (curves_[0])->transformed(m);
-      for (size_t i = 1; i < sz; ++i)
-      {
-          result.curves_[i] = (curves_[i])->transformed(m);
-          if ( result.curves_[i]->initialPoint() != result.curves_[i-1]->finalPoint() ) {
-              THROW_CONTINUITYERROR();
-          }
-      }
-      result.final_->setInitial( (result.curves_[sz])->finalPoint() );
-      result.final_->setFinal( (result.curves_[0])->initialPoint() );
-      result.closed_ = closed_;
-      return result;
+  Path &operator*=(Matrix const &m) {
+    Sequence old_curves;
+    old_curves.reserve(curves_.size());
+    old_curves.push_back(final_);
+    old_curves.swap(curves_);
+    old_curves.pop_back();
+
+    Sequence::const_iterator it;
+    for (it = old_curves.begin() ; it != old_curves.end() ; ++it) {
+      do_append((*it)->transformed(m));
+    }
+    return *this;
   }
-  */
   
   Point pointAt(double t) const 
   {
@@ -454,8 +399,7 @@ public:
               PathInternal::BaseIterator<Impl> last,
               Stitching stitching=NO_STITCHING)
   {
-    Sequence source(PathInternal::DuplicatingIterator<Impl>(first.impl_),
-                    PathInternal::DuplicatingIterator<Impl>(last.impl_));
+    Sequence source(first.impl_, last.impl_);
     if (stitching) stitch(pos.impl_, pos.impl_, source);
     do_update(pos.impl_, pos.impl_, source.begin(), source.end());
   }
@@ -511,8 +455,7 @@ public:
                PathInternal::BaseIterator<Impl> last,
                Stitching stitching=NO_STITCHING)
   {
-    Sequence source(PathInternal::DuplicatingIterator<Impl>(first.impl_),
-                    PathInternal::DuplicatingIterator<Impl>(last.impl_));
+    Sequence source(first.impl_, last.impl_);
     if (stitching) stitch(replaced.impl_, replaced.impl_+1, source);
     do_update(replaced.impl_, replaced.impl_+1, source.begin(), source.end());
   }
