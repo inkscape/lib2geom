@@ -33,8 +33,8 @@
  */
 
 
-#include <numeric/matrix.h>
-#include <numeric/vector.h>
+#include <2geom/numeric/matrix.h>
+#include <2geom/numeric/vector.h>
 
 
 
