@@ -36,6 +36,7 @@
 
 #include <2geom/path.h>
 
+using namespace Geom::PathInternal;
 
 namespace Geom 
 {

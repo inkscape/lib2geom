@@ -46,6 +46,10 @@
 namespace Geom
 {
 
+class Path;
+
+namespace PathInternal {
+
 // Conditional expression for types. If true, first, if false, second.
 template<bool _Cond, typename _Iftrue, typename _Iffalse>
   struct __conditional_type
@@ -116,7 +120,7 @@ private:
   BaseIterator(IteratorImpl const &pos) : impl_(pos) {}
 
   IteratorImpl impl_;
-  friend class Path;
+  friend class ::Geom::Path;
 };
 
 template <typename Iterator>
@@ -150,6 +154,8 @@ private:
   Iterator impl_;
 };
 
+}
+
 /*
  * Open and closed paths: all paths, whether open or closed, store a final
  * segment which connects the initial and final endpoints of the "real"
@@ -170,8 +176,8 @@ private:
   typedef std::vector<Curve *> Sequence;
 
 public:
-  typedef BaseIterator<Sequence::iterator> iterator;
-  typedef BaseIterator<Sequence::const_iterator> const_iterator;
+  typedef PathInternal::BaseIterator<Sequence::iterator> iterator;
+  typedef PathInternal::BaseIterator<Sequence::const_iterator> const_iterator;
   typedef Sequence::size_type size_type;
   typedef Sequence::difference_type difference_type;
 
@@ -214,7 +220,9 @@ public:
   }
 
   template <typename Impl>
-  Path(BaseIterator<Impl> first, BaseIterator<Impl> last, bool closed=false)
+  Path(PathInternal::BaseIterator<Impl> first,
+       PathInternal::BaseIterator<Impl> last,
+       bool closed=false)
   : closed_(closed), final_(new ClosingSegment())
   {
     curves_.push_back(final_);
@@ -449,10 +457,13 @@ public:
   }
 
   template <typename Impl>
-  void insert(iterator pos, BaseIterator<Impl> first, BaseIterator<Impl> last, Stitching stitching=NO_STITCHING)
+  void insert(iterator pos,
+              PathInternal::BaseIterator<Impl> first,
+              PathInternal::BaseIterator<Impl> last,
+              Stitching stitching=NO_STITCHING)
   {
-    Sequence source(DuplicatingIterator<Impl>(first.impl_),
-                    DuplicatingIterator<Impl>(last.impl_));
+    Sequence source(PathInternal::DuplicatingIterator<Impl>(first.impl_),
+                    PathInternal::DuplicatingIterator<Impl>(last.impl_));
     try {
       if (stitching) stitch(pos.impl_, pos.impl_, source);
       do_update(pos.impl_, pos.impl_, source.begin(), source.end());
@@ -529,11 +540,12 @@ public:
 
   template <typename Impl>
   void replace(iterator replaced,
-               BaseIterator<Impl> first, BaseIterator<Impl> last,
+               PathInternal::BaseIterator<Impl> first,
+               PathInternal::BaseIterator<Impl> last,
                Stitching stitching=NO_STITCHING)
   {
-    Sequence source(DuplicatingIterator<Impl>(first.impl_),
-                    DuplicatingIterator<Impl>(last.impl_));
+    Sequence source(PathInternal::DuplicatingIterator<Impl>(first.impl_),
+                    PathInternal::DuplicatingIterator<Impl>(last.impl_));
     try {
       if (stitching) stitch(replaced.impl_, replaced.impl_+1, source);
       do_update(replaced.impl_, replaced.impl_+1, source.begin(), source.end());
@@ -545,7 +557,8 @@ public:
 
   template <typename Impl>
   void replace(iterator first_replaced, iterator last_replaced,
-               BaseIterator<Impl> first, BaseIterator<Impl> last,
+               PathInternal::BaseIterator<Impl> first,
+               PathInternal::BaseIterator<Impl> last,
                Stitching stitching=NO_STITCHING)
   {
     Sequence source(first.impl_, last.impl_);
