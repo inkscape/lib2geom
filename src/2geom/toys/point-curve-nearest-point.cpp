@@ -1,9 +1,9 @@
 /*
- * point-curve nearest point routines testing 
+ * point-curve nearest point routines testing
  *
  * Authors:
  * 		Marco Cecchetti <mrcekets at gmail.com>
- * 
+ *
  * Copyright 2008  authors
  *
  * This library is free software; you can redistribute it and/or
@@ -61,22 +61,22 @@ class NearestPoints : public Toy
 		PATH,
 		TOTAL_ITEMS
 	};
-	
+
 	static const char* menu_items[TOTAL_ITEMS];
-	
+
   private:
-    void draw( cairo_t *cr,	std::ostringstream *notify, 
-    		   int width, int height, bool save ) 
+    void draw( cairo_t *cr,	std::ostringstream *notify,
+    		   int width, int height, bool save )
     {
-    	
+
     	Point p = ph.pos;
     	Point np = p;
     	std::vector<Point> nps;
-    	
+
     	cairo_set_line_width (cr, 0.3);
     	switch ( choice )
     	{
-    		case '1': 
+    		case '1':
     		{
     			LineSegment seg(psh.pts[0], psh.pts[1]);
     			cairo_move_to(cr, psh.pts[0]);
@@ -91,7 +91,7 @@ class NearestPoints : public Toy
     		}
     		case '2':
     		{
-    	        EllipticalArc earc;
+    	        SVGEllipticalArc earc;
     	        bool earc_constraints_satisfied = true;
     	        try
     	        {
@@ -108,14 +108,14 @@ class NearestPoints : public Toy
     	        	{
     	        		std::vector<double> t = earc.allNearestPoints(p);
     	        		for ( unsigned int i = 0; i < t.size(); ++i )
-    	        			nps.push_back(earc.pointAt(t[i])); 
+    	        			nps.push_back(earc.pointAt(t[i]));
     	        	}
     	        	else
     	        	{
     	        		double t = earc.nearestPoint(p);
     	        		np = earc.pointAt(t);
     	        	}
-    	        } 
+    	        }
     	        break;
     		}
     		case '3':
@@ -126,7 +126,7 @@ class NearestPoints : public Toy
     	        {
     	        	std::vector<double> t = Geom::all_nearest_points(p, A);
     	        	for ( unsigned int i = 0; i < t.size(); ++i )
-    	        		nps.push_back(A(t[i])); 
+    	        		nps.push_back(A(t[i]));
     	        }
     	        else
     	        {
@@ -159,7 +159,7 @@ class NearestPoints : public Toy
     	        {
     	        	std::vector<double> t = Geom::all_nearest_points(p, pwc);
     	        	for ( unsigned int i = 0; i < t.size(); ++i )
-    	        		nps.push_back(pwc(t[i])); 
+    	        		nps.push_back(pwc(t[i]));
     	        }
     	        else
     	        {
@@ -178,7 +178,7 @@ class NearestPoints : public Toy
     	        path.append(A);
     	        path.append(B);
     	        path.append(C);
-    	        EllipticalArc D;    	        
+    	        SVGEllipticalArc D;
     	        bool earc_constraints_satisfied = true;
     	        try
     	        {
@@ -190,14 +190,14 @@ class NearestPoints : public Toy
     	        }
     	        if ( earc_constraints_satisfied ) path.append(D);
     	        if ( toggles[1].on ) path.close(true);
-    	            	        
+
     	        cairo_path(cr, path);
-    	        
+
     	        if ( toggles[0].on )
     	        {
     	        	std::vector<double> t = path.allNearestPoints(p);
     	        	for ( unsigned int i = 0; i < t.size(); ++i )
-    	        		nps.push_back(path.pointAt(t[i])); 
+    	        		nps.push_back(path.pointAt(t[i]));
     	        }
     	        else
     	        {
@@ -217,7 +217,7 @@ class NearestPoints : public Toy
 				return;
     		}
     	}
-   	
+
     	if ( toggles[0].on )
     	{
     		for ( unsigned int i = 0; i < nps.size(); ++i )
@@ -232,7 +232,7 @@ class NearestPoints : public Toy
     		cairo_line_to(cr, np);
     	}
         cairo_stroke(cr);
-        
+
     	toggles[0].bounds = Rect( Point(10, height - 50), Point(10, height - 50) + Point(80,25) );
     	toggles[0].draw(cr);
     	if ( closed_toggle )
@@ -241,16 +241,16 @@ class NearestPoints : public Toy
     		toggles[1].draw(cr);
     		closed_toggle = false;
     	}
-    	
+
     	Toy::draw(cr, notify, width, height, save);
     }
-    
+
     void key_hit(GdkEventKey *e)
     {
     	choice = e->keyval;
     	switch ( choice )
     	{
-    		case '1': 
+    		case '1':
     			total_handles = 2;
     			break;
     		case '2':
@@ -261,10 +261,10 @@ class NearestPoints : public Toy
     			break;
     		case '4':
     			total_handles = 13;
-    			break;    
+    			break;
     		case '5':
     			total_handles = 10;
-    			break;    
+    			break;
     		default:
     			total_handles = 0;
     	}
@@ -276,8 +276,8 @@ class NearestPoints : public Toy
     	ph.pos = Point(uniform()*400, uniform()*400);
     	redraw();
     }
-    
-    void mouse_pressed(GdkEventButton* e) 
+
+    void mouse_pressed(GdkEventButton* e)
     {
         toggle_events(toggles, e);
         Toy::mouse_pressed(e);
@@ -293,7 +293,7 @@ class NearestPoints : public Toy
 		toggles.push_back( Toggle("ALL NP", false) );
 		toggles.push_back( Toggle("CLOSED", false) );
 	}
-	
+
   private:
     PointSetHandle psh;
     PointHandle ph;
@@ -303,11 +303,11 @@ class NearestPoints : public Toy
 	bool closed_toggle;
 };
 
-const char* NearestPoints::menu_items[] = 
+const char* NearestPoints::menu_items[] =
 {
 	"",
 	"LineSegment",
-	"EllipticalArc",
+	"SVGEllipticalArc",
 	"SBasisCurve",
 	"Piecewise",
 	"Path"
@@ -315,8 +315,8 @@ const char* NearestPoints::menu_items[] =
 
 
 
-int main(int argc, char **argv) 
-{	
+int main(int argc, char **argv)
+{
     init( argc, argv, new NearestPoints() );
     return 0;
 }

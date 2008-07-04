@@ -1,10 +1,10 @@
 /*
- * make up an elliptical arc knowing 3 points lying on the arc  
+ * make up an elliptical arc knowing 3 points lying on the arc
  * and the ellipse centre
  *
  * Authors:
  *      Marco Cecchetti <mrcekets at gmail.com>
- * 
+ *
  * Copyright 2008  authors
  *
  * This library is free software; you can redistribute it and/or
@@ -34,7 +34,7 @@
 #include <2geom/toys/path-cairo.h>
 #include <2geom/toys/toy-framework-2.h>
 
-#include <2geom/elliptical-arc.h>
+#include <2geom/svg-elliptical-arc.h>
 #include <2geom/numeric/linear_system.h>
 
 
@@ -42,13 +42,13 @@
 namespace Geom
 {
 
-bool make_elliptical_arc( EllipticalArc & ea,
-						  Point const& centre, 
-		                  Point const& initial, 
+bool make_elliptical_arc( SVGEllipticalArc & ea,
+						  Point const& centre,
+		                  Point const& initial,
 		                  Point const& final,
 		                  Point const& inner )
 {
-	
+
 	Point p[3] = { initial, inner, final };
 	double x1, x2, x3, x4;
 	double y1, y2, y3, y4;
@@ -56,7 +56,7 @@ bool make_elliptical_arc( EllipticalArc & ea,
 	NL::Matrix m(3,3);
 	NL::Vector v(3);
 	NL::LinearSystem ls(m, v);
-	
+
 	m.set_all(0);
 	v.set_all(0);
 	for (unsigned int k = 0; k < 3; ++k)
@@ -67,32 +67,32 @@ bool make_elliptical_arc( EllipticalArc & ea,
 		x1y1 = x1 * y1;
 		x2y2 = x2 * y2;
 		x3y1 = x3 * y1; x1y3 = x1 * y3;
-		
+
 		// init linear system
 		m(0,0) += x4;
 		m(0,1) += x3y1;
 		m(0,2) += x2y2;
-	
+
 		m(1,0) += x3y1;
 		m(1,1) += x2y2;
 		m(1,2) += x1y3;
-	
+
 		m(2,0) += x2y2;
 		m(2,1) += x1y3;
 		m(2,2) += y4;
-	
+
 		v[0] += x2;
 		v[1] += x1y1;
 		v[2] += y2;
 	}
 
 	ls.SV_solve();
-	
+
 	double A = ls.solution()[0];
 	double B = ls.solution()[1];
 	double C = ls.solution()[2];
-	
-	
+
+
 	//evaluate ellipse rotation angle
 	double rot = std::atan2( -B, -(A - C) )/2;
 	std::cerr << "rot = " << rot << std::endl;
@@ -103,13 +103,13 @@ bool make_elliptical_arc( EllipticalArc & ea,
 		swap_axes = true;
 	}
 
-	// evaluate the length of the ellipse rays	
+	// evaluate the length of the ellipse rays
 	double cosrot = std::cos(rot);
 	double sinrot = std::sin(rot);
 	double cos2 = cosrot * cosrot;
 	double sin2 = sinrot * sinrot;
 	double cossin = cosrot * sinrot;
-	
+
 	double den = A * cos2 + B * cossin + C * sin2;
 	if ( den <= 0 )
 	{
@@ -127,13 +127,13 @@ bool make_elliptical_arc( EllipticalArc & ea,
 		return false;
 	}
 	double ry = std::sqrt(1/den);
-	
-	
-	// the solution is not unique so we choose always the ellipse 
+
+
+	// the solution is not unique so we choose always the ellipse
 	// with a rotation angle between 0 and PI/2
 	if ( swap_axes ) std::swap(rx, ry);
-	if (    are_near(rot,  M_PI/2) 
-		 || are_near(rot, -M_PI/2) 
+	if (    are_near(rot,  M_PI/2)
+		 || are_near(rot, -M_PI/2)
 		 || are_near(rx, ry)       )
 	{
 		rot = 0;
@@ -142,13 +142,13 @@ bool make_elliptical_arc( EllipticalArc & ea,
 	{
 		rot += M_PI/2;
 	}
-	
+
 	std::cerr << "swap axes: " << swap_axes << std::endl;
 	std::cerr << "rx = " << rx << " ry = " << ry << std::endl;
 	std::cerr << "rot = " << rad_to_deg(rot) << std::endl;
 	std::cerr << "centre: " << centre << std::endl;
-	
-	
+
+
 	// find out how we should set the large_arc_flag and sweep_flag
 	bool large_arc_flag = true;
 	bool sweep_flag = true;
@@ -156,7 +156,7 @@ bool make_elliptical_arc( EllipticalArc & ea,
 	Point sp_cp = initial - centre;
 	Point ep_cp = final - centre;
 	Point ip_cp = inner - centre;
-	
+
 	double angle1 = angle_between(sp_cp, ep_cp);
 	double angle2 = angle_between(sp_cp, ip_cp);
 	double angle3 = angle_between(ip_cp, ep_cp);
@@ -187,11 +187,11 @@ bool make_elliptical_arc( EllipticalArc & ea,
 			sweep_flag = true;
 		}
 	}
-	
+
 	// finally we're going to create the elliptical arc!
 	try
 	{
-		ea.set( initial, rx, ry, rot, 
+		ea.set( initial, rx, ry, rot,
 				large_arc_flag, sweep_flag, final );
 	}
     catch( RangeError e )
@@ -199,7 +199,7 @@ bool make_elliptical_arc( EllipticalArc & ea,
     	std::cerr << e.what() << std::endl;
     	return false;
     }
-	
+
 	return true;
 }
 
@@ -213,7 +213,7 @@ using namespace Geom;
 class ElliptiArcMaker : public Toy
 {
   private:
-	void draw( cairo_t *cr, std::ostringstream *notify, 
+	void draw( cairo_t *cr, std::ostringstream *notify,
   		       int width, int height, bool save )
 	{
 		cairo_set_line_width (cr, 0.3);
@@ -224,7 +224,7 @@ class ElliptiArcMaker : public Toy
 		draw_text(cr, C.pos, "inner");
 		cairo_stroke(cr);
 		cairo_set_source_rgb(cr, 0.7,0,0);
-		bool status 
+		bool status
 			= make_elliptical_arc(ea, O.pos, A.pos, B.pos, C.pos);
 		if (status)
 		{
@@ -247,10 +247,10 @@ class ElliptiArcMaker : public Toy
 		handles.push_back(&B);
 		handles.push_back(&C);
 	}
-	
+
   private:
     PointHandle O, A, B, C;
-	EllipticalArc ea;
+	SVGEllipticalArc ea;
 };
 
 
@@ -260,8 +260,8 @@ class ElliptiArcMaker : public Toy
 
 
 
-int main(int argc, char **argv) 
-{	
+int main(int argc, char **argv)
+{
     init( argc, argv, new ElliptiArcMaker() );
     return 0;
 }

@@ -56,7 +56,7 @@ d2sbasis-fitting
 d2sbasis-fitting-with-np
 ellipse-fitting
 elliptiarc-3point-center-fitting
-elliptiarc-5points-fitting
+#elliptiarc-5points-fitting
 elliptiarc-curve-fitting
 fitter
 hvlineseg-toy
@@ -79,7 +79,7 @@ sb-math-test
 sbasis-fitting
 self-intersect
 squiggles
-svg-elliptic-arc-toy
+#svg-elliptic-arc-toy
 svg-elliptical-arc-toy
 worms
 winding-test
