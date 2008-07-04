@@ -388,14 +388,9 @@ class make_elliptical_arc
         return svg_compliant;
     }
 
-    void svg_compliant_on()
+    void svg_compliant_flag(bool _svg_compliant)
     {
-        svg_compliant = true;
-    }
-
-    void svg_compliant_off()
-    {
-        svg_compliant = false;
+        svg_compliant = _svg_compliant;
     }
 
   private:
