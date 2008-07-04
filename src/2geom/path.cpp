@@ -67,33 +67,6 @@ Rect Path::boundsExact() const {
   return bounds;
 }
 
-/*
-Rect Path::boundsFast()
-{
-    Rect bound;
-    if (empty()) return bound;
-    
-    bound = begin()->boundsFast();
-    for (iterator it = ++begin(); it != end(); ++it)
-    {
-        bound.unionWith(it->boundsFast());
-    }
-    return bound;
-}
-
-Rect Path::boundsExact()
-{
-    Rect bound;
-    if (empty()) return bound;
-    
-    bound = begin()->boundsExact();
-    for (iterator it = ++begin(); it != end(); ++it)
-    {
-        bound.unionWith(it->boundsExact());
-    }
-    return bound;
-    }*/
-
 template<typename iter>
 iter inc(iter const &x, unsigned n) {
   iter ret = x;
