@@ -43,6 +43,7 @@ typedef BezierCurve<2> QuadraticBezier;
 typedef BezierCurve<1> LineSegment;
 typedef BezierCurve<3> CubicBezier;
 class EllipticalArc;
+class SVGEllipticalArc;
 
 class HLineSegment;
 class VLineSegment;
