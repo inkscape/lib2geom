@@ -277,15 +277,16 @@ void Path::do_update(Sequence::iterator first_replaced,
 {
   // note: modifies the contents of [first,last)
   check_continuity(first_replaced, last_replaced, first, last);
+  unshare_curves();
   if ( ( last - first ) == ( last_replaced - first_replaced ) ) {
     std::copy(first, last, first_replaced);
   } else {
     // this approach depends on std::vector's behavior WRT iterator stability
-    curves_.erase(first_replaced, last_replaced);
-    curves_.insert(first_replaced, first, last);
+    get_curves_().erase(first_replaced, last_replaced);
+    get_curves_().insert(first_replaced, first, last);
   }
 
-  if ( curves_.front().get() != final_ ) {
+  if ( get_curves_().front().get() != final_ ) {
     unshare_final();
     final_->setPoint(0, back().finalPoint());
     final_->setPoint(1, front().initialPoint());
@@ -294,15 +295,16 @@ void Path::do_update(Sequence::iterator first_replaced,
 
 void Path::do_append(Curve *c) {
   boost::shared_ptr<Curve> curve(c);
+  unshare_curves();
   unshare_final();
-  if ( curves_.front().get() == final_ ) {
+  if ( get_curves_().front().get() == final_ ) {
     final_->setPoint(1, curve->initialPoint());
   } else {
     if (curve->initialPoint() != finalPoint()) {
       THROW_CONTINUITYERROR();
     }
   }
-  curves_.insert(curves_.end()-1, curve);
+  get_curves_().insert(get_curves_().end()-1, curve);
   final_->setPoint(0, curve->finalPoint());
 }
 
@@ -311,21 +313,21 @@ void Path::stitch(Sequence::iterator first_replaced,
                   Sequence &source)
 {
   if (!source.empty()) {
-    if ( first_replaced != curves_.begin() ) {
+    if ( first_replaced != get_curves_().begin() ) {
       if ( (*first_replaced)->initialPoint() != source.front()->initialPoint() ) {
         Curve *stitch = new StitchSegment((*first_replaced)->initialPoint(),
                                           source.front()->initialPoint());
         source.insert(source.begin(), boost::shared_ptr<Curve>(stitch));
       }
     }
-    if ( last_replaced != (curves_.end()-1) ) {
+    if ( last_replaced != (get_curves_().end()-1) ) {
       if ( (*last_replaced)->finalPoint() != source.back()->finalPoint() ) {
         Curve *stitch = new StitchSegment(source.back()->finalPoint(),
                                           (*last_replaced)->finalPoint());
         source.insert(source.end(), boost::shared_ptr<Curve>(stitch));
       }
     }
-  } else if ( first_replaced != last_replaced && first_replaced != curves_.begin() && last_replaced != curves_.end()-1) {
+  } else if ( first_replaced != last_replaced && first_replaced != get_curves_().begin() && last_replaced != get_curves_().end()-1) {
     if ( (*first_replaced)->initialPoint() != (*(last_replaced-1))->finalPoint() ) {
       Curve *stitch = new StitchSegment((*(last_replaced-1))->finalPoint(),
                                         (*first_replaced)->initialPoint());
@@ -340,17 +342,17 @@ void Path::check_continuity(Sequence::iterator first_replaced,
                             Sequence::iterator last)
 {
   if ( first != last ) {
-    if ( first_replaced != curves_.begin() ) {
+    if ( first_replaced != get_curves_().begin() ) {
       if ( (*first_replaced)->initialPoint() != (*first)->initialPoint() ) {
         THROW_CONTINUITYERROR();
       }
     }
-    if ( last_replaced != (curves_.end()-1) ) {
+    if ( last_replaced != (get_curves_().end()-1) ) {
       if ( (*(last_replaced-1))->finalPoint() != (*(last-1))->finalPoint() ) {
         THROW_CONTINUITYERROR();
       }
     }
-  } else if ( first_replaced != last_replaced && first_replaced != curves_.begin() && last_replaced != curves_.end()-1) {
+  } else if ( first_replaced != last_replaced && first_replaced != get_curves_().begin() && last_replaced != get_curves_().end()-1) {
     if ( (*first_replaced)->initialPoint() != (*(last_replaced-1))->finalPoint() ) {
       THROW_CONTINUITYERROR();
     }

@@ -174,28 +174,28 @@ public:
   // Path(Path const &other) - use default copy constructor
 
   explicit Path(Point p=Point())
-  : curves_(1, boost::shared_ptr<Curve>()),
+  : curves_(boost::shared_ptr<Sequence>(new Sequence(1, boost::shared_ptr<Curve>()))),
     final_(new ClosingSegment(p, p)),
     closed_(false)
   {
-    curves_.back() = boost::shared_ptr<Curve>(final_);
+    get_curves_().back() = boost::shared_ptr<Curve>(final_);
   }
 
   template <typename Impl>
   Path(PathInternal::BaseIterator<Impl> first,
        PathInternal::BaseIterator<Impl> last,
        bool closed=false)
-  : curves_(first.impl_, last.impl_),
+  : curves_(boost::shared_ptr<Sequence>(new Sequence(first.impl_, last.impl_))),
     closed_(closed)
   {
     ClosingSegment *final;
-    if (!curves_.empty()) {
-      final_ = new ClosingSegment(curves_.back()->finalPoint(),
-                                  curves_.front()->initialPoint());
+    if (!get_curves_().empty()) {
+      final_ = new ClosingSegment(get_curves_().back()->finalPoint(),
+                                  get_curves_().front()->initialPoint());
     } else {
       final_ = new ClosingSegment();
     }
-    curves_.push_back(boost::shared_ptr<Curve>(final_));
+    get_curves_().push_back(boost::shared_ptr<Curve>(final_));
   }
 
   virtual ~Path() {}
@@ -209,31 +209,31 @@ public:
     std::swap(other.closed_, closed_);
   }
 
-  Curve const &operator[](unsigned i) const { return *curves_[i]; }
+  Curve const &operator[](unsigned i) const { return *get_curves_()[i]; }
 
-  Curve const &front() const { return *curves_[0]; }
-  Curve const &back() const { return *curves_[curves_.size()-2]; }
-  Curve const &back_open() const { return *curves_[curves_.size()-2]; }
-  Curve const &back_closed() const { return *curves_[curves_.size()-1]; }
+  Curve const &front() const { return *get_curves_()[0]; }
+  Curve const &back() const { return *get_curves_()[get_curves_().size()-2]; }
+  Curve const &back_open() const { return *get_curves_()[get_curves_().size()-2]; }
+  Curve const &back_closed() const { return *get_curves_()[get_curves_().size()-1]; }
   Curve const &back_default() const {
     return ( closed_ ? back_closed() : back_open() );
   }
 
-  const_iterator begin() const { return curves_.begin(); }
-  const_iterator end() const { return curves_.end()-1; }
-  iterator begin() { return curves_.begin(); }
-  iterator end() { return curves_.end()-1; }
+  const_iterator begin() const { return get_curves_().begin(); }
+  const_iterator end() const { return get_curves_().end()-1; }
+  iterator begin() { return get_curves_().begin(); }
+  iterator end() { return get_curves_().end()-1; }
 
-  const_iterator end_open() const { return curves_.end()-1; }
-  const_iterator end_closed() const { return curves_.end(); }
+  const_iterator end_open() const { return get_curves_().end()-1; }
+  const_iterator end_closed() const { return get_curves_().end(); }
   const_iterator end_default() const {
     return ( closed_ ? end_closed() : end_open() );
   }
 
-  size_type size() const { return curves_.size()-1; }
-  size_type max_size() const { return curves_.max_size()-1; }
+  size_type size() const { return get_curves_().size()-1; }
+  size_type max_size() const { return get_curves_().max_size()-1; }
 
-  bool empty() const { return curves_.size() == 1; }
+  bool empty() const { return get_curves_().size() == 1; }
   bool closed() const { return closed_; }
   void close(bool closed=true) { closed_ = closed; }
 
@@ -256,8 +256,8 @@ public:
   bool operator==(Path const &m) const {
       if (size() != m.size() || closed() != m.closed())
           return false;
-      const_iterator it2 = m.curves_.begin();
-    for(const_iterator it = curves_.begin(); it != curves_.end(); ++it) {
+      const_iterator it2 = m.get_curves_().begin();
+    for(const_iterator it = get_curves_().begin(); it != get_curves_().end(); ++it) {
         const Curve& a = (*it);
         const Curve& b = (*it2);
         if(!(a == b))
@@ -277,10 +277,11 @@ public:
     Sequence::iterator it;
     Sequence::iterator last;
     Point prev;
-    last = curves_.end() - 1;
-    for (it = curves_.begin() ; it != last ; ++it) {
+    last = get_curves_().end() - 1;
+    unshare_curves();
+    for (it = get_curves_().begin() ; it != last ; ++it) {
       *it = boost::shared_ptr<Curve>((*it)->transformed(m));
-      if ( it != curves_.begin() && (*it)->initialPoint() != prev ) {
+      if ( it != get_curves_().begin() && (*it)->initialPoint() != prev ) {
         THROW_CONTINUITYERROR();
       }
       prev = (*it)->finalPoint();
@@ -289,7 +290,7 @@ public:
     for ( int i = 0 ; i < 2 ; ++i ) {
       final_->setPoint(i, (*final_)[i] * m);
     }
-    if (curves_.size() > 1) {
+    if (get_curves_().size() > 1) {
       if ( front().initialPoint() != initialPoint() || back().finalPoint() != finalPoint() ) {
         THROW_CONTINUITYERROR();
       }
@@ -384,14 +385,16 @@ public:
 
   Path reverse() const {
     Path ret(*this);
-    for ( Sequence::iterator iter = ret.curves_.begin() ;
-          iter != ret.curves_.end()-1 ; ++iter )
+    ret.unshare_curves();
+    for ( Sequence::iterator iter = ret.get_curves_().begin() ;
+          iter != ret.get_curves_().end()-1 ; ++iter )
     {
       *iter = boost::shared_ptr<Curve>((*iter)->reverse());
     }
-    std::reverse(ret.curves_.begin(), ret.curves_.end()-1);
+    std::reverse(ret.get_curves_().begin(), ret.get_curves_().end()-1);
+    ret.unshare_final();
     ret.final_ = static_cast<ClosingSegment *>(ret.final_->reverse());
-    ret.curves_.back() = boost::shared_ptr<Curve>(ret.final_);
+    ret.get_curves_().back() = boost::shared_ptr<Curve>(ret.final_);
     return ret;
   }
 
@@ -413,8 +416,8 @@ public:
   }
 
   void clear() {
-    do_update(curves_.begin(), curves_.end()-1,
-              curves_.begin(), curves_.begin());
+    do_update(get_curves_().begin(), get_curves_().end()-1,
+              get_curves_().begin(), get_curves_().begin());
   }
 
   void erase(iterator pos, Stitching stitching=NO_STITCHING) {
@@ -423,7 +426,7 @@ public:
       stitch(pos.impl_, pos.impl_+1, stitched);
       do_update(pos.impl_, pos.impl_+1, stitched.begin(), stitched.end());
     } else {
-      do_update(pos.impl_, pos.impl_+1, curves_.begin(), curves_.begin());
+      do_update(pos.impl_, pos.impl_+1, get_curves_().begin(), get_curves_().begin());
     }
   }
 
@@ -433,13 +436,13 @@ public:
       stitch(first.impl_, last.impl_, stitched);
       do_update(first.impl_, last.impl_, stitched.begin(), stitched.end());
     } else {
-      do_update(first.impl_, last.impl_, curves_.begin(), curves_.begin());
+      do_update(first.impl_, last.impl_, get_curves_().begin(), get_curves_().begin());
     }
   }
 
   // erase last segment of path
   void erase_last() {
-    erase(curves_.end()-2);
+    erase(get_curves_().end()-2);
   }
 
   void replace(iterator replaced, Curve const &curve, Stitching stitching=NO_STITCHING) {
@@ -495,7 +498,7 @@ public:
 	  if ( empty() ) return;
 	  boost::shared_ptr<Curve> head(front().duplicate());
 	  head->setInitial(p);
-	  Sequence::iterator replaced = curves_.begin();
+	  Sequence::iterator replaced = get_curves_().begin();
 	  Sequence source(1, head);
 	  do_update(replaced, replaced + 1, source.begin(), source.end());
   }
@@ -505,7 +508,7 @@ public:
 	  if ( empty() ) return;
 	  boost::shared_ptr<Curve> tail(back().duplicate());
 	  tail->setFinal(p);
-	  Sequence::iterator replaced = curves_.end() - 2;
+	  Sequence::iterator replaced = get_curves_().end() - 2;
 	  Sequence source(1, tail);
 	  do_update(replaced, replaced + 1, source.begin(), source.end());
   }
@@ -583,10 +586,20 @@ public:
   }
 
 private:
+  Sequence &get_curves_() { return *curves_; }
+  Sequence const &get_curves_() const { return *curves_; }
+
+  void unshare_curves() {
+    if (!curves_.unique()) {
+      curves_ = boost::shared_ptr<Sequence>(new Sequence(*curves_));
+    }
+  }
+
   void unshare_final() {
-    if (!curves_.back().unique()) {
+    if (!get_curves_().back().unique()) {
+      unshare_curves();
       final_ = static_cast<ClosingSegment *>(final_->duplicate());
-      curves_.back() = boost::shared_ptr<Curve>(final_);
+      get_curves_().back() = boost::shared_ptr<Curve>(final_);
     }
   }
 
@@ -607,10 +620,9 @@ private:
                         Sequence::iterator first,
                         Sequence::iterator last);
 
-  Sequence curves_;
+  boost::shared_ptr<Sequence> curves_;
   ClosingSegment *final_;
   bool closed_;
-  
 };  // end class Path
 
 inline static Piecewise<D2<SBasis> > paths_to_pw(std::vector<Path> paths) {
