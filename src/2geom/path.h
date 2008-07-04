@@ -38,6 +38,7 @@
 #define SEEN_GEOM_PATH_H
 
 
+#include <boost/shared_ptr.hpp>
 #include <2geom/curves.h>
 
 #include <iterator>
@@ -49,6 +50,8 @@ namespace Geom
 class Path;
 
 namespace PathInternal {
+
+typedef std::vector<boost::shared_ptr<Curve> > Sequence;
 
 // Conditional expression for types. If true, first, if false, second.
 template<bool _Cond, typename _Iftrue, typename _Iffalse>
@@ -74,7 +77,6 @@ public:
   // unfortunately I do not know how to imitate the way __normal_iterator 
   // does it, because I don't see a way to get the typename of the container 
   // IteratorImpl is pointing at...
-  typedef std::vector<Curve *> Sequence;
   BaseIterator (  typename __conditional_type<
                     (std::__are_same<IteratorImpl, Sequence::const_iterator >::__value),  // check if this instantiation is of const_iterator type
                     const BaseIterator< Sequence::iterator >,     // if true:  accept iterator in const_iterator instantiation
@@ -82,7 +84,6 @@ public:
                   & __other)
     : impl_(__other.impl_) { }
   friend class BaseIterator< Sequence::const_iterator >;
-
 
   bool operator==(BaseIterator const &other) {
     return other.impl_ == impl_;
@@ -92,7 +93,7 @@ public:
   }
 
   Curve const &operator*() const { return **impl_; }
-  Curve const *operator->() const { return *impl_; }
+  Curve const *operator->() const { return boost::get_pointer(*impl_); }
 
   BaseIterator &operator++() {
     ++impl_;
@@ -138,7 +139,9 @@ public:
     return other.impl_ != impl_;
   }
 
-  Curve *operator*() const { return (*impl_)->duplicate(); }
+  boost::shared_ptr<Curve> operator*() const {
+    return boost::shared_ptr<Curve>((*impl_)->duplicate());
+  }
 
   DuplicatingIterator &operator++() {
     ++impl_;
@@ -172,10 +175,8 @@ private:
  * of the path to use for filling.
  */
 class Path {
-private:
-  typedef std::vector<Curve *> Sequence;
-
 public:
+  typedef PathInternal::Sequence Sequence;
   typedef PathInternal::BaseIterator<Sequence::iterator> iterator;
   typedef PathInternal::BaseIterator<Sequence::const_iterator> const_iterator;
   typedef Sequence::size_type size_type;
@@ -229,10 +230,7 @@ public:
     insert(begin(), first, last);
   }
 
-  virtual ~Path() {
-      delete_range(curves_.begin(), curves_.end()-1);
-      delete final_;
-  }
+  virtual ~Path() {}
 
   Path &operator=(Path const &other) {
     clear();
@@ -317,8 +315,7 @@ public:
     Path ret;
     ret.curves_.reserve(curves_.size());
     for(const_iterator it = begin(); it != end(); ++it) {
-      Curve *curve = it->transformed(m);
-      ret.do_append(curve);
+      ret.do_append(it->transformed(m));
     }
     ret.close(closed_);
     return ret;
@@ -446,14 +443,9 @@ public:
   }
 
   void insert(iterator pos, Curve const &curve, Stitching stitching=NO_STITCHING) {
-    Sequence source(1, curve.duplicate());
-    try {
-      if (stitching) stitch(pos.impl_, pos.impl_, source);
-      do_update(pos.impl_, pos.impl_, source.begin(), source.end());
-    } catch (...) {
-      delete_range(source.begin(), source.end());
-      throw;
-    }
+    Sequence source(1, boost::shared_ptr<Curve>(curve.duplicate()));
+    if (stitching) stitch(pos.impl_, pos.impl_, source);
+    do_update(pos.impl_, pos.impl_, source.begin(), source.end());
   }
 
   template <typename Impl>
@@ -464,13 +456,8 @@ public:
   {
     Sequence source(PathInternal::DuplicatingIterator<Impl>(first.impl_),
                     PathInternal::DuplicatingIterator<Impl>(last.impl_));
-    try {
-      if (stitching) stitch(pos.impl_, pos.impl_, source);
-      do_update(pos.impl_, pos.impl_, source.begin(), source.end());
-    } catch (...) {
-      delete_range(source.begin(), source.end());
-      throw;
-    }
+    if (stitching) stitch(pos.impl_, pos.impl_, source);
+    do_update(pos.impl_, pos.impl_, source.begin(), source.end());
   }
 
   void clear() {
@@ -482,12 +469,7 @@ public:
     if (stitching) {
       Sequence stitched;
       stitch(pos.impl_, pos.impl_+1, stitched);
-      try {
-        do_update(pos.impl_, pos.impl_+1, stitched.begin(), stitched.end());
-      } catch (...) {
-        delete_range(stitched.begin(), stitched.end());
-        throw;
-      }
+      do_update(pos.impl_, pos.impl_+1, stitched.begin(), stitched.end());
     } else {
       do_update(pos.impl_, pos.impl_+1, curves_.begin(), curves_.begin());
     }
@@ -497,12 +479,7 @@ public:
     if (stitching) {
       Sequence stitched;
       stitch(first.impl_, last.impl_, stitched);
-      try {
-        do_update(first.impl_, last.impl_, stitched.begin(), stitched.end());
-      } catch (...) {
-        delete_range(stitched.begin(), stitched.end());
-        throw;
-      }
+      do_update(first.impl_, last.impl_, stitched.begin(), stitched.end());
     } else {
       do_update(first.impl_, last.impl_, curves_.begin(), curves_.begin());
     }
@@ -514,28 +491,18 @@ public:
   }
 
   void replace(iterator replaced, Curve const &curve, Stitching stitching=NO_STITCHING) {
-    Sequence source(1, curve.duplicate());
-    try {
-      if (stitching) stitch(replaced.impl_, replaced.impl_+1, source);
-      do_update(replaced.impl_, replaced.impl_+1, source.begin(), source.end());
-    } catch (...) {
-      delete_range(source.begin(), source.end());
-      throw;
-    }
+    Sequence source(1, boost::shared_ptr<Curve>(curve.duplicate()));
+    if (stitching) stitch(replaced.impl_, replaced.impl_+1, source);
+    do_update(replaced.impl_, replaced.impl_+1, source.begin(), source.end());
   }
 
   void replace(iterator first_replaced, iterator last_replaced,
                Curve const &curve, Stitching stitching=NO_STITCHING)
   {
-    Sequence source(1, curve.duplicate());
-    try {
-      if (stitching) stitch(first_replaced.impl_, last_replaced.impl_, source);
-      do_update(first_replaced.impl_, last_replaced.impl_,
-                source.begin(), source.end());
-    } catch (...) {
-      delete_range(source.begin(), source.end());
-      throw;
-    }
+    Sequence source(1, boost::shared_ptr<Curve>(curve.duplicate()));
+    if (stitching) stitch(first_replaced.impl_, last_replaced.impl_, source);
+    do_update(first_replaced.impl_, last_replaced.impl_,
+              source.begin(), source.end());
   }
 
   template <typename Impl>
@@ -546,13 +513,8 @@ public:
   {
     Sequence source(PathInternal::DuplicatingIterator<Impl>(first.impl_),
                     PathInternal::DuplicatingIterator<Impl>(last.impl_));
-    try {
-      if (stitching) stitch(replaced.impl_, replaced.impl_+1, source);
-      do_update(replaced.impl_, replaced.impl_+1, source.begin(), source.end());
-    } catch (...) {
-      delete_range(source.begin(), source.end());
-      throw;
-    }
+    if (stitching) stitch(replaced.impl_, replaced.impl_+1, source);
+    do_update(replaced.impl_, replaced.impl_+1, source.begin(), source.end());
   }
 
   template <typename Impl>
@@ -562,14 +524,9 @@ public:
                Stitching stitching=NO_STITCHING)
   {
     Sequence source(first.impl_, last.impl_);
-    try {
-      if (stitching) stitch(first_replaced.impl_, last_replaced.impl_, source);
-      do_update(first_replaced.impl_, last_replaced.impl_,
-                source.begin(), source.end());
-    } catch (...) {
-      delete_range(source.begin(), source.end());
-      throw;
-    }
+    if (stitching) stitch(first_replaced.impl_, last_replaced.impl_, source);
+    do_update(first_replaced.impl_, last_replaced.impl_,
+              source.begin(), source.end());
   }
 
   void start(Point p) {
@@ -584,37 +541,21 @@ public:
   void setInitial(Point const& p)
   {
 	  if ( empty() ) return;
-	  Curve* head = front().duplicate();
+	  boost::shared_ptr<Curve> head(front().duplicate());
 	  head->setInitial(p);
 	  Sequence::iterator replaced = curves_.begin();
 	  Sequence source(1, head);
-	  try 
-	  {
-		  do_update(replaced, replaced + 1, source.begin(), source.end());
-	  } 
-	  catch (...) 
-	  {
-		  delete_range(source.begin(), source.end());
-		  throw;
-	  }
+	  do_update(replaced, replaced + 1, source.begin(), source.end());
   }
 
   void setFinal(Point const& p)
   {
 	  if ( empty() ) return;
-	  Curve* tail = back().duplicate();
+	  boost::shared_ptr<Curve> tail(back().duplicate());
 	  tail->setFinal(p);
 	  Sequence::iterator replaced = curves_.end() - 2;
 	  Sequence source(1, tail);
-	  try 
-	  {
-		  do_update(replaced, replaced + 1, source.begin(), source.end());
-	  } 
-	  catch (...) 
-	  {
-		  delete_range(source.begin(), source.end());
-		  throw;
-	  }	 
+	  do_update(replaced, replaced + 1, source.begin(), source.end());
   }
 
   void append(Curve const &curve, Stitching stitching=NO_STITCHING) {
@@ -699,9 +640,8 @@ private:
                  Sequence::iterator first,
                  Sequence::iterator last);
 
+  // n.b. takes ownership of curve object
   void do_append(Curve *curve);
-
-  static void delete_range(Sequence::iterator first, Sequence::iterator last);
 
   void check_continuity(Sequence::iterator first_replaced,
                         Sequence::iterator last_replaced,
@@ -709,7 +649,7 @@ private:
                         Sequence::iterator last);
 
   Sequence curves_;
-  ClosingSegment *final_;
+  boost::shared_ptr<ClosingSegment> final_;
   bool closed_;
   
 };  // end class Path

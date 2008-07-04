@@ -312,7 +312,6 @@ void Path::do_update(Sequence::iterator first_replaced,
 {
   // note: modifies the contents of [first,last)
   check_continuity(first_replaced, last_replaced, first, last);
-  delete_range(first_replaced, last_replaced);
   if ( ( last - first ) == ( last_replaced - first_replaced ) ) {
     std::copy(first, last, first_replaced);
   } else {
@@ -327,7 +326,8 @@ void Path::do_update(Sequence::iterator first_replaced,
   }
 }
 
-void Path::do_append(Curve *curve) {
+void Path::do_append(Curve *c) {
+  boost::shared_ptr<Curve> curve(c);
   if ( curves_.front() == final_ ) {
     final_->setPoint(1, curve->initialPoint());
   } else {
@@ -339,12 +339,6 @@ void Path::do_append(Curve *curve) {
   final_->setPoint(0, curve->finalPoint());
 }
 
-void Path::delete_range(Sequence::iterator first, Sequence::iterator last) {
-  for ( Sequence::iterator iter=first ; iter != last ; ++iter ) {
-    delete *iter;
-  }
-}
-
 void Path::stitch(Sequence::iterator first_replaced,
                   Sequence::iterator last_replaced,
                   Sequence &source)
@@ -352,17 +346,23 @@ void Path::stitch(Sequence::iterator first_replaced,
   if (!source.empty()) {
     if ( first_replaced != curves_.begin() ) {
       if ( (*first_replaced)->initialPoint() != source.front()->initialPoint() ) {
-        source.insert(source.begin(), new StitchSegment((*first_replaced)->initialPoint(), source.front()->initialPoint()));
+        Curve *stitch = new StitchSegment((*first_replaced)->initialPoint(),
+                                          source.front()->initialPoint());
+        source.insert(source.begin(), boost::shared_ptr<Curve>(stitch));
       }
     }
     if ( last_replaced != (curves_.end()-1) ) {
       if ( (*last_replaced)->finalPoint() != source.back()->finalPoint() ) {
-        source.insert(source.end(), new StitchSegment(source.back()->finalPoint(), (*last_replaced)->finalPoint()));
+        Curve *stitch = new StitchSegment(source.back()->finalPoint(),
+                                          (*last_replaced)->finalPoint());
+        source.insert(source.end(), boost::shared_ptr<Curve>(stitch));
       }
     }
   } else if ( first_replaced != last_replaced && first_replaced != curves_.begin() && last_replaced != curves_.end()-1) {
     if ( (*first_replaced)->initialPoint() != (*(last_replaced-1))->finalPoint() ) {
-      source.insert(source.begin(), new StitchSegment((*(last_replaced-1))->finalPoint(), (*first_replaced)->initialPoint()));
+      Curve *stitch = new StitchSegment((*(last_replaced-1))->finalPoint(),
+                                        (*first_replaced)->initialPoint());
+      source.insert(source.begin(), boost::shared_ptr<Curve>(stitch));
     }
   }
 }
