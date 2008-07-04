@@ -41,14 +41,6 @@ using namespace Geom::PathInternal;
 namespace Geom 
 {
 
-void Path::swap(Path &other) {
-  std::swap(curves_, other.curves_);
-  std::swap(closed_, other.closed_);
-  std::swap(*final_, *other.final_);
-  curves_[curves_.size()-1] = final_;
-  other.curves_[other.curves_.size()-1] = other.final_;
-}
-
 Rect Path::boundsFast() const {
   Rect bounds;
   if (empty()) return bounds;
@@ -320,7 +312,8 @@ void Path::do_update(Sequence::iterator first_replaced,
     curves_.insert(first_replaced, first, last);
   }
 
-  if ( curves_.front() != final_ ) {
+  if ( curves_.front().get() != final_ ) {
+    unshare_final();
     final_->setPoint(0, back().finalPoint());
     final_->setPoint(1, front().initialPoint());
   }
@@ -328,7 +321,8 @@ void Path::do_update(Sequence::iterator first_replaced,
 
 void Path::do_append(Curve *c) {
   boost::shared_ptr<Curve> curve(c);
-  if ( curves_.front() == final_ ) {
+  unshare_final();
+  if ( curves_.front().get() == final_ ) {
     final_->setPoint(1, curve->initialPoint());
   } else {
     if (curve->initialPoint() != finalPoint()) {

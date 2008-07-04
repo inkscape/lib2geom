@@ -42,6 +42,7 @@
 #include <2geom/curves.h>
 
 #include <iterator>
+#include <algorithm>
 
 
 namespace Geom
@@ -154,6 +155,7 @@ public:
     ClosingSegment() : LineSegment() {}
     ClosingSegment(Point const &p1, Point const &p2) : LineSegment(p1, p2) {}
     virtual Curve *duplicate() const { return new ClosingSegment(*this); }
+    virtual Curve *reverse() const { return new ClosingSegment((*this)[1], (*this)[0]); }
   };
 
   enum Stitching {
@@ -166,47 +168,46 @@ public:
     StitchSegment() : LineSegment() {}
     StitchSegment(Point const &p1, Point const &p2) : LineSegment(p1, p2) {}
     virtual Curve *duplicate() const { return new StitchSegment(*this); }
+    virtual Curve *reverse() const { return new StitchSegment((*this)[1], (*this)[0]); }
   };
 
-  Path()
-  : final_(new ClosingSegment()), closed_(false)
-  {
-    curves_.push_back(final_);
-  }
+  // Path(Path const &other) - use default copy constructor
 
-  Path(Path const &other)
-  : final_(new ClosingSegment()), closed_(other.closed_)
+  explicit Path(Point p=Point())
+  : curves_(1, boost::shared_ptr<Curve>()),
+    final_(new ClosingSegment(p, p)),
+    closed_(false)
   {
-    curves_.push_back(final_);
-    insert(begin(), other.begin(), other.end());
-  }
-
-  explicit Path(Point p)
-  : final_(new ClosingSegment(p, p)), closed_(false)
-  {
-    curves_.push_back(final_);
+    curves_.back() = boost::shared_ptr<Curve>(final_);
   }
 
   template <typename Impl>
   Path(PathInternal::BaseIterator<Impl> first,
        PathInternal::BaseIterator<Impl> last,
        bool closed=false)
-  : closed_(closed), final_(new ClosingSegment())
+  : curves_(first.impl_, last.impl_),
+    closed_(closed)
   {
-    curves_.push_back(final_);
-    insert(begin(), first, last);
+    ClosingSegment *final;
+    if (!curves_.empty()) {
+      final_ = new ClosingSegment(curves_.back()->finalPoint(),
+                                  curves_.front()->initialPoint());
+    } else {
+      final_ = new ClosingSegment();
+    }
+    curves_.push_back(boost::shared_ptr<Curve>(final_));
   }
 
   virtual ~Path() {}
 
-  Path &operator=(Path const &other) {
-    clear();
-    insert(begin(), other.begin(), other.end());
-    close(other.closed_);
-    return *this;
-  }
+  
+  // Path &operator=(Path const &other) - use default assignment operator
 
-  void swap(Path &other);
+  void swap(Path &other) {
+    std::swap(other.curves_, curves_);
+    std::swap(other.final_, final_);
+    std::swap(other.closed_, closed_);
+  }
 
   Curve const &operator[](unsigned i) const { return *curves_[i]; }
 
@@ -267,25 +268,31 @@ public:
   }
 
   Path operator*(Matrix const &m) const {
-    Path ret;
-    ret.curves_.reserve(curves_.size());
-    for(const_iterator it = begin(); it != end(); ++it) {
-      ret.do_append(it->transformed(m));
-    }
-    ret.close(closed_);
+    Path ret(*this);
+    ret *= m;
     return ret;
   }
 
   Path &operator*=(Matrix const &m) {
-    Sequence old_curves;
-    old_curves.reserve(curves_.size());
-    old_curves.push_back(final_);
-    old_curves.swap(curves_);
-    old_curves.pop_back();
-
-    Sequence::const_iterator it;
-    for (it = old_curves.begin() ; it != old_curves.end() ; ++it) {
-      do_append((*it)->transformed(m));
+    Sequence::iterator it;
+    Sequence::iterator last;
+    Point prev;
+    last = curves_.end() - 1;
+    for (it = curves_.begin() ; it != last ; ++it) {
+      *it = boost::shared_ptr<Curve>((*it)->transformed(m));
+      if ( it != curves_.begin() && (*it)->initialPoint() != prev ) {
+        THROW_CONTINUITYERROR();
+      }
+      prev = (*it)->finalPoint();
+    }
+    unshare_final();
+    for ( int i = 0 ; i < 2 ; ++i ) {
+      final_->setPoint(i, (*final_)[i] * m);
+    }
+    if (curves_.size() > 1) {
+      if ( front().initialPoint() != initialPoint() || back().finalPoint() != finalPoint() ) {
+        THROW_CONTINUITYERROR();
+      }
     }
     return *this;
   }
@@ -376,14 +383,15 @@ public:
   Path portion(Interval i) const { return portion(i.min(), i.max()); }
 
   Path reverse() const {
-    Path ret;
-    ret.close(closed_);
-    for(int i = size() - (closed_ ? 0 : 1); i >= 0; i--) {
-      Curve *temp = (*this)[i].reverse();
-      ret.append(*temp);
-      // delete since append makes a copy
-      delete temp;
+    Path ret(*this);
+    for ( Sequence::iterator iter = ret.curves_.begin() ;
+          iter != ret.curves_.end()-1 ; ++iter )
+    {
+      *iter = boost::shared_ptr<Curve>((*iter)->reverse());
     }
+    std::reverse(ret.curves_.begin(), ret.curves_.end()-1);
+    ret.final_ = static_cast<ClosingSegment *>(ret.final_->reverse());
+    ret.curves_.back() = boost::shared_ptr<Curve>(ret.final_);
     return ret;
   }
 
@@ -474,6 +482,7 @@ public:
 
   void start(Point p) {
     clear();
+    unshare_final();
     final_->setPoint(0, p);
     final_->setPoint(1, p);
   }
@@ -574,6 +583,13 @@ public:
   }
 
 private:
+  void unshare_final() {
+    if (!curves_.back().unique()) {
+      final_ = static_cast<ClosingSegment *>(final_->duplicate());
+      curves_.back() = boost::shared_ptr<Curve>(final_);
+    }
+  }
+
   void stitch(Sequence::iterator first_replaced,
               Sequence::iterator last_replaced,
               Sequence &sequence);
@@ -592,7 +608,7 @@ private:
                         Sequence::iterator last);
 
   Sequence curves_;
-  boost::shared_ptr<ClosingSegment> final_;
+  ClosingSegment *final_;
   bool closed_;
   
 };  // end class Path
