@@ -89,7 +89,11 @@ class Rotate {
     inline bool operator==(Rotate const &o) const { return vec == o.vec; }
     inline bool operator!=(Rotate const &o) const { return vec != o.vec; }
 
-    Rotate inverse() const { return Rotate( Point(vec[X], -vec[Y]) ); }
+    Rotate inverse() const {
+        Rotate r;
+        r.vec = Point(vec[X], -vec[Y]); 
+        return r;
+    }
     static Rotate from_degrees(Coord deg) {
         Coord rad = (deg / 180.0) * M_PI;
         return Rotate(rad);
