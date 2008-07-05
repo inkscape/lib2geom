@@ -277,8 +277,8 @@ public:
     Sequence::iterator it;
     Sequence::iterator last;
     Point prev;
-    last = get_curves_().end() - 1;
     unshare_curves();
+    last = get_curves_().end() - 1;
     for (it = get_curves_().begin() ; it != last ; ++it) {
       *it = boost::shared_ptr<Curve>((*it)->transformed(m));
       if ( it != get_curves_().begin() && (*it)->initialPoint() != prev ) {
