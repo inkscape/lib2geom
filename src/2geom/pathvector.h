@@ -43,8 +43,19 @@ namespace Geom {
 
 typedef std::vector<Geom::Path> PathVector;
 
+inline
+void operator*= (PathVector & path_in, Matrix const &m) {
+    for(PathVector::iterator it = path_in.begin(); it != path_in.end(); ++it) {
+        (*it) *= m;
+    }
+}
 
-PathVector operator* (PathVector const & path_in, Matrix const &m);
+inline
+PathVector operator*(PathVector const & path_in, Matrix const &m) {
+    PathVector ret(path_in);
+    ret *= m;
+    return ret;
+}
 
 PathVector reverse_paths_and_order (PathVector const & path_in);
 
