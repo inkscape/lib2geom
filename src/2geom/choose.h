@@ -31,6 +31,8 @@
 #ifndef _CHOOSE_H
 #define _CHOOSE_H
 
+#include <vector>
+
 // XXX: Can we keep only the left terms easily? 
 // this would more than halve the array
 // row index becomes n2 = n/2, row2 = n2*(n2+1)/2, row = row2*2+(n&1)?n2:0
