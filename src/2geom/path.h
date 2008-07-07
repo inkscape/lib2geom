@@ -71,8 +71,8 @@ public:
 
   Curve const &operator*() const { return (*path)[index]; }
   Curve const *operator->() const { return &(*path)[index]; }
-  boost::shared_ptr<Curve const> stable_ref() const {
-    return path->stable_ref_at_index(index);
+  boost::shared_ptr<Curve const> persistent_ref() const {
+    return path->persistent_ref_at_index(index);
   }
 
   C &operator++() {
@@ -218,7 +218,7 @@ public:
 
   Curve const &operator[](unsigned i) const { return *get_curves()[i]; }
   Curve const &at_index(unsigned i) const { return *get_curves()[i]; }
-  boost::shared_ptr<Curve const> stable_ref_at_index(unsigned i) {
+  boost::shared_ptr<Curve const> persistent_ref_at_index(unsigned i) {
     return get_curves()[i];
   }
 
