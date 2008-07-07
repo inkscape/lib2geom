@@ -78,7 +78,7 @@ struct CurveWrap : Geom::Curve, wrapper<Geom::Curve>
 
     Geom::Curve *transformed(Geom::Matrix const &m) const { return this->get_override("transformed")(m); }
 
-    Geom::Point pointAt(Geom::Coord t) {
+    Geom::Point pointAt(Geom::Coord t) const {
         if (override f = this->get_override("pointAt")) {
             return f(t);
         }
