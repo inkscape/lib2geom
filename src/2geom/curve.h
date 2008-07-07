@@ -122,7 +122,12 @@ public:
   /* unitTangentAt returns the unit vector tangent to the curve at position t
    * (in the direction of increasing t). The method uses l'Hopital's rule when the derivative
    * is (0,0), parameter n determines the maximum nr of iterations (for when higher derivatives are also (0,0) ).
-   * Point(0,0) is returned if no non-zero derivative could be found. */
+   * Point(0,0) is returned if no non-zero derivative could be found. 
+   * Note that unitTangentAt(1) will probably not give the desired result. Probably one should do:
+   *    Curve * c_reverse = c.reverse();
+   *    Point tangent = - c_reverse->unitTangentAt(0);
+   *    delete c_reverse;
+   */
   virtual Point unitTangentAt(Coord t, unsigned n = 3) const
   {
     for (unsigned deriv_n = 1; deriv_n <= n; deriv_n++) {
