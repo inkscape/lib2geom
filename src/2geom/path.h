@@ -141,6 +141,10 @@ private:
  * any path be stroked using [begin(), end_default()), and filled using
  * [begin(), end_closed()), without requiring a separate "filled" version
  * of the path to use for filling.
+ *
+ * \invariant : curves_ always contains at least one segment. The last segment
+ *              is always of type ClosingSegment. All constructors take care of this.
+                (curves_.size() > 0) && dynamic_cast<ClosingSegment>(curves_.back())
  */
 class Path {
 public:
@@ -212,8 +216,11 @@ public:
   Curve const &operator[](unsigned i) const { return *get_curves_()[i]; }
 
   Curve const &front() const { return *get_curves_()[0]; }
-  Curve const &back() const { return *get_curves_()[get_curves_().size()-2]; }
-  Curve const &back_open() const { return *get_curves_()[get_curves_().size()-2]; }
+  Curve const &back() const { return back_open(); }
+  Curve const &back_open() const {
+    if (empty()) { THROW_RANGEERROR("Path contains not enough segments"); }
+    return *get_curves_()[get_curves_().size()-2];
+  }
   Curve const &back_closed() const { return *get_curves_()[get_curves_().size()-1]; }
   Curve const &back_default() const {
     return ( closed_ ? back_closed() : back_open() );
