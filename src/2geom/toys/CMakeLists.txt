@@ -79,8 +79,7 @@ sb-math-test
 sbasis-fitting
 self-intersect
 squiggles
-#svg-elliptic-arc-toy
-svg-elliptical-arc-toy
+svg-elliptical-arc-test-toy
 worms
 winding-test
 )
