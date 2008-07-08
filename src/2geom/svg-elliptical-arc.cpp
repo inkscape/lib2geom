@@ -915,6 +915,13 @@ D2<SBasis> SVGEllipticalArc::toSBasis() const
     SBasis arc_y = ray(Y) * sin(param,4);
     arc[0] = arc_x * cos_rot_angle - arc_y * sin_rot_angle + Linear(center(X),center(X));
     arc[1] = arc_x * sin_rot_angle + arc_y * cos_rot_angle + Linear(center(Y),center(Y));
+
+    // ensure that endpoints remain exact
+    for ( int d = 0 ; d < 2 ; d++ ) {
+        arc[d][0][0] = initialPoint()[d];
+        arc[d][0][1] = finalPoint()[d];
+    }
+
     return arc;
 }
 
