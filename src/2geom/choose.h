@@ -31,7 +31,6 @@
 #ifndef _CHOOSE_H
 #define _CHOOSE_H
 #include <vector>
-#include <vector>
 
 // XXX: Can we keep only the left terms easily? 
 // this would more than halve the array
