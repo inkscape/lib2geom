@@ -222,7 +222,10 @@ class SVGEllipticalArc : public Curve
     // TODO: native implementation of the following methods
     Curve *transformed(Matrix const &m) const
     {
-        return SBasisCurve(toSBasis()).transformed(m);
+         Curve* result = SBasisCurve(toSBasis()).transformed(m);
+         result->setInitial(initialPoint() * m);
+         result->setFinal(finalPoint() * m);
+         return result;
     }
 
     std::vector<Point> pointAndDerivatives(Coord t, unsigned int n) const;
