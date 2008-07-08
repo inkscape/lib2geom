@@ -19,16 +19,16 @@ double uniform() {
     return double(rand()) / RAND_MAX;
 }
 
-void draw_text(cairo_t *cr, Geom::Point loc, const char* txt, bool bottom) {
-        PangoLayout* layout = pango_cairo_create_layout (cr);
-          pango_layout_set_text(layout, txt, -1);
-          /*PangoFontDescription *font_desc = pango_font_description_new();
-            pango_font_description_set_family(font_desc, "Sans");
-          pango_layout_set_font_description(layout, font_desc);*/
-        PangoRectangle logical_extent;
-        pango_layout_get_pixel_extents(layout, NULL, &logical_extent);
-        cairo_move_to(cr, loc - Geom::Point(0, bottom ? logical_extent.height : 0));
-        pango_cairo_show_layout(cr, layout);
+void draw_text(cairo_t *cr, Geom::Point loc, const char* txt, bool bottom, const char* fontdesc) {
+  PangoLayout* layout = pango_cairo_create_layout (cr);
+  pango_layout_set_text(layout, txt, -1);
+  PangoFontDescription *font_desc = pango_font_description_from_string(fontdesc);
+  pango_layout_set_font_description(layout, font_desc);
+  pango_font_description_free (font_desc);
+  PangoRectangle logical_extent;
+  pango_layout_get_pixel_extents(layout, NULL, &logical_extent);
+  cairo_move_to(cr, loc - Geom::Point(0, bottom ? logical_extent.height : 0));
+  pango_cairo_show_layout(cr, layout);
 }
 
 void draw_number(cairo_t *cr, Geom::Point pos, int num) {

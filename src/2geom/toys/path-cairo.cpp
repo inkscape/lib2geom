@@ -2,6 +2,8 @@
 #include <2geom/toys/path-cairo.h>
 #include <2geom/sbasis-to-bezier.h>
 #include <2geom/utils.h>
+#include "toy-framework-2.h"
+#include <sstream>
 
 using namespace Geom;
 
@@ -52,6 +54,13 @@ void cairo_path_stitches(cairo_t *cr, Path const &p) {
         if (dynamic_cast<Path::StitchSegment const *>(&c)) {
             cairo_move_to(cr, c.initialPoint()[X], c.initialPoint()[Y]);
             cairo_line_to(cr, c.finalPoint()[X], c.finalPoint()[Y]);
+            
+            std::stringstream s;
+            s << L1(c.finalPoint() - c.initialPoint());
+            std::string ss = s.str();
+            draw_text(cr, c.initialPoint()+Point(5,5), ss.c_str(), false, "Serif 6");
+
+            //std::cout << c.finalPoint() - c.initialPoint() << std::endl;
         }
     }
 }

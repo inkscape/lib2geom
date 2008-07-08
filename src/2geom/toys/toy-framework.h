@@ -21,7 +21,7 @@ using std::vector;
 //Utility functions
 double uniform();
 
-void draw_text(cairo_t *cr, Geom::Point pos, const char* txt, bool bottom = false);
+void draw_text(cairo_t *cr, Geom::Point pos, const char* txt, bool bottom = false, const char* fontdesc = "Sans");
 void draw_number(cairo_t *cr, Geom::Point pos, int num);
 
 class Toy {

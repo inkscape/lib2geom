@@ -48,6 +48,7 @@ void wrap_transforms() {
         .def("isScale", &Geom::Matrix::isScale)
         .def("isUniformScale", &Geom::Matrix::isUniformScale)
         .def("setIdentity", &Geom::Matrix::setIdentity)
+        .def("inverse", &Geom::Matrix::inverse)
         .def("det", &Geom::Matrix::det)
         .def("descrim2", &Geom::Matrix::descrim2)
         .def("descrim", &Geom::Matrix::descrim)

@@ -120,12 +120,16 @@ class BoolOps: public Toy {
         cairo_fill(cr);
         cairo_set_source_rgba(cr, 0, 0, 0, 1);
         cairo_shape(cr, s);
-
-        cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
-        cairo_set_line_join(cr, CAIRO_LINE_JOIN_ROUND);
-        cairo_set_source_rgb(cr, 1, 0, 0);
-        cairo_set_line_width(cr, 8);
-        show_stitches(cr, s);
+        
+        if(toggles[4].on) {
+            cairo_save(cr);
+            cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
+            cairo_set_line_join(cr, CAIRO_LINE_JOIN_ROUND);
+            cairo_set_source_rgb(cr, 1, 0, 0);
+            cairo_set_line_width(cr, 8);
+            show_stitches(cr, s);
+            cairo_restore(cr);
+        }
 
         double x = width - 60, y = height - 60;
         
@@ -156,6 +160,7 @@ class BoolOps: public Toy {
         toggles[0].bounds = Rect(p + xo, p + xo + d);
         toggles[1].bounds = Rect(p + yo, p + yo + d);
         toggles[3].bounds = Rect(p + d, p + d + d);
+        toggles[4].bounds = Rect(Point(10, y)+d, Point(10+120, y+d[1])+d);
 
         draw_toggles(cr, toggles);
 
@@ -198,6 +203,7 @@ class BoolOps: public Toy {
         toggles.push_back(Toggle("A", true));
         toggles.push_back(Toggle("Q", true));
         toggles.push_back(Toggle("S", false));
+        toggles.push_back(Toggle("Show Stitches", false));
         
         as = cleanup(paths_a) * Geom::Translate(Point(300, 300));
         bs = cleanup(paths_b);
