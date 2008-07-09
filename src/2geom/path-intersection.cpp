@@ -173,47 +173,6 @@ linear_intersect(Point A0, Point A1, Point B0, Point B1,
     }
 }
 
-/* This uses the local bounds functions of curves to generically intersect two.
- * It passes in the curves, time intervals, and keeps track of depth, while
- * returning the results through the Crossings parameter.
- */
-void pair_intersect(Curve const & A, double Al, double Ah, 
-                    Curve const & B, double Bl, double Bh,
-                    Crossings &ret,  unsigned depth=0) {
-   // std::cout << depth << "(" << Al << ", " << Ah << ")\n";
-    Rect Ar = A.boundsLocal(Interval(Al, Ah));
-    if(Ar.isEmpty()) return;
-
-    Rect Br = B.boundsLocal(Interval(Bl, Bh));
-    if(Br.isEmpty()) return;
-    
-    if(!Ar.intersects(Br)) return;
-    
-    //Checks the general linearity of the function
-    if((depth > 12)) { // || (A.boundsLocal(Interval(Al, Ah), 1).maxExtent() < 0.1 
-                    //&&  B.boundsLocal(Interval(Bl, Bh), 1).maxExtent() < 0.1)) {
-        double tA, tB, c;
-        if(linear_intersect(A.pointAt(Al), A.pointAt(Ah), 
-                            B.pointAt(Bl), B.pointAt(Bh), 
-                            tA, tB, c)) {
-            tA = tA * (Ah - Al) + Al;
-            tB = tB * (Bh - Bl) + Bl;
-            if(depth % 2)
-                ret.push_back(Crossing(tB, tA, c < 0));
-            else
-                ret.push_back(Crossing(tA, tB, c > 0));
-            return;
-        }
-    }
-    if(depth > 12) return;
-    double mid = (Bl + Bh)/2;
-    pair_intersect(B, Bl, mid,
-                    A, Al, Ah,
-                    ret, depth+1);
-    pair_intersect(B, mid, Bh,
-                    A, Al, Ah,
-                    ret, depth+1);
-}
 
 typedef union dbl_64{
     long long i64;
@@ -296,18 +255,53 @@ intersect_polish_root (Curve const &A, double &s,
     gsl_vector_free (x);
 }
 
+/* This uses the local bounds functions of curves to generically intersect two.
+ * It passes in the curves, time intervals, and keeps track of depth, while
+ * returning the results through the Crossings parameter.
+ */
+void pair_intersect(Curve const & A, double Al, double Ah, 
+                    Curve const & B, double Bl, double Bh,
+                    Crossings &ret,  unsigned depth=0) {
+   // std::cout << depth << "(" << Al << ", " << Ah << ")\n";
+    Rect Ar = A.boundsLocal(Interval(Al, Ah));
+    if(Ar.isEmpty()) return;
+
+    Rect Br = B.boundsLocal(Interval(Bl, Bh));
+    if(Br.isEmpty()) return;
+    
+    if(!Ar.intersects(Br)) return;
+    
+    //Checks the general linearity of the function
+    if((depth > 12)) { // || (A.boundsLocal(Interval(Al, Ah), 1).maxExtent() < 0.1 
+                    //&&  B.boundsLocal(Interval(Bl, Bh), 1).maxExtent() < 0.1)) {
+        double tA, tB, c;
+        if(linear_intersect(A.pointAt(Al), A.pointAt(Ah), 
+                            B.pointAt(Bl), B.pointAt(Bh), 
+                            tA, tB, c)) {
+            tA = tA * (Ah - Al) + Al;
+            tB = tB * (Bh - Bl) + Bl;
+            intersect_polish_root(A, tA,
+                                  B, tB);
+            if(depth % 2)
+                ret.push_back(Crossing(tB, tA, c < 0));
+            else
+                ret.push_back(Crossing(tA, tB, c > 0));
+            return;
+        }
+    }
+    if(depth > 12) return;
+    double mid = (Bl + Bh)/2;
+    pair_intersect(B, Bl, mid,
+                    A, Al, Ah,
+                    ret, depth+1);
+    pair_intersect(B, mid, Bh,
+                    A, Al, Ah,
+                    ret, depth+1);
+}
 // A simple wrapper around pair_intersect
 Crossings SimpleCrosser::crossings(Curve const &a, Curve const &b) {
     Crossings ret;
     pair_intersect(a, 0, 1, b, 0, 1, ret);
-    for(unsigned i = 0; i < ret.size(); i++) {
-        //std::cout << a(ret[i].ta) - b(ret[i].tb) <<  "vs ";
-        intersect_polish_root(a, ret[i].ta,
-                              b, ret[i].tb);
-        Point eps = Point(EpsilonOf(a(ret[i].ta)[0]), EpsilonOf(a(ret[i].ta)[1]));
-        //std::cout << a(ret[i].ta) - b(ret[i].tb) << " => ";
-        //std::cout << eps << std::endl;
-    }
     return ret;
 }
 

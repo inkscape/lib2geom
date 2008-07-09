@@ -4,9 +4,12 @@
 #include <2geom/sbasis-geometric.h>
 #include <2geom/sbasis-math.h>
 #include <2geom/bezier-to-sbasis.h>
+#include <2geom/sbasis-to-bezier.h>
+#include <2geom/path-intersection.h>
 
 #include <2geom/toys/path-cairo.h>
 #include <2geom/toys/toy-framework-2.h>
+#include <sstream>
 
 using std::vector;
 using namespace Geom;
@@ -72,8 +75,24 @@ class OffsetTester: public Toy {
 
         cairo_set_source_rgba (cr, 0.5, 0.2, 0., 0.8);
         Piecewise<D2<SBasis> > n = rot90(unitVector(derivative(B)));
-        cairo_pw_d2(cr,Piecewise<D2<SBasis> >(B)+n*offset);
+        Piecewise<D2<SBasis> > offset_curve = Piecewise<D2<SBasis> >(B)+n*offset;
+        std::vector<Path> offset_path = path_from_piecewise(offset_curve, 0.1);
+        
+        cairo_path(cr, offset_path);
         cairo_stroke(cr);
+        for(int pi = 0; pi < offset_path.size(); pi++) {
+            Crossings cs = self_crossings(offset_path[pi]);
+            for(int i = 0; i < cs.size(); i++) {
+                draw_cross(cr, offset_path[pi].pointAt(cs[i].ta));
+                std::stringstream s;
+                Point Pa = offset_path[pi].pointAt(cs[i].ta);
+                Point Pb = offset_path[pi].pointAt(cs[i].tb);
+                s << L1(Pa - Pb) << std::endl;
+                std::string ss = s.str();
+                draw_text(cr, Pa+Point(3,3), ss.c_str(), false, "Serif 6");
+                
+            }
+        }
 
         for(unsigned i = 0; i < n.size()+1;i++){
             Point ptA=B(n.cuts[i]), ptB;
