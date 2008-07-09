@@ -39,14 +39,78 @@
 
 #include <2geom/toys/path-cairo.h>
 #include <2geom/toys/toy-framework-2.h>
-
+#include <stdio.h>
+#include <gsl/gsl_errno.h>
+#include <gsl/gsl_math.h>
+#include <gsl/gsl_min.h>
+     
+class EllipseFitting;
 
 using namespace Geom;
+
+double fn1 (double x, void * params);
+     
+int
+mins (EllipseFitting*ef)
+{
+    int status;
+    int iter = 0, max_iter = 100;
+    const gsl_min_fminimizer_type *T;
+    gsl_min_fminimizer *s;
+    double m = 2.0, m_expected = M_PI;
+    double a = 0.0, b = 6.0;
+    gsl_function F;
+     
+    F.function = &fn1;
+    F.params = (void*)ef;
+     
+    T = gsl_min_fminimizer_brent;
+    s = gsl_min_fminimizer_alloc (T);
+    gsl_min_fminimizer_set (s, &F, m, -1000, 1000);
+     
+    printf ("using %s method\n",
+            gsl_min_fminimizer_name (s));
+     
+    printf ("%5s [%9s, %9s] %9s %10s %9s\n",
+            "iter", "lower", "upper", "min",
+            "err", "err(est)");
+     
+    printf ("%5d [%.7f, %.7f] %.7f %+.7f %.7f\n",
+            iter, a, b,
+            m, m - m_expected, b - a);
+     
+    do
+    {
+        iter++;
+        status = gsl_min_fminimizer_iterate (s);
+     
+        m = gsl_min_fminimizer_x_minimum (s);
+        a = gsl_min_fminimizer_x_lower (s);
+        b = gsl_min_fminimizer_x_upper (s);
+     
+        status 
+            = gsl_min_test_interval (a, b, 0.001, 0.0);
+     
+        if (status == GSL_SUCCESS)
+            printf ("Converged:\n");
+     
+        printf ("%5d [%.7f, %.7f] "
+                "%.7f %+.7f %.7f\n",
+                iter, a, b,
+                m, m - m_expected, b - a);
+    }
+    while (status == GSL_CONTINUE && iter < max_iter);
+     
+    gsl_min_fminimizer_free (s);
+     
+    return m;
+}
+
 
 
 class EllipseFitting : public Toy
 {
-  private:
+  public:
     void draw( cairo_t *cr, std::ostringstream *notify,
                int width, int height, bool save )
     {
@@ -67,18 +131,23 @@ class EllipseFitting : public Toy
         {
             psh.push_back(400*uniform()+50, 300*uniform()+50);
         }
-
-        try
-        {
-            e.set(psh.pts);
+        
+        double x = mins(this);
+        
+        psh.pts[4][X] = x;
+        e.set(psh.pts);
+        if(0) {
+            try
+            {
+                e.set(psh.pts);
+            }
+            catch(LogicalError exc)
+            {
+                std::cerr << exc.what() << std::endl;
+                Toy::draw(cr, notify, width, height, save);
+                return;
+            }
         }
-        catch(LogicalError exc)
-        {
-            std::cerr << exc.what() << std::endl;
-            Toy::draw(cr, notify, width, height, save);
-            return;
-        }
-
         if (toggles[0].on)
         {
             try
@@ -102,6 +171,7 @@ class EllipseFitting : public Toy
                                             e.ray(X), e.ray(Y),
                                             0, 2*M_PI,
                                             e.rot_angle() );
+            *notify << "Area:" << e.ray(X)*e.ray(Y);
         }
         else
         {
@@ -160,7 +230,7 @@ class EllipseFitting : public Toy
         handles.push_back(&(sliders[0]));
     }
 
-  private:
+  public:
     Ellipse e;
     SVGEllipticalArc ea;
     bool first_time;
@@ -176,6 +246,23 @@ int main(int argc, char **argv)
     init( argc, argv, new EllipseFitting(), 600, 600 );
     return 0;
 }
+
+double fn1 (double x, void * params)
+{
+    EllipseFitting* ef = (EllipseFitting*)params;
+    Ellipse e;
+    ef->psh.pts[4][X] = x;
+    try
+    {
+        e.set(ef->psh.pts);
+    }
+    catch(LogicalError exc)
+    {
+        return 1e18;
+    }
+    return e.ray(X)*e.ray(Y);
+}
+     
 
 
 /*
