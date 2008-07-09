@@ -39,6 +39,8 @@ nearest-point.cpp
 nearest-point.h
 
 bezier-curve.h
+circle.cpp
+circle.h
 curve.h
 curves.h
 curve-helpers.cpp
@@ -164,3 +166,4 @@ INSTALL(FILES "${CMAKE_BINARY_DIR}/2geom.pc" DESTINATION lib/pkgconfig)
 ADD_SUBDIRECTORY (toys)
 ADD_SUBDIRECTORY (tests)
 ADD_SUBDIRECTORY (py2geom)
+

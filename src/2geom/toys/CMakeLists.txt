@@ -45,6 +45,7 @@ boolops
 bound-path
 box3d
 center-warp
+circle-fitting
 circle-intersect
 conic-3
 conic-4

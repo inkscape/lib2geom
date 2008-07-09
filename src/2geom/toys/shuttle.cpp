@@ -32,11 +32,11 @@ double nearest(Point& P, D2<SBasis> Dom) {
     return t;
 }
 
-class Circle{
+class CCircle{
 public:
     Point center;
     double radius;
-    Circle(D2<SBasis> c, double t) {
+    CCircle(D2<SBasis> c, double t) {
         std::vector<Point > ders = c.valueAndDerivatives(t, 3);
         std::cout << ders[0] << ", "
                   << ders[1] << ", "
@@ -63,23 +63,23 @@ unsigned A_bez_ord;
 unsigned B_bez_ord;
 virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
     cairo_set_line_width (cr, 0.5);
-    
+
     D2<SBasis> A = handles_to_sbasis(handles.begin(), A_bez_ord-1);
     cairo_md_sb(cr, A);
-    
+
     D2<SBasis> B = handles_to_sbasis(handles.begin()+A_bez_ord, B_bez_ord-1);
     cairo_md_sb(cr, B);
     vector<double> Asects, Bsects;
     g_cr = cr;
-    //if(0) pair_intersect(Asects, Bsects, A, 0, 1, 
+    //if(0) pair_intersect(Asects, Bsects, A, 0, 1,
     //               B, 0, 1);
     double pt = nearest(handles[A_bez_ord + B_bez_ord], A);
     double qt = nearest(handles[A_bez_ord + B_bez_ord + 1], B);
     Point P = handles[A_bez_ord + B_bez_ord];
     //Point Q = handles[A_bez_ord + B_bez_ord+1];
-    
-    Circle pc(A, pt);
-    Circle qc(B, qt);
+
+    CCircle pc(A, pt);
+    CCircle qc(B, qt);
     pc.draw(cr);
     qc.draw(cr);
     cairo_move_to(cr, pc.center);
@@ -92,7 +92,7 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
             D2<SBasis> Dom = A;
             if(dom)
                 Dom = B;
-            
+
             cairo_line_to(cr, P);
             dom = !dom;
         }
