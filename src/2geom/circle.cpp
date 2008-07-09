@@ -49,13 +49,15 @@ void Circle::set(double A, double B, double C, double D)
         THROW_RANGEERROR("square term coefficient == 0");
     }
 
+    //std::cerr << "B = " << B << "  C = " << C << "  D = " << D << std::endl;
+
     double b = B / A;
     double c = C / A;
     double d = D / A;
 
     m_centre[X] = -b/2;
     m_centre[Y] = -c/2;
-    double r2 = m_centre[X] * m_centre[X] + m_centre[Y] * m_centre[Y] - D;
+    double r2 = m_centre[X] * m_centre[X] + m_centre[Y] * m_centre[Y] - d;
 
     if (r2 < 0)
     {

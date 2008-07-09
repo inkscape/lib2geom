@@ -57,7 +57,7 @@ class Circle
 
     Circle(double A, double B, double C, double D)
     {
-        set(A, B, C);
+        set(A, B, C, D);
     }
 
     Circle(std::vector<Point> const& points)

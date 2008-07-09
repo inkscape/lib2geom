@@ -93,15 +93,13 @@ class CircleFitting : public Toy
             }
         }
 
+        std::cerr << "center = " << c.center() << "  ray = " << c.ray() << std::endl;
+
         cairo_set_source_rgba(cr, 0.3, 0.3, 0.3, 1.0);
         cairo_set_line_width (cr, 0.3);
         if (!toggles[0].on)
         {
-            draw_elliptical_arc_with_cairo( cr,
-                                            c.center(X), c.center(Y),
-                                            c.ray(), c.ray(),
-                                            0, 2*M_PI,
-                                            0 );
+            cairo_arc(cr, c.center(X), c.center(Y), c.ray(), 0, 2*M_PI);
         }
         else
         {
@@ -115,28 +113,6 @@ class CircleFitting : public Toy
         cairo_stroke(cr);
 
         Toy::draw(cr, notify, width, height, save);
-    }
-
-    void draw_elliptical_arc_with_cairo(
-            cairo_t *cr,
-            double _cx, double _cy,
-            double _rx, double _ry,
-            double _sa, double _ea,
-            double _ra = 0
-            ) const
-    {
-        double cos_rot_angle = std::cos(_ra);
-        double sin_rot_angle = std::sin(_ra);
-        cairo_matrix_t transform_matrix;
-        cairo_matrix_init( &transform_matrix,
-                           _rx * cos_rot_angle, _rx * sin_rot_angle,
-                          -_ry * sin_rot_angle, _ry * cos_rot_angle,
-                           _cx,                 _cy
-                         );
-        cairo_save(cr);
-        cairo_transform(cr, &transform_matrix);
-        cairo_arc(cr, 0, 0, 1, _sa, _ea);
-        cairo_restore(cr);
     }
 
   public:
