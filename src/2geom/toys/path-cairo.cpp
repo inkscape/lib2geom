@@ -7,6 +7,10 @@
 
 using namespace Geom;
 
+void cairo_rectangle(cairo_t *cr, Rect const& r) {
+    cairo_rectangle(cr, r.left(), r.top(), r.width(), r.height());
+}
+
 void cairo_curve(cairo_t *cr, Curve const& c) {
     if(LineSegment const* line_segment = dynamic_cast<LineSegment const*>(&c)) {
         cairo_line_to(cr, (*line_segment)[1][0], (*line_segment)[1][1]);
