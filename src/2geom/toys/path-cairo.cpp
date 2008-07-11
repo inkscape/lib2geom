@@ -28,7 +28,7 @@ void cairo_curve(cairo_t *cr, Curve const& c) {
 //    }
     else {
         //this case handles sbasis as well as all other curve types
-        Path sbasis_path = path_from_sbasis(c.toSBasis(), 0.1);
+        Path sbasis_path = cubicbezierpath_from_sbasis(c.toSBasis(), 0.1);
 
         //recurse to convert the new path resulting from the sbasis to svgd
         for(Path::iterator iter = sbasis_path.begin(); iter != sbasis_path.end(); ++iter) {
