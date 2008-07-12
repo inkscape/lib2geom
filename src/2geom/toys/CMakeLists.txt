@@ -39,6 +39,7 @@ path-cairo.h
 
 
 SET(2GEOM_TOYS-2_SRC
+aa
 arc-bez
 arc-length-param
 boolops
@@ -101,8 +102,14 @@ IF(2GEOM_TOYS)
     ENDFOREACH(source)
     ADD_LIBRARY(toy-2 ${LIB_TYPE} ${2GEOM_TOY-FRAMEWORK-2_SRC})
     TARGET_LINK_LIBRARIES(toy-2 2geom "${GTK2_LINK_FLAGS} ${cairo_LINK_FLAGS}")
+
     FOREACH(source ${2GEOM_TOYS-2_SRC})
-        ADD_EXECUTABLE(${source} ${source}.cpp)
+        IF(${source} STREQUAL aa)
+            ADD_EXECUTABLE(${source} EXCLUDE_FROM_ALL ${source}.cpp)
+            TARGET_LINK_LIBRARIES(${source} affa)
+        ELSE(${source} STREQUAL aa)
+            ADD_EXECUTABLE(${source} ${source}.cpp)
+        ENDIF(${source} STREQUAL aa)
         TARGET_LINK_LIBRARIES(${source} toy-2 2geom "${GTK2_LINK_FLAGS} ${cairo_LINK_FLAGS} ${LINK_GSL}" )
     ENDFOREACH(source)
 
