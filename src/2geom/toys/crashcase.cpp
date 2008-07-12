@@ -36,39 +36,6 @@
 #include <2geom/pathvector.h>
 #include <2geom/transforms.h>
 
-class SPCurve {
-public:
-    /* Constructors */
-    SPCurve(Geom::PathVector const& pathv)
-     : _pathv(pathv)
-     {
-     };
-
-    Geom::PathVector const & get_pathvector() const
-    {
-    return _pathv;
-    }
-
-private:
-    Geom::PathVector _pathv;
-};
-
-SPCurve* setpath(char const * d)
-{
-    std::vector<Geom::Path> pv = Geom::parse_svg_path(d);
-    return new SPCurve(pv);
-}
-
-std::vector<Geom::Path> pvcopy;
-
-void  testfunc(Geom::Path const &path, Geom::Matrix const &tr, bool doTransformation)
-{
-    Geom::Path const pathtr = doTransformation ? path * tr : path;
-    std::cout << pathtr.size();
-}
-
-
-
 int main(int /*argc*/, char** /*argv*/) {
 
 /*
@@ -84,14 +51,11 @@ Crasher =
          d="M 284.00000 23.000000 A 3.0000000 3.0000000 0 1 1  278.00000,23.000000 A 3.0000000 3.0000000 0 1 1  284.00000 23.000000 z"
          transform="matrix(1.331759,0,0,1.327869,-53.22381,-6.040984)" />
 */
+
+    Geom::Matrix tempMat(1.3327578,0,0,1.3220755,-307.96422,-0.9307835);
     char const * d = "M 284.00000 23.000000 A 3.0000000 3.0000000 0 1 1  278.00000,23.000000 A 3.0000000 3.0000000 0 1 1  284.00000 23.000000 z";
-//    Geom::Matrix m = Geom::Matrix(1.331759,0,0,1.327869,-53.22381,-6.040984) * Geom::Translate(-254.4684,4.926264) * Geom::Matrix(1.00075,0,0,0.995637,-4.124129e-2,0.179073);
-    Geom::Matrix m(1.3327578,0,0,1.3220755,-307.96422,-0.9307835);
-    SPCurve* curve = setpath(d);
-    Geom::PathVector const & pv = curve->get_pathvector();
-    for(Geom::PathVector::const_iterator it = pv.begin(); it != pv.end(); ++it) {
-        testfunc(*it, m, true);
-    }
+    Geom::PathVector yo = Geom::parse_svg_path(d);
+    yo *= tempMat;
     std::cout << "success!" << std::endl;
 
     return 0;
