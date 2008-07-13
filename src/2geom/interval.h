@@ -55,6 +55,9 @@ public:
     // Doing an expandTo(p) on this empty interval will correctly set the whole interval to [p,p].
     explicit Interval() { _b[0] = +COORD_HUGE;  _b[1] = -COORD_HUGE; }
     explicit Interval(Coord u) { _b[0] = _b[1] = u; }
+    /* When creating an Interval using the constructor specifying the exact range, the created interval
+     * will be [u,v] when u<=v ; and will be [v,u] when v < u !!!
+     */
     Interval(Coord u, Coord v) {
         if(u < v) {
             _b[0] = u; _b[1] = v;
