@@ -56,6 +56,7 @@ PathVector reverse_paths_and_order (PathVector const & path_in)
     return path_out;
 }
 
+// FIXME: this function does not work for empty paths, because Rect cannot be initialized empty yet. check rect.h
 Rect bounds_fast( PathVector const& pv )
 {
     typedef PathVector::const_iterator const_iterator;
@@ -71,6 +72,7 @@ Rect bounds_fast( PathVector const& pv )
     return bound;
 }
 
+// FIXME: this function does not work for empty paths, because Rect cannot be initialized empty yet. check rect.h
 Rect bounds_exact( PathVector const& pv )
 {
     typedef PathVector::const_iterator const_iterator;
