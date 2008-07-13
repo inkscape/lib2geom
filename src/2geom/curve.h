@@ -67,6 +67,8 @@ public:
   virtual Point initialPoint() const = 0;
   virtual Point finalPoint() const = 0;
 
+  /* isDegenerate returns true if the curve has "zero length".
+   * For a bezier curve this means for example that all handles are at the same point */
   virtual bool isDegenerate() const = 0;
 
   virtual Curve *duplicate() const = 0;
