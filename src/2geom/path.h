@@ -269,7 +269,7 @@ public:
     if (degenerate) {
       // if path only contains degenerate curves, no second cut is added
       // so we need to create at least one segment manually
-      ret = Piecewise<D2<SBasis> >(path.initialPoint());
+      ret = Piecewise<D2<SBasis> >(initialPoint());
     }
     return ret;
   }
