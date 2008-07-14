@@ -122,17 +122,17 @@ class ConvexTest: public Toy {
                 if(out)
                     r = *out;
 #if 1
-                if(out && (r.area() < oldr.area()*0.75)) {
+                if(out && (r.area() < oldr.area()*0.25)) {
                     splits[0] ++;
                     recursive_implicit(r, cr, w);
                 // 2) one dimension is significantly smaller
-                } else if(r[0].extent() < r[1].extent()*0.5) {
+                } else if(r[1].extent() < oldr[1].extent()*0.5) {
                     splits[1]++;
                     recursive_implicit(Rect(Interval(r.left(), r.right()),
                                             Interval(r.top(), c[1])), cr,w);
                     recursive_implicit(Rect(Interval(r.left(), r.right()),
                                             Interval(c[1], r.bottom())), cr,w);
-                } else if((r[1].extent() < r[0].extent()*0.5)) {
+                } else if((r[0].extent() < oldr[0].extent()*0.5)) {
                     splits[2]++;
                     recursive_implicit(Rect(Interval(r.left(), c[0]),
                                             Interval(r.top(), r.bottom())), cr,w);
