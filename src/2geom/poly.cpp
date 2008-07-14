@@ -1,5 +1,12 @@
 #include <2geom/poly.h>
 
+#define HAVE_GSL
+#ifdef HAVE_GSL
+#include <gsl/gsl_poly.h>
+#endif
+
+namespace Geom {
+
 Poly Poly::operator*(const Poly& p) const {
     Poly result; 
     result.resize(degree() +  p.degree()+1);
@@ -11,10 +18,6 @@ Poly Poly::operator*(const Poly& p) const {
     }
     return result;
 }
-#define HAVE_GSL
-#ifdef HAVE_GSL
-#include <gsl/gsl_poly.h>
-#endif
 
 /*double Poly::eval(double x) const {
     return gsl_poly_eval(&coeff[0], size(), x);
@@ -185,6 +188,7 @@ Poly gcd(Poly const &a, Poly const &b, const double /*tol*/) {
     assert(1);
     }*/
 
+} //namespace Geom
 
 /*
   Local Variables:

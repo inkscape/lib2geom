@@ -1,11 +1,13 @@
-#ifndef SEEN_POLY_H
-#define SEEN_POLY_H
+#ifndef LIB2GEOM_SEEN_POLY_H
+#define LIB2GEOM_SEEN_POLY_H
 #include <assert.h>
 #include <vector>
 #include <iostream>
 #include <algorithm>
 #include <complex>
 #include <2geom/utils.h>
+
+namespace Geom {
 
 class Poly : public std::vector<double>{
 public:
@@ -195,6 +197,9 @@ inline std::ostream &operator<< (std::ostream &out_file, const Poly &in_poly) {
     return out_file;
 }
 
+} // namespace Geom
+
+#endif //LIB2GEOM_SEEN_POLY_H
 
 /*
   Local Variables:
@@ -206,4 +211,3 @@ inline std::ostream &operator<< (std::ostream &out_file, const Poly &in_poly) {
   End:
 */
 // vim: filetype=cpp:expandtab:shiftwidth=4:tabstop=8:softtabstop=4:encoding=utf-8:textwidth=99 :
-#endif
