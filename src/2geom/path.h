@@ -289,28 +289,7 @@ public:
     return ret;
   }
 
-  Path &operator*=(Matrix const &m) {
-    unshare();
-    Sequence::iterator last = get_curves().end() - 1;
-    Sequence::iterator it;
-    Point prev;
-    for (it = get_curves().begin() ; it != last ; ++it) {
-      *it = boost::shared_ptr<Curve>((*it)->transformed(m));
-      if ( it != get_curves().begin() && (*it)->initialPoint() != prev ) {
-        THROW_CONTINUITYERROR();
-      }
-      prev = (*it)->finalPoint();
-    }
-    for ( int i = 0 ; i < 2 ; ++i ) {
-      final_->setPoint(i, (*final_)[i] * m);
-    }
-    if (get_curves().size() > 1) {
-      if ( front().initialPoint() != initialPoint() || back().finalPoint() != finalPoint() ) {
-        THROW_CONTINUITYERROR();
-      }
-    }
-    return *this;
-  }
+  Path &operator*=(Matrix const &m);
   
   Point pointAt(double t) const 
   {

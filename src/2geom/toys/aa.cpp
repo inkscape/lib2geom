@@ -84,9 +84,9 @@ AAF eval(AAF x, AAF y) {
   //return x*y;
   //return 4*x+3*y-1;
   //return x*x + y*y - 200*200;
-  //return pow((x*x + y*y), 2) - (x*x-y*y);
+  return pow((x*x + y*y), 2) - (x*x-y*y);
   //return x*x-y;
-  return (x*x*x-y*x)*sin(x) + (x-y*y)*cos(y)-0.5;
+  //return (x*x*x-y*x)*sin(x) + (x-y*y)*cos(y)-0.5;
 }
 
 class ConvexTest: public Toy {
