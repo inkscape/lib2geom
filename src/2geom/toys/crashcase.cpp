@@ -35,6 +35,7 @@
 #include <2geom/svg-path-parser.h>
 #include <2geom/pathvector.h>
 #include <2geom/transforms.h>
+#include <fenv.h>
 
 int main(int /*argc*/, char** /*argv*/) {
 
@@ -51,7 +52,7 @@ Crasher =
          d="M 284.00000 23.000000 A 3.0000000 3.0000000 0 1 1  278.00000,23.000000 A 3.0000000 3.0000000 0 1 1  284.00000 23.000000 z"
          transform="matrix(1.331759,0,0,1.327869,-53.22381,-6.040984)" />
 */
-
+    std::cout<< "fegetround = " << fegetround() << std::endl;
     Geom::Matrix tempMat(1.3327578,0,0,1.3220755,-307.96422,-0.9307835);
     char const * d = "M 284.00000 23.000000 A 3.0000000 3.0000000 0 1 1  278.00000,23.000000 A 3.0000000 3.0000000 0 1 1  284.00000 23.000000 z";
     Geom::PathVector yo = Geom::parse_svg_path(d);
