@@ -232,11 +232,11 @@ Ellipse Ellipse::transformed(Matrix const& m) const
         double angle;
         if (AM[0] != 0)
         {
-            angle = std::atan(AM[2] / AM[0]);
+            angle = std::atan2(AM[2], AM[0]);
         }
         else if (AM[1] != 0)
         {
-            angle = std::atan(AM[3] / AM[1]);
+            angle = std::atan2(AM[3], AM[1]);
         }
         else
         {
