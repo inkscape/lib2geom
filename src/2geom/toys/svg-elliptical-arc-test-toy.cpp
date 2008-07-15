@@ -64,6 +64,7 @@ class SVGEllipticalArcTestToy: public Toy
         TEST_ROOTS,
         TEST_BOUNDS,
         TEST_FITTING,
+        TEST_TRANSFORM,
         TOTAL_ITEMS // this one must be the last item
     };
 
@@ -88,10 +89,15 @@ class SVGEllipticalArcTestToy: public Toy
         ROT_ANGLE_SLIDER,
         T_SLIDER,
         FROM_SLIDER = T_SLIDER,
-        TO_SLIDER
+        TO_SLIDER,
+        TM0_SLIDER = T_SLIDER,
+        TM1_SLIDER,
+        TM2_SLIDER,
+        TM3_SLIDER
     };
 
     static const char* menu_items[TOTAL_ITEMS];
+    static const char keys[TOTAL_ITEMS];
 
     virtual void first_time(int /*argc*/, char** /*argv*/)
     {
@@ -515,6 +521,56 @@ class SVGEllipticalArcTestToy: public Toy
         }
     }
 
+    void init_transform()
+    {
+        init_common();
+
+        double max = 4;
+        double min = -max;
+
+        sliders.push_back( Slider(min, max, 0, 1, "TM0"));
+        sliders.push_back( Slider(min, max, 0, 0, "TM1"));
+        sliders.push_back( Slider(min, max, 0, 0, "TM2"));
+        sliders.push_back( Slider(min, max, 0, 1, "TM3"));
+
+        handles.push_back(&(sliders[TM0_SLIDER]));
+        handles.push_back(&(sliders[TM1_SLIDER]));
+        handles.push_back(&(sliders[TM2_SLIDER]));
+        handles.push_back(&(sliders[TM3_SLIDER]));
+    }
+
+    void draw_transform(cairo_t *cr, std::ostringstream *notify,
+                        int width, int height, bool save)
+    {
+        draw_common(cr, notify, width, height, save);
+        init_transform_ctrl_geom(cr, notify, width, height);
+        if ( no_solution || point_overlap ) return;
+
+        Matrix TM(sliders[TM0_SLIDER].value(), sliders[TM1_SLIDER].value(),
+                  sliders[TM2_SLIDER].value(), sliders[TM3_SLIDER].value(),
+                  ea.center(X),                ea.center(Y));
+
+        Matrix tm( 1,            0,
+                   0,            1,
+                   -ea.center(X), -ea.center(Y) );
+
+
+        SVGEllipticalArc* tea = static_cast<SVGEllipticalArc*>(ea.transformed(tm));
+        SVGEllipticalArc* eat = NULL;
+        eat = static_cast<SVGEllipticalArc*>(tea->transformed(TM));
+        delete tea;
+        if (eat == NULL)
+        {
+            std::cerr << "elliptiarc transformation failed" << std::endl;
+            return;
+        }
+        D2<SBasis> sb = eat->toSBasis();
+        cairo_set_line_width(cr, 0.4);
+        cairo_set_source_rgba(cr, 0.8, 0.1, 0.1, 1.0);
+        cairo_md_sb(cr, sb);
+        cairo_stroke(cr);
+        delete eat;
+    }
 
     void init_common_ctrl_geom(cairo_t* /*cr*/, int /*width*/, int height, std::ostringstream* /*notify*/)
     {
@@ -569,6 +625,23 @@ class SVGEllipticalArcTestToy: public Toy
         }
     }
 
+    void init_transform_ctrl_geom(cairo_t* /*cr*/, std::ostringstream* /*notify*/, int /*width*/, int height)
+    {
+        if ( set_control_geometry )
+        {
+            set_control_geometry = false;
+
+            Point sp = Point(600, height - 140);
+            Point op = Point(0, 30);
+            double len = 200;
+
+            sliders[TM0_SLIDER].geometry(sp, len);
+            sliders[TM1_SLIDER].geometry(sp += op, len);
+            sliders[TM2_SLIDER].geometry(sp += op, len);
+            sliders[TM3_SLIDER].geometry(sp += op, len);
+        }
+    }
+
     void init_menu()
     {
         handles.clear();
@@ -582,54 +655,59 @@ class SVGEllipticalArcTestToy: public Toy
         *notify << std::endl;
         for (int i = SHOW_MENU; i < TOTAL_ITEMS; ++i)
         {
-            *notify << "   " << i << " -  " <<  menu_items[i] << std::endl;
+            *notify << "   " << keys[i] << " -  " <<  menu_items[i] << std::endl;
         }
     }
 
     void key_hit(GdkEventKey *e)
     {
-        switch ( e->keyval )
+        char choice = std::toupper(e->keyval);
+        switch ( choice )
         {
-            case '0':
+            case 'A':
                 init_menu();
                 draw_f = &SVGEllipticalArcTestToy::draw_menu;
                 break;
-            case '1':
+            case 'B':
                 init_common();
                 draw_f = &SVGEllipticalArcTestToy::draw_common;
                 break;
-            case '2':
+            case 'C':
                 init_common();
                 draw_f = &SVGEllipticalArcTestToy::draw_comparison;
                 break;
-            case '3':
+            case 'D':
                 draw_f = &SVGEllipticalArcTestToy::draw_menu;
                 init_portion();
                 draw_f = &SVGEllipticalArcTestToy::draw_portion;
                 break;
-            case '4':
+            case 'E':
                 init_reverse();
                 draw_f = &SVGEllipticalArcTestToy::draw_reverse;
                 break;
-            case '5':
+            case 'F':
                 init_np();
                 draw_f = &SVGEllipticalArcTestToy::draw_np;
                 break;
-            case '6':
+            case 'G':
                 init_derivative();
                 draw_f = &SVGEllipticalArcTestToy::draw_derivative;
                 break;
-            case '7':
+            case 'H':
                 init_roots();
                 draw_f = &SVGEllipticalArcTestToy::draw_roots;
                 break;
-            case '8':
+            case 'I':
                 init_bounds();
                 draw_f = &SVGEllipticalArcTestToy::draw_bounds;
                 break;
-            case '9':
+            case 'J':
                 init_fitting();
                 draw_f = &SVGEllipticalArcTestToy::draw_fitting;
+                break;
+            case 'K':
+                init_transform();
+                draw_f = &SVGEllipticalArcTestToy::draw_transform;
                 break;
         }
         redraw();
@@ -788,9 +866,14 @@ const char* SVGEllipticalArcTestToy::menu_items[] =
     "derivative",
     "roots",
     "bounding box",
-    "fitting"
+    "fitting",
+    "transformation"
 };
 
+const char SVGEllipticalArcTestToy::keys[] =
+{
+     'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K'
+};
 
 
 int main(int argc, char **argv)

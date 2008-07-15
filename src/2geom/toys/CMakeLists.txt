@@ -58,6 +58,8 @@ curve-curve-nearest-point-3
 d2sbasis-fitting
 d2sbasis-fitting-with-np
 ellipse-fitting
+ellipse-area-minimizer
+#ellipse-transform
 elliptiarc-3point-center-fitting
 #elliptiarc-5points-fitting
 elliptiarc-curve-fitting

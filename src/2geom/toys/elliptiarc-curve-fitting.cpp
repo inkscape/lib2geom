@@ -36,14 +36,8 @@
 #include <2geom/sbasis.h>
 #include <2geom/path.h>
 #include <2geom/bezier-to-sbasis.h>
-//#include <2geom/sbasis-geometric.h>
-//#include <2geom/numeric/linear_system.h>
-
-//#include <2geom/numeric/fitting-tool.h>
-//#include <2geom/numeric/fitting-model.h>
-//#include <2geom/ellipse.h>
-
 #include <2geom/svg-elliptical-arc.h>
+
 #include <2geom/toys/path-cairo.h>
 #include <2geom/toys/toy-framework-2.h>
 
