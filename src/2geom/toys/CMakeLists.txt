@@ -51,7 +51,6 @@ circle-intersect
 conic-3
 conic-4
 convex-toy
-crashcase
 curvature-test
 curve-curve-distance
 curve-curve-nearest-point-3
