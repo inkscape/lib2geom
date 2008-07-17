@@ -8,6 +8,10 @@ using Geom::Point;
 using Geom::X;
 using Geom::Y;
 
+// TODO: add test for infinity().  (123 > infinity()) == false, for example.
+// TODO: add tests for Interval. Interval(a,b) == Interval(b,a) for example.
+
+
 class NrTypesTest : public CxxTest::TestSuite
 {
 public:
