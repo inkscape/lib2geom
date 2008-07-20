@@ -8,10 +8,13 @@ using namespace Geom;
 
 class ConvexTest: public Toy {
     PointSetHandle psh[2];
+    PointHandle direction_handle;
     public:
     ConvexTest () {
         handles.push_back(&psh[0]);
         handles.push_back(&psh[1]);
+        handles.push_back(&direction_handle);
+        direction_handle.pos = Point(10,10);
         for(unsigned i = 0; i < 15; i++){
             psh[0].push_back(uniform()*uniform()*400+200,
                           uniform()*uniform()*400+200);
@@ -39,7 +42,7 @@ class ConvexTest: public Toy {
             iterations++;
         }
         *notify << "constructor time = " << 1000*0.1/iterations << std::endl;
-
+        
 
         Geom::ConvexHull ch1(psh[0].pts);
         Geom::ConvexHull ch2(psh[1].pts);
@@ -64,6 +67,27 @@ class ConvexTest: public Toy {
         Geom::ConvexHull gm = graham_merge(ch1, ch2);
         Geom::Point offset = Geom::Point(4, 0);
 
+        Point cent;
+        gm.centroid_and_area(cent);
+        draw_cross(cr, cent);
+        cairo_move_to(cr, cent);
+        cairo_line_to(cr, direction_handle.pos);
+        cairo_stroke(cr);
+        Point const * futh =  gm.furthest(direction_handle.pos - cent);
+        draw_cross(cr, *futh);
+        {
+            Point a, b, c;
+            double dia = gm.narrowest_diameter(a, b, c);
+            cairo_save(cr);
+            cairo_set_line_width(cr, 2);
+            cairo_move_to(cr, b);
+            cairo_line_to(cr, c);
+            cairo_move_to(cr, a);
+            cairo_line_to(cr, (c-b)*dot(a-b, c-b)/dot(c-b,c-b)+b);
+            cairo_stroke(cr);
+            //std::cout << a << ", " << b << ", " << c << ": " << dia << "\n";
+            cairo_restore(cr);
+        }
         /*cairo_set_line_width (cr, 2);
         if(gm.boundary.size() > 0) {
             cairo_move_to(cr, gm.boundary.back() + offset);
@@ -101,15 +125,15 @@ class ConvexTest: public Toy {
         for(unsigned i = 0; i < bs.size(); i+=2) {
             cairo_move_to(cr, bs[i]);
             cairo_line_to(cr, bs[i + 1]);
+            cairo_stroke(cr);
             //draw_number(cr, (bs[i] + bs[i + 1]) / 2, i / 2);
         }
-        cairo_stroke(cr);
 
         cairo_set_source_rgba (cr, 1., 0., 0, 0.8);
         cairo_move_to(cr, ch1.boundary.back());
         for(unsigned i = 0; i < ch1.boundary.size(); i++) {
             cairo_line_to(cr, ch1.boundary[i]);
-            draw_number(cr, ch1.boundary[i], i);
+            //draw_number(cr, ch1.boundary[i], i);
         }
         cairo_stroke(cr);
 
@@ -117,7 +141,7 @@ class ConvexTest: public Toy {
         cairo_set_source_rgba (cr, 0., 1., 0, 0.8);
         for(unsigned i = 0; i < ch2.boundary.size(); i++) {
             cairo_line_to(cr, ch2.boundary[i]);
-            draw_number(cr, ch2.boundary[i], i);
+            //draw_number(cr, ch2.boundary[i], i);
         }
         cairo_stroke(cr);
         Toy::draw(cr, notify, width, height, save);
