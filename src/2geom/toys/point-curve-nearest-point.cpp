@@ -33,6 +33,7 @@
 #include <2geom/d2.h>
 #include <2geom/sbasis.h>
 #include <2geom/path.h>
+#include <2geom/curves.h>
 #include <2geom/angle.h>
 #include <2geom/bezier-to-sbasis.h>
 #include <2geom/sbasis-geometric.h>

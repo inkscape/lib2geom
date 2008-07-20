@@ -39,7 +39,8 @@
 
 
 #include <boost/shared_ptr.hpp>
-#include <2geom/curves.h>
+#include <2geom/curve.h>
+#include <2geom/bezier-curve.h>
 
 #include <iterator>
 #include <algorithm>
