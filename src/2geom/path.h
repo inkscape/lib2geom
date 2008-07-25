@@ -358,13 +358,13 @@ public:
   }
   
   
-  double nearestPoint(Point const& _point, double from, double to) const;
+  double nearestPoint(Point const& _point, double from, double to, double *distance_squared = NULL) const;
   
-  double nearestPoint(Point const& _point) const
+  double nearestPoint(Point const& _point, double *distance_squared = NULL) const
   {
 	  unsigned int sz = size();
 	  if ( closed() ) ++sz;
-	  return nearestPoint(_point, 0, sz);
+	  return nearestPoint(_point, 0, sz, distance_squared);
   }
    
   void appendPortionTo(Path &p, double f, double t) const;
