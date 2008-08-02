@@ -98,6 +98,19 @@ void Matrix::setExpansionY(double val) {
     }
 }
 
+/**
+ * Calculates the rotation component of the matrix. 
+ * The result is the angle of the vector [1,0] after transforming with this matrix.
+ *
+ * TODO:  njh said this can be made more robust by using singular value decomposition
+ */
+double Matrix::rotation() const {
+    // x = Point(1,0);
+    // r = x * (*this);
+    // then r == Point(_c[0], _c[1]) == xAxis()
+    return atan2(xAxis());
+}
+
 /** Sets this matrix to be the Identity Matrix. */
 void Matrix::setIdentity() {
     _c[0] = 1.0; _c[1] = 0.0;
