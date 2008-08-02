@@ -85,8 +85,6 @@ class Matrix {
     void setExpansionX(double val);
     void setExpansionY(double val);
 
-    double rotation() const;
-
     void setIdentity();
 
     bool isIdentity(Coord eps = EPSILON) const;
