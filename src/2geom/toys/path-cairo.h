@@ -6,12 +6,14 @@
 #include <2geom/d2.h>
 #include <2geom/piecewise.h>
 #include <2geom/path.h>
+#include <2geom/convex-cover.h>
 #include <vector>
 
 typedef struct _cairo cairo_t;
 
 void cairo_curve(cairo_t *cr, Geom::Curve const &c);
 void cairo_rectangle(cairo_t *cr, Geom::Rect const &r);
+void cairo_convex_hull(cairo_t *cr, Geom::ConvexHull const &r);
 void cairo_path(cairo_t *cr, Geom::Path const &p);
 void cairo_path(cairo_t *cr, std::vector<Geom::Path> const &p);
 void cairo_path_stitches(cairo_t *cr, Geom::Path const &p);

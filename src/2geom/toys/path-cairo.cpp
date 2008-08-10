@@ -11,6 +11,14 @@ void cairo_rectangle(cairo_t *cr, Rect const& r) {
     cairo_rectangle(cr, r.left(), r.top(), r.width(), r.height());
 }
 
+void cairo_convex_hull(cairo_t *cr, ConvexHull const& ch) {
+    if(ch.empty()) return;
+    cairo_move_to(cr, ch.boundary.back());
+    for(unsigned i = 0; i < ch.boundary.size(); i++) {
+        cairo_line_to(cr, ch.boundary[i]);
+    }
+}
+
 void cairo_curve(cairo_t *cr, Curve const& c) {
     if(LineSegment const* line_segment = dynamic_cast<LineSegment const*>(&c)) {
         cairo_line_to(cr, (*line_segment)[1][0], (*line_segment)[1][1]);

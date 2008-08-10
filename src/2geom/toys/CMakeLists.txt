@@ -40,6 +40,8 @@ path-cairo.h
 
 SET(2GEOM_TOYS-2_SRC
 aa
+ineaa
+parmaa
 arc-bez
 arc-length-param
 boolops
@@ -106,6 +108,12 @@ IF(2GEOM_TOYS)
 
     FOREACH(source ${2GEOM_TOYS-2_SRC})
         IF(${source} STREQUAL aa)
+            ADD_EXECUTABLE(${source} EXCLUDE_FROM_ALL ${source}.cpp)
+            TARGET_LINK_LIBRARIES(${source} affa)
+        ELSEIF(${source} STREQUAL ineaa)
+            ADD_EXECUTABLE(${source} EXCLUDE_FROM_ALL ${source}.cpp)
+            TARGET_LINK_LIBRARIES(${source} affa)
+        ELSEIF(${source} STREQUAL parmaa)
             ADD_EXECUTABLE(${source} EXCLUDE_FROM_ALL ${source}.cpp)
             TARGET_LINK_LIBRARIES(${source} affa)
         ELSE(${source} STREQUAL aa)
