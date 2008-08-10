@@ -122,6 +122,9 @@ void Toy::mouse_pressed(GdkEventButton* e) {
     redraw();
 }
 
+void Toy::scroll(GdkEventScroll* e) {
+}
+
 void Toy::mouse_released(GdkEventButton* e) {
     selected = NULL;
     hit_data = NULL;
@@ -298,6 +301,14 @@ static gint mouse_event(GtkWidget* widget, GdkEventButton* e, gpointer data) {
     return FALSE;
 }
 
+static gint scroll_event(GtkWidget* widget, GdkEventScroll* e, gpointer data) {
+    (void)(data);
+    (void)(widget);
+    if(current_toy != NULL) current_toy->scroll(e);
+
+    return FALSE;
+}
+
 static gint mouse_release_event(GtkWidget* widget, GdkEventButton* e, gpointer data) {
     (void)(data);
     (void)(widget);
@@ -373,9 +384,10 @@ void init(int argc, char **argv, Toy* t, int width, int height) {
     gtk_widget_push_colormap(gdk_rgb_get_cmap());
     canvas = gtk_drawing_area_new();
 
-    gtk_widget_add_events(canvas, (GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_KEY_PRESS_MASK | GDK_POINTER_MOTION_MASK));
+    gtk_widget_add_events(canvas, (GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_KEY_PRESS_MASK | GDK_POINTER_MOTION_MASK | GDK_SCROLL_MASK));
 
     gtk_signal_connect(GTK_OBJECT (canvas), "expose_event", GTK_SIGNAL_FUNC(expose_event), 0);
+    gtk_signal_connect(GTK_OBJECT(canvas), "scroll_event", GTK_SIGNAL_FUNC(scroll_event), 0);
     gtk_signal_connect(GTK_OBJECT(canvas), "button_press_event", GTK_SIGNAL_FUNC(mouse_event), 0);
     gtk_signal_connect(GTK_OBJECT (canvas), "button_release_event", GTK_SIGNAL_FUNC(mouse_release_event), 0);
     gtk_signal_connect(GTK_OBJECT (canvas), "motion_notify_event", GTK_SIGNAL_FUNC(mouse_motion_event), 0);

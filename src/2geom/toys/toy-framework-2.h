@@ -179,6 +179,7 @@ public:
     virtual void mouse_moved(GdkEventMotion* e);
     virtual void mouse_pressed(GdkEventButton* e);
     virtual void mouse_released(GdkEventButton* e);
+    virtual void scroll(GdkEventScroll* e);
 
     virtual void key_hit(GdkEventKey */*e*/) {}
 
