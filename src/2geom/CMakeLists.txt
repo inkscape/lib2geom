@@ -145,7 +145,6 @@ svg-elliptical-arc.h
 #arc-length.h
 
 numeric/matrix.cpp
-
 )
 
 # make lib for 2geom
@@ -167,3 +166,4 @@ ADD_SUBDIRECTORY (toys)
 ADD_SUBDIRECTORY (tests)
 ADD_SUBDIRECTORY (py2geom)
 
+ADD_SUBDIRECTORY (local)

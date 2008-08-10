@@ -19,6 +19,7 @@ test-cg
 #types-test.h
 unit-test-sbasis
 root-find-ut
+implicitization
 )
 
 OPTION(2GEOM_UNIT_TESTS
