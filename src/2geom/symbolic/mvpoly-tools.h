@@ -146,7 +146,9 @@ struct mvpoly
 
     /*
      * mv poly evaluation:
-     * T can be any type that is able to be + and * with the coefficient type
+     * T can be any type that is able to be += with the coefficient type
+     * and that can be *= with the same type T moreover a specialization
+     * of zero struct for the type T is needed
      */
     template <typename T>
     static
@@ -251,16 +253,21 @@ struct mvpoly
     static
     T evaluate_impl(type const& p, boost::array<T, N+i> const& X)
     {
-        T r = zero<T>()();
-        for (size_t k = p.max_degree(); k > 0; --k)
+//        T r = zero<T>()();
+//        for (size_t k = p.max_degree(); k > 0; --k)
+//        {
+//            r += mvpoly<N-1, CoeffT>::template evaluate_impl<T, i+1>(p[k], X);
+//            r *= X[i];
+//        }
+//        r += mvpoly<N-1, CoeffT>::template evaluate_impl<T, i+1>(p[0], X);
+
+        int n = p.max_degree();
+        T r = mvpoly<N-1, CoeffT>::template evaluate_impl<T, i+1>(p[n], X);
+        for (int k = n - 1; k >= 0; --k)
         {
-            r += mvpoly<N-1, CoeffT>::template evaluate_impl<T, i+1>(p[k], X);
-            std::cout << i << " ," << k << ": r += " << r << std::endl;
             r *= X[i];
-            std::cout << i << " ," << k << ": r *= " << r << std::endl;
+            r += mvpoly<N-1, CoeffT>::template evaluate_impl<T, i+1>(p[k], X);
         }
-        r += mvpoly<N-1, CoeffT>::template evaluate_impl<T, i+1>(p[0], X);
-        std::cout << i << ": r = " << r << std::endl;
         return r;
     }
 

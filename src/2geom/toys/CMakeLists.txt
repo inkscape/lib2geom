@@ -65,6 +65,7 @@ elliptiarc-3point-center-fitting
 elliptiarc-curve-fitting
 fitter
 hvlineseg-toy
+implicit-toy
 inner-product-clip
 load-svgd
 mesh-warp
