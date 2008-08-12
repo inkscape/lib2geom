@@ -359,6 +359,9 @@ class ImplicitToy : public Toy
                                               Interval(c[1], r.bottom())), w);
                 }
             }
+        } else {
+            cairo_rectangle(cr, r);
+            cairo_fill(cr);
         }
     }  // end recursive_implicit
 
