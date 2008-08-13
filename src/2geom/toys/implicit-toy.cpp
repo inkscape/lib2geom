@@ -7,6 +7,7 @@
 #include <2geom/d2.h>
 #include <2geom/poly.h>
 #include <2geom/sbasis-poly.h>
+#include <2geom/transforms.h>
 
 #include <2geom/symbolic/implicit.h>
 
@@ -283,6 +284,76 @@ void make_implicit_curve (SL::MVPoly2& ic, D2<SBasis> const& pc)
 
 class ImplicitToy : public Toy
 {
+    bool contains_zero (implicit_curve_t const& eval,
+                        Rect r, double w=1e-5)
+    {
+        ++iters;
+        AAF x(interval(r.left(), r.right()));
+        AAF y(interval(r.top(), r.bottom()));
+        AAF f = eval(x, y);
+        double a = f.index_coeff(x.get_index(0)) / x.index_coeff(x.get_index(0));
+        double b = f.index_coeff(y.get_index(0)) / y.index_coeff(y.get_index(0));
+        AAF d = a*x + b*y - f;
+        interval ivl(d);
+        Point n(a,b);
+        boost::optional<Rect> out = tighten(r, n, Interval(ivl.min(), ivl.max()));
+        if (f.straddles_zero())
+        {
+            if ((r.width() > w) || (r.height() > w))
+            {
+                Point c = r.midpoint();
+                Rect oldr = r;
+                if (out)  r = *out;
+                // Three possibilities:
+                // 1) the trim operation buys us enough that we should just iterate
+                if (1 && (r.area() < oldr.area()*0.25))
+                {
+                    return contains_zero(eval, r,  w);
+                }
+                // 2) one dimension is significantly smaller
+                else if (1 && (r[1].extent() < oldr[1].extent()*0.5))
+                {
+                    return contains_zero (eval,
+                                          Rect(Interval(r.left(), r.right()),
+                                               Interval(r.top(), c[1])), w)
+                        || contains_zero (eval,
+                                          Rect(Interval(r.left(), r.right()),
+                                               Interval(c[1], r.bottom())), w);
+                }
+                else if (1 && (r[0].extent() < oldr[0].extent()*0.5))
+                {
+                    return contains_zero (eval,
+                                          Rect(Interval(r.left(), c[0]),
+                                               Interval(r.top(), r.bottom())), w)
+                        || contains_zero (eval,
+                                          Rect(Interval(c[0], r.right()),
+                                               Interval(r.top(), r.bottom())), w);
+                }
+                // 3) to ensure progress we must do a four way split
+                else
+                {
+                    return contains_zero (eval,
+                                          Rect(Interval(r.left(), c[0]),
+                                               Interval(r.top(), c[1])), w)
+                        || contains_zero (eval, 
+                                          Rect(Interval(c[0], r.right()),
+                                               Interval(r.top(), c[1])), w)
+                        || contains_zero (eval, 
+                                          Rect(Interval(r.left(), c[0]),
+                                               Interval(c[1], r.bottom())), w)
+                        || contains_zero (eval, 
+                                          Rect(Interval(c[0], r.right()),
+                                               Interval(c[1], r.bottom())), w);
+                }
+            }
+            //std::cout << w << " < " << r.width() << " , " << r.height() << std::endl;
+            //std::cout << r.min() << " - " << r.max() << std::endl;
+            return true;
+        }
+        return false;
+    }  // end recursive_implicit
+
+    
     void draw_implicit_curve (cairo_t*cr, implicit_curve_t const& eval,
                               Point const& origin, Rect r, double w)
     {
@@ -360,8 +431,13 @@ class ImplicitToy : public Toy
                 }
             }
         } else {
-            cairo_rectangle(cr, r);
-            cairo_fill(cr);
+            if(contains_zero(eval, r*Geom::Translate(-origin))) {
+                cairo_save(cr);
+                cairo_set_source_rgb(cr, 0,0.5,0);
+                cairo_rectangle(cr, r);
+                cairo_fill(cr);
+                cairo_restore(cr);
+            }
         }
     }  // end recursive_implicit
 
@@ -381,7 +457,7 @@ class ImplicitToy : public Toy
         cairo_set_source_rgba (cr, 0., 0., 0, 1);
         cairo_set_line_width (cr, 0.8);
         draw_implicit_curve (cr, ic, orig_handle.pos,
-                             Rect(Interval(0,width), Interval(0, height)), 2);
+                             Rect(Interval(0,width), Interval(0, height)), 1);
         cairo_stroke(cr);
 
 //        std::cerr << "D1 = " << d1 << std::endl;
