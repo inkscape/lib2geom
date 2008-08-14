@@ -61,7 +61,7 @@ ConvexHull rect2convexhull(Rect const & r) {
     return ch;
 }
 
-double rot_cal(cairo_t* cr, ConvexHull ch) {
+void rot_cal(cairo_t* cr, ConvexHull ch) {
     Point tb = ch.boundary.back();
     for(unsigned i = 0; i < ch.boundary.size(); i++) {
         Point tc = ch.boundary[i];
@@ -73,9 +73,11 @@ double rot_cal(cairo_t* cr, ConvexHull ch) {
     }
 }
 
+/**
 double sweep_ch(cairo_t* cr, ConvexHull ch) {
     
 }
+**/
 
 const bool ch2_tests = false;
 
@@ -159,7 +161,7 @@ class ConvexTest: public Toy {
                 draw_cross(cr, *futh);
                 {
                     Point a, b, c;
-                    double dia = gm.narrowest_diameter(a, b, c);
+                    //double dia = gm.narrowest_diameter(a, b, c);
                     cairo_save(cr);
                     cairo_set_line_width(cr, 2);
                     cairo_move_to(cr, b);

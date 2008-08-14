@@ -122,7 +122,7 @@ void Toy::mouse_pressed(GdkEventButton* e) {
     redraw();
 }
 
-void Toy::scroll(GdkEventScroll* e) {
+void Toy::scroll(GdkEventScroll* /*e*/) {
 }
 
 void Toy::mouse_released(GdkEventButton* e) {

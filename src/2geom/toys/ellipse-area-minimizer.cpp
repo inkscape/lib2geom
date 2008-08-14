@@ -171,7 +171,7 @@ typedef  double goal_function_type(double coeff, void* params);
 double minimizer (std::vector<Point> & points, goal_function_type* gf)
 {
     int status;
-    int iter = 0, max_iter = 1e3;
+    int iter = 0, max_iter = 1000;
     const gsl_min_fminimizer_type *T;
     gsl_min_fminimizer *s;
     double m = 1.0;
