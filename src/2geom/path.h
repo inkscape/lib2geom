@@ -363,6 +363,8 @@ public:
 	  return allNearestPoints(_point, 0, sz);
   }
   
+  std::vector<double>
+  nearestPointPerCurve(Point const& _point) const;  
   
   double nearestPoint(Point const& _point, double from, double to, double *distance_squared = NULL) const;
   
