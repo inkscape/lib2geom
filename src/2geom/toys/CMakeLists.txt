@@ -68,6 +68,7 @@ hvlineseg-toy
 implicit-toy
 inner-product-clip
 load-svgd
+line-rect-intersect
 mesh-warp
 match-curve
 #normal-bundle
