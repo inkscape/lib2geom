@@ -18,7 +18,7 @@ class RectLineIntersect: public Toy {
 
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         cairo_set_line_width (cr, 0.5);
-    
+
         Point E(line_handles.pts[0]);
         Point F(line_handles.pts[1]);
         draw_line_seg(cr, E, F);
@@ -54,7 +54,7 @@ public:
         handles.push_back(&rect_handles);
         line_handles.name = "line";
         rect_handles.name = "rect";
-        
+
         line_handles.push_back(Point(50,100));
         line_handles.push_back(Point(350,200));
 

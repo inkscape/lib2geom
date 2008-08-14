@@ -223,7 +223,7 @@ is_less(Point const &A, Point const &B)
         return true;
     } else {
         return false;
-    }    
+    }
 }
 
 // TODO: this can doubtlessly be improved
