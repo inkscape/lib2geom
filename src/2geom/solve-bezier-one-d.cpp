@@ -102,34 +102,33 @@ Bernsteins::find_bernstein_roots(double const *w, /* The control points  */
         // I thought secant method would be faster here, but it'aint. -- njh
         // Actually, it was, I just was using the wrong method for bezier evaluation.  Horner's rule results in a very efficient algorithm - 10* faster (20080816)
         // Future work: try using brent's method
-        if(use_secant) {
-            int Sl = SGN(w[0]);
-            int Sr = SGN(w[degree]);
-            
-            double tl = 0;
-            double tr = 1;
-            double Bl = w[0];
-            double Br = w[degree];
-            assert(Sl != Sr);
-            double trial_t = 0.5;
-            for(int i = 0; i < 53; i++) {
-                double Ax = tr - tl;
-                double Ay = Br - Bl;
-                trial_t = tl - Ax*Bl / Ay;
-                double Bm = horner(w, trial_t);
-                int Sm = SGN(Bm);
-                if(Sm == Sl) {
-                    tl = trial_t;
-                    Bl = Bm;
-                } else if(Sm == Sr) {
-                    tr = trial_t;
-                    Br = Bm;
-                } else {
-                    throw;
+        if(use_secant) { // false position
+            double s = 0;double t = 1;
+            double e = 1e-10;
+            int n,side=0;
+            double r,fr,fs = w[0],ft = w[degree];
+ 
+            for (n = 1; n <= 100; n++)
+            {
+                r = (fs*t - ft*s) / (fs - ft);
+                if (fabs(t-s) < e*fabs(t+s)) break;
+                fr = horner(w, r);
+ 
+                if (fr * ft > 0)
+                {
+                    t = r; ft = fr;
+                    if (side==-1) fs /= 2;
+                    side = -1;
                 }
-                if(fabs(Bm) < SECANT_EPSILON) break;
+                else if (fs * fr > 0)
+                {
+                    s = r;  fs = fr;
+                    if (side==+1) ft /= 2;
+                    side = +1;
+                }
+                else break;
             }
-            solutions.push_back(trial_t*right_t + (1-trial_t)*left_t);
+            solutions.push_back(r*right_t + (1-r)*left_t);
             return;
         }
     }
