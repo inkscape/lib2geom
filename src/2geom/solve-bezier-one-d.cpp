@@ -220,6 +220,7 @@ Bernsteins::control_poly_flat_enough(double const *V)
     return error < BEPSILON * a;
 }
 
+// suggested by Sederberg.
 double Bernsteins::horner(const double *b, double t) {
     int n = degree;
     double u, bc, tn, tmp;
