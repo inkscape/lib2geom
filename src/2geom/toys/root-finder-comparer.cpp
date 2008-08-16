@@ -95,6 +95,9 @@ public:
         *notify << "sb bounds = "<<bs.min()<< ", " <<bs.max()<<std::endl;
         Poly ply = sbasis_to_poly(test_sb[1]);
         ply = Poly(height/2) - ply;
+        cairo_move_to(cr, 0, height/2);
+        cairo_line_to(cr, width, height/2);
+        cairo_stroke(cr);
 #ifdef HAVE_GSL    
         vector<complex<double> > complex_solutions;
         complex_solutions = solve(ply);
@@ -205,16 +208,30 @@ public:
         iterations = 0;
         while(end_t > clock()) {
             solutions.resize(0);
-            find_bernstein_roots(ys, 5, solutions, 0);
+            find_bernstein_roots(ys, 5, solutions, 0, 0, 1, false);
             iterations++;
         }
+        *notify << "found sub solutions at:\n";
+        std::copy(solutions.begin(), solutions.end(), std::ostream_iterator<double >(*notify, ","));
         *notify << "solver 1d bernstein subdivision slns" << solutions.size() 
                 << ", time = " << timer_precision*units/iterations-overhead 
                 << units_string << std::endl;
-        *notify << "solver 1d bernstein subdivision accuracy:"
+        end_t = clock()+clock_t(timer_precision*CLOCKS_PER_SEC);
+        iterations = 0;
+        while(end_t > clock()) {
+            solutions.resize(0);
+            find_bernstein_roots(ys, 5, solutions, 0, 0, 1, true);
+            iterations++;
+        }
+        *notify << "solver 1d bernstein secant subdivision slns" << solutions.size() 
+                << ", time = " << timer_precision*units/iterations-overhead 
                 << units_string << std::endl;
+        *notify << "found secant solutions at:\n";
+        std::copy(solutions.begin(), solutions.end(), std::ostream_iterator<double >(*notify, ","));
+        *notify << "solver 1d bernstein subdivision accuracy:"
+                 << std::endl;
         for(unsigned i = 0; i < solutions.size(); i++) {
-            *notify << eval_bernstein(ys, solutions[i], trans.size()) << ",";
+            *notify << solutions[i] << ":" << eval_bernstein(ys, solutions[i], trans.size()) << ",";
         }
         solutions = roots( -test_sb[1] + Linear(height/2));
 #if 0
