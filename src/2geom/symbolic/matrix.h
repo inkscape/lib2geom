@@ -38,6 +38,9 @@
 
 #include <vector>
 #include <map>
+
+#include <2geom/point.h>
+#include <2geom/numeric/matrix.h>
 #include <2geom/symbolic/multipoly.h>
 
 
@@ -91,6 +94,7 @@ class Matrix
         return m_data[i * columns() + j];
     }
 
+
   private:
     container_type m_data;
     size_t m_rows;
@@ -124,6 +128,36 @@ operator<< ( std::basic_ostream<charT> & os,
     }
     os << "}";
     return os;
+}
+
+template <size_t N, typename CoeffT, typename T>
+void polynomial_matrix_evaluate (Matrix<T> & A,
+                                 Matrix< MultiPoly<N, CoeffT> > const& M,
+                                 boost::array<T, N> const& X)
+{
+    A.resize(M.rows(), M.columns());
+    for (size_t i = 0; i < M.rows(); ++i)
+    {
+        for (size_t j = 0; j < M.columns(); ++j)
+        {
+            A(i,j) = M(i,j)(X);
+        }
+    }
+}
+
+
+inline
+void polynomial_matrix_evaluate (NL::Matrix & A,
+                                 Matrix< MultiPoly<2, double> > const& M,
+                                 Point const& P)
+{
+    for (size_t i = 0; i < M.rows(); ++i)
+    {
+        for (size_t j = 0; j < M.columns(); ++j)
+        {
+            A(i,j) = M(i,j)(P[X], P[Y]);
+        }
+    }
 }
 
 

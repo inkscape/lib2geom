@@ -246,7 +246,7 @@ void basis_to_poly(MVPoly3 & p0, poly_vector_type const& v)
  * evaluated computing the determinant of the Bezout matrix made up using
  * the polinomial p and q as univariate polynomials in t with coefficients
  * in R[x,y], so the resulting Bezout matix will be a matrix with bivariate
- * polynomials as entries.
+ * polynomials as entries. A Bezout matrix is always symmetric.
  * Reference:
  * Sederberg, Zheng - Algebraic Methods for Computer Aided Geometric Design
  */
@@ -259,21 +259,71 @@ make_bezout_matrix (MVPoly3 const& p, MVPoly3 const& q)
 
     Matrix<MVPoly2> BM(n, n);
     //std::cerr << "rows, columns " << BM.rows() << " , " << BM.columns() << std::endl;
-    for (size_t i = 1; i <= n; ++i)
+    for (size_t i = n; i >= 1; --i)
     {
-        for (size_t j = 1; j <= i; ++j)
+        for (size_t j = n; j >= i; --j)
         {
             size_t m = std::min(i, n + 1 - j);
             //std::cerr << "m = " << m << std::endl;
             for (size_t k = 1; k <= m; ++k)
             {
                 //BM(i-1,j-1) += (p[j-1+k] * q[i-k] - p[i-k] * q[j-1+k]);
-                BM(i-1,j-1) += (p.coefficient(j-1+k) * q.coefficient(i-k)
+                BM(n-i,n-j) += (p.coefficient(j-1+k) * q.coefficient(i-k)
                                 - p.coefficient(i-k) * q.coefficient(j-1+k));
             }
         }
     }
 
+    for (size_t i = 0; i < n; ++i)
+    {
+        for (size_t j = 0; j < i; ++j)
+            BM(j,i) = BM(i,j);
+    }
+    return BM;
+}
+
+/*
+ *  Make a matrix that represents a main minor (i.e. with the diagonal
+ *  on the diagonal of the matrix to which it owns) of the Bezout matrix
+ *  with order n-1 where n is the order of the Bezout matrix.
+ *  The minor is obtained by removing the "h"-th row and the "h"-th column,
+ *  and as the Bezout matrix is symmetric.
+ */
+Matrix<MVPoly2>
+make_bezout_main_minor (MVPoly3 const& p, MVPoly3 const& q, size_t h)
+{
+    size_t pdeg = p.get_poly().real_degree();
+    size_t qdeg = q.get_poly().real_degree();
+    size_t n = std::max(pdeg, qdeg);
+
+    Matrix<MVPoly2> BM(n-1, n-1);
+    size_t u = 0, v;
+    for (size_t i = 1; i <= n; ++i)
+    {
+        v = 0;
+        if (i == h)
+        {
+            u = 1;
+            continue;
+        }
+        for (size_t j = 1; j <= i; ++j)
+        {
+            if (j == h)
+            {
+                v = 1;
+                continue;
+            }
+            size_t m = std::min(i, n + 1 - j);
+            for (size_t k = 1; k <= m; ++k)
+            {
+                //BM(i-u-1,j-v-1) += (p[j-1+k] * q[i-k] - p[i-k] * q[j-1+k]);
+                BM(i-u-1,j-v-1) += (p.coefficient(j-1+k) * q.coefficient(i-k)
+                                  - p.coefficient(i-k) * q.coefficient(j-1+k));
+            }
+        }
+    }
+
+    --n;
     for (size_t i = 0; i < n; ++i)
     {
         for (size_t j = 0; j < i; ++j)

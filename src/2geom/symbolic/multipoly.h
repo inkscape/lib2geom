@@ -197,7 +197,7 @@ public:
 
     template <typename T>
     typename boost::enable_if_c<(N == 1), T>::type
-    operator() (T const& x0)
+    operator() (T const& x0) const
     {
         boost::array<T, N> X = {{x0}};
         return Geom::SL::mvpoly<N, CoeffT>::evaluate(m_poly, X);
@@ -205,7 +205,7 @@ public:
 
     template <typename T>
     typename boost::enable_if_c<(N == 2), T>::type
-    operator() (T const& x0, T const& x1)
+    operator() (T const& x0, T const& x1) const
     {
         boost::array<T, N> X = {{x0, x1}};
         return Geom::SL::mvpoly<N, CoeffT>::evaluate(m_poly, X);
@@ -213,7 +213,7 @@ public:
 
     template <typename T>
     typename boost::enable_if_c<(N == 3), T>::type
-    operator() (T const& x0, T const& x1, T const& x2)
+    operator() (T const& x0, T const& x1, T const& x2) const
     {
         boost::array<T, N> X = {{x0, x1, x2}};
         return Geom::SL::mvpoly<N, CoeffT>::evaluate(m_poly, X);
