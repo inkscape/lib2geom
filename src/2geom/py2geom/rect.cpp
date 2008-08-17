@@ -47,6 +47,9 @@ void wrap_rect() {
     //def("distance", Geom::distance);
 
     class_<Geom::Rect>("Rect", init<Geom::Interval, Geom::Interval>())
+        .def(init<Geom::Point,Geom::Point>())
+        .def(init<>())
+        
         .def("__getitem__", python_getitem<Geom::Rect,Geom::Interval,2>)
     
         .def("min", &Geom::Rect::min)

@@ -32,14 +32,14 @@
 #include <boost/python.hpp>
 
 template <typename T, typename R, unsigned D>
-R python_getitem(T const& p, unsigned const index)
+R python_getitem(T const& p, int index)
 {
     unsigned i = index;
     if (index < 0)
     {
-        i = D + index;
+        i = index = D + index;
     }
-    if (i < 0 || i > (D - 1)) {
+    if ((index < 0) || (i > (D - 1))) {
         PyErr_SetString(PyExc_IndexError, "index out of range");
         boost::python::throw_error_already_set();
     }

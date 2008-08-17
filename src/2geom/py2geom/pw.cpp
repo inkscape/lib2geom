@@ -76,14 +76,14 @@ Geom::FragmentConcept<Geom::SBasis>::BoundsType (*bounds_fast_pwsb)(Geom::Piecew
 Geom::FragmentConcept<Geom::SBasis>::BoundsType (*bounds_exact_pwsb)(Geom::Piecewise<Geom::SBasis> const &) = &Geom::bounds_exact;
 Geom::FragmentConcept<Geom::SBasis>::BoundsType (*bounds_local_pwsb)(Geom::Piecewise<Geom::SBasis> const &, const Geom::Interval &) = &Geom::bounds_local;
 
-Geom::SBasis getitem_pwsb(Geom::Piecewise<Geom::SBasis> const &p, unsigned const index) {
+Geom::SBasis getitem_pwsb(Geom::Piecewise<Geom::SBasis> const &p, int index) {
     unsigned D = p.size();
     unsigned i = index;
     if (index < 0)
     {
-        i = D + index;
+        i = index = D + index;
     }
-    if (i < 0 || i > (D - 1)) {
+    if (index < 0 || i > (D - 1)) {
         PyErr_SetString(PyExc_IndexError, "index out of range");
         boost::python::throw_error_already_set();
     }
