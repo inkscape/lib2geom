@@ -254,7 +254,10 @@ class Sanitize: public Toy {
     public:
     Sanitize () {}
     void first_time(int argc, char** argv) {
-	paths = read_svgd("sanitize_examples.svgd");
+        const char *path_name="sanitize_examples.svgd";
+        if(argc > 1)
+            path_name = argv[1];
+	paths = read_svgd(path_name);
 	es = edges(paths, crossings_among(paths));
         //cells(paths);
     }
