@@ -30,11 +30,9 @@ struct Edge {
 typedef std::vector<Edge> Edges;
 
 Edges edges(Path const &p, Crossings const &cr, unsigned ix) {
-    Edges ret = std::vector<Edge>();
+    Edges ret = Edges();
     EndPoint prev;
     for(unsigned i = 0; i <= cr.size(); i++) {
-    
-    std::cout << "hello!\n";
         double t = cr[i == cr.size() ? 0 : i].getTime(ix);
         Point pnt = p.pointAt(t);
         Point normal = p.pointAt(t+0.01) - pnt;
@@ -49,16 +47,27 @@ Edges edges(Path const &p, Crossings const &cr, unsigned ix) {
 }
 
 template<class T>
-void append(std::vector<T> vec, std::vector<T> other) {
+void append(std::vector<T> &vec, std::vector<T> const &other) {
     vec.insert(vec.end(),other.begin(), other.end());
 }
 
 Edges edges(std::vector<Path> const &ps, CrossingSet const &crs) {
-    Edges ret = std::vector<Edge>();
+    Edges ret = Edges();
     for(unsigned i = 0; i < crs.size(); i++) {
-        append(ret, edges(ps[i], crs[i], i));
+        Edges temp = edges(ps[i], crs[i], i);
+        append(ret, temp);
     }
     return ret;
+}
+
+
+void draw_edges(cairo_t *cr, Edges es, std::vector<Path> ps) {
+    for(unsigned i = 0; i < es.size(); i++) {
+        //std::cout << es[i].ix << ": " << es[i].from.time << " to " << es[i].to.time << "\n";
+        cairo_set_source_rgb(cr, uniform(), uniform(), uniform());
+        cairo_path(cr, ps[es[i].ix].portion(es[i].from.time, es[i].to.time));
+        cairo_stroke(cr);
+    }
 }
 
 //Only works for normal
@@ -140,9 +149,9 @@ Shape boolops(std::vector<Path> const& a, std::vector<Path> const& b, (Int -> In
     Regions ret = Regions();
     std::vector<Path> merge = std::vector<Path>(a);
     Append(merge, b);
-    std::vector<Edges> cells = cells(merge);
-    for(int i = 0; i < cells.size(); i++) {
-         ret.push_back(fromEdges(f(cellWinding(cells[i], a), cellWinding(cells[i], b)), cells[i]);
+    std::vector<Edges> cs = cells(merge);
+    for(int i = 0; i < cs.size(); i++) {
+         ret.push_back(fromEdges(f(cellWinding(cs[i], a), cellWinding(cs[i], b)), cs[i]);
     }
     return Shape(ret).removeVestigial();
 }
@@ -235,8 +244,9 @@ void cairo_region(cairo_t *cr, Region const &r) {
 
 class Sanitize: public Toy {
     std::vector<Path> paths;
+    Edges es;
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
-        
+        draw_edges(cr, es, paths);
         
         Toy::draw(cr, notify, width, height, save);
     }
@@ -245,7 +255,8 @@ class Sanitize: public Toy {
     Sanitize () {}
     void first_time(int argc, char** argv) {
 	paths = read_svgd("sanitize_examples.svgd");
-        cells(paths);
+	es = edges(paths, crossings_among(paths));
+        //cells(paths);
     }
 };
 
