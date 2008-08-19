@@ -90,6 +90,7 @@ squiggles
 svg-elliptical-arc-test-toy
 worms
 winding-test
+sanitize
 )
 
 
