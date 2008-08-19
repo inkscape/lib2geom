@@ -16,11 +16,11 @@ class Sweep: public Toy {
         for(unsigned i = 0; i < count_b; i++)
             rects_b.push_back(Rect(handles[i*2 + count_a*2], handles[i*2+1 + count_a*2]));
                 
-        std::vector<std::vector<unsigned> > res = sweep_bounds(rects_a, rects_b);
+        std::vector<std::vector<unsigned> > res = sweep_bounds(rects_a);
         cairo_set_line_width(cr,0.5);
         for(unsigned i = 0; i < res.size(); i++) {
             for(unsigned j = 0; j < res[i].size(); j++) {
-                draw_line_seg(cr, rects_a[i].midpoint(), rects_b[res[i][j]].midpoint());
+                draw_line_seg(cr, rects_a[i].midpoint(), rects_a[res[i][j]].midpoint());
                 cairo_stroke(cr);
             }
         }
