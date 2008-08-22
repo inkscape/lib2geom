@@ -55,6 +55,7 @@ convex-toy
 curvature-test
 curve-curve-distance
 curve-curve-nearest-point-3
+curve-intersection-by-bezier-clipping
 curve-intersection-by-implicitization
 d2sbasis-fitting
 d2sbasis-fitting-with-np
