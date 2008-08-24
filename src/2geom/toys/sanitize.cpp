@@ -6,6 +6,11 @@
 #include <2geom/crossing.h>
 #include <2geom/path-intersection.h>
 //#include <2geom/shape.h>
+#include <2geom/transforms.h>
+#include <2geom/sbasis-geometric.h>
+#include <2geom/d2.h>
+#include <2geom/sbasis.h>
+#include <2geom/pathvector.h>
 
 using namespace Geom;
 
@@ -37,6 +42,7 @@ Edges edges(Path const &p, Crossings const &cr, unsigned ix) {
         Point pnt = p.pointAt(t);
         Point normal = p.pointAt(t+0.01) - pnt;
         normal.normalize();
+        std::cout << pnt << "\n";
         EndPoint cur(pnt, normal, t);
         if(i == 0) { prev = cur; continue; }
         ret.push_back(Edge(prev, cur, ix, false));
@@ -55,18 +61,29 @@ Edges edges(std::vector<Path> const &ps, CrossingSet const &crs) {
     Edges ret = Edges();
     for(unsigned i = 0; i < crs.size(); i++) {
         Edges temp = edges(ps[i], crs[i], i);
-        append(ret, temp);
+        append(ret, temp); 
     }
     return ret;
 }
 
-
-void draw_edges(cairo_t *cr, Edges es, std::vector<Path> ps) {
+std::vector<Path> edges_to_paths(Edges const &es, std::vector<Path> const &ps) {
+    std::vector<Path> ret;
     for(unsigned i = 0; i < es.size(); i++) {
-        //std::cout << es[i].ix << ": " << es[i].from.time << " to " << es[i].to.time << "\n";
-        cairo_set_source_rgb(cr, uniform(), uniform(), uniform());
-        cairo_path(cr, ps[es[i].ix].portion(es[i].from.time, es[i].to.time));
-        cairo_stroke(cr);
+        ret.push_back(ps[es[i].ix].portion(es[i].from.time, es[i].to.time));
+    }
+    return ret;
+}
+
+void draw_cells(cairo_t *cr, std::vector<Edges> const &es, std::vector<Path> const &ps) {
+    for(unsigned i = 0; i < es.size(); i++) {
+        cairo_set_source_rgba(cr, uniform(), uniform(), uniform(), 1);
+        //cairo_set_line_width(cr, uniform() * 10);
+        std::vector<Path> paths = edges_to_paths(es[i], ps);
+        Piecewise<D2<SBasis> > pw = paths_to_pw(paths);
+        double area;
+   	Point centre;
+    	Geom::centroid(pw, centre, area);
+        cairo_path(cr, paths * (Translate(-centre) * Scale(0.2) * Translate(centre*2)));
     }
 }
 
@@ -76,7 +93,7 @@ double ang(Point n1, Point n2) {
 }
 
 template<class T>
-void remove(std::vector<T> vec, T val) {
+void remove(std::vector<T> &vec, T const &val) {
     for (typename std::vector<T>::iterator it = vec.begin(); it != vec.end(); ++it) {
         if(*it == val) {
             vec.erase(it);
@@ -85,39 +102,54 @@ void remove(std::vector<T> vec, T val) {
     }
 }
 
-std::vector<Path> cells(std::vector<Path> const &ps) {
+std::vector<Edges> cells(cairo_t *cr, std::vector<Path> const &ps) {
     CrossingSet crs = crossings_among(ps);
     Edges es = edges(ps, crs);
+    std::vector<Edges> ret = std::vector<Edges>();
     while(!es.empty()) {
         std::cout << "hello!\n";
-        Edge start = es.back();
+        Edge start = es.front();
         Path p = Path();
         Edge cur = start;
         bool dir = false;
+        Edges cell = Edges();
         do {
-            std::cout << cur.from.time << ", " << cur.to.time << "\n";
+            std::cout << dir << " " << cur.from.time << ", " << cur.to.time << "\n";
             double a = 0;
-            EndPoint curpnt = dir ? cur.to : cur.from;
+            Edge was = cur;
+            EndPoint curpnt = dir ? cur.from : cur.to;
+            Point norm = dir ? curpnt.norm : -curpnt.norm;
+            Point to = curpnt.point + norm *20;
+            
+            //std::cout << norm;
             for(unsigned i = 0; i < es.size(); i++) {
-                if(are_near(curpnt.point, es[i].from.point)) {
-                    double v = ang(curpnt.norm, es[i].from.norm);
-                    if((v < a & start.cw) || (v > a && !start.cw)) {
+                if(es[i] == was || es[i].cw != start.cw) continue;
+                if(are_near(curpnt.point, es[i].from.point, 0.1)) {
+                    double v = ang(norm, es[i].from.norm);
+                    //draw_line_seg(cr, curpnt.point, to);
+                    //draw_line_seg(cr, to, es[i].from.point + es[i].from.norm*30); 
+                    //std::cout << v << "\n";
+                    if(start.cw ? v < a : v > a ) {
                         a = v;
                         cur = es[i];
+                        dir = false; break;
                     }
                 }
-                if(are_near(curpnt.point, es[i].to.point)) {
-                    double v = ang(curpnt.norm, es[i].to.norm);
-                    if((v < a & start.cw) || (v > a && !start.cw)) {
+                if(are_near(curpnt.point, es[i].to.point, 0.1)) {
+                    double v = ang(norm, -es[i].to.norm);
+                    if(start.cw ? v < a : v > a) {
                         a = v;
                         cur = es[i];
+                        dir = true; break;
                     }
                 }
             }
+            cell.push_back(cur);
             remove(es, cur);
+            if(cur == was) break;
         } while(!(cur == start));
+        ret.push_back(cell);
     }
-    std::vector<Path> ret;
     return ret;
 }
 
@@ -244,10 +276,18 @@ void cairo_region(cairo_t *cr, Region const &r) {
 
 class Sanitize: public Toy {
     std::vector<Path> paths;
-    Edges es;
+    std::vector<Edges> es;
+    PointSetHandle angh;
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
-        draw_edges(cr, es, paths);
-        
+        cairo_set_source_rgba(cr, 0, 0, 0, 1);
+        cairo_path(cr, paths);
+        cairo_stroke(cr);
+        es = cells(cr, paths);
+        draw_cells(cr, es, paths);
+
+        Point ap = angh.pts[1] - angh.pts[0], bp = angh.pts[2] - angh.pts[0];
+        ap.normalize(); bp.normalize();
+        *notify << ang(ap, bp);
         Toy::draw(cr, notify, width, height, save);
     }
     
@@ -257,9 +297,13 @@ class Sanitize: public Toy {
         const char *path_name="sanitize_examples.svgd";
         if(argc > 1)
             path_name = argv[1];
-	paths = read_svgd(path_name);
-	es = edges(paths, crossings_among(paths));
-        //cells(paths);
+        paths = read_svgd(path_name);
+        //es = edges(paths, crossings_among(paths));
+        
+        handles.push_back(&angh);
+        angh.push_back(100, 100);
+        angh.push_back(80, 100);
+        angh.push_back(100, 80);
     }
 };
 
