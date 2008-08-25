@@ -5,20 +5,37 @@
 
 namespace Geom {
 
-std::vector<std::pair<double, double> > 
-find_intersections( D2<SBasis> const & A, 
+std::vector<std::pair<double, double> >
+find_intersections( D2<SBasis> const & A,
                     D2<SBasis> const & B);
 
-std::vector<std::pair<double, double> > 
+std::vector<std::pair<double, double> >
 find_self_intersections(D2<SBasis> const & A);
 
 // Bezier form
-std::vector<std::pair<double, double> > 
-find_intersections( std::vector<Point> const & A, 
+std::vector<std::pair<double, double> >
+find_intersections( std::vector<Point> const & A,
                     std::vector<Point> const & B);
 
-std::vector<std::pair<double, double> > 
+std::vector<std::pair<double, double> >
 find_self_intersections(std::vector<Point> const & A);
+
+
+/*
+ * find_intersection
+ *
+ *  input: A, B       - set of control points of two Bezier curve
+ *  input: precision  - required precision of computation
+ *  output: xs        - set of pairs of parameter values
+ *                      at which crossing happens
+ *
+ *  This routine is based on the Bezier Clipping Algorithm,
+ *  see: Sederberg - Computer Aided Geometric Design
+ */
+void find_intersections (std::vector< std::pair<double, double> > & xs,
+                         std::vector<Point> const& A,
+                         std::vector<Point> const& B,
+                         double precision = 1e-5);
 
 };
 

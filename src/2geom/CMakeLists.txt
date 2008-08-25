@@ -49,6 +49,7 @@ ellipse.h
 elliptical-arc.cpp
 elliptical-arc.h
 hvlinesegment.h
+intersection-by-bezier-clipping.cpp
 sbasis-curve.h
 path.cpp
 path.h
@@ -165,3 +166,4 @@ INSTALL(FILES "${CMAKE_BINARY_DIR}/2geom.pc" DESTINATION lib/pkgconfig)
 ADD_SUBDIRECTORY (toys)
 ADD_SUBDIRECTORY (tests)
 ADD_SUBDIRECTORY (py2geom)
+
