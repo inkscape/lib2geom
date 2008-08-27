@@ -277,6 +277,9 @@ static gboolean expose_event(GtkWidget *widget, GdkEventExpose */*event*/, gpoin
 	    current_toy->resize_canvas(alloc_size);
 	resized = true;
     }
+    cairo_rectangle(cr, 0, 0, width, height);
+    cairo_set_source_rgba(cr,1,1,1,1);
+    cairo_fill(cr);
     if(current_toy != NULL) current_toy->draw(cr, &notify, width, height, false);
     cairo_destroy(cr);
 

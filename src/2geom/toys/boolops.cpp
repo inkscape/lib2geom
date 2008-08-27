@@ -37,7 +37,6 @@ void cairo_shape(cairo_t *cr, Shape const &s) {
 
 void show_stitches(cairo_t *cr, Shape const &s) {
     Regions const &p = s.getContent();
-    cairo_set_source_rgb(cr, 1, 0, 0);
     for (Regions::const_iterator j = p.begin(); j != p.end() ; ++j ) {
         cairo_path_stitches(cr, *j);
         cairo_stroke(cr);
@@ -125,7 +124,7 @@ class BoolOps: public Toy {
             cairo_save(cr);
             cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
             cairo_set_line_join(cr, CAIRO_LINE_JOIN_ROUND);
-            cairo_set_source_rgb(cr, 1, 0, 0);
+            cairo_set_source_rgba(cr, 1, 0, 0, 0.25);
             cairo_set_line_width(cr, 8);
             show_stitches(cr, s);
             cairo_restore(cr);
