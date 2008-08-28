@@ -85,6 +85,7 @@ pw-funcs
 pw-toy
 quad-toy
 sb-math-test
+sb-to-bez
 sbasis-fitting
 self-intersect
 squiggles

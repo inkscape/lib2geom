@@ -37,7 +37,7 @@
 #include <2geom/bezier-to-sbasis.h>
 
 #include <2geom/toys/path-cairo.h>
-#include <2geom/toys/toy-framework.h>
+#include <2geom/toys/toy-framework-2.h>
 
 #define ZERO 1e-7
 
@@ -61,7 +61,7 @@ void cairo_pw(cairo_t *cr, Piecewise<SBasis> p, double hscale=1., double vscale=
 static vector<double>  solve_poly (double a[],unsigned deg){
     double tol=1e-7;
     vector<double> result;
-    unsigned i;
+    int i;
 
     i=deg;
     while( i>=0 && fabs(a[i])<tol ) i--;
@@ -76,7 +76,7 @@ static vector<double>  solve_poly (double a[],unsigned deg){
     
     gsl_poly_complex_workspace_free (w);
     
-    for (i = 0; i < deg; i++){
+    for (unsigned i = 0; i < deg; i++){
         //printf ("z%d = %+.18f %+.18f\n", 
         //        i, z[2*i], z[2*i+1]);
         if (fabs(z[2*i+1])<tol){
@@ -241,19 +241,23 @@ static D2<SBasis> L2_proj(Piecewise<D2<SBasis> > const &M,
 **/
 
 
-#define SIZE 6
+//#define SIZE 6
 
 class SbToBezierTester: public Toy {
+    //std::vector<Slider> sliders;
+    PointSetHandle path_psh;
+    PointHandle adjuster, adjuster2, adjuster3;
 
   void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
-    
+      cairo_save(cr);
       D2<SBasis> f;//=SBasis(Linear(0,.5));
-      f=handles_to_sbasis(handles.begin(), SIZE-1);
-      handles[SIZE][1]=450;
-      handles[SIZE][0]=std::max(handles[SIZE][0],150.);
-      handles[SIZE][0]=std::min(handles[SIZE][0],450.);
-      double t0=0;//(handles[SIZE][0]-150)/300;
-      double t1=(handles[SIZE][0]-150)/300;
+      f = path_psh.asBezier();
+      //f=handles_to_sbasis(handles.begin(), SIZE-1);
+      adjuster.pos[1]=450;
+      adjuster.pos[0]=std::max(adjuster.pos[0],150.);
+      adjuster.pos[0]=std::min(adjuster.pos[0],450.);
+      double t0=0;//(adjuster.pos[0]-150)/300;
+      double t1=(adjuster.pos[0]-150)/300;
       //if (t0>t1) {double temp=t0;t0=t1;t1=temp;}
 
       cairo_set_line_width (cr, 0.5);
@@ -283,13 +287,13 @@ class SbToBezierTester: public Toy {
       cairo_md_sb(cr, MM);
       cairo_stroke(cr);
 
-      handles[SIZE+1][0]=150;
-      handles[SIZE+1][1]=std::min(std::max(handles[SIZE+1][1],150.),450.);
-      handles[SIZE+2][0]=450;
-      handles[SIZE+2][1]=std::min(std::max(handles[SIZE+2][1],150.),450.);
+      adjuster2.pos[0]=150;
+      adjuster2.pos[1]=std::min(std::max(adjuster2.pos[1],150.),450.);
+      adjuster3.pos[0]=450;
+      adjuster3.pos[1]=std::min(std::max(adjuster3.pos[1],150.),450.);
 
-      double scale0=(450-handles[SIZE+1][1])/150;
-      double scale1=(450-handles[SIZE+2][1])/150;
+      double scale0=(450-adjuster2.pos[1])/150;
+      double scale1=(450-adjuster3.pos[1])/150;
 
       cairo_set_line_width (cr, 1);
       cairo_set_source_rgba (cr, 0.7, 0., 0.7, .7);
@@ -304,18 +308,25 @@ class SbToBezierTester: public Toy {
       *notify << " -red:  bezier approx derived from parametrization.\n";
       *notify << " -blue: bezier approx derived from curvature.\n";
       *notify << "      max distance (to original): "<<error<<"\n";
-
+      cairo_restore(cr);
       Toy::draw(cr, notify, width, height, save);
   }
   
 public:
-  SbToBezierTester(){
-    if(handles.empty()) {
-      for(unsigned i = 0; i < SIZE+1; i++)
-	handles.push_back(Geom::Point(150+300*uniform(),150+300*uniform()));
-      handles.push_back(Geom::Point(150,300));
-      handles.push_back(Geom::Point(450,300));
-    }
+    SbToBezierTester() {
+      //if(handles.empty()) {
+      for(unsigned i = 0; i < 6; i++)
+	path_psh.push_back(150+300*uniform(),150+300*uniform());
+      handles.push_back(&path_psh);
+      adjuster.pos = Geom::Point(150+300*uniform(),150+300*uniform());
+      handles.push_back(&adjuster);
+      adjuster2.pos = Geom::Point(150,300);
+      //handles.push_back(&adjuster2);
+      adjuster3.pos = Geom::Point(450,300);
+      //handles.push_back(&adjuster3);
+      //}
+    //sliders.push_back(Slider(0.0, 1.0, 0.0, 0.0, "t"));
+    //handles.push_back(&(sliders[0]));
   }
 };
 
