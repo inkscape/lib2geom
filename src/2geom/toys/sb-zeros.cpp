@@ -2,16 +2,17 @@
 #include <2geom/sbasis.h>
 
 #include <2geom/toys/path-cairo.h>
-#include <2geom/toys/toy-framework.h>
+#include <2geom/toys/toy-framework-2.h>
 
 using namespace Geom;
 
 #define SIZE 4
 
 class SBZeros: public Toy {
+    PointSetHandle pB1, pB2;
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
-        D2<SBasis> B1 = handles_to_sbasis(handles.begin(), SIZE-1);
-        D2<SBasis> B2 = handles_to_sbasis(handles.begin()+SIZE, SIZE-1);
+        D2<SBasis> B1 = pB1.asBezier();
+        D2<SBasis> B2 = pB2.asBezier();
         Piecewise<D2<SBasis> >B;
         B.concat(Piecewise<D2<SBasis> >(B1));
         B.concat(Piecewise<D2<SBasis> >(B2));
@@ -36,8 +37,12 @@ class SBZeros: public Toy {
 
     public:
     SBZeros () {
-        for(unsigned i = 0; i < 2*SIZE; i++)
-            handles.push_back(Geom::Point(150+uniform()*300,150+uniform()*300));
+        for(unsigned i = 0; i < SIZE; i++)
+            pB1.push_back(150+uniform()*300,150+uniform()*300);
+        for(unsigned i = 0; i < SIZE; i++)
+            pB2.push_back(150+uniform()*300,150+uniform()*300);
+        handles.push_back(&pB1);
+        handles.push_back(&pB2);
     }
 };
 

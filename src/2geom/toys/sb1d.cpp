@@ -8,7 +8,7 @@
 #include <2geom/path.h>
 
 #include <2geom/toys/path-cairo.h>
-#include <2geom/toys/toy-framework.h>
+#include <2geom/toys/toy-framework-2.h>
 
 #include <vector>
 using std::vector;
@@ -39,28 +39,30 @@ double handle_to_sb_t(unsigned i, unsigned n) {
 }
 
 class Sb1d: public Toy {
+public:
+    PointSetHandle hand;
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         cairo_set_source_rgba (cr, 0., 0.5, 0, 1);
         cairo_set_line_width (cr, 1);
         
         if(!save) {
-            for(unsigned i = 0; i < handles.size(); i++) {
-                handles[i][0] = width*handle_to_sb_t(i, handles.size())/2 + width/4;
+            for(unsigned i = 0; i < hand.pts.size(); i++) {
+                hand.pts[i][0] = width*handle_to_sb_t(i, hand.pts.size())/2 + width/4;
                 if(i)
-                    cairo_line_to(cr, handles[i]);
+                    cairo_line_to(cr, hand.pts[i]);
                 else
-                    cairo_move_to(cr, handles[i]);
+                    cairo_move_to(cr, hand.pts[i]);
             }
         }
         
         D2<SBasis> B;
         B[0] = Linear(width/4, 3*width/4);
-        B[1].resize(handles.size()/2);
+        B[1].resize(hand.pts.size()/2);
         for(unsigned i = 0; i < B[1].size(); i++) {
             B[1][i] = Linear(0);
         }
-        for(unsigned i = 0; i < handles.size(); i++) {
-            handle_to_sb(i, handles.size(), B[1]) = 3*width/4 - handles[i][1];
+        for(unsigned i = 0; i < hand.pts.size(); i++) {
+            handle_to_sb(i, hand.pts.size(), B[1]) = 3*width/4 - hand.pts[i][1];
         }
         for(unsigned i = 1; i < B[1].size(); i++) {
             B[1][i] = B[1][i]*choose<double>(2*i+1, i);
@@ -88,7 +90,7 @@ class Sb1d: public Toy {
         cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
         cairo_stroke(cr);
     
-        Geom::ConvexHull ch(handles);
+        Geom::ConvexHull ch(hand.pts);
     
         cairo_move_to(cr, ch.boundary.back());
         for(unsigned i = 0; i < ch.boundary.size(); i++) {
@@ -98,10 +100,11 @@ class Sb1d: public Toy {
     }
 public:
 Sb1d () {
-    handles.push_back(Geom::Point(0,450));
+    hand.pts.push_back(Geom::Point(0,450));
     for(unsigned i = 0; i < 4; i++)
-        handles.push_back(Geom::Point(uniform()*400, uniform()*400));
-    handles.push_back(Geom::Point(0,450));
+        hand.pts.push_back(Geom::Point(uniform()*400, uniform()*400));
+    hand.pts.push_back(Geom::Point(0,450));
+    handles.push_back(&hand);
 }
 };
 

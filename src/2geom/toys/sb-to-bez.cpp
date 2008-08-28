@@ -260,6 +260,7 @@ class SbToBezierTester: public Toy {
       double t1=(adjuster.pos[0]-150)/300;
       //if (t0>t1) {double temp=t0;t0=t1;t1=temp;}
 
+      cairo_set_source_rgba (cr, 0., 0., 0., 1);
       cairo_set_line_width (cr, 0.5);
       cairo_md_sb(cr, f);
       cairo_stroke(cr);
@@ -303,7 +304,6 @@ class SbToBezierTester: public Toy {
       D2<SBasis>human_approx=handles_to_sbasis(bez_pts.begin(), 3);
       cairo_md_sb(cr, human_approx);
       cairo_stroke(cr);
-
       *notify << "Move handle 6 to set the segment to be approximated by cubic bezier.\n";
       *notify << " -red:  bezier approx derived from parametrization.\n";
       *notify << " -blue: bezier approx derived from curvature.\n";
@@ -321,9 +321,9 @@ public:
       adjuster.pos = Geom::Point(150+300*uniform(),150+300*uniform());
       handles.push_back(&adjuster);
       adjuster2.pos = Geom::Point(150,300);
-      //handles.push_back(&adjuster2);
+      handles.push_back(&adjuster2);
       adjuster3.pos = Geom::Point(450,300);
-      //handles.push_back(&adjuster3);
+      handles.push_back(&adjuster3);
       //}
     //sliders.push_back(Slider(0.0, 1.0, 0.0, 0.0, "t"));
     //handles.push_back(&(sliders[0]));

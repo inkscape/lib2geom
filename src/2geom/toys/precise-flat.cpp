@@ -7,7 +7,7 @@
 #include <2geom/bezier-to-sbasis.h>
 
 #include <2geom/toys/path-cairo.h>
-#include <2geom/toys/toy-framework.h>
+#include <2geom/toys/toy-framework-2.h>
 
 using std::vector;
 using namespace Geom;
@@ -16,18 +16,21 @@ unsigned total_pieces_sub;
 unsigned total_pieces_inc;
 
 class PreciseFlat: public Toy {
+    PointSetHandle hand;
 virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
     cairo_set_line_width (cr, 0.5);
     
-    D2<SBasis> B = handles_to_sbasis(handles.begin(), 3);
+    D2<SBasis> B = hand.asBezier();
     D2<SBasis> dB = derivative(B);
     D2<SBasis> ddB = derivative(dB);
+    cairo_set_source_rgb(cr, 0,0,0);
     cairo_md_sb(cr, B);
+    cairo_stroke(cr);
     
     // draw the longest chord that is no worse than tol from the curve.
     
     Geom::Point st = unit_vector(dB(0));
-    double s3 = fabs(dot(handles[2] - handles[0], rot90(st)));
+    double s3 = fabs(dot(hand.pts[2] - hand.pts[0], rot90(st)));
     
     SBasis inflect = dot(dB, rot90(ddB));
     std::vector<double> rts = roots(inflect);
@@ -38,7 +41,7 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
         double tp = rts[i];
         Geom::Point st = unit_vector(dB(tp));
         Geom::Point O = B(tp);
-        double s4 = fabs(dot(handles[3] - O, rot90(st)));
+        double s4 = fabs(dot(hand.pts[3] - O, rot90(st)));
         double tf = pow(f/s4, 1./3);
         Geom::Point t1p = B(tp + tf*(1-tp));
         Geom::Point t1m = B(tp - tf*(1-tp));
@@ -58,7 +61,9 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
 
 public:
 PreciseFlat () {
-    for(unsigned i = 0; i < 4; i++) handles.push_back(Geom::Point(uniform()*400, uniform()*400));
+    for(unsigned i = 0; i < 4; i++)
+        hand.pts.push_back(Geom::Point(uniform()*400, uniform()*400));
+    handles.push_back(&hand);
 }
 
 };

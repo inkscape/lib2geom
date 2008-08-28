@@ -3,7 +3,7 @@
 #include <2geom/bezier-to-sbasis.h>
 
 #include <2geom/toys/path-cairo.h>
-#include <2geom/toys/toy-framework.h>
+#include <2geom/toys/toy-framework-2.h>
 
 #include <time.h>
 using std::vector;
@@ -91,17 +91,18 @@ static Piecewise<SBasis> pw_inverse(SBasis const &f, int order,double tol=.1,int
 
 class InverseTester: public Toy {
   int size;
+    PointSetHandle hand;
 
   void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
     
       SBasis f;//=SBasis(Linear(0,.5));
       for (int i=0;i<size;i++){
-          handles[i    ][0]=150+15*(i-size);
-          handles[i+size][0]=450+15*(i+1);
-          cairo_move_to(cr, Geom::Point(handles[i    ][0],150));
-          cairo_line_to(cr, Geom::Point(handles[i    ][0],450));
-          cairo_move_to(cr, Geom::Point(handles[i+size][0],150));
-          cairo_line_to(cr, Geom::Point(handles[i+size][0],450));
+          hand.pts[i    ][0]=150+15*(i-size);
+          hand.pts[i+size][0]=450+15*(i+1);
+          cairo_move_to(cr, Geom::Point(hand.pts[i    ][0],150));
+          cairo_line_to(cr, Geom::Point(hand.pts[i    ][0],450));
+          cairo_move_to(cr, Geom::Point(hand.pts[i+size][0],150));
+          cairo_line_to(cr, Geom::Point(hand.pts[i+size][0],450));
       }
       cairo_move_to(cr, Geom::Point(0,300));
       cairo_line_to(cr, Geom::Point(600,300));
@@ -111,8 +112,8 @@ class InverseTester: public Toy {
       cairo_stroke(cr);
     
       for (int i=0;i<size;i++){
-          f.push_back(Linear(-(handles[i     ][1]-300)*pow(4.,i)/150,
-                             -(handles[i+size][1]-300)*pow(4.,i)/150 ));
+          f.push_back(Linear(-(hand.pts[i     ][1]-300)*pow(4.,i)/150,
+                             -(hand.pts[i+size][1]-300)*pow(4.,i)/150 ));
       }
       plot(cr,Linear(0,1),300);	
       
@@ -121,7 +122,7 @@ class InverseTester: public Toy {
       cairo_set_source_rgba (cr, 0., 0., 0.8, 1);
       plot(cr,f,300);	
       
-      *notify<<"Use handles to set the coefficients of the (blue) s-basis."<<std::endl;
+      *notify<<"Use hand.pts to set the coefficients of the (blue) s-basis."<<std::endl;
       *notify<<" (keep it monotonic!)"<<std::endl;
       *notify<<"red=flipped inverse; should be the same as the blue one."<<std::endl;
       
@@ -145,12 +146,13 @@ class InverseTester: public Toy {
 public:
     InverseTester() {
     size=4;
-    if(handles.empty()) {
+    if(hand.pts.empty()) {
       for(int i = 0; i < 2*size; i++)
-	handles.push_back(Geom::Point(0,150+150+uniform()*300*0));
+	hand.pts.push_back(Geom::Point(0,150+150+uniform()*300*0));
     }
-    handles[0][1]=300;
-    handles[size][1]=150;
+    hand.pts[0][1]=300;
+    hand.pts[size][1]=150;
+    handles.push_back(&hand);
   }
 };
 

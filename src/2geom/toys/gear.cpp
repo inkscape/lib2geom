@@ -35,7 +35,7 @@
 #include <2geom/path.h>
 
 #include <2geom/toys/path-cairo.h>
-#include <2geom/toys/toy-framework.h>
+#include <2geom/toys/toy-framework-2.h>
 
 using std::vector;
 using namespace Geom;
@@ -215,9 +215,11 @@ Gear Gear::spawn(int N, double a) {
 
 class GearToy: public Toy {
     public:
+    PointSetHandle hand;
     GearToy () {
         for(unsigned i = 0; i < 4; i++)
-            handles.push_back(Geom::Point(uniform()*400, uniform()*400));
+            hand.pts.push_back(Geom::Point(uniform()*400, uniform()*400));
+        handles.push_back(&hand);
     }
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         cairo_set_source_rgba (cr, 0., 0., 0, 0.8);
@@ -235,11 +237,11 @@ class GearToy: public Toy {
         }
         cairo_stroke(cr);*/
         
-        double pressure_angle = (handles[3][0] / 10) * M_PI / 180;
-        Gear gear(int(handles[2][0] / 10),200.0,pressure_angle);
-        Geom::Point gear_centre = handles[1];
-        gear.pitch_radius(Geom::distance(gear_centre, handles[0]));
-        gear.angle(atan2(handles[0] - gear_centre));
+        double pressure_angle = (hand.pts[3][0] / 10) * M_PI / 180;
+        Gear gear(int(hand.pts[2][0] / 10),200.0,pressure_angle);
+        Geom::Point gear_centre = hand.pts[1];
+        gear.pitch_radius(Geom::distance(gear_centre, hand.pts[0]));
+        gear.angle(atan2(hand.pts[0] - gear_centre));
         gear.centre(gear_centre);
         
         // draw radii

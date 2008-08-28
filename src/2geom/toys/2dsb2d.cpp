@@ -5,7 +5,7 @@
 #include <2geom/transforms.h>
 
 #include <2geom/toys/path-cairo.h>
-#include <2geom/toys/toy-framework.h>
+#include <2geom/toys/toy-framework-2.h>
 #include <2geom/path.h>
 #include <2geom/svg-path-parser.h>
 
@@ -20,6 +20,7 @@ class Sb2d2: public Toy {
     Path path_a;
     D2<SBasis2d> sb2;
     Piecewise<D2<SBasis> >  path_a_pw;
+    PointSetHandle hand;
     
     void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         Geom::Point dir(1,-2);
@@ -37,7 +38,7 @@ class Sb2d2: public Toy {
                             if(vi == 0 && ui == 0) {
                                 base = Geom::Point(width/4., width/4.);
                             }
-                            double dl = dot((handles[corner+4*i] - base), dir)/dot(dir,dir);
+                            double dl = dot((hand.pts[corner+4*i] - base), dir)/dot(dir,dir);
                             sb2[dim][i][corner] = dl/(width/2)*pow(4.0,ui+vi);
                         }
         }
@@ -47,8 +48,8 @@ class Sb2d2: public Toy {
         for(unsigned i = 0; i < path_a_pw.size(); i++) {
             D2<SBasis> B = path_a_pw[i];
             //const int depth = sb2[0].us*sb2[0].vs;
-            //const int surface_handles = 4*depth;
-            //D2<SBasis> B = handles_to_sbasis<3>(handles.begin() + surface_handles);
+            //const int surface_hand.pts = 4*depth;
+            //D2<SBasis> B = hand.pts_to_sbasis<3>(hand.pts.begin() + surface_hand.pts);
             cairo_md_sb(cr, B);
             for(unsigned dim = 0; dim < 2; dim++) {
                 std::vector<double> r = roots(B[dim]);
@@ -93,8 +94,8 @@ class Sb2d2: public Toy {
             sb2[dim].resize(depth, Linear2d(0));
         }
         
-        handles.resize(sb2[0].vs*sb2[0].us*4);
-        
+        hand.pts.resize(sb2[0].vs*sb2[0].us*4);
+        handles.push_back(&hand);
         
     }
     virtual void resize_canvas(Geom::Rect const & s) {
@@ -104,7 +105,7 @@ class Sb2d2: public Toy {
             for(unsigned ui = 0; ui < sb2[0].us; ui++)
                 for(unsigned iv = 0; iv < 2; iv++)
                     for(unsigned iu = 0; iu < 2; iu++)
-                        handles[ii++] = Geom::Point((2*(iu+ui)/(2.*ui+1)+1)*width/4.,
+                        hand.pts[ii++] = Geom::Point((2*(iu+ui)/(2.*ui+1)+1)*width/4.,
                                                     (2*(iv+vi)/(2.*vi+1)+1)*width/4.);
         
     }

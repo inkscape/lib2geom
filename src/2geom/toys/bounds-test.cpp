@@ -3,7 +3,7 @@
 #include <2geom/bezier-to-sbasis.h>
 
 #include <2geom/toys/path-cairo.h>
-#include <2geom/toys/toy-framework.h>
+#include <2geom/toys/toy-framework-2.h>
 
 #include <time.h>
 #include <vector>
@@ -27,17 +27,17 @@ static void plot_bar(cairo_t* cr, double height, double vscale=1,double a=0,doub
 
 class BoundsTester: public Toy {
     unsigned size;
-    
+    PointSetHandle hand;
     void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         
         SBasis B;
         for (unsigned i=0;i<size;i++){
-            handles[i    ][0]=150+15*(i-size);
-            handles[i+size][0]=450+15*(i+1);
-            cairo_move_to(cr, Geom::Point(handles[i    ][0],150));
-            cairo_line_to(cr, Geom::Point(handles[i    ][0],450));
-            cairo_move_to(cr, Geom::Point(handles[i+size][0],150));
-            cairo_line_to(cr, Geom::Point(handles[i+size][0],450));
+            hand.pts[i    ][0]=150+15*(i-size);
+            hand.pts[i+size][0]=450+15*(i+1);
+            cairo_move_to(cr, Geom::Point(hand.pts[i    ][0],150));
+            cairo_line_to(cr, Geom::Point(hand.pts[i    ][0],450));
+            cairo_move_to(cr, Geom::Point(hand.pts[i+size][0],150));
+            cairo_line_to(cr, Geom::Point(hand.pts[i+size][0],450));
         }
         cairo_move_to(cr, Geom::Point(0,300));
         cairo_line_to(cr, Geom::Point(600,300));
@@ -47,8 +47,8 @@ class BoundsTester: public Toy {
         cairo_stroke(cr);
         
         for (unsigned i=0;i<size;i++){
-            B.push_back(Linear(-(handles[i     ][1]-300)*pow(4.,(int)i),
-                               -(handles[i+size][1]-300)*pow(4.,(int)i) ));
+            B.push_back(Linear(-(hand.pts[i     ][1]-300)*pow(4.,(int)i),
+                               -(hand.pts[i+size][1]-300)*pow(4.,(int)i) ));
         }
         B.normalize();
         plot(cr,B,1);   
@@ -69,20 +69,20 @@ class BoundsTester: public Toy {
 /*
 This is a multi-root test...
 */
-        handles[2*size  ][0]=150;
-        handles[2*size+1][0]=150;
-        handles[2*size+2][0]=150;
-        handles[2*size  ][1]=std::max(handles[2*size  ][1],handles[2*size+1][1]);
-        handles[2*size+1][1]=std::max(handles[2*size+1][1],handles[2*size+2][1]);
+        hand.pts[2*size  ][0]=150;
+        hand.pts[2*size+1][0]=150;
+        hand.pts[2*size+2][0]=150;
+        hand.pts[2*size  ][1]=std::max(hand.pts[2*size  ][1],hand.pts[2*size+1][1]);
+        hand.pts[2*size+1][1]=std::max(hand.pts[2*size+1][1],hand.pts[2*size+2][1]);
         vector<double> levels;
-        levels.push_back((300-handles[2*size  ][1]));
-        levels.push_back((300-handles[2*size+1][1]));
-        levels.push_back((300-handles[2*size+2][1]));
+        levels.push_back((300-hand.pts[2*size  ][1]));
+        levels.push_back((300-hand.pts[2*size+1][1]));
+        levels.push_back((300-hand.pts[2*size+2][1]));
         for (unsigned i=0;i<levels.size();i++) plot_bar(cr,levels[i]);
         
         cairo_set_source_rgba (cr, 0., 0.5, 0., 1);
         
-        *notify<<"Use handles to set the coefficients of the s-basis."<<std::endl;
+        *notify<<"Use hand.pts to set the coefficients of the s-basis."<<std::endl;
         
         vector<double>my_roots;
         
@@ -143,13 +143,14 @@ This is a multi-root test...
 public:
     BoundsTester(){
         size=5;
-        if(handles.empty()) {
+        if(hand.pts.empty()) {
             for(unsigned i = 0; i < 2*size; i++)
-                handles.push_back(Geom::Point(0,150+150+uniform()*300*0));
+                hand.pts.push_back(Geom::Point(0,150+150+uniform()*300*0));
         }
-        handles.push_back(Geom::Point(150,300+ 50+uniform()*100));
-        handles.push_back(Geom::Point(150,300- 50+uniform()*100));
-        handles.push_back(Geom::Point(150,300-150+uniform()*100));
+        hand.pts.push_back(Geom::Point(150,300+ 50+uniform()*100));
+        hand.pts.push_back(Geom::Point(150,300- 50+uniform()*100));
+        hand.pts.push_back(Geom::Point(150,300-150+uniform()*100));
+        handles.push_back(&hand);
     }
 };
 

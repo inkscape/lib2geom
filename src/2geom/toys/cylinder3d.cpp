@@ -7,7 +7,7 @@
 #include <2geom/sbasis-math.h>
 
 #include <2geom/toys/path-cairo.h>
-#include <2geom/toys/toy-framework.h>
+#include <2geom/toys/toy-framework-2.h>
 #include <2geom/path.h>
 #include <2geom/svg-path-parser.h>
 
@@ -45,9 +45,10 @@ class Box3d: public Toy {
     std::vector<Toggle> togs;
     Path path_a;
     Piecewise<D2<SBasis> >  path_a_pw;
+    PointSetHandle hand;
     
     void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
-        orig = handles[7];
+        orig = hand.pts[7];
 	
         Geom::Point dir(1,-2);
 
@@ -55,12 +56,12 @@ class Box3d: public Toy {
 
         // draw vertical lines for the VP sliders and keep the sliders at their horizontal positions
         draw_slider_lines (cr);
-        handles[4][0] = 30;
-        handles[5][0] = 45;
-        handles[6][0] = 60;
+        hand.pts[4][0] = 30;
+        hand.pts[5][0] = 45;
+        hand.pts[6][0] = 60;
 
         // draw the curve that is supposed to be projected on the box's front face
-        vector<Geom::Point>::iterator it = handles.begin();
+        vector<Geom::Point>::iterator it = hand.pts.begin();
         for (int j = 0; j < 7; ++j) ++it;
 
         /* create the transformation matrix for the map  P^3 --> P^2 that has the following effect:
@@ -70,8 +71,8 @@ class Box3d: public Toy {
               (0 : 0 : 0 : 1) --> origin (= handle #3)
         */
         for (int j = 0; j < 4; ++j) {
-            tmat[0][j] = handles[j][0];
-            tmat[1][j] = handles[j][1];
+            tmat[0][j] = hand.pts[j][0];
+            tmat[1][j] = hand.pts[j][1];
             tmat[2][j] = 1;
         }
 
@@ -85,7 +86,7 @@ class Box3d: public Toy {
 
         // draw the projective images of the box's corners
         for (int i = 0; i < 8; ++i) {
-            corners[i] = proj_image (cr, c[i], handles);
+            corners[i] = proj_image (cr, c[i], hand.pts);
         }
         draw_box(cr, corners);
         cairo_set_line_width (cr, 2);
@@ -111,9 +112,9 @@ class Box3d: public Toy {
             for (int j = 0; j < 3; ++j) {
                 res[j] =
                     (preimage[0]) * tmat[j][0]
-                    + (preimage[1] - ((handles[5][1]-300)/100)) * tmat[j][1]
-                    + (preimage[2] - ((handles[6][1]-00)/100)) * tmat[j][2]
-                    +( - (handles[4][1]-300)/100) * tmat[j][0] + tmat[j][3];
+                    + (preimage[1] - ((hand.pts[5][1]-300)/100)) * tmat[j][1]
+                    + (preimage[2] - ((hand.pts[6][1]-00)/100)) * tmat[j][2]
+                    +( - (hand.pts[4][1]-300)/100) * tmat[j][0] + tmat[j][3];
             }
             //if (fabs (res[2]) > 0.000001) {
             D2<Piecewise<SBasis> > result(divide(res[0],res[2], 4), 
@@ -139,15 +140,15 @@ class Box3d: public Toy {
         path_a_pw = path_a.toPwSb();
 
         // Finite images of the three vanishing points and the origin
-        handles.push_back(Point(150,300));
-        handles.push_back(Point(380,40));
-        handles.push_back(Point(550,350));
-        handles.push_back(Point(340,450));
+        hand.pts.push_back(Point(150,300));
+        hand.pts.push_back(Point(380,40));
+        hand.pts.push_back(Point(550,350));
+        hand.pts.push_back(Point(340,450));
 
-        // Handles for moving in axes directions
-        handles.push_back(Point(30,300));
-        handles.push_back(Point(45,300));
-        handles.push_back(Point(60,300));
+        // Hand.Pts for moving in axes directions
+        hand.pts.push_back(Point(30,300));
+        hand.pts.push_back(Point(45,300));
+        hand.pts.push_back(Point(60,300));
         
         // Box corners
         for (int i = 0; i < 8; ++i) {
@@ -158,8 +159,9 @@ class Box3d: public Toy {
         }
 
         // Origin handle
-	handles.push_back(Point(180,70));
+	hand.pts.push_back(Point(180,70));
         togs.push_back(Toggle("S", true));
+        handles.push_back(&hand);
     }
     void key_hit(GdkEventKey *e) {
         if(e->keyval == 'c') togs[0].set(1); else

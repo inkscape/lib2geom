@@ -1,20 +1,23 @@
 #include <2geom/sweep.h>
 
 #include <2geom/toys/path-cairo.h>
-#include <2geom/toys/toy-framework.h>
+#include <2geom/toys/toy-framework-2.h>
 
 using namespace Geom;
 
 class Sweep: public Toy {
+public:
+    PointSetHandle hand;
     unsigned count_a, count_b;
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         std::vector<Rect> rects_a, rects_b;
+        cairo_set_source_rgb(cr, 0,0,0);
 
         for(unsigned i = 0; i < count_a; i++)
-            rects_a.push_back(Rect(handles[i*2], handles[i*2+1]));
+            rects_a.push_back(Rect(hand.pts[i*2], hand.pts[i*2+1]));
 
         for(unsigned i = 0; i < count_b; i++)
-            rects_b.push_back(Rect(handles[i*2 + count_a*2], handles[i*2+1 + count_a*2]));
+            rects_b.push_back(Rect(hand.pts[i*2 + count_a*2], hand.pts[i*2+1 + count_a*2]));
                 
         std::vector<std::vector<unsigned> > res = sweep_bounds(rects_a);
         cairo_set_line_width(cr,0.5);
@@ -46,9 +49,10 @@ class Sweep: public Toy {
         for(unsigned i = 0; i < (count_a + count_b); i++) {
             Point dim(uniform() * 90 + 10, uniform() * 90 + 10),
                   pos(uniform() * 500 + 50, uniform() * 500 + 50);
-            handles.push_back(pos - dim/2);
-            handles.push_back(pos + dim/2);
+            hand.pts.push_back(pos - dim/2);
+            hand.pts.push_back(pos + dim/2);
         }
+        handles.push_back(&hand);
     }
 };
 

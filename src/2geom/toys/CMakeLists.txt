@@ -1,33 +1,3 @@
-SET(2GEOM_TOYS_SRC 
-2dsb2d
-bounds-test
-cylinder3d
-draw-toy
-gear
-inverse-test
-mesh-grad
-#nearest-points
-#nearest-points2
-paptest
-precise-flat
-pw-compose-test
-sb-zeros
-sb1d
-sb2d
-shuttle
-sweep
-"${NEEDS_GSL}"
-)
-
-SET(2GEOM_TOY-FRAMEWORK_SRC
-interactive-bits.cpp
-interactive-bits.h
-toy-framework.cpp
-toy-framework.h
-path-cairo.cpp
-path-cairo.h
-)
-
 SET(2GEOM_TOY-FRAMEWORK-2_SRC
 interactive-bits.cpp
 interactive-bits.h
@@ -93,6 +63,21 @@ svg-elliptical-arc-test-toy
 worms
 winding-test
 sanitize
+# these ones have only had a trivial rewrite to toy-2
+2dsb2d
+bounds-test
+cylinder3d
+draw-toy
+gear
+inverse-test
+mesh-grad
+paptest
+precise-flat
+#pw-compose-test
+sb-zeros
+sb1d
+sb2d
+sweep
 )
 
 
@@ -101,13 +86,6 @@ OPTION(2GEOM_TOYS
   ON)
 IF(2GEOM_TOYS)
     # make lib for toy
-    ADD_LIBRARY(toy ${LIB_TYPE} ${2GEOM_TOY-FRAMEWORK_SRC})
-    TARGET_LINK_LIBRARIES(toy 2geom "${GTK2_LINK_FLAGS} ${cairo_LINK_FLAGS}")
-
-    FOREACH(source ${2GEOM_TOYS_SRC})
-        ADD_EXECUTABLE(${source} ${source}.cpp)
-        TARGET_LINK_LIBRARIES(${source} toy 2geom "${GTK2_LINK_FLAGS} ${cairo_LINK_FLAGS} ${LINK_GSL}" )
-    ENDFOREACH(source)
     ADD_LIBRARY(toy-2 ${LIB_TYPE} ${2GEOM_TOY-FRAMEWORK-2_SRC})
     TARGET_LINK_LIBRARIES(toy-2 2geom "${GTK2_LINK_FLAGS} ${cairo_LINK_FLAGS}")
 

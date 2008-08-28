@@ -252,11 +252,12 @@ AAF pow_sample_based(AAF x, double p) {
 }
 
 Point origin;
+double s = 100;
 AAF trial_eval(AAF x, AAF y) {
     x = x-origin[0];
     y = y-origin[1];
-    x = x/100;
-    y = y/100;
+    x = x/s;
+    y = y/s;
     //return x*x - 1;
     //return y - pow(x,3);
     //return y - pow_sample_based(x,2.5);
@@ -275,21 +276,28 @@ AAF trial_eval(AAF x, AAF y) {
     //return x*y;
     //return 4*x+3*y-1;
     //return x*x + y*y - 1;
-    return sin(x*y) + cos(pow(x, 3)) - atan(x);
-    //return pow((x*x + y*y), 2) - (x*x-y*y);
+    //return sin(x*y) + cos(pow(x, 3)) - atan(x);
+    return 4*(2*y-4*x)*(2*y+4*x-16)-16*y*y;
+    return pow((x*x + y*y), 2) - (x*x-y*y);
     //return x*x-y;
     //return (x*x*x-y*x)*sin(x) + (x-y*y)*cos(y)-0.5;
 }
 
 AAF xaxis(AAF x, AAF y) {
     y = y-origin[1];
-    y = y/200;
+    y = y/s;
     return y;
+}
+
+AAF xaxis2(AAF x, AAF y) {
+    y = y-origin[1];
+    y = y/s;
+    return y-4;
 }
 
 AAF yaxis(AAF x, AAF y) {
     x = x-origin[0];
-    x = x/200;
+    x = x/s;
     return x;
 }
 
@@ -425,6 +433,8 @@ public:
             cairo_set_line_width(cr, 0.3);
             cairo_set_source_rgb(cr, 0.5, 0.5, 1);
             eval = xaxis;
+            recursive_implicit(Rect(Interval(0,width), Interval(0, height)), cr, 3);
+            eval = xaxis2;
             recursive_implicit(Rect(Interval(0,width), Interval(0, height)), cr, 3);
             eval = yaxis;
             recursive_implicit(Rect(Interval(0,width), Interval(0, height)), cr, 3);

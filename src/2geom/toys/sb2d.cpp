@@ -3,7 +3,7 @@
 #include <2geom/bezier-to-sbasis.h>
 
 #include <2geom/toys/path-cairo.h>
-#include <2geom/toys/toy-framework.h>
+#include <2geom/toys/toy-framework-2.h>
 
 using std::vector;
 using namespace Geom;
@@ -12,6 +12,11 @@ unsigned total_pieces_sub;
 unsigned total_pieces_inc;
 
 class Sb2d: public Toy {
+public:
+    PointSetHandle hand;
+    Sb2d() {
+        handles.push_back(&hand);
+    }
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         SBasis2d sb2;
         sb2.us = 2;
@@ -21,20 +26,20 @@ class Sb2d: public Toy {
         sb2.resize(depth, Linear2d(0));
         vector<Geom::Point> display_handles(surface_handles);
         Geom::Point dir(1,-2);
-        if(handles.empty()) {
+        if(hand.pts.empty()) {
             for(unsigned vi = 0; vi < sb2.vs; vi++)
              for(unsigned ui = 0; ui < sb2.us; ui++)
               for(unsigned iv = 0; iv < 2; iv++)
                for(unsigned iu = 0; iu < 2; iu++)
-                   handles.push_back(Geom::Point((2*(iu+ui)/(2.*ui+1)+1)*width/4.,
+                   hand.pts.push_back(Geom::Point((2*(iu+ui)/(2.*ui+1)+1)*width/4.,
                                                  (2*(iv+vi)/(2.*vi+1)+1)*width/4.));
         
-            handles.push_back(Geom::Point(3*width/4., width/4.) + 30*dir);
+            hand.pts.push_back(Geom::Point(3*width/4., width/4.) + 30*dir);
         }
-        dir = (handles[surface_handles] - Geom::Point(3*width/4., width/4.)) / 30;
+        dir = (hand.pts[surface_handles] - Geom::Point(3*width/4., width/4.)) / 30;
         if(!save) {
             cairo_move_to(cr, 3*width/4., width/4.);
-            cairo_line_to(cr, handles[surface_handles]);
+            cairo_line_to(cr, hand.pts[surface_handles]);
         }
         for(unsigned vi = 0; vi < sb2.vs; vi++)
          for(unsigned ui = 0; ui < sb2.us; ui++)
@@ -44,7 +49,7 @@ class Sb2d: public Toy {
                unsigned i = ui + vi*sb2.us;
                Geom::Point base((2*(iu+ui)/(2.*ui+1)+1)*width/4.,
                (2*(iv+vi)/(2.*vi+1)+1)*width/4.);
-               double dl = dot((handles[corner+4*i] - base), dir)/dot(dir,dir);
+               double dl = dot((hand.pts[corner+4*i] - base), dir)/dot(dir,dir);
                display_handles[corner+4*i] = dl*dir + base;
                sb2[i][corner] = dl*10/(width/2)*pow(4.,ui+vi);
            }
