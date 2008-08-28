@@ -1,7 +1,12 @@
+
+
+#include <2geom/point.h>
 #include <2geom/sbasis.h>
-#include <2geom/bezier-to-sbasis.h>
-#include <2geom/sbasis-to-bezier.h>
 #include <2geom/d2.h>
+
+#include <vector>
+#include <utility>
+
 
 namespace Geom {
 

@@ -37,6 +37,7 @@
 
 #include <2geom/d2.h>
 #include <2geom/basic-intersection.h>
+#include <2geom/sbasis-to-bezier.h>
 
 
 

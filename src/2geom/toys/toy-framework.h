@@ -15,6 +15,8 @@
 #include <2geom/point.h>
 #include <2geom/geom.h>
 #include <2geom/d2.h>
+#include <2geom/bezier-to-sbasis.h>
+
 
 using std::vector;
 
@@ -47,9 +49,9 @@ public:
     //Cheapo way of informing the framework what the toy would like drawn for it.
     virtual bool should_draw_numbers() { return true; }
     virtual int should_draw_bounds() { return 0; }
-    
+
     virtual void first_time(int /*argc*/, char** /*argv*/) {}
-    
+
     virtual void resize_canvas(Geom::Rect const & /*s*/) {}
 };
 
