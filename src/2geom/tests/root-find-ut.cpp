@@ -40,7 +40,8 @@ main(int argc, char** argv) {
     std::cout << a <<std::endl;
     SBasis B = poly_to_sbasis(a);
     std::cout << B << std::endl;
-    Bezier bez = sbasis_to_bezier(B);
+    Bezier bez;
+    sbasis_to_bezier(bez, B);
     cout << bez << endl;
     //copy(bez.begin(), bez.end(), ostream_iterator<double>(cout, ", "));
     cout << endl;
