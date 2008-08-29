@@ -475,15 +475,17 @@ static void intersect_polish_root (OldBezier &A, double &s,
     while (true) {
         Point trial = best;
         double trial_v = best_v;
-        for(int ni = 0; ni < 4; ni++) {
-            Point n(EpsilonBy(best[0], (ni&1)?1:-1),
-                    EpsilonBy(best[1], (ni&2)?1:-1));
+        for(int nsi = -1; nsi < 2; nsi++) {
+        for(int nti = -1; nti < 2; nti++) {
+            Point n(EpsilonBy(best[0], nsi),
+                    EpsilonBy(best[1], nti));
             double c = L1(A(n[0]) - B(n[1]));
             //std::cout << c << "; ";
             if (c < trial_v) {
                 trial = n;
                 trial_v = c;
             }
+        }
         }
         if(trial == best) {
             //std::cout << "\n" << s << " -> " << s - best[0] << std::endl;
