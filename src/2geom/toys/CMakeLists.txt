@@ -39,6 +39,7 @@ fitter
 hvlineseg-toy
 implicit-toy
 inner-product-clip
+line-toy
 load-svgd
 rect-line-intersect
 mesh-warp

@@ -50,6 +50,9 @@ elliptical-arc.cpp
 elliptical-arc.h
 hvlinesegment.h
 intersection-by-bezier-clipping.cpp
+line.cpp
+line.h
+ray.h
 sbasis-curve.h
 path.cpp
 path.h
