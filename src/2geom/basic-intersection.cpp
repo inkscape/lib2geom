@@ -162,6 +162,7 @@ void OldBezier::split(double t, OldBezier &left, OldBezier &right) const {
         right.p[j] = Vtemp[sz-1-j][j];
 }
 
+#if 0
 /*
  * split the curve at the midpoint, returning an array with the two parts
  * Temporary storage is minimized by using part of the storage for the result
@@ -181,6 +182,28 @@ Point OldBezier::operator()(double t) const {
         }
     }
     return Vtemp[sz-1][0];
+}
+#endif
+
+// suggested by Sederberg.
+Point OldBezier::operator()(double t) const {
+    int n = p.size()-1;
+    double u, bc, tn, tmp;
+    int i;
+    Point r;
+    for(int dim = 0; dim < 2; dim++) {
+        u = 1.0 - t;
+        bc = 1;
+        tn = 1;
+        tmp = p[0][dim]*u;
+        for(i=1; i<n; i++){
+            tn = tn*t;
+            bc = bc*(n-i+1)/i;
+            tmp = (tmp + tn*bc*p[i][dim])*u;
+        }
+        r[dim] = (tmp + tn*t*p[n][dim]);
+    }
+    return r;
 }
 
 
@@ -390,6 +413,20 @@ intersect_polish_f (const gsl_vector * x, void *params,
     return GSL_SUCCESS;
 }
 
+typedef union dbl_64{
+    long long i64;
+    double d64;
+};
+
+static double EpsilonBy(double value, int eps)
+{
+    dbl_64 s;
+    s.d64 = value;
+    s.i64 += eps;
+    return s.d64;
+}
+
+
 static void intersect_polish_root (OldBezier &A, double &s,
                             OldBezier &B, double &t) {
     const gsl_multiroot_fsolver_type *T;
@@ -430,6 +467,36 @@ static void intersect_polish_root (OldBezier &A, double &s,
 
     gsl_multiroot_fsolver_free (sol);
     gsl_vector_free (x);
+    
+    // This code does a neighbourhood search for minor improvements.
+    double best_v = L1(A(s) - B(t));
+    //std::cout  << "------\n" <<  best_v << std::endl;
+    Point best(s,t);
+    while (true) {
+        Point trial = best;
+        double trial_v = best_v;
+        for(int ni = 0; ni < 4; ni++) {
+            Point n(EpsilonBy(best[0], (ni&1)?1:-1),
+                    EpsilonBy(best[1], (ni&2)?1:-1));
+            double c = L1(A(n[0]) - B(n[1]));
+            //std::cout << c << "; ";
+            if (c < trial_v) {
+                trial = n;
+                trial_v = c;
+            }
+        }
+        if(trial == best) {
+            //std::cout << "\n" << s << " -> " << s - best[0] << std::endl;
+            //std::cout << t << " -> " << t - best[1] << std::endl;
+            //std::cout << best_v << std::endl;
+            s = best[0];
+            t = best[1];
+            return;
+        } else {
+            best = trial;
+            best_v = trial_v;
+        }
+    }
 }
 
 
