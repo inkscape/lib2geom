@@ -14,6 +14,10 @@ using std::vector;
 using namespace Geom;
 using namespace std;
 
+//Geom::Rect zoom(Geom::Rect r, Geom::Point p, double s) {
+//    return p + (r - p)*s;
+//}
+
 typedef std::complex<AAF> CAAF;
 
 struct PtLexCmp{
@@ -52,7 +56,7 @@ void draw_line_in_rect(cairo_t*cr, Rect &r, Point n, double c) {
 	cairo_line_to(cr, result[1]);
 	cairo_stroke(cr);
     } else {
-        cout << result.size() << endl;
+        //cout << result.size() << endl;
     }
 
 
@@ -252,12 +256,15 @@ AAF pow_sample_based(AAF x, double p) {
 }
 
 Point origin;
-double s = 100;
+double scale=100;
+
 AAF trial_eval(AAF x, AAF y) {
     x = x-origin[0];
     y = y-origin[1];
-    x = x/s;
-    y = y/s;
+
+    x = x/scale;
+    y = y/scale;
+
     //return x*x - 1;
     //return y - pow(x,3);
     //return y - pow_sample_based(x,2.5);
@@ -277,8 +284,11 @@ AAF trial_eval(AAF x, AAF y) {
     //return 4*x+3*y-1;
     //return x*x + y*y - 1;
     //return sin(x*y) + cos(pow(x, 3)) - atan(x);
+    //return pow((x*x + y*y), 2) - (x*x-y*y);
     return 4*(2*y-4*x)*(2*y+4*x-16)-16*y*y;
     return pow((x*x + y*y), 2) - (x*x-y*y);
+    //return pow(x,3) - 3*x*x - 3*y*y;
+    return (x*x + y*y-1)*((x-1)*(x-1)+y*y-1);
     //return x*x-y;
     //return (x*x*x-y*x)*sin(x) + (x-y*y)*cos(y)-0.5;
 }
@@ -323,6 +333,7 @@ public:
     bool show_splits;
     std::vector<Toggle> toggles;
     AAF (*eval)(AAF, AAF);
+    Geom::Rect view;
     void recursive_implicit(Rect r, cairo_t*cr, double w) {
         if(show_splits) {
             cairo_save(cr);
@@ -423,6 +434,15 @@ public:
     void mouse_pressed(GdkEventButton* e) {
         toggle_events(toggles, e);
         Toy::mouse_pressed(e);
+    }
+    void scroll(GdkEventScroll* e) {
+        if (e->direction == GDK_SCROLL_UP) {
+            cout << "out\n";
+            scale /= 1.2;
+        } else if (e->direction == GDK_SCROLL_DOWN) {
+            scale *= 1.2;
+            cout << "in\n";
+        }
     }
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         cairo_set_source_rgba (cr, 0., 0., 0, 1);

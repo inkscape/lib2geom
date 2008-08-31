@@ -46,7 +46,7 @@ mesh-warp
 match-curve
 #normal-bundle
 point-curve-nearest-point
-offset-test
+offset-toy
 pair-intersect
 parametrics
 parser
