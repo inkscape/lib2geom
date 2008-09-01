@@ -50,21 +50,22 @@ namespace Geom
  *
  *  some remark about precision:
  *  interval [0,1], subdivisions: 10^3
- *  - bezier_to_sbasis : up to degree ~39 precision is at least 10^-5
- *                       up to degree ~51 precision is at least 10^-3
- *  - sbasis_to_bezier : precision is at least 10^-5 even beyond order 100
+ *  - bezier_to_sbasis : up to degree ~72 precision is at least 10^-5
+ *                       up to degree ~87 precision is at least 10^-3
+ *  - sbasis_to_bezier : up to order ~63 precision is at least 10^-15
+ *                       precision is at least 10^-14 even beyond order 200
  *
  *  interval [-1,1], subdivisions: 10^3
- *  - bezier_to_sbasis : up to degree ~22 precision is at least 10^-5
- *                       up to degree ~27 precision is at least 10^-3
- *  - sbasis_to_bezier : up to order ~23 precision is at least 10^-5
- *                       up to order ~27 precision is at least 10^-3
+ *  - bezier_to_sbasis : up to degree ~21 precision is at least 10^-5
+ *                       up to degree ~24 precision is at least 10^-3
+ *  - sbasis_to_bezier : up to order ~11 precision is at least 10^-5
+ *                       up to order ~13 precision is at least 10^-3
  *
  *  interval [-10,10], subdivisions: 10^3
  *  - bezier_to_sbasis : up to degree ~7 precision is at least 10^-5
- *                       up to degree ~9 precision is at least 10^-3
- *  - sbasis_to_bezier : up to order ~8 precision is at least 10^-5
- *                       up to order ~9 precision is at least 10^-3
+ *                       up to degree ~8 precision is at least 10^-3
+ *  - sbasis_to_bezier : up to order ~3 precision is at least 10^-5
+ *                       up to order ~4 precision is at least 10^-3
  *
  *  references:
  *  this implementation is based on the following article:
@@ -136,6 +137,8 @@ void sbasis_to_bezier (Bezier & bz, SBasis const& sb, size_t sz)
     {
         bz[j] /= binomial(n, j);
     }
+    bz[0] = sb[0][0];
+    bz[n] = sb[0][1];
 }
 
 void sbasis_to_bezier (std::vector<Point> & bz, D2<SBasis> const& sb, size_t sz)
@@ -193,6 +196,8 @@ void bezier_to_sbasis (SBasis & sb, Bezier const& bz)
         sb[q][0] += (binomial(n, q) * bz[q]);
         sb[q][1] = sb[q][0];
     }
+    sb[0][0] = bz[0];
+    sb[0][1] = bz[n];
 }
 
 
@@ -238,6 +243,10 @@ void bezier_to_sbasis (D2<SBasis> & sb, std::vector<Point> const& bz)
         sb[Y][q][0] += (binomial(n, q) * bz[q][Y]);
         sb[Y][q][1] = sb[Y][q][0];
     }
+    sb[X][0][0] = bz[0][X];
+    sb[X][0][1] = bz[n][X];
+    sb[Y][0][0] = bz[0][Y];
+    sb[Y][0][1] = bz[n][Y];
 }
 
 
