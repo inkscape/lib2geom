@@ -18,7 +18,7 @@ extern unsigned intersect_steps;
 /** Given two linear md_sb(assume they are linear even if they're not)
     find the ts at the intersection. */
 bool
-linear_pair_intersect(D2<SBasis> A, double Al, double Ah, 
+linear_pair_intersect(D2<SBasis> A, double Al, double Ah,
                       D2<SBasis> B, double Bl, double Bh,
                       double &tA, double &tB) {
     Rect Ar = bounds_local(A, Interval(Al, Ah));
@@ -54,7 +54,7 @@ linear_pair_intersect(D2<SBasis> A, double Al, double Ah,
 
 void pair_intersect(vector<double> &Asects,
                     vector<double> &Bsects,
-                    D2<SBasis> A, double Al, double Ah, 
+                    D2<SBasis> A, double Al, double Ah,
                     D2<SBasis> B, double Bl, double Bh, unsigned depth=0) {
     // we'll split only A, and swap args
     Rect Ar = bounds_local(A, Interval(Al, Ah));
@@ -62,7 +62,7 @@ void pair_intersect(vector<double> &Asects,
 
     Rect Br = bounds_local(B, Interval(Bl, Bh));
     if(Br.isEmpty()) return;
-    
+
     if((depth > 12) || Ar.intersects(Br)) {
         double Ate = 0;
         double Bte = 0;
@@ -75,17 +75,17 @@ void pair_intersect(vector<double> &Asects,
             Bte = std::max(Bte, bs.extent());
         }
 
-        if((depth > 12)  || ((Ate < eps) && 
+        if((depth > 12)  || ((Ate < eps) &&
            (Bte < eps))) {
             std::cout << "intersects\n" << Ate << "\n" << Bte;
             double tA, tB;
-            if(linear_pair_intersect(A, Al, Ah, 
-                                     B, Bl, Bh, 
+            if(linear_pair_intersect(A, Al, Ah,
+                                     B, Bl, Bh,
                                      tA, tB)) {
                 Asects.push_back(tA);
                 Bsects.push_back(tB);
             }
-            
+
         } else {
             double mid = (Al + Ah)/2;
             pair_intersect(Bsects,
@@ -110,23 +110,27 @@ class PairIntersect: public Toy {
     PointSetHandle A_handles;
     PointSetHandle B_handles;
 virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
-    cairo_set_source_rgb(cr, 0,0,0);
+
+    cairo_set_source_rgba(cr, 0, 0, 0, 1.0);
     cairo_set_line_width (cr, 0.5);
-    
     D2<SBasis> A = A_handles.asBezier();
     cairo_md_sb(cr, A);
-    
+    cairo_stroke(cr);
+    cairo_set_source_rgba(cr, 0.0, 0, 0.8, 1.0);
+    cairo_set_line_width (cr, 0.5);
     D2<SBasis> B = B_handles.asBezier();
     cairo_md_sb(cr, B);
+    cairo_stroke(cr);
+
     vector<double> Asects, Bsects;
     g_cr = cr;
-    //if(0) pair_intersect(Asects, Bsects, A, 0, 1, 
+    //if(0) pair_intersect(Asects, Bsects, A, 0, 1,
     //               B, 0, 1);
-    
+
     intersect_steps = 0;
-    
+
     vector<Geom::Point> Ab = A_handles.pts, Bb = B_handles.pts;
-    std::vector<std::pair<double, double> > section = 
+    std::vector<std::pair<double, double> > section =
         find_intersections( A_handles.pts, B_handles.pts);
     cairo_stroke(cr);
     cairo_set_source_rgba (cr, 1., 0., 0, 0.8);
@@ -135,10 +139,10 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
         *notify << Geom::distance(A(section[i].first), B(section[i].second)) << std::endl;
     }
     cairo_stroke(cr);
-    
+
     *notify << "total intersections: " << section.size() << std::endl;
     *notify << "steps to find: " << intersect_steps;
-    
+
     Toy::draw(cr, notify, width, height, save);
 }
 public:
