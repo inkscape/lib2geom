@@ -8,7 +8,7 @@
 
 #define ZROOTS_TEST 0
 #if ZROOTS_TEST
-#include <2geom/zroots.c"
+#include <2geom/zroots.c>
 #endif
 
 #include <vector>
