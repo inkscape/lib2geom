@@ -210,6 +210,10 @@ of points in the poly line or poly bezier case.
 
 The Curves themselves are immutable, which means that they can be shared between Paths.
 
+There is an implicit line segment from the initialPoint to the finalPoint which is used if the path is closed.
+
+An empty (size() == 0) path defines a naked move to.
+
 \section{Curves}
 2Geom has a diversity of curve types and conversions between them.
 
