@@ -45,6 +45,7 @@
 #include <2geom/toys/toy-framework-2.h>
 
 #include <2geom/transforms.h>
+#include <2geom/pathvector.h>
 
 
 #include <algorithm>
@@ -216,22 +217,22 @@ private:
             case '6':
             {
                 closed_toggle = true;
-                assert(paths_b.size() > 0);
-                Path path = paths_b[0]*Translate(psh.pts[0]-paths_b[0][0].initialPoint());
-    	        if ( toggles[1].on ) path.close(true);
+                PathVector pathv = paths_b*Translate(psh.pts[0]-paths_b[0][0].initialPoint());
+                //std::cout << pathv.size() << std::endl;
 
-    	        cairo_path(cr, path);
+    	        cairo_path(cr, pathv);
 
     	        if ( toggles[0].on )
     	        {
-                    std::vector<double> t = path.allNearestPoints(p);
+                    std::vector<PathVectorPosition> t = allNearestPoints(pathv, p);
                     for ( unsigned int i = 0; i < t.size(); ++i )
-                        nps.push_back(path.pointAt(t[i]));
+                        nps.push_back(pointAt(pathv, t[i]));
     	        }
     	        else
     	        {
-                    double t = path.nearestPoint(p);
-                    np = path.pointAt(t);
+                    boost::optional<PathVectorPosition> t = nearestPoint(pathv, p);
+                    if(t)
+                        np = pointAt(pathv, *t);
     	        }
                 break;
             }

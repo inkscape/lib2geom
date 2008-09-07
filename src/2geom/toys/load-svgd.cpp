@@ -3,6 +3,7 @@
 
 #include <2geom/shape.h>
 #include <2geom/path.h>
+#include <2geom/pathvector.h>
 #include <2geom/svg-path-parser.h>
 
 #include <2geom/toys/path-cairo.h>
@@ -59,17 +60,31 @@ Shape cleanup(std::vector<Path> const &ps) {
 
 class BoolOps: public Toy {
     //Region b;
-    Shape bs;
+    //Shape bs;
+    PathVector pv;
     PointHandle offset_handle;
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         Geom::Translate t(offset_handle.pos);
-        Shape bst = bs * t;
+        //Shape bst = bs * t;
         //Region bt = Region(b * t, b.isFill());
         
         cairo_set_line_width(cr, 1);
+        cairo_set_source_rgb(cr, 0,0,0);
         
-        cairo_shape(cr, bst);
+        //cairo_shape(cr, bst);
+        cairo_path(cr, pv*t);
+        cairo_stroke(cr);
         
+        for(unsigned i = 0; i < pv.size(); i++) {
+            if(pv[i].size() == 0) {
+                *notify << "naked moveto;";
+            } else 
+            for(unsigned j = 0; j < pv[i].size(); j++) {
+                const Curve* c = &pv[i][j];
+                *notify << typeid(*c).name() << ';' ;
+            }
+        }
+
         Toy::draw(cr, notify, width, height, save);
     }
     public:
@@ -79,14 +94,17 @@ class BoolOps: public Toy {
         const char *path_b_name="star.svgd";
         if(argc > 1)
             path_b_name = argv[1];
-        std::vector<Path> paths_b = read_svgd(path_b_name);
+        pv = read_svgd(path_b_name);
+        std::cout << pv.size() << "\n";
+        std::cout << pv[0].size() << "\n";
+        pv *= Translate(-pv[0].initialPoint());
         
-	Rect bounds = paths_b[0].boundsExact();
-        std::cout << crossings_among(paths_b)[0].size() << "\n";
+	Rect bounds = pv[0].boundsExact();
+        std::cout << crossings_among(pv)[0].size() << "\n";
         handles.push_back(&offset_handle);
         offset_handle.pos = bounds.midpoint() - bounds.corner(0);
 
-        bs = cleanup(paths_b);
+        //bs = cleanup(pv);
     }
 };
 

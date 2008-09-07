@@ -51,6 +51,13 @@ void cairo_curve(cairo_t *cr, Curve const& c) {
 
 void cairo_path(cairo_t *cr, Path const &p) {
     cairo_move_to(cr, p.initialPoint()[0], p.initialPoint()[1]);
+    if(p.size() == 0) { // naked moveto
+        cairo_move_to(cr, p.finalPoint()+Point(8,0));
+        cairo_line_to(cr, p.finalPoint()+Point(-8,0));
+        cairo_move_to(cr, p.finalPoint()+Point(0,8));
+        cairo_line_to(cr, p.finalPoint()+Point(0,-8));
+        return;
+    }
 
     for(Path::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
         cairo_curve(cr, *iter);

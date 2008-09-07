@@ -38,6 +38,11 @@ int main() {
     x[i] = SimpleInterval(random(), random());
   }
   
+  cout << "sizeof(SimpleInterval)" << sizeof(SimpleInterval) << endl;
+  cout << "sizeof(IntervalTreeNode)" << sizeof(IntervalTreeNode) << endl;
+  cout << "sizeof(it_recursion_node)" << sizeof(it_recursion_node) << endl;
+  cout << "sizeof(IntervalTree)" << sizeof(IntervalTree) << endl;
+  
   IntervalTree itree;
   int onn = 0;
   for(int nn = 1; nn < N; nn*=2) {

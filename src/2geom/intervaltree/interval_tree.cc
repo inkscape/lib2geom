@@ -48,7 +48,7 @@ IntervalTree::IntervalTree()
   root->storedInterval = NULL;
 
   /* the following are used for the Enumerate function */
-  recursionNodeStackSize = 128;
+  recursionNodeStackSize = 8; // the tree depth is approximately lg(n), this is a 256 element tree.  The code will adapt to deeper trees, but this saves considerable space for small trees.
   recursionNodeStack = new it_recursion_node[recursionNodeStackSize];
   recursionNodeStackTop = 1;
   recursionNodeStack[0].start_node = NULL;
