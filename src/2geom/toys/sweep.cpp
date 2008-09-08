@@ -18,16 +18,32 @@ public:
 
         for(unsigned i = 0; i < count_b; i++)
             rects_b.push_back(Rect(hand.pts[i*2 + count_a*2], hand.pts[i*2+1 + count_a*2]));
-                
-        std::vector<std::vector<unsigned> > res = sweep_bounds(rects_a);
-        cairo_set_line_width(cr,0.5);
-        for(unsigned i = 0; i < res.size(); i++) {
-            for(unsigned j = 0; j < res[i].size(); j++) {
-                draw_line_seg(cr, rects_a[i].midpoint(), rects_a[res[i][j]].midpoint());
-                cairo_stroke(cr);
-            }
-        }
         
+        {
+            std::vector<std::vector<unsigned> > res = sweep_bounds(rects_a);
+            cairo_set_line_width(cr,0.5);
+            cairo_save(cr);
+            cairo_set_source_rgb(cr, 1, 0, 0);
+            for(unsigned i = 0; i < res.size(); i++) {
+                for(unsigned j = 0; j < res[i].size(); j++) {
+                    draw_line_seg(cr, rects_a[i].midpoint(), rects_a[res[i][j]].midpoint());
+                    cairo_stroke(cr);
+                }
+            }
+            cairo_restore(cr);
+        }{
+            std::vector<std::vector<unsigned> > res = sweep_bounds(rects_a, rects_b);
+            cairo_set_line_width(cr,0.5);
+            cairo_save(cr);
+            cairo_set_source_rgb(cr, 0.5, 0, 0.5);
+            for(unsigned i = 0; i < res.size(); i++) {
+                for(unsigned j = 0; j < res[i].size(); j++) {
+                    draw_line_seg(cr, rects_a[i].midpoint(), rects_b[res[i][j]].midpoint());
+                    cairo_stroke(cr);
+                }
+            }
+            cairo_restore(cr);
+        }
         cairo_set_line_width(cr,3);
         cairo_set_source_rgba(cr,1,0,0,1);
         for(unsigned i = 0; i < count_a; i++)
