@@ -367,7 +367,9 @@ The intersection system is designed to be modular, so that different algorithms 
 
 \verb|Crossings crossings(Path, Path);|  —  finds the crossings between two paths
 \verb|CrossingSet crossings(std::vector<Path>, std::vector<Path>);|  —  finds the crossings between two sets of paths.
-Layer 2: Regions
+
+
+\section{Layer 2: Regions}
 
 \begin{verbatim}
 src/region.cpp
@@ -378,6 +380,8 @@ src/region.h
 A limited point-set, defined by a boundary. This boundary is stored as a simple (non-self-crossing) path. Regions with positive winding (counter-clockwise) include points which are inside the boundary (fills), whereas Regions with negative winding include all points outside the boundary (holes). It also caches information such as winding direction and bounding box.
 
 Most of the public api for region simply wraps and caches queries to a Path. It also provides various convenience functions such as \verb|as_fill| and \verb|as_hole|. Region should usually only be used by clients of this library when dealing with paths with the same invariants as regions.
+
+
 \section{Layer 3: Shapes}
 
 \begin{verbatim}
