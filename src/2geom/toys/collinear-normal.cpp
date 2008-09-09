@@ -1,5 +1,5 @@
 /*
- * Show off crossings between two Bezier curves.
+ * Show off collinear normals between two Bezier curves.
  * The intersection points are found by using Bezier clipping.
  *
  * Authors:
@@ -38,7 +38,7 @@
 #include <2geom/d2.h>
 #include <2geom/basic-intersection.h>
 #include <2geom/sbasis-to-bezier.h>
-
+#include <2geom/ray.h>
 
 
 
@@ -51,6 +51,11 @@ class CurveIntersect : public Toy
     void draw( cairo_t *cr, std::ostringstream *notify,
                int width, int height, bool save )
     {
+        m_width = width;
+        m_height = height;
+        m_length = (m_width > m_height) ? m_width : m_height;
+        m_length *= 2;
+
         cairo_set_line_width (cr, 0.3);
         cairo_set_source_rgba (cr, 0.8, 0., 0, 1);
         D2<SBasis> A = pshA.asBezier();
@@ -61,20 +66,52 @@ class CurveIntersect : public Toy
         cairo_md_sb(cr, B);
         cairo_stroke(cr);
 
-
-        find_intersections(xs, pshA.pts, pshB.pts, m_precision);
+        find_collinear_normal(xs, pshA.pts, pshB.pts, m_precision);
         cairo_set_line_width (cr, 0.3);
         cairo_set_source_rgba (cr, 0.0, 0.0, 0.7, 1);
         for (size_t i = 0; i < xs.size(); ++i)
         {
-            draw_handle(cr, A(xs[i].first));
-            draw_handle(cr, B(xs[i].second));
+            Point At = A(xs[i].first);
+            Point Bu = B(xs[i].second);
+            draw_axis(cr, At, Bu);
+            draw_handle(cr, At);
+            draw_handle(cr, Bu);
+
         }
         cairo_stroke(cr);
 
         Toy::draw(cr, notify, width, height, save);
     }
 
+    void draw_segment(cairo_t* cr, Point const& p1, Point const&  p2)
+    {
+        cairo_move_to(cr, p1);
+        cairo_line_to(cr, p2);
+    }
+
+    void draw_segment(cairo_t* cr, Point const& p1, double angle, double length)
+    {
+        Point p2;
+        p2[X] = length * std::cos(angle);
+        p2[Y] = length * std::sin(angle);
+        p2 += p1;
+        draw_segment(cr, p1, p2);
+    }
+
+    void draw_ray(cairo_t* cr, Ray const& r)
+    {
+        double angle = r.angle();
+        draw_segment(cr, r.origin(), angle, m_length);
+    }
+
+    void draw_axis(cairo_t* cr, Point const& p1, Point const&  p2)
+    {
+        double d = distance(p1, p2);
+        d = d + d/4;
+        Point q1 = Ray(p1, p2).pointAt(d);
+        Point q2 = Ray(p2, p1).pointAt(d);
+        draw_segment(cr, q1, q2);
+    }
 
 public:
     CurveIntersect(unsigned int _A_bez_ord, unsigned int _B_bez_ord)
@@ -95,13 +132,14 @@ private:
     PointSetHandle pshA, pshB, pshC;
     std::vector< std::pair<double, double> > xs;
     double m_precision;
+    double m_width, m_height, m_length;
 };
 
 
 int main(int argc, char **argv)
 {
-    unsigned int A_bez_ord = 6;
-    unsigned int B_bez_ord = 8;
+    unsigned int A_bez_ord = 4;
+    unsigned int B_bez_ord = 6;
     if(argc > 1)
         sscanf(argv[1], "%d", &A_bez_ord);
     if(argc > 2)

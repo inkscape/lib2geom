@@ -19,6 +19,7 @@ box3d
 center-warp
 circle-fitting
 circle-intersect
+collinear-normal
 conic-3
 conic-4
 convex-toy

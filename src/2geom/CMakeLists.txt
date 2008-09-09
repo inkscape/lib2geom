@@ -37,7 +37,7 @@ ord.h
 #nearestpoint.cpp
 nearest-point.cpp
 nearest-point.h
-
+bezier-clipping.cpp
 bezier-curve.h
 circle.cpp
 circle.h
@@ -49,7 +49,8 @@ ellipse.h
 elliptical-arc.cpp
 elliptical-arc.h
 hvlinesegment.h
-intersection-by-bezier-clipping.cpp
+
+#intersection-by-bezier-clipping.cpp
 line.cpp
 line.h
 ray.h
