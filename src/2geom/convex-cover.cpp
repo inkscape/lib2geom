@@ -30,6 +30,7 @@
  */
 
 #include <2geom/convex-cover.h>
+#include <2geom/exception.h>
 #include <algorithm>
 #include <map>
 
@@ -291,6 +292,7 @@ proposed algorithm:  We must be very careful about rounding here.
 bool
 ConvexHull::no_colinear_points() const {
     // XXX: implement me!
+    THROW_NOTIMPLEMENTED();
 }
 
 bool
