@@ -52,6 +52,7 @@ pair-intersect
 parametrics
 parser
 path-along-path
+path-effects
 plane3d
 pw-funcs
 pw-toy
