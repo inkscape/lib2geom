@@ -35,6 +35,10 @@
  *   MenTaLguY <mental@rydia.net>
  */
 
+#ifndef _2GEOM_D2
+#include <2geom/d2.h>
+#endif
+
 #ifdef _2GEOM_D2  /*This is intentional: we don't actually want anyone to
                     include this, other than D2.h.  If somone else tries, D2
                     won't be defined.  If it is, this will already be included. */
