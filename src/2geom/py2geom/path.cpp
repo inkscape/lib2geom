@@ -92,11 +92,10 @@ struct CurveWrap : Geom::Curve, wrapper<Geom::Curve>
 
 void wrap_path()
 {
-    /*
     class_<CurveWrap, boost::noncopyable>("Curve")
         .def("initalPoint", pure_virtual(&Geom::Curve::initialPoint))
         .def("finalPoint", pure_virtual(&Geom::Curve::finalPoint))
-        .def("duplicate", pure_virtual(&Geom::Curve::duplicate))
+        .def("duplicate", pure_virtual(&Geom::Curve::duplicate), return_value_policy<manage_new_object>())
         .def("boundsFast", pure_virtual(&Geom::Curve::boundsFast))
         .def("boundsExact", pure_virtual(&Geom::Curve::boundsExact))
         //.def("pointAt", &Geom::Curve::pointAt, &CurveWrap::default_pointAt)
@@ -104,7 +103,6 @@ void wrap_path()
         .def("pointAndDerivatives", pure_virtual(&Geom::Curve::pointAndDerivatives))
         .def("toSBasis", pure_virtual(&Geom::Curve::toSBasis))
     ;
-    */
     class_<Geom::Path>("Path")
         .def("empty", &Geom::Path::empty)
         .def("closed", &Geom::Path::closed)
