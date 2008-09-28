@@ -32,6 +32,7 @@
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 
 #include "../curve.h"
+#include "../bezier-curve.h"
 #include "../path.h"
 #include "../pathvector.h"
 #include "../sbasis-to-bezier.h"
@@ -42,6 +43,21 @@
 #include "../d2.h"
 
 using namespace boost::python;
+
+Geom::Curve const &path_getitem(Geom::Path const& p, int index)
+{
+    unsigned size = p.size_default();
+    unsigned i = index;
+    if (index < 0)
+    {
+        i = index = size + index;
+    }
+    if ((index < 0) || (i > (size - 1))) {
+        PyErr_SetString(PyExc_IndexError, "index out of range");
+        boost::python::throw_error_already_set();
+    }
+    return p[i];
+}
 
 struct CurveWrap : Geom::Curve, wrapper<Geom::Curve>
 {
@@ -104,7 +120,17 @@ void wrap_path()
         .def("pointAndDerivatives", pure_virtual(&Geom::Curve::pointAndDerivatives))
         .def("toSBasis", pure_virtual(&Geom::Curve::toSBasis))
     ;
+    class_<Geom::LineSegment, bases<CurveWrap> >("LineSegment")
+        .def("points", &Geom::LineSegment::points)
+    ;
+    class_<Geom::QuadraticBezier, bases<CurveWrap> >("QuadraticBezier")
+        .def("points", &Geom::QuadraticBezier::points)
+    ;
+    class_<Geom::CubicBezier, bases<CurveWrap> >("CubicBezier")
+        .def("points", &Geom::CubicBezier::points)
+    ;
     class_<Geom::Path>("Path")
+        .def("__getitem__", path_getitem, return_value_policy<copy_const_reference>()) //or return_internal_reference see http://www.boost.org/doc/libs/1_36_0/libs/python/doc/v2/faq.html#question1
         .def("empty", &Geom::Path::empty)
         .def("closed", &Geom::Path::closed)
         .def("close", &Geom::Path::close)
