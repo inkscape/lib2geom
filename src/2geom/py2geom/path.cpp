@@ -34,6 +34,7 @@
 #include "../curve.h"
 #include "../path.h"
 #include "../pathvector.h"
+#include "../sbasis-to-bezier.h"
 #include "helpers.h"
 
 #include "../point.h"
@@ -141,6 +142,9 @@ void wrap_path()
     def("reverse_paths_and_order", Geom::reverse_paths_and_order);
     def("bounds_fast", (Geom::Rect (*)(Geom::PathVector const &))&Geom::bounds_fast);
     def("bounds_exact", (Geom::Rect (*)(Geom::PathVector const &))&Geom::bounds_exact);
+    def("path_from_piecewise", Geom::path_from_piecewise);
+    def("path_from_sbasis", Geom::path_from_sbasis);
+    def("cubicbezierpath_from_sbasis", Geom::cubicbezierpath_from_sbasis);
 }
 
 /*
