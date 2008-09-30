@@ -18,7 +18,6 @@
 #include <string>
 #include <map>
 #include <cairo-pdf.h>
-#include <2geom/sbasis.h>
 #include <2geom/point.h>
 #include <2geom/toys/interactive-bits.h>
 #include <2geom/geom.h>
@@ -35,8 +34,6 @@ using namespace Geom;
 
 static GtkWidget *canvas;
 
-
-Linear z0(0.5,1.);
 
 std::vector<Geom::Point*> handles;
 Geom::Point *selected_handle;
@@ -770,6 +767,7 @@ void draw_everything(cairo_t* cr, int /*width*/, int height) {
         fit f(paths[i]);
         f.schematised_merging();
         f.draw(cr);
+        cairo_stroke(cr);
         for(unsigned j = 0; j < paths[i].size(); j++) {
             draw_circ(cr, paths[i][j]);
         }
