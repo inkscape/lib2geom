@@ -706,7 +706,7 @@ Piecewise<T> derivative(Piecewise<T> const &a) {
 
 std::vector<double> roots(Piecewise<SBasis> const &f);
 
-std::vector<double> multi_roots(Piecewise<SBasis> const &f);
+std::vector<std::vector<double> >multi_roots(Piecewise<SBasis> const &f, std::vector<double> const &values);
 
 template<typename T>
 Piecewise<T> reverse(Piecewise<T> const &f) {

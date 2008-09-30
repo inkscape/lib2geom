@@ -166,7 +166,7 @@ std::vector<double> roots(Piecewise<SBasis> const &f){
     return result;
 }
 
-std::vector<std::vector<double> > multi_roots(Piecewise<SBasis> const &f, std::vector<double> values) {
+std::vector<std::vector<double> > multi_roots(Piecewise<SBasis> const &f, std::vector<double> const &values) {
     std::vector<std::vector<double> > result;
     for (unsigned i=0; i<values.size(); i++) result.push_back(std::vector<double>());
     for (unsigned i=0; i<f.size(); i++) {
