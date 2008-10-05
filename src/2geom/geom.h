@@ -1,5 +1,5 @@
 /**
- *  \file geom.h
+ *  \file
  *  \brief Various geometrical calculations
  *
  *  Authors:

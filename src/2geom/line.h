@@ -1,5 +1,6 @@
-/*
- * Infinite Straight Line
+/**
+ * \file
+ * \brief  Infinite Straight Line
  *
  * Copyright 2008  Marco Cecchetti <mrcekets at gmail.com>
  *

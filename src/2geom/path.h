@@ -1,5 +1,6 @@
-/*
- * Path - Series of continuous curves
+/**
+ * \file
+ * \brief  Path - Series of continuous curves
  *
  * Authors:
  * 		MenTaLguY <mental@rydia.net>

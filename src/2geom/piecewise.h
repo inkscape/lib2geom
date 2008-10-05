@@ -1,5 +1,6 @@
-/*
- * piecewise.h - Piecewise function class
+/**
+ * \file
+ * \brief Piecewise function class
  *
  * Copyright 2007 Michael Sloan <mgsloan@gmail.com>
  *

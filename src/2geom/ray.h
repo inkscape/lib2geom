@@ -1,5 +1,6 @@
-/*
- * Infinite Straight Ray
+/**
+ * \file
+ * \brief  Infinite Straight Ray
  *
  * Copyright 2008  Marco Cecchetti <mrcekets at gmail.com>
  *

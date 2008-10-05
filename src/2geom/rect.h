@@ -1,5 +1,6 @@
-/*
- * rect.h - D2<Interval> specialization to Rect
+/**
+ * \file
+ * \brief  D2<Interval> specialization to Rect
  *
  * Copyright 2007 Michael Sloan <mgsloan@gmail.com>
  *

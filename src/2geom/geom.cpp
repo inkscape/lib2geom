@@ -1,5 +1,5 @@
 /**
- *  \file src/geom.cpp
+ *  \file geom.cpp
  *  \brief Various geometrical calculations.
  */
 

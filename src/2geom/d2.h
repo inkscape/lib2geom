@@ -1,5 +1,6 @@
-/*
- * d2.h - Lifts one dimensional objects into 2d 
+/**
+ * \file
+ * \brief   Lifts one dimensional objects into 2d 
  *
  * Copyright 2007 Michael Sloan <mgsloan@gmail.com>
  *

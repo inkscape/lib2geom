@@ -4,7 +4,10 @@
 #include <2geom/piecewise.h>
 #include <vector>
 
-/** two-dimensional geometric operators.  
+/**
+ * \file
+ * \brief two-dimensional geometric operators.  
+ *
  * Copyright 2007, JFBarraud
  * Copyright 2007, njh
  * 
