@@ -9,6 +9,7 @@ path-cairo.h
 
 
 SET(2GEOM_TOYS-2_SRC
+sb2d-solver
 aa
 ineaa
 arc-bez

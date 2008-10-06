@@ -50,7 +50,12 @@ public:
         v 0,2
     */
     double a[4];
-    Linear2d() {}
+    Linear2d() {
+        a[0] = 0; 
+        a[1] = 0;
+        a[2] = 0; 
+        a[3] = 0; 
+    }
     Linear2d(double aa) {
         for(unsigned i = 0 ; i < 4; i ++) 
             a[i] = aa;
