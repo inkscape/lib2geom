@@ -1,4 +1,5 @@
 #include <2geom/sbasis.h>
+#include <2geom/sbasis-math.h>
 #include <2geom/sbasis-2d.h>
 #include <2geom/bezier-to-sbasis.h>
 
@@ -155,6 +156,22 @@ plot3d(cairo_t *cr, SBasis const &x, SBasis const &y, SBasis const &z, Frame fra
 }
 
 void
+plot3d(cairo_t *cr, 
+       Piecewise<SBasis> const &x, 
+       Piecewise<SBasis> const &y, 
+       Piecewise<SBasis> const &z, Frame frame){
+    
+    Piecewise<SBasis> xx = partition(x,y.cuts);
+    Piecewise<SBasis> xxx = partition(xx,z.cuts);
+    Piecewise<SBasis> yyy = partition(y,xxx.cuts);
+    Piecewise<SBasis> zzz = partition(z,xxx.cuts);
+    
+    for (unsigned i=0; i<xxx.size(); i++){
+        plot3d(cr, xxx[i], yyy[i], zzz[i], frame);
+    }
+}
+
+void
 plot3d(cairo_t *cr, SBasis2d const &f, Frame frame, int NbRays=5){
         for (int i=0; i<=NbRays; i++){
             D2<SBasis> seg(Linear(0,1),Linear(i*1./NbRays,i*1./NbRays));
@@ -231,18 +248,29 @@ public:
         cairo_set_source_rgba (cr, 0., 0.3, 0., 1.);
         cairo_stroke(cr);
         
-
-        SBasis2d f = y_x2();
-        D2<SBasis> true_solution(Linear(0,1),Linear(0,1));
-        true_solution[Y].push_back(Linear(-1,-1));
-        Geom::Point A = true_solution(tA);
-        Geom::Point B = true_solution(tB);
-
         Frame frame;
         frame.O = hand.pts[0];//
         frame.x = hand.pts[1]-hand.pts[0];//
         frame.y = hand.pts[2]-hand.pts[0];//
         frame.z = hand.pts[3]-hand.pts[0];// 
+
+/*
+        SBasis2d f = y_x2();
+        D2<SBasis> true_solution(Linear(0,1),Linear(0,1));
+        true_solution[Y].push_back(Linear(-1,-1));
+        SBasis zero = SBasis(Linear(0.));
+        Geom::Point A = true_solution(tA);
+        Geom::Point B = true_solution(tB);
+*/
+
+        SBasis2d f = x2_plus_y2_1();
+        D2<Piecewise<SBasis> > true_solution;
+        true_solution[X] = cos(SBasis(Linear(0,3.14/2)));
+        true_solution[Y] = sin(SBasis(Linear(0,3.14/2)));
+        Piecewise<SBasis> zero = Piecewise<SBasis>(SBasis(Linear(0.)));
+        Geom::Point A = true_solution(tA);
+        Geom::Point B = true_solution(tB);
+
 
         plot3d(cr,Linear(0,1),Linear(0,0),Linear(0,0),frame);
         plot3d(cr,Linear(0,1),Linear(1,1),Linear(0,0),frame);
@@ -256,9 +284,13 @@ public:
         cairo_set_line_width(cr,1);        
         cairo_set_source_rgba (cr, .5, 0.5, 0.5, 1.);
         cairo_stroke(cr);
+        plot3d(cr,f,frame);
+        cairo_set_line_width(cr,.2);        
+        cairo_set_source_rgba (cr, .5, 0.5, 0.5, 1.);
+        cairo_stroke(cr);
 
-        plot3d(cr, true_solution[X], true_solution[Y], SBasis(Linear(0.)),frame);
-        cairo_set_line_width(cr,.2);
+        plot3d(cr, true_solution[X], true_solution[Y], zero, frame);
+        cairo_set_line_width(cr,.5);
         cairo_set_source_rgba (cr, 0., 0., 0., 1.);
         cairo_stroke(cr);
 
