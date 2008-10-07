@@ -30,7 +30,7 @@ v_coef(SBasis2d f, unsigned deg, SBasis &a, SBasis &b) {
     }
 }
 
-SBasis2d u_derivative(SBasis2d const &f) {
+SBasis2d dim_derivative(SBasis2d const &f, int dim) {
     SBasis2d result;
     for(unsigned i = 0; i < f.size(); i++) {
         result.push_back(Linear2d(0,0,0,0));
@@ -41,38 +41,16 @@ SBasis2d u_derivative(SBasis2d const &f) {
     for(unsigned i = 0; i < f.us; i++) {
         for(unsigned j = 0; j < f.vs; j++) {
             Linear2d lin = f.index(i,j);
-            Linear2d dlin(lin[1]-lin[0], lin[1]-lin[0], lin[3]-lin[2], lin[3]-lin[2]);
+            Linear2d dlin(lin[1+dim]-lin[0], lin[1+2*dim]-lin[dim], lin[3-dim]-lin[2*(1-dim)], lin[3]-lin[2-dim]);
             result[i+j*result.us] += dlin;
-            if (i>=1){
-                Linear2d ds_lin_low( lin[0], -lin[1], lin[2], -lin[3] );
-                result[(i-1)+j*result.us] += i*ds_lin_low;
-
-                Linear2d ds_lin_hi( lin[1]-lin[0], lin[1]-lin[0], lin[3]-lin[2], lin[3]-lin[2] );
-                result[i+j*result.us] += i*ds_lin_hi;                
-            }
-        }
-    }
-    return result;
-}
-SBasis2d v_derivative(SBasis2d const &f) {
-    SBasis2d result;
-    for(unsigned i = 0; i < f.size(); i++) {
-        result.push_back(Linear2d(0,0,0,0));
-    }
-    result.us = f.us;
-    result.vs = f.vs;
-
-    for(unsigned i = 0; i < f.us; i++) {
-        for(unsigned j = 0; j < f.vs; j++) {
-            Linear2d lin = f.index(i,j);
-            Linear2d dlin(lin[2]-lin[0], lin[3]-lin[1], lin[2]-lin[0], lin[3]-lin[1]);
-            result[i+j*result.us] += dlin;
-            if (j>=1){
-                Linear2d ds_lin_low( lin[0], lin[1], -lin[2], -lin[3] );
-                result[i+(j-1)*result.us] += j*ds_lin_low;
-
-                Linear2d ds_lin_hi( lin[2]-lin[0], lin[3]-lin[1], lin[2]-lin[0], lin[3]-lin[1] );
-                result[i+j*result.us] += j*ds_lin_hi;                
+            unsigned di = dim?j:i;
+            if (di>=1){
+                float motpi = dim?-1:1;
+                Linear2d ds_lin_low( lin[0], -motpi*lin[1], motpi*lin[2], -lin[3] );
+                result[(i+dim-1)+(j-dim)*result.us] += di*ds_lin_low;
+                
+                Linear2d ds_lin_hi( lin[1+dim]-lin[0], lin[1+2*dim]-lin[dim], lin[3]-lin[2-dim], lin[3-dim]-lin[2-dim] );
+                result[i+j*result.us] += di*ds_lin_hi;                
             }
         }
     }
@@ -80,22 +58,23 @@ SBasis2d v_derivative(SBasis2d const &f) {
 }
 
 D2<SBasis>
-sb2dsolve(SBasis2d const &f, Geom::Point const &A, Geom::Point const &B, unsigned degmax=3){
+sb2dsolve(SBasis2d const &f, Geom::Point const &A, Geom::Point const &B, unsigned degmax=2){
     D2<SBasis>result(Linear(A[X],B[X]),Linear(A[Y],B[Y]));
     g_warning("check f(A)= %f = f(B) = %f =0!", f.apply(A[X],A[Y]), f.apply(B[X],B[Y]));
 
-    SBasis2d dfdu = u_derivative(f);
-    SBasis2d dfdv = v_derivative(f);
+    SBasis2d dfdu = dim_derivative(f, 0);
+    SBasis2d dfdv = dim_derivative(f, 1);
     Geom::Point dfA(dfdu.apply(A[X],A[Y]),dfdv.apply(A[X],A[Y]));
     Geom::Point dfB(dfdu.apply(B[X],B[Y]),dfdv.apply(B[X],B[Y]));
     Geom::Point nA = dfA/(dfA[X]*dfA[X]+dfA[Y]*dfA[Y]);
     Geom::Point nB = dfB/(dfB[X]*dfB[X]+dfB[Y]*dfB[Y]);
 
     double fact_k=1;
-    double sign = -1.;
+    double sign = 1.;
     for(unsigned k=1; k<degmax; k++){
-        fact_k *= k;
-        sign = -sign;
+        // these two lines make the solutions worse!
+        //fact_k *= k;
+        //sign = -sign;
         SBasis f_on_curve = compose(f,result);
         Linear reste = f_on_curve[k];
         double ax = -reste[0]/fact_k*nA[X];
@@ -105,6 +84,7 @@ sb2dsolve(SBasis2d const &f, Geom::Point const &A, Geom::Point const &B, unsigne
 
         result[X].push_back(Linear(ax,bx));
         result[Y].push_back(Linear(ay,by));
+        //sign *= 3;
     }    
     return result;
 }
@@ -293,21 +273,22 @@ public:
         cairo_set_line_width(cr,.5);
         cairo_set_source_rgba (cr, 0., 0., 0., 1.);
         cairo_stroke(cr);
-
-        D2<SBasis> zeroset = sb2dsolve(f,A,B);
-        plot3d(cr, zeroset[X], zeroset[Y], SBasis(Linear(0.)),frame);
-        cairo_set_line_width(cr,1);        
-        cairo_set_source_rgba (cr, 0.9, 0., 0., 1.);
-        cairo_stroke(cr);
-
-        SBasis comp = compose(f,zeroset);
-        plot3d(cr, zeroset[X], zeroset[Y], comp, frame);
-        cairo_set_source_rgba (cr, 0.7, 0., 0.7, 1.);
-        cairo_stroke(cr);
-        
-        //Fix Me: bounds_exact does not work here?!?!
-        Interval bounds = bounds_fast(comp);
-        double error = (bounds.max()>-bounds.min() ? bounds.max() : -bounds.min() );
+        double error;
+        for(int degree = 1; degree < 4; degree++) {
+            D2<SBasis> zeroset = sb2dsolve(f,A,B,degree);
+            plot3d(cr, zeroset[X], zeroset[Y], SBasis(Linear(0.)),frame);
+            cairo_set_line_width(cr,1);        
+            cairo_set_source_rgba (cr, 0.9, 0., 0., 1.);
+            cairo_stroke(cr);
+            
+            SBasis comp = compose(f,zeroset);
+            plot3d(cr, zeroset[X], zeroset[Y], comp, frame);
+            cairo_set_source_rgba (cr, 0.7, 0., 0.7, 1.);
+            cairo_stroke(cr);
+            //Fix Me: bounds_exact does not work here?!?!
+            Interval bounds = bounds_fast(comp);
+            error = (bounds.max()>-bounds.min() ? bounds.max() : -bounds.min() );
+        }
         *notify << "Gray: f-graph and true solution,\n";
         *notify << "Red: solver solution,\n";
         *notify << "Purple: value of f over solver solution.\n";
