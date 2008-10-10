@@ -202,6 +202,7 @@ public:
     public:
         SBasis2d * ff;
         Point A, B;
+        Point dA, dB;
     };
     static double
     my_f (const gsl_vector *v, void *params)
@@ -211,8 +212,8 @@ public:
        
         x = gsl_vector_get(v, 0);
         y = gsl_vector_get(v, 1);
-        Bezier b0(bnb->B[0], x, bnb->A[0], bnb->A[0]);
-        Bezier b1(bnb->B[1], bnb->B[1], y, bnb->A[1]);
+        Bezier b0(bnb->B[0], bnb->B[0]+bnb->dB[0]*x, bnb->A[0]+bnb->dA[0]*y, bnb->A[0]);
+        Bezier b1(bnb->B[1], bnb->B[1]+bnb->dB[1]*x, bnb->A[1]+bnb->dA[1]*y, bnb->A[1]);
             
         D2<SBasis> zeroset(b0.toSBasis(), b1.toSBasis());
             
@@ -279,7 +280,14 @@ public:
         Piecewise<SBasis> zero = Piecewise<SBasis>(SBasis(Linear(0.)));
         Geom::Point A(cos(tA*M_PI/2), sin(tA*M_PI/2));// = true_solution(tA);
         Geom::Point B(cos(tB*M_PI/2), sin(tB*M_PI/2));// = true_solution(tB);
-
+        Point dA(-sin(tA*M_PI/2), cos(tA*M_PI/2));
+        Geom::Point dB(-sin(tB*M_PI/2), cos(tB*M_PI/2));
+        SBasis2d dfdu = dim_derivative(f, 0);
+        SBasis2d dfdv = dim_derivative(f, 1);
+        Geom::Point dfA(dfdu.apply(A[X],A[Y]),dfdv.apply(A[X],A[Y]));
+        Geom::Point dfB(dfdu.apply(B[X],B[Y]),dfdv.apply(B[X],B[Y]));
+        dA = rot90(dfA);
+        dB = rot90(dfB);
 
         plot3d(cr,Linear(0,1),Linear(0,0),Linear(0,0),frame);
         plot3d(cr,Linear(0,1),Linear(1,1),Linear(0,0),frame);
@@ -320,7 +328,8 @@ public:
         }
         if (1) {
 
-            bits_n_bobs par = {&f, A, B};
+            bits_n_bobs par = {&f, A, B, dA, dB};
+            bits_n_bobs* bnb = &par;
             std::cout << f[0] << "= intial f \n";
             const gsl_multimin_fminimizer_type *T = 
                 gsl_multimin_fminimizer_nmsimplex;
@@ -365,16 +374,18 @@ public:
                     printf ("converged to minimum at\n");
                 }
      
-                printf ("%5d %10.3e %10.3ef f() = %7.3f size = %.3f\n", 
-                        iter,
-                        gsl_vector_get (s->x, 0), 
-                        gsl_vector_get (s->x, 1), 
-                        s->fval, size);
             }
             while (status == GSL_CONTINUE && iter < 100);
+            printf ("%5d %10.3e %10.3ef f() = %7.3f size = %g\n", 
+                    iter,
+                    gsl_vector_get (s->x, 0), 
+                    gsl_vector_get (s->x, 1), 
+                    s->fval, size);
             {
-                Bezier b0(B[0], gsl_vector_get(s->x, 0), A[0], A[0]);
-                Bezier b1(B[1], B[1], gsl_vector_get(s->x, 1), A[1]);
+                double x = gsl_vector_get(s->x, 0);
+                double y = gsl_vector_get(s->x, 1);
+                Bezier b0(bnb->B[0], bnb->B[0]+bnb->dB[0]*x, bnb->A[0]+bnb->dA[0]*y, bnb->A[0]);
+                Bezier b1(bnb->B[1], bnb->B[1]+bnb->dB[1]*x, bnb->A[1]+bnb->dA[1]*y, bnb->A[1]);
             
                 D2<SBasis> zeroset(b0.toSBasis(), b1.toSBasis());
                 plot3d(cr, zeroset[X], zeroset[Y], SBasis(Linear(0.)),frame);
