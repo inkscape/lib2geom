@@ -248,6 +248,19 @@ D2<T> operator*(D2<T> const &v, Matrix const &m) {
     return ret;
 }
 
+//IMPL: MultiplicableConcept
+template <typename T>
+inline D2<T>
+operator*(D2<T> const & a, T const & b) {
+    boost::function_requires<MultiplicableConcept<T> >();
+    D2<T> ret;
+    for(unsigned i = 0; i < 2; i++)
+        ret[i] = a[i] * b;
+    return ret;
+}
+
+//IMPL: 
+
 //IMPL: OffsetableConcept
 template <typename T>
 inline D2<T>
