@@ -49,19 +49,22 @@ static vector<double>  solve_poly (double a[],unsigned deg){
 // or
 //    value, speed, and cross(acceleration,speed) 
 // of the original curve at the both ends.
-static D2<SBasis> cubic_fitting_curvature(Point const &M0,   Point const &M1,
-                                          Point const &dM0,  Point const &dM1,
-                                          double d2M0xdM0,  double d2M1xdM1){
-    D2<SBasis> result;
+static std::vector<D2<SBasis> >
+cubics_fitting_curvature(Point const &M0,   Point const &M1,
+                         Point const &dM0,  Point const &dM1,
+                         double d2M0xdM0,  double d2M1xdM1,
+                         int insist_on_speed_signs = 1){
+    std::vector<D2<SBasis> > result;
 
     //speed of cubic bezier will be lambda0*dM0 and lambda1*dM1,
     //with lambda0 and lambda1 s.t. curvature at both ends is the same
     //as the curvature of the given curve.
-    double lambda0,lambda1;
+    std::vector<double> lambda0,lambda1;
     double dM1xdM0=cross(dM1,dM0);
     if (fabs(dM1xdM0)<ZERO){
-        lambda0 = sqrt( 6*cross(M1-M0,dM0)/d2M0xdM0);
-        lambda1 = sqrt(-6*cross(M1-M0,dM1)/d2M1xdM1);
+        //TODO: if d2M0xdM0==0 or d2M1xdM1==0: no solution!
+        lambda0.push_back(sqrt( 6*cross(M1-M0,dM0)/d2M0xdM0) );
+        lambda1.push_back(sqrt(-6*cross(M1-M0,dM1)/d2M1xdM1) );
     }else{
         //solve:  lambda1 = a0 lambda0^2 + c0
         //        lambda0 = a1 lambda1^2 + c1
@@ -71,12 +74,12 @@ static D2<SBasis> cubic_fitting_curvature(Point const &M0,   Point const &M1,
         a1 = -d2M1xdM1/2/dM1xdM0;
         c1 = -3*cross(M1-M0,dM1)/dM1xdM0;
 
-        if (fabs(a0)<ZERO){
-            lambda1=c0;
-            lambda0= a1*lambda1*lambda1 + c1;
+        if (fabs(a0)<ZERO){//TODO: if !insist_on_speed_signs, more sols to collect!
+            lambda1.push_back( c0 );
+            lambda0.push_back( a1*c0*c0 + c1 );
         }else if (fabs(a1)<ZERO){
-            lambda0=c1;
-            lambda1= a0*lambda0*lambda0 + c0;
+            lambda0.push_back( c1 );
+            lambda1.push_back( a0*c1*c1 + c0 );
         }else{
             //find lamda0 by solving a deg 4 equation d0+d1*X+...+d4*X^4=0
             double a[5];
@@ -86,44 +89,54 @@ static D2<SBasis> cubic_fitting_curvature(Point const &M0,   Point const &M1,
             a[3] = 0;
             a[4] = a1*a0*a0;
             vector<double> solns=solve_poly(a,4);
-            g_warning("found %u solutions.",solns.size());
-            lambda0=lambda1=0;
             for (unsigned i=0;i<solns.size();i++){
                 double lbda0=solns[i];
                 double lbda1=c0+a0*lbda0*lbda0;
-                g_warning("lamda0 = %f,  lamda1 = %f", lbda0,lbda1);
                 //only keep solutions pointing in the same direction...
                 if (lbda0>=0. && lbda1>=0.){
-                    lambda0=lbda0;
-                    lambda1=lbda1;
+                    lambda0.push_back( lbda0);
+                    lambda1.push_back( lbda1);
+                }
+                else if (lbda0<=0. && lbda1<=0. && insist_on_speed_signs<=0){
+                    lambda0.push_back( lbda0);
+                    lambda1.push_back( lbda1);
+                }
+                else if (insist_on_speed_signs<0){
+                    lambda0.push_back( lbda0);
+                    lambda1.push_back( lbda1);
                 }
             }
         }
     }
     
-    Point V0 = lambda0*dM0;
-    Point V1 = lambda1*dM1;
-    for(unsigned dim=0;dim<2;dim++){
-        result[dim] = Linear(M0[dim],M1[dim]);
-        result[dim].push_back(Linear( M0[dim]-M1[dim]+V0[dim],
-                                     -M0[dim]+M1[dim]-V1[dim]));
+    for (unsigned i=0; i<lambda0.size(); i++){
+        Point V0 = lambda0[i]*dM0;
+        Point V1 = lambda1[i]*dM1;
+        D2<SBasis> cubic;
+        for(unsigned dim=0;dim<2;dim++){
+            cubic[dim] = Linear(M0[dim],M1[dim]);
+            cubic[dim].push_back(Linear( M0[dim]-M1[dim]+V0[dim],
+                                         -M0[dim]+M1[dim]-V1[dim]));
+        }
+#if 0
+           Piecewise<SBasis> k = curvature(result);
+           double dM0_l = dM0.length();
+           double dM1_l = dM1.length();
+           g_warning("Target radii: %f, %f", dM0_l*dM0_l*dM0_l/d2M0xdM0,dM1_l*dM1_l*dM1_l/d2M1xdM1);
+           g_warning("Obtained radii: %f, %f",1/k.valueAt(0),1/k.valueAt(1));
+#endif
+        result.push_back(cubic);
     }
-
-    /* test result: */
-    Piecewise<SBasis> k = curvature(result);
-    double dM0_l = dM0.length();
-    double dM1_l = dM1.length();
-    g_warning("Target radii: %f, %f", dM0_l*dM0_l*dM0_l/d2M0xdM0,dM1_l*dM1_l*dM1_l/d2M1xdM1);
-    g_warning("Obtained radii: %f, %f",1/k.valueAt(0),1/k.valueAt(1));
-    
     return(result);
 }
-static D2<SBasis> cubic_fitting_curvature(Point const &M0,   Point const &M1,
-                                          Point const &dM0,  Point const &dM1,
-                                          Point const &d2M0, Point const &d2M1){
+static std::vector<D2<SBasis> >
+cubics_fitting_curvature(Point const &M0,   Point const &M1,
+                        Point const &dM0,  Point const &dM1,
+                        Point const &d2M0, Point const &d2M1,
+                        int insist_on_speed_signs = 1){
     double d2M0xdM0 = cross(d2M0,dM0);
     double d2M1xdM1 = cross(d2M1,dM1);
-    return cubic_fitting_curvature(M0,M1,dM0,dM1,d2M0xdM0,d2M1xdM1);
+    return cubics_fitting_curvature(M0,M1,dM0,dM1,d2M0xdM0,d2M1xdM1,insist_on_speed_signs);
 }
 
 
@@ -234,8 +247,22 @@ sb2d_cubic_solve(SBasis2d const &f, Geom::Point const &A, Geom::Point const &B){
                   2*f_uv.apply(B[X],B[Y])*V1[X]*V1[Y]+
                     f_vv.apply(B[X],B[Y])*V1[Y]*V1[Y];
 
-    result = cubic_fitting_curvature(A,B,V0,V1,D2fVV0,D2fVV1);
-    return result;
+    std::vector<D2<SBasis> > candidates = cubics_fitting_curvature(A,B,V0,V1,D2fVV0,D2fVV1);
+    if (candidates.size()==0) {
+        return D2<SBasis>(Linear(A[X],B[X]),Linear(A[Y],B[Y]));
+    }
+    //TODO: I'm sure std algorithm could do that for me...
+    double error = -1;
+    unsigned best = 0;
+    for (unsigned i=0; i<candidates.size(); i++){
+        Interval bounds = bounds_fast(compose(f,candidates[i]));
+        double new_error = (fabs(bounds.max())>fabs(bounds.min()) ? fabs(bounds.max()) : fabs(bounds.min()) );
+        if ( new_error < error || error < 0 ){
+            error = new_error;
+            best = i;
+        }
+    }
+    return candidates[best];
 }
 
 
