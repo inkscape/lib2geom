@@ -127,11 +127,11 @@ cubics_fitting_curvature(Point const &M0,   Point const &M1,
                                          -M0[dim]+M1[dim]-V1[dim]));
         }
 #if 0
-           Piecewise<SBasis> k = curvature(result);
-           double dM0_l = dM0.length();
-           double dM1_l = dM1.length();
-           g_warning("Target radii: %f, %f", dM0_l*dM0_l*dM0_l/d2M0xdM0,dM1_l*dM1_l*dM1_l/d2M1xdM1);
-           g_warning("Obtained radii: %f, %f",1/k.valueAt(0),1/k.valueAt(1));
+        Piecewise<SBasis> k = curvature(result);
+        double dM0_l = dM0.length();
+        double dM1_l = dM1.length();
+        g_warning("Target radii: %f, %f", dM0_l*dM0_l*dM0_l/d2M0xdM0,dM1_l*dM1_l*dM1_l/d2M1xdM1);
+        g_warning("Obtained radii: %f, %f",1/k.valueAt(0),1/k.valueAt(1));
 #endif
         result.push_back(cubic);
     }
@@ -139,9 +139,9 @@ cubics_fitting_curvature(Point const &M0,   Point const &M1,
 }
 static std::vector<D2<SBasis> >
 cubics_fitting_curvature(Point const &M0,   Point const &M1,
-                        Point const &dM0,  Point const &dM1,
-                        Point const &d2M0, Point const &d2M1,
-                        int insist_on_speed_signs = 1){
+                         Point const &dM0,  Point const &dM1,
+                         Point const &d2M0, Point const &d2M1,
+                         int insist_on_speed_signs = 1){
     double d2M0xdM0 = cross(d2M0,dM0);
     double d2M1xdM1 = cross(d2M1,dM1);
     return cubics_fitting_curvature(M0,M1,dM0,dM1,d2M0xdM0,d2M1xdM1,insist_on_speed_signs);
@@ -159,62 +159,59 @@ class CurvatureTester: public Toy {
         cairo_set_source_rgba (cr, 0., 0.5, 0., 1);
 
 	for(int i = 0; i < 2; i++) {
-	  Geom::Point center=curve_handle.pts[1+i];
-	  Geom::Point normal=center- curve_handle.pts[3*i];
-	  double radius = Geom::L2(normal);
-	  *notify<<"K="<<radius<<std::endl;
-	  if (fabs(radius)>1e-4){
+            Geom::Point center=curve_handle.pts[1+i];
+            Geom::Point normal=center- curve_handle.pts[3*i];
+            double radius = Geom::L2(normal);
+            *notify<<"K="<<radius<<std::endl;
+            if (fabs(radius)>1e-4){
 	    
-	    cairo_arc(cr, center[0], center[1],fabs(radius), 0, M_PI*2);
-	    draw_handle(cr, center);
-	  }else{
-	  }
-	  cairo_set_source_rgba (cr, 0.5, 0.2, 0., 0.8);
-	  cairo_stroke(cr);
+                cairo_arc(cr, center[0], center[1],fabs(radius), 0, M_PI*2);
+                draw_handle(cr, center);
+            }else{
+            }
+            cairo_set_source_rgba (cr, 0.5, 0.2, 0., 0.8);
+            cairo_stroke(cr);
 	}
 	if (1) {
-	  Geom::Point A = curve_handle.pts[0];
-	  Geom::Point B = curve_handle.pts[3];
-	  Geom::Point dA = curve_handle.pts[1]-A;
-	  Geom::Point dB = B-curve_handle.pts[2];
-	  std::vector<D2<SBasis> > candidates = 
-	    cubics_fitting_curvature(curve_handle.pts[0],curve_handle.pts[3],
-				     rot90(dA),
-				     rot90(dB),
-				     -L2sq(dA), L2sq(dB));
+            Geom::Point A = curve_handle.pts[0];
+            Geom::Point B = curve_handle.pts[3];
+            Geom::Point dA = curve_handle.pts[1]-A;
+            Geom::Point dB = B-curve_handle.pts[2];
+            std::vector<D2<SBasis> > candidates = 
+                cubics_fitting_curvature(curve_handle.pts[0],curve_handle.pts[3],
+                                         rot90(dA),
+                                         rot90(dB),
+                                         -L2sq(dA), L2sq(dB));
 	  
-	  for (unsigned i=0; i<candidates.size(); i++){
-	    cairo_md_sb(cr, candidates[i]);
-	    cairo_stroke(cr);
-	  }
-	  if (0) {
-	  if (candidates.size()==0) {
-	    D2<SBasis>(Linear(A[X],B[X]),Linear(A[Y],B[Y]));
-	  }
-	  //TODO: I'm sure std algorithm could do that for me...
-	  double error = -1;
-	  unsigned best = 0;
-	  for (unsigned i=0; i<candidates.size(); i++){
-	    double l = length(candidates[i]);
+            if (candidates.size()==0) {
+                cairo_md_sb(cr,  D2<SBasis>(Linear(A[X],B[X]),Linear(A[Y],B[Y])));
+                cairo_stroke(cr);
+            } else {
+                //TODO: I'm sure std algorithm could do that for me...
+                double error = -1;
+                unsigned best = 0;
+                for (unsigned i=0; i<candidates.size(); i++){
+                    double l = length(candidates[i]);
 	  
-	    if ( l < error || error < 0 ){
-	      error = l;
-	      best = i;
-	    }
-	  }
-	  //candidates[best];
-	  }
-	}
+                    if ( l < error || error < 0 ){
+                        error = l;
+                        best = i;
+                    }
+                }
+                cairo_md_sb(cr, candidates[best]);
+                cairo_stroke(cr);
+            }
+        }
         Toy::draw(cr, notify, width, height, save);
     }        
   
-  void canvas_click(Geom::Point at, int button) {
-    std::cout << "clicked at:" << at << " with button " << button << std::endl;
-    if(button == 1) {
-      curve_handle.push_back(at+Point(100,100));
-      curve_handle.push_back(at);
+    void canvas_click(Geom::Point at, int button) {
+        std::cout << "clicked at:" << at << " with button " << button << std::endl;
+        if(button == 1) {
+            curve_handle.push_back(at+Point(100,100));
+            curve_handle.push_back(at);
+        }
     }
-  }
 
 public:
     CurvatureTester(){
