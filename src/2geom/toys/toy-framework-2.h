@@ -167,6 +167,7 @@ public:
     Geom::Point old_mouse_point;
     Handle* selected;
     void* hit_data;
+    int canvas_click_button;
     double notify_offset;
     std::string name;
 
@@ -179,6 +180,7 @@ public:
     virtual void mouse_moved(GdkEventMotion* e);
     virtual void mouse_pressed(GdkEventButton* e);
     virtual void mouse_released(GdkEventButton* e);
+    virtual void canvas_click(Geom::Point at, int button);
     virtual void scroll(GdkEventScroll* e);
 
     virtual void key_hit(GdkEventKey */*e*/) {}

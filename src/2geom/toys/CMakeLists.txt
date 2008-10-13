@@ -84,6 +84,7 @@ sb1d
 sb2d
 sweep
 root-finder-comparer
+curvature-curve
 )
 
 

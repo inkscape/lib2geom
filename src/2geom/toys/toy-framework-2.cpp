@@ -108,6 +108,7 @@ void Toy::mouse_pressed(GdkEventButton* e) {
     Geom::Point mouse(e->x, e->y);
     selected = NULL;
     hit_data = NULL;
+    canvas_click_button = e->button;
     if(e->button == 1) {
         for(unsigned i = 0; i < handles.size(); i++) {
     	    void * hit = handles[i]->hit(mouse);
@@ -125,7 +126,16 @@ void Toy::mouse_pressed(GdkEventButton* e) {
 void Toy::scroll(GdkEventScroll* /*e*/) {
 }
 
+void Toy::canvas_click(Geom::Point at, int button) {
+
+}
+
 void Toy::mouse_released(GdkEventButton* e) {
+    if(selected == NULL) {
+        Geom::Point mouse(e->x, e->y);
+        canvas_click(mouse, canvas_click_button);
+        canvas_click_button = 0;
+    }
     selected = NULL;
     hit_data = NULL;
     if(e->button == 1)
