@@ -180,8 +180,8 @@ class CurvatureTester: public Toy {
 	  std::vector<D2<SBasis> > candidates = 
 	    cubics_fitting_curvature(curve_handle.pts[0],curve_handle.pts[3],
 				     rot90(dA),
-				     -rot90(dB),
-				     1/L2(dA), 1/L2(dB));
+				     rot90(dB),
+				     -L2sq(dA), L2sq(dB));
 	  
 	  for (unsigned i=0; i<candidates.size(); i++){
 	    cairo_md_sb(cr, candidates[i]);
