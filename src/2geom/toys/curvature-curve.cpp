@@ -12,141 +12,6 @@ using std::vector;
 using namespace Geom;
 using namespace std;
 
-
-// TODO: 
-
-#include <gsl/gsl_poly.h>
-
-using std::vector;
-using namespace Geom;
-
-#define ZERO 1e-4
-
-//==================================================================
-static vector<double>  solve_poly (double a[],unsigned deg){
-    double tol=1e-7;
-    vector<double> result;
-    int i;
-    i=deg;
-    while( i>=0 && fabs(a[i])<tol ) i--;
-    deg=i;
-    
-    double z[2*deg];
-    gsl_poly_complex_workspace * w 
-        = gsl_poly_complex_workspace_alloc (deg+1);
-    gsl_poly_complex_solve (a, deg+1, w, z);
-    gsl_poly_complex_workspace_free (w);
-    
-    //collect real solutions.
-    for (unsigned i = 0; i < deg; i++){
-        if (fabs(z[2*i+1])<tol){
-            result.push_back(z[2*i]);
-        }
-    }
-    return result;
-}
-
-
-//TODO: handle multiple solutions/non existence/0 division cases
-//TODO: clean up, then move this into 2Geom core.
-//
-//returns the cubic fitting direction and curvatrue of a given
-// input curve at two points.
-// The input can be the 
-//    value, speed, and acceleration
-// or
-//    value, speed, and cross(acceleration,speed) 
-// of the original curve at the both ends.
-static std::vector<D2<SBasis> >
-cubics_fitting_curvature(Point const &M0,   Point const &M1,
-                         Point const &dM0,  Point const &dM1,
-                         double d2M0xdM0,  double d2M1xdM1,
-                         int insist_on_speed_signs = 1){
-    std::vector<D2<SBasis> > result;
-
-    //speed of cubic bezier will be lambda0*dM0 and lambda1*dM1,
-    //with lambda0 and lambda1 s.t. curvature at both ends is the same
-    //as the curvature of the given curve.
-    std::vector<double> lambda0,lambda1;
-    double dM1xdM0=cross(dM1,dM0);
-    if (fabs(dM1xdM0)<ZERO){
-        //TODO: if d2M0xdM0==0 or d2M1xdM1==0: no solution!
-        lambda0.push_back(sqrt( 6*cross(M1-M0,dM0)/d2M0xdM0) );
-        lambda1.push_back(sqrt(-6*cross(M1-M0,dM1)/d2M1xdM1) );
-    }else{
-        //solve:  lambda1 = a0 lambda0^2 + c0
-        //        lambda0 = a1 lambda1^2 + c1
-        double a0,c0,a1,c1;
-        a0 = -d2M0xdM0/2/dM1xdM0;
-        c0 =  3*cross(M1-M0,dM0)/dM1xdM0;
-        a1 = -d2M1xdM1/2/dM1xdM0;
-        c1 = -3*cross(M1-M0,dM1)/dM1xdM0;
-
-        if (fabs(a0)<ZERO){//TODO: if !insist_on_speed_signs, more sols to collect!
-            lambda1.push_back( c0 );
-            lambda0.push_back( a1*c0*c0 + c1 );
-        }else if (fabs(a1)<ZERO){
-            lambda0.push_back( c1 );
-            lambda1.push_back( a0*c1*c1 + c0 );
-        }else{
-            //find lamda0 by solving a deg 4 equation d0+d1*X+...+d4*X^4=0
-            double a[5];
-            a[0] = c1+a1*c0*c0;
-            a[1] = -1;
-            a[2] = 2*a1*a0*c0;
-            a[3] = 0;
-            a[4] = a1*a0*a0;
-            vector<double> solns=solve_poly(a,4);
-            for (unsigned i=0;i<solns.size();i++){
-                double lbda0=solns[i];
-                double lbda1=c0+a0*lbda0*lbda0;
-                //only keep solutions pointing in the same direction...
-                if (lbda0>=0. && lbda1>=0.){
-                    lambda0.push_back( lbda0);
-                    lambda1.push_back( lbda1);
-                }
-                else if (lbda0<=0. && lbda1<=0. && insist_on_speed_signs<=0){
-                    lambda0.push_back( lbda0);
-                    lambda1.push_back( lbda1);
-                }
-                else if (insist_on_speed_signs<0){
-                    lambda0.push_back( lbda0);
-                    lambda1.push_back( lbda1);
-                }
-            }
-        }
-    }
-    
-    for (unsigned i=0; i<lambda0.size(); i++){
-        Point V0 = lambda0[i]*dM0;
-        Point V1 = lambda1[i]*dM1;
-        D2<SBasis> cubic;
-        for(unsigned dim=0;dim<2;dim++){
-            cubic[dim] = Linear(M0[dim],M1[dim]);
-            cubic[dim].push_back(Linear( M0[dim]-M1[dim]+V0[dim],
-                                         -M0[dim]+M1[dim]-V1[dim]));
-        }
-#if 0
-        Piecewise<SBasis> k = curvature(result);
-        double dM0_l = dM0.length();
-        double dM1_l = dM1.length();
-        g_warning("Target radii: %f, %f", dM0_l*dM0_l*dM0_l/d2M0xdM0,dM1_l*dM1_l*dM1_l/d2M1xdM1);
-        g_warning("Obtained radii: %f, %f",1/k.valueAt(0),1/k.valueAt(1));
-#endif
-        result.push_back(cubic);
-    }
-    return(result);
-}
-static std::vector<D2<SBasis> >
-cubics_fitting_curvature(Point const &M0,   Point const &M1,
-                         Point const &dM0,  Point const &dM1,
-                         Point const &d2M0, Point const &d2M1,
-                         int insist_on_speed_signs = 1){
-    double d2M0xdM0 = cross(d2M0,dM0);
-    double d2M1xdM1 = cross(d2M1,dM1);
-    return cubics_fitting_curvature(M0,M1,dM0,dM1,d2M0xdM0,d2M1xdM1,insist_on_speed_signs);
-}
-
 //-----------------------------------------------
 
 class CurvatureTester: public Toy {
@@ -191,6 +56,8 @@ class CurvatureTester: public Toy {
                 double error = -1;
                 unsigned best = 0;
                 for (unsigned i=0; i<candidates.size(); i++){
+
+                    cairo_md_sb(cr, candidates[i]);
                     double l = length(candidates[i]);
 	  
                     if ( l < error || error < 0 ){
