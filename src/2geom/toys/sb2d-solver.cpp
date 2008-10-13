@@ -1,4 +1,5 @@
 #include <2geom/sbasis.h>
+#include <2geom/sbasis-geometric.h>
 #include <2geom/sbasis-math.h>
 #include <2geom/sbasis-2d.h>
 #include <2geom/bezier-to-sbasis.h>
@@ -6,8 +7,126 @@
 #include <2geom/toys/path-cairo.h>
 #include <2geom/toys/toy-framework-2.h>
 
+#include <gsl/gsl_poly.h>
+
 using std::vector;
 using namespace Geom;
+
+#define ZERO 1e-4
+
+//==================================================================
+static vector<double>  solve_poly (double a[],unsigned deg){
+    double tol=1e-7;
+    vector<double> result;
+    int i;
+    i=deg;
+    while( i>=0 && fabs(a[i])<tol ) i--;
+    deg=i;
+    
+    double z[2*deg];
+    gsl_poly_complex_workspace * w 
+        = gsl_poly_complex_workspace_alloc (deg+1);
+    gsl_poly_complex_solve (a, deg+1, w, z);
+    gsl_poly_complex_workspace_free (w);
+    
+    //collect real solutions.
+    for (unsigned i = 0; i < deg; i++){
+        if (fabs(z[2*i+1])<tol){
+            result.push_back(z[2*i]);
+        }
+    }
+    return result;
+}
+
+
+//TODO: handle multiple solutions/non existence/0 division cases
+//TODO: clean up, then move this into 2Geom core.
+//
+//returns the cubic fitting direction and curvatrue of a given
+// input curve at two points.
+// The input can be the 
+//    value, speed, and acceleration
+// or
+//    value, speed, and cross(acceleration,speed) 
+// of the original curve at the both ends.
+static D2<SBasis> cubic_fitting_curvature(Point const &M0,   Point const &M1,
+                                          Point const &dM0,  Point const &dM1,
+                                          double d2M0xdM0,  double d2M1xdM1){
+    D2<SBasis> result;
+
+    //speed of cubic bezier will be lambda0*dM0 and lambda1*dM1,
+    //with lambda0 and lambda1 s.t. curvature at both ends is the same
+    //as the curvature of the given curve.
+    double lambda0,lambda1;
+    double dM1xdM0=cross(dM1,dM0);
+    if (fabs(dM1xdM0)<ZERO){
+        lambda0 = sqrt( 6*cross(M1-M0,dM0)/d2M0xdM0);
+        lambda1 = sqrt(-6*cross(M1-M0,dM1)/d2M1xdM1);
+    }else{
+        //solve:  lambda1 = a0 lambda0^2 + c0
+        //        lambda0 = a1 lambda1^2 + c1
+        double a0,c0,a1,c1;
+        a0 = -d2M0xdM0/2/dM1xdM0;
+        c0 =  3*cross(M1-M0,dM0)/dM1xdM0;
+        a1 = -d2M1xdM1/2/dM1xdM0;
+        c1 = -3*cross(M1-M0,dM1)/dM1xdM0;
+
+        if (fabs(a0)<ZERO){
+            lambda1=c0;
+            lambda0= a1*lambda1*lambda1 + c1;
+        }else if (fabs(a1)<ZERO){
+            lambda0=c1;
+            lambda1= a0*lambda0*lambda0 + c0;
+        }else{
+            //find lamda0 by solving a deg 4 equation d0+d1*X+...+d4*X^4=0
+            double a[5];
+            a[0] = c1+a1*c0*c0;
+            a[1] = -1;
+            a[2] = 2*a1*a0*c0;
+            a[3] = 0;
+            a[4] = a1*a0*a0;
+            vector<double> solns=solve_poly(a,4);
+            g_warning("found %u solutions.",solns.size());
+            lambda0=lambda1=0;
+            for (unsigned i=0;i<solns.size();i++){
+                double lbda0=solns[i];
+                double lbda1=c0+a0*lbda0*lbda0;
+                g_warning("lamda0 = %f,  lamda1 = %f", lbda0,lbda1);
+                //only keep solutions pointing in the same direction...
+                if (lbda0>=0. && lbda1>=0.){
+                    lambda0=lbda0;
+                    lambda1=lbda1;
+                }
+            }
+        }
+    }
+    
+    Point V0 = lambda0*dM0;
+    Point V1 = lambda1*dM1;
+    for(unsigned dim=0;dim<2;dim++){
+        result[dim] = Linear(M0[dim],M1[dim]);
+        result[dim].push_back(Linear( M0[dim]-M1[dim]+V0[dim],
+                                     -M0[dim]+M1[dim]-V1[dim]));
+    }
+
+    /* test result:
+    Piecewise<SBasis> k = curvature(result);
+    double dM0_l = dM0.length();
+    double dM1_l = dM1.length();
+    g_warning("Target radii: %f, %f", dM0_l*dM0_l*dM0_l/d2M0xdM0,dM1_l*dM1_l*dM1_l/d2M1xdM1);
+    g_warning("Obtained radii: %f, %f",1/k.valueAt(0),1/k.valueAt(1));
+    */
+    return(result);
+}
+static D2<SBasis> cubic_fitting_curvature(Point const &M0,   Point const &M1,
+                                          Point const &dM0,  Point const &dM1,
+                                          Point const &d2M0, Point const &d2M1){
+    double d2M0xdM0 = cross(d2M0,dM0);
+    double d2M1xdM1 = cross(d2M1,dM1);
+    return cubic_fitting_curvature(M0,M1,dM0,dM1,d2M0xdM0,d2M1xdM1);
+}
+
+
 
 
 //see a sb2d as an sb of u with coef in sbasis of v.
@@ -30,7 +149,7 @@ v_coef(SBasis2d f, unsigned deg, SBasis &a, SBasis &b) {
     }
 }
 
-SBasis2d dim_derivative(SBasis2d const &f, int dim) {
+SBasis2d partial_derivative(SBasis2d const &f, int dim) {
     SBasis2d result;
     for(unsigned i = 0; i < f.size(); i++) {
         result.push_back(Linear2d(0,0,0,0));
@@ -62,8 +181,8 @@ sb2dsolve(SBasis2d const &f, Geom::Point const &A, Geom::Point const &B, unsigne
     D2<SBasis>result(Linear(A[X],B[X]),Linear(A[Y],B[Y]));
     g_warning("check f(A)= %f = f(B) = %f =0!", f.apply(A[X],A[Y]), f.apply(B[X],B[Y]));
 
-    SBasis2d dfdu = dim_derivative(f, 0);
-    SBasis2d dfdv = dim_derivative(f, 1);
+    SBasis2d dfdu = partial_derivative(f, 0);
+    SBasis2d dfdv = partial_derivative(f, 1);
     Geom::Point dfA(dfdu.apply(A[X],A[Y]),dfdv.apply(A[X],A[Y]));
     Geom::Point dfB(dfdu.apply(B[X],B[Y]),dfdv.apply(B[X],B[Y]));
     Geom::Point nA = dfA/(dfA[X]*dfA[X]+dfA[Y]*dfA[Y]);
@@ -86,6 +205,36 @@ sb2dsolve(SBasis2d const &f, Geom::Point const &A, Geom::Point const &B, unsigne
         result[Y].push_back(Linear(ay,by));
         //sign *= 3;
     }    
+    return result;
+}
+
+//TODO: handle the case when B is "behind" A for the natural orientation of the level set.
+//TODO: more generally, there might be up to 4 solutions. Choose the best one!
+D2<SBasis>
+sb2d_cubic_solve(SBasis2d const &f, Geom::Point const &A, Geom::Point const &B){
+    D2<SBasis>result;//(Linear(A[X],B[X]),Linear(A[Y],B[Y]));
+    g_warning("check 0 = %f = %f!", f.apply(A[X],A[Y]), f.apply(B[X],B[Y]));
+
+    SBasis2d f_u  = partial_derivative(f  , 0);
+    SBasis2d f_v  = partial_derivative(f  , 1);
+    SBasis2d f_uu = partial_derivative(f_u, 0);
+    SBasis2d f_uv = partial_derivative(f_v, 0);
+    SBasis2d f_vv = partial_derivative(f_v, 1);
+
+    Geom::Point dfA(f_u.apply(A[X],A[Y]),f_v.apply(A[X],A[Y]));
+    Geom::Point dfB(f_u.apply(B[X],B[Y]),f_v.apply(B[X],B[Y]));
+
+    Geom::Point V0 = rot90(dfA);
+    Geom::Point V1 = rot90(dfB);
+    
+    double D2fVV0 = f_uu.apply(A[X],A[Y])*V0[X]*V0[X]+
+                  2*f_uv.apply(A[X],A[Y])*V0[X]*V0[Y]+
+                    f_vv.apply(A[X],A[Y])*V0[Y]*V0[Y];
+    double D2fVV1 = f_uu.apply(B[X],B[Y])*V1[X]*V1[X]+
+                  2*f_uv.apply(B[X],B[Y])*V1[X]*V1[Y]+
+                    f_vv.apply(B[X],B[Y])*V1[Y]*V1[Y];
+
+    result = cubic_fitting_curvature(A,B,V0,V1,D2fVV0,D2fVV1);
     return result;
 }
 
@@ -251,7 +400,6 @@ public:
         Geom::Point A = true_solution(tA);
         Geom::Point B = true_solution(tB);
 
-
         plot3d(cr,Linear(0,1),Linear(0,0),Linear(0,0),frame);
         plot3d(cr,Linear(0,1),Linear(1,1),Linear(0,0),frame);
         plot3d(cr,Linear(0,0),Linear(0,1),Linear(0,0),frame);
@@ -275,7 +423,8 @@ public:
         cairo_stroke(cr);
         double error;
         for(int degree = 1; degree < 4; degree++) {
-            D2<SBasis> zeroset = sb2dsolve(f,A,B,degree);
+            //D2<SBasis> zeroset = sb2dsolve(f,A,B,degree);
+            D2<SBasis> zeroset = sb2d_cubic_solve(f,A,B);
             plot3d(cr, zeroset[X], zeroset[Y], SBasis(Linear(0.)),frame);
             cairo_set_line_width(cr,1);        
             cairo_set_source_rgba (cr, 0.9, 0., 0., 1.);
@@ -293,7 +442,7 @@ public:
         *notify << "Red: solver solution,\n";
         *notify << "Purple: value of f over solver solution.\n";
         *notify << "  error: "<< error <<".\n";
-        
+                
         Toy::draw(cr, notify, width, height, save);
     }
 };
