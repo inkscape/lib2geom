@@ -9,7 +9,7 @@
 #include <2geom/path.h>
 
 #include <2geom/toys/path-cairo.h>
-#include <2geom/toys/toy-framework.h>
+#include <2geom/toys/toy-framework-2.h>
 
 #define ZROOTS_TEST 0
 #if ZROOTS_TEST
@@ -61,12 +61,13 @@ public:
     double timer_precision;
     double units;
     std::string units_string;
+    PointSetHandle psh;
     
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         std::vector<Geom::Point> trans;
-        trans.resize(handles.size());
+        trans.resize(psh.size());
         for(unsigned i = 0; i < handles.size(); i++) {
-            trans[i] = handles[i] - Geom::Point(0, height/2);
+            trans[i] = psh.pts[i] - Geom::Point(0, height/2);
         }
         
         std::vector<double> solutions;
@@ -85,7 +86,7 @@ public:
         std::cout << std::endl;
 #endif
         
-        D2<SBasis> test_sb = handles_to_sbasis(handles.begin(),5);
+        D2<SBasis> test_sb = psh.asBezier();//handles_to_sbasis(handles.begin(),5);
         Interval bs = bounds_exact(test_sb[1]);
         cairo_move_to(cr, test_sb[0](0), bs.min());
         cairo_line_to(cr, test_sb[0](1), bs.min());
@@ -255,7 +256,7 @@ public:
         *notify << "found " << solutions.size() << "solutions at:\n";
         std::copy(solutions.begin(), solutions.end(), std::ostream_iterator<double >(*notify, ","));
             
-        D2<SBasis> B = handles_to_sbasis(handles.begin(), 5);
+        D2<SBasis> B = psh.asBezier();//handles_to_sbasis(handles.begin(), 5);
         Geom::Path pb;
         pb.append(B);
         pb.close(false);
@@ -267,7 +268,8 @@ public:
     }
     RootFinderComparer() : timer_precision(0.1), units(1e6), units_string("us") // microseconds
     {
-        for(unsigned i = 0; i < 6; i++) handles.push_back(Geom::Point(uniform()*400, uniform()*400));
+        for(unsigned i = 0; i < 6; i++) psh.push_back(Geom::Point(uniform()*400, uniform()*400));
+        handles.push_back(&psh);
     }
 };
 

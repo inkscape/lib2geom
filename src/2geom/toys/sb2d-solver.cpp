@@ -109,13 +109,13 @@ static D2<SBasis> cubic_fitting_curvature(Point const &M0,   Point const &M1,
                                      -M0[dim]+M1[dim]-V1[dim]));
     }
 
-    /* test result:
+    /* test result: */
     Piecewise<SBasis> k = curvature(result);
     double dM0_l = dM0.length();
     double dM1_l = dM1.length();
     g_warning("Target radii: %f, %f", dM0_l*dM0_l*dM0_l/d2M0xdM0,dM1_l*dM1_l*dM1_l/d2M1xdM1);
     g_warning("Obtained radii: %f, %f",1/k.valueAt(0),1/k.valueAt(1));
-    */
+    
     return(result);
 }
 static D2<SBasis> cubic_fitting_curvature(Point const &M0,   Point const &M1,
@@ -383,15 +383,15 @@ public:
         frame.y = hand.pts[2]-hand.pts[0];//
         frame.z = hand.pts[3]-hand.pts[0];// 
 
-/*
+#if 0
         SBasis2d f = y_x2();
         D2<SBasis> true_solution(Linear(0,1),Linear(0,1));
         true_solution[Y].push_back(Linear(-1,-1));
         SBasis zero = SBasis(Linear(0.));
         Geom::Point A = true_solution(tA);
         Geom::Point B = true_solution(tB);
-*/
 
+#else
         SBasis2d f = x2_plus_y2_1();
         D2<Piecewise<SBasis> > true_solution;
         true_solution[X] = cos(SBasis(Linear(0,3.14/2)));
@@ -399,6 +399,7 @@ public:
         Piecewise<SBasis> zero = Piecewise<SBasis>(SBasis(Linear(0.)));
         Geom::Point A = true_solution(tA);
         Geom::Point B = true_solution(tB);
+#endif
 
         plot3d(cr,Linear(0,1),Linear(0,0),Linear(0,0),frame);
         plot3d(cr,Linear(0,1),Linear(1,1),Linear(0,0),frame);
