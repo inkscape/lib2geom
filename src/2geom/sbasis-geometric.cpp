@@ -4,8 +4,6 @@
 //#include <2geom/solver.h>
 #include <2geom/sbasis-geometric.h>
 
-#include <gsl/gsl_poly.h>
-
 /** Geometric operators on D2<SBasis> (1D->2D).
  * Copyright 2007 JF Barraud
  * Copyright 2007 N Hurst
@@ -376,29 +374,64 @@ unsigned Geom::centroid(Piecewise<D2<SBasis> > const &p, Point& centroid, double
     return 2;
 }
 
+//------------------------------------------------------------------
 //find cubics with prescribed curvatures at oth ends.
-//TODO: replace this with roots(...)
-static vector<double>  solve_poly (double a[],unsigned deg){
-    double tol=1e-7;
-    vector<double> result;
-    int i;
-    i=deg;
-    while( i>=0 && fabs(a[i])<tol ) i--;
-    deg=i;
+//
+//  this requires to solve a system of the form
+//
+//  lambda1 = a0 lambda0^2 + c0
+//  lambda0 = a1 lambda1^2 + c1
+//
+//which is a deg 4 equation in lambda 0.
+//Below are basic functions dedicated to solving this assuming a0 and a1 !=0.
+//
+
+static Interval
+find_bounds_for_lambda0(double aa0,double aa1,double cc0,double cc1,
+    int insist_on_speeds_signs){
+
+    double a0=aa0,a1=aa1,c0=cc0,c1=cc1;
+    Interval result;
+    bool flip = a1<0;
+    if (a1<0){a1=-a1; c1=-c1;}
+    if (a0<0){a0=-a0; c0=-c0;}
+    double a = (a0<a1 ? a0 : a1);
+    double c = (c0<c1 ? c0 : c1);
+    double delta = 1-4*a*c;
+    if ( delta < 0 )
+        return Interval();//return empty interval
+    double lambda_max = (1+std::sqrt(delta))/2/a;
     
-    double z[2*deg];
-    gsl_poly_complex_workspace * w 
-        = gsl_poly_complex_workspace_alloc (deg+1);
-    gsl_poly_complex_solve (a, deg+1, w, z);
-    gsl_poly_complex_workspace_free (w);
-    
-    //collect real solutions.
-    for (unsigned i = 0; i < deg; i++){
-        if (fabs(z[2*i+1])<tol){
-            result.push_back(z[2*i]);
-        }
+    result = Interval(c,lambda_max);
+    if (flip) 
+        result *= -1;
+    if (insist_on_speeds_signs == 1){
+        if (result.max() < 0)//Caution: setMin with max<new min...
+            return Interval();//return empty interval
+        result.setMin(0);
     }
     return result;
+}
+
+static 
+std::vector<double>
+solve_lambda0(double a0,double a1,double c0,double c1,
+             int insist_on_speeds_signs){
+
+    SBasis p;
+    p.push_back(Linear( a1*c0*c0+c1, a1*a0*(a0+ 2*c0) +a1*c0*c0 +c1 -1  ));
+    p.push_back(Linear( -a1*a0*(a0+2*c0), -a1*a0*(3*a0+2*c0) ));
+    p.push_back(Linear( a1*a0*a0 ));
+
+    Interval domain = find_bounds_for_lambda0(a0,a1,c0,c1,insist_on_speeds_signs);
+    if ( domain.isEmpty() ) 
+        return std::vector<double>();
+    p = compose(p,Linear(domain.min(),domain.max()));
+    std::vector<double>rts = roots(p);
+    for (unsigned i=0; i<rts.size(); i++){
+        rts[i] = domain.min()+rts[i]*domain.extent();
+    }
+    return rts;
 }
 
 /**
@@ -410,7 +443,7 @@ static vector<double>  solve_poly (double a[],unsigned deg){
 * or
 *    value, speed, and cross(acceleration,speed) 
 * of the original curve at the both ends.
-* (the second is sometimes technically usefull, as it avoids some unnecessary division) 
+* (the second is often technically usefull, as it avoids unnecessary division by |v|^2) 
 * Recall that K=1/R=cross(acceleration,speed)/|speed|^3.
 *
 * Moreover, a 7-th argument 'insist_on_speed_signs' can be supplied to select solutions:  
@@ -466,7 +499,8 @@ Geom::cubics_fitting_curvature(Point const &M0,   Point const &M1,
             a[2] = 2*a1*a0*c0;
             a[3] = 0;
             a[4] = a1*a0*a0;
-            vector<double> solns=solve_poly(a,4);
+            //vector<double> solns=solve_poly(a,4);
+            vector<double> solns=solve_lambda0(a0,a1,c0,c1,insist_on_speed_signs);
             for (unsigned i=0;i<solns.size();i++){
                 double lbda0=solns[i];
                 double lbda1=c0+a0*lbda0*lbda0;
