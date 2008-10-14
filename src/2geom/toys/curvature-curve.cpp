@@ -100,8 +100,12 @@ class CurvatureTester: public Toy {
                 curve_handle.push_back(at+Point(100,100));
             } else {
                 // split around t
+                Piecewise<D2<SBasis> > pw =  current_curve.toPwSb();
+                std::vector<Point > vnd = pw.valueAndDerivatives(t, 2);
                 Point on_curve = current_curve(t);
-                Point ps[2] = {on_curve, on_curve+Point(10,10)};
+                Point normal = rot90(vnd[1]);
+                Piecewise<SBasis > K = curvature(pw);
+                Point ps[2] = {on_curve, on_curve+unit_vector(normal)/K(t)};
                 curve_handle.pts.insert(curve_handle.pts.begin()+2*(int(t)+1), ps, ps+2);
             }
         }
