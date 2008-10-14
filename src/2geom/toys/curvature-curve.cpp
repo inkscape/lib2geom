@@ -28,13 +28,25 @@ class CurvatureTester: public Toy {
                 double radius = Geom::L2(normal);
                 *notify<<"K="<<radius<<std::endl;
                 if (fabs(radius)>1e-4){
-	    
-                    cairo_arc(cr, center[0], center[1],fabs(radius), 0, M_PI*2);
-                    draw_handle(cr, center);
+                    
+                    double ang = atan2(-normal);
+                    cairo_arc(cr, center[0], center[1],fabs(radius), ang-0.3, ang+0.3);
+                    cairo_set_source_rgba (cr, 0.75, 0.89, 1., 1);
+                    cairo_stroke(cr);
+                    
+                    
+                    //draw_handle(cr, center);
                 }else{
                 }
-                cairo_set_source_rgba (cr, 0.75, 0.89, 1., 1);
+                {
+                cairo_save(cr);
+                double dashes[2] = {10, 10};
+                cairo_set_dash(cr, dashes, 2, 0);
+                cairo_move_to(cr, center);
+                cairo_line_to(cr, center-normal);
                 cairo_stroke(cr);
+                cairo_restore(cr);
+                }
             }
             cairo_set_source_rgba (cr, 0., 0, 0., 1);
                 Geom::Point A = curve_handle.pts[0+base_i*2];
