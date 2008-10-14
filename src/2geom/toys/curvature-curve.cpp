@@ -17,55 +17,55 @@ using namespace std;
 class CurvatureTester: public Toy {
     PointSetHandle curve_handle;
     void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
-    
-        D2<SBasis> B = curve_handle.asBezier();
-
         cairo_set_line_width (cr, 1);
-        cairo_set_source_rgba (cr, 0., 0.5, 0., 1);
-
-	for(int i = 0; i < 2; i++) {
-            Geom::Point center=curve_handle.pts[1+i];
-            Geom::Point normal=center- curve_handle.pts[3*i];
-            double radius = Geom::L2(normal);
-            *notify<<"K="<<radius<<std::endl;
-            if (fabs(radius)>1e-4){
+        
+        for(int base_i = 0; base_i < curve_handle.pts.size()/2 - 1; base_i++) {
+            for(int i = 0; i < 2; i++) {
+                Geom::Point center=curve_handle.pts[1+2*i+base_i*2];
+                Geom::Point normal=center- curve_handle.pts[2*i+base_i*2];
+                double radius = Geom::L2(normal);
+                *notify<<"K="<<radius<<std::endl;
+                if (fabs(radius)>1e-4){
 	    
-                cairo_arc(cr, center[0], center[1],fabs(radius), 0, M_PI*2);
-                draw_handle(cr, center);
-            }else{
-            }
-            cairo_set_source_rgba (cr, 0.5, 0.2, 0., 0.8);
-            cairo_stroke(cr);
-	}
-	if (1) {
-            Geom::Point A = curve_handle.pts[0];
-            Geom::Point B = curve_handle.pts[3];
-            Geom::Point dA = curve_handle.pts[1]-A;
-            Geom::Point dB = B-curve_handle.pts[2];
-            std::vector<D2<SBasis> > candidates = 
-                cubics_fitting_curvature(curve_handle.pts[0],curve_handle.pts[3],
-                                         rot90(dA),
-                                         rot90(dB),
-                                         -L2sq(dA), L2sq(dB));
-	  
-            if (candidates.size()==0) {
-                cairo_md_sb(cr,  D2<SBasis>(Linear(A[X],B[X]),Linear(A[Y],B[Y])));
+                    cairo_arc(cr, center[0], center[1],fabs(radius), 0, M_PI*2);
+                    draw_handle(cr, center);
+                }else{
+                }
+                cairo_set_source_rgba (cr, 0.75, 0.89, 1., 1);
                 cairo_stroke(cr);
-            } else {
-                //TODO: I'm sure std algorithm could do that for me...
-                double error = -1;
-                unsigned best = 0;
-                for (unsigned i=0; i<candidates.size(); i++){
-
-                    cairo_md_sb(cr, candidates[i]);
-                    double l = length(candidates[i]);
+            }
+            cairo_set_source_rgba (cr, 0., 0, 0., 1);
+                Geom::Point A = curve_handle.pts[0+base_i*2];
+                Geom::Point B = curve_handle.pts[2+base_i*2];
+            D2<SBasis> best_c = D2<SBasis>(Linear(A[X],B[X]),Linear(A[Y],B[Y]));
+            double error = -1;
+            for(int i = 0; i < 4; i++) {
+                Geom::Point dA = curve_handle.pts[1+base_i*2]-A;
+                Geom::Point dB = curve_handle.pts[3+base_i*2]-B;
+                std::vector<D2<SBasis> > candidates = 
+                    cubics_fitting_curvature(curve_handle.pts[0+base_i*2],curve_handle.pts[2+base_i*2],
+                                             -rot90(dA),
+                                             (i&1)?rot90(dB):-rot90(dB),
+                                             ((i&2)?-1:1)*L2sq(dA), -L2sq(dB));
 	  
-                    if ( l < error || error < 0 ){
-                        error = l;
-                        best = i;
+                if (candidates.size()==0) {
+                } else {
+                    //TODO: I'm sure std algorithm could do that for me...
+                    unsigned best = 0;
+                    for (unsigned i=0; i<candidates.size(); i++){
+
+                        double l = length(candidates[i]);
+                        printf("l = %g\n");
+                        if ( l < error || error < 0 ){
+                            error = l;
+                            best = i;
+                            best_c = candidates[best];
+                        }
                     }
                 }
-                cairo_md_sb(cr, candidates[best]);
+            }
+            if(error >= 0) {
+                cairo_md_sb(cr, best_c);
                 cairo_stroke(cr);
             }
         }
