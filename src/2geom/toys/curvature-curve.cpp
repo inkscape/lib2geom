@@ -16,8 +16,10 @@ using namespace std;
 
 class CurvatureTester: public Toy {
     PointSetHandle curve_handle;
+    Path current_curve;
     void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         cairo_set_line_width (cr, 1);
+        current_curve = Path();
         
         for(int base_i = 0; base_i < curve_handle.pts.size()/2 - 1; base_i++) {
             for(int i = 0; i < 2; i++) {
@@ -39,22 +41,23 @@ class CurvatureTester: public Toy {
                 Geom::Point B = curve_handle.pts[2+base_i*2];
             D2<SBasis> best_c = D2<SBasis>(Linear(A[X],B[X]),Linear(A[Y],B[Y]));
             double error = -1;
-            for(int i = 0; i < 4; i++) {
+            for(int i = 0; i < 16; i++) {
                 Geom::Point dA = curve_handle.pts[1+base_i*2]-A;
                 Geom::Point dB = curve_handle.pts[3+base_i*2]-B;
                 std::vector<D2<SBasis> > candidates = 
                     cubics_fitting_curvature(curve_handle.pts[0+base_i*2],curve_handle.pts[2+base_i*2],
-                                             -rot90(dA),
+                                             (i&2)?rot90(dA):-rot90(dA),
                                              (i&1)?rot90(dB):-rot90(dB),
-                                             ((i&2)?-1:1)*L2sq(dA), -L2sq(dB));
+                                             ((i&4)?-1:1)*L2sq(dA), ((i&8)?-1:1)*L2sq(dB));
 	  
                 if (candidates.size()==0) {
                 } else {
                     //TODO: I'm sure std algorithm could do that for me...
                     unsigned best = 0;
                     for (unsigned i=0; i<candidates.size(); i++){
-
-                        double l = length(candidates[i]);
+                        Piecewise<SBasis> K = arcLengthSb(candidates[i]);
+        
+                        double l = K.segs.back().at1();//Geom::length(candidates[i]);
                         printf("l = %g\n");
                         if ( l < error || error < 0 ){
                             error = l;
@@ -65,18 +68,30 @@ class CurvatureTester: public Toy {
                 }
             }
             if(error >= 0) {
-                cairo_md_sb(cr, best_c);
-                cairo_stroke(cr);
+                //cairo_md_sb(cr, best_c);
+                current_curve.append(best_c);
             }
         }
+        
+        cairo_path(cr, current_curve);
+        cairo_stroke(cr);
         Toy::draw(cr, notify, width, height, save);
     }        
   
     void canvas_click(Geom::Point at, int button) {
         std::cout << "clicked at:" << at << " with button " << button << std::endl;
         if(button == 1) {
-            curve_handle.push_back(at+Point(100,100));
-            curve_handle.push_back(at);
+            double dist;
+            double t = current_curve.nearestPoint(at, &dist);
+            if(dist > 5) {
+                curve_handle.push_back(at);
+                curve_handle.push_back(at+Point(100,100));
+            } else {
+                // split around t
+                Point on_curve = current_curve(t);
+                Point ps[2] = {on_curve, on_curve+Point(10,10)};
+                curve_handle.pts.insert(curve_handle.pts.begin()+2*(int(t)+1), ps, ps+2);
+            }
         }
     }
 
