@@ -3,9 +3,10 @@
  * \brief  \todo brief description
  *
  * Authors:
- *      ? <?@?.?>
+ *      Nathan Hurst <?@?.?>
+ *      JFBarraud <?@?.?>
  * 
- * Copyright ?-?  authors
+ * Copyright 2006-2008  authors
  *
  * This library is free software; you can redistribute it and/or
  * modify it either under the terms of the GNU Lesser General Public
@@ -312,7 +313,7 @@ SBasis2d multiply(SBasis2d const &a, SBasis2d const &b);
 
 SBasis2d integral(SBasis2d const &c);
 
-SBasis2d derivative(SBasis2d const &a);
+SBasis2d partial_derivative(SBasis2d const &a, int dim);
 
 SBasis2d sqrt(SBasis2d const &a, int k);
 
@@ -348,6 +349,12 @@ inline std::ostream &operator<< (std::ostream &out_file, const SBasis2d & p) {
     }
     return out_file;
 }
+
+D2<SBasis>
+sb2dsolve(SBasis2d const &f, Geom::Point const &A, Geom::Point const &B, unsigned degmax=2);
+
+D2<SBasis>
+sb2d_cubic_solve(SBasis2d const &f, Geom::Point const &A, Geom::Point const &B);
 
 };
 

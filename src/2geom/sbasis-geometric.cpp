@@ -338,7 +338,8 @@ Geom::arc_length_parametrization(Piecewise<D2<SBasis> > const &M,
     return(result);
 }
 
-/** centroid using sbasis integration.
+/**
+ * Centroid using sbasis integration.
  * This approach uses green's theorem to compute the area and centroid using integrals.  For curved
  * shapes this is much faster than converting to polyline.
 
@@ -374,17 +375,17 @@ unsigned Geom::centroid(Piecewise<D2<SBasis> > const &p, Point& centroid, double
     return 2;
 }
 
-//------------------------------------------------------------------
-//find cubics with prescribed curvatures at oth ends.
-//
-//  this requires to solve a system of the form
-//
-//  lambda1 = a0 lambda0^2 + c0
-//  lambda0 = a1 lambda1^2 + c1
-//
-//which is a deg 4 equation in lambda 0.
-//Below are basic functions dedicated to solving this assuming a0 and a1 !=0.
-//
+/**
+ * Find cubics with prescribed curvatures at both ends.
+ *
+ *  this requires to solve a system of the form
+ *
+ *  lambda1 = a0 lambda0^2 + c0
+ *  lambda0 = a1 lambda1^2 + c1
+ *
+ * which is a deg 4 equation in lambda 0.
+ * Below are basic functions dedicated to solving this assuming a0 and a1 !=0.
+ */
 
 static Interval
 find_bounds_for_lambda0(double aa0,double aa1,double cc0,double cc1,
@@ -435,7 +436,7 @@ solve_lambda0(double a0,double a1,double c0,double c1,
 }
 
 /**
-* \brief returns the cubics fitting direction and curvatrue of a given
+* \brief returns the cubics fitting direction and curvature of a given
 * input curve at two points.
 * 
 * The input can be the 

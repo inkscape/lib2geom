@@ -30,66 +30,6 @@ v_coef(SBasis2d f, unsigned deg, SBasis &a, SBasis &b) {
     }
 }
 
-SBasis2d dim_derivative(SBasis2d const &f, int dim) {
-    SBasis2d result;
-    for(unsigned i = 0; i < f.size(); i++) {
-        result.push_back(Linear2d(0,0,0,0));
-    }
-    result.us = f.us;
-    result.vs = f.vs;
-
-    for(unsigned i = 0; i < f.us; i++) {
-        for(unsigned j = 0; j < f.vs; j++) {
-            Linear2d lin = f.index(i,j);
-            Linear2d dlin(lin[1+dim]-lin[0], lin[1+2*dim]-lin[dim], lin[3-dim]-lin[2*(1-dim)], lin[3]-lin[2-dim]);
-            result[i+j*result.us] += dlin;
-            unsigned di = dim?j:i;
-            if (di>=1){
-                float motpi = dim?-1:1;
-                Linear2d ds_lin_low( lin[0], -motpi*lin[1], motpi*lin[2], -lin[3] );
-                result[(i+dim-1)+(j-dim)*result.us] += di*ds_lin_low;
-                
-                Linear2d ds_lin_hi( lin[1+dim]-lin[0], lin[1+2*dim]-lin[dim], lin[3]-lin[2-dim], lin[3-dim]-lin[2-dim] );
-                result[i+j*result.us] += di*ds_lin_hi;                
-            }
-        }
-    }
-    return result;
-}
-
-D2<SBasis>
-sb2dsolve(SBasis2d const &f, Geom::Point const &A, Geom::Point const &B, unsigned degmax=2){
-    D2<SBasis>result(Linear(A[X],B[X]),Linear(A[Y],B[Y]));
-    g_warning("check f(A)= %f = f(B) = %f =0!", f.apply(A[X],A[Y]), f.apply(B[X],B[Y]));
-
-    SBasis2d dfdu = dim_derivative(f, 0);
-    SBasis2d dfdv = dim_derivative(f, 1);
-    Geom::Point dfA(dfdu.apply(A[X],A[Y]),dfdv.apply(A[X],A[Y]));
-    Geom::Point dfB(dfdu.apply(B[X],B[Y]),dfdv.apply(B[X],B[Y]));
-    Geom::Point nA = dfA/(dfA[X]*dfA[X]+dfA[Y]*dfA[Y]);
-    Geom::Point nB = dfB/(dfB[X]*dfB[X]+dfB[Y]*dfB[Y]);
-
-    double fact_k=1;
-    double sign = 1.;
-    for(unsigned k=1; k<degmax; k++){
-        // these two lines make the solutions worse!
-        //fact_k *= k;
-        //sign = -sign;
-        SBasis f_on_curve = compose(f,result);
-        Linear reste = f_on_curve[k];
-        double ax = -reste[0]/fact_k*nA[X];
-        double ay = -reste[0]/fact_k*nA[Y];
-        double bx = -sign*reste[1]/fact_k*nB[X];
-        double by = -sign*reste[1]/fact_k*nB[Y];
-
-        result[X].push_back(Linear(ax,bx));
-        result[Y].push_back(Linear(ay,by));
-        //sign *= 3;
-    }    
-    return result;
-}
-
-
 
 
 //TODO: implement sb2d algebra!!
@@ -221,7 +161,7 @@ public:
         Interval bounds = bounds_fast(comp);
         double error = (bounds.max()>-bounds.min() ? bounds.max() : -bounds.min() );
         //printf("error = %g %g %g\n", bounds.max(), bounds.min(), error);
-        return error;
+        return error*error;
     }
      
 
@@ -282,8 +222,8 @@ public:
         Geom::Point B(cos(tB*M_PI/2), sin(tB*M_PI/2));// = true_solution(tB);
         Point dA(-sin(tA*M_PI/2), cos(tA*M_PI/2));
         Geom::Point dB(-sin(tB*M_PI/2), cos(tB*M_PI/2));
-        SBasis2d dfdu = dim_derivative(f, 0);
-        SBasis2d dfdv = dim_derivative(f, 1);
+        SBasis2d dfdu = partial_derivative(f, 0);
+        SBasis2d dfdv = partial_derivative(f, 1);
         Geom::Point dfA(dfdu.apply(A[X],A[Y]),dfdv.apply(A[X],A[Y]));
         Geom::Point dfB(dfdu.apply(B[X],B[Y]),dfdv.apply(B[X],B[Y]));
         dA = rot90(dfA);
@@ -343,8 +283,8 @@ public:
      
             /* Starting point */
             x = gsl_vector_alloc (2);
-            gsl_vector_set (x, 0, 0.5);
-            gsl_vector_set (x, 1, 0.5);
+            gsl_vector_set (x, 0, 0.552); // magic number for quarter circle
+            gsl_vector_set (x, 1, 0.552);
      
             /* Set initial step sizes to 1 */
             ss = gsl_vector_alloc (2);
@@ -367,7 +307,7 @@ public:
                     break;
      
                 size = gsl_multimin_fminimizer_size (s);
-                status = gsl_multimin_test_size (size, 1e-4);
+                status = gsl_multimin_test_size (size, 1e-7);
      
                 if (status == GSL_SUCCESS)
                 {
@@ -376,7 +316,7 @@ public:
      
             }
             while (status == GSL_CONTINUE && iter < 100);
-            printf ("%5d %10.3e %10.3ef f() = %7.3f size = %g\n", 
+            printf ("%5d %g %gf f() = %g size = %g\n", 
                     iter,
                     gsl_vector_get (s->x, 0), 
                     gsl_vector_get (s->x, 1), 

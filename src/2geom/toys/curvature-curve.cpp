@@ -70,7 +70,7 @@ class CurvatureTester: public Toy {
                         Piecewise<SBasis> K = arcLengthSb(candidates[i]);
         
                         double l = K.segs.back().at1();//Geom::length(candidates[i]);
-                        printf("l = %g\n");
+                        printf("l = %g\n", l);
                         if ( l < error || error < 0 ){
                             error = l;
                             best = i;
