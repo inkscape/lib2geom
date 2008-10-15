@@ -34,6 +34,7 @@
 #include <2geom/d2.h>
 #include <2geom/sbasis.h>
 #include <2geom/sbasis-geometric.h>
+#include <2geom/basic-intersection.h>
 
 #include <2geom/toys/path-cairo.h>
 #include <2geom/toys/toy-framework-2.h>
@@ -152,10 +153,26 @@ class SbToBezierTester: public Toy {
       D2<SBasis> k_bez = sb_seg_to_bez(g,t0,t1);
       cairo_md_sb(cr, k_bez);
       cairo_stroke(cr);
+      double h_a_t = 0, h_b_t = 0;
+      
+      double h_dist = hausdorfl( k_bez, f, 1e-6, &h_a_t, &h_b_t);
+      {
+          Point At = k_bez(h_a_t);
+          Point Bu = f(h_b_t);
+          cairo_move_to(cr, At);
+          cairo_line_to(cr, Bu);
+          draw_handle(cr, At);
+          draw_handle(cr, Bu);
+          cairo_save(cr);
+          cairo_set_line_width (cr, 0.3);
+          cairo_set_source_rgba (cr, 0.7, 0.0, 0.0, 1);
+          cairo_stroke(cr);
+          cairo_restore(cr);
+      }
       *notify << "Move handle 6 to set the segment to be approximated by cubic bezier.\n";
       *notify << " -red:  bezier approx derived from parametrization.\n";
       *notify << " -blue: bezier approx derived from curvature.\n";
-      *notify << "      max distance (to original): "<<error<<"\n";
+      *notify << "      max distance (to original): "<<h_dist<<"\n";
       cairo_restore(cr);
       Toy::draw(cr, notify, width, height, save);
   }

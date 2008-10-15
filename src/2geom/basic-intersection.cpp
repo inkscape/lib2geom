@@ -531,18 +531,18 @@ double hausdorfl(D2<SBasis>& A, D2<SBasis> const& B,
     find_collinear_normal(xs, Az, Bz, m_precision);
     double h_dist = 0, h_a_t = 0, h_b_t = 0;
     double dist = 0;
-    double t = Geom::nearest_point(B.at0(), A);
-    dist = Geom::distance(B(0), A(t));
+    double t = Geom::nearest_point(A.at0(), B);
+    dist = Geom::distance(A(0), B(t));
     if (dist > h_dist) {
-        h_a_t = t;
-        h_b_t = 0;
+        h_a_t = 0;
+        h_b_t = t;
         h_dist = dist;
     }
-    t = Geom::nearest_point(B.at1(), A);
-    dist = Geom::distance(B(1), A(t));
+    t = Geom::nearest_point(A.at1(), B);
+    dist = Geom::distance(A(1), B(t));
     if (dist > h_dist) {
-        h_a_t = t;
-        h_b_t = 1;
+        h_a_t = 1;
+        h_b_t = t;
         h_dist = dist;
     }
     for (size_t i = 0; i < xs.size(); ++i)
