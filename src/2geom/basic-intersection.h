@@ -94,6 +94,19 @@ void find_collinear_normal (std::vector< std::pair<double, double> >& xs,
                             double precision = 1e-5);
 
 
+/**
+ * Compute the Hausdorf distance from A to B only.
+ */
+double hausdorfl(D2<SBasis>& A, D2<SBasis> const& B,
+                 double m_precision,
+                 double *a_t=0, double* b_t=0);
+
+/** 
+ * Compute the symmetric Hausdorf distance.
+ */
+double hausdorf(D2<SBasis>& A, D2<SBasis> const& B,
+                double m_precision,
+                double *a_t=0, double* b_t=0);
 }
 
 #endif // !SEEN_GEOM_BASICINTERSECTION_H

@@ -45,6 +45,7 @@
 using namespace Geom;
 
 
+
 class CurveIntersect : public Toy
 {
 
@@ -79,6 +80,38 @@ class CurveIntersect : public Toy
 
         }
         cairo_stroke(cr);
+        
+        double h_a_t = 0, h_b_t = 0;
+
+        double h_dist = hausdorfl( A, B, m_precision, &h_a_t, &h_b_t);
+        {
+            Point At = A(h_a_t);
+            Point Bu = B(h_b_t);
+            draw_axis(cr, At, Bu);
+            draw_handle(cr, At);
+            draw_handle(cr, Bu);
+            cairo_save(cr);
+            cairo_set_line_width (cr, 0.3);
+            cairo_set_source_rgba (cr, 0.7, 0.0, 0.0, 1);
+            cairo_stroke(cr);
+            cairo_restore(cr);
+        }
+        h_dist = hausdorf( A, B, m_precision, &h_a_t, &h_b_t);
+        {
+            Point At = A(h_a_t);
+            Point Bu = B(h_b_t);
+            draw_axis(cr, At, Bu);
+            draw_handle(cr, At);
+            draw_handle(cr, Bu);
+            cairo_save(cr);
+            cairo_set_line_width (cr, 0.3);
+            cairo_set_source_rgba (cr, 0.0, 0.7, 0.0, 1);
+            cairo_stroke(cr);
+            cairo_restore(cr);
+        }
+        *notify << "Hausdorf distance = " << h_dist 
+                << "occuring at " << h_a_t 
+                << " B=" << h_b_t << std::endl;
 
         Toy::draw(cr, notify, width, height, save);
     }

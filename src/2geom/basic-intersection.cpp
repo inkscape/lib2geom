@@ -517,6 +517,81 @@ std::vector<std::pair<double, double> > find_intersections( OldBezier a, OldBezi
     std::sort(parameters.begin(), parameters.end());
     return parameters;
 }
+
+/**
+ * Compute the Hausdorf distance from A to B only.
+ */
+double hausdorfl(D2<SBasis>& A, D2<SBasis> const& B,
+                 double m_precision,
+                 double *a_t, double* b_t) {
+    std::vector< std::pair<double, double> > xs;
+    std::vector<Point> Az, Bz;
+    sbasis_to_bezier (Az, A);
+    sbasis_to_bezier (Bz, B);
+    find_collinear_normal(xs, Az, Bz, m_precision);
+    double h_dist = 0, h_a_t = 0, h_b_t = 0;
+    double dist = 0;
+    double t = Geom::nearest_point(B.at0(), A);
+    dist = Geom::distance(B(0), A(t));
+    if (dist > h_dist) {
+        h_a_t = t;
+        h_b_t = 0;
+        h_dist = dist;
+    }
+    t = Geom::nearest_point(B.at1(), A);
+    dist = Geom::distance(B(1), A(t));
+    if (dist > h_dist) {
+        h_a_t = t;
+        h_b_t = 1;
+        h_dist = dist;
+    }
+    for (size_t i = 0; i < xs.size(); ++i)
+    {
+        Point At = A(xs[i].first);
+        Point Bu = B(xs[i].second);
+        dist = Geom::distance(At, Bu);
+        if (dist > h_dist) {
+            h_a_t = xs[i].first;
+            h_b_t = xs[i].second;
+            h_dist = dist;
+        }
+            
+    }
+    if(a_t) *a_t = h_a_t;
+    if(b_t) *b_t = h_b_t;
+    
+    return h_dist;
+}
+
+/** 
+ * Compute the symmetric Hausdorf distance.
+ */
+double hausdorf(D2<SBasis>& A, D2<SBasis> const& B,
+                 double m_precision,
+                 double *a_t, double* b_t) {
+    double h_dist = hausdorfl(A, B, m_precision, a_t, b_t);
+    double h_a_t = 0, h_b_t = 0;
+    
+    double dist = 0;
+    double t = Geom::nearest_point(B.at0(), A);
+    dist = Geom::distance(B(0), A(t));
+    if (dist > h_dist) {
+        h_a_t = t;
+        h_b_t = 0;
+        h_dist = dist;
+    }
+    t = Geom::nearest_point(B.at1(), A);
+    dist = Geom::distance(B(1), A(t));
+    if (dist > h_dist) {
+        h_a_t = t;
+        h_b_t = 1;
+        h_dist = dist;
+    }
+    if(a_t) *a_t = h_a_t;
+    if(b_t) *b_t = h_b_t;
+    
+    return h_dist;
+}
 };
 
 /*
