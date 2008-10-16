@@ -93,6 +93,10 @@ void find_collinear_normal (std::vector< std::pair<double, double> >& xs,
                             std::vector<Point> const& B,
                             double precision = 1e-5);
 
+//should we put doxygen in .h or .cpp?
+double pseudo_hausdorf(D2<SBasis>& A, D2<SBasis> const& B,
+                 double m_precision,
+                 double *a_t=0, double* b_t=0);
 
 /**
  * Compute the Hausdorf distance from A to B only.
