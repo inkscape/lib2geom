@@ -113,16 +113,21 @@ void recursive_curvature_fitter(cairo_t* cr, D2<SBasis> const &M, double t0, dou
       D2<SBasis> k_bez = sb_seg_to_bez(g,t0,t1);
       double h_a_t = 0, h_b_t = 0;
       
-      double h_dist = hausdorfl( k_bez, M, 1e-6, &h_a_t, &h_b_t);
-      if(h_dist > 4) {
-          recursive_curvature_fitter(cr, M, t0, (t0+t1)/2);
-          recursive_curvature_fitter(cr, M, (t0+t1)/2, t1);
+      if(k_bez[0].size() > 1 and k_bez[1].size() > 1) {
+          double h_dist = hausdorfl( k_bez, M, 1e-6, &h_a_t, &h_b_t);
+          if(h_dist > 4) {
+              recursive_curvature_fitter(cr, M, t0, (t0+t1)/2);
+              recursive_curvature_fitter(cr, M, (t0+t1)/2, t1);
+          } 
+          else
+          {
+              cairo_md_sb(cr, k_bez);
+              cairo_stroke(cr);
+          }
+      } else {
+          //recursive_curvature_fitter(cr, M, t0, (t0+t1)/2);
+          //recursive_curvature_fitter(cr, M, (t0+t1)/2, t1);
       } 
-      else
-      {
-          cairo_md_sb(cr, k_bez);
-          cairo_stroke(cr);
-      }
 }
 
 class SbToBezierTester: public Toy {
