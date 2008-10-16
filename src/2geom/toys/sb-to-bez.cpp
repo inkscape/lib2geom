@@ -106,27 +106,38 @@ sb_seg_to_bez(Piecewise<D2<SBasis> > const &M,double t0,double t1){
     return candidates[best];
 }
 
-void recursive_curvature_fitter(cairo_t* cr, D2<SBasis> const &M, double t0, double t1) {
+void recursive_curvature_fitter(cairo_t* cr, D2<SBasis> const &f, double t0, double t1) {
       if (t0>=t1) return;//TODO: fix me...
       
-      Piecewise<D2<SBasis> > g = Piecewise<D2<SBasis> >(M);
+      Piecewise<D2<SBasis> > g = Piecewise<D2<SBasis> >(f);
       D2<SBasis> k_bez = sb_seg_to_bez(g,t0,t1);
       double h_a_t = 0, h_b_t = 0;
       
       if(k_bez[0].size() > 1 and k_bez[1].size() > 1) {
-          double h_dist = hausdorfl( k_bez, M, 1e-6, &h_a_t, &h_b_t);
+          double h_dist = hausdorfl( k_bez, f, 1e-6, &h_a_t, &h_b_t);
           if(h_dist > 4) {
-              recursive_curvature_fitter(cr, M, t0, (t0+t1)/2);
-              recursive_curvature_fitter(cr, M, (t0+t1)/2, t1);
+              recursive_curvature_fitter(cr, f, t0, (t0+t1)/2);
+              recursive_curvature_fitter(cr, f, (t0+t1)/2, t1);
           } 
           else
           {
+              Point At = k_bez(h_a_t);
+              Point Bu = f(h_b_t);
+              cairo_move_to(cr, At);
+              cairo_line_to(cr, Bu);
+              draw_handle(cr, At);
+              draw_handle(cr, Bu);
+              cairo_save(cr);
+              cairo_set_line_width (cr, 0.3);
+              cairo_set_source_rgba (cr, 0.7, 0.0, 0.0, 1);
+              cairo_stroke(cr);
+              cairo_restore(cr);
               cairo_md_sb(cr, k_bez);
               cairo_stroke(cr);
           }
       } else {
-          //recursive_curvature_fitter(cr, M, t0, (t0+t1)/2);
-          //recursive_curvature_fitter(cr, M, (t0+t1)/2, t1);
+          recursive_curvature_fitter(cr, f, t0, (t0+t1)/2);
+          recursive_curvature_fitter(cr, f, (t0+t1)/2, t1);
       } 
 }
 
