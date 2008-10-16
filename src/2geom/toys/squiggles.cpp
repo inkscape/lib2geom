@@ -69,6 +69,7 @@ class Squiggles: public Toy {
         cairo_set_source_rgba (cr, 0., 0., 0., 1);
         cairo_set_line_width (cr, 1);
 
+        //Get user input
         if (mouse_down && selected) {
             for(unsigned i = 0; i < handles.size(); i++) {
                 if(selected == handles[i]){
@@ -83,16 +84,12 @@ class Squiggles: public Toy {
     	    }
         }
 
+        //Compute new curve
         Piecewise<SBasis> curvature = interpolate(curvatures);
         curvature.setDomain(Interval(0,tot_length));
         Piecewise<SBasis> alpha = integral(curvature);
         Piecewise<D2<SBasis> > v = sectionize(tan2(alpha));
         curve = integral(v)+Point(100,100);	
-
-        Piecewise<SBasis> xxx = Piecewise<SBasis>(Linear(100.,100+tot_length));
-        xxx.setDomain(Interval(0,tot_length));
-        Piecewise<D2<SBasis> >pwc = sectionize(D2<Piecewise<SBasis> >(xxx, curvature*100+100));
-	cairo_pw_d2(cr, pwc);
 
         //transform to keep current point in place
         double time = current_ctl_pt*tot_length/(NB_CTL_PTS-1);
@@ -112,7 +109,6 @@ class Squiggles: public Toy {
         cairo_set_source_rgba (cr, 0., 0., 0.5, 1);
         for(unsigned i = 0; i < NB_CTL_PTS; i++) {
             Point m = curve.valueAt(i*tot_length/(NB_CTL_PTS-1));
-            *notify << "Curvature[" << i <<"] = "<< curvatures[i] << "\n"; 
             dynamic_cast<PointHandle*>(handles[i])->pos = m + curvatures[i]*1000*rot90(v.valueAt(i*tot_length/(NB_CTL_PTS-1)));
             draw_handle(cr, m);
             cairo_move_to(cr, m);
@@ -125,18 +121,6 @@ class Squiggles: public Toy {
         cairo_set_source_rgba (cr, 0., 0., 0, 1);
         cairo_stroke(cr);
 
-/*
-#if 1
-        // transform to fix end points:
-        Point start = pwc.firstValue();
-        Point end = pwc.lastValue();
-        Point u = end - start;
-        Matrix mat1 = Matrix(u[X],u[Y],-u[Y],u[X],start[X],start[Y]);
-        Matrix mat2 = Matrix(width/2,0,0,width/2,width/4,200);
-        mat1 = mat1.inverse()*mat2;
-        pwc = pwc*mat1;
-#endif
-*/
         Toy::draw(cr, notify, width, height, save);
     }
 
@@ -155,20 +139,6 @@ public:
             PointHandle *pt_hdle = new PointHandle(Geom::Point(100+i*tot_length/(NB_CTL_PTS-1), 100.));
             handles.push_back(pt_hdle);
         }
-
-/*
-        curves = 1;
-        for(unsigned a = 0; a < curves; a++) {
-	    PWSBHandle*psh = new PWSBHandle(5, 1);
-	    handles.push_back(psh);
-	    for(unsigned i = 0; i < psh->handles_per_curve; i++) {
-	    
-		psh->push_back(150 + 300*i/(psh->curve_size*psh->segs), 
-			       200);
-                //uniform() * 150 + 150 - 50 * a);
-	    }
-	}
-*/
     }
 };
 

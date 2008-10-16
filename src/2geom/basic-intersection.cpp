@@ -550,14 +550,15 @@ double hausdorfl(D2<SBasis>& A, D2<SBasis> const& B,
     for (size_t i = 0; i < xs.size(); ++i)
     {
         Point At = A(xs[i].first);
-        //Point Bu = B(xs[i].second);
+        Point Bu = B(xs[i].second);
+        double distAtBu = Geom::distance(At, Bu);
         t = Geom::nearest_point(At, B);
         dist = Geom::distance(At, B(t));
-        //dist = Geom::distance(At, Bu);
-        if (dist > h_dist) {
+        //FIXME: we might miss it due to floating point precision...
+        if (dist >= distAtBu-.01 && dist > h_dist) {
             h_a_t = xs[i].first;
-            h_b_t = t;
-            h_dist = dist;
+            h_b_t = xs[i].second;
+            h_dist = distAtBu;
         }
             
     }
