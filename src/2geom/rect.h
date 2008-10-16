@@ -50,7 +50,11 @@ namespace Geom {
 typedef D2<Interval> Rect;
 
 Rect unify(const Rect &, const Rect &);
-
+/**
+ * %Rect class.
+ * The Rect class is actually a specialisation of D2<Interval>.
+ * 
+ */
 template<>
 class D2<Interval> {
   private:
@@ -100,6 +104,9 @@ class D2<Interval> {
     inline Point dimensions() const { return Point(f[X].extent(), f[Y].extent()); }
     inline Point midpoint() const { return Point(f[X].middle(), f[Y].middle()); }
 
+/**
+ * Compute the area of this rectangle.  Note that a zero area rectangle is not necessarily empty - just as the interval [0,0] contains one point, the rectangle [0,0] x [0,0] contains 1 point and no area.
+ */
     inline double area() const { return f[X].extent() * f[Y].extent(); }
     inline double maxExtent() const { return std::max(f[X].extent(), f[Y].extent()); }
 
@@ -129,7 +136,7 @@ class D2<Interval> {
     inline void expandBy(Point const p)  { 
         f[X].expandBy(p[X]);  f[Y].expandBy(p[Y]); 
     }
-
+    
     /** Transforms the rect by m. Note that it gives correct results only for scales and translates,
         in the case of rotations, the area of the rect will grow as it cannot rotate. */
     inline Rect operator*(Matrix const m) const { 
@@ -142,8 +149,10 @@ inline Rect unify(Rect const & a, Rect const & b) {
     return Rect(unify(a[X], b[X]), unify(a[Y], b[Y]));
 }
 
-/** Returns the smallest rectangle that encloses both rectangles.
-  * An empty argument is assumed to be an empty rectangle */
+/** 
+ * Returns the smallest rectangle that encloses both rectangles.
+ * An empty argument is assumed to be an empty rectangle
+ */
 inline boost::optional<Rect> unify(boost::optional<Rect> const & a, boost::optional<Rect> const & b) {
     if (!a) {
         return b;
@@ -191,6 +200,9 @@ double distanceSq( Point const& p, Rect const& rect )
     return dx*dx + dy*dy;
 }
 
+/**
+ * Returns the smallest distance between p and rect.
+ */
 inline 
 double distance( Point const& p, Rect const& rect )
 {
