@@ -106,6 +106,25 @@ sb_seg_to_bez(Piecewise<D2<SBasis> > const &M,double t0,double t1){
     return candidates[best];
 }
 
+void recursive_curvature_fitter(cairo_t* cr, D2<SBasis> const &M, double t0, double t1) {
+      if (t0>=t1) return;//TODO: fix me...
+      
+      Piecewise<D2<SBasis> > g = Piecewise<D2<SBasis> >(M);
+      D2<SBasis> k_bez = sb_seg_to_bez(g,t0,t1);
+      double h_a_t = 0, h_b_t = 0;
+      
+      double h_dist = hausdorfl( k_bez, M, 1e-6, &h_a_t, &h_b_t);
+      if(h_dist > 4) {
+          recursive_curvature_fitter(cr, M, t0, (t0+t1)/2);
+          recursive_curvature_fitter(cr, M, (t0+t1)/2, t1);
+      } 
+      else
+      {
+          cairo_md_sb(cr, k_bez);
+          cairo_stroke(cr);
+      }
+}
+
 class SbToBezierTester: public Toy {
     //std::vector<Slider> sliders;
     PointSetHandle path_psh;
@@ -128,7 +147,7 @@ class SbToBezierTester: public Toy {
       cairo_md_sb(cr, f);
       cairo_stroke(cr);
       if (t0==t1) return;//TODO: fix me...
-
+      if(0) {
       Piecewise<D2<SBasis> > g = Piecewise<D2<SBasis> >(f);
       cairo_set_line_width (cr, 1);
       cairo_set_source_rgba (cr, 0., 0., 0.9, .7);
@@ -173,6 +192,8 @@ class SbToBezierTester: public Toy {
       *notify << " -red:  bezier approx derived from parametrization.\n";
       *notify << " -blue: bezier approx derived from curvature.\n";
       *notify << "      max distance (to original): "<<h_dist<<"\n";
+      }
+      recursive_curvature_fitter(cr, f, 0, 1);
       cairo_restore(cr);
       Toy::draw(cr, notify, width, height, save);
   }
