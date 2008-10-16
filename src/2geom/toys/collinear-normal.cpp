@@ -66,6 +66,8 @@ class CurveIntersect : public Toy
         D2<SBasis> B = pshB.asBezier();
         cairo_md_sb(cr, B);
         cairo_stroke(cr);
+        draw_text(cr, A.at0(), "A");
+        draw_text(cr, B.at0(), "B");
 
         find_collinear_normal(xs, pshA.pts, pshB.pts, m_precision);
         cairo_set_line_width (cr, 0.3);
@@ -87,7 +89,8 @@ class CurveIntersect : public Toy
         {
             Point At = A(h_a_t);
             Point Bu = B(h_b_t);
-            draw_axis(cr, At, Bu);
+            cairo_move_to(cr, At);
+            cairo_line_to(cr, Bu);
             draw_handle(cr, At);
             draw_handle(cr, Bu);
             cairo_save(cr);
@@ -96,7 +99,7 @@ class CurveIntersect : public Toy
             cairo_stroke(cr);
             cairo_restore(cr);
         }
-        h_dist = hausdorf( A, B, m_precision, &h_a_t, &h_b_t);
+        /*h_dist = hausdorf( A, B, m_precision, &h_a_t, &h_b_t);
         {
             Point At = A(h_a_t);
             Point Bu = B(h_b_t);
@@ -108,7 +111,7 @@ class CurveIntersect : public Toy
             cairo_set_source_rgba (cr, 0.0, 0.7, 0.0, 1);
             cairo_stroke(cr);
             cairo_restore(cr);
-        }
+            }*/
         *notify << "Hausdorf distance = " << h_dist 
                 << "occuring at " << h_a_t 
                 << " B=" << h_b_t << std::endl;

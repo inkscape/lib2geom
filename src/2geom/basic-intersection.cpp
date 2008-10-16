@@ -531,15 +531,17 @@ double hausdorfl(D2<SBasis>& A, D2<SBasis> const& B,
     find_collinear_normal(xs, Az, Bz, m_precision);
     double h_dist = 0, h_a_t = 0, h_b_t = 0;
     double dist = 0;
-    double t = Geom::nearest_point(A.at0(), B);
-    dist = Geom::distance(A(0), B(t));
+    Point Ax = A.at0();
+    double t = Geom::nearest_point(Ax, B);
+    dist = Geom::distance(Ax, B(t));
     if (dist > h_dist) {
         h_a_t = 0;
         h_b_t = t;
         h_dist = dist;
     }
-    t = Geom::nearest_point(A.at1(), B);
-    dist = Geom::distance(A(1), B(t));
+    Ax = A.at1();
+    t = Geom::nearest_point(Ax, B);
+    dist = Geom::distance(Ax, B(t));
     if (dist > h_dist) {
         h_a_t = 1;
         h_b_t = t;
@@ -548,11 +550,13 @@ double hausdorfl(D2<SBasis>& A, D2<SBasis> const& B,
     for (size_t i = 0; i < xs.size(); ++i)
     {
         Point At = A(xs[i].first);
-        Point Bu = B(xs[i].second);
-        dist = Geom::distance(At, Bu);
+        //Point Bu = B(xs[i].second);
+        t = Geom::nearest_point(At, B);
+        dist = Geom::distance(At, B(t));
+        //dist = Geom::distance(At, Bu);
         if (dist > h_dist) {
             h_a_t = xs[i].first;
-            h_b_t = xs[i].second;
+            h_b_t = t;
             h_dist = dist;
         }
             
@@ -570,25 +574,24 @@ double hausdorf(D2<SBasis>& A, D2<SBasis> const& B,
                  double m_precision,
                  double *a_t, double* b_t) {
     double h_dist = hausdorfl(A, B, m_precision, a_t, b_t);
-    double h_a_t = 0, h_b_t = 0;
     
     double dist = 0;
-    double t = Geom::nearest_point(B.at0(), A);
-    dist = Geom::distance(B(0), A(t));
+    Point Bx = B.at0();
+    double t = Geom::nearest_point(Bx, A);
+    dist = Geom::distance(Bx, A(t));
     if (dist > h_dist) {
-        h_a_t = t;
-        h_b_t = 0;
+        if(a_t) *a_t = t;
+        if(b_t) *b_t = 0;
         h_dist = dist;
     }
-    t = Geom::nearest_point(B.at1(), A);
-    dist = Geom::distance(B(1), A(t));
+    Bx = B.at1();
+    t = Geom::nearest_point(Bx, A);
+    dist = Geom::distance(Bx, A(t));
     if (dist > h_dist) {
-        h_a_t = t;
-        h_b_t = 1;
+        if(a_t) *a_t = t;
+        if(b_t) *b_t = 1;
         h_dist = dist;
     }
-    if(a_t) *a_t = h_a_t;
-    if(b_t) *b_t = h_b_t;
     
     return h_dist;
 }
