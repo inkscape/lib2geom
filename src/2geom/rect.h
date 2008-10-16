@@ -1,7 +1,8 @@
 /**
  * \file
  * \brief  D2<Interval> specialization to Rect
- *
+ */
+/*
  * Copyright 2007 Michael Sloan <mgsloan@gmail.com>
  *
  * This library is free software; you can redistribute it and/or
@@ -103,30 +104,30 @@ class D2<Interval> {
     inline double maxExtent() const { return std::max(f[X].extent(), f[Y].extent()); }
 
     inline bool isEmpty()                 const { 
-	return f[X].isEmpty()        || f[Y].isEmpty(); 
+        return f[X].isEmpty()        || f[Y].isEmpty(); 
     }
     inline bool intersects(Rect const &r) const { 
-	return f[X].intersects(r[X]) && f[Y].intersects(r[Y]); 
+        return f[X].intersects(r[X]) && f[Y].intersects(r[Y]); 
     }
     inline bool contains(Rect const &r)   const { 
-	return f[X].contains(r[X]) && f[Y].contains(r[Y]); 
+        return f[X].contains(r[X]) && f[Y].contains(r[Y]); 
     }
     inline bool contains(Point const &p)  const {
-	return f[X].contains(p[X]) && f[Y].contains(p[Y]);
+        return f[X].contains(p[X]) && f[Y].contains(p[Y]);
     }
 
     inline void expandTo(Point p)        { 
-	f[X].extendTo(p[X]);  f[Y].extendTo(p[Y]); 
+        f[X].extendTo(p[X]);  f[Y].extendTo(p[Y]); 
     }
     inline void unionWith(Rect const &b) { 
-	f[X].unionWith(b[X]); f[Y].unionWith(b[Y]); 
+        f[X].unionWith(b[X]); f[Y].unionWith(b[Y]); 
     }
 
     inline void expandBy(double amnt)    { 
-	f[X].expandBy(amnt);  f[Y].expandBy(amnt); 
+        f[X].expandBy(amnt);  f[Y].expandBy(amnt); 
     }
     inline void expandBy(Point const p)  { 
-	f[X].expandBy(p[X]);  f[Y].expandBy(p[Y]); 
+        f[X].expandBy(p[X]);  f[Y].expandBy(p[Y]); 
     }
 
     /** Transforms the rect by m. Note that it gives correct results only for scales and translates,
@@ -170,30 +171,30 @@ inline boost::optional<Rect> intersect(Rect const & a, Rect const & b) {
 inline
 double distanceSq( Point const& p, Rect const& rect )
 {
-	double dx = 0, dy = 0;
-	if ( p[X] < rect.left() )
-	{
-		dx = p[X] - rect.left();
-	}
-	else if ( p[X] > rect.right() )
-	{
-		dx = rect.right() - p[X];
-	}
-	if ( p[Y] < rect.top() )
-	{
-		dy = rect.top() - p[Y];
-	}
-	else if (  p[Y] > rect.bottom() )
-	{
-		dy = p[Y] - rect.bottom();
-	}
-	return dx*dx + dy*dy;
+    double dx = 0, dy = 0;
+    if ( p[X] < rect.left() )
+    {
+        dx = p[X] - rect.left();
+    }
+    else if ( p[X] > rect.right() )
+    {
+        dx = rect.right() - p[X];
+    }
+    if ( p[Y] < rect.top() )
+    {
+        dy = rect.top() - p[Y];
+    }
+    else if (  p[Y] > rect.bottom() )
+    {
+        dy = p[Y] - rect.bottom();
+    }
+    return dx*dx + dy*dy;
 }
 
 inline 
 double distance( Point const& p, Rect const& rect )
 {
-	return std::sqrt(distanceSq(p, rect));
+    return std::sqrt(distanceSq(p, rect));
 }
 
 
