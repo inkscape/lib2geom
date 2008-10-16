@@ -50,8 +50,18 @@ class Squiggles: public Toy {
             
             cairo_pw(cr, pws[a]);
         }
+        cairo_set_source_rgba (cr, 0.5, 0.5, 0.5, 1);
+        cairo_move_to(cr,Point(150,200));
+        cairo_line_to(cr,Point(450,200));
         cairo_stroke(cr);
-        
+        cairo_set_source_rgba (cr, 0., 0., 0., 1);
+#if 1
+        //curvature to curve:
+        Piecewise<SBasis> alpha = integral(pws[0]-50)/1000;
+        Piecewise<D2<SBasis> > v = sectionize(tan2(alpha));
+        Piecewise<D2<SBasis> > pwc = integral(v);	
+#else
+        //direction of speed to curve
         Piecewise<SBasis> acpw = (pws[0] - pws[0].valueAt(pws[0].cuts[0]))/10;
 	Piecewise< D2<SBasis> > pwc = sectionize(integral(tan2(acpw)));
 	pwc -= pwc.valueAt(pwc.cuts[0]);
@@ -60,10 +70,26 @@ class Squiggles: public Toy {
 	pwc -= Geom::Point(r[0][0], r[1][0]);
 	r = bounds_exact(pwc);
 	cairo_rectangle(cr, r[0][0], r[1][0], r[0].extent(), r[1].extent());
-	
+#endif        
+
+#if 1
+        // transform to fix end points:
+        Point start = pwc.firstValue();
+        Point end = pwc.lastValue();
+        Point u = end - start;
+        Matrix mat1 = Matrix(u[X],u[Y],-u[Y],u[X],start[X],start[Y]);
+        Matrix mat2 = Matrix(width/2,0,0,width/2,width/4,200);
+        mat1 = mat1.inverse()*mat2;
+        pwc = pwc*mat1;
+#endif
 	cairo_pw_d2(cr, pwc);
         cairo_set_source_rgba (cr, 0., 0., 0, 1);
         cairo_stroke(cr);
+/*
+	cairo_pw_d2(cr, pwc);
+        cairo_set_source_rgba (cr, 0., 0., 0, 1);
+        cairo_stroke(cr);
+*/	
 
         Toy::draw(cr, notify, width, height, save);
     }
@@ -74,12 +100,13 @@ public:
     Squiggles () {
         curves = 1;
         for(unsigned a = 0; a < curves; a++) {
-	    PWSBHandle*psh = new PWSBHandle(5, 3);
+	    PWSBHandle*psh = new PWSBHandle(5, 1);
 	    handles.push_back(psh);
 	    for(unsigned i = 0; i < psh->handles_per_curve; i++) {
 	    
 		psh->push_back(150 + 300*i/(psh->curve_size*psh->segs), 
-			       uniform() * 150 + 150 - 50 * a);
+			       200);
+                //uniform() * 150 + 150 - 50 * a);
 	    }
 	}
     }
