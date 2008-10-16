@@ -9,6 +9,8 @@
 
 #include <vector>
 
+#define NB_CTL_PTS 4
+
 using namespace Geom;
 using namespace std;
 
@@ -35,43 +37,95 @@ void cairo_vert(cairo_t *cr, double x, vector<double> p) {
     }
 }
 
-#include <2geom/toys/pwsbhandle.cpp>  // FIXME: This looks like it may give problems later, (including a .cpp file)
+Piecewise<SBasis> interpolate(std::vector<double> val){
+    SBasis bump_in = Linear(0,1);
+    bump_in.push_back(Linear(-1,1));
+    SBasis bump_out = Linear(1,0);
+    bump_out.push_back(Linear(1,-1));
+    
+    Piecewise<SBasis> result;
+    result.cuts.push_back(0);
+    for (unsigned i = 0; i<val.size()-1; i++){
+        result.push(bump_out*val[i]+bump_in*val[i+1],i+1);
+    }
+    return result;
+}
+
+
+//#include <2geom/toys/pwsbhandle.cpp>  // FIXME: This looks like it may give problems later, (including a .cpp file)
 
 class Squiggles: public Toy {
     unsigned segs, handles_per_curve, curves;
+
+    PointSetHandle hand;
+    unsigned current_ctl_pt;
+    Point current_pos;
+    Point current_dir;
+    std::vector<double> curvatures;
+    Piecewise<D2<SBasis> > curve;
+    double tot_length;
+
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         cairo_set_source_rgba (cr, 0., 0., 0., 1);
         cairo_set_line_width (cr, 1);
-        
-        Piecewise<SBasis> pws[curves];
-        for(unsigned a = 0; a < curves; a++) {
-	    pws[a] = dynamic_cast<PWSBHandle*>(handles[a])->value();
-            assert(pws[a].invariants());
-            
-            cairo_pw(cr, pws[a]);
-        }
-        cairo_set_source_rgba (cr, 0.5, 0.5, 0.5, 1);
-        cairo_move_to(cr,Point(150,200));
-        cairo_line_to(cr,Point(450,200));
-        cairo_stroke(cr);
-        cairo_set_source_rgba (cr, 0., 0., 0., 1);
-#if 1
-        //curvature to curve:
-        Piecewise<SBasis> alpha = integral(pws[0]-50)/1000;
-        Piecewise<D2<SBasis> > v = sectionize(tan2(alpha));
-        Piecewise<D2<SBasis> > pwc = integral(v);	
-#else
-        //direction of speed to curve
-        Piecewise<SBasis> acpw = (pws[0] - pws[0].valueAt(pws[0].cuts[0]))/10;
-	Piecewise< D2<SBasis> > pwc = sectionize(integral(tan2(acpw)));
-	pwc -= pwc.valueAt(pwc.cuts[0]);
-	pwc += Point(width/2, height/2);
-	D2<Interval> r = bounds_exact(pwc);
-	pwc -= Geom::Point(r[0][0], r[1][0]);
-	r = bounds_exact(pwc);
-	cairo_rectangle(cr, r[0][0], r[1][0], r[0].extent(), r[1].extent());
-#endif        
 
+        if (mouse_down && selected) {
+            for(unsigned i = 0; i < handles.size(); i++) {
+                if(selected == handles[i]){
+                    *notify << "Selected = " << i; 
+                    current_ctl_pt = i;
+                    double time = current_ctl_pt*tot_length/(NB_CTL_PTS-1);
+                    current_pos = curve.valueAt(time);
+                    current_dir = derivative(curve).valueAt(time);
+                    Point hdle = dynamic_cast<PointHandle*>(handles[current_ctl_pt])->pos;
+                    curvatures[i] = cross(hdle - current_pos,current_dir)/1000;
+                }
+    	    }
+        }
+
+        Piecewise<SBasis> curvature = interpolate(curvatures);
+        curvature.setDomain(Interval(0,tot_length));
+        Piecewise<SBasis> alpha = integral(curvature);
+        Piecewise<D2<SBasis> > v = sectionize(tan2(alpha));
+        curve = integral(v)+Point(100,100);	
+
+        Piecewise<SBasis> xxx = Piecewise<SBasis>(Linear(100.,100+tot_length));
+        xxx.setDomain(Interval(0,tot_length));
+        Piecewise<D2<SBasis> >pwc = sectionize(D2<Piecewise<SBasis> >(xxx, curvature*100+100));
+	cairo_pw_d2(cr, pwc);
+
+        //transform to keep current point in place
+        double time = current_ctl_pt*tot_length/(NB_CTL_PTS-1);
+        Point new_pos = curve.valueAt(time);
+        Point new_dir = v.valueAt(time);
+        Matrix mat1 = Matrix(    new_dir[X],    new_dir[Y],    -new_dir[Y],    new_dir[X],    new_pos[X],    new_pos[Y]);
+        Matrix mat2 = Matrix(current_dir[X],current_dir[Y],-current_dir[Y],current_dir[X],current_pos[X],current_pos[Y]);
+        mat1 = mat1.inverse()*mat2;
+        curve = curve*mat1;
+        v = v*mat1.without_translation();
+
+        //update handles
+        cairo_save(cr);
+        double dashes[2] = {3, 2};
+        cairo_set_dash(cr, dashes, 2, 0);
+        cairo_set_line_width(cr, .5);
+        cairo_set_source_rgba (cr, 0., 0., 0.5, 1);
+        for(unsigned i = 0; i < NB_CTL_PTS; i++) {
+            Point m = curve.valueAt(i*tot_length/(NB_CTL_PTS-1));
+            *notify << "Curvature[" << i <<"] = "<< curvatures[i] << "\n"; 
+            dynamic_cast<PointHandle*>(handles[i])->pos = m + curvatures[i]*1000*rot90(v.valueAt(i*tot_length/(NB_CTL_PTS-1)));
+            draw_handle(cr, m);
+            cairo_move_to(cr, m);
+            cairo_line_to(cr, dynamic_cast<PointHandle*>(handles[i])->pos);
+        }
+        cairo_stroke(cr);
+        cairo_restore(cr);
+
+	cairo_pw_d2(cr, curve);
+        cairo_set_source_rgba (cr, 0., 0., 0, 1);
+        cairo_stroke(cr);
+
+/*
 #if 1
         // transform to fix end points:
         Point start = pwc.firstValue();
@@ -82,22 +136,27 @@ class Squiggles: public Toy {
         mat1 = mat1.inverse()*mat2;
         pwc = pwc*mat1;
 #endif
-	cairo_pw_d2(cr, pwc);
-        cairo_set_source_rgba (cr, 0., 0., 0, 1);
-        cairo_stroke(cr);
-/*
-	cairo_pw_d2(cr, pwc);
-        cairo_set_source_rgba (cr, 0., 0., 0, 1);
-        cairo_stroke(cr);
-*/	
-
+*/
         Toy::draw(cr, notify, width, height, save);
     }
 
     bool should_draw_numbers() { return false; }
-        
+
 public:
     Squiggles () {
+        current_ctl_pt = 0;
+        current_dir = Point(0,1);
+        current_pos = Point(100,100);
+        tot_length = 200;
+
+        curve = Piecewise<D2<SBasis> >(D2<SBasis>(Linear(100,300),Linear(100,100)));
+        for(unsigned i = 0; i < NB_CTL_PTS; i++) {
+            curvatures.push_back(0);
+            PointHandle *pt_hdle = new PointHandle(Geom::Point(100+i*tot_length/(NB_CTL_PTS-1), 100.));
+            handles.push_back(pt_hdle);
+        }
+
+/*
         curves = 1;
         for(unsigned a = 0; a < curves; a++) {
 	    PWSBHandle*psh = new PWSBHandle(5, 1);
@@ -109,6 +168,7 @@ public:
                 //uniform() * 150 + 150 - 50 * a);
 	    }
 	}
+*/
     }
 };
 
