@@ -40,7 +40,13 @@
 #include <2geom/concepts.h>
 
 namespace Geom{
-
+/**
+ * The D2 class takes two instances of a scalar data type and treats them
+ * like a point. All operations which make sense on a point are deﬁned for D2.
+ * A D2<double> is a Point. A D2<Interval> is a standard axis aligned rectangle.
+ * D2<SBasis> provides a 2d parametric function which maps t to a point
+ * x(t), y(t)
+ */
 template <class T>
 class D2{
     //BOOST_CLASS_REQUIRE(T, boost, AssignableConcept);

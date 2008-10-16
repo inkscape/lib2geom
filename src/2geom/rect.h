@@ -45,7 +45,7 @@
 #include <boost/optional/optional.hpp>
 
 namespace Geom {
-
+/** D2<Interval> specialization to Rect */
 typedef D2<Interval> Rect;
 
 Rect unify(const Rect &, const Rect &);
@@ -75,7 +75,7 @@ class D2<Interval> {
     inline Point min() const { return Point(f[X].min(), f[Y].min()); }
     inline Point max() const { return Point(f[X].max(), f[Y].max()); }
 
-    /** returns the four corners of the rectangle in positive order
+    /** Returns the four corners of the rectangle in positive order
      *  (clockwise if +Y is up, anticlockwise if +Y is down) */
     Point corner(unsigned i) const {
         switch(i % 4) {
@@ -95,7 +95,7 @@ class D2<Interval> {
     inline double width() const { return f[X].extent(); }
     inline double height() const { return f[Y].extent(); }
 
-    /** returns a vector from min to max. */
+    /** Returns a vector from min to max. */
     inline Point dimensions() const { return Point(f[X].extent(), f[Y].extent()); }
     inline Point midpoint() const { return Point(f[X].middle(), f[Y].middle()); }
 
