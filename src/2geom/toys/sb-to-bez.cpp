@@ -114,7 +114,8 @@ void recursive_curvature_fitter(cairo_t* cr, D2<SBasis> const &f, double t0, dou
       double h_a_t = 0, h_b_t = 0;
       
       if(k_bez[0].size() > 1 and k_bez[1].size() > 1) {
-          double h_dist = hausdorfl( k_bez, f, 1e-6, &h_a_t, &h_b_t);
+          double h_dist = pseudo_hausdorf( k_bez, f, 1e-6, &h_a_t, &h_b_t);
+          //double h_dist = hausdorfl( k_bez, f, 1e-6, &h_a_t, &h_b_t);
           if(h_dist > 4) {
               recursive_curvature_fitter(cr, f, t0, (t0+t1)/2);
               recursive_curvature_fitter(cr, f, (t0+t1)/2, t1);

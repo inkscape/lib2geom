@@ -540,38 +540,34 @@ double pseudo_hausdorf(D2<SBasis>& A, D2<SBasis> const& B,
     double dist = 0;
     //TODO: reduce code dupl!!
     //Distance from A ends to B
-    Point Ax = A.at0();
-    double t = Geom::nearest_point(Ax, B);
-    dist = Geom::distance(Ax, B(t));
-    if (dist > h_dist) {
-        h_a_t = 0;
-        h_b_t = t;
-        h_dist = dist;
-    }
-    Ax = A.at1();
-    t = Geom::nearest_point(Ax, B);
-    dist = Geom::distance(Ax, B(t));
-    if (dist > h_dist) {
-        h_a_t = 1;
-        h_b_t = t;
-        h_dist = dist;
-    }
-    //Distance from B ends to A
-    Point Bx = B.at0();
-    t = Geom::nearest_point(Bx, A);
-    dist = Geom::distance(Bx, A(t));
-    if (dist > h_dist) {
-        h_b_t = 0;
-        h_a_t = t;
-        h_dist = dist;
-    }
-    Bx = B.at1();
-    t = Geom::nearest_point(Bx, A);
-    dist = Geom::distance(Bx, A(t));
-    if (dist > h_dist) {
-        h_b_t = 1;
-        h_a_t = t;
-        h_dist = dist;
+    for(unsigned curve =0; curve < 2; curve++){
+        for(unsigned end =0; end < 2; end++){
+            Point P;
+            if( curve==0){
+                P = (end==0 ? A.at0() : A.at1() );
+            }else{
+                P = (end==0 ? A.at0() : A.at1() );
+            }
+            double t = Geom::nearest_point(P, (curve==0 ? B : A ));
+            double dist_bis;
+            dist_bis = Geom::distance(P, (curve==0 ? B.at0() : A.at0()));
+            if (dist_bis < dist){
+                t = 0;
+                dist = dist_bis;
+            }
+            dist_bis = Geom::distance(P, (curve==0 ? B.at1() : A.at1()));
+            if (dist_bis < dist){
+                t = 1;
+                dist = dist_bis;
+            }
+            
+            if (dist > h_dist) {
+                (curve==0 ? h_a_t = 0 : h_b_t = 0);
+                (curve==0 ? h_b_t = t : h_a_t = t);
+                h_dist = dist;
+            }
+            
+        }
     }
     //Interior extrema:
     for (size_t i = 0; i < xs.size(); ++i)
