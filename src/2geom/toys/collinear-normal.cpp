@@ -85,7 +85,7 @@ class CurveIntersect : public Toy
         
         double h_a_t = 0, h_b_t = 0;
 
-        double h_dist = pseudo_hausdorf( A, B, m_precision, &h_a_t, &h_b_t);
+        double h_dist = hausdorfl( A, B, m_precision, &h_a_t, &h_b_t);
         {
             Point At = A(h_a_t);
             Point Bu = B(h_b_t);
@@ -94,7 +94,7 @@ class CurveIntersect : public Toy
             draw_handle(cr, At);
             draw_handle(cr, Bu);
             cairo_save(cr);
-            cairo_set_line_width (cr, 0.3);
+            cairo_set_line_width (cr, 1);
             cairo_set_source_rgba (cr, 0.7, 0.0, 0.0, 1);
             cairo_stroke(cr);
             cairo_restore(cr);
