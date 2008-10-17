@@ -3,14 +3,6 @@
 #include <vector>
 #include <iterator>
 
-#include "poly-dk-solve.h"
-//#include "poly-laguerre-solve.h"
-//#include "poly-laguerre-solve.cpp"
-#include "sturm.h"
-
-//x^5*1 + x^4*1212.36 + x^3*-2137.83 + x^2*1357.77 + x^1*-366.403 + x^0*42.0846
-
-
 using namespace std;
 
 

@@ -64,6 +64,8 @@ Piecewise<SBasis> arcLengthSb(Piecewise<D2<SBasis> > const &M, double tol=.01);
 double length(          D2<SBasis>   const &M, double tol=.01);
 double length(Piecewise<D2<SBasis> > const &M, double tol=.01);
 
+void length_integrating(D2<SBasis> const &B, double &result, double &abs_error, double tol);
+
 Piecewise<D2<SBasis> >
 arc_length_parametrization(D2<SBasis> const &M, 
                            unsigned order=3, 

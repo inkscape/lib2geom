@@ -85,7 +85,7 @@ class CurveIntersect : public Toy
         
         double h_a_t = 0, h_b_t = 0;
 
-        double h_dist = hausdorfl( A, B, m_precision, &h_a_t, &h_b_t);
+        double h_dist = pseudo_hausdorf( A, B, m_precision, &h_a_t, &h_b_t);
         {
             Point At = A(h_a_t);
             Point Bu = B(h_b_t);

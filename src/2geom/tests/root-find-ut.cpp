@@ -2,9 +2,6 @@
 #include <vector>
 #include <iterator>
 
-#include "poly-dk-solve.h"
-#include "poly-laguerre-solve.h"
-#include "sturm.h"
 #include "sbasis.h"
 #include "sbasis-poly.h"
 #include "sbasis-to-bezier.h"

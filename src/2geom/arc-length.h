@@ -29,7 +29,7 @@
  *
  */
 
-#include <2geom/path2.h>
+#include <2geom/path.h>
 
 /*** Routines in this group return a path that looks the same, but
  * include extra knots for certain points of interest. */
@@ -40,10 +40,7 @@
 
 double arc_length_subdividing(Geom::Path const & p, double tol);
 double arc_length_integrating(Geom::Path const & p, double tol);
-double arc_length_integrating(Geom::Path const & p, Geom::Path::Location const & pl, double tol);
 
-
-Geom::Path::Location natural_parameterisation(Geom::Path const & p, double s, double tol);
 
 /*
   Local Variables:

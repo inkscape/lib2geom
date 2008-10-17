@@ -75,10 +75,6 @@ sweep.h
 
 poly.cpp
 poly.h
-poly-dk-solve.cpp
-poly-dk-solve.h
-poly-laguerre-solve.cpp
-poly-laguerre-solve.h
 
 quadtree.cpp
 quadtree.h
@@ -142,7 +138,6 @@ convex-cover.h
 solve-bezier-one-d.cpp
 solve-bezier-parametric.cpp
 solver.h
-sturm.h
 svg-elliptical-arc.cpp
 svg-elliptical-arc.h
 

@@ -105,9 +105,76 @@ sb_seg_to_bez(Piecewise<D2<SBasis> > const &M,double t0,double t1){
     }
     return candidates[best];
 }
+#include <2geom/sbasis-to-bezier.h>
 
-void recursive_curvature_fitter(cairo_t* cr, D2<SBasis> const &f, double t0, double t1) {
+/**
+ * Compute the Hausdorf distance from A to B only.
+ */
+double hausdorfl2(cairo_t* cr, D2<SBasis>& A, D2<SBasis> const& B,
+                 double m_precision,
+                 double *a_t, double* b_t) {
+    std::vector< std::pair<double, double> > xs;
+    std::vector<Point> Az, Bz;
+    sbasis_to_bezier (Az, A);
+    sbasis_to_bezier (Bz, B);
+    find_collinear_normal(xs, Az, Bz, m_precision);
+    cairo_save(cr);
+        cairo_set_line_width (cr, 0.3);
+        cairo_set_source_rgba (cr, 0.0, 0.0, 0.7, 1);
+        for (size_t i = 0; i < xs.size(); ++i)
+        {
+            Point At = A(xs[i].first);
+            Point Bu = B(xs[i].second);
+              cairo_move_to(cr, At);
+              cairo_line_to(cr, Bu);
+            draw_handle(cr, At);
+            draw_handle(cr, Bu);
+
+        }
+        cairo_stroke(cr);
+        cairo_restore(cr);
+    double h_dist = 0, h_a_t = 0, h_b_t = 0;
+    double dist = 0;
+    Point Ax = A.at0();
+    double t = Geom::nearest_point(Ax, B);
+    dist = Geom::distance(Ax, B(t));
+    if (dist > h_dist) {
+        h_a_t = 0;
+        h_b_t = t;
+        h_dist = dist;
+    }
+    Ax = A.at1();
+    t = Geom::nearest_point(Ax, B);
+    dist = Geom::distance(Ax, B(t));
+    if (dist > h_dist) {
+        h_a_t = 1;
+        h_b_t = t;
+        h_dist = dist;
+    }
+    for (size_t i = 0; i < xs.size(); ++i)
+    {
+        Point At = A(xs[i].first);
+        Point Bu = B(xs[i].second);
+        double distAtBu = Geom::distance(At, Bu);
+        t = xs[i].second;//Geom::nearest_point(At, B);
+        dist = distAtBu;//Geom::distance(At, B(t));
+        //FIXME: we might miss it due to floating point precision...
+        if (dist >= distAtBu-.1 && distAtBu > h_dist) {
+            h_a_t = xs[i].first;
+            h_b_t = xs[i].second;
+            h_dist = distAtBu;
+        }
+            
+    }
+    if(a_t) *a_t = h_a_t;
+    if(b_t) *b_t = h_b_t;
+    
+    return h_dist;
+}
+
+void recursive_curvature_fitter(cairo_t* cr, D2<SBasis>  &f, double t0, double t1) {
       if (t0>=t1) return;//TODO: fix me...
+      if (t0+0.001>=t1) return;//TODO: fix me...
       
       Piecewise<D2<SBasis> > g = Piecewise<D2<SBasis> >(f);
       D2<SBasis> k_bez = sb_seg_to_bez(g,t0,t1);
@@ -115,6 +182,8 @@ void recursive_curvature_fitter(cairo_t* cr, D2<SBasis> const &f, double t0, dou
       
       if(k_bez[0].size() > 1 and k_bez[1].size() > 1) {
           double h_dist = pseudo_hausdorf( k_bez, f, 1e-6, &h_a_t, &h_b_t);
+          //printf("(%g %g), %g\n", t0, t1, h_dist);
+          //double h_dist = hausdorfl2( cr, k_bez, f, 1e-6, &h_a_t, &h_b_t);
           //double h_dist = hausdorfl( k_bez, f, 1e-6, &h_a_t, &h_b_t);
           if(h_dist > 4) {
               recursive_curvature_fitter(cr, f, t0, (t0+t1)/2);
@@ -191,7 +260,7 @@ class SbToBezierTester: public Toy {
       cairo_stroke(cr);
       double h_a_t = 0, h_b_t = 0;
       
-      double h_dist = hausdorfl( k_bez, f, 1e-6, &h_a_t, &h_b_t);
+      double h_dist = pseudo_hausdorf( k_bez, f, 1e-6, &h_a_t, &h_b_t);
       {
           Point At = k_bez(h_a_t);
           Point Bu = f(h_b_t);

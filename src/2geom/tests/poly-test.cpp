@@ -2,17 +2,9 @@
 #include <vector>
 #include <iterator>
 
-#include <2geom/poly-dk-solve.h>
-//#include "poly-laguerre-solve.h"
-//#include "poly-laguerre-solve.cpp"
-#include <2geom/sturm.h>
-
-//x^5*1 + x^4*1212.36 + x^3*-2137.83 + x^2*1357.77 + x^1*-366.403 + x^0*42.0846
-
 
 using namespace std;
 using Geom::Poly;
-using Geom::sturm;
 
 Poly lin_poly(double a, double b) { // ax + b
     Poly p;
@@ -75,49 +67,6 @@ main(int argc, char** argv) {
     Poly prod = lin_poly(1, 3)*lin_poly(1,-4)*lin_poly(1,-7)*lin_poly(2,1);
     
     std::cout << prod <<std::endl;
-#ifdef HAVE_GSL
-    solve(prod);
-#endif
-    //DK(prod);
-
-    sturm st(prod);
-    
-    for(double t = -3.25; t < 8.25; t+= 0.5) {
-        std::cout << st.count_signs(t) << std::endl;
-    }
-    std::cout << "infty = " << st.count_signs(INFINITY) << std::endl;
-    
-    Poly dk_trial;
-    dk_trial.push_back(-5);
-    dk_trial.push_back(3);
-    dk_trial.push_back(-3);
-    dk_trial.push_back(1);
-
-    Poly p = prod*dk_trial;
-    
-#ifdef HAVE_GSL
-    vector<complex<double> > prod_root = solve(prod);
-    copy(prod_root.begin(), prod_root.end(), ostream_iterator<complex<double> >(cout, ",\t"));
-    cout << endl;
-#endif
-
-    DK(p);
-#ifdef HAVE_GSL
-    {
-    vector<complex<double> > prod_root = solve(p);
-    copy(prod_root.begin(), prod_root.end(), ostream_iterator<complex<double> >(cout, ",\t"));
-    cout << endl;
-    }
-#endif
-    
-    cout << "p = " << p << " = ";
-
-    //vector<complex<double> > sol = Laguerre(p);
-    //copy(sol.begin(), sol.end(), ostream_iterator<complex<double> >(cout, ",\t"));
-    
-    //cout << endl;
-    
-    //std::cout << prod.eval(4.) << std::endl;
 }
 
 

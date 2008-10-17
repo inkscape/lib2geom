@@ -127,6 +127,12 @@ Geom::cutAtRoots(Piecewise<D2<SBasis> > const &M, double ZERO){
     return partition(M,rts);
 }
 
+/** Return a function which gives the angle of vect at each point.
+ \param vect a piecewise parameteric curve.
+ \param tol the maximum error allowed.
+ \param order the maximum degree to use for approximation
+
+*/
 Piecewise<SBasis>
 Geom::atan2(Piecewise<D2<SBasis> > const &vect, double tol, unsigned order){
     Piecewise<SBasis> result;
@@ -152,24 +158,47 @@ Geom::atan2(Piecewise<D2<SBasis> > const &vect, double tol, unsigned order){
     }
     return result;
 }
+/** Return a function which gives the angle of vect at each point.
+ \param vect a piecewise parameteric curve.
+ \param tol the maximum error allowed.
+ \param order the maximum degree to use for approximation
+
+*/
 Piecewise<SBasis>
 Geom::atan2(D2<SBasis> const &vect, double tol, unsigned order){
     return atan2(Piecewise<D2<SBasis> >(vect),tol,order);
 }
 
-//tan2 is the pseudo-inverse of atan2.  It takes an angle and returns a unit_vector that points in the direction of angle.
+/** tan2 is the pseudo-inverse of atan2.  It takes an angle and returns a unit_vector that points in the direction of angle.
+ \param angle a piecewise function of angle wrt t.
+ \param tol the maximum error allowed.
+ \param order the maximum degree to use for approximation
+
+*/
 D2<Piecewise<SBasis> >
 Geom::tan2(SBasis const &angle, double tol, unsigned order){
     return tan2(Piecewise<SBasis>(angle), tol, order);
 }
 
+/** tan2 is the pseudo-inverse of atan2.  It takes an angle and returns a unit_vector that points in the direction of angle.
+ \param angle a piecewise function of angle wrt t.
+ \param tol the maximum error allowed.
+ \param order the maximum degree to use for approximation
+
+*/
 D2<Piecewise<SBasis> >
 Geom::tan2(Piecewise<SBasis> const &angle, double tol, unsigned order){
     return D2<Piecewise<SBasis> >(cos(angle, tol, order), sin(angle, tol, order));
 }
 
-//unitVector(x,y) is computed as (b,-a) where a and b are solutions of:
-//     ax+by=0 (eqn1)   and   a^2+b^2=1 (eqn2)
+/** Return a Piecewise<D2<SBasis> > which points in the same direction as V_in, but has unit_length.
+ \param V_in the original path.
+ \param tol the maximum error allowed.
+ \param order the maximum degree to use for approximation
+
+unitVector(x,y) is computed as (b,-a) where a and b are solutions of:
+     ax+by=0 (eqn1)   and   a^2+b^2=1 (eqn2)
+*/
 Piecewise<D2<SBasis> >
 Geom::unitVector(D2<SBasis> const &V_in, double tol, unsigned order){
     D2<SBasis> V = RescaleForNonVanishingEnds(V_in);
@@ -234,6 +263,14 @@ Geom::unitVector(D2<SBasis> const &V_in, double tol, unsigned order){
     }
 }
 
+/** Return a Piecewise<D2<SBasis> > which points in the same direction as V_in, but has unit_length.
+ \param V_in the original path.
+ \param tol the maximum error allowed.
+ \param order the maximum degree to use for approximation
+
+unitVector(x,y) is computed as (b,-a) where a and b are solutions of:
+     ax+by=0 (eqn1)   and   a^2+b^2=1 (eqn2)
+*/
 Piecewise<D2<SBasis> >
 Geom::unitVector(Piecewise<D2<SBasis> > const &V, double tol, unsigned order){
     Piecewise<D2<SBasis> > result;
@@ -248,6 +285,11 @@ Geom::unitVector(Piecewise<D2<SBasis> > const &V, double tol, unsigned order){
     return result;
 }
 
+/** returns a function giving the arclength at each point in M.
+ \param M the Element.
+ \param tol the maximum error allowed.
+
+*/
 Piecewise<SBasis> 
 Geom::arcLengthSb(Piecewise<D2<SBasis> > const &M, double tol){
     Piecewise<D2<SBasis> > dM = derivative(M);
@@ -256,11 +298,18 @@ Geom::arcLengthSb(Piecewise<D2<SBasis> > const &M, double tol){
     length-=length.segs.front().at0();
     return length;
 }
+
+/** returns a function giving the arclength at each point in M.
+ \param M the Element.
+ \param tol the maximum error allowed.
+
+*/
 Piecewise<SBasis> 
 Geom::arcLengthSb(D2<SBasis> const &M, double tol){
     return arcLengthSb(Piecewise<D2<SBasis> >(M), tol);
 }
 
+#if 0
 double
 Geom::length(D2<SBasis> const &M,
                  double tol){
@@ -273,9 +322,15 @@ Geom::length(Piecewise<D2<SBasis> > const &M,
     Piecewise<SBasis> length = arcLengthSb(M, tol);
     return length.segs.back().at1();
 }
+#endif
 
+/** returns a function giving the curvature at each point in M.
+ \param M the Element.
+ \param tol the maximum error allowed.
 
-// incomplete.
+ Todo:
+ * claimed incomplete.  Check.
+*/
 Piecewise<SBasis>
 Geom::curvature(D2<SBasis> const &M, double tol) {
     D2<SBasis> dM=derivative(M);
@@ -287,6 +342,13 @@ Geom::curvature(D2<SBasis> const &M, double tol) {
     return(k);
 }
 
+/** returns a function giving the curvature at each point in M.
+ \param M the Element.
+ \param tol the maximum error allowed.
+
+ Todo:
+ * claimed incomplete.  Check.
+*/
 Piecewise<SBasis> 
 Geom::curvature(Piecewise<D2<SBasis> > const &V, double tol){
     Piecewise<SBasis> result;
@@ -303,6 +365,12 @@ Geom::curvature(Piecewise<D2<SBasis> > const &V, double tol){
 
 //=================================================================
 
+/** Reparameterise M to have unit speed.
+ \param M the Element.
+ \param tol the maximum error allowed.
+ \param order the maximum degree to use for approximation
+
+*/
 Piecewise<D2<SBasis> >
 Geom::arc_length_parametrization(D2<SBasis> const &M,
                            unsigned order,
@@ -326,6 +394,12 @@ Geom::arc_length_parametrization(D2<SBasis> const &M,
     return u;
 }
 
+/** Reparameterise M to have unit speed.
+ \param M the Element.
+ \param tol the maximum error allowed.
+ \param order the maximum degree to use for approximation
+
+*/
 Piecewise<D2<SBasis> >
 Geom::arc_length_parametrization(Piecewise<D2<SBasis> > const &M,
                                  unsigned order,
@@ -338,18 +412,83 @@ Geom::arc_length_parametrization(Piecewise<D2<SBasis> > const &M,
     return(result);
 }
 
+#include <gsl/gsl_integration.h>
+static double sb_length_integrating(double t, void* param) {
+    SBasis* pc = (SBasis*)param;
+    return sqrt((*pc)(t));
+}
+
+/** Calculates the length of a D2<SBasis> through gsl integration.
+ \param B the Element.
+ \param tol the maximum error allowed.
+ \param result variable to be incremented with the length of the path
+ \param abs_error variable to be incremented with the estimated error
+
+If you only want the length, this routine may be faster/more accurate.
+*/
+void Geom::length_integrating(D2<SBasis> const &B, double &result, double &abs_error, double tol) {
+    D2<SBasis> dB = derivative(B);
+    SBasis dB2 = dot(dB, dB);
+        
+    gsl_function F;
+    gsl_integration_workspace * w 
+        = gsl_integration_workspace_alloc (20);
+    F.function = &sb_length_integrating;
+    F.params = (void*)&dB2;
+    double quad_result, err;
+    /* We could probably use the non adaptive code here if we removed any cusps first. */
+         
+    gsl_integration_qag (&F, 0, 1, 0, tol, 20, 
+                         GSL_INTEG_GAUSS21, w, &quad_result, &err);
+        
+    abs_error += err;
+    result += quad_result;
+}
+
+/** Calculates the length of a D2<SBasis> through gsl integration.
+ \param s the Element.
+ \param tol the maximum error allowed.
+
+If you only want the total length, this routine faster and more accurate than constructing an arcLengthSb.
+*/
+double
+Geom::length(D2<SBasis> const &s,
+                 double tol){
+    double result = 0;
+    double abs_error = 0;
+    length_integrating(s, result, abs_error, tol);
+    return result;
+}
+/** Calculates the length of a Piecewise<D2<SBasis> > through gsl integration.
+ \param s the Element.
+ \param tol the maximum error allowed.
+
+If you only want the total length, this routine faster and more accurate than constructing an arcLengthSb.
+*/
+double
+Geom::length(Piecewise<D2<SBasis> > const &s,
+                 double tol){
+    double result = 0;
+    double abs_error = 0;
+    for (unsigned i=0; i < s.size();i++){
+        length_integrating(s[i], result, abs_error, tol);
+    }
+    return result;
+}
+
 /**
  * Centroid using sbasis integration.
- * This approach uses green's theorem to compute the area and centroid using integrals.  For curved
- * shapes this is much faster than converting to polyline.
+ \param p the Element.
+ \param centroid on return contains the centroid of the shape
+ \param area on return contains the signed area of the shape.
+ 
+This approach uses green's theorem to compute the area and centroid using integrals.  For curved shapes this is much faster than converting to polyline.  Note that without an uncross operation the output is not the absolute area.
 
  * Returned values: 
     0 for normal execution;
     2 if area is zero, meaning centroid is meaningless.
 
- * Copyright Nathan Hurst 2006
  */
-
 unsigned Geom::centroid(Piecewise<D2<SBasis> > const &p, Point& centroid, double &area) {
     Point centroid_tmp(0,0);
     double atmp = 0;
@@ -380,8 +519,10 @@ unsigned Geom::centroid(Piecewise<D2<SBasis> > const &p, Point& centroid, double
  *
  *  this requires to solve a system of the form
  *
- *  lambda1 = a0 lambda0^2 + c0
- *  lambda0 = a1 lambda1^2 + c1
+ * \f[
+ *  \lambda_1 = a_0 \lambda_0^2 + c_0
+ *  \lambda_0 = a_1 \lambda_1^2 + c_1
+ * \f]
  *
  * which is a deg 4 equation in lambda 0.
  * Below are basic functions dedicated to solving this assuming a0 and a1 !=0.
