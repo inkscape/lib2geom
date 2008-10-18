@@ -9,7 +9,8 @@
 
 #include <vector>
 
-#define NB_CTL_PTS 4
+#define NB_CTL_PTS 6
+#define K_SCALE .002
 
 using namespace Geom;
 using namespace std;
@@ -37,16 +38,20 @@ void cairo_vert(cairo_t *cr, double x, vector<double> p) {
     }
 }
 
-Piecewise<SBasis> interpolate(std::vector<double> val){
-    SBasis bump_in = Linear(0,1);
-    bump_in.push_back(Linear(-1,1));
+Piecewise<SBasis> interpolate(std::vector<double> values, std::vector<double> times){
+    assert ( values.size() == times.size() );
+    if ( values.size() == 0 ) return Piecewise<SBasis>();
+    if ( values.size() == 1 ) return Piecewise<SBasis>(values[0]);//what about time??
+
+    SBasis bump_in = Linear(0,1);//Enough for piecewise linear interpolation.
+    //bump_in.push_back(Linear(-1,1));//uncomment for C^1 interpolation
     SBasis bump_out = Linear(1,0);
-    bump_out.push_back(Linear(1,-1));
+    //bump_out.push_back(Linear(1,-1));
     
     Piecewise<SBasis> result;
-    result.cuts.push_back(0);
-    for (unsigned i = 0; i<val.size()-1; i++){
-        result.push(bump_out*val[i]+bump_in*val[i+1],i+1);
+    result.cuts.push_back(times[0]);
+    for (unsigned i = 0; i<values.size()-1; i++){
+        result.push(bump_out*values[i]+bump_in*values[i+1],times[i+1]);
     }
     return result;
 }
@@ -62,37 +67,78 @@ class Squiggles: public Toy {
     Point current_pos;
     Point current_dir;
     std::vector<double> curvatures;
+    std::vector<double> times;
     Piecewise<D2<SBasis> > curve;
     double tot_length;
+    int mode; //0=set curvature, 1=set curv.+rotation, 2=translate, 3=slide time.
+
+    virtual void mouse_moved(GdkEventMotion* e){
+        mode = 0;
+        if((e->state & (GDK_SHIFT_MASK)) && 
+           (e->state & (GDK_CONTROL_MASK))) {
+            mode = 3;
+        }else if(e->state & (GDK_CONTROL_MASK)) {
+            mode = 1;
+        }else if(e->state & (GDK_SHIFT_MASK)) {
+            mode = 2;
+        }
+        Toy::mouse_moved(e);
+    }
+
 
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         cairo_set_source_rgba (cr, 0., 0., 0., 1);
         cairo_set_line_width (cr, 1);
-
+        
+        *notify << "Drag to set curvature,\n";
+        *notify << "SHIFT-Drag to move curve,\n";
+        *notify << "CTRL-Drag to rotate,\n";
+        *notify << "SHIFT-CTRL-Drag to slide handles.";
         //Get user input
         if (mouse_down && selected) {
             for(unsigned i = 0; i < handles.size(); i++) {
                 if(selected == handles[i]){
-                    *notify << "Selected = " << i; 
                     current_ctl_pt = i;
-                    double time = current_ctl_pt*tot_length/(NB_CTL_PTS-1);
-                    current_pos = curve.valueAt(time);
-                    current_dir = derivative(curve).valueAt(time);
-                    Point hdle = dynamic_cast<PointHandle*>(handles[current_ctl_pt])->pos;
-                    curvatures[i] = cross(hdle - current_pos,current_dir)/1000;
+                    break;
                 }
-    	    }
+            }
+            double time = times[current_ctl_pt];
+            current_pos = curve.valueAt(time);
+            current_dir = derivative(curve).valueAt(time);//*This should be a unit vector!*
+            Point hdle = dynamic_cast<PointHandle*>(handles[current_ctl_pt])->pos;
+            if (mode == 0){
+                curvatures[current_ctl_pt] = cross(hdle - current_pos,current_dir)*K_SCALE;
+            }else if (mode == 1){//Rotate
+                double sign = ( curvatures[current_ctl_pt]>=0 ? 1 : -1 ); 
+                //curvatures[current_ctl_pt] = sign*L2(hdle - current_pos)*K_SCALE;
+                current_dir = -sign*unit_vector(rot90(hdle - current_pos));
+            }else if (mode == 2){//Translate
+                Point old_pos = current_pos + curvatures[current_ctl_pt]/K_SCALE*rot90(current_dir); 
+                current_pos += hdle - old_pos;
+                curve += hdle - old_pos;
+            }else if (mode == 3){//Slide time
+                Point old_pos = current_pos + curvatures[current_ctl_pt]/K_SCALE*rot90(current_dir); 
+                double delta = dot(hdle - old_pos,current_dir);
+                double epsilon = 2;
+                if (current_ctl_pt>0 && times[current_ctl_pt]+delta < times[current_ctl_pt-1]+epsilon){
+                    delta = times[current_ctl_pt-1] + epsilon - times[current_ctl_pt];
+                }
+                if (current_ctl_pt<times.size()-1 && times[current_ctl_pt]+delta > times[current_ctl_pt+1]-epsilon){
+                    delta = times[current_ctl_pt+1] - epsilon - times[current_ctl_pt];
+                }
+                times[current_ctl_pt] += delta;
+                current_pos += delta*current_dir;
+            }
         }
 
         //Compute new curve
-        Piecewise<SBasis> curvature = interpolate(curvatures);
-        curvature.setDomain(Interval(0,tot_length));
+        Piecewise<SBasis> curvature = interpolate(curvatures, times);
         Piecewise<SBasis> alpha = integral(curvature);
         Piecewise<D2<SBasis> > v = sectionize(tan2(alpha));
         curve = integral(v)+Point(100,100);	
 
         //transform to keep current point in place
-        double time = current_ctl_pt*tot_length/(NB_CTL_PTS-1);
+        double time = times[current_ctl_pt];
         Point new_pos = curve.valueAt(time);
         Point new_dir = v.valueAt(time);
         Matrix mat1 = Matrix(    new_dir[X],    new_dir[Y],    -new_dir[Y],    new_dir[X],    new_pos[X],    new_pos[Y]);
@@ -108,8 +154,9 @@ class Squiggles: public Toy {
         cairo_set_line_width(cr, .5);
         cairo_set_source_rgba (cr, 0., 0., 0.5, 1);
         for(unsigned i = 0; i < NB_CTL_PTS; i++) {
-            Point m = curve.valueAt(i*tot_length/(NB_CTL_PTS-1));
-            dynamic_cast<PointHandle*>(handles[i])->pos = m + curvatures[i]*1000*rot90(v.valueAt(i*tot_length/(NB_CTL_PTS-1)));
+            Point m = curve.valueAt(times[i]);
+            dynamic_cast<PointHandle*>(handles[i])->pos = m +
+                curvatures[i]/K_SCALE*rot90(v.valueAt(times[i]));
             draw_handle(cr, m);
             cairo_move_to(cr, m);
             cairo_line_to(cr, dynamic_cast<PointHandle*>(handles[i])->pos);
@@ -129,13 +176,14 @@ class Squiggles: public Toy {
 public:
     Squiggles () {
         current_ctl_pt = 0;
-        current_dir = Point(0,1);
+        current_dir = Point(1,0);
         current_pos = Point(100,100);
-        tot_length = 200;
+        tot_length = 300;
 
         curve = Piecewise<D2<SBasis> >(D2<SBasis>(Linear(100,300),Linear(100,100)));
         for(unsigned i = 0; i < NB_CTL_PTS; i++) {
             curvatures.push_back(0);
+            times.push_back(i*tot_length/(NB_CTL_PTS-1));
             PointHandle *pt_hdle = new PointHandle(Geom::Point(100+i*tot_length/(NB_CTL_PTS-1), 100.));
             handles.push_back(pt_hdle);
         }
