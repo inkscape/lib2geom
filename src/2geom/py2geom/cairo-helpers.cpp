@@ -133,18 +133,14 @@ void cairo_pw_d2_sb(cairo_t *cr, Piecewise<D2<SBasis> > const &p) {
         cairo_d2_sb(cr, p[i]);
 }
 
-cairo_t* cairo_t_from_id(long cr_int) {
-  PycairoContext* pcc = (PycairoContext*)(cr_int<<2);
-  return pcc->ctx;
-}
+static Pycairo_CAPI_t *Pycairo_CAPI = 0;
 
-cairo_t* cairo_t_from_object_id(boost::python::object cr) {
-  boost::python::long_ cr_long(cr);
-  printf("trying\n");
-  long cr_int = boost::python::extract<long>(cr_long);
-  printf("%d\n", cr_int);
-  PycairoContext* pcc = (PycairoContext*)cr_int;
-  return pcc->ctx;
+cairo_t* cairo_t_from_object(boost::python::object cr) {
+  if(!Pycairo_CAPI)
+    Pycairo_IMPORT;
+  PycairoContext* pcc = (PycairoContext*)cr.ptr();
+  assert(PyObject_TypeCheck(pcc, &PycairoContext_Type));
+  return PycairoContext_GET(pcc);
 }
 
 

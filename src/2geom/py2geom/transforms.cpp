@@ -39,6 +39,9 @@ using namespace boost::python;
 void wrap_transforms() {
     class_<Geom::Matrix>("Matrix", init<double, double, double, double, double, double>())
         .def(init<>())
+        .def(init<Geom::Rotate>())
+        .def(init<Geom::Scale>())
+        .def(init<Geom::Translate>())
         .def(self_ns::str(self))
         .add_property("xAxis",&Geom::Matrix::xAxis,&Geom::Matrix::setXAxis)
         .add_property("yAxis",&Geom::Matrix::yAxis,&Geom::Matrix::setYAxis)
@@ -70,6 +73,7 @@ void wrap_transforms() {
     ;
 
     class_<Geom::Translate>("Translate", init<double, double>())
+        .def(init<Geom::Point>())
         .def(self == self)
         .def(self != self)
         .def("inverse", &Geom::Translate::inverse)

@@ -109,50 +109,50 @@ struct CurveWrap : Geom::Curve, wrapper<Geom::Curve>
     Geom::D2<Geom::SBasis> toSBasis() const {return this->get_override("sbasis")();}
 };
 
-void py_cairo_curve(long cr_id, Geom::Curve const &c) {
-    cairo_curve(cairo_t_from_id(cr_id), c);
+void py_cairo_curve(object cr, Geom::Curve const &c) {
+    cairo_curve(cairo_t_from_object(cr), c);
 }
-void py_cairo_rectangle(long cr_id, Geom::Rect const &r) {
-    cairo_rectangle(cairo_t_from_id(cr_id), r);
+void py_cairo_rectangle(object cr, Geom::Rect const &r) {
+    cairo_rectangle(cairo_t_from_object(cr), r);
 }
 
-void py_cairo_convex_hull(long cr_id, Geom::ConvexHull const &r) {
-    cairo_convex_hull(cairo_t_from_id(cr_id), r);
+void py_cairo_convex_hull(object cr, Geom::ConvexHull const &r) {
+    cairo_convex_hull(cairo_t_from_object(cr), r);
 }
-/*void py_cairo_path(long cr_id, Geom::Path const &p) {
-    cairo_path(cairo_t_from_id(cr_id), p);
+/*void py_cairo_path(object cr, Geom::Path const &p) {
+    cairo_path(cairo_t_from_object(cr), p);
     }*/
 
 void py_cairo_path(object cr, Geom::Path const &p) {
-    cairo_path(cairo_t_from_object_id(cr), p);
+    cairo_path(cairo_t_from_object(cr), p);
 }
 
 void py_cairo_path(object cr, std::vector<Geom::Path> const &p) {
-    cairo_path(cairo_t_from_object_id(cr), p);
+    cairo_path(cairo_t_from_object(cr), p);
 }
-void py_cairo_path_stitches(long cr_id, Geom::Path const &p) {
-    cairo_path_stitches(cairo_t_from_id(cr_id), p);
+void py_cairo_path_stitches(object cr, Geom::Path const &p) {
+    cairo_path_stitches(cairo_t_from_object(cr), p);
 }
-void py_cairo_path_stitches(long cr_id, std::vector<Geom::Path> const &p) {
-    cairo_path_stitches(cairo_t_from_id(cr_id), p);
+void py_cairo_path_stitches(object cr, std::vector<Geom::Path> const &p) {
+    cairo_path_stitches(cairo_t_from_object(cr), p);
 }
 void     (*cp_1)(object, Geom::Path const &)    = &py_cairo_path;
 void     (*cp_2)(object, std::vector<Geom::Path> const &)    = &py_cairo_path;
 
-void     (*cps_1)(long, Geom::Path const &)    = &py_cairo_path_stitches;
-void     (*cps_2)(long, std::vector<Geom::Path> const &)    = &py_cairo_path_stitches;
+void     (*cps_1)(object, Geom::Path const &)    = &py_cairo_path_stitches;
+void     (*cps_2)(object, std::vector<Geom::Path> const &)    = &py_cairo_path_stitches;
 
 
-void py_cairo_d2_sb(long cr_id, Geom::D2<Geom::SBasis> const &p) {
-    cairo_d2_sb(cairo_t_from_id(cr_id), p);
+void py_cairo_d2_sb(object cr, Geom::D2<Geom::SBasis> const &p) {
+    cairo_d2_sb(cairo_t_from_object(cr), p);
 }
 
-void py_cairo_d2_pw_sb(long cr_id, Geom::D2<Geom::Piecewise<Geom::SBasis> > const &p) {
-    cairo_d2_pw_sb(cairo_t_from_id(cr_id), p);
+void py_cairo_d2_pw_sb(object cr, Geom::D2<Geom::Piecewise<Geom::SBasis> > const &p) {
+    cairo_d2_pw_sb(cairo_t_from_object(cr), p);
 }
 
-void py_cairo_pw_d2_sb(long cr_id, Geom::Piecewise<Geom::D2<Geom::SBasis> > const &p) {
-    cairo_pw_d2_sb(cairo_t_from_id(cr_id), p);
+void py_cairo_pw_d2_sb(object cr, Geom::Piecewise<Geom::D2<Geom::SBasis> > const &p) {
+    cairo_pw_d2_sb(cairo_t_from_object(cr), p);
 }
 
 
@@ -187,6 +187,7 @@ void wrap_path()
         .def("boundsExact", &Geom::Path::boundsExact)
         .def("toPwSb", &Geom::Path::toPwSb)
         .def(self * Geom::Matrix())
+        .def(self *= Geom::Matrix())
         .def("pointAt", &Geom::Path::pointAt)
         .def("valueAt", &Geom::Path::valueAt)
         .def("__call__", &Geom::Path::pointAt)
@@ -213,6 +214,7 @@ void wrap_path()
     class_<std::vector<Geom::Path> >("PathVector")
         .def(vector_indexing_suite<std::vector<Geom::Path> >())
         .def(self * Geom::Matrix())
+        .def(self *= Geom::Matrix())
     ;
     def("reverse_paths_and_order", Geom::reverse_paths_and_order);
     def("bounds_fast", (Geom::Rect (*)(Geom::PathVector const &))&Geom::bounds_fast);

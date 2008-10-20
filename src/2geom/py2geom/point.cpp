@@ -91,6 +91,8 @@ void wrap_point() {
     def("abs", (Geom::Point (*)(Geom::Point const&))&Geom::abs);
 
     class_<Geom::Point>("Point", init<double, double>())
+        .def(init<>())
+        
         .def("__str__", point_repr)
         .def("__repr__", point_repr)
         .def("__getitem__", python_getitem<Geom::Point,double,2>)
