@@ -39,6 +39,7 @@ public:
     
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         cairo_set_line_width (cr, 1);
+        cairo_set_source_rgb(cr, 0,0,0);
         std::vector<Geom::Point> trans;
         trans.resize(psh.size());
         for(unsigned i = 0; i < psh.size(); i++) {

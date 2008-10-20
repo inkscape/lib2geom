@@ -9,6 +9,8 @@
 #include <cairo-svg.h>
 #endif
 
+#include <getopt.h>
+
 GtkWindow* window;
 static GtkWidget *canvas;
 Toy* current_toy;
@@ -127,7 +129,8 @@ void Toy::scroll(GdkEventScroll* /*e*/) {
 }
 
 void Toy::canvas_click(Geom::Point at, int button) {
-
+    (void)at;
+    (void)button;
 }
 
 void Toy::mouse_released(GdkEventButton* e) {
@@ -206,30 +209,45 @@ void save() {
     }
 }
 
-void save_cairo() {
-    GtkWidget* d = gtk_file_chooser_dialog_new("Save file as svg or pdf", window, GTK_FILE_CHOOSER_ACTION_SAVE, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT, NULL);
-    if(gtk_dialog_run(GTK_DIALOG(d)) == GTK_RESPONSE_ACCEPT) {
-        const char* filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(d));
-        cairo_surface_t* cr_s;
-        unsigned l = strlen(filename);
+void save_cairo_backend(const char* filename) {
+    cairo_surface_t* cr_s;
+    unsigned l = strlen(filename);
+    int width = 600;
+    int height = 600;
+    bool save_png = false;
+
+    if (l >= 4 && strcmp(filename + l - 4, ".png") == 0) {
+        cr_s = cairo_image_surface_create ( CAIRO_FORMAT_ARGB32, width, height );
+        save_png = true;
+    }
+
 #if CAIRO_HAS_PDF_SURFACE
-        if (l >= 4 && strcmp(filename + l - 4, ".pdf") == 0)
-            cr_s = cairo_pdf_surface_create(filename, 600., 600.);
+    else if (l >= 4 && strcmp(filename + l - 4, ".pdf") == 0)
+        cr_s = cairo_pdf_surface_create(filename, width, height);
 #endif
 #if CAIRO_HAS_SVG_SURFACE
 #if CAIRO_HAS_PDF_SURFACE        
-        else
+    else
 #endif
-            cr_s = cairo_svg_surface_create(filename, 600., 600.);
+        cr_s = cairo_svg_surface_create(filename, width, height);
 #endif
-        cairo_t* cr = cairo_create(cr_s);
+    cairo_t* cr = cairo_create(cr_s);
         
-        if(current_toy != NULL)
-            current_toy->draw(cr, new std::ostringstream, 600, 600, true);
+    if(current_toy != NULL)
+        current_toy->draw(cr, new std::ostringstream, width, height, true);
 
-        cairo_show_page(cr);
-        cairo_destroy (cr);
-        cairo_surface_destroy (cr_s);
+    cairo_show_page(cr);
+    if(save_png)
+        cairo_surface_write_to_png(cr_s, filename);
+    cairo_destroy (cr);
+    cairo_surface_destroy (cr_s);
+}
+
+void save_cairo() {
+    GtkWidget* d = gtk_file_chooser_dialog_new("Save file as svg, pdf or png", window, GTK_FILE_CHOOSER_ACTION_SAVE, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT, NULL);
+    if(gtk_dialog_run(GTK_DIALOG(d)) == GTK_RESPONSE_ACCEPT) {
+        const char* filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(d));
+        save_cairo_backend(filename);
     }
     gtk_widget_destroy(d);
 }
@@ -356,7 +374,7 @@ GtkItemFactoryEntry menu_items[] = {
     { (gchar*)"/File/_Open Handles",(gchar*)"<CTRL>O",      open,           0,  (gchar*)"<StockItem>", GTK_STOCK_OPEN },
     { (gchar*)"/File/_Save Handles",(gchar*)"<CTRL>S",      save,           0,  (gchar*)"<StockItem>", GTK_STOCK_SAVE_AS },
     { (gchar*)"/File/sep",          NULL,           NULL,           0,  (gchar*)"<Separator>"                 },
-    { (gchar*)"/File/Save SVG/PDF", NULL,           save_cairo,     0,  (gchar*)"<StockItem>", GTK_STOCK_SAVE },
+    { (gchar*)"/File/Save SVG or PDF", NULL,           save_cairo,     0,  (gchar*)"<StockItem>", GTK_STOCK_SAVE },
     { (gchar*)"/File/Save PNG",     NULL,           save_image,     0,  (gchar*)"<StockItem>", GTK_STOCK_SELECT_COLOR }, 
     { (gchar*)"/File/sep",          NULL,           NULL,           0,  (gchar*)"<Separator>"                 },
     { (gchar*)"/File/_Quit",        (gchar*)"<CTRL>Q",      gtk_main_quit,  0,  (gchar*)"<StockItem>", GTK_STOCK_QUIT },
@@ -370,26 +388,85 @@ void init(int argc, char **argv, Toy* t, int width, int height) {
     gtk_init (&argc, &argv);
     
     gdk_rgb_init();
+    
+    FILE * to_load_file = NULL;
+    
+    int c;
+    int digit_optind = 0;
+
+    int screenshot_only_type = 0;
+    char *screenshot_output_name = 0;
+    t->name = typeid(*t).name();
+
+    while (1)
+    {
+        int this_option_optind = optind ? optind : 1;
+        int option_index = 0;
+
+        c = getopt_long (argc, argv, "hs:c:d:012",
+                         NULL, &option_index);
+        if (c == -1)
+            break;
+
+        switch (c)
+        {
+            case 'h':
+                to_load_file = fopen(argv[2], "r");
+                break;
+                
+            case 's':
+                screenshot_only_type = 1;
+                screenshot_output_name = strdup(optarg);
+                break;
+
+            case 'c':
+                printf ("option c with value `%s'\n", optarg);
+                break;
+
+            case 'd':
+                printf ("option d with value `%s'\n", optarg);
+                break;
+
+            case '?':
+                break;
+
+            default:
+                printf ("?? getopt returned character code 0%o ??\n", c);
+        }
+    }
+
+    for(int i = 1; i <= argc-optind; i++)
+        argv[i] = argv[i-1+optind];
+    argc -= optind-1;
 
     t->first_time(argc, argv);
+
+    if(to_load_file)
+        t->load(to_load_file);
+    
+    if(screenshot_only_type > 0) {
+        if(screenshot_output_name)
+            save_cairo_backend(screenshot_output_name);
+        return;
+    }
     
     window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
     
-    //Find last slash - remainder is title
+//Find last slash - remainder is title
     char* title = 0;
     for(char* ch = argv[0]; *ch != '\0'; ch++)
         if(*ch == '/') title = ch+1;
 
     gtk_window_set_title(GTK_WINDOW(window), title);
 
-    //Creates the menu from the menu data above
+//Creates the menu from the menu data above
     GtkAccelGroup* accel_group = gtk_accel_group_new();
     GtkItemFactory* item_factory = gtk_item_factory_new(GTK_TYPE_MENU_BAR, "<main>", accel_group);
     gtk_item_factory_create_items(item_factory, nmenu_items, menu_items, NULL);
     gtk_window_add_accel_group(window, accel_group);
     GtkWidget* menu = gtk_item_factory_get_widget(item_factory, "<main>");
 
-    //gtk_window_set_policy(GTK_WINDOW(window), TRUE, TRUE, TRUE);
+//gtk_window_set_policy(GTK_WINDOW(window), TRUE, TRUE, TRUE);
 
     gtk_signal_connect(GTK_OBJECT(window), "delete_event", GTK_SIGNAL_FUNC(delete_event), NULL);
 
@@ -429,7 +506,6 @@ void init(int argc, char **argv, Toy* t, int width, int height) {
     gtk_widget_grab_focus(canvas);
     assert(gtk_widget_is_focus(canvas));
 
-    t->name = typeid(*t).name();
     gtk_main();
 }
 
