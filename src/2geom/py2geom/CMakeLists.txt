@@ -10,6 +10,7 @@ d2.cpp
 parser.cpp
 path.cpp
 shape.cpp
+cairo-helpers.cpp
 py2geom.cpp
 )
 
@@ -27,7 +28,7 @@ IF(2GEOM_BOOST_PYTHON)
 
         ADD_LIBRARY(py2geom SHARED ${2GEOM_BOOST_PYTHON_SRC})
         SET_TARGET_PROPERTIES(py2geom PROPERTIES PREFIX "_")
-        TARGET_LINK_LIBRARIES(py2geom 2geom ${PYTHON_LIBRARIES} ${BOOST_PYTHON_LIBRARY})
+        TARGET_LINK_LIBRARIES(py2geom 2geom ${PYTHON_LIBRARIES} ${BOOST_PYTHON_LIBRARY} ${cairo_LINK_FLAGS})
 
         INSTALL(TARGETS py2geom DESTINATION "${SITEPACKAGE}/py2geom")
         INSTALL(FILES "${CMAKE_CURRENT_SOURCE_DIR}/__init__.py" DESTINATION "${SITEPACKAGE}/py2geom")
