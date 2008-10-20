@@ -1,51 +1,13 @@
+#include <boost/python.hpp>
 #include <cairo.h>
 #include <2geom/toys/path-cairo.h>
 #include <2geom/sbasis-to-bezier.h>
 #include <2geom/utils.h>
 #include <sstream>
 #include <pycairo/pycairo.h>
+#include "cairo-helpers.h"
 
 using namespace Geom;
-
-void draw_line_seg(cairo_t *cr, Geom::Point a, Geom::Point b) {
-    cairo_move_to(cr, a[0], a[1]);
-    cairo_line_to(cr, b[0], b[1]);
-    cairo_stroke(cr);
-}
-
-void draw_spot(cairo_t *cr, Geom::Point h) {
-    draw_line_seg(cr, h, h);
-}
-
-void draw_handle(cairo_t *cr, Geom::Point h) {
-    double x = h[Geom::X];
-    double y = h[Geom::Y];
-    cairo_move_to(cr, x-3, y);
-    cairo_line_to(cr, x+3, y);
-    cairo_move_to(cr, x, y-3);
-    cairo_line_to(cr, x, y+3);
-}
-
-void draw_cross(cairo_t *cr, Geom::Point h) {
-    double x = h[Geom::X];
-    double y = h[Geom::Y];
-    cairo_move_to(cr, x-3, y-3);
-    cairo_line_to(cr, x+3, y+3);
-    cairo_move_to(cr, x+3, y-3);
-    cairo_line_to(cr, x-3, y+3);
-}
-
-void draw_circ(cairo_t *cr, Geom::Point h) {
-    int x = int(h[Geom::X]);
-    int y = int(h[Geom::Y]);
-    cairo_new_sub_path(cr);
-    cairo_arc(cr, x, y, 3, 0, M_PI*2);
-    cairo_stroke(cr);
-}
-
-void draw_ray(cairo_t *cr, Geom::Point h, Geom::Point dir) {
-    draw_line_seg(cr, h, h+dir);
-}
 
 
 void
@@ -158,20 +120,29 @@ void cairo_path_stitches(cairo_t *cr, std::vector<Path> const &p) {
 }
 
 
-void cairo_md_sb(cairo_t *cr, D2<SBasis> const &B) {
+void cairo_d2_sb(cairo_t *cr, D2<SBasis> const &B) {
     cairo_path(cr, path_from_sbasis(B, 0.1));
 }
 
-void cairo_d2_pw(cairo_t *cr, D2<Piecewise<SBasis> > const &p) {
-    cairo_pw_d2(cr, sectionize(p));
+void cairo_d2_pw_sb(cairo_t *cr, D2<Piecewise<SBasis> > const &p) {
+    cairo_pw_d2_sb(cr, sectionize(p));
 }
 
-void cairo_pw_d2(cairo_t *cr, Piecewise<D2<SBasis> > const &p) {
+void cairo_pw_d2_sb(cairo_t *cr, Piecewise<D2<SBasis> > const &p) {
     for(unsigned i = 0; i < p.size(); i++)
-        cairo_md_sb(cr, p[i]);
+        cairo_d2_sb(cr, p[i]);
 }
 
 cairo_t* cairo_t_from_id(long cr_int) {
+  PycairoContext* pcc = (PycairoContext*)(cr_int<<2);
+  return pcc->ctx;
+}
+
+cairo_t* cairo_t_from_object_id(boost::python::object cr) {
+  boost::python::long_ cr_long(cr);
+  printf("trying\n");
+  long cr_int = boost::python::extract<long>(cr_long);
+  printf("%d\n", cr_int);
   PycairoContext* pcc = (PycairoContext*)cr_int;
   return pcc->ctx;
 }

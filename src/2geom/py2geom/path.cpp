@@ -42,6 +42,8 @@
 #include "../rect.h"
 #include "../d2.h"
 
+#include "cairo-helpers.h"
+
 using namespace boost::python;
 
 Geom::Curve const &path_getitem(Geom::Path const& p, int index)
@@ -107,6 +109,53 @@ struct CurveWrap : Geom::Curve, wrapper<Geom::Curve>
     Geom::D2<Geom::SBasis> toSBasis() const {return this->get_override("sbasis")();}
 };
 
+void py_cairo_curve(long cr_id, Geom::Curve const &c) {
+    cairo_curve(cairo_t_from_id(cr_id), c);
+}
+void py_cairo_rectangle(long cr_id, Geom::Rect const &r) {
+    cairo_rectangle(cairo_t_from_id(cr_id), r);
+}
+
+void py_cairo_convex_hull(long cr_id, Geom::ConvexHull const &r) {
+    cairo_convex_hull(cairo_t_from_id(cr_id), r);
+}
+/*void py_cairo_path(long cr_id, Geom::Path const &p) {
+    cairo_path(cairo_t_from_id(cr_id), p);
+    }*/
+
+void py_cairo_path(object cr, Geom::Path const &p) {
+    cairo_path(cairo_t_from_object_id(cr), p);
+}
+
+void py_cairo_path(object cr, std::vector<Geom::Path> const &p) {
+    cairo_path(cairo_t_from_object_id(cr), p);
+}
+void py_cairo_path_stitches(long cr_id, Geom::Path const &p) {
+    cairo_path_stitches(cairo_t_from_id(cr_id), p);
+}
+void py_cairo_path_stitches(long cr_id, std::vector<Geom::Path> const &p) {
+    cairo_path_stitches(cairo_t_from_id(cr_id), p);
+}
+void     (*cp_1)(object, Geom::Path const &)    = &py_cairo_path;
+void     (*cp_2)(object, std::vector<Geom::Path> const &)    = &py_cairo_path;
+
+void     (*cps_1)(long, Geom::Path const &)    = &py_cairo_path_stitches;
+void     (*cps_2)(long, std::vector<Geom::Path> const &)    = &py_cairo_path_stitches;
+
+
+void py_cairo_d2_sb(long cr_id, Geom::D2<Geom::SBasis> const &p) {
+    cairo_d2_sb(cairo_t_from_id(cr_id), p);
+}
+
+void py_cairo_d2_pw_sb(long cr_id, Geom::D2<Geom::Piecewise<Geom::SBasis> > const &p) {
+    cairo_d2_pw_sb(cairo_t_from_id(cr_id), p);
+}
+
+void py_cairo_pw_d2_sb(long cr_id, Geom::Piecewise<Geom::D2<Geom::SBasis> > const &p) {
+    cairo_pw_d2_sb(cairo_t_from_id(cr_id), p);
+}
+
+
 void wrap_path()
 {
     class_<CurveWrap, boost::noncopyable>("Curve")
@@ -171,6 +220,26 @@ void wrap_path()
     def("path_from_piecewise", Geom::path_from_piecewise);
     def("path_from_sbasis", Geom::path_from_sbasis);
     def("cubicbezierpath_from_sbasis", Geom::cubicbezierpath_from_sbasis);
+
+
+void cairo_move_to(cairo_t *cr, Geom::Point p1);
+    def("cubicbezierpath_from_sbasis", Geom::cubicbezierpath_from_sbasis);
+void cairo_line_to(cairo_t *cr, Geom::Point p1);
+    def("cubicbezierpath_from_sbasis", Geom::cubicbezierpath_from_sbasis);
+void cairo_curve_to(cairo_t *cr, Geom::Point p1, Geom::Point p2, Geom::Point p3);
+    def("cubicbezierpath_from_sbasis", Geom::cubicbezierpath_from_sbasis);
+
+    //def("cairo_curve", cairo_curve);
+    def("cairo_convex_hull", py_cairo_convex_hull);
+    def("cairo_path", cp_1);
+    def("cairo_path", cp_2);
+    def("cairo_path_stitches", cps_1);
+    def("cairo_path_stitches", cps_2);
+
+    def("cairo_d2_sb", py_cairo_d2_sb);
+    def("cairo_d2_pw_sb", py_cairo_d2_pw_sb);
+    def("cairo_pw_d2_sb", py_cairo_pw_d2_sb);
+
 }
 
 /*
