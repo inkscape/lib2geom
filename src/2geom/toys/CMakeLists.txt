@@ -42,7 +42,6 @@ fitter
 hvlineseg-toy
 implicit-toy
 inner-product-clip
-involute
 line-toy
 load-svgd
 rect-line-intersect
@@ -50,7 +49,6 @@ mesh-warp
 match-curve
 #normal-bundle
 point-curve-nearest-point
-osc
 offset-toy
 pair-intersect
 parametrics
