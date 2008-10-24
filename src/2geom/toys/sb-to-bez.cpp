@@ -161,14 +161,13 @@ void recursive_curvature_fitter(cairo_t* cr, Piecewise<D2<SBasis> > const &f, do
 
 class SbToBezierTester: public Toy {
     //std::vector<Slider> sliders;
-    PointSetHandle path_psh;
+    PointSetHandle path_psh[2];
     PointHandle adjuster, adjuster2, adjuster3;
 
   void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
       cairo_save(cr);
-      D2<SBasis> f;//=SBasis(Linear(0,.5));
-      f = path_psh.asBezier();
-      Piecewise<D2<SBasis> >f_as_pw = Piecewise<D2<SBasis> >(f);
+      Piecewise<D2<SBasis> >f_as_pw = Piecewise<D2<SBasis> >(path_psh[0].asBezier());
+      f_as_pw.push_seg(path_psh[1].asBezier());
       //f=handles_to_sbasis(handles.begin(), SIZE-1);
       adjuster.pos[1]=450;
       adjuster.pos[0]=std::max(adjuster.pos[0],150.);
@@ -179,11 +178,12 @@ class SbToBezierTester: public Toy {
 
       cairo_set_source_rgba (cr, 0., 0., 0., 1);
       cairo_set_line_width (cr, 0.5);
-      cairo_md_sb(cr, f);
+      cairo_pw_d2(cr, f_as_pw);
       cairo_stroke(cr);
       if (t0==t1) return;//TODO: fix me...
+#if 0
       if(0) {
-      Piecewise<D2<SBasis> > g = Piecewise<D2<SBasis> >(f);
+      Piecewise<D2<SBasis> > g = f_as_pw;
       cairo_set_line_width (cr, 1);
       cairo_set_source_rgba (cr, 0., 0., 0.9, .7);
       double error=0;
@@ -228,6 +228,9 @@ class SbToBezierTester: public Toy {
       *notify << " -blue: bezier approx derived from curvature.\n";
       *notify << "      max distance (to original): "<<h_dist<<"\n";
       }
+#endif
+
+
       f_as_pw = arc_length_parametrization(f_as_pw);
       adjuster2.pos[0]=150;
       adjuster2.pos[1]=std::min(std::max(adjuster2.pos[1],150.),450.);
@@ -248,9 +251,11 @@ class SbToBezierTester: public Toy {
 public:
     SbToBezierTester() {
       //if(handles.empty()) {
-      for(unsigned i = 0; i < 6; i++)
-	path_psh.push_back(150+300*uniform(),150+300*uniform());
-      handles.push_back(&path_psh);
+        for(int j = 0; j < 2; j++) {
+            for(unsigned i = 0; i < 6; i++)
+                path_psh[j].push_back(150+300*uniform(),150+300*uniform());
+            handles.push_back(&path_psh[j]);
+        }
       adjuster.pos = Geom::Point(150+300*uniform(),150+300*uniform());
       handles.push_back(&adjuster);
       adjuster2.pos = Geom::Point(150,300);
