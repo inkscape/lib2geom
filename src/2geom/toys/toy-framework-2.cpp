@@ -74,9 +74,9 @@ void Toy::draw(cairo_t *cr, std::ostringstream *notify, int width, int height, b
 	cairo_line_to(cr, width/2, height);
     }
 
-    cairo_set_source_rgba (cr, 0., 0.5, 0, 1);
     cairo_set_line_width (cr, 1);
     for(unsigned i = 0; i < handles.size(); i++) {
+        cairo_set_source_rgb (cr, handles[i]->rgb[0], handles[i]->rgb[1], handles[i]->rgb[2]);
 	handles[i]->draw(cr, should_draw_numbers());
     }
     

@@ -29,6 +29,7 @@ void draw_number(cairo_t *cr, Geom::Point pos, int num, std::string name=std::st
 class Handle{
 public:
     std::string name;
+    float rgb[3];
     Handle() {}
     virtual ~Handle() {}
     virtual void draw(cairo_t *cr, bool annotes=false) = 0;

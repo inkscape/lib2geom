@@ -1,6 +1,7 @@
 /** Generates approximate metromap lines
  * Copyright njh
  * Copyright Tim Dwyer
+ * Published in ISVC 2008, Las Vegas, Nevada, USA
  */
 
 #include <cstdio>
@@ -21,6 +22,7 @@
 #include <2geom/point.h>
 #include <2geom/toys/interactive-bits.h>
 #include <2geom/geom.h>
+#include <2geom/toys/toy-framework-2.h>
 
 using std::string;
 using std::vector;
@@ -31,14 +33,6 @@ using std::map;
 using std::cout;
 using std::endl;
 using namespace Geom;
-
-static GtkWidget *canvas;
-
-
-std::vector<Geom::Point*> handles;
-Geom::Point *selected_handle;
-Geom::Point old_handle_pos;
-Geom::Point old_mouse_point;
 
 vector<vector<Point> > paths;
 
@@ -250,7 +244,7 @@ public:
     vector<block> blocks;
     void test();
     void merging_version();
-    void schematised_merging();
+    void schematised_merging(unsigned number_of_directions);
 
     double get_block_line(block& b, Point& d, Point& n, Point& c) {
         n = unit_vector(rot90(d));
@@ -268,9 +262,9 @@ void parse_data(vector<vector<Point> >& paths) {
         getline(location_file,sx,',');
         getline(location_file,sy,'\n');
         char *e;
-        double x = strtod(sx.c_str(),&e), y = strtod(sy.c_str(),&e);
-        //cout << id << " (" << x << "," << y << ")"<< endl;
-        idlookup[id]=Point(x,y);
+        Point p(strtod(sx.c_str(),&e), strtod(sy.c_str(),&e));
+	//cout << id << p << endl;
+        idlookup[id] = p;
     }
     string l;
     while (getline(path_file,l,'\n')) {
@@ -278,10 +272,10 @@ void parse_data(vector<vector<Point> >& paths) {
         if(l.size() < 2) continue; // skip blank lines
         if(l.find(":",0)!=string::npos) continue; // skip labels
         string::size_type p=0,q;
-        while((q=l.find(",",p))!=string::npos || p < l.size() && (q = l.size()-1)) {
+        while((q=l.find(",",p))!=string::npos || p < l.size() && (q = l.size())) {
             id = l.substr(p,q-p);
-            //cout << id << ",";
-            ps.push_back(2*idlookup[id]);
+	    Point pt = 2*idlookup[id];
+            ps.push_back(pt);
             p=q+1;
         }
         paths.push_back(ps);
@@ -352,13 +346,12 @@ void fit::test() {
     thickness[best] = 4;
 }
 
-void fit::schematised_merging() {
+void fit::schematised_merging(unsigned number_of_directions) {
     const double link_cost = 0;
     const unsigned N = input.size()-1;
     blocks.resize(N);
-    unsigned C=4;
-    for(unsigned i = 0; i<C ; i++) {
-        double t = M_PI*i/float(C);
+    for(unsigned i = 0; i<number_of_directions ; i++) {
+        double t = M_PI*i/float(number_of_directions);
         angles.push_back(Point(cos(t),sin(t)));
     }
     // pairs
@@ -734,341 +727,95 @@ void fit::C_simple_dp() {
     reverse(solution.begin(), solution.end());
 }
 
-// H in [0,360)
-// S, V, R, G, B in [0,1]
-void convertHSVtoRGB(const double H, const double S, const double V,
-                     double& R, double& G, double& B) {
-    int Hi = int(floor(H/60.)) % 6;
-    double f = H/60. - Hi;
-    double p = V*(1-S);
-    double q = V*(1-f*S);
-    double t = V*(1-(1-f)*S);
-    switch(Hi) {
-        case 0: R=V, G=t, B=p; break;
-        case 1: R=q, G=V, B=p; break;
-        case 2: R=p, G=V, B=t; break;
-        case 3: R=p, G=q, B=V; break;
-        case 4: R=t, G=p, B=V; break;
-        case 5: R=V, G=p, B=q; break;
-    }
-}
-void draw_everything(cairo_t* cr, int /*width*/, int height) {
-    std::ostringstream notify;
+
+
+
+
+
+class MetroMap: public Toy {
+public:
+  vector<PointSetHandle> metro_lines;
+  PointHandle directions;
+  
+  virtual bool should_draw_numbers() { return false; }
+  
+  virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
+    double slider_margin = 20;
+    double slider_top = 20;
+    double slider_bot = 200;
+    directions.pos[X] = slider_margin;
+    if (directions.pos[Y]<slider_top) directions.pos[Y] = slider_top; 
+    if (directions.pos[Y]>slider_bot) directions.pos[Y] = slider_bot; 
+
+    unsigned num_directions = 2 + 15*(slider_bot-directions.pos[Y])/(slider_bot-slider_top);
+
+    cairo_move_to(cr,Geom::Point(slider_margin,slider_bot));
+    cairo_line_to(cr,Geom::Point(slider_margin,slider_top));
+    cairo_set_line_width(cr,.5);
+    cairo_set_source_rgba (cr, 0., 0.3, 0., 1.);
+    cairo_stroke(cr);
+
     cairo_set_source_rgba (cr, 0., 0.5, 0, 1);
     cairo_set_line_width (cr, 1);
     cairo_set_source_rgba (cr, 0., 0., 0, 0.8);
     cairo_set_line_width (cr, 1);
     
-    unsigned N= paths.size();
+    unsigned N=  paths.size();
     for(unsigned i=0;i<N;i++) {
-        double R,G,B;
-        convertHSVtoRGB(360.*double(i)/double(N),0.7,1.,R,G,B);
-        cairo_set_source_rgba (cr, R, G, B, 0.8);
-        fit f(paths[i]);
-        f.schematised_merging();
-        f.draw(cr);
-        cairo_stroke(cr);
-        for(unsigned j = 0; j < paths[i].size(); j++) {
-            draw_circ(cr, paths[i][j]);
-        }
-        cairo_stroke(cr);
+      double R,G,B;
+      convertHSVtoRGB(360.*double(i)/double(N),1,0.75,R,G,B);
+      metro_lines[i].rgb[0] = R;
+      metro_lines[i].rgb[1] = G;
+      metro_lines[i].rgb[2] = B;
+      cairo_set_source_rgba (cr, R, G, B, 0.8);
+      fit f(metro_lines[i].pts);
+      f.schematised_merging(num_directions);
+      f.draw(cr);
+      cairo_stroke(cr);
     }
     cairo_set_source_rgba (cr, 0., 0., 0, 1);
     {
-        PangoLayout* layout = pango_cairo_create_layout (cr);
-        pango_layout_set_text(layout, 
-                              notify.str().c_str(), -1);
+      PangoLayout* layout = pango_cairo_create_layout (cr);
+      pango_layout_set_text(layout, 
+			    notify->str().c_str(), -1);
 
-        PangoFontDescription *font_desc = pango_font_description_new();
-        pango_font_description_set_family(font_desc, "Sans");
-        const unsigned size_px = 10;
-        pango_font_description_set_absolute_size(font_desc, size_px * 1024.0);
-        pango_layout_set_font_description(layout, font_desc);
-        PangoRectangle logical_extent;
-        pango_layout_get_pixel_extents(layout,
-                                       NULL,
-                                       &logical_extent);
-        cairo_move_to(cr, 0, height-logical_extent.height);
-        pango_cairo_show_layout(cr, layout);
+      PangoFontDescription *font_desc = pango_font_description_new();
+      pango_font_description_set_family(font_desc, "Sans");
+      const unsigned size_px = 10;
+      pango_font_description_set_absolute_size(font_desc, size_px * 1024.0);
+      pango_layout_set_font_description(layout, font_desc);
+      PangoRectangle logical_extent;
+      pango_layout_get_pixel_extents(layout,
+				     NULL,
+				     &logical_extent);
+      cairo_move_to(cr, 0, height-logical_extent.height);
+      pango_cairo_show_layout(cr, layout);
     }
-}
-static gboolean
-expose_event(GtkWidget *widget, GdkEventExpose */*event*/, gpointer /*data*/)
-{
-    cairo_t *cr = gdk_cairo_create (widget->window);
-    
-    int width = 256;
-    int height = 256;
-    gdk_drawable_get_size(widget->window, &width, &height);
-    draw_everything(cr,width,height);
-    
-    cairo_destroy (cr);
-    
-    return TRUE;
-}
+    Toy::draw(cr, notify, width, height, save);
+  }
 
-static void handle_mouse(GtkWidget* widget) {
-    gtk_widget_queue_draw (widget);
-}
-
-static gint mouse_motion_event(GtkWidget* widget, GdkEventMotion* e, gpointer /*data*/) {
-    Geom::Point mouse(e->x, e->y);
-    
-    if(e->state & (GDK_BUTTON1_MASK | GDK_BUTTON3_MASK)) {
-        if(selected_handle) {
-            *selected_handle = mouse - old_handle_pos;
-            
-        }
-        handle_mouse(widget);
+  MetroMap() {
+    parse_data(paths);
+    for(unsigned i=0;i<paths.size();i++) {
+      metro_lines.push_back(PointSetHandle());
+      for(unsigned j=0;j<paths[i].size();j++) {
+	metro_lines.back().push_back(paths[i][j]);
+      }
     }
-
-    if(e->state & (GDK_BUTTON2_MASK)) {
-        gtk_widget_queue_draw(widget);
+    for(unsigned i=0;i<metro_lines.size();i++) {
+      handles.push_back(&metro_lines[i]);
     }
-    
-    old_mouse_point = mouse;
+    handles.push_back(&directions);
+  }
 
-    return FALSE;
-}
+};
 
-static gint mouse_event(GtkWidget* window, GdkEventButton* e, gpointer /*data*/) {
-    Geom::Point mouse(e->x, e->y);
-    if(e->button == 1 || e->button == 3) {
-        for(unsigned i = 0; i < handles.size(); i++) {
-            if(Geom::distance(mouse, *handles[i]) < 5) {
-                selected_handle = handles[i];
-                old_handle_pos = mouse - *handles[i];
-            }
-        }
-        handle_mouse(window);
-    } else if(e->button == 2) {
-        gtk_widget_queue_draw(window);
-    }
-    old_mouse_point = mouse;
 
-    return FALSE;
-}
 
-static gint mouse_release_event(GtkWidget* /*window*/, GdkEventButton* /*e*/, gpointer /*data*/) {
-    selected_handle = 0;
-    return FALSE;
-}
 
-static gint key_release_event(GtkWidget *widget, GdkEventKey *event, gpointer) {
-    gint ret = FALSE;
-    if (event->keyval == ' ') {
-        ret = TRUE;
-    } else if (event->keyval == 'l') {
-        ret = TRUE;
-    } else if (event->keyval == 'q') {
-        exit(0);
-    } else if (event->keyval == 's') {
-        int width = 256;
-        int height = 256;
-        gdk_drawable_get_size(widget->window, &width, &height);
-        cairo_surface_t* cr_s = cairo_pdf_surface_create("metromap.pdf",
-                                                         width,
-                                                         height);
-
-        cairo_t* cr = cairo_create(cr_s);
-        draw_everything(cr,width,height);
-        cairo_show_page(cr);
-        cairo_destroy (cr);
-        cairo_surface_destroy (cr_s);
-
-        ret = TRUE;
-    }
-
-    if (ret) {
-        gtk_widget_queue_draw(widget);
-    }
-
-    return ret;
-}
-
-static gint
-delete_event_cb(GtkWidget* /*window*/, GdkEventAny* /*e*/, gpointer /*data*/)
-{
-    gtk_main_quit();
-    return FALSE;
-}
-
-static void
-on_open_activate(GtkMenuItem */*menuitem*/, gpointer /*user_data*/) {
-    //TODO: show open dialog, get filename
-    
-    char const *const filename = "banana.svgd";
-
-    FILE* f = fopen(filename, "r");
-    if (!f) {
-        perror(filename);
-        return;
-    }
-    
-    gtk_widget_queue_draw(canvas); // globals are probably evil
-}
-
-static void
-on_about_activate(GtkMenuItem */*menuitem*/, gpointer /*user_data*/) {
-    
-}
-
-double uniform() {
-    return double(rand()) / RAND_MAX;
-}
 
 int main(int argc, char **argv) {
-    Geom::Point start_point(uniform()*100, uniform()*100);
-    parse_data(paths);
-/*
-    vector<Point> ps;
-    double step = 50;
-    for(unsigned i = 0; i < 3; i++) {
-        ps.push_back(start_point);
-        start_point += Geom::Point(uniform()*step, 0.5*uniform()*step);
-    }
-    paths.push_back(ps);
-    for(unsigned i = 0; i < 10; i++) {
-        handles.push_back(start_point);
-        start_point += Geom::Point(0.5*uniform()*step, uniform()*step);
-        }*/
-    for(unsigned i=0;i<paths.size();i++) {
-        for(unsigned j=0;j<paths[i].size();j++) {
-            handles.push_back(&paths[i][j]);
-        }
-    }
-    gtk_init (&argc, &argv);
-    
-    gdk_rgb_init();
-    GtkWidget *menubox;
-    GtkWidget *menubar;
-    GtkWidget *menuitem;
-    GtkWidget *menu;
-    GtkWidget *open;
-    GtkWidget *separatormenuitem;
-    GtkWidget *quit;
-    GtkWidget *menuitem2;
-    GtkWidget *menu2;
-    GtkWidget *about;
-    GtkAccelGroup *accel_group;
-
-    accel_group = gtk_accel_group_new ();
- 
-    GtkWidget* window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-
-    gtk_window_set_title(GTK_WINDOW(window), "Fitter");
-
-    menubox = gtk_vbox_new (FALSE, 0);
-    gtk_widget_show (menubox);
-    gtk_container_add (GTK_CONTAINER (window), menubox);
-
-    menubar = gtk_menu_bar_new ();
-    gtk_widget_show (menubar);
-    gtk_box_pack_start (GTK_BOX (menubox), menubar, FALSE, FALSE, 0);
-
-    menuitem = gtk_menu_item_new_with_mnemonic ("_File");
-    gtk_widget_show (menuitem);
-    gtk_container_add (GTK_CONTAINER (menubar), menuitem);
-
-    menu = gtk_menu_new ();
-    gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem), menu);
-
-    open = gtk_image_menu_item_new_from_stock ("gtk-open", accel_group);
-    gtk_widget_show (open);
-    gtk_container_add (GTK_CONTAINER (menu), open);
-
-    separatormenuitem = gtk_separator_menu_item_new ();
-    gtk_widget_show (separatormenuitem);
-    gtk_container_add (GTK_CONTAINER (menu), separatormenuitem);
-    gtk_widget_set_sensitive (separatormenuitem, FALSE);
-
-    quit = gtk_image_menu_item_new_from_stock ("gtk-quit", accel_group);
-    gtk_widget_show (quit);
-    gtk_container_add (GTK_CONTAINER (menu), quit);
-
-    menuitem2 = gtk_menu_item_new_with_mnemonic ("_Help");
-    gtk_widget_show (menuitem2);
-    gtk_container_add (GTK_CONTAINER (menubar), menuitem2);
-
-    menu2 = gtk_menu_new ();
-    gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem2), menu2);
-
-    about = gtk_menu_item_new_with_mnemonic ("_About");
-    gtk_widget_show (about);
-    gtk_container_add (GTK_CONTAINER (menu2), about);
-
-    g_signal_connect ((gpointer) open, "activate",
-                    G_CALLBACK (on_open_activate),
-                    NULL);
-    g_signal_connect ((gpointer) quit, "activate",
-                    gtk_main_quit,
-                    NULL);
-    g_signal_connect ((gpointer) about, "activate",
-                    G_CALLBACK (on_about_activate),
-                    NULL);
-
-    gtk_window_add_accel_group (GTK_WINDOW (window), accel_group);
-
-
-    gtk_window_set_policy(GTK_WINDOW(window), TRUE, TRUE, TRUE);
-
-    gtk_signal_connect(GTK_OBJECT(window),
-                       "delete_event",
-                       GTK_SIGNAL_FUNC(delete_event_cb),
-                       NULL);
-
-    gtk_widget_push_visual(gdk_rgb_get_visual());
-    gtk_widget_push_colormap(gdk_rgb_get_cmap());
-    canvas = gtk_drawing_area_new();
-
-    gtk_signal_connect(GTK_OBJECT (canvas),
-                       "expose_event",
-                       GTK_SIGNAL_FUNC(expose_event),
-                       0);
-    gtk_widget_add_events(canvas, (GDK_BUTTON_PRESS_MASK |
-                                   GDK_BUTTON_RELEASE_MASK |
-                                   GDK_KEY_PRESS_MASK    |
-                                   GDK_POINTER_MOTION_MASK));
-    gtk_signal_connect(GTK_OBJECT (canvas),
-                       "button_press_event",
-                       GTK_SIGNAL_FUNC(mouse_event),
-                       0);
-    gtk_signal_connect(GTK_OBJECT (canvas),
-                       "button_release_event",
-                       GTK_SIGNAL_FUNC(mouse_release_event),
-                       0);
-    gtk_signal_connect(GTK_OBJECT (canvas),
-                       "motion_notify_event",
-                       GTK_SIGNAL_FUNC(mouse_motion_event),
-                       0);
-    gtk_signal_connect(GTK_OBJECT(canvas),
-                       "key_press_event",
-                       GTK_SIGNAL_FUNC(key_release_event),
-                       0);
-
-    gtk_widget_pop_colormap();
-    gtk_widget_pop_visual();
-
-    //GtkWidget *vb = gtk_vbox_new(0, 0);
-
-
-    //gtk_container_add(GTK_CONTAINER(window), vb);
-
-    gtk_box_pack_start(GTK_BOX(menubox), canvas, TRUE, TRUE, 0);
-
-    gtk_window_set_default_size(GTK_WINDOW(window), 600, 600);
-
-    gtk_widget_show_all(window);
-
-    /* Make sure the canvas can receive key press events. */
-    GTK_WIDGET_SET_FLAGS(canvas, GTK_CAN_FOCUS);
-    assert(GTK_WIDGET_CAN_FOCUS(canvas));
-    gtk_widget_grab_focus(canvas);
-    assert(gtk_widget_is_focus(canvas));
-
-    //g_idle_add((GSourceFunc)idler, canvas);
-
-    gtk_main();
+    init(argc, argv, new MetroMap());
 
     return 0;
 }
@@ -1083,3 +830,4 @@ int main(int argc, char **argv) {
   End:
 */
 // vim: filetype=cpp:expandtab:shiftwidth=4:tabstop=8:softtabstop=4:encoding=utf-8:textwidth=99 :
+

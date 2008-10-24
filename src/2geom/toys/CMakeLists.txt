@@ -46,6 +46,7 @@ line-toy
 load-svgd
 rect-line-intersect
 mesh-warp
+metro
 match-curve
 #normal-bundle
 point-curve-nearest-point

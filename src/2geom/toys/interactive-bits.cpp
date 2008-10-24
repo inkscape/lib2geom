@@ -68,3 +68,22 @@ void draw_string(GtkWidget *widget, string s, int x, int y) {
     cairo_destroy (cr);
 }*/
 
+// H in [0,360)
+// S, V, R, G, B in [0,1]
+void convertHSVtoRGB(const double H, const double S, const double V,
+                     double& R, double& G, double& B) {
+    int Hi = int(floor(H/60.)) % 6;
+    double f = H/60. - Hi;
+    double p = V*(1-S);
+    double q = V*(1-f*S);
+    double t = V*(1-(1-f)*S);
+    switch(Hi) {
+        case 0: R=V, G=t, B=p; break;
+        case 1: R=q, G=V, B=p; break;
+        case 2: R=p, G=V, B=t; break;
+        case 3: R=p, G=q, B=V; break;
+        case 4: R=t, G=p, B=V; break;
+        case 5: R=V, G=p, B=q; break;
+    }
+}
+

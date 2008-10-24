@@ -12,3 +12,8 @@ void draw_ray(cairo_t *cr, Geom::Point h, Geom::Point dir);
 void cairo_move_to(cairo_t *cr, Geom::Point p1);
 void cairo_line_to(cairo_t *cr, Geom::Point p1);
 void cairo_curve_to(cairo_t *cr, Geom::Point p1, Geom::Point p2, Geom::Point p3);
+
+// H in [0,360)
+// S, V, R, G, B in [0,1]
+void convertHSVtoRGB(const double H, const double S, const double V,
+                     double& R, double& G, double& B);
