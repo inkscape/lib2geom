@@ -232,7 +232,13 @@ void save_cairo_backend(const char* filename) {
         cr_s = cairo_svg_surface_create(filename, width, height);
 #endif
     cairo_t* cr = cairo_create(cr_s);
-        
+    
+    if(save_png) {
+        cairo_save(cr);
+        cairo_set_source_rgb(cr, 1,1,1);
+        cairo_paint(cr);
+        cairo_restore(cr);
+    }
     if(current_toy != NULL)
         current_toy->draw(cr, new std::ostringstream, width, height, true);
 

@@ -229,7 +229,18 @@ class SbToBezierTester: public Toy {
       *notify << "      max distance (to original): "<<h_dist<<"\n";
       }
       f_as_pw = arc_length_parametrization(f_as_pw);
-      recursive_curvature_fitter(cr, f_as_pw, 0, f_as_pw.cuts.back(),1);
+      adjuster2.pos[0]=150;
+      adjuster2.pos[1]=std::min(std::max(adjuster2.pos[1],150.),450.);
+      cairo_move_to(cr, 150, 150);
+      cairo_line_to(cr, 150, 450);
+      cairo_stroke(cr);
+      ostringstream val_s;
+      double scale0=(450-adjuster2.pos[1])/300;
+      double curve_precision = pow(10, scale0*5-2);
+      val_s << curve_precision;
+      draw_text(cr, adjuster2.pos, val_s.str().c_str());
+
+      recursive_curvature_fitter(cr, f_as_pw, 0, f_as_pw.cuts.back(),curve_precision);
       cairo_restore(cr);
       Toy::draw(cr, notify, width, height, save);
   }
