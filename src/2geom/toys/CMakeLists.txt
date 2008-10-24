@@ -38,7 +38,6 @@ ellipse-area-minimizer
 elliptiarc-3point-center-fitting
 #elliptiarc-5points-fitting
 elliptiarc-curve-fitting
-fitter
 hvlineseg-toy
 implicit-toy
 inner-product-clip
