@@ -50,7 +50,57 @@ that is perfect for geometry: the development of toys exemplifying
 a feature while the feature is perfected.  This has somewhat subsumed
 the role of tests, and provides immediate motivation/reward for work.
 
-\includegraphics[width=90mm]{media/gear.png}
+Every toy uses the same framework, which hides the details of making a
+user interface.  You simply request some handles to interact with, and
+write some code to draw the output from the handles.  
+
+\begin{figure}
+  \begin{center}
+    \includegraphics[width=90mm]{media/gear.png}
+    \caption{The gear toy demonstrates constructing paths, and computing a path with a known function for the teeth.}
+    \label{fig:gear-toy}
+  \end{center}
+\end{figure}
+
+Every toy can save a screenshot in SVG, PDF or PNG format.  You can
+save the current handles to a handle file (.hnd) and load an existing
+handle file.  Every toy can be called with \verb|-s filename| to save
+a screenshot to file filename (the type being determined by the
+extension).  The toy can be started in a known state from a handle
+file.
+
+If you find some strange or buggy behaviour, save a handle file and a
+screenshot and submit them with your bug report.
+
+\section{Getting started}
+
+Build the library and play with all the toys in src/2geom/toys.  Copy one that is similar to the problem you want to solve, and modify it.  For example, say you wanted to compute the involute of a curve.
+
+An involute of a curve is defined by
+$$I(t) = B(t) - \frac{dB(t) \int_0^t|dB(\tau)|_2 d\tau}{|dB(\tau)|_2}$$
+
+If we reparameterise this curve to have unit speed (arc length parameterisation) the equation simplifies to:
+
+$$I(t) = B(t) - \frac{dB_x(t) t}{1}$$
+
+so if we can reparameterise a path to have unit speed the involute is almost trivial.  Let's start with \verb|arc_length_param.cpp|.  We see that the function required is simply:
+\begin{verbatim}
+Piecewise<D2<SBasis> > uniform_B = arc_length_parametrization(B);
+\end{verbatim}
+
+Take the resulting function and apply the calculations.  You'll get
+the involute of the curve, as shown in Figure~\ref{fig:involute-toy}.
+We do not include an involute toy, but we would welcome someone to
+work out how to make non-circular gears.
+
+\begin{figure}
+  \begin{center}
+    \includegraphics[width=70mm]{media/involute.pdf}
+    \caption{The output of an involute toy.}
+    \label{fig:involute-toy}
+  \end{center}
+\end{figure}
+
 
 \chapter{Geometric Primitives}
 
@@ -132,17 +182,18 @@ The \code{D2} class takes two instances of a scalar data type and treats them li
 
 A \verb|D2<double>| is a \code{Point}.  A \verb|D2<Interval>| is a standard axis aligned rectangle.
 \verb|D2<SBasis>| provides a 2d parametric function which maps $t$ to a point $x(t), y(t)$
+\verb|D2<SBasis2d>| provides a 2d parametric function which maps a point $u,v$ to a point $x(u,v), y(u,v)$ --- a distortion.
 
 \section{Bounding Structures}
 
 2geom currently provides two classes for storing approximate bounding
 regions: \code{Rect} and \code{ConvexHull}.  These are mostly intended
-for use in optimization, however provide manipulations suitable for
+for use in (mathematical) optimization, however provide manipulations suitable for
 other uses.
 
 \subsection{Interval}
 
-An interval is simply a pair of Coords which define a closed interval.
+An interval is simply a pair of Coords which define a closed interval $[min, max]$.
 
 \subsection{Rect}
 
@@ -151,15 +202,13 @@ An interval is simply a pair of Coords which define a closed interval.
 \code{Rect}s are rectangles with all sides parallel to the axes. 
 \code{Rect}s are in fact defined as a \verb|D2<Interval>|.
 
+A rectangle can have 0 area and not be empty --- $[0,0] \times [0,0]$ contains exactly 1 point 0,0 and has 0 area.  Similarly, $[0,0] \times [0,1]$ defines a 0 area line segment.
+
 \subsection{ConvexHull}
 
 \includegraphics[height=50mm]{media/convex.png}
 
-Currently there are two implementations:
-\begin{description}
-\item[convex-hull.h] is the inkscape version using rectangles.
-\item[convex-cover.h] is partial implementation done with a set of points in clockwise direction.
-\end{description}
+\verb|convex-cover.h| defines convex hulls with a set of points in clockwise direction.  These can bee unioned and tested for intersection.
 
 \subsubsection{Operations}
 \begin{description}
@@ -171,6 +220,7 @@ Currently there are two implementations:
 \item[intersect:] do two convex hulls intersect?
 \item[intersection:] find the convex hull intersection
 \item[merge:] find the convex hull of a set of convex hulls
+\item[hausdorf distance:] the greatest least distance between a point $a$ in convex hull $A$ and a second convex hull $B$.
 \end{description}
 
 \subsection{Piecewise}
@@ -185,8 +235,8 @@ As for technical details, while the actual SBasis segments begin on the
 first cut and end on the last, the function is defined throughout all
 inputs by extending the first and last segments.  The exact switching
 between segments is arbitrarily such that beginnings (t=0) have
-preference over endings (t=1).  This only matters if it is discontinuous
-at the location.
+preference over endings (t=1).  That is, each segment is $[t_0, t_1)$.  
+This only matters if it is discontinuous at the location.
 
 $$
 f(t) \rightarrow \left\{ 
@@ -290,8 +340,8 @@ The following operations are implemented and are very efficient:
 All of these operations are fast.  For example, multiplication of two
 beziers by converting to s-basis form, multiplying and converting back
 takes roughly the same time as performing the bezier multiplication
-directly, and furthermore, subdivision and degree reduction are
-straightforward in this form.
+directly, and furthermore, subdivision and degree reduction and
+elevation are straightforward in this form.
 
 \section{Implementation}
 As described in Appendix C, SBasis functions have the form $f(t) \rightarrow y$.
@@ -335,6 +385,36 @@ and provide a set of useful operations Operations:
 \item[Sweep:] traverse the tree in say y order, maintaining a y-range of relevant objects. (to implement sweepline algorithms)
 \item[Walk:] traverse the tree in an arbitrary order.
 \end{description}
+
+\chapter{Root like operations}
+
+\section{Roots}
+
+Given a function $x(t)$ we often wish to know where it is 0.
+$roots(x)$ quickly finds all values of $t \in [0,1)$ for which this is
+true.  For example, if you wish to find where a path intersects a line you can rotate the path to make the line the x-axis and find the crossings with roots: $B(t) = \langle x(t), y(t)\rangle$, $roots(B \cdot \vec n)$.
+
+\section{Path intersection}
+
+Given a pair of paths, we often wish to know where they intersect.  \verb|pair_intersect| finds all points where $A(t) = B(s), t \in [0,1], s \in [0,1]$.  This can be performed on paths or \verb|piecewise<d2<sbasis> >|.
+
+\section{Self intersection}
+
+Sometimes we wish to know where a path intersects itself.
+
+\section{Contour finding}
+
+Given a function $f(x, y)$ we wish to construct approximate paths such that $f = 0$.  Find two points on the same contour and use \verb|sb2d_cubic_solve|.  (still needs code to refine and integration with aa.cpp to find the initial points)
+
+\section{Collinear normals}
+
+Given two paths we wish to find all pairs of points where a line through these points is parallel to the normal at that point.
+
+\section{Bounds: fast and exact}
+
+We provide two classes of bounding for functions, fast and exact.
+Fast is merely guaranteed to contain the function, Exact is the
+smallest bound that completely contains the function.
 
 \chapter{Topological operations: sweepline, boolops, sanitize}
 \section{Layer 1: Path Intersection}
@@ -598,8 +678,6 @@ a scalar, and are defined over at least the interval $[0, 1]$.
 \subsubsection{Models}
 
 \subsection{Curve}
-
-\subsection{UVFunction}
 
 \section{Location Sequences}
 
