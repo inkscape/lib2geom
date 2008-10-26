@@ -111,56 +111,34 @@ int recursive_curvature_fitter(cairo_t* cr, Piecewise<D2<SBasis> > const &f, dou
       if (t0>=t1) return 0;//TODO: fix me...
       if (t0+0.001>=t1) return 0;//TODO: fix me...
       
-      Piecewise<D2<SBasis> > g = Piecewise<D2<SBasis> >(f);
-      
-      D2<SBasis> k_bez = sb_seg_to_bez(g,t0,t1);      
+      //TODO: don't re-compute derivative(f) at each try!!
+      D2<SBasis> k_bez = sb_seg_to_bez(f,t0,t1);      
 
-      double h_a_t = 0, h_b_t = 0;
-      
       if(k_bez[0].size() > 1 and k_bez[1].size() > 1) {
           Piecewise<SBasis> s = arcLengthSb(k_bez)+t0;
-          Rect bnds = bounds_fast(compose(f,s) - Piecewise<D2<SBasis> >(k_bez));
-          //double h_dist = bnds.dimensions().length();
+          if ( fabs(s.lastValue()-t1) < precision ){
+              Rect bnds = bounds_fast(compose(f,s) - Piecewise<D2<SBasis> >(k_bez));
+              //double h_dist = bnds.dimensions().length();
 //0 is in the rect!, TODO:gain factor ~2 for free.
 // njh: not really, the benefit is actually rather small.
-          double h_dist = max(bnds.min().length(), bnds.max().length());
+              double h_dist = max(bnds.min().length(), bnds.max().length());
           
-          //printf("(%g %g), %g\n", t0, t1, h_dist);
-          //double h_dist = hausdorfl2( cr, k_bez, f, 1e-6, &h_a_t, &h_b_t);
-          //double h_dist = hausdorfl( k_bez, f, 1e-6, &h_a_t, &h_b_t);
-          if(h_dist > precision) {
-              //TODO: find a better place where to cut (at the worst fit?).
-              return recursive_curvature_fitter(cr, f, t0, (t0+t1)/2, precision) +
-              recursive_curvature_fitter(cr, f, (t0+t1)/2, t1, precision);
-          } 
-          else
-          {
-/*
-              Point At = k_bez(h_a_t);
-              Point Bu = f(h_b_t);
-              cairo_move_to(cr, At);
-              cairo_line_to(cr, Bu);
-              draw_handle(cr, At);
-              draw_handle(cr, Bu);
-              cairo_save(cr);
-              cairo_set_line_width (cr, 0.3);
-              cairo_set_source_rgba (cr, 0.7, 0.0, 0.0, 1);
-              cairo_stroke(cr);
-              cairo_restore(cr);
-*/
-              cairo_save(cr);
-              cairo_set_line_width (cr, 0.93);
-              cairo_set_source_rgba (cr, 0.7, 0.0, 0.0, 1);
-              draw_handle(cr, k_bez.at0());
-              cairo_md_sb(cr, k_bez);
-              cairo_stroke(cr);
-              cairo_restore(cr);
-              return 1;
+              if(h_dist < precision) {
+                  cairo_save(cr);
+                  cairo_set_line_width (cr, 0.93);
+                  cairo_set_source_rgba (cr, 0.7, 0.0, 0.0, 1);
+                  draw_handle(cr, k_bez.at0());
+                  cairo_md_sb(cr, k_bez);
+                  cairo_stroke(cr);
+                  cairo_restore(cr);
+                  return 1;
+              }
           }
-      } else {
-          return recursive_curvature_fitter(cr, f, t0, (t0+t1)/2, precision) +
+
+      }
+      //TODO: find a better place where to cut (at the worst fit?).
+      return recursive_curvature_fitter(cr, f, t0, (t0+t1)/2, precision) +
           recursive_curvature_fitter(cr, f, (t0+t1)/2, t1, precision);
-      } 
 }
 
 double single_curvature_fitter(Piecewise<D2<SBasis> > const &f, double t0, double t1, double precision) {
@@ -173,7 +151,7 @@ double single_curvature_fitter(Piecewise<D2<SBasis> > const &f, double t0, doubl
           Piecewise<SBasis> s = arcLengthSb(k_bez)+t0;
           Rect bnds = bounds_fast(compose(f,s) - Piecewise<D2<SBasis> >(k_bez));
           double h_dist = max(bnds.min().length(), bnds.max().length());
-          
+          h_dist = max(h_dist, fabs(s.lastValue()-t1) );
           return h_dist;
       }
       return 1e100;
