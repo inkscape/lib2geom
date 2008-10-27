@@ -37,6 +37,7 @@
 
 #include <2geom/point.h>
 #include <2geom/svg-path-parser.h>
+#include <2geom/angle.h>
 
 namespace Geom {
 
@@ -223,7 +224,7 @@ throw(SVGPathParseError)
             Point point = _pop_point();
             bool sweep = _pop_flag();
             bool large_arc = _pop_flag();
-            double angle = _pop();
+            double angle = deg_to_rad(_pop());
             double ry = _pop();
             double rx = _pop();
 
