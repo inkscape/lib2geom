@@ -115,26 +115,25 @@ int recursive_curvature_fitter(cairo_t* cr, Piecewise<D2<SBasis> > const &f, dou
       D2<SBasis> k_bez = sb_seg_to_bez(f,t0,t1);      
 
       if(k_bez[0].size() > 1 and k_bez[1].size() > 1) {
-          Piecewise<SBasis> s = arcLengthSb(k_bez)+t0;
-          if ( fabs(s.lastValue()-t1) < precision ){
-              Rect bnds = bounds_fast(compose(f,s) - Piecewise<D2<SBasis> >(k_bez));
-              //double h_dist = bnds.dimensions().length();
+          Piecewise<SBasis> s = arcLengthSb(k_bez);
+          s *= (t1-t0)/arcLengthSb(k_bez).segs.back().at1();
+          s += t0;
+          Rect bnds = bounds_fast(compose(f,s) - Piecewise<D2<SBasis> >(k_bez));
+          //double h_dist = bnds.dimensions().length();
 //0 is in the rect!, TODO:gain factor ~2 for free.
 // njh: not really, the benefit is actually rather small.
-              double h_dist = max(bnds.min().length(), bnds.max().length());
+          double h_dist = max(bnds.min().length(), bnds.max().length());
           
-              if(h_dist < precision) {
-                  cairo_save(cr);
-                  cairo_set_line_width (cr, 0.93);
-                  cairo_set_source_rgba (cr, 0.7, 0.0, 0.0, 1);
-                  draw_handle(cr, k_bez.at0());
-                  cairo_md_sb(cr, k_bez);
-                  cairo_stroke(cr);
-                  cairo_restore(cr);
-                  return 1;
-              }
+          if(h_dist < precision) {
+              cairo_save(cr);
+              cairo_set_line_width (cr, 0.93);
+              cairo_set_source_rgba (cr, 0.7, 0.0, 0.0, 1);
+              draw_handle(cr, k_bez.at0());
+              cairo_md_sb(cr, k_bez);
+              cairo_stroke(cr);
+              cairo_restore(cr);
+              return 1;
           }
-
       }
       //TODO: find a better place where to cut (at the worst fit?).
       return recursive_curvature_fitter(cr, f, t0, (t0+t1)/2, precision) +
@@ -148,10 +147,11 @@ double single_curvature_fitter(Piecewise<D2<SBasis> > const &f, double t0, doubl
       D2<SBasis> k_bez = sb_seg_to_bez(f,t0,t1);      
 
       if(k_bez[0].size() > 1 and k_bez[1].size() > 1) {
-          Piecewise<SBasis> s = arcLengthSb(k_bez)+t0;
+          Piecewise<SBasis> s = arcLengthSb(k_bez);
+          s *= (t1-t0)/arcLengthSb(k_bez).segs.back().at1();
+          s += t0;
           Rect bnds = bounds_fast(compose(f,s) - Piecewise<D2<SBasis> >(k_bez));
           double h_dist = max(bnds.min().length(), bnds.max().length());
-          h_dist = max(h_dist, fabs(s.lastValue()-t1) );
           return h_dist;
       }
       return 1e100;
