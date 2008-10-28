@@ -38,12 +38,11 @@ class RectLineIntersect: public Toy {
         cairo_stroke(cr);
 
         std::vector<Point> intersections = rect_line_intersect(A, C, E, F);
-        std::cout << "number of intersections: " << intersections.size() << std::endl;
+        *notify << "number of intersections: " << intersections.size() << std::endl;
         for (unsigned int i = 0; i < intersections.size(); ++i) {
             draw_handle(cr, intersections[i]);
-            std::cout << "  " << intersections[i] << std::endl;
+            *notify << "  " << intersections[i] << std::endl;
         }
-        std::cout << std::endl;
 
         Toy::draw(cr, notify, width, height, save);
     }

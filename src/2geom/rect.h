@@ -136,13 +136,6 @@ class D2<Interval> {
     inline void expandBy(Point const p)  { 
         f[X].expandBy(p[X]);  f[Y].expandBy(p[Y]); 
     }
-    
-    /** Transforms the rect by m. Note that it gives correct results only for scales and translates,
-        in the case of rotations, the area of the rect will grow as it cannot rotate. */
-    inline Rect operator*(Matrix const m) const { 
-        return unify(Rect(corner(0) * m, corner(2) * m),
-                     Rect(corner(1) * m, corner(3) * m));
-    }
 };
 
 inline Rect unify(Rect const & a, Rect const & b) {

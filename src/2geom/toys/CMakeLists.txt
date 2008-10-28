@@ -44,6 +44,7 @@ inner-product-clip
 line-toy
 load-svgd
 rect-line-intersect
+rect-toy
 mesh-warp
 metro
 match-curve
