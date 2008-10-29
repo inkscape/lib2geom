@@ -57,9 +57,15 @@ class InnerProductClip: public Toy {
         togs[1].bounds = Rect(p + xo, p + xo + d);
         draw_toggles(cr, togs);
         }
-        if(togs[0].on)
+        if(togs[0].on) {
             d = L2(end_handle.pos - start_handle.pos);
-        else {
+            cairo_save(cr);
+            cairo_set_line_width(cr, 0.3);
+            cairo_new_sub_path(cr);
+            cairo_arc(cr, start_handle.pos[0], start_handle.pos[1], d, 0, M_PI*2);
+            cairo_stroke(cr);
+            cairo_restore(cr);
+        } else {
             n = unit_vector(rot90(end_handle.pos - start_handle.pos));
             d = dot(n, start_handle.pos);
             draw_line(cr, n, d);
@@ -145,7 +151,6 @@ class InnerProductClip: public Toy {
         togs.push_back(Toggle("C", true));
         togs.push_back(Toggle("S", true));
     }
-    int should_draw_bounds() {return 1;}
 public:
     InnerProductClip() : start_handle(150,300),
            end_handle(380,40)  {}

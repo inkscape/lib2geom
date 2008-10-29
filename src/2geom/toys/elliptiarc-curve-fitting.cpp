@@ -54,6 +54,7 @@ class EAFittingToy : public Toy
   	      	   int width, int height, bool save )
     {
     	cairo_set_line_width (cr, 0.2);
+    	cairo_set_source_rgb(cr, 0.0, 0.0, 0.);
     	//D2<SBasis> SB = handles_to_sbasis(handles.begin(), total_handles - 1);
     	D2<SBasis> SB = psh.asBezier();
     	cairo_md_sb(cr, SB);

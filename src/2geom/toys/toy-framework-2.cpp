@@ -381,7 +381,6 @@ GtkItemFactoryEntry menu_items[] = {
     { (gchar*)"/File/_Save Handles",(gchar*)"<CTRL>S",      save,           0,  (gchar*)"<StockItem>", GTK_STOCK_SAVE_AS },
     { (gchar*)"/File/sep",          NULL,           NULL,           0,  (gchar*)"<Separator>"                 },
     { (gchar*)"/File/Save SVG or PDF", NULL,           save_cairo,     0,  (gchar*)"<StockItem>", GTK_STOCK_SAVE },
-    { (gchar*)"/File/Save PNG",     NULL,           save_image,     0,  (gchar*)"<StockItem>", GTK_STOCK_SELECT_COLOR }, 
     { (gchar*)"/File/sep",          NULL,           NULL,           0,  (gchar*)"<Separator>"                 },
     { (gchar*)"/File/_Quit",        (gchar*)"<CTRL>Q",      gtk_main_quit,  0,  (gchar*)"<StockItem>", GTK_STOCK_QUIT },
     { (gchar*)"/_Help",             NULL,           NULL,           0,  (gchar*)"<LastBranch>"                },

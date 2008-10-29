@@ -136,7 +136,7 @@ class LineToy : public Toy
         cairo_set_line_width(cr, 0.3);
         cairo_rectangle(cr, r1);
 
-	Rotate rot(sliders[ANGLE_SLIDER].value());
+	Matrix  rot = Translate(-r1.midpoint())*Rotate(sliders[ANGLE_SLIDER].value())*Translate(r1.midpoint());
         cairo_rectangle(cr, r1*rot);
 	cairo_move_to(cr, r1.corner(3)*rot);
 	for(int i = 0; i < 4; i++) {
@@ -149,367 +149,6 @@ class LineToy : public Toy
         draw_label(cr, p2, "P2");
     }
 
-
-    void init_projection()
-    {
-        init_common();
-        p1.pos = Point(400, 50);
-        p2.pos = Point(450, 450);
-        p3.pos = Point(100, 250);
-        p4.pos = Point(200, 450);
-        O.pos = Point(50, 150);
-
-        handles.push_back(&p1);
-        handles.push_back(&p2);
-        handles.push_back(&p3);
-        handles.push_back(&p4);
-        handles.push_back(&O);
-    }
-
-    void draw_projection(cairo_t *cr, std::ostringstream *notify,
-                      int width, int height, bool save)
-    {
-        draw_common(cr, notify, width, height, save);
-
-        Line l1(p1.pos, p2.pos);
-        LineSegment ls(p3.pos, p4.pos);
-
-        Point np = projection(O.pos, l1);
-        LineSegment lsp = projection(ls, l1);
-
-        cairo_set_source_rgba(cr, 0.3, 0.3, 0.3, 1.0);
-        cairo_set_line_width(cr, 0.2);
-        draw_line(cr, l1);
-        draw_segment(cr, ls);
-        cairo_stroke(cr);
-
-        cairo_set_line_width(cr, 0.3);
-        cairo_set_source_rgba(cr, 0.0, 0.0, 1.0, 1.0);
-        draw_segment(cr, lsp);
-        draw_handle(cr, lsp[0]);
-        draw_handle(cr, lsp[1]);
-        cairo_stroke(cr);
-
-        cairo_set_source_rgba(cr, 0.8, 0.0, 0.0, 1.0);
-        draw_circ(cr, np);
-        cairo_stroke(cr);
-
-        cairo_set_source_rgba(cr, 0.5, 0.5, 0.5, 1.0);
-        draw_label(cr, p1, "P1");
-        draw_label(cr, p2, "P2");
-        draw_label(cr, ls, "S");
-        draw_label(cr, lsp, "prj(S)");
-        draw_label(cr, O, "P");
-        draw_text(cr, np, "prj(P)");
-
-        cairo_stroke(cr);
-    }
-
-
-    void init_ortho()
-    {
-        init_common();
-        p1.pos = Point(400, 50);
-        p2.pos = Point(450, 450);
-        p3.pos = Point(100, 50);
-        p4.pos = Point(150, 450);
-
-        handles.push_back(&p1);
-        handles.push_back(&p2);
-        handles.push_back(&p3);
-        handles.push_back(&p4);
-    }
-
-    void draw_ortho(cairo_t *cr, std::ostringstream *notify,
-                      int width, int height, bool save)
-    {
-        draw_common(cr, notify, width, height, save);
-
-        Line l1(p1.pos, p2.pos);
-        Line l2 = make_orthogonal_line(p3.pos, l1);
-        Line l3 = make_parallel_line(p4.pos, l1);
-
-        cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 1.0);
-        cairo_set_line_width(cr, 0.3);
-        draw_line(cr, l1);
-        draw_line(cr, l2);
-        draw_line(cr, l3);
-        cairo_stroke(cr);
-
-        draw_label(cr, p1, "P1");
-        draw_label(cr, p2, "P2");
-        draw_label(cr, p3, "O1");
-        draw_label(cr, p4, "O2");
-
-        draw_label(cr, l1, "L");
-        draw_label(cr, l2, "L1 _|_ L");
-        draw_label(cr, l3, "L2 // L");
-
-    }
-
-
-    void init_distance()
-    {
-        init_common();
-        p1.pos = Point(400, 50);
-        p2.pos = Point(450, 450);
-        p3.pos = Point(100, 250);
-        p4.pos = Point(200, 450);
-        p5.pos = Point(50, 150);
-        p6.pos = Point(480, 60);
-        O.pos = Point(300, 300);
-
-        handles.push_back(&p1);
-        handles.push_back(&p2);
-        handles.push_back(&p3);
-        handles.push_back(&p4);
-        handles.push_back(&p5);
-        handles.push_back(&p6);
-        handles.push_back(&O);
-    }
-
-    void draw_distance(cairo_t *cr, std::ostringstream *notify,
-                      int width, int height, bool save)
-    {
-        draw_common(cr, notify, width, height, save);
-
-        Line l1(p1.pos, p2.pos);
-        LineSegment ls(p3.pos, p4.pos);
-        Ray r1(p5.pos, p6.pos);
-
-        Point q1 = l1.pointAt(l1.nearestPoint(O.pos));
-        Point q2 = ls.pointAt(ls.nearestPoint(O.pos));
-        Point q3 = r1.pointAt(r1.nearestPoint(O.pos));
-
-        double d1 = distance(O.pos, l1);
-        double d2 = distance(O.pos, ls);
-        double d3 = distance(O.pos, r1);
-
-        cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 1.0);
-        cairo_set_line_width(cr, 0.3);
-        draw_line(cr, l1);
-        draw_segment(cr, ls);
-        draw_ray(cr, r1);
-        cairo_stroke(cr);
-
-
-        draw_label(cr, l1, "L");
-        draw_label(cr, ls, "S");
-        draw_label(cr, r1, "R");
-        draw_label(cr, O, "P");
-        cairo_stroke(cr);
-
-        cairo_set_source_rgba(cr, 0.5, 0.5, 0.8, 1.0);
-        cairo_set_line_width(cr, 0.2);
-        draw_segment(cr, O.pos, q1);
-        draw_segment(cr, O.pos, q2);
-        draw_segment(cr, O.pos, q3);
-        cairo_stroke(cr);
-
-        cairo_set_source_rgba(cr, 0.8, 0.0, 0.0, 1.0);
-        cairo_set_line_width(cr, 0.3);
-        draw_handle(cr, q1);
-        draw_handle(cr, q2);
-        draw_handle(cr, q3);
-        cairo_stroke(cr);
-
-        *notify << "  distance(P,L) = " << d1 << std::endl;
-        *notify << "  distance(P,S) = " << d2 << std::endl;
-        *notify << "  distance(P,R) = " << d3 << std::endl;
-    }
-
-
-    void init_position()
-    {
-        init_common();
-        p1.pos = Point(400, 50);
-        p2.pos = Point(450, 450);
-        p3.pos = Point(100, 50);
-        p4.pos = Point(150, 450);
-
-        handles.push_back(&p1);
-        handles.push_back(&p2);
-        handles.push_back(&p3);
-        handles.push_back(&p4);
-    }
-
-    void draw_position(cairo_t *cr, std::ostringstream *notify,
-                      int width, int height, bool save)
-    {
-        draw_common(cr, notify, width, height, save);
-
-        Line l1(p1.pos, p2.pos);
-        Line l2(p3.pos, p4.pos);
-
-        bool b1 = are_same(l1, l2, 0.01);
-        bool b2 = are_parallel(l1, l2, 0.01);
-        bool b3 = are_orthogonal(l1, l2, 0.01);
-
-        double a = angle_between(l1,l2);
-
-        cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 1.0);
-        cairo_set_line_width(cr, 0.3);
-        draw_line(cr, l1);
-        draw_line(cr, l2);
-        cairo_stroke(cr);
-
-        draw_label(cr, l1, "A");
-        draw_label(cr, l2, "B");
-        cairo_stroke(cr);
-
-        if (b1)
-        {
-            *notify << "  A is coincident with B" << std::endl;
-        }
-        else if (b2)
-        {
-            *notify << "  A is parallel to B" << std::endl;
-        }
-        else if (b3)
-        {
-            *notify << "  A is orthogonal to B" << std::endl;
-        }
-        else
-        {
-            *notify << "  A is incident with B:  angle(A,B) = " << angle_formatter(a) << std::endl;
-        }
-    }
-
-
-    void init_seg_bisec()
-    {
-        init_common();
-        p1.pos = Point(100, 50);
-        p2.pos = Point(150, 450);
-
-        handles.push_back(&p1);
-        handles.push_back(&p2);
-    }
-
-    void draw_seg_bisec(cairo_t *cr, std::ostringstream *notify,
-                      int width, int height, bool save)
-    {
-        draw_common(cr, notify, width, height, save);
-
-        LineSegment ls(p1.pos, p2.pos);
-        Line l = make_bisector_line(ls);
-        Point M = middle_point(p1.pos, p2.pos);
-
-        cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 1.0);
-        cairo_set_line_width(cr, 0.3);
-        draw_label(cr, p1, "P");
-        draw_label(cr, p2, "Q");
-        draw_label(cr, M, "M");
-        draw_segment(cr, ls);
-        draw_line(cr, l);
-        cairo_stroke(cr);
-
-        draw_label(cr, l, "axis");
-        cairo_stroke(cr);
-    }
-
-
-    void init_angle_bisec()
-    {
-        init_common();
-        p1.pos = Point(100, 50);
-        p2.pos = Point(150, 450);
-        O.pos = Point(50, 200);
-
-        handles.push_back(&p1);
-        handles.push_back(&p2);
-        handles.push_back(&O);
-    }
-
-    void draw_angle_bisec(cairo_t *cr, std::ostringstream *notify,
-                      int width, int height, bool save)
-    {
-        draw_common(cr, notify, width, height, save);
-
-        Ray r1(O.pos, p1.pos);
-        Ray r2(O.pos, p2.pos);
-        Ray rb = make_angle_bisector_ray(r1, r2);
-
-        double a1 = angle_between(r1,rb);
-        double a2 = angle_between(rb,r2);
-
-        cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 1.0);
-        cairo_set_line_width(cr, 0.3);
-        draw_label(cr, O, "O");
-        draw_ray(cr, r1);
-        draw_ray(cr, r2);
-        draw_ray(cr, rb);
-        cairo_stroke(cr);
-
-        draw_label(cr, r1, "R1");
-        draw_label(cr, r2, "R2");
-        draw_label(cr, rb, "bisector ray");
-
-        *notify << "  angle(R1, bisector ray) = " << angle_formatter(a1)
-                << "    angle(bisector ray, R2) = " << angle_formatter(a2)
-                << std::endl;
-    }
-
-
-    void init_collinear()
-    {
-        init_common();
-        p1.pos = Point(100, 50);
-        p2.pos = Point(450, 450);
-        p3.pos = Point(400, 50);
-
-        handles.push_back(&p1);
-        handles.push_back(&p2);
-        handles.push_back(&p3);
-    }
-
-    void draw_collinear(cairo_t *cr, std::ostringstream *notify,
-                      int width, int height, bool save)
-    {
-        draw_common(cr, notify, width, height, save);
-
-        Point A = p1.pos;
-        Point B = p2.pos;
-        Point C = p3.pos;
-
-        LineSegment AB(A, B);
-        LineSegment BC(B, C);
-        Line l(A, C);
-
-        cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 1.0);
-        cairo_set_line_width(cr, 0.3);
-        draw_label(cr, p1, "A");
-        draw_label(cr, p2, "B");
-        draw_label(cr, p3, "C");
-        cairo_stroke(cr);
-
-
-        double turn = cross(C, B) - cross(C, A) + cross(B, A);
-        //*notify << "  turn: " << turn << std::endl;
-
-        bool collinear = are_collinear(A, B, C, 200);
-        if (collinear)
-        {
-            cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 1.0);
-            cairo_set_line_width(cr, 0.3);
-            draw_line(cr, l);
-            cairo_stroke(cr);
-            *notify << "  A,B,C are collinear!" << std::endl;
-        }
-        else
-        {
-            cairo_set_source_rgba(cr, 0.5, 0.5, 0.8, 1.0);
-            cairo_set_line_width(cr, 0.2);
-            draw_segment(cr, AB);
-            draw_segment(cr, BC);
-            cairo_stroke(cr);
-            if (turn < 0)
-                *notify << "  A,B,C is a left turn:  " << turn << std::endl;
-            else
-                *notify << "  A,B,C is a right turn: " << turn << std::endl;
-        }
-
-    }
 
 
     void init_intersections()
@@ -535,53 +174,39 @@ class LineToy : public Toy
     {
         draw_common(cr, notify, width, height, save);
 
-        Line l1(p1.pos, p2.pos);
-        Ray r1(p3.pos, p4.pos);
-        LineSegment s1(p5.pos, p6.pos);
+        Rect r1(p1.pos, p2.pos);
+        Rect r2(p3.pos, p4.pos);
+        Line l1(p5.pos, p6.pos);
 
-        Crossings cl1r1 = intersection(l1, r1);
-        Crossings cl1s1 = intersection(l1, s1);
-        Crossings cr1s1 = intersection(r1, s1);
+        cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 1.0);
+        cairo_set_line_width(cr, 0.3);
+        cairo_rectangle(cr, r1);
+        cairo_stroke(cr);
 
-        std::vector<Point> ip;
+        cairo_set_source_rgba(cr, 0.0, 0.3, 0.0, 1.0);
+        cairo_rectangle(cr, r2);
+        cairo_stroke(cr);
 
-        for (unsigned int i = 0; i < cl1r1.size(); ++i)
-        {
-            ip.push_back(l1.pointAt(cl1r1[i].ta));
+        boost::optional<Rect> r1xr2 = intersect(r1, r2);
+        if(r1xr2) {
+            cairo_set_source_rgba(cr, 1.0, 0.7, 0.7, 1.0);
+            cairo_rectangle(cr, *r1xr2);
+            cairo_fill(cr);
         }
-        for (unsigned int i = 0; i < cl1s1.size(); ++i)
-        {
-            ip.push_back(l1.pointAt(cl1s1[i].ta));
-        }
-        for (unsigned int i = 0; i < cr1s1.size(); ++i)
-        {
-            ip.push_back(r1.pointAt(cr1s1[i].ta));
-        }
-
 
         cairo_set_source_rgba(cr, 0.2, 0.2, 0.2, 1.0);
         cairo_set_line_width(cr, 0.3);
         draw_line(cr, l1);
-        draw_ray(cr, r1);
-        draw_segment(cr, s1);
         cairo_stroke(cr);
 
 
-        draw_label(cr, l1, "L");
-        draw_label(cr, r1, "R");
-        draw_label(cr, s1, "S");
-        cairo_stroke(cr);
-
-        std::string label("A");
-        cairo_set_source_rgba(cr, 1.0, 0.0, 0.0, 1.0);
-        cairo_set_line_width(cr, 0.5);
-        for (unsigned int i = 0; i < ip.size(); ++i)
-        {
-            draw_handle(cr, ip[i]);
-            draw_text(cr, ip[i]+op, label.c_str());
-            label[0] += 1;
+        std::vector<Point> intersections = rect_line_intersect(r1, p5.pos, p6.pos);
+        *notify << "number of intersections: " << intersections.size() << std::endl;
+        for (unsigned int i = 0; i < intersections.size(); ++i) {
+            draw_handle(cr, intersections[i]);
+            *notify << "  " << intersections[i] << std::endl;
         }
-        cairo_stroke(cr);
+
 
     }
 
@@ -694,34 +319,6 @@ class LineToy : public Toy
                 draw_f = &LineToy::draw_create;
                 break;
             case 'C':
-                init_projection();
-                draw_f = &LineToy::draw_projection;
-                break;
-            case 'D':
-                init_ortho();
-                draw_f = &LineToy::draw_ortho;
-                break;
-            case 'E':
-                init_distance();
-                draw_f = &LineToy::draw_distance;
-                break;
-            case 'F':
-                init_position();
-                draw_f = &LineToy::draw_position;
-                break;
-            case 'G':
-                init_seg_bisec();
-                draw_f = &LineToy::draw_seg_bisec;
-                break;
-            case 'H':
-                init_angle_bisec();
-                draw_f = &LineToy::draw_angle_bisec;
-                break;
-            case 'I':
-                init_collinear();
-                draw_f = &LineToy::draw_collinear;
-                break;
-            case 'J':
                 init_intersections();
                 draw_f = &LineToy::draw_intersections;
                 break;
@@ -764,19 +361,12 @@ const char* LineToy::menu_items[] =
 {
     "show this menu",
     "rect generation",
-    "projection on  a line",
-    "make orthogonal/parallel",
-    "distance",
-    "position",
-    "segment bisector",
-    "angle bisector",
-    "collinear",
     "intersection with a line"
 };
 
 const char LineToy::keys[] =
 {
-     'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'
+     'A', 'B', 'C'
 };
 
 

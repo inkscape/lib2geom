@@ -140,7 +140,7 @@ int recursive_curvature_fitter(cairo_t* cr, Piecewise<D2<SBasis> > const &f, dou
           recursive_curvature_fitter(cr, f, (t0+t1)/2, t1, precision);
 }
 
-double single_curvature_fitter(Piecewise<D2<SBasis> > const &f, double t0, double t1, double precision) {
+double single_curvature_fitter(Piecewise<D2<SBasis> > const &f, double t0, double t1) {
       if (t0>=t1) return 0;//TODO: fix me...
       if (t0+0.001>=t1) return 0;//TODO: fix me...
       
@@ -168,7 +168,7 @@ double quadratic (double x, void *params) {
     struct quadratic_params *p 
         = (struct quadratic_params *) params;
      
-    return single_curvature_fitter(*p->f, p->t0, x, p->precision) - p->precision;
+    return single_curvature_fitter(*p->f, p->t0, x) - p->precision;
 }
      
 #include <stdio.h>
@@ -177,11 +177,11 @@ double quadratic (double x, void *params) {
 #include <gsl/gsl_roots.h>
      
      
-void sequential_curvature_fitter(cairo_t* cr, Piecewise<D2<SBasis> > const &f, double t0, double t1, double precision) {
-    if(t0 >= t1) return;
+int sequential_curvature_fitter(cairo_t* cr, Piecewise<D2<SBasis> > const &f, double t0, double t1, double precision) {
+    if(t0 >= t1) return 0;
     
     double r = t1;
-    if(single_curvature_fitter(f, t0, t1, precision) > precision) {
+    if(single_curvature_fitter(f, t0, t1) > precision) {
         int status;
         int iter = 0, max_iter = 100;
         const gsl_root_fsolver_type *T;
@@ -229,20 +229,25 @@ void sequential_curvature_fitter(cairo_t* cr, Piecewise<D2<SBasis> > const &f, d
     cairo_restore(cr);
     
     if(r < t1)
-        sequential_curvature_fitter(cr, f, r, t1, precision);
+        return sequential_curvature_fitter(cr, f, r, t1, precision) + 1;
+    return 1;
 }
 
 
 class SbToBezierTester: public Toy {
     //std::vector<Slider> sliders;
-    PointSetHandle path_psh[2];
+    std::vector<PointSetHandle*> path_psh;
     PointHandle adjuster, adjuster2, adjuster3;
     std::vector<Toggle> toggles;
 
   void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
       cairo_save(cr);
-      Piecewise<D2<SBasis> >f_as_pw = Piecewise<D2<SBasis> >(path_psh[0].asBezier());
-      //f_as_pw.push_seg(path_psh[1].asBezier());
+      for(unsigned i = 1; i < path_psh.size(); i++)
+          path_psh[i-1]->pts.back() = path_psh[i]->pts[0];
+      Piecewise<D2<SBasis> > f_as_pw(path_psh[0]->asBezier());
+    for(unsigned i = 1; i < path_psh.size(); i++) {
+        f_as_pw.push_seg(path_psh[i]->asBezier());
+    }
       //f=handles_to_sbasis(handles.begin(), SIZE-1);
       adjuster.pos[1]=450;
       adjuster.pos[0]=std::max(adjuster.pos[0],150.);
@@ -318,12 +323,13 @@ class SbToBezierTester: public Toy {
       val_s << curve_precision;
       draw_text(cr, adjuster2.pos, val_s.str().c_str());
       
+    int segs = 0;
       if(toggles[0].on)
-          sequential_curvature_fitter(cr, f_as_pw, 0, f_as_pw.cuts.back(), curve_precision);
+          segs = sequential_curvature_fitter(cr, f_as_pw, 0, f_as_pw.cuts.back(), curve_precision);
       else {
-          int segs = recursive_curvature_fitter(cr, f_as_pw, 0, f_as_pw.cuts.back(),curve_precision);
-          *notify << "      total segments: "<< segs <<"\n";
+          segs = recursive_curvature_fitter(cr, f_as_pw, 0, f_as_pw.cuts.back(),curve_precision);
       }
+    *notify << "      total segments: "<< segs <<"\n";
       cairo_restore(cr);
       Point p(25, height - 50), d(50,25);
       toggles[0].bounds = Rect(p,     p + d);
@@ -342,10 +348,11 @@ public:
     }
     SbToBezierTester() {
       //if(handles.empty()) {
-        for(int j = 0; j < 1; j++) {
+        for(int j = 0; j < 3; j++) {
+            path_psh.push_back(new PointSetHandle());
             for(unsigned i = 0; i < 6; i++)
-                path_psh[j].push_back(150+300*uniform(),150+300*uniform());
-            handles.push_back(&path_psh[j]);
+                path_psh.back()->push_back(150+300*uniform(),150+300*uniform());
+            handles.push_back(path_psh.back());
         }
       adjuster.pos = Geom::Point(150+300*uniform(),150+300*uniform());
       handles.push_back(&adjuster);
