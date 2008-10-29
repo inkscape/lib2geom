@@ -73,7 +73,7 @@ class HLineSegToy : public Toy
     	}
     	assert( hls3.initialPoint() == hls3.finalPoint() );
     	
-    	std::vector<Point> points = hls.pointAndDerivatives(tt, 2);
+    	std::vector<Point> points = hls.pointAndDerivatives(tt, 1);
     	
     	assert(points.size() == 2);
     	assert(points[0] == hls.pointAt(tt));
