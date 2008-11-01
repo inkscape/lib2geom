@@ -114,6 +114,7 @@ class D2<Interval> {
     inline bool hasZeroArea(double eps = EPSILON) const { return isEmpty() || (area() <= eps); }
 
     inline double maxExtent() const { return std::max(f[X].extent(), f[Y].extent()); }
+    inline double minExtent() const { return std::min(f[X].extent(), f[Y].extent()); }
 
     inline bool isEmpty()                 const { 
         return f[X].isEmpty()        || f[Y].isEmpty(); 
