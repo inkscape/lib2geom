@@ -566,8 +566,9 @@ public:
   }
 
 
-  /*
+  /**
    * It is important to note that the coordinates passed to appendNew should be finite!
+   * If one of the coordinates is infinite, 2geom will throw a ContinuityError exception.
    */
 
   template <typename CurveType, typename A>
