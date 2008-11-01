@@ -41,7 +41,7 @@ elliptiarc-curve-fitting
 hvlineseg-toy
 implicit-toy
 inner-product-clip
-involute
+#involute
 line-toy
 load-svgd
 rect-toy
