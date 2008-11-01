@@ -105,10 +105,13 @@ class D2<Interval> {
     inline Point midpoint() const { return Point(f[X].middle(), f[Y].middle()); }
 
 /**
- * Compute the area of this rectangle.  Note that a zero area rectangle is not necessarily empty - just as the interval [0,0] contains one point, the rectangle [0,0] x [0,0] contains 1 point and no area.
+ * \brief Compute the area of this rectangle.
+ *
+ * Note that a zero area rectangle is not necessarily empty - just as the interval [0,0] contains one point, the rectangle [0,0] x [0,0] contains 1 point and no area.
+ * \retval For a valid return value, the rect must be tested for emptyness first.
  */
     inline double area() const { return f[X].extent() * f[Y].extent(); }
-    inline bool hasZeroArea(double eps = EPSILON) const { return area() <= eps; }
+    inline bool hasZeroArea(double eps = EPSILON) const { return isEmpty() || (area() <= eps); }
 
     inline double maxExtent() const { return std::max(f[X].extent(), f[Y].extent()); }
 
