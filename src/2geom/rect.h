@@ -108,6 +108,8 @@ class D2<Interval> {
  * Compute the area of this rectangle.  Note that a zero area rectangle is not necessarily empty - just as the interval [0,0] contains one point, the rectangle [0,0] x [0,0] contains 1 point and no area.
  */
     inline double area() const { return f[X].extent() * f[Y].extent(); }
+    inline bool hasZeroArea(double eps = EPSILON) const { return area() <= eps; }
+
     inline double maxExtent() const { return std::max(f[X].extent(), f[Y].extent()); }
 
     inline bool isEmpty()                 const { 
