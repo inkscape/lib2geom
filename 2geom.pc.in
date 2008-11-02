@@ -9,5 +9,5 @@ Version: @2GEOM_VERSION@
 
 Requires:
 Libs: -L${libdir} -l2geom
-Cflags: -I${includedir}/2geom
+Cflags: -I${includedir}/2geom-@2GEOM_VERSION@
 
