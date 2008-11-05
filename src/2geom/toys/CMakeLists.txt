@@ -86,6 +86,8 @@ sb2d
 sweep
 root-finder-comparer
 curvature-curve
+sb-of-sb
+convole
 )
 
 

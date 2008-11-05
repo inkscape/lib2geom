@@ -37,6 +37,15 @@
 #include <2geom/interval.h>
 #include <2geom/isnan.h>
 
+
+//#define USE_SBASIS_OF
+
+#ifdef USE_SBASIS_OF
+
+#include "linear-of.h"
+
+#else
+
 namespace Geom{
 
 inline double lerp(double t, double a, double b) { return a*(1-t) + b*t; }
@@ -169,7 +178,9 @@ inline Linear operator/=(Linear & a, double b) {
     a[0] /= b; a[1] /= b;
     return a;
 }
-};
+
+}
+#endif
 
 #endif //SEEN_LINEAR_H
 

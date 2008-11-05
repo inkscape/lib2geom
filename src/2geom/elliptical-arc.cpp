@@ -31,6 +31,7 @@
 #include <2geom/elliptical-arc.h>
 #include <2geom/bezier-curve.h>
 #include <2geom/poly.h>
+#include <2geom/sbasis-math.h>
 
 #include <cfloat>
 #include <limits>

@@ -80,6 +80,8 @@ class Piecewise {
         push_cut(1.);
     }
 
+    unsigned input_dim(){return 1;}
+
     typedef typename T::output_type output_type;
 
     explicit Piecewise(const output_type & v) {
@@ -206,6 +208,9 @@ class Piecewise {
         double o = dom.min() - cf, s = dom.extent() / (cuts.back() - cf);
         for(unsigned i = 0; i <= size(); i++)
             cuts[i] = (cuts[i] - cf) * s + o;
+        //fix floating point precision errors.
+        cuts[0] = dom.min();
+        cuts[size()] = dom.max();
     }
 
     //Concatenates this Piecewise function with another, offseting time of the other to match the end.
@@ -227,15 +232,15 @@ class Piecewise {
     inline void continuousConcat(const Piecewise<T> &other) {
         boost::function_requires<AddableConcept<typename T::output_type> >();
         if(other.empty()) return;
-        typename T::output_type y = segs.back().at1() - other.segs.front().at0();
 
         if(empty()) {
             for(unsigned i = 0; i < other.size(); i++)
-                push_seg(other[i] + y);
+                push_seg(other[i]);
             cuts = other.cuts;
             return;
         }
 
+        typename T::output_type y = segs.back().at1() - other.segs.front().at0();
         double t = cuts.back() - other.cuts.front();
         for(unsigned i = 0; i < other.size(); i++)
             push(other[i] + y, other.cuts[i + 1] + t);

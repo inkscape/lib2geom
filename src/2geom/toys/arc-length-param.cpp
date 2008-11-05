@@ -36,11 +36,21 @@ public:
         Piecewise<D2<SBasis> >B;
         B.concat(Piecewise<D2<SBasis> >(B1));
         B.concat(Piecewise<D2<SBasis> >(B2));
-      
+
+// testing fuse_nearby_ends
+        std::vector< Piecewise<D2<SBasis> > > pieces;
+        pieces = fuse_nearby_ends(split_at_discontinuities(B),9);
+        Piecewise<D2<SBasis> > C;
+        for (unsigned i=0; i<pieces.size(); i++){
+            C.concat(pieces[i]);
+        }
+// testing fuse_nearby_ends
+
         cairo_set_line_width (cr, .5);
         cairo_set_source_rgba (cr, 0., 0.5, 0., 1);
         //cairo_md_sb(cr, B1);
-        cairo_pw_d2(cr, B);
+        cairo_pw_d2(cr, C);
+        //cairo_pw_d2(cr, B);
         cairo_stroke(cr);
 
         Piecewise<D2<SBasis> > uniform_B = arc_length_parametrization(B);

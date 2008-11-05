@@ -43,7 +43,14 @@
 #include <2geom/utils.h>
 #include <2geom/exception.h>
 
-namespace Geom {
+
+#ifdef USE_SBASIS_OF
+
+#include "sbasis-of.h"
+
+#else
+
+namespace Geom{
 
 /*** An empty SBasis is identically 0. */
 class SBasis : public std::vector<Linear>{
@@ -325,6 +332,7 @@ std::vector<std::vector<double> > multi_roots(SBasis const &f,
                                  double b=1);
     
 }
+#endif
 
 /*
   Local Variables:

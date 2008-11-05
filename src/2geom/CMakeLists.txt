@@ -98,6 +98,7 @@ rect.h
 piecewise.h
 piecewise.cpp
 
+sbasis-of.h
 sbasis.cpp
 sbasis.h
 sbasis-2d.h

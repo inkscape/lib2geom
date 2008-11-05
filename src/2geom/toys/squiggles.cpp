@@ -38,6 +38,7 @@ void cairo_vert(cairo_t *cr, double x, vector<double> p) {
     }
 }
 
+/*
 Piecewise<SBasis> interpolate(std::vector<double> values, std::vector<double> times){
     assert ( values.size() == times.size() );
     if ( values.size() == 0 ) return Piecewise<SBasis>();
@@ -55,7 +56,7 @@ Piecewise<SBasis> interpolate(std::vector<double> values, std::vector<double> ti
     }
     return result;
 }
-
+*/
 
 //#include <2geom/toys/pwsbhandle.cpp>  // FIXME: This looks like it may give problems later, (including a .cpp file)
 
@@ -132,7 +133,8 @@ class Squiggles: public Toy {
         }
 
         //Compute new curve
-        Piecewise<SBasis> curvature = interpolate(curvatures, times);
+
+        Piecewise<SBasis> curvature = interpolate( times, curvatures , 1);
         Piecewise<SBasis> alpha = integral(curvature);
         Piecewise<D2<SBasis> > v = sectionize(tan2(alpha));
         curve = integral(v)+Point(100,100);	
@@ -161,6 +163,15 @@ class Squiggles: public Toy {
             cairo_move_to(cr, m);
             cairo_line_to(cr, dynamic_cast<PointHandle*>(handles[i])->pos);
         }
+
+#if 0
+        D2<Piecewise<SBasis> > graphe;
+        graphe[X] = Piecewise<SBasis>(Linear(100,300));
+        graphe[Y] = -curvature/K_SCALE+400;
+        graphe[X].setDomain(graphe[Y].domain());
+        cairo_d2_pw(cr, graphe);
+#endif
+
         cairo_stroke(cr);
         cairo_restore(cr);
 

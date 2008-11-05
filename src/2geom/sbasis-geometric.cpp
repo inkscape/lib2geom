@@ -552,6 +552,7 @@ find_bounds_for_lambda0(double aa0,double aa1,double cc0,double cc1,
             return Interval();//return empty interval
         result.setMin(0);
     }
+    result = Interval(result.min()-.1,result.max()+.1);//just in case all our approx. were exact...
     return result;
 }
 

@@ -79,6 +79,8 @@ Piecewise<D2<SBasis> > operator*(Piecewise<D2<SBasis> > const &a, Matrix const &
 
 Piecewise<D2<SBasis> > force_continuity(Piecewise<D2<SBasis> > const &f, double tol=0, bool closed=false);
 
+std::vector<Piecewise<D2<SBasis> > > fuse_nearby_ends(std::vector<Piecewise<D2<SBasis> > > const &f, double tol=0);
+
 std::vector<Geom::Piecewise<Geom::D2<Geom::SBasis> > > split_at_discontinuities (Geom::Piecewise<Geom::D2<Geom::SBasis> > const & pwsbin, double tol = .0001);
 
 class CoordIterator
