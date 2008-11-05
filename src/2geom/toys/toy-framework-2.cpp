@@ -386,7 +386,7 @@ GtkItemFactoryEntry menu_items[] = {
     { (gchar*)"/_Help",             NULL,           NULL,           0,  (gchar*)"<LastBranch>"                },
     { (gchar*)"/Help/About",        NULL,           make_about,     0,  (gchar*)"<StockItem>", GTK_STOCK_ABOUT}
 };
-gint nmenu_items = 10;
+gint nmenu_items = 9;
 
 void init(int argc, char **argv, Toy* t, int width, int height) {
     current_toy = t;
