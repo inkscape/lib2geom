@@ -171,11 +171,15 @@ public:
         return result;
     }
     
-    /** \todo  when this would create an empty interval, make this be just the centerpoint only. Or at least think about what should be done in that case.
+    /** When this would create an empty interval, the interval will be the centerpoint of the old range only.
      */
     inline void expandBy(double amnt) {
         _b[0] -= amnt;
         _b[1] += amnt;
+        if (_b[0] > _b[1]) {
+            Coord halfway = (_b[0]+_b[1])/2;
+            _b[0] = _b[1] = halfway;
+        }
     }
     
     inline void unionWith(const Interval & a) {
