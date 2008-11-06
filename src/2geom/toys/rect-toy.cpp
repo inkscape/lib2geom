@@ -187,7 +187,7 @@ class LineToy : public Toy
         cairo_rectangle(cr, r2);
         cairo_stroke(cr);
 
-        boost::optional<Rect> r1xr2 = intersect(r1, r2);
+        OptRect r1xr2 = intersect(r1, r2);
         if(r1xr2) {
             cairo_set_source_rgba(cr, 1.0, 0.7, 0.7, 1.0);
             cairo_rectangle(cr, *r1xr2);

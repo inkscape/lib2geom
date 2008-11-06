@@ -62,7 +62,7 @@ void draw_line_in_rect(cairo_t*cr, Rect &r, Point n, double c) {
 
 }
 
-boost::optional<Rect> tighten(Rect &r, Point n, Interval lu) {
+OptRect tighten(Rect &r, Point n, Interval lu) {
     vector<Geom::Point> result;
     Point resultp;
     for(int i = 0; i < 4; i++) {
@@ -91,7 +91,7 @@ boost::optional<Rect> tighten(Rect &r, Point n, Interval lu) {
             result.push_back(resultp);
     }
     if(result.size() < 2)
-        return boost::optional<Rect>();
+        return OptRect();
     Rect nr(result[0], result[1]);
     for(size_t i = 2; i < result.size(); i++) {
         nr.expandTo(result[i]);
@@ -358,7 +358,7 @@ public:
         AAF d = a*x + b*y - f;
         interval ivl(d);
         Point n(a,b);
-        boost::optional<Rect> out = tighten(r, n, Interval(ivl.min(), ivl.max()));
+        OptRect out = tighten(r, n, Interval(ivl.min(), ivl.max()));
         if(ivl.extent() < 0.5*L2(n)) {
             draw_line_in_rect(cr, r, n, ivl.middle());
             return;
@@ -489,7 +489,7 @@ public:
             //cout << d << endl;
             interval ivl(d);
             Point n(a,b);
-            boost::optional<Rect> out = tighten(r, n, Interval(ivl.min(), ivl.max()));
+            OptRect out = tighten(r, n, Interval(ivl.min(), ivl.max()));
             if(out)
                 cairo_rectangle(cr, *out);
             cairo_rectangle(cr, r);

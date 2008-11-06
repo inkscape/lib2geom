@@ -150,32 +150,12 @@ inline Rect unify(Rect const & a, Rect const & b) {
     return Rect(unify(a[X], b[X]), unify(a[Y], b[Y]));
 }
 
-/** 
- * Returns the smallest rectangle that encloses both rectangles.
- * An empty argument is assumed to be an empty rectangle
- */
-inline boost::optional<Rect> unify(boost::optional<Rect> const & a, boost::optional<Rect> const & b) {
-    if (!a) {
-        return b;
-    } else if (!b) {
-        return a;
-    } else {
-        return unify(*a, *b);
-    }
-}
-
 inline Rect union_list(std::vector<Rect> const &r) {
     if(r.empty()) return Rect(Interval(0,0), Interval(0,0));
     Rect ret = r[0];
     for(unsigned i = 1; i < r.size(); i++)
         ret.unionWith(r[i]);
     return ret;
-}
-
-inline boost::optional<Rect> intersect(Rect const & a, Rect const & b) {
-    boost::optional<Interval> x = intersect(a[X], b[X]);
-    boost::optional<Interval> y = intersect(a[Y], b[Y]);
-    return x && y ? boost::optional<Rect>(Rect(*x, *y)) : boost::optional<Rect>();
 }
 
 inline
@@ -250,6 +230,24 @@ public:
     }
 };
 
+
+/** 
+ * Returns the smallest rectangle that encloses both rectangles.
+ * An empty argument is assumed to be an empty rectangle
+ */
+inline OptRect unify(OptRect const & a, OptRect const & b) {
+    if (!a) {
+        return b;
+    } else if (!b) {
+        return a;
+    } else {
+        return unify(*a, *b);
+    }
+}
+
+inline OptRect intersect(Rect const & a, Rect const & b) {
+    return OptRect(intersect(a[X], b[X]), intersect(a[Y], b[Y]));
+}
 
 } // end namespace Geom
 
