@@ -57,9 +57,9 @@ str bezord_repr(Geom::Linear const& b)
 void wrap_linear() {
     def("lerp", (double (*)(double, double, double))&Geom::lerp);
     def("reverse", (Geom::Linear (*)(Geom::Linear const &))&Geom::reverse);
-    def("bounds_fast", (Geom::Interval (*)(Geom::Linear const &))&Geom::bounds_fast);
-    def("bounds_exact", (Geom::Interval (*)(Geom::Linear const &))&Geom::bounds_exact);
-    def("bounds_local", (Geom::Interval (*)(Geom::Linear const &))&Geom::bounds_local);
+    def("bounds_fast", (Geom::OptInterval (*)(Geom::Linear const &))&Geom::bounds_fast);
+    def("bounds_exact", (Geom::OptInterval (*)(Geom::Linear const &))&Geom::bounds_exact);
+    def("bounds_local", (Geom::OptInterval (*)(Geom::Linear const &))&Geom::bounds_local);
 
     class_<Geom::Linear>("Linear", init<double, double>())
         .def("__str__", bezord_repr)

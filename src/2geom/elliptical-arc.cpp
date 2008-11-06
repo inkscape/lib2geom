@@ -43,7 +43,7 @@ namespace Geom
 {
 
 
-Rect EllipticalArc::boundsExact() const
+OptRect EllipticalArc::boundsExact() const
 {
 	std::vector<double> extremes(4);
 	double cosrot = std::cos(rotation_angle());

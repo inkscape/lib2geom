@@ -33,7 +33,7 @@ void check_boolops(std::vector<Shape> a, std::vector<Shape> b) {
     int n;
     for(unsigned i = 0; i < s.size(); i++) {
         Shape res = shape_union(a[i], b[i]);
-        Rect bb = bounds_fast(a[i].first).unify(bounds_fast(b[i].second);
+        Rect bb = (*bounds_fast(a[i].first)).unify(*bounds_fast(b[i].second);
         for(unsigned j = 0; j < 1000; j++) {
             Point p = Point(bb.width() * (rand() % 1000)/1000,
                            bb.height() * (rand() & 1000)/1000) + bb.min();

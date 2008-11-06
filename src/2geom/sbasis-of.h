@@ -128,7 +128,7 @@ public:
     //The following lines only makes sens if T=double!
     SBasisOf<T> toSBasis() const { return SBasisOf<T>(*this); }
     double tailError(unsigned tail) const{
-        Interval bs = bounds_fast(*this, tail);
+        Interval bs = *bounds_fast(*this, tail);
         return std::max(fabs(bs.min()),fabs(bs.max()));
     }
 
@@ -162,9 +162,9 @@ private:
 #ifdef USE_SBASIS_OF
 
 //implemented in sbasis-roots.cpp
-Interval bounds_exact(SBasis const &a);
-Interval bounds_fast(SBasis const &a, int order = 0);
-Interval bounds_local(SBasis const &a, const Interval &t, int order = 0);
+OptInterval bounds_exact(SBasis const &a);
+OptInterval bounds_fast(SBasis const &a, int order = 0);
+OptInterval bounds_local(SBasis const &a, const OptInterval &t, int order = 0);
 
 std::vector<double> roots(SBasis const & s);
 std::vector<std::vector<double> > multi_roots(SBasis const &f,

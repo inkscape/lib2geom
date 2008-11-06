@@ -328,13 +328,13 @@ Piecewise<SBasis> reciprocalOnDomain(Interval range, double tol){
 }
 
 Piecewise<SBasis> reciprocal(SBasis const &f, double tol, int order){
-    Piecewise<SBasis> reciprocal_fn=reciprocalOnDomain(bounds_fast(f), tol);
+    Piecewise<SBasis> reciprocal_fn=reciprocalOnDomain(*bounds_fast(f), tol);
     Piecewise<SBasis> result=compose(reciprocal_fn,f);
     truncateResult(result,order);
     return(result);
 }
 Piecewise<SBasis> reciprocal(Piecewise<SBasis> const &f, double tol, int order){
-    Piecewise<SBasis> reciprocal_fn=reciprocalOnDomain(bounds_fast(f), tol);
+    Piecewise<SBasis> reciprocal_fn=reciprocalOnDomain(*bounds_fast(f), tol);
     Piecewise<SBasis> result=compose(reciprocal_fn,f);
     truncateResult(result,order);
     return(result);

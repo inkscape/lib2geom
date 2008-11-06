@@ -68,7 +68,7 @@ public:
             B[1][i] = B[1][i]*choose<double>(2*i+1, i);
         }
         
-        Interval bs = bounds_fast(B[1]);
+        Interval bs = *bounds_fast(B[1]);
         double lo, hi;
         lo = 3*width/4 - bs.min();
         hi = 3*width/4 - bs.max();

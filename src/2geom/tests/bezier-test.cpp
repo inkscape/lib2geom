@@ -145,13 +145,13 @@ Bezier operator/(const Bezier & a, double v)k
     std::cout << derivative(hump).roots() <<std::endl;
 
     cout << "Interval bounds_fast(Bezier const & b);\n";
-    std::cout << bounds_fast(hump) << endl;
+    std::cout << *bounds_fast(hump) << endl;
 
     cout << "Interval bounds_exact(Bezier const & b);\n";
-    cout << bounds_exact(hump) << " == [0, " << hump.valueAt(0.5) << "]\n";
+    cout << *bounds_exact(hump) << " == [0, " << hump.valueAt(0.5) << "]\n";
 
     cout << "Interval bounds_local(Bezier const & b, Interval i);\n";
-    cout << bounds_local(hump, Interval(0.3, 0.6)) << endl;
+    cout << *bounds_local(hump, Interval(0.3, 0.6)) << endl;
 }
 
 

@@ -18,7 +18,7 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
     cairo_set_source_rgba (cr, 0., 0., 0, 1);
     
     D2<SBasis> A = psh.asBezier();
-    Rect Ar = bounds_fast(A);
+    Rect Ar = *bounds_fast(A);
     cairo_md_sb(cr, A);
     cairo_stroke(cr);
 

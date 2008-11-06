@@ -67,9 +67,9 @@ struct CurveWrap : Geom::Curve, wrapper<Geom::Curve>
     Geom::Point finalPoint() const {return this->get_override("finalPoint")();}
     bool isDegenerate() const {return this->get_override("isDegenerate")();}
     CurveWrap *duplicate() const {return this->get_override("duplicate")();}
-    Geom::Rect boundsFast() const {return this->get_override("boundsFast")();}
-    Geom::Rect boundsExact() const {return this->get_override("boundsExact")();}
-    Geom::Rect boundsLocal(Geom::Interval i, unsigned deg) const {return this->get_override("boundsLocal")(i,deg);}
+    Geom::OptRect boundsFast() const {return this->get_override("boundsFast")();}
+    Geom::OptRect boundsExact() const {return this->get_override("boundsExact")();}
+    virtual Geom::OptRect boundsLocal(Geom::OptInterval i, unsigned deg) const {return this->get_override("boundsLocal")(i,deg);}
     std::vector<double> roots(double v, Geom::Dim2 d) const {return this->get_override("roots")(v,d);}
 
     int winding(Geom::Point p) const {
@@ -217,8 +217,8 @@ void wrap_path()
         .def(self *= Geom::Matrix())
     ;
     def("reverse_paths_and_order", Geom::reverse_paths_and_order);
-    def("bounds_fast", (Geom::Rect (*)(Geom::PathVector const &))&Geom::bounds_fast);
-    def("bounds_exact", (Geom::Rect (*)(Geom::PathVector const &))&Geom::bounds_exact);
+    def("bounds_fast", (Geom::OptRect (*)(Geom::PathVector const &))&Geom::bounds_fast);
+    def("bounds_exact", (Geom::OptRect (*)(Geom::PathVector const &))&Geom::bounds_exact);
     def("path_from_piecewise", Geom::path_from_piecewise);
     def("path_from_sbasis", Geom::path_from_sbasis);
     def("cubicbezierpath_from_sbasis", Geom::cubicbezierpath_from_sbasis);

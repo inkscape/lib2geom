@@ -52,9 +52,9 @@ doEffect_pwd2 (Geom::Piecewise<Geom::D2<Geom::SBasis> > & pwd2_in, Geom::Piecewi
     D2<Piecewise<SBasis> > patternd2 = make_cuts_independent(pattern);
     Piecewise<SBasis> x = Piecewise<SBasis>(patternd2[0]);
     Piecewise<SBasis> y = Piecewise<SBasis>(patternd2[1]);
-    Interval pattBnds = bounds_exact(x);
+    Interval pattBnds = *bounds_exact(x);
     x -= pattBnds.min();
-    Interval pattBndsY = bounds_exact(y);
+    Interval pattBndsY = *bounds_exact(y);
     y -= (pattBndsY.max()+pattBndsY.min())/2;
 
     int nbCopies = int(uskeleton.cuts.back()/pattBnds.extent());

@@ -230,7 +230,7 @@ public:
             cairo_set_source_rgba (cr, 0.7, 0., 0.7, 1.);
             cairo_stroke(cr);
             //Fix Me: bounds_exact does not work here?!?!
-            Interval bounds = bounds_fast(comp);
+            Interval bounds = *bounds_fast(comp);
             error = (bounds.max()>-bounds.min() ? bounds.max() : -bounds.min() );
         }
         *notify << "Gray: f-graph and true solution,\n";

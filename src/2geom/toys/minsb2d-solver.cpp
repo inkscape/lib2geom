@@ -158,7 +158,7 @@ public:
         D2<SBasis> zeroset(b0.toSBasis(), b1.toSBasis());
             
         SBasis comp = compose((*bnb->ff),zeroset);
-        Interval bounds = bounds_fast(comp);
+        Interval bounds = *bounds_fast(comp);
         double error = (bounds.max()>-bounds.min() ? bounds.max() : -bounds.min() );
         //printf("error = %g %g %g\n", bounds.max(), bounds.min(), error);
         return error*error;
@@ -263,7 +263,7 @@ public:
             cairo_set_source_rgba (cr, 0.7, 0., 0.7, 1.);
             cairo_stroke(cr);
             //Fix Me: bounds_exact does not work here?!?!
-            Interval bounds = bounds_fast(comp);
+            Interval bounds = *bounds_fast(comp);
             error = (bounds.max()>-bounds.min() ? bounds.max() : -bounds.min() );
         }
         if (1) {
@@ -338,7 +338,7 @@ public:
                 cairo_set_source_rgba (cr, 0.7, 0., 0.7, 1.);
                 cairo_stroke(cr);
                 //Fix Me: bounds_exact does not work here?!?!
-                Interval bounds = bounds_fast(comp);
+                Interval bounds = *bounds_fast(comp);
                 error = (bounds.max()>-bounds.min() ? bounds.max() : -bounds.min() );
 
             }        

@@ -116,13 +116,25 @@ inline CoordIterator iterateCoord(Piecewise<D2<SBasis> > const &a, unsigned d) {
 }
 
 //bounds specializations with order
-inline Rect bounds_fast(D2<SBasis> const & s, unsigned order=0) {
-    return Rect(bounds_fast(s[X], order),
-                bounds_fast(s[Y], order));
+inline OptRect bounds_fast(D2<SBasis> const & s, unsigned order=0) {
+    OptRect retval;
+    OptInterval xint = bounds_fast(s[X], order);
+    if (xint) {
+        OptInterval yint = bounds_fast(s[Y], order);
+        if (yint) {
+            retval = Rect(*xint, *yint);
+        }
+    }
+    return retval;
 }
-inline Rect bounds_local(D2<SBasis> const & s, Interval i, unsigned order=0) {
-    return Rect(bounds_local(s[X], i, order),
-                bounds_local(s[Y], i, order));
+inline OptRect bounds_local(D2<SBasis> const & s, OptInterval i, unsigned order=0) {
+    OptRect retval;
+    OptInterval xint = bounds_local(s[X], i, order);
+    OptInterval yint = bounds_local(s[Y], i, order);
+    if (xint && yint) {
+        retval = Rect(*xint, *yint);
+    }
+    return retval;
 }
 
 }

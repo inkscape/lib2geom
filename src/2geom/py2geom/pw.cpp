@@ -74,7 +74,7 @@ Geom::Piecewise<Geom::SBasis> (*reciprocal_pwsb)(Geom::Piecewise<Geom::SBasis> c
 
 Geom::FragmentConcept<Geom::SBasis>::BoundsType (*bounds_fast_pwsb)(Geom::Piecewise<Geom::SBasis> const &) = &Geom::bounds_fast;
 Geom::FragmentConcept<Geom::SBasis>::BoundsType (*bounds_exact_pwsb)(Geom::Piecewise<Geom::SBasis> const &) = &Geom::bounds_exact;
-Geom::FragmentConcept<Geom::SBasis>::BoundsType (*bounds_local_pwsb)(Geom::Piecewise<Geom::SBasis> const &, const Geom::Interval &) = &Geom::bounds_local;
+Geom::FragmentConcept<Geom::SBasis>::BoundsType (*bounds_local_pwsb)(Geom::Piecewise<Geom::SBasis> const &, const Geom::OptInterval &) = &Geom::bounds_local;
 
 Geom::SBasis getitem_pwsb(Geom::Piecewise<Geom::SBasis> const &p, int index) {
     unsigned D = p.size();

@@ -118,7 +118,7 @@ int recursive_curvature_fitter(cairo_t* cr, Piecewise<D2<SBasis> > const &f, dou
           Piecewise<SBasis> s = arcLengthSb(k_bez);
           s *= (t1-t0)/arcLengthSb(k_bez).segs.back().at1();
           s += t0;
-          Rect bnds = bounds_fast(compose(f,s) - Piecewise<D2<SBasis> >(k_bez));
+          Rect bnds = *bounds_fast(compose(f,s) - Piecewise<D2<SBasis> >(k_bez));
           //double h_dist = bnds.dimensions().length();
 //0 is in the rect!, TODO:gain factor ~2 for free.
 // njh: not really, the benefit is actually rather small.
@@ -150,7 +150,7 @@ double single_curvature_fitter(Piecewise<D2<SBasis> > const &f, double t0, doubl
           Piecewise<SBasis> s = arcLengthSb(k_bez);
           s *= (t1-t0)/arcLengthSb(k_bez).segs.back().at1();
           s += t0;
-          Rect bnds = bounds_fast(compose(f,s) - Piecewise<D2<SBasis> >(k_bez));
+          Rect bnds = *bounds_fast(compose(f,s) - Piecewise<D2<SBasis> >(k_bez));
           double h_dist = max(bnds.min().length(), bnds.max().length());
           return h_dist;
       }

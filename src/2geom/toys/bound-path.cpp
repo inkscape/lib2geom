@@ -92,20 +92,20 @@ class BoundsPath : public Toy
         if ( (m_selection_kind == CURVE) && (m_selected_curve != -1) )
         {
             const Curve & curve = m_pathvector_coll[m_selected_pathvector][m_selected_path][m_selected_curve];
-            bound = toggles[0].on ? curve.boundsExact()
-                                  : curve.boundsFast();
+            bound = toggles[0].on ? *curve.boundsExact()
+                                  : *curve.boundsFast();
         }
         else if ( (m_selection_kind == PATH) && (m_selected_path != -1) )
         {
             const Path & path = m_pathvector_coll[m_selected_pathvector][m_selected_path];
-            bound = toggles[0].on ? path.boundsExact()
-                                  : path.boundsFast();
+            bound = toggles[0].on ? *path.boundsExact()
+                                  : *path.boundsFast();
         }
         else if ( (m_selection_kind == PATHVECTOR) && (m_selected_pathvector != -1) )
         {
             const PathVector & pathvector = m_pathvector_coll[m_selected_pathvector];
-            bound = toggles[0].on ? bounds_exact(pathvector)
-                                  : bounds_fast(pathvector);            
+            bound = toggles[0].on ? *bounds_exact(pathvector)
+                                  : *bounds_fast(pathvector);            
         }
 
         cairo_set_source_rgba(cr, 0.5, 0.0, 0.0, 1.0);
@@ -135,8 +135,8 @@ class BoundsPath : public Toy
                     for ( unsigned int k = 0; k <  m_pathvector_coll[i][j].size(); ++k)
                     {
                         const Curve & curve = m_pathvector_coll[i][j][k];
-                        bound = toggles[0].on ? curve.boundsExact()
-                                              : curve.boundsFast();
+                        bound = toggles[0].on ? *curve.boundsExact()
+                                              : *curve.boundsFast();
                         d = distanceSq(pos, bound);
                         if ( are_near(d, 0) )
                         {
@@ -163,8 +163,8 @@ class BoundsPath : public Toy
                 for (unsigned int j = 0; j < m_pathvector_coll[i].size(); ++j)
                 {
                     const Path & path = m_pathvector_coll[i][j];
-                    bound = toggles[0].on ? path.boundsExact()
-                                          : path.boundsFast();
+                    bound = toggles[0].on ? *path.boundsExact()
+                                          : *path.boundsFast();
                     d = distanceSq(pos, bound);
                     if ( are_near(d, 0) )
                     {
@@ -185,8 +185,8 @@ class BoundsPath : public Toy
             for (unsigned int i = 0; i < m_pathvector_coll.size(); ++i)
             {
                 const PathVector & pathvector = m_pathvector_coll[i];
-                bound = toggles[0].on ? bounds_exact(pathvector)
-                                      : bounds_fast(pathvector);
+                bound = toggles[0].on ? *bounds_exact(pathvector)
+                                      : *bounds_fast(pathvector);
                 d = distanceSq(pos, bound);
                 if ( are_near(d, 0) )
                 {

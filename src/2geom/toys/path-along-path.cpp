@@ -40,7 +40,7 @@ class PathAlongPathToy: public Toy {
         
         Piecewise<SBasis> x=Piecewise<SBasis>(pattern[0]-origin[0]);
         Piecewise<SBasis> y=Piecewise<SBasis>(pattern[1]-origin[1]);
-        Interval pattBnds = bounds_exact(x);
+        Interval pattBnds = *bounds_exact(x);
         int nbCopies = int(uskeleton.cuts.back()/pattBnds.extent());
 
         //double pattWidth = uskeleton.cuts.back()/nbCopies;

@@ -259,8 +259,8 @@ public:
   bool closed() const { return closed_; }
   void close(bool closed=true) { closed_ = closed; }
 
-  Rect boundsFast() const;
-  Rect boundsExact() const;
+  OptRect boundsFast() const;
+  OptRect boundsExact() const;
 
   Piecewise<D2<SBasis> > toPwSb() const {
     Piecewise<D2<SBasis> > ret;

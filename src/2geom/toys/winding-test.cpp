@@ -22,7 +22,7 @@ void draw_bounds(cairo_t *cr, vector<Path> ps) {
     srand(0); 
     for(unsigned i = 0; i < ps.size(); i++) {
         for(Path::iterator it = ps[i].begin(); it != ps[i].end(); it++) {
-            Rect bounds = it->boundsFast();
+            Rect bounds = *(it->boundsFast());
             cairo_set_source_rgba(cr, uniform(), uniform(), uniform(), .5);
             draw_rect(cr, bounds.min(), bounds.max());
             cairo_stroke(cr);

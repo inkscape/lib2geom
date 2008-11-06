@@ -43,7 +43,7 @@ namespace Geom{
  \returns the largest possible error this truncation could give
 */
 double SBasis::tailError(unsigned tail) const {
-  Interval bs = bounds_fast(*this, tail);
+  Interval bs = *bounds_fast(*this, tail);
   return std::max(fabs(bs.min()),fabs(bs.max()));
 }
 

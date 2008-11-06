@@ -74,10 +74,10 @@ public:
 
   virtual Curve *duplicate() const = 0;
 
-  virtual Rect boundsFast() const = 0;
-  virtual Rect boundsExact() const = 0;
-  virtual Rect boundsLocal(Interval i, unsigned deg) const = 0;
-  Rect boundsLocal(Interval i) const { return boundsLocal(i, 0); }
+  virtual OptRect boundsFast() const = 0;
+  virtual OptRect boundsExact() const = 0;
+  virtual OptRect boundsLocal(OptInterval i, unsigned deg) const = 0;
+  OptRect boundsLocal(OptInterval i) const { return boundsLocal(i, 0); }
 
   virtual std::vector<double> roots(double v, Dim2 d) const = 0;
 

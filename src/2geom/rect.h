@@ -60,10 +60,12 @@ class D2<Interval> {
   private:
     Interval f[2];
   public:
-    /* The default constructor creates an empty rect, constructed of two empty Intervals. (users rely on this!)
+    /** Best not to use this constructor, do not rely on what it initializes the object to.
+     *The default constructor creates a rect of default intervals.
      */
     D2<Interval>() { f[X] = f[Y] = Interval(); }
     
+    public:
     D2<Interval>(Interval const &a, Interval const &b) {
         f[X] = a;
         f[Y] = b;
@@ -107,18 +109,18 @@ class D2<Interval> {
 /**
  * \brief Compute the area of this rectangle.
  *
- * Note that a zero area rectangle is not necessarily empty - just as the interval [0,0] contains one point, the rectangle [0,0] x [0,0] contains 1 point and no area.
+ * Note that a zero area rectangle is not empty - just as the interval [0,0] contains one point, the rectangle [0,0] x [0,0] contains 1 point and no area.
  * \retval For a valid return value, the rect must be tested for emptyness first.
  */
     inline double area() const { return f[X].extent() * f[Y].extent(); }
-    inline bool hasZeroArea(double eps = EPSILON) const { return isEmpty() || (area() <= eps); }
+    inline bool hasZeroArea(double eps = EPSILON) const { return (area() <= eps); }
 
     inline double maxExtent() const { return std::max(f[X].extent(), f[Y].extent()); }
     inline double minExtent() const { return std::min(f[X].extent(), f[Y].extent()); }
 
-    inline bool isEmpty()                 const { 
-        return f[X].isEmpty()        || f[Y].isEmpty(); 
-    }
+//    inline bool isEmpty()                 const { 
+//        return f[X].isEmpty()        || f[Y].isEmpty(); 
+//    }
     inline bool intersects(Rect const &r) const { 
         return f[X].intersects(r[X]) && f[Y].intersects(r[Y]); 
     }
@@ -207,6 +209,46 @@ double distance( Point const& p, Rect const& rect )
 {
     return std::sqrt(distanceSq(p, rect));
 }
+
+/**
+ * The OptRect class can represent and empty Rect and non-empty Rects.
+ * If OptRect is not empty, it means that both X and Y intervals are not empty.
+ * 
+ */
+class OptRect : public boost::optional<Rect> {
+public:
+    OptRect() : boost::optional<Rect>() {};
+    OptRect(Rect const &a) : boost::optional<Rect>(a) {};
+
+    /**
+     * Creates an empty OptRect when one of the argument intervals is empty.
+     */
+    OptRect(OptInterval const &x_int, OptInterval const &y_int) {
+        if (x_int && y_int) {
+            *this = Rect(*x_int, *y_int);
+        }
+        // else, stay empty.
+    }
+
+    /**
+     * Check whether this OptRect is empty or not.
+     */
+    inline bool isEmpty() { return (*this == false); };
+
+    /**
+     * If \c this is empty, copy argument \c b. Otherwise, union with it (and do nothing when \c b is empty)
+     */
+    inline void unionWith(OptRect const &b) {
+        if (b) {
+            if (*this) { // check that we are not empty
+                (**this)[X].unionWith((*b)[X]);
+                (**this)[Y].unionWith((*b)[Y]);
+            } else {
+                *this = b;
+            }
+        }
+    }
+};
 
 
 } // end namespace Geom

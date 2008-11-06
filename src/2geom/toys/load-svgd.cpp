@@ -99,7 +99,7 @@ class BoolOps: public Toy {
         std::cout << pv[0].size() << "\n";
         pv *= Translate(-pv[0].initialPoint());
         
-	Rect bounds = pv[0].boundsExact();
+	Rect bounds = *pv[0].boundsExact();
         std::cout << crossings_among(pv)[0].size() << "\n";
         handles.push_back(&offset_handle);
         offset_handle.pos = bounds.midpoint() - bounds.corner(0);

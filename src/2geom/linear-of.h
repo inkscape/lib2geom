@@ -118,9 +118,9 @@ public:
     inline SBasisOf<T> toSBasis() const;
 
 //This is specific for T=double!!
-    inline Interval bounds_exact() const { return Interval(a[0], a[1]); }
-    inline Interval bounds_fast() const { return bounds_exact(); }
-    inline Interval bounds_local(double u, double v) const { return Interval(valueAt(u), valueAt(v)); }
+    inline OptInterval bounds_exact() const { return Interval(a[0], a[1]); }
+    inline OptInterval bounds_fast() const { return bounds_exact(); }
+    inline OptInterval bounds_local(double u, double v) const { return Interval(valueAt(u), valueAt(v)); }
 
     operator TriOf<T>() const {
         return a[1] - a[0];
@@ -133,11 +133,11 @@ public:
 template <>
 unsigned LinearOf<double>::input_dim(){return 1;}
 template <>
-inline Interval LinearOf<double>::bounds_exact() const { return Interval(a[0], a[1]); }
+inline OptInterval LinearOf<double>::bounds_exact() const { return Interval(a[0], a[1]); }
 template <>
-inline Interval LinearOf<double>::bounds_fast() const { return bounds_exact(); }
+inline OptInterval LinearOf<double>::bounds_fast() const { return bounds_exact(); }
 template <>
-inline Interval LinearOf<double>::bounds_local(double u, double v) const { return Interval(valueAt(u), valueAt(v)); }
+inline OptInterval LinearOf<double>::bounds_local(double u, double v) const { return Interval(valueAt(u), valueAt(v)); }
 template <>
 inline bool LinearOf<double>::isZero() const { return a[0]==0 && a[1]==0; }
 

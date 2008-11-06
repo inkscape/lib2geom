@@ -167,10 +167,10 @@ double nearest_point( Point const& p,
     unsigned int ni = si;
     double dsq;
     double mindistsq = distanceSq(p, c[si](nearest));
-    Rect bb;
+    Rect bb(Geom::Point(0,0),Geom::Point(0,0));
     for ( unsigned int i = si + 1; i < ei; ++i )
     {
-        bb = bounds_fast(c[i]);
+        bb = *bounds_fast(c[i]);
         dsq = distanceSq(p, bb);
         if ( mindistsq <= dsq ) continue;
         t = nearest_point(p, c[i]);
@@ -182,7 +182,7 @@ double nearest_point( Point const& p,
             mindistsq = dsq;
         }
     }
-    bb = bounds_fast(c[ei]);
+    bb = *bounds_fast(c[ei]);
     dsq = distanceSq(p, bb);
     if ( mindistsq > dsq )
     {
@@ -227,10 +227,10 @@ all_nearest_points( Point const& p,
     ni.push_back(si);
     double dsq;
     double mindistsq = distanceSq( p, c[si](all_np.front().front()) );
-    Rect bb;
+    Rect bb(Geom::Point(0,0),Geom::Point(0,0));
     for ( unsigned int i = si + 1; i < ei; ++i )
     {
-        bb = bounds_fast(c[i]);
+        bb = *bounds_fast(c[i]);
         dsq = distanceSq(p, bb);
         if ( mindistsq < dsq ) continue;
         all_t = all_nearest_points(p, c[i]);
@@ -249,7 +249,7 @@ all_nearest_points( Point const& p,
             ni.push_back(i);
         }
     }
-    bb = bounds_fast(c[ei]);
+    bb = *bounds_fast(c[ei]);
     dsq = distanceSq(p, bb);
     if ( mindistsq >= dsq )
     {

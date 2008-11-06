@@ -60,7 +60,7 @@ class PwToy: public Toy {
         cairo_pw(cr, pws[0] + pws[1]);
         cairo_stroke(cr);
         
-        Interval bs = bounds_local(pw_out, Interval(interval_test[0].pos[0], 
+        Interval bs = *bounds_local(pw_out, Interval(interval_test[0].pos[0], 
                                                     interval_test[1].pos[0]));
         vector<double> vec;
         vec.push_back(bs.min() + 150); vec.push_back(bs.max() + 150);
