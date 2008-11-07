@@ -48,6 +48,7 @@
 namespace Geom {
 /** D2<Interval> specialization to Rect */
 typedef D2<Interval> Rect;
+class OptRect;
 
 Rect unify(const Rect &, const Rect &);
 /**
@@ -137,8 +138,9 @@ class D2<Interval> {
     inline void unionWith(Rect const &b) { 
         f[X].unionWith(b[X]); f[Y].unionWith(b[Y]); 
     }
+    void unionWith(OptRect const &b);
 
-    inline void expandBy(double amnt)    { 
+    inline void expandBy(double amnt)    {
         f[X].expandBy(amnt);  f[Y].expandBy(amnt); 
     }
     inline void expandBy(Point const p)  { 
@@ -247,6 +249,12 @@ inline OptRect unify(OptRect const & a, OptRect const & b) {
 
 inline OptRect intersect(Rect const & a, Rect const & b) {
     return OptRect(intersect(a[X], b[X]), intersect(a[Y], b[Y]));
+}
+
+inline void Rect::unionWith(OptRect const &b) { 
+    if (b) {
+        unionWith(*b);
+    }
 }
 
 } // end namespace Geom
