@@ -75,7 +75,7 @@ void wrap_interval() {
         .def("max", &Geom::Interval::max)
         .def("middle", &Geom::Interval::middle)
         .def("extent", &Geom::Interval::extent)
-        .def("isEmpty", &Geom::Interval::isEmpty)
+        //.def("isEmpty", &Geom::Interval::isEmpty)
         //TODO: fix for overloading
         //.def("contains", &Geom::Interval::contains)
         .def("intersects", &Geom::Interval::intersects)

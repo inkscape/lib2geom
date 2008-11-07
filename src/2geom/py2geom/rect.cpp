@@ -65,7 +65,7 @@ void wrap_rect() {
         .def("midpoint", &Geom::Rect::midpoint)
         .def("area", &Geom::Rect::area)
         .def("maxExtent", &Geom::Rect::maxExtent)
-        .def("isEmpty", &Geom::Rect::isEmpty)
+        //.def("isEmpty", &Geom::Rect::isEmpty)
         .def("intersects", &Geom::Rect::intersects)
         // TODO: overloaded
         //.def("contains", &Geom::Rect::contains)
