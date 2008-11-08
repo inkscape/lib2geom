@@ -336,7 +336,7 @@ rect_line_intersect(Geom::Rect &r,
     * for now we require the path to be a polyline and assume it is closed.
 **/
 
-int centroid(std::vector<Geom::Point> p, Geom::Point& centroid, double &area) {
+int centroid(std::vector<Geom::Point> const &p, Geom::Point& centroid, double &area) {
     const unsigned n = p.size();
     if (n < 3)
         return 1;

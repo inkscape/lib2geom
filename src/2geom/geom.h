@@ -37,8 +37,7 @@
 //TODO: move somewhere else
 
 #include <vector>
-#include <2geom/point.h>
-#include <2geom/rect.h>
+#include <2geom/forward.h>
 
 namespace Geom {
 
@@ -79,7 +78,7 @@ std::vector<Geom::Point>
 rect_line_intersect(Geom::Rect &r,
                     Geom::Point const &p0, Geom::Point const &p1);
 
-int centroid(std::vector<Geom::Point> p, Geom::Point& centroid, double &area);
+int centroid(std::vector<Geom::Point> const &p, Geom::Point& centroid, double &area);
 
 }
 
