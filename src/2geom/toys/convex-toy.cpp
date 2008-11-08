@@ -12,47 +12,15 @@ struct PtLexCmp{
     }
 };
 // draw ax + by + c = 0
-void draw_line_in_rect(cairo_t*cr, Rect &r, Point n, double c) {
-    vector<Geom::Point> result;
-    Point resultp;
-    if(intersects == line_intersection(Point(1, 0), r.left(),
-				       n, c,
-				       resultp) && r[1].contains(resultp[1]))
-	result.push_back(resultp);
-    if(intersects == line_intersection(Point(1, 0), r.right(),
-				       n, c,
-				       resultp) && r[1].contains(resultp[1]))
-	result.push_back(resultp);
-    if(intersects == line_intersection(Point(0, 1), r.top(),
-				       n, c,
-				       resultp) && r[0].contains(resultp[0]))
-	result.push_back(resultp);
-    if(intersects == line_intersection(Point(0, 1), r.bottom(),
-				       n, c,
-				       resultp) && r[0].contains(resultp[0]))
-	result.push_back(resultp);
-    if(result.size() > 2) {
-        std::sort(result.begin(), result.end(), PtLexCmp());
-        vector<Geom::Point>::iterator new_end = std::unique(result.begin(), result.end());
-        result.resize(new_end-result.begin());
-    }
-    if(result.size() == 2) {
-	cairo_move_to(cr, result[0]);
-	cairo_line_to(cr, result[1]);
+void draw_line_in_rect(cairo_t*cr, Rect &r, Point n, Point p) {
+    boost::optional<LineSegment> ls = rect_line_intersect(r, LineSegment(p, p + rot90(n)));
+    if(ls) {
+	cairo_move_to(cr, (*ls)[0]);
+	cairo_line_to(cr, (*ls)[1]);
 	cairo_stroke(cr);
-    } else {
-        cout << result.size() << endl;
     }
 }
 
-
-/*** SignedTriangleArea
- * returns the area of the triangle defined by p0, p1, p2.  A clockwise triangle has positive area.
- */
-double
-SignedTriangleArea(Point p0, Point p1, Point p2) {
-    return cross((p1 - p0), (p2 - p0));
-}
 
 ConvexHull rect2convexhull(Rect const & r) {
     ConvexHull ch;
@@ -72,12 +40,6 @@ void rot_cal(cairo_t* cr, ConvexHull ch) {
         tb = tc;
     }
 }
-
-/**
-double sweep_ch(cairo_t* cr, ConvexHull ch) {
-    
-}
-**/
 
 const bool ch2_tests = false;
 
@@ -230,10 +192,10 @@ class ConvexTest: public Toy {
             cairo_stroke(cr);
             Point dir = direction_handle.pos - cent;
             Point const * futh1 =  ch1.furthest(dir);
-            draw_line_in_rect(cr, window_r, dir, dot(*futh1, dir));
+            draw_line_in_rect(cr, window_r, dir, *futh1);
             draw_cross(cr, *futh1);
             Point const * futh2 =  ch1.furthest(-dir);
-            draw_line_in_rect(cr, window_r, -dir, dot(*futh2, -dir));
+            draw_line_in_rect(cr, window_r, -dir, *futh2);
             draw_cross(cr, *futh2);
         }
 

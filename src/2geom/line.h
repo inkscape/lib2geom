@@ -226,6 +226,10 @@ class Line
 	{
 		return Line(m_origin * m, (m_origin + m_versor) * m);
 	}
+    
+    static Line from_normal_and_dist(Point const &n, double d) {
+        return Line(n*d, n*d + rot90(n));
+    }
 
   private:
 	Point m_origin;
@@ -360,60 +364,60 @@ LineSegment projection(LineSegment const& _segment, Line const& _line)
 namespace detail
 {
 
-Crossings intersection_impl(Ray const& r1, Line const& l2, unsigned int i);
-Crossings intersection_impl( LineSegment const& ls1,
+OptCrossing intersection_impl(Ray const& r1, Line const& l2, unsigned int i);
+OptCrossing intersection_impl( LineSegment const& ls1,
                              Line const& l2,
                              unsigned int i );
-Crossings intersection_impl( LineSegment const& ls1,
+OptCrossing intersection_impl( LineSegment const& ls1,
                              Ray const& r2,
                              unsigned int i );
 }
 
 
 inline
-Crossings intersection(Ray const& r1, Line const& l2)
+OptCrossing intersection(Ray const& r1, Line const& l2)
 {
     return detail::intersection_impl(r1,  l2, 0);
 
 }
 
 inline
-Crossings intersection(Line const& l1, Ray const& r2)
+OptCrossing intersection(Line const& l1, Ray const& r2)
 {
     return detail::intersection_impl(r2,  l1, 1);
 }
 
 inline
-Crossings intersection(LineSegment const& ls1, Line const& l2)
+OptCrossing intersection(LineSegment const& ls1, Line const& l2)
 {
     return detail::intersection_impl(ls1,  l2, 0);
 }
 
 inline
-Crossings intersection(Line const& l1, LineSegment const& ls2)
+OptCrossing intersection(Line const& l1, LineSegment const& ls2)
 {
     return detail::intersection_impl(ls2,  l1, 1);
 }
 
 inline
-Crossings intersection(LineSegment const& ls1, Ray const& r2)
+OptCrossing intersection(LineSegment const& ls1, Ray const& r2)
 {
     return detail::intersection_impl(ls1,  r2, 0);
 
 }
 
 inline
-Crossings intersection(Ray const& r1, LineSegment const& ls2)
+OptCrossing intersection(Ray const& r1, LineSegment const& ls2)
 {
     return detail::intersection_impl(ls2,  r1, 1);
 }
 
 
-Crossings intersection(Line const& l1, Line const& l2);
+OptCrossing intersection(Line const& l1, Line const& l2);
 
-Crossings intersection(Ray const& r1, Ray const& r2);
+OptCrossing intersection(Ray const& r1, Ray const& r2);
 
-Crossings intersection(LineSegment const& ls1, LineSegment const& ls2);
+OptCrossing intersection(LineSegment const& ls1, LineSegment const& ls2);
 
 
 } // end namespace Geom

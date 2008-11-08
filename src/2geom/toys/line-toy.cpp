@@ -533,23 +533,23 @@ class LineToy : public Toy
         Ray r1(p3.pos, p4.pos);
         LineSegment s1(p5.pos, p6.pos);
 
-        Crossings cl1r1 = intersection(l1, r1);
-        Crossings cl1s1 = intersection(l1, s1);
-        Crossings cr1s1 = intersection(r1, s1);
+        OptCrossing cl1r1 = intersection(l1, r1);
+        OptCrossing cl1s1 = intersection(l1, s1);
+        OptCrossing cr1s1 = intersection(r1, s1);
 
         std::vector<Point> ip;
 
-        for (unsigned int i = 0; i < cl1r1.size(); ++i)
+        if(cl1r1)
         {
-            ip.push_back(l1.pointAt(cl1r1[i].ta));
+            ip.push_back(l1.pointAt(cl1r1->ta));
         }
-        for (unsigned int i = 0; i < cl1s1.size(); ++i)
+        if(cl1s1)
         {
-            ip.push_back(l1.pointAt(cl1s1[i].ta));
+            ip.push_back(l1.pointAt(cl1s1->ta));
         }
-        for (unsigned int i = 0; i < cr1s1.size(); ++i)
+        if(cr1s1)
         {
-            ip.push_back(r1.pointAt(cr1s1[i].ta));
+            ip.push_back(r1.pointAt(cr1s1->ta));
         }
 
 

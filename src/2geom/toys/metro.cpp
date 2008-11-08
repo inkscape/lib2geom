@@ -425,16 +425,25 @@ void fit::schematised_merging(unsigned number_of_directions) {
                 Point d = angles[b.angle];
                 get_block_line(b,d,n,c);
                 Point start = c, end = c+10*angles[b.angle];
+                Line ln = Line::from_normal_and_dist(n, dot(c,n));
                 if(beg==0) {
                     //start = intersection of b.line and 
                     //        line through input[0] orthogonal to b.line
-                    line_intersection(n, dot(c,n), d, dot(d,input[0]), start);
+                    OptCrossing c = intersection(ln,
+                                            Line::from_normal_and_dist(d, dot(d,input[0])));
+                    assert(c);
+                    start = ln.pointAt(c->ta);
+                    //line_intersection(n, dot(c,n), d, dot(d,input[0]), start);
                 } else {
                     //start = intersection of b.line and blocks[prev].line
                     block p = blocks[prev];
                     if(b.angle!=p.angle) {
                         get_block_line(p,angles[p.angle],n1,c1);
-                        line_intersection(n, dot(c,n), n1, dot(c1,n1), start);
+                        //line_intersection(n, dot(c,n), n1, dot(c1,n1), start);
+                        OptCrossing c = intersection(ln,
+                                                   Line::from_normal_and_dist(n1, dot(c1,n1)));
+                        assert(c);
+                        start = ln.pointAt(c->ta);
                     }
                 }
 
@@ -443,12 +452,20 @@ void fit::schematised_merging(unsigned number_of_directions) {
                     block next = blocks[b.next];
                     if(b.angle!=next.angle) {
                         get_block_line(next,angles[next.angle],n1,c1);
-                        line_intersection(n, dot(c,n), n1, dot(c1,n1), end);
+                        //line_intersection(n, dot(c,n), n1, dot(c1,n1), end);
+                        OptCrossing c = intersection(ln,
+                                                     Line::from_normal_and_dist(n1, dot(c1,n1)));
+                        assert(c);
+                        end = ln.pointAt(c->ta);
                     }
                 } else {
                     //end = intersection of b.line and
                     //      line through input[N-1] orthogonal to b.line
-                    line_intersection(n, dot(c,n), d, dot(d,input[N]), end);
+                    //line_intersection(n, dot(c,n), d, dot(d,input[N]), end);
+                    OptCrossing c = intersection(ln,
+                                            Line::from_normal_and_dist(d, dot(d,input[N])));
+                    assert(c);
+                    end = ln.pointAt(c->ta);
                 }                
                 lines.push_back(make_pair(start,end));
             }

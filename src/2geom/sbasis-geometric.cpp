@@ -27,6 +27,11 @@ using namespace std;
 
 //Some utils first.
 //TODO: remove this!! 
+/** 
+ * Return a list of doubles that appear in both a and b to within error tol
+ * a, b, vector of double
+ * tol tolerance
+ */
 static vector<double> 
 vect_intersect(vector<double> const &a, vector<double> const &b, double tol=0.){
     vector<double> inter;
@@ -72,21 +77,7 @@ static SBasis divide_by_t0k(SBasis const &a, int k) {
 }
 
 static SBasis divide_by_t1k(SBasis const &a, int k) {
-    if(k < 0) {
-        SBasis c = Linear(1,0);
-        for (int i=2; i<=-k; i++){
-            c*=c;
-        }
-        c*=a;
-        return(c);
-    }else{
-        SBasis c = Linear(0,1);
-        for (int i=2; i<=k; i++){
-            c*=c;
-        }
-        c*=a;
-        return(divide_by_sk(c,k));
-    }
+    return divide_by_t0k(a, -k);
 }
 
 static D2<SBasis> RescaleForNonVanishingEnds(D2<SBasis> const &MM, double ZERO=1.e-4){
@@ -109,6 +100,14 @@ static D2<SBasis> RescaleForNonVanishingEnds(D2<SBasis> const &MM, double ZERO=1
     }
     return M;
 }
+
+/*static D2<SBasis> RescaleForNonVanishing(D2<SBasis> const &MM, double ZERO=1.e-4){
+    std::vector<double> levels;
+    levels.push_back(-ZERO);
+    levels.push_back(ZERO);
+    //std::vector<std::vector<double> > mr = multi_roots(MM, levels);
+    }*/
+
 
 //=================================================================
 //TODO: what's this for?!?!

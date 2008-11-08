@@ -200,11 +200,11 @@ class LineToy : public Toy
         cairo_stroke(cr);
 
 
-        std::vector<Point> intersections = rect_line_intersect(r1, p5.pos, p6.pos);
-        *notify << "number of intersections: " << intersections.size() << std::endl;
-        for (unsigned int i = 0; i < intersections.size(); ++i) {
-            draw_handle(cr, intersections[i]);
-            *notify << "  " << intersections[i] << std::endl;
+        boost::optional<LineSegment> ls = rect_line_intersect(r1, LineSegment(p5.pos, p6.pos));
+        *notify << "intersects: " << ((ls)?"true":"false") << std::endl;
+        if(ls) {
+            draw_handle(cr, (*ls)[0]);
+            draw_handle(cr, (*ls)[1]);
         }
 
 

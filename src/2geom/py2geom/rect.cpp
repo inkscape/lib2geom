@@ -70,7 +70,7 @@ void wrap_rect() {
         // TODO: overloaded
         //.def("contains", &Geom::Rect::contains)
         .def("expandTo", &Geom::Rect::expandTo)
-        .def("unionWith", &Geom::Rect::unionWith)
+        //.def("unionWith", &Geom::Rect::unionWith)
         // TODO: overloaded
         //.def("expanBy", &Geom::Rect::expandBy)
 
