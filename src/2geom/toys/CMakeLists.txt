@@ -88,6 +88,7 @@ root-finder-comparer
 curvature-curve
 sb-of-sb
 convole
+hatches
 )
 
 
