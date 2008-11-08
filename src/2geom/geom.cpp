@@ -1,5 +1,4 @@
 /**
- *  \file geom.cpp
  *  \brief Various geometrical calculations.
  */
 
