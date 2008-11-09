@@ -114,12 +114,12 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
     cairo_set_source_rgba(cr, 0, 0, 0, 1.0);
     cairo_set_line_width (cr, 0.5);
     D2<SBasis> A = A_handles.asBezier();
-    cairo_md_sb(cr, A);
+    cairo_d2_sb(cr, A);
     cairo_stroke(cr);
     cairo_set_source_rgba(cr, 0.0, 0, 0.8, 1.0);
     cairo_set_line_width (cr, 0.5);
     D2<SBasis> B = B_handles.asBezier();
-    cairo_md_sb(cr, B);
+    cairo_d2_sb(cr, B);
     cairo_stroke(cr);
 
     vector<double> Asects, Bsects;

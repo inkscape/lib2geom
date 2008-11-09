@@ -24,7 +24,7 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
     D2<SBasis> dB = derivative(B);
     D2<SBasis> ddB = derivative(dB);
     cairo_set_source_rgb(cr, 0,0,0);
-    cairo_md_sb(cr, B);
+    cairo_d2_sb(cr, B);
     cairo_stroke(cr);
     
     // draw the longest chord that is no worse than tol from the curve.

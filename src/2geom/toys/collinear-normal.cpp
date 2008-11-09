@@ -60,11 +60,11 @@ class CurveIntersect : public Toy
         cairo_set_line_width (cr, 0.3);
         cairo_set_source_rgba (cr, 0.8, 0., 0, 1);
         D2<SBasis> A = pshA.asBezier();
-        cairo_md_sb(cr, A);
+        cairo_d2_sb(cr, A);
         cairo_stroke(cr);
         cairo_set_source_rgba (cr, 0.0, 0., 0, 1);
         D2<SBasis> B = pshB.asBezier();
-        cairo_md_sb(cr, B);
+        cairo_d2_sb(cr, B);
         cairo_stroke(cr);
         draw_text(cr, A.at0(), "A");
         draw_text(cr, B.at0(), "B");

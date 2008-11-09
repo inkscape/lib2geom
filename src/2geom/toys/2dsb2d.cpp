@@ -42,7 +42,7 @@ class Sb2d2: public Toy {
                             sb2[dim][i][corner] = dl/(width/2)*pow(4.0,ui+vi);
                         }
         }
-        cairo_2dsb2d(cr, sb2, dir*0.1, width);
+        cairo_d2_sb2d(cr, sb2, dir*0.1, width);
         cairo_set_source_rgba (cr, 0., 0., 0, 0.5);
         cairo_stroke(cr);
         for(unsigned i = 0; i < path_a_pw.size(); i++) {
@@ -50,7 +50,7 @@ class Sb2d2: public Toy {
             //const int depth = sb2[0].us*sb2[0].vs;
             //const int surface_hand.pts = 4*depth;
             //D2<SBasis> B = hand.pts_to_sbasis<3>(hand.pts.begin() + surface_hand.pts);
-            cairo_md_sb(cr, B);
+            cairo_d2_sb(cr, B);
             for(unsigned dim = 0; dim < 2; dim++) {
                 std::vector<double> r = roots(B[dim]);
                 for(unsigned i = 0; i < r.size(); i++)
@@ -66,7 +66,7 @@ class Sb2d2: public Toy {
             B = B*(width/2) + Geom::Point(width/4, width/4);
             tB = tB*(width/2) + Geom::Point(width/4, width/4);
             
-            cairo_md_sb(cr, tB);
+            cairo_d2_sb(cr, tB);
         }
         
         //*notify << "bo = " << sb2.index(0,0);

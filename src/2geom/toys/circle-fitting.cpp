@@ -108,7 +108,7 @@ class CircleFitting : public Toy
             draw_text(cr, psh.pts[2], "final");
 
             D2<SBasis> easb = ea.toSBasis();
-            cairo_md_sb(cr, easb);
+            cairo_d2_sb(cr, easb);
         }
         cairo_stroke(cr);
 

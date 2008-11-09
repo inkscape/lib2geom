@@ -111,7 +111,7 @@ private:
     	        }
     	        if ( earc_constraints_satisfied )
     	        {
-                    cairo_md_sb(cr, earc.toSBasis());
+                    cairo_d2_sb(cr, earc.toSBasis());
                     if ( toggles[0].on )
                     {
                         std::vector<double> t = earc.allNearestPoints(p);
@@ -129,7 +129,7 @@ private:
             case '3':
             {
                 D2<SBasis> A = psh.asBezier();
-                cairo_md_sb(cr, A);
+                cairo_d2_sb(cr, A);
     	        if ( toggles[0].on )
     	        {
                     std::vector<double> t = Geom::all_nearest_points(p, A);
@@ -149,10 +149,10 @@ private:
                 D2<SBasis> B = handles_to_sbasis(psh.pts.begin() + 3, 3);
                 D2<SBasis> C = handles_to_sbasis(psh.pts.begin() + 6, 3);
                 D2<SBasis> D = handles_to_sbasis(psh.pts.begin() + 9, 3);
-                cairo_md_sb(cr, A);
-                cairo_md_sb(cr, B);
-                cairo_md_sb(cr, C);
-                cairo_md_sb(cr, D);
+                cairo_d2_sb(cr, A);
+                cairo_d2_sb(cr, B);
+                cairo_d2_sb(cr, C);
+                cairo_d2_sb(cr, D);
     	        Piecewise< D2<SBasis> > pwc;
     	        pwc.push_cut(0);
     	        pwc.push_seg(A);

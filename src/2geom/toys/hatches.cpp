@@ -294,6 +294,16 @@ public:
         b1_handle.pts.front() = b2_handle.pts.back(); 
         D2<SBasis> B1 = b1_handle.asBezier();
         D2<SBasis> B2 = b2_handle.asBezier();
+        
+        {
+            cairo_save(cr);
+            cairo_set_line_width(cr, 0.3);
+            cairo_set_source_rgb(cr, 0, 0, 0);
+            cairo_d2_sb(cr, B1);
+            cairo_d2_sb(cr, B2);
+            cairo_restore(cr);
+        }
+        
         Piecewise<D2<SBasis> >B;
         B.concat(Piecewise<D2<SBasis> >(B1));
         B.continuousConcat(Piecewise<D2<SBasis> >(B2));
@@ -312,7 +322,7 @@ public:
                                                        scale_botback); 
 
         smthSnake = bend(smthSnake, -bending);
-        cairo_pw_d2(cr, smthSnake);
+        cairo_pw_d2_sb(cr, smthSnake);
         cairo_set_line_width (cr, 1.5);
         cairo_set_source_rgba (cr, 0., 0., 0., 1);
         cairo_stroke(cr);
@@ -322,10 +332,10 @@ public:
             for (unsigned i=1; i<snakePoints.size(); i++){
                 snake.appendNew<LineSegment>(snakePoints[i]);
             }
-            //cairo_pw_d2(cr, snake.toPwSb() );
+            //cairo_pw_d2_sb(cr, snake.toPwSb() );
         }
 
-        //cairo_pw_d2(cr, B);
+        //cairo_pw_d2_sb(cr, B);
         cairo_set_line_width (cr, .5);
         cairo_set_source_rgba (cr, 0.7, 0.2, 0., 1);
         cairo_stroke(cr);

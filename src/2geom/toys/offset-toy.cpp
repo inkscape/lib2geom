@@ -48,7 +48,7 @@ static void plot(cairo_t* cr, Piecewise<SBasis> const &f,double vscale=1){
         cairo_move_to(cr, Point(150+t*300, 450));
         cairo_line_to(cr, Point(150+t*300, 450-ft*vscale));
     }
-    cairo_d2_pw(cr, plot);
+    cairo_d2_pw_sb(cr, plot);
 }
 
 
@@ -65,7 +65,7 @@ class OffsetTester: public Toy {
 
         cairo_set_line_width (cr, 1);
         cairo_set_source_rgba (cr, 0., 0.5, 0., 1);
-        cairo_md_sb(cr, B);
+        cairo_d2_sb(cr, B);
         cairo_stroke(cr);
 
         Coord offset = -100;
@@ -110,12 +110,12 @@ class OffsetTester: public Toy {
         plot(cr,alpha,75/M_PI);
 
         Piecewise<D2<SBasis> >n2 = sectionize(D2<Piecewise<SBasis> >(sin(alpha),cos(alpha)));
-        cairo_pw_d2(cr,Piecewise<D2<SBasis> >(B)+n2*offset*.9);
+        cairo_pw_d2_sb(cr,Piecewise<D2<SBasis> >(B)+n2*offset*.9);
         cairo_set_source_rgba (cr, 0.5, 0.2, 0.5, 0.8);
         cairo_stroke(cr);
 
         Piecewise<SBasis> k = curvature(B);
-        cairo_pw_d2(cr,Piecewise<D2<SBasis> >(B)+k*n*100);
+        cairo_pw_d2_sb(cr,Piecewise<D2<SBasis> >(B)+k*n*100);
         cairo_set_source_rgba (cr, 0.5, 0.2, 0.5, 0.8);
         cairo_stroke(cr);
 

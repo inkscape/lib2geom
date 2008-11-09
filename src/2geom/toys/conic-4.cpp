@@ -102,7 +102,7 @@ class Conic4: public Toy {
             for(unsigned i  = 0; i < 5; i++)
                 B[dim] += ab.basis[i]*e_h[i][dim];
         
-        cairo_d2_pw(cr, B);
+        cairo_d2_pw_sb(cr, B);
         cairo_set_source_rgba (cr, 1., 0.5, 0, 1);
         cairo_set_line_width (cr, 1);
         cairo_stroke(cr);

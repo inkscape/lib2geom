@@ -448,7 +448,7 @@ class ImplicitToy : public Toy
         d1 = d2 = 0;
         cairo_set_line_width (cr, 0.3);
         D2<SBasis> A = pshA.asBezier();
-        cairo_md_sb(cr, A);
+        cairo_d2_sb(cr, A);
         cairo_stroke(cr);
 
         SL::MVPoly2 ic;

@@ -15,7 +15,7 @@ void cairo_pw(cairo_t *cr, Piecewise<SBasis> p) {
         D2<SBasis> B;
         B[0] = Linear(p.cuts[i], p.cuts[i+1]);
         B[1] = Linear(150) + p[i];
-        cairo_md_sb(cr, B);
+        cairo_d2_sb(cr, B);
     }
 }
 

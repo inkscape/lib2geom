@@ -148,11 +148,11 @@ void cairo_PathSet_handles(cairo_t *cr, PathSet const &p) {
 }
 #endif
 
-void cairo_md_sb(cairo_t *cr, D2<SBasis> const &B) {
+void cairo_d2_sb(cairo_t *cr, D2<SBasis> const &B) {
     cairo_path(cr, path_from_sbasis(B, 0.1));
 }
 
-void cairo_2dsb2d(cairo_t* cr, D2<SBasis2d> const &sb2, Point /*dir*/, double width) {
+void cairo_d2_sb2d(cairo_t* cr, D2<SBasis2d> const &sb2, Point /*dir*/, double width) {
     D2<SBasis> B;
     for(int ui = 0; ui <= 10; ui++) {
         double u = ui/10.;
@@ -161,7 +161,7 @@ void cairo_2dsb2d(cairo_t* cr, D2<SBasis2d> const &sb2, Point /*dir*/, double wi
         for(unsigned i = 0; i < 2; i ++) {
             B[i] = B[i]*(width/2) + Linear(width/4);
         }
-        cairo_md_sb(cr, B);
+        cairo_d2_sb(cr, B);
     }
     for(int vi = 0; vi <= 10; vi++) {
         double v = vi/10.;
@@ -170,7 +170,7 @@ void cairo_2dsb2d(cairo_t* cr, D2<SBasis2d> const &sb2, Point /*dir*/, double wi
         for(unsigned i = 0; i < 2; i ++) {
             B[i] = B[i]*(width/2) + Linear(width/4);
         }
-        cairo_md_sb(cr, B);
+        cairo_d2_sb(cr, B);
     }
 }
 
@@ -183,7 +183,7 @@ void cairo_sb2d(cairo_t* cr, SBasis2d const &sb2, Point dir, double width) {
         for(unsigned i = 0; i < 2; i ++) {
             B[i] = B[i]*(width/2) + Linear(width/4);
         }
-        cairo_md_sb(cr, B);
+        cairo_d2_sb(cr, B);
     }
     for(int vi = 0; vi <= 10; vi++) {
         double v = vi/10.;
@@ -192,17 +192,17 @@ void cairo_sb2d(cairo_t* cr, SBasis2d const &sb2, Point dir, double width) {
         for(unsigned i = 0; i < 2; i ++) {
             B[i] = B[i]*(width/2) + Linear(width/4);
         }
-        cairo_md_sb(cr, B);
+        cairo_d2_sb(cr, B);
     }
 }
 
-void cairo_d2_pw(cairo_t *cr, D2<Piecewise<SBasis> > const &p) {
-    cairo_pw_d2(cr, sectionize(p));
+void cairo_d2_pw_sb(cairo_t *cr, D2<Piecewise<SBasis> > const &p) {
+    cairo_pw_d2_sb(cr, sectionize(p));
 }
 
-void cairo_pw_d2(cairo_t *cr, Piecewise<D2<SBasis> > const &p) {
+void cairo_pw_d2_sb(cairo_t *cr, Piecewise<D2<SBasis> > const &p) {
     for(unsigned i = 0; i < p.size(); i++)
-        cairo_md_sb(cr, p[i]);
+        cairo_d2_sb(cr, p[i]);
 }
 
 /*

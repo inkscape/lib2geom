@@ -72,7 +72,7 @@ plot3d(cairo_t *cr, SBasis const &x, SBasis const &y, SBasis const &z, Frame fra
         curve[dim] = x*frame.x[dim] + y*frame.y[dim] + z*frame.z[dim];
         curve[dim] += frame.O[dim];
     }
-    cairo_md_sb(cr, curve);
+    cairo_d2_sb(cr, curve);
 }
 
 void

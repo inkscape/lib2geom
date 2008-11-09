@@ -15,7 +15,7 @@ static void plot(cairo_t* cr, SBasis const &B,double vscale=1,double a=0,double 
   plot[0]=SBasis(Linear(150+a*300,150+b*300));
   plot[1]=B*-vscale;
   plot[1]+=450;
-  cairo_md_sb(cr, plot);
+  cairo_d2_sb(cr, plot);
   cairo_stroke(cr);
 }
 static void plot(cairo_t* cr, Piecewise<SBasis> const &f,double vscale=1){

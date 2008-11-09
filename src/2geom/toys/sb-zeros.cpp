@@ -30,7 +30,7 @@ class SBZeros: public Toy {
         
         cairo_set_line_width (cr, .5);
         cairo_set_source_rgba (cr, 0., 0.5, 0., 1);
-        cairo_pw_d2(cr, B);
+        cairo_pw_d2_sb(cr, B);
         cairo_stroke(cr);
         Toy::draw(cr, notify, width, height, save);
     }

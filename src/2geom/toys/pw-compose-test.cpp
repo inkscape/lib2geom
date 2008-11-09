@@ -18,7 +18,7 @@ class PwToy: public Toy {
         for(unsigned i = 0; i < segs; i++) {
             D2<SBasis> foo = Geom::handles_to_sbasis(handles.begin()+hdle_idx, 3);
             hdle_idx += 4;
-            cairo_md_sb(cr, foo);
+            cairo_d2_sb(cr, foo);
             for(unsigned d = 0; d < 2; d++) {
                 pws[d].cuts.push_back(150*i);
                 pws[d].segs.push_back(foo[d]);
@@ -35,7 +35,7 @@ class PwToy: public Toy {
         cairo_set_source_rgba (cr, 0.2, 0.2, 0.2, 1);
         D2<SBasis> foo = Geom::handles_to_sbasis(handles.begin()+hdle_idx, 3);
         SBasis g = foo[0] - Linear(150);
-        cairo_md_sb(cr, foo);
+        cairo_d2_sb(cr, foo);
 	    for(unsigned i=0;i<20;i++){
             double t=i/20.;
             draw_handle(cr, foo(t));
@@ -43,14 +43,14 @@ class PwToy: public Toy {
         cairo_stroke(cr);
         foo[1]=foo[0];
         foo[0]=Linear(150,450);
-        cairo_md_sb(cr, foo);
+        cairo_d2_sb(cr, foo);
 
-        cairo_d2_pw(cr, pws);
+        cairo_d2_pw_sb(cr, pws);
         
         cairo_stroke(cr);
         cairo_set_source_rgba (cr, 0.9, 0., 0., 1);
         D2<Piecewise<SBasis> > res = compose(pws, Piecewise<SBasis>(g));
-        cairo_d2_pw(cr, res);
+        cairo_d2_pw_sb(cr, res);
         for(unsigned i=0;i<20;i++){
             double t=(res[0].cuts.back()-res[0].cuts.front())*i/20.;
             draw_handle(cr, Point(res[0](t),res[1](t)));

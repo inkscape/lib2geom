@@ -53,7 +53,7 @@ void cairo_pw(cairo_t *cr, Piecewise<SBasis> p, double hscale=1., double vscale=
         D2<SBasis> B;
         B[0] = Linear(150+p.cuts[i]*hscale, 150+p.cuts[i+1]*hscale);
         B[1] = Linear(450) - p[i]*vscale;
-        cairo_md_sb(cr, B);
+        cairo_d2_sb(cr, B);
     }
 }
 
@@ -129,7 +129,7 @@ int recursive_curvature_fitter(cairo_t* cr, Piecewise<D2<SBasis> > const &f, dou
               cairo_set_line_width (cr, 0.93);
               cairo_set_source_rgba (cr, 0.7, 0.0, 0.0, 1);
               draw_handle(cr, k_bez.at0());
-              cairo_md_sb(cr, k_bez);
+              cairo_d2_sb(cr, k_bez);
               cairo_stroke(cr);
               cairo_restore(cr);
               return 1;
@@ -224,7 +224,7 @@ int sequential_curvature_fitter(cairo_t* cr, Piecewise<D2<SBasis> > const &f, do
     cairo_set_line_width (cr, 0.93);
     cairo_set_source_rgba (cr, 0.7, 0.0, 0.0, 1);
     draw_handle(cr, k_bez.at0());
-    cairo_md_sb(cr, k_bez);
+    cairo_d2_sb(cr, k_bez);
     cairo_stroke(cr);
     cairo_restore(cr);
     
@@ -258,7 +258,7 @@ class SbToBezierTester: public Toy {
 
       cairo_set_source_rgba (cr, 0., 0., 0., 1);
       cairo_set_line_width (cr, 0.5);
-      cairo_pw_d2(cr, f_as_pw);
+      cairo_pw_d2_sb(cr, f_as_pw);
       cairo_stroke(cr);
       if (t0==t1) return;//TODO: fix me...
 #if 0
@@ -271,7 +271,7 @@ class SbToBezierTester: public Toy {
       cairo_set_line_width (cr, 1);
       cairo_set_source_rgba (cr, 0.9, 0., 0., .7);
       D2<SBasis> naive_bez = naive_sb_seg_to_bez(g,0,t1);
-      cairo_md_sb(cr, naive_bez);
+      cairo_d2_sb(cr, naive_bez);
       cairo_stroke(cr);
 
       adjuster2.pos[0]=150;
@@ -285,7 +285,7 @@ class SbToBezierTester: public Toy {
       cairo_set_line_width (cr, 1);
       cairo_set_source_rgba (cr, 0.7, 0., 0.7, .7);
       D2<SBasis> k_bez = sb_seg_to_bez(g,t0,t1);
-      cairo_md_sb(cr, k_bez);
+      cairo_d2_sb(cr, k_bez);
       cairo_stroke(cr);
       double h_a_t = 0, h_b_t = 0;
       

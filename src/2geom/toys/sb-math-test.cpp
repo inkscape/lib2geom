@@ -74,7 +74,7 @@ static void plot(cairo_t* cr, Piecewise<SBasis> const &f,double vscale=1){
     plot[0].cuts.push_back(f.cuts.back());
     plot[0].segs.push_back(Linear(150,450));
 
-    cairo_d2_pw(cr, plot);
+    cairo_d2_pw_sb(cr, plot);
 
     for (unsigned i=1; i<f.size(); i++){
         cairo_move_to(cr, Point(150+f.cuts[i]*300,300));

@@ -68,7 +68,7 @@ class Box3d: public Toy {
             D2<Piecewise<SBasis> > result(divide(res[0],res[2], 2), 
                                           divide(res[1],res[2], 2));
             
-            cairo_d2_pw(cr, result);
+            cairo_d2_pw_sb(cr, result);
             cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
             cairo_stroke(cr);
         }

@@ -202,9 +202,9 @@ class NearestPoints : public Toy
     {
     	cairo_set_line_width (cr, 0.2);
         D2<SBasis> A = handles_to_sbasis(handles.begin(), A_bez_ord-1);
-        cairo_md_sb(cr, A);
+        cairo_d2_sb(cr, A);
         D2<SBasis> B = handles_to_sbasis(handles.begin()+A_bez_ord, B_bez_ord-1);
-        cairo_md_sb(cr, B);
+        cairo_d2_sb(cr, B);
         
         
         np_finder np(cr, A, B);

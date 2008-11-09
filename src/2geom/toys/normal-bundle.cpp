@@ -77,7 +77,7 @@ void NormalBundle::draw(cairo_t *cr, unsigned NbLi, unsigned NbCol) {
         for(unsigned ui = 0; ui <= NbCol; ui++) {
             B[0]=Linear(ui*width/NbCol);
             tB = compose(*this,B);
-            if (tB.size()>0) cairo_md_sb(cr, tB[0]);
+            if (tB.size()>0) cairo_d2_sb(cr, tB[0]);
         }
 
     B[0]=SBasis(Linear(0,1));
@@ -85,7 +85,7 @@ void NormalBundle::draw(cairo_t *cr, unsigned NbLi, unsigned NbCol) {
         B[1]=Linear(-100+ui*200/NbLi);
         for(unsigned i = 0; i <size(); i++) {
             D2<SBasis> section=composeEach((*this)[i],B);
-            cairo_md_sb(cr, section);
+            cairo_d2_sb(cr, section);
         }
     }
 }
@@ -174,15 +174,15 @@ class NormalBundleToy: public Toy {
         cairo_set_line_width (cr, 0.5);
         //Base lines
         cairo_set_source_rgba (cr, 0.9, 0., 0., 1);
-        cairo_md_sb(cr, B);
+        cairo_d2_sb(cr, B);
         draw_line_seg(cr, O, Oo);
         cairo_stroke(cr);
 
         //Sections    
         cairo_set_source_rgba (cr, 0, 0, 0.9, 1);
-        cairo_md_sb(cr, P);
+        cairo_d2_sb(cr, P);
         for (unsigned i=0;i<Q.size();i++){
-            cairo_md_sb(cr, Q[i]);
+            cairo_d2_sb(cr, Q[i]);
         }
         cairo_stroke(cr);
 

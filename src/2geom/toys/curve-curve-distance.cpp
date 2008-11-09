@@ -760,7 +760,7 @@ class DCCToy : public Toy
         if (choice == 0)
         {
             A = single_curve_psh.asBezier();
-            cairo_md_sb(cr, A);
+            cairo_d2_sb(cr, A);
         }
         else if (choice == 1)
         {
@@ -784,11 +784,11 @@ class DCCToy : public Toy
             {
                 pwA.segs[i] = pwc_psh[i].asBezier(); 
             }
-            cairo_pw_d2(cr, pwA);
+            cairo_pw_d2_sb(cr, pwA);
         }
         
         D2<SBasis> B = B_psh.asBezier();
-        cairo_md_sb(cr, B);
+        cairo_d2_sb(cr, B);
         
         double t = sliders[0].value();
         Piecewise<SBasis> d;
@@ -869,7 +869,7 @@ class DCCToy : public Toy
             pwc.segs[i] = piece;
         }
         cairo_set_source_rgb(cr, 0.7,0,0);
-        cairo_pw_d2(cr, pwc);
+        cairo_pw_d2_sb(cr, pwc);
         *notify << "total cuts: " << pwc.cuts.size();
         if (toggles[1].on)
         {

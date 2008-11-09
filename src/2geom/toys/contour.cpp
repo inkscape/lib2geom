@@ -328,7 +328,7 @@ oops:
 #endif
      
 #if 0
-    cairo_md_sb(cr, (width/2)*B + Geom::Point(width/4., width/4.));
+    cairo_d2_sb(cr, (width/2)*B + Geom::Point(width/4., width/4.));
     SBasis l = compose(sb2, B);
     notify << "l = " << l << std::endl ;
     l = integral(l*l);

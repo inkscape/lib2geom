@@ -542,9 +542,9 @@ class NearestPoints : public Toy
     {
     	cairo_set_line_width (cr, 0.3);
         D2<SBasis> A = pshA.asBezier();
-        cairo_md_sb(cr, A);
+        cairo_d2_sb(cr, A);
         D2<SBasis> B = pshB.asBezier();
-        cairo_md_sb(cr, B);
+        cairo_d2_sb(cr, B);
         cairo_stroke(cr);
         
         np_finder np(cr, A, B);

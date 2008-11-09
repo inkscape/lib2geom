@@ -23,7 +23,7 @@ void cairo_pw(cairo_t *cr, Piecewise<SBasis> p) {
         D2<SBasis> B;
         B[0] = Linear(p.cuts[i], p.cuts[i+1]);
         B[1] = p[i];
-        cairo_md_sb(cr, B);
+        cairo_d2_sb(cr, B);
     }
 }
 
@@ -43,7 +43,7 @@ class CentreWarp: public Toy {
             D2<Piecewise<SBasis> > tB(cos(B[0]*0.1)*(brush_handle.pos[0]/100) + B[0], 
                                       cos(B[1]*0.1)*(brush_handle.pos[1]/100) + B[1]);
 	
-            cairo_d2_pw(cr, tB);
+            cairo_d2_pw_sb(cr, tB);
         } else  {
             Piecewise<SBasis> r2 = (dot(path_a_pw - brush_handle.pos, path_a_pw - brush_handle.pos));
             Piecewise<SBasis> rc;
@@ -65,7 +65,7 @@ class CentreWarp: public Toy {
         
             D2<Piecewise<SBasis> > tB(compose(rc, (r2))*uB[0] + B[0], 
                                       compose(rc, (r2))*uB[1] + B[1]);
-            cairo_d2_pw(cr, tB);
+            cairo_d2_pw_sb(cr, tB);
             //path_a_pw = sectionize(tB);
 	}
 	cairo_stroke(cr);

@@ -230,7 +230,7 @@ class SVGEllipticalArcTestToy: public Toy
         D2<SBasis> easb = ea.toSBasis();
         cairo_set_line_width(cr, 0.2);
         cairo_set_source_rgba(cr, 0.0, 0.0, 1.0, 1.0);
-        cairo_md_sb(cr, easb);
+        cairo_d2_sb(cr, easb);
         cairo_stroke(cr);
 
         // draw initial and final point labels
@@ -316,7 +316,7 @@ class SVGEllipticalArcTestToy: public Toy
         cairo_line_to(cr, eap.finalPoint()[X], eap.finalPoint()[Y]);
         cairo_stroke(cr);
         D2<SBasis> sub_arc = eap.toSBasis();
-        cairo_md_sb(cr, sub_arc);
+        cairo_d2_sb(cr, sub_arc);
         cairo_stroke(cr);
 
         delete eapp;
@@ -355,7 +355,7 @@ class SVGEllipticalArcTestToy: public Toy
         cairo_stroke(cr);
         cairo_set_source_rgba(cr, 0.0, 1.0, 1.0, 1.0);
         D2<SBasis> sub_arc = eap.toSBasis();
-        cairo_md_sb(cr, sub_arc);
+        cairo_d2_sb(cr, sub_arc);
         cairo_stroke(cr);
 
         delete eapp;
@@ -510,7 +510,7 @@ class SVGEllipticalArcTestToy: public Toy
             if ( status ) return;
             D2<SBasis> arc = earc.toSBasis();
             arc[0] += Linear(50, 50);
-            cairo_md_sb(cr, arc);
+            cairo_d2_sb(cr, arc);
             cairo_stroke(cr);
         }
         catch( RangeError e )
@@ -567,7 +567,7 @@ class SVGEllipticalArcTestToy: public Toy
         D2<SBasis> sb = eat->toSBasis();
         cairo_set_line_width(cr, 0.4);
         cairo_set_source_rgba(cr, 0.8, 0.1, 0.1, 1.0);
-        cairo_md_sb(cr, sb);
+        cairo_d2_sb(cr, sb);
         cairo_stroke(cr);
         delete eat;
     }

@@ -81,7 +81,7 @@ class CurvatureTester: public Toy {
                 }
             }
             if(error >= 0) {
-                //cairo_md_sb(cr, best_c);
+                //cairo_d2_sb(cr, best_c);
                 current_curve.append(best_c);
             }
         }

@@ -26,7 +26,7 @@ void cairo_pw(cairo_t *cr, Piecewise<SBasis> p) {
         D2<SBasis> B;
         B[0] = Linear(p.cuts[i], p.cuts[i+1]);
         B[1] = p[i];
-        cairo_md_sb(cr, B);
+        cairo_d2_sb(cr, B);
     }
 }
 
@@ -120,7 +120,7 @@ class Box3d: public Toy {
             D2<Piecewise<SBasis> > result(divide(res[0],res[2], 4), 
                                           divide(res[1],res[2], 4));
             
-            cairo_d2_pw(cr, result);
+            cairo_d2_pw_sb(cr, result);
             cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
             cairo_stroke(cr);
         }

@@ -57,7 +57,7 @@ class EAFittingToy : public Toy
     	cairo_set_source_rgb(cr, 0.0, 0.0, 0.);
     	//D2<SBasis> SB = handles_to_sbasis(handles.begin(), total_handles - 1);
     	D2<SBasis> SB = psh.asBezier();
-    	cairo_md_sb(cr, SB);
+    	cairo_d2_sb(cr, SB);
     	cairo_stroke(cr);
 
     	cairo_set_line_width (cr, 0.4);
@@ -76,7 +76,7 @@ class EAFittingToy : public Toy
     			return;
     		}
     		D2<SBasis> easb = EA.toSBasis();
-        	cairo_md_sb(cr, easb);
+        	cairo_d2_sb(cr, easb);
         	cairo_stroke(cr);
     	}
         catch( RangeError e )

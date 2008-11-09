@@ -27,7 +27,7 @@ class CurvatureTester: public Toy {
 
         cairo_set_line_width (cr, 1);
         cairo_set_source_rgba (cr, 0., 0.5, 0., 1);
-        cairo_md_sb(cr, B);
+        cairo_d2_sb(cr, B);
         cairo_stroke(cr);
 
 	sample_point.pos[1]=400;
@@ -45,7 +45,7 @@ class CurvatureTester: public Toy {
             D2<SBasis> Kxy;
             Kxy[1] = Linear(400) - K.segs[ix]*300;
             Kxy[0] = Linear(300*K.cuts[ix] + 150, 300*K.cuts[ix+1] + 150);
-            cairo_md_sb(cr, Kxy);
+            cairo_d2_sb(cr, Kxy);
             cairo_stroke(cr);
         }
         

@@ -55,7 +55,7 @@ class D2SBasisFitting : public Toy
         
         cairo_set_source_rgba(cr, 0.3, 0.3, 0.3, 1.0);
         cairo_set_line_width (cr, 0.3);
-        cairo_md_sb(cr, sb_curve);
+        cairo_d2_sb(cr, sb_curve);
         cairo_stroke(cr);
         
         Toy::draw(cr, notify, width, height, save);

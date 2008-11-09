@@ -69,7 +69,7 @@ public:
                             sb2[dim][i][corner] = dl/(width/2)*pow(4.0,ui+vi);
                         }
         }
-        cairo_2dsb2d(cr, sb2, dir*0.1, width);
+        cairo_d2_sb2d(cr, sb2, dir*0.1, width);
         cairo_set_source_rgba (cr, 0., 0., 0, 0.5);
         cairo_stroke(cr);
         for(unsigned vi = 0; vi < v_subs; vi++) {

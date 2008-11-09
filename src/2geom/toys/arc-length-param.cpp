@@ -17,7 +17,7 @@ static void dot_plot(cairo_t *cr, Piecewise<D2<SBasis> > const &M, double space=
         Point pos = M(t), perp = Mperp(t);
         draw_line_seg(cr, pos + perp, pos - perp);
     }
-    cairo_pw_d2(cr, M);
+    cairo_pw_d2_sb(cr, M);
     cairo_stroke(cr);
 }
 
@@ -48,9 +48,9 @@ public:
 
         cairo_set_line_width (cr, .5);
         cairo_set_source_rgba (cr, 0., 0.5, 0., 1);
-        //cairo_md_sb(cr, B1);
-        cairo_pw_d2(cr, C);
-        //cairo_pw_d2(cr, B);
+        //cairo_d2_sb(cr, B1);
+        cairo_pw_d2_sb(cr, C);
+        //cairo_pw_d2_sb(cr, B);
         cairo_stroke(cr);
 
         Piecewise<D2<SBasis> > uniform_B = arc_length_parametrization(B);

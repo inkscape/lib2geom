@@ -260,7 +260,7 @@ public:
         cairo_path(cr, pb);
         
         B[0] = Linear(width/4, 3*width/4);
-        cairo_md_sb(cr, B);
+        cairo_d2_sb(cr, B);
         Toy::draw(cr, notify, width, height, save);
     }
     RootFinderComparer() : timer_precision(0.1), units(1e6), units_string("us") // microseconds

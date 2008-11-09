@@ -65,7 +65,7 @@ class SBez: public Toy {
         cairo_set_line_width (cr, 0.5);
     
         D2<SBasis> B = handles_to_sbasis(handles.begin(), order);
-        cairo_md_sb(cr, B);
+        cairo_d2_sb(cr, B);
     
         const gsl_odeiv_step_type * T 
             = gsl_odeiv_step_rk8pd;

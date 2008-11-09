@@ -26,7 +26,7 @@ public:
         cairo_set_line_width (cr, 1);
         
         D2<SBasis> B = bez_handle.asBezier();
-        cairo_md_sb(cr, B);
+        cairo_d2_sb(cr, B);
         cairo_stroke(cr);
         
         cairo_set_source_rgba (cr, 0.25, 0.5, 0, 0.8);
@@ -53,7 +53,7 @@ public:
                 << units_string << std::endl;
         Piecewise<SBasis> als = arcLengthSb(B);
             
-        cairo_d2_pw(cr, D2<Piecewise<SBasis> >(Piecewise<SBasis>(SBasis(Linear(0, width))) , Piecewise<SBasis>(Linear(height-5)) - Piecewise<SBasis>(als)) );
+        cairo_d2_pw_sb(cr, D2<Piecewise<SBasis> >(Piecewise<SBasis>(SBasis(Linear(0, width))) , Piecewise<SBasis>(Linear(height-5)) - Piecewise<SBasis>(als)) );
 
         double abs_error = 0;
         double integrating_arc_length = 0;

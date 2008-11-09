@@ -26,7 +26,7 @@ void cairo_pw(cairo_t *cr, Piecewise<SBasis> p) {
         D2<SBasis> B;
         B[0] = Linear(p.cuts[i], p.cuts[i+1]);
         B[1] = p[i];
-        cairo_md_sb(cr, B);
+        cairo_d2_sb(cr, B);
     }
 }
 
@@ -108,7 +108,7 @@ class InnerProductClip: public Toy {
                 //       i, lr[j], lr[j+1], dd, s[0], s[1], e[0], e[1]);
                 if(0 > dd) {
                     //Curve * cv = path_a[i].portion(lr[j], lr[j+1]);
-                    cairo_md_sb(cr, portion(curpw, lr[j], lr[j+1]));
+                    cairo_d2_sb(cr, portion(curpw, lr[j], lr[j+1]));
                     cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
                     cairo_stroke(cr);
                     /*cairo_curve(cr, path_a[i]);
@@ -119,7 +119,7 @@ class InnerProductClip: public Toy {
             }
 	}
 	
-	//cairo_pw_d2(cr, path_a_pw);
+	//cairo_pw_d2_sb(cr, path_a_pw);
 	cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
 	cairo_stroke(cr);
         

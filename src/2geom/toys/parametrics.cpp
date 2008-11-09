@@ -37,7 +37,7 @@ static void draw_axis(cairo_t *cr, Piecewise<D2<SBasis> > const &pw, unsigned d,
     if(abs(mode)==5) mult = 20;
     if(abs(mode)==6) mult = 100;
     for(unsigned i = 0; i < pw.size(); i++) {
-        cairo_md_sb(cr, D2<SBasis>(Linear(pw.cuts[i]-pw.cuts[0],pw.cuts[i+1]-pw.cuts[0])*mult, pw[i][d])*m);
+        cairo_d2_sb(cr, D2<SBasis>(Linear(pw.cuts[i]-pw.cuts[0],pw.cuts[i+1]-pw.cuts[0])*mult, pw[i][d])*m);
     }
 }
 /*
@@ -121,7 +121,7 @@ class Parametrics: public Toy {
 
           cairo_set_line_width (cr, 2);
           cairo_set_source_rgba (cr, 0., 0.5, 0., 1);
-          cairo_pw_d2(cr, port);
+          cairo_pw_d2_sb(cr, port);
           cairo_stroke(cr);
       }
       if(mode>=0 && t>=obj.cuts.back()+inc) t = 0;

@@ -68,7 +68,7 @@ class Worm {
         }
         cairo_set_source_rgb(cr, red, green, blue);
         Piecewise<D2<SBasis> > port = portion(path, std::max(t - last_time - length, 0.), t - last_time);
-        cairo_pw_d2(cr, port);
+        cairo_pw_d2_sb(cr, port);
         cairo_stroke(cr);
         
         double d = 4;

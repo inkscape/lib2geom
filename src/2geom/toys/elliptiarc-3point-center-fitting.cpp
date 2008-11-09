@@ -229,7 +229,7 @@ class ElliptiArcMaker : public Toy
 		if (status)
 		{
 			D2<Geom::SBasis> easb = ea.toSBasis();
-			cairo_md_sb(cr, easb);
+			cairo_d2_sb(cr, easb);
 		}
 		cairo_stroke(cr);
 		Toy::draw(cr, notify, width, height, save);

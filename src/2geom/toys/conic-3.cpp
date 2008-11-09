@@ -73,7 +73,7 @@ class Conic3: public Toy {
                 B[dim] += Z[i]*e_a_h[i][dim];
             }
         }
-        cairo_d2_pw(cr, B);
+        cairo_d2_pw_sb(cr, B);
         Toy::draw(cr, notify, width, height, save);
     }
 };

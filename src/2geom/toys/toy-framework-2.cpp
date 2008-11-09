@@ -808,7 +808,7 @@ class Sb1d: public Toy {
 	pwc -= pwc.valueAt(0);
 	pwc += Point(width/2, height/2);
 	
-	cairo_pw_d2(cr, pwc);
+	cairo_pw_d2_sb(cr, pwc);
         cairo_set_source_rgba (cr, 0., 0., 0, 1);
         cairo_stroke(cr);
 

@@ -22,11 +22,11 @@ class PathAlongPathToy: public Toy {
 
 
         cairo_set_line_width(cr,1.);
-        cairo_pw_d2(cr, Piecewise<D2<SBasis> >(skeleton));
+        cairo_pw_d2_sb(cr, Piecewise<D2<SBasis> >(skeleton));
         cairo_set_source_rgba(cr,0.0,0.0,1.0,1.0);
         cairo_stroke(cr);
 
-        cairo_pw_d2(cr, Piecewise<D2<SBasis> >(pattern));
+        cairo_pw_d2_sb(cr, Piecewise<D2<SBasis> >(pattern));
         cairo_set_source_rgba(cr,1.0,0.0,1.0,1.0);
         cairo_stroke(cr);
 
@@ -70,7 +70,7 @@ class PathAlongPathToy: public Toy {
             }
         }
 
-        cairo_pw_d2(cr, output);
+        cairo_pw_d2_sb(cr, output);
         cairo_set_source_rgba(cr,1.0,0.0,1.0,1.0);
         cairo_stroke(cr);
 

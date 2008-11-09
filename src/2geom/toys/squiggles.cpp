@@ -20,7 +20,7 @@ void cairo_pw(cairo_t *cr, Piecewise<SBasis> p) {
         D2<SBasis> B;
         B[0] = Linear(p.cuts[i], p.cuts[i+1]);
         B[1] = Linear(150) + p[i];
-        cairo_md_sb(cr, B);
+        cairo_d2_sb(cr, B);
     }
 }
 
@@ -169,13 +169,13 @@ class Squiggles: public Toy {
         graphe[X] = Piecewise<SBasis>(Linear(100,300));
         graphe[Y] = -curvature/K_SCALE+400;
         graphe[X].setDomain(graphe[Y].domain());
-        cairo_d2_pw(cr, graphe);
+        cairo_d2_pw_sb(cr, graphe);
 #endif
 
         cairo_stroke(cr);
         cairo_restore(cr);
 
-	cairo_pw_d2(cr, curve);
+	cairo_pw_d2_sb(cr, curve);
         cairo_set_source_rgba (cr, 0., 0., 0, 1);
         cairo_stroke(cr);
 

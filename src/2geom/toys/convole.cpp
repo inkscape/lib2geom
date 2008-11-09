@@ -174,7 +174,7 @@ static void dot_plot(cairo_t *cr, Piecewise<D2<SBasis> > const &M, double space=
         Point pos = M(t), perp = Mperp(t);
         draw_line_seg(cr, pos + perp, pos - perp);
     }
-    cairo_pw_d2(cr, M);
+    cairo_pw_d2_sb(cr, M);
     cairo_stroke(cr);
 }
 
@@ -187,7 +187,7 @@ static void plot_graph(cairo_t *cr, Piecewise<SBasis> const &f,
                                             100+f.cuts.back()*x_scale)));
     g[X].setDomain(f.domain());
     g[Y] = -f*y_scale+400;
-    cairo_d2_pw(cr, g);
+    cairo_d2_pw_sb(cr, g);
 }
 
 struct Frame
@@ -205,7 +205,7 @@ plot3d(cairo_t *cr, SBasis const &x, SBasis const &y, SBasis const &z, Frame fra
         curve[dim] = x*frame.x[dim] + y*frame.y[dim] + z*frame.z[dim];
         curve[dim] += frame.O[dim];
     }
-    cairo_md_sb(cr, curve);
+    cairo_d2_sb(cr, curve);
 }
 void
 plot3d(cairo_t *cr, SBasisOf<SBasisOf<double> > const &f, Frame frame, int NbRays=5){
@@ -289,9 +289,9 @@ public:
 
         Piecewise<D2<SBasis> > smoothB;
         smoothB = sectionize(smoothB1)+sectionize(smoothB2);
-        //cairo_md_sb(cr, B1);
-        //cairo_md_sb(cr, B2);
-        cairo_pw_d2(cr, smoothB);
+        //cairo_d2_sb(cr, B1);
+        //cairo_d2_sb(cr, B2);
+        cairo_pw_d2_sb(cr, smoothB);
         
         cairo_move_to(cr,100,400);
         cairo_line_to(cr,500,400);
@@ -303,13 +303,13 @@ public:
         bx.setDomain(Interval(0,4));
         Piecewise<SBasis>smth = Piecewise<SBasis>(toSBasis(smoother));
         smth.setDomain(Interval(-scale/2,scale/2));
-        cairo_md_sb(cr, B1);
+        cairo_d2_sb(cr, B1);
         plot_graph(cr, bx, 100, 1);
         plot_graph(cr, smth/scale, 100, 100);
         plot_graph(cr, smoothB1[X],100,1);
         
-        //cairo_pw_d2(cr, Piecewise<D2<SBasis> >(B1) );
-        //cairo_pw_d2(cr, sectionize(smoothB1));        
+        //cairo_pw_d2_sb(cr, Piecewise<D2<SBasis> >(B1) );
+        //cairo_pw_d2_sb(cr, sectionize(smoothB1));        
 
         cairo_set_line_width (cr, .5);
         cairo_set_source_rgba (cr, 0.7, 0.2, 0., 1);

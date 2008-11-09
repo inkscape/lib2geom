@@ -19,7 +19,7 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
     
     D2<SBasis> A = psh.asBezier();
     Rect Ar = *bounds_fast(A);
-    cairo_md_sb(cr, A);
+    cairo_d2_sb(cr, A);
     cairo_stroke(cr);
 
     std::vector<std::pair<double, double> >  all_si = 
