@@ -1,6 +1,4 @@
 SET(2GEOM_TOY-FRAMEWORK-2_SRC
-interactive-bits.cpp
-interactive-bits.h
 toy-framework-2.cpp
 toy-framework-2.h
 path-cairo.cpp

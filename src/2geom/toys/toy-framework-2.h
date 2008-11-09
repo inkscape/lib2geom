@@ -12,11 +12,11 @@
 #include <string>
 
 #include <assert.h>
-#include <2geom/toys/interactive-bits.h>
 #include <2geom/point.h>
 #include <2geom/geom.h>
 #include <2geom/sbasis.h>
 #include <2geom/d2.h>
+#include <2geom/toys/path-cairo.h>
 
 using std::vector;
 

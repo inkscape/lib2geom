@@ -20,7 +20,6 @@
 #include <map>
 #include <cairo-pdf.h>
 #include <2geom/point.h>
-#include <2geom/toys/interactive-bits.h>
 #include <2geom/geom.h>
 #include <2geom/toys/toy-framework-2.h>
 

@@ -78,7 +78,7 @@ int winding(Path const &path, Point p) {
                     const double fudge = 0.01;
                     if(cmp(y, next->valueAt(fudge, Y)) == initial_to_ray) {
                         wind += int(c);
-                        std::cout << "!!!!!" << int(c) << " ";
+                        //std::cout << "!!!!!" << int(c) << " ";
                     }
                     iter = next; // No increment, as the rest of the thing hasn't been counted.
                 } else {
@@ -86,7 +86,7 @@ int winding(Path const &path, Point p) {
                     if(cmp(y, ny) == initial_to_ray) {
                         //Is a continuation through the ray, so counts windingwise
                         wind += int(c);
-                        std::cout << "!!!!!" << int(c) << " ";
+                        //std::cout << "!!!!!" << int(c) << " ";
                     }
                     iter = ++next;
                 }

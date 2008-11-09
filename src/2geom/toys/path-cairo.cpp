@@ -102,52 +102,6 @@ void cairo_path_stitches(cairo_t *cr, std::vector<Path> const &p) {
     }
 }
 
-#if 0
-/*** This is really just for debugging porpoises. */
-#include <sstream>
-#include <iostream>
-#include <2geom/toys/interactive-bits.h>
-#include <pango/pango.h>
-#include <pango/pangocairo.h>
-void cairo_path_handles(cairo_t *cr, Path const &p) {
-    if(p.empty()) return;
-    cairo_move_to(cr, p.initial_point()[0], p.initial_point()[1]);
-    for(Path::const_iterator iter(p.begin()), end(p.end()); iter < end; ++iter) {
-        Path::Elem elem = *iter;
-        for(int i = 0; i < elem.size(); i++) {
-            std::ostringstream notify;
-            notify << i;
-            draw_cross(cr, elem[i]);
-            cairo_move_to(cr, elem[i]);
-            PangoLayout* layout = pango_cairo_create_layout (cr);
-            pango_layout_set_text(layout, 
-                                  notify.str().c_str(), -1);
-
-            PangoFontDescription *font_desc = pango_font_description_new();
-            pango_font_description_set_family(font_desc, "Sans");
-            const int size_px = 10;
-            pango_font_description_set_absolute_size(font_desc, size_px * 1024.0);
-            pango_layout_set_font_description(layout, font_desc);
-            PangoRectangle logical_extent;
-            pango_layout_get_pixel_extents(layout,
-                                           NULL,
-                                           &logical_extent);
-            pango_cairo_show_layout(cr, layout);
-        }
-    }
-}
-
-void cairo_PathSet_handles(cairo_t *cr, PathSet const &p) {
-    std::vector<Path> subpaths;
-    
-    for (std::vector<Path>::const_iterator it(p.begin()),
-             iEnd(p.end());
-         it != iEnd; ++it) {
-        cairo_path_handles(cr, *it);
-    }
-}
-#endif
-
 void cairo_d2_sb(cairo_t *cr, D2<SBasis> const &B) {
     cairo_path(cr, path_from_sbasis(B, 0.1));
 }
@@ -204,6 +158,95 @@ void cairo_pw_d2_sb(cairo_t *cr, Piecewise<D2<SBasis> > const &p) {
     for(unsigned i = 0; i < p.size(); i++)
         cairo_d2_sb(cr, p[i]);
 }
+
+
+void draw_line_seg(cairo_t *cr, Geom::Point a, Geom::Point b) {
+    cairo_move_to(cr, a[0], a[1]);
+    cairo_line_to(cr, b[0], b[1]);
+    cairo_stroke(cr);
+}
+
+void draw_spot(cairo_t *cr, Geom::Point h) {
+    draw_line_seg(cr, h, h);
+}
+
+void draw_handle(cairo_t *cr, Geom::Point h) {
+    double x = h[Geom::X];
+    double y = h[Geom::Y];
+    cairo_move_to(cr, x-3, y);
+    cairo_line_to(cr, x+3, y);
+    cairo_move_to(cr, x, y-3);
+    cairo_line_to(cr, x, y+3);
+}
+
+void draw_cross(cairo_t *cr, Geom::Point h) {
+    double x = h[Geom::X];
+    double y = h[Geom::Y];
+    cairo_move_to(cr, x-3, y-3);
+    cairo_line_to(cr, x+3, y+3);
+    cairo_move_to(cr, x+3, y-3);
+    cairo_line_to(cr, x-3, y+3);
+}
+
+void draw_circ(cairo_t *cr, Geom::Point h) {
+    int x = int(h[Geom::X]);
+    int y = int(h[Geom::Y]);
+    cairo_new_sub_path(cr);
+    cairo_arc(cr, x, y, 3, 0, M_PI*2);
+    cairo_stroke(cr);
+}
+
+void draw_ray(cairo_t *cr, Geom::Point h, Geom::Point dir) {
+    draw_line_seg(cr, h, h+dir);
+}
+
+
+void
+cairo_move_to (cairo_t *cr, Geom::Point p1) {
+    cairo_move_to(cr, p1[0], p1[1]);
+}
+
+void
+cairo_line_to (cairo_t *cr, Geom::Point p1) {
+    cairo_line_to(cr, p1[0], p1[1]);
+}
+
+void
+cairo_curve_to (cairo_t *cr, Geom::Point p1, 
+		Geom::Point p2, Geom::Point p3) {
+    cairo_curve_to(cr, p1[0], p1[1],
+                   p2[0], p2[1],
+                   p3[0], p3[1]);
+}
+/*
+  void draw_string(GtkWidget *widget, string s, int x, int y) {
+  PangoLayout *layout = gtk_widget_create_pango_layout(widget, s.c_str());
+  cairo_t* cr = gdk_cairo_create (widget->window);
+  cairo_move_to(cr, x, y);
+  pango_cairo_show_layout(cr, layout);
+  cairo_destroy (cr);
+  }*/
+
+// H in [0,360)
+// S, V, R, G, B in [0,1]
+void convertHSVtoRGB(const double H, const double S, const double V,
+                     double& R, double& G, double& B) {
+    int Hi = int(floor(H/60.)) % 6;
+    double f = H/60. - Hi;
+    double p = V*(1-S);
+    double q = V*(1-f*S);
+    double t = V*(1-(1-f)*S);
+    switch(Hi) {
+    case 0: R=V, G=t, B=p; break;
+    case 1: R=q, G=V, B=p; break;
+    case 2: R=p, G=V, B=t; break;
+    case 3: R=p, G=q, B=V; break;
+    case 4: R=t, G=p, B=V; break;
+    case 5: R=V, G=p, B=q; break;
+    }
+}
+
+
 
 /*
   Local Variables:
