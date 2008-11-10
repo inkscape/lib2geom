@@ -2,6 +2,7 @@
 
 #include <2geom/sbasis.h>
 #include <2geom/bezier-to-sbasis.h>
+#include <2geom/sbasis-math.h>
 #include <2geom/sbasis-geometric.h>
 
 #include <2geom/toys/path-cairo.h>
@@ -10,6 +11,15 @@
 #include <vector>
 using std::vector;
 using namespace Geom;
+
+Piecewise<SBasis> 
+arcLengthSb2(Piecewise<D2<SBasis> > const &M, double tol){
+    Piecewise<D2<SBasis> > dM = derivative(M);
+    Piecewise<SBasis> length = integral(dot(dM, unitVector(dM)));
+    length-=length.segs.front().at0();
+    return length;
+}
+
 
 
 class ArcBez: public Toy {
@@ -51,7 +61,17 @@ public:
         *notify << "arcLengthSb based " 
                 << ", time = " << timer_precision*units/iterations-overhead 
                 << units_string << std::endl;
+        end_t = clock()+clock_t(timer_precision*CLOCKS_PER_SEC);
+        iterations = 0;
+        while(end_t > clock()) {
+            Piecewise<SBasis> als = arcLengthSb2(Piecewise<D2<SBasis> >(B), 0.01);
+            iterations++;
+        }
+        *notify << "arcLengthSb2 based " 
+                << ", time = " << timer_precision*units/iterations-overhead 
+                << units_string << std::endl;
         Piecewise<SBasis> als = arcLengthSb(B);
+        Piecewise<SBasis> als2 = arcLengthSb2(Piecewise<D2<SBasis> >(B), 0.01);
             
         cairo_d2_pw_sb(cr, D2<Piecewise<SBasis> >(Piecewise<SBasis>(SBasis(Linear(0, width))) , Piecewise<SBasis>(Linear(height-5)) - Piecewise<SBasis>(als)) );
 
@@ -67,10 +87,13 @@ public:
         *notify << "gsl integrating " 
                 << ", time = " << timer_precision*units/iterations-overhead 
                 << units_string << std::endl;
+        integrating_arc_length = 0;
         length_integrating(B, integrating_arc_length, abs_error, 1e-10);
         *notify << "arc length = " << integrating_arc_length << "; abs error = " << abs_error << std::endl;
         double als_arc_length = als.segs.back().at1();
         *notify << "arc length = " << als_arc_length << "; error = " << als_arc_length - integrating_arc_length << std::endl;
+        double als_arc_length2 = als2.segs.back().at1();
+        *notify << "arc length2 = " << als_arc_length2 << "; error = " << als_arc_length2 - integrating_arc_length << std::endl;
         Toy::draw(cr, notify, width, height, save);
     }
 };
