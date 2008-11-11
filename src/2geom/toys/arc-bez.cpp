@@ -54,8 +54,9 @@ public:
         double overhead = timer_precision*units/iterations;
         end_t = clock()+clock_t(timer_precision*CLOCKS_PER_SEC);
         iterations = 0;
+        double tol = 0.01;
         while(end_t > clock()) {
-            Piecewise<SBasis> als = arcLengthSb(B);
+            Piecewise<SBasis> als = arcLengthSb(B, tol);
             iterations++;
         }
         *notify << "arcLengthSb based " 
@@ -70,7 +71,7 @@ public:
         *notify << "arcLengthSb2 based " 
                 << ", time = " << timer_precision*units/iterations-overhead 
                 << units_string << std::endl;
-        Piecewise<SBasis> als = arcLengthSb(B);
+        Piecewise<SBasis> als = arcLengthSb(B, tol);
         Piecewise<SBasis> als2 = arcLengthSb2(Piecewise<D2<SBasis> >(B), 0.01);
             
         cairo_d2_pw_sb(cr, D2<Piecewise<SBasis> >(Piecewise<SBasis>(SBasis(Linear(0, width))) , Piecewise<SBasis>(Linear(height-5)) - Piecewise<SBasis>(als)) );
@@ -88,12 +89,31 @@ public:
                 << ", time = " << timer_precision*units/iterations-overhead 
                 << units_string << std::endl;
         integrating_arc_length = 0;
+        abs_error = 0;
         length_integrating(B, integrating_arc_length, abs_error, 1e-10);
         *notify << "arc length = " << integrating_arc_length << "; abs error = " << abs_error << std::endl;
         double als_arc_length = als.segs.back().at1();
         *notify << "arc length = " << als_arc_length << "; error = " << als_arc_length - integrating_arc_length << std::endl;
         double als_arc_length2 = als2.segs.back().at1();
         *notify << "arc length2 = " << als_arc_length2 << "; error = " << als_arc_length2 - integrating_arc_length << std::endl;
+
+
+        {
+            double scale = 10./fabs(als_arc_length - integrating_arc_length);
+            Piecewise<D2<SBasis> > dM = derivative(Piecewise<D2<SBasis> >(B));
+            Piecewise<SBasis> ddM = dot(dM,dM);
+            Piecewise<SBasis> dMlength = sqrt(ddM,tol,3);
+            double plot_width = (width - 200);
+            
+            Point org(100,height - 200);
+            cairo_move_to(cr, org);
+            for(double t = 0; t < 1; t += 0.01) {
+                cairo_line_to(cr, org + Point(t*plot_width, scale*(sqrt(ddM.valueAt(t)) - dMlength.valueAt(t))));
+            }
+            cairo_stroke(cr);
+        }
+
+
         Toy::draw(cr, notify, width, height, save);
     }
 };
