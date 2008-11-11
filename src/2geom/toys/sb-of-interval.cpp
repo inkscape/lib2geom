@@ -23,7 +23,9 @@ static void plot(cairo_t* cr, SBasis const &B,double vscale=1,double a=0,double 
 //    cairo_stroke(cr);
 }
 static void plot(cairo_t* cr, SBasisOf<Interval> const &f, double vscale=1,double dx=.05, double a=0,double b=1){
+    cairo_save(cr);
     double t= a;
+#if 0
     while (t<=b){
         Interval i = f.valueAt(t);
         std::cout<<i.min()<<","<<i.max()<<"\n";
@@ -31,7 +33,31 @@ static void plot(cairo_t* cr, SBasisOf<Interval> const &f, double vscale=1,doubl
         draw_cross(cr, Geom::Point( 150+t*300, 300-i.max()*vscale ) );
         t+=dx;
     }
-//    cairo_stroke(cr);
+#endif
+    D2<SBasis> plot;
+    Path pth;
+    SBasis fmin;
+    SBasis fmax;
+    fmin.resize(f.size());
+    fmax.resize(f.size());
+    for(unsigned i = 0; i < f.size(); i++) {
+        for(unsigned j = 0; j < 2; j++) {
+            fmin[i][j] = f[i][j].min();
+            fmax[i][j] = f[i][j].max();
+        }
+    }
+    plot[0]=SBasis(Linear(150+a*300,150+b*300));
+    plot[1]=fmin*(-vscale);
+    plot[1]+=300;
+    pth.append(plot, Path::STITCH_DISCONTINUOUS);
+    plot[1]=fmax*(-vscale);
+    plot[1]+=300;
+    pth.append(reverse(plot), Path::STITCH_DISCONTINUOUS);
+    cairo_path(cr, pth);
+    
+    cairo_set_source_rgba(cr, 0, 0, 0, 0.1);
+    cairo_fill(cr);
+    cairo_restore(cr);
 }
 
 
