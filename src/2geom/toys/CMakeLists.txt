@@ -87,6 +87,7 @@ curvature-curve
 sb-of-sb
 convole
 hatches
+sb-of-interval
 )
 
 

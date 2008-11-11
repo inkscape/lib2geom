@@ -107,7 +107,7 @@ public:
             p0 = p0*s + lin[0];
             p1 = p1*s + lin[1];
         }
-        return (1-t)*p0 + t*p1;
+        return p0*(1-t) + p1*t;
     }
 
     T operator()(double t) const {
