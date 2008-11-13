@@ -8,7 +8,6 @@
 #include <2geom/toys/toy-framework-2.h>
 
 using std::vector;
-const unsigned bez_ord = 6;
 using namespace Geom;
 
 class SelfIntersect: public Toy {
@@ -22,8 +21,9 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
     cairo_d2_sb(cr, A);
     cairo_stroke(cr);
 
-    std::vector<std::pair<double, double> >  all_si = 
-        find_self_intersections(A);
+    std::vector<std::pair<double, double> >  all_si;
+    
+    find_self_intersections(all_si, A);
     
     cairo_stroke(cr);
     cairo_set_source_rgba (cr, 1., 0., 1, 1);
@@ -37,7 +37,7 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
     Toy::draw(cr, notify, width, height, save);
 }
 public:
-SelfIntersect () {
+SelfIntersect (unsigned bez_ord) {
     handles.push_back(&psh);
     for(unsigned i = 0; i < bez_ord; i++)
         psh.push_back(uniform()*400, uniform()*400);
@@ -45,7 +45,10 @@ SelfIntersect () {
 };
 
 int main(int argc, char **argv) {   
-    init(argc, argv, new SelfIntersect());
+    unsigned bez_ord=5;
+    if(argc > 1)
+        sscanf(argv[1], "%d", &bez_ord);
+    init(argc, argv, new SelfIntersect(bez_ord));
 
     return 0;
 }

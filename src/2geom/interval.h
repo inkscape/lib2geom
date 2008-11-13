@@ -262,6 +262,14 @@ inline OptInterval intersect(const Interval & a, const Interval & b) {
                   : OptInterval(Interval(u, v));
 }
 
+#ifdef ostream
+inline std::ostream &operator<< (std::ostream &os, 
+                                 const Geom::Interval &I) {
+    os << "Interval("<<I[0] << ", "<<I[1] << ")";
+    return os;
+}
+#endif
+
 }
 #endif //SEEN_INTERVAL_H
 

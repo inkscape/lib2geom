@@ -45,6 +45,7 @@
 
 namespace Geom {
 
+#if 0
 std::vector<std::pair<double, double> >
 find_intersections( D2<SBasis> const & A,
                     D2<SBasis> const & B);
@@ -59,7 +60,7 @@ find_intersections( std::vector<Point> const & A,
 
 std::vector<std::pair<double, double> >
 find_self_intersections(std::vector<Point> const & A);
-
+#endif
 
 /*
  * find_intersection
@@ -77,6 +78,10 @@ void find_intersections (std::vector< std::pair<double, double> > & xs,
                          std::vector<Point> const& B,
                          double precision = 1e-5);
 
+void polish_intersections(std::vector<std::pair<double, double> > &xs, 
+                          D2<SBasis> const &A,
+                          D2<SBasis> const &B);
+
 /*
  * find_collinear_normal
  *
@@ -92,6 +97,19 @@ void find_collinear_normal (std::vector< std::pair<double, double> >& xs,
                             std::vector<Point> const& A,
                             std::vector<Point> const& B,
                             double precision = 1e-5);
+
+void find_intersections(std::vector<std::pair<double, double> >& xs,
+                        D2<SBasis> const & A,
+                        D2<SBasis> const & B);
+
+void find_self_intersections(std::vector<std::pair<double, double> >& xs,
+                             D2<SBasis> const & A);
+
+
+void find_self_intersections(std::vector<std::pair<double, double> >& xs,
+                             std::vector<Point> const & A);
+
+
 
 /**
  * Compute the Hausdorf distance from A to B only.

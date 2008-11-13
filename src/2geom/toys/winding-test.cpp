@@ -20,13 +20,28 @@ void draw_rect(cairo_t *cr, Point tl, Point br) {
 
 void draw_bounds(cairo_t *cr, vector<Path> ps) {
     srand(0); 
+    vector<Rect> bnds;
     for(unsigned i = 0; i < ps.size(); i++) {
         for(Path::iterator it = ps[i].begin(); it != ps[i].end(); it++) {
             Rect bounds = *(it->boundsFast());
+            bnds.push_back(bounds);
             cairo_set_source_rgba(cr, uniform(), uniform(), uniform(), .5);
-            draw_rect(cr, bounds.min(), bounds.max());
+            //draw_rect(cr, bounds.min(), bounds.max());
             cairo_stroke(cr);
         }
+    }
+    {
+        std::vector<std::vector<unsigned> > res = sweep_bounds(bnds);
+        cairo_set_line_width(cr,0.5);
+        cairo_save(cr);
+        cairo_set_source_rgb(cr, 1, 0, 0);
+        for(unsigned i = 0; i < res.size(); i++) {
+            for(unsigned j = 0; j < res[i].size(); j++) {
+                draw_line_seg(cr, bnds[i].midpoint(), bnds[res[i][j]].midpoint());
+                cairo_stroke(cr);
+            }
+        }
+        cairo_restore(cr);
     }
 }
 
@@ -47,8 +62,11 @@ class WindingTest: public Toy {
     vector<Path> path;
     PointHandle test_pt_handle;
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
+        cairo_set_source_rgb(cr, 0, 0, 0);
         cairo_path(cr, path);
         cairo_stroke(cr);
+        mark_verts(cr, path);
+        draw_bounds(cr, path);
         
         //draw_bounds(cr, path); mark_verts(cr, path);
         
