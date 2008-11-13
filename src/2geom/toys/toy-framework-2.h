@@ -30,7 +30,7 @@ class Handle{
 public:
     std::string name;
     float rgb[3];
-    Handle() {}
+    Handle() {rgb[0] = rgb[1] = rgb[2] = 0;}
     virtual ~Handle() {}
     virtual void draw(cairo_t *cr, bool annotes=false) = 0;
   
