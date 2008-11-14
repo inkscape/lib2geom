@@ -1,5 +1,5 @@
 /*
- * Line Toy
+ * Rect Toy
  *
  * Copyright 2008  njh <>
  * multitoy approach
@@ -205,6 +205,12 @@ class LineToy : public Toy
         if(ls) {
             draw_handle(cr, (*ls)[0]);
             draw_handle(cr, (*ls)[1]);
+            cairo_save(cr);
+            cairo_set_line_width(cr, 2);
+            cairo_move_to(cr, (*ls)[0]);
+            cairo_line_to(cr, (*ls)[1]);
+            cairo_stroke(cr);
+            cairo_restore(cr);
         }
 
 

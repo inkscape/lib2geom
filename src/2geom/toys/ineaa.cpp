@@ -24,73 +24,35 @@ struct PtLexCmp{
 
 // draw ax + by + c = 0
 void draw_line_in_rect(cairo_t*cr, Rect &r, Point n, double c) {
-    vector<Geom::Point> result;
-    Point resultp;
-    if(intersects == line_intersection(Point(1, 0), r.left(),
-				       n, c,
-				       resultp) && r[1].contains(resultp[1]))
-	result.push_back(resultp);
-    if(intersects == line_intersection(Point(1, 0), r.right(),
-				       n, c,
-				       resultp) && r[1].contains(resultp[1]))
-	result.push_back(resultp);
-    if(intersects == line_intersection(Point(0, 1), r.top(),
-				       n, c,
-				       resultp) && r[0].contains(resultp[0]))
-	result.push_back(resultp);
-    if(intersects == line_intersection(Point(0, 1), r.bottom(),
-				       n, c,
-				       resultp) && r[0].contains(resultp[0]))
-	result.push_back(resultp);
-    if(result.size() > 2) {
-        std::sort(result.begin(), result.end(), PtLexCmp());
-        vector<Geom::Point>::iterator new_end = std::unique(result.begin(), result.end());
-        result.resize(new_end-result.begin());
-    }
-    if(result.size() == 2) {
-	cairo_move_to(cr, result[0]);
-	cairo_line_to(cr, result[1]);
+    boost::optional<Geom::LineSegment> ls =
+        rect_line_intersect(r, Line::fromNormalDistance(n, c));
+    
+    if(ls) {
+	cairo_move_to(cr, (*ls)[0]);
+	cairo_line_to(cr, (*ls)[1]);
 	cairo_stroke(cr);
-    } else {
-        ;//cout << result.size() << endl;
+        
     }
-
-
 }
 
 void fill_line_in_rect(cairo_t*cr, Rect &r, Point n, double c) {
-    vector<Geom::Point> result;
-    Point resultp;
-    if(intersects == line_intersection(Point(1, 0), r.left(),
-				       n, c,
-				       resultp) && r[1].contains(resultp[1]))
-	result.push_back(resultp);
-    if(intersects == line_intersection(Point(1, 0), r.right(),
-				       n, c,
-				       resultp) && r[1].contains(resultp[1]))
-	result.push_back(resultp);
-    if(intersects == line_intersection(Point(0, 1), r.top(),
-				       n, c,
-				       resultp) && r[0].contains(resultp[0]))
-	result.push_back(resultp);
-    if(intersects == line_intersection(Point(0, 1), r.bottom(),
-				       n, c,
-				       resultp) && r[0].contains(resultp[0]))
-	result.push_back(resultp);
-    if(result.size() > 2) {
-        std::sort(result.begin(), result.end(), PtLexCmp());
-        vector<Geom::Point>::iterator new_end = std::unique(result.begin(), result.end());
-        result.resize(new_end-result.begin());
+    ConvexHull ch;
+    
+    boost::optional<Geom::LineSegment> ls =
+        rect_line_intersect(r, Line::fromNormalDistance(n, c));
+    
+    if(ls) {
+        ch.boundary.push_back((*ls)[0]);
+        ch.boundary.push_back((*ls)[1]);
     }
-        ConvexHull ch(result);
-        for(int i = 0; i < 4; i++) {
-            Point p = r.corner(i);
-            if(dot(n,p) < c) {
-                ch.boundary.push_back(p);
-            }
+    for(int i = 0; i < 4; i++) {
+        Point p = r.corner(i);
+        if(dot(n,p) < c) {
+            ch.boundary.push_back(p);
         }
-        ch.graham();
-	cairo_convex_hull(cr, ch.boundary);
+    }
+    ch.graham();
+    cairo_convex_hull(cr, ch.boundary);
 }
 
 OptRect tighten(Rect &r, Point n, Interval lu) {
@@ -104,22 +66,14 @@ OptRect tighten(Rect &r, Point n, Interval lu) {
     }
     for(int i = 0; i < 2; i++) {
         double c = lu[i];
-        if(intersects == line_intersection(Point(1, 0), r.left(),
-                                           n, c,
-                                           resultp) && r[1].contains(resultp[1]))
-            result.push_back(resultp);
-        if(intersects == line_intersection(Point(1, 0), r.right(),
-                                           n, c,
-                                           resultp) && r[1].contains(resultp[1]))
-            result.push_back(resultp);
-        if(intersects == line_intersection(Point(0, 1), r.top(),
-                                           n, c,
-                                           resultp) && r[0].contains(resultp[0]))
-            result.push_back(resultp);
-        if(intersects == line_intersection(Point(0, 1), r.bottom(),
-                                           n, c,
-                                           resultp) && r[0].contains(resultp[0]))
-            result.push_back(resultp);
+    
+        boost::optional<Geom::LineSegment> ls =
+            rect_line_intersect(r, Line::fromNormalDistance(n, c));
+    
+        if(ls) {
+            result.push_back((*ls)[0]);
+            result.push_back((*ls)[1]);
+        }
     }
     if(result.size() < 2)
         return OptRect();
@@ -270,6 +224,7 @@ double lambertW(double x, double prec = 1E-12, int maxiters = 100) {
         w -= (we - x) / (w1e - (w+2) * (we-x) / (2*w+2));
     }
     //raise ValueError("W doesn't converge fast enough for abs(z) = %f" % abs(x))
+    return 0./0.;
 }
 
 #include <gsl/gsl_errno.h>
@@ -288,7 +243,7 @@ double fn1 (double x, void * params)
      
 double optimise(void * params, double a, double b) {
     int status;
-    param_W *pw = (param_W*)params;
+    //param_W *pw = (param_W*)params;
     int iter = 0, max_iter = 100;
     double m = (a+b)/2;
     gsl_function F;
@@ -299,10 +254,11 @@ double optimise(void * params, double a, double b) {
     const gsl_min_fminimizer_type *T = gsl_min_fminimizer_brent;
     gsl_min_fminimizer *s = gsl_min_fminimizer_alloc (T);
     if(a+1e-10 >= b) return m;
+#if 0
     cout << a << " " << b << " " << m << endl;
     cout << "fn:" <<  fn1(a, params) << " " << fn1(b, params) << " " << fn1(m, params) << endl;
     cout << "fn:" <<  (pw->a*a+pw->b) << " " << (pw->a*b+pw->b) << " " << (pw->a*m+pw->b) << endl;
-    
+#endif    
     gsl_min_fminimizer_set (s, &F, m, a, b);
     do
     {

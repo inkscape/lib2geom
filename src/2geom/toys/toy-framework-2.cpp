@@ -41,6 +41,22 @@ void draw_number(cairo_t *cr, Geom::Point pos, int num, std::string name) {
     draw_text(cr, pos, number.str().c_str(), true);
 }
 
+void draw_number(cairo_t *cr, Geom::Point pos, unsigned num, std::string name) {
+    std::ostringstream number;
+    if (name.size())
+	number << name;
+    number << num;
+    draw_text(cr, pos, number.str().c_str(), true);
+}
+
+void draw_number(cairo_t *cr, Geom::Point pos, double num, std::string name) {
+    std::ostringstream number;
+    if (name.size())
+	number << name;
+    number << num;
+    draw_text(cr, pos, number.str().c_str(), true);
+}
+
 //Framework Accessors
 void redraw() { gtk_widget_queue_draw(GTK_WIDGET(window)); }
 

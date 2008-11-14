@@ -50,7 +50,7 @@ SBasis2d x2_plus_y2_1(){
 */
     SBasis2d result(Linear2d(-1,0,0,1));//x+y-1    
     result.push_back(Linear2d(-1,-1,-1,-1));
-    result.push_back(Linear2d(-1,-1,-1,-1));
+    result.push_back(Linear2d(-4,-1,-1,-1));
     result.push_back(Linear2d(0,0,0,0));
     result.us = 2;
     result.vs = 2;
@@ -218,8 +218,10 @@ public:
         true_solution[X] = cos(SBasis(Linear(0,3.141592/2)));
         true_solution[Y] = sin(SBasis(Linear(0,3.141592/2)));
         Piecewise<SBasis> zero = Piecewise<SBasis>(SBasis(Linear(0.)));
-        Geom::Point A(cos(tA*M_PI/2), sin(tA*M_PI/2));// = true_solution(tA);
-        Geom::Point B(cos(tB*M_PI/2), sin(tB*M_PI/2));// = true_solution(tB);
+        //Geom::Point A(cos(tA*M_PI/2), sin(tA*M_PI/2));// = true_solution(tA);
+        //Geom::Point B(cos(tB*M_PI/2), sin(tB*M_PI/2));// = true_solution(tB);
+        Geom::Point A = true_solution(tA);
+        Geom::Point B = true_solution(tB);
         Point dA(-sin(tA*M_PI/2), cos(tA*M_PI/2));
         Geom::Point dB(-sin(tB*M_PI/2), cos(tB*M_PI/2));
         SBasis2d dfdu = partial_derivative(f, 0);

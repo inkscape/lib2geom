@@ -99,7 +99,8 @@ public:
 
 
         {
-            double scale = 10./fabs(als_arc_length - integrating_arc_length);
+            double err = fabs(als_arc_length - integrating_arc_length);
+            double scale = 10./err;
             Piecewise<D2<SBasis> > dM = derivative(Piecewise<D2<SBasis> >(B));
             Piecewise<SBasis> ddM = dot(dM,dM);
             Piecewise<SBasis> dMlength = sqrt(ddM,tol,3);
@@ -110,7 +111,12 @@ public:
             for(double t = 0; t < 1; t += 0.01) {
                 cairo_line_to(cr, org + Point(t*plot_width, scale*(sqrt(ddM.valueAt(t)) - dMlength.valueAt(t))));
             }
+            cairo_move_to(cr, org);
+            cairo_line_to(cr, org+Point(plot_width, 0));
             cairo_stroke(cr);
+            
+            draw_number(cr, org, scale);
+            
         }
 
 

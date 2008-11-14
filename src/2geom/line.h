@@ -73,6 +73,12 @@ class Line
 		: m_origin(_ray.origin()), m_versor(_ray.versor())
 	{
 	}
+    
+    static Line fromNormalDistance(Point n, double c) {
+        Point P = n*c/(dot(n,n));
+    
+        return Line(P, P+rot90(n));
+    }
 
 	Line* duplicate() const
 	{
