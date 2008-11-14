@@ -26,6 +26,33 @@ struct PtLexCmp{
     }
 };
 
+IntersectorKind 
+line_intersection(Geom::Point const &n0, double const d0,
+                  Geom::Point const &n1, double const d1,
+                  Geom::Point &result)
+{
+    double denominator = dot(Geom::rot90(n0), n1);
+    double X = n1[Geom::Y] * d0 -
+        n0[Geom::Y] * d1;
+    /* X = (-d1, d0) dot (n0[Y], n1[Y]) */
+
+    if (denominator == 0) {
+        if ( X == 0 ) {
+            return coincident;
+        } else {
+            return parallel;
+        }
+    }
+
+    double Y = n0[Geom::X] * d1 -
+        n1[Geom::X] * d0;
+
+    result = Geom::Point(X, Y) / denominator;
+
+    return intersects;
+}
+
+
 // draw ax + by + c = 0
 void draw_line_in_rect(cairo_t*cr, Rect &r, Point n, double c) {
     vector<Geom::Point> result;
@@ -295,19 +322,19 @@ AAF trial_eval(AAF x, AAF y) {
 
 AAF xaxis(AAF x, AAF y) {
     y = y-origin[1];
-    y = y/s;
+    y = y/scale;
     return y;
 }
 
 AAF xaxis2(AAF x, AAF y) {
     y = y-origin[1];
-    y = y/s;
+    y = y/scale;
     return y-4;
 }
 
 AAF yaxis(AAF x, AAF y) {
     x = x-origin[0];
-    x = x/s;
+    x = x/scale;
     return x;
 }
 
