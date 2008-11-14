@@ -464,12 +464,11 @@ public:
     }
     void scroll(GdkEventScroll* e) {
         if (e->direction == GDK_SCROLL_UP) {
-            cout << "out\n";
             scale /= 1.2;
         } else if (e->direction == GDK_SCROLL_DOWN) {
             scale *= 1.2;
-            cout << "in\n";
         }
+        redraw();
     }
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         cairo_set_source_rgba (cr, 0., 0., 0, 1);
