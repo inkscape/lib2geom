@@ -21,14 +21,43 @@ void find_intersections(std::vector<std::pair<double, double> > &xs,
     sbasis_to_bezier(BezA, A);
     sbasis_to_bezier(BezB, B);
     
+    xs.clear();
+    
     find_intersections(xs, BezA, BezB);
 }
 
-void find_self_intersections(std::vector<std::pair<double, double> > &all_si,
-                             D2<SBasis> const & A) {
-    vector<Point> Sb;
-    sbasis_to_bezier(Sb, A);
+/*
+ * split the curve at the midpoint, returning an array with the two parts
+ * Temporary storage is minimized by using part of the storage for the result
+ * to hold an intermediate value until it is no longer needed.
+ */
+void split(vector<Point> const &p, double t, 
+           vector<Point> &left, vector<Point> &right) {
+    const unsigned sz = p.size();
+    Geom::Point Vtemp[sz][sz];
 
+    /* Copy control points	*/
+    std::copy(p.begin(), p.end(), Vtemp[0]);
+
+    /* Triangle computation	*/
+    for (unsigned i = 1; i < sz; i++) {
+        for (unsigned j = 0; j < sz - i; j++) {
+            Vtemp[i][j] = lerp(t, Vtemp[i-1][j], Vtemp[i-1][j+1]);
+        }
+    }
+
+    left.resize(sz);
+    right.resize(sz);
+    for (unsigned j = 0; j < sz; j++)
+        left[j]  = Vtemp[j][0];
+    for (unsigned j = 0; j < sz; j++)
+        right[j] = Vtemp[sz-1-j][j];
+}
+
+
+void
+find_self_intersections(std::vector<std::pair<double, double> > &xs,
+                        D2<SBasis> const & A) {
     vector<double> dr = roots(derivative(A[X]));
     {
         vector<double> dyr = roots(derivative(A[Y]));
@@ -42,43 +71,39 @@ void find_self_intersections(std::vector<std::pair<double, double> > &all_si,
 
     vector<vector<Point> > pieces;
     {
+        vector<Point> in, l, r;
+        sbasis_to_bezier(in, A);
         for(unsigned i = 0; i < dr.size()-1; i++) {
-            vector<Point> in = Sb;
-            detail::bezier_clipping::portion(in, Interval(dr[i], dr[i+1]));
-            
-            pieces.push_back(in);
+            split(in, (dr[i+1]-dr[i]) / (1 - dr[i]), l, r);
+            pieces.push_back(l);
+            in = r;
         }
     }
-    
     for(unsigned i = 0; i < dr.size()-1; i++) {
-        // todo: check that this presumption that no two sequential segments can intersect.
-        for(unsigned j = i+2; j < dr.size()-1; j++) {
+        for(unsigned j = i+1; j < dr.size()-1; j++) {
             std::vector<std::pair<double, double> > section;
             
             find_intersections( section, pieces[i], pieces[j]);
             for(unsigned k = 0; k < section.size(); k++) {
                 double l = section[k].first;
                 double r = section[k].second;
-// This is not needed if j starts at i+2, which works in the toy, but may not be exactly correct. // XXX: This condition will prune out false positives, but it might create some false negatives.  Todo: Confirm it is correct.
-                if(j == i+1) {
-                    std::cout << j << ", " << l << ", " << r << std::endl;
+// XXX: This condition will prune out false positives, but it might create some false negatives.  Todo: Confirm it is correct.
+                if(j == i+1)
                     if((l == 1) && (r == 0))
                         continue;
-                }
-                all_si.push_back(std::make_pair((1-l)*dr[i] + l*dr[i+1],
+                xs.push_back(std::make_pair((1-l)*dr[i] + l*dr[i+1],
                                                 (1-r)*dr[j] + r*dr[j+1]));
             }
         }
     }
 
-    // Because i is in order, all_si should be roughly already in order?
-    //sort(all_si.begin(), all_si.end());
-    //unique(all_si.begin(), all_si.end());
-
+    // Because i is in order, xs should be roughly already in order?
+    //sort(xs.begin(), xs.end());
+    //unique(xs.begin(), xs.end());
 }
 
 
- #include <gsl/gsl_multiroots.h>
+#include <gsl/gsl_multiroots.h>
  
  
 
@@ -104,7 +129,7 @@ intersect_polish_f (const gsl_vector * x, void *params,
     return GSL_SUCCESS;
 }
 
-typedef union dbl_64{
+union dbl_64{
     long long i64;
     double d64;
 };

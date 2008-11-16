@@ -61,8 +61,7 @@ class CurveIntersect : public Toy
         cairo_d2_sb(cr, B);
         cairo_stroke(cr);
 
-
-        find_intersections(xs, pshA.pts, pshB.pts, m_precision);
+        find_intersections_bezier_clipping(xs, pshA.pts, pshB.pts, m_precision);
         cairo_set_line_width (cr, 0.3);
         cairo_set_source_rgba (cr, 0.0, 0.0, 0.7, 1);
         for (size_t i = 0; i < xs.size(); ++i)

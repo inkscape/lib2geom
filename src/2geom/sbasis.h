@@ -93,6 +93,8 @@ public:
     inline double at1() const{
         if(empty()) return 0; else return (*this)[0][1];
     }
+    
+    int degreesOfFreedom() const { return size()*2;}
 
     double valueAt(double t) const {
         double s = t*(1-t);

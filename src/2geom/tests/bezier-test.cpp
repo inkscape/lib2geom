@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "bezier.h"
 #include "poly.h"
 #include <vector>
@@ -7,11 +9,6 @@ using namespace std;
 
 
 using namespace Geom;
-
-inline std::ostream &operator<< (std::ostream &out_file, const Interval &bo) {
-    out_file << "[" << bo[0] << ", " << bo[1] << "]";
-    return out_file;
-}
 
 // streams out a vector
 template <class T>

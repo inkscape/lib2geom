@@ -1046,7 +1046,7 @@ void find_collinear_normal (std::vector< std::pair<double, double> >& xs,
  *  This routine is based on the Bezier Clipping Algorithm,
  *  see: Sederberg, Nishita, 1990 - Curve intersection using Bezier clipping
  */
-void find_intersections (std::vector< std::pair<double, double> >& xs,
+void find_intersections_bezier_clipping (std::vector< std::pair<double, double> >& xs,
                          std::vector<Point> const& A,
                          std::vector<Point> const& B,
                          double precision)
