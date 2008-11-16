@@ -103,6 +103,7 @@ sbasis.cpp
 sbasis.h
 sbasis-2d.h
 sbasis-2d.cpp
+sbasisN.h
 sbasis-geometric.cpp
 sbasis-geometric.h
 sbasis-math.h

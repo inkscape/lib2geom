@@ -12,7 +12,7 @@ using std::vector;
 using namespace Geom;
 using namespace std;
 
-#define SIZE 3
+#define SIZE 4
 
 static void plot(cairo_t* cr, SBasis const &B,double vscale=1,double a=0,double b=1){
     D2<SBasis> plot;
@@ -68,7 +68,7 @@ class SbOfInterval: public Toy {
     PointHandle adjuster_a[3*SIZE];
     PointHandle adjuster_b[3*SIZE];
 
-    void drawSliders(cairo_t *cr, PointHandle adjuster[], double x, double dx, double y_min, double y_max){
+    void drawSliders(cairo_t *cr, PointHandle adjuster[], double y_min, double y_max){
         for (unsigned i=0; i < size; i++){
             cairo_move_to(cr, Geom::Point(adjuster[3*i].pos[X],y_min));
             cairo_line_to(cr, Geom::Point(adjuster[3*i].pos[X],y_max));
@@ -101,8 +101,8 @@ class SbOfInterval: public Toy {
         double min=150, max=450;
         setupSliders(adjuster_a, 100, 15, min, max);
         setupSliders(adjuster_b, 500, 15, min, max);
-        drawSliders(cr, adjuster_a, 100, 15, min, max);
-        drawSliders(cr, adjuster_b, 500, 15, min, max);
+        drawSliders(cr, adjuster_a, min, max);
+        drawSliders(cr, adjuster_b, min, max);
         cairo_set_line_width (cr, 1);
         cairo_set_source_rgba (cr, 0.2, 0.2, 0.2, 1);
         cairo_stroke(cr);

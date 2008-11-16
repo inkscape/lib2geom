@@ -64,7 +64,7 @@ sbasis-fitting
 self-intersect
 squiggles
 svg-elliptical-arc-test-toy
-uncross
+#uncross
 worms
 winding-test
 sanitize
@@ -86,9 +86,10 @@ sweep
 root-finder-comparer
 curvature-curve
 sb-of-sb
+sb-of-interval
+sbasisdim
 convole
 hatches
-sb-of-interval
 )
 
 
