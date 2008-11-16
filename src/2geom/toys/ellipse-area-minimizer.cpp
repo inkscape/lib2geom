@@ -236,22 +236,32 @@ class EllipseAreaMinimizer : public Toy
     {
         Point toggle_sp( 300, height - 50);
         toggles[0].bounds = Rect( toggle_sp, toggle_sp + Point(135,25) );
-
-        goal_function_type* gf = &area_goal;
-        if (!toggles[0].on) gf = &perimeter_goal;
-        double coeff = minimizer(psh.pts, gf);
-
-        try
-        {
-            e = fitting(psh.pts, coeff);
-        }
-        catch(LogicalError exc)
-        {
-            std::cerr << exc.what() << std::endl;
-            Toy::draw(cr, notify, width, height, save);
-            return;
+        ConvexHull ch(psh.pts);
+        bool non_convex = false;
+        for(int i = 0; i < psh.pts.size(); i++) {
+            if (ch.contains_point(psh.pts[i]))
+                non_convex = true;
         }
 
+        if(non_convex) {
+            Circle circ(ch.boundary);
+            e = Ellipse(circ);
+        } else {
+            goal_function_type* gf = &area_goal;
+            if (!toggles[0].on) gf = &perimeter_goal;
+            double coeff = minimizer(psh.pts, gf);
+            
+            try
+            {
+                e = fitting(psh.pts, coeff);
+            }
+            catch(LogicalError exc)
+            {
+                std::cerr << exc.what() << std::endl;
+                Toy::draw(cr, notify, width, height, save);
+                return;
+            }
+        }
         cairo_set_source_rgba(cr, 0.3, 0.3, 0.3, 1.0);
         cairo_set_line_width (cr, 0.3);
         draw_elliptical_arc_with_cairo( cr,
