@@ -64,7 +64,7 @@ sbasis-fitting
 self-intersect
 squiggles
 svg-elliptical-arc-test-toy
-#uncross
+uncross
 worms
 winding-test
 sanitize
