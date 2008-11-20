@@ -90,6 +90,7 @@ sb-of-interval
 sbasisdim
 convole
 hatches
+rdm-area
 )
 
 
