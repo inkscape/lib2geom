@@ -46,6 +46,7 @@
 #include <vector>
 #include <algorithm>
 #include <utility>
+//#include <iomanip>
 
 
 
@@ -365,6 +366,25 @@ void portion (std::vector<Point> & B , Interval const& I)
 
 
 ////////////////////////////////////////////////////////////////////////////////
+// tags
+
+struct intersection_point_tag;
+struct collinear_normal_tag;
+template <typename Tag>
+void clip(Interval & dom,
+          std::vector<Point> const& A,
+          std::vector<Point> const& B);
+template <typename Tag>
+void iterate(std::vector<Interval>& domsA,
+             std::vector<Interval>& domsB,
+             std::vector<Point> const& A,
+             std::vector<Point> const& B,
+             Interval const& domA,
+             Interval const& domB,
+             double precision );
+
+
+////////////////////////////////////////////////////////////////////////////////
 // intersection
 
 /*
@@ -408,6 +428,28 @@ void pick_orientation_line (std::vector<double> & l,
     }
     orientation_line(l, c, 0, i);
     //std::cerr << "i = " << i << std::endl;
+}
+
+/*
+ *  Make up an orientation line for constant bezier curve;
+ *  the orientation line is made up orthogonal to the other curve base line;
+ *  the line is returned in the output parameter "l" in the form of a 3 element
+ *  vector : l[0] * x + l[1] * y + l[2] == 0; the line is normalized.
+ */
+inline
+void orthogonal_orientation_line (std::vector<double> & l,
+                                  std::vector<Point> const& c,
+                                  Point const& p)
+{
+    if (is_constant(c))
+    {
+        // this should never happen
+        assert(!is_constant(c));
+    }
+    std::vector<Point> ol(2);
+    ol[0] = p;
+    ol[1] = (c.back() - c.front()).cw() + p;
+    orientation_line(l, ol, 0, 1);
 }
 
 /*
@@ -482,7 +524,7 @@ void clip_interval (Interval& dom,
     bool plower, phigher;
     bool clower, chigher;
     double t, tmin = 1, tmax = 0;
-    //std::cerr << "bound : " << bound << std::endl;
+//    std::cerr << "bound : " << bound << std::endl;
 
     plower = (p[0][Y] < bound.min());
     phigher = (p[0][Y] > bound.max());
@@ -490,8 +532,8 @@ void clip_interval (Interval& dom,
     {
         if (tmin > p[0][X])  tmin = p[0][X];
         if (tmax < p[0][X])  tmax = p[0][X];
-        //std::cerr << "0 : inside " << p[0]
-        //          << " : tmin = " << tmin << ", tmax = " << tmax << std::endl;
+//        std::cerr << "0 : inside " << p[0]
+//                  << " : tmin = " << tmin << ", tmax = " << tmax << std::endl;
     }
 
     for (size_t i = 1; i < p.size(); ++i)
@@ -502,9 +544,9 @@ void clip_interval (Interval& dom,
         {
             if (tmin > p[i][X])  tmin = p[i][X];
             if (tmax < p[i][X])  tmax = p[i][X];
-            //std::cerr << i << " : inside " << p[i]
-            //          << " : tmin = " << tmin << ", tmax = " << tmax
-            //          << std::endl;
+//            std::cerr << i << " : inside " << p[i]
+//                      << " : tmin = " << tmin << ", tmax = " << tmax
+//                      << std::endl;
         }
         if (clower != plower)  // cross the lower bound
         {
@@ -512,9 +554,9 @@ void clip_interval (Interval& dom,
             if (tmin > t)  tmin = t;
             if (tmax < t)  tmax = t;
             plower = clower;
-            //std::cerr << i << " : lower " << p[i]
-            //          << " : tmin = " << tmin << ", tmax = " << tmax
-            //          << std::endl;
+//            std::cerr << i << " : lower " << p[i]
+//                      << " : tmin = " << tmin << ", tmax = " << tmax
+//                      << std::endl;
         }
         if (chigher != phigher)  // cross the upper bound
         {
@@ -522,9 +564,9 @@ void clip_interval (Interval& dom,
             if (tmin > t)  tmin = t;
             if (tmax < t)  tmax = t;
             phigher = chigher;
-            //std::cerr << i << " : higher " << p[i]
-            //          << " : tmin = " << tmin << ", tmax = " << tmax
-            //          << std::endl;
+//            std::cerr << i << " : higher " << p[i]
+//                      << " : tmin = " << tmin << ", tmax = " << tmax
+//                      << std::endl;
         }
     }
 
@@ -537,16 +579,16 @@ void clip_interval (Interval& dom,
         t = intersect(p[last], p[0], bound.min());
         if (tmin > t)  tmin = t;
         if (tmax < t)  tmax = t;
-        //std::cerr << "0 : lower " << p[0]
-        //          << " : tmin = " << tmin << ", tmax = " << tmax << std::endl;
+//        std::cerr << "0 : lower " << p[0]
+//                  << " : tmin = " << tmin << ", tmax = " << tmax << std::endl;
     }
     if (chigher != phigher)  // cross the upper bound
     {
         t = intersect(p[last], p[0], bound.max());
         if (tmin > t)  tmin = t;
         if (tmax < t)  tmax = t;
-        //std::cerr << "0 : higher " << p[0]
-        //          << " : tmin = " << tmin << ", tmax = " << tmax << std::endl;
+//        std::cerr << "0 : higher " << p[0]
+//                  << " : tmin = " << tmin << ", tmax = " << tmax << std::endl;
     }
 
     dom[0] = tmin;
@@ -558,14 +600,23 @@ void clip_interval (Interval& dom,
  *  intersection points the new parameter interval for the clipped curve
  *  is returned through the output parameter "dom"
  */
+template <>
 inline
-void intersections_clip (Interval & dom,
-                         std::vector<Point> const& A,
-                         std::vector<Point> const& B)
+void clip<intersection_point_tag> (Interval & dom,
+                                   std::vector<Point> const& A,
+                                   std::vector<Point> const& B)
 {
     std::vector<double> bl(3);
     Interval bound;
-    pick_orientation_line(bl, A);
+    if (is_constant(A))
+    {
+        Point M = middle_point(A.front(), A.back());
+        orthogonal_orientation_line(bl, B, M);
+    }
+    else
+    {
+        pick_orientation_line(bl, A);
+    }
     fat_line_bounds(bound, A, bl);
     clip_interval(dom, B, bl, bound);
 }
@@ -763,10 +814,11 @@ void clip_interval (Interval& dom,
  *  points which have collinear normals; the new parameter interval
  *  for the clipped curve is returned through the output parameter "dom"
  */
+template <>
 inline
-void collinear_normal_clip (Interval & dom,
-                            std::vector<Point> const& A,
-                            std::vector<Point> const& B)
+void clip<collinear_normal_tag> (Interval & dom,
+                                 std::vector<Point> const& A,
+                                 std::vector<Point> const& B)
 {
     std::vector<Point> F;
     make_focus(F, A);
@@ -774,9 +826,6 @@ void collinear_normal_clip (Interval & dom,
 }
 
 
-typedef void clip_fnc_t (Interval &,
-                         std::vector<Point> const&,
-                         std::vector<Point> const&);
 
 const double MAX_PRECISION = 1e-8;
 const double MIN_CLIPPED_SIZE_THRESHOLD = 0.8;
@@ -798,24 +847,25 @@ const Interval H2_INTERVAL(0.5 + MAX_PRECISION, 1.0);
  * The parameter intervals are computed by using a Bezier clipping algorithm,
  * in case the clipping doesn't shrink the initial interval more than 20%,
  * a subdivision step is performed.
- * If during the computation one of the two curve interval length becomes less
- * than MAX_PRECISION the routine exits indipendently by the precision reached
- * in the computation of the other curve interval.
+ * If during the computation both curves collapse to a single point
+ * the routine exits indipendently by the precision reached in the computation
+ * of the curve intervals.
  */
-void iterate (std::vector<Interval>& domsA,
-                   std::vector<Interval>& domsB,
-                   std::vector<Point> const& A,
-                   std::vector<Point> const& B,
-                   Interval const& domA,
-                   Interval const& domB,
-                   double precision,
-                   clip_fnc_t* clip)
+template <>
+void iterate<intersection_point_tag> (std::vector<Interval>& domsA,
+                                      std::vector<Interval>& domsB,
+                                      std::vector<Point> const& A,
+                                      std::vector<Point> const& B,
+                                      Interval const& domA,
+                                      Interval const& domB,
+                                      double precision )
 {
     // in order to limit recursion
     static size_t counter = 0;
     if (domA.extent() == 1 && domB.extent() == 1) counter  = 0;
     if (++counter > 100) return;
 #if VERBOSE
+    std::cerr << std::fixed << std::setprecision(16);
     std::cerr << ">> curve subdision performed <<" << std::endl;
     std::cerr << "dom(A) : " << domA << std::endl;
     std::cerr << "dom(B) : " << domB << std::endl;
@@ -845,7 +895,160 @@ void iterate (std::vector<Interval>& domsA,
 #if VERBOSE
         std::cerr << "iter: " << iter << std::endl;
 #endif
-        clip(dom, *C1, *C2);
+        clip<intersection_point_tag>(dom, *C1, *C2);
+
+        // [1,0] is utilized to represent an empty interval
+        if (dom == EMPTY_INTERVAL)
+        {
+#if VERBOSE
+            std::cerr << "dom: empty" << std::endl;
+#endif
+            return;
+        }
+#if VERBOSE
+        std::cerr << "dom : " << dom << std::endl;
+#endif
+        // all other cases where dom[0] > dom[1] are invalid
+        if (dom.min() >  dom.max())
+        {
+            assert(dom.min() <  dom.max());
+        }
+
+        map_to(*dom2, dom);
+
+        portion(*C2, dom);
+        if (is_constant(*C2) && is_constant(*C1))
+        {
+            Point M1 = middle_point(C1->front(), C1->back());
+            Point M2 = middle_point(C2->front(), C2->back());
+#if VERBOSE
+            std::cerr << "both curves are constant: \n"
+                      << "M1: " << M1 << "\n"
+                      << "M2: " << M2 << std::endl;
+            print(*C2, "C2");
+            print(*C1, "C1");
+#endif
+            if (are_near(M1,M2))
+                break;  // append the new interval
+            else
+                return; // exit without appending any new interval
+        }
+
+
+        // if we have clipped less than 20% than we need to subdive the curve
+        // with the largest domain into two sub-curves
+        if ( dom.extent() > MIN_CLIPPED_SIZE_THRESHOLD)
+        {
+#if VERBOSE
+            std::cerr << "clipped less than 20% : " << dom.extent() << std::endl;
+            std::cerr << "angle(pA) : " << angle(pA) << std::endl;
+            std::cerr << "angle(pB) : " << angle(pB) << std::endl;
+#endif
+            std::vector<Point> pC1, pC2;
+            Interval dompC1, dompC2;
+            if (dompA.extent() > dompB.extent())
+            {
+                pC1 = pC2 = pA;
+                portion(pC1, H1_INTERVAL);
+                portion(pC2, H2_INTERVAL);
+                dompC1 = dompC2 = dompA;
+                map_to(dompC1, H1_INTERVAL);
+                map_to(dompC2, H2_INTERVAL);
+                iterate<intersection_point_tag>(domsA, domsB, pC1, pB,
+                                                dompC1, dompB, precision);
+                iterate<intersection_point_tag>(domsA, domsB, pC2, pB,
+                                                dompC2, dompB, precision);
+            }
+            else
+            {
+                pC1 = pC2 = pB;
+                portion(pC1, H1_INTERVAL);
+                portion(pC2, H2_INTERVAL);
+                dompC1 = dompC2 = dompB;
+                map_to(dompC1, H1_INTERVAL);
+                map_to(dompC2, H2_INTERVAL);
+                iterate<intersection_point_tag>(domsB, domsA, pC1, pA,
+                                                dompC1, dompA, precision);
+                iterate<intersection_point_tag>(domsB, domsA, pC2, pA,
+                                                dompC2, dompA, precision);
+            }
+            return;
+        }
+
+        std::swap(C1, C2);
+        std::swap(dom1, dom2);
+#if VERBOSE
+        std::cerr << "dom(pA) : " << dompA << std::endl;
+        std::cerr << "dom(pB) : " << dompB << std::endl;
+#endif
+    }
+    domsA.push_back(dompA);
+    domsB.push_back(dompB);
+}
+
+
+/*
+ * iterate
+ *
+ * input:
+ * A, B: control point sets of two bezier curves
+ * domA, domB: real parameter intervals of the two curves
+ * precision: required computational precision of the returned parameter ranges
+ * output:
+ * domsA, domsB: sets of parameter intervals
+ *
+ * The parameter intervals are computed by using a Bezier clipping algorithm,
+ * in case the clipping doesn't shrink the initial interval more than 20%,
+ * a subdivision step is performed.
+ * If during the computation one of the two curve interval length becomes less
+ * than MAX_PRECISION the routine exits indipendently by the precision reached
+ * in the computation of the other curve interval.
+ */
+template <>
+void iterate<collinear_normal_tag> (std::vector<Interval>& domsA,
+                                    std::vector<Interval>& domsB,
+                                    std::vector<Point> const& A,
+                                    std::vector<Point> const& B,
+                                    Interval const& domA,
+                                    Interval const& domB,
+                                    double precision)
+{
+    // in order to limit recursion
+    static size_t counter = 0;
+    if (domA.extent() == 1 && domB.extent() == 1) counter  = 0;
+    if (++counter > 100) return;
+#if VERBOSE
+    std::cerr << std::fixed << std::setprecision(16);
+    std::cerr << ">> curve subdision performed <<" << std::endl;
+    std::cerr << "dom(A) : " << domA << std::endl;
+    std::cerr << "dom(B) : " << domB << std::endl;
+//    std::cerr << "angle(A) : " << angle(A) << std::endl;
+//    std::cerr << "angle(B) : " << angle(B) << std::endl;
+#endif
+
+    if (precision < MAX_PRECISION)
+        precision = MAX_PRECISION;
+
+    std::vector<Point> pA = A;
+    std::vector<Point> pB = B;
+    std::vector<Point>* C1 = &pA;
+    std::vector<Point>* C2 = &pB;
+
+    Interval dompA = domA;
+    Interval dompB = domB;
+    Interval* dom1 = &dompA;
+    Interval* dom2 = &dompB;
+
+    Interval dom;
+
+    size_t iter = 0;
+    while (++iter < 100
+            && (dompA.extent() >= precision || dompB.extent() >= precision))
+    {
+#if VERBOSE
+        std::cerr << "iter: " << iter << std::endl;
+#endif
+        clip<collinear_normal_tag>(dom, *C1, *C2);
 
         // [1,0] is utilized to represent an empty interval
         if (dom == EMPTY_INTERVAL)
@@ -867,7 +1070,7 @@ void iterate (std::vector<Interval>& domsA,
         map_to(*dom2, dom);
 
         // it's better to stop before losing computational precision
-        if (dom2->extent() <= MAX_PRECISION)
+        if (iter > 1 && (dom2->extent() <= MAX_PRECISION))
         {
 #if VERBOSE
             std::cerr << "beyond max precision limit" << std::endl;
@@ -876,13 +1079,15 @@ void iterate (std::vector<Interval>& domsA,
         }
 
         portion(*C2, dom);
-        if (is_constant(*C2))
+        if (iter > 1 && is_constant(*C2))
         {
 #if VERBOSE
-            std::cerr << "new curve portion is constant" << std::endl;
+            std::cerr << "new curve portion pC1 is constant" << std::endl;
 #endif
             break;
         }
+
+
         // if we have clipped less than 20% than we need to subdive the curve
         // with the largest domain into two sub-curves
         if ( dom.extent() > MIN_CLIPPED_SIZE_THRESHOLD)
@@ -902,7 +1107,7 @@ void iterate (std::vector<Interval>& domsA,
                 }
                 pC1 = pC2 = pA;
                 portion(pC1, H1_INTERVAL);
-                if (is_constant(pC1))
+                if (false && is_constant(pC1))
                 {
 #if VERBOSE
                     std::cerr << "new curve portion pC1 is constant" << std::endl;
@@ -920,8 +1125,10 @@ void iterate (std::vector<Interval>& domsA,
                 dompC1 = dompC2 = dompA;
                 map_to(dompC1, H1_INTERVAL);
                 map_to(dompC2, H2_INTERVAL);
-                iterate(domsA, domsB, pC1, pB, dompC1, dompB, precision, clip);
-                iterate(domsA, domsB, pC2, pB, dompC2, dompB, precision, clip);
+                iterate<collinear_normal_tag>(domsA, domsB, pC1, pB,
+                                              dompC1, dompB, precision);
+                iterate<collinear_normal_tag>(domsA, domsB, pC2, pB,
+                                              dompC2, dompB, precision);
             }
             else
             {
@@ -949,8 +1156,10 @@ void iterate (std::vector<Interval>& domsA,
                 dompC1 = dompC2 = dompB;
                 map_to(dompC1, H1_INTERVAL);
                 map_to(dompC2, H2_INTERVAL);
-                iterate(domsB, domsA, pC1, pA, dompC1, dompA, precision, clip);
-                iterate(domsB, domsA, pC2, pA, dompC2, dompA, precision, clip);
+                iterate<collinear_normal_tag>(domsB, domsA, pC1, pA,
+                                              dompC1, dompA, precision);
+                iterate<collinear_normal_tag>(domsB, domsA, pC2, pA,
+                                              dompC2, dompA, precision);
             }
             return;
         }
@@ -979,15 +1188,15 @@ void iterate (std::vector<Interval>& domsA,
  *  This routine is based on the Bezier Clipping Algorithm,
  *  see: Sederberg - Computer Aided Geometric Design
  */
+template <typename Tag>
 void get_solutions (std::vector< std::pair<double, double> >& xs,
                     std::vector<Point> const& A,
                     std::vector<Point> const& B,
-                    double precision,
-                    clip_fnc_t* clip)
+                    double precision)
 {
     std::pair<double, double> ci;
     std::vector<Interval> domsA, domsB;
-    iterate (domsA, domsB, A, B, UNIT_INTERVAL, UNIT_INTERVAL, precision, clip);
+    iterate<Tag> (domsA, domsB, A, B, UNIT_INTERVAL, UNIT_INTERVAL, precision);
     if (domsA.size() != domsB.size())
     {
         assert (domsA.size() == domsB.size());
@@ -1030,13 +1239,13 @@ void find_collinear_normal (std::vector< std::pair<double, double> >& xs,
                             double precision)
 {
     using detail::bezier_clipping::get_solutions;
-    using detail::bezier_clipping::collinear_normal_clip;
-    get_solutions(xs, A, B, precision, &collinear_normal_clip);
+    using detail::bezier_clipping::collinear_normal_tag;
+    get_solutions<collinear_normal_tag>(xs, A, B, precision);
 }
 
 
 /*
- * find_intersection
+ * find_intersections_bezier_clipping
  *
  *  input: A, B       - set of control points of two Bezier curve
  *  input: precision  - required precision of computation
@@ -1052,8 +1261,8 @@ void find_intersections_bezier_clipping (std::vector< std::pair<double, double> 
                          double precision)
 {
     using detail::bezier_clipping::get_solutions;
-    using detail::bezier_clipping::intersections_clip;
-    get_solutions(xs, A, B, precision, &intersections_clip);
+    using detail::bezier_clipping::intersection_point_tag;
+    get_solutions<intersection_point_tag>(xs, A, B, precision);
 }
 
 }  // end namespace Geom
