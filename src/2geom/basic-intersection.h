@@ -42,7 +42,7 @@
 #include <vector>
 #include <utility>
 
-#define USE_RECURSIVE_INTERSECTOR 1
+#define USE_RECURSIVE_INTERSECTOR 0
 
 namespace Geom {
 
