@@ -20,6 +20,7 @@ test-cg
 unit-test-sbasis
 root-find-ut
 implicitization
+time-ops
 )
 
 OPTION(2GEOM_UNIT_TESTS
