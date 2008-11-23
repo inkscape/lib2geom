@@ -10,13 +10,9 @@ using namespace std;
 
 class Timer{
 public:
-  Timer() {
-#ifdef _POSIX_THREAD_CPUTIME
-    init_cputime();
-#else
-    init_realtime();
-#endif
-  }
+  Timer() {}
+  // note that CPU time is tracked per-thread, so the timer is only useful
+  // in the thread it was start()ed from.
   void start() {
     usec(start_time);
   }
@@ -38,23 +34,17 @@ public:
     sched_yield();
   }
 private:
-#ifdef _POSIX_THREAD_CPUTIME
-  void init_cputime() {
-    if (pthread_getcpuclockid(pthread_self(), &clock) != 0) {
-      init_realtime();
-    }
-  }
-#endif
-  void init_realtime() {
-#ifdef CLOCK_MONOTONIC
-    clock = CLOCK_MONOTONIC;
-#else
-    clock = CLOCK_REALTIME;
-#endif
-  }
   long long start_time;
   struct timespec ts;
-  clockid_t clock;
+#ifdef _POSIX_THREAD_CPUTIME
+  static const clockid_t clock = CLOCK_THREAD_CPUTIME_ID;
+#else
+# ifdef CLOCK_MONOTONIC
+  static const clockid_t clock = CLOCK_MONOTONIC;
+# else
+  static const clockid_t clock = CLOCK_REALTIME;
+# endif
+#endif
 };
 
 int estimate_useful_window() 
