@@ -1,16 +1,22 @@
 #include <sys/time.h>
 #include <iostream>
 #include <vector>
+#include <time.h>
+#include <sched.h>
 
-const long long TICKS_PER_SECOND = 1000000L;
+const long long US_PER_SECOND = 1000000L;
+const long long NS_PER_US = 1000L;
 using namespace std;
 
 class Timer{
 public:
-  struct timeval tv;
-  struct timezone tz;
-  long long start_time;
-  Timer() {}
+  Timer() {
+#ifdef _POSIX_THREAD_CPUTIME
+    init_cputime();
+#else
+    init_realtime();
+#endif
+  }
   void start() {
     usec(start_time);
   }
@@ -24,13 +30,31 @@ public:
     return us - start_time;
   }
   void usec(long long &us) {
-    ::gettimeofday(&tv, &tz);
-    us = tv.tv_sec * TICKS_PER_SECOND + tv.tv_usec;
+    clock_gettime(clock, &ts);
+    us = ts.tv_sec * US_PER_SECOND + ts.tv_nsec / NS_PER_US;
   }
   /** Ask the OS nicely for a big time slice */
   void ask_for_timeslice() {
-    usleep(0);
+    sched_yield();
   }
+private:
+#ifdef _POSIX_THREAD_CPUTIME
+  void init_cputime() {
+    if (pthread_getcpuclockid(pthread_self(), &clock) != 0) {
+      init_realtime();
+    }
+  }
+#endif
+  void init_realtime() {
+#ifdef CLOCK_MONOTONIC
+    clock = CLOCK_MONOTONIC;
+#else
+    clock = CLOCK_REALTIME;
+#endif
+  }
+  long long start_time;
+  struct timespec ts;
+  clockid_t clock;
 };
 
 int estimate_useful_window() 
