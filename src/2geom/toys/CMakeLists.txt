@@ -91,6 +91,7 @@ sbasisdim
 convole
 hatches
 rdm-area
+ray-sorting-test
 )
 
 

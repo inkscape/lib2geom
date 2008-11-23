@@ -65,10 +65,10 @@ bool SBasis::isFinite() const {
 There is an elegant way to compute the value and n derivatives for a polynomial using a variant of horner's rule.  Someone will someday work out how for sbasis.
 */
 std::vector<double> SBasis::valueAndDerivatives(double t, unsigned n) const {
-    std::vector<double> ret(n);
-    ret.push_back(valueAt(t));
+    std::vector<double> ret(n+1);
+    ret[0] = valueAt(t);
     SBasis tmp = *this;
-    for(unsigned i = 0; i < n; i++) {
+    for(unsigned i = 1; i < n+1; i++) {
         tmp.derive();
         ret[i+1] = tmp.valueAt(t);
     }
