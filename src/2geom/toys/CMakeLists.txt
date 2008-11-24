@@ -61,6 +61,7 @@ quad-toy
 sb-math-test
 sb-to-bez
 sbasis-fitting
+scribble
 self-intersect
 squiggles
 svg-elliptical-arc-test-toy
