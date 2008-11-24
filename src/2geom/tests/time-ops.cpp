@@ -1,11 +1,14 @@
 #include <sys/time.h>
 #include <iostream>
 #include <vector>
+#include <algorithm>
+#include <assert.h>
 #include <time.h>
 #include <sched.h>
 
 const long long US_PER_SECOND = 1000000L;
 const long long NS_PER_US = 1000L;
+
 using namespace std;
 
 class Timer{
@@ -57,17 +60,19 @@ int estimate_useful_window()
     tm.start();
     for(int i = 0; i < window; i++) {}
     long long  base_line = tm.lap();
-    if(base_line > 1000)
-      return window;
+    if(base_line > 10000 and window > 10)
+      return window/10;
+    window *= 2;
   }
 }
 
 template <typename T>
 double robust_timer(T const &t) {
-  int  base_rate = 100000;
+  static int  base_rate = estimate_useful_window();
+  cout << "base line iterations:" << base_rate << endl;
   double best = 0, sum = 0;
   vector<double> results;
-  const int n_trials = 5;
+  const int n_trials = 20;
   results.reserve(n_trials);
   for(int trials = 0; trials < n_trials; trials++) {
     Timer tm;
@@ -83,23 +88,51 @@ double robust_timer(T const &t) {
   }
   double resS = 0;
   double resN = 0;
-  double ave = sum/n_trials;
-  //cout << ave << endl;
+  sort(results.begin(), results.end());
+  double ave = results[results.size()/2];//sum/n_trials; // median
+  cout << "median:" << ave << endl;
+  double least = ave;
   for(int i = 0; i < n_trials; i++) {
     double dt = results[i];
-    if(dt <= ave) {
+    if(dt <= ave*1.1) {
       resS += dt;
       resN += 1;
+      if(least < dt)
+	least = dt;
     }
   }
-  return resS / resN;
+
+  double filtered_ave = resS / resN;
+  assert (least > filtered_ave*0.7); // If this throws something was really screwy
+  return filtered_ave;
 }
 
 struct nop{
   void operator()() const {}
 };
 
-int main(int argc, char** argv) {
+#define degenerate_imported 1
+#include "degenerate.cpp"
+using namespace Geom;
 
+struct add{
+  SBasis a, b;
+  void operator()() const {
+    SBasis c = a + b;
+  }
+};
+
+int main(int /*argc*/, char** /*argv*/) {
+  
   cout << "nop:" << robust_timer(nop()) << "us" << endl;
+  
+  vector<SBasis> sbs;
+  generate_random_sbasis(sbs);
+  add A;
+  A.a = sbs[0];
+  A.b = sbs[1];
+  cout << "add:" 
+       << A.a.size() << "," 
+       << A.b.size() << "; " 
+       << robust_timer(A) << "us" << endl;
 }
