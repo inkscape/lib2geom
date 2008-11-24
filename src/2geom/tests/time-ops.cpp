@@ -67,10 +67,10 @@ int estimate_useful_window()
 }
 
 template <typename T>
-double robust_timer(T const &t) {
+double robust_timer(T &t) {
   static int  base_rate = estimate_useful_window();
-  cout << "base line iterations:" << base_rate << endl;
-  double best = 0, sum = 0;
+  //cout << "base line iterations:" << base_rate << endl;
+  double sum = 0;
   vector<double> results;
   const int n_trials = 20;
   results.reserve(n_trials);
@@ -84,13 +84,13 @@ double robust_timer(T const &t) {
     double individual_time = lap_time/base_rate;
     sum += individual_time;
     results.push_back(individual_time);
-    cout << individual_time << endl;
+    //cout << individual_time << endl;
   }
   double resS = 0;
   double resN = 0;
   sort(results.begin(), results.end());
   double ave = results[results.size()/2];//sum/n_trials; // median
-  cout << "median:" << ave << endl;
+  //cout << "median:" << ave << endl;
   double least = ave;
   for(int i = 0; i < n_trials; i++) {
     double dt = results[i];
@@ -115,24 +115,57 @@ struct nop{
 #include "degenerate.cpp"
 using namespace Geom;
 
+template <typename T>
 struct add{
-  SBasis a, b;
-  void operator()() const {
-    SBasis c = a + b;
+  T a, b;
+  void operator()() {
+    T c = a + b;
   }
 };
 
+template <typename T>
+struct add_mutate{
+  T a, b;
+  void operator()() {
+    a += b;
+  }
+};
+
+template <typename T>
+void basic_arith(T a, T b) {
+  {
+    add<T> A;
+    A.a = a;
+    A.b = b;
+    cout << "add:" 
+	 << robust_timer(A) << "us" << endl;
+  }
+  {
+    add_mutate<T> A;
+    A.a = a;
+    A.b = b;
+    cout << "add_mutate:" 
+	 << robust_timer(A) << "us" << endl;
+  }
+  
+}
+
+#include <valarray>
+
 int main(int /*argc*/, char** /*argv*/) {
   
-  cout << "nop:" << robust_timer(nop()) << "us" << endl;
-  
+  {
+    nop N;
+    cout << "nop:" << robust_timer(N) << "us" << endl;
+  }
+
   vector<SBasis> sbs;
+  valarray<double> va(4), vb(4);
   generate_random_sbasis(sbs);
-  add A;
-  A.a = sbs[0];
-  A.b = sbs[1];
-  cout << "add:" 
-       << A.a.size() << "," 
-       << A.b.size() << "; " 
-       << robust_timer(A) << "us" << endl;
+  cout << "double\n";
+  basic_arith(sbs[0][0][0], sbs[1][0][0]);
+  cout << "valarray\n";
+  basic_arith(va, vb);
+  cout << "SBasis\n";
+  basic_arith(sbs[0], sbs[1]);
 }
