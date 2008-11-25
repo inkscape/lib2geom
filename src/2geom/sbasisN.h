@@ -87,7 +87,7 @@ public:
     MultiDegree(unsigned const idx, unsigned const sizes[]){
         unsigned q = idx;
         for (unsigned i = n-1; i >0; i--) {
-            div_t d = div(q, sizes[i]);
+            div_t d = std::div(int(q), int(sizes[i]));
             p[i] = d.rem;
             q = d.quot;
         }

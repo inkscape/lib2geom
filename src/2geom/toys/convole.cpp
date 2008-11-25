@@ -34,12 +34,12 @@ SBasis integral(SBasis const &c) {
     a[0] = Linear(0,0);
 
     for(unsigned k = 1; k < c.size() + 1; k++) {
-        double ahat = -Tri(c[k-1])/(2*k);
-        a[k] = Hat(ahat);
+        double ahat = -c[k-1].tri()/(2*k);
+        a[k][0] = a[k][1] = ahat;
     }
     double aTri = 0;
     for(int k = c.size()-1; k >= 0; k--) {
-        aTri = (Hat(c[k]).d + (k+1)*aTri/2)/(2*k+1);
+        aTri = (c[k].hat() + (k+1)*aTri/2)/(2*k+1);
         a[k][0] -= aTri/2;
         a[k][1] += aTri/2;
     }
@@ -126,7 +126,7 @@ Piecewise<SBasis> convole(SBasisOf<double> const &f, Interval dom_f,
     
     result.cuts.push_back(dom_f.min()+dom_g.min());
     //Note: we know dom_f.extent() >= dom_g.extent()!!
-    double rho = dom_f.extent()/dom_g.extent();
+    //double rho = dom_f.extent()/dom_g.extent();
     double t0 = dom_g.min()/dom_f.extent();
     double t1 = dom_g.max()/dom_f.extent();
     double t2 = t0+1;
@@ -167,7 +167,7 @@ Piecewise<SBasis> convole(SBasisOf<double> const &f, Interval dom_f,
     return result;
 }
 
-static void dot_plot(cairo_t *cr, Piecewise<D2<SBasis> > const &M, double space=10){
+/*static void dot_plot(cairo_t *cr, Piecewise<D2<SBasis> > const &M, double space=10){
     //double dt=(M[0].cuts.back()-M[0].cuts.front())/space;
     Piecewise<D2<SBasis> > Mperp = rot90(derivative(M)) * 2;
     for( double t = M.cuts.front(); t < M.cuts.back(); t += space) {
@@ -176,7 +176,7 @@ static void dot_plot(cairo_t *cr, Piecewise<D2<SBasis> > const &M, double space=
     }
     cairo_pw_d2_sb(cr, M);
     cairo_stroke(cr);
-}
+    }*/
 
 static void plot_graph(cairo_t *cr, Piecewise<SBasis> const &f,
                        double x_scale=300,

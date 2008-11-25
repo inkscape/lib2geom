@@ -177,6 +177,7 @@ linear_intersect(Point A0, Point A1, Point B0, Point B1,
 }
 
 
+#if 0
 typedef union dbl_64{
     long long i64;
     double d64;
@@ -196,6 +197,7 @@ static double EpsilonOf(double value)
     else
         return value - s.d64;
 }
+#endif
 
 struct rparams {
     Curve const &A;

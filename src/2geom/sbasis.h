@@ -43,11 +43,22 @@
 #include <2geom/utils.h>
 #include <2geom/exception.h>
 
+//#define USE_SBASISN 1
 
-#ifdef USE_SBASIS_OF
+
+#if defined(USE_SBASIS_OF)
 
 #include "sbasis-of.h"
 
+#elif defined(USE_SBASISN)
+
+#include "sbasisN.h"
+namespace Geom{
+
+/*** An empty SBasis is identically 0. */
+class SBasis : public SBasisN<1>;
+
+};
 #else
 
 namespace Geom{

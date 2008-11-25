@@ -230,8 +230,8 @@ SBasis multiply(SBasis const &a, SBasis const &b) {
     c.resize(a.size() + b.size(), Linear(0,0));
     for(unsigned j = 0; j < b.size(); j++) {
         for(unsigned i = j; i < a.size()+j; i++) {
-            double tri = Tri(b[j])*Tri(a[i-j]);
-            c[i+1/*shift*/] += Linear(Hat(-tri));
+            double tri = b[j].tri()*a[i-j].tri();
+            c[i+1/*shift*/] += Linear(-tri);
         }
     }
     for(unsigned j = 0; j < b.size(); j++) {
@@ -258,8 +258,8 @@ SBasis multiply_add(SBasis const &a, SBasis const &b, SBasis c) {
     c.resize(a.size() + b.size(), Linear(0,0));
     for(unsigned j = 0; j < b.size(); j++) {
         for(unsigned i = j; i < a.size()+j; i++) {
-            double tri = Tri(b[j])*Tri(a[i-j]);
-            c[i+1/*shift*/] += Linear(Hat(-tri));
+            double tri = b[j].tri()*a[i-j].tri();
+            c[i+1/*shift*/] += Linear(-tri);
         }
     }
     for(unsigned j = 0; j < b.size(); j++) {
@@ -296,12 +296,12 @@ SBasis integral(SBasis const &c) {
     a[0] = Linear(0,0);
 
     for(unsigned k = 1; k < c.size() + 1; k++) {
-        double ahat = -Tri(c[k-1])/(2*k);
-        a[k] = Hat(ahat);
+        double ahat = -c[k-1].tri()/(2*k);
+        a[k][0] = a[k][1] = ahat;
     }
     double aTri = 0;
     for(int k = c.size()-1; k >= 0; k--) {
-        aTri = (Hat(c[k]).d + (k+1)*aTri/2)/(2*k+1);
+        aTri = (c[k].hat() + (k+1)*aTri/2)/(2*k+1);
         a[k][0] -= aTri/2;
         a[k][1] += aTri/2;
     }
@@ -397,7 +397,7 @@ SBasis reciprocal(Linear const &a, int k) {
     SBasis c;
     assert(!a.isZero());
     c.resize(k, Linear(0,0));
-    double r_s0 = (Tri(a)*Tri(a))/(-a[0]*a[1]);
+    double r_s0 = (a.tri()*a.tri())/(-a[0]*a[1]);
     double r_s0k = 1;
     for(unsigned i = 0; i < (unsigned)k; i++) {
         c[i] = Linear(r_s0k/a[0], r_s0k/a[1]);
@@ -444,7 +444,7 @@ SBasis compose(SBasis const &a, SBasis const &b) {
     SBasis r;
 
     for(int i = a.size()-1; i >= 0; i--) {
-        r = multiply_add(r, s, SBasis(Linear(Hat(a[i][0]))) - b*a[i][0] + b*a[i][1]);
+        r = multiply_add(r, s, SBasis(Linear(a[i][0])) - b*a[i][0] + b*a[i][1]);
     }
     return r;
 }
@@ -460,7 +460,7 @@ SBasis compose(SBasis const &a, SBasis const &b, unsigned k) {
     SBasis r;
 
     for(int i = a.size()-1; i >= 0; i--) {
-        r = multiply_add(r, s, SBasis(Linear(Hat(a[i][0]))) - b*a[i][0] + b*a[i][1]);
+        r = multiply_add(r, s, SBasis(Linear(a[i][0])) - b*a[i][0] + b*a[i][1]);
     }
     r.truncate(k);
     return r;
@@ -567,8 +567,8 @@ It is recommended to use the piecewise version unless you have good reason.
 */
 SBasis sin(Linear b, int k) {
     SBasis s = Linear(std::sin(b[0]), std::sin(b[1]));
-    Tri tr(s[0]);
-    double t2 = Tri(b);
+    double tr = s[0].tri();
+    double t2 = b.tri();
     s.push_back(Linear(std::cos(b[0])*t2 - tr, -std::cos(b[1])*t2 + tr));
 
     t2 *= t2;

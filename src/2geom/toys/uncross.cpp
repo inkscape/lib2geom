@@ -83,11 +83,12 @@ public:
         Curve const* curve;
         D2<SBasis> sb;
         int mark;
+        int id;
     };
     class Crossing{
     public:
-        Piece *A, *B;
-        double crossing_product; // first cross(d^nA, d^nB) for n that is non-zero, or 0 if the two curves are the same
+        vector<int> joins;
+        //double crossing_product; // first cross(d^nA, d^nB) for n that is non-zero, or 0 if the two curves are the same
     };
     vector<Rect> rs;
     vector<Path>* pths;
@@ -307,7 +308,8 @@ class WindingTest: public Toy {
         cairo_set_source_rgb(cr, 1, 1, 0);
         cairo_stroke(cr);
         cairo_restore(cr);
-        mark_verts(cr, path);
+        //mark_verts(cr, path);
+        cairo_stroke(cr);
         cairo_set_line_width(cr, 1);
         //draw_bounds(cr, path);
         if(0) {
@@ -323,7 +325,11 @@ class WindingTest: public Toy {
         vector<Path> &ps(path);
         vector<Rect> rs;
         std::vector<Uncross::Piece> pieces;
+        std::vector<Uncross::Crossing> crosses;
+        int id_counter = 0;
         for(unsigned i = 0; i < ps.size(); i++) {
+            int cross_start = crosses.size();
+            int piece_start = pieces.size();
             for(Path::iterator it = ps[i].begin(); it != ps[i].end(); it++) {
                 Rect bounds = *(it->boundsExact());
                 rs.push_back(bounds);
@@ -336,7 +342,14 @@ class WindingTest: public Toy {
                 pieces.back().parameters = Interval(0,1);
                 pieces.back().sb = it->toSBasis();
                 pieces.back().mark = 0;
+                pieces.back().id = id_counter++;
+                if(it != ps[i].begin() and !crosses.empty())
+                    crosses.back().joins.push_back(pieces.back().id);
+                crosses.push_back(Uncross::Crossing());
+                crosses.back().joins.push_back(pieces.back().id);
             }
+            crosses.back().joins.push_back(pieces[piece_start].id);
+            //crosses[cross_start].joins.push_back(pieces.back().id);
         }
         cairo_restore(cr);
         std::vector<std::vector<unsigned> > prs = sweep_bounds(rs);
@@ -360,6 +373,8 @@ class WindingTest: public Toy {
                     // must split around these points to make new Pieces
                     double A_t_prev = 0;
                     double B_t_prev = 0;
+                    int A_prec_id = A.id;
+                    int B_prec_id = B.id;
                     for(unsigned cv_idx = 0; cv_idx <= xs.size(); cv_idx++) {
                         double A_t = 1;
                         double B_t = 1;
@@ -385,7 +400,12 @@ class WindingTest: public Toy {
                                 new_pieces.back().curve = A.curve;
                                 new_pieces.back().parameters = A_slice;
                                 new_pieces.back().sb = Asb;
+                                new_pieces.back().id = id_counter++;
+                                crosses.push_back(Uncross::Crossing());
+                                crosses.back().joins.push_back(A_prec_id);
+                                crosses.back().joins.push_back(new_pieces.back().id);
                                 A.mark = 1;
+                                A_prec_id = new_pieces.back().id;
                             }
 
                             cout << "Bslice" <<B_slice << endl;
@@ -397,7 +417,12 @@ class WindingTest: public Toy {
                                 new_pieces.back().curve = B.curve;
                                 new_pieces.back().parameters = B_slice;
                                 new_pieces.back().sb = Bsb;
+                                new_pieces.back().id = id_counter++;
+                                crosses.push_back(Uncross::Crossing());
+                                crosses.back().joins.push_back(B_prec_id);
+                                crosses.back().joins.push_back(new_pieces.back().id);
                                 B.mark = 1;
+                                B_prec_id = new_pieces.back().id;
                             }
                         }
                         A_t_prev = A_t;
@@ -413,7 +438,7 @@ class WindingTest: public Toy {
         cairo_restore(cr);
         
         for(unsigned i = 0; i < new_pieces.size(); i++) {
-            cout << new_pieces[i].parameters << endl;
+            cout << new_pieces[i].parameters << ", " <<new_pieces[i].id <<endl;
             cairo_save(cr);
             cairo_rectangle(cr, new_pieces[i].bounds);
             cairo_set_source_rgba(cr, 0,1,0,0.1);
@@ -424,6 +449,16 @@ class WindingTest: public Toy {
             cairo_restore(cr);
             cairo_d2_sb(cr, new_pieces[i].sb);
             cairo_stroke(cr);
+        }
+        
+
+        cout << "crossings:";
+        for(int i = 0; i < crosses.size(); i++) {
+            Uncross::Crossing&cr = crosses[i];
+            for(int j = 0; j < cr.joins.size(); j++) {
+                cout << cr.joins[j] << ", ";
+            }
+            cout << endl;
         }
         
         std::streambuf* cout_buffer = std::cout.rdbuf();

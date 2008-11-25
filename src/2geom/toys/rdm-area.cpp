@@ -140,7 +140,6 @@ void uncross(std::list<Point> &loop){
         a0 = b0;
         b0++;
     }
-    assert(0);
     return;//We should never reach this point.
 }
 //------------------------------------------------------------
