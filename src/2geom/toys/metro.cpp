@@ -252,34 +252,97 @@ public:
     }
 };
 
-void parse_data(vector<vector<Point> >& paths) {
-    ifstream location_file("data/london-locations.csv"), path_file("data/london.txt");
+class build_bounds{
+public:
+    int total_n;
+    Point starting[2];
+    Rect combined;
+    void add_point(Point const &P) {
+        if(total_n < 2) {
+            starting[total_n] = P;
+            total_n += 1;
+            if(total_n == 2)
+                combined = Rect(starting[0], starting[1]);
+        } else {
+            combined.expandTo(P);
+            total_n += 1;
+        }
+    }
+    OptRect result() const {
+        if(total_n > 1)
+            return combined;
+        return OptRect();
+    }
+    build_bounds() : total_n(0) {}
+};
+
+/**
+ * returns a point which is portionally between topleft and bottomright in the same way that p was
+ * in src.
+ */
+Point map_point(Point p, Rect src, Point topleft, Point bottomright) {
+    p -= src.min();
+    p[0] /= src[0].extent();
+    p[1] /= src[1].extent();
+    //cout << p << endl;
+    return Point(topleft[0]*(1-p[0]) + bottomright[0]*p[0],
+                 topleft[1]*(1-p[1]) + bottomright[1]*p[1]);
+}
+
+void parse_data(vector<vector<Point> >& paths, 
+                string location_file_name,
+                string path_file_name) {
+    ifstream location_file(location_file_name.c_str()), 
+        path_file(path_file_name.c_str());
     string id,sx,sy;
     map<string,Point> idlookup;
+    build_bounds bld_bounds;
     while (getline(location_file,id,','))
     {
         getline(location_file,sx,',');
         getline(location_file,sy,'\n');
         char *e;
+        // negative for coordinate system
         Point p(strtod(sx.c_str(),&e), strtod(sy.c_str(),&e));
 	//cout << id << p << endl;
         idlookup[id] = p;
     }
+
+    
     string l;
     while (getline(path_file,l,'\n')) {
         vector<Point> ps;
         if(l.size() < 2) continue; // skip blank lines
         if(l.find(":",0)!=string::npos) continue; // skip labels
         string::size_type p=0,q;
-        while((q=l.find(",",p))!=string::npos || p < l.size() && (q = l.size())) {
+        while((q=l.find(",",p))!=string::npos || (p < l.size() && (q = l.size()))) {
             id = l.substr(p,q-p);
+            //cout << id << endl;
 	    Point pt = 2*idlookup[id];
+            //cout << pt << endl;
+            bld_bounds.add_point(pt);
             ps.push_back(pt);
             p=q+1;
         }
         paths.push_back(ps);
         //cout << "*******************************************" << endl;
     }
+    Rect bounds = *bld_bounds.result();
+    //cout << bounds.min() << " - " << bounds.max() << endl;
+    for(unsigned i = 0; i < paths.size(); i++) {
+        for(unsigned j = 0; j < paths[i].size();j++) {
+            paths[i][j] = map_point(paths[i][j], bounds, 
+                                    Point(0,512), Point(512*bounds[0].extent()/bounds[1].extent(),0));
+        }
+    }
+    /*
+    for(map<string,Point>::iterator it = idlookup.begin();
+        it != idlookup.end(); it++) {
+        (*it).second = map_point((*it).second, bounds, 
+                                 Point(0,0), Point(100,100));
+                                 //Point(0, 512), Point(512,0));
+        cout << (*it).first << ":" << (*it).second <<  endl;
+        }*/
         /*
     unsigned biggest = 0, biggest_i;
     for(unsigned i=0;i<paths.size();i++) {
@@ -810,18 +873,28 @@ public:
     Toy::draw(cr, notify, width, height, save);
   }
 
-  MetroMap() {
-    parse_data(paths);
-    for(unsigned i=0;i<paths.size();i++) {
-      metro_lines.push_back(PointSetHandle());
-      for(unsigned j=0;j<paths[i].size();j++) {
-	metro_lines.back().push_back(paths[i][j]);
-      }
+    void first_time(int argc, char** argv) {
+        string location_file_name("data/london-locations.csv");
+        string path_file_name("data/london.txt");
+        if(argc > 2) {
+            location_file_name = argv[1];
+            path_file_name = argv[2];
+        }
+        cout << location_file_name << ", " << path_file_name << endl;
+        parse_data(paths, location_file_name, path_file_name);
+        for(unsigned i=0;i<paths.size();i++) {
+            metro_lines.push_back(PointSetHandle());
+            for(unsigned j=0;j<paths[i].size();j++) {
+                metro_lines.back().push_back(paths[i][j]);
+            }
+        }
+        for(unsigned i=0;i<metro_lines.size();i++) {
+            handles.push_back(&metro_lines[i]);
+        }
+        handles.push_back(&directions);
     }
-    for(unsigned i=0;i<metro_lines.size();i++) {
-      handles.push_back(&metro_lines[i]);
-    }
-    handles.push_back(&directions);
+
+    MetroMap() {
   }
 
 };
