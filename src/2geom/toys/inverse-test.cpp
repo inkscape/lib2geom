@@ -38,10 +38,11 @@ static SBasis my_inverse(SBasis f, int order){
         f /= a1;
     }
 
-    SBasis g=SBasis(Linear(0,1)),r;
+    SBasis g=SBasis(order, Linear());
+    g[0] = Linear(0,1);
     double df0=derivative(f)(0);
     double df1=derivative(f)(1);
-    r=Linear(0,1)-g(f);
+    SBasis r = Linear(0,1)-g(f);
 
     for(int i=1; i<order; i++){
         //std::cout<<"i: "<<i<<std::endl;
@@ -51,7 +52,7 @@ static SBasis my_inverse(SBasis f, int order){
         if (r.size()==0) return(g);
         double a=r[i][0]/pow(df0,i);
         double b=r[i][1]/pow(df1,i);
-        g.push_back(Linear(a,b));
+        g[i] = Linear(a,b);
     }
     
     return(g);
@@ -95,7 +96,6 @@ class InverseTester: public Toy {
 
   void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
     
-      SBasis f;//=SBasis(Linear(0,.5));
       for (int i=0;i<size;i++){
           hand.pts[i    ][0]=150+15*(i-size);
           hand.pts[i+size][0]=450+15*(i+1);
@@ -111,9 +111,10 @@ class InverseTester: public Toy {
       cairo_set_source_rgba (cr, 0.2, 0.2, 0.2, 1);
       cairo_stroke(cr);
     
+      SBasis f(size, Linear());//=SBasis(Linear(0,.5));
       for (int i=0;i<size;i++){
-          f.push_back(Linear(-(hand.pts[i     ][1]-300)*pow(4.,i)/150,
-                             -(hand.pts[i+size][1]-300)*pow(4.,i)/150 ));
+          f[i] = Linear(-(hand.pts[i     ][1]-300)*pow(4.,i)/150,
+                        -(hand.pts[i+size][1]-300)*pow(4.,i)/150 );
       }
       plot(cr,Linear(0,1),300);	
       

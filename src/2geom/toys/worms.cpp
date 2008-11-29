@@ -20,14 +20,15 @@ static void dot_plot(cairo_t *cr, Piecewise<D2<SBasis> > const &M, double min, d
 }
 
 D2<SBasis> random_d2() {
-    D2<SBasis> ret;
-    ret[0].push_back(Linear(uniform()*720, uniform()*720));
-    ret[1].push_back(Linear(uniform()*480, uniform()*480));
+    D2<SBasis> ret(SBasis(6, Linear()),
+                   SBasis(6, Linear()));
+    ret[0][0] = Linear(uniform()*720, uniform()*720);
+    ret[1][0] = Linear(uniform()*480, uniform()*480);
     
     int mul = 1;
-    for(int i = 0; i < 5; i++) {
-        ret[0].push_back(Linear(uniform()*2000*mul - 1000, uniform()*2000*mul - 1000));
-        ret[1].push_back(Linear(uniform()*2000*mul - 1000, uniform()*2000*mul - 1000));
+    for(int i = 1; i < 6; i++) {
+        ret[0][i] = Linear(uniform()*2000*mul - 1000, uniform()*2000*mul - 1000);
+        ret[1][i] = Linear(uniform()*2000*mul - 1000, uniform()*2000*mul - 1000);
         mul*=2;
     }
     return ret;

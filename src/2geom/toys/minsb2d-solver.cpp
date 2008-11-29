@@ -13,20 +13,20 @@ using namespace Geom;
 //see a sb2d as an sb of u with coef in sbasis of v.
 void
 u_coef(SBasis2d f, unsigned deg, SBasis &a, SBasis &b) {
-    a = SBasis();
-    b = SBasis();
+    a = SBasis(f.vs, Linear());
+    b = SBasis(f.vs, Linear());
     for (unsigned v=0; v<f.vs; v++){
-        a.push_back(Linear(f.index(deg,v)[0], f.index(deg,v)[2]));
-        b.push_back(Linear(f.index(deg,v)[1], f.index(deg,v)[3]));
+        a[v] = Linear(f.index(deg,v)[0], f.index(deg,v)[2]);
+        b[v] = Linear(f.index(deg,v)[1], f.index(deg,v)[3]);
     }
 }
 void
 v_coef(SBasis2d f, unsigned deg, SBasis &a, SBasis &b) {
-    a = SBasis();
-    b = SBasis();
+    a = SBasis(f.us, Linear());
+    b = SBasis(f.us, Linear());
     for (unsigned u=0; u<f.us; u++){
-        a.push_back(Linear(f.index(deg,u)[0], f.index(deg,u)[1]));
-        b.push_back(Linear(f.index(deg,u)[2], f.index(deg,u)[3]));
+        a[u] = Linear(f.index(deg,u)[0], f.index(deg,u)[1]);
+        b[u] = Linear(f.index(deg,u)[2], f.index(deg,u)[3]);
     }
 }
 

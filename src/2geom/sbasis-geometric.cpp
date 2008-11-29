@@ -203,13 +203,15 @@ Geom::unitVector(D2<SBasis> const &V_in, double tol, unsigned order){
     D2<SBasis> V = RescaleForNonVanishingEnds(V_in);
     if (V[0].empty() && V[1].empty())
         return Piecewise<D2<SBasis> >(D2<SBasis>(Linear(1),SBasis()));
-    SBasis x = V[0], y = V[1], a, b;
+    SBasis x = V[0], y = V[1];
     SBasis r_eqn1, r_eqn2;
 
     Point v0 = unit_vector(V.at0());
     Point v1 = unit_vector(V.at1());
-    a.push_back(Linear(-v0[1],-v1[1]));
-    b.push_back(Linear( v0[0], v1[0]));
+    SBasis a(order+1, Linear());
+    a[0] = Linear(-v0[1],-v1[1]);
+    SBasis b(order+1, Linear());
+    b[0] = Linear( v0[0], v1[0]);
 
     r_eqn1 = -(a*x+b*y);
     r_eqn2 = Linear(1.)-(a*a+b*b);
@@ -230,8 +232,8 @@ Geom::unitVector(D2<SBasis> const &V_in, double tol, unsigned order){
         a1 = r1/dot(v1,V(1))*v1[0]-rr1/2*v1[1];
         b1 = r1/dot(v1,V(1))*v1[1]+rr1/2*v1[0];
 
-        a.push_back(Linear(a0,a1));        
-        b.push_back(Linear(b0,b1));
+        a[k] = Linear(a0,a1);
+        b[k] = Linear(b0,b1);
         //TODO: use "incremental" rather than explicit formulas.
         r_eqn1 = -(a*x+b*y);
         r_eqn2 = Linear(1)-(a*a+b*b);
@@ -560,10 +562,10 @@ std::vector<double>
 solve_lambda0(double a0,double a1,double c0,double c1,
              int insist_on_speeds_signs){
 
-    SBasis p;
-    p.push_back(Linear( a1*c0*c0+c1, a1*a0*(a0+ 2*c0) +a1*c0*c0 +c1 -1  ));
-    p.push_back(Linear( -a1*a0*(a0+2*c0), -a1*a0*(3*a0+2*c0) ));
-    p.push_back(Linear( a1*a0*a0 ));
+    SBasis p(3, Linear());
+    p[0] = Linear( a1*c0*c0+c1, a1*a0*(a0+ 2*c0) +a1*c0*c0 +c1 -1  );
+    p[1] = Linear( -a1*a0*(a0+2*c0), -a1*a0*(3*a0+2*c0) );
+    p[2] = Linear( a1*a0*a0 );
 
     OptInterval domain = find_bounds_for_lambda0(a0,a1,c0,c1,insist_on_speeds_signs);
     if ( !domain ) 
@@ -670,9 +672,11 @@ Geom::cubics_fitting_curvature(Point const &M0,   Point const &M1,
         Point V1 = lambda1[i]*dM1;
         D2<SBasis> cubic;
         for(unsigned dim=0;dim<2;dim++){
-            cubic[dim] = Linear(M0[dim],M1[dim]);
-            cubic[dim].push_back(Linear( M0[dim]-M1[dim]+V0[dim],
-                                         -M0[dim]+M1[dim]-V1[dim]));
+            SBasis c(2, Linear());
+            c[0] = Linear(M0[dim],M1[dim]);
+            c[1] = Linear( M0[dim]-M1[dim]+V0[dim],
+                           -M0[dim]+M1[dim]-V1[dim]);
+            cubic[dim] = c;
         }
 #if 0
            Piecewise<SBasis> k = curvature(result);

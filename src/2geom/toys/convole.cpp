@@ -12,9 +12,9 @@ using std::vector;
 using namespace Geom;
 
 SBasis toSBasis(SBasisOf<double> const &f){
-    SBasis result;
+    SBasis result(f.size(), Linear());
     for (unsigned i=0; i<f.size(); i++){
-        result.push_back(Linear(f[i][0],f[i][1]));
+        result[i] = Linear(f[i][0],f[i][1]);
     }
     return result;
 }

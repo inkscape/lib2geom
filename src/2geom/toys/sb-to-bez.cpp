@@ -61,16 +61,18 @@ void cairo_pw(cairo_t *cr, Piecewise<SBasis> p, double hscale=1., double vscale=
 
 D2<SBasis>
 naive_sb_seg_to_bez(Piecewise<D2<SBasis> > const &M,double t0,double t1){
-    D2<SBasis> result;
 
     Piecewise<D2<SBasis> > dM = derivative(M); 
     Point M0  = M(t0);
     Point dM0 = dM(t0)*(t1-t0);
     Point M1  = M(t1);
     Point dM1 = dM(t1)*(t1-t0);
+    D2<SBasis> result;
     for (unsigned dim=0; dim<2; dim++){
-        result[dim].push_back(Linear(M0[dim],M1[dim]));
-        result[dim].push_back(Linear(M0[dim]-M1[dim]+dM0[dim],-(M0[dim]-M1[dim]+dM1[dim])));
+        SBasis r(2, Linear());
+        r[0] = Linear(M0[dim],M1[dim]);
+        r[1] = Linear(M0[dim]-M1[dim]+dM0[dim],-(M0[dim]-M1[dim]+dM1[dim]));
+        result[dim] = r;
     }
     return result;
 }

@@ -30,7 +30,6 @@ class BoundsTester: public Toy {
     PointSetHandle hand;
     void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         
-        SBasis B;
         for (unsigned i=0;i<size;i++){
             hand.pts[i    ][0]=150+15*(i-size);
             hand.pts[i+size][0]=450+15*(i+1);
@@ -46,9 +45,10 @@ class BoundsTester: public Toy {
         cairo_set_source_rgba (cr, 0.2, 0.2, 0.2, 1);
         cairo_stroke(cr);
         
+        SBasis B(size, Linear());
         for (unsigned i=0;i<size;i++){
-            B.push_back(Linear(-(hand.pts[i     ][1]-300)*pow(4.,(int)i),
-                               -(hand.pts[i+size][1]-300)*pow(4.,(int)i) ));
+            B[i] = Linear(-(hand.pts[i     ][1]-300)*pow(4.,(int)i),
+                          -(hand.pts[i+size][1]-300)*pow(4.,(int)i) );
         }
         B.normalize();
         plot(cr,B,1);   

@@ -36,10 +36,8 @@ static void plot(cairo_t* cr, SBasisOf<Interval> const &f, double vscale=1,doubl
 #endif
     D2<SBasis> plot;
     Path pth;
-    SBasis fmin;
-    SBasis fmax;
-    fmin.resize(f.size());
-    fmax.resize(f.size());
+    SBasis fmin(f.size(), Linear());
+    SBasis fmax(f.size(), Linear());
     for(unsigned i = 0; i < f.size(); i++) {
         for(unsigned j = 0; j < 2; j++) {
             fmin[i][j] = f[i][j].min();
@@ -96,7 +94,6 @@ class SbOfInterval: public Toy {
     PointSetHandle hand;
     void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         
-        SBasis f_dble;
         SBasisOf<Interval> f;
         double min=150, max=450;
         setupSliders(adjuster_a, 100, 15, min, max);
@@ -127,10 +124,11 @@ class SbOfInterval: public Toy {
             Interval bi(bmin*pow(4.,(int)i), bmax*pow(4.,(int)i));
             f.push_back(LinearOf<Interval>(ai,bi));
         }
+        SBasis f_dble(size, Linear());
         for (unsigned i=0; i < size; i++){
             double ai = (max+min)/2 - adjuster_a[3*i].pos[Y];
             double bi = (max+min)/2 - adjuster_b[3*i].pos[Y];
-            f_dble.push_back(Linear(ai*pow(4.,(int)i),bi*pow(4.,(int)i)));
+            f_dble[i] = Linear(ai*pow(4.,(int)i),bi*pow(4.,(int)i));
         }
 
         plot(cr,f_dble);   

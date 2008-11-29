@@ -3,21 +3,21 @@
 #include <2geom/bezier-to-sbasis.h>
 
 #include <2geom/toys/path-cairo.h>
-#include <2geom/toys/toy-framework.h>
+#include <2geom/toys/toy-framework-2.h>
 
 using namespace Geom;
 
 class PwToy: public Toy {
-    unsigned segs, handles_per_seg, handles_per_curve, curves;
+public:
+    vector<PointSetHandle*> pw_handles;
+    PointSetHandle slids;
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         cairo_set_source_rgba (cr, 0., 0.5, 0, 1);
         cairo_set_line_width (cr, 1);
        
         D2<Piecewise<SBasis> > pws;
-        unsigned hdle_idx=0;
-        for(unsigned i = 0; i < segs; i++) {
-            D2<SBasis> foo = Geom::handles_to_sbasis(handles.begin()+hdle_idx, 3);
-            hdle_idx += 4;
+        for(unsigned i = 0; i < pw_handles.size(); i++) {
+            D2<SBasis> foo = pw_handles[i]->asBezier();
             cairo_d2_sb(cr, foo);
             for(unsigned d = 0; d < 2; d++) {
                 pws[d].cuts.push_back(150*i);
@@ -25,15 +25,15 @@ class PwToy: public Toy {
             }
         }
         for(unsigned d = 0; d < 2; d++)
-            pws[d].cuts.push_back(150*segs);
+            pws[d].cuts.push_back(150*pw_handles.size());
         
-        handles[hdle_idx  ][1]=450;
-        handles[hdle_idx+1][1]=450;
-        handles[hdle_idx+2][1]=450;
-        handles[hdle_idx+3][1]=450;
+        slids.pts[0][1]=450;
+        slids.pts[1][1]=450;
+        slids.pts[2][1]=450;
+        slids.pts[3][1]=450;
 	
         cairo_set_source_rgba (cr, 0.2, 0.2, 0.2, 1);
-        D2<SBasis> foo = Geom::handles_to_sbasis(handles.begin()+hdle_idx, 3);
+        D2<SBasis> foo = slids.asBezier();
         SBasis g = foo[0] - Linear(150);
         cairo_d2_sb(cr, foo);
 	    for(unsigned i=0;i<20;i++){
@@ -64,15 +64,20 @@ class PwToy: public Toy {
         
     public:
     PwToy () {
-        segs = 2;
-        handles_per_seg = 4;
-        handles_per_curve = handles_per_seg * segs;
-        curves = 1;
-        for(unsigned a = 0; a < curves; a++)
-            for(unsigned i = 0; i < handles_per_curve; i++)
-                handles.push_back(Point(150 + 300*i/(4*segs), uniform() * 150 + 150 - 150 * a));
+        unsigned segs = 5;
+        unsigned handles_per_seg = 4;
+        double x = 150;
+        for(unsigned a = 0; a < segs; a++) {
+            PointSetHandle* psh = new PointSetHandle;
+            
+            for(unsigned i = 0; i < handles_per_seg; i++, x+= 25)
+                psh->push_back(Point(x, uniform() * 150));
+            pw_handles.push_back(psh);
+            handles.push_back(psh);
+        }
         for(unsigned i = 0; i < 4; i++)
-            handles.push_back(Point(150 + 100*i,100));
+            slids.push_back(Point(150 + segs*50*i,100));
+        handles.push_back(&slids);
     }
 };
 

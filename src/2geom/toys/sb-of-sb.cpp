@@ -11,9 +11,9 @@ using namespace Geom;
 using namespace std;
 
 SBasis toSBasis(SBasisOf<double> const &f){
-    SBasis result;
+    SBasis result(f.size(), Linear());
     for (unsigned i=0; i<f.size(); i++){
-        result.push_back(Linear(f[i][0],f[i][1]));
+        result[i] = Linear(f[i][0],f[i][1]);
     }
     return result;
 }
@@ -68,9 +68,9 @@ public:
 };
 
 SBasis toSBasis(SBasisDim<1> f){
-    SBasis result;
+    SBasis result(f.size(), Linear());
     for (unsigned i=0; i<f.size(); i++){
-        result.push_back(Linear(f[i][0],f[i][1]));
+        result[i] = Linear(f[i][0],f[i][1]);
     }
     return result;
 }
@@ -128,17 +128,17 @@ SBasisOf<double> compose(SBasisOf<SBasisOf<double> > const &f,
 
 static
 SBasis eval_v(SBasisOf<SBasis> const &f, double v){
-    SBasis result;
+    SBasis result(f.size(), Linear());
     for (unsigned i=0; i<f.size(); i++){
-        result.push_back(Linear(f[i][0].valueAt(v),f[i][1].valueAt(v)));
+        result[i] = Linear(f[i][0].valueAt(v),f[i][1].valueAt(v));
     }
     return result;
 }
 static
 SBasis eval_v(SBasisOf<SBasisOf<double> > const &f, double v){
-    SBasis result;
+    SBasis result(f.size(), Linear());
     for (unsigned i=0; i<f.size(); i++){
-        result.push_back(Linear(f[i][0].valueAt(v),f[i][1].valueAt(v)));
+        result[i] = Linear(f[i][0].valueAt(v),f[i][1].valueAt(v));
     }
     return result;
 }

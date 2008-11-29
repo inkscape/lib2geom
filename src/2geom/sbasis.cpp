@@ -82,18 +82,17 @@ std::vector<double> SBasis::valueAndDerivatives(double t, unsigned n) const {
 
 */
 SBasis operator+(const SBasis& a, const SBasis& b) {
-    SBasis result;
     const unsigned out_size = std::max(a.size(), b.size());
     const unsigned min_size = std::min(a.size(), b.size());
-    result.reserve(out_size);
+    SBasis result(out_size, Linear());
 
     for(unsigned i = 0; i < min_size; i++) {
-        result.push_back(a[i] + b[i]);
+        result[i] = a[i] + b[i];
     }
     for(unsigned i = min_size; i < a.size(); i++)
-        result.push_back(a[i]);
+        result[i] = a[i];
     for(unsigned i = min_size; i < b.size(); i++)
-        result.push_back(b[i]);
+        result[i] = b[i];
 
     assert(result.size() == out_size);
     return result;
@@ -105,18 +104,17 @@ SBasis operator+(const SBasis& a, const SBasis& b) {
 
 */
 SBasis operator-(const SBasis& a, const SBasis& b) {
-    SBasis result;
     const unsigned out_size = std::max(a.size(), b.size());
     const unsigned min_size = std::min(a.size(), b.size());
-    result.reserve(out_size);
+    SBasis result(out_size, Linear());
 
     for(unsigned i = 0; i < min_size; i++) {
-        result.push_back(a[i] - b[i]);
+        result[i] = a[i] - b[i];
     }
     for(unsigned i = min_size; i < a.size(); i++)
-        result.push_back(a[i]);
+        result[i] = a[i];
     for(unsigned i = min_size; i < b.size(); i++)
-        result.push_back(-b[i]);
+        result[i] = -b[i];
 
     assert(result.size() == out_size);
     return result;
@@ -130,12 +128,12 @@ SBasis operator-(const SBasis& a, const SBasis& b) {
 SBasis& operator+=(SBasis& a, const SBasis& b) {
     const unsigned out_size = std::max(a.size(), b.size());
     const unsigned min_size = std::min(a.size(), b.size());
-    a.reserve(out_size);
+    a.resize(out_size);
 
     for(unsigned i = 0; i < min_size; i++)
         a[i] += b[i];
     for(unsigned i = min_size; i < b.size(); i++)
-        a.push_back(b[i]);
+        a[i] = b[i];
 
     assert(a.size() == out_size);
     return a;
@@ -149,12 +147,12 @@ SBasis& operator+=(SBasis& a, const SBasis& b) {
 SBasis& operator-=(SBasis& a, const SBasis& b) {
     const unsigned out_size = std::max(a.size(), b.size());
     const unsigned min_size = std::min(a.size(), b.size());
-    a.reserve(out_size);
+    a.resize(out_size);
 
     for(unsigned i = 0; i < min_size; i++)
         a[i] -= b[i];
     for(unsigned i = min_size; i < b.size(); i++)
-        a.push_back(-b[i]);
+        a[i] = -b[i];
 
     assert(a.size() == out_size);
     return a;
@@ -166,10 +164,9 @@ SBasis& operator-=(SBasis& a, const SBasis& b) {
 
 */
 SBasis operator*(SBasis const &a, double k) {
-    SBasis c;
-    c.reserve(a.size());
+    SBasis c(a.size(), Linear());
     for(unsigned i = 0; i < a.size(); i++)
-        c.push_back(a[i] * k);
+        c[i] = a[i] * k;
     return c;
 }
 
@@ -195,12 +192,14 @@ SBasis& operator*=(SBasis& a, double b) {
 
 */
 SBasis shift(SBasis const &a, int sh) {
-    SBasis c = a;
-    if(sh > 0) {
-        c.insert(c.begin(), sh, Linear(0,0));
-    } else {
-        //TODO: truncate
-    }
+    size_t n = a.size()+sh;
+    SBasis c(n, Linear());
+    size_t m = std::max(0, sh);
+    
+    for(int i = 0; i < sh; i++)
+        c[i] = Linear(0,0);
+    for(size_t i = m, j = 0; i < n; i++, j++)
+        c[i] = a[j];
     return c;
 }
 
@@ -211,11 +210,13 @@ SBasis shift(SBasis const &a, int sh) {
 
 */
 SBasis shift(Linear const &a, int sh) {
-    SBasis c;
-    if(sh >= 0) {
-        c.insert(c.begin(), sh, Linear(0,0));
-        c.push_back(a);
-    }
+    size_t n = 1+sh;
+    SBasis c(n, Linear());
+    
+    for(int i = 0; i < sh; i++)
+        c[i] = Linear(0,0);
+    if(sh >= 0)
+        c[sh] = a;
     return c;
 }
 
@@ -499,11 +500,11 @@ SBasis inverse(SBasis a, int k) {
     if(a1 != 1) {
         a /= a1;
     }
-    SBasis c;                           // c(v) := 0
+    SBasis c(k, Linear());                           // c(v) := 0
     if(a.size() >= 2 && k == 2) {
-        c.push_back(Linear(0,1));
+        c[0] = Linear(0,1);
         Linear t1(1+a[1][0], 1-a[1][1]);    // t_1
-        c.push_back(Linear(-a[1][0]/t1[0], -a[1][1]/t1[1]));
+        c[1] = Linear(-a[1][0]/t1[0], -a[1][1]/t1[1]);
     } else if(a.size() >= 2) {                      // non linear
         SBasis r = Linear(0,1);             // r(u) := r_0(u) := u
         Linear t1(1./(1+a[1][0]), 1./(1-a[1][1]));    // 1./t_1
@@ -519,7 +520,7 @@ SBasis inverse(SBasis a, int k) {
         //assert(t1 == t[1]);
 #endif
 
-        c.resize(k+1, Linear(0,0));
+        //c.resize(k+1, Linear(0,0));
         for(unsigned i = 0; i < (unsigned)k; i++) {   // for i:=0 to k do
 #ifdef DEBUG_INVERSION
             std::cout << "-------" << i << ": ---------" <<std::endl;
@@ -566,10 +567,11 @@ SBasis inverse(SBasis a, int k) {
 It is recommended to use the piecewise version unless you have good reason.
 */
 SBasis sin(Linear b, int k) {
-    SBasis s = Linear(std::sin(b[0]), std::sin(b[1]));
+    SBasis s(k+2, Linear());
+    s[0] = Linear(std::sin(b[0]), std::sin(b[1]));
     double tr = s[0].tri();
     double t2 = b.tri();
-    s.push_back(Linear(std::cos(b[0])*t2 - tr, -std::cos(b[1])*t2 + tr));
+    s[1] = Linear(std::cos(b[0])*t2 - tr, -std::cos(b[1])*t2 + tr);
 
     t2 *= t2;
     for(int i = 0; i < k; i++) {
@@ -578,7 +580,7 @@ SBasis sin(Linear b, int k) {
         bo -= s[i]*(t2/(i+1));
 
 
-        s.push_back(bo/double(i+2));
+        s[i+2] = bo/double(i+2);
     }
 
     return s;
@@ -605,7 +607,7 @@ TODO: compute order according to tol?
 TODO: requires g(0)=0 & g(1)=1 atm... adaptation to other cases should be obvious!
 */
 SBasis compose_inverse(SBasis const &f, SBasis const &g, unsigned order, double zero){
-    SBasis result; //result
+    SBasis result(order, Linear()); //result
     SBasis r=f; //remainder
     SBasis Pk=Linear(1)-g,Qk=g,sg=Pk*Qk;
     Pk.truncate(order);
@@ -634,7 +636,7 @@ SBasis compose_inverse(SBasis const &f, SBasis const &g, unsigned order, double 
             a=( q01*r10-q10*r01)/det;
             b=(-p01*r10+p10*r01)/det;
         }
-        result.push_back(Linear(a,b));
+        result[k] = Linear(a,b);
         r=r-Pk*a-Qk*b;
 
         Pk=Pk*sg;

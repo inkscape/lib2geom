@@ -79,7 +79,7 @@ inverse-test
 mesh-grad
 paptest
 precise-flat
-#pw-compose-test
+pw-compose-test
 sb-zeros
 sb1d
 sb2d

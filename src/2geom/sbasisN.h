@@ -638,10 +638,9 @@ public:
 
 //SBasisN<1> are usual SBasis. Allow conversion.
 SBasis toSBasis(SBasisN<1> f){
-    SBasis res;
-    res.reserve(f.size());
+    SBasis res(f.size(), Linear());
     for (unsigned i = 0; i < f.size(); i++) {
-        res.push_back( toLinear(f[i]) );
+        res[i] = toLinear(f[i]);
     }
     return res;
 }
