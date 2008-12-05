@@ -109,6 +109,25 @@ sb_seg_to_bez(Piecewise<D2<SBasis> > const &M,double t0,double t1){
 }
 #include <2geom/sbasis-to-bezier.h>
 
+int goal_function_type = 0;
+
+double goal_function(Piecewise<D2<SBasis> >const &A, 
+                     Piecewise<D2<SBasis> >const&B) {
+    if(goal_function_type) {
+        OptInterval bnds = bounds_fast(dot(derivative(A), rot90(derivative(B))));
+        //double h_dist = bnds.dimensions().length();
+//0 is in the rect!, TODO:gain factor ~2 for free.
+// njh: not really, the benefit is actually rather small.
+        double h_dist = 0;
+        if(bnds)
+            h_dist = bnds->extent();
+        return h_dist ;
+    } else {
+        Rect bnds = *bounds_fast(A - B);
+        return max(bnds.min().length(), bnds.max().length());
+    }  
+}
+
 int recursive_curvature_fitter(cairo_t* cr, Piecewise<D2<SBasis> > const &f, double t0, double t1, double precision) {
       if (t0>=t1) return 0;//TODO: fix me...
       if (t0+0.001>=t1) return 0;//TODO: fix me...
@@ -120,12 +139,7 @@ int recursive_curvature_fitter(cairo_t* cr, Piecewise<D2<SBasis> > const &f, dou
           Piecewise<SBasis> s = arcLengthSb(k_bez);
           s *= (t1-t0)/arcLengthSb(k_bez).segs.back().at1();
           s += t0;
-          Rect bnds = *bounds_fast(compose(f,s) - Piecewise<D2<SBasis> >(k_bez));
-          //double h_dist = bnds.dimensions().length();
-//0 is in the rect!, TODO:gain factor ~2 for free.
-// njh: not really, the benefit is actually rather small.
-          double h_dist = max(bnds.min().length(), bnds.max().length());
-          
+          double h_dist = goal_function(compose(f,s), Piecewise<D2<SBasis> >(k_bez));
           if(h_dist < precision) {
               cairo_save(cr);
               cairo_set_line_width (cr, 0.93);
@@ -152,9 +166,7 @@ double single_curvature_fitter(Piecewise<D2<SBasis> > const &f, double t0, doubl
           Piecewise<SBasis> s = arcLengthSb(k_bez);
           s *= (t1-t0)/arcLengthSb(k_bez).segs.back().at1();
           s += t0;
-          Rect bnds = *bounds_fast(compose(f,s) - Piecewise<D2<SBasis> >(k_bez));
-          double h_dist = max(bnds.min().length(), bnds.max().length());
-          return h_dist;
+          return goal_function(compose(f,s), Piecewise<D2<SBasis> >(k_bez));
       }
       return 1e100;
 }
@@ -326,6 +338,7 @@ class SbToBezierTester: public Toy {
       draw_text(cr, adjuster2.pos, val_s.str().c_str());
       
     int segs = 0;
+    goal_function_type = toggles[1].on;
       if(toggles[0].on)
           segs = sequential_curvature_fitter(cr, f_as_pw, 0, f_as_pw.cuts.back(), curve_precision);
       else {
@@ -335,6 +348,8 @@ class SbToBezierTester: public Toy {
       cairo_restore(cr);
       Point p(25, height - 50), d(50,25);
       toggles[0].bounds = Rect(p,     p + d);
+      p+= Point(75, 0);
+      toggles[1].bounds = Rect(p,     p + d);
       draw_toggles(cr, toggles);
       Toy::draw(cr, notify, width, height, save);
   }
@@ -363,6 +378,7 @@ public:
       adjuster3.pos = Geom::Point(450,300);
       handles.push_back(&adjuster3);
       toggles.push_back(Toggle("Seq", true));
+      toggles.push_back(Toggle("Linfty", true));
       //}
     //sliders.push_back(Slider(0.0, 1.0, 0.0, 0.0, "t"));
     //handles.push_back(&(sliders[0]));
