@@ -25,10 +25,13 @@ IF(gsl_FOUND)
     SET(LINK_GSL ${gsl_LINK_FLAGS})
     SET(gsl_CFLAGS "${gsl_CFLAGS} -DHAVE_GSL")
 ENDIF(gsl_FOUND) 
+IF(pycairo_FOUND)
+    SET(gsl_CFLAGS "${pycairo_CFLAGS} -DHAVE_PYCAIRO")
+ENDIF(pycairo_FOUND) 
 
 # Set Compiler Flags
 SET(CXX_WARNINGS_FLAGS "-Wall -Wformat -Wformat-security -W -Wpointer-arith -Wcast-align -Wsign-compare -Woverloaded-virtual -Wswitch")
-SET(CMAKE_CXX_FLAGS "${GTK2_CFLAGS} ${cairo_CFLAGS} ${gsl_CFLAGS} ${CXX_WARNINGS_FLAGS}")
+SET(CMAKE_CXX_FLAGS "${GTK2_CFLAGS} ${cairo_CFLAGS} ${gsl_CFLAGS} ${pycairo_CFLAGS} ${CXX_WARNINGS_FLAGS}")
 SET(CMAKE_MAKE_PROGRAM "${CMAKE_MAKE_PROGRAM} -j2")
 
 SET(CMAKE_MAJOR_MINOR "${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}")

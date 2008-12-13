@@ -42,8 +42,6 @@
 #include "../rect.h"
 #include "../d2.h"
 
-#include "cairo-helpers.h"
-
 using namespace boost::python;
 
 Geom::Curve const &path_getitem(Geom::Path const& p, int index)
@@ -109,6 +107,12 @@ struct CurveWrap : Geom::Curve, wrapper<Geom::Curve>
     Geom::D2<Geom::SBasis> toSBasis() const {return this->get_override("sbasis")();}
 };
 
+
+/* pycairo stuff: */
+#ifdef HAVE_PYCAIRO
+
+#include "cairo-helpers.h"
+
 void py_cairo_curve(object cr, Geom::Curve const &c) {
     cairo_curve(cairo_t_from_object(cr), c);
 }
@@ -155,6 +159,7 @@ void py_cairo_pw_d2_sb(object cr, Geom::Piecewise<Geom::D2<Geom::SBasis> > const
     cairo_pw_d2_sb(cairo_t_from_object(cr), p);
 }
 
+#endif // HAVE_PYCAIRO
 
 void wrap_path()
 {
@@ -223,7 +228,7 @@ void wrap_path()
     def("path_from_sbasis", Geom::path_from_sbasis);
     def("cubicbezierpath_from_sbasis", Geom::cubicbezierpath_from_sbasis);
 
-
+#ifdef HAVE_PYCAIRO
 void cairo_move_to(cairo_t *cr, Geom::Point p1);
     def("cubicbezierpath_from_sbasis", Geom::cubicbezierpath_from_sbasis);
 void cairo_line_to(cairo_t *cr, Geom::Point p1);
@@ -241,7 +246,7 @@ void cairo_curve_to(cairo_t *cr, Geom::Point p1, Geom::Point p2, Geom::Point p3)
     def("cairo_d2_sb", py_cairo_d2_sb);
     def("cairo_d2_pw_sb", py_cairo_d2_pw_sb);
     def("cairo_pw_d2_sb", py_cairo_pw_d2_sb);
-
+#endif // HAVE_PYCAIRO
 }
 
 /*
