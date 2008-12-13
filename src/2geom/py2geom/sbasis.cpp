@@ -43,6 +43,21 @@ Geom::SBasis (*multiply_sbasis)(Geom::SBasis const &, Geom::SBasis const &) = &G
 Geom::SBasis (*integral_sbasis)(Geom::SBasis const &) = &Geom::integral;
 Geom::SBasis (*derivative_sbasis)(Geom::SBasis const &) = &Geom::derivative;
 
+Geom::Linear sbasis_getitem(Geom::SBasis const& p, int index)
+{
+    int D = p.size();
+    if (index < 0)
+    {
+        index = D + index;
+    }
+    if ((index < 0) || (index > (D - 1))) {
+        PyErr_SetString(PyExc_IndexError, "index out of range");
+        boost::python::throw_error_already_set();
+    }
+    return p[index];
+}
+
+
 void wrap_sbasis() {
     //sbasis.h
 
@@ -76,9 +91,10 @@ void wrap_sbasis() {
     def("bounds_exact", (Geom::OptInterval (*)(Geom::SBasis const &))&Geom::bounds_exact);
     def("bounds_local", (Geom::OptInterval (*)(Geom::SBasis const &))&Geom::bounds_local);
 
-    class_<Geom::SBasis, bases<std::vector<Geom::Linear> > >("SBasis")
+    class_<Geom::SBasis>("SBasis")
         .def(self_ns::str(self))
         //TODO: add important vector funcs
+        .def("__getitem__", &sbasis_getitem)
 
         .def("isZero", &Geom::SBasis::isZero)
         .def("isFinite", &Geom::SBasis::isFinite)

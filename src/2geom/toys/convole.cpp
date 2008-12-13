@@ -220,7 +220,7 @@ plot3d(cairo_t *cr, SBasisOf<SBasisOf<double> > const &f, Frame frame, int NbRay
 }
 
 
-#define SIZE 4
+#define SIZE 2
 
 class ConvolutionToy: public Toy {
 

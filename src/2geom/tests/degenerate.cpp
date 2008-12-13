@@ -31,9 +31,9 @@ generate_degenerate_cases(vector<Geom::SBasis> &sbs) {
 void generate_random_sbasis(vector<Geom::SBasis> &sbs) {
   MTRand rnd(1);
   for(int i = 0; i < 100; i++) {
-    SBasis sb;
-    for(int j = int(rnd.rand()*4); j >= 0; j--) {
-      sb.push_back(Linear(rnd.randNorm(), rnd.randNorm()));
+    SBasis sb(int(rnd.rand()*4)+1, Linear());
+    for(int j = 0; j < sb.size(); j++) {
+      sb[j] = Linear(rnd.randNorm(), rnd.randNorm());
     }
     //cout << sb << endl;
     sbs.push_back(sb);
