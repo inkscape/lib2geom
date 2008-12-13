@@ -23,7 +23,7 @@ IF(gsl_FOUND)
     sb-to-bez
     )
     SET(LINK_GSL ${gsl_LINK_FLAGS})
-    SET(gsl_CFLAGS "${gsl_CFLAGS} -DHAVE_GDL")
+    SET(gsl_CFLAGS "${gsl_CFLAGS} -DHAVE_GSL")
 ENDIF(gsl_FOUND) 
 
 # Set Compiler Flags
