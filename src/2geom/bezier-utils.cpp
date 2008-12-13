@@ -48,7 +48,7 @@
 #define noBEZIER_DEBUG
 
 #ifdef HAVE_IEEEFP_H
-# include <ieefp.h>
+# include <ieeefp.h>
 #endif
 
 #include <2geom/bezier-utils.h>
