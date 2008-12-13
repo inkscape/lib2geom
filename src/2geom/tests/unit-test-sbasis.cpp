@@ -183,7 +183,7 @@ int main() {
             SBasis A = poly_to_sbasis(P);
             SBasis I = inverse(A,k);
             SBasis err = compose(A, I) - Linear(0,1); // ideally is 0
-            std::cout << truncate(err, k).tail_error(0)
+            std::cout << truncate(err, k).tailError(0)
                       << std::endl;
             /*std::cout << sbasis_to_poly(err)
                       << "   ==   x\n"
