@@ -152,6 +152,24 @@ struct add_mutate{
 };
 
 template <typename T>
+struct scale{
+  T a;
+  double b;
+  void operator()() {
+    T c = a * b;
+  }
+};
+
+template <typename T>
+struct scale_mutate{
+  T a;
+  double b;
+  void operator()() {
+    a *= b;
+  }
+};
+
+template <typename T>
 struct mult{
   T a, b;
   void operator()() {
@@ -189,6 +207,20 @@ void basic_arith(T a, T b) {
     A.a = a;
     A.b = b;
     cout << "add_mutate:" 
+	 << robust_timer(A) << endl;
+  }
+  {
+    ::scale<T> A;
+    A.a = a;
+    A.b = 1;
+    cout << "scale:" 
+	 << robust_timer(A) << endl;
+  }
+  {
+    scale_mutate<T> A;
+    A.a = a;
+    A.b = 1;
+    cout << "scale_mutate:" 
 	 << robust_timer(A) << endl;
   }
   {
