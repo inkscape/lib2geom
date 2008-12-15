@@ -128,6 +128,14 @@ struct nop{
 using namespace Geom;
 
 template <typename T>
+struct copy{
+  T a, b;
+  void operator()() {
+    T c = a;
+  }
+};
+
+template <typename T>
 struct add{
   T a, b;
   void operator()() {
@@ -162,6 +170,13 @@ struct mult_mutate{
 
 template <typename T>
 void basic_arith(T a, T b) {
+  {
+    ::copy<T> A;
+    A.a = a;
+    A.b = b;
+    cout << "copy:" 
+	 << robust_timer(A) << endl;
+  }
   {
     add<T> A;
     A.a = a;
