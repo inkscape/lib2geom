@@ -1,7 +1,5 @@
 #include <2geom/poly.h>
 
-// gsl is a required dependency now.
-#define HAVE_GSL
 #ifdef HAVE_GSL
 #include <gsl/gsl_poly.h>
 #endif
