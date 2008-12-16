@@ -26,7 +26,7 @@ IF(gsl_FOUND)
     SET(gsl_CFLAGS "${gsl_CFLAGS} -DHAVE_GSL")
 ENDIF(gsl_FOUND) 
 IF(pycairo_FOUND)
-    SET(gsl_CFLAGS "${pycairo_CFLAGS} -DHAVE_PYCAIRO")
+    SET(pycairo_CFLAGS "${pycairo_CFLAGS} -DHAVE_PYCAIRO")
 ENDIF(pycairo_FOUND) 
 
 # Set Compiler Flags
