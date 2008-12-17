@@ -119,7 +119,7 @@ IF(2GEOM_TOYS)
         ELSE(${source} STREQUAL aa)
             ADD_EXECUTABLE(${source} ${source}.cpp)
         ENDIF(${source} STREQUAL aa)
-        TARGET_LINK_LIBRARIES(${source} toy-2 2geom "${GTK2_LINK_FLAGS} ${cairo_LINK_FLAGS} ${LINK_GSL}")
+        TARGET_LINK_LIBRARIES(${source} toy-2 ${LINK_GSL} 2geom "${GTK2_LINK_FLAGS} ${cairo_LINK_FLAGS}")
     ENDFOREACH(source)
 
 ENDIF(2GEOM_TOYS)
