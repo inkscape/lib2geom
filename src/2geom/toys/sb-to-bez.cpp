@@ -251,7 +251,7 @@ int sequential_curvature_fitter(cairo_t* cr, Piecewise<D2<SBasis> > const &f, do
 class SbToBezierTester: public Toy {
     //std::vector<Slider> sliders;
     std::vector<PointSetHandle*> path_psh;
-    PointHandle adjuster, adjuster2, adjuster3;
+    PointHandle adjuster, adjuster2;
     std::vector<Toggle> toggles;
 
   void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
@@ -290,11 +290,8 @@ class SbToBezierTester: public Toy {
 
       adjuster2.pos[0]=150;
       adjuster2.pos[1]=std::min(std::max(adjuster2.pos[1],150.),450.);
-      adjuster3.pos[0]=450;
-      adjuster3.pos[1]=std::min(std::max(adjuster3.pos[1],150.),450.);
 
       double scale0=(450-adjuster2.pos[1])/150;
-      double scale1=(450-adjuster3.pos[1])/150;
 
       cairo_set_line_width (cr, 1);
       cairo_set_source_rgba (cr, 0.7, 0., 0.7, .7);
@@ -344,9 +341,16 @@ class SbToBezierTester: public Toy {
       else {
           segs = recursive_curvature_fitter(cr, f_as_pw, 0, f_as_pw.cuts.back(),curve_precision);
       }
-    *notify << "      total segments: "<< segs <<"\n";
+      std::vector<Geom::Path> vpt = path_from_piecewise(f_as_pw, curve_precision, true);
+      unsigned default_number_curves = 0;
+      for(int i = 0; i < vpt.size(); i++) {
+          default_number_curves += vpt[i].size();
+      }
+      
+      *notify << "      segments from default algorithm: "<< default_number_curves <<"\n";
+      *notify << "      total segments: "<< segs <<"\n";
       cairo_restore(cr);
-      Point p(25, height - 50), d(50,25);
+      Point p(25, height - 100), d(50,25);
       toggles[0].bounds = Rect(p,     p + d);
       p+= Point(75, 0);
       toggles[1].bounds = Rect(p,     p + d);
@@ -375,8 +379,6 @@ public:
       handles.push_back(&adjuster);
       adjuster2.pos = Geom::Point(150,300);
       handles.push_back(&adjuster2);
-      adjuster3.pos = Geom::Point(450,300);
-      handles.push_back(&adjuster3);
       toggles.push_back(Toggle("Seq", true));
       toggles.push_back(Toggle("Linfty", true));
       //}
