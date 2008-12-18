@@ -10,27 +10,48 @@ d2.cpp
 parser.cpp
 path.cpp
 shape.cpp
-cairo-helpers.cpp
 py2geom.cpp
 )
+
+IF(pycairo_FOUND)
+    SET(2GEOM_BOOST_PYTHON_SRC
+    ${2GEOM_BOOST_PYTHON_SRC}
+    cairo-helpers.cpp
+    )
+ENDIF(pycairo_FOUND)
+
 
 OPTION(2GEOM_BOOST_PYTHON
   "Build a python binding with Boost.Python"
   OFF)
 IF(2GEOM_BOOST_PYTHON)
         FIND_PACKAGE(Boost)
- 	FIND_PACKAGE(PythonLibs)
+        FIND_PACKAGE(PythonLibs)
         GET_FILENAME_COMPONENT(PYTHON_LIB_INSTALL "${PYTHON_LIBRARY}" PATH)
-        GET_FILENAME_COMPONENT(SITEPACKAGE "${PYTHON_LIB_INSTALL}/../site-packages" ABSOLUTE)
+        SET(PYDEXTENSION FALSE)
+        IF (WIN32)
+            GET_FILENAME_COMPONENT(SITEPACKAGE "${PYTHON_LIB_INSTALL}/../Lib/site-packages" ABSOLUTE)
+            SET(PYDEXTENSION TRUE)
+        ELSE (WIN32)
+            GET_FILENAME_COMPONENT(SITEPACKAGE "${PYTHON_LIB_INSTALL}/../site-packages" ABSOLUTE)
+        ENDIF(WIN32)
 
- 	INCLUDE_DIRECTORIES( src/ ${PYTHON_INCLUDE_PATH}
- 	                    ${BOOST_INCLUDE_DIR} )
+        INCLUDE_DIRECTORIES( src/ ${PYTHON_INCLUDE_PATH}
+                             ${BOOST_INCLUDE_DIR} )
 
         ADD_LIBRARY(py2geom SHARED ${2GEOM_BOOST_PYTHON_SRC})
+
         SET_TARGET_PROPERTIES(py2geom PROPERTIES PREFIX "_")
+        IF(PYDEXTENSION)
+            SET_TARGET_PROPERTIES(py2geom PROPERTIES SUFFIX ".pyd")
+        ENDIF(PYDEXTENSION)
+
         TARGET_LINK_LIBRARIES(py2geom 2geom ${PYTHON_LIBRARIES} ${BOOST_PYTHON_LIBRARY} ${cairo_LINK_FLAGS})
 
         INSTALL(TARGETS py2geom DESTINATION "${SITEPACKAGE}/py2geom")
         INSTALL(FILES "${CMAKE_CURRENT_SOURCE_DIR}/__init__.py" DESTINATION "${SITEPACKAGE}/py2geom")
 
 ENDIF(2GEOM_BOOST_PYTHON)
+
+
+
