@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import lib2geom_py as g
+import py2geom as g
 
 a = g.Point(1,2)
 b = g.Point(31,2)
