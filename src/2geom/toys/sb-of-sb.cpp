@@ -1,5 +1,6 @@
 #include <2geom/sbasis-of.h>
 #include <2geom/sbasis.h>
+#include <2geom/sbasis-geometric.h>
 #include <2geom/bezier-to-sbasis.h>
 
 #include <2geom/toys/path-cairo.h>
@@ -123,6 +124,16 @@ SBasisOf<double> compose(SBasisOf<SBasisOf<double> > const &f,
         r = s*r + compose(f[i][0],x)*y0 + compose(f[i][1],x)*y;
     }
     return r;
+}
+
+SBasisOf<double> compose(SBasisOf<SBasisOf<double> > const &f, 
+                         D2<SBasisOf<double> > const &X){
+    return compose(f, X[0], X[1]);
+}
+
+SBasisOf<double> compose(SBasisOf<SBasisOf<double> > const &f, 
+                         D2<SBasis> const &X){
+    return compose(f, toSBasisOfDouble(X[0]), toSBasisOfDouble(X[1]));
 }
 
 
@@ -266,6 +277,67 @@ Piecewise<SBasis> convole(SBasisOf<double> const &f, Interval dom_f,
     result.push(seg,dom_f.max() + dom_g.max());        
 }
 
+template <typename T>
+SBasisOf<T> subderivative(SBasisOf<T> const& f) {
+    SBasisOf<T> res;
+    for(unsigned i = 0; i < f.size(); i++) {
+        res.push_back(LinearOf<T>(derivative(f[i][0]), derivative(f[i][1])));
+    }
+    return res;
+}
+
+OptInterval bounds_fast(SBasisOf<double> const &f) {
+    return bounds_fast(toSBasis(f));
+}
+
+/**
+ * Finds a path which traces the 0 contour of f, traversing from A to B as a single cubic d2<sbasis>.
+ * The algorithm is based on matching direction and curvature at each end point.
+ */
+//TODO: handle the case when B is "behind" A for the natural orientation of the level set.
+//TODO: more generally, there might be up to 4 solutions. Choose the best one!
+D2<SBasis>
+sbofsb_cubic_solve(SBasisOf<SBasisOf<double> > const &f, Geom::Point const &A, Geom::Point const &B){
+    D2<SBasis>result;//(Linear(A[X],B[X]),Linear(A[Y],B[Y]));
+    //g_warning("check 0 = %f = %f!", f.apply(A[X],A[Y]), f.apply(B[X],B[Y]));
+
+    SBasisOf<SBasisOf<double> > f_u  = derivative(f);
+    SBasisOf<SBasisOf<double> > f_v  = subderivative(f);
+    SBasisOf<SBasisOf<double> > f_uu = derivative(f_u);
+    SBasisOf<SBasisOf<double> > f_uv = derivative(f_v);
+    SBasisOf<SBasisOf<double> > f_vv = subderivative(f_v);
+
+    Geom::Point dfA(f_u.valueAt(A[X]).valueAt(A[Y]),f_v.valueAt(A[X]).valueAt(A[Y]));
+    Geom::Point dfB(f_u.valueAt(B[X]).valueAt(B[Y]),f_v.valueAt(B[X]).valueAt(B[Y]));
+
+    Geom::Point V0 = rot90(dfA);
+    Geom::Point V1 = rot90(dfB);
+    
+    double D2fVV0 = f_uu.valueAt(A[X]).valueAt(A[Y])*V0[X]*V0[X]+
+                  2*f_uv.valueAt(A[X]).valueAt(A[Y])*V0[X]*V0[Y]+
+                    f_vv.valueAt(A[X]).valueAt(A[Y])*V0[Y]*V0[Y];
+    double D2fVV1 = f_uu.valueAt(B[X]).valueAt(B[Y])*V1[X]*V1[X]+
+                  2*f_uv.valueAt(B[X]).valueAt(B[Y])*V1[X]*V1[Y]+
+                    f_vv.valueAt(B[X]).valueAt(B[Y])*V1[Y]*V1[Y];
+
+    std::vector<D2<SBasis> > candidates = cubics_fitting_curvature(A,B,V0,V1,D2fVV0,D2fVV1);
+    if (candidates.size()==0) {
+        return D2<SBasis>(Linear(A[X],B[X]),Linear(A[Y],B[Y]));
+    }
+    //TODO: I'm sure std algorithm could do that for me...
+    double error = -1;
+    unsigned best = 0;
+    for (unsigned i=0; i<candidates.size(); i++){
+        Interval bounds = *bounds_fast(compose(f,candidates[i]));
+        double new_error = (fabs(bounds.max())>fabs(bounds.min()) ? fabs(bounds.max()) : fabs(bounds.min()) );
+        if ( new_error < error || error < 0 ){
+            error = new_error;
+            best = i;
+        }
+    }
+    return candidates[best];
+}
+
 class SBasis0fSBasisToy: public Toy {
     unsigned size;
     PointSetHandle hand;
@@ -290,9 +362,9 @@ class SBasis0fSBasisToy: public Toy {
         if (hand.pts[5][Y]<slider_top) hand.pts[5][Y] = slider_top; 
         if (hand.pts[5][Y]>slider_bot) hand.pts[5][Y] = slider_bot; 
 
-        double tA = (slider_bot-hand.pts[4][Y])/(slider_bot-slider_top);
-        double tB = (slider_bot-hand.pts[5][Y])/(slider_bot-slider_top);
-
+        //double tA = (slider_bot-hand.pts[4][Y])/(slider_bot-slider_top);
+        //double tB = (slider_bot-hand.pts[5][Y])/(slider_bot-slider_top);
+        
         cairo_move_to(cr,Geom::Point(slider_margin,slider_bot));
         cairo_line_to(cr,Geom::Point(slider_margin,slider_top));
         cairo_move_to(cr,Geom::Point(width-slider_margin,slider_bot));
@@ -320,14 +392,32 @@ class SBasis0fSBasisToy: public Toy {
         SBasisOf<SBasisOf<double> > f,u,v;
         u.push_back(LinearOf<SBasisOf<double> >(LinearOf<double>(-1,-1),LinearOf<double>(1,1)));
         v.push_back(LinearOf<SBasisOf<double> >(LinearOf<double>(-1,1),LinearOf<double>(-1,1)));
-#if 0
-        f = u*u + v*v;
+#if 1
+        f = u*u + v*v - LinearOf<SBasisOf<double> >(LinearOf<double>(1,1),LinearOf<double>(1,1));
         //*notify << "input dim = " << f.input_dim() <<"\n";
         plot3d(cr,f,frame);
         cairo_set_line_width(cr,1);        
         cairo_set_source_rgba (cr, .5, 0.5, 0.5, 1.);
         cairo_stroke(cr);
-#endif
+        
+        LineSegment ls(Point(0,0), Point(10,10));
+        SBasis cutting = toSBasis(compose(f, ls.toSBasis()));
+        //cairo_sb(cr, cutting);
+        //cairo_stroke(cr);
+        plot3d(cr, ls.toSBasis()[0], ls.toSBasis()[1], SBasis(0.0), frame);
+        vector<double> rts = roots(cutting);
+        assert(rts.size() >= 2);
+        Geom::Point A = ls.pointAt(rts[0]);
+        Geom::Point B = ls.pointAt(rts[1]);
+
+        //Geom::Point A(1,0.5);
+        //Geom::Point B(0.5,1);
+        D2<SBasis> zeroset = sbofsb_cubic_solve(f,A,B);
+        plot3d(cr, zeroset[X], zeroset[Y], SBasis(Linear(0.)),frame);
+        cairo_set_line_width(cr,1);        
+        cairo_set_source_rgba (cr, 0.9, 0., 0., 1.);
+        cairo_stroke(cr);
+#else
 
         SBasisOf<SBasisOf<double> > g = u - v ;
         g += LinearOf<SBasisOf<double> >(SBasisOf<double>(LinearOf<double>(.5,.5)));
@@ -350,7 +440,7 @@ class SBasis0fSBasisToy: public Toy {
         cairo_set_source_rgba (cr, .5, 0.9, 0.5, 1.);
         cairo_stroke(cr);
 */
-
+#endif
         Toy::draw(cr, notify, width, height, save);
     }        
     
