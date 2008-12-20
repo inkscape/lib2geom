@@ -180,6 +180,10 @@ struct Frame
     Geom::Point x;
     Geom::Point y;
     Geom::Point z;
+    // find the point on the x,y plane that projects to P
+    Point unproject(Point P) {
+        return P * from_basis(x, y, O).inverse();
+    }
 };
 
 void
@@ -341,6 +345,7 @@ sbofsb_cubic_solve(SBasisOf<SBasisOf<double> > const &f, Geom::Point const &A, G
 class SBasis0fSBasisToy: public Toy {
     unsigned size;
     PointSetHandle hand;
+    PointSetHandle cut_hand;
     void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
         
         double slider_top = width/4.;
@@ -400,23 +405,25 @@ class SBasis0fSBasisToy: public Toy {
         cairo_set_source_rgba (cr, .5, 0.5, 0.5, 1.);
         cairo_stroke(cr);
         
-        LineSegment ls(Point(0,0), Point(10,10));
+        LineSegment ls(frame.unproject(cut_hand.pts[0]),
+                       frame.unproject(cut_hand.pts[1]));
         SBasis cutting = toSBasis(compose(f, ls.toSBasis()));
         //cairo_sb(cr, cutting);
         //cairo_stroke(cr);
         plot3d(cr, ls.toSBasis()[0], ls.toSBasis()[1], SBasis(0.0), frame);
         vector<double> rts = roots(cutting);
-        assert(rts.size() >= 2);
-        Geom::Point A = ls.pointAt(rts[0]);
-        Geom::Point B = ls.pointAt(rts[1]);
+        if(rts.size() >= 2) {
+            Geom::Point A = ls.pointAt(rts[0]);
+            Geom::Point B = ls.pointAt(rts[1]);
 
-        //Geom::Point A(1,0.5);
-        //Geom::Point B(0.5,1);
-        D2<SBasis> zeroset = sbofsb_cubic_solve(f,A,B);
-        plot3d(cr, zeroset[X], zeroset[Y], SBasis(Linear(0.)),frame);
-        cairo_set_line_width(cr,1);        
-        cairo_set_source_rgba (cr, 0.9, 0., 0., 1.);
-        cairo_stroke(cr);
+            //Geom::Point A(1,0.5);
+            //Geom::Point B(0.5,1);
+            D2<SBasis> zeroset = sbofsb_cubic_solve(f,A,B);
+            plot3d(cr, zeroset[X], zeroset[Y], SBasis(Linear(0.)),frame);
+            cairo_set_line_width(cr,1);        
+            cairo_set_source_rgba (cr, 0.9, 0., 0., 1.);
+            cairo_stroke(cr);
+        }
 #else
 
         SBasisOf<SBasisOf<double> > g = u - v ;
@@ -447,6 +454,9 @@ class SBasis0fSBasisToy: public Toy {
 public:
     SBasis0fSBasisToy(){
         handles.push_back(&hand);
+        handles.push_back(&cut_hand); 
+        cut_hand.push_back(100,100);
+        cut_hand.push_back(500,500);
     }
 };
 
