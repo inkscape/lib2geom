@@ -501,7 +501,7 @@ SBasisOf<T> integral(SBasisOf<T> const &c){
 template<typename T>
 SBasisOf<T> derivative(SBasisOf<T> const &a){
     SBasisOf<T> c;
-    c.resize(a.size(), LinearOf<T>(0,0));
+    c.resize(a.size(), LinearOf<T>());
     if(a.isZero())
         return c;
 
@@ -514,7 +514,7 @@ SBasisOf<T> derivative(SBasisOf<T> const &a){
     int k = a.size()-1;
     T d = (2*k+1)*(a[k][1] - a[k][0]);
     //TODO: do a real test to know if d==0!
-    if(d == T(0))
+    if(d == T(0.0))
         c.pop_back();
     else {
         c[k][0] = d;
