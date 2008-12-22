@@ -46,13 +46,21 @@ IF(2GEOM_BOOST_PYTHON)
             SET_TARGET_PROPERTIES(py2geom PROPERTIES SUFFIX ".pyd")
         ENDIF(PYDEXTENSION)
 
-        TARGET_LINK_LIBRARIES(py2geom 2geom ${PYTHON_LIBRARIES} ${BOOST_PYTHON_LIBRARY})
+        TARGET_LINK_LIBRARIES(py2geom 2geom ${BOOST_PYTHON_LIBRARY} ${PYTHON_LIBRARIES})
         IF(pycairo_FOUND)
             TARGET_LINK_LIBRARIES(py2geom ${cairo_LINK_FLAGS})
         ENDIF(pycairo_FOUND)
 
         INSTALL(TARGETS py2geom DESTINATION "${SITEPACKAGE}/py2geom")
         INSTALL(FILES "${CMAKE_CURRENT_SOURCE_DIR}/__init__.py" DESTINATION "${SITEPACKAGE}/py2geom")
+        IF (WIN32)
+            # on windows, statically linking boost.python does not work :-(  So we have to copy that DLL to py2geom's dir too
+            GET_FILENAME_COMPONENT(BOOST_PYTHON_NAME ${BOOST_PYTHON_LIBRARY} NAME_WE)
+            # if the dll name has "lib" in front of it, remove it.
+            STRING( REPLACE "lib" "" BOOST_PYTHON_NAME_WO_LIB ${BOOST_PYTHON_NAME})
+            GET_FILENAME_COMPONENT(BOOST_PYTHON_PATH ${BOOST_PYTHON_LIBRARY} PATH)
+            INSTALL(FILES "${BOOST_PYTHON_PATH}/${BOOST_PYTHON_NAME}.dll" DESTINATION "${SITEPACKAGE}/py2geom" RENAME "${BOOST_PYTHON_NAME_WO_LIB}.dll")
+        ENDIF(WIN32)
 
 ENDIF(2GEOM_BOOST_PYTHON)
 
