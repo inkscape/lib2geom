@@ -16,7 +16,7 @@ for i in point_fns_1:
 for i in point_fns_2:
     print "%s:" % i, g.__dict__[i](a,b)
 print "a == b", a == b
-print "Lerp:", g.Lerp(0.3, a,b)
+print "Lerp:", g.lerp(0.3, a,b)
 
 bo = g.BezOrd(2,3)
 print bo
