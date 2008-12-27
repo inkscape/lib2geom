@@ -766,7 +766,7 @@ Piecewise<T> reverse(Piecewise<T> const &f) {
  *  \return a if t = 0, b if t = 1, or an interpolation between a and b for t in [0,1]
  */
 template<typename T>
-Piecewise<T> lerp(Piecewise<T> const &a, Piecewise<T> b, double t) {
+Piecewise<T> lerp(double t, Piecewise<T> const &a, Piecewise<T> b) {
     // Make sure both paths have the same number of segments and cuts at the same locations
     b.setDomain(a.domain());
     Piecewise<T> pA = partition(a, b.cuts);
