@@ -9,13 +9,13 @@ print a, b
 point_fns_1 = ["L1", "L2", "L2sq", "LInfty", "is_zero", "is_unit_vector",
              "atan2", "rot90", 
              "unit_vector", "abs"]
-point_fns_2 = ["dot", "angle_between", "distance", "dist_sq", "cross"]
+point_fns_2 = ["dot", "angle_between", "distance", "distanceSq", "cross"]
 
 for i in point_fns_1:
     print "%s:" % i, g.__dict__[i](a)
 for i in point_fns_2:
     print "%s:" % i, g.__dict__[i](a,b)
-print "point_equalp:", g.point_equalp(a,b, 100)
+print "a == b", a == b
 print "Lerp:", g.Lerp(0.3, a,b)
 
 bo = g.BezOrd(2,3)
