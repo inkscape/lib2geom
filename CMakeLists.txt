@@ -3,7 +3,6 @@ PROJECT(lib2geom CXX)
 SET(2GEOM_MINOR_VERSION 3)
 SET(2GEOM_VERSION 0.${2GEOM_MINOR_VERSION})
 SET(2GEOM_ABI_VERSION ${2GEOM_MINOR_VERSION}.0)
-SET(CMAKE_INCLUDE_CURRENT_DIR TRUE)  # FIXME: I think this should be turned *off* as it is used as library, that is included with <2geom/...>
 
 SET(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib)
 SET(CMAKE_SKIP_RPATH:BOOL OFF)
@@ -33,12 +32,6 @@ ENDIF(pycairo_FOUND)
 SET(CXX_WARNINGS_FLAGS "-Wall -Wformat -Wformat-security -W -Wpointer-arith -Wcast-align -Wsign-compare -Woverloaded-virtual -Wswitch")
 SET(CMAKE_CXX_FLAGS "${GTK2_CFLAGS} ${cairo_CFLAGS} ${gsl_CFLAGS} ${pycairo_CFLAGS} ${CXX_WARNINGS_FLAGS}")
 SET(CMAKE_MAKE_PROGRAM "${CMAKE_MAKE_PROGRAM} -j2")
-
-SET(CMAKE_MAJOR_MINOR "${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}")
-IF("${CMAKE_MAJOR_MINOR}" STREQUAL "2.2")
-    SET(CMAKE_AR "ar")
-    SET(CMAKE_RANLIB "ranlib")
-ENDIF("${CMAKE_MAJOR_MINOR}" STREQUAL "2.2")
 
 OPTION(2GEOM_BUILD_SHARED
   "Build lib2geom and libtoy as shared libraries."
