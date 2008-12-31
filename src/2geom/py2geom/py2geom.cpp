@@ -32,8 +32,8 @@
 #include <boost/python/implicit.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 
-#include "circle-circle.cpp"
-#include "geom.h"
+#include <2geom/circle-circle.cpp>
+#include <2geom/geom.h>
 
 #include "py2geom.h"
 
