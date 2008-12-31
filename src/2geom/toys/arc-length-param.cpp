@@ -53,7 +53,14 @@ public:
         //cairo_pw_d2_sb(cr, B);
         cairo_stroke(cr);
 
+        Timer tm;
+        tm.ask_for_timeslice();
+        tm.start();
+        
         Piecewise<D2<SBasis> > uniform_B = arc_length_parametrization(B);
+        Timer::Time als_time = tm.lap();
+        *timer_stream << "arc_length_parametrization, time = " << als_time << std::endl;
+
         cairo_set_source_rgba (cr, 0., 0., 0.9, 1);
         dot_plot(cr,uniform_B);
         cairo_stroke(cr);

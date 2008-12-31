@@ -39,7 +39,13 @@ class CurvatureTester: public Toy {
 	cairo_stroke(cr);
 
 	double t=std::max(0.,std::min(1.,(sample_point.pos[0]-150)/300.));
+        Timer tm;
+        tm.ask_for_timeslice();
+        tm.start();
+        
         Piecewise<SBasis> K = curvature(B);
+        Timer::Time als_time = tm.lap();
+        *timer_stream << "curvature " << als_time << std::endl;
         
         for(unsigned ix = 0; ix < K.segs.size(); ix++) {
             D2<SBasis> Kxy;

@@ -31,7 +31,7 @@ public:
         handles.push_back(&bez_handle);
     }
 
-    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream, std::ostringstream *timing_stream) {
+    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timing_stream) {
         cairo_set_source_rgba (cr, 0., 0., 0, 1);
         cairo_set_line_width (cr, 1);
         
@@ -51,14 +51,14 @@ public:
             tm.ask_for_timeslice();
             tm.start();
             Piecewise<SBasis> als = arcLengthSb(B, tol);
-            double als_time = tm.lap();
+            Timer::Time als_time = tm.lap();
             *timing_stream << "arcLengthSb based " 
                            << ", time = " << als_time 
                            << units_string << std::endl;
 
             tm.start();
             Piecewise<SBasis> als2 = arcLengthSb2(Piecewise<D2<SBasis> >(B), 0.01);
-            double als2_time = tm.lap();
+            Timer::Time als2_time = tm.lap();
 
             *timing_stream << "arcLengthSb2 based " 
                            << ", time = " << als2_time 
@@ -67,7 +67,7 @@ public:
             double integrating_arc_length = 0;
             tm.start();
             length_integrating(B, integrating_arc_length, abs_error, 1e-10);
-            double li_time = tm.lap();
+            Timer::Time li_time = tm.lap();
     
             *timing_stream << "gsl integrating " 
                            << ", time = " << li_time 
@@ -109,7 +109,7 @@ public:
         }
 
 
-        Toy::draw(cr, notify, width, height, save,timer_stream);
+        Toy::draw(cr, notify, width, height, save,timing_stream);
     }
 };
 

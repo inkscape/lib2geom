@@ -69,7 +69,13 @@ class CurveIntersect : public Toy
         draw_text(cr, A.at0(), "A");
         draw_text(cr, B.at0(), "B");
 
+        Timer tm;
+        tm.ask_for_timeslice();
+        tm.start();
+        
         find_collinear_normal(xs, pshA.pts, pshB.pts, m_precision);
+        Timer::Time als_time = tm.lap();
+        *timer_stream << "find_collinear_normal " << als_time << std::endl;
         cairo_set_line_width (cr, 0.3);
         cairo_set_source_rgba (cr, 0.0, 0.0, 0.7, 1);
         for (size_t i = 0; i < xs.size(); ++i)

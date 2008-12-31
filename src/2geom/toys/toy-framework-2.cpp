@@ -62,14 +62,14 @@ void redraw() { gtk_widget_queue_draw(GTK_WIDGET(window)); }
 
 #include <typeinfo>
 
-Toy::Toy() : hit_data(0) {
+Toy::Toy() : hit_data(0), show_timings(0) {
     mouse_down = false; 
     selected = NULL; 
     notify_offset = 0;
 }
 
 
-void Toy::draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool /*save*/, std::ostringstream */*timing_stream*/)
+void Toy::draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool /*save*/, std::ostringstream *timer_stream)
 {
     if(should_draw_bounds() == 1) {
         cairo_set_source_rgba (cr, 0., 0., 0, 0.8);
@@ -107,6 +107,10 @@ void Toy::draw(cairo_t *cr, std::ostringstream *notify, int width, int height, b
     {
         *notify << std::ends;
         draw_text(cr, Geom::Point(0, height-notify_offset), notify->str().c_str(), true);
+    }
+    if(show_timings) {
+        *timer_stream << std::ends;
+        draw_text(cr, Geom::Point(0, notify_offset), timer_stream->str().c_str(), false);
     }
 }
 
@@ -257,7 +261,10 @@ void save_cairo_backend(const char* filename) {
     }
     if(current_toy != NULL) {
         std::ostringstream * notify = new std::ostringstream;
-        current_toy->draw(cr, notify, width, height, true, notify);
+        std::ostringstream * timer_stream = new std::ostringstream;
+        current_toy->draw(cr, notify, width, height, true, timer_stream);
+        delete notify;
+        delete timer_stream;
     }
 
     cairo_show_page(cr);
@@ -286,7 +293,10 @@ void take_screenshot(const char* filename) {
         
     if(current_toy != NULL) {
         std::ostringstream * notify = new std::ostringstream;
-	current_toy->draw(cr, notify, width, height, true, notify);
+        std::ostringstream * timer_stream = new std::ostringstream;
+	current_toy->draw(cr, notify, width, height, true, timer_stream);
+        delete notify;
+        delete timer_stream;
     }
     
     cairo_show_page(cr);
@@ -312,6 +322,11 @@ static gint delete_event(GtkWidget* window, GdkEventAny* e, gpointer data) {
     return FALSE;
 }
 
+void toggle_show_timings() {
+    if(current_toy)
+        current_toy->show_timings = !current_toy->show_timings;
+}
+
 static gboolean expose_event(GtkWidget *widget, GdkEventExpose */*event*/, gpointer data)
 {
     (void)(data);
@@ -335,7 +350,10 @@ static gboolean expose_event(GtkWidget *widget, GdkEventExpose */*event*/, gpoin
     cairo_set_source_rgba(cr,1,1,1,1);
     cairo_fill(cr);
     if(current_toy != NULL) {
-        current_toy->draw(cr, &notify, width, height, false, &notify);
+        std::ostringstream * timer_stream = new std::ostringstream;
+
+        current_toy->draw(cr, &notify, width, height, false, timer_stream);
+        delete timer_stream;
     }
     cairo_destroy(cr);
 
@@ -404,6 +422,7 @@ GtkItemFactoryEntry menu_items[] = {
     { (gchar*)"/File/sep",          NULL,           NULL,           0,  (gchar*)"<Separator>"                 },
     { (gchar*)"/File/Save SVG or PDF", NULL,           save_cairo,     0,  (gchar*)"<StockItem>", GTK_STOCK_SAVE },
     { (gchar*)"/File/sep",          NULL,           NULL,           0,  (gchar*)"<Separator>"                 },
+    { (gchar*)"/File/_Show Timings",  NULL,         toggle_show_timings,  0,  (gchar*)"<CheckItem>" },
     { (gchar*)"/File/_Quit",        (gchar*)"<CTRL>Q",      gtk_main_quit,  0,  (gchar*)"<StockItem>", GTK_STOCK_QUIT },
     { (gchar*)"/_Help",             NULL,           NULL,           0,  (gchar*)"<LastBranch>"                },
     { (gchar*)"/Help/About",        NULL,           make_about,     0,  (gchar*)"<StockItem>", GTK_STOCK_ABOUT}

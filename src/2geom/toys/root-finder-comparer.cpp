@@ -47,7 +47,6 @@ double eval_bernstein(double* w, double t, unsigned N) {
 using std::vector;
 using namespace Geom;
 
-#define HAVE_GSL
 #ifdef HAVE_GSL
 #include <complex>
 using std::complex;
@@ -55,9 +54,6 @@ using std::complex;
 
 class RootFinderComparer: public Toy {
 public:
-    double timer_precision;
-    double units;
-    std::string units_string;
     PointSetHandle psh;
     
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
@@ -67,21 +63,17 @@ public:
             trans[i] = psh.pts[i] - Geom::Point(0, height/2);
         }
         
+        Timer tm;
+        
+        
         std::vector<double> solutions;
-        clock_t end_t = clock()+clock_t(timer_precision*CLOCKS_PER_SEC);
-        unsigned iterations = 0;
-        while(end_t > clock()) {
-            solutions.resize(6);
-            FindRoots(&trans[0], 5, &solutions[0], 0);
-            iterations++;
-        }
-        *notify << "original time = " << timer_precision*units/iterations 
-                << units_string << std::endl;
-#if 0
-        std::cout << "original: ";
-        std::copy(solutions.begin(), solutions.end(), std::ostream_iterator<double>(std::cout, ",\t"));
-        std::cout << std::endl;
-#endif
+        solutions.resize(6);
+        
+        tm.ask_for_timeslice();
+        tm.start();
+        FindRoots(&trans[0], 5, &solutions[0], 0);
+        Timer::Time als_time = tm.lap();
+        *notify << "original time = " << als_time << std::endl;
         
         D2<SBasis> test_sb = psh.asBezier();//handles_to_sbasis(handles.begin(),5);
         Interval bs = *bounds_exact(test_sb[1]);
@@ -99,10 +91,10 @@ public:
 #ifdef HAVE_GSL    
         vector<complex<double> > complex_solutions;
         complex_solutions = solve(ply);
-#if 0
-        std::cout << "gsl: ";
-        std::copy(complex_solutions.begin(), complex_solutions.end(), std::ostream_iterator<std::complex<double> >(std::cout, ",\t"));
-        std::cout << std::endl;
+#if 1
+        *notify << "gsl: ";
+        std::copy(complex_solutions.begin(), complex_solutions.end(), std::ostream_iterator<std::complex<double> >(*notify, ",\t"));
+        *notify << std::endl;
 #endif
 #endif
         
@@ -121,79 +113,49 @@ public:
         }
 #endif
 
-        // Base loop to remove overhead
-        end_t = clock()+clock_t(timer_precision*CLOCKS_PER_SEC);
-        iterations = 0;
-        while(end_t > clock()) {
-            iterations++;
-        }
-        double overhead = timer_precision*units/iterations;
-
 #ifdef HAVE_GSL    
-        end_t = clock()+clock_t(timer_precision*CLOCKS_PER_SEC);
-        iterations = 0;
-        while(end_t > clock()) {
-            solve(ply);
-            iterations++;
-        }
-        *notify << "gsl poly " 
-                << ", time = " << timer_precision*units/iterations-overhead 
-                << units_string << std::endl;
-      #endif
+        
+        tm.ask_for_timeslice();
+        tm.start();
+        solve(ply);
+        als_time = tm.lap();
+        *timer_stream << "gsl poly = " << als_time << std::endl;
+#endif
   
     #if ZROOTS_TEST
-        end_t = clock()+clock_t(timer_precision*CLOCKS_PER_SEC);
-        iterations = 0;
-        while(end_t > clock()) {
-            zroots(a, ply.size(), rts, false);
-            iterations++;
-        }
-    
-        *notify << "zroots poly " 
-                << ", time = " << timer_precision*units/iterations-overhead 
-                << units_string << std::endl;
+        tm.ask_for_timeslice();
+        tm.start();
+        zroots(a, ply.size(), rts, false);
+        als_time = tm.lap();
+        *timer_stream << "zroots poly = " << als_time << std::endl;
     #endif    
     
     #if LAGUERRE_TEST
-        end_t = clock()+clock_t(timer_precision*CLOCKS_PER_SEC);
-        iterations = 0;
-        while(end_t > clock()) {
-            Laguerre(ply);
-            iterations++;
-        }
+        tm.ask_for_timeslice();
+        tm.start();
+        Laguerre(ply);
+        als_time = tm.lap();
+        *timer_stream << "Laguerre poly = " << als_time << std::endl;
         complex_solutions = Laguerre(ply);
     
-        *notify << "Laguerre poly " 
-                << ", time = " << timer_precision*units/iterations-overhead 
-                << units_string << std::endl;
     #endif    
     
     #define SBASIS_SUBDIV_TEST 0
     #if SBASIS_SUBDIV_TEST
-        end_t = clock()+clock_t(timer_precision*CLOCKS_PER_SEC);
-        iterations = 0;
-        while(end_t > clock()) {
-            std::vector<double> rts;
-            subdiv_sbasis(-test_sb[1] + Linear(3*width/4),
-                          rts, 0, 1);
-            iterations++;
-        }
-    
-        *notify << "sbasis subdivision " 
-                << ", time = " << timer_precision*units/iterations-overhead 
-                << units_string << std::endl;
+        tm.ask_for_timeslice();
+        tm.start();
+        subdiv_sbasis(-test_sb[1] + Linear(3*width/4),
+                      rts, 0, 1);
+        als_time = tm.lap();
+        *timer_stream << "sbasis subdivision = " << als_time << std::endl;
     #endif    
     #if 0
-        end_t = clock()+clock_t(timer_precision*CLOCKS_PER_SEC);
-        iterations = 0;
-        while(end_t > clock()) {
-            solutions.resize(0);
-            find_parametric_bezier_roots(&trans[0], 5, solutions, 0);
-            iterations++;
-        }
-        *notify << "solver parametric time = " 
-                << timer_precision*units/iterations-overhead 
-                << units_string << std::endl;
+        tm.ask_for_timeslice();
+        tm.start();
+        solutions.resize(0);
+        find_parametric_bezier_roots(&trans[0], 5, solutions, 0);
+        als_time = tm.lap();
+        *timer_stream << "solver parametric = " << als_time << std::endl;
     #endif
         double ys[trans.size()];
         for(unsigned i = 0; i < trans.size(); i++) {
@@ -202,28 +164,25 @@ public:
             x = (1-x)*height/4 + x*height*3/4;
             draw_handle(cr, Geom::Point(x, height/2 + ys[i]));
         }
-        end_t = clock()+clock_t(timer_precision*CLOCKS_PER_SEC);
-        iterations = 0;
-        while(end_t > clock()) {
-            solutions.resize(0);
-            find_bernstein_roots(ys, 5, solutions, 0, 0, 1, false);
-            iterations++;
-        }
+        
+        solutions.resize(0);
+        tm.ask_for_timeslice();
+        tm.start();
+        find_bernstein_roots(ys, 5, solutions, 0, 0, 1, false);
+        als_time = tm.lap();
         *notify << "found sub solutions at:\n";
         std::copy(solutions.begin(), solutions.end(), std::ostream_iterator<double >(*notify, ","));
-        *notify << "solver 1d bernstein subdivision slns" << solutions.size() 
-                << ", time = " << timer_precision*units/iterations-overhead 
-                << units_string << std::endl;
-        end_t = clock()+clock_t(timer_precision*CLOCKS_PER_SEC);
-        iterations = 0;
-        while(end_t > clock()) {
-            solutions.resize(0);
-            find_bernstein_roots(ys, 5, solutions, 0, 0, 1, true);
-            iterations++;
-        }
+        *notify << "solver 1d bernstein subdivision n_slns = " << solutions.size() 
+                << ", time = " << als_time << std::endl;
+
+        solutions.resize(0);
+        tm.ask_for_timeslice();
+        tm.start();
+        find_bernstein_roots(ys, 5, solutions, 0, 0, 1, true);
+        als_time = tm.lap();
+
         *notify << "solver 1d bernstein secant subdivision slns" << solutions.size() 
-                << ", time = " << timer_precision*units/iterations-overhead 
-                << units_string << std::endl;
+                << ", time = " << als_time << std::endl;
         *notify << "found secant solutions at:\n";
         std::copy(solutions.begin(), solutions.end(), std::ostream_iterator<double >(*notify, ","));
         *notify << "solver 1d bernstein subdivision accuracy:"
@@ -231,24 +190,20 @@ public:
         for(unsigned i = 0; i < solutions.size(); i++) {
             *notify << solutions[i] << ":" << eval_bernstein(ys, solutions[i], trans.size()) << ",";
         }
+        tm.ask_for_timeslice();
+        tm.start();
         solutions = roots( -test_sb[1] + Linear(height/2));
-#if 0
-        std::cout << "sbasis sub: ";
-        std::copy(solutions.begin(), solutions.end(), std::ostream_iterator<double>(std::cout, ",\t"));
-        std::cout << std::endl;
+        als_time = tm.lap();
+#if 1
+        *notify << "sbasis roots: ";
+        std::copy(solutions.begin(), solutions.end(), std::ostream_iterator<double>(*notify, ",\t"));
+        *notify << "\n time = " << als_time << std::endl;
 #endif        
         for(unsigned i = 0; i < solutions.size(); i++) {
             double x = test_sb[0](solutions[i]);
             draw_cross(cr, Geom::Point(x, height/2));
             
         }
-    /*
-        for(unsigned i = 0; i < complex_solutions.size(); i++) {
-            if(complex_solutions[i].imag() == 0) {
-                double x = test_sb[0](complex_solutions[i].real());
-                draw_handle(cr, Geom::Point(x, 3*width/4));
-            }
-        }*/
 
         *notify << "found " << solutions.size() << "solutions at:\n";
         std::copy(solutions.begin(), solutions.end(), std::ostream_iterator<double >(*notify, ","));
@@ -263,7 +218,7 @@ public:
         cairo_d2_sb(cr, B);
         Toy::draw(cr, notify, width, height, save,timer_stream);
     }
-    RootFinderComparer() : timer_precision(0.1), units(1e6), units_string("us") // microseconds
+    RootFinderComparer()
     {
         for(unsigned i = 0; i < 6; i++) psh.push_back(Geom::Point(uniform()*400, uniform()*400));
         handles.push_back(&psh);

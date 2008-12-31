@@ -174,6 +174,7 @@ public:
     int canvas_click_button;
     double notify_offset;
     std::string name;
+    bool show_timings;
 
     Toy();
 
@@ -211,8 +212,8 @@ Geom::Point read_point(FILE* f);
 
 
 
-const long long US_PER_SECOND = 1000000L;
-const long long NS_PER_US = 1000L;
+const long long NS_PER_SECOND = 1000000L;
+const long long NS_PER_NS = 1;
 
 using namespace std;
 
@@ -221,24 +222,35 @@ public:
   Timer() {}
   // note that CPU time is tracked per-thread, so the timer is only useful
   // in the thread it was start()ed from.
+  
+  class Time{
+  public:
+    double value;
+  Time(long long s, long long l) : value(l) {}
+  Time(double v) : value(v) {}
+    Time operator/(double iters) const {
+      return Time(value / iters);
+    }
+  };
+  
   void start() {
-    usec(start_time);
+    nsec(start_time);
   }
-  void lap(long long &us) {
-    usec(us);
-    us -= start_time;
+  void lap(long long &ns) {
+    nsec(ns);
+    ns -= start_time;
   }
-  long long lap() {
-    long long us;
-    usec(us);
-    return us - start_time;
+  Time lap() {
+    long long ns;
+    nsec(ns);
+    return Time(start_time, ns - start_time);
   }
-  void usec(long long &us) {
+  void nsec(long long &ns) {
 #ifndef WIN32
     clock_gettime(clock, &ts);
-    us = ts.tv_sec * US_PER_SECOND + ts.tv_nsec / NS_PER_US;
+    ns = ts.tv_sec * NS_PER_SECOND + ts.tv_nsec / NS_PER_NS;
 #else
-    us = 0;
+    ns = 0;
 #endif
   }
   /** Ask the OS nicely for a big time slice */
@@ -262,6 +274,12 @@ private:
 #  endif
 #endif
 };
+
+inline ostream& operator<<(ostream& o, Timer::Time const &t) {
+  o << t.value << "ns";
+  return o;
+}
+
 
 
 #endif // _2GEOM_TOY_FRAMEWORK2_H_
