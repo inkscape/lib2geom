@@ -27,6 +27,10 @@ OPTION(2GEOM_UNIT_TESTS
   "Build the projects Unit Tests"
   OFF)
 IF(2GEOM_UNIT_TESTS)
+  # temporary fix. use #include <2geom/bezier.h> instead of #include "bezier.h"
+  INCLUDE_DIRECTORIES( "../" )
+
+
     FOREACH(source ${2GEOM_TESTS_SRC})
         IF(${source} STREQUAL time-ops)
             ADD_EXECUTABLE(${source} EXCLUDE_FROM_ALL ${source}.cpp)
