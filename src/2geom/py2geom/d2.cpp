@@ -31,10 +31,10 @@
 
 #include "py2geom.h"
 #include "helpers.h"
-#include "../point.h"
-#include "../sbasis.h"
-#include "../d2.h"
-#include "../piecewise.h"
+#include <2geom/point.h>
+#include <2geom/sbasis.h>
+#include <2geom/d2.h>
+#include <2geom/piecewise.h>
 
 using namespace boost::python;
 
