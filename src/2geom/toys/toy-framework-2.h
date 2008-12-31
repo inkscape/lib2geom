@@ -249,15 +249,17 @@ public:
   }
 private:
   long long start_time;
+#ifndef WIN32
   struct timespec ts;
-#ifdef _POSIX_THREAD_CPUTIME
+#  ifdef _POSIX_THREAD_CPUTIME
   static const clockid_t clock = CLOCK_THREAD_CPUTIME_ID;
-#else
-# ifdef CLOCK_MONOTONIC
+#  else
+#    ifdef CLOCK_MONOTONIC
   static const clockid_t clock = CLOCK_MONOTONIC;
-# else
+#    else
   static const clockid_t clock = CLOCK_REALTIME;
-# endif
+#    endif
+#  endif
 #endif
 };
 
