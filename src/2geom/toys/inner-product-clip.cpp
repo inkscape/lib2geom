@@ -43,7 +43,7 @@ class InnerProductClip: public Toy {
     std::vector<Toggle> togs;
     PointHandle start_handle, end_handle;
     
-    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
+    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
 	cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
 
 	D2<Piecewise<SBasis> > B = make_cuts_independent(path_a_pw);
@@ -123,7 +123,7 @@ class InnerProductClip: public Toy {
 	cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
 	cairo_stroke(cr);
         
-        Toy::draw(cr, notify, width, height, save);
+        Toy::draw(cr, notify, width, height, save,timer_stream);
     }
     void key_hit(GdkEventKey *e) {
         if(e->keyval == 's') togs[1].toggle(); else

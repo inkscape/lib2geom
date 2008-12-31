@@ -60,7 +60,7 @@ class BoundsPath : public Toy
     
   private:
     void draw( cairo_t *cr, std::ostringstream *notify, 
-               int width, int height, bool save )
+               int width, int height, bool save, std::ostringstream *timer_stream)
     {
         cairo_set_line_width (cr, 0.3);
         m_selection_kind = (unsigned int) (sliders[0].value());
@@ -113,7 +113,7 @@ class BoundsPath : public Toy
         cairo_rectangle(cr, bound.left(), bound.top(), bound.width(), bound.height());
         cairo_stroke(cr);
         
-        Toy::draw(cr, notify, width, height, save);
+        Toy::draw(cr, notify, width, height, save,timer_stream);
     }
     
     

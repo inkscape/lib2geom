@@ -323,7 +323,7 @@ public:
     PointSetHandle b2_handle;
     void draw(cairo_t *cr,
 	      std::ostringstream *notify,
-	      int width, int height, bool save) {
+	      int width, int height, bool save, std::ostringstream *timer_stream) {
         srand(10);
         for(unsigned i=0; i<NB_SLIDER; i++){
             adjuster[i].pos[X] = 30+i*20;
@@ -414,7 +414,7 @@ public:
         cairo_set_source_rgba (cr, 0., 0., 0., 1);
         cairo_stroke(cr);
 
-        Toy::draw(cr, notify, width, height, save);
+        Toy::draw(cr, notify, width, height, save,timer_stream);
     }        
   
 public:

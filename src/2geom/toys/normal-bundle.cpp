@@ -160,7 +160,7 @@ class NormalBundleToy: public Toy {
     PointSetHandle B_handle;
     PointSetHandle P_handle;
     PointHandle O_handle;
-    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
+    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
         D2<SBasis> B = B_handle.asBezier();
         D2<SBasis> P = P_handle.asBezier();
         Geom::Point O = O_handle.pos;
@@ -192,7 +192,7 @@ class NormalBundleToy: public Toy {
         cairo_stroke(cr);
 
 
-        Toy::draw(cr, notify, width, height, save);
+        Toy::draw(cr, notify, width, height, save,timer_stream);
     }        
 
 public:

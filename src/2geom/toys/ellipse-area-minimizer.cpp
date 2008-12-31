@@ -232,7 +232,7 @@ class EllipseAreaMinimizer : public Toy
 {
   public:
     void draw( cairo_t *cr, std::ostringstream *notify,
-               int width, int height, bool save )
+               int width, int height, bool save, std::ostringstream *timer_stream)
     {
         Point toggle_sp( 300, height - 50);
         toggles[0].bounds = Rect( toggle_sp, toggle_sp + Point(135,25) );
@@ -258,7 +258,7 @@ class EllipseAreaMinimizer : public Toy
             catch(LogicalError exc)
             {
                 std::cerr << exc.what() << std::endl;
-                Toy::draw(cr, notify, width, height, save);
+                Toy::draw(cr, notify, width, height, save,timer_stream);
                 return;
             }
         }
@@ -275,7 +275,7 @@ class EllipseAreaMinimizer : public Toy
             *notify << "Perimeter: " << 2* (e.ray(X) + e.ray(Y));
         cairo_stroke(cr);
 
-        Toy::draw(cr, notify, width, height, save);
+        Toy::draw(cr, notify, width, height, save,timer_stream);
     }
 
     void draw_elliptical_arc_with_cairo(

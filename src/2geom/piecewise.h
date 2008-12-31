@@ -747,7 +747,7 @@ std::vector<std::vector<double> >multi_roots(Piecewise<SBasis> const &f, std::ve
 
 template<typename T>
 Piecewise<T> reverse(Piecewise<T> const &f) {
-    Piecewise<T> ret = Piecewise<T>();http://twan.home.fmf.nl/blog/plugins/writeback
+    Piecewise<T> ret = Piecewise<T>();
     ret.reserve(f.size());
     double start = f.cuts[0];
     double end = f.cuts.back();

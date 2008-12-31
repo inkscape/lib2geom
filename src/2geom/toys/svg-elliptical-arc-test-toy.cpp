@@ -166,8 +166,11 @@ class SVGEllipticalArcTestToy: public Toy
     }
 
     virtual void draw_common( cairo_t *cr, std::ostringstream *notify,
-                              int width, int height, bool /*save*/ )
+                              int width, int height, bool /*save*/,
+                              std::ostringstream *timer_stream=0)
     {
+        if(timer_stream == 0)
+            timer_stream = notify;
         init_common_ctrl_geom(cr, width, height, notify);
 
         no_solution = false;
@@ -243,7 +246,7 @@ class SVGEllipticalArcTestToy: public Toy
 
 
     void draw_comparison(cairo_t *cr, std::ostringstream *notify,
-                         int width, int height, bool save)
+                         int width, int height, bool save, std::ostringstream */*timer_stream*/)
     {
         draw_common(cr, notify, width, height, save);
         if ( no_solution || point_overlap ) return;
@@ -295,7 +298,7 @@ class SVGEllipticalArcTestToy: public Toy
     }
 
     void draw_portion(cairo_t *cr, std::ostringstream *notify,
-                      int width, int height, bool save)
+                      int width, int height, bool save, std::ostringstream */*timer_stream*/)
     {
         draw_common(cr, notify, width, height, save);
         init_portion_ctrl_geom(cr, notify, width, height);
@@ -334,7 +337,7 @@ class SVGEllipticalArcTestToy: public Toy
     }
 
     void draw_reverse(cairo_t *cr, std::ostringstream *notify,
-                      int width, int height, bool save)
+                      int width, int height, bool save, std::ostringstream */*timer_stream*/)
     {
         draw_common(cr, notify, width, height, save);
         init_reverse_ctrl_geom(cr, notify, width, height);
@@ -371,7 +374,7 @@ class SVGEllipticalArcTestToy: public Toy
     }
 
     void draw_np(cairo_t *cr, std::ostringstream *notify,
-                 int width, int height, bool save)
+                 int width, int height, bool save, std::ostringstream */*timer_stream*/)
     {
         draw_common(cr, notify, width, height, save);
         if ( no_solution || point_overlap ) return;
@@ -396,7 +399,7 @@ class SVGEllipticalArcTestToy: public Toy
     }
 
     void draw_derivative(cairo_t *cr, std::ostringstream *notify,
-                         int width, int height, bool save)
+                         int width, int height, bool save, std::ostringstream */*timer_stream*/)
     {
         draw_common(cr, notify, width, height, save);
         init_reverse_ctrl_geom(cr, notify, width, height);
@@ -428,7 +431,7 @@ class SVGEllipticalArcTestToy: public Toy
     }
 
     void draw_roots(cairo_t *cr, std::ostringstream *notify,
-                    int width, int height, bool save)
+                    int width, int height, bool save, std::ostringstream */*timer_stream*/)
     {
         draw_common(cr, notify, width, height, save);
         init_roots_ctrl_geom(cr, notify, width, height);
@@ -468,7 +471,7 @@ class SVGEllipticalArcTestToy: public Toy
     }
 
     void draw_bounds(cairo_t *cr, std::ostringstream *notify,
-                     int width, int height, bool save)
+                     int width, int height, bool save, std::ostringstream */*timer_stream*/)
     {
         draw_common(cr, notify, width, height, save);
         if ( no_solution || point_overlap ) return;
@@ -495,7 +498,7 @@ class SVGEllipticalArcTestToy: public Toy
     }
 
     void draw_fitting(cairo_t * cr, std::ostringstream *notify,
-                      int width, int height, bool save )
+                      int width, int height, bool save, std::ostringstream */*timer_stream*/)
     {
         draw_common(cr, notify, width, height, save);
         if ( no_solution || point_overlap ) return;
@@ -540,7 +543,7 @@ class SVGEllipticalArcTestToy: public Toy
     }
 
     void draw_transform(cairo_t *cr, std::ostringstream *notify,
-                        int width, int height, bool save)
+                        int width, int height, bool save, std::ostringstream */*timer_stream*/)
     {
         draw_common(cr, notify, width, height, save);
         init_transform_ctrl_geom(cr, notify, width, height);
@@ -650,7 +653,8 @@ class SVGEllipticalArcTestToy: public Toy
     }
 
     void draw_menu( cairo_t * /*cr*/, std::ostringstream *notify,
-                    int /*width*/, int /*height*/, bool /*save*/ )
+                    int /*width*/, int /*height*/, bool /*save*/,
+                    std::ostringstream */*timer_stream*/)
     {
         *notify << std::endl;
         for (int i = SHOW_MENU; i < TOTAL_ITEMS; ++i)
@@ -824,10 +828,10 @@ class SVGEllipticalArcTestToy: public Toy
     }
 
     virtual void draw( cairo_t *cr, std::ostringstream *notify,
-                       int width, int height, bool save )
+                       int width, int height, bool save, std::ostringstream *timer_stream)
     {
-        (this->*draw_f)(cr, notify, width, height, save);
-        Toy::draw(cr, notify, width, height, save);
+        (this->*draw_f)(cr, notify, width, height, save, timer_stream);
+        Toy::draw(cr, notify, width, height, save,timer_stream);
     }
 
   public:
@@ -836,7 +840,7 @@ class SVGEllipticalArcTestToy: public Toy
     {}
 
   private:
-    typedef void (SVGEllipticalArcTestToy::* draw_func_t) (cairo_t*, std::ostringstream*, int, int, bool);
+    typedef void (SVGEllipticalArcTestToy::* draw_func_t) (cairo_t*, std::ostringstream*, int, int, bool, std::ostringstream*);
     draw_func_t draw_f;
     bool set_common_control_geometry;
     bool set_control_geometry;

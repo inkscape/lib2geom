@@ -35,7 +35,7 @@ class Conic3: public Toy {
         handles.push_back(&psh);
     }
 
-    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
+    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
         cairo_set_source_rgba (cr, 0., 0., 0, 0.8);
         cairo_set_line_width (cr, 0.5);
         cairo_stroke(cr);
@@ -74,7 +74,7 @@ class Conic3: public Toy {
             }
         }
         cairo_d2_pw_sb(cr, B);
-        Toy::draw(cr, notify, width, height, save);
+        Toy::draw(cr, notify, width, height, save,timer_stream);
     }
 };
 

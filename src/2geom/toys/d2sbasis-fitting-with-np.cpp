@@ -48,7 +48,7 @@ class D2SBasisFitting : public Toy
 {
   private:
     void draw( cairo_t *cr, std::ostringstream *notify, 
-               int width, int height, bool save )
+               int width, int height, bool save, std::ostringstream *timer_stream)
     {
         bool changed = false;
         for (size_t i = 0; i < total_handles; ++i)
@@ -85,7 +85,7 @@ class D2SBasisFitting : public Toy
         cairo_d2_sb(cr, sb_curve);
         cairo_stroke(cr);
         
-        Toy::draw(cr, notify, width, height, save);
+        Toy::draw(cr, notify, width, height, save,timer_stream);
     }
     
   public:

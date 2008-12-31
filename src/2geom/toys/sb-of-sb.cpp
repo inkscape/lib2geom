@@ -346,7 +346,7 @@ class SBasis0fSBasisToy: public Toy {
     unsigned size;
     PointSetHandle hand;
     PointSetHandle cut_hand;
-    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
+    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
         
         double slider_top = width/4.;
         double slider_bot = width*3./4.;
@@ -448,7 +448,7 @@ class SBasis0fSBasisToy: public Toy {
         cairo_stroke(cr);
 */
 #endif
-        Toy::draw(cr, notify, width, height, save);
+        Toy::draw(cr, notify, width, height, save,timer_stream);
     }        
     
 public:

@@ -81,7 +81,7 @@ class Conic4: public Toy {
         handles.push_back(&psh);
     }
 
-    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
+    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
         std::vector<Geom::Point> e_h = psh.pts;
         for(int i = 0; i < 5; i++) {
             Geom::Point p = e_h[i];
@@ -107,7 +107,7 @@ class Conic4: public Toy {
         cairo_set_line_width (cr, 1);
         cairo_stroke(cr);
 
-        Toy::draw(cr, notify, width, height, save);
+        Toy::draw(cr, notify, width, height, save,timer_stream);
     }
 };
 

@@ -89,7 +89,7 @@ double my_inv(double x){return (1./x);}
 class SbCalculusToy: public Toy {
     PWSBHandle pwsbh;
 
-  void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
+  void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
 
       //Let the user input sbasis coefs.
       cairo_move_to(cr, Geom::Point(0,300));
@@ -137,7 +137,7 @@ class SbCalculusToy: public Toy {
       plot(cr,&my_inv,f,10);
       cairo_stroke(cr);
       
-      Toy::draw(cr, notify, width, height, save);
+      Toy::draw(cr, notify, width, height, save,timer_stream);
   }
   
 public:

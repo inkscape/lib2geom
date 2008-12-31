@@ -32,7 +32,7 @@ public:
     Sb2d2() {
         handles.push_back(&hand);
     }
-    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
+    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
         D2<SBasis2d> sb2;
         for(unsigned dim = 0; dim < 2; dim++) {
             sb2[dim].us = 2;
@@ -113,7 +113,7 @@ public:
             }
         }
         //*notify << "bo = " << sb2.index(0,0);
-        Toy::draw(cr, notify, width, height, save);
+        Toy::draw(cr, notify, width, height, save,timer_stream);
     }
 };
 

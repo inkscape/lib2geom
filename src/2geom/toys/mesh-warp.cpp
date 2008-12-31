@@ -98,7 +98,7 @@ class QuadToy: public Toy {
     Geom::QuadTree qt;
     Point centre;
     PointHandle offset_handle;
-    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
+    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
         
 	PathVector out = paths_a*Translate(offset_handle.pos - centre);
 	Geom::Rect r(Geom::Interval(250, 500), 
@@ -116,7 +116,7 @@ class QuadToy: public Toy {
         cairo_set_source_rgba (cr, 0.5, 0.125, 0, 1);
         draw_quad_tree(cr, qt.root, qt.bx0, qt.by0, qt.bx1 - qt.bx0);
     
-        Toy::draw(cr, notify, width, height, save);
+        Toy::draw(cr, notify, width, height, save,timer_stream);
     }
 
     virtual int should_draw_bounds () { return 0; }

@@ -69,7 +69,7 @@ Toy::Toy() : hit_data(0) {
 }
 
 
-void Toy::draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool /*save*/)
+void Toy::draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool /*save*/, std::ostringstream */*timing_stream*/)
 {
     if(should_draw_bounds() == 1) {
         cairo_set_source_rgba (cr, 0., 0., 0, 0.8);
@@ -255,8 +255,10 @@ void save_cairo_backend(const char* filename) {
         cairo_paint(cr);
         cairo_restore(cr);
     }
-    if(current_toy != NULL)
-        current_toy->draw(cr, new std::ostringstream, width, height, true);
+    if(current_toy != NULL) {
+        std::ostringstream * notify = new std::ostringstream;
+        current_toy->draw(cr, notify, width, height, true, notify);
+    }
 
     cairo_show_page(cr);
     if(save_png)
@@ -282,9 +284,11 @@ void take_screenshot(const char* filename) {
     cairo_surface_t* cr_s = cairo_image_surface_create ( CAIRO_FORMAT_ARGB32, width, height );
     cairo_t* cr = cairo_create(cr_s);
         
-    if(current_toy != NULL)
-	current_toy->draw(cr, new std::ostringstream, width, height, true);
-
+    if(current_toy != NULL) {
+        std::ostringstream * notify = new std::ostringstream;
+	current_toy->draw(cr, notify, width, height, true, notify);
+    }
+    
     cairo_show_page(cr);
     cairo_surface_write_to_png(cr_s, filename);
     cairo_destroy (cr);
@@ -330,7 +334,9 @@ static gboolean expose_event(GtkWidget *widget, GdkEventExpose */*event*/, gpoin
     cairo_rectangle(cr, 0, 0, width, height);
     cairo_set_source_rgba(cr,1,1,1,1);
     cairo_fill(cr);
-    if(current_toy != NULL) current_toy->draw(cr, &notify, width, height, false);
+    if(current_toy != NULL) {
+        current_toy->draw(cr, &notify, width, height, false, &notify);
+    }
     cairo_destroy(cr);
 
     return TRUE;
@@ -741,112 +747,7 @@ Geom::D2<Geom::SBasis> PointSetHandle::asBezier() {
     return handles_to_sbasis(pts.begin(), size()-1);
 }
 
-#if 0 // It was a nice idea to have self testing c++ files, but g++ 4.3 complains
-#include <2geom/d2.h>
-#include <2geom/sbasis.h>
-#include <2geom/sbasis-2d.h>
-#include <2geom/bezier-to-sbasis.h>
-#include <2geom/choose.h>
-#include <2geom/convex-cover.h>
-
-#include <2geom/path.h>
-
-#include <2geom/toys/path-cairo.h>
-#include <2geom/toys/toy-framework.h>
-#include <2geom/sbasis-math.h>
-
-#include <vector>
-using std::vector;
-using namespace Geom;
-
-extern unsigned total_steps, total_subs;
-
-double& handle_to_sb(unsigned i, unsigned n, SBasis &sb) {
-    assert(i < n);
-    assert(n <= sb.size()*2);
-    unsigned k = i;
-    if(k >= n/2) {
-        k = n - k - 1;
-        return sb[k][1];
-    } else
-        return sb[k][0];
-}
-
-double handle_to_sb_t(unsigned i, unsigned n) {
-    double k = i;
-    if(i >= n/2)
-        k = n - k - 1;
-    double t = k/(2*k+1);
-    if(i >= n/2)
-        return 1 - t;
-    else
-        return t;
-}
-
-class Sb1d: public Toy {
-    PointSetHandle psh;
-    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
-        cairo_set_source_rgba (cr, 0., 0.5, 0, 1);
-        cairo_set_line_width (cr, 1);
-        
-        if(!save) {
-            for(unsigned i = 0; i < psh.pts.size(); i++) {
-                psh.pts[i][0] = width*handle_to_sb_t(i, psh.pts.size())/2 + width/4;
-            }
-        }
-        
-        D2<SBasis> B;
-        B[0] = Linear(width/4, 3*width/4);
-        B[1].resize(psh.pts.size()/2);
-        for(unsigned i = 0; i < B[1].size(); i++) {
-            B[1][i] = Linear(0);
-        }
-        for(unsigned i = 0; i < psh.pts.size(); i++) {
-            handle_to_sb(i, psh.pts.size(), B[1]) = 3*width/4 - psh.pts[i][1];
-        }
-        for(unsigned i = 1; i < B[1].size(); i++) {
-            B[1][i] = B[1][i]*choose<double>(2*i+1, i);
-        }
-        
-        Geom::Path pb;
-        B[1] = SBasis(Linear(3*width/4)) - B[1];
-        pb.append(B);
-        pb.close(false);
-        cairo_path(cr, pb);
-    
-        cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
-        cairo_stroke(cr);
-	
-	B[1] /= 100;
-	D2<Piecewise<SBasis> > arcurv(cos(B[1]),sin(B[1]));
-	Piecewise< D2<SBasis> > pwc = sectionize(arcurv*10);
-	pwc = integral(pwc)*30;
-	pwc -= pwc.valueAt(0);
-	pwc += Point(width/2, height/2);
-	
-	cairo_pw_d2_sb(cr, pwc);
-        cairo_set_source_rgba (cr, 0., 0., 0, 1);
-        cairo_stroke(cr);
-
-    
-        Toy::draw(cr, notify, width, height, save);
-    }
-public:
-Sb1d () : psh(PointSetHandle()) {
-    psh.push_back(0,450);
-	handles.push_back(&psh );
-	for(unsigned i = 0; i < 4; i++)
-	    psh.push_back(uniform()*400, uniform()*400);
-	psh.push_back(0,450);
-    }
-};
-
-int main(int argc, char **argv) {
-    init(argc, argv, new Sb1d());
-    return 0;
-}
-
-#endif/*
+/*
 	Local Variables:
 	mode:c++
 	c-file-style:"stroustrup"

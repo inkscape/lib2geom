@@ -17,7 +17,7 @@ public:
     Sb2d() {
         handles.push_back(&hand);
     }
-    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
+    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
         SBasis2d sb2;
         sb2.us = 2;
         sb2.vs = 2;
@@ -62,7 +62,7 @@ public:
         if(!save)
             for(unsigned i = 0; i < display_handles.size(); i++)
                 draw_circ(cr, display_handles[i]);
-        Toy::draw(cr, notify, width, height, save);
+        Toy::draw(cr, notify, width, height, save,timer_stream);
     }
 };
 

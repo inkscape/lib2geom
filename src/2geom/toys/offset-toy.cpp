@@ -56,7 +56,7 @@ static void plot(cairo_t* cr, Piecewise<SBasis> const &f,double vscale=1){
 class OffsetTester: public Toy {
     PointSetHandle psh;
 
-    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
+    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
         D2<SBasis> B = psh.asBezier();
         *notify << "Curve offset:" << endl;
         *notify << " -blue: pointwise plotted offset," << endl;
@@ -123,7 +123,7 @@ class OffsetTester: public Toy {
         *notify << "(nb of cuts of unitVector: " << n.size()-1 << ")" << endl;
         *notify << "(nb of cuts of cos,sin(atan2): " << n2.size()-1 << ")" << endl;
     
-        Toy::draw(cr, notify, width, height, save);
+        Toy::draw(cr, notify, width, height, save,timer_stream);
     }        
   
 public:

@@ -214,7 +214,7 @@ class ElliptiArcMaker : public Toy
 {
   private:
 	void draw( cairo_t *cr, std::ostringstream *notify,
-  		       int width, int height, bool save )
+  		       int width, int height, bool save, std::ostringstream *timer_stream)
 	{
 		cairo_set_line_width (cr, 0.3);
 		cairo_set_source_rgb(cr, 0,0,0.3);
@@ -232,7 +232,7 @@ class ElliptiArcMaker : public Toy
 			cairo_d2_sb(cr, easb);
 		}
 		cairo_stroke(cr);
-		Toy::draw(cr, notify, width, height, save);
+		Toy::draw(cr, notify, width, height, save,timer_stream);
 	}
 
   public:

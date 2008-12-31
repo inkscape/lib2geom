@@ -16,7 +16,7 @@ class PathAlongPathToy: public Toy {
     PointHandle origin_handle;
     bool should_draw_numbers(){return false;}
 
-    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
+    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
         D2<SBasis> skeleton = skel_handles.asBezier();
         D2<SBasis> pattern  = pat_handles.asBezier();
 
@@ -74,7 +74,7 @@ class PathAlongPathToy: public Toy {
         cairo_set_source_rgba(cr,1.0,0.0,1.0,1.0);
         cairo_stroke(cr);
 
-        Toy::draw(cr, notify, width, height, save);
+        Toy::draw(cr, notify, width, height, save,timer_stream);
     }        
 
 public:

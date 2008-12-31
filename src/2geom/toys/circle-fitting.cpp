@@ -48,7 +48,7 @@ class CircleFitting : public Toy
 {
   private:
     void draw( cairo_t *cr, std::ostringstream *notify,
-               int width, int height, bool save )
+               int width, int height, bool save, std::ostringstream *timer_stream)
     {
         if (first_time)
         {
@@ -75,7 +75,7 @@ class CircleFitting : public Toy
         catch(RangeError exc)
         {
             std::cerr << exc.what() << std::endl;
-            Toy::draw(cr, notify, width, height, save);
+            Toy::draw(cr, notify, width, height, save,timer_stream);
             return;
         }
 
@@ -88,7 +88,7 @@ class CircleFitting : public Toy
             catch(RangeError exc)
             {
                 std::cerr << exc.what() << std::endl;
-                Toy::draw(cr, notify, width, height, save);
+                Toy::draw(cr, notify, width, height, save,timer_stream);
                 return;
             }
         }
@@ -112,7 +112,7 @@ class CircleFitting : public Toy
         }
         cairo_stroke(cr);
 
-        Toy::draw(cr, notify, width, height, save);
+        Toy::draw(cr, notify, width, height, save,timer_stream);
     }
 
   public:

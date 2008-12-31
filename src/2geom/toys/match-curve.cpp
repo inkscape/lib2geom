@@ -37,7 +37,7 @@ public:
     double units;
     PointSetHandle psh;
     
-    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
+    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
         cairo_set_line_width (cr, 1);
         cairo_set_source_rgb(cr, 0,0,0);
         std::vector<Geom::Point> trans;
@@ -134,7 +134,7 @@ public:
         }
         
         cairo_stroke(cr);
-        Toy::draw(cr, notify, width, height, save);
+        Toy::draw(cr, notify, width, height, save,timer_stream);
     }
     MatchCurve() : timer_precision(0.1), units(1e6) // microseconds
     {

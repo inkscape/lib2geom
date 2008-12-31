@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 2.6)
+cmake_policy(VERSION 2.6)
 PROJECT(lib2geom CXX)
 SET(2GEOM_MINOR_VERSION 3)
 SET(2GEOM_VERSION 0.${2GEOM_MINOR_VERSION})

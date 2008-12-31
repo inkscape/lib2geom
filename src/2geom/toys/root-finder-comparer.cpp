@@ -60,7 +60,7 @@ public:
     std::string units_string;
     PointSetHandle psh;
     
-    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
+    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
         std::vector<Geom::Point> trans;
         trans.resize(psh.size());
         for(unsigned i = 0; i < handles.size(); i++) {
@@ -261,7 +261,7 @@ public:
         
         B[0] = Linear(width/4, 3*width/4);
         cairo_d2_sb(cr, B);
-        Toy::draw(cr, notify, width, height, save);
+        Toy::draw(cr, notify, width, height, save,timer_stream);
     }
     RootFinderComparer() : timer_precision(0.1), units(1e6), units_string("us") // microseconds
     {

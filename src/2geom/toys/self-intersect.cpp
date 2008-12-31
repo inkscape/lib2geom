@@ -12,7 +12,7 @@ using namespace Geom;
 
 class SelfIntersect: public Toy {
     PointSetHandle psh;
-virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
+virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
     cairo_set_line_width (cr, 0.5);
     cairo_set_source_rgba (cr, 0., 0., 0, 1);
     
@@ -34,7 +34,7 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
     
     *notify << "total intersections: " << all_si.size();
 
-    Toy::draw(cr, notify, width, height, save);
+    Toy::draw(cr, notify, width, height, save,timer_stream);
 }
 public:
 SelfIntersect (unsigned bez_ord) {

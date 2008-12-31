@@ -9,7 +9,7 @@ class Sweep: public Toy {
 public:
     PointSetHandle hand;
     unsigned count_a, count_b;
-    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
+    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
         std::vector<Rect> rects_a, rects_b;
         cairo_set_source_rgb(cr, 0,0,0);
 
@@ -55,7 +55,7 @@ public:
             cairo_rectangle(cr, rects_b[i].left(), rects_b[i].top(), rects_b[i].width(), rects_b[i].height());
         cairo_stroke(cr);
         
-        Toy::draw(cr, notify, width, height, save);
+        Toy::draw(cr, notify, width, height, save,timer_stream);
     }
     bool should_draw_numbers() { return false; }
     public:

@@ -47,7 +47,7 @@ class Box3d: public Toy {
     Piecewise<D2<SBasis> >  path_a_pw;
     PointSetHandle hand;
     
-    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
+    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
         orig = hand.pts[7];
 	
         Geom::Point dir(1,-2);
@@ -126,7 +126,7 @@ class Box3d: public Toy {
         }
         draw_toggles(cr, togs);
         
-        Toy::draw(cr, notify, width, height, save);
+        Toy::draw(cr, notify, width, height, save,timer_stream);
     }
     void first_time(int argc, char** argv) {
         const char *path_a_name="star.svgd";

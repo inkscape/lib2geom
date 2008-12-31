@@ -254,7 +254,7 @@ class SbToBezierTester: public Toy {
     PointHandle adjuster, adjuster2;
     std::vector<Toggle> toggles;
 
-  void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
+  void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
       cairo_save(cr);
       for(unsigned i = 1; i < path_psh.size(); i++)
           path_psh[i-1]->pts.back() = path_psh[i]->pts[0];
@@ -355,7 +355,7 @@ class SbToBezierTester: public Toy {
       p+= Point(75, 0);
       toggles[1].bounds = Rect(p,     p + d);
       draw_toggles(cr, toggles);
-      Toy::draw(cr, notify, width, height, save);
+      Toy::draw(cr, notify, width, height, save,timer_stream);
   }
   
 public:

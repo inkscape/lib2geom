@@ -83,7 +83,7 @@ class BoolOps: public Toy {
     std::vector<Toggle> toggles;
     Shape as, bs;
     PointHandle p;
-    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
+    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
         Geom::Translate t(p.pos);
         Shape bst = bs * t;
         
@@ -169,7 +169,7 @@ class BoolOps: public Toy {
         //*notify << "A " << (as.isFill() ? "" : "not") << " filled, B " << (bs.isFill() ? "" : "not") << " filled..\n";
         cairo_set_line_width(cr, 1);
 
-        Toy::draw(cr, notify, width, height, save);
+        Toy::draw(cr, notify, width, height, save,timer_stream);
     }
     void key_hit(GdkEventKey *e) {
         if(e->keyval == 'w') toggles[0].toggle(); else

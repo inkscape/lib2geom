@@ -39,7 +39,7 @@ class PwToy: public Toy {
     unsigned segs, handles_per_curve, curves;
     PWSBHandle pwsbh[2];
     PointHandle interval_test[2];
-    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
+    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
         cairo_set_source_rgba (cr, 0., 0., 0., 1);
         cairo_set_line_width (cr, 1);
         
@@ -77,7 +77,7 @@ class PwToy: public Toy {
         */
 
         *notify << pws[0].segN(interval_test[0].pos[0]) << "; " << pws[0].segT(interval_test[0].pos[0]);
-        Toy::draw(cr, notify, width, height, save);
+        Toy::draw(cr, notify, width, height, save,timer_stream);
     }
 
     bool should_draw_numbers() { return false; }

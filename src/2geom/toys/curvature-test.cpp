@@ -21,7 +21,7 @@ using namespace std;
 class CurvatureTester: public Toy {
     PointSetHandle curve_handle;
     PointHandle sample_point;
-    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
+    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
     
         D2<SBasis> B = curve_handle.asBezier();
 
@@ -69,7 +69,7 @@ class CurvatureTester: public Toy {
 	}
 	cairo_set_source_rgba (cr, 0.5, 0.2, 0., 0.8);
 	cairo_stroke(cr);
-        Toy::draw(cr, notify, width, height, save);
+        Toy::draw(cr, notify, width, height, save,timer_stream);
     }        
   
 public:

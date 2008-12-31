@@ -60,7 +60,7 @@ class SBez: public Toy {
      
     double y[2];
 
-    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
+    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
         handlesptr = &handles;
         cairo_set_line_width (cr, 0.5);
     
@@ -103,7 +103,7 @@ class SBez: public Toy {
         gsl_odeiv_control_free (c);
         gsl_odeiv_step_free (s);
 
-        Toy::draw(cr, notify, width, height, save);
+        Toy::draw(cr, notify, width, height, save,timer_stream);
     }
 public:
     SBez() {

@@ -122,7 +122,7 @@ class LineToy : public Toy
     }
 
     void draw_create(cairo_t *cr, std::ostringstream *notify,
-                      int width, int height, bool save)
+                      int width, int height, bool save, std::ostringstream */*timer_stream*/)
     {
         draw_common(cr, notify, width, height, save);
         init_create_ctrl_geom(cr, notify, width, height);
@@ -161,7 +161,7 @@ class LineToy : public Toy
     }
 
     void draw_projection(cairo_t *cr, std::ostringstream *notify,
-                      int width, int height, bool save)
+                      int width, int height, bool save, std::ostringstream */*timer_stream*/)
     {
         draw_common(cr, notify, width, height, save);
 
@@ -215,7 +215,7 @@ class LineToy : public Toy
     }
 
     void draw_ortho(cairo_t *cr, std::ostringstream *notify,
-                      int width, int height, bool save)
+                      int width, int height, bool save, std::ostringstream */*timer_stream*/)
     {
         draw_common(cr, notify, width, height, save);
 
@@ -263,7 +263,7 @@ class LineToy : public Toy
     }
 
     void draw_distance(cairo_t *cr, std::ostringstream *notify,
-                      int width, int height, bool save)
+                      int width, int height, bool save, std::ostringstream */*timer_stream*/)
     {
         draw_common(cr, notify, width, height, save);
 
@@ -328,7 +328,7 @@ class LineToy : public Toy
     }
 
     void draw_position(cairo_t *cr, std::ostringstream *notify,
-                      int width, int height, bool save)
+                      int width, int height, bool save, std::ostringstream */*timer_stream*/)
     {
         draw_common(cr, notify, width, height, save);
 
@@ -381,7 +381,7 @@ class LineToy : public Toy
     }
 
     void draw_seg_bisec(cairo_t *cr, std::ostringstream *notify,
-                      int width, int height, bool save)
+                      int width, int height, bool save, std::ostringstream */*timer_stream*/)
     {
         draw_common(cr, notify, width, height, save);
 
@@ -416,7 +416,7 @@ class LineToy : public Toy
     }
 
     void draw_angle_bisec(cairo_t *cr, std::ostringstream *notify,
-                      int width, int height, bool save)
+                      int width, int height, bool save, std::ostringstream */*timer_stream*/)
     {
         draw_common(cr, notify, width, height, save);
 
@@ -458,7 +458,7 @@ class LineToy : public Toy
     }
 
     void draw_collinear(cairo_t *cr, std::ostringstream *notify,
-                      int width, int height, bool save)
+                      int width, int height, bool save, std::ostringstream */*timer_stream*/)
     {
         draw_common(cr, notify, width, height, save);
 
@@ -525,7 +525,7 @@ class LineToy : public Toy
     }
 
     void draw_intersections(cairo_t *cr, std::ostringstream *notify,
-                            int width, int height, bool save)
+                            int width, int height, bool save, std::ostringstream */*timer_stream*/)
     {
         draw_common(cr, notify, width, height, save);
 
@@ -665,7 +665,8 @@ class LineToy : public Toy
     }
 
     void draw_menu( cairo_t * /*cr*/, std::ostringstream *notify,
-                    int /*width*/, int /*height*/, bool /*save*/ )
+                    int /*width*/, int /*height*/, bool /*save*/, 
+                    std::ostringstream */*timer_stream*/ )
     {
         *notify << std::endl;
         for (int i = SHOW_MENU; i < TOTAL_ITEMS; ++i)
@@ -724,14 +725,14 @@ class LineToy : public Toy
     }
 
     virtual void draw( cairo_t *cr, std::ostringstream *notify,
-                       int width, int height, bool save )
+                       int width, int height, bool save, std::ostringstream *timer_stream)
     {
         m_width = width;
         m_height = height;
         m_length = (m_width > m_height) ? m_width : m_height;
         m_length *= 2;
-        (this->*draw_f)(cr, notify, width, height, save);
-        Toy::draw(cr, notify, width, height, save);
+        (this->*draw_f)(cr, notify, width, height, save, timer_stream);
+        Toy::draw(cr, notify, width, height, save, timer_stream);
     }
 
   public:
@@ -741,7 +742,7 @@ class LineToy : public Toy
     }
 
   private:
-    typedef void (LineToy::* draw_func_t) (cairo_t*, std::ostringstream*, int, int, bool);
+    typedef void (LineToy::* draw_func_t) (cairo_t*, std::ostringstream*, int, int, bool, std::ostringstream*);
     draw_func_t draw_f;
     bool set_common_control_geometry;
     bool set_control_geometry;

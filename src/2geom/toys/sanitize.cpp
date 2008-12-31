@@ -283,7 +283,7 @@ class Sanitize: public Toy {
     std::vector<Edges> es;
     PointSetHandle angh;
 	PointSetHandle pathix;
-    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
+    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
 	    int ix = pathix.pts[0][X] / 10;
         es = cells(cr, paths);
         draw_cell(cr, es[ix], paths);
@@ -295,7 +295,7 @@ class Sanitize: public Toy {
         Point ap = angh.pts[1] - angh.pts[0], bp = angh.pts[2] - angh.pts[0];
         ap.normalize(); bp.normalize();
         *notify << ang(ap, bp);
-        Toy::draw(cr, notify, width, height, save);
+        Toy::draw(cr, notify, width, height, save,timer_stream);
     }
     
     public:

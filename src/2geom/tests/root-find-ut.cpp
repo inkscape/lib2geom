@@ -1,11 +1,11 @@
-#include "poly.h"
+#include <2geom/poly.h>
 #include <vector>
 #include <iterator>
 
-#include "sbasis.h"
-#include "sbasis-poly.h"
-#include "sbasis-to-bezier.h"
-#include "solver.h"
+#include <2geom/sbasis.h>
+#include <2geom/sbasis-poly.h>
+#include <2geom/sbasis-to-bezier.h>
+#include <2geom/solver.h>
 #include <time.h>
 
 using namespace std;

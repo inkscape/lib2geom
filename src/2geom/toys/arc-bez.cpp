@@ -31,7 +31,7 @@ public:
         handles.push_back(&bez_handle);
     }
 
-    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
+    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream, std::ostringstream *timing_stream) {
         cairo_set_source_rgba (cr, 0., 0., 0, 1);
         cairo_set_line_width (cr, 1);
         
@@ -42,49 +42,36 @@ public:
         cairo_set_source_rgba (cr, 0.25, 0.5, 0, 0.8);
         
         double tol = 0.01;
-        bool time_operations = false;
+        bool time_operations = true;
         if(time_operations) {
             double units = 1e6;
             std::string units_string("us");
             double timer_precision = 0.1;
-            clock_t end_t = clock()+clock_t(timer_precision*CLOCKS_PER_SEC);
-            // Base loop to remove overhead
-            end_t = clock()+clock_t(timer_precision*CLOCKS_PER_SEC);
-            long iterations = 0;
-            while(end_t > clock()) {
-                iterations++;
-            }
-            double overhead = timer_precision*units/iterations;
-            end_t = clock()+clock_t(timer_precision*CLOCKS_PER_SEC);
-            iterations = 0;
-            while(end_t > clock()) {
-                Piecewise<SBasis> als = arcLengthSb(B, tol);
-                iterations++;
-            }
-            *notify << "arcLengthSb based " 
-                    << ", time = " << timer_precision*units/iterations-overhead 
-                    << units_string << std::endl;
-            end_t = clock()+clock_t(timer_precision*CLOCKS_PER_SEC);
-            iterations = 0;
-            while(end_t > clock()) {
-                Piecewise<SBasis> als = arcLengthSb2(Piecewise<D2<SBasis> >(B), 0.01);
-                iterations++;
-            }
-            *notify << "arcLengthSb2 based " 
-                    << ", time = " << timer_precision*units/iterations-overhead 
-                    << units_string << std::endl;
+            Timer tm;
+            tm.ask_for_timeslice();
+            tm.start();
+            Piecewise<SBasis> als = arcLengthSb(B, tol);
+            double als_time = tm.lap();
+            *timing_stream << "arcLengthSb based " 
+                           << ", time = " << als_time 
+                           << units_string << std::endl;
+
+            tm.start();
+            Piecewise<SBasis> als2 = arcLengthSb2(Piecewise<D2<SBasis> >(B), 0.01);
+            double als2_time = tm.lap();
+
+            *timing_stream << "arcLengthSb2 based " 
+                           << ", time = " << als2_time 
+                           << units_string << std::endl;
             double abs_error = 0;
             double integrating_arc_length = 0;
-            end_t = clock()+clock_t(timer_precision*CLOCKS_PER_SEC);
-            iterations = 0;
-            while(end_t > clock()) {
-                length_integrating(B, integrating_arc_length, abs_error, 1e-10);
-                iterations++;
-            }
+            tm.start();
+            length_integrating(B, integrating_arc_length, abs_error, 1e-10);
+            double li_time = tm.lap();
     
-            *notify << "gsl integrating " 
-                    << ", time = " << timer_precision*units/iterations-overhead 
-                    << units_string << std::endl;
+            *timing_stream << "gsl integrating " 
+                           << ", time = " << li_time 
+                           << units_string << std::endl;
         }
         Piecewise<SBasis> als = arcLengthSb(B, tol);
         Piecewise<SBasis> als2 = arcLengthSb2(Piecewise<D2<SBasis> >(B), 0.01);
@@ -122,7 +109,7 @@ public:
         }
 
 
-        Toy::draw(cr, notify, width, height, save);
+        Toy::draw(cr, notify, width, height, save,timer_stream);
     }
 };
 

@@ -20,7 +20,7 @@ void draw_each( cairo_t* cr, std::vector<T>& _controls)
 class HLineSegToy : public Toy
 {
     void draw( cairo_t *cr,	std::ostringstream *notify, 
-    		   int width, int height, bool save ) 
+    		   int width, int height, bool save, std::ostringstream *timer_stream) 
     {
         if (first_time)
         {
@@ -120,7 +120,7 @@ class HLineSegToy : public Toy
     		<< "   is degenerate: " << (hls.isDegenerate() ? "true" : "false")
     	;
 
-    	Toy::draw(cr, notify, width, height, save);
+    	Toy::draw(cr, notify, width, height, save,timer_stream);
     }
 
     void init_controls(std::ostringstream */*notify*/, int /*width*/, int height)
@@ -167,7 +167,7 @@ class HLineSegToy : public Toy
 class VLineSegToy : public Toy
 {
     void draw( cairo_t *cr,	std::ostringstream *notify, 
-    		   int width, int height, bool save ) 
+    		   int width, int height, bool save, std::ostringstream *timer_stream) 
     {
         if (first_time)
         {
@@ -267,7 +267,7 @@ class VLineSegToy : public Toy
     		<< "   is degenerate: " << (hls.isDegenerate() ? "true" : "false")
     	;
 
-    	Toy::draw(cr, notify, width, height, save);
+    	Toy::draw(cr, notify, width, height, save,timer_stream);
     }
 
     void init_controls(std::ostringstream */*notify*/, int /*width*/, int height)

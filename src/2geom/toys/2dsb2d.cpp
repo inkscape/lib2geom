@@ -22,7 +22,7 @@ class Sb2d2: public Toy {
     Piecewise<D2<SBasis> >  path_a_pw;
     PointSetHandle hand;
     
-    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
+    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
         Geom::Point dir(1,-2);
         for(unsigned dim = 0; dim < 2; dim++) {
             Geom::Point dir(0,0);
@@ -71,7 +71,7 @@ class Sb2d2: public Toy {
         
         //*notify << "bo = " << sb2.index(0,0);
 
-        Toy::draw(cr, notify, width, height, save);
+        Toy::draw(cr, notify, width, height, save,timer_stream);
     }
     void first_time(int argc, char** argv) {
         const char *path_a_name="star.svgd";

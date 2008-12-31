@@ -50,7 +50,7 @@ class CurveIntersect : public Toy
 {
 
     void draw( cairo_t *cr, std::ostringstream *notify,
-               int width, int height, bool save )
+               int width, int height, bool save, std::ostringstream *timer_stream)
     {
         m_width = width;
         m_height = height;
@@ -116,7 +116,7 @@ class CurveIntersect : public Toy
                 << "occuring at " << h_a_t 
                 << " B=" << h_b_t << std::endl;
 
-        Toy::draw(cr, notify, width, height, save);
+        Toy::draw(cr, notify, width, height, save,timer_stream);
     }
 
     void draw_segment(cairo_t* cr, Point const& p1, Point const&  p2)
@@ -142,7 +142,7 @@ class CurveIntersect : public Toy
 
     void draw_axis(cairo_t* cr, Point const& p1, Point const&  p2)
     {
-        double d = distance(p1, p2);
+        double d = Geom::distance(p1, p2);
         d = d + d/4;
         Point q1 = Ray(p1, p2).pointAt(d);
         Point q2 = Ray(p2, p1).pointAt(d);

@@ -233,6 +233,8 @@ AAF trial_eval(AAF x, AAF y) {
     x = x/scale;
     y = y/scale;
 
+    return  y*y -  x*(x-1)*(x+1);
+
     //return x*x - 1;
     //return y - pow(x,3);
     //return y - pow_sample_based(x,2.5);
@@ -411,7 +413,7 @@ public:
         }
         redraw();
     }
-    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
+    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
         cairo_set_source_rgba (cr, 0., 0., 0, 1);
         cairo_set_line_width (cr, 1);
         origin = orig_handle.pos;
@@ -487,7 +489,7 @@ public:
             //std::cout << a << ", " << b << ", " << c << ": " << dia << "\n";
             cairo_restore(cr);
         }
-        Toy::draw(cr, notify, width, height, save);
+        Toy::draw(cr, notify, width, height, save,timer_stream);
         Point d(25,25);
         toggles[0].bounds = Rect(Point(10, height-80)+d,
                                  Point(10+120, height-80+d[1])+d);

@@ -138,7 +138,7 @@ public:
     Sb2dSolverToy() {
         handles.push_back(&hand);
     }
-    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
+    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
 
         double slider_top = width/4.;
         double slider_bot = width*3./4.;
@@ -237,7 +237,7 @@ public:
         *notify << "Purple: value of f over solver solution.\n";
         *notify << "  error: "<< error <<".\n";
                 
-        Toy::draw(cr, notify, width, height, save);
+        Toy::draw(cr, notify, width, height, save,timer_stream);
     }
 };
 

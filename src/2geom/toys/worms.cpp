@@ -98,7 +98,7 @@ class Worm {
 class Intro: public Toy {
     int t;
     vector<Worm> worms;
-    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
+    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
         t++;
         if(t < 40 && t % 2 == 0) {
             worms.push_back(Worm(t, uniform(), uniform(), uniform(), uniform() * 200 + 50));
@@ -109,7 +109,7 @@ class Intro: public Toy {
             if(uniform() > .999) worms[i].tele(t);
         }
         
-        Toy::draw(cr, notify, width, height, save);
+        Toy::draw(cr, notify, width, height, save,timer_stream);
         redraw();
     }
 

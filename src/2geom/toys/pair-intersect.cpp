@@ -12,7 +12,7 @@ using namespace Geom;
 class PairIntersect: public Toy {
     PointSetHandle A_handles;
     PointSetHandle B_handles;
-virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
+virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
     cairo_save(cr);
     cairo_set_source_rgba(cr, 0, 0, 0, 1.0);
     cairo_set_line_width (cr, 0.5);
@@ -45,7 +45,7 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
 
     *notify << "total intersections: " << section.size();
 
-    Toy::draw(cr, notify, width, height, save);
+    Toy::draw(cr, notify, width, height, save,timer_stream);
 }
 public:
     PairIntersect (unsigned A_bez_ord, unsigned B_bez_ord) {

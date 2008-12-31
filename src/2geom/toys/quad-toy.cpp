@@ -44,7 +44,7 @@ bool clean_quad_tree(Geom::Quad *q) {
 
 class QuadToy: public Toy {
     PointSetHandle psh;
-    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
+    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
         cairo_set_source_rgba (cr, 0., 0.5, 0, 1);
         cairo_set_line_width (cr, 1);
         for(unsigned i = 0; i < psh.pts.size(); i++) {
@@ -103,7 +103,7 @@ class QuadToy: public Toy {
         *notify << "total pieces subdivision = " << total_pieces_sub << std::endl; 
         *notify << "total pieces inc = " << total_pieces_inc; 
     
-        Toy::draw(cr, notify, width, height, save);
+        Toy::draw(cr, notify, width, height, save,timer_stream);
     }
 
     virtual int should_draw_bounds () { return 0; }

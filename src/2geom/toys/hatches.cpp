@@ -270,7 +270,7 @@ public:
     PointSetHandle b2_handle;
     void draw(cairo_t *cr,
 	      std::ostringstream *notify,
-	      int width, int height, bool save) {
+	      int width, int height, bool save, std::ostringstream *timer_stream) {
         for(unsigned i=0; i<NB_SLIDER; i++){
             adjuster[i].pos[X] = 30+i*20;
             if (adjuster[i].pos[Y]<100) adjuster[i].pos[Y] = 100;
@@ -341,7 +341,7 @@ public:
         cairo_stroke(cr);
 
 
-        Toy::draw(cr, notify, width, height, save);
+        Toy::draw(cr, notify, width, height, save,timer_stream);
     }        
   
 public:

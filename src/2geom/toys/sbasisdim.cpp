@@ -75,7 +75,7 @@ class SBasisDimToy: public Toy {
     unsigned size;
     PointSetHandle hand;
 
-    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
+    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
 
         double slider_top = width/4.;
         double slider_bot = width*3./4.;
@@ -234,7 +234,7 @@ class SBasisDimToy: public Toy {
                 << units_string << std::endl;
 #endif
 
-        Toy::draw(cr, notify, width, height, save);
+        Toy::draw(cr, notify, width, height, save,timer_stream);
     }        
     
 public:

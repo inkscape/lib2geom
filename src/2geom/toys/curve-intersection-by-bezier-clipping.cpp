@@ -49,7 +49,7 @@ class CurveIntersect : public Toy
 {
 
     void draw( cairo_t *cr, std::ostringstream *notify,
-               int width, int height, bool save )
+               int width, int height, bool save, std::ostringstream *timer_stream)
     {
         cairo_set_line_width (cr, 0.3);
         cairo_set_source_rgba (cr, 0.8, 0., 0, 1);
@@ -71,7 +71,7 @@ class CurveIntersect : public Toy
         }
         cairo_stroke(cr);
 
-        Toy::draw(cr, notify, width, height, save);
+        Toy::draw(cr, notify, width, height, save,timer_stream);
     }
 
 

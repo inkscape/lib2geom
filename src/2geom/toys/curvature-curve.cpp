@@ -17,11 +17,11 @@ using namespace std;
 class CurvatureTester: public Toy {
     PointSetHandle curve_handle;
     Path current_curve;
-    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
+    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
         cairo_set_line_width (cr, 1);
         current_curve = Path();
         
-        for(int base_i = 0; base_i < curve_handle.pts.size()/2 - 1; base_i++) {
+        for(int base_i = 0; base_i < int(curve_handle.pts.size()/2) - 1; base_i++) {
             for(int i = 0; i < 2; i++) {
                 Geom::Point center=curve_handle.pts[1+2*i+base_i*2];
                 Geom::Point normal=center- curve_handle.pts[2*i+base_i*2];
@@ -88,7 +88,7 @@ class CurvatureTester: public Toy {
         
         cairo_path(cr, current_curve);
         cairo_stroke(cr);
-        Toy::draw(cr, notify, width, height, save);
+        Toy::draw(cr, notify, width, height, save,timer_stream);
     }        
   
     void canvas_click(Geom::Point at, int button) {

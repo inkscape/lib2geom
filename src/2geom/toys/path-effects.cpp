@@ -104,7 +104,7 @@ class BoolOps: public Toy {
     //Shape bs;
     PathVector pv;
     PointHandle offset_handle;
-    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
+    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
         Geom::Translate t(offset_handle.pos);
         //Shape bst = bs * t;
         //Region bt = Region(b * t, b.isFill());
@@ -150,7 +150,7 @@ class BoolOps: public Toy {
             }
         }
 
-        Toy::draw(cr, notify, width, height, save);
+        Toy::draw(cr, notify, width, height, save,timer_stream);
     }
     public:
     BoolOps () {}

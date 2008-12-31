@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "conjugate_gradient.h"
+#include <2geom/conjugate_gradient.h>
 #include <gsl/gsl_linalg.h>
 
 using std::valarray;

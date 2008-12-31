@@ -1,12 +1,12 @@
 #include <iostream>
 #include <math.h>
 #include <cassert>
-#include "sbasis.h"
-#include "sbasis-poly.h"
+#include <2geom/sbasis.h>
+#include <2geom/sbasis-poly.h>
 #include <iterator>
-#include "point.h"
-#include "sbasis-to-bezier.h"
-#include "solver.h"
+#include <2geom/point.h>
+#include <2geom/sbasis-to-bezier.h>
+#include <2geom/solver.h>
 
 using namespace Geom;
 

@@ -28,7 +28,7 @@ static void plot_bar(cairo_t* cr, double height, double vscale=1,double a=0,doub
 class BoundsTester: public Toy {
     unsigned size;
     PointSetHandle hand;
-    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
+    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
         
         for (unsigned i=0;i<size;i++){
             hand.pts[i    ][0]=150+15*(i-size);
@@ -137,7 +137,7 @@ This is a multi-root test...
         }
         *notify << 1000*0.1/iterations <<" ms = multi roots time"<< std::endl;
 */               
-        Toy::draw(cr, notify, width, height, save);
+        Toy::draw(cr, notify, width, height, save,timer_stream);
     }        
     
 public:

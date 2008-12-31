@@ -818,7 +818,7 @@ public:
   
   virtual bool should_draw_numbers() { return false; }
   
-  virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
+  virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
     double slider_margin = 20;
     double slider_top = 20;
     double slider_bot = 200;
@@ -870,7 +870,7 @@ public:
       cairo_move_to(cr, 0, height-logical_extent.height);
       pango_cairo_show_layout(cr, layout);
     }
-    Toy::draw(cr, notify, width, height, save);
+    Toy::draw(cr, notify, width, height, save,timer_stream);
   }
 
     void first_time(int argc, char** argv) {

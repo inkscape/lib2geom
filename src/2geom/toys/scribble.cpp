@@ -140,7 +140,7 @@ class OffsetTester: public Toy {
     PointSetHandle psh;
     PointSetHandle psh_rand;
 
-    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
+    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
         double w = 600;
         double slider_top = w/4.;
         double slider_bot = w*3./4.;
@@ -298,7 +298,7 @@ class OffsetTester: public Toy {
 
         cairo_stroke(cr);
 
-        Toy::draw(cr, notify, width, height, save);
+        Toy::draw(cr, notify, width, height, save,timer_stream);
     }
 
 public:

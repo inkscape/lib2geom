@@ -66,7 +66,7 @@ class ConvexTest: public Toy {
         test_window.push_back(Point(200,200));
     }
 
-    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
+    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
         cairo_set_source_rgba (cr, 0., 0., 0, 0.8);
         cairo_set_line_width (cr, 0.5);
         for(unsigned i = 1; i < 4; i+=2) {
@@ -221,7 +221,7 @@ class ConvexTest: public Toy {
             
             cairo_fill(cr);
         }
-        Toy::draw(cr, notify, width, height, save);
+        Toy::draw(cr, notify, width, height, save,timer_stream);
     }
 
     bool should_draw_numbers() { return false; }

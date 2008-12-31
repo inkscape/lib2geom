@@ -255,7 +255,7 @@ class SbToBezierTester: public Toy {
     std::vector<Toggle> toggles;
     Piecewise<D2<SBasis > > stroke;
 
-  void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
+  void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
       cairo_save(cr);
 
       cairo_set_source_rgba (cr, 0., 0., 0., 1);
@@ -300,7 +300,7 @@ class SbToBezierTester: public Toy {
       p+= Point(75, 0);
       toggles[1].bounds = Rect(p,     p + d);
       draw_toggles(cr, toggles);
-      Toy::draw(cr, notify, width, height, save);
+      Toy::draw(cr, notify, width, height, save,timer_stream);
   }
   
 public:

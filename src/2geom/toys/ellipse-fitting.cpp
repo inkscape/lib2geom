@@ -48,7 +48,7 @@ class EllipseFitting : public Toy
 {
   private:
     void draw( cairo_t *cr, std::ostringstream *notify,
-               int width, int height, bool save )
+               int width, int height, bool save, std::ostringstream *timer_stream)
     {
         if (first_time)
         {
@@ -75,7 +75,7 @@ class EllipseFitting : public Toy
         catch(LogicalError exc)
         {
             std::cerr << exc.what() << std::endl;
-            Toy::draw(cr, notify, width, height, save);
+            Toy::draw(cr, notify, width, height, save,timer_stream);
             return;
         }
 
@@ -88,7 +88,7 @@ class EllipseFitting : public Toy
             catch(RangeError exc)
             {
                 std::cerr << exc.what() << std::endl;
-                Toy::draw(cr, notify, width, height, save);
+                Toy::draw(cr, notify, width, height, save,timer_stream);
                 return;
             }
         }
@@ -114,7 +114,7 @@ class EllipseFitting : public Toy
         }
         cairo_stroke(cr);
 
-        Toy::draw(cr, notify, width, height, save);
+        Toy::draw(cr, notify, width, height, save,timer_stream);
     }
 
     void draw_elliptical_arc_with_cairo(

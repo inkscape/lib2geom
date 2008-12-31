@@ -92,7 +92,7 @@ class SbOfInterval: public Toy {
   }
 
     PointSetHandle hand;
-    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
+    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
         
         SBasisOf<Interval> f;
         double min=150, max=450;
@@ -135,7 +135,7 @@ class SbOfInterval: public Toy {
         plot(cr,f);
         cairo_set_source_rgba (cr, 0., 0., 0.8, 1);
         cairo_stroke(cr);
-        Toy::draw(cr, notify, width, height, save);
+        Toy::draw(cr, notify, width, height, save,timer_stream);
     }        
     
 public:

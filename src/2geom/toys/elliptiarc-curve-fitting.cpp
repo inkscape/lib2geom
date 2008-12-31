@@ -51,7 +51,7 @@ class EAFittingToy : public Toy
 {
   private:
     void draw( cairo_t *cr,	std::ostringstream *notify,
-  	      	   int width, int height, bool save )
+  	      	   int width, int height, bool save, std::ostringstream *timer_stream)
     {
     	cairo_set_line_width (cr, 0.2);
     	cairo_set_source_rgb(cr, 0.0, 0.0, 0.);
@@ -72,7 +72,7 @@ class EAFittingToy : public Toy
 //    			        << " ( " << convert.get_bound() << " )" << std::endl
 //    			        << "angle error: " << convert.get_angle_error()
 //    			        << " ( " << convert.get_angle_tolerance() << " )";
-    			Toy::draw(cr, notify, width, height, save);
+    			Toy::draw(cr, notify, width, height, save,timer_stream);
     			return;
     		}
     		D2<SBasis> easb = EA.toSBasis();
@@ -82,11 +82,11 @@ class EAFittingToy : public Toy
         catch( RangeError e )
         {
         	std::cerr << e.what() << std::endl;
-        	Toy::draw(cr, notify, width, height, save);
+        	Toy::draw(cr, notify, width, height, save,timer_stream);
         	return;
         }
 
-    	Toy::draw(cr, notify, width, height, save);
+    	Toy::draw(cr, notify, width, height, save,timer_stream);
     }
 
   public:

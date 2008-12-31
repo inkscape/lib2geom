@@ -94,7 +94,7 @@ class InverseTester: public Toy {
   int size;
     PointSetHandle hand;
 
-  void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
+  void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
     
       for (int i=0;i<size;i++){
           hand.pts[i    ][0]=150+15*(i-size);
@@ -141,7 +141,7 @@ class InverseTester: public Toy {
           *notify << "function not invertible!" << std::endl;
       }
 
-      Toy::draw(cr, notify, width, height, save);
+      Toy::draw(cr, notify, width, height, save,timer_stream);
   }        
   
 public:

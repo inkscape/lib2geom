@@ -73,7 +73,7 @@ class NearestPoints : public Toy
 private:
     std::vector<Path> paths_b;
     void draw( cairo_t *cr,	std::ostringstream *notify,
-               int width, int height, bool save )
+               int width, int height, bool save, std::ostringstream *timer_stream)
     {
 
     	Point p = ph.pos;
@@ -243,7 +243,7 @@ private:
                 {
                     *notify << "   " << i << " -  " <<  menu_items[i] << std::endl;
                 }
-                Toy::draw(cr, notify, width, height, save);
+                Toy::draw(cr, notify, width, height, save,timer_stream);
                 return;
             }
     	}
@@ -272,7 +272,7 @@ private:
             closed_toggle = false;
     	}
 
-    	Toy::draw(cr, notify, width, height, save);
+    	Toy::draw(cr, notify, width, height, save,timer_stream);
     }
 
     void key_hit(GdkEventKey *e)

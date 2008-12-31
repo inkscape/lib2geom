@@ -17,6 +17,7 @@
 #include <2geom/sbasis.h>
 #include <2geom/d2.h>
 #include <2geom/toys/path-cairo.h>
+#include <sched.h>
 
 using std::vector;
 
@@ -178,7 +179,7 @@ public:
 
     virtual ~Toy() {}
 
-    virtual void draw(cairo_t *cr, std::ostringstream *notify, int w, int h, bool save);
+    virtual void draw(cairo_t *cr, std::ostringstream *notify, int w, int h, bool save, std::ostringstream *timing_stream);
 
     virtual void mouse_moved(GdkEventMotion* e);
     virtual void mouse_pressed(GdkEventButton* e);
@@ -207,5 +208,58 @@ void init(int argc, char **argv, Toy *t, int width=600, int height=600);
 void toggle_events(std::vector<Toggle> &ts, GdkEventButton* e);
 void draw_toggles(cairo_t *cr, std::vector<Toggle> &ts);
 Geom::Point read_point(FILE* f);
+
+
+
+const long long US_PER_SECOND = 1000000L;
+const long long NS_PER_US = 1000L;
+
+using namespace std;
+
+class Timer{
+public:
+  Timer() {}
+  // note that CPU time is tracked per-thread, so the timer is only useful
+  // in the thread it was start()ed from.
+  void start() {
+    usec(start_time);
+  }
+  void lap(long long &us) {
+    usec(us);
+    us -= start_time;
+  }
+  long long lap() {
+    long long us;
+    usec(us);
+    return us - start_time;
+  }
+  void usec(long long &us) {
+#ifndef WIN32
+    clock_gettime(clock, &ts);
+    us = ts.tv_sec * US_PER_SECOND + ts.tv_nsec / NS_PER_US;
+#else
+    us = 0;
+#endif
+  }
+  /** Ask the OS nicely for a big time slice */
+  void ask_for_timeslice() {
+#ifndef WIN32
+    sched_yield();
+#endif
+  }
+private:
+  long long start_time;
+  struct timespec ts;
+#ifdef _POSIX_THREAD_CPUTIME
+  static const clockid_t clock = CLOCK_THREAD_CPUTIME_ID;
+#else
+# ifdef CLOCK_MONOTONIC
+  static const clockid_t clock = CLOCK_MONOTONIC;
+# else
+  static const clockid_t clock = CLOCK_REALTIME;
+# endif
+#endif
+};
+
 
 #endif // _2GEOM_TOY_FRAMEWORK2_H_

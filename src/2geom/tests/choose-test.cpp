@@ -1,7 +1,7 @@
 #include <vector>
 #include <stdio.h>
 #include <iostream>
-#include "choose.h"
+#include <2geom/choose.h>
 
 double W2(unsigned n, unsigned j, unsigned k) {
     if(j == k)

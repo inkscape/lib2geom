@@ -742,7 +742,7 @@ class DCCToy : public Toy
 {
   private:
     void draw( cairo_t *cr, std::ostringstream *notify, 
-               int width, int height, bool save ) 
+               int width, int height, bool save, std::ostringstream *timer_stream) 
     {
         Point ulc(width - 300, height - 60 );
         toggles[0].bounds = Rect(ulc, ulc + Point(160,25) );
@@ -888,7 +888,7 @@ class DCCToy : public Toy
         }
         draw_circ(cr, pwc(t));
         cairo_stroke(cr);
-        Toy::draw(cr, notify, width, height, save);
+        Toy::draw(cr, notify, width, height, save,timer_stream);
     }
 
     

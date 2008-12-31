@@ -24,7 +24,7 @@ class Box3d: public Toy {
     PointSetHandle vanishing_points_handles;
     std::vector<Path> paths_a;
     
-    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
+    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
 
         Geom::Point orig = origin_handle.pos;
 	cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
@@ -73,7 +73,7 @@ class Box3d: public Toy {
             cairo_stroke(cr);
         }
         
-        Toy::draw(cr, notify, width, height, save);
+        Toy::draw(cr, notify, width, height, save,timer_stream);
     }
     void first_time(int argc, char** argv) {
         const char *path_a_name="ptitle.svgd";

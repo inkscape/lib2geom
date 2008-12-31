@@ -300,7 +300,7 @@ public:
 class WindingTest: public Toy {
     vector<Path> path;
     PointHandle test_pt_handle;
-    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save) {
+    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
         cairo_set_source_rgb(cr, 0, 0, 0);
         cairo_set_line_width(cr, 0.5);
         cairo_save(cr);
@@ -466,7 +466,7 @@ class WindingTest: public Toy {
         *notify << "\nwinding:" << winding(path, test_pt_handle.pos) << "\n";
         std::cout.rdbuf(cout_buffer);
 
-        Toy::draw(cr, notify, width, height, save);
+        Toy::draw(cr, notify, width, height, save,timer_stream);
     }
 
     public:

@@ -48,7 +48,7 @@ class SBasisFitting : public Toy
 {
   private:
     void draw( cairo_t *cr, std::ostringstream *notify, 
-               int width, int height, bool save )
+               int width, int height, bool save, std::ostringstream *timer_stream)
     {
         sliders[0].geometry(Point(50, 30), 100);
        
@@ -119,7 +119,7 @@ class SBasisFitting : public Toy
         cairo_set_line_width (cr, 0.3);
         cairo_d2_sb(cr, curve);
         cairo_stroke(cr);
-        Toy::draw(cr, notify, width, height, save);
+        Toy::draw(cr, notify, width, height, save,timer_stream);
     }
     
   public:
