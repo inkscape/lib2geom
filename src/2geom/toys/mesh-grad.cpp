@@ -66,7 +66,7 @@ public:
                                 base = Geom::Point(width/4., width/4.);
                             }
                             double dl = dot((hand.pts[corner+4*i] - base), dir)/dot(dir,dir);
-                            sb2[dim][i][corner] = dl/(width/2)*pow(4.0,ui+vi);
+                            sb2[dim][i][corner] = dl/(width/2)*pow(4.0,(double)ui+vi);
                         }
         }
         cairo_d2_sb2d(cr, sb2, dir*0.1, width);
