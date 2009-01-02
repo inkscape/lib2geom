@@ -114,18 +114,24 @@ Line meanSquareLine(std::vector<Point> const &pts){
 }
 
 void tighten(std::vector<Point> &pts, double radius, bool linear){
+    std::vector<Point> res = pts;
     for (unsigned i=0; i<pts.size(); i++){
         std::vector<Point> ngbrs = neighbors(pts,i,radius);
         if (linear){
             Line d = meanSquareLine(ngbrs);
-            pts[i] = projection( pts[i], d );
+            Point proj = projection( pts[i], d );
+            double t = 2./3.;
+            //pts[i] = pts[i]*(1-t) + proj*t;
+            res[i] = pts[i]*(1-t) + proj*t;
         }else if (ngbrs.size()>=3) {
             Circle c(ngbrs);
             Point o = c.center();
             double r = c.ray();
-            pts[i] = o + unit_vector(pts[i]-o)*r;
+            //pts[i] = o + unit_vector(pts[i]-o)*r;
+            res[i] = o + unit_vector(pts[i]-o)*r;
         }
     }
+    pts = res;
 }
 
 double dist_to(std::vector<Point> const &pts, Point const &p, unsigned *idx=NULL){
@@ -312,7 +318,7 @@ class SketchFitterToy: public Toy {
             cairo_set_line_width (cr, 0.5);
             cairo_stroke(cr);
         }
-        *notify << "Press SHIFT to continue sketching.";
+        *notify << "Press SHIFT to continue sketching. 'Z' to apply changes";
     }
 
 
@@ -330,6 +336,7 @@ class SketchFitterToy: public Toy {
 
         toggles.push_back(Toggle("Linear",true));
         handles.push_back(&(toggles[0]));
+
     }
     void init_tighten_ctrl_geom(cairo_t* /*cr*/, std::ostringstream* /*notify*/, int width, int height)
     {
@@ -490,6 +497,7 @@ class SketchFitterToy: public Toy {
             unsigned i = unsigned( (mouses.size()-1)*sliders[1].value()/100. );
             std::vector<Point> ngbrs = neighbors(mouses,i,radius);
             if ( ngbrs.size()>2 ){
+                draw_cross(cr, mouses[i]);
                 Circle c(ngbrs);
                 cairo_arc(cr, c.center(X), c.center(Y), c.ray(), 0, 2*M_PI);
                 cairo_set_source_rgba (cr, 1., 0., 0., 1);
@@ -636,13 +644,25 @@ public:
         sliders.clear();
         toggles.clear();
     }
-    void draw_menu( cairo_t * /*cr*/, std::ostringstream *notify,
+    void draw_menu( cairo_t * cr, std::ostringstream *notify,
                     int /*width*/, int /*height*/, bool /*save*/, std::ostringstream *timer_stream )
     {
         *notify << std::endl;
         for (int i = SHOW_MENU; i < TOTAL_ITEMS; ++i)
         {
             *notify << "   " << keys[i] << " -  " <<  menu_items[i] << std::endl;
+        }
+        if(!mouses.empty()) {
+            cairo_move_to(cr, mouses[0]);
+            for(unsigned i = 0; i < mouses.size(); i++) {
+                cairo_line_to(cr, mouses[i]);
+            }
+            for(unsigned i = 0; i < mouses.size(); i++) {
+                draw_cross(cr, mouses[i]);
+            }
+            cairo_set_source_rgba (cr, 0., 0., 0., .25);
+            cairo_set_line_width (cr, 0.5);
+            cairo_stroke(cr);
         }
     }
 
@@ -684,6 +704,9 @@ public:
                 init_numerical();
                 fit_f = &SketchFitterToy::fit_numerical;
                 draw_f = &SketchFitterToy::draw_numerical;
+                break;
+            case 'Z':
+                mouses = improved_mouses;
                 break;
         }
         redraw();
