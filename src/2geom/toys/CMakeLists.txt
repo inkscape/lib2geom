@@ -95,6 +95,7 @@ convole
 hatches
 rdm-area
 ray-sorting-test
+sketch-fitter
 )
 
 
