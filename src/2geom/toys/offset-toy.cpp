@@ -127,15 +127,18 @@ class OffsetTester: public Toy {
     }        
   
 public:
-    OffsetTester() {
+    OffsetTester(int order) {
         handles.push_back(&psh);
-        for(unsigned i = 0; i < 6; i++)
+        for(unsigned i = 0; i < order; i++)
             psh.push_back(200+50*i,300+70*uniform());
     }
 };
 
 int main(int argc, char **argv) {
-    init(argc, argv, new OffsetTester);
+    int A_bez_ord = 6;
+    if(argc > 1)
+        sscanf(argv[1], "%d", &A_bez_ord);
+    init(argc, argv, new OffsetTester(A_bez_ord));
     return 0;
 }
 
