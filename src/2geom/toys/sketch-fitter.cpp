@@ -35,7 +35,9 @@
 #include <2geom/d2.h>
 #include <2geom/sbasis.h>
 #include <2geom/sbasis-geometric.h>
+#include <2geom/sbasis-math.h>
 #include <2geom/basic-intersection.h>
+#include <2geom/bezier-utils.h>
 
 #include <2geom/circle.h>
 
@@ -114,24 +116,20 @@ Line meanSquareLine(std::vector<Point> const &pts){
 }
 
 void tighten(std::vector<Point> &pts, double radius, bool linear){
-    std::vector<Point> res = pts;
     for (unsigned i=0; i<pts.size(); i++){
         std::vector<Point> ngbrs = neighbors(pts,i,radius);
         if (linear){
             Line d = meanSquareLine(ngbrs);
             Point proj = projection( pts[i], d );
             double t = 2./3.;
-            //pts[i] = pts[i]*(1-t) + proj*t;
-            res[i] = pts[i]*(1-t) + proj*t;
+            pts[i] = pts[i]*(1-t) + proj*t;
         }else if (ngbrs.size()>=3) {
             Circle c(ngbrs);
             Point o = c.center();
             double r = c.ray();
-            //pts[i] = o + unit_vector(pts[i]-o)*r;
-            res[i] = o + unit_vector(pts[i]-o)*r;
+            pts[i] = o + unit_vector(pts[i]-o)*r;
         }
     }
-    pts = res;
 }
 
 double dist_to(std::vector<Point> const &pts, Point const &p, unsigned *idx=NULL){
@@ -191,6 +189,56 @@ void sort_nearest(std::vector<Point> &pts, double no_longer_than = 0){
         pts[j] = p;
     }
 }
+
+//FIXME: optimize me if further used...
+void sort_nearest_bis(std::vector<Point> &pts, double radius){
+    double d;
+    Point p;
+    for (unsigned i=0; i<pts.size()-1; i++){
+        bool already_visited = true;
+        unsigned next;
+        while ( i < pts.size()-1 && already_visited ){
+            next = nearest_after(pts,i,&d);
+            already_visited = false;
+            for (unsigned k=0; k<i; k++){
+                double d_k_next = L2( pts[next] - pts[k]);
+                if ( d_k_next < d && d_k_next < radius ){
+                    already_visited = true;
+                    pts.erase(pts.begin()+next);
+                    break;
+                }
+            }
+        }
+        if (!already_visited){
+            p = pts[i+1];
+            pts[i+1] = pts[next];
+            pts[next] = p;
+        }
+    }
+}
+
+Path ordered_fit(std::vector<Point> &pts, double tol){
+    unsigned n_points = pts.size();
+    Geom::Point * b = g_new(Geom::Point, 4*n_points);
+    Geom::Point * points = g_new(Geom::Point, 4*n_points);
+    for (unsigned int i = 0; i < pts.size(); i++) { 
+        points[i] = pts[i];
+    }
+    int max_segs = 4*n_points;    
+    int const n_segs = bezier_fit_cubic_r(b, points, n_points,
+                                          tol*tol, max_segs);
+    Path res;
+    if ( n_segs > 0){
+        res = Path(b[0]);
+        for (unsigned i=0; i<n_segs; i++){
+            res.appendNew<CubicBezier>(b[4*i+1],b[4*i+2],b[4*i+3]);
+        }
+    }
+    g_free(b);
+    g_free(points);
+    return res;
+}
+
 //-----------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------------------
@@ -255,6 +303,7 @@ class SketchFitterToy: public Toy {
         TEST_CURVATURE,
         TEST_SORT,
         TEST_NUMERICAL,
+        SHOW_HELP,
         TOTAL_ITEMS // this one must be the last item
     };
 
@@ -264,16 +313,25 @@ class SketchFitterToy: public Toy {
 
     enum toggle_label_t
     {
-    };
-    enum tighten_toggle_label_t
-    {
-        LINEAR = 0,
+        DRAW_MOUSES = 0,
+        DRAW_IMPROVED_MOUSES,
+        DRAW_STROKE,
+        TIGHTEN_USE_CIRCLE,
+        SORT_BIS,
+        TOTAL_TOGGLES // this one must be the last item
     };
 
     enum slider_label_t
     {
         TIGHTEN_NBHD_SIZE = 0,
-        TIGHTEN_ITERRATIONS = 1
+        TIGHTEN_ITERRATIONS,
+        EAT_NBHD_SIZE,
+        SORT_RADIUS,
+        FUSE_RADIUS,
+        INTERPOLATE_RADIUS,
+        CURVATURE_NBHD_SIZE,
+        POINT_CHOOSER,        
+        TOTAL_SLIDERS // this one must be the last item
     };
 
     static const char* menu_items[TOTAL_ITEMS];
@@ -291,26 +349,37 @@ class SketchFitterToy: public Toy {
         set_common_control_geometry = true;
         set_control_geometry = true;
 
-        sliders.clear();
-        toggles.clear();
         handles.clear();
+        handles.push_back(&(toggles[DRAW_MOUSES]));
+        handles.push_back(&(toggles[DRAW_IMPROVED_MOUSES]));
+        handles.push_back(&(toggles[DRAW_STROKE]));
+
+        //sliders.clear();
+        //toggles.clear();
+        //handles.clear();
     }
-    void init_common_ctrl_geom(cairo_t* /*cr*/, int /*width*/, int /*height*/, std::ostringstream* /*notify*/)
+    void init_common_ctrl_geom(cairo_t* /*cr*/, int width, int /*height*/, std::ostringstream* /*notify*/)
     {
         if ( set_common_control_geometry )
         {
             set_common_control_geometry = false;
+            Point p(10, 20), d(width/3-20,25);
+            toggles[DRAW_MOUSES].bounds = Rect(p, p + d);
+            p += Point ((width)/3, 0);
+            toggles[DRAW_IMPROVED_MOUSES].bounds = Rect(p, p + d);
+            p += Point ((width)/3, 0);
+            toggles[DRAW_STROKE].bounds = Rect(p, p + d);
         }
     }
     virtual void draw_common( cairo_t *cr, std::ostringstream *notify,
                               int width, int height, bool /*save*/, std::ostringstream *timer_stream )
     {
         init_common_ctrl_geom(cr, width, height, notify);
-        if(!mouses.empty()) {
-            cairo_move_to(cr, mouses[0]);
-            for(unsigned i = 0; i < mouses.size(); i++) {
-                cairo_line_to(cr, mouses[i]);
-            }
+        if(!mouses.empty() && toggles[DRAW_MOUSES].on ) {
+            //cairo_move_to(cr, mouses[0]);
+            //for(unsigned i = 0; i < mouses.size(); i++) {
+            //    cairo_line_to(cr, mouses[i]);
+            //}
             for(unsigned i = 0; i < mouses.size(); i++) {
                 draw_cross(cr, mouses[i]);
             }
@@ -318,6 +387,24 @@ class SketchFitterToy: public Toy {
             cairo_set_line_width (cr, 0.5);
             cairo_stroke(cr);
         }
+
+        if(!improved_mouses.empty() && toggles[DRAW_IMPROVED_MOUSES].on ) {            
+            cairo_move_to(cr, improved_mouses[0]);
+            for(unsigned i = 0; i < improved_mouses.size(); i++) {
+                draw_cross(cr, improved_mouses[i]);
+            }
+            cairo_set_source_rgba (cr, 1., 0., 0., 1);
+            cairo_set_line_width (cr, .75);
+            cairo_stroke(cr);
+        }
+
+        if(!stroke.empty() && toggles[DRAW_STROKE].on) {            
+            cairo_pw_d2_sb(cr, stroke);
+            cairo_set_source_rgba (cr, 0., 0., 1., 1);
+            cairo_set_line_width (cr, .75);
+            cairo_stroke(cr);
+        }
+
         *notify << "Press SHIFT to continue sketching. 'Z' to apply changes";
     }
 
@@ -328,47 +415,31 @@ class SketchFitterToy: public Toy {
     void init_tighten()
     {
         init_common();
-        sliders.push_back(Slider(0., 1., 0, 0.7, "neighborhood size"));
-        sliders[TIGHTEN_NBHD_SIZE].formatter(&exp_formatter);
-        sliders.push_back(Slider(0, 10, 1, 1, "iterrations"));
         handles.push_back(&(sliders[TIGHTEN_NBHD_SIZE]));
         handles.push_back(&(sliders[TIGHTEN_ITERRATIONS]));
-
-        toggles.push_back(Toggle("Linear",true));
-        handles.push_back(&(toggles[0]));
-
+        handles.push_back(&(toggles[TIGHTEN_USE_CIRCLE]));
     }
     void init_tighten_ctrl_geom(cairo_t* /*cr*/, std::ostringstream* /*notify*/, int width, int height)
     {
         if ( set_control_geometry ){
             set_control_geometry = false;
-            sliders[TIGHTEN_NBHD_SIZE].geometry(Point(50, height - 35*2), 180);
+            sliders[TIGHTEN_NBHD_SIZE  ].geometry(Point(50, height - 35*2), 180);
             sliders[TIGHTEN_ITERRATIONS].geometry(Point(50, height - 35*3), 180);
 
-            Point p(width-125, height - 50), d(100,25);
-            toggles[0].bounds = Rect(p,     p + d);
+            Point p(width-250, height - 50), d(225,25);
+            toggles[TIGHTEN_USE_CIRCLE].bounds = Rect(p,     p + d);
         }
     }
     void fit_tighten(){
         improved_mouses = mouses;
-        double radius = exp_rescale(sliders[0].value());
+        double radius = exp_rescale(sliders[TIGHTEN_NBHD_SIZE].value());
         for (unsigned i=1; i<=sliders[TIGHTEN_ITERRATIONS].value(); i++){
-            tighten(improved_mouses, radius, toggles[0].on);
+            tighten(improved_mouses, radius, !toggles[TIGHTEN_USE_CIRCLE].on);
         }        
     }
     void draw_tighten(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
         draw_common(cr, notify, width, height, save, timer_stream);
         init_tighten_ctrl_geom(cr, notify, width, height);
-
-        if(!improved_mouses.empty()) {            
-            cairo_move_to(cr, improved_mouses[0]);
-            for(unsigned i = 0; i < improved_mouses.size(); i++) {
-                draw_cross(cr, improved_mouses[i]);
-            }
-            cairo_set_source_rgba (cr, 1., 0., 0., 1);
-            cairo_set_line_width (cr, .75);
-            cairo_stroke(cr);
-        }
     }
 
 //-----------------------------------------------------------------------------------------
@@ -377,20 +448,17 @@ class SketchFitterToy: public Toy {
     void init_eat()
     {
         init_common();
-
-        sliders.push_back(Slider(0., 1., 0, 0.7, "neighborhood size"));
-        sliders[0].formatter(&exp_formatter);
-        handles.push_back(&(sliders[0]));
+        handles.push_back(&(sliders[EAT_NBHD_SIZE]));
     }
     void init_eat_ctrl_geom(cairo_t* /*cr*/, std::ostringstream* /*notify*/, int /*width*/, int height)
     {
         if ( set_control_geometry ){
             set_control_geometry = false;
-            sliders[0].geometry(Point(50, height - 35*(0+2)), 180);
+            sliders[EAT_NBHD_SIZE].geometry(Point(50, height - 35*(0+2)), 180);
         }
     }
     void fit_eat(){
-        double radius = exp_rescale(sliders[0].value());
+        double radius = exp_rescale(sliders[EAT_NBHD_SIZE].value());
         improved_mouses = mouses;
 
         tighten(improved_mouses, 20, true);
@@ -406,12 +474,6 @@ class SketchFitterToy: public Toy {
     void draw_eat(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
         draw_common(cr, notify, width, height, save, timer_stream);
         init_eat_ctrl_geom(cr, notify, width, height);
-        if(!mouses.empty()) {
-            cairo_pw_d2_sb(cr, stroke);
-        }
-        cairo_set_source_rgba (cr, 1., 0., 0., 1);
-        cairo_set_line_width (cr, .75);
-        cairo_stroke(cr);
     }
 
 //-----------------------------------------------------------------------------------------
@@ -420,32 +482,27 @@ class SketchFitterToy: public Toy {
     void init_tighten_eat()
     {
         init_common();
-        sliders.push_back(Slider(0., 1., 0, 0.7, "tightening neighborhood size"));
-        sliders[0].formatter(&exp_formatter);
-        sliders.push_back(Slider(0, 10, 1, 1, "tighten iterrations"));
-        sliders.push_back(Slider(0., 1., 0, 0.7, "eating neighborhood size"));
-        sliders[2].formatter(&exp_formatter);
-        handles.push_back(&(sliders[0]));
-        handles.push_back(&(sliders[1]));
-        handles.push_back(&(sliders[2]));
+        handles.push_back(&(sliders[TIGHTEN_NBHD_SIZE]));
+        handles.push_back(&(sliders[TIGHTEN_ITERRATIONS]));
+        handles.push_back(&(sliders[EAT_NBHD_SIZE]));     
     }
     void init_tighten_eat_ctrl_geom(cairo_t* /*cr*/, std::ostringstream* /*notify*/, int width, int height)
     {
         if ( set_control_geometry ){
             set_control_geometry = false;
-            sliders[0].geometry(Point(50, height - 35*2), 180);
-            sliders[1].geometry(Point(50, height - 35*3), 180);
-            sliders[2].geometry(Point(50, height - 35*4), 180);
+            sliders[TIGHTEN_NBHD_SIZE  ].geometry(Point(50, height - 35*2), 180);
+            sliders[TIGHTEN_ITERRATIONS].geometry(Point(50, height - 35*3), 180);
+            sliders[EAT_NBHD_SIZE      ].geometry(Point(50, height - 35*4), 180);
         }
     }
     void fit_tighten_eat(){
         improved_mouses = mouses;
-        double radius = exp_rescale(sliders[0].value());
-        for (unsigned i=1; i<=sliders[1].value(); i++){
+        double radius = exp_rescale(sliders[TIGHTEN_NBHD_SIZE].value());
+        for (unsigned i=1; i<=sliders[TIGHTEN_ITERRATIONS].value(); i++){
             tighten(improved_mouses, radius, toggles[0].on);
         }
         stroke = Piecewise<D2<SBasis> >();
-        radius = exp_rescale(sliders[2].value());
+        radius = exp_rescale(sliders[EAT_NBHD_SIZE].value());
         improved_mouses = eat(improved_mouses, radius);
         Path p(improved_mouses[0]);
         for(unsigned i = 1; i < improved_mouses.size(); i++) {
@@ -456,9 +513,66 @@ class SketchFitterToy: public Toy {
     void draw_tighten_eat(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
         draw_common(cr, notify, width, height, save, timer_stream);
         init_tighten_eat_ctrl_geom(cr, notify, width, height);
+    }
 
-        if(!improved_mouses.empty()) {            
-            cairo_pw_d2_sb(cr, stroke);
+//-----------------------------------------------------------------------------------------
+// Sort: tighten, then sort and eventually fuse.
+//-----------------------------------------------------------------------------------------
+    void init_sort()
+    {
+        init_common();
+        handles.push_back(&(sliders[TIGHTEN_NBHD_SIZE]));
+        handles.push_back(&(sliders[TIGHTEN_ITERRATIONS]));
+        handles.push_back(&(sliders[SORT_RADIUS]));
+        handles.push_back(&(sliders[FUSE_RADIUS]));
+        handles.push_back(&(sliders[INTERPOLATE_RADIUS]));
+        handles.push_back(&(toggles[TIGHTEN_USE_CIRCLE]));
+        handles.push_back(&(toggles[SORT_BIS]));
+    }
+    void init_sort_ctrl_geom(cairo_t* /*cr*/, std::ostringstream* /*notify*/, int width, int height)
+    {
+        if ( set_control_geometry ){
+            set_control_geometry = false;
+            sliders[TIGHTEN_NBHD_SIZE].geometry(Point(50, height - 35*2), 180);
+            sliders[TIGHTEN_ITERRATIONS].geometry(Point(50, height - 35*3), 180);
+            sliders[SORT_RADIUS].geometry(Point(50, height - 35*4), 180);
+            sliders[FUSE_RADIUS].geometry(Point(50, height - 35*5), 180);
+            sliders[INTERPOLATE_RADIUS].geometry(Point(50, height - 35*6), 180);
+
+            Point p(width-250, height - 50), d(225,25);
+            toggles[TIGHTEN_USE_CIRCLE].bounds = Rect(p,     p + d);
+            p += Point(0,-30);
+            toggles[SORT_BIS].bounds = Rect(p,     p + d);
+        }
+    }
+    void fit_sort(){
+        improved_mouses = mouses;
+        double radius = exp_rescale(sliders[TIGHTEN_NBHD_SIZE].value());
+        for (unsigned i=1; i<=sliders[TIGHTEN_ITERRATIONS].value(); i++){
+            tighten(improved_mouses, radius, !toggles[TIGHTEN_USE_CIRCLE].on);
+        }
+        double max_jump = exp_rescale(sliders[SORT_RADIUS].value());
+        if (toggles[SORT_BIS].on){
+            sort_nearest_bis(improved_mouses, max_jump);
+        }else{
+            sort_nearest(improved_mouses, max_jump);
+        }
+        radius = exp_rescale(sliders[FUSE_RADIUS].value());
+        fuse_close_points(improved_mouses, radius);
+
+        radius = exp_rescale(sliders[INTERPOLATE_RADIUS].value());
+        Path p = ordered_fit(improved_mouses, radius/5);
+        stroke = p.toPwSb();
+    }
+    void draw_sort(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
+        draw_common(cr, notify, width, height, save, timer_stream);
+        init_sort_ctrl_geom(cr, notify, width, height);
+
+        if(!improved_mouses.empty() && toggles[DRAW_IMPROVED_MOUSES].on ) {            
+            cairo_move_to(cr, improved_mouses[0]);
+            for(unsigned i = 1; i < improved_mouses.size(); i++) {
+                cairo_line_to(cr, improved_mouses[i]);
+            }
             cairo_set_source_rgba (cr, 1., 0., 0., 1);
             cairo_set_line_width (cr, .75);
             cairo_stroke(cr);
@@ -471,30 +585,56 @@ class SketchFitterToy: public Toy {
     void init_curvature()
     {
         init_common();
-
-        sliders.push_back(Slider(0., 1., 0, 0.8, "neighborhood size"));
-        sliders[0].formatter(&exp_formatter);
-        sliders.push_back(Slider(0, 100, 0, 50, "Point chooser"));
-        handles.push_back(&(sliders[0]));
-        handles.push_back(&(sliders[1]));
+        handles.push_back(&(sliders[CURVATURE_NBHD_SIZE]));
+        handles.push_back(&(sliders[POINT_CHOOSER]));
     }
     void init_curvature_ctrl_geom(cairo_t* /*cr*/, std::ostringstream* /*notify*/, int /*width*/, int height)
     {
         if ( set_control_geometry ){
             set_control_geometry = false;
-            sliders[0].geometry(Point(50, height - 60), 180);
-            sliders[1].geometry(Point(50, height - 90), 180);
+            sliders[CURVATURE_NBHD_SIZE].geometry(Point(50, height - 60), 180);
+            sliders[POINT_CHOOSER      ].geometry(Point(50, height - 90), 180);
         }
     }
+    //just for fun!
     void fit_curvature(){
-        //Not implemented
+        std::vector<double> curvatures(mouses.size(),0);
+        std::vector<double> lengths(mouses.size(),0);
+        for (unsigned i=0; i<mouses.size(); i++){
+            double radius = exp_rescale(sliders[CURVATURE_NBHD_SIZE].value());
+            std::vector<Point> ngbrs = neighbors(mouses,i,radius);
+            if ( ngbrs.size()>2 ){
+                Circle c(ngbrs);
+                curvatures[i] = 1./c.ray();
+                Point v = (i<mouses.size()-1) ? mouses[i+1]-mouses[i] : mouses[i]-mouses[i-1];
+                if (cross(v, c.center()-mouses[i]) > 0 )
+                    curvatures[i] *= -1;
+            }else{
+                curvatures[i] = 0;
+            }
+            if (i>0){
+                lengths[i] = lengths[i-1] + L2(mouses[i]-mouses[i-1]);
+            }
+        }
+        Piecewise<SBasis> k = interpolate( lengths, curvatures , 1);
+        Piecewise<SBasis> alpha = integral(k);
+        Piecewise<D2<SBasis> > v = sectionize(tan2(alpha));
+        stroke = integral(v) + mouses[0];
+
+        Point sp = stroke.lastValue()-stroke.firstValue();
+        Point mp = mouses.back()-mouses.front();
+        Matrix mat1 = Matrix(sp[X], sp[Y], -sp[Y], sp[X], stroke.firstValue()[X], stroke.firstValue()[Y]);
+        Matrix mat2 = Matrix(mp[X], mp[Y], -mp[Y], mp[X], mouses[0][X], mouses[0][Y]);
+        mat1 = mat1.inverse()*mat2;
+        stroke = stroke*mat1;
+        
     }
     void draw_curvature(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
         draw_common(cr, notify, width, height, save, timer_stream);
         init_curvature_ctrl_geom(cr, notify, width, height);
         if(!mouses.empty()) {
-            double radius = exp_rescale(sliders[0].value());
-            unsigned i = unsigned( (mouses.size()-1)*sliders[1].value()/100. );
+            double radius = exp_rescale(sliders[CURVATURE_NBHD_SIZE].value());
+            unsigned i = unsigned( (mouses.size()-1)*sliders[POINT_CHOOSER].value()/100. );
             std::vector<Point> ngbrs = neighbors(mouses,i,radius);
             if ( ngbrs.size()>2 ){
                 draw_cross(cr, mouses[i]);
@@ -504,73 +644,9 @@ class SketchFitterToy: public Toy {
                 cairo_set_line_width (cr, .75);
                 cairo_stroke(cr);
             }
+            cairo_pw_d2_sb(cr, stroke);
         }
     }
-
-//-----------------------------------------------------------------------------------------
-// Sort: tighten, then sort and eventually fuse.
-//-----------------------------------------------------------------------------------------
-    void init_sort()
-    {
-        init_common();
-        sliders.push_back(Slider(0., 1., 0, 0.7, "tighten neighborhood size"));
-        sliders[TIGHTEN_NBHD_SIZE].formatter(&exp_formatter);
-        sliders.push_back(Slider(0, 10, 1, 1, "tighten iterrations"));
-        sliders.push_back(Slider(0., 1., 0, 0.8, "no jump longer than"));
-        sliders[2].formatter(&exp_formatter);
-        sliders.push_back(Slider(0., 1., 0, 0.6, "fuse radius"));
-        sliders[3].formatter(&exp_formatter);
-        handles.push_back(&(sliders[TIGHTEN_NBHD_SIZE]));
-        handles.push_back(&(sliders[TIGHTEN_ITERRATIONS]));
-        handles.push_back(&(sliders[2]));
-        handles.push_back(&(sliders[3]));
-
-        toggles.push_back(Toggle("Linear",true));
-        handles.push_back(&(toggles[0]));
-    }
-    void init_sort_ctrl_geom(cairo_t* /*cr*/, std::ostringstream* /*notify*/, int width, int height)
-    {
-        if ( set_control_geometry ){
-            set_control_geometry = false;
-            sliders[TIGHTEN_NBHD_SIZE].geometry(Point(50, height - 35*2), 180);
-            sliders[TIGHTEN_ITERRATIONS].geometry(Point(50, height - 35*3), 180);
-            sliders[2].geometry(Point(50, height - 35*4), 180);
-            sliders[3].geometry(Point(50, height - 35*5), 180);
-
-            Point p(width-125, height - 50), d(100,25);
-            toggles[0].bounds = Rect(p,     p + d);
-        }
-    }
-    void fit_sort(){
-        improved_mouses = mouses;
-        double radius = exp_rescale(sliders[TIGHTEN_NBHD_SIZE].value());
-        for (unsigned i=1; i<=sliders[TIGHTEN_ITERRATIONS].value(); i++){
-            tighten(improved_mouses, radius, toggles[0].on);
-        }
-        double max_jump = exp_rescale(sliders[2].value());
-        sort_nearest(improved_mouses, max_jump);
-        radius = exp_rescale(sliders[3].value());
-        fuse_close_points(improved_mouses, radius);
-
-    }
-    void draw_sort(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
-        draw_common(cr, notify, width, height, save, timer_stream);
-        init_sort_ctrl_geom(cr, notify, width, height);
-
-        if(!improved_mouses.empty()) {            
-            for(unsigned i = 0; i < improved_mouses.size(); i++) {
-                draw_cross(cr, improved_mouses[i]);
-            }
-            cairo_move_to(cr, improved_mouses[0]);
-            for(unsigned i = 1; i < improved_mouses.size(); i++) {
-                cairo_line_to(cr, improved_mouses[i]);
-            }
-            cairo_set_source_rgba (cr, 1., 0., 0., 1);
-            cairo_set_line_width (cr, .75);
-            cairo_stroke(cr);
-        }
-    }
-
 
 //-----------------------------------------------------------------------------------------
 // Brutal optimization, number of segment fixed.
@@ -578,14 +654,14 @@ class SketchFitterToy: public Toy {
     void init_numerical()
     {
         init_common();
-        sliders.push_back(Slider(0, 10, 1, 1, "Number of curves"));
-        handles.push_back(&(sliders[0]));
+        //sliders.push_back(Slider(0, 10, 1, 1, "Number of curves"));
+        //handles.push_back(&(sliders[0]));
     }
     void init_numerical_ctrl_geom(cairo_t* /*cr*/, std::ostringstream* /*notify*/, int /*width*/, int height)
     {
         if ( set_control_geometry ){
             set_control_geometry = false;
-            sliders[0].geometry(Point(50, height - 35*(0+2)), 180);
+            //sliders[0].geometry(Point(50, height - 35*(0+2)), 180);
         }
     }
     void fit_numerical(){
@@ -601,6 +677,43 @@ class SketchFitterToy: public Toy {
             cairo_stroke(cr);
         }
     }
+//-----------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------------------
+
+    void init_help()
+    {
+        handles.clear();
+        //sliders.clear();
+        //toggles.clear();
+    }
+    void draw_help( cairo_t * cr, std::ostringstream *notify,
+                    int /*width*/, int /*height*/, bool /*save*/, std::ostringstream *timer_stream )
+    {
+        *notify << "Tighten:\n";
+        *notify << "    move points toward local\n";
+        *notify << "    mean square line (or circle).\n";
+        *notify << "Eat:\n";
+        *notify << "    eat points like a pacman; at each step, move to the\n";
+        *notify << "    avarage of the not already visited neighbor points.\n";
+        *notify << "Sort:\n";
+        *notify << "     move from one point to the nearest one.\n";
+        *notify << "    Stop at the first jump longer than sort-radius\n";
+        *notify << "Sort-bis:\n";
+        *notify << "    move from one point to the nearest one,\n";
+        *notify << "    unless it was 'already visited' (i.e. it is closer to\n";
+        *notify << "    an already sorted point with distance < sort-radius.\n";
+        *notify << "Fuse: \n";
+        *notify << "    start from first point, remove all points closer to it\n";
+        *notify << "    than fuse-radius, move to the first one that is not, and repeat.\n";
+        *notify << "Curvature: \n";
+        *notify << "    Compute the curvature at a given point from the circle fitting the\n";
+        *notify << "    nearby points (just for fun: the stroke is the 'integral' of this\n";
+        *notify << "    avarage curvature)\n";
+        *notify << "Numerical: \n";
+        *notify << "    still waiting for someone to implement me ;-)\n\n";
+        *notify << std::endl;
+    }
+
 //-----------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------------------
   
@@ -641,12 +754,16 @@ public:
     void init_menu()
     {
         handles.clear();
-        sliders.clear();
-        toggles.clear();
+        //sliders.clear();
+        //toggles.clear();
     }
     void draw_menu( cairo_t * cr, std::ostringstream *notify,
                     int /*width*/, int /*height*/, bool /*save*/, std::ostringstream *timer_stream )
     {
+        *notify << "Sketch some shape on canvas (press SHIFT to use several 'strokes')\n";
+        *notify << "Each menu below will transform your input.\n";
+        *notify << "Press 'Z' to make the result the new input\n";
+        *notify << " \n \n \n";
         *notify << std::endl;
         for (int i = SHOW_MENU; i < TOTAL_ITEMS; ++i)
         {
@@ -705,6 +822,10 @@ public:
                 fit_f = &SketchFitterToy::fit_numerical;
                 draw_f = &SketchFitterToy::draw_numerical;
                 break;
+            case 'H':
+                init_help();
+                draw_f = &SketchFitterToy::draw_help;
+                break;
             case 'Z':
                 mouses = improved_mouses;
                 break;
@@ -728,6 +849,29 @@ public:
     SketchFitterToy()
     {
         srand ( time(NULL) );
+        sliders = std::vector<Slider>(TOTAL_SLIDERS, Slider(0., 1., 0, 0., ""));
+
+        sliders[TIGHTEN_NBHD_SIZE  ] = Slider(0., 1., 0, 0.65, "neighborhood size");
+        sliders[TIGHTEN_NBHD_SIZE  ].formatter(&exp_formatter);
+        sliders[TIGHTEN_ITERRATIONS] = Slider(0, 10, 1, 3, "iterrations");
+        sliders[EAT_NBHD_SIZE      ] = Slider(0., 1., 0, 0.65, "eating neighborhood size");
+        sliders[EAT_NBHD_SIZE      ].formatter(&exp_formatter);
+        sliders[SORT_RADIUS        ] = Slider(0., 1., 0, 0.65, "sort radius");
+        sliders[SORT_RADIUS        ].formatter(&exp_formatter);
+        sliders[FUSE_RADIUS        ] = Slider(0., 1., 0, 0.65, "fuse radius");
+        sliders[FUSE_RADIUS        ].formatter(&exp_formatter);
+        sliders[INTERPOLATE_RADIUS ] = Slider(0., 1., 0, 0.65, "intrepolate precision");
+        sliders[INTERPOLATE_RADIUS ].formatter(&exp_formatter);
+        sliders[CURVATURE_NBHD_SIZE] = Slider(0., 1., 0, 0.65, "curvature nbhd size");
+        sliders[CURVATURE_NBHD_SIZE].formatter(&exp_formatter);
+        sliders[POINT_CHOOSER      ] = Slider(0, 100, 0, 50, "Point chooser(%)");        
+
+        toggles = std::vector<Toggle>(TOTAL_TOGGLES, Toggle("",true));
+        toggles[DRAW_MOUSES] = Toggle("Draw mouses",true);
+        toggles[DRAW_IMPROVED_MOUSES] = Toggle("Draw new mouses",true);
+        toggles[DRAW_STROKE] = Toggle("Draw stroke",true);
+        toggles[TIGHTEN_USE_CIRCLE] = Toggle("Tighten: use circle",false);
+        toggles[SORT_BIS      ] = Toggle("Sort: bis",false);
     }
 
   private:
@@ -753,11 +897,12 @@ const char* SketchFitterToy::menu_items[] =
     "tighten + sort + fuse",
     "curvature",
     "numerical",
+    "help",
 };
 
 const char SketchFitterToy::keys[] =
 {
-    'A', 'B', 'C', 'D', 'E', 'F', 'G'
+    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'
 };
 
 int main(int argc, char **argv) {
