@@ -303,7 +303,7 @@ double RandomGenerator::area(){
     return areas.back();
 }
 void RandomGenerator::set_generator(double (*f)()){
-    rand = &my_rand_generator;//set this to your favorite generator of numbers in [0,1]!
+    rand = f;//set this to your favorite generator of numbers in [0,1]!
 }
 
 
@@ -361,6 +361,22 @@ public:
         Piecewise<D2<SBasis> >B;
         B.concat(Piecewise<D2<SBasis> >(B1));
         B.continuousConcat(Piecewise<D2<SBasis> >(B2));
+
+        Piecewise<SBasis> are;
+        
+        Point centroid_tmp(0,0);
+        are = integral(dot(B, rot90(derivative(B))))*0.5;
+        are = (are - are.firstValue())*(height/10) / (are.lastValue() - are.firstValue());
+    
+        D2<Piecewise<SBasis> > are_graph(Piecewise<SBasis>(Linear(0, width)), are );
+        std::cout << are.firstValue() << "," << are.lastValue() << std::endl;
+        cairo_save(cr);
+        cairo_d2_pw_sb(cr, are_graph);
+        cairo_set_line_width (cr, .5);
+        cairo_set_source_rgba (cr, 0., 0., 0., 1);
+        cairo_stroke(cr);
+        cairo_restore(cr);
+        
 
 #if 0
         std::vector<Piecewise<D2<SBasis> > >f = split_at_discontinuities(B);
