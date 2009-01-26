@@ -2,7 +2,7 @@
 #include <assert.h>
 #include <2geom/coord.h>
 #include <2geom/isnan.h> //temporary fix for isnan()
-#include <2geom/matrix.h>
+#include <2geom/transforms.h>
 
 namespace Geom {
 
@@ -150,7 +150,19 @@ Point &Point::operator*=(Matrix const &m)
     return *this;
 }
 
-}  //Namespace Geom
+Point constrain_angle(Point const &A, Point const &B, unsigned int n, Point const &dir)
+{
+    // for special cases we could perhaps use explicit testing (which might be faster)
+    if (n == 0.0) {
+        return B;
+    }
+    Point diff(B - A);
+    double angle = -angle_between(diff, dir);
+    double k = round(angle * (double)n / (2.0*M_PI));
+    return A + dir * Rotate(k * 2.0 * M_PI / (double)n) * L2(diff);
+}
+
+}  //namespace Geom
 
 /*
   Local Variables:
