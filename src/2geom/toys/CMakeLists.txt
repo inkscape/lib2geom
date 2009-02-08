@@ -8,7 +8,7 @@ path-cairo.h
 
 SET(2GEOM_TOYS-2_SRC
 pencil
-#naive-fuzzy-box
+intersect-data
 sb2d-solver
 minsb2d-solver
 aa
