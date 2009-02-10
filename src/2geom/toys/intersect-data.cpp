@@ -151,7 +151,7 @@ public:
 
     IntersectionData(){}
     ~IntersectionData(){}
-    void setInputPaths(PathVector paths){input_paths = paths;}
+
     void print(){
         std::cout<<"\nCrossing Data:\n";
         for (unsigned i=0; i<intersections.size(); i++){
@@ -183,6 +183,11 @@ public:
         }
     }
 
+    //-------------------------------
+    //-- Some basic data manipulation.
+    //-------------------------------
+
+    //usefull?
     void renameArea(unsigned oldi, unsigned newi){
         for (unsigned e=0; e<edges.size(); e++){
             if ( edges[e].left  == oldi ) edges[e].left  = newi;
@@ -238,6 +243,7 @@ public:
         }
         return edges.size();
     }
+
     unsigned edgeStart(unsigned e){
         for (unsigned i=0; i<intersections.size(); i++){
             for (unsigned j=0; j<intersections[i].boundary.size(); j++){
@@ -258,6 +264,11 @@ public:
         THROW_EXCEPTION("Invalid intersection data");
         return intersections.size();
     }
+
+
+    //----------------------------------------------------
+    //-- Mutate data: split edges, merge intersections...
+    //----------------------------------------------------
 
     void splitEdge(unsigned i0, double t, unsigned box_id){
         if (!( edges[i0].portion.contains(t) ) ) 
@@ -297,6 +308,8 @@ public:
         intersections[box_id].boundary.push_back(Flag(i0, -3, true  ));//start piece comes in.
     }
 
+    // Whenever an intersection box grows (after merging with another for instance),
+    // recursively check for new overlaps.
     void updateAfterGrowth(unsigned &b){
         assert( b < intersections.size() );
         for (int i=0; i<intersections.size(); i++){
@@ -350,10 +363,20 @@ public:
         return ( intersections.size()-1 );
     }
 
-    void buildIntersections(PathVector paths){
-        std::cout<<"\n\nCompute intersections:\n";
+
+    //-------------------------------
+    //-- Filling data in.
+    //-------------------------------
+
+    //set input path and initialize edges and intersections.
+    void setInputPaths(PathVector paths){
         input_paths = paths;
-        double precision = 5;//FIXME: use a meaningfull precision!!
+        //FIXME: debug purpose only
+        double precision = 5;
+        
+        intersections.clear();
+        edges.clear();
+        areas.clear();
 
         for (unsigned i=0; i<paths.size(); i++){
             for (unsigned ii=0; ii<paths[i].size(); ii++){
@@ -371,7 +394,8 @@ public:
                 //add an intersection at start.
                 p = paths[i][ii].initialPoint();
                 bounds = Rect(p,p);
-                bounds.expandBy(precision);//FIXME: precision should be 0 here (debug purpose only).
+                //debug purpose only:
+                bounds.expandBy(precision);
                 newbox_id = insertNewBox(bounds);
                 intersections[newbox_id].boundary.push_back(Flag(e_idx,-2, false));
                 edges[e_idx].start = newbox_id;
@@ -379,43 +403,45 @@ public:
                 //add an intersection at end.
                 p = paths[i][ii].finalPoint();
                 bounds = Rect(p,p);
-                bounds.expandBy(precision);//FIXME: precision should be 0 here (debug purpose only).
+                //debug purpose only:
+                bounds.expandBy(precision);
                 newbox_id = insertNewBox(bounds);
                 intersections[newbox_id].boundary.push_back(Flag(e_idx,-3, true));
                 edges[e_idx].end = newbox_id;
             }
         }
-        for (unsigned i=0; i<edges.size(); i++){
-            assert(edgeStart(i) == edges[i].start);
-            assert(edgeEnd(i)   == edges[i].end);
-        }
-            //TODO: Do sweeping here.
-            //this is just the quick implemented brutal stupid thing...
+    }
+
+    //to be called by some intersection finder... 
+    void addNewIntersection(unsigned path_a, unsigned curve_a, unsigned path_b, unsigned curve_b, double t_a, double t_b, Rect bounds ){
+        unsigned e_a = findEdge( path_a, curve_a, t_a );
+        unsigned e_b = findEdge( path_b, curve_b, t_b );
+        unsigned newbox_id = insertNewBox(bounds);        
+        splitEdge(e_a, t_a, newbox_id);
+        splitEdge(e_b, t_b, newbox_id);
+    }
+
+    //this should desappear: setup int. data using the most naive intersection finder we can think of. 
+    void buildIntersections(PathVector paths){
+        setInputPaths( paths );
+        double precision = 5;//debug purpose only
         for (unsigned i=0; i<paths.size(); i++){
             for (unsigned ii=0; ii<paths[i].size(); ii++){
                 for (unsigned j=i; j<paths.size(); j++){
-                    for (unsigned jj=( i==j ? ii+1 : 0 ); jj<paths[j].size(); jj++){
+                    for (unsigned jj=( i==j ? ii : 0 ); jj<paths[j].size(); jj++){
+
                         std::cout<<"i="<<i<<", ii="<<ii<<", j="<<j<<", jj="<<jj<<"\n";
                         std::vector<std::pair<double,double> > times;
                         //FIXME: look for self intersection when i=j and ii=jj.
-                        find_intersections( times, paths[i][ii].toSBasis(), paths[j][jj].toSBasis() );
+                        if ( i==j && ii==jj)
+                            find_self_intersections( times, paths[i][ii].toSBasis() );
+                        else
+                            find_intersections( times, paths[i][ii].toSBasis(), paths[j][jj].toSBasis() );
                         for (unsigned k=0; k<times.size(); k++){
-                            unsigned ei = findEdge(i,ii,times[k].first);
-                            unsigned ej = findEdge(j,jj,times[k].second);
-
-                            for (unsigned toto=0; toto<edges.size(); toto++){
-                                assert(edgeStart(toto) == edges[toto].start);
-                                assert(edgeEnd(toto)   == edges[toto].end);
-                            }
-
-                            Point p = paths[edges[ei].path][edges[ei].curve].pointAt(times[k].first);
+                            Point p = paths[i][ii].pointAt(times[k].first);
                             Rect bounds = Rect(p,p);
-                            bounds.expandBy(precision);//FIXME: use a meaningfull precision here!!
-                            unsigned newbox_id = insertNewBox(bounds);
-
-                            splitEdge(ei, times[k].first, newbox_id);
-                            splitEdge(ej, times[k].second, newbox_id);
-
+                            bounds.expandBy(precision);
+                            addNewIntersection( i, ii, j, jj, times[k].first, times[k].second, bounds);
                         }
                     }
                 }
@@ -424,6 +450,11 @@ public:
         //TODO: add intersections for edges meeting boxes. 
         //TODO: remove edges contained in a box! (how?) 
     }
+
+
+    //-------------------------------
+    //-- Ray sorting.
+    //-------------------------------
 
     //returns a rect around a separating it from b. Nota: 3 sides are infinite!
     //TODO: place the cut where there is most space...
@@ -533,13 +564,16 @@ public:
 
         //Rk: at this point, side == 4 means the edge is contained in the intersection box (?)...;
 
-        std::cout<<"-----------\nseparator: x="<<(*sep).min()[X]<<", y="<<(*sep).min()[Y]
+
+        std::cout<<"-----------\nSorting intersection "<<b<<":\n";
+        std::cout<<"-separator: x="<<(*sep).min()[X]<<", y="<<(*sep).min()[Y]
                  <<", X="<<(*sep).max()[X]<<", Y="<<(*sep).max()[Y]<<"\n";
-        std::cout<<"-----------\nboundary before sorting:\n   ";
+        std::cout<<"-boundary before sorting:\n   ";
         for (unsigned i=0; i < exits.size(); i++){
             std::cout<<intersections[b].boundary[i].edge<<", ";
         }
-        std::cout<<"exits before sorting:\n   ";
+        std::cout<<"\n";
+        std::cout<<"-exits before sorting:\n   ";
         for (unsigned i=0; i < exits.size(); i++){
             std::cout<<"("<<exits[i].side<<", "<<exits[i].place<<", "<<exits[i].ray_idx<<"),";
         }
@@ -547,7 +581,7 @@ public:
 
         std::sort( exits.begin(), exits.end(), compareExitPoints );
 
-        std::cout<<"exits after sorting:\n   ";
+        std::cout<<"-exits after sorting:\n   ";
         for (unsigned i=0; i < exits.size(); i++){
             std::cout<<"("<<exits[i].side<<", "<<exits[i].place<<", "<<exits[i].ray_idx<<"),";
         }
@@ -564,7 +598,7 @@ public:
             sorted_boundary[i] = intersections[b].boundary[exits[i].ray_idx];
         }
         //TODO: remove the short edges!! caution: each deletion invalidates all the names...
-        std::cout<<"sorted boundary:\n   ";
+        std::cout<<"-sorted boundary:\n   ";
         for (unsigned i=0; i < exits.size(); i++){
             std::cout<<sorted_boundary[i].edge<<", ";
         }
@@ -574,7 +608,11 @@ public:
 
     }
         
+    //-------------------------------
+    //-- Identify areas.
+    //-------------------------------
 
+    //once a new area has been found ('named'), propagate it along it's boundary.
     void diffuseAreaName(unsigned a, unsigned from_edge, bool reverse){
         if ( a>=areas.size() ) THROW_EXCEPTION("invalid intersction data: unable to name areas.");
         std::cout<<"e="<<(reverse?"+":"-")<<from_edge<<", ";
@@ -598,7 +636,7 @@ public:
         diffuseAreaName(a, intersections[b].boundary[idx].edge,  intersections[b].boundary[idx].reverse );
     }
 
-    //FIXME: at the end of this, nested areas are considered disjoint...
+    //FIXME: disconnected graphs; at the end of this, nested areas are considered disjoint...
     void nameAreas(){
 
         for (unsigned b=0; b<intersections.size(); b++){
@@ -628,6 +666,7 @@ class IntersectDataTester: public Toy {
 
     void drawArea( cairo_t *cr, IntersectionData const &topo, unsigned a ){
         if (a>=topo.areas.size()) return;
+        Path bndary = Path();
         for (int i = 0; i < topo.areas[a].boundary.size(); i++){
             int eidx = topo.areas[a].boundary[i].edge;
             int iidx = topo.areas[a].boundary[i].elt;
@@ -635,15 +674,19 @@ class IntersectDataTester: public Toy {
             D2<SBasis> p = topo.input_paths[e.path][e.curve].toSBasis();
             Interval dom = e.portion;
             if (topo.areas[a].boundary[i].reverse){
-                cairo_set_source_rgba (cr, 1., 1., 0., 1);
+                //cairo_set_source_rgba (cr, 1., .1, 0, .2);
             }else{
-                cairo_set_source_rgba (cr, 1., 0., 1., 1);
+                //cairo_set_source_rgba (cr, 1., 0, .1, .2);
             }
             p = portion(p, dom);
-            cairo_d2_sb(cr, p);
-            cairo_set_line_width (cr, 3);
-            cairo_stroke(cr);
+            bndary.append(p, Path::STITCH_DISCONTINUOUS);
+            //cairo_d2_sb(cr, p);
         }
+        bndary.close();
+        cairo_path(cr, bndary);
+        cairo_set_line_width (cr, 6);
+        cairo_set_source_rgba (cr, 1., .1, 0, .1);
+        cairo_fill(cr);
     }
 
     void highlightRay( cairo_t *cr, IntersectionData const &topo, unsigned b, unsigned r ){
@@ -735,6 +778,8 @@ class IntersectDataTester: public Toy {
         highlightRay(cr, topo, b, r );
         topo.print();
         topo.nameAreas();
+        unsigned a = (unsigned)sliders[2].value()%topo.areas.size();
+        drawArea(cr, topo, a);
         topo.print();
 
         //drawBox(cr,topo, unsigned(sliders[0].value()));
@@ -751,8 +796,10 @@ class IntersectDataTester: public Toy {
         }
         sliders.push_back(Slider(0.0, 20.0, 1, 0.0, "intersection chooser"));
         sliders.push_back(Slider(0.0, 10.0, 1, 0.0, "ray chooser"));
+        sliders.push_back(Slider(0.0, 20.0, 1, 0.0, "area chooser"));
         handles.push_back(&(sliders[0]));
         handles.push_back(&(sliders[1]));
+        handles.push_back(&(sliders[2]));
         for(int i = 0; i < NB_PATHS; i++){
             for(int j = 0; j < NB_PTS_ON_PATH; j++){
                 paths_handles[i].push_back(uniform()*200, 100+ uniform()*200);
@@ -760,7 +807,8 @@ class IntersectDataTester: public Toy {
             handles.push_back(&paths_handles[i]);
         }
         sliders[0].geometry(Point(50, 20), 180);
-        sliders[1].geometry(Point(50, 40), 180);
+        sliders[1].geometry(Point(50, 50), 180);
+        sliders[2].geometry(Point(50, 80), 180);
     }
 
     void first_time(int argc, char** argv) {
