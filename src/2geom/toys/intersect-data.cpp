@@ -673,12 +673,13 @@ class IntersectDataTester: public Toy {
             IntersectionData::Edge e = topo.edges[eidx];
             D2<SBasis> p = topo.input_paths[e.path][e.curve].toSBasis();
             Interval dom = e.portion;
+            p = portion(p, dom);
             if (topo.areas[a].boundary[i].reverse){
+                p = compose( p, Linear(1.,0.) );
                 //cairo_set_source_rgba (cr, 1., .1, 0, .2);
             }else{
                 //cairo_set_source_rgba (cr, 1., 0, .1, .2);
             }
-            p = portion(p, dom);
             bndary.append(p, Path::STITCH_DISCONTINUOUS);
             //cairo_d2_sb(cr, p);
         }
