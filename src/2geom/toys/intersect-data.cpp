@@ -9,6 +9,7 @@
 #include <cstdlib>
 #include <map>
 #include <vector>
+#include <algorithm>
 
 #include <2geom/toys/path-cairo.h>
 #include <2geom/toys/toy-framework-2.h>
@@ -34,6 +35,7 @@ public:
 
 bool compareExitPoints(ExitPoint a, ExitPoint b) {
     if ( a.side < b.side ) return true;
+    if ( a.side > b.side ) return false;
     if ( a.side <= 1) return ( a.place < b.place );
     return ( a.place > b.place );
 }
@@ -502,9 +504,9 @@ public:
         //Now find first exit point for each edge, and sort accordingly.
         //
         std::vector<ExitPoint> exits (intersections[b].boundary.size(), ExitPoint(4,0,0,0));
-        //for (unsigned i=0; i < intersections[b].boundary.size(); i++){//setting idx correctly here is important for edges contained in the box...
-            //exits[i] = ExitPoint( 4, 0, i, 0);
-        //}
+        for (unsigned i=0; i < intersections[b].boundary.size(); i++){//setting idx correctly here is important for edges contained in the box...
+            exits[i] = ExitPoint( 4, 0, i, 0);
+        }
         for (unsigned side=0; side<4; side++){//scan X or Y direction, on level min or max...
             double level = sep->corner( side )[1-side%2];
             if (level != infinity() && level != -infinity() ){
@@ -530,9 +532,16 @@ public:
         }
 
         //Rk: at this point, side == 4 means the edge is contained in the intersection box (?)...;
+
+        std::cout<<"-----------\nseparator: x="<<(*sep).min()[X]<<", y="<<(*sep).min()[Y]
+                 <<", X="<<(*sep).max()[X]<<", Y="<<(*sep).max()[Y]<<"\n";
+        std::cout<<"-----------\nboundary before sorting:\n   ";
+        for (unsigned i=0; i < exits.size(); i++){
+            std::cout<<intersections[b].boundary[i].edge<<", ";
+        }
         std::cout<<"exits before sorting:\n   ";
         for (unsigned i=0; i < exits.size(); i++){
-            std::cout<<exits[i].ray_idx<<", ";
+            std::cout<<"("<<exits[i].side<<", "<<exits[i].place<<", "<<exits[i].ray_idx<<"),";
         }
         std::cout<<"\n";
 
@@ -540,7 +549,13 @@ public:
 
         std::cout<<"exits after sorting:\n   ";
         for (unsigned i=0; i < exits.size(); i++){
-            std::cout<<exits[i].ray_idx<<", ";
+            std::cout<<"("<<exits[i].side<<", "<<exits[i].place<<", "<<exits[i].ray_idx<<"),";
+        }
+        std::cout<<"\n";
+
+        std::cout<<"tests:\n   ";
+        for (unsigned i=1; i < exits.size(); i++){
+            std::cout<<compareExitPoints(exits[i-1],exits[i])<<", ";
         }
         std::cout<<"\n";
 
@@ -548,11 +563,15 @@ public:
         for (unsigned i=0; i < intersections[b].boundary.size(); i++){
             sorted_boundary[i] = intersections[b].boundary[exits[i].ray_idx];
         }
-        //TODO: remove the edges as well!! caution: each deletion invalidates all the names...
-        //while( exits.back().side == 4 ){
-        //    exits.pop_back();
-        //}
+        //TODO: remove the short edges!! caution: each deletion invalidates all the names...
+        std::cout<<"sorted boundary:\n   ";
+        for (unsigned i=0; i < exits.size(); i++){
+            std::cout<<sorted_boundary[i].edge<<", ";
+        }
+        std::cout<<"\n";
+
         intersections[b].boundary = sorted_boundary;
+
     }
         
 
@@ -711,9 +730,12 @@ class IntersectDataTester: public Toy {
         topo.buildIntersections(paths);
         topo.print();
         topo.sortIntersectionBoundaries();
-        highlightRay(cr, topo, sliders[0].value(), sliders[1].value() );
-        //topo.nameAreas();
-        //topo.print();
+        unsigned b = (unsigned)sliders[0].value()%topo.intersections.size();
+        unsigned r = (unsigned)sliders[1].value()%topo.intersections[b].boundary.size();
+        highlightRay(cr, topo, b, r );
+        topo.print();
+        topo.nameAreas();
+        topo.print();
 
         //drawBox(cr,topo, unsigned(sliders[0].value()));
         drawBoxes(cr,topo);
@@ -727,7 +749,7 @@ class IntersectDataTester: public Toy {
         for (int i = 0; i < NB_PATHS; i++){
             paths_handles.push_back(PointSetHandle());
         }
-        sliders.push_back(Slider(0.0, 10.0, 1, 0.0, "intersection chooser"));
+        sliders.push_back(Slider(0.0, 20.0, 1, 0.0, "intersection chooser"));
         sliders.push_back(Slider(0.0, 10.0, 1, 0.0, "ray chooser"));
         handles.push_back(&(sliders[0]));
         handles.push_back(&(sliders[1]));
