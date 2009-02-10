@@ -600,10 +600,11 @@ public:
 
 
 
-#define NB_PATHS 1
-#define NB_PTS_ON_PATH 4
 class IntersectDataTester: public Toy {
-    PointSetHandle paths_handles[NB_PATHS];
+    int NB_PATHS;
+    int NB_PTS_ON_PATH;
+
+    std::vector<PointSetHandle> paths_handles;
     std::vector<Slider> sliders;
 
     void drawArea( cairo_t *cr, IntersectionData const &topo, unsigned a ){
@@ -721,17 +722,15 @@ class IntersectDataTester: public Toy {
     }
 
     public:
-    IntersectDataTester() {
+    IntersectDataTester(int paths, int pts_on_path, int degree) :
+        NB_PATHS(paths), NB_PTS_ON_PATH(pts_on_path) {
         for (int i = 0; i < NB_PATHS; i++){
-            paths_handles[i] = PointSetHandle();
+            paths_handles.push_back(PointSetHandle());
         }
         sliders.push_back(Slider(0.0, 10.0, 1, 0.0, "intersection chooser"));
         sliders.push_back(Slider(0.0, 10.0, 1, 0.0, "ray chooser"));
         handles.push_back(&(sliders[0]));
         handles.push_back(&(sliders[1]));
-    }
-
-    void first_time(int argc, char** argv) {
         for(int i = 0; i < NB_PATHS; i++){
             for(int j = 0; j < NB_PTS_ON_PATH; j++){
                 paths_handles[i].push_back(uniform()*200, 100+ uniform()*200);
@@ -740,12 +739,24 @@ class IntersectDataTester: public Toy {
         }
         sliders[0].geometry(Point(50, 20), 180);
         sliders[1].geometry(Point(50, 40), 180);
+    }
+
+    void first_time(int argc, char** argv) {
 
     }
 };
 
 int main(int argc, char **argv) {
-    init(argc, argv, new IntersectDataTester());
+    unsigned paths=10;
+    unsigned pts_on_path=3;
+    unsigned degree=1;
+    if(argc > 3)
+        sscanf(argv[3], "%d", &degree);
+    if(argc > 2)
+        sscanf(argv[2], "%d", &pts_on_path);
+    if(argc > 1)
+        sscanf(argv[1], "%d", &paths);
+    init(argc, argv, new IntersectDataTester(paths, pts_on_path, degree));
     return 0;
 }
 

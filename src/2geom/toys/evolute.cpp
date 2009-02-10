@@ -10,7 +10,12 @@
 using std::vector;
 using namespace Geom;
 
-class SelfIntersect: public Toy {
+/*
+jfb: I think the evolute goes to infinity at inflection points, in which case you cannot "join" the pieces by hand.
+jfb: for the evolute toy, you could not only cut at inflection points, but event remove the domains where  cross(dda,da)<c*|da|^3, where c is a small constant, as these points will be off screen anyway.
+*/
+
+class Evolution: public Toy {
     PointSetHandle psh;
 virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
     cairo_set_line_width (cr, 0.5);
@@ -43,12 +48,22 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
                                Piecewise<SBasis>(A[1]) + divide(dA[0]*dot(dA,dA), crs, 100, 1));
     cairo_d2_pw_sb(cr, ev4);
     cairo_stroke(cr);
+    if(1) {
+        cout << "bnd" << bounds_exact(dot(ev4, ev4)) << endl;
+        cairo_d2_pw_sb(cr, D2<Piecewise<SBasis> >(Piecewise<SBasis>(SBasis(Linear(0,1000))), dot(ev4, ev4)*1000));
+        cairo_stroke(cr);
+        vector<double> rts = roots(dot(ev4, ev4)-1);
+        for(int i = 0; i < rts.size(); i++) {
+            cout << rts[i] << endl;
+            draw_handle(cr, ev4(rts[i]));
+        }
+    }
     cairo_set_source_rgba (cr, 1., 0., 1, 1);
     
     Toy::draw(cr, notify, width, height, save,timer_stream);
 }
 public:
-SelfIntersect (unsigned bez_ord) {
+Evolution (unsigned bez_ord) {
     handles.push_back(&psh);
     for(unsigned i = 0; i < bez_ord; i++)
         psh.push_back(uniform()*400, uniform()*400);
@@ -59,7 +74,7 @@ int main(int argc, char **argv) {
     unsigned bez_ord=5;
     if(argc > 1)
         sscanf(argv[1], "%d", &bez_ord);
-    init(argc, argv, new SelfIntersect(bez_ord));
+    init(argc, argv, new Evolution(bez_ord));
 
     return 0;
 }
