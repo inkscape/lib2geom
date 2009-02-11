@@ -271,6 +271,7 @@ public:
     //-- Mutate data: split edges, merge intersections...
     //----------------------------------------------------
 
+    //*!* when split, the beginning of the edge is supposed to keep it's name.
     void splitEdge(unsigned i0, double t, unsigned box_id){
         if (!( edges[i0].portion.contains(t) ) ) 
             THROW_EXCEPTION("Invalid intersection data.");
@@ -415,10 +416,13 @@ public:
 
     //to be called by some intersection finder... 
     void addNewIntersection(unsigned path_a, unsigned curve_a, unsigned path_b, unsigned curve_b, double t_a, double t_b, Rect bounds ){
+        std::cout<<"splitEdge: p_a"<<path_a<<", c_a"<<curve_a<<", p_b"<<path_b<<", c_b"<<curve_b<<", t_a"<<t_a<<", t_b"<<t_b<<".\n";
         unsigned e_a = findEdge( path_a, curve_a, t_a );
         unsigned e_b = findEdge( path_b, curve_b, t_b );
         unsigned newbox_id = insertNewBox(bounds);        
+        if (e_a == e_b && t_a < t_b) std::swap(t_a,t_b);//*!* when split, begining of the edge is supposed to keep it's name.
         splitEdge(e_a, t_a, newbox_id);
+        if (e_a == e_b && t_a == t_b) return;
         splitEdge(e_b, t_b, newbox_id);
     }
 
@@ -435,7 +439,7 @@ public:
                         std::vector<std::pair<double,double> > times;
                         //FIXME: look for self intersection when i=j and ii=jj.
                         if ( i==j && ii==jj){
-                            //find_self_intersections( times, paths[i][ii].toSBasis() );
+                            find_self_intersections( times, paths[i][ii].toSBasis() );
                         }else{
                             find_intersections( times, paths[i][ii].toSBasis(), paths[j][jj].toSBasis() );
                         }
@@ -443,7 +447,11 @@ public:
                             Point p = paths[i][ii].pointAt(times[k].first);
                             Rect bounds = Rect(p,p);
                             bounds.expandBy(precision);
-                            addNewIntersection( i, ii, j, jj, times[k].first, times[k].second, bounds);
+                            if (times[k].first == times[k].first && times[k].second == times[k].second ){//is this the way to test NaN?
+                                addNewIntersection( i, ii, j, jj, times[k].first, times[k].second, bounds);
+                            }else{
+                                std::cout<<"ooops: find_(self)_intersections returned NaN.";
+                            }
                         }
                     }
                 }
@@ -475,16 +483,10 @@ public:
             return  OptRect(ret);
         }
         if (b.max()[Y]<a.min()[Y]){
-            ret[Y][1] = ( b.max()[Y] + a.min()[Y] )/ 2;
+            ret[Y][0] = ( b.max()[Y] + a.min()[Y] )/ 2;
             return OptRect(ret);
         }
         return OptRect();
-    }
-
-    void sortIntersectionBoundaries(){
-        for (unsigned i=0; i<intersections.size(); i++){
-            sortIntersectionBoundary(i);
-        }
     }
 
     //Find 4 lines (returned as a Rect sides) that cut all the rays (=edges). *!* some side might be infinite.
@@ -507,6 +509,8 @@ public:
         for (unsigned i=0; i<intersections[b].boundary.size(); i++){
             unsigned ei = intersections[b].boundary[i].edge;
             if (edges[ei].start == edges[ei].end) {
+                assert( edges[ei].start == b );
+                assert( edges[ei].end   == b );
                 Rect sepi ( Interval( -infinity(), infinity() ) , Interval( -infinity(), infinity() ) );
                 OptRect bbox = edgeBounds(ei);
                 if (bbox){
@@ -534,6 +538,13 @@ public:
         return sep;
     }
     
+
+    void sortIntersectionBoundaries(){
+        for (unsigned i=0; i<intersections.size(); i++){
+            sortIntersectionBoundary(i);
+        }
+    }
+
     //Sort the rays (=edges) at a given intersection point.
     void sortIntersectionBoundary(unsigned b){
 
@@ -571,6 +582,13 @@ public:
 
         //Rk: at this point, side == 4 means the edge is contained in the intersection box (?)...;
         std::sort( exits.begin(), exits.end(), compareExitPoints );
+
+        std::cout<<"sorted exits at "<< b <<":\n   ";
+        for (unsigned i=0; i < exits.size(); i++){
+            std::cout<<"("<< exits[i].side <<", "<< exits[i].place <<", ";
+        }
+        std::cout<<"\n";
+        std::cout<<"sep was: y="<<sep->corner(0)[Y]<<", X="<<sep->corner(1)[X]<<", Y="<<sep->corner(2)[Y]<<", x="<<sep->corner(3)[X]<<":\n   ";
 
         Boundary sorted_boundary = intersections[b].boundary;
         for (unsigned i=0; i < intersections[b].boundary.size(); i++){
@@ -644,7 +662,7 @@ class IntersectDataTester: public Toy {
             drawArea(cr, topo, a);
         }
     }
-    void drawArea( cairo_t *cr, IntersectionData const &topo, unsigned a ){
+    void drawArea( cairo_t *cr, IntersectionData const &topo, unsigned a, bool outline=false ){
         if (a>=topo.areas.size()) return;
         Path bndary = Path();
         for (int i = 0; i < topo.areas[a].boundary.size(); i++){
@@ -665,9 +683,18 @@ class IntersectDataTester: public Toy {
         }
         bndary.close();
         cairo_path(cr, bndary);
-        cairo_set_line_width (cr, 6);
-        cairo_set_source_rgba (cr, 1., 0., 1., .3);
+        double r,g,b;
+        convertHSVtoRGB(360*a/topo.areas.size(), 1., .5, r,g,b);
+        cairo_set_source_rgba (cr, r, g, b, 1);
+        //cairo_set_source_rgba (cr, 1., 0., 1., .3);
         cairo_fill(cr);
+
+        if (outline){
+            cairo_path(cr, bndary);
+            //cairo_set_source_rgba (cr, .3,.3,.3, 1);
+            cairo_set_line_width (cr, 5);
+            cairo_stroke(cr);
+        }
     }
 
     void highlightRay( cairo_t *cr, IntersectionData &topo, unsigned b, unsigned r ){
@@ -697,8 +724,10 @@ class IntersectDataTester: public Toy {
         cairo_stroke(cr);
 
         OptRect sep = topo.findRayCutter(b);
+        cairo_set_source_rgba (cr, 1., 0., .5, 1);
+        cairo_set_line_width (cr, .5);
         for (unsigned side=0; side<4; side++){
-            if ( sep->corner(side)[1-side%2] < infinity() ) {
+            if ( sep->corner(side)[1-side%2] > -infinity() && sep->corner(side)[1-side%2] < infinity() ) {
                 Point p,q;
                 p[1-side%2] = sep->corner(side)[1-side%2];
                 p[side%2] = 0;
@@ -706,8 +735,6 @@ class IntersectDataTester: public Toy {
                 q[side%2] = 900;
                 draw_line_seg(cr, p, q);
             }
-            cairo_set_source_rgba (cr, 1., 0., .5, 1);
-            cairo_set_line_width (cr, .5);
             cairo_stroke(cr);
         }
     }
@@ -768,17 +795,17 @@ class IntersectDataTester: public Toy {
 
         //IntersectionData topo;
         topo.buildIntersections(paths);
-        topo.print();
+        //topo.print();
         topo.sortIntersectionBoundaries();
         unsigned b = (unsigned)sliders[0].value()%topo.intersections.size();
         unsigned r = (unsigned)sliders[1].value()%topo.intersections[b].boundary.size();
         highlightRay(cr, topo, b, r );
-        topo.print();
+        //topo.print();
         topo.nameAreas();
         unsigned a = (unsigned)sliders[2].value()%topo.areas.size();
-        //drawAreas(cr, topo);
-        drawArea(cr, topo, a);
-        topo.print();
+        drawAreas(cr, topo);
+        //drawArea(cr, topo, a, true);
+        //topo.print();
 
         //drawBox(cr,topo, unsigned(sliders[0].value()));
         drawBoxes(cr,topo);
@@ -811,7 +838,7 @@ class IntersectDataTester: public Toy {
         }
         for(int i = 0; i < nb_paths; i++){
             for(int j = 0; j < (nb_curves_per_path*degree)+1; j++){
-                paths_handles[i].push_back(uniform()*200, 100+ uniform()*200);
+                paths_handles[i].push_back(uniform()*400, 100+ uniform()*300);
             }
             handles.push_back(&paths_handles[i]);
         }
