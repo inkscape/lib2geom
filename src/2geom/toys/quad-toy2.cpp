@@ -99,18 +99,13 @@ class QuadToy2: public Toy {
     void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
         cairo_set_line_width (cr, 1);
 
-		// draw the rect that corresponds to each Handle
+		// every 2 Handles is one rect.
 		// and insert rect in quadtree
 		Geom::QuadTree qt;
-		for(unsigned i=0; i<handle_set.pts.size(); i++)
+
+		for(unsigned i=0; i<handle_set.pts.size(); i=i+2)
 		{
-			Geom::Point point = handle_set.pts[i];
-
-		    PointHandle p1, p2;
-		    p1.pos = Point(point[0] - rect_length, point[1] - rect_height); // Bottom Left
-		    p2.pos = Point(point[0] + rect_length, point[1] + rect_height); // Top Right
-
-	        Rect r1(p1.pos, p2.pos);
+	        Rect r1(handle_set.pts[i], handle_set.pts[i+1]);
 
 		    cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 1.0);
 		    cairo_set_line_width(cr, 0.3);
@@ -129,45 +124,43 @@ class QuadToy2: public Toy {
         cairo_stroke(cr);
         Toy::draw(cr, notify, width, height, save,timer_stream);
     }        
-  
-    void canvas_click(Geom::Point clicked_point, int button) {
-        std::cout << "+++ clicked at " << clicked_point << " with button " << button << std::endl;
-		// create new point
-        if(button == 1)
+
+    int mouse_down;
+	Geom::Point starting_point;
+	Geom::Point ending_point;
+
+    
+    void mouse_pressed(GdkEventButton* e) {
+		Toy::mouse_pressed(e);
+		if(!selected) {
+			starting_point = Point(e->x, e->y);
+			std::cout << " start mouse_pressed at " << starting_point << std::endl;
+			mouse_down = 1;
+		}
+    }
+
+
+    virtual void mouse_released(GdkEventButton* e) {
+		Toy::mouse_released(e);
+		if(mouse_down)
 		{
-            handle_set.push_back(clicked_point);
-        }
-		// delete existing point
-		// it's a bit brute: delete the first we find :)
-		/*
-        else if(button == 3) 
-		{
-			int limit = 3;
-			for(unsigned i=0; i<handle_set.pts.size(); i++)
-			{
-				if(	(int)handle_set.pts[i][0] >= (int)clicked_point[0] - limit	
-					&& (int)handle_set.pts[i][0] <= (int)clicked_point[0] + limit	
-					&& (int)handle_set.pts[i][1] >= (int)clicked_point[1] - limit	
-					&& (int)handle_set.pts[i][1] <= (int)clicked_point[1] + limit)	
-				{
-					std::cout << "--- remove point " << i << " at " << handle_set.pts[i] << std::endl;
-					
-					break;
-				}
-			}
-        }
-		*/
+			ending_point = Point(e->x, e->y);
+			std::cout << " end mouse_release at " << ending_point  << std::endl;
+			mouse_down = 0;
+			// TODO check for B L, T R ???
+			handle_set.push_back(starting_point);
+			handle_set.push_back(ending_point);
+		}		
     }
 
 public:
-    QuadToy2() : rect_length(8), rect_height(15) {
+    QuadToy2(){
         if(handles.empty()) {
             handles.push_back(&handle_set);
         }
     }
 
-private:
-	double rect_length, rect_height; // these represent half of the length, and height (just for performance)
+
 };
 
 int main(int argc, char **argv) {
