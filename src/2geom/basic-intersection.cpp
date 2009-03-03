@@ -10,6 +10,28 @@
 using std::vector;
 namespace Geom {
 
+#ifdef USE_RECURSIVE_INTERSECTOR
+
+void find_intersections(std::vector<std::pair<double, double> > &xs,
+                        D2<SBasis> const & A,
+                        D2<SBasis> const & B) {
+    vector<Point> BezA, BezB;
+    sbasis_to_bezier(BezA, A);
+    sbasis_to_bezier(BezB, B);
+    
+    xs.clear();
+    
+    find_intersections_bezier_recursive(xs, BezA, BezB);
+}
+void find_intersections(std::vector< std::pair<double, double> > & xs,
+                         std::vector<Point> const& A,
+                         std::vector<Point> const& B,
+                        double precision){
+    find_intersections_bezier_recursive(xs, A, B, precision);
+}
+
+#else
+
 namespace detail{ namespace bezier_clipping {
 void portion (std::vector<Point> & B, Interval const& I);
 }; };
@@ -23,8 +45,16 @@ void find_intersections(std::vector<std::pair<double, double> > &xs,
     
     xs.clear();
     
-    find_intersections(xs, BezA, BezB);
+    find_intersections_bezier_clipping(xs, BezA, BezB);
 }
+void find_intersections(std::vector< std::pair<double, double> > & xs,
+                         std::vector<Point> const& A,
+                         std::vector<Point> const& B,
+                        double precision){
+    find_intersections_bezier_clipping(xs, A, B, precision);
+}
+
+#endif
 
 /*
  * split the curve at the midpoint, returning an array with the two parts

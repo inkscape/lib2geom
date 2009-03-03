@@ -50,7 +50,6 @@ elliptical-arc.cpp
 elliptical-arc.h
 hvlinesegment.h
 
-#intersection-by-bezier-clipping.cpp
 line.cpp
 line.h
 ray.h
@@ -121,6 +120,7 @@ bezier-to-sbasis.h
 basic-intersection.h
 basic-intersection.cpp
 recursive-bezier-intersection.cpp
+#intersection-by-bezier-clipping.cpp
 
 geom.cpp
 geom.h

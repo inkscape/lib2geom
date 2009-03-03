@@ -55,19 +55,19 @@ public:
 };
 
 static void
-find_intersections(std::vector<std::pair<double, double> > & xs,
+find_intersections_bezier_recursive(std::vector<std::pair<double, double> > & xs,
                    OldBezier a,
                    OldBezier b);
 
 void
-find_intersections( std::vector<std::pair<double, double> > &xs,
+find_intersections_bezier_recursive( std::vector<std::pair<double, double> > &xs,
                     vector<Geom::Point> const & A,
                     vector<Geom::Point> const & B,
                     double precision) {
     OldBezier a, b;
     a.p = A;
     b.p = B;
-    return find_intersections(xs, a,b);
+    return find_intersections_bezier_recursive(xs, a,b);
 }
 
 
@@ -442,7 +442,7 @@ static void intersect_polish_root (OldBezier &A, double &s,
 }
 
 
-void find_intersections( std::vector<std::pair<double, double> > &xs,
+void find_intersections_bezier_recursive( std::vector<std::pair<double, double> > &xs,
                          OldBezier a, OldBezier b)
 {
     if( intersect_BB( a, b ) )
