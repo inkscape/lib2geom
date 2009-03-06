@@ -187,7 +187,7 @@ struct mult_mutate{
 };
 
 template <typename T>
-void basic_arith(T a, T b) {
+void basic_arith(T const & a, T const & b) {
   {
     ::copy<T> A;
     A.a = a;

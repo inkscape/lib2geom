@@ -7,6 +7,9 @@ path-cairo.h
 
 
 SET(2GEOM_TOYS-2_SRC
+rect_01
+rect_02
+rect_03
 pencil
 intersect-data
 sb2d-solver

@@ -79,7 +79,7 @@ class InnerProductClip: public Toy {
             SBasis inner;
             if(togs[0].on) {
                 D2<SBasis> test = curpw - start_handle.pos;
-                inner = test[0]*test[0] + test[1]*test[1] - d*d;
+                inner = test[0]*test[0] + test[0]*test[1] + 2*test[1]*test[1] - d*d;
             } else {
                 inner = n[0]*curpw[0] + n[1]*curpw[1] - d;
             }
@@ -99,7 +99,8 @@ class InnerProductClip: public Toy {
                 Point e = curpw(lr[j+1]);
                 double dd;
                 if(togs[0].on) 
-                    dd = dot(m, m) - d*d;
+                    //dd = dot(m, m) - d*d;
+                    dd = m[0]*m[0] + m[0]*m[1] + 2*m[1]*m[1] - d*d;
                 else
                     dd = dot(n, m) - d;
                 if(togs[1].on)

@@ -531,6 +531,19 @@ Piecewise<T> operator*(Piecewise<T> const &a, double b) {
     return ret;
 }
 template<typename T>
+Piecewise<T> operator*(Piecewise<T> const &a, T b) {
+    boost::function_requires<ScalableConcept<T> >();
+
+    if(a.empty()) return Piecewise<T>();
+
+    Piecewise<T> ret;
+    ret.segs.reserve(a.size());
+    ret.cuts = a.cuts;
+    for(unsigned i = 0; i < a.size();i++)
+        ret.push_seg(a[i] * b);
+    return ret;
+}
+template<typename T>
 Piecewise<T> operator/(Piecewise<T> const &a, double b) {
     boost::function_requires<ScalableConcept<T> >();
 
