@@ -218,15 +218,18 @@ public:
         cairo_d2_sb(cr, B);
         Toy::draw(cr, notify, width, height, save,timer_stream);
     }
-    RootFinderComparer()
+    RootFinderComparer(unsigned degree)
     {
-        for(unsigned i = 0; i < 6; i++) psh.push_back(Geom::Point(uniform()*400, uniform()*400));
+        for(unsigned i = 0; i < degree; i++) psh.push_back(Geom::Point(uniform()*400, uniform()*400));
         handles.push_back(&psh);
     }
 };
 
 int main(int argc, char **argv) {
-    init(argc, argv, new RootFinderComparer());
+    unsigned bez_ord = 6;
+    if(argc > 1)
+        sscanf(argv[1], "%d", &bez_ord);
+    init(argc, argv, new RootFinderComparer(bez_ord));
 
     return 0;
 }
