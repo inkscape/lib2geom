@@ -43,9 +43,94 @@ Quad* QuadTree::search(double x0, double y0, double x1, double y1) {
     }
     return q;
 }
+
+
+/*
+Comments by Vangelis (use with caution :P )
+
+Insert Rect (x0, y0), (x1, y1) in the QuadTree Q.
+
+===================================================================================
+* QuadTree Q has: Quadtree's Quad root R, QuadTree's bounding box B. 
+
+* Each Quad has a Quad::data where we store the Rects that belong to this Quad
+
+* Each Quad has 4 Quad children: 0, 1, 2, 3. Each child Quad represents one of the following quarters
+of the bounding box B:
+
++---------------------+
+|          |          |
+|  NW=0    |  NE=1    |
+|          |          |
+|          |          |
++---------------------+
+|          |          |
+|  SW=2    |  SE=3    |
+|          |          |
+|          |          |
++---------------------+ 
+
+Each Quad can further be divided in 4 Quads as above and so on. Below there is an example 
+ 
+        0
+      / || \
+    /  /  \  \
+   0  1   2   3
+     /\
+  / | | \
+  0 1 2 3
+
++---------------------+
+|          | 1-0 | 1-1|
+|    0     |     |    |
+|          |-----|----|
+|          | 1-2 | 1-3|
+|          |     |    |
++---------------------+
+|          |          |
+|          |          |
+|     2    |     3    |
+|          |          |
++---------------------+ 
+
+
+
+===================================================================================
+Insert Rect (x0, y0), (x1, y1) in the QuadTree Q. Algorithm:
+1) check if Rect is bigger than QuadTree's bounding box
+2) find in which Quad we should add the Rect:
+
+
+
+-----------------------------------------------------------------------------------
+How we find in which Quad we should add the Rect:
+We call initially
+CHECK(Quadtree's Quad root R, QuadTree's bounding box B)
+
+Description:
+CHECK(Quad: R, Bounding Box: B)
+BEGIN
+    IF Rect cannot fit in one unique quarter of B THEN
+        add Rect in R.data ;
+        END;
+    FI
+    IF Rect can fit in the quarter I THEN
+        IF R.children[I] doesn't exist THEN
+            create the Quad R.children[I];
+        FI
+        B = bounding box of the Quad R.children[I] ;
+        R = R.children[I] ;
+        CHECK(R, B) ;
+    FI
+END 
+
+
+*/
     
 void QuadTree::insert(double x0, double y0, double x1, double y1, int shape) {
     // loop until a quad would break the box.
+
+    // empty root => empty QuadTree. Create initial bounding box (0,0), (1,1)
     if(root == 0) {
         root = new Quad;
             
@@ -55,13 +140,16 @@ void QuadTree::insert(double x0, double y0, double x1, double y1, int shape) {
         by1 = 1;
     }
     Quad *q = root;
-    
+
+    //A temp bounding box. Same as root's bounting box (ie of the whole QuadTree)
     double bxx0 = bx0, bxx1 = bx1;
     double byy0 = by0, byy1 = by1;
+
     while((bxx0 > x0) ||
           (bxx1 < x1) ||
           (byy0 > y0) ||
-          (byy1 < y1)) { // too small initial size - double
+          (byy1 < y1)) { 
+        // QuadTree has small size, can't accomodate new rect. Double the size:
         unsigned i = 0;
         if(bxx0 > x0) {
             bxx0 = 2*bxx0 - bxx1;
@@ -85,6 +173,7 @@ void QuadTree::insert(double x0, double y0, double x1, double y1, int shape) {
     }
     
     while(q) {
+        // Find the center of the temp bounding box
         double cx = (bxx0 + bxx1)/2;
         double cy = (byy0 + byy1)/2;
         unsigned i = 0;
@@ -97,16 +186,25 @@ void QuadTree::insert(double x0, double y0, double x1, double y1, int shape) {
             bxx0 = cx; // zoom in a quad
         } else if(x1 <= cx) {
             bxx1 = cx;
-        } else
+        } else{
+            // rect does not fit in one unique quarter (in X axis) of the temp bounding box
             break;
+        }
         if(y0 >= cy) {
             i += 2;
             byy0 = cy;
         } else if(y1 <= cy) {
             byy1 = cy;
-        } else
+        } else{
+            // rect does not fit in one unique quarter (in Y axis) of the temp bounding box
             break;
-            
+        }
+
+        /*
+            1 rect does fit in one unique quarter of the temp bounding box. And we have found which.
+            2 temp bounding box = bounding box of this quarter. 
+            3 "Go in" this quarter (create if doesn't exist)
+        */
         assert(i < 4);
         Quad *qq = q->children[i];
         if(qq == 0) {
