@@ -64,6 +64,7 @@ plane3d
 pw-funcs
 pw-toy
 quad-toy
+quad-toy2
 sb-math-test
 sb-to-bez
 sbasis-fitting
@@ -98,7 +99,7 @@ sbasisdim
 convole
 hatches
 rdm-area
-ray-sorting-test
+#ray-sorting-test
 sketch-fitter
 )
 

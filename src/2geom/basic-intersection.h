@@ -68,20 +68,20 @@ void find_self_intersections(std::vector<std::pair<double, double> >& xs,
 
 
 //TODO: this should be moved to .cpp, shouldn't it?
-//#ifdef USE_RECURSIVE_INTERSECTOR
-/*
- * find_intersection
- *
- *  input: A, B       - set of control points of two Bezier curve
- *  input: precision  - required precision of computation
- *  output: xs        - set of pairs of parameter values
- *                      at which crossing happens
- */
-void find_intersections_bezier_recursive (std::vector< std::pair<double, double> > & xs,
-                         std::vector<Point> const& A,
-                         std::vector<Point> const& B,
-                         double precision = 1e-5);
-//#else
+// #ifdef USE_RECURSIVE_INTERSECTOR
+// /*
+//  * find_intersection
+//  *
+//  *  input: A, B       - set of control points of two Bezier curve
+//  *  input: precision  - required precision of computation
+//  *  output: xs        - set of pairs of parameter values
+//  *                      at which crossing happens
+//  */
+// void find_intersections_bezier_recursive (std::vector< std::pair<double, double> > & xs,
+//                          std::vector<Point> const& A,
+//                          std::vector<Point> const& B,
+//                          double precision = 1e-5);
+// #else
 /*
  * find_intersection
  *

@@ -888,6 +888,16 @@ void iterate<intersection_point_tag> (std::vector<Interval>& domsA,
 
     Interval dom;
 
+    if ( is_constant(A) && is_constant(B) ){
+        Point M1 = middle_point(C1->front(), C1->back());
+        Point M2 = middle_point(C2->front(), C2->back());
+        if (are_near(M1,M2)){
+            domsA.push_back(domA);
+            domsB.push_back(domB);
+        }
+        return;
+    }
+
     size_t iter = 0;
     while (++iter < 100
             && (dompA.extent() >= precision || dompB.extent() >= precision))

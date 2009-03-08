@@ -514,6 +514,7 @@ void find_intersections (std::vector< std::pair<double, double> > & xs,
                          std::vector<Point> const& B,
                          double precision)
 {
+    std::cout << "find_intersections: intersection-by-clipping.cpp version\n";
 //    std::cerr << std::fixed << std::setprecision(16);
 
     using detail::bezier_clipping::get_precision;
