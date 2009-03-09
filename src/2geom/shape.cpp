@@ -43,6 +43,8 @@
 #include <algorithm>
 #include <cstdlib>
 
+//#define SHAPE_DEBUG  // turns on debug outputting to cout.
+
 namespace Geom {
 
 // A little sugar for appending a list to another
@@ -376,7 +378,9 @@ unsigned crossing_along(double t, unsigned ix, unsigned jx, bool dir, Crossings 
 void crossing_dual(unsigned &i, unsigned &j, CrossingSet const & crs) {
     Crossing cur = crs[i][j];
     i = cur.getOther(i);
+#ifdef SHAPE_DEBUG
     std::cout << i << "\n";
+#endif
     if(crs[i].empty())
         j = 0;
     else
@@ -465,18 +469,24 @@ std::vector<Path> inner_sanitize(std::vector<Path> const & ps) {
                      to = crs[ix][jx];
             if(dir) {
                 // backwards
+#ifdef SHAPE_DEBUG
                 std::cout << "r" << ix << "[" << from.getTime(ix)  << ", " << to.getTime(ix) << "]\n";
+#endif
                 Path p = ps[ix].portion(from.getTime(ix), to.getTime(ix)).reverse();
                 for(unsigned i = 0; i < p.size(); i++)
                     res.append(p[i], Path::STITCH_DISCONTINUOUS);
             } else {
                 // forwards
+#ifdef SHAPE_DEBUG
                 std::cout << "f" << ix << "[" << from.getTime(ix) << ", " << to.getTime(ix) << "]\n";
+#endif
                 ps[ix].appendPortionTo(res, from.getTime(ix), to.getTime(ix));
             }
             dir = new_dir;
         } while(!visited[ix][jx]);
+#ifdef SHAPE_DEBUG
         std::cout << "added " << res.size() << "\n";
+#endif
         result_paths.push_back(res);
     }
     for(unsigned i = 0; i < crs.size(); i++) {
