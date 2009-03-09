@@ -29,6 +29,9 @@
  *
  */
 
+#ifndef __2GEOM_ARC_LENGTH_H
+#define __2GEOM_ARC_LENGTH_H
+
 #include <2geom/path.h>
 
 /*** Routines in this group return a path that looks the same, but
@@ -41,6 +44,7 @@
 double arc_length_subdividing(Geom::Path const & p, double tol);
 double arc_length_integrating(Geom::Path const & p, double tol);
 
+#endif
 
 /*
   Local Variables:
