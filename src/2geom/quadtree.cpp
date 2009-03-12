@@ -53,7 +53,8 @@ Insert Rect (x0, y0), (x1, y1) in the QuadTree Q.
 ===================================================================================
 * QuadTree Q has: Quadtree's Quad root R, QuadTree's bounding box B. 
 
-* Each Quad has a Quad::data where we store the Rects that belong to this Quad
+* Each Quad has a Quad::data where we store the id of the Rect that belong to 
+this Quad. (In reality we'll store a pointer to the shape).
 
 * Each Quad has 4 Quad children: 0, 1, 2, 3. Each child Quad represents one of the following quarters
 of the bounding box B:
@@ -72,7 +73,7 @@ of the bounding box B:
 
 Each Quad can further be divided in 4 Quads as above and so on. Below there is an example 
  
-        0
+       Root
       / || \
     /  /  \  \
    0  1   2   3
@@ -164,14 +165,20 @@ void QuadTree::insert(double x0, double y0, double x1, double y1, int shape) {
             byy1 = 2*byy1 - byy0;
         }
         q = new Quad;
-        q->children[i] = root;
-        root = q;
+        //check if root is empty (no rects, no quad children)
+        if( clean_root() ){
+            root = q;
+        }
+        else{
+            q->children[i] = root;
+            root = q;
+        }
         bx0 = bxx0;
         bx1 = bxx1;
         by0 = byy0;
         by1 = byy1;
     }
-    
+
     while(q) {
         // Find the center of the temp bounding box
         double cx = (bxx0 + bxx1)/2;
@@ -201,9 +208,9 @@ void QuadTree::insert(double x0, double y0, double x1, double y1, int shape) {
         }
 
         /*
-            1 rect does fit in one unique quarter of the temp bounding box. And we have found which.
-            2 temp bounding box = bounding box of this quarter. 
-            3 "Go in" this quarter (create if doesn't exist)
+        1 rect does fit in one unique quarter of the temp bounding box. And we have found which.
+        2 temp bounding box = bounding box of this quarter. 
+        3 "Go in" this quarter (create if doesn't exist)
         */
         assert(i < 4);
         Quad *qq = q->children[i];
@@ -225,6 +232,35 @@ void QuadTree::erase(Quad *q, int shape) {
         }
     }
     return;
+}
+
+/*
+Returns:
+false:  if root isn't empty
+true:   if root is empty it cleans root
+*/
+bool QuadTree::clean_root() { 
+    assert(root);
+
+    // false if root *has* rects assigned to it.
+    bool all_clean = root->data.empty(); 
+
+    // if root has children we get false
+    for(unsigned i = 0; i < 4; i++)
+    {
+        if(root->children[i])
+        {
+            all_clean = false;
+        }
+    }
+
+    if(all_clean)
+    {
+        delete root;
+        root=0;
+        return true;
+    }
+    return false;
 }
 
 };
