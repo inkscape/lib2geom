@@ -104,26 +104,25 @@ Insert Rect (x0, y0), (x1, y1) in the QuadTree Q. Algorithm:
 
 
 -----------------------------------------------------------------------------------
-How we find in which Quad we should add the Rect:
-We call initially
-CHECK(Quadtree's Quad root R, QuadTree's bounding box B)
+How we find in which Quad we should add the Rect R:
 
-Description:
-CHECK(Quad: R, Bounding Box: B)
-BEGIN
-    IF Rect cannot fit in one unique quarter of B THEN
-        add Rect in R.data ;
-        END;
-    FI
-    IF Rect can fit in the quarter I THEN
-        IF R.children[I] doesn't exist THEN
-            create the Quad R.children[I];
-        FI
-        B = bounding box of the Quad R.children[I] ;
-        R = R.children[I] ;
+Q = Quadtree's Quad root
+B = QuadTree's bounding box B
+WHILE (Q) {
+    IF ( Rect cannot fit in one unique quarter of B ){
+        Q = current Quad ;
+        BREAK;
+    }
+    IF ( Rect can fit in the quarter I ) {
+        IF (Q.children[I] doesn't exist) {
+            create the Quad Q.children[I];
+        }
+        B = bounding box of the Quad Q.children[I] ;
+        Q = Q.children[I] ;
         CHECK(R, B) ;
-    FI
-END 
+    }
+}
+add Rect R to Q ;
 
 
 */
@@ -152,6 +151,7 @@ void QuadTree::insert(double x0, double y0, double x1, double y1, int shape) {
           (byy1 < y1)) { 
         // QuadTree has small size, can't accomodate new rect. Double the size:
         unsigned i = 0;
+
         if(bxx0 > x0) {
             bxx0 = 2*bxx0 - bxx1;
             i += 1;
@@ -188,6 +188,7 @@ void QuadTree::insert(double x0, double y0, double x1, double y1, int shape) {
         assert(x1 <= bxx1);
         assert(y0 >= byy0);
         assert(y1 <= byy1);
+
         if(x0 >= cx) {
             i += 1;
             bxx0 = cx; // zoom in a quad
@@ -204,6 +205,16 @@ void QuadTree::insert(double x0, double y0, double x1, double y1, int shape) {
             byy1 = cy;
         } else{
             // rect does not fit in one unique quarter (in Y axis) of the temp bounding box
+            break;
+        }
+
+        // check if rect's bounding box has size 1x1. This means that rect is defined by 2 points
+        // that are in the same place.
+        if( ( fabs(bxx0 - bxx1) < 1.0 ) && ( fabs(byy0 - byy1) < 1.0 )){
+            bxx0 = floor(bxx0);
+            bxx1 = floor(bxx1);
+            byy0 = floor(byy0);
+            byy1 = floor(byy1);
             break;
         }
 

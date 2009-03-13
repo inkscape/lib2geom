@@ -168,6 +168,8 @@ class QuadToy2: public Toy
         draw_quad_tree(cr, qt.root, qt.bx0, qt.by0, qt.bx1 - qt.bx0);
         cairo_stroke(cr);
 
+		//*notify << " X:" <<  << " Y: " <<  << std::endl;
+
 		Toy::draw(cr, notify, width, height, save,timer_stream);
 
 		// print changes in the status of the tree
@@ -203,11 +205,11 @@ class QuadToy2: public Toy
 		{
 			ending_point = Point(e->x, e->y);
 			
-			if(starting_point == ending_point)
+/*			if(starting_point == ending_point)
 			{
 				ending_point = Point( (e->x) + 2, (e->y) + 2 );
 			}
-			handle_set.push_back(starting_point);
+*/			handle_set.push_back(starting_point);
 			handle_set.push_back(ending_point);
 			create_new_rect = 0;
 			added_new_rect = 1;
