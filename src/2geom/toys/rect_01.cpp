@@ -39,6 +39,9 @@ so don't use these examples as a reference :)
 #include <2geom/toys/path-cairo.h>
 #include <2geom/toys/toy-framework-2.h>
 
+
+#include <2geom/transforms.h>
+
 using std::vector;
 using namespace Geom;
 
@@ -50,7 +53,24 @@ class SimpleRect: public Toy {
     virtual void draw( cairo_t *cr, std::ostringstream *notify,
                    int width, int height, bool save, std::ostringstream *timer_stream)
 	{
+	  {
+	    cairo_save(cr);
+	    Path p1;
+	    p1.appendNew<LineSegment>(Point(0, 0));
+	    p1.appendNew<LineSegment>(Point(100, 0));
+	    p1.appendNew<LineSegment>(Point(100, 100));
+	    p1.appendNew<LineSegment>(Point(0, 100));
+	    p1.appendNew<LineSegment>(Point(0, 0));
+	    p1.close();
 
+	    Path p2 = p1 * Rotate::from_degrees(45); //
+	
+	    cairo_set_source_rgb(cr, 0,0,0);
+	    cairo_path(cr, p1);
+	    cairo_path(cr, p2);
+	    cairo_stroke(cr);
+	    cairo_restore(cr);
+	  }
         PointHandle p1, p2;
         p1.pos = Point(300, 50);
         p2.pos = Point(450, 450);
