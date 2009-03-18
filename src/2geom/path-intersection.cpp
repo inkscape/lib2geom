@@ -401,8 +401,10 @@ void mono_pair(Path const &A, double Al, double Ah,
 
 /** This returns the times when the x or y derivative is 0 in the curve. */
 std::vector<double> curve_mono_splits(Curve const &d) {
+    Curve* deriv = d.derivative();
     std::vector<double> rs = d.roots(0, X);
     append(rs, d.roots(0, Y));
+    delete deriv;
     std::sort(rs.begin(), rs.end());
     return rs;
 }
@@ -423,17 +425,10 @@ std::vector<double> offset_doubles(std::vector<double> const &x, double offs) {
 std::vector<double> path_mono_splits(Path const &p) {
     std::vector<double> ret;
     if(p.empty()) return ret;
-    ret.push_back(0);
-    
-    Curve* deriv = p[0].derivative();
-    append(ret, curve_mono_splits(*deriv));
-    delete deriv;
     
     bool pdx=2, pdy=2;  //Previous derivative direction
     for(unsigned i = 0; i <= p.size(); i++) {
-        deriv = p[i].derivative();
-        std::vector<double> spl = offset_doubles(curve_mono_splits(*deriv), i);
-        delete deriv;
+        std::vector<double> spl = offset_doubles(curve_mono_splits(p[i]), i);
         bool dx = p[i].initialPoint()[X] > (spl.empty()? p[i].finalPoint()[X] :
                                                          p.valueAt(spl.front(), X));
         bool dy = p[i].initialPoint()[Y] > (spl.empty()? p[i].finalPoint()[Y] :
