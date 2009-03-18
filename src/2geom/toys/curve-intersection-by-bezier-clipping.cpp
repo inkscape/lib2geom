@@ -53,6 +53,7 @@ class CurveIntersect : public Toy
     {
         cairo_set_line_width (cr, 0.3);
         cairo_set_source_rgba (cr, 0.8, 0., 0, 1);
+        //pshA.pts.back() = pshB.pts[0];
         D2<SBasis> A = pshA.asBezier();
         cairo_d2_sb(cr, A);
         cairo_stroke(cr);

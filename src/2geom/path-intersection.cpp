@@ -4,8 +4,11 @@
 
 //for path_direction:
 #include <2geom/sbasis-geometric.h>
+#include <2geom/line.h>
+#ifdef GPL_TAINT
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_multiroots.h>
+#endif
 
 namespace Geom {
 
@@ -199,6 +202,7 @@ static double EpsilonOf(double value)
 }
 #endif
 
+#ifdef GPL_TAINT
 struct rparams {
     Curve const &A;
     Curve const &B;
@@ -219,45 +223,86 @@ intersect_polish_f (const gsl_vector * x, void *params,
      
     return GSL_SUCCESS;
 }
+#endif
 
 static void 
 intersect_polish_root (Curve const &A, double &s,
                        Curve const &B, double &t) {
     int status;
     size_t iter = 0;
-     
-    const size_t n = 2;
-    struct rparams p = {A, B};
-    gsl_multiroot_function f = {&intersect_polish_f, n, &p};
-     
-    double x_init[2] = {s, t};
-    gsl_vector *x = gsl_vector_alloc (n);
-     
-    gsl_vector_set (x, 0, x_init[0]);
-    gsl_vector_set (x, 1, x_init[1]);
-     
-    const gsl_multiroot_fsolver_type *T = gsl_multiroot_fsolver_hybrids;
-    gsl_multiroot_fsolver *sol = gsl_multiroot_fsolver_alloc (T, 2);
-    gsl_multiroot_fsolver_set (sol, &f, x);
-     
-    do
-    {
-        iter++;
-        status = gsl_multiroot_fsolver_iterate (sol);
-     
-        if (status)   /* check if solver is stuck */
+    std::vector<Point> as, bs;
+    as = A.pointAndDerivatives(s, 2);
+    bs = B.pointAndDerivatives(t, 2);
+    Point F = as[0] - bs[0];
+    double best = dot(F, F);
+    
+    for(int i = 0; i < 4; i++) {
+        
+        /**
+           we want to solve
+           J*(x1 - x0) = f(x0)
+           
+           |dA(s)[0]  -dB(t)[0]|  (X1 - X0) = A(s) - B(t)
+           |dA(s)[1]  -dB(t)[1]| 
+        **/
+
+        // We're using the standard transformation matricies, which is numerically rather poor.  Much better to solve the equation using elimination.
+
+        Matrix jack(as[1][0], as[1][1],
+                    -bs[1][0], -bs[1][1],
+                    0, 0);
+        Point soln = (F)*jack.inverse();
+        double ns = s - soln[0];
+        double nt = t - soln[1];
+        
+        as = A.pointAndDerivatives(ns, 2);
+        bs = B.pointAndDerivatives(nt, 2);
+        F = as[0] - bs[0];
+        double trial = dot(F, F);
+        if (trial > best*0.1) // we have standards, you know
+            // At this point we could do a line search
             break;
-     
-        status =
-            gsl_multiroot_test_residual (sol->f, 1e-12);
+        best = trial;
+        s = ns;
+        t = nt;
     }
-    while (status == GSL_CONTINUE && iter < 1000);
+
+#ifdef GPL_TAINT
+    if(0) { // the GSL version is more accurate, but taints this with GPL
+        const size_t n = 2;
+        struct rparams p = {A, B};
+        gsl_multiroot_function f = {&intersect_polish_f, n, &p};
+     
+        double x_init[2] = {s, t};
+        gsl_vector *x = gsl_vector_alloc (n);
+     
+        gsl_vector_set (x, 0, x_init[0]);
+        gsl_vector_set (x, 1, x_init[1]);
+     
+        const gsl_multiroot_fsolver_type *T = gsl_multiroot_fsolver_hybrids;
+        gsl_multiroot_fsolver *sol = gsl_multiroot_fsolver_alloc (T, 2);
+        gsl_multiroot_fsolver_set (sol, &f, x);
+     
+        do
+        {
+            iter++;
+            status = gsl_multiroot_fsolver_iterate (sol);
+     
+            if (status)   /* check if solver is stuck */
+                break;
+     
+            status =
+                gsl_multiroot_test_residual (sol->f, 1e-12);
+        }
+        while (status == GSL_CONTINUE && iter < 1000);
     
-    s = gsl_vector_get (sol->x, 0);
-    t = gsl_vector_get (sol->x, 1);
+        s = gsl_vector_get (sol->x, 0);
+        t = gsl_vector_get (sol->x, 1);
     
-    gsl_multiroot_fsolver_free (sol);
-    gsl_vector_free (x);
+        gsl_multiroot_fsolver_free (sol);
+        gsl_vector_free (x);
+    }
+#endif
 }
 
 /**
