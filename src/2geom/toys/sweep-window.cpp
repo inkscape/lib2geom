@@ -25,33 +25,39 @@ void draw_rect(cairo_t *cr, Point tl, Point br) {
 }
 
 struct CurveIx {
-    unsigned px, ix;
-    CurveIx(unsigned p, unsigned i) : px(p), ix(i) {}
+    unsigned path, ix;
+    CurveIx(unsigned p, unsigned i) : path(p), ix(i) {}
 };
 
 struct CEvent {
     CurveIx curve;
     double t, v;
     CEvent(CurveIx c, double ti, double va) : curve(c), t(ti), v(va) {}
+    // Lexicographic ordering by value
+    bool operator<(CEvent const &other) const {
+        if(v < other.v) return true;
+        if(v > other.v) return false;
+        return false;
+    }
 };
 
 struct Section {
     CurveIx curve;
     double f, t;
-    OptRect bounds;
-};
-
-// returns nested vectors of rects, representing curve bounds
-std::vector<std::vector<Rect> > paths_rects(std::vector<Path> const &ps) {
-    std::vector<std::vector<Rect> > ret;
-    for(unsigned i = 0; i < ps.size(); i++) {
-        std::vector<Rect> inner;
-        for(Path::const_iterator it = ps[i].begin(); it != ps[i].end(); it++)
-            inner.push_back(*(it->boundsExact()));
-        ret.push_back(inner);
+    OptRect rect;
+    Section(CurveIx c, double fd, double td) : curve(c), f(fd), t(td) {}
+    Section(Curve const &c, Dim2 d, CurveIx cix, double fd, double td) : curve(cix), f(fd), t(td) {
+        Point fp = c.pointAt(f), tp = c.pointAt(t);
+        //TODO: decide which direction the second case should work
+        if(fp[d] > tp[d] || (fp[d] == tp[d] && fp[1-d] < tp[1-d])) {
+            //swap from and to
+            double temp = f;
+            f = t;
+            t = temp;
+        }
+        rect = OptRect(Rect(fp, tp));
     }
-    return ret;
-}
+};
 
 // A little sugar for appending a list to another
 template<typename T>
@@ -69,16 +75,22 @@ std::vector<double> curve_mono_splits(Curve const &d) {
     return rs;
 }
 
-std::vector<CEvent> paths_events(std::vector<Path> const &ps, Dim2 d = X) {
-    std::vector<CEvent> ret;
+std::vector<Section> paths_sections(std::vector<Path> const &ps, Dim2 d) {
+    std::vector<Section> ret;
     for(unsigned i = 0; i < ps.size(); i++) {
         for(unsigned j = 0; j < ps[i].size(); j++) {
             std::vector<double> deriv = curve_mono_splits(ps[i][j]);
-            ret.push_back(CEvent(CurveIx(i, j), 0, ps[i][j].initialPoint()[d]));
-            ret.push_back(CEvent(CurveIx(i, j), 1, ps[i][j].finalPoint()[d]));
-            for(unsigned k = 0; k < deriv.size(); k++) {
-                if(deriv[k] == 0 || deriv[k] == 1) continue;
-                ret.push_back(CEvent(CurveIx(i, j), deriv[k], ps[i][j].valueAt(deriv[k],d)));
+            //ret.push_back(CEvent(CurveIx(i, j), 0, ps[i][j].initialPoint()[d]));
+            //ret.push_back(CEvent(CurveIx(i, j), 1, ps[i][j].finalPoint()[d]));
+            //ret.push_back(CEvent(CurveIx(i, j), deriv[k], ps[i][j].valueAt(deriv[k],d)));
+            if(deriv.size() == 0) {
+                ret.push_back(Section(ps[i][j], d, CurveIx(i, j), 0, 1));
+            } else {
+                if(deriv[0] != 0) ret.push_back(Section(ps[i][j], d, CurveIx(i,j), 0, deriv[0]));
+                for(unsigned k = 1; k < deriv.size(); k++) {
+                   ret.push_back(Section(ps[i][j], d, CurveIx(i,j), deriv[k-1], deriv[k]));
+                }
+                if(deriv[deriv.size() - 1] != 1) ret.push_back(Section(ps[i][j], d, CurveIx(i,j), deriv[deriv.size() - 1], 1));
             }
         }
     }
@@ -96,14 +108,9 @@ class WindingTest: public Toy {
         cairo_stroke(cr);
         cairo_restore(cr);
         
-        std::vector<CEvent> es = paths_events(path);
+        std::vector<Section> es = paths_sections(path, X);
         for(unsigned i = 0; i < es.size(); i++) {
-            if(es[i].t == 0.0 || es[i].t == 1.0) {
-                cairo_set_source_rgb(cr, 0, 1, 0);
-            } else {
-                cairo_set_source_rgb(cr, 1, 0, 0);
-            }
-            draw_cross(cr, path[es[i].curve.px][es[i].curve.ix].pointAt(es[i].t));
+            cairo_rectangle(cr, *es[i].rect);
             cairo_stroke(cr);
         }
 
