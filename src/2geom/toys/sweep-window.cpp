@@ -117,6 +117,7 @@ subdivide_sections(std::vector<Path> const &ps, Dim2 d,
 class SweepWindow: public Toy {
     vector<Path> path;
     std::vector<Toggle> toggles;
+    PointHandle p;
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
         cairo_set_source_rgb(cr, 0, 0, 0);
         cairo_set_line_width(cr, 0.5);
@@ -156,13 +157,23 @@ class SweepWindow: public Toy {
                 
             }
         }
-        std::vector<Section> new_sections = subdivide_sections(path, X, es, tvals);
+
         if(toggles[0].on) {
-            for(unsigned i = 0; i < new_sections.size(); i++) {
-                Rect r = Rect(new_sections[i].fp, new_sections[i].tp);
+            es = subdivide_sections(path, X, es, tvals);
+            for(unsigned i = 0; i < es.size(); i++) {
+                Rect r = Rect(es[i].fp, es[i].tp);
                 cairo_rectangle(cr, r);
                 cairo_stroke(cr);
             }
+        }
+        
+        double t = fmod(p.pos[X], 20) / 20.0;
+        int n = floor(p.pos[X]) / 20;
+        cout << t << " " << n << endl;
+        if(t > 0 && n < es.size()) {
+            Section s = es[n];
+            draw_cross(cr, path[s.curve.path][s.curve.ix].pointAt(lerp(t, s.f, s.t)));
+            cairo_stroke(cr);
         }
         
         draw_toggles(cr, toggles);
@@ -186,6 +197,8 @@ class SweepWindow: public Toy {
             path += Point(10,10)-bounds->min();
         toggles.push_back(Toggle("Intersect", true));
         toggles[0].bounds = Rect(Point(10,10), Point(100, 30));
+        p = PointHandle(Point(100,300));
+        handles.push_back(&p);
     }
 };
 
