@@ -52,6 +52,7 @@ tuple pwd2sb_centroid(Geom::Piecewise<Geom::D2<Geom::SBasis> > const &pw)
      
 
 Geom::Piecewise<Geom::SBasis> (*portion_pwsb)(const Geom::Piecewise<Geom::SBasis> &, double, double) = &Geom::portion;
+Geom::Piecewise<Geom::D2<Geom::SBasis> > (*portion_pwd2sb)(const Geom::Piecewise<Geom::D2<Geom::SBasis> > &, double, double) = &Geom::portion;
 std::vector<double> (*roots_pwsb)(const Geom::Piecewise<Geom::SBasis> &) = &Geom::roots;
 //Geom::Piecewise<Geom::SBasis> (*multiply_pwsb)(Geom::Piecewise<Geom::SBasis> const &, Geom::Piecewise<Geom::SBasis> const &) = &Geom::multiply;
 Geom::Piecewise<Geom::SBasis> (*divide_pwsb)(Geom::Piecewise<Geom::SBasis> const &, Geom::Piecewise<Geom::SBasis> const &, unsigned) = &Geom::divide;
@@ -102,8 +103,12 @@ void wrap_pw() {
     class_<std::vector<Geom::SBasis> >("SBasisVec")
         .def(vector_indexing_suite<std::vector<Geom::SBasis> >())
     ;
+    class_<std::vector<Geom::D2<Geom::SBasis> > >("D2SBasisVec")
+        .def(vector_indexing_suite<std::vector<Geom::D2<Geom::SBasis> > >())
+    ;
 
     def("portion", portion_pwsb);
+    def("portion", portion_pwd2sb);
     //def("partition", &partition);
     def("roots", roots_pwsb);
     //def("multiply", multiply_pwsb);
@@ -128,7 +133,9 @@ void wrap_pw() {
     def("unit_vector", unitVector_pwd2sb);
     def("arcLengthSb", arcLengthSb_pwd2sb);
 
-    class_<Geom::Piecewise<Geom::SBasis> >("PiecewiseSBasis")
+    class_<Geom::Piecewise<Geom::SBasis> >("PiecewiseSBasis", init<>())
+        .def(init<double>())
+        .def(init<Geom::SBasis>())
         .def("__getitem__", getitem_pwsb)
         .def("__call__", &Geom::Piecewise<Geom::SBasis>::valueAt)
         .def_readonly("cuts", &Geom::Piecewise<Geom::SBasis>::cuts)
@@ -163,7 +170,8 @@ void wrap_pw() {
         
     ;
 
-    class_<Geom::Piecewise<Geom::D2<Geom::SBasis> > >("PiecewiseD2SBasis")
+    class_<Geom::Piecewise<Geom::D2<Geom::SBasis> > >("PiecewiseD2SBasis", init<>())
+        .def(init<Geom::D2<Geom::SBasis> >())
         .def("__getitem__", getitem_pwsb)
         .def("__call__", &Geom::Piecewise<Geom::D2<Geom::SBasis> >::valueAt)
         .def_readonly("cuts", &Geom::Piecewise<Geom::D2<Geom::SBasis> >::cuts)

@@ -39,7 +39,8 @@
 using namespace boost::python;
 
 void wrap_d2() {
-    class_<Geom::D2<Geom::SBasis> >("D2SBasis")
+    class_<Geom::D2<Geom::SBasis> >("D2SBasis", init<>())
+        .def(init<Geom::SBasis,Geom::SBasis>())
         .def("__getitem__", python_getitem<Geom::D2<Geom::SBasis>,Geom::SBasis,2>)
 
         .def("isZero", &Geom::D2<Geom::SBasis>::isZero)
@@ -72,7 +73,7 @@ void wrap_d2() {
     def("portion", ((Geom::D2<Geom::SBasis> (*)(Geom::D2<Geom::SBasis> const &a, Geom::Coord f, Geom::Coord t))&Geom::portion));
     //TODO: dot, rot90, cross, compose, composeEach, eval ops, derivative, integral, L2, portion, multiply ops, 
     
-    class_<Geom::D2<Geom::Piecewise<Geom::SBasis> > >("D2SBasis")
+    class_<Geom::D2<Geom::Piecewise<Geom::SBasis> > >("D2PiecewiseSBasis")
         .def("__getitem__", python_getitem<Geom::D2<Geom::Piecewise<Geom::SBasis> >,Geom::Piecewise<Geom::SBasis>,2>)
 
         //.def("isZero", &Geom::D2<Geom::Piecewise<Geom::SBasis> >::isZero)
