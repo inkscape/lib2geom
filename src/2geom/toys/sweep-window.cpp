@@ -93,8 +93,30 @@ std::vector<Section> paths_sections(std::vector<Path> const &ps, Dim2 d) {
     return ret;
 }
 
-class WindingTest: public Toy {
+std::vector<Section>
+subdivide_sections(std::vector<Path> const &ps, Dim2 d,
+                   std::vector<Section> const &xs,
+                   std::vector<std::vector<double> > &cuts) {
+    std::vector<Section> ret;
+    for(unsigned i = 0; i < cuts.size(); i++) {
+        std::sort(cuts[i].begin(), cuts[i].end());
+        bool rev = xs[i].f > xs[i].t;
+        cuts[i].insert(cuts[i].begin(), rev ? xs[i].t : xs[i].f);
+        cuts[i].push_back(rev ? xs[i].f : xs[i].t);
+        std::unique(cuts[i].begin(), cuts[i].end());
+        /*for(int j = rev ? cuts[i].size() - 1 : 0;
+                    rev ? (j >= 0) : (j < cuts[i].size());
+                    rev ? (j--) : (j++)) {*/
+        for(unsigned j = 1; j < cuts[i].size(); j++) {
+            ret.push_back(Section(ps[xs[i].curve.path][xs[i].curve.ix], d, xs[i].curve, cuts[i][j-1], cuts[i][j]));
+        }
+    }
+    return ret;
+}
+
+class SweepWindow: public Toy {
     vector<Path> path;
+    std::vector<Toggle> toggles;
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
         cairo_set_source_rgb(cr, 0, 0, 0);
         cairo_set_line_width(cr, 0.5);
@@ -108,8 +130,10 @@ class WindingTest: public Toy {
         std::vector<Rect> rs;
         for(unsigned i = 0; i < es.size(); i++) {
             Rect r = Rect(es[i].fp, es[i].tp);
-            cairo_rectangle(cr, r);
-            cairo_stroke(cr);
+            if(!toggles[0].on) {
+                cairo_rectangle(cr, r);
+                cairo_stroke(cr);
+            }
             rs.push_back(r);
         }
         
@@ -132,15 +156,26 @@ class WindingTest: public Toy {
                 
             }
         }
-        for(unsigned i = 0; i < es.size(); i++) std::sort(tvals[i].begin(), tvals[i].end());
-        //now tvals contains a list of time values to split the sections
-//        cout << "==\n";
+        std::vector<Section> new_sections = subdivide_sections(path, X, es, tvals);
+        if(toggles[0].on) {
+            for(unsigned i = 0; i < new_sections.size(); i++) {
+                Rect r = Rect(new_sections[i].fp, new_sections[i].tp);
+                cairo_rectangle(cr, r);
+                cairo_stroke(cr);
+            }
+        }
+        
+        draw_toggles(cr, toggles);
         
         Toy::draw(cr, notify, width, height, save,timer_stream);
     }
 
+    void mouse_pressed(GdkEventButton* e) {
+        toggle_events(toggles, e);
+        Toy::mouse_pressed(e);
+    }
     public:
-    WindingTest () {}
+    SweepWindow () {}
     void first_time(int argc, char** argv) {
         const char *path_name="sanitize_examples.svgd";
         if(argc > 1)
@@ -149,11 +184,13 @@ class WindingTest: public Toy {
         OptRect bounds = bounds_exact(path);
         if(bounds)
             path += Point(10,10)-bounds->min();
+        toggles.push_back(Toggle("Intersect", true));
+        toggles[0].bounds = Rect(Point(10,10), Point(100, 30));
     }
 };
 
 int main(int argc, char **argv) {
-    init(argc, argv, new WindingTest());
+    init(argc, argv, new SweepWindow());
     return 0;
 }
 
