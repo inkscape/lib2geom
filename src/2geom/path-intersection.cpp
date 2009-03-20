@@ -312,7 +312,7 @@ intersect_polish_root (Curve const &A, double &s,
  */
 void pair_intersect(Curve const & A, double Al, double Ah, 
                     Curve const & B, double Bl, double Bh,
-                    Crossings &ret,  unsigned depth=0) {
+                    Crossings &ret,  unsigned depth = 0) {
    // std::cout << depth << "(" << Al << ", " << Ah << ")\n";
     OptRect Ar = A.boundsLocal(Interval(Al, Ah));
     if (!Ar) return;
@@ -348,6 +348,13 @@ void pair_intersect(Curve const & A, double Al, double Ah,
     pair_intersect(B, mid, Bh,
                     A, Al, Ah,
                     ret, depth+1);
+}
+
+Crossings pair_intersect(Curve const & A, Interval const &Ad,
+                         Curve const & B, Interval const &Bd) {
+    Crossings ret;
+    pair_intersect(A, Ad.min(), Ad.max(), B, Bd.min(), Bd.max(), ret);
+    return ret;
 }
 
 /** A simple wrapper around pair_intersect */

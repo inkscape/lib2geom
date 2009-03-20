@@ -44,10 +44,10 @@ struct CEvent {
 struct Section {
     CurveIx curve;
     double f, t;
-    OptRect rect;
+    Point fp, tp;
     Section(CurveIx c, double fd, double td) : curve(c), f(fd), t(td) {}
     Section(Curve const &c, Dim2 d, CurveIx cix, double fd, double td) : curve(cix), f(fd), t(td) {
-        Point fp = c.pointAt(f), tp = c.pointAt(t);
+        fp = c.pointAt(f), tp = c.pointAt(t);
         //TODO: decide which direction the second case should work
         if(fp[d] > tp[d] || (fp[d] == tp[d] && fp[1-d] < tp[1-d])) {
             //swap from and to
@@ -55,7 +55,6 @@ struct Section {
             f = t;
             t = temp;
         }
-        rect = OptRect(Rect(fp, tp));
     }
 };
 
@@ -80,9 +79,6 @@ std::vector<Section> paths_sections(std::vector<Path> const &ps, Dim2 d) {
     for(unsigned i = 0; i < ps.size(); i++) {
         for(unsigned j = 0; j < ps[i].size(); j++) {
             std::vector<double> deriv = curve_mono_splits(ps[i][j]);
-            //ret.push_back(CEvent(CurveIx(i, j), 0, ps[i][j].initialPoint()[d]));
-            //ret.push_back(CEvent(CurveIx(i, j), 1, ps[i][j].finalPoint()[d]));
-            //ret.push_back(CEvent(CurveIx(i, j), deriv[k], ps[i][j].valueAt(deriv[k],d)));
             if(deriv.size() == 0) {
                 ret.push_back(Section(ps[i][j], d, CurveIx(i, j), 0, 1));
             } else {
@@ -109,18 +105,44 @@ class WindingTest: public Toy {
         cairo_restore(cr);
         
         std::vector<Section> es = paths_sections(path, X);
+        std::vector<Rect> rs;
         for(unsigned i = 0; i < es.size(); i++) {
-            cairo_rectangle(cr, *es[i].rect);
+            Rect r = Rect(es[i].fp, es[i].tp);
+            cairo_rectangle(cr, r);
             cairo_stroke(cr);
+            rs.push_back(r);
         }
-
+        
+        std::vector<std::vector<unsigned> > inters = sweep_bounds(rs);
+        std::vector<std::vector<double> > tvals(es.size());
+        for(unsigned i = 0; i < es.size(); i++) tvals[i] = std::vector<double>();
+        for(unsigned i = 0; i < inters.size(); i++) {
+            for(unsigned j = 0; j < inters[i].size(); j++) {
+                Section other = es[inters[i][j]];
+                
+                Crossings xs = pair_intersect(path[es[i].curve.path][es[i].curve.ix], Interval(es[i].f, es[i].t),
+                                              path[other.curve.path][other.curve.ix], Interval(other.f, other.t));
+                for(unsigned k = 0; k < xs.size(); k++) {
+                    if((are_near(xs[k].ta, es[i].f) || are_near(xs[k].ta, es[i].t)) && 
+                       (are_near(xs[k].tb, other.f) || are_near(xs[k].tb, other.t))) continue;
+                    draw_cross(cr, path[es[i].curve.path][es[i].curve.ix].pointAt(xs[k].ta));
+                    tvals[i].push_back(xs[k].ta);
+                    tvals[inters[i][j]].push_back(xs[k].tb);
+                }
+                
+            }
+        }
+        for(unsigned i = 0; i < es.size(); i++) std::sort(tvals[i].begin(), tvals[i].end());
+        //now tvals contains a list of time values to split the sections
+//        cout << "==\n";
+        
         Toy::draw(cr, notify, width, height, save,timer_stream);
     }
 
     public:
     WindingTest () {}
     void first_time(int argc, char** argv) {
-        const char *path_name="winding.svgd";
+        const char *path_name="sanitize_examples.svgd";
         if(argc > 1)
             path_name = argv[1];
         path = read_svgd(path_name);
