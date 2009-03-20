@@ -29,18 +29,6 @@ struct CurveIx {
     CurveIx(unsigned p, unsigned i) : path(p), ix(i) {}
 };
 
-struct CEvent {
-    CurveIx curve;
-    double t, v;
-    CEvent(CurveIx c, double ti, double va) : curve(c), t(ti), v(va) {}
-    // Lexicographic ordering by value
-    bool operator<(CEvent const &other) const {
-        if(v < other.v) return true;
-        if(v > other.v) return false;
-        return false;
-    }
-};
-
 struct Section {
     CurveIx curve;
     double f, t;
@@ -54,6 +42,9 @@ struct Section {
             double temp = f;
             f = t;
             t = temp;
+            Point temp2 = fp;
+            fp = tp;
+            tp = temp2;
         }
     }
 };
@@ -114,6 +105,119 @@ subdivide_sections(std::vector<Path> const &ps, Dim2 d,
     return ret;
 }
 
+struct WEvent {
+    bool closing;
+    unsigned ix;
+    WEvent(bool c, unsigned i) : closing(c), ix(i) {}
+};
+
+struct EventSorter {
+    std::vector<Section> *rs;
+    Dim2 d;
+    EventSorter(std::vector<Section> *r, Dim2 dim) : rs(r), d(dim) {}
+    bool operator()(WEvent x, WEvent y) {
+        Point xp = x.closing ? (*rs)[x.ix].tp : (*rs)[x.ix].fp,
+              yp = y.closing ? (*rs)[y.ix].tp : (*rs)[y.ix].fp;
+        if(xp[d] < yp[d]) return true;
+        if(xp[d] > yp[d]) return false;
+        return x.closing < y.closing;
+    }
+};
+
+std::vector<unsigned> sweep_window(cairo_t *cr, std::vector<Section> &rs, Dim2 d) {
+    std::vector<WEvent> events; events.reserve(rs.size()*2);
+    std::vector<unsigned> ret(rs.size());
+    
+    for(int i = 0; i < rs.size(); i++) {
+        ret.push_back(0);
+        events.push_back(WEvent(false,i));
+        events.push_back(WEvent(true,i));
+    }
+    EventSorter sorter(&rs, d);
+    std::sort(events.begin(), events.end(), sorter);
+
+    /* char* buf = (char*)malloc(10);
+    for(unsigned i = 0; i < events.size(); i++) {
+        sprintf(buf, "%i", i);
+        draw_text(cr, events[i].closing ? rs[events[i].ix].tp : rs[events[i].ix].fp, buf);
+    }
+    free(buf); */ 
+
+    std::vector<unsigned> open;
+    for(unsigned i = 0; i < events.size(); i++) {
+        unsigned ix = events[i].ix;
+        if(events[i].closing) {
+            std::vector<unsigned>::iterator iter = std::find(open.begin(), open.end(), ix);
+            open.erase(iter);
+        } else {
+            for(unsigned j = 0; j < open.size(); j++) {
+                unsigned jx = open[j];
+                 if(rs[jx].tp[d] > rs[ix].fp[d] + 0.01) {
+                    if(min(rs[jx].tp[1-d], rs[jx].fp[1-d]) <
+                       min(rs[ix].tp[1-d], rs[ix].fp[1-d])) ret[ix]++;
+                    else if(min(rs[jx].tp[1-d], rs[jx].fp[1-d]) >
+                       min(rs[ix].tp[1-d], rs[ix].fp[1-d])) ret[jx]++;
+                    else {
+                        draw_text(cr, rs[ix].tp, "hi");
+                        draw_text(cr, rs[jx].tp, "h2");
+                    }
+                }
+            }
+            open.push_back(ix);
+        }
+    }
+    return ret;
+}
+
+double section_root(Section const &s, std::vector<Path> const &ps, double v, Dim2 d) {
+    double vt = -1;
+    std::vector<double> roots = ps[s.curve.path][s.curve.ix].roots(v, d);
+    for(unsigned j = 0; j < roots.size(); j++) {
+        if(Interval(s.f, s.t).contains(roots[j])) {
+            vt = roots[j];
+            break;
+        }
+    }
+    return vt;
+}
+
+std::vector<unsigned> naive_count(std::vector<Section> const &rs, std::vector<Path> const &ps, Dim2 d) {
+    std::vector<unsigned> ret(rs.size());
+    for(unsigned i = 0; i < rs.size(); i++) {
+        double v = rs[i].fp[d] + 1;
+        for(unsigned j = 0; j < rs.size(); j++) {
+            if(j == i) continue;
+            if(rs[j].tp[d] >= rs[i].fp[d] &&
+               min(rs[j].tp[1-d], rs[j].fp[1-d]) <=
+               min(rs[i].tp[1-d], rs[i].fp[1-d])) {
+                if(rs[j].fp[d] == v || rs[j].tp[d] == v) {
+                    v += 0.01;
+                }
+            }
+        }
+        double vt = section_root(rs[i], ps, v, d);
+        if(vt == -1) {
+            cout << "DOH!\n";
+            ret[i] = 0;
+            continue;
+        }
+        double vp = ps[rs[i].curve.path][rs[i].curve.ix](vt)[1-d];
+        unsigned count = 0;
+        for(unsigned j = 0; j < rs.size(); j++) {
+            if(j == i) continue;
+            if(rs[j].tp[d] >= rs[i].fp[d] &&
+               min(rs[j].tp[1-d], rs[j].fp[1-d]) <=
+               min(rs[i].tp[1-d], rs[i].fp[1-d])) {
+                double t = section_root(rs[j], ps, v, d);
+                if(t == -1) continue;
+                if(ps[rs[j].curve.path][rs[j].curve.ix](t)[1-d] < vp) count++;
+            }
+        }
+        ret[i] = count;
+    }
+    return ret;
+}
+
 class SweepWindow: public Toy {
     vector<Path> path;
     std::vector<Toggle> toggles;
@@ -131,7 +235,7 @@ class SweepWindow: public Toy {
         std::vector<Rect> rs;
         for(unsigned i = 0; i < es.size(); i++) {
             Rect r = Rect(es[i].fp, es[i].tp);
-            if(!toggles[0].on) {
+            if(toggles[0].on) {
                 cairo_rectangle(cr, r);
                 cairo_stroke(cr);
             }
@@ -166,10 +270,17 @@ class SweepWindow: public Toy {
                 cairo_stroke(cr);
             }
         }
+        std::vector<unsigned> info = naive_count(es, path, X); //sweep_window(cr, es, X);
+        char* buf = (char*)malloc(10);
+        for(unsigned i = 0; i < es.size(); i++) {
+            sprintf(buf, "%i", info[i]);
+            draw_text(cr, path[es[i].curve.path][es[i].curve.ix].pointAt((es[i].f + es[i].t) / 2), buf);
+        }
+        free(buf);
         
         double t = fmod(p.pos[X], 20) / 20.0;
         int n = floor(p.pos[X]) / 20;
-        cout << t << " " << n << endl;
+        //cout << t << " " << n << endl;
         if(t > 0 && n < es.size()) {
             Section s = es[n];
             draw_cross(cr, path[s.curve.path][s.curve.ix].pointAt(lerp(t, s.f, s.t)));
