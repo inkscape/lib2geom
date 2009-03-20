@@ -57,6 +57,15 @@ Geom::Linear sbasis_getitem(Geom::SBasis const& p, int index)
     return p[index];
 }
 
+#include "../sbasis-to-bezier.h"
+#include "../bezier.h"
+
+Geom::Bezier sbasis_to_returned_bezier (Geom::SBasis const& sb, size_t sz = 0) {
+    Geom::Bezier res;
+    Geom::sbasis_to_bezier(res, sb, sz);
+    return res;
+}
+
 
 void wrap_sbasis() {
     //sbasis.h
@@ -79,19 +88,21 @@ void wrap_sbasis() {
     def("compose", (Geom::SBasis (*) (Geom::SBasis const &, Geom::SBasis const &))&Geom::compose);
     def("integral", integral_sbasis);
     def("derivative", derivative_sbasis);
-    def("sqrt", &Geom::sqrt);
-    def("reciprocal", &Geom::reciprocal);
-    def("divide", &Geom::divide);
-    def("inverse", &Geom::inverse);
-    def("sin", &Geom::sin);
-    def("cos", &Geom::cos);
+    def("sqrt", (Geom::SBasis (*)(Geom::SBasis const &, int ))&Geom::sqrt);
+    def("reciprocal", (Geom::SBasis (*)(Geom::Linear const &, int ))&Geom::reciprocal);
+    def("divide",(Geom::SBasis (*)(Geom::SBasis const &, Geom::SBasis const &, int )) &Geom::divide);
+    def("inverse", (Geom::SBasis (*)(Geom::SBasis, int ))&Geom::inverse);
+    def("sin", (Geom::SBasis (*)(Geom::SBasis const &, int ))&Geom::sin);
+    def("cos", (Geom::SBasis (*)(Geom::SBasis const &, int ))&Geom::cos);
     def("reverse", (Geom::SBasis (*)(Geom::SBasis const &))&Geom::reverse);
-    def("roots", &Geom::roots);
-    def("bounds_fast", (Geom::OptInterval (*)(Geom::SBasis const &))&Geom::bounds_fast);
+    def("roots", (std::vector<double> (*)(Geom::SBasis const &))&Geom::roots);
+    def("bounds_fast", (Geom::OptInterval (*)(Geom::SBasis const &, int))&Geom::bounds_fast);
     def("bounds_exact", (Geom::OptInterval (*)(Geom::SBasis const &))&Geom::bounds_exact);
-    def("bounds_local", (Geom::OptInterval (*)(Geom::SBasis const &))&Geom::bounds_local);
+    def("bounds_local", (Geom::OptInterval (*)(Geom::SBasis const &, const Geom::OptInterval &, int))&Geom::bounds_local);
+    def("sbasis_to_bezier", &::sbasis_to_returned_bezier);
 
-    class_<Geom::SBasis>("SBasis")
+    class_<Geom::SBasis>("SBasis", init<double>())
+        .def(init<double, double>())
         .def(self_ns::str(self))
         //TODO: add important vector funcs
         .def("__getitem__", &sbasis_getitem)

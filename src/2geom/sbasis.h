@@ -99,6 +99,9 @@ public:
     explicit SBasis(double a) {
         push_back(Linear(a,a));
     }
+    explicit SBasis(double a, double b) {
+        push_back(Linear(a,b));
+    }
     SBasis(SBasis const & a) :
         d(a.d)
     {}

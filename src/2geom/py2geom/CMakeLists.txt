@@ -4,6 +4,7 @@ interval.cpp
 transforms.cpp
 rect.cpp
 sbasis.cpp
+bezier.cpp
 linear.cpp
 pw.cpp
 d2.cpp

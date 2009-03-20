@@ -34,6 +34,7 @@ void wrap_interval();
 void wrap_transforms();
 void wrap_rect();
 void wrap_sbasis();
+void wrap_bezier();
 void wrap_linear();
 void wrap_pw();
 void wrap_d2();
