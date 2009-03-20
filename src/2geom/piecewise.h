@@ -766,10 +766,10 @@ Piecewise<T> reverse(Piecewise<T> const &f) {
     double end = f.cuts.back();
     for (unsigned i = 0; i < f.cuts.size(); i++) {
         double x = f.cuts[f.cuts.size() - 1 - i];
-        ret.cuts[i] = end - (x - start);
+        ret.push_cut(end - (x - start));
     }
     for (unsigned i = 0; i < f.segs.size(); i++)
-        ret.segs[i] = reverse(f[f.segs.size() - i - 1]);
+        ret.push_seg(reverse(f[f.segs.size() - i - 1]));
     return ret;
 }
 
