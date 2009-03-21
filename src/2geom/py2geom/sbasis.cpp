@@ -57,6 +57,11 @@ Geom::Linear sbasis_getitem(Geom::SBasis const& p, int index)
     return p[index];
 }
 
+int sbasis_len(Geom::SBasis const& p)
+{
+    return p.size();
+}
+
 #include "../sbasis-to-bezier.h"
 #include "../bezier.h"
 
@@ -103,9 +108,11 @@ void wrap_sbasis() {
 
     class_<Geom::SBasis>("SBasis", init<double>())
         .def(init<double, double>())
+        .def(init<Geom::Linear>())
         .def(self_ns::str(self))
         //TODO: add important vector funcs
         .def("__getitem__", &sbasis_getitem)
+        .def("__len__", &sbasis_len)
 
         .def("isZero", &Geom::SBasis::isZero)
         .def("isFinite", &Geom::SBasis::isFinite)

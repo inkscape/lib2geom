@@ -25,8 +25,7 @@ def cairo_vert(cr, x, ps):
         cr.rel_line_to(10, 0)
 
 def l2s(l):
-    sb = py2geom.SBasis()
-    sb.append(l)
+    sb = py2geom.SBasis(l)
     return sb
 
 def constant(l):
@@ -147,20 +146,24 @@ class PwToy(toyframework.Toy):
         d['constant'] = constant
         pw_out = eval(self.func, d)
 
-        bs = py2geom.bounds_local(pw_out, 
+        bs = py2geom.bounds_local(pw_out, py2geom.OptInterval(
                           py2geom.Interval(self.interval_test[0].pos[0], 
-                                           self.interval_test[1].pos[0]));
-        for ph in self.interval_test:
-            ph.pos= py2geom.Point(ph.pos[0], bs.middle())
-        cr.save()
-        cr.set_source_rgba (.0, 0.25, 0.5, 1.)
-        cr.rectangle(self.interval_test[0].pos[0], bs.min(),
-                     self.interval_test[1].pos[0]-self.interval_test[0].pos[0], bs.extent())
-        cr.stroke()
-        cr.set_source_rgba (0.25, 0.25, .5, 1.);
+                                           self.interval_test[1].pos[0])));
+        if not bs.isEmpty():
+            bs = bs.toInterval()
+            for ph in self.interval_test:
+                ph.pos= py2geom.Point(ph.pos[0], bs.middle())
+            cr.save()
+            cr.set_source_rgba (.0, 0.25, 0.5, 1.)
+            cr.rectangle(self.interval_test[0].pos[0], bs.min(),
+                         self.interval_test[1].pos[0]-self.interval_test[0].pos[0], bs.extent())
+            cr.stroke()
         bs = py2geom.bounds_exact(pw_out);
-        cairo_horiz(cr, bs.middle(), pw_out.cuts);
-        cr.stroke()
+        cr.set_source_rgba (0.25, 0.25, .5, 1.);
+        if not bs.isEmpty():
+            bs = bs.toInterval()
+            cairo_horiz(cr, bs.middle(), pw_out.cuts);
+            cr.stroke()
         cr.restore()
 
         cr.set_source_rgba (0., 0., .5, 1.);

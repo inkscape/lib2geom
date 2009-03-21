@@ -53,6 +53,11 @@ str interval_repr(Geom::Interval const& p)
     return str("(" + str(p[0]) + ", " + str(p[1]) + ")");
 }
 
+Geom::Interval from_optinterval(Geom::OptInterval const & ivl)
+{
+    return *ivl;
+}
+
 
 void wrap_interval() {
     def("interval_to_tuple", interval_to_tuple);
@@ -108,6 +113,15 @@ void wrap_interval() {
         .def(self -= self)
         .def(self * self)
         .def(self *= self)
+    ;
+    class_<Geom::OptInterval>("OptInterval", init<double, double>())
+        .def(init<Geom::Interval>())
+        .def("unionWith", &Geom::OptInterval::unionWith)
+        .def("isEmpty", &Geom::OptInterval::isEmpty)
+        .def("toInterval", from_optinterval)
+
+        .def(self == self)
+        .def(self != self)
     ;
     implicitly_convertible<Geom::Interval,tuple>();
 // TODO: is this possible?
