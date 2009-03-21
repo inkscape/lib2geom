@@ -254,6 +254,11 @@ intersect_polish_root (Curve const &A, double &s,
         Point soln = (F)*jack.inverse();
         double ns = s - soln[0];
         double nt = t - soln[1];
+
+        if (ns<0) ns=0;
+        else if (ns>1) ns=1;
+        if (nt<0) nt=0;
+        else if (nt>1) nt=1;
         
         as = A.pointAndDerivatives(ns, 2);
         bs = B.pointAndDerivatives(nt, 2);
