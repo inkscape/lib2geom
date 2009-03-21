@@ -74,7 +74,9 @@ std::vector<std::vector<unsigned> > sweep_bounds(std::vector<Rect> a, std::vecto
 
     std::vector<unsigned> open[2];
     bool n = events[1].front() < events[0].front();
-    for(unsigned i[] = {0,0}; i[n] < events[n].size();) {
+    {// As elegant as putting the initialiser in the for was, it upsets some legacy compilers (MS VS C++)
+    unsigned i[] = {0,0}; 
+    for(; i[n] < events[n].size();) {
         unsigned ix = events[n][i[n]].ix;
         bool closing = events[n][i[n]].closing;
         //std::cout << n << "[" << ix << "] - " << (closing ? "closer" : "opener") << "\n";
@@ -105,7 +107,7 @@ std::vector<std::vector<unsigned> > sweep_bounds(std::vector<Rect> a, std::vecto
         i[n]++;
 	if(i[n]>=events[n].size()) {break;}
         n = (events[!n][i[!n]] < events[n][i[n]]) ? !n : n;
-    }
+    }}
     return pairs;
 }
 

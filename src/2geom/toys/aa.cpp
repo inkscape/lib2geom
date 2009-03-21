@@ -233,6 +233,7 @@ AAF trial_eval(AAF x, AAF y) {
     x = x/scale;
     y = y/scale;
     
+    return x*x -y*y + -6*x  +10*y-16;
     return -y + log(sqrt(x))/log(x);
     return  y*y -  x*(x-1)*(x+1);
 
