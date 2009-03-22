@@ -12,6 +12,8 @@
 #include <2geom/ord.h>
 
 #include <algorithm>
+#include <2geom/region.h>
+#include <2geom/shape.h>
 
 using namespace Geom;
 using namespace std;
@@ -46,6 +48,9 @@ struct Section {
             fp = tp;
             tp = temp2;
         }
+    }
+    Curve const &get_curve(std::vector<Path> const &ps) const {
+        return ps[curve.path][curve.ix];
     }
 };
 
@@ -99,7 +104,7 @@ subdivide_sections(std::vector<Path> const &ps, Dim2 d,
                     rev ? (j >= 0) : (j < cuts[i].size());
                     rev ? (j--) : (j++)) {*/
         for(unsigned j = 1; j < cuts[i].size(); j++) {
-            ret.push_back(Section(ps[xs[i].curve.path][xs[i].curve.ix], d, xs[i].curve, cuts[i][j-1], cuts[i][j]));
+            ret.push_back(Section(xs[i].get_curve(ps), d, xs[i].curve, cuts[i][j-1], cuts[i][j]));
         }
     }
     return ret;
@@ -120,11 +125,39 @@ struct EventSorter {
               yp = y.closing ? (*rs)[y.ix].tp : (*rs)[y.ix].fp;
         if(xp[d] < yp[d]) return true;
         if(xp[d] > yp[d]) return false;
-        return x.closing < y.closing;
+        if( x.closing && !y.closing ) return true;  //handle closings before openings
+        if( !x.closing && y.closing ) return false;
+        return xp[1-d] < yp[1-d];                   //sort in the other dimension as well
     }
 };
 
-std::vector<unsigned> sweep_window(cairo_t *cr, std::vector<Section> &rs, Dim2 d) {
+/*  Commented out.. it was difficult to think about this out of context, so code is inlined
+
+//checks if a is greater than b along dimension d.
+//   assumes nonintersection, monotonic sections, overlap in opposite d, 
+//   and that b is not inside a's bbox (though the converse may be true)
+//these invariants allow us to assign a strict boolean answer to "is this section above this other one?"
+//TODO: identical sections?
+bool section_above(Section const &a, Section const &b, std::vector<Path> const &ps, Dim2 d) {
+    Rect ra = Rect(a.fp, a.tp), rb = Rect(b.fp, b.tp);
+    if(ra.contains(rb)) {
+        //ambiguous case where we must use roots
+    } else {
+        //we should be able to look at how the sections are related to determine aboveneess
+        if(rb[d].max() >= ra[d].max()
+        if(ra[d].min() <= rb[d].min()) return true;
+        if(ra[1-d].max() > 
+    }
+} */
+
+double section_root(Section const &s, std::vector<Path> const &ps, double v, Dim2 d) {
+    std::vector<double> roots = s.get_curve(ps).roots(v, d);
+    for(unsigned j = 0; j < roots.size(); j++)
+        if(Interval(s.f, s.t).contains(roots[j])) return roots[j];
+    return -1;
+}
+
+std::vector<unsigned> sweep_window(cairo_t *cr, std::vector<Path> const &ps, std::vector<Section> &rs, Dim2 d) {
     std::vector<WEvent> events; events.reserve(rs.size()*2);
     std::vector<unsigned> ret(rs.size());
     
@@ -150,35 +183,39 @@ std::vector<unsigned> sweep_window(cairo_t *cr, std::vector<Section> &rs, Dim2 d
             std::vector<unsigned>::iterator iter = std::find(open.begin(), open.end(), ix);
             open.erase(iter);
         } else {
+            Rect ir = Rect(rs[ix].fp, rs[ix].tp);
+            unsigned count = 0;
             for(unsigned j = 0; j < open.size(); j++) {
                 unsigned jx = open[j];
-                 if(rs[jx].tp[d] > rs[ix].fp[d] + 0.01) {
-                    if(min(rs[jx].tp[1-d], rs[jx].fp[1-d]) <
-                       min(rs[ix].tp[1-d], rs[ix].fp[1-d])) ret[ix]++;
-                    else if(min(rs[jx].tp[1-d], rs[jx].fp[1-d]) >
-                       min(rs[ix].tp[1-d], rs[ix].fp[1-d])) ret[jx]++;
-                    else {
-                        draw_text(cr, rs[ix].tp, "hi");
-                        draw_text(cr, rs[jx].tp, "h2");
+                Rect jr = Rect(rs[jx].fp, rs[jx].tp);
+                //following code checks if jx is above ix, and if not, continues
+                if(jr.contains(ir)) {
+                    //ambiguous case where we must use roots
+                    double rt = section_root(rs[jx], ps, rs[ix].fp[d] + 0.1, d);
+                    bool rl;
+                    if(rt == -1) { 
+                        cairo_set_source_rgb(cr, 1, 0, 0);
+                    } else {
+                        rl = rs[ix].fp[1-d] < rs[jx].get_curve(ps)(rt)[1-d];
+                        if(rl) cairo_set_source_rgb(cr, 0, 0, 1); else
+                               cairo_set_source_rgb(cr, 0, 1, 0);
                     }
+                    cairo_rectangle(cr, jr);
+                    cairo_rectangle(cr, ir);
+                    cairo_stroke(cr);
+                    if(rt == -1 || rl) continue;
+                } else {
+                    if(ir[1-d].min() < jr[1-d].min()) continue;  //ix is above
+                    if(ir[d].max() > jr[d].max() && rs[jx].fp[1-d] > rs[jx].tp[1-d]) continue; //ix is off to the side, and jx is decreasing
                 }
+                //otherwise, jx is above
+                count++;
             }
             open.push_back(ix);
+            ret[ix] = count;
         }
     }
     return ret;
-}
-
-double section_root(Section const &s, std::vector<Path> const &ps, double v, Dim2 d) {
-    double vt = -1;
-    std::vector<double> roots = ps[s.curve.path][s.curve.ix].roots(v, d);
-    for(unsigned j = 0; j < roots.size(); j++) {
-        if(Interval(s.f, s.t).contains(roots[j])) {
-            vt = roots[j];
-            break;
-        }
-    }
-    return vt;
 }
 
 std::vector<unsigned> naive_count(std::vector<Section> const &rs, std::vector<Path> const &ps, Dim2 d) {
@@ -188,7 +225,7 @@ std::vector<unsigned> naive_count(std::vector<Section> const &rs, std::vector<Pa
         for(unsigned j = 0; j < rs.size(); j++) {
             if(j == i) continue;
             if(rs[j].tp[d] >= rs[i].fp[d] &&
-               min(rs[j].tp[1-d], rs[j].fp[1-d]) <=
+               min(rs[j].tp[1-d], rs[j].fp[1-d]) <
                min(rs[i].tp[1-d], rs[i].fp[1-d])) {
                 if(rs[j].fp[d] == v || rs[j].tp[d] == v) {
                     v += 0.01;
@@ -201,7 +238,7 @@ std::vector<unsigned> naive_count(std::vector<Section> const &rs, std::vector<Pa
             ret[i] = 0;
             continue;
         }
-        double vp = ps[rs[i].curve.path][rs[i].curve.ix](vt)[1-d];
+        double vp = rs[i].get_curve(ps)(vt)[1-d];
         unsigned count = 0;
         for(unsigned j = 0; j < rs.size(); j++) {
             if(j == i) continue;
@@ -210,7 +247,7 @@ std::vector<unsigned> naive_count(std::vector<Section> const &rs, std::vector<Pa
                min(rs[i].tp[1-d], rs[i].fp[1-d])) {
                 double t = section_root(rs[j], ps, v, d);
                 if(t == -1) continue;
-                if(ps[rs[j].curve.path][rs[j].curve.ix](t)[1-d] < vp) count++;
+                if(rs[j].get_curve(ps)(t)[1-d] < vp) count++;
             }
         }
         ret[i] = count;
@@ -236,7 +273,7 @@ class SweepWindow: public Toy {
         for(unsigned i = 0; i < es.size(); i++) {
             Rect r = Rect(es[i].fp, es[i].tp);
             if(toggles[0].on) {
-                cairo_rectangle(cr, r);
+                //cairo_rectangle(cr, r);
                 cairo_stroke(cr);
             }
             rs.push_back(r);
@@ -249,12 +286,12 @@ class SweepWindow: public Toy {
             for(unsigned j = 0; j < inters[i].size(); j++) {
                 Section other = es[inters[i][j]];
                 
-                Crossings xs = pair_intersect(path[es[i].curve.path][es[i].curve.ix], Interval(es[i].f, es[i].t),
-                                              path[other.curve.path][other.curve.ix], Interval(other.f, other.t));
+                Crossings xs = pair_intersect(es[i].get_curve(path), Interval(es[i].f, es[i].t),
+                                              other.get_curve(path), Interval(other.f, other.t));
                 for(unsigned k = 0; k < xs.size(); k++) {
                     if((are_near(xs[k].ta, es[i].f) || are_near(xs[k].ta, es[i].t)) && 
                        (are_near(xs[k].tb, other.f) || are_near(xs[k].tb, other.t))) continue;
-                    draw_cross(cr, path[es[i].curve.path][es[i].curve.ix].pointAt(xs[k].ta));
+                    draw_cross(cr, es[i].get_curve(path).pointAt(xs[k].ta));
                     tvals[i].push_back(xs[k].ta);
                     tvals[inters[i][j]].push_back(xs[k].tb);
                 }
@@ -266,15 +303,15 @@ class SweepWindow: public Toy {
             es = subdivide_sections(path, X, es, tvals);
             for(unsigned i = 0; i < es.size(); i++) {
                 Rect r = Rect(es[i].fp, es[i].tp);
-                cairo_rectangle(cr, r);
-                cairo_stroke(cr);
+                //cairo_rectangle(cr, r);
+                //cairo_stroke(cr);
             }
         }
-        std::vector<unsigned> info = naive_count(es, path, X); //sweep_window(cr, es, X);
+        std::vector<unsigned> info = sweep_window(cr, path, es, X);
         char* buf = (char*)malloc(10);
         for(unsigned i = 0; i < es.size(); i++) {
             sprintf(buf, "%i", info[i]);
-            draw_text(cr, path[es[i].curve.path][es[i].curve.ix].pointAt((es[i].f + es[i].t) / 2), buf);
+            draw_text(cr, es[i].get_curve(path).pointAt((es[i].f + es[i].t) / 2), buf);
         }
         free(buf);
         
@@ -283,10 +320,10 @@ class SweepWindow: public Toy {
         //cout << t << " " << n << endl;
         if(t > 0 && n < es.size()) {
             Section s = es[n];
-            draw_cross(cr, path[s.curve.path][s.curve.ix].pointAt(lerp(t, s.f, s.t)));
+            draw_cross(cr, s.get_curve(path).pointAt(lerp(t, s.f, s.t)));
             cairo_stroke(cr);
         }
-        
+                
         draw_toggles(cr, toggles);
         
         Toy::draw(cr, notify, width, height, save,timer_stream);
