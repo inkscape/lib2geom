@@ -70,9 +70,7 @@ std::vector<Rect> section_rects(std::vector<Section> const &s) {
 void draw_section(cairo_t *cr, Section const &s, std::vector<Path> const &ps) {
     cout << s.f << " " << s.t << endl;
     Interval ti = Interval(s.f, s.t);
-    Curve *ret = s.curve.get(ps).portion(ti.min(), ti.max());
-    cairo_curve(cr, *ret);
-    delete ret;
+    cairo_d2_sb(cr, portion(s.curve.get(ps).toSBasis(), ti));
 }
 
 // A little sugar for appending a list to another
