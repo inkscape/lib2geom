@@ -141,7 +141,7 @@ std::vector<std::vector<Section> > sweep_window(std::vector<Path> const &ps) {
             if(context[i].tv == s.fv) {
                 seg_ix = i;
                 //we could probably break out at this point
-            } else if(context[i].tp[X] < s.tp[X]) {
+            } else if(context[i].tp[X] < s.fp[X]) {
                 context.erase(context.begin() + i); // remove irrelevant sections
                 i--; //Must decrement, due to the removal
             }
@@ -165,7 +165,7 @@ std::vector<std::vector<Section> > sweep_window(std::vector<Path> const &ps) {
         sing.push_back(s.bbox());
         std::vector<unsigned> others = sweep_bounds(sing, section_rects(context))[0];
         for(unsigned i = 0; i < others.size(); i++) {
-            if(i == seg_ix) continue;
+            if(others[i] == seg_ix) continue;
             
             //TODO: make sure that this is a mutating reference
             Section &other = context[others[i]];
@@ -179,7 +179,7 @@ std::vector<std::vector<Section> > sweep_window(std::vector<Path> const &ps) {
             //TODO: check if the crossing coincides with the start / end of sections?
             // it seems like we will need to do this.. be sure to handle both being endpnts properly!
             
-            //if(are_near(x.ta, 0) || are_near(x.tb, 0) || are_near(x.ta, 1) || are_near(x.tb, 1)) continue;
+            if(are_near(x.ta, 0) || are_near(x.tb, 0) || are_near(x.ta, 1) || are_near(x.tb, 1)) continue;
             
             //crop context bits
             context[seg_ix].set_to(s.curve.get(ps), X, x.getTime(0), vert);
