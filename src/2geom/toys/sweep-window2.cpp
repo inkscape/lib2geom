@@ -232,6 +232,17 @@ class SweepWindow: public Toy {
         toggle_events(toggles, e);
         Toy::mouse_pressed(e);
     }
+    
+    void key_hit(GdkEventKey* e) {
+        if(e->keyval == 'a') p.pos[X] = 0;
+        else if(e->keyval == '[') p.pos[X] -= 10;
+        else if(e->keyval == ']') p.pos[X] += 10;
+        if (p.pos[X] < 0) {
+            p.pos[X] = 0;
+        }
+        redraw();
+    }
+    
     public:
     SweepWindow () {}
     void first_time(int argc, char** argv) {

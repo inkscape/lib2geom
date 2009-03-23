@@ -395,7 +395,7 @@ static gint mouse_release_event(GtkWidget* widget, GdkEventButton* e, gpointer d
     return FALSE;
 }
 
-static gint key_release_event(GtkWidget *widget, GdkEventKey *e, gpointer data) {
+static gint key_press_event(GtkWidget *widget, GdkEventKey *e, gpointer data) {
     (void)(data);
     (void)(widget);
 
@@ -527,7 +527,7 @@ void init(int argc, char **argv, Toy* t, int width, int height) {
     gtk_signal_connect(GTK_OBJECT(canvas), "button_press_event", GTK_SIGNAL_FUNC(mouse_event), 0);
     gtk_signal_connect(GTK_OBJECT (canvas), "button_release_event", GTK_SIGNAL_FUNC(mouse_release_event), 0);
     gtk_signal_connect(GTK_OBJECT (canvas), "motion_notify_event", GTK_SIGNAL_FUNC(mouse_motion_event), 0);
-    gtk_signal_connect(GTK_OBJECT(canvas), "key_press_event", GTK_SIGNAL_FUNC(key_release_event), 0);
+    gtk_signal_connect(GTK_OBJECT(canvas), "key_press_event", GTK_SIGNAL_FUNC(key_press_event), 0);
     gtk_signal_connect(GTK_OBJECT(canvas), "size-allocate", GTK_SIGNAL_FUNC(size_allocate_event), 0);
 
     gtk_widget_pop_colormap();
