@@ -53,9 +53,12 @@ class PortionTester: public Toy {
         Path P;
         P.append(B);
         
-        if (toggles[0].on)
-            cairo_path(cr, P.portion(t0,t1));
-        else
+        if (toggles[0].on) {
+            if (toggles[1].on)
+                cairo_curve(cr, P.portion(t0,t1)[0]);
+            else
+                cairo_path(cr, P.portion(t0,t1));
+        } else
             cairo_d2_sb(cr, portion(B,t0,t1));
         
         
@@ -68,6 +71,8 @@ public:
     PortionTester(){
         toggles.push_back(Toggle("Path", true));
         toggles[0].bounds = Rect(Point(10,100), Point(100, 130));
+        toggles.push_back(Toggle("Curve", true));
+        toggles[1].bounds = Rect(Point(10,130), Point(100, 160));
         if(handles.empty()) {
             handles.push_back(&curve_handle);
             handles.push_back(&sample_point1);
