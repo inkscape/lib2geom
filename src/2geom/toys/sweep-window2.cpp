@@ -218,6 +218,8 @@ class SweepWindow: public Toy {
         cairo_set_line_width(cr, 2);
         
         std::vector<std::vector<Section> > contexts = sweep_window(path);
+        
+        /*  // this is code to make the handle like the location of the sweepline.
         double v = p.pos[X];
         for(unsigned i = 0; i < contexts.size(); i++) {
             if(std::max_element(contexts[i].begin(), contexts[i].end(), SectionSorter(&path, X))->fp[X] >= v) {
@@ -230,6 +232,19 @@ class SweepWindow: public Toy {
                 break;
             }
         }
+        cairo_set_line_width(cr, 0.5);
+        draw_line_seg(cr, Point(p.pos[X], 0), Point(p.pos[X], 1000));
+        cairo_stroke(cr);
+        */
+        
+        int cix = (int) p.pos[X] / 10;
+        if(cix >= 0 && cix < contexts.size()) {
+            for(unsigned i = 0; i < contexts[cix].size(); i++) {
+                draw_section(cr, contexts[cix][i], path);
+                cairo_stroke(cr);
+            }
+        }
+
         
         //some marks to indicate section breaks
         for(unsigned i = 0; i < path.size(); i++) {
@@ -238,9 +253,7 @@ class SweepWindow: public Toy {
             }
         }
         
-        cairo_set_line_width(cr, 0.5);
-        draw_line_seg(cr, Point(p.pos[X], 0), Point(p.pos[X], 1000));
-        cairo_stroke(cr);
+        *notify << cix << endl;
         
         Toy::draw(cr, notify, width, height, save,timer_stream);
     }
