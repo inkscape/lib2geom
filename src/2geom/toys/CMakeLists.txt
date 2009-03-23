@@ -54,6 +54,7 @@ metro
 match-curve
 #normal-bundle
 point-curve-nearest-point
+portion-test
 offset-toy
 pair-intersect
 parametrics
