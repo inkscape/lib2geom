@@ -20,6 +20,9 @@ void cairo_convex_hull(cairo_t *cr, ConvexHull const& ch) {
 }
 
 void cairo_curve(cairo_t *cr, Curve const& c) {
+    if(!cairo_has_current_point(cr))
+        cairo_move_to(cr, c.initialPoint());
+    
     if(LineSegment const* line_segment = dynamic_cast<LineSegment const*>(&c)) {
         cairo_line_to(cr, (*line_segment)[1][0], (*line_segment)[1][1]);
     }
