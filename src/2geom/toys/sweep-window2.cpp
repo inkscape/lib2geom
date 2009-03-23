@@ -68,9 +68,10 @@ std::vector<Rect> section_rects(std::vector<Section> const &s) {
 }
 
 void draw_section(cairo_t *cr, Section const &s, std::vector<Path> const &ps) {
-    cout << s.f << " " << s.t << endl;
     Interval ti = Interval(s.f, s.t);
-    cairo_d2_sb(cr, portion(s.curve.get(ps).toSBasis(), ti));
+    Curve *curv = s.curve.get(ps).portion(ti.min(), ti.max());
+    cairo_curve(cr, *curv);
+    delete curv;
 }
 
 // A little sugar for appending a list to another
@@ -130,9 +131,7 @@ std::vector<std::vector<Section> > sweep_window(std::vector<Path> const &ps) {
         }
     }
     std::sort(monos.begin(), monos.end(), SectionSorter(&ps, X));
-    
-    contexts.push_back(std::vector<Section>(monos.begin(), monos.end()));
-    
+
     while(!monos.empty()) {
         Section s = monos.front();
         monos.pop_front();
@@ -157,6 +156,7 @@ std::vector<std::vector<Section> > sweep_window(std::vector<Path> const &ps) {
             // replace with this, the next portion of a connected path
             context[seg_ix] = s;
         }
+        //cout << s.curve.path << " " << s.curve.ix << " " << seg_ix << endl;
         
         // Now we intersect with neighbors - do a sweep!
         // we'll have to make the same decision as with construction - derivative checking
@@ -165,29 +165,33 @@ std::vector<std::vector<Section> > sweep_window(std::vector<Path> const &ps) {
         sing.push_back(s.bbox());
         std::vector<unsigned> others = sweep_bounds(sing, section_rects(context))[0];
         for(unsigned i = 0; i < others.size(); i++) {
-                //TODO: make sure that this is a mutating reference
-                Section &other = context[others[i]];
-                //TODO: what we really need is a function that gets the first intersection
-                //if not that, we need to chunk curves into multiple pieces properly
-                Crossings xs = pair_intersect(s.curve.get(ps),     Interval(s.f, s.t),
-                                              other.curve.get(ps), Interval(other.f, other.t));
-                if(xs.empty()) continue;
-                Crossing x = *std::min_element(xs.begin(), xs.end(), CrossingOrder(0, s.f > s.t));
-                
-                //TODO: check if the crossing coincides with the start / end of sections?
-                // it seems like we will need to do this.. be sure to handle both being endpnts properly!
-                
-                //crop context bits
-                context[seg_ix].set_to(s.curve.get(ps), X, x.getTime(0), vert);
-                other.set_to(other.curve.get(ps), X, x.getTime(1), vert);
-                
-                //insert remainders
-                Section sect = Section(s.curve.get(ps),    X, s.curve,     x.getTime(0), s.t, vert, s.tv),
-                        oth = Section(other.curve.get(ps), X, other.curve, x.getTime(1), other.t, vert, other.tv);
-                //monos.insert(std::lower_bound(monos.begin(), monos.end(), sect, SectionSorter(&ps, X)), sect);
-                //monos.insert(std::lower_bound(monos.begin(), monos.end(), oth, SectionSorter(&ps, X)), oth);
-                
-                vert++;
+            if(i == seg_ix) continue;
+            
+            //TODO: make sure that this is a mutating reference
+            Section &other = context[others[i]];
+            //TODO: what we really need is a function that gets the first intersection
+            //if not that, we need to chunk curves into multiple pieces properly
+            Crossings xs = pair_intersect(s.curve.get(ps),     Interval(s.f, s.t),
+                                          other.curve.get(ps), Interval(other.f, other.t));
+            if(xs.empty()) continue;
+            Crossing x = *std::min_element(xs.begin(), xs.end(), CrossingOrder(0, s.f > s.t));
+            
+            //TODO: check if the crossing coincides with the start / end of sections?
+            // it seems like we will need to do this.. be sure to handle both being endpnts properly!
+            
+            //if(are_near(x.ta, 0) || are_near(x.tb, 0) || are_near(x.ta, 1) || are_near(x.tb, 1)) continue;
+            
+            //crop context bits
+            context[seg_ix].set_to(s.curve.get(ps), X, x.getTime(0), vert);
+            other.set_to(other.curve.get(ps), X, x.getTime(1), vert);
+            
+            //insert remainders
+            Section sect = Section(s.curve.get(ps),    X, s.curve,     x.getTime(0), s.t, vert, s.tv),
+                    oth = Section(other.curve.get(ps), X, other.curve, x.getTime(1), other.t, vert, other.tv);
+            //monos.insert(std::lower_bound(monos.begin(), monos.end(), sect, SectionSorter(&ps, X)), sect);
+            //monos.insert(std::lower_bound(monos.begin(), monos.end(), oth, SectionSorter(&ps, X)), oth);
+            
+            vert++;
         }
         
         contexts.push_back(context);
@@ -218,6 +222,8 @@ class SweepWindow: public Toy {
                 cairo_stroke(cr);
             }
         }
+        
+        *notify << cix << endl;
         
         Toy::draw(cr, notify, width, height, save,timer_stream);
     }
