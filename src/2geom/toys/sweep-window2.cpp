@@ -176,20 +176,23 @@ std::vector<std::vector<Section> > sweep_window(std::vector<Path> const &ps) {
             if(xs.empty()) continue;
             Crossing x = *std::min_element(xs.begin(), xs.end(), CrossingOrder(0, s.f > s.t));
             
+   //         assert(Interval(s.f, s.t).contains(x.ta));
+ //           assert(Interval(other.f, other.t).contains(x.tb));
+            
             //TODO: check if the crossing coincides with the start / end of sections?
             // it seems like we will need to do this.. be sure to handle both being endpnts properly!
             
-            if(are_near(x.ta, 0) || are_near(x.tb, 0) || are_near(x.ta, 1) || are_near(x.tb, 1)) continue;
+            if(are_near(x.ta, s.f) || are_near(x.tb, other.f) || are_near(x.ta, s.t) || are_near(x.tb, other.t)) continue;
             
             //crop context bits
-            context[seg_ix].set_to(s.curve.get(ps), X, x.getTime(0), vert);
-            other.set_to(other.curve.get(ps), X, x.getTime(1), vert);
+            context[seg_ix].set_to(s.curve.get(ps), X, x.ta, vert);
+            other.set_to(other.curve.get(ps), X, x.tb, vert);
             
             //insert remainders
-            Section sect = Section(s.curve.get(ps),    X, s.curve,     x.getTime(0), s.t, vert, s.tv),
-                    oth = Section(other.curve.get(ps), X, other.curve, x.getTime(1), other.t, vert, other.tv);
-            //monos.insert(std::lower_bound(monos.begin(), monos.end(), sect, SectionSorter(&ps, X)), sect);
-            //monos.insert(std::lower_bound(monos.begin(), monos.end(), oth, SectionSorter(&ps, X)), oth);
+            Section sect = Section(s.curve.get(ps),    X, s.curve,     x.ta, s.t, vert, s.tv),
+                    oth = Section(other.curve.get(ps), X, other.curve, x.tb, other.t, vert, other.tv);
+            monos.insert(std::lower_bound(monos.begin(), monos.end(), sect, SectionSorter(&ps, X)), sect);
+            monos.insert(std::lower_bound(monos.begin(), monos.end(), oth, SectionSorter(&ps, X)), oth);
             
             vert++;
         }
@@ -215,15 +218,29 @@ class SweepWindow: public Toy {
         cairo_set_line_width(cr, 2);
         
         std::vector<std::vector<Section> > contexts = sweep_window(path);
-        int cix = (int) p.pos[X] / 10;
-        if(cix >= 0 && cix < contexts.size()) {
-            for(unsigned i = 0; i < contexts[cix].size(); i++) {
-                draw_section(cr, contexts[cix][i], path);
-                cairo_stroke(cr);
+        double v = p.pos[X];
+        for(unsigned i = 0; i < contexts.size(); i++) {
+            if(std::max_element(contexts[i].begin(), contexts[i].end(), SectionSorter(&path, X))->fp[X] >= v) {
+               // if(i != 0) i--;
+                for(unsigned j = 0; j < contexts[i].size(); j++) {
+                    draw_section(cr, contexts[i][j], path);
+                    cairo_stroke(cr);
+                }
+                *notify << i << endl;
+                break;
             }
         }
         
-        *notify << cix << endl;
+        //some marks to indicate section breaks
+        for(unsigned i = 0; i < path.size(); i++) {
+            for(unsigned j = 0; j < path[i].size(); j++) {
+                draw_cross(cr, path[i][j].initialPoint());
+            }
+        }
+        
+        cairo_set_line_width(cr, 0.5);
+        draw_line_seg(cr, Point(p.pos[X], 0), Point(p.pos[X], 1000));
+        cairo_stroke(cr);
         
         Toy::draw(cr, notify, width, height, save,timer_stream);
     }
