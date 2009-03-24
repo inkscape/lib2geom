@@ -210,6 +210,7 @@ class SweepWindow: public Toy {
     vector<Path> path;
     std::vector<Toggle> toggles;
     PointHandle p;
+    std::vector<colour> colours;
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
         //draw_toggles(cr, toggles);
         cairo_set_source_rgb(cr, 1, 0, 0);
@@ -242,9 +243,13 @@ class SweepWindow: public Toy {
         
         int cix = (int) p.pos[X] / 10;
         if(cix >= 0 && cix < contexts.size()) {
+            while(colours.size() < contexts[cix].size()) {
+                double c = colours.size();
+                colours.push_back(colour::from_hsv(c, 1, 1, 0.75));
+            }
             for(unsigned i = 0; i < contexts[cix].size(); i++) {
-                cairo_set_source_rgba(cr, uniform() / 2, uniform() / 2, uniform() / 2, 0.75);
-                cairo_set_line_width(cr, uniform()*2 + 1);
+                cairo_set_source_rgba(cr, colours[i].r, colours[i].g, colours[i].b, colours[i].a);
+                cairo_set_line_width(cr, (i%3)+1);
                 draw_section(cr, contexts[cix][i], path);
                 cairo_stroke(cr);
             }

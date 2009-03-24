@@ -21,6 +21,27 @@ double uniform() {
     return double(rand()) / RAND_MAX;
 }
 
+colour colour::from_hsv( float H,          // hue shift (in degrees)
+                         float S,          // saturation shift (scalar)
+                         float V,          // value multiplier (scalar)
+                         float A
+    )
+{
+    double inr = 1;
+    double ing = 0;
+    double inb = 0;
+    float k = V/3;
+    float a = V*S*cos(H)/3;
+    float b = V*S*sin(H)/3;
+        
+    return colour(
+        (k+2*a)*inr -     2*b*ing +    (k-a-b)*inb,
+        (-k+a+3*b)*inr + (3*a-b)*ing + (-k+a+2*b)*inb,
+        (2*k-2*a)*inr +     2*b*ing +  (2*k+a+b)*inb,
+        A);
+}
+
+
 void draw_text(cairo_t *cr, Geom::Point loc, const char* txt, bool bottom, const char* fontdesc) {
     PangoLayout* layout = pango_cairo_create_layout (cr);
     pango_layout_set_text(layout, txt, -1);

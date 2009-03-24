@@ -29,6 +29,17 @@ void draw_number(cairo_t *cr, Geom::Point pos, int num, std::string name=std::st
 void draw_number(cairo_t *cr, Geom::Point pos, unsigned num, std::string name=std::string());
 void draw_number(cairo_t *cr, Geom::Point pos, double num, std::string name=std::string());
 
+struct colour{
+    double r,g,b,a;
+    colour(double r, double g, double b, double a) : r(r), g(g), b(b), a(a) {}
+    static colour from_hsv( float H,          // hue shift (in degrees)
+                            float S,          // saturation shift (scalar)
+                            float V,          // value multiplier (scalar)
+                            float A
+			    );
+};
+
+
 class Handle{
 public:
     std::string name;
