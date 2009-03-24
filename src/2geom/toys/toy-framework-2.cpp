@@ -41,6 +41,9 @@ colour colour::from_hsv( float H,          // hue shift (in degrees)
         A);
 }
 
+void cairo_set_source_rgba(cairo_t* cr, colour c) {
+    cairo_set_source_rgba(cr, c.r, c.g, c.b, c.a);
+}
 
 void draw_text(cairo_t *cr, Geom::Point loc, const char* txt, bool bottom, const char* fontdesc) {
     PangoLayout* layout = pango_cairo_create_layout (cr);

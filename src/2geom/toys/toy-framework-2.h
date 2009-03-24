@@ -38,7 +38,7 @@ struct colour{
                             float A
 			    );
 };
-
+void cairo_set_source_rgba(cairo_t* cr, colour c);
 
 class Handle{
 public:

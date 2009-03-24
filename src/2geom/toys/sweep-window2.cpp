@@ -248,7 +248,7 @@ class SweepWindow: public Toy {
                 colours.push_back(colour::from_hsv(c, 1, 1, 0.75));
             }
             for(unsigned i = 0; i < contexts[cix].size(); i++) {
-                cairo_set_source_rgba(cr, colours[i].r, colours[i].g, colours[i].b, colours[i].a);
+                cairo_set_source_rgba(cr, colours[i]);
                 cairo_set_line_width(cr, (i%3)+1);
                 draw_section(cr, contexts[cix][i], path);
                 cairo_stroke(cr);
