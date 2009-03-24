@@ -53,6 +53,7 @@ struct Section {
         t = ti;
         tp = c(ti);
         tv = v;
+        assert(tp[d] >= fp[d]);
     }
     Rect bbox() const {
         return Rect(fp, tp);
@@ -163,7 +164,7 @@ std::vector<std::vector<Section> > sweep_window(std::vector<Path> const &ps) {
         // for each intersection point, create a fresh vertex, and assign the ends of sections to it
         std::vector<Rect> sing;
         sing.push_back(s.bbox());
-        std::vector<unsigned> others = sweep_bounds(sing, section_rects(context))[0];
+        std::vector<unsigned> others = sweep_bounds(sing, section_rects(context), Y)[0];
         for(unsigned i = 0; i < others.size(); i++) {
             if(others[i] == seg_ix) continue;
             
@@ -176,23 +177,23 @@ std::vector<std::vector<Section> > sweep_window(std::vector<Path> const &ps) {
             if(xs.empty()) continue;
             Crossing x = *std::min_element(xs.begin(), xs.end(), CrossingOrder(0, s.f > s.t));
             
-   //         assert(Interval(s.f, s.t).contains(x.ta));
- //           assert(Interval(other.f, other.t).contains(x.tb));
+            assert(Interval(s.f, s.t).contains(x.ta));
+            assert(Interval(other.f, other.t).contains(x.tb));
             
             //TODO: check if the crossing coincides with the start / end of sections?
             // it seems like we will need to do this.. be sure to handle both being endpnts properly!
             
             if(are_near(x.ta, s.f) || are_near(x.tb, other.f) || are_near(x.ta, s.t) || are_near(x.tb, other.t)) continue;
             
-            //crop context bits
-            context[seg_ix].set_to(s.curve.get(ps), X, x.ta, vert);
-            other.set_to(other.curve.get(ps), X, x.tb, vert);
-            
             //insert remainders
             Section sect = Section(s.curve.get(ps),    X, s.curve,     x.ta, s.t, vert, s.tv),
                     oth = Section(other.curve.get(ps), X, other.curve, x.tb, other.t, vert, other.tv);
             monos.insert(std::lower_bound(monos.begin(), monos.end(), sect, SectionSorter(&ps, X)), sect);
             monos.insert(std::lower_bound(monos.begin(), monos.end(), oth, SectionSorter(&ps, X)), oth);
+            
+            //crop context bits
+            context[seg_ix].set_to(s.curve.get(ps), X, x.ta, vert);
+            other.set_to(other.curve.get(ps), X, x.tb, vert);
             
             vert++;
         }
