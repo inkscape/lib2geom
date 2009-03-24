@@ -72,6 +72,20 @@ void draw_section(cairo_t *cr, Section const &s, std::vector<Path> const &ps) {
     Interval ti = Interval(s.f, s.t);
     Curve *curv = s.curve.get(ps).portion(ti.min(), ti.max());
     cairo_curve(cr, *curv);
+    {
+    Point h = s.curve.get(ps).pointAt(ti.min());
+    int x = int(h[Geom::X]);
+    int y = int(h[Geom::Y]);
+    cairo_new_sub_path(cr);
+    cairo_arc(cr, x, y, 2, 0, M_PI*2);
+    }{
+    Point h = s.curve.get(ps).pointAt(ti.max());
+    int x = int(h[Geom::X]);
+    int y = int(h[Geom::Y]);
+    cairo_new_sub_path(cr);
+    cairo_arc(cr, x, y, 2, 0, M_PI*2);
+    }
+    cairo_stroke(cr);
     delete curv;
 }
 
@@ -108,6 +122,7 @@ struct SectionSorter {
         return x.fv < y.fv;
     }
 };
+std::vector<std::vector<Section> > monoss;
 
 std::vector<std::vector<Section> > sweep_window(cairo_t *cr, std::vector<Path> const &ps) {
     std::vector<std::vector<Section> > contexts;
@@ -199,7 +214,7 @@ std::vector<std::vector<Section> > sweep_window(cairo_t *cr, std::vector<Path> c
             
             vert++;
         }
-        
+        monoss.push_back(std::vector<Section>(monos.begin(), monos.end()));
         contexts.push_back(context);
     }
     
@@ -221,6 +236,7 @@ class SweepWindow: public Toy {
         cairo_set_source_rgb(cr, 0, 0, 0);
         cairo_set_line_width(cr, 2);
         
+        monoss.clear();
         std::vector<std::vector<Section> > contexts = sweep_window(cr, path);
         
         /*  // this is code to make the handle like the location of the sweepline.
@@ -251,6 +267,12 @@ class SweepWindow: public Toy {
                 cairo_set_source_rgba(cr, colours[i]);
                 cairo_set_line_width(cr, (i%3)+1);
                 draw_section(cr, contexts[cix][i], path);
+                cairo_stroke(cr);
+            }
+            cairo_set_source_rgba(cr, 0,0,0,1);
+            cairo_set_line_width(cr, 1);
+            for(unsigned i = 0; i < monoss[cix].size(); i++) {
+                draw_section(cr, monoss[cix][i], path);
                 cairo_stroke(cr);
             }
         }
