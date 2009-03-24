@@ -133,10 +133,12 @@ void rename_fv(unsigned old, unsigned n, std::deque<Section> monos) {
         }
     }
 }
-
-void divide_section(Section &s, std::deque<Section> &monos, std::vector<double> const &ts, std::vector<unsigned> const &verts) {
-
-}
+/*
+void divide_section(Section &s, std::deque<Section> &monos, std::vector<Path> const &ps) {
+    Section sect = Section(s.curve.get(ps), X, s.curve, x.ta, s.t, vert, s.tv);
+    monos.insert(std::lower_bound(monos.begin(), monos.end(), sect, SectionSorter(&ps, X)), sect);
+    context[seg_ix].set_to(s.curve.get(ps), X, x.ta, vert);
+}*/
 
 std::vector<std::vector<Section> > sweep_window(cairo_t *cr, std::vector<Path> const &ps) {
     std::vector<std::vector<Section> > contexts;
@@ -247,35 +249,11 @@ class SweepWindow: public Toy {
     PointHandle p;
     std::vector<colour> colours;
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
-        //draw_toggles(cr, toggles);
-        cairo_set_source_rgb(cr, 1, 0, 0);
-        cairo_set_line_width(cr, 0.5);
-        cairo_path(cr, path);
-        cairo_stroke(cr);
-        
         cairo_set_source_rgb(cr, 0, 0, 0);
         cairo_set_line_width(cr, 2);
         
         monoss.clear();
         std::vector<std::vector<Section> > contexts = sweep_window(cr, path);
-        
-        /*  // this is code to make the handle like the location of the sweepline.
-        double v = p.pos[X];
-        for(unsigned i = 0; i < contexts.size(); i++) {
-            if(std::max_element(contexts[i].begin(), contexts[i].end(), SectionSorter(&path, X))->fp[X] >= v) {
-               // if(i != 0) i--;
-                for(unsigned j = 0; j < contexts[i].size(); j++) {
-                    draw_section(cr, contexts[i][j], path);
-                    cairo_stroke(cr);
-                }
-                *notify << i << endl;
-                break;
-            }
-        }
-        cairo_set_line_width(cr, 0.5);
-        draw_line_seg(cr, Point(p.pos[X], 0), Point(p.pos[X], 1000));
-        cairo_stroke(cr);
-        */
         
         int cix = (int) p.pos[X] / 10;
         if(cix >= 0 && cix < contexts.size()) {
@@ -285,7 +263,7 @@ class SweepWindow: public Toy {
             }
             for(unsigned i = 0; i < contexts[cix].size(); i++) {
                 cairo_set_source_rgba(cr, colours[i]);
-                cairo_set_line_width(cr, (i%3)+1);
+                cairo_set_line_width(cr, (i%2+1)*2);
                 draw_section(cr, contexts[cix][i], path);
                 cairo_stroke(cr);
             }
@@ -297,7 +275,6 @@ class SweepWindow: public Toy {
             }
         }
 
-        
         //some marks to indicate section breaks
         for(unsigned i = 0; i < path.size(); i++) {
             for(unsigned j = 0; j < path[i].size(); j++) {
@@ -346,22 +323,6 @@ int main(int argc, char **argv) {
     init(argc, argv, new SweepWindow());
     return 0;
 }
-
-/*
-// Returns a vector of sections, breaking the path into monotonic parts
-// The from / to parts of the sections are such that increasing t yields increaasing x or y
-std::vector<Section> paths_sections(std::vector<Path> const &ps, Dim2 d) {
-    std::vector<Section> ret;
-    for(unsigned i = 0; i < ps.size(); i++) {
-        for(unsigned j = 0; j < ps[i].size(); j++) {
-            std::vector<double> splits = mono_splits(ps[i][j]);
-            for(unsigned k = 1; k < splits.size(); k++)
-               ret.push_back(Section(ps[i][j], d, CurveIx(i,j), splits[k-1], splits[k]);
-        }
-    }
-    return ret;
-}
-*/
 
 /*
   Local Variables:
