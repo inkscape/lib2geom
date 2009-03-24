@@ -41,6 +41,71 @@ colour colour::from_hsv( float H,          // hue shift (in degrees)
         A);
 }
 
+ // Given H,S,L in range of 0-1
+
+ // Returns a Color (RGB struct) in range of 0-255
+
+colour colour::from_hsl(float h, float sl, float l, float a) {
+    h /= M_PI*2;
+    colour rgba(l,l,l,a); // default to gray 
+    
+    double v = (l <= 0.5) ? (l * (1.0 + sl)) : (l + sl - l * sl);
+    
+    if (v > 0) {
+        double m;
+        double sv;
+        int sextant;
+        double fract, vsf, mid1, mid2;
+
+        m = l + l - v;
+        sv = (v - m ) / v;
+        h *= 6.0;
+        sextant = (int)h;
+        fract = h - sextant;
+        vsf = v * sv * fract;
+        mid1 = m + vsf;
+        mid2 = v - vsf;
+        switch (sextant) {
+            case 0:
+                rgba.r = v;
+                rgba.g = mid1;
+                rgba.b = m;
+                break;
+
+            case 1:
+                rgba.r = mid2;
+                rgba.g = v;
+                rgba.b = m;
+                break;
+
+            case 2:
+                rgba.r = m;
+                rgba.g = v;
+                rgba.b = mid1;
+                break;
+
+            case 3:
+                rgba.r = m;
+                rgba.g = mid2;
+                rgba.b = v;
+                break;
+
+            case 4:
+                rgba.r = mid1;
+                rgba.g = m;
+                rgba.b = v;
+                break;
+
+            case 5:
+                rgba.r = v;
+                rgba.g = m;
+                rgba.b = mid2;
+                break;
+        }
+    }
+    return rgba;
+}
+
 void cairo_set_source_rgba(cairo_t* cr, colour c) {
     cairo_set_source_rgba(cr, c.r, c.g, c.b, c.a);
 }

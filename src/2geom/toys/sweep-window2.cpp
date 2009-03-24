@@ -259,7 +259,7 @@ class SweepWindow: public Toy {
         if(cix >= 0 && cix < contexts.size()) {
             while(colours.size() < contexts[cix].size()) {
                 double c = colours.size();
-                colours.push_back(colour::from_hsv(c, 1, 1, 0.75));
+                colours.push_back(colour::from_hsl(c, 1, 0.5, 0.75));
             }
             for(unsigned i = 0; i < contexts[cix].size(); i++) {
                 cairo_set_source_rgba(cr, colours[i]);
