@@ -242,7 +242,7 @@ public:
   class Time{
   public:
     double value;
-  Time(long long s, long long l) : value(l) {}
+  Time(long long /*s*/, long long l) : value(l) {}
   Time(double v) : value(v) {}
     Time operator/(double iters) const {
       return Time(value / iters);

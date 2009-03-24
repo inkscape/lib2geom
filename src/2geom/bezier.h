@@ -50,12 +50,13 @@ inline Coord subdivideArr(Coord t, Coord const *v, Coord *left, Coord *right, un
  *      Fill in control points for resulting sub-curves.
  * 
  */
+
     unsigned N = order+1;
     std::valarray<Coord> vtemp(2*N);
     for (unsigned i = 0; i < N; i++)
         vtemp[i] = v[i];
 
-    /* Triangle computation	*/
+    // Triangle computation
     const double omt = (1-t);
     if(left)
         left[0] = vtemp[0];
@@ -73,9 +74,9 @@ inline Coord subdivideArr(Coord t, Coord const *v, Coord *left, Coord *right, un
             right[order-i] = row[order-i];
         std::swap(prev_row, row);
     }
-    return (row[0]);
-
-/*    Coord vtemp[order+1][order+1];
+    return (prev_row[0]);
+/*
+    Coord vtemp[order+1][order+1];
 
     // Copy control points
     std::copy(v, v+order+1, vtemp[0]);
@@ -93,7 +94,7 @@ inline Coord subdivideArr(Coord t, Coord const *v, Coord *left, Coord *right, un
         for (unsigned j = 0; j <= order; j++)
             right[j] = vtemp[order-j][j];
 
-    return (vtemp[order][0]);*/
+            return (vtemp[order][0]);*/
 }
 
 

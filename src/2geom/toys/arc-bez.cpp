@@ -13,7 +13,7 @@ using std::vector;
 using namespace Geom;
 
 Piecewise<SBasis> 
-arcLengthSb2(Piecewise<D2<SBasis> > const &M, double tol){
+arcLengthSb2(Piecewise<D2<SBasis> > const &M, double /*tol*/){
     Piecewise<D2<SBasis> > dM = derivative(M);
     Piecewise<SBasis> length = integral(dot(dM, unitVector(dM)));
     length-=length.segs.front().at0();
@@ -44,9 +44,7 @@ public:
         double tol = 0.01;
         bool time_operations = true;
         if(time_operations) {
-            double units = 1e6;
             std::string units_string("us");
-            double timer_precision = 0.1;
             Timer tm;
             tm.ask_for_timeslice();
             tm.start();

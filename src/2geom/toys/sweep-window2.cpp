@@ -38,7 +38,8 @@ struct Section {
     double f, t;
     Point fp, tp;
     unsigned fv, tv;
-    Section(Curve const &c, Dim2 d, CurveIx cix, double fd, double td, unsigned fve, unsigned tve) : curve(cix), f(fd), t(td), fv(fve), tv(tve) {
+    Curve const* cp;
+    Section(Curve const &c, Dim2 d, CurveIx cix, double fd, double td, unsigned fve, unsigned tve) : curve(cix), f(fd), t(td), fv(fve), tv(tve), cp(&c) {
         fp = c.pointAt(f), tp = c.pointAt(t);
         //TODO: decide which direction the second case should work
         if(fp[d] > tp[d] || (fp[d] == tp[d] && fp[1-d] < tp[1-d])) {
@@ -47,6 +48,9 @@ struct Section {
             std::swap(fp, tp);
             std::swap(fv, tv);
         }
+    }
+    Point direction() const {
+        return (*cp).unitTangentAt(t);
     }
     void set_to(Curve const &c, Dim2 d, double ti, unsigned v) {
         //we're assuming the to-val isn't before our from
@@ -119,7 +123,15 @@ class SectionSorter {
         if(x.fp[1-dim] < y.fp[1-dim]) return true;
         if(x.fp[1-dim] > y.fp[1-dim]) return false;
         //TODO: path-based comparison
-        
+        Point xd = x.direction();
+        Point yd = y.direction();
+        // tangent can point backwards
+        if(xd[1-dim] < 0)
+            xd = -xd;
+        if(yd[1-dim] < 0)
+            yd = -yd;
+        //std::cout << xd << ", " << yd << "\n";
+        return xd[dim] < yd[dim];
         return x.fv < y.fv;
     }
 };
@@ -181,7 +193,7 @@ std::vector<std::vector<Section> > sweep_window(cairo_t *cr, std::vector<Path> c
         if(seg_ix == -1) {
             //didn't find a preceding section
             //insert into context, in the proper location
-            seg_ix = std::lower_bound(context.begin(), context.end(), s, SectionSorter(&ps, X)) - context.begin();
+            seg_ix = std::lower_bound(context.begin(), context.end(), s, SectionSorter(&ps, Y)) - context.begin();
             context.insert(context.begin() + seg_ix, s);
             //TODO: assign starting vertex index
         } else {
