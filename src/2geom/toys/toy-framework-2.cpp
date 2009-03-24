@@ -65,7 +65,7 @@ colour colour::from_hsl(float h, float sl, float l, float a) {
         vsf = v * sv * fract;
         mid1 = m + vsf;
         mid2 = v - vsf;
-        switch (sextant) {
+        switch (sextant%6) {
             case 0:
                 rgba.r = v;
                 rgba.g = mid1;
