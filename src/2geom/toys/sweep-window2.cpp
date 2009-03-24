@@ -109,7 +109,7 @@ struct SectionSorter {
     }
 };
 
-std::vector<std::vector<Section> > sweep_window(std::vector<Path> const &ps) {
+std::vector<std::vector<Section> > sweep_window(cairo_t *cr, std::vector<Path> const &ps) {
     std::vector<std::vector<Section> > contexts;
     std::vector<Section> context;
     
@@ -153,11 +153,12 @@ std::vector<std::vector<Section> > sweep_window(std::vector<Path> const &ps) {
             seg_ix = std::lower_bound(context.begin(), context.end(), s, SectionSorter(&ps, X)) - context.begin();
             context.insert(context.begin() + seg_ix, s);
         } else {
-            // we found a preceding section!
-            // replace with this, the next portion of a connected path
+            // we found a preceding section! replace it with the new one
             context[seg_ix] = s;
         }
         //cout << s.curve.path << " " << s.curve.ix << " " << seg_ix << endl;
+        
+        //TODO: deal with multiple paths intersecting at a point
         
         // Now we intersect with neighbors - do a sweep!
         // we'll have to make the same decision as with construction - derivative checking
@@ -168,32 +169,33 @@ std::vector<std::vector<Section> > sweep_window(std::vector<Path> const &ps) {
         for(unsigned i = 0; i < others.size(); i++) {
             if(others[i] == seg_ix) continue;
             
-            //TODO: make sure that this is a mutating reference
-            Section &other = context[others[i]];
+            Section other = context[others[i]];
             //TODO: what we really need is a function that gets the first intersection
             //if not that, we need to chunk curves into multiple pieces properly
-            Crossings xs = pair_intersect(s.curve.get(ps),     Interval(s.f, s.t),
+            Crossings xs = mono_intersect(s.curve.get(ps),     Interval(s.f, s.t),
                                           other.curve.get(ps), Interval(other.f, other.t));
             if(xs.empty()) continue;
             Crossing x = *std::min_element(xs.begin(), xs.end(), CrossingOrder(0, s.f > s.t));
             
+            //draw_cross(cr, s.curve.get(ps)(x.ta));
+            //draw_cross(cr, other.curve.get(ps)(x.tb));
+            draw_line_seg(cr, s.curve.get(ps)(x.ta), other.curve.get(ps)(x.tb));
+            cairo_stroke(cr);
+            
             assert(Interval(s.f, s.t).contains(x.ta));
             assert(Interval(other.f, other.t).contains(x.tb));
             
-            //TODO: check if the crossing coincides with the start / end of sections?
-            // it seems like we will need to do this.. be sure to handle both being endpnts properly!
-            
-            if(are_near(x.ta, s.f) || are_near(x.tb, other.f) || are_near(x.ta, s.t) || are_near(x.tb, other.t)) continue;
-            
-            //insert remainders
-            Section sect = Section(s.curve.get(ps),    X, s.curve,     x.ta, s.t, vert, s.tv),
-                    oth = Section(other.curve.get(ps), X, other.curve, x.tb, other.t, vert, other.tv);
-            monos.insert(std::lower_bound(monos.begin(), monos.end(), sect, SectionSorter(&ps, X)), sect);
-            monos.insert(std::lower_bound(monos.begin(), monos.end(), oth, SectionSorter(&ps, X)), oth);
-            
-            //crop context bits
-            context[seg_ix].set_to(s.curve.get(ps), X, x.ta, vert);
-            other.set_to(other.curve.get(ps), X, x.tb, vert);
+            //split sections when necessary
+            if(!(are_near(x.ta, s.f) || are_near(x.ta, s.t))) {
+                Section sect = Section(s.curve.get(ps),    X, s.curve,     x.ta, s.t, vert, s.tv);
+                monos.insert(std::lower_bound(monos.begin(), monos.end(), sect, SectionSorter(&ps, X)), sect);
+                context[seg_ix].set_to(s.curve.get(ps), X, x.ta, vert);
+            }
+            if(!(are_near(x.tb, other.f) || are_near(x.tb, other.t))) {
+                Section oth = Section(other.curve.get(ps), X, other.curve, x.tb, other.t, vert, other.tv);
+                monos.insert(std::lower_bound(monos.begin(), monos.end(), oth, SectionSorter(&ps, X)), oth);
+                context[others[i]].set_to(other.curve.get(ps), X, x.tb, vert);
+            }
             
             vert++;
         }
@@ -212,13 +214,13 @@ class SweepWindow: public Toy {
         //draw_toggles(cr, toggles);
         cairo_set_source_rgb(cr, 1, 0, 0);
         cairo_set_line_width(cr, 0.5);
-        cairo_path(cr, path);
+        //cairo_path(cr, path);
         cairo_stroke(cr);
         
         cairo_set_source_rgb(cr, 0, 0, 0);
         cairo_set_line_width(cr, 2);
         
-        std::vector<std::vector<Section> > contexts = sweep_window(path);
+        std::vector<std::vector<Section> > contexts = sweep_window(cr, path);
         
         /*  // this is code to make the handle like the location of the sweepline.
         double v = p.pos[X];
@@ -241,6 +243,8 @@ class SweepWindow: public Toy {
         int cix = (int) p.pos[X] / 10;
         if(cix >= 0 && cix < contexts.size()) {
             for(unsigned i = 0; i < contexts[cix].size(); i++) {
+                cairo_set_source_rgba(cr, uniform() / 2, uniform() / 2, uniform() / 2, 0.75);
+                cairo_set_line_width(cr, uniform()*2 + 1);
                 draw_section(cr, contexts[cix][i], path);
                 cairo_stroke(cr);
             }
@@ -250,7 +254,7 @@ class SweepWindow: public Toy {
         //some marks to indicate section breaks
         for(unsigned i = 0; i < path.size(); i++) {
             for(unsigned j = 0; j < path[i].size(); j++) {
-                draw_cross(cr, path[i][j].initialPoint());
+                //draw_cross(cr, path[i][j].initialPoint());
             }
         }
         

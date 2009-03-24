@@ -369,6 +369,50 @@ Crossings SimpleCrosser::crossings(Curve const &a, Curve const &b) {
     return ret;
 }
 
+
+//same as below but curves not paths
+void mono_intersect(Curve const &A, double Al, double Ah,
+                    Curve const &B, double Bl, double Bh,
+                    Crossings &ret, double tol = 0.1, unsigned depth = 0) {
+    if( Al >= Ah || Bl >= Bh) return;
+    //std::cout << " " << depth << "[" << Al << ", " << Ah << "]" << "[" << Bl << ", " << Bh << "]";
+
+    Point A0 = A.pointAt(Al), A1 = A.pointAt(Ah),
+          B0 = B.pointAt(Bl), B1 = B.pointAt(Bh);
+    //inline code that this implies? (without rect/interval construction)
+    Rect Ar = Rect(A0, A1), Br = Rect(B0, B1);
+    if(!Ar.intersects(Br) || A0 == A1 || B0 == B1) return;
+
+    if(depth > 12 || (Ar.maxExtent() < tol && Ar.maxExtent() < tol)) {
+        double tA, tB, c;
+        if(linear_intersect(A0, A1, B0, B1,
+                            tA, tB, c)) {
+            tA = tA * (Ah - Al) + Al;
+            tB = tB * (Bh - Bl) + Bl;
+            if(depth % 2)
+                ret.push_back(Crossing(tB, tA, c < 0));
+            else
+                ret.push_back(Crossing(tA, tB, c > 0));
+            return;
+        }
+    }
+    if(depth > 12) return;
+    double mid = (Bl + Bh)/2;
+    mono_intersect(B, Bl, mid,
+              A, Al, Ah,
+              ret, tol, depth+1);
+    mono_intersect(B, mid, Bh,
+              A, Al, Ah,
+              ret, tol, depth+1);
+}
+
+Crossings mono_intersect(Curve const & A, Interval const &Ad,
+                         Curve const & B, Interval const &Bd) {
+    Crossings ret;
+    mono_intersect(A, Ad.min(), Ad.max(), B, Bd.min(), Bd.max(), ret);
+    return ret;
+}
+
 /**
  * Takes two paths and time ranges on them, with the invariant that the
  * paths are monotonic on the range.  Splits A when the linear intersection
@@ -384,11 +428,10 @@ void mono_pair(Path const &A, double Al, double Ah,
     Point A0 = A.pointAt(Al), A1 = A.pointAt(Ah),
           B0 = B.pointAt(Bl), B1 = B.pointAt(Bh);
     //inline code that this implies? (without rect/interval construction)
-    if(!Rect(A0, A1).intersects(Rect(B0, B1)) || A0 == A1 || B0 == B1) return;
-    
-    //Checks the general linearity of the function
-    //if((depth > 12) || (A.boundsLocal(Interval(Al, Ah), 1).maxExtent() < 0.1 
-    //                &&  B.boundsLocal(Interval(Bl, Bh), 1).maxExtent() < 0.1)) {
+    Rect Ar = Rect(A0, A1), Br = Rect(B0, B1);
+    if(!Ar.intersects(Br) || A0 == A1 || B0 == B1) return;
+
+    if(depth > 12 || (Ar.maxExtent() < 0.1 && Ar.maxExtent() < 0.1)) {
         double tA, tB, c;
         if(linear_intersect(A0, A1, B0, B1,
                             tA, tB, c)) {
@@ -400,7 +443,7 @@ void mono_pair(Path const &A, double Al, double Ah,
                 ret.push_back(Crossing(tA, tB, c > 0));
             return;
         }
-    //}
+    }
     if(depth > 12) return;
     double mid = (Bl + Bh)/2;
     mono_pair(B, Bl, mid,
