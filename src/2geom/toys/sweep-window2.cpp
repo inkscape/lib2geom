@@ -125,40 +125,6 @@ class SectionSorter {
 };
 std::vector<std::vector<Section> > monoss;
 
-// sorter which sorts indices pointing into an underlying container, using the
-// element's less than comparison
-template<typename T>
-class IndexSorter {
-    const T *container;
-    bool rev;
-  public:
-    IndexSorter(const T *c, bool r = false) : container(c), rev(r) {}
-    bool operator()(unsigned x, unsigned y) {
-        if(rev)
-            return (*container)[y] < (*container)[x];
-        else
-            return (*container)[x] < (*container)[y];
-    }
-};
-
-// returns a list of indices, which point into the passed array, yielding sorted elements
-template<typename T>
-std::vector<unsigned> sorted_indexes(T const &in) {
-    std::vector<unsigned> ret(in.size());
-    for(unsigned i = 0; i < in.size(); i++) ret[i] = i;
-    std::sort(ret.begin(), ret.end(), IndexSorter<T>(&in));
-    return ret;
-}
-
-template<typename T>
-T resolve_indexes(std::vector<unsigned> const &ixs, T const &v) {
-    T ret;
-    for(unsigned i = 0; i < ixs.size(); i++) {
-        ret.push_back(v[ixs[i]]);
-    }
-    return ret;
-}
-
 void rename_fv(unsigned old, unsigned n, std::deque<Section> monos) {
     for(unsigned i = 0; i < monos.size(); i++) {
         if(monos[i].fv == old) {
@@ -169,15 +135,7 @@ void rename_fv(unsigned old, unsigned n, std::deque<Section> monos) {
 }
 
 void divide_section(Section &s, std::deque<Section> &monos, std::vector<double> const &ts, std::vector<unsigned> const &verts) {
-    bool nf = are_near(s.f, ts.front()),
-         nt = are_near(s.t, ts.back());
-    if(nf) {
-        s.fv = verts[0];
-        s.set_to()
-    }
-    for(unsigned i = nf ? 1 : 0; i < ts.size(); i++) {
-        
-    }
+
 }
 
 std::vector<std::vector<Section> > sweep_window(cairo_t *cr, std::vector<Path> const &ps) {
@@ -246,31 +204,6 @@ std::vector<std::vector<Section> > sweep_window(cairo_t *cr, std::vector<Path> c
             //if not that, we need to chunk curves into multiple pieces properly
             Crossings xs = mono_intersect(s.curve.get(ps),     Interval(s.f, s.t),
                                           other.curve.get(ps), Interval(other.f, other.t));
-            
-            std::vector<double> tsa, tsb;
-            for(unsigned j = 0; j < xs.size(); j++) {
-                tsa.push_back(xs[j].ta);
-                tsb.push_back(xs[j].tb);
-            }
-            
-            // we need indexes which sort differently, so that the same crossings share vert indexes
-            //TODO: it might be better to construct a split_point structure which stores the two times and a vertix
-            std::vector<unsigned> ixa = sorted_indexes(tsa, s.f > s.t),
-                                  ixb = sorted_indexes(tsb, other.f > other.t);
-            
-            //assign vertex identities as necessary
-            std::vector<unsigned> verts;
-            for(unsigned j = 0; j < xs.size(); j++) verts.push_back(vert++);
-            if(are_near(tsa[ixa.front()], s.f    )) verts[ixa.front()] = s.fv;
-            if(are_near(tsa[ixa.back ()], s.t    )) verts[ixa.back() ] = s.tv;
-            if(are_near(tsb[ixb.front()], other.f)) verts[ixb.front()] = s.fv; 
-            if(are_near(tsb[isb.back ()], other.t)) verts[ixb.back() ] = s.tv;
-            
-            //the pass them into functions which handles the section division.
-            divide_section(s, monos, resolve_indexes(ixa, tsa), resolve_indexes(ixa, verts));
-            divide_section(other, monos, resolve_indexes(ixb, tsb), resolve_indexes(ixb, verts));
-            
-            /*
             if(xs.empty()) continue;
             Crossing x = *std::min_element(xs.begin(), xs.end(), CrossingOrder(0, s.f > s.t));
             
@@ -299,7 +232,7 @@ std::vector<std::vector<Section> > sweep_window(cairo_t *cr, std::vector<Path> c
                 context[others[i]].set_to(other.curve.get(ps), X, x.tb, vert);
             }
             
-            if(!is_s_end || !is_other_end) vert++; */
+            if(!is_s_end || !is_other_end) vert++;
         }
         monoss.push_back(std::vector<Section>(monos.begin(), monos.end()));
         contexts.push_back(context);
@@ -351,13 +284,8 @@ class SweepWindow: public Toy {
                 colours.push_back(colour::from_hsv(c, 1, 1, 0.75));
             }
             for(unsigned i = 0; i < contexts[cix].size(); i++) {
-<<<<<<< .mine
-                //cairo_set_source_rgba(cr, uniform() / 2, uniform() / 2, uniform() / 2, 0.75);
-                //cairo_set_line_width(cr, uniform()*2 + 1);
-=======
                 cairo_set_source_rgba(cr, colours[i]);
                 cairo_set_line_width(cr, (i%3)+1);
->>>>>>> .r1838
                 draw_section(cr, contexts[cix][i], path);
                 cairo_stroke(cr);
             }
