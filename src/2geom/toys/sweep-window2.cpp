@@ -132,24 +132,19 @@ class SectionSorter {
             yd = -yd;
         //std::cout << xd << ", " << yd << "\n";
         return xd[dim] < yd[dim];
-        return x.fv < y.fv;
     }
 };
 std::vector<std::vector<Section> > monoss;
-
-void rename_fv(unsigned old, unsigned n, std::deque<Section> monos) {
-    for(unsigned i = 0; i < monos.size(); i++) {
-        if(monos[i].fv == old) {
-            monos[i].fv = n;
-            return;
+/*
+void divide_section(Section &s, std::deque<Section> &monos, std::vector<Path> const &ps, Crossings xs, unsigned ix) {
+    for(unsigned i = 0; i < xs.size(); i++) {
+        double t = xs[i].getTime(ix);
+        if((i == 0 && !are_near(t, s.f)) || (i == xs.size() - 1 && are_near(t, s.t))) {
+            Section sect = Section(s.curve.get(ps), X, s.curve, x.ta, s.t, 0, s.tv);
+            monos.insert(std::lower_bound(monos.begin(), monos.end(), sect, SectionSorter(&ps, X)), 0);
+            context[seg_ix].set_to(s.curve.get(ps), X, x.ta, 0);
         }
     }
-}
-/*
-void divide_section(Section &s, std::deque<Section> &monos, std::vector<Path> const &ps) {
-    Section sect = Section(s.curve.get(ps), X, s.curve, x.ta, s.t, vert, s.tv);
-    monos.insert(std::lower_bound(monos.begin(), monos.end(), sect, SectionSorter(&ps, X)), sect);
-    context[seg_ix].set_to(s.curve.get(ps), X, x.ta, vert);
 }*/
 
 std::vector<std::vector<Section> > sweep_window(cairo_t *cr, std::vector<Path> const &ps) {
@@ -231,22 +226,17 @@ std::vector<std::vector<Section> > sweep_window(cairo_t *cr, std::vector<Path> c
             
             //TODO: replace these are_nears by spatial distance tols?
             
-            bool is_s_end = are_near(x.ta, s.f) || are_near(x.ta, s.t),
-                 is_other_end = are_near(x.tb, other.f) || are_near(x.tb, other.t);
-            
             //split sections when necessary
-            if(!is_s_end) {
-                Section sect = Section(s.curve.get(ps),    X, s.curve,     x.ta, s.t, vert, s.tv);
-                monos.insert(std::lower_bound(monos.begin(), monos.end(), sect, SectionSorter(&ps, X)), sect);
-                context[seg_ix].set_to(s.curve.get(ps), X, x.ta, vert);
+            if(!(are_near(x.ta, s.f) || are_near(x.ta, s.t))) {
+                Section sect = Section(s.curve.get(ps),    X, s.curve,     x.ta, s.t, 0, s.tv);
+                monos.insert(std::lower_bound(monos.begin(), monos.end(), sect, SectionSorter(&ps, Y)), sect);
+                context[seg_ix].set_to(s.curve.get(ps), X, x.ta, 0);
             }
-            if(!is_other_end) {
-                Section oth = Section(other.curve.get(ps), X, other.curve, x.tb, other.t, vert, other.tv);
-                monos.insert(std::lower_bound(monos.begin(), monos.end(), oth, SectionSorter(&ps, X)), oth);
-                context[others[i]].set_to(other.curve.get(ps), X, x.tb, vert);
+            if(!(are_near(x.tb, other.f) || are_near(x.tb, other.t))) {
+                Section oth = Section(other.curve.get(ps), X, other.curve, x.tb, other.t, 0, other.tv);
+                monos.insert(std::lower_bound(monos.begin(), monos.end(), oth, SectionSorter(&ps, Y)), oth);
+                context[others[i]].set_to(other.curve.get(ps), X, x.tb, 0);
             }
-            
-            if(!is_s_end || !is_other_end) vert++;
         }
         monoss.push_back(std::vector<Section>(monos.begin(), monos.end()));
         contexts.push_back(context);

@@ -385,10 +385,13 @@ void mono_intersect(Curve const &A, double Al, double Ah,
 
     if(depth > 12 || (Ar.maxExtent() < tol && Ar.maxExtent() < tol)) {
         double tA, tB, c;
-        if(linear_intersect(A0, A1, B0, B1,
+        if(linear_intersect(A.pointAt(Al), A.pointAt(Ah), 
+                            B.pointAt(Bl), B.pointAt(Bh), 
                             tA, tB, c)) {
             tA = tA * (Ah - Al) + Al;
             tB = tB * (Bh - Bl) + Bl;
+            intersect_polish_root(A, tA,
+                                  B, tB);
             if(depth % 2)
                 ret.push_back(Crossing(tB, tA, c < 0));
             else
