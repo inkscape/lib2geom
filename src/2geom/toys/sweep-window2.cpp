@@ -38,8 +38,7 @@ struct Section {
     double f, t;
     Point fp, tp;
     unsigned fv, tv;
-    Curve const* cp;
-    Section(Curve const &c, Dim2 d, CurveIx cix, double fd, double td, unsigned fve, unsigned tve) : curve(cix), f(fd), t(td), fv(fve), tv(tve), cp(&c) {
+    Section(Curve const &c, Dim2 d, CurveIx cix, double fd, double td, unsigned fve, unsigned tve) : curve(cix), f(fd), t(td), fv(fve), tv(tve) {
         fp = c.pointAt(f), tp = c.pointAt(t);
         //TODO: decide which direction the second case should work
         if(fp[d] > tp[d] || (fp[d] == tp[d] && fp[1-d] < tp[1-d])) {
@@ -48,9 +47,6 @@ struct Section {
             std::swap(fp, tp);
             std::swap(fv, tv);
         }
-    }
-    Point direction() const {
-        return (*cp).unitTangentAt(t);
     }
     void set_to(Curve const &c, Dim2 d, double ti, unsigned v) {
         //we're assuming the to-val isn't before our from
@@ -77,17 +73,17 @@ void draw_section(cairo_t *cr, Section const &s, std::vector<Path> const &ps) {
     Curve *curv = s.curve.get(ps).portion(ti.min(), ti.max());
     cairo_curve(cr, *curv);
     {
-    Point h = s.curve.get(ps).pointAt(ti.min());
-    int x = int(h[Geom::X]);
-    int y = int(h[Geom::Y]);
-    cairo_new_sub_path(cr);
-    cairo_arc(cr, x, y, 2, 0, M_PI*2);
+        Point h = s.curve.get(ps).pointAt(ti.min());
+        int x = int(h[Geom::X]);
+        int y = int(h[Geom::Y]);
+        cairo_new_sub_path(cr);
+        cairo_arc(cr, x, y, 2, 0, M_PI*2);
     }{
-    Point h = s.curve.get(ps).pointAt(ti.max());
-    int x = int(h[Geom::X]);
-    int y = int(h[Geom::Y]);
-    cairo_new_sub_path(cr);
-    cairo_arc(cr, x, y, 2, 0, M_PI*2);
+        Point h = s.curve.get(ps).pointAt(ti.max());
+        int x = int(h[Geom::X]);
+        int y = int(h[Geom::Y]);
+        cairo_new_sub_path(cr);
+        cairo_arc(cr, x, y, 2, 0, M_PI*2);
     }
     cairo_stroke(cr);
     delete curv;
@@ -112,29 +108,73 @@ std::vector<double> mono_splits(Curve const &d) {
     return splits;
 }
 
+bool lexo_point(Point const &a, Point const &b, Dim2 d) {
+    if(d)
+        return a[Y] < b[Y] || (a[Y] == b[Y] && a[X] < b[X]);
+    else
+        return a[X] < b[X] || (a[X] == b[X] && a[Y] < b[Y]);
+}
+
+class SweepSorter {
+  Dim2 dim;
+  public:
+    SweepSorter(Dim2 d) : dim(d) {}
+    bool operator()(Section const &a, Section const &b) {
+        return lexo_point(a.fp, b.fp, dim);
+    }
+};
+
+double section_root(Section const &s, std::vector<Path> const &ps, double v, Dim2 d) {
+    std::vector<double> roots = s.curve.get(ps).roots(v, d);
+    for(unsigned j = 0; j < roots.size(); j++)
+        if(Interval(s.f, s.t).contains(roots[j])) return roots[j];
+    return -1;
+}
+
 class SectionSorter {
-    const std::vector<Path> *ps;
+    const std::vector<Path> &ps;
     Dim2 dim;
   public:
-    SectionSorter(const std::vector<Path> *rs, Dim2 d) : ps(rs), dim(d) {}
-    bool operator()(Section const &x, Section const &y) {
-        if(x.fp[dim] < y.fp[dim]) return true;
-        if(x.fp[dim] > y.fp[dim]) return false;
-        if(x.fp[1-dim] < y.fp[1-dim]) return true;
-        if(x.fp[1-dim] > y.fp[1-dim]) return false;
-        //TODO: path-based comparison
-        Point xd = x.direction();
-        Point yd = y.direction();
-        // tangent can point backwards
-        if(xd[1-dim] < 0)
-            xd = -xd;
-        if(yd[1-dim] < 0)
-            yd = -yd;
-        //std::cout << xd << ", " << yd << "\n";
-        return xd[dim] < yd[dim];
+    SectionSorter(const std::vector<Path> &rs, Dim2 d) : ps(rs), dim(d) {}
+    bool operator()(Section const &a, Section const &b) {
+        if(are_near(a.fp, b.fp)) {
+            //TODO: use cmp helpers for next two lines?
+            if(a.tp[dim] < a.fp[dim] && b.tp[dim] > b.fp[dim]) return true;
+            if(a.tp[dim] > a.fp[dim] && b.tp[dim] < b.fp[dim]) return false;
+            //TODO: sampling / higher derivatives when unit tangents match
+            Point ad = a.curve.get(ps).unitTangentAt(a.f);
+            Point bd = b.curve.get(ps).unitTangentAt(b.f);
+            // tangent can point backwards
+            if(ad[1-dim] < 0) ad = -ad;
+            if(bd[1-dim] < 0) bd = -bd;
+            //std::cout << xd << ", " << yd << "\n";
+            return ad[dim] < bd[dim];
+        }
+        Rect ra = a.bbox(), rb = b.bbox();
+        if(ra[dim].max() <= rb[dim].min()) return true;
+        if(rb[dim].max() <= ra[dim].min()) return false;
+        // we know that the rects intersect on dim
+        //by referencing f / t we are assuming that the section was constructed with 1-dim
+        if(ra[1-dim].intersects(ra[1-dim])) {
+            if(a.fp[1-dim] < b.fp[1-dim]) {
+                //b inside a
+                double ta = section_root(a, ps, b.fp[1-dim], Dim2(1-dim));
+                assert(ta != -1);
+                return a.curve.get(ps)(ta)[dim] < b.fp[dim];
+            } else {
+                //a inside b
+                double tb = section_root(b, ps, a.fp[1-dim], Dim2(1-dim));
+                assert(tb != -1);
+                return a.fp[dim] < b.curve.get(ps)(tb)[dim];
+            }
+        }
+        
+        assert(false);
+        //return a.fp < b.fp;
     }
 };
 std::vector<std::vector<Section> > monoss;
+
 /*
 void divide_section(Section &s, std::deque<Section> &monos, std::vector<Path> const &ps, Crossings xs, unsigned ix) {
     for(unsigned i = 0; i < xs.size(); i++) {
@@ -145,7 +185,8 @@ void divide_section(Section &s, std::deque<Section> &monos, std::vector<Path> co
             context[seg_ix].set_to(s.curve.get(ps), X, x.ta, 0);
         }
     }
-}*/
+}
+*/
 
 std::vector<std::vector<Section> > sweep_window(cairo_t *cr, std::vector<Path> const &ps) {
     std::vector<std::vector<Section> > contexts;
@@ -169,7 +210,7 @@ std::vector<std::vector<Section> > sweep_window(cairo_t *cr, std::vector<Path> c
             if(monos.back().fv == vert) monos.back().fv = first; else monos.back().tv = first;
         }
     }
-    std::sort(monos.begin(), monos.end(), SectionSorter(&ps, X));
+    std::sort(monos.begin(), monos.end(), SweepSorter(X));
 
     while(!monos.empty()) {
         Section s = monos.front();
@@ -183,21 +224,19 @@ std::vector<std::vector<Section> > sweep_window(cairo_t *cr, std::vector<Path> c
             } else if(context[i].tp[X] < s.fp[X]) {
                 context.erase(context.begin() + i); // remove irrelevant sections
                 i--; //Must decrement, due to the removal
+                //TODO: add to output
             }
         }
         if(seg_ix == -1) {
             //didn't find a preceding section
             //insert into context, in the proper location
-            seg_ix = std::lower_bound(context.begin(), context.end(), s, SectionSorter(&ps, Y)) - context.begin();
+            seg_ix = std::lower_bound(context.begin(), context.end(), s, SectionSorter(ps, Y)) - context.begin();
             context.insert(context.begin() + seg_ix, s);
             //TODO: assign starting vertex index
         } else {
             // we found a preceding section! replace it with the new one
             context[seg_ix] = s;
         }
-        //cout << s.curve.path << " " << s.curve.ix << " " << seg_ix << endl;
-        
-        //TODO: deal with multiple paths intersecting at a point
         
         // Now we intersect with neighbors - do a sweep!
         // we'll have to make the same decision as with construction - derivative checking
@@ -229,12 +268,12 @@ std::vector<std::vector<Section> > sweep_window(cairo_t *cr, std::vector<Path> c
             //split sections when necessary
             if(!(are_near(x.ta, s.f) || are_near(x.ta, s.t))) {
                 Section sect = Section(s.curve.get(ps),    X, s.curve,     x.ta, s.t, 0, s.tv);
-                monos.insert(std::lower_bound(monos.begin(), monos.end(), sect, SectionSorter(&ps, Y)), sect);
+                monos.insert(std::lower_bound(monos.begin(), monos.end(), sect, SweepSorter(X)), sect);
                 context[seg_ix].set_to(s.curve.get(ps), X, x.ta, 0);
             }
             if(!(are_near(x.tb, other.f) || are_near(x.tb, other.t))) {
                 Section oth = Section(other.curve.get(ps), X, other.curve, x.tb, other.t, 0, other.tv);
-                monos.insert(std::lower_bound(monos.begin(), monos.end(), oth, SectionSorter(&ps, Y)), oth);
+                monos.insert(std::lower_bound(monos.begin(), monos.end(), oth, SweepSorter(X)), oth);
                 context[others[i]].set_to(other.curve.get(ps), X, x.tb, 0);
             }
         }
