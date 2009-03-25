@@ -166,12 +166,13 @@ class SectionSorter {
                                      b, b.f > b.t ? b.f - 0.01 : b.f + 0.01);
             } else if(a.fp[1-dim] < b.fp[1-dim]) {
                 //b inside a
-                double ta = section_root(a, ps, a.fp[1-dim], Dim2(1-dim));
+                // b's x position is inside a's x range, so test at b (not a)
+                double ta = section_root(a, ps, b.fp[1-dim], Dim2(1-dim));
                 assert(ta != -1);
                 return section_order(a, ta, b, b.f);
             } else {
                 //a inside b
-                double tb = section_root(b, ps, b.fp[1-dim], Dim2(1-dim));
+                double tb = section_root(b, ps, a.fp[1-dim], Dim2(1-dim));
                 assert(tb != -1);
                 return section_order(a, a.f, b, tb);
             }
