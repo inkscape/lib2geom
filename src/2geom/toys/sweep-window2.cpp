@@ -37,8 +37,8 @@ struct Section {
     CurveIx curve;
     double f, t;
     Point fp, tp;
-    unsigned fv, tv;
-    Section(Curve const &c, Dim2 d, CurveIx cix, double fd, double td, unsigned fve, unsigned tve) : curve(cix), f(fd), t(td), fv(fve), tv(tve) {
+    int fv, tv;
+    Section(Curve const &c, Dim2 d, CurveIx cix, double fd, double td, int fve, int tve) : curve(cix), f(fd), t(td), fv(fve), tv(tve) {
         fp = c.pointAt(f), tp = c.pointAt(t);
         //TODO: decide which direction the second case should work
         if(fp[d] > tp[d] || (fp[d] == tp[d] && fp[1-d] < tp[1-d])) {
@@ -48,7 +48,7 @@ struct Section {
             std::swap(fv, tv);
         }
     }
-    void set_to(Curve const &c, Dim2 d, double ti, unsigned v) {
+    void set_to(Curve const &c, Dim2 d, double ti, int v) {
         //we're assuming the to-val isn't before our from
         t = ti;
         tp = c(ti);
@@ -159,12 +159,12 @@ class SectionSorter {
             if(a.fp[1-dim] < b.fp[1-dim]) {
                 //b inside a
                 double ta = section_root(a, ps, b.fp[1-dim], Dim2(1-dim));
-                assert(ta != -1);
+               // assert(ta != -1);
                 return a.curve.get(ps)(ta)[dim] < b.fp[dim];
             } else {
                 //a inside b
                 double tb = section_root(b, ps, a.fp[1-dim], Dim2(1-dim));
-                assert(tb != -1);
+                //assert(tb != -1);
                 return a.fp[dim] < b.curve.get(ps)(tb)[dim];
             }
         }
@@ -192,7 +192,7 @@ std::vector<std::vector<Section> > sweep_window(cairo_t *cr, std::vector<Path> c
     std::vector<std::vector<Section> > contexts;
     std::vector<Section> context;
     
-    unsigned vert = 0;
+    int vert = 0;
     //TODO: also store a priority queue of sectioned off bits, and do mergepass
     std::deque<Section> monos;
     
@@ -212,31 +212,22 @@ std::vector<std::vector<Section> > sweep_window(cairo_t *cr, std::vector<Path> c
     }
     std::sort(monos.begin(), monos.end(), SweepSorter(X));
 
+    int negvert = -1;
     while(!monos.empty()) {
         Section s = monos.front();
         monos.pop_front();
 
-        int seg_ix = -1;
         for(unsigned i = 0; i < context.size(); i++) {
-            if(context[i].tv == s.fv) {
-                seg_ix = i;
-                //we could probably break out at this point
-            } else if(context[i].tp[X] < s.fp[X]) {
+            if(context[i].tp[X] < s.fp[X] || are_near(context[i].tp[X], s.fp[X])) {
                 context.erase(context.begin() + i); // remove irrelevant sections
                 i--; //Must decrement, due to the removal
                 //TODO: add to output
             }
         }
-        if(seg_ix == -1) {
-            //didn't find a preceding section
-            //insert into context, in the proper location
-            seg_ix = std::lower_bound(context.begin(), context.end(), s, SectionSorter(ps, Y)) - context.begin();
-            context.insert(context.begin() + seg_ix, s);
-            //TODO: assign starting vertex index
-        } else {
-            // we found a preceding section! replace it with the new one
-            context[seg_ix] = s;
-        }
+          
+        //insert section into context, in the proper location
+        unsigned seg_ix = std::lower_bound(context.begin(), context.end(), s, SectionSorter(ps, Y)) - context.begin();
+        context.insert(context.begin() + seg_ix, s);
         
         // Now we intersect with neighbors - do a sweep!
         // we'll have to make the same decision as with construction - derivative checking
@@ -267,14 +258,16 @@ std::vector<std::vector<Section> > sweep_window(cairo_t *cr, std::vector<Path> c
             
             //split sections when necessary
             if(!(are_near(x.ta, s.f) || are_near(x.ta, s.t))) {
-                Section sect = Section(s.curve.get(ps),    X, s.curve,     x.ta, s.t, 0, s.tv);
+                Section sect = Section(s.curve.get(ps),    X, s.curve,     x.ta, s.t, negvert, s.tv);
                 monos.insert(std::lower_bound(monos.begin(), monos.end(), sect, SweepSorter(X)), sect);
-                context[seg_ix].set_to(s.curve.get(ps), X, x.ta, 0);
+                context[seg_ix].set_to(s.curve.get(ps), X, x.ta, negvert);
+                negvert--;
             }
             if(!(are_near(x.tb, other.f) || are_near(x.tb, other.t))) {
-                Section oth = Section(other.curve.get(ps), X, other.curve, x.tb, other.t, 0, other.tv);
+                Section oth = Section(other.curve.get(ps), X, other.curve, x.tb, other.t, negvert, other.tv);
                 monos.insert(std::lower_bound(monos.begin(), monos.end(), oth, SweepSorter(X)), oth);
-                context[others[i]].set_to(other.curve.get(ps), X, x.tb, 0);
+                context[others[i]].set_to(other.curve.get(ps), X, x.tb, negvert);
+                negvert--;
             }
         }
         monoss.push_back(std::vector<Section>(monos.begin(), monos.end()));
