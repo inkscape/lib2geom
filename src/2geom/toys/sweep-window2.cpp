@@ -135,39 +135,45 @@ double section_root(Section const &s, std::vector<Path> const &ps, double v, Dim
 class SectionSorter {
     const std::vector<Path> &ps;
     Dim2 dim;
-  public:
-    SectionSorter(const std::vector<Path> &rs, Dim2 d) : ps(rs), dim(d) {}
-    bool operator()(Section const &a, Section const &b) {
-        if(are_near(a.fp, b.fp)) {
-            //TODO: use cmp helpers for next two lines?
-            if(a.tp[dim] < a.fp[dim] && b.tp[dim] > b.fp[dim]) return true;
-            if(a.tp[dim] > a.fp[dim] && b.tp[dim] < b.fp[dim]) return false;
+    bool section_order(Section const &a, double at, Section const &b, double bt) {
+        Point ap = a.curve.get(ps).pointAt(at);
+        Point bp = b.curve.get(ps).pointAt(bt);
+        if(are_near(ap[dim], bp[dim])) {
+            //they must be coincident!
+            if(a.tp[dim] < ap[dim] && b.tp[dim] > ap[dim]) return true;
+            if(a.tp[dim] > ap[dim] && b.tp[dim] < ap[dim]) return false;
             //TODO: sampling / higher derivatives when unit tangents match
             Point ad = a.curve.get(ps).unitTangentAt(a.f);
             Point bd = b.curve.get(ps).unitTangentAt(b.f);
             // tangent can point backwards
             if(ad[1-dim] < 0) ad = -ad;
             if(bd[1-dim] < 0) bd = -bd;
-            //std::cout << xd << ", " << yd << "\n";
             return ad[dim] < bd[dim];
         }
+        return ap[dim] < bp[dim];
+    }
+  public:
+    SectionSorter(const std::vector<Path> &rs, Dim2 d) : ps(rs), dim(d) {}
+    bool operator()(Section const &a, Section const &b) {
         Rect ra = a.bbox(), rb = b.bbox();
         if(ra[dim].max() <= rb[dim].min()) return true;
         if(rb[dim].max() <= ra[dim].min()) return false;
-        // we know that the rects intersect on dim
+        //we know that the rects intersect on dim
         //by referencing f / t we are assuming that the section was constructed with 1-dim
-        if(ra[1-dim].intersects(ra[1-dim])) {
-            if(a.fp[1-dim] < b.fp[1-dim]) {
+        if(ra[1-dim].intersects(rb[1-dim])) {
+            if(are_near(a.fp[1-dim], b.fp[1-dim])) {
+                return section_order(a, a.f > a.t ? a.f - 0.01 : a.f + 0.01,
+                                     b, b.f > b.t ? b.f - 0.01 : b.f + 0.01);
+            } else if(a.fp[1-dim] < b.fp[1-dim]) {
                 //b inside a
-                double ta = section_root(a, ps, b.fp[1-dim], Dim2(1-dim));
+                double ta = section_root(a, ps, a.fp[1-dim], Dim2(1-dim));
                 assert(ta != -1);
-                return a.curve.get(ps)(ta)[dim] < b.fp[dim];
+                return section_order(a, ta, b, b.f);
             } else {
-                double v = are_near(a.fp[1-dim], b.fp[1-dim]) ? a.fp[1-dim] + 0.1 : a.fp[1-dim];
                 //a inside b
-                double tb = section_root(b, ps, v, Dim2(1-dim));
+                double tb = section_root(b, ps, b.fp[1-dim], Dim2(1-dim));
                 assert(tb != -1);
-                return a.fp[dim] < b.curve.get(ps)(tb)[dim];
+                return section_order(a, a.f, b, tb);
             }
         }
         
@@ -253,8 +259,8 @@ std::vector<std::vector<Section> > sweep_window(cairo_t *cr, std::vector<Path> c
             draw_line_seg(cr, s.curve.get(ps)(x.ta), other.curve.get(ps)(x.tb));
             cairo_stroke(cr);
             
-            assert(Interval(s.f, s.t).contains(x.ta));
-            assert(Interval(other.f, other.t).contains(x.tb));
+//            assert(Interval(s.f, s.t).contains(x.ta));
+//            assert(Interval(other.f, other.t).contains(x.tb));
             
             //TODO: replace these are_nears by spatial distance tols?
             
