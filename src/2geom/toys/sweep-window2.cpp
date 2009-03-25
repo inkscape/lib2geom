@@ -128,6 +128,7 @@ double section_root(Section const &s, std::vector<Path> const &ps, double v, Dim
     std::vector<double> roots = s.curve.get(ps).roots(v, d);
     for(unsigned j = 0; j < roots.size(); j++)
         if(Interval(s.f, s.t).contains(roots[j])) return roots[j];
+    return 0;
     return -1;
 }
 
@@ -159,12 +160,13 @@ class SectionSorter {
             if(a.fp[1-dim] < b.fp[1-dim]) {
                 //b inside a
                 double ta = section_root(a, ps, b.fp[1-dim], Dim2(1-dim));
-               // assert(ta != -1);
+                assert(ta != -1);
                 return a.curve.get(ps)(ta)[dim] < b.fp[dim];
             } else {
+                double v = are_near(a.fp[1-dim], b.fp[1-dim]) ? a.fp[1-dim] + 0.1 : a.fp[1-dim];
                 //a inside b
-                double tb = section_root(b, ps, a.fp[1-dim], Dim2(1-dim));
-                //assert(tb != -1);
+                double tb = section_root(b, ps, v, Dim2(1-dim));
+                assert(tb != -1);
                 return a.fp[dim] < b.curve.get(ps)(tb)[dim];
             }
         }
@@ -295,12 +297,17 @@ class SweepWindow: public Toy {
                 double c = colours.size();
                 colours.push_back(colour::from_hsl(c*0.5, 1, 0.5, 0.75));
             }
+            char* buf = (char*)malloc(10);
             for(unsigned i = 0; i < contexts[cix].size(); i++) {
                 cairo_set_source_rgba(cr, colours[i]);
                 //cairo_set_line_width(cr, (i%2+1)*2);
                 draw_section(cr, contexts[cix][i], path);
+                sprintf(buf, "%i", i);
+                draw_text(cr, contexts[cix][i].curve.get(path)
+                              ((contexts[cix][i].t + contexts[cix][i].f) / 2), buf);
                 cairo_stroke(cr);
             }
+            free(buf);
             cairo_set_source_rgba(cr, 0,0,0,1);
             cairo_set_line_width(cr, 1);
             for(unsigned i = 0; i < monoss[cix].size(); i++) {
