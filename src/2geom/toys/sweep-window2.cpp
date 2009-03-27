@@ -11,10 +11,10 @@
 #include <2geom/toys/toy-framework-2.h>
 
 #include <algorithm>
-#include <deque>
+#include <queue>
+#include <functional>
 
 using namespace Geom;
-using namespace std;
 
 struct CurveIx {
     unsigned path, ix;
@@ -24,35 +24,24 @@ struct CurveIx {
     }
 };
 
-/*
-struct WEvent {
-    CurveIx curve;
-    double time;
-    Point point;
-    unsigned vert;
-    WEvent(CurveIx c, double t, Point p, unsigned v) : curve(c), time(t), point(p), vert(v) {}
-}; */
-
 struct Section {
     CurveIx curve;
     double f, t;
     Point fp, tp;
-    int fv, tv;
-    Section(Curve const &c, Dim2 d, CurveIx cix, double fd, double td, int fve, int tve) : curve(cix), f(fd), t(td), fv(fve), tv(tve) {
+    int winding;
+    Section(Curve const &c, Dim2 d, CurveIx cix, double fd, double td) : curve(cix), f(fd), t(td) {
         fp = c.pointAt(f), tp = c.pointAt(t);
         //TODO: decide which direction the second case should work
         if(fp[d] > tp[d] || (fp[d] == tp[d] && fp[1-d] < tp[1-d])) {
             //swap from and to
             std::swap(f, t);
             std::swap(fp, tp);
-            std::swap(fv, tv);
         }
     }
-    void set_to(Curve const &c, Dim2 d, double ti, int v) {
+    void set_to(Curve const &c, Dim2 d, double ti) {
         //we're assuming the to-val isn't before our from
         t = ti;
         tp = c(ti);
-        tv = v;
         assert(tp[d] >= fp[d]);
     }
     Rect bbox() const {
@@ -89,6 +78,29 @@ void draw_section(cairo_t *cr, Section const &s, std::vector<Path> const &ps) {
     delete curv;
 }
 
+struct NearPredicate {
+    bool operator()(double x, double y) { return are_near(x, y); }
+};
+
+// ensures that f and t are elements of a vector, sorts and uniqueifies
+// also asserts that no values fall outside of f and t
+// if f is greater than t, the sort is in reverse
+void process_splits(std::vector<double> &splits, double f, double t) {
+    splits.push_back(f);
+    splits.push_back(t);
+    std::sort(splits.begin(), splits.end());
+    std::vector<double>::iterator end = std::unique(splits.begin(), splits.end(), NearPredicate());
+    splits.resize(end - splits.begin());
+    if(f > t) std::reverse(splits.begin(), splits.end());
+    for(unsigned i = 0; i < splits.size(); i++) cout << splits[i] << " ";
+    cout << endl;
+    //TODO: reenable these asserts
+   // while(splits.front() != f) splits.erase(splits.begin());
+    //while(splits.back() != t) splits.erase(splits.end() - 1);
+    //assert(splits.front() == f);
+    //assert(splits.back() == t);
+}
+
 // A little sugar for appending a list to another
 template<typename T>
 void append(T &a, T const &b) {
@@ -101,11 +113,34 @@ std::vector<double> mono_splits(Curve const &d) {
     std::vector<double> splits = deriv->roots(0, X);
     append(splits, deriv->roots(0, Y));
     delete deriv;
-    splits.push_back(0);
-    splits.push_back(1);
-    std::sort(splits.begin(), splits.end());
-    std::unique(splits.begin(), splits.end());
+    process_splits(splits, 0, 1);
     return splits;
+}
+
+std::vector<Section> mono_sections(std::vector<Path> const &ps) {
+    std::vector<Section> monos;
+    for(unsigned i = 0; i < ps.size(); i++) {
+        //TODO: necessary? can we have empty paths?
+        if(ps[i].size()) {
+            for(unsigned j = 0; j < ps[i].size(); j++) {
+                std::vector<double> splits = mono_splits(ps[i][j]);
+                for(unsigned k = 1; k < splits.size(); k++) {
+                   monos.push_back(Section(ps[i][j], X, CurveIx(i,j), splits[k-1], splits[k]));
+                }
+            }
+        }
+    }
+    return monos;
+}
+
+//splits a section into bits, mutating it to represent the first bit, and returning the rest
+std::vector<Section> split_section(Section &s, std::vector<Path> const &ps, std::vector<double> &cuts, Dim2 d) {
+    std::vector<Section> ret;
+    process_splits(cuts, s.f, s.t);
+    Curve const &c = s.curve.get(ps);
+    s.set_to(c, d, cuts[1]);
+    for(unsigned i = 2; i < cuts.size(); i++) ret.push_back(Section(c, d, s.curve, cuts[i-1], cuts[i]));
+    return ret;
 }
 
 bool lexo_point(Point const &a, Point const &b, Dim2 d) {
@@ -116,8 +151,13 @@ bool lexo_point(Point const &a, Point const &b, Dim2 d) {
 }
 
 class SweepSorter {
-  Dim2 dim;
+    Dim2 dim;
   public:
+    //binary adapter typedefs
+    typedef Section const& first_argument_type;
+    typedef Section const& second_argument_type;
+    typedef bool result_type;
+    
     SweepSorter(Dim2 d) : dim(d) {}
     bool operator()(Section const &a, Section const &b) {
         return lexo_point(a.fp, b.fp, dim);
@@ -128,7 +168,6 @@ double section_root(Section const &s, std::vector<Path> const &ps, double v, Dim
     std::vector<double> roots = s.curve.get(ps).roots(v, d);
     for(unsigned j = 0; j < roots.size(); j++)
         if(Interval(s.f, s.t).contains(roots[j])) return roots[j];
-    return 0;
     return -1;
 }
 
@@ -139,7 +178,6 @@ class SectionSorter {
         Point ap = a.curve.get(ps).pointAt(at);
         Point bp = b.curve.get(ps).pointAt(bt);
         if(are_near(ap[dim], bp[dim])) {
-            //they must be coincident!
             if(a.tp[dim] < ap[dim] && b.tp[dim] > ap[dim]) return true;
             if(a.tp[dim] > ap[dim] && b.tp[dim] < ap[dim]) return false;
             //TODO: sampling / higher derivatives when unit tangents match
@@ -162,128 +200,144 @@ class SectionSorter {
         //by referencing f / t we are assuming that the section was constructed with 1-dim
         if(ra[1-dim].intersects(rb[1-dim])) {
             if(are_near(a.fp[1-dim], b.fp[1-dim])) {
-                return section_order(a, a.f > a.t ? a.f - 0.01 : a.f + 0.01,
-                                     b, b.f > b.t ? b.f - 0.01 : b.f + 0.01);
+                return section_order(a, a.f > a.t ? a.f - 0.1 : a.f + 0.1,
+                                     b, b.f > b.t ? b.f - 0.1 : b.f + 0.1);
             } else if(a.fp[1-dim] < b.fp[1-dim]) {
                 //b inside a
-                // b's x position is inside a's x range, so test at b (not a)
                 double ta = section_root(a, ps, b.fp[1-dim], Dim2(1-dim));
-                assert(ta != -1);
+                //TODO: fix bug that necessitates this
+                if(ta == -1) ta = (a.t + a.f) / 2;
                 return section_order(a, ta, b, b.f);
             } else {
                 //a inside b
                 double tb = section_root(b, ps, a.fp[1-dim], Dim2(1-dim));
-                assert(tb != -1);
+                //TODO: fix bug that necessitates this
+                if(tb == -1) tb = (b.t + b.f) / 2;
                 return section_order(a, a.f, b, tb);
             }
         }
         
-        assert(false);
+        //assert(false);
+        return false;
         //return a.fp < b.fp;
     }
 };
-std::vector<std::vector<Section> > monoss;
 
-/*
-void divide_section(Section &s, std::deque<Section> &monos, std::vector<Path> const &ps, Crossings xs, unsigned ix) {
-    for(unsigned i = 0; i < xs.size(); i++) {
-        double t = xs[i].getTime(ix);
-        if((i == 0 && !are_near(t, s.f)) || (i == xs.size() - 1 && are_near(t, s.t))) {
-            Section sect = Section(s.curve.get(ps), X, s.curve, x.ta, s.t, 0, s.tv);
-            monos.insert(std::lower_bound(monos.begin(), monos.end(), sect, SectionSorter(&ps, X)), 0);
-            context[seg_ix].set_to(s.curve.get(ps), X, x.ta, 0);
-        }
+void merge_monos(std::vector<Section> &monos, std::vector<Section> const &mergers, Dim2 d) {
+  //TODO: there may be more efficient, more STLish ways of doing this
+    //reserve to prevent iterator invalidation
+    monos.reserve(monos.size() + mergers.size());
+    std::vector<Section>::iterator it = monos.begin();
+    for(unsigned i = 0; i < mergers.size(); i++) {
+        it = std::lower_bound(it, monos.end(), mergers[i], SweepSorter(d));
+        monos.insert(it, mergers[i]);
     }
 }
-*/
 
-std::vector<std::vector<Section> > sweep_window(cairo_t *cr, std::vector<Path> const &ps) {
-    std::vector<std::vector<Section> > contexts;
+template<typename T>
+class SwapParams {
+    T inner;
+  public:
+    typedef typename T::first_argument_type second_argument_type;
+    typedef typename T::second_argument_type first_argument_type;
+    typedef typename T::result_type result_type;
+    SwapParams(T x) : inner(x) {}
+    result_type operator()(first_argument_type x, second_argument_type y) { return inner(x, y); }
+};
+
+template<typename T>
+typename T::value_type pop_it(T &x) {
+    typename T::value_type ret = x.top();
+    x.pop();
+    return ret;
+}
+
+template<typename T>
+void push_them(T &x, std::vector<typename T::value_type> const &xs) {
+    for(unsigned i = 0; i < xs.size(); i++) x.push(xs[i]);
+}
+
+std::vector<std::vector<Section> > monoss;
+std::vector<std::vector<Section> > chopss;
+std::vector<std::vector<Section> > contexts;
+
+std::vector<Section> sweep_window(std::vector<Path> const &ps) {
+    //TODO: also store a priority queue of sectioned off bits, and do mergepass
+    //the monotonic sections to process
+    std::vector<Section> monos = mono_sections(ps);
+    std::sort(monos.begin(), monos.end(), SweepSorter(X));
+    
+    //priority queue of chopped off sections
+    std::priority_queue<Section, std::vector<Section>, SwapParams<SweepSorter> >
+        chops((SwapParams<SweepSorter>(SweepSorter(X))));
+    
+    //the current operating context
     std::vector<Section> context;
     
-    int vert = 0;
-    //TODO: also store a priority queue of sectioned off bits, and do mergepass
-    std::deque<Section> monos;
+    //the returned, output sections
+    std::vector<Section> ret;
     
-    for(unsigned i = 0; i < ps.size(); i++) {
-        //TODO: necessary? can we have empty paths?
-        if(ps[i].size()) {
-            unsigned first = vert;
-            for(unsigned j = 0; j < ps[i].size(); j++) {
-                std::vector<double> splits = mono_splits(ps[i][j]);
-                for(unsigned k = 1; k < splits.size(); k++) {
-                   monos.push_back(Section(ps[i][j], X, CurveIx(i,j), splits[k-1], splits[k], vert, vert+1));
-                   vert++;
+    unsigned mi = 0;
+    while(mi < monos.size() || !chops.empty()) {
+        //grab the next section, be it from chops or monos
+        //if its from monos, mi, the index, is incremented
+        Section s = (mi < monos.size() && (chops.empty() || lexo_point(monos[mi].fp, chops.top().fp, X))) ?
+                      monos[mi++] : pop_it(chops);
+        
+        //iterate the contexts in reverse, looking for sections which are finished
+        for(int i = context.size() - 1; i >= 0; i--) {
+            if(context[i].tp[X] <= s.fp[X] || are_near(context[i].tp[X], s.fp[X])) {
+                //figure out this section's winding
+                int wind = 0;
+                for(int j = 0; j < i; j++) {
+                    if(context[j].f < context[j].t) wind++;
+                    if(context[j].f > context[j].t) wind--;
                 }
-            }
-            if(monos.back().fv == vert) monos.back().fv = first; else monos.back().tv = first;
-        }
-    }
-    std::sort(monos.begin(), monos.end(), SweepSorter(X));
-
-    int negvert = -1;
-    while(!monos.empty()) {
-        Section s = monos.front();
-        monos.pop_front();
-
-        for(unsigned i = 0; i < context.size(); i++) {
-            if(context[i].tp[X] < s.fp[X] || are_near(context[i].tp[X], s.fp[X])) {
-                context.erase(context.begin() + i); // remove irrelevant sections
-                i--; //Must decrement, due to the removal
-                //TODO: add to output
+                //add it to the output
+                Section r = context[i];
+                r.winding = wind;
+                ret.push_back(r);
+                //remove it from the context
+                context.erase(context.begin() + i);
+                i--; //Must decrement our index, due to the removal
             }
         }
           
         //insert section into context, in the proper location
-        unsigned seg_ix = std::lower_bound(context.begin(), context.end(), s, SectionSorter(ps, Y)) - context.begin();
-        context.insert(context.begin() + seg_ix, s);
+        unsigned context_ix = std::lower_bound(context.begin(), context.end(), s, SectionSorter(ps, Y)) - context.begin();
+        context.insert(context.begin() + context_ix, s);
         
         // Now we intersect with neighbors - do a sweep!
-        // we'll have to make the same decision as with construction - derivative checking
-        // for each intersection point, create a fresh vertex, and assign the ends of sections to it
         std::vector<Rect> sing;
         sing.push_back(s.bbox());
         std::vector<unsigned> others = sweep_bounds(sing, section_rects(context), Y)[0];
         for(unsigned i = 0; i < others.size(); i++) {
-            if(others[i] == seg_ix) continue;
+            if(others[i] == context_ix) continue;
             
             Section other = context[others[i]];
-            //TODO: what we really need is a function that gets the first intersection
-            //if not that, we need to chunk curves into multiple pieces properly
+            
             Crossings xs = mono_intersect(s.curve.get(ps),     Interval(s.f, s.t),
                                           other.curve.get(ps), Interval(other.f, other.t));
             if(xs.empty()) continue;
-            Crossing x = *std::min_element(xs.begin(), xs.end(), CrossingOrder(0, s.f > s.t));
             
-            //draw_cross(cr, s.curve.get(ps)(x.ta));
-            //draw_cross(cr, other.curve.get(ps)(x.tb));
-            draw_line_seg(cr, s.curve.get(ps)(x.ta), other.curve.get(ps)(x.tb));
-            cairo_stroke(cr);
-            
-//            assert(Interval(s.f, s.t).contains(x.ta));
-//            assert(Interval(other.f, other.t).contains(x.tb));
-            
-            //TODO: replace these are_nears by spatial distance tols?
-            
-            //split sections when necessary
-            if(!(are_near(x.ta, s.f) || are_near(x.ta, s.t))) {
-                Section sect = Section(s.curve.get(ps),    X, s.curve,     x.ta, s.t, negvert, s.tv);
-                monos.insert(std::lower_bound(monos.begin(), monos.end(), sect, SweepSorter(X)), sect);
-                context[seg_ix].set_to(s.curve.get(ps), X, x.ta, negvert);
-                negvert--;
+            std::vector<double> tas, tbs;
+            for(unsigned j = 0; j < xs.size(); j++) {
+                tas.push_back(xs[j].ta);
+                tbs.push_back(xs[j].tb);
             }
-            if(!(are_near(x.tb, other.f) || are_near(x.tb, other.t))) {
-                Section oth = Section(other.curve.get(ps), X, other.curve, x.tb, other.t, negvert, other.tv);
-                monos.insert(std::lower_bound(monos.begin(), monos.end(), oth, SweepSorter(X)), oth);
-                context[others[i]].set_to(other.curve.get(ps), X, x.tb, negvert);
-                negvert--;
-            }
+            
+            push_them(chops, split_section(context[context_ix], ps, tas, X));
+            push_them(chops, split_section(context[others[i]], ps, tbs, X));
         }
-        monoss.push_back(std::vector<Section>(monos.begin(), monos.end()));
+        std::vector<Section> rem;
+        for(unsigned i = mi; i < monos.size(); i++) {
+            rem.push_back(monos[i]);
+        }
+        monoss.push_back(rem);
         contexts.push_back(context);
     }
     
-    return contexts;
+    return ret;
 }
 
 class SweepWindow: public Toy {
@@ -296,10 +350,11 @@ class SweepWindow: public Toy {
         cairo_set_line_width(cr, 2);
         
         monoss.clear();
-        std::vector<std::vector<Section> > contexts = sweep_window(cr, path);
-        
+        contexts.clear();
+        chopss.clear();
+        std::vector<Section> output = sweep_window(path);
         int cix = (int) p.pos[X] / 10;
-        if(cix >= 0 && cix < contexts.size()) {
+        if(cix >= 0 && cix < (int)contexts.size()) {
             while(colours.size() < contexts[cix].size()) {
                 double c = colours.size();
                 colours.push_back(colour::from_hsl(c*0.5, 1, 0.5, 0.75));
