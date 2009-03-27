@@ -20,7 +20,7 @@ class Evolution: public Toy {
 virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
     cairo_set_line_width (cr, 0.5);
     cairo_set_source_rgba (cr, 0., 0., 0, 1);
-    
+
     D2<SBasis> A(psh.asBezier());
 
     D2<SBasis> dA = derivative(A);
@@ -49,17 +49,17 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
     cairo_d2_pw_sb(cr, ev4);
     cairo_stroke(cr);
     if(1) {
-        cout << "bnd" << bounds_exact(dot(ev4, ev4)) << endl;
+        std::cout << "bnd" << bounds_exact(dot(ev4, ev4)) << std::endl;
         cairo_d2_pw_sb(cr, D2<Piecewise<SBasis> >(Piecewise<SBasis>(SBasis(Linear(0,1000))), dot(ev4, ev4)*1000));
         cairo_stroke(cr);
         vector<double> rts = roots(dot(ev4, ev4)-1);
         for(int i = 0; i < rts.size(); i++) {
-            cout << rts[i] << endl;
+            std::cout << rts[i] << std::endl;
             draw_handle(cr, ev4(rts[i]));
         }
     }
     cairo_set_source_rgba (cr, 1., 0., 1, 1);
-    
+
     Toy::draw(cr, notify, width, height, save,timer_stream);
 }
 public:
@@ -70,7 +70,7 @@ Evolution (unsigned bez_ord) {
 }
 };
 
-int main(int argc, char **argv) {   
+int main(int argc, char **argv) {
     unsigned bez_ord=5;
     if(argc > 1)
         sscanf(argv[1], "%d", &bez_ord);

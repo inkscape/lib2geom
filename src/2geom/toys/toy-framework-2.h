@@ -52,7 +52,7 @@ public:
     Handle() {rgb[0] = rgb[1] = rgb[2] = 0;}
     virtual ~Handle() {}
     virtual void draw(cairo_t *cr, bool annotes=false) = 0;
-  
+
     virtual void* hit(Geom::Point pos) = 0;
     virtual void move_to(void* hit, Geom::Point om, Geom::Point m) = 0;
     virtual void load(FILE* f)=0;
@@ -87,7 +87,7 @@ public:
     PointHandle() {}
     Geom::Point pos;
     virtual void draw(cairo_t *cr, bool annotes = false);
-  
+
     virtual void* hit(Geom::Point mouse);
     virtual void move_to(void* hit, Geom::Point om, Geom::Point m);
     virtual void load(FILE* f);
@@ -99,7 +99,7 @@ public:
     PointSetHandle() {}
     std::vector<Geom::Point> pts;
     virtual void draw(cairo_t *cr, bool annotes = false);
-  
+
     virtual void* hit(Geom::Point mouse);
     virtual void move_to(void* hit, Geom::Point om, Geom::Point m);
     void push_back(double x, double y) {pts.push_back(Geom::Point(x,y));}
@@ -111,7 +111,7 @@ public:
 };
 
 
-// used by Slider 
+// used by Slider
 inline std::string default_formatter(double x)
 {
     std::ostringstream os;
@@ -122,48 +122,48 @@ inline std::string default_formatter(double x)
 class Slider : public Handle
 {
   public:
-      
+
     typedef std::string (*formatter_t) (double );
     typedef double value_type;
-    
+
     // pass step = 0 for having a continuos value variation
-    Slider( value_type _min, value_type _max, value_type _step, 
+    Slider( value_type _min, value_type _max, value_type _step,
             value_type _value, const char * _label = "" )
-        : m_handle(),m_pos(Geom::Point(0,0)), m_length(1), 
-          m_min(_min), m_max(_max), m_step(_step), m_dir(Geom::X), 
+        : m_handle(),m_pos(Geom::Point(0,0)), m_length(1),
+          m_min(_min), m_max(_max), m_step(_step), m_dir(Geom::X),
           m_label(_label), m_formatter(&default_formatter)
     {
         value(_value);
     }
-    
+
     value_type value() const;
-    
+
     void value(value_type _value);
-    
+
     // dir = X horizontal slider dir = Y vertical slider
     void geometry(Geom::Point _pos, value_type _length, Geom::Dim2 _dir = Geom::X);
-    
+
     void draw(cairo_t* cr, bool annotate = false);
-    
+
     void formatter( formatter_t _formatter )
     {
         m_formatter = _formatter;
     }
-    
+
     void* hit(Geom::Point pos)
     {
         return m_handle.hit(pos);
     }
-    
+
     void move_to(void* hit, Geom::Point om, Geom::Point m);
-    
-    void load(FILE* f) 
+
+    void load(FILE* f)
     {
         m_handle.load(f);
     }
-    
-    void save(FILE* f) 
-    { 
+
+    void save(FILE* f)
+    {
         m_handle.save(f);
     }
 
@@ -209,9 +209,9 @@ public:
     //Cheapo way of informing the framework what the toy would like drawn for it.
     virtual bool should_draw_numbers() { return true; }
     virtual int should_draw_bounds() { return 0; }
-    
+
     virtual void first_time(int /*argc*/, char** /*argv*/) {}
-    
+
     virtual void resize_canvas(Geom::Rect const & /*s*/) {}
     virtual void load(FILE* f);
     virtual void save(FILE* f);
@@ -231,14 +231,14 @@ Geom::Point read_point(FILE* f);
 const long long NS_PER_SECOND = 1000000L;
 const long long NS_PER_NS = 1;
 
-using namespace std;
+
 
 class Timer{
 public:
   Timer() {}
   // note that CPU time is tracked per-thread, so the timer is only useful
   // in the thread it was start()ed from.
-  
+
   class Time{
   public:
     double value;
@@ -248,7 +248,7 @@ public:
       return Time(value / iters);
     }
   };
-  
+
   void start() {
     nsec(start_time);
   }
@@ -291,7 +291,7 @@ private:
 #endif
 };
 
-inline ostream& operator<<(ostream& o, Timer::Time const &t) {
+inline std::ostream& operator<<(std::ostream& o, Timer::Time const &t) {
   o << t.value << "ns";
   return o;
 }
