@@ -78,8 +78,9 @@ void draw_section(cairo_t *cr, Section const &s, std::vector<Path> const &ps) {
     delete curv;
 }
 
+template<typename T>
 struct NearPredicate {
-    bool operator()(double x, double y) { return are_near(x, y); }
+    bool operator()(T x, T y) { return are_near(x, y); }
 };
 
 // ensures that f and t are elements of a vector, sorts and uniqueifies
@@ -89,16 +90,18 @@ void process_splits(std::vector<double> &splits, double f, double t) {
     splits.push_back(f);
     splits.push_back(t);
     std::sort(splits.begin(), splits.end());
-    std::vector<double>::iterator end = std::unique(splits.begin(), splits.end(), NearPredicate());
+    std::vector<double>::iterator end = std::unique(splits.begin(), splits.end(), NearPredicate<double>());
     splits.resize(end - splits.begin());
     if(f > t) std::reverse(splits.begin(), splits.end());
-    for(unsigned i = 0; i < splits.size(); i++) std::cout << splits[i] << " ";
-    std::cout << std::endl;
-    //TODO: reenable these asserts
-   // while(splits.front() != f) splits.erase(splits.begin());
-    //while(splits.back() != t) splits.erase(splits.end() - 1);
+
+    //for(unsigned i = 0; i < splits.size(); i++) cout << splits[i] << " ";
+    //cout << endl;
+
     //assert(splits.front() == f);
     //assert(splits.back() == t);
+    //remove any splits which fall outside t / f
+    while(!splits.empty() && splits.front() != f) splits.erase(splits.begin());
+    while(!splits.empty() && splits.back() != t) splits.erase(splits.end() - 1);
 }
 
 // A little sugar for appending a list to another
@@ -134,6 +137,7 @@ std::vector<Section> mono_sections(std::vector<Path> const &ps) {
 }
 
 //splits a section into bits, mutating it to represent the first bit, and returning the rest
+//TODO: output iterator?
 std::vector<Section> split_section(Section &s, std::vector<Path> const &ps, std::vector<double> &cuts, Dim2 d) {
     std::vector<Section> ret;
     process_splits(cuts, s.f, s.t);
@@ -223,16 +227,6 @@ class SectionSorter {
     }
 };
 
-void merge_monos(std::vector<Section> &monos, std::vector<Section> const &mergers, Dim2 d) {
-  //TODO: there may be more efficient, more STLish ways of doing this
-    //reserve to prevent iterator invalidation
-    monos.reserve(monos.size() + mergers.size());
-    std::vector<Section>::iterator it = monos.begin();
-    for(unsigned i = 0; i < mergers.size(); i++) {
-        it = std::lower_bound(it, monos.end(), mergers[i], SweepSorter(d));
-        monos.insert(it, mergers[i]);
-    }
-}
 
 template<typename T>
 class SwapParams {
@@ -257,13 +251,33 @@ void push_them(T &x, std::vector<typename T::value_type> const &xs) {
     for(unsigned i = 0; i < xs.size(); i++) x.push(xs[i]);
 }
 
+//moves all the sections we're done with from the context to the output
+void move_to_output(std::vector<Section> &context, std::vector<Section> &output, double v) {
+    //iterate the contexts in reverse, looking for sections which are finished
+    for(int i = context.size() - 1; i >= 0; i--) {
+        if(context[i].tp[X] < v || are_near(context[i].tp[X], v)) {
+            //figure out this section's winding
+            int wind = 0;
+            for(int j = 0; j < i; j++) {
+                if(context[j].f < context[j].t) wind++;
+                if(context[j].f > context[j].t) wind--;
+            }
+            //add it to the output
+            Section r = context[i];
+            r.winding = wind;
+            output.push_back(r);
+            //remove it from the context
+            context.erase(context.begin() + i);
+        }
+    }
+}
+
 std::vector<std::vector<Section> > monoss;
 std::vector<std::vector<Section> > chopss;
 std::vector<std::vector<Section> > contexts;
 
+//TODO: dimension to sweep across as parameter
 std::vector<Section> sweep_window(std::vector<Path> const &ps) {
-    //TODO: also store a priority queue of sectioned off bits, and do mergepass
-    //the monotonic sections to process
     std::vector<Section> monos = mono_sections(ps);
     std::sort(monos.begin(), monos.end(), SweepSorter(X));
     
@@ -275,7 +289,7 @@ std::vector<Section> sweep_window(std::vector<Path> const &ps) {
     std::vector<Section> context;
     
     //the returned, output sections
-    std::vector<Section> ret;
+    std::vector<Section> output;
     
     unsigned mi = 0;
     while(mi < monos.size() || !chops.empty()) {
@@ -284,24 +298,8 @@ std::vector<Section> sweep_window(std::vector<Path> const &ps) {
         Section s = (mi < monos.size() && (chops.empty() || lexo_point(monos[mi].fp, chops.top().fp, X))) ?
                       monos[mi++] : pop_it(chops);
         
-        //iterate the contexts in reverse, looking for sections which are finished
-        for(int i = context.size() - 1; i >= 0; i--) {
-            if(context[i].tp[X] < s.fp[X] || are_near(context[i].tp, s.fp)) {
-                //figure out this section's winding
-                int wind = 0;
-                for(int j = 0; j < i; j++) {
-                    if(context[j].f < context[j].t) wind++;
-                    if(context[j].f > context[j].t) wind--;
-                }
-                //add it to the output
-                Section r = context[i];
-                r.winding = wind;
-                ret.push_back(r);
-                //remove it from the context
-                context.erase(context.begin() + i);
-            }
-        }
-          
+        move_to_output(context, output, s.fp[X]);
+        
         //insert section into context, in the proper location
         unsigned context_ix = std::lower_bound(context.begin(), context.end(), s, SectionSorter(ps, Y)) - context.begin();
         context.insert(context.begin() + context_ix, s);
@@ -335,9 +333,80 @@ std::vector<Section> sweep_window(std::vector<Path> const &ps) {
         monoss.push_back(rem);
         contexts.push_back(context);
     }
+
+    //move the rest to output.
+    move_to_output(context, output, 1.0 / 0.0);
     
-    return ret;
+    return output;
 }
+
+/*
+struct Edge {
+    unsigned section;
+    int other;
+    bool rev;
+    Point pnt;
+    Edge(unsigned s, bool r, Point p) : section(s), other(-1), rev(r), pnt(p) {}
+}
+
+struct EdgeSort {
+    Dim2 dim;
+    EdgeSort(Dim2 d) : dim(d) {}
+    bool operator()(Edge const &x, Edge const &y) { return lexo_point(x, y, dim); }
+}
+
+struct Vertex {
+    std::vector<Edge> es;
+    Point avg;
+    Vertex(std::vector<Edge> e) : es(e) {
+        
+    }
+}
+
+struct Graph {
+    std::vector<Vertex> verts;
+    std::vector<Section> edges;
+    Graph(std::vector<Vertex> vs, std::vector<Section> es) : verts(vs), edges(es) {}
+}
+
+Graph section_graph(std::vector<Section> const &s, double tol=EPSILON) {
+    std::vector<Vertex> verts;
+    std::vector<Section> sects;
+    
+    std::vector<bool> remove;
+    
+    std::vector<Edge> edges;
+    for(unsigned i = 0; i < s.size(); i++) {
+        edges.push_back(Edge(i, false, s[i].f));
+        edges.push_back(Edge(i, true, s[i].t));
+    }
+    
+    std::sort(edges.begin(), edges.end(), EdgeSort());
+    
+    std::vector<Edge>::const_iterator gb = edges.begin();
+    for(std::vector<Edge>::const_iterator it = edges.begin() + 1; it != edges.end(); ++it) {
+        if(!are_near(gb->pnt, it->pnt)) {
+            verts.push_back(Vertex(std::vector<Edge>(gb, it)));
+            gb = it;
+        }
+    }
+    
+    std::vector<unsigned> sub;
+    unsigned val = 0;
+    for(unsigned i = 0; i < remove.size(); i++) {
+        if(remove[i]) val++;
+        sub.push_back(val);
+    }
+    
+    return Graph(verts, sects);
+}
+
+std::vector<Path> uncross(std::vector<Path> const &ps) {
+    std::vector<Section> sections = sweep_window(ps);
+    
+    std::vector<Vertex> vertices = section_graph(sections);
+    
+} */
 
 class SweepWindow: public Toy {
     vector<Path> path;
@@ -376,7 +445,15 @@ class SweepWindow: public Toy {
                 cairo_stroke(cr);
             }
         }
-
+            char* buf = (char*)malloc(10);
+            for(unsigned i = 0; i < output.size(); i++) {
+//                cairo_set_source_rgba(cr, colours[i]);
+                sprintf(buf, "%i", output[i].winding);
+                draw_text(cr, output[i].curve.get(path)
+                              ((output[i].t + output[i].f) / 2), buf);
+                cairo_stroke(cr);
+            }
+            free(buf);
         //some marks to indicate section breaks
         for(unsigned i = 0; i < path.size(); i++) {
             for(unsigned j = 0; j < path[i].size(); j++) {
