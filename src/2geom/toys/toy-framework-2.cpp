@@ -122,28 +122,28 @@ void draw_text(cairo_t *cr, Geom::Point loc, const char* txt, bool bottom, const
     pango_cairo_show_layout(cr, layout);
 }
 
-void draw_number(cairo_t *cr, Geom::Point pos, int num, std::string name) {
+void draw_number(cairo_t *cr, Geom::Point pos, int num, std::string name, bool bottom) {
     std::ostringstream number;
     if (name.size())
 	number << name;
     number << num;
-    draw_text(cr, pos, number.str().c_str(), true);
+    draw_text(cr, pos, number.str().c_str(), bottom);
 }
 
-void draw_number(cairo_t *cr, Geom::Point pos, unsigned num, std::string name) {
+void draw_number(cairo_t *cr, Geom::Point pos, unsigned num, std::string name, bool bottom) {
     std::ostringstream number;
     if (name.size())
 	number << name;
     number << num;
-    draw_text(cr, pos, number.str().c_str(), true);
+    draw_text(cr, pos, number.str().c_str(), bottom);
 }
 
-void draw_number(cairo_t *cr, Geom::Point pos, double num, std::string name) {
+void draw_number(cairo_t *cr, Geom::Point pos, double num, std::string name, bool bottom) {
     std::ostringstream number;
     if (name.size())
 	number << name;
     number << num;
-    draw_text(cr, pos, number.str().c_str(), true);
+    draw_text(cr, pos, number.str().c_str(), bottom);
 }
 
 //Framework Accessors

@@ -340,73 +340,101 @@ std::vector<Section> sweep_window(std::vector<Path> const &ps) {
     return output;
 }
 
-/*
 struct Edge {
     unsigned section;
     int other;
     bool rev;
     Point pnt;
     Edge(unsigned s, bool r, Point p) : section(s), other(-1), rev(r), pnt(p) {}
-}
+};
 
 struct EdgeSort {
     Dim2 dim;
     EdgeSort(Dim2 d) : dim(d) {}
-    bool operator()(Edge const &x, Edge const &y) { return lexo_point(x, y, dim); }
-}
+    bool operator()(Edge const &x, Edge const &y) { return lexo_point(x.pnt, y.pnt, dim); }
+};
 
 struct Vertex {
-    std::vector<Edge> es;
+    std::vector<Edge> edges;
     Point avg;
-    Vertex(std::vector<Edge> e) : es(e) {
-        
+    Vertex(std::vector<Edge> es) : edges(es) {
+        avg = Point(0, 0);
+        for(unsigned i = 0; i < es.size(); i++) avg += es[i].pnt;
+        avg /= es.size();
     }
-}
+};
 
 struct Graph {
     std::vector<Vertex> verts;
     std::vector<Section> edges;
-    Graph(std::vector<Vertex> vs, std::vector<Section> es) : verts(vs), edges(es) {}
-}
+    Graph(std::vector<Vertex> const &vs, std::vector<Section> const &es) : verts(vs), edges(es) {}
+};
 
 Graph section_graph(std::vector<Section> const &s, double tol=EPSILON) {
-    std::vector<Vertex> verts;
-    std::vector<Section> sects;
-    
-    std::vector<bool> remove;
-    
+    //list edges
     std::vector<Edge> edges;
     for(unsigned i = 0; i < s.size(); i++) {
-        edges.push_back(Edge(i, false, s[i].f));
-        edges.push_back(Edge(i, true, s[i].t));
+        edges.push_back(Edge(i, false, s[i].fp));
+        edges.push_back(Edge(i, true, s[i].tp));
+    }
+    std::sort(edges.begin(), edges.end(), EdgeSort(X));
+    
+    //small rects around endpoints
+    std::vector<Rect> rects;
+    Point tolp = Point(tol, tol);
+    for(unsigned i = 0; i < edges.size(); i++) rects.push_back(Rect(edges[i].pnt - tolp, edges[i].pnt + tolp));
+    
+    //collect overlapping rects into vertices
+    std::vector<std::vector<unsigned> > assoc = sweep_bounds(rects);
+    std::vector<bool> used(assoc.size(), false), remove(s.size(), false);
+    std::vector<Vertex> vertices;
+    std::vector<unsigned> merge_with(s.size(), s.size());
+    for(unsigned i = 0; i < assoc.size(); i++) {
+        if(used[i]) continue;
+        std::vector<Edge> es;
+        for(unsigned j = 0; j < assoc[i].size(); j++) {
+            if(used[assoc[i][j]]) continue;
+            used[assoc[i][j]] = true;
+            es.push_back(edges[assoc[i][j]]);
+        }
+        /* TODO: re-enable once we have section merging
+        if(es.size() == 2) {
+            merge_with[es[0].section] = es[1].section;
+            remove(es[1].section) = true;
+        } else */
+        if(es.size() >= 2) {
+            vertices.push_back(Vertex(es));
+        } //falling through this allows for hanging sections - deal with them appropriately later
     }
     
-    std::sort(edges.begin(), edges.end(), EdgeSort());
-    
-    std::vector<Edge>::const_iterator gb = edges.begin();
-    for(std::vector<Edge>::const_iterator it = edges.begin() + 1; it != edges.end(); ++it) {
-        if(!are_near(gb->pnt, it->pnt)) {
-            verts.push_back(Vertex(std::vector<Edge>(gb, it)));
-            gb = it;
+    //fill in edge.other
+    for(unsigned i = 0; i < vertices.size(); i++) {
+        for(unsigned j = 0; j < vertices[i].edges.size(); j++) {
+            unsigned k = 0;
+            for(; k < vertices.size(); k++)
+                for(unsigned l = 0; l < vertices[k].edges.size(); l++)
+                    if(vertices[i].edges[j].section == vertices[l].edges[k].section) break;
+            vertices[i].edges[j].other = k;
         }
     }
     
+    /* TODO:merge sections
     std::vector<unsigned> sub;
     unsigned val = 0;
     for(unsigned i = 0; i < remove.size(); i++) {
         if(remove[i]) val++;
         sub.push_back(val);
-    }
+    } */
     
-    return Graph(verts, sects);
+    return Graph(vertices, s);
 }
 
 std::vector<Path> uncross(std::vector<Path> const &ps) {
     std::vector<Section> sections = sweep_window(ps);
     
-    std::vector<Vertex> vertices = section_graph(sections);
+    Graph graph = section_graph(sections);
     
-} */
+}
 
 class SweepWindow: public Toy {
     vector<Path> path;
@@ -427,17 +455,13 @@ class SweepWindow: public Toy {
                 double c = colours.size();
                 colours.push_back(colour::from_hsl(c*0.5, 1, 0.5, 0.75));
             }
-            char* buf = (char*)malloc(10);
             for(unsigned i = 0; i < contexts[cix].size(); i++) {
                 cairo_set_source_rgba(cr, colours[i]);
-                //cairo_set_line_width(cr, (i%2+1)*2);
                 draw_section(cr, contexts[cix][i], path);
-                sprintf(buf, "%i", i);
-                draw_text(cr, contexts[cix][i].curve.get(path)
-                              ((contexts[cix][i].t + contexts[cix][i].f) / 2), buf);
+                draw_number(cr, contexts[cix][i].curve.get(path)
+                                ((contexts[cix][i].t + contexts[cix][i].f) / 2), i);
                 cairo_stroke(cr);
             }
-            free(buf);
             cairo_set_source_rgba(cr, 0,0,0,1);
             cairo_set_line_width(cr, 1);
             for(unsigned i = 0; i < monoss[cix].size(); i++) {
@@ -445,15 +469,13 @@ class SweepWindow: public Toy {
                 cairo_stroke(cr);
             }
         }
-            char* buf = (char*)malloc(10);
-            for(unsigned i = 0; i < output.size(); i++) {
-//                cairo_set_source_rgba(cr, colours[i]);
-                sprintf(buf, "%i", output[i].winding);
-                draw_text(cr, output[i].curve.get(path)
-                              ((output[i].t + output[i].f) / 2), buf);
-                cairo_stroke(cr);
-            }
-            free(buf);
+        
+        for(unsigned i = 0; i < output.size(); i++) {
+            draw_number(cr, output[i].curve.get(path)
+                            ((output[i].t + output[i].f) / 2), output[i].winding, "", false);
+            cairo_stroke(cr);
+        }
+
         //some marks to indicate section breaks
         for(unsigned i = 0; i < path.size(); i++) {
             for(unsigned j = 0; j < path[i].size(); j++) {
