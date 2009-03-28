@@ -286,7 +286,7 @@ std::vector<Section> sweep_window(std::vector<Path> const &ps) {
         
         //iterate the contexts in reverse, looking for sections which are finished
         for(int i = context.size() - 1; i >= 0; i--) {
-            if(context[i].tp[X] <= s.fp[X] || are_near(context[i].tp[X], s.fp[X])) {
+            if(context[i].tp[X] < s.fp[X] || are_near(context[i].tp, s.fp)) {
                 //figure out this section's winding
                 int wind = 0;
                 for(int j = 0; j < i; j++) {
@@ -299,7 +299,6 @@ std::vector<Section> sweep_window(std::vector<Path> const &ps) {
                 ret.push_back(r);
                 //remove it from the context
                 context.erase(context.begin() + i);
-                i--; //Must decrement our index, due to the removal
             }
         }
           
