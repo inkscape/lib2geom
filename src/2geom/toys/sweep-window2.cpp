@@ -92,8 +92,8 @@ void process_splits(std::vector<double> &splits, double f, double t) {
     std::vector<double>::iterator end = std::unique(splits.begin(), splits.end(), NearPredicate());
     splits.resize(end - splits.begin());
     if(f > t) std::reverse(splits.begin(), splits.end());
-    for(unsigned i = 0; i < splits.size(); i++) cout << splits[i] << " ";
-    cout << endl;
+    for(unsigned i = 0; i < splits.size(); i++) std::cout << splits[i] << " ";
+    std::cout << std::endl;
     //TODO: reenable these asserts
    // while(splits.front() != f) splits.erase(splits.begin());
     //while(splits.back() != t) splits.erase(splits.end() - 1);
