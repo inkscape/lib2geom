@@ -78,6 +78,9 @@ poly.h
 quadtree.cpp
 quadtree.h
 
+redblacktree.cpp
+redblacktree.h
+
 matrix.cpp
 matrix.h
 transforms.cpp
