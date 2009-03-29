@@ -419,16 +419,12 @@ std::vector<Vertex> section_graph(std::vector<Section> const &s, double tol=EPSI
     return vertices;
 }
 
-void uncross(cairo_t *cr, std::vector<Path> const &ps, bool evenodd = true) {
-    std::vector<Section> sections = sweep_window(ps);
-    
-    std::vector<Vertex> vertices = section_graph(sections, 1);
-    
+void draw_graph(cairo_t *cr, std::vector<Vertex> vertices) {
     for(unsigned i = 0; i < vertices.size(); i++) {
         std::cout << i << " " << vertices[i].avg << " [";
         cairo_set_source_rgba(cr, colour::from_hsl(i*0.5, 1, 0.5, 0.75));
         for(unsigned j = 0; j < vertices[i].edges.size(); j++) {
-            draw_line_seg(cr, vertices[i].avg, 20*unit_vector(vertices[vertices[i].edges[j].other].avg - vertices[i].avg) + vertices[i].avg);
+            draw_ray(cr, vertices[i].avg, 10*unit_vector(vertices[vertices[i].edges[j].other].avg - vertices[i].avg));
             cairo_stroke(cr);
             std::cout << vertices[i].edges[j].other << ", ";
         }
@@ -438,6 +434,10 @@ void uncross(cairo_t *cr, std::vector<Path> const &ps, bool evenodd = true) {
     std::cout << "=======\n";
 }
 
+void uncross(std::vector<Section> const &sections, std::vector<Vertex> const &vertices, bool evenodd = true) {
+    
+}
+
 class SweepWindow: public Toy {
     vector<Path> path;
     std::vector<Toggle> toggles;
@@ -445,16 +445,15 @@ class SweepWindow: public Toy {
     std::vector<colour> colours;
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
         cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
-        cairo_set_line_width(cr, 2);
-        
-        uncross(cr, path);
-        cairo_stroke(cr);
+        cairo_set_line_width(cr, 1);
+
         cairo_set_source_rgb(cr, 0, 0, 0);
+        cairo_set_line_width(cr, 2);
         monoss.clear();
         contexts.clear();
         chopss.clear();
         std::vector<Section> output = sweep_window(path);
-        int cix = (int) p.pos[X] / 10;
+        /* int cix = (int) p.pos[X] / 10;
         if(cix >= 0 && cix < (int)contexts.size()) {
             while(colours.size() < contexts[cix].size()) {
                 double c = colours.size();
@@ -474,22 +473,23 @@ class SweepWindow: public Toy {
                 cairo_stroke(cr);
             }
         }
+        *notify << cix << " "; //<< ixes[cix] << endl;
+         */
         
         for(unsigned i = 0; i < output.size(); i++) {
             draw_number(cr, output[i].curve.get(path)
                             ((output[i].t + output[i].f) / 2), output[i].winding, "", false);
             cairo_stroke(cr);
-        }
-
-        //some marks to indicate section breaks
-        for(unsigned i = 0; i < path.size(); i++) {
-            for(unsigned j = 0; j < path[i].size(); j++) {
-                //draw_cross(cr, path[i][j].initialPoint());
-            }
+            if(abs((output[i].winding + (output[i].f > output[i].t ? 1 : 0)) % 2) == (toggles[0].on ? 0 : 1)) draw_section(cr, output[i], path);
+            cairo_stroke(cr);
         }
         
-        *notify << cix << " "; //<< ixes[cix] << endl;
+        std::vector<Vertex> vertices = section_graph(output, 1);
+        draw_graph(cr, vertices);
         
+        uncross(output, vertices);
+        
+        draw_toggles(cr, toggles);
         Toy::draw(cr, notify, width, height, save,timer_stream);
     }
 

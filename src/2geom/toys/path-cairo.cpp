@@ -201,6 +201,10 @@ void draw_circ(cairo_t *cr, Geom::Point h) {
 
 void draw_ray(cairo_t *cr, Geom::Point h, Geom::Point dir) {
     draw_line_seg(cr, h, h+dir);
+    Point unit = 3*unit_vector(dir),
+          rot = rot90(unit);
+    draw_line_seg(cr, h+dir, h + dir - unit + rot);
+    draw_line_seg(cr, h+dir, h + dir - unit - rot);
 }
 
 
