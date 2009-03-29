@@ -357,10 +357,11 @@ struct EdgeSort {
 struct Vertex {
     std::vector<Edge> edges;
     Point avg;
-    Vertex(std::vector<Edge> es) : edges(es) {
-        avg = Point(0, 0);
-        for(unsigned i = 0; i < es.size(); i++) avg += es[i].pnt;
-        avg /= es.size();
+    Vertex(Edge const &e) : edges(1, e), avg(e.pnt) {}
+    
+    void add_edge(Edge const &e) {
+        edges.push_back(e);
+        avg = (e.pnt + avg) / 2;
     }
 };
 
@@ -370,7 +371,7 @@ struct Graph {
     Graph(std::vector<Vertex> const &vs, std::vector<Section> const &es) : verts(vs), edges(es) {}
 };
 
-Graph section_graph(std::vector<Section> const &s, double tol=EPSILON) {
+std::vector<Vertex> section_graph(std::vector<Section> const &s, double tol=EPSILON) {
     //list edges
     std::vector<Edge> edges;
     for(unsigned i = 0; i < s.size(); i++) {
@@ -379,33 +380,44 @@ Graph section_graph(std::vector<Section> const &s, double tol=EPSILON) {
     }
     std::sort(edges.begin(), edges.end(), EdgeSort(X));
     
-    //small rects around endpoints
-    std::vector<Rect> rects;
-    Point tolp = Point(tol, tol);
-    for(unsigned i = 0; i < edges.size(); i++) rects.push_back(Rect(edges[i].pnt - tolp, edges[i].pnt + tolp));
+    //find vertices
+    std::vector<Vertex> vertices;
+    for(unsigned i = 0; i < edges.size(); i++) {
+        unsigned j = 0;
+        for(; j < vertices.size(); j++) {
+            if(are_near(vertices[j].avg, edges[i].pnt, tol)) {
+                vertices[j].add_edge(edges[i]);
+                break;
+            }
+        }
+        if(j == vertices.size()) vertices.push_back(Vertex(edges[i]));
+    }
     
-    //collect overlapping rects into vertices
+    /* old
     std::vector<std::vector<unsigned> > assoc = sweep_bounds(rects);
     std::vector<bool> used(assoc.size(), false), remove(s.size(), false);
     std::vector<Vertex> vertices;
     std::vector<unsigned> merge_with(s.size(), s.size());
     for(unsigned i = 0; i < assoc.size(); i++) {
-        if(used[i]) continue;
+        if(used[i] || !assoc[i].size()) continue;
+        used[i] = true;
         std::vector<Edge> es;
+        es.push_back(edges[i]);
         for(unsigned j = 0; j < assoc[i].size(); j++) {
             if(used[assoc[i][j]]) continue;
             used[assoc[i][j]] = true;
             es.push_back(edges[assoc[i][j]]);
         }
+        assert(es.size() != 1);
         /* TODO: re-enable once we have section merging
         if(es.size() == 2) {
             merge_with[es[0].section] = es[1].section;
             remove(es[1].section) = true;
-        } else */
-        if(es.size() >= 2) {
+        } else */ /*
+        //if(es.size() > 1) {
             vertices.push_back(Vertex(es));
-        } //falling through this allows for hanging sections - deal with them appropriately later
-    }
+        //} //falling through this allows for hanging sections - deal with them appropriately later
+    } */
     
     //fill in edge.other
     for(unsigned i = 0; i < vertices.size(); i++) {
@@ -413,7 +425,7 @@ Graph section_graph(std::vector<Section> const &s, double tol=EPSILON) {
             unsigned k = 0;
             for(; k < vertices.size(); k++)
                 for(unsigned l = 0; l < vertices[k].edges.size(); l++)
-                    if(vertices[i].edges[j].section == vertices[l].edges[k].section) break;
+                    if(vertices[i].edges[j].section == vertices[k].edges[l].section) break;
             vertices[i].edges[j].other = k;
         }
     }
@@ -426,14 +438,19 @@ Graph section_graph(std::vector<Section> const &s, double tol=EPSILON) {
         sub.push_back(val);
     } */
     
-    return Graph(vertices, s);
+    return vertices;
 }
 
-std::vector<Path> uncross(std::vector<Path> const &ps) {
+void uncross(cairo_t *cr, std::vector<Path> const &ps, bool evenodd = true) {
     std::vector<Section> sections = sweep_window(ps);
     
-    Graph graph = section_graph(sections);
+    std::vector<Vertex> vertices = section_graph(sections, 1);
     
+    for(unsigned i = 0; i < vertices.size(); i++) {
+        draw_number(cr, vertices[i].avg + Point(uniform() * 5, uniform() * 5), (unsigned)vertices[i].edges.size());
+        std::cout << vertices[i].edges.size() << " " << vertices[i].avg << std::endl;
+    }
+    std::cout << "=======\n";
 }
 
 class SweepWindow: public Toy {
@@ -442,9 +459,12 @@ class SweepWindow: public Toy {
     PointHandle p;
     std::vector<colour> colours;
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
-        cairo_set_source_rgb(cr, 0, 0, 0);
+        cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
         cairo_set_line_width(cr, 2);
         
+        uncross(cr, path);
+        cairo_stroke(cr);
+                cairo_set_source_rgb(cr, 0, 0, 0);
         monoss.clear();
         contexts.clear();
         chopss.clear();
