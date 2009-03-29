@@ -393,40 +393,18 @@ std::vector<Vertex> section_graph(std::vector<Section> const &s, double tol=EPSI
         if(j == vertices.size()) vertices.push_back(Vertex(edges[i]));
     }
     
-    /* old
-    std::vector<std::vector<unsigned> > assoc = sweep_bounds(rects);
-    std::vector<bool> used(assoc.size(), false), remove(s.size(), false);
-    std::vector<Vertex> vertices;
-    std::vector<unsigned> merge_with(s.size(), s.size());
-    for(unsigned i = 0; i < assoc.size(); i++) {
-        if(used[i] || !assoc[i].size()) continue;
-        used[i] = true;
-        std::vector<Edge> es;
-        es.push_back(edges[i]);
-        for(unsigned j = 0; j < assoc[i].size(); j++) {
-            if(used[assoc[i][j]]) continue;
-            used[assoc[i][j]] = true;
-            es.push_back(edges[assoc[i][j]]);
-        }
-        assert(es.size() != 1);
-        /* TODO: re-enable once we have section merging
-        if(es.size() == 2) {
-            merge_with[es[0].section] = es[1].section;
-            remove(es[1].section) = true;
-        } else */ /*
-        //if(es.size() > 1) {
-            vertices.push_back(Vertex(es));
-        //} //falling through this allows for hanging sections - deal with them appropriately later
-    } */
-    
     //fill in edge.other
     for(unsigned i = 0; i < vertices.size(); i++) {
         for(unsigned j = 0; j < vertices[i].edges.size(); j++) {
-            unsigned k = 0;
+            unsigned k = i+1, l = 0;
             for(; k < vertices.size(); k++)
-                for(unsigned l = 0; l < vertices[k].edges.size(); l++)
-                    if(vertices[i].edges[j].section == vertices[k].edges[l].section) break;
-            vertices[i].edges[j].other = k;
+                for(l = 0; l < vertices[k].edges.size(); l++)
+                    if(vertices[i].edges[j].section == vertices[k].edges[l].section) goto ex;
+          ex:
+            if(vertices[i].edges[j].other == -1) {
+                vertices[i].edges[j].other = k;
+                if(k != vertices.size()) vertices[k].edges[l].other = i;
+            }
         }
     }
     
@@ -447,8 +425,14 @@ void uncross(cairo_t *cr, std::vector<Path> const &ps, bool evenodd = true) {
     std::vector<Vertex> vertices = section_graph(sections, 1);
     
     for(unsigned i = 0; i < vertices.size(); i++) {
-        draw_number(cr, vertices[i].avg + Point(uniform() * 5, uniform() * 5), (unsigned)vertices[i].edges.size());
-        std::cout << vertices[i].edges.size() << " " << vertices[i].avg << std::endl;
+        std::cout << i << " " << vertices[i].avg << " [";
+        for(unsigned j = 0; j < vertices[i].edges.size(); j++) {
+            draw_line_seg(cr, vertices[i].avg, 20*unit_vector(vertices[vertices[i].edges[j].other].avg - vertices[i].avg) + vertices[i].avg);
+            cairo_stroke(cr);
+            std::cout << vertices[i].edges[j].other << ", ";
+        }
+        //draw_number(cr, vertices[i].avg + Point(uniform() * 5, uniform() * 5), (unsigned)vertices[i].edges.size());
+        std::cout << "]\n";
     }
     std::cout << "=======\n";
 }
