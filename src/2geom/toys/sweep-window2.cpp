@@ -426,6 +426,7 @@ void uncross(cairo_t *cr, std::vector<Path> const &ps, bool evenodd = true) {
     
     for(unsigned i = 0; i < vertices.size(); i++) {
         std::cout << i << " " << vertices[i].avg << " [";
+        cairo_set_source_rgba(cr, colour::from_hsl(i*0.5, 1, 0.5, 0.75));
         for(unsigned j = 0; j < vertices[i].edges.size(); j++) {
             draw_line_seg(cr, vertices[i].avg, 20*unit_vector(vertices[vertices[i].edges[j].other].avg - vertices[i].avg) + vertices[i].avg);
             cairo_stroke(cr);
@@ -448,7 +449,7 @@ class SweepWindow: public Toy {
         
         uncross(cr, path);
         cairo_stroke(cr);
-                cairo_set_source_rgb(cr, 0, 0, 0);
+        cairo_set_source_rgb(cr, 0, 0, 0);
         monoss.clear();
         contexts.clear();
         chopss.clear();
