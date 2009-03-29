@@ -24,6 +24,13 @@ struct CurveIx {
     }
 };
 
+bool lexo_point(Point const &a, Point const &b, Dim2 d) {
+    if(d)
+        return a[Y] < b[Y] || (a[Y] == b[Y] && a[X] < b[X]);
+    else
+        return a[X] < b[X] || (a[X] == b[X] && a[Y] < b[Y]);
+}
+
 struct Section {
     CurveIx curve;
     double f, t;
@@ -31,8 +38,7 @@ struct Section {
     int winding;
     Section(Curve const &c, Dim2 d, CurveIx cix, double fd, double td) : curve(cix), f(fd), t(td) {
         fp = c.pointAt(f), tp = c.pointAt(t);
-        //TODO: decide which direction the second case should work
-        if(fp[d] > tp[d] || (fp[d] == tp[d] && fp[1-d] < tp[1-d])) {
+        if(lexo_point(tp, fp, d)) {
             //swap from and to
             std::swap(f, t);
             std::swap(fp, tp);
@@ -147,13 +153,6 @@ std::vector<Section> split_section(Section &s, std::vector<Path> const &ps, std:
     return ret;
 }
 
-bool lexo_point(Point const &a, Point const &b, Dim2 d) {
-    if(d)
-        return a[Y] < b[Y] || (a[Y] == b[Y] && a[X] < b[X]);
-    else
-        return a[X] < b[X] || (a[X] == b[X] && a[Y] < b[Y]);
-}
-
 class SweepSorter {
     Dim2 dim;
   public:
@@ -182,6 +181,8 @@ class SectionSorter {
         Point ap = a.curve.get(ps).pointAt(at);
         Point bp = b.curve.get(ps).pointAt(bt);
         if(are_near(ap[dim], bp[dim])) {
+            // since the sections are monotonic, if the endpoints are on opposite sides of this
+            // coincidence, the order is determinable
             if(a.tp[dim] < ap[dim] && b.tp[dim] > ap[dim]) return true;
             if(a.tp[dim] > ap[dim] && b.tp[dim] < ap[dim]) return false;
             //TODO: sampling / higher derivatives when unit tangents match
@@ -204,8 +205,8 @@ class SectionSorter {
         //by referencing f / t we are assuming that the section was constructed with 1-dim
         if(ra[1-dim].intersects(rb[1-dim])) {
             if(are_near(a.fp[1-dim], b.fp[1-dim])) {
-                return section_order(a, a.f > a.t ? a.f - 0.1 : a.f + 0.1,
-                                     b, b.f > b.t ? b.f - 0.1 : b.f + 0.1);
+                return section_order(a, a.f > a.t ? a.f - 0.01 : a.f + 0.01,
+                                     b, b.f > b.t ? b.f - 0.01 : b.f + 0.01);
             } else if(a.fp[1-dim] < b.fp[1-dim]) {
                 //b inside a
                 double ta = section_root(a, ps, b.fp[1-dim], Dim2(1-dim));
@@ -221,9 +222,7 @@ class SectionSorter {
             }
         }
         
-        //assert(false);
-        return false;
-        //return a.fp < b.fp;
+        return lexo_point(a.fp, b.fp, dim);
     }
 };
 
@@ -259,6 +258,7 @@ void move_to_output(std::vector<Section> &context, std::vector<Section> &output,
             //figure out this section's winding
             int wind = 0;
             for(int j = 0; j < i; j++) {
+                if(context[j].fp[X] == context[j].tp[X]) continue;
                 if(context[j].f < context[j].t) wind++;
                 if(context[j].f > context[j].t) wind--;
             }
@@ -382,6 +382,8 @@ std::vector<Vertex> section_graph(std::vector<Section> const &s, double tol=EPSI
     
     //find vertices
     std::vector<Vertex> vertices;
+
+    vertices.reserve(edges.size());
     for(unsigned i = 0; i < edges.size(); i++) {
         unsigned j = 0;
         for(; j < vertices.size(); j++) {
@@ -392,18 +394,19 @@ std::vector<Vertex> section_graph(std::vector<Section> const &s, double tol=EPSI
         }
         if(j == vertices.size()) vertices.push_back(Vertex(edges[i]));
     }
-    
+        std::cout << "SIZE " << vertices.size() << std::endl;
     //fill in edge.other
     for(unsigned i = 0; i < vertices.size(); i++) {
         for(unsigned j = 0; j < vertices[i].edges.size(); j++) {
-            unsigned k = i+1, l = 0;
-            for(; k < vertices.size(); k++)
-                for(l = 0; l < vertices[k].edges.size(); l++)
-                    if(vertices[i].edges[j].section == vertices[k].edges[l].section) goto ex;
-          ex:
-            if(vertices[i].edges[j].other == -1) {
-                vertices[i].edges[j].other = k;
-                if(k != vertices.size()) vertices[k].edges[l].other = i;
+            unsigned k = i, l = 0;
+            for(; k < vertices.size(); k++) {
+                for(l = 0; l < vertices[k].edges.size(); l++) {
+                    if(vertices[i].edges[j].section == vertices[k].edges[l].section &&
+                        logical_xor(vertices[i].edges[j].rev, vertices[k].edges[l].rev)) {
+                        vertices[i].edges[j].other = k;
+                        vertices[k].edges[l].other = i;
+                    }
+                }
             }
         }
     }
@@ -424,7 +427,7 @@ void draw_graph(cairo_t *cr, std::vector<Vertex> vertices) {
         std::cout << i << " " << vertices[i].avg << " [";
         cairo_set_source_rgba(cr, colour::from_hsl(i*0.5, 1, 0.5, 0.75));
         for(unsigned j = 0; j < vertices[i].edges.size(); j++) {
-            draw_ray(cr, vertices[i].avg, 10*unit_vector(vertices[vertices[i].edges[j].other].avg - vertices[i].avg));
+            draw_ray(cr, vertices[i].avg, 20*unit_vector(vertices[vertices[i].edges[j].other].avg - vertices[i].avg));
             cairo_stroke(cr);
             std::cout << vertices[i].edges[j].other << ", ";
         }
@@ -445,15 +448,15 @@ class SweepWindow: public Toy {
     std::vector<colour> colours;
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
         cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
-        cairo_set_line_width(cr, 1);
+        cairo_set_line_width(cr, 3);
 
         cairo_set_source_rgb(cr, 0, 0, 0);
-        cairo_set_line_width(cr, 2);
+        cairo_set_line_width(cr, 3);
         monoss.clear();
         contexts.clear();
         chopss.clear();
         std::vector<Section> output = sweep_window(path);
-        /* int cix = (int) p.pos[X] / 10;
+        int cix = (int) p.pos[X] / 10;
         if(cix >= 0 && cix < (int)contexts.size()) {
             while(colours.size() < contexts[cix].size()) {
                 double c = colours.size();
@@ -467,20 +470,20 @@ class SweepWindow: public Toy {
                 cairo_stroke(cr);
             }
             cairo_set_source_rgba(cr, 0,0,0,1);
-            cairo_set_line_width(cr, 1);
+            //cairo_set_line_width(cr, 1);
             for(unsigned i = 0; i < monoss[cix].size(); i++) {
                 draw_section(cr, monoss[cix][i], path);
                 cairo_stroke(cr);
             }
         }
         *notify << cix << " "; //<< ixes[cix] << endl;
-         */
         
+        cairo_set_line_width(cr, 1);
         for(unsigned i = 0; i < output.size(); i++) {
             draw_number(cr, output[i].curve.get(path)
                             ((output[i].t + output[i].f) / 2), output[i].winding, "", false);
             cairo_stroke(cr);
-            if(abs((output[i].winding + (output[i].f > output[i].t ? 1 : 0)) % 2) == (toggles[0].on ? 0 : 1)) draw_section(cr, output[i], path);
+            //if(abs((output[i].winding + (output[i].f > output[i].t ? 1 : 0)) % 2) == (toggles[0].on ? 0 : 1)) draw_section(cr, output[i], path);
             cairo_stroke(cr);
         }
         
@@ -489,7 +492,7 @@ class SweepWindow: public Toy {
         
         uncross(output, vertices);
         
-        draw_toggles(cr, toggles);
+       // draw_toggles(cr, toggles);
         Toy::draw(cr, notify, width, height, save,timer_stream);
     }
 
