@@ -102,8 +102,9 @@ hatches
 rdm-area
 #ray-sorting-test
 sketch-fitter
-sweep-window2
+sweep-window
 redblack-toy
+sweep-graph
 )
 
 
