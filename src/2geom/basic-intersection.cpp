@@ -2,7 +2,7 @@
 #include <2geom/sbasis-to-bezier.h>
 #include <2geom/exception.h>
 
-#ifdef GPL_TAINT
+#ifdef HAVE_GSL
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_multiroots.h>
 #endif
@@ -135,7 +135,7 @@ find_self_intersections(std::vector<std::pair<double, double> > &xs,
     //unique(xs.begin(), xs.end());
 }
 
-#ifdef GPL_TAINT
+#ifdef HAVE_GSL
 #include <gsl/gsl_multiroots.h>
 
 struct rparams
@@ -177,7 +177,7 @@ static double EpsilonBy(double value, int eps)
 
 static void intersect_polish_root (D2<SBasis> const &A, double &s,
                                    D2<SBasis> const &B, double &t) {
-#ifdef GPL_TAINT
+#ifdef HAVE_GSL
     const gsl_multiroot_fsolver_type *T;
     gsl_multiroot_fsolver *sol;
 
@@ -222,7 +222,7 @@ static void intersect_polish_root (D2<SBasis> const &A, double &s,
         t = nt;
     }
     
-#ifdef GPL_TAINT
+#ifdef HAVE_GSL
     const size_t n = 2;
     struct rparams p = {A, B};
     gsl_multiroot_function f = {&intersect_polish_f, n, &p};

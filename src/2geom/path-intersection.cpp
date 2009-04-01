@@ -5,7 +5,7 @@
 //for path_direction:
 #include <2geom/sbasis-geometric.h>
 #include <2geom/line.h>
-#ifdef GPL_TAINT
+#ifdef HAVE_GSL
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_multiroots.h>
 #endif
@@ -202,7 +202,7 @@ static double EpsilonOf(double value)
 }
 #endif
 
-#ifdef GPL_TAINT
+#ifdef HAVE_GSL
 struct rparams {
     Curve const &A;
     Curve const &B;
@@ -272,7 +272,7 @@ intersect_polish_root (Curve const &A, double &s,
         t = nt;
     }
 
-#ifdef GPL_TAINT
+#ifdef HAVE_GSL
     if(0) { // the GSL version is more accurate, but taints this with GPL
         const size_t n = 2;
         struct rparams p = {A, B};
