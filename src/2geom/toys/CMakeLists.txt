@@ -23,6 +23,7 @@ bound-path
 box3d
 center-warp
 circle-fitting
+circle-tangent-fitting
 circle-intersect
 collinear-normal
 conic-3
@@ -42,6 +43,7 @@ elliptiarc-3point-center-fitting
 #elliptiarc-5points-fitting
 elliptiarc-curve-fitting
 evolute
+#filet-minion
 hvlineseg-toy
 implicit-toy
 inner-product-clip
@@ -73,6 +75,7 @@ scribble
 self-intersect
 squiggles
 svg-elliptical-arc-test-toy
+trim-whiskers
 uncross
 worms
 winding-test
