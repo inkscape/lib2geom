@@ -43,7 +43,7 @@ elliptiarc-3point-center-fitting
 #elliptiarc-5points-fitting
 elliptiarc-curve-fitting
 evolute
-#filet-minion
+filet-minion
 hvlineseg-toy
 implicit-toy
 inner-product-clip
