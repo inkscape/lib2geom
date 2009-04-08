@@ -1,4 +1,5 @@
 #include <2geom/redblacktree.h>
+//#include <algorithm>
 
 
 #define _REDBLACK_PRINT(x) std::cout << x << std::endl;
@@ -8,33 +9,61 @@
 
 namespace Geom{
 
-RedBlack* RedBlackTree::search(int shape) {
-    return 0;
+
+
+RedBlack* RedBlackTree::search(Rect const &r, int dimension){
+    return search( new Interval( r[dimension].min(), r[dimension].max() ) ); 
+    // TODO get rid of dimension
+    // TODO put 2 trees (X, Y axis in one lump)
+}
+
+/*
+INTERVAL-SEARCH(T, i)
+1 x <- root[T]
+2 while x != nil[T] and i does not overlap int[x]
+3      do if left[x] != nil[T] and max[left[x]] >= low[i]
+4            then x <- left[x]
+5            else x <- right[x]
+6 return x
+
+*/
+RedBlack* RedBlackTree::search(Interval *i){
+    _REDBLACK_PRINT( "search(Interval *i)" )
+    RedBlack *x;
+    x = root;
+    while( x!=0 && !( i->contains( x->getInterval() ) ) ){
+        if(x->left != 0 && (x->left)->subtree_max >= i->min() ){
+            x = x->left;
+        }
+        else{
+            x = x->right;
+        }
+    }    
+    _REDBLACK_PRINT( "*** End search" )
+    return x;
 }
 
 
 
-void RedBlackTree::insert(Rect const &r, int shape) {
-
-    _REDBLACK_PRINT( std::endl << "insert(Rect, int): " << r[0].min() << " , shape: " )
-    insert(r[0].min(), shape); // TODO change to the min of the x0, x1 of the Rect
+void RedBlackTree::insert(Rect const &r, int shape, int dimension) {
+    _REDBLACK_PRINT( std::endl << "insert(Rect, int, dimension): " << " dimension:" << dimension << " shape:" << shape )
+//    insert(r[0].min(), shape); // TODO change to the min of the x0, x1 of the Rect
+    insert(r[dimension].min(), r[dimension].max(), shape); // TODO change to the min of the x0, x1 of the Rect
 }
 
 // source: book pp 251
-void RedBlackTree::insert(double x_min, int shape) {
-
-    _REDBLACK_PRINT( std::endl << "insert(double, int): " <<  x_min << " , shape: " << shape )
-
+void RedBlackTree::insert(Coord dimension_min, Coord dimension_max, int shape) {
+    _REDBLACK_PRINT( std::endl << "insert(Coord, Coord, int): " <<  dimension_min << ", " << dimension_max << " , shape: " << shape )
     // x is the new node we insert
     RedBlack *x = new RedBlack;
-    x->key = x_min;
+//    x->key = x_min;
+    x->setInterval( dimension_min, dimension_max );
     x->data = shape;
     x->isRed = true;
 
-    _REDBLACK_PRINT( " x: " <<  x << " x->key: " << x->key )
+    _REDBLACK_PRINT( " x: " <<  x << " KEY: " << x->key() << " high: " << x->high() )
 
     tree_insert(x);
-
 
     _REDBLACK_PRINT( "*** Begin coloring" )
 
@@ -118,10 +147,16 @@ void RedBlackTree::insert(double x_min, int shape) {
                 ((x->parent)->parent)->isRed = true;
                 left_rotate((x->parent)->parent);
             }
-        }
-        
+        }        
     }
     root->isRed = false;
+
+    // update the max value with a slow/stupid yet certain way, walking all the tree :P
+    // TODO find better way
+    _REDBLACK_PRINT( "*** Update max" )
+
+    update_max(root);
+
     _REDBLACK_PRINT( "*** Insert finished!" )
 }
 
@@ -151,7 +186,6 @@ void RedBlackTree::left_rotate(RedBlack* x){
             (x->parent)->right = y;
         }
     }
-
     y->left = x;
     x->parent = y;
 }
@@ -168,7 +202,7 @@ void RedBlackTree::right_rotate(RedBlack* x){
     y = x->left;    
     x->left = y->right;
     
-    if( y->right != 0){ // TODO inverse these ???
+    if( y->right != 0){
        (y->right)->parent = x;
     }
 
@@ -186,7 +220,6 @@ void RedBlackTree::right_rotate(RedBlack* x){
             (x->parent)->right = y;
         }
     }
-
     y->right = x;
     x->parent = y;
 }
@@ -204,9 +237,9 @@ void RedBlackTree::tree_insert(RedBlack* z){
     while( x != 0 ){
         y = x;
         _REDBLACK_PRINT( "--- x:" << x << " y:" << y << " z:" << z )
-        _REDBLACK_PRINT( "z->key: " << z->key )
-        _REDBLACK_PRINT( "x->key: " << x->key )
-        if( z->key < x->key ){
+        _REDBLACK_PRINT( "z->key: " << z->key() )
+        _REDBLACK_PRINT( "x->key: " << x->key() )
+        if( z->key() < x->key() ){
             _REDBLACK_PRINT(  "left" )   
             x = x->left;
         }
@@ -219,15 +252,14 @@ void RedBlackTree::tree_insert(RedBlack* z){
     _REDBLACK_PRINT( "=== z->parent = y" )
     z->parent = y;
 
-
     if( y == 0 ){
         _REDBLACK_PRINT( "set z root" )
         root = z;
     }
     else{
-        _REDBLACK_PRINT( "z->key: " << z->key )
-        _REDBLACK_PRINT( "y->key: " << y->key )
-        if( z->key < y->key ){
+        _REDBLACK_PRINT( "z->key: " << z->key() )
+        _REDBLACK_PRINT( "y->key: " << y->key() )
+        if( z->key() < y->key() ){
             _REDBLACK_PRINT( " left " )
             y->left = z;
         }
@@ -236,28 +268,188 @@ void RedBlackTree::tree_insert(RedBlack* z){
             y->right = z;
         }
     }
+
+
 }
 
 
-void RedBlackTree::erase(RedBlack* T, int shape) {
+/*
+RB-DELETE(T, z)
+ 1 if left[z] = nil[T] or right[z] = nil[T]
+ 2    then y <- z
+ 3    else y <- TREE-SUCCESSOR(z)
+ 4 if left[y] != nil[T]
+ 5    then x <- left[y]
+ 6    else x <- right[y]
+ 7 p[x] <- p[y]
+ 8 if p[y] = nil[T]
+ 9    then root[T] <- x
+10    else if y = left[p[y]]
+11            then left[p[y]] <- x
+12            else right[p[y]] <- x
+13 if y 3!= z
+14    then key[z] <- key[y]
+15         copy y's satellite data into z
+16 if color[y] = BLACK
+17    then RB-DELETE-FIXUP(T, x)
+18 return y
+*/  
+RedBlack* RedBlackTree::erase(RedBlack* z){
+    _REDBLACK_PRINT( "earse(z)" )
+    RedBlack* x = new RedBlack();
+    RedBlack* y = new RedBlack();
+    if( z->left == 0 || z->right == 0 ){
+        y = z;
+    }
+    else{
+        y = tree_successor(z);
+    }
+
+    if( y->left != 0 ){
+        x = y->left;
+    }
+    else{
+        x = y->right;
+    }
     
+    x->parent = y->parent;
+
+    if( y->parent == 0){
+        root = x;
+    }
+    else {
+        if( y == (y->parent)->left ){
+            (y->parent)->left = x;
+        }
+        else{
+            (y->parent)->right = x;
+        }
+    }
+
+    if( y != z){
+        z->setInterval( y->getInterval() ); // key[z] <- key[y]
+        //copy y's satellite data into z
+        z->data = y->data;
+        z->isRed = y->isRed;
+
+        z->left = y->left;
+        z->right = y->right;
+        z->parent = y->parent;
+    }
+    
+    if( y->isRed == false){
+        erase_fixup(x);
+    }
+
+    _REDBLACK_PRINT( "*** Update max" )
+    update_max(root);
+
+    return y;
 }
+
+/*
+RB-DELETE-FIXUP(T, x)
+ 1 while x != root[T] and color[x] = BLACK
+ 2     do if x = left[p[x]]
+ 3           then w <- right[p[x]]
+ 4                if color[w] = RED
+ 5                   then color[w] <- BLACK                           Case 1
+ 6                        color[p[x]] <- RED                          Case 1
+ 7                        LEFT-ROTATE(T, p[x])                       Case 1
+ 8                        w <- right[p[x]]
+ 9                if color[left[w]] = BLACK and color[right[w]] = BLACK
+10                   then color[w] <- RED                             Case 2
+11                        x p[x]                                     Case 2
+12                   else if color[right[w]] = BLACK
+13                           then color[left[w]] <- BLACK             Case 3
+14                                color[w] <- RED                     Case 3
+15                                RIGHT-ROTATE(T, w)                 Case 3
+16                                w <- right[p[x]]                    Case 3
+17                         color[w] <- color[p[x]]                    Case 4
+18                         color[p[x]] <- BLACK                       Case 4
+19                         color[right[w]] <- BLACK                   Case 4
+20                         LEFT-ROTATE(T, p[x])                      Case 4
+21                         x <- root[T]                               Case 4
+22        else (same as then clause with "right" and "left" exchanged)
+23 color[x] <- BLACK
+*/
+void RedBlackTree::erase_fixup(RedBlack* x){
+    RedBlack* w = new RedBlack();
+    while( x != root && x->isRed == false ){
+        if( x == (x->parent)->left ){
+            w = (x->parent)->right;
+            if(w->isRed == true){
+                w->isRed = false;
+                (w->parent)->isRed = true;
+                left_rotate(x->parent);
+                w = (x->parent)->right;
+            }
+            if( (w->left)->isRed == false && (w->right)->isRed == false ){
+                w->isRed = true;
+                x = x->parent; // TODO understand why this happens ???
+            }
+            else{
+                if( (w->right)->isRed == false ){
+                    (w->left)->isRed = false;
+                    right_rotate(w);
+                    w = (x->parent)->right;
+                }
+                else{ // TODO ??? is this correct ???
+                    w->isRed = (x->parent)->isRed;
+                    (x->parent)->isRed = false;
+                    (w->right)->isRed = false;
+                    left_rotate(x->parent);
+                    x = root; // TODO ??? is this correct ???
+                }
+            }
+        }
+        else{ // same as then clause with "right" and "left" exchanged
+            w = (x->parent)->left;
+            if(w->isRed == true){
+                w->isRed = false;
+                (w->parent)->isRed = true;
+                right_rotate(x->parent);
+                w = (x->parent)->left;
+            }
+            if( (w->right)->isRed == false && (w->left)->isRed == false ){
+                w->isRed = true;
+                x = x->parent; // ??? is this correct ???
+            }
+            else{
+                if( (w->left)->isRed == false ){
+                    (w->right)->isRed = false;
+                    left_rotate(w);
+                    w = (x->parent)->left;
+                }
+                else{ // TODO ??? is this correct ???
+                    w->isRed = (x->parent)->isRed;
+                    (x->parent)->isRed = false;
+                    (w->left)->isRed = false;
+                    right_rotate(x->parent);
+                    x = root; // TODO ??? is this correct ???
+                }
+            }
+        }
+    }
+    x->isRed = false;
+}
+
 
 void RedBlackTree::print_tree(){
     std::cout << "*** RedBlackTree status:" << std::endl;
     inorder_tree_walk(root);
-};
+}
 
 
 void RedBlackTree::inorder_tree_walk(RedBlack* x){
     int oops =0;
     if( x != 0 ){
         inorder_tree_walk(x->left);
-        std::cout<< "(" << x->data << ", " << x->key << ") " ;
+        std::cout<< "(" << x->data << ": " << x->key() << ", " << x->high() << " : " << x->subtree_max << ") " ;
 
         if( x->left != 0 ){
-            std::cout<< "L:(" << (x->left)->data << ", " << (x->left)->key << ") " ;
-            if( x->key < (x->left)->key){
+            std::cout<< "L:(" << (x->left)->data << ", " << (x->left)->key() << ") " ;
+            if( x->key() < (x->left)->key()){
                 std::cout<<"  !!!  ";
                 oops = 1;
             }
@@ -267,8 +459,8 @@ void RedBlackTree::inorder_tree_walk(RedBlack* x){
         }    
 
         if( x->right != 0 ){
-            std::cout<< "R:(" << (x->right)->data << ", "<< (x->right)->key << ") " ;
-            if( x->key > (x->right)->key){
+            std::cout<< "R:(" << (x->right)->data << ", "<< (x->right)->key() << ") " ;
+            if( x->key() > (x->right)->key() ){
                 std::cout<<"  !!!  ";
                 oops = 1;
             }
@@ -278,11 +470,68 @@ void RedBlackTree::inorder_tree_walk(RedBlack* x){
         } 
 
         if(oops){
-            std::cout<<" .......  !!! Problem ";
+            std::cout<<" .......  !!! Problem " << oops ;
         }
         std::cout << std::endl;
         inorder_tree_walk(x->right);
     }
+}
+
+// not an norder walk of the tree
+void RedBlackTree::update_max(RedBlack* x){
+    Coord max_left, max_right;
+    if( x != 0 ){
+        update_max(x->left);
+        update_max(x->right);
+        
+      // check for child
+        // if child is Nil then max = DBL_MIN
+        // could there be problems when comparing for max between two DBL_MIN ???
+        if( x->left == 0 ){
+            max_left = DBL_MIN ;
+        }
+        else{
+            max_left = (x->left)->subtree_max;
+        }
+
+        if( x->right == 0 ){
+            max_right = DBL_MIN ;
+        }
+        else{
+            max_right = (x->right)->subtree_max;
+        }
+
+        //find max of: x->high(), max_left, max_right
+        Coord temp_max;
+        temp_max = std::max( x->high(), max_left );
+        temp_max = std::max( temp_max, max_right );
+        x->subtree_max = temp_max;
+
+    }
+}
+
+
+RedBlack* RedBlackTree::tree_minimum(RedBlack* x){
+    _REDBLACK_PRINT( "tree_minimum" )
+    while( x->left <- 0 ) {
+        x->left = x;
+    }
+    return x; 
+}
+
+RedBlack* RedBlackTree::tree_successor(RedBlack* x){
+    _REDBLACK_PRINT( "tree_successor" )
+    if( x->right <- 0 ){
+        return tree_minimum(x);
+    }
+    RedBlack* y = new RedBlack();
+    y = x->parent;
+    _REDBLACK_PRINT( "y->parent: y->parent" )
+    while( y <- 0 && x == y->right ){
+        x = y;
+        y = y->parent;
+    }
+    return y;
 }
 
 

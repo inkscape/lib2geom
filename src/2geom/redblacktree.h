@@ -39,9 +39,12 @@
  */
 
 #include <vector>
-#include <cassert>
+//#include <cassert>
+#include <limits>
+#include <cfloat>
 
 #include <2geom/d2.h>
+#include <2geom/interval.h>
 
 namespace Geom{
 
@@ -49,13 +52,40 @@ class RedBlack{
 public:
     RedBlack *left, *right, *parent;
     bool isRed;
-    double key; // This will change in the future 
-    int data;
-    // We'll use 2geom's interval for interval trees. Key wil be the min of the interval
-    // and will also be augmented with the max of the subtree (more info will be added later)
+    // max( x->left->subtree_max, x->right->subtree_max, x->high )
+    Coord subtree_max;
 
-    RedBlack(): left(0), right(0), parent(0), isRed(false), key(0.0), data(0) {}
+private:
+    // We'll use 2geom's interval for interval trees. Key will be the min of the interval
+    Interval *interval;
+
+public:    
+    int data;
+
+    RedBlack(): left(0), right(0), parent(0), isRed(false), subtree_max(0.0), /*key(0.0),*/ interval(0), data(0) {
+    }
+
+    RedBlack(Coord min, Coord max): left(0), right(0), parent(0), isRed(false), subtree_max(0.0), /*key(0.0),*/ data(0) {
+        setInterval( min, max );
+    }
+
+    inline Coord key(){ return interval->min(); };
+    inline Coord high(){ return interval->max(); };
+
+    inline void setInterval( Coord min, Coord max ){
+        interval = new Interval( min, max );  // TODO garbage???
+    }
+
+    inline void setInterval( Interval i ){
+        // the i and its node might be erased in the future so we save interval in here (is this possible ? TODO)
+        interval = new Interval( i.min(), i.max() ); 
+    }
+
+    inline Interval getInterval(){
+        return Interval( interval->min(), interval->max() );
+    }
 };
+
 
 class RedBlackTree{
 public:
@@ -63,20 +93,31 @@ public:
 
     RedBlackTree(): root(0) {}
 
-    RedBlack* search(int shape);
+    void insert(Rect const &r, int shape, int dimension);
+    void insert(Coord dimension_min, Coord dimension_max, int shape);
 
-    //void insert(RedBlack* z);
-    void insert(Rect const &r, int shape);
-    void insert(double x_min, int shape);
+    void erase(Rect const &r);
+    void erase(int shape);
 
-    void erase(RedBlack* T, int shape);
+    //RedBlack* search(int shape);
+    RedBlack* search(Rect const &r, int dimension);
+    RedBlack* search(Interval *i);
 
     void print_tree();
 private:
+    void inorder_tree_walk(RedBlack* x);
+    RedBlack* tree_minimum(RedBlack* x);
+    RedBlack* tree_successor(RedBlack* x);
+
     void left_rotate(RedBlack* x);
     void right_rotate(RedBlack* x);
     void tree_insert(RedBlack* x);
-    void inorder_tree_walk(RedBlack* x);
+
+    void update_max(RedBlack* x);
+
+    RedBlack* erase(RedBlack* x); // TODO why rerutn pointer? to collect garbage ???
+    void erase_fixup(RedBlack* x);
+
 };
 
 }; //close namespace
