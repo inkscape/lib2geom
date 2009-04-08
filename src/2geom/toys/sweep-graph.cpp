@@ -35,7 +35,6 @@ struct Section {
     CurveIx curve;
     double f, t;
     Point fp, tp;
-    int winding;
     Section(Curve const &c, Dim2 d, CurveIx cix, double fd, double td) : curve(cix), f(fd), t(td) {
         fp = c.pointAt(f), tp = c.pointAt(t);
         if(lexo_point(tp, fp, d)) {
@@ -68,9 +67,14 @@ struct Vertex {
 };
 
 struct Graph {
-    std::vector<Vertex> verts;
-    std::vector<Section> edges;
-    Graph(std::vector<Vertex> const &vs, std::vector<Section> const &es) : verts(vs), edges(es) {}
+    std::vector<Vertex> vertices;
+    std::vector<Section> sections;
+    Graph(std::vector<Vertex> const &vs, std::vector<Section> const &es) : vertices(vs), sections(es) {}
+};
+
+//TODO
+struct Area {
+    std::vector<int> windings;
 };
 
 std::vector<Rect> section_rects(std::vector<Section> const &s) {
@@ -232,6 +236,13 @@ class SectionSorter {
     }
 };
 
+/*
+struct ContextTree {
+    std::vector<Section> sections;
+    std::vector<ContextTree> children;
+    
+};*/
+
 template<typename T, typename Z>
 void push_them(T &x, typename T::iterator &it, std::vector<typename T::value_type> const &xs, Z const &z) {
     x.reserve(it - x.begin() + xs.size());
@@ -250,33 +261,46 @@ unsigned find_vertex(std::vector<Vertex> &vertices, Point p) {
     return i;
 }
 
+
 //moves all the sections we're done with from the context to the output
 //helper for sweep_graph, passes in a lot of sweep_graph locals
 void move_to_output(std::vector<Section> &context, std::vector<Section> &sections,
                     std::vector<Vertex> &vertices, std::vector<unsigned> &vix, double v) {
+                    //std::vector<unsigned> const &area_labels, double v) {
+    std::vector<unsigned> to_remove;
     //iterate the contexts in reverse, looking for sections which are finished
     for(int i = context.size() - 1; i >= 0; i--) {
         if(context[i].tp[X] < v || are_near(context[i].tp[X], v)) {
+            /*
             //figure out this section's winding
             int wind = 0;
             for(int j = 0; j < i; j++) {
                 if(context[j].fp[X] == context[j].tp[X]) continue;
                 if(context[j].f < context[j].t) wind++;
                 if(context[j].f > context[j].t) wind--;
-            }
+            } */
+            
+            unsigned vert = find_vertex(vertices, context[i].tp);
+            to_remove.push_back(vert);
+            if(vert == vix[i]) continue;  // remove tiny things
+            
             //add it to the output
-            Section r = context[i];
-            r.winding = wind;
-            sections.push_back(r);
+            sections.push_back(context[i]);
+            
             //add it to vertices
-            unsigned vert = find_vertex(vertices, r.tp);
             vertices[vix[i]].exits.push_back(Edge(sections.size()-1, vert));
             vertices[vert].enters.push_back(Edge(sections.size()-1, vix[i]));
+            
             //remove it from the context
             context.erase(context.begin() + i);
             vix.erase(vix.begin() + i);
         }
     }
+    /*
+    //remove to_remove verts
+    for(unsigned i = 0; i < to_remove.size(); i++) {
+       to_remove[i]
+    } */
 }
 
 std::vector<std::vector<Section> > monoss;
@@ -291,6 +315,12 @@ Graph sweep_graph(std::vector<Path> const &ps, Dim2 d = X, double tol = 1) {
     //sections = the returned, output sections
     //monos = a heap of monotonic sections to process
     std::vector<Section> context, sections, monos = mono_sections(ps);
+
+    /*std::vector<unsigned> area_labels;
+    std::vector<std::vector<unsigned> > areas;
+    area_labels.push_back(0);
+    areas.push_back(std::vector<unsigned>());
+    */
     
     std::make_heap(monos.begin(), monos.end(), heap_sort);
     std::vector<Section>::iterator monos_end = monos.end();
@@ -312,6 +342,7 @@ Graph sweep_graph(std::vector<Path> const &ps, Dim2 d = X, double tol = 1) {
         unsigned context_ix = std::lower_bound(context.begin(), context.end(), s, s_sort) - context.begin();
         context.insert(context.begin() + context_ix, s);
         vix.insert(vix.begin() + context_ix, find_vertex(vertices, s.fp));
+        //area_labels.insert(area_labels.begin() + context_ix + 1);
         
         Interval si = Interval(s.fp[1-d], s.tp[1-d]);
         // Now we intersect with neighbors - do a sweep!
@@ -359,14 +390,169 @@ void draw_graph(cairo_t *cr, std::vector<Vertex> vertices) {
             cairo_stroke(cr);
             std::cout << vertices[i].exits[j].other << ", ";
         }
-        //draw_number(cr, vertices[i].avg + Point(uniform() * 5, uniform() * 5), (unsigned)vertices[i].edges.size());
         std::cout << "]\n";
     }
     std::cout << "=======\n";
 }
 
-void fill(std::vector<Section> const &sections, std::vector<Vertex> const &vertices) {
+/*
+Edge next_edge(Vertex const &v, Edge e) {
+    //some fairly complex logic to find the edge in the vertexes enters/exits and return the next ccw
+    std::vector<Edge>::iterator ex = std::find(v.exits.begin(),  v.exits.end(),  e);
+    if(ex != v.exits.end()) return ex++ == v.exits.end() ? (v.enters.empty() ? e : v.enters.back())
+                                                         : *(ex++);
+    std::vector<Edge>::iterator en = std::find(v.enters.begin(), v.enters.end(), e);
+    return en == v.enters.begin() ? (v.exits.empty() ? e : v.exits.front())
+                                  : *(en--);
+}
+
+std::vector<std::vector<Section> > planar_areas(Graph const &g) {
+    std::vector<unsigned> visited(g.sections.size() * 2, false);
+    for(unsigned i = 0; i < visited.size(); i++) {
+        if(!visited[i]) {
+            std::vector<Section> area;
+            unsigned sect = i / 2;
+            bool from = sect * 2 == i;
+            
+        }
+    }
+}
+
+struct VertexOrder {
+    Dim2 dim;
+    VertexOrder(Dim2 d) : dim(d) {}
+    bool operator()(Vertex const &x, Vertex const &y) {
+        return lexo_point(x.avg, y.avg, dim);
+    }
+};
+
+// sorter which sorts indices pointing into an underlying container, using the
+// element's less than comparison
+template<typename T, typename Z>
+class IndexSorter {
+    const T &container;
+    const Z &compare;
+  public:
+    IndexSorter(const T &c, const Z &z) : container(c), compare(z) {}
+    bool operator()(unsigned x, unsigned y) {
+        return compare(container[x], container[y]);
+    }
+};
+
+// returns a list of indices, which point into the passed array, yielding sorted elements
+template<typename T, typename Z>
+std::vector<unsigned> sorted_indexes(T const &in, const Z &comp) {
+    std::vector<unsigned> ret(in.size());
+    for(unsigned i = 0; i < in.size(); i++) ret[i] = i;
+    std::sort(ret.begin(), ret.end(), IndexSorter<T,Z>(in, comp));
+    return ret;
+}
+
+void areas_sweep(Graph const &gr, Dim2 d) {
+    std::vector<unsigned> vert_order = sorted_indexes(gr.vertices, VertexOrder(d));
     
+    std::vector<unsigned> area_labels;
+    std::vector<unsigned> context;
+    std::vector<std::vector<unsigned> > areas;
+    area_labels.push_back(0); 
+    areas.push_back(std::vector<unsigned>());
+    
+    for(unsigned i = 0; i < vert_order.size(); i++) {
+        Vertex v = gr.vertices[vert_order[i]];
+        
+        //iterate bits that
+        for(unsigned j = 0; j < v.enters.size(); j++) {
+            unsigned ix = find(context.begin(), context.end(), v.enters[j].section) - context.begin();
+            assert(ix != context.size())  //this would mean that this section was never opened
+            area_labels.erase(ix + 1 + area_labels.begin());
+            context.erase(ix + context.begin());
+        }
+        
+        for(unsigned j = 0; j < v.exits.size(); j++) {
+            std::vector<unsigned> ins;
+            for(unsigned k = 0; k < v.exits[j].size()) ins.push_back(v.exits[j].section);
+            context.push_back()
+        }
+    }
+}
+*/
+
+/*
+std::vector<std::vector<Section> > shells(Graph const &a, Dim2 d) {
+    std::vector<std::vector<Edge> > upper;
+    std::vector<std::vector<Edge> > lower;
+    
+    std::vector<unsigned> vert_order = sorted_indexes(a.vertices, VertexOrder(d));
+    
+    for(unsigned i = 0; i < vert_order.size(); i++) {
+        unsigned j = 0;
+        Vertex v = a.vertices[vert_order[i]];
+        for(; j < upper.size(); j++) {
+            if(upper.back().other == vert_order[i]) {
+                upper[j].push_back(v.exits.empty() ? v.enters.
+                upper[j].push_back(a.sections[s_ix].f > a.sections[s_ix].t ? a.vertices[vert_order[i]].exits.
+            }
+        }
+    }
+}
+
+template<typename T>
+T reverse(T const &x) {
+    T ret(x);
+    std::reverse(ret.begin(), ret.end());
+    return ret;
+}
+
+template<typename T>
+T append(T const &x, T const &y) {
+    T ret(x);
+    ret.insert(ret.end(), y.begin(), y.end());
+    return ret;
+}
+
+void fill_helper(Graph const &a, Dim2 d, std::vector<Edge> &ret, bool bottom) {
+    unsigned start = //(bottom ?
+                     //   std::max_element(a.vertices.begin(), a.vertices.end(), VertexOrder(d))
+                      std::min_element(a.vertices.begin(), a.vertices.end(), VertexOrder(d)) - a.vertices.begin();
+    unsigned cur = start;
+    unsigned prev = a.vertices.size();
+    unsigned i = 0;
+    while(true) {
+        std::vector<Edge> es = bottom
+                                ? append(reverse(a.vertices[cur].exits), a.vertices[cur].enters)
+                                : append(a.vertices[cur].exits, reverse(a.vertices[cur].enters));
+        Edge e = es[0].other == prev ? es[1] : es[0];
+        prev = cur;
+        cur = e.other;
+        ret.push_back(e);
+        if(e.other == start) break;
+        i++;
+        if(i > 20) break;
+    }
+}
+
+//TODO: store dim in graph?
+std::vector<Edge> fill(Graph const &a, Dim2 d) {
+    std::vector<Edge> ret;
+    
+    fill_helper(a, d, ret, false);
+    // unsigned old_size = ret.size();
+    //fill_helper(a, d, ret, true);
+    //std::reverse(old_size + ret.begin(), ret.end());
+    
+    return ret;
+}
+*/
+
+Path sectionsToPath(std::vector<Path> const &ps, std::vector<Section> const & sections) {
+    Path ret;
+    for(unsigned i = 0; i < sections.size(); i++) {
+        Interval ti(sections[i].f, sections[i].t);
+        Curve *curv = sections[i].curve.get(ps).portion(ti.min(), ti.max());
+        ret.insert(ret.end(), *curv);
+        delete(curv);
+    }
+    return ret;
 }
 
 class SweepWindow: public Toy {
@@ -400,7 +586,7 @@ class SweepWindow: public Toy {
             cairo_set_source_rgba(cr, 0,0,0,1);
             //cairo_set_line_width(cr, 1);
             for(unsigned i = 0; i < monoss[cix].size(); i++) {
-                draw_section(cr, monoss[cix][i], path);
+                //draw_section(cr, monoss[cix][i], path);
                 cairo_stroke(cr);
             }
         }
@@ -422,7 +608,19 @@ class SweepWindow: public Toy {
         uncross(output, vertices);
         */
         
-        draw_graph(cr, output.verts);
+        //draw_graph(cr, output.vertices);
+        
+        //draw_node(cr, output.vertices[7].avg);
+        //draw_node(cr, output.vertices[14].avg);
+        
+        /*
+        std::vector<Edge> sects = fill(output, X);
+        for(unsigned i = 0; i < sects.size(); i++) {
+            cairo_stroke(cr);
+            Section s = output.sections[sects[i].section];
+            draw_section(cr, s, path);
+            draw_number(cr, s.curve.get(path)((s.f + s.t) / 2), i);
+        } */
         
        // draw_toggles(cr, toggles);
         Toy::draw(cr, notify, width, height, save,timer_stream);
