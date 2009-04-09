@@ -12,6 +12,7 @@
 #include <string>
 
 #include <assert.h>
+#include <2geom/exception.h>
 #include <2geom/point.h>
 #include <2geom/geom.h>
 #include <2geom/sbasis.h>
@@ -228,9 +229,10 @@ Geom::Point read_point(FILE* f);
 
 
 
-const long long NS_PER_SECOND = 1000000L;
-const long long NS_PER_NS = 1;
 
+
+const long long NS_PER_SECOND = 1000000000LL;
+const long long NS_PER_NS = 1;
 
 
 class Timer{
