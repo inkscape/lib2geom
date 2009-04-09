@@ -12,7 +12,7 @@ namespace Geom{
 
 
 RedBlack* RedBlackTree::search(Rect const &r, int dimension){
-    return search( new Interval( r[dimension].min(), r[dimension].max() ) ); 
+    return search( Interval( r[dimension].min(), r[dimension].max() ) ); 
     // TODO get rid of dimension
     // TODO put 2 trees (X, Y axis in one lump)
 }
@@ -26,13 +26,41 @@ INTERVAL-SEARCH(T, i)
 5            else x <- right[x]
 6 return x
 
+Two intervals i,x overlap in the 4 following cases:
+    1) |--------|   i
+          |---|     x
+
+    2)   |-----|    i
+      |----------|  x
+
+    3)      |------|    i
+         |------|       x
+
+    4)  |----|      i
+           |----|   x
+
+And do not overlap when (the one os left or right of the other)
+    1) |--------|           i
+                  |---|     x
+
+    2)              |-----|     i
+      |----------|              x
+
+
 */
-RedBlack* RedBlackTree::search(Interval *i){
-    _REDBLACK_PRINT( "search(Interval *i)" )
+RedBlack* RedBlackTree::search(Interval i){
+    _REDBLACK_PRINT( "===============================" << std::endl << "ENTER: search(Interval i) : (" << i.min() << ", " << i.max() << ")" )
     RedBlack *x;
     x = root;
-    while( x!=0 && !( i->contains( x->getInterval() ) ) ){
-        if(x->left != 0 && (x->left)->subtree_max >= i->min() ){
+
+    while( x!=0 && 
+                ( i.max() < x->interval.min() || 
+                i.min() > x->interval.max() ) 
+    ){
+        _REDBLACK_PRINT( "(" << x->data << ": " << x->key() << ", " << x->high() << " : " << x->subtree_max << ") "
+                        << " i.contains( x->interval ) :" << i.contains( x->interval ) )
+
+        if(x->left != 0 && (x->left)->subtree_max >= i.min() ){
             x = x->left;
         }
         else{
@@ -46,7 +74,7 @@ RedBlack* RedBlackTree::search(Interval *i){
 
 
 void RedBlackTree::insert(Rect const &r, int shape, int dimension) {
-    _REDBLACK_PRINT( std::endl << "insert(Rect, int, dimension): " << " dimension:" << dimension << " shape:" << shape )
+    _REDBLACK_PRINT( "===============================" << std::endl << "ENTER: insert(Rect, int, dimension): " << " dimension:" << dimension << " shape:" << shape )
 //    insert(r[0].min(), shape); // TODO change to the min of the x0, x1 of the Rect
     insert(r[dimension].min(), r[dimension].max(), shape); // TODO change to the min of the x0, x1 of the Rect
 }
@@ -55,9 +83,8 @@ void RedBlackTree::insert(Rect const &r, int shape, int dimension) {
 void RedBlackTree::insert(Coord dimension_min, Coord dimension_max, int shape) {
     _REDBLACK_PRINT( std::endl << "insert(Coord, Coord, int): " <<  dimension_min << ", " << dimension_max << " , shape: " << shape )
     // x is the new node we insert
-    RedBlack *x = new RedBlack;
-//    x->key = x_min;
-    x->setInterval( dimension_min, dimension_max );
+    RedBlack *x = new RedBlack();
+    x->interval = Interval( dimension_min, dimension_max );
     x->data = shape;
     x->isRed = true;
 
@@ -164,7 +191,7 @@ void RedBlackTree::insert(Coord dimension_min, Coord dimension_max, int shape) {
 void RedBlackTree::left_rotate(RedBlack* x){
     // x->right != 0 (assumption book page 266)
     // ??? hm problem ???
-    _REDBLACK_PRINT( "*** left_rotate" )
+    _REDBLACK_PRINT( " " << std::endl << "ENTER: left_rotate" )
     RedBlack* y = new RedBlack;
     y = x->right;    
     x->right = y->left;
@@ -195,7 +222,7 @@ void RedBlackTree::left_rotate(RedBlack* x){
 void RedBlackTree::right_rotate(RedBlack* x){
     // x->right != 0 (assumption book page 266)
     // ??? hm problem ??
-    _REDBLACK_PRINT( "*** right_rotate" )
+    _REDBLACK_PRINT( " " << std::endl << "ENTER: right_rotate" )
     RedBlack* y = new RedBlack;
 
     _REDBLACK_PRINT( "x->left: " << x->left )
@@ -227,11 +254,10 @@ void RedBlackTree::right_rotate(RedBlack* x){
 // insertion in binary search tree: book page 251
 // then the redblack insert performs the coloring
 void RedBlackTree::tree_insert(RedBlack* z){
-    _REDBLACK_PRINT( "*** Begin tree insert" )
+    _REDBLACK_PRINT( " " << std::endl << "ENTER: tree insert" )
     RedBlack* y = 0; // y <- nil
 
-    RedBlack* x = new RedBlack();
-    x = root;
+    RedBlack* x = root;
 
     _REDBLACK_PRINT( "=== while( x != 0 )" )
     while( x != 0 ){
@@ -287,7 +313,7 @@ RB-DELETE(T, z)
 10    else if y = left[p[y]]
 11            then left[p[y]] <- x
 12            else right[p[y]] <- x
-13 if y 3!= z
+13 if y != z
 14    then key[z] <- key[y]
 15         copy y's satellite data into z
 16 if color[y] = BLACK
@@ -295,7 +321,7 @@ RB-DELETE(T, z)
 18 return y
 */  
 RedBlack* RedBlackTree::erase(RedBlack* z){
-    _REDBLACK_PRINT( "earse(z)" )
+    _REDBLACK_PRINT( "===============================" << std::endl << "ENTER: earse(z)" )
     RedBlack* x = new RedBlack();
     RedBlack* y = new RedBlack();
     if( z->left == 0 || z->right == 0 ){
@@ -327,7 +353,7 @@ RedBlack* RedBlackTree::erase(RedBlack* z){
     }
 
     if( y != z){
-        z->setInterval( y->getInterval() ); // key[z] <- key[y]
+        z->interval =  y->interval ; // key[z] <- key[y] TODO check this
         //copy y's satellite data into z
         z->data = y->data;
         z->isRed = y->isRed;
@@ -374,7 +400,7 @@ RB-DELETE-FIXUP(T, x)
 23 color[x] <- BLACK
 */
 void RedBlackTree::erase_fixup(RedBlack* x){
-    RedBlack* w = new RedBlack();
+    RedBlack* w = 0;
     while( x != root && x->isRed == false ){
         if( x == (x->parent)->left ){
             w = (x->parent)->right;
@@ -512,7 +538,7 @@ void RedBlackTree::update_max(RedBlack* x){
 
 
 RedBlack* RedBlackTree::tree_minimum(RedBlack* x){
-    _REDBLACK_PRINT( "tree_minimum" )
+    _REDBLACK_PRINT( "===============================" << std::endl << "ENTER: tree_minimum" )
     while( x->left <- 0 ) {
         x->left = x;
     }
@@ -520,12 +546,11 @@ RedBlack* RedBlackTree::tree_minimum(RedBlack* x){
 }
 
 RedBlack* RedBlackTree::tree_successor(RedBlack* x){
-    _REDBLACK_PRINT( "tree_successor" )
+    _REDBLACK_PRINT( "===============================" << std::endl << "ENTER: tree_successor" )
     if( x->right <- 0 ){
         return tree_minimum(x);
     }
-    RedBlack* y = new RedBlack();
-    y = x->parent;
+    RedBlack* y = x->parent;
     _REDBLACK_PRINT( "y->parent: y->parent" )
     while( y <- 0 && x == y->right ){
         x = y;

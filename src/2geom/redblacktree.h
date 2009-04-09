@@ -48,42 +48,28 @@
 
 namespace Geom{
 
-class RedBlack{
+class RedBlack{    
 public:
+    // We'll use 2geom's interval for interval trees. Key will be the min of the interval
+    Interval interval;
     RedBlack *left, *right, *parent;
     bool isRed;
-    // max( x->left->subtree_max, x->right->subtree_max, x->high )
+    // subtree_max = max( x->left->subtree_max, x->right->subtree_max, x->high )
     Coord subtree_max;
 
-private:
-    // We'll use 2geom's interval for interval trees. Key will be the min of the interval
-    Interval *interval;
-
-public:    
     int data;
 
-    RedBlack(): left(0), right(0), parent(0), isRed(false), subtree_max(0.0), /*key(0.0),*/ interval(0), data(0) {
+
+    RedBlack(): left(0), right(0), parent(0), isRed(false), subtree_max(0.0), data(0) {
+        Interval interval(0.0, 0.0);
     }
 
-    RedBlack(Coord min, Coord max): left(0), right(0), parent(0), isRed(false), subtree_max(0.0), /*key(0.0),*/ data(0) {
-        setInterval( min, max );
+    RedBlack(Coord min, Coord max): left(0), right(0), parent(0), isRed(false), subtree_max(0.0), data(0) {
+        Interval interval( min, max );
     }
 
-    inline Coord key(){ return interval->min(); };
-    inline Coord high(){ return interval->max(); };
-
-    inline void setInterval( Coord min, Coord max ){
-        interval = new Interval( min, max );  // TODO garbage???
-    }
-
-    inline void setInterval( Interval i ){
-        // the i and its node might be erased in the future so we save interval in here (is this possible ? TODO)
-        interval = new Interval( i.min(), i.max() ); 
-    }
-
-    inline Interval getInterval(){
-        return Interval( interval->min(), interval->max() );
-    }
+    inline Coord key(){ return interval.min(); };
+    inline Coord high(){ return interval.max(); };
 };
 
 
@@ -101,7 +87,8 @@ public:
 
     //RedBlack* search(int shape);
     RedBlack* search(Rect const &r, int dimension);
-    RedBlack* search(Interval *i);
+    RedBlack* search(Interval i);
+    RedBlack* search(Coord a, Coord b);
 
     void print_tree();
 private:
