@@ -68,14 +68,18 @@ void draw_redblack_tree(cairo_t* cr, Geom::RedBlack *x, int depth = 0) {
 
 
 
+
+
 class RedBlackToy: public Toy 
 {
     PointSetHandle handle_set;
 	Geom::Point starting_point;
 	Geom::Point ending_point;
+	Geom::Point highlight_point;
 
 	Geom::RedBlackTree rbtree_x;
 	RedBlack* search_result;
+	RedBlack temp_deleted_node;
 
 	int alter_existing_rect;
 	int add_new_rect;
@@ -84,6 +88,9 @@ class RedBlackToy: public Toy
 	Rect rect_chosen;	// the rectangle of the search area
 	Rect dummy_draw;
 	int mode;
+
+	int help_counter;
+	static const int label_size = 15 ;
 
     enum menu_item_t
     {
@@ -128,7 +135,9 @@ class RedBlackToy: public Toy
 		cairo_stroke( cr );
 
 		Toy::draw( cr, notify, width, height, save,timer_stream );
-		draw_redblack_tree( cr, rbtree_x.root );
+		//draw_redblack_tree( cr, rbtree_x.root );
+		draw_tree_in_toy( cr ,rbtree_x.root, 0);
+		help_counter=0;
     }        
     
     void mouse_moved(GdkEventMotion* e){
@@ -144,16 +153,19 @@ class RedBlackToy: public Toy
 			if( mode == 0 ){	// insert / alter
 				if(!selected) {
 					starting_point = Point(e->x, e->y);
+					ending_point = starting_point;
 					add_new_rect = 1;
 				}
 				else
 				{
+					//std::cout <<find_selected_rect(selected) << std::endl ;
 					alter_existing_rect = 1;
 				}
 			}
 			else if( mode == 1 ){	//search
 				if(!selected) {
 					starting_point = Point(e->x, e->y);
+					ending_point = starting_point;
 					add_new_rect = 1;
 				}
 				else{
@@ -209,8 +221,7 @@ class RedBlackToy: public Toy
 
 			}
 		}
-		else if(e->button == 2){	//middle button
-			
+		else if(e->button == 2){	//middle button			
 		}
 		else if(e->button == 3){	//right button
 
@@ -244,21 +255,46 @@ class RedBlackToy: public Toy
 			rbtree_x.print_tree();
 	};
 
-	int find_rectangle_of_point(Handle * selected){
+	void draw_tree_in_toy(cairo_t* cr, Geom::RedBlack* n, int depth = 0) {
+		if(n){
+			if(n->left){
+				draw_tree_in_toy(cr, n->left, depth+1);
+			}
+			help_counter += 1;
+			//drawthisnode(cr, x*10, depth*10);
+			cairo_set_source_rgba (cr, 1, 0, 1, 1);
+			cairo_stroke(cr);
+
+			Geom::Point text_point = Point( help_counter*15, depth*15 );
+			char label[4];
+			sprintf( label,"%d",n->data ); // instead of std::itoa(depth, label, 10); 
+
+			draw_text(cr, text_point, label);
+			////////////////////////////////////////////////////////////////
+			if(n->right){
+				draw_tree_in_toy(cr, n->right, depth+1);
+			}
+		}
+	};
+
 /*
+	int find_selected_rect(PointHandle * selected){
+
 		for( unsigned i=0; i<handle_set.pts.size(); i=i+2 ){
 	        if( handle_set.pts[i] == selected || handle_set.pts[i+1] == selected ){
 				return i;
 			}
 		}
-*/
-		return 0;
-	}
 
+		return -1;
+	};
+*/
 
 
 public:
-    RedBlackToy(): alter_existing_rect(0), add_new_rect(0), enable_printing(1), mode(0){
+    RedBlackToy(): alter_existing_rect(0), add_new_rect(0), enable_printing(1), mode(0),
+					help_counter(0)
+	{
         if(handles.empty()) {
             handles.push_back(&handle_set);
         }
@@ -278,7 +314,7 @@ int main(int argc, char **argv) {
     std::cout << " * Left click and drag on white area: create a rectangle"<< std::endl;
 	std::cout << " * Left click and drag on handler: alter a rectangle"<< std::endl;
     std::cout << " Key B: search mode                                   "<< std::endl;
-	std::cout << " * Left click on handler:  \"search\" for a rectangle"<< std::endl;
+	std::cout << " * Left click and drag on white area: \"search\" for nodes that intersect red area"<< std::endl;
     std::cout << " Key C: delete mode                                   "<< std::endl;
 	std::cout << " * Middle click on handler: delete for a rectangle"<< std::endl;
 	std::cout << "---------------------------------------------------------"<< std::endl;

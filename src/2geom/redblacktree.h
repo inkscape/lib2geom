@@ -50,24 +50,20 @@ namespace Geom{
 
 class RedBlack{    
 public:
-    // We'll use 2geom's interval for interval trees. Key will be the min of the interval
-    Interval interval;
+    Interval interval;    // Key of the redblack tree will be the min of the interval
     RedBlack *left, *right, *parent;
     bool isRed;
-    // subtree_max = max( x->left->subtree_max, x->right->subtree_max, x->high )
-    Coord subtree_max;
-
+    Coord subtree_max;    // subtree_max = max( x->left->subtree_max, x->right->subtree_max, x->high )
     int data;
-
 
     RedBlack(): left(0), right(0), parent(0), isRed(false), subtree_max(0.0), data(0) {
         Interval interval(0.0, 0.0);
     }
-
+/*
     RedBlack(Coord min, Coord max): left(0), right(0), parent(0), isRed(false), subtree_max(0.0), data(0) {
         Interval interval( min, max );
     }
-
+*/
     inline Coord key(){ return interval.min(); };
     inline Coord high(){ return interval.max(); };
 };
@@ -85,7 +81,6 @@ public:
     void erase(Rect const &r);
     void erase(int shape);
 
-    //RedBlack* search(int shape);
     RedBlack* search(Rect const &r, int dimension);
     RedBlack* search(Interval i);
     RedBlack* search(Coord a, Coord b);
