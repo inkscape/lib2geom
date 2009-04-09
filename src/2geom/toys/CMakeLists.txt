@@ -107,6 +107,7 @@ rdm-area
 sketch-fitter
 sweep-window
 redblack-toy
+svgd_test
 sweep-graph
 )
 

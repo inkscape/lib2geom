@@ -81,7 +81,8 @@ class RedBlackToy: public Toy
 	int add_new_rect;
 	int enable_printing; // used for debug - it disables the tree printing
 
-	Rect *rect_chosen;
+	Rect rect_chosen;	// the rectangle of the search area
+	Rect dummy_draw;
 	int mode;
 
     enum menu_item_t
@@ -95,30 +96,48 @@ class RedBlackToy: public Toy
     static const char* menu_items[TOTAL_ITEMS];
     static const char keys[TOTAL_ITEMS];
 
-//    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
     void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
         cairo_set_line_width( cr, 1 );
 
-		
+		// draw the rects that we have saved
 		for( unsigned i=0; i<handle_set.pts.size(); i=i+2 ){
 	        Rect r1( handle_set.pts[i], handle_set.pts[i+1] );
-
-		    cairo_set_source_rgba( cr, 0.5, 1, 0, 1 );
-		    cairo_set_line_width( cr, 0.3 );
 		    cairo_rectangle( cr, r1 );
             // the value to insert in the redblacktree: bounding box and the shapeID
 		}
 
-//		*notify << last_action;
-		Toy::draw( cr, notify, width, height, save,timer_stream );
+	    cairo_set_source_rgba( cr, 0, 0, 0, 0.6 );
+		cairo_stroke( cr );
 
-		cairo_set_source_rgba( cr, 1.0, 0.0, 0.0, 1.0 );
-        cairo_stroke( cr );
+		// draw a rect if we click & drag (so that we know what we are going to create)
+		if(add_new_rect){
+			dummy_draw = Rect( starting_point, ending_point );
+			cairo_rectangle( cr, dummy_draw );
+			if( mode == 0){
+				cairo_set_source_rgba( cr, 0, 0, 0, 1 );
+			}
+			else if( mode == 1){
+			    cairo_set_source_rgba( cr, 1, 0, 0, 1 );
+			}
+			cairo_stroke( cr );
+		}
+
+		// draw a rect for the search area
+		cairo_rectangle( cr, rect_chosen );
+	    cairo_set_source_rgba( cr, 1, 0, 0, 0.6 );
+		cairo_stroke( cr );
 
 		Toy::draw( cr, notify, width, height, save,timer_stream );
 		draw_redblack_tree( cr, rbtree_x.root );
     }        
     
+    void mouse_moved(GdkEventMotion* e){
+		Toy::mouse_moved(e);
+		if(add_new_rect){
+			ending_point = Point(e->x, e->y);
+		}
+	}
+
     void mouse_pressed(GdkEventButton* e) {
 		Toy::mouse_pressed(e);
 		if(e->button == 1){		// left mouse button
@@ -133,29 +152,13 @@ class RedBlackToy: public Toy
 				}
 			}
 			else if( mode == 1 ){	//search
-					search_result = find_rectangle_of_point( Point(e->x, e->y) );
-					if(search_result  != 0){
-						std::cout << "Search found rect: (" << search_result->data 
-							<< ": " << search_result->key() << ", " << search_result->high() 
-							<< " : " << search_result->subtree_max << ") " << std::endl;
-					}
-					else{
-						std::cout << "Search found NO rect" << std::endl;
-					}
-/*
-				if(selected){				
-					search_result = find_rectangle_of_point( Point(e->x, e->y) );
-					if(rect_chosen != 0){
-						std::cout << "Search found rect: " << std::endl;
-					}
-					else{
-						std::cout << "Search found NO rect" << std::endl;
-					}
+				if(!selected) {
+					starting_point = Point(e->x, e->y);
+					add_new_rect = 1;
 				}
 				else{
-					std::cout << "In order to search click on a rect" << std::endl;
+					// TODO freeze the pointers (not able to move them) when searching
 				}
-*/
 			}
 			else if( mode == 2) {	// delete
 			}
@@ -172,7 +175,6 @@ class RedBlackToy: public Toy
 			if( mode == 0) {	// insert / alter
 				if( add_new_rect ){
 					ending_point = Point(e->x, e->y);
-					//REMEMBER: handle same point issue in index, not in application level
 					handle_set.push_back(starting_point);
 					handle_set.push_back(ending_point);
 					insert_in_tree_the_last_rect();
@@ -184,7 +186,24 @@ class RedBlackToy: public Toy
 				}
 			}
 			else if( mode == 1 ){	// search
+				if( add_new_rect ){
+					ending_point = Point(e->x, e->y);
+					rect_chosen = Rect(starting_point, ending_point);
 
+					// search in the X axis
+					Coord a = rect_chosen[0].min();
+					Coord b = rect_chosen[0].max();
+					search_result = rbtree_x.search( Interval( a, b ) );
+					if(search_result){
+						std::cout << "Found: (" << search_result->data << ": " << search_result->key() 
+							<< ", " << search_result->high() << " : " << search_result->subtree_max << ") " 
+							<< std::endl;
+					}
+					else{
+						std::cout << "Nothing found..."<< std::endl;
+					}
+					add_new_rect = 0;
+				}
 			}
 			else if( mode == 2) {	// delete
 
@@ -225,31 +244,26 @@ class RedBlackToy: public Toy
 			rbtree_x.print_tree();
 	};
 
-	RedBlack* find_rectangle_of_point(Point p){
-		Coord a = 20.0;		
-		Coord b = 350.0;
-		return rbtree_x.search( new Interval( a, b) );				
-/*		for( unsigned i=0; i<handle_set.pts.size(); i=i+2 ){
-			// under the assumption that the "upper" handle is chosen when 
-			// selecting two handles that are on top of each other
-			if(p == handle_set.pts[i]){ // TODO fix the 2nd handler
-				std::cout << "found same point";
-				Coord a = 50.0;		// TODO dimension X Axis here
-				Coord b = 150.0;
-				return rbtree_x.search( new Interval( a, b) );				
+	int find_rectangle_of_point(Handle * selected){
+/*
+		for( unsigned i=0; i<handle_set.pts.size(); i=i+2 ){
+	        if( handle_set.pts[i] == selected || handle_set.pts[i+1] == selected ){
+				return i;
 			}
 		}
-		return 0;
 */
+		return 0;
 	}
 
 
 
 public:
-    RedBlackToy(): alter_existing_rect(0), add_new_rect(0), enable_printing(1), rect_chosen(0), mode(0){
+    RedBlackToy(): alter_existing_rect(0), add_new_rect(0), enable_printing(1), mode(0){
         if(handles.empty()) {
             handles.push_back(&handle_set);
         }
+		Rect rect_chosen();
+		Rect dummy_draw();
     }
 
 
