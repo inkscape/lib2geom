@@ -41,57 +41,33 @@ using namespace Geom;
 using namespace std;
 
 
-void draw_redblack_tree(cairo_t* cr, Geom::RedBlack *x, int depth = 0) {
-
-	// works like the RedBlack::print_tree() (inorder function)
-    if( x != 0 ){
-        draw_redblack_tree(cr, x->left, depth+1);
-
-        //print line and depth on the key of the node
-		Geom::Point text_point = Point( x->key(), 10 );
-		char label[4];
-		sprintf(label,"%d",depth); // instead of std::itoa(depth, label, 10); 
-
-		cairo_set_source_rgba (cr, 1, 0, 1, 1);
-        draw_text(cr, text_point, label);
-
-		Geom::Point line_2nd_point = Point( x->key(), 500 );
-		//draw_line(text_point, line_2nd_point);
-		cairo_move_to(cr, text_point );
-        cairo_line_to(cr, line_2nd_point);
-		cairo_set_source_rgba (cr, 0.5, 1, 0, 0.25);
-        cairo_stroke(cr);
-
-		draw_redblack_tree(cr, x->right, depth+1);
-    }
-}
-
-
-
-
-
 class RedBlackToy: public Toy 
 {
     PointSetHandle handle_set;
-	Geom::Point starting_point;
-	Geom::Point ending_point;
-	Geom::Point highlight_point;
+	Geom::Point starting_point;		// during click and drag: start point of click
+	Geom::Point ending_point;		// during click and drag: end point of click (release)
+	Geom::Point highlight_point;	// not used
 
 	Geom::RedBlackTree rbtree_x;
 	RedBlack* search_result;
 	RedBlack temp_deleted_node;
 
+	// colors we are going to use for different purposes
+	colour color_rect, color_rect_guide; 				// black(a=0.6), black
+	colour color_select_area, color_select_area_guide;	// red(a=0.6), red
+
 	int alter_existing_rect;
 	int add_new_rect;
-	int enable_printing; // used for debug - it disables the tree printing
 
 	Rect rect_chosen;	// the rectangle of the search area
-	Rect dummy_draw;
-	int mode;
+	Rect dummy_draw;	// the "helper" rectangle that is shown during the click and drag (before the mouse release)
+	int mode;			// insert/alter, search, delete  modes
 
-	int help_counter;
-	static const int label_size = 15 ;
+	// printing of the tree
+	int help_counter;	// the "x" of the label of each node
+	static const int label_size = 15 ; // size the label of each node
 
+	// used for the keys that switch between modes
     enum menu_item_t
     {
         INSERT = 0,
@@ -99,21 +75,20 @@ class RedBlackToy: public Toy
 		SEARCH,
         TOTAL_ITEMS // this one must be the last item
     };
-
     static const char* menu_items[TOTAL_ITEMS];
     static const char keys[TOTAL_ITEMS];
+
+
 
     void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
         cairo_set_line_width( cr, 1 );
 
-		// draw the rects that we have saved
+		// draw the rects that we have in the handles
 		for( unsigned i=0; i<handle_set.pts.size(); i=i+2 ){
 	        Rect r1( handle_set.pts[i], handle_set.pts[i+1] );
 		    cairo_rectangle( cr, r1 );
-            // the value to insert in the redblacktree: bounding box and the shapeID
 		}
-
-	    cairo_set_source_rgba( cr, 0, 0, 0, 0.6 );
+	    cairo_set_source_rgba( cr, color_rect);
 		cairo_stroke( cr );
 
 		// draw a rect if we click & drag (so that we know what we are going to create)
@@ -121,27 +96,29 @@ class RedBlackToy: public Toy
 			dummy_draw = Rect( starting_point, ending_point );
 			cairo_rectangle( cr, dummy_draw );
 			if( mode == 0){
-				cairo_set_source_rgba( cr, 0, 0, 0, 1 );
+				cairo_set_source_rgba( cr, color_rect_guide);
 			}
 			else if( mode == 1){
-			    cairo_set_source_rgba( cr, 1, 0, 0, 1 );
+			    cairo_set_source_rgba( cr, color_select_area_guide );
 			}
 			cairo_stroke( cr );
 		}
 
 		// draw a rect for the search area
 		cairo_rectangle( cr, rect_chosen );
-	    cairo_set_source_rgba( cr, 1, 0, 0, 0.6 );
+	    cairo_set_source_rgba( cr, color_select_area);
 		cairo_stroke( cr );
 
 		Toy::draw( cr, notify, width, height, save,timer_stream );
-		//draw_redblack_tree( cr, rbtree_x.root );
 		draw_tree_in_toy( cr ,rbtree_x.root, 0);
 		help_counter=0;
     }        
     
     void mouse_moved(GdkEventMotion* e){
-		Toy::mouse_moved(e);
+		if( !( alter_existing_rect && mode == 1 ) ){
+			Toy::mouse_moved(e);
+		}
+
 		if(add_new_rect){
 			ending_point = Point(e->x, e->y);
 		}
@@ -150,7 +127,7 @@ class RedBlackToy: public Toy
     void mouse_pressed(GdkEventButton* e) {
 		Toy::mouse_pressed(e);
 		if(e->button == 1){		// left mouse button
-			if( mode == 0 ){	// insert / alter
+			if( mode == 0 ){	// mode: insert / alter
 				if(!selected) {
 					starting_point = Point(e->x, e->y);
 					ending_point = starting_point;
@@ -158,21 +135,23 @@ class RedBlackToy: public Toy
 				}
 				else
 				{
+					// TODO find the selected rect 
+					// ideas : from Handle *selected ???
 					//std::cout <<find_selected_rect(selected) << std::endl ;
 					alter_existing_rect = 1;
 				}
 			}
-			else if( mode == 1 ){	//search
+			else if( mode == 1 ){	// mode: search
 				if(!selected) {
 					starting_point = Point(e->x, e->y);
 					ending_point = starting_point;
 					add_new_rect = 1;
 				}
 				else{
-					// TODO freeze the pointers (not able to move them) when searching
+					alter_existing_rect = 1;
 				}
 			}
-			else if( mode == 2) {	// delete
+			else if( mode == 2) {	// mode: delete
 			}
 		}
 		else if(e->button == 2){	//middle button
@@ -184,7 +163,7 @@ class RedBlackToy: public Toy
     virtual void mouse_released(GdkEventButton* e) {
 		Toy::mouse_released(e);
 		if( e->button == 1 ) { 		//left mouse button
-			if( mode == 0) {	// insert / alter
+			if( mode == 0) {	// mode: insert / alter
 				if( add_new_rect ){
 					ending_point = Point(e->x, e->y);
 					handle_set.push_back(starting_point);
@@ -194,10 +173,12 @@ class RedBlackToy: public Toy
 				}
 				else if( alter_existing_rect ){
 					//TODO update rect (and tree)
+					// delete selected rect
+					// insert altered
 					alter_existing_rect = 0;
 				}
 			}
-			else if( mode == 1 ){	// search
+			else if( mode == 1 ){	// mode: search
 				if( add_new_rect ){
 					ending_point = Point(e->x, e->y);
 					rect_chosen = Rect(starting_point, ending_point);
@@ -216,8 +197,12 @@ class RedBlackToy: public Toy
 					}
 					add_new_rect = 0;
 				}
+				else if(alter_existing_rect){
+					// do nothing
+					alter_existing_rect = 0;
+				}
 			}
-			else if( mode == 2) {	// delete
+			else if( mode == 2) {	// mode: delete
 
 			}
 		}
@@ -262,7 +247,13 @@ class RedBlackToy: public Toy
 			}
 			help_counter += 1;
 			//drawthisnode(cr, x*10, depth*10);
-			cairo_set_source_rgba (cr, 1, 0, 1, 1);
+			if(n->isRed){
+				cairo_set_source_rgba (cr, color_select_area_guide);
+			}
+			else{
+				cairo_set_source_rgba (cr, color_rect_guide);
+			}
+			
 			cairo_stroke(cr);
 
 			Geom::Point text_point = Point( help_counter*15, depth*15 );
@@ -292,8 +283,9 @@ class RedBlackToy: public Toy
 
 
 public:
-    RedBlackToy(): alter_existing_rect(0), add_new_rect(0), enable_printing(1), mode(0),
-					help_counter(0)
+    RedBlackToy(): 	color_rect(0, 0, 0, 0.6), color_rect_guide(0, 0, 0, 1), 
+					color_select_area(1, 0, 0, 0.6 ),  color_select_area_guide(1, 0, 0, 1 ),
+					alter_existing_rect(0), add_new_rect(0), mode(0), help_counter(0)
 	{
         if(handles.empty()) {
             handles.push_back(&handle_set);
@@ -312,11 +304,11 @@ int main(int argc, char **argv) {
     std::cout << "Let's play with the Red Black Tree! ONLY Insert works now!!!"<< std::endl;
     std::cout << " Key A: insert/alter mode                                   "<< std::endl;
     std::cout << " * Left click and drag on white area: create a rectangle"<< std::endl;
-	std::cout << " * Left click and drag on handler: alter a rectangle"<< std::endl;
+	std::cout << " *NOT READY: Left click and drag on handler: alter a rectangle"<< std::endl;
     std::cout << " Key B: search mode                                   "<< std::endl;
 	std::cout << " * Left click and drag on white area: \"search\" for nodes that intersect red area"<< std::endl;
-    std::cout << " Key C: delete mode                                   "<< std::endl;
-	std::cout << " * Middle click on handler: delete for a rectangle"<< std::endl;
+    std::cout << " NOT READY: Key C: delete mode                                   "<< std::endl;
+	std::cout << " * Left click on handler: delete for a rectangle"<< std::endl;
 	std::cout << "---------------------------------------------------------"<< std::endl;
     init(argc, argv, new RedBlackToy);
     return 0;
