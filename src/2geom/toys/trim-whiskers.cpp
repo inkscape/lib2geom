@@ -385,8 +385,10 @@ class SweepWindow: public Toy {
     PointHandle p;
     std::vector<colour> colours;
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
-        cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
-        cairo_set_line_width(cr, 3);
+        cairo_set_source_rgba(cr, 0.5, 0.5, 0.5, 0.5);
+        cairo_set_line_width(cr, 0.5);
+        cairo_path(cr, path);
+        cairo_stroke(cr);
 
         cairo_set_source_rgb(cr, 0, 0, 0);
         cairo_set_line_width(cr, 3);
