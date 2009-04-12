@@ -59,6 +59,22 @@ SBasis2d x2_plus_y2_1(){
     return result;
 }
 
+SBasis2d conic_sb2d(vector<double> coeff) {
+/*TODO: implement sb2d algebra!!
+    SBasis2d one(Linear2d(1,1,1,1));
+    SBasis2d u(Linear2d(0,1,0,1));
+    SBasis2d v(Linear2d(0,0,1,1));
+    return(u*u+v*v-one);
+*/
+    SBasis2d result(Linear2d(-1,0,0,1));//x+y-1    
+    result.push_back(Linear2d(-1,-1,-1,-1));
+    result.push_back(Linear2d(-1,-1,-1,-1));
+    result.push_back(Linear2d(0,0,0,0));
+    result.us = 2;
+    result.vs = 2;
+    return result;
+}
+
 struct Frame
 {
     Geom::Point O;
@@ -184,8 +200,16 @@ public:
         Geom::Point A = true_solution(tA);
         Geom::Point B = true_solution(tB);
 
-#else
+#elif 0
         SBasis2d f = x2_plus_y2_1();
+        D2<Piecewise<SBasis> > true_solution;
+        true_solution[X] = cos(SBasis(Linear(0,3.14/2)));
+        true_solution[Y] = sin(SBasis(Linear(0,3.14/2)));
+        Piecewise<SBasis> zero = Piecewise<SBasis>(SBasis(Linear(0.)));
+        Geom::Point A = true_solution(tA);
+        Geom::Point B = true_solution(tB);
+#else
+        SBasis2d f = conic_sb2d(vector<double>());
         D2<Piecewise<SBasis> > true_solution;
         true_solution[X] = cos(SBasis(Linear(0,3.14/2)));
         true_solution[Y] = sin(SBasis(Linear(0,3.14/2)));

@@ -239,10 +239,16 @@ class Line
 		return Line(m_origin * m, (m_origin + m_versor) * m);
 	}
     
-    static Line from_normal_and_dist(Point const &n, double d) {
-        return Line(n*d, n*d + rot90(n));
+    Point normal() const {
+        return unit_vector(rot90(m_versor));
     }
-
+    
+    Point normalAndDist(double & dist) const {
+        Point n = normal();
+        dist = -dot(n, m_origin);
+        return n;
+    }
+    
   private:
 	Point m_origin;
 	Point m_versor;

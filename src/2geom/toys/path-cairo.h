@@ -29,6 +29,9 @@ void cairo_d2_pw_sb(cairo_t *cr, Geom::D2<Geom::Piecewise<Geom::SBasis> > const 
 void cairo_pw_d2_sb(cairo_t *cr, Geom::Piecewise<Geom::D2<Geom::SBasis> > const &p);
 
 
+void draw_line(cairo_t *cr, Geom::Point n, double d, Geom::Rect r);
+void draw_line(cairo_t *cr, Geom::Point a, Geom::Point b, Geom::Rect r);
+
 void draw_line_seg(cairo_t *cr, Geom::Point a, Geom::Point b);
 void draw_spot(cairo_t *cr, Geom::Point h);
 void draw_handle(cairo_t *cr, Geom::Point h);
