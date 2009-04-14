@@ -62,6 +62,11 @@ class Line
 		setBy2Points(A, B);
 	}
 
+	Line (double a, double b, double c)
+	{
+	    setByCoefficients(a, b, c);
+	}
+
 	explicit
 	Line(LineSegment const& _segment)
 	{
@@ -73,10 +78,10 @@ class Line
 		: m_origin(_ray.origin()), m_versor(_ray.versor())
 	{
 	}
-    
+
     static Line fromNormalDistance(Point n, double c) {
         Point P = n*c/(dot(n,n));
-    
+
         return Line(P, P+rot90(n));
     }
     static Line fromPointDirection(Point o, Point v) {
@@ -136,6 +141,42 @@ class Line
 			m_versor = Point(0,0);
 		else
 			m_versor.normalize();
+	}
+
+	void setByCoefficients (double a, double b, double c)
+	{
+
+        if ( are_near(a, 0) && are_near(b, 0) )
+        {
+            if (!are_near(c, 0))
+            {
+                THROW_LOGICALERROR("the passed coefficients gives the empty set");
+            }
+            m_versor = Point(0,0);
+            m_origin = Point(0,0);
+        }
+        else
+        {
+            double l = std::sqrt (a*a + b*b);
+            a /= l;
+            b /= l;
+            c /= l;
+            Point N(a, b);
+            m_versor = N.ccw();
+            m_origin = -c * N;
+        }
+	}
+
+	std::vector<double> implicit_form_coefficients() const
+	{
+	    std::vector<double> coeff;
+	    coeff.reserve(3);
+	    Point N = versor().cw();
+	    coeff.push_back (N[X]);
+	    coeff.push_back (N[Y]);
+	    double d = - dot (N, origin());
+	    coeff.push_back (d);
+	    return coeff;
 	}
 
 	bool isDegenerate() const
@@ -238,17 +279,17 @@ class Line
 	{
 		return Line(m_origin * m, (m_origin + m_versor) * m);
 	}
-    
+
     Point normal() const {
         return unit_vector(rot90(m_versor));
     }
-    
+
     Point normalAndDist(double & dist) const {
         Point n = normal();
         dist = -dot(n, m_origin);
         return n;
     }
-    
+
   private:
 	Point m_origin;
 	Point m_versor;

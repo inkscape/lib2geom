@@ -62,6 +62,7 @@ class LineToy : public Toy
         TEST_ANGLE_BISEC,
         TEST_COLLINEAR,
         TEST_INTERSECTIONS,
+        TEST_COEFFICIENTS,
         TOTAL_ITEMS // this one must be the last item
     };
 
@@ -75,7 +76,11 @@ class LineToy : public Toy
 
     enum slider_label_t
     {
-        ANGLE_SLIDER = 0,
+        END_SHARED_SLIDERS = 0,
+        ANGLE_SLIDER = END_SHARED_SLIDERS,
+        A_COEFF_SLIDER = END_SHARED_SLIDERS,
+        B_COEFF_SLIDER,
+        C_COEFF_SLIDER
     };
 
     static const char* menu_items[TOTAL_ITEMS];
@@ -579,6 +584,65 @@ class LineToy : public Toy
 
     }
 
+
+    void init_coefficients()
+    {
+        init_common();
+        p1.pos = Point(400, 50);
+        p2.pos = Point(450, 450);
+
+        Line l(p1.pos, p2.pos);
+        std::vector<double> coeff = l.implicit_form_coefficients();
+        sliders.push_back( Slider(-1, 1, 0, coeff[0], "A"));
+        sliders.push_back( Slider(-1, 1, 0, coeff[1], "B"));
+        sliders.push_back( Slider(-500, 500, 0, coeff[2], "C"));
+
+        handles.push_back(&p1);
+        handles.push_back(&p2);
+        handles.push_back(&(sliders[A_COEFF_SLIDER]));
+        handles.push_back(&(sliders[B_COEFF_SLIDER]));
+        handles.push_back(&(sliders[C_COEFF_SLIDER]));
+    }
+
+    void draw_coefficients(cairo_t *cr, std::ostringstream *notify,
+                            int width, int height, bool save, std::ostringstream */*timer_stream*/)
+    {
+        draw_common(cr, notify, width, height, save);
+        init_coefficients_ctrl_geom(cr, notify, width, height);
+
+        Line l1(p1.pos, p2.pos);
+        std::vector<double> coeff1 = l1.implicit_form_coefficients();
+        Line l2(sliders[A_COEFF_SLIDER].value(),
+                sliders[B_COEFF_SLIDER].value(),
+                sliders[C_COEFF_SLIDER].value());
+
+        cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 1.0);
+        cairo_set_line_width(cr, 0.8);
+        draw_line(cr, l1);
+        cairo_stroke(cr);
+
+        cairo_set_source_rgba(cr, 1.0, 0.0, 0.0, 1.0);
+        cairo_set_line_width(cr, 0.4);
+        draw_line(cr, l2);
+        cairo_stroke(cr);
+
+        cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 1.0);
+        draw_label(cr, p1, "P");
+        draw_label(cr, p2, "Q");
+        //draw_label(cr, l1, "L(P,Q)");
+        cairo_stroke(cr);
+
+        cairo_set_source_rgba(cr, 1.0, 0.0, 0.0, 1.0);
+        draw_label(cr, l2, "L(A, B, C)");
+        cairo_stroke(cr);
+
+        *notify << "  L(P,Q):  a = " << coeff1[0]
+                << ", b = " << coeff1[1]
+                << ", c = " << coeff1[2] << std::endl;
+
+    }
+
+
     void init_common_ctrl_geom(cairo_t* /*cr*/, int /*width*/, int /*height*/, std::ostringstream* /*notify*/)
     {
         if ( set_common_control_geometry )
@@ -597,6 +661,17 @@ class LineToy : public Toy
         }
     }
 
+    void init_coefficients_ctrl_geom(cairo_t* /*cr*/, std::ostringstream* /*notify*/, int /*width*/, int height)
+    {
+        if ( set_control_geometry )
+        {
+            set_control_geometry = false;
+
+            sliders[A_COEFF_SLIDER].geometry(Point(50, height - 160), 400);
+            sliders[B_COEFF_SLIDER].geometry(Point(50, height - 110), 400);
+            sliders[C_COEFF_SLIDER].geometry(Point(50, height - 60), 400);
+        }
+    }
 
 
     void draw_segment(cairo_t* cr, Point const& p1, Point const&  p2)
@@ -665,7 +740,7 @@ class LineToy : public Toy
     }
 
     void draw_menu( cairo_t * /*cr*/, std::ostringstream *notify,
-                    int /*width*/, int /*height*/, bool /*save*/, 
+                    int /*width*/, int /*height*/, bool /*save*/,
                     std::ostringstream */*timer_stream*/ )
     {
         *notify << std::endl;
@@ -720,6 +795,10 @@ class LineToy : public Toy
                 init_intersections();
                 draw_f = &LineToy::draw_intersections;
                 break;
+            case 'K':
+                init_coefficients();
+                draw_f = &LineToy::draw_coefficients;
+                break;
         }
         redraw();
     }
@@ -766,12 +845,13 @@ const char* LineToy::menu_items[] =
     "segment bisector",
     "angle bisector",
     "collinear",
-    "intersection"
+    "intersection",
+    "coefficients"
 };
 
 const char LineToy::keys[] =
 {
-     'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'
+     'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K'
 };
 
 

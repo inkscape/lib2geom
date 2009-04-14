@@ -1,6 +1,7 @@
 #ifndef PATH_CAIRO
 #define PATH_CAIRO
 
+#include <2geom/line.h>
 #include <2geom/sbasis.h>
 #include <2geom/sbasis-2d.h>
 #include <2geom/d2.h>
@@ -29,6 +30,7 @@ void cairo_d2_pw_sb(cairo_t *cr, Geom::D2<Geom::Piecewise<Geom::SBasis> > const 
 void cairo_pw_d2_sb(cairo_t *cr, Geom::Piecewise<Geom::D2<Geom::SBasis> > const &p);
 
 
+void draw_line(cairo_t *cr, const Geom::Line& l, const Geom::Rect& r);
 void draw_line(cairo_t *cr, Geom::Point n, double d, Geom::Rect r);
 void draw_line(cairo_t *cr, Geom::Point a, Geom::Point b, Geom::Rect r);
 

@@ -22,7 +22,7 @@ void cairo_convex_hull(cairo_t *cr, ConvexHull const& ch) {
 void cairo_curve(cairo_t *cr, Curve const& c) {
     if(!cairo_has_current_point(cr))
         cairo_move_to(cr, c.initialPoint());
-    
+
     if(LineSegment const* line_segment = dynamic_cast<LineSegment const*>(&c)) {
         cairo_line_to(cr, (*line_segment)[1][0], (*line_segment)[1][1]);
     }
@@ -30,8 +30,8 @@ void cairo_curve(cairo_t *cr, Curve const& c) {
         std::vector<Point> points = quadratic_bezier->points();
         Point b1 = points[0] + (2./3) * (points[1] - points[0]);
         Point b2 = b1 + (1./3) * (points[2] - points[0]);
-        cairo_curve_to(cr, b1[0], b1[1], 
-                       b2[0], b2[1], 
+        cairo_curve_to(cr, b1[0], b1[1],
+                       b2[0], b2[1],
                        points[2][0], points[2][1]);
     }
     else if(CubicBezier const *cubic_bezier = dynamic_cast<CubicBezier const*>(&c)) {
@@ -76,7 +76,7 @@ void cairo_path_stitches(cairo_t *cr, Path const &p) {
         if (dynamic_cast<Path::StitchSegment const *>(&c)) {
             cairo_move_to(cr, c.initialPoint()[X], c.initialPoint()[Y]);
             cairo_line_to(cr, c.finalPoint()[X], c.finalPoint()[Y]);
-            
+
             std::stringstream s;
             s << L1(c.finalPoint() - c.initialPoint());
             std::string ss = s.str();
@@ -219,7 +219,7 @@ cairo_line_to (cairo_t *cr, Geom::Point p1) {
 }
 
 void
-cairo_curve_to (cairo_t *cr, Geom::Point p1, 
+cairo_curve_to (cairo_t *cr, Geom::Point p1,
 		Geom::Point p2, Geom::Point p3) {
     cairo_curve_to(cr, p1[0], p1[1],
                    p2[0], p2[1],
@@ -283,7 +283,9 @@ def draw_line(cr, a, b, c, r):
 
 */
 
-void draw_line(cairo_t *cr, double a, double b, double c, Geom::Rect r) {
+
+
+void draw_line(cairo_t *cr, double a, double b, double c, const Geom::Rect& r) {
     Point p0, p1;
     if (fabs(b) > fabs(a)) {
         p0 = Point(r[0][0], (-c - a*r[0][0])/b);
@@ -312,6 +314,14 @@ void draw_line(cairo_t *cr, double a, double b, double c, Geom::Rect r) {
     cairo_line_to(cr, p1);
     cairo_stroke(cr);
 }
+
+
+void draw_line(cairo_t* cr, const Geom::Line& l, const Geom::Rect& r)
+{
+    std::vector<double> coeff = l.implicit_form_coefficients();
+    draw_line (cr, coeff[0], coeff[1], coeff[2], r);
+}
+
 
 void draw_line(cairo_t *cr, Geom::Point n, double dist, Geom::Rect r) {
     draw_line(cr, n[0], n[1], dist, r);
