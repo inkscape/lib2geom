@@ -292,6 +292,13 @@ Geom::Point read_point(FILE* f) {
     return p;
 }
 
+Geom::Interval read_interval(FILE* f) {
+    Geom::Interval p;
+    for(unsigned i = 0; i < 2; i++)
+        assert(fscanf(f, " %lf ", &p[i]));
+    return p;
+}
+
 void open() {
     if(current_toy != NULL) {
 	GtkWidget* d = gtk_file_chooser_dialog_new("Open handle configuration", window, GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, NULL);
@@ -854,6 +861,72 @@ void PointSetHandle::save(FILE* f) {
 Geom::D2<Geom::SBasis> PointSetHandle::asBezier() {
     return handles_to_sbasis(pts.begin(), size()-1);
 }
+
+void RectHandle::draw(cairo_t *cr, bool annotes) {
+    cairo_rectangle(cr, pos);
+    cairo_stroke(cr);
+    if(show_center_handle) {
+        draw_circ(cr, pos.midpoint());
+    }
+}
+
+void* RectHandle::hit(Geom::Point mouse) {
+    if(show_center_handle) {
+	if(Geom::distance(mouse, pos.midpoint()) < 5)
+            return (void*)1;
+    }
+    for(int i = 0; i < 4; i++) {
+	if(Geom::distance(mouse, pos.corner(i)) < 5)
+            return (void*)(2+i);
+    }
+    for(int i = 0; i < 4; i++) {
+        Geom::LineSegment ls(pos.corner(i), pos.corner(i+1));
+	if(Geom::distance(ls.pointAt(ls.nearestPoint(mouse)),mouse) < 5)
+            return (void*)(6+i);
+    }
+    return 0;
+    
+}
+
+void RectHandle::move_to(void* hit, Geom::Point om, Geom::Point m) {
+    unsigned h = (unsigned)hit;
+    if(h == 1)
+        pos += (m-om);
+    else if(h >= 2 and h <= 5) {// corners
+        int xi = (h-2)& 1;
+        int yi = (h-2)&2;
+        if(yi)
+            xi = 1-xi; // clockwise
+        pos[0][xi] = m[0];
+        pos[1][yi/2] = m[1];
+    } else if(h >= 6 and h <= 9) {// edges
+        int side, d;
+        switch(h-6) {
+            case 0: d = 1; side = 0; break;
+            case 1: d = 0; side = 1; break;
+            case 2: d = 1; side = 1; break;
+            case 3: d = 0; side = 0; break;
+        }
+        pos[d][side] = m[d];
+    }
+}
+
+void RectHandle::load(FILE* f) {
+    assert(0 == fscanf(f, "r\n"));
+    for(int i = 0; i < 2; i++) {
+	pos[i] = read_interval(f);
+    }
+ 
+}
+
+void RectHandle::save(FILE* f) {
+    fprintf(f, "r\n");
+    for(unsigned i = 0; i < 2; i++) {
+	fprintf(f, "%lf %lf\n", pos[i][0], pos[i][1]);
+    }
+}
+
+
 
 /*
 	Local Variables:

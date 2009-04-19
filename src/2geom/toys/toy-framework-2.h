@@ -111,6 +111,20 @@ public:
     virtual void save(FILE* f);
 };
 
+class RectHandle : public Handle{
+public:
+    RectHandle() {}
+    RectHandle(Geom::Rect pos, bool show_center_handle) : pos(pos), show_center_handle(show_center_handle) {}
+    Geom::Rect pos;
+    bool show_center_handle;
+    virtual void draw(cairo_t *cr, bool annotes = false);
+
+    virtual void* hit(Geom::Point mouse);
+    virtual void move_to(void* hit, Geom::Point om, Geom::Point m);
+    virtual void load(FILE* f);
+    virtual void save(FILE* f);
+};
+
 
 // used by Slider
 inline std::string default_formatter(double x)
@@ -301,3 +315,13 @@ inline std::ostream& operator<<(std::ostream& o, Timer::Time const &t) {
 
 
 #endif // _2GEOM_TOY_FRAMEWORK2_H_
+/*
+	Local Variables:
+	mode:c++
+	c-file-style:"stroustrup"
+	c-file-offsets:((innamespace . 0)(inline-open . 0)(case-label . +))
+	indent-tabs-mode:nil
+	fill-column:99
+	End:
+      */
+// vim: filetype=cpp:expandtab:shiftwidth=4:tabstop=4:softtabstop=4:encoding=utf-8:textwidth=99 :
