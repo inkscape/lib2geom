@@ -907,7 +907,7 @@ void* RectHandle::hit(Geom::Point mouse) {
 }
 
 void RectHandle::move_to(void* hit, Geom::Point om, Geom::Point m) {
-    unsigned h = (unsigned)hit;
+    unsigned h = (unsigned)(uintptr_t)(hit);
     if(h == 1)
         pos += (m-om);
     else if(h >= 2 and h <= 5) {// corners
