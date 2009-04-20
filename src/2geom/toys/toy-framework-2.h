@@ -65,6 +65,7 @@ public:
     Geom::Rect bounds;
     const char* text;
     bool on;
+    Toggle() : bounds(Geom::Point(0,0), Geom::Point(0,0)), text(""), on(false) {}
     Toggle(const char* txt, bool v) : bounds(Geom::Point(0,0), Geom::Point(0,0)), text(txt), on(v) {}
     Toggle(Geom::Rect bnds, const char* txt, bool v) : bounds(bnds), text(txt), on(v) {}
     void draw(cairo_t *cr, bool annotes = false);
@@ -78,7 +79,85 @@ public:
 };
 
 
+template< typename T>
+class VectorHandle : public Handle
+{
+  public:
+    VectorHandle()
+        : m_handles()
+    {
+    }
+    virtual void draw(cairo_t *cr, bool annotes=false)
+    {
+        for (iterator it = m_handles.begin(); it != m_handles.end(); ++it)
+            it->draw(cr, annotes);
+    }
 
+    virtual void* hit(Geom::Point pos)
+    {
+        void* result = NULL;
+        for (iterator it = m_handles.begin(); it != m_handles.end(); ++it)
+        {
+            result = it->hit(pos);
+            if (result != NULL)  break;
+        }
+        return result;
+    }
+
+    virtual void move_to(void* hit, Geom::Point om, Geom::Point m)
+    {
+        if (hit != NULL)
+        {
+            static_cast<T*>(hit)->move_to(hit, om, m);
+        }
+    }
+
+    virtual void load(FILE* f)
+    {
+        for (iterator it = m_handles.begin(); it != m_handles.end(); ++it)
+            it->load(f);
+    }
+
+    virtual void save(FILE* f)
+    {
+        for (iterator it = m_handles.begin(); it != m_handles.end(); ++it)
+            it->save(f);
+    }
+
+    void clear()
+    {
+        m_handles.clear();
+    }
+
+    void reserve(size_t sz)
+    {
+        m_handles.reserve(sz);
+    }
+
+    size_t size() const
+    {
+        return m_handles.size();
+    }
+
+    void push_back (const T& _handle)
+    {
+        m_handles.push_back(_handle);
+    }
+
+    const T& operator[] (size_t i) const
+    {
+        return m_handles.at(i);
+    }
+
+    T& operator[] (size_t i)
+    {
+        return m_handles.at(i);
+    }
+
+  private:
+      typedef typename std::vector<T>::iterator iterator;
+      std::vector<T> m_handles;
+};  // end class VectorHandle
 
 
 class PointHandle : public Handle{
@@ -141,9 +220,17 @@ class Slider : public Handle
     typedef std::string (*formatter_t) (double );
     typedef double value_type;
 
+    Slider()
+        : m_handle(), m_pos(Geom::Point(0,0)), m_length(1),
+         m_min(0), m_max(1), m_step(0), m_dir(Geom::X),
+         m_label(""), m_formatter(&default_formatter)
+    {
+        value(0);
+    }
+
     // pass step = 0 for having a continuos value variation
     Slider( value_type _min, value_type _max, value_type _step,
-            value_type _value, const char * _label = "" )
+            value_type _value, const std::string& _label = "" )
         : m_handle(),m_pos(Geom::Point(0,0)), m_length(1),
           m_min(_min), m_max(_max), m_step(_step), m_dir(Geom::X),
           m_label(_label), m_formatter(&default_formatter)
@@ -151,9 +238,33 @@ class Slider : public Handle
         value(_value);
     }
 
+    void set( value_type _min, value_type _max, value_type _step,
+              value_type _value, const std::string& _label = "" )
+    {
+          m_min = _min;
+          m_max = _max;
+          m_step = _step;
+          m_label = _label;
+          value(_value);
+    }
+
     value_type value() const;
 
     void value(value_type _value);
+
+    value_type max_value() const
+    {
+        return m_max;
+    }
+
+    void max_value(value_type _value);
+
+    value_type min_value() const
+    {
+        return m_min;
+    }
+
+    void min_value(value_type _value);
 
     // dir = X horizontal slider dir = Y vertical slider
     void geometry(Geom::Point _pos, value_type _length, Geom::Dim2 _dir = Geom::X);
@@ -167,7 +278,9 @@ class Slider : public Handle
 
     void* hit(Geom::Point pos)
     {
-        return m_handle.hit(pos);
+        if (m_handle.hit(pos) != NULL)
+            return this;
+        return NULL;
     }
 
     void move_to(void* hit, Geom::Point om, Geom::Point m);
@@ -188,9 +301,10 @@ class Slider : public Handle
     value_type m_length;
     value_type m_min, m_max, m_step;
     int m_dir;
-    const char* m_label;
+    std::string m_label;
     formatter_t m_formatter;
 };
+
 
 
 

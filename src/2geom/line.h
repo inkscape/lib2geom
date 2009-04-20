@@ -111,6 +111,12 @@ class Line
 		m_origin = _point;
 	}
 
+    void origin(Coord _x, Coord _y)
+    {
+        m_origin[X] = _x;
+        m_origin[Y] = _y;
+    }
+
 	void versor(Point const& _versor)
 	{
 		m_versor = _versor;

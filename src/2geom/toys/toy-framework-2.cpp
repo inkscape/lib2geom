@@ -33,7 +33,7 @@ colour colour::from_hsv( float H,          // hue shift (in degrees)
     float k = V/3;
     float a = V*S*cos(H)/3;
     float b = V*S*sin(H)/3;
-        
+
     return colour(
         (k+2*a)*inr -     2*b*ing +    (k-a-b)*inb,
         (-k+a+3*b)*inr + (3*a-b)*ing + (-k+a+2*b)*inb,
@@ -47,10 +47,10 @@ colour colour::from_hsv( float H,          // hue shift (in degrees)
 
 colour colour::from_hsl(float h, float sl, float l, float a) {
     h /= M_PI*2;
-    colour rgba(l,l,l,a); // default to gray 
-    
+    colour rgba(l,l,l,a); // default to gray
+
     double v = (l <= 0.5) ? (l * (1.0 + sl)) : (l + sl - l * sl);
-    
+
     if (v > 0) {
         double m;
         double sv;
@@ -152,8 +152,8 @@ void redraw() { gtk_widget_queue_draw(GTK_WIDGET(window)); }
 #include <typeinfo>
 
 Toy::Toy() : hit_data(0), show_timings(0) {
-    mouse_down = false; 
-    selected = NULL; 
+    mouse_down = false;
+    selected = NULL;
     notify_offset = 0;
 }
 
@@ -184,7 +184,7 @@ void Toy::draw(cairo_t *cr, std::ostringstream *notify, int width, int height, b
         cairo_set_source_rgb (cr, handles[i]->rgb[0], handles[i]->rgb[1], handles[i]->rgb[2]);
 	handles[i]->draw(cr, should_draw_numbers());
     }
-    
+
     cairo_set_source_rgba (cr, 0.5, 0, 0, 1);
     if(selected && mouse_down == true)
 	selected->draw(cr, should_draw_numbers());
@@ -206,7 +206,7 @@ void Toy::draw(cairo_t *cr, std::ostringstream *notify, int width, int height, b
 void Toy::mouse_moved(GdkEventMotion* e)
 {
     Geom::Point mouse(e->x, e->y);
-    
+
     if(e->state & (GDK_BUTTON1_MASK | GDK_BUTTON3_MASK)) {
         if(selected)
 	    selected->move_to(hit_data, old_mouse_point, mouse);
@@ -276,7 +276,7 @@ void make_about() {
     GtkWidget* about_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_title(GTK_WINDOW(about_window), "About");
     gtk_window_set_policy(GTK_WINDOW(about_window), FALSE, FALSE, TRUE);
-    
+
     GtkWidget* about_text = gtk_text_view_new();
     GtkTextBuffer* buf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(about_text));
     gtk_text_buffer_set_text(buf, "Toy lib2geom application", -1);
@@ -342,13 +342,13 @@ void save_cairo_backend(const char* filename) {
         cr_s = cairo_pdf_surface_create(filename, width, height);
 #endif
 #if CAIRO_HAS_SVG_SURFACE
-#if CAIRO_HAS_PDF_SURFACE        
+#if CAIRO_HAS_PDF_SURFACE
     else
 #endif
         cr_s = cairo_svg_surface_create(filename, width, height);
 #endif
     cairo_t* cr = cairo_create(cr_s);
-    
+
     if(save_png) {
         cairo_save(cr);
         cairo_set_source_rgb(cr, 1,1,1);
@@ -386,7 +386,7 @@ void take_screenshot(const char* filename) {
 
     cairo_surface_t* cr_s = cairo_image_surface_create ( CAIRO_FORMAT_ARGB32, width, height );
     cairo_t* cr = cairo_create(cr_s);
-        
+
     if(current_toy != NULL) {
         std::ostringstream * notify = new std::ostringstream;
         std::ostringstream * timer_stream = new std::ostringstream;
@@ -394,7 +394,7 @@ void take_screenshot(const char* filename) {
         delete notify;
         delete timer_stream;
     }
-    
+
     cairo_show_page(cr);
     cairo_surface_write_to_png(cr_s, filename);
     cairo_destroy (cr);
@@ -427,13 +427,13 @@ static gboolean expose_event(GtkWidget *widget, GdkEventExpose */*event*/, gpoin
 {
     (void)(data);
     cairo_t *cr = gdk_cairo_create(widget->window);
-    
+
     int width = 256;
     int height = 256;
     gdk_drawable_get_size(widget->window, &width, &height);
 
     std::ostringstream notify;
-    
+
     static bool resized = false;
     if(!resized) {
 	Geom::Rect alloc_size(Geom::Interval(0, width),
@@ -528,11 +528,11 @@ gint nmenu_items = 9;
 void init(int argc, char **argv, Toy* t, int width, int height) {
     current_toy = t;
     gtk_init (&argc, &argv);
-    
+
     gdk_rgb_init();
-    
+
     FILE * to_load_file = NULL;
-    
+
     int c;
     int digit_optind = 0;
 
@@ -555,7 +555,7 @@ void init(int argc, char **argv, Toy* t, int width, int height) {
             case 'h':
                 to_load_file = fopen(argv[2], "r");
                 break;
-                
+
             case 's':
                 screenshot_only_type = 1;
                 screenshot_output_name = strdup(optarg);
@@ -585,15 +585,15 @@ void init(int argc, char **argv, Toy* t, int width, int height) {
 
     if(to_load_file)
         t->load(to_load_file);
-    
+
     if(screenshot_only_type > 0) {
         if(screenshot_output_name)
             save_cairo_backend(screenshot_output_name);
         return;
     }
-    
+
     window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
-    
+
 //Find last slash - remainder is title
     char* title = 0;
     for(char* ch = argv[0]; *ch != '\0'; ch++)
@@ -682,8 +682,8 @@ void Toggle::handle_click(GdkEventButton* e) {
 
 void* Toggle::hit(Geom::Point mouse)
 {
-    if (bounds.contains(mouse)) 
-    { 
+    if (bounds.contains(mouse))
+    {
         toggle();
         return this;
     }
@@ -704,14 +704,14 @@ Slider::value_type Slider::value() const
 {
     Slider::value_type v = m_handle.pos[m_dir] - m_pos[m_dir];
     v =  ((m_max - m_min) / m_length) * v;
-    //std::cerr << "v : " << v << std::endl; 
+    //std::cerr << "v : " << v << std::endl;
     if (m_step != 0)
     {
         int k = std::floor(v / m_step);
         v = k * m_step;
     }
     v = v + m_min;
-    //std::cerr << "v : " << v << std::endl; 
+    //std::cerr << "v : " << v << std::endl;
     return v;
 }
 
@@ -725,13 +725,27 @@ void Slider::value(Slider::value_type _value)
         int k = std::floor(_value / m_step);
         _value = k * m_step + m_min;
     }
-    m_handle.pos[m_dir] 
+    m_handle.pos[m_dir]
            = (m_length / (m_max - m_min)) * (_value - m_min) + m_pos[m_dir];
 }
 
+void Slider::max_value(Slider::value_type _value)
+{
+    Slider::value_type v = value();
+    m_max = _value;
+    value(v);
+}
+
+void Slider::min_value(Slider::value_type _value)
+{
+    Slider::value_type v = value();
+    m_min = _value;
+    value(v);
+}
+
 // dir = X horizontal slider dir = Y vertical slider
-void Slider::geometry( Geom::Point _pos, 
-                       Slider::value_type _length, 
+void Slider::geometry( Geom::Point _pos,
+                       Slider::value_type _length,
                        Geom::Dim2 _dir )
 {
     Slider::value_type v = value();
@@ -752,7 +766,7 @@ void Slider::draw(cairo_t* cr, bool annotate)
     std::ostringstream os;
     os << m_label << ": " << (*m_formatter)(value());
     cairo_set_source_rgba(cr, 0.1, 0.1, 0.7, 1.0);
-    cairo_set_line_width(cr, 0.7);    
+    cairo_set_line_width(cr, 0.7);
     m_handle.draw(cr, annotate);
     cairo_stroke(cr);
     cairo_set_source_rgba(cr, 0.1, 0.1, 0.1, 1.0);
