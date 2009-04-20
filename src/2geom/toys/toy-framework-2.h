@@ -26,6 +26,7 @@ using std::vector;
 double uniform();
 
 void draw_text(cairo_t *cr, Geom::Point pos, const char* txt, bool bottom = false, const char* fontdesc = "Sans");
+void draw_text(cairo_t *cr, Geom::Point pos, const std::string& txt, bool bottom = false, const std::string& fontdesc = "Sans");
 void draw_number(cairo_t *cr, Geom::Point pos, int num, std::string name=std::string(), bool bottom = true);
 void draw_number(cairo_t *cr, Geom::Point pos, unsigned num, std::string name=std::string(), bool bottom = true);
 void draw_number(cairo_t *cr, Geom::Point pos, double num, std::string name=std::string(), bool bottom = true);

@@ -28,6 +28,7 @@ circle-intersect
 collinear-normal
 conic-3
 conic-4
+conic-5
 convex-toy
 curvature-test
 curve-curve-distance

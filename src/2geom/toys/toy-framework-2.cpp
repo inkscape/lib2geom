@@ -122,6 +122,10 @@ void draw_text(cairo_t *cr, Geom::Point loc, const char* txt, bool bottom, const
     pango_cairo_show_layout(cr, layout);
 }
 
+void draw_text(cairo_t *cr, Geom::Point loc, const std::string& txt, bool bottom, const std::string& fontdesc) {
+    draw_text(cr, loc, txt.c_str(), bottom, fontdesc.c_str());
+}
+
 void draw_number(cairo_t *cr, Geom::Point pos, int num, std::string name, bool bottom) {
     std::ostringstream number;
     if (name.size())

@@ -41,6 +41,8 @@ bezier-clipping.cpp
 bezier-curve.h
 circle.cpp
 circle.h
+conicsec.h
+conicsec.cpp
 curve.h
 curves.h
 curve-helpers.cpp

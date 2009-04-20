@@ -224,6 +224,12 @@ inline Interval unify(const Interval & a, const Interval & b) {
     return Interval(std::min(a.min(), b.min()),
                     std::max(a.max(), b.max()));
 }
+inline Interval operator|(const Interval & a, const Interval & b) {
+    return unify(a, b);
+}
+inline Interval operator|=(Interval & a, const Interval & b) {
+    return a = unify(a, b);
+}
 
 /**
  * \brief OptInterval is an Interval that can be empty.
@@ -261,6 +267,14 @@ inline OptInterval intersect(const Interval & a, const Interval & b) {
     return u > v ? OptInterval()
                   : OptInterval(Interval(u, v));
 }
+
+/*inline Interval operator&(const Interval & a, const Interval & b) {
+    return intersect(a, b);
+}
+inline Interval operator&=(Interval & a, const Interval & b) {
+    return a = intersect(a, b);
+    }*/
+
 
 #ifdef _GLIBCXX_IOSTREAM
 inline std::ostream &operator<< (std::ostream &os, 
