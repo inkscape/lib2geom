@@ -1,6 +1,6 @@
 /**
  * \file
- * \brief Circle Curve
+ * \brief Conic Section
  *
  * Authors:
  *      Nathan Hurst <njh@njhurst.com>
@@ -86,7 +86,9 @@ public:
     }
     xAx() {}
     std::string categorise() const;
+    bool isDegenerate() const;
     static xAx fromPoint(Point p);
+    static xAx fromDistPoint(Point p, double d);
     static xAx fromLine(Point n, double d);
     static xAx fromLine(Line l);
 
@@ -95,7 +97,11 @@ public:
         return c[0]*x*x + c[1]*x*y + c[2]*y*y + c[3]*x + c[4]*y + c[5];
     }
 
-    double evaluate_at(Point P);
+    double valueAt(Point P);
+    
+    std::vector<double> implicit_form_coefficients() {
+        return std::vector<double>(c, c+6);
+    }
 
     template<typename T>
     T evaluate_at(T x, T y, T w) {
@@ -107,13 +113,14 @@ public:
     Point gradient(Point p);
   
     xAx operator-(xAx const &b) const;
+    xAx operator+(double const &b) const;
     xAx operator*(double const &b) const;
     
     std::vector<Point> crossings(Rect r);
     boost::optional<RatQuad> toCurve(Rect const & bnd);
-    std::vector<double> roots(Point d, Point o);
+    std::vector<double> roots(Point d, Point o) const;
 
-    std::vector<double> roots(Line const &l);
+    std::vector<double> roots(Line const &l) const;
   
     static Interval quad_ex(double a, double b, double c, Interval ivl);
     

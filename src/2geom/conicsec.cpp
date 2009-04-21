@@ -197,6 +197,10 @@ xAx xAx::fromPoint(Point p) {
   return xAx(1., 0, 1., -2*p[0], -2*p[1], dot(p,p));
 }
   
+xAx xAx::fromDistPoint(Point p, double d) {
+    return xAx();//1., 0, 1., -2*(1+d)*p[0], -2*(1+d)*p[1], dot(p,p)+d*d);
+}
+  
 xAx xAx::fromLine(Point n, double d) {
   return xAx(n[0]*n[0], 2*n[0]*n[1], n[1]*n[1], 2*d*n[0], 2*d*n[1], d*d);
 }
@@ -211,7 +215,7 @@ xAx xAx::fromLine(Line l) {
 
 
 
-double xAx::evaluate_at(Point P) {
+double xAx::valueAt(Point P) {
   return evaluate_at(P[0], P[1]);
 }
 
@@ -234,6 +238,15 @@ xAx xAx::operator-(xAx const &b) const {
   }
   return res;
 }
+xAx xAx::operator+(double const &b) const {
+  xAx res;
+  for(int i = 0; i < 5; i++) {
+    res.c[i] = c[i];
+  }
+  res.c[5] = c[5] + b;
+  return res;
+}
+    
 xAx xAx::operator*(double const &b) const {
   xAx res;
   for(int i = 0; i < 6; i++) {
@@ -289,7 +302,7 @@ xAx xAx::operator*(double const &b) const {
   return boost::optional<RatQuad>();
 }
     
-  std::vector<double> xAx::roots(Point d, Point o) {
+  std::vector<double> xAx::roots(Point d, Point o) const {
   // Find the roots on line l
   // form the quadratic Q(t) = 0 by composing l with xAx
   double q2 = c[0]*d[0]*d[0] + c[1]*d[0]*d[1] + c[2]*d[1]*d[1];
@@ -324,7 +337,7 @@ xAx xAx::operator*(double const &b) const {
   return r;
 }
 
-  std::vector<double> xAx::roots(Line const &l) {
+std::vector<double> xAx::roots(Line const &l) const {
   return roots(l.versor(), l.origin());
 }
   
@@ -348,9 +361,9 @@ Point xAx::bottom() const {
     
 Interval xAx::extrema(Rect r) {
   if (c[0] == 0 and c[1] == 0 and c[2] == 0) {
-    Interval ext(evaluate_at(r.corner(0)));
+    Interval ext(valueAt(r.corner(0)));
     for(int i = 1; i < 4; i++) 
-      ext |= Interval(evaluate_at(r.corner(i)));
+      ext |= Interval(valueAt(r.corner(i)));
     return ext;
   }
   double k = r[0][0];
@@ -366,7 +379,10 @@ Interval xAx::extrema(Rect r) {
   return ext;
 }
 
-
+bool xAx::isDegenerate() const {
+    assert(0);
+    return false; // XXX:
+}
 
 
 } // end namespace Geom

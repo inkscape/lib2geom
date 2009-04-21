@@ -58,11 +58,14 @@ BOOST_PYTHON_MODULE(_py2geom)
     wrap_sbasis();
     wrap_bezier();
     wrap_linear();
+    wrap_line();
+    wrap_conic();
     wrap_pw();
     wrap_d2();
     wrap_parser();
     wrap_path();
     wrap_shape();
+    wrap_crossing();
 
 }
 

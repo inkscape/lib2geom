@@ -41,6 +41,9 @@ void wrap_d2();
 void wrap_path();
 void wrap_parser();
 void wrap_shape();
+void wrap_line();
+void wrap_conic();
+void wrap_crossing();
 
 #endif
 /*

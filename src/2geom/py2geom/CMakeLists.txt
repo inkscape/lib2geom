@@ -3,6 +3,9 @@ point.cpp
 interval.cpp
 transforms.cpp
 rect.cpp
+line.cpp
+conic.cpp
+crossing.cpp
 sbasis.cpp
 bezier.cpp
 linear.cpp
