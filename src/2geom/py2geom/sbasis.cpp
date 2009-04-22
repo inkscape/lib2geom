@@ -34,6 +34,7 @@
 #include "helpers.h"
 
 #include "../sbasis.h"
+#include "../sbasis-math.h"
 #include "../point.h"
 
 using namespace boost::python;
@@ -106,12 +107,13 @@ void wrap_sbasis() {
     def("compose", (Geom::SBasis (*) (Geom::SBasis const &, Geom::SBasis const &))&Geom::compose);
     def("integral", integral_sbasis);
     def("derivative", derivative_sbasis);
+    def("min", (Geom::Piecewise<Geom::SBasis> (*)(Geom::SBasis const &, Geom::SBasis const & ))&Geom::min);
     def("sqrt", (Geom::SBasis (*)(Geom::SBasis const &, int ))&Geom::sqrt);
     def("reciprocal", (Geom::SBasis (*)(Geom::Linear const &, int ))&Geom::reciprocal);
     def("divide",(Geom::SBasis (*)(Geom::SBasis const &, Geom::SBasis const &, int )) &Geom::divide);
     def("inverse", (Geom::SBasis (*)(Geom::SBasis, int ))&Geom::inverse);
-    def("sin", (Geom::SBasis (*)(Geom::SBasis const &, int ))&Geom::sin);
-    def("cos", (Geom::SBasis (*)(Geom::SBasis const &, int ))&Geom::cos);
+    //def("sin", (Geom::SBasis (*)(Geom::SBasis const &, int ))&Geom::sin);
+    //def("cos", (Geom::SBasis (*)(Geom::SBasis const &, int ))&Geom::cos);
     def("reverse", (Geom::SBasis (*)(Geom::SBasis const &))&Geom::reverse);
     def("roots", (std::vector<double> (*)(Geom::SBasis const &))&Geom::roots);
     def("bounds_fast", &wrap_bounds_fast);

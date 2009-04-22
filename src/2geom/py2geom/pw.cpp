@@ -91,8 +91,6 @@ Geom::SBasis getitem_pwsb(Geom::Piecewise<Geom::SBasis> const &p, int index) {
     return p[i];
 }
 
-Geom::Piecewise<Geom::D2<Geom::SBasis> > (*derivative_pwd2sb)(Geom::Piecewise<Geom::D2<Geom::SBasis> > const &) = &Geom::derivative;
-
 Geom::Piecewise<Geom::D2<Geom::SBasis> > (*unitVector_pwd2sb)(Geom::Piecewise<Geom::D2<Geom::SBasis> > const &, double, unsigned int) = &Geom::unitVector;
 
 Geom::Piecewise<Geom::SBasis> (*arcLengthSb_pwd2sb)(Geom::Piecewise<Geom::D2<Geom::SBasis> > const &, double) = &Geom::arcLengthSb;
@@ -128,7 +126,9 @@ void wrap_pw() {
     def("bounds_exact", bounds_exact_pwsb);
     def("bounds_local", bounds_local_pwsb);
     
-    def("derivative", derivative_pwd2sb);
+    def("derivative", (Geom::Piecewise<Geom::SBasis> (*)(Geom::Piecewise<Geom::SBasis>  const & ))&Geom::derivative);
+    def("integral", (Geom::Piecewise<Geom::SBasis> (*)(Geom::Piecewise<Geom::SBasis>  const & ))&Geom::integral);
+    def("derivative", (Geom::Piecewise<Geom::D2<Geom::SBasis> > (*)(Geom::Piecewise<Geom::D2<Geom::SBasis> > const &)) &Geom::derivative);
     def("rot90", rot90_pwd2sb);
     def("unit_vector", unitVector_pwd2sb);
     def("arcLengthSb", arcLengthSb_pwd2sb);
@@ -140,6 +140,8 @@ void wrap_pw() {
         .def("__call__", &Geom::Piecewise<Geom::SBasis>::valueAt)
         .def_readonly("cuts", &Geom::Piecewise<Geom::SBasis>::cuts)
         .def_readonly("segs", &Geom::Piecewise<Geom::SBasis>::segs)
+        .def("at0", &Geom::Piecewise<Geom::SBasis>::firstValue)
+        .def("at1", &Geom::Piecewise<Geom::SBasis>::lastValue)
         .def("valueAt", &Geom::Piecewise<Geom::SBasis>::valueAt)
         .def("size", &Geom::Piecewise<Geom::SBasis>::size)
         .def("empty", &Geom::Piecewise<Geom::SBasis>::empty)
