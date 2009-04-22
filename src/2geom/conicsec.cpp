@@ -120,14 +120,17 @@ RatQuad RatQuad::fromPointsTangents(Point P0, Point dP0,
 }
   
 CubicBezier RatQuad::toCubic() const {
-  double lamb = lambda();
+    return toCubic(lambda());
+}
+
+CubicBezier RatQuad::toCubic(double lamb) const {
   return CubicBezier(P[0], 
 		     (1-lamb)*P[0] + lamb*P[1], 
 		     (1-lamb)*P[2] + lamb*P[1], 
 		     P[2]);
 }
 
-Point RatQuad::pointAt(double t) {
+Point RatQuad::pointAt(double t) const {
   Bezier xt(P[0][0], P[1][0]*w, P[2][0]);
   Bezier yt(P[0][1], P[1][1]*w, P[2][1]);
   double wt = Bezier(1, w, 1).valueAt(t);
@@ -145,7 +148,7 @@ void RatQuad::split(RatQuad &a, RatQuad &b) const {
 }
 
   
-D2<SBasis> RatQuad::hermite() {
+D2<SBasis> RatQuad::hermite() const {
   SBasis t = Linear(0, 1);
   SBasis omt = Linear(1, 0);
     
@@ -157,7 +160,7 @@ D2<SBasis> RatQuad::hermite() {
   return out;
 }
 
-  std::vector<SBasis> RatQuad::homogenous() {
+  std::vector<SBasis> RatQuad::homogenous() const {
     std::vector<SBasis> res(3, SBasis());
   Bezier xt(P[0][0], P[1][0]*w, P[2][0]);
   bezier_to_sbasis(res[0],xt);
@@ -197,7 +200,7 @@ xAx xAx::fromPoint(Point p) {
   return xAx(1., 0, 1., -2*p[0], -2*p[1], dot(p,p));
 }
   
-xAx xAx::fromDistPoint(Point p, double d) {
+xAx xAx::fromDistPoint(Point /*p*/, double /*d*/) {
     return xAx();//1., 0, 1., -2*(1+d)*p[0], -2*(1+d)*p[1], dot(p,p)+d*d);
 }
   
@@ -215,16 +218,16 @@ xAx xAx::fromLine(Line l) {
 
 
 
-double xAx::valueAt(Point P) {
+double xAx::valueAt(Point P) const {
   return evaluate_at(P[0], P[1]);
 }
 
-xAx xAx::scale(double sx, double sy) {
+xAx xAx::scale(double sx, double sy) const {
   return xAx(c[0]*sx*sx, c[1]*sx*sy, c[2]*sy*sy,
 	     c[3]*sx, c[4]*sy, c[5]);
 }
 
-Point xAx::gradient(Point p) {
+Point xAx::gradient(Point p)  const{
   double x = p[0];
   double y = p[1];
   return Point(2*c[0]*x + c[1]*y + c[3],
@@ -255,7 +258,7 @@ xAx xAx::operator*(double const &b) const {
   return res;
 }
     
-  std::vector<Point> xAx::crossings(Rect r) {
+  std::vector<Point> xAx::crossings(Rect r) const {
     std::vector<Point> res;
   for(int ei = 0; ei < 4; ei++) {
     Geom::LineSegment ls(r.corner(ei), r.corner(ei+1));
@@ -269,7 +272,7 @@ xAx xAx::operator*(double const &b) const {
   return res;
 }
     
-  boost::optional<RatQuad> xAx::toCurve(Rect const & bnd) {
+  boost::optional<RatQuad> xAx::toCurve(Rect const & bnd) const {
   std::vector<Point> crs = crossings(bnd);
   if(crs.size() == 2) {
     Point A = crs[0];
@@ -359,7 +362,7 @@ Point xAx::bottom() const {
   return Point(-c[3], -c[4])*hessian().inverse();
 }
     
-Interval xAx::extrema(Rect r) {
+Interval xAx::extrema(Rect r) const {
   if (c[0] == 0 and c[1] == 0 and c[2] == 0) {
     Interval ext(valueAt(r.corner(0)));
     for(int i = 1; i < 4; i++) 

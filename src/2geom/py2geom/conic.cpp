@@ -73,8 +73,20 @@ Geom::SBasis xy_eval_at(Geom::xAx const & xax,
     return xax.evaluate_at(x, y);
 }
 
-Geom::D2<Geom::SBasis> wrap_rq_to_cubic(Geom::RatQuad const & rq) {
+Geom::D2<Geom::SBasis> wrap_rq_to_cubic_sb(Geom::RatQuad const & rq) {
     return rq.toCubic().toSBasis();
+}
+
+Geom::D2<Geom::SBasis> wrap_rq_to_cubic_sb_l(Geom::RatQuad const & rq, double l) {
+    return rq.toCubic(l).toSBasis();
+}
+
+std::vector<Geom::Point> wrap_rq_to_cubic_l(Geom::RatQuad const & rq, double l) {
+    return  rq.toCubic(l).points();
+}
+
+std::vector<Geom::Point> wrap_rq_to_cubic(Geom::RatQuad const & rq) {
+    return wrap_rq_to_cubic_l(rq, rq.lambda());
 }
 
 tuple wrap_rq_split(Geom::RatQuad const & rq) {
@@ -82,6 +94,13 @@ tuple wrap_rq_split(Geom::RatQuad const & rq) {
     rq.split(a, b);
     return make_tuple(a, b);
 }
+
+object wrap_xax_to_curve(Geom::xAx const & xax, Geom::Rect const & r) {
+    boost::optional<Geom::RatQuad> oc = xax.toCurve(r);
+    return oc?object(*oc):object();
+}
+
+
 
 void wrap_conic() {
     //conicsec.h
@@ -106,6 +125,7 @@ void wrap_conic() {
         .def("gradient", &Geom::xAx::gradient)
         .def("evaluate_at", &xy_eval_at)
         .def("evaluate_at", &homo_eval_at)
+        .def("toCurve", &wrap_xax_to_curve)
         ;
 
     class_<Geom::RatQuad>("RatQuad", init<>())
@@ -117,6 +137,9 @@ void wrap_conic() {
         .def("pointAt", &Geom::RatQuad::pointAt)
 
         .def("toCubic", &wrap_rq_to_cubic)
+        .def("toCubic", &wrap_rq_to_cubic_l)
+        .def("toCubicSBasis", &wrap_rq_to_cubic_sb)
+        .def("toCubicSBasis", &wrap_rq_to_cubic_sb_l)
 
         .def("split", &wrap_rq_split)
         .def("hermite", &Geom::RatQuad::hermite)

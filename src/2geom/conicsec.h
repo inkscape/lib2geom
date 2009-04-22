@@ -66,13 +66,14 @@ public:
                                       Point P2, Point dP2);
   
     CubicBezier toCubic() const;
+    CubicBezier toCubic(double lam) const;
 
-    Point pointAt(double t);
+    Point pointAt(double t) const;
   
     void split(RatQuad &a, RatQuad &b) const;
 
-    D2<SBasis> hermite();
-    std::vector<SBasis> homogenous();
+    D2<SBasis> hermite() const;
+    std::vector<SBasis> homogenous() const;
 };
 
 class xAx{
@@ -97,9 +98,9 @@ public:
         return c[0]*x*x + c[1]*x*y + c[2]*y*y + c[3]*x + c[4]*y + c[5];
     }
 
-    double valueAt(Point P);
+    double valueAt(Point P) const;
     
-    std::vector<double> implicit_form_coefficients() {
+    std::vector<double> implicit_form_coefficients() const {
         return std::vector<double>(c, c+6);
     }
 
@@ -108,16 +109,16 @@ public:
         return c[0]*x*x + c[1]*x*y + c[2]*y*y + c[3]*x*w + c[4]*y*w + c[5]*w*w;
     }
 
-    xAx scale(double sx, double sy);
+    xAx scale(double sx, double sy) const;
 
-    Point gradient(Point p);
+    Point gradient(Point p) const;
   
     xAx operator-(xAx const &b) const;
     xAx operator+(double const &b) const;
     xAx operator*(double const &b) const;
     
-    std::vector<Point> crossings(Rect r);
-    boost::optional<RatQuad> toCurve(Rect const & bnd);
+    std::vector<Point> crossings(Rect r) const;
+    boost::optional<RatQuad> toCurve(Rect const & bnd) const;
     std::vector<double> roots(Point d, Point o) const;
 
     std::vector<double> roots(Line const &l) const;
@@ -128,7 +129,7 @@ public:
     
     Point bottom() const;
     
-    Interval extrema(Rect r);
+    Interval extrema(Rect r) const;
 };
 
 inline std::ostream &operator<< (std::ostream &out_file, const xAx &x) {
