@@ -15,6 +15,9 @@ parser.cpp
 path.cpp
 shape.cpp
 py2geom.cpp
+# curves
+#curve.cpp
+#bezier-curve.cpp
 )
 
 SET(BUILD_BOOST_PYTHON_STATIC FALSE)

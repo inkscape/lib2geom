@@ -93,7 +93,7 @@ public:
     static xAx fromLine(Line l);
 
     template<typename T>
-    T evaluate_at(T x, T y) {
+    T evaluate_at(T x, T y) const {
         return c[0]*x*x + c[1]*x*y + c[2]*y*y + c[3]*x + c[4]*y + c[5];
     }
 
@@ -104,7 +104,7 @@ public:
     }
 
     template<typename T>
-    T evaluate_at(T x, T y, T w) {
+    T evaluate_at(T x, T y, T w) const {
         return c[0]*x*x + c[1]*x*y + c[2]*y*y + c[3]*x*w + c[4]*y*w + c[5]*w*w;
     }
 
