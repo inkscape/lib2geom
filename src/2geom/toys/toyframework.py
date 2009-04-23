@@ -2,6 +2,7 @@
 
 import gtk,math
 import pangocairo,cairo
+import gobject
 
 # def draw_text(cr, pos, txt, bottom = False):
 # def draw_number(cr, pos, num):
@@ -9,6 +10,12 @@ import pangocairo,cairo
 def draw_circ(cr, (x, y)):
     cr.new_sub_path()
     cr.arc(x, y, 3, 0, math.pi*2)
+    cr.stroke()
+def draw_cross(cr, (x, y)):
+    cr.move_to(x-3, y-3)
+    cr.line_to(x+3, y+3)
+    cr.move_to(x-3, y+3)
+    cr.line_to(x+3, y-3)
     cr.stroke()
 
 class Handle:
@@ -19,6 +26,8 @@ class Handle:
     def hit(self, (x, y)):
         return None
     def move_to(self, hit, om, m):
+        pass
+    def scroll(self, pos, dir):
         pass
 
 class PointHandle(Handle):
@@ -37,27 +46,6 @@ class PointHandle(Handle):
     def move_to(self, hit, om, m):
         self.pos = m
 
-class PointSetHandle(Handle):
-    def __init__(self, name=""):
-        Handle.__init__(self)
-        self.pts = []
-        self.name = name
-    def append(self, x,y):
-        self.pts.append((x,y))
-    def draw(self, cr, annotes):
-        for i,p in enumerate(self.pts):
-            draw_circ(cr, p)
-            if annotes:
-                draw_text(cr, p, str(self.name)+str(i))
-    def hit(self, mouse):
-        for i,p in enumerate(self.pts):
-            if math.hypot(mouse[0] - p[0], mouse[1] - p[1]) < 5:
-                return i
-        return None
-    def move_to(self, hit, om, m):
-        if hit != None:
-            self.pts[hit[1]] = m
-
 class Toy:
     def __init__(self):
         self.handles = []
@@ -65,9 +53,14 @@ class Toy:
         self.old_mouse = None
         self.selected = None
         self.notify = "notify"
+        self.origin = [0,0]
+        self.interactive_level = 0
+        self.transform = None
 
     def draw(self, cr, (width, height), save):
         bounds = self.should_draw_bounds()
+        self.transform = cr.get_matrix()
+        self.transform.invert()
         if bounds == 1:
             cr.set_source_rgba(0., 0., 0, 0.8)
             cr.set_line_width (0.5)
@@ -96,18 +89,34 @@ class Toy:
 
         cr.set_source_rgba (0., 0.5, 0, 0.8)
         if self.notify:
+            cr.save()
+            cr.identity_matrix()
+            bnds = draw_text(cr, (0, height), self.notify, True)
+            l,t,w,h = bnds[1]
+            cr.set_source_rgba(1,1,1,0.9)
+            cr.rectangle(l,t+height-h, w, h)
+            cr.fill()
+            cr.set_source_rgba(0,0,0,1)
             draw_text(cr, (0, height), self.notify, True)
+            cr.restore()
         
     def mouse_moved(self, e):
         mouse = (e.x, e.y)
+        if self.transform != None:
+            mouse = self.transform.transform_point(e.x, e.y)
     
         if e.state & (gtk.gdk.BUTTON1_MASK | gtk.gdk.BUTTON3_MASK):
+            self.interactive_level = 2
             if self.selected:
                 self.handles[self.selected[0]].move_to(self.selected, self.old_mouse, mouse)
         self.old_mouse = mouse
-        self.redraw()
+        self.canvas.queue_draw()
+        #self.redraw()
     def mouse_pressed(self, e):
+        self.interactive_level = 1
         mouse = (e.x, e.y)
+        if self.transform != None:
+            mouse = self.transform.transform_point(e.x, e.y)
         if e.button == 1:
             for i,h in enumerate(self.handles):
                 hit = h.hit(mouse)
@@ -115,14 +124,29 @@ class Toy:
                     self.selected = (i, hit)
             self.mouse_down = True
         self.old_mouse = mouse
-        self.redraw()
+        self.canvas.queue_draw()
+        #self.redraw()
 
     def mouse_released(self, e):
+        self.interactive_level = 1
         self.selected = None
         if e.button == 1:
             self.mouse_down = False
-        self.redraw()
+        self.canvas.queue_draw()
+        #self.redraw()
 
+    def scroll_event(self, da, ev):
+        self.interactive_level = 1
+        #print 'scroll:'+'\n'.join([str((x, getattr(ev, x))) for x in dir(ev)])
+        #print 'end'
+        da.queue_draw()
+        hit = None
+        for i,h in enumerate(self.handles):
+            hit = h.scroll((ev.x,ev.y), ev.direction)
+            if hit != None:
+                break
+        return hit != None
+        
     def key_hit(self, e):
         pass
 
@@ -143,6 +167,64 @@ class Toy:
         self.window.queue_draw()
     def get_save_size(self):
         return (0,0)+self.window.window.get_size()
+    def delete_event(self, window, e):
+        gtk.main_quit()
+        return False
+    
+    def expose_event(self, widget, event):
+        cr = widget.window.cairo_create()
+
+        width, height = widget.window.get_size()
+        global resized
+
+        if not resized:
+            alloc_size = ((0, width), (0, height))
+            self.resize_canvas(alloc_size)
+            resized = True
+        cr.translate(self.origin[0], self.origin[1])
+        self.draw(cr, (width, height), False)
+
+        return True
+
+    def mouse_motion_event(self, widget, e):
+        e.x -= self.origin[0]
+        e.y -= self.origin[1]
+        self.mouse_moved(e)
+
+        return False
+
+    def mouse_event(self, widget, e):
+        e.x -= self.origin[0]
+        e.y -= self.origin[1]
+        self.mouse_pressed(e)
+
+        return False
+
+    def mouse_release_event(self, widget, e):
+        e.x -= self.origin[0]
+        e.y -= self.origin[1]
+        self.mouse_released(e)
+
+        return False
+
+    def key_release_event(self, widget, e):
+        self.key_hit(e)
+
+        return False
+
+    def size_allocate_event(self, widget, allocation):
+        alloc_size = ((allocation.x, allocation.x + allocation.width),
+                      (allocation.y, allocation.y+allocation.height))
+        self.resize_canvas(alloc_size)
+
+        return False
+
+    def relax_interaction_timeout(self):
+        if self.interactive_level > 0:
+            self.interactive_level -= 1
+            self.canvas.queue_draw()
+        return True
+                        
 
 class Toggle:
     def __init__(self):
@@ -177,18 +259,30 @@ def draw_toggles(cr, toggles):
         t.draw(cr)
 
 
-window = None
-canvas = None
-current_toy = None
+current_toys = []
 
-def draw_text(cr, loc, txt, bottom = False):
+def draw_text(cr, loc, txt, bottom = False, font="Sans 12"):
+    import pango
     layout = pangocairo.CairoContext.create_layout (cr)
+    layout.set_font_description (pango.FontDescription(font))
+    
     layout.set_text(txt)
     bounds = layout.get_pixel_extents()
     cr.move_to(loc[0], loc[1])
     if bottom:
-        cr.move_to(loc[0], loc[1] - bounds[1][3])
+        if bottom == "topright":
+            cr.move_to(loc[0] - bounds[1][2],
+                       loc[1])
+        elif bottom == "bottomright":
+            cr.move_to(loc[0] - bounds[1][2],
+                       loc[1] - bounds[1][3])
+        elif bottom == "topleft":
+            cr.move_to(loc[0],
+                       loc[1])
+        else:
+            cr.move_to(loc[0], loc[1] - bounds[1][3])
     cr.show_layout(layout)
+    return bounds
 
 # Framework Accessors
 
@@ -216,7 +310,7 @@ def save_cairo(evt):
     if(d.run() == gtk.RESPONSE_ACCEPT):
         filename = d.get_filename()
         cr_s = None
-        left, top, width, height = current_toy.get_save_size()
+        left, top, width, height = current_toys[0].get_save_size()
         
         if filename[-4:] == ".pdf":
             cr_s = cairo.PDFSurface(filename, width, height)
@@ -225,67 +319,17 @@ def save_cairo(evt):
         else:
             cr_s = cairo.SVGSurface(filename, width, height)
         cr = cairo.Context(cr_s)
+        cr = pangocairo.CairoContext(cairo.Context(cr_s))
         cr.translate(-left, -top)
-        current_toy.draw(cr, (width, height), True)
+        current_toys[0].draw(cr, (width, height), True)
             
         cr.show_page()
         del cr
         del cr_s
     d.destroy()
         
-def delete_event(window, e):
-    gtk.main_quit()
-    return False
-                        
 resized = False
 
-def expose_event(widget, event):
-    cr = widget.window.cairo_create()
-    
-    width, height = widget.window.get_size()
-    global resized
-
-    if not resized:
-        alloc_size = ((0, width), (0, height))
-        if current_toy:
-            current_toy.resize_canvas(alloc_size)
-        resized = True
-    if current_toy:
-        current_toy.draw(cr, (width, height), False)
-
-    return True
-
-def mouse_motion_event(widget, e):
-    if current_toy:
-        current_toy.mouse_moved(e)
-
-    return False
-
-def mouse_event(widget, e):
-    if current_toy:
-        current_toy.mouse_pressed(e)
-        
-    return False
-
-def mouse_release_event(widget, e):
-    if current_toy:
-        current_toy.mouse_released(e)
-
-    return False
-
-def key_release_event(widget, e):
-    if current_toy:
-        current_toy.key_hit(e)
-
-    return False
-
-def size_allocate_event(widget, allocation):
-    alloc_size = ((allocation.x, allocation.x + allocation.width),
-                  (allocation.y, allocation.y+allocation.height))
-    if current_toy:
-        current_toy.resize_canvas(alloc_size)
-
-    return False
 
 def FileMenuAction():
     pass
@@ -305,18 +349,14 @@ ui = """
 </ui>
 """
 
-window = None
-vbox = None
-canvas = None
 def init(argv, t, width, height):
-    global current_toy,window
-    current_toy = t
+    global current_toys
+    current_toys.append(t)
 
     t.first_time(argv)
     
-    global window, vbox, canvas
-    window = gtk.Window(gtk.WINDOW_TOPLEVEL)
-    window.set_title("title")
+    t.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
+    t.window.set_title("title")
 
 # Creates the menu from the menu data above
     uim = gtk.UIManager()
@@ -335,42 +375,41 @@ def init(argv, t, width, height):
     #uim.add_ui_from_string(ui)
     #menu = uim.get_widget("ui/menubar")
 
-    window.connect("delete_event", delete_event)
+    t.window.connect("delete_event", t.delete_event)
 
-    canvas = gtk.DrawingArea()
+    t.canvas = gtk.DrawingArea()
 
-    canvas.add_events((gtk.gdk.BUTTON_PRESS_MASK | gtk.gdk.BUTTON_RELEASE_MASK | gtk.gdk.KEY_PRESS_MASK | gtk.gdk.POINTER_MOTION_MASK))
+    t.canvas.add_events((gtk.gdk.BUTTON_PRESS_MASK | gtk.gdk.BUTTON_RELEASE_MASK | gtk.gdk.KEY_PRESS_MASK | gtk.gdk.POINTER_MOTION_MASK | gtk.gdk.SCROLL_MASK))
 
-    canvas.connect("expose_event", expose_event)
-    canvas.connect("button_press_event", mouse_event)
-    canvas.connect("button_release_event", mouse_release_event)
-    canvas.connect("motion_notify_event", mouse_motion_event)
-    canvas.connect("key_press_event", key_release_event)
-    canvas.connect("size-allocate", size_allocate_event)
+    t.canvas.connect("expose_event", t.expose_event)
+    t.canvas.connect("button_press_event", t.mouse_event)
+    t.canvas.connect("button_release_event", t.mouse_release_event)
+    t.canvas.connect("motion_notify_event", t.mouse_motion_event)
+    t.canvas.connect("key_press_event", t.key_release_event)
+    t.canvas.connect("size-allocate", t.size_allocate_event)
+    t.canvas.connect("scroll_event", t.scroll_event)
+    
+    t.vbox = gtk.VBox(False, 0)
+    t.window.add(t.vbox)
 
-    vbox = gtk.VBox(False, 0)
-    window.add(vbox)
-
-    vbox.pack_start (menu, False, False, 0)
+    t.vbox.pack_start (menu, False, False, 0)
 
     pain = gtk.VPaned()
-    vbox.pack_start(pain, True, True, 0)
-    pain.add1(canvas)
+    t.vbox.pack_start(pain, True, True, 0)
+    pain.add1(t.canvas)
 
-    canvas.set_size_request(width, height)
-    window.show_all()
-    t.window = window
-    t.canvas = canvas
+    t.canvas.set_size_request(width, height)
+    t.window.show_all()
 
     # Make sure the canvas can receive key press events.
-    canvas.set_flags(gtk.CAN_FOCUS)
-    canvas.grab_focus()
-    assert(canvas.is_focus())
+    t.canvas.set_flags(gtk.CAN_FOCUS)
+    t.canvas.grab_focus()
+    assert(t.canvas.is_focus())
 
     t.gtk_ready()
+    gobject.timeout_add(1000, t.relax_interaction_timeout)
     
     gtk.main()
 
 def get_vbox():
-    global vbox
-    return vbox
+    return current_toys[0].vbox
