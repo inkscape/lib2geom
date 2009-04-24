@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 Nathan Hurst <njh@njhurst.com>
+ * Copyright 2009 Ricardo Lafuente <r@sollec.org>
  *
  * This library is free software; you can redistribute it and/or
  * modify it either under the terms of the GNU Lesser General Public
@@ -33,45 +33,49 @@
 #include "py2geom.h"
 #include "helpers.h"
 
-#include "../line.h"
 #include "../point.h"
+#include "../ray.h"
+// #include "../bezier_curve.h"
+#include "../exception.h"
+
 
 using namespace boost::python;
 
-object wrap_intersection(Geom::Line const& a, Geom::Line const& b) {
-    Geom::OptCrossing oc = intersection(a, b);
-    if(oc) {
-        return object(*oc);
-    } else
-        return object();
-}
+bool (*are_near_ray)(Geom::Point const& _point, Geom::Ray const& _ray, double eps) = &Geom::are_near;
+double (*angle_between_ray)(Geom::Ray const& r1, Geom::Ray const& r2, bool cw) = &Geom::angle_between;
+double (*distance_ray)(Geom::Point const& _point, Geom::Ray const& _ray) = &Geom::distance;
 
-void wrap_line() {
-    //line.h
 
-    def("intersection", wrap_intersection);
-    class_<Geom::Line>("Line", init<>())
-        .def(init<Geom::Point const&, Geom::Coord>())
-        .def(init<Geom::Point const&, Geom::Point const&>())
-        .def(init<double, double, double>())
-        //.def(self_ns::str(self))
-        .def("valueAt", &Geom::Line::valueAt)
+void wrap_ray() {
+    def("distance", distance_ray);
+    def("are_near", are_near_ray);
+    def("are_same", Geom::are_same);
+    def("angle_between", angle_between_ray);
+    def("make_angle_bisector_ray", Geom::make_angle_bisector_ray);
 
-        .def("implicit_form_coefficients", &Geom::Line::implicit_form_coefficients)
-        .def("isDegenerate", &Geom::Line::isDegenerate)
-        .def("pointAt", &Geom::Line::pointAt)
-        .def("roots", &Geom::Line::roots)
-        .def("nearestPoint", &Geom::Line::nearestPoint)
-        .def("reverse", &Geom::Line::reverse)
-        //.def("portion", &Geom::Line::portion)
-        //.def("segment", &Geom::Line::segment)
-        .def("derivative", &Geom::Line::derivative)
-        .def("transformed", &Geom::Line::transformed)
-        .def("normal", &Geom::Line::normal)
-        .def("normalAndDist", &Geom::Line::normalAndDist)
-        .def("setBy2Points", &Geom::Line::setBy2Points)
-        .def("setByCoefficients", &Geom::Line::setByCoefficients)
-        ;
+    class_<Geom::Ray>("Ray", init<Geom::Point, Geom::Coord>())
+        .def(init<Geom::Point,Geom::Point>())
+        .def(init<>())
+            
+        // TODO: overloaded
+        // .add_property("origin", &Geom::Ray::origin, &Geom::Ray::origin) 
+        // .add_property("versor", &Geom::Ray::versor, &Geom::Ray::versor)
+        // .add_property("angle", &Geom::Ray::angle, &Geom::Ray::angle)
+
+        .def("isDegenerate", &Geom::Ray::isDegenerate)
+        .def("nearestPoint", &Geom::Ray::nearestPoint) 
+        .def("setBy2Points", &Geom::Ray::setBy2Points)
+        .def("valueAt", &Geom::Ray::valueAt)
+        .def("pointAt", &Geom::Ray::pointAt)
+        .def("timeAt", &Geom::Ray::timeAt)
+        .def("reverse", &Geom::Ray::reverse) 
+        .def("roots", &Geom::Ray::roots) 
+        .def("transformed", &Geom::Ray::transformed) 
+        // requires Curve
+        // .def("portion", &Geom::Ray::portion) 
+        .def("segment", &Geom::Ray::segment) 
+    ;
+
 };
 
 /*

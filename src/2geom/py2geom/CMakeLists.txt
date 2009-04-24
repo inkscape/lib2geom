@@ -13,6 +13,7 @@ pw.cpp
 d2.cpp
 parser.cpp
 path.cpp
+ray.cpp
 shape.cpp
 py2geom.cpp
 # curves

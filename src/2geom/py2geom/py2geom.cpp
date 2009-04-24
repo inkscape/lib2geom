@@ -64,6 +64,7 @@ BOOST_PYTHON_MODULE(_py2geom)
     wrap_d2();
     wrap_parser();
     wrap_path();
+    wrap_ray();
     wrap_shape();
     wrap_crossing();
 
