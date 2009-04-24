@@ -43,14 +43,23 @@ using namespace boost::python;
 
 bool (*are_near_ray)(Geom::Point const& _point, Geom::Ray const& _ray, double eps) = &Geom::are_near;
 double (*angle_between_ray)(Geom::Ray const& r1, Geom::Ray const& r2, bool cw) = &Geom::angle_between;
+
+
+double angle_between_ray_def(Geom::Ray const& r1, Geom::Ray const& r2) {
+    return Geom::angle_between(r1, r2);
+}
 double (*distance_ray)(Geom::Point const& _point, Geom::Ray const& _ray) = &Geom::distance;
 
+// why don't these compile?
+//Geom::Point (*get_ray_origin)() = (Geom::Point (*)() const)&Geom::Ray::origin;
+//void (*set_ray_origin)(Geom::Point const& _point) = &Geom::Ray::origin;
 
 void wrap_ray() {
     def("distance", distance_ray);
     def("are_near", are_near_ray);
     def("are_same", Geom::are_same);
     def("angle_between", angle_between_ray);
+    def("angle_between", angle_between_ray_def);
     def("make_angle_bisector_ray", Geom::make_angle_bisector_ray);
 
     class_<Geom::Ray>("Ray", init<Geom::Point, Geom::Coord>())
@@ -58,7 +67,7 @@ void wrap_ray() {
         .def(init<>())
             
         // TODO: overloaded
-        // .add_property("origin", &Geom::Ray::origin, &Geom::Ray::origin) 
+        //.add_property("origin", get_ray_origin, set_ray_origin) 
         // .add_property("versor", &Geom::Ray::versor, &Geom::Ray::versor)
         // .add_property("angle", &Geom::Ray::angle, &Geom::Ray::angle)
 

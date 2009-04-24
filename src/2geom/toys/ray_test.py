@@ -16,4 +16,5 @@ r2 = g.Ray(a,c)
 from math import degrees
 # FIXME: the third argument (clockwise) ought to be optional, but has to be supplied
 print degrees(g.angle_between(r, r2, True))
+print degrees(g.angle_between(r, r2))
 
