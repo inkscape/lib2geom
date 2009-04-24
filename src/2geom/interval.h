@@ -83,8 +83,10 @@ public:
     
 //    inline bool isEmpty() const { return _b[0] > _b[1]; }
     inline bool isSingular() const { return _b[0] == _b[1]; }
+    inline bool strict_contains(Coord val) const { return _b[0] < val && val < _b[1]; }
     inline bool contains(Coord val) const { return _b[0] <= val && val <= _b[1]; }
     bool contains(const Interval & val) const { return _b[0] <= val._b[0] && val._b[1] <= _b[1]; }
+    bool strict_contains(const Interval & val) const { return _b[0] < val._b[0] && val._b[1] < _b[1]; }
     bool intersects(const Interval & val) const {
         return contains(val._b[0]) || contains(val._b[1]) || val.contains(*this);
     }

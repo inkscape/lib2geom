@@ -40,12 +40,12 @@
 using namespace boost::python;
 
 // helpers for point
-tuple xAx_to_tuple(Geom::xAx const& a)
+static tuple xAx_to_tuple(Geom::xAx const& a)
 {
     return make_tuple(a.c[0], a.c[1], a.c[2], a.c[3], a.c[4], a.c[5]);
 }
 
-Geom::xAx tuple_to_xAx(boost::python::tuple const& t)
+static Geom::xAx tuple_to_xAx(boost::python::tuple const& t)
 {
     return Geom::xAx(extract<double>(t[0]),
                      extract<double>(t[1]),
@@ -56,9 +56,9 @@ Geom::xAx tuple_to_xAx(boost::python::tuple const& t)
         );
 }
 
-std::vector<double> xax_roots1(Geom::xAx const & xax, Geom::Point const &a, Geom::Point const &b) { return xax.roots(a,b); }
-std::vector<double> xax_roots2(Geom::xAx const & xax, Geom::Line const &l) { return xax.roots(l); }
-Geom::SBasis homo_eval_at(Geom::xAx const & xax, 
+static std::vector<double> xax_roots1(Geom::xAx const & xax, Geom::Point const &a, Geom::Point const &b) { return xax.roots(a,b); }
+static std::vector<double> xax_roots2(Geom::xAx const & xax, Geom::Line const &l) { return xax.roots(l); }
+static Geom::SBasis homo_eval_at(Geom::xAx const & xax, 
                           Geom::SBasis const & x,
                           Geom::SBasis const & y,
                           Geom::SBasis const & w
@@ -66,36 +66,36 @@ Geom::SBasis homo_eval_at(Geom::xAx const & xax,
     return xax.evaluate_at(x, y, w);
 }
 
-Geom::SBasis xy_eval_at(Geom::xAx const & xax, 
+static Geom::SBasis xy_eval_at(Geom::xAx const & xax, 
                         Geom::SBasis const & x,
                         Geom::SBasis const & y
     ) {
     return xax.evaluate_at(x, y);
 }
 
-Geom::D2<Geom::SBasis> wrap_rq_to_cubic_sb(Geom::RatQuad const & rq) {
+static Geom::D2<Geom::SBasis> wrap_rq_to_cubic_sb(Geom::RatQuad const & rq) {
     return rq.toCubic().toSBasis();
 }
 
-Geom::D2<Geom::SBasis> wrap_rq_to_cubic_sb_l(Geom::RatQuad const & rq, double l) {
+static Geom::D2<Geom::SBasis> wrap_rq_to_cubic_sb_l(Geom::RatQuad const & rq, double l) {
     return rq.toCubic(l).toSBasis();
 }
 
-std::vector<Geom::Point> wrap_rq_to_cubic_l(Geom::RatQuad const & rq, double l) {
+static std::vector<Geom::Point> wrap_rq_to_cubic_l(Geom::RatQuad const & rq, double l) {
     return  rq.toCubic(l).points();
 }
 
-std::vector<Geom::Point> wrap_rq_to_cubic(Geom::RatQuad const & rq) {
+static std::vector<Geom::Point> wrap_rq_to_cubic(Geom::RatQuad const & rq) {
     return wrap_rq_to_cubic_l(rq, rq.lambda());
 }
 
-tuple wrap_rq_split(Geom::RatQuad const & rq) {
+static tuple wrap_rq_split(Geom::RatQuad const & rq) {
     Geom::RatQuad a, b;
     rq.split(a, b);
     return make_tuple(a, b);
 }
 
-object wrap_xax_to_curve(Geom::xAx const & xax, Geom::Rect const & r) {
+static object wrap_xax_to_curve(Geom::xAx const & xax, Geom::Rect const & r) {
     boost::optional<Geom::RatQuad> oc = xax.toCurve(r);
     return oc?object(*oc):object();
 }

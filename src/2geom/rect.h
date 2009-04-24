@@ -128,8 +128,14 @@ class D2<Interval> {
     inline bool contains(Rect const &r)   const { 
         return f[X].contains(r[X]) && f[Y].contains(r[Y]); 
     }
+    inline bool strict_contains(Rect const &r)   const { 
+        return f[X].strict_contains(r[X]) && f[Y].strict_contains(r[Y]); 
+    }
     inline bool contains(Point const &p)  const {
         return f[X].contains(p[X]) && f[Y].contains(p[Y]);
+    }
+    inline bool strict_contains(Point const &p)  const {
+        return f[X].strict_contains(p[X]) && f[Y].strict_contains(p[Y]);
     }
 
     inline void expandTo(Point p)        { 

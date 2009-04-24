@@ -38,33 +38,41 @@ using namespace boost::python;
 
 
 // helpers for interval
-tuple interval_to_tuple(Geom::Interval const& p)
+static tuple interval_to_tuple(Geom::Interval const& p)
 {
     return make_tuple(p[0], p[1]);
 }
 
-Geom::Interval tuple_to_interval(boost::python::tuple const& t)
+static Geom::Interval tuple_to_interval(boost::python::tuple const& t)
 {
     return Geom::Interval(extract<double>(t[0]), extract<double>(t[1]));
 }
 
-str interval_repr(Geom::Interval const& p)
+static str interval_repr(Geom::Interval const& p)
 {
     return str("(" + str(p[0]) + ", " + str(p[1]) + ")");
 }
 
-Geom::Interval from_optinterval(Geom::OptInterval const & ivl)
+static Geom::Interval from_optinterval(Geom::OptInterval const & ivl)
 {
     return *ivl;
 }
 
 
-bool wrap_contains_coord(Geom::Interval const &x, Geom::Coord val) {
+static bool wrap_contains_coord(Geom::Interval const &x, Geom::Coord val) {
     return x.contains(val);
 }
 
-bool wrap_contains_ivl(Geom::Interval const &x, Geom::Interval val) {
+static bool wrap_contains_ivl(Geom::Interval const &x, Geom::Interval val) {
     return x.contains(val);
+}
+
+static bool wrap_strict_contains_coord(Geom::Interval const &x, Geom::Coord val) {
+    return x.strict_contains(val);
+}
+
+static bool wrap_strict_contains_ivl(Geom::Interval const &x, Geom::Interval val) {
+    return x.strict_contains(val);
 }
 
 void wrap_interval() {
@@ -92,6 +100,8 @@ void wrap_interval() {
         //TODO: fix for overloading
         .def("contains", wrap_contains_coord)
         .def("contains", wrap_contains_ivl)
+        .def("strict_contains", wrap_strict_contains_coord)
+        .def("strict_contains", wrap_strict_contains_ivl)
         .def("intersects", &Geom::Interval::intersects)
 
         .def("setMin", &Geom::Interval::setMin)

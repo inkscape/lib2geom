@@ -46,13 +46,33 @@ static bool wrap_contains_ivl(Geom::Rect const &x, Geom::Rect val) {
     return x.contains(val);
 }
 
+static bool wrap_strict_contains_coord(Geom::Rect const &x, Geom::Point val) {
+    return x.strict_contains(val);
+}
+
+static bool wrap_strict_contains_ivl(Geom::Rect const &x, Geom::Rect val) {
+    return x.strict_contains(val);
+}
+
+static void wrap_expandBy_pt(Geom::Rect &x, Geom::Point val) {
+    x.expandBy(val);
+}
+
+static void wrap_expandBy(Geom::Rect &x, double val) {
+    x.expandBy(val);
+}
+
+static void wrap_unionWith(Geom::Rect &x, Geom::Rect &y) {
+    x.unionWith(y);
+}
+
 void wrap_rect() {
     //TODO: fix overloads
     //def("unify", Geom::unify);
     def("union_list", Geom::union_list);
     //def("intersect", Geom::intersect);
-    //def("distanceSq", Geom::distanceSq);
-    //def("distance", Geom::distance);
+    def("distanceSq", (double (*)( Geom::Point const&, Geom::Rect const&  ))Geom::distanceSq);
+    def("distance", (double (*)( Geom::Point const&, Geom::Rect const&  ))Geom::distance);
 
     class_<Geom::Rect>("Rect", init<Geom::Interval, Geom::Interval>())
         .def(init<Geom::Point,Geom::Point>())
@@ -74,17 +94,17 @@ void wrap_rect() {
         .def("midpoint", &Geom::Rect::midpoint)
         .def("area", &Geom::Rect::area)
         .def("maxExtent", &Geom::Rect::maxExtent)
-        //.def("isEmpty", &Geom::Rect::isEmpty)
         .def("contains", wrap_contains_coord)
         .def("contains", wrap_contains_ivl)
+        .def("strict_contains", wrap_strict_contains_coord)
+        .def("strict_contains", wrap_strict_contains_ivl)
         .def("intersects", &Geom::Rect::intersects)
-        // TODO: overloaded
-        //.def("contains", &Geom::Rect::contains)
         .def("expandTo", &Geom::Rect::expandTo)
-        //.def("unionWith", &Geom::Rect::unionWith)
+        .def("unionWith", &wrap_unionWith)
         // TODO: overloaded
-        //.def("expanBy", &Geom::Rect::expandBy)
-
+        .def("expandBy", wrap_expandBy)
+        .def("expandBy", wrap_expandBy_pt)
+        
         .def(self * Geom::Matrix())
     ;
 
