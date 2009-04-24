@@ -38,6 +38,14 @@
 
 using namespace boost::python;
 
+static bool wrap_contains_coord(Geom::Rect const &x, Geom::Point val) {
+    return x.contains(val);
+}
+
+static bool wrap_contains_ivl(Geom::Rect const &x, Geom::Rect val) {
+    return x.contains(val);
+}
+
 void wrap_rect() {
     //TODO: fix overloads
     //def("unify", Geom::unify);
@@ -49,6 +57,7 @@ void wrap_rect() {
     class_<Geom::Rect>("Rect", init<Geom::Interval, Geom::Interval>())
         .def(init<Geom::Point,Geom::Point>())
         .def(init<>())
+        .def(init<Geom::Rect const &>())
         
         .def("__getitem__", python_getitem<Geom::Rect,Geom::Interval,2>)
     
@@ -66,6 +75,8 @@ void wrap_rect() {
         .def("area", &Geom::Rect::area)
         .def("maxExtent", &Geom::Rect::maxExtent)
         //.def("isEmpty", &Geom::Rect::isEmpty)
+        .def("contains", wrap_contains_coord)
+        .def("contains", wrap_contains_ivl)
         .def("intersects", &Geom::Rect::intersects)
         // TODO: overloaded
         //.def("contains", &Geom::Rect::contains)

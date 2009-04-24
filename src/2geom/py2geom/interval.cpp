@@ -59,6 +59,14 @@ Geom::Interval from_optinterval(Geom::OptInterval const & ivl)
 }
 
 
+bool wrap_contains_coord(Geom::Interval const &x, Geom::Coord val) {
+    return x.contains(val);
+}
+
+bool wrap_contains_ivl(Geom::Interval const &x, Geom::Interval val) {
+    return x.contains(val);
+}
+
 void wrap_interval() {
     def("interval_to_tuple", interval_to_tuple);
     def("tuple_to_interval", tuple_to_interval);
@@ -80,9 +88,10 @@ void wrap_interval() {
         .def("max", &Geom::Interval::max)
         .def("middle", &Geom::Interval::middle)
         .def("extent", &Geom::Interval::extent)
-        //.def("isEmpty", &Geom::Interval::isEmpty)
+        .def("isSingular", &Geom::Interval::isSingular)
         //TODO: fix for overloading
-        //.def("contains", &Geom::Interval::contains)
+        .def("contains", wrap_contains_coord)
+        .def("contains", wrap_contains_ivl)
         .def("intersects", &Geom::Interval::intersects)
 
         .def("setMin", &Geom::Interval::setMin)

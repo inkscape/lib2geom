@@ -64,6 +64,7 @@ public:
     static RatQuad fromPointsTangents(Point P0, Point dP0,
                                       Point P,
                                       Point P2, Point dP2);
+    static RatQuad circularArc(Point P0, Point P1, Point P2);
   
     CubicBezier toCubic() const;
     CubicBezier toCubic(double lam) const;

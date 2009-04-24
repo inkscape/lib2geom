@@ -51,8 +51,8 @@ double angle_between_ray_def(Geom::Ray const& r1, Geom::Ray const& r2) {
 double (*distance_ray)(Geom::Point const& _point, Geom::Ray const& _ray) = &Geom::distance;
 
 // why don't these compile?
-//Geom::Point (*get_ray_origin)() = (Geom::Point (*)() const)&Geom::Ray::origin;
-//void (*set_ray_origin)(Geom::Point const& _point) = &Geom::Ray::origin;
+//Geom::Point (*get_ray_origin)(Geom::Ray const) = &Geom::Ray::origin;
+//void (*set_ray_origin)(Geom::Ray const, Geom::Point const& _point) = &Geom::Ray::origin;
 
 void wrap_ray() {
     def("distance", distance_ray);

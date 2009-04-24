@@ -44,6 +44,39 @@
 namespace Geom
 {
 
+LineSegment intersection(Line l, Rect r) {
+    Point p0, p1;
+    double a,b,c;
+    std::vector<double> ifc = l.implicit_form_coefficients();
+    a = ifc[0];
+    b = ifc[1];
+    c = ifc[2];
+    if (fabs(b) > fabs(a)) {
+        p0 = Point(r[0][0], (-c - a*r[0][0])/b);
+        if (p0[1] < r[1][0])
+            p0 = Point((-c - b*r[1][0])/a, r[1][0]);
+        if (p0[1] > r[1][1])
+            p0 = Point((-c - b*r[1][1])/a, r[1][1]);
+        p1 = Point(r[0][1], (-c - a*r[0][1])/b);
+        if (p1[1] < r[1][0])
+            p1 = Point((-c - b*r[1][0])/a, r[1][0]);
+        if (p1[1] > r[1][1])
+            p1 = Point((-c - b*r[1][1])/a, r[1][1]);
+    } else {
+        p0 = Point((-c - b*r[1][0])/a, r[1][0]);
+        if (p0[0] < r[0][0])
+            p0 = Point(r[0][0], (-c - a*r[0][0])/b);
+        if (p0[0] > r[0][1])
+            p0 = Point(r[0][1], (-c - a*r[0][1])/b);
+        p1 = Point((-c - b*r[1][1])/a, r[1][1]);
+        if (p1[0] < r[0][0])
+            p1 = Point(r[0][0], (-c - a*r[0][0])/b);
+        if (p1[0] > r[0][1])
+            p1 = Point(r[0][1], (-c - a*r[0][1])/b);
+    }
+    return LineSegment(p0, p1);
+}
+
 static double det(Point a, Point b) {
   return a[0]*b[1] - a[1]*b[0];
 }
@@ -104,7 +137,8 @@ RatQuad RatQuad::fromPointsTangents(Point P0, Point dP0,
   try {
     OptCrossing oc = intersection(Line0, Line2);
     if(!oc) // what to do?
-      assert(0);
+        return RatQuad(Point(), Point(), Point(), 0); // need opt really
+    //assert(0);
     Point P1 = Line0.pointAt((*oc).ta);
     double triarea = boxprod(P0, P1, P2);
     assert(triarea != 0);
@@ -118,6 +152,13 @@ RatQuad RatQuad::fromPointsTangents(Point P0, Point dP0,
   }
   return RatQuad(Point(), Point(), Point(), 0); // need opt really
 }
+
+RatQuad RatQuad::circularArc(Point P0, Point P1, Point P2) {
+    Line Line0 = Line::fromPointDirection(P0, P1 - P0);
+    Line Line2 = Line::fromPointDirection(P2, P1 - P2);
+    return RatQuad(P0, P1, P2, dot(unit_vector(P1 - P0), unit_vector(P1 - P2)));
+}
+
   
 CubicBezier RatQuad::toCubic() const {
     return toCubic(lambda());
@@ -195,6 +236,7 @@ D2<SBasis> RatQuad::hermite() const {
     return res + "hyperbola";
       
   }
+  return "no idea!";
 }
 xAx xAx::fromPoint(Point p) {
   return xAx(1., 0, 1., -2*p[0], -2*p[1], dot(p,p));
@@ -274,9 +316,24 @@ xAx xAx::operator*(double const &b) const {
     
   boost::optional<RatQuad> xAx::toCurve(Rect const & bnd) const {
   std::vector<Point> crs = crossings(bnd);
-  if(crs.size() == 2) {
+  if(crs.size() == 1) {
+      Point A = crs[0];
+      Point dA = rot90(gradient(A));
+      LineSegment ls = intersection(Line::fromPointDirection(A, dA), bnd);
+      if(L2sq(dA) <= 1e-10) { // perhaps a single point?
+          return boost::optional<RatQuad> ();
+      }
+      return RatQuad::fromPointsTangents(A, dA, ls.pointAt(0.5), ls[1], dA);
+  }
+  else if(crs.size() >= 2 and crs.size() < 4) {
     Point A = crs[0];
     Point C = crs[1];
+    if(crs.size() == 3) {
+        if(distance(A, crs[2]) > distance(A, C))
+            C = crs[2];
+        else if(distance(C, crs[2]) > distance(A, C))
+            A = crs[2];
+    }
     Line bisector = make_bisector_line(LineSegment(A, C));
     std::vector<double> bisect_rts = this->roots(bisector);
     if(bisect_rts.size() > 0) {
@@ -289,9 +346,15 @@ xAx xAx::operator*(double const &b) const {
       }
       if(besti >= 0) {
 	Point B = bisector.pointAt(bisect_rts[besti]);
-          
-	RatQuad rq = RatQuad::fromPointsTangents(A, rot90(gradient(A)), 
-						 B, C, rot90(gradient(C)));
+        
+        Point dA = gradient(A);
+        Point dC = gradient(C);
+        if(L2sq(dA) <= 1e-10 or L2sq(dC) <= 1e-10) {
+            return RatQuad::fromPointsTangents(A, C-A, B, C, A-C);
+        }
+        
+	RatQuad rq = RatQuad::fromPointsTangents(A, rot90(dA), 
+						 B, C, rot90(dC));
 	return rq;
 	//std::vector<SBasis> hrq = rq.homogenous();
 	/*SBasis vertex_poly = evaluate_at(hrq[0], hrq[1], hrq[2]);

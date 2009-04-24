@@ -142,6 +142,20 @@ class Conic5: public Toy {
             cairo_restore(cr);
         }      
 
+        if(1) {
+            RatQuad rq = RatQuad::circularArc(A, B, C);
+	
+            cairo_save(cr);
+            cairo_set_source_rgba (cr, 0., 0., 0, 1);
+            cairo_set_line_width (cr, 1);
+            RatQuad a, b;
+            rq.split(a,b);
+            cairo_curve(cr, a.toCubic());
+            cairo_curve(cr, b.toCubic());
+            cairo_stroke(cr);
+            cairo_restore(cr);
+        }      
+
         Rect screen_rect(Interval(10, width-10), Interval(10, height-10));
         Line cutLine(cutting_plane.pts[0], cutting_plane.pts[1]);
         double dist;

@@ -113,6 +113,10 @@ void wrap_conic() {
         
         .def("from_tuple", tuple_to_xAx)
         .staticmethod("from_tuple")
+        .def("fromPoint", Geom::xAx::fromPoint)
+        .staticmethod("fromPoint")
+        .def("fromLine", (Geom::xAx (*)(Geom::Line l))Geom::xAx::fromLine)
+        .staticmethod("fromLine")
         .def(self_ns::str(self))
         .def("valueAt", &Geom::xAx::valueAt)
 
@@ -126,6 +130,8 @@ void wrap_conic() {
         .def("evaluate_at", &xy_eval_at)
         .def("evaluate_at", &homo_eval_at)
         .def("toCurve", &wrap_xax_to_curve)
+        .def(self - self)
+        .def(self * float())
         ;
 
     class_<Geom::RatQuad>("RatQuad", init<>())
