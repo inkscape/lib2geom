@@ -423,7 +423,14 @@ private:
 };
 
 inline std::ostream& operator<<(std::ostream& o, Timer::Time const &t) {
-  o << t.value << "ns";
+    double tm = t.value;
+    unsigned prefix = 0;
+    char prefixes[] = "num kMGT";
+    while(prefix < sizeof(prefixes) and tm > 1000) {
+        tm /= 1000.0;
+        prefix += 1;
+    }
+    o << tm << prefixes[prefix]  << "s";
   return o;
 }
 

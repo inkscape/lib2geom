@@ -11,6 +11,7 @@ rect_01
 rect_02
 rect_03
 pencil
+pencil-2
 intersect-data
 sb2d-solver
 minsb2d-solver
