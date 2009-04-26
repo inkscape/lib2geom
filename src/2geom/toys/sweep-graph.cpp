@@ -499,26 +499,34 @@ void remove_vertex(unsigned i, Graph &g) {
 }
 
 void trim_whiskers(Graph &g) {
+    std::vector<bool> keep(g.size(), true);
     std::vector<Vertex*> affected(g), new_affected;
+    
     while(!affected.empty()) {
+        //std::cout << affected.size() << std::endl;
         for(unsigned i = 0; i < affected.size(); i++) {
-            if(affected[i]->degree() < 2) {
-                std::vector<Vertex*>::iterator iter;
-                for(unsigned j = 0; j < affected[i]->degree(); j++) {
-                    Edge &e = affected[i]->lookup(j);
+            Vertex *v = affected[i];
+            if(v->degree() < 2) {
+                std::vector<Vertex*>::const_iterator iter;
+                for(unsigned j = 0; j < v->degree(); j++) {
+                    Edge &e = v->lookup(j);
                     unsigned ix = e.other->find(e.section);
                     e.other->remove_edge(ix);
                     iter = std::find(new_affected.begin(), new_affected.end(), e.other);
-                    if(iter == g.end()) new_affected.push_back(e.other);
+                    if(iter == new_affected.end()) new_affected.push_back(e.other);
                 }
-                iter = std::find(g.begin(), g.end(), affected[i]);
-                delete(affected[i]);
-                if(iter != g.end()) g.erase(iter);
+                iter = std::find(g.begin(), g.end(), v);
+                keep[iter - g.begin()] = false;
             }
         }
-        affected = new_affected;
+
+        affected = std::vector<Vertex*>(new_affected);
         new_affected.clear();
     }
+    unsigned j = 0;
+    for(unsigned i = 0; i < keep.size(); i++)
+        if(keep[i]) g[j++] = g[i]; else delete(g[i]);
+    g.resize(j);
 }
 
 void remove_vestigial_verts(Graph &g) {
@@ -560,19 +568,21 @@ std::vector<std::vector<const Section*> > traverse_areas(Graph const &g, std::ve
             
             std::vector<const Section*> area;
             //std::vector<std::vector<bool> > before(visited);
-            while(!visited[cur][e_ix]) {
+            while(cur < g.size() && !visited[cur][e_ix]) {
                 visited[cur][e_ix] = true;
                 
                 area.push_back(e.section);
                 
                 //go to clockwise edge
                 cur = std::find(g.begin(), g.end(), e.other) - g.begin();
+                if(cur >= g.size()) break;
                 e_ix = g[cur]->find(e.section);
                 if(g[cur]->degree() == 1) {
                    visited[cur][e_ix] = true;
                    break;
                 }
-                assert(e_ix != g[cur]->degree());
+                //assert(e_ix != g[cur]->degree());
+                if(e_ix == g[cur]->degree()) break;
                 e = g[cur]->lookup(++e_ix);
                 
                 if(cur == vix && start == e_ix) break;
@@ -811,7 +821,7 @@ class SweepWindow: public Toy {
         draw_edge_orders(cr, output, path);
         
         std::vector<std::vector<std::vector<bool> > > visiteds;
-        
+
         trim_whiskers(output);
         //remove_vestigial_verts(output);
         std::vector<std::vector<const Section*> > areas = traverse_areas(output, visiteds);
