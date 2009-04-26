@@ -111,6 +111,7 @@ struct Vertex {
     }
     
     void remove_edge(unsigned &i) {
+        //TODO: make this an assert?
         if(degree()) {
             i %= degree();
             if(i < enters.size())
@@ -118,6 +119,12 @@ struct Vertex {
             else
                 exits.erase(exits.begin() + (i - enters.size()));
         }
+    }
+    
+    void insert_edge(unsigned i, Edge const &e) {
+        i %= degree();
+        if(i < enters.size()) enters.insert(enters.begin() + i, e);
+        else exits.insert(exits.begin() + (i - enters.size()), e);
     }
 };
 
@@ -529,6 +536,24 @@ void trim_whiskers(Graph &g) {
     g.resize(j);
 }
 
+void double_edge(Vertex *v, Edge const &e) {
+    Section *new_section = new Section(*e.section);
+    v      ->insert_edge(v      ->find(e.section), Edge(new_section, e.other));
+    e.other->insert_edge(e.other->find(e.section), Edge(new_section, v));
+}
+
+void double_whiskers(Graph &g) {
+    std::vector<unsigned> to_process;
+    for(unsigned i = 0; i < g.size(); i++) {
+        if(g[i]->degree() == 1) {
+            unsigned ix = 0;
+            Edge e = g[i]->lookup(ix);
+            to_process.push_back(std::find(g.begin(), g.end(), e.other) - g.begin());
+            double_edge(g[i], e);
+        }
+    }
+}
+
 void remove_vestigial_verts(Graph &g) {
     for(unsigned i = 0; i < g.size(); i++) {
         Edge &e1 = g[i]->enters.front(),
@@ -784,7 +809,7 @@ class SweepWindow: public Toy {
         contexts.clear();
         chopss.clear();
         
-        Graph output = sweep_graph(path,Y);
+        Graph output = sweep_graph(path,X);
         
         int cix = (int) p.pos[X] / 10;
         if(cix >= 0 && cix < (int)contexts.size()) {
@@ -822,8 +847,8 @@ class SweepWindow: public Toy {
         
         std::vector<std::vector<std::vector<bool> > > visiteds;
 
-        trim_whiskers(output);
-        //remove_vestigial_verts(output);
+        double_whiskers(output);
+        remove_vestigial_verts(output);
         std::vector<std::vector<const Section*> > areas = traverse_areas(output, visiteds);
         /*for(unsigned i = 0; i < areas.size(); i++) {
             for(unsigned j = 0; j < areas[i].size(); j++) {
