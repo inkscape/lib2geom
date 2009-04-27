@@ -265,7 +265,7 @@ std::vector<Section*> split_section(Section *s, PathVector const &ps, std::vecto
     
     s->t = cuts[1];
     s->tp = s->curve.get(ps)(cuts[1]);
-    assert(s->tp[d] > s->fp[d]);
+    assert(lexo_point(s->fp, s->tp, d));
     
     ret.reserve(cuts.size() - 2);
     for(int i = cuts.size() - 1; i > 1; i--) ret.push_back(new Section(s->curve, cuts[i-1], cuts[i], ps, d));
@@ -536,21 +536,34 @@ void trim_whiskers(Graph &g) {
     g.resize(j);
 }
 
-void double_edge(Vertex *v, Edge const &e) {
-    Section *new_section = new Section(*e.section);
-    v      ->insert_edge(v      ->find(e.section), Edge(new_section, e.other));
-    e.other->insert_edge(e.other->find(e.section), Edge(new_section, v));
-}
-
 void double_whiskers(Graph &g) {
-    std::vector<unsigned> to_process;
+    std::vector<Edge> etp;
+    std::vector<Vertex*> vtp;
     for(unsigned i = 0; i < g.size(); i++) {
         if(g[i]->degree() == 1) {
             unsigned ix = 0;
-            Edge e = g[i]->lookup(ix);
-            to_process.push_back(std::find(g.begin(), g.end(), e.other) - g.begin());
-            double_edge(g[i], e);
+            etp.push_back(g[i]->lookup(ix));
+            vtp.push_back(g[i]);
         }
+    }
+    unsigned oj = etp.size();
+    while(oj) {
+        unsigned j = 0;
+        for(unsigned i = 0; i < oj; i++) {
+            Edge e = etp[i];
+            Vertex *v = vtp[i];
+            //if it's a vertex of degree 2, then we have a vertex breaking a continuous path, double it too
+            if(e.other->degree() == 2) {
+                unsigned ix = 1 - e.other->find(e.section);
+                etp[j] = e.other->lookup(ix);
+                vtp[j++] = e.other;
+            }
+            //double the edge
+            Section *new_section = new Section(*e.section);
+            v      ->insert_edge(v      ->find(e.section), Edge(new_section, e.other));
+            e.other->insert_edge(e.other->find(e.section), Edge(new_section, v));
+        }
+        oj = j;
     }
 }
 
