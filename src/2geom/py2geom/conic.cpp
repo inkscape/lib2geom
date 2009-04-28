@@ -100,6 +100,13 @@ static object wrap_xax_to_curve(Geom::xAx const & xax, Geom::Rect const & r) {
     return oc?object(*oc):object();
 }
 
+static Geom::Point RatQuadat0(Geom::RatQuad const & rq) {
+    return rq.P[0];
+}
+static Geom::Point RatQuadat1(Geom::RatQuad const & rq) {
+    return rq.P[2];
+}
+
 
 
 void wrap_conic() {
@@ -127,6 +134,7 @@ void wrap_conic() {
         .def("roots", &xax_roots2)
         .def("extrema", &Geom::xAx::extrema)
         .def("gradient", &Geom::xAx::gradient)
+        .def("crossings", &Geom::xAx::crossings)
         .def("evaluate_at", &xy_eval_at)
         .def("evaluate_at", &homo_eval_at)
         .def("toCurve", &wrap_xax_to_curve)
@@ -140,6 +148,8 @@ void wrap_conic() {
         .def_readonly("w", &Geom::RatQuad::w)
         .def_readonly("lam", &Geom::RatQuad::lambda)
         //.def(self_ns::str(self))
+        .def("at0", &RatQuadat0)
+        .def("at1", &RatQuadat1)
         .def("pointAt", &Geom::RatQuad::pointAt)
 
         .def("toCubic", &wrap_rq_to_cubic)

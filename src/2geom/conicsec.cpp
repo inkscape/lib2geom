@@ -141,7 +141,8 @@ RatQuad RatQuad::fromPointsTangents(Point P0, Point dP0,
     //assert(0);
     Point P1 = Line0.pointAt((*oc).ta);
     double triarea = boxprod(P0, P1, P2);
-    assert(triarea != 0);
+    if(triarea == 0)
+        return RatQuad(P0, 0.5*(P0+P2), P2, 0); // line
     double tau0 = boxprod(P, P1, P2)/triarea;
     double tau1 = boxprod(P0, P, P2)/triarea;
     double tau2 = boxprod(P0, P1, P)/triarea;
