@@ -58,6 +58,9 @@ struct Section {
         Interval ti(f, t);
         return curve.get(ps).portion(ti.min(), ti.max());
     }
+    bool operator==(Section const &other) const {
+        return (curve == other.curve) && (f == other.f) && (t == other.t);
+    }
 };
 
 // pre-declaration of vertex so that edge may reference pointers otvertices
@@ -750,6 +753,12 @@ std::vector<std::vector<const Section*> > traverse_areas(Graph const &g, std::ve
     return ret;
 }
 
+void remove_area_whiskers(std::vector<std::vector<const Section*> > &areas) {
+    for(int i = areas.size(); i >= 0; i--)
+        if(areas[i].size() == 2 && *areas[i][0] == *areas[i][1]) 
+            areas.erase(areas.begin() + i);
+}
+
 Path sections_to_path(PathVector const &ps, std::vector<const Section*> const & sections) {
     Path ret;
     for(unsigned i = 0; i < sections.size(); i++) {
@@ -794,6 +803,7 @@ PathVector areas_to_paths(PathVector const &ps, std::vector<std::vector<const Se
 struct AreaTree {
     std::vector<AreaTree> children;
     Path path;
+    std::vector<int> windings;
     AreaTree(std::vector<AreaTree> const &xs, Path const &p) : children(xs), path(p) {}
 };
 
@@ -836,6 +846,8 @@ std::vector<AreaTree> paths_to_trees(std::vector<Path> const &areas) {
             ret.push_back(ptree_helper(i, down_links, up_links, areas));
     return ret;
 }
+
+
 
 //PathVector
 std::vector<std::vector<Curve*> > unio(PathVector const &p1, bool nz1, PathVector const &p2, bool nz2) {
@@ -991,6 +1003,7 @@ class SweepWindow: public Toy {
         double_whiskers(output);
         write_graph(output);
         std::vector<std::vector<const Section*> > areas = traverse_areas(output, visiteds);
+        remove_area_whiskers(areas);
         /*for(unsigned i = 0; i < areas.size(); i++) {
             for(unsigned j = 0; j < areas[i].size(); j++) {
                 std::cout << areas[i][j] << ", ";
