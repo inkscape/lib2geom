@@ -4,6 +4,7 @@
 #include <2geom/path-intersection.h>
 #include <2geom/basic-intersection.h>
 #include <2geom/pathvector.h>
+#include <2geom/sbasis-geometric.h>
 
 #include <cstdlib>
 
@@ -653,10 +654,11 @@ void remove_area_whiskers(Areas &areas) {
 
 Path area_to_path(PathVector const &ps, Area const &area) {
     Path ret;
-    for(unsigned i = 0; i < area.size(); i++) {
-        Interval ti(area[i]->f, area[i]->t);
-        ti += area[i]->curve.ix;
-        ps[area[i]->curve.path].appendPortionTo(ret, ti.min(), ti.max());
+    bool rev = (area.size() > 1) && are_near(area[0]->tp, area[1]->fp);
+    for(int i = rev ? area.size() - 1 : 0; rev ? i >= 0 : i < area.size(); i = rev ? i-1 : i+1) {
+        Curve *curv = area[i]->get_portion(ps);
+        ret.append(*curv, Path::STITCH_DISCONTINUOUS);
+        delete curv;
     }
     return ret;
 }
@@ -869,6 +871,20 @@ void draw_edge_orders(cairo_t *cr, std::vector<Vertex*> const &vertices, PathVec
     }
 }
 
+void draw_areas(cairo_t *cr, PathVector const &pa, Areas const &areas) {
+    PathVector ps = areas_to_paths(pa, areas);
+    for(unsigned i = 0; i < ps.size(); i++) {
+        double area;
+        Point centre;
+        Geom::centroid(ps[i].toPwSb(), centre, area);
+        double d = 5.;
+        if(area < 0) cairo_set_dash(cr, &d, 1, 0);
+        cairo_path(cr, ps[i]);
+        cairo_stroke(cr);
+        cairo_set_dash(cr, &d, 0, 0);
+    }
+}
+
 class SweepWindow: public Toy {
     vector<Path> path, path2;
     std::vector<Toggle> toggles;
@@ -929,9 +945,7 @@ class SweepWindow: public Toy {
         remove_area_whiskers(areas);
         areas = filter_areas(areas, UnionOp(path.size(), false, false));
         
-        PathVector ps = areas_to_paths(pa, areas);
-        cairo_path(cr, ps);
-                
+        draw_areas(cr, pa, areas);
         /*for(unsigned i = 0; i < areas.size(); i++) {
             for(unsigned j = 0; j < areas[i].size(); j++) {
                 std::cout << areas[i][j] << ", ";
