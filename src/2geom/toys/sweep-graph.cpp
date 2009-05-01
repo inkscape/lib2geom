@@ -77,7 +77,7 @@ struct Edge {
 struct Vertex {
     //these two vectors store the incoming / outgoing edges of the verte
     //they are ordered on a clockwise traversal around the vertex, so in other words,
-    //exits ++ enters would yield a clockwise ordering
+    //enters ++ exits would yield a clockwise ordering
     std::vector<Edge> enters, exits;
     Point avg;
     Vertex(Point p) : avg(p) {}
@@ -119,12 +119,6 @@ struct Vertex {
             else
                 exits.erase(exits.begin() + (i - enters.size()));
         }
-    }
-    
-    void insert_edge(unsigned i, Edge const &e) {
-        i %= degree();
-        if(i < enters.size()) enters.insert(enters.begin() + i, e);
-        else exits.insert(exits.begin() + (i - enters.size()), e);
     }
 };
 
@@ -495,16 +489,6 @@ Graph sweep_graph(PathVector const &ps, Dim2 d = X, double tol = 0.00001) {
     return vertices;
 }
 
-//TODO: factor into a Graph class
-void remove_vertex(unsigned i, Graph &g) {
-    for(unsigned j = 0; j < g[i]->degree(); j++) {
-        Edge &e = g[i]->lookup(j);
-        unsigned ix = e.other->find(e.section);
-        e.other->remove_edge(ix);
-    }
-    g.erase(g.begin() + i);
-}
-
 void trim_whiskers(Graph &g) {
     std::vector<bool> keep(g.size(), true);
     std::vector<Vertex*> affected(g), new_affected;
@@ -536,36 +520,168 @@ void trim_whiskers(Graph &g) {
     g.resize(j);
 }
 
+void insert_edge(Vertex *v, unsigned i, Edge const &e) {
+    i %= v->degree();
+    //dir: this edge is an enter
+    //TODO: what if the tollerance determining our verts is too high?
+    bool dir = are_near(e.section->tp, v->avg);
+    if(i == 0 && !dir) {
+        v->exits.insert(v->exits.end(), e);
+    } else if(i < v->enters.size() || (dir && i == v->enters.size())) {
+        //assert(dir);
+        v->enters.insert(v->enters.begin() + i, e);
+    } else {
+        //assert(!dir);
+        v->exits.insert(v->exits.begin() + (i - v->enters.size()), e);
+    }
+}
+
+void add_edge_at(Vertex *v, Section *s, Edge const &e, bool before = true) {
+    for(unsigned i = 0; i < v->enters.size(); i++) {
+        if(v->enters[i].section == s) {
+            v->enters.insert(v->enters.begin() + (before ? i : i + 1), e);
+            return;
+        }
+    }
+    for(unsigned i = 0; i < v->exits.size(); i++) {
+        if(v->exits[i].section == s) {
+            v->exits.insert(v->exits.begin() + (before ? i : i + 1), e);
+            return;
+        }
+    }
+    assert(false);
+}
+
 void double_whiskers(Graph &g) {
-    std::vector<Edge> etp;
-    std::vector<Vertex*> vtp;
+    for(unsigned i = 0; i < g.size(); i++) {
+        if(g[i]->degree() == 1) {
+            Vertex *v = g[i];
+            unsigned ix = 0;
+            Edge e = g[i]->lookup(ix);
+            while(true) {
+                ix = e.other->find(e.section) + 1;
+                Edge next_edge = e.other->lookup(ix);
+                Section *new_section = new Section(*e.section);
+                add_edge_at(v, e.section, Edge(new_section, e.other), false);
+                add_edge_at(e.other, e.section, Edge(new_section, v), true);
+                if(e.other->degree() == 3) {
+                    v = e.other;
+                    e = next_edge;
+                } else break;
+            }
+        }
+    }
+}
+
+/*  A variety of attempts/ approaches of double_whiskers
+void double_whiskers(Graph &g) {
+    // two lists of vertices, where each corresponding vertex need to be connected by an edge
+    std::vector<Vertex*> vf, vt;
+    // sects list is also related to the v lists, and stores a pointer to the section between the two
+    std::vector<Section*> sects;
+    
+    for(unsigned i = 0; i < g.size(); i++) {
+        if(g[i]->degree() == 1) {
+            Vertex *v = g[i];
+            unsigned ix = 0;
+            Edge &e = v.lookup(ix);
+            while(true) {
+                if(e.other->degree() == 2) {
+                    Vertex *v2 = new Vertex(*e.other);
+                    g.push_back(v2);
+                    add_edge_at(v, sects[i], Edge(new_section, v2), true);
+                    add_edge_at(v2, sects[i], Edge(new_section, v), false);
+                }
+            }
+        }
+    }
+    //==========================================
     for(unsigned i = 0; i < g.size(); i++) {
         if(g[i]->degree() == 1) {
             unsigned ix = 0;
-            etp.push_back(g[i]->lookup(ix));
-            vtp.push_back(g[i]);
+            Edge &e = g[i]->lookup(ix);
+            vf.push_back(g[i]);
+            vt.push_back(e.other);
+            sects.push_back(e.section);
         }
     }
-    unsigned oj = etp.size();
+    unsigned oj = vf.size();
     while(oj) {
         unsigned j = 0;
         for(unsigned i = 0; i < oj; i++) {
-            Edge e = etp[i];
-            Vertex *v = vtp[i];
-            //if it's a vertex of degree 2, then we have a vertex breaking a continuous path, double it too
-            if(e.other->degree() == 2) {
-                unsigned ix = 1 - e.other->find(e.section);
-                etp[j] = e.other->lookup(ix);
-                vtp[j++] = e.other;
+            Section *new_section = new Section(*sects[i]);
+            if(vt[i]->degree() == 2) {
+                //this vertex continues the whisker
+                //create a vertex identical to vt, and double link it to vf
+                Vertex *v = new Vertex(*vt[i]);
+                g.push_back(v);
+                add_edge_at(vf[i], sects[i], Edge(new_section, v), true);
+                add_edge_at(v, sects[i], Edge(new_section, vf[i]), false);
+                
+                vf[j] = v;
+                unsigned ix = 1 - vt[i]->find(sects[i]);
+                Edge &e = vt[i]->lookup(ix);
+                vt[j] = e.other;
+                sects[j] = e.section;
+                j++;
+            } else {
+                //end of this particular whisker
+                add_edge_at(vf[i], sects[i], Edge(new_section, vt[i]), true);
+                add_edge_at(vt[i], sects[i], Edge(new_section, vf[i]), false);
             }
-            //double the edge
+            //==================================
+            //continuation of a whisker
+            //figure out which edge is unprocessed
+            unsigned zero = 0, one = 1, two = 2;
+            unsigned eix = 0;
+            if      (*v->lookup(zero).section == *v->lookup(one).section) eix = 2;
+            else if(*v->lookup(zero).section == *v->lookup(two).section) eix = 1;
+            Vertex *v2 = new Vertex(*v);
+            Edge &e = v2->lookup(two);
+            if(eix == 2) {
+               v->remove_edge(one);
+               e = v2->lookup(one);
+               v2->remove_edge(zero);
+               eix--;
+            } else {
+               v->remove_edge(two);
+               v2->remove_edge(eix == 1 ? zero : one);
+            }
+            //attach edge leading in
+            e.other->lookup_section(e.section).other = v2;
+            
+            //=================================== 
+            
+            e = v2->lookup(eix);
             Section *new_section = new Section(*e.section);
-            v      ->insert_edge(v      ->find(e.section), Edge(new_section, e.other));
-            e.other->insert_edge(e.other->find(e.section), Edge(new_section, v));
+            
+            double_section(v2, e.section, Edge(new_section, e.other), false);
+            double_section(e.other, e.section, Edge(new_section, v2), true);
+            
+            Edge &e = v->lookup(two);
+            if(eix == 2) {
+                //take edge 1
+                v->remove_edge(one);
+                e = v->lookup(one);
+                eix--;
+            } else {
+                //take edge 2
+                v->remove_edge(two);
+            }
+            //insert into vertex 2
+            if(are_near(v->avg, e.fp))
+                v2->exits.push_back(e);
+            else
+                v2->enters.push_back(e);
+            e = 
+            Section* new_section = new Section(
+            
+            //double the edge
+        
         }
         oj = j;
     }
-}
+} */
 
 void remove_vestigial_verts(Graph &g) {
     for(unsigned i = 0; i < g.size(); i++) {
@@ -769,21 +885,32 @@ void draw_section(cairo_t *cr, Section const &s, PathVector const &ps) {
     delete curv;
 }
 
-void draw_graph(cairo_t *cr, std::vector<Vertex*> const &vertices) {
+void draw_graph(cairo_t *cr, Graph const &vertices) {
     for(unsigned i = 0; i < vertices.size(); i++) {
-        std::cout << i << " " << vertices[i]->avg << " [";
         cairo_set_source_rgba(cr, colour::from_hsl(i*0.5, 1, 0.5, 0.75));
         for(unsigned j = 0; j < vertices[i]->enters.size(); j++) {
             draw_ray(cr, vertices[i]->avg, 10*unit_vector(vertices[i]->enters[j].other->avg - vertices[i]->avg));
             cairo_stroke(cr);
-            std::cout << vertices[i]->enters[j].section << "_" << vertices[i]->enters[j].other << ", ";
         }
-        std::cout  << "|";
         for(unsigned j = 0; j < vertices[i]->exits.size(); j++) {
             draw_ray(cr, vertices[i]->avg, 20*unit_vector(vertices[i]->exits[j].other->avg - vertices[i]->avg));
             cairo_stroke(cr);
-            std::cout << vertices[i]->exits[j].section << "_" << vertices[i]->exits[j].other << ", ";
         }
+    }
+}
+
+unsigned find_vert(Graph const &vertices, Vertex const *v) {
+    return std::find(vertices.begin(), vertices.end(), v) - vertices.begin();
+}
+
+void write_graph(Graph const &vertices) {
+    for(unsigned i = 0; i < vertices.size(); i++) {
+        std::cout << i << " " << vertices[i]->avg << " [";
+        for(unsigned j = 0; j < vertices[i]->enters.size(); j++)
+            std::cout << find_vert(vertices, vertices[i]->enters[j].other) << ", ";
+        std::cout  << "|";
+        for(unsigned j = 0; j < vertices[i]->exits.size(); j++)
+            std::cout << find_vert(vertices, vertices[i]->exits[j].other) << ", ";
         std::cout << "]\n";
     }
     std::cout << "=======\n";
@@ -859,9 +986,10 @@ class SweepWindow: public Toy {
         draw_edge_orders(cr, output, path);
         
         std::vector<std::vector<std::vector<bool> > > visiteds;
-
+        
+        //remove_vestigial_verts(output);
         double_whiskers(output);
-        remove_vestigial_verts(output);
+        write_graph(output);
         std::vector<std::vector<const Section*> > areas = traverse_areas(output, visiteds);
         /*for(unsigned i = 0; i < areas.size(); i++) {
             for(unsigned j = 0; j < areas[i].size(); j++) {
