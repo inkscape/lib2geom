@@ -576,116 +576,6 @@ void double_whiskers(Graph &g) {
     }
 }
 
-/*  A variety of attempts/ approaches of double_whiskers
-void double_whiskers(Graph &g) {
-    // two lists of vertices, where each corresponding vertex need to be connected by an edge
-    std::vector<Vertex*> vf, vt;
-    // sects list is also related to the v lists, and stores a pointer to the section between the two
-    std::vector<Section*> sects;
-    
-    for(unsigned i = 0; i < g.size(); i++) {
-        if(g[i]->degree() == 1) {
-            Vertex *v = g[i];
-            unsigned ix = 0;
-            Edge &e = v.lookup(ix);
-            while(true) {
-                if(e.other->degree() == 2) {
-                    Vertex *v2 = new Vertex(*e.other);
-                    g.push_back(v2);
-                    add_edge_at(v, sects[i], Edge(new_section, v2), true);
-                    add_edge_at(v2, sects[i], Edge(new_section, v), false);
-                }
-            }
-        }
-    }
-    //==========================================
-    for(unsigned i = 0; i < g.size(); i++) {
-        if(g[i]->degree() == 1) {
-            unsigned ix = 0;
-            Edge &e = g[i]->lookup(ix);
-            vf.push_back(g[i]);
-            vt.push_back(e.other);
-            sects.push_back(e.section);
-        }
-    }
-    unsigned oj = vf.size();
-    while(oj) {
-        unsigned j = 0;
-        for(unsigned i = 0; i < oj; i++) {
-            Section *new_section = new Section(*sects[i]);
-            if(vt[i]->degree() == 2) {
-                //this vertex continues the whisker
-                //create a vertex identical to vt, and double link it to vf
-                Vertex *v = new Vertex(*vt[i]);
-                g.push_back(v);
-                add_edge_at(vf[i], sects[i], Edge(new_section, v), true);
-                add_edge_at(v, sects[i], Edge(new_section, vf[i]), false);
-                
-                vf[j] = v;
-                unsigned ix = 1 - vt[i]->find(sects[i]);
-                Edge &e = vt[i]->lookup(ix);
-                vt[j] = e.other;
-                sects[j] = e.section;
-                j++;
-            } else {
-                //end of this particular whisker
-                add_edge_at(vf[i], sects[i], Edge(new_section, vt[i]), true);
-                add_edge_at(vt[i], sects[i], Edge(new_section, vf[i]), false);
-            }
-            //==================================
-            //continuation of a whisker
-            //figure out which edge is unprocessed
-            unsigned zero = 0, one = 1, two = 2;
-            unsigned eix = 0;
-            if      (*v->lookup(zero).section == *v->lookup(one).section) eix = 2;
-            else if(*v->lookup(zero).section == *v->lookup(two).section) eix = 1;
-            Vertex *v2 = new Vertex(*v);
-            Edge &e = v2->lookup(two);
-            if(eix == 2) {
-               v->remove_edge(one);
-               e = v2->lookup(one);
-               v2->remove_edge(zero);
-               eix--;
-            } else {
-               v->remove_edge(two);
-               v2->remove_edge(eix == 1 ? zero : one);
-            }
-            //attach edge leading in
-            e.other->lookup_section(e.section).other = v2;
-            
-            //=================================== 
-            
-            e = v2->lookup(eix);
-            Section *new_section = new Section(*e.section);
-            
-            double_section(v2, e.section, Edge(new_section, e.other), false);
-            double_section(e.other, e.section, Edge(new_section, v2), true);
-            
-            Edge &e = v->lookup(two);
-            if(eix == 2) {
-                //take edge 1
-                v->remove_edge(one);
-                e = v->lookup(one);
-                eix--;
-            } else {
-                //take edge 2
-                v->remove_edge(two);
-            }
-            //insert into vertex 2
-            if(are_near(v->avg, e.fp))
-                v2->exits.push_back(e);
-            else
-                v2->enters.push_back(e);
-            e = 
-            Section* new_section = new Section(
-            
-            //double the edge
-        
-        }
-        oj = j;
-    }
-} */
-
 void remove_vestigial_verts(Graph &g) {
     for(unsigned i = 0; i < g.size(); i++) {
         Edge &e1 = g[i]->enters.front(),
@@ -703,10 +593,13 @@ void remove_vestigial_verts(Graph &g) {
     }
 }
 
+typedef std::vector<Section*> Area;
+typedef std::vector<Area> Areas;
+
 //planar area finding
 //linear on number of edges
-std::vector<std::vector<const Section*> > traverse_areas(Graph const &g, std::vector<std::vector<std::vector<bool> > > &visiteds) {
-    std::vector<std::vector<const Section*> > ret;
+Areas traverse_areas(Graph const &g) {
+    Areas ret;
     
     //stores which edges we've visited
     std::vector<std::vector<bool> > visited;
@@ -723,7 +616,7 @@ std::vector<std::vector<const Section*> > traverse_areas(Graph const &g, std::ve
             unsigned start = e_ix;
             unsigned cur = vix;
             
-            std::vector<const Section*> area;
+            Area area;
             //std::vector<std::vector<bool> > before(visited);
             while(cur < g.size() && !visited[cur][e_ix]) {
                 visited[cur][e_ix] = true;
@@ -746,27 +639,33 @@ std::vector<std::vector<const Section*> > traverse_areas(Graph const &g, std::ve
             }
             //if(vix == cur && start == e_ix) {
                 ret.push_back(area);
-                visiteds.push_back(visited);
             //} else visited = before;
         }
     }
     return ret;
 }
 
-void remove_area_whiskers(std::vector<std::vector<const Section*> > &areas) {
-    for(int i = areas.size(); i >= 0; i--)
+void remove_area_whiskers(Areas &areas) {
+    for(int i = areas.size() - 1; i >= 0; i--)
         if(areas[i].size() == 2 && *areas[i][0] == *areas[i][1]) 
             areas.erase(areas.begin() + i);
 }
 
-Path sections_to_path(PathVector const &ps, std::vector<const Section*> const & sections) {
+Path area_to_path(PathVector const &ps, Area const &area) {
     Path ret;
-    for(unsigned i = 0; i < sections.size(); i++) {
-        Interval ti(sections[i]->f, sections[i]->t);
-        Curve *curv = sections[i]->curve.get(ps).portion(ti.min(), ti.max());
-        ret.insert(ret.end(), *curv);
-        delete(curv);
+    for(unsigned i = 0; i < area.size(); i++) {
+        Interval ti(area[i]->f, area[i]->t);
+        ti += area[i]->curve.ix;
+        ps[area[i]->curve.path].appendPortionTo(ret, ti.min(), ti.max());
     }
+    return ret;
+}
+
+PathVector areas_to_paths(PathVector const &ps, Areas const &areas) {
+    std::vector<Path> ret;
+    ret.reserve(areas.size());
+    for(unsigned i = 0; i < areas.size(); i++)
+        ret.push_back(area_to_path(ps, areas[i]));
     return ret;
 }
 
@@ -791,14 +690,6 @@ enum {
 /* Thoughts on boolops:
  *  We need to go from a list of areas, to a tree of areas annotated with windings data, to a PathVector result
  */
-
-PathVector areas_to_paths(PathVector const &ps, std::vector<std::vector<const Section*> > const &areas) {
-    std::vector<Path> ret;
-    ret.reserve(areas.size());
-    for(unsigned i = 0; i < areas.size(); i++)
-        ret.push_back(sections_to_path(ps, areas[i]));
-    return ret;
-}
 
 struct AreaTree {
     std::vector<AreaTree> children;
@@ -847,7 +738,39 @@ std::vector<AreaTree> paths_to_trees(std::vector<Path> const &areas) {
     return ret;
 }
 
+struct UnionOp {
+    unsigned ix;
+    bool nz1, nz2;
+    UnionOp(unsigned i, bool a, bool b) : ix(i), nz1(a), nz2(b) {}
+    bool operator()(std::vector<int> const &windings) const {
+        int w1 = 0, w2 = 0;
+        for(unsigned j = 0; j < ix; j++) w1 += windings[j];
+        for(unsigned j = ix; j < windings.size(); j++) w2 += windings[j];
+        return (nz1 ? w1 : w1 % 2) != 0 || (nz2 ? w2 : w2 % 2) != 0;
+    }
+};
 
+//returns all areas for which the winding -> bool function yields true
+template<class Z>
+Areas filter_areas(Areas const & areas, Z const &func) {
+    Areas ret;
+    SweepSorter sorty = SweepSorter(Y),
+                sortx = SweepSorter(X);
+    for(unsigned i = 0; i < areas.size(); i++) {
+        //find a maximal, representative section
+        unsigned rj = 0;
+        for(unsigned j = 1; j < areas[i].size(); j++)
+            if(sorty(*areas[i][rj], *areas[i][j])) rj = j;
+        //if cw, get minimal section
+        if(sortx(*areas[i][(rj+1) % areas[i].size()], *areas[i][rj])) {
+            rj = 0;
+            for(unsigned j = 1; j < areas[i].size(); j++)
+                if(sorty(*areas[i][j], *areas[i][rj])) rj = j;
+        }
+        if(func(areas[i][rj]->windings)) ret.push_back(areas[i]);
+    }
+    return ret;
+}
 
 //PathVector
 std::vector<std::vector<Curve*> > unio(PathVector const &p1, bool nz1, PathVector const &p2, bool nz2) {
@@ -855,8 +778,7 @@ std::vector<std::vector<Curve*> > unio(PathVector const &p1, bool nz1, PathVecto
     concatenate(acc, p2);
     Graph g = sweep_graph(acc);
     
-    std::vector<std::vector<std::vector<bool> > > visits;
-    std::vector<std::vector<const Section*> > areas = traverse_areas(g, visits);
+    Areas areas = traverse_areas(g);
     std::vector<std::vector<Curve*> > ret;
     SweepSorter sort = SweepSorter(Y);
     for(unsigned i = 0; i < areas.size(); i++) {
@@ -891,8 +813,8 @@ void draw_node(cairo_t *cr, Point h) {
 void draw_section(cairo_t *cr, Section const &s, PathVector const &ps) {
     Curve *curv = s.get_portion(ps);
     cairo_curve(cr, *curv);
-    draw_node(cr, curv->initialPoint());
-    draw_node(cr, curv->finalPoint());
+    //draw_node(cr, curv->initialPoint());
+    //draw_node(cr, curv->finalPoint());
     cairo_stroke(cr);
     delete curv;
 }
@@ -961,7 +883,10 @@ class SweepWindow: public Toy {
         contexts.clear();
         chopss.clear();
         
-        Graph output = sweep_graph(path,X);
+        vector<Path> pa = path;
+        concatenate(pa, path2 + p2.pos);
+        
+        Graph output = sweep_graph(pa,X);
         
         int cix = (int) p.pos[X] / 10;
         if(cix >= 0 && cix < (int)contexts.size()) {
@@ -969,13 +894,13 @@ class SweepWindow: public Toy {
                 double c = colours.size();
                 colours.push_back(colour::from_hsl(c*0.5, 1, 0.5, 0.75));
             }
-            for(unsigned i = 0; i < contexts[cix].size(); i++) {
+            /* for(unsigned i = 0; i < contexts[cix].size(); i++) {
                 cairo_set_source_rgba(cr, colours[i]);
-                draw_section(cr, contexts[cix][i], path);
-                draw_number(cr, contexts[cix][i].curve.get(path)
+                draw_section(cr, contexts[cix][i], pa);
+                draw_number(cr, contexts[cix][i].curve.get(pa)
                                 ((contexts[cix][i].t + contexts[cix][i].f) / 2), i);
                 cairo_stroke(cr);
-            }
+            } */
             cairo_set_source_rgba(cr, 0,0,0,1);
             /* for(unsigned i = 0; i < monoss[cix].size(); i++) {
                 draw_section(cr, monoss[cix][i], path);
@@ -995,15 +920,18 @@ class SweepWindow: public Toy {
         //draw_graph(cr, output);
         
         cairo_set_line_width(cr, 1);
-        draw_edge_orders(cr, output, path);
-        
-        std::vector<std::vector<std::vector<bool> > > visiteds;
+        //draw_edge_orders(cr, output, pa);
         
         //remove_vestigial_verts(output);
         double_whiskers(output);
         write_graph(output);
-        std::vector<std::vector<const Section*> > areas = traverse_areas(output, visiteds);
+        Areas areas = traverse_areas(output);
         remove_area_whiskers(areas);
+        areas = filter_areas(areas, UnionOp(path.size(), false, false));
+        
+        PathVector ps = areas_to_paths(pa, areas);
+        cairo_path(cr, ps);
+                
         /*for(unsigned i = 0; i < areas.size(); i++) {
             for(unsigned j = 0; j < areas[i].size(); j++) {
                 std::cout << areas[i][j] << ", ";
@@ -1021,24 +949,27 @@ class SweepWindow: public Toy {
         } */
         
         
-        unsigned area_ix = cix < (int)areas.size() ? cix : areas.size() - 1;
-        cairo_set_line_width(cr, 5);
+        //unsigned area_ix = cix < (int)areas.size() ? cix : areas.size() - 1;
+        /*cairo_set_line_width(cr, 5);
         cairo_set_source_rgba(cr, 1, 1,0,1);
-        for(unsigned i = 0; i < areas[area_ix].size(); i++) {
-            draw_section(cr, *areas[area_ix][i], path);
-        }
+        for(unsigned area_ix = 0; area_ix < areas.size(); area_ix++) {
+            for(unsigned i = 0; i < areas[area_ix].size(); i++) {
+                draw_section(cr, *areas[area_ix][i], pa);
+            }
+        }*/
         
+        /*
         cairo_set_line_width(cr, 1);
         cairo_set_source_rgba(cr, 0, 0, 0, 1);
         for(unsigned i = 0; i < visiteds[area_ix].size(); i++) {
             for(unsigned j = 0; j < visiteds[area_ix][i].size(); j++) {
                 if(visiteds[area_ix][i][j]) {
                     const Section *s = output[i]->lookup(j).section;
-                    draw_ray(cr, output[i]->avg, lerp(0.5, s->curve.get(path)(lerp(0.35, s->f, s->t)) - output[i]->avg, Point()));
+                    draw_ray(cr, output[i]->avg, lerp(0.5, s->curve.get(pa)(lerp(0.35, s->f, s->t)) - output[i]->avg, Point()));
                     cairo_stroke(cr);
                 }
             }
-        }
+        } */
         
         free_graph(output);
         
