@@ -756,20 +756,14 @@ struct UnionOp {
 template<class Z>
 Areas filter_areas(Areas const & areas, Z const &func) {
     Areas ret;
-    SweepSorter sorty = SweepSorter(Y),
-                sortx = SweepSorter(X);
+    SweepSorter sort = SweepSorter(Y);
     for(unsigned i = 0; i < areas.size(); i++) {
-        //find a maximal, representative section
-        unsigned rj = 0;
+        //find a representative section
+        Section *rep = areas[i][0];
+        bool rev = are_near(rep->fp, areas[i][1]->tp);
         for(unsigned j = 1; j < areas[i].size(); j++)
-            if(sorty(*areas[i][rj], *areas[i][j])) rj = j;
-        //if cw, get minimal section
-        if(sortx(*areas[i][(rj+1) % areas[i].size()], *areas[i][rj])) {
-            rj = 0;
-            for(unsigned j = 1; j < areas[i].size(); j++)
-                if(sorty(*areas[i][j], *areas[i][rj])) rj = j;
-        }
-        if(func(areas[i][rj]->windings)) ret.push_back(areas[i]);
+            if(logical_xor(rev, sort(*rep, *areas[i][j]))) rep = areas[i][j];
+        if(func(rep->windings)) ret.push_back(areas[i]);
     }
     return ret;
 }
