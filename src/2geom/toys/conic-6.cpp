@@ -181,20 +181,20 @@ class Conic6: public Toy {
             rts = Geom::roots(D);
         }
         // at this point we have a T and S and perhaps some roots that represent our degenerate conic
-        //for(unsigned i = 0; i < rts.size(); i++) {
-        if(!rts.empty()) {
-            unsigned i = 0;
+        for(unsigned i = 0; i < rts.size(); i++) {
+            //if(!rts.empty()) {
+            //unsigned i = 0;
             double t = T.valueAt(rts[i]);
             double s = S.valueAt(rts[i]);
             *notify << t << "; " << s << std::endl;
             double C0[3][3] = {{t*C1.c[0]+s*C2.c[0], (t*C1.c[1]+s*C2.c[1])/2, (t*C1.c[3]+s*C2.c[3])/2},
                                {(t*C1.c[1]+s*C2.c[1])/2, t*C1.c[2]+s*C2.c[2], (t*C1.c[4]+s*C2.c[4])/2},
                                {(t*C1.c[3]+s*C2.c[3])/2, (t*C1.c[4]+s*C2.c[4])/2, t*C1.c[5]+s*C2.c[5]}};
-            xAx xC0 = C1.scale(t,t) + C2.scale(s,s);
-            ::draw(cr, xC0, screen_rect);
+            xAx xC0 = C1*t + C2*s;
+            ::draw(cr, xC0, screen_rect); // degen
         }
 
-        //::draw(cr, C1*sliders[0].value() + C2*sliders[1].value(), screen_rect);
+        ::draw(cr, C1*sliders[0].value() + C2*sliders[1].value(), screen_rect);
         
 
         
