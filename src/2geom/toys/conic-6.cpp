@@ -120,6 +120,30 @@ xAx fromHandles(std::vector<Geom::Point> const &pt) {
 }
 
 
+static double det(Point a, Point b) {
+    return a[0]*b[1] - a[1]*b[0];
+}
+
+template <typename T>
+static T det(T a, T b, T c, T d) {
+    return a*d - b*c;
+}
+
+template <typename T>
+static T det(T M[2][2]) {
+    return M[0][0]*M[1][1] - M[1][0]*M[0][1];
+}
+
+template <typename T>
+static T det3(T M[3][3]) {
+    return ( M[0][0] * det(M[1][1], M[1][2],
+                           M[2][1], M[2][2])
+             -M[1][0] * det(M[0][1], M[0][2],
+                            M[2][1], M[2][2])
+             +M[2][0] * det(M[0][1], M[0][2],
+                            M[1][1], M[1][2]));
+}
+
 class Conic6: public Toy {
     PointSetHandle C1H, C2H;
     std::vector<Slider> sliders;
@@ -137,7 +161,41 @@ class Conic6: public Toy {
         ::draw(cr, C2, screen_rect);
         *notify << C2;
 
-        ::draw(cr, C1*sliders[0].value() + C2*sliders[1].value(), screen_rect);
+
+        SBasis T(Linear(-1,1));
+        SBasis S(Linear(1,1));
+        SBasis C[3][3] = {{T*C1.c[0]+S*C2.c[0], (T*C1.c[1]+S*C2.c[1])/2, (T*C1.c[3]+S*C2.c[3])/2},
+                          {(T*C1.c[1]+S*C2.c[1])/2, T*C1.c[2]+S*C2.c[2], (T*C1.c[4]+S*C2.c[4])/2},
+                          {(T*C1.c[3]+S*C2.c[3])/2, (T*C1.c[4]+S*C2.c[4])/2, T*C1.c[5]+S*C2.c[5]}};
+    
+        SBasis D = det3(C);
+        std::vector<double> rts = Geom::roots(D);
+        if(rts.empty()) {
+            T = Linear(1,1);
+            S = Linear(-1,1);
+            SBasis C[3][3] = {{T*C1.c[0]+S*C2.c[0], (T*C1.c[1]+S*C2.c[1])/2, (T*C1.c[3]+S*C2.c[3])/2},
+                              {(T*C1.c[1]+S*C2.c[1])/2, T*C1.c[2]+S*C2.c[2], (T*C1.c[4]+S*C2.c[4])/2},
+                              {(T*C1.c[3]+S*C2.c[3])/2, (T*C1.c[4]+S*C2.c[4])/2, T*C1.c[5]+S*C2.c[5]}};
+        
+            D = det3(C);
+            rts = Geom::roots(D);
+        }
+        // at this point we have a T and S and perhaps some roots that represent our degenerate conic
+        //for(unsigned i = 0; i < rts.size(); i++) {
+        if(!rts.empty()) {
+            unsigned i = 0;
+            double t = T.valueAt(rts[i]);
+            double s = S.valueAt(rts[i]);
+            *notify << t << "; " << s << std::endl;
+            double C0[3][3] = {{t*C1.c[0]+s*C2.c[0], (t*C1.c[1]+s*C2.c[1])/2, (t*C1.c[3]+s*C2.c[3])/2},
+                               {(t*C1.c[1]+s*C2.c[1])/2, t*C1.c[2]+s*C2.c[2], (t*C1.c[4]+s*C2.c[4])/2},
+                               {(t*C1.c[3]+s*C2.c[3])/2, (t*C1.c[4]+s*C2.c[4])/2, t*C1.c[5]+s*C2.c[5]}};
+            xAx xC0 = C1.scale(t,t) + C2.scale(s,s);
+            ::draw(cr, xC0, screen_rect);
+        }
+
+        //::draw(cr, C1*sliders[0].value() + C2*sliders[1].value(), screen_rect);
+        
 
         
         cairo_stroke(cr);
