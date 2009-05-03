@@ -110,7 +110,6 @@ xAx fromHandles(std::vector<Geom::Point> const &pt) {
         vv[2] = P[1]*P[1];
         vv[3] = P[0];
         vv[4] = P[1];
-        std::cout << vv << std::endl;
     }
             
     Geom::NL::LinearSystem ls(M, V);
@@ -137,6 +136,9 @@ class Conic6: public Toy {
         Geom::xAx C2 = fromHandles(C2H.pts);
         ::draw(cr, C2, screen_rect);
         *notify << C2;
+
+        ::draw(cr, C1*sliders[0].value() + C2*sliders[1].value(), screen_rect);
+
         
         cairo_stroke(cr);
 	
@@ -152,8 +154,8 @@ public:
         }
         handles.push_back(&C1H);
         handles.push_back(&C2H);
-        sliders.push_back(Slider(0.0, 5.0, 0, 0.0, "a"));
-        sliders.push_back(Slider(0.0, 5.0, 0, 0.0, "b"));
+        sliders.push_back(Slider(-1.0, 1.0, 0, 0.0, "a"));
+        sliders.push_back(Slider(-1.0, 1.0, 0, 0.0, "b"));
         sliders.push_back(Slider(0.0, 5.0, 0, 0.0, "c"));
         handles.push_back(&(sliders[0]));
         handles.push_back(&(sliders[1]));
