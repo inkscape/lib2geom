@@ -282,8 +282,6 @@ D2<SBasis> RatQuad::hermite() const {
   return "no idea!";
 }
 
-extern xAx degen;
-
 std::vector<Point> xAx::intersect(xAx const & xC2) const {
     SBasis T(Linear(-1,1));
     SBasis S(Linear(1,1));
@@ -303,20 +301,22 @@ std::vector<Point> xAx::intersect(xAx const & xC2) const {
         D = det3(C);
         rts = Geom::roots(D);
     }
-    for(unsigned i = 0; i < rts.size(); i++) {
+    // at this point we have a T and S and perhaps some roots that represent our degenerate conic
+    //for(unsigned i = 0; i < rts.size(); i++) {
+    if(!rts.empty()) {
+        unsigned i = 0;
         double t = T.valueAt(rts[i]);
         double s = S.valueAt(rts[i]);
         std::cout << t << "; " << s << std::endl;
         double C0[3][3] = {{t*c[0]+s*xC2.c[0], (t*c[1]+s*xC2.c[1])/2, (t*c[3]+s*xC2.c[3])/2},
                            {(t*c[1]+s*xC2.c[1])/2, t*c[2]+s*xC2.c[2], (t*c[4]+s*xC2.c[4])/2},
                            {(t*c[3]+s*xC2.c[3])/2, (t*c[4]+s*xC2.c[4])/2, t*c[5]+s*xC2.c[5]}};
-        std::cout << "det(C0 = " <<det3(C0) << std::endl;
-        double A11[2][2] = {{t*c[0]+xC2.c[0], (t*c[1]+xC2.c[1])/2},
-                            {(t*c[1]+xC2.c[1])/2, t*c[2]+xC2.c[2]}};
+        std::cout << "det(C0) = " <<det3(C0) << std::endl;
+        double A11[2][2] = {{t*c[0]+s*xC2.c[0], (t*c[1]+s*xC2.c[1])/2},
+                            {(t*c[1]+s*xC2.c[1])/2, t*c[2]+s*xC2.c[2]}};
         
         std::cout <<det(A11) << std::endl;
         xAx xC0 = scale(t,t) + xC2.scale(s,s);
-        degen = xC0;
         Eigen eig(A11);
         std::cout << "eiger:" <<  eig.values[0] << "; " << eig.values[1] << std::endl;
         Point O(0,0);

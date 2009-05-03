@@ -50,10 +50,6 @@ inline std::string stringify(T x)
     return o.str();
 }
 
-namespace Geom{
-xAx degen;
-};
-
 void draw_hull(cairo_t*cr, RatQuad rq) {
     cairo_move_to(cr, rq.P[0]);
     cairo_line_to(cr, rq.P[1]);
@@ -216,7 +212,6 @@ class Conic5: public Toy {
             for(unsigned i = 0; i < intrs.size(); i++) {
                 draw_circ(cr, intrs[i]);
             }
-            ::draw(cr, Geom::degen, screen_rect);
       
             boost::optional<RatQuad> orq = oxo.toCurve(rh.pos);
             if(orq) {

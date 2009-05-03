@@ -30,6 +30,7 @@ collinear-normal
 conic-3
 conic-4
 conic-5
+conic-6
 convex-toy
 curvature-test
 curve-curve-distance
