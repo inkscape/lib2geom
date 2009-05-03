@@ -181,9 +181,9 @@ class Conic6: public Toy {
             rts = Geom::roots(D);
         }
         // at this point we have a T and S and perhaps some roots that represent our degenerate conic
-        for(unsigned i = 0; i < rts.size(); i++) {
-            //if(!rts.empty()) {
-            //unsigned i = 0;
+        //for(unsigned i = 0; i < rts.size(); i++) {
+        if(!rts.empty()) {
+            unsigned i = 0;
             double t = T.valueAt(rts[i]);
             double s = S.valueAt(rts[i]);
             *notify << t << "; " << s << std::endl;
@@ -192,6 +192,43 @@ class Conic6: public Toy {
                                {(t*C1.c[3]+s*C2.c[3])/2, (t*C1.c[4]+s*C2.c[4])/2, t*C1.c[5]+s*C2.c[5]}};
             xAx xC0 = C1*t + C2*s;
             ::draw(cr, xC0, screen_rect); // degen
+            
+            double m = 0;
+            int mi = 0;
+            std::cout << "det(C0) = "<< det3(C0) << "\n";
+            for(int c = 0; c < 3; c++) {
+                double mx = std::max(fabs(C0[0][c]), 
+                                     fabs(C0[1][c]));
+                mx = std::max(mx, fabs(C0[2][c]));
+                if(mx > m) {
+                    mi = c;
+                    m = mx;
+                }
+                std::cout << C0[0][c] << " "
+                        << C0[1][c] << " "
+                        << C0[2][c] << "\n";
+                    
+            }
+            *notify << mi << m << "\n";
+            bool prop = true;
+            for(int c = 0; c < 3; c++) {
+                std::cout << C0[0][c]/C0[0][mi] << " "
+                        << C0[1][c]/C0[1][mi] << " "
+                        << C0[2][c]/C0[2][mi] << "\n";
+                if(c == mi) continue;
+                
+                if(fabs(C0[c][0]*C0[mi][1] - C0[c][1]*C0[mi][0]) > 1e-1)
+                    prop = false;
+                if(fabs(C0[c][0]*C0[mi][2] - C0[c][2]*C0[mi][0]) > 1e-1)
+                    prop = false;
+                    
+            }
+            double p[3];
+            double Mp[3][3] = {{0, p[3], -p[2]},
+                               {-p[3], 0, p[1]},
+                               {p[2], -p[1], 0}};
+            
+            *notify << prop << "\n";
         }
 
         ::draw(cr, C1*sliders[0].value() + C2*sliders[1].value(), screen_rect);
