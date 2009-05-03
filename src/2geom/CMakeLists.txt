@@ -74,6 +74,9 @@ crossing.cpp
 sweep.cpp
 sweep.h
 
+toposweep.cpp
+toposweep.h
+
 poly.cpp
 poly.h
 

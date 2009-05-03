@@ -168,6 +168,14 @@ inline bool operator<=(Point const &a, Point const &b) {
              (( a[Y] == b[Y] ) && ( a[X] < b[X] )));
 }
 
+
+// lexicographical ordering for points given a particular dimension
+inline bool lexo_point(Point const &a, Point const &b, Dim2 d) {
+    if(d) return a[Y] < b[Y] || (a[Y] == b[Y] && a[X] < b[X]);
+    else  return a[X] < b[X] || (a[X] == b[X] && a[Y] < b[Y]);
+}
+
+
 Coord L1(Point const &p);
 
 /** Compute the L2, or euclidean, norm of \a p. */

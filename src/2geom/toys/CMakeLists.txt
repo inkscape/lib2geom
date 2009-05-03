@@ -77,7 +77,6 @@ scribble
 self-intersect
 squiggles
 svg-elliptical-arc-test-toy
-trim-whiskers
 uncross
 worms
 winding-test
@@ -107,7 +106,6 @@ hatches
 rdm-area
 #ray-sorting-test
 sketch-fitter
-sweep-window
 redblack-toy
 sweep-graph
 )

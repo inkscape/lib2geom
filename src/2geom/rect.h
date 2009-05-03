@@ -145,7 +145,8 @@ class D2<Interval> {
         f[X].unionWith(b[X]); f[Y].unionWith(b[Y]); 
     }
     void unionWith(OptRect const &b);
-
+    
+    //TODO: figure out how these work with negative values and OptRect
     inline void expandBy(double amnt)    {
         f[X].expandBy(amnt);  f[Y].expandBy(amnt); 
     }
