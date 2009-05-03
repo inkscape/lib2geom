@@ -108,7 +108,6 @@ static Geom::Point RatQuadat1(Geom::RatQuad const & rq) {
 }
 
 
-
 void wrap_conic() {
     //conicsec.h
 
@@ -160,6 +159,8 @@ void wrap_conic() {
         .def("split", &wrap_rq_split)
         .def("hermite", &Geom::RatQuad::hermite)
         .def("homogenous", &Geom::RatQuad::homogenous)
+        .def("fromPointsTangents", &Geom::RatQuad::fromPointsTangents)
+        .staticmethod("fromPointsTangents")
         ;
     implicitly_convertible<Geom::Point,tuple>();
 };

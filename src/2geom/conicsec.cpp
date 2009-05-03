@@ -78,25 +78,67 @@ LineSegment intersection(Line l, Rect r) {
 }
 
 static double det(Point a, Point b) {
-  return a[0]*b[1] - a[1]*b[0];
+    return a[0]*b[1] - a[1]*b[0];
 }
 
-static double det(double a, double b, double c, double d) {
-  return a*d - b*c;
+template <typename T>
+static T det(T a, T b, T c, T d) {
+    return a*d - b*c;
 }
 
-static double det3(double M[3][3]) {
-  return ( M[0][0] * det(M[1][1], M[1][2],
-			 M[2][1], M[2][2])
-	   -M[1][0] * det(M[0][1], M[0][2],
-			  M[2][1], M[2][2])
-	   +M[2][0] * det(M[0][1], M[0][2],
-			  M[1][1], M[1][2]));
+template <typename T>
+static T det(T M[2][2]) {
+    return M[0][0]*M[1][1] - M[1][0]*M[0][1];
+}
+
+template <typename T>
+static T det3(T M[3][3]) {
+    return ( M[0][0] * det(M[1][1], M[1][2],
+                           M[2][1], M[2][2])
+             -M[1][0] * det(M[0][1], M[0][2],
+                            M[2][1], M[2][2])
+             +M[2][0] * det(M[0][1], M[0][2],
+                            M[1][1], M[1][2]));
 }
 
 static double boxprod(Point a, Point b, Point c) {
-  return det(a,b) - det(a,c) + det(b,c);
+    return det(a,b) - det(a,c) + det(b,c);
 }
+
+
+/**
+ * Find the roots of (q2x + q1)x+q0 = 0
+ * Tries to be numerically robust.
+ */
+template <typename T>
+static std::vector<T> quadratic_roots(T q0, T q1, T q2) {
+    std::vector<double> r;
+    if(q2 == 0) {
+        if(q1 == 0) { // zero or infinite roots
+            return r;
+        }
+        r.push_back(-q0/q1);
+    } else {
+        double desc = q1*q1 - 4*q2*q0;
+        /*cout << q2 << ", " 
+          << q1 << ", "
+          << q0 << "; "
+          << desc << "\n";*/
+        if (desc < 0)
+            return r;
+        else if (desc == 0)
+            r.push_back(-q1/(2*q2));
+        else {
+            desc = std::sqrt(desc);
+            double t = -0.5*(q1+sgn(q1)*desc);
+            r.push_back(t/q2);
+            r.push_back(q0/t);
+        }
+    }
+    return r;
+}
+
+
 
 class BadConversion : public std::runtime_error {
 public:
@@ -130,8 +172,8 @@ double RatQuad::lambda() const {
 }
   
 RatQuad RatQuad::fromPointsTangents(Point P0, Point dP0,
-					   Point P,
-					   Point P2, Point dP2) {
+                                    Point P,
+                                    Point P2, Point dP2) {
   Line Line0 = Line::fromPointDirection(P0, dP0);
   Line Line2 = Line::fromPointDirection(P2, dP2);
   try {
@@ -239,6 +281,73 @@ D2<SBasis> RatQuad::hermite() const {
   }
   return "no idea!";
 }
+
+extern xAx degen;
+
+std::vector<Point> xAx::intersect(xAx const & xC2) const {
+    SBasis T(Linear(-1,1));
+    SBasis S(Linear(1,1));
+    SBasis C[3][3] = {{T*c[0]+S*xC2.c[0], (T*c[1]+S*xC2.c[1])/2, (T*c[3]+S*xC2.c[3])/2},
+                      {(T*c[1]+S*xC2.c[1])/2, T*c[2]+S*xC2.c[2], (T*c[4]+S*xC2.c[4])/2},
+                      {(T*c[3]+S*xC2.c[3])/2, (T*c[4]+S*xC2.c[4])/2, T*c[5]+S*xC2.c[5]}};
+    
+    SBasis D = det3(C);
+    std::vector<double> rts = Geom::roots(D);
+    if(rts.empty()) {
+        T = Linear(1,1);
+        S = Linear(-1,1);
+        SBasis C[3][3] = {{T*c[0]+S*xC2.c[0], (T*c[1]+S*xC2.c[1])/2, (T*c[3]+S*xC2.c[3])/2},
+                          {(T*c[1]+S*xC2.c[1])/2, T*c[2]+S*xC2.c[2], (T*c[4]+S*xC2.c[4])/2},
+                          {(T*c[3]+S*xC2.c[3])/2, (T*c[4]+S*xC2.c[4])/2, T*c[5]+S*xC2.c[5]}};
+        
+        D = det3(C);
+        rts = Geom::roots(D);
+    }
+    for(unsigned i = 0; i < rts.size(); i++) {
+        double t = T.valueAt(rts[i]);
+        double s = S.valueAt(rts[i]);
+        std::cout << t << "; " << s << std::endl;
+        double C0[3][3] = {{t*c[0]+s*xC2.c[0], (t*c[1]+s*xC2.c[1])/2, (t*c[3]+s*xC2.c[3])/2},
+                           {(t*c[1]+s*xC2.c[1])/2, t*c[2]+s*xC2.c[2], (t*c[4]+s*xC2.c[4])/2},
+                           {(t*c[3]+s*xC2.c[3])/2, (t*c[4]+s*xC2.c[4])/2, t*c[5]+s*xC2.c[5]}};
+        std::cout << "det(C0 = " <<det3(C0) << std::endl;
+        double A11[2][2] = {{t*c[0]+xC2.c[0], (t*c[1]+xC2.c[1])/2},
+                            {(t*c[1]+xC2.c[1])/2, t*c[2]+xC2.c[2]}};
+        
+        std::cout <<det(A11) << std::endl;
+        xAx xC0 = scale(t,t) + xC2.scale(s,s);
+        degen = xC0;
+        Eigen eig(A11);
+        std::cout << "eiger:" <<  eig.values[0] << "; " << eig.values[1] << std::endl;
+        Point O(0,0);
+        Point g = gradient(O);
+        double x = 1;
+        while(L2(g) < 1e-10) {
+            O = Point(x,x-1);
+            g = gradient(O);
+            x+= 1;
+        }
+        std::cout << O << "; " << g << "\n";
+        Line L0 = Line::fromPointDirection(O, rot90(g));
+        std::vector<double> lrts = xC0.roots(L0);
+        std::vector<Point> intrs;
+        for(unsigned j =0; j < lrts.size(); j++) {
+            O = L0.pointAt(lrts[j]);
+            g = gradient(O);
+            std::cout << O << g << "\n";
+            
+            Line L1 = Line::fromPointDirection(O, rot90(g));
+            std::vector<double> crts = roots(L1);
+            for(unsigned k =0; k < crts.size(); k++) {
+                intrs.push_back(L1.pointAt(crts[k]));
+            }
+        }
+        return intrs;
+    }
+    return std::vector<Point>();
+}
+
+
 xAx xAx::fromPoint(Point p) {
   return xAx(1., 0, 1., -2*p[0], -2*p[1], dot(p,p));
 }
@@ -281,6 +390,13 @@ xAx xAx::operator-(xAx const &b) const {
   xAx res;
   for(int i = 0; i < 6; i++) {
     res.c[i] = c[i] - b.c[i];
+  }
+  return res;
+}
+xAx xAx::operator+(xAx const &b) const {
+  xAx res;
+  for(int i = 0; i < 6; i++) {
+    res.c[i] = c[i] + b.c[i];
   }
   return res;
 }

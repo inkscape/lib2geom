@@ -115,8 +115,11 @@ public:
     Point gradient(Point p) const;
   
     xAx operator-(xAx const &b) const;
+    xAx operator+(xAx const &b) const;
     xAx operator+(double const &b) const;
     xAx operator*(double const &b) const;
+    
+    std::vector<Point> intersect(const xAx & xC2) const;
     
     std::vector<Point> crossings(Rect r) const;
     boost::optional<RatQuad> toCurve(Rect const & bnd) const;

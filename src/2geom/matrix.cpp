@@ -243,6 +243,46 @@ Eigen::Eigen(Matrix const &m) {
     }
 }
 
+static void quadratic_roots(double q0, double q1, double q2, int &n, double&r0, double&r1) {
+    std::vector<double> r;
+    if(q2 == 0) {
+        if(q1 == 0) { // zero or infinite roots
+            n = 0;
+        } else {
+            n = 1;
+            r0 = -q0/q1;
+        }
+    } else {
+        double desc = q1*q1 - 4*q2*q0;
+        if (desc < 0)
+            n = 0;
+        else if (desc == 0) {
+            n = 1;
+            r0 = -q1/(2*q2);
+        } else {
+            n = 2;
+            desc = std::sqrt(desc);
+            double t = -0.5*(q1+sgn(q1)*desc);
+            r0 = t/q2;
+            r1 = q0/t;
+        }
+    }
+}
+
+Eigen::Eigen(double m[2][2]) {
+    double const B = -m[0][0] - m[1][1];
+    double const C = m[0][0]*m[1][1] - m[1][0]*m[0][1];
+    double const desc = B*B-4*C;
+    double t = -0.5*(B+sgn(B)*desc);
+    int n;
+    values[0] = values[1] = 0;
+    quadratic_roots(C, B, 1, n, values[0], values[1]);
+    for (int i = 0; i < n; i++)
+        vectors[i] = unit_vector(rot90(Point(m[0][0]-values[i], m[0][1])));
+    for (int i = n; i < 2; i++) 
+        vectors[i] = Point(0,0);
+}
+
 }  //namespace Geom
 
 /*

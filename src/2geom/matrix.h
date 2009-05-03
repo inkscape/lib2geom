@@ -127,6 +127,7 @@ public:
     Point vectors[2];
     double values[2];
     Eigen(Matrix const &m);
+    Eigen(double M[2][2]);
 };
 
 // Matrix factories
