@@ -140,7 +140,7 @@ class SweepWindow: public Toy {
         PathVector pa2 = path2 + p.pos;
         concatenate(pa, pa2);
         
-        Graph *output = sweep_graph(pa,X);
+        Graph output = sweep_graph(pa,X);
         draw_context(cr, 0, pa);
         
         /* draw_graph(cr, output);
@@ -156,7 +156,7 @@ class SweepWindow: public Toy {
         areas = filter_areas(pa, areas, UnionOp(path.size(), false, false));
         */
         
-        free_graph(*output);
+        free_graph(output);
         
         Toy::draw(cr, notify, width, height, save,timer_stream);
     }
