@@ -19,6 +19,10 @@
 
 using namespace Geom;
 
+void set_rainbow(cairo_t *cr, unsigned i) {
+    cairo_set_source_rgba(cr, colour::from_hsl(i*0.5, 1, 0.5, 0.75));
+}
+
 void draw_node(cairo_t *cr, Point h) {
     int x = int(h[Geom::X]);
     int y = int(h[Geom::Y]);
@@ -37,7 +41,7 @@ void draw_section(cairo_t *cr, Section const &s, PathVector const &ps) {
 
 void draw_graph(cairo_t *cr, Graph const &vertices) {
     for(unsigned i = 0; i < vertices.size(); i++) {
-        cairo_set_source_rgba(cr, colour::from_hsl(i*0.5, 1, 0.5, 0.75));
+        set_rainbow(cr, i);
         for(unsigned j = 0; j < vertices[i]->enters.size(); j++) {
             draw_ray(cr, vertices[i]->avg, 10*unit_vector(vertices[i]->enters[j].other->avg - vertices[i]->avg));
             cairo_stroke(cr);
@@ -79,7 +83,7 @@ void draw_edges(cairo_t *cr, std::vector<Edge> const &edges, PathVector const &p
 
 void draw_edge_orders(cairo_t *cr, std::vector<Vertex*> const &vertices, PathVector const &ps) {
     for(unsigned i = 0; i < vertices.size(); i++) {
-        cairo_set_source_rgba(cr, colour::from_hsl(i*0.5, 1, 0.5, 0.75));
+        set_rainbow(cr, i);
         draw_edges(cr, vertices[i]->enters, ps, 0.6);
         draw_edges(cr, vertices[i]->exits, ps, 0.4);
     }
@@ -99,11 +103,30 @@ void draw_areas(cairo_t *cr, PathVector const &pa, Areas const &areas) {
     }
 }
 
+void draw_context(cairo_t *cr, int cix, PathVector const &pa) {
+    cix %= contexts.size();
+    for(unsigned i = 0; i < contexts[cix].size(); i++) {
+        set_rainbow(cr, i);
+        draw_section(cr, contexts[cix][i], pa);
+        draw_number(cr, contexts[cix][i].curve.get(pa)
+                        ((contexts[cix][i].t + contexts[cix][i].f) / 2), i);
+        cairo_stroke(cr);
+    }
+    cairo_set_source_rgba(cr, 0,0,0,1);
+    for(unsigned i = 0; i < monoss[cix].size(); i++) {
+        draw_section(cr, monoss[cix][i], pa);
+        cairo_stroke(cr);
+    }
+    for(unsigned i = 0; i < chopss[cix].size(); i++) {
+        draw_section(cr, chopss[cix][i], pa);
+        cairo_stroke(cr);
+    }
+}
+
 class SweepWindow: public Toy {
     vector<Path> path, path2;
     std::vector<Toggle> toggles;
-    PointHandle p, p2;
-    std::vector<colour> colours;
+    PointHandle p;
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
 
         cairo_set_source_rgb(cr, 0, 0, 0);
@@ -113,41 +136,14 @@ class SweepWindow: public Toy {
         contexts.clear();
         chopss.clear();
         
-        vector<Path> pa = path;
-        concatenate(pa, path2 + p2.pos);
+        PathVector pa = path;
+        PathVector pa2 = path2 + p.pos;
+        concatenate(pa, pa2);
         
-        Graph output = sweep_graph(pa,X);
+        Graph *output = sweep_graph(pa,X);
+        draw_context(cr, 0, pa);
         
-        int cix = (int) p.pos[X] / 10;
-        if(cix >= 0 && cix < (int)contexts.size()) {
-            while(colours.size() < contexts[cix].size()) {
-                double c = colours.size();
-                colours.push_back(colour::from_hsl(c*0.5, 1, 0.5, 0.75));
-            }
-            /* for(unsigned i = 0; i < contexts[cix].size(); i++) {
-                cairo_set_source_rgba(cr, colours[i]);
-                draw_section(cr, contexts[cix][i], pa);
-                draw_number(cr, contexts[cix][i].curve.get(pa)
-                                ((contexts[cix][i].t + contexts[cix][i].f) / 2), i);
-                cairo_stroke(cr);
-            } */
-            cairo_set_source_rgba(cr, 0,0,0,1);
-            /* for(unsigned i = 0; i < monoss[cix].size(); i++) {
-                draw_section(cr, monoss[cix][i], path);
-                cairo_fill(cr);
-            } */
-            /* cairo_set_source_rgba(cr,0,0,0,0.5);
-            cairo_set_line_width(cr, 10);
-            std::cout << "!!!!!!!!!!! " << chopss[cix].size() << std::endl;
-            for(unsigned i = 0; i < chopss[cix].size(); i++) {
-                draw_section(cr, chopss[cix][i], path);
-                cairo_stroke(cr);
-            } */
-        }
-        
-        *notify << cix << std::endl;
-        
-        //draw_graph(cr, output);
+        /* draw_graph(cr, output);
         
         cairo_set_line_width(cr, 1);
         //draw_edge_orders(cr, output, pa);
@@ -158,57 +154,9 @@ class SweepWindow: public Toy {
         Areas areas = traverse_areas(output);
         remove_area_whiskers(areas);
         areas = filter_areas(pa, areas, UnionOp(path.size(), false, false));
+        */
         
-        draw_areas(cr, pa, areas);
-        /*for(unsigned i = 0; i < areas.size(); i++) {
-            for(unsigned j = 0; j < areas[i].size(); j++) {
-                std::cout << areas[i][j] << ", ";
-            }
-            std::cout << std::endl;
-        }*/
-        
-        /*std::vector<std::vector<Curve*> > curves = unio(path, true, path2 + p2.pos, true);
-        
-        for(unsigned i = 0; i < curves.size(); i++) {
-            for(unsigned j = 0; j < curves[i].size(); j++) {
-                cairo_curve(cr, *curves[i][j]);
-                cairo_stroke(cr);
-            }
-        } */
-        
-        
-        //unsigned area_ix = cix < (int)areas.size() ? cix : areas.size() - 1;
-        /*cairo_set_line_width(cr, 5);
-        cairo_set_source_rgba(cr, 1, 1,0,1);
-        for(unsigned area_ix = 0; area_ix < areas.size(); area_ix++) {
-            for(unsigned i = 0; i < areas[area_ix].size(); i++) {
-                draw_section(cr, *areas[area_ix][i], pa);
-            }
-        }*/
-        
-        /*
-        cairo_set_line_width(cr, 1);
-        cairo_set_source_rgba(cr, 0, 0, 0, 1);
-        for(unsigned i = 0; i < visiteds[area_ix].size(); i++) {
-            for(unsigned j = 0; j < visiteds[area_ix][i].size(); j++) {
-                if(visiteds[area_ix][i][j]) {
-                    const Section *s = output[i]->lookup(j).section;
-                    draw_ray(cr, output[i]->avg, lerp(0.5, s->curve.get(pa)(lerp(0.35, s->f, s->t)) - output[i]->avg, Point()));
-                    cairo_stroke(cr);
-                }
-            }
-        } */
-        
-        free_graph(output);
-        
-        /*
-        std::vector<Edge> sects = fill(output, X);
-        for(unsigned i = 0; i < sects.size(); i++) {
-            cairo_stroke(cr);
-            Section s = output.sections[sects[i].section];
-            draw_section(cr, s, path);
-            draw_number(cr, s.curve.get(path)((s.f + s.t) / 2), i);
-        } */
+        free_graph(*output);
         
         Toy::draw(cr, notify, width, height, save,timer_stream);
     }
@@ -242,11 +190,9 @@ class SweepWindow: public Toy {
         OptRect bounds = bounds_exact(path);
         if(bounds) path += Point(10,10)-bounds->min();
         bounds = bounds_exact(path2);
-        if(bounds) path2 += Point(10,10)-bounds->min();
+        if(bounds) path2 += Point(20,20)-bounds->min();
         p = PointHandle(Point(100,300));
         handles.push_back(&p);
-        p2 = PointHandle(Point(200,300));
-        handles.push_back(&p2);
     }
 };
 
