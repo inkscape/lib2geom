@@ -205,7 +205,14 @@ class Conic5: public Toy {
         }
         if(1) {
             xAx oxo=sources[0] - sources[2];
+            Timer tm;
+            
+            tm.ask_for_timeslice();
+            tm.start();
+                
             std::vector<Point> intrs = intersect(oxo, sources[0] - sources[1]);
+            Timer::Time als_time = tm.lap();
+            *notify << "intersect time = " << als_time << std::endl;
             for(unsigned i = 0; i < intrs.size(); i++) {
                 cairo_save(cr);
                 cairo_set_source_rgb(cr, 1, 0,0);
@@ -220,11 +227,11 @@ class Conic5: public Toy {
                 draw_hull(cr, rq);
                 vector<SBasis> hrq = rq.homogenous();
                 SBasis vertex_poly = (sources[0] - sources[1]).evaluate_at(hrq[0], hrq[1], hrq[2]);
-                *notify << "\n0: " << hrq[0];
-                *notify << "\n1: " << hrq[1];
-                *notify << "\n2: " << hrq[2];
+                //*notify << "\n0: " << hrq[0];
+                //*notify << "\n1: " << hrq[1];
+                //*notify << "\n2: " << hrq[2];
                 vector<double> rts = roots(vertex_poly);
-                *notify << "\nvertex poly:" << vertex_poly << '\n';
+                //*notify << "\nvertex poly:" << vertex_poly << '\n';
                 for(unsigned i = 0; i < rts.size(); i++) {
                     draw_circ(cr, Point(rq.pointAt(rts[i])));
                     *notify << "\nrq" << i << ":" << rts[i];

@@ -282,7 +282,118 @@ D2<SBasis> RatQuad::hermite() const {
   return "no idea!";
 }
 
+std::vector<Point> decompose_degenerate(xAx const & C1, xAx const & C2, xAx const & xC0) {
+    std::vector<Point> res;
+    double A[2][2] = {{2*xC0.c[0], xC0.c[1]},
+                      {xC0.c[1], 2*xC0.c[2]}};
+//Point B0 = xC0.bottom();
+    double const determ = det(A);
+    //std::cout << determ << "\n";
+    if (fabs(determ) >= 1e-30) { // hopeful, I know
+        Geom::Coord const ideterm = 1.0 / determ;
+            
+        double b[2] = {-xC0.c[3], -xC0.c[4]};
+        Point B0((A[1][1]*b[0]  -A[0][1]*b[1]),
+                 (-A[1][0]*b[0] +  A[0][0]*b[1]));
+        B0 *= ideterm;
+        Point n0, n1;
+        // Are these just the eigenvectors of A11?
+        if(fabs(xC0.c[0]) > fabs(xC0.c[2])) {
+            double b = 0.5*xC0.c[1]/xC0.c[0];
+            double c = xC0.c[2]/xC0.c[0];
+            double d =  std::sqrt(b*b-c);
+            n0 = Point(1, b+d);
+            n1 = Point(1, b-d);
+        } else {
+            double b = 0.5*xC0.c[1]/xC0.c[2];
+            double c = xC0.c[0]/xC0.c[2];
+            double d =  std::sqrt(b*b-c);
+            n0 = Point(b+d, 1);
+            n1 = Point(b-d, 1);
+        }
+            
+        Line L0 = Line::fromPointDirection(B0, rot90(n0));
+        Line L1 = Line::fromPointDirection(B0, rot90(n1));
+            
+        std::vector<double> rts = C1.roots(L0);
+        for(unsigned i = 0; i < rts.size(); i++) {
+            Point P = L0.pointAt(rts[i]);
+            res.push_back(P);
+        }
+        rts = C1.roots(L1);
+        for(unsigned i = 0; i < rts.size(); i++) {
+            Point P = L1.pointAt(rts[i]);
+            res.push_back(P);
+        }
+    } else {
+        // single or double line
+        Point trial_pt(0,0);
+        Point g = xC0.gradient(trial_pt);
+        if(L2sq(g) == 0) {
+            trial_pt[0] += 1;
+            g = xC0.gradient(trial_pt);
+            if(L2sq(g) == 0) {
+                trial_pt[1] += 1;
+                g = xC0.gradient(trial_pt);
+                if(L2sq(g) == 0) {
+                    trial_pt[1] += 1;
+                    g = xC0.gradient(trial_pt);
+                }
+            }
+        }
+        //std::cout << trial_pt << ", " << g << "\n";
+        /**
+         * At this point we have tried up to 4 points: 0,0, 1,0, 1,1, 1,2
+         *
+         * I'm pretty sure that no degenerate conic can pass through these points, so we can assume
+         * that we've found a perpendicular to the double line.  Prove. (6 points in the general
+         * case, but what are they?)
+         *
+         * alternatively, there may be a way to determine this directly from xC0
+         */
+        assert(L2sq(g) != 0);
+            
+        Line Lx = Line::fromPointDirection(trial_pt, g); // a line along the gradient
+        double A[2][2] = {{2*xC0.c[0], xC0.c[1]},
+                          {xC0.c[1], 2*xC0.c[2]}};
+        double const determ = det(A);
+        std::vector<double> rts = xC0.roots(Lx);
+        for(unsigned i = 0; i < rts.size(); i++) {
+            Point P0 = Lx.pointAt(rts[i]);
+            //std::cout << P0 << "\n";
+            Line L = Line::fromPointDirection(P0, rot90(g));
+            std::vector<double> cnrts;
+            // It's very likely that at least one of the conics is degenerate, this will hopefully pick the more generate of the two.
+            if(fabs(C1.hessian().det()) > fabs(C2.hessian().det()))
+                cnrts = C1.roots(L);
+            else
+                cnrts = C2.roots(L);
+            for(unsigned j = 0; j < cnrts.size(); j++) {
+                Point P = L.pointAt(cnrts[j]);
+                res.push_back(P);
+            }
+        }
+    }
+    return res;
+}
+
+double xAx_descr(xAx const & C) {
+    double mC[3][3] = {{C.c[0], (C.c[1])/2, (C.c[3])/2},
+                       {(C.c[1])/2, C.c[2], (C.c[4])/2},
+                       {(C.c[3])/2, (C.c[4])/2, C.c[5]}};
+    
+    return det3(mC);
+}
+
+
 std::vector<Point> intersect(xAx const & C1, xAx const & C2) {
+    // You know, if either of the inputs are degenerate we should use them first!
+    if(xAx_descr(C1) == 0) {
+        return decompose_degenerate(C1, C2, C1);
+    }
+    if(xAx_descr(C2) == 0) {
+        return decompose_degenerate(C1, C2, C2);
+    }
     std::vector<Point> res;
     SBasis T(Linear(-1,1));
     SBasis S(Linear(1,1));
@@ -312,94 +423,7 @@ std::vector<Point> intersect(xAx const & C1, xAx const & C2) {
         xAx xC0 = C1*t + C2*s;
         //::draw(cr, xC0, screen_rect); // degen
         
-        
-        double A[2][2] = {{2*xC0.c[0], xC0.c[1]},
-                          {xC0.c[1], 2*xC0.c[2]}};
-        double b[2] = {-xC0.c[3], -xC0.c[4]};
-//Point B0 = xC0.bottom();
-        double const determ = det(A);
-        //std::cout << determ << "\n";
-        if (fabs(determ) >= 1e-30) { // hopeful, I know
-            Geom::Coord const ideterm = 1.0 / determ;
-            
-            Point B0((A[1][1]*b[0]  -A[0][1]*b[1]),
-                     (-A[1][0]*b[0] +  A[0][0]*b[1]));
-            B0 *= ideterm;
-            Point n0, n1;
-            // Are these just the eigenvectors of A11?
-            if(fabs(xC0.c[0]) > fabs(xC0.c[2])) {
-                double b = 0.5*xC0.c[1]/xC0.c[0];
-                double c = xC0.c[2]/xC0.c[0];
-                double d =  std::sqrt(b*b-c);
-                n0 = Point(1, b+d);
-                n1 = Point(1, b-d);
-            } else {
-                double b = 0.5*xC0.c[1]/xC0.c[2];
-                double c = xC0.c[0]/xC0.c[2];
-                double d =  std::sqrt(b*b-c);
-                n0 = Point(b+d, 1);
-                n1 = Point(b-d, 1);
-            }
-            
-            Line L0 = Line::fromPointDirection(B0, rot90(n0));
-            Line L1 = Line::fromPointDirection(B0, rot90(n1));
-            
-            rts = C1.roots(L0);
-            for(unsigned i = 0; i < rts.size(); i++) {
-                Point P = L0.pointAt(rts[i]);
-                res.push_back(P);
-            }
-            rts = C1.roots(L1);
-            for(unsigned i = 0; i < rts.size(); i++) {
-                Point P = L1.pointAt(rts[i]);
-                res.push_back(P);
-            }
-        } else {
-            // double line?
-            Point trial_pt(0,0);
-            Point g = xC0.gradient(trial_pt);
-            if(L2sq(g) == 0) {
-                trial_pt[0] += 1; // I think this is reasonable?
-                g = xC0.gradient(trial_pt);
-            }
-            if(L2sq(g) == 0) {
-                trial_pt[1] += 1; // I think this is reasonable?
-                g = xC0.gradient(trial_pt);
-            }
-            if(L2sq(g) == 0) {
-                trial_pt[1] += 1; // I think this is reasonable?
-                g = xC0.gradient(trial_pt);
-            }
-            //std::cout << trial_pt << ", " << g << "\n";
-            /**
-             * At this point we have tried up to 4 points: 0,0, 1,0, 1,1, 1,2
-             *
-             * I'm pretty sure that no degenerate conic can pass through these points, so we can
-             * assume that we've found a perpendicular to the double line. 
-             */
-            assert(L2sq(g) != 0);
-            
-            Line Lx = Line::fromPointDirection(trial_pt, g); // a line along the gradient
-            double A[2][2] = {{2*xC0.c[0], xC0.c[1]},
-                              {xC0.c[1], 2*xC0.c[2]}};
-            double const determ = det(A);
-            rts = xC0.roots(Lx);
-            for(unsigned i = 0; i < rts.size(); i++) {
-                Point P0 = Lx.pointAt(rts[i]);
-                //std::cout << P0 << "\n";
-                Line L = Line::fromPointDirection(P0, rot90(g));
-                std::vector<double> cnrts;
-                // It's very likely that at least one of the conics is degenerate, this will hopefully pick the more generate of the two.
-                if(fabs(C1.hessian().det()) > fabs(C2.hessian().det()))
-                    cnrts = C1.roots(L);
-                else
-                    cnrts = C2.roots(L);
-                for(unsigned j = 0; j < cnrts.size(); j++) {
-                    Point P = L.pointAt(cnrts[j]);
-                    res.push_back(P);
-                }
-            }
-        }
+        return decompose_degenerate(C1, C2, xC0);
         
 
     } else {
