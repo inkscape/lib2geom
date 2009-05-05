@@ -39,20 +39,17 @@ void draw_section(cairo_t *cr, Section const &s, PathVector const &ps) {
     delete curv;
 }
 
-void draw_graph(cairo_t *cr, Graph const &vertices) {
-    for(unsigned i = 0; i < vertices.size(); i++) {
+void draw_graph(cairo_t *cr, TopoGraph const &graph) {
+    for(unsigned i = 0; i < graph.size(); i++) {
         set_rainbow(cr, i);
-        for(unsigned j = 0; j < vertices[i]->enters.size(); j++) {
-            draw_ray(cr, vertices[i]->avg, 10*unit_vector(vertices[i]->enters[j].other->avg - vertices[i]->avg));
-            cairo_stroke(cr);
-        }
-        for(unsigned j = 0; j < vertices[i]->exits.size(); j++) {
-            draw_ray(cr, vertices[i]->avg, 20*unit_vector(vertices[i]->exits[j].other->avg - vertices[i]->avg));
+        for(unsigned j = 0; j < graph[i].degree(); j++) {
+            draw_ray(cr, graph[i].avg, 10*unit_vector(graph[i].avg - graph[graph.get_edge(i, j).other_vert].avg));
             cairo_stroke(cr);
         }
     }
 }
 
+/*
 unsigned find_vert(Graph const &vertices, Vertex const *v) {
     return std::find(vertices.begin(), vertices.end(), v) - vertices.begin();
 }
@@ -88,6 +85,7 @@ void draw_edge_orders(cairo_t *cr, std::vector<Vertex*> const &vertices, PathVec
         draw_edges(cr, vertices[i]->exits, ps, 0.4);
     }
 }
+*/
 
 void draw_areas(cairo_t *cr, PathVector const &pa, Areas const &areas) {
     PathVector ps = areas_to_paths(pa, areas);
@@ -103,6 +101,7 @@ void draw_areas(cairo_t *cr, PathVector const &pa, Areas const &areas) {
     }
 }
 
+#ifdef SWEEP_GRAPH_DEBUG
 void draw_context(cairo_t *cr, int cix, PathVector const &pa) {
     cix %= contexts.size();
     for(unsigned i = 0; i < contexts[cix].size(); i++) {
@@ -122,6 +121,7 @@ void draw_context(cairo_t *cr, int cix, PathVector const &pa) {
         cairo_stroke(cr);
     }
 }
+#endif
 
 class SweepWindow: public Toy {
     vector<Path> path, path2;
@@ -132,20 +132,24 @@ class SweepWindow: public Toy {
         cairo_set_source_rgb(cr, 0, 0, 0);
         cairo_set_line_width(cr, 3);
 
+#ifdef SWEEP_GRAPH_DEBUG
         monoss.clear();
         contexts.clear();
         chopss.clear();
+#endif
         
         PathVector pa = path;
         PathVector pa2 = path2 + p.pos;
         concatenate(pa, pa2);
         
-        Graph output = sweep_graph(pa,X);
+        TopoGraph output(pa,X, 0.000001);
+#ifdef SWEEP_GRAPH_DEBUG
         draw_context(cr, 0, pa);
+#endif
         
-        /* draw_graph(cr, output);
+        draw_graph(cr, output);
         
-        cairo_set_line_width(cr, 1);
+        /*cairo_set_line_width(cr, 1);
         //draw_edge_orders(cr, output, pa);
         
         //remove_vestigial_verts(output);
@@ -155,8 +159,6 @@ class SweepWindow: public Toy {
         remove_area_whiskers(areas);
         areas = filter_areas(pa, areas, UnionOp(path.size(), false, false));
         */
-        
-        free_graph(output);
         
         Toy::draw(cr, notify, width, height, save,timer_stream);
     }

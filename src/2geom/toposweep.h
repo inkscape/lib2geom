@@ -43,6 +43,8 @@
 #include <2geom/path.h>
 #include <2geom/curve.h>
 
+#include <boost/shared_ptr.hpp>
+
 namespace Geom {
 
 // indicates a particular curve in a pathvector
@@ -84,25 +86,57 @@ struct Section {
     }
 };
 
-// pre-declaration of vertex so that edge may reference pointers otvertices
-struct Vertex;
+class TopoGraph {
+  public:
 
-// represents an edge of a vertex, pointing towards its section and the "next" vertex"
-struct Edge {
-    Section *section;
-    Vertex *other;
-    Edge(Section *s, Vertex *o) : section(s), other(o) {}
+    // Represents an e    double tol;dge on a vertex
+    class Edge {
+      public:
+        boost::shared_ptr<Section> section;    // section associated with this edge
+        unsigned other_edge; // index of the dual edge
+        unsigned other_vert; // index of the vertex this edge points to
+        Edge(boost::shared_ptr<Section> s, unsigned oe, unsigned ov) : section(s), other_edge(oe), other_vert(ov) {}
+    };
+    
+    // Represents a vertex in the graph, in terms of a point and edges which enter and exit.
+    // A vertex has an "avg" point, which is a representative point for the vertex.  All
+    // edges have an endpoint tol away.
+    class Vertex {
+      public:
+        std::vector<unsigned> enters, exits; // indexes of the enter / exit edges
+        Point avg;
+        Vertex(Point p) : avg(p) {}
+        inline unsigned degree() const { return enters.size() + exits.size(); }
+    };
+    
+    TopoGraph(std::vector<Vertex> vs, std::vector<Edge> es, Dim2 d, double t) : vertices(vs), edges(es), dim(d), tol(t) {}
+    TopoGraph(PathVector const &ps, Dim2 d, double tol);
+    
+    unsigned size() const { return vertices.size(); }
+    
+    Vertex       &operator[](unsigned ix)       { return vertices[ix]; }
+    Vertex const &operator[](unsigned ix) const { return vertices[ix]; }
+    
+    Edge &get_edge(unsigned ix, unsigned jx);
+    Edge get_edge(unsigned ix, unsigned jx) const;
+    
+    //returns a graph with all zero degree vertices and unused edges removed
+    void cannonize();
+    //checks invariants
+    bool invariants() const;
+    
+    std::vector<Vertex> vertices;
+    std::vector<Edge> edges;
+    Dim2 dim;
+    double tol;
 };
 
-// Represents a vertex in the graph, in terms of a point and edges which enter and exit.
-// One thing to note is that the vertex has an "avg" point, which is a representative point for the
-// vertex.  It is NOT guaranteed that all of the edges start at this point.  By the sweep_graph
-// function, it is, however, guaranteed to be tol away.
+/*
 struct Vertex {
     //these two vectors store the incoming / outgoing edges of the verte
     //they are ordered on a clockwise traversal around the vertex, so in other words,
     //enters ++ exits would yield a clockwise ordering
-    std::vector<Edge> enters, exits;
+    std::vector<Edge> enters, exits;TopoGraph
     Point avg;
     Vertex(Point p) : avg(p) {}
     
@@ -121,21 +155,20 @@ struct Vertex {
     unsigned find(Section const *sect) const;
     Edge &lookup_section(Section const *sect);
     void remove_edge(unsigned &i);
-};
+}; */
 
 //TODO: convert to classes
-typedef std::vector<Vertex*> Graph;
-typedef std::vector<Section*> Area;
+typedef std::vector<boost::shared_ptr<Section> > Area;
 typedef std::vector<Area> Areas;
 
-//frees a graph's memory
-void free_graph(Graph const &g);
+//TopoGraph sweep_graph(PathVector const &ps, Dim2 d = X, double tol = 0.00001);
+/*
+void trim_whiskers(TopoGraph &g);
+void double_whiskers(TopoGraph &g);
+void remove_vestigial(TopoGraph &g);
+Areas traverse_areas(TopoGraph const &g);
+*/
 
-Graph sweep_graph(PathVector const &ps, Dim2 d = X, double tol = 0.00001);
-void trim_whiskers(Graph &g);
-void double_whiskers(Graph &g);
-void remove_vestigial(Graph &g);
-Areas traverse_areas(Graph const &g);
 void remove_area_whiskers(Areas &areas);
 PathVector areas_to_paths(PathVector const &ps, Areas const &areas);
 
