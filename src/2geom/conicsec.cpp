@@ -282,69 +282,85 @@ D2<SBasis> RatQuad::hermite() const {
   return "no idea!";
 }
 
-std::vector<Point> xAx::intersect(xAx const & xC2) const {
+std::vector<Point> intersect(xAx const & C1, xAx const & C2) {
+    std::vector<Point> res;
     SBasis T(Linear(-1,1));
     SBasis S(Linear(1,1));
-    SBasis C[3][3] = {{T*c[0]+S*xC2.c[0], (T*c[1]+S*xC2.c[1])/2, (T*c[3]+S*xC2.c[3])/2},
-                      {(T*c[1]+S*xC2.c[1])/2, T*c[2]+S*xC2.c[2], (T*c[4]+S*xC2.c[4])/2},
-                      {(T*c[3]+S*xC2.c[3])/2, (T*c[4]+S*xC2.c[4])/2, T*c[5]+S*xC2.c[5]}};
+    SBasis C[3][3] = {{T*C1.c[0]+S*C2.c[0], (T*C1.c[1]+S*C2.c[1])/2, (T*C1.c[3]+S*C2.c[3])/2},
+                      {(T*C1.c[1]+S*C2.c[1])/2, T*C1.c[2]+S*C2.c[2], (T*C1.c[4]+S*C2.c[4])/2},
+                      {(T*C1.c[3]+S*C2.c[3])/2, (T*C1.c[4]+S*C2.c[4])/2, T*C1.c[5]+S*C2.c[5]}};
     
     SBasis D = det3(C);
     std::vector<double> rts = Geom::roots(D);
     if(rts.empty()) {
         T = Linear(1,1);
         S = Linear(-1,1);
-        SBasis C[3][3] = {{T*c[0]+S*xC2.c[0], (T*c[1]+S*xC2.c[1])/2, (T*c[3]+S*xC2.c[3])/2},
-                          {(T*c[1]+S*xC2.c[1])/2, T*c[2]+S*xC2.c[2], (T*c[4]+S*xC2.c[4])/2},
-                          {(T*c[3]+S*xC2.c[3])/2, (T*c[4]+S*xC2.c[4])/2, T*c[5]+S*xC2.c[5]}};
+        SBasis C[3][3] = {{T*C1.c[0]+S*C2.c[0], (T*C1.c[1]+S*C2.c[1])/2, (T*C1.c[3]+S*C2.c[3])/2},
+                          {(T*C1.c[1]+S*C2.c[1])/2, T*C1.c[2]+S*C2.c[2], (T*C1.c[4]+S*C2.c[4])/2},
+                          {(T*C1.c[3]+S*C2.c[3])/2, (T*C1.c[4]+S*C2.c[4])/2, T*C1.c[5]+S*C2.c[5]}};
         
         D = det3(C);
         rts = Geom::roots(D);
     }
     // at this point we have a T and S and perhaps some roots that represent our degenerate conic
+    // Let's just pick one randomly (can we do better?)
     //for(unsigned i = 0; i < rts.size(); i++) {
     if(!rts.empty()) {
         unsigned i = 0;
         double t = T.valueAt(rts[i]);
         double s = S.valueAt(rts[i]);
-        std::cout << t << "; " << s << std::endl;
-        double C0[3][3] = {{t*c[0]+s*xC2.c[0], (t*c[1]+s*xC2.c[1])/2, (t*c[3]+s*xC2.c[3])/2},
-                           {(t*c[1]+s*xC2.c[1])/2, t*c[2]+s*xC2.c[2], (t*c[4]+s*xC2.c[4])/2},
-                           {(t*c[3]+s*xC2.c[3])/2, (t*c[4]+s*xC2.c[4])/2, t*c[5]+s*xC2.c[5]}};
-        std::cout << "det(C0) = " <<det3(C0) << std::endl;
-        double A11[2][2] = {{t*c[0]+s*xC2.c[0], (t*c[1]+s*xC2.c[1])/2},
-                            {(t*c[1]+s*xC2.c[1])/2, t*c[2]+s*xC2.c[2]}};
+        xAx xC0 = C1*t + C2*s;
+        //::draw(cr, xC0, screen_rect); // degen
         
-        std::cout <<det(A11) << std::endl;
-        xAx xC0 = scale(t,t) + xC2.scale(s,s);
-        Eigen eig(A11);
-        std::cout << "eiger:" <<  eig.values[0] << "; " << eig.values[1] << std::endl;
-        Point O(0,0);
-        Point g = gradient(O);
-        double x = 1;
-        while(L2(g) < 1e-10) {
-            O = Point(x,x-1);
-            g = gradient(O);
-            x+= 1;
-        }
-        std::cout << O << "; " << g << "\n";
-        Line L0 = Line::fromPointDirection(O, rot90(g));
-        std::vector<double> lrts = xC0.roots(L0);
-        std::vector<Point> intrs;
-        for(unsigned j =0; j < lrts.size(); j++) {
-            O = L0.pointAt(lrts[j]);
-            g = gradient(O);
-            std::cout << O << g << "\n";
+        
+        double A[2][2] = {{2*xC0.c[0], xC0.c[1]},
+                          {xC0.c[1], 2*xC0.c[2]}};
+        double b[2] = {-xC0.c[3], -xC0.c[4]};
+//Point B0 = xC0.bottom();
+        double const determ = det(A);
+        if (determ != 0.0) { // hopeful, I know
+            Geom::Coord const ideterm = 1.0 / determ;
             
-            Line L1 = Line::fromPointDirection(O, rot90(g));
-            std::vector<double> crts = roots(L1);
-            for(unsigned k =0; k < crts.size(); k++) {
-                intrs.push_back(L1.pointAt(crts[k]));
+            Point B0((A[1][1]*b[0]  -A[0][1]*b[1]),
+                     (-A[1][0]*b[0] +  A[0][0]*b[1]));
+            B0 *= ideterm;
+            Point n0, n1;
+            // Are these just the eigenvectors of A11?
+            if(fabs(xC0.c[0]) > fabs(xC0.c[2])) {
+                double b = 0.5*xC0.c[1]/xC0.c[0];
+                double c = xC0.c[2]/xC0.c[0];
+                double d =  std::sqrt(b*b-c);
+                n0 = Point(1, b+d);
+                n1 = Point(1, b-d);
+            } else {
+                double b = 0.5*xC0.c[1]/xC0.c[2];
+                double c = xC0.c[0]/xC0.c[2];
+                double d =  std::sqrt(b*b-c);
+                n0 = Point(b+d, 1);
+                n1 = Point(b-d, 1);
             }
+            
+            Line L0 = Line::fromPointDirection(B0, rot90(n0));
+            Line L1 = Line::fromPointDirection(B0, rot90(n1));
+            
+            rts = C1.roots(L0);
+            for(unsigned i = 0; i < rts.size(); i++) {
+                Point P = L0.pointAt(rts[i]);
+                res.push_back(P);
+            }
+            rts = C1.roots(L1);
+            for(unsigned i = 0; i < rts.size(); i++) {
+                Point P = L1.pointAt(rts[i]);
+                res.push_back(P);
+            }
+        } else {
+            // double line?
+            
         }
-        return intrs;
+            
+
     }
-    return std::vector<Point>();
+    return res;
 }
 
 
@@ -502,7 +518,7 @@ xAx xAx::operator*(double const &b) const {
     r.push_back(-q0/q1);
   } else {
     double desc = q1*q1 - 4*q2*q0;
-    /*cout << q2 << ", " 
+    /*std::cout << q2 << ", " 
       << q1 << ", "
       << q0 << "; "
       << desc << "\n";*/
@@ -538,8 +554,25 @@ Geom::Matrix xAx::hessian() const {
 		0, 0);
 }
     
+
+Point solve(double A[2][2], double b[2]) {
+    double const determ = det(A);
+    if (determ !=  0.0) { // hopeful, I know
+        Geom::Coord const ideterm = 1.0 / determ;
+
+        return Point ((A[1][1]*b[0]  -A[0][1]*b[1]),
+                      (-A[1][0]*b[0] +  A[0][0]*b[1]))* ideterm;
+    } else {
+        assert(0);
+    }
+}
+
 Point xAx::bottom() const {
-  return Point(-c[3], -c[4])*hessian().inverse();
+    double A[2][2] = {{2*c[0], c[1]},
+                      {c[1], 2*c[2]}};
+    double b[2] = {-c[3], -c[4]};
+    return solve(A, b);
+    //return Point(-c[3], -c[4])*hessian().inverse();
 }
     
 Interval xAx::extrema(Rect r) const {

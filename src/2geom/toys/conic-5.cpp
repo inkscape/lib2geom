@@ -208,7 +208,7 @@ class Conic5: public Toy {
         }
         if(1) {
             xAx oxo=sources[0] - sources[2];
-            std::vector<Point> intrs = oxo.intersect(sources[0] - sources[1]);
+            std::vector<Point> intrs = intersect(oxo, sources[0] - sources[1]);
             for(unsigned i = 0; i < intrs.size(); i++) {
                 draw_circ(cr, intrs[i]);
             }

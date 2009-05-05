@@ -119,8 +119,6 @@ public:
     xAx operator+(double const &b) const;
     xAx operator*(double const &b) const;
     
-    std::vector<Point> intersect(const xAx & xC2) const;
-    
     std::vector<Point> crossings(Rect r) const;
     boost::optional<RatQuad> toCurve(Rect const & bnd) const;
     std::vector<double> roots(Point d, Point o) const;
@@ -136,6 +134,8 @@ public:
     Interval extrema(Rect r) const;
 };
 
+std::vector<Point> intersect(const xAx & C1, const xAx & C2);
+    
 inline std::ostream &operator<< (std::ostream &out_file, const xAx &x) {
     for(int i = 0; i < 6; i++) {
         out_file << x.c[i] << ", ";
