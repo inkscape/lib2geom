@@ -658,7 +658,7 @@ Geom::Matrix xAx::hessian() const {
 }
     
 
-Point solve(double A[2][2], double b[2]) {
+boost::optional<Point> solve(double A[2][2], double b[2]) {
     double const determ = det(A);
     if (determ !=  0.0) { // hopeful, I know
         Geom::Coord const ideterm = 1.0 / determ;
@@ -666,11 +666,11 @@ Point solve(double A[2][2], double b[2]) {
         return Point ((A[1][1]*b[0]  -A[0][1]*b[1]),
                       (-A[1][0]*b[0] +  A[0][0]*b[1]))* ideterm;
     } else {
-        assert(0);
+        return boost::optional<Point>();
     }
 }
 
-Point xAx::bottom() const {
+boost::optional<Point> xAx::bottom() const {
     double A[2][2] = {{2*c[0], c[1]},
                       {c[1], 2*c[2]}};
     double b[2] = {-c[3], -c[4]};
@@ -693,7 +693,8 @@ Interval xAx::extrema(Rect r) const {
   ext |= quad_ex(c[0], c[1]*k+c[3],  (c[2]*k + c[4])*k + c[5], r[0]);
   k = r[1][1];
   ext |= quad_ex(c[0], c[1]*k+c[3],  (c[2]*k + c[4])*k + c[5], r[0]);
-  if (r.contains(bottom()))
+  boost::optional<Point> B0 = bottom();
+  if (B0 and r.contains(*B0))
     ext.extendTo(0);
   return ext;
 }

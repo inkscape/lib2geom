@@ -195,7 +195,9 @@ class Conic6: public Toy {
             xAx xC0 = C1*t + C2*s;
             //::draw(cr, xC0, screen_rect); // degen
             
-            Point B0 = xC0.bottom();
+            boost::optional<Point> oB0 = xC0.bottom();
+            
+            Point B0 = *oB0;
             //*notify << B0 << " = " << C1.gradient(B0);
             draw_circ(cr, B0);
             

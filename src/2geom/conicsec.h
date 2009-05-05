@@ -132,7 +132,7 @@ public:
     
     Geom::Matrix hessian() const;
     
-    Point bottom() const;
+    boost::optional<Point> bottom() const;
     
     Interval extrema(Rect r) const;
 };
