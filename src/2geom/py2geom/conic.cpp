@@ -100,16 +100,11 @@ static object wrap_xax_to_curve(Geom::xAx const & xax, Geom::Rect const & r) {
     return oc?object(*oc):object();
 }
 
-static Geom::Point RatQuadat0(Geom::RatQuad const & rq) {
-    return rq.P[0];
-}
-static Geom::Point RatQuadat1(Geom::RatQuad const & rq) {
-    return rq.P[2];
-}
 
 
 void wrap_conic() {
     //conicsec.h
+    def("intersect", (std::vector<Geom::Point> (*)(Geom::xAx const &, Geom::xAx const &))Geom::intersect);
 
     class_<Geom::xAx>("xAx", init<>())
         .def(init<double, double, double, double, double, double>())
@@ -121,6 +116,8 @@ void wrap_conic() {
         .staticmethod("from_tuple")
         .def("fromPoint", Geom::xAx::fromPoint)
         .staticmethod("fromPoint")
+        .def("fromPoints", Geom::xAx::fromPoints)
+        .staticmethod("fromPoints")
         .def("fromLine", (Geom::xAx (*)(Geom::Line l))Geom::xAx::fromLine)
         .staticmethod("fromLine")
         .def(self_ns::str(self))
@@ -138,6 +135,7 @@ void wrap_conic() {
         .def("evaluate_at", &homo_eval_at)
         .def("toCurve", &wrap_xax_to_curve)
         .def(self - self)
+        .def(self + float())
         .def(self * float())
         ;
 
@@ -147,8 +145,8 @@ void wrap_conic() {
         .def_readonly("w", &Geom::RatQuad::w)
         .def_readonly("lam", &Geom::RatQuad::lambda)
         //.def(self_ns::str(self))
-        .def("at0", &RatQuadat0)
-        .def("at1", &RatQuadat1)
+        .def("at0", &Geom::RatQuad::at0)
+        .def("at1", &Geom::RatQuad::at1)
         .def("pointAt", &Geom::RatQuad::pointAt)
 
         .def("toCubic", &wrap_rq_to_cubic)

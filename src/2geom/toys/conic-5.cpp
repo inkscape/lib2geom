@@ -90,6 +90,37 @@ void draw(cairo_t* cr, xAx C, Rect bnd) {
     }
 }
 
+static double det(Point a, Point b) {
+    return a[0]*b[1] - a[1]*b[0];
+}
+
+template <typename T>
+static T det(T a, T b, T c, T d) {
+    return a*d - b*c;
+}
+
+template <typename T>
+static T det(T M[2][2]) {
+    return M[0][0]*M[1][1] - M[1][0]*M[0][1];
+}
+
+template <typename T>
+static T det3(T M[3][3]) {
+    return ( M[0][0] * det(M[1][1], M[1][2],
+                           M[2][1], M[2][2])
+             -M[1][0] * det(M[0][1], M[0][2],
+                            M[2][1], M[2][2])
+             +M[2][0] * det(M[0][1], M[0][2],
+                            M[1][1], M[1][2]));
+}
+
+double xAx_descr(xAx const & C) {
+    double mC[3][3] = {{C.c[0], (C.c[1])/2, (C.c[3])/2},
+                       {(C.c[1])/2, C.c[2], (C.c[4])/2},
+                       {(C.c[3])/2, (C.c[4])/2, C.c[5]}};
+    
+    return det3(mC);
+}
 
 
 class Conic5: public Toy {
@@ -137,7 +168,7 @@ class Conic5: public Toy {
             cairo_restore(cr);
         }      
 
-        if(1) {
+        if(0) {
             RatQuad rq = RatQuad::circularArc(A, B, C);
 	
             cairo_save(cr);
@@ -202,6 +233,95 @@ class Conic5: public Toy {
             
             draw_text(cr, rh.pos.midpoint(), 
                       os);
+        }
+        if (0){
+            xAx C1 = sources[0] - sources[2];
+            xAx C2 = sources[0] - sources[1];
+            if(xAx_descr(C1) and xAx_descr(C2)){
+            SBasis T(Linear(-1,1));
+            SBasis S(Linear(1,1));
+            SBasis C[3][3] = {{T*C1.c[0]+S*C2.c[0], (T*C1.c[1]+S*C2.c[1])/2, (T*C1.c[3]+S*C2.c[3])/2},
+                              {(T*C1.c[1]+S*C2.c[1])/2, T*C1.c[2]+S*C2.c[2], (T*C1.c[4]+S*C2.c[4])/2},
+                              {(T*C1.c[3]+S*C2.c[3])/2, (T*C1.c[4]+S*C2.c[4])/2, T*C1.c[5]+S*C2.c[5]}};
+    
+            SBasis D = det3(C);
+            std::vector<double> rts = Geom::roots(D);
+            if(rts.empty()) {
+                T = Linear(1,1);
+                S = Linear(-1,1);
+                SBasis C[3][3] = {{T*C1.c[0]+S*C2.c[0], (T*C1.c[1]+S*C2.c[1])/2, (T*C1.c[3]+S*C2.c[3])/2},
+                                  {(T*C1.c[1]+S*C2.c[1])/2, T*C1.c[2]+S*C2.c[2], (T*C1.c[4]+S*C2.c[4])/2},
+                                  {(T*C1.c[3]+S*C2.c[3])/2, (T*C1.c[4]+S*C2.c[4])/2, T*C1.c[5]+S*C2.c[5]}};
+        
+                D = det3(C);
+                rts = Geom::roots(D);
+            }
+            // at this point we have a T and S and perhaps some roots that represent our degenerate conic
+            // Let's just pick one randomly (can we do better?)
+            //for(unsigned i = 0; i < rts.size(); i++) {
+            if(!rts.empty()) {
+                cairo_save(cr);
+
+                unsigned i = 0;
+                double t = T.valueAt(rts[i]);
+                double s = S.valueAt(rts[i]);
+                xAx xC0 = C1*t + C2*s;
+                //::draw(cr, xC0, screen_rect); // degen
+            
+                double A[2][2] = {{2*xC0.c[0], xC0.c[1]},
+                                  {xC0.c[1], 2*xC0.c[2]}};
+//Point B0 = xC0.bottom();
+                double const determ = det(A);
+                //std::cout << determ << "\n";
+                if (fabs(determ) >= 1e-30) { // hopeful, I know
+                    Point B0 = xC0.bottom();
+                    //*notify << B0 << " = " << C1.gradient(B0);
+                    draw_circ(cr, B0);
+            
+                    Point n0, n1;
+                    // Are these just the eigenvectors of A11?
+                    if(fabs(xC0.c[0]) > fabs(xC0.c[2])) {
+                        double b = 0.5*xC0.c[1]/xC0.c[0];
+                        double c = xC0.c[2]/xC0.c[0];
+                        double d =  std::sqrt(b*b-c);
+                        n0 = Point(1, b+d);
+                        n1 = Point(1, b-d);
+                    } else if(fabs(xC0.c[0]) < fabs(xC0.c[2])){
+                
+                        double b = 0.5*xC0.c[1]/xC0.c[2];
+                        double c = xC0.c[0]/xC0.c[2];
+                        double d =  std::sqrt(b*b-c);
+                        n0 = Point(b+d, 1);
+                        n1 = Point(b-d, 1);
+                    } else {
+                        std::cout << xC0 << "\n";
+                    }
+                    cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
+                    *notify << n0 << n1 << B0 << "\n";
+            
+                    Line L0 = Line::fromPointDirection(B0, rot90(n0));
+                    draw_line(cr, L0, screen_rect);
+                    Line L1 = Line::fromPointDirection(B0, rot90(n1));
+                    draw_line(cr, L1, screen_rect);
+                    rts = C1.roots(L0);
+                    for(unsigned i = 0; i < rts.size(); i++) {
+                        Point P = L0.pointAt(rts[i]);
+                        draw_cross(cr, P);
+                        *notify << rts[i] << P << C1.valueAt(P) << "; " << C2.valueAt(P) << "\n";
+                    }
+                    rts = C1.roots(L1);
+                    for(unsigned i = 0; i < rts.size(); i++) {
+                        Point P = L1.pointAt(rts[i]);
+                        draw_cross(cr, P);
+                        *notify << rts[i] << P << C1.valueAt(P) << "; "<< C2.valueAt(P) << "\n";
+                    }
+            
+                    cairo_stroke(cr);
+                }
+                cairo_restore(cr);
+            }
+            }
+
         }
         if(1) {
             xAx oxo=sources[0] - sources[2];

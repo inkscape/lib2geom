@@ -22,7 +22,6 @@
 #include <2geom/bezier-to-sbasis.h>
 #include <2geom/ord.h>
 
-#include <2geom/numeric/linear_system.h>
 
 
 #include <2geom/conicsec.h>
@@ -112,25 +111,6 @@ void draw(cairo_t* cr, xAx C, Rect bnd) {
 }
 
 
-xAx fromHandles(std::vector<Geom::Point> const &pt) {
-    Geom::NL::Vector V(pt.size(), -1.0);
-    Geom::NL::Matrix M(pt.size(), 5);
-    for(unsigned i = 0; i < pt.size(); i++) {
-        Geom::Point P = pt[i];
-        Geom::NL::VectorView vv = M.row_view(i);
-        vv[0] = P[0]*P[0];
-        vv[1] = P[0]*P[1];
-        vv[2] = P[1]*P[1];
-        vv[3] = P[0];
-        vv[4] = P[1];
-    }
-            
-    Geom::NL::LinearSystem ls(M, V);
-    
-    Geom::NL::Vector x = ls.SV_solve();
-    return Geom::xAx(x[0], x[1], x[2], x[3], x[4], 1);
-    
-}
 
 
 static double det(Point a, Point b) {
@@ -172,11 +152,11 @@ class Conic6: public Toy {
         cairo_set_line_width (cr, 1);
         Rect screen_rect(Interval(10, width-10), Interval(10, height-10));
         
-        Geom::xAx C1 = fromHandles(C1H.pts);
+        Geom::xAx C1 = xAx::fromPoints(C1H.pts);
         ::draw(cr, C1, screen_rect);
         *notify << C1;
         
-        Geom::xAx C2 = fromHandles(C2H.pts);
+        Geom::xAx C2 = xAx::fromPoints(C2H.pts);
         ::draw(cr, C2, screen_rect);
         *notify << C2;
 
@@ -261,7 +241,10 @@ class Conic6: public Toy {
 
         ::draw(cr, C1*sliders[0].value() + C2*sliders[1].value(), screen_rect);
         
-
+        std::vector<Point> res = intersect(C1, C2);
+        for(int i = 0; i < res.size(); i++) {
+            draw_circ(cr, res[i]);
+        }
         
         cairo_stroke(cr);
 	

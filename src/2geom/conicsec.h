@@ -70,6 +70,8 @@ public:
     CubicBezier toCubic(double lam) const;
 
     Point pointAt(double t) const;
+    Point at0() const {return P[0];}
+    Point at1() const {return P[2];}
   
     void split(RatQuad &a, RatQuad &b) const;
 
@@ -93,6 +95,7 @@ public:
     static xAx fromDistPoint(Point p, double d);
     static xAx fromLine(Point n, double d);
     static xAx fromLine(Line l);
+    static xAx fromPoints(std::vector<Point> const &pts);
 
     template<typename T>
     T evaluate_at(T x, T y) const {

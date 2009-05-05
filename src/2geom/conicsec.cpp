@@ -39,7 +39,9 @@
 // File: convert.h
 #include <sstream>
 #include <stdexcept>
- 
+
+// GPL taint? 
+#include <2geom/numeric/linear_system.h>
 
 namespace Geom
 {
@@ -289,7 +291,7 @@ std::vector<Point> decompose_degenerate(xAx const & C1, xAx const & C2, xAx cons
 //Point B0 = xC0.bottom();
     double const determ = det(A);
     //std::cout << determ << "\n";
-    if (fabs(determ) >= 1e-30) { // hopeful, I know
+    if (fabs(determ) >= 1e-20) { // hopeful, I know
         Geom::Coord const ideterm = 1.0 / determ;
             
         double b[2] = {-xC0.c[3], -xC0.c[4]};
@@ -298,16 +300,28 @@ std::vector<Point> decompose_degenerate(xAx const & C1, xAx const & C2, xAx cons
         B0 *= ideterm;
         Point n0, n1;
         // Are these just the eigenvectors of A11?
-        if(fabs(xC0.c[0]) > fabs(xC0.c[2])) {
+        if(xC0.c[0] == xC0.c[2]) {
             double b = 0.5*xC0.c[1]/xC0.c[0];
             double c = xC0.c[2]/xC0.c[0];
+            //assert(fabs(b*b-c) > 1e-10);
             double d =  std::sqrt(b*b-c);
+            //assert(fabs(b-d) > 1e-10);
+            n0 = Point(1, b+d);
+            n1 = Point(1, b-d);
+        } else if(fabs(xC0.c[0]) > fabs(xC0.c[2])) {
+            double b = 0.5*xC0.c[1]/xC0.c[0];
+            double c = xC0.c[2]/xC0.c[0];
+            //assert(fabs(b*b-c) > 1e-10);
+            double d =  std::sqrt(b*b-c);
+            //assert(fabs(b-d) > 1e-10);
             n0 = Point(1, b+d);
             n1 = Point(1, b-d);
         } else {
             double b = 0.5*xC0.c[1]/xC0.c[2];
             double c = xC0.c[0]/xC0.c[2];
+            //assert(fabs(b*b-c) > 1e-10);
             double d =  std::sqrt(b*b-c);
+            //assert(fabs(b-d) > 1e-10);
             n0 = Point(b+d, 1);
             n1 = Point(b-d, 1);
         }
@@ -427,6 +441,7 @@ std::vector<Point> intersect(xAx const & C1, xAx const & C2) {
         
 
     } else {
+        std::cout << "What?\n";
         ;//std::cout << D << "\n";
     }
     return res;
@@ -451,7 +466,26 @@ xAx xAx::fromLine(Line l) {
     
   return fromLine(norm, dist);
 }
-  
+
+xAx xAx::fromPoints(std::vector<Geom::Point> const &pt) {
+    Geom::NL::Vector V(pt.size(), -1.0);
+    Geom::NL::Matrix M(pt.size(), 5);
+    for(unsigned i = 0; i < pt.size(); i++) {
+        Geom::Point P = pt[i];
+        Geom::NL::VectorView vv = M.row_view(i);
+        vv[0] = P[0]*P[0];
+        vv[1] = P[0]*P[1];
+        vv[2] = P[1]*P[1];
+        vv[3] = P[0];
+        vv[4] = P[1];
+    }
+            
+    Geom::NL::LinearSystem ls(M, V);
+    
+    Geom::NL::Vector x = ls.SV_solve();
+    return Geom::xAx(x[0], x[1], x[2], x[3], x[4], 1);
+    
+}
 
 
 
@@ -521,10 +555,10 @@ xAx xAx::operator*(double const &b) const {
   if(crs.size() == 1) {
       Point A = crs[0];
       Point dA = rot90(gradient(A));
-      LineSegment ls = intersection(Line::fromPointDirection(A, dA), bnd);
       if(L2sq(dA) <= 1e-10) { // perhaps a single point?
           return boost::optional<RatQuad> ();
       }
+      LineSegment ls = intersection(Line::fromPointDirection(A, dA), bnd);
       return RatQuad::fromPointsTangents(A, dA, ls.pointAt(0.5), ls[1], dA);
   }
   else if(crs.size() >= 2 and crs.size() < 4) {
