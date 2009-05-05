@@ -318,7 +318,8 @@ std::vector<Point> intersect(xAx const & C1, xAx const & C2) {
         double b[2] = {-xC0.c[3], -xC0.c[4]};
 //Point B0 = xC0.bottom();
         double const determ = det(A);
-        if (determ != 0.0) { // hopeful, I know
+        //std::cout << determ << "\n";
+        if (fabs(determ) >= 1e-30) { // hopeful, I know
             Geom::Coord const ideterm = 1.0 / determ;
             
             Point B0((A[1][1]*b[0]  -A[0][1]*b[1]),
@@ -355,10 +356,54 @@ std::vector<Point> intersect(xAx const & C1, xAx const & C2) {
             }
         } else {
             // double line?
+            Point trial_pt(0,0);
+            Point g = xC0.gradient(trial_pt);
+            if(L2sq(g) == 0) {
+                trial_pt[0] += 1; // I think this is reasonable?
+                g = xC0.gradient(trial_pt);
+            }
+            if(L2sq(g) == 0) {
+                trial_pt[1] += 1; // I think this is reasonable?
+                g = xC0.gradient(trial_pt);
+            }
+            if(L2sq(g) == 0) {
+                trial_pt[1] += 1; // I think this is reasonable?
+                g = xC0.gradient(trial_pt);
+            }
+            //std::cout << trial_pt << ", " << g << "\n";
+            /**
+             * At this point we have tried up to 4 points: 0,0, 1,0, 1,1, 1,2
+             *
+             * I'm pretty sure that no degenerate conic can pass through these points, so we can
+             * assume that we've found a perpendicular to the double line. 
+             */
+            assert(L2sq(g) != 0);
             
+            Line Lx = Line::fromPointDirection(trial_pt, g); // a line along the gradient
+            double A[2][2] = {{2*xC0.c[0], xC0.c[1]},
+                              {xC0.c[1], 2*xC0.c[2]}};
+            double const determ = det(A);
+            rts = xC0.roots(Lx);
+            for(unsigned i = 0; i < rts.size(); i++) {
+                Point P0 = Lx.pointAt(rts[i]);
+                //std::cout << P0 << "\n";
+                Line L = Line::fromPointDirection(P0, rot90(g));
+                std::vector<double> cnrts;
+                // It's very likely that at least one of the conics is degenerate, this will hopefully pick the more generate of the two.
+                if(fabs(C1.hessian().det()) > fabs(C2.hessian().det()))
+                    cnrts = C1.roots(L);
+                else
+                    cnrts = C2.roots(L);
+                for(unsigned j = 0; j < cnrts.size(); j++) {
+                    Point P = L.pointAt(cnrts[j]);
+                    res.push_back(P);
+                }
+            }
         }
-            
+        
 
+    } else {
+        ;//std::cout << D << "\n";
     }
     return res;
 }

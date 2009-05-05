@@ -60,34 +60,31 @@ void draw_hull(cairo_t*cr, RatQuad rq) {
 
 
 void draw(cairo_t* cr, xAx C, Rect bnd) {
+    if(bnd[1].extent() < 5) return;
     vector<double> prev_rts;
     double py = bnd[1][0];
     for(int i = 0; i < 100; i++) {
         double t = i/100.;
         double y = (1-t)*bnd[1][0] + t*bnd[1][1];
         vector<double> rts = C.roots(Point(1, 0), Point(0, y));
+        int top = 0;
+        for(unsigned j = 0; j < rts.size(); j++) {
+            if(bnd[0].contains(rts[j])) {
+                rts[top] = rts[j];
+                top++;
+            }
+        }
+        rts.erase(rts.begin()+top, rts.end());
+        
         if(rts.size() == prev_rts.size()) {
             for(unsigned j = 0; j < rts.size(); j++) {
                 cairo_move_to(cr, prev_rts[j], py);
                 cairo_line_to(cr, rts[j], y);
-            }
-        } else if(prev_rts.size() == 1) {
-            for(unsigned j = 0; j < rts.size(); j++) {
-                cairo_move_to(cr, prev_rts[0], py);
-                cairo_line_to(cr, rts[j], y);
-            }
-        } else if(rts.size() == 1) {
-            for(unsigned j = 0; j < prev_rts.size(); j++) {
-                cairo_move_to(cr, prev_rts[j], py);
-                cairo_line_to(cr, rts[0], y);
+                cairo_stroke(cr);
             }
         } else {
-            for(unsigned j = 0; j < rts.size(); j++) {
-                cairo_move_to(cr, rts[j], y);
-                cairo_rel_line_to(cr, 1,1);
-            }
+            draw(cr, C, Rect(bnd[0], Interval(py, y)));
         }
-        cairo_stroke(cr);
         prev_rts = rts;
         py = y;
     }
@@ -210,7 +207,11 @@ class Conic5: public Toy {
             xAx oxo=sources[0] - sources[2];
             std::vector<Point> intrs = intersect(oxo, sources[0] - sources[1]);
             for(unsigned i = 0; i < intrs.size(); i++) {
-                draw_circ(cr, intrs[i]);
+                cairo_save(cr);
+                cairo_set_source_rgb(cr, 1, 0,0);
+                draw_cross(cr, intrs[i]);
+                cairo_stroke(cr);
+                cairo_restore(cr);
             }
       
             boost::optional<RatQuad> orq = oxo.toCurve(rh.pos);
