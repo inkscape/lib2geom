@@ -87,7 +87,7 @@ void draw_edge_orders(cairo_t *cr, std::vector<Vertex*> const &vertices, PathVec
 }
 */
 
-void draw_areas(cairo_t *cr, PathVector const &pa, Areas const &areas) {
+void draw_areas(cairo_t *cr, Areas const &areas, PathVector const &pa) {
     PathVector ps = areas_to_paths(pa, areas);
     for(unsigned i = 0; i < ps.size(); i++) {
         double area;
@@ -99,6 +99,10 @@ void draw_areas(cairo_t *cr, PathVector const &pa, Areas const &areas) {
         cairo_stroke(cr);
         cairo_set_dash(cr, &d, 0, 0);
     }
+}
+
+void draw_area(cairo_t *cr, Area const &area, PathVector const &pa) {
+    for(unsigned i = 0; i < area.size(); i++) draw_section(cr, *area[i], pa);
 }
 
 #ifdef SWEEP_GRAPH_DEBUG
@@ -128,6 +132,7 @@ class SweepWindow: public Toy {
     std::vector<Toggle> toggles;
     PointHandle p, p2;
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
+        if (p2.pos[X] < 0) p2.pos[X] = 0;
 
         cairo_set_source_rgb(cr, 0, 0, 0);
         cairo_set_line_width(cr, 3);
@@ -145,11 +150,16 @@ class SweepWindow: public Toy {
         TopoGraph output(pa,X, 0.000001);
         double_whiskers(output);
         
+        int cix = p2.pos[X] / 10;
+        
 #ifdef SWEEP_GRAPH_DEBUG
-        draw_context(cr, ((int) p2.pos[X] / 10) % contexts.size(), pa);
+        //draw_context(cr, cix % contexts.size(), pa);
 #endif
         
         draw_graph(cr, output);
+        
+        Areas areas = traverse_areas(output);
+        draw_area(cr, areas[cix % areas.size()], pa);
         
         /*cairo_set_line_width(cr, 1);
         //draw_edge_orders(cr, output, pa);
@@ -171,12 +181,9 @@ class SweepWindow: public Toy {
     }
     
     void key_hit(GdkEventKey* e) {
-        if(e->keyval == 'a') p.pos[X] = 0;
-        else if(e->keyval == '[') p.pos[X] -= 10;
-        else if(e->keyval == ']') p.pos[X] += 10;
-        if (p.pos[X] < 0) {
-            p.pos[X] = 0;
-        }
+        if(e->keyval == 'a') p2.pos[X] = 0;
+        else if(e->keyval == '[') p2.pos[X] -= 10;
+        else if(e->keyval == ']') p2.pos[X] += 10;
         redraw();
     }
     
