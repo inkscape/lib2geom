@@ -22,9 +22,23 @@
 #include <2geom/bezier-to-sbasis.h>
 #include <2geom/ord.h>
 
-
-
 #include <2geom/conicsec.h>
+
+std::vector<Geom::RatQuad> xAx_to_RatQuads(Geom::xAx const &C, Geom::Rect bnd) {
+    // find points on boundary
+    // if there are exactly 0 points return
+    // if there are exactly 2 points fit ratquad and return
+    // if there are an odd number, split bnd on the point with the smallest dot(unit_vector(grad), rect_edge)
+    // sort into clockwise order ABCD
+    // compute corresponding tangents
+    // test boundary points against the line through A
+    // if all on one side
+    //
+    // if A,X and Y,Z
+    // ratquad from A,X and Y,Z
+}
+
+
 
 using namespace Geom;
 using namespace std;

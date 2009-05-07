@@ -1,4 +1,5 @@
 #include <string.h>
+#include <stdint.h>
 #include <2geom/toys/toy-framework-2.h>
 
 #include <cairo-features.h>
