@@ -1,7 +1,7 @@
 
 /**
  * \file
- * \brief  Path - Series of continuous curves
+ * \brief  TopoSweep - topology / graph representation of a PathVector, for boolean operations and related tasks
  *
  * Authors:
  * 		Michael Sloan <mgsloan at gmail.com>
@@ -107,9 +107,13 @@ class TopoGraph {
         Point avg;
         Vertex(Point p) : avg(p) {}
         inline unsigned degree() const { return enters.size() + exits.size(); }
+        unsigned operator[](unsigned ix) const;
+        unsigned &operator[](unsigned ix);
+        void erase(unsigned ix);
+        void insert(unsigned ix, unsigned v);
     };
     
-    TopoGraph(std::vector<Vertex> vs, std::vector<Edge> es, Dim2 d, double t) : vertices(vs), edges(es), dim(d), tol(t) {}
+    //TopoGraph(std::vector<Vertex> vs, std::vector<Edge> es, Dim2 d, double t) : vertices(vs), edges(es), dim(d), tol(t) {}
     TopoGraph(PathVector const &ps, Dim2 d, double tol);
     
     unsigned size() const { return vertices.size(); }
@@ -117,13 +121,19 @@ class TopoGraph {
     Vertex       &operator[](unsigned ix)       { return vertices[ix]; }
     Vertex const &operator[](unsigned ix) const { return vertices[ix]; }
     
-    Edge &get_edge(unsigned ix, unsigned jx);
-    Edge get_edge(unsigned ix, unsigned jx) const;
+    Edge &get_edge(unsigned ix, unsigned jx) { return edges[vertices[ix][jx]]; }
+    Edge get_edge(unsigned ix, unsigned jx) const { return edges[vertices[ix][jx]]; }
+    
+    unsigned find_section(Vertex const &v, boost::shared_ptr<Section> section) const;
+    unsigned find_section(unsigned ix, boost::shared_ptr<Section> section) const { return find_section(vertices[ix], section); }
+    
+    //removes the edge from the vertex and returns its index
+    unsigned remove_edge(unsigned ix, unsigned jx);
     
     //returns a graph with all zero degree vertices and unused edges removed
     void cannonize();
     //checks invariants
-    bool invariants() const;
+    void assert_invariants() const;
     
     std::vector<Vertex> vertices;
     std::vector<Edge> edges;
@@ -162,12 +172,12 @@ typedef std::vector<boost::shared_ptr<Section> > Area;
 typedef std::vector<Area> Areas;
 
 //TopoGraph sweep_graph(PathVector const &ps, Dim2 d = X, double tol = 0.00001);
-/*
+
 void trim_whiskers(TopoGraph &g);
 void double_whiskers(TopoGraph &g);
-void remove_vestigial(TopoGraph &g);
-Areas traverse_areas(TopoGraph const &g);
-*/
+//void remove_vestigial(TopoGraph &g);
+//Areas traverse_areas(TopoGraph const &g);
+
 
 void remove_area_whiskers(Areas &areas);
 PathVector areas_to_paths(PathVector const &ps, Areas const &areas);

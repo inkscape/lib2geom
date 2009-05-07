@@ -43,7 +43,7 @@ void draw_graph(cairo_t *cr, TopoGraph const &graph) {
     for(unsigned i = 0; i < graph.size(); i++) {
         set_rainbow(cr, i);
         for(unsigned j = 0; j < graph[i].degree(); j++) {
-            draw_ray(cr, graph[i].avg, 10*unit_vector(graph[i].avg - graph[graph.get_edge(i, j).other_vert].avg));
+            draw_ray(cr, graph[i].avg, 10*unit_vector(graph[graph.get_edge(i, j).other_vert].avg - graph[i].avg));
             cairo_stroke(cr);
         }
     }
@@ -126,7 +126,7 @@ void draw_context(cairo_t *cr, int cix, PathVector const &pa) {
 class SweepWindow: public Toy {
     vector<Path> path, path2;
     std::vector<Toggle> toggles;
-    PointHandle p;
+    PointHandle p, p2;
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
 
         cairo_set_source_rgb(cr, 0, 0, 0);
@@ -143,8 +143,10 @@ class SweepWindow: public Toy {
         concatenate(pa, pa2);
         
         TopoGraph output(pa,X, 0.000001);
+        double_whiskers(output);
+        
 #ifdef SWEEP_GRAPH_DEBUG
-        draw_context(cr, 0, pa);
+        draw_context(cr, ((int) p2.pos[X] / 10) % contexts.size(), pa);
 #endif
         
         draw_graph(cr, output);
@@ -195,6 +197,8 @@ class SweepWindow: public Toy {
         if(bounds) path2 += Point(20,20)-bounds->min();
         p = PointHandle(Point(100,300));
         handles.push_back(&p);
+        p2 = PointHandle(Point(200, 300));
+        handles.push_back(&p2);
     }
 };
 
