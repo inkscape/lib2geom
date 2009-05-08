@@ -93,9 +93,8 @@ class TopoGraph {
     class Edge {
       public:
         boost::shared_ptr<Section> section;    // section associated with this edge
-        unsigned other_edge; // index of the dual edge
-        unsigned other_vert; // index of the vertex this edge points to
-        Edge(boost::shared_ptr<Section> s, unsigned oe, unsigned ov) : section(s), other_edge(oe), other_vert(ov) {}
+        unsigned other; // index of the vertex this edge points to
+        Edge(boost::shared_ptr<Section> s, unsigned o) : section(s), other(o) {}
     };
     
     // Represents a vertex in the graph, in terms of a point and edges which enter and exit.
@@ -103,40 +102,34 @@ class TopoGraph {
     // edges have an endpoint tol away.
     class Vertex {
       public:
-        std::vector<unsigned> enters, exits; // indexes of the enter / exit edges
+        std::vector<Edge> enters, exits; // indexes of the enter / exit edges
         Point avg;
         Vertex(Point p) : avg(p) {}
         inline unsigned degree() const { return enters.size() + exits.size(); }
-        unsigned operator[](unsigned ix) const;
-        unsigned &operator[](unsigned ix);
+        Edge operator[](unsigned ix) const;
+        Edge &operator[](unsigned ix);
         void erase(unsigned ix);
-        void insert(unsigned ix, unsigned v);
+        void insert(unsigned ix, Edge e);
+        unsigned find_section(boost::shared_ptr<Section> section) const;
     };
     
-    //TopoGraph(std::vector<Vertex> vs, std::vector<Edge> es, Dim2 d, double t) : vertices(vs), edges(es), dim(d), tol(t) {}
-    TopoGraph(PathVector const &ps, Dim2 d, double tol);
+    TopoGraph(PathVector const &ps, Dim2 d, double t);
     
     unsigned size() const { return vertices.size(); }
     
     Vertex       &operator[](unsigned ix)       { return vertices[ix]; }
     Vertex const &operator[](unsigned ix) const { return vertices[ix]; }
     
-    Edge &get_edge(unsigned ix, unsigned jx) { return edges[vertices[ix][jx]]; }
-    Edge get_edge(unsigned ix, unsigned jx) const { return edges[vertices[ix][jx]]; }
-    
-    unsigned find_section(Vertex const &v, boost::shared_ptr<Section> section) const;
-    unsigned find_section(unsigned ix, boost::shared_ptr<Section> section) const { return find_section(vertices[ix], section); }
-    
-    //removes the edge from the vertex and returns its index
-    unsigned remove_edge(unsigned ix, unsigned jx);
+    //removes both edges, and returns the vertices[ix][jx] one
+    Edge remove_edge(unsigned ix, unsigned jx);
     
     //returns a graph with all zero degree vertices and unused edges removed
     void cannonize();
+    
     //checks invariants
     void assert_invariants() const;
     
     std::vector<Vertex> vertices;
-    std::vector<Edge> edges;
     Dim2 dim;
     double tol;
 };

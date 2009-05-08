@@ -7,11 +7,12 @@
 
 namespace Geom {
 
-unsigned &TopoGraph::Vertex::operator[](unsigned ix) {
+TopoGraph::Edge &TopoGraph::Vertex::operator[](unsigned ix) {
     ix %= degree();
     return ix < enters.size() ? enters[ix] : exits[ix - enters.size()];
 }
-unsigned TopoGraph::Vertex::operator[](unsigned ix) const {
+
+TopoGraph::Edge TopoGraph::Vertex::operator[](unsigned ix) const {
     ix %= degree();
     return ix < enters.size() ? enters[ix] : exits[ix - enters.size()];
 }
@@ -24,7 +25,7 @@ void TopoGraph::Vertex::erase(unsigned ix) {
         exits.erase(exits.begin() + (ix - enters.size()));
 }
 
-void TopoGraph::Vertex::insert(unsigned ix, unsigned v) {
+void TopoGraph::Vertex::insert(unsigned ix, Edge v) {
     ix %= degree();
     if(ix < enters.size())
         enters.insert(enters.begin() + ix, v);
@@ -32,22 +33,22 @@ void TopoGraph::Vertex::insert(unsigned ix, unsigned v) {
         exits.insert(exits.begin() + (ix - enters.size()), v);
 }
 
-unsigned TopoGraph::find_section(Vertex const &v, boost::shared_ptr<Section> section) const {
+unsigned TopoGraph::Vertex::find_section(boost::shared_ptr<Section> section) const {
     unsigned i = 0;
-    for(; i < v.degree(); i++)
-        if(edges[v[i]].section == section) return i;
+    for(; i < degree(); i++)
+        if((*this)[i].section == section) return i;
     return i;
 }
 
-unsigned TopoGraph::remove_edge(unsigned ix, unsigned jx) {
+TopoGraph::Edge TopoGraph::remove_edge(unsigned ix, unsigned jx) {
     Vertex &v = vertices[ix];
     if(v.degree()) {
         jx %= v.degree();
-        unsigned ret = v[jx];
+        Edge &ret = v[jx];
         v.erase(jx);
-        v = vertices[edges[ret].other_vert];
+        v = vertices[ret.other];
         if(v.degree()) {
-            v.erase(find_section(v, edges[ret].section));
+            v.erase(v.find_section(ret.section));
             return ret;
         }
     }
@@ -55,50 +56,30 @@ unsigned TopoGraph::remove_edge(unsigned ix, unsigned jx) {
 
 void TopoGraph::cannonize() {
     std::vector<unsigned> vix;
-    std::vector<Vertex> vs;
-    std::vector<bool> e_used(edges.size(), false);
     unsigned ix = 0;
     for(unsigned i = 0; i < vertices.size(); i++) {
         vix.push_back(ix);
-        if(vertices[i].degree() != 0) {
-            for(unsigned j = 0; j < vertices[i].degree(); j++)
-                e_used[vertices[i][j]] = true;
-            vs.push_back(vertices[i]);
-            ix++;
-        }
+        if(vertices[i].degree() != 0) vertices[ix++] = vertices[i];
     }
     
-    std::vector<unsigned> eix;
-    std::vector<Edge> es;
-    ix = 0;
-    for(unsigned i = 0; i < e_used.size(); i++) {
-        eix.push_back(ix);
-        if(e_used[i]) {
-            es.push_back(edges[i]);
-            ix++;
-        }
-    }
-    
-    for(unsigned i = 0; i < es.size(); i++) {
-        es[i].other_edge = eix[es[i].other_edge];
-        es[i].other_vert = vix[es[i].other_vert];
-    }
-    
-    for(unsigned i = 0; i < vs.size(); i++)
-        for(unsigned j = 0; j < vs[i].degree(); j++)
-            vs[i][j] = eix[vs[i][j]];
-    
-    vertices = vs;
-    edges = es;
+    for(unsigned i = 0; i < ix; i++)
+        for(unsigned j = 0; j < vertices[i].degree(); j++)
+            vertices[i][j].other = vix[vertices[i][j].other];
 }
 
+
 void TopoGraph::assert_invariants() const {
-/*    for(unsigned i = 0; i < vertices.size(); i++) {
+    for(unsigned i = 0; i < vertices.size(); i++) {
         for(unsigned j = 0; j < vertices[i].degree(); j++) {
-            Edge e = get_edge(i, j);
-            unsigned oix = find_section(i, e.section);
+            Edge e = vertices[i][j];
+            assert(e.other != i);
+            assert(are_near(e.section->fp, vertices[i].avg, tol) || are_near(e.section->tp, vertices[i].avg, tol));
+            assert(!are_near(e.section->fp, e.section->tp, tol));
+            assert(e.section.get());
+            unsigned oix = vertices[e.other].find_section(e.section);
+            assert(oix != vertices[e.other].degree());
         }
-    } */
+    }
 }
 
 //near predicate utilized in process_splits
@@ -289,7 +270,7 @@ std::vector<std::vector<Section> > contexts;
 
 //TODO: ensure that the outputted graph is planar
 //TODO: I believe that it is currently possible for edges to not be doubled this is bad!
-TopoGraph::TopoGraph(PathVector const &ps, Dim2 d, double tol) {
+TopoGraph::TopoGraph(PathVector const &ps, Dim2 d, double t) : dim(d), tol(t) {
     //s_sort = vertical section order
     DerefAdapter<SectionSorter> s_sort = DerefAdapter<SectionSorter>(SectionSorter(ps, (Dim2)(1-d), tol));
     //sweep_sort = horizontal sweep order
@@ -309,7 +290,6 @@ TopoGraph::TopoGraph(PathVector const &ps, Dim2 d, double tol) {
     std::vector<unsigned> context_vertex, v_to_do;
     
     vertices.reserve(sections.size());
-    edges.reserve(sections.size()*2);
     
     //vector used to hold temporary windings vectors
     std::vector<int> windings(ps.size(), 0);
@@ -343,12 +323,9 @@ TopoGraph::TopoGraph(PathVector const &ps, Dim2 d, double tol) {
                 // exit this vertex, and their order
                 //TODO: make sure that vertical sections aren't finalized too early, and if they are,
                 //       figure out how to account for this in a reasonable fashion
-                for(unsigned j = 0; j < context_vertex.size(); j++) {
-                    if(context_vertex[j] == v_to_do[i]) {
-                        vertices[context_vertex[j]].exits.push_back(edges.size());
-                        edges.push_back(TopoGraph::Edge(context[j], 0, 0));
-                    }
-                }
+                for(unsigned j = 0; j < context_vertex.size(); j++)
+                    if(context_vertex[j] == v_to_do[i])
+                        vertices[context_vertex[j]].exits.push_back(TopoGraph::Edge(context[j], 0));
                 //find the average of the endpoints of the vertex
                 /*Point avg;
                 for(unsigned j = 0; j < vertices[v_to_do[i]].enters.size(); j++)
@@ -386,17 +363,14 @@ TopoGraph::TopoGraph(PathVector const &ps, Dim2 d, double tol) {
                 TopoGraph::Vertex &cv = vertices[context_vertex[i]];
                 unsigned j = 0;
                 for(; j < cv.exits.size(); j++) {
-                    if(edges[cv.exits[j]].section == context[i]) {
-                        edges[cv.exits[j]].other_vert = vert;
-                        edges[cv.exits[j]].other_edge = edges.size();
+                    if(cv.exits[j].section == context[i]) {
+                        cv.exits[j].other = vert;
                         break;
                     }
                 }
                 //TODO: is this if the right behavior?
-                if(j != cv.exits.size()) {
-                    vertices[vert].enters.push_back(edges.size());
-                    edges.push_back(TopoGraph::Edge(context[i], cv.exits[j], context_vertex[i]));
-                } 
+                if(j != cv.exits.size())
+                    vertices[vert].enters.push_back(TopoGraph::Edge(context[i], context_vertex[i]));
                 //remove it from the context
                 context.erase(context.begin() + i);
                 context_vertex.erase(context_vertex.begin() + i);
@@ -456,24 +430,23 @@ void trim_whiskers(TopoGraph &g) {
     
     while(!affected.empty()) {
         unsigned j = 0;
-        for(unsigned i = 0; i < affected.size(); i++) {
-            TopoGraph::Vertex &v = g[affected[i]];
-            if(v.degree() == 1) affected[j++] = g.edges[g.remove_edge(affected[i], 0)].other_vert;
-        }
+        for(unsigned i = 0; i < affected.size(); i++)
+            if(g[affected[i]].degree() == 1)
+                affected[j++] = g.remove_edge(affected[i], 0).other;
         affected.resize(j);
     }
 }
 
-void add_edge_at(TopoGraph &g, unsigned ix, boost::shared_ptr<Section> s, unsigned jx, bool before = true) {
+void add_edge_at(TopoGraph &g, unsigned ix, boost::shared_ptr<Section> s, TopoGraph::Edge jx, bool before = true) {
     TopoGraph::Vertex &v = g[ix];
     for(unsigned i = 0; i < v.enters.size(); i++) {
-        if(g.edges[v.enters[i]].section == s) {
+        if(v.enters[i].section == s) {
             v.enters.insert(v.enters.begin() + (before ? i : i + 1), jx);
             return;
         }
     }
     for(unsigned i = 0; i < v.exits.size(); i++) {
-        if(g.edges[v.exits[i]].section == s) {
+        if(v.exits[i].section == s) {
             v.exits.insert(v.exits.begin() + (before ? i : i + 1), jx);
             return;
         }
@@ -486,18 +459,15 @@ void double_whiskers(TopoGraph &g) {
     for(unsigned i = 0; i < g.size(); i++) {
         if(g[i].degree() == 1) {
             unsigned j = i;
-            TopoGraph::Edge &e = g.get_edge(i, 0);
+            TopoGraph::Edge e = g[i][0];
             while(true) {
-                TopoGraph::Edge &next_edge = g.get_edge(j, 1 - g.find_section(j, e.section));
+                TopoGraph::Edge next_edge = g[j][1 - g[j].find_section(e.section)];
                 boost::shared_ptr<Section> new_section = boost::shared_ptr<Section>(new Section(*e.section));
-                unsigned ixt = g.edges.size(), ixf = g.edges.size() + 1;
-                g.edges.push_back(TopoGraph::Edge(new_section, ixt, e.other_vert));
-                g.edges.push_back(TopoGraph::Edge(new_section, ixf, j));
-                add_edge_at(g, j,            e.section, ixt, false);
-                add_edge_at(g, e.other_vert, e.section, ixf, true);
+                add_edge_at(g, j,       e.section, TopoGraph::Edge(new_section, e.other), false);
+                add_edge_at(g, e.other, e.section, TopoGraph::Edge(new_section, j), true);
                 
-                if(g[e.other_vert].degree() == 3) {
-                    j = e.other_vert;
+                if(g[e.other].degree() == 3) {
+                    j = e.other;
                     e = next_edge;
                 } else break;
             }
@@ -505,25 +475,27 @@ void double_whiskers(TopoGraph &g) {
     }
 }
 
+/*
 void remove_vestigial(TopoGraph &g) {
     for(unsigned i = 0; i < g.size(); i++) {
         if(g[i].enters.size() == 1 && g[i].exits.size() == 1) {
-            TopoGraph::Edge &e1 = g.edges[g[i][0]], &e2 = g.edges[g[i][1]];
+            TopoGraph::Edge &e1 = g[i][0], &e2 = g[i][1];
             if(e1.section == e2.section) {
                 //vestigial vert
                 Section *new_section = new Section(e1.section->curve,
                                          e1.section->f,  e2.section->t,
                                          e1.section->fp, e2.section->tp);
                 
-                /*
+                e1.other
+                
                 Vertex *v1 = e1.other, *v2 = e2.other;
                 v1->lookup_section(e1.section) = Edge(new_section, v2);
                 v2->lookup_section(e2.section) = Edge(new_section, v1);
-                g.erase(g.begin() + i); */
+                g.erase(g.begin() + i);
             }    
         }
     }
-}
+}*/
 
 //planar area finding
 //linear on number of edges
@@ -541,8 +513,6 @@ Areas traverse_areas(TopoGraph const &g) {
             unsigned e_ix = std::find(visited[vix].begin(), visited[vix].end(), false) - visited[vix].begin();
             if(e_ix == g[vix].degree()) break;
             
-            TopoGraph::Edge e = g.get_edge(vix, e_ix);
-            
             unsigned start = e_ix;
             unsigned cur = vix;
             
@@ -551,20 +521,21 @@ Areas traverse_areas(TopoGraph const &g) {
             while(cur < g.size() && !visited[cur][e_ix]) {
                 visited[cur][e_ix] = true;
                 
+                TopoGraph::Edge e = g[cur][e_ix];
+                
                 area.push_back(e.section);
                 
                 //go to clockwise edge
-                cur = e.other_vert;
+                cur = e.other;
                 unsigned deg = g[cur].degree();
-                e_ix = g.find_section(cur, e.section);
-                if(deg == 1) {
+                e_ix = g[cur].find_section(e.section);
+                
+                if(deg == 1 || e_ix == deg) {
                    visited[cur][e_ix] = true;
                    break;
                 }
-                //assert(e_ix != deg);
-                if(e_ix == deg) break;
+                
                 e_ix = (e_ix + 1) % deg;
-                e = g.get_edge(cur, e_ix);
                 
                 if(cur == vix && start == e_ix) break;
             }

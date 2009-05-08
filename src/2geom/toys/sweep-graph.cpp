@@ -43,7 +43,7 @@ void draw_graph(cairo_t *cr, TopoGraph const &graph) {
     for(unsigned i = 0; i < graph.size(); i++) {
         set_rainbow(cr, i);
         for(unsigned j = 0; j < graph[i].degree(); j++) {
-            draw_ray(cr, graph[i].avg, 10*unit_vector(graph[graph.get_edge(i, j).other_vert].avg - graph[i].avg));
+            draw_ray(cr, graph[i].avg, 10*unit_vector(graph[graph[i][j].other].avg - graph[i].avg));
             cairo_stroke(cr);
         }
     }
@@ -147,8 +147,10 @@ class SweepWindow: public Toy {
         PathVector pa2 = path2 + p.pos;
         concatenate(pa, pa2);
         
-        TopoGraph output(pa,X, 0.000001);
+        TopoGraph output(pa,X, .00001);
+        output.assert_invariants();
         double_whiskers(output);
+        output.assert_invariants();
         
         int cix = p2.pos[X] / 10;
         
@@ -159,6 +161,7 @@ class SweepWindow: public Toy {
         draw_graph(cr, output);
         
         Areas areas = traverse_areas(output);
+        remove_area_whiskers(areas);
         draw_area(cr, areas[cix % areas.size()], pa);
         
         /*cairo_set_line_width(cr, 1);
