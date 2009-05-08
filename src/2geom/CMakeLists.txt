@@ -86,6 +86,9 @@ quadtree.h
 redblacktree.cpp
 redblacktree.h
 
+rtree.cpp
+rtree.h
+
 matrix.cpp
 matrix.h
 transforms.cpp
