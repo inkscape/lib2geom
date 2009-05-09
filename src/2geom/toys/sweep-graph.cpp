@@ -162,7 +162,12 @@ class SweepWindow: public Toy {
         
         Areas areas = traverse_areas(output);
         remove_area_whiskers(areas);
-        draw_area(cr, areas[cix % areas.size()], pa);
+        filter_areas(pa, areas, UnionOp(path.size(), false, false));
+        /*for(unsigned i = 0; i < areas.size(); i++) {
+            set_rainbow(cr, i);
+            draw_area(cr, areas[i], pa);
+        }*/
+        draw_areas(cr, areas, pa);
         
         /*cairo_set_line_width(cr, 1);
         //draw_edge_orders(cr, output, pa);
