@@ -156,7 +156,7 @@ void redraw() { gtk_widget_queue_draw(GTK_WIDGET(window)); }
 
 #include <typeinfo>
 
-Toy::Toy() : hit_data(0), show_timings(0) {
+Toy::Toy() : hit_data(0), show_timings(0), spool_file(NULL), to_load_file(NULL) {
     mouse_down = false;
     selected = NULL;
     notify_offset = 0;
@@ -452,6 +452,13 @@ static gboolean expose_event(GtkWidget *widget, GdkEventExpose */*event*/, gpoin
     cairo_fill(cr);
     if(current_toy != NULL) {
         std::ostringstream * timer_stream = new std::ostringstream;
+        
+        if(current_toy->spool_file) {
+            current_toy->save(current_toy->spool_file);
+        } else if(current_toy->to_load_file and !feof(current_toy->to_load_file)) {
+            current_toy->load(current_toy->to_load_file);
+            redraw();
+        }
 
         current_toy->draw(cr, &notify, width, height, false, timer_stream);
         delete timer_stream;
@@ -517,15 +524,15 @@ static gint size_allocate_event(GtkWidget* widget, GtkAllocation *allocation, gp
 }
 
 GtkItemFactoryEntry menu_items[] = {
-    { (gchar*)"/_File",             NULL,           NULL,           0,  (gchar*)"<Branch>"                    },
+    { (gchar*)"/_File",             NULL,           NULL,           0,  (gchar*)"<Branch>", 0                    },
     { (gchar*)"/File/_Open Handles",(gchar*)"<CTRL>O",      open,           0,  (gchar*)"<StockItem>", GTK_STOCK_OPEN },
     { (gchar*)"/File/_Save Handles",(gchar*)"<CTRL>S",      save,           0,  (gchar*)"<StockItem>", GTK_STOCK_SAVE_AS },
-    { (gchar*)"/File/sep",          NULL,           NULL,           0,  (gchar*)"<Separator>"                 },
+    { (gchar*)"/File/sep",          NULL,           NULL,           0,  (gchar*)"<Separator>", 0                 },
     { (gchar*)"/File/Save SVG or PDF", NULL,           save_cairo,     0,  (gchar*)"<StockItem>", GTK_STOCK_SAVE },
-    { (gchar*)"/File/sep",          NULL,           NULL,           0,  (gchar*)"<Separator>"                 },
-    { (gchar*)"/File/_Show Timings",  NULL,         toggle_show_timings,  0,  (gchar*)"<CheckItem>" },
+    { (gchar*)"/File/sep",          NULL,           NULL,           0,  (gchar*)"<Separator>" , 0                },
+    { (gchar*)"/File/_Show Timings",  NULL,         toggle_show_timings,  0,  (gchar*)"<CheckItem>", 0 },
     { (gchar*)"/File/_Quit",        (gchar*)"<CTRL>Q",      gtk_main_quit,  0,  (gchar*)"<StockItem>", GTK_STOCK_QUIT },
-    { (gchar*)"/_Help",             NULL,           NULL,           0,  (gchar*)"<LastBranch>"                },
+    { (gchar*)"/_Help",             NULL,           NULL,           0,  (gchar*)"<LastBranch>", 0                },
     { (gchar*)"/Help/About",        NULL,           make_about,     0,  (gchar*)"<StockItem>", GTK_STOCK_ABOUT}
 };
 gint nmenu_items = 9;
@@ -536,10 +543,8 @@ void init(int argc, char **argv, Toy* t, int width, int height) {
 
     gdk_rgb_init();
 
-    FILE * to_load_file = NULL;
-
     int c;
-    int digit_optind = 0;
+    //int digit_optind = 0;
 
     int screenshot_only_type = 0;
     char *screenshot_output_name = 0;
@@ -547,10 +552,10 @@ void init(int argc, char **argv, Toy* t, int width, int height) {
 
     while (1)
     {
-        int this_option_optind = optind ? optind : 1;
+        //int this_option_optind = optind ? optind : 1;
         int option_index = 0;
 
-        c = getopt_long (argc, argv, "hs:c:d:012",
+        c = getopt_long (argc, argv, "hs:m:d:012",
                          NULL, &option_index);
         if (c == -1)
             break;
@@ -558,12 +563,16 @@ void init(int argc, char **argv, Toy* t, int width, int height) {
         switch (c)
         {
             case 'h':
-                to_load_file = fopen(argv[2], "r");
+                t->to_load_file = fopen(argv[2], "r");
                 break;
 
             case 's':
                 screenshot_only_type = 1;
                 screenshot_output_name = strdup(optarg);
+                break;
+
+            case 'm':
+                current_toy->spool_file = fopen(strdup(optarg), "w");
                 break;
 
             case 'c':
@@ -588,8 +597,8 @@ void init(int argc, char **argv, Toy* t, int width, int height) {
 
     t->first_time(argc, argv);
 
-    if(to_load_file)
-        t->load(to_load_file);
+    if(t->to_load_file)
+        t->load(t->to_load_file);
 
     if(screenshot_only_type > 0) {
         if(screenshot_output_name)
@@ -881,7 +890,7 @@ Geom::D2<Geom::SBasis> PointSetHandle::asBezier() {
     return handles_to_sbasis(pts.begin(), size()-1);
 }
 
-void RectHandle::draw(cairo_t *cr, bool annotes) {
+void RectHandle::draw(cairo_t *cr, bool /*annotes*/) {
     cairo_rectangle(cr, pos);
     cairo_stroke(cr);
     if(show_center_handle) {

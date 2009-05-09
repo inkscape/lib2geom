@@ -321,6 +321,8 @@ public:
     double notify_offset;
     std::string name;
     bool show_timings;
+    FILE* spool_file; // if non-NULL we record all interactions to this file
+    FILE* to_load_file; // if non-NULL and not eof we read back a handle state at every frame.
 
     Toy();
 
