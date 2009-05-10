@@ -47,34 +47,44 @@
 
 namespace Geom{
 
-// used in pick_next()
-enum quadratic_split_group_to_add { ADD_TO_GROUP_A = 0, ADD_TO_GROUP_B};
+// used only in pick_next()
+enum qs_group_to_add { 
+    ADD_TO_GROUP_A = 0, 
+    ADD_TO_GROUP_B
+};
 
 //class RTreeLeaf;
 class RTreeNode;
 
+
 /*
-class RTreeLeaf{    
+
+template <class T>
+class RTreeNode{    
 public:
-    Rect bounding_box;
-    int shape; // identifier of the odject.  
-    
-    RTreeLeaf(){
+//    Rect bounding_box;
+
+    // T = int : leaf node. int is the "shape"
+    // T = RTreeNode* : non-leaf node
+    std::vector< < std::pair< Rect, T > > children;
+
+    RTreeNode(){
     }
+
 };
 */
 
 class RTreeNode{    
 public:
-    Rect bounding_box;
 
     //std::vector<RTreeLeaf> children_leaves; // if this is empty, then node is leaf-node
     // perhaps change to 
     std::vector< std::pair<Rect, int> > children_leaves; // if this is empty, then node is leaf-node
-    std::vector<RTreeNode*> children_nodes;  // if this is empty, then node is NON-leaf node
+    std::vector< std::pair<Rect, RTreeNode*> > children_nodes;  // if this is empty, then node is NON-leaf node
     
     RTreeNode(){
     }
+
 };
 
 
@@ -87,15 +97,15 @@ public:
 
     RTree(int max_n, int min_n): root(0), max_nodes(max_n), min_nodes(min_n) {}
 
-    void insert(Rect const &r, int shape, unsigned min_nodes);
+    void insert(Rect const &r, int shape, unsigned min_nodes, unsigned max_nodes);
 
 private:
     RTreeNode* choose_leaf(Rect const &r, int shape);
-    double find_enlargment(Rect const &children_node, Rect const &new_node);
+    double find_enlargement(Rect const &children_node, Rect const &new_node);
 
-    void quadratic_split(RTreeNode *s, unsigned min_nodes);
+    std::pair<RTreeNode, RTreeNode> quadratic_split(RTreeNode *s, unsigned min_nodes);
     std::pair<unsigned, unsigned> pick_seeds(RTreeNode *s);
-    std::pair<double, quadratic_split_group_to_add>  pick_next(RTreeNode group_a, RTreeNode group_b, RTreeNode *s, std::vector<bool> assigned_v);
+    std::pair<unsigned, qs_group_to_add>  pick_next(RTreeNode group_a, RTreeNode group_b, RTreeNode *s, std::vector<bool> assigned_v);
 };
 
 
