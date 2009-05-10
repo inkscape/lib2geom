@@ -47,15 +47,13 @@
 
 namespace Geom{
 
-// used only in pick_next()
+// used only in pick_next( )
 enum qs_group_to_add { 
     ADD_TO_GROUP_A = 0, 
     ADD_TO_GROUP_B
 };
 
-//class RTreeLeaf;
 class RTreeNode;
-
 
 /*
 
@@ -76,11 +74,11 @@ public:
 
 class RTreeNode{    
 public:
-
-    //std::vector<RTreeLeaf> children_leaves; // if this is empty, then node is leaf-node
-    // perhaps change to 
+    // first: bounding box, second: "data" (leaf-node) or node (NON leaf-node)
     std::vector< std::pair<Rect, int> > children_leaves; // if this is empty, then node is leaf-node
     std::vector< std::pair<Rect, RTreeNode*> > children_nodes;  // if this is empty, then node is NON-leaf node
+
+    // TODO can this design be improved ???
     
     RTreeNode(){
     }
@@ -95,17 +93,29 @@ public:
     unsigned max_nodes; // allow +1 (used during insert)
     unsigned min_nodes;
 
-    RTree(int max_n, int min_n): root(0), max_nodes(max_n), min_nodes(min_n) {}
+    RTree( int max_n, int min_n ): 
+        root(0), max_nodes( max_n ), min_nodes( min_n ) {
+    }
 
-    void insert(Rect const &r, int shape, unsigned min_nodes, unsigned max_nodes);
+    void insert( Rect const &r, int shape, unsigned min_nodes, unsigned max_nodes );
 
 private:
-    RTreeNode* choose_leaf(Rect const &r, int shape);
-    double find_enlargement(Rect const &children_node, Rect const &new_node);
+    // I1
+    RTreeNode* choose_leaf( Rect const &r, int shape );
+    double find_enlargement( Rect const &a, Rect const &b );
 
-    std::pair<RTreeNode, RTreeNode> quadratic_split(RTreeNode *s, unsigned min_nodes);
-    std::pair<unsigned, unsigned> pick_seeds(RTreeNode *s);
-    std::pair<unsigned, qs_group_to_add>  pick_next(RTreeNode group_a, RTreeNode group_b, RTreeNode *s, std::vector<bool> assigned_v);
+    // I2
+    std::pair<RTreeNode, RTreeNode> quadratic_split( RTreeNode *s, unsigned min_nodes );
+    std::pair<unsigned, unsigned> pick_seeds( RTreeNode *s );
+    std::pair<unsigned, qs_group_to_add>  pick_next( RTreeNode group_a, RTreeNode group_b, RTreeNode *s, std::vector<bool> assigned_v );
+
+    // I3
+    bool adjust_tree(       RTreeNode* position, 
+                            std::pair<RTreeNode, RTreeNode>  &splitted_groups, 
+                            bool split_performed, 
+                            unsigned min_nodes,
+                            unsigned max_nodes );
+    RTreeNode* find_parent( RTreeNode* subtree_root, Rect search_area, RTreeNode* wanted );
 };
 
 
