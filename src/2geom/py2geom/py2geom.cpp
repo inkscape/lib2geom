@@ -52,9 +52,12 @@ BOOST_PYTHON_MODULE(_py2geom)
     def("circle_circle_intersection", Geom::circle_circle_intersection);
     
     wrap_point();
+    wrap_etc();
     wrap_interval();
     wrap_transforms();
     wrap_rect();
+    wrap_circle();
+    wrap_ellipse();
     wrap_sbasis();
     wrap_bezier();
     wrap_linear();

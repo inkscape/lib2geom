@@ -1,9 +1,12 @@
 SET(2GEOM_BOOST_PYTHON_SRC
+etc.cpp
 point.cpp
 interval.cpp
 transforms.cpp
 rect.cpp
 line.cpp
+circle.cpp
+ellipse.cpp
 conic.cpp
 crossing.cpp
 sbasis.cpp

@@ -122,6 +122,21 @@ double xAx_descr(xAx const & C) {
     return det3(mC);
 }
 
+void draw_ratquad(cairo_t*cr, RatQuad rq, double tol=1e-1) {
+    CubicBezier cb = rq.toCubic();
+    // I tried using the nearest point to 0.5 for the error, but the improvement was negligible
+    if(L2(cb.pointAt(0.5) - rq.pointAt(0.5)) > tol) {
+        RatQuad a, b;
+        rq.split(a, b);
+        draw_ratquad(cr, a, tol);
+        draw_ratquad(cr, b, tol);
+    } else {
+        cairo_curve(cr, cb);
+        //draw_cross(cr, cb.pointAt(0));
+        //draw_cross(cr, cb.pointAt(1));
+    }
+}
+
 
 class Conic5: public Toy {
     PointSetHandle path_handles;
@@ -153,7 +168,7 @@ class Conic5: public Toy {
         Point B = path_handles.pts[1];
         Point C = path_handles.pts[2];
       
-        if(0) {
+        if(1) {
             QuadraticBezier qb(A, B, C);
             //double abt = qb.nearestPoint(oncurve.pos);
             //oncurve.pos = qb.pointAt(abt);
@@ -163,6 +178,7 @@ class Conic5: public Toy {
             cairo_save(cr);
             cairo_set_source_rgba (cr, 0., 0., 0, 1);
             cairo_set_line_width (cr, 1);
+            draw_ratquad(cr, rq);
             //cairo_d2_sb(cr, rq.hermite());
             cairo_stroke(cr);
             cairo_restore(cr);

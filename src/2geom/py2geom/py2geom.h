@@ -30,9 +30,12 @@
 #define SEEN_PY2GEOM_H
 
 void wrap_point();
+void wrap_etc();
 void wrap_interval();
 void wrap_transforms();
 void wrap_rect();
+void wrap_circle();
+void wrap_ellipse();
 void wrap_sbasis();
 void wrap_bezier();
 void wrap_linear();
@@ -45,6 +48,14 @@ void wrap_shape();
 void wrap_line();
 void wrap_conic();
 void wrap_crossing();
+namespace Geom{
+class Point;
+class Linear;
+};
+#include <vector>
+typedef std::vector<Geom::Point > PointVec;
+typedef std::vector<double > DoubleVec;
+typedef std::vector<Geom::Linear> LinearVec;
 
 #endif
 /*

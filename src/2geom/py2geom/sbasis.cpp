@@ -89,18 +89,6 @@ object wrap_bounds_local(Geom::SBasis const& sb, Geom::Interval const & iv) {
 void wrap_sbasis() {
     //sbasis.h
 
-    // needed for roots
-    class_<std::vector<double> >("DoubleVec")
-        .def(vector_indexing_suite<std::vector<double> >())
-    ;
-    class_<std::vector<Geom::Point> >("PointVec")
-        .def(vector_indexing_suite<std::vector<Geom::Point> >())
-    ;
-    // sbasis is a subclass of
-    class_<std::vector<Geom::Linear> >("LinearVec")
-        .def(vector_indexing_suite<std::vector<Geom::Linear> >())
-    ;
-
     def("shift", (Geom::SBasis (*)(Geom::SBasis const &a, int sh))&Geom::shift);
     def("truncate", truncate_sbasis);
     def("multiply", multiply_sbasis);
