@@ -1,5 +1,4 @@
 #include <2geom/rtree.h>
-//#include <algorithm>
 #include <limits>
 
 /*
@@ -72,6 +71,7 @@ void RTree::insert( Rect const &r, int shape, unsigned min_nodes, unsigned max_n
                 bounding_box_a.unionWith( splitted_groups.first.children_nodes[i].first  );
             }
             std::pair<Rect, RTreeNode*> new_entry_a =  std::make_pair( bounding_box_a, &splitted_groups.first );
+            // new root is certainly non-leaf node (since splitted nodes are also non-leaves)
             new_root.children_nodes.push_back( new_entry_a );
 
             Rect bounding_box_b(splitted_groups.second.children_nodes[0].first );
@@ -87,7 +87,7 @@ void RTree::insert( Rect const &r, int shape, unsigned min_nodes, unsigned max_n
                 bounding_box_a.unionWith( splitted_groups.first.children_leaves[i].first  );
             }
             std::pair<Rect, RTreeNode*> new_entry_a =  std::make_pair( bounding_box_a, &splitted_groups.first );
-            // new root will now not be a leaf
+            // new root will now be a non-leaf (because splitted were leaves)
             new_root.children_nodes.push_back( new_entry_a );
 
             Rect bounding_box_b(splitted_groups.second.children_leaves[0].first );
@@ -148,16 +148,18 @@ RTreeNode* RTree::choose_leaf( Rect const &r, int shape ){
 
 /* 
 find_enlargement:
-find enlargement of area when a and b are unioned
+// TODO check carefully
+enlargement that "a" needs in order to incude "b"
+usually 
+b is the new rect we want to insert.
+a is the rect of the node we try to see if b should go in.
 */
-
+// union_rect.area() - a.area() - b.area();  old *stupid* version
 double RTree::find_enlargement( Rect const &a, Rect const &b ){
     
     Rect union_rect(a);
     union_rect.unionWith(b);
-    double enlargement = union_rect.area() - a.area() - b.area();
-
-    return enlargement;
+    return union_rect.area() - b.area();
 }
 
 /* I2 =========================================================================
@@ -167,8 +169,8 @@ QS1) Pick first entry for each group:
     Appy pick_seeds to choose 2 entries to be the first elements of the groups. Assign each one of 
     them to one group
 QS2) check if done:
-    if all entries have been assinged stop
-    if one group has so few entries that all the rest must be assignmed to it, in order for it to 
+    a) if all entries have been assinged stop
+    b) if one group has so few entries that all the rest must be assignmed to it, in order for it to 
     have the min number , assign them and stop
 QS3) select entry and assign:
     Inkvoke pick_next() to choose the next entry to assign. 
@@ -204,7 +206,14 @@ std::pair<RTreeNode, RTreeNode> RTree::quadratic_split( RTreeNode *s, unsigned m
         std::vector< std::pair<Rect, RTreeNode*> >::iterator it;
         unsigned num_of_not_assigned = s->children_nodes.size() - 2; // so far we have assinged 2 out of all
 
-        while( num_of_not_assigned ){
+        while( num_of_not_assigned ){// QS2 a
+            // QS2 b
+            /* 
+                we are on NON leaf node so children of splitted groups must be nodes
+
+                Check each group to see if one group has so few entries that all the rest must 
+                be assignmed to it, in order for it to have the min number.
+            */
             if( group_a.children_nodes.size() + num_of_not_assigned <= min_nodes ){
                 // add the non-assigned to group_a
                 for(unsigned i = 0; i < assigned_v.size(); i++){
@@ -228,7 +237,7 @@ std::pair<RTreeNode, RTreeNode> RTree::quadratic_split( RTreeNode *s, unsigned m
             }
 
             // QS3
-            std::pair<unsigned, qs_group_to_add>  next_element;
+            std::pair<unsigned, enum_add_to_group>  next_element;
             next_element = pick_next( group_a, group_b, s, assigned_v );
             unsigned element = next_element.first;
             if( next_element.second == ADD_TO_GROUP_A ){
@@ -252,14 +261,21 @@ std::pair<RTreeNode, RTreeNode> RTree::quadratic_split( RTreeNode *s, unsigned m
         assigned_v[ initial_seeds.first ] = true;
 
         // assign 2nd seed to group b
-        group_b.children_nodes.push_back( s->children_nodes[initial_seeds.second] );
+        group_b.children_leaves.push_back( s->children_leaves[initial_seeds.second] );
         assigned_v[ initial_seeds.second ] = true;
 
         // QS2 
         unsigned num_of_not_assigned = s->children_leaves.size() - 2; // so far we have assinged 2 out of all
         std::vector< std::pair<Rect, int> >::iterator it;
 
-        while(num_of_not_assigned){
+        while(num_of_not_assigned){// QS2 a
+            // QS2 b
+            /* 
+                we are on leaf node so children of splitted groups must be leaves
+
+                Check each group to see if one group has so few entries that all the rest must 
+                be assignmed to it, in order for it to have the min number.
+            */
             if( group_a.children_leaves.size() + num_of_not_assigned <= min_nodes ){
                 // add the non-assigned to group_a
                 for( unsigned i = 0; i < assigned_v.size(); i++ ){
@@ -283,7 +299,7 @@ std::pair<RTreeNode, RTreeNode> RTree::quadratic_split( RTreeNode *s, unsigned m
             }
 
             // QS3
-            std::pair<unsigned, qs_group_to_add>  next_element;
+            std::pair<unsigned, enum_add_to_group>  next_element;
             next_element = pick_next(group_a, group_b, s, assigned_v);
             unsigned element = next_element.first;
             if( next_element.second == ADD_TO_GROUP_A ){
@@ -383,12 +399,12 @@ PN2) Find entry with greatest preference for each group:
 
 */
 
-std::pair<unsigned, qs_group_to_add> RTree::pick_next( RTreeNode group_a, RTreeNode group_b, RTreeNode *s, std::vector<bool> assigned_v ){
+std::pair<unsigned, enum_add_to_group> RTree::pick_next( RTreeNode group_a, RTreeNode group_b, RTreeNode *s, std::vector<bool> assigned_v ){
     double max_increase_difference = std::numeric_limits<double>::min();
     unsigned max_increase_difference_node = 0;
     double current_increase_difference = 0; 
 
-    qs_group_to_add group_to_add;
+    enum_add_to_group group_to_add;
 
     // calculate the bounding boxes of the 2 new groups. This info isn't available, since they 
     // have no parent nodes (so that the parent node knows the bounding box)

@@ -48,7 +48,7 @@
 namespace Geom{
 
 // used only in pick_next( )
-enum qs_group_to_add { 
+enum enum_add_to_group { 
     ADD_TO_GROUP_A = 0, 
     ADD_TO_GROUP_B
 };
@@ -56,20 +56,24 @@ enum qs_group_to_add {
 class RTreeNode;
 
 /*
+R-Tree has 2 kinds of nodes
+* Leaves which store:
+  - the actual data
+  - the bounding box of the data
+* Non-Leaves which store:
+  - a child node
+  - the bounding box of the child node
 
-template <class T>
-class RTreeNode{    
-public:
-//    Rect bounding_box;
+    std::vector< std::pair<Rect, int> > children_leaves;
+    std::vector< std::pair<Rect, RTreeNode*> > children_nodes;
 
-    // T = int : leaf node. int is the "shape"
-    // T = RTreeNode* : non-leaf node
-    std::vector< < std::pair< Rect, T > > children;
+This cuases some code duplication in rtree.cpp. There are 2 cases:
+- we care whether we touch a leaf/non-leaf node, since we write data in the node, so we want to 
+  write the correct thing (int or RTreeNode*)
+- we do NOT care  whether we touch a leaf/non-leaf node, because we only read/write the bounding 
+  boxes which is the same in both cases.
 
-    RTreeNode(){
-    }
-
-};
+A better design would eliminate the duplication in the 2nd case, but we can't avoid the 1st probably.
 */
 
 class RTreeNode{    
@@ -107,7 +111,7 @@ private:
     // I2
     std::pair<RTreeNode, RTreeNode> quadratic_split( RTreeNode *s, unsigned min_nodes );
     std::pair<unsigned, unsigned> pick_seeds( RTreeNode *s );
-    std::pair<unsigned, qs_group_to_add>  pick_next( RTreeNode group_a, RTreeNode group_b, RTreeNode *s, std::vector<bool> assigned_v );
+    std::pair<unsigned, enum_add_to_group>  pick_next( RTreeNode group_a, RTreeNode group_b, RTreeNode *s, std::vector<bool> assigned_v );
 
     // I3
     bool adjust_tree(       RTreeNode* position, 
