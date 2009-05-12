@@ -51,6 +51,7 @@ hvlineseg-toy
 implicit-toy
 inner-product-clip
 #involute
+kinematic_templates
 line-toy
 load-svgd
 rect-toy
