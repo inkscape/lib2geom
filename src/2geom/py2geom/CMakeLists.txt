@@ -18,6 +18,7 @@ parser.cpp
 path.cpp
 ray.cpp
 shape.cpp
+convexcover.cpp
 py2geom.cpp
 # curves
 #curve.cpp

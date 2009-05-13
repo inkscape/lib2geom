@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 Ricardo Lafuente <r@sollec.org>
+ * Copyright 2009 Nathan Hurst <njh@njhurst.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it either under the terms of the GNU Lesser General Public
@@ -34,46 +34,53 @@
 #include "helpers.h"
 
 #include "../point.h"
-#include "../ellipse.h"
-#include "../circle.h"
 #include "../exception.h"
-#include "../d2.h"
+#include "../convex-cover.h"
 
 
-void  (Geom::Ellipse::*ellipse_set1)(double, double, double, double, double) = &Geom::Ellipse::set;
-void  (Geom::Ellipse::*ellipse_set2)(double, double, double, double, double, double) = &Geom::Ellipse::set;
-void  (Geom::Ellipse::*ellipse_set3)(std::vector<Geom::Point> const& points) = &Geom::Ellipse::set;
-
-// i can't get these to work
-//Geom::Point  (Geom::Ellipse::*center_point)() = (Geom::Point (*)() const)&Geom::Ellipse::center;
-// Geom::Coord  (Geom::Ellipse::*center_coord)(Geom::Dim2 const& d) = &Geom::Ellipse::center;
 
 using namespace boost::python;
 
-void wrap_ellipse() {
-    class_<Geom::Ellipse>("Ellipse", init<double, double, double, double, double>())
-        .def(init<double, double, double, double, double, double>())
-        // needs to be mapped to PointVec, but i can't figure out how
-        .def(init<PointVec>())
-        .def(init<Geom::Circle>())
-        
-        .def("set", ellipse_set1)
-        .def("set", ellipse_set2)
-        .def("set", ellipse_set3)
-        
-        .add_property("center", (Geom::Point (Geom::Ellipse::*)() const)&Geom::Ellipse::center)
-        // .def("center", center_coord)
-        
-        .def("ray", &Geom::Ellipse::ray)
-        .add_property("rot_angle", &Geom::Ellipse::rot_angle)
-        .def("implicit_form_coefficients", &Geom::Ellipse::implicit_form_coefficients)
-        .def("transformed", &Geom::Ellipse::transformed)
-        // requires SVGEllipticalArc
-        //.def("arc", &Geom::Ellipse::arc)
-        
-    ;
+PointVec ch_boundary(Geom::ConvexHull const &ch) {
+    return ch.boundary;
+}
 
-};
+int furthest_index(Geom::ConvexHull const &ch, Geom::Point const &p) {
+    return (int)(ch.furthest(p) - &ch.boundary[0]);
+}
+
+void wrap_convex_cover() {
+    class_<Geom::ConvexHull>("ConvexHull", init<>())
+        .def(init<PointVec>())
+      
+        .def("merge", &Geom::ConvexHull::merge)
+        .def("contains_point", &Geom::ConvexHull::contains_point)
+        .def("strict_contains_point", &Geom::ConvexHull::strict_contains_point)
+
+        .add_property("boundary", &ch_boundary)
+        .add_property("is_clockwise", &Geom::ConvexHull::is_clockwise)
+        .add_property("no_colinear_points", &Geom::ConvexHull::no_colinear_points)
+        .add_property("top_point_first", &Geom::ConvexHull::top_point_first)
+        .add_property("meets_invariants", &Geom::ConvexHull::meets_invariants)
+        .add_property("empty", &Geom::ConvexHull::empty)
+
+        .add_property("singular", &Geom::ConvexHull::singular)
+
+        .add_property("linear", &Geom::ConvexHull::linear)
+        .add_property("is_degenerate", &Geom::ConvexHull::is_degenerate)
+
+        .def("centroid_and_area", &Geom::ConvexHull::centroid_and_area)
+        .def("area", &Geom::ConvexHull::area)
+        .def("furthest", &furthest_index)
+
+        .def("is_left", &Geom::ConvexHull::is_left)
+        .def("is_strict_left", &Geom::ConvexHull::is_strict_left)
+        .def("find_left", &Geom::ConvexHull::find_left)
+        .def("find_strict_left", &Geom::ConvexHull::find_strict_left)
+        .def("narrowest_diameter", &Geom::ConvexHull::narrowest_diameter)
+        ;
+
+    };
 
 /*
   Local Variables:

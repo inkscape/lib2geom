@@ -1,9 +1,10 @@
 #include <2geom/toys/toy-framework-2.h>
 
 /*
+ * Copyright cilix42
  * Kinematic template toy. The aim is to manipulate the cursor movement
  * so that it stays closer to a given shape (e.g., a circle or a line).
- * For details, see http://hci.uwaterloo.ca/Publications/Papers/uist222-fun.pdf
+ * For details, see http://hci.uwaterloo.ca/Publications/Papers/uist222-fung.pdf
  *
  * Each kinematic template has a radius of action outside of which it
  * has no effect (this is indicated by a red circle).
@@ -17,19 +18,15 @@ using std::vector;
 using namespace Geom;
 using namespace std;
 
+// I feel a little uneasy using a Point for polar coords.
 Point cartesian_to_polar(Point const &pt, Point const &center = Point(0,0)) {
     Point rvec = pt - center;
-    double r = L2(rvec);
-    double theta = angle_between(rvec, Point(1,0));
-
-    return Point(r, theta);
+    // use atan2 unless you want to measure between two vectors
+    return Point(L2(rvec), atan2(rvec));
 }
 
 Point polar_to_cartesian(Point const &pt, Point const &center = Point(0,0)) {
-    double r = pt[0];
-    double theta = pt[1];
-
-    return center + r * Point(1,0) * Rotate(-theta); // FIXME: we shouldn't need _minus_ theta here, only theta
+    return center + Point(pt[0],0) * Rotate(pt[1]);
 }
 
 class KinematicTemplate {
@@ -162,6 +159,26 @@ GridKinematicTemplate::next_point(Point const &at, Point const &delta) {
 }
 
 
+// My idea was to compute the gradient of an arbitrary potential function as the transform.  Probably the right way to do this is to use the hessian as the integrand -- njh
+class ImplicitKinematicTemplate : public KinematicTemplate {
+public:
+    ImplicitKinematicTemplate() {}
+
+    virtual Point next_point(Point const &at, Point const &delta) {
+        if (L2(at + delta - center) < radius) {
+            // we are within the radius of action
+
+            // the 0.7dx+1 includes a weakened version of the constraining force
+            // I can't help but think this is really a form of differential constraint solver, let's discuss.
+            return at + delta*Scale(0.7*sin(at[0]/10.0)+1, 0.7*cos(at[1]/10.0)+1);
+        } else {
+            return at + delta;
+        }
+    }
+};
+
+
+
 vector<KinematicTemplate*> kin;
 KinematicTemplate *cur_kin;
 std::string cur_choice = "A";
@@ -175,6 +192,8 @@ class KinematicTemplatesToy : public Toy {
         KT_GRID,
         KT_CIRCLE,
         KT_RADIAL,
+        KT_CONVEYOR,
+        KT_IMP,
         TOTAL_ITEMS // this one must be the last item
     };
 
@@ -234,6 +253,8 @@ class KinematicTemplatesToy : public Toy {
         kin.push_back(new GridKinematicTemplate(0.1, 0.1));
         kin.push_back(new RadialKinematicTemplate(p1.pos, 0.1, 1.0));
         kin.push_back(new RadialKinematicTemplate(p1.pos, 1.0, 0.1));
+        kin.push_back(new KinematicTemplate(1.0, 0.1, 1, 0)); // horiz conveyor
+        kin.push_back(new ImplicitKinematicTemplate());
         cur_kin = kin[0];
         cur_kin->set_center(p1.pos);
 
@@ -285,28 +306,14 @@ class KinematicTemplatesToy : public Toy {
     void key_hit(GdkEventKey *e)
     {
         char choice = std::toupper(e->keyval);
+        // No need to copy and paste code
+        if(choice >= 'A' and choice < 'A' + TOTAL_ITEMS) {
+            cur_kin = kin[choice - 'A'];
+            cur_choice = choice;
+
+        } else
         switch (choice)
         {
-            case 'A':
-                cur_kin = kin[0];
-                cur_choice = choice;
-                break;
-            case 'B':
-                cur_kin = kin[1];
-                cur_choice = choice;
-                break;
-            case 'C':
-                cur_kin = kin[2];
-                cur_choice = choice;
-                break;
-            case 'D':
-                cur_kin = kin[3];
-                cur_choice = choice;
-                break;
-            case 'E':
-                cur_kin = kin[4];
-                cur_choice = choice;
-                break;
             case '+':
                 cur_kin->enlarge_radius_of_action(5);
                 break;
@@ -330,12 +337,14 @@ const char* KinematicTemplatesToy::menu_items[] =
     "vertical",
     "grid",
     "circular",
-    "radial"
+    "radial",
+    "conveyor",
+    "implicit"
 };
 
 const char KinematicTemplatesToy::keys[] =
 {
-     'A', 'B', 'C', 'D', 'E'
+    'A', 'B', 'C', 'D', 'E', 'F', 'G'
 };
 
 int main(int argc, char **argv) {

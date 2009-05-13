@@ -70,6 +70,7 @@ BOOST_PYTHON_MODULE(_py2geom)
     wrap_ray();
     wrap_shape();
     wrap_crossing();
+    wrap_convex_cover();
 
 }
 

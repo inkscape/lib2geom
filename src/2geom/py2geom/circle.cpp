@@ -42,7 +42,7 @@ void  (Geom::Circle::*circle_set2)(std::vector<Geom::Point> const& points) = &Ge
 
 // i can't get these to work
 //Geom::Point  (Geom::Circle::*center_point)() = (Geom::Point (*)() const)&Geom::Circle::center;
-// Geom::Coord  (Geom::Circle::*center_coord)(Geom::Dim2 const& d) = &Geom::Circle::center;
+//Geom::Coord  (Geom::Circle::*center_coord)(Geom::Dim2 const& d) = &Geom::Circle::center;
 
 using namespace boost::python;
 
@@ -57,9 +57,8 @@ void wrap_circle() {
         .def("set", circle_set2)
         .add_property("ray", &Geom::Circle::ray)
         
-        // .add_property("center", center_point)
-        // .def("center", center_coord)        
-        
+        .add_property("center", (Geom::Point (Geom::Circle::*)() const )&Geom::Circle::center)
+        //.def("center", center)        
         // requires SVGEllipticalArc
         //.def("arc", &Geom::Circle::arc)
     ;
