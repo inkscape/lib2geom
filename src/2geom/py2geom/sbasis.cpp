@@ -72,10 +72,17 @@ Geom::Bezier sbasis_to_returned_bezier (Geom::SBasis const& sb, size_t sz = 0) {
     return res;
 }
 
-object wrap_bounds_fast(Geom::SBasis const& sb) {
+/*object wrap_bounds_fast(Geom::SBasis const& sb) {
     Geom::OptInterval oi = bounds_fast(sb);
     return oi?object(*oi):object();
+    }*/
+
+template <typename T, typename target_type>
+object wrap_bounds_fast(T const& sb) {
+    target_type oi = bounds_fast(sb);
+    return oi?object(*oi):object();
 }
+
 
 object wrap_bounds_exact(Geom::SBasis const& sb) {
     Geom::OptInterval oi = bounds_exact(sb);
@@ -104,7 +111,7 @@ void wrap_sbasis() {
     //def("cos", (Geom::SBasis (*)(Geom::SBasis const &, int ))&Geom::cos);
     def("reverse", (Geom::SBasis (*)(Geom::SBasis const &))&Geom::reverse);
     def("roots", (std::vector<double> (*)(Geom::SBasis const &))&Geom::roots);
-    def("bounds_fast", &wrap_bounds_fast);
+    def("bounds_fast", &wrap_bounds_fast<Geom::SBasis, Geom::OptInterval>);
     def("bounds_exact", &wrap_bounds_exact);
     def("bounds_local", &wrap_bounds_local);
     def("sbasis_to_bezier", &::sbasis_to_returned_bezier);
