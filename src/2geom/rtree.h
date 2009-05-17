@@ -67,7 +67,7 @@ R-Tree has 2 kinds of nodes
     std::vector< std::pair<Rect, int> > children_leaves;
     std::vector< std::pair<Rect, RTreeNode*> > children_nodes;
 
-This cuases some code duplication in rtree.cpp. There are 2 cases:
+This causes some code duplication in rtree.cpp. There are 2 cases:
 - we care whether we touch a leaf/non-leaf node, since we write data in the node, so we want to 
   write the correct thing (int or RTreeNode*)
 - we do NOT care  whether we touch a leaf/non-leaf node, because we only read/write the bounding 
@@ -75,6 +75,7 @@ This cuases some code duplication in rtree.cpp. There are 2 cases:
 
 A better design would eliminate the duplication in the 2nd case, but we can't avoid the 1st probably.
 */
+
 
 class RTreeNode{    
 public:
@@ -97,15 +98,18 @@ public:
     unsigned max_nodes; // allow +1 (used during insert)
     unsigned min_nodes;
 
-    RTree( int max_n, int min_n ): 
-        root(0), max_nodes( max_n ), min_nodes( min_n ) {
-    }
+    RTree( unsigned min_n, unsigned max_n ): 
+        root(0), max_nodes( max_n ), min_nodes( min_n )
+    {}
 
-    void insert( Rect const &r, int shape, unsigned min_nodes, unsigned max_nodes );
+    void insert( Rect const &r, int shape);
+
+    void print_tree(RTreeNode* subtree_root, int depth);
 
 private:
+    void insert( Rect const &r, int shape, unsigned min_nodes, unsigned max_nodes );
     // I1
-    RTreeNode* choose_leaf( Rect const &r, int shape );
+    RTreeNode* choose_leaf( Rect const &r );
     double find_enlargement( Rect const &a, Rect const &b );
 
     // I2
@@ -116,10 +120,11 @@ private:
     // I3
     bool adjust_tree(       RTreeNode* position, 
                             std::pair<RTreeNode, RTreeNode>  &splitted_groups, 
-                            bool split_performed, 
+                            //bool split_performed, 
                             unsigned min_nodes,
                             unsigned max_nodes );
     RTreeNode* find_parent( RTreeNode* subtree_root, Rect search_area, RTreeNode* wanted );
+
 };
 
 
