@@ -115,7 +115,7 @@ private:
     // I2
     std::pair<RTreeNode, RTreeNode> quadratic_split( RTreeNode *s, unsigned min_nodes );
     std::pair<unsigned, unsigned> pick_seeds( RTreeNode *s );
-    std::pair<unsigned, enum_add_to_group>  pick_next( RTreeNode group_a, RTreeNode group_b, RTreeNode *s, std::vector<bool> assigned_v );
+    std::pair<unsigned, enum_add_to_group>  pick_next( RTreeNode group_a, RTreeNode group_b, RTreeNode *s, std::vector<bool> &assigned_v );
 
     // I3
     bool adjust_tree(       RTreeNode* position, 
