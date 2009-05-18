@@ -64,8 +64,8 @@ void RTree::insert( Rect const &r, int shape, unsigned min_nodes, unsigned max_n
 
     //bool split_performed = false;
     std::pair<RTreeNode, RTreeNode> splitted_groups;
-
-    // position IS a leaf node (choose_leaf)
+    bool split_performed = false;
+    // position IS a leaf node (due to choose_leaf)
     if( position->children_leaves.size() < max_nodes ){
         _RTREE_PRINT("I2 no split: " << position->children_leaves.size() );     // I2
         position->children_leaves.push_back( std::make_pair( r, shape) );
@@ -76,59 +76,92 @@ void RTree::insert( Rect const &r, int shape, unsigned min_nodes, unsigned max_n
         // put new element in node, and later on we will split the node.
         position->children_leaves.push_back( std::make_pair( r, shape) ); 
         splitted_groups = quadratic_split( position, min_nodes );
+        split_performed = true;
 
-        _RTREE_PRINT("I3");    // I3
-        bool root_split_performed = adjust_tree( position, splitted_groups, min_nodes, max_nodes);
-        _RTREE_PRINT("root split: " << root_split_performed);
+        _RTREE_PRINT("      group A");
+        print_tree( &splitted_groups.first , 3 );
+        _RTREE_PRINT("      group B");
+        print_tree( &splitted_groups.second , 3 );
 
-
-        _RTREE_PRINT("I4");    // I4
-        // TODO check this setp
-        if( root_split_performed ){
-            RTreeNode* new_root = new RTreeNode();
-            
-            if( splitted_groups.first.children_nodes.size() > 0 ){
-                _RTREE_PRINT("  non leaf");     // non leaf node: splitted nodes 
-
-                Rect bounding_box_a(splitted_groups.first.children_nodes[0].first );
-                for(unsigned i=1; i < splitted_groups.first.children_nodes.size(); i++){
-                    bounding_box_a.unionWith( splitted_groups.first.children_nodes[i].first  );
-                }
-                std::pair<Rect, RTreeNode*> new_entry_a =  std::make_pair( bounding_box_a, &splitted_groups.first );
-                // new root is certainly non-leaf node (since splitted nodes are also non-leaves)
-                new_root->children_nodes.push_back( new_entry_a );
-
-                Rect bounding_box_b(splitted_groups.second.children_nodes[0].first );
-                for(unsigned i=1; i < splitted_groups.second.children_nodes.size(); i++){
-                    bounding_box_b.unionWith( splitted_groups.second.children_nodes[i].first  );
-                }
-                std::pair<Rect, RTreeNode*> new_entry_b =  std::make_pair( bounding_box_b, &splitted_groups.second );
-                new_root->children_nodes.push_back( new_entry_b );
-            }
-            else{
-                _RTREE_PRINT("  leaf");     // leaf node: splitted nodes 
-
-                Rect bounding_box_a(splitted_groups.first.children_leaves[0].first );
-                for(unsigned i=1; i < splitted_groups.first.children_leaves.size(); i++){
-                    bounding_box_a.unionWith( splitted_groups.first.children_leaves[i].first  );
-                }
-                std::pair<Rect, RTreeNode*> new_entry_a =  std::make_pair( bounding_box_a, &splitted_groups.first );
-                // new root will now be a non-leaf (because splitted were leaves)
-                new_root->children_nodes.push_back( new_entry_a );
-
-                Rect bounding_box_b(splitted_groups.second.children_leaves[0].first );
-                for(unsigned i=1; i < splitted_groups.second.children_leaves.size(); i++){
-                    bounding_box_b.unionWith( splitted_groups.second.children_leaves[i].first  );
-                }
-                std::pair<Rect, RTreeNode*> new_entry_b =  std::make_pair( bounding_box_b, &splitted_groups.second );
-                // new root will now not be a leaf
-                new_root->children_nodes.push_back( new_entry_b );
-                
-            }
-            root = new_root; 
-        }
     }
 
+    _RTREE_PRINT("I3");    // I3
+    print_tree( root, 0 );
+    bool root_split_performed = adjust_tree( position, splitted_groups, split_performed, min_nodes, max_nodes);
+    _RTREE_PRINT("root split: " << root_split_performed);
+
+
+/*        _RTREE_PRINT("group a");
+    print_tree( &splitted_groups.first , 0 );
+    _RTREE_PRINT("group b");
+    print_tree( &splitted_groups.second , 0 );*/
+    _RTREE_PRINT("TREE:");
+    print_tree( root , 0 );
+    _RTREE_PRINT("I4");    // I4
+    // TODO check this setp
+    if( root_split_performed ){
+
+
+        RTreeNode* new_node = new RTreeNode();
+        Rect new_entry_bounding;
+        std::pair<Rect, RTreeNode*> new_entry = create_new_node_from_rtreenode( new_entry_bounding, new_node, &splitted_groups.second );
+
+        RTreeNode* new_node_old_root = new RTreeNode();
+        Rect old_root_bb;
+        std::pair<Rect, RTreeNode*> new_entry_old_root = create_new_node_from_rtreenode( old_root_bb, new_node_old_root, root );
+
+        // new root is by definition non-leaf
+        RTreeNode* new_root = new RTreeNode();
+        new_root->children_nodes.push_back( new_entry_old_root );
+        new_root->children_nodes.push_back( new_entry  );
+
+        root = new_root; 
+/*
+        RTreeNode* new_root = new RTreeNode();
+        
+        // check non leaf/leaf. both groups are either leaf or non leaf so check just one (group a)
+        if( splitted_groups.first.children_nodes.size() > 0 ){
+            _RTREE_PRINT("  non leaf");     // non leaf node: splitted nodes 
+
+            Rect bounding_box_a(splitted_groups.first.children_nodes[0].first );
+            for(unsigned i=1; i < splitted_groups.first.children_nodes.size(); i++){
+                bounding_box_a.unionWith( splitted_groups.first.children_nodes[i].first  );
+            }
+            std::pair<Rect, RTreeNode*> new_entry_a =  std::make_pair( bounding_box_a, &splitted_groups.first );
+            // new root is certainly non-leaf node (since splitted nodes are also non-leaves)
+            new_root->children_nodes.push_back( new_entry_a );
+
+            Rect bounding_box_b(splitted_groups.second.children_nodes[0].first );
+            for(unsigned i=1; i < splitted_groups.second.children_nodes.size(); i++){
+                bounding_box_b.unionWith( splitted_groups.second.children_nodes[i].first  );
+            }
+            std::pair<Rect, RTreeNode*> new_entry_b =  std::make_pair( bounding_box_b, &splitted_groups.second );
+            new_root->children_nodes.push_back( new_entry_b );
+        }
+        else{
+            _RTREE_PRINT("  leaf");     // leaf node: splitted nodes 
+
+            Rect bounding_box_a(splitted_groups.first.children_leaves[0].first );
+            for(unsigned i=1; i < splitted_groups.first.children_leaves.size(); i++){
+                bounding_box_a.unionWith( splitted_groups.first.children_leaves[i].first  );
+            }
+            std::pair<Rect, RTreeNode*> new_entry_a =  std::make_pair( bounding_box_a, &splitted_groups.first );
+            // new root will now be a non-leaf (because splitted were leaves)
+            new_root->children_nodes.push_back( new_entry_a );
+
+            Rect bounding_box_b(splitted_groups.second.children_leaves[0].first );
+            for(unsigned i=1; i < splitted_groups.second.children_leaves.size(); i++){
+                bounding_box_b.unionWith( splitted_groups.second.children_leaves[i].first  );
+            }
+            std::pair<Rect, RTreeNode*> new_entry_b =  std::make_pair( bounding_box_b, &splitted_groups.second );
+            // new root will now not be a leaf
+            new_root->children_nodes.push_back( new_entry_b );
+            
+        }
+
+        root = new_root; 
+*/
+    }
     _RTREE_PRINT("done");
 }
 
@@ -559,119 +592,89 @@ AT1) Initialize:
 AT2) check if done:
     IF N is root stop
 AT3) adjust covering rectangle in parent entry
-    Let P be the parent of N
-    Let EN be the N's entry in P
-    Adjust EN bounding box so that it tightly enclosses all entry rectangles in N
+    1) Let P be the parent of N
+    2) Let EN be the N's entry in P
+    3) Adjust EN bounding box so that it tightly enclosses all entry rectangles in N
 AT4) Propagate node split upward
-    IF N has a partner NN resulting from an earlier split create a new entry ENN with ENN "p" 
-    pointing to NN and ENN bounding box enclosing all rectangles in NN
+    IF N has a partner NN resulting from an earlier split 
+        create a new entry ENN with ENN "p" pointing to NN and ENN bounding box enclosing all
+        rectangles in NN
+
         IF there is room in P add NN
         ELSE invoke split_node to produce P an PP containing ENN and all P's old entries.
 AT5) Move up to next level
     Set N=P, 
     IF a split occurred, set NN=PP 
-    goto AT1 (originally it was goto AT2)
+    goto AT2
 */
 
 bool RTree::adjust_tree(    RTreeNode* position, 
-                            std::pair<RTreeNode, RTreeNode>  &splitted_groups, 
-                            //bool split_performed, 
+                            std::pair<RTreeNode, RTreeNode>  &splitted_groups, // modified: it holds the last split group
+                            bool initial_split_performed, 
                             unsigned min_nodes,
                             unsigned max_nodes )
 {
     RTreeNode* parent;
+    bool split_performed = initial_split_performed;
     bool root_split_performed = false;
-    bool split_performed = true;
-    // pick randomly, the 1st entry of the node. Search for this spatial area in the tree. From the
-    // results find the exact node.
- 
 
-//TODO problem in here. check again, 
-// carefully restructure the leaf/nonleaf 
-
-    _RTREE_PRINT("  adjust_tree");    
+    _RTREE_PRINT("  adjust_tree");   
+    _RTREE_PRINT("  AT1");
+    if( split_performed ){
+        copy_group_a_to_existing_node( position, splitted_groups.first );
+    }
+  
     while( true ){
-
-        _RTREE_PRINT("  AT2");    // AT2  
 
         // check for loop BREAK
         if( position == root ){
-            _RTREE_PRINT("  AT1: found root");    // repeat AT1 from below!!!
+            _RTREE_PRINT("  AT2: found root");
             if( split_performed ){
-                
-                // clear existing node and put there all the nodes of group_a
-                if( position->children_nodes.size() > 0 ){
-                    _RTREE_PRINT("  non leaf");    // non leaf-node
-                    position->children_nodes.clear();
-                    for( unsigned i=0; i < splitted_groups.first.children_nodes.size(); i++ ){
-                        position->children_nodes.push_back( splitted_groups.first.children_nodes[i] );
-                    }
-                }
-                else{
-                    _RTREE_PRINT("  leaf node");     // leaf-node
-                    position->children_leaves.clear();
-                    _RTREE_PRINT("  clear");     // leaf-node
-                    for( unsigned i=0; i < splitted_groups.first.children_leaves.size(); i++ ){
-                        position->children_leaves.push_back( splitted_groups.first.children_leaves[i] );
-                    }
-                }
-            }
-            root_split_performed = true;
+                root_split_performed = true;
+            }            
             break;
         }
 
-        _RTREE_PRINT("  AT1");    // AT1. repeat A1 above!!!
-        if( split_performed ){
-            
-            // clear existing node and put there all the nodes of group_a
-            if( position->children_nodes.size() > 0 ){
-                _RTREE_PRINT("  PS1");    // non leaf-node: position
-                position->children_nodes.clear();
-                for( unsigned i=0; i < splitted_groups.first.children_nodes.size(); i++ ){
-                    position->children_nodes.push_back( splitted_groups.first.children_nodes[i] );
-                }
-            }
-            else{
-                _RTREE_PRINT("  PS1");    // leaf-node: positions
-                position->children_leaves.clear();
-                for( unsigned i=0; i < splitted_groups.first.children_leaves.size(); i++ ){
-                    position->children_leaves.push_back( splitted_groups.first.children_leaves[i] );
-                }
-            }
-        }
-        _RTREE_PRINT("  AT3");    // AT3
+
+        /* 
+            pick randomly, let's say the 1st entry of the current node. 
+            Search for this spatial area in the tree, and stop to the parent node.
+            Then find position of current node pointer, in the parent node.
+        */
+        _RTREE_PRINT("  AT3.1");    // AT3.1    Let P be the parent of N
         parent = find_parent( root, position->children_nodes[0].first, position);
-        unsigned child_in_parent;
+        unsigned child_in_parent; // the element in parent node that points to current posistion
+        // parent is a non-leaf, by definition
+        _RTREE_PRINT("  AT3.2");    // AT3.2    Let EN be the N's entry in P
         for( child_in_parent = 0; child_in_parent < parent->children_nodes.size(); child_in_parent++ ){
-            if( parent->children_nodes[child_in_parent].second == position){
+            if( parent->children_nodes[ child_in_parent ].second == position){
                 break;
             }
         }
-        _RTREE_PRINT("  recalculate bounding box of parent ");    
+   
+        _RTREE_PRINT("  AT3.3");    // AT3.2    Adjust EN bounding box so that it tightly enclosses all entry rectangles in N
         if( position->children_nodes.size() > 0 ){
-            _RTREE_PRINT("  non leaf");    // non leaf-node: position
+            _RTREE_PRINT("  non-leaf: recalculate bounding box of parent "); // non leaf-node: position
             parent->children_nodes[ child_in_parent ].first = Rect( position->children_nodes[0].first );
             for( unsigned i=1; i < position->children_nodes.size(); i++ ){
                 parent->children_nodes[ child_in_parent ].first.unionWith( position->children_nodes[i].first );
             }
         }
         else{ 
-            _RTREE_PRINT("  leaf");    // leaf-node: position
+            _RTREE_PRINT("  leaf: recalculate bounding box of parent ");    // leaf-node: position
             parent->children_nodes[ child_in_parent ].first = Rect( position->children_leaves[0].first );
             for( unsigned i=1; i < position->children_leaves.size(); i++ ){
                 parent->children_leaves[ child_in_parent ].first.unionWith( position->children_leaves[i].first );
             }
         }
 
+
         _RTREE_PRINT("  AT4");    // AT4
         if( split_performed ){
-            // found bounding box of new entry (group_b)
-            Rect new_entry_bounding( splitted_groups.second.children_nodes[0].first );
-            for(unsigned i = 0; i < splitted_groups.second.children_nodes.size(); i++ ){
-                new_entry_bounding.unionWith( splitted_groups.second.children_nodes[i].first );
-            }
-            // create new entry (group_b)
-            std::pair<Rect, RTreeNode*> new_entry = std::make_pair( new_entry_bounding, &splitted_groups.second );
+            // create new node (from group_b) 
+            RTreeNode* new_node = new RTreeNode();
+            Rect new_entry_bounding;
+            std::pair<Rect, RTreeNode*> new_entry = create_new_node_from_rtreenode( new_entry_bounding, new_node, &splitted_groups.second );
             
             // install new entry (group_b)
             if( parent->children_nodes.size() < max_nodes ){
@@ -679,10 +682,11 @@ bool RTree::adjust_tree(    RTreeNode* position,
                 split_performed = false;
             }
             else{
-                splitted_groups = quadratic_split( parent, min_nodes );
+                parent->children_nodes.push_back( new_entry );
+                splitted_groups = quadratic_split( parent, min_nodes ); // AT5
                 split_performed = true;
             }
-            position = parent;
+            position = parent; // AT5
         }
     }
 
@@ -723,6 +727,49 @@ RTreeNode* RTree::find_parent( RTreeNode* subtree_root,
 }
 
 
+void RTree::copy_group_a_to_existing_node( RTreeNode *position, RTreeNode group_a ){
+    // clear position (the one that was split) and put there all the nodes of group_a
+    if( position->children_nodes.size() > 0 ){
+        _RTREE_PRINT("  AT1: install group A to existing non-leaf node");    // non leaf-node: position
+        position->children_nodes.clear();
+        for( unsigned i=0; i < group_a.children_nodes.size(); i++ ){
+            position->children_nodes.push_back( group_a.children_nodes[i] );
+        }
+    }
+    else{
+        _RTREE_PRINT("  AT1: install group A to existing leaf node");    // leaf-node: positions
+        position->children_leaves.clear();
+        for( unsigned i=0; i < group_a.children_leaves.size(); i++ ){
+            position->children_leaves.push_back( group_a.children_leaves[i] );
+        }
+    }
+}
+
+std::pair<Rect, RTreeNode*> RTree::create_new_node_from_rtreenode( Rect &new_entry_bounding, RTreeNode* new_node, RTreeNode *rtreenode ){
+    if( rtreenode->children_nodes.size() > 0 ){ // non leaf: group_b
+        for( unsigned i=0; i < rtreenode->children_nodes.size(); i++ ){
+            new_node->children_nodes.push_back( rtreenode->children_nodes[i] );
+        }
+
+        // found bounding box of new entry
+        new_entry_bounding = Rect( new_node->children_nodes[0].first );
+        for(unsigned i = 1; i < new_node->children_nodes.size(); i++ ){
+            new_entry_bounding.unionWith( new_node->children_nodes[ i ].first );
+        }
+    }
+    else{  // non leaf: group_b
+        for( unsigned i=0; i < rtreenode->children_leaves.size(); i++ ){
+            new_node->children_leaves.push_back( rtreenode->children_leaves[i] );
+        }
+
+        // found bounding box of new entry
+        new_entry_bounding = Rect( new_node->children_leaves[0].first );
+        for(unsigned i = 1; i < new_node->children_leaves.size(); i++ ){
+            new_entry_bounding.unionWith( new_node->children_leaves[ i ].first );
+        }
+    } 
+    return std::make_pair( new_entry_bounding, new_node );
+}
 
 
 /*
@@ -732,35 +779,22 @@ RTreeNode* RTree::find_parent( RTreeNode* subtree_root,
     based on ordered tree walking 
 */
 void RTree::print_tree(RTreeNode* subtree_root, int depth){
-    for(int j=0; j< depth; j++){
-        std::cout << "  ";
-    }
-    _RTREE_PRINT("print_tree");// leaf node
 
     if( subtree_root->children_nodes.size() > 0 ){ 
-        for(int j=0; j< depth; j++){
-            std::cout << "  ";
-        }
-        _RTREE_PRINT("non leaf");// non leaf node
 
         // descend in each one of the elements and call print_tree
         for( unsigned i=0; i < subtree_root->children_nodes.size(); i++ ){
             //print spaces for indentation
-            for(int j=0; j< depth; j++){
+            for(int j=0; j < depth; j++){
                 std::cout << "  ";
             }
             std::cout << subtree_root->children_nodes[i].first << std::endl;
-            print_tree( subtree_root->children_nodes[i].second, depth++);
+            //_RTREE_PRINT("descend");// non leaf node
+            print_tree( subtree_root->children_nodes[i].second, depth+1);
         }
     }
     else{   
-        for(int j=0; j< depth; j++){
-            std::cout << "  ";
-        }
-         _RTREE_PRINT("leaf");//leaf node
-
-        //print spaces for indentation
-        for(int j=0; j< depth; j++){
+       for(int j=0; j < depth; j++){
             std::cout << "  " ;
         }
         std::cout << subtree_root->children_leaves.size() << ": ";

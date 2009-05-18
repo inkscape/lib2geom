@@ -53,6 +53,12 @@ enum enum_add_to_group {
     ADD_TO_GROUP_B
 };
 
+
+enum split_strategy { 
+    QUADRATIC_SPIT = 0,
+    LINEAR_COST
+};
+
 class RTreeNode;
 
 /*
@@ -60,12 +66,12 @@ R-Tree has 2 kinds of nodes
 * Leaves which store:
   - the actual data
   - the bounding box of the data
+std::vector< std::pair<Rect, int> > children_leaves;
+
 * Non-Leaves which store:
   - a child node
   - the bounding box of the child node
-
-    std::vector< std::pair<Rect, int> > children_leaves;
-    std::vector< std::pair<Rect, RTreeNode*> > children_nodes;
+std::vector< std::pair<Rect, RTreeNode*> > children_nodes;
 
 This causes some code duplication in rtree.cpp. There are 2 cases:
 - we care whether we touch a leaf/non-leaf node, since we write data in the node, so we want to 
@@ -73,6 +79,7 @@ This causes some code duplication in rtree.cpp. There are 2 cases:
 - we do NOT care  whether we touch a leaf/non-leaf node, because we only read/write the bounding 
   boxes which is the same in both cases.
 
+TODO:
 A better design would eliminate the duplication in the 2nd case, but we can't avoid the 1st probably.
 */
 
@@ -83,10 +90,8 @@ public:
     std::vector< std::pair<Rect, int> > children_leaves; // if this is empty, then node is leaf-node
     std::vector< std::pair<Rect, RTreeNode*> > children_nodes;  // if this is empty, then node is NON-leaf node
 
-    // TODO can this design be improved ???
-    
-    RTreeNode(){
-    }
+    RTreeNode(): children_leaves(0), children_nodes(0)
+    {}
 
 };
 
@@ -113,17 +118,21 @@ private:
     double find_enlargement( Rect const &a, Rect const &b );
 
     // I2
+        // QUADRATIC_SPIT
     std::pair<RTreeNode, RTreeNode> quadratic_split( RTreeNode *s, unsigned min_nodes );
     std::pair<unsigned, unsigned> pick_seeds( RTreeNode *s );
     std::pair<unsigned, enum_add_to_group>  pick_next( RTreeNode group_a, RTreeNode group_b, RTreeNode *s, std::vector<bool> &assigned_v );
+        // others...
 
     // I3
     bool adjust_tree(       RTreeNode* position, 
                             std::pair<RTreeNode, RTreeNode>  &splitted_groups, 
-                            //bool split_performed, 
+                            bool split_performed, 
                             unsigned min_nodes,
                             unsigned max_nodes );
     RTreeNode* find_parent( RTreeNode* subtree_root, Rect search_area, RTreeNode* wanted );
+    void copy_group_a_to_existing_node( RTreeNode *position, RTreeNode group_a );
+    std::pair<Rect, RTreeNode*> create_new_node_from_rtreenode( Rect &new_entry_bounding, RTreeNode* new_node, RTreeNode *rtreenode );
 
 };
 
