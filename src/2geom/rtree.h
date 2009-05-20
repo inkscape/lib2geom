@@ -86,7 +86,8 @@ A better design would eliminate the duplication in the 2nd case, but we can't av
 
 class RTreeNode{    
 public:
-    // first: bounding box, second: "data" (leaf-node) or node (NON leaf-node)
+    // first: bounding box
+    // second: "data" (leaf-node) or node (NON leaf-node)
     std::vector< std::pair<Rect, int> > children_leaves; // if this is empty, then node is leaf-node
     std::vector< std::pair<Rect, RTreeNode*> > children_nodes;  // if this is empty, then node is NON-leaf node
 

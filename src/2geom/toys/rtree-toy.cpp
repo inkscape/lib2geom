@@ -36,43 +36,46 @@
 #include <2geom/toys/toy-framework-2.h>
 
 #include <time.h>
-using std::vector;
+#include <vector>
+
+//using std::vector;
 using namespace Geom;
 using namespace std;
 
 
+
 class RTreeToy: public Toy 
 {
+	
     PointSetHandle handle_set;
+
 	Geom::Point starting_point;		// during click and drag: start point of click
 	Geom::Point ending_point;		// during click and drag: end point of click (release)
 	Geom::Point highlight_point;	// not used
 
-	Geom::RTree rtree;
-	//RedBlack* search_result;
-	//RedBlack temp_deleted_node;
-
 	// colors we are going to use for different purposes
-	colour color_shape, color_shape_guide,
-		color_rtree_l0,
-		color_rtree_l1,
-		color_rtree_l2,
-		color_rtree_l3 
-	; 				
-
+	colour color_shape, color_shape_guide;
 	colour color_select_area, color_select_area_guide;	// red(a=0.6), red
+
 
 	int alter_existing_rect;
 	int add_new_rect;
 
 	Rect rect_chosen;	// the rectangle of the search area
 	Rect dummy_draw;	// the "helper" rectangle that is shown during the click and drag (before the mouse release)
+
+	// save the bounding boxes of the tree in here
+	std::vector< std::vector< Rect > > rects_level;
+	std::vector<colour> color_rtree_level;
+
 	int mode;			// insert/alter, search, delete  modes
 	string help_str, out_str, status_str;
 
 	// printing of the tree
-	int help_counter;	// the "x" of the label of each node
+	//int help_counter;	// the "x" of the label of each node
 	static const int label_size = 15 ; // size the label of each node
+
+	Geom::RTree rtree;
 
 	// used for the keys that switch between modes
     enum menu_item_t
@@ -87,15 +90,15 @@ class RTreeToy: public Toy
 
 
 
-    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
+    void draw( cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream ) {
         cairo_set_line_width( cr, 1 );
 
 		// draw the rects that we have in the handles
 		for( unsigned i=0; i<handle_set.pts.size(); i=i+2 ){
-	        Rect r1( handle_set.pts[i], handle_set.pts[i+1] );
+	        Rect r1( handle_set.pts[ i ], handle_set.pts[ i+1 ] );
 		    cairo_rectangle( cr, r1 );
 		}
-	    cairo_set_source_rgba( cr, color_shape);
+	    cairo_set_source_rgba( cr, color_shape );
 		cairo_stroke( cr );
 
 		// draw a rect if we click & drag (so that we know what we are going to create)
@@ -103,7 +106,7 @@ class RTreeToy: public Toy
 			dummy_draw = Rect( starting_point, ending_point );
 			cairo_rectangle( cr, dummy_draw );
 			if( mode == 0){
-				cairo_set_source_rgba( cr, color_shape_guide);
+				cairo_set_source_rgba( cr, color_shape_guide );
 			}
 			else if( mode == 1){
 			    cairo_set_source_rgba( cr, color_select_area_guide );
@@ -113,32 +116,38 @@ class RTreeToy: public Toy
 
 		// draw a rect for the search area
 		cairo_rectangle( cr, rect_chosen );
-	    cairo_set_source_rgba( cr, color_select_area);
+	    cairo_set_source_rgba( cr, color_select_area );
 		cairo_stroke( cr );
 	
 		*notify << status_str << std::endl << out_str << std::endl << help_str;
 
+		for(unsigned color=0; color < rects_level.size(); color++ ){
+			for(unsigned j=0; j < rects_level[color].size(); j++ ){
+				cairo_rectangle( cr, rects_level[color][j] );
+			}
+			cairo_set_source_rgba( cr, color_rtree_level[color] );
+			cairo_stroke( cr );
+		}
+
 		Toy::draw( cr, notify, width, height, save,timer_stream );
-		//draw_tree_in_toy( cr ,rbtree_x.root, 0);
-		//help_counter=0;
     }        
     
-    void mouse_moved(GdkEventMotion* e){
+    void mouse_moved( GdkEventMotion* e ){
 		if( !( alter_existing_rect && mode == 1 ) ){
-			Toy::mouse_moved(e);
+			Toy::mouse_moved( e );
 		}
 
 		if(add_new_rect){
-			ending_point = Point(e->x, e->y);
+			ending_point = Point( e->x, e->y );
 		}
 	}
 
-    void mouse_pressed(GdkEventButton* e) {
-		Toy::mouse_pressed(e);
+    void mouse_pressed( GdkEventButton* e ) {
+		Toy::mouse_pressed( e );
 		if(e->button == 1){		// left mouse button
 			if( mode == 0 ){	// mode: insert / alter
 				if(!selected) {
-					starting_point = Point(e->x, e->y);
+					starting_point = Point( e->x, e->y );
 					ending_point = starting_point;
 					add_new_rect = 1;
 				}
@@ -152,7 +161,7 @@ class RTreeToy: public Toy
 			}
 			else if( mode == 1 ){	// mode: search
 				if(!selected) {
-					starting_point = Point(e->x, e->y);
+					starting_point = Point( e->x, e->y );
 					ending_point = starting_point;
 					add_new_rect = 1;
 				}
@@ -160,24 +169,25 @@ class RTreeToy: public Toy
 					alter_existing_rect = 1;
 				}
 			}
-			else if( mode == 2) {	// mode: delete
+			else if( mode == 2 ) {	// mode: delete
 			}
 		}
-		else if(e->button == 2){	//middle button
+		else if( e->button == 2 ){	//middle button
 		}
-		else if(e->button == 3){	//right button
+		else if( e->button == 3 ){	//right button
 		}
     }
 
-    virtual void mouse_released(GdkEventButton* e) {
-		Toy::mouse_released(e);
+    virtual void mouse_released( GdkEventButton* e ) {
+		Toy::mouse_released( e );
 		if( e->button == 1 ) { 		//left mouse button
 			if( mode == 0) {	// mode: insert / alter
 				if( add_new_rect ){
-					ending_point = Point(e->x, e->y);
-					handle_set.push_back(starting_point);
-					handle_set.push_back(ending_point);
+					ending_point = Point( e->x, e->y );
+					handle_set.push_back( starting_point );
+					handle_set.push_back( ending_point );
 					insert_in_tree_the_last_rect();
+					find_rtree_subtrees_bounding_boxes( rtree );
 					add_new_rect = 0;
 				}
 				else if( alter_existing_rect ){
@@ -189,8 +199,8 @@ class RTreeToy: public Toy
 			}
 			else if( mode == 1 ){	// mode: search
 				if( add_new_rect ){
-					ending_point = Point(e->x, e->y);
-					rect_chosen = Rect(starting_point, ending_point);
+					ending_point = Point( e->x, e->y );
+					rect_chosen = Rect( starting_point, ending_point );
 
 					// search in the X axis
 					Coord a = rect_chosen[0].min();
@@ -206,8 +216,7 @@ class RTreeToy: public Toy
 					}*/
 					add_new_rect = 0;
 				}
-				else if(alter_existing_rect){
-					// do nothing
+				else if( alter_existing_rect ){ // do nothing					
 					alter_existing_rect = 0;
 				}
 			}
@@ -215,17 +224,17 @@ class RTreeToy: public Toy
 
 			}
 		}
-		else if(e->button == 2){	//middle button			
+		else if( e->button == 2 ){	//middle button			
 		}
-		else if(e->button == 3){	//right button
+		else if( e->button == 3 ){	//right button
 
 		}
     }
 
 
-    void key_hit(GdkEventKey *e)
+    void key_hit( GdkEventKey *e )
     {
-        char choice = std::toupper(e->keyval);
+        char choice = std::toupper( e->keyval );
         switch ( choice )
         {
             case 'A':
@@ -247,74 +256,85 @@ class RTreeToy: public Toy
         redraw();
     }
 
+
 	void insert_in_tree_the_last_rect(){
 			unsigned i = handle_set.pts.size() - 2;
-		    Rect r1(handle_set.pts[i], handle_set.pts[i+1]);
+		    Rect r1( handle_set.pts[ i ], handle_set.pts[ i+1 ] );
 			// insert in R tree
 			rtree.insert( r1, i );
 			std::cout << " \nTree:\n" << std::endl;
-			rtree.print_tree( rtree.root, 0);	
+			rtree.print_tree( rtree.root, 0 );	
 	};
 
-	void draw_tree_in_toy(cairo_t* cr, Geom::RTree* n, int depth = 0) {
-		if(n){
-/*			if(n->left){
-				draw_tree_in_toy(cr, n->left, depth+1);
-			}
-			help_counter += 1;
-			//drawthisnode(cr, x*10, depth*10);
-			if(n->isRed){
-				cairo_set_source_rgba (cr, color_select_area_guide);
-			}
-			else{
-				cairo_set_source_rgba (cr, color_rect_guide);
-			}
-			
-			cairo_stroke(cr);
 
-			Geom::Point text_point = Point( help_counter*15, depth*15 );
-			char label[4];
-			sprintf( label,"%d",n->data ); // instead of std::itoa(depth, label, 10); 
-
-			draw_text(cr, text_point, label);
-			////////////////////////////////////////////////////////////////
-			if(n->right){
-				draw_tree_in_toy(cr, n->right, depth+1);
+	void find_rtree_subtrees_bounding_boxes( Geom::RTree tree ){
+		if( tree.root ){
+			for(unsigned color=0; color < rects_level.size(); color++ ){
+				rects_level[color].clear();
 			}
-*/
+			save_subtrees( tree.root, 0);
 		}
+	};
+
+	void save_subtrees( Geom::RTreeNode* subtree_root, int depth ) 
+	{
+		if( subtree_root->children_nodes.size() > 0 ){ 
+
+			// descend in each one of the elements and call print_tree
+			for( unsigned i=0; i < subtree_root->children_nodes.size(); i++ ){
+			    Rect r1( subtree_root->children_nodes[i].first );
+				rects_level[depth].push_back( r1 );
+			    draw_tree_in_toy( subtree_root->children_nodes[i].second, depth+1);
+			}
+		}
+		// else{} do nothing, Leave  entries are the rects themselves...
+	};
+
+
+	void draw_tree_in_toy( Geom::RTreeNode* subtree_root, int depth ) 
+	{
+		if( subtree_root->children_nodes.size() > 0 ){ 
+
+			// descend in each one of the elements and call print_tree
+			for( unsigned i=0; i < subtree_root->children_nodes.size(); i++ ){
+			    Rect r1( subtree_root->children_nodes[i].first );
+				rects_level[depth].push_back( r1 );
+			    draw_tree_in_toy( subtree_root->children_nodes[i].second, depth+1);
+			}
+		}
+		// else{} do nothing, Leave  entries are the rects themselves...
 	};
 
 
 
 public:
-    RTreeToy(): 	color_shape(0, 0, 0, 0.6), color_shape_guide(0, 0, 0, 1),
-					color_rtree_l0(1, 0, 1, 1), color_rtree_l1(0, 1, 1, 1),
-					color_rtree_l2(1, 1, 0, 1), color_rtree_l3(0, 0, 1, 1), 
-					//color_rect(0, 0, 0, 0.6), color_rect_guide(0, 0, 0, 1), 
-
+    RTreeToy(): 	color_shape(0, 0, 0, 1), color_shape_guide(0, 1, 0, 1),
 					color_select_area(1, 0, 0, 0.6 ),  color_select_area_guide(1, 0, 0, 1 ),
-
-					alter_existing_rect(0), add_new_rect(0), mode(0), help_str("A: Insert/Alter, B: Search, C: Delete"),
-					out_str("Mode: Insert - Alter(NOT implemented)"), status_str("Welcome!"),
-					help_counter(0), 
-					rtree(2,5)
+					//alter_existing_rect(0), add_new_rect(0), 
+					rect_chosen(), dummy_draw(),
+					rects_level(4),
+					color_rtree_level(4, colour(0, 0, 0, 0) ),
+					mode(0), 
+					help_str("A: Insert/Update, B: Search, C: Delete"),
+					out_str("Mode: Insert (click n drag on whitespace) - Update(NOT implemented)"), 
+					status_str("Welcome!"),
+					rtree( 3, 5 )
 	{
         if( handles.empty() ) {
             handles.push_back( &handle_set );
-        }
-		Rect rect_chosen();
-		Rect dummy_draw();
+        }	
+		color_rtree_level[0] = colour(0, 0.58, 1, 1);
+		color_rtree_level[1] = colour(0, 0.45, 0, 1);
+		color_rtree_level[2] = colour(0.53, 0, 0.66, 1);
+		color_rtree_level[3] = colour(0, 0, 1, 1);
     }
-
-
 };
 
 
 
 int main(int argc, char **argv) {
 	std::cout << "---------------------------------------------------------"<< std::endl;
-    std::cout << "Let's play with the Red Black Tree! ONLY Insert works now!!!"<< std::endl;
+    std::cout << "Let's play with the R- Tree! ONLY Insert works now!!!"<< std::endl;
     std::cout << " Key A: insert/alter mode                                   "<< std::endl;
     std::cout << " * Left click and drag on white area: create a rectangle"<< std::endl;
 	std::cout << " *NOT READY: Left click and drag on handler: alter a rectangle"<< std::endl;

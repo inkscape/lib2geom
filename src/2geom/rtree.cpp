@@ -278,7 +278,7 @@ std::pair<RTreeNode, RTreeNode> RTree::quadratic_split( RTreeNode *s, unsigned m
                 Check each group to see if one group has so few entries that all the rest must 
                 be assignmed to it, in order for it to have the min number.
             */
-            if( group_a.children_nodes.size() + num_of_not_assigned <= min_nodes ){
+            if( group_a.children_nodes.size() + num_of_not_assigned < min_nodes ){
                 // add the non-assigned to group_a
                 for(unsigned i = 0; i < assigned_v.size(); i++){
                     if(assigned_v[i] == false){
@@ -289,7 +289,7 @@ std::pair<RTreeNode, RTreeNode> RTree::quadratic_split( RTreeNode *s, unsigned m
                 break;           
             }
 
-            if( group_b.children_nodes.size() + num_of_not_assigned <= min_nodes ){
+            if( group_b.children_nodes.size() + num_of_not_assigned < min_nodes ){
                 // add the non-assigned to group_b
                 for( unsigned i = 0; i < assigned_v.size(); i++ ){
                     if( assigned_v[i] == false ){
@@ -642,7 +642,13 @@ bool RTree::adjust_tree(    RTreeNode* position,
             Then find position of current node pointer, in the parent node.
         */
         _RTREE_PRINT("  AT3.1");    // AT3.1    Let P be the parent of N
-        parent = find_parent( root, position->children_nodes[0].first, position);
+        if( position->children_nodes.size() > 0 ){
+            parent = find_parent( root, position->children_nodes[0].first, position);
+        }
+        else{
+            parent = find_parent( root, position->children_leaves[0].first, position);
+        }
+
         unsigned child_in_parent; // the element in parent node that points to current posistion
         // parent is a non-leaf, by definition
         _RTREE_PRINT("  AT3.2");    // AT3.2    Let EN be the N's entry in P
@@ -664,10 +670,10 @@ bool RTree::adjust_tree(    RTreeNode* position,
             _RTREE_PRINT("  leaf: recalculate bounding box of parent ");    // leaf-node: position
             parent->children_nodes[ child_in_parent ].first = Rect( position->children_leaves[0].first );
             for( unsigned i=1; i < position->children_leaves.size(); i++ ){
-                parent->children_leaves[ child_in_parent ].first.unionWith( position->children_leaves[i].first );
+                parent->children_nodes[ child_in_parent ].first.unionWith( position->children_leaves[i].first );
             }
         }
-
+        // TODO sth fishy
 
         _RTREE_PRINT("  AT4");    // AT4
         if( split_performed ){
@@ -686,8 +692,10 @@ bool RTree::adjust_tree(    RTreeNode* position,
                 splitted_groups = quadratic_split( parent, min_nodes ); // AT5
                 split_performed = true;
             }
-            position = parent; // AT5
+           
         }
+        _RTREE_PRINT("  AT5");    // AT5
+        position = parent;
     }
 
     return root_split_performed;
