@@ -219,10 +219,18 @@ a is the rect of the node we try to see if b should go in.
 // union_rect.area() - a.area() - b.area();  old *stupid* version
 double RTree::find_enlargement( Rect const &a, Rect const &b ){
     _RTREE_PRINT("      find_enlargement");
+
     Rect union_rect(a);
     union_rect.unionWith(b);
-    return union_rect.area() - b.area();
-    // TODO check carefully: currecly not correct
+
+    OptRect a_intersection_b = intersect( a, b );
+    if( a_intersection_b.isEmpty() ){ // no intersection
+        return union_rect.area() - a.area() - b.area();
+    }
+    // there is intersection
+    return union_rect.area() - a.area() - b.area() - a_intersection_b->area();
+
+    // TODO check carefully
 }
 
 /* I2 =========================================================================

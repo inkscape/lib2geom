@@ -69,6 +69,7 @@ class RTreeToy: public Toy
 	std::vector<colour> color_rtree_level;
 
 	int mode;			// insert/alter, search, delete  modes
+	bool drawBB;			// draw bounding boxes of RTree
 	string help_str, out_str, status_str;
 
 	// printing of the tree
@@ -83,6 +84,7 @@ class RTreeToy: public Toy
         INSERT = 0,
 		DELETE,
 		SEARCH,
+		TOGGLE,
         TOTAL_ITEMS // this one must be the last item
     };
     static const char* menu_items[TOTAL_ITEMS];
@@ -119,14 +121,16 @@ class RTreeToy: public Toy
 	    cairo_set_source_rgba( cr, color_select_area );
 		cairo_stroke( cr );
 	
-		*notify << status_str << std::endl << out_str << std::endl << help_str;
+		*notify << out_str << std::endl << help_str << " | " << status_str;
 
-		for(unsigned color=0; color < rects_level.size(); color++ ){
-			for(unsigned j=0; j < rects_level[color].size(); j++ ){
-				cairo_rectangle( cr, rects_level[color][j] );
+		if( drawBB ){
+			for(unsigned color=0; color < rects_level.size(); color++ ){
+				for(unsigned j=0; j < rects_level[color].size(); j++ ){
+					cairo_rectangle( cr, rects_level[color][j] );
+				}
+				cairo_set_source_rgba( cr, color_rtree_level[color] );
+				cairo_stroke( cr );
 			}
-			cairo_set_source_rgba( cr, color_rtree_level[color] );
-			cairo_stroke( cr );
 		}
 
 		Toy::draw( cr, notify, width, height, save,timer_stream );
@@ -240,18 +244,26 @@ class RTreeToy: public Toy
             case 'A':
                 mode = 0;
 				out_str = "Mode: Insert - Alter(NOT implemented)";
-				status_str = "";
                 break;
             case 'B':
                 mode = 1;
 				out_str = "Mode: Search";
-				status_str = "";
                 break;
             case 'C':
                 mode = 2;
 				out_str = "Mode: Delete(NOT implemented)";
-				status_str = "";
                 break;
+			case 'T':
+				
+				if( drawBB ){
+					drawBB = false;
+					status_str = "Draw RTree Bounding Boxes: OFF";
+				}
+				else{
+					drawBB = true;
+					status_str = "Draw RTree Bounding Boxes: ON";
+				}
+				break;
         }
         redraw();
     }
@@ -314,11 +326,11 @@ public:
 					rect_chosen(), dummy_draw(),
 					rects_level(4),
 					color_rtree_level(4, colour(0, 0, 0, 0) ),
-					mode(0), 
+					mode(0), drawBB(true),
 					help_str("A: Insert/Update, B: Search, C: Delete"),
 					out_str("Mode: Insert (click n drag on whitespace) - Update(NOT implemented)"), 
-					status_str("Welcome!"),
-					rtree( 3, 5 )
+					status_str("Draw RTree Bounding Boxes: ON"),
+					rtree( 2, 3 )
 	{
         if( handles.empty() ) {
             handles.push_back( &handle_set );
@@ -327,6 +339,16 @@ public:
 		color_rtree_level[1] = colour(0, 0.45, 0, 1);
 		color_rtree_level[2] = colour(0.53, 0, 0.66, 1);
 		color_rtree_level[3] = colour(0, 0, 1, 1);
+/*		
+		Rect r1( Point(100, 100), Point(150, 150)),
+				r2( Point(200, 200), Point(250, 250)),
+				r3( Point(50, 50), Point(100, 100));
+		OptRect a_intersection_b;
+		a_intersection_b = intersect( r1, r2 );
+		std::cout << "r1, r2  " << a_intersection_b.isEmpty() << std::endl;
+		a_intersection_b = intersect( r1, r3 );
+		std::cout << "r1, r3  " << a_intersection_b.isEmpty() << std::endl;
+*/
     }
 };
 
@@ -351,10 +373,11 @@ const char* RTreeToy::menu_items[] =
 {
     "Insert / Alter Rectangle",
     "Search Rectangle",
-    "Delete Reactangle"
+    "Delete Reactangle",
+    "Toggle"
 };
 
 const char RTreeToy::keys[] =
 {
-     'A', 'B', 'C'
+     'A', 'B', 'C', 'T'
 };
