@@ -109,6 +109,7 @@ rdm-area
 #ray-sorting-test
 sketch-fitter
 redblack-toy
+rtree-toy
 sweep-graph
 )
 

@@ -61,6 +61,21 @@ enum split_strategy {
 
 class RTreeNode;
 
+template <typename T>
+class pedantic_vector:public std::vector<T> {
+public:
+    pedantic_vector(size_t s=0) : std::vector<T>(s) {}
+    T& operator[](int i) {
+        assert(i >= 0);
+        assert(i < std::vector<T>::size());
+        return std::vector<T>::operator[](i);
+    }
+    T const& operator[](int i) const {
+        assert(i >= 0);
+        assert(i < std::vector<T>::size());
+        return std::vector<T>::operator[](i);
+    }
+};
 /*
 R-Tree has 2 kinds of nodes
 * Leaves which store:
@@ -88,8 +103,8 @@ class RTreeNode{
 public:
     // first: bounding box
     // second: "data" (leaf-node) or node (NON leaf-node)
-    std::vector< std::pair<Rect, int> > children_leaves; // if this is empty, then node is leaf-node
-    std::vector< std::pair<Rect, RTreeNode*> > children_nodes;  // if this is empty, then node is NON-leaf node
+    pedantic_vector< std::pair<Rect, int> > children_leaves; // if this is empty, then node is leaf-node
+    pedantic_vector< std::pair<Rect, RTreeNode*> > children_nodes;  // if this is empty, then node is NON-leaf node
 
     RTreeNode(): children_leaves(0), children_nodes(0)
     {}

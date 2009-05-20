@@ -269,9 +269,13 @@ std::pair<RTreeNode, RTreeNode> RTree::quadratic_split( RTreeNode *s, unsigned m
         std::fill( assigned_v.begin(), assigned_v.end(), false );
 
         group_a.children_nodes.push_back( s->children_nodes[initial_seeds.first] );
+        assert(initial_seeds.first >= 0);
+        assert(initial_seeds.first < assigned_v.size());
         assigned_v[ initial_seeds.first ] = true;
 
         group_b.children_nodes.push_back( s->children_nodes[initial_seeds.second] );
+        assert(initial_seeds.second >= 0);
+        assert(initial_seeds.second < assigned_v.size());
         assigned_v[ initial_seeds.second ] = true;
 
         _RTREE_PRINT("  QS2");     // QS2 
@@ -330,10 +334,14 @@ std::pair<RTreeNode, RTreeNode> RTree::quadratic_split( RTreeNode *s, unsigned m
 
         // assign 1st seed to group a
         group_a.children_leaves.push_back( s->children_leaves[initial_seeds.first] );
+        assert(initial_seeds.first >= 0);
+        assert(initial_seeds.first < assigned_v.size());
         assigned_v[ initial_seeds.first ] = true;
 
         // assign 2nd seed to group b
         group_b.children_leaves.push_back( s->children_leaves[initial_seeds.second] );
+        assert(initial_seeds.second >= 0);
+        assert(initial_seeds.second < assigned_v.size());
         assigned_v[ initial_seeds.second ] = true;
 
         _RTREE_PRINT("  QS2");    // QS2 
@@ -534,6 +542,8 @@ std::pair<unsigned, enum_add_to_group> RTree::pick_next(    RTreeNode group_a,
                 }
             }
         }
+        assert(max_increase_difference_node >= 0);
+        assert(max_increase_difference_node < assigned_v.size());
         assigned_v[max_increase_difference_node] = true;
         _RTREE_PRINT("      ... i:" << max_increase_difference_node << "assigned:" << assigned_v[max_increase_difference_node] );
     }
@@ -576,6 +586,8 @@ std::pair<unsigned, enum_add_to_group> RTree::pick_next(    RTreeNode group_a,
                 }
             }
         }
+        assert(max_increase_difference_node >= 0);
+        assert(max_increase_difference_node < assigned_v.size());
         assigned_v[max_increase_difference_node] = true;
         _RTREE_PRINT("      ... i:" << max_increase_difference_node << "assigned:" << assigned_v[max_increase_difference_node] );
     }
