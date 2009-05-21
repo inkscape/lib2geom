@@ -294,9 +294,9 @@ class RTreeToy: public Toy
 
 			// descend in each one of the elements and call print_tree
 			for( unsigned i=0; i < subtree_root->children_nodes.size(); i++ ){
-			    Rect r1( subtree_root->children_nodes[i].first );
+			    Rect r1( subtree_root->children_nodes[i].bounding_box );
 				rects_level[depth].push_back( r1 );
-			    draw_tree_in_toy( subtree_root->children_nodes[i].second, depth+1);
+			    draw_tree_in_toy( subtree_root->children_nodes[i].data, depth+1);
 			}
 		}
 		// else{} do nothing, Leave  entries are the rects themselves...
@@ -309,9 +309,9 @@ class RTreeToy: public Toy
 
 			// descend in each one of the elements and call print_tree
 			for( unsigned i=0; i < subtree_root->children_nodes.size(); i++ ){
-			    Rect r1( subtree_root->children_nodes[i].first );
+			    Rect r1( subtree_root->children_nodes[i].bounding_box );
 				rects_level[depth].push_back( r1 );
-			    draw_tree_in_toy( subtree_root->children_nodes[i].second, depth+1);
+			    draw_tree_in_toy( subtree_root->children_nodes[i].data, depth+1);
 			}
 		}
 		// else{} do nothing, Leave  entries are the rects themselves...

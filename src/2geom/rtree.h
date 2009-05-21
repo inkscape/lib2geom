@@ -59,7 +59,7 @@ enum split_strategy {
     LINEAR_COST
 };
 
-class RTreeNode;
+
 
 template <typename T>
 class pedantic_vector:public std::vector<T> {
@@ -76,17 +76,42 @@ public:
         return std::vector<T>::operator[](i);
     }
 };
+
+class RTreeNode;
+
+class RTreeRecord_Leaf{
+public:
+    Rect bounding_box;
+    int data;
+
+    RTreeRecord_Leaf(): bounding_box(), data(0)
+    {}
+
+    RTreeRecord_Leaf(Rect bb, int d): bounding_box(bb), data(d)
+    {}
+};
+
+class RTreeRecord_NonLeaf{
+public:
+    Rect bounding_box;
+    RTreeNode* data;    
+
+    RTreeRecord_NonLeaf(): bounding_box(), data(0)
+    {}
+
+    RTreeRecord_NonLeaf(Rect bb, RTreeNode* d): bounding_box(bb), data(d)
+    {}
+};
+
 /*
 R-Tree has 2 kinds of nodes
 * Leaves which store:
   - the actual data
   - the bounding box of the data
-std::vector< std::pair<Rect, int> > children_leaves;
 
 * Non-Leaves which store:
-  - a child node
+  - a child node (data)
   - the bounding box of the child node
-std::vector< std::pair<Rect, RTreeNode*> > children_nodes;
 
 This causes some code duplication in rtree.cpp. There are 2 cases:
 - we care whether we touch a leaf/non-leaf node, since we write data in the node, so we want to 
@@ -97,14 +122,12 @@ This causes some code duplication in rtree.cpp. There are 2 cases:
 TODO:
 A better design would eliminate the duplication in the 2nd case, but we can't avoid the 1st probably.
 */
-
-
 class RTreeNode{    
 public:
     // first: bounding box
     // second: "data" (leaf-node) or node (NON leaf-node)
-    pedantic_vector< std::pair<Rect, int> > children_leaves; // if this is empty, then node is leaf-node
-    pedantic_vector< std::pair<Rect, RTreeNode*> > children_nodes;  // if this is empty, then node is NON-leaf node
+    pedantic_vector< RTreeRecord_Leaf > children_leaves; // if this is empty, then node is leaf-node
+    pedantic_vector< RTreeRecord_NonLeaf > children_nodes;  // if this is empty, then node is NON-leaf node
 
     RTreeNode(): children_leaves(0), children_nodes(0)
     {}
@@ -125,7 +148,7 @@ public:
 
     void insert( Rect const &r, int shape);
 
-    void print_tree(RTreeNode* subtree_root, int depth);
+    void print_tree(RTreeNode* subtree_root, int depth, bool break_on_first_iteration = false);
 
 private:
     void insert( Rect const &r, int shape, unsigned min_nodes, unsigned max_nodes );
@@ -135,20 +158,21 @@ private:
 
     // I2
         // QUADRATIC_SPIT
-    std::pair<RTreeNode, RTreeNode> quadratic_split( RTreeNode *s, unsigned min_nodes );
-    std::pair<unsigned, unsigned> pick_seeds( RTreeNode *s );
-    std::pair<unsigned, enum_add_to_group>  pick_next( RTreeNode group_a, RTreeNode group_b, RTreeNode *s, std::vector<bool> &assigned_v );
+    std::pair<RTreeNode*, RTreeNode*> quadratic_split( RTreeNode* s, unsigned min_nodes );
+    std::pair<unsigned, unsigned> pick_seeds( RTreeNode* s );
+    std::pair<unsigned, enum_add_to_group>  pick_next( RTreeNode* group_a, RTreeNode* group_b, RTreeNode* s, std::vector<bool> &assigned_v );
         // others...
 
     // I3
     bool adjust_tree(       RTreeNode* position, 
-                            std::pair<RTreeNode, RTreeNode>  &splitted_groups, 
+                            std::pair<RTreeNode*, RTreeNode*>  &node_division, 
                             bool split_performed, 
                             unsigned min_nodes,
                             unsigned max_nodes );
-    RTreeNode* find_parent( RTreeNode* subtree_root, Rect search_area, RTreeNode* wanted );
-    void copy_group_a_to_existing_node( RTreeNode *position, RTreeNode group_a );
-    std::pair<Rect, RTreeNode*> create_new_node_from_rtreenode( Rect &new_entry_bounding, RTreeNode* new_node, RTreeNode *rtreenode );
+    std::pair< RTreeNode*, bool > find_parent( RTreeNode* subtree_root, Rect search_area, RTreeNode* wanted );
+    void copy_group_a_to_existing_node( RTreeNode *position, RTreeNode* group_a );
+    RTreeRecord_NonLeaf create_nonleaf_record_from_rtreenode( Rect &new_entry_bounding,RTreeNode *rtreenode );
+    RTreeRecord_Leaf create_leaf_record_from_rtreenode( Rect &new_entry_bounding, RTreeNode *rtreenode );
 
 };
 
