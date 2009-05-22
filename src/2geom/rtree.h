@@ -147,6 +147,7 @@ public:
     {}
 
     void insert( Rect const &r, int shape);
+    void search( Rect const &search_area, std::vector< int >* result, const RTreeNode* subtree ) const;
 
     void print_tree(RTreeNode* subtree_root, int depth, bool break_on_first_iteration = false);
 

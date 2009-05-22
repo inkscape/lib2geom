@@ -45,6 +45,10 @@ using namespace std;
 // make sure that in RTreeToy() constructor you assign the same number of colors 
 // otherwise, they extra will be black :P
 const int no_of_colors = 3;
+const string search_str = "Mode: Search";
+const string insert_str = "Mode: Insert (Click whitespace and Drag) - Update (Click handle and Drag NOT implemented)" ;
+const string erase_str = "Mode: Delete(NOT implemented)";
+const string help_str = "'A': Insert/Update, 'B': Search, 'C': Delete";
 
 class RTreeToy: public Toy 
 {
@@ -74,7 +78,7 @@ class RTreeToy: public Toy
 
 	int mode;			// insert/alter, search, delete  modes
 	bool drawBB;			// draw bounding boxes of RTree
-	string help_str, out_str, drawBB_str, drawBB_color_str;
+	string out_str, drawBB_str, drawBB_color_str;
 
 	// printing of the tree
 	//int help_counter;	// the "x" of the label of each node
@@ -132,9 +136,9 @@ class RTreeToy: public Toy
 	    cairo_set_source_rgba( cr, color_select_area );
 		cairo_stroke( cr );
 	
-		*notify << "'T': Bounding Boxes: " << drawBB_str << ", '0'-'5', 'P': Show Layer: " << drawBB_color_str << std::endl 
-				<< out_str << std::endl 
-				<< help_str ;
+		*notify << help_str << std::endl 
+			<< "'T': Bounding Boxes: " << drawBB_str << ", '0'-'" << no_of_colors << "', 'P': Show Layer: " << drawBB_color_str << std::endl 
+			<< out_str;
 
 		if( drawBB ){
 			for(unsigned color=0; color < rects_level.size(); color++ ){
@@ -221,19 +225,19 @@ class RTreeToy: public Toy
 					ending_point = Point( e->x, e->y );
 					rect_chosen = Rect( starting_point, ending_point );
 
-					// search
+					std::vector< int > result(0);
 
-					/*	
-					search_result = rbtree_x.search( Interval( a, b ) );
-					if(search_result){
-						std::cout << "Found: (" << search_result->data << ": " << search_result->key() 
-							<< ", " << search_result->high() << " : " << search_result->subtree_max << ") " 
-							<< std::endl;
+					// search
+					if( rtree.root ){
+						rtree.search( rect_chosen, &result, rtree.root );
 					}
-					else{
-						std::cout << "Nothing found..."<< std::endl;
+					std::cout << "Search results: " << result.size() << std::endl;
+					//Rect const &search_area, std::vector< int > result, const RTreeNode* subtree
+					for(unsigned i = 0; i < result.size(); i++ ){
+						std::cout << result[i] << ", " ;
 					}
-					*/
+					std::cout << std::endl;
+
 					add_new_rect = 0;
 				}
 				else if( alter_existing_rect ){ // do nothing					
@@ -260,15 +264,15 @@ class RTreeToy: public Toy
         {
             case 'A':
                 mode = 0;
-				out_str = "Mode: Insert - Alter(NOT implemented)";
+				out_str = insert_str;
                 break;
             case 'B':
                 mode = 1;
-				out_str = "Mode: Search";
+				out_str = search_str; 
                 break;
             case 'C':
                 mode = 2;
-				out_str = "Mode: Delete(NOT implemented)";
+				out_str = erase_str;
                 break;
 			case 'T':
 				
@@ -375,15 +379,15 @@ class RTreeToy: public Toy
 public:
     RTreeToy(unsigned rmax, unsigned rmin, char handlefile ):
 	 	color_shape(0, 0, 0, 1), color_shape_guide(0, 1, 0, 1),
-		color_select_area(1, 0, 0, 0.6 ),  color_select_area_guide(1, 0, 0, 1 ),
+		color_select_area(1, 0, 0, 0.9 ),  color_select_area_guide(0, 1, 0, 1 ), //1, 0, 0, 1
 		//alter_existing_rect(0), add_new_rect(0), 
 		rect_chosen(), dummy_draw(),
 		rects_level( no_of_colors ),
 		color_rtree_level( no_of_colors, colour(0, 0, 0, 0) ),
 		drawBB_color(9), drawBB_color_all(true),
 		mode(0), drawBB(true),
-		help_str("'A': Insert/Update, 'B': Search, 'C': Delete"),
-		out_str("Mode: Insert (click n drag on whitespace) - Update(NOT implemented)"), 
+		//help_str(),
+		out_str( insert_str ), 
 		drawBB_str("ON"), drawBB_color_str("all"),
 		rtree( rmin, rmax )
 	{

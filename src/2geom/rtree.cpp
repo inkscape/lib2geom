@@ -79,24 +79,24 @@ void RTree::insert( Rect const &r, int shape, unsigned min_nodes, unsigned max_n
         node_division = quadratic_split( position, min_nodes );
         
         split_performed = true;
-
+/*
         _RTREE_PRINT("      group A");
         print_tree( node_division.first , 3 );
         _RTREE_PRINT("      group B");
         print_tree( node_division.second , 3 );
-
+*/
     }
 
-    _RTREE_PRINT("TREE:");
-    print_tree( root, 2 );
+//    _RTREE_PRINT("TREE:");
+//    print_tree( root, 2 );
 
     _RTREE_PRINT("I3");    // I3    
     bool root_split_performed = adjust_tree( position, node_division, split_performed, min_nodes, max_nodes);
     _RTREE_PRINT("root split: " << root_split_performed);
 
 
-    _RTREE_PRINT("TREE:");
-    print_tree( root , 2 );
+//    _RTREE_PRINT("TREE:");
+//    print_tree( root , 2 );
 
     _RTREE_PRINT("I4");    // I4
     // TODO check this set: looks good now
@@ -785,7 +785,34 @@ void RTree::print_tree(RTreeNode* subtree_root, int depth, bool break_on_first_i
 /*=============================================================================
 TODO                            search
 ===============================================================================
+Given an RTree whose root node is T find all index records whose rects overlap search rect S
+S1) Search subtrees:
+    IF T isnt a leaf, check every entry E to determine whether E I overlaps S
+        FOR all overlapping entries invoke Search on the tree whose root node is pointed by E P
+S2) ELSE T is leaf
+        check all entries E to determine whether E I overlaps S
+        IF so E is a qualifying record
 */
+
+
+void RTree::search( Rect const &search_area, std::vector< int >* result, const RTreeNode* subtree ) const {
+    // S1
+    if( subtree->children_nodes.size() > 0  ){   // non-leaf: subtree
+        for( unsigned i = 0; i < subtree->children_nodes.size(); i++  ){
+            if( subtree->children_nodes[ i ].bounding_box.intersects( search_area ) ){
+                search( search_area, result, subtree->children_nodes[ i ].data );
+            }
+        }
+    }
+    // S2
+    else{   // leaf: subtree
+        for( unsigned i = 0; i < subtree->children_leaves.size(); i++  ){
+            if( subtree->children_leaves[ i ].bounding_box.intersects( search_area ) ){
+                result->push_back( subtree->children_leaves[ i ].data );
+            }
+        }
+    }    
+}
 
 
 /*=============================================================================
