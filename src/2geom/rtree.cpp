@@ -77,6 +77,7 @@ void RTree::insert( Rect const &r, int shape, unsigned min_nodes, unsigned max_n
         // put new element in node temporarily. Later on, we will split the node.
         position->children_leaves.push_back( RTreeRecord_Leaf( r, shape) ); 
         node_division = quadratic_split( position, min_nodes );
+        
         split_performed = true;
 
         _RTREE_PRINT("      group A");
@@ -306,7 +307,7 @@ std::pair<RTreeNode*, RTreeNode*> RTree::quadratic_split( RTreeNode *s, unsigned
         _RTREE_PRINT("  QS2");    // QS2 
         unsigned num_of_not_assigned = s->children_leaves.size() - 2; // so far we have assinged 2 out of all
 
-        while(num_of_not_assigned){// QS2 a
+        while( num_of_not_assigned ){// QS2 a
             _RTREE_PRINT("  QS2 b");    // QS2 b
             /* 
                 we are on leaf node so children of splitted groups must be leaves
@@ -349,7 +350,7 @@ std::pair<RTreeNode*, RTreeNode*> RTree::quadratic_split( RTreeNode *s, unsigned
             num_of_not_assigned--;
         }
     }
-
+    assert( initial_seeds.first != initial_seeds.second );
     return std::make_pair( group_a, group_b );
 }
 
@@ -365,7 +366,7 @@ std::pair<unsigned, unsigned> RTree::pick_seeds( RTreeNode *s ){
     double current_d = 0;
     double max_d = std::numeric_limits<double>::min();
     unsigned seed_a = 0;
-    unsigned seed_b = 0;
+    unsigned seed_b = 1;
     _RTREE_PRINT("      pick_seeds");  
 
     // if non leaf node: s

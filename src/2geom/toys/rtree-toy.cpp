@@ -353,16 +353,16 @@ class RTreeToy: public Toy
 
 			// descend in each one of the elements and call print_tree
 			for( unsigned i=0; i < subtree_root->children_nodes.size(); i++ ){
-				std::cout<< "Toy: save_bb: save: " << depth ;
+				//std::cout<< "Toy: save_bb: save: " << depth ;
 			    Rect r1( subtree_root->children_nodes[ i ].bounding_box );
 				rects_level[ depth ].push_back( r1 );
 
 				if( depth == no_of_colors - 1 ){	// if we reached Nth levels of colors, roll back to color 0
-					std::cout<< "   descend in: reset color: 0" << std::endl;
+					//std::cout<< "   descend in: reset color: 0" << std::endl;
 					save_bb( subtree_root->children_nodes[ i ].data, 0);
 				}
 				else{
-					std::cout<< "   descend in: " << depth+1 << std::endl;
+					//std::cout<< "   descend in: " << depth+1 << std::endl;
 				    save_bb( subtree_root->children_nodes[ i ].data, depth+1);
 				}
 			}
