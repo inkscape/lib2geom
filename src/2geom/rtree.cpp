@@ -15,7 +15,7 @@ Based on source (BibTex):
 
 
 #define _RTREE_PRINT(x) std::cout << x << std::endl;
-//comment the following if you want output during RedBlack Tree operations
+//comment the following if you want output during RTree operations
 //#define _RTREE_PRINT(x) ; 
 
 
@@ -37,7 +37,8 @@ I2) add record to leaf node:
 I3) propagate changes upward:
     Invoke adjust_tree on L, also passing LL if a split was performed.
 I4) grow tree taller:
-    // TODO
+    if a node spilt propagation, cuased the root to split
+        create new root whose children are the 2 resulting nodes
 */
 
 void RTree::insert( Rect const &r, int shape ){
@@ -61,12 +62,11 @@ void RTree::insert( Rect const &r, int shape, unsigned min_nodes, unsigned max_n
     position = choose_leaf( r );
 
     std::pair< RTreeNode*, RTreeNode* > node_division;
-    // TODO when finished free the first, it's garbage
-    // been saved to existing and second is used
+    // when finished free the first, it's garbage. It has been saved to existing and second is added
 
     bool split_performed = false;
 
-    // position IS a leaf node (due to choose_leaf)
+    // position *is* a leaf node (due to choose_leaf)
     if( position->children_leaves.size() < max_nodes ){
         _RTREE_PRINT("I2 no split: " << position->children_leaves.size() );     // I2
         position->children_leaves.push_back( RTreeRecord_Leaf( r, shape) );
@@ -74,7 +74,7 @@ void RTree::insert( Rect const &r, int shape, unsigned min_nodes, unsigned max_n
     else{
         _RTREE_PRINT("I2 split: " << position->children_leaves.size() );     // I2
 
-        // put new element in node, and later on we will split the node.
+        // put new element in node temporarily. Later on, we will split the node.
         position->children_leaves.push_back( RTreeRecord_Leaf( r, shape) ); 
         node_division = quadratic_split( position, min_nodes );
         split_performed = true;
@@ -98,34 +98,34 @@ void RTree::insert( Rect const &r, int shape, unsigned min_nodes, unsigned max_n
     print_tree( root , 2 );
 
     _RTREE_PRINT("I4");    // I4
-    // TODO check this setp
+    // TODO check this set: looks good now
     if( root_split_performed ){
         Rect new_record_bounding_box;
         Rect old_root_bounding_box;
 
         RTreeRecord_NonLeaf new_record = create_nonleaf_record_from_rtreenode( new_record_bounding_box, node_division.second );
         RTreeRecord_NonLeaf new_record_old_root = create_nonleaf_record_from_rtreenode( old_root_bounding_box, root ); 
-
-
+/*
         _RTREE_PRINT("          new entry:");
         print_tree( new_record.data, 5 );
         _RTREE_PRINT("          old root:");
         print_tree( new_record_old_root.data, 5 );
-
+*/
         // new root is by definition non-leaf. Install the new records there
         RTreeNode* new_root = new RTreeNode();
         new_root->children_nodes.push_back( new_record_old_root );
         new_root->children_nodes.push_back( new_record  );  
 
-/*        if( root->children_nodes.size() > 0 ){ // non-leaf: root
-        }
-        else{ //leaf: root (this happens only once, during the first split of the root)
-        }
-*/
         root = new_root; 
-        print_tree(root, 5);
+        print_tree( root, 5 );
     }
     _RTREE_PRINT("done");
+
+    /* 
+        the node_division.second is saved on the tree
+        the node_division.first was copied in existing tree in node
+        so we don't need this anymore
+    */ 
     delete node_division.first;
 }
 
@@ -176,11 +176,9 @@ RTreeNode* RTree::choose_leaf( Rect const &r ){
 find_enlargement:
 
 enlargement that "a" needs in order to incude "b"
-usually 
 b is the new rect we want to insert.
 a is the rect of the node we try to see if b should go in.
 */
-// union_rect.area() - a.area() - b.area();  old *stupid* version
 double RTree::find_enlargement( Rect const &a, Rect const &b ){
     _RTREE_PRINT("      find_enlargement");
 
@@ -193,8 +191,6 @@ double RTree::find_enlargement( Rect const &a, Rect const &b ){
     }
     // there is intersection
     return union_rect.area() - a.area() - b.area() - a_intersection_b->area();
-
-    // TODO check carefully
 }
 
 /* I2 =========================================================================
@@ -565,12 +561,12 @@ AT4) Propagate node split upward
         create a new entry ENN with ENN "p" pointing to NN and ENN bounding box enclosing all
         rectangles in NN
 
-        IF there is room in P add NN
+        IF there is room in P add ENN
         ELSE invoke split_node to produce P an PP containing ENN and all P's old entries.
 AT5) Move up to next level
     Set N=P, 
     IF a split occurred, set NN=PP 
-    goto AT2
+    goto AT1 (was goto AT2)
 */
 
 bool RTree::adjust_tree(    RTreeNode* position, 
@@ -584,12 +580,6 @@ bool RTree::adjust_tree(    RTreeNode* position,
     bool split_performed = initial_split_performed;
     bool root_split_performed = false;
 
-/*    _RTREE_PRINT("  adjust_tree");   
-    _RTREE_PRINT("  AT1");
-    if( split_performed ){
-        copy_group_a_to_existing_node( position, node_division.first );
-    }
-*/  
     while( true ){
 
         _RTREE_PRINT("  adjust_tree");   
@@ -651,19 +641,19 @@ bool RTree::adjust_tree(    RTreeNode* position,
 
         _RTREE_PRINT("  AT4");    // AT4
         if( split_performed ){
-            // create new node (from group_b) 
-            RTreeNode* new_node = new RTreeNode();
-            Rect new_entry_bounding;
+            // create new record (from group_b) 
+            //RTreeNode* new_node = new RTreeNode();
+            Rect new_record_bounding;
 
-            RTreeRecord_NonLeaf new_entry = create_nonleaf_record_from_rtreenode( new_entry_bounding, node_division.second );
+            RTreeRecord_NonLeaf new_record = create_nonleaf_record_from_rtreenode( new_record_bounding, node_division.second );
             
             // install new entry (group_b)
             if( parent->children_nodes.size() < max_nodes ){
-                parent->children_nodes.push_back( new_entry );
+                parent->children_nodes.push_back( new_record );
                 split_performed = false;
             }
             else{
-                parent->children_nodes.push_back( new_entry );
+                parent->children_nodes.push_back( new_record );
                 node_division = quadratic_split( parent, min_nodes ); // AT5
                 split_performed = true;
             }
@@ -735,7 +725,6 @@ void RTree::copy_group_a_to_existing_node( RTreeNode *position, RTreeNode* group
 
 RTreeRecord_NonLeaf RTree::create_nonleaf_record_from_rtreenode( Rect &new_entry_bounding, RTreeNode* rtreenode ){
 
-    RTreeNode t1;
     if( rtreenode->children_nodes.size() > 0 ){
         // found bounding box of new entry
         new_entry_bounding = Rect( rtreenode->children_nodes[0].bounding_box );

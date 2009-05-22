@@ -42,11 +42,13 @@
 using namespace Geom;
 using namespace std;
 
-
+// make sure that in RTreeToy() constructor you assign the same number of colors 
+// otherwise, they extra will be black :P
+const int no_of_colors = 3;
 
 class RTreeToy: public Toy 
 {
-	
+
     PointSetHandle handle_set;
 
 	Geom::Point starting_point;		// during click and drag: start point of click
@@ -67,10 +69,12 @@ class RTreeToy: public Toy
 	// save the bounding boxes of the tree in here
 	std::vector< std::vector< Rect > > rects_level;
 	std::vector<colour> color_rtree_level;
+	int drawBB_color;
+	bool drawBB_color_all;
 
 	int mode;			// insert/alter, search, delete  modes
 	bool drawBB;			// draw bounding boxes of RTree
-	string help_str, out_str, status_str;
+	string help_str, out_str, drawBB_str, drawBB_color_str;
 
 	// printing of the tree
 	//int help_counter;	// the "x" of the label of each node
@@ -81,10 +85,17 @@ class RTreeToy: public Toy
 	// used for the keys that switch between modes
     enum menu_item_t
     {
-        INSERT = 0,
+        INSERT_A = 0,
 		DELETE,
 		SEARCH,
-		TOGGLE,
+		BB_TOGGLE_T,
+		BB_DRAW_0,
+		BB_DRAW_1,
+		BB_DRAW_2,
+		BB_DRAW_3,
+		BB_DRAW_4,
+		BB_DRAW_5,
+		BB_DRAW_ALL_O,
         TOTAL_ITEMS // this one must be the last item
     };
     static const char* menu_items[TOTAL_ITEMS];
@@ -121,15 +132,19 @@ class RTreeToy: public Toy
 	    cairo_set_source_rgba( cr, color_select_area );
 		cairo_stroke( cr );
 	
-		*notify << out_str << std::endl << help_str << " | " << status_str;
+		*notify << "'T': Bounding Boxes: " << drawBB_str << ", '0'-'5', 'P': Show Layer: " << drawBB_color_str << std::endl 
+				<< out_str << std::endl 
+				<< help_str ;
 
 		if( drawBB ){
 			for(unsigned color=0; color < rects_level.size(); color++ ){
-				for(unsigned j=0; j < rects_level[color].size(); j++ ){
-					cairo_rectangle( cr, rects_level[color][j] );
+				if( drawBB_color == color || drawBB_color_all ){
+					for(unsigned j=0; j < rects_level[color].size(); j++ ){
+						cairo_rectangle( cr, rects_level[color][j] );
+					}
+					cairo_set_source_rgba( cr, color_rtree_level[color] );
+					cairo_stroke( cr );
 				}
-				cairo_set_source_rgba( cr, color_rtree_level[color] );
-				cairo_stroke( cr );
 			}
 		}
 
@@ -206,10 +221,10 @@ class RTreeToy: public Toy
 					ending_point = Point( e->x, e->y );
 					rect_chosen = Rect( starting_point, ending_point );
 
-					// search in the X axis
-					Coord a = rect_chosen[0].min();
-					Coord b = rect_chosen[0].max();
-				/*	search_result = rbtree_x.search( Interval( a, b ) );
+					// search
+
+					/*	
+					search_result = rbtree_x.search( Interval( a, b ) );
 					if(search_result){
 						std::cout << "Found: (" << search_result->data << ": " << search_result->key() 
 							<< ", " << search_result->high() << " : " << search_result->subtree_max << ") " 
@@ -217,7 +232,8 @@ class RTreeToy: public Toy
 					}
 					else{
 						std::cout << "Nothing found..."<< std::endl;
-					}*/
+					}
+					*/
 					add_new_rect = 0;
 				}
 				else if( alter_existing_rect ){ // do nothing					
@@ -233,6 +249,7 @@ class RTreeToy: public Toy
 		else if( e->button == 3 ){	//right button
 
 		}
+		//std::cout<< "Toy: end mouse_released" << std::endl;
     }
 
 
@@ -257,61 +274,97 @@ class RTreeToy: public Toy
 				
 				if( drawBB ){
 					drawBB = false;
-					status_str = "Draw RTree Bounding Boxes: OFF";
+					drawBB_str = "OFF";
 				}
 				else{
 					drawBB = true;
-					status_str = "Draw RTree Bounding Boxes: ON";
+					drawBB_str = "ON";
 				}
 				break;
+            case 'P':
+                drawBB_color_all = true;
+				drawBB_color = 9;
+				drawBB_color_str = "all";
+                break;
+            case '0':
+                drawBB_color_all = false;
+				drawBB_color = 0;
+				drawBB_color_str = "0";
+                break;
+            case '1':
+                drawBB_color_all = false;
+				drawBB_color = 1;
+				drawBB_color_str = "1";
+                break;
+            case '2':
+                drawBB_color_all = false;
+				drawBB_color = 2;
+				drawBB_color_str = "2";
+                break;
+            case '3':
+                drawBB_color_all = false;
+				drawBB_color = 3;
+				drawBB_color_str = "3";
+                break;
+            case '4':
+                drawBB_color_all = false;
+				drawBB_color = 4;
+				drawBB_color_str = "4";
+                break;
+            case '5':
+                drawBB_color_all = false;
+				drawBB_color = 5;
+				drawBB_color_str = "5";
+                break;
         }
         redraw();
     }
 
 
 	void insert_in_tree_the_last_rect(){
+			//std::cout<< "Toy: insert_in_tree_the_last_rect" << std::endl;
 			unsigned i = handle_set.pts.size() - 2;
 		    Rect r1( handle_set.pts[ i ], handle_set.pts[ i+1 ] );
 			// insert in R tree
 			rtree.insert( r1, i );
 			std::cout << " \nTree:\n" << std::endl;
 			rtree.print_tree( rtree.root, 0 );	
+			std::cout << "...done\n" << std::endl;
 	};
 
 
 	void find_rtree_subtrees_bounding_boxes( Geom::RTree tree ){
+		//std::cout<< "Toy: find_rtree_subtrees_bounding_boxes: " << rects_level.size() << std::endl;
 		if( tree.root ){
+			// clear existing bounding boxes 
 			for(unsigned color=0; color < rects_level.size(); color++ ){
+				std::cout<< "color:" << color << std::endl;
 				rects_level[color].clear();
 			}
-			save_subtrees( tree.root, 0);
+			save_bb( tree.root, 0);
 		}
 	};
 
-	void save_subtrees( Geom::RTreeNode* subtree_root, int depth ) 
-	{
+	// TODO fix this.
+	void save_bb( Geom::RTreeNode* subtree_root, int depth ) 
+	{	
+		//std::cout<< "Toy: save_bb: " << rects_level.size() << std::endl;
 		if( subtree_root->children_nodes.size() > 0 ){ 
 
 			// descend in each one of the elements and call print_tree
 			for( unsigned i=0; i < subtree_root->children_nodes.size(); i++ ){
-			    Rect r1( subtree_root->children_nodes[i].bounding_box );
-				rects_level[depth].push_back( r1 );
-			    draw_tree_in_toy( subtree_root->children_nodes[i].data, depth+1);
-			}
-		}
-		// else{} do nothing, Leave  entries are the rects themselves...
-	};
+				std::cout<< "Toy: save_bb: save: " << depth ;
+			    Rect r1( subtree_root->children_nodes[ i ].bounding_box );
+				rects_level[ depth ].push_back( r1 );
 
-
-	void draw_tree_in_toy( Geom::RTreeNode* subtree_root, int depth ) 
-	{
-		if( subtree_root->children_nodes.size() > 0 ){ 
-
-			// descend in each one of the elements and call print_tree
-			for( unsigned i=0; i < subtree_root->children_nodes.size(); i++ ){
-			    Rect r1( subtree_root->children_nodes[i].bounding_box );
-				rects_level[depth].push_back( r1 );
-			    draw_tree_in_toy( subtree_root->children_nodes[i].data, depth+1);
+				if( depth == no_of_colors - 1 ){	// if we reached Nth levels of colors, roll back to color 0
+					std::cout<< "   descend in: reset color: 0" << std::endl;
+					save_bb( subtree_root->children_nodes[ i ].data, 0);
+				}
+				else{
+					std::cout<< "   descend in: " << depth+1 << std::endl;
+				    save_bb( subtree_root->children_nodes[ i ].data, depth+1);
+				}
 			}
 		}
 		// else{} do nothing, Leave  entries are the rects themselves...
@@ -320,36 +373,40 @@ class RTreeToy: public Toy
 
 
 public:
-    RTreeToy(): 	color_shape(0, 0, 0, 1), color_shape_guide(0, 1, 0, 1),
-					color_select_area(1, 0, 0, 0.6 ),  color_select_area_guide(1, 0, 0, 1 ),
-					//alter_existing_rect(0), add_new_rect(0), 
-					rect_chosen(), dummy_draw(),
-					rects_level(4),
-					color_rtree_level(4, colour(0, 0, 0, 0) ),
-					mode(0), drawBB(true),
-					help_str("A: Insert/Update, B: Search, C: Delete"),
-					out_str("Mode: Insert (click n drag on whitespace) - Update(NOT implemented)"), 
-					status_str("Draw RTree Bounding Boxes: ON"),
-					rtree( 2, 3 )
+    RTreeToy(unsigned rmax, unsigned rmin, char handlefile ):
+	 	color_shape(0, 0, 0, 1), color_shape_guide(0, 1, 0, 1),
+		color_select_area(1, 0, 0, 0.6 ),  color_select_area_guide(1, 0, 0, 1 ),
+		//alter_existing_rect(0), add_new_rect(0), 
+		rect_chosen(), dummy_draw(),
+		rects_level( no_of_colors ),
+		color_rtree_level( no_of_colors, colour(0, 0, 0, 0) ),
+		drawBB_color(9), drawBB_color_all(true),
+		mode(0), drawBB(true),
+		help_str("'A': Insert/Update, 'B': Search, 'C': Delete"),
+		out_str("Mode: Insert (click n drag on whitespace) - Update(NOT implemented)"), 
+		drawBB_str("ON"), drawBB_color_str("all"),
+		rtree( rmin, rmax )
 	{
+		std::cout<< "INIT\n";
         if( handles.empty() ) {
             handles.push_back( &handle_set );
         }	
 		color_rtree_level[0] = colour(0, 0.58, 1, 1);
 		color_rtree_level[1] = colour(0, 0.45, 0, 1);
 		color_rtree_level[2] = colour(0.53, 0, 0.66, 1);
-		color_rtree_level[3] = colour(0, 0, 1, 1);
-/*		
-		Rect r1( Point(100, 100), Point(150, 150)),
-				r2( Point(200, 200), Point(250, 250)),
-				r3( Point(50, 50), Point(100, 100));
-		OptRect a_intersection_b;
-		a_intersection_b = intersect( r1, r2 );
-		std::cout << "r1, r2  " << a_intersection_b.isEmpty() << std::endl;
-		a_intersection_b = intersect( r1, r3 );
-		std::cout << "r1, r3  " << a_intersection_b.isEmpty() << std::endl;
-*/
+//		color_rtree_level[3] = colour(0, 0, 1, 1);
+//		color_rtree_level[4] = colour(1, 0.62, 0, 1);
+//		color_rtree_level[5] = colour(1, 0, 0, 1);
+
+
     }
+
+	void first_time(int argc, char** argv){
+		std::cout << "argc = " << argc << std::endl;
+		for(int i = 0; i < argc; i++){
+			std::cout << "argv[" << i << "] = " << argv[i] << std::endl; 	
+		}
+	}
 };
 
 
@@ -365,7 +422,15 @@ int main(int argc, char **argv) {
     std::cout << " NOT READY: Key C: delete mode                                   "<< std::endl;
 	std::cout << " * Left click on handler: delete for a rectangle"<< std::endl;
 	std::cout << "---------------------------------------------------------"<< std::endl;
-    init(argc, argv, new RTreeToy);
+	// rtree max nodes: -rmax
+	// rtree min nodes: -rmin
+	unsigned int rmax = 3;
+	unsigned int rmin = 2;
+	// handle filename: -f
+	char handlefile = 'T';
+
+    init(argc, argv, new RTreeToy(rmax, rmin, handlefile) );
+
     return 0;
 }
 	  	 
@@ -379,5 +444,19 @@ const char* RTreeToy::menu_items[] =
 
 const char RTreeToy::keys[] =
 {
-     'A', 'B', 'C', 'T'
+     'A', 'B', 'C', 'T', 
+	'0', '1', '2', '3', '4', '5', 'P'
 };
+
+
+/*		
+intersection test
+		Rect r1( Point(100, 100), Point(150, 150)),
+				r2( Point(200, 200), Point(250, 250)),
+				r3( Point(50, 50), Point(100, 100));
+		OptRect a_intersection_b;
+		a_intersection_b = intersect( r1, r2 );
+		std::cout << "r1, r2  " << a_intersection_b.isEmpty() << std::endl;
+		a_intersection_b = intersect( r1, r3 );
+		std::cout << "r1, r3  " << a_intersection_b.isEmpty() << std::endl;
+*/
