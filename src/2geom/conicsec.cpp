@@ -32,15 +32,16 @@
  */
 
 
-#include <2geom/line.h>
 #include <2geom/conicsec.h>
-#include <string>
+#include <2geom/numeric/fitting-tool.h>
+#include <2geom/numeric/fitting-model.h>
+
 
 // File: convert.h
 #include <sstream>
 #include <stdexcept>
 
-// GPL taint? 
+// GPL taint?
 #include <2geom/numeric/linear_system.h>
 
 namespace Geom
@@ -122,7 +123,7 @@ static std::vector<T> quadratic_roots(T q0, T q1, T q2) {
         r.push_back(-q0/q1);
     } else {
         double desc = q1*q1 - 4*q2*q0;
-        /*cout << q2 << ", " 
+        /*cout << q2 << ", "
           << q1 << ", "
           << q0 << "; "
           << desc << "\n";*/
@@ -148,7 +149,7 @@ public:
         : std::runtime_error(s)
     { }
 };
- 
+
 template <typename T>
 inline std::string stringify(T x)
 {
@@ -172,7 +173,7 @@ inline std::string stringify(T x)
 double RatQuad::lambda() const {
   return 2*(6*w*w +1 -std::sqrt(3*w*w+1))/(12*w*w+3);
 }
-  
+
 RatQuad RatQuad::fromPointsTangents(Point P0, Point dP0,
                                     Point P,
                                     Point P2, Point dP2) {
@@ -204,15 +205,15 @@ RatQuad RatQuad::circularArc(Point P0, Point P1, Point P2) {
     return RatQuad(P0, P1, P2, dot(unit_vector(P0 - P1), unit_vector(P0 - P2)));
 }
 
-  
+
 CubicBezier RatQuad::toCubic() const {
     return toCubic(lambda());
 }
 
 CubicBezier RatQuad::toCubic(double lamb) const {
-  return CubicBezier(P[0], 
-		     (1-lamb)*P[0] + lamb*P[1], 
-		     (1-lamb)*P[2] + lamb*P[1], 
+  return CubicBezier(P[0],
+		     (1-lamb)*P[0] + lamb*P[1],
+		     (1-lamb)*P[2] + lamb*P[1],
 		     P[2]);
 }
 
@@ -223,7 +224,7 @@ Point RatQuad::pointAt(double t) const {
   return Point(xt.valueAt(t)/wt,
 	       yt.valueAt(t)/wt);
 }
-  
+
 void RatQuad::split(RatQuad &a, RatQuad &b) const {
   a.P[0] = P[0];
   b.P[2] = P[2];
@@ -233,11 +234,11 @@ void RatQuad::split(RatQuad &a, RatQuad &b) const {
   a.P[2] = b.P[0] = (0.5*a.P[1]+0.5*b.P[1]);
 }
 
-  
+
 D2<SBasis> RatQuad::hermite() const {
   SBasis t = Linear(0, 1);
   SBasis omt = Linear(1, 0);
-    
+
   D2<SBasis> out(omt*omt*P[0][0]+2*omt*t*P[1][0]*w+t*t*P[2][0],
 		 omt*omt*P[0][1]+2*omt*t*P[1][1]*w+t*t*P[2][1]);
   for(int dim = 0; dim < 2; dim++) {
@@ -279,7 +280,7 @@ D2<SBasis> RatQuad::hermite() const {
       return res + "rectangular hyperbola";
     }
     return res + "hyperbola";
-      
+
   }
   return "no idea!";
 }
@@ -293,7 +294,7 @@ std::vector<Point> decompose_degenerate(xAx const & C1, xAx const & C2, xAx cons
     //std::cout << determ << "\n";
     if (fabs(determ) >= 1e-20) { // hopeful, I know
         Geom::Coord const ideterm = 1.0 / determ;
-            
+
         double b[2] = {-xC0.c[3], -xC0.c[4]};
         Point B0((A[1][1]*b[0]  -A[0][1]*b[1]),
                  (-A[1][0]*b[0] +  A[0][0]*b[1]));
@@ -325,10 +326,10 @@ std::vector<Point> decompose_degenerate(xAx const & C1, xAx const & C2, xAx cons
             n0 = Point(b+d, 1);
             n1 = Point(b-d, 1);
         }
-            
+
         Line L0 = Line::fromPointDirection(B0, rot90(n0));
         Line L1 = Line::fromPointDirection(B0, rot90(n1));
-            
+
         std::vector<double> rts = C1.roots(L0);
         for(unsigned i = 0; i < rts.size(); i++) {
             Point P = L0.pointAt(rts[i]);
@@ -366,7 +367,7 @@ std::vector<Point> decompose_degenerate(xAx const & C1, xAx const & C2, xAx cons
          * alternatively, there may be a way to determine this directly from xC0
          */
         assert(L2sq(g) != 0);
-            
+
         Line Lx = Line::fromPointDirection(trial_pt, g); // a line along the gradient
         double A[2][2] = {{2*xC0.c[0], xC0.c[1]},
                           {xC0.c[1], 2*xC0.c[2]}};
@@ -395,7 +396,7 @@ double xAx_descr(xAx const & C) {
     double mC[3][3] = {{C.c[0], (C.c[1])/2, (C.c[3])/2},
                        {(C.c[1])/2, C.c[2], (C.c[4])/2},
                        {(C.c[3])/2, (C.c[4])/2, C.c[5]}};
-    
+
     return det3(mC);
 }
 
@@ -414,7 +415,7 @@ std::vector<Point> intersect(xAx const & C1, xAx const & C2) {
     SBasis C[3][3] = {{T*C1.c[0]+S*C2.c[0], (T*C1.c[1]+S*C2.c[1])/2, (T*C1.c[3]+S*C2.c[3])/2},
                       {(T*C1.c[1]+S*C2.c[1])/2, T*C1.c[2]+S*C2.c[2], (T*C1.c[4]+S*C2.c[4])/2},
                       {(T*C1.c[3]+S*C2.c[3])/2, (T*C1.c[4]+S*C2.c[4])/2, T*C1.c[5]+S*C2.c[5]}};
-    
+
     SBasis D = det3(C);
     std::vector<double> rts = Geom::roots(D);
     if(rts.empty()) {
@@ -423,7 +424,7 @@ std::vector<Point> intersect(xAx const & C1, xAx const & C2) {
         SBasis C[3][3] = {{T*C1.c[0]+S*C2.c[0], (T*C1.c[1]+S*C2.c[1])/2, (T*C1.c[3]+S*C2.c[3])/2},
                           {(T*C1.c[1]+S*C2.c[1])/2, T*C1.c[2]+S*C2.c[2], (T*C1.c[4]+S*C2.c[4])/2},
                           {(T*C1.c[3]+S*C2.c[3])/2, (T*C1.c[4]+S*C2.c[4])/2, T*C1.c[5]+S*C2.c[5]}};
-        
+
         D = det3(C);
         rts = Geom::roots(D);
     }
@@ -436,9 +437,9 @@ std::vector<Point> intersect(xAx const & C1, xAx const & C2) {
         double s = S.valueAt(rts[i]);
         xAx xC0 = C1*t + C2*s;
         //::draw(cr, xC0, screen_rect); // degen
-        
+
         return decompose_degenerate(C1, C2, xC0);
-        
+
 
     } else {
         std::cout << "What?\n";
@@ -451,19 +452,19 @@ std::vector<Point> intersect(xAx const & C1, xAx const & C2) {
 xAx xAx::fromPoint(Point p) {
   return xAx(1., 0, 1., -2*p[0], -2*p[1], dot(p,p));
 }
-  
+
 xAx xAx::fromDistPoint(Point /*p*/, double /*d*/) {
     return xAx();//1., 0, 1., -2*(1+d)*p[0], -2*(1+d)*p[1], dot(p,p)+d*d);
 }
-  
+
 xAx xAx::fromLine(Point n, double d) {
   return xAx(n[0]*n[0], 2*n[0]*n[1], n[1]*n[1], 2*d*n[0], 2*d*n[1], d*d);
 }
-  
+
 xAx xAx::fromLine(Line l) {
   double dist;
   Point norm = l.normalAndDist(dist);
-    
+
   return fromLine(norm, dist);
 }
 
@@ -479,12 +480,12 @@ xAx xAx::fromPoints(std::vector<Geom::Point> const &pt) {
         vv[3] = P[0];
         vv[4] = P[1];
     }
-            
+
     Geom::NL::LinearSystem ls(M, V);
-    
+
     Geom::NL::Vector x = ls.SV_solve();
     return Geom::xAx(x[0], x[1], x[2], x[3], x[4], 1);
-    
+
 }
 
 
@@ -504,7 +505,7 @@ Point xAx::gradient(Point p)  const{
   return Point(2*c[0]*x + c[1]*y + c[3],
 	       c[1]*x + 2*c[2]*y + c[4]);
 }
-  
+
 xAx xAx::operator-(xAx const &b) const {
   xAx res;
   for(int i = 0; i < 6; i++) {
@@ -527,7 +528,7 @@ xAx xAx::operator+(double const &b) const {
   res.c[5] = c[5] + b;
   return res;
 }
-    
+
 xAx xAx::operator*(double const &b) const {
   xAx res;
   for(int i = 0; i < 6; i++) {
@@ -535,7 +536,7 @@ xAx xAx::operator*(double const &b) const {
   }
   return res;
 }
-    
+
   std::vector<Point> xAx::crossings(Rect r) const {
     std::vector<Point> res;
   for(int ei = 0; ei < 4; ei++) {
@@ -549,7 +550,7 @@ xAx xAx::operator*(double const &b) const {
   }
   return res;
 }
-    
+
   boost::optional<RatQuad> xAx::toCurve(Rect const & bnd) const {
   std::vector<Point> crs = crossings(bnd);
   if(crs.size() == 1) {
@@ -582,14 +583,14 @@ xAx xAx::operator*(double const &b) const {
       }
       if(besti >= 0) {
 	Point B = bisector.pointAt(bisect_rts[besti]);
-        
+
         Point dA = gradient(A);
         Point dC = gradient(C);
         if(L2sq(dA) <= 1e-10 or L2sq(dC) <= 1e-10) {
             return RatQuad::fromPointsTangents(A, C-A, B, C, A-C);
         }
-        
-	RatQuad rq = RatQuad::fromPointsTangents(A, rot90(dA), 
+
+	RatQuad rq = RatQuad::fromPointsTangents(A, rot90(dA),
 						 B, C, rot90(dC));
 	return rq;
 	//std::vector<SBasis> hrq = rq.homogenous();
@@ -603,7 +604,7 @@ xAx xAx::operator*(double const &b) const {
   }
   return boost::optional<RatQuad>();
 }
-    
+
   std::vector<double> xAx::roots(Point d, Point o) const {
   // Find the roots on line l
   // form the quadratic Q(t) = 0 by composing l with xAx
@@ -621,7 +622,7 @@ xAx xAx::operator*(double const &b) const {
     r.push_back(-q0/q1);
   } else {
     double desc = q1*q1 - 4*q2*q0;
-    /*std::cout << q2 << ", " 
+    /*std::cout << q2 << ", "
       << q1 << ", "
       << q0 << "; "
       << desc << "\n";*/
@@ -642,7 +643,7 @@ xAx xAx::operator*(double const &b) const {
 std::vector<double> xAx::roots(Line const &l) const {
   return roots(l.versor(), l.origin());
 }
-  
+
 Interval xAx::quad_ex(double a, double b, double c, Interval ivl) {
   double cx = -b*0.5/a;
   Interval bnds((a*ivl[0]+b)*ivl[0]+c, (a*ivl[1]+b)*ivl[1]+c);
@@ -650,13 +651,13 @@ Interval xAx::quad_ex(double a, double b, double c, Interval ivl) {
     bnds.extendTo((a*cx+b)*cx+c);
   return bnds;
 }
-    
+
 Geom::Matrix xAx::hessian() const {
   return Matrix(2*c[0], c[1],
 		c[1], 2*c[2],
 		0, 0);
 }
-    
+
 
 boost::optional<Point> solve(double A[2][2], double b[2]) {
     double const determ = det(A);
@@ -677,11 +678,11 @@ boost::optional<Point> xAx::bottom() const {
     return solve(A, b);
     //return Point(-c[3], -c[4])*hessian().inverse();
 }
-    
+
 Interval xAx::extrema(Rect r) const {
   if (c[0] == 0 and c[1] == 0 and c[2] == 0) {
     Interval ext(valueAt(r.corner(0)));
-    for(int i = 1; i < 4; i++) 
+    for(int i = 1; i < 4; i++)
       ext |= Interval(valueAt(r.corner(i)));
     return ext;
   }
@@ -704,6 +705,273 @@ bool xAx::isDegenerate() const {
     return false; // XXX:
 }
 
+
+
+
+
+
+
+
+/*
+ *  helper functions
+ */
+
+bool at_infinity (Point const& p)
+{
+    if (p[X] == infinity() || p[X] == -infinity()
+        || p[Y] == infinity() || p[Y] == -infinity())
+    {
+        return true;
+    }
+    return false;
+}
+
+
+
+
+/*
+ *  Define a conic section by computing the one that fits better with
+ *  N points.
+ *
+ *  points: points to fit
+ *
+ *  precondition: there must be at least 5 non-overlapping points
+ */
+void xAx::set(std::vector<Point> const& points)
+{
+    size_t sz = points.size();
+    if (sz < 5)
+    {
+        THROW_RANGEERROR("fitting error: too few points passed");
+    }
+    NL::LFMConicSection model;
+    NL::least_squeares_fitter<NL::LFMConicSection> fitter(model, sz);
+
+    for (size_t i = 0; i < sz; ++i)
+    {
+        fitter.append(points[i]);
+    }
+    fitter.update();
+
+    NL::Vector z(sz, 0.0);
+    model.instance(*this, fitter.result(z));
+}
+
+/*
+ *  Define a section conic by providing the coordinates of one of its vertex,
+ *  the major axis inclination angle and the coordinates of its foci
+ *  with respect to the unidimensional system defined by the major axis with
+ *  origin set at the provided vertex.
+ *
+ *  _vertex :   section conic vertex V
+ *  _angle :    section conic major axis angle
+ *  _dist1:     +/-distance btw V and nearest focus
+ *  _dist2:     +/-distance btw V and farest focus
+ *
+ *  prerequisite: _dist1 <= _dist2
+ */
+void xAx::set (const Point& _vertex, double _angle, double _dist1, double _dist2)
+{
+    if (_dist2 == infinity() || _dist2 == -infinity())  // parabola
+    {
+        if (_dist1 == infinity()) // degenerate to a line
+        {
+            Line l(_vertex, _angle);
+            std::vector<double> lcoeff = l.implicit_form_coefficients();
+            coeff(3) = lcoeff[0];
+            coeff(4) = lcoeff[1];
+            coeff(5) = lcoeff[2];
+            return;
+        }
+
+        // y^2 - 4px == 0
+        double cD = -4 * _dist1;
+
+        double cosa = std::cos (_angle);
+        double sina = std::sin (_angle);
+        double cca = cosa * cosa;
+        double ssa = sina * sina;
+        double csa = cosa * sina;
+
+        coeff(0) = ssa;
+        coeff(1) = -2 * csa;
+        coeff(2) = cca;
+        coeff(3) = cD * cosa;
+        coeff(4) = cD * sina;
+
+        double VxVx = _vertex[X] * _vertex[X];
+        double VxVy = _vertex[X] * _vertex[Y];
+        double VyVy = _vertex[Y] * _vertex[Y];
+
+        coeff(5) = coeff(0) * VxVx + coeff(1) * VxVy + coeff(2) * VyVy
+               - coeff(3) * _vertex[X] - coeff(4) * _vertex[Y];
+        coeff(3) -= (2 * coeff(0) * _vertex[X] + coeff(1) * _vertex[Y]);
+        coeff(4) -= (2 * coeff(2) * _vertex[Y] + coeff(1) * _vertex[X]);
+
+        return;
+    }
+
+    if (std::fabs(_dist1) > std::fabs(_dist2))
+    {
+        std::swap (_dist1, _dist2);
+    }
+    if (_dist1 < 0)
+    {
+        _angle -= M_PI;
+        _dist1 = -_dist1;
+        _dist2 = -_dist2;
+    }
+
+    // ellipse and hyperbola
+    double lin_ecc = (_dist2 - _dist1) / 2;
+    double rx = (_dist2 + _dist1) / 2;
+
+    double cA = rx * rx - lin_ecc * lin_ecc;
+    double cC = rx * rx;
+    double cF = - cA * cC;
+//    std::cout << "cA: " << cA << std::endl;
+//    std::cout << "cC: " << cC << std::endl;
+//    std::cout << "cF: " << cF << std::endl;
+
+    double cosa = std::cos (_angle);
+    double sina = std::sin (_angle);
+    double cca = cosa * cosa;
+    double ssa = sina * sina;
+    double csa = cosa * sina;
+
+    coeff(0) = cca * cA + ssa * cC;
+    coeff(2) = ssa * cA + cca * cC;
+    coeff(1) = 2 * csa * (cA - cC);
+
+    Point C (rx * cosa + _vertex[X], rx * sina + _vertex[Y]);
+    double CxCx = C[X] * C[X];
+    double CxCy = C[X] * C[Y];
+    double CyCy = C[Y] * C[Y];
+
+    coeff(3) = -2 * coeff(0) * C[X] - coeff(1) * C[Y];
+    coeff(4) = -2 * coeff(2) * C[Y] - coeff(1) * C[X];
+    coeff(5) = cF + coeff(0) * CxCx + coeff(1) * CxCy + coeff(2) * CyCy;
+}
+
+/*
+ *  Define a conic section by providing one of its vertex and its foci.
+ *
+ *  _vertex: section conic vertex
+ *  _focus1: section conic focus
+ *  _focus2: section conic focus
+ */
+void xAx::set (const Point& _vertex, const Point& _focus1, const Point& _focus2)
+{
+    if (at_infinity(_vertex))
+    {
+        THROW_RANGEERROR("case not handled: vertex at infinity");
+    }
+    if (at_infinity(_focus2))
+    {
+        if (at_infinity(_focus1))
+        {
+            THROW_RANGEERROR("case not handled: both focus at infinity");
+        }
+        Point VF = _focus1 - _vertex;
+        double dist1 = L2(VF);
+        double angle = atan2(VF);
+        set(_vertex, angle, dist1, infinity());
+        return;
+    }
+    else if (at_infinity(_focus1))
+    {
+        Point VF = _focus2 - _vertex;
+        double dist1 = L2(VF);
+        double angle = atan2(VF);
+        set(_vertex, angle, dist1, infinity());
+        return;
+    }
+    assert (are_collinear (_vertex, _focus1, _focus2));
+    if (!are_near(_vertex, _focus1))
+    {
+        Point VF = _focus1 - _vertex;
+        Line axis(_vertex, _focus1);
+        double angle = atan2(VF);
+        double dist1 = L2(VF);
+        double dist2 = distance (_vertex, _focus2);
+        double t = axis.timeAt(_focus2);
+        if (t < 0)  dist2 = -dist2;
+//        std::cout << "t = " << t << std::endl;
+//        std::cout << "dist2 = " << dist2 << std::endl;
+        set (_vertex, angle, dist1, dist2);
+    }
+    else if (!are_near(_vertex, _focus2))
+    {
+        Point VF = _focus2 - _vertex;
+        double angle = atan2(VF);
+        double dist1 = 0;
+        double dist2 = L2(VF);
+        set (_vertex, angle, dist1, dist2);
+    }
+    else
+    {
+        coeff(0) = coeff(2) = 1;
+        coeff(1) = coeff(3) = coeff(4) = coeff(5) = 0;
+    }
+}
+
+
+/*
+ *  Compute the solutions of the conic section algebraic equation with respect to
+ *  one coordinate after substituting to the other coordinate the passed value
+ *
+ *  sol: the computed solutions
+ *  v:   the provided value
+ *  d:   the index of the coordinate the passed value have to be substituted to
+ */
+void xAx::roots (std::vector<double>& sol, Coord v, Dim2 d) const
+{
+    sol.clear();
+    if (d < 0 || d > Y)
+    {
+        THROW_RANGEERROR("dimension parameter out of range");
+    }
+
+    // p*t^2 + q*t + r = 0;
+    double p, q, r;
+
+    if (d == X)
+    {
+        p = coeff(2);
+        q = coeff(4) + coeff(1) * v;
+        r = coeff(5) + (coeff(0) * v + coeff(3)) * v;
+    }
+    else
+    {
+        p = coeff(0);
+        q = coeff(3) + coeff(1) * v;
+        r = coeff(5) + (coeff(2) * v + coeff(4)) * v;
+    }
+
+    if (are_near(p, 0, 1e-8))
+    {
+        if (are_near(q, 0, 1e-8))  return;
+        double t = -r/q;
+        sol.push_back(t);
+        return;
+    }
+    double delta = q*q - 4*p*r;
+    //std::cout << "delta = " << delta << std::endl;
+    if (delta < 0)  return;
+    double p2 = 2 * p;
+    if (are_near(delta, 0, 1e-8))
+    {
+        double t = -q / p2;
+        sol.push_back(t);
+        return;
+    }
+    // else
+    double srd = std::sqrt(delta);
+    double t1 = -(q + srd) / p2;
+    double t2 = (-q + srd) / p2;
+    sol.push_back(t1);
+    sol.push_back(t2);
+}
 
 } // end namespace Geom
 

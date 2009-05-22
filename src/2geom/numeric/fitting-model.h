@@ -43,6 +43,7 @@
 #include <2geom/ellipse.h>
 #include <2geom/circle.h>
 #include <2geom/utils.h>
+#include <2geom/conicsec.h>
 
 
 namespace Geom { namespace NL {
@@ -83,6 +84,10 @@ namespace Geom { namespace NL {
  *   instance type:  the type of the objects produced by using
  *                   the fitting raw data solution
  */
+
+
+
+
 template< typename ParameterType, typename ValueType, typename InstanceType >
 class LinearFittingModel
 {
@@ -230,8 +235,32 @@ class LFMNormalizedPowerBasis
 // incomplete model, it can be inherited to make up different kinds of
 // instance type; the raw data is a vector of coefficients of the equation
 // of an ellipse curve
+//template< typename InstanceType >
+//class LFMEllipseEquation
+//    : public LinearFittingModelWithFixedTerms<Point, double, InstanceType>
+//{
+//  public:
+//    void feed( VectorView & coeff, double & fixed_term, Point const& p ) const
+//    {
+//        coeff[0] = p[X] * p[Y];
+//        coeff[1] = p[Y] * p[Y];
+//        coeff[2] = p[X];
+//        coeff[3] = p[Y];
+//        coeff[4] = 1;
+//        fixed_term = p[X] * p[X];
+//    }
+//
+//    size_t size() const
+//    {
+//        return 5;
+//    }
+//};
+
+// incomplete model, it can be inherited to make up different kinds of
+// instance type; the raw data is a vector of coefficients of the equation
+// of a conic section
 template< typename InstanceType >
-class LFMEllipseEquation
+class LFMConicEquation
     : public LinearFittingModelWithFixedTerms<Point, double, InstanceType>
 {
   public:
@@ -251,10 +280,20 @@ class LFMEllipseEquation
     }
 };
 
+// this model generates Ellipse curves
+class LFMConicSection
+    : public LFMConicEquation<xAx>
+{
+  public:
+    void instance(xAx & c, ConstVectorView const& coeff) const
+    {
+        c.set(1, coeff[0], coeff[1], coeff[2], coeff[3], coeff[4]);
+    }
+};
 
 // this model generates Ellipse curves
 class LFMEllipse
-    : public LFMEllipseEquation<Ellipse>
+    : public LFMConicEquation<Ellipse>
 {
   public:
     void instance(Ellipse & e, ConstVectorView const& coeff) const

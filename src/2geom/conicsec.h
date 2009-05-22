@@ -35,9 +35,20 @@
 #ifndef _2GEOM_CONIC_SECTION_H_
 #define _2GEOM_CONIC_SECTION_H_
 
-#include <2geom/point.h>
 #include <2geom/exception.h>
+#include <2geom/rect.h>
+#include <2geom/matrix.h>
+#include <2geom/point.h>
+#include <2geom/line.h>
 #include <2geom/bezier-curve.h>
+
+#include <boost/optional/optional.hpp>
+
+#include <string>
+#include <vector>
+#include <ostream>
+
+
 
 
 namespace Geom
@@ -47,7 +58,7 @@ class RatQuad{
     /**
      * A curve of the form B02*A + B12*B*w + B22*C/(B02 + B12*w + B22)
      * These curves can exactly represent a piece conic section less than a certain angle (find out)
-     * 
+     *
      **/
 
 public:
@@ -60,35 +71,106 @@ public:
         P[2] = c;
     }
     double lambda() const;
-  
+
     static RatQuad fromPointsTangents(Point P0, Point dP0,
                                       Point P,
                                       Point P2, Point dP2);
     static RatQuad circularArc(Point P0, Point P1, Point P2);
-  
+
     CubicBezier toCubic() const;
     CubicBezier toCubic(double lam) const;
 
     Point pointAt(double t) const;
     Point at0() const {return P[0];}
     Point at1() const {return P[2];}
-  
+
     void split(RatQuad &a, RatQuad &b) const;
 
     D2<SBasis> hermite() const;
     std::vector<SBasis> homogenous() const;
 };
 
+
+
+
 class xAx{
 public:
     double c[6];
 
-    xAx(double c0, double c1, double c2, double c3, double c4, double c5) {
+
+    xAx() {}
+
+    /*
+     *  Define the conic section by its algebraic equation coefficients
+     *
+     *  c0, .., c5: equation coefficients
+     */
+    xAx (double c0, double c1, double c2, double c3, double c4, double c5)
+    {
+        set (c0, c1, c2, c3, c4, c5);
+    }
+
+    /*
+     *  Define a conic section by computing the one that fits better with
+     *  N points.
+     *
+     *  points: points to fit
+     *
+     *  precondition: there must be at least 5 non-overlapping points
+     */
+    xAx (std::vector<Point> const& points)
+    {
+        set (points);
+    }
+
+    /*
+     *  Define a section conic by providing the coordinates of one of its
+     *  vertex,the major axis inclination angle and the coordinates of its foci
+     *  with respect to the unidimensional system defined by the major axis with
+     *  origin set at the provided vertex.
+     *
+     *  _vertex :   section conic vertex V
+     *  _angle :    section conic major axis angle
+     *  _dist1:     +/-distance btw V and nearest focus
+     *  _dist2:     +/-distance btw V and farest focus
+     *
+     *  prerequisite: _dist1 <= _dist2
+     */
+    xAx (const Point& _vertex, double _angle, double _dist1, double _dist2)
+    {
+        set (_vertex, _angle, _dist1, _dist2);
+    }
+
+    /*
+     *  Define a conic section by providing one of its vertex and its foci.
+     *
+     *  _vertex: section conic vertex
+     *  _focus1: section conic focus
+     *  _focus2: section conic focus
+     */
+    xAx (const Point& _vertex, const Point& _focus1, const Point& _focus2)
+    {
+        set(_vertex, _focus1, _focus2);
+    }
+
+    /*
+     *  Define the conic section by its algebraic equation coefficients
+     *  c0, ..., c5: equation coefficients
+     */
+    void set (double c0, double c1, double c2, double c3, double c4, double c5)
+    {
         c[0] = c0;   c[1] = c1;   c[2] = c2; // xx, xy, yy
         c[3] = c3;   c[4] = c4; // x, y
         c[5] = c5; // 1
     }
-    xAx() {}
+
+    void set (std::vector<Point> const& points);
+
+    void set (const Point& _vertex, double _angle, double _dist1, double _dist2);
+
+    void set (const Point& _vertex, const Point& _focus1, const Point& _focus2);
+
+
     std::string categorise() const;
     bool isDegenerate() const;
     static xAx fromPoint(Point p);
@@ -97,13 +179,14 @@ public:
     static xAx fromLine(Line l);
     static xAx fromPoints(std::vector<Point> const &pts);
 
+
     template<typename T>
     T evaluate_at(T x, T y) const {
         return c[0]*x*x + c[1]*x*y + c[2]*y*y + c[3]*x + c[4]*y + c[5];
     }
 
     double valueAt(Point P) const;
-    
+
     std::vector<double> implicit_form_coefficients() const {
         return std::vector<double>(c, c+6);
     }
@@ -116,29 +199,50 @@ public:
     xAx scale(double sx, double sy) const;
 
     Point gradient(Point p) const;
-  
+
     xAx operator-(xAx const &b) const;
     xAx operator+(xAx const &b) const;
     xAx operator+(double const &b) const;
     xAx operator*(double const &b) const;
-    
+
     std::vector<Point> crossings(Rect r) const;
     boost::optional<RatQuad> toCurve(Rect const & bnd) const;
     std::vector<double> roots(Point d, Point o) const;
 
     std::vector<double> roots(Line const &l) const;
-  
+
     static Interval quad_ex(double a, double b, double c, Interval ivl);
-    
+
     Geom::Matrix hessian() const;
-    
+
     boost::optional<Point> bottom() const;
-    
+
     Interval extrema(Rect r) const;
+
+    /*
+     *  Return the i-th coefficient of the conic section algebraic equation
+     *  Modifying the returned value does not modify the conic section coefficient
+     */
+    double coeff (size_t i) const
+    {
+        return c[i];
+    }
+
+    /*
+     *  Return the i-th coefficient of the conic section algebraic equation
+     *  Modifying the returned value modifies the conic section coefficient
+     */
+    double& coeff (size_t i)
+    {
+        return c[i];
+    }
+
+    void roots (std::vector<double>& sol, Coord v, Dim2 d) const;
+
 };
 
 std::vector<Point> intersect(const xAx & C1, const xAx & C2);
-    
+
 inline std::ostream &operator<< (std::ostream &out_file, const xAx &x) {
     for(int i = 0; i < 6; i++) {
         out_file << x.c[i] << ", ";

@@ -55,18 +55,18 @@ OptCrossing intersection_impl(Point const& V1, Point const O1,
     Crossing c;
     c.ta = detBV2 * inv_detV1V2;
     c.tb = detV1B * inv_detV1V2;
-//	std::cerr << "ta = " << solution.ta << std::endl;
-//	std::cerr << "tb = " << solution.tb << std::endl;
+//	std::cerr << "ta = " << c.ta << std::endl;
+//	std::cerr << "tb = " << c.tb << std::endl;
     return OptCrossing(c);
 }
 
 
 OptCrossing intersection_impl(Ray const& r1, Line const& l2, unsigned int i)
 {
-    OptCrossing crossing = 
+    OptCrossing crossing =
         intersection_impl(r1.versor(), r1.origin(),
                           l2.versor(), l2.origin() );
-    
+
     if (crossing)
     {
         if (crossing->ta < 0)
@@ -97,7 +97,7 @@ OptCrossing intersection_impl( LineSegment const& ls1,
                                Line const& l2,
                                unsigned int i )
 {
-    OptCrossing crossing = 
+    OptCrossing crossing =
         intersection_impl(ls1.finalPoint() - ls1.initialPoint(),
                           ls1.initialPoint(),
                           l2.versor(),
@@ -135,7 +135,7 @@ OptCrossing intersection_impl( LineSegment const& ls1,
                                unsigned int i )
 {
     Point direction = ls1.finalPoint() - ls1.initialPoint();
-    OptCrossing crossing = 
+    OptCrossing crossing =
         intersection_impl( direction,
                            ls1.initialPoint(),
                            r2.versor(),
@@ -143,9 +143,9 @@ OptCrossing intersection_impl( LineSegment const& ls1,
 
     if (crossing)
     {
-        if ( crossing->getTime(0) < 0
-             || crossing->getTime(0) > 1
-             || crossing->getTime(1) < 0 )
+        if ( (crossing->getTime(0) < 0)
+             || (crossing->getTime(0) > 1)
+             || (crossing->getTime(1) < 0) )
         {
             return OptCrossing();
         }
@@ -203,7 +203,7 @@ OptCrossing intersection_impl( LineSegment const& ls1,
 
 OptCrossing intersection(Line const& l1, Line const& l2)
 {
-    OptCrossing crossing = 
+    OptCrossing crossing =
         detail::intersection_impl( l1.versor(), l1.origin(),
                                    l2.versor(), l2.origin() );
     if (crossing)
@@ -223,7 +223,7 @@ OptCrossing intersection(Line const& l1, Line const& l2)
 
 OptCrossing intersection(Ray const& r1, Ray const& r2)
 {
-    OptCrossing crossing = 
+    OptCrossing crossing =
     detail::intersection_impl( r1.versor(), r1.origin(),
                                r2.versor(), r2.origin() );
 
