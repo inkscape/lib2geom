@@ -342,6 +342,10 @@ std::vector<Point> decompose_degenerate(xAx const & C1, xAx const & C2, xAx cons
         }
     } else {
         // single or double line
+        // check for completely zero case (what to do?)
+        assert(xC0.c[0] || xC0.c[1] ||
+               xC0.c[2] || xC0.c[3] ||
+               xC0.c[4] || xC0.c[5]);
         Point trial_pt(0,0);
         Point g = xC0.gradient(trial_pt);
         if(L2sq(g) == 0) {
@@ -351,18 +355,23 @@ std::vector<Point> decompose_degenerate(xAx const & C1, xAx const & C2, xAx cons
                 trial_pt[1] += 1;
                 g = xC0.gradient(trial_pt);
                 if(L2sq(g) == 0) {
-                    trial_pt[1] += 1;
+                    trial_pt[0] += 1;
                     g = xC0.gradient(trial_pt);
+                    if(L2sq(g) == 0) {
+                        trial_pt = Point(1.5,0.5);
+                        g = xC0.gradient(trial_pt);
+                    }
                 }
             }
         }
         //std::cout << trial_pt << ", " << g << "\n";
         /**
-         * At this point we have tried up to 4 points: 0,0, 1,0, 1,1, 1,2
+         * At this point we have tried up to 4 points: 0,0, 1,0, 1,1, 2,1, 1.5,1.5
          *
-         * I'm pretty sure that no degenerate conic can pass through these points, so we can assume
-         * that we've found a perpendicular to the double line.  Prove. (6 points in the general
-         * case, but what are they?)
+         * No degenerate conic can pass through these points, so we can assume
+         * that we've found a perpendicular to the double line.  
+         * Proof:
+         *  any degenerate must consist of at most 2 lines.  1.5,0.5 is not on any pair of lines passing through the previous 4 trials.
          *
          * alternatively, there may be a way to determine this directly from xC0
          */
