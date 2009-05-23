@@ -54,7 +54,7 @@ enum enum_add_to_group {
 };
 
 
-enum split_strategy { 
+enum enum_split_strategy { 
     QUADRATIC_SPIT = 0,
     LINEAR_COST
 };
@@ -65,16 +65,23 @@ template <typename T>
 class pedantic_vector:public std::vector<T> {
 public:
     pedantic_vector(size_t s=0) : std::vector<T>(s) {}
-    T& operator[](int i) {
-        assert(i >= 0);
+    T& operator[](unsigned i) {
+        //assert(i >= 0);
         assert(i < std::vector<T>::size());
         return std::vector<T>::operator[](i);
     }
-    T const& operator[](int i) const {
-        assert(i >= 0);
+    T const& operator[](unsigned i) const {
+        //assert(i >= 0);
         assert(i < std::vector<T>::size());
         return std::vector<T>::operator[](i);
     }
+/*
+    erase( std::vector<T>::iterator it ) {
+        //assert(i >= 0);
+        assert( it < std::vector<T>::size());
+        return std::vector<T>::erase(it);
+    }
+*/
 };
 
 class RTreeNode;
@@ -126,8 +133,11 @@ class RTreeNode{
 public:
     // first: bounding box
     // second: "data" (leaf-node) or node (NON leaf-node)
-    pedantic_vector< RTreeRecord_Leaf > children_leaves; // if this is empty, then node is leaf-node
-    pedantic_vector< RTreeRecord_NonLeaf > children_nodes;  // if this is empty, then node is NON-leaf node
+    //pedantic_vector< RTreeRecord_Leaf > children_leaves; // if this is empty, then node is leaf-node
+    //pedantic_vector< RTreeRecord_NonLeaf > children_nodes;  // if this is empty, then node is NON-leaf node
+
+    std::vector< RTreeRecord_Leaf > children_leaves; // if this is empty, then node is leaf-node
+    std::vector< RTreeRecord_NonLeaf > children_nodes;  // if this is empty, then node is NON-leaf node
 
     RTreeNode(): children_leaves(0), children_nodes(0)
     {}
@@ -142,25 +152,37 @@ public:
     unsigned max_nodes; // allow +1 (used during insert)
     unsigned min_nodes;
 
-    RTree( unsigned min_n, unsigned max_n ): 
-        root(0), max_nodes( max_n ), min_nodes( min_n )
+    enum_split_strategy split_strategy;
+
+    RTree( unsigned min_n, unsigned max_n, enum_split_strategy split_s ): 
+        root(0), max_nodes( max_n ), min_nodes( min_n ), split_strategy( split_s )
     {}
 
     void insert( Rect const &r, int shape);
-    void search( Rect const &search_area, std::vector< int >* result, const RTreeNode* subtree ) const;
+    void search( const Rect &search_area, std::vector< int >* result, const RTreeNode* subtree ) const;
+    int erase( const RTreeRecord_Leaf & search );
+//  update
 
-    void print_tree(RTreeNode* subtree_root, int depth, bool break_on_first_iteration = false);
+    void print_tree(RTreeNode* subtree_root, int depth, bool break_on_first_iteration = false) const;
 
 private:
-    void insert( Rect const &r, int shape, unsigned min_nodes, unsigned max_nodes );
+    void insert(  Rect const &r, 
+                int shape, 
+                unsigned min_nodes, 
+                unsigned max_nodes 
+/*
+                const bool insert_high = false, 
+                const unsigned stop_height = 0,
+                const RTreeRecord_NonLeaf* nonleaf_record_to_insert = 0 */);
     // I1
-    RTreeNode* choose_leaf( Rect const &r );
-    double find_enlargement( Rect const &a, Rect const &b );
+    RTreeNode* choose_node( const Rect &r /*, const bool insert_high = false, const unsigned stop_height=0*/) const;
+    double find_enlargement( const Rect &a, const Rect &b ) const;
 
     // I2
+    std::pair<RTreeNode*, RTreeNode*> split_node( RTreeNode *s, unsigned min_nodes );
         // QUADRATIC_SPIT
     std::pair<RTreeNode*, RTreeNode*> quadratic_split( RTreeNode* s, unsigned min_nodes );
-    std::pair<unsigned, unsigned> pick_seeds( RTreeNode* s );
+    std::pair<unsigned, unsigned> pick_seeds( RTreeNode* s ) const;
     std::pair<unsigned, enum_add_to_group>  pick_next( RTreeNode* group_a, RTreeNode* group_b, RTreeNode* s, std::vector<bool> &assigned_v );
         // others...
 
@@ -170,10 +192,13 @@ private:
                             bool split_performed, 
                             unsigned min_nodes,
                             unsigned max_nodes );
-    std::pair< RTreeNode*, bool > find_parent( RTreeNode* subtree_root, Rect search_area, RTreeNode* wanted );
+    std::pair< RTreeNode*, bool > find_parent( RTreeNode* subtree_root, Rect search_area, RTreeNode* wanted ) const;
     void copy_group_a_to_existing_node( RTreeNode *position, RTreeNode* group_a );
-    RTreeRecord_NonLeaf create_nonleaf_record_from_rtreenode( Rect &new_entry_bounding,RTreeNode *rtreenode );
+    RTreeRecord_NonLeaf create_nonleaf_record_from_rtreenode( Rect &new_entry_bounding, RTreeNode *rtreenode );
     RTreeRecord_Leaf create_leaf_record_from_rtreenode( Rect &new_entry_bounding, RTreeNode *rtreenode );
+
+    // erase
+    RTreeNode* find_leaf( RTreeNode* subtree, const RTreeRecord_Leaf &search ) const;
 
 };
 

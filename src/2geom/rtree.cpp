@@ -27,7 +27,7 @@ namespace Geom{
 insert a new index entry E into the R-tree:
 
 I1) find position of new record:
-    choose_leaf will find a leaf node L (position) in which to place r
+    choose_node will find a leaf node L (position) in which to place r
 I2) add record to leaf node:
     if L has room for another entry install E
     else split_node will obtain L and LL containing E and all the old entries of L
@@ -49,7 +49,16 @@ void RTree::insert( Rect const &r, int shape ){
 
 
 
-void RTree::insert( Rect const &r, int shape, unsigned min_nodes, unsigned max_nodes ){
+void RTree::insert( Rect const &r, 
+                    int shape, 
+                    unsigned min_nodes, 
+                    unsigned max_nodes 
+            /*TODO 
+                const bool insert_high, 
+                const unsigned stop_height,
+                const RTreeRecord_NonLeaf* nonleaf_record_to_insert
+                */ )
+{
     _RTREE_PRINT("insert private");
     RTreeNode *position = 0;
 
@@ -59,32 +68,54 @@ void RTree::insert( Rect const &r, int shape, unsigned min_nodes, unsigned max_n
     }
 
     _RTREE_PRINT("I1");     // I1
-    position = choose_leaf( r );
+//TODO   if ! insert_high
+    position = choose_node( r ); // choose leaf node
+//TODO else {
+//    position = choose_node( rtreerecord_nonleaf.bounding_box, stop_height ); // choose nonleaf node
 
     std::pair< RTreeNode*, RTreeNode* > node_division;
     // when finished free the first, it's garbage. It has been saved to existing and second is added
 
     bool split_performed = false;
 
-    // position *is* a leaf node (due to choose_leaf)
-    if( position->children_leaves.size() < max_nodes ){
-        _RTREE_PRINT("I2 no split: " << position->children_leaves.size() );     // I2
-        position->children_leaves.push_back( RTreeRecord_Leaf( r, shape) );
-    }
-    else{
-        _RTREE_PRINT("I2 split: " << position->children_leaves.size() );     // I2
+    //TODO change this after refactor
+    // position *is* a leaf node (due to choose_node) 
+    if( position->children_nodes.size() > 0 ){
+        if( position->children_nodes.size() < max_nodes ){
+            _RTREE_PRINT("I2 no split: " << position->children_nodes.size() );     // I2
+            //TODO position->children_nodes.push_back( nonleaf_record_to_insert );
+        }
+        else{
+            _RTREE_PRINT("I2 split: " << position->children_nodes.size() );     // I2
 
-        // put new element in node temporarily. Later on, we will split the node.
-        position->children_leaves.push_back( RTreeRecord_Leaf( r, shape) ); 
-        node_division = quadratic_split( position, min_nodes );
-        
-        split_performed = true;
-/*
-        _RTREE_PRINT("      group A");
-        print_tree( node_division.first , 3 );
-        _RTREE_PRINT("      group B");
-        print_tree( node_division.second , 3 );
-*/
+            // put new element in node temporarily. Later on, we will split the node.
+            // TODO position->children_nodes.push_back( nonleaf_record_to_insert ); 
+            node_division = split_node( position, min_nodes);
+            
+            split_performed = true;
+
+        }
+    }
+    else { // leaf node: position 
+        if( position->children_leaves.size() < max_nodes ){
+            _RTREE_PRINT("I2 no split: " << position->children_leaves.size() );     // I2
+            position->children_leaves.push_back( RTreeRecord_Leaf( r, shape) );
+        }
+        else{
+            _RTREE_PRINT("I2 split: " << position->children_leaves.size() );     // I2
+
+            // put new element in node temporarily. Later on, we will split the node.
+            position->children_leaves.push_back( RTreeRecord_Leaf( r, shape) ); 
+            node_division = split_node( position, min_nodes );
+            
+            split_performed = true;
+    /*
+            _RTREE_PRINT("      group A");
+            print_tree( node_division.first , 3 );
+            _RTREE_PRINT("      group B");
+            print_tree( node_division.second , 3 );
+    */
+        }
     }
 
 //    _RTREE_PRINT("TREE:");
@@ -132,16 +163,24 @@ void RTree::insert( Rect const &r, int shape, unsigned min_nodes, unsigned max_n
 
 /* I1 =========================================================================
 
-choose_leaf will find a leaf node L in which to place r
+original: choose_node will find a leaf node L in which to place r
+changed to choose_node will find a node L in which to place r
+the node L is: TODO 
+non-leaf: if flag is set. the height of the node is insert_at_height
+leaf: if flag is NOT set
 
 1) Initialize: set N to be the root node
-2) Leaf Check: if N is leaf return N
+2) Leaf Check: 
+    insert_height = false 
+        if N is leaf return N
+    insert_height = true
 3) Choose subtree: If N not leaf then   
     let F be an entry in N whose rect Fi needs least enlargement to incude r
     ties resolved with rect of smallest area
 4) descend until a leaf is reached: set N to the child node pointed to by F and goto 2.
 */
-RTreeNode* RTree::choose_leaf( Rect const &r ){
+
+RTreeNode* RTree::choose_node( const Rect &r /*, const bool insert_high = false, const unsigned stop_height */) const {
 
     _RTREE_PRINT("  CL1");// CL1
     RTreeNode *pos = root;
@@ -150,8 +189,9 @@ RTreeNode* RTree::choose_leaf( Rect const &r ){
     double current_enlargement;
     int node_min_enlargement;
 
-    _RTREE_PRINT("  CL2");    // CL2 Leaf check
-    while( pos->children_nodes.size() != 0 ){
+    _RTREE_PRINT("  CL2");    
+    // CL2 Leaf check && Height check
+    while( pos->children_nodes.size() != 0 /* && check_height() */ ){
         _RTREE_PRINT("  CL3");    // CL3
         min_enlargement = std::numeric_limits<double>::max();
         current_enlargement = 0;
@@ -168,6 +208,7 @@ RTreeNode* RTree::choose_leaf( Rect const &r ){
         _RTREE_PRINT("  CL4");    // CL4
         // descend to the node with the min_enlargement
         pos = pos->children_nodes[node_min_enlargement].data; 
+        /* && TODO function that checks the height */
     }
     
     return pos;
@@ -180,7 +221,7 @@ enlargement that "a" needs in order to incude "b"
 b is the new rect we want to insert.
 a is the rect of the node we try to see if b should go in.
 */
-double RTree::find_enlargement( Rect const &a, Rect const &b ){
+double RTree::find_enlargement( const Rect &a, const Rect &b ) const{
     _RTREE_PRINT("      find_enlargement");
 
     Rect union_rect(a);
@@ -192,6 +233,11 @@ double RTree::find_enlargement( Rect const &a, Rect const &b ){
     }
     // there is intersection
     return union_rect.area() - a.area() - b.area() - a_intersection_b->area();
+}
+
+
+std::pair<RTreeNode*, RTreeNode*> RTree::split_node( RTreeNode *s, unsigned min_nodes ){
+    return quadratic_split( s, min_nodes );
 }
 
 /* I2 =========================================================================
@@ -211,7 +257,7 @@ QS3) select entry and assign:
     one with fewer entries, then to either of the two.
     goto 2.
 */
-std::pair<RTreeNode*, RTreeNode*> RTree::quadratic_split( RTreeNode *s, unsigned min_nodes ){
+std::pair<RTreeNode*, RTreeNode*> RTree::quadratic_split( RTreeNode *s, unsigned min_nodes ) {
 
     // s is the original leaf node or non-leaf node
     RTreeNode* group_a = new RTreeNode(); // a is the 1st group
@@ -230,12 +276,12 @@ std::pair<RTreeNode*, RTreeNode*> RTree::quadratic_split( RTreeNode *s, unsigned
         std::fill( assigned_v.begin(), assigned_v.end(), false );
 
         group_a->children_nodes.push_back( s->children_nodes[initial_seeds.first] );
-        assert(initial_seeds.first >= 0);
+        //assert(initial_seeds.first >= 0);
         assert(initial_seeds.first < assigned_v.size());
         assigned_v[ initial_seeds.first ] = true;
 
         group_b->children_nodes.push_back( s->children_nodes[initial_seeds.second] );
-        assert(initial_seeds.second >= 0);
+        //assert(initial_seeds.second >= 0);
         assert(initial_seeds.second < assigned_v.size());
         assigned_v[ initial_seeds.second ] = true;
 
@@ -294,13 +340,13 @@ std::pair<RTreeNode*, RTreeNode*> RTree::quadratic_split( RTreeNode *s, unsigned
 
         // assign 1st seed to group a
         group_a->children_leaves.push_back( s->children_leaves[initial_seeds.first] );
-        assert(initial_seeds.first >= 0);
+        //assert(initial_seeds.first >= 0);
         assert(initial_seeds.first < assigned_v.size());
         assigned_v[ initial_seeds.first ] = true;
 
         // assign 2nd seed to group b
         group_b->children_leaves.push_back( s->children_leaves[initial_seeds.second] );
-        assert(initial_seeds.second >= 0);
+        //assert(initial_seeds.second >= 0);
         assert(initial_seeds.second < assigned_v.size());
         assigned_v[ initial_seeds.second ] = true;
 
@@ -362,7 +408,7 @@ PS2) choose the most wastefull pair:
     Choose pair with largest d
 */
 
-std::pair<unsigned, unsigned> RTree::pick_seeds( RTreeNode *s ){
+std::pair<unsigned, unsigned> RTree::pick_seeds( RTreeNode *s ) const{
     double current_d = 0;
     double max_d = std::numeric_limits<double>::min();
     unsigned seed_a = 0;
@@ -484,7 +530,7 @@ std::pair<unsigned, enum_add_to_group> RTree::pick_next(    RTreeNode* group_a,
                 }
             }
         }
-        assert(max_increase_difference_node >= 0);
+        //assert(max_increase_difference_node >= 0);
         assert(max_increase_difference_node < assigned_v.size());
         assigned_v[max_increase_difference_node] = true;
         _RTREE_PRINT("      ... i:" << max_increase_difference_node << "assigned:" << assigned_v[max_increase_difference_node] );
@@ -528,7 +574,7 @@ std::pair<unsigned, enum_add_to_group> RTree::pick_next(    RTreeNode* group_a,
                 }
             }
         }
-        assert(max_increase_difference_node >= 0);
+        //assert(max_increase_difference_node >= 0);
         assert(max_increase_difference_node < assigned_v.size());
         assigned_v[max_increase_difference_node] = true;
         _RTREE_PRINT("      ... i:" << max_increase_difference_node << "assigned:" << assigned_v[max_increase_difference_node] );
@@ -681,7 +727,7 @@ If not we call find_parent again recursively
 
 std::pair< RTreeNode*, bool > RTree::find_parent( RTreeNode* subtree_root, 
                                 Rect search_area, 
-                                RTreeNode* wanted){
+                                RTreeNode* wanted) const{
     _RTREE_PRINT("find_parent");
 
     std::pair< RTreeNode*, bool > result;   
@@ -749,7 +795,7 @@ RTreeRecord_NonLeaf RTree::create_nonleaf_record_from_rtreenode( Rect &new_entry
     print the elements of the tree
     based on ordered tree walking 
 */
-void RTree::print_tree(RTreeNode* subtree_root, int depth, bool break_on_first_iteration ){
+void RTree::print_tree(RTreeNode* subtree_root, int depth, bool break_on_first_iteration ) const{
 
     if( subtree_root->children_nodes.size() > 0 ){ 
 
@@ -782,8 +828,9 @@ void RTree::print_tree(RTreeNode* subtree_root, int depth, bool break_on_first_i
 }
 
 
+
 /*=============================================================================
-TODO                            search
+                                search
 ===============================================================================
 Given an RTree whose root node is T find all index records whose rects overlap search rect S
 S1) Search subtrees:
@@ -795,7 +842,7 @@ S2) ELSE T is leaf
 */
 
 
-void RTree::search( Rect const &search_area, std::vector< int >* result, const RTreeNode* subtree ) const {
+void RTree::search( const Rect &search_area, std::vector< int >* result, const RTreeNode* subtree ) const {
     // S1
     if( subtree->children_nodes.size() > 0  ){   // non-leaf: subtree
         for( unsigned i = 0; i < subtree->children_nodes.size(); i++  ){
@@ -818,8 +865,107 @@ void RTree::search( Rect const &search_area, std::vector< int >* result, const R
 /*=============================================================================
 TODO                            erase
 ===============================================================================
+we changed steps D2)
+D1) Find node containing record
+    Invoke find_leaf() to locate the leaf node L containing E
+    IF record is found stop
+D2) Delete record
+    Remove E from L (it happens in find_leaf step FL2)
+D3) Propagate changes
+    Invoke condense_tree, passing L
+D4) Shorten tree
+    If root node has only one child, after the tree was adjusted, make the child new root
 */
 
+// zero success
+int RTree::erase( const RTreeRecord_Leaf & record_to_erase ){
+    // D1
+    RTreeNode* contains_record = find_leaf( root, record_to_erase );
+    if( !contains_record ){ // no entry returned from find_leaf
+        return 1; // no entry found
+    }
+    // D2: entry is deleted in find_leaf
+    // D3
+    //condense_tree();
+
+    // D4
+    return 0; // success
+}
+
+
+/*
+    find_leaf()
+Given an RTree whose root node is T find the leaf node containing index entry E
+
+FL1) Search subtrees
+    IF T is non leaf, check each entry F in T to determine if F I overlaps E I 
+        foreach such entry invoke find_leaf on the tree whose root is pointed to by F P until E is 
+        found or all entries have been checked
+FL2) search leaf node for record
+    IF T is leaf, check each entry to see if it matches E
+        IF E is found return T 
+        AND delete element E (step D2)
+*/
+
+RTreeNode* RTree::find_leaf( RTreeNode* subtree, const RTreeRecord_Leaf &record_to_erase ) const {
+    // FL1
+    if( subtree->children_nodes.size() > 0  ){   // non-leaf: subtree
+        for( std::vector< RTreeRecord_NonLeaf >::iterator it = subtree->children_nodes.begin(); it!=subtree->children_nodes.end(); ++it ){
+            if( it->bounding_box.intersects( record_to_erase.bounding_box ) ){
+                RTreeNode* t = find_leaf( it->data, record_to_erase );
+                if( t ){ // if search was successful terminate
+                    return t;
+                }
+            }
+        }
+    }
+    // FL2
+    else{   // leaf: subtree
+        for( std::vector< RTreeRecord_Leaf >::iterator it = subtree->children_leaves.begin(); it!=subtree->children_leaves.end(); ++it ){
+            if( it->data == record_to_erase.data ){
+                // delete element: implement step D2)
+                subtree->children_leaves.erase( it ); 
+                return subtree;
+            }
+        }
+    }
+    return 0;
+}
+
+
+/*
+    condense_tree()
+Given a Leaf node L from which an entry has been deleted eliminate the node if it has too few entries and reallocate its entries
+Propagate node elimination upwards as necessary
+Adjust all covering recsts n the path to the root making them smaller if possible
+
+CT1) Initialize
+    Set N=L 
+    Set Q the set of eliminated nodes to be empty
+CT2) Find parent entry
+    IF N is the root 
+        goto CT6
+    ELSE 
+        let P be the parent of N 
+        and let EN be N's entry in P
+CT3) Eliminate underfull node
+    IF N has fewer than m entries 
+        delete EN from P 
+        and add N to set Q
+CT4)ELSE adjust EN I to tightly contain all entries in N
+CT5) move up one level in tree
+    set N=P and repeat from CT2
+CT6) Re insert orphaned entries
+    Re-inser all entreis of nodes in set Q
+    Entries from eliminated leaf nodes are re-inserted in tree leaves (like in insert)
+    BUT non-leaf nodes must be placed higher in the tree so that leaves of their dependent subtrees
+    will be on the same level as leaves of the main tree. (on the same height they originally were)
+    (not in the source description)
+    the criteria for placing the node is again least enlargement
+
+*/
+
+//condense_tree()
 /*=============================================================================
 TODO                            update
 ===============================================================================

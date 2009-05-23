@@ -389,7 +389,7 @@ public:
 		//help_str(),
 		out_str( insert_str ), 
 		drawBB_str("ON"), drawBB_color_str("all"),
-		rtree( rmin, rmax )
+		rtree( rmin, rmax, QUADRATIC_SPIT )
 	{
 		std::cout<< "INIT\n";
         if( handles.empty() ) {
