@@ -44,7 +44,7 @@ using namespace std;
 
 // make sure that in RTreeToy() constructor you assign the same number of colors 
 // otherwise, they extra will be black :P
-const int no_of_colors = 3;
+const int no_of_colors = 8;
 const string search_str = "Mode: Search";
 const string insert_str = "Mode: Insert (Click whitespace and Drag) - Update (Click handle and Drag NOT implemented)" ;
 const string erase_str = "Mode: Delete(NOT implemented)";
@@ -320,6 +320,16 @@ class RTreeToy: public Toy
 				drawBB_color = 5;
 				drawBB_color_str = "5";
                 break;
+            case '6':
+                drawBB_color_all = false;
+				drawBB_color = 6;
+				drawBB_color_str = "6";
+                break;
+            case '7':
+                drawBB_color_all = false;
+				drawBB_color = 7;
+				drawBB_color_str = "7";
+                break;
         }
         redraw();
     }
@@ -342,7 +352,7 @@ class RTreeToy: public Toy
 		if( tree.root ){
 			// clear existing bounding boxes 
 			for(unsigned color=0; color < rects_level.size(); color++ ){
-				std::cout<< "color:" << color << std::endl;
+				//std::cout<< "color:" << color << std::endl;
 				rects_level[color].clear();
 			}
 			save_bb( tree.root, 0);
@@ -398,9 +408,11 @@ public:
 		color_rtree_level[0] = colour(0, 0.58, 1, 1);
 		color_rtree_level[1] = colour(0, 0.45, 0, 1);
 		color_rtree_level[2] = colour(0.53, 0, 0.66, 1);
-//		color_rtree_level[3] = colour(0, 0, 1, 1);
-//		color_rtree_level[4] = colour(1, 0.62, 0, 1);
-//		color_rtree_level[5] = colour(1, 0, 0, 1);
+		color_rtree_level[3] = colour(0, 0, 1, 1);
+		color_rtree_level[4] = colour(1, 0.62, 0, 1);
+		color_rtree_level[5] = colour(1, 0, 0.8, 1);
+		color_rtree_level[6] = colour(0.47, 0.26, 0.12, 1);
+		color_rtree_level[7] = colour(0, 0, 0.5, 1);
 
 
     }

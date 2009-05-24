@@ -56,7 +56,8 @@ enum enum_add_to_group {
 
 enum enum_split_strategy { 
     QUADRATIC_SPIT = 0,
-    LINEAR_COST
+    LINEAR_COST,
+    TOTAL_STRATEGIES // this one must be the last item
 };
 
 
@@ -154,8 +155,10 @@ public:
 
     enum_split_strategy split_strategy;
 
+
     RTree( unsigned min_n, unsigned max_n, enum_split_strategy split_s ): 
-        root(0), max_nodes( max_n ), min_nodes( min_n ), split_strategy( split_s )
+        root(0), max_nodes( max_n ), min_nodes( min_n ), split_strategy( split_s ),
+        tree_height(0)
     {}
 
     void insert( Rect const &r, int shape);
@@ -166,16 +169,20 @@ public:
     void print_tree(RTreeNode* subtree_root, int depth, bool break_on_first_iteration = false) const;
 
 private:
+    unsigned tree_height; // 0 is the root level
+
     void insert(  Rect const &r, 
                 int shape, 
                 unsigned min_nodes, 
-                unsigned max_nodes 
-/*
-                const bool insert_high = false, 
-                const unsigned stop_height = 0,
-                const RTreeRecord_NonLeaf* nonleaf_record_to_insert = 0 */);
+                unsigned max_nodes,
+
+            const bool &insert_high = false, 
+            const unsigned &stop_height = 0,
+            const RTreeRecord_NonLeaf* nonleaf_record_to_insert = 0 
+                );
     // I1
-    RTreeNode* choose_node( const Rect &r /*, const bool insert_high = false, const unsigned stop_height=0*/) const;
+    RTreeNode* choose_node( const Rect &r, const bool &insert_high = false, const unsigned &stop_height=0 ) const;
+    double find_waste_area( const Rect &a, const Rect &b ) const;
     double find_enlargement( const Rect &a, const Rect &b ) const;
 
     // I2
@@ -193,12 +200,19 @@ private:
                             unsigned min_nodes,
                             unsigned max_nodes );
     std::pair< RTreeNode*, bool > find_parent( RTreeNode* subtree_root, Rect search_area, RTreeNode* wanted ) const;
+    void recalculate_bounding_box( RTreeNode* parent, RTreeNode* child, unsigned &child_in_parent );
+
     void copy_group_a_to_existing_node( RTreeNode *position, RTreeNode* group_a );
     RTreeRecord_NonLeaf create_nonleaf_record_from_rtreenode( Rect &new_entry_bounding, RTreeNode *rtreenode );
     RTreeRecord_Leaf create_leaf_record_from_rtreenode( Rect &new_entry_bounding, RTreeNode *rtreenode );
 
     // erase
     RTreeNode* find_leaf( RTreeNode* subtree, const RTreeRecord_Leaf &search ) const;
+    bool condense_tree( RTreeNode* position, 
+    //                  std::pair<RTreeNode*, RTreeNode*>  &node_division, // modified: it holds the last split group
+    //                  bool initial_split_performed, 
+                        const unsigned min_nodes,
+                        const unsigned max_nodes );
 
 };
 
