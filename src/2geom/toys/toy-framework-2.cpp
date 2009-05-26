@@ -896,6 +896,7 @@ void RectHandle::draw(cairo_t *cr, bool /*annotes*/) {
     if(show_center_handle) {
         draw_circ(cr, pos.midpoint());
     }
+    draw_text(cr, pos.corner(0), name);
 }
 
 void* RectHandle::hit(Geom::Point mouse) {

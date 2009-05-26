@@ -57,24 +57,27 @@ I4) grow tree taller:
         create new root whose children are the 2 resulting nodes
 */
 
-void RTree::insert( Rect const &r, int shape ){
+void RTree::insert( Rect const &r, unsigned shape ){
     _RTREE_PRINT("\n=====================================");
     _RTREE_PRINT("insert");
-    insert( r, shape, min_nodes, max_nodes );
+    RTreeRecord_Leaf* leaf_record= new RTreeRecord_Leaf( r, shape );
+//    insert( record, min_nodes, max_nodes );
+    insert( *leaf_record );
 }
 
 
 
-void RTree::insert( Rect const &r, 
-                    int shape, 
-                    unsigned min_nodes, 
-                    unsigned max_nodes,
-                const bool &insert_high /* false */,
-                const unsigned &stop_height /* 0 */,
-                const RTreeRecord_NonLeaf* nonleaf_record_to_insert /* 0 */
+void RTree::insert( //Rect const &r, 
+                    //int shape, 
+                    const RTreeRecord_Leaf &leaf_record,
+//                    unsigned min_nodes, 
+//                    unsigned max_nodes,
+                    const bool &insert_high /* false */,
+                    const unsigned &stop_height /* 0 */,
+                    const RTreeRecord_NonLeaf &nonleaf_record /* 0 */
                 )
 {
-    _RTREE_PRINT("insert private");
+    _RTREE_PRINT("insert private. element:" << leaf_record.data << "  insert high:" << insert_high << "  stop height:" << stop_height );
     RTreeNode *position = 0;
 
     // if tree is unsued create the root Node, not described in source, stupid me :P
@@ -84,10 +87,10 @@ void RTree::insert( Rect const &r,
 
     _RTREE_PRINT("I1");     // I1
     if( insert_high == false ){ // choose leaf node
-        position = choose_node( r ); 
+        position = choose_node( leaf_record.bounding_box ); 
     }
     else { // choose nonleaf node
-        position = choose_node( nonleaf_record_to_insert->bounding_box, insert_high, stop_height ); 
+        position = choose_node( nonleaf_record.bounding_box, insert_high, stop_height ); 
     }
 
     std::pair< RTreeNode*, RTreeNode* > node_division;
@@ -98,7 +101,7 @@ void RTree::insert( Rect const &r,
         assert( insert_high == true ); // we must reach here only to insert high non leaf node, not insert leaf node 
 
         // put new element in node temporarily. Later on, if we need to, we will split the node.
-        position->children_nodes.push_back( *nonleaf_record_to_insert ); 
+        position->children_nodes.push_back( nonleaf_record ); 
         if( position->children_nodes.size() <= max_nodes ){
             _RTREE_PRINT("I2 no split: " << position->children_nodes.size() );     // I2
         }
@@ -112,7 +115,7 @@ void RTree::insert( Rect const &r,
         assert( insert_high == false ); // we must reach here only to insert leaf node, not insert high non leaf node
 
         // put new element in node temporarily. Later on, if we need to, we will split the node.
-        position->children_leaves.push_back( RTreeRecord_Leaf( r, shape) ); 
+        position->children_leaves.push_back( leaf_record ); 
         if( position->children_leaves.size() <= max_nodes ){
             _RTREE_PRINT("I2 no split: " << position->children_leaves.size() );     // I2
         }
@@ -128,9 +131,6 @@ void RTree::insert( Rect const &r,
     */
         }
     }
-
-//    _RTREE_PRINT("TREE:");
-//    print_tree( root, 2 );
 
     _RTREE_PRINT("I3");    // I3    
     bool root_split_performed = adjust_tree( position, node_division, split_performed, min_nodes, max_nodes);
@@ -193,7 +193,6 @@ leaf: if flag is NOT set
 4) descend until a leaf is reached OR proper height is reached: set N to the child node pointed to by F and goto 2.
 */
 
-// TODO some cases look strange
 RTreeNode* RTree::choose_node( const Rect &r, const bool &insert_high /* false */, const unsigned &stop_height /* 0 */) const {
 
     _RTREE_PRINT("  CL1");// CL1
@@ -888,11 +887,11 @@ void RTree::print_tree(RTreeNode* subtree_root, int depth, bool break_on_first_i
             for(int j=0; j < depth; j++){
                 std::cout << "  ";
             }
+
             std::cout << subtree_root->children_nodes[i].bounding_box << std::endl;
             if( break_on_first_iteration ){
                 break;
             }
-            //_RTREE_PRINT("descend");// non leaf node
             print_tree( subtree_root->children_nodes[i].data, depth+1, break_on_first_iteration);
         }
     }
@@ -902,7 +901,7 @@ void RTree::print_tree(RTreeNode* subtree_root, int depth, bool break_on_first_i
         }
         std::cout << subtree_root->children_leaves.size() << ": ";
 
-        // print all the elements of the node
+        // print all the elements of the leaf node
         for( unsigned i=0; i < subtree_root->children_leaves.size(); i++ ){
             std::cout << subtree_root->children_leaves[i].data << ", ";
         }
@@ -946,7 +945,7 @@ void RTree::search( const Rect &search_area, std::vector< int >* result, const R
 
 
 /*=============================================================================
-TODO                            erase
+                                  erase
 ===============================================================================
 we changed steps D2)
 D1) Find node containing record
@@ -964,19 +963,25 @@ return
 1 in case no entry was found
 
 */
-int RTree::erase( const RTreeRecord_Leaf & record_to_erase ){
+//int RTree::erase( const RTreeRecord_Leaf & record_to_erase ){
+int RTree::erase( const Rect &search_area, const int shape_to_delete ){
+    _RTREE_PRINT("\n=====================================");
+    _RTREE_PRINT("erase element: " << shape_to_delete);
     // D1 + D2: entry is deleted in find_leaf
-    RTreeNode* contains_record = find_leaf( root, record_to_erase );
+    RTreeNode* contains_record = find_leaf( root, search_area, shape_to_delete );
     if( !contains_record ){ // no entry returned from find_leaf
         return 1; // no entry found
     }
     
     // D3
-    bool root_split_performed = condense_tree( contains_record, min_nodes, max_nodes );
+    bool root_elimination_performed = condense_tree( contains_record );
 
     // D4
-    // TODO
-    height--;
+
+    if( root_elimination_performed ){
+    // TODO not implemented
+        tree_height--;
+    }
     return 0; // success
 }
 
@@ -995,12 +1000,12 @@ FL2) search leaf node for record
         AND delete element E (step D2)
 */
 
-RTreeNode* RTree::find_leaf( RTreeNode* subtree, const RTreeRecord_Leaf &record_to_erase ) const {
+RTreeNode* RTree::find_leaf( RTreeNode* subtree, const Rect &search_area, const int shape_to_delete ) const {
     // FL1
     if( subtree->children_nodes.size() > 0  ){   // non-leaf: subtree
         for( std::vector< RTreeRecord_NonLeaf >::iterator it = subtree->children_nodes.begin(); it!=subtree->children_nodes.end(); ++it ){
-            if( it->bounding_box.intersects( record_to_erase.bounding_box ) ){
-                RTreeNode* t = find_leaf( it->data, record_to_erase );
+            if( it->bounding_box.intersects( search_area ) ){
+                RTreeNode* t = find_leaf( it->data, search_area, shape_to_delete );
                 if( t ){ // if search was successful terminate
                     return t;
                 }
@@ -1010,7 +1015,7 @@ RTreeNode* RTree::find_leaf( RTreeNode* subtree, const RTreeRecord_Leaf &record_
     // FL2
     else{   // leaf: subtree
         for( std::vector< RTreeRecord_Leaf >::iterator it = subtree->children_leaves.begin(); it!=subtree->children_leaves.end(); ++it ){
-            if( it->data == record_to_erase.data ){
+            if( it->data == shape_to_delete ){
                 // delete element: implement step D2)
                 subtree->children_leaves.erase( it ); 
                 return subtree;
@@ -1056,11 +1061,12 @@ CT6) Re insert orphaned entries
 
 */
 // TODO this can be merged with adjust_tree or refactor to reutilize some parts. less readable
-bool RTree::condense_tree( RTreeNode* position, 
+bool RTree::condense_tree( RTreeNode* position
         //                  std::pair<RTreeNode*, RTreeNode*>  &node_division, // modified: it holds the last split group
         //                  bool initial_split_performed, 
-                            const unsigned min_nodes,
-                            const unsigned max_nodes )
+//                            const unsigned min_nodes
+//                            const unsigned max_nodes
+                         )
 {
     RTreeNode* parent;
     unsigned child_in_parent = 0; // the element in parent node that points to current posistion
@@ -1068,13 +1074,14 @@ bool RTree::condense_tree( RTreeNode* position,
     std::pair< RTreeNode*, bool > find_result;
     bool elimination_performed = false;
     bool root_elimination_performed = false;
+    unsigned current_height = tree_height;
 
     // leaf records that were eliminated due to under-full node
-    std::vector< RTreeRecord_Leaf > q_set_leaf_records( 0 );
+    std::vector< RTreeRecord_Leaf > Q_leaf_records( 0 );
 
-    // non-leaf records, and their height that were eliminated due to under-full node
-    std::vector< std::pair< RTreeRecord_Leaf, unsigned > > q_set_nonleaf_records( 0 );
-    unsigned current_height = tree_height;
+    // < non-leaf records, their height > that were eliminated due to under-full node
+    std::vector< std::pair< RTreeRecord_NonLeaf, unsigned > > Q_nonleaf_records( 0 );
+
 
     while( true ){
 
@@ -1106,7 +1113,7 @@ bool RTree::condense_tree( RTreeNode* position,
         parent = find_result.first;
 
         
-        // parent is a non-leaf, by definition
+        // parent is a non-leaf, by definition. Calculate "child_in_parent"
         _RTREE_PRINT("  CT2.3");    // CT2.3    Let EN be the N's entry in P
         for( child_in_parent = 0; child_in_parent < parent->children_nodes.size(); child_in_parent++ ){
             if( parent->children_nodes[ child_in_parent ].data == position){
@@ -1116,35 +1123,68 @@ bool RTree::condense_tree( RTreeNode* position,
         }
 
         if( position->children_nodes.size() > 0 ){ // non leaf node: position
-            if( position->children_nodes.size() < min_nodes ){  // CT3) Eliminate underfull node TODO
+            _RTREE_PRINT("  CT3: nonleaf");    // CT3 Eliminate underfull node
+            if( position->children_nodes.size() < min_nodes ){  
+                _RTREE_PRINT("  CT3.2 ");    // CT3.2 add N to set Q ( EN the record that points to N )
+                std::pair< RTreeRecord_NonLeaf, unsigned > t = std::make_pair( parent->children_nodes[ child_in_parent ], current_height );
+                Q_nonleaf_records.push_back( t );
+
+                _RTREE_PRINT("  CT3.1 ");    /// CT3.1 delete EN from P  ( parent is by definition nonleaf )
+                remove_record_from_parent( parent, position ); // TODO does erase, delete to the pointer ???
             }
-            else{             // CT4) if not underfull
+            else{   
+                _RTREE_PRINT("  CT4 ");    /// CT4) if not underfull
                 recalculate_bounding_box( parent, position, child_in_parent );
             }
 
         }
         else{ // leaf node: position
-            if( position->children_leaves.size() < min_nodes ){  // CT3) Eliminate underfull node TODO
+            _RTREE_PRINT("  CT3: leaf");    // CT3 Eliminate underfull node
+            if( position->children_leaves.size() < min_nodes ){  
+                _RTREE_PRINT("  CT3.2   " << position->children_leaves.size() );    // CT3.2 add N to set Q
+                for( unsigned i = 0; i < position->children_leaves.size(); i++ ){
+                    _RTREE_PRINT("  i " << i );
+                    Q_leaf_records.push_back( position->children_leaves[i] ); // TODO problem here
+                }
+
+                _RTREE_PRINT("  CT3.1 ");    /// CT3.1 delete EN from P ( parent is by definition nonleaf )
+                remove_record_from_parent( parent, position );
+
             }
-            else{             // CT4) if not underfull
+            else{   
+                _RTREE_PRINT("  CT4 ");    /// CT4) if not underfull
                 recalculate_bounding_box( parent, position, child_in_parent );
             }
         }
-        // CT5) move up one level in tree
+        _RTREE_PRINT("  CT5 ");// CT5) move up one level in tree
         position = parent;
         current_height--;
     }
-    // CT6:  TODO
-    return 0;
+    // CT6: reinsert
+    _RTREE_PRINT("  CT6 ");
+    for( std::vector< RTreeRecord_Leaf >::iterator it = Q_leaf_records.begin(); it != Q_leaf_records.end(); ++it ){
+        insert( *it );
+    }
+
+    
+    for( std::vector< std::pair< RTreeRecord_NonLeaf, unsigned > >::iterator it = Q_nonleaf_records.begin(); it != Q_nonleaf_records.end(); ++it ){
+        insert( RTreeRecord_Leaf() , true, it->second, it->first );
+        // TODO this fake RTreeRecord_Leaf() looks stupid. find better way to to this ???
+    }
+    
+    return root_elimination_performed;
 }
 
 
 /*
-given a parent
-a child node
-and the position of the child node in the parent
-
+given:
+- a parent
+- a child node
+- and the position of the child node in the parent
 recalculate the parent record's bounding box of the child, in order to ightly contain all entries of child
+
+NOTE! child must be indeed child of the parent, otherwise it screws up things. So find parent and child
+before calling this function
 */
 void RTree::recalculate_bounding_box( RTreeNode* parent, RTreeNode* child, unsigned &child_in_parent ) {
     if( child->children_nodes.size() > 0 ){
@@ -1162,6 +1202,27 @@ void RTree::recalculate_bounding_box( RTreeNode* parent, RTreeNode* child, unsig
             parent->children_nodes[ child_in_parent ].bounding_box.unionWith( child->children_leaves[i].bounding_box );
         }
     }
+}
+
+/*
+given:
+- a parent
+- a child node
+it removes the child record from the parent
+
+NOTE! child must be indeed child of the parent, otherwise it screws up things. So find parent and child
+before calling this function
+*/
+int RTree::remove_record_from_parent( RTreeNode* parent, RTreeNode* child ) {
+    _RTREE_PRINT( "remove_record_from_parent)" );
+    for( std::vector< RTreeRecord_NonLeaf >::iterator it = parent->children_nodes.begin(); it!=parent->children_nodes.end(); ++it ){
+        if( it->data == child ){
+            // delete element: implement step D2)
+            parent->children_nodes.erase( it ); 
+            return 0; // sucess
+        }
+    }
+    return 1; // failure
 }
 
 /*=============================================================================

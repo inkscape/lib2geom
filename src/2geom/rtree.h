@@ -161,9 +161,11 @@ public:
         tree_height(0)
     {}
 
-    void insert( Rect const &r, int shape);
+    void insert( Rect const &r, unsigned shape);
     void search( const Rect &search_area, std::vector< int >* result, const RTreeNode* subtree ) const;
-    int erase( const RTreeRecord_Leaf & search );
+    //int erase( const RTreeRecord_Leaf & search );
+    int erase( const Rect &search_area, const int shape_to_delete );
+
 //  update
 
     void print_tree(RTreeNode* subtree_root, int depth, bool break_on_first_iteration = false) const;
@@ -171,14 +173,14 @@ public:
 private:
     unsigned tree_height; // 0 is the root level
 
-    void insert(  Rect const &r, 
-                int shape, 
-                unsigned min_nodes, 
-                unsigned max_nodes,
-
-            const bool &insert_high = false, 
-            const unsigned &stop_height = 0,
-            const RTreeRecord_NonLeaf* nonleaf_record_to_insert = 0 
+    void insert(  //Rect const &r, 
+                //int shape, 
+                const RTreeRecord_Leaf &leaf_record,
+//                unsigned min_nodes, 
+//                unsigned max_nodes,
+                const bool &insert_high = false, 
+                const unsigned &stop_height = 0,
+                const RTreeRecord_NonLeaf &nonleaf_record = RTreeRecord_NonLeaf()
                 );
     // I1
     RTreeNode* choose_node( const Rect &r, const bool &insert_high = false, const unsigned &stop_height=0 ) const;
@@ -200,6 +202,7 @@ private:
                             unsigned min_nodes,
                             unsigned max_nodes );
     std::pair< RTreeNode*, bool > find_parent( RTreeNode* subtree_root, Rect search_area, RTreeNode* wanted ) const;
+
     void recalculate_bounding_box( RTreeNode* parent, RTreeNode* child, unsigned &child_in_parent );
 
     void copy_group_a_to_existing_node( RTreeNode *position, RTreeNode* group_a );
@@ -207,12 +210,16 @@ private:
     RTreeRecord_Leaf create_leaf_record_from_rtreenode( Rect &new_entry_bounding, RTreeNode *rtreenode );
 
     // erase
-    RTreeNode* find_leaf( RTreeNode* subtree, const RTreeRecord_Leaf &search ) const;
-    bool condense_tree( RTreeNode* position, 
+//    RTreeNode* find_leaf( RTreeNode* subtree, const RTreeRecord_Leaf &search ) const;
+    RTreeNode* find_leaf( RTreeNode* subtree, const Rect &search_area, const int shape_to_delete ) const;
+
+    bool condense_tree( RTreeNode* position
     //                  std::pair<RTreeNode*, RTreeNode*>  &node_division, // modified: it holds the last split group
     //                  bool initial_split_performed, 
-                        const unsigned min_nodes,
-                        const unsigned max_nodes );
+    //                    const unsigned min_nodes
+    //                    const unsigned max_nodes 
+                        );
+    int remove_record_from_parent( RTreeNode* parent, RTreeNode* child );
 
 };
 
