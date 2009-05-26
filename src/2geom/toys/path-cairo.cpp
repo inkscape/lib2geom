@@ -327,6 +327,28 @@ void draw_line(cairo_t *cr, Geom::Point n, double dist, Geom::Rect r) {
     draw_line(cr, n[0], n[1], dist, r);
 }
 
+
+void draw_ray(cairo_t *cr, const Geom::Ray& ray, const Geom::Rect& r)
+{
+    LineSegment ls;
+
+    for (size_t i = 0; i < 4; ++i)
+    {
+        ls.setInitial (r.corner(i));
+        ls.setFinal (r.corner(i+1));
+        OptCrossing cx = intersection (ls, ray);
+        if (cx)
+        {
+            Point P = ray.pointAt ((*cx).tb);
+            draw_line_seg (cr, ray.origin(), P);
+            break;
+        }
+    }
+}
+
+
+
+
 /*
   Local Variables:
   mode:c++

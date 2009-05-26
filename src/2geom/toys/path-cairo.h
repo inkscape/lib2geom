@@ -40,6 +40,7 @@ void draw_handle(cairo_t *cr, Geom::Point h);
 void draw_cross(cairo_t *cr, Geom::Point h);
 void draw_circ(cairo_t *cr, Geom::Point h);
 void draw_ray(cairo_t *cr, Geom::Point h, Geom::Point dir);
+void draw_ray(cairo_t *cr, const Geom::Ray& ray, const Geom::Rect& r);
 
 void cairo_move_to(cairo_t *cr, Geom::Point p1);
 void cairo_line_to(cairo_t *cr, Geom::Point p1);
