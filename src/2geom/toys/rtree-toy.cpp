@@ -39,6 +39,8 @@
 #include <vector>
 
 #include <sstream>
+#include <getopt.h>
+
 
 
 
@@ -54,6 +56,9 @@ const string update_str = "Mode: Update (Click Bounding Box (dark gray) and Drag
 const string insert_str = "Mode: Insert (Click whitespace and Drag)" ;
 const string erase_str = "Mode: Delete (Click on Bounding Box (dark gray))";
 const string help_str = "'I': Insert, 'U': Update, 'S': Search, 'D': Delete";
+
+
+const char* program_name;
 
 class RTreeToy: public Toy 
 {
@@ -440,38 +445,97 @@ public:
 		color_rtree_level[7] = colour(1, 0.90, 0, 1);		// yellow
     }
 
-	void first_time(int argc, char** argv){
-		std::cout << "argc = " << argc << std::endl;
-		for(int i = 0; i < argc; i++){
-			std::cout << "argv[" << i << "] = " << argv[i] << std::endl; 	
-		}
-	}
 };
 
 
 
 int main(int argc, char **argv) {
-	std::cout << "---------------------------------------------------------"<< std::endl;
-    std::cout << "Let's play with the R- Tree! ONLY Insert works now!!!"<< std::endl;
-    std::cout << " Key A: insert/alter mode                                   "<< std::endl;
-    std::cout << " * Left click and drag on white area: create a rectangle"<< std::endl;
-	std::cout << " *NOT READY: Left click and drag on handler: alter a rectangle"<< std::endl;
-    std::cout << " Key B: search mode                                   "<< std::endl;
-	std::cout << " * Left click and drag on white area: \"search\" for nodes that intersect red area"<< std::endl;
-    std::cout << " NOT READY: Key C: delete mode                                   "<< std::endl;
-	std::cout << " * Left click on handler: delete for a rectangle"<< std::endl;
-	std::cout << "---------------------------------------------------------"<< std::endl;
-	// rtree max nodes: -rmax
-	// rtree min nodes: -rmin
+
+	char* min_arg = NULL;
+	char* max_arg = NULL;
+
+	int set_min_max = 0;
+
+	int c;
+
+	while (1)
+	{
+		static struct option long_options[] =
+		{
+			/* These options set a flag. */
+			/* These options don't set a flag.
+			We distinguish them by their indices. */
+			{"min-nodes",	required_argument,	0, 'n'},
+			{"max-nodes",	required_argument,	0, 'm'},
+			{"help",		no_argument,		0, 'h'},
+			{0, 0, 0, 0}
+		};
+		/* getopt_long stores the option index here. */
+		int option_index = 0;
+
+		c = getopt_long (argc, argv, "n:m:h",
+			long_options, &option_index);
+
+		/* Detect the end of the options. */
+		if (c == -1){
+			break;
+		}
+
+		switch (c)
+		{
+			case 'n':
+			min_arg = optarg;
+			set_min_max += 1;
+			break;
+
+
+			case 'm':
+			max_arg = optarg;	
+			set_min_max += 2;
+			break;
+
+
+			case 'h':
+			std::cerr << "Usage:  " << argv[0] << " options\n" << std::endl ;
+			std::cerr << 
+				   "  -n  --min-nodes=NUMBER   minimum number in node.\n" <<
+				   "  -m  --max-nodes=NUMBER   maximum number in node.\n" <<
+				   "  -h  --help               Print this help.\n" << std::endl;
+			exit(1);
+			break;
+
+
+			case '?':
+			/* getopt_long already printed an error message. */
+			break;
+
+			default:
+			abort ();
+		}
+	}
+
 	unsigned rmin = 0;
-	std::stringstream out1( argv[1] );
-	out1 >> rmin;
-
 	unsigned rmax = 0;
-	std::stringstream out2( argv[2] );
-	out2 >> rmax;
 
-	// handle filename: -f
+	if(	set_min_max == 3 ){
+		stringstream s1( min_arg );
+		s1 >> rmin;
+
+		stringstream s2( max_arg );
+		s2 >> rmax;
+		if( rmax <= rmin || rmax < 2 || rmin < 1 ){
+			std::cerr << "Rtree set to 2, 3" << std::endl ;
+			rmin = 2;
+			rmax = 3;			
+		}
+	}
+	else{
+		std::cerr << "Rtree set to 2, 3 ." << std::endl ;
+		rmin = 2;
+		rmax = 3;
+	}
+
+
 	char handlefile = 'T';
 	std::cout << "rmin: " << rmin << "  rmax:" << rmax << std::endl;
     init(argc, argv, new RTreeToy( rmin, rmax, handlefile) );
@@ -494,6 +558,10 @@ const char RTreeToy::keys[] =
 	'I', 'U', 'S', 'D', 'T', 
 	'0', '1', '2', '3', '4', '5', 'P'
 };
+
+
+
+
 
 
 /*		

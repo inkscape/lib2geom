@@ -107,7 +107,7 @@ void RTree::insert( //Rect const &r,
         }
         else{
             _RTREE_PRINT("I2 nonleaf: split: " << position->children_nodes.size() );     // I2
-            node_division = split_node( position, min_nodes);
+            node_division = split_node( position );
             split_performed = true;
         }
     }
@@ -121,7 +121,7 @@ void RTree::insert( //Rect const &r,
         }
         else{
             _RTREE_PRINT("I2 leaf: split: " << position->children_leaves.size() << "  max_nodes:" << max_nodes);     // I2
-            node_division = split_node( position, min_nodes );
+            node_division = split_node( position );
             split_performed = true;
     /*
             _RTREE_PRINT("      group A");
@@ -133,7 +133,7 @@ void RTree::insert( //Rect const &r,
     }
 
     _RTREE_PRINT("I3");    // I3    
-    bool root_split_performed = adjust_tree( position, node_division, split_performed, min_nodes, max_nodes);
+    bool root_split_performed = adjust_tree( position, node_division, split_performed );
     _RTREE_PRINT("root split: " << root_split_performed);
 
 
@@ -280,13 +280,13 @@ double RTree::find_enlargement( const Rect &a, const Rect &b ) const{
 use one split strategy
 */
 
-std::pair<RTreeNode*, RTreeNode*> RTree::split_node( RTreeNode *s, unsigned min_nodes ){
+std::pair<RTreeNode*, RTreeNode*> RTree::split_node( RTreeNode *s ){
 /*
     if( split_strategy == LINEAR_COST ){
         linear_cost_split( ............. );
     }
 */
-    return quadratic_split( s, min_nodes ); // else QUADRATIC_SPIT
+    return quadratic_split( s ); // else QUADRATIC_SPIT
 }
 
 
@@ -307,7 +307,7 @@ QS3) select entry and assign:
     one with fewer entries, then to either of the two.
     goto 2.
 */
-std::pair<RTreeNode*, RTreeNode*> RTree::quadratic_split( RTreeNode *s, unsigned min_nodes ) {
+std::pair<RTreeNode*, RTreeNode*> RTree::quadratic_split( RTreeNode *s ) {
 
     // s is the original leaf node or non-leaf node
     RTreeNode* group_a = new RTreeNode(); // a is the 1st group
@@ -693,9 +693,7 @@ AT5) Move up to next level
 
 bool RTree::adjust_tree(    RTreeNode* position, 
                             std::pair<RTreeNode*, RTreeNode*>  &node_division, // modified: it holds the last split group
-                            bool initial_split_performed, 
-                            unsigned min_nodes,
-                            unsigned max_nodes )
+                            bool initial_split_performed)
 {
     RTreeNode* parent;
     unsigned child_in_parent; // the element in parent node that points to current posistion
@@ -779,7 +777,7 @@ bool RTree::adjust_tree(    RTreeNode* position,
             }
             else{
                 parent->children_nodes.push_back( new_record );
-                node_division = quadratic_split( parent, min_nodes ); // AT5
+                node_division = quadratic_split( parent ); // AT5
                 split_performed = true;
             }
            
@@ -804,13 +802,13 @@ If not we call find_parent again recursively
 */
 
 std::pair< RTreeNode*, bool > RTree::find_parent( RTreeNode* subtree_root, 
-                                Rect search_area, 
-                                RTreeNode* wanted) const{
+                                                    Rect search_area, 
+                                                    RTreeNode* wanted) const
+{
     _RTREE_PRINT("find_parent");
 
     std::pair< RTreeNode*, bool > result;   
     if( subtree_root->children_nodes.size() > 0 ){
-        
         
         for( unsigned i=0; i < subtree_root->children_nodes.size(); i++ ){
             if( subtree_root->children_nodes[i].data == wanted){
@@ -1088,6 +1086,7 @@ bool RTree::condense_tree( RTreeNode* position
     bool elimination_performed = false;
     bool root_elimination_performed = false;
     unsigned current_height = tree_height;
+    Rect special_case_bounding_box;
 
     // leaf records that were eliminated due to under-full node
     std::vector< RTreeRecord_Leaf > Q_leaf_records( 0 );
@@ -1095,10 +1094,9 @@ bool RTree::condense_tree( RTreeNode* position
     // < non-leaf records, their height > that were eliminated due to under-full node
     std::vector< std::pair< RTreeRecord_NonLeaf, unsigned > > Q_nonleaf_records( 0 );
 
-
+    _RTREE_PRINT("  condense_tree");   
     while( true ){
 
-        _RTREE_PRINT("  condense_tree");   
         _RTREE_PRINT("  CT1");
 
         // check for loop BREAK
@@ -1115,11 +1113,23 @@ bool RTree::condense_tree( RTreeNode* position
             Search for this spatial area in the tree, and stop to the parent node.
             Then find position of current node pointer, in the parent node.
         */
-        _RTREE_PRINT("  CT2.1 - 2");    // CT2.1   find parent
+        /* 
+            special case. if elimination due to children being underfull was performed AND
+            AND parent had only 1 record ,then this one record was removed.
+        */
         if( position->children_nodes.size() > 0 ){
+            _RTREE_PRINT("  CT2.1 - 2: non leaf");    // CT2.1   find parent. By definition it's nonleaf
             find_result = find_parent( root, position->children_nodes[0].bounding_box, position);
         }
+        else if( position->children_nodes.size() == 0 
+            && position->children_leaves.size() == 0 
+            && elimination_performed )
+        { // special case
+            _RTREE_PRINT("  CT2.1 - 2: special case");    // CT2.1   find parent. By definition it's nonleaf
+            find_result = find_parent( root, special_case_bounding_box, position);
+        }
         else{
+            _RTREE_PRINT("  CT2.1 - 2: leaf");    // CT2.1   find parent. By definition it's nonleaf
             find_result = find_parent( root, position->children_leaves[0].bounding_box, position);
         }
         // CT2.2 Let P be the parent of N
@@ -1130,7 +1140,7 @@ bool RTree::condense_tree( RTreeNode* position
         _RTREE_PRINT("  CT2.3");    // CT2.3    Let EN be the N's entry in P
         for( child_in_parent = 0; child_in_parent < parent->children_nodes.size(); child_in_parent++ ){
             if( parent->children_nodes[ child_in_parent ].data == position){
-                _RTREE_PRINT("  child_in_parent: " << child_in_parent);
+                _RTREE_PRINT("  child_in_parent: " << child_in_parent << " out of " << parent->children_nodes.size() << " (size)" );
                 break;
             }
         }
@@ -1141,13 +1151,18 @@ bool RTree::condense_tree( RTreeNode* position
                 _RTREE_PRINT("  CT3.2 ");    // CT3.2 add N to set Q ( EN the record that points to N )
                 std::pair< RTreeRecord_NonLeaf, unsigned > t = std::make_pair( parent->children_nodes[ child_in_parent ], current_height );
                 Q_nonleaf_records.push_back( t );
+                special_case_bounding_box = parent->children_nodes[ child_in_parent ].bounding_box;
 
                 _RTREE_PRINT("  CT3.1 ");    /// CT3.1 delete EN from P  ( parent is by definition nonleaf )
-                remove_record_from_parent( parent, position ); // TODO does erase, delete to the pointer ???
+                if( remove_record_from_parent( parent, position ) ){ // TODO does erase, delete to the pointer ???
+                    _RTREE_PRINT("  remove_record_from_parent error ");
+                }
+                elimination_performed = true;
             }
             else{   
                 _RTREE_PRINT("  CT4 ");    /// CT4) if not underfull
                 recalculate_bounding_box( parent, position, child_in_parent );
+                elimination_performed = false;
             }
 
         }
@@ -1158,19 +1173,24 @@ bool RTree::condense_tree( RTreeNode* position
                 for( unsigned i = 0; i < position->children_leaves.size(); i++ ){
                     _RTREE_PRINT("  i " << i );
                     Q_leaf_records.push_back( position->children_leaves[i] ); // TODO problem here
+                    special_case_bounding_box = position->children_leaves[i].bounding_box;
                 }
 
                 _RTREE_PRINT("  CT3.1 ");    /// CT3.1 delete EN from P ( parent is by definition nonleaf )
-                remove_record_from_parent( parent, position );
-
+                if( remove_record_from_parent( parent, position ) ){
+                    _RTREE_PRINT("  remove_record_from_parent error ");
+                }
+                elimination_performed = true;
             }
             else{   
                 _RTREE_PRINT("  CT4 ");    /// CT4) if not underfull
                 recalculate_bounding_box( parent, position, child_in_parent );
+                elimination_performed = false;
             }
         }
         _RTREE_PRINT("  CT5 ");// CT5) move up one level in tree
         position = parent;
+
         current_height--;
     }
     // CT6: reinsert

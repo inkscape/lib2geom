@@ -176,8 +176,6 @@ private:
     void insert(  //Rect const &r, 
                 //int shape, 
                 const RTreeRecord_Leaf &leaf_record,
-//                unsigned min_nodes, 
-//                unsigned max_nodes,
                 const bool &insert_high = false, 
                 const unsigned &stop_height = 0,
                 const RTreeRecord_NonLeaf &nonleaf_record = RTreeRecord_NonLeaf()
@@ -188,19 +186,18 @@ private:
     double find_enlargement( const Rect &a, const Rect &b ) const;
 
     // I2
-    std::pair<RTreeNode*, RTreeNode*> split_node( RTreeNode *s, unsigned min_nodes );
+    std::pair<RTreeNode*, RTreeNode*> split_node( RTreeNode *s );
         // QUADRATIC_SPIT
-    std::pair<RTreeNode*, RTreeNode*> quadratic_split( RTreeNode* s, unsigned min_nodes );
+    std::pair<RTreeNode*, RTreeNode*> quadratic_split( RTreeNode* s );
     std::pair<unsigned, unsigned> pick_seeds( RTreeNode* s ) const;
     std::pair<unsigned, enum_add_to_group>  pick_next( RTreeNode* group_a, RTreeNode* group_b, RTreeNode* s, std::vector<bool> &assigned_v );
         // others...
 
     // I3
-    bool adjust_tree(       RTreeNode* position, 
-                            std::pair<RTreeNode*, RTreeNode*>  &node_division, 
-                            bool split_performed, 
-                            unsigned min_nodes,
-                            unsigned max_nodes );
+    bool adjust_tree(   RTreeNode* position, 
+                        std::pair<RTreeNode*, RTreeNode*>  &node_division, 
+                        bool split_performed
+                        );
     std::pair< RTreeNode*, bool > find_parent( RTreeNode* subtree_root, Rect search_area, RTreeNode* wanted ) const;
 
     void recalculate_bounding_box( RTreeNode* parent, RTreeNode* child, unsigned &child_in_parent );
