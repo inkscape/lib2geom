@@ -217,6 +217,7 @@ class RTreeToy: public Toy
 //					check_if_duplicates( );
 					delete_rect = true;
 				}
+				hit = NULL;
 			}
 		}
 		else if( e->button == 2 ){	//middle button
@@ -413,7 +414,7 @@ class RTreeToy: public Toy
 
 
 public:
-    RTreeToy(unsigned rmax, unsigned rmin, char handlefile ):
+    RTreeToy(unsigned rmin, unsigned rmax, char handlefile ):
 		rectangles(0),
 	 	color_shape(0, 0, 0, 0.9), color_shape_guide(1, 0, 0, 1),
 		color_select_area(1, 0, 0, 0.6 ),  color_select_area_guide(1, 0, 0, 1 ), //1, 0, 0, 1
@@ -462,12 +463,18 @@ int main(int argc, char **argv) {
 	std::cout << "---------------------------------------------------------"<< std::endl;
 	// rtree max nodes: -rmax
 	// rtree min nodes: -rmin
-	unsigned int rmax = 4;
-	unsigned int rmin = 2;
+	unsigned rmin = 0;
+	std::stringstream out1( argv[1] );
+	out1 >> rmin;
+
+	unsigned rmax = 0;
+	std::stringstream out2( argv[2] );
+	out2 >> rmax;
+
 	// handle filename: -f
 	char handlefile = 'T';
-
-    init(argc, argv, new RTreeToy(rmax, rmin, handlefile) );
+	std::cout << "rmin: " << rmin << "  rmax:" << rmax << std::endl;
+    init(argc, argv, new RTreeToy( rmin, rmax, handlefile) );
 
     return 0;
 }

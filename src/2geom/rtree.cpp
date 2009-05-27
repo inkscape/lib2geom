@@ -103,10 +103,10 @@ void RTree::insert( //Rect const &r,
         // put new element in node temporarily. Later on, if we need to, we will split the node.
         position->children_nodes.push_back( nonleaf_record ); 
         if( position->children_nodes.size() <= max_nodes ){
-            _RTREE_PRINT("I2 no split: " << position->children_nodes.size() );     // I2
+            _RTREE_PRINT("I2 nonleaf: no split: " << position->children_nodes.size() );     // I2
         }
         else{
-            _RTREE_PRINT("I2 split: " << position->children_nodes.size() );     // I2
+            _RTREE_PRINT("I2 nonleaf: split: " << position->children_nodes.size() );     // I2
             node_division = split_node( position, min_nodes);
             split_performed = true;
         }
@@ -117,10 +117,10 @@ void RTree::insert( //Rect const &r,
         // put new element in node temporarily. Later on, if we need to, we will split the node.
         position->children_leaves.push_back( leaf_record ); 
         if( position->children_leaves.size() <= max_nodes ){
-            _RTREE_PRINT("I2 no split: " << position->children_leaves.size() );     // I2
+            _RTREE_PRINT("I2 leaf: no split: " << position->children_leaves.size() );     // I2
         }
         else{
-            _RTREE_PRINT("I2 split: " << position->children_leaves.size() );     // I2
+            _RTREE_PRINT("I2 leaf: split: " << position->children_leaves.size() << "  max_nodes:" << max_nodes);     // I2
             node_division = split_node( position, min_nodes );
             split_performed = true;
     /*
@@ -978,9 +978,22 @@ int RTree::erase( const Rect &search_area, const int shape_to_delete ){
 
     // D4
 
-    if( root_elimination_performed ){
-    // TODO not implemented
-        tree_height--;
+    //if( root_elimination_performed ){
+    if( root->children_nodes.size() > 0 ){ // non leaf: root
+        // D4
+        if( root->children_nodes.size() == 1 ){
+            _RTREE_PRINT("D4 : non leaf: ");
+            tree_height--;
+            RTreeNode* t = root;
+            root = root->children_nodes[0].data;
+            delete t;
+        }
+
+    }
+    else { // leaf: root
+        // D4
+        //if( root->children_leaves() == 1 ){
+        // do nothing
     }
     return 0; // success
 }
