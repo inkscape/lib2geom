@@ -38,11 +38,13 @@
 
 
 // File: convert.h
+#include <utility>
 #include <sstream>
 #include <stdexcept>
 
-// GPL taint?
-#include <2geom/numeric/linear_system.h>
+
+
+
 
 namespace Geom
 {
@@ -369,7 +371,7 @@ std::vector<Point> decompose_degenerate(xAx const & C1, xAx const & C2, xAx cons
          * At this point we have tried up to 4 points: 0,0, 1,0, 1,1, 2,1, 1.5,1.5
          *
          * No degenerate conic can pass through these points, so we can assume
-         * that we've found a perpendicular to the double line.  
+         * that we've found a perpendicular to the double line.
          * Proof:
          *  any degenerate must consist of at most 2 lines.  1.5,0.5 is not on any pair of lines passing through the previous 4 trials.
          *
@@ -924,6 +926,53 @@ void xAx::set (const Point& _vertex, const Point& _focus1, const Point& _focus2)
     }
 }
 
+/*
+ *  Define a conic section by passing a focus, the related directrix,
+ *  and the eccentricity (e)
+ *  (e < 1 -> ellipse; e = 1 -> parabola; e > 1 -> hyperbola)
+ *
+ *  _focus:         a focus of the conic section
+ *  _directrix:     the directrix related to the given focus
+ *  _eccentricity:  the eccentricity parameter of the conic section
+ */
+void xAx::set (const Point & _focus, const Line & _directrix, double _eccentricity)
+{
+    Point O = _directrix.pointAt (_directrix.timeAtProjection (_focus));
+    //std::cout << "O = " << O << std::endl;
+    Point OF = _focus - O;
+    double p = L2(OF);
+
+    coeff(0) = 1 - _eccentricity * _eccentricity;
+    coeff(1) = 0;
+    coeff(2) = 1;
+    coeff(3) = -2 * p;
+    coeff(4) = 0;
+    coeff(5) = p * p;
+
+    double angle = atan2 (OF);
+
+    (*this) = rotate (angle);
+    //std::cout << "O = " << O << std::endl;
+    (*this) = translate (O);
+}
+
+/*
+ *  Made up a degenerate conic section as a pair of lines
+ *
+ *  l1, l2: lines that made up the conic section
+ */
+void xAx::set (const Line& l1, const Line& l2)
+{
+    std::vector<double> cl1 = l1.implicit_form_coefficients();
+    std::vector<double> cl2 = l2.implicit_form_coefficients();
+
+    coeff(0) = cl1[0] * cl2[0];
+    coeff(2) = cl1[1] * cl2[1];
+    coeff(5) = cl1[2] * cl2[2];
+    coeff(1) = cl1[0] * cl2[1] + cl1[1] * cl2[0];
+    coeff(3) = cl1[0] * cl2[2] + cl1[2] * cl2[0];
+    coeff(4) = cl1[1] * cl2[2] + cl1[2] * cl2[1];
+}
 
 /*
  *  Compute the solutions of the conic section algebraic equation with respect to
@@ -980,6 +1029,66 @@ void xAx::roots (std::vector<double>& sol, Coord v, Dim2 d) const
     double t2 = (-q + srd) / p2;
     sol.push_back(t1);
     sol.push_back(t2);
+}
+
+/*
+ *  Translate the conic section by the given vector offset
+ *
+ *  _offset: represent the vector offset
+ */
+xAx xAx::translate (const Point & _offset) const
+{
+    double B = coeff(1) / 2;
+    double D = coeff(3) / 2;
+    double E = coeff(4) / 2;
+
+    Point T = - _offset;
+
+    xAx cs;
+    cs.coeff(0) = coeff(0);
+    cs.coeff(1) = coeff(1);
+    cs.coeff(2) = coeff(2);
+
+    Point DE;
+    DE[0] = coeff(0) * T[0] + B * T[1];
+    DE[1] = B * T[0] + coeff(2) * T[1];
+
+    cs.coeff(3) = (DE[0] + D) * 2;
+    cs.coeff(4) = (DE[1] + E) * 2;
+
+    cs.coeff(5) = dot (T,  DE) + 2 * (T[0] * D + T[1] * E) + coeff(5);
+
+    return cs;
+}
+
+/*
+ *  Rotate the conic section by the given angle wrt the point (0,0)
+ *
+ *  angle: represent the rotation angle
+ */
+xAx xAx::rotate (double angle) const
+{
+    double c = std::cos(-angle);
+    double s = std::sin(-angle);
+    double cc = c * c;
+    double ss = s * s;
+    double cs = c * s;
+
+    xAx result;
+    result.coeff(5) = coeff(5);
+
+    // quadratic terms
+    double Bcs = coeff(1) * cs;
+
+    result.coeff(0) = coeff(0) * cc + Bcs + coeff(2) * ss;
+    result.coeff(2) = coeff(0) * ss - Bcs + coeff(2) * cc;
+    result.coeff(1) = coeff(1) * (cc - ss) + 2 * (coeff(2) - coeff(0)) * cs;
+
+    // linear terms
+    result.coeff(3) = coeff(3) * c + coeff(4) * s;
+    result.coeff(4) = coeff(4) * c - coeff(3) * s;
+
+    return result;
 }
 
 } // end namespace Geom

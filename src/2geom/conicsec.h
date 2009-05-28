@@ -41,6 +41,7 @@
 #include <2geom/point.h>
 #include <2geom/line.h>
 #include <2geom/bezier-curve.h>
+#include <2geom/numeric/linear_system.h>
 
 #include <boost/optional/optional.hpp>
 
@@ -154,6 +155,30 @@ public:
     }
 
     /*
+     *  Define a conic section by passing a focus, the related directrix,
+     *  and the eccentricity (e)
+     *  (e < 1 -> ellipse; e = 1 -> parabola; e > 1 -> hyperbola)
+     *
+     *  _focus:         a focus of the conic section
+     *  _directrix:     the directrix related to the given focus
+     *  _eccentricity:  the eccentricity parameter of the conic section
+     */
+    xAx (const Point & _focus, const Line & _directrix, double _eccentricity)
+    {
+        set (_focus, _directrix, _eccentricity);
+    }
+
+    /*
+     *  Made up a degenerate conic section as a pair of lines
+     *
+     *  l1, l2: lines that made up the conic section
+     */
+    xAx (const Line& l1, const Line& l2)
+    {
+        set (l1, l2);
+    }
+
+    /*
      *  Define the conic section by its algebraic equation coefficients
      *  c0, ..., c5: equation coefficients
      */
@@ -169,6 +194,10 @@ public:
     void set (const Point& _vertex, double _angle, double _dist1, double _dist2);
 
     void set (const Point& _vertex, const Point& _focus1, const Point& _focus2);
+
+    void set (const Point & _focus, const Line & _directrix, double _eccentricity);
+
+    void set (const Line& l1, const Line& l2);
 
 
     std::string categorise() const;
@@ -237,7 +266,51 @@ public:
         return c[i];
     }
 
+    /*
+     *  Compute the centre of simmetry of the conic section when it exists,
+     *  else it return an unitialized boost::optional<Point> instance.
+     */
+    boost::optional<Point> centre() const
+    {
+        typedef boost::optional<Point> opt_point_t;
+
+        double d = coeff(1) * coeff(1) - 4 * coeff(0) * coeff(2);
+        if (are_near (d, 0))  return opt_point_t();
+        NL::Matrix Q(2, 2);
+        Q(0,0) = coeff(0);
+        Q(1,1) = coeff(2);
+        Q(0,1) = Q(1,0) = coeff(1) * 0.5;
+        NL::Vector T(2);
+        T[0] = - coeff(3) * 0.5;
+        T[1] = - coeff(4) * 0.5;
+
+        NL::LinearSystem ls (Q, T);
+        NL::Vector sol = ls.SV_solve();
+        Point C;
+        C[0] = sol[0];
+        C[1] = sol[1];
+
+        return opt_point_t(C);
+    }
+
     void roots (std::vector<double>& sol, Coord v, Dim2 d) const;
+
+    xAx translate (const Point & _offset) const;
+
+    xAx rotate (double angle) const;
+
+    /*
+     *  Rotate the conic section by the given angle wrt the provided point.
+     *
+     *  _rot_centre:   the rotation centre
+     *  _angle:        the rotation angle
+     */
+    xAx rotate (const Point & _rot_centre, double _angle) const
+    {
+        xAx result
+            = translate (-_rot_centre).rotate (_angle).translate (_rot_centre);
+        return result;
+    }
 
 };
 
