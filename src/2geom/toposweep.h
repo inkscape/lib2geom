@@ -70,17 +70,12 @@ struct Section {
     Section(CurveIx cix, double fd, double td, PathVector ps, Dim2 d) : curve(cix), f(fd), t(td) {
         fp = curve.get(ps).pointAt(f), tp = curve.get(ps).pointAt(t);
         if(lexo_point(tp, fp, d)) {
-            //swap from and to
+            //swap from and to, since tp is left or above fp
             std::swap(f, t);
             std::swap(fp, tp);
         }
     }
     Rect bbox() const { return Rect(fp, tp); }
-    //retrieves the portion the curve represents.  Asssumes that its indices exist within the vector
-    Curve *get_portion(PathVector const &ps) const {
-        Interval ti(f, t);
-        return curve.get(ps).portion(ti.min(), ti.max());
-    }
     bool operator==(Section const &other) const {
         return (curve == other.curve) && (f == other.f) && (t == other.t);
     }
@@ -134,32 +129,6 @@ class TopoGraph {
     double tol;
 };
 
-/*
-struct Vertex {
-    //these two vectors store the incoming / outgoing edges of the verte
-    //they are ordered on a clockwise traversal around the vertex, so in other words,
-    //enters ++ exits would yield a clockwise ordering
-    std::vector<Edge> enters, exits;TopoGraph
-    Point avg;
-    Vertex(Point p) : avg(p) {}
-    
-    //returns the number of incident edges.
-    inline unsigned degree() const { return enters.size() + exits.size(); }
-    
-    //returns the i-th edge of exits ++ enters.
-    //NOTE: mutates the index via modulus
-    inline Edge &lookup(unsigned &i) {
-        i %= degree();
-        return i < enters.size() ? enters[i] : exits[i - enters.size()];
-    }
-    inline Edge const &lookup(unsigned &i) const { return lookup(i); }
-    
-    //finds the index of the edge which corresponds to a particular section.
-    unsigned find(Section const *sect) const;
-    Edge &lookup_section(Section const *sect);
-    void remove_edge(unsigned &i);
-}; */
-
 //TODO: convert to classes
 typedef std::vector<boost::shared_ptr<Section> > Area;
 typedef std::vector<Area> Areas;
@@ -168,14 +137,13 @@ typedef std::vector<Area> Areas;
 
 void trim_whiskers(TopoGraph &g);
 void double_whiskers(TopoGraph &g);
+//void remove_degenerate(TopoGraph &g);
 //void remove_vestigial(TopoGraph &g);
 //Areas traverse_areas(TopoGraph const &g);
 
 
 void remove_area_whiskers(Areas &areas);
 PathVector areas_to_paths(PathVector const &ps, Areas const &areas);
-
-Areas filter_areas(Areas const & areas, bool (*func)(std::vector<unsigned>));
 
 class SectionSorter {
     const PathVector &ps;

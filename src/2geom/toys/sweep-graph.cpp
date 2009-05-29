@@ -5,7 +5,12 @@
 #include <2geom/sbasis-geometric.h>
 
 #define SWEEP_GRAPH_DEBUG
+
+#ifdef SWEEP_GRAPH_DEBUG
 #include <2geom/toposweep.cpp>
+#else
+#include <2geom/toposweep.h>
+#endif
 
 #include <cstdlib>
 
@@ -31,10 +36,11 @@ void draw_node(cairo_t *cr, Point h) {
 }
 
 void draw_section(cairo_t *cr, Section const &s, PathVector const &ps) {
-    Curve *curv = s.get_portion(ps);
+    Interval ti(s.f, s.t);
+    Curve *curv = s.curve.get(ps).portion(ti.min(), ti.max());
+    //draw_node(cr, s.fp);
     cairo_curve(cr, *curv);
-    draw_node(cr, curv->initialPoint());
-    draw_node(cr, curv->finalPoint());
+    //draw_node(cr, s.tp);
     cairo_stroke(cr);
     delete curv;
 }
@@ -49,24 +55,16 @@ void draw_graph(cairo_t *cr, TopoGraph const &graph) {
     }
 }
 
-/*
-unsigned find_vert(Graph const &vertices, Vertex const *v) {
-    return std::find(vertices.begin(), vertices.end(), v) - vertices.begin();
-}
-
-void write_graph(Graph const &vertices) {
-    for(unsigned i = 0; i < vertices.size(); i++) {
-        std::cout << i << " " << vertices[i]->avg << " [";
-        for(unsigned j = 0; j < vertices[i]->enters.size(); j++)
-            std::cout << find_vert(vertices, vertices[i]->enters[j].other) << ", ";
-        std::cout  << "|";
-        for(unsigned j = 0; j < vertices[i]->exits.size(); j++)
-            std::cout << find_vert(vertices, vertices[i]->exits[j].other) << ", ";
+void write_graph(TopoGraph const &graph) {
+    for(unsigned i = 0; i < graph.size(); i++) {
+        std::cout << i << " " << graph[i].avg << " [";
+        for(unsigned j = 0; j < graph[i].degree(); j++)
+            std::cout << graph[i][j].other << ", ";
         std::cout << "]\n";
     }
-    std::cout << "=======\n";
 }
 
+/*
 void draw_edges(cairo_t *cr, std::vector<Edge> const &edges, PathVector const &ps, double t) {
     for(unsigned j = 1; j < edges.size(); j++) {
         const Section * const s1 = edges[j-1].section,
@@ -107,7 +105,8 @@ void draw_area(cairo_t *cr, Area const &area, PathVector const &pa) {
 
 #ifdef SWEEP_GRAPH_DEBUG
 void draw_context(cairo_t *cr, int cix, PathVector const &pa) {
-    cix %= contexts.size();
+    if(contexts.empty()) return;
+    cix %= std::max(1,(int)contexts.size());
     for(unsigned i = 0; i < contexts[cix].size(); i++) {
         set_rainbow(cr, i);
         draw_section(cr, contexts[cix][i], pa);
@@ -148,38 +147,29 @@ class SweepWindow: public Toy {
         concatenate(pa, pa2);
         
         TopoGraph output(pa,X, .00001);
-        output.assert_invariants();
-        double_whiskers(output);
-        output.assert_invariants();
+        //output.assert_invariants();
+        //double_whiskers(output);
+        //output.assert_invariants();
         
         int cix = p2.pos[X] / 10;
         
 #ifdef SWEEP_GRAPH_DEBUG
-        //draw_context(cr, cix % contexts.size(), pa);
+        draw_context(cr, cix, pa);
 #endif
-        
+        write_graph(output);
         draw_graph(cr, output);
         
-        Areas areas = traverse_areas(output);
-        remove_area_whiskers(areas);
-        filter_areas(pa, areas, UnionOp(path.size(), false, false));
-        /*for(unsigned i = 0; i < areas.size(); i++) {
+        *notify << contexts.size() << "\n";
+        
+        /*Areas areas = traverse_areas(output);
+        //remove_area_whiskers(areas);
+        //filter_areas(pa, areas, UnionOp(path.size(), false, false));
+        for(unsigned i = 0; i < areas.size(); i++) {
             set_rainbow(cr, i);
             draw_area(cr, areas[i], pa);
-        }*/
-        draw_areas(cr, areas, pa);
-        
-        /*cairo_set_line_width(cr, 1);
-        //draw_edge_orders(cr, output, pa);
-        
-        //remove_vestigial_verts(output);
-        double_whiskers(output);
-        write_graph(output);
-        Areas areas = traverse_areas(output);
-        remove_area_whiskers(areas);
-        areas = filter_areas(pa, areas, UnionOp(path.size(), false, false));
+        }
+        //draw_areas(cr, areas, pa, X);
         */
-        
         Toy::draw(cr, notify, width, height, save,timer_stream);
     }
 

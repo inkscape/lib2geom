@@ -108,8 +108,8 @@ void concatenate(T &a, T const &b) { a.insert(a.end(), b.begin(), b.end()); }
 
 //returns a list of monotonic sections of a path
 //TODO: handle saddle points
-std::vector<Section> mono_sections(PathVector const &ps, Dim2 d) {
-    std::vector<Section> monos;
+std::vector<boost::shared_ptr<Section> > mono_sections(PathVector const &ps, Dim2 d) {
+    std::vector<boost::shared_ptr<Section> > monos;
     for(unsigned i = 0; i < ps.size(); i++) {
         //TODO: necessary? can we have empty paths?
         if(ps[i].size()) {
@@ -122,7 +122,7 @@ std::vector<Section> mono_sections(PathVector const &ps, Dim2 d) {
                 process_splits(splits, 0, 1);
                 //split on points of 0 derivative
                 for(unsigned k = 1; k < splits.size(); k++)
-                    monos.push_back(Section(CurveIx(i,j), splits[k-1], splits[k], ps, d));
+                    monos.push_back(boost::shared_ptr<Section>(new Section(CurveIx(i,j), splits[k-1], splits[k], ps, d)));
             }
         }
     }
@@ -215,14 +215,11 @@ void merge(X &a, X const &b, Z const &z) {
      std::inplace_merge(a.begin(), a.begin() + start, a.end(), z);
 }
 
-//TODO: make this faster than linear
-unsigned get_vertex(std::vector<TopoGraph::Vertex> &vertices, std::vector<unsigned> &v_to_do, Point p, double tol) {
-    unsigned i = 0;
-    for(; i < vertices.size(); i++)
+//TODO: faster than linear
+unsigned find_vertex(std::vector<TopoGraph::Vertex> const &vertices, Point p, double tol) {
+    for(unsigned i = 0; i < vertices.size(); i++)
         if(are_near(vertices[i].avg, p, tol)) return i;
-    vertices.push_back(TopoGraph::Vertex(p));
-    v_to_do.push_back(i);
-    return i;
+    return vertices.size();
 }
 
 //takes a vector of T pointers, and returns a vector of T with copies
@@ -261,6 +258,15 @@ struct DerefAdapter {
     }
 };
 
+struct EdgeSorter {
+    typedef TopoGraph::Edge first_argument_type;
+    typedef TopoGraph::Edge second_argument_type;
+    typedef bool result_type;
+    SectionSorter s;
+    EdgeSorter(const PathVector &rs, Dim2 d, double t) : s(rs, d, t) {}
+    bool operator()(TopoGraph::Edge const &e1, TopoGraph::Edge const &e2) const { return s(*e1.section, *e2.section); }
+};
+
 #ifdef SWEEP_GRAPH_DEBUG
 //used for debugging purposes - each element represents a subsequent iteration of the algorithm.
 std::vector<std::vector<Section> > monoss;
@@ -268,6 +274,191 @@ std::vector<std::vector<Section> > chopss;
 std::vector<std::vector<Section> > contexts;
 #endif
 
+/*
+ 1) take item off sweep sorted todo
+ 2) find all of the to-values before the beginning of this section
+ 3) sort these lexicographically, process them in order, grouping other sections in the context, and constructing a vertex in one fell swoop.
+ 4) add our section into context, splitting on intersections
+ 
+ 3 is novel, we perform it by storing 
+ */
+
+template<typename A, typename B, typename Z>
+struct MergeIterator {
+    A const &a;
+    B &b;
+    Z const &z;
+    unsigned ai;
+    bool on_a;
+    MergeIterator(A const &av, B &bv, Z const &zv) : a(av), b(bv), z(zv), ai(0), on_a(b.empty() || z(a[0], b.back())) {}
+    MergeIterator &operator++() {
+        if(!done()) {
+            on_a = b.empty() ? true : (ai >= a.size() ? false : z(a[ai], b.back()));
+            if(on_a) {
+                ++ai;
+                if(ai >= a.size()) on_a = false;
+            } else {
+                b.erase(b.end());
+                if(b.empty()) on_a = true;
+            }
+        }
+        return *this;
+    }
+    typename A::value_type operator*() {
+        assert(!done());
+        return on_a ? a[ai] : b.back();
+    }
+    bool done() { return b.empty() && ai >= a.size() - 1; }
+    typename A::value_type operator->() { assert(!done()); return on_a ? a[ai] : b.back(); }
+};
+
+void modify_windings(std::vector<int> &windings, boost::shared_ptr<Section> sec, Dim2 d) {
+    unsigned k = sec->curve.path;
+    if(k >= windings.size() || sec->fp[d] == sec->tp[d]) return;
+    if(sec->f < sec->t) windings[k]++;
+    if(sec->f > sec->t) windings[k]--;
+}
+
+struct Context {
+    boost::shared_ptr<Section> section;
+    int from_vert;
+    int to_vert;
+    Context(boost::shared_ptr<Section> sect, int from) : section(sect), from_vert(from), to_vert(-1) {}
+};
+
+template<typename C>
+struct ContextAdapter {
+    typedef Context first_argument_type;
+    typedef typename C::second_argument_type second_argument_type;
+    typedef typename C::result_type result_type;
+    const C &comp;
+    ContextAdapter(const C &c) : comp(c) {}
+    result_type operator()(const Context &a, const second_argument_type &b) const { return comp(a.section, b); }
+};
+
+#define DINF std::numeric_limits<double>::infinity()
+
+TopoGraph::TopoGraph(PathVector const &ps, Dim2 d, double t) : dim(d), tol(t) {
+    //s_sort = vertical section order
+    ContextAdapter<DerefAdapter<SectionSorter> > s_sort = DerefAdapter<SectionSorter>(SectionSorter(ps, (Dim2)(1-d), tol));
+    //sweep_sort = horizontal sweep order
+    DerefAdapter<SweepSorter> sweep_sort = DerefAdapter<SweepSorter>(SweepSorter(d));
+    //heap_sort = reverse horizontal sweep order
+    ReverseAdapter<DerefAdapter<SweepSorter> > heap_sort = ReverseAdapter<DerefAdapter<SweepSorter> >(sweep_sort);
+    //edge_sort = sorter for edges
+    EdgeSorter edge_sort = EdgeSorter(ps, (Dim2)(1-d), tol);
+    
+    std::vector<boost::shared_ptr<Section> > input_sections = mono_sections(ps, d), chops;
+    std::sort(input_sections.begin(), input_sections.end(), sweep_sort);
+    
+    std::vector<Context> context;
+    
+    vertices.reserve(input_sections.size());
+    
+    std::vector<int> windings(ps.size(), 0);
+    for(MergeIterator<Area, Area, DerefAdapter<SweepSorter> > iter(input_sections, chops, sweep_sort); ; ++iter) {
+        Point lim;
+        if(iter.done()) lim[X] = lim[Y] = DINF; else lim = iter->fp;
+        
+        //find all sections to remove
+        for(int i = context.size() - 1; i >= 0; i--) {
+            boost::shared_ptr<Section> sec = context[i].section;
+            if(!lexo_point(lim, sec->tp, d)) {
+                //sec->tp is less than or equal to lim
+                if(context[i].to_vert == -1) {
+                    //we need to create a new vertex; add everything that enters it
+                    //Point avg;
+                    //unsigned cnt;
+                    std::vector<Edge> enters;
+                    std::fill(windings.begin(), windings.end(), 0);
+                    for(unsigned j = 0; j < context.size(); j++) {
+                        modify_windings(windings, context[j].section, d);
+                        if(are_near(sec->tp, context[j].section->tp, tol)) {
+                            assert(-1 == context[j].to_vert);
+                            context[j].section->windings = windings;
+                            context[j].to_vert = vertices.size();
+                            enters.push_back(Edge(context[j].section, context[j].from_vert));
+                            //avg += context[j].section->tp;
+                            //cnt++;
+                        }
+                    }
+                    //Vertex &v(avg / (double)cnt);
+                    Vertex v(context[i].section->tp);
+                    v.enters = enters;
+                    vertices.push_back(v);
+                }
+                context.erase(context.begin() + i);
+            }
+        }
+        
+        if(!iter.done()) {
+            boost::shared_ptr<Section> s = *iter;
+            
+            //create a new context, associate a beginning vertex, and insert it in the proper location
+            unsigned ix = find_vertex(vertices, s->fp, tol);
+            if(ix == vertices.size()) vertices.push_back(Vertex(s->fp));
+            unsigned context_ix = std::lower_bound(context.begin(), context.end(), s, s_sort) - context.begin();
+
+            context.insert(context.begin() + context_ix, Context(s, ix));
+            
+            Interval si = Interval(s->fp[1-d], s->tp[1-d]);
+            
+            // Now we intersect with neighbors - do a sweep!
+            std::vector<double> this_splits;
+            for(unsigned i = 0; i < context.size(); i++) {
+                if(context[i].section == context[context_ix].section) continue;
+                
+                boost::shared_ptr<Section> sec = context[i].section;
+                
+                if(!si.intersects(Interval(sec->fp[1-d], sec->tp[1-d]))) continue;
+                
+                std::vector<double> other_splits;
+                Crossings xs = mono_intersect(s->curve.get(ps), Interval(s->f, s->t),
+                                              sec->curve.get(ps), Interval(sec->f, sec->t));
+                if(xs.empty()) continue;
+                
+                for(unsigned j = 0; j < xs.size(); j++) {
+                    this_splits.push_back(xs[j].ta);
+                    other_splits.push_back(xs[j].tb);
+                }
+                merge(chops, split_section(sec, ps, other_splits, d), heap_sort);
+            }
+            if(!this_splits.empty())
+                merge(chops, split_section(context[context_ix].section, ps, this_splits, d), heap_sort);
+            
+            if(context[context_ix].section->tp[d] - context[context_ix].section->fp[d] <= tol) {
+                ix = find_vertex(vertices, context[context_ix].section->tp, tol);
+                if(ix != vertices.size()) {
+                    if(vertices[ix].enters.empty()) {
+                        std::fill(windings.begin(), windings.end(), 0);
+                        for(unsigned j = 0; j <= context_ix; j++) modify_windings(windings, context[j].section, d);
+                    } else {
+                        windings = vertices[ix].enters.back().section->windings;
+                        windings[context[context_ix].section->curve.path]++;
+                    }
+                    context[context_ix].section->windings = windings;
+                    vertices[ix].enters.push_back(TopoGraph::Edge(context[context_ix].section, context[context_ix].from_vert));
+                    context.erase(context.begin() + context_ix);
+                }
+            }
+            
+            std::sort(chops.begin(), chops.end(), heap_sort);
+        } else if(context.empty()) return;
+        
+        #ifdef SWEEP_GRAPH_DEBUG
+        std::vector<Section> rem;
+        for(unsigned i = iter.ai; i < iter.a.size(); i++) rem.push_back(*iter.a[i]);
+        monoss.push_back(rem);
+        chopss.push_back(deref_vector(iter.b));
+        rem.clear();
+        for(unsigned i = 0; i < context.size(); i++) rem.push_back(*context[i].section);
+        contexts.push_back(rem);
+        #endif
+    }
+}
+
+/*
+                
 //TODO: ensure that the outputted graph is planar
 //TODO: I believe that it is currently possible for edges to not be doubled this is bad!
 TopoGraph::TopoGraph(PathVector const &ps, Dim2 d, double t) : dim(d), tol(t) {
@@ -277,11 +468,12 @@ TopoGraph::TopoGraph(PathVector const &ps, Dim2 d, double t) : dim(d), tol(t) {
     DerefAdapter<SweepSorter> sweep_sort = DerefAdapter<SweepSorter>(SweepSorter(d));
     //heap_sort = reverse horizontal sweep order
     ReverseAdapter<DerefAdapter<SweepSorter> > heap_sort = ReverseAdapter<DerefAdapter<SweepSorter> >(sweep_sort);
+    EdgeSorter edge_sort = EdgeSorter(ps, (Dim2)(1-d), tol);
     
     //sections = input monotonic sections, sorted on sweep_sort
     //chops = portions of sections yielded by intersection handling, sorted on heap_sort
     //context = the current operating context, sorted on s_sort
-    std::vector<Section> sections = mono_sections(ps, d);
+    std::vector<boost::shared_ptr<Section> > sections = mono_sections(ps, d);
     std::vector<boost::shared_ptr<Section> > chops, context;
     std::sort(sections.begin(), sections.end(), SweepSorter(d));
     
@@ -306,7 +498,7 @@ TopoGraph::TopoGraph(PathVector const &ps, Dim2 d, double t) : dim(d), tol(t) {
         //mergepass of monos and chops
         boost::shared_ptr<Section> s;
         if(mix < sections.size() && (chops.empty() || lexo_point(sections[mix].fp, chops.back()->fp, d))) {
-            s = boost::shared_ptr<Section>(new Section(sections[mix++]));
+            s = sections[mix++];
         } else if(!chops.empty()) {
             s = chops.back();
             chops.pop_back();
@@ -327,11 +519,11 @@ TopoGraph::TopoGraph(PathVector const &ps, Dim2 d, double t) : dim(d), tol(t) {
                     if(context_vertex[j] == v_to_do[i])
                         vertices[context_vertex[j]].exits.push_back(TopoGraph::Edge(context[j], 0));
                 //find the average of the endpoints of the vertex
-                /*Point avg;
+                Point avg;
                 for(unsigned j = 0; j < vertices[v_to_do[i]].enters.size(); j++)
                     avg += vertices[v_to_do[i]].enters[j].section->tp;
                 for(unsigned j = 0; j < vertices[v_to_do[i]].exits.size(); j++)
-                    avg += vertices[v_to_do[i]].exits[j].section->fp; */
+                    avg += vertices[v_to_do[i]].exits[j].section->fp;
                 //TODO: verify that this doesn't allow funny situations to occur, eg, adding more to an already finalized vertex
                 //avg /= vertices[to_do_i].degree();
                 v_to_do.erase(v_to_do.begin() + i);
@@ -340,7 +532,33 @@ TopoGraph::TopoGraph(PathVector const &ps, Dim2 d, double t) : dim(d), tol(t) {
         
         //move all of the segments we're done with
         for(int i = context.size() - 1; i >= 0; i--) {
-            if(context[i]->tp[d] < lim || are_near(context[i]->tp[d], lim)) {
+            if(context[i]->tp[d] <= lim + tol || are_near(context[i]->tp[d], lim)) {
+                TopoGraph::Vertex &cv = vertices[context_vertex[i]];
+                unsigned vert;
+                if(context[i]->tp[d] <= cv.avg[d] + tol) {
+                    if(are_near(context[i]->tp, cv.avg)) {
+                        context.erase(context.begin() + i);
+                        context_vertex.erase(context_vertex.begin() + i);
+                        continue;
+                    }
+                    vert = get_vertex(vertices, v_to_do, context[i]->tp, tol);
+                    TopoGraph::Edge e(context[i], vert);
+                    cv.exits.insert(std::lower_bound(cv.exits.begin(), cv.exits.end(), e, edge_sort), e);
+                } else {
+                    vert = get_vertex(vertices, v_to_do, context[i]->tp, tol);
+                    for(unsigned j = 0; j < cv.exits.size(); j++) {
+                        if(cv.exits[j].section == context[i]) {
+                            cv.exits[j].other = vert;
+                            break;
+                        }
+                    }
+                }
+                TopoGraph::Edge e(context[i], context_vertex[i]);
+                if(context[i]->tp[d] >= cv.avg[d] - tol)
+                    vertices[vert].enters.push_back(e);
+                else
+                    vertices[vert].enters.insert(std::lower_bound(vertices[vert].enters.begin(), vertices[vert].enters.end(), e, ReverseAdapter<EdgeSorter>(edge_sort)), e);
+                
                 //figure out this section's winding
                 std::fill(windings.begin(), windings.end(), 0);
                 for(int j = 0; j < i; j++) {
@@ -353,24 +571,7 @@ TopoGraph::TopoGraph(PathVector const &ps, Dim2 d, double t) : dim(d), tol(t) {
                 }
                 
                 context[i]->windings = windings;
-        
-                unsigned vert = get_vertex(vertices, v_to_do, context[i]->tp, tol);
                 
-                //TODO: erase section?
-                //if(vert == vix[i]) continue;  // remove tiny things
-                
-                //add edges to vertices
-                TopoGraph::Vertex &cv = vertices[context_vertex[i]];
-                unsigned j = 0;
-                for(; j < cv.exits.size(); j++) {
-                    if(cv.exits[j].section == context[i]) {
-                        cv.exits[j].other = vert;
-                        break;
-                    }
-                }
-                //TODO: is this if the right behavior?
-                if(j != cv.exits.size())
-                    vertices[vert].enters.push_back(TopoGraph::Edge(context[i], context_vertex[i]));
                 //remove it from the context
                 context.erase(context.begin() + i);
                 context_vertex.erase(context_vertex.begin() + i);
@@ -420,7 +621,7 @@ TopoGraph::TopoGraph(PathVector const &ps, Dim2 d, double t) : dim(d), tol(t) {
         contexts.push_back(deref_vector(context));
         #endif
     }
-}
+} */
 
 void trim_whiskers(TopoGraph &g) {
     std::vector<unsigned> affected;
@@ -474,6 +675,15 @@ void double_whiskers(TopoGraph &g) {
         }
     }
 }
+
+/*
+void remove_degenerate(TopoGraph &g) {
+    for(unsigned i = 0; i < g.size(); i++) {
+        for(int j = g[i].degree(); j >= 0; j--) {
+            if(g[i][j].other == i) 
+        }
+    }
+}*/
 
 /*
 void remove_vestigial(TopoGraph &g) {
@@ -555,11 +765,16 @@ void remove_area_whiskers(Areas &areas) {
 
 Path area_to_path(PathVector const &ps, Area const &area) {
     Path ret;
-    bool rev = (area.size() > 1) && are_near(area[0]->tp, area[1]->fp);
-    for(int i = rev ? area.size() - 1 : 0; rev ? i >= 0 : i < (int)area.size(); i = rev ? i-1 : i+1) {
-        Curve *curv = area[i]->get_portion(ps);
+    if(area.size() == 0) return ret;
+    Point prev = area[0]->fp;
+    for(unsigned i = 0; i < area.size(); i++) {
+        bool forward = are_near(area[i]->fp, prev, 0.01);
+        Curve *curv = area[i]->curve.get(ps).portion(
+                          forward ? area[i]->f : area[i]->t,
+                          forward ? area[i]->t : area[i]->f);
         ret.append(*curv, Path::STITCH_DISCONTINUOUS);
         delete curv;
+        prev = forward ? area[i]->tp : area[i]->fp;
     }
     return ret;
 }
