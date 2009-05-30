@@ -727,7 +727,7 @@ bool RTree::adjust_tree(    RTreeNode* position,
 
     while( true ){
         _RTREE_PRINT("  ------- current tree status:");
-        print_tree(root, 2);
+        print_tree(root, 2, true);
 
         // check for loop BREAK
         if( position == root ){
@@ -887,7 +887,7 @@ RTreeRecord_NonLeaf RTree::create_nonleaf_record_from_rtreenode( Rect &new_entry
     print the elements of the tree
     based on ordered tree walking 
 */
-void RTree::print_tree(RTreeNode* subtree_root, int depth, bool break_on_first_iteration ) const{
+void RTree::print_tree(RTreeNode* subtree_root, int depth, bool used_during_insert  ) const{
 
     if( subtree_root->children_nodes.size() > 0 ){ 
 
@@ -899,17 +899,24 @@ void RTree::print_tree(RTreeNode* subtree_root, int depth, bool break_on_first_i
             }
 
             std::cout << subtree_root->children_nodes[i].bounding_box << ",  " << subtree_root->children_nodes.size() << std::endl;
-            if( break_on_first_iteration ){
-                break;
-            }
-            print_tree( subtree_root->children_nodes[i].data, depth+1, break_on_first_iteration);
+//            if( break_on_first_iteration ){
+//                break;
+//            }
+//            print_tree( subtree_root->children_nodes[i].data, depth+1, break_on_first_iteration);
+            print_tree( subtree_root->children_nodes[i].data, depth+1, used_during_insert);
         }
 
 
+        // sanity check
         if( subtree_root != root ){
             assert( subtree_root->children_nodes.size() >= min_records);
         }
-        assert( subtree_root->children_nodes.size() <= max_records + 1 ); // allow one more during for insert
+        if( used_during_insert ){
+            assert( subtree_root->children_nodes.size() <= max_records + 1 ); // allow one more during for insert
+        }
+        else{
+            assert( subtree_root->children_nodes.size() <= max_records );
+        }
 
     }
     else{   
@@ -925,10 +932,16 @@ void RTree::print_tree(RTreeNode* subtree_root, int depth, bool break_on_first_i
         std::cout << std::endl;
 
 
+        // sanity check
         if( subtree_root != root ){
             assert( subtree_root->children_leaves.size() >= min_records);
         }
-        assert( subtree_root->children_leaves.size() <= max_records + 1 ); // allow one more during for insert
+        if( used_during_insert ){
+            assert( subtree_root->children_leaves.size() <= max_records + 1 ); // allow one more during for insert
+        }
+        else{
+            assert( subtree_root->children_nodes.size() <= max_records );
+        }
     }
 }
 

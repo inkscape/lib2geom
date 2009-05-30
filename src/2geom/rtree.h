@@ -169,7 +169,7 @@ public:
 
 //  update
 
-    void print_tree(RTreeNode* subtree_root, int depth, bool break_on_first_iteration = false) const;
+    void print_tree(RTreeNode* subtree_root, int depth, bool used_during_insert = false) const;
 
 private:
     unsigned tree_height; // 0 is the root level
