@@ -150,14 +150,15 @@ class RTree{
 public:
     RTreeNode* root;
 
-    unsigned min_nodes;
-    unsigned max_nodes; // allow +1 (used during insert)
+    // min/max records per node
+    unsigned min_records;
+    unsigned max_records; // allow +1 (used during insert)
 
     enum_split_strategy split_strategy;
 
 
-    RTree( unsigned min_n, unsigned max_n, enum_split_strategy split_s ): 
-        root(0), min_nodes( min_n ), max_nodes( max_n ), split_strategy( split_s ),
+    RTree( unsigned n, unsigned m, enum_split_strategy split_s ): 
+        root(0), min_records( n ), max_records( m ), split_strategy( split_s ),
         tree_height(0)
     {}
 
