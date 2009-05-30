@@ -169,7 +169,7 @@ public:
 
 //  update
 
-    void print_tree(RTreeNode* subtree_root, int depth, bool used_during_insert = false) const;
+    void print_tree(RTreeNode* subtree_root, int depth ) const;
 
 private:
     unsigned tree_height; // 0 is the root level
@@ -218,6 +218,7 @@ private:
     //                    const unsigned max_nodes 
                         );
     int remove_record_from_parent( RTreeNode* parent, RTreeNode* child );
+    void sanity_check(RTreeNode* subtree_root, int depth, bool used_during_insert = false ) const;
 
 };
 
