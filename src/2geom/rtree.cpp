@@ -88,7 +88,8 @@ void RTree::insert( const RTreeRecord_Leaf &leaf_record,
     else { // choose nonleaf node
         position = choose_node( nonleaf_record.bounding_box, insert_high, stop_height ); 
     }
-
+    _RTREE_PRINT("leaf node chosen: " );
+    print_tree( position , 0 );
     std::pair< RTreeNode*, RTreeNode* > node_division;
 
     bool split_performed = false;
@@ -120,12 +121,12 @@ void RTree::insert( const RTreeRecord_Leaf &leaf_record,
             _RTREE_PRINT("I2 leaf: split: " << position->children_leaves.size() << "  max_records:" << max_records);     // I2
             node_division = split_node( position );
             split_performed = true;
-    /*
+    
             _RTREE_PRINT("      group A");
             print_tree( node_division.first , 3 );
             _RTREE_PRINT("      group B");
             print_tree( node_division.second , 3 );
-    */
+    
         }
 
     }
@@ -141,21 +142,43 @@ void RTree::insert( const RTreeRecord_Leaf &leaf_record,
     _RTREE_PRINT("I4");    // I4
     // TODO check this: looks good now
     if( root_split_performed ){
-        Rect new_record_bounding_box;
+        std::pair<RTreeNode*, RTreeNode*> root_division;
+        root_division = quadratic_split( root ); // AT5
+
+        Rect first_record_bounding_box;
+        Rect second_record_bounding_box;
+
+        RTreeRecord_NonLeaf first_new_record = create_nonleaf_record_from_rtreenode( first_record_bounding_box, root_division.first );
+        RTreeRecord_NonLeaf second_new_record = create_nonleaf_record_from_rtreenode( second_record_bounding_box, root_division.second ); 
+        _RTREE_PRINT("          1st:");
+        print_tree( first_new_record.data, 5 );
+        _RTREE_PRINT("          2nd:");
+        print_tree( second_new_record.data, 5 );
+
+        // *new* root is by definition non-leaf. Install the new records there
+        RTreeNode* new_root = new RTreeNode();
+        new_root->children_nodes.push_back( first_new_record );
+        new_root->children_nodes.push_back( second_new_record  );  
+
+        delete root;
+
+        
+/*        Rect new_record_bounding_box;
         Rect old_root_bounding_box;
 
         RTreeRecord_NonLeaf new_record = create_nonleaf_record_from_rtreenode( new_record_bounding_box, node_division.second );
         RTreeRecord_NonLeaf new_record_old_root = create_nonleaf_record_from_rtreenode( old_root_bounding_box, root ); 
-/*
+
         _RTREE_PRINT("          new entry:");
         print_tree( new_record.data, 5 );
         _RTREE_PRINT("          old root:");
         print_tree( new_record_old_root.data, 5 );
-*/
+
         // *new* root is by definition non-leaf. Install the new records there
         RTreeNode* new_root = new RTreeNode();
         new_root->children_nodes.push_back( new_record_old_root );
         new_root->children_nodes.push_back( new_record  );  
+*/
 
         root = new_root; 
         tree_height++; // increse tree height
@@ -337,14 +360,14 @@ std::pair<RTreeNode*, RTreeNode*> RTree::quadratic_split( RTreeNode *s ) {
         unsigned num_of_not_assigned = s->children_nodes.size() - 2; // so far we have assinged 2 out of all
 
         while( num_of_not_assigned ){// QS2 a
-            _RTREE_PRINT("  QS2 b");     // QS2 b
+            _RTREE_PRINT("  QS2 b,   num_of_not_assigned:" << num_of_not_assigned);    // QS2 b
             /* 
                 we are on NON leaf node so children of splitted groups must be nodes
 
                 Check each group to see if one group has so few entries that all the rest must 
                 be assignmed to it, in order for it to have the min number.
             */
-            if( group_a->children_nodes.size() + num_of_not_assigned < min_records ){
+            if( group_a->children_nodes.size() + num_of_not_assigned <= min_records ){
                 // add the non-assigned to group_a
                 for(unsigned i = 0; i < assigned_v.size(); i++){
                     if(assigned_v[i] == false){
@@ -355,7 +378,7 @@ std::pair<RTreeNode*, RTreeNode*> RTree::quadratic_split( RTreeNode *s ) {
                 break;           
             }
 
-            if( group_b->children_nodes.size() + num_of_not_assigned < min_records ){
+            if( group_b->children_nodes.size() + num_of_not_assigned <= min_records ){
                 // add the non-assigned to group_b
                 for( unsigned i = 0; i < assigned_v.size(); i++ ){
                     if( assigned_v[i] == false ){
@@ -402,7 +425,7 @@ std::pair<RTreeNode*, RTreeNode*> RTree::quadratic_split( RTreeNode *s ) {
         unsigned num_of_not_assigned = s->children_leaves.size() - 2; // so far we have assinged 2 out of all
 
         while( num_of_not_assigned ){// QS2 a
-            _RTREE_PRINT("  QS2 b");    // QS2 b
+            _RTREE_PRINT("  QS2 b,   num_of_not_assigned:" << num_of_not_assigned);    // QS2 b
             /* 
                 we are on leaf node so children of splitted groups must be leaves
 
@@ -699,13 +722,12 @@ bool RTree::adjust_tree(    RTreeNode* position,
     bool split_performed = initial_split_performed;
     bool root_split_performed = false;
 
-    while( true ){
+    _RTREE_PRINT("  adjust_tree");   
+    _RTREE_PRINT("  AT1");
 
-        _RTREE_PRINT("  adjust_tree");   
-        _RTREE_PRINT("  AT1");
-        if( split_performed ){
-            copy_group_a_to_existing_node( position, node_division.first );
-        }
+    while( true ){
+        _RTREE_PRINT("  ------- current tree status:");
+        print_tree(root, 2);
 
         // check for loop BREAK
         if( position == root ){
@@ -714,7 +736,16 @@ bool RTree::adjust_tree(    RTreeNode* position,
                 root_split_performed = true;
             }            
             break;
+        } 
+//////////////////////////// was after copy_group_a_to_existing_node, at potision A
+
+
+
+        if( split_performed ){
+            copy_group_a_to_existing_node( position, node_division.first );
         }
+
+//////////////////////////// potision A
 
         /* 
             pick randomly, let's say the 1st entry of the current node. 
@@ -741,24 +772,7 @@ bool RTree::adjust_tree(    RTreeNode* position,
         
         _RTREE_PRINT("  AT3.3");    // AT3.2    Adjust EN bounding box so that it tightly enclosses all entry rectangles in N
         recalculate_bounding_box( parent, position, child_in_parent );
-/* instead of function:
 
-        if( position->children_nodes.size() > 0 ){
-            _RTREE_PRINT("  non-leaf: recalculate bounding box of parent "); // non leaf-node: position
-            parent->children_nodes[ child_in_parent ].bounding_box = Rect( position->children_nodes[0].bounding_box );
-            for( unsigned i=1; i < position->children_nodes.size(); i++ ){
-                parent->children_nodes[ child_in_parent ].bounding_box.unionWith( position->children_nodes[i].bounding_box );
-            }
-        }
-        else{ 
-            _RTREE_PRINT("  leaf: recalculate bounding box of parent ");    // leaf-node: position
-            parent->children_nodes[ child_in_parent ].bounding_box = Rect( position->children_leaves[0].bounding_box );;
-
-            for( unsigned i=1; i < position->children_leaves.size(); i++ ){
-                parent->children_nodes[ child_in_parent ].bounding_box.unionWith( position->children_leaves[i].bounding_box );
-            }
-        }
-*/
 
         _RTREE_PRINT("  AT4");    // AT4
         if( split_performed ){
@@ -895,7 +909,7 @@ void RTree::print_tree(RTreeNode* subtree_root, int depth, bool break_on_first_i
         if( subtree_root != root ){
             assert( subtree_root->children_nodes.size() >= min_records);
         }
-        assert( subtree_root->children_nodes.size() < max_records + 1 ); // allow one more during for insert
+        assert( subtree_root->children_nodes.size() <= max_records + 1 ); // allow one more during for insert
 
     }
     else{   
@@ -914,7 +928,7 @@ void RTree::print_tree(RTreeNode* subtree_root, int depth, bool break_on_first_i
         if( subtree_root != root ){
             assert( subtree_root->children_leaves.size() >= min_records);
         }
-        assert( subtree_root->children_leaves.size() < max_records + 1 ); // allow one more during for insert
+        assert( subtree_root->children_leaves.size() <= max_records + 1 ); // allow one more during for insert
     }
 }
 
