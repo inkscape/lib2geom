@@ -106,10 +106,7 @@ void RTree::insert( const RTreeRecord_Leaf &leaf_record,
             node_division = split_node( position );
             split_performed = true;
         }
-        if( position != root ){
-            assert( position->children_nodes.size() > min_records);
-        }
-        assert( position->children_nodes.size() <= max_records);
+
     }
     else { // leaf node: position: 
         assert( insert_high == false ); // we must reach here only to insert leaf node, not insert high non leaf node
@@ -130,10 +127,7 @@ void RTree::insert( const RTreeRecord_Leaf &leaf_record,
             print_tree( node_division.second , 3 );
     */
         }
-        if( position != root ){
-            assert( position->children_leaves.size() > min_records);
-        }
-        assert( position->children_leaves.size() <= max_records);
+
     }
 
     _RTREE_PRINT("I3");    // I3    
@@ -890,12 +884,19 @@ void RTree::print_tree(RTreeNode* subtree_root, int depth, bool break_on_first_i
                 std::cout << "  ";
             }
 
-            std::cout << subtree_root->children_nodes[i].bounding_box << std::endl;
+            std::cout << subtree_root->children_nodes[i].bounding_box << ",  " << subtree_root->children_nodes.size() << std::endl;
             if( break_on_first_iteration ){
                 break;
             }
             print_tree( subtree_root->children_nodes[i].data, depth+1, break_on_first_iteration);
         }
+
+
+        if( subtree_root != root ){
+            assert( subtree_root->children_nodes.size() >= min_records);
+        }
+        assert( subtree_root->children_nodes.size() < max_records + 1 ); // allow one more during for insert
+
     }
     else{   
        for(int j=0; j < depth; j++){
@@ -908,6 +909,12 @@ void RTree::print_tree(RTreeNode* subtree_root, int depth, bool break_on_first_i
             std::cout << subtree_root->children_leaves[i].data << ", ";
         }
         std::cout << std::endl;
+
+
+        if( subtree_root != root ){
+            assert( subtree_root->children_leaves.size() >= min_records);
+        }
+        assert( subtree_root->children_leaves.size() < max_records + 1 ); // allow one more during for insert
     }
 }
 
@@ -1208,11 +1215,11 @@ bool RTree::condense_tree( RTreeNode* position
     /*///////////////////////////////////////////////////////////////////
     check Q sets have the proper things inside
     */
-        _RTREE_PRINT("  Q_leaf ------------");
+        _RTREE_PRINT("  ------ Q_leaf");
     for( std::vector< RTreeRecord_Leaf >::iterator it = Q_leaf_records.begin(); it != Q_leaf_records.end(); ++it ){
         _RTREE_PRINT("  leaf:" << (*it).data);
     }
-     _RTREE_PRINT("  Q_nonleaf ------------");
+     _RTREE_PRINT("  ------ Q_nonleaf");
     for( std::vector< std::pair< RTreeRecord_NonLeaf, unsigned > >::iterator it = Q_nonleaf_records.begin(); it != Q_nonleaf_records.end(); ++it ){
         _RTREE_PRINT(" ------- " << it->second );
         print_tree( it->first.data, 0);
