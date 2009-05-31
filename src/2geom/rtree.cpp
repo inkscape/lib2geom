@@ -946,9 +946,11 @@ void RTree::sanity_check(RTreeNode* subtree_root, int depth, bool used_during_in
         if( subtree_root != root ){
             assert( subtree_root->children_nodes.size() >= min_records);
         }
+/*
         else{
             assert( subtree_root->children_nodes.size() >= 1);
         }
+*/
 
         if( used_during_insert ){
             assert( subtree_root->children_nodes.size() <= max_records + 1 ); // allow one more during for insert
@@ -963,9 +965,11 @@ void RTree::sanity_check(RTreeNode* subtree_root, int depth, bool used_during_in
         if( subtree_root != root ){
             assert( subtree_root->children_leaves.size() >= min_records);
         }
+/*
         else{
             assert( subtree_root->children_leaves.size() >= 1);
         }
+*/
 
         if( used_during_insert ){
             assert( subtree_root->children_leaves.size() <= max_records + 1 ); // allow one more during for insert
