@@ -37,6 +37,7 @@
 #include <2geom/conicsec.h>
 #include <2geom/line.h>
 
+//#include <iomanip>
 
 
 using namespace Geom;
@@ -47,9 +48,11 @@ class ConicSectionToy : public Toy
     enum menu_item_t
     {
         SHOW_MENU = 0,
-        TEST_VERTEX_FOCI, // #1
-        TEST_FITTING, // #1
-        TEST_ROOTS, // #1
+        TEST_VERTEX_FOCI,
+        TEST_FITTING,
+        TEST_ECCENTRICITY,
+        TEST_DEGENERATE,
+        TEST_ROOTS,
         TOTAL_ITEMS // this one must be the last item
     };
 
@@ -76,6 +79,9 @@ class ConicSectionToy : public Toy
     }
 
 
+/*
+ *  TEST VERTEX FOCI
+ */
     void init_vertex_foci()
     {
         set_common_control_geometry = true;
@@ -102,15 +108,23 @@ class ConicSectionToy : public Toy
 
         if (!parabola_toggle.on )
         {
-            if (distance (focus1.pos, focus2.pos) > 20 )
+            if (focus2.pos == Point(infinity(),infinity()))
+                focus2.pos = Point(m_width/2, m_height/2);
+            double df1f2 = distance (focus1.pos, focus2.pos);
+            if (df1f2 > 20 )
             {
                 Line axis(focus1.pos,focus2.pos);
                 vertex.pos = projection (vertex.pos, axis);
             }
-            else
+            else if (df1f2 > 1)
             {
                 Line axis(focus1.pos,vertex.pos);
                 focus2.pos = projection (focus2.pos, axis);
+            }
+            else
+            {
+                Line axis(focus1.pos,vertex.pos);
+                focus2.pos = focus1.pos;
             }
         }
         else
@@ -129,9 +143,7 @@ class ConicSectionToy : public Toy
         draw_label(cr, vertex, "V");
         cairo_stroke(cr);
 
-        //*notify << "conic section type: " << cs.categorise();
-        *notify << cs;
-
+        *notify << cs.categorise() << ": " << cs << std::endl;
     }
 
     void init_vertex_foci_ctrl_geom (cairo_t* /*cr*/,
@@ -143,10 +155,14 @@ class ConicSectionToy : public Toy
             set_common_control_geometry = false;
 
             Point toggle_sp( width - 200, 10);
-            parabola_toggle.bounds = Rect( toggle_sp, toggle_sp + Point(190,30) );
+            parabola_toggle.bounds = Rect (toggle_sp, toggle_sp + Point(190,30));
         }
     }
 
+
+/*
+ *  TEST FITTING
+ */
     void init_fitting()
     {
         set_common_control_geometry = true;
@@ -188,8 +204,7 @@ class ConicSectionToy : public Toy
         cairo_set_line_width (cr, 0.5);
         draw (cr, cs, m_window);
         cairo_stroke(cr);
-
-        *notify << cs;
+        *notify << cs.categorise() << ": " << cs << std::endl;
     }
 
     void init_fitting_ctrl_geom (cairo_t* /*cr*/,
@@ -203,6 +218,113 @@ class ConicSectionToy : public Toy
         }
     }
 
+
+/*
+ *  TEST ECCENTRICITY
+ */
+    void init_eccentricity()
+    {
+        set_common_control_geometry = true;
+        handles.clear();
+
+        p1 = Point (100, 100);
+        p2 = Point (100, 400);
+        focus1 = Point (300, 250);
+
+        eccentricity_slider.set (0, 3, 0, 1, "eccentricity");
+
+        handles.push_back (&p1);
+        handles.push_back (&p2);
+        handles.push_back (&focus1);
+        handles.push_back (&eccentricity_slider);
+    }
+
+    void draw_eccentricity (cairo_t *cr, std::ostringstream *notify,
+                            int width, int height, bool /*save*/,
+                            std::ostringstream * /*timer_stream*/)
+    {
+        init_eccentricity_ctrl_geom(cr, notify, width, height);
+
+        Line directrix (p1.pos, p2.pos);
+
+        cs.set (focus1.pos, directrix, eccentricity_slider.value());
+
+        cairo_set_source_rgba(cr, 0.3, 0.3, 0.3, 1.0);
+        cairo_set_line_width (cr, 0.5);
+        draw (cr, cs, m_window);
+        cairo_stroke(cr);
+
+        draw_label (cr, focus1, "F");
+        draw_line (cr, directrix, m_window);
+        draw_label(cr, p1, "directrix");
+        cairo_stroke(cr);
+
+        *notify << cs.categorise() << ": " << cs << std::endl;
+    }
+
+    void init_eccentricity_ctrl_geom (cairo_t* /*cr*/,
+                                      std::ostringstream* /*notify*/,
+                                      int /*width*/, int height)
+    {
+        if ( set_common_control_geometry )
+        {
+            set_common_control_geometry = false;
+            eccentricity_slider.geometry (Point (10, height - 50), 300);
+        }
+    }
+
+
+
+/*
+ *  TEST DEGENERATE
+ */
+    void init_degenerate()
+    {
+        set_common_control_geometry = true;
+        handles.clear();
+
+        psh.pts.resize(4);
+        psh.pts[0] = Point(450, 250);
+        psh.pts[1] = Point(250, 100);
+        psh.pts[2] = Point(250, 400);
+        psh.pts[3] = Point(400, 320);
+
+
+
+        handles.push_back(&psh);
+    }
+
+    void draw_degenerate (cairo_t *cr, std::ostringstream *notify,
+                          int width, int height, bool /*save*/,
+                          std::ostringstream * /*timer_stream*/)
+    {
+        init_degenerate_ctrl_geom(cr, notify, width, height);
+
+        Line l1 (psh.pts[0], psh.pts[1]);
+        Line l2 (psh.pts[2], psh.pts[3]);
+        cs.set (l1, l2);
+        cairo_set_source_rgba(cr, 0.3, 0.3, 0.3, 1.0);
+        cairo_set_line_width (cr, 0.5);
+        draw (cr, cs, m_window);
+        cairo_stroke(cr);
+
+        *notify << cs.categorise() << ": " << cs << std::endl;
+    }
+
+    void init_degenerate_ctrl_geom (cairo_t* /*cr*/,
+                                    std::ostringstream* /*notify*/,
+                                    int /*width*/, int /*height*/)
+    {
+        if ( set_common_control_geometry )
+        {
+            set_common_control_geometry = false;
+        }
+    }
+
+
+/*
+ *  TEST ROOTS
+ */
     void init_roots()
     {
         init_common();
@@ -256,13 +378,14 @@ class ConicSectionToy : public Toy
         }
     }
 
-    void init_roots_ctrl_geom(cairo_t* /*cr*/, std::ostringstream* /*notify*/, int width, int height)
+    void init_roots_ctrl_geom (cairo_t* /*cr*/, std::ostringstream* /*notify*/,
+                               int width, int height)
     {
         if ( set_control_geometry )
         {
             set_control_geometry = false;
 
-            Point T(width - 280, height - 120);
+            Point T(width - 120, height - 60);
             x_y_toggle.bounds = Rect( T, T + Point(100,25) );
         }
     }
@@ -382,6 +505,14 @@ class ConicSectionToy : public Toy
                 draw_f = &ConicSectionToy::draw_fitting;
                 break;
             case 'D':
+                init_eccentricity();
+                draw_f = &ConicSectionToy::draw_eccentricity;
+                break;
+            case 'E':
+                init_degenerate();
+                draw_f = &ConicSectionToy::draw_degenerate;
+                break;
+            case 'F':
                 init_roots();
                 draw_f = &ConicSectionToy::draw_roots;
                 break;
@@ -428,6 +559,7 @@ private:
     PointHandle p1, p2;
     Toggle x_y_toggle;
 
+    Slider eccentricity_slider;
 };
 
 
@@ -436,17 +568,20 @@ const char* ConicSectionToy::menu_items[] =
     "show this menu",
     "vertex and foci",
     "fitting",
+    "eccentricity",
+    "degenerate",
     "roots",
 };
 
 const char ConicSectionToy::keys[] =
 {
-     'A', 'B', 'C', 'D'
+     'A', 'B', 'C', 'D', 'E','F'
 };
 
 
 int main(int argc, char **argv)
 {
+    //std::cout.precision(20);
     init( argc, argv, new ConicSectionToy(), 800, 600 );
     return 0;
 }
