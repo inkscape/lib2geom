@@ -125,8 +125,9 @@ public:
     }
     inline bool isConstant() const {
         if (empty()) return true;
-        for (unsigned i = 0; i < size(); i++) {
-            if(!(*this)[i].isConstant()) return false;
+        if(!(*this)[0].isConstant()) return false;
+        for (unsigned i = 1; i < size(); i++) {
+            if(!(*this)[i].isZero()) return false;
         }
         return true;
     }
