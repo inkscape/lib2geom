@@ -93,6 +93,11 @@ void process_splits(std::vector<double> &splits, double f, double t) {
     splits.push_back(f);
     splits.push_back(t);
     std::sort(splits.begin(), splits.end());
+    if((splits.back() == t && are_near(splits[splits.size() - 2], t))) {
+        //for the case in which there is a split which is both near and less than t
+        splits.pop_back();
+        splits[splits.size() - 1] = t;
+    }
     std::vector<double>::iterator end = std::unique(splits.begin(), splits.end(), NearPredicate<double>());
     splits.resize(end - splits.begin());
     if(f > t) std::reverse(splits.begin(), splits.end());
