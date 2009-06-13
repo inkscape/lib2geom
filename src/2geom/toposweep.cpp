@@ -91,20 +91,17 @@ struct NearPredicate { bool operator()(T x, T y) { return are_near(x, y); } };
 // if f is greater than t, the sort is in reverse
 void process_splits(std::vector<double> &splits, double f, double t) {
     splits.push_back(f);
-    splits.push_back(t);
     std::sort(splits.begin(), splits.end());
-    if((splits.back() == t && are_near(splits[splits.size() - 2], t))) {
-        //for the case in which there is a split which is both near and less than t
-        splits.pop_back();
-        splits[splits.size() - 1] = t;
-    }
-    std::vector<double>::iterator end = std::unique(splits.begin(), splits.end(), NearPredicate<double>());
-    splits.resize(end - splits.begin());
+    while(are_near(splits.back(), t)) splits.erase(splits.end() - 1);
+    splits.push_back(t);
     if(f > t) std::reverse(splits.begin(), splits.end());
 
     //remove any splits which fall outside t / f
     while(!splits.empty() && splits.front() != f) splits.erase(splits.begin());
     while(!splits.empty() && splits.back() != t) splits.erase(splits.end() - 1);
+    
+    std::vector<double>::iterator end = std::unique(splits.begin(), splits.end(), NearPredicate<double>());
+    splits.resize(end - splits.begin());
 }
 
 // A little sugar for appending a list to another
