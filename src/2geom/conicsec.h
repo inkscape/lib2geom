@@ -42,6 +42,8 @@
 #include <2geom/line.h>
 #include <2geom/bezier-curve.h>
 #include <2geom/numeric/linear_system.h>
+#include <2geom/numeric/symmetric-matrix-fs.h>
+#include <2geom/numeric/symmetric-matrix-fs-operation.h>
 
 #include <boost/optional/optional.hpp>
 
@@ -109,6 +111,14 @@ public:
     xAx (double c0, double c1, double c2, double c3, double c4, double c5)
     {
         set (c0, c1, c2, c3, c4, c5);
+    }
+
+    /*
+     *  Define a conic section by its related symmetric matrix
+     */
+    xAx (const NL::ConstSymmetricMatrixView<3> & C)
+    {
+        set(C);
     }
 
     /*
@@ -189,6 +199,14 @@ public:
         c[5] = c5; // 1
     }
 
+    /*
+     *  Define a conic section by its related symmetric matrix
+     */
+    void set (const NL::ConstSymmetricMatrixView<3> & C)
+    {
+        set(C(0,0), 2*C(1,0), C(1,1), 2*C(2,0), 2*C(2,1), C(2,2));
+    }
+
     void set (std::vector<Point> const& points);
 
     void set (const Point& _vertex, double _angle, double _dist1, double _dist2);
@@ -201,7 +219,6 @@ public:
 
 
     std::string categorise() const;
-    bool isDegenerate() const;
     static xAx fromPoint(Point p);
     static xAx fromDistPoint(Point p, double d);
     static xAx fromLine(Point n, double d);
@@ -248,6 +265,18 @@ public:
 
     Interval extrema(Rect r) const;
 
+
+    /*
+     *  Return the symmetric matrix related to the conic section.
+     *  Modifying the matrix does not modify the conic section
+     */
+    NL::SymmetricMatrix<3> get_matrix() const
+    {
+        NL::SymmetricMatrix<3> C(c);
+        C(1,0) *= 0.5; C(2,0) *= 0.5; C(2,1) *= 0.5;
+        return C;
+    }
+
     /*
      *  Return the i-th coefficient of the conic section algebraic equation
      *  Modifying the returned value does not modify the conic section coefficient
@@ -264,6 +293,15 @@ public:
     double& coeff (size_t i)
     {
         return c[i];
+    }
+
+    /*
+     *  Return true if the conic is degenerate, i.e. if the related matrix
+     *  determinant is null, false otherwise
+     */
+    bool isDegenerate() const
+    {
+        return (det_sgn (get_matrix()) == 0);
     }
 
     /*
@@ -293,6 +331,8 @@ public:
         return opt_point_t(C);
     }
 
+    double axis_angle() const;
+
     void roots (std::vector<double>& sol, Coord v, Dim2 d) const;
 
     xAx translate (const Point & _offset) const;
@@ -310,6 +350,39 @@ public:
         xAx result
             = translate (-_rot_centre).rotate (_angle).translate (_rot_centre);
         return result;
+    }
+
+    /*
+     *  Compute the tangent line of the conic section at the provided point
+     *
+     *  _point: the conic section point the tangent line pass through
+     */
+    Line tangent (const Point & _point) const
+    {
+        NL::Vector pp(3);
+        pp[0] = _point[0]; pp[1] = _point[1]; pp[2] = 1;
+        NL::SymmetricMatrix<3> C = get_matrix();
+        NL::Vector line = C * pp;
+        return Line(line[0], line[1], line[2]);
+    }
+
+    std::vector<Point> allNearestPoints (const Point P) const;
+
+    /*
+     *  Return the point on the conic section nearest to the passed point "P".
+     *
+     *  P: the point to compute the nearest one
+     */
+    Point nearestPoint (const Point P) const
+    {
+        std::vector<Point> points = allNearestPoints (P);
+        if (points.size() != 0)
+        {
+            return points.front();
+        }
+        // else
+        THROW_LOGICALERROR ("nearestPoint: no nearest point found");
+        return Point();
     }
 
 };

@@ -152,9 +152,9 @@ class Line
 	void setByCoefficients (double a, double b, double c)
 	{
 
-        if ( are_near(a, 0) && are_near(b, 0) )
+        if (a == 0 && b == 0)
         {
-            if (!are_near(c, 0))
+            if (c != 0)
             {
                 THROW_LOGICALERROR("the passed coefficients gives the empty set");
             }

@@ -643,7 +643,15 @@ xAx xAx::operator*(double const &b) const {
       r.push_back(-q1/(2*q2));
     else {
       desc = std::sqrt(desc);
-      double t = -0.5*(q1+sgn(q1)*desc);
+      double t;
+      if (q1 == 0)
+      {
+          t = -0.5 * desc;
+      }
+      else
+      {
+          t = -0.5 * (q1 + sgn(q1) * desc);
+      }
       r.push_back(t/q2);
       r.push_back(q0/t);
     }
@@ -711,10 +719,6 @@ Interval xAx::extrema(Rect r) const {
   return ext;
 }
 
-bool xAx::isDegenerate() const {
-    assert(0);
-    return false; // XXX:
-}
 
 
 
@@ -1006,29 +1010,85 @@ void xAx::roots (std::vector<double>& sol, Coord v, Dim2 d) const
         r = coeff(5) + (coeff(2) * v + coeff(4)) * v;
     }
 
-    if (are_near(p, 0, 1e-8))
+    if (p == 0)
     {
-        if (are_near(q, 0, 1e-8))  return;
+        if (q == 0)  return;
         double t = -r/q;
         sol.push_back(t);
         return;
     }
-    double delta = q*q - 4*p*r;
-    //std::cout << "delta = " << delta << std::endl;
-    if (delta < 0)  return;
-    double p2 = 2 * p;
-    if (are_near(delta, 0, 1e-8))
+
+    if (q == 0)
     {
-        double t = -q / p2;
+        if ((p > 0 && r > 0) || (p < 0 && r < 0))  return;
+        double t = -r / p;
+        t = std::sqrt (t);
+        sol.push_back(-t);
+        sol.push_back(t);
+        return;
+    }
+
+    if (r == 0)
+    {
+        double t = -q/p;
+        sol.push_back(0);
+        sol.push_back(t);
+        return;
+    }
+
+
+    //std::cout << "p = " << p <<  ", q = " << q <<  ", r = " << r << std::endl;
+    double delta = q * q - 4 * p * r;
+    if (delta < 0)  return;
+    if (delta == 0)
+    {
+        double t = -q / (2 * p);
         sol.push_back(t);
         return;
     }
     // else
     double srd = std::sqrt(delta);
-    double t1 = -(q + srd) / p2;
-    double t2 = (-q + srd) / p2;
-    sol.push_back(t1);
-    sol.push_back(t2);
+    double t = - (q + sgn(q) * srd) / 2;
+    sol.push_back (t/p);
+    sol.push_back (r/t);
+
+}
+
+/*
+ *  Return the inclination angle of the major axis of the conic section
+ */
+double xAx::axis_angle() const
+{
+    if (coeff(0) == 0 && coeff(1) == 0 && coeff(2) == 0)
+    {
+        Line l (coeff(3), coeff(4), coeff(5));
+        return l.angle();
+    }
+    if (coeff(1) == 0 && (coeff(0) == coeff(2)))  return 0;
+
+    double angle;
+
+    int sgn_discr = det_sgn (get_matrix().main_minor_const_view());
+    if (sgn_discr == 0)
+    {
+        //std::cout << "rotation_angle: sgn_discr = "
+        //          << sgn_discr << std::endl;
+        angle = std::atan2 (-coeff(1), 2 * coeff(2));
+        if (angle < 0)  angle += 2*M_PI;
+        if (angle >= M_PI) angle -= M_PI;
+
+    }
+    else
+    {
+        angle = std::atan2 (coeff(1), coeff(0) - coeff(2));
+        if (angle < 0)  angle += 2*M_PI;
+        angle -= M_PI;
+        if (angle < 0)  angle += 2*M_PI;
+        angle /= 2;
+        if (angle >= M_PI) angle -= M_PI;
+    }
+    //std::cout <<  "rotation_angle : angle = "  << angle << std::endl;
+    return angle;
 }
 
 /*
@@ -1090,6 +1150,59 @@ xAx xAx::rotate (double angle) const
 
     return result;
 }
+
+/*
+ *  Return all points on the conic section nearest to the passed point "P".
+ *
+ *  P: the point to compute the nearest one
+ */
+std::vector<Point> xAx::allNearestPoints (const Point P) const
+{
+    // TODO: manage the circle - centre case
+    std::vector<Point> points;
+
+    // named C the conic we look for points (x,y) on C such that
+    // dot (grad (C(x,y)), rot90 (P -(x,y))) == 0; the set of points satisfying
+    // this equation is still a conic G, so the wanted points can be found by
+    // intersecting C with G
+    xAx G (-coeff(1),
+           2 * (coeff(0) - coeff(2)),
+           coeff(1),
+           -coeff(4) + coeff(1) * P[X] - 2 * coeff(0) * P[Y],
+           coeff(3) - coeff(1) * P[Y] + 2 * coeff(2) * P[X],
+           -coeff(3) * P[Y] + coeff(4) * P[X]);
+
+    std::vector<Point> crs = intersect (*this, G);
+
+    //std::cout << "NEAREST POINT: crs.size = " << crs.size() << std::endl;
+    if (crs.size() == 0)  return points;
+
+    size_t idx = 0;
+    double mindist = distanceSq (crs[0], P);
+    std::vector<double> dist;
+    dist.push_back (mindist);
+
+    for (size_t i = 1; i < crs.size(); ++i)
+    {
+        dist.push_back (distanceSq (crs[i], P));
+        if (mindist > dist.back())
+        {
+            idx = i;
+            mindist = dist.back();
+        }
+    }
+
+    points.push_back (crs[idx]);
+    for (size_t i = 0; i < crs.size(); ++i)
+    {
+        if (i == idx) continue;
+        if (dist[i] == mindist)
+            points.push_back (crs[i]);
+    }
+
+    return points;
+}
+
 
 } // end namespace Geom
 
