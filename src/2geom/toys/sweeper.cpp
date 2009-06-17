@@ -84,17 +84,19 @@ public:
     // also asserts that no values fall outside of f and t
     // if f is greater than t, the sort is in reverse
     void process_splits(std::vector<double> &splits, double f, double t, double tol=EPSILON) {
-        splits.push_back(f);
-        splits.push_back(t);
+        //splits.push_back(f);
+        //splits.push_back(t);
         std::sort(splits.begin(), splits.end());
         std::vector<double>::iterator end = std::unique(splits.begin(), splits.end(), NearPredicate<double>(tol));
         splits.resize(end - splits.begin());
         
         //remove any splits which fall outside t / f
-        while(!splits.empty() && splits.front() < f-tol) splits.erase(splits.begin());
-        splits[0] = f;
-        while(!splits.empty() && splits.back()  > t+tol) splits.erase(splits.end() - 1);
-        splits.back() = t;
+        while(!splits.empty() && splits.front() < f+tol) splits.erase(splits.begin());
+        splits.insert(splits.begin(), f);
+        //splits[0] = f;
+        while(!splits.empty() && splits.back()  > t-tol) splits.erase(splits.end() - 1);
+        splits.push_back(t);
+        //splits.back() = t;
     }
 
     Rect fatPoint(Point const &p, double radius){
@@ -415,8 +417,9 @@ public:
         //make sure it is sorted, but should be ok. (remove sorting at the end of monotonic tiles creation?
         std::sort(tiles_data.begin(), tiles_data.end(), SweepOrder(dim) );
 
-//        std::printf("\nFind intersections: tiles_data.size():%u\n", tiles_data.size() );
-        for (unsigned i=0; i<tiles_data.size()-1; i++){
+        std::printf("\nFind intersections: tiles_data.size():%u\n", tiles_data.size() );
+
+        for (unsigned i=0; i+1<tiles_data.size(); i++){
 //            std::printf("\ni=%u (%u([%f,%f]))\n", i, tiles_data[i].curve, tiles_data[i].f, tiles_data[i].t );
             std::vector<double > times_i;
             for (unsigned j=i+1; j<tiles_data.size(); j++){
@@ -704,9 +707,10 @@ public:
         dim = sweep_dir;
         tol = tolerance;
 
+        std::printf("\nSweeper initialisation");
         //split paths into monotonic pieces
         createMonotonicTiles();
-
+        
         //split at pieces intersections
         splitIntersectingTiles();
 
@@ -714,6 +718,7 @@ public:
         do{
             vtxboxes = collectBoxes();
         }while ( splitTilesThroughFatPoints(vtxboxes) );
+        
         enlargeTilesEnds(vtxboxes);
 
         //now create the pointers to the tiles.
@@ -721,15 +726,16 @@ public:
         for (unsigned i=0; i<tiles_data.size(); i++){
             tiles[i] = i;
         }
-        
         sortTiles();
 
         //initialize the context.
-        context.clear();
-        context.last_pos = tiles_data[tiles.front()].min();
-        context.last_pos[dim] -= 1;
-        context.pending_vertex = FatVertex();
-        context.pending_event = Event();
+        if (tiles_data.size()>0){
+            context.clear();
+            context.last_pos = tiles_data[tiles.front()].min();
+            context.last_pos[dim] -= 1;
+            context.pending_vertex = FatVertex();
+            context.pending_event = Event();
+        }
 
         std::printf("Sweeper initialized (%u tiles)\n", tiles_data.size());
     }

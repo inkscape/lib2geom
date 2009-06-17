@@ -83,10 +83,10 @@ class SweeperToy: public Toy {
             paths[i] = Path(paths_handles[i].pts[0]);
             for (int j = 0; j+degree < paths_handles[i].size(); j+=degree){
                 D2<SBasis> c = handles_to_sbasis(paths_handles[i].pts.begin()+j, degree);
-                if ( j + degree == paths_handles[i].size()-1 ){
-                    c[X].at(0)[1] = paths_handles[i].pts.front()[X];
-                    c[Y].at(0)[1] = paths_handles[i].pts.front()[Y];
-                }
+//                 if ( j + degree == paths_handles[i].size()-1 ){
+//                     c[X].at(0)[1] = paths_handles[i].pts.front()[X];
+//                     c[Y].at(0)[1] = paths_handles[i].pts.front()[Y];
+//                 }
                 paths[i].append(c);
             }
             paths[i].close();
@@ -98,9 +98,9 @@ class SweeperToy: public Toy {
         cairo_stroke(cr);
 
         sweeper = Sweeper(paths,X, pow(10,sliders[3].value()));
-        unsigned idx = (unsigned)(sliders[0].value()*(sweeper.tiles_data.size()-1));
-        drawTiles(cr);
-        enlightTile(cr, idx);
+       unsigned idx = (unsigned)(sliders[0].value()*(sweeper.tiles_data.size()-1));
+       drawTiles(cr);
+       enlightTile(cr, idx);
 
         Toy::draw(cr, notify, width, height, save, timer_stream);
     }
