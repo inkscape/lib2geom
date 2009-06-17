@@ -97,7 +97,7 @@ class SweeperToy: public Toy {
         cairo_set_line_width (cr, 1);
         cairo_stroke(cr);
 
-        sweeper = Sweeper(paths,X, 5);
+        sweeper = Sweeper(paths,X, pow(10,sliders[3].value()));
         unsigned idx = (unsigned)(sliders[0].value()*(sweeper.tiles_data.size()-1));
         drawTiles(cr);
         enlightTile(cr, idx);
@@ -120,12 +120,15 @@ class SweeperToy: public Toy {
         sliders.push_back(Slider(0.0, 1, 0, 0.0, "intersection chooser"));
         sliders.push_back(Slider(0.0, 1, 0, 0.0, "ray chooser"));
         sliders.push_back(Slider(0.0, 1, 0, 0.0, "area chooser"));
+        sliders.push_back(Slider(-5.0, 2, 0, 0.0, "tolerance chooser"));
         handles.push_back(&(sliders[0]));
         handles.push_back(&(sliders[1]));
         handles.push_back(&(sliders[2]));
+        handles.push_back(&(sliders[3]));
         sliders[0].geometry(Point(50, 20), 250);
         sliders[1].geometry(Point(50, 50), 250);
         sliders[2].geometry(Point(50, 80), 250);
+        sliders[3].geometry(Point(50, 110), 250);
     }
 
     void first_time(int argc, char** argv) {
