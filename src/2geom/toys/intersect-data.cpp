@@ -174,6 +174,8 @@ public:
         }
     }
 
+    
+
     //----------------------------------------------------
     //-- Boundary Navigation/Modification
     //----------------------------------------------------
@@ -465,6 +467,56 @@ class IntersectDataTester: public Toy {
     std::vector<Slider> sliders;
     IntersectionData topo;
 
+    //TODO conversions to path should be owned by the relevant classes.
+    Path edgeToPath(IntersectionData::OrientedEdge o_edge){
+        IntersectionData::Edge e = topo.edges[o_edge.edge];
+        D2<SBasis> p = topo.input_paths[e.path][e.curve].toSBasis();
+        Interval dom = e.portion;
+        p = portion(p, dom);
+        if ( o_edge.reversed ){
+            p = compose( p, Linear(1.,0.) );
+        }
+        unsigned c_idx = topo.source(o_edge, true);
+        Point center = topo.vertices[c_idx].bounds.midpoint();
+        Path ret(center);
+
+        ret.append(p, Path::STITCH_DISCONTINUOUS);
+
+        c_idx = topo.target(o_edge, true);
+        center = topo.vertices[c_idx].bounds.midpoint();
+        if ( center != p.at1() ) ret.appendNew<LineSegment>(center);
+        return ret;
+    }
+
+    Path boundaryToPath(IntersectionData::Boundary b){
+        Point pt;
+        if (b.size()==0){
+            return Path();
+        }else{
+            IntersectionData::OrientedEdge o_edge = b.front();
+            unsigned first_v = topo.source(o_edge, true);
+            pt = topo.vertices[first_v].bounds.midpoint();
+        }
+        Path bndary(pt);        
+        for (unsigned i = 0; i < b.size(); i++){
+            bndary.append( edgeToPath(b[i]), Path::STITCH_DISCONTINUOUS);
+        }
+        bndary.close();
+        return bndary;
+    }
+
+    //TODO:this should return a path vector, but we glue the components for easy drawing in the toy. 
+    Path areaToPath(unsigned a){
+        Path bndary =  boundaryToPath(topo.areas[a].boundary);
+        for (unsigned j = 0; j < topo.areas[a].inner_boundaries.size(); j++){
+            for (unsigned i = 0; i < topo.areas[a].inner_boundaries[j].size(); i++){
+                bndary.append( edgeToPath(topo.areas[a].inner_boundaries[j][i]), Path::STITCH_DISCONTINUOUS );
+            }
+            bndary.appendNew<LineSegment>( bndary.initialPoint() );
+        }
+        bndary.close();
+        return bndary;
+    }
     void drawAreas( cairo_t *cr, IntersectionData const &topo, bool fill=true ){
         //don't draw the first one...
         for (unsigned a=1; a<topo.areas.size(); a++){
@@ -473,35 +525,7 @@ class IntersectDataTester: public Toy {
     }
     void drawArea( cairo_t *cr, IntersectionData const &topo, unsigned a, bool fill=true ){
         if (a>=topo.areas.size()) return;
-        Path bndary = Path();
-        for (unsigned i = 0; i < topo.areas[a].boundary.size(); i++){
-            unsigned eidx = topo.areas[a].boundary[i].edge;
-            IntersectionData::Edge e = topo.edges[eidx];
-            D2<SBasis> p = topo.input_paths[e.path][e.curve].toSBasis();
-            Interval dom = e.portion;
-            p = portion(p, dom);
-            if (topo.areas[a].boundary[i].reversed){
-                p = compose( p, Linear(1.,0.) );
-            }else{
-            }
-            bndary.append(p, Path::STITCH_DISCONTINUOUS);
-        }
-
-        for (unsigned j = 0; j < topo.areas[a].inner_boundaries.size(); j++){
-            for (unsigned i = 0; i < topo.areas[a].inner_boundaries[j].size(); i++){
-                unsigned eidx = topo.areas[a].inner_boundaries[j][i].edge;
-                IntersectionData::Edge e = topo.edges[eidx];
-                D2<SBasis> p = topo.input_paths[e.path][e.curve].toSBasis();
-                Interval dom = e.portion;
-                p = portion(p, dom);
-                if (topo.areas[a].inner_boundaries[j][i].reversed){
-                    p = compose( p, Linear(1.,0.) );
-                }
-                bndary.append(p, Path::STITCH_DISCONTINUOUS);
-            }
-        }
-
-        bndary.close();
+        Path bndary = areaToPath(a);
         cairo_path(cr, bndary);
         double r,g,b;
 
@@ -512,13 +536,7 @@ class IntersectDataTester: public Toy {
 
         //convertHSVtoRGB(0, 1., .5 + winding/10, r,g,b);
         //convertHSVtoRGB(360*a/topo.areas.size(), 1., .5, r,g,b);
-        r=1.; b=1; g=1.;
-        if (winding>0)
-            r = 1.-winding/5.;
-        else
-            b = 1.+winding/5.;
-
-        //convertHSVtoRGB(180+50*winding, 1., .5, r,g,b);
+        convertHSVtoRGB(180+50*winding, 1., .5, r,g,b);
         cairo_set_source_rgba (cr, r, g, b, 1.);
         //cairo_set_source_rgba (cr, 1., 0., 1., .3);
 
@@ -566,24 +584,24 @@ class IntersectDataTester: public Toy {
         cairo_set_line_width (cr, 1);
         cairo_stroke(cr);
 
-        //std::cout<<"\nintersection boundary:\n";
-        for (unsigned i = 0; i < topo.vertices[b].boundary.size(); i++){
-            unsigned eidx = topo.vertices[b].boundary[i].edge;
-            IntersectionData::Edge e = topo.edges[eidx];
-            D2<SBasis> p = topo.input_paths[e.path][e.curve].toSBasis();
-            Interval dom = e.portion;
-            if (topo.vertices[b].boundary[i].reversed){
-                dom[0] += e.portion.extent()*2./3;
-                cairo_set_source_rgba (cr, 0., 1., .5, 1);
-            }else{
-                dom[1] -= e.portion.extent()*2./3;
-                cairo_set_source_rgba (cr, 0., .5, 1., 1);
-            }
-            p = portion(p, dom);
-            cairo_d2_sb(cr, p);
-            cairo_set_line_width (cr, 2);
-            cairo_stroke(cr);
-        }
+//         //std::cout<<"\nintersection boundary:\n";
+//         for (unsigned i = 0; i < topo.vertices[b].boundary.size(); i++){
+//             unsigned eidx = topo.vertices[b].boundary[i].edge;
+//             IntersectionData::Edge e = topo.edges[eidx];
+//             D2<SBasis> p = topo.input_paths[e.path][e.curve].toSBasis();
+//             Interval dom = e.portion;
+//             if (topo.vertices[b].boundary[i].reversed){
+//                 dom[0] += e.portion.extent()*2./3;
+//                 cairo_set_source_rgba (cr, 0., 1., .5, 1);
+//             }else{
+//                 dom[1] -= e.portion.extent()*2./3;
+//                 cairo_set_source_rgba (cr, 0., .5, 1., 1);
+//             }
+//             p = portion(p, dom);
+//             cairo_d2_sb(cr, p);
+//             cairo_set_line_width (cr, 2);
+//             cairo_stroke(cr);
+//         }
     }
     void drawBoxes( cairo_t *cr, IntersectionData const &topo ){
         for (unsigned b=0; b<topo.vertices.size(); b++){
@@ -620,7 +638,7 @@ class IntersectDataTester: public Toy {
 
         tol = 1.0;
         //IntersectionData topo;
-        topo = IntersectionData(paths, tol);
+        topo = IntersectionData(paths, pow(10,sliders[3].value()) );
 
 #if 1
         unsigned v = (unsigned)(sliders[0].value()*(topo.vertices.size()));
@@ -630,7 +648,7 @@ class IntersectDataTester: public Toy {
         if( r == topo.vertices[v].boundary.size()) r--;
         if( a == topo.areas.size()) a--;
         drawAreas(cr, topo);
-        drawArea(cr, topo, a, false);
+        //drawArea(cr, topo, a, false);
         highlightRay(cr, topo, v, r );
 
         //drawBox(cr,topo, unsigned(sliders[0].value()));
@@ -654,12 +672,17 @@ class IntersectDataTester: public Toy {
         sliders.push_back(Slider(0.0, 1, 0, 0.0, "intersection chooser"));
         sliders.push_back(Slider(0.0, 1, 0, 0.0, "ray chooser"));
         sliders.push_back(Slider(0.0, 1, 0, 0.0, "area chooser"));
+        sliders.push_back(Slider(-5.0, 2, 0, 0.0, "tolerance chooser"));
+
         handles.push_back(&(sliders[0]));
         handles.push_back(&(sliders[1]));
         handles.push_back(&(sliders[2]));
+        handles.push_back(&(sliders[3]));
+
         sliders[0].geometry(Point(50, 20), 250);
         sliders[1].geometry(Point(50, 50), 250);
         sliders[2].geometry(Point(50, 80), 250);
+        sliders[3].geometry(Point(50, 110), 250);
     }
 
     void first_time(int argc, char** argv) {

@@ -124,6 +124,8 @@ public:
         Point min(){return ( bbox().min() ); }
         Point max(){return ( bbox().max() ); }
         Rect cur_box() const {return ((open)^(reversed) ) ? tbox : fbox; }
+        Rect first_box() const {return ( reversed ) ? tbox : fbox; }
+        Rect last_box() const {return ( reversed ) ? fbox : tbox; }
     };
 
     D2<SBasis> tileToSB(Tile const &tile){
@@ -260,27 +262,53 @@ public:
     }
 
     //----
-    //This is the heart of it all!! Take particularily to non linear sweep line...
+    //This is the heart of it all!! Take particular care to non linear sweep line...
     //----
     unsigned contextRanking(Point const &pt){
         //TODO: implement me as a lower_bound!
-        //return (std::lower_bound(context.begin(), context.end(), context.size(), PosFinder( p, this) ) - context.begin() );
         //std::printf("contextRanking:\n");
         
         for (unsigned i=0; i<context.size(); i++){
             Tile tile = tiles_data[context[i]];
             if (pt[1-dim] < tile.min()[1-dim] ) return i;
             if (pt[1-dim] > tile.max()[1-dim] ) continue;
-            //FIXME: is it ok to only check cur_box()??
-            if (tile.cur_box()[dim].contains( pt[dim] ) ){
-                if (pt[1-dim]<tile.max()[1-dim]) continue;
-                return i;
+
+            if (tile.first_box()[dim].contains( pt[dim] ) ){
+                //we have to compre with tiles the sweep line goes round the fbox of.
+                std::printf("tricky contextRanking!! (%f,%f) against \n", pt[X],pt[Y]);
+
+                //if the point is at the level of the tbow, it should be in front.
+                if (tile.last_box()[1-dim].contains( pt[1-dim] ) ){
+                    assert( pt[dim] < tile.last_box()[dim].min() );
+                    if (tile.first_box()[1-dim].min()> pt[1-dim]){
+                        return i;
+                    }else{
+                        continue;
+                    }
+                }
+                //if not, the line through the point in the dim direction should hit the curve section.
+                D2<SBasis> c = tileToSB( tile );
+                std::vector<double> times = roots(c[1-dim]-pt[1-dim]);
+                assert ( times.size()>0 );
+                double hit_place = c[dim](times.front());
+                if ( ( pt[dim] > hit_place )^(tile.first_box()[1-dim].min()> pt[1-dim]) ){
+                    return i;
+                }else{
+                    continue;
+                }
             }
             //std::printf("use roots...\n");
             //TODO: don't convert each time!!!!!!
             D2<SBasis> c = tileToSB( tile );
             
             std::vector<double> times = roots(c[dim]-pt[dim]);
+            if (times.size()==0){
+                Interval dom = *bounds_exact(c[dim]);
+                std::printf("this tile (%u) does not cross the sweep line!?!? [%f,%f] vs %f\n", context[i], dom.min(), dom.max(), pt[dim]);
+                std::printf("  fbox: [%f,%f]x[%f,%f]\n", tile.fbox[X][0],tile.fbox[X][1],tile.fbox[Y][0],tile.fbox[Y][1]);
+                std::printf("  tbox: [%f,%f]x[%f,%f]\n", tile.tbox[X][0],tile.tbox[X][1],tile.tbox[Y][0],tile.tbox[Y][1]);
+
+            }
             assert ( times.size()>0 );
             if ( pt[1-dim] < c[1-dim](times.front()) ){
                 return i;
