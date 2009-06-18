@@ -365,8 +365,8 @@ public:
                     //TODO: use meaningful tolerance here!!
                     Point fp = paths[i][j].pointAt(tile.f);
                     Point tp = paths[i][j].pointAt(tile.t);
-                    tile.fbox = fatPoint(fp, tol );
-                    tile.tbox = fatPoint(tp, tol );
+                    tile.fbox = fatPoint(fp, 0 );//tile.fbox = fatPoint(fp, tol );
+                    tile.tbox = fatPoint(tp, 0 );//tile.tbox = fatPoint(tp, tol );
                     tile.open = false;
                     tile.reversed = lexo_point(tp, fp, dim);
                     //TODO: maybe too early??
