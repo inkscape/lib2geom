@@ -51,7 +51,7 @@ class IntersectionData {
 public:
 
     // -!- convention: 
-    // I a boundary, reversed edges point away from the vertex or CW around the area.
+    // In a boundary, reversed edges point away from the vertex or CW around the area.
     struct OrientedEdge{
         unsigned edge; //edge index.
         bool reversed; //true if the intrinsic edge orientation points away (from vertex) or backward (along area boundary)
@@ -71,29 +71,29 @@ public:
     class Boundary : public std::vector<OrientedEdge>{
     public:
         //debug only:
-        bool of_area;//true if this the boundary of an area. Fix this with templates?
+        bool of_area;//true if this is the boundary of an area. Fix this with templates?
         Boundary(bool area_type): of_area(area_type){}
     };
 
     class Vertex{
     public:
-        Boundary boundary; // pairs of (edge,area) indices
+        Boundary boundary; // list of edges in CCW order around the vertex
         Geom::Rect bounds;
         Vertex():boundary(false){}
     };
     
     class Area {//an area is a connected comp of the complement of the graph.  .
     public:
-        Boundary boundary; // pairs of (edge,vertex) indices in the outermost component
-        std::vector<Boundary> inner_boundaries;
-        std::vector<int> windings;
+        Boundary boundary; // outermost boundary component, CCW oriented (i.e. area is on the left of the boundary).
+        std::vector<Boundary> inner_boundaries;//same conventions, area on the left, so this gives the CW orientation for inner components.
+        std::vector<int> windings;//one winding number for each input path.
         Area(unsigned size):windings(size, 0), boundary(true){}
     };
 
     class Edge {
     public:
-        unsigned left, right;// the area indices of the left and right areas of this curve
-        unsigned start, end; // the vertex indices of start and end.(redundant, but keeps duality between pt and areas...)
+        unsigned left, right;// the indices of the areas on the left and on the right this edge.
+        unsigned start, end; // the indices of vertices at start and at end of this ege.
         Geom::Interval portion;
         unsigned path;
         unsigned curve;
@@ -466,7 +466,8 @@ class IntersectDataTester: public Toy {
     IntersectionData topo;
 
     void drawAreas( cairo_t *cr, IntersectionData const &topo, bool fill=true ){
-        for (unsigned a=0; a<topo.areas.size(); a++){
+        //don't draw the first one...
+        for (unsigned a=1; a<topo.areas.size(); a++){
             drawArea(cr, topo, a, fill);
         }
     }
@@ -511,8 +512,14 @@ class IntersectDataTester: public Toy {
 
         //convertHSVtoRGB(0, 1., .5 + winding/10, r,g,b);
         //convertHSVtoRGB(360*a/topo.areas.size(), 1., .5, r,g,b);
-        convertHSVtoRGB(180+30*winding, 1., .5, r,g,b);
-        cairo_set_source_rgba (cr, r, g, b, .5);
+        r=1.; b=1; g=1.;
+        if (winding>0)
+            r = 1.-winding/5.;
+        else
+            b = 1.+winding/5.;
+
+        //convertHSVtoRGB(180+50*winding, 1., .5, r,g,b);
+        cairo_set_source_rgba (cr, r, g, b, 1.);
         //cairo_set_source_rgba (cr, 1., 0., 1., .3);
 
         if (fill){
@@ -593,6 +600,7 @@ class IntersectDataTester: public Toy {
         
         std::vector<Path> paths(nb_paths, Path());
         for (unsigned i = 0; i < nb_paths; i++){
+            paths_handles[i].pts.back()=paths_handles[i].pts.front();
             paths[i] = Path(paths_handles[i].pts[0]);
             for (unsigned j = 0; j+degree < paths_handles[i].size(); j+=degree){
                 D2<SBasis> c = handles_to_sbasis(paths_handles[i].pts.begin()+j, degree);

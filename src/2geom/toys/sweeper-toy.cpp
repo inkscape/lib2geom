@@ -80,13 +80,10 @@ class SweeperToy: public Toy {
         
         std::vector<Path> paths(nb_paths, Path());
         for (int i = 0; i < nb_paths; i++){
+            paths_handles[i].pts.back()=paths_handles[i].pts.front();
             paths[i] = Path(paths_handles[i].pts[0]);
             for (int j = 0; j+degree < paths_handles[i].size(); j+=degree){
                 D2<SBasis> c = handles_to_sbasis(paths_handles[i].pts.begin()+j, degree);
-//                 if ( j + degree == paths_handles[i].size()-1 ){
-//                     c[X].at(0)[1] = paths_handles[i].pts.front()[X];
-//                     c[Y].at(0)[1] = paths_handles[i].pts.front()[Y];
-//                 }
                 paths[i].append(c);
             }
             paths[i].close();
