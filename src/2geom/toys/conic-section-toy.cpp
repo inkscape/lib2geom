@@ -53,6 +53,8 @@ class ConicSectionToy : public Toy
         TEST_ECCENTRICITY,
         TEST_DEGENERATE,
         TEST_ROOTS,
+        TEST_NEAREST_POINT,
+        TEST_TANGENT,
         TOTAL_ITEMS // this one must be the last item
     };
 
@@ -390,7 +392,73 @@ class ConicSectionToy : public Toy
         }
     }
 
+/*
+ *  TEST NEAREST POINT
+ */
 
+    void init_nearest_point()
+    {
+        init_common();
+        p1.pos = Point(180, 50);
+        handles.push_back(&p1);
+    }
+
+    void draw_nearest_point (cairo_t *cr, std::ostringstream *notify,
+                             int width, int height, bool save,
+                             std::ostringstream * timer_stream)
+    {
+        draw_common(cr, notify, width, height, save, timer_stream);
+
+        Point P;
+        try
+        {
+            P = cs.nearestPoint (p1.pos);
+        }
+        catch (LogicalError e)
+        {
+            std::cerr << e.what() << std::endl;
+        }
+
+
+        cairo_set_source_rgba(cr, 0.8, 0.1, 0.1, 1.0);
+        draw_line_seg(cr, p1.pos, P);
+        cairo_stroke(cr);
+
+        cairo_set_source_rgba(cr, 0.1, 0.1, 0.9, 1.0);
+        draw_handle(cr, P);
+        cairo_stroke(cr);
+        cairo_set_source_rgba(cr, 0.1, 0.1, 0.1, 1.0);
+        draw_label(cr, p1, "Q");
+        draw_text(cr, P + Point(5, 5), "P");
+        cairo_stroke(cr);
+    }
+
+/*
+ *  TEST TANGENT
+ */
+    void init_tangent()
+    {
+        init_common();
+
+        p1.pos = Point(180, 50);
+
+        handles.push_back(&p1);
+    }
+
+    void draw_tangent (cairo_t *cr, std::ostringstream *notify,
+                         int width, int height, bool save,
+                         std::ostringstream * timer_stream)
+    {
+        draw_common(cr, notify, width, height, save, timer_stream);
+
+        p1.pos = cs.nearestPoint (p1.pos);
+        Line l = cs.tangent(p1.pos);
+
+        draw_label (cr, p1, "P");
+        cairo_set_source_rgba(cr, 0.8, 0.0, 0.0, 1.0);
+        draw_line(cr, l, m_window);
+        cairo_stroke(cr);
+    }
 
 
     void draw_segment (cairo_t* cr, Point const& p1, Point const&  p2)
@@ -516,6 +584,15 @@ class ConicSectionToy : public Toy
                 init_roots();
                 draw_f = &ConicSectionToy::draw_roots;
                 break;
+            case 'G':
+                init_nearest_point();
+                draw_f = &ConicSectionToy::draw_nearest_point;
+                break;
+            case 'H':
+                init_tangent();
+                draw_f = &ConicSectionToy::draw_tangent;
+                break;
+
         }
         redraw();
     }
@@ -556,7 +633,7 @@ private:
     PointSetHandle psh;
     Slider fitting_slider;
 
-    PointHandle p1, p2;
+    PointHandle p1, p2, p3;
     Toggle x_y_toggle;
 
     Slider eccentricity_slider;
@@ -571,11 +648,13 @@ const char* ConicSectionToy::menu_items[] =
     "eccentricity",
     "degenerate",
     "roots",
+    "nearest point",
+    "tangent"
 };
 
 const char ConicSectionToy::keys[] =
 {
-     'A', 'B', 'C', 'D', 'E','F'
+     'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'
 };
 
 
