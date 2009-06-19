@@ -507,7 +507,19 @@ class IntersectDataTester: public Toy {
 
     //TODO:this should return a path vector, but we glue the components for easy drawing in the toy. 
     Path areaToPath(unsigned a){
-        Path bndary =  boundaryToPath(topo.areas[a].boundary);
+        Path bndary;
+        if ( topo.areas[a].boundary.size()==0 ){//this is the unbounded component...
+            OptRect bbox = bounds_fast( topo.input_paths );
+            if (!bbox ){return Path();}//???
+            bbox->expandBy(50);
+            bndary = Path(bbox->corner(0));
+            bndary.appendNew<LineSegment>(bbox->corner(1));
+            bndary.appendNew<LineSegment>(bbox->corner(2));
+            bndary.appendNew<LineSegment>(bbox->corner(3));
+            bndary.appendNew<LineSegment>(bbox->corner(0));
+        }else{
+            bndary =  boundaryToPath(topo.areas[a].boundary);
+        }
         for (unsigned j = 0; j < topo.areas[a].inner_boundaries.size(); j++){
             for (unsigned i = 0; i < topo.areas[a].inner_boundaries[j].size(); i++){
                 bndary.append( edgeToPath(topo.areas[a].inner_boundaries[j][i]), Path::STITCH_DISCONTINUOUS );
@@ -519,7 +531,7 @@ class IntersectDataTester: public Toy {
     }
     void drawAreas( cairo_t *cr, IntersectionData const &topo, bool fill=true ){
         //don't draw the first one...
-        for (unsigned a=1; a<topo.areas.size(); a++){
+        for (unsigned a=0; a<topo.areas.size(); a++){
             drawArea(cr, topo, a, fill);
         }
     }
