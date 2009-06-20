@@ -177,8 +177,8 @@ double RatQuad::lambda() const {
 }
 
 RatQuad RatQuad::fromPointsTangents(Point P0, Point dP0,
-                                    Point P,
-                                    Point P2, Point dP2) {
+                       Point P,
+                       Point P2, Point dP2) {
   Line Line0 = Line::fromPointDirection(P0, dP0);
   Line Line2 = Line::fromPointDirection(P2, dP2);
   try {
@@ -188,12 +188,23 @@ RatQuad RatQuad::fromPointsTangents(Point P0, Point dP0,
     //assert(0);
     Point P1 = Line0.pointAt((*oc).ta);
     double triarea = boxprod(P0, P1, P2);
-    if(triarea == 0)
-        return RatQuad(P0, 0.5*(P0+P2), P2, 0); // line
+//    std::cout << "RatQuad::fromPointsTangents: triarea = " << triarea << std::endl;
+    if (triarea == 0)
+    {
+        return RatQuad(P0, 0.5*(P0+P2), P2, 1);
+    }
     double tau0 = boxprod(P, P1, P2)/triarea;
     double tau1 = boxprod(P0, P, P2)/triarea;
     double tau2 = boxprod(P0, P1, P)/triarea;
+    if (tau0 == 0 || tau1 == 0 || tau2 == 0)
+    {
+        return RatQuad(P0, 0.5*(P0+P2), P2, 1);
+    }
     double w = tau1/(2*std::sqrt(tau0*tau2));
+//    std::cout << "RatQuad::fromPointsTangents: tau0 = " << tau0 << std::endl;
+//    std::cout << "RatQuad::fromPointsTangents: tau1 = " << tau1 << std::endl;
+//    std::cout << "RatQuad::fromPointsTangents: tau2 = " << tau2 << std::endl;
+//    std::cout << "RatQuad::fromPointsTangents: w = " << w << std::endl;
     return  RatQuad(P0, P1, P2, w);
   } catch(Geom::InfiniteSolutions) {
     return RatQuad(P0, 0.5*(P0+P2), P2, 1);
@@ -260,6 +271,7 @@ D2<SBasis> RatQuad::hermite() const {
   return res;
 }
 
+#if 0
   std::string xAx::categorise() const {
   double M[3][3] = {{c[0], c[1], c[3]},
 		    {c[1], c[2], c[4]},
@@ -286,6 +298,8 @@ D2<SBasis> RatQuad::hermite() const {
   }
   return "no idea!";
 }
+#endif
+
 
 std::vector<Point> decompose_degenerate(xAx const & C1, xAx const & C2, xAx const & xC0) {
     std::vector<Point> res;
@@ -741,6 +755,11 @@ bool at_infinity (Point const& p)
     return false;
 }
 
+inline
+double signed_triangle_area (Point const& p1, Point const& p2, Point const& p3)
+{
+    return (cross(p3, p2) - cross(p3, p1) + cross(p2, p1));
+}
 
 
 
@@ -978,6 +997,144 @@ void xAx::set (const Line& l1, const Line& l2)
     coeff(4) = cl1[1] * cl2[2] + cl1[2] * cl2[1];
 }
 
+
+
+/*
+ *   Return the section conic kind
+ */
+xAx::kind_t xAx::kind () const
+{
+
+    xAx conic(*this);
+    NL::SymmetricMatrix<3> C = conic.get_matrix();
+    NL::ConstSymmetricMatrixView<2> A = C.main_minor_const_view();
+
+    double t1 = trace(A);
+    double t2 = det(A);
+    //double T3 = det(C);
+    int st1 = trace_sgn(A);
+    int st2 = det_sgn(A);
+    int sT3 = det_sgn(C);
+
+    //std::cout << "T3 = " << T3 << std::endl;
+    //std::cout << "sT3 = " << sT3 << std::endl;
+    //std::cout << "t2 = " << t2 << std::endl;
+    //std::cout << "t1 = " << t1 << std::endl;
+    //std::cout << "st2 = " << st2 << std::endl;
+
+    if (sT3 != 0)
+    {
+        if (st2 == 0)
+        {
+            return PARABOLA;
+        }
+        else if (st2 == 1)
+        {
+
+            if (sT3 * st1 < 0)
+            {
+                NL::SymmetricMatrix<2> discr;
+                discr(0,0) = 4; discr(1,1) = t2; discr(1,0) = t1;
+                int discr_sgn = - det_sgn (discr);
+                //std::cout << "t1 * t1 - 4 * t2 = "
+                //          << (t1 * t1 - 4 * t2) << std::endl;
+                //std::cout << "discr_sgn = " << discr_sgn << std::endl;
+                if (discr_sgn == 0)
+                {
+                    return CIRCLE;
+                }
+                else
+                {
+                    return REAL_ELLIPSE;
+                }
+            }
+            else // sT3 * st1 > 0
+            {
+                return IMAGINARY_ELLIPSE;
+            }
+        }
+        else // t2 < 0
+        {
+            if (st1 == 0)
+            {
+                return RECTANGULAR_HYPERBOLA;
+            }
+            else
+            {
+                return HYPERBOLA;
+            }
+        }
+    }
+    else // T3 == 0
+    {
+        if (st2 == 0)
+        {
+            //double T2 = NL::trace<2>(C);
+            int sT2 = NL::trace_sgn<2>(C);
+            //std::cout << "T2 = " << T2 << std::endl;
+            //std::cout << "sT2 = " << sT2 << std::endl;
+
+            if (sT2 == 0)
+            {
+                return DOUBLE_LINE;
+            }
+            if (sT2 == -1)
+            {
+                return TWO_REAL_PARALLEL_LINES;
+            }
+            else // T2 > 0
+            {
+                return TWO_IMAGINARY_PARALLEL_LINES;
+            }
+        }
+        else if (st2 == -1)
+        {
+            return TWO_REAL_CROSSING_LINES;
+        }
+        else // t2 > 0
+        {
+            return TWO_IMAGINARY_CROSSING_LINES;
+        }
+    }
+    return UNKNOWN;
+}
+
+/*
+ *  Return a string representing the conic section kind
+ */
+std::string xAx::categorise() const
+{
+    kind_t KIND = kind();
+
+    switch (KIND)
+    {
+        case PARABOLA :
+            return "parabola";
+        case CIRCLE :
+            return "circle";
+        case REAL_ELLIPSE :
+            return "real ellispe";
+        case IMAGINARY_ELLIPSE :
+            return "imaginary ellispe";
+        case RECTANGULAR_HYPERBOLA :
+            return "rectangular hyperbola";
+        case HYPERBOLA :
+            return "hyperbola";
+        case DOUBLE_LINE :
+            return "double line";
+        case TWO_REAL_PARALLEL_LINES :
+            return "two real parallel lines";
+        case TWO_IMAGINARY_PARALLEL_LINES :
+            return "two imaginary parallel lines";
+        case TWO_REAL_CROSSING_LINES :
+            return "two real crossing lines";
+        case TWO_IMAGINARY_CROSSING_LINES :
+            return "two imaginary crossing lines";
+        default :
+            return "unknown";
+    }
+}
+
 /*
  *  Compute the solutions of the conic section algebraic equation with respect to
  *  one coordinate after substituting to the other coordinate the passed value
@@ -1149,6 +1306,101 @@ xAx xAx::rotate (double angle) const
     result.coeff(4) = coeff(4) * c - coeff(3) * s;
 
     return result;
+}
+
+/*
+ *  Return the rectangle that bound the conic section arc characterized by
+ *  the passed points.
+ *
+ *  P1:  the initial point of the arc
+ *  Q:   the inner point of the arc
+ *  P2:  the final point of the arc
+ *
+ *  prerequisite: the passed points must lie on the conic
+ */
+Rect xAx::arc_bound (const Point & P1, const Point & Q, const Point & P2) const
+{
+    //std::cout << "BOUND: P1 = " << P1 << std::endl;
+    //std::cout << "BOUND: Q = " << Q << std::endl;
+    //std::cout << "BOUND: P2 = " << P2 << std::endl;
+
+    Rect B(P1, P2);
+    double Qside = signed_triangle_area (P1, Q, P2);
+    //std::cout << "BOUND: Qside = " << Qside << std::endl;
+
+    Line gl[2];
+    bool empty[2] = {false, false};
+
+    try // if the passed coefficients lead to an equation 0x + 0y + c == 0,
+    {   // with c != 0 the setByCoefficients rise an exception
+        gl[0].setByCoefficients (coeff(1), 2 * coeff(2), coeff(4));
+    }
+    catch(Geom::LogicalError e)
+    {
+        empty[0] = true;
+    }
+
+    try
+    {
+        gl[1].setByCoefficients (2 * coeff(0), coeff(1), coeff(3));
+    }
+    catch(Geom::LogicalError e)
+    {
+        empty[1] = true;
+    }
+
+    std::vector<double> rts;
+    std::vector<Point> M;
+    for (size_t dim = 0; dim < 2; ++dim)
+    {
+        if (empty[dim])  continue;
+        rts = roots (gl[dim]);
+        M.clear();
+        for (size_t i = 0; i < rts.size(); ++i)
+            M.push_back (gl[dim].pointAt (rts[i]));
+        if (M.size() == 1)
+        {
+            double Mside = signed_triangle_area (P1, M[0], P2);
+            if (sgn(Mside) == sgn(Qside))
+            {
+                //std::cout << "BOUND: M.size() == 1" << std::endl;
+                if (M[0][dim] > B[dim][1])
+                    B[dim][1] = M[0][dim];
+                else if (M[0][dim] < B[dim][0])
+                    B[dim][0] = M[0][dim];
+            }
+        }
+        else if (M.size() == 2)
+        {
+            //std::cout << "BOUND: M.size() == 2" << std::endl;
+            if (M[0][dim] > M[1][dim])
+                std::swap (M[0], M[1]);
+
+            if (M[0][dim] > B[dim][1])
+            {
+                double Mside = signed_triangle_area (P1, M[0], P2);
+                if (sgn(Mside) == sgn(Qside))
+                    B[dim][1] = M[0][dim];
+            }
+            else if (M[1][dim] < B[dim][0])
+            {
+                double Mside = signed_triangle_area (P1, M[1], P2);
+                if (sgn(Mside) == sgn(Qside))
+                    B[dim][0] = M[1][dim];
+            }
+            else
+            {
+                double Mside = signed_triangle_area (P1, M[0], P2);
+                if (sgn(Mside) == sgn(Qside))
+                    B[dim][0] = M[0][dim];
+                Mside = signed_triangle_area (P1, M[1], P2);
+                if (sgn(Mside) == sgn(Qside))
+                    B[dim][1] = M[1][dim];
+            }
+        }
+    }
+
+    return B;
 }
 
 /*

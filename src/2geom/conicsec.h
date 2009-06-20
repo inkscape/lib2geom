@@ -36,6 +36,7 @@
 #define _2GEOM_CONIC_SECTION_H_
 
 #include <2geom/exception.h>
+#include <2geom/angle.h>
 #include <2geom/rect.h>
 #include <2geom/matrix.h>
 #include <2geom/point.h>
@@ -99,6 +100,23 @@ public:
 class xAx{
 public:
     double c[6];
+
+    enum kind_t
+    {
+        PARABOLA,
+        CIRCLE,
+        REAL_ELLIPSE,
+        IMAGINARY_ELLIPSE,
+        RECTANGULAR_HYPERBOLA,
+        HYPERBOLA,
+        DOUBLE_LINE,
+        TWO_REAL_PARALLEL_LINES,
+        TWO_IMAGINARY_PARALLEL_LINES,
+        TWO_REAL_CROSSING_LINES,
+        TWO_IMAGINARY_CROSSING_LINES, // crossing at a real point
+        SINGLE_POINT = TWO_IMAGINARY_CROSSING_LINES,
+        UNKNOWN
+    };
 
 
     xAx() {}
@@ -218,7 +236,6 @@ public:
     void set (const Line& l1, const Line& l2);
 
 
-    std::string categorise() const;
     static xAx fromPoint(Point p);
     static xAx fromDistPoint(Point p, double d);
     static xAx fromLine(Point n, double d);
@@ -295,6 +312,10 @@ public:
         return c[i];
     }
 
+    kind_t kind () const;
+
+    std::string categorise() const;
+
     /*
      *  Return true if the conic is degenerate, i.e. if the related matrix
      *  determinant is null, false otherwise
@@ -365,6 +386,64 @@ public:
         NL::Vector line = C * pp;
         return Line(line[0], line[1], line[2]);
     }
+
+    /*
+     *  For a non degenerate conic compute the dual conic.
+     *  TODO: investigate degenerate case
+     */
+    xAx dual () const
+    {
+        //assert (! isDegenerate());
+        NL::SymmetricMatrix<3> C = get_matrix();
+        NL::SymmetricMatrix<3> D = adj(C);
+        xAx dc(D);
+        return dc;
+    }
+
+    /*
+     *  Return the angle related to the normal gradient computed at the passed
+     *  point.
+     *
+     *  _point: the point at which computes the angle
+     *
+     *  prerequisite: the passed point must lie on the conic
+     */
+    double angle_at (const Point & _point) const
+    {
+        double angle = atan2 (gradient (_point));
+        if (angle < 0)  angle += (2*M_PI);
+        return angle;
+    }
+
+    /*
+     *  Return true if the given point is contained in the conic arc determined
+     *  by the passed points.
+     *
+     *  _point:     the point to be tested
+     *  _initial:   the initial point of the arc
+     *  _inner:     an inner point of the arc
+     *  _final:     the final point of the arc
+     *
+     *  prerequisite: the passed points must lie on the conic, the inner point
+     *                has to be strictly contained in the arc, except when the
+     *                initial and final points are equal: in such a case if the
+     *                inner point is also equal to them, then they define an arc
+     *                made up by a single point.
+     *
+     */
+    bool arc_contains (const Point & _point, const Point & _initial,
+                       const Point & _inner, const Point & _final) const
+    {
+        double pa = angle_at (_point);
+        double sa = angle_at (_initial);
+        double ia = angle_at (_inner);
+        double ea = angle_at (_final);
+        // we test if _point and _inner have the same position
+        // wrt _initial and _final
+        return Geom::arc_contains (pa, sa, ia, ea);
+    }
+
+    Rect arc_bound (const Point & P1, const Point & Q, const Point & P2) const;
 
     std::vector<Point> allNearestPoints (const Point P) const;
 
