@@ -116,12 +116,12 @@ class HLineSegment : public Curve
         m_line_seg.setFinal( Point(finalPoint()[X], _y) );
     }
 
-    virtual OptRect boundsFast() const
+    virtual Rect boundsFast() const
     {
         return boundsExact();
     }
 
-    virtual OptRect boundsExact() const
+    virtual Rect boundsExact() const
     {
         return Rect( initialPoint(), finalPoint() );
     }
@@ -357,12 +357,12 @@ class VLineSegment : public Curve
         m_line_seg.setFinal( Point(_x, finalPoint()[Y]) );
     }
 
-    virtual OptRect boundsFast() const
+    virtual Rect boundsFast() const
     {
         return boundsExact();
     }
 
-    virtual OptRect boundsExact() const
+    virtual Rect boundsExact() const
     {
         return Rect( initialPoint(), finalPoint() );
     }

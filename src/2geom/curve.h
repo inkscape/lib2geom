@@ -73,9 +73,10 @@ public:
   virtual bool isDegenerate() const = 0;
 
   virtual Curve *duplicate() const = 0;
-
-  virtual OptRect boundsFast() const = 0;
-  virtual OptRect boundsExact() const = 0;
+    
+  /* We require Curve to have an initial and final point so bounds is always non-empty. */
+  virtual Rect boundsFast() const = 0;
+  virtual Rect boundsExact() const = 0;
   virtual OptRect boundsLocal(OptInterval i, unsigned deg) const = 0;
   OptRect boundsLocal(OptInterval i) const { return boundsLocal(i, 0); }
 

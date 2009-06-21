@@ -168,12 +168,12 @@ class EllipticalArc : public Curve
     }
     
     
-    virtual OptRect boundsFast() const
+    virtual Rect boundsFast() const
     {
         return boundsExact();
     }
   
-    virtual OptRect boundsExact() const;
+    virtual Rect boundsExact() const;
     
     // TODO: native implementation of the following methods
     virtual OptRect boundsLocal(OptInterval i, unsigned int deg) const

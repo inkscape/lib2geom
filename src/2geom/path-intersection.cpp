@@ -28,7 +28,7 @@ int winding(Path const &path, Point p) {
     if(iter == path.end_closed()) { return 0; }
     if(iter->initialPoint()[Y]!=p[Y])   { start = iter; break; }
     if(iter->finalPoint()[Y]!=p[Y])     { start = iter; break; }
-    if(iter->boundsFast()->height()!=0.){ start = iter; break; }
+    if(iter->boundsFast().height()!=0.){ start = iter; break; }
   }
   int wind = 0;
   unsigned cnt = 0;
@@ -39,7 +39,7 @@ int winding(Path const &path, Point p) {
     cnt++;
     if(cnt > path.size()) return wind;  //some bug makes this required
     starting = false;
-    Rect bounds = *(iter->boundsFast());
+    Rect bounds = (iter->boundsFast());
     Coord x = p[X], y = p[Y];
     
     if(x > bounds.right() || !bounds[Y].contains(y)) continue; //ray doesn't intersect box
@@ -73,7 +73,7 @@ int winding(Path const &path, Point p) {
         next++;
         for(; ; next++) {
             if(next == path.end_closed()) next = path.begin();
-            Rect bnds = *(next->boundsFast());
+            Rect bnds = (next->boundsFast());
             //TODO: X considerations
             if(bnds.height() > 0) {
                 //It has diverged

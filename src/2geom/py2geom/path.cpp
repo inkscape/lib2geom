@@ -65,8 +65,8 @@ struct CurveWrap : Geom::Curve, wrapper<Geom::Curve>
     Geom::Point finalPoint() const {return this->get_override("finalPoint")();}
     bool isDegenerate() const {return this->get_override("isDegenerate")();}
     CurveWrap *duplicate() const {return this->get_override("duplicate")();}
-    Geom::OptRect boundsFast() const {return this->get_override("boundsFast")();}
-    Geom::OptRect boundsExact() const {return this->get_override("boundsExact")();}
+    Geom::Rect boundsFast() const {return this->get_override("boundsFast")();}
+    Geom::Rect boundsExact() const {return this->get_override("boundsExact")();}
     virtual Geom::OptRect boundsLocal(Geom::OptInterval i, unsigned deg) const {return this->get_override("boundsLocal")(i,deg);}
     std::vector<double> roots(double v, Geom::Dim2 d) const {return this->get_override("roots")(v,d);}
 

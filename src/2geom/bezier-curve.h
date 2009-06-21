@@ -104,8 +104,8 @@ public:
   void setPoint(unsigned ix, Point v) { inner[X].setPoint(ix, v[X]); inner[Y].setPoint(ix, v[Y]); }
   Point const operator[](unsigned ix) const { return Point(inner[X][ix], inner[Y][ix]); }
 
-  virtual OptRect boundsFast() const { return bounds_fast(inner); }
-  virtual OptRect boundsExact() const { return bounds_exact(inner); }
+  virtual Rect boundsFast() const { return *bounds_fast(inner); }
+  virtual Rect boundsExact() const { return *bounds_exact(inner); }
   virtual OptRect boundsLocal(OptInterval i, unsigned deg) const {
       if (!i) return OptRect();
       if(i->min() == 0 && i->max() == 1) return boundsFast();

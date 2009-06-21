@@ -146,7 +146,7 @@ Path::allNearestPoints(Point const& _point, double from, double to) const
 	Rect bb(Geom::Point(0,0),Geom::Point(0,0));
 	for ( unsigned int i = si + 1; i < ei; ++i )
 	{
-		bb = *(_path[i].boundsFast());
+		bb = (_path[i].boundsFast());
 		dsq = distanceSq(_point, bb);
 		if ( mindistsq < dsq ) continue;
 		all_t = _path[i].allNearestPoints(_point);
@@ -165,7 +165,7 @@ Path::allNearestPoints(Point const& _point, double from, double to) const
 			ni.push_back(i);
 		}
 	}
-	bb = *(_path[ei].boundsFast());
+	bb = (_path[ei].boundsFast());
 	dsq = distanceSq(_point, bb);
 	if ( mindistsq >= dsq )
 	{
@@ -257,7 +257,7 @@ double Path::nearestPoint(Point const &_point, double from, double to, double *d
 	Rect bb(Geom::Point(0,0),Geom::Point(0,0));
 	for ( unsigned int i = si + 1; i < ei; ++i )
 	{
-		bb = *(_path[i].boundsFast());
+		bb = (_path[i].boundsFast());
 		dsq = distanceSq(_point, bb);
 		if ( mindistsq <= dsq ) continue;
 		t = _path[i].nearestPoint(_point);
@@ -269,7 +269,7 @@ double Path::nearestPoint(Point const &_point, double from, double to, double *d
 			mindistsq = dsq;
 		}
 	}
-	bb = *(_path[ei].boundsFast());
+	bb = (_path[ei].boundsFast());
 	dsq = distanceSq(_point, bb);
 	if ( mindistsq > dsq )
 	{

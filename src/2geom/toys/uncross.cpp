@@ -26,7 +26,7 @@ void draw_bounds(cairo_t *cr, vector<Path> ps) {
     vector<Rect> bnds;
     for(unsigned i = 0; i < ps.size(); i++) {
         for(Path::iterator it = ps[i].begin(); it != ps[i].end(); it++) {
-            Rect bounds = *(it->boundsFast());
+            Rect bounds = (it->boundsFast());
             bnds.push_back(bounds);
             cairo_set_source_rgba(cr, uniform(), uniform(), uniform(), .5);
             //draw_rect(cr, bounds.min(), bounds.max());
@@ -102,7 +102,7 @@ public:
         vector<Path> &ps(*pths);
         for(unsigned i = 0; i < ps.size(); i++) {
             for(Path::iterator it = ps[i].begin(); it != ps[i].end(); it++) {
-                Rect bounds = *(it->boundsExact());
+                Rect bounds = (it->boundsExact());
                 rs.push_back(bounds);
                 //cairo_set_source_rgba(cr, uniform(), uniform(), uniform(), .5);
                 //draw_rect(cr, bounds.min(), bounds.max());
@@ -331,7 +331,7 @@ class WindingTest: public Toy {
             int cross_start = crosses.size();
             int piece_start = pieces.size();
             for(Path::iterator it = ps[i].begin(); it != ps[i].end(); it++) {
-                Rect bounds = *(it->boundsExact());
+                Rect bounds = (it->boundsExact());
                 rs.push_back(bounds);
                 /*cairo_set_source_rgba(cr, uniform(), uniform(), uniform(), .5);
                 draw_rect(cr, bounds.min(), bounds.max());

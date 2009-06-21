@@ -478,7 +478,7 @@ class SVGEllipticalArcTestToy: public Toy
 
 //      const char* msg[] = { "xmax", "xmin", "ymax", "ymin" };
 
-        Rect bb = *ea.boundsFast();
+        Rect bb = ea.boundsFast();
 
 //      for ( unsigned int i = 0; i < limits.size(); ++i )
 //      {

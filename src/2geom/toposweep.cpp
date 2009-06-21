@@ -52,6 +52,7 @@ TopoGraph::Edge TopoGraph::remove_edge(unsigned ix, unsigned jx) {
             return ret;
         }
     }
+    assert(0);
 }
 
 void TopoGraph::cannonize() {
