@@ -54,7 +54,9 @@ class ConicSectionToy : public Toy
         TEST_DEGENERATE,
         TEST_ROOTS,
         TEST_NEAREST_POINT,
+        TEST_BOUND,
         TEST_TANGENT,
+        TEST_DUAL,
         TOTAL_ITEMS // this one must be the last item
     };
 
@@ -434,6 +436,51 @@ class ConicSectionToy : public Toy
     }
 
 /*
+ *  TEST BOUND
+ */
+    void init_bound()
+    {
+        init_common();
+        p1.pos = Point(50, 200);
+        p2.pos = Point(50, 400);
+        p3.pos = Point(50, 500);
+        handles.push_back(&p1);
+        handles.push_back(&p2);
+        handles.push_back(&p3);
+    }
+
+    void draw_bound (cairo_t *cr, std::ostringstream *notify,
+                         int width, int height, bool save,
+                         std::ostringstream * timer_stream)
+    {
+        draw_common(cr, notify, width, height, save, timer_stream);
+
+        try
+        {
+            p1.pos = cs.nearestPoint (p1.pos);
+            p2.pos = cs.nearestPoint (p2.pos);
+            p3.pos = cs.nearestPoint (p3.pos);
+        }
+        catch (LogicalError e)
+        {
+            std::cerr << e.what() << std::endl;
+        }
+
+        Rect bound = cs.arc_bound (p1.pos, p2.pos, p3.pos);
+        cairo_set_source_rgba(cr, 0.8, 0.1, 0.1, 1.0);
+        cairo_set_line_width (cr, 0.5);
+        cairo_rectangle (cr, bound);
+        cairo_stroke(cr);
+
+        cairo_set_source_rgba(cr, 0.1, 0.1, 0.1, 1.0);
+        draw_label (cr, p1, "initial");
+        draw_label (cr, p2, "inner");
+        draw_label (cr, p3, "final");
+        cairo_stroke(cr);
+
+    }
+
+/*
  *  TEST TANGENT
  */
     void init_tangent()
@@ -458,6 +505,33 @@ class ConicSectionToy : public Toy
         cairo_set_source_rgba(cr, 0.8, 0.0, 0.0, 1.0);
         draw_line(cr, l, m_window);
         cairo_stroke(cr);
+    }
+
+/*
+ *  TEST DUAL
+ */
+    void init_dual()
+    {
+        init_common();
+    }
+
+    void draw_dual (cairo_t *cr, std::ostringstream *notify,
+                         int width, int height, bool save,
+                         std::ostringstream * timer_stream)
+    {
+        draw_common(cr, notify, width, height, save, timer_stream);
+
+        cairo_set_source_rgba(cr, 0.8, 0.0, 0.0, 1.0);
+        xAx dc = cs.dual();
+        // we need some trick to make the dual visible in the window
+        std::string dckind = dc.categorise();
+        boost::optional<Point> T = dc.centre();
+        if (T)  dc = dc.translate (-*T);
+        dc = dc.scale (1e-5, 1e-5);
+        dc = dc.translate (Point(width/2, height/2));
+        draw (cr, dc, m_window);
+        cairo_stroke(cr);
+        *notify << "\n dual: " << dckind << ": " << dc;
     }
 
 
@@ -589,8 +663,16 @@ class ConicSectionToy : public Toy
                 draw_f = &ConicSectionToy::draw_nearest_point;
                 break;
             case 'H':
+                init_bound();
+                draw_f = &ConicSectionToy::draw_bound;
+                break;
+            case 'I':
                 init_tangent();
                 draw_f = &ConicSectionToy::draw_tangent;
+                break;
+            case 'J':
+                init_dual();
+                draw_f = &ConicSectionToy::draw_dual;
                 break;
 
         }
@@ -649,12 +731,14 @@ const char* ConicSectionToy::menu_items[] =
     "degenerate",
     "roots",
     "nearest point",
-    "tangent"
+    "bound",
+    "tangent",
+    "dual"
 };
 
 const char ConicSectionToy::keys[] =
 {
-     'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'
+     'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H','I', 'J'
 };
 
 
