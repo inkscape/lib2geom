@@ -49,12 +49,13 @@ our fat vertices have a non zero "duration", during which many things can happen
 have to keep closed edges in the context until both ends of theire boxes are reached...
 
 
-To keep things uniform, such "big" events are split into elementary ones: opening/closing of a single edge.
-One such event is generated for each tile around the current 'box', in CCW order (geometrically, the sweepline 
-is deformed in a neighborhood of the box to go round it for a certain amount, enter the box and come back 
-inside the box; the piece inside the box is a "virtual edge" that is not added for good but that we keep track of).
-The event knows if it's the last one in such a sequence, so that the client knows when to do the additional work required
-to "close" the vertex construction. Hmmm. It's hard to explain the moves without a drawing here... there are
+To keep things uniform, such "big" events are split into elementary ones: opening/closing of a single
+edge. One such event is generated for each tile around the current 'box', in CCW order (geometrically,
+the sweepline is deformed in a neighborhood of the box to go round it for a certain amount, enter the 
+box and come back inside the box; the piece inside the box is a "virtual edge" that is not added for 
+good but that we keep track of). The event knows if it's the last one in such a sequence, so that the 
+client knows when to do the additional work required to "close" the vertex construction. Hmmm. It's 
+hard to explain the moves without a drawing here...(see sweep.svg in the doc dir). There are
 
 *Closings: insert a new the relevant tile in the context with a "exit" flag.
 
