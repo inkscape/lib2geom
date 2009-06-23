@@ -28,35 +28,40 @@ information at this step! All the boxes of all the tiles are then enlarged so th
 either equal or disjoint.
 [TODO: we should look for curves traversing boxes, split them and repeat the process...]
 
-The sweeper maintains a virtual sweepline and the tiles can have 2 states, open if the sweepline is 
-crossing them, or closed otherwise.
+The sweeper maintains a virtual sweepline, that is the limit of the "known area". The tiles can have 2 states: 
+open if they have one end in the known area, and one in the unknown, closed otherwise. 
 [TODO: open/close should belong to tiles pointers, not tiles...]
 
-The list of open tiles sorted along the sweepline is called the "context".
+The sorted list of open tiles intersecting the sweep line is called the "context".
+*!*WARNING*!*: because the sweep line is not straight, closed tiles can still be in the context!!
+they can only be removed once the end of the last box is reached.
 
-The events are changes in the context as the sweep line crosses boxes.
-They are obtained by sorting the tiles according to one or the other of thiere end boxes depending
+The events are changes in the context when the sweep line crosses boxes.
+They are obtained by sorting the tiles according to one or the other of theire end boxes depending
 on the open/close state.
 
-A "big" event is when the sweep line goes from one side of a 'box' to the other.
-N.B.: in an ideal world, all tiles ending at one box woudl be on one side, all the tiles starting
+A "big" event happens when the sweep line reaches a new 'box'. After such a "big" event, the sweep 
+line goes round the new box along it's 3 other sides. 
+N.B.: in an ideal world, all tiles ending at one box would be on one side, all the tiles starting
 there on the other. Unfortunately, because we have boxes as vertices, things are not that nice: 
-open/closed tiles can appear in any order around a vertex, even in the mononic case(!).
+open/closed tiles can appear in any order around a vertex, even in the monotonic case(!). Morover, 
+our fat vertices have a non zero "duration", during which many things can happen: this is why we
+have to keep closed edges in the context until both ends of theire boxes are reached...
 
 
 To keep things uniform, such "big" events are split into elementary ones: opening/closing of a single edge.
-One such event is generated for each tile around the current 'box', in CCW order. The event knows if 
-it's the last one in such a sequence, so that the client knows when to do the additional work required
-to "close" the vertex construction.
+One such event is generated for each tile around the current 'box', in CCW order (geometrically, the sweepline 
+is deformed in a neighborhood of the box to go round it for a certain amount, enter the box and come back 
+inside the box; the piece inside the box is a "virtual edge" that is not added for good but that we keep track of).
+The event knows if it's the last one in such a sequence, so that the client knows when to do the additional work required
+to "close" the vertex construction. Hmmm. It's hard to explain the moves without a drawing here... there are
 
+*Closings: insert a new the relevant tile in the context with a "exit" flag.
 
-*Closings:
-closing an edge is done by deforming the sweepline to let it go to the box and come back near this edge. 
-The associated event is the move of letting the half turn happen "behind" the tile end instead of before.
+*Openings: insert a new the relevant tile in the context with a "entry" flag.
 
-*Openings:
-opening an edge is done by inserting it in the context at the specified rank. (we have to keep track of
-this rank from one event to the next) 
+At the end of a box, the relevant exit/entries are purged from the context.
+
 
 N.B. I doubt we can do boolops without building the full graph, i.e. having different clients to obtain
 different outputs. So splitting sweeper/grpah builder is maybe not so relevant w/r to functionality 
@@ -120,6 +125,7 @@ public:
         Rect fbox, tbox;
         bool reversed;//with respect to sweep direction. Flip f/t instead?
         bool open;//means sweepline currently cuts it.
+        //Warning: we can not delete a tile immediately when it's past(=closed again), only when the end of it's tbox is!.
         Rect bbox(){Rect b = fbox; b.unionWith(tbox); return b;}
         Point min(){return ( bbox().min() ); }
         Point max(){return ( bbox().max() ); }
@@ -219,9 +225,9 @@ public:
     class Event{
     public:
         bool opening;//true means an edge is added, otherwise an edge is removed from context.
-        unsigned insert_at;//where to insert the next opening in the context. Meaningless for closings but they should update it!!)
-        unsigned erase_at;//idx of the tile to close in the context.  = context.find(tile).
-        unsigned tile;//which edge to add.
+        unsigned tile;//which tile to open/close.
+        unsigned insert_at;//where to insert the next tile in the context.
+        //unsigned erase_at;//idx of the tile to close in the context.  = context.find(tile).
         bool to_be_continued;
         bool empty(){
             return  tile==NULL_IDX;
@@ -229,7 +235,7 @@ public:
         Event(){
             opening = false;
             insert_at = 0;
-            erase_at = 0;
+            //erase_at = 0;
             tile = NULL_IDX;
             to_be_continued = false;
         }
@@ -239,24 +245,31 @@ public:
         std::printf("Event: ");
         std::printf("%s, ", e.opening?"opening":"closing");
         std::printf("insert_at:%u, ", e.insert_at);
-        std::printf("erase_at:%u, ", e.erase_at);
+        //std::printf("erase_at:%u, ", e.erase_at);
         std::printf("tile:%u.\n", e.tile);
     }
 
-    class Context : public std::vector<unsigned>{
+    class Context : public std::vector<std::pair<unsigned,bool> >{//first = tile, second = true if it's a birth (+).
     public:
         Point last_pos;
         FatVertex pending_vertex;
         Event pending_event;
 
-        unsigned find(unsigned const tile){
-            return std::find(this->begin(), this->end(), tile) - this->begin();
+        unsigned find(unsigned const tile, bool positive_only=false){
+            for (unsigned i=0; i<size(); i++){
+                if ( (*this)[i].first == tile ){
+                    if ( (*this)[i].second || !positive_only ) return i;
+                }
+            }
+            return (*this).size();
         }
-    };    
+    };
     void printContext(){
         std::printf("context:[");
         for (unsigned i=0; i<context.size(); i++){
-            std::printf(" %s%u%s", (tiles_data[ context[i] ].reversed)?"-":"+", context[i], (tiles_data[ context[i] ].open)?"o":"c");
+            unsigned tile = context[i].first;
+            std::printf(" %s%u%s", (tiles_data[ tile ].reversed)?"-":"+", tile, (context[i].second)?"o":"c");
+            assert( context[i].second || !tiles_data[ tile ].open);
         }
         std::printf("]\n");
     }
@@ -264,63 +277,120 @@ public:
     //----
     //This is the heart of it all!! Take particular care to non linear sweep line...
     //----
+    //Given a point on the sweep line, (supposed to be the min() of a vertex not yet connected to the already known part),
+    //find the first edge "after" it in the context. Pretty tricky atm :-(
     unsigned contextRanking(Point const &pt){
-        //TODO: implement me as a lower_bound!
-        //std::printf("contextRanking:\n");
-        
+        //TODO: implement me as a lower_bound (?).
+        std::printf("contextRanking:------------------------------------\n");
+
+        unsigned rank = context.size();
         for (unsigned i=0; i<context.size(); i++){
-            Tile tile = tiles_data[context[i]];
-            if (pt[1-dim] < tile.min()[1-dim] ) return i;
-            if (pt[1-dim] > tile.max()[1-dim] ) continue;
+            //don't do the work twice.
+            if ( !context[i].second ) continue;
 
-            if (tile.first_box()[dim].contains( pt[dim] ) ){
-                //we have to compre with tiles the sweep line goes round the fbox of.
-                std::printf("tricky contextRanking!! (%f,%f) against \n", pt[X],pt[Y]);
+            Tile tile = tiles_data[context[i].first];
+            //if the tile is closed, we are only interested in when if the point is between the tile and a corner of the sweep line
+            //in particular the tile's bbox should contain the point.
+            if (!tile.open && !tile.bbox().contains( pt ) )
+                continue;
 
-                //if the point is at the level of the tbow, it should be in front.
-                if (tile.last_box()[1-dim].contains( pt[1-dim] ) ){
-                    assert( pt[dim] < tile.last_box()[dim].min() );
-                    if (tile.first_box()[1-dim].min()> pt[1-dim]){
-                        return i;
+            //if the tile is open (i.e. not both ends in the already sweeped area), point is below the tile's bbox:
+            if ( tile.open ){
+                if (pt[1-dim] < tile.min()[1-dim] ) {
+                    std::printf("rank: %u (bbox based) in", i);
+                    printContext();
+                    return i;
+                }else if (pt[1-dim] > tile.max()[1-dim] ) continue;
+            }
+
+            //At this point, the tile's bbox contains the point.
+
+            //If the pt happens during a tile's end box:
+            bool fbox_contains = tile.fbox[dim].contains( pt[dim] );
+            if (fbox_contains || tile.tbox[dim].contains( pt[dim] )){
+                std::printf("tricky contextRanking: pt=(%f,%f)->", pt[X],pt[Y]);
+
+                Rect cont_box = fbox_contains ? tile.fbox : tile.tbox;//the box that makes a bump in the sweep line.
+                Rect other_box = fbox_contains ? tile.tbox : tile.fbox;//the other end of the tile (that might also make a bump)
+
+                //Find intersection with the hline(vline if dim=Y) through the point
+                double hit_place;
+                //TODO: don't convert each time!!!!!!
+                D2<SBasis> c = tileToSB( tile );
+                std::vector<double> times = roots(c[1-dim]-pt[1-dim]);
+                if ( times.size()>0 )
+                    hit_place = c[dim](times.front());
+                else{
+                    //if there was no intersection, the line went through the other_box
+                    assert( other_box[1-dim].contains( pt[1-dim] ) );
+                    hit_place = ( pt[dim] < other_box[dim].min() ) ? other_box[dim].min() : other_box[dim].max();                    
+                }
+
+                //Ouf!! we finally know if pt is before or after the tile.
+                bool pt_below_cont = (cont_box.min()[1-dim] > pt[1-dim]);
+                bool pt_before = ( pt[dim] < hit_place );
+                if ( (pt_below_cont && pt_before) || (!pt_below_cont && !pt_before) ){
+                        rank = i;
+                        break;
                     }else{
                         continue;
                     }
-                }
-                //if not, the line through the point in the dim direction should hit the curve section.
-                D2<SBasis> c = tileToSB( tile );
-                std::vector<double> times = roots(c[1-dim]-pt[1-dim]);
-                assert ( times.size()>0 );
-                double hit_place = c[dim](times.front());
-                if ( ( pt[dim] > hit_place )^(tile.first_box()[1-dim].min()> pt[1-dim]) ){
-                    return i;
-                }else{
-                    continue;
-                }
+
             }
+
+            //At this point, the point happened during no tile end, so the boundary of the known area is straight.
+            //(the sweepline itself generally is not be because it still goes around first_box-es of the open tiles,
+            //but it's irrelevant here).
+
             //std::printf("use roots...\n");
             //TODO: don't convert each time!!!!!!
             D2<SBasis> c = tileToSB( tile );
             
             std::vector<double> times = roots(c[dim]-pt[dim]);
+            //this should not happen!
             if (times.size()==0){
                 Interval dom = *bounds_exact(c[dim]);
-                std::printf("this tile (%u) does not cross the sweep line!?!? [%f,%f] vs %f\n", context[i], dom.min(), dom.max(), pt[dim]);
+                std::printf("this tile (%u) does not cross the sweep line!?!? [%f,%f] vs %f\n", context[i].first, dom.min(), dom.max(), pt[dim]);
+                std::printf("  point: [%f,%f]\n", pt[X], pt[Y]);
                 std::printf("  fbox: [%f,%f]x[%f,%f]\n", tile.fbox[X][0],tile.fbox[X][1],tile.fbox[Y][0],tile.fbox[Y][1]);
                 std::printf("  tbox: [%f,%f]x[%f,%f]\n", tile.tbox[X][0],tile.tbox[X][1],tile.tbox[Y][0],tile.tbox[Y][1]);
-
             }
             assert ( times.size()>0 );
             if ( pt[1-dim] < c[1-dim](times.front()) ){
-                return i;
+                rank = i;
+                break;
             }            
         }
-        return context.size();
+        std::printf("rank %u in ", rank);
+        printContext();
+        return rank;
     }
 
+    //TODO: optimize this.
+    //it's done the slow way for debugging purpose...
+    void purgeDeadTiles(){
+        //std::printf("purge ");
+        //printContext();
+        for (unsigned i=0; i<context.size(); i++){
+            Tile tile = tiles_data[context[i].first];
+            if (!tile.open && lexo_point( tile.fbox.max(), context.last_pos, dim ) && lexo_point( tile.tbox.max(), context.last_pos, dim ) ){
+                unsigned j;
+                for (j=i+1; j<context.size() && context[j].first != context[i].first; j++){}
+                assert ( j < context.size() );
+                if ( context[j].first == context[i].first){
+                    assert ( context[j].second == !context[i].second );
+                    context.erase(context.begin()+j);
+                    context.erase(context.begin()+i);
+                    printContext();
+                    i--;
+                }
+            }
+        }
+        return;
+    }
 
     void applyEvent(Event event){
 //        std::printf("Apply event : ");
-
         if(event.empty()){
 //            std::printf("empty event!\n");
             return;
@@ -332,15 +402,17 @@ public:
 
 
         if (!event.opening){
-            unsigned idx = event.erase_at;
-            assert( idx == context.find(event.tile) );
-            assert( context[idx] == event.tile);
-            tiles_data[event.tile].open = false;//We could simply erase them from "tiles"...
-            context.erase(context.begin()+idx);
+//             unsigned idx = event.erase_at;
+//             assert( idx == context.find(event.tile) );
+//             assert( context[idx].first == event.tile);
+            tiles_data[event.tile].open = false;
+            //context.erase(context.begin()+idx);
+            unsigned idx = event.insert_at;
+            context.insert(context.begin()+idx, std::pair<unsigned, bool>(event.tile, false) );
         }else{
             unsigned idx = event.insert_at;
             tiles_data[event.tile].open = true;
-            context.insert(context.begin()+idx, event.tile);
+            context.insert(context.begin()+idx, std::pair<unsigned, bool>(event.tile, true) );
             sortTiles();
         }
         context.last_pos = context.pending_vertex.min();
@@ -445,7 +517,7 @@ public:
         //make sure it is sorted, but should be ok. (remove sorting at the end of monotonic tiles creation?
         std::sort(tiles_data.begin(), tiles_data.end(), SweepOrder(dim) );
 
-        std::printf("\nFind intersections: tiles_data.size():%u\n", tiles_data.size() );
+//        std::printf("\nFind intersections: tiles_data.size():%u\n", tiles_data.size() );
 
         for (unsigned i=0; i+1<tiles_data.size(); i++){
 //            std::printf("\ni=%u (%u([%f,%f]))\n", i, tiles_data[i].curve, tiles_data[i].f, tiles_data[i].t );
@@ -453,6 +525,7 @@ public:
             for (unsigned j=i+1; j<tiles_data.size(); j++){
 //                std::printf("  j=%u (%u)\n", j,tiles_data[j].curve );
                 if ( lexo_point( tiles_data[i].max(), tiles_data[j].min(), dim) ) break;
+                g_warning("FIXME: Sweeper tolerance meaning?? make mono_intersect tolerance aware.");
                 Crossings crossings = mono_intersect(paths[tiles_data[i].path][tiles_data[i].curve], Interval(tiles_data[i].f, tiles_data[i].t),
                                                      paths[tiles_data[j].path][tiles_data[j].curve], Interval(tiles_data[j].f, tiles_data[j].t) );
                 std::vector<double > times_j (crossings.size(), 0 );
@@ -735,7 +808,7 @@ public:
         dim = sweep_dir;
         tol = tolerance;
 
-        std::printf("\nSweeper initialisation");
+//        std::printf("\nSweeper initialisation");
         //split paths into monotonic pieces
         createMonotonicTiles();
         
@@ -765,7 +838,7 @@ public:
             context.pending_event = Event();
         }
 
-        std::printf("Sweeper initialized (%u tiles)\n", tiles_data.size());
+//        std::printf("Sweeper initialized (%u tiles)\n", tiles_data.size());
     }
 
 
@@ -775,10 +848,14 @@ public:
 
 
     Event getNextEvent(){
-        std::printf("getNextEvent():\n");
+//        std::printf("getNextEvent():\n");
 
         Event old_event = context.pending_event, event;
+
+        std::printf("getNextEvent:\n");
+
         applyEvent(context.pending_event);        
+        printContext();
 
         if (context.pending_vertex.rays.size()== 0){            
             std::printf("cook up a new vertex\n");
@@ -789,12 +866,14 @@ public:
             for ( low = tiles.begin(); low != tiles.end() && lexo_point(tiles_data[*low].cur_box().min(), context.last_pos, dim); low++){}
             
             if ( low == tiles.end() ){
-                std::printf("no more event found\n");
+//                std::printf("no more event found\n");
                 return(Event());
             }
             Rect pos = tiles_data[ *low ].cur_box();
             context.last_pos = pos.min();
             context.last_pos[1-dim] = pos.max()[1-dim];
+            
+            purgeDeadTiles();
 
             FatVertex v(pos);
             high = low;
@@ -805,12 +884,13 @@ public:
 
             sortRays(v);
 
+            //Look for an opened tile
             unsigned i=0;
             for( i=0; i<v.rays.size() && !tiles_data[ v.rays[i].tile ].open; ++i){}
-
+            
             //if there are only openings:
             if (i == v.rays.size() ){
-                std::printf("only openings!\n");
+//                std::printf("only openings!\n");
                 event.insert_at = contextRanking(pos.min());
             }
             //if there is at least one closing: make it first, and catch 'insert_at'.
@@ -823,30 +903,31 @@ public:
                 }
                 assert( tiles_data[ v.rays[0].tile ].open );
                 event.insert_at = context.find( v.rays.front().tile )+1;
-                event.erase_at = context.find( v.rays.front().tile );
-                std::printf("at least one closing!\n");
+//                event.erase_at = context.find( v.rays.front().tile );
+//                std::printf("at least one closing!\n");
             }
             context.pending_vertex = v;
         }else{
-            std::printf("continue biting exiting vertex\n");
+//            std::printf("continue biting exiting vertex\n");
             event.tile = context.pending_vertex.rays.front().tile;
             event.insert_at = old_event.insert_at;
-            if (old_event.opening){ 
-                event.insert_at++; 
-            }else{
-                if (old_event.erase_at < old_event.insert_at){ 
-                    event.insert_at--; 
-                }
-            }
+//             if (old_event.opening){ 
+//                 event.insert_at++; 
+//             }else{
+//                 if (old_event.erase_at < old_event.insert_at){ 
+//                     event.insert_at--; 
+//                 }
+//             }
+            event.insert_at++; 
         }
         event.tile = context.pending_vertex.rays.front().tile;
         event.opening = !tiles_data[ event.tile ].open;
         event.to_be_continued = context.pending_vertex.rays.size()>1;
-        if ( !event.opening ) event.erase_at = context.find(event.tile);
+//        if ( !event.opening ) event.erase_at = context.find(event.tile);
 
         context.pending_vertex.rays.erase(context.pending_vertex.rays.begin());
         context.pending_event = event;
-        printEvent(event);
+//        printEvent(event);
         return event;
     }
 };

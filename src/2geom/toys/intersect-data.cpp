@@ -222,8 +222,8 @@ public:
         unsigned src;
         src = source(a.front(), a.of_area);
 
-        unsigned af = a.front().edge, as=source(a.front(), a.of_area), ab=a.back().edge, at=target(a.back(), a.of_area);
-        unsigned bf = b.front().edge, bs=source(b.front(), b.of_area), bb=b.back().edge, bt=target(b.back(), b.of_area);
+//        unsigned af = a.front().edge, as=source(a.front(), a.of_area), ab=a.back().edge, at=target(a.back(), a.of_area);
+//        unsigned bf = b.front().edge, bs=source(b.front(), b.of_area), bb=b.back().edge, bt=target(b.back(), b.of_area);
 //        std::printf("a=%u(%u)...(%u)%u\n", as, af,ab,at);
 //        std::printf("b=%u(%u)...(%u)%u\n", bs, bf,bb,bt);
 
@@ -332,8 +332,8 @@ public:
     IntersectionData(){}
     ~IntersectionData(){}
     IntersectionData(PathVector const &paths, double tol=EPSILON){
-        std::printf("\n---------------------\n---------------------\n---------------------\n");
-        std::printf("IntersectionData creation\n");        
+//        std::printf("\n---------------------\n---------------------\n---------------------\n");
+//        std::printf("IntersectionData creation\n");        
         input_paths = paths;
 
         vertices.clear();
@@ -405,9 +405,9 @@ public:
                 if ( vertices[v].boundary.size() > 0 ){
                     cur_a = target( vertices[v].boundary.back(), false );
                 }else{//this vertex is empty
-                    if (event.insert_at>0){
-                        unsigned lower_e = sweeper.context[event.insert_at -1];
-                        cur_a = (sweeper.tiles_data[lower_e].reversed) ? edges[lower_e].right : edges[lower_e].left;
+                    if ( event.insert_at < sweeper.context.size() ){
+                        unsigned upper_tile = sweeper.context[event.insert_at].first;
+                        cur_a = (sweeper.tiles_data[upper_tile].reversed) ? edges[upper_tile].left : edges[upper_tile].right;
                     }else{
                         cur_a = 0;
                     }
@@ -548,7 +548,7 @@ class IntersectDataTester: public Toy {
 
         //convertHSVtoRGB(0, 1., .5 + winding/10, r,g,b);
         //convertHSVtoRGB(360*a/topo.areas.size(), 1., .5, r,g,b);
-        convertHSVtoRGB(180+50*winding, 1., .5, r,g,b);
+        convertHSVtoRGB(180+30*winding, 1., .5, r,g,b);
         cairo_set_source_rgba (cr, r, g, b, 1.);
         //cairo_set_source_rgba (cr, 1., 0., 1., .3);
 
@@ -595,6 +595,9 @@ class IntersectDataTester: public Toy {
         cairo_set_source_rgba (cr, 1., 0., 0, 1);
         cairo_set_line_width (cr, 1);
         cairo_stroke(cr);
+        cairo_rectangle(cr, box);
+        cairo_set_source_rgba (cr, 1., 0., 0, .2);
+        cairo_fill(cr);
 
 //         //std::cout<<"\nintersection boundary:\n";
 //         for (unsigned i = 0; i < topo.vertices[b].boundary.size(); i++){
@@ -623,8 +626,7 @@ class IntersectDataTester: public Toy {
 
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
         *notify<<"line command args: #1=nb paths, #2=nb csurves per path, #3=degree of each curve.\n";
-        *notify<<"N.B.: first area is 'inverted' (it's the unbounded one)\n";
-        *notify<<"N.B.: I dunno how to fill regions with holes :-(\n";
+        *notify<<"N.B.: I don't know how to fill regions with holes :-(\n";
         cairo_set_source_rgba (cr, 0., 0., 0, 1);
         cairo_set_line_width (cr, 1);
         
@@ -672,6 +674,8 @@ class IntersectDataTester: public Toy {
     public:
     IntersectDataTester(unsigned paths, unsigned curves_in_path, unsigned degree) :
         nb_paths(paths), nb_curves_per_path(curves_in_path), degree(degree) {
+
+#if 1
         for (unsigned i = 0; i < nb_paths; i++){
             paths_handles.push_back(PointSetHandle());
         }
@@ -681,6 +685,37 @@ class IntersectDataTester: public Toy {
             }
             handles.push_back(&paths_handles[i]);
         }
+#else
+        //start with the bad case...
+        nb_paths=3; nb_curves_per_path = 5; degree = 1;
+
+        paths_handles.push_back(PointSetHandle());
+        paths_handles[0].push_back(100,100);
+        paths_handles[0].push_back(100,200);
+        paths_handles[0].push_back(300,200);
+        paths_handles[0].push_back(300,100);
+        paths_handles[0].push_back(100,100);
+        
+        paths_handles.push_back(PointSetHandle());
+        paths_handles[1].push_back(120,190);
+        paths_handles[1].push_back(200,210);
+        paths_handles[1].push_back(280,190);
+        paths_handles[1].push_back(200,300);
+        paths_handles[1].push_back(120,190);
+
+        paths_handles.push_back(PointSetHandle());
+        paths_handles[2].push_back(180,150);
+        paths_handles[2].push_back(200,140);
+        paths_handles[2].push_back(220,150);
+        paths_handles[2].push_back(300,160);
+        paths_handles[2].push_back(180,150);
+
+        handles.push_back(&paths_handles[0]);
+        handles.push_back(&paths_handles[1]);
+        handles.push_back(&paths_handles[2]);
+
+        //------------------
+#endif
         sliders.push_back(Slider(0.0, 1, 0, 0.0, "intersection chooser"));
         sliders.push_back(Slider(0.0, 1, 0, 0.0, "ray chooser"));
         sliders.push_back(Slider(0.0, 1, 0, 0.0, "area chooser"));
@@ -715,6 +750,7 @@ int main(int argc, char **argv) {
     if (degree<=0) degree = 1;
     if (curves_in_path<=0) curves_in_path = 3;
     if (paths<=0) paths = 1;
+    
     init(argc, argv, new IntersectDataTester(paths, curves_in_path, degree));
     return 0;
 }
