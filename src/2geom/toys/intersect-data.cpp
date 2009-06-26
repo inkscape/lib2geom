@@ -7,6 +7,7 @@
 #include <2geom/exception.h>
 
 #include <cstdlib>
+#include <cstdio>
 #include <set>
 #include <vector>
 #include <algorithm>
@@ -32,7 +33,7 @@ At creation time, the data calls a sweeper, creates one edge with unkown start/e
 for each sweeper tile, and one empty area.
 
 The data is filled according to the events. It is supposed to stay well formed all along the process:
-at each time, the data represents the topology of everything before the sweepline (you can 
+at each time, the data represents the topology of everything before the sweepline (you can
 imagine that the edges are prolongated to infinity without crossing after they cross the sweepline).
 
 The only exception is that during a sequence of events representign one big event, a virtual edge
@@ -50,7 +51,7 @@ using namespace std;
 class IntersectionData {
 public:
 
-    // -!- convention: 
+    // -!- convention:
     // In a boundary, reversed edges point away from the vertex or CW around the area.
     struct OrientedEdge{
         unsigned edge; //edge index.
@@ -81,7 +82,7 @@ public:
         Geom::Rect bounds;
         Vertex():boundary(false){}
     };
-    
+
     class Area {//an area is a connected comp of the complement of the graph.  .
     public:
         Boundary boundary; // outermost boundary component, CCW oriented (i.e. area is on the left of the boundary).
@@ -111,7 +112,7 @@ public:
     vector<Area> areas;
     vector<Edge> edges;
     vector<Vertex> vertices;
-    
+
     PathVector input_paths;//we don't need our own copy...
     cairo_t* cr;
 
@@ -174,7 +175,7 @@ public:
         }
     }
 
-    
+
 
     //----------------------------------------------------
     //-- Boundary Navigation/Modification
@@ -203,7 +204,7 @@ public:
         if ( bndry.empty() ){
             bndry.push_back(f);
             return true;
-        }        
+        }
         unsigned src = source(f, bndry.of_area);
         if ( src == target( bndry.back(),  bndry.of_area ) && src != NULL_IDX ){
             bndry.push_back(f);
@@ -261,7 +262,7 @@ public:
 
     bool fuseConnectedBoundaries(unsigned a){
 //        std::printf(" fuseConnectedBoundaries %u\n",a);
-        
+
         bool ret = false;
         if ( areas[a].boundary.size()>0 ){
             for ( unsigned i=0; i<areas[a].inner_boundaries.size(); i++){
@@ -283,7 +284,7 @@ public:
         }
         return ret;
     }
-    
+
     //-------------------------------
     //-- Some basic area manipulation.
     //-------------------------------
@@ -321,7 +322,7 @@ public:
     D2<SBasis> edgeAsSBasis(unsigned e){
         //beurk! optimize me.
         D2<SBasis> c = input_paths[edges[e].path][edges[e].curve].toSBasis();
-        return portion(c, edges[e].portion); 
+        return portion(c, edges[e].portion);
     }
 
 
@@ -333,7 +334,7 @@ public:
     ~IntersectionData(){}
     IntersectionData(PathVector const &paths, double tol=EPSILON){
 //        std::printf("\n---------------------\n---------------------\n---------------------\n");
-//        std::printf("IntersectionData creation\n");        
+//        std::printf("IntersectionData creation\n");
         input_paths = paths;
 
         vertices.clear();
@@ -351,11 +352,11 @@ public:
             edges[i].portion = Interval(sweeper.tiles_data[i].f, sweeper.tiles_data[i].t);
         }
 
-        //std::printf("entering event loop:\n");        
+        //std::printf("entering event loop:\n");
 
         for(Sweeper::Event event = sweeper.getNextEvent(); ; event = sweeper.getNextEvent() ){
             if (event.empty()){
-                //std::printf("   empty event recieved\n");        
+                //std::printf("   empty event recieved\n");
                 break;
             }
             //std::printf("   non empty event recieved:");
@@ -363,7 +364,7 @@ public:
 
             //is this a new event or the continuation of an old one?
             unsigned v;
-            Rect r = sweeper.context.pending_vertex; 
+            Rect r = sweeper.context.pending_vertex;
             if (vertices.empty() || !r.intersects( vertices.back().bounds ) ){
                 v = vertices.size();
                 vertices.push_back(Vertex());
@@ -373,11 +374,11 @@ public:
                 v = vertices.size()-1;
                 //std::printf("   continue last intersection (%u).\n",v);
             }
-                
+
             //--Closing an edge:-------------
             if( !event.opening ){
                 unsigned e = event.tile, a, b;
-                //std::printf("   closing edge %u\n", e);        
+                //std::printf("   closing edge %u\n", e);
                 bool reversed = sweeper.tiles_data[e].reversed;//Warning: true means v==e.start
                 if (reversed){
                     edges[e].start = v;
@@ -399,7 +400,7 @@ public:
             //--Opening an edge:-------------
                 unsigned e = event.tile, a, b;
                 bool reversed = !sweeper.tiles_data[e].reversed;//Warning: true means v==start.
-             
+
                 //--Find first and last area around this vertex:-------------
                 unsigned cur_a;
                 if ( vertices[v].boundary.size() > 0 ){
@@ -434,7 +435,7 @@ public:
                 //update vertex
                 OrientedEdge f(e, reversed);
                 assert( prolongate( vertices[v].boundary, f) );
-                addAreaBoundaryPiece(cur_a, OrientedEdge(e, reversed) );                
+                addAreaBoundaryPiece(cur_a, OrientedEdge(e, reversed) );
             }
             if (!event.to_be_continued && vertices[v].boundary.size()>0){
                 unsigned first_a = source( vertices[v].boundary.front(), false );
@@ -443,13 +444,13 @@ public:
             }
 
 //            this->print();
-//            std::printf("----------------\n"); 
+//            std::printf("----------------\n");
             //std::printf("\n");
         }
     }
 
 
-    
+
     //----------------------------------------------------
     //-- done.
     //----------------------------------------------------
@@ -497,7 +498,7 @@ class IntersectDataTester: public Toy {
             unsigned first_v = topo.source(o_edge, true);
             pt = topo.vertices[first_v].bounds.midpoint();
         }
-        Path bndary(pt);        
+        Path bndary(pt);
         for (unsigned i = 0; i < b.size(); i++){
             bndary.append( edgeToPath(b[i]), Path::STITCH_DISCONTINUOUS);
         }
@@ -505,7 +506,7 @@ class IntersectDataTester: public Toy {
         return bndary;
     }
 
-    //TODO:this should return a path vector, but we glue the components for easy drawing in the toy. 
+    //TODO:this should return a path vector, but we glue the components for easy drawing in the toy.
     Path areaToPath(unsigned a){
         Path bndary;
         if ( topo.areas[a].boundary.size()==0 ){//this is the unbounded component...
@@ -629,7 +630,7 @@ class IntersectDataTester: public Toy {
         *notify<<"N.B.: I don't know how to fill regions with holes :-(\n";
         cairo_set_source_rgba (cr, 0., 0., 0, 1);
         cairo_set_line_width (cr, 1);
-        
+
         std::vector<Path> paths(nb_paths, Path());
         for (unsigned i = 0; i < nb_paths; i++){
             paths_handles[i].pts.back()=paths_handles[i].pts.front();
@@ -644,7 +645,7 @@ class IntersectDataTester: public Toy {
             }
             paths[i].close();
         }
-        
+
         cairo_path(cr, paths);
         cairo_set_source_rgba (cr, 0., 0., 0, 1);
         cairo_set_line_width (cr, 1);
@@ -695,7 +696,7 @@ class IntersectDataTester: public Toy {
         paths_handles[0].push_back(300,200);
         paths_handles[0].push_back(300,100);
         paths_handles[0].push_back(100,100);
-        
+
         paths_handles.push_back(PointSetHandle());
         paths_handles[1].push_back(120,190);
         paths_handles[1].push_back(200,210);
@@ -750,7 +751,7 @@ int main(int argc, char **argv) {
     if (degree<=0) degree = 1;
     if (curves_in_path<=0) curves_in_path = 3;
     if (paths<=0) paths = 1;
-    
+
     init(argc, argv, new IntersectDataTester(paths, curves_in_path, degree));
     return 0;
 }

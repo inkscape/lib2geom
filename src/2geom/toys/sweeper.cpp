@@ -6,6 +6,7 @@
 #include <2geom/exception.h>
 
 #include <cstdlib>
+#include <cstdio>
 #include <set>
 #include <vector>
 #include <algorithm>
@@ -28,8 +29,8 @@ information at this step! All the boxes of all the tiles are then enlarged so th
 either equal or disjoint.
 [TODO: we should look for curves traversing boxes, split them and repeat the process...]
 
-The sweeper maintains a virtual sweepline, that is the limit of the "known area". The tiles can have 2 states: 
-open if they have one end in the known area, and one in the unknown, closed otherwise. 
+The sweeper maintains a virtual sweepline, that is the limit of the "known area". The tiles can have 2 states:
+open if they have one end in the known area, and one in the unknown, closed otherwise.
 [TODO: open/close should belong to tiles pointers, not tiles...]
 
 The sorted list of open tiles intersecting the sweep line is called the "context".
@@ -40,21 +41,21 @@ The events are changes in the context when the sweep line crosses boxes.
 They are obtained by sorting the tiles according to one or the other of theire end boxes depending
 on the open/close state.
 
-A "big" event happens when the sweep line reaches a new 'box'. After such a "big" event, the sweep 
-line goes round the new box along it's 3 other sides. 
+A "big" event happens when the sweep line reaches a new 'box'. After such a "big" event, the sweep
+line goes round the new box along it's 3 other sides.
 N.B.: in an ideal world, all tiles ending at one box would be on one side, all the tiles starting
-there on the other. Unfortunately, because we have boxes as vertices, things are not that nice: 
-open/closed tiles can appear in any order around a vertex, even in the monotonic case(!). Morover, 
+there on the other. Unfortunately, because we have boxes as vertices, things are not that nice:
+open/closed tiles can appear in any order around a vertex, even in the monotonic case(!). Morover,
 our fat vertices have a non zero "duration", during which many things can happen: this is why we
 have to keep closed edges in the context until both ends of theire boxes are reached...
 
 
 To keep things uniform, such "big" events are split into elementary ones: opening/closing of a single
 edge. One such event is generated for each tile around the current 'box', in CCW order (geometrically,
-the sweepline is deformed in a neighborhood of the box to go round it for a certain amount, enter the 
-box and come back inside the box; the piece inside the box is a "virtual edge" that is not added for 
-good but that we keep track of). The event knows if it's the last one in such a sequence, so that the 
-client knows when to do the additional work required to "close" the vertex construction. Hmmm. It's 
+the sweepline is deformed in a neighborhood of the box to go round it for a certain amount, enter the
+box and come back inside the box; the piece inside the box is a "virtual edge" that is not added for
+good but that we keep track of). The event knows if it's the last one in such a sequence, so that the
+client knows when to do the additional work required to "close" the vertex construction. Hmmm. It's
 hard to explain the moves without a drawing here...(see sweep.svg in the doc dir). There are
 
 *Closings: insert a new the relevant tile in the context with a "exit" flag.
@@ -65,7 +66,7 @@ At the end of a box, the relevant exit/entries are purged from the context.
 
 
 N.B. I doubt we can do boolops without building the full graph, i.e. having different clients to obtain
-different outputs. So splitting sweeper/grpah builder is maybe not so relevant w/r to functionality 
+different outputs. So splitting sweeper/grpah builder is maybe not so relevant w/r to functionality
 (only code organization).
 */
 
@@ -85,7 +86,7 @@ public:
         NearPredicate(double eps):tol(eps){}
         NearPredicate(){tol = EPSILON;}//???
         bool operator()(T x, T y) { return are_near(x, y, tol); } };
-    
+
     // ensures that f and t are elements of a vector, sorts and uniqueifies
     // also asserts that no values fall outside of f and t
     // if f is greater than t, the sort is in reverse
@@ -95,7 +96,7 @@ public:
         std::sort(splits.begin(), splits.end());
         std::vector<double>::iterator end = std::unique(splits.begin(), splits.end(), NearPredicate<double>(tol));
         splits.resize(end - splits.begin());
-        
+
         //remove any splits which fall outside t / f
         while(!splits.empty() && splits.front() < f+tol) splits.erase(splits.begin());
         splits.insert(splits.begin(), f);
@@ -109,14 +110,14 @@ public:
         return Rect( p+Point(-radius,-radius), p+Point( radius, radius) ) ;
     }
 
-    
+
 
     //---------------------------
     // Tiles.
     //---------------------------
 
     //A tile is a "light edge": just two boxes, joint by a curve.
-    //it is open iff intersected by the sweepline. 
+    //it is open iff intersected by the sweepline.
     class Tile{
     public:
         unsigned path;
@@ -156,12 +157,12 @@ public:
         Dim2 dim;
         std::vector<Tile>::iterator const begin;
         PtrSweepOrder(std::vector<Tile>::iterator const beg, Dim2 d) : dim(d), begin(beg){}
-        bool operator()(const unsigned a, const unsigned b) const { 
+        bool operator()(const unsigned a, const unsigned b) const {
             return lexo_point((begin+a)->cur_box().min(), (begin+b)->cur_box().min(), dim);
         }
     };
 
-    
+
     //---------------------------
     // Vertices.
     //---------------------------
@@ -191,10 +192,10 @@ public:
         void setExitInfo( unsigned side, double place, double time){
             exit_side = side;
             exit_place = place;
-            exit_time = time;            
+            exit_time = time;
         }
-    };    
-    
+    };
+
     class FatVertex : public Rect{
     public:
         std::vector<Ray> rays;
@@ -215,14 +216,14 @@ public:
             }else{
                 rays.erase( rays.begin()+from, rays.begin()+to );
             }
-            
+
         }
     };
 
     //---------------------------
     // Context related stuff.
     //---------------------------
-        
+
     class Event{
     public:
         bool opening;//true means an edge is added, otherwise an edge is removed from context.
@@ -241,7 +242,7 @@ public:
             to_be_continued = false;
         }
     };
-    
+
     void printEvent(Event const &e){
         std::printf("Event: ");
         std::printf("%s, ", e.opening?"opening":"closing");
@@ -324,7 +325,7 @@ public:
                 else{
                     //if there was no intersection, the line went through the other_box
                     assert( other_box[1-dim].contains( pt[1-dim] ) );
-                    hit_place = ( pt[dim] < other_box[dim].min() ) ? other_box[dim].min() : other_box[dim].max();                    
+                    hit_place = ( pt[dim] < other_box[dim].min() ) ? other_box[dim].min() : other_box[dim].max();
                 }
 
                 //Ouf!! we finally know if pt is before or after the tile.
@@ -346,7 +347,7 @@ public:
             //std::printf("use roots...\n");
             //TODO: don't convert each time!!!!!!
             D2<SBasis> c = tileToSB( tile );
-            
+
             std::vector<double> times = roots(c[dim]-pt[dim]);
             //this should not happen!
             if (times.size()==0){
@@ -360,7 +361,7 @@ public:
             if ( pt[1-dim] < c[1-dim](times.front()) ){
                 rank = i;
                 break;
-            }            
+            }
         }
         std::printf("rank %u in ", rank);
         printContext();
@@ -508,11 +509,11 @@ public:
         tiles_data[newi].f    = tiles_data[newi-1].t;
         tiles_data[newi].fbox = tiles_data[newi-1].tbox;
 
-        if (sort) 
+        if (sort)
             std::sort(tiles_data.begin()+i, tiles_data.end(), SweepOrder(dim) );
     }
 
-    //TODO: maybe not optimal. For a fully optimized sweep, it would be nice to have 
+    //TODO: maybe not optimal. For a fully optimized sweep, it would be nice to have
     //an efficient way to way find *only the first* intersection (in sweep direction)...
     void splitIntersectingTiles(){
         //make sure it is sorted, but should be ok. (remove sorting at the end of monotonic tiles creation?
@@ -619,11 +620,11 @@ public:
             }
             assert( (*t_it).contains(tiles_data[i].tbox) );
             tiles_data[i].tbox = *t_it;
-            
+
             //NB: enlarging the ends may swapp their sweep order!!!
             tiles_data[i].reversed = lexo_point ( tiles_data[i].tbox.min(), tiles_data[i].fbox.min(), dim );
 
-            if ( f_it==t_it ){ 
+            if ( f_it==t_it ){
                 tiles_data.erase(tiles_data.begin()+i);
                 i-=1;
             }
@@ -667,10 +668,10 @@ public:
     //-------------------------------------------------------------------------------------------
     //returns an (infinite) rect around "a" separating it from "b". Nota: 3 sides are infinite!
     //TODO: place the cut where there is most space...
-    OptRect separate(Rect const &a, Rect const &b){        
+    OptRect separate(Rect const &a, Rect const &b){
         Rect ret ( Interval( -infinity(), infinity() ) , Interval(-infinity(), infinity() ) );
         double gap = 0;
-        unsigned dir = 4; 
+        unsigned dir = 4;
         if (b[X][0] - a[X][1] > gap){
             gap = b[X][0] - a[X][1];
             dir = 0;
@@ -733,7 +734,7 @@ public:
             time = t;
         }
     };
-    
+
 
     class ExitOrder{
     public:
@@ -812,7 +813,7 @@ public:
 //        std::printf("\nSweeper initialisation");
         //split paths into monotonic pieces
         createMonotonicTiles();
-        
+
         //split at pieces intersections
         splitIntersectingTiles();
 
@@ -820,7 +821,7 @@ public:
         do{
             vtxboxes = collectBoxes();
         }while ( splitTilesThroughFatPoints(vtxboxes) );
-        
+
         enlargeTilesEnds(vtxboxes);
 
         //now create the pointers to the tiles.
@@ -855,17 +856,17 @@ public:
 
         std::printf("getNextEvent:\n");
 
-        applyEvent(context.pending_event);        
+        applyEvent(context.pending_event);
         printContext();
 
-        if (context.pending_vertex.rays.size()== 0){            
+        if (context.pending_vertex.rays.size()== 0){
             std::printf("cook up a new vertex\n");
 
             //find the edges at the next vertex.
             //TODO: implement this as a lower bound!!
             std::vector<unsigned>::iterator low, high;
             for ( low = tiles.begin(); low != tiles.end() && lexo_point(tiles_data[*low].cur_box().min(), context.last_pos, dim); low++){}
-            
+
             if ( low == tiles.end() ){
 //                std::printf("no more event found\n");
                 return(Event());
@@ -873,7 +874,7 @@ public:
             Rect pos = tiles_data[ *low ].cur_box();
             context.last_pos = pos.min();
             context.last_pos[1-dim] = pos.max()[1-dim];
-            
+
             purgeDeadTiles();
 
             FatVertex v(pos);
@@ -888,7 +889,7 @@ public:
             //Look for an opened tile
             unsigned i=0;
             for( i=0; i<v.rays.size() && !tiles_data[ v.rays[i].tile ].open; ++i){}
-            
+
             //if there are only openings:
             if (i == v.rays.size() ){
 //                std::printf("only openings!\n");
@@ -912,14 +913,14 @@ public:
 //            std::printf("continue biting exiting vertex\n");
             event.tile = context.pending_vertex.rays.front().tile;
             event.insert_at = old_event.insert_at;
-//             if (old_event.opening){ 
-//                 event.insert_at++; 
+//             if (old_event.opening){
+//                 event.insert_at++;
 //             }else{
-//                 if (old_event.erase_at < old_event.insert_at){ 
-//                     event.insert_at--; 
+//                 if (old_event.erase_at < old_event.insert_at){
+//                     event.insert_at--;
 //                 }
 //             }
-            event.insert_at++; 
+            event.insert_at++;
         }
         event.tile = context.pending_vertex.rays.front().tile;
         event.opening = !tiles_data[ event.tile ].open;
