@@ -71,7 +71,6 @@ public:
 
     class Boundary : public std::vector<OrientedEdge>{
     public:
-        //debug only:
         bool of_area;//true if this is the boundary of an area. Fix this with templates?
         Boundary(bool area_type): of_area(area_type){}
     };
@@ -115,6 +114,11 @@ public:
 
     PathVector input_paths;//we don't need our own copy...
     cairo_t* cr;
+
+    //debug only!!
+    int steps_max;
+    //----------
+
 
     //----------------------------------------------------
     //-- utils...
@@ -332,9 +336,14 @@ public:
 
     IntersectionData(){}
     ~IntersectionData(){}
-    IntersectionData(PathVector const &paths, double tol=EPSILON){
+    IntersectionData(PathVector const &paths, double tol=EPSILON, int stepsmax=-1){
 //        std::printf("\n---------------------\n---------------------\n---------------------\n");
 //        std::printf("IntersectionData creation\n");
+
+        //debug only:
+        steps_max = stepsmax;
+        //-------------
+
         input_paths = paths;
 
         vertices.clear();
@@ -353,8 +362,17 @@ public:
         }
 
         //std::printf("entering event loop:\n");
-
+        unsigned step=0;
         for(Sweeper::Event event = sweeper.getNextEvent(); ; event = sweeper.getNextEvent() ){
+            //print();
+            //debug only!!!
+            if ( steps_max >= 0 && step > steps_max ){
+                break;
+            }else{
+                step++;
+            }
+            //---------
+
             if (event.empty()){
                 //std::printf("   empty event recieved\n");
                 break;
@@ -464,8 +482,12 @@ class IntersectDataTester: public Toy {
     unsigned degree;
     double tol;
 
+    vector<Path> cmd_line_paths;
+
     std::vector<PointSetHandle> paths_handles;
     std::vector<Slider> sliders;
+    int nb_steps;
+
     IntersectionData topo;
 
     //TODO conversions to path should be owned by the relevant classes.
@@ -477,31 +499,43 @@ class IntersectDataTester: public Toy {
         if ( o_edge.reversed ){
             p = compose( p, Linear(1.,0.) );
         }
+        Path ret;
+        Point center;
         unsigned c_idx = topo.source(o_edge, true);
-        Point center = topo.vertices[c_idx].bounds.midpoint();
-        Path ret(center);
-
-        ret.append(p, Path::STITCH_DISCONTINUOUS);
-
+        if ( c_idx == NULL_IDX ){
+            ret.append(p, Path::STITCH_DISCONTINUOUS);
+        }else{
+            center = topo.vertices[c_idx].bounds.midpoint();
+            ret = Path(center);
+            ret.append(p, Path::STITCH_DISCONTINUOUS);
+        }
         c_idx = topo.target(o_edge, true);
-        center = topo.vertices[c_idx].bounds.midpoint();
-        if ( center != p.at1() ) ret.appendNew<LineSegment>(center);
-        return ret;
+        if ( c_idx == NULL_IDX ){
+            return ret;
+        }else{
+            center = topo.vertices[c_idx].bounds.midpoint();
+            if ( center != p.at1() ) ret.appendNew<LineSegment>(center);
+            return ret;
+        }
     }
 
     Path boundaryToPath(IntersectionData::Boundary b){
         Point pt;
-        if (b.size()==0){
-            return Path();
-        }else{
-            IntersectionData::OrientedEdge o_edge = b.front();
-            unsigned first_v = topo.source(o_edge, true);
+        Path bndary;
+
+        if (b.size()==0){ return Path(); }
+
+        IntersectionData::OrientedEdge o_edge = b.front();
+        unsigned first_v = topo.source(o_edge, true);
+        if ( first_v != NULL_IDX ){
             pt = topo.vertices[first_v].bounds.midpoint();
+            bndary = Path(pt);
         }
-        Path bndary(pt);
+
         for (unsigned i = 0; i < b.size(); i++){
             bndary.append( edgeToPath(b[i]), Path::STITCH_DISCONTINUOUS);
         }
+        bndary.appendNew<LineSegment>(bndary.initialPoint());//usefull??
         bndary.close();
         return bndary;
     }
@@ -522,9 +556,7 @@ class IntersectDataTester: public Toy {
             bndary =  boundaryToPath(topo.areas[a].boundary);
         }
         for (unsigned j = 0; j < topo.areas[a].inner_boundaries.size(); j++){
-            for (unsigned i = 0; i < topo.areas[a].inner_boundaries[j].size(); i++){
-                bndary.append( edgeToPath(topo.areas[a].inner_boundaries[j][i]), Path::STITCH_DISCONTINUOUS );
-            }
+            bndary.append( boundaryToPath(topo.areas[a].inner_boundaries[j]), Path::STITCH_DISCONTINUOUS );
             bndary.appendNew<LineSegment>( bndary.initialPoint() );
         }
         bndary.close();
@@ -588,6 +620,34 @@ class IntersectDataTester: public Toy {
         cairo_stroke(cr);
     }
 
+    void drawEdge( cairo_t *cr, IntersectionData const &topo, unsigned eidx ){
+        if (eidx>=topo.edges.size()) return;
+        IntersectionData::Edge e = topo.edges[eidx];
+        D2<SBasis> p = topo.input_paths[e.path][e.curve].toSBasis();
+        Interval dom = e.portion;
+        p = portion(p, dom);
+        cairo_d2_sb(cr, p);
+        if (e.start == NULL_IDX || e.end == NULL_IDX )
+            cairo_set_source_rgba (cr, 0., 1., 0, 1);
+        else
+            cairo_set_source_rgba (cr, 0., 0., 0, 1);
+        cairo_set_line_width (cr, 1);
+        cairo_stroke(cr);
+    }
+    void drawEdges( cairo_t *cr, IntersectionData const &topo ){
+        for (unsigned e=0; e<topo.edges.size(); e++){
+            drawEdge(cr, topo, e);
+        }
+    }
+    void drawKnownEdges( cairo_t *cr, IntersectionData const &topo ){
+        for (unsigned v=0; v<topo.vertices.size(); v++){
+            for (unsigned e=0; e<topo.vertices[v].boundary.size(); e++){
+                drawEdge(cr, topo, topo.vertices[v].boundary[e].edge);
+            }
+        }
+    }
+
+
     void drawBox( cairo_t *cr, IntersectionData const &topo, unsigned b ){
         if (b>=topo.vertices.size()) return;
         Rect box = topo.vertices[b].bounds;
@@ -626,45 +686,58 @@ class IntersectDataTester: public Toy {
     }
 
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
-        *notify<<"line command args: #1=nb paths, #2=nb csurves per path, #3=degree of each curve.\n";
-        *notify<<"N.B.: I don't know how to fill regions with holes :-(\n";
+        *notify<<"line command args: svgd file or (nb paths, nb curves/path, degree of curves).\n";
         cairo_set_source_rgba (cr, 0., 0., 0, 1);
         cairo_set_line_width (cr, 1);
 
-        std::vector<Path> paths(nb_paths, Path());
-        for (unsigned i = 0; i < nb_paths; i++){
-            paths_handles[i].pts.back()=paths_handles[i].pts.front();
-            paths[i] = Path(paths_handles[i].pts[0]);
-            for (unsigned j = 0; j+degree < paths_handles[i].size(); j+=degree){
-                D2<SBasis> c = handles_to_sbasis(paths_handles[i].pts.begin()+j, degree);
-                if ( j + degree == paths_handles[i].size()-1 ){
-                    c[X].at(0)[1] = paths_handles[i].pts.front()[X];
-                    c[Y].at(0)[1] = paths_handles[i].pts.front()[Y];
-                }
-                paths[i].append(c);
+        std::vector<Path> paths;
+        if (cmd_line_paths.size()>0){
+            paths = cmd_line_paths;
+            for (unsigned i = 0; i < paths.size(); i++){
+                paths[i] *= Translate( paths_handles[i].pts[0] - paths[i].initialPoint() );
             }
-            paths[i].close();
+        }else{
+            paths = std::vector<Path>(nb_paths, Path());
+            for (unsigned i = 0; i < nb_paths; i++){
+                paths_handles[i].pts.back()=paths_handles[i].pts.front();
+                paths[i] = Path(paths_handles[i].pts[0]);
+                for (unsigned j = 0; j+degree < paths_handles[i].size(); j+=degree){
+                    D2<SBasis> c = handles_to_sbasis(paths_handles[i].pts.begin()+j, degree);
+                    if ( j + degree == paths_handles[i].size()-1 ){
+                        c[X].at(0)[1] = paths_handles[i].pts.front()[X];
+                        c[Y].at(0)[1] = paths_handles[i].pts.front()[Y];
+                    }
+                    paths[i].append(c);
+                }
+                paths[i].close();
+            }
         }
+        *notify<<"Use '<' and '>' keys to move backward/forward in the sweep: (currently doing "<<nb_steps<<" steps)\n";
+        *notify<<"nb_steps: "<<nb_steps<<"\n";
 
+
+#if 0
         cairo_path(cr, paths);
         cairo_set_source_rgba (cr, 0., 0., 0, 1);
         cairo_set_line_width (cr, 1);
         cairo_stroke(cr);
+#endif
 
-        tol = 1.0;
-        //IntersectionData topo;
-        topo = IntersectionData(paths, pow(10,sliders[3].value()) );
+        tol = pow(10,sliders[3].value());
+        topo = IntersectionData(paths, tol, nb_steps );
 
 #if 1
-        unsigned v = (unsigned)(sliders[0].value()*(topo.vertices.size()));
-        unsigned r = (unsigned)(sliders[1].value()*(topo.vertices[v].boundary.size()-1));
-        unsigned a = (unsigned)(sliders[2].value()*(topo.areas.size()-1));
+        unsigned v = (unsigned)(sliders[0].value()*(double(topo.vertices.size())));
+        unsigned r = (unsigned)(sliders[1].value()*(double(topo.vertices[v].boundary.size())));
+        unsigned a = (unsigned)(sliders[2].value()*(double(topo.areas.size())));
         if( v == topo.vertices.size() ) v--;
         if( r == topo.vertices[v].boundary.size()) r--;
         if( a == topo.areas.size()) a--;
         drawAreas(cr, topo);
+        drawKnownEdges(cr, topo);
         //drawArea(cr, topo, a, false);
-        highlightRay(cr, topo, v, r );
+        //highlightRay(cr, topo, v, r );
+        //*notify<<"highlighted edge: "<< topo.vertices[v].boundary[r].edge<<"\n";
 
         //drawBox(cr,topo, unsigned(sliders[0].value()));
         drawBoxes(cr,topo);
@@ -672,22 +745,55 @@ class IntersectDataTester: public Toy {
         Toy::draw(cr, notify, width, height, save, timer_stream);
     }
 
+
+    void initSliders(){
+        sliders.push_back(Slider(0.0, 1, 0, 0.0, "intersection chooser"));
+        sliders.push_back(Slider(0.0, 1, 0, 0.0, "ray chooser"));
+        sliders.push_back(Slider(0.0, 1, 0, 0.0, "area chooser"));
+        sliders.push_back(Slider(-5.0, 2, 0, 0.0, "tolerance chooser"));
+
+        handles.push_back(&(sliders[0]));
+        handles.push_back(&(sliders[1]));
+        handles.push_back(&(sliders[2]));
+        handles.push_back(&(sliders[3]));
+
+        sliders[0].geometry(Point(50, 20), 250);
+        sliders[1].geometry(Point(50, 50), 250);
+        sliders[2].geometry(Point(50, 80), 250);
+        sliders[3].geometry(Point(50, 110), 250);
+
+    }
+
     public:
+    IntersectDataTester(PathVector input_paths){
+        cmd_line_paths = input_paths;
+        //nb_paths=0; nb_curves_per_path = 0; degree = 0;//meaningless
+        paths_handles = std::vector<PointSetHandle>( cmd_line_paths.size(), PointSetHandle() );
+        for(unsigned i = 0; i < cmd_line_paths.size(); i++){
+            cmd_line_paths[i].close();
+            cmd_line_paths[i].appendNew<LineSegment>(cmd_line_paths[i].initialPoint() );
+            Point p = cmd_line_paths[i].initialPoint();
+            paths_handles.push_back(PointSetHandle());
+            paths_handles[i].push_back(p);
+            handles.push_back( &paths_handles[i] );
+        }        
+        initSliders();
+    }
+
     IntersectDataTester(unsigned paths, unsigned curves_in_path, unsigned degree) :
         nb_paths(paths), nb_curves_per_path(curves_in_path), degree(degree) {
 
-#if 1
-        for (unsigned i = 0; i < nb_paths; i++){
-            paths_handles.push_back(PointSetHandle());
-        }
+        paths_handles = std::vector<PointSetHandle>( nb_paths, PointSetHandle() );
         for(unsigned i = 0; i < nb_paths; i++){
             for(unsigned j = 0; j < (nb_curves_per_path*degree)+1; j++){
                 paths_handles[i].push_back(uniform()*400, 100+ uniform()*300);
             }
             handles.push_back(&paths_handles[i]);
         }
-#else
-        //start with the bad case...
+        initSliders();
+    }
+
+    IntersectDataTester(){
         nb_paths=3; nb_curves_per_path = 5; degree = 1;
 
         paths_handles.push_back(PointSetHandle());
@@ -715,44 +821,51 @@ class IntersectDataTester: public Toy {
         handles.push_back(&paths_handles[1]);
         handles.push_back(&paths_handles[2]);
 
-        //------------------
-#endif
-        sliders.push_back(Slider(0.0, 1, 0, 0.0, "intersection chooser"));
-        sliders.push_back(Slider(0.0, 1, 0, 0.0, "ray chooser"));
-        sliders.push_back(Slider(0.0, 1, 0, 0.0, "area chooser"));
-        sliders.push_back(Slider(-5.0, 2, 0, 0.0, "tolerance chooser"));
-
-        handles.push_back(&(sliders[0]));
-        handles.push_back(&(sliders[1]));
-        handles.push_back(&(sliders[2]));
-        handles.push_back(&(sliders[3]));
-
-        sliders[0].geometry(Point(50, 20), 250);
-        sliders[1].geometry(Point(50, 50), 250);
-        sliders[2].geometry(Point(50, 80), 250);
-        sliders[3].geometry(Point(50, 110), 250);
+        initSliders();
     }
+
 
     void first_time(int argc, char** argv) {
-
+        nb_steps = -1;
     }
+
+    void key_hit(GdkEventKey *e)
+    {
+        char choice = std::toupper(e->keyval);
+        switch ( choice )
+        {
+            case '>':
+                nb_steps++;
+                break;
+            case '<':
+                if ( nb_steps > -1 ) nb_steps--;
+                break;
+        }
+        redraw();
+    }
+
 };
 
 int main(int argc, char **argv) {
-    unsigned paths=10;
-    unsigned curves_in_path=3;
-    unsigned degree=1;
-    if(argc > 3)
-        sscanf(argv[3], "%d", &degree);
-    if(argc > 2)
-        sscanf(argv[2], "%d", &curves_in_path);
-    if(argc > 1)
-        sscanf(argv[1], "%d", &paths);
-    if (degree<=0) degree = 1;
-    if (curves_in_path<=0) curves_in_path = 3;
-    if (paths<=0) paths = 1;
-
-    init(argc, argv, new IntersectDataTester(paths, curves_in_path, degree));
+    if(argc == 2){
+        const char *path_name = argv[1];
+        PathVector cmd_line_paths = read_svgd(path_name); //* Scale(3);
+        OptRect bounds = bounds_exact(cmd_line_paths);
+        if(bounds) cmd_line_paths += Point(10,10)-bounds->min();
+        init(argc, argv, new IntersectDataTester(cmd_line_paths));
+    }else{
+        unsigned nb_paths=3, nb_curves_per_path = 5, degree = 1;
+        if(argc > 3)
+            sscanf(argv[3], "%d", &degree);
+        if(argc > 2)
+            sscanf(argv[2], "%d", &nb_curves_per_path);
+        if(argc > 1){
+            sscanf(argv[1], "%d", &nb_paths);
+            init(argc, argv, new IntersectDataTester( nb_paths, nb_curves_per_path, degree ) );
+        }else{
+            init(argc, argv, new IntersectDataTester());
+        }
+    }
     return 0;
 }
 
