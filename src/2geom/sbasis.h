@@ -365,6 +365,7 @@ SBasis sin(Linear bo, int k);
 SBasis cos(Linear bo, int k);
 
 std::vector<double> roots(SBasis const & s);
+std::vector<double> roots(SBasis const & s, Interval const inside);
 std::vector<std::vector<double> > multi_roots(SBasis const &f,
                                  std::vector<double> const &levels,
                                  double htol=1e-7,

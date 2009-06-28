@@ -89,7 +89,7 @@ class SweeperToy: public Toy {
             paths[i].close();
         }
         
-        cairo_path(cr, paths);
+        //cairo_path(cr, paths);
         cairo_set_source_rgba (cr, 0., 0., 0, 1);
         cairo_set_line_width (cr, 1);
         cairo_stroke(cr);

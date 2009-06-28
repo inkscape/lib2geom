@@ -358,6 +358,17 @@ std::vector<double> roots1(SBasis const & s) {
     return res;
 }
 
+std::vector<double> roots1(SBasis const & s, Interval const ivl) {
+    std::vector<double> res;
+    double d = s[0][0] - s[0][1];
+    if(d != 0) {
+        double r = s[0][0] / d;
+        if(ivl.contains(r))
+            res.push_back(r);
+    }
+    return res;
+}
+
 /** Find all t s.t s(t) = 0
  \param a sbasis function
  \returns vector of zeros (roots)
@@ -374,6 +385,20 @@ std::vector<double> roots(SBasis const & s) {
             Bezier bz;
             sbasis_to_bezier(bz, s);
             return bz.roots();
+        }
+    }
+}
+std::vector<double> roots(SBasis const & s, Interval const ivl) {
+    switch(s.size()) {
+        case 0:
+            return std::vector<double>();
+        case 1:
+            return roots1(s, ivl);
+        default:
+        {
+            Bezier bz;
+            sbasis_to_bezier(bz, s);
+            return bz.roots(ivl);
         }
     }
 }
