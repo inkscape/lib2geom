@@ -336,9 +336,10 @@ public:
 
     IntersectionData(){}
     ~IntersectionData(){}
-    IntersectionData(PathVector const &paths, double tol=EPSILON, int stepsmax=-1){
+    IntersectionData(PathVector const &paths, cairo_t* cairo, double tol=EPSILON, int stepsmax=-1){
 //        std::printf("\n---------------------\n---------------------\n---------------------\n");
 //        std::printf("IntersectionData creation\n");
+        cr = cairo;
 
         //debug only:
         steps_max = stepsmax;
@@ -364,6 +365,7 @@ public:
         //std::printf("entering event loop:\n");
         unsigned step=0;
         for(Sweeper::Event event = sweeper.getNextEvent(); ; event = sweeper.getNextEvent() ){
+//            std::printf("   new event recieved: ");
             //print();
             //debug only!!!
             if ( steps_max >= 0 && step > steps_max ){
@@ -377,6 +379,7 @@ public:
                 //std::printf("   empty event recieved\n");
                 break;
             }
+
             //std::printf("   non empty event recieved:");
             //sweeper.printEvent(event);
 
@@ -387,16 +390,16 @@ public:
                 v = vertices.size();
                 vertices.push_back(Vertex());
                 vertices[v].bounds = r;
-                //std::printf("   new intersection created (%u).\n",v);
+//                std::printf("   new intersection created (%u).\n",v);
             }else{
                 v = vertices.size()-1;
-                //std::printf("   continue last intersection (%u).\n",v);
+//                std::printf("   continue last intersection (%u).\n",v);
             }
 
             //--Closing an edge:-------------
             if( !event.opening ){
                 unsigned e = event.tile, a, b;
-                //std::printf("   closing edge %u\n", e);
+//                std::printf("   closing edge %u\n", e);
                 bool reversed = sweeper.tiles_data[e].reversed;//Warning: true means v==e.start
                 if (reversed){
                     edges[e].start = v;
@@ -417,6 +420,7 @@ public:
             }else{
             //--Opening an edge:-------------
                 unsigned e = event.tile, a, b;
+//                std::printf("   opening edge %u\n", e);
                 bool reversed = !sweeper.tiles_data[e].reversed;//Warning: true means v==start.
 
                 //--Find first and last area around this vertex:-------------
@@ -582,7 +586,7 @@ class IntersectDataTester: public Toy {
         //convertHSVtoRGB(0, 1., .5 + winding/10, r,g,b);
         //convertHSVtoRGB(360*a/topo.areas.size(), 1., .5, r,g,b);
         convertHSVtoRGB(180+30*winding, 1., .5, r,g,b);
-        cairo_set_source_rgba (cr, r, g, b, 1.);
+        cairo_set_source_rgba (cr, r, g, b, 1);
         //cairo_set_source_rgba (cr, 1., 0., 1., .3);
 
         if (fill){
@@ -599,7 +603,7 @@ class IntersectDataTester: public Toy {
         Rect box = topo.vertices[b].bounds;
         //box.expandBy(2);
         cairo_rectangle(cr, box);
-        cairo_set_source_rgba (cr, 1., 0., 0, 1);
+        cairo_set_source_rgba (cr, 1., 0., 0, 1.0);
         cairo_set_line_width (cr, 1);
         cairo_fill(cr);
         unsigned eidx = topo.vertices[b].boundary[r].edge;
@@ -608,14 +612,14 @@ class IntersectDataTester: public Toy {
         Interval dom = e.portion;
         if (topo.vertices[b].boundary[r].reversed){
             //dom[0] += e.portion.extent()*2./3;
-            cairo_set_source_rgba (cr, 0., 1., 0., 1);
+            cairo_set_source_rgba (cr, 0., 1., 0., 1.0);
         }else{
             //dom[1] -= e.portion.extent()*2./3;
-            cairo_set_source_rgba (cr, 0., 0., 1., 1);
+            cairo_set_source_rgba (cr, 0., 0., 1., 1.0);
         }
         p = portion(p, dom);
         cairo_d2_sb(cr, p);
-        cairo_set_source_rgba (cr, 1., 0., 0, 1);
+        cairo_set_source_rgba (cr, 1., 0., 0, 1.0);
         cairo_set_line_width (cr, 5);
         cairo_stroke(cr);
     }
@@ -628,9 +632,9 @@ class IntersectDataTester: public Toy {
         p = portion(p, dom);
         cairo_d2_sb(cr, p);
         if (e.start == NULL_IDX || e.end == NULL_IDX )
-            cairo_set_source_rgba (cr, 0., 1., 0, 1);
+            cairo_set_source_rgba (cr, 0., 1., 0, 1.0);
         else
-            cairo_set_source_rgba (cr, 0., 0., 0, 1);
+            cairo_set_source_rgba (cr, 0., 0., 0, 1.0);
         cairo_set_line_width (cr, 1);
         cairo_stroke(cr);
     }
@@ -653,7 +657,7 @@ class IntersectDataTester: public Toy {
         Rect box = topo.vertices[b].bounds;
         //box.expandBy(5);
         cairo_rectangle(cr, box);
-        cairo_set_source_rgba (cr, 1., 0., 0, 1);
+        cairo_set_source_rgba (cr, 1., 0., 0, .5);
         cairo_set_line_width (cr, 1);
         cairo_stroke(cr);
         cairo_rectangle(cr, box);
@@ -724,7 +728,7 @@ class IntersectDataTester: public Toy {
 #endif
 
         tol = pow(10,sliders[3].value());
-        topo = IntersectionData(paths, tol, nb_steps );
+        topo = IntersectionData(paths, cr, tol, nb_steps );
 
 #if 1
         unsigned v = (unsigned)(sliders[0].value()*(double(topo.vertices.size())));

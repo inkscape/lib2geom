@@ -140,6 +140,8 @@ public:
 
     D2<SBasis> tileToSB(Tile const &tile){
         //TODO: don't convert each time!!!!!!
+        assert( tile.path < paths.size() );
+        assert( tile.curve < paths[tile.path].size() );
         D2<SBasis> c = paths[tile.path][tile.curve].toSBasis();
         c = portion( c, Interval( tile.f, tile.t ) );
         return c;
@@ -272,6 +274,7 @@ public:
         std::printf("context:[");
         for (unsigned i=0; i<context.size(); i++){
             unsigned tile = context[i].first;
+            assert( tile<tiles_data.size() );
             std::printf(" %s%u%s", (tiles_data[ tile ].reversed)?"-":"+", tile, (context[i].second)?"o":"c");
 //            assert( context[i].second || !tiles_data[ tile ].open);
             assert( context[i].second || tiles_data[ tile ].state==1);
@@ -279,33 +282,44 @@ public:
         std::printf("]\n");
     }
 
+
+
     //----
     //This is the heart of it all!! Take particular care to non linear sweep line...
     //----
     //Given a point on the sweep line, (supposed to be the min() of a vertex not yet connected to the already known part),
     //find the first edge "after" it in the context. Pretty tricky atm :-(
+    //TODO: implement this as a lower_bound (?).
+
     unsigned contextRanking(Point const &pt){
-        //TODO: implement me as a lower_bound (?).
-        //std::printf("contextRanking:------------------------------------\n");
+
+//        std::printf("contextRanking:------------------------------------\n");
 
         unsigned rank = context.size();
-        std::vector<unsigned> unmatched_closed_tiles;
+        std::vector<unsigned> unmatched_closed_tiles = std::vector<unsigned>();
+
+//        std::printf("Scan context.\n");
 
         for (unsigned i=0; i<context.size(); i++){
 
-            Tile tile = tiles_data[context[i].first];
+            unsigned tile_idx = context[i].first;
+            assert(  tile_idx < tiles_data.size() );
+//            std::printf("testing %u (e=%u),", i, tile_idx);
+
+            Tile tile = tiles_data[tile_idx];
             assert( tile.state >= 0 );
 
             //if the tile is open (i.e. not both ends in the known area) and point is below/above the tile's bbox:
             if ( tile.state == 0 ){
-//            if ( tile.open ){
+//                std::printf("opened tile, ");
                 if (pt[1-dim] < tile.min()[1-dim] ) {
 //                    printContext();
-//                    std::printf("below bbox %u!,", i);
-                    return i;
+//                    std::printf("below bbox %u!\n", i);
+                    rank = i;
+                    break;
                 }
                 if (pt[1-dim] > tile.max()[1-dim] ){
-//                    std::printf("above bbox %u!,", i);
+//                    std::printf("above bbox %u!\n", i);
                     continue;
                 }
                 
@@ -316,58 +330,70 @@ public:
                 if (times.size()==0){
                     assert( tile.first_box()[dim].contains(pt[dim]) );
                     if ( pt[1-dim] < tile.first_box()[1-dim].min() ){
+//                        std::printf("open+hit box %u!\n", i);
                         rank = i;
                         break;
+                    }else{
+                        continue;
                     }
                 }
                 if ( pt[1-dim] < c[1-dim](times.front()) ){
+//                    std::printf("open+hit curve %u!\n", i);
                     rank = i;
                     break;
                 }            
             }
-            
+
+//            std::printf("closed tile, ");
+
+
             //At this point, the tile is closed (i.e. both ends are in the known area)
             //Such tiles do 'nested parens' like travels in the unknown area.
-            //We are interested in the second occurence only (to give a chance to open tiles to exist inbetween.
-            if ( unmatched_closed_tiles.size()==0 || context[i].first != unmatched_closed_tiles.back() ){
-                unmatched_closed_tiles.push_back( context[i].first );
+            //We are interested in the second occurence only (to give a chance to open tiles to exist inbetween).
+            if ( unmatched_closed_tiles.size()==0 || tile_idx != unmatched_closed_tiles.back() ){
+                unmatched_closed_tiles.push_back( tile_idx );
+//                std::printf("open paren %u\n",tile_idx);
                 continue;
             }
             unmatched_closed_tiles.pop_back();
+
+//            std::printf("close paren, ");
             
             if ( !tile.bbox().contains( pt ) ){
                 continue;
             }
             
-            //At least one of fbox[dim], tbox[dim] has to contain the pt[dim].
-//             bool fbox_contains = tile.fbox[dim].contains( pt[dim] );
-//             assert (fbox_contains || tile.tbox[dim].contains( pt[dim] ));
-//             Rect cont_box = fbox_contains ? tile.fbox : tile.tbox;
-//             Rect other_box = fbox_contains ? tile.tbox : tile.fbox;
+//            std::printf("in bbox, ");
+
+            //At least one of fbox[dim], tbox[dim] has to contain the pt[dim]: assert it?
 
             //Find intersection with the hline(vline if dim=Y) through the point
             double hit_place;
             //TODO: don't convert each time!!!!!!
-            D2<SBasis> c = tileToSB( tile );
-            std::vector<double> times = roots(c[1-dim]-pt[1-dim]);
-            if ( times.size()>0 ){
-//                std::printf("hit curve,");
-                hit_place = c[dim](times.front());
-            }else{
-                //if there was no intersection, the line went through the first_box
-                assert( tile.first_box()[1-dim].contains(pt[1-dim]) );
-                continue;
-            }
+           D2<SBasis> c = tileToSB( tile );
+           std::vector<double> times = roots(c[1-dim]-pt[1-dim]);
+           if ( times.size()>0 ){
+//               std::printf("hit curve,");
+               hit_place = c[dim](times.front());
+           }else{
+//               std::printf("hit box, ");
+               //if there was no intersection, the line went through the first_box
+               assert( tile.first_box()[1-dim].contains(pt[1-dim]) );
+               continue;
+           }
             
             if ( pt[dim] > hit_place ){
+//                std::printf("wrong side, ");
                 continue;
             }
+//            std::printf("good side, ");
             rank = i;
             break;
         }
 
-//        std::printf("rank %u in ", rank);
+//        std::printf("rank %u.\n", rank);
 //        printContext();
+        assert( rank<=tiles_data.size() );
         return rank;
     }
 
@@ -377,6 +403,7 @@ public:
         //std::printf("purge ");
         //printContext();
         for (unsigned i=0; i<context.size(); i++){
+            assert( context[i].first<tiles_data.size() );
             Tile tile = tiles_data[context[i].first];
             if (tile.state==1 && lexo_point( tile.fbox.max(), context.last_pos, dim ) && lexo_point( tile.tbox.max(), context.last_pos, dim ) ){
 //            if (!tile.open && lexo_point( tile.fbox.max(), context.last_pos, dim ) && lexo_point( tile.tbox.max(), context.last_pos, dim ) ){
@@ -406,6 +433,7 @@ public:
 //        std::printf("    old ");
 //        printContext();
 
+        assert ( event.insert_at <= context.end()-context.begin() );
 
         if (!event.opening){
 //             unsigned idx = event.erase_at;
@@ -498,6 +526,7 @@ public:
     }
 
     void splitTile(unsigned i, double t, double tolerance=0, bool sort = true){
+        assert( i<tiles_data.size() );
         Tile newtile = tiles_data[i];
         assert( newtile.f < t && t < newtile.t );
         newtile.f = t;
@@ -511,7 +540,8 @@ public:
 
     void splitTile(unsigned i, std::vector<double> const &times, double tolerance=0, bool sort = true){
         if ( times.size()<3 ) return;
-        std::vector<Tile> pieces (times.size()-2, tiles_data[i]);
+        assert( i<tiles_data.size() );
+        std::vector<Tile> pieces ( times.size()-2, tiles_data[i] );
         Rect prevbox = tiles_data[i].fbox;
         for (unsigned k=0; k < times.size()-2; k++){
                  pieces[k].f = times[k];
@@ -523,6 +553,8 @@ public:
         }
         tiles_data.insert(tiles_data.begin()+i, pieces.begin(), pieces.end() );
         unsigned newi = i + times.size()-2;
+        assert( newi<tiles_data.size() );
+        assert( newi>=1 );
         tiles_data[newi].f    = tiles_data[newi-1].t;
         tiles_data[newi].fbox = tiles_data[newi-1].tbox;
 
@@ -650,12 +682,9 @@ public:
     }
 
     //Make sure tiles stop at vertices. Split them if needed.
-    //Returns true if some vertices had to be enlarged.
-    //TODO:
-    //TODO: not implemented!! (but needed to avoid ">|<" issue).
-    //TODO:
+    //Returns true if at least one tile was split.
     bool splitTilesThroughFatPoints(std::vector<Rect> &boxes ){
-
+        
         std::sort(tiles.begin(), tiles.end(), PtrSweepOrder(tiles_data.begin(), dim) );
         std::sort(boxes.begin(), boxes.end(), SweepOrder(dim) );
 
@@ -803,7 +832,7 @@ public:
         }
     }
 
-    //TODO: use a partial order on input coming from the context. Try quadrant order just in case it's enough.
+    //TODO: use a partial order on input coming from the context + Try quadrant order just in case it's enough.
     //TODO: use monotonic assumption.
     void sortRays( FatVertex &v ){
         OptRect sep = isolateVertex(v);
@@ -815,6 +844,7 @@ public:
 
         for (unsigned i=0; i < v.rays.size(); i++){
             //TODO: don't convert each time!!!
+            assert( v.rays[i].tile < tiles_data.size() );
             D2<SBasis> c = tileToSB( tiles_data[ v.rays[i].tile ] );
 
             for (unsigned side=0; side<4; side++){//scan X or Y direction, on level min or max...
@@ -823,6 +853,7 @@ public:
                     std::vector<double> times = roots(c[1-side%2]-level);
                     if ( times.size() > 0 ) {
                         double t;
+                        assert( v.rays[i].tile < tiles_data.size() );
                         if (tiles_data[ v.rays[i].tile ].fbox == v){
                             t = times.front();
                             if ( v.rays[i].exit_side > 3 || v.rays[i].exit_time > t ){
@@ -854,44 +885,18 @@ public:
         dim = sweep_dir;
         tol = tolerance;
 
-//        std::printf("\nSweeper initialisation");
-        //split paths into monotonic pieces
+        //split paths into monotonic tiles
         createMonotonicTiles();
-//        std::printf("nb of sweep tiles before intersection: %u\n", tiles_data.size());
-        //split at pieces intersections
-        splitIntersectingTiles();
-//        std::printf("nb of sweep tiles after intersections: %u\n", tiles_data.size());
 
-        //handle overlapping ends bboxes
+        //split at tiles intersections
+        splitIntersectingTiles();
+
+        //handle overlapping end boxes/and tiles traversing boxes.
         do{
             vtxboxes = collectBoxes();
         }while ( splitTilesThroughFatPoints(vtxboxes) );
 
-//         for (unsigned i=0; i<tiles_data.size(); i++){
-//             unsigned j;
-//             for (j=0; j<vtxboxes.size() && !vtxboxes[j].contains(tiles_data[i].fbox); j++){}
-//             assert( j<vtxboxes.size() );
-//             for (j=0; j<vtxboxes.size() && !vtxboxes[j].contains(tiles_data[i].tbox); j++){}
-//             assert( j<vtxboxes.size() );
-//         }
-//         for (unsigned i=0; i<vtxboxes.size(); i++){
-//             for (unsigned j=i+1; j<vtxboxes.size(); j++){
-//                 assert( !vtxboxes[i].intersects(vtxboxes[j]) );
-//             }
-//         }
-//         std::sort(vtxboxes.begin(),vtxboxes.end(),SweepOrder(dim));
-
         enlargeTilesEnds(vtxboxes);
-
-//         for (unsigned i=0; i<tiles_data.size(); i++){
-//             unsigned j;
-//             for (j=0; j<vtxboxes.size() && vtxboxes[j] != tiles_data[i].fbox; j++){}
-//             assert( j<vtxboxes.size() );
-//             for (j=0; j<vtxboxes.size() && vtxboxes[j] != tiles_data[i].tbox; j++){}
-//             assert( j<vtxboxes.size() );
-//         }
-
-
 
         //now create the pointers to the tiles.
         tiles = std::vector<unsigned>(tiles_data.size(), 0);
@@ -921,10 +926,10 @@ public:
     Event getNextEvent(){
 //        std::printf("getNextEvent():\n");
 
+//        std::printf("initial contex:\n");
+//        printContext();
         Event old_event = context.pending_event, event;
-
-//        std::printf("getNextEvent:\n");
-
+//        std::printf("apply old event\n");
         applyEvent(context.pending_event);
 //        printContext();
 
@@ -946,7 +951,10 @@ public:
             context.last_pos = pos.min();
             context.last_pos[1-dim] = pos.max()[1-dim];
 
+//            printContext();
+//            std::printf("purgeDeadTiles\n");
             purgeDeadTiles();
+//            printContext();
 
             FatVertex v(pos);
             high = low;
@@ -956,10 +964,13 @@ public:
                 high++;
             }while( high != tiles.end() && tiles_data[ *high ].cur_box()==pos );
 
+//            std::printf("sortRays\n");
             sortRays(v);
 
             //Look for an opened tile
             unsigned i=0;
+
+            for( i=0; i<v.rays.size(); ++i){assert( v.rays[i].tile<tiles_data.size() );}
 //            for( i=0; i<v.rays.size() && !tiles_data[ v.rays[i].tile ].open; ++i){}
             for( i=0; i<v.rays.size() && tiles_data[ v.rays[i].tile ].state!=0; ++i){}
 
@@ -970,6 +981,7 @@ public:
             }
             //if there is at least one closing: make it first, and catch 'insert_at'.
             else{
+//                std::printf("not only openings\n");
                 if( i > 0 ){
                     std::vector<Ray> head;
                     head.assign  ( v.rays.begin(), v.rays.begin()+i );
