@@ -441,7 +441,9 @@ public:
                 Area new_area(paths.size());
                 new_area.boundary.push_back( OrientedEdge(e, !reversed ) );
                 new_area.windings = areas[cur_a].windings;//FIXME: escape boundary cases!!!
-                new_area.windings[edges[e].path] += (reversed) ? +1 : -1;
+                if ( input_paths[edges[e].path].closed() ){
+                    new_area.windings[edges[e].path] += (reversed) ? +1 : -1;
+                }
                 areas.push_back(new_area);
 
                 //update edge
@@ -774,8 +776,11 @@ class IntersectDataTester: public Toy {
         //nb_paths=0; nb_curves_per_path = 0; degree = 0;//meaningless
         paths_handles = std::vector<PointSetHandle>( cmd_line_paths.size(), PointSetHandle() );
         for(unsigned i = 0; i < cmd_line_paths.size(); i++){
-            cmd_line_paths[i].close();
-            cmd_line_paths[i].appendNew<LineSegment>(cmd_line_paths[i].initialPoint() );
+            //TODO: use path iterators to deal with closed/open paths!!!
+            //cmd_line_paths[i].close();
+            if ( cmd_line_paths[i].closed() ){
+                cmd_line_paths[i].appendNew<LineSegment>(cmd_line_paths[i].initialPoint() );
+            }
             Point p = cmd_line_paths[i].initialPoint();
             paths_handles.push_back(PointSetHandle());
             paths_handles[i].push_back(p);
