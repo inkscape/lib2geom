@@ -35,6 +35,7 @@
 #include <cmath>
 
 #include <2geom/bezier-curve.h> // for LineSegment
+#include <2geom/rect.h>
 #include <2geom/crossing.h>
 #include <2geom/exception.h>
 
@@ -423,7 +424,7 @@ LineSegment projection(LineSegment const& _segment, Line const& _line)
 					      _line.nearestPoint(_segment.finalPoint()) );
 }
 
-
+LineSegment clip (Line const& l, Rect const& r);
 
 
 namespace detail

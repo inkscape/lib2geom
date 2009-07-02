@@ -317,6 +317,16 @@ public:
     std::string categorise() const;
 
     /*
+     *  Return true if the equation:
+     *  c0*x^2 + c1*xy + c2*y^2 + c3*x + c4*y +c5 == 0
+     *  really defines a conic, false otherwise
+     */
+    bool is_quadratic() const
+    {
+        return (coeff(0) != 0 || coeff(1) != 0 || coeff(2) != 0);
+    }
+
+    /*
      *  Return true if the conic is degenerate, i.e. if the related matrix
      *  determinant is null, false otherwise
      */
@@ -400,6 +410,25 @@ public:
         return dc;
     }
 
+    bool decompose (Line& l1, Line& l2) const;
+
+    /*
+     *  Generate a RatQuad object from a conic arc.
+     *
+     *  p0: the initial point of the arc
+     *  p1: the inner point of the arc
+     *  p2: the final point of the arc
+     */
+    RatQuad toRatQuad (const Point & p0,
+                       const Point & p1,
+                       const Point & p2) const
+    {
+        Point dp0 = gradient (p0);
+        Point dp2 = gradient (p2);
+        return
+            RatQuad::fromPointsTangents (p0, rot90 (dp0), p1, p2, rot90 (dp2));
+    }
+
     /*
      *  Return the angle related to the normal gradient computed at the passed
      *  point.
@@ -467,6 +496,8 @@ public:
 };
 
 std::vector<Point> intersect(const xAx & C1, const xAx & C2);
+
+bool clip (std::vector<RatQuad> & rq, const xAx & cs, const Rect & R);
 
 inline std::ostream &operator<< (std::ostream &out_file, const xAx &x) {
     for(int i = 0; i < 6; i++) {

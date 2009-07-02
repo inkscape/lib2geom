@@ -1,6 +1,8 @@
 #ifndef PATH_CAIRO
 #define PATH_CAIRO
 
+
+#include <cairo.h>
 #include <2geom/line.h>
 #include <2geom/sbasis.h>
 #include <2geom/sbasis-2d.h>

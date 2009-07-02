@@ -33,6 +33,7 @@
 
 
 #include <2geom/conicsec.h>
+#include <2geom/conic_section_clipper.h>
 #include <2geom/numeric/fitting-tool.h>
 #include <2geom/numeric/fitting-model.h>
 
@@ -1278,6 +1279,7 @@ xAx xAx::translate (const Point & _offset) const
     return cs;
 }
 
+
 /*
  *  Rotate the conic section by the given angle wrt the point (0,0)
  *
@@ -1307,6 +1309,88 @@ xAx xAx::rotate (double angle) const
 
     return result;
 }
+
+
+/*
+ * Decompose a degenerate conic in two lines the conic section is made by.
+ * Return true if the decomposition is successfull, else if it fails.
+ *
+ * l1, l2: out parameters where the decomposed conic section is returned
+ */
+bool xAx::decompose (Line& l1, Line& l2) const
+{
+    NL::SymmetricMatrix<3> C = get_matrix();
+    if (!is_quadratic() || !isDegenerate())
+    {
+        return false;
+    }
+    NL::Matrix M(C);
+    NL::SymmetricMatrix<3> D = -adj(C);
+
+    if (!D.is_zero())  // D == 0 <=> rank(C) < 2
+    {
+
+        //if (D.get<0,0>() < 0 || D.get<1,1>() < 0 || D.get<2,2>() < 0)
+        //{
+            //std::cout << "C: \n" << C << std::endl;
+            //std::cout << "D: \n" << D << std::endl;
+
+            /*
+             *  This case should be impossible because any diagonal element
+             *  of D is a square, but due to non exact aritmethic computation
+             *  it can actually happen; however the algorithm seems to work
+             *  correctly even if some diagonal term is negative, the only
+             *  difference is that we should compute the absolute value of
+             *  diagonal elements. So until we elaborate a better degenerate
+             *  test it's better not rising exception when we have a negative
+             *  diagonal element.
+             */
+        //}
+
+        NL::Vector d(3);
+        d[0] = std::fabs (D.get<0,0>());
+        d[1] = std::fabs (D.get<1,1>());
+        d[2] = std::fabs (D.get<2,2>());
+
+        size_t idx = d.max_index();
+        if (d[idx] == 0)
+        {
+            THROW_LOGICALERROR ("xAx::decompose: "
+                                "rank 2 but adjoint with null diagonal");
+        }
+        d[0] = D(idx,0); d[1] = D(idx,1); d[2] = D(idx,2);
+        d.scale (1 / std::sqrt (std::fabs (D(idx,idx))));
+        M(1,2) += d[0]; M(2,1) -= d[0];
+        M(0,2) -= d[1]; M(2,0) += d[1];
+        M(0,1) += d[2]; M(1,0) -= d[2];
+
+        //std::cout << "C: \n" << C << std::endl;
+        //std::cout << "D: \n" << D << std::endl;
+        //std::cout << "d = " << d << std::endl;
+        //std::cout << "M = " << M << std::endl;
+    }
+
+    std::pair<size_t, size_t> max_ij = M.max_index();
+    std::pair<size_t, size_t> min_ij = M.min_index();
+    double abs_max = std::fabs (M(max_ij.first, max_ij.second));
+    double abs_min = std::fabs (M(min_ij.first, min_ij.second));
+    size_t i_max, j_max;
+    if (abs_max > abs_min)
+    {
+        i_max = max_ij.first;
+        j_max = max_ij.second;
+    }
+    else
+    {
+        i_max = min_ij.first;
+        j_max = min_ij.second;
+    }
+    l1.setByCoefficients (M(i_max,0), M(i_max,1), M(i_max,2));
+    l2.setByCoefficients (M(0, j_max), M(1,j_max), M(2,j_max));
+
+    return true;
+}
+
 
 /*
  *  Return the rectangle that bound the conic section arc characterized by
@@ -1453,6 +1537,14 @@ std::vector<Point> xAx::allNearestPoints (const Point P) const
     }
 
     return points;
+}
+
+
+
+bool clip (std::vector<RatQuad> & rq, const xAx & cs, const Rect & R)
+{
+    clipper aclipper (cs, R);
+    return aclipper.clip (rq);
 }
 
 

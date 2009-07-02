@@ -333,6 +333,41 @@ OptCrossing intersection( LineSegment const& ls1, LineSegment const& ls2 )
 }
 
 
+LineSegment clip (Line const& l, Rect const& r)
+{
+    Point p0, p1;
+    double a,b,c;
+    std::vector<double> ifc = l.implicit_form_coefficients();
+    a = ifc[0];
+    b = ifc[1];
+    c = ifc[2];
+    if (fabs(b) > fabs(a)) {
+        p0 = Point(r[0][0], (-c - a*r[0][0])/b);
+        if (p0[1] < r[1][0])
+            p0 = Point((-c - b*r[1][0])/a, r[1][0]);
+        if (p0[1] > r[1][1])
+            p0 = Point((-c - b*r[1][1])/a, r[1][1]);
+        p1 = Point(r[0][1], (-c - a*r[0][1])/b);
+        if (p1[1] < r[1][0])
+            p1 = Point((-c - b*r[1][0])/a, r[1][0]);
+        if (p1[1] > r[1][1])
+            p1 = Point((-c - b*r[1][1])/a, r[1][1]);
+    } else {
+        p0 = Point((-c - b*r[1][0])/a, r[1][0]);
+        if (p0[0] < r[0][0])
+            p0 = Point(r[0][0], (-c - a*r[0][0])/b);
+        if (p0[0] > r[0][1])
+            p0 = Point(r[0][1], (-c - a*r[0][1])/b);
+        p1 = Point((-c - b*r[1][1])/a, r[1][1]);
+        if (p1[0] < r[0][0])
+            p1 = Point(r[0][0], (-c - a*r[0][0])/b);
+        if (p1[0] > r[0][1])
+            p1 = Point(r[0][1], (-c - a*r[0][1])/b);
+    }
+    return LineSegment(p0, p1);
+
+}
+
 
 Line make_angle_bisector_line(Line const& l1, Line const& l2)
 {
@@ -357,6 +392,8 @@ Line make_angle_bisector_line(Line const& l1, Line const& l2)
 
     return make_angle_bisector_line(A, O, B);
 }
+
+
 
 
 }  // end namespace Geom
