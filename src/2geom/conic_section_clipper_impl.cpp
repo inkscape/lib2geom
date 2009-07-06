@@ -1045,8 +1045,8 @@ bool CLIPPER_CLASS::clip (std::vector<RatQuad> & arcs)
         sp = points.begin();
         ip = sp; ++ip;
         fp = ip; ++fp;
-        rsplit (points, sp, ip, 1u);
-        rsplit (points, ip, fp, 1u);
+        rsplit (points, sp, ip, size_t(1u));
+        rsplit (points, ip, fp, size_t(1u));
 
         // length conditioned split
         sp = points.begin();
