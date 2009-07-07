@@ -34,6 +34,12 @@
 #include <2geom/toys/path-cairo.h>
 #include <2geom/toys/toy-framework-2.h>
 
+//#define CLIP_WITH_CAIRO_SUPPORT
+#ifdef CLIP_WITH_CAIRO_SUPPORT
+    #include <2geom/conic_section_clipper_cr.h>
+#endif
+
+
 #include <2geom/conicsec.h>
 #include <2geom/line.h>
 
@@ -55,6 +61,7 @@ class ConicSectionToy : public Toy
         TEST_ROOTS,
         TEST_NEAREST_POINT,
         TEST_BOUND,
+        TEST_CLIP,
         TEST_TANGENT,
         TEST_DUAL,
         TOTAL_ITEMS // this one must be the last item
@@ -481,6 +488,40 @@ class ConicSectionToy : public Toy
     }
 
 /*
+ *  TEST CLIP
+ */
+    void init_clip()
+    {
+        init_common();
+    }
+
+    void draw_clip (cairo_t *cr, std::ostringstream *notify,
+                         int width, int height, bool save,
+                         std::ostringstream * timer_stream)
+    {
+        draw_common(cr, notify, width, height, save, timer_stream);
+        //init_clip_ctrl_geom(cr, notify, width, height);
+
+
+        Rect R(Point (100, 100),Point (width-100, height-100));
+        std::vector<RatQuad> rq;
+#ifdef  CLIP_WITH_CAIRO_SUPPORT
+        clipper_cr aclipper(cr, cs, R);
+        aclipper.clip (rq);
+#else
+        clip (rq, cs, R);
+#endif
+        cairo_set_source_rgba(cr, 0.8, 0.1, 0.1, 1.0);
+        cairo_set_line_width (cr, 0.5);
+        cairo_rectangle (cr, Rect (Point (100, 100),Point (width-100, height-100)));
+        for (size_t i = 0; i < rq.size(); ++i)
+        {
+            cairo_d2_sb (cr, rq[i].toCubic().toSBasis());
+        }
+        cairo_stroke(cr);
+    }
+
+/*
  *  TEST TANGENT
  */
     void init_tangent()
@@ -666,11 +707,15 @@ class ConicSectionToy : public Toy
                 init_bound();
                 draw_f = &ConicSectionToy::draw_bound;
                 break;
-            case 'I':
+            case 'K':
+                init_clip();
+                draw_f = &ConicSectionToy::draw_clip;
+                break;
+            case 'J':
                 init_tangent();
                 draw_f = &ConicSectionToy::draw_tangent;
                 break;
-            case 'J':
+            case 'I':
                 init_dual();
                 draw_f = &ConicSectionToy::draw_dual;
                 break;
@@ -732,13 +777,14 @@ const char* ConicSectionToy::menu_items[] =
     "roots",
     "nearest point",
     "bound",
+    "clip",
     "tangent",
     "dual"
 };
 
 const char ConicSectionToy::keys[] =
 {
-     'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H','I', 'J'
+     'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'K', 'J', 'I'
 };
 
 
