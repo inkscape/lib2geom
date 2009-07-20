@@ -165,6 +165,12 @@ inline bool operator!=(Point const &a, Point const &b) {
 /** This is a lexicographical ordering for points.  It is remarkably useful for sweepline algorithms*/
 inline bool operator<=(Point const &a, Point const &b) {
     return ( ( a[Y] < b[Y] ) ||
+             (( a[Y] == b[Y] ) && ( a[X] <= b[X] )));
+}
+
+/** This is a lexicographical ordering for points. needed for std::sort. */
+inline bool operator<(Point const &a, Point const &b) {
+    return ( ( a[Y] < b[Y] ) ||
              (( a[Y] == b[Y] ) && ( a[X] < b[X] )));
 }
 

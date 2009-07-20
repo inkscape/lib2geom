@@ -37,12 +37,14 @@ void draw_line(cairo_t *cr, Geom::Point n, double d, Geom::Rect r);
 void draw_line(cairo_t *cr, Geom::Point a, Geom::Point b, Geom::Rect r);
 
 void draw_line_seg(cairo_t *cr, Geom::Point a, Geom::Point b);
+void draw_line_seg_with_arrow(cairo_t *cr, Geom::Point a, Geom::Point b, double dangle = 15*M_PI/180, double radius = 20);
 void draw_spot(cairo_t *cr, Geom::Point h);
 void draw_handle(cairo_t *cr, Geom::Point h);
 void draw_cross(cairo_t *cr, Geom::Point h);
 void draw_circ(cairo_t *cr, Geom::Point h);
 void draw_ray(cairo_t *cr, Geom::Point h, Geom::Point dir);
 void draw_ray(cairo_t *cr, const Geom::Ray& ray, const Geom::Rect& r);
+void draw_line_segment(cairo_t *cr, const Geom::LineSegment& ls, const Geom::Rect& r);
 
 void cairo_move_to(cairo_t *cr, Geom::Point p1);
 void cairo_line_to(cairo_t *cr, Geom::Point p1);

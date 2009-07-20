@@ -41,7 +41,26 @@ void rot_cal(cairo_t* cr, ConvexHull ch) {
     }
 }
 
-const bool ch2_tests = false;
+const bool ch2_tests = true;
+
+/*ConvexHull inset_ch(ConvexHull ch, double dist) {
+    ConvexHull ret;
+    for(int i = 0; i < ch.size(); i++) {
+        Point bisect = ((ch[i+1] - ch[i]) + (ch[i-1] - ch[i]))*0.5;
+        ret.boundary.push_back(unit_vector(bisect)*dist+ch[i]);
+    }
+    return ret;
+    }*/
+
+ConvexHull inset_ch(ConvexHull ch, double dist) {
+    ConvexHull ret;
+    for(int i = 0; i < ch.size(); i++) {
+        Point bisect = (rot90(ch[i+1] - ch[i]));
+        ret.merge(unit_vector(bisect)*dist+ch[i]);
+        ret.merge(unit_vector(bisect)*dist+ch[i+1]);
+    }
+    return ret;
+}
 
 class ConvexTest: public Toy {
     PointSetHandle psh[2];
@@ -52,8 +71,10 @@ class ConvexTest: public Toy {
         handles.push_back(&psh[0]);
         if(ch2_tests)
             handles.push_back(&psh[1]);
-        handles.push_back(&direction_handle);
-        direction_handle.pos = Point(10,10);
+        if(0) {
+            handles.push_back(&direction_handle);
+            direction_handle.pos = Point(10,10);
+        }
         for(unsigned i = 0; i < 5; i++){
             psh[0].push_back(uniform()*uniform()*400+200,
                           uniform()*uniform()*400+200);
@@ -61,9 +82,11 @@ class ConvexTest: public Toy {
                 psh[1].push_back(uniform()*uniform()*400+200,
                                  uniform()*uniform()*400+200);
 	}
-        handles.push_back(&test_window);
-        test_window.push_back(Point(100,100));
-        test_window.push_back(Point(200,200));
+        if(0) {
+            handles.push_back(&test_window);
+            test_window.push_back(Point(100,100));
+            test_window.push_back(Point(200,200));
+        }
     }
 
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
@@ -168,47 +191,59 @@ class ConvexTest: public Toy {
         cairo_set_line_width (cr, 1);
         
         if(ch2_tests) {
+            cairo_save(cr);
             cairo_set_source_rgba(cr, 0., 0., 1., 0.5);
-            std::vector<Geom::Point> bs = bridge_points(ch1, ch2);
-            for(unsigned i = 0; i < bs.size(); i+=2) {
-                cairo_move_to(cr, bs[i]);
-                cairo_line_to(cr, bs[i + 1]);
+            cairo_set_line_width(cr, 3);
+            std::vector<std::pair<int,int> > bs = bridges(ch1, ch2);
+            for(unsigned i = 0; i < bs.size(); i++) {
+                draw_line_seg_with_arrow(cr, ch1[bs[i].first], ch2[bs[i].second]);
                 cairo_stroke(cr);
                 //draw_number(cr, (bs[i] + bs[i + 1]) / 2, i / 2);
             }
+            cairo_restore(cr);
         }
         
-        rot_cal(cr, ch1);
-        cairo_stroke(cr);
-        
-        Rect window_r(Point(0,0), Point(width, height));
-
-        {
-            Point cent;
-            ch1.centroid_and_area(cent);
-            draw_cross(cr, cent);
-            cairo_move_to(cr, cent);
-            cairo_line_to(cr, direction_handle.pos);
+        if(0) {
+            rot_cal(cr, ch1);
             cairo_stroke(cr);
-            Point dir = direction_handle.pos - cent;
-            Point const * futh1 =  ch1.furthest(dir);
-            draw_line_in_rect(cr, window_r, dir, *futh1);
-            draw_cross(cr, *futh1);
-            Point const * futh2 =  ch1.furthest(-dir);
-            draw_line_in_rect(cr, window_r, -dir, *futh2);
-            draw_cross(cr, *futh2);
+            
+            Rect window_r(Point(0,0), Point(width, height));
+            
+            {
+                Point cent;
+                ch1.centroid_and_area(cent);
+                draw_cross(cr, cent);
+                cairo_move_to(cr, cent);
+                cairo_line_to(cr, direction_handle.pos);
+                cairo_stroke(cr);
+                Point dir = direction_handle.pos - cent;
+                Point const * futh1 =  ch1.furthest(dir);
+                draw_line_in_rect(cr, window_r, dir, *futh1);
+                draw_cross(cr, *futh1);
+                Point const * futh2 =  ch1.furthest(-dir);
+                draw_line_in_rect(cr, window_r, -dir, *futh2);
+                draw_cross(cr, *futh2);
+            }
         }
-
+        if(1) {
+            cairo_save(cr);
+            cairo_set_source_rgba (cr, 1., 0., 0, 0.3);
+            cairo_set_line_width(cr, 30);
+            cairo_convex_hull(cr, merge(ch1, ch2));
+            cairo_stroke(cr);
+            cairo_restore(cr);
+        }
+        
         cairo_set_source_rgba (cr, 1., 0., 0, 0.8);
         cairo_convex_hull(cr, ch1);
         cairo_stroke(cr);
-        
+
         if(ch2_tests) {
             cairo_set_source_rgba (cr, 0., 1., 0, 0.8);
             cairo_convex_hull(cr, ch2);
             cairo_stroke(cr);
         }
-        {
+        if(0) {
             cairo_set_source_rgb(cr, 0,0,0);
             Rect r(test_window.pts[0], test_window.pts[1]);
             ConvexHull ch = rect2convexhull(r);

@@ -346,6 +346,37 @@ void draw_ray(cairo_t *cr, const Geom::Ray& ray, const Geom::Rect& r)
     }
 }
 
+void draw_line_segment(cairo_t *cr, const Geom::LineSegment& ls, const Geom::Rect& r)
+{
+    if(r.contains(ls[0])) {
+        if(r.contains(ls[1])) {
+            draw_line_seg(cr, ls[0], ls[1]);
+        } else {
+            draw_ray(cr, Geom::Ray(ls[0], ls[1]), r);
+        }
+
+    } else {
+        if(r.contains(ls[1])) {
+            draw_ray(cr, Geom::Ray(ls[1], ls[0]), r);
+        } else {
+            draw_line(cr, Geom::Line(ls[0], ls[1]), r);
+        }
+
+    }
+}
+
+void draw_line_seg_with_arrow(cairo_t *cr, Geom::Point a, Geom::Point b, double dangle, double radius) {
+    double angle = atan2(a-b);
+    cairo_move_to(cr, a);
+    cairo_line_to(cr, b);
+    
+    cairo_move_to(cr, b);
+    cairo_line_to(cr, Point::polar(angle + dangle, radius) + b);
+    cairo_move_to(cr, b);
+    cairo_line_to(cr, Point::polar(angle - dangle, radius) + b);
+    cairo_stroke(cr);
+}
+
 
 
 
