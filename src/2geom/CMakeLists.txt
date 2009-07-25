@@ -179,6 +179,8 @@ INSTALL(TARGETS 2geom
 )
 FILE(GLOB files "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 INSTALL(FILES ${files} DESTINATION include/2geom-${2GEOM_VERSION}/2geom)
+FILE(GLOB files "${CMAKE_CURRENT_SOURCE_DIR}/numeric/*.h")
+INSTALL(FILES ${files} DESTINATION include/2geom-${2GEOM_VERSION}/2geom/numeric)
 
 CONFIGURE_FILE( ${CMAKE_SOURCE_DIR}/2geom.pc.in
                 ${CMAKE_BINARY_DIR}/2geom.pc @ONLY IMMEDIATE )
