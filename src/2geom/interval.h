@@ -39,7 +39,7 @@
 
 #include <assert.h>
 #include <2geom/coord.h>
-
+#include <2geom/isnan.h>
 #include <boost/optional/optional.hpp>
 
 namespace Geom {
@@ -187,6 +187,10 @@ public:
     inline void unionWith(const Interval & a) {
         if(a._b[0] < _b[0]) _b[0] = a._b[0];
         if(a._b[1] > _b[1]) _b[1] = a._b[1];
+    }
+    
+    inline bool is_finite() const {
+        return IS_FINITE(_b[0]) && IS_FINITE(_b[1]);
     }
 };
 
