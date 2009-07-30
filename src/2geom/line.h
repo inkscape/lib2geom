@@ -41,6 +41,8 @@
 
 #include <2geom/ray.h>
 
+#include <boost/optional.hpp>
+
 
 namespace Geom
 {
@@ -424,7 +426,7 @@ LineSegment projection(LineSegment const& _segment, Line const& _line)
 					      _line.nearestPoint(_segment.finalPoint()) );
 }
 
-LineSegment clip (Line const& l, Rect const& r);
+boost::optional<LineSegment> clip (Line const& l, Rect const& r);
 
 
 namespace detail

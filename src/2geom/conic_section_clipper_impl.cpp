@@ -61,7 +61,6 @@ struct lex_lesser
  *  The method returns true if the conic section intersects at least one
  *  of the four lines passing through rectangle edges, else it returns false.
  */
-#if 1
 bool CLIPPER_CLASS::intersect (std::vector<Point> & crossing_points) const
 {
     crossing_points.clear();
@@ -217,548 +216,7 @@ bool CLIPPER_CLASS::intersect (std::vector<Point> & crossing_points) const
 
     return no_crossing;
 }  // end function intersect
-#endif
 
-#if 0
-bool CLIPPER_CLASS::intersect (std::vector<Point> & crs,
-                               std::vector<Point> & single_points) const
-{
-    crs.clear();
-    single_points.clear();
-
-    std::vector<double> rts;
-
-    bool no_crossing = true;
-
-#if 0
-    // top-left corner
-    Point corner = R.corner(0);
-    DBGPRINT ("CLIP: top-left corner: ", corner)
-    DBGPRINT ("CLIP: value: ", cs.valueAt (corner))
-    if (is_zero_at (corner))
-    {
-        no_crossing = false;
-        Point dcorner = cs.gradient (corner);
-        double angle = atan2 (dcorner);
-        DBGPRINT ("CLIP: angle = ", angle)
-        if (are_near (angle, 0, ANGLE_EPS)
-                || are_near (angle, M_PI, ANGLE_EPS)
-                || are_near (angle, -M_PI, ANGLE_EPS))
-        {
-            double ddP = derivative2 (corner, Y);
-            DBGPRINT ("CLIP: ddP = ", ddP)
-            if (ddP < 0)
-            {
-                single_points.push_back (corner);
-                DBGINFO ("CLIP: top-left corner appended to single_points")
-            }
-            else
-            {
-                crs.push_back (corner);
-                DBGINFO ("CLIP: top-left corner appended to crs")
-            }
-        }
-        else if (are_near (angle, M_PI/2, ANGLE_EPS)
-                    || are_near (angle, -M_PI/2, ANGLE_EPS))
-        {
-            double ddP = derivative2 (corner, X);
-            DBGPRINT ("CLIP: ddP = ", ddP)
-            if (ddP < 0)
-            {
-                single_points.push_back (corner);
-                DBGINFO ("CLIP: top-left corner appended to single_points")
-            }
-            else
-
-            {
-                crs.push_back (corner);
-                DBGINFO ("CLIP: top-left corner appended to crs")
-            }
-        }
-        else if ((-M_PI/2 < angle && angle < 0)
-                    || (M_PI/2 < angle && angle < M_PI))
-        {
-            crs.push_back (corner);
-            DBGINFO ("CLIP: top-left corner appended to crs")
-        }
-        else
-        {
-            single_points.push_back (corner);
-            DBGINFO ("CLIP: top-left corner appended to single_points")
-        }
-    }
-
-    // top-right corner
-    corner = R.corner(1);
-    DBGPRINT ("CLIP: top-right corner: ", corner)
-    DBGPRINT ("CLIP: value: ", cs.valueAt (corner))
-    if (is_zero_at (corner))
-    {
-        no_crossing = false;
-        Point dcorner = cs.gradient (corner);
-        double angle = atan2 (dcorner);
-        DBGPRINT ("CLIP: angle = ", angle)
-        if (are_near (angle, 0, ANGLE_EPS)
-                || are_near (angle, M_PI, ANGLE_EPS)
-                || are_near (angle, -M_PI, ANGLE_EPS))
-        {
-            double ddP = derivative2 (corner, Y);
-            DBGPRINT ("CLIP: ddP = ", ddP)
-            if (ddP > 0)
-            {
-                single_points.push_back (corner);
-                DBGINFO ("CLIP: top-right corner appended to single_points")
-            }
-            else
-            {
-                crs.push_back (corner);
-                DBGINFO ("CLIP: top-right corner appended to crs")
-            }
-        }
-        else if (are_near (angle, M_PI/2, ANGLE_EPS)
-                    || are_near (angle, -M_PI/2, ANGLE_EPS))
-        {
-            double ddP = derivative2 (corner, X);
-            DBGPRINT ("CLIP: ddP = ", ddP)
-            if (ddP < 0)
-            {
-                single_points.push_back (corner);
-                DBGINFO ("CLIP: top-right corner appended to single_points")
-            }
-            else
-            {
-                crs.push_back (corner);
-                DBGINFO ("CLIP: top-right corner appended to crs")
-            }
-        }
-        else if ((0 < angle && angle < M_PI/2)
-                    || (-M_PI < angle && angle < -M_PI/2))
-        {
-            crs.push_back (corner);
-            DBGINFO ("CLIP: top-right corner appended to crs")
-        }
-        else
-        {
-            single_points.push_back (corner);
-            DBGINFO ("CLIP: top-right corner appended to single_points")
-        }
-    }
-
-
-    // bottom-right corner
-    corner = R.corner(2);
-    DBGPRINT ("CLIP: bottom-right corner: ", corner)
-    DBGPRINT ("CLIP: value: ", cs.valueAt (corner))
-    if (is_zero_at (corner))
-    {
-        no_crossing = false;
-        Point dcorner = cs.gradient (corner);
-        double angle = atan2 (dcorner);
-        DBGPRINT ("CLIP: angle = ", angle)
-        if (are_near (angle, 0, ANGLE_EPS)
-                || are_near (angle, M_PI, ANGLE_EPS)
-                || are_near (angle, -M_PI, ANGLE_EPS))
-        {
-            double ddP = derivative2 (corner, Y);
-            DBGPRINT ("CLIP: ddP = ", ddP)
-            if (ddP > 0)
-            {
-                single_points.push_back (corner);
-                DBGINFO ("CLIP: bottom-right corner appended to single_points")
-            }
-            else
-            {
-                crs.push_back (corner);
-                DBGINFO ("CLIP: bottom-right corner appended to crs")
-            }
-        }
-        else if (are_near (angle, M_PI/2, ANGLE_EPS)
-                    || are_near (angle, -M_PI/2, ANGLE_EPS))
-        {
-            double ddP = derivative2 (corner, X);
-            DBGPRINT ("CLIP: ddP = ", ddP)
-            if (ddP > 0)
-            {
-                single_points.push_back (corner);
-                DBGINFO ("CLIP: bottom-right corner appended to single_points")
-            }
-            else
-            {
-                crs.push_back (corner);
-                DBGINFO ("CLIP: bottom-right corner appended to crs")
-            }
-        }
-        else if ((-M_PI/2 < angle && angle < 0)
-                    || (M_PI/2 < angle && angle < M_PI))
-        {
-            crs.push_back (corner);
-            DBGINFO ("CLIP: bottom-right corner appended to crs")
-        }
-        else
-        {
-            single_points.push_back (corner);
-            DBGINFO ("CLIP: bottom-right corner appended to single_points")
-        }
-    }
-
-    // bottom-left corner
-    corner = R.corner(3);
-    DBGPRINT ("CLIP: bottom-right corner: ", corner)
-    DBGPRINT ("CLIP: value: ", cs.valueAt (corner))
-    if (is_zero_at (corner))
-    {
-        no_crossing = false;
-        Point dcorner = cs.gradient (corner);
-        double angle = atan2 (dcorner);
-        DBGPRINT ("CLIP: angle = ", angle)
-        if (are_near (angle, 0, ANGLE_EPS)
-                || are_near (angle, M_PI, ANGLE_EPS)
-                || are_near (angle, -M_PI, ANGLE_EPS))
-        {
-            double ddP = derivative2 (corner, Y);
-            DBGPRINT ("CLIP: ddP = ", ddP)
-            if (ddP < 0)
-            {
-                single_points.push_back (corner);
-                DBGINFO ("CLIP: bottom-left corner appended to single_points")
-            }
-            else
-            {
-                crs.push_back (corner);
-                DBGINFO ("CLIP: bottom-left corner appended to crs")
-            }
-        }
-        else if (are_near (angle, M_PI/2, ANGLE_EPS)
-                    || are_near (angle, -M_PI/2, ANGLE_EPS))
-        {
-            double ddP = derivative2 (corner, X);
-            DBGPRINT ("CLIP: ddP = ", ddP)
-            if (ddP > 0)
-            {
-                single_points.push_back (corner);
-                DBGINFO ("CLIP: bottom-left corner appended to single_points")
-            }
-            else
-            {
-                crs.push_back (corner);
-                DBGINFO ("CLIP: bottom-left corner appended to crs")
-            }
-        }
-        else if ((0 < angle && angle < M_PI/2)
-                    || (-M_PI < angle && angle < -M_PI/2))
-        {
-            crs.push_back (corner);
-            DBGINFO ("CLIP: bottom-left corner appended to crs")
-        }
-        else
-        {
-            single_points.push_back (corner);
-            DBGINFO ("CLIP: bottom-left corner appended to single_points")
-        }
-    }
-#endif
-    // rigth edge
-    cs.roots (rts, R.right(), X);
-    if (rts.size() != 0)
-    {
-        no_crossing = false;
-        DBGPRINT ("CLIP: right: rts[0] = ", rts[0])
-        DBGPRINTIF ((rts.size() == 2), "CLIP: right: rts[1] = ", rts[1])
-
-        if (rts.size() == 1)
-        {
-            if (rts[0] > ER.top() && rts[0] < ER.bottom())
-            {
-                Point P(R.right(), rts[0]);
-                Point dP = cs.gradient (P);
-                DBGPRINT ("CLIP: right: dp = ", dP)
-                if (dP[Y] != 0)
-                {
-                    crs.push_back (P);
-                    DBGINFO ("CLIP: right-edge point appended to crs")
-                }
-                else
-                {
-                    double ddP = derivative2 (P, Y);
-                    DBGPRINT ("CLIP: right: ddP = ", ddP)
-                    if (ddP > 0)
-                    {
-                        single_points.push_back (P);
-                        DBGINFO ("CLIP: right-edge point "
-                                 "appended to single_points")
-                    }
-                }
-            }
-        }
-        else
-        {
-            if (rts[0] > ER.top() && rts[0] < ER.bottom())
-            {
-                crs.push_back (Point (R.right(), rts[0]));
-                DBGINFO ("CLIP: right-edge point appended to crs")
-            }
-            if (rts[1] > ER.top() && rts[1] < ER.bottom())
-            {
-                crs.push_back (Point (R.right(), rts[1]));
-                DBGINFO ("CLIP: right-edge point appended to crs")
-            }
-        }
-    }
-
-    // top edge
-    cs.roots (rts, R.top(), Y);
-    if (rts.size() != 0)
-    {
-        no_crossing = false;
-        DBGPRINT ("CLIP: top: rts[0] = ", rts[0])
-        DBGPRINTIF ((rts.size() == 2), "CLIP: top: rts[1] = ", rts[1])
-        print_if_not_equal (R.left(), rts[0]);
-
-        if (rts.size() == 1)
-        {
-            if ( R.left() <= rts[0] && rts[0] <= R.right())
-            {
-                Point P(rts[0], R.top());
-                Point dP = cs.gradient (P);
-                DBGPRINT ("CLIP: top: dp = ", dP)
-                if (!are_near (dP[X], 0))
-                {
-                   crs.push_back (P);
-                    DBGINFO ("CLIP: top-edge point appended to crs")
-                }
-                else
-                {
-                    double ddP = derivative2 (P, X);
-                    DBGPRINT ("CLIP: top: ddP = ", ddP)
-                    if (ddP < 0)
-                    {
-                        single_points.push_back (P);
-                        DBGINFO ("CLIP: top-edge point "
-                                 "appended to single_points")
-                    }
-                }
-            }
-        }
-        else
-        {
-            if (rts[0] >= R.left() && rts[0] <= R.right())
-            {
-                crs.push_back (Point (rts[0], R.top()));
-                DBGINFO ("CLIP: top-edge point appended to crs")
-            }
-            if (rts[1] >= ER.left() && rts[1] <= ER.right())
-            {
-                crs.push_back (Point (rts[1], R.top()));
-                DBGINFO ("CLIP: top-edge point appended to crs")
-            }
-        }
-    }
-
-    // left edge
-    cs.roots (rts, R.left(), X);
-    if (rts.size() != 0)
-    {
-        no_crossing = false;
-        DBGPRINT ("CLIP: left: rts[0] = ", rts[0])
-        DBGPRINTIF ((rts.size() == 2), "CLIP: left: rts[1] = ", rts[1])
-        print_if_not_equal (R.left(), rts[0]);
-
-        if (rts.size() == 1)
-        {
-            if (ER.top() <= rts[0] && rts[0] <= ER.bottom())
-            {
-                Point P(R.left(), rts[0]);
-                Point dP = cs.gradient (P);
-                DBGPRINT ("CLIP: left: dp = ", dP)
-                if (dP[Y] != 0)
-                {
-                    crs.push_back (P);
-                    DBGINFO ("CLIP: left-edge point appended to crs")
-                }
-                else
-                {
-                    double ddP = derivative2 (P, Y);
-                    DBGPRINT ("CLIP: left: ddP = ", ddP)
-                    if (ddP < 0)
-                    {
-                        single_points.push_back (P);
-                        DBGINFO ("CLIP: left-edge point "
-                                 "appended to single_points")
-                    }
-                }
-            }
-        }
-        else
-        {
-            if (rts[0] >= ER.top() && rts[0] <= ER.bottom())
-            {
-                crs.push_back (Point (R.left(), rts[0]));
-                DBGINFO ("CLIP: left-edge point appended to crs")
-            }
-            if (rts[1] >= ER.top() && rts[1] <= ER.bottom())
-            {
-                crs.push_back (Point (R.left(), rts[1]));
-                DBGINFO ("CLIP: left-edge point appended to crs")
-            }
-        }
-    }
-
-    // bottom edge
-    cs.roots (rts, R.bottom(), Y);
-    if (rts.size() != 0)
-    {
-        no_crossing = false;
-        DBGPRINT ("CLIP: bottom: rts[0] = ", rts[0])
-        DBGPRINTIF ((rts.size() == 2), "CLIP: bottom: rts[1] = ", rts[1])
-
-        if (rts.size() == 1)
-        {
-            if (rts[0] > ER.left() && rts[0] < ER.right())
-            {
-                Point P(rts[0], R.bottom());
-                Point dP = cs.gradient (P);
-                DBGPRINT ("CLIP: bottom: dp = ", dP)
-                if (dP[X] != 0)
-                {
-                    crs.push_back (P);
-                    DBGINFO ("CLIP: bottom-edge point appended to crs")
-                }
-                else
-                {
-                    double ddP = derivative2 (P, X);
-                    DBGPRINT ("CLIP: bottom: ddP = ", ddP)
-                    if (ddP > 0)
-                    {
-                        single_points.push_back (P);
-                        DBGINFO ("CLIP: bottom-edge point "
-                                 "appended to single_points")
-                    }
-                }
-            }
-        }
-        else
-        {
-            if (rts[0] > ER.left() && rts[0] < ER.right())
-            {
-                crs.push_back (Point (rts[0], R.bottom()));
-                DBGINFO ("CLIP: bottom-edge point appended to crs")
-            }
-            if (rts[1] > ER.left() && rts[1] < ER.right())
-            {
-                crs.push_back (Point (rts[1], R.bottom()));
-                DBGINFO ("CLIP: bottom-edge point appended to crs")
-            }
-        }
-    }
-
-
-    // top-left corner
-    Point corner = R.corner(0);
-    bool corner_checked =false;
-    size_t sz = crs.size();
-    for (size_t i = 0; i < sz; ++i)
-    {
-        if (crs[i] != corner) continue;
-        if (corner_checked)
-        {
-            assert (sz != 0);
-            --sz;
-            std::swap (crs[i], crs[sz]);
-        }
-        else
-        {
-            corner_checked = true;
-
-            Point dcorner = cs.gradient (corner);
-            double angle = atan2 (dcorner);
-            DBGPRINT ("CLIP: angle = ", angle)
-            if (angle == 0 || angle == M_PI || angle == -M_PI)
-            {
-                double ddP = derivative2 (corner, Y);
-                DBGPRINT ("CLIP: ddP = ", ddP)
-                if (ddP < 0)
-                {
-                    single_points.push_back (corner);
-                    assert (sz != 0);
-                    --sz;
-                    std::swap (crs[i], crs[sz]);
-                    DBGINFO ("CLIP: top-left corner appended to single_points")
-                }
-            }
-            else if (are_near (angle, M_PI/2, ANGLE_EPS)
-                                || are_near (angle, -M_PI/2, ANGLE_EPS))
-            //else if (angle == M_PI/2 || angle == -M_PI/2)
-            {
-                double eps = std::asin (ANGLE_EPS);
-                DBGPRINT ("CLIP: asin (ANGLE_EPS) = ", eps);
-
-                double ddP = derivative2 (corner, X);
-                DBGPRINT ("CLIP: ddP = ", ddP)
-                if (ddP < 0)
-                {
-                    bool remove = true;
-                    for (size_t j = 0; j < sz; ++j)
-                    {
-                        if (crs[j][Y] != corner[Y] || crs[j][X] == corner[X])
-                            continue;
-                        if (are_near (corner, crs[j], eps))
-                        {
-                            remove = false;
-                            break;
-                        }
-                    }
-                    if (remove)
-                    {
-                        single_points.push_back (corner);
-                        assert (sz != 0);
-                        --sz;
-                        std::swap (crs[i], crs[sz]);
-                        DBGINFO ("CLIP: top-left corner appended to single_points")
-                    }
-                }
-                else
-                {
-                    for (size_t j = 0; j < sz; ++j)
-                    {
-                        if (crs[j][Y] != corner[Y] || crs[j][X] == corner[X])
-                            continue;
-                        if (are_near (corner, crs[j], eps))
-                        {
-                            single_points.push_back (corner);
-                            assert (sz != 0);
-                            --sz;
-                            std::swap (crs[j], crs[sz]);
-                            DBGINFO ("CLIP: top-left corner appended to single_points")
-                            break;
-                        }
-                    }
-                }
-            }
-            else if ((0 < angle && angle < M_PI/2)
-                        || (-M_PI < angle && angle < -M_PI/2))
-            {
-                single_points.push_back (corner);
-                assert (sz != 0);
-                --sz;
-                std::swap (crs[i], crs[sz]);
-                DBGINFO ("CLIP: top-left corner appended to single_points")
-            }
-        }
-    }
-
-
-    if (crs.size() != sz)
-    {
-        crs.resize(sz);
-    }
-
-    DBGPRINT ("CLIP: intersect: crs.size = ", crs.size())
-    DBGPRINTCOLL ("CLIP: intersect: crs", crs)
-    DBGPRINT ("CLIP: intersect: single_points.size = ", single_points.size())
-    DBGPRINTCOLL ("CLIP: intersect: single_points", single_points)
-    return no_crossing;
-}  // end function intersect
-#endif
 
 
 inline
@@ -940,15 +398,45 @@ bool CLIPPER_CLASS::clip (std::vector<RatQuad> & arcs)
     Line l1, l2;
     if (cs.decompose (l1, l2))
     {
+        bool inner_empty = true;
+
         DBGINFO ("CLIP: degenerate section conic")
-        LineSegment ls1 = Geom::clip (l1, R);
-        Point M = middle_point (ls1);
-        arcs.push_back (RatQuad (ls1.initialPoint(), M, ls1.finalPoint(), 1));
-        LineSegment ls2 = Geom::clip (l2, R);
-        M = middle_point (ls2);
-        arcs.push_back (RatQuad (ls2.initialPoint(), M, ls2.finalPoint(), 1));
-        return true;
+
+        boost::optional<LineSegment> ls1 = Geom::clip (l1, R);
+        if (ls1)
+        {
+            if (ls1->isDegenerate())
+            {
+                single_points.push_back (ls1->initialPoint());
+            }
+            else
+            {
+                Point M = middle_point (*ls1);
+                arcs.push_back
+                    (RatQuad (ls1->initialPoint(), M, ls1->finalPoint(), 1));
+                inner_empty = false;
+            }
+        }
+
+        boost::optional<LineSegment> ls2 = Geom::clip (l2, R);
+        if (ls2)
+        {
+            if (ls2->isDegenerate())
+            {
+                single_points.push_back (ls2->initialPoint());
+            }
+            else
+            {
+                Point M = middle_point (*ls2);
+                arcs.push_back
+                    (RatQuad (ls2->initialPoint(), M, ls2->finalPoint(), 1));
+                inner_empty = false;
+            }
+        }
+
+        return !inner_empty;
     }
+
 
     bool no_crossing = intersect (crossing_points);
 
@@ -1014,7 +502,7 @@ bool CLIPPER_CLASS::clip (std::vector<RatQuad> & arcs)
         pairing (paired_points, inner_points, crossing_points);
     }
 
-#if 1
+
     // we split arcs until the end-point distance is less than a given value,
     // in this way the RatQuad parametrization is enough accurate
     std::list<Point> points;
@@ -1080,15 +568,6 @@ bool CLIPPER_CLASS::clip (std::vector<RatQuad> & arcs)
         }
         points.clear();
     }
-#else
-
-    for (size_t i = 0, j = 0; i < paired_points.size(); i += 2, ++j)
-    {
-        arcs.push_back (cs.toRatQuad (paired_points[i],
-                                      inner_points[j],
-                                      paired_points[i+1]));
-    }
-#endif
     DBGPRINT ("CLIP: arcs.size() = ", arcs.size())
     return (arcs.size() != 0);
 } // end method clip

@@ -333,39 +333,60 @@ OptCrossing intersection( LineSegment const& ls1, LineSegment const& ls2 )
 }
 
 
-LineSegment clip (Line const& l, Rect const& r)
+boost::optional<LineSegment> clip (Line const& l, Rect const& r)
 {
-    Point p0, p1;
-    double a,b,c;
-    std::vector<double> ifc = l.implicit_form_coefficients();
-    a = ifc[0];
-    b = ifc[1];
-    c = ifc[2];
-    if (fabs(b) > fabs(a)) {
-        p0 = Point(r[0][0], (-c - a*r[0][0])/b);
-        if (p0[1] < r[1][0])
-            p0 = Point((-c - b*r[1][0])/a, r[1][0]);
-        if (p0[1] > r[1][1])
-            p0 = Point((-c - b*r[1][1])/a, r[1][1]);
-        p1 = Point(r[0][1], (-c - a*r[0][1])/b);
-        if (p1[1] < r[1][0])
-            p1 = Point((-c - b*r[1][0])/a, r[1][0]);
-        if (p1[1] > r[1][1])
-            p1 = Point((-c - b*r[1][1])/a, r[1][1]);
-    } else {
-        p0 = Point((-c - b*r[1][0])/a, r[1][0]);
-        if (p0[0] < r[0][0])
-            p0 = Point(r[0][0], (-c - a*r[0][0])/b);
-        if (p0[0] > r[0][1])
-            p0 = Point(r[0][1], (-c - a*r[0][1])/b);
-        p1 = Point((-c - b*r[1][1])/a, r[1][1]);
-        if (p1[0] < r[0][0])
-            p1 = Point(r[0][0], (-c - a*r[0][0])/b);
-        if (p1[0] > r[0][1])
-            p1 = Point(r[0][1], (-c - a*r[0][1])/b);
+    typedef boost::optional<LineSegment> opt_linesegment;
+    LineSegment result;
+    //size_t index = 0;
+    std::vector<Point> points;
+    LineSegment ls (r.corner(0), r.corner(1));
+    try
+    {
+        OptCrossing oc = intersection (ls, l);
+        if (oc)
+        {
+            points.push_back (l.pointAt (oc->tb));
+        }
     }
-    return LineSegment(p0, p1);
+    catch (InfiniteSolutions e)
+    {
+        return opt_linesegment(ls);
+    }
 
+    for (size_t i = 2; i < 5; ++i)
+    {
+        ls.setInitial (ls[1]);
+        ls.setFinal (r.corner(i));
+        try
+        {
+            OptCrossing oc = intersection (ls, l);
+            if (oc)
+            {
+                points.push_back (l.pointAt (oc->tb));
+                if (points.size() > 1)
+                {
+                    size_t sz = points.size();
+                    if (!are_near (points[sz - 2], points[sz - 1], 1e-10))
+                    {
+                        result.setInitial (points[sz - 2]);
+                        result.setFinal (points[sz - 1]);
+                        return opt_linesegment(result);
+                    }
+                }
+            }
+        }
+        catch (InfiniteSolutions e)
+        {
+            return opt_linesegment(ls);
+        }
+    }
+    if (points.size() != 0)
+    {
+        result.setInitial (points[0]);
+        result.setFinal (points[0]);
+        return opt_linesegment(result);
+    }
+    return opt_linesegment();
 }
 
 
