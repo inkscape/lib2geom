@@ -9,7 +9,7 @@
 #include <iostream>
 
 #include <2geom/coord.h>
-#include <2geom/isnan.h>
+#include <2geom/isnan.h> //temporary fix for isnan()
 #include <2geom/utils.h>
 
 namespace Geom {

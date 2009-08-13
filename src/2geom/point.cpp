@@ -1,7 +1,5 @@
 #include <2geom/point.h>
 #include <assert.h>
-#include <2geom/coord.h>
-#include <2geom/isnan.h> //temporary fix for isnan()
 #include <2geom/transforms.h>
 
 namespace Geom {
