@@ -83,7 +83,8 @@ class EllipseFitting : public Toy
         {
             try
             {
-                ea = e.arc(psh.pts[0], psh.pts[2], psh.pts[4]);
+                std::auto_ptr<EllipticalArc> eap( e.arc(psh.pts[0], psh.pts[2], psh.pts[4]) );
+                ea = *eap;
             }
             catch(RangeError exc)
             {
@@ -162,7 +163,7 @@ class EllipseFitting : public Toy
 
   private:
     Ellipse e;
-    SVGEllipticalArc ea;
+    EllipticalArc ea;
     bool first_time;
     PointSetHandle psh;
     std::vector<Toggle> toggles;

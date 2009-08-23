@@ -1,7 +1,7 @@
 /**
- *  \file angle.h
+ *  \file
  *  \brief Various trigoniometric helper functions
- *
+ *//*
  *  Authors:
  *   Johan Engelen <goejendaagh@zonnet.nl>
  *   Marco Cecchetti <mrcekets at gmail.com>

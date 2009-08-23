@@ -35,7 +35,7 @@
 #ifndef _2GEOM_ELLIPSE_H_
 #define _2GEOM_ELLIPSE_H_
 
-
+#include <vector>
 #include <2geom/point.h>
 #include <2geom/exception.h>
 #include <2geom/matrix.h>
@@ -43,7 +43,7 @@
 namespace Geom
 {
 
-class SVGEllipticalArc;
+class EllipticalArc;
 class Circle;
 
 class Ellipse
@@ -88,9 +88,8 @@ class Ellipse
     // prerequisite: at least 5 points must be passed
     void set(std::vector<Point> const& points);
 
-    SVGEllipticalArc
-    arc(Point const& initial, Point const& inner, Point const& final,
-        bool _svg_compliant = true);
+    EllipticalArc *
+    arc(Point const& initial, Point const& inner, Point const& final, bool svg_compliant = true);
 
     Point center() const
     {

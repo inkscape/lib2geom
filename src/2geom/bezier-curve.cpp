@@ -1,11 +1,14 @@
 /**
  * \file
- * \brief Circle Curve
+ * \brief Bezier curve
  *
+ *//*
  * Authors:
- *      Marco Cecchetti <mrcekets at gmail.com>
- *
- * Copyright 2008  authors
+ *   MenTaLguY <mental@rydia.net>
+ *   Marco Cecchetti <mrcekets at gmail.com>
+ *   Krzysztof Kosiński <tweenk.pl@gmail.com>
+ * 
+ * Copyright 2007-2009 Authors
  *
  * This library is free software; you can redistribute it and/or
  * modify it either under the terms of the GNU Lesser General Public
@@ -31,89 +34,52 @@
  * the specific language governing rights and limitations.
  */
 
+#include <2geom/bezier-curve.h>
 
-#ifndef _2GEOM_CIRCLE_H_
-#define _2GEOM_CIRCLE_H_
-
-
-#include <2geom/point.h>
-#include <2geom/exception.h>
-#include <vector>
-
-namespace Geom
+namespace Geom 
 {
 
-class EllipticalArc;
-
-class Circle
+BezierCurve *BezierCurve::optimize() const
 {
-  public:
-    Circle()
-    {}
-
-    Circle(double cx, double cy, double r)
-        : m_centre(cx, cy), m_ray(r)
-    {
+    switch(order()) {
+    case 1:
+        if (!dynamic_cast<LineSegment const *>(this))
+            return new LineSegment((*this)[0], (*this)[1]);
+        break;
+    case 2:
+        if (!dynamic_cast<QuadraticBezier const *>(this))
+            return new QuadraticBezier((*this)[0], (*this)[1], (*this)[2]);
+        break;
+    case 3:
+        if (!dynamic_cast<CubicBezier const *>(this))
+            return new CubicBezier((*this)[0], (*this)[1], (*this)[2], (*this)[3]);
+        break;
     }
-
-    Circle(double A, double B, double C, double D)
-    {
-        set(A, B, C, D);
+    return const_cast<BezierCurve*>(this);
+}
+Curve *BezierCurve::duplicate() const
+{
+    switch(order()) {
+    case 1:
+        return new LineSegment((*this)[0], (*this)[1]);
+    case 2:
+        return new QuadraticBezier((*this)[0], (*this)[1], (*this)[2]);
+    case 3:
+        return new CubicBezier((*this)[0], (*this)[1], (*this)[2], (*this)[3]);
     }
+    return new BezierCurve(*this);
+}
 
-    Circle(std::vector<Point> const& points)
-    {
-        set(points);
+Curve *BezierCurve::derivative() const
+{
+    if (order() == 1) {
+        double dx = inner[X][1] - inner[X][0], dy = inner[Y][1] - inner[Y][0];
+        return new LineSegment(Point(dx,dy),Point(dx,dy));
     }
-
-    void set(double cx, double cy, double r)
-    {
-        m_centre[X] = cx;
-        m_centre[Y] = cy;
-        m_ray = r;
-    }
-
-
-    // build a circle by its implicit equation:
-    // Ax^2 + Ay^2 + Bx + Cy + D = 0
-    void set(double A, double B, double C, double D);
-
-    // build up the best fitting circle wrt the passed points
-    // prerequisite: at least 3 points must be passed
-    void set(std::vector<Point> const& points);
-
-    EllipticalArc *
-    arc(Point const& initial, Point const& inner, Point const& final,
-        bool _svg_compliant = true);
-
-    Point center() const
-    {
-        return m_centre;
-    }
-
-    Coord center(Dim2 d) const
-    {
-        return m_centre[d];
-    }
-
-    Coord ray() const
-    {
-        return m_ray;
-    }
-
-
-  private:
-    Point m_centre;
-    Coord m_ray;
-};
-
+    return new BezierCurve(Geom::derivative(inner[X]), Geom::derivative(inner[Y]));
+}
 
 } // end namespace Geom
-
-
-
-#endif // _2GEOM_CIRCLE_H_
-
 
 /*
   Local Variables:

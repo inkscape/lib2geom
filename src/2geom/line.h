@@ -311,7 +311,7 @@ double distance(Point const& _point, Line const& _line)
 {
 	if ( _line.isDegenerate() )
 	{
-		return distance( _point, _line.origin() );
+		return ::Geom::distance( _point, _line.origin() );
 	}
 	else
 	{

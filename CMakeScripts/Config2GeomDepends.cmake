@@ -24,9 +24,15 @@ ENDFOREACH(dep)
 
 INCLUDE(FindBoost)
 
-INCLUDE (CheckIncludeFiles)
-# usage: CHECK_INCLUDE_FILES (<header> <RESULT_VARIABLE> )
+# WTF! All other standard checking macros don't work!
+INCLUDE (CheckCXXSourceCompiles)
 
-#CHECK_INCLUDE_FILES (malloc.h HAVE_MALLOC_H)
-#CHECK_INCLUDE_FILES ("sys/param.h;sys/mount.h" HAVE_SYS_MOUNT_H)
-#CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
+MACRO(CHECK_MATH_FUNCTION FUNCTION VAR)
+    CHECK_CXX_SOURCE_COMPILES("#include <math.h>\nint main() { double a=0.5,b=0.5,c=0.5; int i=1,j=2,k=3; ${FUNCTION}; return 0; }" ${VAR})
+ENDMACRO(CHECK_MATH_FUNCTION)
+
+CHECK_MATH_FUNCTION("sincos(a,&b,&c)" HAVE_SINCOS)
+CHECK_MATH_FUNCTION("round(a)" HAVE_ROUND)
+CHECK_MATH_FUNCTION("trunc(a)" HAVE_TRUNC)
+
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/src/2geom/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)

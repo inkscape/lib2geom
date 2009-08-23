@@ -69,7 +69,7 @@ struct Section {
     Section(CurveIx cix, double fd, double td, Point fdp, Point tdp) : curve(cix), f(fd), t(td), fp(fdp), tp(tdp) { }
     Section(CurveIx cix, double fd, double td, PathVector ps, Dim2 d) : curve(cix), f(fd), t(td) {
         fp = curve.get(ps).pointAt(f), tp = curve.get(ps).pointAt(t);
-        if(lexo_point(tp, fp, d)) {
+        if (Point::LexOrderRt(d)(tp, fp)) {
             //swap from and to, since tp is left or above fp
             std::swap(f, t);
             std::swap(fp, tp);
@@ -166,7 +166,9 @@ struct SweepSorter {
     typedef bool result_type;
     Dim2 dim;
     SweepSorter(Dim2 d) : dim(d) {}
-    bool operator()(const Section &a, const Section &b) const { return lexo_point(a.fp, b.fp, dim); }
+    bool operator()(const Section &a, const Section &b) const {
+        return Point::LexOrderRt(dim)(a.fp, b.fp);
+    }
 };
 
 struct UnionOp {

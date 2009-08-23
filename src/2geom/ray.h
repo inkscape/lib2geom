@@ -198,7 +198,7 @@ inline
 double distance(Point const& _point, Ray const& _ray)
 {
 	double t = _ray.nearestPoint(_point);
-	return distance(_point, _ray.pointAt(t));
+	return ::Geom::distance(_point, _ray.pointAt(t));
 }
 
 inline

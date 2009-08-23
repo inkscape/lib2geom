@@ -54,7 +54,7 @@ vector<double> c3_top;
 vector<double> c4_bot;
 vector<double> c4_top;
 
-BezierCurve<3> create_bezier(Point const &anchor, double angle /* in degrees */,
+BezierCurve create_bezier(Point const &anchor, double angle /* in degrees */,
                              double length, double dx1, double dx2, cairo_t *cr = NULL) {
     Point A = anchor;
     Point dir = Point(1.0, 0) * Rotate(-angle) * length;
@@ -74,7 +74,7 @@ BezierCurve<3> create_bezier(Point const &anchor, double angle /* in degrees */,
         draw_cross(cr, F);
     }
 
-    return BezierCurve<3>(C, E, F, D);
+    return BezierCurve(C, E, F, D);
 }
 
 /*
@@ -89,7 +89,7 @@ BezierCurve<3> create_bezier(Point const &anchor, double angle /* in degrees */,
  * - A point in J1 (2nd intermediate point of the Bezier curve)
  *
  */
-BezierCurve<3>
+BezierCurve
 create_bezier_again(Point const &anchor1, Point const &anchor2, Point const &dir1, Point const &dir2,
                     double c1, double c2, double c3, double c4, double mu, cairo_t *cr = NULL) {
     Point A = anchor1;// - dir * c1;
@@ -104,10 +104,10 @@ create_bezier_again(Point const &anchor1, Point const &anchor2, Point const &dir
         //draw_cross(cr, D);
     }
 
-    return BezierCurve<3>(A, B, C, D);
+    return BezierCurve(A, B, C, D);
 }
 
-BezierCurve<3>
+BezierCurve
 create_bezier_along_curve(Piecewise<D2<SBasis> > const &curve1,
                           Piecewise<D2<SBasis> > const &curve2,
                           double segdist,
@@ -133,7 +133,7 @@ create_bezier_along_curve(Piecewise<D2<SBasis> > const &curve1,
     }
 
     cout << "create_bezier_along_curve -- end" << endl;
-    return BezierCurve<3>(A, B, C, D);
+    return BezierCurve(A, B, C, D);
 }
 
 class OffsetTester: public Toy {
@@ -270,7 +270,7 @@ class OffsetTester: public Toy {
             Path path1;
             //cout << "dirs_bot[" << i << "]: " << dirs_bot[i] << endl;
             cout << "c3_bot[" << i << "]: " << c3_bot[i] << endl;
-            BezierCurve<3> bc = create_bezier_again(pts_bot[i], pts_top[i],
+            BezierCurve bc = create_bezier_again(pts_bot[i], pts_top[i],
                                                     dirs_bot[i], dirs_top[i],
                                                     0, 0, c3_bot[i] * lambda3, c4_top[i] * lambda4, mu, cr);
                                                     //c1_bot[i] * lambda1,

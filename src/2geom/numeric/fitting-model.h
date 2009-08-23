@@ -470,9 +470,8 @@ class LFMBezier
 
 
 // this model generates Bezier curves
-template< unsigned int N >
 class LFMBezierCurve
-    : public LinearFittingModel< double, Point, BezierCurve<N> >
+    : public LinearFittingModel< double, Point, BezierCurve >
 {
   public:
     LFMBezierCurve( size_t _order )
@@ -490,13 +489,13 @@ class LFMBezierCurve
         return mob.size();
     }
 
-    void instance(BezierCurve<N> & bc, ConstMatrixView const& raw_data) const
+    void instance(BezierCurve & bc, ConstMatrixView const& raw_data) const
     {
         Bezier bx(size()-1);
         Bezier by(size()-1);
         mob.instance(bx, raw_data.column_const_view(X));
         mob.instance(by, raw_data.column_const_view(Y));
-        bc = BezierCurve<N>(bx, by);
+        bc = BezierCurve(bx, by);
     }
 
   private:

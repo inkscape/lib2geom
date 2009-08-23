@@ -147,13 +147,13 @@ class SVGEllipticalArcTestToy: public Toy
         sliders.reserve(50);
         sliders.push_back(Slider(0, 500, 0, ea.ray(X), "ray X"));
         sliders.push_back(Slider(0, 500, 0, ea.ray(Y), "ray Y"));
-        sliders.push_back(Slider(0, 2*M_PI, 0, ea.rotation_angle(), "rot angle"));
+        sliders.push_back(Slider(0, 2*M_PI, 0, ea.rotationAngle(), "rot angle"));
         sliders[ROT_ANGLE_SLIDER].formatter(&angle_formatter);
 
         toggles.clear();
         toggles.reserve(50);
-        toggles.push_back(Toggle("Large Arc Flag", ea.large_arc_flag()));
-        toggles.push_back(Toggle("Sweep Flag", ea.sweep_flag()));
+        toggles.push_back(Toggle("Large Arc Flag", ea.largeArc()));
+        toggles.push_back(Toggle("Sweep Flag", ea.sweep()));
 
         handles.clear();
         handles.push_back(&initial_point);
@@ -202,8 +202,8 @@ class SVGEllipticalArcTestToy: public Toy
         // calculate the center of the two possible ellipse supporting the arc
         std::pair<Point,Point> centers
             = calculate_ellipse_centers( ea.initialPoint(), ea.finalPoint(),
-                                         ea.ray(X), ea.ray(Y), ea.rotation_angle(),
-                                         ea.large_arc_flag(), ea.sweep_flag() );
+                                         ea.ray(X), ea.ray(Y), ea.rotationAngle(),
+                                         ea.largeArc(), ea.sweep() );
 
 
         // draw axes passing through the center of the ellipse supporting the arc
@@ -219,13 +219,13 @@ class SVGEllipticalArcTestToy: public Toy
                               centers.first[X], centers.first[Y],
                               ea.ray(X), ea.ray(Y),
                               0, 2*M_PI,
-                              ea.rotation_angle() );
+                              ea.rotationAngle() );
             cairo_stroke(cr);
             cairo_elliptiarc( cr,
                               centers.second[X], centers.second[Y],
                               ea.ray(X), ea.ray(Y),
                               0, 2*M_PI,
-                              ea.rotation_angle() );
+                              ea.rotationAngle() );
             cairo_stroke(cr);
         }
 
@@ -241,7 +241,8 @@ class SVGEllipticalArcTestToy: public Toy
         draw_text(cr, ea.finalPoint() + Point(5, 0), "final");
         cairo_stroke(cr);
 
-        *notify << ea;
+        // TODO reenable this
+        //*notify << ea;
     }
 
 
@@ -255,28 +256,28 @@ class SVGEllipticalArcTestToy: public Toy
         cairo_set_line_width(cr, 0.3);
         cairo_set_source_rgba(cr, 1.0, 0.0, 0.0, 1.0);
 
-        if (ea.is_svg_compliant() && ea.isDegenerate())
+        if (ea.isSVGCompliant() && ea.isDegenerate())
         {
             cairo_move_to(cr, ea.initialPoint());
             cairo_line_to(cr, ea.finalPoint());
         }
         else
         {
-            if ( ea.sweep_flag() )
+            if ( ea.sweep() )
             {
                 cairo_elliptiarc( cr,
                                   ea.center(X), ea.center(Y),
                                   ea.ray(X), ea.ray(Y),
-                                  ea.start_angle(), ea.end_angle(),
-                                  ea.rotation_angle() );
+                                  ea.initialAngle(), ea.finalAngle(),
+                                  ea.rotationAngle() );
             }
             else
             {
                 cairo_elliptiarc( cr,
                                   ea.center(X), ea.center(Y),
                                   ea.ray(X), ea.ray(Y),
-                                  ea.end_angle(), ea.start_angle(),
-                                  ea.rotation_angle() );
+                                  ea.finalAngle(), ea.initialAngle(),
+                                  ea.rotationAngle() );
             }
         }
         cairo_stroke(cr);
@@ -508,7 +509,7 @@ class SVGEllipticalArcTestToy: public Toy
         {
             SVGEllipticalArc earc;
             make_elliptical_arc convert(earc, easb, 5, 0.1);
-            convert.svg_compliant_flag(ea.is_svg_compliant());
+            convert.svg_compliant_flag(ea.isSVGCompliant());
             bool status = !convert();
             if ( status ) return;
             D2<SBasis> arc = earc.toSBasis();
@@ -720,7 +721,7 @@ class SVGEllipticalArcTestToy: public Toy
 
     void draw_axes(cairo_t* cr) const
     {
-        Point D(std::cos(ea.rotation_angle()), std::sin(ea.rotation_angle()));
+        Point D(std::cos(ea.rotationAngle()), std::sin(ea.rotationAngle()));
         Point Dx = (ea.ray(X) + 20) * D;
         Point Dy = (ea.ray(Y) + 20) * D.cw();
         Point C(ea.center(X),ea.center(Y));
@@ -836,8 +837,10 @@ class SVGEllipticalArcTestToy: public Toy
 
   public:
     SVGEllipticalArcTestToy(bool _svg_compliant_flag)
-        : ea(_svg_compliant_flag)
+        : ea(_svg_compliant_flag ? *new SVGEllipticalArc() : *new EllipticalArc())
     {}
+    ~SVGEllipticalArcTestToy()
+    { delete &ea; }
 
   private:
     typedef void (SVGEllipticalArcTestToy::* draw_func_t) (cairo_t*, std::ostringstream*, int, int, bool, std::ostringstream*);
@@ -850,7 +853,7 @@ class SVGEllipticalArcTestToy: public Toy
     PointHandle nph, ph;
     std::vector<Toggle> toggles;
     std::vector<Slider> sliders;
-    SVGEllipticalArc ea;
+    EllipticalArc &ea;
 
     double from_t;
     double to_t;

@@ -170,7 +170,7 @@ void Ellipse::set(std::vector<Point> const& points)
 }
 
 
-SVGEllipticalArc
+EllipticalArc *
 Ellipse::arc(Point const& initial, Point const& inner, Point const& final,
              bool _svg_compliant)
 {
@@ -212,9 +212,15 @@ Ellipse::arc(Point const& initial, Point const& inner, Point const& final,
         }
     }
 
-    SVGEllipticalArc ea( initial, ray(X), ray(Y), rot_angle(),
-                      large_arc_flag, sweep_flag, final, _svg_compliant);
-    return ea;
+    EllipticalArc *ret_arc;
+    if (_svg_compliant) {
+        ret_arc = new SVGEllipticalArc(initial, ray(X), ray(Y), rot_angle(),
+                      large_arc_flag, sweep_flag, final);
+    } else {
+        ret_arc = new EllipticalArc(initial, ray(X), ray(Y), rot_angle(),
+                      large_arc_flag, sweep_flag, final);
+    }
+    return ret_arc;
 }
 
 Ellipse Ellipse::transformed(Matrix const& m) const
@@ -225,7 +231,7 @@ Ellipse Ellipse::transformed(Matrix const& m) const
               -ray(Y) * sinrot, ray(Y) * cosrot,
                0,               0                );
     Point new_center = center() * m;
-    Matrix M = m.without_translation();
+    Matrix M = m.withoutTranslation();
     Matrix AM = A * M;
     if ( are_near(AM.det(), 0) )
     {

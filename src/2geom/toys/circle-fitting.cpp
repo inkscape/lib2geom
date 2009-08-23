@@ -30,7 +30,7 @@
  * the specific language governing rights and limitations.
  */
 
-
+#include <memory>
 #include <2geom/numeric/fitting-tool.h>
 #include <2geom/numeric/fitting-model.h>
 
@@ -83,7 +83,8 @@ class CircleFitting : public Toy
         {
             try
             {
-                ea = c.arc(psh.pts[0], psh.pts[1], psh.pts[2]);
+                std::auto_ptr<EllipticalArc> eap( c.arc(psh.pts[0], psh.pts[1], psh.pts[2]) );
+                ea = *eap;
             }
             catch(RangeError exc)
             {
@@ -136,7 +137,7 @@ class CircleFitting : public Toy
 
   private:
     Circle c;
-    SVGEllipticalArc ea;
+    EllipticalArc ea;
     bool first_time;
     PointSetHandle psh;
     std::vector<Toggle> toggles;

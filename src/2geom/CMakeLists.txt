@@ -38,6 +38,7 @@ ord.h
 nearest-point.cpp
 nearest-point.h
 bezier-clipping.cpp
+bezier-curve.cpp
 bezier-curve.h
 circle.cpp
 circle.h
@@ -142,6 +143,7 @@ recursive-bezier-intersection.cpp
 geom.cpp
 geom.h
 
+math-utils.h
 utils.cpp
 utils.h
 exception.h

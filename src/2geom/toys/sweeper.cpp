@@ -152,8 +152,12 @@ public:
     public:
         Dim2 dim;
         SweepOrder(Dim2 d) : dim(d) {}
-        bool operator()(const Rect &a, const Rect &b) const { return lexo_point(a.min(), b.min(), dim); }
-        bool operator()(const Tile &a, const Tile &b) const { return lexo_point(a.cur_box().min(), b.cur_box().min(), dim);}
+        bool operator()(const Rect &a, const Rect &b) const {
+            return Point::LexOrderRt(dim)(a.min(), b.min());
+        }
+        bool operator()(const Tile &a, const Tile &b) const {
+            return Point::LexOrderRt(dim)(a.cur_box().min(), b.cur_box().min());
+        }
     };
 
     class PtrSweepOrder{
@@ -162,7 +166,7 @@ public:
         std::vector<Tile>::iterator const begin;
         PtrSweepOrder(std::vector<Tile>::iterator const beg, Dim2 d) : dim(d), begin(beg){}
         bool operator()(const unsigned a, const unsigned b) const {
-            return lexo_point((begin+a)->cur_box().min(), (begin+b)->cur_box().min(), dim);
+            return Point::LexOrderRt(dim)((begin+a)->cur_box().min(), (begin+b)->cur_box().min());
         }
     };
 
@@ -405,8 +409,8 @@ public:
         for (unsigned i=0; i<context.size(); i++){
             assert( context[i].first<tiles_data.size() );
             Tile tile = tiles_data[context[i].first];
-            if (tile.state==1 && lexo_point( tile.fbox.max(), context.last_pos, dim ) && lexo_point( tile.tbox.max(), context.last_pos, dim ) ){
-//            if (!tile.open && lexo_point( tile.fbox.max(), context.last_pos, dim ) && lexo_point( tile.tbox.max(), context.last_pos, dim ) ){
+            if (tile.state==1 && Point::LexOrderRt(dim)( tile.fbox.max(), context.last_pos ) && Point::LexOrderRt(dim)( tile.tbox.max(), context.last_pos ) ){
+//            if (!tile.open && Point::LexOrderRt(dim)( tile.fbox.max(), context.last_pos ) && Point::LexOrderRt(dim)( tile.tbox.max(), context.last_pos ) ){
                 unsigned j;
                 for (j=i+1; j<context.size() && context[j].first != context[i].first; j++){}
                 assert ( j < context.size() );
@@ -510,7 +514,7 @@ public:
 #endif
                     tile.open = false;
                     tile.state = -1;
-                    tile.reversed = lexo_point(tp, fp, dim);
+                    tile.reversed = Point::LexOrderRt(dim)(tp, fp);
 
                     tiles_data.push_back(tile);
 //                     //TODO: maybe too early??
@@ -575,7 +579,7 @@ public:
             std::vector<double > times_i;
             for (unsigned j=i+1; j<tiles_data.size(); j++){
 //                std::printf("  j=%u (%u)\n", j,tiles_data[j].curve );
-                if ( lexo_point( tiles_data[i].max(), tiles_data[j].min(), dim) ) break;
+                if ( Point::LexOrderRt(dim)(tiles_data[i].max(), tiles_data[j].min()) ) break;
 //                g_warning("FIXME: Sweeper tolerance meaning?? make mono_intersect tolerance aware.");
                 Crossings crossings = mono_intersect(paths[tiles_data[i].path][tiles_data[i].curve], Interval(tiles_data[i].f, tiles_data[i].t),
                                                      paths[tiles_data[j].path][tiles_data[j].curve], Interval(tiles_data[j].f, tiles_data[j].t) );
@@ -617,7 +621,7 @@ public:
     void fuseInsert(const Rect &b,  std::vector<Rect> &boxes, Dim2 dim){
         //TODO: this can be optimized...
         for (unsigned i=0; i<boxes.size(); i++){
-            if ( lexo_point( b.max(), boxes[i].min(), dim ) ) break;
+            if ( Point::LexOrderRt(dim)( b.max(), boxes[i].min() ) ) break;
             if ( b.intersects( boxes[i] ) ){
                 Rect bigb = b;
                 bigb.unionWith( boxes[i] );
@@ -672,7 +676,7 @@ public:
             tiles_data[i].tbox = *t_it;
 
             //NB: enlarging the ends may swapp their sweep order!!!
-            tiles_data[i].reversed = lexo_point ( tiles_data[i].tbox.min(), tiles_data[i].fbox.min(), dim );
+            tiles_data[i].reversed = Point::LexOrderRt(dim)( tiles_data[i].tbox.min(), tiles_data[i].fbox.min());
 
             if ( f_it==t_it ){
                 tiles_data.erase(tiles_data.begin()+i);
@@ -691,8 +695,8 @@ public:
         bool result = false;
         for (unsigned i=0; i<tiles_data.size(); i++){
             for (unsigned k=0; k < boxes.size(); k++){
-                if ( lexo_point( tiles_data[i].max(), boxes[k].min(), dim) ) break;
-                if ( lexo_point( boxes[k].max(), tiles_data[i].min(), dim) ) continue;
+                if ( Point::LexOrderRt(dim)( tiles_data[i].max(), boxes[k].min()) ) break;
+                if ( Point::LexOrderRt(dim)( boxes[k].max(), tiles_data[i].min()) ) continue;
                 if ( !boxes[k].intersects( tiles_data[i].bbox() ) ) continue;
                 if ( tiles_data[i].fbox.intersects( boxes[k] ) ) continue;
                 if ( tiles_data[i].tbox.intersects( boxes[k] ) ) continue;
@@ -774,7 +778,7 @@ public:
         OptRect sep ( Interval( -infinity(), infinity() ) , Interval(-infinity(), infinity() ) );
         //separate this vertex from the others. Find a better way.
         for (unsigned i=0; i<vtxboxes.size(); i++){
-            if ( lexo_point( sep->max(), vtxboxes[i].min(), dim ) ){
+            if ( Point::LexOrderRt(dim)( sep->max(), vtxboxes[i].min() ) ){
                 break;
             }
             if ( vtxboxes[i]!=box ){//&& !vtxboxes[i].intersects(box) ){
@@ -941,7 +945,7 @@ public:
             std::vector<unsigned>::iterator low, high;
             //Warning: bad looking test, but make sure we advance even in case of 0 width boxes...
             for ( low = tiles.begin(); low != tiles.end() && 
-                      ( tiles_data[*low].state==1 || lexo_point(tiles_data[*low].cur_box().min(), context.last_pos, dim) ); low++){}
+                      ( tiles_data[*low].state==1 || Point::LexOrderRt(dim)(tiles_data[*low].cur_box().min(), context.last_pos) ); low++){}
 
             if ( low == tiles.end() ){
 //                std::printf("no more event found\n");

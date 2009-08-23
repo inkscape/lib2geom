@@ -188,7 +188,7 @@ bool SectionSorter::operator()(Section const &a, Section const &b) const {
         }
     }
     
-    return lexo_point(a.fp, b.fp, dim);
+    return Point::LexOrderRt(dim)(a.fp, b.fp);
 }
 
 // splits a section into pieces, as specified by an array of doubles, mutating the section to
@@ -202,7 +202,7 @@ std::vector<boost::shared_ptr<Section> > split_section(boost::shared_ptr<Section
     
     s->t = cuts[1];
     s->tp = s->curve.get(ps)(cuts[1]);
-    assert(lexo_point(s->fp, s->tp, d));
+    assert(Point::LexOrderRt(d)(s->fp, s->tp));
     
     ret.reserve(cuts.size() - 2);
     for(int i = cuts.size() - 1; i > 1; i--) ret.push_back(boost::shared_ptr<Section>(new Section(s->curve, cuts[i-1], cuts[i], ps, d)));
@@ -379,7 +379,7 @@ TopoGraph::TopoGraph(PathVector const &ps, Dim2 d, double t) : dim(d), tol(t) {
         //find all sections to remove
         for(int i = context.size() - 1; i >= 0; i--) {
             boost::shared_ptr<Section> sec = context[i].section;
-            if(!lexo_point(lim, sec->tp, d)) {
+            if(Point::LexOrderRt(d)(lim, sec->tp)) {
                 //sec->tp is less than or equal to lim
                 if(context[i].to_vert == -1) {
                     //we need to create a new vertex; add everything that enters it

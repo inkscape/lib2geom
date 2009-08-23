@@ -147,7 +147,7 @@ class Squiggles: public Toy {
         Matrix mat2 = Matrix(current_dir[X],current_dir[Y],-current_dir[Y],current_dir[X],current_pos[X],current_pos[Y]);
         mat1 = mat1.inverse()*mat2;
         curve = curve*mat1;
-        v = v*mat1.without_translation();
+        v = v*mat1.withoutTranslation();
 
         //update handles
         cairo_save(cr);

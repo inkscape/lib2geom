@@ -179,9 +179,9 @@ private:
             case '5':
             {
                 closed_toggle = true;
-                BezierCurve<2> A(psh.pts[0], psh.pts[1], psh.pts[2]);
-                BezierCurve<3> B(psh.pts[2], psh.pts[3], psh.pts[4], psh.pts[5]);
-                BezierCurve<3> C(psh.pts[5], psh.pts[6], psh.pts[7], psh.pts[8]);
+                BezierCurve A(psh.pts[0], psh.pts[1], psh.pts[2]);
+                BezierCurve B(psh.pts[2], psh.pts[3], psh.pts[4], psh.pts[5]);
+                BezierCurve C(psh.pts[5], psh.pts[6], psh.pts[7], psh.pts[8]);
                 Path path;
     	        path.append(A);
     	        path.append(B);
