@@ -54,11 +54,11 @@ template <class T> inline int sgn(const T& x) {
 template <class T> inline T sqr(const T& x) {return x * x;}
 template <class T> inline T cube(const T& x) {return x * x * x;}
 
-/** Between function - returns true if a number x is within a range. The values delimiting the
- *  range and the number must have the same type.
+/** Between function - returns true if a number x is within a range: (min < x) && (max > x).
+ * The values delimiting the range and the number must have the same type.
  */
 template <class T> inline const T& between (const T& min, const T& max, const T& x)
-    { return min < x && max > x; }
+    { return (min < x) && (max > x); }
 
 /** @brief Returns @a x rounded to the nearest multiple of \f$10^{p}\f$.
 
