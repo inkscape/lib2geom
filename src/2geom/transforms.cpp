@@ -152,12 +152,14 @@ Matrix &Matrix::operator*=(VShear const &v) {
 // if you add a new transform type, include it here!
 void check_transforms()
 {
+#ifdef BOOST_CONCEPT_ASSERT
     BOOST_CONCEPT_ASSERT((TransformConcept<Translate>));
     BOOST_CONCEPT_ASSERT((TransformConcept<Scale>));
     BOOST_CONCEPT_ASSERT((TransformConcept<Rotate>));
     BOOST_CONCEPT_ASSERT((TransformConcept<HShear>));
     BOOST_CONCEPT_ASSERT((TransformConcept<VShear>));
     BOOST_CONCEPT_ASSERT((TransformConcept<Matrix>)); // Matrix is also a transform
+#endif
 
     // check inter-transform multiplication
     Matrix m;
