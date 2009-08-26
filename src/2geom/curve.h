@@ -89,8 +89,8 @@ public:
     /** Retrieve the end of the curve.
      * @return The point corresponding to \f$\mathbf{C}(1)\f$. */
     virtual Point finalPoint() const = 0;
-    /** @brief Check whether the curve has zero length.
-     * @return True if the curve's initial point is the same as its final point, and it contains
+    /** @brief Check whether the curve has exactly zero length.
+     * @return True if the curve's initial point is exactly the same as its final point, and it contains
      *         no other points (its value set contains only one element).
      */
     virtual bool isDegenerate() const = 0;
