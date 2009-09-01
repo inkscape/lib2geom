@@ -348,17 +348,23 @@ bool Matrix::isSingular(Coord eps) const {
  * @post (m * m.inverse()).isIdentity() == true */
 Matrix Matrix::inverse() const {
     Matrix d;
-
-    Geom::Coord const determ = det();
-    if (!are_near(determ, 0.0)) {
-        Geom::Coord const ideterm = 1.0 / determ;
-
-        d._c[0] =  _c[3] * ideterm;
-        d._c[1] = -_c[1] * ideterm;
-        d._c[2] = -_c[2] * ideterm;
-        d._c[3] =  _c[0] * ideterm;
-        d._c[4] = -_c[4] * d._c[0] - _c[5] * d._c[2];
-        d._c[5] = -_c[4] * d._c[1] - _c[5] * d._c[3];
+    
+    double mx = std::max(std::max(fabs(_c[0]), fabs(_c[1])), 
+                         std::max(fabs(_c[2]), fabs(_c[3])));
+    if(mx > 0) {
+        Geom::Coord const determ = det();
+        if (!rel_error_bound(determ, mx*mx)) {
+            Geom::Coord const ideterm = 1.0 / (determ);
+            
+            d._c[0] =  _c[3] * ideterm;
+            d._c[1] = -_c[1] * ideterm;
+            d._c[2] = -_c[2] * ideterm;
+            d._c[3] =  _c[0] * ideterm;
+            d._c[4] = (-_c[4] * d._c[0] - _c[5] * d._c[2]);
+            d._c[5] = (-_c[4] * d._c[1] - _c[5] * d._c[3]);
+        } else {
+            d.setIdentity();
+        }
     } else {
         d.setIdentity();
     }
@@ -395,13 +401,15 @@ Geom::Coord Matrix::descrim() const {
  * obtained by first applying the original version of this matrix, and then
  * applying @a m. */
 Matrix &Matrix::operator*=(Matrix const &o) {
+    Matrix A;
     for(int a = 0; a < 5; a += 2) {
         for(int b = 0; b < 2; b++) {
-            _c[a + b] = _c[a] * o._c[b] + _c[a + 1] * o._c[b + 2];
+            A._c[a + b] = _c[a] * o._c[b] + _c[a + 1] * o._c[b + 2];
         }
     }
-    _c[4] += o._c[4];
-    _c[5] += o._c[5];
+    A._c[4] += o._c[4];
+    A._c[5] += o._c[5];
+    *this = A;
     return *this;
 }
 

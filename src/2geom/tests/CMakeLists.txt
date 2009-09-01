@@ -3,7 +3,7 @@ SET(2GEOM_TESTS_SRC
 bezier-test
 choose-test
 #lin_alg_test
-#matrix-test
+matrix-inv
 #point-fns-test
 poly-test
 #rotate-test

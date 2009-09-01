@@ -34,22 +34,29 @@
 #include "helpers.h"
 
 #include "../line.h"
+//#include "../bezier-curve.h"
 #include "../point.h"
 
 using namespace boost::python;
 
-object wrap_intersection(Geom::Line const& a, Geom::Line const& b) {
+template <typename S, typename T>
+object wrap_intersection(S const& a, T const& b) {
     Geom::OptCrossing oc = intersection(a, b);
-    if(oc) {
-        return object(*oc);
-    } else
-        return object();
+    return oc?object(*oc):object();
 }
 
 void wrap_line() {
     //line.h
 
-    def("intersection", wrap_intersection);
+    def("intersection", wrap_intersection<Geom::Line, Geom::Line>);
+    def("intersection", wrap_intersection<Geom::Line, Geom::Ray>);
+    //def("intersection", wrap_intersection<Geom::Line, Geom::LineSegment>);
+    def("intersection", wrap_intersection<Geom::Ray, Geom::Line>);
+    def("intersection", wrap_intersection<Geom::Ray, Geom::Ray>);
+    //def("intersection", wrap_intersection<Geom::Ray, Geom::LineSegment>);
+    //def("intersection", wrap_intersection<Geom::LineSegement, Geom::Line>);
+    //def("intersection", wrap_intersection<Geom::LineSegement, Geom::Ray>);
+    //def("intersection", wrap_intersection<Geom::LineSegement, Geom::LineSegment>);
     class_<Geom::Line>("Line", init<>())
         .def(init<Geom::Point const&, Geom::Coord>())
         .def(init<Geom::Point const&, Geom::Point const&>())
@@ -72,6 +79,7 @@ void wrap_line() {
         .def("setBy2Points", &Geom::Line::setBy2Points)
         .def("setByCoefficients", &Geom::Line::setByCoefficients)
         ;
+
 };
 
 /*
