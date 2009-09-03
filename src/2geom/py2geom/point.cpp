@@ -102,8 +102,8 @@ void wrap_point() {
         .staticmethod("from_tuple")
         
         //point.h
-        .def("polar", &Geom::Point::polar)
-        .staticmethod("polar")
+        //.def("polar", &Geom::Point::polar)
+        //.staticmethod("polar")
 
         .def("ccw", &Geom::Point::ccw)
         .def("cw", &Geom::Point::cw)
@@ -117,13 +117,10 @@ void wrap_point() {
         .def(self += self)
         .def(self -= self)
 
-        .def(self ^ self)
-
         .def(-self)
         .def(self * float()).def(float() * self)
         .def(self / float())
         .def(self *= float())
-        .def(self /= float())
 
         .def(self == self)
         .def(self != self)

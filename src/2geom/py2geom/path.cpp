@@ -163,7 +163,7 @@ void py_cairo_pw_d2_sb(object cr, Geom::Piecewise<Geom::D2<Geom::SBasis> > const
 
 void wrap_path()
 {
-    class_<CurveWrap, boost::noncopyable>("Curve")
+/*    class_<CurveWrap, boost::noncopyable>("Curve")
         .def("initalPoint", pure_virtual(&Geom::Curve::initialPoint))
         .def("finalPoint", pure_virtual(&Geom::Curve::finalPoint))
         .def("duplicate", pure_virtual(&Geom::Curve::duplicate), return_value_policy<manage_new_object>())
@@ -173,8 +173,8 @@ void wrap_path()
         //.def("winding", &Geom::Curve::winding, &CurveWrap::default_winding)
         .def("pointAndDerivatives", pure_virtual(&Geom::Curve::pointAndDerivatives))
         .def("toSBasis", pure_virtual(&Geom::Curve::toSBasis))
-    ;
-    class_<Geom::LineSegment, bases<CurveWrap> >("LineSegment")
+        ;*/
+/*    class_<Geom::LineSegment, bases<CurveWrap> >("LineSegment")
         .def("points", &Geom::LineSegment::points)
     ;
     class_<Geom::QuadraticBezier, bases<CurveWrap> >("QuadraticBezier")
@@ -182,7 +182,7 @@ void wrap_path()
     ;
     class_<Geom::CubicBezier, bases<CurveWrap> >("CubicBezier")
         .def("points", &Geom::CubicBezier::points)
-    ;
+        ;*/
     class_<Geom::Path>("Path")
         .def("__getitem__", path_getitem, return_value_policy<copy_const_reference>()) //or return_internal_reference see http://www.boost.org/doc/libs/1_36_0/libs/python/doc/v2/faq.html#question1
         .def("empty", &Geom::Path::empty)

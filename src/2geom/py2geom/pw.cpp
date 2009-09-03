@@ -47,7 +47,7 @@ tuple pwd2sb_centroid(Geom::Piecewise<Geom::D2<Geom::SBasis> > const &pw)
     Geom::Point p;
     double a;
     u = Geom::centroid(pw, p, a);
-    return make_tuple(p, a);
+    return boost::python::make_tuple(p, a);
 }
      
 
