@@ -94,7 +94,7 @@ class SweeperToy: public Toy {
         cairo_set_line_width (cr, 1);
         cairo_stroke(cr);
 
-        sweeper = Sweeper(paths,X, pow(10,sliders[3].value()));
+        sweeper = Sweeper(paths,X, pow(10.0,sliders[3].value()));
        unsigned idx = (unsigned)(sliders[0].value()*(sweeper.tiles_data.size()-1));
        drawTiles(cr);
        enlightTile(cr, idx);
