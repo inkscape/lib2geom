@@ -729,7 +729,7 @@ class IntersectDataTester: public Toy {
         cairo_stroke(cr);
 #endif
 
-        tol = pow(10,sliders[3].value());
+        tol = pow(10.0,sliders[3].value());
         topo = IntersectionData(paths, cr, tol, nb_steps );
 
 #if 1
