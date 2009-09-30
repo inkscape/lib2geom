@@ -349,8 +349,8 @@ bool Matrix::isSingular(Coord eps) const {
 Matrix Matrix::inverse() const {
     Matrix d;
     
-    double mx = std::max(std::max(fabs(_c[0]), fabs(_c[1])), 
-                         std::max(fabs(_c[2]), fabs(_c[3])));
+    double mx = std::max(fabs(_c[0]) + fabs(_c[1]), 
+                         fabs(_c[2]) + fabs(_c[3])); // a random matrix norm (either l1 or linfty
     if(mx > 0) {
         Geom::Coord const determ = det();
         if (!rel_error_bound(determ, mx*mx)) {
