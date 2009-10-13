@@ -236,18 +236,26 @@ public:
     //inline Coord const &operator[](unsigned ix) const { return c_[ix]; }
     inline void setPoint(unsigned ix, double val) { c_[ix] = val; }
 
-    /* This is inelegant, as it uses several extra stores.  I think there might be a way to
-     * evaluate roughly in situ. */
-
+    /**
+    *  The size of the returned vector equals n_derivs+1.
+    */
     std::vector<Coord> valueAndDerivatives(Coord t, unsigned n_derivs) const {
-        std::vector<Coord> val_n_der;
+        /* This is inelegant, as it uses several extra stores.  I think there might be a way to
+         * evaluate roughly in situ. */
+
+         // initialize return vector with zeroes, such that we only need to replace the non-zero derivs
+        std::vector<Coord> val_n_der(n_derivs + 1, Coord(0.0));
+
+        // initialize temp storage variables
         std::valarray<Coord> d_(order()+1);
-        unsigned nn = n_derivs + 1; 	// the size of the result vector equals n_derivs+1 ...
-        if(nn > order())
-            nn = order()+1;		// .. but with a maximum of order() + 1!
-        for(unsigned i = 0; i < size(); i++)
+        for(unsigned i = 0; i < size(); i++) {
             d_[i] = c_[i];
-        val_n_der.resize(nn);
+        }
+
+        unsigned nn = n_derivs + 1;
+        if(n_derivs > order()) {
+            nn = order()+1; // only calculate the non zero derivs
+        }
         for(unsigned di = 0; di < nn; di++) {
             //val_n_der[di] = (subdivideArr(t, &d_[0], NULL, NULL, order() - di));
             val_n_der[di] = bernsteinValueAt(t, &d_[0], order() - di);
@@ -255,6 +263,7 @@ public:
                 d_[i] = (order()-di)*(d_[i+1] - d_[i]);
             }
         }
+
         return val_n_der;
     }
 

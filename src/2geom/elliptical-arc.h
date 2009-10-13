@@ -278,7 +278,12 @@ public:
     virtual int degreesOfFreedom() const { return 7; }
     virtual Curve *derivative() const;
     virtual Curve *transformed(Matrix const &m) const;
+
+    /**
+    *  The size of the returned vector equals n+1.
+    */
     virtual std::vector<Point> pointAndDerivatives(Coord t, unsigned int n) const;
+
     virtual D2<SBasis> toSBasis() const;
     virtual double valueAt(Coord t, Dim2 d) const {
     	Coord tt = map_to_02PI(t);

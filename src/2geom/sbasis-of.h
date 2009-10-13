@@ -114,9 +114,12 @@ public:
         return valueAt(t);
     }
 
+    /**
+    *  The size of the returned vector equals n+1.
+    */
     std::vector<T> valueAndDerivatives(double t, unsigned n) const{
-        std::vector<T> ret(n);
-        ret.push_back(valueAt(t));
+        std::vector<T> ret(n+1);
+        ret[0] = valueAt(t);
         SBasisOf<T> tmp = *this;
         for(unsigned i = 0; i < n; i++) {
             tmp.derive();

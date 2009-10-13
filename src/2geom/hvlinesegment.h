@@ -106,6 +106,10 @@ public:
         if (d != axis) return initialPoint()[other_axis];
         return initialPoint()[axis] + t * (finalPoint()[axis] - initialPoint()[axis]);
     }
+
+    /**
+    *  The size of the returned vector equals n+1.
+    */
     virtual std::vector<Point> pointAndDerivatives(Coord t, unsigned n) const {
         std::vector<Point> result;
         result.push_back(pointAt(t));

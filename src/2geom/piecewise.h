@@ -105,6 +105,10 @@ class Piecewise {
     inline output_type lastValue() const {
         return valueAt(cuts.back());
     }
+
+    /**
+    *  The size of the returned vector equals n_derivs+1.
+    */
     std::vector<output_type> valueAndDerivatives(double t, unsigned n_derivs) const {
         unsigned n = segN(t);
         std::vector<output_type> ret, val = segs[n].valueAndDerivatives(segT(t, n), n_derivs);
@@ -115,6 +119,7 @@ class Piecewise {
         }
         return ret;
     }
+
     //TODO: maybe it is not a good idea to have this?
     Piecewise<T> operator()(SBasis f);
     Piecewise<T> operator()(Piecewise<SBasis>f);
