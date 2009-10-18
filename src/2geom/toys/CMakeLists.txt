@@ -4,7 +4,11 @@ toy-framework-2.h
 path-cairo.cpp
 path-cairo.h
 )
-
+SET(2GEOM_LPE_TOY_FRAMEWORK_SRC
+${2GEOM_TOY-FRAMEWORK-2_SRC}
+lpe-framework.cpp
+lpe-framework.h
+)
 
 SET(2GEOM_TOYS-2_SRC
 rect_01
@@ -116,6 +120,30 @@ sweep-graph
 sweeper-toy
 )
 
+SET(2GEOM_LPE_TOYS_SRC
+lpe-test
+)
+
+OPTION(2GEOM_LPE_TOYS
+  "Build the project's Inkscape Live Path Effect (LPE) Toy files"
+  ON)
+IF(2GEOM_LPE_TOYS)
+    # make lib for lpetoy
+    ADD_LIBRARY(lpetoy ${LIB_TYPE} ${2GEOM_LPE_TOY_FRAMEWORK_SRC})
+    TARGET_LINK_LIBRARIES(lpetoy 2geom "${GTK2_LINK_FLAGS} ${cairo_LINK_FLAGS}")
+
+    FOREACH(source ${2GEOM_LPE_TOYS_SRC})
+        ADD_EXECUTABLE(${source} ${source}.cpp)
+
+        IF (WIN32)
+        ELSE (WIN32)
+            TARGET_LINK_LIBRARIES(lpetoy "-lrt")
+          #SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -lrt")
+        ENDIF(WIN32)
+        TARGET_LINK_LIBRARIES(${source} lpetoy ${LINK_GSL} 2geom "${GTK2_LINK_FLAGS} ${cairo_LINK_FLAGS}")
+    ENDFOREACH(source)
+
+ENDIF(2GEOM_LPE_TOYS)
 
 OPTION(2GEOM_TOYS
   "Build the projects Toy files"
