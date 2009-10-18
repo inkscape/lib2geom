@@ -100,7 +100,7 @@ T pow(T const &t, int n) {
         if ( n & 1 ) { result *= x; --n; }
         x *= x; n /= 2;
     }
-    return x;
+    return result;
 }
 
 /** @brief Translation by a vector.
