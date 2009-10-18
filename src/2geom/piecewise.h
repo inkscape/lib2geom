@@ -58,7 +58,7 @@ namespace Geom {
  *      \begin{array}{cc}
  *      s_1,& t <= c_2 \\
  *      s_2,& c_2 <= t <= c_3\\
- *      \ldots
+ *      \ldots \\
  *      s_n,& c_n <= t
  *      \end{array}\right.
  * \f]
@@ -778,10 +778,10 @@ Piecewise<T> reverse(Piecewise<T> const &f) {
     return ret;
 }
 
-
 /**
  *  Interpolates between a and b.
  *  \return a if t = 0, b if t = 1, or an interpolation between a and b for t in [0,1]
+ *  \relates Piecewise
  */
 template<typename T>
 Piecewise<T> lerp(double t, Piecewise<T> const &a, Piecewise<T> b) {

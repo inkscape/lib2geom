@@ -48,6 +48,7 @@ elliptiarc-3point-center-fitting
 elliptiarc-curve-fitting
 evolute
 filet-minion
+find-derivative
 hvlineseg-toy
 implicit-toy
 inner-product-clip
