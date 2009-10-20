@@ -63,7 +63,10 @@ class SBasis : public SBasisN<1>;
 
 namespace Geom{
 
-/*** An empty SBasis is identically 0. */
+/**
+* \brief S-power basis function class
+*
+* An empty SBasis is identically 0. */
 class SBasis{
     std::vector<Linear> d;
     void push_back(Linear const&l) { d.push_back(l); }
@@ -189,6 +192,7 @@ OptInterval bounds_local(SBasis const &a, const OptInterval &t, int order = 0);
 
 /** Returns a function which reverses the domain of a.
  \param a sbasis function
+ \relates SBasis
 
 useful for reversing a parameteric curve.
 */
@@ -313,7 +317,8 @@ inline SBasis& operator*=(SBasis& a, SBasis const & b) {
 /** Returns the degree of the first non zero coefficient.
  \param a sbasis function
  \param tol largest abs val considered 0
- \returns first non zero coefficient
+ \return first non zero coefficient
+ \relates SBasis
 */
 inline unsigned 
 valuation(SBasis const &a, double tol=0){
@@ -334,10 +339,10 @@ SBasis inverse(SBasis a, int k);
 SBasis compose_inverse(SBasis const &f, SBasis const &g, unsigned order=2, double tol=1e-3);
 
 /** Returns the sbasis on domain [0,1] that was t on [from, to]
- \param a sbasis function
+ \param t sbasis function
  \param from,to interval
- \returns sbasis
-
+ \return sbasis
+ \relates SBasis
 */
 inline SBasis portion(const SBasis &t, double from, double to) { return compose(t, Linear(from, to)); }
 inline SBasis portion(const SBasis &t, Interval ivl) { return compose(t, Linear(ivl[0], ivl[1])); }

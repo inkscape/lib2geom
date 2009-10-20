@@ -151,7 +151,7 @@ public:
     }
 };
 
-/***
+/**
  * Returns the maximal degree appearing in the two arguments for each variables.
  */
 template <unsigned n>
@@ -179,7 +179,7 @@ MultiDegree<n> operator += (MultiDegree<n> const &p, MultiDegree<n> const &q){
     return p;
 }
 
-/***
+/**
  *  \brief MultiDegree comparison.
  * A MultiDegree \param p is smaller than another \param q
  * if all it's smaller for all variables.
@@ -195,7 +195,7 @@ bool operator<=(MultiDegree<n> const &p, MultiDegree<n> const &q){
 }
 
 
-/***
+/**
  *  \brief Polynomials of n variables, written in SBasis form.
  * An SBasisN<n> f is internaly represented as a vector of LinearN<n>.
  * It should be thought of as an n-dimensional vector: the coef of s0^p0...s_{n-1}p^{n-1}
@@ -239,7 +239,7 @@ public:
 //----------------------------------------------
 //-- Degree/Sizing facilities ------------------
 //----------------------------------------------
-/***
+/**
  * Internal recursive function used to compute partial degrees.
  */
     bool find_non_empty_level(unsigned var, MultiDegree<n> &fixed_degrees)const{
@@ -265,7 +265,7 @@ public:
         return false;//FIXME: this shoud return -infty in all variables!
     }
 
-/***
+/**
  * Returns the degree of an SBasisN<n> with respect to a given variable form its sizes.
  * All terms are taken into account, even eventual trailing zeros.
  * Note: degree is expressed with respect to s = t*(1-t), not t itself.
@@ -273,7 +273,7 @@ public:
     unsigned quick_degree(unsigned var) const{
         return ( sizes[var] > 0 ? sizes[var]-1 : 0 );//this should be -infty.
      }
-/***
+/**
  * Computes the multi degree of the SBasis from it's sizes.
  * All terms are taken into account, even eventual trailing zeros.
  * Note: degrees are expressed with respect to s = t*(1-t), not t itself.
@@ -287,7 +287,7 @@ public:
        }
         return ret;
     }
-/***
+/**
  * Returns the degree of an SBasisN<n> with respect to a given variable.
  * Trailing zeros are not taken into account.
  * Note: degree is expressed with respect to s = t*(1-t), not t itself.
@@ -300,7 +300,7 @@ public:
         if ( find_non_empty_level(var, degrees) ) return degrees[var];
         else return 0;//should be -infty.
      }
-/***
+/**
  * Returns the *real* degree of an SBasisN<n> with respect to a given variable.
  * Trailing zeros are not taken into account.
  * Note: degree is expressed with respect to t itself, not s = t*(1-t).
@@ -324,7 +324,7 @@ public:
         }
         return 2*deg + ( even ? 0 : 1 );
      }
-/***
+/**
  * Returns the *real* degrees of an SBasisN<n>.
  * Trailing zeros are not taken into account.
  * Note: degree is expressed with respect to t itself, not s = t*(1-t).
@@ -337,7 +337,7 @@ public:
         }
         return res;
      }
-/***
+/**
  * Computes the multi degree of the SBasis.
  * Trailing zeros are not taken into account.
  * Note: degree is expressed with respect to s = t*(1-t), not t itself.
@@ -350,7 +350,7 @@ public:
         }
         return ret;
     }
-/***
+/**
  * Returns the highest degree over all variables.
  * Note: degree is expressed with respect to s = t*(1-t), not t itself.
  */
@@ -364,7 +364,7 @@ public:
         return d;
     }
 
-/***
+/**
  * Resize an SBasisN<n> to match new sizes.
  *
  * Caution: if a new size is smaller, the coresponding coefficients are discarded.
@@ -404,7 +404,7 @@ public:
 //-- Misc. --------------------
 //-----------------------------
 
-/***
+/**
  * Returns the number of variables this function takes as input: n.
  */
     unsigned input_dim(){return n;};
@@ -439,7 +439,7 @@ public:
 //------------------------------------------
 //-- Evaluation methods --------------------
 //------------------------------------------
-/***
+/**
  * Returns the value of the SBasis at a given corner of [0,1]^n.
  * \param k describes the corner: if i-th bit is 0, ti=0, otherwise ti=1. 
  */
@@ -447,7 +447,7 @@ public:
         if(this->size()==0) return 0.;
         return (*this)[0].atCorner(k);
     }
-/***
+/**
  * Returns the value of the SBasis at a given corner of [0,1]^n.
  * \param t[n] describes the corner: the values should be 0's and 1's. 
  */
@@ -455,7 +455,7 @@ public:
         if(this->size()==0) return 0.;
         return (*this)[0].atCorner(t);
     }
-/***
+/**
  * Returns a "slice" of the array.
  * Returns an SBasis containing all the coeff of (s-)degree \param deg in variable \param var
  */
@@ -476,7 +476,7 @@ public:
         }
         return res;
     }
-/***
+/**
  * Returns a the SBasisN<n-1> obtained by setting variable \param var to 0.
  */
     inline SBasisN<n-1> at0(unsigned var=0, unsigned deg=0) const {
@@ -491,7 +491,7 @@ public:
         }
         return res;
     }
-/***
+/**
  * Returns a the SBasisN<n-1> obtained by setting variable \param var to 1.
  */
     inline SBasisN<n-1> at1(unsigned var=0, unsigned deg=0) const {
@@ -506,7 +506,7 @@ public:
         }
         return res;
     }
-/***
+/**
  * Returns a the SBasisN<n-1> obtained by setting variable \param var to \param t.
  */
     inline SBasisN<n-1> partialEval(double t, unsigned var=0 ) const {
@@ -528,7 +528,7 @@ public:
         return res;
     }
 
-/***
+/**
  * \brief Internal recursive function.
  * Replace each variable  by it's value in the 's=t*(1-t)' factor 
  * but not in the LinearN<n> coeffs. Then sum up all coefficients.
@@ -548,7 +548,7 @@ public:
         }
         return a;
     }
-/***
+/**
  * Evaluate at given n-dimensional point.
  * \param t[n]: values of the variables.
  */
@@ -571,7 +571,7 @@ public:
 //-- Coeff. manipulation ---------------------------
 //--------------------------------------------------
 
-/***
+/**
  * Accessing the SBasisN<n> coefficents.
  */
     LinearN<n> operator[](unsigned i) const {
