@@ -33,19 +33,19 @@ int main(int argc, char *argv[])
     UTEST_TEST("operator*(translate, translate)") {
         UTEST_ASSERT( tbc.offset == Geom::Point(-5.0, 1.0) );
         UTEST_ASSERT( tbc.offset == ( tc * tb ).offset );
-        UTEST_ASSERT( Geom::Matrix(tbc) == Geom::Matrix(tb) * Geom::Matrix(tc) );
+        UTEST_ASSERT( Geom::Affine(tbc) == Geom::Affine(tb) * Geom::Affine(tc) );
     }
 
     UTEST_TEST("operator*(Point, translate)") {
         UTEST_ASSERT( tbc.offset == b * tc );
-        UTEST_ASSERT( b * tc == b * Geom::Matrix(tc) );
+        UTEST_ASSERT( b * tc == b * Geom::Affine(tc) );
     }
 
     Geom::translate const t_id(0.0, 0.0);
-    Geom::Matrix const m_id(Geom::identity());
+    Geom::Affine const m_id(Geom::identity());
     UTEST_TEST("identity") {
         UTEST_ASSERT( b * t_id == b );
-        UTEST_ASSERT( Geom::Matrix(t_id) == m_id );
+        UTEST_ASSERT( Geom::Affine(t_id) == m_id );
     }
 
     return ( utest_end()

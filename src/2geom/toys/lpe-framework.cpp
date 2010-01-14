@@ -3,7 +3,7 @@
 #include <2geom/toys/lpe-framework.h>
 
 #include <2geom/sbasis-to-bezier.h>
-#include <2geom/matrix.h>
+#include <2geom/affine.h>
 #include <2geom/pathvector.h>
 
 #define  LPE_CONVERSION_TOLERANCE 0.01

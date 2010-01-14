@@ -91,7 +91,7 @@ public:
     virtual Curve *portion(Coord f, Coord t) const {
         return new SBasisCurve(Geom::portion(inner, f, t));
     }
-    virtual Curve *transformed(Matrix const &m) const { return new SBasisCurve(inner * m); }
+    virtual Curve *transformed(Affine const &m) const { return new SBasisCurve(inner * m); }
     virtual Curve *derivative() const {
         return new SBasisCurve(Geom::derivative(inner));
     }

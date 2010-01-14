@@ -38,7 +38,7 @@
 #include <vector>
 #include <2geom/point.h>
 #include <2geom/exception.h>
-#include <2geom/matrix.h>
+#include <2geom/affine.h>
 
 namespace Geom
 {
@@ -113,7 +113,7 @@ class Ellipse
 
     std::vector<double> implicit_form_coefficients() const;
 
-    Ellipse transformed(Matrix const& m) const;
+    Ellipse transformed(Affine const& m) const;
 
   private:
     Point m_centre, m_ray;

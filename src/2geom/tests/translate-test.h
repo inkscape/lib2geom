@@ -35,7 +35,7 @@ public:
     Geom::translate const tc;
     Geom::translate const tbc;
     Geom::translate const t_id;
-    Geom::Matrix const m_id;
+    Geom::Affine const m_id;
 
 
     void testCtorsArrayOperator(void)
@@ -59,19 +59,19 @@ public:
     {
         TS_ASSERT_EQUALS( tbc.offset, Geom::Point(-5.0, 1.0) );
         TS_ASSERT_EQUALS( tbc.offset, ( tc * tb ).offset );
-        TS_ASSERT_EQUALS( Geom::Matrix(tbc), Geom::Matrix(tb) * Geom::Matrix(tc) );
+        TS_ASSERT_EQUALS( Geom::Affine(tbc), Geom::Affine(tb) * Geom::Affine(tc) );
     }
 
     void testOpStarPointTranslate(void)
     {
         TS_ASSERT_EQUALS( tbc.offset, b * tc );
-        TS_ASSERT_EQUALS( b * tc, b * Geom::Matrix(tc) );
+        TS_ASSERT_EQUALS( b * tc, b * Geom::Affine(tc) );
     }
 
     void testIdentity(void)
     {
         TS_ASSERT_EQUALS( b * t_id, b );
-        TS_ASSERT_EQUALS( Geom::Matrix(t_id), m_id );
+        TS_ASSERT_EQUALS( Geom::Affine(t_id), m_id );
     }
 };
 

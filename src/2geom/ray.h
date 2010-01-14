@@ -183,7 +183,7 @@ public:
 		return LineSegment(pointAt(f), pointAt(t));
 	}
 
-	Ray transformed(Matrix const& m) const
+	Ray transformed(Affine const& m) const
 	{
 		return Ray(m_origin * m, (m_origin + m_versor) * m);
 	}

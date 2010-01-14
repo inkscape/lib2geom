@@ -44,7 +44,7 @@
 #include <2geom/nearest-point.h>
 #include <2geom/sbasis.h>
 #include <2geom/d2.h>
-#include <2geom/matrix.h>
+#include <2geom/affine.h>
 #include <2geom/exception.h>
 #include <vector>
 
@@ -166,9 +166,9 @@ public:
      * This method returns a new curve instead modifying the existing one, because some curve
      * types are not closed under affine transformations. The returned curve may be of different
      * underlying type (as is the case for horizontal and vertical line segments).
-     * @param m Matrix describing the affine transformation
+     * @param m Affine describing the affine transformation
      * @return Pointer to a new, transformed curve */
-    virtual Curve *transformed(Matrix const &m) const = 0;
+    virtual Curve *transformed(Affine const &m) const = 0;
     /** @brief Create a curve that corresponds to a part of this curve.
      * For \f$a > b\f$, the returned portion will be reversed with respect to the original.
      * The returned curve will always be of the same type.

@@ -77,7 +77,7 @@ iter inc(iter const &x, unsigned n) {
   return ret;
 }
 
-Path &Path::operator*=(Matrix const &m) {
+Path &Path::operator*=(Affine const &m) {
   unshare();
   Sequence::iterator last = get_curves().end() - 1;
   Sequence::iterator it;

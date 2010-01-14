@@ -49,7 +49,7 @@ namespace Geom {
 
 enum Dim2 { X=0, Y=1 };
 
-class Matrix;
+class Affine;
 
 /**
  * @brief Two-dimensional point that doubles as a vector.
@@ -75,7 +75,7 @@ class Point
     : boost::additive< Point
     , boost::totally_ordered< Point
     , boost::multiplicative< Point, Coord
-    , boost::multiplicative< Point, Matrix
+    , boost::multiplicative< Point, Affine
     , boost::multiplicative< Point, Translate
     , boost::multiplicative< Point, Rotate
     , boost::multiplicative< Point, Scale
@@ -165,7 +165,7 @@ public:
 
     /// @name Affine transformations
     /// @{
-    Point &operator*=(Matrix const &m);
+    Point &operator*=(Affine const &m);
     // implemented in transforms.cpp
     Point &operator*=(Translate const &t);
     Point &operator*=(Scale const &s);
@@ -358,7 +358,7 @@ Point constrain_angle(Point const &A, Point const &B, unsigned int n = 4, Geom::
 
 // This is required to fix a bug in GCC 4.3.3 (and probably others) that causes the compiler
 // to try to instantiate the iterator_traits template and fail. Probably it thinks that Point
-// is an iterator and tries to use std::distance.
+// is an iterator and tries to use std::distance instead of Geom::distance.
 namespace std {
 template <> class iterator_traits<Geom::Point> {};
 }

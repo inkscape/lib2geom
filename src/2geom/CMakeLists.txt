@@ -96,8 +96,8 @@ redblacktree.h
 rtree.cpp
 rtree.h
 
-matrix.cpp
-matrix.h
+affine.cpp
+affine.h
 transforms.cpp
 transforms.h
 

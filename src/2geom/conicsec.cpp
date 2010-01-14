@@ -686,10 +686,11 @@ Interval xAx::quad_ex(double a, double b, double c, Interval ivl) {
   return bnds;
 }
 
-Geom::Matrix xAx::hessian() const {
-  return Matrix(2*c[0], c[1],
+Geom::Affine xAx::hessian() const {
+  Geom::Affine m(2*c[0], c[1],
 		c[1], 2*c[2],
 		0, 0);
+  return m;
 }
 
 

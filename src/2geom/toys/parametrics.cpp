@@ -9,7 +9,7 @@
 
 #include <2geom/toys/path-cairo.h>
 #include <2geom/toys/toy-framework-2.h>
-#include <2geom/matrix.h>
+#include <2geom/affine.h>
 
 #include <glib.h>
 #include <vector>
@@ -28,7 +28,7 @@ static void dot_plot(cairo_t *cr, Piecewise<D2<SBasis> > const &M, double max, d
     cairo_stroke(cr);
 }
 
-static void draw_axis(cairo_t *cr, Piecewise<D2<SBasis> > const &pw, unsigned d, Matrix m) {
+static void draw_axis(cairo_t *cr, Piecewise<D2<SBasis> > const &pw, unsigned d, Affine m) {
     double mult;
     if(abs(mode)==1) mult = 20;
     if(abs(mode)==2) mult = 1;

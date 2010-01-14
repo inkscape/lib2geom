@@ -136,7 +136,7 @@ class LineToy : public Toy
         cairo_set_line_width(cr, 0.3);
         cairo_rectangle(cr, r1);
 
-	Matrix  rot = Translate(-r1.midpoint())*Rotate(sliders[ANGLE_SLIDER].value())*Translate(r1.midpoint());
+	Affine  rot = Translate(-r1.midpoint())*Rotate(sliders[ANGLE_SLIDER].value())*Translate(r1.midpoint());
         cairo_rectangle(cr, r1*rot);
 	cairo_move_to(cr, r1.corner(3)*rot);
 	for(int i = 0; i < 4; i++) {

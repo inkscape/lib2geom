@@ -11,13 +11,13 @@ using namespace Geom;
 
 int main(int argc, char **argv) {
     //init(argc, argv, new Sb2d2);
-    Geom::Matrix test_matrix2[2] = {Geom::Matrix( 0.001, 0.0, 0.0, 
+    Geom::Affine test_matrix2[2] = {Geom::Affine( 0.001, 0.0, 0.0, 
                                                   0.001, 0.0, 0.0 ),
-                                    Geom::Matrix( 0.001, 0.001-1e-6, 0.001, 
+                                    Geom::Affine( 0.001, 0.001-1e-6, 0.001, 
                                                   0.001, 0.0, 0.0 )};
     for(int i = 0; i < 2; i++) {
         std::cout << "iteration: " << i << std::endl;
-       Geom::Matrix test_inverse2 = test_matrix2[i].inverse();
+       Geom::Affine test_inverse2 = test_matrix2[i].inverse();
        std::cout << test_matrix2[i] << std::endl;
        std::cout << Point(0,0)*test_matrix2[i] << std::endl;
        std::cout << Point(1,0)*test_matrix2[i] << std::endl;

@@ -284,7 +284,7 @@ class Line
 		return result;
 	}
 
-	Line transformed(Matrix const& m) const
+	Line transformed(Affine const& m) const
 	{
 		return Line(m_origin * m, (m_origin + m_versor) * m);
 	}

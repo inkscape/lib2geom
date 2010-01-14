@@ -550,11 +550,11 @@ class SVGEllipticalArcTestToy: public Toy
         init_transform_ctrl_geom(cr, notify, width, height);
         if ( no_solution || point_overlap ) return;
 
-        Matrix TM(sliders[TM0_SLIDER].value(), sliders[TM1_SLIDER].value(),
+        Affine TM(sliders[TM0_SLIDER].value(), sliders[TM1_SLIDER].value(),
                   sliders[TM2_SLIDER].value(), sliders[TM3_SLIDER].value(),
                   ea.center(X),                ea.center(Y));
 
-        Matrix tm( 1,            0,
+        Affine tm( 1,            0,
                    0,            1,
                    -ea.center(X), -ea.center(Y) );
 
@@ -790,7 +790,7 @@ class SVGEllipticalArcTestToy: public Toy
         double cos_rot_angle = std::cos(m_rot_angle);
 
 
-        Matrix m( cos_rot_angle, -sin_rot_angle,
+        Affine m( cos_rot_angle, -sin_rot_angle,
                   sin_rot_angle, cos_rot_angle,
                   0,             0              );
 

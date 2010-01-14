@@ -38,44 +38,6 @@
 
 namespace Geom {
 
-// Transform docs here
-
-/**
- * @defgroup Transforms Transformation classes
- *
- * Each transformation class represent a set of affine transforms that is closed
- * under multiplication. Those are translation, scaling, rotation, horizontal shearing
- * and vertical shearing. Any affine transform can be obtained by composing those
- * basic operations.
- *
- * Each of the transforms can be applied to points and matrices (using multiplication).
- * Each can also be converted into a matrix (which can represent any composition
- * of transforms generically). All (except translation) use the origin (0,0) as the invariant
- * point (e.g. one that stays in the same place after applying the transform to the plane).
- * To obtain transforms with different invariant points, combine them with translation to
- * and back from the origin. For example, to get a 60 degree rotation around the point @a p:
- * @code Matrix rot_around_p = Translate(-p) * Rotate::from_degrees(60) * Translate(p); @endcode
- *
- * Multiplication of transforms is associative: the result of an expression involving
- * points and matrices is the same regardless of the order of evaluating multiplications.
- * If you need to transform a complicated object
- * by A, then B, and then C, you should first compute the total transform and apply it to the
- * object in one go. This way instead of performing 3 expensive operations, you will only do
- * two very fast matrix multiplications and one complex transformation. Here is an example:
- * @code
-   transformed_path = long_path * A * B * C; // wrong! long_path will be transformed 3 times.
-   transformed_path = long_path * (A * B * C); // good! long_path will be transformed only once.
-   Matrix total = A * B * C; // you can store the transform to apply it to several objects.
-   transformed_path = long_path * total; // good!
-   @endcode
- * Ordering note: if you compose transformations via multiplication, they are applied
- * from left to right. If you write <code> ptrans = p * A * B * C * D;</code>, then it means
- * that @a ptrans is obtained from @a p by first transforming it by A, then by B, then by C,
- * and finally by D. This is a consequence of interpreting points as row vectors, instead
- * of the more common column vector interpretation; 2Geom's choice leads to more intuitive
- * notation.
- */
-
 // Point transformation methods.
 Point &Point::operator*=(Translate const &t)
 {
@@ -107,17 +69,17 @@ Point &Point::operator*=(VShear const &v)
     return *this;
 }
 
-// Matrix multiplication methods.
+// Affine multiplication methods.
 
 /** @brief Combine this transformation with a translation. */
-Matrix &Matrix::operator*=(Translate const &t) {
+Affine &Affine::operator*=(Translate const &t) {
     _c[4] += t[X];
     _c[5] += t[Y];
     return *this;
 }
 
 /** @brief Combine this transformation with scaling. */
-Matrix &Matrix::operator*=(Scale const &s) {
+Affine &Affine::operator*=(Scale const &s) {
     _c[0] *= s[X]; _c[1] *= s[Y];
     _c[2] *= s[X]; _c[3] *= s[Y];
     _c[4] *= s[X]; _c[5] *= s[Y];
@@ -125,15 +87,15 @@ Matrix &Matrix::operator*=(Scale const &s) {
 }
 
 /** @brief Combine this transformation a rotation. */
-Matrix &Matrix::operator*=(Rotate const &r) {
-    // TODO: we just convert the Rotate to a matrix and use the existing operator*=()
+Affine &Affine::operator*=(Rotate const &r) {
+    // TODO: we just convert the Rotate to an Affine and use the existing operator*=()
     // is there a better way?
-    *this *= (Matrix) r;
+    *this *= (Affine) r;
     return *this;
 }
 
 /** @brief Combine this transformation with horizontal shearing (skew). */
-Matrix &Matrix::operator*=(HShear const &h) {
+Affine &Affine::operator*=(HShear const &h) {
     _c[0] += h.f * _c[1];
     _c[2] += h.f * _c[3];
     _c[4] += h.f * _c[5];
@@ -141,7 +103,7 @@ Matrix &Matrix::operator*=(HShear const &h) {
 }
 
 /** @brief Combine this transformation with vertical shearing (skew). */
-Matrix &Matrix::operator*=(VShear const &v) {
+Affine &Affine::operator*=(VShear const &v) {
     _c[1] += v.f * _c[0];
     _c[3] += v.f * _c[2];
     _c[5] += v.f * _c[4];
@@ -158,11 +120,11 @@ void check_transforms()
     BOOST_CONCEPT_ASSERT((TransformConcept<Rotate>));
     BOOST_CONCEPT_ASSERT((TransformConcept<HShear>));
     BOOST_CONCEPT_ASSERT((TransformConcept<VShear>));
-    BOOST_CONCEPT_ASSERT((TransformConcept<Matrix>)); // Matrix is also a transform
+    BOOST_CONCEPT_ASSERT((TransformConcept<Affine>)); // Affine is also a transform
 #endif
 
     // check inter-transform multiplication
-    Matrix m;
+    Affine m;
     Translate t(Translate::identity());
     Scale s(Scale::identity());
     Rotate r(Rotate::identity());

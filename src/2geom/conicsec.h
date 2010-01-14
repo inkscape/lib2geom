@@ -38,7 +38,7 @@
 #include <2geom/exception.h>
 #include <2geom/angle.h>
 #include <2geom/rect.h>
-#include <2geom/matrix.h>
+#include <2geom/affine.h>
 #include <2geom/point.h>
 #include <2geom/line.h>
 #include <2geom/bezier-curve.h>
@@ -276,7 +276,7 @@ public:
 
     static Interval quad_ex(double a, double b, double c, Interval ivl);
 
-    Geom::Matrix hessian() const;
+    Geom::Affine hessian() const;
 
     boost::optional<Point> bottom() const;
 

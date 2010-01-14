@@ -139,7 +139,7 @@ Point abs(Point const &b)
 }
 
 /** @brief Transform the point by the specified matrix. */
-Point &Point::operator*=(Matrix const &m) {
+Point &Point::operator*=(Affine const &m) {
     double x = _pt[X], y = _pt[Y];
     for(int i = 0; i < 2; i++) {
         _pt[i] = x * m[i] + y * m[i + 2] + m[i + 4];

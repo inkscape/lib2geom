@@ -42,7 +42,7 @@
 #ifndef _2GEOM_RECT
 #define _2GEOM_RECT
 
-#include <2geom/matrix.h>
+#include <2geom/affine.h>
 #include <boost/optional/optional.hpp>
 
 namespace Geom {

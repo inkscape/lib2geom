@@ -105,7 +105,7 @@ void wrap_rect() {
         .def("expandBy", wrap_expandBy)
         .def("expandBy", wrap_expandBy_pt)
         
-        .def(self * Geom::Matrix())
+        .def(self * Geom::Affine())
     ;
 
 };

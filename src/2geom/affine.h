@@ -2,8 +2,8 @@
  *  \brief 3x3 affine transformation matrix.
  *//*
  * Main authors:
- *   Lauris Kaplinski <lauris@kaplinski.com> (Original NRMatrix definition and related macros)
- *   Nathan Hurst <njh@mail.csse.monash.edu.au> (Geom::Matrix class version of the above)
+ *   Lauris Kaplinski <lauris@kaplinski.com> (Original NRAffine definition and related macros)
+ *   Nathan Hurst <njh@mail.csse.monash.edu.au> (Geom::Affine class version of the above)
  *   Michael G. Sloan <mgsloan@gmail.com> (reorganization and additions)
  *   Krzysztof Kosiński <tweenk.pl@gmail.com> (removal of boilerplate, docs)
  *
@@ -55,24 +55,25 @@ namespace Geom {
  *
  * @ingroup Transforms
  */
-class Matrix
-    : boost::equality_comparable< Matrix
-    , boost::multipliable< Matrix
-    , boost::multipliable< Matrix, Translate
-    , boost::multipliable< Matrix, Scale
-    , boost::multipliable< Matrix, Rotate
-    , boost::multipliable< Matrix, HShear
-    , boost::multipliable< Matrix, VShear
-      > > > > > > >
+class Affine
+    : boost::equality_comparable< Affine // generates operator!= from operator==
+    , boost::multipliable< Affine, Translate
+    , boost::multipliable< Affine, Scale
+    , boost::multipliable< Affine, Rotate
+    , boost::multipliable< Affine, HShear
+    , boost::multipliable< Affine, VShear
+      > > > > > >
+    // boost::multipliable< A, B > generates operator*(A const &, B const &)
+    // and operator*(B const &, A const &) from A::operator*=(B const &)
 {
     Coord _c[6];
 public:
-    Matrix() {
+    Affine() {
         _c[0] = _c[3] = 1;
         _c[1] = _c[2] = _c[4] = _c[5] = 0;
     }
 
-    Matrix(Matrix const &m) {
+    Affine(Affine const &m) {
         for(int i = 0; i < 6; i++) {
             _c[i] = m[i];
         }
@@ -86,13 +87,13 @@ public:
      * @see Rotate
      * @see HShear
      * @see VShear */
-    Matrix(Coord c0, Coord c1, Coord c2, Coord c3, Coord c4, Coord c5) {
+    Affine(Coord c0, Coord c1, Coord c2, Coord c3, Coord c4, Coord c5) {
         _c[0] = c0; _c[1] = c1;
         _c[2] = c2; _c[3] = c3;
         _c[4] = c4; _c[5] = c5;
     }
 
-    Matrix &operator=(Matrix const &m) {
+    Affine &operator=(Affine const &m) {
         for(int i = 0; i < 6; i++)
             _c[i] = m._c[i];
         return *this;
@@ -104,16 +105,17 @@ public:
 
     /// @name Combine with other transformations
     /// @{
-    Matrix &operator*=(Matrix const &m);
+    Affine &operator*=(Affine const &m);
+    Affine operator*(Affine const &m);
     // implemented in transforms.cpp
-    Matrix &operator*=(Translate const &t);
-    Matrix &operator*=(Scale const &s);
-    Matrix &operator*=(Rotate const &r);
-    Matrix &operator*=(HShear const &h);
-    Matrix &operator*=(VShear const &v);
+    Affine &operator*=(Translate const &t);
+    Affine &operator*=(Scale const &s);
+    Affine &operator*=(Rotate const &r);
+    Affine &operator*=(HShear const &h);
+    Affine &operator*=(VShear const &v);
     /// @}
 
-    bool operator==(Matrix const &o) const {
+    bool operator==(Affine const &o) const {
         for(unsigned i = 0; i < 6; ++i) {
             if ( _c[i] != o._c[i] ) return false;
         }
@@ -171,12 +173,12 @@ public:
 
     /// @name Compute other matrices
     /// @{
-    Matrix withoutTranslation() const {
-        Matrix ret(*this);
+    Affine withoutTranslation() const {
+        Affine ret(*this);
         ret.setTranslation(Point(0,0));
         return ret;
     }
-    Matrix inverse() const;
+    Affine inverse() const;
     /// @}
 
     /// @name Compute scalar values
@@ -185,12 +187,12 @@ public:
     Coord descrim2() const;
     Coord descrim() const;
     /// @}
-    inline static Matrix identity();
+    inline static Affine identity();
 };
 
-/** @brief Print out the Matrix (for debugging).
- * @relates Matrix */
-inline std::ostream &operator<< (std::ostream &out_file, const Geom::Matrix &m) {
+/** @brief Print out the Affine (for debugging).
+ * @relates Affine */
+inline std::ostream &operator<< (std::ostream &out_file, const Geom::Affine &m) {
     out_file << "A: " << m[0] << "  C: " << m[2] << "  E: " << m[4] << "\n";
     out_file << "B: " << m[1] << "  D: " << m[3] << "  F: " << m[5] << "\n";
     return out_file;
@@ -198,8 +200,8 @@ inline std::ostream &operator<< (std::ostream &out_file, const Geom::Matrix &m) 
 
 /** Given a matrix m such that unit_circle = m*x, this returns the
  * quadratic form x*A*x = 1.
- * @relates Matrix */
-Matrix elliptic_quadratic_form(Matrix const &m);
+ * @relates Affine */
+Affine elliptic_quadratic_form(Affine const &m);
 
 /** Given a matrix (ignoring the translation) this returns the eigen
  * values and vectors. */
@@ -207,17 +209,17 @@ class Eigen{
 public:
     Point vectors[2];
     double values[2];
-    Eigen(Matrix const &m);
+    Eigen(Affine const &m);
     Eigen(double M[2][2]);
 };
 
-// Matrix factories
-Matrix from_basis(const Point x_basis, const Point y_basis, const Point offset=Point(0,0));
+// Affine factories
+Affine from_basis(const Point x_basis, const Point y_basis, const Point offset=Point(0,0));
 
 /** @brief Create an identity matrix.
- * This is a convenience function identical to Matrix::identity(). */
-inline Matrix identity() {
-    Matrix ret(Matrix::identity());
+ * This is a convenience function identical to Affine::identity(). */
+inline Affine identity() {
+    Affine ret(Affine::identity());
     return ret; // allow NRVO
 }
 
@@ -227,9 +229,9 @@ inline Matrix identity() {
            1 & 0 & 0 \\
            0 & 1 & 0 \\
            0 & 0 & 1 \end{array}\right]\f$.
- * @relates Matrix */
-inline Matrix Matrix::identity() {
-    Matrix ret(1.0, 0.0,
+ * @relates Affine */
+inline Affine Affine::identity() {
+    Affine ret(1.0, 0.0,
                0.0, 1.0,
                0.0, 0.0);
     return ret; // allow NRVO

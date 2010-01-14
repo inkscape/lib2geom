@@ -623,8 +623,8 @@ class SketchFitterToy: public Toy {
 
         Point sp = stroke.lastValue()-stroke.firstValue();
         Point mp = mouses.back()-mouses.front();
-        Matrix mat1 = Matrix(sp[X], sp[Y], -sp[Y], sp[X], stroke.firstValue()[X], stroke.firstValue()[Y]);
-        Matrix mat2 = Matrix(mp[X], mp[Y], -mp[Y], mp[X], mouses[0][X], mouses[0][Y]);
+        Affine mat1 = Affine(sp[X], sp[Y], -sp[Y], sp[X], stroke.firstValue()[X], stroke.firstValue()[Y]);
+        Affine mat2 = Affine(mp[X], mp[Y], -mp[Y], mp[X], mouses[0][X], mouses[0][Y]);
         mat1 = mat1.inverse()*mat2;
         stroke = stroke*mat1;
         

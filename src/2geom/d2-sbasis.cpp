@@ -121,7 +121,7 @@ Piecewise<SBasis> cross(Piecewise<D2<SBasis> > const &a,
   return result;
 }
 
-Piecewise<D2<SBasis> > operator*(Piecewise<D2<SBasis> > const &a, Matrix const &m) {
+Piecewise<D2<SBasis> > operator*(Piecewise<D2<SBasis> > const &a, Affine const &m) {
   Piecewise<D2<SBasis> > result;
   if(a.empty()) return result;
   result.push_cut(a.cuts[0]);

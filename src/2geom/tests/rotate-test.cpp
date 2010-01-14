@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
 {
     utest_start("rotate");
 
-    Geom::Matrix const m_id(Geom::identity());
+    Geom::Affine const m_id(Geom::identity());
     Geom::Rotate const r_id(0.0);
     Geom::Rotate const rot234(.234);
     UTEST_TEST("constructors, comparisons") {
@@ -23,8 +23,8 @@ int main(int argc, char *argv[])
         UTEST_ASSERT( rot234 == rot234 );
         UTEST_ASSERT( rot234 != r_id );
         UTEST_ASSERT( r_id == Geom::Rotate(Geom::Point(1.0, 0.0)) );
-        UTEST_ASSERT( Geom::Matrix(r_id) == m_id );
-        UTEST_ASSERT( Geom::Matrix(r_id).test_identity() );
+        UTEST_ASSERT( Geom::Affine(r_id) == m_id );
+        UTEST_ASSERT( Geom::Affine(r_id).test_identity() );
 
         UTEST_ASSERT(rotate_equalp(rot234, Geom::Rotate(Geom::Point(cos(.234), sin(.234))), 1e-12));
     }
@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
     UTEST_TEST("operator*(Point, rotate)") {
         UTEST_ASSERT( b * r_id == b );
         UTEST_ASSERT( b * rot180 == -b );
-        UTEST_ASSERT( b * rot234 == b * Geom::Matrix(rot234) );
+        UTEST_ASSERT( b * rot234 == b * Geom::Affine(rot234) );
         UTEST_ASSERT(point_equalp(b * Geom::Rotate(M_PI / 2),
                                   Geom::rot90(b),
                                   1e-14));

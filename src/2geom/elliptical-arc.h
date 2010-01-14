@@ -41,7 +41,7 @@
 #include <2geom/angle.h>
 #include <2geom/bezier-curve.h>
 #include <2geom/curve.h>
-#include <2geom/matrix.h>
+#include <2geom/affine.h>
 #include <2geom/sbasis-curve.h>  // for non-native methods
 #include <2geom/utils.h>
 
@@ -85,21 +85,19 @@ namespace Geom
  *
  * @image html elliptical-arc-flags.png "The four possible arcs and the meaning of flags"
  */
-class EllipticalArc : public Curve
+class EllipticalArc : public Curve, public AngleInterval
 {
 public:
     /** @brief Creates an arc with all variables set to zero, and both flags to true. */
     EllipticalArc()
-        : m_initial_point(0,0)
-        , m_final_point(0,0)
-        , m_rx(0)
-        , m_ry(0)
-        , m_rot_angle(0)
-        , m_large_arc(true)
-        , m_sweep(true)
-        , m_start_angle(0)
-        , m_end_angle(0)
-        , m_center(0,0)
+        : AngleInterval(0, 0, true)
+        , _initial_point(0,0)
+        , _final_point(0,0)
+        , _rays(0,0)
+        , _center(0,0)
+        , _rot_angle(0)
+        , _large_arc(true)
+        , _sweep(true)
     {}
     /** @brief Create a new elliptical arc.
      * @param ip Initial point of the arc
@@ -111,16 +109,17 @@ public:
      * @param sweep If true, the clockwise arc is chosen, otherwise the counter-clockwise
      *              arc is chosen
      * @param fp Final point of the arc */
-    EllipticalArc( Point _initial_point, double _rx, double _ry,
-                   double _rot_angle, bool _large_arc, bool _sweep,
-                   Point _final_point
-                  )
-        : m_initial_point(_initial_point)
-        , m_final_point(_final_point)
-        , m_rx(_rx)
-        , m_ry(_ry)
-        , m_rot_angle(_rot_angle)
-        , m_large_arc(_large_arc), m_sweep(_sweep)
+    EllipticalArc( Point ip, Coord rx, Coord ry,
+                   Coord rot_angle, bool large_arc, bool sweep,
+                   Point fp
+                 )
+        : AngleInterval(0,0,sweep)
+        , _initial_point(ip)
+        , _final_point(fp)
+        , _rays(rx, ry)
+        , _rot_angle(rot_angle)
+        , _large_arc(large_arc)
+        , _sweep(sweep)
     {
         _updateCenterAndAngles();
     }
@@ -129,12 +128,6 @@ public:
 
     /// @name Retrieve and modify parameters
     /// @{
-    /** @brief Get the angular coordinate of the arc's initial point
-     * @return Angle in range \f$[0,2\pi)\f$ corresponding to the start of arc */
-    double initialAngle() const { return m_start_angle; }
-    /** @brief Get the angular coordinate of the arc's final point
-     * @return Angle in range \f$[0,2\pi)\f$ corresponding to the end of arc */
-    double finalAngle() const { return m_end_angle; }
     /** @brief Get the interval of angles the arc contains
      * @return The interval between the final and initial angles of the arc */
     Interval angleInterval() const { return Interval(initialAngle(), finalAngle()); }
@@ -143,62 +136,61 @@ public:
      * @return The selected coordinate of the center */
     /** @brief Get the defining ellipse's rotation
      * @return Angle between the +X ray of the ellipse and the +X axis */
-    double rotationAngle() const {
-        return m_rot_angle;
+    Angle rotationAngle() const {
+        return _rot_angle;
     }
     /** @brief Get one of the ellipse's rays
      * @param d Dimension to retrieve
      * @return The selected ray of the ellipse */
-    Coord ray(Dim2 d) const { return (d == X) ? m_rx : m_ry; }
+    Coord ray(Dim2 d) const { return _rays[d]; }
     /** @brief Get both rays as a point
      * @return Point with X equal to the X ray and Y to Y ray */
-    Point rays() const { return Point(m_rx, m_ry); }
+    Point rays() const { return _rays; }
     /** @brief Whether the arc is larger than half an ellipse.
      * @return True if the arc is larger than \f$\pi\f$, false otherwise */
-    bool largeArc() const { return m_large_arc; }
+    bool largeArc() const { return _large_arc; }
     /** @brief Whether the arc turns clockwise
      * @return True if the arc makes a clockwise turn when going from initial to final
      *         point, false otherwise */
-    bool sweep() const { return m_sweep; }
+    bool sweep() const { return _sweep; }
     /** @brief Get the line segment connecting the arc's endpoints.
      * @return A linear segment with initial and final point correspoding to those of the arc. */
-    LineSegment chord() const { return LineSegment(m_initial_point, m_final_point); }
+    LineSegment chord() const { return LineSegment(_initial_point, _final_point); }
     /** @brief Change the arc's parameters. */ 
-    void set( Point _initial_point, double _rx, double _ry,
-              double _rot_angle, bool _large_arc, bool _sweep,
-              Point _final_point
+    void set( Point const &ip, double rx, double ry,
+              double rot_angle, bool large_arc, bool sweep,
+              Point const &fp
             )
     {
-    	m_initial_point = _initial_point;
-    	m_final_point = _final_point;
-    	m_rx = _rx;
-    	m_ry = _ry;
-    	m_rot_angle = _rot_angle;
-    	m_large_arc = _large_arc;
-    	m_sweep = _sweep;
-    	_updateCenterAndAngles();
+        _initial_point = ip;
+        _final_point = fp;
+        _rays[X] = rx;
+        _rays[Y] = ry;
+        _rot_angle = Angle(rot_angle);
+        _large_arc = large_arc;
+        _sweep = sweep;
+        _updateCenterAndAngles();
     }
     /** @brief Change the initial and final point in one operation.
      * This method exists because modifying any of the endpoints causes rather costly
      * recalculations of the center and extreme angles.
      * @param ip New initial point
      * @param fp New final point */
-    void setExtremes( const Point& _initial_point, const Point& _final_point )
-    {
-        m_initial_point = _initial_point;
-        m_final_point = _final_point;
+    void setExtremes(Point const &ip, Point const &fp) {
+        _initial_point = ip;
+        _final_point = fp;
         _updateCenterAndAngles();
     }
     /// @}
 
     /// @name Access computed parameters of the arc
     /// @{
-    Coord center(Dim2 d) const { return m_center[d]; }
+    Coord center(Dim2 d) const { return _center[d]; }
     /** @brief Get the arc's center
      * @return The arc's center, situated on the intersection of the ellipse's rays */
-    Point center() const { return m_center; }
+    Point center() const { return _center; }
     /** @brief Get the extent of the arc
-     * @return The angle between the initial and final point, in arc's angular coordiantes */
+     * @return The angle between the initial and final point, in arc's angular coordinates */
     double sweepAngle() const {
         Coord d = finalAngle() - initialAngle();
         if ( !sweep() ) d = -d;
@@ -227,7 +219,7 @@ public:
      * Each ellipse can be interpreted as a translated, scaled and rotate unit circle.
      * This function returns the transform that maps the unit circle to the arc's ellipse.
      * @return Transform from unit circle to the arc's ellipse */
-    Matrix unitCircleTransform() const;
+    Affine unitCircleTransform() const;
     /// @}
 
     /** @brief Check whether the arc adheres to SVG 1.1 implementation guidelines */
@@ -245,15 +237,15 @@ public:
 
     // implementation of overloads goes here
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
-    virtual Point initialPoint() const { return m_initial_point; }
-    virtual Point finalPoint() const { return m_final_point; }
+    virtual Point initialPoint() const { return _initial_point; }
+    virtual Point finalPoint() const { return _final_point; }
     virtual Curve* duplicate() const { return new EllipticalArc(*this); }
-    virtual void setInitial(Point const &_point) {
-        m_initial_point = _point;
+    virtual void setInitial(Point const &p) {
+        _initial_point = p;
         _updateCenterAndAngles();
     }
-    virtual void setFinal(Point const &_point) {
-        m_final_point = _point;
+    virtual void setFinal(Point const &p) {
+        _final_point = p;
         _updateCenterAndAngles();
     }
     virtual bool isDegenerate() const {
@@ -277,7 +269,7 @@ public:
     }
     virtual int degreesOfFreedom() const { return 7; }
     virtual Curve *derivative() const;
-    virtual Curve *transformed(Matrix const &m) const;
+    virtual Curve *transformed(Affine const &m) const;
 
     /**
     *  The size of the returned vector equals n+1.
@@ -304,11 +296,11 @@ private:
     Coord map_to_02PI(Coord t) const;
     Coord map_to_01(Coord angle) const; 
 
-    Point m_initial_point, m_final_point;
-    double m_rx, m_ry, m_rot_angle;
-    bool m_large_arc, m_sweep;
-    double m_start_angle, m_end_angle;
-    Point m_center;
+    Point _initial_point, _final_point;
+    Point _rays, _center;
+    Angle _rot_angle;
+    bool _large_arc;
+    bool _sweep;
 }; // end class EllipticalArc
 
 } // end namespace Geom

@@ -13,75 +13,75 @@
  */
 
 #include <2geom/utils.h>
-#include <2geom/matrix.h>
+#include <2geom/affine.h>
 #include <2geom/point.h>
 
 namespace Geom {
 
-/** Creates a Matrix given an axis and origin point.
+/** Creates a Affine given an axis and origin point.
  *  The axis is represented as two vectors, which represent skew, rotation, and scaling in two dimensions.
  *  from_basis(Point(1, 0), Point(0, 1), Point(0, 0)) would return the identity matrix.
 
  \param x_basis the vector for the x-axis.
  \param y_basis the vector for the y-axis.
  \param offset the translation applied by the matrix.
- \return The new Matrix.
+ \return The new Affine.
  */
 //NOTE: Inkscape's version is broken, so when including this version, you'll have to search for code with this func
-Matrix from_basis(Point const x_basis, Point const y_basis, Point const offset) {
-    return Matrix(x_basis[X], x_basis[Y],
+Affine from_basis(Point const x_basis, Point const y_basis, Point const offset) {
+    return Affine(x_basis[X], x_basis[Y],
                   y_basis[X], y_basis[Y],
                   offset [X], offset [Y]);
 }
 
-Point Matrix::xAxis() const {
+Point Affine::xAxis() const {
     return Point(_c[0], _c[1]);
 }
 
-Point Matrix::yAxis() const {
+Point Affine::yAxis() const {
     return Point(_c[2], _c[3]);
 }
 
-/** Gets the translation imparted by the Matrix.
+/** Gets the translation imparted by the Affine.
  */
-Point Matrix::translation() const {
+Point Affine::translation() const {
     return Point(_c[4], _c[5]);
 }
 
-void Matrix::setXAxis(Point const &vec) {
+void Affine::setXAxis(Point const &vec) {
     for(int i = 0; i < 2; i++)
         _c[i] = vec[i];
 }
 
-void Matrix::setYAxis(Point const &vec) {
+void Affine::setYAxis(Point const &vec) {
     for(int i = 0; i < 2; i++)
         _c[i + 2] = vec[i];
 }
 
-/** Sets the translation imparted by the Matrix.
+/** Sets the translation imparted by the Affine.
  */
-void Matrix::setTranslation(Point const &loc) {
+void Affine::setTranslation(Point const &loc) {
     for(int i = 0; i < 2; i++)
         _c[i + 4] = loc[i];
 }
 
-/** Calculates the amount of x-scaling imparted by the Matrix.  This is the scaling applied to
+/** Calculates the amount of x-scaling imparted by the Affine.  This is the scaling applied to
  *  the original x-axis region.  It is \emph{not} the overall x-scaling of the transformation.
  *  Equivalent to L2(m.xAxis())
  */
-double Matrix::expansionX() const {
+double Affine::expansionX() const {
     return sqrt(_c[0] * _c[0] + _c[1] * _c[1]);
 }
 
-/** Calculates the amount of y-scaling imparted by the Matrix.  This is the scaling applied before
+/** Calculates the amount of y-scaling imparted by the Affine.  This is the scaling applied before
  *  the other transformations.  It is \emph{not} the overall y-scaling of the transformation. 
  *  Equivalent to L2(m.yAxis())
  */
-double Matrix::expansionY() const {
+double Affine::expansionY() const {
     return sqrt(_c[2] * _c[2] + _c[3] * _c[3]);
 }
 
-void Matrix::setExpansionX(double val) {
+void Affine::setExpansionX(double val) {
     double exp_x = expansionX();
     if(!are_near(exp_x, 0.0)) {  //TODO: best way to deal with it is to skip op?
         double coef = val / expansionX();
@@ -89,7 +89,7 @@ void Matrix::setExpansionX(double val) {
     }
 }
 
-void Matrix::setExpansionY(double val) {
+void Affine::setExpansionY(double val) {
     double exp_y = expansionY();
     if(!are_near(exp_y, 0.0)) {  //TODO: best way to deal with it is to skip op?
         double coef = val / expansionY();
@@ -97,8 +97,8 @@ void Matrix::setExpansionY(double val) {
     }
 }
 
-/** Sets this matrix to be the Identity Matrix. */
-void Matrix::setIdentity() {
+/** Sets this matrix to be the Identity Affine. */
+void Affine::setIdentity() {
     _c[0] = 1.0; _c[1] = 0.0;
     _c[2] = 0.0; _c[3] = 1.0;
     _c[4] = 0.0; _c[5] = 0.0;
@@ -111,7 +111,7 @@ void Matrix::setIdentity() {
            1 & 0 & 0 \\
            0 & 1 & 0 \\
            0 & 0 & 1 \end{array}\right]\f$ */
-bool Matrix::isIdentity(Coord eps) const {
+bool Affine::isIdentity(Coord eps) const {
     return are_near(_c[0], 1.0, eps) && are_near(_c[1], 0.0, eps) &&
            are_near(_c[2], 0.0, eps) && are_near(_c[3], 1.0, eps) &&
            are_near(_c[4], 0.0, eps) && are_near(_c[5], 0.0, eps);
@@ -125,7 +125,7 @@ bool Matrix::isIdentity(Coord eps) const {
            1 & 0 & 0 \\
            0 & 1 & 0 \\
            a & b & 1 \end{array}\right]\f$ */
-bool Matrix::isTranslation(Coord eps) const {
+bool Affine::isTranslation(Coord eps) const {
     return are_near(_c[0], 1.0, eps) && are_near(_c[1], 0.0, eps) &&
            are_near(_c[2], 0.0, eps) && are_near(_c[3], 1.0, eps);
 }
@@ -136,7 +136,7 @@ bool Matrix::isTranslation(Coord eps) const {
            1 & 0 & 0 \\
            0 & 1 & 0 \\
            a & b & 1 \end{array}\right]\f$ and \f$a, b \neq 0\f$ */
-bool Matrix::isNonzeroTranslation(Coord eps) const {
+bool Affine::isNonzeroTranslation(Coord eps) const {
     return are_near(_c[0], 1.0, eps) && are_near(_c[1], 0.0, eps) &&
            are_near(_c[2], 0.0, eps) && are_near(_c[3], 1.0, eps) &&
            (!are_near(_c[4], 0.0, eps) || !are_near(_c[5], 0.0, eps));
@@ -149,7 +149,7 @@ bool Matrix::isNonzeroTranslation(Coord eps) const {
            a & 0 & 0 \\
            0 & b & 0 \\
            0 & 0 & 1 \end{array}\right]\f$. */
-bool Matrix::isScale(Coord eps) const {
+bool Affine::isScale(Coord eps) const {
     return are_near(_c[1], 0.0, eps) && are_near(_c[2], 0.0, eps) && 
            are_near(_c[4], 0.0, eps) && are_near(_c[5], 0.0, eps);
 }
@@ -161,7 +161,7 @@ bool Matrix::isScale(Coord eps) const {
            a & 0 & 0 \\
            0 & b & 0 \\
            0 & 0 & 1 \end{array}\right]\f$ and \f$a, b \neq 1\f$. */
-bool Matrix::isNonzeroScale(Coord eps) const {
+bool Affine::isNonzeroScale(Coord eps) const {
     return (!are_near(_c[0], 1.0, eps) || !are_near(_c[3], 1.0, eps)) &&  //NOTE: these are the diags, and the next line opposite diags
            are_near(_c[1], 0.0, eps) && are_near(_c[2], 0.0, eps) && 
            are_near(_c[4], 0.0, eps) && are_near(_c[5], 0.0, eps);
@@ -174,7 +174,7 @@ bool Matrix::isNonzeroScale(Coord eps) const {
            a & 0 & 0 \\
            0 & a & 0 \\
            0 & 0 & 1 \end{array}\right]\f$. */
-bool Matrix::isUniformScale(Coord eps) const {
+bool Affine::isUniformScale(Coord eps) const {
     return are_near(_c[0], _c[3], eps) &&
            are_near(_c[1], 0.0, eps) && are_near(_c[2], 0.0, eps) &&  
            are_near(_c[4], 0.0, eps) && are_near(_c[5], 0.0, eps);
@@ -187,7 +187,7 @@ bool Matrix::isUniformScale(Coord eps) const {
            a & 0 & 0 \\
            0 & a & 0 \\
            0 & 0 & 1 \end{array}\right]\f$ and \f$a \neq 1\f$. */
-bool Matrix::isNonzeroUniformScale(Coord eps) const {
+bool Affine::isNonzeroUniformScale(Coord eps) const {
     return !are_near(_c[0], 1.0, eps) && are_near(_c[0], _c[3], eps) &&
            are_near(_c[1], 0.0, eps) && are_near(_c[2], 0.0, eps) &&  
            are_near(_c[4], 0.0, eps) && are_near(_c[5], 0.0, eps);
@@ -200,7 +200,7 @@ bool Matrix::isNonzeroUniformScale(Coord eps) const {
            a & b & 0 \\
            -b & a & 0 \\
            0 & 0 & 1 \end{array}\right]\f$ and \f$a^2 + b^2 = 1\f$. */
-bool Matrix::isRotation(Coord eps) const {
+bool Affine::isRotation(Coord eps) const {
     return are_near(_c[0], _c[3], eps) && are_near(_c[1], -_c[2], eps) &&
            are_near(_c[4], 0.0, eps) && are_near(_c[5], 0.0, eps) &&
            are_near(_c[0]*_c[0] + _c[1]*_c[1], 1.0, eps);
@@ -213,7 +213,7 @@ bool Matrix::isRotation(Coord eps) const {
            a & b & 0 \\
            -b & a & 0 \\
            0 & 0 & 1 \end{array}\right]\f$, \f$a^2 + b^2 = 1\f$ and \f$a \neq 1\f$. */
-bool Matrix::isNonzeroRotation(Coord eps) const {
+bool Affine::isNonzeroRotation(Coord eps) const {
     return !are_near(_c[0], 1.0, eps) &&
            are_near(_c[0], _c[3], eps) && are_near(_c[1], -_c[2], eps) &&
            are_near(_c[4], 0.0, eps) && are_near(_c[5], 0.0, eps) &&
@@ -227,7 +227,7 @@ bool Matrix::isNonzeroRotation(Coord eps) const {
            1 & 0 & 0 \\
            k & 1 & 0 \\
            0 & 0 & 1 \end{array}\right]\f$. */
-bool Matrix::isHShear(Coord eps) const {
+bool Affine::isHShear(Coord eps) const {
     return are_near(_c[0], 1.0, eps) && are_near(_c[1], 0.0, eps) &&
            are_near(_c[3], 1.0, eps) && are_near(_c[4], 0.0, eps) &&
            are_near(_c[5], 0.0, eps);
@@ -239,7 +239,7 @@ bool Matrix::isHShear(Coord eps) const {
            1 & 0 & 0 \\
            k & 1 & 0 \\
            0 & 0 & 1 \end{array}\right]\f$ and \f$k \neq 0\f$. */
-bool Matrix::isNonzeroHShear(Coord eps) const {
+bool Affine::isNonzeroHShear(Coord eps) const {
     return are_near(_c[0], 1.0, eps) && are_near(_c[1], 0.0, eps) &&
           !are_near(_c[2], 0.0, eps) && are_near(_c[3], 1.0, eps) &&
            are_near(_c[4], 0.0, eps) && are_near(_c[5], 0.0, eps);
@@ -252,7 +252,7 @@ bool Matrix::isNonzeroHShear(Coord eps) const {
            1 & k & 0 \\
            0 & 1 & 0 \\
            0 & 0 & 1 \end{array}\right]\f$. */
-bool Matrix::isVShear(Coord eps) const {
+bool Affine::isVShear(Coord eps) const {
     return are_near(_c[0], 1.0, eps) && are_near(_c[2], 0.0, eps) &&
            are_near(_c[3], 1.0, eps) && are_near(_c[4], 0.0, eps) &&
            are_near(_c[5], 0.0, eps);
@@ -265,7 +265,7 @@ bool Matrix::isVShear(Coord eps) const {
            1 & k & 0 \\
            0 & 1 & 0 \\
            0 & 0 & 1 \end{array}\right]\f$ and \f$k \neq 0\f$. */
-bool Matrix::isNonzeroVShear(Coord eps) const {
+bool Affine::isNonzeroVShear(Coord eps) const {
     return are_near(_c[0], 1.0, eps) && !are_near(_c[1], 0.0, eps) &&
            are_near(_c[2], 0.0, eps) && are_near(_c[3], 1.0, eps) &&
            are_near(_c[4], 0.0, eps) && are_near(_c[5], 0.0, eps);
@@ -280,7 +280,7 @@ bool Matrix::isNonzeroVShear(Coord eps) const {
            a & 0 & 0 \\
            0 & a & 0 \\
            b & c & 1 \end{array}\right]\f$. */
-bool Matrix::isZoom(Coord eps) const {
+bool Affine::isZoom(Coord eps) const {
     return are_near(_c[0], _c[3], eps) && are_near(_c[1], 0, eps) && are_near(_c[2], 0, eps);
 }
 
@@ -290,7 +290,7 @@ bool Matrix::isZoom(Coord eps) const {
  * of Y-scale and X-scale is 1).
  * @param eps Numerical tolerance
  * @return True iff \f$|\det A| = 1\f$. */
-bool Matrix::preservesArea(Coord eps) const
+bool Affine::preservesArea(Coord eps) const
 {
     return are_near(descrim2(), 1.0, eps);
 }
@@ -304,7 +304,7 @@ bool Matrix::preservesArea(Coord eps) const
            a & b & 0 \\
            -b & a & 0 \\
            c & d & 1 \end{array}\right]\f$. */
-bool Matrix::preservesAngles(Coord eps) const
+bool Affine::preservesAngles(Coord eps) const
 {
     return are_near(_c[0], _c[3], eps) && are_near(_c[1], -_c[2], eps);
 }
@@ -317,7 +317,7 @@ bool Matrix::preservesAngles(Coord eps) const
            a & b & 0 \\
            -b & a & 0 \\
            c & d & 1 \end{array}\right]\f$ and \f$a^2 + b^2 = 1\f$. */
-bool Matrix::preservesDistances(Coord eps) const
+bool Affine::preservesDistances(Coord eps) const
 {
     return are_near(_c[0], _c[3], eps) && are_near(_c[1], -_c[2], eps) &&
            are_near(_c[0] * _c[0] + _c[1] * _c[1], 1.0, eps);
@@ -325,7 +325,7 @@ bool Matrix::preservesDistances(Coord eps) const
 
 /** @brief Check whether this transformation flips objects.
  * A transformation flips objects if it has a negative scaling component. */
-bool Matrix::flips() const {
+bool Affine::flips() const {
     // TODO shouldn't this be det() < 0?
     return cross(xAxis(), yAxis()) > 0;
 }
@@ -335,7 +335,7 @@ bool Matrix::flips() const {
  * results in a loss of information.
  * @param eps Numerical tolerance
  * @return True iff the determinant is near zero. */
-bool Matrix::isSingular(Coord eps) const {
+bool Affine::isSingular(Coord eps) const {
     return are_near(det(), 0.0, eps);
 }
 
@@ -346,8 +346,8 @@ bool Matrix::isSingular(Coord eps) const {
  * @param eps Numerical tolerance
  * @return Inverse of the matrix, or the identity matrix if the inverse is undefined.
  * @post (m * m.inverse()).isIdentity() == true */
-Matrix Matrix::inverse() const {
-    Matrix d;
+Affine Affine::inverse() const {
+    Affine d;
     
     double mx = std::max(fabs(_c[0]) + fabs(_c[1]), 
                          fabs(_c[2]) + fabs(_c[3])); // a random matrix norm (either l1 or linfty
@@ -374,7 +374,7 @@ Matrix Matrix::inverse() const {
 
 /** @brief Calculate the determinant.
  * @return \f$\det A\f$. */
-Geom::Coord Matrix::det() const {
+Geom::Coord Affine::det() const {
     // TODO this can overflow
     return _c[0] * _c[3] - _c[1] * _c[2];
 }
@@ -382,7 +382,7 @@ Geom::Coord Matrix::det() const {
 /** @brief Calculate the square of the descriminant.
  * This is simply the absolute value of the determinant.
  * @return \f$|\det A|\f$. */
-Geom::Coord Matrix::descrim2() const {
+Geom::Coord Affine::descrim2() const {
     return fabs(det());
 }
 
@@ -392,7 +392,7 @@ Geom::Coord Matrix::descrim2() const {
  * to arbitrary objects on a plane (the new length will be
  * @code line_seg.length() * m.descrim()) @endcode.
  * @return \f$\sqrt{|\det A|}\f$. */
-Geom::Coord Matrix::descrim() const {
+Geom::Coord Affine::descrim() const {
     return sqrt(descrim2());
 }
 
@@ -400,8 +400,12 @@ Geom::Coord Matrix::descrim() const {
  * After this operation, the matrix will correspond to the transformation
  * obtained by first applying the original version of this matrix, and then
  * applying @a m. */
-Matrix &Matrix::operator*=(Matrix const &o) {
-    Matrix A;
+Affine &Affine::operator*=(Affine const &m) {
+    *this = *this * m;
+    return *this;
+}
+Affine Affine::operator*(Affine const &o) {
+    Affine A;
     for(int a = 0; a < 5; a += 2) {
         for(int b = 0; b < 2; b++) {
             A._c[a + b] = _c[a] * o._c[b] + _c[a + 1] * o._c[b + 2];
@@ -409,20 +413,19 @@ Matrix &Matrix::operator*=(Matrix const &o) {
     }
     A._c[4] += o._c[4];
     A._c[5] += o._c[5];
-    *this = A;
-    return *this;
+    return A;
 }
 
 //TODO: What's this!?!
-Matrix elliptic_quadratic_form(Matrix const &m) {
+Affine elliptic_quadratic_form(Affine const &m) {
     double od = m[0] * m[1]  +  m[2] * m[3];
-    Matrix ret (m[0]*m[0] + m[1]*m[1], od,
+    Affine ret (m[0]*m[0] + m[1]*m[1], od,
                 od, m[2]*m[2] + m[3]*m[3],
                 0, 0);
     return ret; // allow NRVO
 }
 
-Eigen::Eigen(Matrix const &m) {
+Eigen::Eigen(Affine const &m) {
     double const B = -m[0] - m[3];
     double const C = m[0]*m[3] - m[1]*m[2];
     double const center = -B/2.0;

@@ -181,7 +181,7 @@ public:
         Point ip = initialPoint();
         return new HLineSegment(finalPoint()[X], ip[X], ip[Y]);
     }
-    virtual Curve *transformed(Matrix const & m) const {
+    virtual Curve *transformed(Affine const & m) const {
         Point ip = initialPoint() * m;
         Point ep = finalPoint() * m;
         // cannot afford to lose precision here since it can lead to discontinuous paths
@@ -251,7 +251,7 @@ public:
         Point ip = initialPoint();
         return new VLineSegment(ip[X], finalPoint()[Y], ip[Y]);
     }
-    virtual Curve *transformed(Matrix const & m) const {
+    virtual Curve *transformed(Affine const & m) const {
         Point ip = initialPoint() * m;
         Point ep = finalPoint() * m;
         if (m.isZoom()) {

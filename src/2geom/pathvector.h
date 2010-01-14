@@ -46,13 +46,13 @@ typedef std::vector<Geom::Path> PathVector;
 
 /* general path transformation: */
 inline
-void operator*= (PathVector & path_in, Matrix const &m) {
+void operator*= (PathVector & path_in, Affine const &m) {
     for(PathVector::iterator it = path_in.begin(); it != path_in.end(); ++it) {
         (*it) *= m;
     }
 }
 inline
-PathVector operator*(PathVector const & path_in, Matrix const &m) {
+PathVector operator*(PathVector const & path_in, Affine const &m) {
     PathVector ret(path_in);
     ret *= m;
     return ret;

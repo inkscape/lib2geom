@@ -233,7 +233,7 @@ public:
     Curve *reverse() const {
         return new BezierCurve(Geom::reverse(inner));
     }
-    virtual Curve *transformed(Matrix const &m) const {
+    virtual Curve *transformed(Affine const &m) const {
         BezierCurve *ret = new BezierCurve(order());
         std::vector<Point> ps = points();
         for(unsigned i = 0;  i <= order(); i++) ps[i] = ps[i] * m;

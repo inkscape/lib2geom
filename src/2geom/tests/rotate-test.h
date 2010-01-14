@@ -31,7 +31,7 @@ public:
     static NrRotateTest *createSuite() { return new NrRotateTest(); }
     static void destroySuite( NrRotateTest *suite ) { delete suite; }
 
-    Geom::Matrix const m_id;
+    Geom::Affine const m_id;
     Geom::Rotate const r_id;
     Geom::Rotate const rot234;
     Geom::Point const b;
@@ -43,8 +43,8 @@ public:
         TS_ASSERT_EQUALS( rot234, rot234 );
         TS_ASSERT_DIFFERS( rot234, r_id );
         TS_ASSERT_EQUALS( r_id, Geom::Rotate(Geom::Point(1.0, 0.0)) );
-        TS_ASSERT_EQUALS( Geom::Matrix(r_id), m_id );
-        TS_ASSERT( Geom::Matrix(r_id).test_identity() );
+        TS_ASSERT_EQUALS( Geom::Affine(r_id), m_id );
+        TS_ASSERT( Geom::Affine(r_id).test_identity() );
 
         TS_ASSERT(rotate_equalp(rot234, Geom::Rotate(Geom::Point(cos(.234), sin(.234))), 1e-12));
     }
@@ -67,7 +67,7 @@ public:
     {
         TS_ASSERT_EQUALS( b * r_id, b );
         TS_ASSERT_EQUALS( b * rot180, -b );
-        TS_ASSERT_EQUALS( b * rot234, b * Geom::Matrix(rot234) );
+        TS_ASSERT_EQUALS( b * rot234, b * Geom::Affine(rot234) );
         TS_ASSERT(point_equalp(b * Geom::Rotate(M_PI / 2),
                                Geom::rot90(b),
                                1e-14));

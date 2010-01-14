@@ -36,7 +36,7 @@
 #define SEEN_Geom_TRANSFORMS_H
 
 #include <2geom/forward.h>
-#include <2geom/matrix.h>
+#include <2geom/affine.h>
 #include <cmath>
 
 namespace Geom {
@@ -46,7 +46,7 @@ namespace Geom {
 template <typename T>
 struct TransformConcept {
     T t;
-    Matrix m;
+    Affine m;
     Point p;
     bool bool_;
     void constraints() {
@@ -78,15 +78,15 @@ class TransformOperations
 {
 public:
     template <typename T2>
-    Matrix operator*(T2 const &t) {
-        Matrix ret(*static_cast<T const*>(this)); ret *= t; return ret;
+    Affine operator*(T2 const &t) {
+        Affine ret(*static_cast<T const*>(this)); ret *= t; return ret;
     }
 };
 
 /** @brief Integer exponentiation for transforms.
  * Negative exponents will yield the corresponding power of the inverse. This function
  * can also be applied to matrices.
- * @param t Matrix or transform to exponantiate
+ * @param t Affine or transform to exponantiate
  * @param n Exponent
  * @return \f$A^n\f$ if @a n is positive, \f$(A^{-1})^n\f$ if negative, identity if zero.
  * @ingroup Transforms */
@@ -116,7 +116,7 @@ public:
     /** @brief Construct a translation from its coordinates. */
     explicit Translate(Coord x, Coord y) : vec(x, y) {}
 
-    operator Matrix() const { Matrix ret(1, 0, 0, 1, vec[X], vec[Y]); return ret; }    
+    operator Affine() const { Affine ret(1, 0, 0, 1, vec[X], vec[Y]); return ret; }    
     Coord operator[](Dim2 dim) const { return vec[dim]; }
     Coord operator[](unsigned dim) const { return vec[dim]; }
     Translate &operator*=(Translate const &o) { vec += o.vec; return *this; }
@@ -143,7 +143,7 @@ public:
     explicit Scale(Point const &p) : vec(p) {}
     Scale(Coord x, Coord y) : vec(x, y) {}
     explicit Scale(Coord s) : vec(s, s) {}
-    inline operator Matrix() const { Matrix ret(vec[X], 0, 0, vec[Y], 0, 0); return ret; }
+    inline operator Affine() const { Affine ret(vec[X], 0, 0, vec[Y], 0, 0); return ret; }
 
     Coord operator[](Dim2 d) const { return vec[d]; }
     Coord operator[](unsigned d) const { return vec[d]; }
@@ -174,7 +174,7 @@ public:
     explicit Rotate(Point const &p) : vec(unit_vector(p)) {}
     /** @brief Construct a rotation from the coordinates of its characteristic vector. */
     explicit Rotate(Coord x, Coord y) { Rotate(Point(x, y)); }
-    operator Matrix() const { Matrix ret(vec[X], vec[Y], -vec[Y], vec[X], 0, 0); return ret; }
+    operator Affine() const { Affine ret(vec[X], vec[Y], -vec[Y], vec[X], 0, 0); return ret; }
 
     /** @brief Get the characteristic vector of the rotation.
      * @return A vector that would be obtained by applying this transform to the X versor. */
@@ -218,7 +218,7 @@ public:
     static S identity() { return S(0); }
 
     friend class Point;
-    friend class Matrix;
+    friend class Affine;
 };
 
 /** @brief Horizontal shearing.
@@ -230,7 +230,7 @@ class HShear
 {
 public:
     explicit HShear(Coord h) : ShearBase<HShear>(h) {}
-    operator Matrix() const { Matrix ret(1, 0, f, 1, 0, 0); return ret; }
+    operator Affine() const { Affine ret(1, 0, f, 1, 0, 0); return ret; }
 };
 
 /** @brief Vertical shearing.
@@ -242,7 +242,7 @@ class VShear
 {
 public:
     explicit VShear(Coord h) : ShearBase<VShear>(h) {}
-    operator Matrix() const { Matrix ret(1, f, 0, 1, 0, 0); return ret; }
+    operator Affine() const { Affine ret(1, f, 0, 1, 0, 0); return ret; }
 };
 
 /** @brief Specialization of exponentiation for Scale.

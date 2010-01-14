@@ -93,7 +93,7 @@ struct CurveWrap : Geom::Curve, wrapper<Geom::Curve>
     void setFinal(Geom::Point v){ this->get_override("setFinal")(v); }
 
 
-    Geom::Curve *transformed(Geom::Matrix const &m) const { return this->get_override("transformed")(m); }
+    Geom::Curve *transformed(Geom::Affine const &m) const { return this->get_override("transformed")(m); }
 
     Geom::Point pointAt(Geom::Coord t) const {
         if (override f = this->get_override("pointAt")) {
@@ -191,8 +191,8 @@ void wrap_path()
         .def("boundsFast", &Geom::Path::boundsFast)
         .def("boundsExact", &Geom::Path::boundsExact)
         .def("toPwSb", &Geom::Path::toPwSb)
-        .def(self * Geom::Matrix())
-        .def(self *= Geom::Matrix())
+        .def(self * Geom::Affine())
+        .def(self *= Geom::Affine())
         .def("pointAt", &Geom::Path::pointAt)
         .def("valueAt", &Geom::Path::valueAt)
         .def("__call__", &Geom::Path::pointAt)
@@ -218,8 +218,8 @@ void wrap_path()
     def("paths_to_pw",Geom::paths_to_pw);
     class_<std::vector<Geom::Path> >("PathVector")
         .def(vector_indexing_suite<std::vector<Geom::Path> >())
-        .def(self * Geom::Matrix())
-        .def(self *= Geom::Matrix())
+        .def(self * Geom::Affine())
+        .def(self *= Geom::Affine())
     ;
     def("reverse_paths_and_order", Geom::reverse_paths_and_order);
     def("bounds_fast", (Geom::OptRect (*)(Geom::PathVector const &))&Geom::bounds_fast);

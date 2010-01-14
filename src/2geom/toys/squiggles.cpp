@@ -143,8 +143,8 @@ class Squiggles: public Toy {
         double time = times[current_ctl_pt];
         Point new_pos = curve.valueAt(time);
         Point new_dir = v.valueAt(time);
-        Matrix mat1 = Matrix(    new_dir[X],    new_dir[Y],    -new_dir[Y],    new_dir[X],    new_pos[X],    new_pos[Y]);
-        Matrix mat2 = Matrix(current_dir[X],current_dir[Y],-current_dir[Y],current_dir[X],current_pos[X],current_pos[Y]);
+        Affine mat1 = Affine(    new_dir[X],    new_dir[Y],    -new_dir[Y],    new_dir[X],    new_pos[X],    new_pos[Y]);
+        Affine mat2 = Affine(current_dir[X],current_dir[Y],-current_dir[Y],current_dir[X],current_pos[X],current_pos[Y]);
         mat1 = mat1.inverse()*mat2;
         curve = curve*mat1;
         v = v*mat1.withoutTranslation();
