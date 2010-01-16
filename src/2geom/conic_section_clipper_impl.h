@@ -219,7 +219,7 @@ Point CLIPPER_CLASS::find_inner_point (const Point & P, const Point & Q) const
         {
             return find_inner_point_by_bisector_line (P, Q);
         }
-        l.setBy2Points (l1.pointAt (oc->ta), middle_point (P, Q));
+        l.setPoints (l1.pointAt (oc->ta), middle_point (P, Q));
     }
     catch (Geom::InfiniteSolutions e)
     {

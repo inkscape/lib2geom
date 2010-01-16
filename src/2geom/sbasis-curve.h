@@ -48,9 +48,11 @@ namespace Geom
  * (geometric interpretation of parameters, numerical stability near ends of the curve)
  * and the monomial basis (fast evaluation). They are the main representation of curves
  * in 2Geom.
+ *
+ * @ingroup Curves
  */
 class SBasisCurve : public Curve {
-	
+
 private:
     SBasisCurve();
     D2<SBasis> inner;

@@ -44,57 +44,6 @@
 namespace Geom 
 {
 
-/**
- * @brief Two-dimensional Bezier curve of arbitrary order.
- *
- * Bezier curves are an expansion of the concept of linear interpolation to n points, and adhere
- * to the definition of curves in the Curve class. Linear segments in 2Geom are in fact Bezier
- * curves of order 1.
- *
- * Let \f$\mathbf{B}_{\mathbf{p}_0\mathbf{p}_1\ldots\mathbf{p}_n}\f$ denote a Bezier curve
- * of order \f$n\f$ defined by the points \f$\mathbf{p}_0, \mathbf{p}_1, \ldots, \mathbf{p}_n\f$.
- * Bezier curve of order 1 is a linear interpolation curve between two points, defined as
- * \f[ \mathbf{B}_{\mathbf{p}_0\mathbf{p}_1}(t) = (1-t)\mathbf{p}_0 + t\mathbf{p}_1 \f]
- * If we now substitute points \f$\mathbf{p_0}\f$ and \f$\mathbf{p_1}\f$ in this definition
- * by linear interpolations, we get the definition of a Bezier curve of order 2, also called
- * a quadratic Bezier curve.
- * \f{align*}{ \mathbf{B}_{\mathbf{p}_0\mathbf{p}_1\mathbf{p}_2}(t)
-       &= (1-t) \mathbf{B}_{\mathbf{p}_0\mathbf{p}_1}(t) + t \mathbf{B}_{\mathbf{p}_1\mathbf{p}_2}(t) \\
-     \mathbf{B}_{\mathbf{p}_0\mathbf{p}_1\mathbf{p}_2}(t)
-       &= (1-t)^2\mathbf{p}_0 + 2(1-t)t\mathbf{p}_1 + t^2\mathbf{p}_2 \f}
- * By substituting points for quadratic Bezier curves in the original definition,
- * we get a Bezier curve of order 3, called a cubic Bezier curve.
- * \f{align*}{ \mathbf{B}_{\mathbf{p}_0\mathbf{p}_1\mathbf{p}_2\mathbf{p}_3}(t)
-       &= (1-t) \mathbf{B}_{\mathbf{p}_0\mathbf{p}_1\mathbf{p}_2}(t)
-       + t \mathbf{B}_{\mathbf{p}_1\mathbf{p}_2\mathbf{p}_3}(t) \\
-     \mathbf{B}_{\mathbf{p}_0\mathbf{p}_1\mathbf{p}_2\mathbf{p}_3}(t)
-       &= (1-t)^3\mathbf{p}_0+3(1-t)^2t\mathbf{p}_1+3(1-t)t^2\mathbf{p}_2+t^3\mathbf{p}_3 \f}
- * In general, a Bezier curve or order \f$n\f$ can be recursively defined as
- * \f[ \mathbf{B}_{\mathbf{p}_0\mathbf{p}_1\ldots\mathbf{p}_n}(t)
-     = (1-t) \mathbf{B}_{\mathbf{p}_0\mathbf{p}_1\ldots\mathbf{p}_{n-1}}(t)
-     + t \mathbf{B}_{\mathbf{p}_1\mathbf{p}_2\ldots\mathbf{p}_n}(t) \f]
- *
- * This substitution can be repeated an arbitrary number of times. To picture this, imagine
- * the evaluation of a point on the curve as follows: first, all control points are joined with
- * straight lines, and a point corresponding to the sselected time value is marked on them.
- * Then, the marked points are joined with straight lines and the point corresponding to
- * the time value is marked. This is repeated until only one marked point remains, which is the
- * point at the selected time value.
- *
- * @image html bezier-curve-evaluation.png "Evaluation of the Bezier curve"
- *
- * An important property of the Bezier curves is that their parameters (control points)
- * have an intutive geometric interpretation. Because of this, they are frequently used
- * in vector graphics editors.
- *
- * Bezier curves of order 1, 2 and 3 are common enough to have their own more specific subclasses.
- * Note that if you create a generic BezierCurve, you cannot use a dynamic cast to those more
- * specific types, and you might face a slight preformance penalty relative to the more specific
- * classes. To obtain an instance of the correct optimized type, use the optimize()
- * or duplicate() methods. The difference is that optimize() will not create a new object
- * if it can't be optimized or is already an instance of one of the specific types, while
- * duplicate() will always create a new object.
- */
 class BezierCurve : public Curve {
 public:
     /// @name Construct the curve
@@ -185,18 +134,6 @@ public:
                    BezierCurve(sx.first, sy.first),
                    BezierCurve(sx.second, sy.second));
     }
-    /** @brief Create an optimized instance of the curve.
-     * If the curve was created as a generic Bezier curve but has an order between 1 and 3,
-     * this method will create a newly allocated curve that is a LineSegment, a QuadraticBezier,
-     * or a CubicBezier. For other cases it returns the pointer to the current curve, to avoid
-     * allocating extra memory. Be careful when you use this method, because whether you have
-     * to delete the returned object or not depends on its return value! If easier deletion
-     * semantics are required, you can use the duplicate() method instead, which returns
-     * optimized objects by default.
-     * @return Pointer to a curve that is an instance of LineSegment, QuadraticBezier
-     *         or CubicBezier based on the order. If the object is already an instance
-     *         of te more specific types or the order is above 3, a pointer to the original
-     *         object is returned instead, and no memory is allocated. */
     BezierCurve *optimize() const;
 
     // implementation of virtual methods goes here
@@ -262,9 +199,13 @@ protected:
 };
 
 
-/** @brief Optimizations for a linear segment (a Bezier curve of order 1).
+/** @brief Linear segment, a special case of a Bezier curve.
+ *
+ * This class uses some optimizations for a linear segment (a Bezier curve of order 1).
  * Note that if you created a BezierCurve, you will not be able to cast it to a LineSegment
- * using a dynamic cast regardless of its order - use the optimize() method. */
+ * using a dynamic cast regardless of its order - use the optimize() method.
+ *
+ * @ingroup Curves */
 class LineSegment : public BezierCurve {
 public:
     LineSegment() : BezierCurve(1) {}
@@ -290,17 +231,19 @@ public:
 #endif
 };
 
-/** @brief Optimizations for a quadratic Bezier curve.
+/** @brief Quadratic Bezier curve.
  * Note that if you created a BezierCurve, you will not be able to cast it to a QuadraticBezier
- * using a dynamic cast regardless of its order - use the optimize() method. */
+ * using a dynamic cast regardless of its order - use the optimize() method.
+ * @ingroup Curves */
 class QuadraticBezier : public BezierCurve {
 public:
     QuadraticBezier(Point c0, Point c1, Point c2) : BezierCurve(c0, c1, c2) {}
 };
 
-/** @brief Optimizations for a cubic Bezier curve.
+/** @brief Cubic Bezier curve.
  * Note that if you created a BezierCurve, you will not be able to cast it to a CubicBezier
- * using a dynamic cast regardless of its order - use the optimize() method. */
+ * using a dynamic cast regardless of its order - use the optimize() method.
+ * @ingroup Curves */
 class CubicBezier : public BezierCurve {
 public:
     CubicBezier(Point c0, Point c1, Point c2, Point c3) : BezierCurve(c0, c1, c2, c3) {}

@@ -592,7 +592,7 @@ class LineToy : public Toy
         p2.pos = Point(450, 450);
 
         Line l(p1.pos, p2.pos);
-        std::vector<double> coeff = l.implicit_form_coefficients();
+        std::vector<double> coeff = l.coefficients();
         sliders.push_back( Slider(-1, 1, 0, coeff[0], "A"));
         sliders.push_back( Slider(-1, 1, 0, coeff[1], "B"));
         sliders.push_back( Slider(-500, 500, 0, coeff[2], "C"));
@@ -611,7 +611,7 @@ class LineToy : public Toy
         init_coefficients_ctrl_geom(cr, notify, width, height);
 
         Line l1(p1.pos, p2.pos);
-        std::vector<double> coeff1 = l1.implicit_form_coefficients();
+        std::vector<double> coeff1 = l1.coefficients();
         Line l2(sliders[A_COEFF_SLIDER].value(),
                 sliders[B_COEFF_SLIDER].value(),
                 sliders[C_COEFF_SLIDER].value());

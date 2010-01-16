@@ -318,7 +318,7 @@ void draw_line(cairo_t *cr, double a, double b, double c, const Geom::Rect& r) {
 
 void draw_line(cairo_t* cr, const Geom::Line& l, const Geom::Rect& r)
 {
-    std::vector<double> coeff = l.implicit_form_coefficients();
+    std::vector<double> coeff = l.coefficients();
     draw_line (cr, coeff[0], coeff[1], coeff[2], r);
 }
 

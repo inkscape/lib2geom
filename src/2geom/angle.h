@@ -5,8 +5,9 @@
  *  Authors:
  *   Johan Engelen <goejendaagh@zonnet.nl>
  *   Marco Cecchetti <mrcekets at gmail.com>
+ *   Krzysztof Kosiński <tweenk.pl@gmail.com>
  *
- * Copyright (C) 2007, 2008, 2009 authors
+ * Copyright (C) 2007-2010 Authors
  *
  * This library is free software; you can redistribute it and/or
  * modify it either under the terms of the GNU Lesser General Public
@@ -54,6 +55,8 @@ namespace Geom {
  * like addition modulo \f$2\pi\f$. The value returned from the default conversion
  * to <tt>double</tt> is in the range \f$[-\pi, \pi)\f$ - the convention used by C's
  * math library.
+ *
+ * @ingroup Primitives
  */
 class Angle
     : boost::additive< Angle
@@ -167,6 +170,8 @@ inline Angle distance_abs(Angle const &as, Angle const &ae) {
  * as functions \f$f: [0, 1] \to [-\pi, \pi)\f$, which return the start angle for 0,
  * the end angle for 1, and interpolate linearly for other values. Note that such functions
  * are not continuous if the interval contains the zero angle.
+ *
+ * @ingroup Primitives
  */
 class AngleInterval {
 public:

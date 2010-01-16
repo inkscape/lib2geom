@@ -51,26 +51,6 @@ enum Dim2 { X=0, Y=1 };
 
 class Affine;
 
-/**
- * @brief Two-dimensional point that doubles as a vector.
- *
- * Points in 2Geom are represented in Cartesian coordinates, e.g. as a pair of numbers
- * that store the X and Y coordinates. Each point is also a vector in \f$\mathbb{R}^2\f$
- * from the origin (point at 0,0) to the stored coordinates,
- * and has methods implementing several vector operations (like length()).
- *
- * \par Operator note
- * \par
- * Most operators are provided by Boost operator helpers, so they are not visible in this class.
- * If @a p, @a q, @a r denote points, @a s a floating-point scalar, and @a m a transformation matrix,
- * then the following operations are available:
- * @code
-   p += q; p -= q; r = p + q; r = p - q;
-   p *= s; p /= s; q = p * s; q = s * p; q = p / s;
-   p *= m; p /= m; q = p * m; q = m * p; q = p / m;
-   @endcode
- * It is possible to left-multiply a point by a matrix, even though mathematically speaking
- * this is undefined. Division by matrices is defined as multiplication by their inverses. */
 class Point
     : boost::additive< Point
     , boost::totally_ordered< Point

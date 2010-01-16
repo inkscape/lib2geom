@@ -76,6 +76,8 @@ protected:
  *
  * Some methods return pointers to newly allocated curves. They are expected to be freed
  * by the caller when no longer used. Default implementations are provided for some methods.
+ *
+ * @ingroup Curves
  */
 class Curve : private CurveHelpers {
 public:

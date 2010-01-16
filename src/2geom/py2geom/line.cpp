@@ -64,7 +64,7 @@ void wrap_line() {
         //.def(self_ns::str(self))
         .def("valueAt", &Geom::Line::valueAt)
 
-        .def("implicit_form_coefficients", &Geom::Line::implicit_form_coefficients)
+        .def("coefficients", &Geom::Line::coefficients)
         .def("isDegenerate", &Geom::Line::isDegenerate)
         .def("pointAt", &Geom::Line::pointAt)
         .def("roots", &Geom::Line::roots)
@@ -76,8 +76,8 @@ void wrap_line() {
         .def("transformed", &Geom::Line::transformed)
         .def("normal", &Geom::Line::normal)
         .def("normalAndDist", &Geom::Line::normalAndDist)
-        .def("setBy2Points", &Geom::Line::setBy2Points)
-        .def("setByCoefficients", &Geom::Line::setByCoefficients)
+        .def("setPoints", &Geom::Line::setPoints)
+        .def("setCoefficients", &Geom::Line::setCoefficients)
         ;
 
 };

@@ -31,7 +31,7 @@
  * the specific language governing rights and limitations.
  */
 
-// 1. Main page of the documentation - contains logo and introductory text
+// Main page of the documentation - contains logo and introductory text
 /**
  * @mainpage
  *
@@ -69,6 +69,7 @@
  * For performance-critical tasks it may be necessary to use the lower level API.
  */
 
+// Documentation for groups
 /**
  * @defgroup Transforms Transformation classes
  *
@@ -87,6 +88,7 @@
  *
  * Multiplication of transforms is associative: the result of an expression involving
  * points and matrices is the same regardless of the order of evaluating multiplications.
+ *
  * If you need to transform a complicated object
  * by A, then B, and then C, you should first compute the total transform and apply it to the
  * object in one go. This way instead of performing 3 expensive operations, you will only do
@@ -105,6 +107,27 @@
  * notation.
  */
 
+/**
+ * @defgroup Primitives Geometrical primitives
+ *
+ * 2Geom has several basic geometrical objects: points, lines, intervals,
+ * and others. Most of those objects can be treated as sets of points or numbers
+ * satisfying some equation or as functions.
+ */
+
+/**
+ * @defgroup Curves Curves
+ *
+ * Curves are functions \f$\mathbf{C}: [0, 1] \to \mathbb{R}^2\f$. For details, see
+ * the documentation for the Curve class. All curves can be included in paths and path sequences.
+ */
+
+/**
+ * @defgroup Shapes Basic shapes
+ *
+ * Among the shapes supported by 2Geom are rectangles, circles, ellipses and polygons.
+ * Polygons can also be represented by paths containing only linear segments.
+ */
 /*
   Local Variables:
   mode:c++

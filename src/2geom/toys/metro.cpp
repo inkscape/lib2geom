@@ -487,12 +487,12 @@ void fit::schematised_merging(unsigned number_of_directions) {
                 Point d = angles[b.angle];
                 get_block_line(b,d,n,c);
                 Point start = c, end = c+10*angles[b.angle];
-                Line ln = Line::fromNormalDistance(n, dot(c,n));
+                Line ln = Line::from_normal_distance(n, dot(c,n));
                 if(beg==0) {
                     //start = intersection of b.line and 
                     //        line through input[0] orthogonal to b.line
                     OptCrossing c = intersection(ln,
-                                            Line::fromNormalDistance(d, dot(d,input[0])));
+                                            Line::from_normal_distance(d, dot(d,input[0])));
                     assert(c);
                     start = ln.pointAt(c->ta);
                     //line_intersection(n, dot(c,n), d, dot(d,input[0]), start);
@@ -503,7 +503,7 @@ void fit::schematised_merging(unsigned number_of_directions) {
                         get_block_line(p,angles[p.angle],n1,c1);
                         //line_intersection(n, dot(c,n), n1, dot(c1,n1), start);
                         OptCrossing c = intersection(ln,
-                                                   Line::fromNormalDistance(n1, dot(c1,n1)));
+                                                   Line::from_normal_distance(n1, dot(c1,n1)));
                         assert(c);
                         start = ln.pointAt(c->ta);
                     }
@@ -516,7 +516,7 @@ void fit::schematised_merging(unsigned number_of_directions) {
                         get_block_line(next,angles[next.angle],n1,c1);
                         //line_intersection(n, dot(c,n), n1, dot(c1,n1), end);
                         OptCrossing c = intersection(ln,
-                                                     Line::fromNormalDistance(n1, dot(c1,n1)));
+                                                     Line::from_normal_distance(n1, dot(c1,n1)));
                         assert(c);
                         end = ln.pointAt(c->ta);
                     }
@@ -525,7 +525,7 @@ void fit::schematised_merging(unsigned number_of_directions) {
                     //      line through input[N-1] orthogonal to b.line
                     //line_intersection(n, dot(c,n), d, dot(d,input[N]), end);
                     OptCrossing c = intersection(ln,
-                                            Line::fromNormalDistance(d, dot(d,input[N])));
+                                            Line::from_normal_distance(d, dot(d,input[N])));
                     assert(c);
                     end = ln.pointAt(c->ta);
                 }                

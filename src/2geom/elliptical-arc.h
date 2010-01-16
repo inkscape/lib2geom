@@ -48,43 +48,6 @@
 namespace Geom 
 {
 
-/**
- * @brief Elliptical arc curve
- *
- * Elliptical arc is a curve taking the shape of a section of an ellipse.
- * 
- * The arc function has two forms: the regular one, mapping the unit interval to points
- * on 2D plane (the linear domain), and a second form that maps some interval
- * \f$A \subseteq [0,2\pi)\f$ to the same points (the angular domain). The interval \f$A\f$
- * determines which part of the ellipse forms the arc. The arc is said to contain an angle
- * if its angular domain includes that angle (and therefore it is defined for that angle).
- *
- * The angular domain considers each ellipse to be
- * a rotated, scaled and translated unit circle: 0 corresponds to \f$(1,0)\f$ on the unit circle,
- * \f$\pi/2\f$ corresponds to \f$(0,1)\f$, \f$\pi\f$ to \f$(-1,0)\f$ and \f$3\pi/2\f$
- * to \f$(0,-1)\f$. After the angle is mapped to a point from a unit circle, the point is
- * transformed using a matrix of this form
- * \f[ M = \left[ \begin{array}{ccc}
-        r_X \cos(\theta) & -r_Y \sin(\theta) & 0 \\
-        r_X \sin(\theta) & r_Y \cos(\theta) & 0 \\
-        c_X & c_Y & 1 \end{array} \right] \f]
- * where \f$r_X, r_Y\f$ are the X and Y rays of the ellipse, \f$\theta\f$ is its angle of rotation,
- * and \f$c_X, c_Y\f$ the coordinates of the ellipse's center - thus mapping the angle
- * to some point on the ellipse. Note that for example the point at angluar coordinate 0,
- * the center and the point at angular coordinate \f$\pi/4\f$ do not necessarily
- * create an angle of \f$\pi/4\f$ radians; it is only the case if both axes of the ellipse
- * are of the same length (i.e. it is a circle).
- *
- * @image html ellipse-angular-coordinates.png "An illustration of the angular domain"
- *
- * Each arc is defined by five variables: The initial and final point, the ellipse's rays,
- * and the ellipse's rotation. Each set of those parameters corresponds to four different arcs,
- * with two of them larger than half an ellipse and two of turning clockwise while traveling
- * the initial to final point. The two flags disambiguate between them: "large arc flag" selects
- * the bigger arc, while the "sweep flag" selects the clockwise arc.
- *
- * @image html elliptical-arc-flags.png "The four possible arcs and the meaning of flags"
- */
 class EllipticalArc : public Curve, public AngleInterval
 {
 public:

@@ -37,6 +37,90 @@
 namespace Geom
 {
 
+/**
+ * @class Line
+ * @brief Infinite line on a plane.
+ *
+ * Every line in 2Geom has a special point on it, called the origin. The direction of the line
+ * is stored as a unit vector (versor). This way a line can be interpreted as a function
+ * \f$ f: (-\infty, \infty) \to \mathbb{R}^2\f$. Zero corresponds to the origin point,
+ * positive values to the points in the direction of the unit vector, and negative values
+ * to points in the opposite direction.
+ * 
+ * @ingroup Primitives
+ */
+
+/** @brief Set the line by solving the line equation.
+ * A line is a set of points that satisfies the line equation
+ * \f$Ax + By + C = 0\f$. This function changes the line so that its points
+ * satisfy the line equation with the given coefficients. */
+void Line::setCoefficients (double a, double b, double c) {
+    if (a == 0 && b == 0) {
+        if (c != 0) {
+            THROW_LOGICALERROR("the passed coefficients gives the empty set");
+        }
+        m_versor = Point(0,0);
+        m_origin = Point(0,0);
+    } else {
+        double l = hypot(a,b);
+        a /= l;
+        b /= l;
+        c /= l;
+        Point N(a, b);
+        m_versor = N.ccw();
+        m_origin = -c * N;
+    }
+}
+
+/** @brief Get the line equation coefficients of this line.
+ * @return Vector with three values corresponding to the A, B and C
+ *         coefficients of the line equation for this line. */
+std::vector<double> Line::coefficients() const {
+    std::vector<double> coeff;
+    coeff.reserve(3);
+    Point N = versor().cw();
+    coeff.push_back (N[X]);
+    coeff.push_back (N[Y]);
+    double d = - dot (N, origin());
+    coeff.push_back (d);
+    return coeff;
+}
+
+/** @brief Find intersection with an axis-aligned line.
+ * @param v Coordinate of the axis-aligned line
+ * @param d Which axis the coordinate is on. X means a vertical line, Y means a horizontal line.
+ * @return Time values at which this line intersects the query line. */
+std::vector<Coord> Line::roots(Coord v, Dim2 d) const {
+    if (d < 0 || d > 1)
+        THROW_RANGEERROR("Line::roots, dimension argument out of range");
+    std::vector<Coord> result;
+    if ( m_versor[d] != 0 )
+    {
+        result.push_back( (v - m_origin[d]) / m_versor[d] );
+    }
+    // TODO: else ?
+    return result;
+}
+
+/** @brief Get a time value corresponding to a point.
+ * @param p Point on the line. If the point is not on the line,
+ *          the returned value will be meaningless.
+ * @return Time value t such that \f$f(t) = p\f$.
+ * @see timeAtProjection */
+Coord Line::timeAt(Point const& _point) const {
+    Coord t;
+    if ( m_versor[X] != 0 ) {
+        t = (_point[X] - m_origin[X]) / m_versor[X];
+    }
+    else if ( m_versor[Y] != 0 ) {
+        t = (_point[Y] - m_origin[Y]) / m_versor[Y];
+    }
+    else { // degenerate case
+        t = 0;
+    }
+    return t;
+}
+
 namespace detail
 {
 

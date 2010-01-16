@@ -53,7 +53,7 @@ namespace Geom
 LineSegment intersection(Line l, Rect r) {
     Point p0, p1;
     double a,b,c;
-    std::vector<double> ifc = l.implicit_form_coefficients();
+    std::vector<double> ifc = l.coefficients();
     a = ifc[0];
     b = ifc[1];
     c = ifc[2];
@@ -180,8 +180,8 @@ double RatQuad::lambda() const {
 RatQuad RatQuad::fromPointsTangents(Point P0, Point dP0,
                        Point P,
                        Point P2, Point dP2) {
-  Line Line0 = Line::fromPointDirection(P0, dP0);
-  Line Line2 = Line::fromPointDirection(P2, dP2);
+  Line Line0 = Line::from_origin_and_versor(P0, dP0);
+  Line Line2 = Line::from_origin_and_versor(P2, dP2);
   try {
     OptCrossing oc = intersection(Line0, Line2);
     if(!oc) // what to do?
@@ -214,8 +214,8 @@ RatQuad RatQuad::fromPointsTangents(Point P0, Point dP0,
 }
 
 RatQuad RatQuad::circularArc(Point P0, Point P1, Point P2) {
-    Line Line0 = Line::fromPointDirection(P0, P1 - P0);
-    Line Line2 = Line::fromPointDirection(P2, P1 - P2);
+    Line Line0 = Line::from_origin_and_versor(P0, P1 - P0);
+    Line Line2 = Line::from_origin_and_versor(P2, P1 - P2);
     return RatQuad(P0, P1, P2, dot(unit_vector(P0 - P1), unit_vector(P0 - P2)));
 }
 
@@ -344,8 +344,8 @@ std::vector<Point> decompose_degenerate(xAx const & C1, xAx const & C2, xAx cons
             n1 = Point(b-d, 1);
         }
 
-        Line L0 = Line::fromPointDirection(B0, rot90(n0));
-        Line L1 = Line::fromPointDirection(B0, rot90(n1));
+        Line L0 = Line::from_origin_and_versor(B0, rot90(n0));
+        Line L1 = Line::from_origin_and_versor(B0, rot90(n1));
 
         std::vector<double> rts = C1.roots(L0);
         for(unsigned i = 0; i < rts.size(); i++) {
@@ -394,7 +394,7 @@ std::vector<Point> decompose_degenerate(xAx const & C1, xAx const & C2, xAx cons
          */
         assert(L2sq(g) != 0);
 
-        Line Lx = Line::fromPointDirection(trial_pt, g); // a line along the gradient
+        Line Lx = Line::from_origin_and_versor(trial_pt, g); // a line along the gradient
         double A[2][2] = {{2*xC0.c[0], xC0.c[1]},
                           {xC0.c[1], 2*xC0.c[2]}};
         double const determ = det(A);
@@ -402,7 +402,7 @@ std::vector<Point> decompose_degenerate(xAx const & C1, xAx const & C2, xAx cons
         for(unsigned i = 0; i < rts.size(); i++) {
             Point P0 = Lx.pointAt(rts[i]);
             //std::cout << P0 << "\n";
-            Line L = Line::fromPointDirection(P0, rot90(g));
+            Line L = Line::from_origin_and_versor(P0, rot90(g));
             std::vector<double> cnrts;
             // It's very likely that at least one of the conics is degenerate, this will hopefully pick the more generate of the two.
             if(fabs(C1.hessian().det()) > fabs(C2.hessian().det()))
@@ -585,7 +585,7 @@ xAx xAx::operator*(double const &b) const {
       if(L2sq(dA) <= 1e-10) { // perhaps a single point?
           return boost::optional<RatQuad> ();
       }
-      LineSegment ls = intersection(Line::fromPointDirection(A, dA), bnd);
+      LineSegment ls = intersection(Line::from_origin_and_versor(A, dA), bnd);
       return RatQuad::fromPointsTangents(A, dA, ls.pointAt(0.5), ls[1], dA);
   }
   else if(crs.size() >= 2 and crs.size() < 4) {
@@ -813,7 +813,7 @@ void xAx::set (const Point& _vertex, double _angle, double _dist1, double _dist2
         if (_dist1 == infinity()) // degenerate to a line
         {
             Line l(_vertex, _angle);
-            std::vector<double> lcoeff = l.implicit_form_coefficients();
+            std::vector<double> lcoeff = l.coefficients();
             coeff(3) = lcoeff[0];
             coeff(4) = lcoeff[1];
             coeff(5) = lcoeff[2];
@@ -988,8 +988,8 @@ void xAx::set (const Point & _focus, const Line & _directrix, double _eccentrici
  */
 void xAx::set (const Line& l1, const Line& l2)
 {
-    std::vector<double> cl1 = l1.implicit_form_coefficients();
-    std::vector<double> cl2 = l2.implicit_form_coefficients();
+    std::vector<double> cl1 = l1.coefficients();
+    std::vector<double> cl2 = l2.coefficients();
 
     coeff(0) = cl1[0] * cl2[0];
     coeff(2) = cl1[1] * cl2[1];
@@ -1386,8 +1386,8 @@ bool xAx::decompose (Line& l1, Line& l2) const
         i_max = min_ij.first;
         j_max = min_ij.second;
     }
-    l1.setByCoefficients (M(i_max,0), M(i_max,1), M(i_max,2));
-    l2.setByCoefficients (M(0, j_max), M(1,j_max), M(2,j_max));
+    l1.setCoefficients (M(i_max,0), M(i_max,1), M(i_max,2));
+    l2.setCoefficients (M(0, j_max), M(1,j_max), M(2,j_max));
 
     return true;
 }
@@ -1417,8 +1417,8 @@ Rect xAx::arc_bound (const Point & P1, const Point & Q, const Point & P2) const
     bool empty[2] = {false, false};
 
     try // if the passed coefficients lead to an equation 0x + 0y + c == 0,
-    {   // with c != 0 the setByCoefficients rise an exception
-        gl[0].setByCoefficients (coeff(1), 2 * coeff(2), coeff(4));
+    {   // with c != 0 the setCoefficients rise an exception
+        gl[0].setCoefficients (coeff(1), 2 * coeff(2), coeff(4));
     }
     catch(Geom::LogicalError e)
     {
@@ -1427,7 +1427,7 @@ Rect xAx::arc_bound (const Point & P1, const Point & Q, const Point & P2) const
 
     try
     {
-        gl[1].setByCoefficients (2 * coeff(0), coeff(1), coeff(3));
+        gl[1].setCoefficients (2 * coeff(0), coeff(1), coeff(3));
     }
     catch(Geom::LogicalError e)
     {

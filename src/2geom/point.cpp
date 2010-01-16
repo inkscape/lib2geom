@@ -5,6 +5,31 @@
 
 namespace Geom {
 
+/**
+ * @class Point
+ * @brief Two-dimensional point that doubles as a vector.
+ *
+ * Points in 2Geom are represented in Cartesian coordinates, e.g. as a pair of numbers
+ * that store the X and Y coordinates. Each point is also a vector in \f$\mathbb{R}^2\f$
+ * from the origin (point at 0,0) to the stored coordinates,
+ * and has methods implementing several vector operations (like length()).
+ *
+ * \par Operator note
+ * \par
+ * Most operators are provided by Boost operator helpers, so they are not visible in this class.
+ * If @a p, @a q, @a r denote points, @a s a floating-point scalar, and @a m a transformation matrix,
+ * then the following operations are available:
+ * @code
+   p += q; p -= q; r = p + q; r = p - q;
+   p *= s; p /= s; q = p * s; q = s * p; q = p / s;
+   p *= m; p /= m; q = p * m; q = m * p; q = p / m;
+   @endcode
+ * It is possible to left-multiply a point by a matrix, even though mathematically speaking
+ * this is undefined. The result is a point identical to that obtained by right-multiplying.
+ * Division of points by matrices is defined as multiplication by their inverses.
+ *
+ * @ingroup Primitives */
+
 /** @brief Normalize the vector representing the point.
  * After this method returns, the length of the vector will be 1 (unless both coordinates are
  * zero - the zero point will be returned then). The function tries to handle infinite

@@ -47,6 +47,13 @@
 namespace Geom
 {
 
+/**
+ * @class SVGEllipticalArc
+ * @brief SVG 1.1-compliant elliptical arc.
+ *
+ * This class is almost identical to the normal elliptical arc, but it differs slightly
+ * in the handling of degenerate arcs to be compliant with SVG 1.1 implementation guidelines.
+ */
 
 namespace detail
 {
