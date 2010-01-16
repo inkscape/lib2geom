@@ -35,7 +35,7 @@
 /**
  * @mainpage
  *
- * @image 2geom-logo.png
+ * @image html 2geom-logo.png
  *
  * @section Introduction
  *
