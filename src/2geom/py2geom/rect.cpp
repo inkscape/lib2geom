@@ -32,7 +32,7 @@
 #include "py2geom.h"
 #include "helpers.h"
 
-#include "../matrix.h"
+#include "../affine.h"
 #include "../d2.h"
 #include "../interval.h"
 
