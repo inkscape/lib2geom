@@ -374,7 +374,7 @@ Affine Affine::inverse() const {
 
 /** @brief Calculate the determinant.
  * @return \f$\det A\f$. */
-Geom::Coord Affine::det() const {
+Coord Affine::det() const {
     // TODO this can overflow
     return _c[0] * _c[3] - _c[1] * _c[2];
 }
@@ -382,7 +382,7 @@ Geom::Coord Affine::det() const {
 /** @brief Calculate the square of the descriminant.
  * This is simply the absolute value of the determinant.
  * @return \f$|\det A|\f$. */
-Geom::Coord Affine::descrim2() const {
+Coord Affine::descrim2() const {
     return fabs(det());
 }
 
@@ -392,7 +392,7 @@ Geom::Coord Affine::descrim2() const {
  * to arbitrary objects on a plane (the new length will be
  * @code line_seg.length() * m.descrim()) @endcode.
  * @return \f$\sqrt{|\det A|}\f$. */
-Geom::Coord Affine::descrim() const {
+Coord Affine::descrim() const {
     return sqrt(descrim2());
 }
 
@@ -400,20 +400,19 @@ Geom::Coord Affine::descrim() const {
  * After this operation, the matrix will correspond to the transformation
  * obtained by first applying the original version of this matrix, and then
  * applying @a m. */
-Affine &Affine::operator*=(Affine const &m) {
-    *this = *this * m;
-    return *this;
-}
-Affine Affine::operator*(Affine const &o) {
-    Affine A;
+Affine &Affine::operator*=(Affine const &o) {
+    Coord nc[6];
     for(int a = 0; a < 5; a += 2) {
         for(int b = 0; b < 2; b++) {
-            A._c[a + b] = _c[a] * o._c[b] + _c[a + 1] * o._c[b + 2];
+            nc[a + b] = _c[a] * o._c[b] + _c[a + 1] * o._c[b + 2];
         }
     }
-    A._c[4] += o._c[4];
-    A._c[5] += o._c[5];
-    return A;
+    for(int a = 0; a < 6; ++a) {
+        _c[a] = nc[a];
+    }
+    _c[4] += o._c[4];
+    _c[5] += o._c[5];
+    return *this;
 }
 
 //TODO: What's this!?!

@@ -57,12 +57,13 @@ namespace Geom {
  */
 class Affine
     : boost::equality_comparable< Affine // generates operator!= from operator==
+    , boost::multipliable< Affine
     , boost::multipliable< Affine, Translate
     , boost::multipliable< Affine, Scale
     , boost::multipliable< Affine, Rotate
     , boost::multipliable< Affine, HShear
     , boost::multipliable< Affine, VShear
-      > > > > > >
+      > > > > > > >
     // boost::multipliable< A, B > generates operator*(A const &, B const &)
     // and operator*(B const &, A const &) from A::operator*=(B const &)
 {
@@ -106,7 +107,6 @@ public:
     /// @name Combine with other transformations
     /// @{
     Affine &operator*=(Affine const &m);
-    Affine operator*(Affine const &m);
     // implemented in transforms.cpp
     Affine &operator*=(Translate const &t);
     Affine &operator*=(Scale const &s);
