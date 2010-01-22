@@ -1,11 +1,12 @@
 /**
  * \file
  * \brief  Contains forward declarations of 2geom types
- *
+ *//*
  * Authors:
  *  Johan Engelen <goejendaagh@zonnet.nl>
+ *  Krzysztof Kosiński <tweenk.pl@gmail.com>
  *
- * Copyright 2008  authors
+ * Copyright (C) 2008-2010 Authors
  *
  * This library is free software; you can redistribute it and/or
  * modify it either under the terms of the GNU Lesser General Public
@@ -43,6 +44,8 @@ typedef double Coord;
 class Point;
 class Interval;
 class OptInterval;
+class Line;
+class Ray;
 
 // fragments
 class Linear;
@@ -72,11 +75,8 @@ class InvariantsViolation;
 class NotInvertible;
 class ContinuityError;
 
-class Hat;
-class Tri;
-
 // transforms
-class Matrix;
+class Affine;
 class Translate;
 class Rotate;
 class Scale;
@@ -84,7 +84,7 @@ class HShear;
 class VShear;
 
 // templates
-template <class> class D2;
+template <typename> class D2;
 template <typename> class Piecewise;
 
 typedef D2<Interval> Rect;
@@ -92,6 +92,8 @@ class OptRect;
 
 class Shape;
 class Region;
+class Hat;
+class Tri;
 
 // misc
 class SVGPathSink;

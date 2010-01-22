@@ -28,21 +28,30 @@
  * the specific language governing rights and limitations.
  */
 
-#ifndef _2GEOM_RAY_H_
-#define _2GEOM_RAY_H_
+#ifndef LIB2GEOM_SEEN_RAY_H
+#define LIB2GEOM_SEEN_RAY_H
 
+#include <vector>
 #include <2geom/point.h>
 #include <2geom/bezier-curve.h> // for LineSegment
 #include <2geom/exception.h>
 
-#include <vector>
-
-
 namespace Geom
 {
 
-class Ray
-{
+/**
+ * @brief Straight ray from a specific point to infinity.
+ *
+ * Rays are "half-lines" - they begin at some specific point and extend in a straight line
+ * to infinity.
+ *
+ * @ingroup Primitives
+ */
+class Ray {
+private:
+    Point m_origin;
+    Point m_versor;
+
 public:
 	Ray()
 		: m_origin(0,0), m_versor(1,0)
@@ -187,11 +196,6 @@ public:
 	{
 		return Ray(m_origin * m, (m_origin + m_versor) * m);
 	}
-
-private:
-	Point m_origin;
-	Point m_versor;
-
 };  // end class ray
 
 inline

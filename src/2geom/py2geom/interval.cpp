@@ -67,12 +67,12 @@ static bool wrap_contains_ivl(Geom::Interval const &x, Geom::Interval val) {
     return x.contains(val);
 }
 
-static bool wrap_strict_contains_coord(Geom::Interval const &x, Geom::Coord val) {
-    return x.strict_contains(val);
+static bool wrap_interiorContains_coord(Geom::Interval const &x, Geom::Coord val) {
+    return x.interiorContains(val);
 }
 
-static bool wrap_strict_contains_ivl(Geom::Interval const &x, Geom::Interval val) {
-    return x.strict_contains(val);
+static bool wrap_interiorContains_ivl(Geom::Interval const &x, Geom::Interval val) {
+    return x.interiorContains(val);
 }
 
 void wrap_interval() {
@@ -100,14 +100,14 @@ void wrap_interval() {
         //TODO: fix for overloading
         .def("contains", wrap_contains_coord)
         .def("contains", wrap_contains_ivl)
-        .def("strict_contains", wrap_strict_contains_coord)
-        .def("strict_contains", wrap_strict_contains_ivl)
+        .def("interiorContains", wrap_interiorContains_coord)
+        .def("interiorContains", wrap_interiorContains_ivl)
         .def("intersects", &Geom::Interval::intersects)
 
         .def("setMin", &Geom::Interval::setMin)
         .def("setMax", &Geom::Interval::setMax)
         .def("extendTo", &Geom::Interval::extendTo)
-        .def("fromArray", &Geom::Interval::fromArray)
+        .def("from_array", &Geom::Interval::from_array)
         .def("expandBy", &Geom::Interval::expandBy)
         .def("unionWith", &Geom::Interval::unionWith)
 

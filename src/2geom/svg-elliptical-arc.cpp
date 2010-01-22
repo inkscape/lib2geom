@@ -53,6 +53,8 @@ namespace Geom
  *
  * This class is almost identical to the normal elliptical arc, but it differs slightly
  * in the handling of degenerate arcs to be compliant with SVG 1.1 implementation guidelines.
+ *
+ * @ingroup Curves
  */
 
 namespace detail

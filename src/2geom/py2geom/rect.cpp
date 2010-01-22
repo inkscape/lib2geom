@@ -46,12 +46,12 @@ static bool wrap_contains_ivl(Geom::Rect const &x, Geom::Rect val) {
     return x.contains(val);
 }
 
-static bool wrap_strict_contains_coord(Geom::Rect const &x, Geom::Point val) {
-    return x.strict_contains(val);
+static bool wrap_interiorContains_coord(Geom::Rect const &x, Geom::Point val) {
+    return x.interiorContains(val);
 }
 
-static bool wrap_strict_contains_ivl(Geom::Rect const &x, Geom::Rect val) {
-    return x.strict_contains(val);
+static bool wrap_interiorContains_ivl(Geom::Rect const &x, Geom::Rect val) {
+    return x.interiorContains(val);
 }
 
 static void wrap_expandBy_pt(Geom::Rect &x, Geom::Point val) {
@@ -96,8 +96,8 @@ void wrap_rect() {
         .def("maxExtent", &Geom::Rect::maxExtent)
         .def("contains", wrap_contains_coord)
         .def("contains", wrap_contains_ivl)
-        .def("strict_contains", wrap_strict_contains_coord)
-        .def("strict_contains", wrap_strict_contains_ivl)
+        .def("interiorContains", wrap_interiorContains_coord)
+        .def("interiorContains", wrap_interiorContains_ivl)
         .def("intersects", &Geom::Rect::intersects)
         .def("expandTo", &Geom::Rect::expandTo)
         .def("unionWith", &wrap_unionWith)

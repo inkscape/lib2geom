@@ -45,19 +45,28 @@ namespace Geom
 {
 
 class BezierCurve : public Curve {
+protected:
+    D2<Bezier> inner;
+
 public:
     /// @name Construct the curve
     /// @{
     /** @brief Construct a Bezier curve of the specified order with all points zero. */
-    explicit BezierCurve(unsigned order) : inner(Bezier::Order(order), Bezier::Order(order)) {}
+    explicit BezierCurve(unsigned order)
+        : inner(Bezier::Order(order), Bezier::Order(order))
+    {}
     /** @brief Construct from 2D Bezier polynomial. */
-    explicit BezierCurve(D2<Bezier > const &x) : inner(x) {
+    explicit BezierCurve(D2<Bezier > const &x)
+        : inner(x)
+    {
         if (inner[X].order() != inner[Y].order())
             THROW_LOGICALERROR("Beziers used to construct a BezierCurve "
                                "are not of the same order");
     }
     /** @brief Construct from two 1D Bezier polynomials of the same order. */
-    BezierCurve(Bezier x, Bezier y) : inner(x, y) {
+    BezierCurve(Bezier x, Bezier y)
+        : inner(x, y)
+    {
         // throw an error if the orders do not match
         if (x.order() != y.order())
             THROW_LOGICALERROR("Beziers used to construct a BezierCurve "
@@ -183,19 +192,6 @@ public:
     virtual Coord valueAt(Coord t, Dim2 d) const { return inner[d].valueAt(t); }
     virtual D2<SBasis> toSBasis() const {return inner.toSBasis(); }
 #endif
-
-protected:
-    /*BezierCurve(Point c[]) {
-        Coord *x = new Coord[order()+1];
-        Coord *y = new Coord[order()+1];
-        for(unsigned i = 0; i <= order(); i++) {
-            x[i] = c[i][X]; y[i] = c[i][Y];
-        }
-        inner[X] = Bezier(x, order());
-        inner[Y] = Bezier(y, order());
-    }*/
-
-    D2<Bezier> inner;
 };
 
 

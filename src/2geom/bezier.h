@@ -381,7 +381,8 @@ inline Bezier integral(const Bezier & a) {
 }
 
 inline OptInterval bounds_fast(Bezier const & b) {
-    return Interval::fromArray(&const_cast<Bezier&>(b).c_[0], b.size());
+    OptInterval ret = Interval::from_array(&const_cast<Bezier&>(b).c_[0], b.size());
+    return ret;
 }
 
 //TODO: better bounds exact

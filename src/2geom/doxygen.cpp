@@ -44,19 +44,23 @@
  * or exact boolean operations on paths. It evolved from the geometry code used
  * in Inkscape, a free software, cross-platform vector graphics editor.
  *
- * @section Contents
+ * @section UserGuide User guide
  *
  * - @subpage Overview "Overview of 2Geom"
- * - @ref Primitives "Geometric primitives" - points, intervals and angles.
+ * - @ref Primitives "Geometric primitives" - points, angles, lines, axis-aligned rectangles...
  * - @ref Transforms "Affine transformations" - mathematical representation for operations
  *   like translation, scaling and rotation.
  * - @ref Curves "Curves" - functions mapping the unit interval to points on a plane.
- * - @ref Shapes "Shapes" - circles, rectangles, ellipses, polygons and the like.
+ * - @ref Shapes "Shapes" - circles, ellipses, polygons and the like.
  * - @ref Paths "Paths" - contiguous sequences of curves.
  * - @ref ShapeOps "Shape operations" - boolean algebra, offsets and other advanced operations.
  * - @ref Containers "Geometric containers" - efficient ways to store and retrieve
  *   geometric information.
  * - @ref SVG "SVG integration" - classes and functions to work with SVG-like input.
+ *
+ * @section DeveloperInfo Developer information
+ *
+ * - @subpage CodingStandards "Coding standards used in 2Geom"
  */
 
 // Overview subpage
@@ -67,6 +71,75 @@
  * objects of in a generic way without knowing their actual type at compile time,
  * an a lower-level one based on templates, which is designed with performance in mind.
  * For performance-critical tasks it may be necessary to use the lower level API.
+ */
+
+/**
+ * @page CodingStandards "Coding standards and conventions used in 2Geom"
+ *
+ * @section Indenting
+ *
+ * All files should use 4 spaces as indentation.
+ * 
+ * @section Namespaces
+ *
+ * All classes intended for direct use by the end users should be in the Geom namespace.
+ * Contents of namespaces should not be indented. Closing brace of a namespace
+ * should have a comment indicating which namespace it is closing.
+ * @code
+ namespace Geom {
+ namespace FooInternal {
+ 
+ unsigned some_function()
+ {
+     // ...code...
+ }
+
+ } // namespace FooInternal
+ } // namespace Geom
+ @endcode
+ * 
+ * @section Classes
+ *
+ * @code
+ // superclass list should use Boost notation,
+ // especially if there is more than one.
+ class Foo
+     : public Bar
+     , public Baz
+ {
+     // constructors should use Boost notation if the class has superclasses.
+     Foo(int a)
+         : Bar(a)
+         , Baz(b)
+     {
+         // constructor body
+     }
+     Foo(int a) {
+         // constructor with default initialization of superclasses
+     }
+
+     // methods use camelCaseNames.
+     // one-line methods can be collapsed.
+     bool isActive() { return _blurp; }
+     // multi-line methods have the opening brace on the same line.
+     void invert() {
+         // ... code ...
+     }
+
+     // static functions use lowercase_with_underscores.
+     // static factory functions should be called from_something.
+     static Foo from_point(Point const &p) {
+         // ...
+     }
+ }; // end of class Foo
+
+ // Closing brace of a class should have the above comment.
+ @endcode
+ *
+ * @section FreeFuns Free functions
+ *
+ * Functions should use lowercase_with_underscores names. The opening brace of
+ * the definition should be on a separate line.
  */
 
 // Documentation for groups
@@ -94,10 +167,10 @@
  * object in one go. This way instead of performing 3 expensive operations, you will only do
  * two very fast matrix multiplications and one complex transformation. Here is an example:
  * @code
-   transformed_path = long_path * A * B * C; // wrong! long_path will be transformed 3 times.
-   transformed_path = long_path * (A * B * C); // good! long_path will be transformed only once.
-   Affine total = A * B * C; // you can store the transform to apply it to several objects.
-   transformed_path = long_path * total; // good!
+ transformed_path = long_path * A * B * C; // wrong! long_path will be transformed 3 times.
+ transformed_path = long_path * (A * B * C); // good! long_path will be transformed only once.
+ Affine total = A * B * C; // you can store the transform to apply it to several objects.
+ transformed_path = long_path * total; // good!
    @endcode
  * Ordering note: if you compose transformations via multiplication, they are applied
  * from left to right. If you write <code> ptrans = p * A * B * C * D;</code>, then it means
@@ -125,7 +198,7 @@
 /**
  * @defgroup Shapes Basic shapes
  *
- * Among the shapes supported by 2Geom are rectangles, circles, ellipses and polygons.
+ * Among the shapes supported by 2Geom are circles, ellipses and polygons.
  * Polygons can also be represented by paths containing only linear segments.
  */
 /*

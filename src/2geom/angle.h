@@ -171,6 +171,9 @@ inline Angle distance_abs(Angle const &as, Angle const &ae) {
  * the end angle for 1, and interpolate linearly for other values. Note that such functions
  * are not continuous if the interval contains the zero angle.
  *
+ * This class is immutable - you cannot change the values of start and end angles
+ * without creating a new instance of this class.
+ *
  * @ingroup Primitives
  */
 class AngleInterval {

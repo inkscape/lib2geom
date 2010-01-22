@@ -1,8 +1,7 @@
 /**
  * \file
- * \brief  D2<Interval> specialization to Rect
- */
-/*
+ * \brief Axis-aligned rectangle
+ *//*
  * Copyright 2007 Michael Sloan <mgsloan@gmail.com>
  *
  * This library is free software; you can redistribute it and/or
@@ -28,9 +27,7 @@
  * OF ANY KIND, either express or implied. See the LGPL or the MPL for
  * the specific language governing rights and limitations.
  *
- */
-
-/* Authors of original rect class:
+ * Authors of original rect class:
  *   Lauris Kaplinski <lauris@kaplinski.com>
  *   Nathan Hurst <njh@mail.csse.monash.edu.au>
  *   bulia byak <buliabyak@users.sf.net>
@@ -39,26 +36,30 @@
 
 #include <2geom/d2.h>
 
-#ifndef _2GEOM_RECT
-#define _2GEOM_RECT
+#ifndef LIB2GEOM_RECT_H
+#define LIB2GEOM_RECT_H
 
 #include <2geom/affine.h>
 #include <boost/optional/optional.hpp>
 
 namespace Geom {
-/** D2<Interval> specialization to Rect */
+
+/**
+ * @brief Axis-aligned rectangle - convenience typedef
+ * @ingroup Primitives
+ */
 typedef D2<Interval> Rect;
 class OptRect;
 
 Rect unify(const Rect &, const Rect &);
+
 /**
- * %Rect class.
- * The Rect class is actually a specialisation of D2<Interval>.
- * 
+ * @brief Axis aligned rectangle.
+ * @ingroup Primitives
  */
 template<>
 class D2<Interval> {
-  private:
+private:
     Interval f[2];
   public:
     /** Best not to use this constructor, do not rely on what it initializes the object to.
@@ -128,14 +129,14 @@ class D2<Interval> {
     inline bool contains(Rect const &r)   const { 
         return f[X].contains(r[X]) && f[Y].contains(r[Y]); 
     }
-    inline bool strict_contains(Rect const &r)   const { 
-        return f[X].strict_contains(r[X]) && f[Y].strict_contains(r[Y]); 
+    inline bool interiorContains(Rect const &r)   const { 
+        return f[X].interiorContains(r[X]) && f[Y].interiorContains(r[Y]); 
     }
     inline bool contains(Point const &p)  const {
         return f[X].contains(p[X]) && f[Y].contains(p[Y]);
     }
-    inline bool strict_contains(Point const &p)  const {
-        return f[X].strict_contains(p[X]) && f[Y].strict_contains(p[Y]);
+    inline bool interiorContains(Point const &p)  const {
+        return f[X].interiorContains(p[X]) && f[Y].interiorContains(p[Y]);
     }
 
     inline void expandTo(Point p)        { 

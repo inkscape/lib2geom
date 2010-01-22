@@ -52,13 +52,12 @@ private:
     Point m_origin;
     Point m_versor;
 public:
+    /// @name Creating lines.
+    /// @{
     /** @brief Create a default horizontal line. */
     Line()
         : m_origin(0,0), m_versor(1,0)
     {}
-
-    /// @name Creating lines.
-    /// @{
     /** @brief Create a line with the specified inclination.
      * @param _origin One of the points on the line
      * @param angle Angle of the line in mathematical convention */

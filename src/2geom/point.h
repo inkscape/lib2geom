@@ -49,8 +49,6 @@ namespace Geom {
 
 enum Dim2 { X=0, Y=1 };
 
-class Affine;
-
 class Point
     : boost::additive< Point
     , boost::totally_ordered< Point
@@ -250,40 +248,40 @@ inline bool Point::LexOrderRt::operator()(Point const &a, Point const &b) {
     return dim ? Point::LexOrder<Y>()(a, b) : Point::LexOrder<X>()(a, b);
 }
 
-Coord L1(Point const &p);
-
 /** @brief Compute the second (Euclidean) norm of @a p.
  * This corresponds to the length of @a p. The result will not overflow even if
  * \f$p_X^2 + p_Y^2\f$ is larger that the maximum value that can be stored
  * in a <code>double</code>.
  * @return \f$\sqrt{p_X^2 + p_Y^2}\f$
  * @relates Point */
-inline Coord L2(Point const &p) { return p.length(); }
+inline Coord L2(Point const &p)
+{
+    return p.length();
+}
 
 /** @brief Compute the square of the Euclidean norm of @a p.
  * Warning: this can overflow where L2 won't.
  * @return \f$p_X^2 + p_Y^2\f$
  * @relates Point */
-inline Coord L2sq(Point const &p) { return p[0]*p[0] + p[1]*p[1]; }
-
-double LInfty(Point const &p);
-bool is_zero(Point const &p);
-bool is_unit_vector(Point const &p);
-extern double atan2(Point const &p);
-extern double angle_between(Point const &a, Point const &b);
+inline Coord L2sq(Point const &p)
+{
+    return p[0]*p[0] + p[1]*p[1];
+}
 
 //IMPL: NearConcept
 /** @brief Nearness predicate for points.
  * True if neither coordinate of @a a is further than @a eps from the corresponding
  * coordinate of @a b.
  * @relates Point */
-inline bool are_near(Point const &a, Point const &b, double const eps=EPSILON) {
+inline bool are_near(Point const &a, Point const &b, double const eps=EPSILON)
+{
     return ( are_near(a[X],b[X],eps) && are_near(a[Y],b[Y],eps) );
 }
 
 /** @brief Return a point halfway between the specified ones.
  * @relates Point */
-inline Point middle_point(Point const& P1, Point const& P2) {
+inline Point middle_point(Point const& P1, Point const& P2)
+{
     return (P1 + P2) / 2;
 }
 
@@ -296,7 +294,10 @@ inline Point middle_point(Point const& P1, Point const& P2) {
  *
  * There is no function to rotate by -90 degrees: use -rot90(p) instead.
  * @relates Point */
-inline Point rot90(Point const &p) { return Point(-p[Y], p[X]); }
+inline Point rot90(Point const &p)
+{
+    return Point(-p[Y], p[X]);
+}
 
 /** @brief Linear interpolation between two points.
  * @param t Time value
@@ -305,9 +306,10 @@ inline Point rot90(Point const &p) { return Point(-p[Y], p[X]); }
  * @return Point on a line between a and b. The ratio of its distance from a
  *         and the distance between a and b will be equal to t.
  * @relates Point */
-inline Point lerp(double const t, Point const &a, Point const &b) { return (a * (1 - t) + b * t); }
-
-Point unit_vector(Point const &a);
+inline Point lerp(double const t, Point const &a, Point const &b)
+{
+    return (a * (1 - t) + b * t);
+}
 
 /** @brief Compute the dot product of a and b.
  * Dot product can be interpreted as a measure of how parallel the vectors are.
@@ -315,22 +317,41 @@ Point unit_vector(Point const &a);
  * and the sign depends on whether they point in the same direction (+) or opposite ones (-).
  * @return \f$a \cdot b = a_X b_X + a_Y b_Y\f$.
  * @relates Point*/
-inline Coord dot(Point const &a, Point const &b) { return a[0] * b[0] + a[1] * b[1]; }
+inline Coord dot(Point const &a, Point const &b)
+{
+    return a[0] * b[0] + a[1] * b[1];
+}
 
 /** @brief Compute the 2D cross product.
  * Defined as dot(a, b.cw()). This means it will be zero for parallel vectors,
  * and its absolute value highest for perpendicular vectors.
  * @relates Point*/
-inline Coord cross(Point const &a, Point const &b) { return dot(a, b.cw()); }
+inline Coord cross(Point const &a, Point const &b)
+{
+    return dot(a, b.cw());
+}
 
 /** @brief Compute the (Euclidean) distance between points.
  * @relates Point */
-inline Coord distance (Point const &a, Point const &b) { return L2(a - b); }
+inline Coord distance (Point const &a, Point const &b)
+{
+    return L2(a - b);
+}
 
 /** @brief Compute the square of the distance between points.
  * @relates Point */
-inline Coord distanceSq (Point const &a, Point const &b) { return L2sq(a - b); }
+inline Coord distanceSq (Point const &a, Point const &b)
+{
+    return L2sq(a - b);
+}
 
+Point unit_vector(Point const &a);
+Coord L1(Point const &p);
+Coord LInfty(Point const &p);
+bool is_zero(Point const &p);
+bool is_unit_vector(Point const &p);
+extern double atan2(Point const &p);
+extern double angle_between(Point const &a, Point const &b);
 Point abs(Point const &b);
 Point constrain_angle(Point const &A, Point const &B, unsigned int n = 4, Geom::Point const &dir = Geom::Point(1,0));
 
