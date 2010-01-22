@@ -206,7 +206,7 @@ Path::nearestPointPerCurve(Point const& _point) const
 	for (const_iterator it = begin() ; it != end_default() ; ++it)
 	//for (std::vector<Path>::const_iterator it = _path.begin(); it != _path.end(), ++it){
 	{
-	    np.push_back((*it)->nearestPoint(_point));
+	    np.push_back(it->nearestPoint(_point));
     }
 	return np;
 }  
