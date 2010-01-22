@@ -388,16 +388,14 @@ std::vector<Point> decompose_degenerate(xAx const & C1, xAx const & C2, xAx cons
          * No degenerate conic can pass through these points, so we can assume
          * that we've found a perpendicular to the double line.
          * Proof:
-         *  any degenerate must consist of at most 2 lines.  1.5,0.5 is not on any pair of lines passing through the previous 4 trials.
+         *  any degenerate must consist of at most 2 lines.  1.5,0.5 is not on any pair of lines
+         *  passing through the previous 4 trials.
          *
          * alternatively, there may be a way to determine this directly from xC0
          */
         assert(L2sq(g) != 0);
 
         Line Lx = Line::from_origin_and_versor(trial_pt, g); // a line along the gradient
-        double A[2][2] = {{2*xC0.c[0], xC0.c[1]},
-                          {xC0.c[1], 2*xC0.c[2]}};
-        double const determ = det(A);
         std::vector<double> rts = xC0.roots(Lx);
         for(unsigned i = 0; i < rts.size(); i++) {
             Point P0 = Lx.pointAt(rts[i]);

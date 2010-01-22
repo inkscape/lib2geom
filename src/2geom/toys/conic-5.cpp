@@ -90,10 +90,6 @@ void draw(cairo_t* cr, xAx C, Rect bnd) {
     }
 }
 
-static double det(Point a, Point b) {
-    return a[0]*b[1] - a[1]*b[0];
-}
-
 template <typename T>
 static T det(T a, T b, T c, T d) {
     return a*d - b*c;
@@ -337,7 +333,7 @@ public:
         sliders[2].geometry(Point(50, 80), 250);
     }
 
-    void first_time(int argc, char** argv) {
+    void first_time(int /*argc*/, char**/* argv*/) {
 
     }
 };

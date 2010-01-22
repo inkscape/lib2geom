@@ -91,7 +91,7 @@ BezierCurve create_bezier(Point const &anchor, double angle /* in degrees */,
  */
 BezierCurve
 create_bezier_again(Point const &anchor1, Point const &anchor2, Point const &dir1, Point const &dir2,
-                    double c1, double c2, double c3, double c4, double mu, cairo_t *cr = NULL) {
+                    double /*c1*/, double /*c2*/, double c3, double c4, double mu, cairo_t *cr = NULL) {
     Point A = anchor1;// - dir * c1;
     Point B = anchor1 + dir1 * (c3 + mu);
     Point C = anchor2 - dir2 * (c4 + mu);
@@ -112,7 +112,7 @@ create_bezier_along_curve(Piecewise<D2<SBasis> > const &curve1,
                           Piecewise<D2<SBasis> > const &curve2,
                           double segdist,
                           Coord const t1, Coord const t2, Point const &n,
-                          double c1, double c2, double c3, double c4, double mu, cairo_t *cr = NULL) {
+                          double c1, double c2, double /*c3*/, double /*c4*/, double /*mu*/, cairo_t *cr = NULL) {
     cout << "create_bezier_along_curve -- start" << endl;
     /*
     Point A = curve1.valueAt(t1 - c1);
@@ -203,7 +203,7 @@ class OffsetTester: public Toy {
         *notify << "5 - start/end rounding increase randomization" << endl;
         *notify << "6 - additional offset of the upper anchors (to modify the segment angle)" << endl;
 
-        for(int i = 0; i < psh_rand.size(); ++i) {
+        for(unsigned i = 0; i < psh_rand.size(); ++i) {
             cairo_move_to(cr,Geom::Point(slider_margin + 15.0 * i, slider_bot));
             cairo_line_to(cr,Geom::Point(slider_margin + 15.0 * i, slider_top));
         }
@@ -252,7 +252,6 @@ class OffsetTester: public Toy {
         vector<Point> dirs_bot;
         vector<Point> dirs_top;
         int counter = 0;
-        double tmpdist = 0;
         for(double i = 0.0; i < 1.0; i += segdist) {
             draw_cross(cr, offset_curve1.valueAt(i));
             pts_bot.push_back(offset_curve1.valueAt(i + segdist * c1_bot[counter] * lambda1));

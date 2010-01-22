@@ -136,7 +136,7 @@ SBasisOf<double> compose(SBasisOf<SBasisOf<double> > const &f,
     return compose(f, toSBasisOfDouble(X[0]), toSBasisOfDouble(X[1]));
 }
 
-
+/*
 static
 SBasis eval_v(SBasisOf<SBasis> const &f, double v){
     SBasis result(f.size(), Linear());
@@ -152,7 +152,7 @@ SBasis eval_v(SBasisOf<SBasisOf<double> > const &f, double v){
         result[i] = Linear(f[i][0].valueAt(v),f[i][1].valueAt(v));
     }
     return result;
-}
+}*/
 static
 SBasisOf<double> eval_dim(SBasisOf<SBasisOf<double> > const &f, double t, unsigned dim){
     if (dim == 1) return f.valueAt(t);
@@ -278,7 +278,8 @@ Piecewise<SBasis> convole(SBasisOf<double> const &f, Interval dom_f,
     b = SBasisOf<double>(LinearOf<double>(1.,1.)); 
     t = SBasisOf<double>(LinearOf<double>(dom_f.max()/dom_g.extent(), dom_f.max()/dom_g.extent()+1 )); 
     seg = toSBasis(compose(hh,b,t)-compose(hh,a,t));
-    result.push(seg,dom_f.max() + dom_g.max());        
+    result.push(seg,dom_f.max() + dom_g.max());
+    return result;
 }
 
 template <typename T>

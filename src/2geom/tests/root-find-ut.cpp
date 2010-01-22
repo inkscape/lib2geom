@@ -26,8 +26,7 @@ double uniform() {
     return double(rand()) / RAND_MAX;
 }
 
-int
-main(int argc, char** argv) {
+int main() {
     Poly a, b, r;
     double timer_precision = 0.01;
     double units = 1e6; // us
@@ -141,6 +140,8 @@ main(int argc, char** argv) {
         }
         cout << endl;
     }
+
+    return 0;
 }
 
 

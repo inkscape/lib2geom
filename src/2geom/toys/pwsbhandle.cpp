@@ -70,7 +70,7 @@ void PWSBHandle::load(FILE* f) {
 }
 
 void PWSBHandle::save(FILE* f) {
-    fprintf(f, "%d %d %d\n", curve_size, segs, pts.size());
+    fprintf(f, "%d %d %lu\n", curve_size, segs, pts.size());
     for(unsigned i = 0; i < pts.size(); i++) {
 	fprintf(f, "%lf %lf\n", pts[i][0], pts[i][1]);
     }

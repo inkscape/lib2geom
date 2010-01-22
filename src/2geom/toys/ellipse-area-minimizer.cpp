@@ -238,7 +238,7 @@ class EllipseAreaMinimizer : public Toy
         toggles[0].bounds = Rect( toggle_sp, toggle_sp + Point(135,25) );
         ConvexHull ch(psh.pts);
         bool non_convex = false;
-        for(int i = 0; i < psh.pts.size(); i++) {
+        for(unsigned i = 0; i < psh.pts.size(); i++) {
             if (ch.contains_point(psh.pts[i]))
                 non_convex = true;
         }

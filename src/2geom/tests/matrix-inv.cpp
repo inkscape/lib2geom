@@ -9,7 +9,7 @@ using std::vector;
 using namespace Geom;
 
 
-int main(int argc, char **argv) {
+int main() {
     //init(argc, argv, new Sb2d2);
     Geom::Affine test_matrix2[2] = {Geom::Affine( 0.001, 0.0, 0.0, 
                                                   0.001, 0.0, 0.0 ),

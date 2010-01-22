@@ -117,8 +117,7 @@ class BoolOps: public Toy {
         cairo_stroke(cr);
 	
         cairo_set_source_rgb(cr, 0,0,0);
-        Coord offset = -10;
-	for(int i = 0; i < pv.size(); i++) {
+	for(unsigned i = 0; i < pv.size(); i++) {
 	  Piecewise<D2<SBasis> > B = pv[i].toPwSb();
 	  Piecewise<D2<SBasis> > n = rot90(unitVector(derivative(B)));
 	  Piecewise<SBasis > al = arcLengthSb(B);

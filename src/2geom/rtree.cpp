@@ -1022,7 +1022,7 @@ int RTree::erase( const Rect &search_area, const int shape_to_delete ){
     }
     
     // D3
-    bool root_elimination_performed = condense_tree( contains_record );
+    //bool root_elimination_performed = condense_tree( contains_record );
 
     // D4
 

@@ -76,7 +76,7 @@ pick_polyN(size_t d, size_t m)
 
 template <>
 inline
-double pick_polyN<0>(size_t d, size_t m)
+double pick_polyN<0>(size_t /*d*/, size_t m)
 {
     return pick_int(m);
 }
@@ -97,7 +97,7 @@ pick_poly_max(size_t d, size_t m)
 
 template <>
 inline
-double pick_poly_max<0>(size_t d, size_t m)
+double pick_poly_max<0>(size_t /*d*/, size_t m)
 {
     return pick_int(m);
 }

@@ -704,8 +704,6 @@ public:
                 //at this point box[k] intersects the curve bbox away from the fbox and tbox.
 
                 D2<SBasis> c = tileToSB( tiles_data[i] );
-                double t1;
-                unsigned founds = 0;
                 for (unsigned corner=0; corner<4; corner++){
                     unsigned D = corner % 2;
                     double val = boxes[k].corner(corner)[D];

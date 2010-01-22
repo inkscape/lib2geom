@@ -54,7 +54,7 @@ const bool ch2_tests = true;
 
 ConvexHull inset_ch(ConvexHull ch, double dist) {
     ConvexHull ret;
-    for(int i = 0; i < ch.size(); i++) {
+    for(unsigned i = 0; i < ch.size(); i++) {
         Point bisect = (rot90(ch[i+1] - ch[i]));
         ret.merge(unit_vector(bisect)*dist+ch[i]);
         ret.merge(unit_vector(bisect)*dist+ch[i+1]);

@@ -67,10 +67,10 @@ struct CurveWrap : Geom::Curve, wrapper<Geom::Curve>
     CurveWrap *duplicate() const {return this->get_override("duplicate")();}
     Geom::Rect boundsFast() const {return this->get_override("boundsFast")();}
     Geom::Rect boundsExact() const {return this->get_override("boundsExact")();}
-    virtual Geom::OptRect boundsLocal(Geom::OptInterval i, unsigned deg) const {return this->get_override("boundsLocal")(i,deg);}
+    virtual Geom::OptRect boundsLocal(Geom::OptInterval const &i, unsigned deg) const {return this->get_override("boundsLocal")(i,deg);}
     std::vector<double> roots(double v, Geom::Dim2 d) const {return this->get_override("roots")(v,d);}
 
-    int winding(Geom::Point p) const {
+    int winding(Geom::Point const &p) const {
         if (override f = this->get_override("winding")) {
             return f(p);
         }
@@ -89,8 +89,8 @@ struct CurveWrap : Geom::Curve, wrapper<Geom::Curve>
 
     Geom::Curve *derivative() const { return this->get_override("derivative")(); }
 
-    void setInitial(Geom::Point v){ this->get_override("setInitial")(v); }
-    void setFinal(Geom::Point v){ this->get_override("setFinal")(v); }
+    void setInitial(Geom::Point const &v){ this->get_override("setInitial")(v); }
+    void setFinal(Geom::Point const &v){ this->get_override("setFinal")(v); }
 
 
     Geom::Curve *transformed(Geom::Affine const &m) const { return this->get_override("transformed")(m); }
@@ -102,7 +102,9 @@ struct CurveWrap : Geom::Curve, wrapper<Geom::Curve>
         return Geom::Curve::pointAt(t);
     }
     Geom::Point default_pointAt(Geom::Coord t) { return this->Geom::Curve::pointAt(t); }
-    std::vector<Geom::Point> pointAndDerivatives(Geom::Coord t, unsigned n) const {return this->get_override("pointAndDerivatives")();}
+    std::vector<Geom::Point> pointAndDerivatives(Geom::Coord t, unsigned n) const {
+        return this->get_override("pointAndDerivatives")(t, n);
+    }
 
     Geom::D2<Geom::SBasis> toSBasis() const {return this->get_override("sbasis")();}
 };

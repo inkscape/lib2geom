@@ -31,8 +31,7 @@ Poly lin_poly(double a, double b) { // ax + b
     return p;
 }
 
-int
-main(int argc, char** argv) {
+int main() {
     Bezier unit(0.0,1.0), hump(0,1,0), wiggle(0,1,-2,3);
   
     std::cout << unit <<std::endl;

@@ -59,7 +59,7 @@ SBasis2d x2_plus_y2_1(){
     return result;
 }
 
-SBasis2d conic_sb2d(vector<double> coeff) {
+SBasis2d conic_sb2d(vector<double> /*coeff*/) {
 /*TODO: implement sb2d algebra!!
     SBasis2d one(Linear2d(1,1,1,1));
     SBasis2d u(Linear2d(0,1,0,1));

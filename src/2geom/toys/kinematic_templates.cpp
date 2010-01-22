@@ -49,7 +49,7 @@ public:
     Point const get_center() { return center; }
     void set_center(Point const &pos) { center = pos; }
 
-    double const get_radius_of_action() { return radius; }
+    double get_radius_of_action() { return radius; }
     void set_radius_of_action(double const r) { radius = r; }
     void enlarge_radius_of_action(double const by) {
         if (radius > -by)

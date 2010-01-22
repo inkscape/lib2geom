@@ -22,10 +22,10 @@ static void plot(cairo_t* cr, SBasis const &B,double vscale=1,double a=0,double 
     cairo_d2_sb(cr, plot);
 //    cairo_stroke(cr);
 }
-static void plot(cairo_t* cr, SBasisOf<Interval> const &f, double vscale=1,double dx=.05, double a=0,double b=1){
+static void plot(cairo_t* cr, SBasisOf<Interval> const &f, double vscale=1,double /*dx*/=.05, double a=0,double b=1){
     cairo_save(cr);
-    double t= a;
 #if 0
+    double t = a;
     while (t<=b){
         Interval i = f.valueAt(t);
         std::cout<<i.min()<<","<<i.max()<<"\n";
@@ -72,7 +72,7 @@ class SbOfInterval: public Toy {
             cairo_line_to(cr, Geom::Point(adjuster[3*i].pos[X],y_max));
         }
     }
-    void drawIntervals(cairo_t *cr, PointHandle adjuster[], double x, double dx, double y_min, double y_max){
+    void drawIntervals(cairo_t *cr, PointHandle adjuster[], double /*x*/, double /*dx*/, double /*y_min*/, double /*y_max*/){
         for (unsigned i=0; i < size; i++){
             cairo_move_to(cr, adjuster[3*i+1].pos);
             cairo_line_to(cr, adjuster[3*i+2].pos);

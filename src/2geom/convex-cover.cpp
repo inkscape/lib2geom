@@ -483,13 +483,13 @@ ConvexHull merge(ConvexHull a, ConvexHull b) {
     // then the merged hull is p0, ..., pb1, qb1, ..., qb2, pb2, ...
     // In other words, either of the two polygons vertices are added in order until the vertex coincides with a bridge point, at which point we swap.
 
-    int state = (a[0][Y] < b[0][Y])?0:1;
+    unsigned state = (a[0][Y] < b[0][Y])?0:1;
     ret.boundary.reserve(a.size() + b.size());
     ConvexHull chs[2] = {a, b};
-    int idx = 0;
+    unsigned idx = 0;
     
     for(unsigned k = 0; k < bpair.size(); k++) {
-        int limit = idx_to_pair(bpair[k], state);
+        unsigned limit = idx_to_pair(bpair[k], state);
         std::cout << bpair[k].first << " , " << bpair[k].second << "; "
                   << idx << ", " << limit << ", s: "
                   << state

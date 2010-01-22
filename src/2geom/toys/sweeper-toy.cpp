@@ -82,7 +82,7 @@ class SweeperToy: public Toy {
         for (int i = 0; i < nb_paths; i++){
             paths_handles[i].pts.back()=paths_handles[i].pts.front();
             paths[i] = Path(paths_handles[i].pts[0]);
-            for (int j = 0; j+degree < paths_handles[i].size(); j+=degree){
+            for (unsigned j = 0; j+degree < paths_handles[i].size(); j+=degree){
                 D2<SBasis> c = handles_to_sbasis(paths_handles[i].pts.begin()+j, degree);
                 paths[i].append(c);
             }
@@ -128,7 +128,7 @@ class SweeperToy: public Toy {
         sliders[3].geometry(Point(50, 110), 250);
     }
 
-    void first_time(int argc, char** argv) {
+    void first_time(int /*argc*/, char** /*argv*/) {
 
     }
 };

@@ -8,7 +8,6 @@ double W2(unsigned n, unsigned j, unsigned k) {
         return 1;
     unsigned q = (n+1)/2;
     if(k > n-k) return W2(n, n-j, n-k);
-    if(k < 0) return 0;
     if(k >= q) return 0;
     if(j >= n-k) return 0;
     if(j < k) return 0;
@@ -21,7 +20,6 @@ double Tm1(unsigned n, unsigned j, unsigned k) {
         return 1;
     unsigned q = (n+1)/2;
     if(k > n-k) return Tm1(n, n-j, n-k);
-    if(k < 0) return 0;
     if(k >= q) return 0;
     if(j >= n-k) return 0;
     if(j < k) return 0;
@@ -33,7 +31,6 @@ double W(unsigned n, unsigned j, unsigned k) {
     if((n & 1) == 0 && j == q && k == q)
         return 1;
     if(k > n-k) return W(n, n-j, n-k);
-    if(k < 0) return 0;
     if(k >= q) return 0;
     if(j >= n-k) return 0;
     if(j < k) return 0;

@@ -88,7 +88,7 @@ class IntersectDataTester: public Toy {
 	  D2<SBasis> dist = pieces[endi]-pieces[0].at1();
 	  *notify << dist << "\n";
 	  vector<double> locs = roots(dot(dist,dist) - SBasis(r*r));
-	  for(int i = 0; i < locs.size(); i++) {
+	  for(unsigned i = 0; i < locs.size(); i++) {
 	    //draw_circ(cr, pieces[endi](locs[i]));
 	    *notify  << locs[i] << ' ';
 	  }
@@ -128,7 +128,7 @@ class IntersectDataTester: public Toy {
         sliders[2].geometry(Point(50, 80), 250);
     }
 
-    void first_time(int argc, char** argv) {
+    void first_time(int /*argc*/, char** /*argv*/) {
 
     }
 };

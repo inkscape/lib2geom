@@ -42,7 +42,7 @@
 using namespace boost::python;
 namespace Geom{
 //XXX: FIXME: TODO: This is just here to satisfy the vector indexing suite
-bool operator==(Geom::Region const &r1,Geom::Region const &r2){
+bool operator==(Geom::Region const &/*r1*/,Geom::Region const &/*r2*/){
     return false;
 }
 }

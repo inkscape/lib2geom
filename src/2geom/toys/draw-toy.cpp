@@ -6,7 +6,7 @@
 class DrawToy: public Toy {
     PointSetHandle hand;
     //Knot : Och : Och : Knot : Och : Och : Knot : Och : Och : ...
-    void draw(cairo_t *cr, std::ostringstream */*notify*/, int /*width*/, int /*height*/, bool save) {
+    void draw(cairo_t *cr, std::ostringstream */*notify*/, int /*width*/, int /*height*/, bool save, std::ostringstream*) {
         if(!save) {
             cairo_set_source_rgba (cr, 0, 0.5, 0, 1);
             cairo_set_line_width (cr, 1);
@@ -80,7 +80,8 @@ class DrawToy: public Toy {
         Geom::Point mouse(e->x, e->y);
         
         if(e->state & (GDK_BUTTON1_MASK) && selected != NULL) {
-            int hd = (int)hd;
+            // NOTE this is completely broken.
+            int hd = 0;
             if (hd % 3 == 0) {
                 Geom::Point diff = mouse - hand.pts[hd];
                 if(int(hand.pts.size() - 1) > hd) hand.pts[hd + 1] += diff;

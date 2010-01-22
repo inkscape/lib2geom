@@ -230,7 +230,7 @@ Path ordered_fit(std::vector<Point> &pts, double tol){
     Path res;
     if ( n_segs > 0){
         res = Path(b[0]);
-        for (unsigned i=0; i<n_segs; i++){
+        for (int i=0; i<n_segs; i++){
             res.appendNew<CubicBezier>(b[4*i+1],b[4*i+2],b[4*i+3]);
         }
     }
@@ -252,7 +252,6 @@ std::vector<Point> eat(std::vector<Point> const &pts, double sampling){
     res.push_back(p);
     while(true){
         double num_nghbrs = 0;
-        double dir = 0;
         Point next(0,0);
         for(unsigned i = 0; i < pts.size(); i++) {
             if (!visited[i] && L2(pts[i]-p)<sampling){
@@ -372,7 +371,7 @@ class SketchFitterToy: public Toy {
         }
     }
     virtual void draw_common( cairo_t *cr, std::ostringstream *notify,
-                              int width, int height, bool /*save*/, std::ostringstream *timer_stream )
+                              int width, int height, bool /*save*/, std::ostringstream */*timer_stream*/)
     {
         init_common_ctrl_geom(cr, width, height, notify);
         if(!mouses.empty() && toggles[DRAW_MOUSES].on ) {
@@ -486,7 +485,7 @@ class SketchFitterToy: public Toy {
         handles.push_back(&(sliders[TIGHTEN_ITERRATIONS]));
         handles.push_back(&(sliders[EAT_NBHD_SIZE]));     
     }
-    void init_tighten_eat_ctrl_geom(cairo_t* /*cr*/, std::ostringstream* /*notify*/, int width, int height)
+    void init_tighten_eat_ctrl_geom(cairo_t* /*cr*/, std::ostringstream* /*notify*/, int /*width*/, int height)
     {
         if ( set_control_geometry ){
             set_control_geometry = false;
@@ -657,7 +656,7 @@ class SketchFitterToy: public Toy {
         //sliders.push_back(Slider(0, 10, 1, 1, "Number of curves"));
         //handles.push_back(&(sliders[0]));
     }
-    void init_numerical_ctrl_geom(cairo_t* /*cr*/, std::ostringstream* /*notify*/, int /*width*/, int height)
+    void init_numerical_ctrl_geom(cairo_t* /*cr*/, std::ostringstream* /*notify*/, int /*width*/, int /*height*/)
     {
         if ( set_control_geometry ){
             set_control_geometry = false;
@@ -686,8 +685,8 @@ class SketchFitterToy: public Toy {
         //sliders.clear();
         //toggles.clear();
     }
-    void draw_help( cairo_t * cr, std::ostringstream *notify,
-                    int /*width*/, int /*height*/, bool /*save*/, std::ostringstream *timer_stream )
+    void draw_help( cairo_t * /*cr*/, std::ostringstream *notify,
+                    int /*width*/, int /*height*/, bool /*save*/, std::ostringstream */*timer_stream*/)
     {
         *notify << "Tighten:\n";
         *notify << "    move points toward local\n";
@@ -758,7 +757,7 @@ public:
         //toggles.clear();
     }
     void draw_menu( cairo_t * cr, std::ostringstream *notify,
-                    int /*width*/, int /*height*/, bool /*save*/, std::ostringstream *timer_stream )
+                    int /*width*/, int /*height*/, bool /*save*/, std::ostringstream */*timer_stream*/)
     {
         *notify << "Sketch some shape on canvas (press SHIFT to use several 'strokes')\n";
         *notify << "Each menu below will transform your input.\n";

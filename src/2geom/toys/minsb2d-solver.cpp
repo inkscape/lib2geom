@@ -318,7 +318,7 @@ public:
      
             }
             while (status == GSL_CONTINUE && iter < 100);
-            printf ("%5d %g %gf f() = %g size = %g\n", 
+            printf ("%5lu %g %gf f() = %g size = %g\n", 
                     iter,
                     gsl_vector_get (s->x, 0), 
                     gsl_vector_get (s->x, 1), 

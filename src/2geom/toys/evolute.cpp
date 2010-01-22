@@ -28,7 +28,7 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
     SBasis crs = cross(ddA, dA);
     cairo_d2_sb(cr, D2<SBasis>(Linear(0,1000), crs*(500./bounds_exact(crs)->extent())));
     vector<double> rts = roots(crs);
-    for(int i = 0; i < rts.size(); i++) {
+    for(unsigned i = 0; i < rts.size(); i++) {
         draw_handle(cr, A(rts[i]));
     }
     cairo_d2_sb(cr, A);
@@ -53,7 +53,7 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
         cairo_d2_pw_sb(cr, D2<Piecewise<SBasis> >(Piecewise<SBasis>(SBasis(Linear(0,1000))), dot(ev4, ev4)*1000));
         cairo_stroke(cr);
         vector<double> rts = roots(dot(ev4, ev4)-1);
-        for(int i = 0; i < rts.size(); i++) {
+        for(unsigned i = 0; i < rts.size(); i++) {
             std::cout << rts[i] << std::endl;
             draw_handle(cr, ev4(rts[i]));
         }

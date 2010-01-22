@@ -40,7 +40,7 @@ class PairIntersect: public Toy {
     crs = shift(crs*Linear(-1, 0)*Linear(-1, 0), -2);
     crs = crs * (300/(*bounds_exact(crs)).extent());
     vector<double> rts = roots(crs);
-    for(int i = 0; i < rts.size(); i++) {
+    for(unsigned i = 0; i < rts.size(); i++) {
         double t = rts[i];
         cairo_move_to(cr, A(0));
         cairo_line_to(cr, A(t));

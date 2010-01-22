@@ -174,7 +174,7 @@ public:
     
     
     static void
-    draw_interval(cairo_t* cr, Interval I, Point origin, Point dir) {
+    draw_interval(cairo_t* cr, Interval I, Point origin, Point /*dir*/) {
         cairo_save(cr);
         cairo_set_line_width(cr, 0.5);
         for(int i = 0; i < 2; i++) {
@@ -328,7 +328,6 @@ class WindingTest: public Toy {
         std::vector<Uncross::Crossing> crosses;
         int id_counter = 0;
         for(unsigned i = 0; i < ps.size(); i++) {
-            int cross_start = crosses.size();
             int piece_start = pieces.size();
             for(Path::iterator it = ps[i].begin(); it != ps[i].end(); it++) {
                 Rect bounds = (it->boundsExact());
@@ -453,9 +452,9 @@ class WindingTest: public Toy {
         
 
         cout << "crossings:";
-        for(int i = 0; i < crosses.size(); i++) {
+        for(unsigned i = 0; i < crosses.size(); i++) {
             Uncross::Crossing&cr = crosses[i];
-            for(int j = 0; j < cr.joins.size(); j++) {
+            for(unsigned j = 0; j < cr.joins.size(); j++) {
                 cout << cr.joins[j] << ", ";
             }
             cout << endl;

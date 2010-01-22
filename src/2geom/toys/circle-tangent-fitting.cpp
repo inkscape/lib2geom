@@ -49,7 +49,7 @@ class LFMCircleTangentEquation
   : public NL::LinearFittingModelWithFixedTerms<Point, double, Circle>
 {
   public:
-  mutable int count; // sigh
+  mutable unsigned count; // sigh
   mutable Point pb;
   vector<Point> bases;
   void feed( NL::VectorView & coeff, double & fixed_term, Point const& p ) const

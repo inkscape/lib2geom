@@ -87,7 +87,7 @@ public:
         Boundary boundary; // outermost boundary component, CCW oriented (i.e. area is on the left of the boundary).
         std::vector<Boundary> inner_boundaries;//same conventions, area on the left, so this gives the CW orientation for inner components.
         std::vector<int> windings;//one winding number for each input path.
-        Area(unsigned size):windings(size, 0), boundary(true){}
+        Area(unsigned size): boundary(true), windings(size, 0){}
     };
 
     class Edge {
@@ -363,7 +363,7 @@ public:
         }
 
         //std::printf("entering event loop:\n");
-        unsigned step=0;
+        int step=0;
         for(Sweeper::Event event = sweeper.getNextEvent(); ; event = sweeper.getNextEvent() ){
 //            std::printf("   new event recieved: ");
             //print();
@@ -419,7 +419,7 @@ public:
                 fuseConnectedBoundaries(b);//
             }else{
             //--Opening an edge:-------------
-                unsigned e = event.tile, a, b;
+                unsigned e = event.tile;
 //                std::printf("   opening edge %u\n", e);
                 bool reversed = !sweeper.tiles_data[e].reversed;//Warning: true means v==start.
 
@@ -834,7 +834,7 @@ class IntersectDataTester: public Toy {
     }
 
 
-    void first_time(int argc, char** argv) {
+    void first_time(int /*argc*/, char** /*argv*/) {
         nb_steps = -1;
     }
 

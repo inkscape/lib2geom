@@ -13,8 +13,7 @@ Poly lin_poly(double a, double b) { // ax + b
     return p;
 }
 
-int
-main(int argc, char** argv) {
+int main() {
     Poly a, b, r;
     
     a.push_back(1);
@@ -67,6 +66,8 @@ main(int argc, char** argv) {
     Poly prod = lin_poly(1, 3)*lin_poly(1,-4)*lin_poly(1,-7)*lin_poly(2,1);
     
     std::cout << prod <<std::endl;
+
+    return 0;
 }
 
 

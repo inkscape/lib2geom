@@ -101,11 +101,11 @@ void remove(std::vector<T> &vec, T const &val) {
     }
 }
 
-std::vector<Edges> cells(cairo_t *cr, std::vector<Path> const &ps) {
+std::vector<Edges> cells(cairo_t */*cr*/, std::vector<Path> const &ps) {
     CrossingSet crs = crossings_among(ps);
     Edges es = edges(ps, crs);
     std::vector<Edges> ret = std::vector<Edges>();
-	int foo = 0;
+
     while(!es.empty()) {
         std::cout << "hello!\n";
         Edge start = es.front();
@@ -157,8 +157,8 @@ std::vector<Edges> cells(cairo_t *cr, std::vector<Path> const &ps) {
     return ret;
 }
 
-int cellWinding(Edges const &es, std::vector<Path> const &ps) {
-    
+int cellWinding(Edges const &/*es*/, std::vector<Path> const &/*ps*/) {
+    return 0;
 }
 
 /*
@@ -214,7 +214,7 @@ std::vector<Path> sanitize(Path const &p) {
     std::cout << crs_a.size() << "\n";
     //if(crs_a.size() == 0) return new Shape(new Region(p));
     
-    /*   A
+         A
          ^
        1 | 0
       -------> B

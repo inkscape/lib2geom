@@ -24,7 +24,7 @@
 
 #include <2geom/conicsec.h>
 
-std::vector<Geom::RatQuad> xAx_to_RatQuads(Geom::xAx const &C, Geom::Rect bnd) {
+std::vector<Geom::RatQuad> xAx_to_RatQuads(Geom::xAx const &/*C*/, Geom::Rect const &/*bnd*/) {
     // find points on boundary
     // if there are exactly 0 points return
     // if there are exactly 2 points fit ratquad and return
@@ -36,6 +36,7 @@ std::vector<Geom::RatQuad> xAx_to_RatQuads(Geom::xAx const &C, Geom::Rect bnd) {
     //
     // if A,X and Y,Z
     // ratquad from A,X and Y,Z
+    return std::vector<Geom::RatQuad>();
 }
 
 
@@ -124,13 +125,6 @@ void draw(cairo_t* cr, xAx C, Rect bnd) {
     }
 }
 
-
-
-
-static double det(Point a, Point b) {
-    return a[0]*b[1] - a[1]*b[0];
-}
-
 template <typename T>
 static T det(T a, T b, T c, T d) {
     return a*d - b*c;
@@ -203,9 +197,9 @@ class Conic6: public Toy {
             double t = T.valueAt(rts[i]);
             double s = S.valueAt(rts[i]);
             *notify << t << "; " << s << std::endl;
-            double C0[3][3] = {{t*C1.c[0]+s*C2.c[0], (t*C1.c[1]+s*C2.c[1])/2, (t*C1.c[3]+s*C2.c[3])/2},
+            /*double C0[3][3] = {{t*C1.c[0]+s*C2.c[0], (t*C1.c[1]+s*C2.c[1])/2, (t*C1.c[3]+s*C2.c[3])/2},
                                {(t*C1.c[1]+s*C2.c[1])/2, t*C1.c[2]+s*C2.c[2], (t*C1.c[4]+s*C2.c[4])/2},
-                               {(t*C1.c[3]+s*C2.c[3])/2, (t*C1.c[4]+s*C2.c[4])/2, t*C1.c[5]+s*C2.c[5]}};
+                               {(t*C1.c[3]+s*C2.c[3])/2, (t*C1.c[4]+s*C2.c[4])/2, t*C1.c[5]+s*C2.c[5]}};*/
             xAx xC0 = C1*t + C2*s;
             //::draw(cr, xC0, screen_rect); // degen
             
@@ -258,7 +252,7 @@ class Conic6: public Toy {
         ::draw(cr, C1*sliders[0].value() + C2*sliders[1].value(), screen_rect);
         
         std::vector<Point> res = intersect(C1, C2);
-        for(int i = 0; i < res.size(); i++) {
+        for(unsigned i = 0; i < res.size(); i++) {
             draw_circ(cr, res[i]);
         }
         
@@ -287,7 +281,7 @@ public:
         sliders[2].geometry(Point(50, 80), 250);
     }
 
-    void first_time(int argc, char** argv) {
+    void first_time(int /*argc*/, char**/* argv*/) {
 
     }
 };
