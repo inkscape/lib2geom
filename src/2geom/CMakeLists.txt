@@ -51,8 +51,9 @@ conic_section_clipper_cr.h
 conic_section_clipper_impl.h
 
 curve.h
+curve.cpp
 curves.h
-curve-helpers.cpp
+
 ellipse.cpp
 ellipse.h
 elliptical-arc.cpp

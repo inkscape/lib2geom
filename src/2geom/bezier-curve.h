@@ -34,8 +34,8 @@
  * the specific language governing rights and limitations.
  */
 
-#ifndef _2GEOM_BEZIER_CURVE_H_
-#define _2GEOM_BEZIER_CURVE_H_
+#ifndef SEEN_LIB2GEOM_BEZIER_CURVE_H
+#define SEEN_LIB2GEOM_BEZIER_CURVE_H
 
 #include <2geom/curve.h>
 #include <2geom/sbasis-curve.h> // for non-native winding method
@@ -170,9 +170,6 @@ public:
     virtual std::vector<Coord> roots(Coord v, Dim2 d) const {
         return (inner[d] - v).roots();
     }
-    virtual Coord nearestPoint(Point const &p, Coord from = 0, Coord to = 1 ) const {
-        return Curve::nearestPoint(p, from, to);
-    }
     Curve *portion(Coord f, Coord t) const {
         return new BezierCurve(Geom::portion(inner, f, t));
     }
@@ -187,6 +184,7 @@ public:
         return ret;
     }
     virtual Curve *derivative() const;
+    virtual Coord length(Coord tolerance) const;
     virtual Point pointAt(Coord t) const { return inner.valueAt(t); }
     virtual std::vector<Point> pointAndDerivatives(Coord t, unsigned n) const { return inner.valueAndDerivatives(t, n); }
     virtual Coord valueAt(Coord t, Dim2 d) const { return inner[d].valueAt(t); }
@@ -194,46 +192,27 @@ public:
 #endif
 };
 
-
-/** @brief Linear segment, a special case of a Bezier curve.
- *
- * This class uses some optimizations for a linear segment (a Bezier curve of order 1).
- * Note that if you created a BezierCurve, you will not be able to cast it to a LineSegment
- * using a dynamic cast regardless of its order - use the optimize() method.
- *
- * @ingroup Curves */
 class LineSegment : public BezierCurve {
 public:
     LineSegment() : BezierCurve(1) {}
     LineSegment(Point c0, Point c1) : BezierCurve(c0, c1) {}
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
-    virtual Coord nearestPoint(Point const& p, Coord from = 0, Coord to = 1) const {
-        if ( from > to ) std::swap(from, to);
-        Point ip = pointAt(from);
-        Point fp = pointAt(to);
-        Point v = fp - ip;
-        Coord l2v = L2sq(v);
-        if(l2v == 0) return 0;
-        Coord t = dot( p - ip, v ) / l2v;
-        if ( t <= 0 )  		return from;
-        else if ( t >= 1 )  return to;
-        else return from + t*(to-from);
-    }
+    virtual Coord nearestPoint(Point const& p, Coord from = 0, Coord to = 1) const;
     virtual Curve *derivative() const {
         Coord dx = inner[X][1] - inner[X][0], dy = inner[Y][1] - inner[Y][0];
         return new LineSegment(Point(dx,dy),Point(dx,dy));
     }
+    virtual Coord length(Coord) const { return distance(initialPoint(), finalPoint()); }
 #endif
 };
 
-/** @brief Quadratic Bezier curve.
- * Note that if you created a BezierCurve, you will not be able to cast it to a QuadraticBezier
- * using a dynamic cast regardless of its order - use the optimize() method.
- * @ingroup Curves */
 class QuadraticBezier : public BezierCurve {
 public:
     QuadraticBezier(Point c0, Point c1, Point c2) : BezierCurve(c0, c1, c2) {}
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+    virtual Coord length(Coord tolerance) const;
+#endif
 };
 
 /** @brief Cubic Bezier curve.
@@ -243,6 +222,9 @@ public:
 class CubicBezier : public BezierCurve {
 public:
     CubicBezier(Point c0, Point c1, Point c2, Point c3) : BezierCurve(c0, c1, c2, c3) {}
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+    virtual Coord length(Coord tolerance) const;
+#endif
 };
 
 inline Point middle_point(LineSegment const& _segment) {
@@ -253,6 +235,9 @@ inline Coord length(LineSegment const& seg) {
     return distance(seg.initialPoint(), seg.finalPoint());
 }
 
+Coord bezier_length(std::vector<Point> const &points, Coord tolerance = 0.01);
+Coord bezier_length(Point p0, Point p1, Point p2, Coord tolerance = 0.01);
+Coord bezier_length(Point p0, Point p1, Point p2, Point p3, Coord tolerance = 0.01);
 
 } // end namespace Geom
 

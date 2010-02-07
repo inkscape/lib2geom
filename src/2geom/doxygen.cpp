@@ -47,7 +47,7 @@
  * @section UserGuide User guide
  *
  * - @subpage Overview "Overview of 2Geom"
- * - @ref Primitives "Geometric primitives" - points, angles, lines, axis-aligned rectangles...
+ * - @ref Primitives "Geometrical primitives" - points, angles, lines, axis-aligned rectangles...
  * - @ref Transforms "Affine transformations" - mathematical representation for operations
  *   like translation, scaling and rotation.
  * - @ref Curves "Curves" - functions mapping the unit interval to points on a plane.
@@ -65,7 +65,7 @@
 
 // Overview subpage
 /**
- * @page Overview "Overview of 2Geom"
+ * @page Overview Overview of 2Geom
  *
  * 2Geom has two APIs: a high level one, which uses virtual functions to allow handling
  * objects of in a generic way without knowing their actual type at compile time,
@@ -74,7 +74,7 @@
  */
 
 /**
- * @page CodingStandards "Coding standards and conventions used in 2Geom"
+ * @page CodingStandards Coding standards and conventions used in 2Geom
  *
  * @section Indenting
  *

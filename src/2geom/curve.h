@@ -38,15 +38,13 @@
 #ifndef _2GEOM_CURVE_H_
 #define _2GEOM_CURVE_H_
 
+#include <vector>
 #include <2geom/coord.h>
 #include <2geom/point.h>
 #include <2geom/interval.h>
-#include <2geom/nearest-point.h>
 #include <2geom/sbasis.h>
 #include <2geom/d2.h>
 #include <2geom/affine.h>
-#include <2geom/exception.h>
-#include <vector>
 
 namespace Geom 
 {
@@ -207,11 +205,9 @@ public:
      * @param b Maximum time value to consider; \f$a < b\f$
      * @return \f$q \in [a, b]: ||\mathbf{C}(q) - \mathbf{p}|| = 
                \inf(\{r \in \mathbb{R} : ||\mathbf{C}(r) - \mathbf{p}||\})\f$ */
-    virtual Coord nearestPoint( Point const& p, Coord a = 0, Coord b = 1 ) const {
-        return nearest_point(p, toSBasis(), a, b);
-    }
+    virtual Coord nearestPoint( Point const& p, Coord a = 0, Coord b = 1 ) const;
     /** @brief A version that takes an Interval. */
-    Coord nearestPoint( Point const &p, Interval const &i) const {
+    Coord nearestPoint(Point const &p, Interval const &i) const {
         return nearestPoint(p, i.min(), i.max());
     }
     /** @brief Compute time values at which the curve comes closest to a specified point.
@@ -220,14 +216,22 @@ public:
      * @param b Maximum time value to consider; \f$a < b\f$
      * @return Vector of points closest and equally far away from the query point */
     virtual std::vector<Coord> allNearestPoints( Point const& p, Coord from = 0,
-        Coord to = 1 ) const
-    {
-        return all_nearest_points(p, toSBasis(), from, to);
-    }
+        Coord to = 1 ) const;
     /** @brief A version that takes an Interval. */
     std::vector<Coord> allNearestPoints(Point const &p, Interval const &i) {
         return allNearestPoints(p, i.min(), i.max());
     }
+    /** @brief Compute the arc length of this curve.
+     * For a curve \f$\mathbf{C}(t) = (C_x(t), C_y(t))\f$, arc length is defined for 2D curves as
+     * \f[ \ell = \int_{0}^{1} \sqrt { [C_x'(t)]^2 + [C_y'(t)]^2 }\, \text{d}t \f]
+     * In other words, we divide the curve into infinitely small linear segments
+     * and add together their lengths. Of course we can't subdivide the curve into
+     * infinitely many segments on a computer, so this method returns an approximation.
+     * Not that there is usually no closed form solution to such integrals, so this
+     * method might be slow.
+     * @param tolerance Maximum allowed error
+     * @return Total distance the curve's value travels on the plane when going from 0 to 1 */
+    virtual Coord length(Coord tolerance=0.01) const;
     /** @brief Computes time values at which the curve intersects an axis-aligned line.
      * @param v The coordinate of the line
      * @param d Which axis the coordinate is on. X means a vertical line, Y a horizontal line. */
@@ -251,17 +255,7 @@ public:
         Curve *c_reverse = c.reverse();
         Point tangent = - c_reverse->unitTangentAt(0);
         delete c_reverse; @endcode */
-    virtual Point unitTangentAt(Coord t, unsigned n = 3) const {
-        std::vector<Point> derivs = pointAndDerivatives(t, n);
-        for (unsigned deriv_n = 1; deriv_n < derivs.size(); deriv_n++) {
-            Coord length = derivs[deriv_n].length();
-            if ( ! are_near(length, 0) ) {
-                // length of derivative is non-zero, so return unit vector
-                return derivs[deriv_n] / length;
-            }
-        }
-        return Point (0,0);
-    };
+    virtual Point unitTangentAt(Coord t, unsigned n = 3) const;
     /** @brief Convert the curve to a symmetric power basis polynomial.
      * Symmetric power basis polynomials (S-basis for short) are numerical representations
      * of curves with excellent numerical properties. Most high level operations provided by 2Geom

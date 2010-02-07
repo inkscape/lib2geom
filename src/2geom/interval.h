@@ -270,7 +270,7 @@ inline Interval operator|=(Interval & a, const Interval & b) {
  */
 class OptInterval : public boost::optional<Interval> {
 public:
-    /// @name Crate optionally empty intervals.
+    /// @name Create optionally empty intervals.
     /// @{
     /** @brief Create an empty interval. */
     OptInterval() : boost::optional<Interval>() {};

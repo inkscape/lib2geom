@@ -37,6 +37,8 @@
 #define _2GEOM_SBASIS_CURVE_H_
 
 #include <2geom/curve.h>
+#include <2geom/nearest-point.h>
+#include <2geom/sbasis-geometric.h>
 
 namespace Geom 
 {
@@ -90,6 +92,7 @@ public:
     {
         return all_nearest_points(p, inner, from, to);
     }
+    virtual Coord length(Coord tolerance) const { return ::Geom::length(inner, tolerance); }
     virtual Curve *portion(Coord f, Coord t) const {
         return new SBasisCurve(Geom::portion(inner, f, t));
     }
