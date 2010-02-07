@@ -38,7 +38,8 @@
 #define LIB2GEOM_SEEN_INTERVAL_H
 
 #include <assert.h>
-#include <boost/optional/optional.hpp>
+#include <boost/none.hpp>
+#include <boost/optional.hpp>
 #include <boost/operators.hpp>
 #include <2geom/coord.h>
 #include <2geom/isnan.h>
@@ -56,7 +57,12 @@ class OptInterval;
  * @ingroup Primitives
  */
 class Interval
-    : boost::equality_comparable<Interval>
+    : boost::equality_comparable< Interval
+    , boost::additive< Interval
+    , boost::multipliable< Interval
+    , boost::arithmetic< Interval, Coord
+    , boost::orable< Interval
+      > > > > >
 {
 private:
     /// @invariant _b[0] <= _b[1]
@@ -131,54 +137,7 @@ public:
         return contains(val._b[0]) || contains(val._b[1]) || val.contains(*this);
     }
     /// @}
-    
-    bool operator==(Interval const &other) const { return _b[0] == other._b[0] && _b[1] == other._b[1]; }
-    
-    //IMPL: OffsetableConcept
-    //TODO: rename output_type to something else in the concept
-    typedef Coord output_type;
-    Interval operator+(Coord amnt) {
-        return Interval(_b[0] + amnt, _b[1] + amnt);
-    }
-    Interval operator-(Coord amnt) {
-        return Interval(_b[0] - amnt, _b[1] - amnt);
-    }
-    Interval operator+=(Coord amnt) {
-        _b[0] += amnt; _b[1] += amnt;
-        return *this;
-    }
-    Interval operator-=(Coord amnt) {
-        _b[0] -= amnt; _b[1] -= amnt;
-        return *this;
-    }
-    
-    //IMPL: ScalableConcept
-    inline Interval operator-() const { return Interval(*this); }
-    inline Interval operator*(Coord s) const { return Interval(_b[0]*s, _b[1]*s); }
-    inline Interval operator/(Coord s) const { return Interval(_b[0]/s, _b[1]/s); }
-    Interval operator*=(Coord s) {
-        if(s < 0) {
-            Coord temp = _b[0];
-            _b[0] = _b[1]*s;
-            _b[1] = temp*s;
-        } else {
-            _b[0] *= s;
-            _b[1] *= s;
-        }
-        return *this;
-    }
-    Interval operator/=(Coord s) {
-        //TODO: what about s=0?
-        if(s < 0) {
-            Coord temp = _b[0];
-            _b[0] = _b[1]/s;
-            _b[1] = temp/s;
-        } else {
-            _b[0] /= s;
-            _b[1] /= s;
-        }
-        return *this;
-    }
+
     /// @name Modify the interval.
     /// @{
     //TODO: NaN handleage for the next two?
@@ -208,7 +167,7 @@ public:
        if(val > _b[1]) _b[1] = val;  //no else, as we want to handle NaN
     }
     /** @brief Expand or shrink the interval in both directions by the given amount.
-     * After this method, the interval's length (extent) will be reduced by
+     * After this method, the interval's length (extent) will be increased by
      * <code>amount * 2</code>. Negative values can be given; they will shrink the interval.
      * Shrinking by a value larger than half the interval's length will create a degenerate
      * interval containing only the midpoint of the original. */
@@ -229,46 +188,101 @@ public:
         if(a._b[1] > _b[1]) _b[1] = a._b[1];
     }
     /// @}
+
+    /// @name Operators
+    /// @{
     inline operator OptInterval();
+    bool operator==(Interval const &other) const { return _b[0] == other._b[0] && _b[1] == other._b[1]; }
+    
+    //IMPL: OffsetableConcept
+    //TODO: rename output_type to something else in the concept
+    typedef Coord output_type;
+    /** @brief Offset the interval by a specified amount */
+    Interval &operator+=(Coord amnt) {
+        _b[0] += amnt; _b[1] += amnt;
+        return *this;
+    }
+    /** @brief Offset the interval by the negation of the specified amount */
+    Interval &operator-=(Coord amnt) {
+        _b[0] -= amnt; _b[1] -= amnt;
+        return *this;
+    }
+    
+    // IMPL: ScalableConcept
+    /** @brief Return an interval mirrored about 0 */
+    inline Interval operator-() const { return Interval(-_b[1], -_b[0]); }
+    /** @brief Scale an interval */
+    Interval &operator*=(Coord s) {
+        _b[0] *= s;
+        _b[1] *= s;
+        if(s < 0) std::swap(_b[0], _b[1]);
+        return *this;
+    }
+    /** @brief Scale an interval by the inverse of the specified value */
+    Interval &operator/=(Coord s) {
+        _b[0] /= s;
+        _b[1] /= s;
+        if(s < 0) std::swap(_b[0], _b[1]);
+        return *this;
+    }
+    // IMPL: AddableConcept
+    /** @brief Add two intervals
+     * Sum is defined as the set of points that can be obtained by adding any two values
+     * from both operands: \f$S = \{x \in A, y \in B: x + y\}\f$ */
+    Interval &operator+=(Interval const &o) {
+        _b[0] += o._b[0];
+        _b[1] += o._b[1];
+        return *this;
+    }
+    /** @brief Subtract two intervals
+     * Difference is defined as the set of points that can be obtained by subtracting
+     * any value from the second operand from any value from the first operand:
+     * \f$S = \{x \in A, y \in B: x - y\}\f$ */
+    Interval &operator-=(Interval const &o) {
+        // equal to *this += -o
+        _b[0] -= o._b[1];
+        _b[1] -= o._b[0];
+        return *this;
+    }
+    /** @brief Multiply two intervals
+     * Product is defined as the set of points that can be obtained by multiplying
+     * any value from the second operand by any value from the first operand:
+     * \f$S = \{x \in A, y \in B: x * y\}\f$ */
+    Interval &operator*=(Interval const &o) {
+        // TODO implement properly
+        Coord mn = min(), mx = max();
+        extendTo(mn * o.min());
+        extendTo(mn * o.max());
+        extendTo(mx * o.min());
+        extendTo(mx * o.max());
+        return *this;
+    }
+    /** @brief Union two intervals
+     * Note that intersection is only defined for OptIntervals, because the result
+     * of an intersection can be empty, while an Interval cannot. */
+    Interval &operator|=(Interval const &o) {
+        unionWith(o);
+        return *this;
+    }
+    /// @}
 };
 
-//IMPL: AddableConcept
-inline Interval operator+(const Interval & a, const Interval & b) {
-    return Interval(a.min() + b.min(), a.max() + b.max());
-}
-inline Interval operator-(const Interval & a, const Interval & b) {
-    return Interval(a.min() - b.max(), a.max() - b.min());
-}
-inline Interval operator+=(Interval & a, const Interval & b) { a = a + b; return a; }
-inline Interval operator-=(Interval & a, const Interval & b) { a = a - b; return a; }
-
-//There might be impls of this based off sign checks
-inline Interval operator*(const Interval & a, const Interval & b) {
-    Interval res(a.min() * b.min());
-    res.extendTo(a.min() * b.max());
-    res.extendTo(a.max() * b.min());
-    res.extendTo(a.max() * b.max());
-    return res;
-}
-inline Interval operator*=(Interval & a, const Interval & b) { a = a * b; return a; }
-
-// 'union' conflicts with C keyword
-inline Interval unify(const Interval & a, const Interval & b) {
-    return Interval(std::min(a.min(), b.min()),
-                    std::max(a.max(), b.max()));
-}
-inline Interval operator|(const Interval & a, const Interval & b) {
-    return unify(a, b);
-}
-inline Interval operator|=(Interval & a, const Interval & b) {
-    return a = unify(a, b);
+/** @brief Union two intervals
+ * @relates Interval */
+inline Interval unify(Interval const &a, Interval const &b) {
+    return a | b;
 }
 
 /**
- * @brief An range of numbers that can be empty.
+ * @brief A range of numbers that can be empty.
  * @ingroup Primitives
  */
-class OptInterval : public boost::optional<Interval> {
+class OptInterval
+    : public boost::optional<Interval>
+    , boost::orable< OptInterval
+    , boost::andable< OptInterval
+      > >
+{
 public:
     /// @name Create optionally empty intervals.
     /// @{
@@ -295,16 +309,16 @@ public:
             OptInterval ret;
             return ret;
         }
-        OptInterval ret(Interval::from_array(start, end));
+        OptInterval ret(Interval::from_range(start, end));
         return ret;
     }
     /// @}
 
     /** @brief Check whether this OptInterval is empty. */
-    inline bool isEmpty() { return (*this == false); };
-    
+    bool isEmpty() { return !*this; };
+
     /** @brief Union with another interval, gracefully handling empty ones. */
-    inline void unionWith(const OptInterval & a) {
+    inline void unionWith(OptInterval const &a) {
         if (a) {
             if (*this) { // check that we are not empty
                 (*this)->unionWith(*a);
@@ -313,22 +327,38 @@ public:
             }
         }
     }
+    inline void intersectWith(OptInterval const &o) {
+        if (o && *this) {
+            Coord u, v;
+            u = std::max((*this)->min(), o->min());
+            v = std::min((*this)->max(), o->max());
+            if (u <= v) {
+                *this = Interval(u, v);
+                return;
+            }
+        }
+        (*static_cast<boost::optional<Interval>*>(this)) = boost::none;
+    }
+    OptInterval &operator|=(OptInterval const &o) {
+        unionWith(o);
+        return *this;
+    }
+    OptInterval &operator&=(OptInterval const &o) {
+        intersectWith(o);
+        return *this;
+    }
 };
 
-inline OptInterval intersect(const Interval & a, const Interval & b) {
-    Coord u = std::max(a.min(), b.min()),
-          v = std::min(a.max(), b.max());
-    //technically >= might be incorrect, but singulars suck
-    return u > v ? OptInterval()
-                  : OptInterval(Interval(u, v));
+/** @brief Intersect two intervals and return a possibly empty range of numbers
+ * @relates OptInterval */
+inline OptInterval intersect(Interval const &a, Interval const &b) {
+    return OptInterval(a) & OptInterval(b);
 }
-
-/*inline Interval operator&(const Interval & a, const Interval & b) {
-    return intersect(a, b);
+/** @brief Intersect two intervals and return a possibly empty range of numbers
+ * @relates OptInterval */
+inline OptInterval operator&(Interval const &a, Interval const &b) {
+    return OptInterval(a) & OptInterval(b);
 }
-inline Interval operator&=(Interval & a, const Interval & b) {
-    return a = intersect(a, b);
-}*/
 
 inline Interval::operator OptInterval() {
     return OptInterval(*this);
