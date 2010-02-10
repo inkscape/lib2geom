@@ -1,7 +1,7 @@
 /**
  * \file
  * \brief  Simple closed interval class
- *
+ *//*
  * Copyright 2007 Michael Sloan <mgsloan@gmail.com>
  *
  * Original Rect/Range code by:
@@ -226,7 +226,7 @@ public:
         return *this;
     }
     // IMPL: AddableConcept
-    /** @brief Add two intervals
+    /** @brief Add two intervals.
      * Sum is defined as the set of points that can be obtained by adding any two values
      * from both operands: \f$S = \{x \in A, y \in B: x + y\}\f$ */
     Interval &operator+=(Interval const &o) {
@@ -234,7 +234,7 @@ public:
         _b[1] += o._b[1];
         return *this;
     }
-    /** @brief Subtract two intervals
+    /** @brief Subtract two intervals.
      * Difference is defined as the set of points that can be obtained by subtracting
      * any value from the second operand from any value from the first operand:
      * \f$S = \{x \in A, y \in B: x - y\}\f$ */
@@ -244,7 +244,7 @@ public:
         _b[1] -= o._b[0];
         return *this;
     }
-    /** @brief Multiply two intervals
+    /** @brief Multiply two intervals.
      * Product is defined as the set of points that can be obtained by multiplying
      * any value from the second operand by any value from the first operand:
      * \f$S = \{x \in A, y \in B: x * y\}\f$ */
@@ -257,7 +257,7 @@ public:
         extendTo(mx * o.max());
         return *this;
     }
-    /** @brief Union two intervals
+    /** @brief Union two intervals.
      * Note that intersection is only defined for OptIntervals, because the result
      * of an intersection can be empty, while an Interval cannot. */
     Interval &operator|=(Interval const &o) {

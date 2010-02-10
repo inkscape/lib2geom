@@ -165,7 +165,7 @@ public:
         return OptRect();
     }
     virtual int degreesOfFreedom() const {
-        return 2 * inner[X].order();
+        return 2 * (order() + 1);
     }
     virtual std::vector<Coord> roots(Coord v, Dim2 d) const {
         return (inner[d] - v).roots();
@@ -198,7 +198,17 @@ public:
     LineSegment(Point c0, Point c1) : BezierCurve(c0, c1) {}
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
+    virtual Curve *duplicate() const { return new LineSegment(*this); }
+    virtual Rect boundsFast() const { return Rect(initialPoint(), finalPoint()); }
+    virtual Rect boundsExact() const { return boundsFast(); }
     virtual Coord nearestPoint(Point const& p, Coord from = 0, Coord to = 1) const;
+    virtual Curve *portion(Coord f, Coord t) const {
+        return new LineSegment(pointAt(f), pointAt(t));
+    }
+    virtual Curve *reverse() const { return new LineSegment(finalPoint(), initialPoint()); }
+    virtual Curve *transformed(Affine const &m) const {
+        return new LineSegment(initialPoint() * m, finalPoint() * m);
+    }
     virtual Curve *derivative() const {
         Coord dx = inner[X][1] - inner[X][0], dy = inner[Y][1] - inner[Y][0];
         return new LineSegment(Point(dx,dy),Point(dx,dy));

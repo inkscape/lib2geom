@@ -148,7 +148,7 @@
  *
  * Each transformation class represent a set of affine transforms that is closed
  * under multiplication. Those are translation, scaling, rotation, horizontal shearing
- * and vertical shearing. Any affine transform can be obtained by composing those
+ * and vertical shearing. Any affine transform can be obtained by combining those
  * basic operations.
  *
  * Each of the transforms can be applied to points and matrices (using multiplication).
