@@ -118,6 +118,7 @@ redblack-toy
 rtree-toy
 sweep-graph
 sweeper-toy
+boolops-topo
 )
 
 SET(2GEOM_LPE_TOYS_SRC
