@@ -821,6 +821,16 @@ Piecewise<D2<SBasis> > compose(D2<SBasis2d> const &sb2d, Piecewise<D2<SBasis> > 
   return result;
 }*/
 
+/** Compose an SBasis with the inverse of another.
+ * WARNING: It's up to the user to check that the second SBasis is indeed
+ * invertible (i.e. strictly increasing or decreasing).
+ *  \return \f$ f \cdot g^{-1} \f$
+ *  \relates Piecewise
+ */
+Piecewise<SBasis> pw_compose_inverse(SBasis const &f, SBasis const &g, unsigned order, double zero);
+
+
+
 template <typename T>
 Piecewise<T> Piecewise<T>::operator()(SBasis f){return compose((*this),f);}
 template <typename T>

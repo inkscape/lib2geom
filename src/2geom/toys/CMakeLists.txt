@@ -119,6 +119,7 @@ rtree-toy
 sweep-graph
 sweeper-toy
 boolops-topo
+smash-intersector
 )
 
 SET(2GEOM_LPE_TOYS_SRC

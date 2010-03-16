@@ -154,6 +154,47 @@ int compose_findSegIdx(std::map<double,unsigned>::iterator  const &cut,
     return idx;
 }
 
+
+Piecewise<SBasis> pw_compose_inverse(SBasis const &f, SBasis const &g, unsigned order, double zero){
+	Piecewise<SBasis> result;
+
+	SBasis g01 = g;
+	bool flip = ( g01.at0() > g01.at1() );
+
+	OptInterval g_range = bounds_exact(g);
+    //OptInterval g_range( Interval( g.at0(), g.at1() ));
+
+    g01 -= g_range->min();
+    g01 /= g_range->extent();
+    if ( flip ){
+    	g01 *= -1.;
+    	g01 += 1.;
+    }
+
+	SBasis foginv = compose_inverse( f, g01, order, zero );
+    SBasis err = compose( foginv, g01) - f;
+
+    if ( err.tailError(0) < zero ){
+    	result = Piecewise<SBasis> (foginv);
+    }else{
+    	SBasis g_portion = portion( g01, Interval(0.,.5) );
+    	SBasis f_portion = portion( f, Interval(0.,.5) );
+    	result = pw_compose_inverse(f_portion, g_portion, order, zero);
+
+    	g_portion = portion( g01, Interval(.5, 1.) );
+    	f_portion = portion( f, Interval(.5, 1.) );
+    	Piecewise<SBasis> result_next;
+    	result_next = pw_compose_inverse(f_portion, g_portion, order, zero);
+    	result.concat( result_next );
+    }
+    if (flip) {
+    	result = reverse(result);
+    }
+	result.setDomain(*g_range);
+    return result;
+}
+
+
 std::vector<double> roots(Piecewise<SBasis> const &f){
     std::vector<double> result;
     for (unsigned i=0; i<f.size(); i++){
