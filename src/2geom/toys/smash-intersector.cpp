@@ -52,6 +52,7 @@
 
 using namespace Geom;
 
+
 //returns the intervals on which either x or y is a graph over t.
 std::vector<Interval> monotonicSplit(D2<SBasis> const &p){
 	std::vector<Interval> result;
@@ -89,8 +90,6 @@ std::vector<Interval> monotonicSplit(D2<SBasis> const &p){
 
 std::vector<std::pair<double, double> > intersect(cairo_t *cr, D2<SBasis> const &a, D2<SBasis> const &b ){
 
-	double red,green,blue;
-
 	std::vector<std::pair<double, double> > res;
 
 	D2<SBasis> aa = a;
@@ -115,7 +114,6 @@ std::vector<std::pair<double, double> > intersect(cairo_t *cr, D2<SBasis> const 
 	if (dxmin < dymin) {
 		aa = D2<SBasis>( aa[Y], aa[X] );
 		bb = D2<SBasis>( bb[Y], bb[X] );
-		blue=1.;
 	}
 
 	Piecewise<SBasis> y_of_x = pw_compose_inverse(aa[Y],aa[X], 2, 1e-3);

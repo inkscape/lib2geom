@@ -120,6 +120,7 @@ sweep-graph
 sweeper-toy
 boolops-topo
 smash-intersector
+levelsets-test
 )
 
 SET(2GEOM_LPE_TOYS_SRC

@@ -377,8 +377,24 @@ std::vector<std::vector<double> > multi_roots(SBasis const &f,
                                  double vtol=1e-7,
                                  double a=0,
                                  double b=1);
-    
+/** 'Solve' f(t)\in I=[u,v] for several intervals I at once.
+ *  For each I, f^{-1}(I) is a collection of interval (J_k). We return
+ *  a collection (J'_k) such that forall k, J'_k is contained in J_k (and non empty).
+ *  In particular f(J'k) is contained in I.
+    \param f sbasis function
+    \param levels vector of 'y' intervals, that should be disjoints and sorted.
+    \param a, b limit search on domain [a,b]
+    \param tol the returned intervals are contained in the exact ones, but might be that smaller.
+    \returns a vector of vectors of intervals.
+*/
+
+std::vector<std::vector<Interval> > level_sets (SBasis const &f,
+		std::vector<Interval> const &levels,
+		double a=0.,
+		double b=1.,
+		double tol = 1e-5);
 }
+
 #endif
 
 /*
