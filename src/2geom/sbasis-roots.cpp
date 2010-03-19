@@ -391,6 +391,7 @@ static void level_sets_internal(SBasis const &f,
         }
         return;
     }
+
     unsigned idxa=upper_level(levels,fa);
     unsigned idxb=upper_level(levels,fb);
 
@@ -464,11 +465,27 @@ static void level_sets_internal(SBasis const &f,
     //let [t0,t1] be the next interval where to search.
     double t0=std::min(ta_hi,ta_lo);
     double t1=std::max(tb_hi,tb_lo);
+
+    if (t0>=t1) return;//no root here.
+
+    //if the interval is smaller than our resolution:
+    //pretend f simultaneously meets all the levels between f(t0) and f(t1)...
+    if ( t1 - t0 <= tol ){
+    	Interval f_t0t1 ( f(t0), f(t1) );
+    	unsigned idxmin = std::min(idxa, idxb);
+    	unsigned idxmax = std::min( std::max(idxa, idxb) + 1, levels.size() );
+    	for (unsigned idx = idxmin; idx < idxmax; idx++){
+    		if (f_t0t1.intersects( levels[idx] ) ){
+    			solsets[idx].push_back( Interval( t0, t1 ) );//cheat to avoid overlapping intervals on different levels?
+    		}
+    	}
+    	return;
+    }
+
 	//To make sure we finally exit the level jump at least by tol:
     t0 = std::max( t0, a + tol );
     t1 = std::min( t1, b - tol );
 
-    if (t0>=t1) return;//no root here.
 
     double t =(t0+t1)/2;
     double ft=f(t);
@@ -492,6 +509,23 @@ std::vector<std::vector<Interval> > level_sets(SBasis const &f,
     }
     return solsets;
 }
+
+std::vector<Interval> level_set (SBasis const &f, double level, double vtol, double a, double b, double tol){
+	Interval fat_level( level - vtol, level + vtol );
+	return level_set(f, fat_level, a, b, tol);
+}
+std::vector<Interval> level_set (SBasis const &f, Interval const &level, double a, double b, double tol){
+	std::vector<Interval> levels(1,level);
+	return level_sets(f,levels, a, b, tol).front() ;
+}
+std::vector<std::vector<Interval> > level_sets (SBasis const &f, std::vector<double> const &levels, double vtol, double a, double b, double tol){
+	std::vector<Interval> fat_levels( levels.size(), Interval());
+	for (unsigned i = 0; i < levels.size(); i++){
+		fat_levels[i] = Interval( levels[i]-vtol, levels[i]+vtol);
+	}
+	return level_sets(f, fat_levels, a, b, tol);
+}
+
 
 //-------------------------------------
 //-------------------------------------

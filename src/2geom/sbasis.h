@@ -377,24 +377,69 @@ std::vector<std::vector<double> > multi_roots(SBasis const &f,
                                  double vtol=1e-7,
                                  double a=0,
                                  double b=1);
+
+//--------- Levelset like functions -----------------------------------------------------
+
+/** Solve f(t) = v +/- tolerance. The collection of intervals where
+ *     v - vtol <= f(t) <= v+vtol
+ *   is returned (with a precision tol on the boundaries).
+    \param f sbasis function
+    \param level the value of v.
+    \param vtol: error tolerance on v.
+    \param a, b limit search on domain [a,b]
+    \param tol: tolerance on the result bounds.
+    \returns a vector of intervals.
+*/
+std::vector<Interval> level_set (SBasis const &f,
+		double level,
+		double vtol = 1e-5,
+		double a=0.,
+		double b=1.,
+		double tol = 1e-5);
+
+/** Solve f(t)\in I=[u,v], which defines a collection of intervals (J_k). More precisely,
+ *  a collection (J'_k) is returned with J'_k = J_k up to a given tolerance.
+    \param f sbasis function
+    \param level: the given interval of deisred values for f.
+    \param a, b limit search on domain [a,b]
+    \param tol: tolerance on the bounds of the result.
+    \returns a vector of intervals.
+*/
+std::vector<Interval> level_set (SBasis const &f,
+		Interval const &level,
+		double a=0.,
+		double b=1.,
+		double tol = 1e-5);
+
+/** 'Solve' f(t) = v +/- tolerance for several values of v at once.
+    \param f sbasis function
+    \param levels vector of values, that should be sorted.
+    \param vtol: error tolerance on v.
+    \param a, b limit search on domain [a,b]
+    \param tol: the bounds of the returned intervals are exact up to that tolerance.
+    \returns a vector of vectors of intervals.
+*/
+std::vector<std::vector<Interval> > level_sets (SBasis const &f,
+		std::vector<double> const &levels,
+		double a=0.,
+		double b=1.,
+		double vtol = 1e-5,
+		double tol = 1e-5);
+
 /** 'Solve' f(t)\in I=[u,v] for several intervals I at once.
- *  For each I, f^{-1}(I) is a collection of interval (J_k). We return
- *  a collection (J'_k) such that forall k, J'_k is contained in J_k (and non empty).
- *  In particular f(J'k) is contained in I.
     \param f sbasis function
     \param levels vector of 'y' intervals, that should be disjoints and sorted.
     \param a, b limit search on domain [a,b]
-    \param tol the returned intervals are contained in the exact ones, but might be that smaller.
+    \param tol: the bounds of the returned intervals are exact up to that tolerance.
     \returns a vector of vectors of intervals.
 */
-
 std::vector<std::vector<Interval> > level_sets (SBasis const &f,
 		std::vector<Interval> const &levels,
 		double a=0.,
 		double b=1.,
 		double tol = 1e-5);
-}
 
+}
 #endif
 
 /*
