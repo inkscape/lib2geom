@@ -340,12 +340,12 @@ static unsigned upper_level(vector<Interval> const &levels, double x ){
     return( lower_bound( levels.begin(), levels.end(), Interval(x,x), compareIntervalMax) - levels.begin() );
 }
 
-static std::vector<Interval> fuseOverlaps(std::vector<Interval> const &sets){
+static std::vector<Interval> fuseContiguous(std::vector<Interval> const &sets, double tol=0.){
 	std::vector<Interval> result;
 	if (sets.size() == 0 ) return result;
 	result.push_back( sets.front() );
 	for (unsigned i=1; i < sets.size(); i++ ){
-		if ( result.back().intersects( sets[i] ) ){
+		if ( result.back().max() + tol >= sets[i].min() ){
 			result.back().unionWith( sets[i] );
 		}else{
 			result.push_back( sets[i] );
@@ -473,19 +473,22 @@ static void level_sets_internal(SBasis const &f,
     if ( t1 - t0 <= tol ){
     	Interval f_t0t1 ( f(t0), f(t1) );
     	unsigned idxmin = std::min(idxa, idxb);
-    	unsigned idxmax = std::min( std::max(idxa, idxb) + 1, levels.size() );
-    	for (unsigned idx = idxmin; idx < idxmax; idx++){
-    		if (f_t0t1.intersects( levels[idx] ) ){
-    			solsets[idx].push_back( Interval( t0, t1 ) );//cheat to avoid overlapping intervals on different levels?
-    		}
+    	unsigned idxmax = std::max(idxa, idxb);
+    	//push [t0,t1] into all crossed level. Cheat to avoid overlapping intervals on different levels?
+    	if ( idxmax > idxmin ){
+        	for (unsigned idx = idxmin; idx < idxmax; idx++){
+    			solsets[idx].push_back( Interval( t0, t1 ) );
+        	}
+    	}
+    	if ( idxmax < levels.size() && f_t0t1.intersects( levels[idxmax] ) ){
+    		solsets[idxmax].push_back( Interval( t0, t1 ) );
     	}
     	return;
     }
 
 	//To make sure we finally exit the level jump at least by tol:
-    t0 = std::max( t0, a + tol );
-    t1 = std::min( t1, b - tol );
-
+    t0 = std::min( std::max( t0, a + tol ), b );
+    t1 = std::max( std::min( t1, b - tol ), a );
 
     double t =(t0+t1)/2;
     double ft=f(t);
@@ -505,7 +508,7 @@ std::vector<std::vector<Interval> > level_sets(SBasis const &f,
     for (unsigned i=0; i<solsets.size(); i++){
     	if ( solsets[i].size() == 0 ) continue;
     	std::sort( solsets[i].begin(), solsets[i].end(), compareIntervalMin );
-    	solsets[i] = fuseOverlaps( solsets[i] );
+    	solsets[i] = fuseContiguous( solsets[i], tol );
     }
     return solsets;
 }

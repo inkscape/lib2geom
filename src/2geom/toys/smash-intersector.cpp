@@ -243,10 +243,24 @@ std::vector<std::pair<Interval, Interval> > smash_intersect(cairo_t *cr, D2<SBas
 	for (unsigned j=0; j<tbs.size(); j++){
 		result[j].second = tbs[j];
 		Interval x_dom = Interval( bb[X].valueAt( tbs[j].min() ),  bb[X].valueAt( tbs[j].max() ));
-		double width = x_dom.extent()-tol;
-		if ( width < 0 ) x_dom +=Interval(width/2,-width/2);
-		std::vector<Interval> tas = level_set(aa[X], x_dom);
+
+		if ( x_dom.extent() < tol ) x_dom +=Interval( -tol, tol );
+		std::vector<Interval> tas = level_set(aa[X], x_dom );
+
+		if ( tas.size() != 1 ){
+			printf("Error: preimage of [%f, %f] by x:[0,1]->[%f, %f] is ",
+					x_dom.min(), x_dom.max(), x_range.min(), x_range.max());
+			if ( tas.size() == 0 ){
+				printf( "empty.\n");
+			}else{
+				printf("\n   [%f,%f]", tas[0].min(), tas[0].max() );
+				for (unsigned toto=1; toto<tas.size(); toto++){
+					printf(" U [%f,%f]", tas[toto].min(), tas[toto].max() );
+				}
+			}
+		}
 		assert( tas.size()==1 );
+
 		result[j].first = tas.front();
 	}
 
