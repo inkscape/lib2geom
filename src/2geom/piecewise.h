@@ -875,6 +875,14 @@ std::vector<double> roots(Piecewise<SBasis> const &f);
 
 std::vector<std::vector<double> >multi_roots(Piecewise<SBasis> const &f, std::vector<double> const &values);
 
+//TODO: implement level_sets directly for pwsb instead of sb (and derive it fo sb).
+//It should be faster than the reverse as the algorithm may jump over full cut intervals.
+std::vector<Interval> level_set(Piecewise<SBasis> const &f, Interval const &level, double tol=1e-5);
+std::vector<Interval> level_set(Piecewise<SBasis> const &f, double v, double vtol, double tol=1e-5);
+//std::vector<Interval> level_sets(Piecewise<SBasis> const &f, std::vector<Interval> const &levels, double tol=1e-5);
+//std::vector<Interval> level_sets(Piecewise<SBasis> const &f, std::vector<double> &v, double vtol, double tol=1e-5);
+
+
 /**
  *  ...
  *  \return ...

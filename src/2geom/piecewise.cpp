@@ -220,6 +220,32 @@ std::vector<std::vector<double> > multi_roots(Piecewise<SBasis> const &f, std::v
     return result;
 }
 
+
+std::vector<Interval> level_set(Piecewise<SBasis> const &f, Interval const &level, double tol){
+    std::vector<Interval> result;
+    for (unsigned i=0; i<f.size(); i++){
+        std::vector<Interval> resulti = level_set( f[i], level, 0., 1., tol);
+        for (unsigned j=0; j<resulti.size(); j++){
+        	double a = f.cuts[i] + resulti[j].min() * ( f.cuts[i+1] - f.cuts[i] );
+        	double b = f.cuts[i] + resulti[j].max() * ( f.cuts[i+1] - f.cuts[i] );
+        	Interval domj( a, b );
+        	//Interval domj( f.mapToDomain(resulti[j].min(), i ), f.mapToDomain(resulti[j].max(), i ) );
+
+        	if ( j==0 && result.size() > 0 && result.back().intersects(domj) ){
+        		result.back().unionWith(domj);
+        	}else{
+        		result.push_back(domj);
+        	}
+        }
+    }
+    return result;
+}
+std::vector<Interval> level_set(Piecewise<SBasis> const &f, double v, double vtol, double tol){
+	Interval level ( v-vtol, v+vtol );
+	return level_set( f, level, tol);
+}
+
+
 }
 /*
   Local Variables:

@@ -61,6 +61,7 @@ class BoundsTester: public Toy {
         cairo_stroke(cr);
 
         double vtol = exp_rescale(slider.value());
+        if (vtol<1e-4) vtol=0;
 
         hand.pts[2*size  ][X]=150;
         hand.pts[2*size+1][X]=150;
@@ -96,9 +97,11 @@ class BoundsTester: public Toy {
                 plot_bar(cr,ys, 1., sols[i][j].min(), sols[i][j].max());
                 cairo_set_source_rgba( cr, 0., 0., 1., .3);
                 cairo_stroke(cr);
-                plot_bar(cr,0., 1., sols[i][j].min(), sols[i][j].max());
-                cairo_set_source_rgba( cr, 0., 0., 1, 1);
                 cairo_set_line_width (cr, 1.6);
+                cairo_set_source_rgba( cr, 0., 0., 1, 1);
+                plot_bar(cr,0., 1., sols[i][j].min(), sols[i][j].max());
+                Point sol ( 150 + 300 * sols[i][j].middle(), 300);
+                draw_cross(cr, sol);
                 cairo_stroke(cr);
             }
         }
