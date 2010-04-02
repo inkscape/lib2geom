@@ -158,11 +158,12 @@ int compose_findSegIdx(std::map<double,unsigned>::iterator  const &cut,
 Piecewise<SBasis> pw_compose_inverse(SBasis const &f, SBasis const &g, unsigned order, double zero){
 	Piecewise<SBasis> result;
 
+	assert( f.size()>0 && g.size()>0);
 	SBasis g01 = g;
 	bool flip = ( g01.at0() > g01.at1() );
 
-	OptInterval g_range = bounds_exact(g);
-    //OptInterval g_range( Interval( g.at0(), g.at1() ));
+	//OptInterval g_range = bounds_exact(g);
+    OptInterval g_range( Interval( g.at0(), g.at1() ));
 
     g01 -= g_range->min();
     g01 /= g_range->extent();
@@ -170,6 +171,12 @@ Piecewise<SBasis> pw_compose_inverse(SBasis const &f, SBasis const &g, unsigned 
     	g01 *= -1.;
     	g01 += 1.;
     }
+#if 1
+    assert( std::abs( g01.at0() - 0. ) < zero );
+    assert( std::abs( g01.at1() - 1. ) < zero );
+    //g[0][0] = 0.;
+    //g[0][1] = 1.;
+#endif
 
 	SBasis foginv = compose_inverse( f, g01, order, zero );
     SBasis err = compose( foginv, g01) - f;

@@ -140,6 +140,8 @@ basic-intersection.h
 basic-intersection.cpp
 recursive-bezier-intersection.cpp
 #intersection-by-bezier-clipping.cpp
+intersection-by-smashing.h
+intersection-by-smashing.cpp
 
 geom.cpp
 geom.h

@@ -20,6 +20,8 @@
 #include "topology.cpp"
 
 
+static double exp_rescale(double x){ return pow(10, x);}
+std::string exp_formatter(double x){ return default_formatter(exp_rescale(x));}
 
 
 class IntersectDataTester: public Toy {
@@ -269,7 +271,7 @@ class IntersectDataTester: public Toy {
         cairo_stroke(cr);
 #endif
 
-        tol = pow(10.0,sliders[3].value());
+        tol = exp_rescale( sliders[3].value() );
         topo = Topology(paths, cr, tol, nb_steps );
 
 #if 1
@@ -307,6 +309,7 @@ class IntersectDataTester: public Toy {
         sliders[1].geometry(Point(50, 50), 250);
         sliders[2].geometry(Point(50, 80), 250);
         sliders[3].geometry(Point(50, 110), 250);
+        sliders[3].formatter( &exp_formatter );
 
     }
 

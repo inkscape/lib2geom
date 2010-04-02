@@ -43,6 +43,7 @@
 #include <2geom/path.h>
 #include <2geom/bezier-to-sbasis.h>
 #include <2geom/sbasis-geometric.h>
+#include <2geom/intersection-by-smashing.h>
 
 #include <2geom/toys/path-cairo.h>
 #include <2geom/toys/toy-framework-2.h>
@@ -103,7 +104,40 @@ Piecewise<D2<SBasis> > linearizeCusps( D2<SBasis> f, double tol){
 }
 #endif
 
+/* Returns the intervals over which the curve keeps its slope
+ * in one of the 8 sectors delimited by x=0, y=0, y=x, y=-x.
+ */
+std::vector<Interval> monotonicSplit(D2<SBasis> const &p){
+	std::vector<Interval> result;
 
+	D2<SBasis> v = derivative(p);
+
+	std::vector<double> someroots;
+	std::vector<double> cuts (2,0.);
+	cuts[1] = 1.;
+
+	someroots = roots(v[X]);
+	cuts.insert( cuts.end(), someroots.begin(), someroots.end() );
+
+	someroots = roots(v[Y]);
+	cuts.insert( cuts.end(), someroots.begin(), someroots.end() );
+
+	someroots = roots(v[X]-v[Y]);
+	cuts.insert( cuts.end(), someroots.begin(), someroots.end() );
+
+	someroots = roots(v[X]+v[Y]);
+	cuts.insert( cuts.end(), someroots.begin(), someroots.end() );
+
+	sort(cuts.begin(),cuts.end());
+	unique(cuts.begin(), cuts.end() );
+
+	for (unsigned i=1; i<cuts.size(); i++){
+		result.push_back( Interval( cuts[i-1], cuts[i] ) );
+	}
+	return result;
+}
+
+#if 0
 /* Computes the intersection of two sets given as (ordered) union intervals.
  */
 std::vector<Interval> intersect( std::vector<Interval> const &a, std::vector<Interval> const &b){
@@ -172,40 +206,6 @@ void computeLinfinityNeighborhood( Piecewise<SBasis> const &f, double tol, Piece
 	}
 }
 
-/* Returns the intervals over which the curve keeps its slope
- * in one of the 8 sectors delimited by x=0, y=0, y=x, y=-x.
- */
-std::vector<Interval> monotonicSplit(D2<SBasis> const &p){
-	std::vector<Interval> result;
-
-	D2<SBasis> v = derivative(p);
-
-	std::vector<double> someroots;
-	std::vector<double> cuts (2,0.);
-	cuts[1] = 1.;
-
-	someroots = roots(v[X]);
-	cuts.insert( cuts.end(), someroots.begin(), someroots.end() );
-
-	someroots = roots(v[Y]);
-	cuts.insert( cuts.end(), someroots.begin(), someroots.end() );
-
-	//we could split in the middle to avoid computing roots again...
-	someroots = roots(v[X]-v[Y]);
-	cuts.insert( cuts.end(), someroots.begin(), someroots.end() );
-
-	someroots = roots(v[X]+v[Y]);
-	cuts.insert( cuts.end(), someroots.begin(), someroots.end() );
-
-	sort(cuts.begin(),cuts.end());
-	unique(cuts.begin(), cuts.end() );
-
-	for (unsigned i=1; i<cuts.size(); i++){
-		result.push_back( Interval( cuts[i-1], cuts[i] ) );
-	}
-	return result;
-}
-
 std::vector<Interval> level_set( D2<SBasis> const &f, Rect region){
 	std::vector<Interval> x_in_reg = level_set( f[X], region[X] );
 	std::vector<Interval> y_in_reg = level_set( f[Y], region[Y] );
@@ -221,7 +221,13 @@ void prolongateByConstants( Piecewise<SBasis> &f, double paddle_width ){
 	f.segs.insert( f.segs.end(), SBasis( f.segs.back().at1() ) );
 }
 
-//WARNING: both curves are supposed to be a graphs over x or y axis, with slope <45°.
+
+
+/* Returns the intervals over which the curve keeps its slope
+ * in one of the 8 sectors delimited by x=0, y=0, y=x, y=-x.
+ * WARNING: both curves are supposed to be a graphs over x or y axis,
+ *     and the smaller the slopes the better (typically <=45°).
+ */
 std::vector<std::pair<Interval, Interval> > smash_intersect( D2<SBasis> const &a, D2<SBasis> const &b,
 			double tol, cairo_t *cr , bool draw_more_stuff=false ){
 
@@ -454,6 +460,7 @@ std::vector<std::pair<Interval, Interval> > smash_intersect( D2<SBasis> const &a
 	return result;
 }
 
+#endif
 
 class Intersector : public Toy
 {
@@ -503,6 +510,21 @@ class Intersector : public Toy
         }
 #endif
 
+		std::vector<Intersection> my_intersections;
+     	my_intersections = smash_intersect( A, B, tol );
+
+     	for (unsigned k=0; k<my_intersections.size(); k++){
+     		cairo_set_line_width (cr, 2.5);
+            cairo_set_source_rgba(cr, 1., 0., 0., .8 );
+            cairo_d2_sb(cr, portion( A, my_intersections[k].times[X]));
+        	cairo_stroke(cr);
+            cairo_set_line_width (cr, 2.5);
+            cairo_set_source_rgba(cr, 0., 0., 1., .8 );
+            cairo_d2_sb(cr, portion( B, my_intersections[k].times[Y]));
+        	cairo_stroke(cr);
+     	}
+#if 0
+
         unsigned apiece( slidera.value()/100. * Acuts.size() );
         unsigned bpiece( sliderb.value()/100. * Bcuts.size() );
 
@@ -512,23 +534,25 @@ class Intersector : public Toy
         	for (unsigned j=0; j<Bcuts.size(); j++){
             	if ( toggle.on &&  (i != apiece || j != bpiece) ) continue;
 
-        		std::vector<std::pair<Interval, Interval> > my_intersections;
+        		std::vector<Intersection> my_intersections;
             	D2<SBasis> Bj = portion( B, Bcuts[j]);
             	bool draw_more = toggle.on &&  i == apiece && j == bpiece;
-             	my_intersections = smash_intersect( Ai, Bj, tol, cr, draw_more );
+//             	my_intersections = smash_intersect( Ai, Bj, tol, cr, draw_more );
+             	my_intersections = monotonic_smash_intersect( Ai, Bj, tol );
 
              	for (unsigned k=0; k<my_intersections.size(); k++){
              		cairo_set_line_width (cr, 2.5);
                     cairo_set_source_rgba(cr, 1., 0., 0., .8 );
-                    cairo_d2_sb(cr, portion( Ai, my_intersections[k].first));
+                    cairo_d2_sb(cr, portion( Ai, my_intersections[k].times[X]));
                 	cairo_stroke(cr);
                     cairo_set_line_width (cr, 2.5);
                     cairo_set_source_rgba(cr, 0., 0., 1., .8 );
-                    cairo_d2_sb(cr, portion( Bj, my_intersections[k].second));
+                    cairo_d2_sb(cr, portion( Bj, my_intersections[k].times[Y]));
                 	cairo_stroke(cr);
              	}
             }
         }
+#endif
         Toy::draw(cr, notify, width, height, save,timer_stream);
     }
 	

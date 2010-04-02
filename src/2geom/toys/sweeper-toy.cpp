@@ -22,6 +22,10 @@ using namespace std;
 
 #include "sweeper.cpp"
 
+double exp_rescale(double x){ return pow(10, x);}
+std::string exp_formatter(double x){ return default_formatter(exp_rescale(x));}
+
+
 class SweeperToy: public Toy {
     int nb_paths;
     int nb_curves_per_path;
@@ -77,7 +81,7 @@ class SweeperToy: public Toy {
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
         cairo_set_source_rgba (cr, 0., 0., 0, 1);
         cairo_set_line_width (cr, 1);
-        
+
         std::vector<Path> paths(nb_paths, Path());
         for (int i = 0; i < nb_paths; i++){
             paths_handles[i].pts.back()=paths_handles[i].pts.front();
@@ -94,7 +98,13 @@ class SweeperToy: public Toy {
         cairo_set_line_width (cr, 1);
         cairo_stroke(cr);
 
-        sweeper = Sweeper(paths,X, pow(10.0,sliders[3].value()));
+        double tol = exp_rescale(sliders[3].value());
+    	Rect tolbytol( Point(50,110), Point(50,110) );
+    	tolbytol.expandBy( tol );
+        cairo_rectangle(cr, tolbytol);
+    	cairo_stroke(cr);
+
+        sweeper = Sweeper(paths,X, tol);
        unsigned idx = (unsigned)(sliders[0].value()*(sweeper.tiles_data.size()-1));
        drawTiles(cr);
        enlightTile(cr, idx);
@@ -126,6 +136,7 @@ class SweeperToy: public Toy {
         sliders[1].geometry(Point(50, 50), 250);
         sliders[2].geometry(Point(50, 80), 250);
         sliders[3].geometry(Point(50, 110), 250);
+		sliders[3].formatter(&exp_formatter);
     }
 
     void first_time(int /*argc*/, char** /*argv*/) {

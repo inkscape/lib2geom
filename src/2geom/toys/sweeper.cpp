@@ -1,6 +1,6 @@
 #include <iostream>
 #include <2geom/path.h>
-#include <2geom/path-intersection.h>
+#include <2geom/intersection-by-smashing.h>
 #include <2geom/basic-intersection.h>
 #include <2geom/pathvector.h>
 #include <2geom/exception.h>
@@ -71,9 +71,30 @@ different outputs. So splitting sweeper/grpah builder is maybe not so relevant w
 */
 
 
+//TODO: decline intersections algorithms for each kind of curves...
+//TODO: write an intersector that can work on sub domains.
+//TODO: factor computation of derivative and the like out.
+std::vector<Intersection> monotonic_smash_intersect( Curve const &a, Interval a_dom,
+			                                         Curve const &b, Interval b_dom, double tol){
+	std::vector<Intersection> result;
+    D2<SBasis> asb = a.toSBasis();
+    asb = portion( asb, a_dom );
+    D2<SBasis> bsb = b.toSBasis();
+    bsb = portion( bsb, b_dom );
+    result = monotonic_smash_intersect(asb, bsb, tol );
+    for (unsigned i=0; i < result.size(); i++){
+    	result[i].times[X] *= a_dom.extent();
+    	result[i].times[X] += a_dom.min();
+    	result[i].times[Y] *= b_dom.extent();
+    	result[i].times[Y] += b_dom.min();
+    }
+    return result;
+}
+
+
+
 class Sweeper{
 public:
-
 
     //---------------------------
     // utils...
@@ -106,10 +127,49 @@ public:
         //splits.back() = t;
     }
 
-    Rect fatPoint(Point const &p, double radius){
-        return Rect( p+Point(-radius,-radius), p+Point( radius, radius) ) ;
-    }
+    struct IntersectionMinTimeOrder {
+        unsigned which;
+        IntersectionMinTimeOrder (unsigned idx) : which(idx) {}
+        bool operator()(Intersection a, Intersection b) {
+        	return a.times[which].min() < b.times[which].min();
+        }
+    };
 
+    // ensures that f and t are elements of a vector, sorts and uniqueifies
+    // also asserts that no values fall outside of f and t
+    // if f is greater than t, the sort is in reverse
+    std::vector<std::pair<Interval, Rect> >
+    process_intersections(std::vector<Intersection> &inters, unsigned which, unsigned tileidx) {
+    	std::vector<std::pair<Interval, Rect> > result;
+    	std::pair<Interval, Rect> apair;
+    	Interval dom ( tiles_data[tileidx].f, tiles_data[tileidx].t );
+    	apair.first  = Interval( dom.min() );
+    	apair.second = tiles_data[tileidx].fbox;
+    	result.push_back( apair );
+
+    	std::sort(inters.begin(), inters.end(), IntersectionMinTimeOrder(which) );
+    	for (unsigned i=0; i < inters.size(); i++){
+    		if ( !inters[i].times[which].intersects( dom ) )//this should never happen.
+    			continue;
+    		if ( result.back().first.intersects( inters[i].times[which] ) ){
+    			result.back().first.unionWith( inters[i].times[which] );
+    			result.back().second.unionWith( inters[i].bbox );
+    		}else{
+    	    	apair.first  = inters[i].times[which];
+    	    	apair.second = inters[i].bbox;
+    	    	result.push_back( apair );
+    		}
+    	}
+    	apair.first  = Interval( dom.max() );
+    	apair.second = tiles_data[tileidx].tbox;
+		if ( result.size() > 1 && result.back().first.intersects( apair.first ) ){
+			result.back().first.unionWith( apair.first );
+			result.back().second.unionWith( apair.second );
+		}else{
+	    	result.push_back( apair );
+		}
+		return result;
+    }
 
 
     //---------------------------
@@ -437,7 +497,7 @@ public:
 //        std::printf("    old ");
 //        printContext();
 
-        assert ( event.insert_at <= context.end()-context.begin() );
+        assert ( context.begin() + event.insert_at <= context.end() );
 
         if (!event.opening){
 //             unsigned idx = event.erase_at;
@@ -487,42 +547,35 @@ public:
     void createMonotonicTiles(){
         for ( unsigned i=0; i<paths.size(); i++){
             for ( unsigned j=0; j<paths[i].size(); j++){
-                //find the points of 0 derivative
-                Curve* deriv = paths[i][j].derivative();
-                std::vector<double> splits = deriv->roots(0, X);
-                std::vector<double> splitsY = deriv->roots(0, Y);
-                splits.insert(splits.begin(), splitsY.begin(), splitsY.end() );
-                delete deriv;
+                //find the points where slope is 0°, 45°, 90°, 135°...
+                D2<SBasis> deriv = derivative( paths[i][j].toSBasis() );
+                std::vector<double> splits0 = roots( deriv[X] );
+                std::vector<double> splits90 = roots( deriv[Y] );
+                std::vector<double> splits45 = roots( deriv[X]- deriv[Y] );
+                std::vector<double> splits135 = roots( deriv[X] + deriv[Y] );
+                std::vector<double> splits;
+                splits.insert(splits.begin(), splits0.begin(), splits0.end() );
+                splits.insert(splits.begin(), splits90.begin(), splits90.end() );
+                splits.insert(splits.begin(), splits45.begin(), splits45.end() );
+                splits.insert(splits.begin(), splits135.begin(), splits135.end() );
                 process_splits(splits,0,1);
 
-                double t=0;
                 for(unsigned k = 1; k < splits.size(); k++){
-                    Tile tile;
+                	Tile tile;
                     tile.path = i;
                     tile.curve = j;
-                    tile.f = t;
+                    tile.f = splits[k-1];
                     tile.t = splits[k];
                     //TODO: use meaningful tolerance here!!
                     Point fp = paths[i][j].pointAt(tile.f);
                     Point tp = paths[i][j].pointAt(tile.t);
-#if 1
-                    tile.fbox = fatPoint(fp, 0 );
-                    tile.tbox = fatPoint(tp, 0 );
-#else
-                    tile.fbox = fatPoint(fp, tol );
-                    tile.tbox = fatPoint(tp, tol );
-#endif
+                    tile.fbox = Rect(fp, fp );
+                    tile.tbox = Rect(tp, tp );
                     tile.open = false;
                     tile.state = -1;
                     tile.reversed = Point::LexOrderRt(dim)(tp, fp);
 
                     tiles_data.push_back(tile);
-//                     //TODO: maybe too early??
-//                     //*Yes*!!! this tile will be removed, but it's boxes play a role at enlarging time!!
-//                     if ( !tile.fbox.intersects(tile.tbox) ){
-//                         tiles_data.push_back(tile);
-//                     }
-                    t = splits[k];
                 }
             }
         }
@@ -534,14 +587,30 @@ public:
         Tile newtile = tiles_data[i];
         assert( newtile.f < t && t < newtile.t );
         newtile.f = t;
-        newtile.fbox = fatPoint(paths[newtile.path][newtile.curve].pointAt(t), tolerance );
+        //newtile.fbox = fatPoint(paths[newtile.path][newtile.curve].pointAt(t), tolerance );
+        Point p = paths[newtile.path][newtile.curve].pointAt(t);
+        newtile.fbox = Rect(p, p);
+        newtile.fbox.expandBy( tolerance );
         tiles_data[i].tbox = newtile.fbox;
         tiles_data[i].t = t;
         tiles_data.insert(tiles_data.begin()+i+1, newtile);
         if (sort)
             std::sort(tiles_data.begin()+i+1, tiles_data.end(), SweepOrder(dim) );
     }
-
+    void splitTile(unsigned i, Intersection inter, unsigned which,bool sort = true){
+    	double t = inter.times[which].middle();
+    	assert( i<tiles_data.size() );
+        Tile newtile = tiles_data[i];
+        assert( newtile.f < t && t < newtile.t );
+        newtile.f = t;
+        newtile.fbox = inter.bbox;
+        tiles_data[i].tbox = newtile.fbox;
+        tiles_data[i].t = t;
+        tiles_data.insert(tiles_data.begin()+i+1, newtile);
+        if (sort)
+            std::sort(tiles_data.begin()+i+1, tiles_data.end(), SweepOrder(dim) );
+    }
+#if 0
     void splitTile(unsigned i, std::vector<double> const &times, double tolerance=0, bool sort = true){
         if ( times.size()<3 ) return;
         assert( i<tiles_data.size() );
@@ -565,6 +634,29 @@ public:
         if (sort)
             std::sort(tiles_data.begin()+i, tiles_data.end(), SweepOrder(dim) );
     }
+#else
+    void splitTile(unsigned i, std::vector<std::pair<Interval,Rect> > const &cuts, bool sort = true){
+        assert ( cuts.size() >= 2 );
+        assert( i<tiles_data.size() );
+        std::vector<Tile> pieces ( cuts.size()-1, tiles_data[i] );
+        for (unsigned k=1; k+1 < cuts.size(); k++){
+        	pieces[k-1].t = cuts[k].first.middle();
+        	pieces[k  ].f = cuts[k].first.middle();
+        	pieces[k-1].tbox = cuts[k].second;
+        	pieces[k  ].fbox = cuts[k].second;
+        }
+    	pieces.front().fbox.unionWith( cuts[0].second );
+    	pieces.back().tbox.unionWith( cuts.back().second );
+
+        tiles_data.insert(tiles_data.begin()+i, pieces.begin(), pieces.end()-1 );
+        unsigned newi = i + cuts.size()-2;
+        assert( newi < tiles_data.size() );
+        tiles_data[newi] = pieces.back();
+
+        if (sort)
+            std::sort(tiles_data.begin()+i, tiles_data.end(), SweepOrder(dim) );
+    }
+#endif
 
     //TODO: maybe not optimal. For a fully optimized sweep, it would be nice to have
     //an efficient way to way find *only the first* intersection (in sweep direction)...
@@ -575,34 +667,38 @@ public:
 //        std::printf("\nFind intersections: tiles_data.size():%u\n", tiles_data.size() );
 
         for (unsigned i=0; i+1<tiles_data.size(); i++){
-//            std::printf("\ni=%u (%u([%f,%f]))\n", i, tiles_data[i].curve, tiles_data[i].f, tiles_data[i].t );
-            std::vector<double > times_i;
+            //std::printf("\ni=%u (%u([%f,%f]))\n", i, tiles_data[i].curve, tiles_data[i].f, tiles_data[i].t );
+            std::vector<Intersection> inters_on_i;
             for (unsigned j=i+1; j<tiles_data.size(); j++){
-//                std::printf("  j=%u (%u)\n", j,tiles_data[j].curve );
+                //std::printf("  j=%u (%u)\n", j,tiles_data[j].curve );
                 if ( Point::LexOrderRt(dim)(tiles_data[i].max(), tiles_data[j].min()) ) break;
-//                g_warning("FIXME: Sweeper tolerance meaning?? make mono_intersect tolerance aware.");
-                Crossings crossings = mono_intersect(paths[tiles_data[i].path][tiles_data[i].curve], Interval(tiles_data[i].f, tiles_data[i].t),
-                                                     paths[tiles_data[j].path][tiles_data[j].curve], Interval(tiles_data[j].f, tiles_data[j].t) );
-                std::vector<double > times_j (crossings.size(), 0 );
-                for (unsigned k=0; k < crossings.size(); k++){
-                    Crossing c = crossings[k];
-                    times_i.push_back( c.ta );
-                    times_j[k] = c.tb;
-                }
-                process_splits(times_j, tiles_data[j].f, tiles_data[j].t);
+
+                unsigned pi = tiles_data[i].path;
+                unsigned ci = tiles_data[i].curve;
+                unsigned pj = tiles_data[j].path;
+                unsigned cj = tiles_data[j].curve;
+                std::vector<Intersection> intersections;
+
+                intersections = monotonic_smash_intersect(paths[pi][ci], Interval(tiles_data[i].f, tiles_data[i].t),
+                                                          paths[pj][cj], Interval(tiles_data[j].f, tiles_data[j].t), tol );
+                inters_on_i.insert( inters_on_i.end(), intersections.begin(), intersections.end() );
+                std::vector<std::pair<Interval, Rect> > cuts = process_intersections(intersections, 1, j);
 
 //                std::printf("  >|%u/%u|=%u. times_j:%u", i, j, crossings.size(),  times_j.size() );
 
-                splitTile(j, times_j, tol, false);
-                j+=times_j.size()-2;
-//                std::printf("  new j:%u\n",j );
+                splitTile(j, cuts, false);
+                j += cuts.size()-2;
             }
 
-            process_splits(times_i, tiles_data[i].f, tiles_data[i].t);
-            assert(times_i.size()>=2);
-            splitTile(i, times_i, tol, false);
-            i+=times_i.size()-2;
-//             std::printf("new i:%u",i );
+            //process_splits(times_i, tiles_data[i].f, tiles_data[i].t);
+            //assert(times_i.size()>=2);
+            //splitTile(i, times_i, tol, false);
+            //i+=times_i.size()-2;
+            std::vector<std::pair<Interval, Rect> > cuts_on_i = process_intersections(inters_on_i, 0, i);
+            splitTile(i, cuts_on_i, false);
+            i += cuts_on_i.size()-2;
+            //std::printf("new i:%u, tiles_data: %u\n",i ,tiles_data.size());
+            //std::sort(tiles_data.begin()+i+1, tiles_data.end(), SweepOrder(dim) );
             std::sort(tiles_data.begin()+i+1, tiles_data.end(), SweepOrder(dim) );
         }
         //this last sorting should be useless!!
@@ -704,6 +800,7 @@ public:
                 //at this point box[k] intersects the curve bbox away from the fbox and tbox.
 
                 D2<SBasis> c = tileToSB( tiles_data[i] );
+//----------> use level-set!!
                 for (unsigned corner=0; corner<4; corner++){
                     unsigned D = corner % 2;
                     double val = boxes[k].corner(corner)[D];

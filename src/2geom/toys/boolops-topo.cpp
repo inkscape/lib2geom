@@ -19,6 +19,9 @@
 
 #include "topology.cpp"
 
+static double exp_rescale(double x){ return pow(10, x);}
+std::string exp_formatter(double x){ return default_formatter(exp_rescale(x));}
+
 
 bool even_odd (int winding){ return (winding%2); }
 bool non_zero (int winding){ return  winding   ; }
@@ -83,7 +86,7 @@ class BoolOpsTester: public Toy {
         cairo_stroke(cr);
 #endif
 
-        tol = pow(10.0,slider.value());
+        tol = exp_rescale( slider.value() );
         topo = Topology(paths, cr, tol );
         cairo_set_source_rgba (cr, 0.7, 0., 0., 1.);
         topo.drawBoxes(cr);
@@ -161,6 +164,7 @@ class BoolOpsTester: public Toy {
         slider = Slider(-5.0, 2, 0, 0.0, "tolerance");
         handles.push_back(&slider);
         slider.geometry(Point(50, 20), 250);
+        slider.formatter( &exp_formatter );
 
     }
 
