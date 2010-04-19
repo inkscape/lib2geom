@@ -25,6 +25,8 @@
 # * OF ANY KIND, either express or implied. See the LGPL or the MPL for
 # * the specific language governing rights and limitations.
 
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", "py2geom"))
 import py2geom
 
 class TestSink(py2geom.SVGPathSink):

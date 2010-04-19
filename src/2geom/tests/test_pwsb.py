@@ -1,5 +1,8 @@
 #!/usr/bin/python
 
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", "py2geom"))
+
 from  py2geom import *
 import py2geom
 import numpy
