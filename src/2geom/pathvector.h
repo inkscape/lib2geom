@@ -3,7 +3,8 @@
  * \brief PathVector - std::vector containing Geom::Path
  * This file provides a set of operations that can be performed on PathVector,
  * e.g. an affine transform.
- *
+ */
+/*
  * Authors:
  *  Johan Engelen <goejendaagh@zonnet.nl>
  * 
