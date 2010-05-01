@@ -25,9 +25,13 @@ py2geom.cpp
 #bezier-curve.cpp
 )
 
-SET(BUILD_BOOST_PYTHON_STATIC FALSE)
+IF (WIN32)
+    SET(BUILD_BOOST_PYTHON_STATIC TRUE)
+ELSE (WIN32)
+    SET(BUILD_BOOST_PYTHON_STATIC FALSE)
+ENDIF (WIN32)
 IF (BUILD_BOOST_PYTHON_STATIC)
-  SET(BOOST_PYTHON_SRC "C:/boost/libs/python/src")
+  SET(BOOST_PYTHON_SRC "C:/boost_1_42_0/libs/python/src")
   #define BOOST_PYTHON_STATIC_LIB
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DBOOST_PYTHON_STATIC_LIB")
   SET(2GEOM_BOOST_PYTHON_SRC
@@ -56,6 +60,7 @@ IF (BUILD_BOOST_PYTHON_STATIC)
     ${BOOST_PYTHON_SRC}/object/class.cpp
     ${BOOST_PYTHON_SRC}/object/enum.cpp
     ${BOOST_PYTHON_SRC}/object/function.cpp
+    ${BOOST_PYTHON_SRC}/object/function_doc_signature.cpp
     ${BOOST_PYTHON_SRC}/object/inheritance.cpp
     ${BOOST_PYTHON_SRC}/object/iterator.cpp
     ${BOOST_PYTHON_SRC}/object/life_support.cpp
