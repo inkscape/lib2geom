@@ -60,7 +60,6 @@ public:
         , _center(0,0)
         , _rot_angle(0)
         , _large_arc(true)
-        , _sweep(true)
     {}
     /** @brief Create a new elliptical arc.
      * @param ip Initial point of the arc
@@ -82,9 +81,8 @@ public:
         , _rays(rx, ry)
         , _rot_angle(rot_angle)
         , _large_arc(large_arc)
-        , _sweep(sweep)
     {
-        _updateCenterAndAngles();
+        _updateCenterAndAngles(false);
     }
 
     // methods new to EllipticalArc go here
@@ -132,7 +130,7 @@ public:
         _rot_angle = Angle(rot_angle);
         _large_arc = large_arc;
         _sweep = sweep;
-        _updateCenterAndAngles();
+        _updateCenterAndAngles(isSVGCompliant());
     }
     /** @brief Change the initial and final point in one operation.
      * This method exists because modifying any of the endpoints causes rather costly
@@ -142,7 +140,7 @@ public:
     void setExtremes(Point const &ip, Point const &fp) {
         _initial_point = ip;
         _final_point = fp;
-        _updateCenterAndAngles();
+        _updateCenterAndAngles(isSVGCompliant());
     }
     /// @}
 
@@ -154,12 +152,8 @@ public:
     Point center() const { return _center; }
     /** @brief Get the extent of the arc
      * @return The angle between the initial and final point, in arc's angular coordinates */
-    double sweepAngle() const {
-        Coord d = finalAngle() - initialAngle();
-        if ( !sweep() ) d = -d;
-        if ( d < 0 )
-            d += 2*M_PI;
-        return d;
+    Coord sweepAngle() const {
+        return extent();
     }
     /// @}
     
@@ -205,11 +199,11 @@ public:
     virtual Curve* duplicate() const { return new EllipticalArc(*this); }
     virtual void setInitial(Point const &p) {
         _initial_point = p;
-        _updateCenterAndAngles();
+        _updateCenterAndAngles(isSVGCompliant());
     }
     virtual void setFinal(Point const &p) {
         _final_point = p;
-        _updateCenterAndAngles();
+        _updateCenterAndAngles(isSVGCompliant());
     }
     virtual bool isDegenerate() const {
         return ( are_near(ray(X), 0) || are_near(ray(Y), 0) );
@@ -241,29 +235,25 @@ public:
 
     virtual D2<SBasis> toSBasis() const;
     virtual double valueAt(Coord t, Dim2 d) const {
-    	Coord tt = map_to_02PI(t);
-    	return valueAtAngle(tt, d);
+    	return valueAtAngle(angleAt(t), d);
     }
     virtual Point pointAt(Coord t) const {
-        Coord tt = map_to_02PI(t);
-        return pointAtAngle(tt);
+        return pointAtAngle(angleAt(t));
     }
     virtual Curve* portion(double f, double t) const;
     virtual Curve* reverse() const;
 #endif
 
 protected:
-    virtual void _updateCenterAndAngles();
-
-private:
-    Coord map_to_02PI(Coord t) const;
-    Coord map_to_01(Coord angle) const; 
+    void _updateCenterAndAngles(bool svg);
 
     Point _initial_point, _final_point;
     Point _rays, _center;
     Angle _rot_angle;
     bool _large_arc;
-    bool _sweep;
+
+private:
+    Coord map_to_01(Coord angle) const; 
 }; // end class EllipticalArc
 
 } // end namespace Geom

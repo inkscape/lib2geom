@@ -115,51 +115,9 @@ Rect EllipticalArc::boundsExact() const
     if ( arc_extremes[2] < arc_extremes[3] )
         std::swap(arc_extremes[2], arc_extremes[3]);
 
-
-    if ( _start_angle.radians0() < _end_angle.radians0() )
-    {
-        if ( _sweep )
-        {
-            for ( unsigned int i = 0; i < 4; ++i )
-            {
-                if ( _start_angle.radians0() < extremes[i] && extremes[i] < _end_angle.radians0() )
-                {
-                    arc_extremes[i] = pointAtAngle(extremes[i])[i >> 1];
-                }
-            }
-        }
-        else
-        {
-            for ( unsigned int i = 0; i < 4; ++i )
-            {
-                if ( initialAngle().radians0() > extremes[i] || extremes[i] > finalAngle().radians0() )
-                {
-                    arc_extremes[i] = pointAtAngle(extremes[i])[i >> 1];
-                }
-            }
-        }
-    }
-    else
-    {
-        if ( _sweep )
-        {
-            for ( unsigned int i = 0; i < 4; ++i )
-            {
-                if ( _start_angle.radians0() < extremes[i] || extremes[i] < _end_angle.radians0() )
-                {
-                    arc_extremes[i] = pointAtAngle(extremes[i])[i >> 1];
-                }
-            }
-        }
-        else
-        {
-            for ( unsigned int i = 0; i < 4; ++i )
-            {
-                if ( _start_angle.radians0() > extremes[i] && extremes[i] > _end_angle.radians0() )
-                {
-                    arc_extremes[i] = pointAtAngle(extremes[i])[i >> 1];
-                }
-            }
+    for (unsigned i = 0; i < 4; ++i) {
+        if (containsAngle(extremes[i])) {
+            arc_extremes[i] = valueAtAngle(extremes[i], i >> 1 ? Y : X);
         }
     }
 
@@ -423,16 +381,7 @@ EllipticalArc::pointAndDerivatives(Coord t, unsigned int n) const
 
 bool EllipticalArc::containsAngle(Coord angle) const
 {
-    if ( _sweep )
-        if ( _start_angle < _end_angle )
-            return ( !( angle < _start_angle || angle > _end_angle ) );
-        else
-            return ( !( angle < _start_angle && angle > _end_angle ) );
-    else
-        if ( _start_angle > _end_angle )
-            return ( !( angle > _start_angle || angle < _end_angle ) );
-        else
-            return ( !( angle > _start_angle && angle < _end_angle ) );
+    return AngleInterval::contains(angle);
 }
 
 Curve* EllipticalArc::portion(double f, double t) const
@@ -460,7 +409,7 @@ Curve* EllipticalArc::portion(double f, double t) const
     if ( f > t ) arc->_sweep = !_sweep;
     if ( _large_arc && fabs(sweepAngle() * (t-f)) < M_PI)
         arc->_large_arc = false;
-    arc->_updateCenterAndAngles(); //TODO: be more clever
+    arc->_updateCenterAndAngles(arc->isSVGCompliant()); //TODO: be more clever
     return arc;
 }
 
@@ -472,7 +421,7 @@ Curve *EllipticalArc::reverse() const {
     rarc->_final_point = _initial_point;
     rarc->_start_angle = _end_angle;
     rarc->_end_angle = _start_angle;
-    rarc->_updateCenterAndAngles();
+    rarc->_updateCenterAndAngles(rarc->isSVGCompliant());
     return rarc;
 }
 
@@ -708,12 +657,12 @@ std::vector<double> EllipticalArc::allNearestPoints( Point const& p, double from
  * NOTE: this implementation follows Standard SVG 1.1 implementation guidelines
  * for elliptical arc curves. See Appendix F.6.
  */
-void EllipticalArc::_updateCenterAndAngles()
+void EllipticalArc::_updateCenterAndAngles(bool svg)
 {
     Point d = initialPoint() - finalPoint();
 
-    // TODO move this to SVGElipticalArc.
-    if (isSVGCompliant())
+    // TODO move this to SVGElipticalArc?
+    if (svg)
     {
         if ( initialPoint() == finalPoint() )
         {
@@ -885,7 +834,7 @@ void EllipticalArc::_updateCenterAndAngles()
 
         _center = c * rm + middle_point(initialPoint(), finalPoint());
     }
-    else if (rad == 1 || isSVGCompliant())
+    else if (rad == 1 || svg)
     {
         double lamda = std::sqrt(1 / rad);
         _rays[X] *= lamda;
@@ -945,22 +894,6 @@ Curve *EllipticalArc::transformed(Affine const& m) const
                                   inner_point * m,
                                   finalPoint() * m,
                                   isSVGCompliant() );
-}
-
-/*
- * helper routine to convert the parameter t value
- * btw [0,1] and [0,2PI] domain and back
- *
- */
-Coord EllipticalArc::map_to_02PI(Coord t) const
-{
-    Angle a = initialAngle();
-    if ( _sweep ) {
-        a += sweepAngle() * t;
-    } else {
-        a -= sweepAngle() * t;
-    }
-    return a.radians();
 }
 
 Coord EllipticalArc::map_to_01(Coord angle) const

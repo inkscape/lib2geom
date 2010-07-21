@@ -107,12 +107,7 @@ public:
         if (ret < 0) ret += 360;
         return ret;
     }
-    
-    static Angle from_radians0(Coord r) {
-        Angle a;
-        a._angle = std::fmod(r, 2*M_PI);
-        return a;
-    }
+
     static Angle from_degrees(Coord d) {
         Angle a(d * M_PI / 180);
         return a;
@@ -130,33 +125,11 @@ public:
 private:
     Angle() {}
     void _normalize() {
-        if (_angle >= 2*M_PI) _angle -= 2*M_PI;
-        if (_angle < 0) _angle += 2*M_PI;
+        _angle -= floor(_angle / (2*M_PI)) * 2*M_PI;
     }
-    Coord _angle; // this is always in [0, 2pi), so offset by pi from math library convention
+    Coord _angle; // this is always in [0, 2pi)
     friend class AngleInterval;
 };
-
-inline Angle distance_ccw(Angle const &as, Angle const &ae) {
-    Coord s = as.radians0();
-    Coord e = ae.radians0();
-    Coord dist;
-    if (s <= e) dist = s - e;
-    else dist = 2*M_PI + s - e;
-    return Angle::from_radians0(dist);
-}
-inline Angle distance_cw(Angle const &as, Angle const &ae) {
-    return distance_ccw(ae, as);
-}
-
-inline Angle distance_abs(Angle const &as, Angle const &ae) {
-    Angle ret = distance_ccw(as, ae);
-    if (ret.radians0() > M_PI) {
-        return Angle::from_radians0(2*M_PI - ret.radians0());
-    } else {
-        return ret;
-    }
-}
 
 /** @brief Directed angular interval.
  *
@@ -175,10 +148,10 @@ inline Angle distance_abs(Angle const &as, Angle const &ae) {
 class AngleInterval {
 public:
     AngleInterval(Angle const &s, Angle const &e, bool cw = false)
-        : _start_angle(cw ? e : s), _end_angle(cw ? s : e)
+        : _start_angle(s), _end_angle(e), _sweep(cw)
     {}
     AngleInterval(double s, double e, bool cw = false)
-        : _start_angle(cw ? e : s), _end_angle(cw ? s : e)
+        : _start_angle(s), _end_angle(e), _sweep(cw)
     {}
     /** @brief Get the angular coordinate of the interval's initial point
      * @return Angle in range \f$[0,2\pi)\f$ corresponding to the start of arc */
@@ -189,36 +162,50 @@ public:
     bool isDegenerate() const { return initialAngle() == finalAngle(); }
     /** @brief Get an angle corresponding to the specified time value. */
     Angle angleAt(Coord t) const {
-        Coord span = distance_ccw(_start_angle, _end_angle).radians0();
-        Angle ret;
-        ret._angle = std::fmod(_start_angle.radians0() + span * t, 2*M_PI);
+        Coord span = extent();
+        Angle ret = _start_angle.radians0() + span * (_sweep ? t : -t);
         return ret;
     }
     Angle operator()(Coord t) const { return angleAt(t); }
+#if 0
     /** @brief Find an angle nearest to the specified time value.
      * @param a Query angle
      * @return If the interval contains the query angle, a number from the range [0, 1]
      *         such that a = angleAt(t); otherwise, 0 or 1, depending on which extreme
      *         angle is nearer. */
     Coord nearestAngle(Angle const &a) const {
-        Coord dist = distance_ccw(_start_angle, a).radians0();
-        Coord span = distance_ccw(_start_angle, _end_angle).radians0();
+        Coord dist = distance(_start_angle, a, _sweep).radians0();
+        Coord span = distance(_start_angle, _end_angle, _sweep).radians0();
         if (dist <= span) return dist / span;
-        else return distance_abs(_start_angle, a).radians0() > distance_abs(_end_angle, a) ? 1.0 : 0.0;
+        else return distance_abs(_start_angle, a).radians0() > distance_abs(_end_angle, a).radians0() ? 1.0 : 0.0;
     }
+#endif
     /** @brief Check whether the interval includes the given angle. */
     bool contains(Angle const &a) const {
         Coord s = _start_angle.radians0();
         Coord e = _end_angle.radians0();
         Coord x = a.radians0();
-        // If s <= e, then the +X axis (the angular origin) is contained in the interval.
-        if (s <= e) return x >= s && x <= e;
-        else return x >= e || x <= s;
+        if (_sweep) {
+            if (s < e) return x >= s && x <= e;
+            return x >= s || x <= e;
+        } else {
+            if (s > e) return x <= s && x >= e;
+            return x <= s || x >= e;
+        }
+    }
+    /** @brief Extent of the angle interval.
+     * @return Extent in range \f$[0, 2\pi)\f$ */
+    Coord extent() const {
+        Coord d = _end_angle - _start_angle;
+        if (!_sweep) d = -d;
+        if (d < 0) d += 2*M_PI;
+        return d;
     }
 protected:
     AngleInterval() {}
     Angle _start_angle;
     Angle _end_angle;
+    bool _sweep;
 };
 
 inline double deg_to_rad(double deg) { return deg*M_PI/180.0;}

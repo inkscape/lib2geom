@@ -57,12 +57,20 @@ public:
     SVGEllipticalArc()
         : EllipticalArc()
     {}
-    SVGEllipticalArc( Point _initial_point, double _rx, double _ry,
-                      double _rot_angle, bool _large_arc, bool _sweep,
-                      Point _final_point
+    SVGEllipticalArc( Point ip, double rx, double ry,
+                      double rot_angle, bool large_arc, bool sweep,
+                      Point fp
                     )
-        : EllipticalArc(_initial_point, _rx, _ry, _rot_angle, _large_arc, _sweep, _final_point)
-    {}
+        : EllipticalArc()
+    {
+        _initial_point = ip;
+        _final_point = fp;
+        _rays[X] = rx; _rays[Y] = ry;
+        _rot_angle = rot_angle;
+        _large_arc = large_arc;
+        _sweep = sweep;
+        _updateCenterAndAngles(true);
+    }
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
     virtual Curve *duplicate() const {
