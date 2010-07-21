@@ -82,8 +82,8 @@ namespace Geom
  *
  * Each arc is defined by five variables: The initial and final point, the ellipse's rays,
  * and the ellipse's rotation. Each set of those parameters corresponds to four different arcs,
- * with two of them larger than half an ellipse and two of turning clockwise while traveling
- * the initial to final point. The two flags disambiguate between them: "large arc flag" selects
+ * with two of them larger than half an ellipse and two of them turning clockwise while traveling
+ * from initial to final point. The two flags disambiguate between them: "large arc flag" selects
  * the bigger arc, while the "sweep flag" selects the clockwise arc.
  *
  * @image html elliptical-arc-flags.png "The four possible arcs and the meaning of flags"
@@ -116,13 +116,13 @@ Rect EllipticalArc::boundsExact() const
         std::swap(arc_extremes[2], arc_extremes[3]);
 
 
-    if ( _start_angle < _end_angle )
+    if ( _start_angle.radians0() < _end_angle.radians0() )
     {
         if ( _sweep )
         {
             for ( unsigned int i = 0; i < 4; ++i )
             {
-                if ( _start_angle < extremes[i] && extremes[i] < _end_angle )
+                if ( _start_angle.radians0() < extremes[i] && extremes[i] < _end_angle.radians0() )
                 {
                     arc_extremes[i] = pointAtAngle(extremes[i])[i >> 1];
                 }
@@ -132,7 +132,7 @@ Rect EllipticalArc::boundsExact() const
         {
             for ( unsigned int i = 0; i < 4; ++i )
             {
-                if ( initialAngle() > extremes[i] || extremes[i] > finalAngle() )
+                if ( initialAngle().radians0() > extremes[i] || extremes[i] > finalAngle().radians0() )
                 {
                     arc_extremes[i] = pointAtAngle(extremes[i])[i >> 1];
                 }
@@ -145,7 +145,7 @@ Rect EllipticalArc::boundsExact() const
         {
             for ( unsigned int i = 0; i < 4; ++i )
             {
-                if ( _start_angle < extremes[i] || extremes[i] < _end_angle )
+                if ( _start_angle.radians0() < extremes[i] || extremes[i] < _end_angle.radians0() )
                 {
                     arc_extremes[i] = pointAtAngle(extremes[i])[i >> 1];
                 }
@@ -155,7 +155,7 @@ Rect EllipticalArc::boundsExact() const
         {
             for ( unsigned int i = 0; i < 4; ++i )
             {
-                if ( _start_angle > extremes[i] && extremes[i] > _end_angle )
+                if ( _start_angle.radians0() > extremes[i] && extremes[i] > _end_angle.radians0() )
                 {
                     arc_extremes[i] = pointAtAngle(extremes[i])[i >> 1];
                 }
@@ -193,7 +193,7 @@ Coord EllipticalArc::valueAtAngle(Coord t, Dim2 d) const
 
 Affine EllipticalArc::unitCircleTransform() const
 {
-    Affine ret = Rotate(_rot_angle) * Scale(ray(X), ray(Y));
+    Affine ret = Scale(ray(X), ray(Y)) * Rotate(_rot_angle);
     ret.setTranslation(center());
     return ret;
 }
@@ -457,14 +457,10 @@ Curve* EllipticalArc::portion(double f, double t) const
     EllipticalArc *arc = static_cast<EllipticalArc*>(duplicate());
     arc->_initial_point = pointAt(f);
     arc->_final_point = pointAt(t);
-    double sa = _sweep ? sweepAngle() : -sweepAngle();
-    arc->_start_angle = _start_angle;
-    arc->_start_angle += (sa * f);
-    arc->_end_angle = _start_angle;
-    arc->_end_angle += (sa * t);
     if ( f > t ) arc->_sweep = !_sweep;
-    if ( _large_arc && (arc->sweepAngle() < M_PI) )
+    if ( _large_arc && fabs(sweepAngle() * (t-f)) < M_PI)
         arc->_large_arc = false;
+    arc->_updateCenterAndAngles(); //TODO: be more clever
     return arc;
 }
 
@@ -476,6 +472,7 @@ Curve *EllipticalArc::reverse() const {
     rarc->_final_point = _initial_point;
     rarc->_start_angle = _end_angle;
     rarc->_end_angle = _start_angle;
+    rarc->_updateCenterAndAngles();
     return rarc;
 }
 
@@ -861,7 +858,10 @@ void EllipticalArc::_updateCenterAndAngles()
 
     }
 
-    Rotate m(_rot_angle);
+    Rotate rm(_rot_angle);
+    Affine m(rm);
+    m[1] = -m[1];
+    m[2] = -m[2];
 
     Point p = (d / 2) * m;
     double rx2 = _rays[X] * _rays[X];
@@ -883,11 +883,7 @@ void EllipticalArc::_updateCenterAndAngles()
         if (_large_arc == _sweep) rad = -rad;
         c = rad * Point(rxpy / ray(Y), -rypx / ray(X));
 
-        Affine mr(m);
-        mr[1] = -mr[1];
-        mr[2] = -mr[2];
-
-        _center = c * mr + middle_point(initialPoint(), finalPoint());
+        _center = c * rm + middle_point(initialPoint(), finalPoint());
     }
     else if (rad == 1 || isSVGCompliant())
     {
@@ -958,18 +954,13 @@ Curve *EllipticalArc::transformed(Affine const& m) const
  */
 Coord EllipticalArc::map_to_02PI(Coord t) const
 {
-    Coord angle = initialAngle();
-    if ( _sweep )
-    {
-        angle += sweepAngle() * t;
+    Angle a = initialAngle();
+    if ( _sweep ) {
+        a += sweepAngle() * t;
+    } else {
+        a -= sweepAngle() * t;
     }
-    else
-    {
-        angle -= sweepAngle() * t;
-    }
-    angle = std::fmod(angle, 2*M_PI);
-    if ( angle < 0 ) angle += 2*M_PI;
-    return angle;
+    return a.radians();
 }
 
 Coord EllipticalArc::map_to_01(Coord angle) const

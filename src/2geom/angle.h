@@ -64,18 +64,18 @@ class Angle
       > >
 {
 public:
-    Angle(Coord v) : _angle(v + M_PI) { normalize(); } // this can be called implicitly
-    explicit Angle(Point p) : _angle(atan2(p) + M_PI) {}
-    Angle(Point a, Point b) : _angle(angle_between(a, b) + M_PI) {}
+    Angle(Coord v) : _angle(v) { _normalize(); } // this can be called implicitly
+    explicit Angle(Point p) : _angle(atan2(p)) { _normalize(); }
+    Angle(Point a, Point b) : _angle(angle_between(a, b)) { _normalize(); }
     operator Coord() const { return radians(); }
     Angle &operator+=(Angle const &o) {
         _angle += o._angle;
-        normalize();
+        _normalize();
         return *this;
     }
     Angle &operator-=(Angle const &o) {
         _angle -= o._angle;
-        normalize();
+        _normalize();
         return *this;
     }
     bool operator==(Angle const &o) const {
@@ -85,10 +85,10 @@ public:
     /** @brief Get the angle as radians.
      * @return Number in range \f$[-\pi, \pi)\f$. */
     Coord radians() const {
-        return _angle - M_PI;
+        return _angle > M_PI ? _angle - 2*M_PI : _angle;
     }
-    /** @brief Get the angle as radians starting from zero.
-     * @return Number in range \f$[0, 2\pi)\f$. 0 corresponds to \f$-\pi\f$ for radians(). */
+    /** @brief Get the angle as positive radians.
+     * @return Number in range \f$[0, 2\pi)\f$. */
     Coord radians0() const {
         return _angle;
     }
@@ -106,14 +106,6 @@ public:
         Coord ret = 90.0 - _angle / M_PI * 180.0;
         if (ret < 0) ret += 360;
         return ret;
-    }
-    /** @brief Convert the angle to canonical internal representation.
-     * Use this periodically to avoid loss of precision when adding lots of angles together. */
-    void normalize() {
-        if (_angle >= 2*M_PI || _angle < 0) {
-            _angle = std::fmod(_angle, 2*M_PI);
-            if (_angle < 0) _angle += 2*M_PI;
-        }
     }
     
     static Angle from_radians0(Coord r) {
@@ -137,6 +129,10 @@ public:
     }
 private:
     Angle() {}
+    void _normalize() {
+        if (_angle >= 2*M_PI) _angle -= 2*M_PI;
+        if (_angle < 0) _angle += 2*M_PI;
+    }
     Coord _angle; // this is always in [0, 2pi), so offset by pi from math library convention
     friend class AngleInterval;
 };
