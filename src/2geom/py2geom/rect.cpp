@@ -62,8 +62,11 @@ static void wrap_expandBy(Geom::Rect &x, double val) {
     x.expandBy(val);
 }
 
-static void wrap_unionWith(Geom::Rect &x, Geom::Rect &y) {
+static void wrap_unionWith(Geom::Rect &x, Geom::Rect const &y) {
     x.unionWith(y);
+}
+static bool wrap_intersects(Geom::Rect const &x, Geom::Rect const &y) {
+    return x.intersects(y);
 }
 
 void wrap_rect() {
@@ -98,7 +101,7 @@ void wrap_rect() {
         .def("contains", wrap_contains_ivl)
         .def("interiorContains", wrap_interiorContains_coord)
         .def("interiorContains", wrap_interiorContains_ivl)
-        .def("intersects", &Geom::Rect::intersects)
+        .def("intersects", wrap_intersects)
         .def("expandTo", &Geom::Rect::expandTo)
         .def("unionWith", &wrap_unionWith)
         // TODO: overloaded

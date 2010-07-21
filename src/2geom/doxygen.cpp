@@ -140,6 +140,14 @@
  *
  * Functions should use lowercase_with_underscores names. The opening brace of
  * the definition should be on a separate line.
+ *
+ * @section InlineInClasses When to use inline
+ *
+ * The "inline" keyword is not required when the body of the function is given
+ * in the definition of the class. Do not mark such functions inline, because
+ * they are automatically marked as inline by the compiler. It is only
+ * necessary to use the inline keyword when the body of the function is given
+ * after the class definition.
  */
 
 // Documentation for groups

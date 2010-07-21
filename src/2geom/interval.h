@@ -86,7 +86,7 @@ public:
 
     /** @brief Create an interval containing a range of values.
      * The resulting interval will contain all values from the given range.
-     * The return type of iterators must be convertible to double. The given range
+     * The return type of iterators must be convertible to Coord. The given range
      * must not be empty. For potentially empty ranges, see OptInterval.
      * @param start Beginning of the range
      * @param end   End of the range
@@ -95,11 +95,11 @@ public:
     static Interval from_range(InputIterator start, InputIterator end) {
         assert(start != end);
         Interval result(*start++);
-        for (; start != end; ++start) result.extendTo(*start);
+        for (; start != end; ++start) result.expandTo(*start);
         return result;
     }
     /** @brief Create an interval from a C-style array of values it should contain. */
-    static Interval from_array(Coord const *c, int n) {
+    static Interval from_array(Coord const *c, unsigned n) {
         Interval result = from_range(c, c+n);
         return result;
     }
@@ -128,13 +128,17 @@ public:
      * Interior means all numbers in the interval except its ends. */
     bool interiorContains(Coord val) const { return _b[0] < val && val < _b[1]; }
     /** @brief Check whether the interval includes the given interval. */
-    bool contains(const Interval & val) const { return _b[0] <= val._b[0] && val._b[1] <= _b[1]; }
+    bool contains(Interval const &val) const { return _b[0] <= val._b[0] && val._b[1] <= _b[1]; }
     /** @brief Check whether the interior of the interval includes the given interval.
      * Interior means all numbers in the interval except its ends. */
-    bool interiorContains(const Interval & val) const { return _b[0] < val._b[0] && val._b[1] < _b[1]; }
+    bool interiorContains(Interval const &val) const { return _b[0] < val._b[0] && val._b[1] < _b[1]; }
     /** @brief Check whether the intervals have any common elements. */
-    bool intersects(const Interval & val) const {
+    bool intersects(Interval const &val) const {
         return contains(val._b[0]) || contains(val._b[1]) || val.contains(*this);
+    }
+    /** @brief Check whether the interiors of the intervals have any common elements. */
+    bool interiorIntersects(Interval const &val) const {
+        return interiorContains(val._b[0]) || interiorContains(val._b[1]) || val.interiorContains(*this);
     }
     /// @}
 
@@ -162,7 +166,7 @@ public:
         }
     }
     /** @brief Extend the interval to include the given number. */
-    void extendTo(Coord val) {
+    void expandTo(Coord val) {
        if(val < _b[0]) _b[0] = val;
        if(val > _b[1]) _b[1] = val;  //no else, as we want to handle NaN
     }
@@ -210,7 +214,7 @@ public:
     
     // IMPL: ScalableConcept
     /** @brief Return an interval mirrored about 0 */
-    inline Interval operator-() const { return Interval(-_b[1], -_b[0]); }
+    Interval operator-() const { return Interval(-_b[1], -_b[0]); }
     /** @brief Scale an interval */
     Interval &operator*=(Coord s) {
         _b[0] *= s;
@@ -251,10 +255,10 @@ public:
     Interval &operator*=(Interval const &o) {
         // TODO implement properly
         Coord mn = min(), mx = max();
-        extendTo(mn * o.min());
-        extendTo(mn * o.max());
-        extendTo(mx * o.min());
-        extendTo(mx * o.max());
+        expandTo(mn * o.min());
+        expandTo(mn * o.max());
+        expandTo(mx * o.min());
+        expandTo(mx * o.max());
         return *this;
     }
     /** @brief Union two intervals.

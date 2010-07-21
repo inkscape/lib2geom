@@ -74,7 +74,7 @@ OptInterval bounds_exact(SBasis const &a) {
     SBasis df = derivative(a);
     vector<double>extrema = roots(df);
     for (unsigned i=0; i<extrema.size(); i++){
-        result.extendTo(a(extrema[i]));
+        result.expandTo(a(extrema[i]));
     }
     return result;
 }

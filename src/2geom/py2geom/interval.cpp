@@ -106,7 +106,7 @@ void wrap_interval() {
 
         .def("setMin", &Geom::Interval::setMin)
         .def("setMax", &Geom::Interval::setMax)
-        .def("extendTo", &Geom::Interval::extendTo)
+        .def("expandTo", &Geom::Interval::expandTo)
         .def("from_array", &Geom::Interval::from_array)
         .def("expandBy", &Geom::Interval::expandBy)
         .def("unionWith", &Geom::Interval::unionWith)

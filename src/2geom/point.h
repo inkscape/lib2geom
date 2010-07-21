@@ -47,8 +47,6 @@
 
 namespace Geom {
 
-enum Dim2 { X=0, Y=1 };
-
 class Point
     : boost::additive< Point
     , boost::totally_ordered< Point
@@ -65,18 +63,18 @@ class Point
 
 public:
     /** Construct a point on the origin. */
-    inline Point()
+    Point()
     { _pt[X] = _pt[Y] = 0; }
 
     /** Construct a point from its coordinates. */
-    inline Point(Coord x, Coord y) {
+    Point(Coord x, Coord y) {
         _pt[X] = x; _pt[Y] = y;
     }
-    inline Point(Point const &p) {
+    Point(Point const &p) {
         for (unsigned i = 0; i < 2; ++i)
             _pt[i] = p._pt[i];
     }
-    inline Point &operator=(Point const &p) {
+    Point &operator=(Point const &p) {
         for (unsigned i = 0; i < 2; ++i)
             _pt[i] = p._pt[i];
         return *this;
@@ -84,8 +82,8 @@ public:
 
     /// @name Access the coordinates of a point
     /// @{
-    inline Coord operator[](unsigned i) const { return _pt[i]; }
-    inline Coord &operator[](unsigned i) { return _pt[i]; }
+    Coord operator[](unsigned i) const { return _pt[i]; }
+    Coord &operator[](unsigned i) { return _pt[i]; }
 
     Coord operator[](Dim2 d) const throw() { return _pt[d]; }
     Coord &operator[](Dim2 d) throw() { return _pt[d]; }
@@ -95,7 +93,7 @@ public:
     /// @{
     /** @brief Compute the distance from origin.
      * @return Length of the vector from origin to this point */
-    inline Coord length() const { return hypot(_pt[0], _pt[1]); }
+    Coord length() const { return hypot(_pt[0], _pt[1]); }
     void normalize();
 
     /** @brief Return a point like this point but rotated -90 degrees.
@@ -115,26 +113,26 @@ public:
 
     /// @name Vector-like arithmetic operations
     /// @{
-    inline Point operator-() const {
+    Point operator-() const {
         return Point(-_pt[X], -_pt[Y]);
     }
-    inline Point &operator+=(Point const &o) {
+    Point &operator+=(Point const &o) {
         for ( unsigned i = 0 ; i < 2 ; ++i ) {
             _pt[i] += o._pt[i];
         }
         return *this;
     }
-    inline Point &operator-=(Point const &o) {
+    Point &operator-=(Point const &o) {
         for ( unsigned i = 0 ; i < 2 ; ++i ) {
             _pt[i] -= o._pt[i];
         }
         return *this;
     }
-    inline Point &operator*=(double s) {
+    Point &operator*=(Coord s) {
         for ( unsigned i = 0 ; i < 2 ; ++i ) _pt[i] *= s;
         return *this;
     }
-    inline Point &operator/=(double s) {
+    Point &operator/=(Coord s) {
         //TODO: s == 0?
         for ( unsigned i = 0 ; i < 2 ; ++i ) _pt[i] /= s;
         return *this;
@@ -162,7 +160,7 @@ public:
     /// @{
     /** @brief Lower the precision of the point.
      * This will round both coordinates to multiples of \f$10^p\f$. */
-    inline void round (int p = 0) {
+    void round (int p = 0) {
         _pt[X] = (Coord)(decimal_round((double)_pt[X], p));
         _pt[Y] = (Coord)(decimal_round((double)_pt[Y], p));
         return;
@@ -170,7 +168,7 @@ public:
 
     /** @brief Check whether both coordinates are finite.
      * @return True if neither coordinate is infinite. */
-    inline bool isFinite() const {
+    bool isFinite() const {
         for ( unsigned i = 0 ; i < 2 ; ++i ) {
             if(!IS_FINITE(_pt[i])) return false;
         }
@@ -179,14 +177,14 @@ public:
     /** @brief Equality operator.
      * This tests for exact identity (as opposed to are_near()). Note that due to numerical
      * errors, this test might return false even if the points should be identical. */
-    inline bool operator==(const Point &in_pnt) const {
+    bool operator==(const Point &in_pnt) const {
         return ((_pt[X] == in_pnt[X]) && (_pt[Y] == in_pnt[Y]));
     }
     /** @brief Lexicographical ordering for points.
      * Y coordinate is regarded as more significant. When sorting according to this
      * ordering, the points will be sorted according to the Y coordinate, and within
      * points with the same Y coordinate according to the X coordinate. */
-    inline bool operator<(const Point &p) const {
+    bool operator<(const Point &p) const {
         return ( ( _pt[Y] < p[Y] ) ||
              (( _pt[Y] == p[Y] ) && ( _pt[X] < p[X] )));
     }
@@ -197,7 +195,7 @@ public:
     /** @brief Construct a point from its polar coordinates.
      * The angle is specified in radians, in the mathematical convention (increasing
      * counter-clockwise from +X). */
-    static inline Point polar(Coord angle, Coord radius) {
+    static Point polar(Coord angle, Coord radius) {
         Point ret(polar(angle));
         ret *= radius;
         return ret;
@@ -205,7 +203,7 @@ public:
     /** @brief Construct an unit vector from its angle.
      * The angle is specified in radians, in the mathematical convention (increasing
      * counter-clockwise from +X). */
-    static inline Point polar(Coord angle) {
+    static Point polar(Coord angle) {
         Point ret;
         sincos(angle, ret[Y], ret[X]);
         return ret;

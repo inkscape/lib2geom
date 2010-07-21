@@ -89,7 +89,7 @@ class BoundsTester: public Toy {
         for (unsigned i=0;i<sols.size();i++){
             for (unsigned j=0;j<sols[i].size();j++){
             	Interval ys = levels[i];
-            	ys.extendTo(0.);
+            	ys.expandTo(0.);
                 cairo_set_line_width (cr, .3);
                 plot_bar(cr,ys, 1., sols[i][j].min(), sols[i][j].max());
                 cairo_set_source_rgba( cr, 0., 0., 1., .3);

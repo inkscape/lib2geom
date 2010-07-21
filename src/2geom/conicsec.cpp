@@ -680,7 +680,7 @@ Interval xAx::quad_ex(double a, double b, double c, Interval ivl) {
   double cx = -b*0.5/a;
   Interval bnds((a*ivl[0]+b)*ivl[0]+c, (a*ivl[1]+b)*ivl[1]+c);
   if(ivl.contains(cx))
-    bnds.extendTo((a*cx+b)*cx+c);
+    bnds.expandTo((a*cx+b)*cx+c);
   return bnds;
 }
 
@@ -729,7 +729,7 @@ Interval xAx::extrema(Rect r) const {
   ext |= quad_ex(c[0], c[1]*k+c[3],  (c[2]*k + c[4])*k + c[5], r[0]);
   boost::optional<Point> B0 = bottom();
   if (B0 and r.contains(*B0))
-    ext.extendTo(0);
+    ext.expandTo(0);
   return ext;
 }
 
