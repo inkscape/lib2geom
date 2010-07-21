@@ -57,6 +57,7 @@
  * - @ref Containers "Geometric containers" - efficient ways to store and retrieve
  *   geometric information.
  * - @ref SVG "SVG integration" - classes and functions to work with SVG-like input.
+ * - @subpage ReleaseNotes "Release notes" - what's new in 2Geom
  *
  * @section DeveloperInfo Developer information
  *
@@ -69,8 +70,35 @@
  *
  * 2Geom has two APIs: a high level one, which uses virtual functions to allow handling
  * objects of in a generic way without knowing their actual type at compile time,
- * an a lower-level one based on templates, which is designed with performance in mind.
+ * and a lower-level one based on templates, which is designed with performance in mind.
  * For performance-critical tasks it may be necessary to use the lower level API.
+ */
+
+// RELEASE NOTES
+// Update this to describe the most important API changes.
+/**
+ * @page ReleaseNotes 2Geom release notes
+ *
+ * - Version 0.4
+ *   - API additions:
+ *     - New geometric primitives - Angle and AngleInterval.
+ *   - Major changes:
+ *     - Matrix has been renamed to Affine.
+ *     - Classification methods of Affine, for example Affine::isRotation(), will now
+ *       return true for transforms that are close to identity. This is to reflect the
+ *       fact that an identity transform can be interpreted as a rotation by zero
+ *       degrees. To get the old behavior of returning false for identity, use
+ *       methods prefixed with "Nonzero", e.g. Affine::isNonzeroRotation().
+ *     - EllipticalArc and SVGEllipticalArc have been merged. EllipticalArc underwent
+ *       substantial changes to match 2Geom naming conventions and make use of new
+ *       angular geometric primitives.
+ *   - Minor changes:
+ *     - Affine::without_translation() is now called Affine::withoutTranslation().
+ *     - Interval::strict_contains() is now called Interval::interiorContains().
+ *       The same change has been made for Rect.
+ *     - Some unclear and unused operators of D2 were removed, for instance D2 * Point.
+ * - Version 0.3
+ *     - release notes were started after this version.
  */
 
 /**
@@ -191,7 +219,7 @@
 /**
  * @defgroup Primitives Geometrical primitives
  *
- * 2Geom has several basic geometrical objects: points, lines, intervals,
+ * 2Geom has several basic geometrical objects: points, lines, intervals, angles,
  * and others. Most of those objects can be treated as sets of points or numbers
  * satisfying some equation or as functions.
  */
