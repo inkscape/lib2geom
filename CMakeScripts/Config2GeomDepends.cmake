@@ -1,5 +1,6 @@
 SET(2GEOM_DEPENDS gtk+-2.0 gtkmm-2.4 cairomm-1.0 cairo gsl blas pycairo)
 include(UsePkgConfig)
+# lib SpatialIndex is added only for tests/rtree-performance.cpp
 
 # Dependencies Packages
 
