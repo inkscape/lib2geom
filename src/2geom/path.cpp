@@ -46,8 +46,9 @@ namespace Geom
 OptRect Path::boundsFast() const {
   OptRect bounds;
   if (empty()) return bounds;
-  bounds=front().boundsFast();
+  bounds = front().boundsFast();
   const_iterator iter = begin();
+  // the closing path segment can be ignored, because it will always lie within the bbox of the rest of the path
   if ( iter != end() ) {
     for ( ++iter; iter != end() ; ++iter ) {
       bounds.unionWith(iter->boundsFast());
@@ -59,8 +60,9 @@ OptRect Path::boundsFast() const {
 OptRect Path::boundsExact() const {
   OptRect bounds;
   if (empty()) return bounds;
-  bounds=front().boundsExact();
+  bounds = front().boundsExact();
   const_iterator iter = begin();
+  // the closing path segment can be ignored, because it will always lie within the bbox of the rest of the path
   if ( iter != end() ) {
     for ( ++iter; iter != end() ; ++iter ) {
       bounds.unionWith(iter->boundsExact());
