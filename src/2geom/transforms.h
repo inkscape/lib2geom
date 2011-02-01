@@ -78,7 +78,7 @@ class TransformOperations
 {
 public:
     template <typename T2>
-    Affine operator*(T2 const &t) {
+    Affine operator*(T2 const &t) const {
         Affine ret(*static_cast<T const*>(this)); ret *= t; return ret;
     }
 };
