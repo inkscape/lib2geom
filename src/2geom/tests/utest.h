@@ -131,4 +131,4 @@ int utest_end(void) {
   fill-column:99
   End:
 */
-// vim: filetype=c:noexpandtab:shiftwidth=8:tabstop=8:encoding=utf-8:textwidth=99 :
+// vim: filetype=c:noexpandtab:shiftwidth=8:tabstop=8:fileencoding=utf-8:textwidth=99 :
