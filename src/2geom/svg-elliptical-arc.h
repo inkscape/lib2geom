@@ -106,6 +106,7 @@ public:
         if (isDegenerate()) return chord().roots(v, d);
         return EllipticalArc::roots(v, d);
     }
+#ifdef HAVE_GSL
     virtual std::vector<Coord> allNearestPoints( Point const& p, double from = 0, double to = 1 ) const {
         if (isDegenerate()) {
             std::vector<Coord> result;
@@ -114,6 +115,7 @@ public:
         }
         return EllipticalArc::allNearestPoints(p, from, to);
     }
+#endif
     virtual D2<SBasis> toSBasis() const {
         if (isDegenerate()) return chord().toSBasis();
         return EllipticalArc::toSBasis();
