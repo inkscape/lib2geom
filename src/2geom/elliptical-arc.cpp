@@ -425,6 +425,7 @@ Curve *EllipticalArc::reverse() const {
     return rarc;
 }
 
+#ifdef HAVE_GSL  // GSL is required for function "solve_reals"
 std::vector<double> EllipticalArc::allNearestPoints( Point const& p, double from, double to ) const
 {
     std::vector<double> result;
@@ -651,7 +652,7 @@ std::vector<double> EllipticalArc::allNearestPoints( Point const& p, double from
 
     return result;
 }
-
+#endif
 
 /*
  * NOTE: this implementation follows Standard SVG 1.1 implementation guidelines
