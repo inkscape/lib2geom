@@ -104,6 +104,11 @@
 /**
  * @page CodingStandards Coding standards and conventions used in 2Geom
  *
+ * @section Filenames
+ *
+ * Files and directories should be all lowercase. Words should be separated with hyphens (-).
+ * Underscores, capital letters and non-ASCII characters should not be used.
+ *
  * @section Indenting
  *
  * All files should use 4 spaces as indentation.
@@ -161,7 +166,7 @@
      }
  }; // end of class Foo
 
- // Closing brace of a class should have the above comment.
+ // Closing brace of a class should have the above comment, unless it's very short.
  @endcode
  *
  * @section FreeFuns Free functions
