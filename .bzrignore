@@ -1,0 +1,17 @@
+CMakeCache.txt
+**/CMakeFiles
+cmake_uninstall.cmake
+cmake_install.cmake
+config.h
+./Makefile
+src/**/Makefile
+2geom.pc
+!src/2geom/toys/*.cpp
+!src/2geom/toys/data
+!src/2geom/toys/*.h
+!src/2geom/toys/*.svg
+!src/2geom/toys/*.svgd
+!src/2geom/toys/*.hand
+!src/2geom/toys/*.rb
+!src/2geom/toys/*.py
+src/2geom/toys/*
