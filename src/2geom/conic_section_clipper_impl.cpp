@@ -35,7 +35,7 @@
 
 
 #ifndef CLIP_WITH_CAIRO_SUPPORT
-    #include "conic_section_clipper.h"
+    #include <2geom/conic_section_clipper.h>
 #endif
 
 

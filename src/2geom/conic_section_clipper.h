@@ -39,7 +39,7 @@
 
 
 #undef  CLIP_WITH_CAIRO_SUPPORT
-#include "conic_section_clipper_impl.h"
+#include <2geom/conic_section_clipper_impl.h>
 
 
 #endif // _2GEOM_CONIC_SECTION_CLIPPER_H_

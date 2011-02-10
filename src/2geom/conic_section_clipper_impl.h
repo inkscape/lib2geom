@@ -38,7 +38,7 @@
 #define _2GEOM_CONIC_SECTION_CLIPPER_IMPL_H_
 
 
-#include "conicsec.h"
+#include <2geom/conicsec.h>
 #include <2geom/line.h>
 
 #include <list>

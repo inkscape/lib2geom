@@ -44,10 +44,9 @@ circle.cpp
 circle.h
 conicsec.h
 conicsec.cpp
-conic_section_clipper.cpp
 conic_section_clipper.h
 conic_section_clipper_cr.h
-#conic_section_clipper_impl.cpp
+conic_section_clipper_impl.cpp
 conic_section_clipper_impl.h
 
 curve.h
