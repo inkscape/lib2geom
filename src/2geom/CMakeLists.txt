@@ -34,7 +34,6 @@ svg-path-parser.cpp
 
 ord.h
 
-#nearestpoint.cpp
 nearest-point.cpp
 nearest-point.h
 bezier-clipping.cpp
@@ -127,8 +126,6 @@ sbasis-math.h
 sbasis-math.cpp
 sbasis-poly.cpp
 sbasis-poly.h
-#chebyshev.cpp # requires gsl, not useful, I think
-#chebyshev.h
 sbasis-roots.cpp
 sbasis-to-bezier.cpp
 sbasis-to-bezier.h
@@ -138,7 +135,6 @@ bezier-to-sbasis.h
 basic-intersection.h
 basic-intersection.cpp
 recursive-bezier-intersection.cpp
-#intersection-by-bezier-clipping.cpp
 intersection-by-smashing.h
 intersection-by-smashing.cpp
 
@@ -164,9 +160,6 @@ solve-bezier-parametric.cpp
 solver.h
 svg-elliptical-arc.cpp
 svg-elliptical-arc.h
-
-#arc-length.cpp
-#arc-length.h
 
 numeric/matrix.cpp
 
