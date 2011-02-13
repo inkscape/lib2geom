@@ -15,3 +15,5 @@ src/**/Makefile
 !src/2geom/toys/*.rb
 !src/2geom/toys/*.py
 src/2geom/toys/*
+doc/html
+doc/latex
