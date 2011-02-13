@@ -2,7 +2,7 @@
 #include <2geom/bezier-to-sbasis.h>
 #include <2geom/solver.h>
 #include <2geom/sbasis-poly.h>
-#include <2geom/orphan code/nearestpoint.cpp>  // FIXME: This looks like it may give problems later, (including a .cpp file)
+#include <2geom/orphan-code/nearestpoint.cpp>  // FIXME: This looks like it may give problems later, (including a .cpp file)
 #include <2geom/path.h>
 
 #include <2geom/toys/path-cairo.h>
