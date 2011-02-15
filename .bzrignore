@@ -17,3 +17,4 @@ src/**/Makefile
 src/2geom/toys/*
 doc/html
 doc/latex
+doxygen_warnings.log

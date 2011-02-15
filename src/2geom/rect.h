@@ -130,13 +130,16 @@ public:
     /** @brief Return rightmost coordinate of the rectangle (+X is to the right). */
     Coord right() const { return f[X].max(); }
 
+    /** @brief Get the horizontal extent of the rectangle. */
     Coord width() const { return f[X].extent(); }
+    /** @brief Get the vertical extent of the rectangle. */
     Coord height() const { return f[Y].extent(); }
 
     /** @brief Get rectangle's width and height as a point.
      * @return Point with X coordinate corresponding to the width and the Y coordinate
      *         corresponding to the height of the rectangle. */
     Point dimensions() const { return Point(f[X].extent(), f[Y].extent()); }
+    /** @brief Get the point in the geometric center of the rectangle. */
     Point midpoint() const { return Point(f[X].middle(), f[Y].middle()); }
 
 /**
@@ -212,8 +215,7 @@ public:
     /** @brief Enlarge the rectangle to contain the given rectangle.
      * Unioning with an empty rectangle results in no changes. */
     void unionWith(OptRect const &b);
-    
-    //TODO: figure out how these work with negative values and OptRect
+
     /** @brief Expand the rectangle in both directions by the specified amount.
      * Note that this is different from scaling. Negative values wil shrink the
      * rectangle. If <code>-amount</code> is larger than
