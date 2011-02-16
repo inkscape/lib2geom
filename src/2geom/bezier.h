@@ -1,10 +1,13 @@
 /**
- * \file bezier.h
- * \brief \todo brief description
+ * @file
+ * @brief Bezier polynomial
+ *//*
+ * Authors:
+ *   MenTaLguY <mental@rydia.net>
+ *   Michael Sloan <mgsloan@gmail.com>
+ *   Nathan Hurst <njh@njhurst.com>
  *
- * Copyright 2007  MenTaLguY <mental@rydia.net>
- * Copyright 2007  Michael Sloan <mgsloan@gmail.com>
- * Copyright 2007  Nathan Hurst <njh@njhurst.com>
+ * Copyright 2007 Authors
  *
  * This library is free software; you can redistribute it and/or
  * modify it either under the terms of the GNU Lesser General Public
@@ -31,8 +34,8 @@
  *
  */
 
-#ifndef SEEN_BEZIER_H
-#define SEEN_BEZIER_H
+#ifndef LIB2GEOM_SEEN_BEZIER_H
+#define LIB2GEOM_SEEN_BEZIER_H
 
 #include <2geom/coord.h>
 #include <valarray>
@@ -407,7 +410,7 @@ inline std::ostream &operator<< (std::ostream &out_file, const Bezier & b) {
 }
 
 }
-#endif //SEEN_BEZIER_H
+#endif // LIB2GEOM_SEEN_BEZIER_H
 
 /*
   Local Variables:

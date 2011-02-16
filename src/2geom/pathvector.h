@@ -34,8 +34,8 @@
  * the specific language governing rights and limitations.
  */
 
-#ifndef SEEN_GEOM_PATHVECTOR_H
-#define SEEN_GEOM_PATHVECTOR_H
+#ifndef LIB2GEOM_SEEN_PATHVECTOR_H
+#define LIB2GEOM_SEEN_PATHVECTOR_H
 
 #include <2geom/forward.h>
 #include <2geom/path.h>
@@ -122,11 +122,9 @@ Point pointAt(PathVector const & path_in, PathVectorPosition const pvp) {
     return path_in[pvp.path_nr].pointAt(pvp.t);
 }
 
-
-
 } // end namespace Geom
 
-#endif // SEEN_GEOM_PATHVECTOR_H
+#endif // LIB2GEOM_SEEN_PATHVECTOR_H
 
 /*
   Local Variables:

@@ -2,7 +2,10 @@
  * \file
  * \brief Axis-aligned rectangle
  *//*
- * Copyright 2007 Michael Sloan <mgsloan@gmail.com>
+ * Authors:
+ *   Michael Sloan <mgsloan@gmail.com>
+ *   Krzysztof Kosiński <tweenk.pl@gmail.com>
+ * Copyright 2007-2011 Authors
  *
  * This library is free software; you can redistribute it and/or
  * modify it either under the terms of the GNU Lesser General Public
@@ -36,8 +39,8 @@
 
 #include <2geom/d2.h>
 
-#ifndef LIB2GEOM_RECT_H
-#define LIB2GEOM_RECT_H
+#ifndef LIB2GEOM_SEEN_RECT_H
+#define LIB2GEOM_SEEN_RECT_H
 
 #include <2geom/affine.h>
 #include <boost/optional/optional.hpp>
@@ -361,7 +364,7 @@ inline bool Rect::interiorContains(OptRect const &r) const {
 
 } // end namespace Geom
 
-#endif //_2GEOM_RECT
+#endif // LIB2GEOM_SEEN_RECT_H
 
 /*
   Local Variables:

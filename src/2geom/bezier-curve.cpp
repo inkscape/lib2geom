@@ -41,7 +41,7 @@ namespace Geom
 
 /**
  * @class BezierCurve
- * @brief Two-dimensional Bezier curve of arbitrary order. (this is an abstract class)
+ * @brief Two-dimensional Bezier curve of arbitrary order.
  *
  * Bezier curves are an expansion of the concept of linear interpolation to n points.
  * Linear segments in 2Geom are in fact Bezier curves of order 1.

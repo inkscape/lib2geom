@@ -1,7 +1,7 @@
 /**
  *  \file
  *  \brief Defines the Coord "real" type with sufficient precision for coordinates.
- *
+ *//*
  * Copyright 2006 Nathan Hurst <njh@mail.csse.monash.edu.au>
  *
  * This library is free software; you can redistribute it and/or
@@ -29,15 +29,15 @@
  *
  */
 
-#ifndef SEEN_Geom_COORD_H
-#define SEEN_Geom_COORD_H
+#ifndef LIB2GEOM_SEEN_COORD_H
+#define LIB2GEOM_SEEN_COORD_H
 
 #include <cmath>
 #include <limits>
 
 namespace Geom {
 
-/** @brief Axis enum (X or Y). */
+/** @brief 2D axis enumeration (X or Y). */
 enum Dim2 { X=0, Y=1 };
 
 /**
@@ -57,13 +57,11 @@ inline Coord infinity() {  return std::numeric_limits<Coord>::infinity();  }
 inline bool are_near(Coord a, Coord b, double eps=EPSILON) { return a-b <= eps && a-b >= -eps; }
 inline bool rel_error_bound(Coord a, Coord b, double eps=EPSILON) { return a <= eps*b && a >= -eps*b; }
 
-
 typedef long IntCoord;
 
-} /* namespace Geom */
+} // end namespace Geom
 
-
-#endif /* !SEEN_Geom_COORD_H */
+#endif // LIB2GEOM_SEEN_COORD_H
 
 /*
   Local Variables:

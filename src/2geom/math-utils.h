@@ -1,6 +1,3 @@
-#ifndef LIB2GEOM_MATH_UTILS_HEADER
-#define LIB2GEOM_MATH_UTILS_HEADER
-
 /**
  * \file
  * \brief Low level math functions and compatibility wrappers
@@ -35,6 +32,9 @@
  * the specific language governing rights and limitations.
  *
  */
+
+#ifndef LIB2GEOM_SEEN_MATH_UTILS_H
+#define LIB2GEOM_SEEN_MATH_UTILS_H
 
 #include "config.h"
 #include <math.h> // sincos is usually only available in math.h
@@ -94,7 +94,7 @@ inline void sincos(double angle, double &sin_, double &cos_) {
 
 }
 
-#endif
+#endif // LIB2GEOM_SEEN_MATH_UTILS_H
 
 /*
   Local Variables:

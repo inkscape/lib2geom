@@ -1,7 +1,7 @@
 /**
  * \file
  * \brief   Lifts one dimensional objects into 2d 
- *
+ *//*
  * Copyright 2007 Michael Sloan <mgsloan@gmail.com>
  *
  * This library is free software; you can redistribute it and/or

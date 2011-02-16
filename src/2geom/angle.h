@@ -304,8 +304,7 @@ bool arc_contains (double a, double sa, double ia, double ea)
 
 } // end namespace Geom
 
-#endif
-
+#endif // LIB2GEOM_SEEN_ANGLE_H
 
 /*
   Local Variables:

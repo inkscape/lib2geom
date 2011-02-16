@@ -1,14 +1,13 @@
 /**
  * \file
  * \brief Bezier curve
- *
  *//*
  * Authors:
  *   MenTaLguY <mental@rydia.net>
  *   Marco Cecchetti <mrcekets at gmail.com>
  *   Krzysztof Kosiński <tweenk.pl@gmail.com>
  * 
- * Copyright 2007-2009 Authors
+ * Copyright 2007-2011 Authors
  *
  * This library is free software; you can redistribute it and/or
  * modify it either under the terms of the GNU Lesser General Public

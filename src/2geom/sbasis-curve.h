@@ -33,8 +33,8 @@
  * the specific language governing rights and limitations.
  */
 
-#ifndef _2GEOM_SBASIS_CURVE_H_
-#define _2GEOM_SBASIS_CURVE_H_
+#ifndef LIB2GEOM_SEEN_SBASIS_CURVE_H
+#define LIB2GEOM_SEEN_SBASIS_CURVE_H
 
 #include <2geom/curve.h>
 #include <2geom/nearest-point.h>
@@ -54,15 +54,14 @@ namespace Geom
  * @ingroup Curves
  */
 class SBasisCurve : public Curve {
-
 private:
-    SBasisCurve();
     D2<SBasis> inner;
   
 public:
     explicit SBasisCurve(D2<SBasis> const &sb) : inner(sb) {}
     explicit SBasisCurve(Curve const &other) : inner(other.toSBasis()) {}
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
     virtual Curve *duplicate() const { return new SBasisCurve(*this); }
     virtual Point initialPoint() const    { return inner.at0(); }
     virtual Point finalPoint() const      { return inner.at1(); }
@@ -104,16 +103,12 @@ public:
     virtual int degreesOfFreedom() const {
         return inner[0].degreesOfFreedom() + inner[1].degreesOfFreedom();
     }
+#endif
 };
-
 
 } // end namespace Geom
 
-
-#endif // _2GEOM_SBASIS_CURVE_H_
-
-
-
+#endif // LIB2GEOM_SEEN_SBASIS_CURVE_H
 
 /*
   Local Variables:
