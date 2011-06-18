@@ -283,7 +283,7 @@ public:
     }
     std::vector<double> roots(Interval const ivl) const {
         std::vector<double> solutions;
-        find_bernstein_roots(&const_cast<std::valarray<Coord>&>(c_)[0], order(), solutions, 0, ivl[0], ivl[1]);
+        find_bernstein_roots(&const_cast<std::valarray<Coord>&>(c_)[0], order(), solutions, 0, ivl.min(), ivl.max());
         return solutions;
     }
 };

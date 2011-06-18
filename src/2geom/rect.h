@@ -75,7 +75,7 @@ public:
         f[Y] = b;
     }
     /** @brief Create a rectangle from two points. */
-    D2<Interval>(Point const & a, Point const & b) {
+    D2<Interval>(Point const &a, Point const &b) {
         f[X] = Interval(a[X], b[X]);
         f[Y] = Interval(a[Y], b[Y]);
     }
@@ -156,7 +156,7 @@ public:
     /** @brief Check whether the rectangle has zero area up to specified tolerance.
      * @param eps Maximum value of the area to consider empty
      * @return True if rectangle has an area smaller than tolerance, false otherwise */
-    bool hasZeroArea(double eps = EPSILON) const { return (area() <= eps); }
+    bool hasZeroArea(Coord eps = EPSILON) const { return (area() <= eps); }
 
     /** @brief Get the larger extent (width or height) of the rectangle. */
     Coord maxExtent() const { return std::max(f[X].extent(), f[Y].extent()); }
@@ -208,7 +208,7 @@ public:
     /// @name Modify the rectangle.
     /// @{
     /** @brief Enlarge the rectangle to contain the given point. */
-    void expandTo(Point p)        { 
+    void expandTo(Point const &p)        { 
         f[X].expandTo(p[X]);  f[Y].expandTo(p[Y]);
     }
     /** @brief Enlarge the rectangle to contain the given rectangle. */
@@ -232,13 +232,13 @@ public:
      * and the height by Y coordinate of the point. Negative coordinate values will
      * shrink the rectangle. If <code>-p[X]</code> is larger than half of the width,
      * the X interval will contain only the X coordinate of the midpoint; same for height. */
-    void expandBy(Point const p) { 
+    void expandBy(Point const &p) { 
         f[X].expandBy(p[X]);  f[Y].expandBy(p[Y]);
     }
     /// @}
 };
 
-inline Rect unify(Rect const & a, Rect const & b) {
+inline Rect unify(Rect const &a, Rect const &b) {
     return Rect(unify(a[X], b[X]), unify(a[Y], b[Y]));
 }
 
@@ -251,7 +251,7 @@ inline Rect union_list(std::vector<Rect> const &r) {
 }
 
 inline
-Coord distanceSq( Point const& p, Rect const& rect )
+Coord distanceSq(Point const &p, Rect const &rect)
 {
     double dx = 0, dy = 0;
     if ( p[X] < rect.left() ) {
@@ -269,7 +269,7 @@ Coord distanceSq( Point const& p, Rect const& rect )
 
 /** @brief Returns the smallest distance between p and rect. */
 inline 
-Coord distance( Point const& p, Rect const& rect )
+Coord distance(Point const &p, Rect const &rect)
 {
     // copy of distanceSq, because we need to use hypot()
     double dx = 0, dy = 0;
@@ -333,7 +333,7 @@ public:
  * Returns the smallest rectangle that encloses both rectangles.
  * An empty argument is assumed to be an empty rectangle
  */
-inline OptRect unify(OptRect const & a, OptRect const & b) {
+inline OptRect unify(OptRect const &a, OptRect const &b) {
     if (!a) {
         return b;
     } else if (!b) {
@@ -343,7 +343,7 @@ inline OptRect unify(OptRect const & a, OptRect const & b) {
     }
 }
 
-inline OptRect intersect(Rect const & a, Rect const & b) {
+inline OptRect intersect(Rect const &a, Rect const &b) {
     return OptRect(intersect(a[X], b[X]), intersect(a[Y], b[Y]));
 }
 

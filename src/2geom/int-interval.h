@@ -1,15 +1,9 @@
 /**
- * \file
- * \brief  Simple closed interval class
+ *  \file
+ *  \brief Closed interval of integer values
  *//*
- * Copyright 2007 Michael Sloan <mgsloan@gmail.com>
+ * Copyright 2011 Krzysztof Kosiński <tweenk.pl@gmail.com>
  *
- * Original Rect/Range code by:
- *   Lauris Kaplinski <lauris@kaplinski.com>
- *   Nathan Hurst <njh@mail.csse.monash.edu.au>
- *   bulia byak <buliabyak@users.sf.net>
- *   MenTaLguY <mental@rydia.net>
- * 
  * This library is free software; you can redistribute it and/or
  * modify it either under the terms of the GNU Lesser General Public
  * License version 2.1 as published by the Free Software Foundation
@@ -19,7 +13,7 @@
  * the MPL or the LGPL.
  *
  * You should have received a copy of the LGPL along with this library
- * in the file COPYING-LGPL-2.1; if not, output to the Free Software
+ * in the file COPYING-LGPL-2.1; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * You should have received a copy of the MPL along with this library
  * in the file COPYING-MPL-1.1
@@ -32,119 +26,84 @@
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY
  * OF ANY KIND, either express or implied. See the LGPL or the MPL for
  * the specific language governing rights and limitations.
- *
  */
-#ifndef LIB2GEOM_SEEN_INTERVAL_H
-#define LIB2GEOM_SEEN_INTERVAL_H
 
-#include <assert.h>
+#ifndef LIB2GEOM_SEEN_INT_INTERVAL_H
+#define LIB2GEOM_SEEN_INT_INTERVAL_H
+
+#include <cassert>
 #include <boost/none.hpp>
 #include <boost/optional.hpp>
 #include <boost/operators.hpp>
 #include <2geom/coord.h>
-#include <2geom/isnan.h>
-#include <2geom/int-interval.h>
 
 namespace Geom {
 
-class OptInterval;
+class OptIntInterval;
 
-/** 
- * @brief Range of numbers that is never empty.
- *
- * Intervals are closed ranges \f$[a, b]\f$, which means they include their endpoints.
- * To use them as open ranges, you can use the interiorContains() methods.
- *
- * @ingroup Primitives
- */
-class Interval
-    : boost::equality_comparable< Interval
-    , boost::additive< Interval
-    , boost::multipliable< Interval
-    , boost::arithmetic< Interval, Coord
-    , boost::orable< Interval
-      > > > > >
+class IntInterval
+    : boost::equality_comparable< IntInterval
+    , boost::additive< IntInterval
+    , boost::additive< IntInterval, IntCoord
+    , boost::orable< IntInterval
+      > > > >
 {
-private:
-    /// @invariant _b[0] <= _b[1]
-    Coord _b[2];
-
+    IntCoord _b[2];
 public:
     /// @name Create intervals.
     /// @{
     /** @brief Create an interval that contains only zero. */
-    Interval() { _b[0] = 0;  _b[1] = 0; }
+    IntInterval() { _b[0] = 0;  _b[1] = 0; }
     /** @brief Create an interval that contains a single point. */
-    explicit Interval(Coord u) { _b[0] = _b[1] = u; }
+    explicit IntInterval(IntCoord u) { _b[0] = _b[1] = u; }
     /** @brief Create an interval that contains all points between @c u and @c v. */
-    Interval(Coord u, Coord v) {
+    IntInterval(Coord u, Coord v) {
         if (u <= v) {
             _b[0] = u; _b[1] = v;
         } else {
             _b[0] = v; _b[1] = u;
         }
     }
-    /** @brief Convert from integer interval */
-    Interval(IntInterval const &i) { _b[0] = i.min(); _b[1] = i.max(); }
 
     /** @brief Create an interval containing a range of values.
      * The resulting interval will contain all values from the given range.
-     * The return type of iterators must be convertible to Coord. The given range
-     * must not be empty. For potentially empty ranges, see OptInterval.
+     * The return type of iterators must be convertible to IntCoord. The given range
+     * must not be empty. For potentially empty ranges, see OptIntInterval.
      * @param start Beginning of the range
      * @param end   End of the range
      * @return Interval that contains all values from [start, end). */
     template <typename InputIterator>
-    static Interval from_range(InputIterator start, InputIterator end) {
+    static IntInterval from_range(InputIterator start, InputIterator end) {
         assert(start != end);
-        Interval result(*start++);
+        IntInterval result(*start++);
         for (; start != end; ++start) result.expandTo(*start);
         return result;
     }
     /** @brief Create an interval from a C-style array of values it should contain. */
-    static Interval from_array(Coord const *c, unsigned n) {
-        Interval result = from_range(c, c+n);
+    static IntInterval from_array(IntCoord const *c, unsigned n) {
+        IntInterval result = from_range(c, c+n);
         return result;
     }
     /// @}
 
     /// @name Inspect endpoints.
     /// @{
-    /// @deprecated
-    Coord operator[](unsigned i) const { return _b[i]; }
-    /// @deprecated
-    /// @todo Remove Interval index operator, which can be used to break the invariant
-    Coord& operator[](unsigned i) { return _b[i]; }
-
-    Coord min() const { return _b[0]; }
-    Coord max() const { return _b[1]; }
-    Coord extent() const { return max() - min(); }
-    Coord middle() const { return (max() + min()) * 0.5; }
+    IntCoord min() const { return _b[0]; }
+    IntCoord max() const { return _b[1]; }
+    IntCoord extent() const { return max() - min(); }
+    IntCoord middle() const { return (max() + min()) * 0.5; }
     bool isSingular() const { return min() == max(); }
-    bool isFinite() const {
-        return IS_FINITE(min()) && IS_FINITE(max());
-    }
     /// @}
 
     /// @name Test coordinates and other intervals for inclusion.
     /// @{
     /** @brief Check whether the interval includes this number. */
-    bool contains(Coord val) const { return min() <= val && val <= max(); }
-    /** @brief Check whether the interior of the interval includes this number.
-     * Interior means all numbers in the interval except its ends. */
-    bool interiorContains(Coord val) const { return min() < val && val < max(); }
+    bool contains(IntCoord val) const { return min() <= val && val <= max(); }
     /** @brief Check whether the interval includes the given interval. */
-    bool contains(Interval const &val) const { return min() <= val.min() && val.max() <= max(); }
-    /** @brief Check whether the interior of the interval includes the given interval.
-     * Interior means all numbers in the interval except its ends. */
-    bool interiorContains(Interval const &val) const { return min() < val.min() && val.max() < max(); }
+    bool contains(IntInterval const &val) const { return min() <= val.min() && val.max() <= max(); }
     /** @brief Check whether the intervals have any common elements. */
-    bool intersects(Interval const &val) const {
+    bool intersects(IntInterval const &val) const {
         return contains(val.min()) || contains(val.max()) || val.contains(*this);
-    }
-    /** @brief Check whether the interiors of the intervals have any common elements. */
-    bool interiorIntersects(Interval const &val) const {
-        return interiorContains(val.min()) || interiorContains(val.max()) || val.interiorContains(*this);
     }
     /// @}
 
@@ -154,7 +113,7 @@ public:
     /** @brief Set the lower boundary of the interval.
      * When the given number is larger than the interval's largest element,
      * it will be reduced to the single number @c val. */
-    void setMin(Coord val) {
+    void setMin(IntCoord val) {
         if(val > _b[1]) {
             _b[0] = _b[1] = val;
         } else {
@@ -164,7 +123,7 @@ public:
     /** @brief Set the upper boundary of the interval.
      * When the given number is smaller than the interval's smallest element,
      * it will be reduced to the single number @c val. */
-    void setMax(Coord val) {
+    void setMax(IntCoord val) {
         if(val < _b[0]) {
             _b[1] = _b[0] = val;
         } else {
@@ -172,7 +131,7 @@ public:
         }
     }
     /** @brief Extend the interval to include the given number. */
-    void expandTo(Coord val) {
+    void expandTo(IntCoord val) {
        if(val < _b[0]) _b[0] = val;
        if(val > _b[1]) _b[1] = val;  //no else, as we want to handle NaN
     }
@@ -181,11 +140,11 @@ public:
      * <code>amount * 2</code>. Negative values can be given; they will shrink the interval.
      * Shrinking by a value larger than half the interval's length will create a degenerate
      * interval containing only the midpoint of the original. */
-    void expandBy(Coord amount) {
+    void expandBy(IntCoord amount) {
         _b[0] -= amount;
         _b[1] += amount;
         if (_b[0] > _b[1]) {
-            Coord halfway = (_b[0]+_b[1])/2;
+            IntCoord halfway = (_b[0]+_b[1])/2;
             _b[0] = _b[1] = halfway;
         }
     }
@@ -193,7 +152,7 @@ public:
      * The resulting interval will contain all points of both intervals.
      * It might also contain some points which didn't belong to either - this happens
      * when the intervals did not have any common elements. */
-    void unionWith(Interval const &a) {
+    void unionWith(IntInterval const &a) {
         if(a._b[0] < _b[0]) _b[0] = a._b[0];
         if(a._b[1] > _b[1]) _b[1] = a._b[1];
     }
@@ -201,45 +160,30 @@ public:
 
     /// @name Operators
     /// @{
-    inline operator OptInterval();
-    bool operator==(Interval const &other) const { return min() == other.min() && max() == other.max(); }
+    inline operator OptIntInterval();
+    bool operator==(IntInterval const &other) const { return min() == other.min() && max() == other.max(); }
     
     //IMPL: OffsetableConcept
     //TODO: rename output_type to something else in the concept
-    typedef Coord output_type;
+    typedef IntCoord output_type;
     /** @brief Offset the interval by a specified amount */
-    Interval &operator+=(Coord amnt) {
+    IntInterval &operator+=(IntCoord amnt) {
         _b[0] += amnt; _b[1] += amnt;
         return *this;
     }
     /** @brief Offset the interval by the negation of the specified amount */
-    Interval &operator-=(Coord amnt) {
+    IntInterval &operator-=(IntCoord amnt) {
         _b[0] -= amnt; _b[1] -= amnt;
         return *this;
     }
     
-    // IMPL: ScalableConcept
     /** @brief Return an interval mirrored about 0 */
-    Interval operator-() const { IntInterval r(-_b[1], -_b[0]); return r; }
-    /** @brief Scale an interval */
-    Interval &operator*=(Coord s) {
-        _b[0] *= s;
-        _b[1] *= s;
-        if(s < 0) std::swap(_b[0], _b[1]);
-        return *this;
-    }
-    /** @brief Scale an interval by the inverse of the specified value */
-    Interval &operator/=(Coord s) {
-        _b[0] /= s;
-        _b[1] /= s;
-        if(s < 0) std::swap(_b[0], _b[1]);
-        return *this;
-    }
+    IntInterval operator-() const { IntInterval r(-_b[1], -_b[0]); return r; }
     // IMPL: AddableConcept
     /** @brief Add two intervals.
      * Sum is defined as the set of points that can be obtained by adding any two values
      * from both operands: \f$S = \{x \in A, y \in B: x + y\}\f$ */
-    Interval &operator+=(Interval const &o) {
+    IntInterval &operator+=(IntInterval const &o) {
         _b[0] += o._b[0];
         _b[1] += o._b[1];
         return *this;
@@ -248,98 +192,65 @@ public:
      * Difference is defined as the set of points that can be obtained by subtracting
      * any value from the second operand from any value from the first operand:
      * \f$S = \{x \in A, y \in B: x - y\}\f$ */
-    Interval &operator-=(Interval const &o) {
+    IntInterval &operator-=(IntInterval const &o) {
         // equal to *this += -o
         _b[0] -= o._b[1];
         _b[1] -= o._b[0];
         return *this;
     }
-    /** @brief Multiply two intervals.
-     * Product is defined as the set of points that can be obtained by multiplying
-     * any value from the second operand by any value from the first operand:
-     * \f$S = \{x \in A, y \in B: x * y\}\f$ */
-    Interval &operator*=(Interval const &o) {
-        // TODO implement properly
-        Coord mn = min(), mx = max();
-        expandTo(mn * o.min());
-        expandTo(mn * o.max());
-        expandTo(mx * o.min());
-        expandTo(mx * o.max());
-        return *this;
-    }
     /** @brief Union two intervals.
-     * Note that the intersection-and-assignment operator is not defined for Interval,
-     * because the result of an intersection can be empty, while an Interval cannot. */
-    Interval &operator|=(Interval const &o) {
+     * Note that the intersection-and-assignment operator is not defined for IntInterval,
+     * because the result of an intersection can be empty, while an IntInterval cannot. */
+    IntInterval &operator|=(IntInterval const &o) {
         unionWith(o);
         return *this;
-    }
-    /// @}
-    
-    /// @name Rounding to integer values
-    /// @{
-    /** @brief Return the smallest integer interval which contains this one. */
-    IntInterval roundOutwards() const {
-        IntInterval ret(floor(min()), ceil(max()));
-        return ret;
-    }
-    /** @brief Return the largest integer interval which is contained in this one. */
-    OptIntInterval roundInwards() const {
-        IntCoord u = ceil(min()), v = floor(max());
-        if (u > v) { OptIntInterval e; return e; }
-        IntInterval ret(u, v);
-        return ret;
     }
     /// @}
 };
 
 /** @brief Union two intervals
- * @relates Interval */
-inline Interval unify(Interval const &a, Interval const &b) {
+ * @relates IntInterval */
+inline IntInterval unify(IntInterval const &a, IntInterval const &b) {
     return a | b;
 }
 
 /**
- * @brief A range of numbers that can be empty.
+ * @brief A range of integers that can be empty.
  * @ingroup Primitives
  */
-class OptInterval
-    : public boost::optional<Interval>
-    , boost::orable< OptInterval
-    , boost::andable< OptInterval
+class OptIntInterval
+    : public boost::optional<IntInterval>
+    , boost::orable< OptIntInterval
+    , boost::andable< OptIntInterval
       > >
 {
 public:
-    /// @name Create optionally empty intervals.
+    /// @name Create optionally empty intervals of integers.
     /// @{
     /** @brief Create an empty interval. */
-    OptInterval() : boost::optional<Interval>() {};
+    OptIntInterval() : boost::optional<IntInterval>() {};
     /** @brief Wrap an existing interval. */
-    OptInterval(Interval const &a) : boost::optional<Interval>(a) {};
+    OptIntInterval(IntInterval const &a) : boost::optional<IntInterval>(a) {};
     /** @brief Create an interval containing a single point. */
-    explicit OptInterval(Coord u) : boost::optional<Interval>(Interval(u)) {};
+    OptIntInterval(Coord u) : boost::optional<IntInterval>(IntInterval(u)) {};
     /** @brief Create an interval containing a range of numbers. */
-    OptInterval(Coord u, Coord v) : boost::optional<Interval>(Interval(u,v)) {};
-    /** @brief Convert from optional integer interval. */
-    OptInterval(OptIntInterval const &i) {
-        if (i) *this = i;
-    }
+    OptIntInterval(Coord u, Coord v) : boost::optional<IntInterval>(IntInterval(u,v)) {};
 
     /** @brief Create a possibly empty interval containing a range of values.
      * The resulting interval will contain all values from the given range.
-     * The return type of iterators must be convertible to double. The given range
+     * The return type of iterators must be convertible to IntCoord. The given range
      * may be empty.
      * @param start Beginning of the range
      * @param end   End of the range
      * @return Interval that contains all values from [start, end), or nothing if the range
      *         is empty. */
     template <typename InputIterator>
-    static OptInterval from_range(InputIterator start, InputIterator end) {
+    static OptIntInterval from_range(InputIterator start, InputIterator end) {
         if (start == end) {
-            OptInterval ret;
+            OptIntInterval ret;
             return ret;
         }
-        OptInterval ret(Interval::from_range(start, end));
+        OptIntInterval ret(IntInterval::from_range(start, end));
         return ret;
     }
     /// @}
@@ -348,7 +259,7 @@ public:
     bool isEmpty() { return !*this; };
 
     /** @brief Union with another interval, gracefully handling empty ones. */
-    inline void unionWith(OptInterval const &a) {
+    inline void unionWith(OptIntInterval const &a) {
         if (a) {
             if (*this) { // check that we are not empty
                 (*this)->unionWith(*a);
@@ -357,23 +268,23 @@ public:
             }
         }
     }
-    inline void intersectWith(OptInterval const &o) {
+    inline void intersectWith(OptIntInterval const &o) {
         if (o && *this) {
             Coord u, v;
             u = std::max((*this)->min(), o->min());
             v = std::min((*this)->max(), o->max());
             if (u <= v) {
-                *this = Interval(u, v);
+                *this = IntInterval(u, v);
                 return;
             }
         }
-        (*static_cast<boost::optional<Interval>*>(this)) = boost::none;
+        (*static_cast<boost::optional<IntInterval>*>(this)) = boost::none;
     }
-    OptInterval &operator|=(OptInterval const &o) {
+    OptIntInterval &operator|=(OptIntInterval const &o) {
         unionWith(o);
         return *this;
     }
-    OptInterval &operator&=(OptInterval const &o) {
+    OptIntInterval &operator&=(OptIntInterval const &o) {
         intersectWith(o);
         return *this;
     }
@@ -381,29 +292,29 @@ public:
 
 /** @brief Intersect two intervals and return a possibly empty range of numbers
  * @relates OptInterval */
-inline OptInterval intersect(Interval const &a, Interval const &b) {
-    return OptInterval(a) & OptInterval(b);
+inline OptIntInterval intersect(IntInterval const &a, IntInterval const &b) {
+    return OptIntInterval(a) & OptIntInterval(b);
 }
 /** @brief Intersect two intervals and return a possibly empty range of numbers
  * @relates OptInterval */
-inline OptInterval operator&(Interval const &a, Interval const &b) {
-    return OptInterval(a) & OptInterval(b);
+inline OptIntInterval operator&(IntInterval const &a, IntInterval const &b) {
+    return OptIntInterval(a) & OptIntInterval(b);
 }
 
-inline Interval::operator OptInterval() {
-    return OptInterval(*this);
+inline IntInterval::operator OptIntInterval() {
+    return OptIntInterval(*this);
 }
 
 #ifdef _GLIBCXX_IOSTREAM
 inline std::ostream &operator<< (std::ostream &os, 
-                                 const Geom::Interval &I) {
+                                 Geom::IntInterval const &I) {
     os << "Interval("<<I.min() << ", "<<I.max() << ")";
     return os;
 }
 #endif
 
-}
-#endif //SEEN_INTERVAL_H
+} // namespace Geom
+#endif // !LIB2GEOM_SEEN_INT_RECT_H
 
 /*
   Local Variables:

@@ -87,6 +87,22 @@ public:
             _pt[i] = p._pt[i];
         return *this;
     }
+    /** @brief Construct a point from its polar coordinates.
+     * The angle is specified in radians, in the mathematical convention (increasing
+     * counter-clockwise from +X). */
+    static Point polar(Coord angle, Coord radius) {
+        Point ret(polar(angle));
+        ret *= radius;
+        return ret;
+    }
+    /** @brief Construct an unit vector from its angle.
+     * The angle is specified in radians, in the mathematical convention (increasing
+     * counter-clockwise from +X). */
+    static Point polar(Coord angle) {
+        Point ret;
+        sincos(angle, ret[Y], ret[X]);
+        return ret;
+    }
     /// @}
 
     /// @name Access the coordinates of a point
@@ -213,26 +229,6 @@ public:
      * points with the same Y coordinate according to the X coordinate. */
     bool operator<(const Point &p) const {
         return _pt[Y] < p[Y] || (_pt[Y] == p[Y] && _pt[X] < p[X]);
-    }
-    /// @}
-
-    /// @name Point factories
-    /// @{
-    /** @brief Construct a point from its polar coordinates.
-     * The angle is specified in radians, in the mathematical convention (increasing
-     * counter-clockwise from +X). */
-    static Point polar(Coord angle, Coord radius) {
-        Point ret(polar(angle));
-        ret *= radius;
-        return ret;
-    }
-    /** @brief Construct an unit vector from its angle.
-     * The angle is specified in radians, in the mathematical convention (increasing
-     * counter-clockwise from +X). */
-    static Point polar(Coord angle) {
-        Point ret;
-        sincos(angle, ret[Y], ret[X]);
-        return ret;
     }
     /// @}
 
