@@ -426,7 +426,6 @@ inline std::ostream &operator<< (std::ostream &out_file, const Geom::D2<T> &in_d
 
 } //end namespace Geom
 
-#include <2geom/rect.h>
 #include <2geom/d2-sbasis.h>
 
 namespace Geom{

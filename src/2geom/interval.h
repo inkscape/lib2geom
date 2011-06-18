@@ -65,7 +65,7 @@ typedef GenericOptInterval<Coord> OptInterval;
 class Interval
     : public GenericInterval<Coord>
     , boost::multipliable< Interval
-    , boost::arithmetic< Interval, Coord
+    , boost::multipliable< Interval, Coord
       > >
 {
     typedef GenericInterval<Coord> Base;

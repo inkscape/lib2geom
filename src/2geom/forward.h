@@ -95,7 +95,7 @@ class VShear;
 template <typename> class D2;
 template <typename> class Piecewise;
 
-typedef D2<Interval> Rect;
+class Rect;
 class OptRect;
 
 class Shape;

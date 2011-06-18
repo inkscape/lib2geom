@@ -37,45 +37,41 @@
  *   MenTaLguY <mental@rydia.net>
  */
 
-#include <2geom/d2.h>
-
 #ifndef LIB2GEOM_SEEN_RECT_H
 #define LIB2GEOM_SEEN_RECT_H
 
+#include <boost/optional.hpp>
 #include <2geom/affine.h>
-#include <boost/optional/optional.hpp>
+#include <2geom/interval.h>
 
 namespace Geom {
 
-/**
- * @brief Axis-aligned, non-empty rectangle - convenience typedef
- * @ingroup Primitives
- */
-typedef D2<Interval> Rect;
 class OptRect;
-
-inline Rect unify(Rect const &, Rect const &);
 
 /**
  * @brief Axis aligned, non-empty rectangle.
  * @ingroup Primitives
  */
-template<>
-class D2<Interval> {
+class Rect
+    : boost::multipliable< Rect, Affine,
+      boost::additive< Rect, Point,
+      boost::equality_comparable< Rect
+      > > >
+{
 private:
     Interval f[2];
 public:
     /// @name Create rectangles.
     /// @{
     /** @brief Create a rectangle that contains only the point at (0,0). */
-    D2<Interval>() { f[X] = f[Y] = Interval(); }
+    Rect() { f[X] = f[Y] = Interval(); }
     /** @brief Create a rectangle from X and Y intervals. */
-    D2<Interval>(Interval const &a, Interval const &b) {
+    Rect(Interval const &a, Interval const &b) {
         f[X] = a;
         f[Y] = b;
     }
     /** @brief Create a rectangle from two points. */
-    D2<Interval>(Point const &a, Point const &b) {
+    Rect(Point const &a, Point const &b) {
         f[X] = Interval(a[X], b[X]);
         f[Y] = Interval(a[Y], b[Y]);
     }
@@ -145,12 +141,6 @@ public:
     /** @brief Get the point in the geometric center of the rectangle. */
     Point midpoint() const { return Point(f[X].middle(), f[Y].middle()); }
 
-/**
- * \brief Compute the area of this rectangle.
- *
- * Note that a zero area rectangle is not empty - just as the interval [0,0] contains one point, the rectangle [0,0] x [0,0] contains 1 point and no area.
- * \retval For a valid return value, the rect must be tested for emptyness first.
- */
     /** @brief Compute rectangle's area. */
     Coord area() const { return f[X].extent() * f[Y].extent(); }
     /** @brief Check whether the rectangle has zero area up to specified tolerance.
@@ -236,6 +226,25 @@ public:
         f[X].expandBy(p[X]);  f[Y].expandBy(p[Y]);
     }
     /// @}
+
+    /// @name Operators
+    /// @{
+    Rect &operator*=(Affine const &m);
+    /** @brief Offset the rectangle by a vector. */
+    Rect &operator+=(Point const &p) {
+        f[X] += p[X];
+        f[Y] += p[Y];
+        return *this;
+    }
+    /** @brief Offset the rectangle by the negation of a vector. */
+    Rect &operator-=(Point const &p) {
+        f[X] -= p[X];
+        f[Y] -= p[Y];
+        return *this;
+    }
+    /** @brief Test for equality of rectangles. */
+    bool operator==(Rect const &o) const { return f[X] == o[X] && f[Y] == o[Y]; }
+    /// @}
 };
 
 inline Rect unify(Rect const &a, Rect const &b) {
@@ -250,41 +259,8 @@ inline Rect union_list(std::vector<Rect> const &r) {
     return ret;
 }
 
-inline
-Coord distanceSq(Point const &p, Rect const &rect)
-{
-    double dx = 0, dy = 0;
-    if ( p[X] < rect.left() ) {
-        dx = p[X] - rect.left();
-    } else if ( p[X] > rect.right() ) {
-        dx = rect.right() - p[X];
-    }
-    if (p[Y] < rect.top() ) {
-        dy = rect.top() - p[Y];
-    } else if (  p[Y] > rect.bottom() ) {
-        dy = p[Y] - rect.bottom();
-    }
-    return dx*dx+dy*dy;
-}
-
-/** @brief Returns the smallest distance between p and rect. */
-inline 
-Coord distance(Point const &p, Rect const &rect)
-{
-    // copy of distanceSq, because we need to use hypot()
-    double dx = 0, dy = 0;
-    if ( p[X] < rect.left() ) {
-        dx = p[X] - rect.left();
-    } else if ( p[X] > rect.right() ) {
-        dx = rect.right() - p[X];
-    }
-    if (p[Y] < rect.top() ) {
-        dy = rect.top() - p[Y];
-    } else if (  p[Y] > rect.bottom() ) {
-        dy = p[Y] - rect.bottom();
-    }
-    return hypot(dx, dy);
-}
+Coord distanceSq(Point const &p, Rect const &rect);
+Coord distance(Point const &p, Rect const &rect);
 
 /**
  * @brief Axis-aligned rectangle that can be empty.
@@ -306,7 +282,7 @@ public:
     }
 
     /** @brief Check for emptiness. */
-    inline bool isEmpty() const { return (*this == false); };
+    inline bool isEmpty() const { return !*this; };
 
     bool intersects(Rect const &r) const { return r.intersects(*this); }
     bool contains(Rect const &r) const { return *this && (*this)->contains(r); }
@@ -361,6 +337,13 @@ inline bool Rect::contains(OptRect const &r) const {
 inline bool Rect::interiorContains(OptRect const &r) const {
     return !r || interiorContains(*r);
 }
+
+#ifdef _GLIBCXX_IOSTREAM
+inline std::ostream &operator<<(std::ostream &out, Rect const &r) {
+    out << "X: " << r[X] << "  Y: " << r[Y];
+    return out;
+}
+#endif
 
 } // end namespace Geom
 

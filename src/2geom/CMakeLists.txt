@@ -101,7 +101,6 @@ pathvector.cpp
 pathvector.h
 piecewise.cpp
 piecewise.h
-point-l.h
 point.cpp
 point.h
 poly.cpp
@@ -112,6 +111,7 @@ quadtree.h
 
 ray.h
 rect.h
+rect.cpp
 recursive-bezier-intersection.cpp
 redblacktree.cpp
 redblacktree.h

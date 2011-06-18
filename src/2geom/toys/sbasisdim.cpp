@@ -1,3 +1,4 @@
+#include <iostream>
 #include <2geom/linearN.h>
 #include <2geom/sbasisN.h>
 #include <2geom/sbasis.h>
