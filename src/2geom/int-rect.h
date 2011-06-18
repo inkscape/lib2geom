@@ -1,8 +1,8 @@
 /**
  *  \file
- *  \brief Defines the Coord "real" type with sufficient precision for coordinates.
+ *  \brief Axis-aligned rectangle with integer coordinates
  *//*
- * Copyright 2006 Nathan Hurst <njh@mail.csse.monash.edu.au>
+ * Copyright 2011 Krzysztof Kosiński <tweenk.pl@gmail.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it either under the terms of the GNU Lesser General Public
@@ -26,63 +26,22 @@
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY
  * OF ANY KIND, either express or implied. See the LGPL or the MPL for
  * the specific language governing rights and limitations.
- *
  */
 
-#ifndef LIB2GEOM_SEEN_COORD_H
-#define LIB2GEOM_SEEN_COORD_H
+#ifndef LIB2GEOM_SEEN_INT_RECT_H
+#define LIB2GEOM_SEEN_INT_RECT_H
 
-#include <cmath>
-#include <limits>
-#include <2geom/forward.h>
+#include <2geom/coord.h>
+#include <2geom/generic-rect.h>
 
 namespace Geom {
 
-/** @brief 2D axis enumeration (X or Y). */
-enum Dim2 { X=0, Y=1 };
-
-/**
- * @brief Floating point type used to store coordinates.
- *
- * You may safely assume that double (or even float) provides enough precision for storing
- * on-canvas points, and hence that double provides enough precision for dot products of
- * differences of on-canvas points.
- */
-typedef double Coord;
-typedef int IntCoord;
-
-const Coord EPSILON = 1e-5; //1e-18;
-
-inline Coord infinity() {  return std::numeric_limits<Coord>::infinity();  }
-
-//IMPL: NearConcept
-inline bool are_near(Coord a, Coord b, double eps=EPSILON) { return a-b <= eps && a-b >= -eps; }
-inline bool rel_error_bound(Coord a, Coord b, double eps=EPSILON) { return a <= eps*b && a >= -eps*b; }
-
-template <typename C>
-struct CoordTraits {};
-
-template<>
-struct CoordTraits<IntCoord> {
-    typedef IntPoint PointType;
-    typedef IntInterval IntervalType;
-    typedef OptIntInterval OptIntervalType;
-    typedef IntRect RectType;
-    typedef OptIntRect OptRectType;
-};
-
-template<>
-struct CoordTraits<Coord> {
-    typedef Point PointType;
-    typedef Interval IntervalType;
-    typedef OptInterval OptIntervalType;
-    typedef Rect RectType;
-    typedef OptRect OptRectType;
-};
+typedef GenericRect<IntCoord> IntRect;
+typedef GenericOptRect<IntCoord> OptIntRect;
 
 } // end namespace Geom
 
-#endif // LIB2GEOM_SEEN_COORD_H
+#endif // !LIB2GEOM_SEEN_INT_RECT_H
 
 /*
   Local Variables:

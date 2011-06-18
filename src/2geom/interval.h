@@ -37,7 +37,6 @@
 #ifndef LIB2GEOM_SEEN_INTERVAL_H
 #define LIB2GEOM_SEEN_INTERVAL_H
 
-#include <assert.h>
 #include <boost/none.hpp>
 #include <boost/optional.hpp>
 #include <boost/operators.hpp>
@@ -91,9 +90,7 @@ public:
      * @return Interval that contains all values from [start, end). */
     template <typename InputIterator>
     static Interval from_range(InputIterator start, InputIterator end) {
-        assert(start != end);
-        Interval result(*start++);
-        for (; start != end; ++start) result.expandTo(*start);
+        Interval result = Base::from_range(start, end);
         return result;
     }
     /** @brief Create an interval from a C-style array of values it should contain. */

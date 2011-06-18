@@ -159,7 +159,7 @@ public:
      * The resulting interval will contain all points of both intervals.
      * It might also contain some points which didn't belong to either - this happens
      * when the intervals did not have any common elements. */
-    void unionWith(GenericInterval const &a) {
+    void unionWith(GenericInterval<C> const &a) {
         if(a._b[0] < _b[0]) _b[0] = a._b[0];
         if(a._b[1] > _b[1]) _b[1] = a._b[1];
     }
@@ -167,9 +167,6 @@ public:
 
     /// @name Operators
     /// @{
-    inline operator GenericOptInterval<C>();
-    bool operator==(GenericInterval const &other) const { return min() == other.min() && max() == other.max(); }
-    
     //IMPL: OffsetableConcept
     //TODO: rename output_type to something else in the concept
     typedef C output_type;
@@ -212,6 +209,10 @@ public:
         unionWith(o);
         return *this;
     }
+    /** @brief Test for interval equality. */
+    bool operator==(GenericInterval<C> const &other) const {
+        return min() == other.min() && max() == other.max();
+    }
     /// @}
 };
 
@@ -228,23 +229,25 @@ inline GenericInterval<C> unify(GenericInterval<C> const &a, GenericInterval<C> 
  */
 template <typename C>
 class GenericOptInterval
-    : public boost::optional< GenericInterval<C> >
-    , boost::orable< GenericOptInterval<C>
-    , boost::andable< GenericOptInterval<C>
+    : public boost::optional<typename CoordTraits<C>::IntervalType>
+    , boost::orable< GenericOptInterval<C>, typename CoordTraits<C>::OptIntervalType
+    , boost::andable< GenericOptInterval<C>, typename CoordTraits<C>::OptIntervalType
       > >
 {
-	typedef boost::optional< GenericInterval<C> > OptType;
+    typedef typename CoordTraits<C>::IntervalType CInterval;
+    typedef typename CoordTraits<C>::OptIntervalType OptCInterval;
+    typedef boost::optional<CInterval> Base;
 public:
     /// @name Create optionally empty intervals of integers.
     /// @{
     /** @brief Create an empty interval. */
-    GenericOptInterval() : OptType() {};
+    GenericOptInterval() : Base() {};
     /** @brief Wrap an existing interval. */
-    GenericOptInterval(GenericInterval<C> const &a) : OptType(a) {};
+    GenericOptInterval(CInterval const &a) : Base(a) {};
     /** @brief Create an interval containing a single point. */
-    GenericOptInterval(C u) : OptType(GenericInterval<C>(u)) {};
+    GenericOptInterval(C u) : Base(GenericInterval<C>(u)) {};
     /** @brief Create an interval containing a range of numbers. */
-    GenericOptInterval(C u, C v) : OptType(GenericInterval<C>(u,v)) {};
+    GenericOptInterval(C u, C v) : Base(GenericInterval<C>(u,v)) {};
 
     /** @brief Create a possibly empty interval containing a range of values.
      * The resulting interval will contain all values from the given range.
@@ -260,7 +263,7 @@ public:
             GenericOptInterval<C> ret;
             return ret;
         }
-        GenericOptInterval<C> ret(GenericInterval<C>::from_range(start, end));
+        GenericOptInterval<C> ret(CInterval::from_range(start, end));
         return ret;
     }
     /// @}
@@ -269,32 +272,30 @@ public:
     bool isEmpty() { return !*this; };
 
     /** @brief Union with another interval, gracefully handling empty ones. */
-    inline void unionWith(GenericOptInterval<C> const &a) {
-        if (a) {
-            if (*this) { // check that we are not empty
-                (*this)->unionWith(*a);
-            } else {
-                *this = a;
-            }
+    void unionWith(GenericOptInterval<C> const &a) {
+        if (*this) { // check that we are not empty
+            (*this)->unionWith(*a);
+        } else if (a) {
+            *this = *a;
         }
     }
-    inline void intersectWith(GenericOptInterval<C> const &o) {
+    void intersectWith(GenericOptInterval<C> const &o) {
         if (o && *this) {
-            C u, v;
-            u = std::max((*this)->min(), o->min());
-            v = std::min((*this)->max(), o->max());
+            if (!*this) return;
+            C u = std::max((*this)->min(), o->min());
+            C v = std::min((*this)->max(), o->max());
             if (u <= v) {
-                *this = GenericInterval<C>(u, v);
+                *this = CInterval(u, v);
                 return;
             }
         }
-        (*static_cast<OptType*>(this)) = boost::none;
+        (*static_cast<Base*>(this)) = boost::none;
     }
-    GenericOptInterval<C> &operator|=(GenericOptInterval<C> const &o) {
+    GenericOptInterval<C> &operator|=(OptCInterval const &o) {
         unionWith(o);
         return *this;
     }
-    GenericOptInterval<C> &operator&=(GenericOptInterval<C> const &o) {
+    GenericOptInterval<C> &operator&=(OptCInterval const &o) {
         intersectWith(o);
         return *this;
     }
@@ -311,11 +312,6 @@ inline GenericOptInterval<C> intersect(GenericInterval<C> const &a, GenericInter
 template <typename C>
 inline GenericOptInterval<C> operator&(GenericInterval<C> const &a, GenericInterval<C> const &b) {
     return GenericOptInterval<C>(a) & GenericOptInterval<C>(b);
-}
-
-template <typename C>
-inline GenericInterval<C>::operator GenericOptInterval<C>() {
-    return GenericOptInterval<C>(*this);
 }
 
 #ifdef _GLIBCXX_IOSTREAM
