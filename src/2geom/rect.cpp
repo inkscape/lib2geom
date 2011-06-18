@@ -1,7 +1,5 @@
-/**
- * \file
- * \brief Axis-aligned rectangle
- *//*
+/* Axis-aligned rectangle
+ *
  * Authors:
  *   Michael Sloan <mgsloan@gmail.com>
  *   Krzysztof Kosiński <tweenk.pl@gmail.com>

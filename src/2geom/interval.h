@@ -42,7 +42,7 @@
 #include <boost/optional.hpp>
 #include <boost/operators.hpp>
 #include <2geom/coord.h>
-#include <2geom/isnan.h>
+#include <2geom/math-utils.h>
 #include <2geom/generic-interval.h>
 #include <2geom/int-interval.h>
 
@@ -105,10 +105,12 @@ public:
 
     /// @name Inspect endpoints.
     /// @{
-    /// @deprecated
+    /** @brief Access endpoints by value.
+     * @deprecated Use min() and max() instead */
     Coord operator[](unsigned i) const { return _b[i]; }
-    /// @deprecated
-    /// @todo Remove Interval index operator, which can be used to break the invariant
+    /** @brief Access endpoints by reference.
+     * @deprecated Use min() and max() instead
+     * @todo Remove Interval index operator, which can be used to break the invariant */
     Coord& operator[](unsigned i) { return _b[i]; }
 
     bool isFinite() const {

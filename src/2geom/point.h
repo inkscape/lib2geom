@@ -43,7 +43,6 @@
 #include <2geom/forward.h>
 #include <2geom/coord.h>
 #include <2geom/int-point.h>
-#include <2geom/isnan.h> //temporary fix for isnan()
 #include <2geom/math-utils.h>
 #include <2geom/utils.h>
 

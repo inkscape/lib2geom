@@ -1,9 +1,3 @@
-#define __Geom_MATRIX_C__
-
-/** \file
- * Various matrix routines.  Currently includes some Geom::Rotate etc. routines too.
- */
-
 /*
  * Authors:
  *   Lauris Kaplinski <lauris@kaplinski.com>

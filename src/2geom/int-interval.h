@@ -38,6 +38,7 @@ namespace Geom {
 
 /**
  * @brief Range of integers that is never empty.
+ * @ingroup Primitives
  */
 typedef GenericInterval<IntCoord> IntInterval;
 

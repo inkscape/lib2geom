@@ -1,7 +1,7 @@
 /**
- * \file
- * \brief  LinearN fragment function class
- *
+ * @file
+ * @brief  LinearN fragment function class
+ *//*
  *  Authors:
  *   JF Barraud <jf.barraud@gmail.com>
  *   Nathan Hurst <njh@mail.csse.monash.edu.au>
@@ -36,8 +36,8 @@
 #ifndef SEEN_LINEARN_H
 #define SEEN_LINEARN_H
 #include <2geom/interval.h>
-#include <2geom/isnan.h>
-#include <2geom/linear.h>//for convertion purpose ( + lerp() )
+#include <2geom/math-utils.h>
+#include <2geom/linear.h> //for conversion purpose ( + lerp() )
 
 #include <iostream>
 

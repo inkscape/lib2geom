@@ -41,6 +41,10 @@ namespace Geom {
 template <typename C>
 class GenericOptInterval;
 
+/**
+ * @brief A range of numbers which is never empty.
+ * @ingroup Primitives
+ */
 template <typename C>
 class GenericInterval
     : boost::equality_comparable< GenericInterval<C>
@@ -219,7 +223,7 @@ inline GenericInterval<C> unify(GenericInterval<C> const &a, GenericInterval<C> 
 }
 
 /**
- * @brief A range of integers that can be empty.
+ * @brief A range of numbers that can be empty.
  * @ingroup Primitives
  */
 template <typename C>

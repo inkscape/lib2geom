@@ -1,8 +1,5 @@
-/**
- * \file
- * \brief Bezier curve
+/* Bezier curve implementation
  *
- *//*
  * Authors:
  *   MenTaLguY <mental@rydia.net>
  *   Marco Cecchetti <mrcekets at gmail.com>

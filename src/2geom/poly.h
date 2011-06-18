@@ -1,7 +1,7 @@
 /**
  * \file
- * \brief  \todo brief description
- *
+ * \brief Polynomial in canonical (monomial) basis
+ *//*
  * Authors:
  *      ? <?@?.?>
  * 

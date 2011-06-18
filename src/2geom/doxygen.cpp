@@ -1,11 +1,10 @@
-/**
- * @file
- * @brief Doxygen documentation
- *//*
+/*
+ * Doxygen documentation for the lib2geom library
+ *
  * Authors:
  *    Krzysztof Kosiński <tweenk.pl@gmail.com>
  * 
- * Copyright 2009 Authors
+ * Copyright 2009-2011 Authors
  *
  * This library is free software; you can redistribute it and/or
  * modify it either under the terms of the GNU Lesser General Public
@@ -79,9 +78,11 @@
 /**
  * @page ReleaseNotes 2Geom release notes
  *
- * - Version 0.4
+ * @section Ver04 Version 0.4
  *   - API additions:
- *     - New geometric primitives - Angle and AngleInterval.
+ *     - Integer versions of Point, Interval and OptInterval, called
+ *       IntPoint, IntInterval and OptIntInterval.
+ *     - New geometric primitives: Angle and AngleInterval.
  *   - Major changes:
  *     - Matrix has been renamed to Affine.
  *     - Classification methods of Affine, for example Affine::isRotation(), will now
@@ -97,7 +98,10 @@
  *     - Interval::strict_contains() is now called Interval::interiorContains().
  *       The same change has been made for Rect.
  *     - Some unclear and unused operators of D2 were removed, for instance D2 * Point.
- * - Version 0.3
+ *     - Interval is now a derived class of a GenericInterval template.
+ *     - Rect is no longer a D2 specialization.
+ *     - isnan.h merged with math-utils.h.
+ * @section Ver03 Version 0.3
  *     - release notes were started after this version.
  */
 

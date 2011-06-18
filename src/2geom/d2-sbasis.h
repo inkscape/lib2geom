@@ -1,11 +1,10 @@
 /**
  * \file
- * \brief  Do not include this file \todo brief description
+ * \brief  Do not include this file
  *
  * We don't actually want anyone to
- * include this, other than D2.h.  If somone else tries, D2
- * won't be defined.  If it is, this will already be included.
- *
+ * include this, other than D2.h.
+ *//*
  * Authors:
  *      ? <?@?.?>
  * 
