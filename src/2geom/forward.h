@@ -41,11 +41,16 @@ namespace Geom {
 
 // basic types
 typedef double Coord;
+typedef int IntCoord;
 class Point;
-class Interval;
-class OptInterval;
 class Line;
 class Ray;
+template <typename> class GenericInterval;
+template <typename> class GenericOptInterval;
+class Interval;
+typedef GenericOptInterval<Coord> OptInterval;
+typedef GenericInterval<IntCoord> IntInterval;
+typedef GenericOptInterval<IntCoord> OptIntInterval;
 
 // fragments
 class Linear;
