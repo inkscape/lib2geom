@@ -116,12 +116,12 @@ public:
     /// @name Rounding to integer coordinates
     /// @{
     /** @brief Return the smallest integer rectangle which contains this one. */
-    IntRect roundOutwards() {
+    IntRect roundOutwards() const {
         IntRect ir(f[X].roundOutwards(), f[Y].roundOutwards());
         return ir;
     }
     /** @brief Return the largest integer rectangle which is contained in this one. */
-    OptIntRect roundInwards() {
+    OptIntRect roundInwards() const {
         OptIntRect oir(f[X].roundInwards(), f[Y].roundInwards());
         return oir;
     }
@@ -138,6 +138,25 @@ Coord distance(Point const &p, Rect const &rect);
 
 inline bool Rect::interiorContains(OptRect const &r) const {
     return !r || interiorContains(static_cast<Rect const &>(*r));
+}
+
+// the functions below do not work when defined generically
+inline OptRect operator&(Rect const &a, Rect const &b) {
+    OptRect ret(a);
+    ret.intersectWith(b);
+    return ret;
+}
+inline OptRect intersect(Rect const &a, Rect const &b) {
+    return a & b;
+}
+inline OptRect intersect(OptRect const &a, OptRect const &b) {
+    return a & b;
+}
+inline Rect unify(Rect const &a, Rect const &b) {
+    return a | b;
+}
+inline OptRect unify(OptRect const &a, OptRect const &b) {
+    return a | b;
 }
 
 /** @brief Union a list of rectangles

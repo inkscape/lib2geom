@@ -39,6 +39,25 @@ namespace Geom {
 typedef GenericRect<IntCoord> IntRect;
 typedef GenericOptRect<IntCoord> OptIntRect;
 
+// the functions below do not work when defined generically
+inline OptIntRect operator&(IntRect const &a, IntRect const &b) {
+    OptIntRect ret(a);
+    ret.intersectWith(b);
+    return ret;
+}
+inline OptIntRect intersect(IntRect const &a, IntRect const &b) {
+    return a & b;
+}
+inline OptIntRect intersect(OptIntRect const &a, OptIntRect const &b) {
+    return a & b;
+}
+inline IntRect unify(IntRect const &a, IntRect const &b) {
+    return a | b;
+}
+inline OptIntRect unify(OptIntRect const &a, OptIntRect const &b) {
+    return a | b;
+}
+
 } // end namespace Geom
 
 #endif // !LIB2GEOM_SEEN_INT_RECT_H

@@ -245,13 +245,13 @@ public:
     /// @name Create optionally empty intervals of integers.
     /// @{
     /** @brief Create an empty interval. */
-    GenericOptInterval() : Base() {};
+    GenericOptInterval() : Base() {}
     /** @brief Wrap an existing interval. */
-    GenericOptInterval(CInterval const &a) : Base(a) {};
+    GenericOptInterval(GenericInterval<C> const &a) : Base(CInterval(a)) {}
     /** @brief Create an interval containing a single point. */
-    GenericOptInterval(C u) : Base(GenericInterval<C>(u)) {};
+    GenericOptInterval(C u) : Base(CInterval(u)) {}
     /** @brief Create an interval containing a range of numbers. */
-    GenericOptInterval(C u, C v) : Base(GenericInterval<C>(u,v)) {};
+    GenericOptInterval(C u, C v) : Base(CInterval(u,v)) {}
 
     /** @brief Create a possibly empty interval containing a range of values.
      * The resulting interval will contain all values from the given range.

@@ -64,7 +64,7 @@ class GenericRect
     typedef typename CoordTraits<C>::RectType CRect;
     typedef typename CoordTraits<C>::OptRectType OptCRect;
 protected:
-    Interval f[2];
+    CInterval f[2];
 public:
     /// @name Create rectangles.
     /// @{
@@ -241,12 +241,6 @@ public:
     /// @}
 };
 
-template <typename C>
-inline GenericRect<C> unify(GenericRect<C> const &a, GenericRect<C> const &b) {
-    GenericRect<C> r(unify(a[X], b[X]), unify(a[Y], b[Y]));
-    return r;
-}
-
 /**
  * @brief Axis-aligned generic rectangle that can be empty.
  * @ingroup Primitives
@@ -266,8 +260,8 @@ class GenericOptRect
     typedef typename CoordTraits<C>::OptRectType OptCRect;
     typedef boost::optional<CRect> Base;
 public:
-    GenericOptRect() : Base() {};
-    GenericOptRect(CRect const &a) : Base(a) {}
+    GenericOptRect() : Base() {}
+    GenericOptRect(GenericRect<C> const &a) : Base(CRect(a)) {}
     GenericOptRect(CPoint const &a, CPoint const &b) : Base(CRect(a, b)) {}
     /**
      * Creates an empty OptRect when one of the argument intervals is empty.
@@ -329,31 +323,6 @@ public:
         return *this;
     }
 };
-
-
-/** 
- * Returns the smallest rectangle that encloses both rectangles.
- * An empty argument is assumed to be an empty rectangle
- */
-template <typename C>
-inline GenericOptRect<C> unify(GenericOptRect<C> const &a, GenericOptRect<C> const &b) {
-    if (!a) {
-        return b;
-    } else if (!b) {
-        return a;
-    } else {
-        return unify(*a, *b);
-    }
-}
-
-template <typename C>
-inline GenericOptRect<C> intersect(GenericRect<C> const &a, GenericRect<C> const &b) {
-    return GenericOptRect<C>(a) & b;
-}
-template <typename C>
-inline GenericOptRect<C> operator&(GenericRect<C> const &a, GenericRect<C> const &b) {
-    return GenericOptRect<C>(a) & b;
-}
 
 template <typename C>
 inline void GenericRect<C>::unionWith(OptCRect const &b) { 
