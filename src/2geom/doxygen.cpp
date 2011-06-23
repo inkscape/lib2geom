@@ -71,6 +71,25 @@
  * objects of in a generic way without knowing their actual type at compile time,
  * and a lower-level one based on templates, which is designed with performance in mind.
  * For performance-critical tasks it may be necessary to use the lower level API.
+ *
+ * @section CoordSys Standard coordinate system
+ *
+ * 2Geom's standard coordinate system is common for computer graphics: the X axis grows
+ * to the right and the Y axis grows downwards. Angles start from the +X axis
+ * and grow towards the +Y axis (clockwise).
+ *
+ * @image html coords.png Standard coordinate system in 2Geom
+ *
+ * Most functions can be used without taking the coordinate system into account,
+ * as their interpretation is the same regardless of the coordinate system. However,
+ * a few of them depend on this definition, for example Rect's top() and bottom() methods.
+ *
+ * @section OpNote Operator note
+ *
+ * Most operators are provided by Boost operator helpers. This means that not all operators
+ * are defined in the class. For example, Rect only implements the operators
+ * +=, -= for points and *= for affines. The corresponding +, - and * operators
+ * are generated automatically by Boost.
  */
 
 // RELEASE NOTES
