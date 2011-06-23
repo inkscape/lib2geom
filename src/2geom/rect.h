@@ -71,6 +71,7 @@ public:
     Rect(Interval const &a, Interval const &b) : Base(a,b) {}
     /** @brief Create a rectangle from two points. */
     Rect(Point const &a, Point const &b) : Base(a,b) {}
+    Rect(Coord x0, Coord y0, Coord x1, Coord y1) : Base(x0, y0, x1, y1) {}
     Rect(Base const &b) : Base(b) {}
     /** @brief Create a rectangle from a range of points.
      * The resulting rectangle will contain all ponts from the range.
@@ -87,6 +88,14 @@ public:
     /** @brief Create a rectangle from a C-style array of points it should contain. */
     static Rect from_array(Point const *c, unsigned n) {
         Rect result = Rect::from_range(c, c+n);
+        return result;
+    }
+    static Rect from_xywh(Coord x, Coord y, Coord w, Coord h) {
+        Rect result = Base::from_xywh(x, y, w, h);
+        return result;
+    }
+    static Rect from_xywh(Point const &o, Point const &dim) {
+        Rect result = Base::from_xywh(o, dim);
         return result;
     }
     /// @}
