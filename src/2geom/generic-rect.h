@@ -183,6 +183,16 @@ public:
 
     /// @name Modify the rectangle.
     /// @{
+    /** @brief Set the upper left point of the rectangle. */
+    void setMin(CPoint const &p) {
+        f[X].setMin(p[X]);
+        f[Y].setMin(p[Y]);
+    }
+    /** @brief Set the lower right point of the rectangle. */
+    void setMax(CPoint const &p) {
+        f[X].setMax(p[X]);
+        f[Y].setMax(p[Y]);
+    }
     /** @brief Enlarge the rectangle to contain the given point. */
     void expandTo(CPoint const &p)        { 
         f[X].expandTo(p[X]);  f[Y].expandTo(p[Y]);
