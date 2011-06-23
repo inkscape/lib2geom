@@ -29,12 +29,13 @@
  *
  */
 
-#ifndef _2GEOM_D2  //If this is change, change the guard in rect.h as well.
-#define _2GEOM_D2
+#ifndef SEEN_LIB2GEOM_D2_H
+#define SEEN_LIB2GEOM_D2_H
 
 #include <2geom/point.h>
 #include <2geom/interval.h>
 #include <2geom/affine.h>
+#include <2geom/rect.h>
 
 #include <boost/concept_check.hpp>
 #include <2geom/concepts.h>

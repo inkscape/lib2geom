@@ -69,7 +69,7 @@ public:
     /// @name Create rectangles.
     /// @{
     /** @brief Create a rectangle that contains only the point at (0,0). */
-    GenericRect() { f[X] = f[Y] = Interval(); }
+    GenericRect() { f[X] = f[Y] = CInterval(); }
     /** @brief Create a rectangle from X and Y intervals. */
     GenericRect(CInterval const &a, CInterval const &b) {
         f[X] = a;
@@ -77,8 +77,13 @@ public:
     }
     /** @brief Create a rectangle from two points. */
     GenericRect(CPoint const &a, CPoint const &b) {
-        f[X] = Interval(a[X], b[X]);
-        f[Y] = Interval(a[Y], b[Y]);
+        f[X] = CInterval(a[X], b[X]);
+        f[Y] = CInterval(a[Y], b[Y]);
+    }
+    /** @brief Create rectangle from coordinates of two points. */
+    GenericRect(C x0, C y0, C x1, C y1) {
+        f[X] = CInterval(x0, x1);
+        f[Y] = CInterval(y0, y1);
     }
     /** @brief Create a rectangle from a range of points.
      * The resulting rectangle will contain all ponts from the range.
@@ -100,6 +105,18 @@ public:
     /** @brief Create a rectangle from a C-style array of points it should contain. */
     static GenericRect<C> from_array(CPoint const *c, unsigned n) {
         GenericRect<C> result = GenericRect<C>::from_range(c, c+n);
+        return result;
+    }
+    /** @brief Create rectangle from origin and dimensions. */
+    static GenericRect<C> from_xywh(C x, C y, C w, C h) {
+        CPoint xy(x, y);
+        CPoint wh(w, h);
+        GenericRect<C> result(xy, xy + wh);
+        return result;
+    }
+    /** @brief Create rectangle from origin and dimensions. */
+    static GenericRect<C> from_xywh(CPoint const &xy, CPoint const &wh) {
+        GenericRect<C> result(xy, xy + wh);
         return result;
     }
     /// @}
