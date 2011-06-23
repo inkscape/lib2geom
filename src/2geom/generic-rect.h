@@ -170,10 +170,10 @@ public:
 
     /** @brief Check whether the rectangles have any common points.
      * A non-empty rectangle will not intersect empty rectangles. */
-    inline bool intersects(GenericOptRect<C> const &r) const;
+    inline bool intersects(OptCRect const &r) const;
     /** @brief Check whether the rectangle includes all points in the given rectangle.
      * A non-empty rectangle will contain any empty rectangle. */
-    inline bool contains(GenericOptRect<C> const &r) const;
+    inline bool contains(OptCRect const &r) const;
 
     /** @brief Check whether the given point is within the rectangle. */
     bool contains(CPoint const &p) const {
@@ -193,7 +193,7 @@ public:
     }
     /** @brief Enlarge the rectangle to contain the given rectangle.
      * Unioning with an empty rectangle results in no changes. */
-    void unionWith(GenericOptRect<C> const &b);
+    void unionWith(OptCRect const &b);
 
     /** @brief Expand the rectangle in both directions by the specified amount.
      * Note that this is different from scaling. Negative values wil shrink the
@@ -216,13 +216,13 @@ public:
     /// @name Operators
     /// @{
     /** @brief Offset the rectangle by a vector. */
-    GenericRect<C> &operator+=(Point const &p) {
+    GenericRect<C> &operator+=(CPoint const &p) {
         f[X] += p[X];
         f[Y] += p[Y];
         return *this;
     }
     /** @brief Offset the rectangle by the negation of a vector. */
-    GenericRect<C> &operator-=(Point const &p) {
+    GenericRect<C> &operator-=(CPoint const &p) {
         f[X] -= p[X];
         f[Y] -= p[Y];
         return *this;
@@ -263,6 +263,7 @@ class GenericOptRect
     typedef typename CoordTraits<C>::OptIntervalType OptCInterval;
     typedef typename CoordTraits<C>::PointType CPoint;
     typedef typename CoordTraits<C>::RectType CRect;
+    typedef typename CoordTraits<C>::OptRectType OptCRect;
     typedef boost::optional<CRect> Base;
 public:
     GenericOptRect() : Base() {};
@@ -284,8 +285,8 @@ public:
     bool intersects(CRect const &r) const { return r.intersects(*this); }
     bool contains(CRect const &r) const { return *this && (*this)->contains(r); }
 
-    bool intersects(GenericOptRect<C> const &r) const { return *this && (*this)->intersects(r); }
-    bool contains(GenericOptRect<C> const &r) const { return *this && (*this)->contains(r); }
+    bool intersects(OptCRect const &r) const { return *this && (*this)->intersects(r); }
+    bool contains(OptCRect const &r) const { return *this && (*this)->contains(r); }
 
     bool contains(CPoint const &p) const { return *this && (*this)->contains(p); }
 
@@ -296,7 +297,7 @@ public:
             *this = b;
         }
     }
-    void unionWith(GenericOptRect<C> const &b) {
+    void unionWith(OptCRect const &b) {
         if (b) unionWith(*b);
     }
     void intersectWith(CRect const &b) {
@@ -308,14 +309,14 @@ public:
             *(static_cast<Base*>(this)) = boost::none;
         }
     }
-    void intersectWith(GenericOptRect<C> const &b) {
+    void intersectWith(OptCRect const &b) {
         if (b) {
             intersectWith(*b);
         } else {
             *(static_cast<Base*>(this)) = boost::none;
         }
     }
-    GenericOptRect<C> &operator|=(GenericOptRect<C> const &b) {
+    GenericOptRect<C> &operator|=(OptCRect const &b) {
         unionWith(b);
         return *this;
     }
@@ -323,7 +324,7 @@ public:
         intersectWith(b);
         return *this;
     }
-    GenericOptRect<C> &operator&=(GenericOptRect<C> const &b) {
+    GenericOptRect<C> &operator&=(OptCRect const &b) {
         intersectWith(b);
         return *this;
     }
@@ -355,17 +356,17 @@ inline GenericOptRect<C> operator&(GenericRect<C> const &a, GenericRect<C> const
 }
 
 template <typename C>
-inline void GenericRect<C>::unionWith(GenericOptRect<C> const &b) { 
+inline void GenericRect<C>::unionWith(OptCRect const &b) { 
     if (b) {
         unionWith(*b);
     }
 }
 template <typename C>
-inline bool GenericRect<C>::intersects(GenericOptRect<C> const &r) const {
+inline bool GenericRect<C>::intersects(OptCRect const &r) const {
     return r && intersects(*r);
 }
 template <typename C>
-inline bool GenericRect<C>::contains(GenericOptRect<C> const &r) const {
+inline bool GenericRect<C>::contains(OptCRect const &r) const {
     return !r || contains(*r);
 }
 

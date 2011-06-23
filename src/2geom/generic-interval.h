@@ -80,15 +80,15 @@ public:
      * @param end   End of the range
      * @return Interval that contains all values from [start, end). */
     template <typename InputIterator>
-    static GenericInterval<C> from_range(InputIterator start, InputIterator end) {
+    static Self from_range(InputIterator start, InputIterator end) {
         assert(start != end);
-        GenericInterval<C> result(*start++);
+        Self result(*start++);
         for (; start != end; ++start) result.expandTo(*start);
         return result;
     }
     /** @brief Create an interval from a C-style array of values it should contain. */
-    static GenericInterval from_array(C const *c, unsigned n) {
-        GenericInterval result = from_range(c, c+n);
+    static Self from_array(C const *c, unsigned n) {
+        Self result = from_range(c, c+n);
         return result;
     }
     /// @}
@@ -105,11 +105,15 @@ public:
     /// @name Test coordinates and other intervals for inclusion.
     /// @{
     /** @brief Check whether the interval includes this number. */
-    bool contains(C val) const { return min() <= val && val <= max(); }
+    bool contains(C val) const {
+        return CoordTraits<C>::contains(min(), max(), val, val);
+    }
     /** @brief Check whether the interval includes the given interval. */
-    bool contains(GenericInterval const &val) const { return min() <= val.min() && val.max() <= max(); }
+    bool contains(Self const &val) const {
+        return CoordTraits<C>::contains(min(), max(), val.min(), val.max());
+    }
     /** @brief Check whether the intervals have any common elements. */
-    bool intersects(GenericInterval const &val) const {
+    bool intersects(Self const &val) const {
         return contains(val.min()) || contains(val.max()) || val.contains(*this);
     }
     /// @}
@@ -159,7 +163,7 @@ public:
      * The resulting interval will contain all points of both intervals.
      * It might also contain some points which didn't belong to either - this happens
      * when the intervals did not have any common elements. */
-    void unionWith(GenericInterval<C> const &a) {
+    void unionWith(Self const &a) {
         if(a._b[0] < _b[0]) _b[0] = a._b[0];
         if(a._b[1] > _b[1]) _b[1] = a._b[1];
     }
@@ -210,7 +214,7 @@ public:
         return *this;
     }
     /** @brief Test for interval equality. */
-    bool operator==(GenericInterval<C> const &other) const {
+    bool operator==(Self const &other) const {
         return min() == other.min() && max() == other.max();
     }
     /// @}
