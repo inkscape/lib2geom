@@ -120,6 +120,7 @@ public:
     Translate &operator*=(Translate const &o) { vec += o.vec; return *this; }
     bool operator==(Translate const &o) const { return vec == o.vec; }
 
+    Point vector() const { return vec; }
     /** @brief Get the inverse translation. */
     Translate inverse() const { return Translate(-vec); }
     /** @brief Get a translation that doesn't do anything. */
@@ -150,6 +151,8 @@ public:
     Coord &operator[](unsigned d) { return vec[d]; }
     Scale &operator*=(Scale const &b) { vec[X] *= b[X]; vec[Y] *= b[Y]; return *this; }
     bool operator==(Scale const &o) const { return vec == o.vec; }
+
+    Point vector() const { return vec; }
     Scale inverse() const { return Scale(1./vec[0], 1./vec[1]); }
     static Scale identity() { Scale ret; return ret; }
 
@@ -189,7 +192,7 @@ public:
     /** @brief Get a 0-degree rotation. */
     static Rotate identity() { Rotate ret; return ret; }
     /** @brief Construct a rotation from its angle in degrees.
-     * Positive arguments correspond to counter-clockwise rotations (if Y grows upwards). */
+     * Positive arguments correspond to clockwise rotations if Y grows downwards. */
     static Rotate from_degrees(Coord deg) {
         Coord rad = (deg / 180.0) * M_PI;
         return Rotate(rad);
@@ -213,8 +216,8 @@ public:
     void setFactor(Coord nf) { f = nf; }
     S &operator*=(S const &s) { f += s.f; return static_cast<S &>(*this); }
     bool operator==(S const &s) const { return f == s.f; }
-    S inverse() const { return S(-f); }
-    static S identity() { return S(0); }
+    S inverse() const { S ret(-f); return ret; }
+    static S identity() { S ret(0); return ret; }
 
     friend class Point;
     friend class Affine;
@@ -242,6 +245,45 @@ class VShear
 public:
     explicit VShear(Coord h) : ShearBase<VShear>(h) {}
     operator Affine() const { Affine ret(1, f, 0, 1, 0, 0); return ret; }
+};
+
+/** @brief Combination of a translation and uniform scale.
+ * The translation part is applied first, then the result is scaled from the new origin.
+ * This way when the class is used to accumulate a zoom transform, trans always points
+ * to the new origin in original coordinates.
+ * @ingroup Transform */
+class Zoom
+    : public TransformOperations< Zoom >
+{
+    Coord _scale;
+    Point _trans;
+    Zoom() : _scale(1), _trans() {}
+public:
+    explicit Zoom(Coord s) : _scale(s), _trans() {}
+    explicit Zoom(Translate const &t) : _scale(1), _trans(t.vector()) {}
+    Zoom(Coord s, Translate const &t) : _scale(s), _trans(t.vector()) {}
+
+    operator Affine() const {
+        Affine ret(_scale, 0, 0, _scale, _trans[X] * _scale, _trans[Y] * _scale);
+        return ret;
+    }
+    Zoom &operator*=(Zoom const &z) {
+        _trans += z._trans / _scale;
+        _scale *= z._scale;
+        return *this;
+    }
+    bool operator==(Zoom const &z) const { return _scale == z._scale && _trans == z._trans; }
+
+    Coord scale() const { return _scale; }
+    void setScale(Coord s) { _scale = s; }
+    Point translation() const { return _trans; }
+    void setTranslation(Point const &p) { _trans = p; }
+    Zoom inverse() const { Zoom ret(1/_scale, Translate(-_trans*_scale)); return ret; }
+    static Zoom identity() { Zoom ret(1.0); return ret; }
+    static Zoom map_rect(Rect const &old_r, Rect const &new_r);
+    
+    friend class Point;
+    friend class Affine;
 };
 
 /** @brief Specialization of exponentiation for Scale.

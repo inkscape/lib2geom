@@ -34,7 +34,7 @@ OPTION(2GEOM_UNIT_TESTS
 IF(2GEOM_UNIT_TESTS)
   # temporary fix. use #include <2geom/bezier.h> instead of #include "bezier.h"
   INCLUDE_DIRECTORIES( "../" )
-
+  ENABLE_TESTING()
 
     FOREACH(source ${2GEOM_TESTS_SRC})
         IF(${source} STREQUAL time-ops)
@@ -55,5 +55,6 @@ IF(2GEOM_UNIT_TESTS)
             ADD_EXECUTABLE(${source} ${source}.cpp)
             TARGET_LINK_LIBRARIES(${source} ${LINK_GSL} 2geom ${GTK2_LINK_FLAGS})
         ENDIF(${source} STREQUAL time-ops)
+        ADD_TEST(NAME ${source} COMMAND ${source})
     ENDFOREACH(source)
 ENDIF(2GEOM_UNIT_TESTS)

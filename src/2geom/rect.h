@@ -114,6 +114,10 @@ public:
     bool interiorIntersects(Rect const &r) const {
         return f[X].interiorIntersects(r[X]) && f[Y].interiorIntersects(r[Y]);
     }
+    /** @brief Check whether the interior includes the given point. */
+    bool interiorContains(Point const &p) const {
+        return f[X].interiorContains(p[X]) && f[Y].interiorContains(p[Y]);
+    }
     /** @brief Check whether the interior includes all points in the given rectangle.
      * Interior of the rectangle is the entire rectangle without its borders. */
     bool interiorContains(Rect const &r) const { 

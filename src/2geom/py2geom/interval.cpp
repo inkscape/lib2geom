@@ -79,8 +79,8 @@ void wrap_interval() {
     def("interval_to_tuple", interval_to_tuple);
     def("tuple_to_interval", tuple_to_interval);
 
-    def("unify", Geom::unify);
-    def("intersect", Geom::intersect);
+    //def("unify", Geom::unify(Geom::Interval const &, Geom::Interval const &));
+    //def("intersect", Geom::intersect(Geom::Interval const &, Geom::Interval const &));
 
     //TODO: add overloaded constructors
     class_<Geom::Interval>("Interval", init<double, double>())

@@ -155,6 +155,8 @@ public:
     C width() const { return f[X].extent(); }
     /** @brief Get the vertical extent of the rectangle. */
     C height() const { return f[Y].extent(); }
+    /** @brief Get the ratio of width to height of the rectangle. */
+    Coord aspectRatio() const { return Coord(width()) / Coord(height()); }
 
     /** @brief Get rectangle's width and height as a point.
      * @return Point with X coordinate corresponding to the width and the Y coordinate

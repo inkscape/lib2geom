@@ -73,10 +73,10 @@ void wrap_ray() {
 
         .def("isDegenerate", &Geom::Ray::isDegenerate)
         .def("nearestPoint", &Geom::Ray::nearestPoint) 
-        .def("setBy2Points", &Geom::Ray::setBy2Points)
+        .def("setBy2Points", &Geom::Ray::setPoints)
         .def("valueAt", &Geom::Ray::valueAt)
         .def("pointAt", &Geom::Ray::pointAt)
-        .def("timeAt", &Geom::Ray::timeAt)
+        .def("nearestPoint", &Geom::Ray::nearestPoint)
         .def("reverse", &Geom::Ray::reverse) 
         .def("roots", &Geom::Ray::roots) 
         .def("transformed", &Geom::Ray::transformed) 
