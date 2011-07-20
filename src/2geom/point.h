@@ -112,6 +112,11 @@ public:
 
     Coord operator[](Dim2 d) const throw() { return _pt[d]; }
     Coord &operator[](Dim2 d) throw() { return _pt[d]; }
+
+    Coord x() const throw() { return _pt[X]; }
+    Coord &x() throw() { return _pt[X]; }
+    Coord y() const throw() { return _pt[Y]; }
+    Coord &y() throw() { return _pt[Y]; }
     /// @}
 
     /// @name Vector operations
