@@ -40,6 +40,7 @@
 #ifndef LIB2GEOM_SEEN_GENERIC_RECT_H
 #define LIB2GEOM_SEEN_GENERIC_RECT_H
 
+#include <limits>
 #include <boost/optional.hpp>
 
 namespace Geom {
@@ -93,30 +94,37 @@ public:
      * @param end   End of the range
      * @return Rectangle that contains all points from [start, end). */
     template <typename InputIterator>
-    static GenericRect<C> from_range(InputIterator start, InputIterator end) {
+    static CRect from_range(InputIterator start, InputIterator end) {
         assert(start != end);
         CPoint p1 = *start++;
-        GenericRect<C> result(p1, p1);
+        CRect result(p1, p1);
         for (; start != end; ++start) {
             result.expandTo(*start);
         }
         return result;
     }
     /** @brief Create a rectangle from a C-style array of points it should contain. */
-    static GenericRect<C> from_array(CPoint const *c, unsigned n) {
-        GenericRect<C> result = GenericRect<C>::from_range(c, c+n);
+    static CRect from_array(CPoint const *c, unsigned n) {
+        CRect result = GenericRect<C>::from_range(c, c+n);
         return result;
     }
     /** @brief Create rectangle from origin and dimensions. */
-    static GenericRect<C> from_xywh(C x, C y, C w, C h) {
+    static CRect from_xywh(C x, C y, C w, C h) {
         CPoint xy(x, y);
         CPoint wh(w, h);
-        GenericRect<C> result(xy, xy + wh);
+        CRect result(xy, xy + wh);
         return result;
     }
     /** @brief Create rectangle from origin and dimensions. */
-    static GenericRect<C> from_xywh(CPoint const &xy, CPoint const &wh) {
-        GenericRect<C> result(xy, xy + wh);
+    static CRect from_xywh(CPoint const &xy, CPoint const &wh) {
+        CRect result(xy, xy + wh);
+        return result;
+    }
+    /// Create infinite rectangle.
+    static CRect infinite() {
+        CPoint p0(std::numeric_limits<C>::min(), std::numeric_limits<C>::min());
+        CPoint p1(std::numeric_limits<C>::max(), std::numeric_limits<C>::max());
+        CRect result(p0, p1);
         return result;
     }
     /// @}

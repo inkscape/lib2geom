@@ -74,31 +74,6 @@ public:
     Rect(Coord x0, Coord y0, Coord x1, Coord y1) : Base(x0, y0, x1, y1) {}
     Rect(Base const &b) : Base(b) {}
     Rect(IntRect const &ir) : Base(ir.min(), ir.max()) {}
-    /** @brief Create a rectangle from a range of points.
-     * The resulting rectangle will contain all ponts from the range.
-     * The return type of iterators must be convertible to Point.
-     * The range must not be empty. For possibly empty ranges, see OptRect.
-     * @param start Beginning of the range
-     * @param end   End of the range
-     * @return Rectangle that contains all points from [start, end). */
-    template <typename InputIterator>
-    static Rect from_range(InputIterator start, InputIterator end) {
-        Rect result = Base::from_range(start, end);
-        return result;
-    }
-    /** @brief Create a rectangle from a C-style array of points it should contain. */
-    static Rect from_array(Point const *c, unsigned n) {
-        Rect result = Rect::from_range(c, c+n);
-        return result;
-    }
-    static Rect from_xywh(Coord x, Coord y, Coord w, Coord h) {
-        Rect result = Base::from_xywh(x, y, w, h);
-        return result;
-    }
-    static Rect from_xywh(Point const &o, Point const &dim) {
-        Rect result = Base::from_xywh(o, dim);
-        return result;
-    }
     /// @}
 
     /// @name Inspect dimensions.
