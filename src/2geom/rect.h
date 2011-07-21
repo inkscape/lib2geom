@@ -73,6 +73,7 @@ public:
     Rect(Point const &a, Point const &b) : Base(a,b) {}
     Rect(Coord x0, Coord y0, Coord x1, Coord y1) : Base(x0, y0, x1, y1) {}
     Rect(Base const &b) : Base(b) {}
+    Rect(IntRect const &ir) : Base(ir.min(), ir.max()) {}
     /** @brief Create a rectangle from a range of points.
      * The resulting rectangle will contain all ponts from the range.
      * The return type of iterators must be convertible to Point.
