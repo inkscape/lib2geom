@@ -54,10 +54,10 @@ class GenericOptRect;
  */
 template <typename C>
 class GenericRect
-    : boost::additive< GenericRect<C>, typename CoordTraits<C>::PointType
-    , boost::equality_comparable< GenericRect<C>
-    , boost::orable< GenericRect<C>
-    , boost::orable< GenericRect<C>, typename CoordTraits<C>::OptRectType
+    : boost::additive< typename CoordTraits<C>::RectType, typename CoordTraits<C>::PointType
+    , boost::equality_comparable< typename CoordTraits<C>::RectType
+    , boost::orable< typename CoordTraits<C>::RectType
+    , boost::orable< typename CoordTraits<C>::RectType, typename CoordTraits<C>::OptRectType
       > > > >
 {
     typedef typename CoordTraits<C>::IntervalType CInterval;
@@ -225,7 +225,7 @@ public:
         f[X].expandTo(p[X]);  f[Y].expandTo(p[Y]);
     }
     /** @brief Enlarge the rectangle to contain the given rectangle. */
-    void unionWith(GenericRect<C> const &b) { 
+    void unionWith(CRect const &b) { 
         f[X].unionWith(b[X]); f[Y].unionWith(b[Y]);
     }
     /** @brief Enlarge the rectangle to contain the given rectangle.
@@ -265,7 +265,7 @@ public:
         return *this;
     }
     /** @brief Union two rectangles. */
-    GenericRect<C> &operator|=(GenericRect<C> const &o) {
+    GenericRect<C> &operator|=(CRect const &o) {
         unionWith(o);
         return *this;
     }
@@ -285,9 +285,9 @@ public:
 template <typename C>
 class GenericOptRect
     : public boost::optional<typename CoordTraits<C>::RectType>
-    , boost::orable< GenericOptRect<C>
-    , boost::andable< GenericOptRect<C>
-    , boost::andable< GenericOptRect<C>, typename CoordTraits<C>::RectType
+    , boost::orable< typename CoordTraits<C>::OptRectType
+    , boost::andable< typename CoordTraits<C>::OptRectType
+    , boost::andable< typename CoordTraits<C>::OptRectType, typename CoordTraits<C>::RectType
       > > >
 {
     typedef typename CoordTraits<C>::IntervalType CInterval;

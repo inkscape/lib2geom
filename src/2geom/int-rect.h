@@ -32,6 +32,7 @@
 #define LIB2GEOM_SEEN_INT_RECT_H
 
 #include <2geom/coord.h>
+#include <2geom/int-interval.h>
 #include <2geom/generic-rect.h>
 
 namespace Geom {
