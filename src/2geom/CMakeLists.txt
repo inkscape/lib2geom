@@ -78,11 +78,9 @@ geom.h
 
 hvlinesegment.h
 
-intersection-by-smashing.cpp
-intersection-by-smashing.h
-
 line.cpp
 line.h
+linear.h
 
 math-utils.h
 
@@ -113,12 +111,8 @@ ray.h
 rect.h
 rect.cpp
 recursive-bezier-intersection.cpp
-redblacktree.cpp
-redblacktree.h
 region.cpp
 region.h
-rtree.cpp
-rtree.h
 
 sbasis-2d.cpp
 sbasis-2d.h
@@ -127,7 +121,6 @@ sbasis-geometric.cpp
 sbasis-geometric.h
 sbasis-math.cpp
 sbasis-math.h
-sbasis-of.h
 sbasis-poly.cpp
 sbasis-poly.h
 sbasis-roots.cpp
@@ -135,7 +128,6 @@ sbasis-to-bezier.cpp
 sbasis-to-bezier.h
 sbasis.cpp
 sbasis.h
-sbasisN.h
 shape.cpp
 shape.h
 solve-bezier-one-d.cpp

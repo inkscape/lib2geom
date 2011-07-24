@@ -1,6 +1,6 @@
 /**
  * \file
- * \brief Defines multi-dimensional S-power basis function class
+ * \brief Multi-dimensional symmetric power basis function.
  * A SBasisN<n> is a polynomial f of n variables (t0,...,tn-1), 
  * written in a particular form. Let si = ti(1-t_i). f is written as
  *
@@ -14,7 +14,7 @@
  * Caution: degrees are expressed as degrees of s=t*(1-t). The real degree
  * (with respect to t) of the polynomial is twice that + 0 or 1 depending 
  * wether the relevant LinearN<n> coeff is constant or not.
- *
+ *//*
  *
  *  Authors:
  *   JF Barraud <jf.barraud@gmail.com>
@@ -53,7 +53,7 @@
 #include <cassert>
 #include <iostream>
 
-#include <2geom/linearN.h>
+#include <2geom/orphan-code/linearN.h>
 #include <2geom/linear.h>//for conversion purpose
 #include <2geom/sbasis.h>//for conversion purpose
 #include <2geom/interval.h>
@@ -754,6 +754,7 @@ inline SBasisN<n> operator+(const SBasisN<n> & a, LinearN<n> const & b) {
     return result;
 }
 template<unsigned n>
+
 inline SBasisN<n> operator-(const SBasisN<n> & a, LinearN<n> const & b) {
     if(b.isZero()) return a;
     if(a.isZero()) return -b;

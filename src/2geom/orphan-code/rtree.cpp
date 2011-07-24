@@ -1,4 +1,4 @@
-#include <2geom/rtree.h>
+#include <2geom/orphan-code/rtree.h>
 #include <limits>
 
 /*

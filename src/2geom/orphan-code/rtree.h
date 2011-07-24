@@ -38,6 +38,9 @@
  *
  */
 
+#ifndef SEEN_LIB2GEOM_RTREE_H
+#define SEEN_LIB2GEOM_RTREE_H
+
 #include <vector>
 #include <utility>
 
@@ -222,9 +225,9 @@ private:
 
 };
 
+} // end namespace Geom
 
-
-}; //close namespace
+#endif // !SEEN_LIB2GEOM_RTREE_H
 
 /*
   Local Variables:

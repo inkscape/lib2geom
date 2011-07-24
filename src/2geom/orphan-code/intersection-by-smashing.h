@@ -7,7 +7,7 @@
  *  Y <- Y - y(X)
  * smashes M on the x axis. The intersections are then given by the roots of:
  *  Y(u) - y(X(u)) = 0
- *
+ *//*
  * Authors:
  * 		J.-F. Barraud    <jfbarraud at gmail.com>
  * Copyright 2010  authors
@@ -36,8 +36,11 @@
  * the specific language governing rights and limitations.
  */
 
+#ifndef SEEN_LIB2GEOM_INTERSECTION_BY_SMASHING_H
+#define SEEN_LIB2GEOM_INTERSECTION_BY_SMASHING_H
 
 #include <2geom/d2.h>
+#include <2geom/interval.h>
 #include <2geom/sbasis.h>
 #include <2geom/sbasis-geometric.h>
 #include <cstdlib>
@@ -57,7 +60,11 @@ std::vector<Intersection> monotonic_smash_intersect( D2<SBasis> const &a, D2<SBa
 //std::vector<Intersection> monotonic_smash_intersect( Curve const &a, double a_from, double a_to,
 //			                                         Curve const &b, double b_from, double b_to, double tol);
 
-}
+std::vector<Interval> monotonicSplit(D2<SBasis> const &p);
+
+} // end namespace Geom
+
+#endif // !SEEN_LIB2GEOM_INTERSECTION_BY_SMASHING_H
 
 /*
   Local Variables:

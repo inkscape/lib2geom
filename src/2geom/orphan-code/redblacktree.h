@@ -38,6 +38,9 @@
  *
  */
 
+#ifndef SEEN_LIB2GEOM_REDBLACKTREE_H
+#define SEEN_LIB2GEOM_REDBLACKTREE_H
+
 #include <vector>
 //#include <cassert>
 #include <limits>
@@ -102,7 +105,9 @@ private:
 
 };
 
-}; //close namespace
+} // end namespace Geom
+
+#endif // !SEEN_LIB2GEOM_REDBLACKTREE_H
 
 /*
   Local Variables:
