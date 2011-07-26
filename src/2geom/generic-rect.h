@@ -131,15 +131,22 @@ public:
 
     /// @name Inspect dimensions.
     /// @{
-    CInterval &operator[](unsigned i)              { return f[i]; }
+    CInterval &operator[](unsigned i)             { return f[i]; }
     CInterval const &operator[](unsigned i) const { return f[i]; }
+    CInterval &operator[](Dim2 d)                 { return f[d]; }
+    CInterval const &operator[](Dim2 d) const     { return f[d]; }
 
+    /** @brief Get the corner of the rectangle with smallest coordinate values.
+     * In 2Geom standard coordinate system, this means upper left. */
     CPoint min() const { return CPoint(f[X].min(), f[Y].min()); }
+    /** @brief Get the corner of the rectangle with largest coordinate values.
+     * In 2Geom standard coordinate system, this means lower right. */
     CPoint max() const { return CPoint(f[X].max(), f[Y].max()); }
     /** @brief Return the n-th corner of the rectangle.
-     * If the Y axis grows upwards, this returns corners in clockwise order
-     * starting from the lower left. If Y grows downwards, it returns the corners
-     * in counter-clockwise order starting from the upper left. */
+     * Returns corners in the direction of growing angles, starting from
+     * the one given by min(). For the standard coordinate system used
+     * in 2Geom (+Y downwards), this means clockwise starting from
+     * the upper left. */
     CPoint corner(unsigned i) const {
         switch(i % 4) {
             case 0:  return CPoint(f[X].min(), f[Y].min());
@@ -244,7 +251,8 @@ public:
      * This will expand the width by the X coordinate of the point in both directions
      * and the height by Y coordinate of the point. Negative coordinate values will
      * shrink the rectangle. If <code>-p[X]</code> is larger than half of the width,
-     * the X interval will contain only the X coordinate of the midpoint; same for height. */
+     * the X interval will contain only the X coordinate of the midpoint;
+     * same for height. */
     void expandBy(CPoint const &p) { 
         f[X].expandBy(p[X]);  f[Y].expandBy(p[Y]);
     }
@@ -300,9 +308,7 @@ public:
     GenericOptRect() : Base() {}
     GenericOptRect(GenericRect<C> const &a) : Base(CRect(a)) {}
     GenericOptRect(CPoint const &a, CPoint const &b) : Base(CRect(a, b)) {}
-    /**
-     * Creates an empty OptRect when one of the argument intervals is empty.
-     */
+    /// Creates an empty OptRect when one of the argument intervals is empty.
     GenericOptRect(OptCInterval const &x_int, OptCInterval const &y_int) {
         if (x_int && y_int) {
             *this = CRect(*x_int, *y_int);
@@ -313,6 +319,8 @@ public:
     /** @brief Check for emptiness. */
     inline bool isEmpty() const { return !*this; };
 
+    /// @name Check other rectangles and points for inclusion.
+    /// @{
     bool intersects(CRect const &r) const { return r.intersects(*this); }
     bool contains(CRect const &r) const { return *this && (*this)->contains(r); }
 
@@ -320,7 +328,10 @@ public:
     bool contains(OptCRect const &r) const { return *this && (*this)->contains(r); }
 
     bool contains(CPoint const &p) const { return *this && (*this)->contains(p); }
+    /// @}
 
+    /// @name Modify the potentially empty rectangle.
+    /// @{
     void unionWith(CRect const &b) {
         if (*this) {
             (*this)->unionWith(b);
@@ -347,6 +358,10 @@ public:
             *(static_cast<Base*>(this)) = boost::none;
         }
     }
+    /// @}
+    
+    /// @name Operators
+    /// @{
     GenericOptRect<C> &operator|=(OptCRect const &b) {
         unionWith(b);
         return *this;
@@ -359,6 +374,7 @@ public:
         intersectWith(b);
         return *this;
     }
+    /// @}
 };
 
 template <typename C>
