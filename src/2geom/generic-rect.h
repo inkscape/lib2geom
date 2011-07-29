@@ -42,6 +42,7 @@
 
 #include <limits>
 #include <boost/optional.hpp>
+#include <2geom/coord.h>
 
 namespace Geom {
 
@@ -54,11 +55,7 @@ class GenericOptRect;
  */
 template <typename C>
 class GenericRect
-    : boost::additive< typename CoordTraits<C>::RectType, typename CoordTraits<C>::PointType
-    , boost::equality_comparable< typename CoordTraits<C>::RectType
-    , boost::orable< typename CoordTraits<C>::RectType
-    , boost::orable< typename CoordTraits<C>::RectType, typename CoordTraits<C>::OptRectType
-      > > > >
+    : CoordTraits<C>::RectOps
 {
     typedef typename CoordTraits<C>::IntervalType CInterval;
     typedef typename CoordTraits<C>::PointType CPoint;

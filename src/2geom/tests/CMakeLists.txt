@@ -15,7 +15,7 @@ poly-test
 test-cg
 #translate-test
 #translate-test.h
-#types-test
+types-test
 #types-test.h
 unit-test-sbasis
 root-find-ut
