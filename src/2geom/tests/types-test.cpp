@@ -1,6 +1,9 @@
 #include <iostream>
 #include <iomanip>
-#include <2geom/2geom.h>
+#include <2geom/rect.h>
+#include <2geom/affine.h>
+#include <2geom/pathvector.h>
+#include <2geom/curves.h>
 
 using namespace Geom;
 

@@ -241,7 +241,7 @@ void basic_arith(T const & a, T const & b) {
 }
 
 #include <valarray>
-#include <2geom/sbasisN.h>
+#include <2geom/orphan-code/sbasisN.h>
 #include <piecewise.h>
 int main(int /*argc*/, char** /*argv*/) {
   
