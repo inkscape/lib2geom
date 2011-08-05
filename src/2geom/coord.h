@@ -64,7 +64,7 @@ template <typename C>
 struct CoordTraits {};
 
 // NOTE: operator helpers for Rect and Interval are defined here.
-// This is to avoid increasing their size.
+// This is to avoid increasing their size through multiple inheritance.
 
 template<>
 struct CoordTraits<IntCoord> {
