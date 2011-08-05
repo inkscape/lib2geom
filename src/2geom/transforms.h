@@ -49,6 +49,7 @@ struct TransformConcept {
     Affine m;
     Point p;
     bool bool_;
+    Coord epsilon;
     void constraints() {
         m = t;  //implicit conversion
         m *= t;
@@ -64,6 +65,7 @@ struct TransformConcept {
         t = T::identity();
         t = t.inverse();
         bool_ = are_near(t, t2);
+        bool_ = are_near(t, t2, epsilon);
     }
 };
 
