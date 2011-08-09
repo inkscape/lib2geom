@@ -135,10 +135,10 @@ public:
 
     /** @brief Get the corner of the rectangle with smallest coordinate values.
      * In 2Geom standard coordinate system, this means upper left. */
-    CPoint min() const { return CPoint(f[X].min(), f[Y].min()); }
+    CPoint min() const { CPoint p(f[X].min(), f[Y].min()); return p; }
     /** @brief Get the corner of the rectangle with largest coordinate values.
      * In 2Geom standard coordinate system, this means lower right. */
-    CPoint max() const { return CPoint(f[X].max(), f[Y].max()); }
+    CPoint max() const { CPoint p(f[X].max(), f[Y].max()); return p; }
     /** @brief Return the n-th corner of the rectangle.
      * Returns corners in the direction of growing angles, starting from
      * the one given by min(). For the standard coordinate system used
@@ -279,7 +279,7 @@ public:
         return *this;
     }
     /** @brief Test for equality of rectangles. */
-    bool operator==(GenericRect<C> const &o) const { return f[X] == o[X] && f[Y] == o[Y]; }
+    bool operator==(CRect const &o) const { return f[X] == o[X] && f[Y] == o[Y]; }
     /// @}
 };
 
@@ -290,10 +290,12 @@ public:
 template <typename C>
 class GenericOptRect
     : public boost::optional<typename CoordTraits<C>::RectType>
+    , boost::equality_comparable< typename CoordTraits<C>::OptRectType
+    , boost::equality_comparable< typename CoordTraits<C>::OptRectType, typename CoordTraits<C>::RectType
     , boost::orable< typename CoordTraits<C>::OptRectType
     , boost::andable< typename CoordTraits<C>::OptRectType
     , boost::andable< typename CoordTraits<C>::OptRectType, typename CoordTraits<C>::RectType
-      > > >
+      > > > > >
 {
     typedef typename CoordTraits<C>::IntervalType CInterval;
     typedef typename CoordTraits<C>::OptIntervalType OptCInterval;
@@ -307,6 +309,7 @@ public:
     GenericOptRect() : Base() {}
     GenericOptRect(GenericRect<C> const &a) : Base(CRect(a)) {}
     GenericOptRect(CPoint const &a, CPoint const &b) : Base(CRect(a, b)) {}
+    GenericOptRect(C x0, C y0, C x1, C y1) : Base(CRect(x0, y0, x1, y1)) {}
     /// Creates an empty OptRect when one of the argument intervals is empty.
     GenericOptRect(OptCInterval const &x_int, OptCInterval const &y_int) {
         if (x_int && y_int) {
@@ -314,6 +317,7 @@ public:
         }
         // else, stay empty.
     }
+    
     /** @brief Create a rectangle from a range of points.
      * The resulting rectangle will contain all ponts from the range.
      * If the range contains no points, the result will be an empty rectangle.
@@ -426,6 +430,16 @@ public:
     GenericOptRect<C> &operator&=(OptCRect const &b) {
         intersectWith(b);
         return *this;
+    }
+    /** @brief Test for equality.
+     * All empty rectangles are equal. */
+    bool operator==(OptCRect const &other) const {
+        if (!*this != !other) return false;
+        return *this ? (**this == *other) : true;
+    }
+    bool operator==(CRect const &other) const {
+        if (!*this) return false;
+        return **this == other;
     }
     /// @}
 };

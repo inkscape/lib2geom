@@ -24,13 +24,20 @@ time-ops
 #rtree-performance
 )
 
+SET(2GEOM_GTESTS_SRC
+rect-test
+)
+
 OPTION(2GEOM_IDX_LIBSPATIALINDEX
   "Build lib2geom with libSpatialIndex indexing support."
   OFF)
 
+FOREACH(source ${2GEOM_GTESTS_SRC})
+	ADD_EXECUTABLE(${source} ${source}.cpp)
+	TARGET_LINK_LIBRARIES(${source} 2geom gtest_main)
+	ADD_TEST(NAME ${source} COMMAND ${source})
+ENDFOREACH()
 
-# temporary fix. use #include <2geom/bezier.h> instead of #include "bezier.h"
-INCLUDE_DIRECTORIES( "../" )
 
 FOREACH(source ${2GEOM_TESTS_SRC})
     IF(${source} STREQUAL time-ops)
