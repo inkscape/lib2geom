@@ -20,11 +20,12 @@ types-test
 unit-test-sbasis
 root-find-ut
 implicitization
-time-ops
+#time-ops
 #rtree-performance
 )
 
 SET(2GEOM_GTESTS_SRC
+affine-test
 rect-test
 )
 
