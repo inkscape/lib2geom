@@ -242,7 +242,15 @@ public:
      * half of the width, the X interval will contain only the X coordinate
      * of the midpoint; same for height. */
     void expandBy(C amount) {
-        f[X].expandBy(amount);  f[Y].expandBy(amount);
+        expandBy(amount, amount);
+    }
+    /** @brief Expand the rectangle in both directions.
+     * Note that this is different from scaling. Negative values wil shrink the
+     * rectangle. If <code>-x</code> is larger than
+     * half of the width, the X interval will contain only the X coordinate
+     * of the midpoint; same for height. */
+    void expandBy(C x, C y) { 
+        f[X].expandBy(x);  f[Y].expandBy(y);
     }
     /** @brief Expand the rectangle by the coordinates of the given point.
      * This will expand the width by the X coordinate of the point in both directions
@@ -250,8 +258,8 @@ public:
      * shrink the rectangle. If <code>-p[X]</code> is larger than half of the width,
      * the X interval will contain only the X coordinate of the midpoint;
      * same for height. */
-    void expandBy(CPoint const &p) { 
-        f[X].expandBy(p[X]);  f[Y].expandBy(p[Y]);
+    void expandBy(CPoint const &p) {
+        expandBy(p[X], p[Y]);
     }
     /// @}
 
