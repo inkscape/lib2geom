@@ -58,7 +58,7 @@ bool clean_quad_tree(Geom::Quad *q) {
 PathVector
 half_plane(Coord d, Point n, PathVector path_a) {
     PathVector res;
-    for(PathVector::const_iterator it = path_a.begin(); it != path_a.end(); it++) {
+    for(PathVector::const_iterator it = path_a.begin(); it != path_a.end(); ++it) {
 	for(unsigned i = 0; i <= it->size(); i++) {
 	    D2<SBasis> curpw = (*it)[i].toSBasis();
 	    SBasis inner = n[0]*curpw[0] + n[1]*curpw[1] - d;

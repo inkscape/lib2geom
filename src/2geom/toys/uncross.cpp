@@ -25,7 +25,7 @@ void draw_bounds(cairo_t *cr, vector<Path> ps) {
     srand(0); 
     vector<Rect> bnds;
     for(unsigned i = 0; i < ps.size(); i++) {
-        for(Path::iterator it = ps[i].begin(); it != ps[i].end(); it++) {
+        for(Path::iterator it = ps[i].begin(); it != ps[i].end(); ++it) {
             Rect bounds = (it->boundsFast());
             bnds.push_back(bounds);
             cairo_set_source_rgba(cr, uniform(), uniform(), uniform(), .5);
@@ -50,7 +50,7 @@ void draw_bounds(cairo_t *cr, vector<Path> ps) {
 
 void mark_verts(cairo_t *cr, vector<Path> ps) {
     for(unsigned i = 0; i < ps.size(); i++)
-        for(Path::iterator it = ps[i].begin(); it != ps[i].end(); it++)
+        for(Path::iterator it = ps[i].begin(); it != ps[i].end(); ++it)
             draw_cross(cr, it->initialPoint());
 }
 
@@ -101,7 +101,7 @@ public:
         cairo_save(cr);
         vector<Path> &ps(*pths);
         for(unsigned i = 0; i < ps.size(); i++) {
-            for(Path::iterator it = ps[i].begin(); it != ps[i].end(); it++) {
+            for(Path::iterator it = ps[i].begin(); it != ps[i].end(); ++it) {
                 Rect bounds = (it->boundsExact());
                 rs.push_back(bounds);
                 //cairo_set_source_rgba(cr, uniform(), uniform(), uniform(), .5);
@@ -329,7 +329,7 @@ class WindingTest: public Toy {
         int id_counter = 0;
         for(unsigned i = 0; i < ps.size(); i++) {
             int piece_start = pieces.size();
-            for(Path::iterator it = ps[i].begin(); it != ps[i].end(); it++) {
+            for(Path::iterator it = ps[i].begin(); it != ps[i].end(); ++it) {
                 Rect bounds = (it->boundsExact());
                 rs.push_back(bounds);
                 /*cairo_set_source_rgba(cr, uniform(), uniform(), uniform(), .5);

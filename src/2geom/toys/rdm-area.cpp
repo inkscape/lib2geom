@@ -383,7 +383,7 @@ public:
         std::list<Point> p = toPoly( f, tol);
         uncross(p);
         cairo_move_to(cr, p.front());
-        for (std::list<Point>::iterator pt = p.begin(); pt!=p.end(); pt++){
+        for (std::list<Point>::iterator pt = p.begin(); pt!=p.end(); ++pt){
             cairo_line_to(cr, *pt);
             //if (i++>p.size()*tau) break;
         } 
