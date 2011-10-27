@@ -115,7 +115,7 @@ class CLIPPER_CLASS
 
     bool found_any_isolated_point() const
     {
-        return (single_points.size() != 0);
+        return ( !single_points.empty() );
     }
 
     const std::vector<Point> & isolated_points() const

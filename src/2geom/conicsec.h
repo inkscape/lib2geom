@@ -484,7 +484,7 @@ public:
     Point nearestPoint (const Point P) const
     {
         std::vector<Point> points = allNearestPoints (P);
-        if (points.size() != 0)
+        if ( !points.empty() )
         {
             return points.front();
         }
