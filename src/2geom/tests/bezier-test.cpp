@@ -205,8 +205,6 @@ void vector_equal(vector<double> a, vector<double> b) {
 
 vector<double> find_all_roots(Bezier b) {
     vector<double> rts = b.roots();
-    if(b.at0() == 0) rts.push_back(0);
-    if(b.at1() == 0) rts.push_back(1);
     return rts;
 }
 
@@ -225,17 +223,21 @@ TEST_F(BezierTest, Deflate) {
 }
 
 TEST_F(BezierTest, Roots) {
-    expect_array((const double[]){0.5}, wiggle.roots());
+    /*expect_array((const double[]){0.5}, wiggle.roots());
     
     Bezier bigun(Bezier::Order(30));
     for(unsigned i = 0; i < bigun.size(); i++) {
         bigun.setPoint(i,rand()-0.5);
     }
-    cout << bigun.roots() << endl;
+    cout << bigun.roots() << endl;*/
 
     vector<vector<double> > tests;
     tests.push_back(vector_from_array((const double[]){0}));
+    tests.push_back(vector_from_array((const double[]){0, 0}));
     tests.push_back(vector_from_array((const double[]){0.5}));
+    tests.push_back(vector_from_array((const double[]){0.5, 0.5}));
+    tests.push_back(vector_from_array((const double[]){0.1, 0.1}));
+    tests.push_back(vector_from_array((const double[]){0.1, 0.1, 0.1}));
     tests.push_back(vector_from_array((const double[]){0.25,0.75}));
     tests.push_back(vector_from_array((const double[]){0.5,0.5}));
     tests.push_back(vector_from_array((const double[]){0, 0.2, 0.6,0.6, 1}));
@@ -244,6 +246,7 @@ TEST_F(BezierTest, Roots) {
     
     for(unsigned test_i = 0; test_i < tests.size(); test_i++) {
         Bezier b = array_roots(tests[test_i]);
+        std::cout << tests[test_i] << ": " << b << std::endl;
         vector_equal(tests[test_i], find_all_roots(b));
     }
 }

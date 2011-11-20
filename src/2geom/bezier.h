@@ -112,7 +112,6 @@ inline T bernsteinValueAt(double t, T const *c_, unsigned n) {
     return (tmp + tn*t*c_[n]);
 }
 
-
 class Bezier {
 private:
     std::valarray<Coord> c_;
@@ -122,6 +121,12 @@ private:
     friend OptInterval bounds_fast(Bezier const & b);
 
     friend Bezier derivative(const Bezier & a);
+
+    friend class Bernstein;
+
+    void
+    find_bezier_roots(std::vector<double> & solutions,
+                      double l, double r) const;
 
 protected:
     Bezier(Coord const c[], unsigned ord) : c_(c, ord+1){
@@ -271,20 +276,13 @@ public:
     }
 
     std::vector<double> roots() const {
-        Bezier bz = *this;
         std::vector<double> solutions;
-        while(bz[0] == 0) {
-            bz = bz.deflate();
-            solutions.push_back(0);
-        }
-
-        find_bernstein_roots(&const_cast<std::valarray<Coord>&>(bz.c_)[0], 
-                             bz.order(), solutions, 0, 0.0, 1.0);
+        find_bezier_roots(solutions, 0, 1);
         return solutions;
     }
     std::vector<double> roots(Interval const ivl) const {
         std::vector<double> solutions;
-        find_bernstein_roots(&const_cast<std::valarray<Coord>&>(c_)[0], order(), solutions, 0, ivl[0], ivl[1]);
+        find_bezier_roots(solutions, ivl[0], ivl[1]);
         return solutions;
     }
 
@@ -480,10 +478,11 @@ inline OptInterval bounds_local(Bezier const & b, OptInterval i) {
 }
 
 inline std::ostream &operator<< (std::ostream &out_file, const Bezier & b) {
+    out_file << "Bezier(";
     for(unsigned i = 0; i < b.size(); i++) {
         out_file << b[i] << ", ";
     }
-    return out_file;
+    return out_file << ")";
 }
 
 }
