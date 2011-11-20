@@ -38,6 +38,7 @@
 #define LIB2GEOM_SEEN_BEZIER_H
 
 #include <2geom/coord.h>
+#include <2geom/choose.h>
 #include <valarray>
 #include <2geom/isnan.h>
 #include <2geom/d2.h>
@@ -221,17 +222,10 @@ public:
             tmp = (tmp + tn*bc*c_[i])*u;
         }
         return (tmp + tn*t*c_[n]);
-        //return subdivideArr(t, &c_[0], NULL, NULL, order());
     }
     inline Coord operator()(double t) const { return valueAt(t); }
 
     SBasis toSBasis() const;
-//    inline SBasis toSBasis() const {
-//        SBasis sb;
-//        bezier_to_sbasis(sb, (*this));
-//        return sb;
-//        //return bezier_to_sbasis(&c_[0], order());
-//    }
 
     //Only mutator
     inline Coord &operator[](unsigned ix) { return c_[ix]; }
@@ -277,8 +271,15 @@ public:
     }
 
     std::vector<double> roots() const {
+        Bezier bz = *this;
         std::vector<double> solutions;
-        find_bernstein_roots(&const_cast<std::valarray<Coord>&>(c_)[0], order(), solutions, 0, 0.0, 1.0);
+        while(bz[0] == 0) {
+            bz = bz.deflate();
+            solutions.push_back(0);
+        }
+
+        find_bernstein_roots(&const_cast<std::valarray<Coord>&>(bz.c_)[0], 
+                             bz.order(), solutions, 0, 0.0, 1.0);
         return solutions;
     }
     std::vector<double> roots(Interval const ivl) const {
@@ -286,11 +287,87 @@ public:
         find_bernstein_roots(&const_cast<std::valarray<Coord>&>(c_)[0], order(), solutions, 0, ivl[0], ivl[1]);
         return solutions;
     }
+
+    Bezier forward_difference(unsigned k) {
+        Bezier fd(Order(order()-k));
+        unsigned n = fd.size();
+        
+        for(unsigned i = 0; i < n; i++) {
+            fd[i] = 0;
+            for(unsigned j = i; j < n; j++) {
+                fd[i] += (((j)&1)?-c_[j]:c_[j])*choose<double>(n, j-i);
+            }
+        }
+        return fd;
+    }
+  
+    Bezier elevate_degree() const {
+        Bezier ed(Order(order()+1));
+        unsigned n = size();
+        ed[0] = c_[0];
+        ed[n] = c_[n-1];
+        for(unsigned i = 1; i < n; i++) {
+            ed[i] = (i*c_[i-1] + (n - i)*c_[i])/(n);
+        }
+        return ed;
+    }
+
+    Bezier reduce_degree() const {
+        if(order() == 0) return *this;
+        Bezier ed(Order(order()-1));
+        unsigned n = size();
+        ed[0] = c_[0];
+        ed[n-1] = c_[n]; // ensure exact endpoints
+        unsigned middle = n/2;
+        for(unsigned i = 1; i < middle; i++) {
+            ed[i] = (n*c_[i] - i*ed[i-1])/(n-i);
+        }
+        for(unsigned i = n-1; i >= middle; i--) {
+            ed[i] = (n*c_[i] - i*ed[n-i])/(i);
+        }
+        return ed;
+    }
+
+    Bezier elevate_to_degree(unsigned newDegree) const {
+        Bezier ed = *this;
+        for(unsigned i = degree(); i < newDegree; i++) {
+            ed = ed.elevate_degree();
+        }
+        return ed;
+    }
+
+    Bezier deflate() {
+        if(order() == 0) return *this;
+        unsigned n = order();
+        Bezier b(Order(n-1));
+        for(unsigned i = 0; i < n; i++) {
+            b[i] = (n*c_[i+1])/(i+1);
+        }
+        return b;
+    }
 };
 
 
 void bezier_to_sbasis (SBasis & sb, Bezier const& bz);
 
+inline
+Bezier multiply(Bezier const& f, Bezier const& g) {
+    unsigned m = f.order();
+    unsigned n = g.order();
+    Bezier h(Bezier::Order(m+n));
+    // h_k = sum_(i+j=k) (m i)f_i (n j)g_j / (m+n k)
+    
+    for(unsigned i = 0; i <= m; i++) {
+        const double fi = choose<double>(m,i)*f[i];
+        for(unsigned j = 0; j <= n; j++) {
+            h[i+j] += fi * choose<double>(n,j)*g[j];
+        }
+    }
+    for(unsigned k = 0; k <= m+n; k++) {
+        h[k] /= choose<double>(m+n, k);
+    }
+    return h;
+}
 
 inline
 SBasis Bezier::toSBasis() const {

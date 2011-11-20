@@ -1,10 +1,13 @@
 SET(2GEOM_TESTS_SRC
 #bezier-utils-test
 bezier-test
+chain-test
 choose-test
+convex-test
 #lin_alg_test
 matrix-inv
 #point-fns-test
+path-test
 poly-test
 #rotate-test
 #rotate-test.h
@@ -12,7 +15,9 @@ poly-test
 #scale-test.h
 #rotate-fns-test
 #rotate-fns-test.h
+sbasis-test
 test-cg
+#svgd
 #translate-test
 #translate-test.h
 #types-test
@@ -53,7 +58,7 @@ IF(2GEOM_UNIT_TESTS)
             ENDIF(2GEOM_IDX_LIBSPATIALINDEX AND 2GEOM_TOYS)
         ELSE()
             ADD_EXECUTABLE(${source} ${source}.cpp)
-            TARGET_LINK_LIBRARIES(${source} ${LINK_GSL} 2geom ${GTK2_LINK_FLAGS})
+            TARGET_LINK_LIBRARIES(${source} ${LINK_GSL} 2geom ${GTK2_LINK_FLAGS} gtest)
         ENDIF(${source} STREQUAL time-ops)
     ENDFOREACH(source)
 ENDIF(2GEOM_UNIT_TESTS)

@@ -109,6 +109,9 @@ public:
     SBasis(SBasis const & a) :
         d(a.d)
     {}
+    SBasis(std::vector<Linear> const & ls) :
+        d(ls)
+    {}
     SBasis(Linear const & bo) {
         push_back(bo);
     }

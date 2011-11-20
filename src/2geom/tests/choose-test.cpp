@@ -3,6 +3,8 @@
 #include <iostream>
 #include <2geom/choose.h>
 
+using namespace Geom;
+
 double W2(unsigned n, unsigned j, unsigned k) {
     if(j == k)
         return 1;

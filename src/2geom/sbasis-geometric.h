@@ -101,6 +101,7 @@ cubics_with_prescribed_curvature(Point const &M0,   Point const &M1,
 
 
 std::vector<double> find_tangents(Point P, D2<SBasis> const &A);
+std::vector<double> find_normals(Point P, D2<SBasis> const &A);
 
 };
 
