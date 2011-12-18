@@ -34,6 +34,7 @@
 #include <2geom/sbasis.h>
 #include <2geom/interval.h>
 #include <2geom/point.h>
+#include <2geom/rect.h>
 #include <vector>
 #include <boost/concept_check.hpp>
 #include <2geom/forward.h>

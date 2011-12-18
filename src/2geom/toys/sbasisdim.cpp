@@ -1,5 +1,4 @@
-#include <2geom/linearN.h>
-#include <2geom/sbasisN.h>
+#include <iostream>
 #include <2geom/sbasis.h>
 #include <2geom/bezier-to-sbasis.h>
 
@@ -8,6 +7,10 @@
 
 #include <time.h>
 #include <vector>
+
+#include <2geom/orphan-code/linearN.h>
+#include <2geom/orphan-code/sbasisN.h>
+
 using namespace Geom;
 using namespace std;
 

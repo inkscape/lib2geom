@@ -45,10 +45,11 @@ namespace Geom {
  * @ingroup Concepts */
 template <typename T>
 struct TransformConcept {
-    T t;
+    T t, t2;
     Affine m;
     Point p;
     bool bool_;
+    Coord epsilon;
     void constraints() {
         m = t;  //implicit conversion
         m *= t;
@@ -63,6 +64,8 @@ struct TransformConcept {
         bool_ = (t != t);
         t = T::identity();
         t = t.inverse();
+        bool_ = are_near(t, t2);
+        bool_ = are_near(t, t2, epsilon);
     }
 };
 
@@ -106,13 +109,14 @@ T pow(T const &t, int n) {
 class Translate
     : public TransformOperations< Translate >
 {
-    Translate() : vec(0, 0) {}
     Point vec;
 public:
-    /** @brief Construct a translation from its vector. */
-    explicit Translate(Point const &p) : vec(p) {}
-    /** @brief Construct a translation from its coordinates. */
-    explicit Translate(Coord x, Coord y) : vec(x, y) {}
+    /// Create a translation that doesn't do anything.
+    Translate() : vec(0, 0) {}
+    /// Construct a translation from its vector.
+    Translate(Point const &p) : vec(p) {}
+    /// Construct a translation from its coordinates.
+    Translate(Coord x, Coord y) : vec(x, y) {}
 
     operator Affine() const { Affine ret(1, 0, 0, 1, vec[X], vec[Y]); return ret; }    
     Coord operator[](Dim2 dim) const { return vec[dim]; }
@@ -120,13 +124,18 @@ public:
     Translate &operator*=(Translate const &o) { vec += o.vec; return *this; }
     bool operator==(Translate const &o) const { return vec == o.vec; }
 
-    /** @brief Get the inverse translation. */
+    Point vector() const { return vec; }
+    /// Get the inverse translation.
     Translate inverse() const { return Translate(-vec); }
-    /** @brief Get a translation that doesn't do anything. */
+    /// Get a translation that doesn't do anything.
     static Translate identity() { Translate ret; return ret; }
 
     friend class Point;
 };
+
+inline bool are_near(Translate const &a, Translate const &b, Coord eps=EPSILON) {
+    return are_near(a[X], b[X], eps) && are_near(a[Y], b[Y], eps);
+}
 
 /** @brief Scaling from the origin.
  * During scaling, the point (0,0) will not move. To obtain a scale  with a different
@@ -136,10 +145,14 @@ class Scale
     : public TransformOperations< Scale >
 {
     Point vec;
-    Scale() : vec(1, 1) {}
 public:
+    /// Create a scaling that doesn't do anything.
+    Scale() : vec(1, 1) {}
+    /// Create a scaling from two scaling factors given as coordinates of a point.
     explicit Scale(Point const &p) : vec(p) {}
+    /// Create a scaling from two scaling factors.
     Scale(Coord x, Coord y) : vec(x, y) {}
+    /// Create an uniform scaling from a single scaling factor.
     explicit Scale(Coord s) : vec(s, s) {}
     inline operator Affine() const { Affine ret(vec[X], 0, 0, vec[Y], 0, 0); return ret; }
 
@@ -150,11 +163,17 @@ public:
     Coord &operator[](unsigned d) { return vec[d]; }
     Scale &operator*=(Scale const &b) { vec[X] *= b[X]; vec[Y] *= b[Y]; return *this; }
     bool operator==(Scale const &o) const { return vec == o.vec; }
+
+    Point vector() const { return vec; }
     Scale inverse() const { return Scale(1./vec[0], 1./vec[1]); }
     static Scale identity() { Scale ret; return ret; }
 
     friend class Point;
 };
+
+inline bool are_near(Scale const &a, Scale const &b, Coord eps=EPSILON) {
+    return are_near(a[X], b[X], eps) && are_near(a[Y], b[Y], eps);
+}
 
 /** @brief Rotation around the origin.
  * Combine with translations to the origin and back to get a rotation around a different point.
@@ -162,15 +181,16 @@ public:
 class Rotate
     : public TransformOperations< Rotate >
 {
-    Rotate() : vec(1, 0) {}
-    Point vec;
+    Point vec; ///< @todo Convert to storing the angle, as it's more space-efficient.
 public:
+    /// Construct a zero-degree rotation.
+    Rotate() : vec(1, 0) {}
     /** @brief Construct a rotation from its angle in radians.
      * Positive arguments correspond to counter-clockwise rotations (if Y grows upwards). */
     explicit Rotate(Coord theta) : vec(Point::polar(theta)) {}
-    /** @brief Construct a rotation from its characteristic vector. */
+    /// Construct a rotation from its characteristic vector.
     explicit Rotate(Point const &p) : vec(unit_vector(p)) {}
-    /** @brief Construct a rotation from the coordinates of its characteristic vector. */
+    /// Construct a rotation from the coordinates of its characteristic vector.
     explicit Rotate(Coord x, Coord y) { Rotate(Point(x, y)); }
     operator Affine() const { Affine ret(vec[X], vec[Y], -vec[Y], vec[X], 0, 0); return ret; }
 
@@ -186,10 +206,10 @@ public:
         r.vec = Point(vec[X], -vec[Y]); 
         return r;
     }
-    /** @brief Get a 0-degree rotation. */
+    /// @brief Get a zero-degree rotation.
     static Rotate identity() { Rotate ret; return ret; }
     /** @brief Construct a rotation from its angle in degrees.
-     * Positive arguments correspond to counter-clockwise rotations (if Y grows upwards). */
+     * Positive arguments correspond to clockwise rotations if Y grows downwards. */
     static Rotate from_degrees(Coord deg) {
         Coord rad = (deg / 180.0) * M_PI;
         return Rotate(rad);
@@ -197,6 +217,10 @@ public:
 
     friend class Point;
 };
+
+inline bool are_near(Rotate const &a, Rotate const &b, Coord eps=EPSILON) {
+    return are_near(a[X], b[X], eps) && are_near(a[Y], b[Y], eps);
+}
 
 /** @brief Common base for shearing transforms.
  * This class is an implementation detail and should not be used directly.
@@ -211,10 +235,10 @@ protected:
 public:
     Coord factor() const { return f; }
     void setFactor(Coord nf) { f = nf; }
-    S &operator*=(S const &s) { f += s.f; return *static_cast<S const*>(this); }
+    S &operator*=(S const &s) { f += s.f; return static_cast<S &>(*this); }
     bool operator==(S const &s) const { return f == s.f; }
-    S inverse() const { return S(-f); }
-    static S identity() { return S(0); }
+    S inverse() const { S ret(-f); return ret; }
+    static S identity() { S ret(0); return ret; }
 
     friend class Point;
     friend class Affine;
@@ -232,6 +256,10 @@ public:
     operator Affine() const { Affine ret(1, 0, f, 1, 0, 0); return ret; }
 };
 
+inline bool are_near(HShear const &a, HShear const &b, Coord eps=EPSILON) {
+    return are_near(a.factor(), b.factor(), eps);
+}
+
 /** @brief Vertical shearing.
  * Points on the Y axis will not move. Combine with translations to get a shear
  * with a different invariant line.
@@ -243,6 +271,57 @@ public:
     explicit VShear(Coord h) : ShearBase<VShear>(h) {}
     operator Affine() const { Affine ret(1, f, 0, 1, 0, 0); return ret; }
 };
+
+inline bool are_near(VShear const &a, VShear const &b, Coord eps=EPSILON) {
+    return are_near(a.factor(), b.factor(), eps);
+}
+
+/** @brief Combination of a translation and uniform scale.
+ * The translation part is applied first, then the result is scaled from the new origin.
+ * This way when the class is used to accumulate a zoom transform, trans always points
+ * to the new origin in original coordinates.
+ * @ingroup Transform */
+class Zoom
+    : public TransformOperations< Zoom >
+{
+    Coord _scale;
+    Point _trans;
+    Zoom() : _scale(1), _trans() {}
+public:
+    /// Construct a zoom from a scaling factor.
+    explicit Zoom(Coord s) : _scale(s), _trans() {}
+    /// Construct a zoom from a translation.
+    explicit Zoom(Translate const &t) : _scale(1), _trans(t.vector()) {}
+    /// Construct a zoom from a scaling factor and a translation.
+    Zoom(Coord s, Translate const &t) : _scale(s), _trans(t.vector()) {}
+
+    operator Affine() const {
+        Affine ret(_scale, 0, 0, _scale, _trans[X] * _scale, _trans[Y] * _scale);
+        return ret;
+    }
+    Zoom &operator*=(Zoom const &z) {
+        _trans += z._trans / _scale;
+        _scale *= z._scale;
+        return *this;
+    }
+    bool operator==(Zoom const &z) const { return _scale == z._scale && _trans == z._trans; }
+
+    Coord scale() const { return _scale; }
+    void setScale(Coord s) { _scale = s; }
+    Point translation() const { return _trans; }
+    void setTranslation(Point const &p) { _trans = p; }
+    Zoom inverse() const { Zoom ret(1/_scale, Translate(-_trans*_scale)); return ret; }
+    static Zoom identity() { Zoom ret(1.0); return ret; }
+    static Zoom map_rect(Rect const &old_r, Rect const &new_r);
+    
+    friend class Point;
+    friend class Affine;
+};
+
+inline bool are_near(Zoom const &a, Zoom const &b, Coord eps=EPSILON) {
+    return are_near(a.scale(), b.scale(), eps) &&
+           are_near(a.translation(), b.translation(), eps);
+}
 
 /** @brief Specialization of exponentiation for Scale.
  * @relates Scale */
@@ -259,7 +338,7 @@ inline Translate pow(Translate const &t, int n) {
     return ret;
 }
 
-//TODO: matrix to trans/scale/rotate
+//TODO: decomposition of Affine into some finite combination of the above classes
 
 } // end namespace Geom
 

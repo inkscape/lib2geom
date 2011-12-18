@@ -27,7 +27,7 @@ void cairo_region(cairo_t *cr, Region const &r) {
 }
 
 void cairo_regions(cairo_t *cr, Regions const &p) {
-    for(Regions::const_iterator j = p.begin(); j != p.end(); j++)
+    for(Regions::const_iterator j = p.begin(); j != p.end(); ++j)
         cairo_region(cr, *j);
 }
 
@@ -48,7 +48,7 @@ void mark_crossings(cairo_t *cr, Shape const &a, Shape const &b) {
     Crossings c = crossings(Path(a[0]), Path(b[0]));
     //for(unsigned j = 0; j < cc.size(); j++) {
         //Crossings c = cc[j];
-        for(Crossings::iterator i = c.begin(); i != c.end(); i++) {
+        for(Crossings::iterator i = c.begin(); i != c.end(); ++i) {
             draw_cross(cr, Path(ac[i->a]).pointAt(i->ta));
             cairo_stroke(cr);
             //draw_text(cr, ac[i->a].getBoundary().pointAt(i->ta), i->dir ? "T" : "F");

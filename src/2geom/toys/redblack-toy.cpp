@@ -29,11 +29,11 @@
  initial toy for redblack trees
 */
 
-
-#include <2geom/redblacktree.h>
-
 #include <2geom/toys/path-cairo.h>
 #include <2geom/toys/toy-framework-2.h>
+
+#include <2geom/orphan-code/redblacktree.h>
+#include <2geom/orphan-code/redblacktree.cpp>
 
 #include <time.h>
 using std::vector;

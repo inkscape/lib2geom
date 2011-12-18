@@ -1,16 +1,11 @@
-/*
- * Diffeomorphism-based intersector: given two curves
- *  M(t)=(x(t),y(t)) and N(u)=(X(u),Y(u))
- * and supposing M is a graph over the x-axis, we compute y(x) and the
- * transformation:
- *  X <- X
- *  Y <- Y - y(X)
- * smashes M on the x axis. The intersections are then given by the roots of:
- *  Y(u) - y(X(u)) = 0
- *
+/**
+ * \file
+ * \brief Include everything
+ *//*
  * Authors:
- * 		J.-F. Barraud    <jfbarraud at gmail.com>
- * Copyright 2010  authors
+ *   Krzysztof Kosiński <tweenk.pl@gmail.com>
+ * 
+ * Copyright 2011 Authors
  *
  * This library is free software; you can redistribute it and/or
  * modify it either under the terms of the GNU Lesser General Public
@@ -36,29 +31,38 @@
  * the specific language governing rights and limitations.
  */
 
+#ifndef SEEN_LIB2GEOM_2GEOM_H
+#define SEEN_LIB2GEOM_2GEOM_H
 
+#include <2geom/forward.h>
+
+// primitives
+#include <2geom/coord.h>
+#include <2geom/point.h>
+#include <2geom/interval.h>
+#include <2geom/rect.h>
+#include <2geom/angle.h>
+#include <2geom/ray.h>
+#include <2geom/line.h>
+#include <2geom/affine.h>
+#include <2geom/transforms.h>
+
+// curves and paths
+#include <2geom/curves.h>
+#include <2geom/path.h>
+#include <2geom/pathvector.h>
+
+// fragments
 #include <2geom/d2.h>
+#include <2geom/linear.h>
+#include <2geom/bezier.h>
 #include <2geom/sbasis.h>
-#include <2geom/sbasis-geometric.h>
-#include <cstdlib>
-#include <vector>
-#include <algorithm>
 
+// others
+#include <2geom/math-utils.h>
+#include <2geom/utils.h>
 
-namespace Geom{
-
-struct Intersection{
-	Rect times;
-	Rect bbox;
-};
-
-std::vector<Intersection> smash_intersect( D2<SBasis> const &a, D2<SBasis> const &b, double tol);
-std::vector<Intersection> monotonic_smash_intersect( D2<SBasis> const &a, D2<SBasis> const &b, double tol);
-//std::vector<Intersection> monotonic_smash_intersect( Curve const &a, double a_from, double a_to,
-//			                                         Curve const &b, double b_from, double b_to, double tol);
-
-}
-
+#endif // SEEN_LIB2GEOM_HEADER_H
 /*
   Local Variables:
   mode:c++
@@ -68,4 +72,4 @@ std::vector<Intersection> monotonic_smash_intersect( D2<SBasis> const &a, D2<SBa
   fill-column:99
   End:
 */
-// vim: filetype=cpp:expandtab:shiftwidth=4:tabstop=8:softtabstop=4:fileencoding=utf-8:textwidth=99 :
+// vim: filetype=cpp:expandtab:shiftwidth=4:tabstop=8:softtabstop=4:encoding=utf-8:textwidth=99 :

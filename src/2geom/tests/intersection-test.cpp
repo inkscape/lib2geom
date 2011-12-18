@@ -13,7 +13,7 @@ void check_crossing(std::vector<Path> as, std::vector<Path> > bs) {
     unsigned n = 1;
     for(unsigned i = 0; i < as.size(); i++) {
         Crossings cs = crossings(as[i], bs[i]);
-        for(Crossings::iterator it = cs.begin(); it != cs.end(); it++) {
+        for(Crossings::iterator it = cs.begin(); it != cs.end(); ++it) {
             double dist = distance(as[i].valueAt(it->ta), bs[i].valueAt(it->tb));
             if(dist > 0.01) {
                 cout << "  #" << n << " innacurate, distance of " << dist << " between points";

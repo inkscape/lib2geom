@@ -46,7 +46,7 @@ namespace {
 
 class Parser {
 public:
-    Parser(SVGPathSink &sink) : _sink(sink) {}
+    Parser(SVGPathSink &sink) : _absolute(false), _sink(sink) {}
 
     void parse(char const *str) throw(SVGPathParseError);
 

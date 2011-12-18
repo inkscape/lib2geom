@@ -1,105 +1,42 @@
-#include "../utest/utest.h"
-#include <libnr/types.h>
-#include <libnr/point-fns.h>
-#include <cmath>
-using Geom::Point;
-using Geom::X;
-using Geom::Y;
+#include <iostream>
+#include <iomanip>
+#include <2geom/rect.h>
+#include <2geom/affine.h>
+#include <2geom/pathvector.h>
+#include <2geom/curves.h>
 
+using namespace Geom;
 
-int main(int argc, char *argv[]) {
-	utest_start("Basic Geom::Point operations");
+#define TYPE_SIZE(T) \
+	do { std::cout << std::setw(20) << #T << "  " << sizeof(T) << "\n"; } while(0)
 
-	UTEST_TEST("X,Y values") {
-		UTEST_ASSERT(X == 0);
-		UTEST_ASSERT(Y == 1);
-	}
+int main() {
+	std::cout << "Type sizes\n";
+	TYPE_SIZE(Dim2);
+	TYPE_SIZE(Coord);
+	TYPE_SIZE(IntCoord);
+	TYPE_SIZE(Point);
+	TYPE_SIZE(Interval);
+	TYPE_SIZE(OptInterval);
+	TYPE_SIZE(IntInterval);
+	TYPE_SIZE(OptIntInterval);
+	TYPE_SIZE(Rect);
+	TYPE_SIZE(OptRect);
+	TYPE_SIZE(IntRect);
+	TYPE_SIZE(OptIntRect);
+	TYPE_SIZE(Affine);
+	TYPE_SIZE(Path);
+	TYPE_SIZE(PathVector);
+	std::cout << std::endl;
+	TYPE_SIZE(Curve);
+	TYPE_SIZE(BezierCurve);
+	TYPE_SIZE(LineSegment);
+	TYPE_SIZE(QuadraticBezier);
+	TYPE_SIZE(CubicBezier);
+	TYPE_SIZE(SBasisCurve);
+	TYPE_SIZE(EllipticalArc);
+	TYPE_SIZE(SVGEllipticalArc);
+	std::cout << std::endl;
 
-	Geom::Point const a(1.5, 2.0);
-	UTEST_TEST("x,y constructor and operator[] const") {
-		UTEST_ASSERT(a[X] == 1.5);
-		UTEST_ASSERT(a[Y] == 2.0);
-	}
-
-	Geom::Point const b(-2.0, 3.0);
-
-	UTEST_TEST("copy constructor") {
-		Geom::Point a_copy(a);
-		UTEST_ASSERT(a == a_copy);
-		UTEST_ASSERT(!(a != a_copy));
-	}
-
-	UTEST_TEST("non-const operator[]") {
-		Geom::Point a_copy(a);
-		a_copy[X] = -2.0;
-		UTEST_ASSERT(a_copy != a);
-		UTEST_ASSERT(a_copy != b);
-		a_copy[Y] = 3.0;
-		UTEST_ASSERT(a_copy == b);
-	}
-
-	Geom::Point const ab(-0.5, 5.0);
-	UTEST_TEST("binary +, -") {
-		UTEST_ASSERT(a != b);
-		UTEST_ASSERT(a + b == ab);
-		UTEST_ASSERT(ab - a == b);
-		UTEST_ASSERT(ab - b == a);
-		UTEST_ASSERT(ab + a != b);
-	}
-
-	UTEST_TEST("unary-") {
-		UTEST_ASSERT(-a == Point(-a[X], -a[Y]));
-	}
-
-	UTEST_TEST("scale, divide") {
-		UTEST_ASSERT(-a == -1.0 * a);
-		UTEST_ASSERT(a + a + a == 3.0 * a);
-		UTEST_ASSERT(a / .5 == 2.0 * a);
-	}
-
-	UTEST_TEST("dot") {
-		UTEST_ASSERT( dot(a, b) == ( a[X] * b[X]  +
-					     a[Y] * b[Y] ) );
-		UTEST_ASSERT( dot(a, Geom::rot90(a)) == 0.0 );
-		UTEST_ASSERT( dot(-a, Geom::rot90(a)) == 0.0 );
-	}
-
-	double const small = pow(2.0, -1070);
-
-	Point const small_left(-small, 0.0);
-	Point const smallish_3_neg4(3.0 * small, -4.0 * small);
-
-	UTEST_TEST("L1, L2, LInfty norms") {
-		UTEST_ASSERT(L1(small_left) == small);
-		UTEST_ASSERT(L2(small_left) == small);
-		UTEST_ASSERT(LInfty(small_left) == small);
-
-		UTEST_ASSERT(L1(smallish_3_neg4) == 7.0 * small);
-		UTEST_ASSERT(L2(smallish_3_neg4) == 5.0 * small);
-		UTEST_ASSERT(LInfty(smallish_3_neg4) == 4.0 * small);
-	}
-
-	UTEST_TEST("operator+=") {
-		Point x(a);
-		x += b;
-		UTEST_ASSERT(x == ab);
-	}
-
-	UTEST_TEST("operator/=") {
-		Point x(a);
-		x /= .5;
-		UTEST_ASSERT(x == a + a);
-	}
-
-	UTEST_TEST("normalize") {
-		Point x(small_left);
-		x.normalize();
-		UTEST_ASSERT(x == Point(-1.0, 0.0));
-
-		x = smallish_3_neg4;
-		x.normalize();
-		UTEST_ASSERT(x == Point(0.6, -0.8));
-	}
-
-	return utest_end() ? 0 : 1;
+	return 0;
 }

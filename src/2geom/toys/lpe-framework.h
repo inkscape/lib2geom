@@ -1,8 +1,16 @@
 /**
  * \file lpe-framework.h
- * \brief A framework for writing an Inkscape Live Path Effect toy. See lpe-test.cpp.
- */
-/*
+ * \brief A framework for writing an Inkscape Live Path Effect toy.
+ *
+ * Instead of using the standard toy framework, one can use this LPE 
+ * framework when creating an LPE for Inkscape. When new 2geom functions 
+ * are required for the LPE, adding this functionality directly in Inkscape 
+ * greatly increases compile times. Using this framework, one only has to
+ * rebuild 2geom, which speeds up development considerably. (Think about
+ * how much of Inkscape will have to be rebuild if you change/add something
+ * in point.h ...)
+ * An example of how to use this framework is lpe.test.cpp.
+ *//*
  * Copyright 2009  Johan Engelen <goejendaagh@zonnet.nl>
  *
  * This library is free software; you can redistribute it and/or

@@ -39,10 +39,11 @@
 #include <cassert>
 #include <iostream>
 
-#include <2geom/linear-of.h>
 #include <2geom/interval.h>
 #include <2geom/utils.h>
 #include <2geom/exception.h>
+
+#include <2geom/orphan-code/linear-of.h>
 
 namespace Geom {
 

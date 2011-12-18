@@ -1,7 +1,7 @@
 /**
  * \file arc-length.h
- * \brief  \todo brief description
- *
+ * \brief Arc length computations for paths
+ *//*
  * Copyright 2006 Nathan Hurst <njh@mail.csse.monash.edu.au>
  *
  * This library is free software; you can redistribute it and/or
@@ -34,10 +34,10 @@
 
 #include <2geom/path.h>
 
-/*** Routines in this group return a path that looks the same, but
+/* Routines in this group return a path that looks the same, but
  * include extra knots for certain points of interest. */
 
-/*** find_vector_extreme_points
+/* find_vector_extreme_points
  * extreme points . dir.
  */
 

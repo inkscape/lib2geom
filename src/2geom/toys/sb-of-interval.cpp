@@ -1,6 +1,5 @@
 #include <2geom/d2.h>
 #include <2geom/sbasis.h>
-#include <2geom/sbasis-of.h>
 #include <2geom/bezier-to-sbasis.h>
 
 #include <2geom/toys/path-cairo.h>
@@ -8,6 +7,9 @@
 
 #include <time.h>
 #include <vector>
+
+#include <2geom/orphan-code/sbasis-of.h>
+
 using std::vector;
 using namespace Geom;
 using namespace std;

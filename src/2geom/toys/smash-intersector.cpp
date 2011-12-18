@@ -43,8 +43,6 @@
 #include <2geom/path.h>
 #include <2geom/bezier-to-sbasis.h>
 #include <2geom/sbasis-geometric.h>
-#include <2geom/intersection-by-smashing.h>
-
 #include <2geom/toys/path-cairo.h>
 #include <2geom/toys/toy-framework-2.h>
 
@@ -54,6 +52,8 @@
 #include <vector>
 #include <algorithm>
 
+#include <2geom/orphan-code/intersection-by-smashing.h>
+#include <2geom/orphan-code/intersection-by-smashing.cpp>
 
 using namespace Geom;
 
@@ -103,39 +103,6 @@ Piecewise<D2<SBasis> > linearizeCusps( D2<SBasis> f, double tol){
 	return result;
 }
 #endif
-
-/* Returns the intervals over which the curve keeps its slope
- * in one of the 8 sectors delimited by x=0, y=0, y=x, y=-x.
- */
-std::vector<Interval> monotonicSplit(D2<SBasis> const &p){
-	std::vector<Interval> result;
-
-	D2<SBasis> v = derivative(p);
-
-	std::vector<double> someroots;
-	std::vector<double> cuts (2,0.);
-	cuts[1] = 1.;
-
-	someroots = roots(v[X]);
-	cuts.insert( cuts.end(), someroots.begin(), someroots.end() );
-
-	someroots = roots(v[Y]);
-	cuts.insert( cuts.end(), someroots.begin(), someroots.end() );
-
-	someroots = roots(v[X]-v[Y]);
-	cuts.insert( cuts.end(), someroots.begin(), someroots.end() );
-
-	someroots = roots(v[X]+v[Y]);
-	cuts.insert( cuts.end(), someroots.begin(), someroots.end() );
-
-	sort(cuts.begin(),cuts.end());
-	unique(cuts.begin(), cuts.end() );
-
-	for (unsigned i=1; i<cuts.size(); i++){
-		result.push_back( Interval( cuts[i-1], cuts[i] ) );
-	}
-	return result;
-}
 
 #if 0
 /* Computes the intersection of two sets given as (ordered) union intervals.

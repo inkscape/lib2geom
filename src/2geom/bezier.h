@@ -37,13 +37,14 @@
 #ifndef LIB2GEOM_SEEN_BEZIER_H
 #define LIB2GEOM_SEEN_BEZIER_H
 
+#include <valarray>
+#include <boost/optional.hpp>
 #include <2geom/coord.h>
 #include <2geom/choose.h>
 #include <valarray>
-#include <2geom/isnan.h>
+#include <2geom/math-utils.h>
 #include <2geom/d2.h>
 #include <2geom/solver.h>
-#include <boost/optional/optional.hpp>
 
 namespace Geom {
 
@@ -282,7 +283,7 @@ public:
     }
     std::vector<double> roots(Interval const ivl) const {
         std::vector<double> solutions;
-        find_bezier_roots(solutions, ivl[0], ivl[1]);
+        find_bernstein_roots(&const_cast<std::valarray<Coord>&>(c_)[0], order(), solutions, 0, ivl.min(), ivl.max());
         return solutions;
     }
 

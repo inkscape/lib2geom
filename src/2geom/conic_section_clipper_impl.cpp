@@ -1,6 +1,4 @@
-/**
- * \file
- * \brief Conic section clipping with respect to a rectangle
+/* Conic section clipping with respect to a rectangle
  *
  * Authors:
  *      Marco Cecchetti <mrcekets at gmail>
@@ -31,29 +29,12 @@
  * the specific language governing rights and limitations.
  */
 
-
-
-
 #ifndef CLIP_WITH_CAIRO_SUPPORT
     #include <2geom/conic_section_clipper.h>
 #endif
 
-
-
-
 namespace Geom
 {
-
-struct lex_lesser
-{
-    bool operator() (const Point & P, const Point & Q) const
-    {
-        if (P[X] < Q[X])  return true;
-        if (P[X] == Q[X] && P[Y] < Q[Y]) return true;
-        return false;
-    }
-};
-
 
 /*
  *  Find rectangle-conic crossing points. They are returned in the
@@ -192,7 +173,7 @@ bool CLIPPER_CLASS::intersect (std::vector<Point> & crossing_points) const
               cpts.size())
 
     // remove duplicates
-    std::sort (cpts.begin(), cpts.end(), lex_lesser());
+    std::sort (cpts.begin(), cpts.end(), Point::LexOrder<X>());
     cpts.erase (std::unique (cpts.begin(), cpts.end()), cpts.end());
 
 
@@ -457,7 +438,7 @@ bool CLIPPER_CLASS::clip (std::vector<RatQuad> & arcs)
     // if the conic does not cross any line passing through a rectangle edge or
     // it is tangent to only one edge then it is an ellipse
     if (no_crossing
-            || (crossing_points.size() == 1 && single_points.size() == 0))
+            || (crossing_points.size() == 1 && single_points.empty()))
     {
         // if the ellipse centre is inside the rectangle
         // then so it is the ellipse
@@ -496,7 +477,7 @@ bool CLIPPER_CLASS::clip (std::vector<RatQuad> & arcs)
         // in case the conic section intersects any of the four lines passing
         // through the rectangle edges but it does not cross any rectangle edge
         // then the conic is all outer of the rectangle
-        if (crossing_points.size() == 0) return false;
+        if (crossing_points.empty()) return false;
         // else we need to pair crossing points, and to find an arc inner point
         // in order to generate a RatQuad object
         pairing (paired_points, inner_points, crossing_points);

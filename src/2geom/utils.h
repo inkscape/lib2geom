@@ -33,6 +33,7 @@
 #ifndef SEEN_LIB2GEOM_UTILS_H
 #define SEEN_LIB2GEOM_UTILS_H
 
+#include <cstddef>
 #include <vector>
 
 namespace Geom {

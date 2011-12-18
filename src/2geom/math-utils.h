@@ -92,7 +92,48 @@ inline void sincos(double angle, double &sin_, double &cos_) {
 #endif
 }
 
-}
+/* Temporary fix for various misdefinitions of isnan().
+ * isnan() is becoming undef'd in some .h files. 
+ * #include this last in your .cpp file to get it right.
+ *
+ * The problem is that isnan and isfinite are part of C99 but aren't part of
+ * the C++ standard (which predates C99).
+ */
+
+#if defined(__isnan)
+# define IS_NAN(_a) (__isnan(_a))
+#elif defined(__APPLE__) && __GNUC__ == 3
+# define IS_NAN(_a) (__isnan(_a))	/* MacOSX/Darwin definition < 10.4 */
+#elif defined(WIN32) || defined(_isnan)
+# define IS_NAN(_a) (_isnan(_a)) 	/* Win32 definition */
+#elif defined(isnan) || defined(__FreeBSD__) || defined(__osf__)
+# define IS_NAN(_a) (isnan(_a))		/* GNU definition */
+#elif defined (SOLARIS_2_8) && __GNUC__ == 3 && __GNUC_MINOR__ == 2
+# define IS_NAN(_a) (isnan(_a))		/* GNU definition */
+#else
+# define IS_NAN(_a) (std::isnan(_a))
+#endif
+/* If the above doesn't work, then try (a != a). */
+
+
+#if defined(__isfinite)
+# define IS_FINITE(_a) (__isfinite(_a))
+#elif defined(__APPLE__) && __GNUC__ == 3
+# define IS_FINITE(_a) (__isfinite(_a))	/* MacOSX/Darwin definition < 10.4 */
+#elif defined(__sgi)
+# define IS_FINITE(_a) (_isfinite(_a))
+#elif defined(isfinite)
+# define IS_FINITE(_a) (isfinite(_a))
+#elif defined(__osf__)
+# define IS_FINITE(_a) (finite(_a) && !IS_NAN(_a))
+#elif defined (SOLARIS_2_8) && __GNUC__ == 3 && __GNUC_MINOR__ == 2
+#include  <ieeefp.h>
+#define IS_FINITE(_a) (finite(_a) && !IS_NAN(_a))
+#else
+# define IS_FINITE(_a) (std::isfinite(_a))
+#endif
+
+} // end namespace Geom
 
 #endif // LIB2GEOM_SEEN_MATH_UTILS_H
 

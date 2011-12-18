@@ -1,7 +1,7 @@
 #include <2geom/d2.h>
 #include <2geom/sbasis.h>
 #include <2geom/sbasis-geometric.h>
-#include <2geom/intersection-by-smashing.h>
+#include <2geom/orphan-code/intersection-by-smashing.h>
 
 #include <cstdlib>
 #include <cstdio>
@@ -71,7 +71,6 @@ void computeLinfinityNeighborhood( Piecewise<SBasis> const &f, double tol, Piece
  * Returns the intervals over which the curve keeps its slope
  * in one of the 8 sectors delimited by x=0, y=0, y=x, y=-x.
  */
-static
 std::vector<Interval> monotonicSplit(D2<SBasis> const &p){
 	std::vector<Interval> result;
 

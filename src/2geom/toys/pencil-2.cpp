@@ -32,13 +32,11 @@
 #include <2geom/sbasis.h>
 #include <2geom/sbasis-geometric.h>
 #include <2geom/basic-intersection.h>
+#include <2geom/math-utils.h>
 
 #include <2geom/toys/path-cairo.h>
 #include <2geom/toys/toy-framework-2.h>
 
-namespace Geom{
-
-namespace BezierFitter{
 #define SP_HUGE 1e5
 #define noBEZIER_DEBUG
 
@@ -46,7 +44,9 @@ namespace BezierFitter{
 # include <ieeefp.h>
 #endif
 
-#include <2geom/isnan.h>
+namespace Geom{
+
+namespace BezierFitter{
 
 typedef Point BezierCurve[];
 

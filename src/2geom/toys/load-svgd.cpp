@@ -26,7 +26,7 @@ void cairo_region(cairo_t *cr, Region const &r) {
 
 void cairo_regions(cairo_t *cr, Regions const &p) {
     srand(0); 
-    for(Regions::const_iterator j = p.begin(); j != p.end(); j++)
+    for(Regions::const_iterator j = p.begin(); j != p.end(); ++j)
         cairo_region(cr, *j);
 }
 

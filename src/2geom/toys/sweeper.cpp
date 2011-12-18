@@ -1,6 +1,5 @@
 #include <iostream>
 #include <2geom/path.h>
-#include <2geom/intersection-by-smashing.h>
 #include <2geom/basic-intersection.h>
 #include <2geom/pathvector.h>
 #include <2geom/exception.h>
@@ -13,6 +12,9 @@
 
 #include <limits.h>
 #define NULL_IDX UINT_MAX
+
+#include <2geom/orphan-code/intersection-by-smashing.h>
+#include <2geom/orphan-code/intersection-by-smashing.cpp>
 
 using namespace Geom;
 using namespace std;

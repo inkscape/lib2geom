@@ -30,18 +30,16 @@
 */
 
 
-#include <2geom/rtree.h>
-
 #include <2geom/toys/path-cairo.h>
 #include <2geom/toys/toy-framework-2.h>
 
 #include <time.h>
 #include <vector>
-
 #include <sstream>
 #include <getopt.h>
 
-
+#include <2geom/orphan-code/rtree.h>
+#include <2geom/orphan-code/rtree.cpp>
 
 
 //using std::vector;
