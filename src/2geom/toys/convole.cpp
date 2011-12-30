@@ -326,10 +326,6 @@ public:
             b1_handle.push_back(150+uniform()*300,150+uniform()*300);
             b2_handle.push_back(150+uniform()*300,150+uniform()*300);
         }
-        b1_handle.pts[0] = Geom::Point(150,150);
-        b1_handle.pts[1] = Geom::Point(150,150);
-        b1_handle.pts[2] = Geom::Point(150,450);
-        b1_handle.pts[3] = Geom::Point(450,150);
         handles.push_back(&b1_handle);
         handles.push_back(&b2_handle);
 

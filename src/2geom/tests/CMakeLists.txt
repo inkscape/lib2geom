@@ -1,10 +1,13 @@
 SET(2GEOM_TESTS_SRC
 #bezier-utils-test
 bezier-test
+chain-test
 choose-test
+convex-test
 #lin_alg_test
 matrix-inv
 #point-fns-test
+path-test
 poly-test
 #rotate-test
 #rotate-test.h
@@ -12,7 +15,9 @@ poly-test
 #scale-test.h
 #rotate-fns-test
 #rotate-fns-test.h
+sbasis-test
 test-cg
+#svgd
 #translate-test
 #translate-test.h
 types-test
@@ -54,12 +59,12 @@ FOREACH(source ${2GEOM_TESTS_SRC})
             LINK_DIRECTORIES(/home/vag/projects/inkscape/spatialindex-lib/lib)
 
             ADD_EXECUTABLE(${source} ${source}.cpp)
-            TARGET_LINK_LIBRARIES(${source} spatialindex 2geom toy-2 ${GTK2_LINK_FLAGS})
+            TARGET_LINK_LIBRARIES(${source} ${LINK_GSL} spatialindex 2geom toy-2 ${GTK2_LINK_FLAGS})
             ADD_TEST(NAME ${source} COMMAND ${source})
-        ENDIF(2GEOM_IDX_LIBSPATIALINDEX AND 2GEOM_TOYS)
+        ENDIF(${source} STREQUAL time-ops)
     ELSE()
         ADD_EXECUTABLE(${source} ${source}.cpp)
-        TARGET_LINK_LIBRARIES(${source} ${LINK_GSL} 2geom ${GTK2_LINK_FLAGS})
+        TARGET_LINK_LIBRARIES(${source} ${LINK_GSL} 2geom ${GTK2_LINK_FLAGS} gtest)
         ADD_TEST(NAME ${source} COMMAND ${source})
     ENDIF()
 ENDFOREACH(source)

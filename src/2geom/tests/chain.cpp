@@ -1,4 +1,4 @@
-#include "testing.h"
+#include "gtest/gtest.h"
 #include <iostream>
 
 #include <2geom/bezier.h>
@@ -11,11 +11,18 @@ using namespace std;
 
 using namespace Geom;
 
-Poly lin_poly(double a, double b) { // ax + b
-    Poly p;
-    p.push_back(b);
-    p.push_back(a);
-    return p;
+// streams out a vector
+template <class T>
+std::ostream&
+operator<< (std::ostream &out, const std::vector<T,
+             std::allocator<T> > &v)
+{
+    typedef std::ostream_iterator<T, char,
+    std::char_traits<char> > Iter;
+
+    std::copy (v.begin (), v.end (), Iter (out, " "));
+
+    return out;
 }
 
 bool are_equal(Bezier A, Bezier B) {
@@ -29,15 +36,23 @@ bool are_equal(Bezier A, Bezier B) {
     return true;
 }
 
+template <typename T, int xn>
+void expect_array(const T (&x)[xn], vector<T> y) {
+    EXPECT_EQ(xn, y.size());
+    for(unsigned i = 0; i < y.size(); i++) {
+        EXPECT_EQ(x[i], y[i]);
+    }
+}
+
 namespace {
 
 // The fixture for testing class Foo.
-class BezierTest : public ::testing::Test {
+class ChainTest : public ::testing::Test {
 protected:
     // You can remove any or all of the following functions if its body
     // is empty.
 
-    BezierTest() {
+    ChainTest() {
         // You can do set-up work for each test here.
         zero = Bezier(0.0,0.0);
         unit = Bezier(0.0,1.0);
@@ -45,7 +60,7 @@ protected:
         wiggle = Bezier(0,1,-2,3);
     }
 
-    virtual ~BezierTest() {
+    virtual ~ChainTest() {
         // You can do clean-up work that doesn't throw exceptions here.
     }
 
@@ -68,11 +83,11 @@ protected:
 };
 
 // Tests that Foo does Xyz.
-TEST_F(BezierTest, DoesXyz) {
+TEST_F(ChainTest, DoesXyz) {
     // Exercises the Xyz feature of Foo.
 }
 
-TEST_F(BezierTest, UnitTests) {
+TEST_F(ChainTest, UnitTests) {
   
     //std::cout << unit <<std::endl;
     //std::cout << hump <<std::endl;
@@ -108,7 +123,7 @@ Coord subdivideArr(Coord t, Coord const *v, Coord *left, Coord *right, unsigned 
     EXPECT_EQ(3, hump.size());
 }
 
-TEST_F(BezierTest, ValueAt) {
+TEST_F(ChainTest, ValueAt) {
     EXPECT_EQ(0.0, wiggle.at0());
     EXPECT_EQ(3.0, wiggle.at1());
 
@@ -122,7 +137,7 @@ TEST_F(BezierTest, ValueAt) {
     //cout << wiggle.toSBasis() << endl;
 }
 
-TEST_F(BezierTest, Mutation) {
+TEST_F(ChainTest, Mutation) {
 //Only mutator
 //Coord &operator[](unsigned ix);
 //Coord const &operator[](unsigned ix);
@@ -140,12 +155,12 @@ TEST_F(BezierTest, Mutation) {
     }
 }
 
-TEST_F(BezierTest, MultiDerivative) {
+TEST_F(ChainTest, MultiDerivative) {
     vector<double> vnd = wiggle.valueAndDerivatives(0.5, 5);
     expect_array((const double[]){0,0,12,72,0,0}, vnd);
 }
 
-TEST_F(BezierTest, DegreeElevation) {
+TEST_F(ChainTest, DegreeElevation) {
     EXPECT_TRUE(are_equal(wiggle, wiggle));
     Bezier Q = wiggle;
     Bezier P = Q.elevate_degree();
@@ -188,7 +203,7 @@ vector<T> vector_from_array(const T (&x)[xn]) {
 Interval bound_vector(vector<double> v) {
     double low = v[0];
     double high = v[0];
-    for(unsigned i = 0; i < v.size(); i++) {
+    for(int i = 0; i < v.size(); i++) {
         low = min(v[i], low);
         high = max(v[i], high);
     }
@@ -198,17 +213,19 @@ Interval bound_vector(vector<double> v) {
 void vector_equal(vector<double> a, vector<double> b) {
     EXPECT_EQ(a.size(), b.size());
     if(a.size() != b.size()) return;
-    for(unsigned i = 0; i < a.size(); i++) {
+    for(int i = 0; i < a.size(); i++) {
         EXPECT_FLOAT_EQ(a[i], b[i]);
     }
 }
 
 vector<double> find_all_roots(Bezier b) {
     vector<double> rts = b.roots();
+    if(b.at0() == 0) rts.push_back(0);
+    if(b.at1() == 0) rts.push_back(1);
     return rts;
 }
 
-TEST_F(BezierTest, Deflate) {
+TEST_F(ChainTest, Deflate) {
     Bezier b = array_roots(vector_from_array((const double[]){0,0.25,0.5}));
     EXPECT_FLOAT_EQ(0, b.at0());
     b = b.deflate();
@@ -222,22 +239,18 @@ TEST_F(BezierTest, Deflate) {
     EXPECT_FLOAT_EQ(0, b.at0());
 }
 
-TEST_F(BezierTest, Roots) {
-    /*expect_array((const double[]){0.5}, wiggle.roots());
+TEST_F(ChainTest, Roots) {
+    expect_array((const double[]){0.5}, wiggle.roots());
     
     Bezier bigun(Bezier::Order(30));
     for(unsigned i = 0; i < bigun.size(); i++) {
         bigun.setPoint(i,rand()-0.5);
     }
-    cout << bigun.roots() << endl;*/
+    cout << bigun.roots() << endl;
 
     vector<vector<double> > tests;
     tests.push_back(vector_from_array((const double[]){0}));
-    tests.push_back(vector_from_array((const double[]){0, 0}));
     tests.push_back(vector_from_array((const double[]){0.5}));
-    tests.push_back(vector_from_array((const double[]){0.5, 0.5}));
-    tests.push_back(vector_from_array((const double[]){0.1, 0.1}));
-    tests.push_back(vector_from_array((const double[]){0.1, 0.1, 0.1}));
     tests.push_back(vector_from_array((const double[]){0.25,0.75}));
     tests.push_back(vector_from_array((const double[]){0.5,0.5}));
     tests.push_back(vector_from_array((const double[]){0, 0.2, 0.6,0.6, 1}));
@@ -246,12 +259,11 @@ TEST_F(BezierTest, Roots) {
     
     for(unsigned test_i = 0; test_i < tests.size(); test_i++) {
         Bezier b = array_roots(tests[test_i]);
-        std::cout << tests[test_i] << ": " << b << std::endl;
         vector_equal(tests[test_i], find_all_roots(b));
     }
 }
 
-TEST_F(BezierTest,Operators) {
+TEST_F(ChainTest,Operators) {
     cout << "scalar operators\n";
     cout << hump + 3 << endl;
     cout << hump - 3 << endl;
@@ -284,7 +296,7 @@ TEST_F(BezierTest,Operators) {
     EXPECT_TRUE(bounds_local(hump, Interval(0.3, 0.6))->contains(tight_local_bounds));
 
     Bezier Bs[] = {unit, hump, wiggle};
-    for(unsigned i = 0; i < sizeof(Bs)/sizeof(Bezier); i++) {
+    for(int i = 0; i < sizeof(Bs)/sizeof(Bezier); i++) {
         Bezier B = Bs[i];
         Bezier product = multiply(B, B);
         for(int i = 0; i <= 16; i++) {

@@ -52,7 +52,11 @@
 
 using namespace Geom;
 
-
+std::ostream&
+operator<< (std::ostream &out, const PathVectorPosition pvp)
+{
+    return out << pvp.path_nr << "." << pvp.t;
+}
 
 class NearestPoints : public Toy
 {
@@ -179,8 +183,8 @@ private:
             case '5':
             {
                 closed_toggle = true;
-                BezierCurveN<2> A(psh.pts[0], psh.pts[1], psh.pts[2]);
-                BezierCurveN<3> B(psh.pts[2], psh.pts[3], psh.pts[4], psh.pts[5]);
+                BezierCurveN<3> A(psh.pts[0], psh.pts[1], psh.pts[2], psh.pts[3]);
+                BezierCurveN<2> B(psh.pts[3], psh.pts[4], psh.pts[5]);
                 BezierCurveN<3> C(psh.pts[5], psh.pts[6], psh.pts[7], psh.pts[8]);
                 Path path;
     	        path.append(A);
@@ -219,6 +223,10 @@ private:
                 closed_toggle = true;
                 PathVector pathv = paths_b*Translate(psh.pts[0]-paths_b[0][0].initialPoint());
                 //std::cout << pathv.size() << std::endl;
+                OptRect optRect = bounds_fast(pathv);
+                
+                cairo_rectangle(cr, *optRect);
+                cairo_stroke(cr);
 
     	        cairo_path(cr, pathv);
 
@@ -230,9 +238,16 @@ private:
     	        }
     	        else
     	        {
-                    boost::optional<PathVectorPosition> t = nearestPoint(pathv, p);
-                    if(t)
-                        np = pointAt(pathv, *t);
+                    //boost::optional<PathVectorPosition>
+                    double s = 0, e = 1;
+                    draw_cross(cr, pathv[0].pointAt(s));
+                    draw_cross(cr, pathv[0].pointAt(e));
+                    double t = pathv[0][0].nearestPoint(p, 0, 1);
+                    if(t) {
+                        *notify << p+psh.pts[0] << std::endl;
+                        *notify << t << std::endl;
+                        np = pathv[0].pointAt(t);
+                    }
     	        }
                 break;
             }
@@ -302,6 +317,14 @@ private:
                 total_handles = 0;
     	}
     	psh.pts.clear();
+        psh.push_back( 262.6037,35.824151);
+        psh.pts[0] += Point(300,300);
+        psh.push_back(0,0);
+        psh.pts[1] += psh.pts[0];
+        psh.push_back(-92.64892,-187.405851);
+        psh.pts[2] += psh.pts[0];
+        psh.push_back(30,-149.999981);
+        psh.pts[3] += psh.pts[0];
     	for ( unsigned int i = 0; i < total_handles; ++i )
     	{
             psh.push_back(uniform()*400, uniform()*400);

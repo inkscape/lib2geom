@@ -81,7 +81,14 @@ class BoolOps: public Toy {
             } else 
             for(unsigned j = 0; j < pv[i].size(); j++) {
                 const Curve* c = &pv[i][j];
-                *notify << typeid(*c).name() << ';' ;
+                const BezierCurve* bc = dynamic_cast<const BezierCurve*>(c);
+                if(bc) {
+                    for(unsigned k = 0; k < bc->order(); k++) {
+                        *notify << (*bc)[k];
+                    }
+                } else {
+                    *notify << typeid(*c).name() << ';' ;
+                }
             }
         }
 
