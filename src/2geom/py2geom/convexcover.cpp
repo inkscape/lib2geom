@@ -59,7 +59,6 @@ void wrap_convex_cover() {
 
         .add_property("boundary", &ch_boundary)
         .add_property("is_clockwise", &Geom::ConvexHull::is_clockwise)
-        .add_property("no_colinear_points", &Geom::ConvexHull::no_colinear_points)
         .add_property("top_point_first", &Geom::ConvexHull::top_point_first)
         .add_property("meets_invariants", &Geom::ConvexHull::meets_invariants)
         .add_property("empty", &Geom::ConvexHull::empty)
