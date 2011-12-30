@@ -57,7 +57,7 @@ hvlineseg-toy
 implicit-toy
 inner-product-clip
 #involute
-kerning
+#kerning
 kinematic_templates
 line-toy
 load-svgd
