@@ -103,15 +103,15 @@ void uncross(std::list<Point> &loop){
     std::list<Point>::iterator b0 = loop.begin(),a0,b1,a1;
     if ( b0 == loop.end() ) return;
     a0 = b0;
-    b0++;
+    ++b0;
     if ( b0 == loop.end() ) return;
     //now a0,b0 are 2 consecutive points.
     while ( b0 != loop.end() ){
         b1 = b0;
-        b1++;
+        ++b1;
         if ( b1 != loop.end() ) {
             a1 = b1;
-            b1++;
+            ++b1;
             if ( b1 != loop.end() ) {
                 //now a0,b0,a1,b1 are 4 consecutive points.
                 Point c;
@@ -120,25 +120,27 @@ void uncross(std::list<Point> &loop){
                         if ( c != (*a0) && c != (*b0) ){
                             loop.insert(b1,c);
                             loop.insert(b0,c);
-                            a1++;
+                            ++a1;
                             std::list<Point> loop_piece;
                             loop_piece.insert(loop_piece.begin(), b0, a1 );
                             loop_piece.reverse();
                             loop.erase( b0, a1 );
                             loop.splice( a1, loop_piece );
-                            b0 = a0; b0++;
+                            b0 = a0;
+                            ++b0;
                             //a1 = b1; a1--;//useless
                         }else{
                             //TODO: handle degenerated crossings...
                         }
                     }else{
-                        a1=b1; b1++;
+                        a1=b1;
+                        ++b1;
                     }
                 }
             }
         }
         a0 = b0;
-        b0++;
+        ++b0;
     }
     return;//We should never reach this point.
 }
@@ -153,9 +155,9 @@ void triangulate(std::list<Point> &pts, std::vector<Triangle> &tri, bool clockwi
     pts.push_back(pts.front()); pts.pop_front();
     std::list<Point>::iterator a,b,c,m;
     int sign = (clockwise ? -1 : 1 );
-    a = pts.end(); a--;
+    a = pts.end(); --a;
     b = pts.begin();
-    c = b; c++;
+    c = b; ++c;
     //now a,b,c are 3 consecutive points.
     if ( pts.size() == 3 ) { 
         Triangle abc;
@@ -178,7 +180,8 @@ void triangulate(std::list<Point> &pts, std::vector<Triangle> &tri, bool clockwi
             triangulate(pts,tri,clockwise);
             return;
         }
-        m = c; m++;
+        m = c;
+        ++m;
         while ( m != pts.end() && !found && m!=a){
             bool pointing_inside;
             double abam = cross((*b)-(*a),(*m)-(*a));
@@ -189,18 +192,19 @@ void triangulate(std::list<Point> &pts, std::vector<Triangle> &tri, bool clockwi
                 pointing_inside = ( sign * abam >=0 ) || ( sign * bcbm >=0);
             }
             if ( pointing_inside ){
-                std::list<Point>::iterator p=c,q=p++;
+                std::list<Point>::iterator p=c,q=++p;
                 Point inter;
                 while ( q != pts.end() && !intersect(*b,*m,*p,*q,inter) ){
-                    p=q; q++;
+                    p=q;
+                    ++q;
                 }
                 if ( q == pts.end() ){
                     found = true;
                 }else{
-                    m++;
+                    ++m;
                 }
             }else{
-                m++;
+                ++m;
             }
         }
         if ( found ){
@@ -214,7 +218,7 @@ void triangulate(std::list<Point> &pts, std::vector<Triangle> &tri, bool clockwi
         }else{
             a = b;
             b = c;
-            c++;
+            ++c;
         }
     }
     //we should never reach this point.
@@ -261,10 +265,10 @@ void RandomGenerator::setDomain(Piecewise<D2<SBasis> >f_in, double tol){
     if ( p.size()<3) return;
     double tot_area = 0;
     std::list<Point>::iterator a = p.begin(), b=a;
-    b++;
+    ++b;
     while(b!=p.end()){
         tot_area += ((*b)[X]-(*a)[X]) * ((*b)[Y]+(*a)[Y])/2;
-        a++;b++;
+        ++a;++b;
     }
     bool clockwise = tot_area < 0;
     triangles = std::vector<Triangle>();
