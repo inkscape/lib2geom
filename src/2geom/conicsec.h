@@ -474,14 +474,14 @@ public:
 
     Rect arc_bound (const Point & P1, const Point & Q, const Point & P2) const;
 
-    std::vector<Point> allNearestPoints (const Point P) const;
+    std::vector<Point> allNearestPoints (const Point &P) const;
 
     /*
      *  Return the point on the conic section nearest to the passed point "P".
      *
      *  P: the point to compute the nearest one
      */
-    Point nearestPoint (const Point P) const
+    Point nearestPoint (const Point &P) const
     {
         std::vector<Point> points = allNearestPoints (P);
         if ( !points.empty() )
