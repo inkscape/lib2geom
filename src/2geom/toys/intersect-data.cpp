@@ -239,7 +239,7 @@ class IntersectDataTester: public Toy {
         cairo_set_line_width (cr, 1);
 
         std::vector<Path> paths;
-        if (cmd_line_paths.size()>0){
+        if (!cmd_line_paths.empty()){
             paths = cmd_line_paths;
             for (unsigned i = 0; i < paths.size(); i++){
                 paths[i] *= Translate( paths_handles[i].pts[0] - paths[i].initialPoint() );

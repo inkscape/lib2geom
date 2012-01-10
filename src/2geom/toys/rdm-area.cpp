@@ -147,7 +147,7 @@ void uncross(std::list<Point> &loop){
 //------------------------------------------------------------
 void triangulate(std::list<Point> &pts, std::vector<Triangle> &tri, bool clockwise = false, double tol=.001){
     pts.unique();
-    while ( pts.size()>0 && pts.front() == pts.back() ){ pts.pop_back(); }
+    while ( !pts.empty() && pts.front() == pts.back() ){ pts.pop_back(); }
     if ( pts.size() < 3 ) return; 
     //cycle by 1 to have a better looking output...
     pts.push_back(pts.front()); pts.pop_front();
@@ -281,7 +281,7 @@ void RandomGenerator::resetRandomizer(){
     seed = start_seed;
 }
 Point RandomGenerator::pt(){
-    if (areas.size()==0) return Point(0,0);
+    if (areas.empty()) return Point(0,0);
     double pick_area = rand()*areas.back();
     std::vector<double>::iterator picked = std::lower_bound( areas.begin(), areas.end(), pick_area);
     unsigned i = picked - areas.begin();
@@ -299,7 +299,7 @@ Point RandomGenerator::pt(){
     return res;
 }
 double RandomGenerator::area(){
-    if (areas.size()==0) return 0;
+    if (areas.empty()) return 0;
     return areas.back();
 }
 void RandomGenerator::set_generator(double (*f)()){

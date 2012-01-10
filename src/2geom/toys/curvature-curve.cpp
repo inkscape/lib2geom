@@ -62,7 +62,7 @@ class CurvatureTester: public Toy {
                                              (i&1)?rot90(dB):-rot90(dB),
                                              ((i&4)?-1:1)*L2sq(dA), ((i&8)?-1:1)*L2sq(dB));
 	  
-                if (candidates.size()==0) {
+                if (candidates.empty()) {
                 } else {
                     //TODO: I'm sure std algorithm could do that for me...
                     unsigned best = 0;

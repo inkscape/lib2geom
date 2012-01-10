@@ -93,7 +93,7 @@ sb_seg_to_bez(Piecewise<D2<SBasis> > const &M,double t0,double t1){
     A1=M(t1);
     
     std::vector<D2<SBasis> > candidates = cubics_fitting_curvature(M0,M1,dM0,dM1,d2M0,d2M1);
-    if (candidates.size()==0){
+    if (candidates.empty()){
         return D2<SBasis>(Linear(M0[X],M1[X]),Linear(M0[Y],M1[Y])) ;
     }
     double maxlength = -1;

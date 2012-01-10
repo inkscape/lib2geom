@@ -135,7 +135,7 @@ plot3d_top(cairo_t *cr, SBasis2d const &f, Frame frame, int NbRays=5){
                 }
                 SBasis f_on_seg = compose(f,seg);
                 std::vector<double> rts = roots(f_on_seg);
-                if (rts.size()==0||rts.back()<1) rts.push_back(1.);
+                if (rts.empty()||rts.back()<1) rts.push_back(1.);
                 double t1,t0 = 0;
                 for (unsigned i=(rts.front()<=0?1:0); i<rts.size(); i++){
                     t1 = rts[i];

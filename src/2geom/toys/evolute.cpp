@@ -34,7 +34,7 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
     cairo_d2_sb(cr, A);
     cairo_stroke(cr);
     Interval r(0, 1);
-    if(rts.size() > 0)
+    if(!rts.empty())
         r[1] = rts[0];
     //if(rts[0] == 0)
     //rts.erase(rts.begin(), rts.begin()+1);

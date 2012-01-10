@@ -78,7 +78,7 @@ class Sb2d2: public Toy {
         if(argc > 1)
             path_a_name = argv[1];
         std::vector<Path> paths_a = read_svgd(path_a_name);
-        assert(paths_a.size() > 0);
+        assert(!paths_a.empty());
         path_a = paths_a[0];
         Rect bounds = path_a[0].boundsFast();
         std::cout << bounds.min() <<std::endl;
