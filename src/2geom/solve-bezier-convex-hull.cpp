@@ -19,7 +19,9 @@ static int SGN(t x) { return (x > 0 ? 1 : (x < 0 ? -1 : 0)); }
 // 1 each edge is either in the upper or lower edge set.  We only need
 // to consider the line segment from the previous lower and upper
 // point and the points are already in order.
+namespace detail { namespace bezier_clipping {
 void convex_hull (std::vector<Point> & P);
+} } // defined in bezier-clipping.cpp
 
 void find_left_convex_hull(Geom::Bezier const& bz) {
   const double dt = 1./bz.size();
@@ -28,7 +30,7 @@ void find_left_convex_hull(Geom::Bezier const& bz) {
     P.push_back(Point(i*dt, bz[i]));
   }
   
-  convex_hull(P);
+  detail::bezier_clipping::convex_hull(P);
   
   Point p0 = P.back();
   double min_x = 1;
