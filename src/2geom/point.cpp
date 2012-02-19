@@ -57,11 +57,10 @@ namespace Geom {
  * @code
    p += q; p -= q; r = p + q; r = p - q;
    p *= s; p /= s; q = p * s; q = s * p; q = p / s;
-   p *= m; p /= m; q = p * m; q = m * p; q = p / m;
+   p *= m; q = p * m; q = m * p;
    @endcode
  * It is possible to left-multiply a point by a matrix, even though mathematically speaking
  * this is undefined. The result is a point identical to that obtained by right-multiplying.
- * Division of points by matrices is defined as multiplication by their inverses.
  *
  * @ingroup Primitives */
 
@@ -231,7 +230,7 @@ Point constrain_angle(Point const &A, Point const &B, unsigned int n, Point cons
     return A + dir * Rotate(k * 2.0 * M_PI / (double)n) * L2(diff);
 }
 
-}  //namespace Geom
+} // end namespace Geom
 
 /*
   Local Variables:

@@ -6,7 +6,6 @@ choose-test
 convex-test
 #lin_alg_test
 matrix-inv
-#point-fns-test
 path-test
 poly-test
 #rotate-test
@@ -31,6 +30,7 @@ implicitization
 
 SET(2GEOM_GTESTS_SRC
 affine-test
+point-test
 rect-test
 )
 

@@ -280,7 +280,7 @@ inline bool are_near(VShear const &a, VShear const &b, Coord eps=EPSILON) {
  * The translation part is applied first, then the result is scaled from the new origin.
  * This way when the class is used to accumulate a zoom transform, trans always points
  * to the new origin in original coordinates.
- * @ingroup Transform */
+ * @ingroup Transforms */
 class Zoom
     : public TransformOperations< Zoom >
 {
