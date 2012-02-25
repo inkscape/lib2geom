@@ -30,7 +30,7 @@ implicitization
 
 SET(2GEOM_GTESTS_SRC
 affine-test
-point-test
+#point-test
 rect-test
 )
 
