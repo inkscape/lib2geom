@@ -342,40 +342,8 @@ inline Translate pow(Translate const &t, int n) {
 
 /** @brief Reflects objects about line.
  * The line, defined by a vector along the line and a point on it, acts as a mirror.
- * @ingroup Transforms */
-class Reflect
-    : public TransformOperations< Reflect >
-{
-public:
-    /// construct a Reflect transform from a line defined by a vector and an origin
-    explicit Reflect(Point vector, Point origin) : _vec(unit_vector(vector)), _orig(origin) {}
-
-    Point vector() const { return _vec; }
-    void setVector(Point const &v) { _vec = v; }
-    Point origin() const { return _orig; }
-    void setOrigin(Point const &p) { _orig = p; }
-
-    operator Affine() const {
-        Affine mirror ( _vec[X]*_vec[X] - _vec[Y]*_vec[Y], 2 * _vec[X] * _vec[Y] ,
-                        2 * _vec[X] * _vec[Y]          , _vec[Y]*_vec[Y] - _vec[X]*_vec[X] ,
-                        0 ,0 );
-        return Translate(-_orig) * mirror * Translate(_orig);
-    }
-
-protected:
-    Point _vec;
-    Point _orig;
-
-private:
-    /// The default constructor is not available.
-    Reflect();
-};
-
-inline bool are_near(Reflect const &a, Reflect const &b, Coord eps=EPSILON) {
-    return are_near(a.vector(), b.vector(), eps) &&
-           ( are_near(a.origin(), b.origin()) || are_near(a.vector(), a.origin() - b.origin()) );
-}
-
+ */
+Affine reflection(Point const & vector, Point const & origin);
 
 //TODO: decomposition of Affine into some finite combination of the above classes
 
