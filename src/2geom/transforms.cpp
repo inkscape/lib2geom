@@ -173,8 +173,9 @@ void check_transforms()
 }
 
 Affine reflection(Point const & vector, Point const & origin) {
-    Affine mirror ( vector[X]*vector[X] - vector[Y]*vector[Y], 2 * vector[X] * vector[Y] ,
-                    2 * vector[X] * vector[Y]                , vector[Y]*vector[Y] - vector[X]*vector[X] ,
+    Geom::Point vec_norm = unit_vector(vector);
+    Affine mirror ( vec_norm[X]*vec_norm[X] - vec_norm[Y]*vec_norm[Y], 2 * vec_norm[X] * vec_norm[Y] ,
+                    2 * vec_norm[X] * vec_norm[Y], vec_norm[Y]*vec_norm[Y] - vec_norm[X]*vec_norm[X] ,
                     0 ,0 );
     return Translate(-origin) * mirror * Translate(origin);
 }
