@@ -211,8 +211,6 @@ RatQuad RatQuad::fromPointsTangents(Point P0, Point dP0,
 }
 
 RatQuad RatQuad::circularArc(Point P0, Point P1, Point P2) {
-    Line Line0 = Line::from_origin_and_versor(P0, P1 - P0);
-    Line Line2 = Line::from_origin_and_versor(P2, P1 - P2);
     return RatQuad(P0, P1, P2, dot(unit_vector(P0 - P1), unit_vector(P0 - P2)));
 }
 
