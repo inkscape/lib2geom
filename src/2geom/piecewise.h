@@ -92,8 +92,8 @@ class Piecewise {
 
     inline void reserve(unsigned i) { segs.reserve(i); cuts.reserve(i + 1); }
 
-    inline T operator[](unsigned i) const { return segs[i]; }
-    inline T &operator[](unsigned i) { return segs[i]; }
+    inline T const& operator[](unsigned i) const { return segs[i]; }
+    inline T&       operator[](unsigned i)       { return segs[i]; }
     inline output_type operator()(double t) const { return valueAt(t); }
     inline output_type valueAt(double t) const {
         unsigned n = segN(t);
