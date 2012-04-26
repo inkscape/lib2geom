@@ -65,6 +65,11 @@ public:
         std::cout << "A " << rx << " " << ry << " " << angle << " " << large_arc << " " << sweep << " " << p << std::endl;
     }
 
+    void backspace()
+    {
+        std::cout << "[remove last segment]" << std::endl;
+    }
+
     void closePath() {
         std::cout << "Z" << std::endl;
     }
