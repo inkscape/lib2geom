@@ -48,6 +48,7 @@ class SVGPathSinkWrap: public Geom::SVGPathSink, public wrapper<Geom::SVGPathSin
     void curveTo(Geom::Point c0, Geom::Point c1, Geom::Point p) {this->get_override("curveTo")(c0, c1, p);}
     void quadTo(Geom::Point c, Geom::Point p) {this->get_override("quadTo")(c, p);}
     void arcTo(double rx, double ry, double angle, bool large_arc, bool sweep, Geom::Point p) {this->get_override("arcTo")(rx, ry, angle, large_arc, sweep, p);}
+    void backspace() {this->get_override("backspace")();}
     void closePath() {this->get_override("closePath")();}
     void finish() {this->get_override("finish")();}
 };
@@ -65,6 +66,7 @@ void wrap_parser() {
         .def("curveTo", pure_virtual(&Geom::SVGPathSink::curveTo))
         .def("quadTo", pure_virtual(&Geom::SVGPathSink::quadTo))
         .def("arcTo", pure_virtual(&Geom::SVGPathSink::arcTo))
+        .def("backspace", pure_virtual(&Geom::SVGPathSink::backspace))
         .def("closePath", pure_virtual(&Geom::SVGPathSink::closePath))
         .def("finish", pure_virtual(&Geom::SVGPathSink::finish))
     ;
