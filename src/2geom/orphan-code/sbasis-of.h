@@ -60,16 +60,16 @@ class SBasisOf : public std::vector<LinearOf<T> >{
 public:
     SBasisOf() {}
     explicit SBasisOf(T a) {
-        push_back(LinearOf<T>(a,a));
+        this->push_back(LinearOf<T>(a,a));
     }
     SBasisOf(SBasisOf<T> const & a) :
         std::vector<LinearOf<T> >(a)
     {}
     SBasisOf(LinearOf<T> const & bo) {
-        push_back(bo);
+        this->push_back(bo);
     }
     SBasisOf(LinearOf<T>* bo) {
-        push_back(*bo);
+        this->push_back(*bo);
     }
     //static unsigned input_dim(){return T::input_dim()+1;}
 

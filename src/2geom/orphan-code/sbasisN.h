@@ -215,7 +215,7 @@ public:
         for (unsigned i = 0; i < n; i++) {
             sizes[i] = 1;
         }
-        push_back(LinearN<n>(a));
+        this->push_back(LinearN<n>(a));
     }
     SBasisN(SBasisN<n> const & a) : std::vector<LinearN<n> >(a){
         //TODO: efficient array copy??
@@ -227,13 +227,13 @@ public:
         for (unsigned i = 0; i < n; i++) {
             sizes[i] = 1;
         }
-        push_back(bo);
+        this->push_back(bo);
     }
     SBasisN(LinearN<n>* bo) {
         for (unsigned i = 0; i < n; i++) {
             sizes[i] = 1;
         }
-        push_back(*bo); 
+        this->push_back(*bo); 
     }
 
 //----------------------------------------------
