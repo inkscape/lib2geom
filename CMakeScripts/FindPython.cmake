@@ -1,4 +1,5 @@
 # figure out Python flags
+#TODO - rewrite to use ALLCAPS?
 FIND_PACKAGE(PythonInterp)
 IF(PYTHONINTERP_FOUND)
   EXEC_PROGRAM(${PYTHON_EXECUTABLE}

@@ -63,6 +63,8 @@
 #=============================================================================
 
 # Configuration options.
+
+#TODO - rewrite to use ALLCAPS?
 set( CYTHON_ANNOTATE OFF
   CACHE BOOL "Create an annotated .html file when compiling *.pyx." )
 set( CYTHON_NO_DOCSTRINGS OFF
