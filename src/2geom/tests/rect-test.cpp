@@ -136,6 +136,21 @@ TYPED_TEST(GenericRectTest, Intersects) {
     EXPECT_FALSE(oa.intersects(oc));
 }
 
+/**
+ JonCruz failure: (10, 20)-(55,30) and (45,20)-(100,30) should intersect.
+*/
+
+TYPED_TEST(GenericRectTest, JonCruzRect) {
+    typename TestFixture::CRect a(10, 20, 55, 30), b(45, 20, 100,30);
+    typename TestFixture::OptCRect empty, oa(a), ob(b);
+    EXPECT_TRUE(a.intersects(a));
+    EXPECT_TRUE(a.intersects(b));
+    EXPECT_TRUE(b.intersects(a));
+    EXPECT_TRUE(oa.intersects(oa));
+    EXPECT_TRUE(oa.intersects(ob));
+    EXPECT_TRUE(ob.intersects(oa));
+}
+
 TYPED_TEST(GenericRectTest, Intersection) {
     typename TestFixture::CRect a(0, 0, 10, 10), b(-5, -5, 5, 5), c(-10, -10, -1, -1), d(1, 1, 9, 9);
     typename TestFixture::CRect int_ab(0, 0, 5, 5), int_bc(-5, -5, -1, -1);
