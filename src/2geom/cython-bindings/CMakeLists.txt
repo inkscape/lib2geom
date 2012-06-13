@@ -17,7 +17,6 @@ target_link_libraries(_cy_primitives
     #you have to enable building dynamic library in cmake . -i
     gsl gslcblas 2geom
 )
-#set_target_properties(_cy_primitives )
 
 cython_add_module( cy2geom cy2geom.pyx)
 

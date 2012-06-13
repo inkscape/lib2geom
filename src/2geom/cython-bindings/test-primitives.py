@@ -2,7 +2,7 @@ import unittest
 from math import pi, sqrt
 
 import cy2geom
-from cy2geom import Angle, Point, Line, Ray
+from cy2geom import Angle, Point, Line, Ray, GenericInterval
 
 class TestPrimitives(unittest.TestCase):
     def test_angle(self):
@@ -208,5 +208,42 @@ class TestPrimitives(unittest.TestCase):
             Point(1, 1)/sqrt(2),
             Ray.make_angle_bisector_ray(q, r).versor()))
 
+    def test_genericInterval(self):
+        a = 1
+        b = 5
+        I = GenericInterval(a, b)
+        self.assertEqual(I.min(), a)
+        self.assertEqual(I.max(), b)
+        self.assertEqual(I.middle(), (b+a)/2)
+        self.assertEqual(I.extent(), b-a)
+        self.assertFalse(I.isSingular())
+        self.assertTrue(I.contains(a + (b-a)/3))
+        self.assertFalse(I.contains(a-1))
+        I.setMin(b)
+        I.setMax(8+b)
+        self.assertTrue(I.containsInterval(GenericInterval(b+1, b+4)))
+        self.assertFalse(I.containsInterval(I+1))
+        #I in now [5, 13]
+        J = GenericInterval(2, 9)
+        self.assertEqual((I+J).min(), 7)
+        self.assertEqual((I|J).min(), 2)
+        self.assertEqual((I|J), GenericInterval.unify(I, J))
+        I.expandBy(-3)
+        self.assertEqual(I, GenericInterval(8, 10))
+        I.expandTo(1)
+        self.assertEqual(I, GenericInterval(1, 10))
+        
+        p = [1, 2, 3.443, 3]
+        K = GenericInterval.from_list(p)
+        self.assertAlmostEqual(K.max(), max(p))
+        self.assertAlmostEqual((K+GenericInterval(1.0)).min(), min(p)+1)
+        L = GenericInterval(10/3.0)
+        for i in range(3):
+            K+=L
+        self.assertAlmostEqual(K.max(), max(p)+10)
+        #TODO This 2geom behaviour is a bit strange
+        self.assertEqual(GenericInterval(3.0)|GenericInterval(5.0), 
+                    GenericInterval(3.0, 5.0))
+        self.assertAlmostEqual((K-L).max(), (K-10/3.0).max())
 unittest.main()
 

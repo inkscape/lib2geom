@@ -156,3 +156,51 @@ cdef extern from "2geom/ray.h" namespace "Geom":
     bint are_same(Ray&, Ray &, double)
     double angle_between(Ray &, Ray &, bint)
     Ray make_angle_bisector_ray(Ray &, Ray&)
+
+cdef extern from "2geom/generic-interval.h" namespace "Geom":
+    cdef cppclass GenericInterval[C]:
+        #ctypedef typename GenericInterval[C]::IntervalType CInterval
+        GenericInterval()
+        GenericInterval(C)
+        GenericInterval(C, C)
+
+        #TODO
+        #template <typename InputIterator>
+        #static CInterval from_range(InputIterator start, InputIterator end) 
+        C min()
+        C max()
+        C extent()
+        C middle()
+        bint isSingular()
+        bint contains(C)
+        bint contains(GenericInterval[C] &) 
+        bint intersects(GenericInterval[C] &)
+        void setMin(C)
+        void setMax(C)
+        void expandTo(C)
+        void expandBy(C)
+        void unionWith(GenericInterval[C] &)
+        
+        GenericInterval[C] &operator+(C)
+        GenericInterval[C] &operator-(C)
+        GenericInterval[C] &operator-()
+        GenericInterval[C] &operator+(GenericInterval[C] &)
+        GenericInterval[C] &operator-(GenericInterval[C] &)
+        GenericInterval[C] &operator|(GenericInterval[C] &)
+        bint operator==(GenericInterval[C] &)
+        bint operator!=(GenericInterval[C] &)
+    #TODO - Find out how to do this!
+    #GenericInterval[C] unify(GenericInterval[C], GenericInterval[C])
+#cdef extern from "2geom/generic-interval.h" namespace "Geom::GenericInterval":
+    #GenericInterval[C] from_array(C *, unsigned int)
+
+        
+#cdef extern form "2geom/interval.h" namespace "Geom":
+#    Interval()
+#    Interval(Coord)
+#    Interval(Coord, Coord)
+#    Interval
+#cdef extern from "2geom/rect.h" namespace "Geom":
+#    cdef cppclass Rect:
+#        Rect()
+        

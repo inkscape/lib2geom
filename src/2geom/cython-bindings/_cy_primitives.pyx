@@ -9,6 +9,9 @@ cdef class cy_Angle:
 
     def __cinit__(self, double x):
         self.thisptr = new Angle(x)
+    def __repr__(self):
+        return "Angle, {0:.2f} radians, {1:.1f} degrees".format(
+            self.radians(), self.degrees())
     def __dealloc__(self):
         del self.thisptr
 
@@ -333,3 +336,246 @@ cdef cy_Ray wrap_Ray(Ray p):
     cdef cy_Ray r = cy_Ray.__new__(cy_Ray)
     r.thisptr = retp
     return r
+
+# --Generic Interval--
+#TODO: move to better place -- ? 
+
+cdef class cy_int_GenericInterval:
+    cdef GenericInterval[int]* thisptr
+    def __cinit__(self, int a, int b):
+        self.thisptr = new GenericInterval[int](a, b)
+    def __dealloc__(self):
+        del self.thisptr
+    def _type(self):
+        return int
+    def max(self):
+        return self.thisptr.max()
+    def min(self):
+        return self.thisptr.min()
+    def middle(self):
+        return self.thisptr.middle()
+    def extent(self):
+        return self.thisptr.extent()
+    def isSingular(self):
+        return self.thisptr.isSingular()
+    def contains(self, int c):
+        return self.thisptr.contains(c)
+    def containsInterval(self, cy_int_GenericInterval interval):
+        return self.thisptr.contains(deref(interval.thisptr))
+    def setMin(self, val):
+        self.thisptr.setMin(val)
+    def setMax(self, val):
+        self.thisptr.setMax(val)
+    def expandTo(self, val):
+        self.thisptr.expandTo(val)
+    def expandBy(self, val):
+        self.thisptr.expandBy(val)
+    def unionWith(self, cy_int_GenericInterval interval):
+        self.thisptr.unionWith( deref(interval.thisptr) )
+    def _add_number(self, int X):
+        return wrap_int_GenericInterval(deref(self.thisptr)+X)
+    def _sub_number(self, int X):
+        return wrap_int_GenericInterval(deref(self.thisptr)-X)
+    def _add_interval(self, cy_int_GenericInterval I):
+        return wrap_int_GenericInterval(deref(self.thisptr)+deref(I.thisptr))
+    def _sub_interval(self, cy_int_GenericInterval I):
+        return wrap_int_GenericInterval(deref(self.thisptr)-deref(I.thisptr))
+    def _or_interval(self, cy_int_GenericInterval I):
+        return wrap_int_GenericInterval(deref(self.thisptr)|deref(I.thisptr))
+    def _unary(self):
+        return wrap_int_GenericInterval(-deref(self.thisptr))
+    def comp(self, cy_int_GenericInterval other, op):
+        if op==2:
+            return deref(self.thisptr)==deref(other.thisptr)
+        elif op==3:
+            return deref(self.thisptr)!=deref(other.thisptr)
+
+cdef cy_int_GenericInterval wrap_int_GenericInterval(GenericInterval[int] p):
+    cdef GenericInterval[int] * retp = new GenericInterval[int]()
+    retp[0] = p
+    cdef cy_int_GenericInterval r = cy_int_GenericInterval.__new__(
+                                        cy_int_GenericInterval, 0, 0)
+    r.thisptr = retp
+    return r
+        
+cdef class cy_double_GenericInterval:
+    cdef GenericInterval[double]* thisptr
+    def __cinit__(self, double a, double b):
+        self.thisptr = new GenericInterval[double](a, b)
+    def __dealloc__(self):
+        del self.thisptr
+    def _type(self):
+        return float
+    def max(self):
+        return self.thisptr.max()
+    def min(self):
+        return self.thisptr.min()
+    def middle(self):
+        return self.thisptr.middle()
+    def extent(self):
+        return self.thisptr.extent()
+    def isSingular(self):
+        return self.thisptr.isSingular()
+    def contains(self, double c):
+        return self.thisptr.contains(c)
+    def containsInterval(self, cy_double_GenericInterval interval):
+        return self.thisptr.contains(deref(interval.thisptr))
+    def setMin(self, val):
+        self.thisptr.setMin(val)
+    def setMax(self, val):
+        self.thisptr.setMax(val)
+    def expandTo(self, val):
+        self.thisptr.expandTo(val)
+    def expandBy(self, val):
+        self.thisptr.expandBy(val)
+    def unionWith(self, cy_double_GenericInterval interval):
+        self.thisptr.unionWith( deref(interval.thisptr) )
+    def _add_number(self, double X):
+        return wrap_double_GenericInterval(deref(self.thisptr)+X)
+    def _sub_number(self, double X):
+        return wrap_double_GenericInterval(deref(self.thisptr)-X)
+    def _add_interval(self, cy_double_GenericInterval I):
+        return wrap_double_GenericInterval(deref(self.thisptr)+deref(I.thisptr))
+    def _sub_interval(self, cy_double_GenericInterval I):
+        return wrap_double_GenericInterval(deref(self.thisptr)-deref(I.thisptr))
+    def _or_interval(self, cy_double_GenericInterval I):
+        return wrap_double_GenericInterval(deref(self.thisptr)|deref(I.thisptr))
+    def _unary(self):
+        return wrap_double_GenericInterval(-deref(self.thisptr))
+    def comp(self, cy_double_GenericInterval other, op):
+        if op==2:
+            return deref(self.thisptr)==deref(other.thisptr)
+        elif op==3:
+            return deref(self.thisptr)!=deref(other.thisptr)
+
+cdef cy_double_GenericInterval wrap_double_GenericInterval(GenericInterval[double] p):
+    cdef GenericInterval[double] * retp = new GenericInterval[double]()
+    retp[0] = p
+    cdef cy_double_GenericInterval r = cy_double_GenericInterval.__new__(
+                                        cy_double_GenericInterval, 0, 0)
+    r.thisptr = retp
+    return r
+
+class py_GenericInterval:
+    def __init__(self, a = 0, b = None):
+        self.cy_class = None
+        #constructor for singular interval
+        if b is None:
+            if isinstance(a, int):
+                self.cy_class = cy_int_GenericInterval(a, a)
+                self.type = int
+                self.cy_class_type = cy_int_GenericInterval
+            elif isinstance(a, float):
+                self.cy_class = cy_double_GenericInterval(a, a)
+                self.type = float
+                self.cy_class_type = cy_double_GenericInterval
+            
+        if isinstance(a, int) and isinstance(b, int):
+            self.cy_class = cy_int_GenericInterval(a, b)
+            self.type = int
+            self.cy_class_type = cy_int_GenericInterval
+        if isinstance(a, float):
+            if isinstance(b, float) or isinstance(b, int):
+                self.cy_class = cy_double_GenericInterval(a, b)
+                self.type = float
+                self.cy_class_type = cy_double_GenericInterval
+        if isinstance(b, float):
+            #first case can't happen
+            if isinstance(a, float) or isinstance(a, int): 
+                self.cy_class = cy_double_GenericInterval(a, b)
+                self.type = float
+                self.cy_class_type = cy_double_GenericInterval
+        if self.cy_class is None:
+            raise(TypeError)
+    def __repr__(self):
+        return "Interval [{0:.2f}; {1:.2f}]".format(
+            self.min(), self.max())
+    @classmethod
+    def __from_cy_class(cls, cy_class):
+        #alternative constructor from cy_class
+        #this is not very nice, I am working on different way of handling templates
+        ret = py_GenericInterval(0, 0)
+        ret.type = cy_class._type()
+        ret.cy_class = cy_class
+        ret.cy_class_type = cy_class.__class__
+        return ret
+    @classmethod
+    #TODO this is not done by the C++ method
+    def unify(cls, interval1, interval2):
+        if interval1.type == interval2.type:
+            return interval1 | interval2
+    @classmethod
+    #TODO this is not done by the C++ method
+    def from_list(cls, lst):
+        if float in map(type, lst):
+            ret = py_GenericInterval(float(lst[0]))
+        else:
+            #TODO maybe fail differently on empty list
+            ret = py_GenericInterval(int(lst[0]))
+        for i in lst[1:]:
+            ret.expandTo(i)
+        return ret
+    def max(self):
+        return self.cy_class.max()
+    def min(self):
+        return self.cy_class.min()
+    def middle(self):
+        return self.cy_class.middle()
+    def extent(self):
+        return self.cy_class.extent()
+    def isSingular(self):
+        return self.cy_class.isSingular()
+    def contains(self, c):
+        return self.cy_class.contains(c)
+    def containsInterval(self, interval):
+        return self.cy_class.containsInterval(interval.cy_class)
+
+    def setMin(self, val):
+        self.cy_class.setMin(val)
+    def setMax(self, val):
+        self.cy_class.setMax(val)
+    def expandTo(self, val):
+        self.cy_class.expandTo(val)
+    def expandBy(self, val):
+        self.cy_class.expandBy(val)
+    def unionWith(self, interval):
+        self.cy_class.unionWith( interval.cy_class )
+    
+    def __add__(self, other):
+        if isinstance(other, self.type):
+            return py_GenericInterval.__from_cy_class(
+                self.cy_class._add_number(other))
+        elif isinstance(other, py_GenericInterval) and\
+         isinstance(other.cy_class, self.cy_class_type):
+            return py_GenericInterval.__from_cy_class(
+                self.cy_class._add_interval(other.cy_class))
+        raise(TypeError)
+    def __sub__(self, other):
+        if isinstance(other, self.type):
+            return py_GenericInterval.__from_cy_class(
+                self.cy_class._sub_number(other))
+        elif isinstance(other, py_GenericInterval) and\
+         isinstance(other.cy_class, self.cy_class_type):
+            return py_GenericInterval.__from_cy_class(
+                self.cy_class._sub_interval(other.cy_class))
+        raise(TypeError)
+    def __or__(self, other):
+        if isinstance(other, py_GenericInterval) and\
+        isinstance(other.cy_class, self.cy_class_type):
+            return py_GenericInterval.__from_cy_class(
+                self.cy_class._or_interval(other.cy_class))
+        raise(TypeError)
+    def __neg__(self):
+        return py_GenericInterval.__form_cy_class(self.cy_class._unary())
+            
+    def __eq__(self, other):
+        if self.type != other.type:
+            return NotImplemented
+        return self.cy_class.comp(other.cy_class, 2)
+        
+
+    def __neq__(self, other):
+        if self.type != other.type:
+            return NotImplemented
+        return self.cy_class.comp(other.cy_class, 3)
+        
