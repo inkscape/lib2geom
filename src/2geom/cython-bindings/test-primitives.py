@@ -2,7 +2,7 @@ import unittest
 from math import pi, sqrt
 
 import cy2geom
-from cy2geom import Angle, Point, Line, Ray, GenericInterval
+from cy2geom import Angle, Point, IntPoint, Line, Ray, GenericInterval
 
 class TestPrimitives(unittest.TestCase):
     def test_angle(self):
@@ -103,7 +103,24 @@ class TestPrimitives(unittest.TestCase):
     #        Point.constrain_angle(Point(1, 0), Point(0, 1), 1, Point(sqrt(2)/2, sqrt(2)/2)),
     #
     #   ))
-
+    
+    def test_intPoint(self):
+        p = Point(4.89, 3.21)
+        self.assertEqual(p.round(), IntPoint(5, 3))
+        self.assertEqual(p.floor(), IntPoint(4, 3))
+        self.assertEqual(p.ceil(), IntPoint(5, 4))
+    
+        self.assertEqual(p.ceil().x, 5)
+        self.assertEqual(p.floor().y, 3)
+        self.assertEqual(IntPoint(), p.floor()-p.floor())
+        a = IntPoint(2, -5)
+        b = IntPoint(5, 3)
+        self.assertEqual(IntPoint(7, -2), a+b)
+        self.assertEqual(IntPoint(3, 8), b-a)
+        self.assertGreater(b, a)
+        self.assertGreaterEqual(b, b)
+        self.assertNotEqual(a, b)
+        
     def test_line(self):
         l = Line(Point(), pi/4)
         self.assertTrue(Point.are_near(
@@ -232,8 +249,7 @@ class TestPrimitives(unittest.TestCase):
         self.assertEqual(I, GenericInterval(8, 10))
         I.expandTo(1)
         self.assertEqual(I, GenericInterval(1, 10))
-        
-        p = [1, 2, 3.443, 3]
+        p = [1, 2, 3.442, 3]
         K = GenericInterval.from_list(p)
         self.assertAlmostEqual(K.max(), max(p))
         self.assertAlmostEqual((K+GenericInterval(1.0)).min(), min(p)+1)

@@ -1,4 +1,4 @@
-from _common_decl cimport Coord, Dim2, EPSILON
+from _common_decl cimport Coord, IntCoord, Dim2, EPSILON
 #from cython.libcpp cimport vector
 
 
@@ -38,7 +38,11 @@ cdef extern from "2geom/point.h" namespace "Geom":
         Coord length()
         Point ccw()
         Point cw()
-
+        Coord x()
+        Coord y()
+        IntPoint round()
+        IntPoint floor()
+        IntPoint ceil()
         bint isFinite()
         bint isZero()
         bint isNormalized(Coord)
@@ -84,6 +88,26 @@ cdef extern from "2geom/point.h" namespace "Geom":
 cdef extern from "2geom/point.h" namespace "Geom::Point":
     Point polar(Coord angle, Coord radius)
 
+cdef extern from "2geom/int-point.h" namespace "Geom":
+    cdef cppclass IntPoint:
+        IntPoint()
+        IntPoint(IntCoord, IntCoord)
+        IntPoint(IntPoint &)
+        IntCoord operator[](unsigned int)
+        #IntCoord & operator[](unsigned int)
+        #IntCoord operator[](Dim2)
+        #IntCoord & operator[](Dim2)
+        IntCoord x()
+        IntCoord y()
+        #why doesn't IntPoint have unary -?
+        IntPoint & operator+(IntPoint &)
+        IntPoint & operator-(IntPoint &)
+        bint operator==(IntPoint &)
+        bint operator!=(IntPoint &)
+        bint operator<=(IntPoint &)
+        bint operator>=(IntPoint &)
+        bint operator>(IntPoint &)
+        bint operator<(IntPoint &)
 
 cdef extern from "2geom/line.h" namespace "Geom":
     cdef cppclass Line:
@@ -157,6 +181,8 @@ cdef extern from "2geom/ray.h" namespace "Geom":
     double angle_between(Ray &, Ray &, bint)
     Ray make_angle_bisector_ray(Ray &, Ray&)
 
+
+
 cdef extern from "2geom/generic-interval.h" namespace "Geom":
     cdef cppclass GenericInterval[C]:
         #ctypedef typename GenericInterval[C]::IntervalType CInterval
@@ -193,14 +219,3 @@ cdef extern from "2geom/generic-interval.h" namespace "Geom":
     #GenericInterval[C] unify(GenericInterval[C], GenericInterval[C])
 #cdef extern from "2geom/generic-interval.h" namespace "Geom::GenericInterval":
     #GenericInterval[C] from_array(C *, unsigned int)
-
-        
-#cdef extern form "2geom/interval.h" namespace "Geom":
-#    Interval()
-#    Interval(Coord)
-#    Interval(Coord, Coord)
-#    Interval
-#cdef extern from "2geom/rect.h" namespace "Geom":
-#    cdef cppclass Rect:
-#        Rect()
-        
