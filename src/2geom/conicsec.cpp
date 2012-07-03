@@ -581,7 +581,7 @@ xAx xAx::operator*(double const &b) const {
       LineSegment ls = intersection(Line::from_origin_and_versor(A, dA), bnd);
       return RatQuad::fromPointsTangents(A, dA, ls.pointAt(0.5), ls[1], dA);
   }
-  else if(crs.size() >= 2 and crs.size() < 4) {
+  else if(crs.size() >= 2 && crs.size() < 4) {
     Point A = crs[0];
     Point C = crs[1];
     if(crs.size() == 3) {
@@ -605,7 +605,7 @@ xAx xAx::operator*(double const &b) const {
 
         Point dA = gradient(A);
         Point dC = gradient(C);
-        if(L2sq(dA) <= 1e-10 or L2sq(dC) <= 1e-10) {
+        if(L2sq(dA) <= 1e-10 || L2sq(dC) <= 1e-10) {
             return RatQuad::fromPointsTangents(A, C-A, B, C, A-C);
         }
 
@@ -708,7 +708,7 @@ boost::optional<Point> xAx::bottom() const {
 }
 
 Interval xAx::extrema(Rect r) const {
-  if (c[0] == 0 and c[1] == 0 and c[2] == 0) {
+  if (c[0] == 0 && c[1] == 0 && c[2] == 0) {
     Interval ext(valueAt(r.corner(0)));
     for(int i = 1; i < 4; i++)
       ext |= Interval(valueAt(r.corner(i)));
@@ -723,7 +723,7 @@ Interval xAx::extrema(Rect r) const {
   k = r[1][1];
   ext |= quad_ex(c[0], c[1]*k+c[3],  (c[2]*k + c[4])*k + c[5], r[0]);
   boost::optional<Point> B0 = bottom();
-  if (B0 and r.contains(*B0))
+  if (B0 && r.contains(*B0))
     ext.expandTo(0);
   return ext;
 }

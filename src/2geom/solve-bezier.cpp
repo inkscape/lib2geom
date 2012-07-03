@@ -80,7 +80,7 @@ void convex_hull_marching(Bezier src_bz, Bezier bz,
                           double left_t,
                           double right_t)
 {
-    while(bz.order() > 0 and bz[0] == 0) {
+    while(bz.order() > 0 && bz[0] == 0) {
         std::cout << "deflate\n";
         bz = bz.deflate();
         solutions.push_back(left_t);
@@ -113,7 +113,7 @@ void convex_hull_marching(Bezier src_bz, Bezier bz,
         double new_left_t = left_bound * (right_t - left_t) + left_t;
         std::cout << "new_left_t = " << new_left_t << std::endl;
         Bezier bzr = subRight(src_bz, new_left_t);
-        while(bzr.order() > 0 and bzr[0] == 0) {
+        while(bzr.order() > 0 && bzr[0] == 0) {
             std::cout << "deflate\n";
             bzr = bzr.deflate();
             solutions.push_back(new_left_t);
@@ -124,7 +124,7 @@ void convex_hull_marching(Bezier src_bz, Bezier bz,
                                  new_left_t, right_t); 
         } else {
             std::cout << "epsilon reached\n";
-            while(bzr.order() > 0 and fabs(bzr[0]) <= 1e-10) {
+            while(bzr.order() > 0 && fabs(bzr[0]) <= 1e-10) {
                 std::cout << "deflate\n";
                 bzr = bzr.deflate();
                 std::cout << bzr << std::endl;
@@ -259,7 +259,7 @@ void Bernsteins::find_bernstein_roots(Bezier bz,
     debug(std::cout << "Solution is exactly on the subdivision point.\n");
     debug(std::cout << Left << " , " << Right << std::endl);
     Left = reverse(Left);
-    while(Right.order() > 0 and fabs(Right[0]) <= 1e-10) {
+    while(Right.order() > 0 && fabs(Right[0]) <= 1e-10) {
         debug(std::cout << "deflate\n");
         Right = Right.deflate();
         Left = Left.deflate();
