@@ -64,10 +64,13 @@ void find_intersections(std::vector< std::pair<double, double> > & xs,
 void split(vector<Point> const &p, double t, 
            vector<Point> &left, vector<Point> &right) {
     const unsigned sz = p.size();
-    Geom::Point Vtemp[sz][sz];
+    //Geom::Point Vtemp[sz][sz];
+    vector<vector<Point> > Vtemp(sz);
+    for ( size_t i = 0; i < sz; ++i )
+        Vtemp[i].reserve(sz);
 
     /* Copy control points	*/
-    std::copy(p.begin(), p.end(), Vtemp[0]);
+    std::copy(p.begin(), p.end(), Vtemp[0].begin());
 
     /* Triangle computation	*/
     for (unsigned i = 1; i < sz; i++) {

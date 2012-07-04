@@ -433,7 +433,7 @@ bool same_side(Point L[2], Point  xs[4]) {
     int side = 0;
     for(int i = 0; i < 4; i++) {
         int sn = sgn(SignedTriangleArea(L[0], L[1], xs[i]));
-        if(sn and not side)
+        if(sn &&  !side)
             side = sn;
         else if(sn != side) return false;
     }
@@ -455,7 +455,7 @@ std::vector<pair<int, int> > bridges(ConvexHull a, ConvexHull b) {
     double ap_angle = atan2(a[ai+1] - a[ai]);
     double bp_angle = atan2(b[bi+1] - b[bi]);
     Point L[2] = {a[ai], b[bi]};
-    while(ai < int(a.size()) or bi < int(b.size())) {
+    while(ai < int(a.size()) || bi < int(b.size())) {
         if(ap_angle == bp_angle) {
             // In the case of parallel support lines, we must consider all four pairs of copodal points
             {
@@ -681,7 +681,7 @@ Point const * ConvexHull::furthest(Point direction) const {
 // is currently n*O(furthest)
 double ConvexHull::narrowest_diameter(Point &a, Point &b, Point &c) {
     Point tb = boundary.back();
-    double d = INFINITY;
+    double d = std::numeric_limits<double>::max();
     for(unsigned i = 0; i < boundary.size(); i++) {
         Point tc = boundary[i];
         Point n = -rot90(tb-tc);

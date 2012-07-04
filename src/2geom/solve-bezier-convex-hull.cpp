@@ -37,7 +37,7 @@ void find_left_convex_hull(Geom::Bezier const& bz) {
   for(unsigned i = 0; i < P.size(); i++) {
     Point p1 = P[i];
     double x = (-p0[1]) / (p1[1] - p0[1]);
-    if(x >= 0 and x <= 1 and x < min_x) {
+    if(x >= 0 && x <= 1 && x < min_x) {
       min_x = x;
     }
     

@@ -81,10 +81,13 @@ const double INV_EPS = (1L<<14);
  */
 void OldBezier::split(double t, OldBezier &left, OldBezier &right) const {
     const unsigned sz = p.size();
-    Geom::Point Vtemp[sz][sz];
+    //Geom::Point Vtemp[sz][sz];
+    std::vector< std::vector< Geom::Point > > Vtemp;
+    for (size_t i = 0; i < sz; ++i )
+        Vtemp[i].reserve(sz);
 
     /* Copy control points	*/
-    std::copy(p.begin(), p.end(), Vtemp[0]);
+    std::copy(p.begin(), p.end(), Vtemp[0].begin());
 
     /* Triangle computation	*/
     for (unsigned i = 1; i < sz; i++) {
@@ -174,8 +177,8 @@ bool intersect_BB( OldBezier a, OldBezier b ) {
     b.bounds(minbx, maxbx, minby, maxby);
     // Test bounding box of b against bounding box of a
     // Not >= : need boundary case
-    return not( ( minax > maxbx ) || ( minay > maxby )
-                || ( minbx > maxax ) || ( minby > maxay ) );
+    return !( ( minax > maxbx ) || ( minay > maxby )
+              || ( minbx > maxax ) || ( minby > maxay ) );
 }
 
 /*
