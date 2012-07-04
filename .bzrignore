@@ -20,3 +20,4 @@ doc/latex
 doxygen_warnings.log
 Testing
 CTestTestfile.cmake
+*.cxx
