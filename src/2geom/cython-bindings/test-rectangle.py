@@ -1,8 +1,19 @@
 import unittest
 from math import pi, sqrt
+from random import randint
 
 import cy2geom
+
+from cy2geom import Point, IntPoint
+
 from cy2geom import Interval, IntInterval, OptInterval, OptIntInterval
+from cy2geom import GenericInterval, GenericOptInterval
+
+from cy2geom import Rect, OptRect, IntRect, OptIntRect
+#from cy2geom import GenericRect
+
+from fractions import Fraction
+        
 
 class TestPrimitives(unittest.TestCase):
     def interval_basic(self, I, J):
@@ -10,35 +21,35 @@ class TestPrimitives(unittest.TestCase):
         self.assertTrue(I.min() >= 0)
         self.assertTrue(J.min() >= 0)
         a = I.min()
-        b = I.max()
-        self.assertAlmostEqual(I.middle(), (a+b)/2)
-        self.assertAlmostEqual(I.extent(), (b-a))
+        b = I.max();
+        self.assertAlmostEqual(I.middle(), (a+b)/2); 
+        self.assertAlmostEqual(I.extent(), (b-a)); 
         if a != b:
             self.assertFalse(I.isSingular())
         else:
             self.assertTrue(I.isSingular())
+            
         I.expandBy(a)
-        self.assertAlmostEqual(I.min(), 0)
+        self.assertAlmostEqual(I.min(), 0); 
         self.assertAlmostEqual(I.max(), a+b)
-        
         I.setMin(a)
         I.setMax(b)
+        
         self.assertTrue(I.contains(a+ (b-a)/3 ))
         self.assertTrue(I.contains(a))
         self.assertTrue(I.contains(I))
+        
         if (not I.isSingular()) or I.min() != 0 :
             self.assertFalse(I.contains(I+I))
         self.assertFalse(I.contains(a-1))
         
         c = J.min()
         d = J.max()
-                
         self.assertAlmostEqual( (I+J).min(), a+c )
         self.assertAlmostEqual((I|J).min(), min(a, c))
         J.setMin(a+2)
         J.setMax(b+2)
         self.assertEqual(I+2, J)
-        
         I.expandTo(2*b)
         self.assertAlmostEqual(I.max(), 2*b)
         
@@ -112,8 +123,8 @@ class TestPrimitives(unittest.TestCase):
         I = OptIntInterval(2, 9)
         J = IntInterval(3, 13)
         K = OptIntInterval.from_Interval(J)
-        self.assertEqual(K.IntInterval, J)
-        self.interval_basic(K.IntInterval, I.IntInterval)
+        self.assertEqual(K.Interval, J)
+        self.interval_basic(K.Interval, I.Interval)
         
         L = OptIntInterval()
         
@@ -124,8 +135,384 @@ class TestPrimitives(unittest.TestCase):
         
         L |= I
         
-        self.assertEqual(L.IntInterval, I.IntInterval)
+        self.assertEqual(L.Interval, I.Interval)
         
-        self.assertEqual((I & K).IntInterval, IntInterval(3, 9))
+        self.assertEqual((I & K).Interval, IntInterval(3, 9))
         
+    def test_genericInterval(self):
+        maxv = 100000
+        test_vars = [
+            ( (randint(0, maxv), randint(0, maxv)), (randint(0, maxv), randint(0, maxv)) ),
+            ( (3,), (2, 0) ),
+            ( (0.0, 9), (4, 1.3)),
+            ((2.98, sqrt(2)), (sqrt(7),)),
+            ( (Fraction(1,2), Fraction(3, 7)), ( Fraction(2, 1), ) )
+            ]
+        for a,b in test_vars:
+            self.interval_basic( GenericInterval(*a), GenericInterval(*b) )
+            
+    def test_genericOptInterval(self):
+        test_vars = [
+            ( (3,), (2, 0) ),
+            ( (0.0, 9), (4, 1.3)),
+            ((2.98, sqrt(2)), (sqrt(7),)),
+            ( (Fraction(1,2), Fraction(3, 7)), ( Fraction(2, 1), ) )
+            ]
+            
+        for a, b in test_vars:
+            I = GenericOptInterval(*a)
+            J = GenericInterval(*b)
+            K = GenericOptInterval.from_Interval(J)
+            
+            self.assertEqual(I, GenericOptInterval.from_Interval(I))
+            
+            self.assertEqual(K.Interval, J)
+            self.interval_basic(K.Interval, I.Interval)
+            
+            L = GenericOptInterval()
+            
+            self.assertFalse(L)
+            self.assertTrue( (L&I).isEmpty() )
+            L.intersectWith(I)
+            self.assertFalse(L)
+            
+            L |= I
+            
+            self.assertEqual(L.Interval, I.Interval)
+            
+            if I.intersectWith(K):
+                if I.Interval.min() <= K.Interval.min():
+                    if I.Interval.max() >= K.Interval.max():
+                        self.assertEqual( I & K, K)
+                    else:
+                        self.assertEqual( I & K, GenericInterval(K.min(), I.max()))
+                else:
+                    if I.Interval.max() >= K.Interval.max():
+                        self.assertEqual( I & K, GenericInterval(I.min(), K.max()))
+                    else:
+                        self.assertEqual( I & K, I)
+    
+    def not_test_genericRect(self):
+        A = GenericRect(1, 1, 4, 4)
+        self.assertEqual( A.min(), (1, 1) )
+    
+    def rect_basic(self, P, Q):
+        pmin = P.min()
+        pmax = P.max()
+        #for simplicity
+        self.assertTrue(pmin.x > 0)
+        self.assertTrue(pmin.y > 0)
+        
+        self.assertAlmostEqual(pmin.x, P[0].min())
+        self.assertAlmostEqual(pmax.y, P[1].max())
+        self.assertEqual(pmin, P.corner(0))
+        
+        self.assertEqual(pmin, Point(P.left(), P.top()))
+        self.assertEqual(pmax, Point(P.right(), P.bottom()))
+        
+        self.assertAlmostEqual( P.width(), P[0].extent() )
+        self.assertAlmostEqual( P.height(), P[1].extent() )
+        
+        self.assertAlmostEqual( P.aspectRatio(), P.width()/P.height() )
+        self.assertEqual( P.dimensions(), Point( P.width(), P.height() ) )
+        self.assertEqual( P.midpoint(), (P.min() + P.max())/2 )
+        self.assertAlmostEqual(P.area(), P.width()*P.height())
+        #TODO export EPSILON from 2geom
+        if P.area() > 1e-7:
+            self.assertFalse(P.hasZeroArea())
+            self.assertTrue(P.hasZeroArea(P.area()))
+        else:
+            self.assertTrue(P.hasZeroArea())
+        self.assertAlmostEqual(P.maxExtent(), max(P.width(), P.height()))
+        self.assertGreaterEqual(P.maxExtent(), P.minExtent())
+        
+        qmin = Q.min()
+        qmax = Q.max()
+        
+        pdiag = (pmax-pmin).length()
+        
+        Q.setMin(P.midpoint())
+        Q.setMax(P.midpoint())
+        self.assertTrue(Q.hasZeroArea())
+        
+        #print P,Q
+        Q.expandBy(P.minExtent()/3.0)
+         
+        #print P, Q
+        
+        self.assertTrue(P.contains(Q))
+        self.assertTrue(P.intersects(Q))
+        self.assertTrue(Q.intersects(P))
+        self.assertFalse(Q.contains(P))
+        
+        self.assertTrue(P.interiorContains(Q))
+        self.assertFalse(P.interiorContains(P))
+        self.assertTrue(P.interiorIntersects(Q))
+        self.assertTrue(P.interiorIntersects(P))
+        
+        self.assertTrue(P.contains(P.midpoint()))
+        self.assertFalse(P.contains(P.midpoint()*3))
+        
+        P.unionWith(Q)
+        
+        self.assertEqual( P.min(), pmin )
+        
+        Q.setLeft(qmin.x)
+        Q.setTop(qmin.y)
+        Q.setRight(qmax.x)
+        Q.setBottom(qmax.y)
+        
+        self.assertEqual(Q.min(), qmin)
+        self.assertEqual(Q.max(), qmax)
+        
+        Q.expandTo( Point() )
+        self.assertEqual(Point(), Q.min())
+        Q.expandBy(qmax)
+        self.assertEqual(qmax, -Q.min())
+        
+        Q.expandBy(-qmax.x, -qmax.y)
+        self.assertEqual(Q.max(), qmax)
+        
+        self.assertEqual( (P+Q.min()).max(), P.max() + Q.min() )
+        
+        self.assertEqual( (P-Q.max()).min(), P.min() - Q.max() )
+        
+        self.assertEqual( P|P, P )
+        
+        self.assertFalse( P != P )
+
+        Q.setLeft(qmin.x)
+        Q.setTop(qmin.y)
+        Q.setRight(qmax.x)
+        Q.setBottom(qmax.y)
+        
+        self.assertAlmostEqual(Rect.distance(Point(), P), P.min().length())
+        self.assertAlmostEqual(Rect.distanceSq(Q.min(), P), Rect.distance(Q.min(), P)**2 )
+        
+        self.assertEqual(P.roundOutwards()[0], P[0].roundOutwards())
+        if P.roundInwards():
+            self.assertEqual(P.roundInwards().Rect[1], P[1].roundInwards().Interval)
+        
+        
+    def intrect_basic(self, P, Q):
+        pmin = P.min()
+        pmax = P.max()
+        #for simplicity
+        self.assertTrue(pmin.x > 0)
+        self.assertTrue(pmin.y > 0)
+        
+        self.assertAlmostEqual(pmin.x, P[0].min())
+        self.assertAlmostEqual(pmax.y, P[1].max())
+        self.assertEqual(pmin, P.corner(0))
+        
+        self.assertEqual(pmin, IntPoint(P.left(), P.top()))
+        self.assertEqual(pmax, IntPoint(P.right(), P.bottom()))
+        
+        self.assertAlmostEqual( P.width(), P[0].extent() )
+        self.assertAlmostEqual( P.height(), P[1].extent() )
+        
+        self.assertAlmostEqual( P.aspectRatio(), float(P.width())/float(P.height()) )
+        self.assertEqual( P.dimensions(), IntPoint( P.width(), P.height() ) )
+        self.assertEqual( P.midpoint().x, (P.min() + P.max()).x/2 )
+        self.assertAlmostEqual(P.area(), P.width()*P.height())
+        #TODO export EPSILON from 2geom
+        if P.area() > 0:
+            self.assertFalse(P.hasZeroArea())
+        else:
+            self.assertTrue(P.hasZeroArea())
+        self.assertAlmostEqual(P.maxExtent(), max(P.width(), P.height()))
+        self.assertGreaterEqual(P.maxExtent(), P.minExtent())
+        
+        qmin = Q.min()
+        qmax = Q.max()
+        
+        #pdiag = (pmax-pmin).length()
+        
+        Q.setMin(P.midpoint())
+        Q.setMax(P.midpoint())
+        self.assertTrue(Q.hasZeroArea())
+        
+        #print P,Q
+        Q.expandBy(P.minExtent()/3.0)
+         
+        #print P, Q
+        
+        self.assertTrue(P.contains(Q))
+        self.assertTrue(P.intersects(Q))
+        self.assertTrue(Q.intersects(P))
+        self.assertFalse(Q.contains(P))
+
+        self.assertTrue(P.contains(P.midpoint()))
+        self.assertFalse(P.contains(P.midpoint()+P.midpoint()+P.midpoint()))
+        
+        P.unionWith(Q)
+        
+        self.assertEqual( P.min(), pmin )
+        
+        Q.setLeft(qmin.x)
+        Q.setTop(qmin.y)
+        Q.setRight(qmax.x)
+        Q.setBottom(qmax.y)
+        
+        self.assertEqual(Q.min(), qmin)
+        self.assertEqual(Q.max(), qmax)
+        
+        Q.expandTo( IntPoint() )
+        self.assertEqual(IntPoint(), Q.min())
+        Q.expandBy(qmax)
+        self.assertEqual(qmax, IntPoint()-Q.min())
+        
+        Q.expandBy(-qmax.x, -qmax.y)
+        self.assertEqual(Q.max(), qmax)
+        
+        self.assertEqual( (P+Q.min()).max(), P.max() + Q.min() )
+        
+        self.assertEqual( (P-Q.max()).min(), P.min() - Q.max() )
+        
+        self.assertEqual( P|P, P )
+        
+        self.assertFalse( P != P )
+
+        Q.setLeft(qmin.x)
+        Q.setTop(qmin.y)
+        Q.setRight(qmax.x)
+        Q.setBottom(qmax.y)
+
+
+
+    def test_rect(self):
+        P = Rect(0.298, 2, 4, 5)
+        self.interval_basic(P[0], P[1])
+        G = Rect(sqrt(2), sqrt(2), sqrt(3), sqrt(3))
+        H = Rect.from_xywh(3.43232, 9.23214, 21.523, -0.31232)
+        
+        self.rect_basic(P, G)
+        self.rect_basic(G, H)
+        
+        lst = [Point(randint(-100, 100), randint(-100, 100)) for i in range(10)]
+   
+        R = Rect.from_list(lst)
+        
+        for p in lst:
+            self.assertTrue(R.contains(p))
+            
+        self.assertAlmostEqual(min(lst).y, R.min().y)
+        self.assertAlmostEqual(max(lst).y, R.max().y)
+        
+        
+        
+    def test_optRect(self):
+        P = OptRect(0.298, 2, 4, 5)
+        self.interval_basic(P.Rect[0], P.Rect[1])
+        
+        
+        G = Rect(sqrt(2), sqrt(2), sqrt(3), sqrt(3))
+        H = OptRect.from_Rect(G)
+        
+        self.rect_basic(P.Rect, G)
+        
+        lst = [Point(randint(-100, 100), randint(-100, 100)) for i in range(10)]
+
+        R = OptRect.from_list(lst)
+        
+        for p in lst:
+            self.assertTrue(R.Rect.contains(p))
+            
+        self.assertAlmostEqual(min(lst).y, R.Rect.min().y)
+        self.assertAlmostEqual(max(lst).y, R.Rect.max().y)
+        
+        Q = OptRect()
+        self.assertFalse(Q)
+        self.assertTrue(P)
+
+        self.assertTrue(Q.isEmpty())
+        self.assertFalse(P.isEmpty())
+
+        self.assertTrue(P.contains( P ))
+        self.assertTrue(P.contains(Q))
+        self.assertFalse(Q.contains(P))
+        self.assertFalse(P.intersects(Q))
+        self.assertTrue(P.contains(P.Rect))
+        self.assertTrue(P.contains(P.Rect.midpoint())) 
+        
+        self.assertEqual(P, OptRect.from_Rect(P))
+        
+        P.unionWith(G)
+        P.unionWith(H)
+        self.assertTrue(P.contains(H))
+        
+        P.intersectWith(G)
+        self.assertEqual(P, G)
+        
+        self.assertEqual( P|H, G )
+        self.assertEqual( (P|R).Rect.min().x , min( P.Rect.min().x, R.Rect.min().x ))
+        
+        self.assertFalse(P & Q)
+        self.assertEqual(P, P&P)
+        
+        self.assertEqual( P & (R | H), (P & R) | (P & H)  )
+        
+    def test_intRect(self):
+        A = IntRect(2, 6, 9, 23)
+        B = IntRect(IntInterval(1, 5), IntInterval(8, 9))
+        C = IntRect(IntPoint(1, 8), IntPoint(5, 9))
+        
+        self.assertEqual(B, C)
+        
+        self.intrect_basic(A, B)
+        self.intrect_basic(B, C)
+        self.intrect_basic(C, A)
+        
+    def test_optIntRect(self):
+        P = OptIntRect(1, 2, 4, 5)
+        self.interval_basic(P.Rect[0], P.Rect[1])
+        
+        
+        G = IntRect(2, 2, 3, 3)
+        H = OptIntRect.from_Rect(G)
+        
+        self.intrect_basic(P.Rect, G)
+        
+        lst = [IntPoint(randint(-100, 100), randint(-100, 100)) for i in range(10)]
+
+        R = OptIntRect.from_list(lst)
+        
+        for p in lst:
+            self.assertTrue(R.Rect.contains(p))
+            
+        self.assertAlmostEqual(min(lst).y, R.Rect.min().y)
+        self.assertAlmostEqual(max(lst).y, R.Rect.max().y)
+        
+        Q = OptIntRect()
+        self.assertFalse(Q)
+        self.assertTrue(P)
+
+        self.assertTrue(Q.isEmpty())
+        self.assertFalse(P.isEmpty())
+
+        self.assertTrue(P.contains( P ))
+        self.assertTrue(P.contains( P.Rect ))
+        self.assertTrue(P.contains(Q))
+        self.assertFalse(Q.contains(P))
+        self.assertFalse(P.intersects(Q))
+        self.assertTrue(P.contains(P.Rect))
+        self.assertTrue(P.contains(P.Rect.midpoint())) 
+        
+        self.assertEqual(P, OptIntRect.from_Rect(P))
+        
+        P.unionWith(G)
+        P.unionWith(H)
+        self.assertTrue(P.contains(H))
+        
+        P.intersectWith(G)
+        self.assertEqual(P, G)
+        
+        self.assertEqual( P|H, G )
+        self.assertEqual( (P|R).Rect.min().x , min( P.Rect.min().x, R.Rect.min().x ))
+        
+        self.assertFalse(P & Q)
+        self.assertEqual(P, P&P)
+        
+        self.assertEqual( P & (R | H), (P & R) | (P & H)  )
+
 unittest.main()

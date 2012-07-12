@@ -1,5 +1,11 @@
 from _common_decl cimport Coord, IntCoord, Dim2, EPSILON
+from cpython.ref cimport PyObject
 
+from _cy_primitives cimport Point, cy_Point, wrap_Point
+from _cy_primitives cimport IntPoint, cy_IntPoint, wrap_IntPoint
+#cdef extern from "2geom/point.h" namespace "Geom":
+#    cdef cppclass Point:
+#        pass
 
 cdef extern from "2geom/generic-interval.h" namespace "Geom":
     cdef cppclass GenericInterval[C]:
@@ -55,8 +61,7 @@ cdef extern from "2geom/generic-interval.h" namespace "Geom":
         bint isEmpty()
 
         void intersectWith(GenericOptInterval &)
-        
-        GenericOptInterval &operator&(GenericOptInterval &)
+
 
         GenericOptInterval[C] &operator+(C)
         GenericOptInterval[C] &operator-(C)
@@ -64,6 +69,7 @@ cdef extern from "2geom/generic-interval.h" namespace "Geom":
         GenericOptInterval[C] &operator+(GenericOptInterval[C] &)
         GenericOptInterval[C] &operator-(GenericOptInterval[C] &)
         GenericOptInterval[C] &operator|(GenericOptInterval[C] &)
+        GenericOptInterval[C] &operator&(GenericOptInterval[C] &)
         bint operator==(GenericOptInterval[C] &)
         bint operator!=(GenericOptInterval[C] &)
     #TODO
@@ -137,3 +143,293 @@ cdef extern from "2geom/interval.h" namespace "Geom":
         
         OptInterval &operator|(OptInterval &)
         OptInterval &operator&(OptInterval &)
+
+cdef extern from "2geom/cython-bindings/wrapped-pyobject.h" namespace "Geom":
+    cdef cppclass WrappedPyObject:
+        WrappedPyObject()
+        WrappedPyObject(object)
+        object getObj()
+    cdef cppclass PyPoint:
+        PyPoint()
+        PyPoint(WrappedPyObject, WrappedPyObject)
+        WrappedPyObject operator[](int)
+        
+cdef extern from "2geom/generic-rect.h" namespace "Geom":
+    cdef cppclass GenericRect[C]:
+        #GenericRect[C] & operator=(GenericRect[C] &)
+        GenericRect(GenericRect[C] &)
+        GenericRect()
+        GenericRect(GenericInterval[C] &, GenericInterval[C] &)
+        GenericRect(Point &, Point &)
+        GenericRect(PyPoint &, PyPoint &)
+        GenericRect(IntPoint &, IntPoint &)
+
+
+        GenericRect(C, C, C, C)
+        #GenericRect[C] from_range(Point *, Point *)
+        #GenericRect[C] from_array(Point *, unsigned int)
+        #GenericRect[C] from_xywh(WrappedPyObject, WrappedPyObject, WrappedPyObject, WrappedPyObject)
+        #GenericRect[C] from_xywh(Point &, Point &)
+        #GenericRect[C] infinite()
+        #GenericInterval[C] & operator[](unsigned int)
+        #GenericInterval[C] & operator[](unsigned int)
+        #GenericInterval[C] & operator[](Dim2)
+        GenericInterval[C] & operator[](Dim2)
+        PyPoint min()
+        PyPoint max()
+        PyPoint corner(unsigned int)
+        
+        IntPoint i_min "min" ()
+        IntPoint i_max "max" ()
+        IntPoint i_corner "corner" (unsigned int)
+        
+        C top()
+        C bottom()
+        C left()
+        C right()
+        C width()
+        C height()
+        #WrappedPyObject aspectRatio()
+        Coord aspectRatio()
+        
+        PyPoint dimensions()
+        PyPoint midpoint()
+
+        IntPoint i_dimensions "dimensions" ()
+        IntPoint i_midpoint "midpoint" ()
+        
+        C area()
+        bint hasZeroArea()
+        C maxExtent()
+        C minExtent()
+        bint intersects(GenericRect[C] &)
+        bint contains(GenericRect[C] &)
+
+        bint contains(PyPoint &)
+        bint contains(IntPoint &)
+
+        void setLeft(C)
+        void setRight(C)
+        void setTop(C)
+        void setBottom(C)
+
+        void setMin(PyPoint &)
+        void setMax(PyPoint &)
+        void expandTo(PyPoint &)
+        void setMin(IntPoint &)
+        void setMax(IntPoint &)
+        void expandTo(IntPoint &)
+        
+        void unionWith(GenericRect[C] &)
+        void expandBy(C)
+        void expandBy(C, C)
+        
+        void expandBy(PyPoint &)
+        void expandBy(IntPoint &)
+        
+        #GenericRect[C] & operator+=(Point &)
+        GenericRect[C] & operator+(PyPoint &)
+        GenericRect[C] & operator+(IntPoint &)
+                
+        #GenericRect[C] & operator-=(Point &)
+        GenericRect[C] & operator-(PyPoint &)
+        GenericRect[C] & operator-(IntPoint &)
+
+        #GenericRect[C] & operator|=(GenericRect[C] &)
+        GenericRect[C] & operator|(GenericRect[C] &)
+        bint operator==(GenericRect[C] &)
+        bint operator!=(GenericRect[C] &)
+    #GenericRect[WrappedPyPoint] from_range(Point *, Point *)
+    #GenericRect[C] from_array(Point *, unsigned int)
+    #GenericRect[WrappedPyObject] from_xywh(WrappedPyObject, WrappedPyObject, WrappedPyObject, WrappedPyObject)
+    #GenericRect[WrappedPyObject] from_xywh(PyPoint &, PyPoint &)
+    
+    cdef cppclass GenericOptRect[C]:
+        GenericOptRect()
+        GenericOptRect(GenericRect[C] &)
+        GenericOptRect(C, C, C, C)
+        GenericOptRect(Point &, Point &)
+        GenericOptRect(GenericOptInterval[C] &, GenericOptInterval[C] &)
+        
+        GenericRect[C] get()
+        
+        bint isEmpty()
+        bint intersects(GenericRect[C] &)
+        bint contains(GenericRect[C] &)
+        bint intersects(GenericOptRect[C] &)
+        bint contains(GenericOptRect[C] &)
+        
+        bint contains(Point &)
+        bint contains(IntPoint &)
+        
+        void unionWith(GenericRect[C] &)
+        void unionWith(GenericOptRect[C] &)
+        void intersectWith(GenericRect[C] &)
+        void intersectWith(GenericOptRect[C] &)
+        
+        void expandTo(Point &)
+        
+        GenericOptRect[C] &operator|(GenericOptRect[C] &)
+        GenericOptRect[C] &operator&(GenericRect[C] &)
+        GenericOptRect[C] &operator&(GenericOptRect[C] &)
+        
+        bint operator==(GenericOptRect[C] &)
+        bint operator==(GenericRect[C] &)
+
+        bint operator!=(GenericOptRect[C] &)
+        bint operator!=(GenericRect[C] &)
+
+cdef extern from "2geom/generic-rect.h" namespace "Geom::GenericRect<Geom::WrappedPyObject>":
+    GenericRect[WrappedPyObject] from_xywh(WrappedPyObject, WrappedPyObject, WrappedPyObject, WrappedPyObject)
+    GenericRect[WrappedPyObject] from_xywh(PyPoint &, PyPoint &)
+
+cdef extern from "2geom/int-rect.h" namespace "Geom":
+    ctypedef GenericRect[IntCoord] IntRect
+
+cdef extern from "2geom/rect.h" namespace "Geom":
+    cdef cppclass Rect:
+        #Rect & operator=(Rect &)
+        Rect(Rect &)
+        Rect()
+        Rect(Interval &, Interval &)
+        Rect(Point &, Point &)
+        Rect(Coord, Coord, Coord, Coord)
+        #Rect from_range(Point *, Point *)
+        #Rect from_array(Point *, unsigned int)
+        #Rect from_xywh(WrappedPyObject, WrappedPyObject, WrappedPyObject, WrappedPyObject)
+        #Rect from_xywh(Point &, Point &)
+        #Rect infinite()
+        #GenericInterval[C] & operator[](unsigned int)
+        #GenericInterval[C] & operator[](unsigned int)
+        #GenericInterval[C] & operator[](Dim2)
+        Interval & operator[](Dim2)
+        Point min()
+        Point max()
+        Point corner(unsigned int)
+        Coord top()
+        Coord bottom()
+        Coord left()
+        Coord right()
+        Coord width()
+        Coord height()
+        Coord aspectRatio()
+        Point dimensions()
+        Point midpoint()
+        Coord area()
+        bint hasZeroArea()
+        Coord maxExtent()
+        Coord minExtent()
+        bint intersects(Rect &)
+        bint contains(Rect &)
+        bint contains(Point &)
+        void setLeft(Coord)
+        void setRight(Coord)
+        void setTop(Coord)
+        void setBottom(Coord)
+        void setMin(Point &)
+        void setMax(Point &)
+        void expandTo(Point &)
+        void unionWith(Rect &)
+        void expandBy(Coord)
+        void expandBy(Coord, Coord)
+        void expandBy(Point &)
+        #Rect & operator+=(Point &)
+        Rect & operator+(Point &)
+        #Rect & operator-=(Point &)
+        Rect & operator-(Point &)
+        #Rect & operator|=(Rect &)
+        Rect & operator|(Rect &)
+        bint operator==(Rect &)
+        bint operator!=(Rect &)   
+        
+        bint hasZeroArea(Coord)
+        bint interiorIntersects(Rect &)
+        bint interiorContains(Point &)
+        bint interiorContains(Rect &)
+        bint interiorContains(OptRect &)
+        IntRect roundOutwards()
+        OptIntRect roundInwards()
+#        Rect &operator*(Affine &)
+        bint operator==(IntRect &)
+        bint operator!=(IntRect &)
+
+    Coord distanceSq(Point &, Rect &)
+    Coord distance(Point &, Rect &)
+
+        
+    
+    
+    cdef cppclass OptRect:
+        OptRect()
+        OptRect(Rect &)
+        OptRect(Coord, Coord, Coord, Coord)
+        OptRect(Point &, Point &)
+        OptRect(OptInterval &, OptInterval &)
+        
+        Rect get()
+        
+        bint isEmpty()
+        bint intersects(Rect &)
+        bint contains(Rect &)
+        bint intersects(OptRect &)
+        bint contains(OptRect &)
+        bint contains(Point &)
+        
+        void unionWith(Rect &)
+        void unionWith(OptRect &)
+        void intersectWith(Rect &)
+        void intersectWith(OptRect &)
+        void expandTo(Point &)
+        
+        OptRect &operator|(OptRect &)
+        OptRect &operator&(Rect &)
+        OptRect &operator&(OptRect &)
+        
+        bint operator==(OptRect &)
+        bint operator==(Rect &)
+
+        bint operator!=(OptRect &)
+        bint operator!=(Rect &)
+                
+cdef extern from "2geom/rect.h" namespace "Geom::Rect":
+    Rect from_xywh(Coord, Coord, Coord, Coord)
+    Rect from_xywh(Point &, Point &)
+
+cdef extern from "2geom/int-rect.h" namespace "Geom":
+    #ctypedef GenericRect[IntCoord] IntRect
+    #ctypedef GenericOptRect[IntCoord] OptIntRect
+    #redeclaring because cython complains about ambigous overloading othewise
+    cdef cppclass OptIntRect:
+        OptIntRect()
+        OptIntRect(IntRect &)
+        OptIntRect(IntCoord, IntCoord, IntCoord, IntCoord)
+        OptIntRect(IntPoint &, IntPoint &)
+        OptIntRect(OptIntInterval &, OptIntInterval &)
+        
+        IntRect get()
+        
+        bint isEmpty()
+        bint intersects(IntRect &)
+        bint contains(IntRect &)
+        bint intersects(OptIntRect &)
+        bint contains(OptIntRect &)
+        
+        bint contains(Point &)
+        bint contains(IntPoint &)
+        
+        void unionWith(IntRect &)
+        void unionWith(OptIntRect &)
+        void intersectWith(IntRect &)
+        void intersectWith(OptIntRect &)
+        
+        void expandTo(IntPoint &)
+        
+        OptIntRect &operator|(OptIntRect &)
+        OptIntRect &operator&(IntRect &)
+        OptIntRect &operator&(OptIntRect &)
+        
+        bint operator==(OptIntRect &)
+        bint operator==(IntRect &)
+
+        bint operator!=(OptIntRect &)
+        bint operator!=(IntRect &)

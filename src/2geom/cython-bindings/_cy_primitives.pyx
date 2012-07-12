@@ -78,7 +78,7 @@ cdef cy_Angle wrap_Angle(Angle p):
 #-- Point --
 
 cdef class cy_Point:
-    cdef Point* thisptr
+    #cdef Point* thisptr
 
     def __cinit__(self, double x=0.0, double y=0.0):
         self.thisptr = new Point(x, y)
@@ -217,13 +217,16 @@ cdef cy_Point wrap_Point(Point p):
 #-- IntPoint --
 
 cdef class cy_IntPoint:
-    cdef IntPoint* thisptr
+#    cdef IntPoint* thisptr
 
     def __init__(self, IntCoord x = 0, IntCoord y = 0):
         self.thisptr =  new IntPoint(x ,y)
 
     def __getitem__(self, key):
         return deref(self.thisptr)[key]
+
+    def __repr__(self):
+        return "Point ({0}, {1})".format(self[0], self[1])
 
     @property
     def x(self):

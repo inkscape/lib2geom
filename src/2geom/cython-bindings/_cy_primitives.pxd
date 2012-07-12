@@ -88,6 +88,11 @@ cdef extern from "2geom/point.h" namespace "Geom":
 cdef extern from "2geom/point.h" namespace "Geom::Point":
     Point polar(Coord angle, Coord radius)
 
+cdef class cy_Point:
+    cdef Point* thisptr
+
+cdef cy_Point wrap_Point(Point p)
+
 cdef extern from "2geom/int-point.h" namespace "Geom":
     cdef cppclass IntPoint:
         IntPoint()
@@ -108,6 +113,11 @@ cdef extern from "2geom/int-point.h" namespace "Geom":
         bint operator>=(IntPoint &)
         bint operator>(IntPoint &)
         bint operator<(IntPoint &)
+
+cdef class cy_IntPoint:
+    cdef IntPoint* thisptr
+
+cdef cy_IntPoint wrap_IntPoint(IntPoint p)
 
 cdef extern from "2geom/line.h" namespace "Geom":
     cdef cppclass Line:
