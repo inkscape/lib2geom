@@ -1,18 +1,13 @@
 from cython.operator cimport dereference as deref
 from _common_decl cimport *
 
-
+from _cy_affine cimport cy_Affine, get_Affine, is_transform
 
 from numbers import Number
-
-#ctypedef cy_Point _cy_primitive.cy_Point
-
 
 cdef class cy_GenericInterval:
     cdef GenericInterval[WrappedPyObject]* thisptr
     def __cinit__(self, u = 0, v = None):
-        #cdef WrappedPyObject * Wu = new WrappedPyObject(u)
-        #   cdef WrappedPyObject * Wv = new WrappedPyObject(v)
         if v is None:
             self.thisptr = new GenericInterval[WrappedPyObject]( WrappedPyObject(u) )
         else:
@@ -188,7 +183,7 @@ cdef cy_GenericOptInterval wrap_GenericOptInterval(GenericOptInterval[WrappedPyO
 
 
 cdef class cy_Interval:
-    cdef Interval* thisptr
+#~     cdef Interval* thisptr
     def __cinit__(self, u = None, v = None):
         if u is None:
             self.thisptr = new Interval()
@@ -336,7 +331,7 @@ cdef cy_Interval wrap_Interval(Interval p):
     return r
 
 cdef class cy_OptInterval:
-    cdef OptInterval* thisptr
+#~     cdef OptInterval* thisptr
     def __cinit__(self, u = None, v = None):
         if u is None:
             self.thisptr = new OptInterval()
@@ -567,32 +562,20 @@ cdef cy_OptIntInterval wrap_OptIntInterval(OptIntInterval p):
 
 cdef class cy_GenericRect:
     cdef GenericRect[WrappedPyObject]* thisptr
-    cdef WrappedPyObject *x0
-    cdef WrappedPyObject *y0
-    cdef WrappedPyObject *x1
-    cdef WrappedPyObject *y1
+
     def __cinit__(self, *args):
-        print args
         cdef WrappedPyObject zero = WrappedPyObject(0)
         if len(args) == 0:
             self.thisptr = new GenericRect[WrappedPyObject](zero, zero, zero, zero)
         elif len(args) == 2:
-            if isinstance(args[0], cy_GenericInterval) and isinstance(args[0], cy_GenericInterval):
+            if isinstance(args[0], cy_GenericInterval) and isinstance(args[1], cy_GenericInterval):
                 self.thisptr = new GenericRect[WrappedPyObject](deref((<cy_GenericInterval> args[0]).thisptr),
                                                                 deref((<cy_GenericInterval> args[1]).thisptr))
         elif len(args) == 4:
-            x0 = new WrappedPyObject(args[0])
-            y0 = new WrappedPyObject(args[1])
-            x1 = new WrappedPyObject(args[2])
-            y1 = new WrappedPyObject(args[3])
-#            self.thisptr = new GenericRect[WrappedPyObject](WrappedPyObject(args[0]),
-#                                                            WrappedPyObject(args[1]),
-#                                                            WrappedPyObject(args[2]),
-#                                                            WrappedPyObject(args[3]))
-            self.thisptr = new GenericRect[WrappedPyObject](deref(x0),
-                                                            deref(y0),
-                                                            deref(x1),
-                                                            deref(y1))
+            self.thisptr = new GenericRect[WrappedPyObject](WrappedPyObject(args[0]),
+                                                            WrappedPyObject(args[1]),
+                                                            WrappedPyObject(args[2]),
+                                                            WrappedPyObject(args[3]))
 
 
     @classmethod
@@ -657,8 +640,6 @@ cdef class cy_GenericRect:
             return self.thisptr.contains( deref((<cy_GenericRect> r).thisptr) )
         elif isinstance(r, tuple):
             return self.thisptr.contains( make_PyPoint(r) )
-#    def contains(self, cy_Point p):
-#        return self.thisptr.contains(deref( p.thisptr ))
 
     def setLeft(self, val):
         self.thisptr.setLeft( WrappedPyObject(val) )
@@ -698,6 +679,7 @@ cdef class cy_GenericRect:
 cdef PyPoint make_PyPoint(p):
     return PyPoint( WrappedPyObject(p[0]), WrappedPyObject(p[1]) )
 
+#D2[WrappedPyObject] is converted to tuple
 cdef wrap_PyPoint(PyPoint p):
     return (p[0].getObj(), p[1].getObj())
 
@@ -711,7 +693,7 @@ cdef cy_GenericRect wrap_GenericRect(GenericRect[WrappedPyObject] p):
 
 
 cdef class cy_Rect:
-    cdef Rect* thisptr
+    #cdef Rect* thisptr
     def __cinit__(self, *args):
         if len(args) == 0:
             self.thisptr = new Rect()
@@ -846,6 +828,11 @@ cdef class cy_Rect:
         return wrap_Rect( deref(self.thisptr) + deref( p.thisptr ) )
     def __sub__(cy_Rect self, cy_Point p):
         return wrap_Rect( deref(self.thisptr) - deref( p.thisptr ) )
+    def __mul__(cy_Rect self, t):
+        cdef Affine at
+        if is_transform(t):
+            at = get_Affine(t)
+            return wrap_Rect( deref(self.thisptr) * at )
     def __or__(cy_Rect self, cy_Rect o):
         return wrap_Rect( deref(self.thisptr) | deref( o.thisptr ))
     def __richcmp__(cy_Rect self, o, int op):
@@ -880,7 +867,7 @@ cdef cy_Rect wrap_Rect(Rect p):
     return r
 
 cdef class cy_OptRect:
-    cdef OptRect* thisptr
+#    cdef OptRect* thisptr
     def __cinit__(self, *args):
         if len(args) == 0:
             self.thisptr = new OptRect()

@@ -1,11 +1,17 @@
 from cython.operator cimport dereference as deref
 from _common_decl cimport *
 
+from numbers import Number
+
+
+from _cy_affine cimport cy_Translate, cy_Rotate, cy_Scale
+from _cy_affine cimport cy_VShear, cy_HShear, cy_Zoom
+from _cy_affine cimport cy_Affine, get_Affine, is_transform
+
 #-- Angle --
 
 cdef class cy_Angle:
     #TODO add constructor from Point -- done as class method (sufficient?)
-    cdef Angle* thisptr
 
     def __cinit__(self, double x):
         self.thisptr = new Angle(x)
@@ -14,7 +20,8 @@ cdef class cy_Angle:
             self.radians(), self.degrees())
     def __dealloc__(self):
         del self.thisptr
-
+    def __float__(self):
+        return <Coord> deref(self.thisptr)
     def radians(self):
         return self.thisptr.radians()
     def radians0(self):
@@ -75,6 +82,41 @@ cdef cy_Angle wrap_Angle(Angle p):
     r.thisptr = retp
     return r
 
+
+cdef class cy_AngleInterval:
+    cdef AngleInterval* thisptr
+    def __cinit__(self, *args, bint cw = False):
+        if len(args) == 2:
+            if isinstance(args[0], cy_Angle) and isinstance(args[1], cy_Angle):
+                self.thisptr = new AngleInterval( deref( (<cy_Angle> args[0]).thisptr ),
+                                                  deref( (<cy_Angle> args[1]).thisptr ),
+                                                  cw)
+            else:
+                self.thisptr = new AngleInterval( float(args[0]),
+                                                  float(args[1]),
+                                                  cw)
+    def __call__(self, Coord t):
+        return wrap_Angle(deref( self.thisptr ) (t))
+    def initialAngle(self):
+        return wrap_Angle(self.thisptr.initialAngle())
+    def finalAngle(self):
+        return wrap_Angle(self.thisptr.finalAngle())
+    def isDegenerate(self):
+        return self.thisptr.isDegenerate()
+    def angleAt(self, Coord t):
+        return wrap_Angle(self.thisptr.angleAt(t))
+    def contains(self, cy_Angle a):
+        return self.thisptr.contains(deref( a.thisptr ))
+    def extent(self):
+        return self.thisptr.extent()
+
+cdef cy_AngleInterval wrap_AngleInterval(AngleInterval p):
+    cdef AngleInterval * retp = new AngleInterval(0, 0, 0)
+    retp[0] = p
+    cdef cy_AngleInterval r = cy_AngleInterval.__new__(cy_AngleInterval)
+    r.thisptr = retp
+    return r
+
 #-- Point --
 
 cdef class cy_Point:
@@ -112,14 +154,32 @@ cdef class cy_Point:
 
     def __neg__(self):
         return(wrap_Point(-deref(self.thisptr)))
+    def __abs__(self):
+        return self.length()
     def __add__(cy_Point self, cy_Point other):
         return wrap_Point(deref(self.thisptr) + deref(other.thisptr))
     def __sub__(cy_Point self, cy_Point other):
         return wrap_Point(deref(self.thisptr) - deref(other.thisptr))
-    #TODO rewrite to accept transforms
     #TODO exceptions
-    def __mul__(cy_Point self, Coord s):
-        return wrap_Point(deref(self.thisptr)*s)
+    def __mul__(cy_Point self, s):
+        if isinstance(s, Number):
+            return wrap_Point(deref(self.thisptr)* (<Coord> float(s)))
+        elif isinstance(s, cy_Affine):
+            return wrap_Point( deref(self.thisptr) * <Affine &> deref( (<cy_Affine> s).thisptr ) )
+        elif isinstance(s, cy_Translate):
+            return wrap_Point( deref(self.thisptr) * <Translate &> deref( (<cy_Translate> s).thisptr ) )
+        elif isinstance(s, cy_Scale):
+            return wrap_Point( deref(self.thisptr) * <Scale &> deref( (<cy_Scale> s).thisptr ) )
+        elif isinstance(s, cy_Rotate):
+            return wrap_Point( deref(self.thisptr) * <Rotate &> deref( (<cy_Rotate> s).thisptr ) )
+        elif isinstance(s, cy_HShear):
+            return wrap_Point( deref(self.thisptr) * <HShear &> deref( (<cy_HShear> s).thisptr ) )
+        elif isinstance(s, cy_VShear):
+            return wrap_Point( deref(self.thisptr) * <VShear &> deref( (<cy_VShear> s).thisptr ) )
+        elif isinstance(s, cy_Zoom):
+            return wrap_Point( deref(self.thisptr) * <Zoom &> deref( (<cy_Zoom> s).thisptr ) )
+        return NotImplemented
+
     def __div__(cy_Point self, Coord s):
         return wrap_Point(deref(self.thisptr)/s)
     #lexicographic ordering, y coordinate is more significant
@@ -275,7 +335,9 @@ cdef class cy_Line:
     @classmethod
     def fromPoints(cls, cy_Point cp, cy_Point cq):
         return wrap_Line( (Line( deref(cp.thisptr), deref(cq.thisptr) )) )
-
+    @classmethod
+    def from_origin_and_versor(cls, cy_Point o, cy_Point v):
+        return wrap_Line( from_origin_and_versor(deref(o.thisptr), deref(v.thisptr)) )
     def origin(self):
         return wrap_Point(self.thisptr.origin())
     def versor(self):
@@ -299,6 +361,8 @@ cdef class cy_Line:
         return self.thisptr.timeAtProjection( deref(cp.thisptr) )
     def nearestPoint(self, cy_Point cp):
         return self.thisptr.nearestPoint( deref(cp.thisptr) )
+    def roots(self, Coord v, Dim2 d):
+        return wrap_vector_double( self.thisptr.roots(v, d) )
     def reverse(self):
         return wrap_Line( self.thisptr.reverse() )
     def derivative(self):
@@ -307,6 +371,14 @@ cdef class cy_Line:
         return wrap_Point( self.thisptr.normal() )
     def normalAndDist(self, x):
         return wrap_Point( self.thisptr.normalAndDist(x) )
+        
+    def transformed(self, t):
+        #doing this because transformed(t) takes reference
+        cdef Affine at
+        if is_transform(t): 
+            at = get_Affine(t)
+            return wrap_Line(self.thisptr.transformed( at ))
+        
     @classmethod
     def distance(cls, cy_Point cp, cy_Line cl):
         return distance( deref(cp.thisptr), deref(cl.thisptr))
@@ -374,6 +446,14 @@ cdef class cy_Ray:
         return self.thisptr.nearestPoint( deref(cp.thisptr) )
     def reverse(self):
         return wrap_Ray( self.thisptr.reverse() )
+    def roots(self, Coord v, Dim2 d):
+        return wrap_vector_double( self.thisptr.roots(v, d) )
+    def transformed(self, t):
+        cdef Affine at
+        if is_transform(t): 
+            at = get_Affine(t)
+            return wrap_Ray(self.thisptr.transformed( at ))
+
     @classmethod
     def distance(cls, cy_Point cp, cy_Ray cl):
         return distance( deref(cp.thisptr), deref(cl.thisptr))
@@ -395,4 +475,11 @@ cdef cy_Ray wrap_Ray(Ray p):
     retp[0] = p
     cdef cy_Ray r = cy_Ray.__new__(cy_Ray)
     r.thisptr = retp
+    return r
+
+cdef object wrap_vector_double(vector[double] v):
+    r = []
+    cdef unsigned int i
+    for i in range(v.size()):
+        r.append(v[i])
     return r

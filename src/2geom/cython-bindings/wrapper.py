@@ -8,14 +8,14 @@ class wType:
     def __init__(self, c_str):
         self.c_str = c_str
         self.wrapped_types = ["bint", "double", "int", "unsigned int",
-                            "Coord", "IntCoord", "Dim2"]
+                            "Coord", "IntCoord", "Dim2", "size_t"]
 
     def get_C(self):
         """returns plain c string"""
         return self.c_str
 
     def get_Cython_type(self):
-        """Returns correspondig Cython type string"""
+        """Returns corresponding Cython type string"""
         typestr= self.get_C()
         typestr= typestr.replace(" const ", " ")
         if typestr.find("::Geom::")==0:
@@ -84,7 +84,6 @@ class wType:
 class CythonWrapper:
     def __init__(self, gn):
         self.global_namespace = gn
-
         self.delim = '    '
     
     def wrap_constructor(self, constructor, types_dict):
@@ -108,7 +107,7 @@ class CythonWrapper:
         arguments_cython = []
         for argument in constructor.arguments:
             arguments_cython.append(types_dict[argument.type.decl_string].get_Python_pass_argument().format(argument.name))
-        function_call = "self.thisptr."+constructor.name+"({})".format(" ,".join(arguments_cython))
+        function_call = "new "+constructor.name+"({})".format(" ,".join(arguments_cython))
         
         return_statement = "self.thisptr = {}".format(function_call)
         pyx_lines.append(self.delim+declaration)
@@ -124,18 +123,20 @@ class CythonWrapper:
         for argument_type in operator.argument_types:
             pxd_arguments.append( types_dict[argument_type.decl_string].get_Cython_type() )
         pxd_argument_str = "({})".format(", ".join(pxd_arguments))
-        
-        
+        boost_wrapped = ["operator{}=".format(i) for i in ["+", "-", "*", "/", "|", "&"]]
         pxd_function_str = types_dict[operator.return_type.decl_string].get_Cython_type()+\
                             " "+operator.name+pxd_argument_str
-        pxd_lines.append(self.delim*2+pxd_function_str)
         
-        boost_wrapped = ["operator{}=".format(i) for i in ["+", "-", "*", "/", "|", "&"]]
-        if operator.name in boost_wrapped:
+        if not (operator.name in boost_wrapped):
+            pxd_lines.append(self.delim*2+pxd_function_str)
+
+        else:
+            pxd_lines.append(self.delim*2+"#"+pxd_function_str)
+
             pxd_function_str = types_dict[operator.return_type.decl_string].get_Cython_type()+\
             " "+operator.name[:-1]+pxd_argument_str
             pxd_lines.append(self.delim*2+pxd_function_str)
-        
+
 
         special_methods = {
             "+" : "__add__",
@@ -143,14 +144,17 @@ class CythonWrapper:
             "*" : "__mul__",
             "/" : "__div__",
             "|" : "__or__",
-            "&" : "__and__"
+            "&" : "__and__",
+            "[]": "__getitem__",
+            "()": "__call__",
+            "==": "__richcmp__",
+            "!=": "__richcmp__"
         }
         
         if operator.name in boost_wrapped:
             operation = operator.name[-2]
         else:
-            #what about multi-character operators?
-            operation = operator.name[-1]
+            operation = operator.name[ len("operator"): ]
             
         if operation in special_methods:
             python_name = special_methods[operation]
@@ -165,7 +169,7 @@ class CythonWrapper:
         arguments_cython = []
         for argument in operator.arguments:
             arguments_cython.append(types_dict[argument.type.decl_string].get_Python_pass_argument().format(argument.name))
-        function_call = "self.thisptr."+operator.name+"({})".format(" ,".join(arguments_cython))
+        function_call = "deref( self.thisptr ) "+operation+" {}".format(", ".join(arguments_cython))
         
         return_statement = types_dict[operator.return_type.decl_string].get_Python_return().format(function_call)
         
@@ -199,17 +203,54 @@ class CythonWrapper:
         arguments_cython = []   
         for argument in method.arguments:
             arguments_cython.append(types_dict[argument.type.decl_string].get_Python_pass_argument().format(argument.name))
-        function_call = "self.thisptr."+method.name+"({})".format(" ,".join(arguments_cython))
+        function_call = "self.thisptr."+method.name+"({})".format(", ".join(arguments_cython))
         
         return_statement = types_dict[method.return_type.decl_string].get_Python_return().format(function_call)
         pyx_lines.append(self.delim+declaration)
         pyx_lines.append(self.delim*2 + return_statement)
         
         return (pxd_lines, pyx_lines)
+    
+    def wrap_free_function(self, function, types_dict):
+        pxd_lines = []
+        pyx_lines = []
+        decl_lines = []
+                                
+        pxd_arguments = []
+        for argument_type in function.argument_types:
+            pxd_arguments.append( types_dict[argument_type.decl_string].get_Cython_type() )
+        pxd_argument_str = "({})".format(", ".join(pxd_arguments))
         
+        
+        pxd_function_str = types_dict[function.return_type.decl_string].get_Cython_type()+\
+                            " "+function.name+pxd_argument_str
+        pxd_lines.append(self.delim+pxd_function_str)
+        
+        #python function
+        arguments_python = []
+        for argument in function.arguments:
+            arguments_python.append(types_dict[argument.type.decl_string].get_Python_function_argument()+argument.name)
+        declaration = "def cy_{}".format(function.name)+"({}):".format(", ".join(arguments_python))
+        
+        decl_lines.append("from _cy_??? import cy_{0} as {0}".format(function.name))
+        
+        arguments_cython = []   
+        for argument in function.arguments:
+
+            arguments_cython.append(types_dict[argument.type.decl_string].get_Python_pass_argument().format(argument.name))
+        function_call = function.name+"({})".format(", ".join(arguments_cython))
+        
+        return_statement = types_dict[function.return_type.decl_string].get_Python_return().format(function_call)
+        pyx_lines.append(declaration)
+        pyx_lines.append(self.delim + return_statement)
+        
+        return (pxd_lines, pyx_lines, decl_lines)
+
+    
     def wrap_class(self, class_name, class_file):
         pxd_lines = []
         pyx_lines = []
+        decl_lines = []
         other_lines = []
 
         pxd_lines.append("cdef extern from \"2geom/{}\" namespace \"Geom\":".format(class_file))
@@ -220,6 +261,7 @@ class CythonWrapper:
         types_dict = self.collect_types(class_name)
         #parse
         c_class = self.global_namespace.namespace(name = "Geom").class_(name=class_name)
+
         for member in c_class.get_members():
             if isinstance(member, declarations.calldef.constructor_t):
                 pxd, pyx = self.wrap_constructor(member, types_dict)
@@ -233,6 +275,21 @@ class CythonWrapper:
                 pxd, pyx = self.wrap_method(member, types_dict)
                 pxd_lines += pxd
                 pyx_lines += pyx
+                
+        pyx_lines.append("#free functions:")
+        for ff in self.global_namespace.namespace(name = "Geom").free_funs():
+            if os.path.basename(ff.location.file_name) == class_file:
+                pxd, pyx, decl = self.wrap_free_function(ff, types_dict)
+                pxd_lines += map(lambda x: x[4:], pxd)
+                pyx_lines += pyx
+                decl_lines += decl
+                
+        for ff in self.global_namespace.namespace(name = "Geom").free_operators():
+            if os.path.basename(ff.location.file_name) == class_file:
+                pxd, pyx = self.wrap_operator(ff, types_dict)
+                pxd_lines += map(lambda x: x[4:], pxd)
+                pyx_lines += pyx
+   
         pyx_lines.append("")
         for ctype in types_dict:
             wtype = types_dict[ctype]
@@ -244,22 +301,26 @@ class CythonWrapper:
         print "------"
         for i in pyx_lines:
             print i
+        print "------"
+        for i in decl_lines:
+            print i
             
+           
     def collect_types(self, class_name):
         types_set = set()
         c_class = self.global_namespace.namespace(name = "Geom").class_(name=class_name)
         for member in c_class.get_members():
-            if isinstance(member, declarations.calldef.constructor_t):
+            if any([isinstance(member, declarations.calldef.constructor_t),
+                    isinstance(member, declarations.calldef.member_operator_t),
+                    isinstance(member, declarations.calldef.member_function_t)]):
                 for a_type in member.argument_types:
                     types_set.add(a_type.decl_string) 
-            elif isinstance(member, declarations.calldef.member_operator_t):
-                for a_type in member.argument_types:
-                    types_set.add(a_type.decl_string) 
-                types_set.add(member.return_type.decl_string)
-            elif isinstance(member, declarations.calldef.member_function_t):
-                for a_type in member.argument_types:
-                    types_set.add(a_type.decl_string) 
-                types_set.add(member.return_type.decl_string)
+                if isinstance(member, declarations.calldef.member_operator_t) or isinstance(member, declarations.calldef.member_function_t):
+                    types_set.add(member.return_type.decl_string)
+        for ff in list(self.global_namespace.namespace(name = "Geom").free_funs()) + list(self.global_namespace.namespace(name = "Geom").free_operators()):
+            for a_type in ff.argument_types:
+                types_set.add(a_type.decl_string)
+                types_set.add(ff.return_type.decl_string)
         types_dict = dict()
         
         for f_type in types_set:
@@ -269,7 +330,7 @@ class CythonWrapper:
 
 def main():
 
-    #set up argument parser?
+    #set up argument parser
     cmd_parser = argparse.ArgumentParser()
     cmd_parser.add_argument('--lib2geom_dir', action = 'store')
     cmd_parser.add_argument('--file_name', action = 'store')
@@ -280,10 +341,10 @@ def main():
     includes = [cmd_args.lib2geom_dir, 
                 os.path.join(cmd_args.lib2geom_dir, 'src'), 
                 "/usr/include/boost"]
-    #-D__STRICT_ANSI__ makes it compile here
+
     config = parser.config_t(compiler='gcc', 
                             include_paths=includes, 
-                            cflags="-D__STRICT_ANSI__" )
+                            cflags="")
     
     file_to_parse = [os.path.join(cmd_args.lib2geom_dir, "src", "2geom", cmd_args.file_name)] 
     
@@ -294,5 +355,6 @@ def main():
 
 main()
 
-#run with f.e.
+#run with
 #python2 wrapper.py --lib2geom_dir ../../.. --file_name int-point.h --class_name IntPoint
+#from cython-bindings directory

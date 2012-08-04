@@ -2,7 +2,7 @@ import unittest
 from math import pi, sqrt
 
 import cy2geom
-from cy2geom import Angle, Point, IntPoint, Line, Ray
+from cy2geom import Angle, AngleInterval, Point, IntPoint, Line, Ray
 
 class TestPrimitives(unittest.TestCase):
     def test_angle(self):
@@ -39,6 +39,18 @@ class TestPrimitives(unittest.TestCase):
             beta.radians()+gamma.radians() )
         self.assertAlmostEqual( (beta - gamma).degrees(), 0)
 
+    def test_angleInterval(self):
+        A = AngleInterval(Angle(pi/6), Angle(pi/4))
+        B = AngleInterval( 0, pi/4, cw = True )
+        self.assertEqual(A(0), Angle(pi/6))
+        self.assertEqual(A(0.5), A.angleAt(0.5))
+        self.assertEqual(A(0), A.initialAngle())
+        self.assertEqual(B(1), B.finalAngle())
+        self.assertFalse(B.isDegenerate())
+        self.assertTrue(B.contains(Angle(pi/6)))
+        self.assertTrue(A.contains(Angle(pi)))
+        
+        self.assertAlmostEqual( B.extent(), pi/4 )
     def test_point(self):
         p = Point(3, 4)
         q = Point(8, 16)
@@ -153,6 +165,9 @@ class TestPrimitives(unittest.TestCase):
             k.derivative().origin(),
             k.versor()))
         self.assertTrue(Point.are_near(k.normal(), k.versor().cw()))
+        roots = k.roots( 3, 0 )
+        for root in roots:
+            self.assertAlmostEqual( k.valueAt(root, 0), 3)
         #normalAndDist does something strange
         self.assertAlmostEqual(Line.distance(Point(-1, 1), l), sqrt(2))
         self.assertTrue(Line.are_near(Point(0), l))
@@ -205,6 +220,9 @@ class TestPrimitives(unittest.TestCase):
 #            Point(1, 1)))
         self.assertAlmostEqual(r.valueAt(4, 0), 1)
         self.assertAlmostEqual(r.valueAt(4, 1), 5)
+        roots = r.roots( 3, 1 )
+        for root in roots:
+            self.assertAlmostEqual( r.valueAt(root, 1), 3)
         self.assertTrue(Point.are_near(
             r.pointAt(3) - r.origin(),
             r.origin()-r.reverse().pointAt(3)))

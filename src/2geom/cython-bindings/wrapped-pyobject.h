@@ -8,33 +8,47 @@ namespace Geom{
 
 //TODO! looks like memory leak
 class WrappedPyObject{
-public:
+private:
     PyObject* self;
+public:
+    //~ int code;
+
     WrappedPyObject(){
-        //printf("Created empty WPO\n");
+        //~ printf("Created empty WPO at address %p\n", this);
         self = NULL;
+        //~ code = 0;
     }
     
     WrappedPyObject(WrappedPyObject const &other){
         self = other.getObj();
-        //printf("COPY-CONSTRUCTOR %p\n", other.getObj());
-        Py_INCREF(self);
-        }
+        //~ code = other.code;
+        //~ printf("COPY-CONSTRUCTOR %p, this WPO %p, other WPO %p\n", self, this, &other);
+        Py_XINCREF(self);
+    }
     
     WrappedPyObject(PyObject* arg){
         if (arg == NULL){
             //PyErr_Print();
+            //~ code = c;
         }
         else{
-            //printf("CONSTRUCTOR %p\n", arg);
+            //~ printf("CONSTRUCTOR %p\n", arg);
             Py_INCREF(arg);
             self = arg;
+            //~ code = c;
         }
     }
     
+    WrappedPyObject(int c){
+        self = Py_BuildValue("i", c);
+        //~ printf("INT-OPERATOR= %p, this WPO %p, other WPO %p\n", self, this, &other);
+        Py_INCREF(self);
+    }
+        
+    
     ~WrappedPyObject(){
         //TODO Leaking memory
-        //printf("DECREF %p\n", self);
+        //~ printf("DECREF %p\n", self);
         //Py_DECREF(self);
     }
     
@@ -45,9 +59,18 @@ public:
     WrappedPyObject operator=(WrappedPyObject other){
         if (this != &other){
             self = other.getObj();
-            //printf("OPERATOR= %p\n", self);
-            Py_INCREF(self);
+            //~ printf("OPERATOR= %p, this WPO %p, other WPO %p\n", self, this, &other);
+            Py_XINCREF(self);
         }
+        return *this;
+    }
+    
+    WrappedPyObject operator=(int other){
+        
+            self = Py_BuildValue("i", other);
+            //~ printf("INT-OPERATOR= %p, this WPO %p, other WPO %p\n", self, this, &other);
+            Py_INCREF(self);
+        
         return *this;
     }
     
@@ -56,7 +79,7 @@ public:
         ret = PyObject_CallMethodObjArgs(self, Py_BuildValue("s", "__neg__"), NULL);
         if (ret == NULL){
             Py_INCREF(Py_None);
-            return Py_None;
+            return WrappedPyObject(Py_None);
             }
         //Py_INCREF(ret);
         WrappedPyObject * retw = new WrappedPyObject(ret);
@@ -70,7 +93,7 @@ public:
         ret = PyObject_CallMethodObjArgs(self, Py_BuildValue("s", method.c_str()), other, NULL);
         if (ret == NULL){
             Py_INCREF(Py_None);
-            return Py_None;
+            return WrappedPyObject(Py_None);
             }
         PyObject * isNI = PyObject_RichCompare(ret, Py_NotImplemented, Py_EQ);
         if ( PyInt_AsLong(isNI) ){
@@ -78,7 +101,7 @@ public:
             }
         if (ret == NULL){
             Py_INCREF(Py_None);
-            return Py_None;
+            return WrappedPyObject(Py_None);
             }
         WrappedPyObject * retw = new WrappedPyObject(ret);
         return *retw;
@@ -141,6 +164,28 @@ public:
         return richcmp(other, Py_EQ);
     }
     
+
+    bool operator<(int const c) const {
+        return richcmp(WrappedPyObject(c), Py_LT);
+    }
+    
+    bool operator<=(int const c) const {
+        return richcmp(WrappedPyObject(c), Py_LE);
+    }
+    
+    bool operator>=(int const c) const{
+        return richcmp(WrappedPyObject(c), Py_GE);
+    }
+
+    bool operator>(int const c) const {
+        return richcmp(WrappedPyObject(c), Py_GT);
+    }
+    
+    bool operator==(int const c) const {
+        return richcmp(WrappedPyObject(c), Py_EQ);
+    }
+
+
     WrappedPyObject operator+=(WrappedPyObject other){
         *this = *this + other;
         return *this;

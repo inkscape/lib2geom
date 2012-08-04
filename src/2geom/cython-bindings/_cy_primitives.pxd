@@ -1,7 +1,16 @@
-from _common_decl cimport Coord, IntCoord, Dim2, EPSILON
-#from cython.libcpp cimport vector
+from _common_decl cimport *
+from libcpp.vector cimport vector
 
-
+cdef extern from "2geom/affine.h" namespace "Geom":
+    cdef cppclass Affine:
+        pass
+    cdef cppclass Translate
+    cdef cppclass Scale
+    cdef cppclass Rotate
+    cdef cppclass VShear
+    cdef cppclass HShear
+    cdef cppclass Zoom
+    
 cdef extern from "2geom/angle.h" namespace "Geom":
     cdef cppclass Angle:
         Angle()
@@ -12,6 +21,7 @@ cdef extern from "2geom/angle.h" namespace "Geom":
         Coord degrees()
         Coord degreesClock()
 
+        Coord operator()
         Angle &operator+(Angle &)
         Angle &operator-(Angle &)
         bint operator==(Angle &)
@@ -23,12 +33,28 @@ cdef extern from "2geom/angle.h" namespace "Geom":
     Coord map_unit_interval_on_circular_arc(Coord, double, double, bint)
     bint arc_contains (double, double, double, double)
 
-
-
 cdef extern from "2geom/angle.h" namespace "Geom::Angle":
     Angle from_radians(Coord d)
     Angle from_degrees(Coord d)
     Angle from_degrees_clock(Coord d)
+
+cdef class cy_Angle:
+    cdef Angle* thisptr
+
+cdef cy_Angle wrap_Angle(Angle)
+
+cdef extern from "2geom/angle.h" namespace "Geom":
+    cdef cppclass AngleInterval:
+        AngleInterval(AngleInterval &)
+        AngleInterval(Angle &, Angle &, bint)
+        AngleInterval(double, double, bint)
+        Angle & initialAngle()
+        Angle & finalAngle()
+        bint isDegenerate()
+        Angle angleAt(Coord)
+        Angle operator()(Coord)
+        bint contains(Angle &)
+        Coord extent()
 
 
 cdef extern from "2geom/point.h" namespace "Geom":
@@ -61,6 +87,15 @@ cdef extern from "2geom/point.h" namespace "Geom":
         Point &operator-(Point &)
         Point &operator*(Coord)
         Point &operator/(Coord)
+        
+        Point &operator*(Affine  &)
+        Point &operator*(Translate  &)
+        Point &operator*(Scale  &)
+        Point &operator*(Rotate  &)
+        Point &operator*(HShear  &)
+        Point &operator*(VShear  &)
+        Point &operator*(Zoom  &)
+            
 
     Coord L2(Point &)
     Coord L2sq(Point &)
@@ -145,13 +180,13 @@ cdef extern from "2geom/line.h" namespace "Geom":
         Coord timeAt(Point &)
         Coord timeAtProjection(Point &)
         Coord nearestPoint(Point &)
-        #vector[Coord] roots(Coord, int)
+        vector[Coord] roots(Coord, Dim2)
         Line reverse()
         #Curve* portion(Coord, Coord)
         #LineSegment segment(Coord, Coord)
         #Ray ray(Coord)
         Line derivative()
-        #Line transformed(Affine &)
+        Line transformed(Affine &)
         Point normal()
         Point normalAndDist(double &)
 
@@ -164,6 +199,9 @@ cdef extern from "2geom/line.h" namespace "Geom":
 
     double angle_between(Line &, Line &)
     #double distance(Point &, LineSegment &)
+cdef extern from "2geom/line.h" namespace "Geom::Line":
+    Line from_origin_and_versor(Point, Point)
+
 
 cdef extern from "2geom/ray.h" namespace "Geom":
     cdef cppclass Ray:
@@ -179,12 +217,12 @@ cdef extern from "2geom/ray.h" namespace "Geom":
         bint isDegenerate()
         Point pointAt(Coord)
         Coord valueAt(Coord, Dim2)
-        #vector[Coord] roots(Coord, Dim2)#TODO
+        vector[Coord] roots(Coord, Dim2)
         Coord nearestPoint(Point &)
         Ray reverse()
         #Curve *portion(Coord, Coord)
         #LineSegment segment(Coord, Coord)
-        #Ray transformed(Affine &)
+        Ray transformed(Affine &)
     double distance(Point &, Ray &)
     bint are_near(Point &, Ray &, double)
     bint are_same(Ray&, Ray &, double)

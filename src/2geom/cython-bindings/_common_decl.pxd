@@ -7,7 +7,3 @@ cdef extern from "2geom/coord.h" namespace "Geom":
         X = 0
         Y = 1
 
-
-
-
-

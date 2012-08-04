@@ -7,6 +7,10 @@ from _cy_primitives cimport IntPoint, cy_IntPoint, wrap_IntPoint
 #    cdef cppclass Point:
 #        pass
 
+cdef extern from "2geom/affine.h" namespace "Geom":
+    cdef cppclass Affine:
+        pass
+
 cdef extern from "2geom/generic-interval.h" namespace "Geom":
     cdef cppclass GenericInterval[C]:
         GenericInterval()
@@ -144,6 +148,17 @@ cdef extern from "2geom/interval.h" namespace "Geom":
         OptInterval &operator|(OptInterval &)
         OptInterval &operator&(OptInterval &)
 
+cdef class cy_Interval:
+    cdef Interval* thisptr
+
+cdef cy_Interval wrap_Interval(Interval p)
+
+cdef class cy_OptInterval:
+    cdef OptInterval* thisptr
+
+cdef cy_OptInterval wrap_OptInterval(OptInterval p)
+
+
 cdef extern from "2geom/cython-bindings/wrapped-pyobject.h" namespace "Geom":
     cdef cppclass WrappedPyObject:
         WrappedPyObject()
@@ -163,8 +178,6 @@ cdef extern from "2geom/generic-rect.h" namespace "Geom":
         GenericRect(Point &, Point &)
         GenericRect(PyPoint &, PyPoint &)
         GenericRect(IntPoint &, IntPoint &)
-
-
         GenericRect(C, C, C, C)
         #GenericRect[C] from_range(Point *, Point *)
         #GenericRect[C] from_array(Point *, unsigned int)
@@ -349,7 +362,7 @@ cdef extern from "2geom/rect.h" namespace "Geom":
         bint interiorContains(OptRect &)
         IntRect roundOutwards()
         OptIntRect roundInwards()
-#        Rect &operator*(Affine &)
+        Rect &operator*(Affine &)
         bint operator==(IntRect &)
         bint operator!=(IntRect &)
 
@@ -394,6 +407,17 @@ cdef extern from "2geom/rect.h" namespace "Geom":
 cdef extern from "2geom/rect.h" namespace "Geom::Rect":
     Rect from_xywh(Coord, Coord, Coord, Coord)
     Rect from_xywh(Point &, Point &)
+
+cdef class cy_Rect:
+    cdef Rect* thisptr
+    
+cdef cy_Rect wrap_Rect(Rect p)
+
+cdef class cy_OptRect:
+    cdef OptRect* thisptr
+    
+cdef cy_OptRect wrap_OptRect(OptRect p)
+
 
 cdef extern from "2geom/int-rect.h" namespace "Geom":
     #ctypedef GenericRect[IntCoord] IntRect

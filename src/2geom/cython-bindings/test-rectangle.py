@@ -10,7 +10,7 @@ from cy2geom import Interval, IntInterval, OptInterval, OptIntInterval
 from cy2geom import GenericInterval, GenericOptInterval
 
 from cy2geom import Rect, OptRect, IntRect, OptIntRect
-#from cy2geom import GenericRect
+from cy2geom import GenericRect
 
 from fractions import Fraction
         
@@ -192,10 +192,104 @@ class TestPrimitives(unittest.TestCase):
                     else:
                         self.assertEqual( I & K, I)
     
-    def not_test_genericRect(self):
+    def test_genericRect(self):
         A = GenericRect(1, 1, 4, 4)
         self.assertEqual( A.min(), (1, 1) )
-    
+        B = GenericRect(Fraction(1,4), Fraction(9, 94), Fraction(2, 3), Fraction(23, 37))
+
+        amin = A.min()
+        amax = A.max()
+        
+        self.assertAlmostEqual(amin[0], A[0].min())
+        self.assertAlmostEqual(amax[1], A[1].max())
+        self.assertEqual(amin, A.corner(0))
+        
+        self.assertEqual(amin, (A.left(), A.top()))
+        self.assertEqual(amax, (A.right(), A.bottom()))
+        
+        self.assertAlmostEqual( A.width(), A[0].extent() )
+        self.assertAlmostEqual( A.height(), A[1].extent() )
+        
+        #~ self.assertAlmostEqual( A.aspectRatio(), A.width()/A.height() )
+        self.assertEqual( A.dimensions(), ( A.width(), A.height() ) )
+        #~ self.assertEqual( A.midpoint(), (A.min() + A.max())/2 )
+        self.assertAlmostEqual(A.area(), A.width()*A.height())
+        #TODO export EPSILON from 2geom
+        print A.area()
+        if A.area() > 0:
+            self.assertFalse(A.hasZeroArea())
+        else:
+            self.assertTrue(A.hasZeroArea())
+        self.assertAlmostEqual(A.maxExtent(), max(A.width(), A.height()))
+        self.assertGreaterEqual(A.maxExtent(), A.minExtent())
+        
+        bmin = B.min()
+        bmax = B.max()
+
+        pdiag = sqrt((amax[0]-amin[0])**2+(amax[1]-amin[1])**2)
+
+        B.setMin(A.midpoint())
+        B.setMax(A.midpoint())
+
+        self.assertTrue(B.hasZeroArea())
+        
+        #print P,B
+        B.expandBy(A.minExtent()/3.0)
+         
+        #print P, B
+        
+        self.assertTrue(A.contains(B))
+        self.assertTrue(A.intersects(B))
+        self.assertTrue(B.intersects(A))
+        self.assertFalse(B.contains(A))
+        
+
+        
+        self.assertTrue(A.contains(A.midpoint()))
+        self.assertFalse(A.contains( (A.midpoint()[0]*3, A.midpoint()[1]*3) ))
+        
+        A.unionWith(B)
+        
+        self.assertEqual( A.min(), amin )
+        
+        B.setLeft(bmin[0])
+        B.setTop(bmin[1])
+        B.setRight(bmax[0])
+        B.setBottom(bmax[1])
+        
+        self.assertEqual(B.min(), bmin)
+        self.assertEqual(B.max(), bmax)
+        
+        B.expandTo( (0, 0) )
+        self.assertEqual((0, 0), B.min())
+        print B.min()
+        B.expandBy(*bmax)
+        #~ B.expandBy((3, 6))
+        print bmax
+        print B.max(), B.min()
+        self.assertEqual(bmax, (- (B.min()[0]), - (B.min()[1])) )
+        
+        B.expandBy(-bmax[0], -bmax[1])
+        self.assertEqual(B.max(), bmax)
+        
+        self.assertEqual( (A+B.min()).max()[0], A.max()[0] + B.min()[0] )
+        
+        #~ self.assertEqual( (A-B.max()).min(), A.min() - B.max() )
+        
+        self.assertEqual( A|A, A )
+        
+        self.assertFalse( A != A )
+
+        B.setLeft(bmin[0])
+        B.setTop(bmin[1])
+        B.setRight(bmax[0])
+        B.setBottom(bmax[1])
+        
+        #~ self.assertAlmostEqual(Rect.distance(Point(), A), A.min().length())
+        #~ self.assertAlmostEqual(Rect.distanceSq(B.min(), A), Rect.distance(B.min(), A)**2 )
+
+
+        
     def rect_basic(self, P, Q):
         pmin = P.min()
         pmax = P.max()
