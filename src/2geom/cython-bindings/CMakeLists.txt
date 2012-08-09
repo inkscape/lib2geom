@@ -3,7 +3,8 @@
 
 set_source_files_properties(
   _common_decl.pxd
-  
+  _common_decl.pyx
+
   _cy_primitives.pxd
   _cy_primitives.pyx
   
@@ -16,11 +17,17 @@ set_source_files_properties(
   _cy_curves.pxd
   _cy_curves.pyx
   
+  _cy_path.pxd
+  _cy_path.pyx
+  
   cy2geom.pyx
 
   PROPERTIES CYTHON_IS_CXX 1)
 
 # Multi-file cython modules do not appear to be working at the moment.
+cython_add_module( _common_decl _common_decl.pyx)
+
+
 cython_add_module( _cy_primitives _cy_primitives.pyx)
 
 cython_add_module( _cy_rectangle _cy_rectangle.pyx)
@@ -28,6 +35,8 @@ cython_add_module( _cy_rectangle _cy_rectangle.pyx)
 cython_add_module( _cy_affine _cy_affine.pyx)
 
 cython_add_module( _cy_curves _cy_curves.pyx)
+
+cython_add_module( _cy_path _cy_path.pyx)
 
 target_link_libraries(_cy_primitives
     #TODO! linking to static lib2geom.a gives -fPIC error, to compile 
@@ -46,9 +55,14 @@ target_link_libraries(_cy_curves
     gsl gslcblas 2geom
 )
 
+target_link_libraries(_cy_path
+    gsl gslcblas 2geom
+)
+
 cython_add_module( cy2geom cy2geom.pyx)
 
 add_test(cython-primitives python2 test-primitives.py)
 add_test(cython-rectangle python2 test-rectangle.py)
 add_test(cython-affine python2 test-affine.py)
 add_test(cython-curves python2 test-curves.py)
+add_test(cython-path python2 test-path.py)

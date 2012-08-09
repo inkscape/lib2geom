@@ -32,6 +32,8 @@ from _cy_affine import cy_Zoom as Zoom
 
 from _cy_affine import cy_Eigen as Eigen
 
+from _cy_curves import cy_Curve as Curve
+
 from _cy_curves import cy_Linear as Linear
 from _cy_curves import cy_SBasis as SBasis
 from _cy_curves import cy_SBasisCurve as SBasisCurve
@@ -84,3 +86,6 @@ from _cy_curves import cy_multiply_add as multiply_add
 from _cy_curves import cy_bezier_to_sbasis as bezier_to_sbasis
 #~ from _cy_curves import cy_bernsteinValueAt as bernsteinValueAt
 from _cy_curves import cy_bezier_points as bezier_points
+
+
+from _cy_path import cy_Path as Path

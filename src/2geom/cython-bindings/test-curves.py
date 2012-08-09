@@ -8,10 +8,7 @@ from cy2geom import Angle
 from cy2geom import Point, IntPoint
 from cy2geom import Line, Ray, Rect
 from cy2geom import Interval, IntInterval, OptInterval, OptIntInterval
-#from cy2geom import GenericInterval, GenericOptInterval
 
-from cy2geom import Rect#, OptRect, IntRect, OptIntRect
-#from cy2geom import GenericRect
 
 from cy2geom import Affine
 from cy2geom import Translate, Scale, Rotate, VShear, HShear, Zoom

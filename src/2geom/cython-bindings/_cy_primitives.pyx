@@ -477,9 +477,9 @@ cdef cy_Ray wrap_Ray(Ray p):
     r.thisptr = retp
     return r
 
-cdef object wrap_vector_double(vector[double] v):
-    r = []
-    cdef unsigned int i
-    for i in range(v.size()):
-        r.append(v[i])
-    return r
+#~ cdef object wrap_vector_double(vector[double] v):
+#~     r = []
+#~     cdef unsigned int i
+#~     for i in range(v.size()):
+#~         r.append(v[i])
+#~     return r

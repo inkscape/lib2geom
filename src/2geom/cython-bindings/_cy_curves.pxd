@@ -50,6 +50,13 @@ cdef extern from "2geom/curve.h" namespace "Geom":
         int degreesOfFreedom()
         bint operator==(Curve &)
 
+cdef class cy_Curve:
+    cdef Curve* thisptr
+    
+cdef cy_Curve wrap_Curve(Curve & p)
+cdef cy_Curve wrap_Curve_p(Curve * p)
+
+
 cdef extern from "2geom/linear.h" namespace "Geom":
     cdef cppclass Linear:
 #~         Linear(Linear &)
@@ -172,6 +179,8 @@ cdef extern from "2geom/sbasis.h" namespace "Geom":
     OptInterval bounds_local(SBasis &, OptInterval &, int)
     OptInterval bounds_fast(SBasis &, int)    
 
+cdef class cy_SBasis:
+    cdef SBasis* thisptr
 
 cdef extern from "2geom/sbasis-curve.h" namespace "Geom":
     cdef cppclass SBasisCurve:
@@ -491,3 +500,6 @@ cdef extern from "2geom/svg-elliptical-arc.h" namespace "Geom":
         vector[Coord] allNearestPoints(Point &, double, double)
         D2[SBasis] toSBasis()
         bint isSVGCompliant()
+
+cdef Curve * get_Curve_p(object c)
+cdef bint is_Curve(object c)
