@@ -272,9 +272,9 @@ intersect_polish_root (Curve const &A, double &s, Curve const &B, double &t)
     }
 
 #ifdef HAVE_GSL
-    int status;
-    size_t iter = 0;
     if(0) { // the GSL version is more accurate, but taints this with GPL
+        int status;
+        size_t iter = 0;
         const size_t n = 2;
         struct rparams p = {A, B};
         gsl_multiroot_function f = {&intersect_polish_f, n, &p};

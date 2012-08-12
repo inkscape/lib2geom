@@ -12,20 +12,20 @@ using namespace Geom;
 
 void
 cairo_move_to (cairo_t *cr, Geom::Point p1) {
-	cairo_move_to(cr, p1[0], p1[1]);
+    cairo_move_to(cr, p1[0], p1[1]);
 }
 
 void
 cairo_line_to (cairo_t *cr, Geom::Point p1) {
-	cairo_line_to(cr, p1[0], p1[1]);
+    cairo_line_to(cr, p1[0], p1[1]);
 }
 
 void
 cairo_curve_to (cairo_t *cr, Geom::Point p1, 
-		Geom::Point p2, Geom::Point p3) {
-	cairo_curve_to(cr, p1[0], p1[1],
-		       p2[0], p2[1],
-		       p3[0], p3[1]);
+        Geom::Point p2, Geom::Point p3) {
+    cairo_curve_to(cr, p1[0], p1[1],
+               p2[0], p2[1],
+               p3[0], p3[1]);
 }
 
 void cairo_rectangle(cairo_t *cr, Rect const& r) {
@@ -95,9 +95,9 @@ void cairo_path_stitches(cairo_t *cr, Path const &p) {
             cairo_move_to(cr, c.initialPoint()[X], c.initialPoint()[Y]);
             cairo_line_to(cr, c.finalPoint()[X], c.finalPoint()[Y]);
             
-            std::stringstream s;
-            s << L1(c.finalPoint() - c.initialPoint());
-            std::string ss = s.str();
+            //std::stringstream s;
+            //s << L1(c.finalPoint() - c.initialPoint());
+            //std::string ss = s.str();
             //draw_text(cr, c.initialPoint()+Point(5,5), ss.c_str(), false, "Serif 6");
 
             //std::cout << c.finalPoint() - c.initialPoint() << std::endl;

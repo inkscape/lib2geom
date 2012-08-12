@@ -43,10 +43,9 @@ using namespace boost::python;
 // helpers for point
 tuple pwd2sb_centroid(Geom::Piecewise<Geom::D2<Geom::SBasis> > const &pw)
 {
-    unsigned u;
     Geom::Point p;
     double a;
-    u = Geom::centroid(pw, p, a);
+    Geom::centroid(pw, p, a);
     return boost::python::make_tuple(p, a);
 }
      

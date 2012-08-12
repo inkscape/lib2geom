@@ -84,8 +84,9 @@ public:
 
 public:
     ConvexHull() {}
-    ConvexHull(std::vector<Point> const & points) {
-        boundary = points;
+    ConvexHull(std::vector<Point> const & points) :
+        boundary (points)
+    {
         graham();
     }
 
