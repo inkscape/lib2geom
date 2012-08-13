@@ -127,6 +127,8 @@ cdef class cy_Point:
     cdef Point* thisptr
 
 cdef cy_Point wrap_Point(Point p)
+cdef object wrap_vector_point(vector[Point] v)
+cdef vector[Point] make_vector_point(object l)
 
 cdef extern from "2geom/int-point.h" namespace "Geom":
     cdef cppclass IntPoint:

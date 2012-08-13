@@ -113,3 +113,13 @@ cdef extern from "2geom/path.h" namespace "Geom":
         void append(D2[SBasis] &, Stitching)
         void append(Path &, Stitching)
         void stitchTo(Point &)
+
+cdef class cy_Path:
+#~     NO_STITCHING = c_NO_STITCHING
+#~     STITCH_DISCONTINUOUS = c_STITCH_DISCONTINUOUS
+    cdef Path* thisptr
+    cdef ConstIterator _const_iterator_at_index(self, int i)
+    cdef Iterator _iterator_at_index(self, int i)
+
+cdef cy_Path wrap_Path(Path p)
+cdef vector[Path] make_vector_Path(object l)

@@ -274,6 +274,19 @@ cdef cy_Point wrap_Point(Point p):
     r.thisptr = retp
     return r
 
+cdef object wrap_vector_point(vector[Point] v):
+    r = []
+    cdef unsigned int i
+    for i in range(v.size()):
+        r.append( wrap_Point(v[i]) )
+    return r
+
+cdef vector[Point] make_vector_point(object l):
+    cdef vector[Point] ret
+    for i in l:
+        ret.push_back( deref( (<cy_Point> i).thisptr ) )
+    return ret
+
 #-- IntPoint --
 
 cdef class cy_IntPoint:

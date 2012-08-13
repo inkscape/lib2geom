@@ -89,3 +89,7 @@ from _cy_curves import cy_bezier_points as bezier_points
 
 
 from _cy_path import cy_Path as Path
+
+
+from _cy_conicsection import cy_Circle as Circle
+from _cy_conicsection import cy_Ellipse as Ellipse

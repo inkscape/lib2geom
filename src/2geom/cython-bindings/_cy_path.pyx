@@ -46,7 +46,7 @@ cdef cy_Iterator wrap_Iterator(Iterator i, ConstIterator starti, ConstIterator e
 cdef class cy_Path:
     NO_STITCHING = c_NO_STITCHING
     STITCH_DISCONTINUOUS = c_STITCH_DISCONTINUOUS
-    cdef Path* thisptr
+   # cdef Path* thisptr
 #~     def __init__(self, cy_PathInternal::ConstIterator first, cy_PathInternal::ConstIterator last, bint closed):
 #~         self.thisptr = new Path(deref( first.thisptr ) ,deref( last.thisptr ) ,closed)
     def __cinit__(self, *args):
@@ -292,3 +292,16 @@ cdef cy_Path wrap_Path(Path p):
     cdef cy_Path r = cy_Path.__new__(cy_Path)
     r.thisptr = retp
     return r
+
+cdef vector[Path] make_vector_Path(object l):
+    cdef vector[Path] ret
+    for i in l:
+        ret.push_back( deref( (<cy_Path> i).thisptr ) )
+    return ret
+
+#~ cdef object wrap_vector_Path(vector[Path] v):
+#~     r = []
+#~     cdef unsigned int i
+#~     for i in range(v.size()):
+#~         r.append( wrap_Path(v[i]) )
+#~     return r

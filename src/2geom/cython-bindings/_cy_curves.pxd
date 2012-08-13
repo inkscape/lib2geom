@@ -5,7 +5,7 @@ from libcpp.pair cimport pair
 
 from _cy_rectangle cimport Interval, OptInterval, Rect, OptRect
 from _cy_affine cimport Affine
-from _cy_primitives cimport Point, cy_Point, wrap_Point
+from _cy_primitives cimport Point, cy_Point, wrap_Point, wrap_vector_point, make_vector_point
 from _cy_primitives cimport Angle, cy_Angle, wrap_Angle
 from _cy_primitives cimport AngleInterval
 
@@ -485,6 +485,10 @@ cdef extern from "2geom/elliptical-arc.h" namespace "Geom":
         Curve * portion(double, double)
         Curve * reverse()
 
+cdef class cy_EllipticalArc:
+    cdef EllipticalArc* thisptr
+cdef cy_EllipticalArc wrap_EllipticalArc(EllipticalArc p)
+
 cdef extern from "2geom/svg-elliptical-arc.h" namespace "Geom":
     cdef cppclass SVGEllipticalArc:
         SVGEllipticalArc()
@@ -500,6 +504,10 @@ cdef extern from "2geom/svg-elliptical-arc.h" namespace "Geom":
         vector[Coord] allNearestPoints(Point &, double, double)
         D2[SBasis] toSBasis()
         bint isSVGCompliant()
+
+cdef class cy_SVGEllipticalArc(cy_EllipticalArc):
+    pass
+cdef cy_SVGEllipticalArc wrap_SVGEllipticalArc(SVGEllipticalArc p)
 
 cdef Curve * get_Curve_p(object c)
 cdef bint is_Curve(object c)

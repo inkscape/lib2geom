@@ -6,20 +6,9 @@ from _cy_rectangle cimport cy_Interval, wrap_Interval
 from _cy_affine cimport cy_Translate, cy_Rotate, cy_Scale
 from _cy_affine cimport cy_VShear, cy_HShear, cy_Zoom
 from _cy_affine cimport cy_Affine, wrap_Affine, get_Affine, is_transform
-#~ TODO:
-#~     Curve class is used to work nicely with C++'s static typing, it, however
-#~     becomes unneccessary in python with it's dynamin (or even duck) typing.
-#~     So far I am not wrapping Curve. Methods returning Curve will cast to 
-#~     underlying type, and it will be possible to convert between different 
-#~     curve types. 
-#~     TODO? Discuss this.
+
 
 cdef class cy_Curve:
-#    cdef Curve* thisptr
-#~     def operator=(self, cy_Curve arg0):
-#~         return wrap_Curve(deref( self.thisptr ) = deref( arg0.thisptr ))
-#~     def __init__(self, cy_Curve arg0):
-#~         self.thisptr = self.thisptr.Curve(deref( arg0.thisptr ))
     def __cinit__(self):
         self.thisptr = <Curve *> new SBasisCurve(D2[SBasis]( SBasis(), SBasis() ))
     def __call__(self, Coord t):
@@ -34,10 +23,8 @@ cdef class cy_Curve:
         return wrap_Point(self.thisptr.pointAt(t))
     def valueAt(self, Coord t, Dim2 d):
         return self.thisptr.valueAt(t ,d)
-#~     def operator()(self, Coord t):
-#~         return wrap_Point(deref( self.thisptr ) () t)
-#~     def pointAndDerivatives(self, Coord t, unsigned int n):
-#~         return wrap_::std::vector<Geom::Point, std::allocator<Geom::Point> >(self.thisptr.pointAndDerivatives(t ,n))
+    def pointAndDerivatives(self, Coord t, unsigned int n):
+        return wrap_vector_point(self.thisptr.pointAndDerivatives(t ,n))
     def setInitial(self, cy_Point v):
         self.thisptr.setInitial(deref( v.thisptr ))
     def setFinal(self, cy_Point v):
@@ -52,12 +39,15 @@ cdef class cy_Curve:
         return wrap_OptRect(self.thisptr.boundsLocal(deref( a.thisptr )))
     def duplicate(self):
         return wrap_Curve_p( self.thisptr.duplicate() ) 
-#~     def transformed(self, cy_Affine m):
-#~         return wrap_Curve( deref(self.thisptr.transformed(deref( m.thisptr ))) )
-#~     def portion(self, Coord a, Coord b):
-#~         return wrap_Curve( deref(self.thisptr.portion(a ,b)) )
-#~     def portion(self, cy_Interval i):
-#~         return wrap_Curve( deref(self.thisptr.portion(deref( i.thisptr ))) )
+    def transformed(self, m):
+        cdef Affine at
+        if is_transform(m):
+            at = get_Affine(m)
+            return wrap_Curve_p( self.thisptr.transformed(at) )
+    def portion(self, Coord a, Coord b):
+        return wrap_Curve( deref(self.thisptr.portion(a ,b)) )
+    def portion(self, cy_Interval i):
+        return wrap_Curve( deref(self.thisptr.portion(deref( i.thisptr ))) )
     def reverse(self):
         return wrap_Curve_p( self.thisptr.reverse() )
     def derivative(self):
@@ -72,14 +62,15 @@ cdef class cy_Curve:
 #~         return wrap_::std::vector<double, std::allocator<double> >(self.thisptr.allNearestPoints(deref( p.thisptr ) ,deref( i.thisptr )))
     def length(self, Coord tolerance):
         return self.thisptr.length(tolerance)
-#~     def roots(self, Coord v, Dim2 d):
-#~         return wrap_::std::vector<double, std::allocator<double> >(self.thisptr.roots(v ,d))
+    def roots(self, Coord v, Dim2 d):
+        return wrap_vector_double(self.thisptr.roots(v ,d))
     def winding(self, cy_Point p):
         return self.thisptr.winding(deref( p.thisptr ))
     def unitTangentAt(self, Coord t, unsigned int n):
         return wrap_Point(self.thisptr.unitTangentAt(t ,n))
-#~     def toSBasis(self):
-#~         return wrap_D2<Geom::SBasis>(self.thisptr.toSBasis())
+    def toSBasis(self):
+        cdef D2[SBasis] ret = self.thisptr.toSBasis()
+        return ( wrap_SBasis(ret[0]), wrap_SBasis(ret[1]) )
     def degreesOfFreedom(self):
         return self.thisptr.degreesOfFreedom()
 #~     def operator==(self, cy_Curve c):
@@ -93,8 +84,6 @@ cdef cy_Curve wrap_Curve(Curve & p):
     return r
 
 cdef cy_Curve wrap_Curve_p(Curve * p):
-#~     cdef Curve * retp = <Curve *> SBasisCurve(D2[SBasis]( SBasis(), SBasis() ))
-#~     retp[0] = p
     cdef cy_Curve r = cy_Curve.__new__(cy_Curve)
     r.thisptr = p
     return r
@@ -1038,7 +1027,7 @@ cdef cy_VLineSegment wrap_VLineSegment(VLineSegment p):
     return r
 
 cdef class cy_EllipticalArc:
-    cdef EllipticalArc* thisptr
+    #cdef EllipticalArc* thisptr
     def __cinit__(self, cy_Point ip = cy_Point(0, 0), 
                         Coord rx = 0, 
                         Coord ry = 0, 
@@ -1186,8 +1175,8 @@ cdef class cy_SVGEllipticalArc(cy_EllipticalArc):
                         bint sweep = True, 
                         cy_Point fp = cy_Point(0, 0)):
         self.thisptr = <EllipticalArc *> new SVGEllipticalArc(deref( ip.thisptr ), rx, ry, rot_angle, large_arc, sweep, deref( fp.thisptr ))
-#~     def __call__(self, Coord t):
-#~         return self.pointAt(t)
+    def __call__(self, Coord t):
+        return self.pointAt(t)
     def valueAt(self, Coord t, Dim2 d):
         return (<SVGEllipticalArc *> self.thisptr).valueAt(t, d)
     def pointAt(self, Coord t):
@@ -1228,19 +1217,6 @@ cdef cy_SVGEllipticalArc wrap_SVGEllipticalArc(SVGEllipticalArc p):
     return r
 
 #TODO move somewhere else
-
-cdef object wrap_vector_point(vector[Point] v):
-    r = []
-    cdef unsigned int i
-    for i in range(v.size()):
-        r.append( wrap_Point(v[i]) )
-    return r
-
-cdef vector[Point] make_vector_point(object l):
-    cdef vector[Point] ret
-    for i in l:
-        ret.push_back( deref( (<cy_Point> i).thisptr ) )
-    return ret
 
 cdef object wrap_vector_interval(vector[Interval] v):
     r = []
