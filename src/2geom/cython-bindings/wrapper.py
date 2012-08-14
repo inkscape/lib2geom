@@ -107,7 +107,7 @@ class CythonWrapper:
         arguments_cython = []
         for argument in constructor.arguments:
             arguments_cython.append(types_dict[argument.type.decl_string].get_Python_pass_argument().format(argument.name))
-        function_call = "new "+constructor.name+"({})".format(" ,".join(arguments_cython))
+        function_call = "new "+constructor.name+"({})".format(", ".join(arguments_cython))
         
         return_statement = "self.thisptr = {}".format(function_call)
         pyx_lines.append(self.delim+declaration)

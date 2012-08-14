@@ -363,6 +363,13 @@ cdef extern from "2geom/bezier-curve.h" namespace "Geom":
         Curve * transformed(Affine &)
         Curve * derivative()
 
+cdef class cy_BezierCurve:
+    cdef BezierCurve* thisptr
+
+cdef class cy_LineSegment(cy_BezierCurve):
+    pass
+
+cdef cy_LineSegment wrap_LineSegment(LineSegment p)
 
 
 cdef extern from "2geom/cython-bindings/hacks.h":

@@ -1,5 +1,7 @@
-from _common_decl cimport *
 from libcpp.vector cimport vector
+
+from _common_decl cimport *
+
 
 cdef extern from "2geom/affine.h" namespace "Geom":
     cdef cppclass Affine:
@@ -10,6 +12,7 @@ cdef extern from "2geom/affine.h" namespace "Geom":
     cdef cppclass VShear
     cdef cppclass HShear
     cdef cppclass Zoom
+
     
 cdef extern from "2geom/angle.h" namespace "Geom":
     cdef cppclass Angle:
@@ -43,6 +46,7 @@ cdef class cy_Angle:
 
 cdef cy_Angle wrap_Angle(Angle)
 
+
 cdef extern from "2geom/angle.h" namespace "Geom":
     cdef cppclass AngleInterval:
         AngleInterval(AngleInterval &)
@@ -69,17 +73,17 @@ cdef extern from "2geom/point.h" namespace "Geom":
         IntPoint round()
         IntPoint floor()
         IntPoint ceil()
+
         bint isFinite()
         bint isZero()
         bint isNormalized(Coord)
+
         bint operator==(Point &)
         bint operator!=(Point &)
         bint operator<(Point &)
         bint operator>(Point &)
         bint operator<=(Point &)
         bint operator>=(Point &)
-
-        #TODO add rounding methods in case of wrapping IntPoint
 
         Coord &operator[](int)
         Point operator-()
@@ -96,7 +100,6 @@ cdef extern from "2geom/point.h" namespace "Geom":
         Point &operator*(VShear  &)
         Point &operator*(Zoom  &)
             
-
     Coord L2(Point &)
     Coord L2sq(Point &)
 
@@ -105,6 +108,7 @@ cdef extern from "2geom/point.h" namespace "Geom":
     Point middle_point(Point &, Point &)
     Point rot90(Point &)
     Point lerp(double, Point &, Point &)
+
     Coord dot(Point &, Point &)
     Coord cross(Point &, Point &)
     Coord distance (Point &, Point &)
@@ -130,15 +134,13 @@ cdef cy_Point wrap_Point(Point p)
 cdef object wrap_vector_point(vector[Point] v)
 cdef vector[Point] make_vector_point(object l)
 
+
 cdef extern from "2geom/int-point.h" namespace "Geom":
     cdef cppclass IntPoint:
         IntPoint()
         IntPoint(IntCoord, IntCoord)
         IntPoint(IntPoint &)
         IntCoord operator[](unsigned int)
-        #IntCoord & operator[](unsigned int)
-        #IntCoord operator[](Dim2)
-        #IntCoord & operator[](Dim2)
         IntCoord x()
         IntCoord y()
         #why doesn't IntPoint have unary -?
@@ -156,16 +158,21 @@ cdef class cy_IntPoint:
 
 cdef cy_IntPoint wrap_IntPoint(IntPoint p)
 
+
+cdef extern from "2geom/curve.h" namespace "Geom":
+    cdef cppclass Curve
+
+cdef extern from "2geom/bezier.h" namespace "Geom":
+    cdef cppclass LineSegment
+
 cdef extern from "2geom/line.h" namespace "Geom":
     cdef cppclass Line:
         Line()
         Line(Point &, Coord)
         Line(Point &, Point &)
 
-        #Line(LineSegment &)
-        #Line(Ray &)
-        #Line from_normal_distance(Point, double)
-        #Line from_origin_and_versor(Point, Point)
+        Line(LineSegment &)
+        Line(Ray &)
         Line* duplicate()
 
         Point origin()
@@ -184,9 +191,9 @@ cdef extern from "2geom/line.h" namespace "Geom":
         Coord nearestPoint(Point &)
         vector[Coord] roots(Coord, Dim2)
         Line reverse()
-        #Curve* portion(Coord, Coord)
-        #LineSegment segment(Coord, Coord)
-        #Ray ray(Coord)
+        Curve* portion(Coord, Coord)
+        LineSegment segment(Coord, Coord)
+        Ray ray(Coord)
         Line derivative()
         Line transformed(Affine &)
         Point normal()
@@ -200,10 +207,11 @@ cdef extern from "2geom/line.h" namespace "Geom":
     bint are_collinear(Point &, Point &, Point &, double)
 
     double angle_between(Line &, Line &)
-    #double distance(Point &, LineSegment &)
+    double distance(Point &, LineSegment &)
+
 cdef extern from "2geom/line.h" namespace "Geom::Line":
     Line from_origin_and_versor(Point, Point)
-
+    Line from_normal_distance(Point, double)
 
 cdef extern from "2geom/ray.h" namespace "Geom":
     cdef cppclass Ray:
@@ -214,6 +222,7 @@ cdef extern from "2geom/ray.h" namespace "Geom":
         Point versor()
         void setOrigin(Point &)
         void setVersor(Point &)
+        void setAngle(Coord)
         Coord angle()
         void setPoints(Point &, Point &)
         bint isDegenerate()
@@ -222,8 +231,8 @@ cdef extern from "2geom/ray.h" namespace "Geom":
         vector[Coord] roots(Coord, Dim2)
         Coord nearestPoint(Point &)
         Ray reverse()
-        #Curve *portion(Coord, Coord)
-        #LineSegment segment(Coord, Coord)
+        Curve *portion(Coord, Coord)
+        LineSegment segment(Coord, Coord)
         Ray transformed(Affine &)
     double distance(Point &, Ray &)
     bint are_near(Point &, Ray &, double)

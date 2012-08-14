@@ -126,7 +126,7 @@ Coord L1(Point const &p) {
 }
 
 /** @brief Compute the infinity norm (maximum norm) of @a p.
- * @return \f$\max(p_X, p_Y)\f$
+ * @return \f$\max(|p_X|, |p_Y|)\f$
  * @relates Point */
 Coord LInfty(Point const &p) {
     Coord const a(fabs(p[0]));

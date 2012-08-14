@@ -84,11 +84,11 @@ class TestPrimitives(unittest.TestCase):
 
         l = Line(Point(1, 1), 2)
         self.assertEqual( (l.transformed(A)).origin(), l.origin()*A )
-        self.assertTrue( Line.are_near( l.pointAt(3)*A, l.transformed(A) ) )
+        self.assertTrue( Line.are_near( l.point_at(3)*A, l.transformed(A) ) )
 
         r = Ray(Point(2, 3), 4)
         self.assertEqual( (r.transformed(A)).origin(), r.origin()*A )
-        self.assertTrue( Ray.are_near( r.pointAt(3)*A, r.transformed(A) ) )
+        self.assertTrue( Ray.are_near( r.point_at(3)*A, r.transformed(A) ) )
 
         
 

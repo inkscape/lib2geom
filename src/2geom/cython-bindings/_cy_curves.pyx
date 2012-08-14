@@ -610,7 +610,6 @@ cdef cy_Bezier wrap_Bezier(Bezier p):
 
 
 cdef class cy_BezierCurve:
-    cdef BezierCurve* thisptr
     def __cinit__(self, *args):
 #~         if len(args) == 0:
 #~             self.thisptr = new BezierCurve(0)

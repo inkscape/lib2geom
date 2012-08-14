@@ -1,8 +1,8 @@
-ctypedef double Coord
-ctypedef int IntCoord
-
 from libcpp.vector cimport vector
 from libcpp.pair cimport pair
+
+ctypedef double Coord
+ctypedef int IntCoord
 
 cdef extern from "2geom/coord.h" namespace "Geom":
     cdef Coord EPSILON
