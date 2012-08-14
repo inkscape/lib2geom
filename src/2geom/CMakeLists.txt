@@ -175,21 +175,7 @@ ADD_SUBDIRECTORY (tests)
 ADD_SUBDIRECTORY (py2geom)
 
 
-include( UseCython )
 
-# With CMake, a clean separation can be made between the source tree and the
-# build tree.  When all source is compiled, as with pure C/C++, the source is
-# no-longer needed in the build tree.  However, with pure *.py source, the
-# source is processed directly.  To handle this, we reproduce the availability
-# of the source files in the build tree.
-add_custom_target( ReplicatePythonSourceTree ALL ${CMAKE_COMMAND} -P
-#  ${CMAKE_CURRENT_SOURCE_DIR}/CMakeScripts/ReplicatePythonSourceTree.cmake
-  ${CMAKE_CURRENT_BINARY_DIR}
-  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} )
-
-#include_directories( ${CYTHON_CMAKE_EXAMPLE_SOURCE_DIR}/include )
-
-# Process the CMakeLists.txt in the 'src' and 'bin' directory.
 add_subdirectory(cython-bindings)
 
 
