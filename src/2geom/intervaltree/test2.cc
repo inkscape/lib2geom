@@ -7,9 +7,15 @@
 
 class SimpleInterval : public Interval {
 public:
-  SimpleInterval() {}
+  SimpleInterval() :
+    _low(0),
+    _high(0),
+    _node(NULL)
+    {}
   SimpleInterval(const int low,const int high)
-    :_low(low), _high(high)
+    :_low(low),
+    _high(high),
+    _node(NULL)
     { }
   
   int GetLowPoint() const { return _low;}

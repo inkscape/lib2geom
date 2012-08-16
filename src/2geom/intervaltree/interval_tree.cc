@@ -455,7 +455,7 @@ IntervalTree::~IntervalTree() {
   }
   delete nil;
   delete root;
-  free(recursionNodeStack);
+  delete recursionNodeStack;
 }
 
 
