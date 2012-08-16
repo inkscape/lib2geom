@@ -52,10 +52,10 @@ class TestPrimitives(unittest.TestCase):
         self.assertFalse(P.empty() ^ (P.size()==0))
         
         exact = P.boundsExact().Rect
-        exact.expandBy(1e-5)
+        exact.expand_by(1e-5)
         
         fast = P.boundsFast().Rect
-        fast.expandBy(1e-5)
+        fast.expand_by(1e-5)
         A1 = Affine(3, 1, 8, 3, 9, 9)
         A2 = Rotate(0.231)
         

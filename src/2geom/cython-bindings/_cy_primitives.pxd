@@ -1,5 +1,3 @@
-from libcpp.vector cimport vector
-
 from _common_decl cimport *
 
 
@@ -212,6 +210,7 @@ cdef extern from "2geom/line.h" namespace "Geom":
 cdef extern from "2geom/line.h" namespace "Geom::Line":
     Line from_origin_and_versor(Point, Point)
     Line from_normal_distance(Point, double)
+
 
 cdef extern from "2geom/ray.h" namespace "Geom":
     cdef cppclass Ray:

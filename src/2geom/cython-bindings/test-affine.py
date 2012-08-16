@@ -133,7 +133,7 @@ class TestPrimitives(unittest.TestCase):
         self.affine(Affine(V), Affine(U))
         self.affine(Affine(U), Affine(V))
 
-        r = Rect( Point(0, 2), Point(4, 8) )
+        r = Rect.from_points( Point(0, 2), Point(4, 8) )
 
         self.assertEqual( ( r*(U*V) ).min(), r.min()+U.vector()+V.vector())
 
@@ -151,7 +151,7 @@ class TestPrimitives(unittest.TestCase):
         self.assertEqual( (T*U)[0], T[0]*U[0] )
         self.assertAlmostEqual( 1/U.inverse()[1], U[1] )
 
-        r = Rect( Point(0, 2), Point(4, 8) )
+        r = Rect.from_points( Point(0, 2), Point(4, 8) )
         self.assertAlmostEqual((r*V).area(), 2*r.area())
         self.assertFalse(Affine(U).preservesArea())
         self.assertTrue(Affine(V).preservesAngles())

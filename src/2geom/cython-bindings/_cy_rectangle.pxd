@@ -1,18 +1,30 @@
-from _common_decl cimport Coord, IntCoord, Dim2, EPSILON
+from _common_decl cimport *
 from cpython.ref cimport PyObject
 
 from _cy_primitives cimport Point, cy_Point, wrap_Point
 from _cy_primitives cimport IntPoint, cy_IntPoint, wrap_IntPoint
-#cdef extern from "2geom/point.h" namespace "Geom":
-#    cdef cppclass Point:
-#        pass
 
 cdef extern from "2geom/affine.h" namespace "Geom":
     cdef cppclass Affine:
         pass
 
+cdef extern from "2geom/cython-bindings/wrapped-pyobject.h" namespace "Geom":
+
+    cdef cppclass WrappedPyObject:
+        WrappedPyObject()
+        WrappedPyObject(object)
+        object getObj()
+
+    cdef cppclass PyPoint:
+        PyPoint()
+        PyPoint(WrappedPyObject, WrappedPyObject)
+        WrappedPyObject operator[](int)
+        
+
 cdef extern from "2geom/generic-interval.h" namespace "Geom":
+
     cdef cppclass GenericInterval[C]:
+
         GenericInterval()
         GenericInterval(C)
         GenericInterval(C, C)
@@ -21,10 +33,12 @@ cdef extern from "2geom/generic-interval.h" namespace "Geom":
         C max()
         C extent()
         C middle()
+    
         bint isSingular()
         bint contains(C)
         bint contains(GenericInterval[C] &) 
         bint intersects(GenericInterval[C] &)
+
         void setMin(C)
         void setMax(C)
         void expandTo(C)
@@ -40,30 +54,31 @@ cdef extern from "2geom/generic-interval.h" namespace "Geom":
         bint operator==(GenericInterval[C] &)
         bint operator!=(GenericInterval[C] &)
 
+
     cdef cppclass GenericOptInterval[C]:
+    
         GenericOptInterval()
         GenericOptInterval(C)
         GenericOptInterval(C, C)
 
-        GenericOptInterval get()
-
+        GenericInterval get() 
 
         C min()
         C max()
         C extent()
         C middle()
+
+        bint isEmpty()        
         bint isSingular()
         bint contains(C)
         bint contains(GenericOptInterval[C] &) 
         bint intersects(GenericOptInterval[C] &)
+        
         void setMin(C)
         void setMax(C)
         void expandTo(C)
         void expandBy(C)
         void unionWith(GenericOptInterval[C] &)
-
-        bint isEmpty()
-
         void intersectWith(GenericOptInterval &)
 
 
@@ -76,10 +91,7 @@ cdef extern from "2geom/generic-interval.h" namespace "Geom":
         GenericOptInterval[C] &operator&(GenericOptInterval[C] &)
         bint operator==(GenericOptInterval[C] &)
         bint operator!=(GenericOptInterval[C] &)
-    #TODO
-    #GenericInterval[C] unify(GenericInterval[C], GenericInterval[C])
-#cdef extern from "2geom/generic-interval.h" namespace "Geom::GenericInterval":
-    #GenericInterval[C] from_array(C *, unsigned int)
+
 
 cdef extern from "2geom/int-interval.h" namespace "Geom":
     ctypedef GenericInterval[IntCoord] IntInterval
@@ -89,7 +101,9 @@ cdef extern from "2geom/int-interval.h" namespace "Geom":
 #redeclaring inherited methods, other option is to cast all
 #pointers from Interval to GenericInterval[Coord] in extension class
 cdef extern from "2geom/interval.h" namespace "Geom":
+    
     cdef cppclass Interval:
+    
         Interval()
         Interval(Coord)
         Interval(Coord, Coord)
@@ -98,10 +112,12 @@ cdef extern from "2geom/interval.h" namespace "Geom":
         Coord max()
         Coord extent()
         Coord middle()
+    
         bint isSingular()
         bint contains(Coord)
         bint contains(Interval &) 
         bint intersects(Interval &)
+    
         void setMin(Coord)
         void setMax(Coord)
         void expandTo(Coord)
@@ -130,6 +146,7 @@ cdef extern from "2geom/interval.h" namespace "Geom":
         IntInterval roundOutwards()
         OptIntInterval roundInwards()
 
+    
     cdef cppclass OptInterval:
 
         OptInterval(OptInterval &)
@@ -140,6 +157,7 @@ cdef extern from "2geom/interval.h" namespace "Geom":
         OptInterval(GenericOptInterval[double] &)
         OptInterval(IntInterval &)
         OptInterval(OptIntInterval &)
+    
         Interval get()
         bint isEmpty()
         void unionWith(OptInterval &)
@@ -159,35 +177,17 @@ cdef class cy_OptInterval:
 cdef cy_OptInterval wrap_OptInterval(OptInterval p)
 
 
-cdef extern from "2geom/cython-bindings/wrapped-pyobject.h" namespace "Geom":
-    cdef cppclass WrappedPyObject:
-        WrappedPyObject()
-        WrappedPyObject(object)
-        object getObj()
-    cdef cppclass PyPoint:
-        PyPoint()
-        PyPoint(WrappedPyObject, WrappedPyObject)
-        WrappedPyObject operator[](int)
-        
 cdef extern from "2geom/generic-rect.h" namespace "Geom":
     cdef cppclass GenericRect[C]:
-        #GenericRect[C] & operator=(GenericRect[C] &)
-        GenericRect(GenericRect[C] &)
         GenericRect()
         GenericRect(GenericInterval[C] &, GenericInterval[C] &)
         GenericRect(Point &, Point &)
         GenericRect(PyPoint &, PyPoint &)
         GenericRect(IntPoint &, IntPoint &)
         GenericRect(C, C, C, C)
-        #GenericRect[C] from_range(Point *, Point *)
-        #GenericRect[C] from_array(Point *, unsigned int)
-        #GenericRect[C] from_xywh(WrappedPyObject, WrappedPyObject, WrappedPyObject, WrappedPyObject)
-        #GenericRect[C] from_xywh(Point &, Point &)
-        #GenericRect[C] infinite()
-        #GenericInterval[C] & operator[](unsigned int)
-        #GenericInterval[C] & operator[](unsigned int)
-        #GenericInterval[C] & operator[](Dim2)
+
         GenericInterval[C] & operator[](Dim2)
+
         PyPoint min()
         PyPoint max()
         PyPoint corner(unsigned int)
@@ -202,7 +202,6 @@ cdef extern from "2geom/generic-rect.h" namespace "Geom":
         C right()
         C width()
         C height()
-        #WrappedPyObject aspectRatio()
         Coord aspectRatio()
         
         PyPoint dimensions()
@@ -240,22 +239,16 @@ cdef extern from "2geom/generic-rect.h" namespace "Geom":
         void expandBy(PyPoint &)
         void expandBy(IntPoint &)
         
-        #GenericRect[C] & operator+=(Point &)
         GenericRect[C] & operator+(PyPoint &)
         GenericRect[C] & operator+(IntPoint &)
                 
-        #GenericRect[C] & operator-=(Point &)
         GenericRect[C] & operator-(PyPoint &)
         GenericRect[C] & operator-(IntPoint &)
 
-        #GenericRect[C] & operator|=(GenericRect[C] &)
         GenericRect[C] & operator|(GenericRect[C] &)
         bint operator==(GenericRect[C] &)
         bint operator!=(GenericRect[C] &)
-    #GenericRect[WrappedPyPoint] from_range(Point *, Point *)
-    #GenericRect[C] from_array(Point *, unsigned int)
-    #GenericRect[WrappedPyObject] from_xywh(WrappedPyObject, WrappedPyObject, WrappedPyObject, WrappedPyObject)
-    #GenericRect[WrappedPyObject] from_xywh(PyPoint &, PyPoint &)
+
     
     cdef cppclass GenericOptRect[C]:
         GenericOptRect()
@@ -301,20 +294,11 @@ cdef extern from "2geom/int-rect.h" namespace "Geom":
 
 cdef extern from "2geom/rect.h" namespace "Geom":
     cdef cppclass Rect:
-        #Rect & operator=(Rect &)
-        Rect(Rect &)
         Rect()
         Rect(Interval &, Interval &)
         Rect(Point &, Point &)
         Rect(Coord, Coord, Coord, Coord)
-        #Rect from_range(Point *, Point *)
-        #Rect from_array(Point *, unsigned int)
-        #Rect from_xywh(WrappedPyObject, WrappedPyObject, WrappedPyObject, WrappedPyObject)
-        #Rect from_xywh(Point &, Point &)
-        #Rect infinite()
-        #GenericInterval[C] & operator[](unsigned int)
-        #GenericInterval[C] & operator[](unsigned int)
-        #GenericInterval[C] & operator[](Dim2)
+
         Interval & operator[](Dim2)
         Point min()
         Point max()
@@ -332,9 +316,11 @@ cdef extern from "2geom/rect.h" namespace "Geom":
         bint hasZeroArea()
         Coord maxExtent()
         Coord minExtent()
+
         bint intersects(Rect &)
         bint contains(Rect &)
         bint contains(Point &)
+
         void setLeft(Coord)
         void setRight(Coord)
         void setTop(Coord)
@@ -346,32 +332,29 @@ cdef extern from "2geom/rect.h" namespace "Geom":
         void expandBy(Coord)
         void expandBy(Coord, Coord)
         void expandBy(Point &)
-        #Rect & operator+=(Point &)
+
         Rect & operator+(Point &)
-        #Rect & operator-=(Point &)
         Rect & operator-(Point &)
-        #Rect & operator|=(Rect &)
         Rect & operator|(Rect &)
         bint operator==(Rect &)
         bint operator!=(Rect &)   
+        bint operator==(IntRect &)
+        bint operator!=(IntRect &)
         
         bint hasZeroArea(Coord)
         bint interiorIntersects(Rect &)
         bint interiorContains(Point &)
         bint interiorContains(Rect &)
         bint interiorContains(OptRect &)
+
         IntRect roundOutwards()
         OptIntRect roundInwards()
         Rect &operator*(Affine &)
-        bint operator==(IntRect &)
-        bint operator!=(IntRect &)
 
     Coord distanceSq(Point &, Rect &)
     Coord distance(Point &, Rect &)
 
-        
-    
-    
+
     cdef cppclass OptRect:
         OptRect()
         OptRect(Rect &)
@@ -407,6 +390,7 @@ cdef extern from "2geom/rect.h" namespace "Geom":
 cdef extern from "2geom/rect.h" namespace "Geom::Rect":
     Rect from_xywh(Coord, Coord, Coord, Coord)
     Rect from_xywh(Point &, Point &)
+    Rect infinite()
 
 cdef class cy_Rect:
     cdef Rect* thisptr
@@ -420,8 +404,6 @@ cdef cy_OptRect wrap_OptRect(OptRect p)
 
 
 cdef extern from "2geom/int-rect.h" namespace "Geom":
-    #ctypedef GenericRect[IntCoord] IntRect
-    #ctypedef GenericOptRect[IntCoord] OptIntRect
     #redeclaring because cython complains about ambigous overloading othewise
     cdef cppclass OptIntRect:
         OptIntRect()
@@ -457,3 +439,4 @@ cdef extern from "2geom/int-rect.h" namespace "Geom":
 
         bint operator!=(OptIntRect &)
         bint operator!=(IntRect &)
+
