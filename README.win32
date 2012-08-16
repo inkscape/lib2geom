@@ -9,7 +9,7 @@
     - mingwenv.bat
     - cmake -G "MinGW Makefiles" c:\path\to\2geom    (be sure you have a CAPITAL '-G' there!)
     - cmake -i     (especially mind to set the install dir to where you want it installed (probably the gtk folder, e.g. c:/gtk210))
-    - make
+    - mingw32-make
 - copy the resulting *.exe files into the inkscape install directory
 
 If you want to be able to compile the ragel defined svg-parser aswell, 
@@ -23,7 +23,7 @@ and rename it to rlcodegen.exe :-)
 TROUBLESHOOTING
 If things don't work out, here is a list of things you can try.
 1. Type  'make --version'. It should display:
-        E:\inkscapelpe>make --version
+        E:\inkscapelpe>mingw32-make --version
         GNU Make 3.80
         Copyright (C) 2002  Free Software Foundation, Inc.
    Or something very similar. If it does not, probably windows finds a different make (Borland's or another?).
