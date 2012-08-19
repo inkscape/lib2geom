@@ -47,8 +47,8 @@ cdef class cy_Affine:
             return wrap_Affine( deref(self.thisptr) * deref( (<cy_VShear> other).thisptr ) )
         elif isinstance(other, cy_Zoom):
             return wrap_Affine( deref(self.thisptr) * deref( (<cy_Zoom> other).thisptr ) )
-#~     def __pow__(cy_Affine self, int n, z = None):
-#~         return wrap_Affine(pow( deref(self.thisptr), n ))
+    def __pow__(cy_Affine self, int n, z):
+        return wrap_Affine(pow( deref(self.thisptr), n ))
     def __richcmp__(cy_Affine self, cy_Affine other, int op):
         if op == 2:
             return deref(self.thisptr) == deref(other.thisptr)

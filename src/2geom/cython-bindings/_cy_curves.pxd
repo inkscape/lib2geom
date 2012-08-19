@@ -14,10 +14,10 @@ cdef extern from "2geom/d2.h" namespace "Geom":
     cdef cppclass D2[T]:
         D2()
         D2(T &, T &)
-        T& operator[](unsigned i)  
+        T& operator[](unsigned i)
+
 cdef extern from "2geom/curve.h" namespace "Geom":
     cdef cppclass Curve:
-        Curve(Curve &)
         Curve()
         Point initialPoint()
         Point finalPoint()
@@ -52,8 +52,8 @@ cdef extern from "2geom/curve.h" namespace "Geom":
 
 cdef class cy_Curve:
     cdef Curve* thisptr
-    
-cdef cy_Curve wrap_Curve(Curve & p)
+
+#~ cdef cy_Curve wrap_Curve(Curve & p)
 cdef cy_Curve wrap_Curve_p(Curve * p)
 
 
@@ -77,7 +77,7 @@ cdef extern from "2geom/linear.h" namespace "Geom":
         OptInterval bounds_local(double, double)
         double tri()
         double hat()
-        
+
     bint operator==(Linear &, Linear &)
     bint operator!=(Linear &, Linear &)
     Linear operator*(Linear &, double)
@@ -92,13 +92,19 @@ cdef extern from "2geom/linear.h" namespace "Geom":
     double lerp(double, double, double)
     Linear reverse(Linear &)
 
-    
+
 cdef extern from "2geom/sbasis.h" namespace "Geom":
     cdef cppclass SBasis:
+
+        SBasis()
+        SBasis(double)
+        SBasis(double, double)
+        SBasis(SBasis &)
+        SBasis(vector[Linear] &)
+        SBasis(Linear &)
+
         size_t size()
         Linear operator[](unsigned int)
-        vector[Linear].iterator begin() #TODO
-        vector[Linear].iterator end() #TODO
         bint empty()
         Linear & back()
         void pop_back()
@@ -110,14 +116,7 @@ cdef extern from "2geom/sbasis.h" namespace "Geom":
         Linear & at(unsigned int)
         bint operator==(SBasis &)
         bint operator!=(SBasis &)
-        SBasis()
-        SBasis(double)
-        SBasis(double, double)
-        SBasis(SBasis &)
-#~         SBasis(vector[Linear] &)
-        SBasis(Linear &)
-        SBasis(Linear *)
-#~         SBasis(size_t, Linear &)
+
         bint isZero(double)
         bint isConstant(double)
         bint isFinite()
@@ -150,7 +149,7 @@ cdef extern from "2geom/sbasis.h" namespace "Geom":
     SBasis shift(Linear &, int)
     SBasis shift(SBasis &, int)
     SBasis inverse(SBasis, int)
-        
+
     SBasis portion(SBasis &, Interval)
     SBasis portion(SBasis &, double, double)
     SBasis compose(SBasis &, SBasis &, unsigned int)
@@ -166,7 +165,7 @@ cdef extern from "2geom/sbasis.h" namespace "Geom":
     vector[double] roots(SBasis &)
     vector[ vector[Interval] ] level_sets(SBasis &, vector[Interval] &, double, double, double) #TODO
     vector[ vector[Interval] ] level_sets(SBasis &, vector[double] &, double, double, double, double) #TODO
-    
+
     SBasis reverse(SBasis &)
     SBasis derivative(SBasis &)
     SBasis integral(SBasis &)
@@ -174,17 +173,16 @@ cdef extern from "2geom/sbasis.h" namespace "Geom":
     SBasis compose_inverse(SBasis &, SBasis &, unsigned int, double)
     SBasis multiply(SBasis &, SBasis &)
     SBasis multiply_add(SBasis &, SBasis &, SBasis)
-    
+
     OptInterval bounds_exact(SBasis &)
     OptInterval bounds_local(SBasis &, OptInterval &, int)
-    OptInterval bounds_fast(SBasis &, int)    
+    OptInterval bounds_fast(SBasis &, int)
 
 cdef class cy_SBasis:
     cdef SBasis* thisptr
 
 cdef extern from "2geom/sbasis-curve.h" namespace "Geom":
     cdef cppclass SBasisCurve:
-        SBasisCurve(SBasisCurve &)
         SBasisCurve(D2[SBasis] &)
         SBasisCurve(Curve &)
         Curve * duplicate()
@@ -218,7 +216,6 @@ cdef extern from "2geom/bezier.h" namespace "Geom":
         unsigned int order()
         unsigned int size()
         Bezier()
-        Bezier(Bezier &)
 #~         Bezier(Bezier.Order)
         Bezier(Coord)
         Bezier(Coord, Coord)
@@ -265,7 +262,7 @@ cdef extern from "2geom/bezier.h" namespace "Geom":
     OptInterval bounds_fast(Bezier &)
     Bezier multiply(Bezier &, Bezier &)
     Bezier reverse(Bezier &)
-    
+
 #This is ugly workaround around cython's lack of support for interger template parameters
 cdef extern from *:
     ctypedef int n_0 "0"
@@ -273,8 +270,6 @@ cdef extern from *:
 
 cdef extern from "2geom/bezier-curve.h" namespace "Geom":
     cdef cppclass BezierCurve:
-#~         BezierCurve & operator=(BezierCurve &)
-        BezierCurve(BezierCurve &)
         unsigned int order()
         vector[Point] points()
         void setPoint(unsigned int, Point)
@@ -336,7 +331,7 @@ cdef extern from "2geom/bezier-curve.h" namespace "Geom":
         Curve * reverse()
         Curve * transformed(Affine &)
         Curve * derivative()
-        
+
 
     cdef cppclass CubicBezier:
         CubicBezier()
@@ -351,17 +346,17 @@ cdef extern from "2geom/bezier-curve.h" namespace "Geom":
         Curve * transformed(Affine &)
         Curve * derivative()
 
-    cdef cppclass BezierCurveN[n_1]:
-        BezierCurveN ()
-        BezierCurveN(Bezier &, Bezier &)
-        #BezierCurveN(Point &, Point &)        
-        BezierCurveN(vector[Point] &)
-        pair[BezierCurveN, BezierCurveN] subdivide(Coord)
-
-        Curve * duplicate()
-        Curve * reverse()
-        Curve * transformed(Affine &)
-        Curve * derivative()
+#~     cdef cppclass BezierCurveN[n_1]:
+#~         BezierCurveN ()
+#~         BezierCurveN(Bezier &, Bezier &)
+#~         #BezierCurveN(Point &, Point &)
+#~         BezierCurveN(vector[Point] &)
+#~         pair[BezierCurveN, BezierCurveN] subdivide(Coord)
+#~
+#~         Curve * duplicate()
+#~         Curve * reverse()
+#~         Curve * transformed(Affine &)
+#~         Curve * derivative()
 
 cdef class cy_BezierCurve:
     cdef BezierCurve* thisptr
@@ -373,7 +368,9 @@ cdef cy_LineSegment wrap_LineSegment(LineSegment p)
 
 
 cdef extern from "2geom/cython-bindings/hacks.h":
+
     cdef cppclass AxisLineSegment_X:
+
         void setInitial(Point &)
         void setFinal(Point &)
         Rect boundsFast()
@@ -383,8 +380,10 @@ cdef extern from "2geom/cython-bindings/hacks.h":
         Coord nearestPoint(Point &, Coord, Coord)
         Point pointAt(Coord)
         Coord valueAt(Coord, Dim2)
-        vector[Point] pointAndDerivatives(Coord, unsigned) 
+        vector[Point] pointAndDerivatives(Coord, unsigned)
+
     cdef cppclass AxisLineSegment_Y:
+
         void setInitial(Point &)
         void setFinal(Point &)
         Rect boundsFast()
@@ -394,51 +393,42 @@ cdef extern from "2geom/cython-bindings/hacks.h":
         Coord nearestPoint(Point &, Coord, Coord)
         Point pointAt(Coord)
         Coord valueAt(Coord, Dim2)
-        vector[Point] pointAndDerivatives(Coord, unsigned) 
+        vector[Point] pointAndDerivatives(Coord, unsigned)
+
+
 cdef extern from "2geom/hvlinesegment.h" namespace "Geom":
 
-        
-#~     cdef cppclass AxisLineSegment[n_1]:# "AxisLineSegment<1>":
-#~         void setInitial(Point &)
-#~         void setFinal(Point &)
-#~         Rect boundsFast()
-#~         Rect boundsExact()
-#~         int degreesOfFreedom()
-#~         vector[Coord] roots(Coord, Dim2)
-#~         Coord nearestPoint(Point &, Coord, Coord)
-#~         Point pointAt(Coord)
-#~         Coord valueAt(Coord, Dim2)
-#~         vector[Point] pointAndDerivatives(Coord, unsigned)
-        
     cdef cppclass HLineSegment:
-#~         HLineSegment & operator=(HLineSegment &)
-        HLineSegment(HLineSegment &)
+
         HLineSegment()
-        HLineSegment(Coord, Coord, Coord)
         HLineSegment(Point &, Coord)
         HLineSegment(Point &, Point &)
+
         Coord getY()
         void setInitialX(Coord)
         void setFinalX(Coord)
         void setY(Coord)
         pair[HLineSegment, HLineSegment] subdivide(Coord)
+
         Curve * duplicate()
         Curve * portion(Coord, Coord)
         Curve * reverse()
         Curve * transformed(Affine &)
         Curve * derivative()
+
+
     cdef cppclass VLineSegment:
-#~         VLineSegment & operator=(VLineSegment &)
-        VLineSegment(VLineSegment &)
+
         VLineSegment()
-        VLineSegment(Coord, Coord, Coord)
         VLineSegment(Point &, Coord)
         VLineSegment(Point &, Point &)
+
         Coord getX()
         void setInitialY(Coord)
         void setFinalY(Coord)
         void setX(Coord)
         pair[VLineSegment, VLineSegment] subdivide(Coord)
+
         Curve * duplicate()
         Curve * portion(Coord, Coord)
         Curve * reverse()

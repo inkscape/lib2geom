@@ -35,16 +35,18 @@ class TestPrimitives(unittest.TestCase):
         Dp = D.getPath()
         self.assertEqual(D.center(), Point(2, 4))
         self.assertEqual(D.ray(), 2)
-        
+
         for i in range(11):
             t = i/10.0
             #Circle approximated by SBasis is not perfect
             self.assertAlmostEqual( abs(D.center()-Dp(t)), D.ray(), delta=0.1 )
-            
+
         half_circle = D.arc(Dp(0), Dp(0.3), Dp(0.5))
-        self.assertTrue(half_circle.isSVGCompliant())
+
+        self.assertTrue(half_circle.is_SVG_compliant())
+
         self.assertAlmostEqual(Dp(0.25), half_circle(0.5), delta=0.1)
-        
+
         points = [Point(2, 5), Point(1, 4), Point(9, 0)]
         D.setPoints(points)
         for p in points:
@@ -61,7 +63,7 @@ class TestPrimitives(unittest.TestCase):
         Ec = E.arc(E.center()+Point(E.ray(), 0), E.center()-Point(E.ray(), 0), E.center()+Point(E.ray(), 0) )
         for i in range(11):
             t = i/10.0
-            self.assertAlmostEqual(param(Ec.valueAt(t, 0), Ec.valueAt(t, 1)), 0)
+            self.assertAlmostEqual(param(Ec.value_at(t, 0), Ec.value_at(t, 1)), 0)
         
         E.set(3, 5, 9)
         self.assertAlmostEqual(E.center(), Point(3, 5))

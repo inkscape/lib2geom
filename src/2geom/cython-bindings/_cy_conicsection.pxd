@@ -6,7 +6,7 @@ from libcpp.pair cimport pair
 from _cy_rectangle cimport Interval, OptInterval, Rect, OptRect
 from _cy_rectangle cimport cy_OptRect
 from _cy_affine cimport is_transform, get_Affine, Affine
-from _cy_curves cimport Curve, cy_Curve, wrap_Curve, wrap_Curve_p
+from _cy_curves cimport Curve, cy_Curve,  wrap_Curve_p
 from _cy_curves cimport SBasis, cy_SBasis
 from _cy_curves cimport EllipticalArc, cy_EllipticalArc, wrap_EllipticalArc
 from _cy_curves cimport SVGEllipticalArc, cy_SVGEllipticalArc, wrap_SVGEllipticalArc
