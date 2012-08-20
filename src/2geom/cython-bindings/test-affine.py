@@ -29,52 +29,52 @@ class TestPrimitives(unittest.TestCase):
         #xor
         self.assertFalse( A.flips() ^ (A.det() < 0) )
 
-        if A.isSingular():
+        if A.is_singular():
             self.assertAlmostEqual(A.det(), 0)
         else:
             self.assertTrue( Affine.are_near (A*A.inverse(), E) )
             self.assertAlmostEqual(A.det(), 1/A.inverse().det())
-        self.assertEqual( A.xAxis(), Point(c0, c1) )
-        self.assertEqual( A.yAxis(), Point(c2, c3) )
+        self.assertEqual( A.x_axis(), Point(c0, c1) )
+        self.assertEqual( A.y_axis(), Point(c2, c3) )
         self.assertEqual( A.translation(), Point(c4, c5) )
 
-        self.assertAlmostEqual(A.expansionX(), A.xAxis().length())
-        self.assertAlmostEqual(A.expansionY(), A.yAxis().length())
+        self.assertAlmostEqual(A.expansion_X(), A.x_axis().length())
+        self.assertAlmostEqual(A.expansion_Y(), A.y_axis().length())
         
-        if abs(A.expansionX()) > 1e-7 and abs(A.expansionY()) > 1e-7:
-            A.setExpansionX(2)
-            A.setExpansionY(3)
-            self.assertAlmostEqual(A.expansionX(), 2)
-            self.assertAlmostEqual(A.expansionY(), 3)
+        if abs(A.expansion_X()) > 1e-7 and abs(A.expansion_Y()) > 1e-7:
+            A.set_expansion_X(2)
+            A.set_expansion_Y(3)
+            self.assertAlmostEqual(A.expansion_X(), 2)
+            self.assertAlmostEqual(A.expansion_Y(), 3)
 
-        A.setIdentity()
+        A.set_identity()
 
-        self.assertTrue(A.isIdentity())
-        self.assertTrue(A.isTranslation())
-        self.assertFalse(A.isNonzeroTranslation())
-        self.assertTrue(A.isScale())
-        self.assertTrue(A.isUniformScale())
-        self.assertFalse(A.isNonzeroScale())
-        self.assertFalse(A.isNonzeroUniformScale())
-        self.assertTrue(A.isRotation())
-        self.assertFalse(A.isNonzeroRotation())
-        self.assertTrue(A.isHShear())
-        self.assertTrue(A.isVShear())
-        self.assertFalse(A.isNonzeroHShear())
-        self.assertFalse(A.isNonzeroVShear())
-        self.assertTrue(A.isZoom())
+        self.assertTrue(A.is_identity())
+        self.assertTrue(A.is_translation())
+        self.assertFalse(A.is_nonzero_translation())
+        self.assertTrue(A.is_scale())
+        self.assertTrue(A.is_uniform_scale())
+        self.assertFalse(A.is_nonzero_scale())
+        self.assertFalse(A.is_nonzero_uniform_scale())
+        self.assertTrue(A.is_rotation())
+        self.assertFalse(A.is_nonzero_rotation())
+        self.assertTrue(A.is_HShear())
+        self.assertTrue(A.is_VShear())
+        self.assertFalse(A.is_nonzero_HShear())
+        self.assertFalse(A.is_nonzero_VShear())
+        self.assertTrue(A.is_zoom())
 
-        self.assertTrue(A.preservesArea() and A.preservesAngles() and A.preservesDistances())
+        self.assertTrue(A.preserves_area() and A.preserves_angles() and A.preserves_distances())
 
         self.assertFalse( A.flips() )
-        self.assertFalse( A.isSingular() )
+        self.assertFalse( A.is_singular() )
 
-        A.setXAxis(Point(c0, c1))
-        A.setYAxis(Point(c2, c3))
+        A.set_X_axis(Point(c0, c1))
+        A.set_Y_axis(Point(c2, c3))
 
-        self.assertEqual(A.withoutTranslation(), A)
+        self.assertEqual(A.without_translation(), A)
 
-        A.setTranslation(Point(c4, c5))
+        A.set_translation(Point(c4, c5))
         self.assertEqual(C, A)
 
         self.assertAlmostEqual( (A*B).det(), A.det()*B.det() )
@@ -122,8 +122,8 @@ class TestPrimitives(unittest.TestCase):
         U = Translate(Point(2, 4))
         V = Translate(1, -9)
 
-        self.assertTrue(Affine(T).isTranslation())
-        self.assertTrue(Affine(U).isNonzeroTranslation())
+        self.assertTrue(Affine(T).is_translation())
+        self.assertTrue(Affine(U).is_nonzero_translation())
 
         self.assertEqual( (U*V).vector(), U.vector()+V.vector() )
         self.assertEqual( U.inverse().vector(), -U.vector() )
@@ -143,9 +143,9 @@ class TestPrimitives(unittest.TestCase):
         U = Scale( -3, 1)
         V = Scale(sqrt(2))
 
-        self.assertTrue( Affine(T).isScale() )
-        self.assertTrue( Affine(T).isNonzeroScale() )
-        self.assertTrue( Affine(V).isNonzeroUniformScale())
+        self.assertTrue( Affine(T).is_scale() )
+        self.assertTrue( Affine(T).is_nonzero_scale() )
+        self.assertTrue( Affine(V).is_nonzero_uniform_scale())
 
         self.assertEqual( (T*V).vector(), T.vector()*sqrt(2) )
         self.assertEqual( (T*U)[0], T[0]*U[0] )
@@ -153,8 +153,8 @@ class TestPrimitives(unittest.TestCase):
 
         r = Rect.from_points( Point(0, 2), Point(4, 8) )
         self.assertAlmostEqual((r*V).area(), 2*r.area())
-        self.assertFalse(Affine(U).preservesArea())
-        self.assertTrue(Affine(V).preservesAngles())
+        self.assertFalse(Affine(U).preserves_area())
+        self.assertTrue(Affine(V).preserves_angles())
         
         self.affine(Affine(T), Affine(U))
         self.affine(Affine(U), Affine(V))
@@ -186,32 +186,32 @@ class TestPrimitives(unittest.TestCase):
         self.assertAlmostEqual(V.inverse().factor(), sqrt(2))
 
         G = HShear.identity()
-        H.setFactor(0)
+        H.set_factor(0)
         self.assertEqual(G, H)
         
-        G.setFactor(2)
-        H.setFactor(4)
+        G.set_factor(2)
+        H.set_factor(4)
         self.assertAlmostEqual((G*H).factor(), G.factor()+H.factor())
 
         W = VShear.identity()
-        V.setFactor(0)
+        V.set_factor(0)
         self.assertEqual(W, V)
         
-        W.setFactor(-2)
-        V.setFactor(3)
+        W.set_factor(-2)
+        V.set_factor(3)
         self.assertAlmostEqual((W*V).factor(), W.factor()+V.factor())
         
     def test_zoom(self):
         Z = Zoom(3)
-        Y = Zoom(Translate(3,2))
+        Y = Zoom(translate=Translate(3,2))
         X = Zoom(sqrt(3), Translate(-1, 3))
         
         self.assertEqual( 
             Zoom(Z.scale(), Translate(Y.translation())),
             Y*Z )
             
-        Z.setTranslation(Y.translation())
-        Y.setScale(Z.scale())
+        Z.set_translation(Y.translation())
+        Y.set_scale(Z.scale())
         self.assertEqual(Z, Y)
         
         self.assertEqual(Y.inverse().scale(), 1/Y.scale())

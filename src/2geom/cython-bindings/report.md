@@ -104,6 +104,10 @@ OptIntInterval? This would probably require writing the logic in cython.
 GenericOptRect is not there yet, because I got GenericRect only working
 only recently. It should be, however, quick to add.
 
+##`_cy_affine`
+Affine and specialised transforms. This is in pretty good state. Eigenvalues
+seem to be a bit off sometimes.
+
 ##`_cy_curves`
 All of the curves are wrapped here, together with functions like Linear, 
 SBasis and Bezier. 
@@ -127,6 +131,9 @@ problems with templated classes - one would have to declare each type
 separately. First three orders are wrapped, and BezierCurve, with variable
 degree, is also wrapped.
 
+`hacks.h` is used to go around cython's problems with integer template 
+parameters.
+
 ##`_cy_path`
 Path is wrapped here. Biggest problem with path was it's heavy use of 
 iterators, which are not the same as python's iterators. In most of the
@@ -138,12 +145,24 @@ to allow iterators to be shifted by arbitrary number.
 Not everything is provided, but there should be enough functionality to 
 have total control over Path's curves.
 
+##`_cy_conicsection`
+Circle and ellipse classes. ratQuad and xAx from conic-section should also
+go there.
+
+##`utils.py`
+Only a simple function to draw curve/path to Tk windows and regular
+N-agon creating fucntion reside there, useful mainly for debugging
+
+##`wrapper.py`
+Script used to cut the most trivial part of creating bindings, writing
+.pxd declarations, extension type and other functions. It's pretty tailored
+into 2geom, but I guess after some work one could make it more generic.
+
 
 ##General Issues
 Exceptions coming from C++ code are not handled yet, they actually crash 
 the program. Simplest solution is adding `except +` after every method that
-possibly raises exceptions (I hope to do this before GSoC ends), but traces
-won't look that nice.
+possibly raises exceptions, but traces won't look that nice.
 
 cython has some kind of problem with docstrings, it doesn't write function's
 argument to them, just ellipsis. This can be addresed by specifying all 
@@ -155,6 +174,16 @@ type is chosen, distance(Point, Point) goes to Point class. Other options
 are making them check for all possible types (this is ugly and error-prone) 
 or differentiating using different names, which is more or less the same as 
 classmethods, just not that systematic
+
+##What's missing
+Piecewise missing and all of crossings/boolops stuff are biggest things 
+that didn't make. Concerning Piecewise, I think best option is to 
+implement only Piecewise<SBasis> and Piecewise<D2<SBasis>> as those are 
+only ones actually useful (SBasis, Bezier and their D2 versions are AFAIK
+only classes implementing required concepts).
+
+Crossings are working, boolops not so much. Work on Shape and Region has
+been started.
 
 #Personal Notes
 I am also summarizing a bit on my personal experience with GSoC.
@@ -197,7 +226,10 @@ correcting the largest mistakes.
 I would also discuss design of API bit more, since mapping the C++ sometimes
 turned out to be cumbersome from python's perspective. Often, I would spend
 lots of time thinking through some detail (Iterator for Path, boost::optional,
-most of the templated classes), only doing ad-hoc solution at the end.
+most of the templated classes), only doing ad-hoc solution at the end in 
+order to I to keep progressing.
+
+Jan Pulmann -  jan.pulmann@gmail.com
 
 [2g]: http://lib2geom.sourceforge.net/
 [cy]: http://www.cython.org/

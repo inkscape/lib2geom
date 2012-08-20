@@ -48,15 +48,15 @@ class TestPrimitives(unittest.TestCase):
         self.assertAlmostEqual(Dp(0.25), half_circle(0.5), delta=0.1)
 
         points = [Point(2, 5), Point(1, 4), Point(9, 0)]
-        D.setPoints(points)
+        D.set_points(points)
         for p in points:
             self.assertAlmostEqual( abs(p-D.center()), D.ray() )
-        Dc = Circle.fromPoints(points)
+        Dc = Circle.from_points(points)
         self.assertAlmostEqual(Dc.center(), D.center())
         self.assertAlmostEqual(Dc.ray(), D.ray())
         
         coeffs = (2, 4, 1, -4)
-        E = Circle.fromCoefficients(*coeffs)
+        E = Circle.from_coefficients(*coeffs)
         def param(x, y):
             A, B, C, D = coeffs
             return A*x**2 + A*y**2 + B*x + C*y + D
@@ -69,7 +69,7 @@ class TestPrimitives(unittest.TestCase):
         self.assertAlmostEqual(E.center(), Point(3, 5))
         self.assertAlmostEqual(E.ray(), 9)
         
-        E.setCoefficients(*coeffs)
+        E.set_coefficients(*coeffs)
         #radius and center from parametric equation 
         ca = float(coeffs[1])/coeffs[0]
         cb = float(coeffs[2])/coeffs[0]
@@ -98,14 +98,14 @@ class TestPrimitives(unittest.TestCase):
         self.assertAlmostEqual(F.implicit_form_coefficients()[5], -1)
         
         coeffs = (1/3.0, 0, 1/16.0, 1, 0, -1/4.0)
-        G = Ellipse.fromCoefficients(*coeffs)
+        G = Ellipse.from_coefficients(*coeffs)
         self.assertAlmostEqual(G.center(), Point(-3/2.0, 0))
         self.assertAlmostEqual(G.ray(0), math.sqrt(3))
         self.assertAlmostEqual(G.ray(1), 4)
         self.assertAlmostEqual(G.rot_angle(), 0)
         
         points = [Point(1, 2), Point(2 ,9), Point(0, 3), Point(-3, 8), Point(5, 8)]
-        G.setPoints(points)
+        G.set_points(points)
         coeffs_G = tuple(G.implicit_form_coefficients())
         def paramG(x, y):
             A, B, C, D, E, F = coeffs_G
@@ -113,7 +113,7 @@ class TestPrimitives(unittest.TestCase):
         for p in points:
             self.assertAlmostEqual(paramG(p.x, p.y), 0)
 
-        G2 = Ellipse.fromPoints(points)
+        G2 = Ellipse.from_points(points)
         coeffs_G2 = tuple(G.implicit_form_coefficients())
         def paramG2(x, y):
             A, B, C, D, E, F = coeffs_G2
@@ -121,11 +121,11 @@ class TestPrimitives(unittest.TestCase):
         for p in points:
             self.assertAlmostEqual(paramG2(p.x, p.y), 0)
         
-        E.setCoefficients(*coeffs_G2)
+        E.set_coefficients(*coeffs_G2)
         for a1, a2 in zip(E.implicit_form_coefficients(), G2.implicit_form_coefficients()):
             self.assertAlmostEqual(a1, a2)
 
-        H = Ellipse.fromCircle(Circle(Point(2, 8), 5))
+        H = Ellipse.from_circle(Circle(Point(2, 8), 5))
         self.assertAlmostEqual(H.center(), Point(2, 8))
         self.assertAlmostEqual(H.ray(0), 5)
         self.assertAlmostEqual(H.ray(1), 5)

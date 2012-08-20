@@ -6,13 +6,13 @@ from _cy_primitives cimport Point, cy_Point, wrap_Point
 
 cdef extern from "2geom/affine.h" namespace "Geom":
     cdef cppclass Affine:
-        
+
         Affine(Affine &)
         Affine()
         Affine(Coord, Coord, Coord, Coord, Coord, Coord)
-        
+
         Coord operator[](unsigned int)
-        
+
         Affine & operator*(Affine &)
         Affine & operator*(Translate &)
         Affine & operator*(Scale &)
@@ -20,24 +20,24 @@ cdef extern from "2geom/affine.h" namespace "Geom":
         Affine & operator*(HShear &)
         Affine & operator*(VShear &)
         Affine & operator*(Zoom &)
-        
+
         bint operator==(Affine &)
         bint operator!=(Affine &)
-        
+
         Point xAxis()
         Point yAxis()
         Point translation()
         Coord expansionX()
         Coord expansionY()
         Point expansion()
-        
+
         void setXAxis(Point &)
         void setYAxis(Point &)
         void setTranslation(Point &)
         void setExpansionX(Coord)
         void setExpansionY(Coord)
         void setIdentity()
-        
+
         bint isIdentity(Coord)
         bint isTranslation(Coord)
         bint isScale(Coord)
@@ -57,17 +57,17 @@ cdef extern from "2geom/affine.h" namespace "Geom":
         bint preservesDistances(Coord)
         bint flips()
         bint isSingular(Coord)
-        
+
         Affine withoutTranslation()
         Affine inverse()
-        
+
         Coord det()
         Coord descrim2()
         Coord descrim()
-        
-    bint are_near(Affine &, Affine &)
+
+    bint are_near(Affine &, Affine &, Coord)
     Affine a_identity "Geom::Affine::identity" ()
-        
+
 cdef extern from "2geom/transforms.h" namespace "Geom":
     Affine reflection(Point &, Point &)
     #TODO find out how cython __pow__ works
@@ -106,10 +106,8 @@ cdef extern from "2geom/transforms.h" namespace "Geom":
 
         Point vector()
         Translate inverse()
-        
-    Translate t_identity "Geom::Translate::identity" ()
 
-#cdef extern from "2geom/transforms.h" namespace "Geom::Translate":
+    Translate t_identity "Geom::Translate::identity" ()
 
 cdef class cy_Translate:
     cdef Translate* thisptr
@@ -129,17 +127,17 @@ cdef extern from "2geom/transforms.h" namespace "Geom":
         bint operator!=(Scale &)
 
         Affine operator()
-        
+
         Point vector()
         Scale inverse()
         Scale identity()
-        
+
     Scale s_identity "Geom::Scale::identity" ()
 
 cdef class cy_Scale:
     cdef Scale* thisptr
 
-        
+
 cdef extern from "2geom/transforms.h" namespace "Geom":
     cdef cppclass Rotate:
         Rotate(Rotate &)
@@ -148,22 +146,22 @@ cdef extern from "2geom/transforms.h" namespace "Geom":
         Rotate(Point &)
         Rotate(Coord, Coord)
         Point vector()
-        
+
         Coord operator[](Dim2)
         Coord operator[](unsigned int)
         Rotate & operator*(Rotate &)
         Affine & operator*(Affine &)
         bint operator==(Rotate &)
         bint operator!=(Rotate &)
-        
+
         Affine operator()
         Rotate inverse()
-        
+
     Rotate r_identity "Geom::Rotate::identity" ()
-        
+
 cdef extern from "2geom/transforms.h" namespace "Geom::Rotate":
     Rotate from_degrees(Coord)
-        
+
 
 cdef class cy_Rotate:
     cdef Rotate* thisptr
@@ -174,21 +172,21 @@ cdef extern from "2geom/transforms.h" namespace "Geom":
         VShear(Coord)
         Coord factor()
         void setFactor(Coord)
-        
+
         VShear &operator*(VShear)
         Affine & operator*(Affine &)
         bint operator==(VShear &)
-        bint operator!=(VShear &) 
+        bint operator!=(VShear &)
         Affine operator()
 
-        VShear inverse() 
-        
+        VShear inverse()
+
     VShear vs_identity "Geom::VShear::identity"()
-            
+
 cdef class cy_VShear:
     cdef VShear* thisptr
 
-        
+
 cdef extern from "2geom/transforms.h" namespace "Geom":
     cdef cppclass HShear:
         HShear(HShear &)
@@ -198,15 +196,15 @@ cdef extern from "2geom/transforms.h" namespace "Geom":
         HShear &operator*(HShear)
         Affine & operator*(Affine &)
         bint operator==(HShear &)
-        bint operator!=(HShear &) 
+        bint operator!=(HShear &)
         Affine operator()
 
-        HShear inverse() 
-        
+        HShear inverse()
+
     HShear hs_identity "Geom::HShear::identity"()
-    
+
 cdef class cy_HShear:
-    cdef HShear* thisptr        
+    cdef HShear* thisptr
 
 
 cdef extern from "2geom/transforms.h" namespace "Geom":
@@ -215,21 +213,21 @@ cdef extern from "2geom/transforms.h" namespace "Geom":
         Zoom(Coord)
         Zoom(Translate &)
         Zoom(Coord, Translate &)
-        
+
         Zoom & operator*(Zoom &)
         Affine & operator*(Affine &)
         bint operator==(Zoom &)
         bint operator!=(Zoom &)
 
         Affine operator()
-        
+
         Coord scale()
         void setScale(Coord)
         Point translation()
         void setTranslation(Point &)
-        
+
         Zoom inverse()
-        
+
         Zoom()
 
     Zoom z_identity "Geom::Zoom::identity" ()
