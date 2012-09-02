@@ -20,6 +20,25 @@ Make sure you have ragel.exe and rlcodegen.exe in the dir you specify.
 If your package does not contain rlcodegen.exe you can copy rlgen-cd.exe
 and rename it to rlcodegen.exe :-)
 
+PYTHON BINDINGS
+To install python bindings, you need python2 and cython(>=0.16). Get cython from
+http://www.lfd.uci.edu/~gohlke/pythonlibs/#cython
+and install it to $PYTHON_PATH\Libs\site-packages
+32-bit version is your safest bet.
+cmake should be able to find cython now. Make sure that PYTHON_PATH is set 
+correctly to python2 in mingwenv.bat.
+
+Continue with installation as described above. When running "cmake -i",
+remember to choose to build cython bindings and also lib2geom as a
+shared library!
+
+If you get errors about missing DLL file, try copying lib2geom.dll to 
+cython-bindings directory.
+
+Note: If you have both python2 and python3 installed, make sure cmake uses
+python2. To ensure this, choose "advanced options" when running "cmake -i",
+scroll and set PYTHON_INCLUDE_DIR and PYTHON_LIBRARY accordingly.
+
 TROUBLESHOOTING
 If things don't work out, here is a list of things you can try.
 1. Type  'make --version'. It should display:
