@@ -23,7 +23,7 @@
 #=============================================================================
 
 find_program( CYTHON_EXECUTABLE NAMES cython cython.py 
-              PATHS ${PYTHON_PATH}\\Lib\\site-packages)
+              PATHS $ENV{PYTHON_PATH}\\Lib\\site-packages ${PYTHON_PATH}\\Lib\\site-packages)
 
 include( FindPackageHandleStandardArgs )
 FIND_PACKAGE_HANDLE_STANDARD_ARGS( Cython REQUIRED_VARS CYTHON_EXECUTABLE )

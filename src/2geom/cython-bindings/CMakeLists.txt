@@ -13,10 +13,10 @@ IF(2GEOM_CYTHON_BINDINGS)
         # no-longer needed in the build tree.  However, with pure *.py source, the
         # source is processed directly.  To handle this, we reproduce the availability
         # of the source files in the build tree.
-        add_custom_target( ReplicatePythonSourceTree ALL ${CMAKE_COMMAND} -P
+        #add_custom_target( ReplicatePythonSourceTree ALL ${CMAKE_COMMAND} -P
         #  ${CMAKE_CURRENT_SOURCE_DIR}/CMakeScripts/ReplicatePythonSourceTree.cmake
-          ${CMAKE_CURRENT_BINARY_DIR}
-          WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} )
+        #  ${CMAKE_CURRENT_BINARY_DIR}
+        #  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} )
 
         #include_directories( ${CYTHON_CMAKE_EXAMPLE_SOURCE_DIR}/include )
 
