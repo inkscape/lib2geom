@@ -117,4 +117,18 @@ IF(2GEOM_CYTHON_BINDINGS)
         add_test(cython-curves python2 test-curves.py)
         add_test(cython-path python2 test-path.py)
         add_test(cython-conicsection python2 test-conicsection.py)
+
+        # stuff to install the cy2geom package in the Python site-packages directory
+        FIND_PACKAGE(PythonLibs)
+        IF (WIN32)
+            GET_FILENAME_COMPONENT(PYTHON_LIB_INSTALL "${PYTHON_LIBRARY}" PATH)
+            GET_FILENAME_COMPONENT(SITEPACKAGE "${PYTHON_LIB_INSTALL}/../Lib/site-packages" ABSOLUTE)
+        ELSE (WIN32)
+            SET(PYTHON_LIB_INSTALL "/usr/local/lib/python2.7/dist-packages" CACHE STRING "Where to install the cy2geom module?")
+            SET(SITEPACKAGE ${PYTHON_LIB_INSTALL})
+        ENDIF(WIN32)
+
+        INSTALL(TARGETS _common_decl _cy_primitives  _cy_rectangle  _cy_affine _cy_curves _cy_path _cy_conicsection cy2geom 
+                DESTINATION "${SITEPACKAGE}/cy2geom")
+
 ENDIF(2GEOM_CYTHON_BINDINGS)
