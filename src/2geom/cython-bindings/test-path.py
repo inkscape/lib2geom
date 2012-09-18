@@ -210,5 +210,9 @@ class TestPrimitives(unittest.TestCase):
         k = Path.fromList([QuadraticBezier(Point(), Point(2, 1), Point(-2, .21)).reverse()])
         k.append_portion_to(l, 0, 0.3)
         self.assertAlmostEqual(l.final_point(), k(0.3))
-
+    
+    def test_read_svgd(self):
+        p = Path.read_svgd("../toys/spiral.svgd")
+        if draw:
+            utils.draw(p[0], scale=0.4)
 unittest.main()

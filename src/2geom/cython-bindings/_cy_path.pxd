@@ -83,7 +83,7 @@ cdef extern from "2geom/path.h" namespace "Geom":
 #~         Path & operator*=(Affine &)
         Point pointAt(double)
         double valueAt(double, Dim2)
-        Point operator()(double)
+        Point operator()(double) except +
         vector[double] roots(double, Dim2)
         vector[double] allNearestPoints(Point &, double, double)
         vector[double] allNearestPoints(Point &)
@@ -123,3 +123,7 @@ cdef class cy_Path:
 
 cdef cy_Path wrap_Path(Path p)
 cdef vector[Path] make_vector_Path(object l)
+
+cdef extern from "2geom/svg-path-parser.h":
+    #TODO: this doesn't actually catch the exception (?)
+    vector[Path] read_svgd(char * name) except +
