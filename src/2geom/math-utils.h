@@ -50,6 +50,8 @@ namespace Geom {
  * @return -1 when x is negative, 1 when positive, and 0 if equal to 0. */
 template <class T> inline int sgn(const T& x) {
     return (x < 0 ? -1 : (x > 0 ? 1 : 0) );
+// can we 'optimize' this with:
+//    return ( (T(0) < x) - (x < T(0)) );
 }
 
 template <class T> inline T sqr(const T& x) {return x * x;}
