@@ -363,7 +363,6 @@ Geom::length(Piecewise<D2<SBasis> > const &M,
 Piecewise<SBasis>
 Geom::curvature(D2<SBasis> const &M, double tol) {
     D2<SBasis> dM=derivative(M);
-    Piecewise<SBasis> result;
     Piecewise<D2<SBasis> > unitv = unitVector(dM,tol);
     Piecewise<SBasis> dMlength = dot(Piecewise<D2<SBasis> >(dM),unitv);
     Piecewise<SBasis> k = cross(derivative(unitv),unitv);
