@@ -202,7 +202,7 @@ std::vector<Coord> EllipticalArc::roots(Coord v, Dim2 d) const
             {
                 return sol;
             }
-            double ray_prj;
+            double ray_prj = 0.0;
             switch(d)
             {
                 case X:
@@ -264,7 +264,7 @@ std::vector<Coord> EllipticalArc::roots(Coord v, Dim2 d) const
     }
 
     double rotx, roty;
-    sincos(_rot_angle, roty, rotx);
+    sincos(_rot_angle, roty, rotx); /// \todo sin and cos are calculated in many places in this function, optimize this a bit!
     if (d == X) roty = -roty;
 
     double rxrotx = ray(X) * rotx;
