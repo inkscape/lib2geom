@@ -81,7 +81,7 @@ double avarageCurvature(std::vector<Point> const &pts, unsigned idx, double radi
     double k=0;
     double mass = 0;
     for (unsigned i=0; i<5; i++){
-        unsigned ia,ib,ic;
+        unsigned ia,ib,ic = 0;
         ia = rand()%ngbrs.size();
         while (ib == ia) 
             ib = rand()%ngbrs.size();

@@ -152,7 +152,7 @@ class Parametrics: public Toy {
       }
 
       if(!save) {
-      char file[10];
+      char file[100];
       sprintf(file, "output/%04d.png", count);
       //take_screenshot(file);
       count++;

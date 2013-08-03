@@ -51,11 +51,11 @@ class InnerProductClip: public Toy {
 	Point n;
 	double d;
         {
-        double x = width - 60, y = height - 60;
-        Point p(x, y), d(25,25), xo(25,0), yo(0,25);
-        togs[0].bounds = Rect(p,     p + d);
-        togs[1].bounds = Rect(p + xo, p + xo + d);
-        draw_toggles(cr, togs);
+            double x = width - 60, y = height - 60;
+            Point p(x, y), dpoint(25,25), xo(25,0), yo(0,25);
+            togs[0].bounds = Rect(p,     p + dpoint);
+            togs[1].bounds = Rect(p + xo, p + xo + dpoint);
+            draw_toggles(cr, togs);
         }
         if(togs[0].on) {
             d = L2(end_handle.pos - start_handle.pos);
