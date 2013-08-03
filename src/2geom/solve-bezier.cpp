@@ -89,12 +89,11 @@ void convex_hull_marching(Bezier src_bz, Bezier bz,
     
         int old_sign = SGN(bz[0]);
     
-        int sign;
         double left_bound = 0;
         double dt = 0;
         for (size_t i = 1; i < bz.size(); i++)
         {
-            sign = SGN(bz[i]);
+            int sign = SGN(bz[i]);
             if (sign != old_sign)
             {
                 dt = double(i) / bz.order();
@@ -182,11 +181,10 @@ void Bernsteins::find_bernstein_roots(Bezier bz,
 
     int old_sign = SGN(bz[0]);
     //std::cout << "w[0] = " << bz[0] << std::endl;
-    int sign;
     for (size_t i = 1; i < bz.size(); i++)
     {
         //std::cout << "w[" << i << "] = " << w[i] << std::endl;
-        sign = SGN(bz[i]);
+        int sign = SGN(bz[i]);
         if (sign != 0)
         {
             if (sign != old_sign && old_sign != 0)
@@ -293,7 +291,7 @@ double Bernsteins::secant(Bezier bz) {
     double s = 0, t = 1;
     double e = 1e-14;
     int side = 0;
-    double r, fr, fs = bz.at0(), ft = bz.at1();
+    double r, fs = bz.at0(), ft = bz.at1();
 
     for (size_t n = 0; n < 100; ++n)
     {
@@ -305,7 +303,7 @@ double Bernsteins::secant(Bezier bz) {
             return r;
         }
 
-        fr = horner(bz, r);
+        double fr = horner(bz, r);
 
         if (fr * ft > 0)
         {

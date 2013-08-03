@@ -128,17 +128,15 @@ Point OldBezier::operator()(double t) const {
 #endif
 
 // suggested by Sederberg.
-Point OldBezier::operator()(double t) const {
-    int n = p.size()-1;
-    double u, bc, tn, tmp;
-    int i;
+Point OldBezier::operator()(double const t) const {
+    size_t const n = p.size()-1;
     Point r;
     for(int dim = 0; dim < 2; dim++) {
-        u = 1.0 - t;
-        bc = 1;
-        tn = 1;
-        tmp = p[0][dim]*u;
-        for(i=1; i<n; i++){
+        double const u = 1.0 - t;
+        double bc = 1;
+        double tn = 1;
+        double tmp = p[0][dim]*u;
+        for(size_t i=1; i<n; i++){
             tn = tn*t;
             bc = bc*(n-i+1)/i;
             tmp = (tmp + tn*bc*p[i][dim])*u;

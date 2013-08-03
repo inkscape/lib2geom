@@ -43,10 +43,9 @@ void binomial_coefficients(std::vector<size_t>& bc, size_t n)
     bc.clear();
     bc.resize(s);
     bc[0] = 1;
-    size_t k;
     for (size_t i = 1; i < n; ++i)
     {
-        k = i >> 1;
+        size_t k = i >> 1;
         if (i & 1u)
         {
             bc[k+1] = bc[k] << 1;

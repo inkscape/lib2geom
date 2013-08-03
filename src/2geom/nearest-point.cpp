@@ -66,10 +66,9 @@ double nearest_point( Point const& p,
 
     double closest = from;
     double min_dist_sq = L2sq(c(from) - p);
-    double distsq;
-    for ( unsigned int i = 0; i < zeros.size(); ++i )
+    for ( size_t i = 0; i < zeros.size(); ++i )
     {
-        distsq = L2sq(c(zeros[i]) - p);
+        double distsq = L2sq(c(zeros[i]) - p);
         if ( min_dist_sq > L2sq(c(zeros[i]) - p) )
         {
             closest = zeros[i];
