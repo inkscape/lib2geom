@@ -5,7 +5,7 @@ chain-test
 choose-test
 convex-test
 #lin_alg_test
-matrix-inv
+matrix-inv-test
 path-test
 poly-test
 #rotate-test
@@ -15,15 +15,15 @@ poly-test
 #rotate-fns-test
 #rotate-fns-test.h
 sbasis-test
-test-cg
-#svgd
+cg-test
+#svgd-test
 #translate-test
 #translate-test.h
 types-test
 #types-test.h
-unit-test-sbasis
-root-find-ut
-implicitization
+sbasis-text-test
+root-find-test
+implicitization-test
 #time-ops
 #rtree-performance
 )
@@ -46,12 +46,12 @@ ENDFOREACH()
 
 
 FOREACH(source ${2GEOM_TESTS_SRC})
-    IF(${source} STREQUAL time-ops)
+    IF(${source} STREQUAL timing-test)
         ADD_EXECUTABLE(${source} ${source}.cpp)
         TARGET_LINK_LIBRARIES(${source} rt)
         TARGET_LINK_LIBRARIES(${source} ${LINK_GSL} 2geom ${GTK2_LINK_FLAGS})
         ADD_TEST(NAME ${source} COMMAND ${source})
-    ELSEIF(${source} STREQUAL rtree-performance)
+    ELSEIF(${source} STREQUAL rtree-performance-test)
         IF(2GEOM_IDX_LIBSPATIALINDEX AND 2GEOM_TOYS)
             # we use the lib from a tar and not a package, because there's a gap 
             # debian package (sid unstable) has 1.4.0 whereas the release version is 1.5.0

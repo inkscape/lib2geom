@@ -21,3 +21,4 @@ doxygen_warnings.log
 Testing
 CTestTestfile.cmake
 *.cxx
+src/2geom/tests/*-test
