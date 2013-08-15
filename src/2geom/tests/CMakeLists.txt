@@ -1,12 +1,10 @@
+# Use this variable for tests which provide their own main().
 SET(2GEOM_TESTS_SRC
 #bezier-utils-test
-bezier-test
-chain-test
 choose-test
 convex-test
 #lin_alg_test
 matrix-inv-test
-path-test
 poly-test
 #rotate-test
 #rotate-test.h
@@ -14,7 +12,6 @@ poly-test
 #scale-test.h
 #rotate-fns-test
 #rotate-fns-test.h
-sbasis-test
 cg-test
 #svgd-test
 #translate-test
@@ -24,14 +21,19 @@ types-test
 sbasis-text-test
 root-find-test
 implicitization-test
-#time-ops
-#rtree-performance
+#timing-test
+#rtree-performance-test
 )
 
+# Use this variable for GTest tests which should have a default main().
 SET(2GEOM_GTESTS_SRC
 affine-test
+bezier-test
+chain-test
+path-test
 #point-test
 rect-test
+sbasis-test
 )
 
 OPTION(2GEOM_IDX_LIBSPATIALINDEX

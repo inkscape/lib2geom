@@ -16,16 +16,16 @@ operator<< (std::ostream &out, const std::vector<T,
     return out;
 }
 
-template <typename T, int xn>
+template <typename T, unsigned xn>
 std::vector<T> vector_from_array(const T (&x)[xn]) {
     std::vector<T> v;
-    for(int i = 0; i < xn; i++) {
+    for(unsigned i = 0; i < xn; i++) {
         v.push_back(x[i]);
     }
     return v;
 }
 
-template <typename T, int xn>
+template <typename T, unsigned xn>
 void expect_array(const T (&x)[xn], std::vector<T> y) {
     EXPECT_EQ(xn, y.size());
     for(unsigned i = 0; i < y.size(); i++) {

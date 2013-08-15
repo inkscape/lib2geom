@@ -44,9 +44,6 @@ void expect_array(const T (&x)[xn], vector<T> y) {
     }
 }
 
-namespace {
-
-// The fixture for testing class Foo.
 class ChainTest : public ::testing::Test {
 protected:
     // You can remove any or all of the following functions if its body
@@ -81,11 +78,6 @@ protected:
     Bezier zero, unit, hump, wiggle;
 
 };
-
-// Tests that Foo does Xyz.
-TEST_F(ChainTest, DoesXyz) {
-    // Exercises the Xyz feature of Foo.
-}
 
 TEST_F(ChainTest, UnitTests) {
   
@@ -306,14 +298,6 @@ TEST_F(ChainTest,Operators) {
         }
     }
 }
-
-}  // namespace
-
-int main(int argc, char **argv) {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}
-
 
 /*
   Local Variables:

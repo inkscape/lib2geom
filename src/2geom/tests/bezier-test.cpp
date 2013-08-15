@@ -7,8 +7,6 @@
 #include <iterator>
 
 using namespace std;
-
-
 using namespace Geom;
 
 Poly lin_poly(double a, double b) { // ax + b
@@ -29,48 +27,18 @@ bool are_equal(Bezier A, Bezier B) {
     return true;
 }
 
-namespace {
-
-// The fixture for testing class Foo.
 class BezierTest : public ::testing::Test {
 protected:
-    // You can remove any or all of the following functions if its body
-    // is empty.
 
     BezierTest() {
-        // You can do set-up work for each test here.
         zero = Bezier(0.0,0.0);
         unit = Bezier(0.0,1.0);
         hump = Bezier(0,1,0);
         wiggle = Bezier(0,1,-2,3);
     }
 
-    virtual ~BezierTest() {
-        // You can do clean-up work that doesn't throw exceptions here.
-    }
-
-    // If the constructor and destructor are not enough for setting up
-    // and cleaning up each test, you can define the following methods:
-
-    virtual void SetUp() {
-        // Code here will be called immediately after the constructor (right
-        // before each test).
-    }
-
-    virtual void TearDown() {
-        // Code here will be called immediately after each test (right
-        // before the destructor).
-    }
-
-    // Objects declared here can be used by all tests in the test case for Foo.
     Bezier zero, unit, hump, wiggle;
-
 };
-
-// Tests that Foo does Xyz.
-TEST_F(BezierTest, DoesXyz) {
-    // Exercises the Xyz feature of Foo.
-}
 
 TEST_F(BezierTest, UnitTests) {
   
@@ -84,7 +52,7 @@ TEST_F(BezierTest, UnitTests) {
 
 Coord subdivideArr(Coord t, Coord const *v, Coord *left, Coord *right, unsigned order);
 */
-    EXPECT_EQ(3, Bezier(0,2,4,5).order());
+    EXPECT_EQ(3u, Bezier(0,2,4,5).order());
 
     ///cout << " Bezier::Bezier(const Bezier& b);\n";
     //cout << Bezier(wiggle) << " == " << wiggle << endl;
@@ -174,33 +142,6 @@ Bezier array_roots(vector<double> x) {
         b = multiply(b, linear_root(x[i]));
     }
     return b;
-}
-
-template <typename T, int xn>
-vector<T> vector_from_array(const T (&x)[xn]) {
-    vector<T> v;
-    for(int i = 0; i < xn; i++) {
-        v.push_back(x[i]);
-    }
-    return v;
-}
-
-Interval bound_vector(vector<double> v) {
-    double low = v[0];
-    double high = v[0];
-    for(unsigned i = 0; i < v.size(); i++) {
-        low = min(v[i], low);
-        high = max(v[i], high);
-    }
-    return Interval(low-1, high-1);
-}
-
-void vector_equal(vector<double> a, vector<double> b) {
-    EXPECT_EQ(a.size(), b.size());
-    if(a.size() != b.size()) return;
-    for(unsigned i = 0; i < a.size(); i++) {
-        EXPECT_FLOAT_EQ(a[i], b[i]);
-    }
 }
 
 vector<double> find_all_roots(Bezier b) {
@@ -294,14 +235,6 @@ TEST_F(BezierTest,Operators) {
         }
     }
 }
-
-}  // namespace
-
-int main(int argc, char **argv) {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}
-
 
 /*
   Local Variables:

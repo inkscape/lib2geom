@@ -11,15 +11,13 @@
 using namespace std;
 using namespace Geom;
 
-namespace {
-
-    Path string_to_path(const char* s) {
+Path string_to_path(const char* s) {
 	PathVector pv = parse_svg_path(s);
 	assert(pv.size() == 1);
 	return pv[0];
-    }
+}
 
-// The fixture for testing class Foo.
+// Path fixture
 class PathTest : public ::testing::Test {
 protected:
     PathTest() {
@@ -109,14 +107,6 @@ TEST_F(PathTest, NearestPoint) {
         }
     }
     }*/
-
-}  // namespace
-
-int main(int argc, char **argv) {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}
-
 
 /*
   Local Variables:

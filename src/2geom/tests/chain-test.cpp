@@ -12,11 +12,9 @@
 #include <iterator>
 
 using namespace std;
-
-
 using namespace Geom;
 
-bool are_equal(Bezier A, Bezier B) {
+bool are_equal(Bezier const &A, Bezier const &B) {
     int maxSize = max(A.size(), B.size());
     double t = 0., dt = 1./maxSize;
     
@@ -72,8 +70,6 @@ public:
   }
 };
 
-namespace {
-
 // The fixture for testing class Foo.
 class ChainTest : public ::testing::Test {
 protected:
@@ -88,7 +84,7 @@ protected:
       vector<PathVector> segs;
       for(int i = 0; i < 2; i++) {
 	segs.push_back(read_svgd_f(fi));
-        EXPECT_EQ(1, segs.size());
+        EXPECT_EQ(1u, segs.size());
       }
       fclose(fi);
       
@@ -117,15 +113,6 @@ protected:
 
 TEST_F(ChainTest, UnitTests) {
 }
-
-
-}  // namespace
-
-int main(int argc, char **argv) {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}
-
 
 /*
   Local Variables:

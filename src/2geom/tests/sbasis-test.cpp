@@ -10,7 +10,7 @@
 using namespace std;
 using namespace Geom;
 
-bool are_equal(SBasis A, SBasis B) {
+bool are_equal(SBasis const &A, SBasis const &B) {
     int maxSize = max(A.size(), B.size());
     double t = 0., dt = 1./maxSize;
     
@@ -21,21 +21,16 @@ bool are_equal(SBasis A, SBasis B) {
     return true;
 }
 
-namespace {
-
-// The fixture for testing class Foo.
 class SBasisTest : public ::testing::Test {
 protected:
     friend class Geom::SBasis;
     SBasisTest() {
-        // You can do set-up work for each test here.
         zero = SBasis(Bezier(0.0).toSBasis());
         unit = SBasis(Bezier(0.0,1.0).toSBasis());
         hump = SBasis(Bezier(0,1,0).toSBasis());
         wiggle = SBasis(Bezier(0,1,-2,3).toSBasis());
     }
 
-    // Objects declared here can be used by all tests in the test case for Foo.
     SBasis zero, unit, hump, wiggle;
 
 };
@@ -44,8 +39,8 @@ TEST_F(SBasisTest, UnitTests) {
     EXPECT_TRUE(Bezier(0,0,0,0).toSBasis().isZero());
     EXPECT_TRUE(Bezier(0,1,2,3).toSBasis().isFinite());
 
-    EXPECT_EQ(3, Bezier(0,2,4,5).toSBasis().size());
-    EXPECT_EQ(3, hump.size());
+    EXPECT_EQ(3u, Bezier(0,2,4,5).toSBasis().size());
+    EXPECT_EQ(3u, hump.size());
 }
 
 TEST_F(SBasisTest, ValueAt) {
@@ -85,33 +80,6 @@ SBasis array_roots(vector<double> x) {
         b = multiply(b, linear_root(x[i]));
     }
     return b;
-}
-
-template <typename T, int xn>
-vector<T> vector_from_array(const T (&x)[xn]) {
-    vector<T> v;
-    for(int i = 0; i < xn; i++) {
-        v.push_back(x[i]);
-    }
-    return v;
-}
-
-Interval bound_vector(vector<double> v) {
-    double low = v[0];
-    double high = v[0];
-    for(unsigned i = 0; i < v.size(); i++) {
-        low = min(v[i], low);
-        high = max(v[i], high);
-    }
-    return Interval(low-1, high-1);
-}
-
-void vector_equal(vector<double> a, vector<double> b) {
-    EXPECT_EQ(a.size(), b.size());
-    if(a.size() != b.size()) return;
-    for(unsigned i = 0; i < a.size(); i++) {
-        EXPECT_FLOAT_EQ(a[i], b[i]);
-    }
 }
 
 vector<double> find_all_roots(SBasis b) {
@@ -214,14 +182,6 @@ TEST_F(SBasisTest,Operators) {
         }
     }
 }
-
-}  // namespace
-
-int main(int argc, char **argv) {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}
-
 
 /*
   Local Variables:
