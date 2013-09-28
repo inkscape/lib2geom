@@ -146,6 +146,7 @@ double angle_between(Ray const& r1, Ray const& r2, bool cw = true) {
 	return angle;
 }
 
+// This assumes that both r1.versor and r2.versor are normalized!
 inline
 Ray make_angle_bisector_ray(Ray const& r1, Ray const& r2)
 {
