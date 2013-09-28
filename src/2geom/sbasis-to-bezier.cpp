@@ -227,14 +227,14 @@ void sbasis_to_cubic_bezier (std::vector<Point> & bz, D2<SBasis> const& sb)
 //  calculate midpoint at t = 0.5
 
     div = 2;
-    for (int i = 0; i < sb[X].size(); ++i) {
+    for (size_t i = 0; i < sb[X].size(); ++i) {
         midx += (sb[X][i][0] + sb[X][i][1])/div;
         div *= 4;
     }
     midx = 8*midx - 4*bz[0][X] - 4*bz[3][X];
 
     div = 2;
-    for (int i = 0; i < sb[Y].size(); ++i) {
+    for (size_t i = 0; i < sb[Y].size(); ++i) {
         midy += (sb[Y][i][0] + sb[Y][i][1])/div;
         div *= 4;
     }
@@ -262,13 +262,13 @@ void sbasis_to_cubic_bezier (std::vector<Point> & bz, D2<SBasis> const& sb)
 							// calculate slope at t = 0.5
         midx = 0;
         div = 1;
-        for (int i = 0; i < sb[X].size(); ++i) {
+        for (size_t i = 0; i < sb[X].size(); ++i) {
             midx += (sb[X][i][1] - sb[X][i][0])/div;
             div *= 4;
         }
         midy = 0;
         div = 1;
-        for (int i = 0; i < sb[Y].size(); ++i) {
+        for (size_t i = 0; i < sb[Y].size(); ++i) {
             midy += (sb[Y][i][1] - sb[Y][i][0])/div;
             div *= 4;
         }
