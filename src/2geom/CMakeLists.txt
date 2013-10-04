@@ -6,18 +6,8 @@ SET(GENERATE_SVG_PARSER NOT EXISTS "${SVG_PARSER_CPP}")
 SET(REGENERATE_SVG_PARSER "${SVG_PARSER_CPP}" IS_NEWER_THAN "${SVG_PARSER_RL}")
 IF( EXISTS "/usr/bin/ragel" OR EXISTS "/usr/local/bin/ragel" )
 IF(GENERATE_SVG_PARSER OR REGENERATE_SVG_PARSER)
-  EXECUTE_PROCESS(COMMAND ragel --version	OUTPUT_VARIABLE CMD_OUTPUT ERROR_QUIET)
-  STRING(REGEX MATCH "version [0-9]+[.]*[0-9]*" RALEG_VERSION ${CMD_OUTPUT})
-  STRING(REGEX REPLACE "version ([0-9]+).*" "\\1" RALEG_MAJOR ${RALEG_VERSION})
-  STRING(REGEX MATCH "[0-9]+$" RALEG_MINOR ${RALEG_VERSION})
-  IF( ${RALEG_MAJOR} LESS 6 AND ${RALEG_MINOR} LESS 18 )
-    SET(RLCODEGEN_CMD  rlcodegen)
-  ELSE( ${RALEG_MAJOR} LESS 6 AND ${RALEG_MINOR} LESS 18 )
-    SET(RLCODEGEN_CMD rlgen-cd)
-  ENDIF( ${RALEG_MAJOR} LESS 6 AND ${RALEG_MINOR} LESS 18 )
   ADD_CUSTOM_COMMAND(OUTPUT "${SVG_PARSER_CPP}"
-                     COMMAND ragel -o "${SVG_PARSER_TMP}" "${SVG_PARSER_RL}"
-                     COMMAND ${RLCODEGEN_CMD} -T0 -o "${SVG_PARSER_CPP}" "${SVG_PARSER_TMP}"
+                     COMMAND ragel -T0 -o "${SVG_PARSER_CPP}" "${SVG_PARSER_RL}"
                      DEPENDS "${SVG_PARSER_RL}"
                      WORKING_DIRECTORY "${CURRENT_SOURCE_DIR}"
                      COMMENT "Generating svg_path_parser.cpp with ragel"
@@ -151,6 +141,9 @@ transforms.h
 
 utils.cpp
 utils.h
+
+viewbox.cpp
+viewbox.h
 )
 
 # make lib for 2geom
