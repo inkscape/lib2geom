@@ -34,6 +34,7 @@
 #ifndef SEEN_LIB2GEOM_VIEWBOX_H
 #define SEEN_LIB2GEOM_VIEWBOX_H
 
+#include <2geom/affine.h>
 #include <2geom/rect.h>
 
 namespace Geom {

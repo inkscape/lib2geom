@@ -31,6 +31,7 @@
  * the specific language governing rights and limitations.
  */
 
+#include <2geom/transforms.h>
 #include <2geom/viewbox.h>
 
 namespace Geom {
@@ -111,7 +112,7 @@ Affine ViewBox::transformTo(Geom::Rect const &viewport) const
 
         // compute offset for align
         Geom::Point offset = bdims * scale - vdims;
-        offset *= Scale(gravity_factors(_align));
+        offset *= Scale(align_factors(_align));
         total *= Translate(-offset);
     }
 

@@ -59,7 +59,7 @@ using namespace Geom;
 
 #define VERBOSE 0
 
-static double exp_rescale(double x){ return pow(10, x);}
+static double exp_rescale(double x){ return ::pow(10, x);}
 std::string exp_formatter(double x){ return default_formatter(exp_rescale(x));}
 
 
