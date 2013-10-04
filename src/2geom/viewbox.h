@@ -74,6 +74,13 @@ public:
         , _expansion(ex)
     {}
 
+    void setBox(OptRect const &r) { _box = r; }
+    void setAlign(Align a) { _align = a; }
+    void setExpansion(Expansion ex) { _expansion = ex; }
+    OptRect const &box() const { return _box; }
+    Align align() const { return _align; }
+    Expansion expansion() const { return _expansion; }
+
     /** Obtain transformation from the viewbox to the specified viewport. */
     Affine transformTo(Geom::Rect const &viewport) const;
 };

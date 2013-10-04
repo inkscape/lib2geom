@@ -96,7 +96,11 @@ Affine ViewBox::transformTo(Geom::Rect const &viewport) const
     Geom::Point bdims = _box->dimensions();
     Geom::Scale scale(vdims[X] / bdims[X], vdims[Y] / bdims[Y]);
 
-    if (_align != ALIGN_NONE) {
+    if (_align == ALIGN_NONE) {
+        // apply non-uniform scale
+        // = Scale(_box->dimensions()).inverse() * Scale(viewport.dimensions())
+        total *= scale * Translate(viewport.min());
+    } else {
         double uscale = 0;
         if (_expansion == EXPANSION_MEET) {
             uscale = std::min(scale[X], scale[Y]);
@@ -109,10 +113,6 @@ Affine ViewBox::transformTo(Geom::Rect const &viewport) const
         Geom::Point offset = bdims * scale - vdims;
         offset *= Scale(gravity_factors(_align));
         total *= Translate(-offset);
-    } else {
-        // apply non-uniform scale
-        // = Scale(_box->dimensions()).inverse() * Scale(viewport.dimensions())
-        total *= Scale(vdims[X] / bdims[X], vdims[Y] / bdims[Y]) * Translate(viewport.min());
     }
 
     return total;
