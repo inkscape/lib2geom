@@ -59,7 +59,7 @@ class TestSink(py2geom.SVGPathSink):
         self.data.append('A %s, %s %s %i %i %s, %s' % (rx,ry,angle,large_arc,sweep,x,y))
     def closePath(self): 
         self.data.append('Z')
-    def finish(self): 
+    def flush(self): 
         pass
 
 def test_path(description, in_path, out_path):

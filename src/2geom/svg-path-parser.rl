@@ -45,7 +45,7 @@ namespace {
 
 class Parser {
 public:
-    Parser(SVGPathSink &sink) : _absolute(false), _sink(sink) {}
+    Parser(PathSink &sink) : _absolute(false), _sink(sink) {}
 
     void parse(char const *str) throw(SVGPathParseError);
 
@@ -56,7 +56,7 @@ private:
     Point _cubic_tangent;
     Point _quad_tangent;
     std::vector<double> _params;
-    SVGPathSink &_sink;
+    PathSink &_sink;
 
     void _reset() {
         _absolute = false;
@@ -386,12 +386,12 @@ throw(SVGPathParseError)
 
 }
 
-void parse_svg_path(char const *str, SVGPathSink &sink)
+void parse_svg_path(char const *str, PathSink &sink)
 throw(SVGPathParseError)
 {
     Parser parser(sink);
     parser.parse(str);
-    sink.finish();
+    sink.flush();
 }
 
 }

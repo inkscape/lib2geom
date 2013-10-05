@@ -35,7 +35,7 @@
 #include <2geom/sbasis-to-bezier.h>
 #include <2geom/d2.h>
 #include <2geom/choose.h>
-#include <2geom/svg-path.h>
+#include <2geom/path-sink.h>
 #include <2geom/exception.h>
 
 #include <iostream>
@@ -485,7 +485,7 @@ path_from_sbasis(D2<SBasis> const &B, double tol, bool only_cubicbeziers) {
     PathBuilder pb;
     pb.moveTo(B.at0());
     build_from_sbasis(pb, B, tol, only_cubicbeziers);
-    pb.finish();
+    pb.flush();
     return pb.peek().front();
 }
 
@@ -527,7 +527,7 @@ path_from_piecewise(Geom::Piecewise<Geom::D2<Geom::SBasis> > const &B, double to
             build_from_sbasis(pb, B[i], tol, only_cubicbeziers);
         }
     }
-    pb.finish();
+    pb.flush();
     return pb.peek();
 }
 

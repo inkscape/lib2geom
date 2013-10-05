@@ -30,12 +30,12 @@
 
 
 #include <iostream>
-#include <2geom/svg-path.h>
+#include <2geom/path-sink.h>
 #include <2geom/svg-path-parser.h>
 
-class SVGPathTestPrinter : public Geom::SVGPathSink {
+class SVGPathTestPrinter : public Geom::PathSink {
 public:
-    void moveTo(Geom::Point p) {
+    void moveTo(Geom::Point const &p) {
         std::cout << "M " << p << std::endl;
     }
     
@@ -47,34 +47,35 @@ public:
         std::cout << "V " << v << std::endl;
     }
 
-    void lineTo(Geom::Point p) {
+    void lineTo(Geom::Point const &p) {
         std::cout << "L " << p << std::endl;
     }
 
-    void curveTo(Geom::Point c0, Geom::Point c1, Geom::Point p) {
+    void curveTo(Geom::Point const &c0, Geom::Point const &c1, Geom::Point const &p) {
         std::cout << "C " << c0 << " " << c1 << " " << p << std::endl;
     }
 
-    void quadTo(Geom::Point c, Geom::Point p) {
+    void quadTo(Geom::Point const &c, Geom::Point const &p) {
         std::cout << "Q " << c << " " << p << std::endl;
     }
 
     void arcTo(double rx, double ry, double angle,
-               bool large_arc, bool sweep, Geom::Point p)
+               bool large_arc, bool sweep, Geom::Point const &p)
     {
         std::cout << "A " << rx << " " << ry << " " << angle << " " << large_arc << " " << sweep << " " << p << std::endl;
     }
 
-    void backspace()
+    bool backspace()
     {
-        std::cout << "[remove last segment]" << std::endl;
+        //std::cout << "[remove last segment]" << std::endl;
+        return false;
     }
 
     void closePath() {
         std::cout << "Z" << std::endl;
     }
 
-    void finish() {
+    void flush() {
 	;
     }
 

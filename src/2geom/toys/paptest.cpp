@@ -30,7 +30,7 @@
 
 
 #include <iostream>
-#include <2geom/svg-path.h>
+#include <2geom/path-sink.h>
 #include <2geom/svg-path-parser.h>
 #include <2geom/sbasis.h>
 #include <2geom/sbasis-geometric.h>

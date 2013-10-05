@@ -83,6 +83,8 @@ ord.h
 
 path-intersection.cpp
 path-intersection.h
+path-sink.cpp
+path-sink.h
 path.cpp
 path.h
 pathvector.cpp
@@ -129,8 +131,6 @@ svg-elliptical-arc.cpp
 svg-elliptical-arc.h
 svg-path-parser.cpp
 svg-path-parser.h
-svg-path.cpp
-svg-path.h
 sweep.cpp
 sweep.h
 

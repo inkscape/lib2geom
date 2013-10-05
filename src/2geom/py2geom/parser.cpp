@@ -31,26 +31,28 @@
 #include "py2geom.h"
 #include "helpers.h"
 
-#include "../svg-path.h"
+#include "../path-sink.h"
 #include "../svg-path-parser.h"
 
 
 using namespace boost::python;
 
-void (*parse_svg_path_str_sink) (char const *, Geom::SVGPathSink &) = &Geom::parse_svg_path;
+void (*parse_svg_path_str_sink) (char const *, Geom::PathSink &) = &Geom::parse_svg_path;
 std::vector<Geom::Path> (*parse_svg_path_str) (char const *) = &Geom::parse_svg_path;
 
-class SVGPathSinkWrap: public Geom::SVGPathSink, public wrapper<Geom::SVGPathSink> {
-    void moveTo(Geom::Point p) {this->get_override("moveTo")(p);}
+class PathSinkWrap: public Geom::PathSink, public wrapper<Geom::PathSink> {
+    void moveTo(Geom::Point const &p) {this->get_override("moveTo")(p);}
     void hlineTo(Geom::Coord v) {this->get_override("hlineTo")(v);}
     void vlineTo(Geom::Coord v) {this->get_override("vlineTo")(v);}
-    void lineTo(Geom::Point p) {this->get_override("lineTo")(p);}
-    void curveTo(Geom::Point c0, Geom::Point c1, Geom::Point p) {this->get_override("curveTo")(c0, c1, p);}
-    void quadTo(Geom::Point c, Geom::Point p) {this->get_override("quadTo")(c, p);}
-    void arcTo(double rx, double ry, double angle, bool large_arc, bool sweep, Geom::Point p) {this->get_override("arcTo")(rx, ry, angle, large_arc, sweep, p);}
-    void backspace() {this->get_override("backspace")();}
+    void lineTo(Geom::Point const &p) {this->get_override("lineTo")(p);}
+    void curveTo(Geom::Point const &c0, Geom::Point const &c1, Geom::Point const &p) {this->get_override("curveTo")(c0, c1, p);}
+    void quadTo(Geom::Point const &c, Geom::Point const &p) {this->get_override("quadTo")(c, p);}
+    void arcTo(double rx, double ry, double angle, bool large_arc, bool sweep, Geom::Point const &p) {this->get_override("arcTo")(rx, ry, angle, large_arc, sweep, p);}
+    bool backspace() {return this->get_override("backspace")();}
     void closePath() {this->get_override("closePath")();}
-    void finish() {this->get_override("finish")();}
+    void flush() {this->get_override("flush")();}
+    void path(Geom::Path const &p) {this->get_override("path")(p);}
+    void pathvector(Geom::Path const &pv) {this->get_override("pathvector")(pv);}
 };
 
 void wrap_parser() {
@@ -58,17 +60,19 @@ void wrap_parser() {
     def("parse_svg_path", parse_svg_path_str);
     def("read_svgd", Geom::read_svgd);
 
-    class_<SVGPathSinkWrap, boost::noncopyable>("SVGPathSink")
-        .def("moveTo", pure_virtual(&Geom::SVGPathSink::moveTo))
-        .def("hlineTo", pure_virtual(&Geom::SVGPathSink::hlineTo))
-        .def("vlineTo", pure_virtual(&Geom::SVGPathSink::vlineTo))
-        .def("lineTo", pure_virtual(&Geom::SVGPathSink::lineTo))
-        .def("curveTo", pure_virtual(&Geom::SVGPathSink::curveTo))
-        .def("quadTo", pure_virtual(&Geom::SVGPathSink::quadTo))
-        .def("arcTo", pure_virtual(&Geom::SVGPathSink::arcTo))
-        .def("backspace", pure_virtual(&Geom::SVGPathSink::backspace))
-        .def("closePath", pure_virtual(&Geom::SVGPathSink::closePath))
-        .def("finish", pure_virtual(&Geom::SVGPathSink::finish))
+    class_<PathSinkWrap, boost::noncopyable>("PathSink")
+        .def("moveTo", pure_virtual(&Geom::PathSink::moveTo))
+        .def("hlineTo", pure_virtual(&Geom::PathSink::hlineTo))
+        .def("vlineTo", pure_virtual(&Geom::PathSink::vlineTo))
+        .def("lineTo", pure_virtual(&Geom::PathSink::lineTo))
+        .def("curveTo", pure_virtual(&Geom::PathSink::curveTo))
+        .def("quadTo", pure_virtual(&Geom::PathSink::quadTo))
+        .def("arcTo", pure_virtual(&Geom::PathSink::arcTo))
+        .def("backspace", pure_virtual(&Geom::PathSink::backspace))
+        .def("closePath", pure_virtual(&Geom::PathSink::closePath))
+        .def("flush", pure_virtual(&Geom::PathSink::flush))
+        .def("path", &Geom::PathSink::path)
+        .def("pathvector", &Geom::PathSink::pathvector)
     ;
 };
 
