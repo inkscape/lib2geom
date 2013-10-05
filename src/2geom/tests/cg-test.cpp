@@ -32,9 +32,9 @@ main (void)
             }
         }
 	
-        double * A_c[N];
-        for(unsigned i = 0; i < N; i++)
-            A_c[i] = &A_data[N*i];
+        //double * A_c[N];
+        //for(unsigned i = 0; i < N; i++)
+        //    A_c[i] = &A_data[N*i];
 		
         double b_data[N];
         for(unsigned i = 0; i < N; i++)

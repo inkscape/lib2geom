@@ -196,8 +196,8 @@ class Conic5: public Toy {
 
         Rect screen_rect(Interval(10, width-10), Interval(10, height-10));
         Line cutLine(cutting_plane.pts[0], cutting_plane.pts[1]);
-        double dist;
-        Point norm = cutLine.normalAndDist(dist);
+        //double dist;
+        //Point norm = cutLine.normalAndDist(dist);
       
         const unsigned N = 3;
         xAx sources[N] = {

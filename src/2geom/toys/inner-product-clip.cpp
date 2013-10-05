@@ -92,11 +92,11 @@ class InnerProductClip: public Toy {
             lr.insert(lr.end(), 1);
             Path out;
             for(unsigned j = 0; j < lr.size()-1; j++) {
-                Point s = curpw(lr[j]);
+                //Point s = curpw(lr[j]);
                 Point m = curpw((lr[j] + lr[j+1])/2);
                 if(togs[0].on)
                     m -= start_handle.pos;
-                Point e = curpw(lr[j+1]);
+                //Point e = curpw(lr[j+1]);
                 double dd;
                 if(togs[0].on) 
                     //dd = dot(m, m) - d*d;

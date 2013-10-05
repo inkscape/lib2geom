@@ -53,7 +53,7 @@ class DrawToy: public Toy {
                  hand.pts.erase(hand.pts.begin() + close_i);
              else {
                  selected = &hand;
-                 hit_data = (void*)close_i;
+                 hit_data = (void*)(intptr_t)close_i;
              }
         } else {
              if(e->button==1) {
@@ -71,7 +71,7 @@ class DrawToy: public Toy {
                  hand.pts.push_back(mouse);
              } else {
                  selected = &hand;
-                 hit_data = (void*)close_i;
+                 hit_data = (void*)(intptr_t)close_i;
              }
         }
     }

@@ -74,19 +74,19 @@ void check_convex(ConvexHull &ch) {
 }
 
 TEST_F(ConvexHullTest, size) {
-    EXPECT_EQ(0, null.size());
+    EXPECT_EQ(0u, null.size());
     EXPECT_TRUE(null.is_degenerate());
-    EXPECT_EQ(1, point.size());
+    EXPECT_EQ(1u, point.size());
     EXPECT_TRUE(point.is_degenerate());
-    EXPECT_EQ(2, line.size());
+    EXPECT_EQ(2u, line.size());
     EXPECT_TRUE(line.is_degenerate());
-    EXPECT_EQ(3, triangle.size());
+    EXPECT_EQ(3u, triangle.size());
     EXPECT_FALSE(triangle.is_degenerate());
-    EXPECT_EQ(4, square.size());
+    EXPECT_EQ(4u, square.size());
     EXPECT_FALSE(square.is_degenerate());
-    EXPECT_EQ(6, hexagon.size());
+    EXPECT_EQ(6u, hexagon.size());
     EXPECT_FALSE(hexagon.is_degenerate());
-    EXPECT_EQ(6, antihexagon.size());
+    EXPECT_EQ(6u, antihexagon.size());
     EXPECT_FALSE(antihexagon.is_degenerate());
     check_convex(null);
     check_convex(point);
@@ -132,46 +132,46 @@ TEST_F(ConvexHullTest, PointContainment) {
 TEST_F(ConvexHullTest, PointMerging) {
     Point zero(0,0), half(0.5, 0.5);
     null.merge(zero);
-    EXPECT_EQ(1, null.size());
+    EXPECT_EQ(1u, null.size());
     check_convex(null);
     point.merge(zero);
-    EXPECT_EQ(1, point.size());
+    EXPECT_EQ(1u, point.size());
     check_convex(point);
     //cout << line << endl;
     line.merge(zero);
     check_convex(line);
-    EXPECT_EQ(2, line.size());
+    EXPECT_EQ(2u, line.size());
     line.merge(half);
     check_convex(line);
-    EXPECT_EQ(3, line.size());
+    EXPECT_EQ(3u, line.size());
     line.merge(half);
     check_convex(line);
-    EXPECT_EQ(3, line.size());
+    EXPECT_EQ(3u, line.size());
     ConvexHull trySquare = square;
     trySquare.merge(half);
     check_convex(trySquare);
-    EXPECT_EQ(4, trySquare.size());
+    EXPECT_EQ(4u, trySquare.size());
     trySquare.merge(Point(1e12, 0));
     check_convex(trySquare);
-    EXPECT_EQ(5, trySquare.size());
+    EXPECT_EQ(5u, trySquare.size());
     trySquare.merge(Point(1e12, 1));
     cout << trySquare << endl;
     check_convex(trySquare);
-    EXPECT_EQ(4, trySquare.size());
+    EXPECT_EQ(4u, trySquare.size());
     trySquare = square;
     
     trySquare.merge(Point(-1e12, -1e12));
     cout << trySquare << endl;
     check_convex(trySquare);
-    EXPECT_EQ(4, trySquare.size());
+    EXPECT_EQ(4u, trySquare.size());
 }
     
 TEST_F(ConvexHullTest, Merging) {
     ConvexHull dodecagon = graham_merge(hexagon, antihexagon);
-    EXPECT_EQ(12, dodecagon.size());
+    EXPECT_EQ(12u, dodecagon.size());
     
     dodecagon = andrew_merge(hexagon, antihexagon);
-    EXPECT_EQ(12, dodecagon.size());
+    EXPECT_EQ(12u, dodecagon.size());
     
     //dodecagon = merge(hexagon, antihexagon);
     //EXPECT_EQ(12, dodecagon.size());

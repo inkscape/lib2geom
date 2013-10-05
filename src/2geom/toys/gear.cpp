@@ -225,7 +225,7 @@ class GearToy: public Toy {
         cairo_set_source_rgba (cr, 0., 0., 0, 0.8);
         cairo_set_line_width (cr, 0.5);
         
-        Geom::Point centre = Geom::Point(width/2,height/2);
+        //Geom::Point centre = Geom::Point(width/2,height/2);
         /* draw cross hairs
         double dominant_dim = std::max(width,height);
         double minor_dim = std::min(width,height);

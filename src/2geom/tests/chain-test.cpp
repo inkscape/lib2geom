@@ -88,7 +88,7 @@ protected:
       }
       fclose(fi);
       
-      EXPECT_EQ(5, pv.size());
+      EXPECT_EQ(5u, pv.size());
       
       for(unsigned i = 0;  i < pv.size(); i++) {
 	cs.chains.push_back(Chain());

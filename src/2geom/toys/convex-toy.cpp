@@ -133,7 +133,7 @@ class ConvexTest: public Toy {
         *notify << "merge time = " << 1000*0.1/iterations << std::endl;*/
         if(ch2_tests) {
             Geom::ConvexHull gm = graham_merge(ch1, ch2);
-            Geom::Point offset = Geom::Point(4, 0);
+            //Geom::Point offset = Geom::Point(4, 0);
         
             if(0) {
                 Point cent;
@@ -176,7 +176,7 @@ class ConvexTest: public Toy {
         //if(m.contains_point(old_mouse_point))
         //    *notify << "mouse in convex" << std::endl;
 
-        Geom::Point offset = Geom::Point(0, -200);
+        //Geom::Point offset = Geom::Point(0, -200);
 
         /*cairo_set_line_width (cr, 2);
         if(m.boundary.size() > 0) {

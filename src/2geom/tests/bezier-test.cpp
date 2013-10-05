@@ -70,10 +70,10 @@ Coord subdivideArr(Coord t, Coord const *v, Coord *left, Coord *right, unsigned 
     //cout << Bezier(0,1,2,3) << endl;
 
     //cout << "unsigned degree();\n";
-    EXPECT_EQ(2, hump.degree());
+    EXPECT_EQ(2u, hump.degree());
 
     //cout << "unsigned size();\n";
-    EXPECT_EQ(3, hump.size());
+    EXPECT_EQ(3u, hump.size());
 }
 
 TEST_F(BezierTest, ValueAt) {
@@ -122,7 +122,7 @@ TEST_F(BezierTest, DegreeElevation) {
     EXPECT_TRUE(are_equal(Q, P));
     Q = wiggle;
     P = Q.elevate_to_degree(10);
-    EXPECT_EQ(10, P.order());
+    EXPECT_EQ(10u, P.order());
     EXPECT_TRUE(are_equal(Q, P));
     //EXPECT_EQ(0, P.forward_difference(10)[0]);
     /*Q = wiggle.elevate_degree();

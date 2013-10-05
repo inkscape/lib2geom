@@ -902,16 +902,16 @@ void RectHandle::draw(cairo_t *cr, bool /*annotes*/) {
 void* RectHandle::hit(Geom::Point mouse) {
     if(show_center_handle) {
 	if(Geom::distance(mouse, pos.midpoint()) < 5)
-            return (void*)1;
+            return (void*)(intptr_t)1;
     }
     for(int i = 0; i < 4; i++) {
 	if(Geom::distance(mouse, pos.corner(i)) < 5)
-            return (void*)(2+i);
+            return (void*)(intptr_t)(2+i);
     }
     for(int i = 0; i < 4; i++) {
         Geom::LineSegment ls(pos.corner(i), pos.corner(i+1));
 	if(Geom::distance(ls.pointAt(ls.nearestPoint(mouse)),mouse) < 5)
-            return (void*)(6+i);
+            return (void*)(intptr_t)(6+i);
     }
     return 0;
     
