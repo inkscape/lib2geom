@@ -37,6 +37,7 @@
 #include <2geom/exception.h>
 #include <2geom/math-utils.h>
 #include <2geom/transforms.h>
+#include <2geom/angle.h>
 
 namespace Geom
 {
