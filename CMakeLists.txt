@@ -31,7 +31,15 @@ ENDIF(pycairo_FOUND)
 
 # Set Compiler Flags
 SET(CXX_WARNINGS_FLAGS "-Wall -Wformat -Wformat-security -W -Wpointer-arith -Wcast-align -Wsign-compare -Woverloaded-virtual -Wswitch -Werror=return-type")
-SET(CMAKE_CXX_FLAGS "${GTK2_CFLAGS} ${cairo_CFLAGS} ${gsl_CFLAGS} ${pycairo_CFLAGS} ${CXX_WARNINGS_FLAGS}")
+
+# enable C++11  (the required flag may depend on your compiler...
+#IF(CMAKE_COMPILER_IS_GNUCXX)
+#    SET(CPP11_FLAG "-std=gnu++0x")
+#ELSE(CMAKE_COMPILER_IS_GNUCXX)
+#    SET(CPP11_FLAG "-std=c++11")
+#ENDIF(CMAKE_COMPILER_IS_GNUCXX)
+
+SET(CMAKE_CXX_FLAGS "${CPP11_FLAG} ${GTK2_CFLAGS} ${cairo_CFLAGS} ${gsl_CFLAGS} ${pycairo_CFLAGS} ${CXX_WARNINGS_FLAGS}")
 SET(CMAKE_MAKE_PROGRAM "${CMAKE_MAKE_PROGRAM} -j2")
 
 OPTION(2GEOM_BUILD_SHARED
