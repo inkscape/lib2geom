@@ -166,7 +166,7 @@ INSTALL(FILES "${CMAKE_BINARY_DIR}/2geom.pc" DESTINATION lib/pkgconfig)
 ADD_SUBDIRECTORY (toys)
 ADD_SUBDIRECTORY (tests)
 ADD_SUBDIRECTORY (py2geom)
-
+ADD_SUBDIRECTORY (performance-tests)
 
 
 add_subdirectory(cython-bindings)

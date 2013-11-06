@@ -32,15 +32,23 @@ ENDIF(pycairo_FOUND)
 # Set Compiler Flags
 SET(CXX_WARNINGS_FLAGS "-Wall -Wformat -Wformat-security -W -Wpointer-arith -Wcast-align -Wsign-compare -Woverloaded-virtual -Wswitch -Werror=return-type")
 
-# enable C++11  (the required flag may depend on your compiler...
-#IF(CMAKE_COMPILER_IS_GNUCXX)
-#    SET(CPP11_FLAG "-std=gnu++0x")
-#ELSE(CMAKE_COMPILER_IS_GNUCXX)
-#    SET(CPP11_FLAG "-std=c++11")
-#ENDIF(CMAKE_COMPILER_IS_GNUCXX)
+# the required C++11 flag depends on the compiler brand:
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fcolor-diagnostics")  # force colored output through make/ninja
+    SET(CPP11_FLAG "-std=c++11")
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    SET(CPP11_FLAG "-std=gnu++0x")
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
+    SET(CPP11_FLAG "-std=c++11")
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+  # using Visual Studio C++
+endif()
 
-SET(CMAKE_CXX_FLAGS "${CPP11_FLAG} ${GTK2_CFLAGS} ${cairo_CFLAGS} ${gsl_CFLAGS} ${pycairo_CFLAGS} ${CXX_WARNINGS_FLAGS}")
-SET(CMAKE_MAKE_PROGRAM "${CMAKE_MAKE_PROGRAM} -j2")
+# set the general CXX flags, note that subproject folders may add to this list for themselves
+#SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CPP11_FLAG} ${GTK2_CFLAGS} ${cairo_CFLAGS} ${gsl_CFLAGS} ${pycairo_CFLAGS} ${CXX_WARNINGS_FLAGS} -O2")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GTK2_CFLAGS} ${cairo_CFLAGS} ${gsl_CFLAGS} ${pycairo_CFLAGS} ${CXX_WARNINGS_FLAGS} -O2")
+
+SET(CMAKE_MAKE_PROGRAM "${CMAKE_MAKE_PROGRAM}")
 
 OPTION(2GEOM_BUILD_SHARED
   "Build lib2geom and libtoy as shared libraries."
