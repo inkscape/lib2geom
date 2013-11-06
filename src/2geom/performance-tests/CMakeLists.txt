@@ -1,5 +1,5 @@
 SET(2GEOM_PERFORMANCE_TESTS_SRC
-skeleton-performance-test
+example-performance-test
 )
 
 
