@@ -34,6 +34,13 @@ SET(CXX_WARNINGS_FLAGS "-Wall -Wformat -Wformat-security -W -Wpointer-arith -Wca
 # set the general CXX flags, note that subproject folders may add to this list for themselves
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GTK2_CFLAGS} ${cairo_CFLAGS} ${gsl_CFLAGS} ${pycairo_CFLAGS} ${CXX_WARNINGS_FLAGS} -O2")
 
+# suppress the very annoying "#pragma ms_struct" Clang warning, caused by -mms-bitfield required for GTK
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    if (WIN32)
+        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-ignored-attributes")
+    endif()
+endif()
+
 # the required C++11 flag depends on the compiler brand:
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fcolor-diagnostics")  # force colored output through make/ninja
