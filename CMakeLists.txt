@@ -31,6 +31,8 @@ ENDIF(pycairo_FOUND)
 
 # Set Compiler Flags
 SET(CXX_WARNINGS_FLAGS "-Wall -Wformat -Wformat-security -W -Wpointer-arith -Wcast-align -Wsign-compare -Woverloaded-virtual -Wswitch -Werror=return-type")
+# set the general CXX flags, note that subproject folders may add to this list for themselves
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GTK2_CFLAGS} ${cairo_CFLAGS} ${gsl_CFLAGS} ${pycairo_CFLAGS} ${CXX_WARNINGS_FLAGS} -O2")
 
 # the required C++11 flag depends on the compiler brand:
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
@@ -44,9 +46,15 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
   # using Visual Studio C++
 endif()
 
-# set the general CXX flags, note that subproject folders may add to this list for themselves
-#SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CPP11_FLAG} ${GTK2_CFLAGS} ${cairo_CFLAGS} ${gsl_CFLAGS} ${pycairo_CFLAGS} ${CXX_WARNINGS_FLAGS} -O2")
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GTK2_CFLAGS} ${cairo_CFLAGS} ${gsl_CFLAGS} ${pycairo_CFLAGS} ${CXX_WARNINGS_FLAGS} -O2")
+#OPTION(USE_CPP11
+#  "Build lib2geom with C++11 enabled"
+#  OFF)
+#if (USE_CPP11)
+if (0) 
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CPP11_FLAG}")
+    # if we want to enable some C++11 code by #ifdefs, add the defines here
+    # add_definitions(-DHAS_MOVESEMANTICS)
+endif()
 
 SET(CMAKE_MAKE_PROGRAM "${CMAKE_MAKE_PROGRAM}")
 

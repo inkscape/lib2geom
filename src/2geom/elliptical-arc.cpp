@@ -569,7 +569,7 @@ std::vector<double> EllipticalArc::allNearestPoints( Point const& p, double from
     double mindistsq1 = std::numeric_limits<double>::max();
     double mindistsq2 = std::numeric_limits<double>::max();
     double dsq;
-    unsigned int mi1, mi2;
+    unsigned int mi1, mi2 = 0;
     for ( unsigned int i = 0; i < real_sol.size(); ++i )
     {
         dsq = distanceSq(p, pointAtAngle(real_sol[i]));
