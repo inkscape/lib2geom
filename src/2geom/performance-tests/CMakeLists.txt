@@ -1,6 +1,7 @@
 SET(2GEOM_PERFORMANCE_TESTS_SRC
 example-performance-test
 bendpath
+bezier-utils-test
 )
 
 add_custom_target(perf)
