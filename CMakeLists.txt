@@ -58,9 +58,17 @@ endif()
 #  OFF)
 #if (USE_CPP11)
 if (0) 
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CPP11_FLAG}")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CPP11_FLAG} -DCPP11")
     # if we want to enable some C++11 code by #ifdefs, add the defines here
     # add_definitions(-DHAS_MOVESEMANTICS)
+endif()
+
+OPTION(COMPILE_WITH_PROFILER
+  "Build lib2geom with profiling enabled"
+  OFF)
+if (COMPILE_WITH_PROFILER)
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
+  SET (CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -pg")
 endif()
 
 SET(CMAKE_MAKE_PROGRAM "${CMAKE_MAKE_PROGRAM}")

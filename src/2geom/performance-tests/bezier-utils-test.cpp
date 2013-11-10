@@ -59,6 +59,24 @@ Path interpolateToPath(std::vector<Point> const &points, double tolerance_sq, un
 };
 
 
+Path interpolateToPath2(std::vector<Point> const &points, double tolerance_sq, unsigned max_beziers)
+{
+    std::vector<Point> b(max_beziers * 4);
+
+    int const n_segs = Geom::bezier_fit_cubic_r(b.data(), points.data(), points.size(), tolerance_sq, max_beziers);
+
+    Geom::Path fit;
+    if (n_segs > 0) {
+        fit.start(b[0]);
+        for (int c = 0; c < n_segs; c++) {
+            fit.appendNew<Geom::CubicBezier>(b[4 * c + 1], b[4 * c + 2], b[4 * c + 3]);
+        }
+    }
+
+    return fit;
+};
+
+
 int main()
 {
     std::vector<Point> data_vector;
@@ -76,6 +94,7 @@ int main()
         for (int i = 0; i < num_repeats; i++) {
             Point *bezier = new Point[max_beziers*4];  // large array on stack = not good, so allocate on heap
             int n_segs = bezier_fit_cubic_r(bezier, data, data_len, tolerance_sq, max_beziers);
+            (void) n_segs;
             delete[] bezier;
         }
         std::clock_t stop = std::clock();
@@ -88,11 +107,25 @@ int main()
         for (int i = 0; i < num_repeats; i++) {
             Path path = interpolateToPath(data_vector, tolerance_sq, max_beziers);
             int n_segs = path.size();
+            (void) n_segs;
         }
         std::clock_t stop = std::clock();
         std::cout << "bezier_fit_cubic_r 2Geom interoperability (" << num_repeats << "x): " << (stop - start) * (1000. / CLOCKS_PER_SEC) << " ms "
                   << std::endl;
     }
+
+    for (int rep = 0; rep < 3; rep++) {
+        std::clock_t start = std::clock();
+        for (int i = 0; i < num_repeats; i++) {
+            Path path = interpolateToPath2(data_vector, tolerance_sq, max_beziers);
+            int n_segs = path.size();
+            (void) n_segs;
+        }
+        std::clock_t stop = std::clock();
+        std::cout << "bezier_fit_cubic_r 2Geom interoperability 2nd version (" << num_repeats
+                  << "x): " << (stop - start) * (1000. / CLOCKS_PER_SEC) << " ms " << std::endl;
+    }
+
 }
 
 
