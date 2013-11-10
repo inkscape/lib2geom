@@ -53,11 +53,11 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
   # using Visual Studio C++
 endif()
 
-#OPTION(USE_CPP11
-#  "Build lib2geom with C++11 enabled"
-#  OFF)
-#if (USE_CPP11)
-if (0) 
+OPTION(USE_CPP11
+  "Build lib2geom with C++11 enabled"
+  OFF)
+if (USE_CPP11)
+#if (1) 
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CPP11_FLAG} -DCPP11")
     # if we want to enable some C++11 code by #ifdefs, add the defines here
     # add_definitions(-DHAS_MOVESEMANTICS)
