@@ -3,6 +3,7 @@ example-performance-test
 bendpath
 bezier-utils-test
 parse-svg
+path-operations
 )
 
 add_custom_target(perf)
