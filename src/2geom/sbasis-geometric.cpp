@@ -435,11 +435,10 @@ Geom::arc_length_parametrization(Piecewise<D2<SBasis> > const &M,
                                  unsigned order,
                                  double tol){
     Piecewise<D2<SBasis> > result;
-    for (unsigned i=0; i<M.size(); i++ ){
-        Piecewise<D2<SBasis> > uniform_seg=arc_length_parametrization(M[i],order,tol);
-        result.concat(uniform_seg);
+    for (unsigned i=0; i<M.size(); i++) {
+        result.concat( arc_length_parametrization(M[i],order,tol) );
     }
-    return(result);
+    return result;
 }
 
 #include <gsl/gsl_integration.h>
