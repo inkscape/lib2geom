@@ -92,8 +92,7 @@ public:
     void resize(unsigned n, Linear const& l) { d.resize(n, l);}
     void reserve(unsigned n) { d.reserve(n);}
     void clear() {d.clear();}
-    void insert(iterator before, const_iterator src_begin, const_iterator src_end) { d.insert(std::vector<Linear>::iterator(before), src_begin, src_end);}
-    //void insert(Linear* aa, Linear* bb, Linear* cc} { d.insert(aa, bb, cc);}
+    void insert(iterator before, const_iterator src_begin, const_iterator src_end) { d.insert(before, src_begin, src_end);}
     Linear& at(unsigned i) { return d.at(i);}
     //void insert(Linear* before, int& n, Linear const &l) { d.insert(std::vector<Linear>::iterator(before), n, l);}
     bool operator==(SBasis const&B) const { return d == B.d;}
