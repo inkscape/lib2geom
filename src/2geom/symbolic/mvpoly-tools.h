@@ -272,7 +272,7 @@ struct mvpoly
     }
 
     template <size_t M, typename C>
-    friend class mvpoly;
+    friend struct mvpoly;
 };
 
 /*
@@ -374,7 +374,7 @@ struct mvpoly<0, CoeffT>
 
 
     template <size_t M, typename C>
-    friend class mvpoly;
+    friend struct mvpoly;
 };
 
 
@@ -412,7 +412,7 @@ struct monomial
 
     // make_impl private require that monomial classes to be each other friend
     template <size_t M, typename C>
-    friend class monomial;
+    friend struct monomial;
 };
 
 
@@ -433,7 +433,7 @@ struct monomial<0, CoeffT>
     }
 
     template<size_t N, typename C>
-    friend class monomial;
+    friend struct monomial;
 };
 
 
@@ -563,7 +563,7 @@ struct coefficient< N, Polynomial<CoeffT> >
     }
 
     template<size_t M, typename T>
-    friend class coefficient;
+    friend struct coefficient;
 
 };
 
@@ -649,7 +649,7 @@ struct coefficient< 0, Polynomial<CoeffT> >
     }
 
     template<size_t M, typename T>
-    friend class coefficient;
+    friend struct coefficient;
 };
 
 // initialization of static member zero
