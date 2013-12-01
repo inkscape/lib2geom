@@ -459,7 +459,7 @@ void build_from_sbasis(Geom::PathBuilder &pb, D2<SBasis> const &B, double tol, b
     if (!B.isFinite()) {
         THROW_EXCEPTION("assertion failed: B.isFinite()");
     }
-    if(tail_error(B, 2) < tol || sbasis_size(B) == 2) { // nearly cubic enough
+    if(tail_error(B, 3) < tol || sbasis_size(B) == 2) { // nearly cubic enough
         if( !only_cubicbeziers && (sbasis_size(B) <= 1) ) {
             pb.lineTo(B.at1());
         } else {
