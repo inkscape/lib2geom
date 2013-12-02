@@ -115,9 +115,11 @@ Rect EllipticalArc::boundsExact() const
     if ( arc_extremes[2] < arc_extremes[3] )
         std::swap(arc_extremes[2], arc_extremes[3]);
 
-    for (unsigned i = 0; i < 4; ++i) {
-        if (containsAngle(extremes[i])) {
-            arc_extremes[i] = valueAtAngle(extremes[i], (i >> 1) ? Y : X);
+    if ( !are_near(initialPoint(), finalPoint()) ) {
+        for (unsigned i = 0; i < 4; ++i) {
+            if (containsAngle(extremes[i])) {
+                arc_extremes[i] = valueAtAngle(extremes[i], (i >> 1) ? Y : X);
+            }
         }
     }
 
