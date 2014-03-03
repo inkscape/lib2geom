@@ -125,16 +125,16 @@ void polish_intersections(std::vector<std::pair<double, double> > &xs,
 /**
  * Compute the Hausdorf distance from A to B only.
  */
-double hausdorfl(D2<SBasis>& A, D2<SBasis> const& B,
+double hausdorfl(D2<SBasis>& A, D2<SBasis> const &B,
                  double m_precision,
-                 double *a_t=0, double* b_t=0);
+                 double *a_t=NULL, double *b_t=NULL);
 
 /** 
  * Compute the symmetric Hausdorf distance.
  */
-double hausdorf(D2<SBasis>& A, D2<SBasis> const& B,
+double hausdorf(D2<SBasis> &A, D2<SBasis> const &B,
                 double m_precision,
-                double *a_t=0, double* b_t=0);
+                double *a_t=NULL, double *b_t=NULL);
 }
 
 #endif // !SEEN_GEOM_BASICINTERSECTION_H
