@@ -84,7 +84,7 @@ class GeomZoomPrinter:
     def __init__(self, val):
         self.val = val
     def to_string(self):
-        return "zoom %f%% at %s" % (self.val["_scale"], str(self.val["_trans"]))
+        return "zoom %f%% at %s" % (self.val["_scale"] * 100, str(self.val["_trans"]))
 
 
 def lib2geom_pretty_printer():
