@@ -282,6 +282,12 @@ Coord nearest_point(Point const& p, Curve const& c) {
     return c.nearestPoint(p);
 }
 
+// for make benefit glorious library of Boost Pointer Container
+inline
+Curve *new_clone(Curve const &c) {
+     return c.duplicate();
+}
+
 } // end namespace Geom
 
 
