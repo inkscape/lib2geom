@@ -74,7 +74,7 @@ public:
      * 
      * This call should implicitly finish the current subpath.
      * Calling this method should be idempotent, because the default
-     * implementations of path() and pathvector() will be call it
+     * implementations of path() and pathvector() will call it
      * multiple times in a row. */
     virtual void flush() = 0;
 
@@ -205,14 +205,14 @@ protected:
     Point _start_p;
 };
 
-typedef std::back_insert_iterator<std::vector<Path> > iter;
+typedef std::back_insert_iterator<PathVector> SubpathInserter;
 
-class PathBuilder : public PathIteratorSink<iter> {
+class PathBuilder : public PathIteratorSink<SubpathInserter> {
 private:
-    std::vector<Path> _pathset;
+    PathVector _pathset;
 public:
-    PathBuilder() : PathIteratorSink<iter>(iter(_pathset)) {}
-    std::vector<Path> const &peek() const {return _pathset;}
+    PathBuilder() : PathIteratorSink<SubpathInserter>(SubpathInserter(_pathset)) {}
+    PathVector const &peek() const {return _pathset;}
 };
 
 }

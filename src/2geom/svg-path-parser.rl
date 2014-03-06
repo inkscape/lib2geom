@@ -43,11 +43,11 @@ namespace Geom {
 
 namespace {
 
-class Parser {
+class SVGPathParser {
 public:
-    Parser(PathSink &sink) : _absolute(false), _sink(sink) {}
+    SVGPathParser(PathSink &sink) : _absolute(false), _sink(sink) {}
 
-    void parse(char const *str) throw(SVGPathParseError);
+    void parse(char const *str);
 
 private:
     bool _absolute;
@@ -143,8 +143,7 @@ private:
     write data noerror;
 }%%
 
-void Parser::parse(char const *str)
-throw(SVGPathParseError)
+void SVGPathParser::parse(char const *str)
 {
     char const *p = str;
     char const *start = NULL;
@@ -387,9 +386,8 @@ throw(SVGPathParseError)
 }
 
 void parse_svg_path(char const *str, PathSink &sink)
-throw(SVGPathParseError)
 {
-    Parser parser(sink);
+    SVGPathParser parser(sink);
     parser.parse(str);
     sink.flush();
 }

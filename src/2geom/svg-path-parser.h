@@ -42,28 +42,29 @@
 
 namespace Geom {
 
-void parse_svg_path(char const *str, PathSink &sink) throw(SVGPathParseError);
+void parse_svg_path(char const *str, PathSink &sink);
 
-inline std::vector<Path> parse_svg_path(char const *str) throw(SVGPathParseError) {
-    typedef std::vector<Path> Subpaths;
-    typedef std::back_insert_iterator<Subpaths> Inserter;
-    
-    Subpaths subpaths;
-    Inserter iter(subpaths);
-    PathIteratorSink<Inserter> generator(iter);
-
-    parse_svg_path(str, generator);
-    return subpaths;
+inline void parse_svg_path(std::string const &str, PathSink &sink) {
+    parse_svg_path(str.c_str(), sink);
 }
 
-inline std::vector<Path> read_svgd_f(FILE * fi) throw(SVGPathParseError) {
+inline PathVector parse_svg_path(char const *str) {
+    PathVector ret;
+    SubpathInserter iter(ret);
+    PathIteratorSink<SubpathInserter> generator(iter);
+
+    parse_svg_path(str, generator);
+    return ret;
+}
+
+inline std::vector<Path> read_svgd_f(FILE * fi) {
     /// @bug The 10kB length limit should be removed
     char input[1024 * 10];
     fgets(input, 1024 * 10, fi);
     return parse_svg_path(input);
 }
 
-inline std::vector<Path> read_svgd(char const * name) throw(SVGPathParseError) {
+inline std::vector<Path> read_svgd(char const * name) {
     FILE* fi = fopen(name, "r");
     if(fi == NULL) throw(std::runtime_error("Error opening file"));
     std::vector<Path> out = read_svgd_f(fi);
