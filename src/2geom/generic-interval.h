@@ -277,7 +277,7 @@ public:
         if (a) {
             if (*this) { // check that we are not empty
                 (*this)->unionWith(*a);
-            } else if (a) {
+            } else {
                 *this = *a;
             }
         }
