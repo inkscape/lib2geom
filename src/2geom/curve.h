@@ -162,6 +162,7 @@ public:
     /** @brief Create an exact copy of this curve.
      * @return Pointer to a newly allocated curve, identical to the original */
     virtual Curve *duplicate() const = 0;
+
     /** @brief Create a curve transformed by an affine transformation.
      * This method returns a new curve instead modifying the existing one, because some curve
      * types are not closed under affine transformations. The returned curve may be of different
@@ -169,6 +170,15 @@ public:
      * @param m Affine describing the affine transformation
      * @return Pointer to a new, transformed curve */
     virtual Curve *transformed(Affine const &m) const = 0;
+
+    /** @brief Translate the curve (i.e. displace by Point)
+     * This method modifies the curve; all curve types are closed under
+     * translations (the result can be expressed in its own curve type).
+     * This function yields the same result as transformed(m).
+     * @param p Point by which to translate the curve
+     * @return reference to self */
+    virtual Curve &operator*=(Translate const &m) = 0;
+
     /** @brief Create a curve that corresponds to a part of this curve.
      * For \f$a > b\f$, the returned portion will be reversed with respect to the original.
      * The returned curve will always be of the same type.

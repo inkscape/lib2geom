@@ -35,6 +35,7 @@
 
 
 #include <2geom/path.h>
+#include <2geom/transforms.h>
 #include <algorithm>
 
 
@@ -93,6 +94,29 @@ Path &Path::operator*=(Affine const &m) {
   }
   for ( int i = 0 ; i < 2 ; ++i ) {
     final_->setPoint(i, (*final_)[i] * m);
+  }
+  if (get_curves().size() > 1) {
+    if ( front().initialPoint() != initialPoint() || back().finalPoint() != finalPoint() ) {
+      THROW_CONTINUITYERROR();
+    }
+  }
+  return *this;
+}
+
+Path &Path::operator*=(Translate const &m) {
+  unshare();
+  Sequence::iterator last = get_curves().end() - 1;
+  Sequence::iterator it;
+  Point prev;
+  for (it = get_curves().begin() ; it != last ; ++it) {
+    *(const_cast<Curve*>(&**it)) *= m;
+    if ( it != get_curves().begin() && (*it)->initialPoint() != prev ) {
+      THROW_CONTINUITYERROR();
+    }
+    prev = (*it)->finalPoint();
+  }
+  for ( int i = 0 ; i < 2 ; ++i ) {
+    final_->setPoint(i, (*final_)[i] + m.vector());
   }
   if (get_curves().size() > 1) {
     if ( front().initialPoint() != initialPoint() || back().finalPoint() != finalPoint() ) {

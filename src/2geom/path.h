@@ -40,6 +40,7 @@
 #include <boost/shared_ptr.hpp>
 #include <2geom/curve.h>
 #include <2geom/bezier-curve.h>
+#include <2geom/transforms.h>
 
 namespace Geom {
 
@@ -289,8 +290,14 @@ public:
     ret *= m;
     return ret;
   }
+  Path operator*(Translate const &m) const { // specialization over Affine, for faster computation
+    Path ret(*this);
+    ret *= m;
+    return ret;
+  }
 
   Path &operator*=(Affine const &m);
+  Path &operator*=(Translate const &m); // specialization over Affine, for faster computation
   
   Point pointAt(double t) const 
   {

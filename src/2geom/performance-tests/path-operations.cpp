@@ -66,18 +66,31 @@ static char const *path_str =
 
 int main()
 {
-    std::vector<Path> path1 = parse_svg_path(path_str);
     for (int rep = 0; rep < 3; rep++) {
         std::vector<Path> path1 = parse_svg_path(path_str);
         const int num_repeats = 1000;
         std::clock_t start = std::clock();
         for (int i = 0; i < num_repeats; i++) {
-            path1 += Point(3.,1.);
-            path1 += Point(4.,1.);
-            path1 += Point(5.,1.);
+            path1 *= Translate(Point(3.,1.));
+            path1 *= Translate(Point(4.,1.));
+            path1 *= Translate(Point(5.,1.));
         }
         std::clock_t stop = std::clock();
-        std::cout << "PathVector += Point (" << num_repeats << "x): " << (stop - start) * (1000. / CLOCKS_PER_SEC) << " ms "
+        std::cout << "PathVector *= Translate (" << num_repeats << "x): " << (stop - start) * (1000. / CLOCKS_PER_SEC) << " ms "
+                  << std::endl;
+    }
+
+    for (int rep = 0; rep < 3; rep++) {
+        std::vector<Path> path1 = parse_svg_path(path_str);
+        const int num_repeats = 1000;
+        std::clock_t start = std::clock();
+        for (int i = 0; i < num_repeats; i++) {
+            path1 *= Affine(Translate(Point(3.,1.)));
+            path1 *= Affine(Translate(Point(4.,1.)));
+            path1 *= Affine(Translate(Point(5.,1.)));
+        }
+        std::clock_t stop = std::clock();
+        std::cout << "PathVector *= Affine (" << num_repeats << "x): " << (stop - start) * (1000. / CLOCKS_PER_SEC) << " ms "
                   << std::endl;
     }
 }
