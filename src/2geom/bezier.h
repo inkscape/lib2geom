@@ -391,13 +391,13 @@ inline Bezier operator-(const Bezier & a, double v) {
     return result;
 }
 
-inline Bezier operator+=(Bezier & a, double v) {
+inline Bezier& operator+=(Bezier & a, double v) {
     for(unsigned i = 0; i <= a.order(); ++i)
         a[i] = a[i] + v;
     return a;
 }
 
-inline Bezier operator-=(Bezier & a, double v) {
+inline Bezier& operator-=(Bezier & a, double v) {
     for(unsigned i = 0; i <= a.order(); ++i)
         a[i] = a[i] - v;
     return a;
