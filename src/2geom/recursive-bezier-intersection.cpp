@@ -71,9 +71,6 @@ find_intersections_bezier_recursive( std::vector<std::pair<double, double> > &xs
 }
 
 
-/* The value of 1.0 / (1L<<14) is enough for most applications */
-const double INV_EPS = (1L<<14);
-
 /*
  * split the curve at the midpoint, returning an array with the two parts
  * Temporary storage is minimized by using part of the storage for the result
@@ -318,9 +315,14 @@ double Lmax(Point p) {
     return std::max(fabs(p[X]), fabs(p[Y]));
 }
 
+
 unsigned wangs_theorem(OldBezier /*a*/) {
     return 6; // seems a good approximation!
-    /*double la1 = Lmax( ( a.p[2] - a.p[1] ) - (a.p[1] - a.p[0]) );
+
+    /*
+    const double INV_EPS = (1L<<14); // The value of 1.0 / (1L<<14) is enough for most applications
+
+    double la1 = Lmax( ( a.p[2] - a.p[1] ) - (a.p[1] - a.p[0]) );
     double la2 = Lmax( ( a.p[3] - a.p[2] ) - (a.p[2] - a.p[1]) );
     double l0 = std::max(la1, la2);
     unsigned ra;
