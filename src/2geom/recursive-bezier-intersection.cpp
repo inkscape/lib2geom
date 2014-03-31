@@ -13,6 +13,8 @@
 unsigned intersect_steps = 0;
 
 using std::vector;
+using std::swap;
+
 namespace Geom {
 
 class OldBezier {
@@ -31,7 +33,7 @@ public:
         minax = p[0][X];	 // These are the most likely to be extremal
         maxax = p.back()[X];
         if( minax > maxax )
-            std::swap(minax, maxax);
+            swap(minax, maxax);
         for(unsigned i = 1; i < p.size()-1; i++) {
             if( p[i][X] < minax )
                 minax = p[i][X];
@@ -42,7 +44,7 @@ public:
         minay = p[0][Y];	 // These are the most likely to be extremal
         maxay = p.back()[Y];
         if( minay > maxay )
-            std::swap(minay, maxay);
+            swap(minay, maxay);
         for(unsigned i = 1; i < p.size()-1; i++) {
             if( p[i][Y] < minay )
                 minay = p[i][Y];

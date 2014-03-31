@@ -100,13 +100,16 @@ typedef std::vector<intersection_info> intersections_info;
  */
 void intersect(intersections_info& xs,  D2<SBasis> const& A, D2<SBasis> const& B)
 {
+    using std::swap;
+
     // supposing implicitization the most expensive step
     // we perform a call to intersect with curve arguments swapped
     if (A[0].size() > B[0].size())
     {
         intersect(xs, B, A);
         for (size_t i = 0; i < xs.size(); ++i)
-            std::swap(xs[i].t0, xs[i].t1);
+            swap(xs[i].t0, xs[i].t1);
+
         return;
     }
 

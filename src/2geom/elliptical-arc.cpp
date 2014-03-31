@@ -46,6 +46,7 @@
 #include <2geom/numeric/fitting-tool.h>
 #include <2geom/numeric/fitting-model.h>
 
+using std::swap;
 
 namespace Geom
 {
@@ -109,11 +110,11 @@ Rect EllipticalArc::boundsExact() const
     arc_extremes[0] = initialPoint()[X];
     arc_extremes[1] = finalPoint()[X];
     if ( arc_extremes[0] < arc_extremes[1] )
-        std::swap(arc_extremes[0], arc_extremes[1]);
+        swap(arc_extremes[0], arc_extremes[1]);
     arc_extremes[2] = initialPoint()[Y];
     arc_extremes[3] = finalPoint()[Y];
     if ( arc_extremes[2] < arc_extremes[3] )
-        std::swap(arc_extremes[2], arc_extremes[3]);
+        swap(arc_extremes[2], arc_extremes[3]);
 
     if ( !are_near(initialPoint(), finalPoint()) ) {
         for (unsigned i = 0; i < 4; ++i) {
@@ -432,7 +433,7 @@ std::vector<double> EllipticalArc::allNearestPoints( Point const& p, double from
 {
     std::vector<double> result;
 
-    if ( from > to ) std::swap(from, to);
+    if ( from > to ) swap(from, to);
     if ( from < 0 || to > 1 )
     {
         THROW_RANGEERROR("[from,to] interval out of range");

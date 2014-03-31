@@ -486,8 +486,9 @@ void intersection (std::vector<Interval>& domsA,
             return;
         }
 
-        std::swap(C1, C2);
-        std::swap(dom1, dom2);
+        using std::swap;
+        swap(C1, C2);
+        swap(dom1, dom2);
 //        std::cerr << "dom(pA) : " << dompA << std::endl;
 //        std::cerr << "dom(pB) : " << dompB << std::endl;
     }

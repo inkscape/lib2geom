@@ -35,6 +35,7 @@
 #include <2geom/nearest-point.h>
 #include <algorithm>
 
+using std::swap;
 
 namespace Geom
 {
@@ -54,7 +55,7 @@ double nearest_point( Point const& p,
                       D2<SBasis> const& dc,
                       double from, double to )
 {
-    if ( from > to ) std::swap(from, to);
+    if ( from > to ) swap(from, to);
     if ( from < 0 || to > 1 )
     {
         THROW_RANGEERROR("[from,to] interval out of bounds");
@@ -93,8 +94,8 @@ all_nearest_points( Point const& p,
             D2<SBasis> const& dc,
             double from, double to )
 {
-    std::swap(from, to);
-    if ( from > to ) std::swap(from, to);
+    swap(from, to);
+    if ( from > to ) swap(from, to);
     if ( from < 0 || to > 1 )
     {
         THROW_RANGEERROR("[from,to] interval out of bounds");
@@ -148,7 +149,7 @@ double nearest_point( Point const& p,
                       Piecewise< D2<SBasis> > const& c,
                       double from, double to )
 {
-    if ( from > to ) std::swap(from, to);
+    if ( from > to ) swap(from, to);
     if ( from < c.cuts[0] || to > c.cuts[c.size()] )
     {
         THROW_RANGEERROR("[from,to] interval out of bounds");
@@ -202,7 +203,7 @@ all_nearest_points( Point const& p,
                     Piecewise< D2<SBasis> > const& c,
                     double from, double to )
 {
-    if ( from > to ) std::swap(from, to);
+    if ( from > to ) swap(from, to);
     if ( from < c.cuts[0] || to > c.cuts[c.size()] )
     {
         THROW_RANGEERROR("[from,to] interval out of bounds");

@@ -751,7 +751,8 @@ class DCCToy : public Toy
         if (toggle0_status != toggles[0].on)
         {
             toggle0_status = toggles[0].on;
-            std::swap(sliders[0], sliders[1]);
+            using std::swap;
+            swap(sliders[0], sliders[1]);
         }
         
         cairo_set_source_rgba(cr, 0.3, 0.3, 0.3, 1.0);

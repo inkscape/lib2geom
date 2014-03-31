@@ -9,6 +9,8 @@
 #include <algorithm>
 
 
+using std::swap;
+
 namespace Geom {
 using namespace Geom;
 
@@ -34,7 +36,7 @@ void computeLinfinityNeighborhood( D2<SBasis > const &f, double tol, D2<Piecewis
 	bot += Point( tol*signx, -tol);
 
 	if ( signy < 0 ){
-		std::swap( top, bot );
+		swap( top, bot );
 		top += Point( 0,  2*tol);
 		bot += Point( 0, -2*tol);
 	}
@@ -60,11 +62,11 @@ void computeLinfinityNeighborhood( Piecewise<SBasis> const &f, double tol, Piece
 	bot.cuts.insert( bot.cuts.begin(), f.domain().min() - tol);
 	bot.segs.insert( bot.segs.begin(), SBasis(Linear( f.firstValue() - tol )) );
 
-	if ( f.firstValue() > f.lastValue() ){
-	std::swap( top, bot );
-	top += 2*tol;
-	bot -= 2*tol;
-	}
+    if (f.firstValue() > f.lastValue()) {
+        swap(top, bot);
+        top += 2 * tol;
+        bot -= 2 * tol;
+    }
 }
 
 /*
@@ -191,7 +193,7 @@ std::vector<Intersection> monotonic_smash_intersect( D2<SBasis> const &a, D2<SBa
 	if	( dbbounds->min().length() > dabounds->min().length() ){
 		aa=b;
 		bb=a;
-		std::swap( dabounds, dbbounds );
+		swap( dabounds, dbbounds );
 		swapresult = true;
 	}
 
@@ -301,12 +303,12 @@ std::vector<Intersection> monotonic_smash_intersect( D2<SBasis> const &a, D2<SBa
 
 	if (swapresult) {
 		for ( unsigned i=0; i<result.size(); i++){
-			std::swap( result[i].times[X], result[i].times[Y]);
+			swap( result[i].times[X], result[i].times[Y]);
 		}
 	}
 	if (swapcoord) {
 		for ( unsigned i=0; i<result.size(); i++){
-			std::swap( result[i].bbox[X], result[i].bbox[Y] );
+			swap( result[i].bbox[X], result[i].bbox[Y] );
 		}
 	}
 

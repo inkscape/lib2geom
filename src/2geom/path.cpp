@@ -38,7 +38,7 @@
 #include <2geom/transforms.h>
 #include <algorithm>
 
-
+using std::swap;
 using namespace Geom::PathInternal;
 
 namespace Geom
@@ -129,7 +129,9 @@ Path &Path::operator*=(Translate const &m) {
 std::vector<double>
 Path::allNearestPoints(Point const& _point, double from, double to) const
 {
-	if ( from > to ) std::swap(from, to);
+  using std::swap;
+
+	if ( from > to ) swap(from, to);
 	const Path& _path = *this;
 	unsigned int sz = _path.size();
 	if ( _path.closed() ) ++sz;
@@ -239,7 +241,9 @@ Path::nearestPointPerCurve(Point const& _point) const
 
 double Path::nearestPoint(Point const &_point, double from, double to, double *distance_squared) const
 {
-	if ( from > to ) std::swap(from, to);
+  using std::swap;
+
+	if ( from > to ) swap(from, to);
 	const Path& _path = *this;
 	unsigned int sz = _path.size();
 	if ( _path.closed() ) ++sz;

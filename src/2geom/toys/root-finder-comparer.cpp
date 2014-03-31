@@ -13,6 +13,7 @@
 #include <2geom/zroots.c>
 #endif
 
+using std::swap;
 
 namespace Geom{
 extern void subdiv_sbasis(SBasis const & s,
@@ -38,7 +39,7 @@ double eval_bernstein(double* w, double t, unsigned N) {
         }
         //Left[i] = row[0];
         //Right[degree-i] = row[degree-i];
-        std::swap(prev_row, row);
+        swap(prev_row, row);
     }
     return prev_row[0];
 }

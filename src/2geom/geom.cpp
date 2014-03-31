@@ -10,6 +10,8 @@
 #include <algorithm>
 #include <2geom/rect.h>
 
+using std::swap;
+
 namespace Geom {
 
 /**
@@ -305,7 +307,7 @@ rect_line_intersect(Geom::Point const &c0, Geom::Point const &c1,
         Point dir1 (results[1] - results[0]);
         Point dir2 (p1 - p0);
         if (dot(dir1, dir2) < 0) {
-            std::swap(results[0], results[1]);
+            swap(results[0], results[1]);
         }
     }
 

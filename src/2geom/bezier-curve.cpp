@@ -166,7 +166,9 @@ Curve *BezierCurveN<1>::derivative() const {
 template<>
 Coord BezierCurveN<1>::nearestPoint(Point const& p, Coord from, Coord to) const
 {
-    if ( from > to ) std::swap(from, to);
+    using std::swap;
+
+    if ( from > to ) swap(from, to);
     Point ip = pointAt(from);
     Point fp = pointAt(to);
     Point v = fp - ip;

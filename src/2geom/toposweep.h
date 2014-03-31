@@ -71,8 +71,9 @@ struct Section {
         fp = curve.get(ps).pointAt(f), tp = curve.get(ps).pointAt(t);
         if (Point::LexOrderRt(d)(tp, fp)) {
             //swap from and to, since tp is left or above fp
-            std::swap(f, t);
-            std::swap(fp, tp);
+            using std::swap;
+            swap(f, t);
+            swap(fp, tp);
         }
     }
     Rect bbox() const { return Rect(fp, tp); }

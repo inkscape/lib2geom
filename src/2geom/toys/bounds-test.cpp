@@ -47,8 +47,8 @@ class BoundsTester: public Toy {
         
         SBasis B(size, Linear());
         for (unsigned i=0;i<size;i++){
-            B[i] = Linear(-(hand.pts[i     ][1]-300)*pow(4.,(int)i),
-                          -(hand.pts[i+size][1]-300)*pow(4.,(int)i) );
+            B[i] = Linear(-(hand.pts[i     ][1]-300)*std::pow(4.,(int)i),
+                          -(hand.pts[i+size][1]-300)*std::pow(4.,(int)i) );
         }
         B.normalize();
         plot(cr,B,1);   

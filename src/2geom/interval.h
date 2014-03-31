@@ -125,16 +125,18 @@ public:
     // IMPL: ScalableConcept
     /** @brief Scale an interval */
     Interval &operator*=(Coord s) {
+        using std::swap;
         _b[0] *= s;
         _b[1] *= s;
-        if(s < 0) std::swap(_b[0], _b[1]);
+        if(s < 0) swap(_b[0], _b[1]);
         return *this;
     }
     /** @brief Scale an interval by the inverse of the specified value */
     Interval &operator/=(Coord s) {
+        using std::swap;
         _b[0] /= s;
         _b[1] /= s;
-        if(s < 0) std::swap(_b[0], _b[1]);
+        if(s < 0) swap(_b[0], _b[1]);
         return *this;
     }
     /** @brief Multiply two intervals.

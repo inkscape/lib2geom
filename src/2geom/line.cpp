@@ -33,6 +33,7 @@
 
 #include <algorithm>
 
+using std::swap;
 
 namespace Geom
 {
@@ -161,7 +162,7 @@ OptCrossing intersection_impl(Ray const& r1, Line const& l2, unsigned int i)
         {
             if (i != 0)
             {
-                std::swap(crossing->ta, crossing->tb);
+                swap(crossing->ta, crossing->tb);
             }
             return crossing;
         }
@@ -198,7 +199,7 @@ OptCrossing intersection_impl( LineSegment const& ls1,
         {
             if (i != 0)
             {
-                std::swap((*crossing).ta, (*crossing).tb);
+                swap((*crossing).ta, (*crossing).tb);
             }
             return crossing;
         }
@@ -237,7 +238,7 @@ OptCrossing intersection_impl( LineSegment const& ls1,
         {
             if (i != 0)
             {
-                std::swap(crossing->ta, crossing->tb);
+                swap(crossing->ta, crossing->tb);
             }
             return crossing;
         }

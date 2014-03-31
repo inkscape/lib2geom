@@ -79,12 +79,13 @@ public:
         return result;
     }
     virtual Coord nearestPoint( Point const &p, Coord from = 0, Coord to = 1 ) const {
-        if ( from > to ) std::swap(from, to);
+        using std::swap;
+        if ( from > to ) swap(from, to);
         Coord xfrom = valueAt(from, axis);
         Coord xto = valueAt(to, axis);
         if ( xfrom > xto ) {
-            std::swap(xfrom, xto);
-            std::swap(from, to);
+            swap(xfrom, xto);
+            swap(from, to);
         }
         if ( p[axis] > xfrom && p[axis] < xto ) {
             return (p[axis] - initialPoint()[axis]) / (finalPoint()[axis] - initialPoint()[axis]);

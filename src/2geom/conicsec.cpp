@@ -40,7 +40,7 @@
 #include <sstream>
 #include <stdexcept>
 
-
+using std::swap;
 
 
 
@@ -842,7 +842,7 @@ void xAx::set (const Point& _vertex, double _angle, double _dist1, double _dist2
 
     if (std::fabs(_dist1) > std::fabs(_dist2))
     {
-        std::swap (_dist1, _dist2);
+        swap (_dist1, _dist2);
     }
     if (_dist1 < 0)
     {
@@ -1452,7 +1452,7 @@ Rect xAx::arc_bound (const Point & P1, const Point & Q, const Point & P2) const
         {
             //std::cout << "BOUND: M.size() == 2" << std::endl;
             if (M[0][dim] > M[1][dim])
-                std::swap (M[0], M[1]);
+                swap (M[0], M[1]);
 
             if (M[0][dim] > B[dim][1])
             {

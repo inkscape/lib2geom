@@ -142,7 +142,7 @@ void computeLinfinityNeighborhood( D2<SBasis > const &f, double tol, D2<Piecewis
 	bot += Point( tol*signx, -tol);
 
 	if ( signy < 0 ){
-		std::swap( top, bot );
+		swap( top, bot );
 		top += Point( 0,  2*tol);
 		bot += Point( 0, -2*tol);
 	}
@@ -167,7 +167,7 @@ void computeLinfinityNeighborhood( Piecewise<SBasis> const &f, double tol, Piece
 	bot.segs.insert( bot.segs.begin(), SBasis(Linear( f.firstValue() - tol )) );
 
 	if ( f.firstValue() > f.lastValue() ){
-	std::swap( top, bot );
+	swap( top, bot );
 	top += 2*tol;
 	bot -= 2*tol;
 	}
@@ -233,7 +233,7 @@ std::vector<std::pair<Interval, Interval> > smash_intersect( D2<SBasis> const &a
 	if	( dbbounds->min().length() > dabounds->min().length() ){
 		aa=b;
 		bb=a;
-		std::swap( dabounds, dbbounds );
+		swap( dabounds, dbbounds );
 		swapresult = true;
 	}
 
@@ -284,7 +284,7 @@ std::vector<std::pair<Interval, Interval> > smash_intersect( D2<SBasis> const &a
 		cairo_stroke(cr);
 
 		D2<SBasis> bbb = bb;
-		if ( swapcoord ) std::swap( bbb[X], bbb[Y] );
+		if ( swapcoord ) swap( bbb[X], bbb[Y] );
 		//Piecewise<D2<SBasis> > dbg_rgnB = neighborhood( bbb, tol );
 		D2<Piecewise<SBasis> > dbg_topB, dbg_botB;
 		computeLinfinityNeighborhood( bbb, tol, dbg_topB, dbg_botB );

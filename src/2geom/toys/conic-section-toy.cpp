@@ -639,7 +639,9 @@ class ConicSectionToy : public Toy
             p2 = Point(x, r2[1]) + O;
             if (_window.contains(p1) && _window.contains(p2))
                 draw_segment(cr, p1, p2);
-            std::swap(r1, r2);
+
+            using std::swap;
+            swap(r1, r2);
         }
     }
 

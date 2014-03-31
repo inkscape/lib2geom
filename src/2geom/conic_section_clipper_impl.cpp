@@ -33,6 +33,8 @@
     #include <2geom/conic_section_clipper.h>
 #endif
 
+using std::swap;
+
 namespace Geom
 {
 
@@ -257,9 +259,8 @@ bool CLIPPER_CLASS::are_paired (Point& M, const Point & P1, const Point & P2) co
 
         if (sgn(side0) == sgn(side1))
         {
-            if (std::fabs(side0) > std::fabs(side1))
-            {
-                std::swap (extrema[0], extrema[1]);
+            if (std::fabs(side0) > std::fabs(side1)) {
+                swap(extrema[0], extrema[1]);
             }
             extrema.pop_back();
         }
@@ -454,14 +455,14 @@ bool CLIPPER_CLASS::clip (std::vector<RatQuad> & arcs)
             double angle = cs.axis_angle();
             Line axis1 (*c, angle);
             rts = cs.roots (axis1);
-            if (rts[0] > rts[1])  std::swap (rts[0], rts[1]);
+            if (rts[0] > rts[1])  swap (rts[0], rts[1]);
             paired_points[0] = axis1.pointAt (rts[0]);
             paired_points[1] = axis1.pointAt (rts[1]);
             paired_points[2] = paired_points[1];
             paired_points[3] = paired_points[0];
             Line axis2 (*c, angle + M_PI/2);
             rts = cs.roots (axis2);
-            if (rts[0] > rts[1])  std::swap (rts[0], rts[1]);
+            if (rts[0] > rts[1])  swap (rts[0], rts[1]);
             inner_points.push_back (axis2.pointAt (rts[0]));
             inner_points.push_back (axis2.pointAt (rts[1]));
         }

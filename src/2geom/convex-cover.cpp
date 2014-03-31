@@ -50,6 +50,7 @@ using std::vector;
 using std::map;
 using std::pair;
 using std::make_pair;
+using std::swap;
 
 namespace Geom{
 
@@ -126,7 +127,7 @@ ConvexHull::find_pivot() {
         if(boundary[i] <= boundary[pivot])
             pivot = i;
 
-    std::swap(boundary[0], boundary[pivot]);
+    swap(boundary[0], boundary[pivot]);
 }
 
 void
@@ -229,7 +230,7 @@ void ConvexHull::andrew_scan ()
         {
             --u;
         }
-        std::swap(P[u], P[i]);
+        swap(P[u], P[i]);
         ++u;
     }
     std::sort(P.begin() + u, P.end(), lex_greater());
@@ -243,7 +244,7 @@ void ConvexHull::andrew_scan ()
         {
             --l;
         }
-        std::swap(P[l], P[i]);
+        swap(P[l], P[i]);
         ++l;
     }
     P.resize(l);
@@ -595,7 +596,7 @@ ConvexHull graham_merge(ConvexHull a, ConvexHull b) {
 
     // we can avoid the find pivot step because of top_point_first
     if(b.boundary[0] <= a.boundary[0])
-        std::swap(a, b);
+        swap(a, b);
 
     result.boundary = a.boundary;
     result.boundary.insert(result.boundary.end(),
@@ -615,7 +616,7 @@ ConvexHull andrew_merge(ConvexHull a, ConvexHull b) {
 
     // we can avoid the find pivot step because of top_point_first
     if(b.boundary[0] <= a.boundary[0])
-        std::swap(a, b);
+        swap(a, b);
 
     result.boundary = a.boundary;
     result.boundary.insert(result.boundary.end(),

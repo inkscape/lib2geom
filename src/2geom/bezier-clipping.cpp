@@ -48,7 +48,7 @@
 #include <utility>
 //#include <iomanip>
 
-
+using std::swap;
 
 
 #define VERBOSE 0
@@ -176,7 +176,7 @@ void convex_hull (std::vector<Point> & P)
         {
             --u;
         }
-        std::swap(P[u], P[i]);
+        swap(P[u], P[i]);
         ++u;
     }
     std::sort(P.begin() + u, P.end(), lex_greater());
@@ -190,7 +190,7 @@ void convex_hull (std::vector<Point> & P)
         {
             --l;
         }
-        std::swap(P[l], P[i]);
+        swap(P[l], P[i]);
         ++l;
     }
     P.resize(l);
@@ -983,8 +983,8 @@ void iterate<intersection_point_tag> (std::vector<Interval>& domsA,
             return;
         }
 
-        std::swap(C1, C2);
-        std::swap(dom1, dom2);
+        swap(C1, C2);
+        swap(dom1, dom2);
 #if VERBOSE
         std::cerr << "dom(pA) : " << dompA << std::endl;
         std::cerr << "dom(pB) : " << dompB << std::endl;
@@ -1172,8 +1172,8 @@ void iterate<collinear_normal_tag> (std::vector<Interval>& domsA,
             return;
         }
 
-        std::swap(C1, C2);
-        std::swap(dom1, dom2);
+        swap(C1, C2);
+        swap(dom1, dom2);
 #if VERBOSE
         std::cerr << "dom(pA) : " << dompA << std::endl;
         std::cerr << "dom(pB) : " << dompB << std::endl;
