@@ -395,7 +395,7 @@ public:
     return Time(start_time, ns - start_time);
   }
   void nsec(long long &ns) {
-#ifndef WIN32
+#if ! (defined(WIN32) || defined(__APPLE__))
     clock_gettime(clock, &ts);
     ns = ts.tv_sec * NS_PER_SECOND + ts.tv_nsec / NS_PER_NS;
 #else
@@ -410,7 +410,7 @@ public:
   }
 private:
   long long start_time;
-#ifndef WIN32
+#if ! (defined(WIN32) || defined(__APPLE__))
   struct timespec ts;
 #  ifdef _POSIX_THREAD_CPUTIME
   static const clockid_t clock = CLOCK_THREAD_CPUTIME_ID;
