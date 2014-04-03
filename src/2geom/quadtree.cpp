@@ -211,10 +211,6 @@ void QuadTree::insert(double x0, double y0, double x1, double y1, int shape) {
         // check if rect's bounding box has size 1x1. This means that rect is defined by 2 points
         // that are in the same place.
         if( ( fabs(bxx0 - bxx1) < 1.0 ) && ( fabs(byy0 - byy1) < 1.0 )){
-            bxx0 = floor(bxx0);
-            bxx1 = floor(bxx1);
-            byy0 = floor(byy0);
-            byy1 = floor(byy1);
             break;
         }
 

@@ -632,7 +632,6 @@ SBasis compose_inverse(SBasis const &f, SBasis const &g, unsigned order, double 
 
         //TODO: handle det~0!!
         if (fabs(det)<zero){
-            det = zero;
             a=b=0;
         }else{
             a=( q01*r10-q10*r01)/det;
