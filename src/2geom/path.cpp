@@ -104,6 +104,7 @@ Path &Path::operator*=(Affine const &m) {
 }
 
 Path &Path::operator*=(Translate const &m) {
+  /* Somehow there is something wrong here, Inkscape's LPE Construct grid fails with this code, perhaps something with desharing of curves...
   unshare();
   Sequence::iterator last = get_curves().end() - 1;
   Sequence::iterator it;
@@ -124,6 +125,8 @@ Path &Path::operator*=(Translate const &m) {
     }
   }
   return *this;
+  */
+  return this->operator*=(static_cast<Affine>(m));
 }
 
 std::vector<double>
