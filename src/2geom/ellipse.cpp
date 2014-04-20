@@ -234,7 +234,7 @@ Ellipse Ellipse::transformed(Affine const& m) const
     Point new_center = center() * m;
     Affine M = m.withoutTranslation();
     Affine AM = A * M;
-    if ( are_near(AM.det(), 0) )
+    if ( are_near(std::sqrt(fabs(AM.det())), 0) )
     {
         double angle;
         if (AM[0] != 0)
