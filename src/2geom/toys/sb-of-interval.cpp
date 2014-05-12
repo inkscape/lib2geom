@@ -120,17 +120,17 @@ class SbOfInterval: public Toy {
         for (unsigned i=0; i < size; i++){
             double amin = (max+min)/2 - adjuster_a[3*i+1].pos[Y];
             double amax = (max+min)/2 - adjuster_a[3*i+2].pos[Y];
-            Interval ai(amin*pow(4.,(int)i), amax*pow(4.,(int)i));
+            Interval ai(amin*std::pow(4.,(int)i), amax*std::pow(4.,(int)i));
             double bmin = (max+min)/2 - adjuster_b[3*i+1].pos[Y];
             double bmax = (max+min)/2 - adjuster_b[3*i+2].pos[Y];
-            Interval bi(bmin*pow(4.,(int)i), bmax*pow(4.,(int)i));
+            Interval bi(bmin*std::pow(4.,(int)i), bmax*std::pow(4.,(int)i));
             f.push_back(LinearOf<Interval>(ai,bi));
         }
         SBasis f_dble(size, Linear());
         for (unsigned i=0; i < size; i++){
             double ai = (max+min)/2 - adjuster_a[3*i].pos[Y];
             double bi = (max+min)/2 - adjuster_b[3*i].pos[Y];
-            f_dble[i] = Linear(ai*pow(4.,(int)i),bi*pow(4.,(int)i));
+            f_dble[i] = Linear(ai*std::pow(4.,(int)i),bi*std::pow(4.,(int)i));
         }
 
         plot(cr,f_dble);   
