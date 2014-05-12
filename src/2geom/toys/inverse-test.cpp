@@ -50,8 +50,8 @@ static SBasis my_inverse(SBasis f, int order){
         //std::cout<<"t-gof="<<r<<std::endl;
         r.normalize();
         if (r.size()==0) return(g);
-        double a=r[i][0]/pow(df0,i);
-        double b=r[i][1]/pow(df1,i);
+        double a=r[i][0]/std::pow(df0,i);
+        double b=r[i][1]/std::pow(df1,i);
         g[i] = Linear(a,b);
     }
     
@@ -113,8 +113,8 @@ class InverseTester: public Toy {
     
       SBasis f(size, Linear());//=SBasis(Linear(0,.5));
       for (int i=0;i<size;i++){
-          f[i] = Linear(-(hand.pts[i     ][1]-300)*pow(4.,i)/150,
-                        -(hand.pts[i+size][1]-300)*pow(4.,i)/150 );
+          f[i] = Linear(-(hand.pts[i     ][1]-300)*std::pow(4.,i)/150,
+                        -(hand.pts[i+size][1]-300)*std::pow(4.,i)/150 );
       }
       plot(cr,Linear(0,1),300);	
       

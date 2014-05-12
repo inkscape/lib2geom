@@ -6,10 +6,10 @@
 #include <2geom/toys/toy-framework-2.h>
 
 using std::vector;
-using namespace Geom;
 using namespace std;
+using namespace Geom;
 
-static double exp_rescale(double x){ return pow(10, x);}
+static double exp_rescale(double x){ return std::pow(10, x);}
 std::string exp_formatter(double x){ return default_formatter(exp_rescale(x));}
 
 
@@ -52,8 +52,8 @@ class BoundsTester: public Toy {
         
         SBasis B(size, Linear());
         for (unsigned i=0;i<size;i++){
-            B[i] = Linear(-(hand.pts[i     ][1]-300)*pow(4.,(int)i),
-                          -(hand.pts[i+size][1]-300)*pow(4.,(int)i) );
+            B[i] = Linear(-(hand.pts[i     ][1]-300)*std::pow(4.,(int)i),
+                          -(hand.pts[i+size][1]-300)*std::pow(4.,(int)i) );
         }
         B.normalize();
         plot(cr,B,1);   
