@@ -64,6 +64,8 @@ public:
                  * this case should be never reached */
                 assert(false);
         }        
+        assert(false);
+        return Rect();
     }
 };
 
