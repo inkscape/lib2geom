@@ -426,13 +426,23 @@ inline Bezier reverse(const Bezier & a) {
 
 inline Bezier portion(const Bezier & a, double from, double to) {
     //TODO: implement better?
+    std::vector<Coord> input(a.order()+1);
+    for (unsigned i = 0; i < a.order() + 1; ++i) {
+        input[i] = a.c_[i];
+    }
+    if (from > to) {
+        from = 1 - from;
+        to = 1 - to;
+        std::reverse(input.begin(), input.end());
+    }
+
     std::valarray<Coord> res(a.order() + 1);
     if(from == 0) {
-        if(to == 1) { return Bezier(a); }
-        subdivideArr(to, &const_cast<Bezier&>(a).c_[0], &res[0], NULL, a.order());
+        if(to == 1) { return Bezier(&input[0], a.order()); }
+        subdivideArr(to, &input[0], &res[0], NULL, a.order());
         return Bezier(&res[0], a.order());
     }
-    subdivideArr(from, &const_cast<Bezier&>(a).c_[0], NULL, &res[0], a.order());
+    subdivideArr(from, &input[0], NULL, &res[0], a.order());
     if(to == 1) return Bezier(&res[0], a.order());
     std::valarray<Coord> res2(a.order()+1);
     subdivideArr((to - from)/(1 - from), &res[0], &res2[0], NULL, a.order());

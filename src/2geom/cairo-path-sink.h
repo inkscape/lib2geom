@@ -38,7 +38,20 @@
 namespace Geom {
 
 
-/** @brief 
+/** @brief Path sink that outputs paths to a Cairo drawing context
+ *
+ * This class converts from 2Geom path representation to the Cairo representation.
+ * Use it to simplify visualizing the results of 2Geom operations with the Cairo library,
+ * for example:
+ * <code>
+ *   CairoPathSink sink(cr);
+ *   sink.pathvector(pv);
+ *   sink.flush();
+ *   cairo_stroke(cr);
+ * </code>
+ *
+ * Currently the flush method is a no-op, but this is not strictly guaranteed
+ * to hold forever.
  */
 class CairoPathSink
     : public PathSink
