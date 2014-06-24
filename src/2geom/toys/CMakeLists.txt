@@ -24,7 +24,6 @@ ineaa
 arc-bez
 arc-length-param
 boolops
-boolops-cgal
 bound-path
 box3d
 center-warp
@@ -168,10 +167,6 @@ IF(2GEOM_TOYS)
         ELSEIF(${source} STREQUAL implicit-toy)
             ADD_EXECUTABLE(${source} EXCLUDE_FROM_ALL ${source}.cpp)
             TARGET_LINK_LIBRARIES(${source} affa)
-        ELSEIF(${source} STREQUAL boolops-cgal)
-        	ADD_EXECUTABLE(${source} EXCLUDE_FROM_ALL ${source}.cpp)
-        	TARGET_LINK_LIBRARIES(${source} CGAL)
-        	TARGET_LINK_LIBRARIES(${source} CGAL_Core)
         ELSE(${source} STREQUAL aa)
             ADD_EXECUTABLE(${source} ${source}.cpp)
         ENDIF(${source} STREQUAL aa)
