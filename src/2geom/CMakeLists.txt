@@ -30,6 +30,8 @@ bezier-to-sbasis.h
 bezier-utils.cpp
 bezier-utils.h
 
+cairo-path-sink.h
+cairo-path-sink.cpp
 choose.h
 circle.cpp
 circle.h
