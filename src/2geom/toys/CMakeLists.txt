@@ -24,6 +24,7 @@ ineaa
 arc-bez
 arc-length-param
 boolops
+boolops-cgal
 bound-path
 box3d
 center-warp
@@ -152,6 +153,9 @@ ENDIF(2GEOM_LPE_TOYS)
 OPTION(2GEOM_TOYS
   "Build the projects Toy files"
   ON)
+OPTION(CGAL_TOYS
+  "Build toys that require CGAL"
+  OFF)
 IF(2GEOM_TOYS)
     # make lib for toy
     ADD_LIBRARY(toy-2 ${LIB_TYPE} ${2GEOM_TOY-FRAMEWORK-2_SRC})
@@ -167,6 +171,12 @@ IF(2GEOM_TOYS)
         ELSEIF(${source} STREQUAL implicit-toy)
             ADD_EXECUTABLE(${source} EXCLUDE_FROM_ALL ${source}.cpp)
             TARGET_LINK_LIBRARIES(${source} affa)
+		ELSEIF(${source} STREQUAL boolops-cgal)
+			IF(CGAL_TOYS)
+				set_source_files_properties(${source}.cpp PROPERTIES COMPILE_FLAGS "-frounding-math")
+				ADD_EXECUTABLE(${source} ${source}.cpp)
+				TARGET_LINK_LIBRARIES(${source} CGAL CGAL_Core gmp)
+			ENDIF(CGAL_TOYS)
         ELSE(${source} STREQUAL aa)
             ADD_EXECUTABLE(${source} ${source}.cpp)
         ENDIF(${source} STREQUAL aa)
