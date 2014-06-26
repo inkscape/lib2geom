@@ -67,7 +67,7 @@ class Ellipse
         set(A, B, C, D, E, F);
     }
 
-    Ellipse(std::vector<Point> const& points)
+    explicit Ellipse(std::vector<Point> const& points)
     {
         set(points);
     }

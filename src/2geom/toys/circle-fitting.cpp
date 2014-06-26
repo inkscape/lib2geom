@@ -70,7 +70,7 @@ class CircleFitting : public Toy
 
         try
         {
-            c.set(psh.pts);
+            c.fit(psh.pts);
         }
         catch(RangeError exc)
         {
@@ -94,13 +94,13 @@ class CircleFitting : public Toy
             }
         }
 
-        std::cerr << "center = " << c.center() << "  ray = " << c.ray() << std::endl;
+        std::cerr << "center = " << c.center() << "  ray = " << c.radius() << std::endl;
 
         cairo_set_source_rgba(cr, 0.3, 0.3, 0.3, 1.0);
         cairo_set_line_width (cr, 0.3);
         if (!toggles[0].on)
         {
-            cairo_arc(cr, c.center(X), c.center(Y), c.ray(), 0, 2*M_PI);
+            cairo_arc(cr, c.center(X), c.center(Y), c.radius(), 0, 2*M_PI);
         }
         else
         {

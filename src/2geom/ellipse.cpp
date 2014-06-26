@@ -274,7 +274,7 @@ Ellipse Ellipse::transformed(Affine const& m) const
 Ellipse::Ellipse(Geom::Circle const &c)
 {
     m_centre = c.center();
-    m_ray[X] = m_ray[Y] = c.ray();
+    m_ray[X] = m_ray[Y] = c.radius();
 }
 
 }  // end namespace Geom

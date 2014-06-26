@@ -34,83 +34,83 @@
 #ifndef LIB2GEOM_SEEN_CIRCLE_H
 #define LIB2GEOM_SEEN_CIRCLE_H
 
-#include <vector>
 #include <2geom/point.h>
-#include <2geom/exception.h>
-#include <2geom/path.h>
+#include <2geom/forward.h>
+#include <2geom/transforms.h>
 
 namespace Geom {
 
 class EllipticalArc;
 
 class Circle
+    : MultipliableNoncommutative< Circle, Translate
+    , MultipliableNoncommutative< Circle, Rotate
+    , MultipliableNoncommutative< Circle, Zoom
+      > > >
 {
-  public:
-    Circle()
+    Point _center;
+    Coord _radius;
+
+public:
+    Circle() {}
+    Circle(Coord cx, Coord cy, Coord r)
+        : _center(cx, cy), _radius(r)
+    {}
+    Circle(Point const &center, Coord r)
+        : _center(center), _radius(r)
     {}
 
-    Circle(double cx, double cy, double r)
-        : m_centre(cx, cy), m_ray(r)
-    {
-    }
-
-    Circle(Point center, double r)
-        : m_centre(center), m_ray(r)
-    {
-    }
-
-    Circle(double A, double B, double C, double D)
-    {
+    Circle(Coord A, Coord B, Coord C, Coord D) {
         set(A, B, C, D);
     }
 
-    Circle(std::vector<Point> const& points)
-    {
-        set(points);
+    explicit Circle(std::vector<Point> const& points) {
+        fit(points);
     }
-
-    void set(double cx, double cy, double r)
-    {
-        m_centre[X] = cx;
-        m_centre[Y] = cy;
-        m_ray = r;
-    }
-
 
     // build a circle by its implicit equation:
     // Ax^2 + Ay^2 + Bx + Cy + D = 0
-    void set(double A, double B, double C, double D);
+    void set(Coord A, Coord B, Coord C, Coord D);
 
     // build up the best fitting circle wrt the passed points
     // prerequisite: at least 3 points must be passed
-    void set(std::vector<Point> const& points);
+    void fit(std::vector<Point> const& points);
 
     EllipticalArc *
     arc(Point const& initial, Point const& inner, Point const& final,
-        bool _svg_compliant = true);
+        bool svg_compliant = true);
 
     D2<SBasis> toSBasis();
     void getPath(std::vector<Path> &path_out);
 
-    Point center() const
-    {
-        return m_centre;
+    Point center() const {
+        return _center;
+    }
+    Coord center(Dim2 d) const {
+        return _center[d];
+    }
+    Coord radius() const {
+        return _radius;
+    }
+    void setCenter(Point const &p) {
+        _center = p;
+    }
+    void setRadius(Coord c) {
+        _radius = c;
     }
 
-    Coord center(Dim2 d) const
-    {
-        return m_centre[d];
+    Circle &operator*=(Translate const &t) {
+        _center *= t;
+        return *this;
     }
-
-    Coord ray() const
-    {
-        return m_ray;
+    Circle &operator*=(Rotate const &) {
+        return *this;
     }
-
-
-  private:
-    Point m_centre;
-    Coord m_ray;
+    Circle &operator*=(Zoom const &z) {
+        _center *= z;
+        _radius *= z.scale();
+        return *this;
+    }
 };
 
 } // end namespace Geom

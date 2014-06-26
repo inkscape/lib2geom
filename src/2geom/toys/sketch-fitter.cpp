@@ -126,7 +126,7 @@ void tighten(std::vector<Point> &pts, double radius, bool linear){
         }else if (ngbrs.size()>=3) {
             Circle c(ngbrs);
             Point o = c.center();
-            double r = c.ray();
+            double r = c.radius();
             pts[i] = o + unit_vector(pts[i]-o)*r;
         }
     }
@@ -604,7 +604,7 @@ class SketchFitterToy: public Toy {
             std::vector<Point> ngbrs = neighbors(mouses,i,radius);
             if ( ngbrs.size()>2 ){
                 Circle c(ngbrs);
-                curvatures[i] = 1./c.ray();
+                curvatures[i] = 1./c.radius();
                 Point v = (i<mouses.size()-1) ? mouses[i+1]-mouses[i] : mouses[i]-mouses[i-1];
                 if (cross(v, c.center()-mouses[i]) > 0 )
                     curvatures[i] *= -1;
@@ -638,7 +638,7 @@ class SketchFitterToy: public Toy {
             if ( ngbrs.size()>2 ){
                 draw_cross(cr, mouses[i]);
                 Circle c(ngbrs);
-                cairo_arc(cr, c.center(X), c.center(Y), c.ray(), 0, 2*M_PI);
+                cairo_arc(cr, c.center(X), c.center(Y), c.radius(), 0, 2*M_PI);
                 cairo_set_source_rgba (cr, 1., 0., 0., 1);
                 cairo_set_line_width (cr, .75);
                 cairo_stroke(cr);

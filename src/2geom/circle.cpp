@@ -42,7 +42,7 @@
 namespace Geom
 {
 
-void Circle::set(double A, double B, double C, double D)
+void Circle::set(Coord A, Coord B, Coord C, Coord D)
 {
     if (A == 0)
     {
@@ -51,24 +51,24 @@ void Circle::set(double A, double B, double C, double D)
 
     //std::cerr << "B = " << B << "  C = " << C << "  D = " << D << std::endl;
 
-    double b = B / A;
-    double c = C / A;
-    double d = D / A;
+    Coord b = B / A;
+    Coord c = C / A;
+    Coord d = D / A;
 
-    m_centre[X] = -b/2;
-    m_centre[Y] = -c/2;
-    double r2 = m_centre[X] * m_centre[X] + m_centre[Y] * m_centre[Y] - d;
+    _center[X] = -b/2;
+    _center[Y] = -c/2;
+    Coord r2 = _center[X] * _center[X] + _center[Y] * _center[Y] - d;
 
     if (r2 < 0)
     {
         THROW_RANGEERROR("ray^2 < 0");
     }
 
-    m_ray = std::sqrt(r2);
+    _radius = std::sqrt(r2);
 }
 
 
-void Circle::set(std::vector<Point> const& points)
+void Circle::fit(std::vector<Point> const& points)
 {
     size_t sz = points.size();
     if (sz < 3)
@@ -93,11 +93,11 @@ void Circle::set(std::vector<Point> const& points)
  */
 EllipticalArc *
 Circle::arc(Point const& initial, Point const& inner, Point const& final,
-             bool _svg_compliant)
+             bool svg_compliant)
 {
     // TODO native implementation!
-    Ellipse e(center(X), center(Y), ray(), ray(), 0);
-    return e.arc(initial, inner, final, _svg_compliant);
+    Ellipse e(_center[X], _center[Y], _radius, _radius, 0);
+    return e.arc(initial, inner, final, svg_compliant);
 }
 
 D2<SBasis> Circle::toSBasis()
@@ -108,7 +108,7 @@ D2<SBasis> Circle::toSBasis()
     B[0] = cos(bo,4);
     B[1] = sin(bo,4);
 
-    B = B * m_ray + m_centre;
+    B = B * _radius + _center;
 
     return B;
 }

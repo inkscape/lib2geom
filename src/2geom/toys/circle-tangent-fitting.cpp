@@ -156,7 +156,7 @@ class CircleFitting : public Toy
         cairo_set_line_width (cr, 0.3);
         if (!toggles[0].on)
         {
-            cairo_arc(cr, c.center(X), c.center(Y), c.ray(), 0, 2*M_PI);
+            cairo_arc(cr, c.center(X), c.center(Y), c.radius(), 0, 2*M_PI);
         }
         else
         {
