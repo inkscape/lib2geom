@@ -176,14 +176,14 @@ class Parametrics: public Toy {
   public:
     Parametrics(){
       mode = 2;
-      vector<Path> cp = read_svgd("parametrics.svgd");
+      vector<Path> cp = read_svgd("cat.svgd");
       //dump_latex(cp);
       cat = paths_to_pw(cp);
       cat *= .3;
       cat += Point(50, 50);
       alcat = arc_length_parametrization(cat);
 
-      monk = paths_to_pw(read_svgd("monk.svgd"));
+      monk = paths_to_pw(read_svgd("monkey.svgd"));
       //monk *= .3;
       monk += Point(50,50);
       
