@@ -24,7 +24,6 @@ ineaa
 arc-bez
 arc-length-param
 boolops
-boolops-cgal
 bound-path
 box3d
 center-warp
@@ -129,6 +128,10 @@ SET(2GEOM_LPE_TOYS_SRC
 lpe-test
 )
 
+SET(2GEOM_CGAL_TOYS
+boolops-cgal
+)
+
 OPTION(2GEOM_LPE_TOYS
   "Build the project's Inkscape Live Path Effect (LPE) Toy files"
   ON)
@@ -172,11 +175,7 @@ IF(2GEOM_TOYS)
             ADD_EXECUTABLE(${source} EXCLUDE_FROM_ALL ${source}.cpp)
             TARGET_LINK_LIBRARIES(${source} affa)
 		ELSEIF(${source} STREQUAL boolops-cgal)
-			IF(CGAL_TOYS)
-				set_source_files_properties(${source}.cpp PROPERTIES COMPILE_FLAGS "-frounding-math")
-				ADD_EXECUTABLE(${source} ${source}.cpp)
-				TARGET_LINK_LIBRARIES(${source} CGAL CGAL_Core gmp)
-			ENDIF(CGAL_TOYS)
+			
         ELSE(${source} STREQUAL aa)
             ADD_EXECUTABLE(${source} ${source}.cpp)
         ENDIF(${source} STREQUAL aa)
@@ -188,5 +187,12 @@ IF(2GEOM_TOYS)
         TARGET_LINK_LIBRARIES(${source} toy-2 ${LINK_GSL} 2geom "${GTK2_LINK_FLAGS} ${cairo_LINK_FLAGS}")
     ENDFOREACH(source)
 
+	IF(CGAL_TOYS)
+		FOREACH(source ${2GEOM_CGAL_TOYS})
+			set_source_files_properties(${source}.cpp PROPERTIES COMPILE_FLAGS "-frounding-math")
+			ADD_EXECUTABLE(${source} ${source}.cpp)
+			TARGET_LINK_LIBRARIES(${source} CGAL CGAL_Core gmp)
+		ENDFOREACH(source)
+	ENDIF(CGAL_TOYS)
 ENDIF(2GEOM_TOYS)
 
