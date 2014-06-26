@@ -45,12 +45,11 @@ namespace Geom {
  * for example:
  * <code>
  *   CairoPathSink sink(cr);
- *   sink.pathvector(pv);
- *   sink.flush();
+ *   sink.feed(pv);
  *   cairo_stroke(cr);
  * </code>
  *
- * Currently the flush method is a no-op, but this is not strictly guaranteed
+ * Currently the flush method is a no-op, but this is not guaranteed
  * to hold forever.
  */
 class CairoPathSink

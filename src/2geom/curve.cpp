@@ -34,7 +34,9 @@
 #include <2geom/curve.h>
 #include <2geom/nearest-point.h>
 #include <2geom/sbasis-geometric.h>
+#include <2geom/sbasis-to-bezier.h>
 #include <2geom/ord.h>
+#include <2geom/path-sink.h>
 
 namespace Geom 
 {
@@ -107,6 +109,16 @@ Point Curve::unitTangentAt(Coord t, unsigned n) const
     }
     return Point (0,0);
 };
+
+void Curve::feed(PathSink &sink, bool moveto_initial) const
+{
+    std::vector<Point> pts;
+    sbasis_to_bezier(pts, toSBasis(), 2); //TODO: use something better!
+    if (moveto_initial) {
+        sink.moveTo(initialPoint());
+    }
+    sink.curveTo(pts[0], pts[1], pts[2]);
+}
 
 } // namespace Geom
 

@@ -34,11 +34,12 @@
 #include <limits>
 #include <memory>
 
-#include <2geom/elliptical-arc.h>
-#include <2geom/ellipse.h>
-#include <2geom/sbasis-geometric.h>
 #include <2geom/bezier-curve.h>
+#include <2geom/ellipse.h>
+#include <2geom/elliptical-arc.h>
+#include <2geom/path-sink.h>
 #include <2geom/poly.h>
+#include <2geom/sbasis-geometric.h>
 #include <2geom/transforms.h>
 #include <2geom/utils.h>
 
@@ -571,7 +572,7 @@ std::vector<double> EllipticalArc::allNearestPoints( Point const& p, double from
 
     double mindistsq1 = std::numeric_limits<double>::max();
     double mindistsq2 = std::numeric_limits<double>::max();
-    double dsq;
+    double dsq = 0;
     unsigned int mi1 = 0, mi2 = 0;
     for ( unsigned int i = 0; i < real_sol.size(); ++i )
     {
@@ -898,6 +899,14 @@ Curve *EllipticalArc::transformed(Affine const& m) const
                                   inner_point * m,
                                   finalPoint() * m,
                                   isSVGCompliant() );
+}
+
+void EllipticalArc::feed(PathSink &sink, bool moveto_initial) const
+{
+    if (moveto_initial) {
+        sink.moveTo(_initial_point);
+    }
+    sink.arcTo(_rays[X], _rays[Y], _rot_angle, _large_arc, _sweep, _final_point);
 }
 
 Coord EllipticalArc::map_to_01(Coord angle) const

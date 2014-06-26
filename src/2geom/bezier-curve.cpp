@@ -32,6 +32,7 @@
  */
 
 #include <2geom/bezier-curve.h>
+#include <2geom/path-sink.h>
 
 namespace Geom 
 {
@@ -97,7 +98,7 @@ namespace Geom
  * @class BezierCurveN
  * @brief Bezier curve with compile-time specified order.
  *
- * @tparam degree unsigned value indicating the order of the bezier curve
+ * @tparam degree unsigned value indicating the order of the Bezier curve
  * 
  * @relates BezierCurve 
  * @ingroup Curves
@@ -106,6 +107,9 @@ namespace Geom
 
 BezierCurve::BezierCurve(std::vector<Point> const &pts)
 {
+    if (pts.size() < 2) {
+        THROW_RANGEERROR("Bezier curve must have at least 2 control points");
+    }
     inner = D2<Bezier>(Bezier::Order(pts.size() - 1), Bezier::Order(pts.size() - 1));
     for (unsigned d = 0; d < 2; ++d) {
         for (unsigned i = 0; i < pts.size(); i++) {
@@ -124,16 +128,50 @@ Coord BezierCurve::length(Coord tolerance) const
         return distance(initialPoint(), finalPoint());
     case 2:
         {
-            std::vector<Point> pts = points();
+            std::vector<Point> pts = controlPoints();
             return bezier_length(pts[0], pts[1], pts[2], tolerance);
         }
     case 3:
         {
-            std::vector<Point> pts = points();
+            std::vector<Point> pts = controlPoints();
             return bezier_length(pts[0], pts[1], pts[2], pts[3], tolerance);
         }
     default:
-        return bezier_length(points(), tolerance);
+        return bezier_length(controlPoints(), tolerance);
+    }
+}
+
+void BezierCurve::feed(PathSink &sink, bool moveto_initial) const
+{
+    if (size() > 4) {
+        Curve::feed(sink, moveto_initial);
+        return;
+    }
+
+    Point ip = controlPoint(0);
+    if (moveto_initial) {
+        sink.moveTo(ip);
+    }
+    switch (size()) {
+    case 2: {
+        Point fp = controlPoint(1);
+        if (ip[X] == fp[X]) {
+            sink.vlineTo(fp[Y]);
+        } else if (ip[Y] == fp[Y]) {
+            sink.hlineTo(fp[X]);
+        } else {
+            sink.lineTo(controlPoint(1));
+        }
+        break; }
+    case 3:
+        sink.quadTo(controlPoint(1), controlPoint(2));
+        break;
+    case 4:
+        sink.curveTo(controlPoint(1), controlPoint(2), controlPoint(3));
+        break;
+    default:
+        assert(false);
+        break;
     }
 }
 
@@ -178,6 +216,33 @@ Coord BezierCurveN<1>::nearestPoint(Point const& p, Coord from, Coord to) const
     if ( t <= 0 )  		return from;
     else if ( t >= 1 )  return to;
     else return from + t*(to-from);
+}
+
+template <>
+void BezierCurveN<1>::feed(PathSink &sink, bool moveto_initial) const
+{
+    if (moveto_initial) {
+        sink.moveTo(controlPoint(0));
+    }
+    sink.lineTo(controlPoint(1));
+}
+
+template <>
+void BezierCurveN<2>::feed(PathSink &sink, bool moveto_initial) const
+{
+    if (moveto_initial) {
+        sink.moveTo(controlPoint(0));
+    }
+    sink.quadTo(controlPoint(1), controlPoint(2));
+}
+
+template <>
+void BezierCurveN<3>::feed(PathSink &sink, bool moveto_initial) const
+{
+    if (moveto_initial) {
+        sink.moveTo(controlPoint(0));
+    }
+    sink.curveTo(controlPoint(1), controlPoint(2), controlPoint(3));
 }
 
 

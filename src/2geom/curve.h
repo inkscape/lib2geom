@@ -50,6 +50,7 @@ namespace Geom
 {
 
 class Curve;
+class PathSink;
 
 struct CurveHelpers {
 protected:
@@ -284,6 +285,8 @@ public:
     /** @brief Test equality of two curves.
      * @return True if the curves are identical, false otherwise */
     virtual bool operator==(Curve const &c) const { return this == &c;}
+    /** @brief Feed the curve to a PathSink */
+    virtual void feed(PathSink &sink, bool moveto_initial) const;
     /// @}
 };
 

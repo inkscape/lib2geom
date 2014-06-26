@@ -27,7 +27,7 @@ void cairo_curve(cairo_t *cr, Curve const& c) {
         cairo_line_to(cr, (*line_segment)[1][0], (*line_segment)[1][1]);
     }
     else if(QuadraticBezier const *quadratic_bezier = dynamic_cast<QuadraticBezier const*>(&c)) {
-        std::vector<Point> points = quadratic_bezier->points();
+        std::vector<Point> points = quadratic_bezier->controlPoints();
         Point b1 = points[0] + (2./3) * (points[1] - points[0]);
         Point b2 = b1 + (1./3) * (points[2] - points[0]);
         cairo_curve_to(cr, b1[0], b1[1],
@@ -35,7 +35,7 @@ void cairo_curve(cairo_t *cr, Curve const& c) {
                        points[2][0], points[2][1]);
     }
     else if(CubicBezier const *cubic_bezier = dynamic_cast<CubicBezier const*>(&c)) {
-        std::vector<Point> points = cubic_bezier->points();
+        std::vector<Point> points = cubic_bezier->controlPoints();
         cairo_curve_to(cr, points[1][0], points[1][1], points[2][0], points[2][1], points[3][0], points[3][1]);
     }
 //    else if(EllipticalArc const *svg_elliptical_arc = dynamic_cast<EllipticalArc *>(c)) {

@@ -58,9 +58,11 @@ public:
     /** @brief Get the order of the Bezier curve.
      * A Bezier curve has order() + 1 control points. */
     unsigned order() const { return inner[X].order(); }
+    /** @brief Get the number of control points. */
+    unsigned size() const { return inner[X].order() + 1; }
     /** @brief Get the control points.
      * @return Vector with order() + 1 control points. */
-    std::vector<Point> points() const { return bezier_points(inner); }
+    std::vector<Point> controlPoints() const { return bezier_points(inner); }
     /** @brief Modify a control point.
      * @param ix The zero-based index of the point to modify. Note that the caller is responsible for checking that this value is <= order().
      * @param v The new value of the point */
@@ -83,7 +85,8 @@ public:
     /** @brief Access control points of the curve.
      * @param ix The (zero-based) index of the control point. Note that the caller is responsible for checking that this value is <= order().
      * @return The control point. No-reference return, use setPoint() to modify control points. */
-    Point const operator[](unsigned ix) const { return Point(inner[X][ix], inner[Y][ix]); }
+    Point controlPoint(unsigned ix) const { return Point(inner[X][ix], inner[Y][ix]); }
+    Point operator[](unsigned ix) const { return Point(inner[X][ix], inner[Y][ix]); }
     /// @}
 
     /// @name Construct a Bezier curve with runtime-determined order.
@@ -122,7 +125,7 @@ public:
 
     virtual Curve *transformed(Affine const &m) const {
         BezierCurve *ret = new BezierCurve();
-        std::vector<Point> ps = points();
+        std::vector<Point> ps = controlPoints();
         for (unsigned i = 0;  i <= order(); i++) {
             ps[i] = ps[i] * m;
         }
@@ -148,6 +151,7 @@ public:
     virtual std::vector<Point> pointAndDerivatives(Coord t, unsigned n) const { return inner.valueAndDerivatives(t, n); }
     virtual Coord valueAt(Coord t, Dim2 d) const { return inner[d].valueAt(t); }
     virtual D2<SBasis> toSBasis() const {return inner.toSBasis(); }
+    virtual void feed(PathSink &sink, bool) const;
 #endif
 };
 
@@ -247,7 +251,7 @@ public:
             return new BezierCurveN<1>(initialPoint() * m, finalPoint() * m);
         } else {
             BezierCurveN *ret = new BezierCurveN();
-            std::vector<Point> ps = points();
+            std::vector<Point> ps = controlPoints();
             for (unsigned i = 0;  i <= degree; i++) {
                 ps[i] = ps[i] * m;
             }
@@ -264,6 +268,10 @@ public:
     // the method below is defined so that LineSegment can specialize it
     virtual Coord nearestPoint(Point const& p, Coord from = 0, Coord to = 1) const {
         return Curve::nearestPoint(p, from, to);
+    }
+    virtual void feed(PathSink &sink, bool moveto_initial) const {
+        // call super. this is implemented only to allow specializations
+        BezierCurve::feed(sink, moveto_initial);
     }
 #endif
 };
@@ -294,6 +302,9 @@ Curve *BezierCurveN<degree>::derivative() const {
 // optimized specializations for LineSegment
 template <> Curve *BezierCurveN<1>::derivative() const;
 template <> Coord BezierCurveN<1>::nearestPoint(Point const &, Coord, Coord) const;
+template <> void BezierCurveN<1>::feed(PathSink &sink, bool moveto_initial) const;
+template <> void BezierCurveN<2>::feed(PathSink &sink, bool moveto_initial) const;
+template <> void BezierCurveN<3>::feed(PathSink &sink, bool moveto_initial) const;
 
 inline Point middle_point(LineSegment const& _segment) {
     return ( _segment.initialPoint() + _segment.finalPoint() ) / 2;

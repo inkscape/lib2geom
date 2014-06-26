@@ -77,6 +77,8 @@ public:
      * implementations of path() and pathvector() will call it
      * multiple times in a row. */
     virtual void flush() = 0;
+    // Get the current point, e.g. where the initial point of the next segment will be.
+    //virtual Point currentPoint() const = 0;
 
     /** Undo the last segment.
      * This method is optional.
@@ -84,14 +86,17 @@ public:
     virtual bool backspace() { return false; }
 
     // these have a default implementation
+    virtual void feed(Curve const &c, bool moveto_initial = true);
     /** Output a subpath.
      * Calls the appropriate segment methods according to the contents
      * of the passed subpath. You can override this function. */
-    virtual void path(Path const &p);
+    virtual void feed(Path const &p);
     /** Output a path.
      * Calls the appropriate segment methods according to the contents
      * of the passed path. You can override this function. */
-    virtual void pathvector(PathVector const &v);
+    virtual void feed(PathVector const &v);
+    /// Output an axis-aligned rectangle, using moveTo, hlineTo, vlineTo and closePath.
+    virtual void feed(Rect const &);
 
     virtual ~PathSink() {}
 };

@@ -251,6 +251,7 @@ public:
     }
     virtual Curve* portion(double f, double t) const;
     virtual Curve* reverse() const;
+    virtual void feed(PathSink &sink, bool moveto_initial) const;
 #endif
 
 protected:
