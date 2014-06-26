@@ -25,7 +25,7 @@ class LoadSVGD: public Toy {
         cairo_set_source_rgb(cr, 0,0,0);
 
         CairoPathSink sink(cr);
-        sink.pathvector(pv * Translate(offset_handle.pos));
+        sink.feed(pv * Translate(offset_handle.pos));
         cairo_stroke(cr);
 
         // spit out some diagnostic info about the path
