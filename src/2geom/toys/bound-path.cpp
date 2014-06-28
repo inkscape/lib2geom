@@ -140,7 +140,7 @@ class BoundsPath : public Toy
                         d = distanceSq(pos, bound);
                         if ( are_near(d, 0) )
                         {
-                            t = curve.nearestPoint(pos);
+                            t = curve.nearestTime(pos);
                             d = distanceSq(pos, curve.pointAt(t));
                             if (d < dist)
                             {
@@ -168,7 +168,7 @@ class BoundsPath : public Toy
                     d = distanceSq(pos, bound);
                     if ( are_near(d, 0) )
                     {
-                        t = path.nearestPoint(pos);
+                        t = path.nearestTime(pos);
                         d = distanceSq(pos, path.pointAt(t));
                         if (d < dist)
                         {
@@ -193,7 +193,7 @@ class BoundsPath : public Toy
                     for (unsigned int j = 0; j < m_pathvector_coll[i].size(); ++j)
                     {
                         const Path & path = m_pathvector_coll[i][j];
-                        t = path.nearestPoint(pos);
+                        t = path.nearestTime(pos);
                         d = distanceSq(pos, path.pointAt(t));
                         if (d < dist)
                         {

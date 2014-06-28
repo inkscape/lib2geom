@@ -130,7 +130,7 @@ Path &Path::operator*=(Translate const &m) {
 }
 
 std::vector<double>
-Path::allNearestPoints(Point const& _point, double from, double to) const
+Path::allNearestTimes(Point const& _point, double from, double to) const
 {
   using std::swap;
 
@@ -159,7 +159,7 @@ Path::allNearestPoints(Point const& _point, double from, double to) const
 	if ( si == ei )
 	{
 		std::vector<double>	all_nearest =
-			_path[si].allNearestPoints(_point, st, et);
+			_path[si].allNearestTimes(_point, st, et);
 		for ( unsigned int i = 0; i < all_nearest.size(); ++i )
 		{
 			all_nearest[i] = si + all_nearest[i];
@@ -168,7 +168,7 @@ Path::allNearestPoints(Point const& _point, double from, double to) const
 	}
 	std::vector<double> all_t;
 	std::vector< std::vector<double> > all_np;
-	all_np.push_back( _path[si].allNearestPoints(_point, st) );
+	all_np.push_back( _path[si].allNearestTimes(_point, st) );
 	std::vector<unsigned int> ni;
 	ni.push_back(si);
 	double dsq;
@@ -180,7 +180,7 @@ Path::allNearestPoints(Point const& _point, double from, double to) const
 		bb = (_path[i].boundsFast());
 		dsq = distanceSq(_point, bb);
 		if ( mindistsq < dsq ) continue;
-		all_t = _path[i].allNearestPoints(_point);
+		all_t = _path[i].allNearestTimes(_point);
 		dsq = distanceSq( _point, _path[i].pointAt( all_t.front() ) );
 		if ( mindistsq > dsq )
 		{
@@ -200,7 +200,7 @@ Path::allNearestPoints(Point const& _point, double from, double to) const
 	dsq = distanceSq(_point, bb);
 	if ( mindistsq >= dsq )
 	{
-		all_t = _path[ei].allNearestPoints(_point, 0, et);
+		all_t = _path[ei].allNearestTimes(_point, 0, et);
 		dsq = distanceSq( _point, _path[ei].pointAt( all_t.front() ) );
 		if ( mindistsq > dsq )
 		{
@@ -230,19 +230,19 @@ Path::allNearestPoints(Point const& _point, double from, double to) const
 }
 
 std::vector<double>
-Path::nearestPointPerCurve(Point const& _point) const
+Path::nearestTimePerCurve(Point const& _point) const
 {
 	//return a single nearest point for each curve in this path
 	std::vector<double> np;
 	for (const_iterator it = begin() ; it != end_default() ; ++it)
 	//for (std::vector<Path>::const_iterator it = _path.begin(); it != _path.end(), ++it){
 	{
-	    np.push_back(it->nearestPoint(_point));
+	    np.push_back(it->nearestTime(_point));
     }
 	return np;
 }  
 
-double Path::nearestPoint(Point const &_point, double from, double to, double *distance_squared) const
+double Path::nearestTime(Point const &_point, double from, double to, double *distance_squared) const
 {
   using std::swap;
 
@@ -275,14 +275,14 @@ double Path::nearestPoint(Point const &_point, double from, double to, double *d
 	}
 	if ( si == ei )
 	{
-		double nearest = _path[si].nearestPoint(_point, st, et);
+		double nearest = _path[si].nearestTime(_point, st, et);
 		if (distance_squared != NULL)
 		    *distance_squared = distanceSq(_point, _path[si].pointAt(nearest));
 		return si + nearest;
 	}
 
 	double t;
-	double nearest = _path[si].nearestPoint(_point, st);
+	double nearest = _path[si].nearestTime(_point, st);
 	unsigned int ni = si;
 	double dsq;
 	double mindistsq = distanceSq(_point, _path[si].pointAt(nearest));
@@ -291,7 +291,7 @@ double Path::nearestPoint(Point const &_point, double from, double to, double *d
             Rect bb = (_path[i].boundsFast());
 		dsq = distanceSq(_point, bb);
 		if ( mindistsq <= dsq ) continue;
-		t = _path[i].nearestPoint(_point);
+		t = _path[i].nearestTime(_point);
 		dsq = distanceSq(_point, _path[i].pointAt(t));
 		if ( mindistsq > dsq )
 		{
@@ -304,7 +304,7 @@ double Path::nearestPoint(Point const &_point, double from, double to, double *d
 	dsq = distanceSq(_point, bb);
 	if ( mindistsq > dsq )
 	{
-		t = _path[ei].nearestPoint(_point, 0, et);
+		t = _path[ei].nearestTime(_point, 0, et);
 		dsq = distanceSq(_point, _path[ei].pointAt(t));
 		if ( mindistsq > dsq )
 		{

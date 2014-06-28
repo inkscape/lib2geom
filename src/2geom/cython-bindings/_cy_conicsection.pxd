@@ -23,14 +23,15 @@ cdef extern from "2geom/circle.h" namespace "Geom":
         Circle(Point, double)
         Circle(double, double, double, double)
         Circle(vector[Point] &)
-        void set(double, double, double)
+        void setCenter(Point &)
+        void setRadius(double)
         void set(double, double, double, double)
-        void set(vector[Point] &)
+        void fit(vector[Point] &)
         EllipticalArc * arc(Point &, Point &, Point &, bint)
         void getPath(vector[Path] &)
         Point center()
         Coord center(Dim2)
-        Coord ray()
+        Coord radius()
 
 cdef extern from "2geom/ellipse.h" namespace "Geom":
     cdef cppclass Ellipse:

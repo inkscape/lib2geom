@@ -265,27 +265,27 @@ cdef class cy_Path:
     def all_nearest_points(self, cy_Point _point, double fr=-1, double to=1):
         """Return all values of t that |self(t) - point| is minimized."""
         if fr == -1:
-            return wrap_vector_double(self.thisptr.allNearestPoints(deref( _point.thisptr )))
-        return wrap_vector_double(self.thisptr.allNearestPoints(deref( _point.thisptr ), fr, to))
+            return wrap_vector_double(self.thisptr.allNearestTimes(deref( _point.thisptr )))
+        return wrap_vector_double(self.thisptr.allNearestTimes(deref( _point.thisptr ), fr, to))
 
 
     def nearest_point_per_curve(self, cy_Point _point):
         """Find nearest points, return one time value per each curve."""
-        return wrap_vector_double(self.thisptr.nearestPointPerCurve(deref( _point.thisptr )))
+        return wrap_vector_double(self.thisptr.nearestTimePerCurve(deref( _point.thisptr )))
 
     def nearest_point(self, cy_Point _point, double fr=-1, double to=1):#, cy_double * distance_squared):
         """Return such t that |self(t) - point| is minimized."""
         if fr == -1:
-            return self.thisptr.nearestPoint(deref( _point.thisptr ), NULL)
-        return self.thisptr.nearestPoint(deref( _point.thisptr ), fr, to, NULL)
+            return self.thisptr.nearestTime(deref( _point.thisptr ), NULL)
+        return self.thisptr.nearestTime(deref( _point.thisptr ), fr, to, NULL)
 
     def nearest_point_and_dist_sq(self, cy_Point _point, double fr=-1, double to=1):
         """Return such t that |self(t) - point| is minimized and square of that distance."""
         cdef double t, dist
         if fr == -1:
-            t = self.thisptr.nearestPoint(deref( _point.thisptr ), &dist )
+            t = self.thisptr.nearestTime(deref( _point.thisptr ), &dist )
         else:
-            t = self.thisptr.nearestPoint(deref( _point.thisptr ), fr, to, &dist)
+            t = self.thisptr.nearestTime(deref( _point.thisptr ), fr, to, &dist)
         return (t, dist)
 
     def append_portion_to(self, cy_Path p, double f, double t):

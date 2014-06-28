@@ -72,11 +72,11 @@ void wrap_ray() {
         // .add_property("angle", &Geom::Ray::angle, &Geom::Ray::angle)
 
         .def("isDegenerate", &Geom::Ray::isDegenerate)
-        .def("nearestPoint", &Geom::Ray::nearestPoint) 
+        .def("nearestTime", &Geom::Ray::nearestTime) 
         .def("setBy2Points", &Geom::Ray::setPoints)
         .def("valueAt", &Geom::Ray::valueAt)
         .def("pointAt", &Geom::Ray::pointAt)
-        .def("nearestPoint", &Geom::Ray::nearestPoint)
+        .def("nearestTime", &Geom::Ray::nearestTime)
         .def("reverse", &Geom::Ray::reverse) 
         .def("roots", &Geom::Ray::roots) 
         .def("transformed", &Geom::Ray::transformed) 

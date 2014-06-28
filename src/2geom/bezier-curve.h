@@ -266,8 +266,8 @@ public:
     virtual Curve *derivative() const;
     
     // the method below is defined so that LineSegment can specialize it
-    virtual Coord nearestPoint(Point const& p, Coord from = 0, Coord to = 1) const {
-        return Curve::nearestPoint(p, from, to);
+    virtual Coord nearestTime(Point const& p, Coord from = 0, Coord to = 1) const {
+        return Curve::nearestTime(p, from, to);
     }
     virtual void feed(PathSink &sink, bool moveto_initial) const {
         // call super. this is implemented only to allow specializations
@@ -301,7 +301,7 @@ Curve *BezierCurveN<degree>::derivative() const {
 
 // optimized specializations for LineSegment
 template <> Curve *BezierCurveN<1>::derivative() const;
-template <> Coord BezierCurveN<1>::nearestPoint(Point const &, Coord, Coord) const;
+template <> Coord BezierCurveN<1>::nearestTime(Point const &, Coord, Coord) const;
 template <> void BezierCurveN<1>::feed(PathSink &sink, bool moveto_initial) const;
 template <> void BezierCurveN<2>::feed(PathSink &sink, bool moveto_initial) const;
 template <> void BezierCurveN<3>::feed(PathSink &sink, bool moveto_initial) const;

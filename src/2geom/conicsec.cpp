@@ -1486,7 +1486,7 @@ Rect xAx::arc_bound (const Point & P1, const Point & Q, const Point & P2) const
  *
  *  P: the point to compute the nearest one
  */
-std::vector<Point> xAx::allNearestPoints (const Point &P) const
+std::vector<Point> xAx::allNearestTimes (const Point &P) const
 {
     // TODO: manage the circle - centre case
     std::vector<Point> points;

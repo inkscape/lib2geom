@@ -184,7 +184,7 @@ public:
 
     /** @brief Find a point on the line closest to the query point.
      * This is an alias for timeAtProjection(). */
-    Coord nearestPoint(Point const& _point) const {
+    Coord nearestTime(Point const& _point) const {
         return timeAtProjection(_point);
     }
 
@@ -323,7 +323,7 @@ double angle_between(Line const& l1, Line const& l2)
 inline
 double distance(Point const& _point, LineSegment const& _segment)
 {
-    double t = _segment.nearestPoint(_point);
+    double t = _segment.nearestTime(_point);
     return L2(_point - _segment.pointAt(t));
 }
 
@@ -372,14 +372,14 @@ Line make_angle_bisector_line(Point const& A, Point const& O, Point const& B)
 inline
 Point projection(Point const& _point, Line const& _line)
 {
-    return _line.pointAt( _line.nearestPoint(_point) );
+    return _line.pointAt( _line.nearestTime(_point) );
 }
 
 inline
 LineSegment projection(LineSegment const& _segment, Line const& _line)
 {
-    return _line.segment( _line.nearestPoint(_segment.initialPoint()),
-                          _line.nearestPoint(_segment.finalPoint()) );
+    return _line.segment( _line.nearestTime(_segment.initialPoint()),
+                          _line.nearestTime(_segment.finalPoint()) );
 }
 
 boost::optional<LineSegment> clip (Line const& l, Rect const& r);

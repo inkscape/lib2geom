@@ -82,7 +82,7 @@ static Geom::D2<Geom::SBasis> wrap_rq_to_cubic_sb_l(Geom::RatQuad const & rq, do
 }
 
 static std::vector<Geom::Point> wrap_rq_to_cubic_l(Geom::RatQuad const & rq, double l) {
-    return  rq.toCubic(l).points();
+    return  rq.toCubic(l).controlPoints();
 }
 
 static std::vector<Geom::Point> wrap_rq_to_cubic(Geom::RatQuad const & rq) {

@@ -95,7 +95,7 @@ class CurvatureTester: public Toy {
         std::cout << "clicked at:" << at << " with button " << button << std::endl;
         if(button == 1) {
             double dist;
-            double t = current_curve.nearestPoint(at, &dist);
+            double t = current_curve.nearestTime(at, &dist);
             if(dist > 5) {
                 curve_handle.push_back(at);
                 curve_handle.push_back(at+Point(100,100));

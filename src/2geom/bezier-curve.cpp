@@ -202,7 +202,7 @@ Curve *BezierCurveN<1>::derivative() const {
 }
 
 template<>
-Coord BezierCurveN<1>::nearestPoint(Point const& p, Coord from, Coord to) const
+Coord BezierCurveN<1>::nearestTime(Point const& p, Coord from, Coord to) const
 {
     using std::swap;
 

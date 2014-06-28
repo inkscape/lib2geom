@@ -68,7 +68,7 @@ void ea_np_test()
 	double t;
 	for ( unsigned int i = 0; i < N; ++i )
 	{
-		t = eas[i].allNearestPoints(points[i], 1.0/3, 2.0/3).front();
+		t = eas[i].allNearestTimes(points[i], 1.0/3, 2.0/3).front();
 		//t = ea_all_nearest_points(points[i], eas[i]).front();
 		fake_fun( t, i );
 	}

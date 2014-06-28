@@ -38,9 +38,13 @@ cdef class cy_Circle:
         """Create best fitting circle from at least three points."""
         return wrap_Circle( Circle( make_vector_point(points) ) )
 
-    def set(self, double cx, double cy, double r):
-        """Set coordinates of center and radius."""
-        self.thisptr.set(cx, cy, r)
+    def set_center(self, cy_Point c):
+        """Set coordinates of center."""
+        self.thisptr.setCenter(deref(c.thisptr))
+
+    def set_radius(self, double r):
+        """Set the circle's radius."""
+        self.thisptr.setRadius(r)
 
     def set_coefficients(self, double A, double B, double C, double D):
         """Set implicit equation coefficients:
@@ -49,9 +53,9 @@ cdef class cy_Circle:
         """
         self.thisptr.set(A, B, C, D)
     
-    def set_points(self, points):
+    def fit(self, points):
         """Set circle to the best fit of at least three points."""
-        self.thisptr.set( make_vector_point(points) )
+        self.thisptr.fit( make_vector_point(points) )
         
     def arc(self, cy_Point initial, cy_Point inner, cy_Point final, bint _svg_compliant=True):
         """Get (SVG)EllipticalArc.
@@ -78,9 +82,9 @@ cdef class cy_Circle:
         """Get center of circle in point."""
         return wrap_Point(self.thisptr.center())
 
-    def ray(self):
+    def radius(self):
         """Get radius of circle."""
-        return self.thisptr.ray()
+        return self.thisptr.radius()
 
 cdef cy_Circle wrap_Circle(Circle p):
     cdef Circle * retp = new Circle()

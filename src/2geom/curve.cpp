@@ -82,12 +82,12 @@ int CurveHelpers::root_winding(Curve const &c, Point p) {
     return wind;
 }
 
-Coord Curve::nearestPoint(Point const& p, Coord a, Coord b) const
+Coord Curve::nearestTime(Point const& p, Coord a, Coord b) const
 {
     return nearest_point(p, toSBasis(), a, b);
 }
 
-std::vector<Coord> Curve::allNearestPoints(Point const& p, Coord from, Coord to) const
+std::vector<Coord> Curve::allNearestTimes(Point const& p, Coord from, Coord to) const
 {
     return all_nearest_points(p, toSBasis(), from, to);
 }

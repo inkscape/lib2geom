@@ -383,7 +383,7 @@ class FindDerivatives : public Toy
 
     void draw_label(cairo_t* cr, Ray const& r, const char* label)
     {
-        Point prj = r.pointAt(r.nearestPoint(Point(m_width/2-30, m_height/2-30)));
+        Point prj = r.pointAt(r.nearestTime(Point(m_width/2-30, m_height/2-30)));
         if (L2(r.origin() - prj) < 100)
         {
             prj = r.origin() + 100*r.versor();

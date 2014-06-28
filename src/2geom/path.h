@@ -357,26 +357,26 @@ public:
   }
   
   std::vector<double> 
-  allNearestPoints(Point const& _point, double from, double to) const;
+  allNearestTimes(Point const& _point, double from, double to) const;
   
   std::vector<double>
-  allNearestPoints(Point const& _point) const
+  allNearestTimes(Point const& _point) const
   {
 	  unsigned int sz = size();
 	  if ( closed() ) ++sz;
-	  return allNearestPoints(_point, 0, sz);
+	  return allNearestTimes(_point, 0, sz);
   }
   
   std::vector<double>
-  nearestPointPerCurve(Point const& _point) const;  
+  nearestTimePerCurve(Point const& _point) const;  
   
-  double nearestPoint(Point const& _point, double from, double to, double *distance_squared = NULL) const;
+  double nearestTime(Point const& _point, double from, double to, double *distance_squared = NULL) const;
   
-  double nearestPoint(Point const& _point, double *distance_squared = NULL) const
+  double nearestTime(Point const& _point, double *distance_squared = NULL) const
   {
 	  unsigned int sz = size();
 	  if ( closed() ) ++sz;
-	  return nearestPoint(_point, 0, sz, distance_squared);
+	  return nearestTime(_point, 0, sz, distance_squared);
   }
    
   void appendPortionTo(Path &p, double f, double t) const;
@@ -691,7 +691,7 @@ inline static Piecewise<D2<SBasis> > paths_to_pw(std::vector<Path> paths) {
 inline
 Coord nearest_point(Point const& p, Path const& c)
 {
-	return c.nearestPoint(p);
+	return c.nearestTime(p);
 }
 
 }  // end namespace Geom

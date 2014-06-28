@@ -632,7 +632,7 @@ cdef class cy_Line:
 
     def nearest_point(self, cy_Point cp):
         """Alias for time_at_projection."""
-        return self.thisptr.nearestPoint( deref(cp.thisptr) )
+        return self.thisptr.nearestTime( deref(cp.thisptr) )
 
     def roots(self, Coord v, Dim2 d):
         """Return time values where self.value_at(t, dim) == v."""
@@ -801,7 +801,7 @@ cdef class cy_Ray:
 
     def nearest_point(self, cy_Point cp):
         """Get time value of nearest point of ray."""
-        return self.thisptr.nearestPoint( deref(cp.thisptr) )
+        return self.thisptr.nearestTime( deref(cp.thisptr) )
     def reverse(self):
         """Reverse the ray."""
         return wrap_Ray( self.thisptr.reverse() )

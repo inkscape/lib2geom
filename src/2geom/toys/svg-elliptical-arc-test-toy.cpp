@@ -380,7 +380,7 @@ class SVGEllipticalArcTestToy: public Toy
         draw_common(cr, notify, width, height, save);
         if ( no_solution || point_overlap ) return;
 
-        std::vector<double> times = ea.allNearestPoints( nph.pos );
+        std::vector<double> times = ea.allNearestTimes( nph.pos );
         for ( unsigned int i = 0; i < times.size(); ++i )
         {
             cairo_move_to(cr,nph.pos);

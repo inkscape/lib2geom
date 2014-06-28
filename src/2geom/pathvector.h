@@ -115,9 +115,9 @@ struct PathVectorPosition {
     PathVectorPosition(unsigned int path_nr,
                        double       t) : path_nr(path_nr), t(t) {}
 };
-boost::optional<PathVectorPosition> nearestPoint(PathVector const & path_in, Point const& _point, double *distance_squared = NULL);
+boost::optional<PathVectorPosition> nearestPosition(PathVector const & path_in, Point const& _point, double *distance_squared = NULL);
 
-std::vector<PathVectorPosition> allNearestPoints(PathVector const & path_in, Point const& _point, double *distance_squared = NULL);
+std::vector<PathVectorPosition> allNearestPositions(PathVector const & path_in, Point const& _point, double *distance_squared = NULL);
 
 inline
 Point pointAt(PathVector const & path_in, PathVectorPosition const &pvp) {

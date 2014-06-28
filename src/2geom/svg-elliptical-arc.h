@@ -105,13 +105,13 @@ public:
         return EllipticalArc::roots(v, d);
     }
 #ifdef HAVE_GSL
-    virtual std::vector<Coord> allNearestPoints( Point const& p, double from = 0, double to = 1 ) const {
+    virtual std::vector<Coord> allNearestTimes( Point const& p, double from = 0, double to = 1 ) const {
         if (isDegenerate()) {
             std::vector<Coord> result;
-            result.push_back(chord().nearestPoint(p, from, to));
+            result.push_back(chord().nearestTime(p, from, to));
             return result;
         }
-        return EllipticalArc::allNearestPoints(p, from, to);
+        return EllipticalArc::allNearestTimes(p, from, to);
     }
 #endif
     virtual D2<SBasis> toSBasis() const {

@@ -218,13 +218,13 @@ public:
     }
     virtual std::vector<double> roots(double v, Dim2 d) const;
 #ifdef HAVE_GSL
-    virtual std::vector<double> allNearestPoints( Point const& p, double from = 0, double to = 1 ) const;
+    virtual std::vector<double> allNearestTimes( Point const& p, double from = 0, double to = 1 ) const;
 #endif
-    virtual double nearestPoint( Point const& p, double from = 0, double to = 1 ) const {
+    virtual double nearestTime( Point const& p, double from = 0, double to = 1 ) const {
         if ( are_near(ray(X), ray(Y)) && are_near(center(), p) ) {
             return from;
         }
-        return allNearestPoints(p, from, to).front();
+        return allNearestTimes(p, from, to).front();
     }
     virtual int degreesOfFreedom() const { return 7; }
     virtual Curve *derivative() const;

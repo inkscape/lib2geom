@@ -93,7 +93,7 @@ private:
                 LineSegment seg(psh.pts[0], psh.pts[1]);
                 cairo_move_to(cr, psh.pts[0]);
                 cairo_curve(cr, seg);
-                double t = seg.nearestPoint(p);
+                double t = seg.nearestTime(p);
                 np = seg.pointAt(t);
                 if ( toggles[0].on )
                 {
@@ -118,13 +118,13 @@ private:
                     cairo_d2_sb(cr, earc.toSBasis());
                     if ( toggles[0].on )
                     {
-                        std::vector<double> t = earc.allNearestPoints(p);
+                        std::vector<double> t = earc.allNearestTimes(p);
                         for ( unsigned int i = 0; i < t.size(); ++i )
                             nps.push_back(earc.pointAt(t[i]));
                     }
                     else
                     {
-                        double t = earc.nearestPoint(p);
+                        double t = earc.nearestTime(p);
                         np = earc.pointAt(t);
                     }
     	        }
@@ -207,13 +207,13 @@ private:
 
     	        if ( toggles[0].on )
     	        {
-                    std::vector<double> t = path.allNearestPoints(p);
+                    std::vector<double> t = path.allNearestTimes(p);
                     for ( unsigned int i = 0; i < t.size(); ++i )
                         nps.push_back(path.pointAt(t[i]));
     	        }
     	        else
     	        {
-                    double t = path.nearestPoint(p);
+                    double t = path.nearestTime(p);
                     np = path.pointAt(t);
     	        }
                 break;
@@ -232,7 +232,7 @@ private:
 
     	        if ( toggles[0].on )
     	        {
-                    std::vector<PathVectorPosition> t = allNearestPoints(pathv, p);
+                    std::vector<PathVectorPosition> t = allNearestPositions(pathv, p);
                     for ( unsigned int i = 0; i < t.size(); ++i )
                         nps.push_back(pointAt(pathv, t[i]));
     	        }
@@ -242,7 +242,7 @@ private:
                     double s = 0, e = 1;
                     draw_cross(cr, pathv[0].pointAt(s));
                     draw_cross(cr, pathv[0].pointAt(e));
-                    double t = pathv[0][0].nearestPoint(p, 0, 1);
+                    double t = pathv[0][0].nearestTime(p, 0, 1);
                     if(t) {
                         *notify << p+psh.pts[0] << std::endl;
                         *notify << t << std::endl;

@@ -47,20 +47,20 @@ TEST_F(PathTest, ValueAt) {
 }
 
 TEST_F(PathTest, NearestPoint) {
-    EXPECT_EQ(0, line.nearestPoint(Point(0,0)));
-    EXPECT_EQ(0.5, line.nearestPoint(Point(0.5,0)));
-    EXPECT_EQ(0.5, line.nearestPoint(Point(0.5,1)));
-    EXPECT_EQ(1, line.nearestPoint(Point(100,0)));
-    EXPECT_EQ(0, line.nearestPoint(Point(-100,1000)));
+    EXPECT_EQ(0, line.nearestTime(Point(0,0)));
+    EXPECT_EQ(0.5, line.nearestTime(Point(0.5,0)));
+    EXPECT_EQ(0.5, line.nearestTime(Point(0.5,1)));
+    EXPECT_EQ(1, line.nearestTime(Point(100,0)));
+    EXPECT_EQ(0, line.nearestTime(Point(-100,1000)));
 
-    EXPECT_EQ(0, square.nearestPoint(Point(0,0)));
-    EXPECT_EQ(1, square.nearestPoint(Point(1,0)));
-    EXPECT_EQ(3, square.nearestPoint(Point(0,1)));
+    EXPECT_EQ(0, square.nearestTime(Point(0,0)));
+    EXPECT_EQ(1, square.nearestTime(Point(1,0)));
+    EXPECT_EQ(3, square.nearestTime(Point(0,1)));
     
-    cout << diederik.nearestPoint(Point(247.32293,-43.339507)) << endl;
+    cout << diederik.nearestTime(Point(247.32293,-43.339507)) << endl;
 
-    EXPECT_FLOAT_EQ(6.5814033, diederik.nearestPoint(Point(511.75,40.85)));
-    cout << diederik.pointAt(diederik.nearestPoint(Point(511.75,40.85))) << endl;
+    EXPECT_FLOAT_EQ(6.5814033, diederik.nearestTime(Point(511.75,40.85)));
+    cout << diederik.pointAt(diederik.nearestTime(Point(511.75,40.85))) << endl;
 
 }
 

@@ -276,9 +276,9 @@ class LineToy : public Toy
         LineSegment ls(p3.pos, p4.pos);
         Ray r1(p5.pos, p6.pos);
 
-        Point q1 = l1.pointAt(l1.nearestPoint(O.pos));
-        Point q2 = ls.pointAt(ls.nearestPoint(O.pos));
-        Point q3 = r1.pointAt(r1.nearestPoint(O.pos));
+        Point q1 = l1.pointAt(l1.nearestTime(O.pos));
+        Point q2 = ls.pointAt(ls.nearestTime(O.pos));
+        Point q3 = r1.pointAt(r1.nearestTime(O.pos));
 
         double d1 = distance(O.pos, l1);
         double d2 = distance(O.pos, ls);
@@ -724,7 +724,7 @@ class LineToy : public Toy
 
     void draw_label(cairo_t* cr, Ray const& r, const char* label)
     {
-        Point prj = r.pointAt(r.nearestPoint(Point(m_width/2-30, m_height/2-30)));
+        Point prj = r.pointAt(r.nearestTime(Point(m_width/2-30, m_height/2-30)));
         if (L2(r.origin() - prj) < 100)
         {
             prj = r.origin() + 100*r.versor();

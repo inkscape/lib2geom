@@ -92,9 +92,14 @@ public:
     virtual Point finalPoint() const = 0;
     /** @brief Check whether the curve has exactly zero length.
      * @return True if the curve's initial point is exactly the same as its final point, and it contains
-     *         no other points (its value set contains only one element).
-     */
+     *         no other points (its value set contains only one element). */
     virtual bool isDegenerate() const = 0;
+    /** @brief Get the interval of allowed time values.
+     * @return \f$[0, 1]\f$ */
+    virtual Interval timeRange() const {
+        Interval tr(0, 1);
+        return tr;
+    }
     /** @brief Evaluate the curve at a specified time value.
      * @param t Time value
      * @return \f$\mathbf{C}(t)\f$ */
@@ -216,21 +221,21 @@ public:
      * @param b Maximum time value to consider; \f$a < b\f$
      * @return \f$q \in [a, b]: ||\mathbf{C}(q) - \mathbf{p}|| = 
                \inf(\{r \in \mathbb{R} : ||\mathbf{C}(r) - \mathbf{p}||\})\f$ */
-    virtual Coord nearestPoint( Point const& p, Coord a = 0, Coord b = 1 ) const;
+    virtual Coord nearestTime( Point const& p, Coord a = 0, Coord b = 1 ) const;
     /** @brief A version that takes an Interval. */
-    Coord nearestPoint(Point const &p, Interval const &i) const {
-        return nearestPoint(p, i.min(), i.max());
+    Coord nearestTime(Point const &p, Interval const &i) const {
+        return nearestTime(p, i.min(), i.max());
     }
     /** @brief Compute time values at which the curve comes closest to a specified point.
      * @param p Query point
      * @param a Minimum time value to consider
      * @param b Maximum time value to consider; \f$a < b\f$
      * @return Vector of points closest and equally far away from the query point */
-    virtual std::vector<Coord> allNearestPoints( Point const& p, Coord from = 0,
+    virtual std::vector<Coord> allNearestTimes( Point const& p, Coord from = 0,
         Coord to = 1 ) const;
     /** @brief A version that takes an Interval. */
-    std::vector<Coord> allNearestPoints(Point const &p, Interval const &i) {
-        return allNearestPoints(p, i.min(), i.max());
+    std::vector<Coord> allNearestTimes(Point const &p, Interval const &i) {
+        return allNearestTimes(p, i.min(), i.max());
     }
     /** @brief Compute the arc length of this curve.
      * For a curve \f$\mathbf{C}(t) = (C_x(t), C_y(t))\f$, arc length is defined for 2D curves as
@@ -292,7 +297,7 @@ public:
 
 inline
 Coord nearest_point(Point const& p, Curve const& c) {
-    return c.nearestPoint(p);
+    return c.nearestTime(p);
 }
 
 // for make benefit glorious library of Boost Pointer Container

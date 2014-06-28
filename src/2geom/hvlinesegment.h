@@ -78,7 +78,7 @@ public:
         }
         return result;
     }
-    virtual Coord nearestPoint( Point const &p, Coord from = 0, Coord to = 1 ) const {
+    virtual Coord nearestTime( Point const &p, Coord from = 0, Coord to = 1 ) const {
         using std::swap;
         if ( from > to ) swap(from, to);
         Coord xfrom = valueAt(from, axis);

@@ -421,7 +421,7 @@ class ConicSectionToy : public Toy
         Point P;
         try
         {
-            P = cs.nearestPoint (p1.pos);
+            P = cs.nearestTime (p1.pos);
         }
         catch (LogicalError e)
         {
@@ -464,9 +464,9 @@ class ConicSectionToy : public Toy
 
         try
         {
-            p1.pos = cs.nearestPoint (p1.pos);
-            p2.pos = cs.nearestPoint (p2.pos);
-            p3.pos = cs.nearestPoint (p3.pos);
+            p1.pos = cs.nearestTime (p1.pos);
+            p2.pos = cs.nearestTime (p2.pos);
+            p3.pos = cs.nearestTime (p3.pos);
         }
         catch (LogicalError e)
         {
@@ -539,7 +539,7 @@ class ConicSectionToy : public Toy
     {
         draw_common(cr, notify, width, height, save, timer_stream);
 
-        p1.pos = cs.nearestPoint (p1.pos);
+        p1.pos = cs.nearestTime (p1.pos);
         Line l = cs.tangent(p1.pos);
 
         draw_label (cr, p1, "P");

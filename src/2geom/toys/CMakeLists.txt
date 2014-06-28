@@ -128,14 +128,14 @@ SET(2GEOM_LPE_TOYS_SRC
 lpe-test
 )
 
-SET(2GEOM_CGAL_TOYS
+SET(2GEOM_CGAL_TOYS_SRC
 boolops-cgal
 )
 
-OPTION(2GEOM_LPE_TOYS
-  "Build the project's Inkscape Live Path Effect (LPE) Toy files"
+OPTION(2GEOM_TOYS_LPE
+  "Build Inkscape Live Path Effect (LPE) Toy files"
   ON)
-IF(2GEOM_LPE_TOYS)
+IF(2GEOM_TOYS_LPE)
     # make lib for lpetoy
     ADD_LIBRARY(lpetoy ${LIB_TYPE} ${2GEOM_LPE_TOY_FRAMEWORK_SRC})
     TARGET_LINK_LIBRARIES(lpetoy 2geom "${GTK2_LINK_FLAGS} ${cairo_LINK_FLAGS}")
@@ -151,12 +151,12 @@ IF(2GEOM_LPE_TOYS)
         TARGET_LINK_LIBRARIES(${source} lpetoy ${LINK_GSL} 2geom "${GTK2_LINK_FLAGS} ${cairo_LINK_FLAGS}")
     ENDFOREACH(source)
 
-ENDIF(2GEOM_LPE_TOYS)
+ENDIF(2GEOM_TOYS_LPE)
 
 OPTION(2GEOM_TOYS
   "Build the projects Toy files"
   ON)
-OPTION(CGAL_TOYS
+OPTION(2GEOM_TOYS_CGAL
   "Build toys that require CGAL"
   OFF)
 IF(2GEOM_TOYS)
@@ -187,12 +187,13 @@ IF(2GEOM_TOYS)
         TARGET_LINK_LIBRARIES(${source} toy-2 ${LINK_GSL} 2geom "${GTK2_LINK_FLAGS} ${cairo_LINK_FLAGS}")
     ENDFOREACH(source)
 
-	IF(CGAL_TOYS)
-		FOREACH(source ${2GEOM_CGAL_TOYS})
+	IF(2GEOM_TOYS_CGAL)
+		FOREACH(source ${2GEOM_CGAL_TOYS_SRC})
 			set_source_files_properties(${source}.cpp PROPERTIES COMPILE_FLAGS "-frounding-math")
 			ADD_EXECUTABLE(${source} ${source}.cpp)
 			TARGET_LINK_LIBRARIES(${source} CGAL CGAL_Core gmp)
+			TARGET_LINK_LIBRARIES(${source} toy-2 ${LINK_GSL} 2geom "${GTK2_LINK_FLAGS} ${cairo_LINK_FLAGS}")
 		ENDFOREACH(source)
-	ENDIF(CGAL_TOYS)
+	ENDIF(2GEOM_TOYS_CGAL)
 ENDIF(2GEOM_TOYS)
 

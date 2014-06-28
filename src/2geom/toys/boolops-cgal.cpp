@@ -239,13 +239,13 @@ PathVector boolean_operation(PathVector const &a, PathVector const &b, unsigned 
     Polygon_with_holes_2 p1, p2;
     {
         CGALPathSink sink;
-        sink.pathvector(a);
+        sink.feed(a);
         sink.flush();
         p1 = sink.getResult();
     }
     {
         CGALPathSink sink;
-        sink.pathvector(b);
+        sink.feed(b);
         sink.flush();
         p2 = sink.getResult();
     }
@@ -282,15 +282,15 @@ class BoolOpsCGAL : public Toy {
 
         CairoPathSink sink(cr);
 
-        sink.pathvector(as);
+        sink.feed(as);
         cairo_set_source_rgba(cr, 1, 0, 0, 0.5);
         cairo_fill(cr);
 
-        sink.pathvector(bst);
+        sink.feed(bst);
         cairo_set_source_rgba(cr, 0, 1, 0, 0.5);
         cairo_fill(cr);
 
-        sink.pathvector(s);
+        sink.feed(s);
         cairo_set_source_rgba(cr, 0, 0, 0, 1);
         //cairo_set_line_width(cr, 2);
         cairo_fill(cr);

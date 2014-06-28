@@ -40,6 +40,9 @@ using namespace boost::python;
 void (*parse_svg_path_str_sink) (char const *, Geom::PathSink &) = &Geom::parse_svg_path;
 std::vector<Geom::Path> (*parse_svg_path_str) (char const *) = &Geom::parse_svg_path;
 
+void (Geom::PathSink::*feed_path)(Geom::Path const &) = &Geom::PathSink::feed;
+void (Geom::PathSink::*feed_pathvector)(Geom::PathVector const &) = &Geom::PathSink::feed;
+
 class PathSinkWrap: public Geom::PathSink, public wrapper<Geom::PathSink> {
     void moveTo(Geom::Point const &p) {this->get_override("moveTo")(p);}
     void hlineTo(Geom::Coord v) {this->get_override("hlineTo")(v);}
@@ -71,8 +74,8 @@ void wrap_parser() {
         .def("backspace", pure_virtual(&Geom::PathSink::backspace))
         .def("closePath", pure_virtual(&Geom::PathSink::closePath))
         .def("flush", pure_virtual(&Geom::PathSink::flush))
-        .def("path", &Geom::PathSink::path)
-        .def("pathvector", &Geom::PathSink::pathvector)
+        .def("feed", feed_path)
+        .def("feed", feed_pathvector)
     ;
 };
 

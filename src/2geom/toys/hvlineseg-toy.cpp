@@ -56,7 +56,7 @@ class HLineSegToy : public Toy
     	}
     	
     	
-    	double t = hls.nearestPoint(pts[5], 1.0/4, 3.0/4);
+    	double t = hls.nearestTime(pts[5], 1.0/4, 3.0/4);
     	
     	double tt = sliders[0].value();
     	
@@ -203,7 +203,7 @@ class VLineSegToy : public Toy
     	}
     	
     	
-    	double t = hls.nearestPoint(pts[5], 1.0/4, 3.0/4);
+    	double t = hls.nearestTime(pts[5], 1.0/4, 3.0/4);
     	
     	double tt = sliders[0].value();
     	

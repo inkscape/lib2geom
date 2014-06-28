@@ -113,16 +113,16 @@ cdef class cy_Curve:
     def nearest_point(self, cy_Point p, Coord fr=0, Coord to=1, cy_Interval interval=None):
         """Return such t that |self(t) - point| is minimized."""
         if interval is None:
-            return self.thisptr.nearestPoint(deref( p.thisptr ), fr, to)
+            return self.thisptr.nearestTime(deref( p.thisptr ), fr, to)
         else:
-            return self.thisptr.nearestPoint(deref( p.thisptr ), deref( interval.thisptr ))
+            return self.thisptr.nearestTime(deref( p.thisptr ), deref( interval.thisptr ))
 
     def all_nearest_points(self, cy_Point p, Coord fr=0, Coord to=1, cy_Interval interval=None):
         """Return all values of t that |self(t) - point| is minimized."""
         if interval is None:
-            return wrap_vector_double(self.thisptr.allNearestPoints(deref( p.thisptr ), fr, to))
+            return wrap_vector_double(self.thisptr.allNearestTimes(deref( p.thisptr ), fr, to))
         else:
-            return wrap_vector_double(self.thisptr.allNearestPoints(deref( p.thisptr ),
+            return wrap_vector_double(self.thisptr.allNearestTimes(deref( p.thisptr ),
                                                                     deref( interval.thisptr )))
 
     def length(self, Coord tolerance):
@@ -742,16 +742,16 @@ cdef class cy_SBasisCurve:
     def nearest_point(self, cy_Point p, Coord fr=0, Coord to=1, cy_Interval interval=None):
         """Return such t that |self(t) - point| is minimized."""
         if interval is None:
-            return self.thisptr.nearestPoint(deref( p.thisptr ), fr, to)
+            return self.thisptr.nearestTime(deref( p.thisptr ), fr, to)
         else:
-            return (<Curve *> self.thisptr).nearestPoint(deref( p.thisptr ), deref( interval.thisptr ) )
+            return (<Curve *> self.thisptr).nearestTime(deref( p.thisptr ), deref( interval.thisptr ) )
 
     def all_nearest_points(self, cy_Point p, Coord fr=0, Coord to=1, cy_Interval interval=None):
         """Return all values of t that |self(t) - point| is minimized."""
         if interval is None:
-            return wrap_vector_double(self.thisptr.allNearestPoints(deref( p.thisptr ), fr, to))
+            return wrap_vector_double(self.thisptr.allNearestTimes(deref( p.thisptr ), fr, to))
         else:
-            return wrap_vector_double((<Curve *> self.thisptr).allNearestPoints(deref( p.thisptr ),
+            return wrap_vector_double((<Curve *> self.thisptr).allNearestTimes(deref( p.thisptr ),
                                                                                 deref( interval.thisptr ) ))
 
     def length(self, Coord tolerance = 0.01):
@@ -1068,9 +1068,9 @@ cdef class cy_BezierCurve:
         """Get order of curve."""
         return self.thisptr.order()
 
-    def points(self):
+    def control_points(self):
         """Get control points."""
-        return wrap_vector_point(self.thisptr.points())
+        return wrap_vector_point(self.thisptr.controlPoints())
 
     def set_point(self, unsigned int ix, cy_Point v):
         """Set control point."""
@@ -1122,16 +1122,16 @@ cdef class cy_BezierCurve:
     def nearest_point(self, cy_Point p, Coord fr=0, Coord to=1, cy_Interval interval=None):
         """Return such t that |self(t) - point| is minimized."""
         if interval is None:
-            return (<Curve *> self.thisptr).nearestPoint(deref( p.thisptr ), fr, to)
+            return (<Curve *> self.thisptr).nearestTime(deref( p.thisptr ), fr, to)
         else:
-            return (<Curve *> self.thisptr).nearestPoint(deref( p.thisptr ), deref( interval.thisptr ) )
+            return (<Curve *> self.thisptr).nearestTime(deref( p.thisptr ), deref( interval.thisptr ) )
 
     def all_nearest_points(self, cy_Point p, Coord fr=0, Coord to=1, cy_Interval interval=None):
         """Return all values of t that |self(t) - point| is minimized."""
         if interval is None:
-            return wrap_vector_double((<Curve *> self.thisptr).allNearestPoints(deref( p.thisptr ), fr, to))
+            return wrap_vector_double((<Curve *> self.thisptr).allNearestTimes(deref( p.thisptr ), fr, to))
         else:
-            return wrap_vector_double((<Curve *> self.thisptr).allNearestPoints(deref( p.thisptr ),
+            return wrap_vector_double((<Curve *> self.thisptr).allNearestTimes(deref( p.thisptr ),
                                                                                 deref( interval.thisptr ) ))
 
     def portion(self, Coord fr=0, Coord to=1, cy_Interval interval=None):
@@ -1204,7 +1204,7 @@ cdef class cy_BezierCurve:
 
 cdef cy_BezierCurve wrap_BezierCurve(BezierCurve p):
     cdef vector[Point] points = make_vector_point([cy_Point(), cy_Point()])
-    cdef BezierCurve * retp = create(p.points())
+    cdef BezierCurve * retp = create(p.controlPoints())
     cdef cy_BezierCurve r = cy_BezierCurve.__new__(cy_BezierCurve, [cy_Point(), cy_Point()])
     r.thisptr = retp
     return r
@@ -1467,9 +1467,9 @@ cdef class cy_HLineSegment(cy_LineSegment):
     def nearest_point(self, cy_Point p, Coord fr=0, Coord to=1, cy_Interval interval=None):
         """Return such t that |self(t) - point| is minimized."""
         if interval is None:
-            return (<AxisLineSegment_X *> self.thisptr).nearestPoint(deref( p.thisptr ), fr, to)
+            return (<AxisLineSegment_X *> self.thisptr).nearestTime(deref( p.thisptr ), fr, to)
         else:
-            return (<Curve *> self.thisptr).nearestPoint(deref( p.thisptr ),
+            return (<Curve *> self.thisptr).nearestTime(deref( p.thisptr ),
                                                          deref( ( interval.thisptr ) ) )
 
     def point_at(self, Coord t):
@@ -1598,9 +1598,9 @@ cdef class cy_VLineSegment(cy_LineSegment):
     def nearest_point(self, cy_Point p, Coord fr=0, Coord to=1, cy_Interval interval=None):
         """Return such t that |self(t) - point| is minimized."""
         if interval is None:
-            return (<AxisLineSegment_Y *> self.thisptr).nearestPoint(deref( p.thisptr ), fr, to)
+            return (<AxisLineSegment_Y *> self.thisptr).nearestTime(deref( p.thisptr ), fr, to)
         else:
-            return (<Curve *> self.thisptr).nearestPoint(deref( p.thisptr ),
+            return (<Curve *> self.thisptr).nearestTime(deref( p.thisptr ),
                                                          deref( ( interval.thisptr ) ) )
 
     def point_at(self, Coord t):
@@ -1845,17 +1845,17 @@ cdef class cy_EllipticalArc:
     def nearest_point(self, cy_Point p, Coord fr=0, Coord to=1, cy_Interval interval=None):
         """Return such t that |self(t) - point| is minimized."""
         if interval is None:
-            return self.thisptr.nearestPoint(deref( p.thisptr ), fr, to)
+            return self.thisptr.nearestTime(deref( p.thisptr ), fr, to)
         else:
-            return (<Curve *> self.thisptr).nearestPoint(deref( p.thisptr ),
+            return (<Curve *> self.thisptr).nearestTime(deref( p.thisptr ),
                                                          deref( interval.thisptr ) )
 
     def all_nearest_points(self, cy_Point p, Coord fr=0, Coord to=1, cy_Interval interval=None):
         """Return all values of t that |self(t) - point| is minimized."""
         if interval is None:
-            return wrap_vector_double( (<Curve *> self.thisptr).allNearestPoints(deref( p.thisptr ), fr, to))
+            return wrap_vector_double( (<Curve *> self.thisptr).allNearestTimes(deref( p.thisptr ), fr, to))
         else:
-            return wrap_vector_double( (<Curve *> self.thisptr).allNearestPoints(deref( p.thisptr ), deref( interval.thisptr ) ))
+            return wrap_vector_double( (<Curve *> self.thisptr).allNearestTimes(deref( p.thisptr ), deref( interval.thisptr ) ))
 
     def degrees_of_freedom(self):
         """Return number of independent parameters needed to specify the curve."""
@@ -1980,9 +1980,9 @@ cdef class cy_SVGEllipticalArc(cy_EllipticalArc):
     def all_nearest_points(self, cy_Point p, Coord fr=0, Coord to=1, cy_Interval interval=None):
         """Return all values of t that |self(t) - point| is minimized."""
         if interval is None:
-            return wrap_vector_double( (<SVGEllipticalArc *> self.thisptr).allNearestPoints(deref( p.thisptr ), fr, to))
+            return wrap_vector_double( (<SVGEllipticalArc *> self.thisptr).allNearestTimes(deref( p.thisptr ), fr, to))
         else:
-            return wrap_vector_double((<Curve *> self.thisptr).allNearestPoints(deref( p.thisptr ),
+            return wrap_vector_double((<Curve *> self.thisptr).allNearestTimes(deref( p.thisptr ),
                                                                                 deref( interval.thisptr ) ))
 
     def to_SBasis(self):

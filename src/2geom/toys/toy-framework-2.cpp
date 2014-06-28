@@ -910,7 +910,7 @@ void* RectHandle::hit(Geom::Point mouse) {
     }
     for(int i = 0; i < 4; i++) {
         Geom::LineSegment ls(pos.corner(i), pos.corner(i+1));
-	if(Geom::distance(ls.pointAt(ls.nearestPoint(mouse)),mouse) < 5)
+	if(Geom::distance(ls.pointAt(ls.nearestTime(mouse)),mouse) < 5)
             return (void*)(intptr_t)(6+i);
     }
     return 0;

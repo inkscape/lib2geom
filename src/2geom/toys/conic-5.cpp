@@ -166,7 +166,7 @@ class Conic5: public Toy {
       
         if(1) {
             QuadraticBezier qb(A, B, C);
-            //double abt = qb.nearestPoint(oncurve.pos);
+            //double abt = qb.nearestTime(oncurve.pos);
             //oncurve.pos = qb.pointAt(abt);
       
             RatQuad rq = RatQuad::fromPointsTangents(A, B-A, oncurve.pos, C, B -C); //( A, B, C, w);

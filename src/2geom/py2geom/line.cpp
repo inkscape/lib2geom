@@ -68,7 +68,7 @@ void wrap_line() {
         .def("isDegenerate", &Geom::Line::isDegenerate)
         .def("pointAt", &Geom::Line::pointAt)
         .def("roots", &Geom::Line::roots)
-        .def("nearestPoint", &Geom::Line::nearestPoint)
+        .def("nearestTime", &Geom::Line::nearestTime)
         .def("reverse", &Geom::Line::reverse)
         //.def("portion", &Geom::Line::portion)
         //.def("segment", &Geom::Line::segment)

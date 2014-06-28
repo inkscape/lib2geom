@@ -88,7 +88,7 @@ OptRect bounds_exact( PathVector const& pv )
 
 /* Note: undefined for empty pathvectors or pathvectors with empty paths.
  * */
-boost::optional<PathVectorPosition> nearestPoint(PathVector const & path_in, Point const& _point, double *distance_squared)
+boost::optional<PathVectorPosition> nearestPosition(PathVector const & path_in, Point const& _point, double *distance_squared)
 {
     boost::optional<PathVectorPosition> retval;
 
@@ -96,7 +96,7 @@ boost::optional<PathVectorPosition> nearestPoint(PathVector const & path_in, Poi
     unsigned int i = 0;
     for (Geom::PathVector::const_iterator pit = path_in.begin(); pit != path_in.end(); ++pit) {
         double dsq;
-        double t = pit->nearestPoint(_point, &dsq);
+        double t = pit->nearestTime(_point, &dsq);
         //std::cout << t << "," << dsq << std::endl;
         if (dsq < mindsq) {
             mindsq = dsq;
@@ -112,7 +112,7 @@ boost::optional<PathVectorPosition> nearestPoint(PathVector const & path_in, Poi
     return retval;
 }
 
-std::vector<PathVectorPosition> allNearestPoints(PathVector const & path_in, Point const& _point, double *distance_squared)
+std::vector<PathVectorPosition> allNearestPositions(PathVector const & path_in, Point const& _point, double *distance_squared)
 {
     std::vector<PathVectorPosition> retval;
 
@@ -120,9 +120,12 @@ std::vector<PathVectorPosition> allNearestPoints(PathVector const & path_in, Poi
     unsigned int i = 0;
     for (Geom::PathVector::const_iterator pit = path_in.begin(); pit != path_in.end(); ++pit) {
         double dsq;
-        double t = pit->nearestPoint(_point, &dsq);
+        double t = pit->nearestTime(_point, &dsq);
         if (dsq < mindsq) {
             mindsq = dsq;
+            retval.clear();
+        }
+        if (dsq <= mindsq) {
             retval.push_back(PathVectorPosition(i, t));
         }
 

@@ -37,9 +37,6 @@
 #include "../circle.h"
 #include "../exception.h"
 
-void  (Geom::Circle::*circle_set1)(double, double, double, double) = &Geom::Circle::set;
-void  (Geom::Circle::*circle_set2)(std::vector<Geom::Point> const& points) = &Geom::Circle::set;
-
 // i can't get these to work
 //Geom::Point  (Geom::Circle::*center_point)() = (Geom::Point (*)() const)&Geom::Circle::center;
 //Geom::Coord  (Geom::Circle::*center_coord)(Geom::Dim2 const& d) = &Geom::Circle::center;
@@ -53,9 +50,9 @@ void wrap_circle() {
         // needs to be mapped to PointVec, but i can't figure out how
         .def(init<PointVec >())
             
-        .def("set", circle_set1)
-        .def("set", circle_set2)
-        .add_property("ray", &Geom::Circle::ray)
+        .def("set", &Geom::Circle::set)
+        .def("fit", &Geom::Circle::fit)
+        .add_property("radius", &Geom::Circle::radius)
         
         .add_property("center", (Geom::Point (Geom::Circle::*)() const )&Geom::Circle::center)
         //.def("center", center)        

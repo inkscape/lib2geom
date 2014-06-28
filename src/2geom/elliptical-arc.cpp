@@ -430,7 +430,7 @@ Curve *EllipticalArc::reverse() const {
 }
 
 #ifdef HAVE_GSL  // GSL is required for function "solve_reals"
-std::vector<double> EllipticalArc::allNearestPoints( Point const& p, double from, double to ) const
+std::vector<double> EllipticalArc::allNearestTimes( Point const& p, double from, double to ) const
 {
     std::vector<double> result;
 
@@ -448,7 +448,7 @@ std::vector<double> EllipticalArc::allNearestPoints( Point const& p, double from
     else if ( are_near(ray(X), 0) || are_near(ray(Y), 0) )
     {
         LineSegment seg(pointAt(from), pointAt(to));
-        Point np = seg.pointAt( seg.nearestPoint(p) );
+        Point np = seg.pointAt( seg.nearestTime(p) );
         if ( are_near(ray(Y), 0) )
         {
             if ( are_near(_rot_angle, M_PI/2)
