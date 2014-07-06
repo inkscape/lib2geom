@@ -91,15 +91,15 @@ void cairo_path_handles(cairo_t */*cr*/, Path const &/*p*/) {
     //TODO
 }
 
-void cairo_path(cairo_t *cr, std::vector<Path> const &p) {
-    std::vector<Path>::const_iterator it;
+void cairo_path(cairo_t *cr, PathVector const &p) {
+    PathVector::const_iterator it;
     for(it = p.begin(); it != p.end(); ++it) {
         cairo_path(cr, *it);
     }
 }
 
-void cairo_path_stitches(cairo_t *cr, std::vector<Path> const &p) {
-    std::vector<Path>::const_iterator it;
+void cairo_path_stitches(cairo_t *cr, PathVector const &p) {
+    PathVector::const_iterator it;
     for ( it = p.begin() ; it != p.end() ; ++it ) {
         cairo_path_stitches(cr, *it);
     }

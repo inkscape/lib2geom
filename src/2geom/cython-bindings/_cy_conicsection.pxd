@@ -28,7 +28,6 @@ cdef extern from "2geom/circle.h" namespace "Geom":
         void set(double, double, double, double)
         void fit(vector[Point] &)
         EllipticalArc * arc(Point &, Point &, Point &, bint)
-        void getPath(vector[Path] &)
         Point center()
         Coord center(Dim2)
         Coord radius()

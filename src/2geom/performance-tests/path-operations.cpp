@@ -67,7 +67,7 @@ static char const *path_str =
 int main()
 {
     for (int rep = 0; rep < 3; rep++) {
-        std::vector<Path> path1 = parse_svg_path(path_str);
+        PathVector path1 = parse_svg_path(path_str);
         const int num_repeats = 1000;
         std::clock_t start = std::clock();
         for (int i = 0; i < num_repeats; i++) {
@@ -81,7 +81,7 @@ int main()
     }
 
     for (int rep = 0; rep < 3; rep++) {
-        std::vector<Path> path1 = parse_svg_path(path_str);
+        PathVector path1 = parse_svg_path(path_str);
         const int num_repeats = 1000;
         std::clock_t start = std::clock();
         for (int i = 0; i < num_repeats; i++) {

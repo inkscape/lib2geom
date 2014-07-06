@@ -1,13 +1,12 @@
 /**
  * \file
- * \brief PathVector - std::vector containing Geom::Path.
- * This file provides a set of operations that can be performed on PathVector,
- * e.g. an affine transform.
+ * \brief PathVector - a sequence of contiguous subpaths.
  *//*
  * Authors:
- *  Johan Engelen <goejendaagh@zonnet.nl>
+ *   Johan Engelen <j.b.c.engelen@alumnus.utwente.nl>
+ *   Krzysztof Kosiński <tweenk.pl@gmail.com>
  * 
- * Copyright 2008  authors
+ * Copyright 2008-2014 authors
  *
  * This library is free software; you can redistribute it and/or
  * modify it either under the terms of the GNU Lesser General Public
@@ -36,93 +35,150 @@
 #ifndef LIB2GEOM_SEEN_PATHVECTOR_H
 #define LIB2GEOM_SEEN_PATHVECTOR_H
 
+#include <boost/concept/requires.hpp>
+#include <boost/shared_ptr.hpp>
 #include <2geom/forward.h>
 #include <2geom/path.h>
 #include <2geom/transforms.h>
 
 namespace Geom {
 
-typedef std::vector<Geom::Path> PathVector;
-
-/* general path transformation: */
-inline
-void operator*= (PathVector & path_in, Affine const &m) {
-    for(PathVector::iterator it = path_in.begin(); it != path_in.end(); ++it) {
-        (*it) *= m;
-    }
-}
-inline
-PathVector operator*(PathVector const & path_in, Affine const &m) {
-    PathVector ret(path_in);
-    ret *= m;
-    return ret;
-}
-
-/* specific path transformations: Translation: 
- * This makes it possible to make optimized implementations for Translate transforms */
-inline
-void operator*= (PathVector & path_in, Translate const &m) {
-    for(PathVector::iterator it = path_in.begin(); it != path_in.end(); ++it) {
-        (*it) *= m;
-    }
-}
-inline
-PathVector operator*(PathVector const & path_in, Translate const &m) {
-    PathVector ret(path_in);
-    ret *= m;
-    return ret;
-}
-
-/* user friendly approach to Translate transforms: just add an offset Point to the whole path */
-inline
-void operator+=(PathVector &path_in, Point const &p) {
-    for(PathVector::iterator it = path_in.begin(); it != path_in.end(); ++it) {
-        (*it) *= Translate(p);
-    }
-}
-inline
-PathVector operator+(PathVector const &path_in, Point const &p) {
-    PathVector ret(path_in);
-    ret *= Translate(p);
-    return ret;
-}
-
-inline
-Geom::Point initialPoint(PathVector const &path_in)
-{
-    return path_in.front().initialPoint();
-}
-
-inline
-Geom::Point finalPoint(PathVector const &path_in)
-{
-    return path_in.back().finalPoint();
-}
-
-PathVector reverse_paths_and_order (PathVector const & path_in);
-
-OptRect bounds_fast( PathVector const & pv );
-OptRect bounds_exact( PathVector const & pv );
-
 struct PathVectorPosition {
-    // pathvector[path_nr].pointAt(t) is the position
-    unsigned int path_nr;
-    double       t;
-    PathVectorPosition() :
-        path_nr(0),
-        t(0)
-        {}
-    PathVectorPosition(unsigned int path_nr,
-                       double       t) : path_nr(path_nr), t(t) {}
+    unsigned index;
+    double t;
+    PathVectorPosition() : index(0), t(0) {}
+    PathVectorPosition(unsigned _i, double _t) : index(_i), t(_t) {}
 };
-boost::optional<PathVectorPosition> nearestPosition(PathVector const & path_in, Point const& _point, double *distance_squared = NULL);
 
-std::vector<PathVectorPosition> allNearestPositions(PathVector const & path_in, Point const& _point, double *distance_squared = NULL);
+/** @brief A sequence of contiguous subpaths.
+ *
+ * This class corresponds to the SVG notion of a path:
+ * a sequence of any number of open or closed contiguous subpaths.
+ */
+class PathVector
+    : MultipliableNoncommutative< PathVector, Affine
+    , MultipliableNoncommutative< PathVector, Translate
+    , MultipliableNoncommutative< PathVector, Scale
+    , MultipliableNoncommutative< PathVector, Rotate
+    , MultipliableNoncommutative< PathVector, HShear
+    , MultipliableNoncommutative< PathVector, VShear
+    , MultipliableNoncommutative< PathVector, Zoom
+    , boost::addable< PathVector
+      > > > > > > > >
+{
+    typedef std::vector<Path> Sequence;
+public:
+    typedef PathVectorPosition Position;
+    typedef Sequence::iterator iterator;
+    typedef Sequence::const_iterator const_iterator;
+    typedef Sequence::size_type size_type;
+    typedef Path value_type;
+    typedef Path &reference;
+    typedef Path const &const_reference;
+    typedef Path *pointer;
+    typedef std::ptrdiff_t difference_type;
 
-inline
-Point pointAt(PathVector const & path_in, PathVectorPosition const &pvp) {
-    return path_in[pvp.path_nr].pointAt(pvp.t);
-}
+    PathVector() {}
+    PathVector(Path const &p)
+        : _data(1, p)
+    {}
+    template <typename InputIter>
+    PathVector(InputIter first, InputIter last)
+        : _data(first, last)
+    {}
+
+    bool empty() const {
+        return _data.empty();
+    }
+    size_type size() const { return _data.size(); }
+    size_type curveCount() const;
+
+    iterator begin() { return _data.begin(); }
+    iterator end() { return _data.end(); }
+    const_iterator begin() const { return _data.begin(); }
+    const_iterator end() const { return _data.end(); }
+    Path &operator[](size_type index) {
+        return _data[index];
+    }
+    Path const &operator[](size_type index) const {
+        return _data[index];
+    }
+    Path &at(size_type index) {
+        return _data.at(index);
+    }
+    Path const &at(size_type index) const {
+        return _data.at(index);
+    }
+    Path &front() { return _data.front(); }
+    Path const &front() const { return _data.front(); }
+    Path &back() { return _data.back(); }
+    Path const &back() const { return _data.back(); }
+    void push_back(Path const &path) {
+        _data.push_back(path);
+    }
+    void pop_back() {
+        _data.pop_back();
+    }
+    iterator insert(iterator pos, Path const &p) {
+        return _data.insert(pos, p);
+    }
+    template <typename InputIter>
+    void insert(iterator out, InputIter first, InputIter last) {
+        _data.insert(out, first, last);
+    }
+    iterator erase(iterator i) {
+        return _data.erase(i);
+    }
+    iterator erase(iterator first, iterator last) {
+        return _data.erase(first, last);
+    }
+    void clear() { _data.clear(); }
+    void resize(size_type n) { _data.resize(n); }
+
+    void reverse(bool reverse_paths = true);
+    PathVector reversed(bool reverse_paths = true);
+
+    Interval timeRange() const;
+    Point initialPoint() const {
+        return _data.front().initialPoint();
+    }
+    Point finalPoint() const {
+        return _data.back().finalPoint();
+    }
+    OptRect boundsFast() const;
+    OptRect boundsExact() const;
+
+    template <typename T>
+    BOOST_CONCEPT_REQUIRES(((TransformConcept<T>)), (PathVector &))
+    operator*=(T const &t) {
+        if (empty()) return *this;
+        for (iterator i = begin(); i != end(); ++i) {
+            *i *= t;
+        }
+        return *this;
+    }
+
+    Coord valueAt(Position const &pos, Dim2 d) const { return at(pos.index).valueAt(pos.t, d); }
+    Coord valueAt(Coord t, Dim2 d) const;
+    Point pointAt(Position const &pos) const { return at(pos.index).pointAt(pos.t); }
+    Point pointAt(Coord t) const;
+    /*Curve const &curveAt(Position const &pos, Coord *rest = NULL) const;
+    Curve const &curveAt(Coord t, Coord *rest = NULL) const;
+    Path const &pathAt(Position const &pos, Coord *rest = NULL) const;
+    Path const &pathAt(Coord t, Coord *rest = NULL) const;*/
+
+    Coord nearestTime(Point const &p) const;
+    boost::optional<Position> nearestPosition(Point const &p, double *distance_squared = NULL) const;
+    std::vector<Position> allNearestPositions(Point const &p, double *distance_squared = NULL) const;
+
+private:
+    Coord _getIndices(Coord t, size_type &path_index, size_type &curve_index) const;
+
+    Sequence _data;
+};
+
+inline OptRect bounds_fast(PathVector const &pv) { return pv.boundsFast(); }
+inline OptRect bounds_exact(PathVector const &pv) { return pv.boundsExact(); }
 
 } // end namespace Geom
 

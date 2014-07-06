@@ -41,7 +41,7 @@ static void draw_axis(cairo_t *cr, Piecewise<D2<SBasis> > const &pw, unsigned d,
     }
 }
 /*
-void dump_latex(vector<Path> ps) {
+void dump_latex(PathVector ps) {
     for(unsigned d = 0; d < 2; d++) {
         std::cout << "$$\n" << (d?"y":"x") << "(t) = \\left\\{\n\\begin{array}{ll}\n";
         int seg = 0;
@@ -176,7 +176,7 @@ class Parametrics: public Toy {
   public:
     Parametrics(){
       mode = 2;
-      vector<Path> cp = read_svgd("cat.svgd");
+      PathVector cp = read_svgd("cat.svgd");
       //dump_latex(cp);
       cat = paths_to_pw(cp);
       cat *= .3;

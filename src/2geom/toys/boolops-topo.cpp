@@ -40,7 +40,7 @@ class BoolOpsTester: public Toy {
     double tol;
 
     Slider slider;
-    vector<Path> cmd_line_pathsA, cmd_line_pathsB;
+    PathVector cmd_line_pathsA, cmd_line_pathsB;
 
     PointHandle handleA, handleB;
     int nb_steps;
@@ -73,11 +73,11 @@ class BoolOpsTester: public Toy {
         cairo_set_line_width (cr, 1);
 
         Point offsetA = handleA.pos - cmd_line_pathsA[0].initialPoint();
-        cmd_line_pathsA += offsetA;
+        cmd_line_pathsA *= Translate(offsetA);
         Point offsetB = handleB.pos - cmd_line_pathsB[0].initialPoint();
-        cmd_line_pathsB += offsetB;
+        cmd_line_pathsB *= Translate(offsetB);
 
-        std::vector<Path> paths = cmd_line_pathsA;
+        PathVector paths = cmd_line_pathsA;
         paths.insert(paths.end(), cmd_line_pathsB.begin(), cmd_line_pathsB.end());
 #if 1
         cairo_path(cr, paths);

@@ -8,7 +8,7 @@ using namespace std;
 using namespace Geom;
 
 //Tests by checking the accuracy and winding
-void check_crossing(std::vector<Path> as, std::vector<Path> > bs) {
+void check_crossing(PathVector as, PathVector > bs) {
     cout << "Testing crossing:";
     unsigned n = 1;
     for(unsigned i = 0; i < as.size(); i++) {

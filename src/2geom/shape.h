@@ -116,19 +116,19 @@ inline CrossingSet crossings_between(Shape const &a, Shape const &b) { return cr
 Shape shape_boolean(bool rev, Shape const &, Shape const &, CrossingSet const &);
 Shape shape_boolean(bool rev, Shape const &, Shape const &);
 
-//unsigned pick_coincident(unsigned ix, unsigned jx, bool &rev, std::vector<Path> const &ps, CrossingSet const &crs);
-//void outer_crossing(unsigned &ix, unsigned &jx, bool & dir, std::vector<Path> const & ps, CrossingSet const & crs);
+//unsigned pick_coincident(unsigned ix, unsigned jx, bool &rev, PathVector const &ps, CrossingSet const &crs);
+//void outer_crossing(unsigned &ix, unsigned &jx, bool & dir, PathVector const & ps, CrossingSet const & crs);
 void crossing_dual(unsigned &i, unsigned &j, CrossingSet const & crs);
 unsigned crossing_along(double t, unsigned ix, unsigned jx, bool dir, Crossings const & crs);
 
 Shape boolop(Shape const &, Shape const &, unsigned flags);
 Shape boolop(Shape const &, Shape const &, unsigned flags, CrossingSet &);
 
-Shape sanitize(std::vector<Path> const &ps);
+Shape sanitize(PathVector const &ps);
 
-Shape stopgap_cleaner(std::vector<Path> const &ps);
+Shape stopgap_cleaner(PathVector const &ps);
 
-inline std::vector<Path> desanitize(Shape const & s) {
+inline PathVector desanitize(Shape const & s) {
     return paths_from_regions(s.getContent());
 }
 

@@ -127,7 +127,7 @@ void draw_context(cairo_t *cr, int cix, PathVector const &pa) {
 #endif
 
 class SweepWindow: public Toy {
-    vector<Path> path, path2;
+    PathVector path, path2;
     std::vector<Toggle> toggles;
     PointHandle p, p2;
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
@@ -143,7 +143,7 @@ class SweepWindow: public Toy {
 #endif
         
         PathVector pa = path;
-        PathVector pa2 = path2 + p.pos;
+        PathVector pa2 = path2 * Translate(p.pos);
         concatenate(pa, pa2);
         
         TopoGraph output(pa,X, .00001);
@@ -197,9 +197,13 @@ class SweepWindow: public Toy {
         path = read_svgd(path_name); //* Scale(3);
         path2 = read_svgd(path2_name);
         OptRect bounds = bounds_exact(path);
-        if(bounds) path += Point(10,10)-bounds->min();
+        if (bounds) {
+            path *= Translate(Point(10,10) - bounds->min());
+        }
         bounds = bounds_exact(path2);
-        if(bounds) path2 += Point(20,20)-bounds->min();
+        if (bounds) {
+            path2 *= Translate(Point(20,20) - bounds->min());
+        }
         p = PointHandle(Point(100,300));
         handles.push_back(&p);
         p2 = PointHandle(Point(200, 300));

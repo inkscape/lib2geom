@@ -22,7 +22,7 @@ class Box3d: public Toy {
     double tmat[3][4];
     PointHandle origin_handle;
     PointSetHandle vanishing_points_handles;
-    std::vector<Path> paths_a;
+    PathVector paths_a;
     
     void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
 

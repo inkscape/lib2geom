@@ -6,7 +6,7 @@
 
 #include <2geom/toys/path-cairo.h>
 #include <2geom/toys/toy-framework-2.h>
-#include <2geom/path.h>
+#include <2geom/pathvector.h>
 #include <2geom/svg-path-parser.h>
 
 #include <vector>
@@ -77,7 +77,7 @@ class Sb2d2: public Toy {
         const char *path_a_name="star.svgd";
         if(argc > 1)
             path_a_name = argv[1];
-        std::vector<Path> paths_a = read_svgd(path_a_name);
+        PathVector paths_a = read_svgd(path_a_name);
         assert(!paths_a.empty());
         path_a = paths_a[0];
         Rect bounds = path_a[0].boundsFast();

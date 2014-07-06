@@ -223,8 +223,8 @@ class OffsetTester: public Toy {
         Piecewise<D2<SBasis> > n = rot90(unitVector(derivative(B)));
         Piecewise<D2<SBasis> > offset_curve1 = Piecewise<D2<SBasis> >(B)+n*offset;
         Piecewise<D2<SBasis> > offset_curve2 = Piecewise<D2<SBasis> >(B)-n*offset;
-        std::vector<Path> offset_path1 = path_from_piecewise(offset_curve1, 0.1);
-        std::vector<Path> offset_path2 = path_from_piecewise(offset_curve2, 0.1);
+        PathVector offset_path1 = path_from_piecewise(offset_curve1, 0.1);
+        PathVector offset_path2 = path_from_piecewise(offset_curve2, 0.1);
         Piecewise<D2<SBasis> > tangent1 = unitVector(derivative(offset_curve1));
         Piecewise<D2<SBasis> > tangent2 = unitVector(derivative(offset_curve2));
         cairo_set_line_width (cr, 1);

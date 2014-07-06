@@ -64,7 +64,7 @@ class PairIntersect: public Toy {
     PA.append(A);
         
     if (toggles[0].on) {
-        std::vector<Path> ps;
+        PathVector ps;
         ps.push_back(PA);
         ps.push_back(PB);
         CrossingSet cs = crossings_among(ps);

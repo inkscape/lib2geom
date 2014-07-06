@@ -341,7 +341,7 @@ class SbToBezierTester: public Toy {
       else {
           segs = recursive_curvature_fitter(cr, f_as_pw, 0, f_as_pw.cuts.back(),curve_precision);
       }
-      std::vector<Geom::Path> vpt = path_from_piecewise(f_as_pw, curve_precision, true);
+      Geom::PathVector vpt = path_from_piecewise(f_as_pw, curve_precision, true);
       unsigned default_number_curves = 0;
       for(unsigned i = 0; i < vpt.size(); i++) {
           default_number_curves += vpt[i].size();

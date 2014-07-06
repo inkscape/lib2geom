@@ -93,7 +93,7 @@ cdef extern from "2geom/path.h" namespace "Geom":
         void appendPortionTo(Path &, double, double)
         Path portion(double, double)
         Path portion(Interval)
-        Path reverse()
+        Path reversed()
         void insert(Iterator &, Curve &, Stitching) except +
         void insert(Iterator &, ConstIterator &, ConstIterator &, Stitching)
         void clear()
@@ -122,8 +122,3 @@ cdef class cy_Path:
     cdef Iterator _iterator_at_index(self, int i)
 
 cdef cy_Path wrap_Path(Path p)
-cdef vector[Path] make_vector_Path(object l)
-
-cdef extern from "2geom/svg-path-parser.h":
-    #TODO: this doesn't actually catch the exception (?)
-    vector[Path] read_svgd(char * name) except +

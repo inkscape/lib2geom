@@ -48,7 +48,7 @@ void mark_mono(cairo_t *cr, Shape const &a) {
     }
 }
 
-Shape cleanup(std::vector<Path> const &ps) {
+Shape cleanup(PathVector const &ps) {
     Piecewise<D2<SBasis> > pw = paths_to_pw(ps);
     double area;
     Point centre;
@@ -124,7 +124,7 @@ class BoolOps: public Toy {
 	  
 #if 0
 	  Piecewise<D2<SBasis> > offset_curve = Piecewise<D2<SBasis> >(B)+n*offset;
-	  std::vector<Path> offset_path = path_from_piecewise(offset_curve, 0.1);
+	  PathVector offset_path = path_from_piecewise(offset_curve, 0.1);
         
 	  cairo_path(cr, offset_path*t);
 	  cairo_stroke(cr);
@@ -134,7 +134,7 @@ class BoolOps: public Toy {
 	  //    compose(sore_tooth(Interval(al.firstValue(),al.lastValue())), al)*n;
 	  Piecewise<D2<SBasis> > zz_curve = Piecewise<D2<SBasis> >(B)+
 	      sin(al*0.1)*10*n;
-	  std::vector<Path> zz_path = path_from_piecewise(zz_curve, 0.1);
+	  PathVector zz_path = path_from_piecewise(zz_curve, 0.1);
         
 	  cairo_path(cr, zz_path*t);
 	  cairo_stroke(cr);

@@ -30,7 +30,7 @@ class IntersectDataTester: public Toy {
     unsigned degree;
     double tol;
 
-    vector<Path> cmd_line_paths;
+    PathVector cmd_line_paths;
 
     std::vector<PointSetHandle> paths_handles;
     std::vector<Slider> sliders;
@@ -238,17 +238,16 @@ class IntersectDataTester: public Toy {
         cairo_set_source_rgba (cr, 0., 0., 0, 1);
         cairo_set_line_width (cr, 1);
 
-        std::vector<Path> paths;
+        PathVector paths;
         if (!cmd_line_paths.empty()){
             paths = cmd_line_paths;
             for (unsigned i = 0; i < paths.size(); i++){
                 paths[i] *= Translate( paths_handles[i].pts[0] - paths[i].initialPoint() );
             }
         }else{
-            paths = std::vector<Path>(nb_paths, Path());
             for (unsigned i = 0; i < nb_paths; i++){
                 paths_handles[i].pts.back()=paths_handles[i].pts.front();
-                paths[i] = Path(paths_handles[i].pts[0]);
+                paths.push_back(Path(paths_handles[i].pts[0]));
                 for (unsigned j = 0; j+degree < paths_handles[i].size(); j+=degree){
                     D2<SBasis> c = handles_to_sbasis(paths_handles[i].pts.begin()+j, degree);
                     if ( j + degree == paths_handles[i].size()-1 ){
@@ -403,7 +402,9 @@ int main(int argc, char **argv) {
         const char *path_name = argv[1];
         PathVector cmd_line_paths = read_svgd(path_name); //* Scale(3);
         OptRect bounds = bounds_exact(cmd_line_paths);
-        if(bounds) cmd_line_paths += Point(10,10)-bounds->min();
+        if (bounds) {
+            cmd_line_paths *= Translate(Point(10,10) - bounds->min());
+        }
         init(argc, argv, new IntersectDataTester(cmd_line_paths));
     }else{
         unsigned nb_paths=3, nb_curves_per_path = 5, degree = 1;

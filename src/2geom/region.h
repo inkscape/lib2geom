@@ -79,7 +79,7 @@ class Region {
         return logical_xor(!fill, contains(p));
     }
     
-    Region inverse() const { return Region(boundary.reverse(), box, !fill); }
+    Region inverse() const { return Region(boundary.reversed(), box, !fill); }
     
     Region operator*(Affine const &m) const;
     
@@ -91,15 +91,15 @@ typedef std::vector<Region> Regions;
 unsigned outer_index(Regions const &ps);
 
 //assumes they're already sanitized somewhat
-inline Regions regions_from_paths(std::vector<Path> const &ps) {
+inline Regions regions_from_paths(PathVector const &ps) {
     Regions res;
     for(unsigned i = 0; i < ps.size(); i++)
         res.push_back(Region(ps[i]));
     return res;
 }
 
-inline std::vector<Path> paths_from_regions(Regions const &rs) {
-    std::vector<Path> res;
+inline PathVector paths_from_regions(Regions const &rs) {
+    PathVector res;
     for(unsigned i = 0; i < rs.size(); i++)
         res.push_back(rs[i]);
     return res;

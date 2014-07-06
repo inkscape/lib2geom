@@ -58,7 +58,7 @@ void expect_array(const T (&x)[xn], vector<T> y) {
         EXPECT_EQ(x[i], y[i]);
     }
 }
-Shape cleanup(std::vector<Path> const &ps) {
+Shape cleanup(PathVector const &ps) {
     Piecewise<D2<SBasis> > pw = paths_to_pw(ps);
     double area;
     Point centre;

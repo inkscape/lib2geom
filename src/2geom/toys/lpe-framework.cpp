@@ -46,14 +46,14 @@ void LPEToy::draw(cairo_t *cr, std::ostringstream *notify, int width, int height
     using namespace Geom;
 
     Piecewise<D2<SBasis> > pwd2(curve_handle.asBezier());
-    std::vector<Geom::Path> A = Geom::path_from_piecewise( pwd2, LPE_CONVERSION_TOLERANCE);
+    PathVector A = Geom::path_from_piecewise( pwd2, LPE_CONVERSION_TOLERANCE);
     cairo_set_line_width (cr, 2);
     cairo_set_source_rgba (cr, 1., 0.0, 0., 1);
     cairo_path(cr, A);
     cairo_stroke(cr);
 
     // perform the effect:
-    std::vector<Geom::Path> B = doEffect_path(A);
+    PathVector B = doEffect_path(A);
 
     cairo_set_line_width (cr, 1);
     cairo_set_source_rgba (cr, 0., 0.0, 0., 1);
@@ -78,17 +78,17 @@ LPEToy::LPEToy(){
 /*
  *  Here be the doEffect function chain:  (this is copied code from Inkscape)
  */
-std::vector<Geom::Path>
-LPEToy::doEffect_path (std::vector<Geom::Path> const & path_in)
+Geom::PathVector
+LPEToy::doEffect_path (Geom::PathVector const &path_in)
 {
-    std::vector<Geom::Path> path_out;
+    Geom::PathVector path_out;
 
     if ( !concatenate_before_pwd2 ) {
         // default behavior
         for (unsigned int i=0; i < path_in.size(); i++) {
             Geom::Piecewise<Geom::D2<Geom::SBasis> > pwd2_in = path_in[i].toPwSb();
             Geom::Piecewise<Geom::D2<Geom::SBasis> > pwd2_out = doEffect_pwd2(pwd2_in);
-            std::vector<Geom::Path> path = Geom::path_from_piecewise( pwd2_out, LPE_CONVERSION_TOLERANCE);
+            Geom::PathVector path = Geom::path_from_piecewise( pwd2_out, LPE_CONVERSION_TOLERANCE);
             // add the output path vector to the already accumulated vector:
             for (unsigned int j=0; j < path.size(); j++) {
                 path_out.push_back(path[j]);

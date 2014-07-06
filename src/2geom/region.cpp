@@ -6,7 +6,7 @@
 namespace Geom {
 
 Region Region::operator*(Affine const &m) const {
-    Region r((m.flips() ? boundary.reverse() : boundary) * m, fill);
+    Region r((m.flips() ? boundary.reversed() : boundary) * m, fill);
     if(box && m.isZoom()) r.box = (*box) * m;
     return r;
 }

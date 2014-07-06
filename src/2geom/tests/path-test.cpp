@@ -32,9 +32,6 @@ protected:
     Path square, circle, diederik;
 };
 
-TEST_F(PathTest, UnitTests) {
-}
-
 TEST_F(PathTest, ValueAt) {
     EXPECT_EQ(Point(0,0), line.initialPoint());
     EXPECT_EQ(Point(1,0), line.finalPoint());
@@ -43,7 +40,10 @@ TEST_F(PathTest, ValueAt) {
 
     EXPECT_EQ(Point(0,0), square.initialPoint());
     EXPECT_EQ(Point(0,0), square.finalPoint());
-    EXPECT_EQ(Point(0,0), square.pointAt(1));
+    EXPECT_EQ(Point(1,0), square.pointAt(1));
+    EXPECT_EQ(Point(0.5,1), square.pointAt(2.5));
+    EXPECT_EQ(Point(0,0.5), square.pointAt(3.5));
+    EXPECT_EQ(Point(0,0), square.pointAt(4));
 }
 
 TEST_F(PathTest, NearestPoint) {

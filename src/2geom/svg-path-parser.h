@@ -57,17 +57,17 @@ inline PathVector parse_svg_path(char const *str) {
     return ret;
 }
 
-inline std::vector<Path> read_svgd_f(FILE * fi) {
+inline PathVector read_svgd_f(FILE * fi) {
     /// @bug The 10kB length limit should be removed
     char input[1024 * 10];
     fgets(input, 1024 * 10, fi);
     return parse_svg_path(input);
 }
 
-inline std::vector<Path> read_svgd(char const * name) {
+inline PathVector read_svgd(char const * name) {
     FILE* fi = fopen(name, "r");
     if(fi == NULL) throw(std::runtime_error("Error opening file"));
-    std::vector<Path> out = read_svgd_f(fi);
+    PathVector out = read_svgd_f(fi);
     fclose(fi);
     return out;
 }

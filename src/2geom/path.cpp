@@ -35,6 +35,7 @@
 
 
 #include <2geom/path.h>
+#include <2geom/pathvector.h>
 #include <2geom/transforms.h>
 #include <algorithm>
 
@@ -235,7 +236,7 @@ Path::nearestTimePerCurve(Point const& _point) const
 	//return a single nearest point for each curve in this path
 	std::vector<double> np;
 	for (const_iterator it = begin() ; it != end_default() ; ++it)
-	//for (std::vector<Path>::const_iterator it = _path.begin(); it != _path.end(), ++it){
+	//for (PathVector::const_iterator it = _path.begin(); it != _path.end(), ++it){
 	{
 	    np.push_back(it->nearestTime(_point));
     }
@@ -438,6 +439,14 @@ void Path::check_continuity(Sequence::iterator first_replaced,
       THROW_CONTINUITYERROR();
     }
   }
+}
+
+Piecewise<D2<SBasis> > paths_to_pw(PathVector const &paths) {
+    Piecewise<D2<SBasis> > ret = paths[0].toPwSb();
+    for(unsigned i = 1; i < paths.size(); i++) {
+        ret.concat(paths[i].toPwSb());
+    }
+    return ret;
 }
 
 } // end namespace Geom

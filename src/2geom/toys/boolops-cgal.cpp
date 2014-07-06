@@ -147,8 +147,8 @@ public:
         _current_point = p2;
     }
 
-    virtual void arcTo(double rx, double ry, double angle,
-                       bool large_arc, bool sweep, Point const &p)
+    virtual void arcTo(double /*rx*/, double /*ry*/, double /*angle*/,
+                       bool /*large_arc*/, bool /*sweep*/, Point const &p)
     {
         // XXX
         lineTo(p);
@@ -371,7 +371,7 @@ class BoolOpsCGAL : public Toy {
         p = PointHandle(Point(300,300));
         handles.push_back(&p);
 
-        b_offset = initialPoint(bs);
+        b_offset = bs.initialPoint();
         
         toggles.push_back(Toggle("W", true));
         toggles.push_back(Toggle("A", true));

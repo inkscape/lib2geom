@@ -75,7 +75,7 @@ int main()
         const int num_repeats = 100;
         std::clock_t start = std::clock();
         for (int i = 0; i < num_repeats; i++) {
-            std::vector<Path> path = parse_svg_path(path_str);
+            PathVector path = parse_svg_path(path_str);
         }
         std::clock_t stop = std::clock();
         std::cout << "Parse SVG-d (" << num_repeats << "x): " << (stop - start) * (1000. / CLOCKS_PER_SEC) << " ms "

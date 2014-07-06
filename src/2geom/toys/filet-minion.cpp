@@ -35,9 +35,9 @@ class IntersectDataTester: public Toy {
         cairo_set_line_width (cr, 1);
         
 	std::vector<D2<SBasis> > pieces;
-        std::vector<Path> paths(nb_paths, Path());
+        PathVector paths;
         for (int i = 0; i < nb_paths; i++){
-            paths[i] = Path(paths_handles[i].pts[0]);
+            paths.push_back(Path(paths_handles[i].pts[0]));
             for (unsigned j = 0; j+degree < paths_handles[i].size(); j+=degree){
                 D2<SBasis> c = handles_to_sbasis(paths_handles[i].pts.begin()+j, degree);
                 paths[i].append(c);

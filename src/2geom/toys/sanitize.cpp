@@ -57,7 +57,7 @@ void append(std::vector<T> &vec, std::vector<T> const &other) {
     vec.insert(vec.end(),other.begin(), other.end());
 }
 
-Edges edges(std::vector<Path> const &ps, CrossingSet const &crs) {
+Edges edges(PathVector const &ps, CrossingSet const &crs) {
     Edges ret = Edges();
     for(unsigned i = 0; i < crs.size(); i++) {
         Edges temp = edges(ps[i], crs[i], i);
@@ -66,18 +66,18 @@ Edges edges(std::vector<Path> const &ps, CrossingSet const &crs) {
     return ret;
 }
 
-std::vector<Path> edges_to_paths(Edges const &es, std::vector<Path> const &ps) {
-    std::vector<Path> ret;
+PathVector edges_to_paths(Edges const &es, PathVector const &ps) {
+    PathVector ret;
     for(unsigned i = 0; i < es.size(); i++) {
         ret.push_back(ps[es[i].ix].portion(es[i].from.time, es[i].to.time));
     }
     return ret;
 }
 
-void draw_cell(cairo_t *cr, Edges const &es, std::vector<Path> const &ps) {
+void draw_cell(cairo_t *cr, Edges const &es, PathVector const &ps) {
 	cairo_set_source_rgba(cr, uniform(), uniform(), uniform(), 0.5);
 	cairo_set_line_width(cr, uniform() * 10);
-	std::vector<Path> paths = edges_to_paths(es, ps);
+	PathVector paths = edges_to_paths(es, ps);
 	Piecewise<D2<SBasis> > pw = paths_to_pw(paths);
 	double area;
 	Point centre;
@@ -101,7 +101,7 @@ void remove(std::vector<T> &vec, T const &val) {
     }
 }
 
-std::vector<Edges> cells(cairo_t */*cr*/, std::vector<Path> const &ps) {
+std::vector<Edges> cells(cairo_t */*cr*/, PathVector const &ps) {
     CrossingSet crs = crossings_among(ps);
     Edges es = edges(ps, crs);
     std::vector<Edges> ret = std::vector<Edges>();
@@ -157,7 +157,7 @@ std::vector<Edges> cells(cairo_t */*cr*/, std::vector<Path> const &ps) {
     return ret;
 }
 
-int cellWinding(Edges const &/*es*/, std::vector<Path> const &/*ps*/) {
+int cellWinding(Edges const &/*es*/, PathVector const &/*ps*/) {
     return 0;
 }
 
@@ -166,7 +166,7 @@ Region fromEdges(bool hole, Edges const &es) {
     Region ret;
 }
 
-Shape sanitize(bool nonZero, std::vector<Path> const& paths) {
+Shape sanitize(bool nonZero, PathVector const& paths) {
     Regions ret = Regions();
     std::vector<Edges> cells = cells(paths);
     for(int i = 0; i < cells.size(); i++) {
@@ -181,9 +181,9 @@ Shape sanitize(bool nonZero, std::vector<Path> const& paths) {
     return Shape(ret);
 }
 
-Shape boolops(std::vector<Path> const& a, std::vector<Path> const& b, (Int -> Int -> Bool) f){
+Shape boolops(PathVector const& a, PathVector const& b, (Int -> Int -> Bool) f){
     Regions ret = Regions();
-    std::vector<Path> merge = std::vector<Path>(a);
+    PathVector merge = PathVector(a);
     Append(merge, b);
     std::vector<Edges> cs = cells(merge);
     for(int i = 0; i < cs.size(); i++) {
@@ -206,7 +206,7 @@ bool first_false(std::vector<bool> visits, int& i) {
     return false;
 }
 
-std::vector<Path> sanitize(Path const &p) {
+PathVector sanitize(Path const &p) {
     Crossings crs_a = self_crossings(p);
     sort_crossings(crs_a, 0);
     Crossings crs_b = Crossings(crs_a);
@@ -259,7 +259,7 @@ std::vector<Path> sanitize(Path const &p) {
         regions.push_back(segs);
     }
     
-    std::vector<Path> ret = std::vector<Path>();
+    PathVector ret = PathVector();
     for(int i = 0; i > regions.size(); i++) {
         for(int j = 0; j < regions[i].size(); j++) {
             std::cout << regions[i][j].min() << "," << regions[i][j].max() << " "; 
@@ -279,7 +279,7 @@ void cairo_region(cairo_t *cr, Region const &r) {
 */
 
 class Sanitize: public Toy {
-    std::vector<Path> paths;
+    PathVector paths;
     std::vector<Edges> es;
     PointSetHandle angh;
 	PointSetHandle pathix;

@@ -36,7 +36,7 @@
 #define _SBASIS_TO_BEZIER
 
 #include <2geom/d2.h>
-#include <2geom/path.h>
+#include <2geom/pathvector.h>
 
 #include <vector>
 
@@ -65,7 +65,7 @@ sbasis_to_bezier(D2<SBasis> const &B, unsigned q = 0);
 #endif
 
 
-std::vector<Path> path_from_piecewise(Piecewise<D2<SBasis> > const &B, double tol, bool only_cubicbeziers = false);
+PathVector path_from_piecewise(Piecewise<D2<SBasis> > const &B, double tol, bool only_cubicbeziers = false);
 
 Path path_from_sbasis(D2<SBasis> const &B, double tol, bool only_cubicbeziers = false);
 inline Path cubicbezierpath_from_sbasis(D2<SBasis> const &B, double tol)

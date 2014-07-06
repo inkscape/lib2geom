@@ -654,9 +654,9 @@ Path area_to_path(PathVector const &ps, Area const &area) {
 }
 
 PathVector areas_to_paths(PathVector const &ps, Areas const &areas) {
-    std::vector<Path> ret;
-    ret.reserve(areas.size());
-    for(unsigned i = 0; i < areas.size(); i++)
+    PathVector ret;
+    //ret.reserve(areas.size());
+    for(unsigned i = 0; i < areas.size(); ++i)
         ret.push_back(area_to_path(ps, areas[i]));
     return ret;
 }

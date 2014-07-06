@@ -446,7 +446,7 @@ There are a few convenience typedefs for the popular crossing collections:
 The intersection system is designed to be modular, so that different algorithms may be used. The current algorithms are generic, and apply to anything that implements Curve. A custom curve type might provide an algorithm with special cases, and default to the generic algorithms. The following crossing functions use the DefaultCrosser, which is currently a simple binary search.
 
 \verb|Crossings crossings(Path, Path);|  —  finds the crossings between two paths
-\verb|CrossingSet crossings(std::vector<Path>, std::vector<Path>);|  —  finds the crossings between two sets of paths.
+\verb|CrossingSet crossings(PathVector, PathVector);|  —  finds the crossings between two sets of paths.
 
 
 \section{Layer 2: Regions}

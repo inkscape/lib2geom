@@ -21,7 +21,7 @@ void draw_rect(cairo_t *cr, Point tl, Point br) {
     cairo_close_path(cr);
 }
 
-void draw_bounds(cairo_t *cr, vector<Path> ps) {
+void draw_bounds(cairo_t *cr, PathVector ps) {
     srand(0); 
     vector<Rect> bnds;
     for(unsigned i = 0; i < ps.size(); i++) {
@@ -48,13 +48,13 @@ void draw_bounds(cairo_t *cr, vector<Path> ps) {
     }
 }
 
-void mark_verts(cairo_t *cr, vector<Path> ps) {
+void mark_verts(cairo_t *cr, PathVector ps) {
     for(unsigned i = 0; i < ps.size(); i++)
         for(Path::iterator it = ps[i].begin(); it != ps[i].end(); ++it)
             draw_cross(cr, it->initialPoint());
 }
 
-int winding(vector<Path> ps, Point p) {
+int winding(PathVector ps, Point p) {
     int wind = 0;
     for(unsigned i = 0; i < ps.size(); i++)
         wind += winding(ps[i],p);
@@ -91,15 +91,15 @@ public:
         //double crossing_product; // first cross(d^nA, d^nB) for n that is non-zero, or 0 if the two curves are the same
     };
     vector<Rect> rs;
-    vector<Path>* pths;
+    PathVector* pths;
     cairo_t* cr;
     std::vector<Piece> pieces;
     
-    Uncross(vector<Path> &pt, cairo_t* cr):pths(&pt), cr(cr) {}
+    Uncross(PathVector &pt, cairo_t* cr):pths(&pt), cr(cr) {}
     
     void build() {
         cairo_save(cr);
-        vector<Path> &ps(*pths);
+        PathVector &ps(*pths);
         for(unsigned i = 0; i < ps.size(); i++) {
             for(Path::iterator it = ps[i].begin(); it != ps[i].end(); ++it) {
                 Rect bounds = (it->boundsExact());
@@ -298,7 +298,7 @@ public:
 };
 
 class WindingTest: public Toy {
-    vector<Path> path;
+    PathVector path;
     PointHandle test_pt_handle;
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
         cairo_set_source_rgb(cr, 0, 0, 0);
@@ -322,7 +322,7 @@ class WindingTest: public Toy {
         }
         
         cairo_save(cr);
-        vector<Path> &ps(path);
+        PathVector &ps(path);
         vector<Rect> rs;
         std::vector<Uncross::Piece> pieces;
         std::vector<Uncross::Crossing> crosses;
@@ -476,8 +476,9 @@ class WindingTest: public Toy {
             path_name = argv[1];
         path = read_svgd(path_name);
         OptRect bounds = bounds_exact(path);
-        if(bounds)
-            path += Point(10,10)-bounds->min();
+        if (bounds) {
+            path *= Translate(Point(10,10) - bounds->min());
+        }
         
         handles.push_back(&test_pt_handle);
     }

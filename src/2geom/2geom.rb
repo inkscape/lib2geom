@@ -161,7 +161,7 @@ class Arrangement
     builder.c <<-EOS
       static VALUE each() {
         Geom::Arrangement *arrangement=value_to_arrangement(self);
-        for ( std::vector<Geom::Path>::const_iterator iter = arrangement->begin() ;
+        for ( Geom::PathVector::const_iterator iter = arrangement->begin() ;
               iter != arrangement->end() ; ++iter )
         {
           Geom::Path *path = new Geom::Path(*iter);

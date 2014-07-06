@@ -38,7 +38,7 @@
 using namespace boost::python;
 
 void (*parse_svg_path_str_sink) (char const *, Geom::PathSink &) = &Geom::parse_svg_path;
-std::vector<Geom::Path> (*parse_svg_path_str) (char const *) = &Geom::parse_svg_path;
+Geom::PathVector (*parse_svg_path_str) (char const *) = &Geom::parse_svg_path;
 
 void (Geom::PathSink::*feed_path)(Geom::Path const &) = &Geom::PathSink::feed;
 void (Geom::PathSink::*feed_pathvector)(Geom::PathVector const &) = &Geom::PathSink::feed;

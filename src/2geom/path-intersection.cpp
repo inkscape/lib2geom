@@ -21,7 +21,7 @@ namespace Geom {
  * used to derive a delta on the winding value.  If the point is within the bounding box,
  * the curve specific winding function is called.
  */
-int winding(Path const &path, Point p) {
+int winding(Path const &path, Point const &p) {
   //start on a segment which is not a horizontal line with y = p[y]
   Path::const_iterator start;
   for(Path::const_iterator iter = path.begin(); ; ++iter) {
@@ -162,7 +162,7 @@ void append(T &a, T const &b) {
  * indicates if the time values are within their proper range on the line segments.
  */
 bool
-linear_intersect(Point A0, Point A1, Point B0, Point B1,
+linear_intersect(Point const &A0, Point const &A1, Point const &B0, Point const &B1,
                  double &tA, double &tB, double &det) {
     bool both_lines_non_zero = (!are_near(A0, A1)) && (!are_near(B0, B1));
 
@@ -521,7 +521,7 @@ std::vector<double> path_mono_splits(Path const &p) {
  * Applies path_mono_splits to multiple paths, and returns the results such that 
  * time-set i corresponds to Path i.
  */
-std::vector<std::vector<double> > paths_mono_splits(std::vector<Path> const &ps) {
+std::vector<std::vector<double> > paths_mono_splits(PathVector const &ps) {
     std::vector<std::vector<double> > ret;
     for(unsigned i = 0; i < ps.size(); i++)
         ret.push_back(path_mono_splits(ps[i]));
@@ -533,7 +533,7 @@ std::vector<std::vector<double> > paths_mono_splits(std::vector<Path> const &ps)
  * Each entry i corresponds to path i of the input.  The number of rects in each entry is guaranteed to be the
  * number of splits for that path, subtracted by one.
  */
-std::vector<std::vector<Rect> > split_bounds(std::vector<Path> const &p, std::vector<std::vector<double> > splits) {
+std::vector<std::vector<Rect> > split_bounds(PathVector const &p, std::vector<std::vector<double> > splits) {
     std::vector<std::vector<Rect> > ret;
     for(unsigned i = 0; i < p.size(); i++) {
         std::vector<Rect> res;
@@ -553,7 +553,7 @@ std::vector<std::vector<Rect> > split_bounds(std::vector<Path> const &p, std::ve
  * This function does two sweeps, one on the bounds of each path, and after that cull, one on the curves within.
  * This leads to a certain amount of code complexity, however, most of that is factored into the above functions
  */
-CrossingSet MonoCrosser::crossings(std::vector<Path> const &a, std::vector<Path> const &b) {
+CrossingSet MonoCrosser::crossings(PathVector const &a, PathVector const &b) {
     if(b.empty()) return CrossingSet(a.size(), Crossings());
     CrossingSet results(a.size() + b.size(), Crossings());
     if(a.empty()) return results;
@@ -596,7 +596,7 @@ CrossingSet MonoCrosser::crossings(std::vector<Path> const &a, std::vector<Path>
 
 /* This function is similar codewise to the MonoCrosser, the main difference is that it deals with
  * only one set of paths and includes self intersection
-CrossingSet crossings_among(std::vector<Path> const &p) {
+CrossingSet crossings_among(PathVector const &p) {
     CrossingSet results(p.size(), Crossings());
     if(p.empty()) return results;
     
@@ -780,7 +780,7 @@ void flip_crossings(Crossings &crs) {
         crs[i] = Crossing(crs[i].tb, crs[i].ta, crs[i].b, crs[i].a, !crs[i].dir);
 }
 
-CrossingSet crossings_among(std::vector<Path> const &p) {
+CrossingSet crossings_among(PathVector const &p) {
     CrossingSet results(p.size(), Crossings());
     if(p.empty()) return results;
     

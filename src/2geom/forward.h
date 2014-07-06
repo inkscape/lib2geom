@@ -79,7 +79,7 @@ class SVGEllipticalArc;
 
 // paths and path sequences
 class Path;
-typedef std::vector<Path> PathVector;
+class PathVector;
 
 // errors
 class Exception;

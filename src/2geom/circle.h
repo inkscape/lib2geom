@@ -81,7 +81,7 @@ public:
         bool svg_compliant = true);
 
     D2<SBasis> toSBasis();
-    void getPath(std::vector<Path> &path_out);
+    void getPath(PathVector &path_out);
 
     Point center() const {
         return _center;

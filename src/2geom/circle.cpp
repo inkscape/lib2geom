@@ -114,7 +114,7 @@ D2<SBasis> Circle::toSBasis()
 }
 
 void
-Circle::getPath(std::vector<Path> &path_out) {
+Circle::getPath(PathVector &path_out) {
     Path pb;
 
     D2<SBasis> B = toSBasis();

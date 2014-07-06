@@ -139,7 +139,7 @@ class InnerProductClip: public Toy {
         const char *path_a_name="star.svgd";
         if(argc > 1)
             path_a_name = argv[1];
-        std::vector<Path> paths_a = read_svgd(path_a_name);
+        PathVector paths_a = read_svgd(path_a_name);
         assert(paths_a.size() > 0);
         path_a = paths_a[0];
         

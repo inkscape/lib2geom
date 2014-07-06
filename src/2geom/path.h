@@ -389,7 +389,7 @@ public:
   }
   Path portion(Interval i) const { return portion(i.min(), i.max()); }
 
-  Path reverse() const {
+  Path reversed() const {
     Path ret(*this);
     ret.unshare();
     for ( Sequence::iterator iter = ret.get_curves().begin() ;
@@ -523,7 +523,7 @@ public:
   }
 
   Point initialPoint() const { return (*final_)[1]; }
-  Point finalPoint() const { return (*final_)[0]; }
+  Point finalPoint() const { return (*final_)[closed_ ? 1 : 0]; }
 
   void setInitial(Point const& p)
   {
@@ -680,13 +680,7 @@ private:
   bool closed_;
 };  // end class Path
 
-inline static Piecewise<D2<SBasis> > paths_to_pw(std::vector<Path> paths) {
-    Piecewise<D2<SBasis> > ret = paths[0].toPwSb();
-    for(unsigned i = 1; i < paths.size(); i++) {
-        ret.concat(paths[i].toPwSb());
-    }
-    return ret;
-}
+Piecewise<D2<SBasis> > paths_to_pw(PathVector const &paths);
 
 inline
 Coord nearest_point(Point const& p, Path const& c)

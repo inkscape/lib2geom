@@ -509,7 +509,7 @@ path_from_sbasis(D2<SBasis> const &B, double tol, bool only_cubicbeziers) {
   If only_cubicbeziers is true, the resulting path may only contain CubicBezier curves.
  TODO: some of this logic should be lifted into svg-path
 */
-std::vector<Geom::Path>
+PathVector
 path_from_piecewise(Geom::Piecewise<Geom::D2<Geom::SBasis> > const &B, double tol, bool only_cubicbeziers) {
     Geom::PathBuilder pb;
     if(B.size() == 0) return pb.peek();

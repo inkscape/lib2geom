@@ -53,9 +53,9 @@
 using namespace Geom;
 
 std::ostream&
-operator<< (std::ostream &out, const PathVectorPosition pvp)
+operator<< (std::ostream &out, PathVectorPosition const &pvp)
 {
-    return out << pvp.path_nr << "." << pvp.t;
+    return out << pvp.index << "." << pvp.t;
 }
 
 class NearestPoints : public Toy
@@ -75,7 +75,7 @@ class NearestPoints : public Toy
     static const char* menu_items[TOTAL_ITEMS];
 
 private:
-    std::vector<Path> paths_b;
+    PathVector paths_b;
     void draw( cairo_t *cr,	std::ostringstream *notify,
                int width, int height, bool save, std::ostringstream *timer_stream)
     {
@@ -232,9 +232,9 @@ private:
 
     	        if ( toggles[0].on )
     	        {
-                    std::vector<PathVectorPosition> t = allNearestPositions(pathv, p);
+                    std::vector<PathVectorPosition> t = pathv.allNearestPositions(p);
                     for ( unsigned int i = 0; i < t.size(); ++i )
-                        nps.push_back(pointAt(pathv, t[i]));
+                        nps.push_back(pathv.pointAt(t[i]));
     	        }
     	        else
     	        {

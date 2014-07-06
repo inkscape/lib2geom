@@ -201,11 +201,11 @@ int main()
 {
     for (int rep = 0; rep < 3; rep++) {
         const int num_repeats = 100;
-        std::vector<Path> path = parse_svg_path(many_subpaths);
+        PathVector path = parse_svg_path(many_subpaths);
         std::clock_t start = std::clock();
         for (int i = 0; i < num_repeats; i++) {
-            std::vector<Path> path2 = reverse_paths_and_order(path);
-            std::vector<Path> path3 = reverse_paths_and_order(reverse_paths_and_order(path2));
+            PathVector path2 = path.reversed();
+            PathVector path3 = path2.reversed().reversed();
         }
         std::clock_t stop = std::clock();
         std::cout << "Reverse paths (" << num_repeats << "x): " << (stop - start) * (1000. / CLOCKS_PER_SEC) << " ms " << std::endl;

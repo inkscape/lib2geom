@@ -133,20 +133,20 @@ void py_cairo_path(object cr, Geom::Path const &p) {
     cairo_path(cairo_t_from_object(cr), p);
 }
 
-void py_cairo_path(object cr, std::vector<Geom::Path> const &p) {
+void py_cairo_path(object cr, Geom::PathVector const &p) {
     cairo_path(cairo_t_from_object(cr), p);
 }
 void py_cairo_path_stitches(object cr, Geom::Path const &p) {
     cairo_path_stitches(cairo_t_from_object(cr), p);
 }
-void py_cairo_path_stitches(object cr, std::vector<Geom::Path> const &p) {
+void py_cairo_path_stitches(object cr, Geom::PathVector const &p) {
     cairo_path_stitches(cairo_t_from_object(cr), p);
 }
 void     (*cp_1)(object, Geom::Path const &)    = &py_cairo_path;
-void     (*cp_2)(object, std::vector<Geom::Path> const &)    = &py_cairo_path;
+void     (*cp_2)(object, Geom::PathVector const &)    = &py_cairo_path;
 
 void     (*cps_1)(object, Geom::Path const &)    = &py_cairo_path_stitches;
-void     (*cps_2)(object, std::vector<Geom::Path> const &)    = &py_cairo_path_stitches;
+void     (*cps_2)(object, Geom::PathVector const &)    = &py_cairo_path_stitches;
 
 
 void py_cairo_d2_sb(object cr, Geom::D2<Geom::SBasis> const &p) {
@@ -203,7 +203,7 @@ void wrap_path()
         //.def("nearestTime", &Geom::Path::nearestTime)
         .def("appendPortionTo", &Geom::Path::appendPortionTo)
         //.def("portion", &Geom::Path::portion)
-        .def("reverse", &Geom::Path::reverse)
+        .def("reversed", &Geom::Path::reversed)
         //.def("insert", &Geom::Path::insert)
         .def("clear", &Geom::Path::clear)
         //.def("erase", &Geom::Path::erase)
@@ -218,14 +218,15 @@ void wrap_path()
         //.def("appendNew", &Geom::Path::appendNew)
     ;
     def("paths_to_pw",Geom::paths_to_pw);
-    class_<std::vector<Geom::Path> >("PathVector")
-        .def(vector_indexing_suite<std::vector<Geom::Path> >())
+    class_<Geom::PathVector >("PathVector")
+        .def(vector_indexing_suite<Geom::PathVector >())
         .def(self * Geom::Affine())
         .def(self *= Geom::Affine())
+        .def("reversed", &Geom::PathVector::reversed)
+        .def("reverse", &Geom::PathVector::reverse)
+        .def("boundsFast", &Geom::PathVector::boundsFast)
+        .def("boundsExact", &Geom::PathVector::boundsExact)
     ;
-    def("reverse_paths_and_order", Geom::reverse_paths_and_order);
-    def("bounds_fast", (Geom::OptRect (*)(Geom::PathVector const &))&Geom::bounds_fast);
-    def("bounds_exact", (Geom::OptRect (*)(Geom::PathVector const &))&Geom::bounds_exact);
     def("path_from_piecewise", Geom::path_from_piecewise);
     def("path_from_sbasis", Geom::path_from_sbasis);
     def("cubicbezierpath_from_sbasis", Geom::cubicbezierpath_from_sbasis);

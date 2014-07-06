@@ -56,7 +56,7 @@ void mark_crossings(cairo_t *cr, Shape const &a, Shape const &b) {
     //}
 }
 
-void mark_crossings(cairo_t* cr, std::vector<Path> &a) {
+void mark_crossings(cairo_t* cr, PathVector &a) {
     CrossingSet crs = crossings_among(a);
     for(unsigned i = 0; i < crs.size(); i++) {
         for(unsigned j = 0; j < crs[i].size(); j++) {
@@ -67,7 +67,7 @@ void mark_crossings(cairo_t* cr, std::vector<Path> &a) {
     }
 }
 
-Shape cleanup(std::vector<Path> const &ps) {
+Shape cleanup(PathVector const &ps) {
     Piecewise<D2<SBasis> > pw = paths_to_pw(ps);
     double area;
     Point centre;
@@ -90,9 +90,9 @@ class BoolOps: public Toy {
         cairo_set_line_width(cr, 1);
         //mark_crossings(cr, as, bst);
         
-        /* std::vector<Path> ps;
+        /* PathVector ps;
         ps.push_back(bst[0]);
-        std::vector<Path> ap = paths_from_regions(as.getContent());
+        PathVector ap = paths_from_regions(as.getContent());
         ps.insert(ps.end(), ap.begin(), ap.begin()+1);
         
         Shape rgs = sanitize(ps);
@@ -192,8 +192,8 @@ class BoolOps: public Toy {
             path_a_name = argv[1];
         if(argc > 2)
             path_b_name = argv[2];
-        std::vector<Path> paths_a = read_svgd(path_a_name);
-        std::vector<Path> paths_b = read_svgd(path_b_name);
+        PathVector paths_a = read_svgd(path_a_name);
+        PathVector paths_b = read_svgd(path_b_name);
              
         p = PointHandle(Point(300,300));
         handles.push_back(&p);

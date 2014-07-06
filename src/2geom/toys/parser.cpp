@@ -87,8 +87,8 @@ int main(int argc, char **argv) {
         SVGPathTestPrinter sink;
         Geom::parse_svg_path(&*argv[1], sink);
         std::cout << "Try real pathsink:" << std::endl;
-        std::vector<Geom::Path> testpath = Geom::parse_svg_path(&*argv[1]);
-        std::cout << "std::vector<Geom::Path> length: " << testpath.size() << std::endl;
+        Geom::PathVector testpath = Geom::parse_svg_path(&*argv[1]);
+        std::cout << "Geom::PathVector length: " << testpath.size() << std::endl;
         if ( !testpath.empty() )
         	std::cout << "Path curves: " << testpath.front().size() << std::endl;
         std::cout << "success!" << std::endl;

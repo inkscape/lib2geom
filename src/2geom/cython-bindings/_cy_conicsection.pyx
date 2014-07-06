@@ -71,13 +71,6 @@ cdef class cy_Circle:
         else:
             return wrap_EllipticalArc( deref(self.thisptr.arc(deref( initial.thisptr ), deref( inner.thisptr ), deref( final.thisptr ), _svg_compliant)) )
 
-    #changing this function to return Path
-    def getPath(self):
-        """Get path copying this circle."""
-        cdef vector[Path] v
-        self.thisptr.getPath(v)
-        return wrap_Path(v[0])
-
     def center(self):
         """Get center of circle in point."""
         return wrap_Point(self.thisptr.center())

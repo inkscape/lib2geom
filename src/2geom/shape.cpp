@@ -298,7 +298,7 @@ Shape boolop(Shape const &a, Shape const &b, unsigned flags) {
     return Shape();
 }
 
-int paths_winding(std::vector<Path> const &ps, Point p) {
+int paths_winding(PathVector const &ps, Point p) {
     int ret = 0;
     for(unsigned i = 0; i < ps.size(); i++)
         ret += winding(ps[i], p);
@@ -312,7 +312,7 @@ void add_to_shape(Shape &s, Path const &p, bool fill) {
         s.content.push_back(Region(p).asHole());
 }
 
-int inner_winding(Path const & p, std::vector<Path> const &ps) {
+int inner_winding(Path const & p, PathVector const &ps) {
     Point pnt = p.initialPoint();
     return paths_winding(ps, pnt) - winding(p, pnt) + 1;
 }
@@ -323,7 +323,7 @@ double fudgerize(double d, bool rev) {
     return ret;
 }
 
-unsigned pick_coincident(unsigned ix, unsigned jx, bool &rev, std::vector<Path> const &ps, CrossingSet const &crs) {
+unsigned pick_coincident(unsigned ix, unsigned jx, bool &rev, PathVector const &ps, CrossingSet const &crs) {
     unsigned ex_jx = jx;
     unsigned oix = crs[ix][jx].getOther(ix);
     double otime = crs[ix][jx].getTime(oix);
@@ -388,7 +388,7 @@ void crossing_dual(unsigned &i, unsigned &j, CrossingSet const & crs) {
 }
 
 //locate a crossing on the outside, by casting a ray through the middle of the bbox
-void outer_crossing(unsigned &ix, unsigned &jx, bool & dir, std::vector<Path> const & ps, CrossingSet const & crs) {
+void outer_crossing(unsigned &ix, unsigned &jx, bool & dir, PathVector const & ps, CrossingSet const & crs) {
     Rect bounds = *(ps[ix].boundsFast());
     double ry = bounds[Y].middle();
     double max_val = bounds.left(), max_t = 0;
@@ -413,7 +413,7 @@ void outer_crossing(unsigned &ix, unsigned &jx, bool & dir, std::vector<Path> co
     }
 }
 
-std::vector<Path> inner_sanitize(std::vector<Path> const & ps) {
+PathVector inner_sanitize(PathVector const & ps) {
     CrossingSet crs(crossings_among(ps));
     
     Regions chunks;
@@ -423,7 +423,7 @@ std::vector<Path> inner_sanitize(std::vector<Path> const & ps) {
     for(unsigned i = 0; i < crs.size(); i++)
         visited.push_back(std::vector<bool>(crs[i].size(), false));
     
-    std::vector<Path> result_paths;
+    PathVector result_paths;
     
     while(true) {
         unsigned ix = 0, jx = 0;
@@ -472,7 +472,7 @@ std::vector<Path> inner_sanitize(std::vector<Path> const & ps) {
 #ifdef SHAPE_DEBUG
                 std::cout << "r" << ix << "[" << from.getTime(ix)  << ", " << to.getTime(ix) << "]\n";
 #endif
-                Path p = ps[ix].portion(from.getTime(ix), to.getTime(ix)).reverse();
+                Path p = ps[ix].portion(from.getTime(ix), to.getTime(ix)).reversed();
                 for(unsigned i = 0; i < p.size(); i++)
                     res.append(p[i], Path::STITCH_DISCONTINUOUS);
             } else {
@@ -496,16 +496,16 @@ std::vector<Path> inner_sanitize(std::vector<Path> const & ps) {
     return result_paths;
 }
 
-Shape sanitize(std::vector<Path> const & ps) {
-    std::vector<Path> res;
+Shape sanitize(PathVector const & ps) {
+    PathVector res;
     for(unsigned i = 0; i < ps.size(); i++) {
-        append(res, inner_sanitize(std::vector<Path>(1, ps[i])));
+        append(res, inner_sanitize(ps[i]));
     }
     return stopgap_cleaner(res);
 }
 
 /*  WIP sanitizer:
-unsigned pick_coincident(unsigned ix, unsigned jx, bool pref, bool &rev, std::vector<Path> const &ps, CrossingSet const &crs) {
+unsigned pick_coincident(unsigned ix, unsigned jx, bool pref, bool &rev, PathVector const &ps, CrossingSet const &crs) {
     unsigned ex_jx = jx;
     unsigned oix = crs[ix][jx].getOther(ix);
     double otime = crs[ix][jx].getTime(oix);
@@ -544,7 +544,7 @@ bool corner_direction(unsigned ix, unsigned jc, unsigned corner, CrossingSet con
     if(crs[ix][jc].a == ix) return corner > 1; else return corner %2 == 1;
 }
 
-Shape sanitize(std::vector<Path> const & ps) {
+Shape sanitize(PathVector const & ps) {
     CrossingSet crs = crossings_among(ps);
     
     //Keep track of which CORNERS we've hit.
@@ -646,7 +646,7 @@ bool Shape::contains(Point const &p) const {
     return content[ix].isFill();
 }
 
-Shape stopgap_cleaner(std::vector<Path> const &ps) {
+Shape stopgap_cleaner(PathVector const &ps) {
     if(ps.empty()) return Shape(false);
     Shape ret;
     for(unsigned i = 0; i < ps.size(); i++)

@@ -78,13 +78,13 @@ doEffect_pwd2 (Geom::Piecewise<Geom::D2<Geom::SBasis> > & pwd2_in, Geom::Piecewi
 
 int main(int argc, char **argv) {
     if (argc > 1) {
-        std::vector<Geom::Path> originald = Geom::parse_svg_path(&*argv[1]);
+        Geom::PathVector originald = Geom::parse_svg_path(&*argv[1]);
         Geom::Piecewise<Geom::D2<Geom::SBasis> > originaldpwd2;
         for (unsigned int i=0; i < originald.size(); i++) {
             originaldpwd2.concat( originald[i].toPwSb() );
         }
 
-        std::vector<Geom::Path> pattern = Geom::parse_svg_path(&*argv[2]);
+        Geom::PathVector pattern = Geom::parse_svg_path(&*argv[2]);
         Geom::Piecewise<Geom::D2<Geom::SBasis> > patternpwd2;
         for (unsigned int i=0; i < pattern.size(); i++) {
             patternpwd2.concat( pattern[i].toPwSb() );

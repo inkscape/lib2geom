@@ -302,9 +302,9 @@ cdef class cy_Path:
         else:
             return wrap_Path(self.thisptr.portion(deref( interval.thisptr )))
 
-    def reverse(self):
+    def reversed(self):
         """Return reversed curve."""
-        return wrap_Path(self.thisptr.reverse())
+        return wrap_Path(self.thisptr.reversed())
 
     def insert(self, int pos, curve, Stitching stitching=NO_STITCHING):
         """Insert curve into position pos.
@@ -449,27 +449,9 @@ cdef class cy_Path:
         """Set last point to p, creating stitching segment to it."""
         self.thisptr.stitchTo(deref( p.thisptr ))
 
-    @classmethod
-    def read_svgd(self, bytes filename):
-        """Read svgd from file with specified filename."""
-        return wrap_vector_Path( read_svgd( filename ) )
-
 cdef cy_Path wrap_Path(Path p):
     cdef Path * retp = new Path(Point())
     retp[0] = p
     cdef cy_Path r = cy_Path.__new__(cy_Path)
     r.thisptr = retp
     return r
-
-cdef vector[Path] make_vector_Path(object l):
-    cdef vector[Path] ret
-    for i in l:
-        ret.push_back( deref( (<cy_Path> i).thisptr ) )
-    return ret
-
-cdef object wrap_vector_Path(vector[Path] l):
-    ret = []
-    cdef unsigned int i
-    for i in range(l.size()):
-        ret.append( wrap_Path(l[i]) )
-    return ret

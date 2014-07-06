@@ -18,7 +18,7 @@ void draw_rect(cairo_t *cr, Point tl, Point br) {
     cairo_close_path(cr);
 }
 
-void draw_bounds(cairo_t *cr, vector<Path> ps) {
+void draw_bounds(cairo_t *cr, PathVector ps) {
     srand(0); 
     vector<Rect> bnds;
     for(unsigned i = 0; i < ps.size(); i++) {
@@ -45,13 +45,13 @@ void draw_bounds(cairo_t *cr, vector<Path> ps) {
     }
 }
 
-void mark_verts(cairo_t *cr, vector<Path> ps) {
+void mark_verts(cairo_t *cr, PathVector ps) {
     for(unsigned i = 0; i < ps.size(); i++)
         for(Path::iterator it = ps[i].begin(); it != ps[i].end(); ++it)
             draw_cross(cr, it->initialPoint());
 }
 
-int winding(vector<Path> ps, Point p) {
+int winding(PathVector ps, Point p) {
     int wind = 0;
     for(unsigned i = 0; i < ps.size(); i++)
         wind += winding(ps[i],p);
@@ -59,7 +59,7 @@ int winding(vector<Path> ps, Point p) {
 }
 
 class WindingTest: public Toy {
-    vector<Path> path;
+    PathVector path;
     PointHandle test_pt_handle;
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
         cairo_set_source_rgb(cr, 0, 0, 0);

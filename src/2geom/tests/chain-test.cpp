@@ -97,7 +97,7 @@ protected:
 	  c.p.append(pv[i][j]);
 	}
 	if(c.p.initialPoint()[Y] > c.p.finalPoint()[Y]) {
-	  c.p = c.p.reverse();
+	  c.p = c.p.reversed();
 	}
 	cout << c.p.initialPoint() << endl;
 	cout << c.p.finalPoint() << endl;
@@ -105,8 +105,8 @@ protected:
       EXPECT_EQ(0, cs.sweepY);
       cs.findSweepY();
       EXPECT_EQ(265, cs.sweepY);
-      cs.chains[1].p.append(segs[0][0].reverse());
-      cs.chains[1].p.append(segs[1][0].reverse());
+      cs.chains[1].p.append(segs[0][0].reversed());
+      cs.chains[1].p.append(segs[1][0].reversed());
     }
 
 };

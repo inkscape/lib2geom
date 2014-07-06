@@ -109,8 +109,8 @@ int main()
 {
     for (int rep = 0; rep < 3; rep++) {
         const int num_repeats = 100;
-        std::vector<Path> path1 = parse_svg_path(path_str);
-        std::vector<Path> path2 = parse_svg_path(bend_str);
+        PathVector path1 = parse_svg_path(path_str);
+        PathVector path2 = parse_svg_path(bend_str);
         Piecewise<D2<SBasis> > pwd2_path = path1[0].toPwSb();
         Piecewise<D2<SBasis> > pwd2_bend = path2[0].toPwSb();
         std::clock_t start = std::clock();

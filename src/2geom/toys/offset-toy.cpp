@@ -76,7 +76,7 @@ class OffsetTester: public Toy {
         cairo_set_source_rgba (cr, 0.5, 0.2, 0., 0.8);
         Piecewise<D2<SBasis> > n = rot90(unitVector(derivative(B)));
         Piecewise<D2<SBasis> > offset_curve = Piecewise<D2<SBasis> >(B)+n*offset;
-        std::vector<Path> offset_path = path_from_piecewise(offset_curve, 0.1);
+        PathVector offset_path = path_from_piecewise(offset_curve, 0.1);
         
         cairo_path(cr, offset_path);
         cairo_stroke(cr);

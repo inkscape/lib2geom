@@ -42,59 +42,86 @@
 
 namespace Geom {
 
-// TODO: see which of these functions can be inlined for optimization
+//PathVector &PathVector::operator+=(PathVector const &other);
 
-/**
- * Reverses all Paths and the order of paths in the vector as well
- **/
-PathVector reverse_paths_and_order (PathVector const & path_in)
+void PathVector::reverse(bool reverse_paths)
 {
-    PathVector path_out;
-    for (PathVector::const_reverse_iterator it = path_in.rbegin(); it != path_in.rend(); ++it) {
-        path_out.push_back( (*it).reverse() );
+    if (reverse_paths) {
+        std::reverse(begin(), end());
     }
-    return path_out;
+    for (iterator i = begin(); i != end(); ++i) {
+        *i = i->reversed();
+    }
 }
 
-OptRect bounds_fast( PathVector const& pv )
+PathVector PathVector::reversed(bool reverse_paths)
 {
-    typedef PathVector::const_iterator const_iterator;
-    
+    PathVector ret;
+    for (iterator i = begin(); i != end(); ++i) {
+        ret.push_back(i->reversed());
+    }
+    if (reverse_paths) {
+        std::reverse(ret.begin(), ret.end());
+    }
+    return ret;
+}
+
+OptRect PathVector::boundsFast() const
+{
     OptRect bound;
-    if (pv.empty()) return bound;
-    
-    bound = (pv.begin())->boundsFast();
-    for (const_iterator it = ++(pv.begin()); it != pv.end(); ++it)
-    {
+    if (empty()) return bound;
+
+    bound = front().boundsFast();
+    for (const_iterator it = ++begin(); it != end(); ++it) {
         bound.unionWith(it->boundsFast());
     }
     return bound;
 }
 
-OptRect bounds_exact( PathVector const& pv )
+OptRect PathVector::boundsExact() const
 {
-    typedef PathVector::const_iterator const_iterator;
-    
     OptRect bound;
-    if (pv.empty()) return bound;
-    
-    bound = (pv.begin())->boundsExact();
-    for (const_iterator it = ++(pv.begin()); it != pv.end(); ++it)
-    {
+    if (empty()) return bound;
+
+    bound = front().boundsExact();
+    for (const_iterator it = ++begin(); it != end(); ++it) {
         bound.unionWith(it->boundsExact());
     }
     return bound;
 }
 
-/* Note: undefined for empty pathvectors or pathvectors with empty paths.
- * */
-boost::optional<PathVectorPosition> nearestPosition(PathVector const & path_in, Point const& _point, double *distance_squared)
+Coord PathVector::valueAt(Coord t, Dim2 d) const
+{
+    size_type path_index = 0, curve_index = 0;
+    Coord f = _getIndices(t, path_index, curve_index);
+    return at(path_index)[curve_index].valueAt(f, d);
+}
+Point PathVector::pointAt(Coord t) const
+{
+    size_type path_index = 0, curve_index = 0;
+    Coord f = _getIndices(t, path_index, curve_index);
+    return at(path_index)[curve_index].pointAt(f);
+}
+
+Coord PathVector::_getIndices(Coord t, size_type &path_index, size_type &curve_index) const
+{
+    Coord path = 0;
+    Coord f = modf(t, &path);
+    for (; path_index < size(); ++path_index) {
+        unsigned s = _data.at(path_index).size();
+        if (s > curve_index) break;
+        curve_index -= s;
+    }
+    return f;
+}
+
+boost::optional<PathVectorPosition> PathVector::nearestPosition(Point const& _point, double *distance_squared) const
 {
     boost::optional<PathVectorPosition> retval;
 
     double mindsq = infinity();
     unsigned int i = 0;
-    for (Geom::PathVector::const_iterator pit = path_in.begin(); pit != path_in.end(); ++pit) {
+    for (const_iterator pit = begin(); pit != end(); ++pit) {
         double dsq;
         double t = pit->nearestTime(_point, &dsq);
         //std::cout << t << "," << dsq << std::endl;
@@ -112,13 +139,13 @@ boost::optional<PathVectorPosition> nearestPosition(PathVector const & path_in, 
     return retval;
 }
 
-std::vector<PathVectorPosition> allNearestPositions(PathVector const & path_in, Point const& _point, double *distance_squared)
+std::vector<PathVectorPosition> PathVector::allNearestPositions(Point const& _point, double *distance_squared) const
 {
     std::vector<PathVectorPosition> retval;
 
     double mindsq = infinity();
     unsigned int i = 0;
-    for (Geom::PathVector::const_iterator pit = path_in.begin(); pit != path_in.end(); ++pit) {
+    for (const_iterator pit = begin(); pit != end(); ++pit) {
         double dsq;
         double t = pit->nearestTime(_point, &dsq);
         if (dsq < mindsq) {
@@ -136,7 +163,6 @@ std::vector<PathVectorPosition> allNearestPositions(PathVector const & path_in, 
         *distance_squared = mindsq;
     }
     return retval;
-
 }
 
 } // namespace Geom
