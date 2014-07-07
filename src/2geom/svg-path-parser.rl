@@ -41,115 +41,103 @@
 
 namespace Geom {
 
-namespace {
-
-class SVGPathParser {
-public:
-    SVGPathParser(PathSink &sink) : _absolute(false), _sink(sink) {}
-
-    void parse(char const *str);
-
-private:
-    bool _absolute;
-    Point _current;
-    Point _initial;
-    Point _cubic_tangent;
-    Point _quad_tangent;
-    std::vector<double> _params;
-    PathSink &_sink;
-
-    void _reset() {
-        _absolute = false;
-        _current = _initial = Point(0, 0);
-        _quad_tangent = _cubic_tangent = Point(0, 0);
-        _params.clear();
-    }
-
-    void _push(double value) {
-        _params.push_back(value);
-    }
-
-    double _pop() {
-        double value = _params.back();
-        _params.pop_back();
-        return value;
-    }
-
-    bool _pop_flag() {
-        return _pop() != 0.0;
-    }
-
-    double _pop_coord(Geom::Dim2 axis) {
-        if (_absolute) {
-            return _pop();
-        } else {
-            return _pop() + _current[axis];
-        }
-    }
-
-    Point _pop_point() {
-        double y = _pop_coord(Geom::Y);
-        double x = _pop_coord(Geom::X);
-        return Point(x, y);
-    }
-
-    void _moveTo(Point p) {
-        _quad_tangent = _cubic_tangent = _current = _initial = p;
-        _sink.moveTo(p);
-    }
-    
-    void _hlineTo(Point p) {
-        _quad_tangent = _cubic_tangent = _current = p;
-        _sink.hlineTo(p[Geom::X]);
-    }
-    
-    void _vlineTo(Point p) {
-        _quad_tangent = _cubic_tangent = _current = p;
-        _sink.vlineTo(p[Geom::Y]);
-    }
-
-    void _lineTo(Point p) {
-        _quad_tangent = _cubic_tangent = _current = p;
-        _sink.lineTo(p);
-    }
-
-    void _curveTo(Point c0, Point c1, Point p) {
-        _quad_tangent = _current = p;
-        _cubic_tangent = p + ( p - c1 );
-        _sink.curveTo(c0, c1, p);
-    }
-
-    void _quadTo(Point c, Point p) {
-        _cubic_tangent = _current = p;
-        _quad_tangent = p + ( p - c );
-        _sink.quadTo(c, p);
-    }
-
-    void _arcTo(double rx, double ry, double angle,
-                bool large_arc, bool sweep, Point p)
-    {
-        _quad_tangent = _cubic_tangent = _current = p;
-        _sink.arcTo(rx, ry, angle, large_arc, sweep, p);
-    }
-
-    void _closePath() {
-        _quad_tangent = _cubic_tangent = _current = _initial;
-        _sink.closePath();
-    }
-};
-
 %%{
     machine svg_path;
     write data noerror;
 }%%
 
+SVGPathParser::SVGPathParser(PathSink &sink)
+    : _absolute(false)
+    , _sink(sink)
+{}
+
+void SVGPathParser::reset() {
+    _absolute = false;
+    _current = _initial = Point(0, 0);
+    _quad_tangent = _cubic_tangent = Point(0, 0);
+    _params.clear();
+
+    %%{
+        write init;
+    }%%
+}
+
+void SVGPathParser::_push(Coord value) {
+    _params.push_back(value);
+}
+
+Coord SVGPathParser::_pop() {
+    Coord value = _params.back();
+    _params.pop_back();
+    return value;
+}
+
+bool SVGPathParser::_pop_flag() {
+    return _pop() != 0.0;
+}
+
+Coord SVGPathParser::_pop_coord(Dim2 axis) {
+    if (_absolute) {
+        return _pop();
+    } else {
+        return _pop() + _current[axis];
+    }
+}
+
+Point SVGPathParser::_pop_point() {
+    Coord y = _pop_coord(Y);
+    Coord x = _pop_coord(X);
+    return Point(x, y);
+}
+
+void SVGPathParser::_moveTo(Point const &p) {
+    _quad_tangent = _cubic_tangent = _current = _initial = p;
+    _sink.moveTo(p);
+}
+
+void SVGPathParser::_hlineTo(Point const &p) {
+    _quad_tangent = _cubic_tangent = _current = p;
+    _sink.hlineTo(p[X]);
+}
+
+void SVGPathParser::_vlineTo(Point const &p) {
+    _quad_tangent = _cubic_tangent = _current = p;
+    _sink.vlineTo(p[Y]);
+}
+
+void SVGPathParser::_lineTo(Point const &p) {
+    _quad_tangent = _cubic_tangent = _current = p;
+    _sink.lineTo(p);
+}
+
+void SVGPathParser::_curveTo(Point const &c0, Point const &c1, Point const &p) {
+    _quad_tangent = _current = p;
+    _cubic_tangent = p + ( p - c1 );
+    _sink.curveTo(c0, c1, p);
+}
+
+void SVGPathParser::_quadTo(Point const &c, Point const &p) {
+    _cubic_tangent = _current = p;
+    _quad_tangent = p + ( p - c );
+    _sink.quadTo(c, p);
+}
+
+void SVGPathParser::_arcTo(Coord rx, Coord ry, Coord angle,
+                           bool large_arc, bool sweep, Point const &p)
+{
+    _quad_tangent = _cubic_tangent = _current = p;
+    _sink.arcTo(rx, ry, angle, large_arc, sweep, p);
+}
+
+void SVGPathParser::_closePath() {
+    _quad_tangent = _cubic_tangent = _current = _initial;
+    _sink.closePath();
+}
+
 void SVGPathParser::parse(char const *str)
 {
     char const *p = str;
     char const *start = NULL;
-    int cs;
-
-    _reset();
 
     %%{
         action start_number {
@@ -157,7 +145,7 @@ void SVGPathParser::parse(char const *str)
         }
 
         action push_number {
-            char const *end=p;
+            char const *end = p;
             std::string buf(start, end);
             _push(g_ascii_strtod(buf.c_str(), NULL));
             start = NULL;
@@ -373,8 +361,6 @@ void SVGPathParser::parse(char const *str)
 
         main := svg_path;
 
-        # Inintialize and execute.
-        write init;
         write exec noend;
     }%%
 
@@ -383,6 +369,9 @@ void SVGPathParser::parse(char const *str)
     }
 }
 
+void SVGPathParser::parse(std::string const &s)
+{
+    parse(s.c_str());
 }
 
 void parse_svg_path(char const *str, PathSink &sink)
@@ -392,7 +381,7 @@ void parse_svg_path(char const *str, PathSink &sink)
     sink.flush();
 }
 
-}
+} // namespace Geom
 
 /*
   Local Variables:

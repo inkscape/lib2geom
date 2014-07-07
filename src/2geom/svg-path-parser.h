@@ -33,14 +33,53 @@
 #ifndef SEEN_SVG_PATH_PARSER_H
 #define SEEN_SVG_PATH_PARSER_H
 
-#include <vector>
+#include <iostream>
 #include <iterator>
 #include <stdexcept>
+#include <vector>
 #include <2geom/exception.h>
 #include <2geom/point.h>
 #include <2geom/path-sink.h>
 
 namespace Geom {
+
+class SVGPathParser {
+public:
+    SVGPathParser(PathSink &sink);
+
+    void reset();
+
+    void parse(char const *str);
+    void parse(std::string const &s);
+
+private:
+    bool _absolute;
+    Point _current;
+    Point _initial;
+    Point _cubic_tangent;
+    Point _quad_tangent;
+    std::vector<Coord> _params;
+    PathSink &_sink;
+
+    int cs;
+
+    void _parse(char const *str);
+
+    void _push(Coord value);
+    Coord _pop();
+    bool _pop_flag();
+    Coord _pop_coord(Geom::Dim2 axis);
+    Point _pop_point();
+    void _moveTo(Point const &p);
+    void _hlineTo(Point const &p);
+    void _vlineTo(Point const &p);
+    void _lineTo(Point const &p);
+    void _curveTo(Point const &c0, Point const &c1, Point const &p);
+    void _quadTo(Point const &c, Point const &p);
+    void _arcTo(double rx, double ry, double angle,
+                bool large_arc, bool sweep, Point const &p);
+    void _closePath();
+};
 
 void parse_svg_path(char const *str, PathSink &sink);
 
