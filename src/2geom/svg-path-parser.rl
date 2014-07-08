@@ -30,7 +30,7 @@
  *
  */
 
-
+#include <cstdio>
 #include <cmath>
 #include <vector>
 #include <glib.h>
@@ -49,7 +49,9 @@ namespace Geom {
 SVGPathParser::SVGPathParser(PathSink &sink)
     : _absolute(false)
     , _sink(sink)
-{}
+{
+    reset();
+}
 
 void SVGPathParser::reset() {
     _absolute = false;
@@ -60,6 +62,38 @@ void SVGPathParser::reset() {
     %%{
         write init;
     }%%
+}
+
+void SVGPathParser::parse(char const *str, int len)
+{
+    if (len < 0) {
+        len = std::strlen(str);
+    }
+    _parse(str, str + len, true);
+}
+
+void SVGPathParser::parse(std::string const &s)
+{
+    _parse(s.c_str(), s.c_str() + s.size(), true);
+}
+
+void SVGPathParser::feed(char const *str, int len)
+{
+    if (len < 0) {
+        len = std::strlen(str);
+    }
+    _parse(str, str + len, false);
+}
+
+void SVGPathParser::feed(std::string const &s)
+{
+    _parse(s.c_str(), s.c_str() + s.size(), false);
+}
+
+void SVGPathParser::finish()
+{
+    char const *empty = "";
+    _parse(empty, empty, true);
 }
 
 void SVGPathParser::_push(Coord value) {
@@ -134,9 +168,11 @@ void SVGPathParser::_closePath() {
     _sink.closePath();
 }
 
-void SVGPathParser::parse(char const *str)
+void SVGPathParser::_parse(char const *str, char const *strend, bool finish)
 {
     char const *p = str;
+    char const *pe = strend;
+    char const *eof = finish ? pe : NULL;
     char const *start = NULL;
 
     %%{
@@ -354,31 +390,46 @@ void SVGPathParser::parse(char const *str)
             moveto_drawto_command_group
             (wsp* moveto_drawto_command_group)*;
 
-        end_of_string = 0 @{fbreak;};
-
-        svg_path = wsp* moveto_drawto_command_groups? wsp* end_of_string;
+        svg_path = wsp* moveto_drawto_command_groups? wsp*;
                 
 
         main := svg_path;
 
-        write exec noend;
+        write exec;
     }%%
 
-    if ( cs < svg_path_first_final ) {
+    if (finish && cs < svg_path_first_final) {
         throw SVGPathParseError();
     }
-}
 
-void SVGPathParser::parse(std::string const &s)
-{
-    parse(s.c_str());
+    if (finish) {
+        _sink.flush();
+        reset();
+    }
 }
 
 void parse_svg_path(char const *str, PathSink &sink)
 {
     SVGPathParser parser(sink);
     parser.parse(str);
-    sink.flush();
+}
+
+void parse_svg_path_file(FILE *fi, PathSink &sink)
+{
+    static const int BUFFER_SIZE = 4096;
+    char buffer[BUFFER_SIZE];
+    size_t bytes_read;
+    SVGPathParser parser(sink);
+
+    while (true) {
+        bytes_read = fread(buffer, 1, BUFFER_SIZE, fi);
+        if (bytes_read < BUFFER_SIZE) {
+            parser.parse(buffer, bytes_read);
+            break;
+        } else {
+            parser.feed(buffer, bytes_read);
+        }
+    }
 }
 
 } // namespace Geom

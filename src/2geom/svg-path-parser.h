@@ -43,14 +43,49 @@
 
 namespace Geom {
 
+/** @brief SVG format path data parsing
+ *
+ * This class provides an interface to an SVG path data parser written in Ragel.
+ * It supports parsing the path data either at once or block-by-block.
+ * Use the parse() functions to parse complete data and the feed() and finish()
+ * functions to parse partial data.
+ */
 class SVGPathParser {
 public:
     SVGPathParser(PathSink &sink);
 
+    /** @brief Reset internal state.
+     * Discards the internal state associated with partially parsed data,
+     * letting you start from scratch. Note that any partial data written
+     * to the path sink is not affected - you need to clear it yourself. */
     void reset();
 
-    void parse(char const *str);
+    /** @brief Parse a C-style string.
+     * The path sink is flushed and the internal state is reset after this call.
+     * Note that the state is not reset before this method, so you can use it to
+     * process the last block of partial data.
+     * @param str String to parse
+     * @param len Length of string or -1 if null-terminated */
+    void parse(char const *str, int len = -1);
+    /** @brief Parse an STL string. */
     void parse(std::string const &s);
+
+    /** @brief Parse a part of path data stored in a C-style string.
+     * This method does not reset internal state, so it can be called multiple
+     * times to parse successive blocks of a longer SVG path data string.
+     * To finish parsing, call finish() after the final block or call parse()
+     * with the last block of data.
+     * @param str String to parse
+     * @param len Length of string or -1 if null-terminated */
+    void feed(char const *str, int len = -1);
+    /** @brief Parse a part of path data stored in an STL string. */
+    void feed(std::string const &s);
+
+    /** @brief Finalize parsing.
+     * After the last block of data was submitted with feed(), call this method
+     * to finalize parsing, flush the path sink and reset internal state.
+     * You should not call this after parse(). */
+    void finish();
 
 private:
     bool _absolute;
@@ -62,8 +97,6 @@ private:
     PathSink &_sink;
 
     int cs;
-
-    void _parse(char const *str);
 
     void _push(Coord value);
     Coord _pop();
@@ -79,9 +112,12 @@ private:
     void _arcTo(double rx, double ry, double angle,
                 bool large_arc, bool sweep, Point const &p);
     void _closePath();
+
+    void _parse(char const *str, char const *strend, bool finish);
 };
 
 void parse_svg_path(char const *str, PathSink &sink);
+void parse_svg_path_file(FILE *fi, PathSink &sink);
 
 inline void parse_svg_path(std::string const &str, PathSink &sink) {
     parse_svg_path(str.c_str(), sink);
@@ -97,14 +133,16 @@ inline PathVector parse_svg_path(char const *str) {
 }
 
 inline PathVector read_svgd_f(FILE * fi) {
-    /// @bug The 10kB length limit should be removed
-    char input[1024 * 10];
-    fgets(input, 1024 * 10, fi);
-    return parse_svg_path(input);
+    PathVector ret;
+    SubpathInserter iter(ret);
+    PathIteratorSink<SubpathInserter> generator(iter);
+
+    parse_svg_path_file(fi, generator);
+    return ret;
 }
 
-inline PathVector read_svgd(char const * name) {
-    FILE* fi = fopen(name, "r");
+inline PathVector read_svgd(char const *filename) {
+    FILE* fi = fopen(filename, "r");
     if(fi == NULL) throw(std::runtime_error("Error opening file"));
     PathVector out = read_svgd_f(fi);
     fclose(fi);
