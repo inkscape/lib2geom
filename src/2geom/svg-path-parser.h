@@ -97,6 +97,7 @@ private:
     PathSink &_sink;
 
     int cs;
+    std::string _number_part;
 
     void _push(Coord value);
     Coord _pop();

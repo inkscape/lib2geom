@@ -181,10 +181,15 @@ void SVGPathParser::_parse(char const *str, char const *strend, bool finish)
         }
 
         action push_number {
-            char const *end = p;
-            std::string buf(start, end);
-            _push(g_ascii_strtod(buf.c_str(), NULL));
-            start = NULL;
+            if (start) {
+                std::string buf(start, p);
+                _push(g_ascii_strtod(buf.c_str(), NULL));
+                start = NULL;
+            } else {
+                std::string buf(str, p);
+                _push(g_ascii_strtod((_number_part + buf).c_str(), NULL));
+                _number_part.clear();
+            }
         }
 
         action push_true {
@@ -398,8 +403,12 @@ void SVGPathParser::_parse(char const *str, char const *strend, bool finish)
         write exec;
     }%%
 
-    if (finish && cs < svg_path_first_final) {
-        throw SVGPathParseError();
+    if (finish) {
+        if (cs < svg_path_first_final) {
+            throw SVGPathParseError();
+        }
+    } else if (start != NULL) {
+        _number_part = std::string(start, pe);
     }
 
     if (finish) {
