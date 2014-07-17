@@ -1,5 +1,6 @@
 CMakeCache.txt
 **/CMakeFiles
+**/__pycache__
 cmake_uninstall.cmake
 cmake_install.cmake
 config.h
@@ -22,4 +23,5 @@ Testing
 CTestTestfile.cmake
 *.cxx
 src/2geom/tests/*-test
+src/2geom/performance-tests/*-test
 *.so.*

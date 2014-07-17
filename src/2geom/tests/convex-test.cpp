@@ -181,11 +181,6 @@ TEST_F(ConvexHullTest, Merging) {
 
 }  // namespace
 
-int main(int argc, char **argv) {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}
-
 
 /*
   Local Variables:

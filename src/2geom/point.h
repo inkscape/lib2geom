@@ -116,6 +116,11 @@ public:
      * @return Length of the vector from origin to this point */
     Coord length() const { return hypot(_pt[0], _pt[1]); }
     void normalize();
+    Point normalized() const {
+        Point ret(*this);
+        ret.normalize();
+        return ret;
+    }
 
     /** @brief Return a point like this point but rotated -90 degrees.
      * If the y axis grows downwards and the x axis grows to the
