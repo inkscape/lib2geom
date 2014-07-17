@@ -46,7 +46,7 @@ namespace Geom {
  * between path formats used by different graphics libraries.
  *
  * To store a path in a new format, implement the virtual methods
- * for segments in a derived class and call path() or pathvector().
+ * for segments in a derived class and call feed().
  */
 class PathSink {
 public:
@@ -193,7 +193,6 @@ public:
             _in_path = false;
             *_out++ = _path;
             _path.clear();
-            _path.close(false);
         }
     }
 

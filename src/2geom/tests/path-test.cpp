@@ -32,6 +32,13 @@ protected:
     Path square, circle, diederik;
 };
 
+TEST_F(PathTest, Continuity) {
+    line.checkContinuity();
+    square.checkContinuity();
+    circle.checkContinuity();
+    diederik.checkContinuity();
+}
+
 TEST_F(PathTest, ValueAt) {
     EXPECT_EQ(Point(0,0), line.initialPoint());
     EXPECT_EQ(Point(1,0), line.finalPoint());
