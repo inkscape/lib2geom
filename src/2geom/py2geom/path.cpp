@@ -89,9 +89,6 @@ struct CurveWrap : Geom::Curve, wrapper<Geom::Curve>
 
     Geom::Curve *derivative() const { return this->get_override("derivative")(); }
 
-    void setInitial(Geom::Point const &v){ this->get_override("setInitial")(v); }
-    void setFinal(Geom::Point const &v){ this->get_override("setFinal")(v); }
-
 
     Geom::Curve *transformed(Geom::Affine const &m) const { return this->get_override("transformed")(m); }
 
@@ -212,8 +209,6 @@ void wrap_path()
         .def("start", &Geom::Path::start)
         .def("initialPoint", &Geom::Path::initialPoint)
         .def("finalPoint", &Geom::Path::finalPoint)
-        .def("setInitial", &Geom::Path::setInitial)
-        .def("setFinal", &Geom::Path::setFinal)
         //.def("append", &Geom::Path::append)
         //.def("appendNew", &Geom::Path::appendNew)
     ;

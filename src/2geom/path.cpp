@@ -1,11 +1,12 @@
-/*
- * Path - Series of continuous curves
- *
+/** @file
+ * @brief Path - a sequence of contiguous curves (implementation file)
+ *//*
  * Authors:
- *              MenTaLguY <mental@rydia.net>
- *              Marco Cecchetti <mrcekets at gmail.com>
+ *   MenTaLguY <mental@rydia.net>
+ *   Marco Cecchetti <mrcekets at gmail.com>
+ *   Krzysztof Kosiński <tweenk.pl@gmail.com>
  *
- * Copyright 2007-2008  authors
+ * Copyright 2007-2014  authors
  *
  * This library is free software; you can redistribute it and/or
  * modify it either under the terms of the GNU Lesser General Public
@@ -30,8 +31,6 @@
  * OF ANY KIND, either express or implied. See the LGPL or the MPL for
  * the specific language governing rights and limitations.
  */
-
-
 
 #include <2geom/path.h>
 #include <2geom/pathvector.h>
@@ -120,13 +119,13 @@ bool Path::operator==(Path const &other) const
         return true;
     if (_closed != other._closed)
         return false;
-    return _getCurves() == other._getCurves();
+    return *_curves == *other._curves;
 }
 
 Path &Path::operator*=(Affine const &m)
 {
     _unshare();
-    Sequence::iterator last = _getCurves().end() - 1;
+    Sequence::iterator last = _curves->end() - 1;
     Sequence::iterator it;
     Point prev;
     for (it = _curves->begin(); it != last; ++it) {
@@ -152,12 +151,12 @@ Path &Path::operator*=(Translate const &m)
     /* Somehow there is something wrong here, Inkscape's LPE Construct grid fails with this code, perhaps something with
     desharing of curves...
     _unshare();
-    Sequence::iterator last = _getCurves().end() - 1;
+    Sequence::iterator last = _curves->end() - 1;
     Sequence::iterator it;
     Point prev;
-    for (it = _getCurves().begin() ; it != last ; ++it) {
+    for (it = _curves->begin() ; it != last ; ++it) {
       *(const_cast<Curve*>(&**it)) *= m;
-      if ( it != _getCurves().begin() && (*it)->initialPoint() != prev ) {
+      if ( it != _curves->begin() && (*it)->initialPoint() != prev ) {
         THROW_CONTINUITYERROR();
       }
       prev = (*it)->finalPoint();
@@ -165,7 +164,7 @@ Path &Path::operator*=(Translate const &m)
     for ( int i = 0 ; i < 2 ; ++i ) {
       _closing_seg->setPoint(i, (*_closing_seg)[i] + m.vector());
     }
-    if (_getCurves().size() > 1) {
+    if (_curves->size() > 1) {
       if ( front().initialPoint() != initialPoint() || back().finalPoint() != finalPoint() ) {
         THROW_CONTINUITYERROR();
       }
@@ -181,6 +180,16 @@ void Path::start(Point const &p) {
     }
     _closing_seg->setInitial(p);
     _closing_seg->setFinal(p);
+}
+
+Interval Path::timeRange() const
+{
+    unsigned sz = size();
+    if (closed()) {
+        ++sz;
+    }
+    Interval ret(0, sz);
+    return ret;
 }
 
 Point Path::pointAt(Coord t) const
@@ -449,23 +458,119 @@ Path Path::reversed() const
     typedef std::reverse_iterator<Sequence::const_iterator> RIter;
 
     Path ret;
-    ret._getCurves().pop_back();
-    RIter iter(_getCurves().end()), rend(_getCurves().begin());
+    ret._curves->pop_back();
+    RIter iter(_curves->end()), rend(_curves->begin());
     for (; iter != rend; ++iter) {
-        ret._getCurves().push_back(iter->reverse());
+        ret._curves->push_back(iter->reverse());
     }
     ret._closing_seg = static_cast<ClosingSegment *>(ret._closing_seg->reverse());
-    ret._getCurves().push_back(ret._closing_seg);
+    ret._curves->push_back(ret._closing_seg);
     return ret;
+}
+
+
+void Path::insert(iterator pos, Curve const &curve, Stitching stitching)
+{
+    _unshare();
+    Sequence::iterator seq_pos(seq_iter(pos));
+    Sequence source;
+    source.push_back(curve.duplicate());
+    if (stitching)
+        stitch(seq_pos, seq_pos, source);
+    do_update(seq_pos, seq_pos, source.begin(), source.end(), source);
+}
+
+void Path::insert(iterator pos, const_iterator first, const_iterator last, Stitching stitching)
+{
+    _unshare();
+    Sequence::iterator seq_pos(seq_iter(pos));
+    Sequence source(seq_iter(first), seq_iter(last));
+    if (stitching)
+        stitch(seq_pos, seq_pos, source);
+    do_update(seq_pos, seq_pos, source.begin(), source.end(), source);
+}
+
+void Path::erase(iterator pos, Stitching stitching)
+{
+    _unshare();
+    Sequence::iterator seq_pos(seq_iter(pos));
+    if (stitching) {
+        Sequence stitched;
+        stitch(seq_pos, seq_pos + 1, stitched);
+        do_update(seq_pos, seq_pos + 1, stitched.begin(), stitched.end(), stitched);
+    } else {
+        do_update(seq_pos, seq_pos + 1, _curves->begin(), _curves->begin(), *_curves);
+    }
+}
+
+void Path::erase(iterator first, iterator last, Stitching stitching)
+{
+    _unshare();
+    Sequence::iterator seq_first = seq_iter(first);
+    Sequence::iterator seq_last = seq_iter(last);
+    if (stitching) {
+        Sequence stitched;
+        stitch(seq_first, seq_last, stitched);
+        do_update(seq_first, seq_last, stitched.begin(), stitched.end(), stitched);
+    } else {
+        do_update(seq_first, seq_last, _curves->begin(), _curves->begin(), *_curves);
+    }
+}
+
+void Path::replace(iterator replaced, Curve const &curve, Stitching stitching)
+{
+    _unshare();
+    Sequence::iterator seq_replaced(seq_iter(replaced));
+    Sequence source(1);
+    source.push_back(curve.duplicate());
+    if (stitching)
+        stitch(seq_replaced, seq_replaced + 1, source);
+    do_update(seq_replaced, seq_replaced + 1, source.begin(), source.end(), source);
+}
+
+void Path::replace(iterator first_replaced, iterator last_replaced, Curve const &curve,
+                   Stitching stitching)
+{
+    _unshare();
+    Sequence::iterator seq_first_replaced(seq_iter(first_replaced));
+    Sequence::iterator seq_last_replaced(seq_iter(last_replaced));
+    Sequence source(1);
+    source.push_back(curve.duplicate());
+    if (stitching)
+        stitch(seq_first_replaced, seq_last_replaced, source);
+    do_update(seq_first_replaced, seq_last_replaced, source.begin(), source.end(), source);
+}
+
+void Path::replace(iterator replaced, const_iterator first, const_iterator last,
+                   Stitching stitching)
+{
+    _unshare();
+    Sequence::iterator seq_replaced(seq_iter(replaced));
+    Sequence source(seq_iter(first), seq_iter(last));
+    if (stitching)
+        stitch(seq_replaced, seq_replaced + 1, source);
+    do_update(seq_replaced, seq_replaced + 1, source.begin(), source.end(), source);
+}
+
+void Path::replace(iterator first_replaced, iterator last_replaced, const_iterator first,
+                   const_iterator last, Stitching stitching)
+{
+    _unshare();
+    Sequence::iterator seq_first_replaced(seq_iter(first_replaced));
+    Sequence::iterator seq_last_replaced(seq_iter(last_replaced));
+    Sequence source(seq_iter(first), seq_iter(last));
+    if (stitching)
+        stitch(seq_first_replaced, seq_last_replaced, source);
+    do_update(seq_first_replaced, seq_last_replaced, source.begin(), source.end(), source);
 }
 
 void Path::do_update(Sequence::iterator first_replaced, Sequence::iterator last_replaced, Sequence::iterator first,
                      Sequence::iterator last, Sequence &source)
 {
-    _getCurves().erase(first_replaced, last_replaced);
-    _getCurves().transfer(first_replaced, first, last, source);
+    _curves->erase(first_replaced, last_replaced);
+    _curves->transfer(first_replaced, first, last, source);
 
-    if (&_getCurves().front() != _closing_seg) {
+    if (&_curves->front() != _closing_seg) {
         _closing_seg->setPoint(0, back().finalPoint());
         _closing_seg->setPoint(1, front().initialPoint());
     }
@@ -489,20 +594,20 @@ void Path::do_append(Curve *c)
 void Path::stitch(Sequence::iterator first_replaced, Sequence::iterator last_replaced, Sequence &source)
 {
     if (!source.empty()) {
-        if (first_replaced != _getCurves().begin()) {
+        if (first_replaced != _curves->begin()) {
             if (first_replaced->initialPoint() != source.front().initialPoint()) {
                 Curve *stitch = new StitchSegment(first_replaced->initialPoint(), source.front().initialPoint());
                 source.insert(source.begin(), stitch);
             }
         }
-        if (last_replaced != (_getCurves().end() - 1)) {
+        if (last_replaced != (_curves->end() - 1)) {
             if (last_replaced->finalPoint() != source.back().finalPoint()) {
                 Curve *stitch = new StitchSegment(source.back().finalPoint(), last_replaced->finalPoint());
                 source.insert(source.end(), stitch);
             }
         }
-    } else if (first_replaced != last_replaced && first_replaced != _getCurves().begin() &&
-               last_replaced != _getCurves().end() - 1) {
+    } else if (first_replaced != last_replaced && first_replaced != _curves->begin() &&
+               last_replaced != _curves->end() - 1) {
         if (first_replaced->initialPoint() != (last_replaced - 1)->finalPoint()) {
             Curve *stitch = new StitchSegment((last_replaced - 1)->finalPoint(), first_replaced->initialPoint());
             source.insert(source.begin(), stitch);

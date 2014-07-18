@@ -1,12 +1,12 @@
-/**
- * \file
- * \brief  Path - Series of continuous curves
- */ /*
+/** @file
+ * @brief Path - a sequence of contiguous curves
+ *//*
   * Authors:
   *   MenTaLguY <mental@rydia.net>
   *   Marco Cecchetti <mrcekets at gmail.com>
+  *   Krzysztof Kosiński <tweenk.pl@gmail.com>
   *
-  * Copyright 2007-2008 Authors
+  * Copyright 2007-2014 Authors
   *
   * This library is free software; you can redistribute it and/or
   * modify it either under the terms of the GNU Lesser General Public
@@ -106,25 +106,37 @@ class BaseIterator
 
 }
 
-/*
- * Open and closed paths: all paths, whether open or closed, store a final
- * segment which connects the initial and final endpoints of the "real"
- * path data.  While similar to the "z" in an SVG path, it exists for
- * both open and closed paths, and is not considered part of the "normal"
- * path data, which is always covered by the range [begin(), end_open()).
- * Conversely, the range [begin(), end_closed()) always contains the "extra"
- * closing segment.
+/** @brief Sequence of contiguous curves, aka spline.
  *
- * The only difference between a closed and an open path is whether
- * end_default() returns end_closed() or end_open().  The idea behind this
- * is to let any path be stroked using [begin(), end_default()), and filled
- * using [begin(), end_closed()), without requiring a separate "filled" version
- * of the path to use for filling.
+ * Path represents a sequence of contiguous curves, also known as a spline.
+ * It corresponds to a "subpath" in SVG terminology. It can represent both
+ * open and closed subpaths. The final point of each curve is exactly
+ * equal to the initial point of the next curve.
  *
- * \invariant : _curves always contains at least one segment. The last segment
- *              is always of type ClosingSegment. All constructors take care of this.
-                (_curves.size() > 0) && dynamic_cast<ClosingSegment>(_curves.back())
- */
+ * The path always contains a linear closing segment that connects
+ * the final point of the last "real" curve to the initial point of the
+ * first curve. This way the curves form a closed loop even for open paths.
+ * If the closing segment has nonzero length and the path is closed, it is
+ * considered a normal part of the path data.
+ *
+ * Since the methods for inserting, erasing and replacing curves can cause a path
+ * to become non-contiguous, they have an additional parameter, called @a stitching,
+ * which determines whether non-contiguous segments are joined with additional
+ * linear segments that fill the created gaps.
+ *
+ * Internally, Path uses copy-on-write data. This is done for two reasons: first,
+ * copying a Curve requires calling a virtual function, so it's a little more expensive
+ * that normal copying; and second, it reduces the memory cost of copying the path.
+ * Therefore you can return Path and PathVector from functions without worrying
+ * about memory use.
+ *
+ * Note that this class cannot represent arbitrary shapes, which may contain holes.
+ * To do that, use PathVector, which is more generic.
+ *
+ * It's not very convenient to create a Path directly. To construct paths more easily,
+ * use PathBuilder.
+ *
+ * @ingroup Curves */
 class Path
     : boost::equality_comparable1< Path
     , MultipliableNoncommutative< Path, Affine
@@ -161,43 +173,61 @@ class Path
 
     // Path(Path const &other) - use default copy constructor
 
+    /** @brief Construct an empty path starting at the specified point. */
     explicit Path(Point p = Point())
         : _curves(new Sequence())
         , _closing_seg(new ClosingSegment(p, p))
         , _closed(false)
     {
-        _getCurves().push_back(_closing_seg);
+        _curves->push_back(_closing_seg);
     }
 
-    Path(const_iterator const &first, const_iterator const &last, bool closed = false)
-        : _curves(new Sequence(seq_iter(first), seq_iter(last)))
+    /** @brief Construct a path containing a range of curves. */
+    template <typename Iter>
+    Path(Iter first, Iter last, bool closed = false)
+        : _curves(new Sequence())
         , _closed(closed)
     {
-        if (!_getCurves().empty()) {
-            _closing_seg = new ClosingSegment(_curves->back().finalPoint(), _curves->front().initialPoint());
+        for (Iter i = first; i != last; ++i) {
+            _curves->push_back(i->duplicate());
+        }
+        if (!_curves->empty()) {
+            _closing_seg = new ClosingSegment(_curves->back().finalPoint(),
+                                              _curves->front().initialPoint());
         } else {
             _closing_seg = new ClosingSegment();
         }
-        _getCurves().push_back(_closing_seg);
+        _curves->push_back(_closing_seg);
     }
 
     virtual ~Path() {}
 
     // Path &operator=(Path const &other) - use default assignment operator
 
-    /// \todo Add noexcept specifiers for C++11
-    void swap(Path &other) {
+    /** @brief Swap contents with another path
+     * @todo Add noexcept specifiers for C++11 */
+    void swap(Path &other) throw() {
         using std::swap;
         swap(other._curves, _curves);
         swap(other._closing_seg, _closing_seg);
         swap(other._closed, _closed);
     }
-    friend inline void swap(Path &a, Path &b) { a.swap(b); }
+    /** @brief Swap contents of two paths.
+     * @relates Path */
+    friend inline void swap(Path &a, Path &b) throw() { a.swap(b); }
 
-    Curve const &operator[](unsigned i) const { return _getCurves()[i]; }
-    Curve const &at_index(unsigned i) const { return _getCurves()[i]; }
+    /** @brief Access a curve by index */
+    Curve const &operator[](unsigned i) const { return (*_curves)[i]; }
+    /** @brief Access a curve by index */
+    Curve const &at(unsigned i) const { return _curves->at(i); }
 
-    Curve const &front() const { return _getCurves()[0]; }
+    /** @brief Access the first curve in the path.
+     * Since the curve always contains at least a degenerate closing segment,
+     * it is always safe to use this method. */
+    Curve const &front() const { return _curves->front(); }
+    /** @brief Access the last curve in the path.
+     * Since the curve always contains at least a degenerate closing segment,
+     * it is always safe to use this method. */
     Curve const &back() const { return back_open(); }
     Curve const &back_open() const {
         if (empty()) {
@@ -217,20 +247,36 @@ class Path
     const_iterator end_closed() const { return const_iterator(*this, size() + 1); }
     const_iterator end_default() const { return (_closed ? end_closed() : end_open()); }
 
-    size_type size_open() const { return _getCurves().size() - 1; }
-    size_type size_closed() const { return _getCurves().size(); }
+    size_type size_open() const { return _curves->size() - 1; }
+    size_type size_closed() const { return _curves->size(); }
     size_type size_default() const { return (_closed ? size_closed() : size_open()); }
     size_type size() const { return size_open(); }
 
-    size_type max_size() const { return _getCurves().max_size() - 1; }
+    size_type max_size() const { return _curves->max_size() - 1; }
 
-    bool empty() const { return (_getCurves().size() == 1); }
+    /** @brief Check whether path is empty.
+     * The path is empty if it contains only the closing segment, which according
+     * to the continuity invariant must be degenerate. Note that unlike standard
+     * containers, two empty paths are not necessarily identical, because the
+     * degenerate closing segment may be at a different point, affecting the operation
+     * of methods such as appendNew(). */
+    bool empty() const { return (_curves->size() == 1); }
+    /** @brief Check whether the path is closed. */
     bool closed() const { return _closed; }
+    /** @brief Set whether the path is closed. */
     void close(bool closed = true) { _closed = closed; }
 
+    /** @brief Remove all curves from the path.
+     * The initial and final points of the closing segment are set to (0,0). */
     void clear();
 
+    /** @brief Get the approximate bounding box.
+     * The rectangle returned by this method will contain all the curves, but it's not
+     * guaranteed to be the smallest possible one */
     OptRect boundsFast() const;
+    /** @brief Get a tight-fitting bounding box.
+     * This will return the smallest possible axis-aligned rectangle containing
+     * all the curves in the path. */
     OptRect boundsExact() const;
 
     Piecewise<D2<SBasis> > toPwSb() const;
@@ -240,17 +286,25 @@ class Path
     Path &operator*=(Affine const &m);
     Path &operator*=(Translate const &m); // specialization over Affine, for faster computation
 
+    /** @brief Get the allowed range of time values.
+     * @return Values for which pointAt() and valueAt() yield valid results. */
+    Interval timeRange() const;
+
+    /** @brief Get the point at the specified time value.
+     * Time values range from zero to the number of curves. */
     Point pointAt(Coord t) const;
+    /** @brief Get one coordinate (X or Y) at the specified time value.
+     * Time values range from zero to the number of curves. */
     Coord valueAt(Coord t, Dim2 d) const;
 
     Point operator()(Coord t) const { return pointAt(t); }
 
-    std::vector<Coord> roots(double v, Dim2 d) const;
+    std::vector<Coord> roots(Coord v, Dim2 d) const;
 
-    std::vector<Coord> allNearestTimes(Point const &_point, double from, double to) const;
+    std::vector<Coord> allNearestTimes(Point const &_point, Coord from, Coord to) const;
 
     std::vector<Coord> allNearestTimes(Point const &_point) const {
-        unsigned int sz = size();
+        size_type sz = size();
         if (closed())
             ++sz;
         return allNearestTimes(_point, 0, sz);
@@ -258,10 +312,10 @@ class Path
 
     std::vector<Coord> nearestTimePerCurve(Point const &_point) const;
 
-    Coord nearestTime(Point const &_point, double from, double to, double *distance_squared = NULL) const;
+    Coord nearestTime(Point const &_point, Coord from, Coord to, Coord *distance_squared = NULL) const;
 
-    Coord nearestTime(Point const &_point, double *distance_squared = NULL) const {
-        unsigned int sz = size();
+    Coord nearestTime(Point const &_point, Coord *distance_squared = NULL) const {
+        size_type sz = size();
         if (closed())
             ++sz;
         return nearestTime(_point, 0, sz, distance_squared);
@@ -269,92 +323,46 @@ class Path
 
     void appendPortionTo(Path &p, Coord f, Coord t) const;
 
+    /** @brief Get a subset of the current path.
+     * Note that @a f can be smaller than @a t, in which case the returned part of the path
+     * will go in the opposite direction.
+     * @param f Time value specifying the initial point of the returned path
+     * @param t Time value specifying the final point of the returned path
+     * @return Portion of the path */
     Path portion(Coord f, Coord t) const {
         Path ret;
         ret.close(false);
         appendPortionTo(ret, f, t);
         return ret;
     }
+    /** @brief Get a subset of the current path.
+     * This version takes an Interval. */
     Path portion(Interval i) const { return portion(i.min(), i.max()); }
 
+    /** @brief Obtain a reversed version of the current path.
+     * The final point of the current path will become the initial point
+     * of the reversed path, unless it is closed and has a non-degenerate
+     * closing segment. In that case, the new initial point will be the final point
+     * of the last "real" segment. */
     Path reversed() const;
 
-    void insert(iterator const &pos, Curve const &curve, Stitching stitching = NO_STITCHING) {
-        _unshare();
-        Sequence::iterator seq_pos(seq_iter(pos));
-        Sequence source;
-        source.push_back(curve.duplicate());
-        if (stitching)
-            stitch(seq_pos, seq_pos, source);
-        do_update(seq_pos, seq_pos, source.begin(), source.end(), source);
-    }
+    void insert(iterator pos, Curve const &curve, Stitching stitching = NO_STITCHING);
+    void insert(iterator pos, const_iterator first, const_iterator last,
+                Stitching stitching = NO_STITCHING);
 
-    void insert(iterator const &pos, const_iterator const &first, const_iterator const &last,
-                Stitching stitching = NO_STITCHING) {
-        _unshare();
-        Sequence::iterator seq_pos(seq_iter(pos));
-        Sequence source(seq_iter(first), seq_iter(last));
-        if (stitching)
-            stitch(seq_pos, seq_pos, source);
-        do_update(seq_pos, seq_pos, source.begin(), source.end(), source);
-    }
-
-    void erase(iterator const &pos, Stitching stitching = NO_STITCHING) {
-        _unshare();
-        Sequence::iterator seq_pos(seq_iter(pos));
-        if (stitching) {
-            Sequence stitched;
-            stitch(seq_pos, seq_pos + 1, stitched);
-            do_update(seq_pos, seq_pos + 1, stitched.begin(), stitched.end(), stitched);
-        } else {
-            do_update(seq_pos, seq_pos + 1, _getCurves().begin(), _getCurves().begin(), _getCurves());
-        }
-    }
-
-    void erase(iterator const &first, iterator const &last, Stitching stitching = NO_STITCHING) {
-        _unshare();
-        Sequence::iterator seq_first = seq_iter(first);
-        Sequence::iterator seq_last = seq_iter(last);
-        if (stitching) {
-            Sequence stitched;
-            stitch(seq_first, seq_last, stitched);
-            do_update(seq_first, seq_last, stitched.begin(), stitched.end(), stitched);
-        } else {
-            do_update(seq_first, seq_last, _getCurves().begin(), _getCurves().begin(), _getCurves());
-        }
-    }
+    void erase(iterator pos, Stitching stitching = NO_STITCHING);
+    void erase(iterator first, iterator last, Stitching stitching = NO_STITCHING);
 
     // erase last segment of path
     void erase_last() { erase(iterator(*this, size() - 1)); }
 
     void start(Point const &p);
 
+    /** @brief Get the first point in the path. */
     Point initialPoint() const { return (*_closing_seg)[1]; }
+    /** @brief Get the last point in the path.
+     * If the path is closed, this is always the same as the initial point. */
     Point finalPoint() const { return (*_closing_seg)[_closed ? 1 : 0]; }
-
-    void setInitial(Point const &p) {
-        if (empty())
-            return;
-        _unshare();
-        std::auto_ptr<Curve> head(front().duplicate());
-        head->setInitial(p);
-        Sequence::iterator replaced = _getCurves().begin();
-        Sequence source;
-        source.push_back(head);
-        do_update(replaced, replaced + 1, source.begin(), source.end(), source);
-    }
-
-    void setFinal(Point const &p) {
-        if (empty())
-            return;
-        _unshare();
-        std::auto_ptr<Curve> tail(back().duplicate());
-        tail->setFinal(p);
-        Sequence::iterator replaced = _getCurves().end() - 2;
-        Sequence source;
-        source.push_back(tail);
-        do_update(replaced, replaced + 1, source.begin(), source.end(), source);
-    }
 
     void append(Curve const &curve, Stitching stitching = NO_STITCHING) {
         _unshare();
@@ -372,6 +380,7 @@ class Path
         insert(end(), other.begin(), other.end(), stitching);
     }
 
+    /** @brief Append a stitching segment to the specified point. */
     void stitchTo(Point const &p) {
         if (!empty() && finalPoint() != p) {
             _unshare();
@@ -379,54 +388,25 @@ class Path
         }
     }
 
-    void replace(iterator const &replaced, Curve const &curve, Stitching stitching = NO_STITCHING) {
-        _unshare();
-        Sequence::iterator seq_replaced(seq_iter(replaced));
-        Sequence source(1);
-        source.push_back(curve.duplicate());
-        if (stitching)
-            stitch(seq_replaced, seq_replaced + 1, source);
-        do_update(seq_replaced, seq_replaced + 1, source.begin(), source.end(), source);
-    }
+    void replace(iterator replaced, Curve const &curve, Stitching stitching = NO_STITCHING);
+    void replace(iterator first_replaced, iterator last_replaced, Curve const &curve,
+                 Stitching stitching = NO_STITCHING);
+    void replace(iterator replaced, const_iterator first, const_iterator last,
+                 Stitching stitching = NO_STITCHING);
+    void replace(iterator first_replaced, iterator last_replaced, const_iterator first,
+                 const_iterator last, Stitching stitching = NO_STITCHING);
 
-    void replace(iterator const &first_replaced, iterator const &last_replaced, Curve const &curve,
-                 Stitching stitching = NO_STITCHING) {
-        _unshare();
-        Sequence::iterator seq_first_replaced(seq_iter(first_replaced));
-        Sequence::iterator seq_last_replaced(seq_iter(last_replaced));
-        Sequence source(1);
-        source.push_back(curve.duplicate());
-        if (stitching)
-            stitch(seq_first_replaced, seq_last_replaced, source);
-        do_update(seq_first_replaced, seq_last_replaced, source.begin(), source.end(), source);
-    }
-
-    void replace(iterator const &replaced, const_iterator const &first, const_iterator const &last,
-                 Stitching stitching = NO_STITCHING) {
-        _unshare();
-        Sequence::iterator seq_replaced(seq_iter(replaced));
-        Sequence source(seq_iter(first), seq_iter(last));
-        if (stitching)
-            stitch(seq_replaced, seq_replaced + 1, source);
-        do_update(seq_replaced, seq_replaced + 1, source.begin(), source.end(), source);
-    }
-
-    void replace(iterator const &first_replaced, iterator const &last_replaced, const_iterator const &first,
-                 const_iterator const &last, Stitching stitching = NO_STITCHING) {
-        _unshare();
-        Sequence::iterator seq_first_replaced(seq_iter(first_replaced));
-        Sequence::iterator seq_last_replaced(seq_iter(last_replaced));
-        Sequence source(seq_iter(first), seq_iter(last));
-        if (stitching)
-            stitch(seq_first_replaced, seq_last_replaced, source);
-        do_update(seq_first_replaced, seq_last_replaced, source.begin(), source.end(), source);
-    }
-
-    /**
+    /** @brief Append a new curve to the path.
+     *
+     * This family of methods will automaticaly use the current final point of the path
+     * as the first argument of the new curve's constructor. To call this method,
+     * you'll need to write e.g.:
+     * <pre>
+     * path.template appendNew<CubicBezier>(control1, control2, end_point);
+     * </pre>
      * It is important to note that the coordinates passed to appendNew should be finite!
      * If one of the coordinates is infinite, 2geom will throw a ContinuityError exception.
      */
-
     template <typename CurveType, typename A>
     void appendNew(A a) {
         _unshare();
@@ -483,16 +463,17 @@ class Path
         do_append(new CurveType(finalPoint(), a, b, c, d, e, f, g, h, i));
     }
 
+    /** @brief Verify the continuity invariant.
+     * If the path is not contiguous, this will throw a CountinuityError. */
     void checkContinuity() const;
 
   private:
-    static Sequence::iterator seq_iter(iterator const &iter) { return iter.path->_getCurves().begin() + iter.index; }
-    static Sequence::const_iterator seq_iter(const_iterator const &iter) {
-        return iter.path->_getCurves().begin() + iter.index;
+    static Sequence::iterator seq_iter(iterator const &iter) {
+        return iter.path->_curves->begin() + iter.index;
     }
-
-    Sequence &_getCurves() { return *_curves; }
-    Sequence const &_getCurves() const { return *_curves; }
+    static Sequence::const_iterator seq_iter(const_iterator const &iter) {
+        return iter.path->_curves->begin() + iter.index;
+    }
 
     void _unshare() {
         if (!_curves.unique()) {
