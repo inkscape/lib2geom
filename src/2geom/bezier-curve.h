@@ -60,9 +60,15 @@ public:
     unsigned order() const { return inner[X].order(); }
     /** @brief Get the number of control points. */
     unsigned size() const { return inner[X].order() + 1; }
+    /** @brief Access control points of the curve.
+     * @param ix The (zero-based) index of the control point. Note that the caller is responsible for checking that this value is <= order().
+     * @return The control point. No-reference return, use setPoint() to modify control points. */
+    Point controlPoint(unsigned ix) const { return Point(inner[X][ix], inner[Y][ix]); }
+    Point operator[](unsigned ix) const { return Point(inner[X][ix], inner[Y][ix]); }
     /** @brief Get the control points.
      * @return Vector with order() + 1 control points. */
     std::vector<Point> controlPoints() const { return bezier_points(inner); }
+
     /** @brief Modify a control point.
      * @param ix The zero-based index of the point to modify. Note that the caller is responsible for checking that this value is <= order().
      * @param v The new value of the point */
@@ -82,21 +88,18 @@ public:
             setPoint(i, ps[i]);
         }
     }
-    /** @brief Access control points of the curve.
-     * @param ix The (zero-based) index of the control point. Note that the caller is responsible for checking that this value is <= order().
-     * @return The control point. No-reference return, use setPoint() to modify control points. */
-    Point controlPoint(unsigned ix) const { return Point(inner[X][ix], inner[Y][ix]); }
-    Point operator[](unsigned ix) const { return Point(inner[X][ix], inner[Y][ix]); }
     /// @}
 
     /// @name Construct a Bezier curve with runtime-determined order.
     /// @{
-    /** @brief Construct a curve from a vector of control points. */
+    /** @brief Construct a curve from a vector of control points.
+     * This will construct the appropriate specialization of BezierCurve (i.e. LineSegment,
+     * QuadraticBezier or Cubic Bezier) if the number of control points in the passed vector
+     * does not exceed 4. */
     static BezierCurve *create(std::vector<Point> const &pts);
     /// @}
 
     // implementation of virtual methods goes here
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
     virtual Point initialPoint() const { return inner.at0(); }
     virtual Point finalPoint() const { return inner.at1(); }
     virtual bool isDegenerate() const { return inner.isConstant(); }
@@ -152,16 +155,16 @@ public:
     virtual Coord valueAt(Coord t, Dim2 d) const { return inner[d].valueAt(t); }
     virtual D2<SBasis> toSBasis() const {return inner.toSBasis(); }
     virtual void feed(PathSink &sink, bool) const;
-#endif
 };
 
 template <unsigned degree>
-class BezierCurveN : public BezierCurve {
+class BezierCurveN
+    : public BezierCurve
+{
+    template <unsigned required_degree>
+    static void assert_degree(BezierCurveN<required_degree> const *) {}
 
 public:
-  template <unsigned required_degree>
-  static void assert_degree(BezierCurveN<required_degree> const *) {}
-
     /// @name Construct Bezier curves
     /// @{
     /** @brief Construct a Bezier curve of the specified order with all points zero. */
@@ -228,7 +231,6 @@ public:
                    BezierCurveN(sx.second, sy.second));
     }
 
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
     virtual Curve *duplicate() const {
         return new BezierCurveN(*this);
     }
@@ -273,7 +275,6 @@ public:
         // call super. this is implemented only to allow specializations
         BezierCurve::feed(sink, moveto_initial);
     }
-#endif
 };
 
 // BezierCurveN<0> is meaningless; specialize it out
@@ -299,7 +300,7 @@ Curve *BezierCurveN<degree>::derivative() const {
     return new BezierCurveN<degree-1>(Geom::derivative(inner[X]), Geom::derivative(inner[Y]));
 }
 
-// optimized specializations for LineSegment
+// optimized specializations
 template <> Curve *BezierCurveN<1>::derivative() const;
 template <> Coord BezierCurveN<1>::nearestTime(Point const &, Coord, Coord) const;
 template <> void BezierCurveN<1>::feed(PathSink &sink, bool moveto_initial) const;
