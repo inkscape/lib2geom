@@ -260,13 +260,14 @@ public:
 
     const_iterator begin() const { return const_iterator(*this, 0); }
     const_iterator end() const { return end_default(); }
-    iterator begin() { return iterator(*this, 0); }
-    iterator end() { return end_default(); }
-
+    const_iterator end_default() const { return const_iterator(*this, size_default()); }
     const_iterator end_open() const { return const_iterator(*this, size_open()); }
     const_iterator end_closed() const { return const_iterator(*this, size_closed()); }
+    iterator begin() { return iterator(*this, 0); }
+    iterator end() { return end_default(); }
     iterator end_default() { return iterator(*this, size_default()); }
-    const_iterator end_default() const { return const_iterator(*this, size_default()); }
+    iterator end_open() { return iterator(*this, size_open()); }
+    iterator end_closed() { return iterator(*this, size_closed()); }
 
     size_type size_open() const { return _curves->size() - 1; }
     size_type size_closed() const { return _curves->size(); }
@@ -339,18 +340,13 @@ public:
 
     std::vector<Coord> roots(Coord v, Dim2 d) const;
 
-    std::vector<Coord> allNearestTimes(Point const &_point, Coord from, Coord to) const;
-
-    std::vector<Coord> allNearestTimes(Point const &_point) const {
-        size_type sz = size();
-        if (closed())
-            ++sz;
-        return allNearestTimes(_point, 0, sz);
+    std::vector<Coord> allNearestTimes(Point const &p, Coord from, Coord to) const;
+    std::vector<Coord> allNearestTimes(Point const &p) const {
+        return allNearestTimes(p, 0, size_default());
     }
 
-    std::vector<Coord> nearestTimePerCurve(Point const &_point) const;
-
     Coord nearestTime(Point const &p, Coord *dist = NULL) const;
+    std::vector<Coord> nearestTimePerCurve(Point const &p) const;
     Position nearestPosition(Point const &p, Coord *dist = NULL) const;
 
     void appendPortionTo(Path &p, Coord f, Coord t) const;
@@ -412,7 +408,7 @@ public:
         insert(end(), other.begin(), other.end(), stitching);
     }
 
-    /** @brief Append a stitching segment to the specified point. */
+    /** @brief Append a stitching segment ending at the specified point. */
     void stitchTo(Point const &p) {
         if (!empty() && finalPoint() != p) {
             _unshare();

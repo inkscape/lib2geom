@@ -234,6 +234,8 @@ std::vector<Coord> Path::roots(Coord v, Dim2 d) const
 
 std::vector<double> Path::allNearestTimes(Point const &_point, double from, double to) const
 {
+    // TODO from and to are not used anywhere.
+    // rewrite this to simplify.
     using std::swap;
 
     if (from > to)
