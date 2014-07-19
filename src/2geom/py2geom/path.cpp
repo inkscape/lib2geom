@@ -160,6 +160,9 @@ void py_cairo_pw_d2_sb(object cr, Geom::Piecewise<Geom::D2<Geom::SBasis> > const
 
 #endif // HAVE_PYCAIRO
 
+Geom::Point (Geom::Path::*path_pointAt_time)(Geom::Coord) const = &Geom::Path::pointAt;
+Geom::Coord (Geom::Path::*path_valueAt_time)(Geom::Coord, Geom::Dim2) const = &Geom::Path::valueAt;
+
 void wrap_path()
 {
 /*    class_<CurveWrap, boost::noncopyable>("Curve")
@@ -192,9 +195,9 @@ void wrap_path()
         .def("toPwSb", &Geom::Path::toPwSb)
         .def(self * Geom::Affine())
         .def(self *= Geom::Affine())
-        .def("pointAt", &Geom::Path::pointAt)
-        .def("valueAt", &Geom::Path::valueAt)
-        .def("__call__", &Geom::Path::pointAt)
+        .def("pointAt", path_pointAt_time)
+        .def("valueAt", path_valueAt_time)
+        .def("__call__", path_pointAt_time)
         .def("roots", &Geom::Path::roots)
         //.def("allNearestTimes", &Geom::Path::allNearestTimes)
         //.def("nearestTime", &Geom::Path::nearestTime)

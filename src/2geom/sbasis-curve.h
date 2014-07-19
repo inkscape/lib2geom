@@ -84,7 +84,6 @@ public:
     explicit SBasisCurve(D2<SBasis> const &sb) : inner(sb) {}
     explicit SBasisCurve(Curve const &other) : inner(other.toSBasis()) {}
 
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
     virtual Curve *duplicate() const { return new SBasisCurve(*this); }
     virtual Point initialPoint() const    { return inner.at0(); }
     virtual Point finalPoint() const      { return inner.at1(); }
@@ -132,7 +131,6 @@ public:
     virtual int degreesOfFreedom() const {
         return inner[0].degreesOfFreedom() + inner[1].degreesOfFreedom();
     }
-#endif
 };
 
 } // end namespace Geom

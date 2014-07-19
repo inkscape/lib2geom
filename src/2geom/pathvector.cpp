@@ -1,12 +1,11 @@
-/*
- * PathVector - std::vector containing Geom::Path
- * This file provides a set of operations that can be performed on PathVector,
- * e.g. an affine transform.
- *
+/** @file
+ * @brief PathVector - a sequence of subpaths
+ *//*
  * Authors:
- *  Johan Engelen <goejendaagh@zonnet.nl>
+ *   Johan Engelen <goejendaagh@zonnet.nl>
+ *   Krzysztof Kosiński <tweenk.pl@gmail.com>
  * 
- * Copyright 2008  authors
+ * Copyright 2008-2014 Authors
  *
  * This library is free software; you can redistribute it and/or
  * modify it either under the terms of the GNU Lesser General Public
@@ -32,9 +31,6 @@
  * the specific language governing rights and limitations.
  */
 
-#ifndef SEEN_GEOM_PATHVECTOR_CPP
-#define SEEN_GEOM_PATHVECTOR_CPP
-
 #include <2geom/pathvector.h>
 
 #include <2geom/path.h>
@@ -43,6 +39,15 @@
 namespace Geom {
 
 //PathVector &PathVector::operator+=(PathVector const &other);
+
+PathVector::size_type PathVector::curveCount() const
+{
+    size_type n = 0;
+    for (const_iterator it = begin(); it != end(); ++it) {
+        n += it->size_default();
+    }
+    return n;
+}
 
 void PathVector::reverse(bool reverse_paths)
 {
@@ -64,6 +69,37 @@ PathVector PathVector::reversed(bool reverse_paths)
         std::reverse(ret.begin(), ret.end());
     }
     return ret;
+}
+
+Path &PathVector::pathAt(Coord t, Coord *rest)
+{
+    return const_cast<Path &>(static_cast<PathVector const*>(this)->pathAt(t, rest));
+}
+Path const &PathVector::pathAt(Coord t, Coord *rest) const
+{
+    Position pos = _getPosition(t);
+    if (rest) {
+        *rest = Coord(pos.curve_index) + pos.t;
+    }
+    return at(pos.path_index);
+}
+Curve const &PathVector::curveAt(Coord t, Coord *rest) const
+{
+    Position pos = _getPosition(t);
+    if (rest) {
+        *rest = pos.t;
+    }
+    return at(pos.path_index).at(pos.curve_index);
+}
+Coord PathVector::valueAt(Coord t, Dim2 d) const
+{
+    Position pos = _getPosition(t);
+    return at(pos.path_index).at(pos.curve_index).valueAt(pos.t, d);
+}
+Point PathVector::pointAt(Coord t) const
+{
+    Position pos = _getPosition(t);
+    return at(pos.path_index).at(pos.curve_index).pointAt(pos.t);
 }
 
 OptRect PathVector::boundsFast() const
@@ -90,84 +126,70 @@ OptRect PathVector::boundsExact() const
     return bound;
 }
 
-Coord PathVector::valueAt(Coord t, Dim2 d) const
+boost::optional<PathVectorPosition> PathVector::nearestPosition(Point const &p, Coord *dist) const
 {
-    size_type path_index = 0, curve_index = 0;
-    Coord f = _getIndices(t, path_index, curve_index);
-    return at(path_index)[curve_index].valueAt(f, d);
-}
-Point PathVector::pointAt(Coord t) const
-{
-    size_type path_index = 0, curve_index = 0;
-    Coord f = _getIndices(t, path_index, curve_index);
-    return at(path_index)[curve_index].pointAt(f);
-}
+    boost::optional<Position> retval;
 
-Coord PathVector::_getIndices(Coord t, size_type &path_index, size_type &curve_index) const
-{
-    Coord path = 0;
-    Coord f = modf(t, &path);
-    for (; path_index < size(); ++path_index) {
-        unsigned s = _data.at(path_index).size();
-        if (s > curve_index) break;
-        curve_index -= s;
-    }
-    return f;
-}
-
-boost::optional<PathVectorPosition> PathVector::nearestPosition(Point const& _point, double *distance_squared) const
-{
-    boost::optional<PathVectorPosition> retval;
-
-    double mindsq = infinity();
-    unsigned int i = 0;
-    for (const_iterator pit = begin(); pit != end(); ++pit) {
-        double dsq;
-        double t = pit->nearestTime(_point, &dsq);
-        //std::cout << t << "," << dsq << std::endl;
-        if (dsq < mindsq) {
-            mindsq = dsq;
-            retval = PathVectorPosition(i, t);
+    Coord mindist = infinity();
+    for (size_type i = 0; i < size(); ++i) {
+        Coord d;
+        PathPosition pos = (*this)[i].nearestPosition(p, &d);
+        if (d < mindist) {
+            mindist = d;
+            retval = Position(i, pos.curve_index, pos.t);
         }
-
-        ++i;
     }
 
-    if (distance_squared) {
-        *distance_squared = mindsq;
+    if (dist) {
+        *dist = mindist;
     }
     return retval;
 }
 
-std::vector<PathVectorPosition> PathVector::allNearestPositions(Point const& _point, double *distance_squared) const
+std::vector<PathVectorPosition> PathVector::allNearestPositions(Point const &p, Coord *dist) const
 {
-    std::vector<PathVectorPosition> retval;
+    std::vector<Position> retval;
 
-    double mindsq = infinity();
-    unsigned int i = 0;
-    for (const_iterator pit = begin(); pit != end(); ++pit) {
-        double dsq;
-        double t = pit->nearestTime(_point, &dsq);
-        if (dsq < mindsq) {
-            mindsq = dsq;
+    Coord mindist = infinity();
+    for (size_type i = 0; i < size(); ++i) {
+        Coord d;
+        PathPosition pos = (*this)[i].nearestPosition(p, &d);
+        if (d < mindist) {
+            mindist = d;
             retval.clear();
         }
-        if (dsq <= mindsq) {
-            retval.push_back(PathVectorPosition(i, t));
+        if (d <= mindist) {
+            retval.push_back(Position(i, pos.curve_index, pos.t));
         }
-
-        ++i;
     }
 
-    if (distance_squared) {
-        *distance_squared = mindsq;
+    if (dist) {
+        *dist = mindist;
     }
     return retval;
+}
+
+PathVectorPosition PathVector::_getPosition(Coord t) const
+{
+    Position ret;
+    Coord rest = 0;
+    ret.t = modf(t, &rest);
+    ret.curve_index = rest;
+    for (; ret.path_index < size(); ++ret.path_index) {
+        unsigned s = _data.at(ret.path_index).size_default();
+        if (s > ret.curve_index) break;
+        // special case for the last point
+        if (s == ret.curve_index && ret.path_index + 1 == size()) {
+            --ret.curve_index;
+            ret.t = 1;
+            break;
+        }
+        ret.curve_index -= s;
+    }
+    return ret;
 }
 
 } // namespace Geom
-
-#endif // SEEN_GEOM_PATHVECTOR_CPP
 
 /*
   Local Variables:

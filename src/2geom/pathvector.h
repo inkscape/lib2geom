@@ -1,6 +1,5 @@
-/**
- * \file
- * \brief PathVector - a sequence of contiguous subpaths.
+/** @file
+ * @brief PathVector - a sequence of subpaths
  *//*
  * Authors:
  *   Johan Engelen <j.b.c.engelen@alumnus.utwente.nl>
@@ -43,17 +42,27 @@
 
 namespace Geom {
 
-struct PathVectorPosition {
-    unsigned index;
-    double t;
-    PathVectorPosition() : index(0), t(0) {}
-    PathVectorPosition(unsigned _i, double _t) : index(_i), t(_t) {}
+struct PathVectorPosition
+    : public PathPosition
+{
+    size_type path_index;
+
+    PathVectorPosition() : PathPosition(0, 0), path_index(0) {}
+    PathVectorPosition(size_type _i, size_type _c, Coord _t)
+        : PathPosition(_c, _t), path_index(_i) {}
 };
 
-/** @brief A sequence of contiguous subpaths.
+/** @brief Sequence of subpaths.
  *
  * This class corresponds to the SVG notion of a path:
  * a sequence of any number of open or closed contiguous subpaths.
+ * Unlike Path, this class is closed under boolean operations.
+ *
+ * If you want to represent an arbitrary shape, this is the best class to use.
+ * Shapes with a boundary that is composed of only a single contiguous
+ * component can be represented with Path instead.
+ *
+ * @ingroup Curves
  */
 class PathVector
     : MultipliableNoncommutative< PathVector, Affine
@@ -87,10 +96,11 @@ public:
         : _data(first, last)
     {}
 
-    bool empty() const {
-        return _data.empty();
-    }
+    /// Check whether the vector contains any paths.
+    bool empty() const { return _data.empty(); }
+    /// Get the number of paths in the vector.
     size_type size() const { return _data.size(); }
+    /// Get the total number of curves in the vector.
     size_type curveCount() const;
 
     iterator begin() { return _data.begin(); }
@@ -113,9 +123,11 @@ public:
     Path const &front() const { return _data.front(); }
     Path &back() { return _data.back(); }
     Path const &back() const { return _data.back(); }
+    /// Append a path at the end.
     void push_back(Path const &path) {
         _data.push_back(path);
     }
+    /// Remove the last path.
     void pop_back() {
         _data.pop_back();
     }
@@ -126,25 +138,67 @@ public:
     void insert(iterator out, InputIter first, InputIter last) {
         _data.insert(out, first, last);
     }
+    /// Remove a path from the vector.
     iterator erase(iterator i) {
         return _data.erase(i);
     }
+    /// Remove a range of paths from the vector.
     iterator erase(iterator first, iterator last) {
         return _data.erase(first, last);
     }
+    /// Remove all paths from the vector.
     void clear() { _data.clear(); }
+    /** @brief Change the number of paths.
+     * If the vector size increases, it is passed with paths that contain only
+     * a degenerate closing segment at (0,0). */
     void resize(size_type n) { _data.resize(n); }
-
+    /** @brief Reverse the direction of paths in the vector.
+     * @param reverse_paths If this is true, the order of paths is reversed as well;
+     *                      otherwise each path is reversed, but their order in the
+     *                      PathVector stays the same */
     void reverse(bool reverse_paths = true);
+    /** @brief Get a new vector with reversed direction of paths.
+     * @param reverse_paths If this is true, the order of paths is reversed as well;
+     *                      otherwise each path is reversed, but their order in the
+     *                      PathVector stays the same */
     PathVector reversed(bool reverse_paths = true);
 
-    Interval timeRange() const;
+    /// Get the range of allowed time values.
+    Interval timeRange() const {
+        Interval ret(0, curveCount()); return ret;
+    }
+    /** @brief Get the first point in the first path of the vector.
+     * This method will throw an exception if the vector doesn't contain any paths. */
     Point initialPoint() const {
         return _data.front().initialPoint();
     }
+    /** @brief Get the last point in the last path of the vector.
+     * This method will throw an exception if the vector doesn't contain any paths. */
     Point finalPoint() const {
         return _data.back().finalPoint();
     }
+    Path &pathAt(Coord t, Coord *rest = NULL);
+    Path const &pathAt(Coord t, Coord *rest = NULL) const;
+    Curve const &curveAt(Coord t, Coord *rest = NULL) const;
+    Coord valueAt(Coord t, Dim2 d) const;
+    Point pointAt(Coord t) const;
+
+    Path &pathAt(Position const &pos) {
+        return const_cast<Path &>(static_cast<PathVector const*>(this)->pathAt(pos));
+    }
+    Path const &pathAt(Position const &pos) const {
+        return at(pos.path_index);
+    }
+    Curve const &curveAt(Position const &pos) const {
+        return at(pos.path_index).at(pos.curve_index);
+    }
+    Point pointAt(Position const &pos) const {
+        return at(pos.path_index).at(pos.curve_index).pointAt(pos.t);
+    }
+    Coord valueAt(Position const &pos, Dim2 d) const {
+        return at(pos.path_index).at(pos.curve_index).valueAt(pos.t, d);
+    }
+
     OptRect boundsFast() const;
     OptRect boundsExact() const;
 
@@ -158,21 +212,17 @@ public:
         return *this;
     }
 
-    Coord valueAt(Position const &pos, Dim2 d) const { return at(pos.index).valueAt(pos.t, d); }
-    Coord valueAt(Coord t, Dim2 d) const;
-    Point pointAt(Position const &pos) const { return at(pos.index).pointAt(pos.t); }
-    Point pointAt(Coord t) const;
     /*Curve const &curveAt(Position const &pos, Coord *rest = NULL) const;
     Curve const &curveAt(Coord t, Coord *rest = NULL) const;
     Path const &pathAt(Position const &pos, Coord *rest = NULL) const;
     Path const &pathAt(Coord t, Coord *rest = NULL) const;*/
 
     Coord nearestTime(Point const &p) const;
-    boost::optional<Position> nearestPosition(Point const &p, double *distance_squared = NULL) const;
-    std::vector<Position> allNearestPositions(Point const &p, double *distance_squared = NULL) const;
+    boost::optional<Position> nearestPosition(Point const &p, Coord *dist = NULL) const;
+    std::vector<Position> allNearestPositions(Point const &p, Coord *dist = NULL) const;
 
 private:
-    Coord _getIndices(Coord t, size_type &path_index, size_type &curve_index) const;
+    Position _getPosition(Coord t) const;
 
     Sequence _data;
 };

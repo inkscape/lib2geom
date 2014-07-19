@@ -55,7 +55,7 @@ using namespace Geom;
 std::ostream&
 operator<< (std::ostream &out, PathVectorPosition const &pvp)
 {
-    return out << pvp.index << "." << pvp.t;
+    return out << pvp.curve_index << "." << pvp.t;
 }
 
 class NearestPoints : public Toy

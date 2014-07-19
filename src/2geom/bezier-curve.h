@@ -99,6 +99,7 @@ public:
     static BezierCurve *create(std::vector<Point> const &pts);
     /// @}
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
     // implementation of virtual methods goes here
     virtual Point initialPoint() const { return inner.at0(); }
     virtual Point finalPoint() const { return inner.at1(); }
@@ -155,6 +156,7 @@ public:
     virtual Coord valueAt(Coord t, Dim2 d) const { return inner[d].valueAt(t); }
     virtual D2<SBasis> toSBasis() const {return inner.toSBasis(); }
     virtual void feed(PathSink &sink, bool) const;
+#endif
 };
 
 template <unsigned degree>

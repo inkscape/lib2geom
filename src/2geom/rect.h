@@ -153,6 +153,10 @@ public:
 
 Coord distanceSq(Point const &p, Rect const &rect);
 Coord distance(Point const &p, Rect const &rect);
+/// Minimum square of distance to rectangle, or infinity if empty.
+Coord distanceSq(Point const &p, OptRect const &rect);
+/// Minimum distance to rectangle, or infinity if empty.
+Coord distance(Point const &p, OptRect const &rect);
 
 inline bool Rect::interiorContains(OptRect const &r) const {
     return !r || interiorContains(static_cast<Rect const &>(*r));

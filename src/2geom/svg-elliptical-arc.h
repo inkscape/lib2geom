@@ -70,7 +70,6 @@ public:
         _updateCenterAndAngles(true);
     }
 
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
     virtual Curve *duplicate() const {
         return new SVGEllipticalArc(*this);
     }
@@ -122,7 +121,6 @@ public:
     // TODO move SVG-specific behavior here.
 //protected:
     //virtual void _updateCenterAndAngles();
-#endif
 }; // end class SVGEllipticalArc
 
 /*

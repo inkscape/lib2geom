@@ -51,7 +51,6 @@
  *   like translation, scaling and rotation.
  * - @ref Curves "Curves" - functions mapping the unit interval to points on a plane.
  * - @ref Shapes "Shapes" - circles, ellipses, polygons and the like.
- * - @ref Paths "Paths" - contiguous sequences of curves.
  * - @ref ShapeOps "Shape operations" - boolean algebra, offsets and other advanced operations.
  * - @ref Containers "Geometric containers" - efficient ways to store and retrieve
  *   geometric information.

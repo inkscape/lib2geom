@@ -36,6 +36,7 @@
 #include <2geom/pathvector.h>
 #include <2geom/transforms.h>
 #include <algorithm>
+#include <limits>
 
 using std::swap;
 using namespace Geom::PathInternal;
@@ -184,50 +185,40 @@ void Path::start(Point const &p) {
 
 Interval Path::timeRange() const
 {
-    unsigned sz = size();
-    if (closed()) {
-        ++sz;
-    }
-    Interval ret(0, sz);
+    Interval ret(0, size_default());
     return ret;
+}
+
+Curve const &Path::curveAt(Coord t, Coord *rest) const
+{
+    Position pos = _getPosition(t);
+    if (rest) {
+        *rest = pos.t;
+    }
+    return at(pos.curve_index);
 }
 
 Point Path::pointAt(Coord t) const
 {
-    unsigned int sz = size();
-    if (closed())
-        ++sz;
-    if (t < 0 || t > sz) {
-        THROW_RANGEERROR("parameter t out of bounds");
-    }
-    if (empty())
-        return initialPoint(); // naked moveto
-    Coord k, lt = modf(t, &k);
-    unsigned int i = static_cast<unsigned int>(k);
-    if (i == sz) {
-        --i;
-        lt = 1;
-    }
-    return (*this)[i].pointAt(lt);
+    return pointAt(_getPosition(t));
 }
 
 Coord Path::valueAt(Coord t, Dim2 d) const
 {
-    unsigned int sz = size();
-    if (closed())
-        ++sz;
-    if (t < 0 || t > sz) {
-        THROW_RANGEERROR("parameter t out of bounds");
-    }
-    if (empty())
-        return initialPoint()[d]; // naked moveto
-    Coord k, lt = modf(t, &k);
-    unsigned int i = static_cast<unsigned int>(k);
-    if (i == sz) {
-        --i;
-        lt = 1;
-    }
-    return (*this)[i].valueAt(lt, d);
+    return valueAt(_getPosition(t), d);
+}
+
+Curve const &Path::curveAt(Position const &pos) const
+{
+    return at(pos.curve_index);
+}
+Point Path::pointAt(Position const &pos) const
+{
+    return at(pos.curve_index).pointAt(pos.t);
+}
+Coord Path::valueAt(Position const &pos, Dim2 d) const
+{
+    return at(pos.curve_index).valueAt(pos.t, d);
 }
 
 std::vector<Coord> Path::roots(Coord v, Dim2 d) const
@@ -324,89 +315,54 @@ std::vector<double> Path::allNearestTimes(Point const &_point, double from, doub
     return all_nearest;
 }
 
-std::vector<double> Path::nearestTimePerCurve(Point const &_point) const
+std::vector<Coord> Path::nearestTimePerCurve(Point const &p) const
 {
-    // return a single nearest point for each curve in this path
-    std::vector<double> np;
-    for (const_iterator it = begin(); it != end_default(); ++it)
-        // for (PathVector::const_iterator it = _path.begin(); it != _path.end(), ++it){
-    {
-        np.push_back(it->nearestTime(_point));
+    // return a single nearest time for each curve in this path
+    std::vector<Coord> np;
+    for (const_iterator it = begin(); it != end_default(); ++it) {
+        np.push_back(it->nearestTime(p));
     }
     return np;
 }
 
-double Path::nearestTime(Point const &_point, double from, double to, double *distance_squared) const
+Coord Path::nearestTime(Point const &p, Coord *dist) const
 {
-    using std::swap;
+    Position pos = nearestPosition(p, dist);
+    return pos.curve_index + pos.t;
+}
 
-    if (from > to)
-        swap(from, to);
-    const Path &_path = *this;
-    unsigned int sz = _path.size();
-    if (_path.closed())
-        ++sz;
-    if (from < 0 || to > sz) {
-        THROW_RANGEERROR("[from,to] interval out of bounds");
-    }
-    double sif, st = modf(from, &sif);
-    double eif, et = modf(to, &eif);
-    unsigned int si = static_cast<unsigned int>(sif);
-    unsigned int ei = static_cast<unsigned int>(eif);
-    if (sz == 0) { // naked moveto
-        if (distance_squared != NULL)
-            *distance_squared = distanceSq(_point, _path.initialPoint());
-        return 0;
-    }
-    if (si == sz) {
-        --si;
-        st = 1;
-    }
-    if (ei == sz) {
-        --ei;
-        et = 1;
-    }
-    if (si == ei) {
-        double nearest = _path[si].nearestTime(_point, st, et);
-        if (distance_squared != NULL)
-            *distance_squared = distanceSq(_point, _path[si].pointAt(nearest));
-        return si + nearest;
+PathPosition Path::nearestPosition(Point const &p, Coord *dist) const
+{
+    Coord mindist = std::numeric_limits<Coord>::max();
+    Position ret;
+
+    if (_curves->size() == 1) {
+        // naked moveto
+        ret.curve_index = 0;
+        ret.t = 0;
+        if (dist) {
+            *dist = distance(_closing_seg->initialPoint(), p);
+        }
+        return ret;
     }
 
-    double t;
-    double nearest = _path[si].nearestTime(_point, st);
-    unsigned int ni = si;
-    double dsq;
-    double mindistsq = distanceSq(_point, _path[si].pointAt(nearest));
-    for (unsigned int i = si + 1; i < ei; ++i) {
-        Rect bb = (_path[i].boundsFast());
-        dsq = distanceSq(_point, bb);
-        if (mindistsq <= dsq)
-            continue;
-        t = _path[i].nearestTime(_point);
-        dsq = distanceSq(_point, _path[i].pointAt(t));
-        if (mindistsq > dsq) {
-            nearest = t;
-            ni = i;
-            mindistsq = dsq;
+    for (size_type i = 0; i < size_default(); ++i) {
+        Curve const &c = at(i);
+        if (distance(p, c.boundsFast()) >= mindist) continue;
+
+        Coord t = c.nearestTime(p);
+        Coord d = distance(c.pointAt(t), p);
+        if (d < mindist) {
+            mindist = d;
+            ret.curve_index = i;
+            ret.t = t;
         }
     }
-    Rect bb = (_path[ei].boundsFast());
-    dsq = distanceSq(_point, bb);
-    if (mindistsq > dsq) {
-        t = _path[ei].nearestTime(_point, 0, et);
-        dsq = distanceSq(_point, _path[ei].pointAt(t));
-        if (mindistsq > dsq) {
-            nearest = t;
-            ni = ei;
-            mindistsq = dsq;
-        }
+    if (dist) {
+        *dist = mindist;
     }
 
-    if (distance_squared != NULL)
-        *distance_squared = mindistsq;
-
-    return ni + nearest;
+    return ret;
 }
 
 void Path::appendPortionTo(Path &ret, double from, double to) const
@@ -627,6 +583,24 @@ void Path::checkContinuity() const
     if (_curves->front().initialPoint() != _curves->back().finalPoint()) {
         THROW_CONTINUITYERROR();
     }
+}
+
+PathPosition Path::_getPosition(Coord t) const
+{
+    size_type sz = size_default();
+    if (t < 0 || t > sz) {
+        THROW_RANGEERROR("parameter t out of bounds");
+    }
+
+    Position ret;
+    Coord k;
+    ret.t = modf(t, &k);
+    ret.curve_index = k;
+    if (ret.curve_index == sz) {
+        --ret.curve_index;
+        ret.t = 1;
+    }
+    return ret;
 }
 
 Piecewise<D2<SBasis> > paths_to_pw(PathVector const &paths)

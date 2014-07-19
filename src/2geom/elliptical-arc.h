@@ -193,7 +193,6 @@ public:
     }
 
     // implementation of overloads goes here
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
     virtual Point initialPoint() const { return _initial_point; }
     virtual Point finalPoint() const { return _final_point; }
     virtual Curve* duplicate() const { return new EllipticalArc(*this); }
@@ -252,7 +251,6 @@ public:
     virtual Curve* portion(double f, double t) const;
     virtual Curve* reverse() const;
     virtual void feed(PathSink &sink, bool moveto_initial) const;
-#endif
 
 protected:
     void _updateCenterAndAngles(bool svg);

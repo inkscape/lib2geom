@@ -106,6 +106,25 @@ class BaseIterator
 
 }
 
+/** @brief Position in the path.
+ *
+ * This class exists because mapping the range of multiple curves onto the same interval
+ * as the curve index, we lose some precision. For instance, a path with 16 curves will
+ * have 4 bits less precision than a path with 1 curve. If you need high precision results
+ * in long paths, either use this class and related methods instead of the standard methods
+ * pointAt(), nearestTime() and so on, or use curveAt() to first obtain the curve, then
+ * call the method again to obtain a high precision result.
+ * 
+ * @relates Path */
+struct PathPosition {
+    typedef PathInternal::Sequence::size_type size_type;
+
+    Coord t;
+    size_type curve_index;
+    PathPosition() : t(0), curve_index(0) {}
+    PathPosition(size_type idx, Coord tval) : t(tval), curve_index(idx) {}
+};
+
 /** @brief Sequence of contiguous curves, aka spline.
  *
  * Path represents a sequence of contiguous curves, also known as a spline.
@@ -143,7 +162,8 @@ class Path
     , MultipliableNoncommutative< Path, Translate
       > > >
 {
-  public:
+public:
+    typedef PathPosition Position;
     typedef PathInternal::Sequence Sequence;
     typedef PathInternal::BaseIterator<Path> iterator;
     typedef PathInternal::BaseIterator<Path const> const_iterator;
@@ -228,7 +248,7 @@ class Path
     /** @brief Access the last curve in the path.
      * Since the curve always contains at least a degenerate closing segment,
      * it is always safe to use this method. */
-    Curve const &back() const { return back_open(); }
+    Curve const &back() const { return back_default(); }
     Curve const &back_open() const {
         if (empty()) {
             THROW_RANGEERROR("Path contains not enough segments");
@@ -239,18 +259,21 @@ class Path
     Curve const &back_default() const { return (_closed ? back_closed() : back_open()); }
 
     const_iterator begin() const { return const_iterator(*this, 0); }
-    const_iterator end() const { return const_iterator(*this, size()); }
+    const_iterator end() const { return end_default(); }
     iterator begin() { return iterator(*this, 0); }
-    iterator end() { return iterator(*this, size()); }
+    iterator end() { return end_default(); }
 
-    const_iterator end_open() const { return const_iterator(*this, size()); }
-    const_iterator end_closed() const { return const_iterator(*this, size() + 1); }
-    const_iterator end_default() const { return (_closed ? end_closed() : end_open()); }
+    const_iterator end_open() const { return const_iterator(*this, size_open()); }
+    const_iterator end_closed() const { return const_iterator(*this, size_closed()); }
+    iterator end_default() { return iterator(*this, size_default()); }
+    const_iterator end_default() const { return const_iterator(*this, size_default()); }
 
     size_type size_open() const { return _curves->size() - 1; }
     size_type size_closed() const { return _curves->size(); }
-    size_type size_default() const { return (_closed ? size_closed() : size_open()); }
-    size_type size() const { return size_open(); }
+    size_type size_default() const {
+        return _includesClosingSegment() ? size_closed() : size_open();
+    }
+    size_type size() const { return size_default(); }
 
     size_type max_size() const { return _curves->max_size() - 1; }
 
@@ -290,12 +313,27 @@ class Path
      * @return Values for which pointAt() and valueAt() yield valid results. */
     Interval timeRange() const;
 
+    /** Get the curve at the specified time value.
+     * @param t Time value
+     * @param rest Optional storage for the corresponding time value in the curve */
+    Curve const &curveAt(Coord t, Coord *rest = NULL) const;
     /** @brief Get the point at the specified time value.
-     * Time values range from zero to the number of curves. */
+     * Note that this method has reduced precision with respect to calling pointAt()
+     * directly on the curve. If you want high precision results, use the version
+     * that takes a Position parameter.
+     * 
+     * Allowed time values range from zero to the number of curves; you can retrieve
+     * the allowed range of values with timeRange(). */
     Point pointAt(Coord t) const;
-    /** @brief Get one coordinate (X or Y) at the specified time value.
-     * Time values range from zero to the number of curves. */
+    /// @brief Get one coordinate (X or Y) at the specified time value.
     Coord valueAt(Coord t, Dim2 d) const;
+
+    /// Get the curve at the specified position.
+    Curve const &curveAt(Position const &pos) const;
+    /// Get the point at the specified position.
+    Point pointAt(Position const &pos) const;
+    /// Get one coordinate at the specified position.
+    Coord valueAt(Position const &pos, Dim2 d) const;
 
     Point operator()(Coord t) const { return pointAt(t); }
 
@@ -312,14 +350,8 @@ class Path
 
     std::vector<Coord> nearestTimePerCurve(Point const &_point) const;
 
-    Coord nearestTime(Point const &_point, Coord from, Coord to, Coord *distance_squared = NULL) const;
-
-    Coord nearestTime(Point const &_point, Coord *distance_squared = NULL) const {
-        size_type sz = size();
-        if (closed())
-            ++sz;
-        return nearestTime(_point, 0, sz, distance_squared);
-    }
+    Coord nearestTime(Point const &p, Coord *dist = NULL) const;
+    Position nearestPosition(Point const &p, Coord *dist = NULL) const;
 
     void appendPortionTo(Path &p, Coord f, Coord t) const;
 
@@ -401,9 +433,9 @@ class Path
      * This family of methods will automaticaly use the current final point of the path
      * as the first argument of the new curve's constructor. To call this method,
      * you'll need to write e.g.:
-     * <pre>
-     * path.template appendNew<CubicBezier>(control1, control2, end_point);
-     * </pre>
+     * @code
+       path.template appendNew<CubicBezier>(control1, control2, end_point);
+       @endcode
      * It is important to note that the coordinates passed to appendNew should be finite!
      * If one of the coordinates is infinite, 2geom will throw a ContinuityError exception.
      */
@@ -467,7 +499,7 @@ class Path
      * If the path is not contiguous, this will throw a CountinuityError. */
     void checkContinuity() const;
 
-  private:
+private:
     static Sequence::iterator seq_iter(iterator const &iter) {
         return iter.path->_curves->begin() + iter.index;
     }
@@ -475,12 +507,16 @@ class Path
         return iter.path->_curves->begin() + iter.index;
     }
 
+    bool _includesClosingSegment() const {
+        return _closed && !_closing_seg->isDegenerate();
+    }
     void _unshare() {
         if (!_curves.unique()) {
             _curves.reset(new Sequence(*_curves));
             _closing_seg = static_cast<ClosingSegment*>(&_curves->back());
         }
     }
+    Position _getPosition(Coord t) const;
 
     void stitch(Sequence::iterator first_replaced, Sequence::iterator last_replaced, Sequence &sequence);
 

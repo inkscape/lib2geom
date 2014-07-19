@@ -44,7 +44,7 @@ class AxisLineSegment : public LineSegment
 {
 public:
     static const Dim2 other_axis = static_cast<Dim2>((axis + 1) % 2);
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
+
     virtual void setInitial(Point const &p) {
         Point f = finalPoint();
         f[axis] = p[axis];
@@ -121,7 +121,6 @@ public:
         }
         return result;
     }
-#endif
 protected:
     AxisLineSegment(Point const &p0, Point const &p1) : LineSegment(p0, p1) {}
     AxisLineSegment() {}
@@ -169,7 +168,6 @@ public:
         return result;
     }
 
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
     virtual Curve* duplicate() const { return new HLineSegment(*this); }
     virtual Curve *portion(Coord f, Coord t) const {
         Point ip = pointAt(f);
@@ -194,7 +192,6 @@ public:
         Coord x = finalPoint()[X] - initialPoint()[X];
         return new HLineSegment(x, x, 0);
     }
-#endif
 };  // end class HLineSegment
 
 
@@ -241,7 +238,6 @@ public:
         return result;
     }
 
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
     virtual Curve *duplicate() const { return new VLineSegment(*this); }
     virtual Curve *portion(Coord f, Coord t) const {
         Point ip = pointAt(f);
@@ -265,7 +261,6 @@ public:
         Coord y = finalPoint()[Y] - initialPoint()[Y];
         return new VLineSegment(0, y, y);
     }
-#endif
 }; // end class VLineSegment
 
 }  // end namespace Geom
