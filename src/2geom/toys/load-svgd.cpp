@@ -9,6 +9,7 @@
 #include <2geom/toys/toy-framework-2.h>
 
 #include <2geom/cairo-path-sink.h>
+#include <2geom/svg-path-writer.h>
 
 #include <cstdlib>
 
@@ -29,6 +30,10 @@ class LoadSVGD: public Toy {
         cairo_stroke(cr);
 
         // spit out some diagnostic info about the path
+        SVGPathWriter sw;
+        sw.feed(pv);
+        *notify << sw.str();
+        /*
         for(unsigned i = 0; i < pv.size(); i++) {
             if(pv[i].size() == 0) {
                 *notify << "naked moveto;";
@@ -44,7 +49,7 @@ class LoadSVGD: public Toy {
                     *notify << typeid(*c).name() << ';' ;
                 }
             }
-        }
+        }*/
 
         Toy::draw(cr, notify, width, height, save,timer_stream);
     }

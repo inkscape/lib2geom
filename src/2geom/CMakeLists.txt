@@ -133,6 +133,8 @@ svg-elliptical-arc.cpp
 svg-elliptical-arc.h
 svg-path-parser.cpp
 svg-path-parser.h
+svg-path-writer.cpp
+svg-path-writer.h
 sweep.cpp
 sweep.h
 
