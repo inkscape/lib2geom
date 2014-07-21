@@ -124,6 +124,11 @@ public:
         return new SBasisCurve(Geom::derivative(inner));
     }
     virtual D2<SBasis> toSBasis() const { return inner; }
+    virtual bool operator==(Curve const &c) const {
+        SBasisCurve const *other = dynamic_cast<SBasisCurve const *>(&c);
+        if (!other) return false;
+        return inner == other->inner;
+    }
     virtual int degreesOfFreedom() const {
         return inner[0].degreesOfFreedom() + inner[1].degreesOfFreedom();
     }

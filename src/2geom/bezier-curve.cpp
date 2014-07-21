@@ -141,6 +141,20 @@ Coord BezierCurve::length(Coord tolerance) const
     }
 }
 
+bool BezierCurve::operator==(Curve const &c) const
+{
+    if (this == &c) return true;
+
+    BezierCurve const *other = dynamic_cast<BezierCurve const *>(&c);
+    if (!other) return false;
+    if (size() != other->size()) return false;
+
+    for (unsigned i = 0; i < size(); ++i) {
+        if (controlPoint(i) != other->controlPoint(i)) return false;
+    }
+    return true;
+}
+
 void BezierCurve::feed(PathSink &sink, bool moveto_initial) const
 {
     if (size() > 4) {

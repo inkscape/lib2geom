@@ -889,7 +889,6 @@ D2<SBasis> EllipticalArc::toSBasis() const
     return arc;
 }
 
-
 void EllipticalArc::transform(Affine const& m)
 {
     // TODO avoid allocating a new arc here
@@ -902,6 +901,21 @@ void EllipticalArc::transform(Affine const& m)
                                  isSVGCompliant() );
     *this = *arc;
     delete arc;
+}
+
+bool EllipticalArc::operator==(Curve const &c) const
+{
+    EllipticalArc const *other = dynamic_cast<EllipticalArc const *>(&c);
+    if (!other) return false;
+    if (_initial_point != other->_initial_point) return false;
+    if (_final_point != other->_final_point) return false;
+    // TODO: all arcs with ellipse rays which are too small
+    //       and fall back to a line should probably be equal
+    if (_rays != other->_rays) return false;
+    if (_rot_angle != other->_rot_angle) return false;
+    if (_large_arc != other->_large_arc) return false;
+    if (_sweep != other->_sweep) return false;
+    return true;
 }
 
 void EllipticalArc::feed(PathSink &sink, bool moveto_initial) const

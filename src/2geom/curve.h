@@ -290,6 +290,8 @@ public:
      * multiplied by 2. */
     virtual int degreesOfFreedom() const { return 0;}
     /** @brief Test equality of two curves.
+     * Equality means that for any time value, the evaluation of either curve will yield
+     * the same value. This means that reversed curves are not equal to each other.
      * @return True if the curves are identical, false otherwise */
     virtual bool operator==(Curve const &c) const { return this == &c;}
     /** @brief Feed the curve to a PathSink */

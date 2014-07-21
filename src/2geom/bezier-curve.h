@@ -146,6 +146,7 @@ public:
     virtual std::vector<Point> pointAndDerivatives(Coord t, unsigned n) const { return inner.valueAndDerivatives(t, n); }
     virtual Coord valueAt(Coord t, Dim2 d) const { return inner[d].valueAt(t); }
     virtual D2<SBasis> toSBasis() const {return inner.toSBasis(); }
+    virtual bool operator==(Curve const &c) const;
     virtual void feed(PathSink &sink, bool) const;
 };
 
