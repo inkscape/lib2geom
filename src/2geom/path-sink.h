@@ -50,7 +50,7 @@ namespace Geom {
  */
 class PathSink {
 public:
-    /** Move to a different point without creating a segment.
+    /** @brief Move to a different point without creating a segment.
      * Usually starts a new subpath. */
     virtual void moveTo(Point const &p) = 0;
     /// Output a line segment.
@@ -59,15 +59,14 @@ public:
     virtual void curveTo(Point const &c0, Point const &c1, Point const &p) = 0;
     /// Output a cubic Bezier segment.
     virtual void quadTo(Point const &c, Point const &p) = 0;
-    /** Output an elliptical arc segment.
+    /** @brief Output an elliptical arc segment.
      * See the EllipticalArc class for the documentation of parameters. */
     virtual void arcTo(double rx, double ry, double angle,
                        bool large_arc, bool sweep, Point const &p) = 0;
 
     /// Close the current path with a line segment.
     virtual void closePath() = 0;
-    /** Flush any internal state of the generator.
-     * 
+    /** @brief Flush any internal state of the generator.
      * This call should implicitly finish the current subpath.
      * Calling this method should be idempotent, because the default
      * implementations of path() and pathvector() will call it
@@ -76,20 +75,25 @@ public:
     // Get the current point, e.g. where the initial point of the next segment will be.
     //virtual Point currentPoint() const = 0;
 
-    /** Undo the last segment.
+    /** @brief Undo the last segment.
      * This method is optional.
      * @return true true if a segment was erased, false otherwise. */
     virtual bool backspace() { return false; }
 
     // these have a default implementation
     virtual void feed(Curve const &c, bool moveto_initial = true);
-    /** Output a subpath.
+    /** @brief Output a subpath.
      * Calls the appropriate segment methods according to the contents
-     * of the passed subpath. You can override this function. */
+     * of the passed subpath. You can override this function.
+     * NOTE: if you override only some of the feed() functions,
+     * always write this in the derived class:
+     * @code
+       using PathSink::feed;
+       @endcode
+     * Otherwise the remaining methods will be hidden. */
     virtual void feed(Path const &p);
-    /** Output a path.
-     * Calls the appropriate segment methods according to the contents
-     * of the passed path. You can override this function. */
+    /** @brief Output a path.
+     * Calls feed() on each path in the vector. You can override this function. */
     virtual void feed(PathVector const &v);
     /// Output an axis-aligned rectangle, using moveTo, lineTo and closePath.
     virtual void feed(Rect const &);
@@ -176,7 +180,8 @@ public:
         }
     }
 
-    void path(Path const &other)
+    using PathSink::feed;
+    void feed(Path const &other)
     {
         flush();
         *_out++ = other;

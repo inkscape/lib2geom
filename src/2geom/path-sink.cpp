@@ -43,11 +43,11 @@ void PathSink::feed(Path const &path) {
     flush();
     moveTo(path.front().initialPoint());
 
-    Path::const_iterator iter;
-    for (iter = path.begin(); iter != path.end(); ++iter) {
+    // never output the closing segment to the sink
+    Path::const_iterator iter = path.begin(), last = path.end_open();
+    for (; iter != last; ++iter) {
         iter->feed(*this, false);
     }
-
     if (path.closed()) {
         closePath();
     }

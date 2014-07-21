@@ -48,24 +48,31 @@ public:
     SVGPathWriter();
     ~SVGPathWriter() {}
 
-    virtual void moveTo(Point const &p);
-    virtual void lineTo(Point const &p);
-    virtual void curveTo(Point const &c0, Point const &c1, Point const &p);
-    virtual void quadTo(Point const &c, Point const &p);
-    virtual void arcTo(double rx, double ry, double angle,
-                       bool large_arc, bool sweep, Point const &p);
-    virtual void closePath();
-    virtual void flush();
+    void moveTo(Point const &p);
+    void lineTo(Point const &p);
+    void curveTo(Point const &c0, Point const &c1, Point const &p);
+    void quadTo(Point const &c, Point const &p);
+    void arcTo(double rx, double ry, double angle,
+               bool large_arc, bool sweep, Point const &p);
+    void closePath();
+    void flush();
 
+    void clear();
     void setPrecision(int prec);
+    void setOptimize(bool opt) { _optimize = opt; }
     std::string str() const { return _s.str(); }
 
 private:
-    std::ostringstream _s;
+    void _setCommand(char cmd);
+    std::string _formatCoord(Coord par);
+
+    std::ostringstream _s, _ns;
     std::vector<Coord> _current_pars;
-    Point _start;
+    Point _subpath_start;
     Point _current;
-    unsigned _precision;
+    int _precision;
+    bool _optimize;
+    char _command;
 };
 
 } // namespace Geom

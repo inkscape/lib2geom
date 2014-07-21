@@ -5,6 +5,7 @@
 #include <2geom/path.h>
 #include <2geom/pathvector.h>
 #include <2geom/svg-path-parser.h>
+#include <2geom/svg-path-writer.h>
 #include <vector>
 #include <iterator>
 
@@ -12,19 +13,19 @@ using namespace std;
 using namespace Geom;
 
 Path string_to_path(const char* s) {
-	PathVector pv = parse_svg_path(s);
-	assert(pv.size() == 1);
-	return pv[0];
+    PathVector pv = parse_svg_path(s);
+    assert(pv.size() == 1);
+    return pv[0];
 }
 
 // Path fixture
 class PathTest : public ::testing::Test {
 protected:
     PathTest() {
-	line.append(LineSegment(Point(0,0), Point(1,0)));
-	square = string_to_path("M 0,0 1,0 1,1 0,1 z");
-	circle = string_to_path("m 362,288.5 a 4.5,4.5 0 1 1 -9,0 4.5,4.5 0 1 1 9,0 z");
-	diederik = string_to_path("m 262.6037,35.824151 c 0,0 -92.64892,-187.405851 30,-149.999981 104.06976,31.739531 170,109.9999815 170,109.9999815 l -10,-59.9999905 c 0,0 40,79.99999 -40,79.99999 -80,0 -70,-129.999981 -70,-129.999981 l 50,0 C 435.13571,-131.5667 652.76275,126.44872 505.74322,108.05672 358.73876,89.666591 292.6037,-14.175849 292.6037,15.824151 c 0,30 -30,20 -30,20 z");
+        line.append(LineSegment(Point(0,0), Point(1,0)));
+        square = string_to_path("M 0,0 1,0 1,1 0,1 z");
+        circle = string_to_path("m 362,288.5 a 4.5,4.5 0 1 1 -9,0 4.5,4.5 0 1 1 9,0 z");
+        diederik = string_to_path("m 262.6037,35.824151 c 0,0 -92.64892,-187.405851 30,-149.999981 104.06976,31.739531 170,109.9999815 170,109.9999815 l -10,-59.9999905 c 0,0 40,79.99999 -40,79.99999 -80,0 -70,-129.999981 -70,-129.999981 l 50,0 C 435.13571,-131.5667 652.76275,126.44872 505.74322,108.05672 358.73876,89.666591 292.6037,-14.175849 292.6037,15.824151 c 0,30 -30,20 -30,20 z");
     }
 
     // Objects declared here can be used by all tests in the test case for Foo.
@@ -64,11 +65,43 @@ TEST_F(PathTest, NearestPoint) {
     EXPECT_EQ(1, square.nearestTime(Point(1,0)));
     EXPECT_EQ(3, square.nearestTime(Point(0,1)));
     
-    cout << diederik.nearestTime(Point(247.32293,-43.339507)) << endl;
+    //cout << diederik.nearestTime(Point(247.32293,-43.339507)) << endl;
 
     EXPECT_FLOAT_EQ(6.5814033, diederik.nearestTime(Point(511.75,40.85)));
-    cout << diederik.pointAt(diederik.nearestTime(Point(511.75,40.85))) << endl;
+    //cout << diederik.pointAt(diederik.nearestTime(Point(511.75,40.85))) << endl;
 
+}
+
+TEST_F(PathTest, SVGRoundtrip) {
+    SVGPathWriter sw;
+
+    for (unsigned i = 0; i < 2; ++i) {
+        sw.feed(line);
+        //cout << sw.str() << endl;
+        Path line_svg = string_to_path(sw.str().c_str());
+        EXPECT_TRUE(line_svg == line);
+        sw.clear();
+
+        sw.feed(square);
+        //cout << sw.str() << endl;
+        Path square_svg = string_to_path(sw.str().c_str());
+        EXPECT_TRUE(square_svg == square);
+        sw.clear();
+
+        sw.feed(circle);
+        //cout << sw.str() << endl;
+        Path circle_svg = string_to_path(sw.str().c_str());
+        EXPECT_TRUE(circle_svg == circle);
+        sw.clear();
+
+        sw.feed(diederik);
+        //cout << sw.str() << endl;
+        Path diederik_svg = string_to_path(sw.str().c_str());
+        EXPECT_TRUE(diederik_svg == diederik);
+        sw.clear();
+
+        sw.setOptimize(true);
+    }
 }
 
     /*TEST_F(PathTest,Operators) {

@@ -32,6 +32,7 @@ class LoadSVGD: public Toy {
 
         // spit out some diagnostic info about the path
         SVGPathWriter sw;
+        //sw.setOptimize(true);
         sw.feed(res);
         *notify << sw.str();
         /*
