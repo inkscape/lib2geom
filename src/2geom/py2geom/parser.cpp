@@ -45,8 +45,6 @@ void (Geom::PathSink::*feed_pathvector)(Geom::PathVector const &) = &Geom::PathS
 
 class PathSinkWrap: public Geom::PathSink, public wrapper<Geom::PathSink> {
     void moveTo(Geom::Point const &p) {this->get_override("moveTo")(p);}
-    void hlineTo(Geom::Coord v) {this->get_override("hlineTo")(v);}
-    void vlineTo(Geom::Coord v) {this->get_override("vlineTo")(v);}
     void lineTo(Geom::Point const &p) {this->get_override("lineTo")(p);}
     void curveTo(Geom::Point const &c0, Geom::Point const &c1, Geom::Point const &p) {this->get_override("curveTo")(c0, c1, p);}
     void quadTo(Geom::Point const &c, Geom::Point const &p) {this->get_override("quadTo")(c, p);}
@@ -54,8 +52,6 @@ class PathSinkWrap: public Geom::PathSink, public wrapper<Geom::PathSink> {
     bool backspace() {return this->get_override("backspace")();}
     void closePath() {this->get_override("closePath")();}
     void flush() {this->get_override("flush")();}
-    void path(Geom::Path const &p) {this->get_override("path")(p);}
-    void pathvector(Geom::Path const &pv) {this->get_override("pathvector")(pv);}
 };
 
 void wrap_parser() {
@@ -65,8 +61,6 @@ void wrap_parser() {
 
     class_<PathSinkWrap, boost::noncopyable>("PathSink")
         .def("moveTo", pure_virtual(&Geom::PathSink::moveTo))
-        .def("hlineTo", pure_virtual(&Geom::PathSink::hlineTo))
-        .def("vlineTo", pure_virtual(&Geom::PathSink::vlineTo))
         .def("lineTo", pure_virtual(&Geom::PathSink::lineTo))
         .def("curveTo", pure_virtual(&Geom::PathSink::curveTo))
         .def("quadTo", pure_virtual(&Geom::PathSink::quadTo))

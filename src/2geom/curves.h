@@ -1,10 +1,9 @@
-/**
- * \file
- * \brief Include all curve types
+/** @file
+ * @brief Include all curve types
  *//*
  * Authors:
- * 		MenTaLguY <mental@rydia.net>
- * 		Marco Cecchetti <mrcekets at gmail.com>
+ *   MenTaLguY <mental@rydia.net>
+ *   Marco Cecchetti <mrcekets at gmail.com>
  *
  * Copyright 2007-2008  authors
  *
@@ -38,7 +37,6 @@
 #include <2geom/curve.h>
 #include <2geom/sbasis-curve.h>
 #include <2geom/bezier-curve.h>
-#include <2geom/hvlinesegment.h>
 #include <2geom/elliptical-arc.h>
 #include <2geom/svg-elliptical-arc.h>
 

@@ -49,8 +49,6 @@ public:
     ~SVGPathWriter() {}
 
     virtual void moveTo(Point const &p);
-    virtual void hlineTo(Coord v);
-    virtual void vlineTo(Coord v);
     virtual void lineTo(Point const &p);
     virtual void curveTo(Point const &c0, Point const &c1, Point const &p);
     virtual void quadTo(Point const &c, Point const &p);

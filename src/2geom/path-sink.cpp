@@ -62,10 +62,10 @@ void PathSink::feed(PathVector const &pv) {
 }
 
 void PathSink::feed(Rect const &r) {
-    moveTo(Point(r[X].min(), r[Y].min()));
-    hlineTo(r[X].max());
-    vlineTo(r[Y].max());
-    hlineTo(r[X].min());
+    moveTo(r.corner(0));
+    lineTo(r.corner(1));
+    lineTo(r.corner(2));
+    lineTo(r.corner(3));
     closePath();
 }
 

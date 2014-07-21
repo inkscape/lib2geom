@@ -159,8 +159,7 @@ struct PathPosition {
 class Path
     : boost::equality_comparable1< Path
     , MultipliableNoncommutative< Path, Affine
-    , MultipliableNoncommutative< Path, Translate
-      > > >
+      > >
 {
 public:
     typedef PathPosition Position;
@@ -308,7 +307,6 @@ public:
     bool operator==(Path const &other) const;
 
     Path &operator*=(Affine const &m);
-    Path &operator*=(Translate const &m); // specialization over Affine, for faster computation
 
     /** @brief Get the allowed range of time values.
      * @return Values for which pointAt() and valueAt() yield valid results. */

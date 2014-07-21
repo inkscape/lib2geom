@@ -68,8 +68,6 @@ forward.h
 geom.cpp
 geom.h
 
-hvlinesegment.h
-
 line.cpp
 line.h
 linear.h

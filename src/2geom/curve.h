@@ -35,8 +35,8 @@
  */
 
 
-#ifndef _2GEOM_CURVE_H_
-#define _2GEOM_CURVE_H_
+#ifndef LIB2GEOM_SEEN_CURVE_H
+#define LIB2GEOM_SEEN_CURVE_H
 
 #include <vector>
 #include <2geom/coord.h>
@@ -169,21 +169,21 @@ public:
      * @return Pointer to a newly allocated curve, identical to the original */
     virtual Curve *duplicate() const = 0;
 
+    /** @brief Transform this curve by an affine transformation.
+     * Because of this method, all curve types must be closed under affine
+     * transformations.
+     * @param m Affine describing the affine transformation */
+    virtual void transform(Affine const &m) = 0;
+
     /** @brief Create a curve transformed by an affine transformation.
-     * This method returns a new curve instead modifying the existing one, because some curve
-     * types are not closed under affine transformations. The returned curve may be of different
-     * underlying type (as is the case for horizontal and vertical line segments).
+     * This method returns a new curve instead modifying the existing one.
      * @param m Affine describing the affine transformation
      * @return Pointer to a new, transformed curve */
-    virtual Curve *transformed(Affine const &m) const = 0;
-
-    /** @brief Translate the curve (i.e. displace by Point)
-     * This method modifies the curve; all curve types are closed under
-     * translations (the result can be expressed in its own curve type).
-     * This function yields the same result as transformed(m).
-     * @param p Point by which to translate the curve
-     * @return reference to self */
-    virtual Curve &operator*=(Translate const &m) = 0;
+    virtual Curve *transformed(Affine const &m) const {
+         Curve *ret = duplicate();
+         ret->transform(m);
+         return ret;
+    }
 
     /** @brief Create a curve that corresponds to a part of this curve.
      * For \f$a > b\f$, the returned portion will be reversed with respect to the original.
@@ -252,8 +252,10 @@ public:
      * @param v The coordinate of the line
      * @param d Which axis the coordinate is on. X means a vertical line, Y a horizontal line. */
     virtual std::vector<Coord> roots(Coord v, Dim2 d) const = 0;
-    /** @brief Compute the winding number of the curve at the specified point.
-     * @todo Does this makes sense for curves at all? */
+    /** @brief Compute the winding number contribution of this curve.
+     * @param p Point where the winding number should be determined
+     * @return The number of times the curve intersects a ray cast from the point
+     *         in the +X direction */
     virtual int winding(Point const &p) const { return root_winding(*this, p); }
     /** @brief Compute a vector tangent to the curve.
      * This will return an unit vector (a Point with length() equal to 1) that denotes a vector

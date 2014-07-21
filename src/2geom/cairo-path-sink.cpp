@@ -45,18 +45,6 @@ void CairoPathSink::moveTo(Point const &p)
     _current_point = p;
 }
 
-void CairoPathSink::hlineTo(Coord v)
-{
-    cairo_line_to(_cr, v, _current_point[Y]);
-    _current_point[X] = v;
-}
-
-void CairoPathSink::vlineTo(Coord v)
-{
-    cairo_line_to(_cr, _current_point[X], v);
-    _current_point[Y] = v;
-}
-
 void CairoPathSink::lineTo(Point const &p)
 {
     cairo_line_to(_cr, p[X], p[Y]);

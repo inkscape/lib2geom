@@ -118,11 +118,7 @@ public:
         return new SBasisCurve(Geom::portion(inner, f, t));
     }
 
-    virtual Curve *transformed(Affine const &m) const { return new SBasisCurve(inner * m); }
-    virtual Curve &operator*=(Translate const &m) {
-        inner += m.vector();
-        return *this;
-    };
+    virtual void transform(Affine const &m) { inner = inner * m; }
 
     virtual Curve *derivative() const {
         return new SBasisCurve(Geom::derivative(inner));

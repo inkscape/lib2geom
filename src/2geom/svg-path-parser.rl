@@ -129,16 +129,6 @@ void SVGPathParser::_moveTo(Point const &p) {
     _sink.moveTo(p);
 }
 
-void SVGPathParser::_hlineTo(Point const &p) {
-    _quad_tangent = _cubic_tangent = _current = p;
-    _sink.hlineTo(p[X]);
-}
-
-void SVGPathParser::_vlineTo(Point const &p) {
-    _quad_tangent = _cubic_tangent = _current = p;
-    _sink.vlineTo(p[Y]);
-}
-
 void SVGPathParser::_lineTo(Point const &p) {
     _quad_tangent = _cubic_tangent = _current = p;
     _sink.lineTo(p);
@@ -217,11 +207,11 @@ void SVGPathParser::_parse(char const *str, char const *strend, bool finish)
         }
 
         action horizontal_lineto {
-            _hlineTo(Point(_pop_coord(X), _current[Y]));
+            _lineTo(Point(_pop_coord(X), _current[Y]));
         }
 
         action vertical_lineto {
-            _vlineTo(Point(_current[X], _pop_coord(Y)));
+            _lineTo(Point(_current[X], _pop_coord(Y)));
         }
 
         action curveto {

@@ -33,8 +33,8 @@
  * the specific language governing rights and limitations.
  */
 
-#ifndef SEEN_LIB2GEOM_BEZIER_CURVE_H
-#define SEEN_LIB2GEOM_BEZIER_CURVE_H
+#ifndef LIB2GEOM_SEEN_BEZIER_CURVE_H
+#define LIB2GEOM_SEEN_BEZIER_CURVE_H
 
 #include <2geom/curve.h>
 #include <2geom/sbasis-curve.h> // for non-native winding method
@@ -99,7 +99,6 @@ public:
     static BezierCurve *create(std::vector<Point> const &pts);
     /// @}
 
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
     // implementation of virtual methods goes here
     virtual Point initialPoint() const { return inner.at0(); }
     virtual Point finalPoint() const { return inner.at1(); }
@@ -127,19 +126,11 @@ public:
         return new BezierCurve(Geom::reverse(inner));
     }
 
-    virtual Curve *transformed(Affine const &m) const {
-        BezierCurve *ret = new BezierCurve();
-        std::vector<Point> ps = controlPoints();
-        for (unsigned i = 0;  i <= order(); i++) {
-            ps[i] = ps[i] * m;
+    virtual void transform(Affine const &m) {
+        for (unsigned i = 0;  i < size(); ++i) {
+            setPoint(i, controlPoint(i) * m);
         }
-        ret->setPoints(ps);
-        return ret;
     }
-    virtual Curve &operator*=(Translate const &m) {
-        inner += m.vector();
-        return *this;
-    };
 
     virtual Curve *derivative() const {
         return new BezierCurve(Geom::derivative(inner[X]), Geom::derivative(inner[Y]));
@@ -156,7 +147,6 @@ public:
     virtual Coord valueAt(Coord t, Dim2 d) const { return inner[d].valueAt(t); }
     virtual D2<SBasis> toSBasis() const {return inner.toSBasis(); }
     virtual void feed(PathSink &sink, bool) const;
-#endif
 };
 
 template <unsigned degree>
@@ -249,23 +239,6 @@ public:
         } else {
             return new BezierCurveN(Geom::reverse(inner));
         }
-    }
-    virtual Curve *transformed(Affine const &m) const {
-        if (degree == 1) {
-            return new BezierCurveN<1>(initialPoint() * m, finalPoint() * m);
-        } else {
-            BezierCurveN *ret = new BezierCurveN();
-            std::vector<Point> ps = controlPoints();
-            for (unsigned i = 0;  i <= degree; i++) {
-                ps[i] = ps[i] * m;
-            }
-            ret->setPoints(ps);
-            return ret;
-        }
-    }
-    virtual Curve &operator*=(Translate const &m) {
-        inner += m.vector();
-        return *this;
     }
     virtual Curve *derivative() const;
     

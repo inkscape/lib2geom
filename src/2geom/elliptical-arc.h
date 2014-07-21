@@ -34,8 +34,8 @@
  * the specific language governing rights and limitations.
  */
 
-#ifndef _2GEOM_ELLIPTICAL_ARC_H_
-#define _2GEOM_ELLIPTICAL_ARC_H_
+#ifndef LIB2GEOM_SEEN_ELLIPTICAL_ARC_H
+#define LIB2GEOM_SEEN_ELLIPTICAL_ARC_H
 
 #include <algorithm>
 #include <2geom/angle.h>
@@ -227,7 +227,7 @@ public:
     }
     virtual int degreesOfFreedom() const { return 7; }
     virtual Curve *derivative() const;
-    virtual Curve *transformed(Affine const &m) const;
+    virtual void transform(Affine const &m);
     virtual Curve &operator*=(Translate const &m) {
         _initial_point += m.vector();
         _final_point += m.vector();

@@ -1158,16 +1158,6 @@ void SVGPathParser::_moveTo(Point const &p) {
     _sink.moveTo(p);
 }
 
-void SVGPathParser::_hlineTo(Point const &p) {
-    _quad_tangent = _cubic_tangent = _current = p;
-    _sink.hlineTo(p[X]);
-}
-
-void SVGPathParser::_vlineTo(Point const &p) {
-    _quad_tangent = _cubic_tangent = _current = p;
-    _sink.vlineTo(p[Y]);
-}
-
 void SVGPathParser::_lineTo(Point const &p) {
     _quad_tangent = _cubic_tangent = _current = p;
     _sink.lineTo(p);
@@ -1205,7 +1195,7 @@ void SVGPathParser::_parse(char const *str, char const *strend, bool finish)
     char const *start = NULL;
 
     
-#line 1209 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.cpp"
+#line 1199 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.cpp"
 	{
 	int _klen;
 	unsigned int _trans;
@@ -1280,13 +1270,13 @@ _match:
 		switch ( *_acts++ )
 		{
 	case 0:
-#line 179 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
+#line 169 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
 	{
             start = p;
         }
 	break;
 	case 1:
-#line 183 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
+#line 173 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
 	{
             if (start) {
                 std::string buf(start, p);
@@ -1300,55 +1290,55 @@ _match:
         }
 	break;
 	case 2:
-#line 195 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
+#line 185 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
 	{
             _push(1.0);
         }
 	break;
 	case 3:
-#line 199 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
+#line 189 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
 	{
             _push(0.0);
         }
 	break;
 	case 4:
-#line 203 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
+#line 193 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
 	{
             _absolute = true;
         }
 	break;
 	case 5:
-#line 207 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
+#line 197 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
 	{
             _absolute = false;
         }
 	break;
 	case 6:
-#line 211 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
+#line 201 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
 	{
             _moveTo(_pop_point());
         }
 	break;
 	case 7:
-#line 215 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
+#line 205 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
 	{
             _lineTo(_pop_point());
         }
 	break;
 	case 8:
-#line 219 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
+#line 209 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
 	{
-            _hlineTo(Point(_pop_coord(X), _current[Y]));
+            _lineTo(Point(_pop_coord(X), _current[Y]));
         }
 	break;
 	case 9:
-#line 223 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
+#line 213 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
 	{
-            _vlineTo(Point(_current[X], _pop_coord(Y)));
+            _lineTo(Point(_current[X], _pop_coord(Y)));
         }
 	break;
 	case 10:
-#line 227 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
+#line 217 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
 	{
             Point p = _pop_point();
             Point c1 = _pop_point();
@@ -1357,7 +1347,7 @@ _match:
         }
 	break;
 	case 11:
-#line 234 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
+#line 224 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
 	{
             Point p = _pop_point();
             Point c1 = _pop_point();
@@ -1365,7 +1355,7 @@ _match:
         }
 	break;
 	case 12:
-#line 240 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
+#line 230 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
 	{
             Point p = _pop_point();
             Point c = _pop_point();
@@ -1373,14 +1363,14 @@ _match:
         }
 	break;
 	case 13:
-#line 246 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
+#line 236 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
 	{
             Point p = _pop_point();
             _quadTo(_quad_tangent, p);
         }
 	break;
 	case 14:
-#line 251 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
+#line 241 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
 	{
             Point point = _pop_point();
             bool sweep = _pop_flag();
@@ -1393,12 +1383,12 @@ _match:
         }
 	break;
 	case 15:
-#line 262 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
+#line 252 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
 	{
             _closePath();
         }
 	break;
-#line 1402 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.cpp"
+#line 1392 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.cpp"
 		}
 	}
 
@@ -1415,7 +1405,7 @@ _again:
 	while ( __nacts-- > 0 ) {
 		switch ( *__acts++ ) {
 	case 1:
-#line 183 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
+#line 173 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
 	{
             if (start) {
                 std::string buf(start, p);
@@ -1429,31 +1419,31 @@ _again:
         }
 	break;
 	case 6:
-#line 211 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
+#line 201 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
 	{
             _moveTo(_pop_point());
         }
 	break;
 	case 7:
-#line 215 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
+#line 205 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
 	{
             _lineTo(_pop_point());
         }
 	break;
 	case 8:
-#line 219 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
+#line 209 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
 	{
-            _hlineTo(Point(_pop_coord(X), _current[Y]));
+            _lineTo(Point(_pop_coord(X), _current[Y]));
         }
 	break;
 	case 9:
-#line 223 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
+#line 213 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
 	{
-            _vlineTo(Point(_current[X], _pop_coord(Y)));
+            _lineTo(Point(_current[X], _pop_coord(Y)));
         }
 	break;
 	case 10:
-#line 227 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
+#line 217 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
 	{
             Point p = _pop_point();
             Point c1 = _pop_point();
@@ -1462,7 +1452,7 @@ _again:
         }
 	break;
 	case 11:
-#line 234 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
+#line 224 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
 	{
             Point p = _pop_point();
             Point c1 = _pop_point();
@@ -1470,7 +1460,7 @@ _again:
         }
 	break;
 	case 12:
-#line 240 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
+#line 230 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
 	{
             Point p = _pop_point();
             Point c = _pop_point();
@@ -1478,14 +1468,14 @@ _again:
         }
 	break;
 	case 13:
-#line 246 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
+#line 236 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
 	{
             Point p = _pop_point();
             _quadTo(_quad_tangent, p);
         }
 	break;
 	case 14:
-#line 251 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
+#line 241 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
 	{
             Point point = _pop_point();
             bool sweep = _pop_flag();
@@ -1498,12 +1488,12 @@ _again:
         }
 	break;
 	case 15:
-#line 262 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
+#line 252 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
 	{
             _closePath();
         }
 	break;
-#line 1507 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.cpp"
+#line 1497 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.cpp"
 		}
 	}
 	}
@@ -1511,7 +1501,7 @@ _again:
 	_out: {}
 	}
 
-#line 404 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
+#line 394 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.rl"
 
 
     if (finish) {

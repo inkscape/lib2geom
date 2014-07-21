@@ -29,8 +29,8 @@
  *
  */
 
-#ifndef SEEN_SVG_PATH_H
-#define SEEN_SVG_PATH_H
+#ifndef LIB2GEOM_SEEN_PATH_SINK_H
+#define LIB2GEOM_SEEN_PATH_SINK_H
 
 #include <2geom/pathvector.h>
 #include <2geom/curves.h>
@@ -53,10 +53,6 @@ public:
     /** Move to a different point without creating a segment.
      * Usually starts a new subpath. */
     virtual void moveTo(Point const &p) = 0;
-    /// Output a horizontal line segment. Only the X coordinate of the final point is given.
-    virtual void hlineTo(Coord v) = 0;
-    /// Output a vertical line segment. Only the Y coordinate of the final point is given.
-    virtual void vlineTo(Coord v) = 0;
     /// Output a line segment.
     virtual void lineTo(Point const &p) = 0;
     /// Output a quadratic Bezier segment.
@@ -95,7 +91,7 @@ public:
      * Calls the appropriate segment methods according to the contents
      * of the passed path. You can override this function. */
     virtual void feed(PathVector const &v);
-    /// Output an axis-aligned rectangle, using moveTo, hlineTo, vlineTo and closePath.
+    /// Output an axis-aligned rectangle, using moveTo, lineTo and closePath.
     virtual void feed(Rect const &);
 
     virtual ~PathSink() {}
@@ -114,22 +110,6 @@ public:
         _in_path = true;
     }
 //TODO: what if _in_path = false?
-
-    void hlineTo(Coord v) {
-    // check for implicit moveto, like in: "M 1,1 L 2,2 z l 2,2 z"
-        if (!_in_path) {
-            moveTo(_start_p);
-        }
-        _path.template appendNew<HLineSegment>(Point(v, _path.finalPoint()[Y]));
-    }
-
-    void vlineTo(Coord v) {
-    // check for implicit moveto, like in: "M 1,1 L 2,2 z l 2,2 z"
-        if (!_in_path) {
-            moveTo(_start_p);
-        }
-        _path.template appendNew<VLineSegment>(Point(_path.finalPoint()[X], v));
-    }
 
     void lineTo(Point const &p) {
         // check for implicit moveto, like in: "M 1,1 L 2,2 z l 2,2 z"

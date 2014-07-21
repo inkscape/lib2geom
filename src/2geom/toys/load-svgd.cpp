@@ -25,13 +25,14 @@ class LoadSVGD: public Toy {
         cairo_set_line_width(cr, 1);
         cairo_set_source_rgb(cr, 0,0,0);
 
+        PathVector res = pv * Translate(offset_handle.pos);
         CairoPathSink sink(cr);
-        sink.feed(pv * Translate(offset_handle.pos));
+        sink.feed(res);
         cairo_stroke(cr);
 
         // spit out some diagnostic info about the path
         SVGPathWriter sw;
-        sw.feed(pv);
+        sw.feed(res);
         *notify << sw.str();
         /*
         for(unsigned i = 0; i < pv.size(); i++) {

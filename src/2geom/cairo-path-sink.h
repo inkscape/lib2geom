@@ -29,8 +29,8 @@
  *
  */
 
-#ifndef SEEN_LIB2GEOM_CAIRO_PATH_SINK_H
-#define SEEN_LIB2GEOM_CAIRO_PATH_SINK_H
+#ifndef LIB2GEOM_SEEN_CAIRO_PATH_SINK_H
+#define LIB2GEOM_SEEN_CAIRO_PATH_SINK_H
 
 #include <2geom/path-sink.h>
 #include <cairo.h>
@@ -59,8 +59,6 @@ public:
     CairoPathSink(cairo_t *cr);
 
     virtual void moveTo(Point const &p);
-    virtual void hlineTo(Coord v);
-    virtual void vlineTo(Coord v);
     virtual void lineTo(Point const &p);
     virtual void curveTo(Point const &c0, Point const &c1, Point const &p);
     virtual void quadTo(Point const &c, Point const &p);

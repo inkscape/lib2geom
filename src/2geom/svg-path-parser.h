@@ -105,8 +105,6 @@ private:
     Coord _pop_coord(Geom::Dim2 axis);
     Point _pop_point();
     void _moveTo(Point const &p);
-    void _hlineTo(Point const &p);
-    void _vlineTo(Point const &p);
     void _lineTo(Point const &p);
     void _curveTo(Point const &c0, Point const &c1, Point const &p);
     void _quadTo(Point const &c, Point const &p);

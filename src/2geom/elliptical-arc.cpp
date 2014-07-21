@@ -890,15 +890,18 @@ D2<SBasis> EllipticalArc::toSBasis() const
 }
 
 
-Curve *EllipticalArc::transformed(Affine const& m) const
+void EllipticalArc::transform(Affine const& m)
 {
+    // TODO avoid allocating a new arc here
     Ellipse e(center(X), center(Y), ray(X), ray(Y), _rot_angle);
     Ellipse et = e.transformed(m);
     Point inner_point = pointAt(0.5);
-    return et.arc( initialPoint() * m,
-                                  inner_point * m,
-                                  finalPoint() * m,
-                                  isSVGCompliant() );
+    EllipticalArc *arc = et.arc( initialPoint() * m,
+                                 inner_point * m,
+                                 finalPoint() * m,
+                                 isSVGCompliant() );
+    *this = *arc;
+    delete arc;
 }
 
 void EllipticalArc::feed(PathSink &sink, bool moveto_initial) const

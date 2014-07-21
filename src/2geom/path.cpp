@@ -128,51 +128,13 @@ Path &Path::operator*=(Affine const &m)
     _unshare();
     Sequence::iterator last = _curves->end() - 1;
     Sequence::iterator it;
-    Point prev;
-    for (it = _curves->begin(); it != last; ++it) {
-        _curves->replace(it, it->transformed(m));
-        if (it != _curves->begin() && it->initialPoint() != prev) {
-            THROW_CONTINUITYERROR();
-        }
-        prev = it->finalPoint();
-    }
-    for (int i = 0; i < 2; ++i) {
-        _closing_seg->setPoint(i, (*_closing_seg)[i] * m);
-    }
-    if (_curves->size() > 1) {
-        if (front().initialPoint() != initialPoint() || back().finalPoint() != finalPoint()) {
-            THROW_CONTINUITYERROR();
-        }
-    }
-    return *this;
-}
 
-Path &Path::operator*=(Translate const &m)
-{
-    /* Somehow there is something wrong here, Inkscape's LPE Construct grid fails with this code, perhaps something with
-    desharing of curves...
-    _unshare();
-    Sequence::iterator last = _curves->end() - 1;
-    Sequence::iterator it;
-    Point prev;
-    for (it = _curves->begin() ; it != last ; ++it) {
-      *(const_cast<Curve*>(&**it)) *= m;
-      if ( it != _curves->begin() && (*it)->initialPoint() != prev ) {
-        THROW_CONTINUITYERROR();
-      }
-      prev = (*it)->finalPoint();
+    for (it = _curves->begin(); it != last; ++it) {
+        it->transform(m);
     }
-    for ( int i = 0 ; i < 2 ; ++i ) {
-      _closing_seg->setPoint(i, (*_closing_seg)[i] + m.vector());
-    }
-    if (_curves->size() > 1) {
-      if ( front().initialPoint() != initialPoint() || back().finalPoint() != finalPoint() ) {
-        THROW_CONTINUITYERROR();
-      }
-    }
+    _closing_seg->transform(m);
+    checkContinuity();
     return *this;
-    */
-    return this->operator*=(static_cast<Affine>(m));
 }
 
 void Path::start(Point const &p) {

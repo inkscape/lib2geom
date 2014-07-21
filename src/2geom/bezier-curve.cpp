@@ -153,16 +153,9 @@ void BezierCurve::feed(PathSink &sink, bool moveto_initial) const
         sink.moveTo(ip);
     }
     switch (size()) {
-    case 2: {
-        Point fp = controlPoint(1);
-        if (ip[X] == fp[X]) {
-            sink.vlineTo(fp[Y]);
-        } else if (ip[Y] == fp[Y]) {
-            sink.hlineTo(fp[X]);
-        } else {
-            sink.lineTo(controlPoint(1));
-        }
-        break; }
+    case 2:
+        sink.lineTo(controlPoint(1));
+        break;
     case 3:
         sink.quadTo(controlPoint(1), controlPoint(2));
         break;
@@ -170,6 +163,8 @@ void BezierCurve::feed(PathSink &sink, bool moveto_initial) const
         sink.curveTo(controlPoint(1), controlPoint(2), controlPoint(3));
         break;
     default:
+        // TODO: add a path sink method that accepts a vector of control points
+        //       and converts to cubic spline by default
         assert(false);
         break;
     }

@@ -48,15 +48,6 @@ void SVGPathWriter::moveTo(Point const &p)
 {
     _s << "M " << p[X] << "," << p[Y];
 }
-
-void SVGPathWriter::hlineTo(Coord h)
-{
-    _s << " H " << h;
-}
-void SVGPathWriter::vlineTo(Coord v)
-{
-    _s << " V " << v;
-}
 void SVGPathWriter::lineTo(Point const &p)
 {
     _s << " L " << p[X] << "," << p[Y];
