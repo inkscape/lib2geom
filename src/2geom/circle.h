@@ -73,7 +73,7 @@ public:
     void set(Coord A, Coord B, Coord C, Coord D);
 
     // build up the best fitting circle wrt the passed points
-    // prerequisite: at least 3 points must be passed
+    // prerequisite: at least 2 points must be passed
     void fit(std::vector<Point> const& points);
 
     EllipticalArc *

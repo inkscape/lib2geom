@@ -71,10 +71,15 @@ void Circle::set(Coord A, Coord B, Coord C, Coord D)
 void Circle::fit(std::vector<Point> const& points)
 {
     size_t sz = points.size();
-    if (sz < 3)
-    {
+    if (sz < 2) {
         THROW_RANGEERROR("fitting error: too few points passed");
     }
+    if (sz == 2) {
+        _center = points[0] * 0.5 + points[1] * 0.5;
+        _radius = distance(points[0], points[1]) / 2;
+        return;
+    }
+
     NL::LFMCircle model;
     NL::least_squeares_fitter<NL::LFMCircle> fitter(model, sz);
 
