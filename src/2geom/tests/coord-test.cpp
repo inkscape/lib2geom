@@ -1,5 +1,5 @@
 /*
- * Unit tests for Point and IntPoint
+ * Unit tests for Coord
  * Uses the Google Testing Framework
  *//*
  * Authors:

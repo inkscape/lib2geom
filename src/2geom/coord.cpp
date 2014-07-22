@@ -107,12 +107,6 @@
 #define DOUBLE_CONVERSION_UNUSED
 #endif
 
-// The original library had complex detection logic here.
-// However, since all platforms that Inkscape / lib2geom supports can be configured
-// so that double rounding does not occur, it was removed.
-// NOTE: on Linux x86 (32-bit), this file must be compiled with -msse2 -mfpmath=sse
-#define DOUBLE_CONVERSION_CORRECT_DOUBLE_OPERATIONS 1
-
 namespace Geom {
 
 namespace {
@@ -2364,35 +2358,6 @@ static const int kMinDecimalPower = -324;
 
 // 2^64 = 18446744073709551616
 static const uint64_t kMaxUint64 = UINT64_2PART_C(0xFFFFFFFF, FFFFFFFF);
-
-
-static const double exact_powers_of_ten[] = {
-  1.0,  // 10^0
-  10.0,
-  100.0,
-  1000.0,
-  10000.0,
-  100000.0,
-  1000000.0,
-  10000000.0,
-  100000000.0,
-  1000000000.0,
-  10000000000.0,  // 10^10
-  100000000000.0,
-  1000000000000.0,
-  10000000000000.0,
-  100000000000000.0,
-  1000000000000000.0,
-  10000000000000000.0,
-  100000000000000000.0,
-  1000000000000000000.0,
-  10000000000000000000.0,
-  100000000000000000000.0,  // 10^20
-  1000000000000000000000.0,
-  // 10^22 = 0x21e19e0c9bab2400000 = 0x878678326eac9 * 2^22
-  10000000000000000000000.0
-};
-static const int kExactPowersOfTenSize = ARRAY_SIZE(exact_powers_of_ten);
 static const int kMaxSignificantDecimalDigits = 780;
 
 static Vector<const char> TrimLeadingZeros(Vector<const char> buffer) {
@@ -2480,38 +2445,6 @@ static void ReadDiyFp(Vector<const char> buffer,
     *result = DiyFp(significand, exponent);
     *remaining_decimals = buffer.length() - read_digits;
   }
-}
-
-static bool DoubleStrtod(Vector<const char> trimmed,
-                         int exponent,
-                         double* result)
-{
-  if (trimmed.length() <= kMaxExactDoubleIntegerDecimalDigits) {
-    int read_digits;
-    if (exponent < 0 && -exponent < kExactPowersOfTenSize) {
-      *result = static_cast<double>(ReadUint64(trimmed, &read_digits));
-      ASSERT(read_digits == trimmed.length());
-      *result /= exact_powers_of_ten[-exponent];
-      return true;
-    }
-    if (0 <= exponent && exponent < kExactPowersOfTenSize) {
-      *result = static_cast<double>(ReadUint64(trimmed, &read_digits));
-      ASSERT(read_digits == trimmed.length());
-      *result *= exact_powers_of_ten[exponent];
-      return true;
-    }
-    int remaining_digits =
-        kMaxExactDoubleIntegerDecimalDigits - trimmed.length();
-    if ((0 <= exponent) &&
-        (exponent - remaining_digits < kExactPowersOfTenSize)) {
-      *result = static_cast<double>(ReadUint64(trimmed, &read_digits));
-      ASSERT(read_digits == trimmed.length());
-      *result *= exact_powers_of_ten[remaining_digits];
-      *result *= exact_powers_of_ten[exponent - remaining_digits];
-      return true;
-    }
-  }
-  return false;
 }
 
 static DiyFp AdjustmentPowerOfTen(int exponent) {
@@ -2663,8 +2596,7 @@ static bool ComputeGuess(Vector<const char> trimmed, int exponent,
     return true;
   }
 
-  if (DoubleStrtod(trimmed, exponent, guess) ||
-      DiyFpStrtod(trimmed, exponent, guess)) {
+  if (DiyFpStrtod(trimmed, exponent, guess)) {
     return true;
   }
   if (*guess == Double::Infinity()) {
@@ -3141,14 +3073,10 @@ static BignumDtoaMode DtoaToBignumDtoaMode(
 }
 
 
-void DoubleToStringConverter::DoubleToAscii(double v,
-                                            DtoaMode mode,
-                                            int requested_digits,
-                                            char* buffer,
-                                            int buffer_length,
-                                            bool* sign,
-                                            int* length,
-                                            int* point) {
+void DoubleToStringConverter::DoubleToAscii(double v, DtoaMode mode, int requested_digits,
+                                            char* buffer, int buffer_length,
+                                            bool* sign, int* length, int* point)
+{
   Vector<char> vector(buffer, buffer_length);
   ASSERT(!Double(v).IsSpecial());
   ASSERT(mode == SHORTEST || requested_digits >= 0);
