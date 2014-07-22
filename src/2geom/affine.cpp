@@ -369,7 +369,7 @@ Affine Affine::inverse() const {
                          fabs(_c[2]) + fabs(_c[3])); // a random matrix norm (either l1 or linfty
     if(mx > 0) {
         Geom::Coord const determ = det();
-        if (!rel_error_bound(determ, mx*mx)) {
+        if (!rel_error_bound(std::sqrt(fabs(determ)), mx)) {
             Geom::Coord const ideterm = 1.0 / (determ);
             
             d._c[0] =  _c[3] * ideterm;
