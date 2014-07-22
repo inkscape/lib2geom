@@ -48,7 +48,12 @@ TEST(CoordTest, StringRoundtripShortest) {
     for (unsigned i = 0; i < 100000; ++i) {
         u = uint64_t(g_random_int()) | (uint64_t(g_random_int()) << 32);
         if (!std::isfinite(d)) continue;
-        double x = parse_coord(format_coord_shortest(d));
+
+        std::string str = format_coord_shortest(d);
+        double x = parse_coord(str);
+        if (x != d) {
+            std::cout << std::endl << d << " -> " << str << " -> " << x << std::endl;
+        }
         EXPECT_EQ(d, x);
     }
 }
@@ -61,10 +66,11 @@ TEST(CoordTest, StringRoundtripNice) {
     for (unsigned i = 0; i < 100000; ++i) {
         u = uint64_t(g_random_int()) | (uint64_t(g_random_int()) << 32);
         if (!std::isfinite(d)) continue;
+
         std::string str = format_coord_nice(d);
         double x = parse_coord(str);
         if (x != d) {
-            std::cout << str << d << " -> " << str << " -> " << x << std::endl;
+            std::cout << std::endl << d << " -> " << str << " -> " << x << std::endl;
         }
         EXPECT_EQ(d, x);
     }
