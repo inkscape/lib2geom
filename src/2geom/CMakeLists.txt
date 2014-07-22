@@ -46,6 +46,7 @@ conjugate_gradient.cpp
 conjugate_gradient.h
 convex-cover.cpp
 convex-cover.h
+coord.cpp
 coord.h
 crossing.cpp
 crossing.h

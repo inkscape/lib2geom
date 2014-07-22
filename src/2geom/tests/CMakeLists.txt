@@ -20,6 +20,7 @@ affine-test
 bezier-test
 chain-test
 convex-test
+coord-test
 path-test
 point-test
 rect-test

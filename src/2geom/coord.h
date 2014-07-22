@@ -34,6 +34,7 @@
 
 #include <cmath>
 #include <limits>
+#include <string>
 #include <boost/operators.hpp>
 #include <2geom/forward.h>
 
@@ -119,6 +120,21 @@ struct CoordTraits<Coord> {
       > > > > > >
         RectOps;
 };
+
+/** @brief Convert coordinate to shortest possible string
+ * @return The shortest string that parses back to the original value. */
+std::string format_coord_shortest(Coord x);
+
+/** @brief Convert coordinate to human-readable string
+ * Unlike format_coord_shortest, this function will not omit a leading zero
+ * before a decimal point or use small negative exponents. The output format
+ * is similar to Javascript functions. */
+std::string format_coord_nice(Coord x);
+
+/** @brief Parse coordinate string
+ * When using this function in conjunction with format_coord_shortest()
+ * or format_coord_nice(), the value is guaranteed to be preserved exactly. */
+Coord parse_coord(std::string const &s);
 
 } // end namespace Geom
 

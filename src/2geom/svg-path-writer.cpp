@@ -30,8 +30,9 @@
  * the specific language governing rights and limitations.
  */
 
-#include <2geom/svg-path-writer.h>
 #include <iomanip>
+#include <2geom/coord.h>
+#include <2geom/svg-path-writer.h>
 #include <glib.h>
 
 namespace Geom {
@@ -130,7 +131,7 @@ void SVGPathWriter::flush()
         _s << _command;
     } else {
         if (_s.tellp() != 0) {
-            _s << " ";
+            _s << ' ';
         }
         _s << _command;
     }
@@ -204,11 +205,7 @@ std::string SVGPathWriter::_formatCoord(Coord par)
 {
     std::string ret;
     if (_precision < 0) {
-        // use dtostr, which guarantees roundtrip
-        // TODO: use Grisu3 instead
-        char buf[G_ASCII_DTOSTR_BUF_SIZE];
-        g_ascii_dtostr(buf, G_ASCII_DTOSTR_BUF_SIZE, par);
-        ret = buf;
+        return format_coord_shortest(par);
     } else {
         // use the formatting stream with C locale
         _ns << par;

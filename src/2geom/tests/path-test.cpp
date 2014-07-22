@@ -75,6 +75,8 @@ TEST_F(PathTest, NearestPoint) {
 TEST_F(PathTest, SVGRoundtrip) {
     SVGPathWriter sw;
 
+    Path transformed = diederik * (Rotate(1.23456789) * Scale(1e-8) * Translate(1e-9, 1e-9));
+
     for (unsigned i = 0; i < 2; ++i) {
         sw.feed(line);
         //cout << sw.str() << endl;
@@ -98,6 +100,11 @@ TEST_F(PathTest, SVGRoundtrip) {
         //cout << sw.str() << endl;
         Path diederik_svg = string_to_path(sw.str().c_str());
         EXPECT_TRUE(diederik_svg == diederik);
+        sw.clear();
+
+        sw.feed(transformed);
+        Path transformed_svg = string_to_path(sw.str().c_str());
+        EXPECT_TRUE(transformed_svg == transformed);
         sw.clear();
 
         sw.setOptimize(true);
