@@ -267,7 +267,7 @@ private:
 
 } // end namespace Geom
 
-#endif // _2GEOM_ELLIPTICAL_ARC_H_
+#endif // LIB2GEOM_SEEN_ELLIPTICAL_ARC_H
 
 /*
   Local Variables:

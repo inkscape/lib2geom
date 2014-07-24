@@ -1,7 +1,6 @@
-/**
- * \file
- * \brief  Ellipse Curve
- *
+/** @file
+ * @brief Ellipse shape
+ *//*
  * Authors:
  *      Marco Cecchetti <mrcekets at gmail.com>
  *
@@ -32,8 +31,8 @@
  */
 
 
-#ifndef _2GEOM_ELLIPSE_H_
-#define _2GEOM_ELLIPSE_H_
+#ifndef LIB2GEOM_SEEN_ELLIPSE_H
+#define LIB2GEOM_SEEN_ELLIPSE_H
 
 #include <vector>
 #include <2geom/point.h>

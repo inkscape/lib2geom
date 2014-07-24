@@ -33,8 +33,8 @@
  *
  */
 
-#ifndef __GEOM_CROSSING_H
-#define __GEOM_CROSSING_H
+#ifndef LIB2GEOM_SEEN_CROSSING_H
+#define LIB2GEOM_SEEN_CROSSING_H
 
 #include <vector>
 #include <2geom/rect.h>
@@ -198,7 +198,7 @@ CrossingSet reverse_tb(CrossingSet const &cr, unsigned split, std::vector<double
 void clean(Crossings &cr_a, Crossings &cr_b);
 void delete_duplicates(Crossings &crs);
 
-}
+} // end namespace Geom
 
 #endif
 /*

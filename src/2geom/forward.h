@@ -32,8 +32,8 @@
  * the specific language governing rights and limitations.
  */
 
-#ifndef SEEN_GEOM_FORWARD_H
-#define SEEN_GEOM_FORWARD_H
+#ifndef LIB2GEOM_SEEN_FORWARD_H
+#define LIB2GEOM_SEEN_FORWARD_H
 
 #include <vector>   // include this dependency so PathVector can be defined more explicitly
 

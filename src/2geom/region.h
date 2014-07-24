@@ -32,8 +32,8 @@
  *
  */
 
-#ifndef __2GEOM_REGION_H
-#define __2GEOM_REGION_H
+#ifndef LIB2GEOM_SEEN_REGION_H
+#define LIB2GEOM_SEEN_REGION_H
 
 #include <2geom/path.h>
 #include <2geom/path-intersection.h>
@@ -114,7 +114,7 @@ inline Regions region_boolean(bool rev, Region const & a, Region const & b) {
     return region_boolean(rev, a, b, crossings(a, b));
 }
 
-}
+} // end namespace Geom
 
 #endif
 

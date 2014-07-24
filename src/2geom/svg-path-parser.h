@@ -30,8 +30,8 @@
  *
  */
 
-#ifndef SEEN_SVG_PATH_PARSER_H
-#define SEEN_SVG_PATH_PARSER_H
+#ifndef LIB2GEOM_SEEN_SVG_PATH_PARSER_H
+#define LIB2GEOM_SEEN_SVG_PATH_PARSER_H
 
 #include <iostream>
 #include <iterator>
@@ -166,7 +166,7 @@ inline PathVector read_svgd(char const *filename) {
     return out;
 }
 
-}
+} // end namespace Geom
 
 #endif
 /*

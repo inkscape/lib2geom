@@ -1,7 +1,7 @@
 /**
  * \file
  * \brief  Linear fragment function class
- *
+ *//*
  *  Authors:
  *   Nathan Hurst <njh@mail.csse.monash.edu.au>
  *   Michael Sloan <mgsloan@gmail.com>
@@ -32,11 +32,11 @@
  * the specific language governing rights and limitations.
  */
 
-#ifndef SEEN_LINEAR_H
-#define SEEN_LINEAR_H
+#ifndef LIB2GEOM_SEEN_LINEAR_H
+#define LIB2GEOM_SEEN_LINEAR_H
+
 #include <2geom/interval.h>
 #include <2geom/math-utils.h>
-
 
 //#define USE_SBASIS_OF
 
@@ -158,7 +158,7 @@ inline Linear operator/=(Linear & a, double b) {
 }
 #endif
 
-#endif //SEEN_LINEAR_H
+#endif //LIB2GEOM_SEEN_LINEAR_H
 
 /*
   Local Variables:

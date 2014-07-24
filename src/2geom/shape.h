@@ -1,6 +1,6 @@
-/**
- * \brief  Shapes are special paths on which boolops can be performed
- *
+/** @file
+ * @brief  Shapes are special paths on which boolops can be performed
+ *//*
  * Authors:
  *      Michael G. Sloan <mgsloan@gmail.com>
  *      Nathan Hurst <njh@mail.csse.monash.edu.au>
@@ -33,8 +33,8 @@
  *
  */
 
-#ifndef __2GEOM_SHAPE_H
-#define __2GEOM_SHAPE_H
+#ifndef LIB2GEOM_SEEN_SHAPE_H
+#define LIB2GEOM_SEEN_SHAPE_H
 
 #include <vector>
 #include <set>
@@ -132,10 +132,9 @@ inline PathVector desanitize(Shape const & s) {
     return paths_from_regions(s.getContent());
 }
 
-}
+} // end namespace Geom
 
 #endif
-
 /*
   Local Variables:
   mode:c++

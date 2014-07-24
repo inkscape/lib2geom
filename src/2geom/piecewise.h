@@ -1,7 +1,6 @@
-/**
- * \file
- * \brief Piecewise function class
- *
+/** @file
+ * @brief Piecewise function class
+ *//*
  * Copyright 2007 Michael Sloan <mgsloan@gmail.com>
  *
  * This library is free software; you can redistribute it and/or
@@ -29,8 +28,8 @@
  *
  */
 
-#ifndef SEEN_GEOM_PW_SB_H
-#define SEEN_GEOM_PW_SB_H
+#ifndef LIB2GEOM_SEEN_PIECEWISE_H
+#define LIB2GEOM_SEEN_PIECEWISE_H
 
 #include <vector>
 #include <map>
@@ -933,7 +932,7 @@ Piecewise<T> lerp(double t, Piecewise<T> const &a, Piecewise<T> b) {
 }
 
 }
-#endif //SEEN_GEOM_PW_SB_H
+#endif //LIB2GEOM_SEEN_PIECEWISE_H
 /*
   Local Variables:
   mode:c++

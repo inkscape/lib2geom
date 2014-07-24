@@ -1,5 +1,4 @@
-/**
- * @file
+/** @file
  * @brief Routines for solving a system of linear equations using the conjugate gradient method
  *//*
  * Copyright 2006 Nathan Hurst <njh@mail.csse.monash.edu.au>
@@ -29,8 +28,8 @@
  *
  */
 
-#ifndef _2GEOM_CONJUGATE_GRADIENT_H
-#define _2GEOM_CONJUGATE_GRADIENT_H
+#ifndef LIB2GEOM_SEEN_CONJUGATE_GRADIENT_H
+#define LIB2GEOM_SEEN_CONJUGATE_GRADIENT_H
 
 #include <valarray>
 
@@ -50,7 +49,7 @@ conjugate_gradient(std::valarray<double> const &A,
 
 } // namespace Geom
 
-#endif // _2GEOM_CONJUGATE_GRADIENT_H
+#endif // LIB2GEOM_SEEN_CONJUGATE_GRADIENT_H
 
 /*
   Local Variables:

@@ -30,8 +30,8 @@
  *
  */
 
-#ifndef SEEN_LIB2GEOM_UTILS_H
-#define SEEN_LIB2GEOM_UTILS_H
+#ifndef LIB2GEOM_SEEN_UTILS_H
+#define LIB2GEOM_SEEN_UTILS_H
 
 #include <cstddef>
 #include <vector>
@@ -61,7 +61,7 @@ struct MultipliableNoncommutative : B
 
 } // end namespace Geom
 
-#endif // SEEN_LIB2GEOM_UTILS_H
+#endif // LIB2GEOM_SEEN_UTILS_H
 
 /*
   Local Variables:

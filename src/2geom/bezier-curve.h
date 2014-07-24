@@ -297,7 +297,7 @@ Coord bezier_length(Point p0, Point p1, Point p2, Point p3, Coord tolerance = 0.
 
 } // end namespace Geom
 
-#endif // _2GEOM_BEZIER_CURVE_H_
+#endif // LIB2GEOM_SEEN_BEZIER_CURVE_H
 
 /*
   Local Variables:

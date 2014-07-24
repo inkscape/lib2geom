@@ -1,8 +1,7 @@
-
 /**
  * \file
  * \brief  TopoSweep - topology / graph representation of a PathVector, for boolean operations and related tasks
- *
+ *//*
  * Authors:
  * 		Michael Sloan <mgsloan at gmail.com>
  * 		Nathan Hurst <njhurst at njhurst.com>
@@ -33,8 +32,8 @@
  * the specific language governing rights and limitations.
  */
 
-#ifndef SEEN_GEOM_TOPOSWEEP_H
-#define SEEN_GEOM_TOPOSWEEP_H
+#ifndef LIB2GEOM_SEEN_TOPOSWEEP_H
+#define LIB2GEOM_SEEN_TOPOSWEEP_H
 
 #include <2geom/coord.h>
 #include <2geom/point.h>
@@ -209,7 +208,7 @@ Areas filter_areas(PathVector const &ps, Areas const & areas, Z const &z) {
 
 } // end namespace Geom
 
-#endif // SEEN_GEOM_TOPOSWEEP_H
+#endif // LIB2GEOM_SEEN_TOPOSWEEP_H
 
 /*
   Local Variables:

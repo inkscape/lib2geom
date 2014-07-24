@@ -11,8 +11,8 @@
  * This code is in public domain.
  */
 
-#ifndef SEEN_LIB2GEOM_AFFINE_H
-#define SEEN_LIB2GEOM_AFFINE_H
+#ifndef LIB2GEOM_SEEN_AFFINE_H
+#define LIB2GEOM_SEEN_AFFINE_H
 
 #include <boost/operators.hpp>
 #include <2geom/forward.h>

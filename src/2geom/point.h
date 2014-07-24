@@ -1,6 +1,5 @@
-/**
- *  \file
- *  \brief Cartesian point / 2D vector and related operations
+/** @file
+ * @brief Cartesian point / 2D vector and related operations
  *//*
  *  Authors:
  *    Michael G. Sloan <mgsloan@gmail.com>
@@ -33,8 +32,8 @@
  * the specific language governing rights and limitations.
  */
 
-#ifndef SEEN_Geom_POINT_H
-#define SEEN_Geom_POINT_H
+#ifndef LIB2GEOM_SEEN_POINT_H
+#define LIB2GEOM_SEEN_POINT_H
 
 #include "config.h"
 #include <iostream>
@@ -371,7 +370,7 @@ double angle_between(Point const &a, Point const &b);
 Point abs(Point const &b);
 Point constrain_angle(Point const &A, Point const &B, unsigned int n = 4, Geom::Point const &dir = Geom::Point(1,0));
 
-} /* namespace Geom */
+} // end namespace Geom
 
 // This is required to fix a bug in GCC 4.3.3 (and probably others) that causes the compiler
 // to try to instantiate the iterator_traits template and fail. Probably it thinks that Point
@@ -380,7 +379,7 @@ namespace std {
 template <> class iterator_traits<Geom::Point> {};
 }
 
-#endif /* !SEEN_Geom_POINT_H */
+#endif // LIB2GEOM_SEEN_POINT_H
 
 /*
   Local Variables:

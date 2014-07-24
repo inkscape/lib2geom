@@ -30,8 +30,8 @@
  * the specific language governing rights and limitations.
  */
 
-#ifndef SEEN_LIB2GEOM_SVG_PATH_WRITER_H
-#define SEEN_LIB2GEOM_SVG_PATH_WRITER_H
+#ifndef LIB2GEOM_SEEN_SVG_PATH_WRITER_H
+#define LIB2GEOM_SEEN_SVG_PATH_WRITER_H
 
 #include <2geom/path-sink.h>
 #include <sstream>
@@ -107,7 +107,7 @@ private:
 
 } // namespace Geom
 
-#endif // SEEN_LIB2GEOM_HEADER_H
+#endif // LIB2GEOM_SEEN_SVG_PATH_WRITER_H
 /*
   Local Variables:
   mode:c++

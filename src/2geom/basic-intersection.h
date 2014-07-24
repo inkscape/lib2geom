@@ -32,8 +32,8 @@
  *
  */
 
-#ifndef SEEN_GEOM_BASICINTERSECTION_H
-#define SEEN_GEOM_BASICINTERSECTION_H
+#ifndef LIB2GEOM_SEEN_BASIC_INTERSECTION_H
+#define LIB2GEOM_SEEN_BASIC_INTERSECTION_H
 
 #include <2geom/point.h>
 #include <2geom/sbasis.h>
@@ -137,7 +137,7 @@ double hausdorf(D2<SBasis> &A, D2<SBasis> const &B,
                 double *a_t=NULL, double *b_t=NULL);
 }
 
-#endif // !SEEN_GEOM_BASICINTERSECTION_H
+#endif // !LIB2GEOM_SEEN_BASIC_INTERSECTION_H
 
 /*
   Local Variables:

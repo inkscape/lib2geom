@@ -29,8 +29,8 @@
  *
  */
 
-#ifndef SEEN_LIB2GEOM_D2_H
-#define SEEN_LIB2GEOM_D2_H
+#ifndef LIB2GEOM_SEEN_D2_H
+#define LIB2GEOM_SEEN_D2_H
 
 #include <2geom/point.h>
 #include <2geom/interval.h>
@@ -429,7 +429,7 @@ inline std::ostream &operator<< (std::ostream &out_file, const Geom::D2<T> &in_d
 
 #include <2geom/d2-sbasis.h>
 
-namespace Geom{
+namespace Geom {
 
 //Some D2 Fragment implementation which requires rect:
 template <typename T>
@@ -447,8 +447,10 @@ OptRect bounds_local(const D2<T> &a, const OptInterval &t) {
     boost::function_requires<FragmentConcept<T> >();
     return OptRect(bounds_local(a[X], t), bounds_local(a[Y], t));
 }
-};
 
+} // end namespace Geom
+
+#endif
 /*
   Local Variables:
   mode:c++
@@ -459,4 +461,3 @@ OptRect bounds_local(const D2<T> &a, const OptInterval &t) {
   End:
 */
 // vim: filetype=cpp:expandtab:shiftwidth=4:tabstop=8:softtabstop=4:fileencoding=utf-8:textwidth=99 :
-#endif

@@ -1,7 +1,6 @@
-/**
- * \file
- * \brief Dynamic convex hull structure
- *
+/** @file
+ * @brief Dynamic convex hull structure
+ *//*
  * Copyright 2006 Nathan Hurst <njh@mail.csse.monash.edu.au>
  * Copyright 2006 Michael G. Sloan <mgsloan@gmail.com>
  *
@@ -30,8 +29,8 @@
  *
  */
 
-#ifndef GEOM_CONVEX_COVER_H
-#define GEOM_CONVEX_COVER_H
+#ifndef LIB2GEOM_SEEN_CONVEX_COVER_H
+#define LIB2GEOM_SEEN_CONVEX_COVER_H
 
 #include <2geom/point.h>
 #include <vector>
@@ -190,7 +189,7 @@ public:
 
 };
 
-#endif //2GEOM_CONVEX_COVER_H
+#endif // LIB2GEOM_SEEN_CONVEX_COVER_H
 
 /*
   Local Variables:

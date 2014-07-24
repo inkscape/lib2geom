@@ -32,8 +32,8 @@
  *
  */
 
-#ifndef _SBASIS_TO_BEZIER
-#define _SBASIS_TO_BEZIER
+#ifndef LIB2GEOM_SEEN_SBASIS_TO_BEZIER_H
+#define LIB2GEOM_SEEN_SBASIS_TO_BEZIER_H
 
 #include <2geom/d2.h>
 #include <2geom/pathvector.h>
@@ -73,10 +73,7 @@ inline Path cubicbezierpath_from_sbasis(D2<SBasis> const &B, double tol)
 
 } // end namespace Geom
 
-
-
 #endif
-
 /*
   Local Variables:
   mode:c++

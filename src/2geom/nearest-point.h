@@ -1,7 +1,6 @@
-/**
- * \file
- * \brief  nearest point routines for D2<SBasis> and Piecewise<D2<SBasis>>
- *
+/** @file
+ * @brief  nearest point routines for D2<SBasis> and Piecewise<D2<SBasis>>
+ *//*
  * Authors:
  *
  * 		Marco Cecchetti <mrcekets at gmail.com>
@@ -33,8 +32,8 @@
  */
 
 
-#ifndef _NEAREST_POINT_H_
-#define _NEAREST_POINT_H_
+#ifndef LIB2GEOM_SEEN_NEAREST_POINT_H
+#define LIB2GEOM_SEEN_NEAREST_POINT_H
 
 
 #include <vector>
@@ -128,6 +127,14 @@ all_nearest_points( Point const& p, Piecewise< D2<SBasis> > const& c )
 
 } // end namespace Geom
 
-
-
-#endif /*_NEAREST_POINT_H_*/
+#endif // LIB2GEOM_SEEN_NEAREST_POINT_H
+/*
+  Local Variables:
+  mode:c++
+  c-file-style:"stroustrup"
+  c-file-offsets:((innamespace . 0)(inline-open . 0)(case-label . +))
+  indent-tabs-mode:nil
+  fill-column:99
+  End:
+*/
+// vim: filetype=cpp:expandtab:shiftwidth=4:tabstop=8:softtabstop=4:fileencoding=utf-8:textwidth=99 :

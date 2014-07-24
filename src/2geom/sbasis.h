@@ -1,7 +1,6 @@
-/**
- * \file
- * \brief Defines S-power basis function class
- *
+/** @file
+ * @brief Polynomial in symmetric power basis (S-basis)
+ *//*
  *  Authors:
  *   Nathan Hurst <njh@mail.csse.monash.edu.au>
  *   Michael Sloan <mgsloan@gmail.com>
@@ -32,8 +31,8 @@
  * the specific language governing rights and limitations.
  */
 
-#ifndef SEEN_SBASIS_H
-#define SEEN_SBASIS_H
+#ifndef LIB2GEOM_SEEN_SBASIS_H
+#define LIB2GEOM_SEEN_SBASIS_H
 #include <vector>
 #include <cassert>
 #include <iostream>

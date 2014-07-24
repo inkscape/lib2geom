@@ -1,7 +1,6 @@
-/**
- * \file
- * \brief Conic Section
- *
+/** @file
+ * @brief Conic Section
+ *//*
  * Authors:
  *      Nathan Hurst <njh@njhurst.com>
  *
@@ -32,8 +31,8 @@
  */
 
 
-#ifndef _2GEOM_CONIC_SECTION_H_
-#define _2GEOM_CONIC_SECTION_H_
+#ifndef LIB2GEOM_SEEN_CONICSEC_H
+#define LIB2GEOM_SEEN_CONICSEC_H
 
 #include <2geom/exception.h>
 #include <2geom/angle.h>
@@ -509,8 +508,7 @@ inline std::ostream &operator<< (std::ostream &out_file, const xAx &x) {
 };
 
 
-#endif // _2GEOM_CONIC_SECTION_H_
-
+#endif // LIB2GEOM_SEEN_CONICSEC_H
 
 /*
   Local Variables:

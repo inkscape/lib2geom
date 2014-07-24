@@ -32,8 +32,8 @@
  *
  */
 
-#ifndef __2GEOM_SWEEP_H__
-#define __2GEOM_SWEEP_H__
+#ifndef LIB2GEOM_SEEN_SWEEP_H
+#define LIB2GEOM_SEEN_SWEEP_H
 
 #include <vector>
 #include <2geom/d2.h>

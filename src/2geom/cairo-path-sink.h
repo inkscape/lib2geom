@@ -74,7 +74,7 @@ private:
 
 }
 
-#endif
+#endif // !LIB2GEOM_SEEN_CAIRO_PATH_SINK_H
 /*
   Local Variables:
   mode:c++

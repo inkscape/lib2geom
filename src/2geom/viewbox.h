@@ -31,8 +31,8 @@
  * the specific language governing rights and limitations.
  */
 
-#ifndef SEEN_LIB2GEOM_VIEWBOX_H
-#define SEEN_LIB2GEOM_VIEWBOX_H
+#ifndef LIB2GEOM_SEEN_VIEWBOX_H
+#define LIB2GEOM_SEEN_VIEWBOX_H
 
 #include <2geom/affine.h>
 #include <2geom/rect.h>
@@ -88,7 +88,7 @@ public:
 
 } // namespace Geom
 
-#endif // !SEEN_LIB2GEOM_VIEWBOX_H
+#endif // !LIB2GEOM_SEEN_VIEWBOX_H
 
 /*
   Local Variables:
