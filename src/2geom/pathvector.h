@@ -42,10 +42,19 @@
 
 namespace Geom {
 
+/** @brief Position (generalized time value) in the path vector.
+ *
+ * This class exists because mapping the range of multiple curves onto the same interval
+ * as the curve index, we lose some precision. For instance, a path with 16 curves will
+ * have 4 bits less precision than a path with 1 curve. If you need high precision results
+ * in long paths, use this class and related methods instead of the standard methods
+ * pointAt(), nearestTime() and so on.
+ * 
+ * @ingroup Paths */
 struct PathVectorPosition
     : public PathPosition
 {
-    size_type path_index;
+    size_type path_index; ///< Index of the path in the vector
 
     PathVectorPosition() : PathPosition(0, 0), path_index(0) {}
     PathVectorPosition(size_type _i, size_type _c, Coord _t)
@@ -62,7 +71,7 @@ struct PathVectorPosition
  * Shapes with a boundary that is composed of only a single contiguous
  * component can be represented with Path instead.
  *
- * @ingroup Curves
+ * @ingroup Paths
  */
 class PathVector
     : MultipliableNoncommutative< PathVector, Affine

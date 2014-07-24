@@ -106,7 +106,7 @@ class BaseIterator
 
 }
 
-/** @brief Position in the path.
+/** @brief Position (generalized time value) in the path.
  *
  * This class exists because mapping the range of multiple curves onto the same interval
  * as the curve index, we lose some precision. For instance, a path with 16 curves will
@@ -115,12 +115,12 @@ class BaseIterator
  * pointAt(), nearestTime() and so on, or use curveAt() to first obtain the curve, then
  * call the method again to obtain a high precision result.
  * 
- * @relates Path */
+ * @ingroup Paths */
 struct PathPosition {
     typedef PathInternal::Sequence::size_type size_type;
 
-    Coord t;
-    size_type curve_index;
+    Coord t; ///< Time value in the curve
+    size_type curve_index; ///< Index of the curve in the path
     PathPosition() : t(0), curve_index(0) {}
     PathPosition(size_type idx, Coord tval) : t(tval), curve_index(idx) {}
 };
@@ -155,7 +155,7 @@ struct PathPosition {
  * It's not very convenient to create a Path directly. To construct paths more easily,
  * use PathBuilder.
  *
- * @ingroup Curves */
+ * @ingroup Paths */
 class Path
     : boost::equality_comparable1< Path
     , MultipliableNoncommutative< Path, Affine

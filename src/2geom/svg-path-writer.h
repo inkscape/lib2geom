@@ -38,8 +38,9 @@
 
 namespace Geom {
 
-/** @brief SVG path data writer.
+/** @brief Serialize paths to SVG path data strings.
  * You can access the generated string by calling the str() method.
+ * @ingroup Paths
  */
 class SVGPathWriter
     : public PathSink
@@ -57,9 +58,34 @@ public:
     void closePath();
     void flush();
 
+    /// Clear any path data written so far.
     void clear();
+
+    /** @brief Set output precision.
+     * When the parameter is negative, the path writer enters a verbatim mode
+     * which preserves all values exactly. */
     void setPrecision(int prec);
+
+    /** @brief Enable or disable length optimization.
+     * 
+     * When set to true, the path writer will optimize the generated path data
+     * for minimum length. However, this will make the data less readable,
+     * because spaces between commands and coordinates will be omitted where
+     * unnecessary for correct parsing.
+     *
+     * When set to false, the string will be a straightforward, partially redundant
+     * representation of the passed commands, optimized for readability.
+     * Commands and coordinates will always be separated by spaces and the command
+     * symbol will not be omitted for multiple consecutive commands of the same type.
+     *
+     * Length optimization is turned off by default. */
     void setOptimize(bool opt) { _optimize = opt; }
+
+    /** @brief Enable or disable the use of V, H, T and S commands where possible.
+     * Shorthands are turned on by default. */
+    void setUseShorthands(bool use) { _use_shorthands = use; }
+
+    /// Retrieve the generated path data string.
     std::string str() const { return _s.str(); }
 
 private:
@@ -75,6 +101,7 @@ private:
     Coord _epsilon;
     int _precision;
     bool _optimize;
+    bool _use_shorthands;
     char _command;
 };
 

@@ -43,12 +43,19 @@
 
 namespace Geom {
 
-/** @brief SVG format path data parsing
+/** @brief Read SVG path data and feed it to a PathSink
  *
  * This class provides an interface to an SVG path data parser written in Ragel.
  * It supports parsing the path data either at once or block-by-block.
  * Use the parse() functions to parse complete data and the feed() and finish()
  * functions to parse partial data.
+ *
+ * The parser will call the appropriate methods on the PathSink supplied
+ * at construction. To store the path in memory as a PathVector, pass
+ * a PathBuilder. You can also use one of the freestanding helper functions
+ * if you don't need to parse data block-by-block.
+ *
+ * @ingroup Paths
  */
 class SVGPathParser {
 public:
@@ -115,13 +122,20 @@ private:
     void _parse(char const *str, char const *strend, bool finish);
 };
 
+/** @brief Feed SVG path data to the specified sink
+ * @ingroup Paths */
 void parse_svg_path(char const *str, PathSink &sink);
-void parse_svg_path_file(FILE *fi, PathSink &sink);
-
+/** @brief Feed SVG path data to the specified sink
+ * @ingroup Paths */
 inline void parse_svg_path(std::string const &str, PathSink &sink) {
     parse_svg_path(str.c_str(), sink);
 }
+/** Feed SVG path data from a C stream to the specified sink
+ * @ingroup Paths */
+void parse_svg_path_file(FILE *fi, PathSink &sink);
 
+/** @brief Create path vector from SVG path data stored in a C string
+ * @ingroup Paths */
 inline PathVector parse_svg_path(char const *str) {
     PathVector ret;
     SubpathInserter iter(ret);
@@ -131,6 +145,8 @@ inline PathVector parse_svg_path(char const *str) {
     return ret;
 }
 
+/** @brief Create path vector from a C stream with SVG path data
+ * @ingroup Paths */
 inline PathVector read_svgd_f(FILE * fi) {
     PathVector ret;
     SubpathInserter iter(ret);
@@ -140,6 +156,8 @@ inline PathVector read_svgd_f(FILE * fi) {
     return ret;
 }
 
+/** @brief Create path vector from SVG path data stored in a file
+ * @ingroup Paths */
 inline PathVector read_svgd(char const *filename) {
     FILE* fi = fopen(filename, "r");
     if(fi == NULL) throw(std::runtime_error("Error opening file"));

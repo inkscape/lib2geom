@@ -44,9 +44,13 @@ namespace Geom {
  * PathSink provides an interface that allows one to easily write
  * code which processes path data, for instance when converting
  * between path formats used by different graphics libraries.
+ * It is also useful for writing algorithms which must do something
+ * for each curve in the path.
  *
  * To store a path in a new format, implement the virtual methods
  * for segments in a derived class and call feed().
+ *
+ * @ingroup Paths
  */
 class PathSink {
 public:
@@ -61,7 +65,7 @@ public:
     virtual void quadTo(Point const &c, Point const &p) = 0;
     /** @brief Output an elliptical arc segment.
      * See the EllipticalArc class for the documentation of parameters. */
-    virtual void arcTo(double rx, double ry, double angle,
+    virtual void arcTo(Coord rx, Coord ry, Coord angle,
                        bool large_arc, bool sweep, Point const &p) = 0;
 
     /// Close the current path with a line segment.
@@ -101,6 +105,8 @@ public:
     virtual ~PathSink() {}
 };
 
+/** @brief Store paths to an output iterator
+ * @ingroup Paths */
 template <typename OutputIterator>
 class PathIteratorSink : public PathSink {
 public:
@@ -139,7 +145,7 @@ public:
         _path.template appendNew<CubicBezier>(c0, c1, p);
     }
 
-    void arcTo(double rx, double ry, double angle,
+    void arcTo(Coord rx, Coord ry, Coord angle,
                bool large_arc, bool sweep, Point const &p)
     {
         // check for implicit moveto, like in: "M 1,1 L 2,2 z l 2,2 z"
@@ -196,12 +202,17 @@ protected:
 
 typedef std::back_insert_iterator<PathVector> SubpathInserter;
 
+/** @brief Store paths to a PathVector
+ * @ingroup Paths */
 class PathBuilder : public PathIteratorSink<SubpathInserter> {
 private:
     PathVector _pathset;
 public:
     PathBuilder() : PathIteratorSink<SubpathInserter>(SubpathInserter(_pathset)) {}
+    /// Retrieve the path
     PathVector const &peek() const {return _pathset;}
+    /// Clear the stored path vector
+    void clear() { _pathset.clear(); }
 };
 
 }

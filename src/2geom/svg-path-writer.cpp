@@ -46,6 +46,7 @@ SVGPathWriter::SVGPathWriter()
     : _epsilon(0)
     , _precision(-1)
     , _optimize(false)
+    , _use_shorthands(true)
     , _command(0)
 {
     // always use C locale for number formatting
@@ -69,18 +70,25 @@ void SVGPathWriter::lineTo(Point const &p)
 {
     // The weird setting of _current is to avoid drift with many almost-aligned segments
     // The additional conditions ensure that the smaller dimension is rounded to zero
-    Point r = _current - p;
-    if (are_near(p[X], _current[X], _epsilon) && std::abs(r[X]) < std::abs(r[Y])) {
-        // emit vlineto
-        _setCommand('V');
-        _current_pars.push_back(p[Y]);
-        _current[Y] = p[Y];
-    } else if (are_near(p[Y], _current[Y], _epsilon) && std::abs(r[Y]) < std::abs(r[X])) {
-        // emit hlineto
-        _setCommand('H');
-        _current_pars.push_back(p[X]);
-        _current[X] = p[X];
-    } else {
+    bool written = false;
+    if (_use_shorthands) {
+        Point r = _current - p;
+        if (are_near(p[X], _current[X], _epsilon) && std::abs(r[X]) < std::abs(r[Y])) {
+            // emit vlineto
+            _setCommand('V');
+            _current_pars.push_back(p[Y]);
+            _current[Y] = p[Y];
+            written = true;
+        } else if (are_near(p[Y], _current[Y], _epsilon) && std::abs(r[Y]) < std::abs(r[X])) {
+            // emit hlineto
+            _setCommand('H');
+            _current_pars.push_back(p[X]);
+            _current[X] = p[X];
+            written = true;
+        }
+    }
+
+    if (!written) {
         // emit normal lineto
         if (_command != 'M' && _command != 'L') {
             _setCommand('L');
@@ -98,17 +106,15 @@ void SVGPathWriter::lineTo(Point const &p)
 
 void SVGPathWriter::quadTo(Point const &c, Point const &p)
 {
-    if (are_near(c, _quad_tangent, _epsilon)) {
-        _setCommand('T');
-        _current_pars.push_back(p[X]);
-        _current_pars.push_back(p[Y]);
-    } else {
-        _setCommand('Q');
+    bool shorthand = _use_shorthands && are_near(c, _quad_tangent, _epsilon);
+
+    _setCommand(shorthand ? 'T' : 'Q');
+    if (!shorthand) {
         _current_pars.push_back(c[X]);
         _current_pars.push_back(c[Y]);
-        _current_pars.push_back(p[X]);
-        _current_pars.push_back(p[Y]);
     }
+    _current_pars.push_back(p[X]);
+    _current_pars.push_back(p[Y]);
 
     _current = _cubic_tangent = p;
     _quad_tangent = p + (p - c);
@@ -119,21 +125,17 @@ void SVGPathWriter::quadTo(Point const &c, Point const &p)
 
 void SVGPathWriter::curveTo(Point const &p1, Point const &p2, Point const &p3)
 {
-    if (are_near(p1, _cubic_tangent, _epsilon)) {
-        _setCommand('S');
-        _current_pars.push_back(p2[X]);
-        _current_pars.push_back(p2[Y]);
-        _current_pars.push_back(p3[X]);
-        _current_pars.push_back(p3[Y]);
-    } else {
-        _setCommand('C');
+    bool shorthand = _use_shorthands && are_near(p1, _cubic_tangent, _epsilon);
+
+    _setCommand(shorthand ? 'S' : 'C');
+    if (!shorthand) {
         _current_pars.push_back(p1[X]);
         _current_pars.push_back(p1[Y]);
-        _current_pars.push_back(p2[X]);
-        _current_pars.push_back(p2[Y]);
-        _current_pars.push_back(p3[X]);
-        _current_pars.push_back(p3[Y]);
     }
+    _current_pars.push_back(p2[X]);
+    _current_pars.push_back(p2[Y]);
+    _current_pars.push_back(p3[X]);
+    _current_pars.push_back(p3[Y]);
 
     _current = _quad_tangent = p3;
     _cubic_tangent = p3 + (p3 - p2);

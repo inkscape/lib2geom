@@ -51,10 +51,10 @@
  *   like translation, scaling and rotation.
  * - @ref Curves "Curves" - functions mapping the unit interval to points on a plane.
  * - @ref Shapes "Shapes" - circles, ellipses, polygons and the like.
+ * - @ref Paths "Paths" - sequences of contiguous curves, aka splines, and their processing.
  * - @ref ShapeOps "Shape operations" - boolean algebra, offsets and other advanced operations.
  * - @ref Containers "Geometric containers" - efficient ways to store and retrieve
  *   geometric information.
- * - @ref SVG "SVG integration" - classes and functions to work with SVG-like input.
  * - @subpage ReleaseNotes "Release notes" - what's new in 2Geom
  *
  * @section DeveloperInfo Developer information
@@ -207,7 +207,8 @@
 
 // Documentation for groups
 /**
- * @defgroup Transforms Transformation classes
+ * @defgroup Transforms Affine transformations
+ * @brief Transformations of the plane such as rotation and scaling
  *
  * Each transformation class represent a set of affine transforms that is closed
  * under multiplication. Those are translation, scaling, rotation, horizontal shearing
@@ -245,6 +246,7 @@
 
 /**
  * @defgroup Primitives Geometrical primitives
+ * @brief Basic mathematical objects such as intervals and points
  *
  * 2Geom has several basic geometrical objects: points, lines, intervals, angles,
  * and others. Most of those objects can be treated as sets of points or numbers
@@ -253,6 +255,7 @@
 
 /**
  * @defgroup Curves Curves
+ * @brief Functions mapping the unit interval to a plane
  *
  * Curves are functions \f$\mathbf{C}: [0, 1] \to \mathbb{R}^2\f$. For details, see
  * the documentation for the Curve class. All curves can be included in paths and path sequences.
@@ -260,9 +263,15 @@
 
 /**
  * @defgroup Shapes Basic shapes
+ * @brief Circles, ellipes, polygons...
  *
  * Among the shapes supported by 2Geom are circles, ellipses and polygons.
  * Polygons can also be represented by paths containing only linear segments.
+ */
+
+/**
+ * @defgroup Paths Path and path sequences
+ * @brief Sequences of contiguous curves, aka splines, and their procesing
  */
 /*
   Local Variables:
