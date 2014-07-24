@@ -78,7 +78,10 @@ TEST_F(PathTest, SVGRoundtrip) {
 
     Path transformed = diederik * (Rotate(1.23456789) * Scale(1e-8) * Translate(1e-9, 1e-9));
 
-    for (unsigned i = 0; i < 2; ++i) {
+    for (unsigned i = 0; i < 4; ++i) {
+        sw.setOptimize(i & 1);
+        sw.setUseShorthands(i & 2);
+
         sw.feed(line);
         //cout << sw.str() << endl;
         Path line_svg = string_to_path(sw.str().c_str());
@@ -114,8 +117,6 @@ TEST_F(PathTest, SVGRoundtrip) {
         Path cmds_svg = string_to_path(sw.str().c_str());
         EXPECT_TRUE(cmds_svg == cmds);
         sw.clear();
-
-        sw.setOptimize(true);
     }
 }
 
