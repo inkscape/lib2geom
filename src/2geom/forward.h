@@ -35,8 +35,6 @@
 #ifndef LIB2GEOM_SEEN_FORWARD_H
 #define LIB2GEOM_SEEN_FORWARD_H
 
-#include <vector>   // include this dependency so PathVector can be defined more explicitly
-
 namespace Geom {
 
 // basic types
