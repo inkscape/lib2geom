@@ -50,8 +50,8 @@ public:
 
     void moveTo(Point const &p);
     void lineTo(Point const &p);
-    void curveTo(Point const &c0, Point const &c1, Point const &p);
     void quadTo(Point const &c, Point const &p);
+    void curveTo(Point const &c0, Point const &c1, Point const &p);
     void arcTo(double rx, double ry, double angle,
                bool large_arc, bool sweep, Point const &p);
     void closePath();
@@ -70,6 +70,9 @@ private:
     std::vector<Coord> _current_pars;
     Point _subpath_start;
     Point _current;
+    Point _quad_tangent;
+    Point _cubic_tangent;
+    Coord _epsilon;
     int _precision;
     bool _optimize;
     char _command;

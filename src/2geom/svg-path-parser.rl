@@ -125,37 +125,37 @@ Point SVGPathParser::_pop_point() {
 }
 
 void SVGPathParser::_moveTo(Point const &p) {
-    _quad_tangent = _cubic_tangent = _current = _initial = p;
     _sink.moveTo(p);
+    _quad_tangent = _cubic_tangent = _current = _initial = p;
 }
 
 void SVGPathParser::_lineTo(Point const &p) {
-    _quad_tangent = _cubic_tangent = _current = p;
     _sink.lineTo(p);
+    _quad_tangent = _cubic_tangent = _current = p;
 }
 
 void SVGPathParser::_curveTo(Point const &c0, Point const &c1, Point const &p) {
+    _sink.curveTo(c0, c1, p);
     _quad_tangent = _current = p;
     _cubic_tangent = p + ( p - c1 );
-    _sink.curveTo(c0, c1, p);
 }
 
 void SVGPathParser::_quadTo(Point const &c, Point const &p) {
+    _sink.quadTo(c, p);
     _cubic_tangent = _current = p;
     _quad_tangent = p + ( p - c );
-    _sink.quadTo(c, p);
 }
 
 void SVGPathParser::_arcTo(Coord rx, Coord ry, Coord angle,
                            bool large_arc, bool sweep, Point const &p)
 {
-    _quad_tangent = _cubic_tangent = _current = p;
     _sink.arcTo(rx, ry, angle, large_arc, sweep, p);
+    _quad_tangent = _cubic_tangent = _current = p;
 }
 
 void SVGPathParser::_closePath() {
-    _quad_tangent = _cubic_tangent = _current = _initial;
     _sink.closePath();
+    _quad_tangent = _cubic_tangent = _current = _initial;
 }
 
 void SVGPathParser::_parse(char const *str, char const *strend, bool finish)
