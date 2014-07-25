@@ -22,88 +22,40 @@ namespace Geom {
  * the curve specific winding function is called.
  */
 int winding(Path const &path, Point const &p) {
-  //start on a segment which is not a horizontal line with y = p[y]
-  Path::const_iterator start;
-  for(Path::const_iterator iter = path.begin(); ; ++iter) {
-    if(iter == path.end_closed()) { return 0; }
-    if(iter->initialPoint()[Y]!=p[Y])   { start = iter; break; }
-    if(iter->finalPoint()[Y]!=p[Y])     { start = iter; break; }
-    if(iter->boundsFast().height()!=0.){ start = iter; break; }
-  }
-  int wind = 0;
-  unsigned cnt = 0;
-  bool starting = true;
-  for (Path::const_iterator iter = start; iter != start || starting
-       ; ++iter, iter = (iter == path.end_closed()) ? path.begin() : iter )
-  {
-    cnt++;
-    if(cnt > path.size()) return wind;  //some bug makes this required
-    starting = false;
-    Rect bounds = (iter->boundsFast());
-    Coord x = p[X], y = p[Y];
-    
-    if(x > bounds.right() || !bounds[Y].contains(y)) continue; //ray doesn't intersect box
-    
-    Point final = iter->finalPoint();
-    Point initial = iter->initialPoint();
-    Cmp final_to_ray = cmp(final[Y], y);
-    Cmp initial_to_ray = cmp(initial[Y], y);
-    
-    // if y is included, these will have opposite values, giving order.
-    Cmp c = cmp(final_to_ray, initial_to_ray); 
-    if(x < bounds.left()) {
-        // ray goes through bbox
-        // winding delta determined by position of endpoints
-        if(final_to_ray != EQUAL_TO) {
-            wind += int(c); // GT = counter-clockwise = 1; LT = clockwise = -1; EQ = not-included = 0
-            //std::cout << int(c) << " ";
-            goto cont;
-        }
-    } else {
-        //inside bbox, use custom per-curve winding thingie
-        int delt = iter->winding(p);
-        wind += delt;
-        //std::cout << "n" << delt << " ";
-    }
-    //Handling the special case of an endpoint on the ray:
-    if(final[Y] == y) {
-        //Traverse segments until it breaks away from y
-        //99.9% of the time this will happen the first go
-        Path::const_iterator next = iter;
-        ++next;
-        for(; ; ++next) {
-            if(next == path.end_closed()) next = path.begin();
-            Rect bnds = (next->boundsFast());
-            //TODO: X considerations
-            if(bnds.height() > 0) {
-                //It has diverged
-                if(bnds.contains(p)) {
-                    const double fudge = 0.01;
-                    if(cmp(y, next->valueAt(fudge, Y)) == initial_to_ray) {
-                        wind += int(c);
-                        //std::cout << "!!!!!" << int(c) << " ";
-                    }
-                    iter = next; // No increment, as the rest of the thing hasn't been counted.
-                } else {
-                    Coord ny = next->initialPoint()[Y];
-                    if(cmp(y, ny) == initial_to_ray) {
-                        //Is a continuation through the ray, so counts windingwise
-                        wind += int(c);
-                        //std::cout << "!!!!!" << int(c) << " ";
-                    }
-                    iter = ++next;
+    int wind = 0;
+
+    /* To handle all the edge cases, we consider the minimum Y edge of the bounding box
+     * as not included in box. This way paths that contain linear horizontal
+     * segments will be treated correctly. */
+    for (Path::const_iterator i = path.begin(); i != path.end_closed(); ++i) {
+        Rect bounds = i->boundsFast();
+
+        if (bounds.height() == 0) continue;
+        if (p[X] > bounds.right() || !(bounds[Y].contains(p[Y]) && p[Y] != bounds[Y].min()))
+            continue;
+
+        if (p[X] < bounds.left()) {
+            /* Point is outside bbox; the winding contribution is exactly the same as that
+             * of a linear segment with the same initial and final points. */
+            Point ip = i->initialPoint();
+            Point fp = i->finalPoint();
+            Rect eqbox(ip, fp);
+
+            if (p[Y] > eqbox[Y].min() && p[Y] <= eqbox[Y].max()) {
+                /* The ray intersects the equivalent linear segment.
+                 * Determine winding contribution based on its derivative. */
+                if (ip[Y] < fp[Y]) {
+                    wind += 1;
+                } else if (ip[Y] > fp[Y]) {
+                    wind -= 1;
                 }
-                goto cont;
             }
-            if(next==start) return wind;
+        } else {
+            // point is inside bbox
+            wind += i->windingAt(p);
         }
-        //Looks like it looped, which means everything's flat
-        return 0;
     }
-    
-    cont:(void)0;
-  }
-  return wind;
+    return wind;
 }
 
 /**

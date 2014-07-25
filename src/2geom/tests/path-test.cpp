@@ -4,6 +4,7 @@
 #include <2geom/bezier.h>
 #include <2geom/path.h>
 #include <2geom/pathvector.h>
+#include <2geom/path-intersection.h>
 #include <2geom/svg-path-parser.h>
 #include <2geom/svg-path-writer.h>
 #include <vector>
@@ -24,7 +25,7 @@ protected:
     PathTest() {
         line.append(LineSegment(Point(0,0), Point(1,0)));
         square = string_to_path("M 0,0 1,0 1,1 0,1 z");
-        circle = string_to_path("m 362,288.5 a 4.5,4.5 0 1 1 -9,0 4.5,4.5 0 1 1 9,0 z");
+        circle = string_to_path("M 0,0 a 4.5,4.5 0 1 1 -9,0 4.5,4.5 0 1 1 9,0 z");
         diederik = string_to_path("m 262.6037,35.824151 c 0,0 -92.64892,-187.405851 30,-149.999981 104.06976,31.739531 170,109.9999815 170,109.9999815 l -10,-59.9999905 c 0,0 40,79.99999 -40,79.99999 -80,0 -70,-129.999981 -70,-129.999981 l 50,0 C 435.13571,-131.5667 652.76275,126.44872 505.74322,108.05672 358.73876,89.666591 292.6037,-14.175849 292.6037,15.824151 c 0,30 -30,20 -30,20 z");
         cmds = string_to_path("M 0,0 V 100 H 100 Q 100,0 0,0 L 200,0 C 200,100 300,100 300,0 S 200,-100 200,0");
     }
@@ -71,6 +72,33 @@ TEST_F(PathTest, NearestPoint) {
     EXPECT_FLOAT_EQ(6.5814033, diederik.nearestTime(Point(511.75,40.85)));
     //cout << diederik.pointAt(diederik.nearestTime(Point(511.75,40.85))) << endl;
 
+}
+
+TEST_F(PathTest, Winding) {
+    // test points in special positions
+    EXPECT_EQ(winding(line, Point(-1, 0)), 0);
+    EXPECT_EQ(winding(line, Point(2, 0)), 0);
+    EXPECT_EQ(winding(line, Point(0, 1)), 0);
+    EXPECT_EQ(winding(line, Point(0, -1)), 0);
+    EXPECT_EQ(winding(line, Point(1, 1)), 0);
+    EXPECT_EQ(winding(line, Point(1, -1)), 0);
+
+    EXPECT_EQ(winding(square, Point(0, -1)), 0);
+    EXPECT_EQ(winding(square, Point(1, -1)), 0);
+    EXPECT_EQ(winding(square, Point(0, 2)), 0);
+    EXPECT_EQ(winding(square, Point(1, 2)), 0);
+    EXPECT_EQ(winding(square, Point(-1, 0)), 0);
+    EXPECT_EQ(winding(square, Point(-1, 1)), 0);
+    EXPECT_EQ(winding(square, Point(2, 0)), 0);
+    EXPECT_EQ(winding(square, Point(2, 1)), 0);
+    EXPECT_EQ(winding(square, Point(0.5, 0.5)), 1);
+
+    // These fail, because EllipticalArc::roots() returns bogus results for d == Y
+    /*EXPECT_EQ(winding(circle, Point(-4.5,0)), 1);
+    EXPECT_EQ(winding(circle, Point(-3.5,0)), 1);
+    EXPECT_EQ(winding(circle, Point(-4.5,1)), 1);
+    EXPECT_EQ(winding(circle, Point(-10,0)), 0);
+    EXPECT_EQ(winding(circle, Point(1,0)), 0);*/
 }
 
 TEST_F(PathTest, SVGRoundtrip) {

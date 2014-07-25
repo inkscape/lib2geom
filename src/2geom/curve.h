@@ -46,17 +46,9 @@
 #include <2geom/d2.h>
 #include <2geom/affine.h>
 
-namespace Geom 
-{
+namespace Geom {
 
-class Curve;
 class PathSink;
-
-struct CurveHelpers {
-protected:
-  static int root_winding(Curve const &c, Point p);
-};
-
 
 /**
  * @brief Abstract continuous curve on a plane defined on [0,1].
@@ -78,7 +70,7 @@ protected:
  *
  * @ingroup Curves
  */
-class Curve : private CurveHelpers {
+class Curve {
 public:
     virtual ~Curve() {}
 
@@ -252,11 +244,15 @@ public:
      * @param v The coordinate of the line
      * @param d Which axis the coordinate is on. X means a vertical line, Y a horizontal line. */
     virtual std::vector<Coord> roots(Coord v, Dim2 d) const = 0;
-    /** @brief Compute the winding number contribution of this curve.
+    /** @brief Compute the partial winding number of this curve.
+     * The partial winding number is equal to the difference between the number
+     * of roots at which the curve goes in the +Y direction and the number of roots
+     * at which the curve goes in the -Y direction. This method is mainly useful
+     * for implementing path winding calculation. It will ignore roots which
+     * are local minima on the Y axis.
      * @param p Point where the winding number should be determined
-     * @return The number of times the curve intersects a ray cast from the point
-     *         in the +X direction */
-    virtual int winding(Point const &p) const { return root_winding(*this, p); }
+     * @return Winding number contribution at p */
+    virtual int windingAt(Point const &p) const;
     /** @brief Compute a vector tangent to the curve.
      * This will return an unit vector (a Point with length() equal to 1) that denotes a vector
      * tangent to the curve. This vector is defined as
