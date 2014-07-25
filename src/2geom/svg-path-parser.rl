@@ -285,7 +285,7 @@ void SVGPathParser::_parse(char const *str, char const *strend, bool finish)
             (nonnegative_number $(elliptical_arg_a,1) %(elliptical_arg_a,0) comma_wsp?
              nonnegative_number $(elliptical_arg_b,1) %(elliptical_arg_b,0) comma_wsp?
              number comma_wsp
-             flag comma_wsp flag comma_wsp
+             flag comma_wsp? flag comma_wsp?
              coordinate_pair)
             %elliptical_arc;
         elliptical_arc_argument_sequence =
