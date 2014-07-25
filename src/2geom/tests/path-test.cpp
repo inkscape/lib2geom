@@ -93,12 +93,11 @@ TEST_F(PathTest, Winding) {
     EXPECT_EQ(winding(square, Point(2, 1)), 0);
     EXPECT_EQ(winding(square, Point(0.5, 0.5)), 1);
 
-    // These fail, because EllipticalArc::roots() returns bogus results for d == Y
-    /*EXPECT_EQ(winding(circle, Point(-4.5,0)), 1);
+    EXPECT_EQ(winding(circle, Point(-4.5,0)), 1);
     EXPECT_EQ(winding(circle, Point(-3.5,0)), 1);
     EXPECT_EQ(winding(circle, Point(-4.5,1)), 1);
     EXPECT_EQ(winding(circle, Point(-10,0)), 0);
-    EXPECT_EQ(winding(circle, Point(1,0)), 0);*/
+    EXPECT_EQ(winding(circle, Point(1,0)), 0);
 }
 
 TEST_F(PathTest, SVGRoundtrip) {
