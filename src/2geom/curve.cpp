@@ -38,7 +38,7 @@
 #include <2geom/ord.h>
 #include <2geom/path-sink.h>
 
-#include <iostream>
+//#include <iostream>
 
 namespace Geom 
 {
@@ -74,7 +74,7 @@ int Curve::windingAt(Point const &p) const
         int wind = 0;
         for (std::size_t i = 0; i < ts.size(); ++i) {
             Coord t = ts[i];
-            std::cout << t << std::endl;
+            //std::cout << t << std::endl;
             if ((t == 0 && ingore_0) || (t == 1 && ignore_1)) continue;
             if (valueAt(t, X) > p[X]) { // root is ray intersection
                 Point tangent = unitTangentAt(t);
