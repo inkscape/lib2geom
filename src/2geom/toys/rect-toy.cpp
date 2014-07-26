@@ -49,10 +49,6 @@ std::string angle_formatter(double angle)
     return default_formatter(decimal_round(rad_to_deg(angle),2));
 }
 
-void cairo_rectangle(cairo_t *cr, Rect &r) {
-  cairo_rectangle(cr, r[0][0], r[1][0], r[0].extent(), r[1].extent());
-}
-
 class LineToy : public Toy
 {
     enum menu_item_t
