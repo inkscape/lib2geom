@@ -39,6 +39,7 @@
 #define LIB2GEOM_SEEN_CURVE_H
 
 #include <vector>
+#include <boost/operators.hpp>
 #include <2geom/coord.h>
 #include <2geom/point.h>
 #include <2geom/interval.h>
@@ -70,7 +71,9 @@ class PathSink;
  *
  * @ingroup Curves
  */
-class Curve {
+class Curve
+     : boost::equality_comparable<Curve>
+{
 public:
     virtual ~Curve() {}
 
@@ -313,7 +316,7 @@ public:
      * the same value. This means non-degenerate curves are not equal to their reverses.
      * Note that this tests for exact equality.
      * @return True if the curves are identical, false otherwise */
-    virtual bool operator==(Curve const &c) const { return this == &c;}
+    virtual bool operator==(Curve const &c) const = 0;
 
     /** @brief Feed the curve to a PathSink */
     virtual void feed(PathSink &sink, bool moveto_initial) const;
