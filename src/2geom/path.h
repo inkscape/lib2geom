@@ -338,6 +338,18 @@ public:
 
     std::vector<Coord> roots(Coord v, Dim2 d) const;
 
+    /** @brief Determine the winding number at the specified position.
+     * 
+     * The winding number is the number of full turns made by a ray that connects the passed
+     * point and the path's value (i.e. the result of the pointAt() method) as the time increases
+     * from 0 to the maximum valid value. Positive numbers indicate turns in the direction
+     * of increasing angles.
+     *
+     * Winding numbers are often used as the definition of what is considered "inside"
+     * the shape. Typically points with either nonzero winding or odd winding are
+     * considered to be inside the path. */
+    int windingAt(Point const &p) const;
+
     std::vector<Coord> allNearestTimes(Point const &p, Coord from, Coord to) const;
     std::vector<Coord> allNearestTimes(Point const &p) const {
         return allNearestTimes(p, 0, size_default());

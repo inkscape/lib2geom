@@ -126,6 +126,15 @@ OptRect PathVector::boundsExact() const
     return bound;
 }
 
+int PathVector::windingAt(Point const &p) const
+{
+    int wind = 0;
+    for (const_iterator i = begin(); i != end(); ++i) {
+        wind += i->windingAt(p);
+    }
+    return wind;
+}
+
 boost::optional<PathVectorPosition> PathVector::nearestPosition(Point const &p, Coord *dist) const
 {
     boost::optional<Position> retval;

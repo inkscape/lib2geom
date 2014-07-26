@@ -12,50 +12,9 @@
 
 namespace Geom {
 
-/**
- * This function computes the winding of the path, given a reference point.
- * Positive values correspond to counter-clockwise in the mathematical coordinate system,
- * and clockwise in screen coordinates.  This particular implementation casts a ray in
- * the positive x direction.  It iterates the path, checking for intersection with the
- * bounding boxes.  If an intersection is found, the initial/final Y value of the curve is
- * used to derive a delta on the winding value.  If the point is within the bounding box,
- * the curve specific winding function is called.
- */
+/// Compute winding number of the path at the specified point
 int winding(Path const &path, Point const &p) {
-    int wind = 0;
-
-    /* To handle all the edge cases, we consider the minimum Y edge of the bounding box
-     * as not included in box. This way paths that contain linear horizontal
-     * segments will be treated correctly. */
-    for (Path::const_iterator i = path.begin(); i != path.end_closed(); ++i) {
-        Rect bounds = i->boundsFast();
-
-        if (bounds.height() == 0) continue;
-        if (p[X] > bounds.right() || !(bounds[Y].contains(p[Y]) && p[Y] != bounds[Y].min()))
-            continue;
-
-        if (p[X] < bounds.left()) {
-            /* Point is outside bbox; the winding contribution is exactly the same as that
-             * of a linear segment with the same initial and final points. */
-            Point ip = i->initialPoint();
-            Point fp = i->finalPoint();
-            Rect eqbox(ip, fp);
-
-            if (p[Y] > eqbox[Y].min() && p[Y] <= eqbox[Y].max()) {
-                /* The ray intersects the equivalent linear segment.
-                 * Determine winding contribution based on its derivative. */
-                if (ip[Y] < fp[Y]) {
-                    wind += 1;
-                } else if (ip[Y] > fp[Y]) {
-                    wind -= 1;
-                }
-            }
-        } else {
-            // point is inside bbox
-            wind += i->windingAt(p);
-        }
-    }
-    return wind;
+    return path.windingAt(p);
 }
 
 /**

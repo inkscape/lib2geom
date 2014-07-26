@@ -28,10 +28,9 @@
  * the specific language governing rights and limitations.
  */
 
-
-#include <2geom/line.h>
-
 #include <algorithm>
+#include <2geom/line.h>
+#include <2geom/math-utils.h>
 
 using std::swap;
 
@@ -100,7 +99,7 @@ std::vector<Coord> Line::coefficients() const
 std::vector<Coord> Line::roots(Coord v, Dim2 d) const {
     std::vector<Coord> result;
     Coord r = root(v, d);
-    if (std::isfinite(r)) {
+    if (IS_FINITE(r)) {
         result.push_back(r);
     }
     return result;

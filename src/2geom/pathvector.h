@@ -221,10 +221,9 @@ public:
         return *this;
     }
 
-    /*Curve const &curveAt(Position const &pos, Coord *rest = NULL) const;
-    Curve const &curveAt(Coord t, Coord *rest = NULL) const;
-    Path const &pathAt(Position const &pos, Coord *rest = NULL) const;
-    Path const &pathAt(Coord t, Coord *rest = NULL) const;*/
+    /** @brief Determine the winding number at the specified point.
+     * This is simply the sum of winding numbers for constituent paths. */
+    int windingAt(Point const &p) const;
 
     Coord nearestTime(Point const &p) const;
     boost::optional<Position> nearestPosition(Point const &p, Coord *dist = NULL) const;
