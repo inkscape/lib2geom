@@ -270,7 +270,7 @@
  */
 
 /**
- * @defgroup Paths Path and path sequences
+ * @defgroup Paths Paths and path sequences
  * @brief Sequences of contiguous curves, aka splines, and their procesing
  */
 /*
