@@ -262,11 +262,12 @@ void Toy::mouse_released(GdkEventButton* e) {
 
 void Toy::load(FILE* f) {
     char data[1024];
-    fscanf(f, "%s", data);
-    if( strlen(data))
-	name = data;
-    for(unsigned i = 0; i < handles.size(); i++)
-	handles[i]->load(f);
+    if (fscanf(f, "%1024s", data)) {
+        name = data;
+    }
+    for(unsigned i = 0; i < handles.size(); i++) {
+        handles[i]->load(f);
+    }
 }
 
 void Toy::save(FILE* f) {
