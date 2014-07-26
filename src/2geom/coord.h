@@ -40,8 +40,11 @@
 
 namespace Geom {
 
-/** @brief 2D axis enumeration (X or Y). */
+/// 2D axis enumeration (X or Y).
 enum Dim2 { X=0, Y=1 };
+
+/// Get the other (perpendicular) dimension.
+inline Dim2 other_dimension(Dim2 d) { return d == Y ? X : Y; }
 
 /**
  * @brief Floating point type used to store coordinates.
