@@ -75,6 +75,8 @@ public:
      * @param eps Maximum value of the area to consider empty
      * @return True if rectangle has an area smaller than tolerance, false otherwise */
     bool hasZeroArea(Coord eps = EPSILON) const { return (area() <= eps); }
+    /// Check whether the rectangle has finite area
+    bool isFinite() const { return (*this)[X].isFinite() && (*this)[Y].isFinite(); }
     /// @}
 
     /// @name Test other rectangles and points for inclusion.
