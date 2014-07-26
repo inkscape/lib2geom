@@ -223,7 +223,7 @@ public:
 
     /** @brief Determine the winding number at the specified point.
      * This is simply the sum of winding numbers for constituent paths. */
-    int windingAt(Point const &p) const;
+    int winding(Point const &p) const;
 
     Coord nearestTime(Point const &p) const;
     boost::optional<Position> nearestPosition(Point const &p, Coord *dist = NULL) const;

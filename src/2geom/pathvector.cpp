@@ -126,11 +126,11 @@ OptRect PathVector::boundsExact() const
     return bound;
 }
 
-int PathVector::windingAt(Point const &p) const
+int PathVector::winding(Point const &p) const
 {
     int wind = 0;
     for (const_iterator i = begin(); i != end(); ++i) {
-        wind += i->windingAt(p);
+        wind += i->winding(p);
     }
     return wind;
 }

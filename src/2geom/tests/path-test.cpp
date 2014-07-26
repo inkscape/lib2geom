@@ -76,28 +76,28 @@ TEST_F(PathTest, NearestPoint) {
 
 TEST_F(PathTest, Winding) {
     // test points in special positions
-    EXPECT_EQ(line.windingAt(Point(-1, 0)), 0);
-    EXPECT_EQ(line.windingAt(Point(2, 0)), 0);
-    EXPECT_EQ(line.windingAt(Point(0, 1)), 0);
-    EXPECT_EQ(line.windingAt(Point(0, -1)), 0);
-    EXPECT_EQ(line.windingAt(Point(1, 1)), 0);
-    EXPECT_EQ(line.windingAt(Point(1, -1)), 0);
+    EXPECT_EQ(line.winding(Point(-1, 0)), 0);
+    EXPECT_EQ(line.winding(Point(2, 0)), 0);
+    EXPECT_EQ(line.winding(Point(0, 1)), 0);
+    EXPECT_EQ(line.winding(Point(0, -1)), 0);
+    EXPECT_EQ(line.winding(Point(1, 1)), 0);
+    EXPECT_EQ(line.winding(Point(1, -1)), 0);
 
-    EXPECT_EQ(square.windingAt(Point(0, -1)), 0);
-    EXPECT_EQ(square.windingAt(Point(1, -1)), 0);
-    EXPECT_EQ(square.windingAt(Point(0, 2)), 0);
-    EXPECT_EQ(square.windingAt(Point(1, 2)), 0);
-    EXPECT_EQ(square.windingAt(Point(-1, 0)), 0);
-    EXPECT_EQ(square.windingAt(Point(-1, 1)), 0);
-    EXPECT_EQ(square.windingAt(Point(2, 0)), 0);
-    EXPECT_EQ(square.windingAt(Point(2, 1)), 0);
-    EXPECT_EQ(square.windingAt(Point(0.5, 0.5)), 1);
+    EXPECT_EQ(square.winding(Point(0, -1)), 0);
+    EXPECT_EQ(square.winding(Point(1, -1)), 0);
+    EXPECT_EQ(square.winding(Point(0, 2)), 0);
+    EXPECT_EQ(square.winding(Point(1, 2)), 0);
+    EXPECT_EQ(square.winding(Point(-1, 0)), 0);
+    EXPECT_EQ(square.winding(Point(-1, 1)), 0);
+    EXPECT_EQ(square.winding(Point(2, 0)), 0);
+    EXPECT_EQ(square.winding(Point(2, 1)), 0);
+    EXPECT_EQ(square.winding(Point(0.5, 0.5)), 1);
 
-    EXPECT_EQ(circle.windingAt(Point(-4.5,0)), 1);
-    EXPECT_EQ(circle.windingAt(Point(-3.5,0)), 1);
-    EXPECT_EQ(circle.windingAt(Point(-4.5,1)), 1);
-    EXPECT_EQ(circle.windingAt(Point(-10,0)), 0);
-    EXPECT_EQ(circle.windingAt(Point(1,0)), 0);
+    EXPECT_EQ(circle.winding(Point(-4.5,0)), 1);
+    EXPECT_EQ(circle.winding(Point(-3.5,0)), 1);
+    EXPECT_EQ(circle.winding(Point(-4.5,1)), 1);
+    EXPECT_EQ(circle.winding(Point(-10,0)), 0);
+    EXPECT_EQ(circle.winding(Point(1,0)), 0);
 }
 
 TEST_F(PathTest, SVGRoundtrip) {

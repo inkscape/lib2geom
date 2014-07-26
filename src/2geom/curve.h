@@ -275,7 +275,7 @@ public:
      * are local minima on the Y axis.
      * @param p Point where the winding number should be determined
      * @return Winding number contribution at p */
-    virtual int windingAt(Point const &p) const;
+    virtual int winding(Point const &p) const;
 
     /** @brief Compute a vector tangent to the curve.
      * This will return an unit vector (a Point with length() equal to 1) that denotes a vector

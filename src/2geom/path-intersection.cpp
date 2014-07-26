@@ -14,7 +14,7 @@ namespace Geom {
 
 /// Compute winding number of the path at the specified point
 int winding(Path const &path, Point const &p) {
-    return path.windingAt(p);
+    return path.winding(p);
 }
 
 /**

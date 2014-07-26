@@ -194,7 +194,7 @@ std::vector<Coord> Path::roots(Coord v, Dim2 d) const
     return res;
 }
 
-int Path::windingAt(Point const &p) const {
+int Path::winding(Point const &p) const {
     int wind = 0;
 
     /* To handle all the edge cases, we consider the minimum Y edge of the bounding box
@@ -228,7 +228,7 @@ int Path::windingAt(Point const &p) const {
             }
         } else {
             // point is inside bbox
-            wind += i->windingAt(p);
+            wind += i->winding(p);
         }
     }
     return wind;

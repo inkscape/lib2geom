@@ -58,7 +58,7 @@ Coord Curve::length(Coord tolerance) const
     return ::Geom::length(toSBasis(), tolerance);
 }
 
-int Curve::windingAt(Point const &p) const
+int Curve::winding(Point const &p) const
 {
     try {
         std::vector<Coord> ts = roots(p[Y], Y);

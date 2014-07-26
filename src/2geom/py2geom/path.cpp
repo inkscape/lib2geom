@@ -70,13 +70,13 @@ struct CurveWrap : Geom::Curve, wrapper<Geom::Curve>
     virtual Geom::OptRect boundsLocal(Geom::OptInterval const &i, unsigned deg) const {return this->get_override("boundsLocal")(i,deg);}
     std::vector<double> roots(double v, Geom::Dim2 d) const {return this->get_override("roots")(v,d);}
 
-    int windingAt(Geom::Point const &p) const {
-        if (override f = this->get_override("windingAt")) {
+    int winding(Geom::Point const &p) const {
+        if (override f = this->get_override("winding")) {
             return f(p);
         }
-        return Geom::Curve::windingAt(p);
+        return Geom::Curve::winding(p);
     }
-    int default_winding(Geom::Point p) const { return this->Geom::Curve::windingAt(p); }
+    int default_winding(Geom::Point p) const { return this->Geom::Curve::winding(p); }
 
     Geom::Curve *portion(double f, double t) const { return this->get_override("portion")(f,t); }
     Geom::Curve *reverse() const { 
