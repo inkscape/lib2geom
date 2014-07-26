@@ -146,7 +146,7 @@
  
  unsigned some_function()
  {
-     // ...code...
+ // ...code...
  }
 
  } // namespace FooInternal
