@@ -71,9 +71,9 @@ public:
      * @param sweep If true, the clockwise arc is chosen, otherwise the counter-clockwise
      *              arc is chosen
      * @param fp Final point of the arc */
-    EllipticalArc( Point ip, Coord rx, Coord ry,
+    EllipticalArc( Point const &ip, Coord rx, Coord ry,
                    Coord rot_angle, bool large_arc, bool sweep,
-                   Point fp
+                   Point const &fp
                  )
         : AngleInterval(0,0,sweep)
         , _initial_point(ip)
@@ -137,7 +137,7 @@ public:
      * recalculations of the center and extreme angles.
      * @param ip New initial point
      * @param fp New final point */
-    void setExtremes(Point const &ip, Point const &fp) {
+    void setEndpoints(Point const &ip, Point const &fp) {
         _initial_point = ip;
         _final_point = fp;
         _updateCenterAndAngles(isSVGCompliant());
