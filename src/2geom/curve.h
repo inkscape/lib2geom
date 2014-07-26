@@ -79,31 +79,38 @@ public:
     /** @brief Retrieve the start of the curve.
     * @return The point corresponding to \f$\mathbf{C}(0)\f$. */
     virtual Point initialPoint() const = 0;
+
     /** Retrieve the end of the curve.
      * @return The point corresponding to \f$\mathbf{C}(1)\f$. */
     virtual Point finalPoint() const = 0;
+
     /** @brief Check whether the curve has exactly zero length.
      * @return True if the curve's initial point is exactly the same as its final point, and it contains
      *         no other points (its value set contains only one element). */
     virtual bool isDegenerate() const = 0;
+
     /** @brief Get the interval of allowed time values.
      * @return \f$[0, 1]\f$ */
     virtual Interval timeRange() const {
         Interval tr(0, 1);
         return tr;
     }
+
     /** @brief Evaluate the curve at a specified time value.
      * @param t Time value
      * @return \f$\mathbf{C}(t)\f$ */
     virtual Point pointAt(Coord t) const { return pointAndDerivatives(t, 0).front(); }
+
     /** @brief Evaluate one of the coordinates at the specified time value.
      * @param t Time value
      * @param d The dimension to evaluate
      * @return The specified coordinate of \f$\mathbf{C}(t)\f$ */
     virtual Coord valueAt(Coord t, Dim2 d) const { return pointAt(t)[d]; }
+
     /** @brief Evaluate the function at the specified time value. Allows curves to be used
      * as functors. */
     virtual Point operator() (Coord t)  const { return pointAt(t); }
+
     /** @brief Evaluate the curve and its derivatives.
      * This will return a vector that contains the value of the curve and the specified number
      * of derivatives. However, the returned vector might contain less elements than specified
@@ -123,6 +130,7 @@ public:
      * type.
      * @param p New starting point of the curve */
     virtual void setInitial(Point const &v) = 0;
+
     /** @brief Change the ending point of the curve.
      * After calling this method, it is guaranteed that \f$\mathbf{C}(0) = \mathbf{p}\f$,
      * and the curve is still continuous. The precise new shape of the curve varies
@@ -138,12 +146,15 @@ public:
      * but it might not be the smallest such rectangle. This method is usually fast.
      * @return A rectangle that contains all points belonging to the curve. */
     virtual Rect boundsFast() const = 0;
+
     /** @brief Compute the curve's exact bounding box.
      * This method can be dramatically slower than boundsExact() depending on the curve type.
      * @return The smallest possible rectangle containing all of the curve's points. */
     virtual Rect boundsExact() const = 0;
+
     // I have no idea what the 'deg' parameter is for, so this is undocumented for now.
     virtual OptRect boundsLocal(OptInterval const &i, unsigned deg) const = 0;
+
     /** @brief Compute the bounding box of a part of the curve.
      * Since this method returns the smallest possible bounding rectangle of the specified portion,
      * it can also be rather slow.
@@ -188,13 +199,16 @@ public:
      * - \f$\mathbf{D}[ [0, 1] ] = \mathbf{C}[ [a?b] ]\f$,
      *   where \f$[a?b] = [\min(a, b), \max(a, b)]\f$ */
     virtual Curve *portion(Coord a, Coord b) const = 0;
+
     /** @brief A version of that accepts an Interval. */
     Curve *portion(Interval const &i) const { return portion(i.min(), i.max()); }
+
     /** @brief Create a reversed version of this curve.
      * The result corresponds to <code>portion(1, 0)</code>, but this method might be faster.
      * @return Pointer to a new curve \f$\mathbf{D}\f$ such that
      *         \f$\forall_{x \in [0, 1]} \mathbf{D}(x) = \mathbf{C}(1-x)\f$ */
     virtual Curve *reverse() const { return portion(1, 0); }
+
     /** @brief Create a derivative of this curve.
      * It's best to think of the derivative in physical terms: if the curve describes
      * the position of some object on the plane from time \f$t=0\f$ to \f$t=1\f$ as said in the
@@ -214,10 +228,12 @@ public:
      * @return \f$q \in [a, b]: ||\mathbf{C}(q) - \mathbf{p}|| = 
                \inf(\{r \in \mathbb{R} : ||\mathbf{C}(r) - \mathbf{p}||\})\f$ */
     virtual Coord nearestTime( Point const& p, Coord a = 0, Coord b = 1 ) const;
+
     /** @brief A version that takes an Interval. */
     Coord nearestTime(Point const &p, Interval const &i) const {
         return nearestTime(p, i.min(), i.max());
     }
+
     /** @brief Compute time values at which the curve comes closest to a specified point.
      * @param p Query point
      * @param a Minimum time value to consider
@@ -225,10 +241,12 @@ public:
      * @return Vector of points closest and equally far away from the query point */
     virtual std::vector<Coord> allNearestTimes( Point const& p, Coord from = 0,
         Coord to = 1 ) const;
+
     /** @brief A version that takes an Interval. */
     std::vector<Coord> allNearestTimes(Point const &p, Interval const &i) {
         return allNearestTimes(p, i.min(), i.max());
     }
+
     /** @brief Compute the arc length of this curve.
      * For a curve \f$\mathbf{C}(t) = (C_x(t), C_y(t))\f$, arc length is defined for 2D curves as
      * \f[ \ell = \int_{0}^{1} \sqrt { [C_x'(t)]^2 + [C_y'(t)]^2 }\, \text{d}t \f]
@@ -240,10 +258,12 @@ public:
      * @param tolerance Maximum allowed error
      * @return Total distance the curve's value travels on the plane when going from 0 to 1 */
     virtual Coord length(Coord tolerance=0.01) const;
+
     /** @brief Computes time values at which the curve intersects an axis-aligned line.
      * @param v The coordinate of the line
      * @param d Which axis the coordinate is on. X means a vertical line, Y a horizontal line. */
     virtual std::vector<Coord> roots(Coord v, Dim2 d) const = 0;
+
     /** @brief Compute the partial winding number of this curve.
      * The partial winding number is equal to the difference between the number
      * of roots at which the curve goes in the +Y direction and the number of roots
@@ -253,6 +273,7 @@ public:
      * @param p Point where the winding number should be determined
      * @return Winding number contribution at p */
     virtual int windingAt(Point const &p) const;
+
     /** @brief Compute a vector tangent to the curve.
      * This will return an unit vector (a Point with length() equal to 1) that denotes a vector
      * tangent to the curve. This vector is defined as
@@ -270,6 +291,7 @@ public:
         Point tangent = - c_reverse->unitTangentAt(0);
         delete c_reverse; @endcode */
     virtual Point unitTangentAt(Coord t, unsigned n = 3) const;
+
     /** @brief Convert the curve to a symmetric power basis polynomial.
      * Symmetric power basis polynomials (S-basis for short) are numerical representations
      * of curves with excellent numerical properties. Most high level operations provided by 2Geom
@@ -285,11 +307,14 @@ public:
      * of this curve. For example, for Bezier curves it returns the curve's order
      * multiplied by 2. */
     virtual int degreesOfFreedom() const { return 0;}
+
     /** @brief Test equality of two curves.
      * Equality means that for any time value, the evaluation of either curve will yield
-     * the same value. This means that reversed curves are not equal to each other.
+     * the same value. This means non-degenerate curves are not equal to their reverses.
+     * Note that this tests for exact equality.
      * @return True if the curves are identical, false otherwise */
     virtual bool operator==(Curve const &c) const { return this == &c;}
+
     /** @brief Feed the curve to a PathSink */
     virtual void feed(PathSink &sink, bool moveto_initial) const;
     /// @}
