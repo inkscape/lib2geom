@@ -102,7 +102,7 @@ public:
     // implementation of virtual methods goes here
     virtual Point initialPoint() const { return inner.at0(); }
     virtual Point finalPoint() const { return inner.at1(); }
-    virtual bool isDegenerate() const { return inner.isConstant(); }
+    virtual bool isDegenerate() const { return inner.isConstant(0); }
     virtual void setInitial(Point const &v) { setPoint(0, v); }
     virtual void setFinal(Point const &v) { setPoint(order(), v); }
     virtual Rect boundsFast() const { return *bounds_fast(inner); }

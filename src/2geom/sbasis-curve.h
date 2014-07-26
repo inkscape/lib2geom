@@ -87,7 +87,7 @@ public:
     virtual Curve *duplicate() const { return new SBasisCurve(*this); }
     virtual Point initialPoint() const    { return inner.at0(); }
     virtual Point finalPoint() const      { return inner.at1(); }
-    virtual bool isDegenerate() const     { return inner.isConstant(); }
+    virtual bool isDegenerate() const     { return inner.isConstant(0); }
     virtual Point pointAt(Coord t) const  { return inner.valueAt(t); }
     virtual std::vector<Point> pointAndDerivatives(Coord t, unsigned n) const {
         return inner.valueAndDerivatives(t, n);

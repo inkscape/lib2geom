@@ -182,6 +182,11 @@ public:
     /** @brief Check whether the arc adheres to SVG 1.1 implementation guidelines */
     virtual bool isSVGCompliant() const { return false; }
 
+    /// Check whether both rays are nonzero
+    bool isChord() const {
+        return _rays[0] == 0 || _rays[Y] == 0;
+    }
+
     std::pair<EllipticalArc, EllipticalArc> subdivide(Coord t) const {
         EllipticalArc* arc1 = static_cast<EllipticalArc*>(portion(0, t));
         EllipticalArc* arc2 = static_cast<EllipticalArc*>(portion(t, 1));
@@ -205,7 +210,7 @@ public:
         _updateCenterAndAngles(isSVGCompliant());
     }
     virtual bool isDegenerate() const {
-        return ( are_near(ray(X), 0) || are_near(ray(Y), 0) );
+        return _initial_point == _final_point;
     }
     virtual Rect boundsFast() const {
         return boundsExact();
