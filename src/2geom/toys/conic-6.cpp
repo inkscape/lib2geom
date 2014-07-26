@@ -81,10 +81,10 @@ void draw_hull(cairo_t*cr, RatQuad rq) {
 void draw(cairo_t* cr, xAx C, Rect bnd) {
     if(bnd[1].extent() < 5) return;
     vector<double> prev_rts;
-    double py = bnd[1][0];
+    double py = bnd[Y].min();
     for(int i = 0; i < 100; i++) {
         double t = i/100.;
-        double y = (1-t)*bnd[1][0] + t*bnd[1][1];
+        double y = bnd[Y].valueAt(t);
         vector<double> rts = C.roots(Point(1, 0), Point(0, y));
         int top = 0;
         for(unsigned j = 0; j < rts.size(); j++) {

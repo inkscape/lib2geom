@@ -35,13 +35,13 @@ void cairo_vert(cairo_t *cr, double x, vector<double> p) {
 }
 
 Piecewise<SBasis> log(Interval in) {
-    Piecewise<SBasis> I = integral(Geom::reciprocal(Linear(in[0], in[1])));
-    return I + Piecewise<SBasis> (-I.segs[0][0] + log(in[0]));
+    Piecewise<SBasis> I = integral(Geom::reciprocal(Linear(in.min(), in.max())));
+    return I + Piecewise<SBasis> (-I.segs[0][0] + log(in.min()));
 }
 
 Piecewise<SBasis> xlogx(Interval in) {
     Piecewise<SBasis> I = integral(log(in) + Piecewise<SBasis>(1));
-    return I + Piecewise<SBasis> (-I.segs[0][0] + in[0]*log(in[0]));
+    return I + Piecewise<SBasis> (-I.segs[0][0] + in.min()*log(in.min()));
 }
 
 class PwToy: public Toy {

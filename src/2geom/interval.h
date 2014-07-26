@@ -91,18 +91,24 @@ public:
     }
     /// @}
 
-    /// @name Inspect endpoints.
+    /// @name Inspect contained values.
     /// @{
-    /** @brief Access endpoints by value.
-     * @deprecated Use min() and max() instead */
-    Coord operator[](unsigned i) const { return _b[i]; }
-    /** @brief Access endpoints by reference.
-     * @deprecated Use min() and max() instead
-     * @todo Remove Interval index operator, which can be used to break the invariant */
-    Coord& operator[](unsigned i) { return _b[i]; }
-
+    /** @brief Check whether both endpoints are finite. */
     bool isFinite() const {
         return IS_FINITE(min()) && IS_FINITE(max());
+    }
+    /** @brief Map the interval [0,1] onto this one.
+     * This method simply performs 1D linear interpolation between endpoints. */
+    Coord valueAt(Coord t) {
+        // this is a lot more accurate that min() + t * extent()
+        // when the endpoints have very different magintudes
+        return (1-t) * min() + t * max();
+    }
+    /** @brief Find closest time in [0,1] that maps to the given value. */
+    Coord nearestTime(Coord t) {
+        if (t < min()) return 0;
+        if (t > max()) return 1;
+        return (t - min()) / extent();
     }
     /// @}
 

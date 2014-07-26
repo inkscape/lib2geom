@@ -19,8 +19,8 @@ std::vector<std::vector<unsigned> > sweep_bounds(std::vector<Rect> rs, Dim2 d) {
     std::vector<std::vector<unsigned> > pairs(rs.size());
 
     for(unsigned i = 0; i < rs.size(); i++) {
-        events.push_back(Event(rs[i][d][0], i, false));
-        events.push_back(Event(rs[i][d][1], i, true));
+        events.push_back(Event(rs[i][d].min(), i, false));
+        events.push_back(Event(rs[i][d].max(), i, true));
     }
     std::sort(events.begin(), events.end());
 
@@ -66,8 +66,8 @@ std::vector<std::vector<unsigned> > sweep_bounds(std::vector<Rect> a, std::vecto
         events[n].reserve(sz*2);
         for(unsigned i = 0; i < sz; i++) {
             Rect r = n ? b[i] : a[i];
-            events[n].push_back(Event(r[d][0], i, false));
-            events[n].push_back(Event(r[d][1], i, true));
+            events[n].push_back(Event(r[d].min(), i, false));
+            events[n].push_back(Event(r[d].max(), i, true));
         }
         std::sort(events[n].begin(), events[n].end());
     }

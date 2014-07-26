@@ -135,15 +135,15 @@ public:
     std::vector<unsigned> open;
     
     int cmpy(Piece* a, Piece* b, Interval X) {
-        if(a->bounds[1][1] < b->bounds[1][0]) { // bounds are strictly ordered
+        if(a->bounds[Y].max() < b->bounds[Y].min()) { // bounds are strictly ordered
             return -1;
         }
-        if(a->bounds[1][0] > b->bounds[1][1]) { // bounds are strictly ordered
+        if(a->bounds[Y].min() > b->bounds[Y].max()) { // bounds are strictly ordered
             return 1;
         }
         std::vector<std::pair<double, double> > xs;
         find_intersections(xs, a->sb, b->sb);
-        if(not xs.empty()) {
+        if(!xs.empty()) {
             polish_intersections( xs, a->sb, b->sb);
             // must split around these points to make new Pieces
             for(unsigned i = 0; i < xs.size(); i++) {
@@ -177,12 +177,14 @@ public:
     draw_interval(cairo_t* cr, Interval I, Point origin, Point /*dir*/) {
         cairo_save(cr);
         cairo_set_line_width(cr, 0.5);
-        for(int i = 0; i < 2; i++) {
-            cairo_move_to(cr, Point(I[i], -3) + origin);
-            cairo_line_to(cr, Point(I[i], +3) + origin);
-        }
-        cairo_move_to(cr, Point(I[0], 0) + origin);
-        cairo_line_to(cr, Point(I[1], 0) + origin);
+
+        cairo_move_to(cr, Point(I.min(), -3) + origin);
+        cairo_line_to(cr, Point(I.min(), +3) + origin);
+        cairo_move_to(cr, Point(I.max(), -3) + origin);
+        cairo_line_to(cr, Point(I.max(), +3) + origin);
+
+        cairo_move_to(cr, Point(I.min(), 0) + origin);
+        cairo_line_to(cr, Point(I.min(), 0) + origin);
         cairo_stroke(cr);
         cairo_restore(cr);
     }

@@ -90,13 +90,14 @@ public:
     }
     /// @}
 
-    /// @name Inspect endpoints.
+    /// @name Inspect contained values.
     /// @{
     C min() const { return _b[0]; }
     C max() const { return _b[1]; }
     C extent() const { return max() - min(); }
     C middle() const { return (max() + min()) / 2; }
     bool isSingular() const { return min() == max(); }
+    C operator[](unsigned i) const { assert(i < 2); return _b[i]; }
     /// @}
 
     /// @name Test coordinates and other intervals for inclusion.
@@ -136,6 +137,16 @@ public:
             _b[1] = _b[0] = val;
         } else {
             _b[1] = val;
+        }
+    }
+    /// Set both ends of the interval simultaneously
+    void setEnds(C a, C b) {
+        if (a <= b) {
+            _b[0] = a;
+            _b[1] = b;
+        } else {
+            _b[0] = b;
+            _b[1] = a;
         }
     }
     /** @brief Extend the interval to include the given number. */
@@ -271,6 +282,8 @@ public:
 
     /** @brief Check whether this interval is empty. */
     bool isEmpty() { return !*this; };
+    /// Alias of isEmpty() for STL similarity.
+    bool empty() { return !*this; }
 
     /** @brief Union with another interval, gracefully handling empty ones. */
     void unionWith(GenericOptInterval<C> const &a) {

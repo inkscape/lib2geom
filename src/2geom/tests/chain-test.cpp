@@ -46,7 +46,7 @@ public:
     unsigned i = lowerBound;
     for(; i < p.size(); i++) {
       Rect bounds = p[i].boundsFast();
-      if(bounds[Geom::Y][1] < y) {
+      if(bounds[Geom::Y].max() < y) {
 	break;
       }
     }

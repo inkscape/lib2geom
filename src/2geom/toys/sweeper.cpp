@@ -844,27 +844,27 @@ public:
         Rect ret ( Interval( -infinity(), infinity() ) , Interval(-infinity(), infinity() ) );
         double gap = 0;
         unsigned dir = 4;
-        if (b[X][0] - a[X][1] > gap){
-            gap = b[X][0] - a[X][1];
+        if (b[X].min() - a[X].max() > gap){
+            gap = b[X].min() - a[X].max();
             dir = 0;
         }
-        if (a[X][0] - b[X][1] > gap){
-            gap = a[X][0] - b[X][1];
+        if (a[X].min() - b[X].max() > gap){
+            gap = a[X].min() - b[X].max();
             dir = 1;
         }
-        if (b[Y][0] - a[Y][1] > gap){
-            gap = b[Y][0] - a[Y][1];
+        if (b[Y].min() - a[Y].max() > gap){
+            gap = b[Y].min() - a[Y].max();
             dir = 2;
         }
-        if (a[Y][0] - b[Y][1] > gap){
-            gap = a[Y][0] - b[Y][1];
+        if (a[Y].min() - b[Y].max() > gap){
+            gap = a[Y].min() - b[Y].max();
             dir = 3;
         }
         switch (dir) {
-            case 0: ret[X][1] = ( a.max()[X] + b.min()[X] )/ 2; break;
-            case 1: ret[X][0] = ( b.max()[X] + a.min()[X] )/ 2; break;
-            case 2: ret[Y][1] = ( a.max()[Y] + b.min()[Y] )/ 2; break;
-            case 3: ret[Y][0] = ( b.max()[Y] + a.min()[Y] )/ 2; break;
+            case 0: ret[X].setMax(( a.max()[X] + b.min()[X] )/ 2); break;
+            case 1: ret[X].setMin(( b.max()[X] + a.min()[X] )/ 2); break;
+            case 2: ret[Y].setMax(( a.max()[Y] + b.min()[Y] )/ 2); break;
+            case 3: ret[Y].setMin(( b.max()[Y] + a.min()[Y] )/ 2); break;
             case 4: return OptRect();
         }
         return OptRect(ret);
@@ -927,7 +927,7 @@ public:
                     r.tile, r.centrifuge, r.exit_side, r.exit_place);
     }
     void printVertex(FatVertex const &v){
-        std::printf("Vertex: [%f,%f]x[%f,%f]\n", v[X][0],v[X][1],v[Y][0],v[Y][1] );
+        std::printf("Vertex: [%f,%f]x[%f,%f]\n", v[X].min(),v[X].max(),v[Y].min(),v[Y].max() );
         for (unsigned i=0; i < v.rays.size(); i++){
             printRay(v.rays[i]);
         }

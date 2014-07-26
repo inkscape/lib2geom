@@ -40,7 +40,7 @@ using namespace boost::python;
 // helpers for interval
 static tuple interval_to_tuple(Geom::Interval const& p)
 {
-    return make_tuple(p[0], p[1]);
+    return make_tuple(p.min(), p.max());
 }
 
 static Geom::Interval tuple_to_interval(boost::python::tuple const& t)
@@ -50,7 +50,7 @@ static Geom::Interval tuple_to_interval(boost::python::tuple const& t)
 
 static str interval_repr(Geom::Interval const& p)
 {
-    return str("(" + str(p[0]) + ", " + str(p[1]) + ")");
+    return str("(" + str(p.min()) + ", " + str(p.max()) + ")");
 }
 
 static Geom::Interval from_optinterval(Geom::OptInterval const & ivl)
@@ -86,7 +86,6 @@ void wrap_interval() {
     class_<Geom::Interval>("Interval", init<double, double>())
         .def("__str__", interval_repr)
         .def("__repr__", interval_repr)
-        .def("__getitem__", python_getitem<Geom::Interval,double,2>)
         .def("tuple", interval_to_tuple)
     
         .def("from_tuple", tuple_to_interval)

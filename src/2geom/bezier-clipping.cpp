@@ -242,9 +242,7 @@ bool solve(Point & P, Point const& P1, Point const& P2, Point const& Q)
 inline
 void map_to(Interval & J, Interval const& I)
 {
-    double length = J.extent();
-    J[1] = I.max() * length + J[0];
-    J[0] = I.min() * length + J[0];
+    J.setEnds(J.valueAt(I.min()), J.valueAt(I.max()));
 }
 
 /*
@@ -252,11 +250,9 @@ void map_to(Interval & J, Interval const& I)
  * is just an helper function for creating such an interval
  */
 inline
-Interval make_empty_interval()
+OptInterval make_empty_interval()
 {
-    Interval I(0);
-    I[0] = 1;
-    return I;
+    return OptInterval();
 }
 
 
@@ -371,9 +367,8 @@ void portion (std::vector<Point> & B , Interval const& I)
 struct intersection_point_tag;
 struct collinear_normal_tag;
 template <typename Tag>
-void clip(Interval & dom,
-          std::vector<Point> const& A,
-          std::vector<Point> const& B);
+OptInterval clip(std::vector<Point> const& A,
+                 std::vector<Point> const& B);
 template <typename Tag>
 void iterate(std::vector<Interval>& domsA,
              std::vector<Interval>& domsB,
@@ -471,13 +466,10 @@ void fat_line_bounds (Interval& bound,
                       std::vector<Point> const& c,
                       std::vector<double> const& l)
 {
-    bound[0] = 0;
-    bound[1] = 0;
+    bound = Interval(0, 0);
     for (size_t i = 0; i < c.size(); ++i)
     {
-        const double d = distance(c[i], l);
-        if (bound[0] > d)  bound[0] = d;
-        if (bound[1] < d)  bound[1] = d;
+        bound.expandTo(distance(c[i], l));
     }
 }
 
@@ -500,10 +492,9 @@ double intersect (Point const& p1, Point const& p2, double y)
  * line "l" and the interval range "bound", the new parameter interval for
  * the clipped curve is returned through the output parameter "dom"
  */
-void clip_interval (Interval& dom,
-                    std::vector<Point> const& B,
-                    std::vector<double> const& l,
-                    Interval const& bound)
+OptInterval clip_interval (std::vector<Point> const& B,
+                           std::vector<double> const& l,
+                           Interval const& bound)
 {
     double n = B.size() - 1;  // number of sub-intervals
     std::vector<Point> D;     // distance curve control points
@@ -589,8 +580,11 @@ void clip_interval (Interval& dom,
 //                  << " : tmin = " << tmin << ", tmax = " << tmax << std::endl;
     }
 
-    dom[0] = tmin;
-    dom[1] = tmax;
+    if (tmin == 1 && tmax == 0) {
+        return OptInterval();
+    } else {
+        return Interval(tmin, tmax);
+    }
 }
 
 /*
@@ -600,9 +594,8 @@ void clip_interval (Interval& dom,
  */
 template <>
 inline
-void clip<intersection_point_tag> (Interval & dom,
-                                   std::vector<Point> const& A,
-                                   std::vector<Point> const& B)
+OptInterval clip<intersection_point_tag> (std::vector<Point> const& A,
+                                          std::vector<Point> const& B)
 {
     std::vector<double> bl(3);
     Interval bound;
@@ -616,7 +609,7 @@ void clip<intersection_point_tag> (Interval & dom,
         pick_orientation_line(bl, A);
     }
     fat_line_bounds(bound, A, bl);
-    clip_interval(dom, B, bl, bound);
+    return clip_interval(B, bl, bound);
 }
 
 
@@ -743,9 +736,8 @@ void distance_control_points (std::vector<Point> & D,
  * Clip the Bezier curve "B" wrt the focus "F"; the new parameter interval for
  * the clipped curve is returned through the output parameter "dom"
  */
-void clip_interval (Interval& dom,
-                    std::vector<Point> const& B,
-                    std::vector<Point> const& F)
+OptInterval clip_interval (std::vector<Point> const& B,
+                           std::vector<Point> const& F)
 {
     std::vector<Point> D;     // distance curve control points
     distance_control_points(D, B, F);
@@ -803,8 +795,11 @@ void clip_interval (Interval& dom,
 //        std::cerr << "0 : lower " << p[0]
 //                  << " : tmin = " << tmin << ", tmax = " << tmax << std::endl;
     }
-    dom[0] = tmin;
-    dom[1] = tmax;
+    if (tmin == 1 && tmax == 0) {
+        return OptInterval();
+    } else {
+        return Interval(tmin, tmax);
+    }
 }
 
 /*
@@ -814,13 +809,12 @@ void clip_interval (Interval& dom,
  */
 template <>
 inline
-void clip<collinear_normal_tag> (Interval & dom,
-                                 std::vector<Point> const& A,
-                                 std::vector<Point> const& B)
+OptInterval clip<collinear_normal_tag> (std::vector<Point> const& A,
+                                        std::vector<Point> const& B)
 {
     std::vector<Point> F;
     make_focus(F, A);
-    clip_interval(dom, B, F);
+    return clip_interval(B, F);
 }
 
 
@@ -828,7 +822,7 @@ void clip<collinear_normal_tag> (Interval & dom,
 const double MAX_PRECISION = 1e-8;
 const double MIN_CLIPPED_SIZE_THRESHOLD = 0.8;
 const Interval UNIT_INTERVAL(0,1);
-const Interval EMPTY_INTERVAL = make_empty_interval();
+const OptInterval EMPTY_INTERVAL;
 const Interval H1_INTERVAL(0, 0.5);
 const Interval H2_INTERVAL(0.5 + MAX_PRECISION, 1.0);
 
@@ -884,7 +878,7 @@ void iterate<intersection_point_tag> (std::vector<Interval>& domsA,
     Interval* dom1 = &dompA;
     Interval* dom2 = &dompB;
 
-    Interval dom;
+    OptInterval dom;
 
     if ( is_constant(A) && is_constant(B) ){
         Point M1 = middle_point(C1->front(), C1->back());
@@ -903,10 +897,9 @@ void iterate<intersection_point_tag> (std::vector<Interval>& domsA,
 #if VERBOSE
         std::cerr << "iter: " << iter << std::endl;
 #endif
-        clip<intersection_point_tag>(dom, *C1, *C2);
+        dom = clip<intersection_point_tag>(*C1, *C2);
 
-        // [1,0] is utilized to represent an empty interval
-        if (dom == EMPTY_INTERVAL)
+        if (dom.isEmpty())
         {
 #if VERBOSE
             std::cerr << "dom: empty" << std::endl;
@@ -917,14 +910,11 @@ void iterate<intersection_point_tag> (std::vector<Interval>& domsA,
         std::cerr << "dom : " << dom << std::endl;
 #endif
         // all other cases where dom[0] > dom[1] are invalid
-        if (dom.min() >  dom.max())
-        {
-            assert(dom.min() <  dom.max());
-        }
+        assert(dom->min() <= dom->max());
 
-        map_to(*dom2, dom);
+        map_to(*dom2, *dom);
 
-        portion(*C2, dom);
+        portion(*C2, *dom);
         if (is_constant(*C2) && is_constant(*C1))
         {
             Point M1 = middle_point(C1->front(), C1->back());
@@ -945,10 +935,10 @@ void iterate<intersection_point_tag> (std::vector<Interval>& domsA,
 
         // if we have clipped less than 20% than we need to subdive the curve
         // with the largest domain into two sub-curves
-        if ( dom.extent() > MIN_CLIPPED_SIZE_THRESHOLD)
+        if (dom->extent() > MIN_CLIPPED_SIZE_THRESHOLD)
         {
 #if VERBOSE
-            std::cerr << "clipped less than 20% : " << dom.extent() << std::endl;
+            std::cerr << "clipped less than 20% : " << dom->extent() << std::endl;
             std::cerr << "angle(pA) : " << angle(pA) << std::endl;
             std::cerr << "angle(pB) : " << angle(pB) << std::endl;
 #endif
@@ -1047,7 +1037,7 @@ void iterate<collinear_normal_tag> (std::vector<Interval>& domsA,
     Interval* dom1 = &dompA;
     Interval* dom2 = &dompB;
 
-    Interval dom;
+    OptInterval dom;
 
     size_t iter = 0;
     while (++iter < 100
@@ -1056,11 +1046,9 @@ void iterate<collinear_normal_tag> (std::vector<Interval>& domsA,
 #if VERBOSE
         std::cerr << "iter: " << iter << std::endl;
 #endif
-        clip<collinear_normal_tag>(dom, *C1, *C2);
+        dom = clip<collinear_normal_tag>(*C1, *C2);
 
-        // [1,0] is utilized to represent an empty interval
-        if (dom == EMPTY_INTERVAL)
-        {
+        if (dom.isEmpty()) {
 #if VERBOSE
             std::cerr << "dom: empty" << std::endl;
 #endif
@@ -1069,13 +1057,9 @@ void iterate<collinear_normal_tag> (std::vector<Interval>& domsA,
 #if VERBOSE
         std::cerr << "dom : " << dom << std::endl;
 #endif
-        // all other cases where dom[0] > dom[1] are invalid
-        if (dom.min() >  dom.max())
-        {
-            assert(dom.min() <  dom.max());
-        }
+        assert(dom->min() <= dom->max());
 
-        map_to(*dom2, dom);
+        map_to(*dom2, *dom);
 
         // it's better to stop before losing computational precision
         if (iter > 1 && (dom2->extent() <= MAX_PRECISION))
@@ -1086,7 +1070,7 @@ void iterate<collinear_normal_tag> (std::vector<Interval>& domsA,
             break;
         }
 
-        portion(*C2, dom);
+        portion(*C2, *dom);
         if (iter > 1 && is_constant(*C2))
         {
 #if VERBOSE
@@ -1098,10 +1082,10 @@ void iterate<collinear_normal_tag> (std::vector<Interval>& domsA,
 
         // if we have clipped less than 20% than we need to subdive the curve
         // with the largest domain into two sub-curves
-        if ( dom.extent() > MIN_CLIPPED_SIZE_THRESHOLD)
+        if ( dom->extent() > MIN_CLIPPED_SIZE_THRESHOLD)
         {
 #if VERBOSE
-            std::cerr << "clipped less than 20% : " << dom.extent() << std::endl;
+            std::cerr << "clipped less than 20% : " << dom->extent() << std::endl;
             std::cerr << "angle(pA) : " << angle(pA) << std::endl;
             std::cerr << "angle(pB) : " << angle(pB) << std::endl;
 #endif

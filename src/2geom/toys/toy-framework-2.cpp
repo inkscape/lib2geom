@@ -300,8 +300,10 @@ Geom::Point read_point(FILE* f) {
 
 Geom::Interval read_interval(FILE* f) {
     Geom::Interval p;
-    for(unsigned i = 0; i < 2; i++)
-        assert(fscanf(f, " %lf ", &p[i]));
+    Geom::Coord a, b;
+    assert(fscanf(f, " %lf ", &a));
+    assert(fscanf(f, " %lf ", &b));
+    p.setEnds(a, b);
     return p;
 }
 
@@ -919,6 +921,9 @@ void* RectHandle::hit(Geom::Point mouse) {
 }
 
 void RectHandle::move_to(void* hit, Geom::Point om, Geom::Point m) {
+    using Geom::X;
+    using Geom::Y;
+
     unsigned h = (unsigned)(uintptr_t)(hit);
     if(h == 1)
         pos += (m-om);
@@ -927,8 +932,16 @@ void RectHandle::move_to(void* hit, Geom::Point om, Geom::Point m) {
         int yi = (h-2)&2;
         if(yi)
             xi = 1-xi; // clockwise
-        pos[0][xi] = m[0];
-        pos[1][yi/2] = m[1];
+        if (xi) {
+            pos[X].setMax(m[0]);
+        } else {
+            pos[X].setMin(m[0]);
+        }
+        if (yi/2) {
+            pos[Y].setMax(m[1]);
+        } else {
+            pos[Y].setMax(m[1]);
+        }
     } else if(h >= 6 and h <= 9) {// edges
         int side, d;
         switch(h-6) {
@@ -937,7 +950,11 @@ void RectHandle::move_to(void* hit, Geom::Point om, Geom::Point m) {
             case 2: d = 1; side = 1; break;
             case 3: d = 0; side = 0; break;
         }
-        pos[d][side] = m[d];
+        if (side) {
+            pos[d].setMax(m[d]);
+        } else {
+            pos[d].setMin(m[d]);
+        }
     }
 }
 
@@ -952,7 +969,7 @@ void RectHandle::load(FILE* f) {
 void RectHandle::save(FILE* f) {
     fprintf(f, "r\n");
     for(unsigned i = 0; i < 2; i++) {
-	fprintf(f, "%lf %lf\n", pos[i][0], pos[i][1]);
+	fprintf(f, "%lf %lf\n", pos[i].min(), pos[i].max());
     }
 }
 

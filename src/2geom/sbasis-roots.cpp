@@ -98,20 +98,20 @@ OptInterval bounds_fast(const SBasis &sb, int order) {
         double b=sb[j][1];
 
         double v, t = 0;
-        v = res[0];
+        v = res.min();
         if (v<0) t = ((b-a)/v+1)*0.5;
         if (v>=0 || t<0 || t>1) {
-            res[0] = std::min(a,b);
-        }else{
-            res[0]=lerp(t, a+v*t, b);
+            res.setMin(std::min(a,b));
+        } else {
+            res.setMin(lerp(t, a+v*t, b));
         }
 
-        v = res[1];
+        v = res.max();
         if (v>0) t = ((b-a)/v+1)*0.5;
         if (v<=0 || t<0 || t>1) {
-            res[1] = std::max(a,b);
+            res.setMax(std::max(a,b));
         }else{
-            res[1]=lerp(t, a+v*t, b);
+            res.setMax(lerp(t, a+v*t, b));
         }
     }
     if (order>0) res*=std::pow(.25,order);

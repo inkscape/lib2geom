@@ -649,7 +649,7 @@ std::vector<double> xAx::roots(Line const &l) const {
 
 Interval xAx::quad_ex(double a, double b, double c, Interval ivl) {
   double cx = -b*0.5/a;
-  Interval bnds((a*ivl[0]+b)*ivl[0]+c, (a*ivl[1]+b)*ivl[1]+c);
+  Interval bnds((a*ivl.min()+b)*ivl.min()+c, (a*ivl.max()+b)*ivl.max()+c);
   if(ivl.contains(cx))
     bnds.expandTo((a*cx+b)*cx+c);
   return bnds;
@@ -690,14 +690,14 @@ Interval xAx::extrema(Rect r) const {
       ext |= Interval(valueAt(r.corner(i)));
     return ext;
   }
-  double k = r[0][0];
-  Interval ext = quad_ex(c[2], c[1]*k+c[4],  (c[0]*k + c[3])*k + c[5], r[1]);
-  k = r[0][1];
-  ext |= quad_ex(c[2], c[1]*k+c[4],  (c[0]*k + c[3])*k + c[5], r[1]);
-  k = r[1][0];
-  ext |= quad_ex(c[0], c[1]*k+c[3],  (c[2]*k + c[4])*k + c[5], r[0]);
-  k = r[1][1];
-  ext |= quad_ex(c[0], c[1]*k+c[3],  (c[2]*k + c[4])*k + c[5], r[0]);
+  double k = r[X].min();
+  Interval ext = quad_ex(c[2], c[1]*k+c[4],  (c[0]*k + c[3])*k + c[5], r[Y]);
+  k = r[X].max();
+  ext |= quad_ex(c[2], c[1]*k+c[4],  (c[0]*k + c[3])*k + c[5], r[Y]);
+  k = r[Y].min();
+  ext |= quad_ex(c[0], c[1]*k+c[3],  (c[2]*k + c[4])*k + c[5], r[X]);
+  k = r[Y].max();
+  ext |= quad_ex(c[0], c[1]*k+c[3],  (c[2]*k + c[4])*k + c[5], r[X]);
   boost::optional<Point> B0 = bottom();
   if (B0 && r.contains(*B0))
     ext.expandTo(0);
@@ -1418,10 +1418,7 @@ Rect xAx::arc_bound (const Point & P1, const Point & Q, const Point & P2) const
             if (sgn(Mside) == sgn(Qside))
             {
                 //std::cout << "BOUND: M.size() == 1" << std::endl;
-                if (M[0][dim] > B[dim][1])
-                    B[dim][1] = M[0][dim];
-                else if (M[0][dim] < B[dim][0])
-                    B[dim][0] = M[0][dim];
+                B[dim].expandTo(M[0][dim]);
             }
         }
         else if (M.size() == 2)
@@ -1430,26 +1427,26 @@ Rect xAx::arc_bound (const Point & P1, const Point & Q, const Point & P2) const
             if (M[0][dim] > M[1][dim])
                 swap (M[0], M[1]);
 
-            if (M[0][dim] > B[dim][1])
+            if (M[0][dim] > B[dim].max())
             {
                 double Mside = signed_triangle_area (P1, M[0], P2);
                 if (sgn(Mside) == sgn(Qside))
-                    B[dim][1] = M[0][dim];
+                    B[dim].setMax(M[0][dim]);
             }
-            else if (M[1][dim] < B[dim][0])
+            else if (M[1][dim] < B[dim].min())
             {
                 double Mside = signed_triangle_area (P1, M[1], P2);
                 if (sgn(Mside) == sgn(Qside))
-                    B[dim][0] = M[1][dim];
+                    B[dim].setMin(M[1][dim]);
             }
             else
             {
                 double Mside = signed_triangle_area (P1, M[0], P2);
                 if (sgn(Mside) == sgn(Qside))
-                    B[dim][0] = M[0][dim];
+                    B[dim].setMin(M[0][dim]);
                 Mside = signed_triangle_area (P1, M[1], P2);
                 if (sgn(Mside) == sgn(Qside))
-                    B[dim][1] = M[1][dim];
+                    B[dim].setMax(M[1][dim]);
             }
         }
     }
