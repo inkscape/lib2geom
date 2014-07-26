@@ -55,7 +55,8 @@ namespace Geom
  * A line is a set of points that satisfies the line equation
  * \f$Ax + By + C = 0\f$. This function changes the line so that its points
  * satisfy the line equation with the given coefficients. */
-void Line::setCoefficients (double a, double b, double c) {
+void Line::setCoefficients (Coord a, Coord b, Coord c)
+{
     if (a == 0 && b == 0) {
         if (c != 0) {
             THROW_LOGICALERROR("the passed coefficients gives the empty set");
@@ -63,7 +64,7 @@ void Line::setCoefficients (double a, double b, double c) {
         m_versor = Point(0,0);
         m_origin = Point(0,0);
     } else {
-        double l = hypot(a,b);
+        Coord l = hypot(a,b);
         a /= l;
         b /= l;
         c /= l;
@@ -73,17 +74,22 @@ void Line::setCoefficients (double a, double b, double c) {
     }
 }
 
+void Line::coefficients(Coord &a, Coord &b, Coord &c) const
+{
+    Point n = versor().cw();
+    a = n[X];
+    b = n[Y];
+    c = -dot(n, origin());
+}
+
 /** @brief Get the line equation coefficients of this line.
  * @return Vector with three values corresponding to the A, B and C
  *         coefficients of the line equation for this line. */
-std::vector<double> Line::coefficients() const {
-    std::vector<double> coeff;
-    coeff.reserve(3);
-    Point N = versor().cw();
-    coeff.push_back (N[X]);
-    coeff.push_back (N[Y]);
-    double d = - dot (N, origin());
-    coeff.push_back (d);
+std::vector<Coord> Line::coefficients() const
+{
+    Coord c[3];
+    coefficients(c[0], c[1], c[2]);
+    std::vector<Coord> coeff(c, c+3);
     return coeff;
 }
 
@@ -92,15 +98,84 @@ std::vector<double> Line::coefficients() const {
  * @param d Which axis the coordinate is on. X means a vertical line, Y means a horizontal line.
  * @return Time values at which this line intersects the query line. */
 std::vector<Coord> Line::roots(Coord v, Dim2 d) const {
-    if (d < 0 || d > 1)
-        THROW_RANGEERROR("Line::roots, dimension argument out of range");
     std::vector<Coord> result;
-    if ( m_versor[d] != 0 )
-    {
-        result.push_back( (v - m_origin[d]) / m_versor[d] );
+    Coord r = root(v, d);
+    if (std::isfinite(r)) {
+        result.push_back(r);
     }
-    // TODO: else ?
     return result;
+}
+
+Coord Line::root(Coord v, Dim2 d) const
+{
+    assert(d == X || d == Y);
+    if (m_versor[d] != 0) {
+        return (v - m_origin[d]) / m_versor[d];
+    } else {
+        return nan("");
+    }
+}
+
+boost::optional<LineSegment> Line::segmentInside(Rect const &r) const
+{
+    // handle horizontal and vertical lines first,
+    // since the root-based code below will break for them
+    for (unsigned i = 0; i < 2; ++i) {
+        Dim2 d = (Dim2) i;
+        Dim2 o = other_dimension(d);
+        if (m_versor[d] != 0) continue;
+        if (r[d].contains(m_origin[d])) {
+            Point a, b;
+            a[o] = r[o].min();
+            b[o] = r[o].max();
+            a[d] = b[d] = m_origin[d];
+            if (m_versor[o] > 0) {
+                return LineSegment(a, b);
+            } else {
+                return LineSegment(b, a);
+            }
+        } else {
+            return boost::none;
+        }
+    }
+
+    Interval xpart(root(r[X].min(), X), root(r[X].max(), X));
+    Interval ypart(root(r[Y].min(), Y), root(r[Y].max(), Y));
+    if (!xpart.isFinite() || !ypart.isFinite()) {
+        return boost::none;
+    }
+
+    OptInterval common = xpart & ypart;
+    if (common) {
+        return segment(common->min(), common->max());
+    } else {
+        return boost::none;
+    }
+/*
+    if (fabs(b) > fabs(a)) {
+        p0 = Point(r[X].min(), (-c - a*r[X].min())/b);
+        if (p0[Y] < r[Y].min())
+            p0 = Point((-c - b*r[Y].min())/a, r[Y].min());
+        if (p0[Y] > r[Y].max())
+            p0 = Point((-c - b*r[Y].max())/a, r[Y].max());
+        p1 = Point(r[X].max(), (-c - a*r[X].max())/b);
+        if (p1[Y] < r[Y].min())
+            p1 = Point((-c - b*r[Y].min())/a, r[Y].min());
+        if (p1[Y] > r[Y].max())
+            p1 = Point((-c - b*r[Y].max())/a, r[Y].max());
+    } else {
+        p0 = Point((-c - b*r[Y].min())/a, r[Y].min());
+        if (p0[X] < r[X].min())
+            p0 = Point(r[X].min(), (-c - a*r[X].min())/b);
+        if (p0[X] > r[X].max())
+            p0 = Point(r[X].max(), (-c - a*r[X].max())/b);
+        p1 = Point((-c - b*r[Y].max())/a, r[Y].max());
+        if (p1[X] < r[X].min())
+            p1 = Point(r[X].min(), (-c - a*r[X].min())/b);
+        if (p1[X] > r[X].max())
+            p1 = Point(r[X].max(), (-c - a*r[X].max())/b);
+    }
+    return LineSegment(p0, p1);*/
 }
 
 /** @brief Get a time value corresponding to a point.

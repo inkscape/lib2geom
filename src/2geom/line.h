@@ -150,6 +150,7 @@ public:
 
     void setCoefficients (double a, double b, double c);
     std::vector<double> coefficients() const;
+    void coefficients(Coord &a, Coord &b, Coord &c) const;
 
     /** @brief Check if the line has any points.
      * A degenerate line can be created if the line is created from a line equation
@@ -189,6 +190,7 @@ public:
     }
 
     std::vector<Coord> roots(Coord v, Dim2 d) const;
+    Coord root(Coord v, Dim2 d) const;
     /// @}
 
     /// @name Create other objects based on this line.
@@ -217,6 +219,9 @@ public:
     LineSegment segment(Coord  f, Coord t) const {
         return LineSegment(pointAt(f), pointAt(t));
     }
+
+    /// Return the portion of the line that is inside the given rectangle
+    boost::optional<LineSegment> segmentInside(Rect const &r) const;
 
     /** @brief Create a ray starting at the specified time value.
      * The created ray will go in the direction of the line's versor (in the direction

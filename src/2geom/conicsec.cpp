@@ -48,36 +48,12 @@ namespace Geom
 {
 
 LineSegment intersection(Line l, Rect r) {
-    Point p0, p1;
-    double a,b,c;
-    std::vector<double> ifc = l.coefficients();
-    a = ifc[0];
-    b = ifc[1];
-    c = ifc[2];
-    if (fabs(b) > fabs(a)) {
-        p0 = Point(r[0][0], (-c - a*r[0][0])/b);
-        if (p0[1] < r[1][0])
-            p0 = Point((-c - b*r[1][0])/a, r[1][0]);
-        if (p0[1] > r[1][1])
-            p0 = Point((-c - b*r[1][1])/a, r[1][1]);
-        p1 = Point(r[0][1], (-c - a*r[0][1])/b);
-        if (p1[1] < r[1][0])
-            p1 = Point((-c - b*r[1][0])/a, r[1][0]);
-        if (p1[1] > r[1][1])
-            p1 = Point((-c - b*r[1][1])/a, r[1][1]);
+    boost::optional<LineSegment> seg = l.segmentInside(r);
+    if (seg) {
+        return *seg;
     } else {
-        p0 = Point((-c - b*r[1][0])/a, r[1][0]);
-        if (p0[0] < r[0][0])
-            p0 = Point(r[0][0], (-c - a*r[0][0])/b);
-        if (p0[0] > r[0][1])
-            p0 = Point(r[0][1], (-c - a*r[0][1])/b);
-        p1 = Point((-c - b*r[1][1])/a, r[1][1]);
-        if (p1[0] < r[0][0])
-            p1 = Point(r[0][0], (-c - a*r[0][0])/b);
-        if (p1[0] > r[0][1])
-            p1 = Point(r[0][1], (-c - a*r[0][1])/b);
+        return LineSegment(Point(0,0), Point(0,0));
     }
-    return LineSegment(p0, p1);
 }
 
 static double det(Point a, Point b) {

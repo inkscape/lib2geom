@@ -45,6 +45,8 @@ object wrap_intersection(S const& a, T const& b) {
     return oc?object(*oc):object();
 }
 
+std::vector<Geom::Coord> (Geom::Line::*coefficients_vec)() const = &Geom::Line::coefficients;
+
 void wrap_line() {
     //line.h
 
@@ -64,7 +66,7 @@ void wrap_line() {
         //.def(self_ns::str(self))
         .def("valueAt", &Geom::Line::valueAt)
 
-        .def("coefficients", &Geom::Line::coefficients)
+        .def("coefficients", coefficients_vec)
         .def("isDegenerate", &Geom::Line::isDegenerate)
         .def("pointAt", &Geom::Line::pointAt)
         .def("roots", &Geom::Line::roots)

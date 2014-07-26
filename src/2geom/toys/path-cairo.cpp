@@ -253,66 +253,14 @@ void convertHSVtoRGB(const double H, const double S, const double V,
     }
 }
 
-/*
-def draw_line(cr, a, b, c, r):
-    if abs(b) > abs(a):
-        p0 = r.left, (-c - a*r.left)/b
-        if p0[1] < r.top:
-            p0 = (-c - b*r.top)/a, r.top
-        if p0[1] > r.bottom:
-            p0 = (-c - b*r.bottom)/a, r.bottom
-        p1 = r.right, (-c - a*r.right)/b
-        if p1[1] < r.top:
-            p1 = (-c - b*r.top)/a, r.top
-        if p1[1] > r.bottom:
-            p1 = (-c - b*r.bottom)/a, r.bottom
-    else:
-        p0 = (-c - b*r.top)/a, r.top
-        if p0[0] < r.left:
-            p0 = r.left, (-c - a*r.left)/b
-        if p0[0] > r.right:
-            p0 = r.right, (-c - a*r.right)/b
-        p1 = (-c - b*r.bottom)/a, r.bottom
-        if p1[0] < r.left:
-            p1 = r.left, (-c - a*r.left)/b
-        if p1[0] > r.right:
-            p1 = r.right, (-c - a*r.right)/b
-    cr.move_to(*p0)
-    cr.line_to(*p1)
-    cr.stroke()
-
-*/
-
-
-
 void draw_line(cairo_t *cr, double a, double b, double c, const Geom::Rect& r) {
-    Point p0, p1;
-    if (fabs(b) > fabs(a)) {
-        p0 = Point(r[0][0], (-c - a*r[0][0])/b);
-        if (p0[1] < r[1][0])
-            p0 = Point((-c - b*r[1][0])/a, r[1][0]);
-        if (p0[1] > r[1][1])
-            p0 = Point((-c - b*r[1][1])/a, r[1][1]);
-        p1 = Point(r[0][1], (-c - a*r[0][1])/b);
-        if (p1[1] < r[1][0])
-            p1 = Point((-c - b*r[1][0])/a, r[1][0]);
-        if (p1[1] > r[1][1])
-            p1 = Point((-c - b*r[1][1])/a, r[1][1]);
-    } else {
-        p0 = Point((-c - b*r[1][0])/a, r[1][0]);
-        if (p0[0] < r[0][0])
-            p0 = Point(r[0][0], (-c - a*r[0][0])/b);
-        if (p0[0] > r[0][1])
-            p0 = Point(r[0][1], (-c - a*r[0][1])/b);
-        p1 = Point((-c - b*r[1][1])/a, r[1][1]);
-        if (p1[0] < r[0][0])
-            p1 = Point(r[0][0], (-c - a*r[0][0])/b);
-        if (p1[0] > r[0][1])
-            p1 = Point(r[0][1], (-c - a*r[0][1])/b);
+    Geom::Line l(a, b, c);
+    boost::optional<Geom::LineSegment> seg = l.segmentInside(r);
+    if (seg) {
+        cairo_move_to(cr, seg->initialPoint());
+        cairo_line_to(cr, seg->finalPoint());
+        cairo_stroke(cr);
     }
-    cairo_move_to(cr, p0);
-    cairo_line_to(cr, p1);
-    cairo_stroke(cr);
 }
 
 

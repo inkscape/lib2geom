@@ -63,6 +63,7 @@ class LineToy : public Toy
         TEST_COLLINEAR,
         TEST_INTERSECTIONS,
         TEST_COEFFICIENTS,
+        TEST_SEGMENT_INSIDE,
         TOTAL_ITEMS // this one must be the last item
     };
 
@@ -642,6 +643,44 @@ class LineToy : public Toy
 
     }
 
+    void init_segment_inside()
+    {
+        init_common();
+        p1.pos = Point(200, 300);
+        p2.pos = Point(400, 200);
+        p3.pos = Point(250, 200);
+        p4.pos = Point(350, 300);
+
+        handles.push_back(&p1);
+        handles.push_back(&p2);
+        handles.push_back(&p3);
+        handles.push_back(&p4);
+    }
+
+    void draw_segment_inside(cairo_t *cr, std::ostringstream *notify,
+                             int width, int height, bool save, std::ostringstream */*timer_stream*/)
+    {
+        draw_common(cr, notify, width, height, save);
+        Line l(p1.pos, p2.pos);
+        Rect r(p3.pos, p4.pos);
+
+        cairo_set_source_rgba(cr, 0, 0, 0, 1);
+        cairo_set_line_width(cr, 0.5);
+        draw_line(cr, l);
+        cairo_stroke(cr);
+
+        cairo_set_source_rgba(cr, 0, 0, 1, 1);
+        cairo_rectangle(cr, r);
+        cairo_stroke(cr);
+
+        boost::optional<LineSegment> seg = l.segmentInside(r);
+        if (seg) {
+            cairo_set_source_rgba(cr, 1, 0, 0, 1);
+            draw_line_seg(cr, seg->initialPoint(), seg->finalPoint());
+            cairo_stroke(cr);
+        }
+    }
+
 
     void init_common_ctrl_geom(cairo_t* /*cr*/, int /*width*/, int /*height*/, std::ostringstream* /*notify*/)
     {
@@ -799,6 +838,9 @@ class LineToy : public Toy
                 init_coefficients();
                 draw_f = &LineToy::draw_coefficients;
                 break;
+            case 'L':
+                init_segment_inside();
+                draw_f = &LineToy::draw_segment_inside;
         }
         redraw();
     }
@@ -846,12 +888,13 @@ const char* LineToy::menu_items[] =
     "angle bisector",
     "collinear",
     "intersection",
-    "coefficients"
+    "coefficients",
+    "segment inside"
 };
 
 const char LineToy::keys[] =
 {
-     'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K'
+     'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'
 };
 
 
