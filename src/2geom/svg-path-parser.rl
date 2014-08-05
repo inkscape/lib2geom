@@ -149,6 +149,10 @@ void SVGPathParser::_quadTo(Point const &c, Point const &p) {
 void SVGPathParser::_arcTo(Coord rx, Coord ry, Coord angle,
                            bool large_arc, bool sweep, Point const &p)
 {
+    if (are_near(_current, p)) {
+        return; // ignore invalid (ambiguous) arc segments where start and end point are the same (per SVG spec)
+    }
+
     _sink.arcTo(rx, ry, angle, large_arc, sweep, p);
     _quad_tangent = _cubic_tangent = _current = p;
 }
