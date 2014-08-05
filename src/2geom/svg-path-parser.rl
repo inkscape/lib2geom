@@ -415,7 +415,7 @@ void parse_svg_path(char const *str, PathSink &sink)
 
 void parse_svg_path_file(FILE *fi, PathSink &sink)
 {
-    static const int BUFFER_SIZE = 4096;
+    static const size_t BUFFER_SIZE = 4096;
     char buffer[BUFFER_SIZE];
     size_t bytes_read;
     SVGPathParser parser(sink);
