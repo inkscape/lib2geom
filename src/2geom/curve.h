@@ -272,7 +272,7 @@ public:
      * of roots at which the curve goes in the +Y direction and the number of roots
      * at which the curve goes in the -Y direction. This method is mainly useful
      * for implementing path winding calculation. It will ignore roots which
-     * are local minima on the Y axis.
+     * are local maxima on the Y axis.
      * @param p Point where the winding number should be determined
      * @return Winding number contribution at p */
     virtual int winding(Point const &p) const;

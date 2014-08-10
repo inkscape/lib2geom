@@ -65,11 +65,11 @@ int Curve::winding(Point const &p) const
         if(ts.empty()) return 0;
         std::sort(ts.begin(), ts.end());
 
-        // skip endpoint roots when they are local minima on the Y axis
+        // skip endpoint roots when they are local maxima on the Y axis
         // this follows the convention used in other winding routines,
         // i.e. that the bottommost coordinate is not part of the shape
-        bool ingore_0 = unitTangentAt(0)[Y] >= 0;
-        bool ignore_1 = unitTangentAt(1)[Y] <= 0;
+        bool ingore_0 = unitTangentAt(0)[Y] <= 0;
+        bool ignore_1 = unitTangentAt(1)[Y] >= 0;
 
         int wind = 0;
         for (std::size_t i = 0; i < ts.size(); ++i) {

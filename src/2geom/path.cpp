@@ -197,14 +197,14 @@ std::vector<Coord> Path::roots(Coord v, Dim2 d) const
 int Path::winding(Point const &p) const {
     int wind = 0;
 
-    /* To handle all the edge cases, we consider the minimum Y edge of the bounding box
+    /* To handle all the edge cases, we consider the maximum Y edge of the bounding box
      * as not included in box. This way paths that contain linear horizontal
      * segments will be treated correctly. */
     for (const_iterator i = begin(); i != end_closed(); ++i) {
         Rect bounds = i->boundsFast();
 
         if (bounds.height() == 0) continue;
-        if (p[X] > bounds.right() || !(bounds[Y].contains(p[Y]) && p[Y] != bounds[Y].min())) {
+        if (p[X] > bounds.right() || !bounds[Y].lowerContains(p[Y])) {
             // Ray doesn't intersect bbox, so we ignore this segment
             continue;
         }
@@ -217,13 +217,16 @@ int Path::winding(Point const &p) const {
             Point fp = i->finalPoint();
             Rect eqbox(ip, fp);
 
-            if (p[Y] > eqbox[Y].min() && p[Y] <= eqbox[Y].max()) {
+            if (eqbox[Y].lowerContains(p[Y])) {
                 /* The ray intersects the equivalent linear segment.
                  * Determine winding contribution based on its derivative. */
                 if (ip[Y] < fp[Y]) {
                     wind += 1;
                 } else if (ip[Y] > fp[Y]) {
                     wind -= 1;
+                } else {
+                    // should never happen, because bounds.height() was not zero
+                    assert(false);
                 }
             }
         } else {
