@@ -6,6 +6,7 @@
 #include <2geom/sbasis-to-bezier.h>
 #include <vector>
 #include <iterator>
+#include <glib.h>
 
 using namespace std;
 using namespace Geom;
@@ -24,15 +25,20 @@ bool are_equal(SBasis const &A, SBasis const &B) {
 class SBasisTest : public ::testing::Test {
 protected:
     friend class Geom::SBasis;
-    SBasisTest() {
+    SBasisTest()
+        : zero(fragments[0])
+        , unit(fragments[1])
+        , hump(fragments[2])
+        , wiggle(fragments[3])
+    {
         zero = SBasis(Bezier(0.0).toSBasis());
         unit = SBasis(Bezier(0.0,1.0).toSBasis());
         hump = SBasis(Bezier(0,1,0).toSBasis());
         wiggle = SBasis(Bezier(0,1,-2,3).toSBasis());
     }
 
-    SBasis zero, unit, hump, wiggle;
-
+    SBasis fragments[4];
+    SBasis &zero, &unit, &hump, &wiggle;
 };
 
 TEST_F(SBasisTest, UnitTests) {
@@ -137,6 +143,28 @@ TEST_F(SBasisTest, Roots) {
     //bz = bz.deflate();
     cout << bz << endl;
     cout << bz.roots() << endl;
+}
+
+TEST_F(SBasisTest, Subdivide) {
+    for (unsigned i = 0; i < 10000; ++i) {
+        double t = g_random_double_range(1e-18, 1 - 1e-18);
+        for (unsigned i = 0; i < 4; ++i) {
+            SBasis &input = fragments[i];
+            std::pair<SBasis, SBasis> result;
+            result.first = portion(input, 0, t);
+            result.second = portion(input, t, 1);
+
+            // the endpoints must correspond exactly
+            EXPECT_EQ(result.first.at0(), input.at0());
+            EXPECT_EQ(result.first.at1(), result.second.at0());
+            EXPECT_EQ(result.second.at1(), input.at1());
+
+            // ditto for valueAt
+            EXPECT_EQ(result.first.valueAt(0), input.valueAt(0));
+            EXPECT_EQ(result.first.valueAt(1), result.second.valueAt(0));
+            EXPECT_EQ(result.second.valueAt(1), input.valueAt(1));
+        }
+    }
 }
 
 TEST_F(SBasisTest,Operators) {
