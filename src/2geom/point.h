@@ -321,9 +321,9 @@ inline Point rot90(Point const &p)
  * @return Point on a line between a and b. The ratio of its distance from a
  *         and the distance between a and b will be equal to t.
  * @relates Point */
-inline Point lerp(double const t, Point const &a, Point const &b)
+inline Point lerp(Coord t, Point const &a, Point const &b)
 {
-    return (a * (1 - t) + b * t);
+    return (1 - t) * a + t * b;
 }
 
 /** @brief Compute the dot product of a and b.

@@ -100,9 +100,7 @@ public:
     /** @brief Map the interval [0,1] onto this one.
      * This method simply performs 1D linear interpolation between endpoints. */
     Coord valueAt(Coord t) {
-        // this is a lot more accurate that min() + t * extent()
-        // when the endpoints have very different magintudes
-        return (1-t) * min() + t * max();
+        return lerp(t, min(), max());
     }
     /** @brief Find closest time in [0,1] that maps to the given value. */
     Coord nearestTime(Coord t) {

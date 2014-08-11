@@ -64,6 +64,11 @@ inline Coord infinity() {  return std::numeric_limits<Coord>::infinity();  }
 inline bool are_near(Coord a, Coord b, double eps=EPSILON) { return a-b <= eps && a-b >= -eps; }
 inline bool rel_error_bound(Coord a, Coord b, double eps=EPSILON) { return a <= eps*b && a >= -eps*b; }
 
+/// Numerically stable linear interpolation.
+inline Coord lerp(Coord t, Coord a, Coord b) {
+    return (1 - t) * a + t * b;
+}
+
 template <typename C>
 struct CoordTraits {};
 

@@ -58,6 +58,7 @@ Geom::Coord (*L2_point)   (Geom::Point const &) = &Geom::L2;
 Geom::Point (*rot90_point)(Geom::Point const &) = &Geom::rot90;
 Geom::Coord (*dot_point)  (Geom::Point const &, Geom::Point const &) = &Geom::dot;
 Geom::Coord (*cross_point)(Geom::Point const &, Geom::Point const &) = &Geom::cross;
+Geom::Point (*lerp_point)(Geom::Coord, Geom::Point const &, Geom::Point const &) = &Geom::lerp;
 
 bool near_point1(Geom::Point const &a, Geom::Point const &b) { return are_near(a,b); }
 bool near_point2(Geom::Point const &a, Geom::Point const &b, double eps) { return are_near(a,b,eps); }
@@ -79,7 +80,7 @@ void wrap_point() {
     def("cross", cross_point);
     def("distance", Geom::distance);
     def("distanceSq", Geom::distanceSq);
-    def("lerp", Geom::lerp);
+    def("lerp", lerp_point);
 
     def("atan2", Geom::atan2);
     def("angle_between", Geom::angle_between);

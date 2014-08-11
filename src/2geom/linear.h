@@ -46,9 +46,7 @@
 
 #else
 
-namespace Geom{
-
-inline double lerp(double t, double a, double b) { return a*(1-t) + b*t; }
+namespace Geom {
 
 class SBasis;
 
