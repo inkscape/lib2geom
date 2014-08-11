@@ -1,11 +1,12 @@
-/**
- * \file
- * \brief Basic intersection routines
- *
+/** @file
+ * @brief Basic intersection routines
+ *//*
  * Authors:
- *      ? <?@?.?>
+ *   Nathan Hurst <njh@njhurst.com>
+ *   Marco Cecchetti <mrcekets at gmail.com>
+ *   Jean-François Barraud <jf.barraud@gmail.com>
  * 
- * Copyright ?-?  authors
+ * Copyright 2008-2009 Authors
  *
  * This library is free software; you can redistribute it and/or
  * modify it either under the terms of the GNU Lesser General Public
