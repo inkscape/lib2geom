@@ -113,7 +113,11 @@ inline T bernsteinValueAt(double t, T const *c_, unsigned n) {
     return (tmp + tn*t*c_[n]);
 }
 
-class Bezier {
+class Bezier
+    : boost::arithmetic< Bezier, double
+    , boost::additive< Bezier
+      > >
+{
 private:
     std::valarray<Coord> c_;
 
@@ -135,8 +139,9 @@ protected:
     }
 
 public:
-    unsigned int order() const { return c_.size()-1;}
-    unsigned int size() const { return c_.size();}
+    unsigned order() const { return c_.size()-1;}
+    unsigned degree() const { return order(); }
+    unsigned size() const { return c_.size();}
 
     Bezier() {}
     Bezier(const Bezier& b) :c_(b.c_) {}
@@ -189,8 +194,6 @@ public:
         c_.resize(0);
     }
 
-    inline unsigned degree() const { return order(); }
-
     //IMPL: FragmentConcept
     typedef Coord output_type;
     inline bool isZero(double eps=EPSILON) const {
@@ -233,7 +236,6 @@ public:
 
     SBasis toSBasis() const;
 
-    //Only mutator
     inline Coord &operator[](unsigned ix) { return c_[ix]; }
     inline Coord const &operator[](unsigned ix) const { return const_cast<std::valarray<Coord>&>(c_)[ix]; }
     //inline Coord const &operator[](unsigned ix) const { return c_[ix]; }
@@ -271,9 +273,12 @@ public:
     }
 
     std::pair<Bezier, Bezier > subdivide(Coord t) const {
-        Bezier a(Bezier::Order(*this)), b(Bezier::Order(*this));
-        subdivideArr(t, &const_cast<std::valarray<Coord>&>(c_)[0], &a.c_[0], &b.c_[0], order());
-        return std::pair<Bezier, Bezier >(a, b);
+        std::pair<Bezier, Bezier> ret;
+        ret.first.c_.resize(size());
+        ret.second.c_.resize(size());
+        subdivideArr(t, &const_cast<std::valarray<Coord>&>(c_)[0],
+                     &ret.first.c_[0], &ret.second.c_[0], order());
+        return ret;
     }
 
     std::vector<double> roots() const {
@@ -281,7 +286,7 @@ public:
         find_bezier_roots(solutions, 0, 1);
         return solutions;
     }
-    std::vector<double> roots(Interval const ivl) const {
+    std::vector<double> roots(Interval const &ivl) const {
         std::vector<double> solutions;
         find_bernstein_roots(&const_cast<std::valarray<Coord>&>(c_)[0], order(), solutions, 0, ivl.min(), ivl.max());
         return solutions;
@@ -299,7 +304,7 @@ public:
         }
         return fd;
     }
-  
+
     Bezier elevate_degree() const {
         Bezier ed(Order(order()+1));
         unsigned n = size();
@@ -344,6 +349,34 @@ public:
         }
         return b;
     }
+
+    // basic arithmetic operators
+    Bezier &operator+=(double v) {
+        c_ += v;
+        return *this;
+    }
+    Bezier &operator-=(double v) {
+        c_ -= v;
+        return *this;
+    }
+    Bezier &operator*=(double v) {
+        c_ *= v;
+        return *this;
+    }
+    Bezier &operator/=(double v) {
+        c_ /= v;
+        return *this;
+    }
+    Bezier &operator+=(Bezier const &other) {
+        // TODO: handle differing orders
+        c_ += other.c_;
+        return *this;
+    }
+    Bezier &operator-=(Bezier const &other) {
+        // TODO: handle differing orders
+        c_ -= other.c_;
+        return *this;
+    }
 };
 
 
@@ -374,47 +407,6 @@ SBasis Bezier::toSBasis() const {
     bezier_to_sbasis(sb, (*this));
     return sb;
     //return bezier_to_sbasis(&c_[0], order());
-}
-
-//TODO: implement others
-inline Bezier operator+(const Bezier & a, double v) {
-    Bezier result = Bezier(Bezier::Order(a));
-    for(unsigned i = 0; i <= a.order(); i++)
-        result[i] = a[i] + v;
-    return result;
-}
-
-inline Bezier operator-(const Bezier & a, double v) {
-    Bezier result = Bezier(Bezier::Order(a));
-    for(unsigned i = 0; i <= a.order(); i++)
-        result[i] = a[i] - v;
-    return result;
-}
-
-inline Bezier& operator+=(Bezier & a, double v) {
-    for(unsigned i = 0; i <= a.order(); ++i)
-        a[i] = a[i] + v;
-    return a;
-}
-
-inline Bezier& operator-=(Bezier & a, double v) {
-    for(unsigned i = 0; i <= a.order(); ++i)
-        a[i] = a[i] - v;
-    return a;
-}
-
-inline Bezier operator*(const Bezier & a, double v) {
-    Bezier result = Bezier(Bezier::Order(a));
-    for(unsigned i = 0; i <= a.order(); i++)
-        result[i] = a[i] * v;
-    return result;
-}
-
-inline Bezier operator/(const Bezier & a, double v) {
-    Bezier result = Bezier(Bezier::Order(a));
-    for(unsigned i = 0; i <= a.order(); i++)
-        result[i] = a[i] / v;
-    return result;
 }
 
 inline Bezier reverse(const Bezier & a) {
@@ -500,12 +492,13 @@ inline OptInterval bounds_local(Bezier const & b, OptInterval i) {
     }
 }
 
-inline std::ostream &operator<< (std::ostream &out_file, const Bezier & b) {
-    out_file << "Bezier(";
-    for(unsigned i = 0; i < b.size(); i++) {
-        out_file << b[i] << ", ";
+inline std::ostream &operator<< (std::ostream &os, const Bezier & b) {
+    os << "Bezier(";
+    for(unsigned i = 0; i < b.order(); i++) {
+        os << format_coord_nice(b[i]) << ", ";
     }
-    return out_file << ")";
+    os << format_coord_nice(b[b.order()]) << ")";
+    return os;
 }
 
 }
