@@ -50,7 +50,7 @@ TEST_F(BezierTest, UnitTests) {
 
 /* Todo:
 
-Coord subdivideArr(Coord t, Coord const *v, Coord *left, Coord *right, unsigned order);
+Coord casteljau_subdivision(Coord t, Coord const *v, Coord *left, Coord *right, unsigned order);
 */
     EXPECT_EQ(3u, Bezier(0,2,4,5).order());
 

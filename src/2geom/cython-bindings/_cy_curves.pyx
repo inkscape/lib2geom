@@ -1023,7 +1023,7 @@ cdef class cy_Bezier:
 #~     bezier_to_sbasis(deref( sb.thisptr ), deref( bz.thisptr ))
 
 #These are look like internal functions.
-#~ def cy_subdivideArr(Coord t, cy_Coord * v, cy_Coord * left, cy_Coord * right, unsigned int order):
+#~ def cy_casteljau_subdivision(Coord t, cy_Coord * v, cy_Coord * left, cy_Coord * right, unsigned int order):
 #~     return subdivideArr(t, v.thisptr, left.thisptr, right.thisptr, order)
 #~ def cy_bernsteinValueAt(double t, cy_double * c_, unsigned int n):
 #~     return bernsteinValueAt(t, c_.thisptr, n)

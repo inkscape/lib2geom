@@ -252,7 +252,7 @@ cdef extern from "2geom/bezier.h" namespace "Geom":
 
     Bezier portion(Bezier &, double, double)
     OptInterval bounds_local(Bezier &, OptInterval)
-    Coord subdivideArr(Coord, Coord *, Coord *, Coord *, unsigned int)
+    Coord casteljau_subidivision(Coord, Coord *, Coord *, Coord *, unsigned int)
     void bezier_to_sbasis(SBasis &, Bezier &)
     Bezier integral(Bezier &)
     Bezier derivative(Bezier &)

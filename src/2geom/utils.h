@@ -35,6 +35,7 @@
 
 #include <cstddef>
 #include <vector>
+#include <boost/operators.hpp>
 
 namespace Geom {
 
@@ -57,6 +58,17 @@ struct MultipliableNoncommutative : B
     friend T operator*(T const &lhs, U const &rhs) {
         T nrv(lhs); nrv *= rhs; return nrv;
     }
+};
+
+/** @brief Null output iterator
+ * Use this if you want to discard a result returned through an output iterator. */
+struct NullIterator
+    : public boost::output_iterator_helper<NullIterator>
+{
+    NullIterator() {}
+
+    template <typename T>
+    void operator=(T const &v) {}
 };
 
 } // end namespace Geom

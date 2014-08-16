@@ -115,7 +115,7 @@ static Point const unconstrained_tangent(0, 0);
 Point
 bezier_pt(unsigned const degree, Point const V[], double const t)
 {
-    return bernsteinValueAt(t, V, degree);
+    return bernstein_value_at(t, V, degree);
     
 }
 

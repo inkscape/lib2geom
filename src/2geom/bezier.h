@@ -39,44 +39,47 @@
 
 #include <valarray>
 #include <boost/optional.hpp>
-#include <2geom/coord.h>
 #include <2geom/choose.h>
-#include <valarray>
-#include <2geom/math-utils.h>
+#include <2geom/coord.h>
 #include <2geom/d2.h>
+#include <2geom/math-utils.h>
 #include <2geom/solver.h>
 
 namespace Geom {
 
-inline Coord subdivideArr(Coord t, Coord const *v, Coord *left, Coord *right, unsigned order) {
-/*
- *  Bernstein : 
- *	Evaluate a Bernstein function at a particular parameter value
- *      Fill in control points for resulting sub-curves.
- * 
- */
-
-    unsigned N = order+1;
-    std::valarray<Coord> row(N);
-    for (unsigned i = 0; i < N; i++)
-        row[i] = v[i];
+/** @brief Perform Casteljau subdivision of a Bezier polynomial.
+ * Given an array of coefficients and a time value, computes two new Bernstein-Bezier basis
+ * polynomials corresponding to the \f$[0, t]\f$ and \f$[t, 1]\f$ intervals of the original one.
+ * @param t Time value
+ * @param v Array of input coordinates
+ * @param left Output polynomial corresponding to \f$[0, t]\f$
+ * @param right Output polynomial corresponding to \f$[t, 1]\f$
+ * @param order Order of the input polynomial, equal to one less the number of coefficients
+ * @return Value of the polynomial at @a t */
+inline Coord casteljau_subdivision(Coord t, Coord const *v, Coord *left, Coord *right, unsigned order) {
+    unsigned const N = order+1;
+    double const omt = (1-t);
+    std::valarray<Coord> row(v, N);
 
     // Triangle computation
-    const double omt = (1-t);
-    if(left)
+    if (left) {
         left[0] = row[0];
-    if(right)
+    }
+    if (right) {
         right[order] = row[order];
+    }
     for (unsigned i = 1; i < N; i++) {
         for (unsigned j = 0; j < N - i; j++) {
             row[j] = omt*row[j] + t*row[j+1];
         }
-        if(left)
+        if (left) {
             left[i] = row[0];
-        if(right)
+        }
+        if (right) {
             right[order-i] = row[order-i];
+        }
     }
-    return (row[0]);
+    return row[0];
 /*
     Coord vtemp[order+1][order+1];
 
@@ -100,7 +103,7 @@ inline Coord subdivideArr(Coord t, Coord const *v, Coord *left, Coord *right, un
 }
 
 template <typename T>
-inline T bernsteinValueAt(double t, T const *c_, unsigned n) {
+inline T bernstein_value_at(double t, T const *c_, unsigned n) {
     double u = 1.0 - t;
     double bc = 1;
     double tn = 1;
@@ -262,8 +265,8 @@ public:
             nn = order()+1; // only calculate the non zero derivs
         }
         for(unsigned di = 0; di < nn; di++) {
-            //val_n_der[di] = (subdivideArr(t, &d_[0], NULL, NULL, order() - di));
-            val_n_der[di] = bernsteinValueAt(t, &d_[0], order() - di);
+            //val_n_der[di] = (casteljau_subdivision(t, &d_[0], NULL, NULL, order() - di));
+            val_n_der[di] = bernstein_value_at(t, &d_[0], order() - di);
             for(unsigned i = 0; i < order() - di; i++) {
                 d_[i] = (order()-di)*(d_[i+1] - d_[i]);
             }
@@ -276,8 +279,8 @@ public:
         std::pair<Bezier, Bezier> ret;
         ret.first.c_.resize(size());
         ret.second.c_.resize(size());
-        subdivideArr(t, &const_cast<std::valarray<Coord>&>(c_)[0],
-                     &ret.first.c_[0], &ret.second.c_[0], order());
+        casteljau_subdivision(t, &const_cast<std::valarray<Coord>&>(c_)[0],
+                              &ret.first.c_[0], &ret.second.c_[0], order());
         return ret;
     }
 
@@ -368,13 +371,25 @@ public:
         return *this;
     }
     Bezier &operator+=(Bezier const &other) {
-        // TODO: handle differing orders
-        c_ += other.c_;
+        if (c_.size() > other.size()) {
+            c_ += other.elevate_to_degree(degree()).c_;
+        } else if (c_.size() < other.size()) {
+            *this = elevate_to_degree(other.degree());
+            c_ += other.c_;
+        } else {
+            c_ += other.c_;
+        }
         return *this;
     }
     Bezier &operator-=(Bezier const &other) {
-        // TODO: handle differing orders
-        c_ -= other.c_;
+        if (c_.size() > other.size()) {
+            c_ -= other.elevate_to_degree(degree()).c_;
+        } else if (c_.size() < other.size()) {
+            *this = elevate_to_degree(other.degree());
+            c_ -= other.c_;
+        } else {
+            c_ -= other.c_;
+        }
         return *this;
     }
 };
@@ -429,15 +444,16 @@ inline Bezier portion(const Bezier & a, double from, double to) {
     }
 
     std::valarray<Coord> res(a.order() + 1);
-    if(from == 0) {
-        if(to == 1) { return Bezier(&input[0], a.order()); }
-        subdivideArr(to, &input[0], &res[0], NULL, a.order());
+    if (from == 0) {
+        if (to == 1) { return Bezier(&input[0], a.order()); }
+        casteljau_subdivision(to, &input[0], &res[0], NULL, a.order());
         return Bezier(&res[0], a.order());
     }
-    subdivideArr(from, &input[0], NULL, &res[0], a.order());
-    if(to == 1) return Bezier(&res[0], a.order());
+    casteljau_subdivision(from, &input[0], NULL, &res[0], a.order());
+    if (to == 1) return Bezier(&res[0], a.order());
+
     std::valarray<Coord> res2(a.order()+1);
-    subdivideArr((to - from)/(1 - from), &res[0], &res2[0], NULL, a.order());
+    casteljau_subdivision((to - from)/(1 - from), &res[0], &res2[0], NULL, a.order());
     return Bezier(&res2[0], a.order());
 }
 

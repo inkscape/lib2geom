@@ -25,3 +25,5 @@ CTestTestfile.cmake
 src/2geom/tests/*-test
 src/2geom/performance-tests/*-test
 *.so.*
+src/2geom/cython-bindings/cython_debug
+install_manifest.txt
