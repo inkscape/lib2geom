@@ -187,28 +187,6 @@ bool is_a_right_turn (Point const& p0, Point const& p1, Point const& p2)
 }
 
 /*
- * return true if p < q wrt the lexicographyc order induced by the coordinates
- */
-struct lex_less
-{
-    bool operator() (Point const& p, Point const& q)
-    {
-      return ((p[Y] < q[Y]) || (p[Y] == q[Y] && p[X] < q[X]));
-    }
-};
-
-/*
- * return true if p > q wrt the lexicographyc order induced by the coordinates
- */
-struct lex_greater
-{
-    bool operator() (Point const& p, Point const& q)
-    {
-        return ((p[Y] > q[Y]) || (p[Y] == q[Y] && p[X] > q[X]));
-    }
-};
-
-/*
  * Compute the convex hull of a set of points.
  * The implementation is based on the Andrew's scan algorithm
  * note: in the Bezier clipping for collinear normals it seems
@@ -220,7 +198,7 @@ void ConvexHull::andrew_scan ()
     vector<Point> & P = boundary;
     size_t n = P.size();
     if (n < 2)  return;
-    std::sort(P.begin(), P.end(), lex_less());
+    std::sort(P.begin(), P.end(), Point::LexLess<Y>());
     if (n < 4) return;
     // upper hull
     size_t u = 2;
@@ -233,7 +211,7 @@ void ConvexHull::andrew_scan ()
         swap(P[u], P[i]);
         ++u;
     }
-    std::sort(P.begin() + u, P.end(), lex_greater());
+    std::sort(P.begin() + u, P.end(), Point::LexGreater<Y>());
     std::rotate(P.begin(), P.begin() + 1, P.end());
     // lower hull
     size_t l = u;

@@ -134,28 +134,6 @@ bool is_a_right_turn (Point const& p0, Point const& p1, Point const& p2)
 }
 
 /*
- * return true if p < q wrt the lexicographyc order induced by the coordinates
- */
-struct lex_less
-{
-    bool operator() (Point const& p, Point const& q)
-    {
-      return ((p[X] < q[X]) || (p[X] == q[X] && p[Y] < q[Y]));
-    }
-};
-
-/*
- * return true if p > q wrt the lexicographyc order induced by the coordinates
- */
-struct lex_greater
-{
-    bool operator() (Point const& p, Point const& q)
-    {
-        return ((p[X] > q[X]) || (p[X] == q[X] && p[Y] > q[Y]));
-    }
-};
-
-/*
  * Compute the convex hull of a set of points.
  * The implementation is based on the Andrew's scan algorithm
  * note: in the Bezier clipping for collinear normals it seems
@@ -166,7 +144,7 @@ void convex_hull (std::vector<Point> & P)
 {
     size_t n = P.size();
     if (n < 2)  return;
-    std::sort(P.begin(), P.end(), lex_less());
+    std::sort(P.begin(), P.end(), Point::LexLess<X>());
     if (n < 4) return;
     // upper hull
     size_t u = 2;
@@ -179,7 +157,7 @@ void convex_hull (std::vector<Point> & P)
         swap(P[u], P[i]);
         ++u;
     }
-    std::sort(P.begin() + u, P.end(), lex_greater());
+    std::sort(P.begin() + u, P.end(), Point::LexGreater<X>());
     std::rotate(P.begin(), P.begin() + 1, P.end());
     // lower hull
     size_t l = u;
@@ -263,6 +241,7 @@ OptInterval make_empty_interval()
  * Return true if all the Bezier curve control points are near,
  * false otherwise
  */
+// Bezier.isConstant(precision)
 inline
 bool is_constant(std::vector<Point> const& A, double precision = EPSILON)
 {
@@ -277,6 +256,7 @@ bool is_constant(std::vector<Point> const& A, double precision = EPSILON)
 /*
  * Compute the hodograph of the bezier curve B and return it in D
  */
+// derivative(Bezier)
 inline
 void derivative(std::vector<Point> & D, std::vector<Point> const& B)
 {
@@ -300,6 +280,7 @@ void derivative(std::vector<Point> & D, std::vector<Point> const& B)
  * Compute the hodograph of the Bezier curve B rotated of 90 degree
  * and return it in D; we have N(t) orthogonal to B(t) for any t
  */
+// rot90(derivative(Bezier))
 inline
 void normal(std::vector<Point> & N, std::vector<Point> const& B)
 {
@@ -313,6 +294,7 @@ void normal(std::vector<Point> & N, std::vector<Point> const& B)
 /*
  *  Compute the portion of the Bezier curve "B" wrt the interval [0,t]
  */
+// portion(Bezier, 0, t)
 inline
 void left_portion(Coord t, std::vector<Point> & B)
 {
@@ -329,6 +311,7 @@ void left_portion(Coord t, std::vector<Point> & B)
 /*
  *  Compute the portion of the Bezier curve "B" wrt the interval [t,1]
  */
+// portion(Bezier, t, 1)
 inline
 void right_portion(Coord t, std::vector<Point> & B)
 {
@@ -345,6 +328,7 @@ void right_portion(Coord t, std::vector<Point> & B)
 /*
  *  Compute the portion of the Bezier curve "B" wrt the interval "I"
  */
+// portion(Bezier, I)
 inline
 void portion (std::vector<Point> & B , Interval const& I)
 {
@@ -387,6 +371,7 @@ void iterate(std::vector<Interval>& domsA,
  *  the line is returned in the output parameter "l" in the form of a 3 element
  *  vector : l[0] * x + l[1] * y + l[2] == 0; the line is normalized.
  */
+// Line(c[i], c[j])
 inline
 void orientation_line (std::vector<double> & l,
                        std::vector<Point> const& c,

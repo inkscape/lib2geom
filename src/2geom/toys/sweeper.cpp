@@ -215,10 +215,10 @@ public:
         Dim2 dim;
         SweepOrder(Dim2 d) : dim(d) {}
         bool operator()(const Rect &a, const Rect &b) const {
-            return Point::LexOrderRt(dim)(a.min(), b.min());
+            return Point::LexLessRt(dim)(a.min(), b.min());
         }
         bool operator()(const Tile &a, const Tile &b) const {
-            return Point::LexOrderRt(dim)(a.cur_box().min(), b.cur_box().min());
+            return Point::LexLessRt(dim)(a.cur_box().min(), b.cur_box().min());
         }
     };
 
@@ -228,7 +228,7 @@ public:
         std::vector<Tile>::iterator const begin;
         PtrSweepOrder(std::vector<Tile>::iterator const beg, Dim2 d) : dim(d), begin(beg){}
         bool operator()(const unsigned a, const unsigned b) const {
-            return Point::LexOrderRt(dim)((begin+a)->cur_box().min(), (begin+b)->cur_box().min());
+            return Point::LexLessRt(dim)((begin+a)->cur_box().min(), (begin+b)->cur_box().min());
         }
     };
 
@@ -471,8 +471,8 @@ public:
         for (unsigned i=0; i<context.size(); i++){
             assert( context[i].first<tiles_data.size() );
             Tile tile = tiles_data[context[i].first];
-            if (tile.state==1 && Point::LexOrderRt(dim)( tile.fbox.max(), context.last_pos ) && Point::LexOrderRt(dim)( tile.tbox.max(), context.last_pos ) ){
-//            if (!tile.open && Point::LexOrderRt(dim)( tile.fbox.max(), context.last_pos ) && Point::LexOrderRt(dim)( tile.tbox.max(), context.last_pos ) ){
+            if (tile.state==1 && Point::LexLessRt(dim)( tile.fbox.max(), context.last_pos ) && Point::LexLessRt(dim)( tile.tbox.max(), context.last_pos ) ){
+//            if (!tile.open && Point::LexLessRt(dim)( tile.fbox.max(), context.last_pos ) && Point::LexLessRt(dim)( tile.tbox.max(), context.last_pos ) ){
                 unsigned j;
                 for (j=i+1; j<context.size() && context[j].first != context[i].first; j++){}
                 assert ( j < context.size() );
@@ -575,7 +575,7 @@ public:
                     tile.tbox = Rect(tp, tp );
                     tile.open = false;
                     tile.state = -1;
-                    tile.reversed = Point::LexOrderRt(dim)(tp, fp);
+                    tile.reversed = Point::LexLessRt(dim)(tp, fp);
 
                     tiles_data.push_back(tile);
                 }
@@ -673,7 +673,7 @@ public:
             std::vector<Intersection> inters_on_i;
             for (unsigned j=i+1; j<tiles_data.size(); j++){
                 //std::printf("  j=%u (%u)\n", j,tiles_data[j].curve );
-                if ( Point::LexOrderRt(dim)(tiles_data[i].max(), tiles_data[j].min()) ) break;
+                if ( Point::LexLessRt(dim)(tiles_data[i].max(), tiles_data[j].min()) ) break;
 
                 unsigned pi = tiles_data[i].path;
                 unsigned ci = tiles_data[i].curve;
@@ -719,7 +719,7 @@ public:
     void fuseInsert(const Rect &b,  std::vector<Rect> &boxes, Dim2 dim){
         //TODO: this can be optimized...
         for (unsigned i=0; i<boxes.size(); i++){
-            if ( Point::LexOrderRt(dim)( b.max(), boxes[i].min() ) ) break;
+            if ( Point::LexLessRt(dim)( b.max(), boxes[i].min() ) ) break;
             if ( b.intersects( boxes[i] ) ){
                 Rect bigb = b;
                 bigb.unionWith( boxes[i] );
@@ -774,7 +774,7 @@ public:
             tiles_data[i].tbox = *t_it;
 
             //NB: enlarging the ends may swapp their sweep order!!!
-            tiles_data[i].reversed = Point::LexOrderRt(dim)( tiles_data[i].tbox.min(), tiles_data[i].fbox.min());
+            tiles_data[i].reversed = Point::LexLessRt(dim)( tiles_data[i].tbox.min(), tiles_data[i].fbox.min());
 
             if ( f_it==t_it ){
                 tiles_data.erase(tiles_data.begin()+i);
@@ -793,8 +793,8 @@ public:
         bool result = false;
         for (unsigned i=0; i<tiles_data.size(); i++){
             for (unsigned k=0; k < boxes.size(); k++){
-                if ( Point::LexOrderRt(dim)( tiles_data[i].max(), boxes[k].min()) ) break;
-                if ( Point::LexOrderRt(dim)( boxes[k].max(), tiles_data[i].min()) ) continue;
+                if ( Point::LexLessRt(dim)( tiles_data[i].max(), boxes[k].min()) ) break;
+                if ( Point::LexLessRt(dim)( boxes[k].max(), tiles_data[i].min()) ) continue;
                 if ( !boxes[k].intersects( tiles_data[i].bbox() ) ) continue;
                 if ( tiles_data[i].fbox.intersects( boxes[k] ) ) continue;
                 if ( tiles_data[i].tbox.intersects( boxes[k] ) ) continue;
@@ -875,7 +875,7 @@ public:
         OptRect sep ( Interval( -infinity(), infinity() ) , Interval(-infinity(), infinity() ) );
         //separate this vertex from the others. Find a better way.
         for (unsigned i=0; i<vtxboxes.size(); i++){
-            if ( Point::LexOrderRt(dim)( sep->max(), vtxboxes[i].min() ) ){
+            if ( Point::LexLessRt(dim)( sep->max(), vtxboxes[i].min() ) ){
                 break;
             }
             if ( vtxboxes[i]!=box ){//&& !vtxboxes[i].intersects(box) ){
@@ -1042,7 +1042,7 @@ public:
             std::vector<unsigned>::iterator low, high;
             //Warning: bad looking test, but make sure we advance even in case of 0 width boxes...
             for ( low = tiles.begin(); low != tiles.end() && 
-                      ( tiles_data[*low].state==1 || Point::LexOrderRt(dim)(tiles_data[*low].cur_box().min(), context.last_pos) ); low++){}
+                      ( tiles_data[*low].state==1 || Point::LexLessRt(dim)(tiles_data[*low].cur_box().min(), context.last_pos) ); low++){}
 
             if ( low == tiles.end() ){
 //                std::printf("no more event found\n");

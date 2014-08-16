@@ -175,7 +175,7 @@ bool CLIPPER_CLASS::intersect (std::vector<Point> & crossing_points) const
               cpts.size())
 
     // remove duplicates
-    std::sort (cpts.begin(), cpts.end(), Point::LexOrder<X>());
+    std::sort (cpts.begin(), cpts.end(), Point::LexLess<X>());
     cpts.erase (std::unique (cpts.begin(), cpts.end()), cpts.end());
 
 

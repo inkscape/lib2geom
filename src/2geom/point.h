@@ -227,13 +227,20 @@ public:
     }
     /// @}
 
-    /** @brief Lexicographical ordering functor. */
-    template <Dim2 d> struct LexOrder;
+    /** @brief Lexicographical ordering functor.
+     * @param d The dimension with higher significance */
+    template <Dim2 DIM> struct LexLess;
+    template <Dim2 DIM> struct LexGreater;
     /** @brief Lexicographical ordering functor with runtime dimension. */
-    class LexOrderRt {
-    public:
-        LexOrderRt(Dim2 d) : dim(d) {}
-        inline bool operator()(Point const &a, Point const &b);
+    struct LexLessRt {
+        LexLessRt(Dim2 d) : dim(d) {}
+        inline bool operator()(Point const &a, Point const &b) const;
+    private:
+        Dim2 dim;
+    };
+    struct LexGreaterRt {
+        LexGreaterRt(Dim2 d) : dim(d) {}
+        inline bool operator()(Point const &a, Point const &b) const;
     private:
         Dim2 dim;
     };
@@ -249,18 +256,31 @@ inline std::ostream &operator<< (std::ostream &out_file, const Geom::Point &in_p
     return out_file;
 }
 
-template<> struct Point::LexOrder<X> {
-    bool operator()(Point const &a, Point const &b) {
+template<> struct Point::LexLess<X> {
+    bool operator()(Point const &a, Point const &b) const {
         return a[X] < b[X] || (a[X] == b[X] && a[Y] < b[Y]);
     }
 };
-template<> struct Point::LexOrder<Y> {
-    bool operator()(Point const &a, Point const &b) {
+template<> struct Point::LexLess<Y> {
+    bool operator()(Point const &a, Point const &b) const {
         return a[Y] < b[Y] || (a[Y] == b[Y] && a[X] < b[X]);
     }
 };
-inline bool Point::LexOrderRt::operator()(Point const &a, Point const &b) {
-    return dim ? Point::LexOrder<Y>()(a, b) : Point::LexOrder<X>()(a, b);
+template<> struct Point::LexGreater<X> {
+    bool operator()(Point const &a, Point const &b) const {
+        return a[X] > b[X] || (a[X] == b[X] && a[Y] > b[Y]);
+    }
+};
+template<> struct Point::LexGreater<Y> {
+    bool operator()(Point const &a, Point const &b) const {
+        return a[Y] > b[Y] || (a[Y] == b[Y] && a[X] > b[X]);
+    }
+};
+inline bool Point::LexLessRt::operator()(Point const &a, Point const &b) const {
+    return dim ? Point::LexLess<Y>()(a, b) : Point::LexLess<X>()(a, b);
+}
+inline bool Point::LexGreaterRt::operator()(Point const &a, Point const &b) const {
+    return dim ? Point::LexGreater<Y>()(a, b) : Point::LexGreater<X>()(a, b);
 }
 
 /** @brief Compute the second (Euclidean) norm of @a p.
