@@ -142,7 +142,7 @@ public:
     inline Coord at0() const { return (*this)[0][0]; }
     inline Coord &at0() { return (*this)[0][0]; }
     inline Coord at1() const { return (*this)[0][1]; }
-    inline Coord &at1() { return (*this)[0][0]; }
+    inline Coord &at1() { return (*this)[0][1]; }
     
     int degreesOfFreedom() const { return size()*2;}
 
