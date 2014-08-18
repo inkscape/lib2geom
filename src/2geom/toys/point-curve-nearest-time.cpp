@@ -136,13 +136,13 @@ private:
                 cairo_d2_sb(cr, A);
     	        if ( toggles[0].on )
     	        {
-                    std::vector<double> t = Geom::all_nearest_points(p, A);
+                    std::vector<double> t = Geom::all_nearest_times(p, A);
                     for ( unsigned int i = 0; i < t.size(); ++i )
                         nps.push_back(A(t[i]));
     	        }
     	        else
     	        {
-                    double t = nearest_point(p, A);
+                    double t = nearest_time(p, A);
                     np = A(t);
     	        }
                 break;
@@ -169,13 +169,13 @@ private:
     	        pwc.push_cut(1);
     	        if ( toggles[0].on )
     	        {
-                    std::vector<double> t = Geom::all_nearest_points(p, pwc);
+                    std::vector<double> t = Geom::all_nearest_times(p, pwc);
                     for ( unsigned int i = 0; i < t.size(); ++i )
                         nps.push_back(pwc(t[i]));
     	        }
     	        else
     	        {
-                    double t = Geom::nearest_point(p, pwc);
+                    double t = Geom::nearest_time(p, pwc);
                     np = pwc(t);
     	        }
                 break;

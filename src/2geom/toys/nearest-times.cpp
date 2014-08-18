@@ -58,7 +58,7 @@ public:
 
 	void operator() ()
 	{
-		nearest_points_impl(0.5, 0, 1);
+		nearest_times_impl(0.5, 0, 1);
 		d = sqrt(dsq);
 	}
 	
@@ -88,12 +88,12 @@ public:
 	}
 	
 private:
-	void nearest_points_impl( double t, double from = 0, double to = 1 )
+	void nearest_times_impl( double t, double from = 0, double to = 1 )
 	{
 		//std::cerr << "[" << from << "," << to << "] t: " << t << std::endl;
 		
 		double st = t, et = t;
-		std::pair<double, double> npc = loc_nearest_points(t, from, to);
+		std::pair<double, double> npc = loc_nearest_times(t, from, to);
 		//std::cerr << "(" << npc.first << "," << npc.second << ")" << std::endl;
 		if ( npc.second != -1 && dsq > L2sq(c1(npc.first) - c2(npc.second)) )
 		{
@@ -111,13 +111,13 @@ private:
 		double d1 = std::fabs(st - from);
 		double d2 = std::fabs(to - et);
 		if ( d1 > EPSILON )
-			nearest_points_impl(from + d1/2, from, st);
+			nearest_times_impl(from + d1/2, from, st);
 		if ( d2 > EPSILON )
-			nearest_points_impl(et + d2/2, et, to);
+			nearest_times_impl(et + d2/2, et, to);
 	}
 	
 	std::pair<double, double> 
-	loc_nearest_points( double t, double from = 0, double to = 1 )
+	loc_nearest_times( double t, double from = 0, double to = 1 )
 	{
 		unsigned int i = 0;
 		std::pair<double, double> np(-1,-1);
@@ -132,10 +132,10 @@ private:
 		{
 			++i;
 			pt = ct;
-			s = nearest_point(c1(ct), c2, dc2, cd2);
+			s = nearest_time(c1(ct), c2, dc2, cd2);
 			//std::cerr << "s: " << s << std::endl;
 	        //cairo_line_to(cr, c2(s));
-			ct = nearest_point(c2(s), c1, dc1, cd1, from, to);
+			ct = nearest_time(c2(s), c1, dc1, cd1, from, to);
 			//std::cerr << "t: " << t1 << std::endl;
 			//cairo_line_to(cr, c1(ct));
 			if ( ct < from ) return npf;
@@ -149,7 +149,7 @@ private:
 		return np;
 	}
 	
-	double nearest_point( Point const& p, D2<SBasis> const&c, D2<SBasis> const& dc, SBasis const& cd, double from = 0, double to = 1 )
+	double nearest_time( Point const& p, D2<SBasis> const&c, D2<SBasis> const& dc, SBasis const& cd, double from = 0, double to = 1 )
 	{
 		D2<SBasis> sbc = c - p;
 		SBasis dd = cd - dotp(p, dc);

@@ -630,7 +630,7 @@ cdef class cy_Line:
         """Find time value corresponding to orthogonal projection of point."""
         return self.thisptr.timeAtProjection( deref(cp.thisptr) )
 
-    def nearest_point(self, cy_Point cp):
+    def nearest_time(self, cy_Point cp):
         """Alias for time_at_projection."""
         return self.thisptr.nearestTime( deref(cp.thisptr) )
 
@@ -799,7 +799,7 @@ cdef class cy_Ray:
         """Access coordinates of point_at(t)."""
         return self.thisptr.valueAt(t, d)
 
-    def nearest_point(self, cy_Point cp):
+    def nearest_time(self, cy_Point cp):
         """Get time value of nearest point of ray."""
         return self.thisptr.nearestTime( deref(cp.thisptr) )
     def reverse(self):

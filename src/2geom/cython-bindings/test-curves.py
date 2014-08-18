@@ -269,12 +269,12 @@ class TestPrimitives(unittest.TestCase):
             self.assertAlmostEqual( C.reverse()(t), C(1-t) )
         self.assertAlmostEqual( C.point_and_derivatives(0.3, 1)[1], C.derivative()(0.3) )
         
-        self.assertAlmostEqual( C.nearest_point(C(0)), 0 )
-        self.assertAlmostEqual( C( C.nearest_point(C(0.5), interval=Interval(0.2, 0.5)) ), C(0.5) )
-        self.assertAlmostEqual( C( C.nearest_point(C(0.5), 0.2, 0.5) ), C(0.5) )
-        for p in C.all_nearest_points( C(0), 0, 1):
+        self.assertAlmostEqual( C.nearest_time(C(0)), 0 )
+        self.assertAlmostEqual( C( C.nearest_time(C(0.5), interval=Interval(0.2, 0.5)) ), C(0.5) )
+        self.assertAlmostEqual( C( C.nearest_time(C(0.5), 0.2, 0.5) ), C(0.5) )
+        for p in C.all_nearest_times( C(0), 0, 1):
             self.assertEqual(C(p), C(0))
-        for p in C.all_nearest_points( C(1), interval=Interval(0, 1)):
+        for p in C.all_nearest_times( C(1), interval=Interval(0, 1)):
             self.assertEqual(C(p), C(1))
         for r in C.roots(0, 0):
             self.assertAlmostEqual(C.value_at(r, 0), 0)
@@ -394,14 +394,14 @@ class TestPrimitives(unittest.TestCase):
         #~ self.assertAlmostEqual( X(0), Point(0, 2) )
         #~ self.assertAlmostEqual( X(1), Point(1, 2) )
         #~ print V(0.5)
-        #~ print V.nearest_point(V(0.5), 0.1, 0.4   )
-        #~ print V.nearest_point(V(0.5), Interval(0.2, 0.5))
+        #~ print V.nearest_time(V(0.5), 0.1, 0.4   )
+        #~ print V.nearest_time(V(0.5), Interval(0.2, 0.5))
         #~ print V(0.5), V(0.2)
     #TODO:
     #this is likely a bug in 2geom, following code
     
         #~ VLineSegment V(Point(0, 0), 2);
-        #~ printf("%f\n", V.nearest_point(V(0.5), 0.2, 0.5));
+        #~ printf("%f\n", V.nearest_time(V(0.5), 0.2, 0.5));
     
     #prints
         #0.2

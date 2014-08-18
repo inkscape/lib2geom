@@ -405,14 +405,14 @@ class ConicSectionToy : public Toy
  *  TEST NEAREST POINT
  */
 
-    void init_nearest_point()
+    void init_nearest_time()
     {
         init_common();
         p1.pos = Point(180, 50);
         handles.push_back(&p1);
     }
 
-    void draw_nearest_point (cairo_t *cr, std::ostringstream *notify,
+    void draw_nearest_time (cairo_t *cr, std::ostringstream *notify,
                              int width, int height, bool save,
                              std::ostringstream * timer_stream)
     {
@@ -702,8 +702,8 @@ class ConicSectionToy : public Toy
                 draw_f = &ConicSectionToy::draw_roots;
                 break;
             case 'G':
-                init_nearest_point();
-                draw_f = &ConicSectionToy::draw_nearest_point;
+                init_nearest_time();
+                draw_f = &ConicSectionToy::draw_nearest_time;
                 break;
             case 'H':
                 init_bound();

@@ -7,7 +7,7 @@
 #include <2geom/exception.h>
 #include <2geom/sbasis-geometric.h>
 #include <2geom/path-intersection.h>
-#include <2geom/nearest-point.h>
+#include <2geom/nearest-time.h>
 #include <2geom/line.h>
 #include <2geom/bezier-to-sbasis.h>
 #include <2geom/sbasis-to-bezier.h>

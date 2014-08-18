@@ -84,8 +84,8 @@ linear.h
 
 math-utils.h
 
-nearest-point.cpp
-nearest-point.h
+nearest-time.cpp
+nearest-time.h
 
 numeric/matrix.cpp
 

@@ -147,9 +147,9 @@ public:
 		cuts1.reserve(c1.size()+1);
 		for ( unsigned int i = 0; i < c1.size(); ++i )
 		{
-			cuts1.push_back( nearest_point(c1[i].at0(), _c2, dc2, cd2) );
+			cuts1.push_back( nearest_time(c1[i].at0(), _c2, dc2, cd2) );
 		}
-		cuts1.push_back( nearest_point(c1[c1.size()-1].at1(), _c2, dc2, cd2) );
+		cuts1.push_back( nearest_time(c1[c1.size()-1].at1(), _c2, dc2, cd2) );
 		
 //		for ( unsigned int i = 0; i < c1.size(); ++i )
 //		{
@@ -165,9 +165,9 @@ public:
 		cuts2.reserve(c2.size()+1);
 		for ( unsigned int i = 0; i < c2.size(); ++i )
 		{
-			cuts2.push_back( nearest_point(c2[i].at0(), _c1, dc1, cd1) );
+			cuts2.push_back( nearest_time(c2[i].at0(), _c1, dc1, cd1) );
 		}
-		cuts2.push_back( nearest_point(c2[c2.size()-1].at1(), _c1, dc1, cd1) );
+		cuts2.push_back( nearest_time(c2[c2.size()-1].at1(), _c1, dc1, cd1) );
 		
 //		for ( unsigned int i = 0; i < c2.size(); ++i )
 //		{
@@ -236,7 +236,7 @@ public:
 		cuts1.reserve(dk2_roots.size());
 		for ( unsigned int i = 0; i < dk2_roots.size(); ++i )
 		{
-			cuts1.push_back(nearest_point(_c2(dk2_roots[i]), _c1, dc1, cd1));
+			cuts1.push_back(nearest_time(_c2(dk2_roots[i]), _c1, dc1, cd1));
 		}
 		
 //		for( unsigned int i = 0; i < dk2_roots.size(); ++i )
@@ -260,7 +260,7 @@ public:
 		{
 			p = pwc1[i](0.5);
 			nv = n1[i](0.5);
-			npt = nearest_point(p, _c2, dc2, cd2);
+			npt = nearest_time(p, _c2, dc2, cd2);
 			if( dot( _c2(npt) - p, nv ) > 0 )
 			{
 				if ( dot( nv, n2(npt) ) > 0 )
@@ -281,7 +281,7 @@ public:
 		{
 			p = pwc2[i](0.5);
 			nv = n2[i](0.5);
-			npt = nearest_point(p, _c1, dc1, cd1);
+			npt = nearest_time(p, _c1, dc1, cd1);
 			if( dot( _c1(npt) - p, nv ) > 0 )
 			{
 				if ( dot( nv, n1(npt) ) > 0 )
@@ -348,7 +348,7 @@ public:
 
 	void operator() ()
 	{
-		nearest_points_impl();
+		nearest_times_impl();
 		d = sqrt(dsq);
 	}
 	
@@ -378,7 +378,7 @@ public:
 	}
 	
 private:
-	void nearest_points_impl()
+	void nearest_times_impl()
 	{		
 		double t;
 		for ( unsigned int i = 0; i < c1.size(); ++i )
@@ -386,7 +386,7 @@ private:
 			if ( skip_list[i] ) continue;
 			std::cerr << i << " ";
 			t = c1.mapToDomain(0.5, i);
-			std::pair<double, double> npc = loc_nearest_points(t, c1.cuts[i], c1.cuts[i+1]);
+			std::pair<double, double> npc = loc_nearest_times(t, c1.cuts[i], c1.cuts[i+1]);
 			if ( npc.second != -1 && dsq > L2sq(c1(npc.first) - c2(npc.second)) )
 			{
 				t1 = npc.first;
@@ -399,7 +399,7 @@ private:
 	}
 		
 	std::pair<double, double> 
-	loc_nearest_points( double t, double from = 0, double to = 1 )
+	loc_nearest_times( double t, double from = 0, double to = 1 )
 	{
 		std::cerr << "[" << from << "," << to << "] t: " << t << std::endl;
 		unsigned int iter = 0, iter1 = 0, iter2 = 0;
@@ -408,7 +408,7 @@ private:
 		std::pair<double, double> npt(to, -1);
 		double ct = t;
 		double pt = -1;
-		double s = nearest_point(c1(t), cc2, dc2, cd2);
+		double s = nearest_time(c1(t), cc2, dc2, cd2);
 		cairo_set_source_rgba(cr, 1/(t+1), t*t, t, 1.0);
 		cairo_move_to(cr, c1(t));
 		while( !are_near(ct, pt) && iter < 1000 )
@@ -427,7 +427,7 @@ private:
 				//std::cerr << "t: " << ct << std::endl;
 
 				ct = ct + angle / r_dcn1(ct);
-				s = nearest_point(c1(ct), cc2, dc2, cd2);
+				s = nearest_time(c1(ct), cc2, dc2, cd2);
 //				angle = angle_between( n2(s), evl1(ct) - evl2(s) );
 //				assert( !IS_NAN(angle) );
 //				angle = (angle > 0) ? angle - M_PI : angle + M_PI;
@@ -436,8 +436,8 @@ private:
 			else
 			{
 				++iter1;
-				ct = nearest_point(c2(s), cc1, dc1, cd1, from, to);
-				s = nearest_point(c1(ct), cc2, dc2, cd2);
+				ct = nearest_time(c2(s), cc1, dc1, cd1, from, to);
+				s = nearest_time(c1(ct), cc2, dc2, cd2);
 			}
 			iter = iter1 + iter2;
 			//std::cerr << "s: " << s << std::endl;
@@ -469,7 +469,7 @@ private:
 		return np;
 	}
 	
-	double nearest_point( Point const& p, D2<SBasis> const&c, D2<SBasis> const& dc, SBasis const& cd, double from = 0, double to = 1 )
+	double nearest_time( Point const& p, D2<SBasis> const&c, D2<SBasis> const& dc, SBasis const& cd, double from = 0, double to = 1 )
 	{
 		D2<SBasis> sbc = c - p;
 		SBasis dd = cd - dotp(p, dc);

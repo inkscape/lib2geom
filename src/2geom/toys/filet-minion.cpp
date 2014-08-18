@@ -7,7 +7,7 @@
 #include <2geom/exception.h>
 #include <2geom/sbasis-geometric.h>
 #include <2geom/path-intersection.h>
-#include <2geom/nearest-point.h>
+#include <2geom/nearest-time.h>
 
 
 #include <cstdlib>
@@ -70,8 +70,8 @@ class IntersectDataTester: public Toy {
                 Point cp =p0(cs[i].ta);
                 //draw_circ(cr, cp);
                 //cairo_stroke(cr);
-                double p0pt = nearest_point(cp, pieces[0]);
-                double p1pt = nearest_point(cp, pieces[1]);
+                double p0pt = nearest_time(cp, pieces[0]);
+                double p1pt = nearest_time(cp, pieces[1]);
                 Circle circ(cp[0], cp[1], r);
                 //cairo_arc(cr, circ.center(X), circ.center(Y), circ.ray(), 0, 2*M_PI);
                 

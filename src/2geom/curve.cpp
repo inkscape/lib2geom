@@ -32,7 +32,7 @@
  */
 
 #include <2geom/curve.h>
-#include <2geom/nearest-point.h>
+#include <2geom/nearest-time.h>
 #include <2geom/sbasis-geometric.h>
 #include <2geom/sbasis-to-bezier.h>
 #include <2geom/ord.h>
@@ -45,12 +45,12 @@ namespace Geom
 
 Coord Curve::nearestTime(Point const& p, Coord a, Coord b) const
 {
-    return nearest_point(p, toSBasis(), a, b);
+    return nearest_time(p, toSBasis(), a, b);
 }
 
 std::vector<Coord> Curve::allNearestTimes(Point const& p, Coord from, Coord to) const
 {
-    return all_nearest_points(p, toSBasis(), from, to);
+    return all_nearest_times(p, toSBasis(), from, to);
 }
 
 Coord Curve::length(Coord tolerance) const

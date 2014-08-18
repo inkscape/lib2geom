@@ -262,24 +262,24 @@ cdef class cy_Path:
         """Find time values where self(t)[d] == v"""
         return wrap_vector_double(self.thisptr.roots(v, d))
 
-    def all_nearest_points(self, cy_Point _point, double fr=-1, double to=1):
+    def all_nearest_times(self, cy_Point _point, double fr=-1, double to=1):
         """Return all values of t that |self(t) - point| is minimized."""
         if fr == -1:
             return wrap_vector_double(self.thisptr.allNearestTimes(deref( _point.thisptr )))
         return wrap_vector_double(self.thisptr.allNearestTimes(deref( _point.thisptr ), fr, to))
 
 
-    def nearest_point_per_curve(self, cy_Point _point):
+    def nearest_time_per_curve(self, cy_Point _point):
         """Find nearest points, return one time value per each curve."""
         return wrap_vector_double(self.thisptr.nearestTimePerCurve(deref( _point.thisptr )))
 
-    def nearest_point(self, cy_Point _point, double fr=-1, double to=1):#, cy_double * distance_squared):
+    def nearest_time(self, cy_Point _point, double fr=-1, double to=1):#, cy_double * distance_squared):
         """Return such t that |self(t) - point| is minimized."""
         if fr == -1:
             return self.thisptr.nearestTime(deref( _point.thisptr ), NULL)
         return self.thisptr.nearestTime(deref( _point.thisptr ), fr, to, NULL)
 
-    def nearest_point_and_dist_sq(self, cy_Point _point, double fr=-1, double to=1):
+    def nearest_time_and_dist_sq(self, cy_Point _point, double fr=-1, double to=1):
         """Return such t that |self(t) - point| is minimized and square of that distance."""
         cdef double t, dist
         if fr == -1:

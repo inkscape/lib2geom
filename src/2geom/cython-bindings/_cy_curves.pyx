@@ -110,14 +110,14 @@ cdef class cy_Curve:
         """Return curve's derivative."""
         return wrap_Curve_p( self.thisptr.derivative() )
 
-    def nearest_point(self, cy_Point p, Coord fr=0, Coord to=1, cy_Interval interval=None):
+    def nearest_time(self, cy_Point p, Coord fr=0, Coord to=1, cy_Interval interval=None):
         """Return such t that |self(t) - point| is minimized."""
         if interval is None:
             return self.thisptr.nearestTime(deref( p.thisptr ), fr, to)
         else:
             return self.thisptr.nearestTime(deref( p.thisptr ), deref( interval.thisptr ))
 
-    def all_nearest_points(self, cy_Point p, Coord fr=0, Coord to=1, cy_Interval interval=None):
+    def all_nearest_times(self, cy_Point p, Coord fr=0, Coord to=1, cy_Interval interval=None):
         """Return all values of t that |self(t) - point| is minimized."""
         if interval is None:
             return wrap_vector_double(self.thisptr.allNearestTimes(deref( p.thisptr ), fr, to))
@@ -739,14 +739,14 @@ cdef class cy_SBasisCurve:
         """Find time values where self(t)[d] == v."""
         return wrap_vector_double( self.thisptr.roots(v, d) )
 
-    def nearest_point(self, cy_Point p, Coord fr=0, Coord to=1, cy_Interval interval=None):
+    def nearest_time(self, cy_Point p, Coord fr=0, Coord to=1, cy_Interval interval=None):
         """Return such t that |self(t) - point| is minimized."""
         if interval is None:
             return self.thisptr.nearestTime(deref( p.thisptr ), fr, to)
         else:
             return (<Curve *> self.thisptr).nearestTime(deref( p.thisptr ), deref( interval.thisptr ) )
 
-    def all_nearest_points(self, cy_Point p, Coord fr=0, Coord to=1, cy_Interval interval=None):
+    def all_nearest_times(self, cy_Point p, Coord fr=0, Coord to=1, cy_Interval interval=None):
         """Return all values of t that |self(t) - point| is minimized."""
         if interval is None:
             return wrap_vector_double(self.thisptr.allNearestTimes(deref( p.thisptr ), fr, to))
@@ -1119,14 +1119,14 @@ cdef class cy_BezierCurve:
         """Return bounding rectangle to portion of curve."""
         return wrap_OptRect(self.thisptr.boundsLocal(deref( i.thisptr ), deg))
 
-    def nearest_point(self, cy_Point p, Coord fr=0, Coord to=1, cy_Interval interval=None):
+    def nearest_time(self, cy_Point p, Coord fr=0, Coord to=1, cy_Interval interval=None):
         """Return such t that |self(t) - point| is minimized."""
         if interval is None:
             return (<Curve *> self.thisptr).nearestTime(deref( p.thisptr ), fr, to)
         else:
             return (<Curve *> self.thisptr).nearestTime(deref( p.thisptr ), deref( interval.thisptr ) )
 
-    def all_nearest_points(self, cy_Point p, Coord fr=0, Coord to=1, cy_Interval interval=None):
+    def all_nearest_times(self, cy_Point p, Coord fr=0, Coord to=1, cy_Interval interval=None):
         """Return all values of t that |self(t) - point| is minimized."""
         if interval is None:
             return wrap_vector_double((<Curve *> self.thisptr).allNearestTimes(deref( p.thisptr ), fr, to))
@@ -1464,7 +1464,7 @@ cdef class cy_HLineSegment(cy_LineSegment):
         """Find time values where self(t)[d] == v."""
         return wrap_vector_double( (<AxisLineSegment_X *> self.thisptr).roots(v, d) )
 
-    def nearest_point(self, cy_Point p, Coord fr=0, Coord to=1, cy_Interval interval=None):
+    def nearest_time(self, cy_Point p, Coord fr=0, Coord to=1, cy_Interval interval=None):
         """Return such t that |self(t) - point| is minimized."""
         if interval is None:
             return (<AxisLineSegment_X *> self.thisptr).nearestTime(deref( p.thisptr ), fr, to)
@@ -1595,7 +1595,7 @@ cdef class cy_VLineSegment(cy_LineSegment):
         """Find time values where self(t)[d] == v."""
         return wrap_vector_double( (<AxisLineSegment_Y *> self.thisptr).roots(v, d) )
 
-    def nearest_point(self, cy_Point p, Coord fr=0, Coord to=1, cy_Interval interval=None):
+    def nearest_time(self, cy_Point p, Coord fr=0, Coord to=1, cy_Interval interval=None):
         """Return such t that |self(t) - point| is minimized."""
         if interval is None:
             return (<AxisLineSegment_Y *> self.thisptr).nearestTime(deref( p.thisptr ), fr, to)
@@ -1842,7 +1842,7 @@ cdef class cy_EllipticalArc:
         """Find time values where self(t)[d] == v."""
         return wrap_vector_double(self.thisptr.roots(v, d))
 
-    def nearest_point(self, cy_Point p, Coord fr=0, Coord to=1, cy_Interval interval=None):
+    def nearest_time(self, cy_Point p, Coord fr=0, Coord to=1, cy_Interval interval=None):
         """Return such t that |self(t) - point| is minimized."""
         if interval is None:
             return self.thisptr.nearestTime(deref( p.thisptr ), fr, to)
@@ -1850,7 +1850,7 @@ cdef class cy_EllipticalArc:
             return (<Curve *> self.thisptr).nearestTime(deref( p.thisptr ),
                                                          deref( interval.thisptr ) )
 
-    def all_nearest_points(self, cy_Point p, Coord fr=0, Coord to=1, cy_Interval interval=None):
+    def all_nearest_times(self, cy_Point p, Coord fr=0, Coord to=1, cy_Interval interval=None):
         """Return all values of t that |self(t) - point| is minimized."""
         if interval is None:
             return wrap_vector_double( (<Curve *> self.thisptr).allNearestTimes(deref( p.thisptr ), fr, to))
@@ -1977,7 +1977,7 @@ cdef class cy_SVGEllipticalArc(cy_EllipticalArc):
         """Find time values where self(t)[d] == v."""
         return wrap_vector_double((<SVGEllipticalArc *> self.thisptr).roots(v, d))
 
-    def all_nearest_points(self, cy_Point p, Coord fr=0, Coord to=1, cy_Interval interval=None):
+    def all_nearest_times(self, cy_Point p, Coord fr=0, Coord to=1, cy_Interval interval=None):
         """Return all values of t that |self(t) - point| is minimized."""
         if interval is None:
             return wrap_vector_double( (<SVGEllipticalArc *> self.thisptr).allNearestTimes(deref( p.thisptr ), fr, to))

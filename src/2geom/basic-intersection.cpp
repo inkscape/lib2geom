@@ -408,7 +408,7 @@ double hausdorfl(D2<SBasis>& A, D2<SBasis> const& B,
     double h_dist = 0, h_a_t = 0, h_b_t = 0;
     double dist = 0;
     Point Ax = A.at0();
-    double t = Geom::nearest_point(Ax, B);
+    double t = Geom::nearest_time(Ax, B);
     dist = Geom::distance(Ax, B(t));
     if (dist > h_dist) {
         h_a_t = 0;
@@ -416,7 +416,7 @@ double hausdorfl(D2<SBasis>& A, D2<SBasis> const& B,
         h_dist = dist;
     }
     Ax = A.at1();
-    t = Geom::nearest_point(Ax, B);
+    t = Geom::nearest_time(Ax, B);
     dist = Geom::distance(Ax, B(t));
     if (dist > h_dist) {
         h_a_t = 1;
@@ -428,7 +428,7 @@ double hausdorfl(D2<SBasis>& A, D2<SBasis> const& B,
         Point At = A(xs[i].first);
         Point Bu = B(xs[i].second);
         double distAtBu = Geom::distance(At, Bu);
-        t = Geom::nearest_point(At, B);
+        t = Geom::nearest_time(At, B);
         dist = Geom::distance(At, B(t));
         //FIXME: we might miss it due to floating point precision...
         if (dist >= distAtBu-.1 && distAtBu > h_dist) {
@@ -454,7 +454,7 @@ double hausdorf(D2<SBasis>& A, D2<SBasis> const& B,
     
     double dist = 0;
     Point Bx = B.at0();
-    double t = Geom::nearest_point(Bx, A);
+    double t = Geom::nearest_time(Bx, A);
     dist = Geom::distance(Bx, A(t));
     if (dist > h_dist) {
         if(a_t) *a_t = t;
@@ -462,7 +462,7 @@ double hausdorf(D2<SBasis>& A, D2<SBasis> const& B,
         h_dist = dist;
     }
     Bx = B.at1();
-    t = Geom::nearest_point(Bx, A);
+    t = Geom::nearest_time(Bx, A);
     dist = Geom::distance(Bx, A(t));
     if (dist > h_dist) {
         if(a_t) *a_t = t;

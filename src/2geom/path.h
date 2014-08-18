@@ -539,7 +539,7 @@ private:
 
 Piecewise<D2<SBasis> > paths_to_pw(PathVector const &paths);
 
-inline Coord nearest_point(Point const &p, Path const &c) { return c.nearestTime(p); }
+inline Coord nearest_time(Point const &p, Path const &c) { return c.nearestTime(p); }
 
 } // end namespace Geom
 

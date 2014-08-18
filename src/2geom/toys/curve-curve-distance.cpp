@@ -41,7 +41,7 @@
 #include <2geom/toys/path-cairo.h>
 #include <2geom/toys/toy-framework-2.h>
 
-#include <2geom/nearest-point.h>
+#include <2geom/nearest-time.h>
 #include <2geom/numeric/linear_system.h>
 
 #include <algorithm>
@@ -293,7 +293,7 @@ class distance_impl
         for (unsigned int i = evaluation_si; i < evaluation_ei; ++i)
         {
             At = A(t);
-            nptime = nearest_point(At, B);
+            nptime = nearest_time(At, B);
             sample_distances[i] = distance(At, B(nptime));
             t += step;
         }
@@ -401,10 +401,10 @@ class distance_impl
             for (unsigned int i = 1; i < sample_distances.size(); i+=2)
             {
                 At = A(t);
-                nptime = nearest_point(At, B);
+                nptime = nearest_time(At, B);
                 sample_distances_1[i] = distance(At, B(nptime));
                 At = A(t + rec_piece_step);
-                nptime = nearest_point(At, B);
+                nptime = nearest_time(At, B);
                 sample_distances_2[i] = distance(At, B(nptime));
                 t += rec_step;
             }
@@ -487,7 +487,7 @@ class distance_impl
         for (unsigned int i = 1; i < sample_distances.size(); i+=2)
         {
             At = A(tt);
-            nptime = nearest_point(At, B);
+            nptime = nearest_time(At, B);
             sample_distances[i] = distance(At, B(nptime));
             tt += step;
         }
@@ -719,7 +719,7 @@ unsigned int dist_test( Piecewise<SBasis> const& pwc,
     for (double t = 0; t <= 1; t += step)
     {	
         At = A(t);
-        nptime = nearest_point(At, B);
+        nptime = nearest_time(At, B);
         sample_distance = distance(At, B(nptime));
         if ( !are_near(pwc(t), sample_distance, 0.001) )
         {
@@ -820,7 +820,7 @@ class DCCToy : public Toy
                 //total_error = dist_test(d, pwA, B, 0.0004);                
             }
             
-            double nptB = nearest_point(cursor, B);
+            double nptB = nearest_time(cursor, B);
             draw_circ(cr, cursor);
             cairo_move_to(cr, cursor);
             cairo_line_to(cr, B(nptB));
@@ -832,7 +832,7 @@ class DCCToy : public Toy
             cursor = B(t);
             if (choice == 0)
             {        
-                double nptA = nearest_point(cursor, A);
+                double nptA = nearest_time(cursor, A);
                 np = A(nptA);
                 d = distance(B, A, 40);
                 // uncomment following lines to view errors in computing the distance 
@@ -840,7 +840,7 @@ class DCCToy : public Toy
             }
             else if (choice == 1)
             {
-                double nptA = nearest_point(cursor, pA);
+                double nptA = nearest_time(cursor, pA);
                 np = pA(nptA);
                 d = distance(B, pA, 40);
                 // uncomment following lines to view errors in computing the distance 

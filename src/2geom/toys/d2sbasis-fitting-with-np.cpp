@@ -69,7 +69,7 @@ class D2SBasisFitting : public Toy
                 double t = 0;
                 for (size_t i = 2; i < total_handles-2; ++i)
                 {
-                    t = nearest_point(psh.pts[i], sb_curve);
+                    t = nearest_time(psh.pts[i], sb_curve);
                     lsf_2dsb.append(t);
                 }
                 lsf_2dsb.append(0.66);

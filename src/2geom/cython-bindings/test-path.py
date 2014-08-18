@@ -84,13 +84,13 @@ class TestPrimitives(unittest.TestCase):
                 if root < P.size_default():
                     self.assertAlmostEqual(P.value_at(root, 1), i)
         
-        for t in P.all_nearest_points(P(0)):
+        for t in P.all_nearest_times(P(0)):
             self.assertAlmostEqual(P(t), P(0))
-        self.assertAlmostEqual(min(P.all_nearest_points( P(0) )), 0)
-        self.assertAlmostEqual(P.nearest_point(P(0), 0, 0.2), 0)
-        self.assertEqual( len(P.nearest_point_per_curve(Point())), P.size_default() )
+        self.assertAlmostEqual(min(P.all_nearest_times( P(0) )), 0)
+        self.assertAlmostEqual(P.nearest_time(P(0), 0, 0.2), 0)
+        self.assertEqual( len(P.nearest_time_per_curve(Point())), P.size_default() )
         
-        t, distSq = P.nearest_point_and_dist_sq(Point(-1, -1), 0, P.size())
+        t, distSq = P.nearest_time_and_dist_sq(Point(-1, -1), 0, P.size())
         self.assertAlmostEqual(distSq**0.5, abs(P(t)-Point(-1, -1)) )
         
         self.assertAlmostEqual(P.portion(0.3, 0.4)(0), P(0.3))

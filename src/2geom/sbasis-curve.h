@@ -37,7 +37,7 @@
 #define LIB2GEOM_SEEN_SBASIS_CURVE_H
 
 #include <2geom/curve.h>
-#include <2geom/nearest-point.h>
+#include <2geom/nearest-time.h>
 #include <2geom/sbasis-geometric.h>
 #include <2geom/transforms.h>
 
@@ -106,12 +106,12 @@ public:
     }
     virtual std::vector<Coord> roots(Coord v, Dim2 d) const { return Geom::roots(inner[d] - v); }
     virtual Coord nearestTime( Point const& p, Coord from = 0, Coord to = 1 ) const {
-        return nearest_point(p, inner, from, to);
+        return nearest_time(p, inner, from, to);
     }
     virtual std::vector<Coord> allNearestTimes( Point const& p, Coord from = 0,
         Coord to = 1 ) const
     {
-        return all_nearest_points(p, inner, from, to);
+        return all_nearest_times(p, inner, from, to);
     }
     virtual Coord length(Coord tolerance) const { return ::Geom::length(inner, tolerance); }
     virtual Curve *portion(Coord f, Coord t) const {

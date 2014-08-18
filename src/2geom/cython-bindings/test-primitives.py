@@ -159,7 +159,7 @@ class TestPrimitives(unittest.TestCase):
             k.time_at_projection(Point(4, 2) + Point(2, -4)),
             sqrt(20))
         self.assertAlmostEqual(
-            k.point_at(k.nearest_point(Point(4, 2) + Point(2, -4))),
+            k.point_at(k.nearest_time(Point(4, 2) + Point(2, -4))),
             Point(4,2))
         self.assertAlmostEqual(
             k.time_at_projection(Point(3, 3)),

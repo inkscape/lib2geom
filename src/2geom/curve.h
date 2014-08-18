@@ -324,7 +324,7 @@ public:
 };
 
 inline
-Coord nearest_point(Point const& p, Curve const& c) {
+Coord nearest_time(Point const& p, Curve const& c) {
     return c.nearestTime(p);
 }
 

@@ -39,7 +39,7 @@ conic-section-toy
 convex-toy
 curvature-test
 curve-curve-distance
-curve-curve-nearest-point-3
+curve-curve-nearest-time
 curve-intersection-by-bezier-clipping
 curve-intersection-by-implicitization
 d2sbasis-fitting
@@ -65,7 +65,7 @@ mesh-warp
 metro
 match-curve
 #normal-bundle
-point-curve-nearest-point
+point-curve-nearest-time
 portion-test
 offset-toy
 pair-intersect
