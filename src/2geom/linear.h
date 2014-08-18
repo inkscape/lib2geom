@@ -50,7 +50,11 @@ namespace Geom {
 
 class SBasis;
 
-class Linear{
+/**
+ * @brief Linear function fragment
+ * @ingroup Fragments
+ */
+class Linear {
 public:
     double a[2];
     Linear() {a[0]=0; a[1]=0;}
@@ -74,8 +78,10 @@ public:
     inline bool isConstant(double eps=EPSILON) const { return are_near(a[0], a[1], eps); }
     inline bool isFinite() const { return IS_FINITE(a[0]) && IS_FINITE(a[1]); }
 
-    inline double at0() const { return a[0]; }
-    inline double at1() const { return a[1]; }
+    inline Coord at0() const { return a[0]; }
+    inline Coord &at0() { return a[0]; }
+    inline Coord at1() const { return a[1]; }
+    inline Coord &at1() { return a[1]; }
 
     inline double valueAt(double t) const { return lerp(t, a[0], a[1]); }
     inline double operator()(double t) const { return valueAt(t); }

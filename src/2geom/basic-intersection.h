@@ -37,6 +37,7 @@
 #define LIB2GEOM_SEEN_BASIC_INTERSECTION_H
 
 #include <2geom/point.h>
+#include <2geom/bezier.h>
 #include <2geom/sbasis.h>
 #include <2geom/d2.h>
 
@@ -48,41 +49,29 @@
 
 namespace Geom {
 
-//why not allowing precision to be set here?
-void find_intersections(std::vector<std::pair<double, double> >& xs,
-                        D2<SBasis> const & A,
-                        D2<SBasis> const & B);
+void find_intersections(std::vector<std::pair<double, double> > &xs,
+                        D2<Bezier> const &A,
+                        D2<Bezier> const &B,
+                        double precision = EPSILON);
 
-void find_intersections(std::vector< std::pair<double, double> > & xs,
-                         std::vector<Point> const& A,
-                         std::vector<Point> const& B,
-                         double precision = 1e-5);
+void find_intersections(std::vector<std::pair<double, double> > &xs,
+                        D2<SBasis> const &A,
+                        D2<SBasis> const &B,
+                        double precision = EPSILON);
 
-//why not allowing precision to be set here?
-void find_self_intersections(std::vector<std::pair<double, double> >& xs,
-                             D2<SBasis> const & A);
+void find_intersections(std::vector< std::pair<double, double> > &xs,
+                        std::vector<Point> const &A,
+                        std::vector<Point> const &B,
+                        double precision = EPSILON);
 
+void find_self_intersections(std::vector<std::pair<double, double> > &xs,
+                             D2<SBasis> const &A,
+                             double precision = EPSILON);
 
-//--not implemented
-//void find_self_intersections(std::vector<std::pair<double, double> >& xs,
-//                             std::vector<Point> const & A);
+void find_self_intersections(std::vector<std::pair<double, double> > &xs,
+                             D2<Bezier> const &A,
+                             double precision = EPSILON);
 
-
-//TODO: this should be moved to .cpp, shouldn't it?
-// #ifdef USE_RECURSIVE_INTERSECTOR
-// /*
-//  * find_intersection
-//  *
-//  *  input: A, B       - set of control points of two Bezier curve
-//  *  input: precision  - required precision of computation
-//  *  output: xs        - set of pairs of parameter values
-//  *                      at which crossing happens
-//  */
-// void find_intersections_bezier_recursive (std::vector< std::pair<double, double> > & xs,
-//                          std::vector<Point> const& A,
-//                          std::vector<Point> const& B,
-//                          double precision = 1e-5);
-// #else
 /*
  * find_intersection
  *
@@ -97,10 +86,14 @@ void find_self_intersections(std::vector<std::pair<double, double> >& xs,
 void find_intersections_bezier_clipping (std::vector< std::pair<double, double> > & xs,
                          std::vector<Point> const& A,
                          std::vector<Point> const& B,
-                         double precision = 1e-5);
+                         double precision = EPSILON);
 //#endif
 
-
+void subdivide(D2<Bezier> const &a,
+               D2<Bezier> const &b,
+               std::vector< std::pair<double, double> > const &xs,
+               std::vector< D2<Bezier> > &av,
+               std::vector< D2<Bezier> > &bv);
 
 /*
  * find_collinear_normal
@@ -116,7 +109,7 @@ void find_intersections_bezier_clipping (std::vector< std::pair<double, double> 
 void find_collinear_normal (std::vector< std::pair<double, double> >& xs,
                             std::vector<Point> const& A,
                             std::vector<Point> const& B,
-                            double precision = 1e-5);
+                            double precision = EPSILON);
 
 void polish_intersections(std::vector<std::pair<double, double> > &xs, 
                           D2<SBasis> const &A,

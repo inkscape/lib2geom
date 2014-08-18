@@ -126,8 +126,8 @@ void wrap_sbasis() {
 
         .def("isZero", &Geom::SBasis::isZero)
         .def("isFinite", &Geom::SBasis::isFinite)
-        .def("at0", &Geom::SBasis::at0)
-        .def("at1", &Geom::SBasis::at1)
+        .def("at0", (double (Geom::SBasis::*)() const) &Geom::SBasis::at0)
+        .def("at1", (double (Geom::SBasis::*)() const) &Geom::SBasis::at1)
         .def("valueAt", &Geom::SBasis::valueAt)
         .def("toSBasis", &Geom::SBasis::toSBasis)
 

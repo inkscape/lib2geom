@@ -72,9 +72,9 @@ public:
     /** @brief Modify a control point.
      * @param ix The zero-based index of the point to modify. Note that the caller is responsible for checking that this value is <= order().
      * @param v The new value of the point */
-    void setPoint(unsigned ix, Point v) {
-        inner[X].setPoint(ix, v[X]);
-        inner[Y].setPoint(ix, v[Y]);
+    void setPoint(unsigned ix, Point const &v) {
+        inner[X][ix] = v[X];
+        inner[Y][ix] = v[Y];
     }
     /** @brief Set new control points.
      * @param ps Vector which must contain order() + 1 points.

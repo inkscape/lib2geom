@@ -91,13 +91,12 @@ TEST_F(BezierTest, ValueAt) {
 }
 
 TEST_F(BezierTest, Mutation) {
-//Only mutator
 //Coord &operator[](unsigned ix);
 //Coord const &operator[](unsigned ix);
-//void setPoint(unsigned ix double val);
+//void setCoeff(unsigned ix double val);
     //cout << "bigun\n";
     Bezier bigun(Bezier::Order(30));
-    bigun.setPoint(5,10.0);
+    bigun.setCoeff(5,10.0);
     for(unsigned i = 0; i < bigun.size(); i++) {
         EXPECT_EQ((i == 5) ? 10 : 0, bigun[i]);
     }
@@ -168,7 +167,7 @@ TEST_F(BezierTest, Roots) {
     
     Bezier bigun(Bezier::Order(30));
     for(unsigned i = 0; i < bigun.size(); i++) {
-        bigun.setPoint(i,rand()-0.5);
+        bigun.setCoeff(i,rand()-0.5);
     }
     cout << bigun.roots() << endl;*/
 

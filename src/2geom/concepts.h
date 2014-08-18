@@ -76,6 +76,8 @@ struct FragmentConcept {
         b = t.isFinite();
         o = t.at0();
         o = t.at1();
+        t.at0() = o;
+        t.at1() = o;
         o = t.valueAt(d);
         o = t(d);
         v = t.valueAndDerivatives(d, u-1);

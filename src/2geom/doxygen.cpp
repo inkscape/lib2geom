@@ -254,6 +254,15 @@
  */
 
 /**
+ * @defgroup Fragments Fragments and related classes
+ * @brief 1D functions on the unit interval
+ *
+ * Each type of fragments represents one of the various ways in which a function from
+ * the unit interval to the real line may be given. These are the most important mathematical
+ * primitives in 2Geom.
+ */
+
+/**
  * @defgroup Curves Curves
  * @brief Functions mapping the unit interval to a plane
  *

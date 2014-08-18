@@ -63,7 +63,6 @@ namespace detail { namespace bezier_clipping {
 // for debugging
 //
 
-inline
 void print(std::vector<Point> const& cp, const char* msg = "")
 {
     std::cerr << msg << std::endl;
@@ -72,7 +71,6 @@ void print(std::vector<Point> const& cp, const char* msg = "")
 }
 
 template< class charT >
-inline
 std::basic_ostream<charT> &
 operator<< (std::basic_ostream<charT> & os, const Interval & I)
 {
@@ -80,7 +78,6 @@ operator<< (std::basic_ostream<charT> & os, const Interval & I)
     return os;
 }
 
-inline
 double angle (std::vector<Point> const& A)
 {
     size_t n = A.size() -1;
@@ -88,7 +85,6 @@ double angle (std::vector<Point> const& A)
     return (180 * a / M_PI);
 }
 
-inline
 size_t get_precision(Interval const& I)
 {
     double d = I.extent();
@@ -103,7 +99,6 @@ size_t get_precision(Interval const& I)
     return n;
 }
 
-inline
 void range_assertion(int k, int m, int n, const char* msg)
 {
     if ( k < m || k > n)
@@ -123,7 +118,6 @@ void range_assertion(int k, int m, int n, const char* msg)
 /*
  * return true in case the oriented polyline p0, p1, p2 is a right turn
  */
-inline
 bool is_a_right_turn (Point const& p0, Point const& p1, Point const& p2)
 {
     if (p1 == p2) return false;
@@ -181,7 +175,6 @@ void convex_hull (std::vector<Point> & P)
 /*
  * Compute the binomial coefficient (n, k)
  */
-inline
 double binomial(unsigned int n, unsigned int k)
 {
     return choose<double>(n, k);
@@ -190,7 +183,6 @@ double binomial(unsigned int n, unsigned int k)
 /*
  * Compute the determinant of the 2x2 matrix with column the point P1, P2
  */
-inline
 double det(Point const& P1, Point const& P2)
 {
     return P1[X]*P2[Y] - P1[Y]*P2[X];
@@ -200,7 +192,6 @@ double det(Point const& P1, Point const& P2)
  * Solve the linear system [P1,P2] * P = Q
  * in case there isn't exactly one solution the routine returns false
  */
-inline
 bool solve(Point & P, Point const& P1, Point const& P2, Point const& Q)
 {
     double d = det(P1, P2);
@@ -217,22 +208,10 @@ bool solve(Point & P, Point const& P1, Point const& P2, Point const& Q)
 /*
  * Map the sub-interval I in [0,1] into the interval J and assign it to J
  */
-inline
 void map_to(Interval & J, Interval const& I)
 {
     J.setEnds(J.valueAt(I.min()), J.valueAt(I.max()));
 }
-
-/*
- * The interval [1,0] is used to represent the empty interval, this routine
- * is just an helper function for creating such an interval
- */
-inline
-OptInterval make_empty_interval()
-{
-    return OptInterval();
-}
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // bezier curve routines
@@ -242,7 +221,6 @@ OptInterval make_empty_interval()
  * false otherwise
  */
 // Bezier.isConstant(precision)
-inline
 bool is_constant(std::vector<Point> const& A, double precision = EPSILON)
 {
     for (unsigned int i = 1; i < A.size(); ++i)
@@ -257,7 +235,6 @@ bool is_constant(std::vector<Point> const& A, double precision = EPSILON)
  * Compute the hodograph of the bezier curve B and return it in D
  */
 // derivative(Bezier)
-inline
 void derivative(std::vector<Point> & D, std::vector<Point> const& B)
 {
     D.clear();
@@ -281,7 +258,6 @@ void derivative(std::vector<Point> & D, std::vector<Point> const& B)
  * and return it in D; we have N(t) orthogonal to B(t) for any t
  */
 // rot90(derivative(Bezier))
-inline
 void normal(std::vector<Point> & N, std::vector<Point> const& B)
 {
     derivative(N,B);
@@ -295,7 +271,6 @@ void normal(std::vector<Point> & N, std::vector<Point> const& B)
  *  Compute the portion of the Bezier curve "B" wrt the interval [0,t]
  */
 // portion(Bezier, 0, t)
-inline
 void left_portion(Coord t, std::vector<Point> & B)
 {
     size_t n = B.size();
@@ -312,7 +287,6 @@ void left_portion(Coord t, std::vector<Point> & B)
  *  Compute the portion of the Bezier curve "B" wrt the interval [t,1]
  */
 // portion(Bezier, t, 1)
-inline
 void right_portion(Coord t, std::vector<Point> & B)
 {
     size_t n = B.size();
@@ -329,7 +303,6 @@ void right_portion(Coord t, std::vector<Point> & B)
  *  Compute the portion of the Bezier curve "B" wrt the interval "I"
  */
 // portion(Bezier, I)
-inline
 void portion (std::vector<Point> & B , Interval const& I)
 {
     if (I.min() == 0)
@@ -372,7 +345,6 @@ void iterate(std::vector<Interval>& domsA,
  *  vector : l[0] * x + l[1] * y + l[2] == 0; the line is normalized.
  */
 // Line(c[i], c[j])
-inline
 void orientation_line (std::vector<double> & l,
                        std::vector<Point> const& c,
                        size_t i, size_t j)
@@ -391,7 +363,6 @@ void orientation_line (std::vector<double> & l,
  * Pick up an orientation line for the Bezier curve "c" and return it in
  * the output parameter "l"
  */
-inline
 void pick_orientation_line (std::vector<double> & l,
                             std::vector<Point> const& c)
 {
@@ -416,7 +387,6 @@ void pick_orientation_line (std::vector<double> & l,
  *  the line is returned in the output parameter "l" in the form of a 3 element
  *  vector : l[0] * x + l[1] * y + l[2] == 0; the line is normalized.
  */
-inline
 void orthogonal_orientation_line (std::vector<double> & l,
                                   std::vector<Point> const& c,
                                   Point const& p)
@@ -435,7 +405,6 @@ void orthogonal_orientation_line (std::vector<double> & l,
 /*
  *  Compute the signed distance of the point "P" from the normalized line l
  */
-inline
 double distance (Point const& P, std::vector<double> const& l)
 {
     return l[X] * P[X] + l[Y] * P[Y] + l[2];
@@ -446,7 +415,6 @@ double distance (Point const& P, std::vector<double> const& l)
  * curve "c" from the normalized orientation line "l".
  * This bounds are returned through the output Interval parameter"bound".
  */
-inline
 void fat_line_bounds (Interval& bound,
                       std::vector<Point> const& c,
                       std::vector<double> const& l)
@@ -462,7 +430,6 @@ void fat_line_bounds (Interval& bound,
  * return the x component of the intersection point between the line
  * passing through points p1, p2 and the line Y = "y"
  */
-inline
 double intersect (Point const& p1, Point const& p2, double y)
 {
     // we are sure that p2[Y] != p1[Y] because this routine is called
@@ -578,7 +545,6 @@ OptInterval clip_interval (std::vector<Point> const& B,
  *  is returned through the output parameter "dom"
  */
 template <>
-inline
 OptInterval clip<intersection_point_tag> (std::vector<Point> const& A,
                                           std::vector<Point> const& B)
 {
@@ -605,7 +571,6 @@ OptInterval clip<intersection_point_tag> (std::vector<Point> const& A,
  * Compute a closed focus for the Bezier curve B and return it in F
  * A focus is any curve through which all lines perpendicular to B(t) pass.
  */
-inline
 void make_focus (std::vector<Point> & F, std::vector<Point> const& B)
 {
     assert (B.size() > 2);
@@ -793,7 +758,6 @@ OptInterval clip_interval (std::vector<Point> const& B,
  *  for the clipped curve is returned through the output parameter "dom"
  */
 template <>
-inline
 OptInterval clip<collinear_normal_tag> (std::vector<Point> const& A,
                                         std::vector<Point> const& B)
 {

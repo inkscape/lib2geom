@@ -44,7 +44,8 @@ namespace Geom {
 
 class PathBuilder;
 
-void sbasis_to_bezier (Bezier & bz, SBasis const& sb, size_t sz = 0);
+void sbasis_to_bezier (Bezier &bz, SBasis const &sb, size_t sz = 0);
+void sbasis_to_bezier (D2<Bezier> &bz, D2<SBasis> const &sb, size_t sz = 0);
 void sbasis_to_bezier (std::vector<Point> & bz, D2<SBasis> const& sb, size_t sz = 0);
 void sbasis_to_cubic_bezier (std::vector<Point> & bz, D2<SBasis> const& sb);
 void bezier_to_sbasis (SBasis & sb, Bezier const& bz);

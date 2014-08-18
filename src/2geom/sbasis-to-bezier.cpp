@@ -152,6 +152,15 @@ void sbasis_to_bezier (Bezier & bz, SBasis const& sb, size_t sz)
     bz[n] = sb[0][1];
 }
 
+void sbasis_to_bezier(D2<Bezier> &bz, D2<SBasis> const &sb, size_t sz)
+{
+    if (sz == 0) {
+        sz = std::max(sb[X].size(), sb[Y].size())*2;
+    }
+    sbasis_to_bezier(bz[X], sb[X], sz);
+    sbasis_to_bezier(bz[Y], sb[Y], sz);
+}
+
 /** Changes the basis of p to be Bernstein.
  \param p the D2 Symmetric basis polynomial
  \returns the D2 Bernstein basis polynomial
@@ -160,24 +169,9 @@ void sbasis_to_bezier (Bezier & bz, SBasis const& sb, size_t sz)
 */
 void sbasis_to_bezier (std::vector<Point> & bz, D2<SBasis> const& sb, size_t sz)
 {
-    Bezier bzx, bzy;
-    if(sz == 0) {
-        sz = std::max(sb[X].size(), sb[Y].size())*2;
-    }
-    sbasis_to_bezier(bzx, sb[X], sz);
-    sbasis_to_bezier(bzy, sb[Y], sz);
-    assert(bzx.size() == bzy.size());
-    size_t n = (bzx.size() >= bzy.size()) ? bzx.size() : bzy.size();
-
-    bz.resize(n, Point(0,0));
-    for (size_t i = 0; i < bzx.size(); ++i)
-    {
-        bz[i][X] = bzx[i];
-    }
-    for (size_t i = 0; i < bzy.size(); ++i)
-    {
-        bz[i][Y] = bzy[i];
-    }
+    D2<Bezier> bez;
+    sbasis_to_bezier(bez, sb, sz);
+    bz = bezier_points(bez);
 }
 
 /** Changes the basis of p to be Bernstein.

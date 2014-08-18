@@ -72,8 +72,8 @@ void wrap_linear() {
 
         .def("isZero", &Geom::Linear::isZero)
         .def("isFinite", &Geom::Linear::isFinite)
-        .def("at0", &Geom::Linear::at0)
-        .def("at1", &Geom::Linear::at1)
+        .def("at0", (double (Geom::Linear::*)() const) &Geom::Linear::at0)
+        .def("at1", (double (Geom::Linear::*)() const) &Geom::Linear::at1)
         .def("valueAt", &Geom::Linear::valueAt)
         .def("toSBasis", &Geom::Linear::toSBasis)
 

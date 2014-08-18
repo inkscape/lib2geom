@@ -69,6 +69,10 @@ class D2{
 
     T& operator[](unsigned i)              { return f[i]; }
     T const & operator[](unsigned i) const { return f[i]; }
+    Point point(unsigned i) const {
+        Point ret(f[X][i], f[Y][i]);
+        return ret;
+    }
 
     //IMPL: FragmentConcept
     typedef Point output_type;

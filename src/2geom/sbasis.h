@@ -60,13 +60,13 @@ class SBasis : public SBasisN<1>;
 };
 #else
 
-namespace Geom{
+namespace Geom {
 
 /**
-* \brief S-power basis function class
-*
-* An empty SBasis is identically 0. */
-class SBasis{
+ * @brief Polynomial in symmetric power basis
+ * @ingroup Fragments
+ */
+class SBasis {
     std::vector<Linear> d;
     void push_back(Linear const&l) { d.push_back(l); }
 
@@ -139,12 +139,10 @@ public:
     }
 
     bool isFinite() const;
-    inline double at0() const { 
-        if(empty()) return 0; else return (*this)[0][0];
-    }
-    inline double at1() const{
-        if(empty()) return 0; else return (*this)[0][1];
-    }
+    inline Coord at0() const { return (*this)[0][0]; }
+    inline Coord &at0() { return (*this)[0][0]; }
+    inline Coord at1() const { return (*this)[0][1]; }
+    inline Coord &at1() { return (*this)[0][0]; }
     
     int degreesOfFreedom() const { return size()*2;}
 

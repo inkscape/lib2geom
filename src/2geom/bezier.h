@@ -116,6 +116,10 @@ inline T bernstein_value_at(double t, T const *c_, unsigned n) {
     return (tmp + tn*t*c_[n]);
 }
 
+/**
+ * @brief Polynomial in Bernstein-Bezier basis
+ * @ingroup Fragments
+ */
 class Bezier
     : boost::arithmetic< Bezier, double
     , boost::additive< Bezier
@@ -218,22 +222,12 @@ public:
         return true;
     }
     inline Coord at0() const { return c_[0]; }
+    inline Coord &at0() { return c_[0]; }
     inline Coord at1() const { return c_[order()]; }
+    inline Coord &at1() { return c_[order()]; }
 
     inline Coord valueAt(double t) const {
-        int n = order();
-        double u, bc, tn, tmp;
-        int i;
-        u = 1.0 - t;
-        bc = 1;
-        tn = 1;
-        tmp = c_[0]*u;
-        for(i=1; i<n; i++){
-            tn = tn*t;
-            bc = bc*(n-i+1)/i;
-            tmp = (tmp + tn*bc*c_[i])*u;
-        }
-        return (tmp + tn*t*c_[n]);
+        return bernstein_value_at(t, &c_[0], order());
     }
     inline Coord operator()(double t) const { return valueAt(t); }
 
@@ -241,8 +235,8 @@ public:
 
     inline Coord &operator[](unsigned ix) { return c_[ix]; }
     inline Coord const &operator[](unsigned ix) const { return const_cast<std::valarray<Coord>&>(c_)[ix]; }
-    //inline Coord const &operator[](unsigned ix) const { return c_[ix]; }
-    inline void setPoint(unsigned ix, double val) { c_[ix] = val; }
+
+    inline void setCoeff(unsigned ix, double val) { c_[ix] = val; }
 
     /**
     *  The size of the returned vector equals n_derivs+1.

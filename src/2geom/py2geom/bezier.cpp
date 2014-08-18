@@ -52,7 +52,6 @@ double bezier_getitem(Geom::Bezier const& p, int index)
     return p[index];
 }
 
-
 void wrap_bezier() {
     //bezier.h
 
@@ -66,8 +65,8 @@ void wrap_bezier() {
 
         .def("isZero", &Geom::Bezier::isZero)
         .def("isFinite", &Geom::Bezier::isFinite)
-        .def("at0", &Geom::Bezier::at0)
-        .def("at1", &Geom::Bezier::at1)
+        .def("at0", (double (Geom::Bezier::*)() const) &Geom::Bezier::at0)
+        .def("at1", (double (Geom::Bezier::*)() const) &Geom::Bezier::at1)
         .def("valueAt", &Geom::Bezier::valueAt)
         .def("toSBasis", &Geom::Bezier::toSBasis)
 
