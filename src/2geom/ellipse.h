@@ -2,7 +2,8 @@
  * @brief Ellipse shape
  *//*
  * Authors:
- *      Marco Cecchetti <mrcekets at gmail.com>
+ *   Marco Cecchetti <mrcekets at gmail.com>
+ *   Krzysztof Kosiński <tweenk.pl@gmail.com>
  *
  * Copyright 2008  authors
  *
@@ -35,100 +36,99 @@
 #define LIB2GEOM_SEEN_ELLIPSE_H
 
 #include <vector>
-#include <2geom/point.h>
+#include <2geom/angle.h>
 #include <2geom/exception.h>
-#include <2geom/affine.h>
+#include <2geom/point.h>
+#include <2geom/transforms.h>
 
-namespace Geom
-{
+namespace Geom {
 
 class EllipticalArc;
 class Circle;
 
+/** @brief Set of points with a constant sum of distances from two foci
+ * @ingroup Shapes */
 class Ellipse
+    : boost::multipliable< Ellipse, Translate
+    , boost::multipliable< Ellipse, Scale
+    , boost::multipliable< Ellipse, Rotate
+    , boost::multipliable< Ellipse, Zoom
+    , boost::multipliable< Ellipse, Affine
+      > > > > >
 {
-  public:
-    Ellipse():
-       m_centre(),
-       m_ray(),
-       m_angle(0)
+    Point _center;
+    Point _rays;
+    Angle _angle;
+public:
+    Ellipse() {}
+    Ellipse(Point const &c, Point const &r, Coord angle)
+        : _center(c)
+        , _rays(r)
+        , _angle(angle)
     {}
-
-    Ellipse(double cx, double cy, double rx, double ry, double a)
-        : m_centre(cx, cy), m_ray(rx, ry), m_angle(a)
-    {
+    Ellipse(Coord cx, Coord cy, Coord rx, Coord ry, Coord angle)
+        : _center(cx, cy)
+        , _rays(rx, ry)
+        , _angle(angle)
+    {}
+    Ellipse(double A, double B, double C, double D, double E, double F) {
+        setCoefficients(A, B, C, D, E, F);
     }
-
-    // build an ellipse by its implicit equation:
-    // Ax^2 + Bxy + Cy^2 + Dx + Ey + F = 0
-    Ellipse(double A, double B, double C, double D, double E, double F)
-    {
-        set(A, B, C, D, E, F);
-    }
-
-    explicit Ellipse(std::vector<Point> const& points)
-    {
-        set(points);
-    }
-    
     Ellipse(Geom::Circle const &c);
 
-    void set(double cx, double cy, double rx, double ry, double a)
-    {
-        m_centre[X] = cx;
-        m_centre[Y] = cy;
-        m_ray[X] = rx;
-        m_ray[Y] = ry;
-        m_angle = a;
+    void set(Point const &c, Point const &r, Coord angle) {
+        _center = c;
+        _rays = r;
+        _angle = angle;
+    }
+    void set(Coord cx, Coord cy, Coord rx, Coord ry, Coord a) {
+        _center[X] = cx;
+        _center[Y] = cy;
+        _rays[X] = rx;
+        _rays[Y] = ry;
+        _angle = a;
     }
 
     // build an ellipse by its implicit equation:
     // Ax^2 + Bxy + Cy^2 + Dx + Ey + F = 0
-    void set(double A, double B, double C, double D, double E, double F);
+    void setCoefficients(double A, double B, double C, double D, double E, double F);
 
     // biuld up the best fitting ellipse wrt the passed points
     // prerequisite: at least 5 points must be passed
-    void set(std::vector<Point> const& points);
+    void fit(std::vector<Point> const& points);
 
-    EllipticalArc *
-    arc(Point const& initial, Point const& inner, Point const& final, bool svg_compliant = true);
+    EllipticalArc *arc(Point const &ip, Point const &inner, Point const &fp,
+                       bool svg_compliant = true);
 
-    Point center() const
-    {
-        return m_centre;
+    Point center() const { return _center; }
+    Coord center(Dim2 d) const { return _center[d]; }
+    Point rays() const { return _rays; }
+    Coord ray(Dim2 d) const { return _rays[d]; }
+    Angle rotationAngle() const { return _angle; }
+
+    std::vector<double> coefficients() const;
+
+    Ellipse &operator*=(Translate const &t) {
+        _center *= t;
+        return *this;
     }
-
-    Coord center(Dim2 d) const
-    {
-        return m_centre[d];
+    Ellipse &operator*=(Scale const &s) {
+        _center *= s;
+        _rays *= s;
+        return *this;
     }
-
-    Coord ray(Dim2 d) const
-    {
-        return m_ray[d];
+    Ellipse &operator*=(Zoom const &z) {
+        _center *= z;
+        _rays *= z.scale();
+        return *this;
     }
-
-    Coord rot_angle() const
-    {
-        return m_angle;
-    }
-
-    std::vector<double> implicit_form_coefficients() const;
-
-    Ellipse transformed(Affine const& m) const;
-
-  private:
-    Point m_centre, m_ray;
-    double m_angle;
+    Ellipse &operator*=(Rotate const &r);
+    Ellipse &operator*=(Affine const &m);
 };
-
 
 } // end namespace Geom
 
-
-
-#endif // _2GEOM_ELLIPSE_H_
-
+#endif // LIB2GEOM_SEEN_ELLIPSE_H
 
 /*
   Local Variables:

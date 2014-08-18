@@ -47,10 +47,8 @@ void wrap_circle() {
 
     class_<Geom::Circle>("Circle", init<double, double, double>())
         .def(init<double, double, double, double>())
-        // needs to be mapped to PointVec, but i can't figure out how
-        .def(init<PointVec >())
             
-        .def("set", &Geom::Circle::set)
+        .def("setCoefficients", &Geom::Circle::setCoefficients)
         .def("fit", &Geom::Circle::fit)
         .add_property("radius", &Geom::Circle::radius)
         

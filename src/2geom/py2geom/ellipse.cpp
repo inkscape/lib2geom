@@ -40,9 +40,8 @@
 #include "../d2.h"
 
 
-void  (Geom::Ellipse::*ellipse_set1)(double, double, double, double, double) = &Geom::Ellipse::set;
-void  (Geom::Ellipse::*ellipse_set2)(double, double, double, double, double, double) = &Geom::Ellipse::set;
-void  (Geom::Ellipse::*ellipse_set3)(std::vector<Geom::Point> const& points) = &Geom::Ellipse::set;
+void  (Geom::Ellipse::*ellipse_set1)(Geom::Point const &, Geom::Point const &, double) = &Geom::Ellipse::set;
+void  (Geom::Ellipse::*ellipse_set2)(double, double, double, double, double) = &Geom::Ellipse::set;
 
 // i can't get these to work
 //Geom::Point  (Geom::Ellipse::*center_point)() = (Geom::Point (*)() const)&Geom::Ellipse::center;
@@ -54,20 +53,21 @@ void wrap_ellipse() {
     class_<Geom::Ellipse>("Ellipse", init<double, double, double, double, double>())
         .def(init<double, double, double, double, double, double>())
         // needs to be mapped to PointVec, but i can't figure out how
-        .def(init<PointVec>())
         .def(init<Geom::Circle>())
-        
+
         .def("set", ellipse_set1)
         .def("set", ellipse_set2)
-        .def("set", ellipse_set3)
+        .def("setCoefficients", &Geom::Ellipse::setCoefficients)
+        .def("fit", &Geom::Ellipse::fit)
         
-        .add_property("center", (Geom::Point (Geom::Ellipse::*)() const)&Geom::Ellipse::center)
+        .def("center", (Geom::Point (Geom::Ellipse::*)() const) &Geom::Ellipse::center)
         // .def("center", center_coord)
         
         .def("ray", &Geom::Ellipse::ray)
-        .add_property("rot_angle", &Geom::Ellipse::rot_angle)
-        .def("implicit_form_coefficients", &Geom::Ellipse::implicit_form_coefficients)
-        .def("transformed", &Geom::Ellipse::transformed)
+        .def("rotationAngle", &Geom::Ellipse::rotationAngle)
+        .def("coefficients", &Geom::Ellipse::coefficients)
+        .def(self * Geom::Affine())
+        .def(self *= Geom::Affine())
         // requires SVGEllipticalArc
         //.def("arc", &Geom::Ellipse::arc)
         

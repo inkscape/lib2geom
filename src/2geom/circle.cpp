@@ -1,10 +1,11 @@
-/*
- * Circle Curve
- *
+/** @file
+ * @brief Circle shape
+ *//*
  * Authors:
- *      Marco Cecchetti <mrcekets at gmail.com>
+ *   Marco Cecchetti <mrcekets at gmail.com>
+ *   Krzysztof Kosiński <tweenk.pl@gmail.com>
  *
- * Copyright 2008  authors
+ * Copyright 2008-2014 Authors
  *
  * This library is free software; you can redistribute it and/or
  * modify it either under the terms of the GNU Lesser General Public
@@ -30,22 +31,17 @@
  * the specific language governing rights and limitations.
  */
 
-
 #include <2geom/circle.h>
 #include <2geom/ellipse.h>
 #include <2geom/svg-elliptical-arc.h>
 #include <2geom/numeric/fitting-tool.h>
 #include <2geom/numeric/fitting-model.h>
 
+namespace Geom {
 
-
-namespace Geom
+void Circle::setCoefficients(Coord A, Coord B, Coord C, Coord D)
 {
-
-void Circle::set(Coord A, Coord B, Coord C, Coord D)
-{
-    if (A == 0)
-    {
+    if (A == 0) {
         THROW_RANGEERROR("square term coefficient == 0");
     }
 
@@ -59,8 +55,7 @@ void Circle::set(Coord A, Coord B, Coord C, Coord D)
     _center[Y] = -c/2;
     Coord r2 = _center[X] * _center[X] + _center[Y] * _center[Y] - d;
 
-    if (r2 < 0)
-    {
+    if (r2 < 0) {
         THROW_RANGEERROR("ray^2 < 0");
     }
 
@@ -83,8 +78,7 @@ void Circle::fit(std::vector<Point> const& points)
     NL::LFMCircle model;
     NL::least_squeares_fitter<NL::LFMCircle> fitter(model, sz);
 
-    for (size_t i = 0; i < sz; ++i)
-    {
+    for (size_t i = 0; i < sz; ++i) {
         fitter.append(points[i]);
     }
     fitter.update();

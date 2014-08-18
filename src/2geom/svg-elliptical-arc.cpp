@@ -207,7 +207,7 @@ bool make_elliptical_arc::make_elliptiarc()
     Ellipse e;
     try
     {
-        e.set(1, coeff[0], coeff[1], coeff[2], coeff[3], coeff[4]);
+        e.setCoefficients(1, coeff[0], coeff[1], coeff[2], coeff[3], coeff[4]);
     }
     catch(LogicalError const &exc)
     {

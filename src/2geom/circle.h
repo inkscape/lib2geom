@@ -1,11 +1,11 @@
-/**
- * \file
- * \brief Circles
+/** @file
+ * @brief Circle shape
  *//*
  * Authors:
- *      Marco Cecchetti <mrcekets at gmail.com>
+ *   Marco Cecchetti <mrcekets at gmail.com>
+ *   Krzysztof Kosiński <tweenk.pl@gmail.com>
  *
- * Copyright 2008  authors
+ * Copyright 2008-2014 Authors
  *
  * This library is free software; you can redistribute it and/or
  * modify it either under the terms of the GNU Lesser General Public
@@ -42,6 +42,8 @@ namespace Geom {
 
 class EllipticalArc;
 
+/** @brief Set of all points at a fixed distance from the center
+ * @ingroup Shapes */
 class Circle
     : MultipliableNoncommutative< Circle, Translate
     , MultipliableNoncommutative< Circle, Rotate
@@ -61,20 +63,16 @@ public:
     {}
 
     Circle(Coord A, Coord B, Coord C, Coord D) {
-        set(A, B, C, D);
-    }
-
-    explicit Circle(std::vector<Point> const& points) {
-        fit(points);
+        setCoefficients(A, B, C, D);
     }
 
     // build a circle by its implicit equation:
     // Ax^2 + Ay^2 + Bx + Cy + D = 0
-    void set(Coord A, Coord B, Coord C, Coord D);
+    void setCoefficients(Coord A, Coord B, Coord C, Coord D);
 
-    // build up the best fitting circle wrt the passed points
-    // prerequisite: at least 2 points must be passed
-    void fit(std::vector<Point> const& points);
+    /** @brief Fit the circle to the passed points using the least squares method.
+     * @param points Samples at the perimeter of the circle */
+    void fit(std::vector<Point> const &points);
 
     EllipticalArc *
     arc(Point const& initial, Point const& inner, Point const& final,
@@ -83,21 +81,12 @@ public:
     D2<SBasis> toSBasis();
     void getPath(PathVector &path_out);
 
-    Point center() const {
-        return _center;
-    }
-    Coord center(Dim2 d) const {
-        return _center[d];
-    }
-    Coord radius() const {
-        return _radius;
-    }
-    void setCenter(Point const &p) {
-        _center = p;
-    }
-    void setRadius(Coord c) {
-        _radius = c;
-    }
+    Point center() const { return _center; }
+    Coord center(Dim2 d) const { return _center[d]; }
+    Coord radius() const { return _radius; }
+
+    void setCenter(Point const &p) { _center = p; }
+    void setRadius(Coord c) { _radius = c; }
 
     Circle &operator*=(Translate const &t) {
         _center *= t;

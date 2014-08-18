@@ -70,7 +70,7 @@ class EllipseFitting : public Toy
 
         try
         {
-            e.set(psh.pts);
+            e.fit(psh.pts);
         }
         catch(LogicalError exc)
         {
@@ -102,7 +102,7 @@ class EllipseFitting : public Toy
                                             e.center(X), e.center(Y),
                                             e.ray(X), e.ray(Y),
                                             0, 2*M_PI,
-                                            e.rot_angle() );
+                                            e.rotationAngle() );
         }
         else
         {

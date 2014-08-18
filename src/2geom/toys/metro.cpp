@@ -383,7 +383,7 @@ void fit::test() {
         ss += input[i];
     }
     double best_bl = DBL_MAX;
-    unsigned best;
+    unsigned best = 0;
     for(unsigned i=0;i<angles.size();i++) {
         Point n = unit_vector(rot90(angles[i]));
         double dist = dot(n, input[0]);

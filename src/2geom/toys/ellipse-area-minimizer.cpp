@@ -83,7 +83,7 @@ class LFMEllipseArea
 //                  << " E = " << coeff[2]
 //                  << " F = " << coeff[3]
 //                  << std::endl;
-        e.set(1, coeff[0], m_coeff, coeff[1], coeff[2], coeff[3]);
+        e.setCoefficients(1, coeff[0], m_coeff, coeff[1], coeff[2], coeff[3]);
     }
 
   private:
@@ -244,7 +244,8 @@ class EllipseAreaMinimizer : public Toy
         }
 
         if(non_convex) {
-            Circle circ(ch.boundary);
+            Circle circ;
+            circ.fit(ch.boundary);
             e = Ellipse(circ);
         } else {
             goal_function_type* gf = &area_goal;
@@ -268,7 +269,7 @@ class EllipseAreaMinimizer : public Toy
                                         e.center(X), e.center(Y),
                                         e.ray(X), e.ray(Y),
                                         0, 2*M_PI,
-                                        e.rot_angle() );
+                                        e.rotationAngle() );
         if (toggles[0].on)
             *notify << "Area: " << e.ray(X)*e.ray(Y);
         else

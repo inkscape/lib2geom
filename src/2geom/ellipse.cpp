@@ -1,10 +1,11 @@
-/*
- * Ellipse Curve
- *
+/** @file
+ * @brief Ellipse shape
+ *//*
  * Authors:
- *      Marco Cecchetti <mrcekets at gmail.com>
+ *   Marco Cecchetti <mrcekets at gmail.com>
+ *   Krzysztof Kosiński <tweenk.pl@gmail.com>
  *
- * Copyright 2008  authors
+ * Copyright 2008-2014 Authors
  *
  * This library is free software; you can redistribute it and/or
  * modify it either under the terms of the GNU Lesser General Public
@@ -30,33 +31,28 @@
  * the specific language governing rights and limitations.
  */
 
-
 #include <2geom/ellipse.h>
 #include <2geom/svg-elliptical-arc.h>
 #include <2geom/numeric/fitting-tool.h>
 #include <2geom/numeric/fitting-model.h>
 
-using std::swap;
+namespace Geom {
 
-namespace Geom
-{
-
-void Ellipse::set(double A, double B, double C, double D, double E, double F)
+void Ellipse::setCoefficients(double A, double B, double C, double D, double E, double F)
 {
     double den = 4*A*C - B*B;
-    if ( den == 0 )
-    {
-        THROW_LOGICALERROR("den == 0, while computing ellipse centre");
+    if (den == 0) {
+        THROW_RANGEERROR("den == 0, while computing ellipse centre");
     }
-    m_centre[X] = (B*E - 2*C*D) / den;
-    m_centre[Y] = (B*D - 2*A*E) / den;
+    _center[X] = (B*E - 2*C*D) / den;
+    _center[Y] = (B*D - 2*A*E) / den;
 
     // evaluate the a coefficient of the ellipse equation in normal form
     // E(x,y) = a*(x-cx)^2 + b*(x-cx)*(y-cy) + c*(y-cy)^2 = 1
     // where b = a*B , c = a*C, (cx,cy) == centre
-    double num =   A * sqr(m_centre[X])
-                 + B * m_centre[X] * m_centre[Y]
-                 + C * sqr(m_centre[Y])
+    double num =   A * sqr(_center[X])
+                 + B * _center[X] * _center[Y]
+                 + C * sqr(_center[Y])
                  - F;
 
 
@@ -64,73 +60,66 @@ void Ellipse::set(double A, double B, double C, double D, double E, double F)
     double rot = std::atan2( -B, -(A - C) )/2;
 //      std::cerr << "rot = " << rot << std::endl;
     bool swap_axes = false;
-    if ( are_near(rot, 0) ) rot = 0;
-    if ( are_near(rot, M_PI/2)  || rot < 0 )
-    {
+
+    if (rot >= M_PI/2 || rot < 0) {
         swap_axes = true;
     }
 
     // evaluate the length of the ellipse rays
-    double cosrot = std::cos(rot);
-    double sinrot = std::sin(rot);
+    double sinrot, cosrot;
+    sincos(rot, sinrot, cosrot);
     double cos2 = cosrot * cosrot;
     double sin2 = sinrot * sinrot;
     double cossin = cosrot * sinrot;
 
     den = A * cos2 + B * cossin + C * sin2;
-    if ( den == 0 )
-    {
-        THROW_LOGICALERROR("den == 0, while computing 'rx' coefficient");
+    if (den == 0) {
+        THROW_RANGEERROR("den == 0, while computing 'rx' coefficient");
     }
-    double rx2 =  num/den;
-    if ( rx2 < 0 )
-    {
-        THROW_LOGICALERROR("rx2 < 0, while computing 'rx' coefficient");
+    double rx2 = num / den;
+    if (rx2 < 0) {
+        THROW_RANGEERROR("rx2 < 0, while computing 'rx' coefficient");
     }
     double rx = std::sqrt(rx2);
 
     den = C * cos2 - B * cossin + A * sin2;
-    if ( den == 0 )
-    {
-        THROW_LOGICALERROR("den == 0, while computing 'ry' coefficient");
+    if (den == 0) {
+        THROW_RANGEERROR("den == 0, while computing 'ry' coefficient");
     }
-    double ry2 =  num/den;
-    if ( ry2 < 0 )
-    {
-        THROW_LOGICALERROR("ry2 < 0, while computing 'rx' coefficient");
+    double ry2 = num / den;
+    if (ry2 < 0) {
+        THROW_RANGEERROR("ry2 < 0, while computing 'rx' coefficient");
     }
     double ry = std::sqrt(ry2);
 
     // the solution is not unique so we choose always the ellipse
     // with a rotation angle between 0 and PI/2
-    if ( swap_axes ) swap(rx, ry);
-    if (    are_near(rot,  M_PI/2)
-         || are_near(rot, -M_PI/2)
-         || are_near(rx, ry)       )
-    {
+    if (swap_axes) {
+        std::swap(rx, ry);
+    }
+
+    if (rx == ry) {
         rot = 0;
     }
-    else if ( rot < 0 )
-    {
+    if (rot < 0) {
         rot += M_PI/2;
     }
 
-    m_ray[X] = rx;
-    m_ray[Y] = ry;
-    m_angle = rot;
+    _rays[X] = rx;
+    _rays[Y] = ry;
+    _angle = rot;
 }
 
 
-std::vector<double> Ellipse::implicit_form_coefficients() const
+std::vector<double> Ellipse::coefficients() const
 {
-    if (ray(X) == 0 || ray(Y) == 0)
-    {
-        THROW_LOGICALERROR("a degenerate ellipse doesn't own an implicit form");
+    if (ray(X) == 0 || ray(Y) == 0) {
+        THROW_RANGEERROR("a degenerate ellipse doesn't have an implicit form");
     }
 
     std::vector<double> coeff(6);
-    double cosrot = std::cos(rot_angle());
-    double sinrot = std::sin(rot_angle());
+    double cosrot, sinrot;
+    sincos(_angle, sinrot, cosrot);
     double cos2 = cosrot * cosrot;
     double sin2 = sinrot * sinrot;
     double cossin = cosrot * sinrot;
@@ -150,18 +139,16 @@ std::vector<double> Ellipse::implicit_form_coefficients() const
 }
 
 
-void Ellipse::set(std::vector<Point> const& points)
+void Ellipse::fit(std::vector<Point> const &points)
 {
     size_t sz = points.size();
-    if (sz < 5)
-    {
+    if (sz < 5) {
         THROW_RANGEERROR("fitting error: too few points passed");
     }
     NL::LFMEllipse model;
     NL::least_squeares_fitter<NL::LFMEllipse> fitter(model, sz);
 
-    for (size_t i = 0; i < sz; ++i)
-    {
+    for (size_t i = 0; i < sz; ++i) {
         fitter.append(points[i]);
     }
     fitter.update();
@@ -172,12 +159,12 @@ void Ellipse::set(std::vector<Point> const& points)
 
 
 EllipticalArc *
-Ellipse::arc(Point const& initial, Point const& inner, Point const& final,
+Ellipse::arc(Point const &ip, Point const &inner, Point const &fp,
              bool _svg_compliant)
 {
-    Point sp_cp = initial - center();
-    Point ep_cp = final   - center();
-    Point ip_cp = inner   - center();
+    Point sp_cp = ip    - center();
+    Point ep_cp = fp    - center();
+    Point ip_cp = inner - center();
 
     double angle1 = angle_between(sp_cp, ep_cp);
     double angle2 = angle_between(sp_cp, ip_cp);
@@ -186,28 +173,19 @@ Ellipse::arc(Point const& initial, Point const& inner, Point const& final,
     bool large_arc_flag = true;
     bool sweep_flag = true;
 
-    if ( angle1 > 0 )
-    {
-        if ( angle2 > 0 && angle3 > 0 )
-        {
+    if (angle1 > 0) {
+        if (angle2 > 0 && angle3 > 0) {
             large_arc_flag = false;
             sweep_flag = true;
-        }
-        else
-        {
+        } else {
             large_arc_flag = true;
             sweep_flag = false;
         }
-    }
-    else
-    {
-        if ( angle2 < 0 && angle3 < 0 )
-        {
+    } else {
+        if (angle2 < 0 && angle3 < 0) {
             large_arc_flag = false;
             sweep_flag = false;
-        }
-        else
-        {
+        } else {
             large_arc_flag = true;
             sweep_flag = true;
         }
@@ -215,66 +193,71 @@ Ellipse::arc(Point const& initial, Point const& inner, Point const& final,
 
     EllipticalArc *ret_arc;
     if (_svg_compliant) {
-        ret_arc = new SVGEllipticalArc(initial, ray(X), ray(Y), rot_angle(),
-                      large_arc_flag, sweep_flag, final);
+        ret_arc = new SVGEllipticalArc(ip, ray(X), ray(Y), rotationAngle(),
+                                       large_arc_flag, sweep_flag, fp);
     } else {
-        ret_arc = new EllipticalArc(initial, ray(X), ray(Y), rot_angle(),
-                      large_arc_flag, sweep_flag, final);
+        ret_arc = new EllipticalArc(ip, ray(X), ray(Y), rotationAngle(),
+                                    large_arc_flag, sweep_flag, fp);
     }
     return ret_arc;
 }
 
-Ellipse Ellipse::transformed(Affine const& m) const
+Ellipse &Ellipse::operator*=(Rotate const &r) {
+    _angle += r.angle();
+    // keep the angle in the first quadrant
+    if (_angle < 0) {
+        _angle += M_PI;
+    }
+    if (_angle >= M_PI/2) {
+        std::swap(_rays[X], _rays[Y]);
+        _angle -= M_PI/2;
+    }
+    return *this;
+}
+
+Ellipse &Ellipse::operator*=(Affine const& m)
 {
-    double cosrot = std::cos(rot_angle());
-    double sinrot = std::sin(rot_angle());
-    Affine A(  ray(X) * cosrot, ray(X) * sinrot,
-              -ray(Y) * sinrot, ray(Y) * cosrot,
-               0,               0                );
-    Point new_center = center() * m;
-    Affine M = m.withoutTranslation();
-    Affine AM = A * M;
-    if ( are_near(std::sqrt(fabs(AM.det())), 0) )
-    {
+    Rotate a(_angle);
+    Affine mwot = m.withoutTranslation();
+    Affine am = a * mwot;
+    if (are_near(am.descrim(), 0)) {
         double angle;
-        if (AM[0] != 0)
-        {
-            angle = std::atan2(AM[2], AM[0]);
-        }
-        else if (AM[1] != 0)
-        {
-            angle = std::atan2(AM[3], AM[1]);
-        }
-        else
-        {
+        if (am[0] != 0) {
+            angle = std::atan2(am[2], am[0]);
+        } else if (am[1] != 0) {
+            angle = std::atan2(am[3], am[1]);
+        } else {
             angle = M_PI/2;
         }
-        Point V(std::cos(angle), std::sin(angle));
-        V *= AM;
-        double rx = L2(V);
-        angle = atan2(V);
-        return Ellipse(new_center[X], new_center[Y], rx, 0, angle);
+        Point v;
+        sincos(angle, v[X], v[Y]);
+        v *= am;
+        _angle = atan2(v);
+        _center *= m;
+        _rays[X] = L2(v);
+        _rays[Y] = 0;
+        return *this;
     }
 
-    std::vector<double> coeff = implicit_form_coefficients();
-    Affine Q( coeff[0],   coeff[1]/2,
+    std::vector<double> coeff = coefficients();
+    Affine q( coeff[0],   coeff[1]/2,
               coeff[1]/2, coeff[2],
               0,          0   );
 
-    Affine invm = M.inverse();
-    Q = invm * Q ;
-    swap( invm[1], invm[2] );
-    Q *= invm;
-    Ellipse e(Q[0], 2*Q[1], Q[3], 0, 0, -1);
-    e.m_centre = new_center;
+    Affine invm = mwot.inverse();
+    q = invm * q ;
+    std::swap(invm[1], invm[2]);
+    q *= invm;
+    setCoefficients(q[0], 2*q[1], q[3], 0, 0, -1);
+    _center *= m;
 
-    return e;
+    return *this;
 }
 
 Ellipse::Ellipse(Geom::Circle const &c)
 {
-    m_centre = c.center();
-    m_ray[X] = m_ray[Y] = c.radius();
+    _center = c.center();
+    _rays[X] = _rays[Y] = c.radius();
 }
 
 }  // end namespace Geom

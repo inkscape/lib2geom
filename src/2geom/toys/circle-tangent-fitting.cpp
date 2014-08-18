@@ -76,7 +76,7 @@ class LFMCircleTangentEquation
     }
   void instance(Circle & c, NL::Vector const& coeff) const
     {
-      c.set(1, coeff[0], coeff[1], coeff[2]);
+      c.setCoefficients(1, coeff[0], coeff[1], coeff[2]);
     }
 };
 

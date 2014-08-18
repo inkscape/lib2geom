@@ -897,12 +897,12 @@ void EllipticalArc::transform(Affine const& m)
 {
     // TODO avoid allocating a new arc here
     Ellipse e(center(X), center(Y), ray(X), ray(Y), _rot_angle);
-    Ellipse et = e.transformed(m);
+    e *= m;
     Point inner_point = pointAt(0.5);
-    EllipticalArc *arc = et.arc( initialPoint() * m,
-                                 inner_point * m,
-                                 finalPoint() * m,
-                                 isSVGCompliant() );
+    EllipticalArc *arc = e.arc(initialPoint() * m,
+                               inner_point * m,
+                               finalPoint() * m,
+                               isSVGCompliant());
     *this = *arc;
     delete arc;
 }

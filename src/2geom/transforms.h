@@ -199,6 +199,7 @@ public:
     /** @brief Get the characteristic vector of the rotation.
      * @return A vector that would be obtained by applying this transform to the X versor. */
     Point vector() const { return vec; }
+    Coord angle() const { return atan2(vec); }
     Coord operator[](Dim2 dim) const { return vec[dim]; }
     Coord operator[](unsigned dim) const { return vec[dim]; }
     Rotate &operator*=(Rotate const &o) { vec *= o; return *this; }
