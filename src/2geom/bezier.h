@@ -37,6 +37,7 @@
 #ifndef LIB2GEOM_SEEN_BEZIER_H
 #define LIB2GEOM_SEEN_BEZIER_H
 
+#include <algorithm>
 #include <valarray>
 #include <boost/optional.hpp>
 #include <2geom/choose.h>
@@ -56,10 +57,11 @@ namespace Geom {
  * @param right Output polynomial corresponding to \f$[t, 1]\f$
  * @param order Order of the input polynomial, equal to one less the number of coefficients
  * @return Value of the polynomial at @a t */
-inline Coord casteljau_subdivision(Coord t, Coord const *v, Coord *left, Coord *right, unsigned order) {
+template <typename T>
+inline T casteljau_subdivision(double t, T const *v, T *left, T *right, unsigned order) {
     unsigned const N = order+1;
     double const omt = (1-t);
-    std::valarray<Coord> row(v, N);
+    std::valarray<T> row(v, N);
 
     // Triangle computation
     if (left) {
@@ -281,11 +283,13 @@ public:
     std::vector<double> roots() const {
         std::vector<double> solutions;
         find_bezier_roots(solutions, 0, 1);
+        std::sort(solutions.begin(), solutions.end());
         return solutions;
     }
     std::vector<double> roots(Interval const &ivl) const {
         std::vector<double> solutions;
         find_bernstein_roots(&const_cast<std::valarray<Coord>&>(c_)[0], order(), solutions, 0, ivl.min(), ivl.max());
+        std::sort(solutions.begin(), solutions.end());
         return solutions;
     }
 
@@ -337,7 +341,7 @@ public:
         return ed;
     }
 
-    Bezier deflate() {
+    Bezier deflate() const {
         if(order() == 0) return *this;
         unsigned n = order();
         Bezier b(Order(n-1));
@@ -440,14 +444,14 @@ inline Bezier portion(const Bezier & a, double from, double to) {
     std::valarray<Coord> res(a.order() + 1);
     if (from == 0) {
         if (to == 1) { return Bezier(&input[0], a.order()); }
-        casteljau_subdivision(to, &input[0], &res[0], NULL, a.order());
+        casteljau_subdivision<double>(to, &input[0], &res[0], NULL, a.order());
         return Bezier(&res[0], a.order());
     }
-    casteljau_subdivision(from, &input[0], NULL, &res[0], a.order());
+    casteljau_subdivision<double>(from, &input[0], NULL, &res[0], a.order());
     if (to == 1) return Bezier(&res[0], a.order());
 
     std::valarray<Coord> res2(a.order()+1);
-    casteljau_subdivision((to - from)/(1 - from), &res[0], &res2[0], NULL, a.order());
+    casteljau_subdivision<double>((to - from)/(1 - from), &res[0], &res2[0], NULL, a.order());
     return Bezier(&res2[0], a.order());
 }
 
