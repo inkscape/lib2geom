@@ -345,8 +345,8 @@ SBasis compose_inverse(SBasis const &f, SBasis const &g, unsigned order=2, doubl
  \return sbasis
  \relates SBasis
 */
-inline SBasis portion(const SBasis &t, double from, double to) { return compose(t, Linear(from, to)); }
-inline SBasis portion(const SBasis &t, Interval ivl) { return compose(t, Linear(ivl.min(), ivl.max())); }
+SBasis portion(const SBasis &t, double from, double to);
+inline SBasis portion(const SBasis &t, Interval const &ivl) { return portion(t, ivl.min(), ivl.max()); }
 
 // compute f(g)
 inline SBasis

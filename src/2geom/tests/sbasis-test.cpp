@@ -45,8 +45,9 @@ TEST_F(SBasisTest, UnitTests) {
     EXPECT_TRUE(Bezier(0,0,0,0).toSBasis().isZero());
     EXPECT_TRUE(Bezier(0,1,2,3).toSBasis().isFinite());
 
-    EXPECT_EQ(3u, Bezier(0,2,4,5).toSBasis().size());
-    EXPECT_EQ(3u, hump.size());
+    // note: "size" of sbasis equals half the number of coefficients
+    EXPECT_EQ(2u, Bezier(0,2,4,5).toSBasis().size());
+    EXPECT_EQ(2u, hump.size());
 }
 
 TEST_F(SBasisTest, ValueAt) {
@@ -146,8 +147,9 @@ TEST_F(SBasisTest, Roots) {
 }
 
 TEST_F(SBasisTest, Subdivide) {
+    std::vector<std::pair<SBasis, double> > errors;
     for (unsigned i = 0; i < 10000; ++i) {
-        double t = g_random_double_range(1e-18, 1 - 1e-18);
+        double t = g_random_double_range(0, 1e-6);
         for (unsigned i = 0; i < 4; ++i) {
             SBasis &input = fragments[i];
             std::pair<SBasis, SBasis> result;
@@ -163,32 +165,44 @@ TEST_F(SBasisTest, Subdivide) {
             EXPECT_EQ(result.first.valueAt(0), input.valueAt(0));
             EXPECT_EQ(result.first.valueAt(1), result.second.valueAt(0));
             EXPECT_EQ(result.second.valueAt(1), input.valueAt(1));
+
+            if (result.first.at1() != result.second.at0()) {
+                errors.push_back(std::pair<SBasis,double>(input, t));
+            }
+        }
+    }
+    if (!errors.empty()) {
+        std::cout << "Found " << errors.size() << " subdivision errors" << std::endl;
+        for (unsigned i = 0; i < errors.size(); ++i) {
+            std::cout << "Error #" << i << ":\n"
+                          << "SBasis: " << errors[i].first << "\n"
+                          << "t: " << format_coord_nice(errors[i].second) << std::endl;
         }
     }
 }
 
-TEST_F(SBasisTest,Operators) {
-    cout << "scalar operators\n";
-    cout << hump + 3 << endl;
-    cout << hump - 3 << endl;
-    cout << hump*3 << endl;
-    cout << hump/3 << endl;
-
+TEST_F(SBasisTest, Reverse) {
     SBasis reverse_wiggle = reverse(wiggle);
-    EXPECT_EQ(reverse_wiggle[0], wiggle[wiggle.size()-1]);
+    EXPECT_EQ(reverse_wiggle.at0(), wiggle.at1());
+    EXPECT_EQ(reverse_wiggle.at1(), wiggle.at0());
+    EXPECT_EQ(reverse_wiggle.valueAt(0.5), wiggle.valueAt(0.5));
+    EXPECT_EQ(reverse_wiggle.valueAt(0.25), wiggle.valueAt(0.75));
     EXPECT_TRUE(are_equal(reverse(reverse_wiggle), wiggle));
+}
 
-    cout << "SBasis portion(const SBasis & a, double from, double to);\n";
-    cout << portion(SBasis(0.0,2.0), 0.5, 1) << endl;
+TEST_F(SBasisTest,Operators) {
+    //cout << "scalar operators\n";
+    //cout << hump + 3 << endl;
+    //cout << hump - 3 << endl;
+    //cout << hump*3 << endl;
+    //cout << hump/3 << endl;
 
-// std::vector<Point> bezier_points(const D2<SBasis > & a) {
-
-    cout << "SBasis derivative(const SBasis & a);\n";
-    std::cout << derivative(hump) <<std::endl;
-    std::cout << integral(hump) <<std::endl;
+    //cout << "SBasis derivative(const SBasis & a);\n";
+    //std::cout << derivative(hump) <<std::endl;
+    //std::cout << integral(hump) <<std::endl;
 
     EXPECT_TRUE(are_equal(derivative(integral(wiggle)), wiggle));
-    std::cout << derivative(integral(hump)) <<std::endl;
+    //std::cout << derivative(integral(hump)) << std::endl;
     expect_array((const double []){0.5}, roots(derivative(hump)));
 
     EXPECT_TRUE(bounds_fast(hump)->contains(Interval(0,hump.valueAt(0.5))));
