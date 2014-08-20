@@ -5,7 +5,6 @@ choose-test
 #lin_alg_test
 matrix-inv-test
 poly-test
-cg-test
 #svgd-test
 sbasis-text-test
 root-find-test

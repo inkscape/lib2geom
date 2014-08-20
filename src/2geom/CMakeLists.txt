@@ -51,8 +51,6 @@ conic_section_clipper.h
 conic_section_clipper_cr.h
 conic_section_clipper_impl.cpp
 conic_section_clipper_impl.h
-conjugate_gradient.cpp
-conjugate_gradient.h
 convex-cover.cpp
 convex-cover.h
 coord.cpp
