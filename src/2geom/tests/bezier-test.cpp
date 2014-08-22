@@ -5,6 +5,7 @@
 #include <2geom/poly.h>
 #include <vector>
 #include <iterator>
+#include <glib.h>
 
 using namespace std;
 using namespace Geom;
@@ -30,17 +31,23 @@ bool are_equal(Bezier A, Bezier B) {
 class BezierTest : public ::testing::Test {
 protected:
 
-    BezierTest() {
+    BezierTest()
+        : zero(fragments[0])
+        , unit(fragments[1])
+        , hump(fragments[2])
+        , wiggle(fragments[3])
+    {
         zero = Bezier(0.0,0.0);
         unit = Bezier(0.0,1.0);
         hump = Bezier(0,1,0);
         wiggle = Bezier(0,1,-2,3);
     }
 
-    Bezier zero, unit, hump, wiggle;
+    Bezier fragments[4];
+    Bezier &zero, &unit, &hump, &wiggle;
 };
 
-TEST_F(BezierTest, UnitTests) {
+TEST_F(BezierTest, Basics) {
   
     //std::cout << unit <<std::endl;
     //std::cout << hump <<std::endl;
@@ -48,10 +55,6 @@ TEST_F(BezierTest, UnitTests) {
     EXPECT_TRUE(Bezier(0,0,0,0).isZero());
     EXPECT_TRUE(Bezier(0,1,2,3).isFinite());
 
-/* Todo:
-
-Coord casteljau_subdivision(Coord t, Coord const *v, Coord *left, Coord *right, unsigned order);
-*/
     EXPECT_EQ(3u, Bezier(0,2,4,5).order());
 
     ///cout << " Bezier::Bezier(const Bezier& b);\n";
@@ -88,6 +91,83 @@ TEST_F(BezierTest, ValueAt) {
     //cout << unit.toSBasis() << endl;
     //cout << hump.toSBasis() << endl;
     //cout << wiggle.toSBasis() << endl;
+}
+
+TEST_F(BezierTest, Casteljau) {
+    unsigned N = wiggle.order() + 1;
+    std::vector<Coord> left(N), right(N);
+    std::vector<Coord> left2(N), right2(N);
+
+    for (unsigned i = 0; i < 10000; ++i) {
+        double t = g_random_double_range(0, 1);
+        double vok = bernstein_value_at(t, &wiggle[0], wiggle.order());
+        double v = casteljau_subdivision<double>(t, &wiggle[0], &left[0], &right[0], wiggle.order());
+        EXPECT_EQ(v, vok);
+        EXPECT_EQ(left[0], wiggle.at0());
+        EXPECT_EQ(left[wiggle.order()], right[0]);
+        EXPECT_EQ(right[wiggle.order()], wiggle.at1());
+
+        double vl = casteljau_subdivision<double>(t, &wiggle[0], &left2[0], NULL, wiggle.order());
+        double vr = casteljau_subdivision<double>(t, &wiggle[0], NULL, &right2[0], wiggle.order());
+        EXPECT_EQ(vl, vok);
+        EXPECT_EQ(vr, vok);
+        vector_equal(left2, left);
+        vector_equal(right2, right);
+
+        double vnone = casteljau_subdivision<double>(t, &wiggle[0], NULL, NULL, wiggle.order());
+        EXPECT_EQ(vnone, vok);
+    }
+}
+
+TEST_F(BezierTest, Portion) {
+    for (unsigned i = 0; i < 10000; ++i) {
+        double from = g_random_double_range(0, 1);
+        double to = g_random_double_range(0, 1);
+        for (unsigned i = 0; i < 4; ++i) {
+            Bezier &input = fragments[i];
+            Bezier result = portion(input, from, to);
+
+            // the endpoints must correspond exactly
+            EXPECT_EQ(result.at0(), input.valueAt(from));
+            EXPECT_EQ(result.at1(), input.valueAt(to));
+        }
+    }
+}
+
+TEST_F(BezierTest, Subdivide) {
+    std::vector<std::pair<Bezier, double> > errors;
+    for (unsigned i = 0; i < 10000; ++i) {
+        double t = g_random_double_range(0, 1e-6);
+        for (unsigned i = 0; i < 4; ++i) {
+            Bezier &input = fragments[i];
+            std::pair<Bezier, Bezier> result = input.subdivide(t);
+
+            // the endpoints must correspond exactly
+            // moreover, the subdivision point must be exactly equal to valueAt(t)
+            EXPECT_EQ(result.first.at0(), input.at0());
+            EXPECT_EQ(result.first.at1(), result.second.at0());
+            EXPECT_EQ(result.second.at0(), input.valueAt(t));
+            EXPECT_EQ(result.second.at1(), input.at1());
+
+            // ditto for valueAt
+            EXPECT_EQ(result.first.valueAt(0), input.valueAt(0));
+            EXPECT_EQ(result.first.valueAt(1), result.second.valueAt(0));
+            EXPECT_EQ(result.second.valueAt(0), input.valueAt(t));
+            EXPECT_EQ(result.second.valueAt(1), input.valueAt(1));
+
+            if (result.first.at1() != result.second.at0()) {
+                errors.push_back(std::pair<Bezier,double>(input, t));
+            }
+        }
+    }
+    if (!errors.empty()) {
+        std::cout << "Found " << errors.size() << " subdivision errors" << std::endl;
+        for (unsigned i = 0; i < errors.size(); ++i) {
+            std::cout << "Error #" << i << ":\n"
+                          << errors[i].first << "\n"
+                          << "t: " << format_coord_nice(errors[i].second) << std::endl;
+        }
+    }
 }
 
 TEST_F(BezierTest, Mutation) {
@@ -192,14 +272,15 @@ TEST_F(BezierTest, Roots) {
 }
 
 TEST_F(BezierTest,Operators) {
-    cout << "scalar operators\n";
+    /*cout << "scalar operators\n";
     cout << hump + 3 << endl;
     cout << hump - 3 << endl;
     cout << hump*3 << endl;
-    cout << hump/3 << endl;
+    cout << hump/3 << endl;*/
 
     Bezier reverse_wiggle = reverse(wiggle);
-    EXPECT_EQ(reverse_wiggle[0], wiggle[wiggle.size()-1]);
+    EXPECT_EQ(reverse_wiggle.at0(), wiggle.at1());
+    EXPECT_EQ(reverse_wiggle.at1(), wiggle.at0());
     EXPECT_TRUE(are_equal(reverse(reverse_wiggle), wiggle));
 
     cout << "Bezier portion(const Bezier & a, double from, double to);\n";
@@ -207,12 +288,12 @@ TEST_F(BezierTest,Operators) {
 
 // std::vector<Point> bezier_points(const D2<Bezier > & a) {
 
-    cout << "Bezier derivative(const Bezier & a);\n";
+    /*cout << "Bezier derivative(const Bezier & a);\n";
     std::cout << derivative(hump) <<std::endl;
-    std::cout << integral(hump) <<std::endl;
+    std::cout << integral(hump) <<std::endl;*/
 
     EXPECT_TRUE(are_equal(derivative(integral(wiggle)), wiggle));
-    std::cout << derivative(integral(hump)) <<std::endl;
+    //std::cout << derivative(integral(hump)) <<std::endl;
     expect_array((const double []){0.5}, derivative(hump).roots());
 
     EXPECT_TRUE(bounds_fast(hump)->contains(Interval(0,hump.valueAt(0.5))));

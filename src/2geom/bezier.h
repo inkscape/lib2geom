@@ -48,62 +48,11 @@
 
 namespace Geom {
 
-/** @brief Perform Casteljau subdivision of a Bezier polynomial.
- * Given an array of coefficients and a time value, computes two new Bernstein-Bezier basis
- * polynomials corresponding to the \f$[0, t]\f$ and \f$[t, 1]\f$ intervals of the original one.
+/** @brief Compute the value of a Bernstein-Bezier polynomial.
+ * This method uses a Horner-like fast evaluation scheme.
  * @param t Time value
- * @param v Array of input coordinates
- * @param left Output polynomial corresponding to \f$[0, t]\f$
- * @param right Output polynomial corresponding to \f$[t, 1]\f$
- * @param order Order of the input polynomial, equal to one less the number of coefficients
- * @return Value of the polynomial at @a t */
-template <typename T>
-inline T casteljau_subdivision(double t, T const *v, T *left, T *right, unsigned order) {
-    unsigned const N = order+1;
-    double const omt = (1-t);
-    std::valarray<T> row(v, N);
-
-    // Triangle computation
-    if (left) {
-        left[0] = row[0];
-    }
-    if (right) {
-        right[order] = row[order];
-    }
-    for (unsigned i = 1; i < N; i++) {
-        for (unsigned j = 0; j < N - i; j++) {
-            row[j] = omt*row[j] + t*row[j+1];
-        }
-        if (left) {
-            left[i] = row[0];
-        }
-        if (right) {
-            right[order-i] = row[order-i];
-        }
-    }
-    return row[0];
-/*
-    Coord vtemp[order+1][order+1];
-
-    // Copy control points
-    std::copy(v, v+order+1, vtemp[0]);
-
-    // Triangle computation
-    for (unsigned i = 1; i <= order; i++) {
-        for (unsigned j = 0; j <= order - i; j++) {
-            vtemp[i][j] = lerp(t, vtemp[i-1][j], vtemp[i-1][j+1]);
-        }
-    }
-    if(left != NULL)
-        for (unsigned j = 0; j <= order; j++)
-            left[j]  = vtemp[j][0];
-    if(right != NULL)
-        for (unsigned j = 0; j <= order; j++)
-            right[j] = vtemp[order-j][j];
-
-            return (vtemp[order][0]);*/
-}
-
+ * @param c_ Pointer to coefficients
+ * @param n Degree of the polynomial (number of coefficients minus one) */
 template <typename T>
 inline T bernstein_value_at(double t, T const *c_, unsigned n) {
     double u = 1.0 - t;
@@ -116,6 +65,56 @@ inline T bernstein_value_at(double t, T const *c_, unsigned n) {
         tmp = (tmp + tn*bc*c_[i])*u;
     }
     return (tmp + tn*t*c_[n]);
+}
+
+/** @brief Perform Casteljau subdivision of a Bezier polynomial.
+ * Given an array of coefficients and a time value, computes two new Bernstein-Bezier basis
+ * polynomials corresponding to the \f$[0, t]\f$ and \f$[t, 1]\f$ intervals of the original one.
+ * @param t Time value
+ * @param v Array of input coordinates
+ * @param left Output polynomial corresponding to \f$[0, t]\f$
+ * @param right Output polynomial corresponding to \f$[t, 1]\f$
+ * @param order Order of the input polynomial, equal to one less the number of coefficients
+ * @return Value of the polynomial at @a t */
+template <typename T>
+inline T casteljau_subdivision(double t, T const *v, T *left, T *right, unsigned order) {
+    if (!left && !right) {
+        return bernstein_value_at(t, v, order);
+    }
+
+    // The Horner-like scheme gives very slightly different results, but we need
+    // the result of subdivision to match exactly with Bezier's valueAt function.
+    T val = bernstein_value_at(t, v, order);
+
+    if (!right) {
+        if (left != v) {
+            std::copy(v, v + order + 1, left);
+        }
+        for (std::size_t i = order; i > 0; --i) {
+            for (std::size_t j = i; j <= order; ++j) {
+                left[j] = lerp(t, left[j-1], left[j]);
+            }
+        }
+        left[order] = val;
+        return val;
+    }
+
+    if (right != v) {
+        std::copy(v, v + order + 1, right);
+    }
+    for (std::size_t i = 1; i <= order; ++i) {
+        if (left) {
+            left[i-1] = right[0];
+        }
+        for (std::size_t j = i; j > 0; --j) {
+            right[j-1] = lerp(t, right[j-1], right[j]);
+        }
+    }
+    if (left) {
+        left[order] = val;
+    }
+    right[0] = val;
+    return right[0];
 }
 
 /**
@@ -430,29 +429,34 @@ inline Bezier reverse(const Bezier & a) {
 }
 
 inline Bezier portion(const Bezier & a, double from, double to) {
-    //TODO: implement better?
-    std::vector<Coord> input(a.order()+1);
-    for (unsigned i = 0; i < a.order() + 1; ++i) {
-        input[i] = a.c_[i];
-    }
+    Bezier ret(a);
+
+    bool reverse_result = false;
     if (from > to) {
-        from = 1 - from;
-        to = 1 - to;
-        std::reverse(input.begin(), input.end());
+        std::swap(from, to);
+        reverse_result = true;
     }
 
-    std::valarray<Coord> res(a.order() + 1);
-    if (from == 0) {
-        if (to == 1) { return Bezier(&input[0], a.order()); }
-        casteljau_subdivision<double>(to, &input[0], &res[0], NULL, a.order());
-        return Bezier(&res[0], a.order());
-    }
-    casteljau_subdivision<double>(from, &input[0], NULL, &res[0], a.order());
-    if (to == 1) return Bezier(&res[0], a.order());
+    do {
+        if (from == 0) {
+            if (to == 1) {
+                break;
+            }
+            casteljau_subdivision<double>(to, &ret.c_[0], &ret.c_[0], NULL, ret.order());
+            break; 
+        }
+        casteljau_subdivision<double>(from, &ret.c_[0], NULL, &ret.c_[0], ret.order());
+        if (to == 1) break;
+        casteljau_subdivision<double>((to - from) / (1 - from), &ret.c_[0], &ret.c_[0], NULL, ret.order());
+        // to protect against numerical inaccuracy in the above expression, we manually set
+        // the last coefficient to a value evaluated directly from the original polynomial
+        ret.c_[ret.order()] = a.valueAt(to);
+    } while(0);
 
-    std::valarray<Coord> res2(a.order()+1);
-    casteljau_subdivision<double>((to - from)/(1 - from), &res[0], &res2[0], NULL, a.order());
-    return Bezier(&res2[0], a.order());
+    if (reverse_result) {
+        std::reverse(&ret.c_[0], &ret.c_[0] + ret.c_.size());
+    }
+    return ret;
 }
 
 // XXX Todo: how to handle differing orders
