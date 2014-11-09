@@ -150,6 +150,8 @@ public:
     bool isNonzeroScale(Coord eps = EPSILON) const;
     bool isNonzeroUniformScale(Coord eps = EPSILON) const;
     bool isNonzeroRotation(Coord eps = EPSILON) const;
+    bool isNonzeroNonpureRotation(Coord eps = EPSILON) const;
+    Point rotationCenter() const;
     bool isNonzeroHShear(Coord eps = EPSILON) const;
     bool isNonzeroVShear(Coord eps = EPSILON) const;
 

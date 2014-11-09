@@ -222,6 +222,29 @@ bool Affine::isNonzeroRotation(Coord eps) const {
            are_near(_c[0]*_c[0] + _c[1]*_c[1], 1.0, eps);
 }
 
+/** @brief Check whether this matrix represents a non-zero rotation about any point.
+ * @param eps Numerical tolerance
+ * @return True iff the matrix is of the form
+ *         \f$\left[\begin{array}{ccc}
+           a & b & 0 \\
+           -b & a & 0 \\
+           c & d & 1 \end{array}\right]\f$, \f$a^2 + b^2 = 1\f$ and \f$a \neq 1\f$. */
+bool Affine::isNonzeroNonpureRotation(Coord eps) const {
+    return !are_near(_c[0], 1.0, eps) &&
+           are_near(_c[0], _c[3], eps) && are_near(_c[1], -_c[2], eps) &&
+           are_near(_c[0]*_c[0] + _c[1]*_c[1], 1.0, eps);
+}
+
+/** @brief For a (possibly non-pure) non-zero-rotation matrix, calculate the rotation center.
+ * @pre The matrix must be a non-zero-rotation matrix to prevent division by zero, see isNonzeroNonpureRotation().
+ * @return The rotation center x, the solution to the equation
+ *         \f$A x = x\f$. */
+Point Affine::rotationCenter() const {
+    Coord x = (_c[2]*_c[5]+_c[4]-_c[4]*_c[3]) / (1-_c[3]-_c[0]+_c[0]*_c[3]-_c[2]*_c[1]);
+    Coord y = (_c[1]*x + _c[5]) / (1 - _c[3]);
+    return Point(x,y);
+};
+
 /** @brief Check whether this matrix represents pure horizontal shearing.
  * @param eps Numerical tolerance
  * @return True iff the matrix is of the form
@@ -356,7 +379,7 @@ bool Affine::isSingular(Coord eps) const {
 }
 
 /** @brief Compute the inverse matrix.
- * Inverse is a matrix (denoted \f$A^{-1}) such that \f$AA^{-1} = A^{-1}A = I\f$.
+ * Inverse is a matrix (denoted \f$A^{-1}\f$) such that \f$AA^{-1} = A^{-1}A = I\f$.
  * Singular matrices have no inverse (for example a matrix that has two of its columns equal).
  * For such matrices, the identity matrix will be returned instead.
  * @param eps Numerical tolerance

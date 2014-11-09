@@ -61,6 +61,7 @@ TEST(AffineTest, Classification) {
         EXPECT_FALSE(a.isNonzeroScale());
         EXPECT_FALSE(a.isNonzeroUniformScale());
         EXPECT_FALSE(a.isNonzeroRotation());
+        EXPECT_FALSE(a.isNonzeroNonpureRotation());
         EXPECT_FALSE(a.isNonzeroHShear());
         EXPECT_FALSE(a.isNonzeroVShear());
         EXPECT_TRUE(a.preservesArea());
@@ -83,6 +84,7 @@ TEST(AffineTest, Classification) {
         EXPECT_FALSE(a.isNonzeroScale());
         EXPECT_FALSE(a.isNonzeroUniformScale());
         EXPECT_FALSE(a.isNonzeroRotation());
+        EXPECT_FALSE(a.isNonzeroNonpureRotation());
         EXPECT_FALSE(a.isNonzeroHShear());
         EXPECT_FALSE(a.isNonzeroVShear());
         EXPECT_TRUE(a.preservesArea());
@@ -105,6 +107,7 @@ TEST(AffineTest, Classification) {
         EXPECT_TRUE(a.isNonzeroScale());
         EXPECT_TRUE(a.isNonzeroUniformScale());
         EXPECT_FALSE(a.isNonzeroRotation());
+        EXPECT_FALSE(a.isNonzeroNonpureRotation());
         EXPECT_FALSE(a.isNonzeroHShear());
         EXPECT_FALSE(a.isNonzeroVShear());
         EXPECT_TRUE(a.preservesArea());
@@ -127,6 +130,7 @@ TEST(AffineTest, Classification) {
         EXPECT_TRUE(a.isNonzeroScale());
         EXPECT_TRUE(a.isNonzeroUniformScale());
         EXPECT_FALSE(a.isNonzeroRotation());
+        EXPECT_FALSE(a.isNonzeroNonpureRotation());
         EXPECT_FALSE(a.isNonzeroHShear());
         EXPECT_FALSE(a.isNonzeroVShear());
         EXPECT_FALSE(a.preservesArea());
@@ -149,6 +153,7 @@ TEST(AffineTest, Classification) {
         EXPECT_TRUE(a.isNonzeroScale());
         EXPECT_TRUE(a.isNonzeroUniformScale());
         EXPECT_FALSE(a.isNonzeroRotation());
+        EXPECT_FALSE(a.isNonzeroNonpureRotation());
         EXPECT_FALSE(a.isNonzeroHShear());
         EXPECT_FALSE(a.isNonzeroVShear());
         EXPECT_FALSE(a.preservesArea());
@@ -171,6 +176,7 @@ TEST(AffineTest, Classification) {
         EXPECT_TRUE(a.isNonzeroScale());
         EXPECT_FALSE(a.isNonzeroUniformScale());
         EXPECT_FALSE(a.isNonzeroRotation());
+        EXPECT_FALSE(a.isNonzeroNonpureRotation());
         EXPECT_FALSE(a.isNonzeroHShear());
         EXPECT_FALSE(a.isNonzeroVShear());
         EXPECT_FALSE(a.preservesArea());
@@ -193,6 +199,7 @@ TEST(AffineTest, Classification) {
         EXPECT_TRUE(a.isNonzeroScale());
         EXPECT_FALSE(a.isNonzeroUniformScale());
         EXPECT_FALSE(a.isNonzeroRotation());
+        EXPECT_FALSE(a.isNonzeroNonpureRotation());
         EXPECT_FALSE(a.isNonzeroHShear());
         EXPECT_FALSE(a.isNonzeroVShear());
         EXPECT_TRUE(a.preservesArea());
@@ -215,6 +222,33 @@ TEST(AffineTest, Classification) {
         EXPECT_FALSE(a.isNonzeroScale());
         EXPECT_FALSE(a.isNonzeroUniformScale());
         EXPECT_TRUE(a.isNonzeroRotation());
+        EXPECT_TRUE(a.isNonzeroNonpureRotation());
+        EXPECT_EQ(a.rotationCenter(), Point(0.0,0.0));
+        EXPECT_FALSE(a.isNonzeroHShear());
+        EXPECT_FALSE(a.isNonzeroVShear());
+        EXPECT_TRUE(a.preservesArea());
+        EXPECT_TRUE(a.preservesAngles());
+        EXPECT_TRUE(a.preservesDistances());
+        EXPECT_FALSE(a.flips());
+        EXPECT_FALSE(a.isSingular());
+    }
+    {
+        Point rotation_center(1.23,4.56);
+        Affine a = Translate(-rotation_center) * Rotate(0.7) * Translate(rotation_center); // rotation around (1.23,4.56)
+        EXPECT_FALSE(a.isIdentity());
+        EXPECT_FALSE(a.isTranslation());
+        EXPECT_FALSE(a.isScale());
+        EXPECT_FALSE(a.isUniformScale());
+        EXPECT_FALSE(a.isRotation());
+        EXPECT_FALSE(a.isHShear());
+        EXPECT_FALSE(a.isVShear());
+        EXPECT_FALSE(a.isZoom());
+        EXPECT_FALSE(a.isNonzeroTranslation());
+        EXPECT_FALSE(a.isNonzeroScale());
+        EXPECT_FALSE(a.isNonzeroUniformScale());
+        EXPECT_FALSE(a.isNonzeroRotation());
+        EXPECT_TRUE(a.isNonzeroNonpureRotation());
+        EXPECT_TRUE(are_near(a.rotationCenter(), rotation_center, 1e-7));
         EXPECT_FALSE(a.isNonzeroHShear());
         EXPECT_FALSE(a.isNonzeroVShear());
         EXPECT_TRUE(a.preservesArea());
@@ -237,6 +271,7 @@ TEST(AffineTest, Classification) {
         EXPECT_FALSE(a.isNonzeroScale());
         EXPECT_FALSE(a.isNonzeroUniformScale());
         EXPECT_FALSE(a.isNonzeroRotation());
+        EXPECT_FALSE(a.isNonzeroNonpureRotation());
         EXPECT_TRUE(a.isNonzeroHShear());
         EXPECT_FALSE(a.isNonzeroVShear());
         EXPECT_TRUE(a.preservesArea());
@@ -259,6 +294,7 @@ TEST(AffineTest, Classification) {
         EXPECT_FALSE(a.isNonzeroScale());
         EXPECT_FALSE(a.isNonzeroUniformScale());
         EXPECT_FALSE(a.isNonzeroRotation());
+        EXPECT_FALSE(a.isNonzeroNonpureRotation());
         EXPECT_FALSE(a.isNonzeroHShear());
         EXPECT_TRUE(a.isNonzeroVShear());
         EXPECT_TRUE(a.preservesArea());
@@ -281,6 +317,7 @@ TEST(AffineTest, Classification) {
         EXPECT_FALSE(a.isNonzeroScale());
         EXPECT_FALSE(a.isNonzeroUniformScale());
         EXPECT_FALSE(a.isNonzeroRotation());
+        EXPECT_FALSE(a.isNonzeroNonpureRotation());
         EXPECT_FALSE(a.isNonzeroHShear());
         EXPECT_FALSE(a.isNonzeroVShear());
         EXPECT_FALSE(a.preservesArea());
@@ -306,6 +343,7 @@ TEST(AffineTest, Classification) {
         EXPECT_FALSE(a.isNonzeroScale());
         EXPECT_FALSE(a.isNonzeroUniformScale());
         EXPECT_FALSE(a.isNonzeroRotation());
+        EXPECT_FALSE(a.isNonzeroNonpureRotation());
         EXPECT_FALSE(a.isNonzeroHShear());
         EXPECT_FALSE(a.isNonzeroVShear());
         EXPECT_FALSE(a.preservesArea());
@@ -328,6 +366,7 @@ TEST(AffineTest, Classification) {
         EXPECT_FALSE(a.isNonzeroScale());
         EXPECT_FALSE(a.isNonzeroUniformScale());
         EXPECT_FALSE(a.isNonzeroRotation());
+        EXPECT_FALSE(a.isNonzeroNonpureRotation());
         EXPECT_FALSE(a.isNonzeroHShear());
         EXPECT_FALSE(a.isNonzeroVShear());
         EXPECT_FALSE(a.preservesArea());
