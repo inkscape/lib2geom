@@ -361,7 +361,10 @@ inline std::ostream &operator<< (std::ostream &out_file, const Linear &bo) {
 
 inline std::ostream &operator<< (std::ostream &out_file, const SBasis & p) {
     for(unsigned i = 0; i < p.size(); i++) {
-        out_file << p[i] << "s^" << i << " + ";
+        if (i != 0) {
+            out_file << " + ";
+        }
+        out_file << p[i] << "s^" << i;
     }
     return out_file;
 }
