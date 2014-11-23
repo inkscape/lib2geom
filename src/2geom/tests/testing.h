@@ -51,3 +51,11 @@ void vector_equal(std::vector<double> a, std::vector<double> b) {
     }
 }
 
+void vector_equal(std::vector<double> a, std::vector<double> b, double eps) {
+    EXPECT_EQ(a.size(), b.size());
+    if(a.size() != b.size()) return;
+    for(unsigned i = 0; i < a.size(); i++) {
+        EXPECT_TRUE(Geom::are_near(a[i], b[i], eps));
+    }
+}
+

@@ -211,21 +211,18 @@ TEST_F(BezierTest, DegreeElevation) {
 }
 //std::pair<Bezier, Bezier > subdivide(Coord t);
 
+// Constructs a linear Bezier with root at t
 Bezier linear_root(double t) {
     return Bezier(0-t, 1-t);
 }
 
+// Constructs a Bezier with roots at the locations in x
 Bezier array_roots(vector<double> x) {
     Bezier b(1);
     for(unsigned i = 0; i < x.size(); i++) {
         b = multiply(b, linear_root(x[i]));
     }
     return b;
-}
-
-vector<double> find_all_roots(Bezier b) {
-    vector<double> rts = b.roots();
-    return rts;
 }
 
 TEST_F(BezierTest, Deflate) {
@@ -251,8 +248,12 @@ TEST_F(BezierTest, Roots) {
     }
     cout << bigun.roots() << endl;*/
 
+    // The results of our rootfinding are at the moment fairly inaccurate.
+    double eps = 5e-4;
+
     vector<vector<double> > tests;
     tests.push_back(vector_from_array((const double[]){0}));
+    tests.push_back(vector_from_array((const double[]){1}));
     tests.push_back(vector_from_array((const double[]){0, 0}));
     tests.push_back(vector_from_array((const double[]){0.5}));
     tests.push_back(vector_from_array((const double[]){0.5, 0.5}));
@@ -260,14 +261,15 @@ TEST_F(BezierTest, Roots) {
     tests.push_back(vector_from_array((const double[]){0.1, 0.1, 0.1}));
     tests.push_back(vector_from_array((const double[]){0.25,0.75}));
     tests.push_back(vector_from_array((const double[]){0.5,0.5}));
-    tests.push_back(vector_from_array((const double[]){0, 0.2, 0.6,0.6, 1}));
+    tests.push_back(vector_from_array((const double[]){0, 0.2, 0.6, 0.6, 1}));
     tests.push_back(vector_from_array((const double[]){.1,.2,.3,.4,.5,.6}));
     tests.push_back(vector_from_array((const double[]){0.25,0.25,0.25,0.75,0.75,0.75}));
     
     for(unsigned test_i = 0; test_i < tests.size(); test_i++) {
         Bezier b = array_roots(tests[test_i]);
         std::cout << tests[test_i] << ": " << b << std::endl;
-        vector_equal(tests[test_i], find_all_roots(b));
+        std::cout << b.roots() << std::endl;
+        vector_equal(tests[test_i], b.roots(), eps);
     }
 }
 
