@@ -240,9 +240,9 @@ TEST_F(BezierTest, Deflate) {
 }
 
 TEST_F(BezierTest, Roots) {
-    /*expect_array((const double[]){0.5}, wiggle.roots());
+    expect_array((const double[]){0, 0.5, 0.5}, wiggle.roots());
     
-    Bezier bigun(Bezier::Order(30));
+    /*Bezier bigun(Bezier::Order(30));
     for(unsigned i = 0; i < bigun.size(); i++) {
         bigun.setCoeff(i,rand()-0.5);
     }
