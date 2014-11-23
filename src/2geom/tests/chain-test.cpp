@@ -47,7 +47,7 @@ public:
     for(; i < p.size(); i++) {
       Rect bounds = p[i].boundsFast();
       if(bounds[Geom::Y].max() < y) {
-	break;
+  break;
       }
     }
     lowerBound = i;
@@ -64,7 +64,7 @@ public:
     for(unsigned i = 0; i < chains.size(); i++) {
       double y = chains[i].p.finalPoint()[Geom::Y];
       if(y < sweepY) {
-	sweepY = y;
+  sweepY = y;
       }
     }
   }
@@ -76,39 +76,33 @@ protected:
   ChainSweep cs;
   
     ChainTest() {
-      const char *path_b_name="sweep1.svgds";
-      
-      FILE* fi = fopen(path_b_name, "r");
-      if(fi == NULL) throw(std::runtime_error("Error opening file"));
-      PathVector pv = read_svgd_f(fi);
-      vector<PathVector> segs;
-      for(int i = 0; i < 2; i++) {
-	segs.push_back(read_svgd_f(fi));
-        EXPECT_EQ(1u, segs.size());
-      }
-      fclose(fi);
-      
+      const char *path_b_svgd="m 307,259 c 0,0 8,8 -3,11 -5,1 -5,9 -5,9 m 4,-17 1,3 m -6,-8 3,12 m -9,-11 1,4 2,3 -1,4 3,3 -2,5 m -9,-19 4,14";
+
+      PathVector pv = parse_svg_path(path_b_svgd);
       EXPECT_EQ(5u, pv.size());
       
-      for(unsigned i = 0;  i < pv.size(); i++) {
-	cs.chains.push_back(Chain());
-	Chain &c = cs.chains.back();
-	for(unsigned j = 0; j < pv[i].size(); j++) {
-	  c.p.append(pv[i][j]);
-	}
-	if(c.p.initialPoint()[Y] > c.p.finalPoint()[Y]) {
-	  c.p = c.p.reversed();
-	}
-	cout << c.p.initialPoint() << endl;
-	cout << c.p.finalPoint() << endl;
+      vector<PathVector> segs;
+      segs.push_back(parse_svg_path("m 296,280 5,-11"));
+      segs.push_back(parse_svg_path("m 309,283 -5,-18"));
+
+      for (unsigned i = 0; i < pv.size(); i++) {
+          cs.chains.push_back(Chain());
+          Chain &c = cs.chains.back();
+          for (unsigned j = 0; j < pv[i].size(); j++) {
+              c.p.append(pv[i][j]);
+          }
+          if (c.p.initialPoint()[Y] > c.p.finalPoint()[Y]) {
+              c.p = c.p.reversed();
+          }
+          cout << c.p.initialPoint() << endl;
+          cout << c.p.finalPoint() << endl;
       }
-      EXPECT_EQ(0, cs.sweepY);
+      EXPECT_FLOAT_EQ(0, cs.sweepY);
       cs.findSweepY();
       EXPECT_EQ(265, cs.sweepY);
       cs.chains[1].p.append(segs[0][0].reversed());
       cs.chains[1].p.append(segs[1][0].reversed());
     }
-
 };
 
 TEST_F(ChainTest, UnitTests) {
