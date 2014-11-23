@@ -172,6 +172,11 @@ void Bernsteins::find_bernstein_roots(Bezier const &bz,
             old_sign = sign;
         }
     }
+    // if last control point is zero, that counts as crossing too
+    if (SGN(bz[bz.size()-1]) == 0) { 
+        ++n_crossings;
+    }
+
     //std::cout << "n_crossings = " << n_crossings << std::endl;
     if (n_crossings == 0)  return; // no solutions here
 
