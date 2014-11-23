@@ -70,9 +70,9 @@ public:
     inline size_t size() const { return boundary.size();}
     inline Point operator[](int i) const {
 
-        int l = boundary.size();
-        if(l == 0) return Point();
-        return boundary[i >= 0 ? i % l : (i % l) + l];
+        int len = boundary.size();
+        if(len == 0) return Point();
+        return boundary[i >= 0 ? i % len : (i % len) + len];
     }
 
     /*inline Point &operator[](unsigned i) {

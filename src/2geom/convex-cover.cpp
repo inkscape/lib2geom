@@ -311,18 +311,18 @@ void
 ConvexHull::merge(Point p) {
     std::vector<Point> out;
 
-    int l = boundary.size();
+    int len = boundary.size();
 
-    if(l < 2) {
+    if(len < 2) {
         if(boundary.empty() || boundary[0] != p)
             boundary.push_back(p);
         return;
     }
 
     bool pushed = false;
-
+ 
     bool pre = is_left(p, -1);
-    for(int i = 0; i < l; i++) {
+    for(int i = 0; i < len; i++) {
         bool cur = is_left(p, i);
         if(pre) {
             if(cur) {
