@@ -36,6 +36,7 @@
 
 #include <boost/concept/requires.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/range/algorithm/equal.hpp>
 #include <2geom/forward.h>
 #include <2geom/path.h>
 #include <2geom/transforms.h>
@@ -82,7 +83,8 @@ class PathVector
     , MultipliableNoncommutative< PathVector, VShear
     , MultipliableNoncommutative< PathVector, Zoom
     , boost::addable< PathVector
-      > > > > > > > >
+    , boost::equality_comparable< PathVector
+      > > > > > > > > >
 {
     typedef std::vector<Path> Sequence;
 public:
@@ -219,6 +221,10 @@ public:
             *i *= t;
         }
         return *this;
+    }
+
+    bool operator==(PathVector const &other) const {
+        return boost::range::equal(_data, other._data);
     }
 
     /** @brief Determine the winding number at the specified point.
