@@ -105,6 +105,8 @@ private:
     char _command;
 };
 
+std::string write_svg_path(PathVector const &pv, int prec = -1, bool optimize = false, bool shorthands = true);
+
 } // namespace Geom
 
 #endif // LIB2GEOM_SEEN_SVG_PATH_WRITER_H

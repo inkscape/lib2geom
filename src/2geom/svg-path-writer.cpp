@@ -270,6 +270,18 @@ std::string SVGPathWriter::_formatCoord(Coord par)
     return ret;
 }
 
+
+std::string write_svg_path(PathVector const &pv, int prec, bool optimize, bool shorthands)
+{
+    SVGPathWriter writer;
+    writer.setPrecision(prec);
+    writer.setOptimize(optimize);
+    writer.setUseShorthands(shorthands);
+
+    writer.feed(pv);
+    return writer.str();
+}
+
 } // namespace Geom
 
 /*
