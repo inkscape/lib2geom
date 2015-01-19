@@ -270,12 +270,26 @@ public:
         return val_n_der;
     }
 
-    std::pair<Bezier, Bezier > subdivide(Coord t) const {
+    void subdivide(Coord t, Bezier *left, Bezier *right) const {
+		if (left) {
+			left->c_.resize(size());
+			if (right) {
+				right->c_.resize(size());
+				casteljau_subdivision(t, &const_cast<std::valarray<Coord>&>(c_)[0],
+					&left->c_[0], &right->c_[0], order());
+			} else {
+				casteljau_subdivision(t, &const_cast<std::valarray<Coord>&>(c_)[0],
+					&left->c_[0], NULL, order());
+			}
+		} else if (right) {
+			right->c_.resize(size());
+			casteljau_subdivision(t, &const_cast<std::valarray<Coord>&>(c_)[0],
+				NULL, &right->c_[0], order());
+		}
+	}
+	std::pair<Bezier, Bezier > subdivide(Coord t) const {
         std::pair<Bezier, Bezier> ret;
-        ret.first.c_.resize(size());
-        ret.second.c_.resize(size());
-        casteljau_subdivision(t, &const_cast<std::valarray<Coord>&>(c_)[0],
-                              &ret.first.c_[0], &ret.second.c_[0], order());
+        subdivide(t, &ret.first, &ret.second);
         return ret;
     }
 
