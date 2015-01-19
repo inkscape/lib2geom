@@ -275,15 +275,15 @@ public:
 			left->c_.resize(size());
 			if (right) {
 				right->c_.resize(size());
-				casteljau_subdivision(t, &const_cast<std::valarray<Coord>&>(c_)[0],
+				casteljau_subdivision<double>(t, &const_cast<std::valarray<Coord>&>(c_)[0],
 					&left->c_[0], &right->c_[0], order());
 			} else {
-				casteljau_subdivision(t, &const_cast<std::valarray<Coord>&>(c_)[0],
+				casteljau_subdivision<double>(t, &const_cast<std::valarray<Coord>&>(c_)[0],
 					&left->c_[0], NULL, order());
 			}
 		} else if (right) {
 			right->c_.resize(size());
-			casteljau_subdivision(t, &const_cast<std::valarray<Coord>&>(c_)[0],
+			casteljau_subdivision<double>(t, &const_cast<std::valarray<Coord>&>(c_)[0],
 				NULL, &right->c_[0], order());
 		}
 	}
