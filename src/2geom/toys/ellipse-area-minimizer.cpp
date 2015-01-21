@@ -239,13 +239,14 @@ class EllipseAreaMinimizer : public Toy
         ConvexHull ch(psh.pts);
         bool non_convex = false;
         for(unsigned i = 0; i < psh.pts.size(); i++) {
-            if (ch.contains_point(psh.pts[i]))
+            if (ch.contains(psh.pts[i]))
                 non_convex = true;
         }
 
         if(non_convex) {
             Circle circ;
-            circ.fit(ch.boundary);
+            std::vector<Point> boundary(ch.begin(), ch.end());
+            circ.fit(boundary);
             e = Ellipse(circ);
         } else {
             goal_function_type* gf = &area_goal;

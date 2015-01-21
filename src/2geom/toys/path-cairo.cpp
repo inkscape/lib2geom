@@ -13,9 +13,9 @@ void cairo_rectangle(cairo_t *cr, Rect const& r) {
 
 void cairo_convex_hull(cairo_t *cr, ConvexHull const& ch) {
     if(ch.empty()) return;
-    cairo_move_to(cr, ch.boundary.back());
-    for(unsigned i = 0; i < ch.boundary.size(); i++) {
-        cairo_line_to(cr, ch.boundary[i]);
+    cairo_move_to(cr, ch[ch.size()-1]);
+    for(unsigned i = 0; i < ch.size(); i++) {
+        cairo_line_to(cr, ch[i]);
     }
 }
 

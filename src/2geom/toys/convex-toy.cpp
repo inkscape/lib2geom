@@ -1,4 +1,4 @@
-#include <2geom/convex-cover.h>
+#include <2geom/convex-hull.h>
 
 #include <2geom/toys/path-cairo.h>
 #include <2geom/toys/toy-framework-2.h>
@@ -29,10 +29,10 @@ ConvexHull rect2convexhull(Rect const & r) {
     return ch;
 }
 
-void rot_cal(cairo_t* cr, ConvexHull ch) {
-    Point tb = ch.boundary.back();
-    for(unsigned i = 0; i < ch.boundary.size(); i++) {
-        Point tc = ch.boundary[i];
+void rot_cal(cairo_t* cr, ConvexHull const &ch) {
+    Point tb = ch.back();
+    for(unsigned i = 0; i < ch.size(); i++) {
+        Point tc = ch[i];
         Point n = -rot90(tb-tc);
         Point ta = *ch.furthest(n);
         cairo_move_to(cr, tc);

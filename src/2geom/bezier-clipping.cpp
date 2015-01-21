@@ -39,7 +39,6 @@
 #include <2geom/point.h>
 #include <2geom/interval.h>
 #include <2geom/bezier.h>
-//#include <2geom/convex-cover.h>
 #include <2geom/numeric/matrix.h>
 
 #include <cassert>

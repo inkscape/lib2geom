@@ -3,7 +3,7 @@
 #include <2geom/sbasis-2d.h>
 #include <2geom/bezier-to-sbasis.h>
 #include <2geom/choose.h>
-#include <2geom/convex-cover.h>
+#include <2geom/convex-hull.h>
 
 #include <2geom/path.h>
 
@@ -92,9 +92,9 @@ public:
     
         Geom::ConvexHull ch(hand.pts);
     
-        cairo_move_to(cr, ch.boundary.back());
-        for(unsigned i = 0; i < ch.boundary.size(); i++) {
-            cairo_line_to(cr, ch.boundary[i]);
+        cairo_move_to(cr, ch.back());
+        for(unsigned i = 0; i < ch.size(); i++) {
+            cairo_line_to(cr, ch[i]);
         }
         Toy::draw(cr, notify, width, height, save,timer_stream);
     }

@@ -9,7 +9,7 @@
 #include <2geom/d2.h>
 #include <2geom/piecewise.h>
 #include <2geom/path.h>
-#include <2geom/convex-cover.h>
+#include <2geom/convex-hull.h>
 #include <vector>
 #include <string>
 

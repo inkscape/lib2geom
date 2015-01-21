@@ -36,7 +36,7 @@ conic-4
 conic-5
 conic-6
 conic-section-toy
-convex-toy
+#convex-toy
 curvature-test
 curve-curve-distance
 curve-curve-nearest-time

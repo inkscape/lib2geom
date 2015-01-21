@@ -231,6 +231,7 @@ public:
      * @param d The dimension with higher significance */
     template <Dim2 DIM> struct LexLess;
     template <Dim2 DIM> struct LexGreater;
+    //template <Dim2 DIM, typename First = std::less<Coord>, typename Second = std::less<Coord> > LexOrder;
     /** @brief Lexicographical ordering functor with runtime dimension. */
     struct LexLessRt {
         LexLessRt(Dim2 d) : dim(d) {}
@@ -244,6 +245,7 @@ public:
     private:
         Dim2 dim;
     };
+    //template <typename First = std::less<Coord>, typename Second = std::less<Coord> > LexOrder
 
     friend inline std::ostream &operator<< (std::ostream &out_file, const Geom::Point &in_pnt);
 };
@@ -257,21 +259,37 @@ inline std::ostream &operator<< (std::ostream &out_file, const Geom::Point &in_p
 }
 
 template<> struct Point::LexLess<X> {
+    typedef std::less<Coord> Primary;
+    typedef std::less<Coord> Secondary;
+    typedef std::less<Coord> XOrder;
+    typedef std::less<Coord> YOrder;
     bool operator()(Point const &a, Point const &b) const {
         return a[X] < b[X] || (a[X] == b[X] && a[Y] < b[Y]);
     }
 };
 template<> struct Point::LexLess<Y> {
+    typedef std::less<Coord> Primary;
+    typedef std::less<Coord> Secondary;
+    typedef std::less<Coord> XOrder;
+    typedef std::less<Coord> YOrder;
     bool operator()(Point const &a, Point const &b) const {
         return a[Y] < b[Y] || (a[Y] == b[Y] && a[X] < b[X]);
     }
 };
 template<> struct Point::LexGreater<X> {
+    typedef std::greater<Coord> Primary;
+    typedef std::greater<Coord> Secondary;
+    typedef std::greater<Coord> XOrder;
+    typedef std::greater<Coord> YOrder;
     bool operator()(Point const &a, Point const &b) const {
         return a[X] > b[X] || (a[X] == b[X] && a[Y] > b[Y]);
     }
 };
 template<> struct Point::LexGreater<Y> {
+    typedef std::greater<Coord> Primary;
+    typedef std::greater<Coord> Secondary;
+    typedef std::greater<Coord> XOrder;
+    typedef std::greater<Coord> YOrder;
     bool operator()(Point const &a, Point const &b) const {
         return a[Y] > b[Y] || (a[Y] == b[Y] && a[X] > b[X]);
     }

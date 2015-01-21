@@ -39,7 +39,7 @@
 #include <2geom/basic-intersection.h>
 #include <2geom/bezier.h>
 #include <2geom/interval.h>
-#include <2geom/convex-cover.h>
+#include <2geom/convex-hull.h>
 
 
 #include <vector>

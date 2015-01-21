@@ -107,6 +107,7 @@ void find_intersections(std::vector< std::pair<double, double> > & xs,
  * Temporary storage is minimized by using part of the storage for the result
  * to hold an intermediate value until it is no longer needed.
  */
+// TODO replace with Bezier method
 void split(vector<Point> const &p, double t, 
            vector<Point> &left, vector<Point> &right) {
     const unsigned sz = p.size();

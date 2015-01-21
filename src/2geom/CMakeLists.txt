@@ -51,8 +51,8 @@ conic_section_clipper.h
 conic_section_clipper_cr.h
 conic_section_clipper_impl.cpp
 conic_section_clipper_impl.h
-convex-cover.cpp
-convex-cover.h
+convex-hull.cpp
+convex-hull.h
 coord.cpp
 coord.h
 crossing.cpp
