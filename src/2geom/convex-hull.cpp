@@ -38,6 +38,7 @@
 #include <map>
 #include <iostream>
 #include <cassert>
+#include <boost/array.hpp>
 
 /** Todo:
     + modify graham scan to work top to bottom, rather than around angles
@@ -58,45 +59,51 @@ using std::swap;
 
 namespace Geom {
 
-ConvexHull::ConvexHull(Point const &xmin, Point const &xmax, Point const &ymin, Point const &ymax) {
-    // 1 point case
-    if (xmin == xmax) {
-        // all passed points must be equal
-        _boundary.push_back(xmin);
-        _lower = 1;
-        return;
-    }
+ConvexHull::ConvexHull(Point const &a, Point const &b)
+    : _lower(0)
+{
+    std::vector<Point> pts(2);
+    pts[0] = a;
+    pts[1] = b;
+    std::sort(pts.begin(), pts.end(), Point::LexLess<X>());
+    _construct(pts);
+}
 
-    // 2 point cases
-    if ((xmin == ymin && xmax == ymax) || (xmin == ymax && xmax == ymin)) {
-        _boundary.push_back(xmin);
-        _boundary.push_back(xmax);
-        _lower = 2;
-        return;
-    }
+ConvexHull::ConvexHull(Point const &a, Point const &b, Point const &c)
+    : _lower(0)
+{
+    std::vector<Point> pts(3);
+    pts[0] = a;
+    pts[1] = b;
+    pts[2] = c;
+    std::sort(pts.begin(), pts.end(), Point::LexLess<X>());
+    _construct(pts);
+}
 
-    // 3 point cases
-    if (xmin == ymin || xmax == ymin) {
-        _boundary.push_back(xmin);
-        _boundary.push_back(xmax);
-        _boundary.push_back(ymax);
-        _lower = 2;
-        return;
+ConvexHull::ConvexHull(Point const &a, Point const &b, Point const &c, Point const &d)
+    : _lower(0)
+{
+    std::vector<Point> pts(4);
+    pts[0] = a;
+    pts[1] = b;
+    pts[2] = c;
+    pts[3] = d;
+    std::sort(pts.begin(), pts.end(), Point::LexLess<X>());
+    _construct(pts);
+}
+
+ConvexHull::ConvexHull(std::vector<Point> const &pts)
+    : _lower(0)
+{
+    std::vector<Point> sorted;
+    if (pts.size() > 16) { // arbitrary threshold
+        _prune(pts.begin(), pts.end(), sorted);
+    } else {
+        sorted.resize(pts.size());
+        std::copy(pts.begin(), pts.end(), sorted.begin());
+        std::sort(sorted.begin(), sorted.end(), Point::LexLess<X>());
     }
-    if (xmin == ymax || xmax == ymax) {
-        _boundary.push_back(xmin);
-        _boundary.push_back(ymin);
-        _boundary.push_back(xmax);
-        _lower = 3;
-        return;
-    }
-    
-    // generic 4-point case
-    _boundary.push_back(xmin);
-    _boundary.push_back(ymin);
-    _boundary.push_back(xmax);
-    _boundary.push_back(ymax);
-    _lower = 3;
+    _construct(sorted);
 }
 
 bool ConvexHull::_is_clockwise_turn(Point const &a, Point const &b, Point const &c)
@@ -112,9 +119,15 @@ void ConvexHull::_construct(std::vector<Point> const &pts)
         _lower = 0;
         return;
     }
-    if (pts.size() <= 2) {
+    if (pts.size() == 1 || (pts.size() == 2 && pts[0] == pts[1])) {
+        _boundary.resize(1);
+        _boundary[0] = pts[0];
+        _lower = 1;
+        return;
+    }
+    if (pts.size() == 2) {
         _boundary = pts;
-        _lower = pts.size();
+        _lower = 2;
         return;
     }
 
@@ -151,33 +164,41 @@ double ConvexHull::area() const
 
 OptRect ConvexHull::bounds() const
 {
-    if (empty()) return OptRect();
+    OptRect ret;
+    if (empty()) return ret;
+    ret = Rect(left(), top(), right(), bottom());
+    return ret;
+}
 
-    Coord xmin = _boundary.front()[X];
-    Coord xmax = _boundary[_lower-1][X];
-    Coord ymin = std::numeric_limits<Coord>::infinity();
-    Coord ymax = -std::numeric_limits<Coord>::infinity();
+Point ConvexHull::topPoint() const
+{
+    Point ret;
+    ret[Y] = std::numeric_limits<Coord>::infinity();
 
-    // we know that in the upper hull, the Y values will first decrease,
-    // then start increasing at some point, so we stop searching
-    // when the Y values start increasing
     for (UpperIterator i = upperHull().begin(); i != upperHull().end(); ++i) {
-        if (ymin > i->y()) {
-            ymin = i->y();
+        if (ret[Y] > i->y()) {
+            ret = *i;
         } else {
             break;
         }
     }
+
+    return ret;
+}
+
+Point ConvexHull::bottomPoint() const
+{
+    Point ret;
+    ret[Y] = -std::numeric_limits<Coord>::infinity();
 
     for (LowerIterator j = lowerHull().begin(); j != lowerHull().end(); ++j) {
-        if (ymax < j->y()) {
-            ymax = j->y();
+        if (ret[Y] < j->y()) {
+            ret = *j;
         } else {
             break;
         }
     }
 
-    OptRect ret = Rect(xmin, ymin, xmax, ymax);
     return ret;
 }
 
@@ -229,6 +250,25 @@ bool ConvexHull::contains(Rect const &r) const
 {
     for (unsigned i = 0; i < 4; ++i) {
         if (!contains(r.corner(i))) return false;
+    }
+    return true;
+}
+
+bool ConvexHull::contains(ConvexHull const &ch) const
+{
+    // TODO: requires interiorContains.
+    // We have to check all points of ch, and each point takes logarithmic time.
+    // If there are more points in ch that here, it is faster to make the check
+    // the other way around.
+    /*if (ch.size() > size()) {
+        for (iterator i = begin(); i != end(); ++i) {
+            if (ch.interiorContains(*i)) return false;
+        }
+        return true;
+    }*/
+
+    for (iterator i = ch.begin(); i != ch.end(); ++i) {
+        if (!contains(*i)) return false;
     }
     return true;
 }

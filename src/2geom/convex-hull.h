@@ -44,6 +44,9 @@ namespace Geom {
 
 namespace {
 
+/** @brief Iterator for the lower convex hull.
+ * This iterator allows us to avoid duplicating any points in the hull
+ * boundary and still express most algorithms in a concise way. */
 class ConvexHullLowerIterator
     : public boost::random_access_iterator_helper
         < ConvexHullLowerIterator
@@ -107,7 +110,9 @@ private:
 
 } // end anonymous namespace
 
-/** Convex hull based on the Andrew's scan algorithm.
+/**
+ * @brief Convex hull based on the Andrew's monotone chain algorithm.
+ * @ingroup Shapes
  */
 class ConvexHull {
 public:
@@ -116,20 +121,24 @@ public:
     typedef std::vector<Point>::const_iterator UpperIterator;
     typedef ConvexHullLowerIterator LowerIterator;
 
+    /// @name Construct a convex hull.
+    /// @{
+
     /// Create an empty convex hull.
     ConvexHull() {}
+    /// Construct a singular convex hull.
+    explicit ConvexHull(Point const &a)
+        : _boundary(1, a)
+        , _lower(1)
+    {}
+    /// Construct a convex hull of two points.
+    ConvexHull(Point const &a, Point const &b);
+    /// Construct a convex hull of three points.
+    ConvexHull(Point const &a, Point const &b, Point const &c);
+    /// Construct a convex hull of four points.
+    ConvexHull(Point const &a, Point const &b, Point const &c, Point const &d);
     /// Create a convex hull of a vector of points.
-    ConvexHull(std::vector<Point> const &pts) {
-        std::vector<Point> sorted;
-        if (pts.size() > 16) { // arbitrary threshold
-            _prune(pts.begin(), pts.end(), sorted);
-        } else {
-            sorted.resize(pts.size());
-            std::copy(pts.begin(), pts.end(), sorted.begin());
-            std::sort(sorted.begin(), sorted.end(), Point::LexLess<X>());
-        }
-        _construct(sorted);
-    }
+    ConvexHull(std::vector<Point> const &pts);
 
     /// Create a convex hull of a range of points.
     template <typename Iter>
@@ -139,11 +148,15 @@ public:
         _prune(first, last, sorted);
         _construct(sorted);
     }
+    /// @}
 
-    /// Get the number of points in the hull.
-    size_t size() const { return _boundary.size(); }
+    /// @name Inspect basic properties.
+    /// @{
+
     /// Check for emptiness.
     bool empty() const { return _boundary.empty(); }
+    /// Get the number of points in the hull.
+    size_t size() const { return _boundary.size(); }
     /// Check whether the hull contains only one point.
     bool isSingular() const { return _boundary.size() == 1; }
     /// Check whether the hull is a line.
@@ -156,22 +169,88 @@ public:
     //double areaAndCentroid(Point &c);
     //FatLine maxDiameter() const;
     //FatLine minDiameter() const;
+    /// @}
+
+    /// @name Inspect bounds and extreme points.
+    /// @{
+
+    /// Compute the bounding rectangle of the convex hull.
     OptRect bounds() const;
 
+    /// Get the leftmost (minimum X) coordinate of the hull.
+    Coord left() const { return _boundary[0][X]; }
+    /// Get the rightmost (maximum X) coordinate of the hull.
+    Coord right() const { return _boundary[_lower-1][X]; }
+    /// Get the topmost (minimum Y) coordinate of the hull.
+    Coord top() const { return topPoint()[Y]; }
+    /// Get the bottommost (maximum Y) coordinate of the hull.
+    Coord bottom() const { return bottomPoint()[Y]; }
+
+    /// Get the leftmost (minimum X) point of the hull.
+    Point leftPoint() const { return _boundary[0]; }
+    /// Get the rightmost (maximum X) point of the hull.
+    Point rightPoint() const { return _boundary[_lower-1]; }
+    /// Get the topmost (minimum Y) point of the hull.
+    Point topPoint() const;
+    /// Get the bottommost (maximum Y) point of the hull.
+    Point bottomPoint() const;
+    ///@}
+
+    /// @name Iterate over points.
+    /// @{
+    /** @brief Get the begin iterator to the points that form the hull.
+     * Points are are returned beginning the the leftmost one, going along
+     * the upper (minimum Y) side, and then along the bottom.
+     * Thus the points are always ordered clockwise. No point is
+     * repeated. */
     iterator begin() const { return _boundary.begin(); }
+    /// Get the end iterator to the points that form the hull.
     iterator end() const { return _boundary.end(); }
+    /// Get the first, leftmost
     Point const &front() { return _boundary.front(); }
     Point const &back() { return _boundary.back(); }
     Point const &operator[](std::size_t i) const {
         return _boundary[i];
     }
 
-    /// Check whether the given point is inside the hull.
-    /// This takes logarithmic time.
+    /** @brief Get an iterator range to the upper part of the hull.
+     * This returns a range that includes the leftmost point,
+     * all points of the upper hull, and the rightmost point. */
+    boost::iterator_range<UpperIterator> upperHull() const {
+        boost::iterator_range<UpperIterator> r(_boundary.begin(), _boundary.begin() + _lower);
+        return r;
+    }
+
+    /** @brief Get an iterator range to the lower part of the hull.
+     * This returns a range that includes the leftmost point,
+     * all points of the lower hull, and the rightmost point. */
+    boost::iterator_range<LowerIterator> lowerHull() const {
+        if (_boundary.empty()) {
+            boost::iterator_range<LowerIterator> r(LowerIterator(_boundary, 0),
+                                                   LowerIterator(_boundary, 0));
+            return r;
+        }
+        if (_boundary.size() == 1) {
+            boost::iterator_range<LowerIterator> r(LowerIterator(_boundary, 0),
+                                                   LowerIterator(_boundary, 1));
+            return r;
+        }
+        boost::iterator_range<LowerIterator> r(LowerIterator(_boundary, _lower - 1),
+                                               LowerIterator(_boundary, _boundary.size() + 1));
+        return r;
+    }
+    /// @}
+
+    /// @name Check for containment and intersection.
+    /// @{
+    /** @brief Check whether the given point is inside the hull.
+     * This takes logarithmic time. */
     bool contains(Point const &p) const;
-    /// Check whether the given axis-aligned rectangle is inside the hull.
+    /** @brief Check whether the given axis-aligned rectangle is inside the hull.
+     * A rectangle is inside the hull if all of its corners are inside. */
     bool contains(Rect const &r) const;
-    //bool contains(ConvexHull const &other) const;
+    /// Check whether the given convex hull is completely contained in this one.
+    bool contains(ConvexHull const &other) const;
     //bool interiorContains(Point const &p) const;
     //bool interiorContains(Rect const &r) const;
     //bool interiorContains(ConvexHull const &other) const;
@@ -185,25 +264,9 @@ public:
     //ConvexHull &expand(Point const &p);
     //void unifyWith(ConvexHull const &other);
     //void intersectWith(ConvexHull const &other);
-
-    boost::iterator_range<UpperIterator> upperHull() const {
-        return boost::iterator_range<UpperIterator>(_boundary.begin(), _boundary.begin() + _lower);
-    }
-    boost::iterator_range<LowerIterator> lowerHull() const {
-        if (_boundary.empty()) {
-            return boost::iterator_range<LowerIterator>(LowerIterator(_boundary, 0),
-                                                        LowerIterator(_boundary, 0));
-        }
-        if (_boundary.size() == 1) {
-            return boost::iterator_range<LowerIterator>(LowerIterator(_boundary, 0),
-                                                        LowerIterator(_boundary, 1));
-        }
-        return boost::iterator_range<LowerIterator>(LowerIterator(_boundary, _lower - 1),
-                                                    LowerIterator(_boundary, _boundary.size() + 1));
-    }
+    /// @}
 
 private:
-    ConvexHull(Point const &xmin, Point const &xmax, Point const &ymin, Point const &ymax);
     void _construct(std::vector<Point> const &pts);
     static bool _is_clockwise_turn(Point const &a, Point const &b, Point const &c);
 
@@ -241,13 +304,14 @@ private:
         std::sort(out.begin(), out.end(), Point::LexLess<X>());
         out.erase(std::unique(out.begin(), out.end()), out.end());
     }
-    
+
     /// Sequence of points forming the convex hull polygon.
     std::vector<Point> _boundary;
-    /// Where the lower part of the boundary starts.
+    /// Index one past the rightmost point, where the lower part of the boundary starts.
     std::size_t _lower;
 };
-/** @brief Output operator for points.
+
+/** @brief Output operator for convex hulls.
  * Prints out all the coordinates. */
 inline std::ostream &operator<< (std::ostream &out_file, const Geom::ConvexHull &in_cvx) {
     out_file << "ConvexHull(";
