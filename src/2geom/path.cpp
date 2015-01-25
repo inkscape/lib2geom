@@ -35,6 +35,7 @@
 #include <2geom/path.h>
 #include <2geom/pathvector.h>
 #include <2geom/transforms.h>
+#include <2geom/convex-hull.h>
 #include <algorithm>
 #include <limits>
 
@@ -43,7 +44,34 @@ using namespace Geom::PathInternal;
 
 namespace Geom {
 
-void Path::clear() {
+Path::Path(ConvexHull const &ch)
+    : _curves(new Sequence())
+    , _closing_seg(new ClosingSegment(Point(), Point()))
+    , _closed(false)
+{
+    if (ch.empty()) {
+        _curves->push_back(_closing_seg);
+        return;
+    }
+
+    _closing_seg->setInitial(ch.back());
+    _closing_seg->setFinal(ch.front());
+
+    Point last = ch.front();
+
+    for (std::size_t i = 1; i < ch.size(); ++i) {
+        _curves->push_back(new LineSegment(last, ch[i]));
+        last = ch[i];
+    }
+
+    _curves->push_back(_closing_seg);
+    if (ch.size() > 1) {
+        _closed = true;
+    }
+}
+
+void Path::clear()
+{
     _unshare();
     _curves->pop_back().release();
     _curves->clear();

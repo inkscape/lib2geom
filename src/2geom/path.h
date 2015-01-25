@@ -47,6 +47,7 @@
 namespace Geom {
 
 class Path;
+class ConvexHull;
 
 namespace PathInternal {
 
@@ -218,6 +219,9 @@ public:
         }
         _curves->push_back(_closing_seg);
     }
+
+    /// Construct a path from a convex hull.
+    Path(ConvexHull const &);
 
     virtual ~Path() {}
 

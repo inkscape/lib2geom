@@ -206,9 +206,10 @@ public:
     iterator begin() const { return _boundary.begin(); }
     /// Get the end iterator to the points that form the hull.
     iterator end() const { return _boundary.end(); }
-    /// Get the first, leftmost
-    Point const &front() { return _boundary.front(); }
-    Point const &back() { return _boundary.back(); }
+    /// Get the first, leftmost point in the hull.
+    Point const &front() const { return _boundary.front(); }
+    /// Get the penultimate point of the lower hull.
+    Point const &back() const { return _boundary.back(); }
     Point const &operator[](std::size_t i) const {
         return _boundary[i];
     }
