@@ -87,6 +87,9 @@ inline T casteljau_subdivision(double t, T const *v, T *left, T *right, unsigned
     T val = bernstein_value_at(t, v, order);
 
     if (!right) {
+        if (!left) {
+            return val;
+        }
         if (left != v) {
             std::copy(v, v + order + 1, left);
         }
