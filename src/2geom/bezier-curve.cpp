@@ -262,7 +262,7 @@ static Coord bezier_length_internal(std::vector<Point> &v1, Coord tolerance)
      * but shorter than the length of the polyline formed by its control
      * points. When the difference between the two values is smaller than the
      * error tolerance, we can be sure that the true value is no further than
-     * 2*tolerance from their arithmetic mean. When it's larger, we recursively
+     * 0.5 * tolerance from their arithmetic mean. When it's larger, we recursively
      * subdivide the Bezier curve into two parts and add their lengths.
      */
     Coord lower = distance(v1.front(), v1.back());

@@ -78,18 +78,15 @@ inline T bernstein_value_at(double t, T const *c_, unsigned n) {
  * @return Value of the polynomial at @a t */
 template <typename T>
 inline T casteljau_subdivision(double t, T const *v, T *left, T *right, unsigned order) {
-    if (!left && !right) {
-        return bernstein_value_at(t, v, order);
-    }
-
     // The Horner-like scheme gives very slightly different results, but we need
     // the result of subdivision to match exactly with Bezier's valueAt function.
     T val = bernstein_value_at(t, v, order);
 
+    if (!left && !right) {
+        return val;
+    }
+
     if (!right) {
-        if (!left) {
-            return val;
-        }
         if (left != v) {
             std::copy(v, v + order + 1, left);
         }
@@ -99,7 +96,7 @@ inline T casteljau_subdivision(double t, T const *v, T *left, T *right, unsigned
             }
         }
         left[order] = val;
-        return val;
+        return left[order];
     }
 
     if (right != v) {
@@ -113,10 +110,10 @@ inline T casteljau_subdivision(double t, T const *v, T *left, T *right, unsigned
             right[j-1] = lerp(t, right[j-1], right[j]);
         }
     }
-    if (left) {
-        left[order] = val;
-    }
     right[0] = val;
+    if (left) {
+        left[order] = right[0];
+    }
     return right[0];
 }
 
@@ -176,24 +173,49 @@ public:
         assert(ord.order ==  order());
     }
 
+    /// @name Construct Bezier polynomials from their control points
+    /// @{
     explicit Bezier(Coord c0) : c_(0., 1) {
         c_[0] = c0;
     }
-
-    //Construct an order-1 bezier (linear Bézier)
     Bezier(Coord c0, Coord c1) : c_(0., 2) {
         c_[0] = c0; c_[1] = c1;
     }
-
-    //Construct an order-2 bezier (quadratic Bézier)
     Bezier(Coord c0, Coord c1, Coord c2) : c_(0., 3) {
         c_[0] = c0; c_[1] = c1; c_[2] = c2;
     }
-
-    //Construct an order-3 bezier (cubic Bézier)
     Bezier(Coord c0, Coord c1, Coord c2, Coord c3) : c_(0., 4) {
         c_[0] = c0; c_[1] = c1; c_[2] = c2; c_[3] = c3;
     }
+    Bezier(Coord c0, Coord c1, Coord c2, Coord c3, Coord c4) : c_(0., 5) {
+        c_[0] = c0; c_[1] = c1; c_[2] = c2; c_[3] = c3; c_[4] = c4;
+    }
+    Bezier(Coord c0, Coord c1, Coord c2, Coord c3, Coord c4,
+           Coord c5) : c_(0., 6) {
+        c_[0] = c0; c_[1] = c1; c_[2] = c2; c_[3] = c3; c_[4] = c4;
+        c_[5] = c5;
+    }
+    Bezier(Coord c0, Coord c1, Coord c2, Coord c3, Coord c4,
+           Coord c5, Coord c6) : c_(0., 7) {
+        c_[0] = c0; c_[1] = c1; c_[2] = c2; c_[3] = c3; c_[4] = c4;
+        c_[5] = c5; c_[6] = c6;
+    }
+    Bezier(Coord c0, Coord c1, Coord c2, Coord c3, Coord c4,
+           Coord c5, Coord c6, Coord c7) : c_(0., 8) {
+        c_[0] = c0; c_[1] = c1; c_[2] = c2; c_[3] = c3; c_[4] = c4;
+        c_[5] = c5; c_[6] = c6; c_[7] = c7;
+    }
+    Bezier(Coord c0, Coord c1, Coord c2, Coord c3, Coord c4,
+           Coord c5, Coord c6, Coord c7, Coord c8) : c_(0., 9) {
+        c_[0] = c0; c_[1] = c1; c_[2] = c2; c_[3] = c3; c_[4] = c4;
+        c_[5] = c5; c_[6] = c6; c_[7] = c7; c_[8] = c8;
+    }
+    Bezier(Coord c0, Coord c1, Coord c2, Coord c3, Coord c4,
+           Coord c5, Coord c6, Coord c7, Coord c8, Coord c9) : c_(0., 10) {
+        c_[0] = c0; c_[1] = c1; c_[2] = c2; c_[3] = c3; c_[4] = c4;
+        c_[5] = c5; c_[6] = c6; c_[7] = c7; c_[8] = c8; c_[9] = c9;
+    }
+    /// @}
 
     void resize (unsigned int n, Coord v = 0)
     {

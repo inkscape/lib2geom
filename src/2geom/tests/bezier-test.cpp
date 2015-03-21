@@ -3,6 +3,7 @@
 
 #include <2geom/bezier.h>
 #include <2geom/poly.h>
+#include <2geom/basic-intersection.h>
 #include <vector>
 #include <iterator>
 #include <glib.h>
@@ -267,8 +268,8 @@ TEST_F(BezierTest, Roots) {
     
     for(unsigned test_i = 0; test_i < tests.size(); test_i++) {
         Bezier b = array_roots(tests[test_i]);
-        std::cout << tests[test_i] << ": " << b << std::endl;
-        std::cout << b.roots() << std::endl;
+        //std::cout << tests[test_i] << ": " << b << std::endl;
+        //std::cout << b.roots() << std::endl;
         vector_equal(tests[test_i], b.roots(), eps);
     }
 }
@@ -285,8 +286,8 @@ TEST_F(BezierTest,Operators) {
     EXPECT_EQ(reverse_wiggle.at1(), wiggle.at0());
     EXPECT_TRUE(are_equal(reverse(reverse_wiggle), wiggle));
 
-    cout << "Bezier portion(const Bezier & a, double from, double to);\n";
-    cout << portion(Bezier(0.0,2.0), 0.5, 1) << endl;
+    //cout << "Bezier portion(const Bezier & a, double from, double to);\n";
+    //cout << portion(Bezier(0.0,2.0), 0.5, 1) << endl;
 
 // std::vector<Point> bezier_points(const D2<Bezier > & a) {
 
@@ -318,55 +319,120 @@ TEST_F(BezierTest,Operators) {
     }
 }
 
-#if 0
-struct IntersectionTestcase {
+struct XPt {
+    XPt(Coord x, Coord y, Coord ta, Coord tb)
+        : p(x, y), ta(ta), tb(tb)
+    {}
+    XPt() {}
+    Point p;
+    Coord ta, tb;
+};
+
+struct XTest {
     D2<Bezier> a;
     D2<Bezier> b;
-    std::vector<Point> x;
-    std::vector<Coord> ta;
-    std::vector<Coord> tb;
+    std::vector<XPt> s;
+};
+
+struct XLess {
+    bool operator()(std::pair<double, double> const &a, std::pair<double, double> const &b) const {
+        if (a.first < b.first) return true;
+        if (a.first == b.first && a.second < b.second) return true;
+        return false;
+    }
 };
 
 TEST_F(BezierTest, Intersection) {
     // test cases taken from:
     // D. Lasser, Calculating the self-intersections of Bezier curves
+    typedef D2<Bezier> D2Bez;
+    std::vector<XTest> tests;
 
-    Coord a1x[] = {-3.3, -3.3, 0, 3.3, 3.3};
-    Coord a1y[] = {1.3, -0.7, 2.3 -0.7, 1.3};
-    Coord b1x[] = {-4.0, -4.0, 0, 4.0, 4.0};
-    Coord b1y[] = {-0.35, 3.0, -2.6, 3.0, -0.35};
-    Coord p1x[] = {-3.12109, -1.67341, 1.67341, 3.12109};
-    Coord p1y[] = {0.76362, 0.60298, 0.60298, 0.76362};
-    Coord p1ta[] = {0.09834, 0.32366, 0.67634, 0.90166};
-    Coord p1tb[] = {0.20604, 0.35662, 0.64338, 0.79396};
+    // Example 1
+    tests.push_back(XTest());
+    tests.back().a = D2Bez(Bezier(-3.3, -3.3, 0, 3.3, 3.3), Bezier(1.3, -0.7, 2.3, -0.7, 1.3));
+    tests.back().b = D2Bez(Bezier(-4.0, -4.0, 0, 4.0, 4.0), Bezier(-0.35, 3.0, -2.6, 3.0, -0.35));
+    tests.back().s.resize(4);
+    tests.back().s[0] = XPt(-3.12109, 0.76362, 0.09834, 0.20604);
+    tests.back().s[1] = XPt(-1.67341, 0.60298, 0.32366, 0.35662);
+    tests.back().s[2] = XPt(1.67341, 0.60298, 0.67634, 0.64338);
+    tests.back().s[3] = XPt(3.12109, 0.76362, 0.90166, 0.79396);
 
-    Coord a2x[] = {0, 0, 3, 3};
-    Coord a2y[] = {0, 14, -9, 5};
-    Coord b2x[] = {-1, 13, -10, 4};
-    Coord b2y[] = {4, 4, 1, 1};
-    Coord p2x[] = {0.00809, 0.02596, 0.17250, 0.97778, 1.50000, 2.02221, 2.82750, 2.97404, 2.99191};
-    Coord p2y[] = {1.17249, 1.97778, 3.99191, 3.97404, 2.50000, 1.02596, 1.00809, 3.02221, 3.82750};
-    Coord p2ta[] = {0.03029, 0.05471, 0.14570, 0.38175, 0.50000, 0.61825, 0.85430, 0.94529, 0.96971};
-    Coord p2tb[] = {0.85430, 0.61825, 0.03029, 0.05471, 0.50000, 0.94529, 0.96971, 0.38175, 0.14570};
+    // Example 2
+    tests.push_back(XTest());
+    tests.back().a = D2Bez(Bezier(0, 0, 3, 3), Bezier(0, 14, -9, 5));
+    tests.back().b = D2Bez(Bezier(-1, 13, -10, 4), Bezier(4, 4, 1, 1));
+    tests.back().s.resize(9);
+    tests.back().s[0] = XPt(0.00809, 1.17249, 0.03029, 0.85430);
+    tests.back().s[1] = XPt(0.02596, 1.97778, 0.05471, 0.61825);
+    tests.back().s[2] = XPt(0.17250, 3.99191, 0.14570, 0.03029);
+    tests.back().s[3] = XPt(0.97778, 3.97404, 0.38175, 0.05471);
+    tests.back().s[4] = XPt(1.5, 2.5, 0.5, 0.5);
+    tests.back().s[5] = XPt(2.02221, 1.02596, 0.61825, 0.94529);
+    tests.back().s[6] = XPt(2.82750, 1.00809, 0.85430, 0.96971);
+    tests.back().s[7] = XPt(2.97404, 3.02221, 0.94529, 0.38175);
+    tests.back().s[8] = XPt(2.99191, 3.82750, 0.96971, 0.14570);
 
-    Coord a3x[] = {-5, -5, -3, 0, 3, 5, 5};
-    Coord a3y[] = {0, 3.555, -1, 4.17, -1, 3.555, 0};
-    Coord b3x[] = {-6, -6, -3, 0, 3, 6, 6};
-    Coord b3y[] = {3, -0.555, 4, -1.17, 4, -0.555, 3};
-    Coord p3x[] = {-3.64353, -2.92393, -0.77325, 0.77325, 2.92393, 3.64353};
-    Coord p3y[] = {1.49822, 1.50086, 1.49989, 1.49989, 1.50086, 1.49822};
-    Coord p3ta[] = {0.23120, 0.29330, 0.44827, 0.55173, 0.70670, 0.76880};
-    Coord p3tb[] = {0.27305, 0.32148, 0.45409, 0.54591, 0.67852, 0.72695};
+    // Example 3
+    tests.push_back(XTest());
+    tests.back().a = D2Bez(Bezier(-5, -5, -3, 0, 3, 5, 5), Bezier(0, 3.555, -1, 4.17, -1, 3.555, 0));
+    tests.back().b = D2Bez(Bezier(-6, -6, -3, 0, 3, 6, 6), Bezier(3, -0.555, 4, -1.17, 4, -0.555, 3));
+    tests.back().s.resize(6);
+    tests.back().s[0] = XPt(-3.64353, 1.49822, 0.23120, 0.27305);
+    tests.back().s[1] = XPt(-2.92393, 1.50086, 0.29330, 0.32148);
+    tests.back().s[2] = XPt(-0.77325, 1.49989, 0.44827, 0.45409);
+    tests.back().s[3] = XPt(0.77325, 1.49989, 0.55173, 0.54591);
+    tests.back().s[4] = XPt(2.92393, 1.50086, 0.70670, 0.67852);
+    tests.back().s[5] = XPt(3.64353, 1.49822, 0.76880, 0.72695);
 
-    Coord a4x[] = {-4, -10, -2, -2, 2, 2, 10, 4};
-    Coord a4y[] = {0, 6, 6, 0, 0, 6, 6, 0};
-    Coord b4x[] = {-8, 0, 8};
-    Coord b4y[] = {1, 6, 1};
-    Coord p4x[] = {-5.69310, -2.68113, 2.68113, 5.69310};
-    Coord p4y[] = {2.23393, 3.21920, 3.21920, 2.23393};
-    Coord p4ta[] = {0.14418, 0.33243, 0.66757, 0.85582};
-    Coord p4tb[] = {0.06613, 0.35152, 0.64848, 0.93387};
+    // Example 4
+    tests.push_back(XTest());
+    tests.back().a = D2Bez(Bezier(-4, -10, -2, -2, 2, 2, 10, 4), Bezier(0, 6, 6, 0, 0, 6, 6, 0));
+    tests.back().b = D2Bez(Bezier(-8, 0, 8), Bezier(1, 6, 1));
+    tests.back().s.resize(4);
+    tests.back().s[0] = XPt(-5.69310, 2.23393, 0.06613, 0.14418);
+    tests.back().s[1] = XPt(-2.68113, 3.21920, 0.35152, 0.33243);
+    tests.back().s[2] = XPt(2.68113, 3.21920, 0.64848, 0.66757);
+    tests.back().s[3] = XPt(5.69310, 2.23393, 0.93387, 0.85582);
 
+    //std::cout << std::setprecision(5);
+
+    for (unsigned i = 0; i < tests.size(); ++i) {
+        std::vector<std::pair<double, double> > xs;
+        find_intersections(xs, tests[i].a, tests[i].b, 1e-7);
+        std::sort(xs.begin(), xs.end(), XLess());
+        //xs.erase(std::unique(xs.begin(), xs.end(), XEqual()), xs.end());
+
+        std::cout << "\n\n"
+                  << "===============================\n"
+                  << "=== Intersection Testcase " << i+1 << " ===\n"
+                  << "===============================\n" << std::endl;
+
+        EXPECT_EQ(xs.size(), tests[i].s.size());
+        //if (xs.size() != tests[i].s.size()) continue;
+
+        for (unsigned j = 0; j < std::min(xs.size(), tests[i].s.size()); ++j) {
+            std::cout << xs[j].first << " = " << tests[i].a.valueAt(xs[j].first) << "   "
+                      << xs[j].second << " = " << tests[i].b.valueAt(xs[j].second) << "\n"
+                      << tests[i].s[j].ta << " = " << tests[i].a.valueAt(tests[i].s[j].ta) << "   "
+                      << tests[i].s[j].tb << " = " << tests[i].b.valueAt(tests[i].s[j].tb) << std::endl;
+        }
+        for (unsigned j = 0; j < xs.size(); ++j) {
+            //EXPECT_NEAR(xs[j].first, tests[i].s[j].ta, 2e-5);
+            //EXPECT_NEAR(xs[j].second, tests[i].s[j].tb, 2e-5);
+            Point pa = tests[i].a.valueAt(xs[j].first);
+            Point pb = tests[i].b.valueAt(xs[j].second);
+            //EXPECT_NEAR(pa[X], tests[i].s[j].p[X], 2e-5);
+            //EXPECT_NEAR(pa[Y], tests[i].s[j].p[Y], 2e-5);
+            //EXPECT_NEAR(pb[X], tests[i].s[j].p[X], 2e-5);
+            //EXPECT_NEAR(pb[Y], tests[i].s[j].p[Y], 2e-5);
+            EXPECT_NEAR(pa[X], pb[X], 1e-6);
+            EXPECT_NEAR(pa[Y], pb[Y], 1e-6);
+        }
+    }
+
+    #if 0
+    // these contain second-order intersections
     Coord a5x[] = {-1.5, -1.5, -10, -10, 0, 10, 10, 1.5, 1.5};
     Coord a5y[] = {0, -8, -8, 9, 9, 9, -8, -8, 0};
     Coord b5x[] = {-3, -12, 0, 12, 3};
@@ -384,8 +450,8 @@ TEST_F(BezierTest, Intersection) {
     Coord p6y[] = {1.63288, -0.86192, -2.38219, -2.17973, 1.91463};
     Coord p6ta[] = {0.03184, 0.33990, 0.49353, 0.62148, 0.96618};
     Coord p6tb[] = {0.96977, 0.85797, 0.05087, 0.28232, 0.46102};
+    #endif
 }
-#endif
 
 /*
   Local Variables:
