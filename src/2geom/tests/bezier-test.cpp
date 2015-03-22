@@ -274,7 +274,7 @@ TEST_F(BezierTest, Roots) {
     }
 }
 
-TEST_F(BezierTest,Operators) {
+TEST_F(BezierTest, Operators) {
     /*cout << "scalar operators\n";
     cout << hump + 3 << endl;
     cout << hump - 3 << endl;
@@ -343,8 +343,15 @@ struct XLess {
 };
 
 TEST_F(BezierTest, Intersection) {
-    // test cases taken from:
-    // D. Lasser, Calculating the self-intersections of Bezier curves
+    /* Intersection test cases taken from:
+     * Dieter Lasser (1988), Calculating the Self-Intersections of Bezier Curves
+     * https://archive.org/stream/calculatingselfi00lass
+     *
+     * The intersection points are not actually calculated to a high precision
+     * in the paper. The most relevant tests are whether the curves actually
+     * intersect at the returned time values (i.e. whether a(ta) = b(tb))
+     * and whether the number of intersections is correct.
+     */
     typedef D2<Bezier> D2Bez;
     std::vector<XTest> tests;
 
@@ -417,6 +424,7 @@ TEST_F(BezierTest, Intersection) {
                       << tests[i].s[j].ta << " = " << tests[i].a.valueAt(tests[i].s[j].ta) << "   "
                       << tests[i].s[j].tb << " = " << tests[i].b.valueAt(tests[i].s[j].tb) << std::endl;
         }
+
         for (unsigned j = 0; j < xs.size(); ++j) {
             //EXPECT_NEAR(xs[j].first, tests[i].s[j].ta, 2e-5);
             //EXPECT_NEAR(xs[j].second, tests[i].s[j].tb, 2e-5);
