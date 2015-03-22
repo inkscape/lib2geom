@@ -255,7 +255,7 @@ void convertHSVtoRGB(const double H, const double S, const double V,
 
 void draw_line(cairo_t *cr, double a, double b, double c, const Geom::Rect& r) {
     Geom::Line l(a, b, c);
-    boost::optional<Geom::LineSegment> seg = l.segmentInside(r);
+    boost::optional<Geom::LineSegment> seg = l.clip(r);
     if (seg) {
         cairo_move_to(cr, seg->initialPoint());
         cairo_line_to(cr, seg->finalPoint());

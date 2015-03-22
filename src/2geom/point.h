@@ -307,8 +307,7 @@ inline bool Point::LexGreaterRt::operator()(Point const &a, Point const &b) cons
  * in a <code>double</code>.
  * @return \f$\sqrt{p_X^2 + p_Y^2}\f$
  * @relates Point */
-inline Coord L2(Point const &p)
-{
+inline Coord L2(Point const &p) {
     return p.length();
 }
 
@@ -316,26 +315,8 @@ inline Coord L2(Point const &p)
  * Warning: this can overflow where L2 won't.
  * @return \f$p_X^2 + p_Y^2\f$
  * @relates Point */
-inline Coord L2sq(Point const &p)
-{
+inline Coord L2sq(Point const &p) {
     return p[0]*p[0] + p[1]*p[1];
-}
-
-//IMPL: NearConcept
-/** @brief Nearness predicate for points.
- * True if neither coordinate of @a a is further than @a eps from the corresponding
- * coordinate of @a b.
- * @relates Point */
-inline bool are_near(Point const &a, Point const &b, double const eps=EPSILON)
-{
-    return ( are_near(a[X],b[X],eps) && are_near(a[Y],b[Y],eps) );
-}
-
-/** @brief Return a point halfway between the specified ones.
- * @relates Point */
-inline Point middle_point(Point const& P1, Point const& P2)
-{
-    return (P1 + P2) / 2;
 }
 
 /** @brief Returns p * Geom::rotate_degrees(90), but more efficient.
@@ -347,8 +328,7 @@ inline Point middle_point(Point const& P1, Point const& P2)
  *
  * There is no function to rotate by -90 degrees: use -rot90(p) instead.
  * @relates Point */
-inline Point rot90(Point const &p)
-{
+inline Point rot90(Point const &p) {
     return Point(-p[Y], p[X]);
 }
 
@@ -359,9 +339,14 @@ inline Point rot90(Point const &p)
  * @return Point on a line between a and b. The ratio of its distance from a
  *         and the distance between a and b will be equal to t.
  * @relates Point */
-inline Point lerp(Coord t, Point const &a, Point const &b)
-{
+inline Point lerp(Coord t, Point const &a, Point const &b) {
     return (1 - t) * a + t * b;
+}
+
+/** @brief Return a point halfway between the specified ones.
+ * @relates Point */
+inline Point middle_point(Point const &p1, Point const &p2) {
+    return lerp(0.5, p1, p2);
 }
 
 /** @brief Compute the dot product of a and b.
@@ -370,9 +355,8 @@ inline Point lerp(Coord t, Point const &a, Point const &b)
  * and the sign depends on whether they point in the same direction (+) or opposite ones (-).
  * @return \f$a \cdot b = a_X b_X + a_Y b_Y\f$.
  * @relates Point */
-inline Coord dot(Point const &a, Point const &b)
-{
-    return a[0] * b[0] + a[1] * b[1];
+inline Coord dot(Point const &a, Point const &b) {
+    return a[X] * b[X] + a[Y] * b[Y];
 }
 
 /** @brief Compute the 2D cross product.
@@ -388,16 +372,21 @@ inline Coord cross(Point const &a, Point const &b)
 
 /** @brief Compute the (Euclidean) distance between points.
  * @relates Point */
-inline Coord distance (Point const &a, Point const &b)
-{
-    return L2(a - b);
+inline Coord distance (Point const &a, Point const &b) {
+    return (a - b).length();
 }
 
 /** @brief Compute the square of the distance between points.
  * @relates Point */
-inline Coord distanceSq (Point const &a, Point const &b)
-{
+inline Coord distanceSq (Point const &a, Point const &b) {
     return L2sq(a - b);
+}
+
+//IMPL: NearConcept
+/** @brief Nearness predicate for points.
+ * @relates Point */
+inline bool are_near(Point const &a, Point const &b, double const eps=EPSILON) {
+    return are_near(distance(a, b), 0, eps);
 }
 
 Point unit_vector(Point const &a);

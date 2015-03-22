@@ -406,7 +406,7 @@ TEST_F(BezierTest, Intersection) {
 
     for (unsigned i = 0; i < tests.size(); ++i) {
         std::vector<std::pair<double, double> > xs;
-        find_intersections(xs, tests[i].a, tests[i].b, 1e-7);
+        find_intersections(xs, tests[i].a, tests[i].b, 1e-12);
         std::sort(xs.begin(), xs.end(), XLess());
         //xs.erase(std::unique(xs.begin(), xs.end(), XEqual()), xs.end());
 

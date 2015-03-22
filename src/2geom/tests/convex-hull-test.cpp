@@ -107,6 +107,8 @@ TEST_F(ConvexHullTest, PointContainment) {
     EXPECT_TRUE(triangle.contains(x));
     EXPECT_TRUE(triangle.contains(half));
     EXPECT_TRUE(square.contains(half));
+    EXPECT_TRUE(hexagon.contains(zero));
+    EXPECT_TRUE(antihexagon.contains(zero));
 
     /*EXPECT_FALSE(null.interiorContains(zero));
     EXPECT_FALSE(point.interiorContains(zero));

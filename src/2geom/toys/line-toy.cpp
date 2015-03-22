@@ -673,7 +673,7 @@ class LineToy : public Toy
         cairo_rectangle(cr, r);
         cairo_stroke(cr);
 
-        boost::optional<LineSegment> seg = l.segmentInside(r);
+        boost::optional<LineSegment> seg = l.clip(r);
         if (seg) {
             cairo_set_source_rgba(cr, 1, 0, 0, 1);
             draw_line_seg(cr, seg->initialPoint(), seg->finalPoint());

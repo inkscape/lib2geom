@@ -48,30 +48,36 @@ namespace Geom
 
 class Line {
 private:
-    Point m_origin;
-    Point m_versor;
+    Point _initial;
+    Point _final;
 public:
     /// @name Creating lines.
     /// @{
-    /** @brief Create a default horizontal line. */
+    /** @brief Create a default horizontal line.
+     * Creates a line with unit speed going in +X direction. */
     Line()
-        : m_origin(0,0), m_versor(1,0)
+        : _initial(0,0), _final(1,0)
     {}
     /** @brief Create a line with the specified inclination.
-     * @param _origin One of the points on the line
+     * @param origin One of the points on the line
      * @param angle Angle of the line in mathematical convention */
-    Line(Point const& _origin, Coord angle )
-        : m_origin(_origin)
+    Line(Point const &origin, Coord angle)
+        : _initial(origin)
     {
-        sincos(angle, m_versor[Y], m_versor[X]);
+        Point v;
+        sincos(angle, v[Y], v[X]);
+        _final = _initial + v;
     }
 
     /** @brief Create a line going through two points.
-     * @param A First point
-     * @param B Second point */
-    Line(Point const& A, Point const& B) {
-        setPoints(A, B);
-    }
+     * The first point will be at time 0, while the second one
+     * will be at time 1.
+     * @param a Initial point
+     * @param b First point */
+    Line(Point const &a, Point const &b)
+        : _initial(a)
+        , _final(b)
+    {}
 
     /** @brief Create a line based on the coefficients of its equation.
      @see Line::setCoefficients() */
@@ -80,29 +86,29 @@ public:
     }
 
     /** @brief Create a line by extending a line segment. */
-    explicit Line(LineSegment const& _segment) {
-        setPoints(_segment.initialPoint(), _segment.finalPoint());
-    }
-
-    /** @brief Create a line by extending a ray. */
-    explicit Line(Ray const& _ray)
-        : m_origin(_ray.origin()), m_versor(_ray.versor())
+    explicit Line(LineSegment const &seg)
+        : _initial(seg.initialPoint())
+        , _final(seg.finalPoint())
     {}
 
-    // huh?
-    static Line from_normal_distance(Point n, double c) {
-        Point P = n * c / dot(n,n);
-        Line l(P, P+rot90(n));
+    /** @brief Create a line by extending a ray. */
+    explicit Line(Ray const &r)
+        : _initial(r.origin())
+        , _final(r.origin() + r.versor())
+    {}
+
+    /** @brief Create a line normal to a vector at a specified distance from origin. */
+    static Line from_normal_distance(Point const &n, Coord c) {
+        Point start = c * n.normalized();
+        Line l(start, start + rot90(n));
         return l;
     }
     /** @brief Create a line from origin and unit vector.
      * Note that each line direction has two possible unit vectors.
      * @param o Point through which the line will pass
      * @param v Unit vector of the line's direction */
-    static Line from_origin_and_versor(Point o, Point v) {
-        Line l;
-        l.m_origin = o;
-        l.m_versor = v;
+    static Line from_origin_and_versor(Point const &o, Point const &v) {
+        Line l(o, o + v);
         return l;
     }
 
@@ -114,63 +120,89 @@ public:
     /// @name Retrieve and set the line's parameters.
     /// @{
     /** @brief Get the line's origin point. */
-    Point origin() const { return m_origin; }
+    Point origin() const { return _initial; }
     /** @brief Get the line's direction unit vector. */
-    Point versor() const { return m_versor; }
+    Point versor() const { return _final - _initial; }
     // return the angle described by rotating the X-axis in cw direction
     // until it overlaps the line
     // the returned value is in the interval [0, PI[
     Coord angle() const {
-        double a = std::atan2(m_versor[Y], m_versor[X]);
+        Point d = _final - _initial;
+        double a = std::atan2(d[Y], d[X]);
         if (a < 0) a += M_PI;
         if (a == M_PI) a = 0;
         return a;
     }
 
-    void setOrigin(Point const& _point) {
-        m_origin = _point;
+    /** @brief Set the point at zero time.
+     * The orientation remains unchanged, modulo numeric errors during addition. */
+    void setOrigin(Point const &p) {
+        Point d = p - _initial;
+        _initial = p;
+        _final += d;
     }
-    void setVersor(Point const& _versor) {
-        m_versor = _versor;
+    /** @brief Set the speed of the line.
+     * Origin remains unchanged. */
+    void setVersor(Point const &v) {
+        _final = _initial + v;
     }
 
-    void setAngle(Coord _angle) {
-        sincos(_angle, m_versor[Y], m_versor[X]);
+    void setAngle(Coord angle) {
+        Point v;
+        sincos(angle, v[Y], v[X]);
+        v *= distance(_initial, _final);
+        _final = _initial + v;
     }
 
     /** @brief Set a line based on two points it should pass through. */
-    void setPoints(Point const& A, Point const& B) {
-        m_origin = A;
-        if ( are_near(A, B) )
-            m_versor = Point(0,0);
-        else
-            m_versor = B - A;
-            m_versor.normalize();
+    void setPoints(Point const &a, Point const &b) {
+        _initial = a;
+        _final = b;
     }
 
-    void setCoefficients (double a, double b, double c);
+    void setCoefficients(double a, double b, double c);
     std::vector<double> coefficients() const;
     void coefficients(Coord &a, Coord &b, Coord &c) const;
 
-    /** @brief Check if the line has any points.
+    /** @brief Check if the line has more than one point.
      * A degenerate line can be created if the line is created from a line equation
      * that has no solutions.
-     * @return True if the line has no points */
+     * @return True if the line has no points or exactly one point */
     bool isDegenerate() const {
-        return ( m_versor[X] == 0 && m_versor[Y] == 0 );
+        return _initial == _final;
+    }
+
+    /** @brief Reparametrize the line so that it has unit speed. */
+    void normalize() {
+        Point v = _final - _initial;
+        v.normalize();
+        _final = _initial + v;
+    }
+    /** @brief Return a new line reparametrized for unit speed. */
+    Line normalized() const {
+        Point v = _final - _initial;
+        v.normalize();
+        Line ret(_initial, _initial + v);
+        return ret;
     }
     /// @}
 
     /// @name Evaluate the line as a function.
     ///@{
+    Point initialPoint() const {
+        return _initial;
+    }
+    Point finalPoint() const {
+        return _final;
+    }
     Point pointAt(Coord t) const {
-        return m_origin + m_versor * t;
+        return lerp(t, _initial, _final);;
     }
 
     Coord valueAt(Coord t, Dim2 d) const {
-        if (d < 0 || d > 1)
-            THROW_RANGEERROR("Line::valueAt, dimension argument out of range");
-        return m_origin[d] + m_versor[d] * t;
+        //if (d < 0 || d > 1)
+        //    THROW_RANGEERROR("Line::valueAt, dimension argument out of range");
+        return lerp(t, _initial[d], _final[d]);
     }
 
     Coord timeAt(Point const &p) const;
@@ -180,13 +212,14 @@ public:
      * @return Time value corresponding to a point closest to @c p. */
     Coord timeAtProjection(Point const& p) const {
         if ( isDegenerate() ) return 0;
-        return dot( p - m_origin, m_versor );
+        Point v = versor();
+        return dot(p - _initial, v) / dot(v, v);
     }
 
     /** @brief Find a point on the line closest to the query point.
      * This is an alias for timeAtProjection(). */
-    Coord nearestTime(Point const& _point) const {
-        return timeAtProjection(_point);
+    Coord nearestTime(Point const &p) const {
+        return timeAtProjection(p);
     }
 
     std::vector<Coord> roots(Coord v, Dim2 d) const;
@@ -195,13 +228,13 @@ public:
 
     /// @name Create other objects based on this line.
     /// @{
+    void reverse() {
+        std::swap(_final, _initial);
+    }
     /** @brief Create a line containing the same points, but with negated time values.
      * @return Line \f$g\f$ such that \f$g(t) = f(-t)\f$ */
-    Line reverse() const
-    {
-        Line result;
-        result.setOrigin(m_origin);
-        result.setVersor(-m_versor);
+    Line reversed() const {
+        Line result(_final, _initial);
         return result;
     }
 
@@ -221,7 +254,7 @@ public:
     }
 
     /// Return the portion of the line that is inside the given rectangle
-    boost::optional<LineSegment> segmentInside(Rect const &r) const;
+    boost::optional<LineSegment> clip(Rect const &r) const;
 
     /** @brief Create a ray starting at the specified time value.
      * The created ray will go in the direction of the line's versor (in the direction
@@ -231,7 +264,7 @@ public:
     Ray ray(Coord t) {
         Ray result;
         result.setOrigin(pointAt(t));
-        result.setVersor(m_versor);
+        result.setVersor(versor());
         return result;
     }
 
@@ -239,28 +272,27 @@ public:
      * The new line will always be degenerate. Its origin will be equal to this
      * line's versor. */
     Line derivative() const {
-        Line result;
-        result.setOrigin(m_versor);
-        result.setVersor(Point(0,0));
+        Point v = versor();
+        Line result(v, v);
         return result;
     }
 
     /** @brief Create a line transformed by an affine transformation. */
     Line transformed(Affine const& m) const {
-        return Line(m_origin * m, (m_origin + m_versor) * m);
+        return Line(_initial * m, _final * m);
     }
 
-    /** @brief Get a vector normal to the line.
+    /** @brief Get a unit vector normal to the line.
      * If Y grows upwards, then this is the left normal. If Y grows downwards,
      * then this is the right normal. */
     Point normal() const {
-        return rot90(m_versor);
+        return rot90(versor()).normalized();
     }
 
     // what does this do?
     Point normalAndDist(double & dist) const {
         Point n = normal();
-        dist = -dot(n, m_origin);
+        dist = -dot(n, _initial);
         return n;
     }
     /// @}
@@ -268,42 +300,38 @@ public:
 
 
 inline
-double distance(Point const& _point, Line const& _line)
+double distance(Point const &p, Line const &line)
 {
-    if ( _line.isDegenerate() )
-    {
-        return ::Geom::distance( _point, _line.origin() );
-    }
-    else
-    {
-        return fabs( dot(_point - _line.origin(), _line.versor().ccw()) );
+    if (line.isDegenerate()) {
+        return ::Geom::distance(p, line.initialPoint());
+    } else {
+        Coord t = line.nearestTime(p);
+        return ::Geom::distance(line.pointAt(t), p);
     }
 }
 
 inline
-bool are_near(Point const& _point, Line const& _line, double eps = EPSILON)
+bool are_near(Point const &p, Line const &line, double eps = EPSILON)
 {
-    return are_near(distance(_point, _line), 0, eps);
+    return are_near(distance(p, line), 0, eps);
 }
 
 inline
-bool are_parallel(Line const& l1, Line const& l2, double eps = EPSILON)
+bool are_parallel(Line const &l1, Line const &l2, double eps = EPSILON)
 {
-    return ( are_near(l1.versor(), l2.versor(), eps)
-             || are_near(l1.versor(), -l2.versor(), eps) );
+    return are_near(cross(l1.versor(), l2.versor()), 0, eps);
 }
 
 inline
-bool are_same(Line const& l1, Line const& l2, double eps = EPSILON)
+bool are_same(Line const &l1, Line const &l2, double eps = EPSILON)
 {
     return are_parallel(l1, l2, eps) && are_near(l1.origin(), l2, eps);
 }
 
 inline
-bool are_orthogonal(Line const& l1, Line const& l2, double eps = EPSILON)
+bool are_orthogonal(Line const &l1, Line const &l2, double eps = EPSILON)
 {
-    return ( are_near(l1.versor(), l2.versor().cw(), eps)
-             || are_near(l1.versor(), l2.versor().ccw(), eps) );
+    return are_near(dot(l1.versor(), l2.versor()), 0, eps);
 }
 
 inline
@@ -326,36 +354,34 @@ double angle_between(Line const& l1, Line const& l2)
 }
 
 inline
-double distance(Point const& _point, LineSegment const& _segment)
+double distance(Point const &p, LineSegment const &seg)
 {
-    double t = _segment.nearestTime(_point);
-    return L2(_point - _segment.pointAt(t));
+    double t = seg.nearestTime(p);
+    return distance(p, seg.pointAt(t));
 }
 
 inline
-bool are_near(Point const& _point, LineSegment const& _segment,
-              double eps = EPSILON)
+bool are_near(Point const &p, LineSegment const &seg, double eps = EPSILON)
 {
-    return are_near(distance(_point, _segment), 0, eps);
+    return are_near(distance(p, seg), 0, eps);
 }
 
 // build a line passing by _point and orthogonal to _line
 inline
-Line make_orthogonal_line(Point const& _point, Line const& _line)
+Line make_orthogonal_line(Point const &p, Line const &line)
 {
-    Line l;
-    l.setOrigin(_point);
-    l.setVersor(_line.versor().cw());
+    Point d = line.versor().cw();
+    Line l(p, p + d);
     return l;
 }
 
 // build a line passing by _point and parallel to _line
 inline
-Line make_parallel_line(Point const& _point, Line const& _line)
+Line make_parallel_line(Point const &p, Line const &line)
 {
-    Line l(_line);
-    l.setOrigin(_point);
-    return l;
+    Line result(line);
+    result.setOrigin(p);
+    return result;
 }
 
 // build a line passing by the middle point of _segment and orthogonal to it.
@@ -367,7 +393,7 @@ Line make_bisector_line(LineSegment const& _segment)
 
 // build the bisector line of the angle between ray(O,A) and ray(O,B)
 inline
-Line make_angle_bisector_line(Point const& A, Point const& O, Point const& B)
+Line make_angle_bisector_line(Point const &A, Point const &O, Point const &B)
 {
     Point M = middle_point(A,B);
     return Line(O,M);
@@ -375,19 +401,22 @@ Line make_angle_bisector_line(Point const& A, Point const& O, Point const& B)
 
 // prj(P) = rot(v, Point( rot(-v, P-O)[X], 0 )) + O
 inline
-Point projection(Point const& _point, Line const& _line)
+Point projection(Point const &p, Line const &line)
 {
-    return _line.pointAt( _line.nearestTime(_point) );
+    return line.pointAt(line.nearestTime(p));
 }
 
 inline
-LineSegment projection(LineSegment const& _segment, Line const& _line)
+LineSegment projection(LineSegment const &seg, Line const &line)
 {
-    return _line.segment( _line.nearestTime(_segment.initialPoint()),
-                          _line.nearestTime(_segment.finalPoint()) );
+    return line.segment(line.nearestTime(seg.initialPoint()),
+                        line.nearestTime(seg.finalPoint()));
 }
 
-boost::optional<LineSegment> clip (Line const& l, Rect const& r);
+inline
+boost::optional<LineSegment> clip(Line const &l, Rect const &r) {
+    return l.clip(r);
+}
 
 
 namespace detail

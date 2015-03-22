@@ -48,7 +48,7 @@ namespace Geom
 {
 
 LineSegment intersection(Line l, Rect r) {
-    boost::optional<LineSegment> seg = l.segmentInside(r);
+    boost::optional<LineSegment> seg = l.clip(r);
     if (seg) {
         return *seg;
     } else {
