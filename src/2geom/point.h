@@ -376,12 +376,14 @@ inline Coord dot(Point const &a, Point const &b)
 }
 
 /** @brief Compute the 2D cross product.
- * Defined as dot(a, b.cw()). This means it will be zero for parallel vectors,
- * and its absolute value highest for perpendicular vectors.
+ * This is also known as "perp dot product". It will be zero for parallel vectors,
+ * and the absolute value will be highest for perpendicular vectors.
  * @relates Point*/
 inline Coord cross(Point const &a, Point const &b)
 {
-    return dot(a, b.cw());
+    // equivalent implementation:
+    // return dot(a, b.ccw());
+    return a[X] * b[Y] - a[Y] * b[X];
 }
 
 /** @brief Compute the (Euclidean) distance between points.

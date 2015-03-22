@@ -120,10 +120,7 @@ void range_assertion(int k, int m, int n, const char* msg)
 bool is_a_right_turn (Point const& p0, Point const& p1, Point const& p2)
 {
     if (p1 == p2) return false;
-    Point q1 = p1 - p0;
-    Point q2 = p2 - p0;
-    if (q1 == -q2) return false;
-    return (cross (q1, q2) < 0);
+    return cross(p1-p0, p2-p0) > 0;
 }
 
 /*
@@ -350,7 +347,7 @@ void orientation_line (std::vector<double> & l,
 {
     l[0] = c[j][Y] - c[i][Y];
     l[1] = c[i][X] - c[j][X];
-    l[2] = cross(c[i], c[j]);
+    l[2] = cross(c[j], c[i]);
     double length = std::sqrt(l[0] * l[0] + l[1] * l[1]);
     assert (length != 0);
     l[0] /= length;

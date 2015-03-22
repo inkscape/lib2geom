@@ -109,7 +109,7 @@ ConvexHull::ConvexHull(std::vector<Point> const &pts)
 bool ConvexHull::_is_clockwise_turn(Point const &a, Point const &b, Point const &c)
 {
     if (b == c) return false;
-    return cross(b-a, c-a) < 0;
+    return cross(b-a, c-a) > 0;
 }
 
 void ConvexHull::_construct(std::vector<Point> const &pts)

@@ -365,8 +365,7 @@ bool Affine::preservesDistances(Coord eps) const
 /** @brief Check whether this transformation flips objects.
  * A transformation flips objects if it has a negative scaling component. */
 bool Affine::flips() const {
-    // TODO shouldn't this be det() < 0?
-    return cross(xAxis(), yAxis()) > 0;
+    return det() < 0;
 }
 
 /** @brief Check whether this matrix is singular.
