@@ -328,7 +328,7 @@ sbofsb_cubic_solve(SBasisOf<SBasisOf<double> > const &f, Geom::Point const &A, G
 
     std::vector<D2<SBasis> > candidates = cubics_fitting_curvature(A,B,V0,V1,D2fVV0,D2fVV1);
     if (candidates.size()==0) {
-        return D2<SBasis>(Linear(A[X],B[X]),Linear(A[Y],B[Y]));
+        return D2<SBasis>(SBasis(A[X],B[X]),SBasis(A[Y],B[Y]));
     }
     //TODO: I'm sure std algorithm could do that for me...
     double error = -1;

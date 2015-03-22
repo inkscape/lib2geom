@@ -112,12 +112,12 @@ plot3d(cairo_t *cr,
 void
 plot3d(cairo_t *cr, SBasis2d const &f, Frame frame, int NbRays=5){
         for (int i=0; i<=NbRays; i++){
-            D2<SBasis> seg(Linear(0,1),Linear(i*1./NbRays,i*1./NbRays));
+            D2<SBasis> seg(SBasis(0.,1.), SBasis(i*1./NbRays,i*1./NbRays));
             SBasis f_on_seg = compose(f,seg);
             plot3d(cr,seg[X],seg[Y],f_on_seg,frame);
         }
         for (int i=0; i<NbRays; i++){
-            D2<SBasis> seg(Linear(i*1./NbRays,i*1./NbRays),Linear(0,1));
+            D2<SBasis> seg(SBasis(i*1./NbRays, i*1./NbRays), SBasis(0.,1.));
             SBasis f_on_seg = compose(f,seg);
             plot3d(cr,seg[X],seg[Y],f_on_seg,frame);
         }
@@ -129,9 +129,9 @@ plot3d_top(cairo_t *cr, SBasis2d const &f, Frame frame, int NbRays=5){
             for(int j=0; j<2; j++){
                 D2<SBasis> seg;
                 if (j==0){
-                    seg = D2<SBasis>(Linear(0,1),Linear(i*1./NbRays,i*1./NbRays));
+                    seg = D2<SBasis>(SBasis(0.,1.), SBasis(i*1./NbRays,i*1./NbRays));
                 }else{
-                    seg = D2<SBasis>(Linear(i*1./NbRays,i*1./NbRays),Linear(0,1));
+                    seg = D2<SBasis>(SBasis(i*1./NbRays,i*1./NbRays), SBasis(0.,1.));
                 }
                 SBasis f_on_seg = compose(f,seg);
                 std::vector<double> rts = roots(f_on_seg);

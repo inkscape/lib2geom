@@ -130,11 +130,8 @@ private:
     std::valarray<Coord> c_;
 
     friend Bezier portion(const Bezier & a, Coord from, Coord to);
-
     friend OptInterval bounds_fast(Bezier const & b);
-
     friend Bezier derivative(const Bezier & a);
-
     friend class Bernstein;
 
     void
@@ -142,9 +139,9 @@ private:
                       double l, double r) const;
 
 protected:
-    Bezier(Coord const c[], unsigned ord) : c_(c, ord+1){
-        //std::copy(c, c+order()+1, &c_[0]);
-    }
+    Bezier(Coord const c[], unsigned ord)
+        : c_(c, ord+1)
+    {}
 
 public:
     unsigned order() const { return c_.size()-1;}
@@ -215,6 +212,17 @@ public:
         c_[0] = c0; c_[1] = c1; c_[2] = c2; c_[3] = c3; c_[4] = c4;
         c_[5] = c5; c_[6] = c6; c_[7] = c7; c_[8] = c8; c_[9] = c9;
     }
+
+    template <typename Iter>
+    Bezier(Iter first, Iter last) {
+        c_.resize(std::distance(first, last));
+        for (std::size_t i = 0; first != last; ++first, ++i) {
+            c_[i] = *first;
+        }
+    }
+    Bezier(std::vector<Coord> const &vec)
+        : c_(&vec[0], vec.size())
+    {}
     /// @}
 
     void resize (unsigned int n, Coord v = 0)

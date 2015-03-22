@@ -89,7 +89,7 @@ Piecewise< D2<SBasis> > zaggy(Interval intv, double dt, double radius) {
         if(nt > intv.max())
             nt = intv.max();
         Point np = Point((uniform()-0.5)*2*radius, (uniform()-0.5)*2*radius);
-        D2<SBasis> zag(Linear(p[0],np[0]), Linear(p[1],np[1]));
+        D2<SBasis> zag(SBasis(p[0],np[0]), SBasis(p[1],np[1]));
         p = np;
         //std::cout << t <<","<< nt << p << np << std::endl;
         out.push(zag, nt);

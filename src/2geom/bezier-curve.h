@@ -162,7 +162,7 @@ public:
     /// @{
     /** @brief Construct a Bezier curve of the specified order with all points zero. */
     BezierCurveN() {
-        inner = D2<Bezier> (Bezier::Order(degree), Bezier::Order(degree));
+        inner = D2<Bezier>(Bezier(Bezier::Order(degree)), Bezier(Bezier::Order(degree)));
     }
 
     /** @brief Construct from 2D Bezier polynomial. */

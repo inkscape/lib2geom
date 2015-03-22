@@ -51,7 +51,7 @@ class CurvatureTester: public Toy {
             cairo_set_source_rgba (cr, 0., 0, 0., 1);
                 Geom::Point A = curve_handle.pts[0+base_i*2];
                 Geom::Point B = curve_handle.pts[2+base_i*2];
-            D2<SBasis> best_c = D2<SBasis>(Linear(A[X],B[X]),Linear(A[Y],B[Y]));
+            D2<SBasis> best_c = D2<SBasis>(SBasis(Linear(A[X],B[X])),SBasis(Linear(A[Y],B[Y])));
             double error = -1;
             for(int i = 0; i < 16; i++) {
                 Geom::Point dA = curve_handle.pts[1+base_i*2]-A;

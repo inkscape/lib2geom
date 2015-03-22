@@ -191,7 +191,7 @@ public:
         current_pos = Point(100,100);
         tot_length = 300;
 
-        curve = Piecewise<D2<SBasis> >(D2<SBasis>(Linear(100,300),Linear(100,100)));
+        curve = Piecewise<D2<SBasis> >(D2<SBasis>(SBasis(100.,300.),SBasis(100.,100.)));
         for(unsigned i = 0; i < NB_CTL_PTS; i++) {
             curvatures.push_back(0);
             times.push_back(i*tot_length/(NB_CTL_PTS-1));

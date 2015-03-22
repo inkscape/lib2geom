@@ -37,7 +37,7 @@ static void draw_axis(cairo_t *cr, Piecewise<D2<SBasis> > const &pw, unsigned d,
     if(abs(mode)==5) mult = 20;
     if(abs(mode)==6) mult = 100;
     for(unsigned i = 0; i < pw.size(); i++) {
-        cairo_d2_sb(cr, D2<SBasis>(Linear(pw.cuts[i]-pw.cuts[0],pw.cuts[i+1]-pw.cuts[0])*mult, pw[i][d])*m);
+        cairo_d2_sb(cr, D2<SBasis>(SBasis(pw.cuts[i]-pw.cuts[0], pw.cuts[i+1]-pw.cuts[0])*mult, SBasis(pw[i][d]))*m);
     }
 }
 /*
@@ -192,15 +192,15 @@ class Parametrics: public Toy {
       
       box = Piecewise<D2<SBasis> >();
       box.push_cut(0);
-      box.push(D2<SBasis>(Linear(100,300),Linear(100)), 1);
-      box.push(D2<SBasis>(Linear(300),Linear(100,300)), 2);
-      box.push(D2<SBasis>(Linear(300,100),Linear(300)), 3);
-      box.push(D2<SBasis>(Linear(100),Linear(300,100)), 4);
+      box.push(D2<SBasis>(SBasis(100.,300.), SBasis(100.)), 1);
+      box.push(D2<SBasis>(SBasis(300.), SBasis(100.,300.)), 2);
+      box.push(D2<SBasis>(SBasis(300.,100.), SBasis(300.)), 3);
+      box.push(D2<SBasis>(SBasis(100.), SBasis(300.,100.)), 4);
       //handles.push_back(Point(100, 100));
       traj = Piecewise<D2<SBasis> >();
       SBasis quad = Linear(0,1)*Linear(0,1)*256-Linear(0,256)+200;
       traj.push_cut(0);
-      traj.push(D2<SBasis>(Linear(100,300),quad), 1);
+      traj.push(D2<SBasis>(SBasis(100.,300.),SBasis(quad)), 1);
 #ifdef USE_TIME
       time = g_timer_new();
       g_timer_reset(time);

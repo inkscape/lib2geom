@@ -32,15 +32,16 @@
 #ifndef LIB2GEOM_SEEN_D2_H
 #define LIB2GEOM_SEEN_D2_H
 
+#include <iterator>
+#include <boost/concept_check.hpp>
+#include <boost/iterator/transform_iterator.hpp>
 #include <2geom/point.h>
 #include <2geom/interval.h>
 #include <2geom/affine.h>
 #include <2geom/rect.h>
-
-#include <boost/concept_check.hpp>
 #include <2geom/concepts.h>
 
-namespace Geom{
+namespace Geom {
 /**
  * The D2 class takes two instances of a scalar data type and treats them
  * like a point. All operations which make sense on a point are deﬁned for D2.
@@ -55,6 +56,11 @@ class D2{
     T f[2];
 
   public:
+
+    typedef T D1Value;
+    typedef T &D1Reference;
+    typedef T const &D1ConstReference;
+
     D2() {f[X] = f[Y] = T();}
     explicit D2(Point const &a) {
         f[X] = T(a[X]); f[Y] = T(a[Y]);
@@ -63,6 +69,30 @@ class D2{
     D2(T const &a, T const &b) {
         f[X] = a;
         f[Y] = b;
+    }
+
+    template <typename Iter>
+    D2(Iter first, Iter last) {
+        typedef typename std::iterator_traits<Iter>::value_type V;
+        typedef typename boost::transform_iterator<GetX<V>, Iter> XIter;
+        typedef typename boost::transform_iterator<GetY<V>, Iter> YIter;
+
+        XIter xfirst(first, GetX<V>()), xlast(last, GetX<V>());
+        f[X] = T(xfirst, xlast);
+        YIter yfirst(first, GetY<V>()), ylast(last, GetY<V>());
+        f[Y] = T(yfirst, ylast);
+    }
+
+    D2(std::vector<Point> const &vec) {
+        typedef Point V;
+        typedef std::vector<Point>::const_iterator Iter;
+        typedef boost::transform_iterator<GetX<V>, Iter> XIter;
+        typedef boost::transform_iterator<GetY<V>, Iter> YIter;
+
+        XIter xfirst(vec.begin(), GetX<V>()), xlast(vec.end(), GetX<V>());
+        f[X] = T(xfirst, xlast);
+        YIter yfirst(vec.begin(), GetY<V>()), ylast(vec.end(), GetY<V>());
+        f[Y] = T(yfirst, ylast);
     }
 
     //TODO: ask mental about operator= as seen in Point

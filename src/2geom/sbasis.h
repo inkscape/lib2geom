@@ -100,11 +100,17 @@ public:
 
     
     SBasis() {}
-    explicit SBasis(double a) {
-        push_back(Linear(a,a));
+    explicit SBasis(double a)
+        : d(1)
+    {
+        d[0][0] = a;
+        d[0][1] = a;
     }
-    explicit SBasis(double a, double b) {
-        push_back(Linear(a,b));
+    explicit SBasis(double a, double b)
+        : d(1)
+    {
+        d[0][0] = a;
+        d[0][1] = b;
     }
     SBasis(SBasis const & a) :
         d(a.d)
@@ -116,9 +122,68 @@ public:
         push_back(bo);
     }
     SBasis(Linear* bo) {
-        push_back(*bo);
+        if (bo) {
+            push_back(*bo);
+        }
     }
     explicit SBasis(size_t n, Linear const&l) : d(n, l) {}
+
+    SBasis(Coord c0, Coord c1, Coord c2, Coord c3)
+        : d(2)
+    {
+        d[0][0] = c0;
+        d[1][0] = c1;
+        d[1][1] = c2;
+        d[0][1] = c3;
+    }
+    SBasis(Coord c0, Coord c1, Coord c2, Coord c3, Coord c4, Coord c5)
+        : d(3)
+    {
+        d[0][0] = c0;
+        d[1][0] = c1;
+        d[2][0] = c2;
+        d[2][1] = c3;
+        d[1][1] = c4;
+        d[0][1] = c5;
+    }
+    SBasis(Coord c0, Coord c1, Coord c2, Coord c3, Coord c4, Coord c5,
+           Coord c6, Coord c7)
+        : d(4)
+    {
+        d[0][0] = c0;
+        d[1][0] = c1;
+        d[2][0] = c2;
+        d[3][0] = c3;
+        d[3][1] = c4;
+        d[2][1] = c5;
+        d[1][1] = c6;
+        d[0][1] = c7;
+    }
+    SBasis(Coord c0, Coord c1, Coord c2, Coord c3, Coord c4, Coord c5,
+           Coord c6, Coord c7, Coord c8, Coord c9)
+        : d(5)
+    {
+        d[0][0] = c0;
+        d[1][0] = c1;
+        d[2][0] = c2;
+        d[3][0] = c3;
+        d[4][0] = c4;
+        d[4][1] = c5;
+        d[3][1] = c6;
+        d[2][1] = c7;
+        d[1][1] = c8;
+        d[0][1] = c9;
+    }
+
+    // construct from a sequence of coefficients
+    template <typename Iter>
+    SBasis(Iter first, Iter last) {
+        assert(std::distance(first, last) % 2 == 0);
+        for (; first != last; ++first) {
+            --last;
+            push_back(Linear(*first, *last));
+        }
+    }
 
     //IMPL: FragmentConcept
     typedef double output_type;

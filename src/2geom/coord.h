@@ -1,6 +1,5 @@
-/**
- *  \file
- *  \brief Defines the Coord "real" type with sufficient precision for coordinates.
+/** @file
+ * @brief Integral and real coordinate types and some basic utilities
  *//*
  * Copyright 2006 Nathan Hurst <njh@mail.csse.monash.edu.au>
  *
@@ -35,6 +34,7 @@
 #include <cmath>
 #include <limits>
 #include <string>
+#include <functional>
 #include <boost/operators.hpp>
 #include <2geom/forward.h>
 
@@ -45,6 +45,32 @@ enum Dim2 { X=0, Y=1 };
 
 /// Get the other (perpendicular) dimension.
 inline Dim2 other_dimension(Dim2 d) { return d == Y ? X : Y; }
+
+// TODO: make a smarter implementation with C++11
+template <typename T>
+struct D2Traits {
+    typedef typename T::D1Value D1Value;
+    typedef typename T::D1Reference D1Reference;
+    typedef typename T::D1ConstReference D1ConstReference;
+};
+
+// for use with things such as transform_iterator
+template <typename T>
+struct GetX {
+    typedef typename D2Traits<T>::D1Value result_type;
+    typedef T argument_type;
+    typename D2Traits<T>::D1Value operator()(T const &a) const {
+        return a[X];
+    }
+};
+template <typename T>
+struct GetY {
+    typedef typename D2Traits<T>::D1Value result_type;
+    typedef T argument_type;
+    typename D2Traits<T>::D1Value operator()(T const &a) const {
+        return a[Y];
+    }
+};
 
 /**
  * @brief Floating point type used to store coordinates.

@@ -64,6 +64,10 @@ class GenericRect
 protected:
     CInterval f[2];
 public:
+    typedef CInterval D1Value;
+    typedef CInterval &D1Reference;
+    typedef CInterval const &D1ConstReference;
+
     /// @name Create rectangles.
     /// @{
     /** @brief Create a rectangle that contains only the point at (0,0). */
@@ -328,6 +332,10 @@ class GenericOptRect
     typedef typename CoordTraits<C>::OptRectType OptCRect;
     typedef boost::optional<CRect> Base;
 public:
+    typedef CInterval D1Value;
+    typedef CInterval &D1Reference;
+    typedef CInterval const &D1ConstReference;
+
     /// @name Create potentially empty rectangles.
     /// @{
     GenericOptRect() : Base() {}

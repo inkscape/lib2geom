@@ -58,10 +58,14 @@ class Point
     , MultipliableNoncommutative< Point, HShear
     , MultipliableNoncommutative< Point, VShear
     , MultipliableNoncommutative< Point, Zoom
-      > > > > > > > > > > // this uses chaining so it looks weird, but works
+      > > > > > > > > > > // base class chaining, see documentation for Boost.Operator
 {
     Coord _pt[2];
 public:
+    typedef Coord D1Value;
+    typedef Coord &D1Reference;
+    typedef Coord const &D1ConstReference;
+
     /// @name Create points
     /// @{
     /** Construct a point on the origin. */

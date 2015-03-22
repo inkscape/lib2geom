@@ -26,12 +26,12 @@ void computeLinfinityNeighborhood( D2<SBasis > const &f, double tol, D2<Piecewis
 	Piecewise<D2<SBasis> > top, bot;
 	top = Piecewise<D2<SBasis> > (f);
 	top.cuts.insert( top.cuts.end(), 2);
-	top.segs.insert( top.segs.end(), D2<SBasis>(Linear( f[X].at1(), f[X].at1()+2*tol*signx),
-			                                    Linear( f[Y].at1() )) );
+	top.segs.insert( top.segs.end(), D2<SBasis>(SBasis(Linear( f[X].at1(), f[X].at1()+2*tol*signx)),
+			                                    SBasis(Linear( f[Y].at1() )) ));
 	bot = Piecewise<D2<SBasis> >(f);
 	bot.cuts.insert( bot.cuts.begin(), - 1 );
-	bot.segs.insert( bot.segs.begin(), D2<SBasis>(Linear( f[X].at0()-2*tol*signx, f[X].at0()),
-												  Linear( f[Y].at0() )) );
+	bot.segs.insert( bot.segs.begin(), D2<SBasis>(SBasis(Linear( f[X].at0()-2*tol*signx, f[X].at0())),
+												  SBasis(Linear( f[Y].at0() )) ));
 	top += Point(-tol*signx,  tol);
 	bot += Point( tol*signx, -tol);
 
