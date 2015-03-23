@@ -143,10 +143,10 @@ public:
     /// Create a convex hull of a range of points.
     template <typename Iter>
     ConvexHull(Iter first, Iter last)
+        : _lower(0)
     {
-        std::vector<Point> sorted;
-        _prune(first, last, sorted);
-        _construct(sorted);
+        _prune(first, last, _boundary);
+        _construct();
     }
     /// @}
 
@@ -187,12 +187,16 @@ public:
     Coord bottom() const { return bottomPoint()[Y]; }
 
     /// Get the leftmost (minimum X) point of the hull.
+    /// If the leftmost edge is vertical, the top point of the edge is returned.
     Point leftPoint() const { return _boundary[0]; }
     /// Get the rightmost (maximum X) point of the hull.
+    /// If the rightmost edge is vertical, the bottom point edge is returned.
     Point rightPoint() const { return _boundary[_lower-1]; }
     /// Get the topmost (minimum Y) point of the hull.
+    /// If the topmost edge is horizontal, the right point of the edge is returned.
     Point topPoint() const;
     /// Get the bottommost (maximum Y) point of the hull.
+    /// If the bottommost edge is horizontal, the left point of the edge is returned.
     Point bottomPoint() const;
     ///@}
 
@@ -267,8 +271,11 @@ public:
     //void intersectWith(ConvexHull const &other);
     /// @}
 
+    void swap(ConvexHull &other);
+    void swap(std::vector<Point> &pts);
+
 private:
-    void _construct(std::vector<Point> const &pts);
+    void _construct();
     static bool _is_clockwise_turn(Point const &a, Point const &b, Point const &c);
 
     /// Take a vector of points and produce a pruned sorted vector.

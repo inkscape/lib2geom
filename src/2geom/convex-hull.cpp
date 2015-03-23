@@ -60,50 +60,48 @@ using std::swap;
 namespace Geom {
 
 ConvexHull::ConvexHull(Point const &a, Point const &b)
-    : _lower(0)
+    : _boundary(2)
+    , _lower(0)
 {
-    std::vector<Point> pts(2);
-    pts[0] = a;
-    pts[1] = b;
-    std::sort(pts.begin(), pts.end(), Point::LexLess<X>());
-    _construct(pts);
+    _boundary[0] = a;
+    _boundary[1] = b;
+    std::sort(_boundary.begin(), _boundary.end(), Point::LexLess<X>());
+    _construct();
 }
 
 ConvexHull::ConvexHull(Point const &a, Point const &b, Point const &c)
-    : _lower(0)
+    : _boundary(3)
+    , _lower(0)
 {
-    std::vector<Point> pts(3);
-    pts[0] = a;
-    pts[1] = b;
-    pts[2] = c;
-    std::sort(pts.begin(), pts.end(), Point::LexLess<X>());
-    _construct(pts);
+    _boundary[0] = a;
+    _boundary[1] = b;
+    _boundary[2] = c;
+    std::sort(_boundary.begin(), _boundary.end(), Point::LexLess<X>());
+    _construct();
 }
 
 ConvexHull::ConvexHull(Point const &a, Point const &b, Point const &c, Point const &d)
-    : _lower(0)
+    : _boundary(4)
+    , _lower(0)
 {
-    std::vector<Point> pts(4);
-    pts[0] = a;
-    pts[1] = b;
-    pts[2] = c;
-    pts[3] = d;
-    std::sort(pts.begin(), pts.end(), Point::LexLess<X>());
-    _construct(pts);
+    _boundary[0] = a;
+    _boundary[1] = b;
+    _boundary[2] = c;
+    _boundary[3] = d;
+    std::sort(_boundary.begin(), _boundary.end(), Point::LexLess<X>());
+    _construct();
 }
 
 ConvexHull::ConvexHull(std::vector<Point> const &pts)
     : _lower(0)
 {
-    std::vector<Point> sorted;
-    if (pts.size() > 16) { // arbitrary threshold
-        _prune(pts.begin(), pts.end(), sorted);
-    } else {
-        sorted.resize(pts.size());
-        std::copy(pts.begin(), pts.end(), sorted.begin());
-        std::sort(sorted.begin(), sorted.end(), Point::LexLess<X>());
-    }
-    _construct(sorted);
+    //if (pts.size() > 16) { // arbitrary threshold
+    //    _prune(pts.begin(), pts.end(), _boundary);
+    //} else {
+        _boundary = pts;
+        std::sort(_boundary.begin(), _boundary.end(), Point::LexLess<X>());
+    //}
+    _construct();
 }
 
 bool ConvexHull::_is_clockwise_turn(Point const &a, Point const &b, Point const &c)
@@ -112,42 +110,42 @@ bool ConvexHull::_is_clockwise_turn(Point const &a, Point const &b, Point const 
     return cross(b-a, c-a) > 0;
 }
 
-void ConvexHull::_construct(std::vector<Point> const &pts)
+void ConvexHull::_construct()
 {
-    // vector must already be sorted in LexLess<X> order
-    if (pts.empty()) {
+    // _boundary must already be sorted in LexLess<X> order
+    if (_boundary.empty()) {
         _lower = 0;
         return;
     }
-    if (pts.size() == 1 || (pts.size() == 2 && pts[0] == pts[1])) {
+    if (_boundary.size() == 1 || (_boundary.size() == 2 && _boundary[0] == _boundary[1])) {
         _boundary.resize(1);
-        _boundary[0] = pts[0];
         _lower = 1;
         return;
     }
-    if (pts.size() == 2) {
-        _boundary = pts;
+    if (_boundary.size() == 2) {
         _lower = 2;
         return;
     }
 
-    std::size_t k = 0;
-    for (std::size_t i = 0; i < pts.size(); ++i) {
-        while (k >= 2 && !_is_clockwise_turn(_boundary[k-2], _boundary[k-1], pts[i])) {
+    std::size_t k = 2;
+    for (std::size_t i = 2; i < _boundary.size(); ++i) {
+        while (k >= 2 && !_is_clockwise_turn(_boundary[k-2], _boundary[k-1], _boundary[i])) {
             --k;
         }
-        _boundary.resize(k++);
-        _boundary.push_back(pts[i]);
+        std::swap(_boundary[k++], _boundary[i]);
     }
-    _lower = _boundary.size();
-    for (std::size_t i = pts.size()-1; i > 0; --i) {
-        while (k >= _lower+1 && !_is_clockwise_turn(_boundary[k-2], _boundary[k-1], pts[i-1])) {
+
+    _lower = k;
+    std::sort(_boundary.begin() + k, _boundary.end(), Point::LexGreater<X>());
+    _boundary.push_back(_boundary.front());
+    for (std::size_t i = _lower; i < _boundary.size(); ++i) {
+        while (k > _lower && !_is_clockwise_turn(_boundary[k-2], _boundary[k-1], _boundary[i])) {
             --k;
         }
-        _boundary.resize(k++);
-        _boundary.push_back(pts[i-1]);
+        std::swap(_boundary[k++], _boundary[i]);
     }
-    _boundary.pop_back();
+
+    _boundary.resize(k-1);
 }
 
 double ConvexHull::area() const
@@ -176,7 +174,7 @@ Point ConvexHull::topPoint() const
     ret[Y] = std::numeric_limits<Coord>::infinity();
 
     for (UpperIterator i = upperHull().begin(); i != upperHull().end(); ++i) {
-        if (ret[Y] > i->y()) {
+        if (ret[Y] >= i->y()) {
             ret = *i;
         } else {
             break;
@@ -192,7 +190,7 @@ Point ConvexHull::bottomPoint() const
     ret[Y] = -std::numeric_limits<Coord>::infinity();
 
     for (LowerIterator j = lowerHull().begin(); j != lowerHull().end(); ++j) {
-        if (ret[Y] < j->y()) {
+        if (ret[Y] <= j->y()) {
             ret = *j;
         } else {
             break;
@@ -271,6 +269,20 @@ bool ConvexHull::contains(ConvexHull const &ch) const
         if (!contains(*i)) return false;
     }
     return true;
+}
+
+void ConvexHull::swap(ConvexHull &other)
+{
+    _boundary.swap(other._boundary);
+    std::swap(_lower, other._lower);
+}
+
+void ConvexHull::swap(std::vector<Point> &pts)
+{
+    _boundary.swap(pts);
+    _lower = 0;
+    std::sort(_boundary.begin(), _boundary.end(), Point::LexLess<X>());
+    _construct();
 }
 
 #if 0

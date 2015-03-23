@@ -133,7 +133,6 @@ shape.h
 solve-bezier.cpp
 solve-bezier-one-d.cpp
 solve-bezier-parametric.cpp
-solve-bezier-convex-hull.cpp
 solver.h
 svg-elliptical-arc.cpp
 svg-elliptical-arc.h

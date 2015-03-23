@@ -40,6 +40,7 @@
 #include <2geom/interval.h>
 #include <2geom/bezier.h>
 #include <2geom/numeric/matrix.h>
+#include <2geom/convex-hull.h>
 
 #include <cassert>
 #include <vector>
@@ -108,60 +109,6 @@ void range_assertion(int k, int m, int n, const char* msg)
                   << "  range: " << m << ", " << n << std::endl;
         assert (k >= m && k <= n);
     }
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-//  convex hull
-
-/*
- * return true in case the oriented polyline p0, p1, p2 is a right turn
- */
-bool is_a_right_turn (Point const& p0, Point const& p1, Point const& p2)
-{
-    if (p1 == p2) return false;
-    return cross(p1-p0, p2-p0) > 0;
-}
-
-/*
- * Compute the convex hull of a set of points.
- * The implementation is based on the Andrew's scan algorithm
- * note: in the Bezier clipping for collinear normals it seems
- * to be more stable wrt the Graham's scan algorithm and in general
- * a bit quikier
- */
-void convex_hull (std::vector<Point> & P)
-{
-    size_t n = P.size();
-    if (n < 2)  return;
-    std::sort(P.begin(), P.end(), Point::LexLess<X>());
-    if (n < 4) return;
-    // upper hull
-    size_t u = 2;
-    for (size_t i = 2; i < n; ++i)
-    {
-        while (u > 1 && !is_a_right_turn(P[u-2], P[u-1], P[i]))
-        {
-            --u;
-        }
-        swap(P[u], P[i]);
-        ++u;
-    }
-    std::sort(P.begin() + u, P.end(), Point::LexGreater<X>());
-    std::rotate(P.begin(), P.begin() + 1, P.end());
-    // lower hull
-    size_t l = u;
-    size_t k = u - 1;
-    for (size_t i = l; i < n; ++i)
-    {
-        while (l > k && !is_a_right_turn(P[l-2], P[l-1], P[i]))
-        {
-            --l;
-        }
-        swap(P[l], P[i]);
-        ++l;
-    }
-    P.resize(l);
 }
 
 
@@ -454,8 +401,8 @@ OptInterval clip_interval (std::vector<Point> const& B,
     }
     //print(D);
 
-    convex_hull(D);
-    std::vector<Point> & p = D;
+    ConvexHull p;
+    p.swap(D);
     //print(p);
 
     bool plower, phigher;
@@ -691,8 +638,8 @@ OptInterval clip_interval (std::vector<Point> const& B,
 //    ConvexHull chD(D);
 //    std::vector<Point>& p = chD.boundary; // convex hull vertices
 
-    convex_hull(D);
-    std::vector<Point> & p = D;
+    ConvexHull p;
+    p.swap(D);
     //print(p, "CH(D)");
 
     bool plower, clower;
