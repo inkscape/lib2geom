@@ -32,6 +32,7 @@
  */
 
 #include <2geom/curve.h>
+#include <2geom/exception.h>
 #include <2geom/nearest-time.h>
 #include <2geom/sbasis-geometric.h>
 #include <2geom/sbasis-to-bezier.h>
@@ -95,11 +96,10 @@ int Curve::winding(Point const &p) const
     }
 }
 
-std::vector<CurveIntersection> Curve::intersect(Curve const &other, Coord eps) const
+std::vector<CurveIntersection> Curve::intersect(Curve const &/*other*/, Coord /*eps*/) const
 {
-    // Approximate as Bezier
-    std::vector<CurveIntersection> empty_vector;
-    return empty_vector;
+    // TODO: approximate as Bezier
+    THROW_NOTIMPLEMENTED();
 }
 
 std::vector<CurveIntersection> Curve::intersectSelf(Coord eps) const

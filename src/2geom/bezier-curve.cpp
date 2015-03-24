@@ -150,8 +150,9 @@ BezierCurve::intersect(Curve const &other, Coord eps) const
             CurveIntersection x(*this, other, xs[i].first, xs[i].second);
             result.push_back(x);
         }
+    } else {
+        THROW_NOTIMPLEMENTED();
     }
-    // for others, do nothing for now
 
     return result;
 }
