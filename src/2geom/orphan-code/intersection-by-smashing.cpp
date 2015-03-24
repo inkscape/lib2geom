@@ -126,14 +126,14 @@ void prolongateByConstants( Piecewise<SBasis> &f, double paddle_width ){
 }
 
 static
-bool compareIntersectionsTimesX( Intersection const &inter1, Intersection const &inter2 ){
+bool compareIntersectionsTimesX( SmashIntersection const &inter1, SmashIntersection const &inter2 ){
 	return inter1.times[X].min() < inter2.times[Y].min();
 }
 /*Fuse contiguous intersection domains
  *
  */
 static
-void cleanup_and_fuse( std::vector<Intersection> &inters ){
+void cleanup_and_fuse( std::vector<SmashIntersection> &inters ){
 	std::sort( inters.begin(), inters.end(), compareIntersectionsTimesX);
 	for (unsigned i=0; i < inters.size(); i++ ){
 		for (unsigned j=i+1; j < inters.size() && inters[i].times[X].intersects( inters[j].times[X]) ; j++ ){
@@ -170,7 +170,7 @@ std::vector<Interval> intersect( std::vector<Interval> const &a, std::vector<Int
  * (but not necessarily the same axis for both) and the smaller
  * the slope the better (typically <=45°).
  */
-std::vector<Intersection> monotonic_smash_intersect( D2<SBasis> const &a, D2<SBasis> const &b, double tol){
+std::vector<SmashIntersection> monotonic_smash_intersect( D2<SBasis> const &a, D2<SBasis> const &b, double tol){
 
 	// a and b or X and Y may have to be exchanged, so make local copies.
 	D2<SBasis> aa = a;
@@ -181,10 +181,10 @@ std::vector<Intersection> monotonic_smash_intersect( D2<SBasis> const &a, D2<SBa
 	//if the (enlarged) bounding boxes don't intersect, stop.
 	OptRect abounds = bounds_fast( a );
 	OptRect bbounds = bounds_fast( b );
-	if ( !abounds || !bbounds ) return std::vector<Intersection>();
+	if ( !abounds || !bbounds ) return std::vector<SmashIntersection>();
 	abounds->expandBy(tol);
 	if ( !(abounds->intersects(*bbounds))){
-		return std::vector<Intersection>();
+		return std::vector<SmashIntersection>();
 	}
 
 	//Choose the best curve to be re-parametrized by x or y values.
@@ -243,7 +243,7 @@ std::vector<Intersection> monotonic_smash_intersect( D2<SBasis> const &a, D2<SBa
 		tbs.insert(tbs.end(), rts.begin(),  rts.end()  );
 	}
 
-	std::vector<Intersection > result(tbs.size(), Intersection() );
+	std::vector<SmashIntersection> result(tbs.size(), SmashIntersection());
 
 	/* for each solution I, find times when aa is in the neighborhood of bb(I).
 	 * (Note: the preimage of bb[X](I) by aa[X], enlarged by tol, is a good approximation of this:
@@ -316,8 +316,8 @@ std::vector<Intersection> monotonic_smash_intersect( D2<SBasis> const &a, D2<SBa
 	return result;
 }
 
-std::vector<Intersection> smash_intersect( D2<SBasis> const &a, D2<SBasis> const &b, double tol){
-	std::vector<Intersection> result;
+std::vector<SmashIntersection> smash_intersect( D2<SBasis> const &a, D2<SBasis> const &b, double tol){
+	std::vector<SmashIntersection> result;
 
 	std::vector<Interval> acuts = monotonicSplit(a);
 	std::vector<Interval> bcuts = monotonicSplit(b);
@@ -325,7 +325,7 @@ std::vector<Intersection> smash_intersect( D2<SBasis> const &a, D2<SBasis> const
 		D2<SBasis> ai = portion( a, acuts[i]);
 		for (unsigned j=0; j<bcuts.size(); j++){
 			D2<SBasis> bj = portion( b, bcuts[j]);
-			std::vector<Intersection> ai_cap_bj = monotonic_smash_intersect( ai, bj, tol );
+			std::vector<SmashIntersection> ai_cap_bj = monotonic_smash_intersect( ai, bj, tol );
 			for (unsigned k=0; k < ai_cap_bj.size(); k++){
 				ai_cap_bj[k].times[X] = ai_cap_bj[k].times[X] * acuts[i].extent() + acuts[i].min();
 				ai_cap_bj[k].times[Y] = ai_cap_bj[k].times[Y] * bcuts[j].extent() + bcuts[j].min();

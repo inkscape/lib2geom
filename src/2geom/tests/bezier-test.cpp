@@ -4,6 +4,7 @@
 #include <2geom/bezier.h>
 #include <2geom/poly.h>
 #include <2geom/basic-intersection.h>
+#include <2geom/bezier-curve.h>
 #include <vector>
 #include <iterator>
 #include <glib.h>
@@ -334,10 +335,10 @@ struct XTest {
     std::vector<XPt> s;
 };
 
-struct XLess {
-    bool operator()(std::pair<double, double> const &a, std::pair<double, double> const &b) const {
-        if (a.first < b.first) return true;
-        if (a.first == b.first && a.second < b.second) return true;
+struct CILess {
+    bool operator()(CurveIntersection const &a, CurveIntersection const &b) const {
+        if (a.first.time() < b.first.time()) return true;
+        if (a.first.time() == b.first.time() && a.second.time() < b.second.time()) return true;
         return false;
     }
 };
@@ -405,9 +406,10 @@ TEST_F(BezierTest, Intersection) {
     //std::cout << std::setprecision(5);
 
     for (unsigned i = 0; i < tests.size(); ++i) {
-        std::vector<std::pair<double, double> > xs;
-        find_intersections(xs, tests[i].a, tests[i].b, 1e-12);
-        std::sort(xs.begin(), xs.end(), XLess());
+        BezierCurve a(tests[i].a), b(tests[i].b);
+        std::vector<CurveIntersection> xs;
+        xs = a.intersect(b, 1e-8);
+        std::sort(xs.begin(), xs.end(), CILess());
         //xs.erase(std::unique(xs.begin(), xs.end(), XEqual()), xs.end());
 
         std::cout << "\n\n"
@@ -419,8 +421,8 @@ TEST_F(BezierTest, Intersection) {
         //if (xs.size() != tests[i].s.size()) continue;
 
         for (unsigned j = 0; j < std::min(xs.size(), tests[i].s.size()); ++j) {
-            std::cout << xs[j].first << " = " << tests[i].a.valueAt(xs[j].first) << "   "
-                      << xs[j].second << " = " << tests[i].b.valueAt(xs[j].second) << "\n"
+            std::cout << xs[j].first.time() << " = " << a.pointAt(xs[j].first.time()) << "   "
+                      << xs[j].second.time() << " = " << b.pointAt(xs[j].second.time()) << "\n"
                       << tests[i].s[j].ta << " = " << tests[i].a.valueAt(tests[i].s[j].ta) << "   "
                       << tests[i].s[j].tb << " = " << tests[i].b.valueAt(tests[i].s[j].tb) << std::endl;
         }
@@ -428,14 +430,13 @@ TEST_F(BezierTest, Intersection) {
         for (unsigned j = 0; j < xs.size(); ++j) {
             //EXPECT_NEAR(xs[j].first, tests[i].s[j].ta, 2e-5);
             //EXPECT_NEAR(xs[j].second, tests[i].s[j].tb, 2e-5);
-            Point pa = tests[i].a.valueAt(xs[j].first);
-            Point pb = tests[i].b.valueAt(xs[j].second);
+            Point pa = a.pointAt(xs[j].first.time());
+            Point pb = b.pointAt(xs[j].second.time());
             //EXPECT_NEAR(pa[X], tests[i].s[j].p[X], 2e-5);
             //EXPECT_NEAR(pa[Y], tests[i].s[j].p[Y], 2e-5);
             //EXPECT_NEAR(pb[X], tests[i].s[j].p[X], 2e-5);
             //EXPECT_NEAR(pb[Y], tests[i].s[j].p[Y], 2e-5);
-            EXPECT_NEAR(pa[X], pb[X], 1e-6);
-            EXPECT_NEAR(pa[Y], pb[Y], 1e-6);
+            EXPECT_NEAR(distance(pa, pb), 0, 1e-6);
         }
     }
 

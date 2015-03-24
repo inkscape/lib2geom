@@ -40,6 +40,7 @@
 #include <boost/operators.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
 #include <boost/shared_ptr.hpp>
+#include <2geom/intersection.h>
 #include <2geom/curve.h>
 #include <2geom/bezier-curve.h>
 #include <2geom/transforms.h>
@@ -109,7 +110,7 @@ class BaseIterator
 
 /** @brief Position (generalized time value) in the path.
  *
- * This class exists because mapping the range of multiple curves onto the same interval
+ * This class exists because when mapping the range of multiple curves onto the same interval
  * as the curve index, we lose some precision. For instance, a path with 16 curves will
  * have 4 bits less precision than a path with 1 curve. If you need high precision results
  * in long paths, either use this class and related methods instead of the standard methods
@@ -117,13 +118,32 @@ class BaseIterator
  * call the method again to obtain a high precision result.
  * 
  * @ingroup Paths */
-struct PathPosition {
+struct PathPosition
+    : boost::totally_ordered<PathPosition>
+{
     typedef PathInternal::Sequence::size_type size_type;
 
     Coord t; ///< Time value in the curve
     size_type curve_index; ///< Index of the curve in the path
+
     PathPosition() : t(0), curve_index(0) {}
     PathPosition(size_type idx, Coord tval) : t(tval), curve_index(idx) {}
+
+    bool operator<(PathPosition const &other) const {
+        if (curve_index < other.curve_index) return true;
+        if (curve_index == other.curve_index) {
+            return t < other.t;
+        }
+        return false;
+    }
+    bool operator==(PathPosition const &other) const {
+        return curve_index == other.curve_index && t == other.t;
+    }
+};
+
+template <>
+struct ShapeTraits<Path> {
+    typedef PathPosition TimeType;
 };
 
 /** @brief Sequence of contiguous curves, aka spline.

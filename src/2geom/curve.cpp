@@ -95,6 +95,52 @@ int Curve::winding(Point const &p) const
     }
 }
 
+std::vector<CurveIntersection> Curve::intersect(Curve const &other, Coord eps) const
+{
+    // Approximate as Bezier
+    std::vector<CurveIntersection> empty_vector;
+    return empty_vector;
+}
+
+std::vector<CurveIntersection> Curve::intersectSelf(Coord eps) const
+{
+    // Monotonic segments cannot have self-intersections.
+    // Thus, we can split the curve at roots and intersect the portions.
+    std::vector<Coord> splits;
+    {
+        std::auto_ptr<Curve> deriv(derivative());
+        splits = deriv->roots(0, X);
+    }
+    splits.push_back(1.);
+
+    boost::ptr_vector<Curve> parts;
+    Coord previous = 0;
+    for (unsigned i = 0; i < splits.size(); ++i) {
+        if (splits[i] == 0.) continue;
+        parts.push_back(portion(previous, splits[i]));
+        previous = splits[i];
+    }
+
+    std::vector<CurveIntersection> result;
+    for (unsigned i = 0; i < parts.size(); ++i) {
+        Interval dom_i(splits[i], splits[i+1]);
+        for (unsigned j = i+1; j < parts.size(); ++j) {
+            Interval dom_j(splits[i], splits[i+1]);
+            std::vector<CurveIntersection> xs = parts[i].intersect(parts[j], eps);
+            for (unsigned k = 0; k < xs.size(); ++k) {
+                Coord ti = dom_i.valueAt(xs[k].first.time());
+                Coord tj = dom_j.valueAt(xs[k].second.time());
+                // to avoid duplicated intersections, skip values at exactly 1
+                if (ti == 1. || tj == 1.) continue;
+
+                CurveIntersection real(*this, *this, ti, tj, xs[k].point());
+                result.push_back(real);
+            }
+        }
+    }
+    return result;
+}
+
 Point Curve::unitTangentAt(Coord t, unsigned n) const
 {
     std::vector<Point> derivs = pointAndDerivatives(t, n);

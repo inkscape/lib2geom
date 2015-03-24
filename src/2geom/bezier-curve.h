@@ -48,11 +48,12 @@ class BezierCurve : public Curve {
 protected:
     D2<Bezier> inner;
     BezierCurve() {}
-    BezierCurve(D2<Bezier> const &b) : inner(b) {}
     BezierCurve(Bezier const &x, Bezier const &y) : inner(x, y) {}
     BezierCurve(std::vector<Point> const &pts);
 
 public:
+    explicit BezierCurve(D2<Bezier> const &b) : inner(b) {}
+
     /// @name Access and modify control points
     /// @{
     /** @brief Get the order of the Bezier curve.
@@ -142,8 +143,11 @@ public:
         return (inner[d] - v).roots();
     }
     virtual Coord length(Coord tolerance) const;
+    virtual std::vector<CurveIntersection> intersect(Curve const &other, Coord eps = EPSILON) const;
     virtual Point pointAt(Coord t) const { return inner.valueAt(t); }
-    virtual std::vector<Point> pointAndDerivatives(Coord t, unsigned n) const { return inner.valueAndDerivatives(t, n); }
+    virtual std::vector<Point> pointAndDerivatives(Coord t, unsigned n) const {
+        return inner.valueAndDerivatives(t, n);
+    }
     virtual Coord valueAt(Coord t, Dim2 d) const { return inner[d].valueAt(t); }
     virtual D2<SBasis> toSBasis() const {return inner.toSBasis(); }
     virtual bool operator==(Curve const &c) const;

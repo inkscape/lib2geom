@@ -50,13 +50,13 @@
 
 namespace Geom{
 
-struct Intersection{
+struct SmashIntersection {
 	Rect times;
 	Rect bbox;
 };
 
-std::vector<Intersection> smash_intersect( D2<SBasis> const &a, D2<SBasis> const &b, double tol);
-std::vector<Intersection> monotonic_smash_intersect( D2<SBasis> const &a, D2<SBasis> const &b, double tol);
+std::vector<SmashIntersection> smash_intersect( D2<SBasis> const &a, D2<SBasis> const &b, double tol);
+std::vector<SmashIntersection> monotonic_smash_intersect( D2<SBasis> const &a, D2<SBasis> const &b, double tol);
 //std::vector<Intersection> monotonic_smash_intersect( Curve const &a, double a_from, double a_to,
 //			                                         Curve const &b, double b_from, double b_to, double tol);
 

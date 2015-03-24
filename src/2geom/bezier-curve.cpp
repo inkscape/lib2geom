@@ -33,6 +33,7 @@
 
 #include <2geom/bezier-curve.h>
 #include <2geom/path-sink.h>
+#include <2geom/basic-intersection.h>
 
 namespace Geom 
 {
@@ -134,6 +135,25 @@ Coord BezierCurve::length(Coord tolerance) const
     default:
         return bezier_length(controlPoints(), tolerance);
     }
+}
+
+std::vector<CurveIntersection>
+BezierCurve::intersect(Curve const &other, Coord eps) const
+{
+    std::vector<CurveIntersection> result;
+
+    BezierCurve const *bez = dynamic_cast<BezierCurve const *>(&other);
+    if (bez) {
+        std::vector<std::pair<double, double> > xs;
+        find_intersections(xs, inner, bez->inner, eps);
+        for (unsigned i = 0; i < xs.size(); ++i) {
+            CurveIntersection x(*this, other, xs[i].first, xs[i].second);
+            result.push_back(x);
+        }
+    }
+    // for others, do nothing for now
+
+    return result;
 }
 
 bool BezierCurve::operator==(Curve const &c) const

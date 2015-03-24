@@ -46,10 +46,13 @@
 #include <2geom/sbasis.h>
 #include <2geom/d2.h>
 #include <2geom/affine.h>
+#include <2geom/intersection.h>
 
 namespace Geom {
 
 class PathSink;
+
+typedef Intersection<Curve, Curve> CurveIntersection;
 
 /**
  * @brief Abstract continuous curve on a plane defined on [0,1].
@@ -276,6 +279,12 @@ public:
      * @param p Point where the winding number should be determined
      * @return Winding number contribution at p */
     virtual int winding(Point const &p) const;
+
+    /// Compute intersections with another curve.
+    virtual std::vector<CurveIntersection> intersect(Curve const &other, Coord eps = EPSILON) const;
+
+    /// Compute intersections of this curve with itself.
+    virtual std::vector<CurveIntersection> intersectSelf(Coord eps = EPSILON) const;
 
     /** @brief Compute a vector tangent to the curve.
      * This will return an unit vector (a Point with length() equal to 1) that denotes a vector

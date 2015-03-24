@@ -77,6 +77,8 @@ public:
     bool hasZeroArea(Coord eps = EPSILON) const { return (area() <= eps); }
     /// Check whether the rectangle has finite area
     bool isFinite() const { return (*this)[X].isFinite() && (*this)[Y].isFinite(); }
+    /// Calculate the diameter of the smallest circle that would contain the rectangle.
+    Coord diameter() const { return distance(corner(0), corner(2)); }
     /// @}
 
     /// @name Test other rectangles and points for inclusion.

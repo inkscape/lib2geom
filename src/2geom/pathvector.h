@@ -54,12 +54,30 @@ namespace Geom {
  * @ingroup Paths */
 struct PathVectorPosition
     : public PathPosition
+    , boost::totally_ordered<PathVectorPosition>
 {
     size_type path_index; ///< Index of the path in the vector
 
     PathVectorPosition() : PathPosition(0, 0), path_index(0) {}
     PathVectorPosition(size_type _i, size_type _c, Coord _t)
         : PathPosition(_c, _t), path_index(_i) {}
+
+    bool operator<(PathVectorPosition const &other) const {
+        if (path_index < other.path_index) return true;
+        if (path_index == other.path_index) {
+            return static_cast<PathPosition const &>(*this) < static_cast<PathPosition const &>(other);
+        }
+        return false;
+    }
+    bool operator==(PathVectorPosition const &other) const {
+        return path_index == other.path_index
+            && static_cast<PathPosition const &>(*this) == static_cast<PathPosition const &>(other);
+    }
+};
+
+template <>
+struct ShapeTraits<PathVector> {
+    typedef PathVectorPosition TimeType;
 };
 
 /** @brief Sequence of subpaths.

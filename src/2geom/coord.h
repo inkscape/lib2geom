@@ -96,7 +96,26 @@ inline Coord lerp(Coord t, Coord a, Coord b) {
 }
 
 template <typename C>
-struct CoordTraits {};
+struct CoordTraits {
+    typedef D2<C> PointType;
+    typedef GenericInterval<C> IntervalType;
+    typedef GenericOptInterval<C> OptIntervalType;
+    typedef GenericRect<C> RectType;
+    typedef GenericOptRect<C> OptRectType;
+
+    typedef
+      boost::equality_comparable< IntervalType
+    , boost::orable< IntervalType
+      > >
+        IntervalOps;
+
+    typedef
+      boost::equality_comparable< RectType
+    , boost::orable< RectType
+    , boost::orable< RectType, OptRectType
+      > > >
+        RectOps;
+};
 
 // NOTE: operator helpers for Rect and Interval are defined here.
 // This is to avoid increasing their size through multiple inheritance.

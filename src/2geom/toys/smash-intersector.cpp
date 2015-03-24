@@ -477,7 +477,7 @@ class Intersector : public Toy
         }
 #endif
 
-		std::vector<Intersection> my_intersections;
+		std::vector<SmashIntersection> my_intersections;
      	my_intersections = smash_intersect( A, B, tol );
 
      	for (unsigned k=0; k<my_intersections.size(); k++){
@@ -501,7 +501,7 @@ class Intersector : public Toy
         	for (unsigned j=0; j<Bcuts.size(); j++){
             	if ( toggle.on &&  (i != apiece || j != bpiece) ) continue;
 
-        		std::vector<Intersection> my_intersections;
+        		std::vector<SmashIntersection> my_intersections;
             	D2<SBasis> Bj = portion( B, Bcuts[j]);
             	bool draw_more = toggle.on &&  i == apiece && j == bpiece;
 //             	my_intersections = smash_intersect( Ai, Bj, tol, cr, draw_more );

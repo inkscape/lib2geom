@@ -76,9 +76,9 @@ different outputs. So splitting sweeper/grpah builder is maybe not so relevant w
 //TODO: decline intersections algorithms for each kind of curves...
 //TODO: write an intersector that can work on sub domains.
 //TODO: factor computation of derivative and the like out.
-std::vector<Intersection> monotonic_smash_intersect( Curve const &a, Interval a_dom,
+std::vector<SmashIntersection> monotonic_smash_intersect( Curve const &a, Interval a_dom,
 			                                         Curve const &b, Interval b_dom, double tol){
-	std::vector<Intersection> result;
+	std::vector<SmashIntersection> result;
     D2<SBasis> asb = a.toSBasis();
     asb = portion( asb, a_dom );
     D2<SBasis> bsb = b.toSBasis();
@@ -132,7 +132,7 @@ public:
     struct IntersectionMinTimeOrder {
         unsigned which;
         IntersectionMinTimeOrder (unsigned idx) : which(idx) {}
-        bool operator()(Intersection a, Intersection b) {
+        bool operator()(SmashIntersection const &a, SmashIntersection const &b) const {
         	return a.times[which].min() < b.times[which].min();
         }
     };
@@ -141,7 +141,7 @@ public:
     // also asserts that no values fall outside of f and t
     // if f is greater than t, the sort is in reverse
     std::vector<std::pair<Interval, Rect> >
-    process_intersections(std::vector<Intersection> &inters, unsigned which, unsigned tileidx) {
+    process_intersections(std::vector<SmashIntersection> &inters, unsigned which, unsigned tileidx) {
     	std::vector<std::pair<Interval, Rect> > result;
     	std::pair<Interval, Rect> apair;
     	Interval dom ( tiles_data[tileidx].f, tiles_data[tileidx].t );
@@ -599,7 +599,7 @@ public:
         if (sort)
             std::sort(tiles_data.begin()+i+1, tiles_data.end(), SweepOrder(dim) );
     }
-    void splitTile(unsigned i, Intersection inter, unsigned which,bool sort = true){
+    void splitTile(unsigned i, SmashIntersection inter, unsigned which,bool sort = true){
     	double t = inter.times[which].middle();
     	assert( i<tiles_data.size() );
         Tile newtile = tiles_data[i];
@@ -670,7 +670,7 @@ public:
 
         for (unsigned i=0; i+1<tiles_data.size(); i++){
             //std::printf("\ni=%u (%u([%f,%f]))\n", i, tiles_data[i].curve, tiles_data[i].f, tiles_data[i].t );
-            std::vector<Intersection> inters_on_i;
+            std::vector<SmashIntersection> inters_on_i;
             for (unsigned j=i+1; j<tiles_data.size(); j++){
                 //std::printf("  j=%u (%u)\n", j,tiles_data[j].curve );
                 if ( Point::LexLessRt(dim)(tiles_data[i].max(), tiles_data[j].min()) ) break;
@@ -679,7 +679,7 @@ public:
                 unsigned ci = tiles_data[i].curve;
                 unsigned pj = tiles_data[j].path;
                 unsigned cj = tiles_data[j].curve;
-                std::vector<Intersection> intersections;
+                std::vector<SmashIntersection> intersections;
 
                 intersections = monotonic_smash_intersect(paths[pi][ci], Interval(tiles_data[i].f, tiles_data[i].t),
                                                           paths[pj][cj], Interval(tiles_data[j].f, tiles_data[j].t), tol );
