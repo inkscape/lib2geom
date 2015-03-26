@@ -337,8 +337,8 @@ struct XTest {
 
 struct CILess {
     bool operator()(CurveIntersection const &a, CurveIntersection const &b) const {
-        if (a.first.time() < b.first.time()) return true;
-        if (a.first.time() == b.first.time() && a.second.time() < b.second.time()) return true;
+        if (a.first < b.first) return true;
+        if (a.first == b.first && a.second < b.second) return true;
         return false;
     }
 };
@@ -421,8 +421,8 @@ TEST_F(BezierTest, Intersection) {
         //if (xs.size() != tests[i].s.size()) continue;
 
         for (unsigned j = 0; j < std::min(xs.size(), tests[i].s.size()); ++j) {
-            std::cout << xs[j].first.time() << " = " << a.pointAt(xs[j].first.time()) << "   "
-                      << xs[j].second.time() << " = " << b.pointAt(xs[j].second.time()) << "\n"
+            std::cout << xs[j].first << " = " << a.pointAt(xs[j].first) << "   "
+                      << xs[j].second << " = " << b.pointAt(xs[j].second) << "\n"
                       << tests[i].s[j].ta << " = " << tests[i].a.valueAt(tests[i].s[j].ta) << "   "
                       << tests[i].s[j].tb << " = " << tests[i].b.valueAt(tests[i].s[j].tb) << std::endl;
         }
@@ -430,8 +430,8 @@ TEST_F(BezierTest, Intersection) {
         for (unsigned j = 0; j < xs.size(); ++j) {
             //EXPECT_NEAR(xs[j].first, tests[i].s[j].ta, 2e-5);
             //EXPECT_NEAR(xs[j].second, tests[i].s[j].tb, 2e-5);
-            Point pa = a.pointAt(xs[j].first.time());
-            Point pb = b.pointAt(xs[j].second.time());
+            Point pa = a.pointAt(xs[j].first);
+            Point pb = b.pointAt(xs[j].second);
             //EXPECT_NEAR(pa[X], tests[i].s[j].p[X], 2e-5);
             //EXPECT_NEAR(pa[Y], tests[i].s[j].p[Y], 2e-5);
             //EXPECT_NEAR(pb[X], tests[i].s[j].p[X], 2e-5);

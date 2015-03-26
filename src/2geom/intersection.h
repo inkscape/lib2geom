@@ -45,43 +45,6 @@ struct ShapeTraits {
     typedef typename CoordTraits<T>::IntervalType IntervalType;
 };
 
-/** @brief Reference to a shape and a position on it.
- *
- * This holds a reference to a parametric 2D shape - basically anything that has
- * a pointAt method - and a time value. These determine a point on the plane:
- * the result of evaluating the function at that time value.
- */
-template <typename T>
-class ShapePosition {
-public:
-    typedef typename ShapeTraits<T>::TimeType TimeType;
-
-    ShapePosition(T const &s, TimeType const &pos)
-        : _shape(&s)
-        , _pos(pos)
-    {}
-
-    TimeType time() const {
-        return _pos;
-    }
-    /// Alias for use with Path and PathVector.
-    TimeType position() const {
-        return _pos;
-    }
-
-    T const &shape() const {
-        return *_shape;
-    }
-    /// Evaluate the shape at the stored time value.
-    Point point() const {
-        return _shape->pointAt(_pos);
-    }
-
-private:
-    T const *_shape;
-    TimeType _pos;
-};
-
 /** @brief Intersection between two shapes.
  */
 template <typename TA, typename TB = TA>
@@ -94,16 +57,16 @@ public:
     /** @brief Construct from shape references and time values.
      * By default, the intersection point will be halfway between the evaluated
      * points on the two shapes. */
-    Intersection(TA const &sa, TB const &sb, Coord ta, Coord tb)
-        : first(sa, ta)
-        , second(sb, tb)
-        , _point(lerp(0.5, first.point(), second.point()))
+    Intersection(TA const &sa, TB const &sb, TimeA const &ta, TimeB const &tb)
+        : first(ta)
+        , second(tb)
+        , _point(lerp(0.5, sa.pointAt(ta), sb.pointAt(tb)))
     {}
 
     /// Additionally report the intersection point.
-    Intersection(TA const &sa, TB const &sb, Coord ta, Coord tb, Point const &p)
-        : first(sa, ta)
-        , second(sb, tb)
+    Intersection(TimeA const &ta, TimeB const &tb, Point const &p)
+        : first(ta)
+        , second(tb)
         , _point(p)
     {}
 
@@ -115,16 +78,19 @@ public:
     operator Point() const {
         return _point;
     }
-    /// Rough estimate of the precision of intersection.
-    Coord delta() const {
-        return distance(first.point(), second.point());
+
+    friend inline void swap(Intersection &a, Intersection &b) {
+        using std::swap;
+        swap(a.first, b.first);
+        swap(a.second, b.second);
+        swap(a._point, b._point);
     }
 
 public:
     /// First shape and time value.
-    ShapePosition<TA> first;
+    TimeA first;
     /// Second shape and time value.
-    ShapePosition<TB> second;
+    TimeB second;
 private:
     // Recalculation of the intersection point from the time values is in many cases
     // less precise than the value obtained directly from the intersection algorithm,

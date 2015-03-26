@@ -144,6 +144,7 @@ struct PathPosition
 template <>
 struct ShapeTraits<Path> {
     typedef PathPosition TimeType;
+    typedef GenericInterval<PathPosition> IntervalType;
 };
 
 /** @brief Sequence of contiguous curves, aka spline.

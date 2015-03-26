@@ -104,13 +104,16 @@ std::vector<CurveIntersection> Curve::intersect(Curve const &/*other*/, Coord /*
 
 std::vector<CurveIntersection> Curve::intersectSelf(Coord eps) const
 {
+    std::vector<CurveIntersection> result;
     // Monotonic segments cannot have self-intersections.
     // Thus, we can split the curve at roots and intersect the portions.
     std::vector<Coord> splits;
-    {
-        std::auto_ptr<Curve> deriv(derivative());
-        splits = deriv->roots(0, X);
+    std::auto_ptr<Curve> deriv(derivative());
+    splits = deriv->roots(0, X);
+    if (splits.empty()) {
+        return result;
     }
+    deriv.reset();
     splits.push_back(1.);
 
     boost::ptr_vector<Curve> parts;
@@ -121,19 +124,25 @@ std::vector<CurveIntersection> Curve::intersectSelf(Coord eps) const
         previous = splits[i];
     }
 
-    std::vector<CurveIntersection> result;
-    for (unsigned i = 0; i < parts.size(); ++i) {
-        Interval dom_i(splits[i], splits[i+1]);
+    Coord prev_i = 0;
+    for (unsigned i = 0; i < parts.size()-1; ++i) {
+        Interval dom_i(prev_i, splits[i]);
+        prev_i = splits[i];
+
+        Coord prev_j = 0;
         for (unsigned j = i+1; j < parts.size(); ++j) {
-            Interval dom_j(splits[i], splits[i+1]);
+            Interval dom_j(prev_j, splits[j]);
+            prev_j = splits[j];
+
             std::vector<CurveIntersection> xs = parts[i].intersect(parts[j], eps);
             for (unsigned k = 0; k < xs.size(); ++k) {
-                Coord ti = dom_i.valueAt(xs[k].first.time());
-                Coord tj = dom_j.valueAt(xs[k].second.time());
                 // to avoid duplicated intersections, skip values at exactly 1
-                if (ti == 1. || tj == 1.) continue;
+                if (xs[k].first == 1. || xs[k].second == 1.) continue;
 
-                CurveIntersection real(*this, *this, ti, tj, xs[k].point());
+                Coord ti = dom_i.valueAt(xs[k].first);
+                Coord tj = dom_j.valueAt(xs[k].second);
+
+                CurveIntersection real(ti, tj, xs[k].point());
                 result.push_back(real);
             }
         }

@@ -35,6 +35,7 @@
 #include <2geom/interval.h>
 #include <2geom/point.h>
 #include <2geom/rect.h>
+#include <2geom/intersection.h>
 #include <vector>
 #include <boost/concept_check.hpp>
 #include <2geom/forward.h>
@@ -95,6 +96,19 @@ struct FragmentConcept {
           C) Interval version provided below
          */
         t = portion(t, d, d);
+    }
+};
+
+template <typename T>
+struct ShapeConcept {
+    typedef typename ShapeTraits<T>::TimeType Time;
+
+    T shape;
+    Time t;
+    Point p;
+
+    void constraints() {
+        p = shape.pointAt(t);
     }
 };
 
