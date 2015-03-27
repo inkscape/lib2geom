@@ -37,8 +37,6 @@
 #include <2geom/svg-elliptical-arc.h>
 #include <2geom/numeric/linear_system.h>
 
-using std::swap;
-
 namespace Geom
 {
 
@@ -131,7 +129,7 @@ bool make_elliptical_arc( SVGEllipticalArc & ea,
 
 	// the solution is not unique so we choose always the ellipse
 	// with a rotation angle between 0 and PI/2
-	if ( swap_axes ) swap(rx, ry);
+	if ( swap_axes ) std::swap(rx, ry);
 	if (    are_near(rot,  M_PI/2)
 		 || are_near(rot, -M_PI/2)
 		 || are_near(rx, ry)       )

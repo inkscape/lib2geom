@@ -8,9 +8,6 @@
 #include <vector>
 #include <algorithm>
 
-
-using std::swap;
-
 namespace Geom {
 using namespace Geom;
 
@@ -36,7 +33,7 @@ void computeLinfinityNeighborhood( D2<SBasis > const &f, double tol, D2<Piecewis
 	bot += Point( tol*signx, -tol);
 
 	if ( signy < 0 ){
-		swap( top, bot );
+		std::swap( top, bot );
 		top += Point( 0,  2*tol);
 		bot += Point( 0, -2*tol);
 	}
@@ -63,7 +60,7 @@ void computeLinfinityNeighborhood( Piecewise<SBasis> const &f, double tol, Piece
 	bot.segs.insert( bot.segs.begin(), SBasis(Linear( f.firstValue() - tol )) );
 
     if (f.firstValue() > f.lastValue()) {
-        swap(top, bot);
+        std::swap(top, bot);
         top += 2 * tol;
         bot -= 2 * tol;
     }
@@ -171,6 +168,7 @@ std::vector<Interval> intersect( std::vector<Interval> const &a, std::vector<Int
  * the slope the better (typically <=45°).
  */
 std::vector<SmashIntersection> monotonic_smash_intersect( D2<SBasis> const &a, D2<SBasis> const &b, double tol){
+	using std::swap;
 
 	// a and b or X and Y may have to be exchanged, so make local copies.
 	D2<SBasis> aa = a;

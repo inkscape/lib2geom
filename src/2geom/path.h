@@ -169,7 +169,7 @@ struct ShapeTraits<Path> {
  * copying a Curve requires calling a virtual function, so it's a little more expensive
  * that normal copying; and second, it reduces the memory cost of copying the path.
  * Therefore you can return Path and PathVector from functions without worrying
- * about memory use.
+ * about temporary copies.
  *
  * Note that this class cannot represent arbitrary shapes, which may contain holes.
  * To do that, use PathVector, which is more generic.
@@ -261,9 +261,9 @@ public:
     friend inline void swap(Path &a, Path &b) throw() { a.swap(b); }
 
     /** @brief Access a curve by index */
-    Curve const &operator[](unsigned i) const { return (*_curves)[i]; }
+    Curve const &operator[](size_type i) const { return (*_curves)[i]; }
     /** @brief Access a curve by index */
-    Curve const &at(unsigned i) const { return _curves->at(i); }
+    Curve const &at(size_type i) const { return _curves->at(i); }
 
     /** @brief Access the first curve in the path.
      * Since the curve always contains at least a degenerate closing segment,
@@ -385,9 +385,14 @@ public:
     Position nearestPosition(Point const &p, Coord *dist = NULL) const;
 
     void appendPortionTo(Path &p, Coord f, Coord t) const;
+    /** @brief Append a subset of this path to another path.
+     * An extra linear segment will be inserted if the start point of the portion
+     * and the final point of the target path do not match exactly.
+     * The closing segment of the target path will be modified. */
+    void appendPortionTo(Path &p, Position const &from, Position const &to, bool cross_start = false) const;
 
     /** @brief Get a subset of the current path.
-     * Note that @a f can be smaller than @a t, in which case the returned part of the path
+     * Note that @a f can be larger than @a t, in which case the returned part of the path
      * will go in the opposite direction.
      * @param f Time value specifying the initial point of the returned path
      * @param t Time value specifying the final point of the returned path
@@ -400,7 +405,20 @@ public:
     }
     /** @brief Get a subset of the current path.
      * This version takes an Interval. */
-    Path portion(Interval i) const { return portion(i.min(), i.max()); }
+    Path portion(Interval const &i) const { return portion(i.min(), i.max()); }
+
+    /** @brief Get a subset of the current path with full precision.
+     * When @a from is larger (later in the path) than @a to, the returned portion
+     * will be reversed. If @a cross_start is true, the portion will be reversed
+     * and will cross the initial point of the path. Therefore, when @a from is larger
+     * than @a to and @a cross_start is true, the returned portion will not be reversed,
+     * but will "wrap around" the end of the path. */
+    Path portion(Position const &from, Position const &to, bool cross_start = false) const {
+        Path ret;
+        ret.close(false);
+        appendPortionTo(ret, from, to, cross_start);
+        return ret;
+    }
 
     /** @brief Obtain a reversed version of the current path.
      * The final point of the current path will become the initial point
@@ -426,6 +444,12 @@ public:
     /** @brief Get the last point in the path.
      * If the path is closed, this is always the same as the initial point. */
     Point finalPoint() const { return (*_closing_seg)[_closed ? 1 : 0]; }
+
+    void append(Curve *curve) {
+        _unshare();
+        stitchTo(curve->initialPoint());
+        do_append(curve);
+    }
 
     void append(Curve const &curve, Stitching stitching = NO_STITCHING) {
         _unshare();

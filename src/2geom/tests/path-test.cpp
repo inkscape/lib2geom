@@ -147,6 +147,20 @@ TEST_F(PathTest, SVGRoundtrip) {
     }
 }
 
+TEST_F(PathTest, Portion) {
+    PathPosition a(0, 0.5), b(3, 0.5);
+    PathPosition c(1, 0.25), d(1, 0.75);
+
+    EXPECT_EQ(square.portion(a, b), string_to_path("M 0.5, 0 L 1,0 1,1 0,1 0,0.5"));
+    EXPECT_EQ(square.portion(b, a), string_to_path("M 0,0.5 L 0,1 1,1 1,0 0.5,0"));
+    EXPECT_EQ(square.portion(a, b, true), string_to_path("M 0.5,0 L 0,0 0,0.5"));
+    EXPECT_EQ(square.portion(b, a, true), string_to_path("M 0,0.5 L 0,0 0.5,0"));
+    EXPECT_EQ(square.portion(c, d), string_to_path("M 1,0.25 L 1,0.75"));
+    EXPECT_EQ(square.portion(d, c), string_to_path("M 1,0.75 L 1,0.25"));
+    EXPECT_EQ(square.portion(c, d, true), string_to_path("M 1,0.25 L 1,0 0,0 0,1 1,1 1,0.75"));
+    EXPECT_EQ(square.portion(d, c, true), string_to_path("M 1,0.75 L 1,1 0,1 0,0 1,0 1,0.25"));
+}
+
     /*TEST_F(PathTest,Operators) {
     cout << "scalar operators\n";
     cout << hump + 3 << endl;

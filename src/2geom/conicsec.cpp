@@ -40,10 +40,6 @@
 #include <sstream>
 #include <stdexcept>
 
-using std::swap;
-
-
-
 namespace Geom
 {
 
@@ -777,6 +773,8 @@ void xAx::set(std::vector<Point> const& points)
  */
 void xAx::set (const Point& _vertex, double _angle, double _dist1, double _dist2)
 {
+    using std::swap;
+
     if (_dist2 == infinity() || _dist2 == -infinity())  // parabola
     {
         if (_dist1 == infinity()) // degenerate to a line

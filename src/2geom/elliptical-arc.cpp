@@ -47,8 +47,6 @@
 #include <2geom/numeric/fitting-tool.h>
 #include <2geom/numeric/fitting-model.h>
 
-using std::swap;
-
 namespace Geom
 {
 
@@ -95,6 +93,8 @@ namespace Geom
 
 Rect EllipticalArc::boundsExact() const
 {
+    using std::swap;
+
     double extremes[4];
     double sinrot, cosrot;
     sincos(_rot_angle, sinrot, cosrot);
@@ -438,7 +438,7 @@ std::vector<double> EllipticalArc::allNearestTimes( Point const& p, double from,
 {
     std::vector<double> result;
 
-    if ( from > to ) swap(from, to);
+    if ( from > to ) std::swap(from, to);
     if ( from < 0 || to > 1 )
     {
         THROW_RANGEERROR("[from,to] interval out of range");

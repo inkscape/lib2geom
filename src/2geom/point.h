@@ -366,6 +366,7 @@ inline Coord dot(Point const &a, Point const &b) {
 /** @brief Compute the 2D cross product.
  * This is also known as "perp dot product". It will be zero for parallel vectors,
  * and the absolute value will be highest for perpendicular vectors.
+ * @return \f$a \times b = a_X b_Y - a_Y b_X\f$.
  * @relates Point*/
 inline Coord cross(Point const &a, Point const &b)
 {

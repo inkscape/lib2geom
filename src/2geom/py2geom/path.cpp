@@ -162,6 +162,8 @@ void py_cairo_pw_d2_sb(object cr, Geom::Piecewise<Geom::D2<Geom::SBasis> > const
 
 Geom::Point (Geom::Path::*path_pointAt_time)(Geom::Coord) const = &Geom::Path::pointAt;
 Geom::Coord (Geom::Path::*path_valueAt_time)(Geom::Coord, Geom::Dim2) const = &Geom::Path::valueAt;
+void (Geom::Path::*appendPortionTo_time)(Geom::Path &, Geom::Coord, Geom::Coord) const = &Geom::Path::appendPortionTo;
+//void (Geom::Path::*appendPortionTo_pos)(Geom::Path &, Geom::PathPosition const &, Geom::PathPosition const &, bool) const = &Geom::Path::appendPortionTo;
 
 void wrap_path()
 {
@@ -201,7 +203,7 @@ void wrap_path()
         .def("roots", &Geom::Path::roots)
         //.def("allNearestTimes", &Geom::Path::allNearestTimes)
         //.def("nearestTime", &Geom::Path::nearestTime)
-        .def("appendPortionTo", &Geom::Path::appendPortionTo)
+        .def("appendPortionTo", appendPortionTo_time)
         //.def("portion", &Geom::Path::portion)
         .def("reversed", &Geom::Path::reversed)
         //.def("insert", &Geom::Path::insert)

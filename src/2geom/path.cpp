@@ -444,6 +444,28 @@ void Path::appendPortionTo(Path &ret, double from, double to) const
     delete tov;
 }
 
+void Path::appendPortionTo(Path &target, Position const &from, Position const &to, bool cross_start) const
+{
+    bool reverse = cross_start ? (to >= from) : (to < from);
+    size_type di = reverse ? -1 : 1;
+
+    if (!cross_start && from.curve_index == to.curve_index) {
+        target.append((*this)[from.curve_index].portion(from.t, to.t));
+    } else {
+        target.append((*this)[from.curve_index].portion(from.t, reverse ? 0 : 1));
+        for (size_type i = (from.curve_index + di) % size_closed(); i != to.curve_index;
+             i = (i + di) % size_closed())
+        {
+            if (reverse) {
+                target.append((*this)[i].reverse());
+            } else {
+                target.append((*this)[i].duplicate());
+            }
+        }
+        target.append((*this)[to.curve_index].portion(reverse ? 1 : 0, to.t));
+    }
+}
+
 Path Path::reversed() const
 {
     typedef std::reverse_iterator<Sequence::const_iterator> RIter;

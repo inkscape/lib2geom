@@ -32,8 +32,6 @@
 #include <2geom/line.h>
 #include <2geom/math-utils.h>
 
-using std::swap;
-
 namespace Geom
 {
 
@@ -238,31 +236,25 @@ OptCrossing intersection_impl(Point const &v1, Point const &o1,
 
 OptCrossing intersection_impl(Ray const& r1, Line const& l2, unsigned int i)
 {
+    using std::swap;
+
     OptCrossing crossing =
         intersection_impl(r1.versor(), r1.origin(),
                           l2.versor(), l2.origin() );
 
-    if (crossing)
-    {
-        if (crossing->ta < 0)
-        {
+    if (crossing) {
+        if (crossing->ta < 0) {
             return OptCrossing();
-        }
-        else
-        {
-            if (i != 0)
-            {
+        } else {
+            if (i != 0) {
                 swap(crossing->ta, crossing->tb);
             }
             return crossing;
         }
     }
-    if (are_near(r1.origin(), l2))
-    {
+    if (are_near(r1.origin(), l2)) {
         THROW_INFINITESOLUTIONS();
-    }
-    else
-    {
+    } else {
         return OptCrossing();
     }
 }
@@ -272,34 +264,29 @@ OptCrossing intersection_impl( LineSegment const& ls1,
                                Line const& l2,
                                unsigned int i )
 {
+    using std::swap;
+
     OptCrossing crossing =
         intersection_impl(ls1.finalPoint() - ls1.initialPoint(),
                           ls1.initialPoint(),
                           l2.versor(),
                           l2.origin() );
 
-    if (crossing)
-    {
+    if (crossing) {
         if ( crossing->getTime(0) < 0
              || crossing->getTime(0) > 1 )
         {
             return OptCrossing();
-        }
-        else
-        {
-            if (i != 0)
-            {
+        } else {
+            if (i != 0) {
                 swap((*crossing).ta, (*crossing).tb);
             }
             return crossing;
         }
     }
-    if (are_near(ls1.initialPoint(), l2))
-    {
+    if (are_near(ls1.initialPoint(), l2)) {
         THROW_INFINITESOLUTIONS();
-    }
-    else
-    {
+    } else {
         return OptCrossing();
     }
 }
@@ -309,6 +296,8 @@ OptCrossing intersection_impl( LineSegment const& ls1,
                                Ray const& r2,
                                unsigned int i )
 {
+    using std::swap;
+
     Point direction = ls1.finalPoint() - ls1.initialPoint();
     OptCrossing crossing =
         intersection_impl( direction,
@@ -316,57 +305,40 @@ OptCrossing intersection_impl( LineSegment const& ls1,
                            r2.versor(),
                            r2.origin() );
 
-    if (crossing)
-    {
+    if (crossing) {
         if ( (crossing->getTime(0) < 0)
              || (crossing->getTime(0) > 1)
              || (crossing->getTime(1) < 0) )
         {
             return OptCrossing();
-        }
-        else
-        {
-            if (i != 0)
-            {
+        } else {
+            if (i != 0) {
                 swap(crossing->ta, crossing->tb);
             }
             return crossing;
         }
     }
 
-    if ( are_near(r2.origin(), ls1) )
-    {
+    if ( are_near(r2.origin(), ls1) ) {
         bool eqvs = (dot(direction, r2.versor()) > 0);
-        if ( are_near(ls1.initialPoint(), r2.origin()) && !eqvs  )
-        {
+        if ( are_near(ls1.initialPoint(), r2.origin()) && !eqvs)  {
             crossing->ta = crossing->tb = 0;
             return crossing;
-        }
-        else if ( are_near(ls1.finalPoint(), r2.origin()) && eqvs )
-        {
-            if (i == 0)
-            {
+        } else if ( are_near(ls1.finalPoint(), r2.origin()) && eqvs) {
+            if (i == 0) {
                 crossing->ta = 1;
                 crossing->tb = 0;
-            }
-            else
-            {
+            }  else {
                 crossing->ta = 0;
                 crossing->tb = 1;
             }
             return crossing;
-        }
-        else
-        {
+        } else {
             THROW_INFINITESOLUTIONS();
         }
-    }
-    else if ( are_near(ls1.initialPoint(), r2) )
-    {
+    } else if ( are_near(ls1.initialPoint(), r2) ) {
         THROW_INFINITESOLUTIONS();
-    }
-    else
-    {
+    } else {
         OptCrossing no_crossing;
         return no_crossing;
     }

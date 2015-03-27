@@ -33,8 +33,6 @@
     #include <2geom/conic_section_clipper.h>
 #endif
 
-using std::swap;
-
 namespace Geom
 {
 
@@ -218,6 +216,8 @@ double signed_triangle_area (Point const& p1, Point const& p2, Point const& p3)
  */
 bool CLIPPER_CLASS::are_paired (Point& M, const Point & P1, const Point & P2) const
 {
+    using std::swap;
+
     /*
      *  we looks for the points on the conic whose tangent is parallel to the
      *  arc chord P1P2, they will be extrema of the conic arc P1P2 wrt the
@@ -372,6 +372,8 @@ void CLIPPER_CLASS::pairing (std::vector<Point> & paired_points,
  */
 bool CLIPPER_CLASS::clip (std::vector<RatQuad> & arcs)
 {
+    using std::swap;
+
     arcs.clear();
     std::vector<Point> crossing_points;
     std::vector<Point> paired_points;
