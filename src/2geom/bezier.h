@@ -543,9 +543,13 @@ inline OptInterval bounds_fast(Bezier const & b) {
     return ret;
 }
 
-//TODO: better bounds exact
 inline OptInterval bounds_exact(Bezier const & b) {
-    return bounds_exact(b.toSBasis());
+    OptInterval ret(b.at0(), b.at1());
+    std::vector<Coord> r = derivative(b).roots();
+    for (unsigned i = 0; i < r.size(); ++i) {
+        ret->expandTo(b.valueAt(r[i]));
+    }
+    return ret;
 }
 
 inline OptInterval bounds_local(Bezier const & b, OptInterval i) {

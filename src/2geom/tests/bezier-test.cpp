@@ -275,6 +275,20 @@ TEST_F(BezierTest, Roots) {
     }
 }
 
+TEST_F(BezierTest, BoundsExact) {
+    OptInterval unit_bounds = bounds_exact(unit);
+    EXPECT_EQ(unit_bounds->min(), 0);
+    EXPECT_EQ(unit_bounds->max(), 1);
+
+    OptInterval hump_bounds = bounds_exact(hump);
+    EXPECT_EQ(hump_bounds->min(), 0);
+    EXPECT_FLOAT_EQ(hump_bounds->max(), hump.valueAt(0.5));
+
+    OptInterval wiggle_bounds = bounds_exact(wiggle);
+    EXPECT_EQ(wiggle_bounds->min(), 0);
+    EXPECT_EQ(wiggle_bounds->max(), 3);
+}
+
 TEST_F(BezierTest, Operators) {
     /*cout << "scalar operators\n";
     cout << hump + 3 << endl;
