@@ -49,10 +49,10 @@ static void plot(cairo_t* cr, SBasisOf<Interval> const &f, double vscale=1,doubl
     plot[0]=SBasis(Linear(150+a*300,150+b*300));
     plot[1]=fmin*(-vscale);
     plot[1]+=300;
-    pth.append(plot, Path::STITCH_DISCONTINUOUS);
+    pth.append(plot);
     plot[1]=fmax*(-vscale);
     plot[1]+=300;
-    pth.append(reverse(plot), Path::STITCH_DISCONTINUOUS);
+    pth.append(reverse(plot));
     cairo_path(cr, pth);
     
     cairo_set_source_rgba(cr, 0, 0, 0, 0.1);

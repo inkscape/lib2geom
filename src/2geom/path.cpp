@@ -48,6 +48,7 @@ Path::Path(ConvexHull const &ch)
     : _curves(new Sequence())
     , _closing_seg(new ClosingSegment(Point(), Point()))
     , _closed(false)
+    , _exception_on_stitch(false)
 {
     if (ch.empty()) {
         _curves->push_back(_closing_seg);
@@ -418,30 +419,24 @@ void Path::appendPortionTo(Path &ret, double from, double to) const
     }
     const_iterator fromi = inc(begin(), (unsigned)fi);
     if (fi == ti && from < to) {
-        Curve *v = fromi->portion(ff, tf);
-        ret.append(*v, STITCH_DISCONTINUOUS);
-        delete v;
+        ret.append(fromi->portion(ff, tf));
         return;
     }
     const_iterator toi = inc(begin(), (unsigned)ti);
     if (ff != 1.) {
-        Curve *fromv = fromi->portion(ff, 1.);
         // fromv->setInitial(ret.finalPoint());
-        ret.append(*fromv, STITCH_DISCONTINUOUS);
-        delete fromv;
+        ret.append(fromi->portion(ff, 1.));
     }
     if (from >= to) {
         const_iterator ender = end();
         if (ender->initialPoint() == ender->finalPoint())
             ++ender;
-        ret.insert(ret.end(), ++fromi, ender, STITCH_DISCONTINUOUS);
-        ret.insert(ret.end(), begin(), toi, STITCH_DISCONTINUOUS);
+        ret.insert(ret.end(), ++fromi, ender);
+        ret.insert(ret.end(), begin(), toi);
     } else {
-        ret.insert(ret.end(), ++fromi, toi, STITCH_DISCONTINUOUS);
+        ret.insert(ret.end(), ++fromi, toi);
     }
-    Curve *tov = toi->portion(0., tf);
-    ret.append(*tov, STITCH_DISCONTINUOUS);
-    delete tov;
+    ret.append(toi->portion(0., tf));
 }
 
 void Path::appendPortionTo(Path &target, Position const &from, Position const &to, bool cross_start,
@@ -528,98 +523,88 @@ Path Path::reversed() const
 }
 
 
-void Path::insert(iterator pos, Curve const &curve, Stitching stitching)
+void Path::insert(iterator pos, Curve const &curve)
 {
     _unshare();
     Sequence::iterator seq_pos(seq_iter(pos));
     Sequence source;
     source.push_back(curve.duplicate());
-    if (stitching)
-        stitch(seq_pos, seq_pos, source);
+    stitch(seq_pos, seq_pos, source);
     do_update(seq_pos, seq_pos, source.begin(), source.end(), source);
 }
 
-void Path::insert(iterator pos, const_iterator first, const_iterator last, Stitching stitching)
+void Path::insert(iterator pos, const_iterator first, const_iterator last)
 {
     _unshare();
     Sequence::iterator seq_pos(seq_iter(pos));
     Sequence source(seq_iter(first), seq_iter(last));
-    if (stitching)
-        stitch(seq_pos, seq_pos, source);
+    stitch(seq_pos, seq_pos, source);
     do_update(seq_pos, seq_pos, source.begin(), source.end(), source);
 }
 
-void Path::erase(iterator pos, Stitching stitching)
+void Path::erase(iterator pos)
 {
     _unshare();
     Sequence::iterator seq_pos(seq_iter(pos));
-    if (stitching) {
-        Sequence stitched;
-        stitch(seq_pos, seq_pos + 1, stitched);
-        do_update(seq_pos, seq_pos + 1, stitched.begin(), stitched.end(), stitched);
-    } else {
-        do_update(seq_pos, seq_pos + 1, _curves->begin(), _curves->begin(), *_curves);
-    }
+
+    Sequence stitched;
+    stitch(seq_pos, seq_pos + 1, stitched);
+    do_update(seq_pos, seq_pos + 1, stitched.begin(), stitched.end(), stitched);
 }
 
-void Path::erase(iterator first, iterator last, Stitching stitching)
+void Path::erase(iterator first, iterator last)
 {
     _unshare();
     Sequence::iterator seq_first = seq_iter(first);
     Sequence::iterator seq_last = seq_iter(last);
-    if (stitching) {
-        Sequence stitched;
-        stitch(seq_first, seq_last, stitched);
-        do_update(seq_first, seq_last, stitched.begin(), stitched.end(), stitched);
-    } else {
-        do_update(seq_first, seq_last, _curves->begin(), _curves->begin(), *_curves);
-    }
+
+    Sequence stitched;
+    stitch(seq_first, seq_last, stitched);
+    do_update(seq_first, seq_last, stitched.begin(), stitched.end(), stitched);
 }
 
-void Path::replace(iterator replaced, Curve const &curve, Stitching stitching)
+void Path::replace(iterator replaced, Curve const &curve)
 {
     _unshare();
     Sequence::iterator seq_replaced(seq_iter(replaced));
     Sequence source(1);
     source.push_back(curve.duplicate());
-    if (stitching)
-        stitch(seq_replaced, seq_replaced + 1, source);
+
+    stitch(seq_replaced, seq_replaced + 1, source);
     do_update(seq_replaced, seq_replaced + 1, source.begin(), source.end(), source);
 }
 
-void Path::replace(iterator first_replaced, iterator last_replaced, Curve const &curve,
-                   Stitching stitching)
+void Path::replace(iterator first_replaced, iterator last_replaced, Curve const &curve)
 {
     _unshare();
     Sequence::iterator seq_first_replaced(seq_iter(first_replaced));
     Sequence::iterator seq_last_replaced(seq_iter(last_replaced));
     Sequence source(1);
     source.push_back(curve.duplicate());
-    if (stitching)
-        stitch(seq_first_replaced, seq_last_replaced, source);
+
+    stitch(seq_first_replaced, seq_last_replaced, source);
     do_update(seq_first_replaced, seq_last_replaced, source.begin(), source.end(), source);
 }
 
-void Path::replace(iterator replaced, const_iterator first, const_iterator last,
-                   Stitching stitching)
+void Path::replace(iterator replaced, const_iterator first, const_iterator last)
 {
     _unshare();
     Sequence::iterator seq_replaced(seq_iter(replaced));
     Sequence source(seq_iter(first), seq_iter(last));
-    if (stitching)
-        stitch(seq_replaced, seq_replaced + 1, source);
+
+    stitch(seq_replaced, seq_replaced + 1, source);
     do_update(seq_replaced, seq_replaced + 1, source.begin(), source.end(), source);
 }
 
 void Path::replace(iterator first_replaced, iterator last_replaced, const_iterator first,
-                   const_iterator last, Stitching stitching)
+                   const_iterator last)
 {
     _unshare();
     Sequence::iterator seq_first_replaced(seq_iter(first_replaced));
     Sequence::iterator seq_last_replaced(seq_iter(last_replaced));
     Sequence source(seq_iter(first), seq_iter(last));
-    if (stitching)
-        stitch(seq_first_replaced, seq_last_replaced, source);
+
+    stitch(seq_first_replaced, seq_last_replaced, source);
     do_update(seq_first_replaced, seq_last_replaced, source.begin(), source.end(), source);
 }
 
@@ -655,12 +640,18 @@ void Path::stitch(Sequence::iterator first_replaced, Sequence::iterator last_rep
     if (!source.empty()) {
         if (first_replaced != _curves->begin()) {
             if (first_replaced->initialPoint() != source.front().initialPoint()) {
+                if (_exception_on_stitch) {
+                    THROW_CONTINUITYERROR();
+                }
                 Curve *stitch = new StitchSegment(first_replaced->initialPoint(), source.front().initialPoint());
                 source.insert(source.begin(), stitch);
             }
         }
         if (last_replaced != (_curves->end() - 1)) {
             if (last_replaced->finalPoint() != source.back().finalPoint()) {
+                if (_exception_on_stitch) {
+                    THROW_CONTINUITYERROR();
+                }
                 Curve *stitch = new StitchSegment(source.back().finalPoint(), last_replaced->finalPoint());
                 source.insert(source.end(), stitch);
             }
@@ -668,6 +659,9 @@ void Path::stitch(Sequence::iterator first_replaced, Sequence::iterator last_rep
     } else if (first_replaced != last_replaced && first_replaced != _curves->begin() &&
                last_replaced != _curves->end() - 1) {
         if (first_replaced->initialPoint() != (last_replaced - 1)->finalPoint()) {
+            if (_exception_on_stitch) {
+                THROW_CONTINUITYERROR();
+            }
             Curve *stitch = new StitchSegment((last_replaced - 1)->finalPoint(), first_replaced->initialPoint());
             source.insert(source.begin(), stitch);
         }

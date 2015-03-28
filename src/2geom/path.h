@@ -160,10 +160,11 @@ struct ShapeTraits<Path> {
  * If the closing segment has nonzero length and the path is closed, it is
  * considered a normal part of the path data.
  *
- * Since the methods for inserting, erasing and replacing curves can cause a path
- * to become non-contiguous, they have an additional parameter, called @a stitching,
- * which determines whether non-contiguous segments are joined with additional
- * linear segments that fill the created gaps.
+ * When inserting, erasing and replacing curves in a path, line segments
+ * are added automatically to keep the path contiguous. However, sometimes
+ * such segments are unwanted. You can use the method setStitchingExceptions()
+ * to enable the throwing of exceptions whenever a stitching segment is about
+ * to be inserted.
  *
  * Internally, Path uses copy-on-write data. This is done for two reasons: first,
  * copying a Curve requires calling a virtual function, so it's a little more expensive
@@ -199,11 +200,6 @@ public:
         virtual Curve *reverse() const { return new ClosingSegment((*this)[1], (*this)[0]); }
     };
 
-    enum Stitching {
-        NO_STITCHING = 0,
-        STITCH_DISCONTINUOUS
-    };
-
     class StitchSegment : public LineSegment {
       public:
         StitchSegment() : LineSegment() {}
@@ -215,10 +211,11 @@ public:
     // Path(Path const &other) - use default copy constructor
 
     /** @brief Construct an empty path starting at the specified point. */
-    explicit Path(Point p = Point())
+    explicit Path(Point const &p = Point())
         : _curves(new Sequence())
         , _closing_seg(new ClosingSegment(p, p))
         , _closed(false)
+        , _exception_on_stitch(false)
     {
         _curves->push_back(_closing_seg);
     }
@@ -228,6 +225,7 @@ public:
     Path(Iter first, Iter last, bool closed = false)
         : _curves(new Sequence())
         , _closed(closed)
+        , _exception_on_stitch(false)
     {
         for (Iter i = first; i != last; ++i) {
             _curves->push_back(i->duplicate());
@@ -269,9 +267,7 @@ public:
      * Since the curve always contains at least a degenerate closing segment,
      * it is always safe to use this method. */
     Curve const &front() const { return _curves->front(); }
-    /** @brief Access the last curve in the path.
-     * Since the curve always contains at least a degenerate closing segment,
-     * it is always safe to use this method. */
+    /** @brief Access the last curve in the path. */
     Curve const &back() const { return back_default(); }
     Curve const &back_open() const {
         if (empty()) {
@@ -435,12 +431,11 @@ public:
      * of the last "real" segment. */
     Path reversed() const;
 
-    void insert(iterator pos, Curve const &curve, Stitching stitching = NO_STITCHING);
-    void insert(iterator pos, const_iterator first, const_iterator last,
-                Stitching stitching = NO_STITCHING);
+    void insert(iterator pos, Curve const &curve);
+    void insert(iterator pos, const_iterator first, const_iterator last);
 
-    void erase(iterator pos, Stitching stitching = NO_STITCHING);
-    void erase(iterator first, iterator last, Stitching stitching = NO_STITCHING);
+    void erase(iterator pos);
+    void erase(iterator first, iterator last);
 
     // erase last segment of path
     void erase_last() { erase(iterator(*this, size() - 1)); }
@@ -459,37 +454,36 @@ public:
         do_append(curve);
     }
 
-    void append(Curve const &curve, Stitching stitching = NO_STITCHING) {
+    void append(Curve const &curve) {
         _unshare();
-        if (stitching)
-            stitchTo(curve.initialPoint());
+        stitchTo(curve.initialPoint());
         do_append(curve.duplicate());
     }
-    void append(D2<SBasis> const &curve, Stitching stitching = NO_STITCHING) {
+    void append(D2<SBasis> const &curve) {
         _unshare();
-        if (stitching)
-            stitchTo(Point(curve[X][0][0], curve[Y][0][0]));
+        stitchTo(Point(curve[X][0][0], curve[Y][0][0]));
         do_append(new SBasisCurve(curve));
     }
-    void append(Path const &other, Stitching stitching = NO_STITCHING) {
-        insert(end(), other.begin(), other.end(), stitching);
+    void append(Path const &other) {
+        insert(end(), other.begin(), other.end());
     }
 
     /** @brief Append a stitching segment ending at the specified point. */
     void stitchTo(Point const &p) {
         if (!empty() && finalPoint() != p) {
+            if (_exception_on_stitch) {
+                THROW_CONTINUITYERROR();
+            }
             _unshare();
             do_append(new StitchSegment(finalPoint(), p));
         }
     }
 
-    void replace(iterator replaced, Curve const &curve, Stitching stitching = NO_STITCHING);
-    void replace(iterator first_replaced, iterator last_replaced, Curve const &curve,
-                 Stitching stitching = NO_STITCHING);
-    void replace(iterator replaced, const_iterator first, const_iterator last,
-                 Stitching stitching = NO_STITCHING);
+    void replace(iterator replaced, Curve const &curve);
+    void replace(iterator first_replaced, iterator last_replaced, Curve const &curve);
+    void replace(iterator replaced, const_iterator first, const_iterator last);
     void replace(iterator first_replaced, iterator last_replaced, const_iterator first,
-                 const_iterator last, Stitching stitching = NO_STITCHING);
+                 const_iterator last);
 
     /** @brief Append a new curve to the path.
      *
@@ -562,6 +556,11 @@ public:
      * If the path is not contiguous, this will throw a CountinuityError. */
     void checkContinuity() const;
 
+    /// Enable or disable the throwing of exceptions when stitching discontinuities.
+    void setStitchingExceptions(bool x) {
+        _exception_on_stitch = x;
+    }
+
 private:
     static Sequence::iterator seq_iter(iterator const &iter) {
         return iter.path->_curves->begin() + iter.index;
@@ -592,6 +591,7 @@ private:
     boost::shared_ptr<Sequence> _curves;
     ClosingSegment *_closing_seg;
     bool _closed;
+    bool _exception_on_stitch;
 }; // end class Path
 
 Piecewise<D2<SBasis> > paths_to_pw(PathVector const &paths);

@@ -165,12 +165,12 @@ public:
         return false;
     }
 
-    void append(Path const &other, Path::Stitching stitching = Path::NO_STITCHING)
+    void append(Path const &other)
     {
         if (!_in_path) {
             moveTo(other.initialPoint());
         }
-        _path.append(other, stitching);
+        _path.append(other);
     }
 
     void closePath() {

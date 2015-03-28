@@ -646,7 +646,7 @@ Path area_to_path(PathVector const &ps, Area const &area) {
         Curve *curv = area[i]->curve.get(ps).portion(
                           forward ? area[i]->f : area[i]->t,
                           forward ? area[i]->t : area[i]->f);
-        ret.append(*curv, Path::STITCH_DISCONTINUOUS);
+        ret.append(*curv);
         delete curv;
         prev = forward ? area[i]->tp : area[i]->fp;
     }

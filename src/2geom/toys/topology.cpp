@@ -189,11 +189,11 @@ public:
     	Point center;
     	unsigned c_idx = source(o_edge, true);
     	if ( c_idx == NULL_IDX ){
-    		ret.append(p, Path::STITCH_DISCONTINUOUS);
+    		ret.append(p);
 		}else{
 			center = vertices[c_idx].bounds.midpoint();
 			ret 	= Path(center);
-			ret.append(p, Path::STITCH_DISCONTINUOUS);
+			ret.append(p);
 		}
     	c_idx = target(o_edge, true);
     	if ( c_idx == NULL_IDX ){
@@ -219,7 +219,7 @@ public:
             }
 
             for (unsigned i = 0; i < b.size(); i++){
-                bndary.append( edgeToPath(b[i]), Path::STITCH_DISCONTINUOUS);
+                bndary.append( edgeToPath(b[i]));
             }
             bndary.appendNew<LineSegment>(bndary.initialPoint());//usefull??
             bndary.close();
@@ -398,7 +398,7 @@ public:
             bndary =  boundaryToPath(areas[a].boundary);
         }
         for (unsigned j = 0; j < areas[a].inner_boundaries.size(); j++){
-            bndary.append( boundaryToPath(areas[a].inner_boundaries[j]), Path::STITCH_DISCONTINUOUS );
+            bndary.append( boundaryToPath(areas[a].inner_boundaries[j]));
             bndary.appendNew<LineSegment>( bndary.initialPoint() );
         }
         bndary.close();

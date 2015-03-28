@@ -474,7 +474,7 @@ PathVector inner_sanitize(PathVector const & ps) {
 #endif
                 Path p = ps[ix].portion(from.getTime(ix), to.getTime(ix)).reversed();
                 for(unsigned i = 0; i < p.size(); i++)
-                    res.append(p[i], Path::STITCH_DISCONTINUOUS);
+                    res.append(p[i]);
             } else {
                 // forwards
 #ifdef SHAPE_DEBUG
