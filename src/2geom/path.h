@@ -139,6 +139,20 @@ struct PathPosition
     bool operator==(PathPosition const &other) const {
         return curve_index == other.curve_index && t == other.t;
     }
+    /// Convert positions at or beyond 1 to 0 on the next curve.
+    void normalizeForward(size_type path_size) {
+        if (t >= 1) {
+            curve_index = (curve_index + 1) % path_size;
+            t = 0;
+        }
+    }
+    /// Convert positions at or before 0 to 1 on the previous curve.
+    void normalizeBackward(size_type path_size) {
+        if (t <= 0) {
+            curve_index = (curve_index - 1) % path_size;
+            t = 1;
+        }
+    }
 };
 
 template <>
@@ -396,7 +410,7 @@ public:
     /** @brief Append a subset of this path to another path, specifying endpoints.
      * This method is for use in situations where endpoints of the portion segments
      * have to be set exactly, for instance when computing Boolean operations. */
-    void appendPortionTo(Path &p, Position const &from, Position const &to, bool cross_start,
+    void appendPortionTo(Path &p, Position from, Position to, bool cross_start,
                          boost::optional<Point> const &p_from, boost::optional<Point> const &p_to) const;
 
     /** @brief Get a subset of the current path.

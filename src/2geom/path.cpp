@@ -227,6 +227,7 @@ std::vector<PathIntersection> Path::intersect(Path const &other, Coord precision
 {
     std::vector<PathIntersection> result;
 
+    // TODO: sweepline optimization
     // TODO: remove multiple intersections within precision of each other?
     for (size_type i = 0; i < size(); ++i) {
         for (size_type j = 0; j < other.size(); ++j) {
@@ -458,35 +459,20 @@ void Path::appendPortionTo(Path &ret, double from, double to) const
     ret.append(toi->portion(0., tf));
 }
 
-void Path::appendPortionTo(Path &target, Position const &from, Position const &to, bool cross_start,
+void Path::appendPortionTo(Path &target, Position from, Position to, bool cross_start,
                            boost::optional<Point> const &p_from, boost::optional<Point> const &p_to) const
 {
     bool pos_increasing = to >= from;
     bool reverse = cross_start ? pos_increasing : !pos_increasing;
     size_type di = reverse ? -1 : 1;
 
-    Coord t_from = from.t, t_to = to.t;
-    size_type i_from = from.curve_index, i_to = to.curve_index;
-
     // ignore degenerate segments
     if (reverse) {
-        if (t_from <= 0) {
-            i_from = (i_from - 1) % size_closed();
-            t_from = 1;
-        }
-        if (t_to >= 1) {
-            i_to = (i_to + 1) % size_closed();
-            t_to = 0;
-        }
+        to.normalizeForward(size_closed());
+        from.normalizeBackward(size_closed());
     } else {
-        if (t_from >= 1) {
-            i_from = (i_from + 1) % size_closed();
-            t_from = 0;
-        }
-        if (t_to <= 0) {
-            i_to = (i_to - 1) % size_closed();
-            t_to = 1;
-        }
+        from.normalizeForward(size_closed());
+        to.normalizeBackward(size_closed());
     }
 
     // if this happens, it means the domain does not contain any points
