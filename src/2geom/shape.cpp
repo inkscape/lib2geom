@@ -395,13 +395,13 @@ void outer_crossing(unsigned &ix, unsigned &jx, bool & dir, PathVector const & p
     ix = ps.size();
     for(unsigned i = 0; i < ps.size(); i++) {
         if(!crs[i].empty()) {
-            std::vector<double> rts = ps[i].roots(ry, Y);
+            std::vector<PathPosition> rts = ps[i].roots(ry, Y);
             for(unsigned j = 0; j < rts.size(); j++) {
                 double val = ps[i].valueAt(rts[j], X);
                 if(val > max_val) {
                     ix = i;
                     max_val = val;
-                    max_t = rts[j];
+                    max_t = rts[j].curve_index + rts[j].t;
                 }
             }
         }

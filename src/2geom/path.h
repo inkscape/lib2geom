@@ -359,7 +359,7 @@ public:
 
     Point operator()(Coord t) const { return pointAt(t); }
 
-    std::vector<Coord> roots(Coord v, Dim2 d) const;
+    std::vector<Position> roots(Coord v, Dim2 d) const;
 
     std::vector<PathIntersection> intersect(Path const &other, Coord precision = EPSILON) const;
 

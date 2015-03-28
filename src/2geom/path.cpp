@@ -212,13 +212,13 @@ Coord Path::valueAt(Position const &pos, Dim2 d) const
     return at(pos.curve_index).valueAt(pos.t, d);
 }
 
-std::vector<Coord> Path::roots(Coord v, Dim2 d) const
+std::vector<PathPosition> Path::roots(Coord v, Dim2 d) const
 {
-    std::vector<Coord> res;
+    std::vector<PathPosition> res;
     for (unsigned i = 0; i <= size(); i++) {
         std::vector<Coord> temp = (*this)[i].roots(v, d);
         for (unsigned j = 0; j < temp.size(); j++)
-            res.push_back(temp[j] + i);
+            res.push_back(PathPosition(i, temp[j]));
     }
     return res;
 }
