@@ -44,6 +44,74 @@ using namespace Geom::PathInternal;
 
 namespace Geom {
 
+// this represents an empty interval
+PathInterval::PathInterval()
+    : _from(1, 0.0)
+    , _to(0, 1.0)
+    , _path_size(1)
+    , _cross_start(false)
+    , _reverse(false)
+{}
+
+PathInterval::PathInterval(Position const &from, Position const &to, bool cross_start, size_type path_size)
+    : _from(from)
+    , _to(to)
+    , _path_size(path_size)
+    , _cross_start(cross_start)
+    , _reverse(cross_start ? to >= from : to < from)
+{
+    if (_reverse) {
+        _to.normalizeForward(_path_size);
+        if (_from != _to) {
+            _from.normalizeBackward(_path_size);
+        }
+    } else {
+        _from.normalizeForward(_path_size);
+        if (_from != _to) {
+            _to.normalizeBackward(_path_size);
+        }
+    }
+
+    if (_from == _to) {
+        _reverse = false;
+        _cross_start = false;
+    }
+}
+
+PathInterval PathInterval::from_direction(Position const &from, Position const &to, bool reversed, size_type path_size)
+{
+    PathInterval result;
+    result._from = from;
+    result._to = to;
+    result._path_size = path_size;
+
+    if (reversed) {
+        result._to.normalizeForward(path_size);
+        if (result._from != result._to) {
+            result._from.normalizeBackward(path_size);
+        }
+    } else {
+        result._from.normalizeForward(path_size);
+        if (result._from != result._to) {
+            result._to.normalizeBackward(path_size);
+        }
+    }
+
+    if (result._from == result._to) {
+        result._reverse = false;
+        result._cross_start = false;
+    } else {
+        result._reverse = reversed;
+        if (reversed) {
+            result._cross_start = from < to;
+        } else {
+            result._cross_start = to < from;
+        }
+    }
+    return result;
+}
+
+
 Path::Path(ConvexHull const &ch)
     : _curves(new Sequence())
     , _closing_seg(new ClosingSegment(Point(), Point()))
@@ -459,26 +527,21 @@ void Path::appendPortionTo(Path &ret, double from, double to) const
     ret.append(toi->portion(0., tf));
 }
 
-void Path::appendPortionTo(Path &target, Position from, Position to, bool cross_start,
+void Path::appendPortionTo(Path &target, PathInterval const &ival,
                            boost::optional<Point> const &p_from, boost::optional<Point> const &p_to) const
 {
-    bool pos_increasing = to >= from;
-    bool reverse = cross_start ? pos_increasing : !pos_increasing;
-    size_type di = reverse ? -1 : 1;
-
-    // ignore degenerate segments
-    if (reverse) {
-        to.normalizeForward(size_closed());
-        from.normalizeBackward(size_closed());
-    } else {
-        from.normalizeForward(size_closed());
-        to.normalizeBackward(size_closed());
+    if (ival.isDegenerate()) {
+        Point stitch_to = p_from ? *p_from : pointAt(ival.from());
+        target.stitchTo(stitch_to);
+        return;
     }
 
-    // if this happens, it means the domain does not contain any points
-    if ((to >= from) != pos_increasing) return;
+    Position const &from = ival.from(), &to = ival.to();
 
-    if (!cross_start && from.curve_index == to.curve_index) {
+    bool reverse = ival.reverse();
+    size_type di = reverse ? -1 : 1;
+
+    if (!ival.crossesStart() && from.curve_index == to.curve_index) {
         Curve *c = (*this)[from.curve_index].portion(from.t, to.t);
         if (p_from) {
             c->setInitial(*p_from);

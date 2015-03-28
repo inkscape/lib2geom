@@ -155,10 +155,71 @@ struct PathPosition
     }
 };
 
+
+/** @brief Contiguous subset of the path's parameter domain.
+ * @ingroup Paths */
+class PathInterval {
+public:
+    typedef PathPosition Position;
+    typedef PathInternal::Sequence::size_type size_type;
+
+    PathInterval();
+    PathInterval(Position const &from, Position const &to, bool cross_start, size_type path_size);
+
+    Position const &from() const { return _from; }
+    Position const &to() const { return _to; }
+
+    bool isDegenerate() const { return _from == _to; }
+    bool reverse() const { return _reverse; }
+    bool crossesStart() const { return _cross_start; }
+
+    bool contains(Position const &pos) const {
+        if (_reverse) {
+            return _to <= pos && pos <= _from;
+        } else {
+            return _from <= pos && pos <= _to;
+        }
+    }
+
+    /// Select one of two intervals with given endpoints by parameter direction.
+    static PathInterval from_direction(Position const &from, Position const &to,
+                                       bool reversed, size_type path_size);
+
+    /// Select one of two intervals with given endpoints by whether it includes the initial point.
+    static PathInterval from_start_crossing(Position const &from, Position const &to,
+                                            bool cross_start, size_type path_size) {
+        PathInterval result(from, to, cross_start, path_size);
+        return result;
+    }
+
+private:
+    Position _from, _to;
+    size_type _path_size;
+    bool _cross_start, _reverse;
+};
+
+/// Create an interval in the direction of increasing time value.
+/// @relates PathInterval
+inline PathInterval forward_interval(PathPosition const &from, PathPosition const &to,
+                                     PathInterval::size_type path_size)
+{
+    PathInterval result = PathInterval::from_direction(from, to, false, path_size);
+    return result;
+}
+
+/// Create an interval in the direction of decreasing time value.
+/// @relates PathInterval
+inline PathInterval backward_interval(PathPosition const &from, PathPosition const &to,
+                                      PathInterval::size_type path_size)
+{
+    PathInterval result = PathInterval::from_direction(from, to, true, path_size);
+    return result;
+}
+
 template <>
 struct ShapeTraits<Path> {
     typedef PathPosition TimeType;
-    typedef GenericInterval<PathPosition> IntervalType;
+    typedef PathInterval IntervalType;
 };
 
 typedef Intersection<Path, Path> PathIntersection;
@@ -404,13 +465,18 @@ public:
      * and the final point of the target path do not match exactly.
      * The closing segment of the target path will be modified. */
     void appendPortionTo(Path &p, Position const &from, Position const &to, bool cross_start = false) const {
-        appendPortionTo(p, from, to, cross_start, boost::none, boost::none);
+        PathInterval ival(from, to, cross_start, size_closed());
+        appendPortionTo(p, ival, boost::none, boost::none);
+    }
+
+    void appendPortionTo(Path &p, PathInterval const &ival) const {
+        appendPortionTo(p, ival, boost::none, boost::none);
     }
 
     /** @brief Append a subset of this path to another path, specifying endpoints.
      * This method is for use in situations where endpoints of the portion segments
      * have to be set exactly, for instance when computing Boolean operations. */
-    void appendPortionTo(Path &p, Position from, Position to, bool cross_start,
+    void appendPortionTo(Path &p, PathInterval const &ival,
                          boost::optional<Point> const &p_from, boost::optional<Point> const &p_to) const;
 
     /** @brief Get a subset of the current path.
@@ -439,6 +505,13 @@ public:
         Path ret;
         ret.close(false);
         appendPortionTo(ret, from, to, cross_start);
+        return ret;
+    }
+
+    Path portion(PathInterval const &ival) const {
+        Path ret;
+        ret.close(false);
+        appendPortionTo(ret, ival);
         return ret;
     }
 

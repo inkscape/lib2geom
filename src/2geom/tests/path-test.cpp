@@ -159,6 +159,15 @@ TEST_F(PathTest, Portion) {
     EXPECT_EQ(square.portion(d, c), string_to_path("M 1,0.75 L 1,0.25"));
     EXPECT_EQ(square.portion(c, d, true), string_to_path("M 1,0.25 L 1,0 0,0 0,1 1,1 1,0.75"));
     EXPECT_EQ(square.portion(d, c, true), string_to_path("M 1,0.75 L 1,1 0,1 0,0 1,0 1,0.25"));
+
+    // verify that no matter how an endpoint is specified, the result is the same
+    PathPosition a1(0, 1.0), a2(1, 0.0);
+    PathPosition b1(2, 1.0), b2(3, 0.0);
+    Path result = string_to_path("M 1,0 L 1,1 0,1");
+    EXPECT_EQ(square.portion(a1, b1), result);
+    EXPECT_EQ(square.portion(a1, b2), result);
+    EXPECT_EQ(square.portion(a2, b1), result);
+    EXPECT_EQ(square.portion(a2, b2), result);
 }
 
     /*TEST_F(PathTest,Operators) {
