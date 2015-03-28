@@ -444,15 +444,56 @@ void Path::appendPortionTo(Path &ret, double from, double to) const
     delete tov;
 }
 
-void Path::appendPortionTo(Path &target, Position const &from, Position const &to, bool cross_start) const
+void Path::appendPortionTo(Path &target, Position const &from, Position const &to, bool cross_start,
+                           boost::optional<Point> const &p_from, boost::optional<Point> const &p_to) const
 {
-    bool reverse = cross_start ? (to >= from) : (to < from);
+    bool pos_increasing = to >= from;
+    bool reverse = cross_start ? pos_increasing : !pos_increasing;
     size_type di = reverse ? -1 : 1;
 
-    if (!cross_start && from.curve_index == to.curve_index) {
-        target.append((*this)[from.curve_index].portion(from.t, to.t));
+    Coord t_from = from.t, t_to = to.t;
+    size_type i_from = from.curve_index, i_to = to.curve_index;
+
+    // ignore degenerate segments
+    if (reverse) {
+        if (t_from <= 0) {
+            i_from = (i_from - 1) % size_closed();
+            t_from = 1;
+        }
+        if (t_to >= 1) {
+            i_to = (i_to + 1) % size_closed();
+            t_to = 0;
+        }
     } else {
-        target.append((*this)[from.curve_index].portion(from.t, reverse ? 0 : 1));
+        if (t_from >= 1) {
+            i_from = (i_from + 1) % size_closed();
+            t_from = 0;
+        }
+        if (t_to <= 0) {
+            i_to = (i_to - 1) % size_closed();
+            t_to = 1;
+        }
+    }
+
+    // if this happens, it means the domain does not contain any points
+    if ((to >= from) != pos_increasing) return;
+
+    if (!cross_start && from.curve_index == to.curve_index) {
+        Curve *c = (*this)[from.curve_index].portion(from.t, to.t);
+        if (p_from) {
+            c->setInitial(*p_from);
+        }
+        if (p_to) {
+            c->setFinal(*p_to);
+        }
+        target.append(c);
+    } else {
+        Curve *c_first = (*this)[from.curve_index].portion(from.t, reverse ? 0 : 1);
+        if (p_from) {
+            c_first->setInitial(*p_from);
+        }
+        target.append(c_first);
+
         for (size_type i = (from.curve_index + di) % size_closed(); i != to.curve_index;
              i = (i + di) % size_closed())
         {
@@ -462,7 +503,12 @@ void Path::appendPortionTo(Path &target, Position const &from, Position const &t
                 target.append((*this)[i].duplicate());
             }
         }
-        target.append((*this)[to.curve_index].portion(reverse ? 1 : 0, to.t));
+
+        Curve *c_last = (*this)[to.curve_index].portion(reverse ? 1 : 0, to.t);
+        if (p_to) {
+            c_last->setFinal(*p_to);
+        }
+        target.append(c_last);
     }
 }
 

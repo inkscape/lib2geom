@@ -389,7 +389,15 @@ public:
      * An extra linear segment will be inserted if the start point of the portion
      * and the final point of the target path do not match exactly.
      * The closing segment of the target path will be modified. */
-    void appendPortionTo(Path &p, Position const &from, Position const &to, bool cross_start = false) const;
+    void appendPortionTo(Path &p, Position const &from, Position const &to, bool cross_start = false) const {
+        appendPortionTo(p, from, to, cross_start, boost::none, boost::none);
+    }
+
+    /** @brief Append a subset of this path to another path, specifying endpoints.
+     * This method is for use in situations where endpoints of the portion segments
+     * have to be set exactly, for instance when computing Boolean operations. */
+    void appendPortionTo(Path &p, Position const &from, Position const &to, bool cross_start,
+                         boost::optional<Point> const &p_from, boost::optional<Point> const &p_to) const;
 
     /** @brief Get a subset of the current path.
      * Note that @a f can be larger than @a t, in which case the returned part of the path
