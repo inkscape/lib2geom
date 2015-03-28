@@ -166,13 +166,22 @@ public:
     PathInterval();
     PathInterval(Position const &from, Position const &to, bool cross_start, size_type path_size);
 
+    /// Get the position of the initial point.
+    Position const &initialPosition() const { return _from; }
+    /// Get the position of the final point.
+    Position const &finalPosition() const { return _to; }
+
     Position const &from() const { return _from; }
     Position const &to() const { return _to; }
 
+    /// Check whether the interval has only one point.
     bool isDegenerate() const { return _from == _to; }
+    /// True if the interval goes in the direction of decreasing time values.
     bool reverse() const { return _reverse; }
+    /// True if the interior of the interval contains the initial point of the path.
     bool crossesStart() const { return _cross_start; }
 
+    /// Test a path position for inclusion.
     bool contains(Position const &pos) const {
         if (_reverse) {
             return _to <= pos && pos <= _from;

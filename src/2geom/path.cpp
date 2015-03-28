@@ -134,9 +134,7 @@ Path::Path(ConvexHull const &ch)
     }
 
     _curves->push_back(_closing_seg);
-    if (ch.size() > 1) {
-        _closed = true;
-    }
+    _closed = true;
 }
 
 void Path::clear()
