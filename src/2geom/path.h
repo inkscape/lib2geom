@@ -147,6 +147,8 @@ struct ShapeTraits<Path> {
     typedef GenericInterval<PathPosition> IntervalType;
 };
 
+typedef Intersection<Path, Path> PathIntersection;
+
 /** @brief Sequence of contiguous curves, aka spline.
  *
  * Path represents a sequence of contiguous curves, also known as a spline.
@@ -358,6 +360,8 @@ public:
     Point operator()(Coord t) const { return pointAt(t); }
 
     std::vector<Coord> roots(Coord v, Dim2 d) const;
+
+    std::vector<PathIntersection> intersect(Path const &other, Coord precision = EPSILON) const;
 
     /** @brief Determine the winding number at the specified point.
      * 

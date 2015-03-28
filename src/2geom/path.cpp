@@ -223,6 +223,25 @@ std::vector<Coord> Path::roots(Coord v, Dim2 d) const
     return res;
 }
 
+std::vector<PathIntersection> Path::intersect(Path const &other, Coord precision) const
+{
+    std::vector<PathIntersection> result;
+
+    // TODO: remove multiple intersections within precision of each other?
+    for (size_type i = 0; i < size(); ++i) {
+        for (size_type j = 0; j < other.size(); ++j) {
+            std::vector<CurveIntersection> cx = (*this)[i].intersect(other[j], precision);
+            for (std::size_t ci = 0; ci < cx.size(); ++ci) {
+                PathPosition a(i, cx[ci].first), b(j, cx[ci].second);
+                PathIntersection px(a, b, cx[ci].point());
+                result.push_back(px);
+            }
+        }
+    }
+
+    return result;
+}
+
 int Path::winding(Point const &p) const {
     int wind = 0;
 

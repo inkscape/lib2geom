@@ -142,6 +142,9 @@ BezierCurve::intersect(Curve const &other, Coord eps) const
 {
     std::vector<CurveIntersection> result;
 
+    // optimization for the common case of no intersections
+    if (!boundsFast().intersects(other.boundsFast())) return result;
+
     BezierCurve const *bez = dynamic_cast<BezierCurve const *>(&other);
     if (bez) {
         std::vector<std::pair<double, double> > xs;
