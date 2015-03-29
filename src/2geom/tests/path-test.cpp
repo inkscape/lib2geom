@@ -260,50 +260,6 @@ TEST_F(PathTest, Portion) {
     EXPECT_EQ(square.portion(a2, b2), result);
 }
 
-    /*TEST_F(PathTest,Operators) {
-    cout << "scalar operators\n";
-    cout << hump + 3 << endl;
-    cout << hump - 3 << endl;
-    cout << hump*3 << endl;
-    cout << hump/3 << endl;
-
-    Bezier reverse_wiggle = reverse(wiggle);
-    EXPECT_EQ(reverse_wiggle[0], wiggle[wiggle.size()-1]);
-    EXPECT_TRUE(are_equal(reverse(reverse_wiggle), wiggle));
-
-    cout << "Bezier portion(const Bezier & a, double from, double to);\n";
-    cout << portion(Bezier(0.0,2.0), 0.5, 1) << endl;
-
-// std::vector<Point> bezier_points(const D2<Bezier > & a) {
-
-    cout << "Bezier derivative(const Bezier & a);\n";
-    std::cout << derivative(hump) <<std::endl;
-    std::cout << integral(hump) <<std::endl;
-
-    EXPECT_TRUE(are_equal(derivative(integral(wiggle)), wiggle));
-    std::cout << derivative(integral(hump)) <<std::endl;
-    expect_array((const double []){0.5}, derivative(hump).roots());
-
-    EXPECT_TRUE(bounds_fast(hump)->contains(Interval(0,hump.valueAt(0.5))));
-
-    EXPECT_EQ(Interval(0,hump.valueAt(0.5)), *bounds_exact(hump));
-
-    Interval tight_local_bounds(min(hump.valueAt(0.3),hump.valueAt(0.6)),
-             hump.valueAt(0.5));
-    EXPECT_TRUE(bounds_local(hump, Interval(0.3, 0.6))->contains(tight_local_bounds));
-
-    Bezier Bs[] = {unit, hump, wiggle};
-    for(unsigned i = 0; i < sizeof(Bs)/sizeof(Bezier); i++) {
-        Bezier B = Bs[i];
-        Bezier product = multiply(B, B);
-        for(int i = 0; i <= 16; i++) {
-            double t = i/16.0;
-            double b = B.valueAt(t);
-            EXPECT_FLOAT_EQ(b*b, product.valueAt(t));
-        }
-    }
-    }*/
-
 /*
   Local Variables:
   mode:c++
