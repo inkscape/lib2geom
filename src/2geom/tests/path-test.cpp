@@ -179,6 +179,15 @@ TEST_F(PathTest, Winding) {
     EXPECT_EQ(circle.winding(Point(-4.5,1)), 1);
     EXPECT_EQ(circle.winding(Point(-10,0)), 0);
     EXPECT_EQ(circle.winding(Point(1,0)), 0);
+
+    // extra nasty cases with exact double roots
+    Path hump = string_to_path("M 0,0 Q 1,1 2,0 L 2,2 0,2 Z");
+    EXPECT_EQ(hump.winding(Point(0.25, 0.5)), 1);
+    EXPECT_EQ(hump.winding(Point(1.75, 0.5)), 1);
+
+    Path hump2 = string_to_path("M 0,0 L 2,0 2,2 Q 1,1 0,2 Z");
+    EXPECT_EQ(hump2.winding(Point(0.25, 1.5)), 1);
+    EXPECT_EQ(hump2.winding(Point(1.75, 1.5)), 1);
 }
 
 TEST_F(PathTest, SVGRoundtrip) {
