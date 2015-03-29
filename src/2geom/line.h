@@ -395,8 +395,9 @@ Line make_bisector_line(LineSegment const& _segment)
 inline
 Line make_angle_bisector_line(Point const &A, Point const &O, Point const &B)
 {
-    Point M = middle_point(A,B);
-    return Line(O,M);
+    AngleInterval ival(Angle(A-O), Angle(B-O));
+    Angle bisect = ival.angleAt(0.5);
+    return Line(O, bisect);
 }
 
 // prj(P) = rot(v, Point( rot(-v, P-O)[X], 0 )) + O
