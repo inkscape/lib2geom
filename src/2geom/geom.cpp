@@ -14,6 +14,13 @@ using std::swap;
 
 namespace Geom {
 
+enum IntersectorKind {
+    intersects = 0,
+    parallel,
+    coincident,
+    no_intersection
+};
+
 /**
  * Finds the intersection of the two (infinite) lines
  * defined by the points p such that dot(n0, p) == d0 and dot(n1, p) == d1.
