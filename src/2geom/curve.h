@@ -51,8 +51,7 @@
 namespace Geom {
 
 class PathSink;
-
-typedef Intersection<Curve, Curve> CurveIntersection;
+typedef Intersection<> CurveIntersection;
 
 /**
  * @brief Abstract continuous curve on a plane defined on [0,1].

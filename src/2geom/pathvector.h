@@ -75,9 +75,15 @@ struct PathVectorPosition
     }
 };
 
+typedef Intersection<PathVectorPosition> PathVectorIntersection;
+typedef PathVectorIntersection PVIntersection; ///< Alias to save typing
+
 template <>
 struct ShapeTraits<PathVector> {
     typedef PathVectorPosition TimeType;
+    //typedef PathVectorInterval IntervalType;
+    typedef PathVector AffineClosureType;
+    typedef PathVectorIntersection IntersectionType;
 };
 
 /** @brief Sequence of subpaths.

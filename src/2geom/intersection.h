@@ -39,24 +39,17 @@
 
 namespace Geom {
 
-template <typename T>
-struct ShapeTraits {
-    typedef Coord TimeType;
-    typedef typename CoordTraits<T>::IntervalType IntervalType;
-};
 
 /** @brief Intersection between two shapes.
  */
-template <typename TA, typename TB = TA>
+template <typename TimeA = Coord, typename TimeB = TimeA>
 class Intersection
 {
 public:
-    typedef typename ShapeTraits<TA>::TimeType TimeA;
-    typedef typename ShapeTraits<TB>::TimeType TimeB;
-
     /** @brief Construct from shape references and time values.
      * By default, the intersection point will be halfway between the evaluated
      * points on the two shapes. */
+    template <typename TA, typename TB>
     Intersection(TA const &sa, TB const &sb, TimeA const &ta, TimeB const &tb)
         : first(ta)
         , second(tb)
@@ -97,6 +90,17 @@ private:
     // so we need to store it.
     Point _point;
 };
+
+
+// TODO: move into new header
+template <typename T>
+struct ShapeTraits {
+    typedef Coord TimeType;
+    typedef Interval IntervalType;
+    typedef T AffineClosureType;
+    typedef Intersection<> IntersectionType;
+};
+
 
 } // namespace Geom
 

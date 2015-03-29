@@ -256,15 +256,15 @@ inline std::ostream &operator<<(std::ostream &os, PathInterval const &ival) {
     return os;
 }
 
-
+typedef Intersection<PathPosition> PathIntersection;
 
 template <>
 struct ShapeTraits<Path> {
     typedef PathPosition TimeType;
     typedef PathInterval IntervalType;
+    typedef Path AffineClosureType;
+    typedef PathIntersection IntersectionType;
 };
-
-typedef Intersection<Path, Path> PathIntersection;
 
 /** @brief Sequence of contiguous curves, aka spline.
  *
