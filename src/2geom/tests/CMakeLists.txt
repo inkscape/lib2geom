@@ -20,6 +20,7 @@ bezier-test
 chain-test  # what is this?
 convex-hull-test
 coord-test
+intersection-graph-test
 path-test
 point-test
 rect-test

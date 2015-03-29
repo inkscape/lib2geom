@@ -76,6 +76,10 @@ forward.h
 geom.cpp
 geom.h
 
+intersection.h
+intersection-graph.cpp
+intersection-graph.h
+
 line.cpp
 line.h
 linear.h
