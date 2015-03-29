@@ -182,13 +182,11 @@ public:
     bool crossesStart() const { return _cross_start; }
 
     /// Test a path position for inclusion.
-    bool contains(Position const &pos) const {
-        if (_reverse) {
-            return _to <= pos && pos <= _from;
-        } else {
-            return _from <= pos && pos <= _to;
-        }
-    }
+    bool contains(Position const &pos) const;
+
+    /// Get a position at least @a min_dist away in parameter space from the ends.
+    /// If no such position exists, the middle point between these positions is returned.
+    Position inside(Coord min_dist = EPSILON) const;
 
     /// Select one of two intervals with given endpoints by parameter direction.
     static PathInterval from_direction(Position const &from, Position const &to,

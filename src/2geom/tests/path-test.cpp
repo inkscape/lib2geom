@@ -34,6 +34,101 @@ protected:
     Path line, square, circle, diederik, cmds;
 };
 
+std::ostream &operator<<(std::ostream &os, PathPosition const &pos) {
+    os << pos.curve_index << " " << pos.t;
+    return os;
+}
+std::ostream &operator<<(std::ostream &os, PathInterval const &ival) {
+    os << "PathInterval: ";
+    if (ival.crossesStart()) {
+        os << ival.from() << " -> origin -> " << ival.to();
+    } else {
+        os << ival.from() << " -> " << ival.to();
+    }
+    return os;
+}
+
+TEST_F(PathTest, PathInterval) {
+    PathPosition n2_before(1, 0.9995), n2_after(2, 0.0005),
+                 n3_before(2, 0.9995), n3_after(3, 0.0005),
+                 mid2(2, 0.5), mid3(3, 0.5);
+
+    // ival[x][0] - normal
+    // ival[x][1] - reversed
+    // ival[x][2] - crosses start
+    // ival[x][3] - reversed, crosses start
+    PathInterval ival[5][4];
+
+    ival[0][0] = PathInterval(n2_before, n2_after, false, 4);
+    ival[0][1] = PathInterval(n2_after, n2_before, false, 4);
+    ival[0][2] = PathInterval(n2_before, n2_after, true, 4);
+    ival[0][3] = PathInterval(n2_after, n2_before, true, 4);
+    ival[1][0] = PathInterval(n2_before, n3_after, false, 4);
+    ival[1][1] = PathInterval(n3_after, n2_before, false, 4);
+    ival[1][2] = PathInterval(n2_before, n3_after, true, 4);
+    ival[1][3] = PathInterval(n3_after, n2_before, true, 4);
+    ival[2][0] = PathInterval(n2_before, mid2, false, 4);
+    ival[2][1] = PathInterval(mid2, n2_before, false, 4);
+    ival[2][2] = PathInterval(n2_before, mid2, true, 4);
+    ival[2][3] = PathInterval(mid2, n2_before, true, 4);
+    ival[3][0] = PathInterval(mid2, mid3, false, 4);
+    ival[3][1] = PathInterval(mid3, mid2, false, 4);
+    ival[3][2] = PathInterval(mid2, mid3, true, 4);
+    ival[3][3] = PathInterval(mid3, mid2, true, 4);
+    ival[4][0] = PathInterval(n2_after, n3_before, false, 4);
+    ival[4][1] = PathInterval(n3_before, n2_after, false, 4);
+    ival[4][2] = PathInterval(n2_after, n3_before, true, 4);
+    ival[4][3] = PathInterval(n3_before, n2_after, true, 4);
+
+    EXPECT_TRUE(ival[0][0].contains(n2_before));
+    EXPECT_TRUE(ival[0][0].contains(n2_after));
+    EXPECT_TRUE(ival[0][1].contains(n2_before));
+    EXPECT_TRUE(ival[0][1].contains(n2_after));
+
+    for (unsigned i = 0; i <= 4; ++i) {
+        EXPECT_FALSE(ival[i][0].reverse());
+        EXPECT_TRUE(ival[i][1].reverse());
+        EXPECT_TRUE(ival[i][2].reverse());
+        EXPECT_FALSE(ival[i][3].reverse());
+    }
+
+    for (unsigned i = 0; i <= 4; ++i) {
+        for (unsigned j = 0; j <= 3; ++j) {
+            //std::cout << i << " " << j << " " << ival[i][j] << std::endl;
+            EXPECT_TRUE(ival[i][j].contains(ival[i][j].inside(1e-3)));
+        }
+    }
+
+    PathPosition n1(1, 0.0), n1x(0, 1.0),
+                 n2(2, 0.0), n2x(1, 1.0),
+                 n3(3, 0.0), n3x(2, 1.0);
+    PathPosition tests[8] = { n1, n1x, n2, n2x, n3, n3x, mid2, mid3 };
+
+    // 0: false for both
+    // 1: true for normal, false for cross_start
+    // 2: false for normal, true for cross_start
+    // 3: true for both
+
+    int const NORMAL = 1, CROSS = 2, BOTH = 3;
+
+    int includes[5][8] = {
+        { CROSS,  CROSS,  NORMAL, NORMAL, CROSS,  CROSS,  CROSS,  CROSS  },
+        { CROSS,  CROSS,  NORMAL, NORMAL, NORMAL, NORMAL, NORMAL, CROSS  },
+        { CROSS,  CROSS,  NORMAL, NORMAL, CROSS,  CROSS,  BOTH,   CROSS  },
+        { CROSS,  CROSS,  CROSS,  CROSS,  NORMAL, NORMAL, BOTH,   BOTH   },
+        { CROSS,  CROSS,  CROSS,  CROSS,  CROSS,  CROSS,  NORMAL, CROSS  }
+    };
+
+    for (unsigned i = 0; i < 5; ++i) {
+        for (unsigned j = 0; j < 8; ++j) {
+            EXPECT_EQ(ival[i][0].contains(tests[j]), bool(includes[i][j] & NORMAL));
+            EXPECT_EQ(ival[i][1].contains(tests[j]), bool(includes[i][j] & NORMAL));
+            EXPECT_EQ(ival[i][2].contains(tests[j]), bool(includes[i][j] & CROSS));
+            EXPECT_EQ(ival[i][3].contains(tests[j]), bool(includes[i][j] & CROSS));
+        }
+    }
+}
+
 TEST_F(PathTest, Continuity) {
     line.checkContinuity();
     square.checkContinuity();

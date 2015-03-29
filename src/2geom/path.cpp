@@ -46,8 +46,8 @@ namespace Geom {
 
 // this represents an empty interval
 PathInterval::PathInterval()
-    : _from(1, 0.0)
-    , _to(0, 1.0)
+    : _from(0, 0.0)
+    , _to(0, 0.0)
     , _path_size(1)
     , _cross_start(false)
     , _reverse(false)
@@ -76,6 +76,109 @@ PathInterval::PathInterval(Position const &from, Position const &to, bool cross_
         _reverse = false;
         _cross_start = false;
     }
+}
+
+bool PathInterval::contains(Position const &pos) const {
+    if (_cross_start) {
+        if (_reverse) {
+            return pos >= _to || _from >= pos;
+        } else {
+            return pos >= _from || _to >= pos;
+        }
+    } else {
+        if (_reverse) {
+            return _to <= pos && pos <= _from;
+        } else {
+            return _from <= pos && pos <= _to;
+        }
+    }
+}
+
+PathPosition PathInterval::inside(Coord min_dist) const
+{
+    // If there is some node further than min_dist (in time coord) from the ends,
+    // return that node. Otherwise, return the middle.
+    PathPosition result(0, 0.0);
+
+    if (!_cross_start && _from.curve_index == _to.curve_index) {
+        PathPosition result(_from.curve_index, lerp(0.5, _from.t, _to.t));
+        return result;
+    }
+    // If _cross_start, then we can be sure that at least one node is in the domain.
+    // If dcurve == 0, it actually means that all curves are included in the domain
+
+    if (_reverse) {
+        size_type dcurve = (_from.curve_index - _to.curve_index) % _path_size;
+        bool from_close = _from.t < min_dist;
+        bool to_close = _to.t > 1 - min_dist;
+
+        if (dcurve == 0) {
+            dcurve = _path_size;
+        }
+
+        if (dcurve == 1) {
+            if (from_close || to_close) {
+                result.curve_index = _from.curve_index;
+                Coord tmid = _from.t - ((1 - _to.t) + _from.t) * 0.5;
+                if (tmid < 0) {
+                    result.curve_index = (result.curve_index - 1) % _path_size;
+                    tmid += 1;
+                }
+                result.t = tmid;
+                return result;
+            }
+
+            result.curve_index = _from.curve_index;
+            return result;
+        }
+
+        result.curve_index = (_to.curve_index + 1) % _path_size;
+        if (to_close) {
+            if (dcurve == 2) {
+                result.t = 0.5;
+            } else {
+                result.curve_index = (result.curve_index + 1) % _path_size;
+            }
+        }
+        return result;
+    } else {
+        size_type dcurve = (_to.curve_index - _from.curve_index) % _path_size;
+        bool from_close = _from.t > 1 - min_dist;
+        bool to_close = _to.t < min_dist;
+
+        if (dcurve == 0) {
+            dcurve = _path_size;
+        }
+
+        if (dcurve == 1) {
+            if (from_close || to_close) {
+                result.curve_index = _from.curve_index;
+                Coord tmid = ((1 - _from.t) + _to.t) * 0.5 + _from.t;
+                if (tmid >= 1) {
+                    result.curve_index = (result.curve_index + 1) % _path_size;
+                    tmid -= 1;
+                }
+                result.t = tmid;
+                return result;
+            }
+
+            result.curve_index = _to.curve_index;
+            return result;
+        }
+
+        result.curve_index = (_from.curve_index + 1) % _path_size;
+        if (from_close) {
+            if (dcurve == 2) {
+                result.t = 0.5;
+            } else {
+                result.curve_index = (result.curve_index + 1) % _path_size;
+            }
+        }
+        return result;
+    }
+
+    result.curve_index = _reverse ? _from.curve_index : _to.curve_index;
+    return result;
 }
 
 PathInterval PathInterval::from_direction(Position const &from, Position const &to, bool reversed, size_type path_size)
