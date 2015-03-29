@@ -34,20 +34,6 @@ protected:
     Path line, square, circle, diederik, cmds;
 };
 
-std::ostream &operator<<(std::ostream &os, PathPosition const &pos) {
-    os << pos.curve_index << " " << pos.t;
-    return os;
-}
-std::ostream &operator<<(std::ostream &os, PathInterval const &ival) {
-    os << "PathInterval: ";
-    if (ival.crossesStart()) {
-        os << ival.from() << " -> origin -> " << ival.to();
-    } else {
-        os << ival.from() << " -> " << ival.to();
-    }
-    return os;
-}
-
 TEST_F(PathTest, PathInterval) {
     PathPosition n2_before(1, 0.9995), n2_after(2, 0.0005),
                  n3_before(2, 0.9995), n3_after(3, 0.0005),

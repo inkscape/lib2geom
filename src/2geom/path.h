@@ -37,6 +37,7 @@
 
 #include <iterator>
 #include <algorithm>
+#include <iostream>
 #include <boost/operators.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
 #include <boost/shared_ptr.hpp>
@@ -155,15 +156,34 @@ struct PathPosition
     }
 };
 
+inline std::ostream &operator<<(std::ostream &os, PathPosition const &pos) {
+    os << pos.curve_index << ": " << pos.t;
+    return os;
+}
+
 
 /** @brief Contiguous subset of the path's parameter domain.
+ * This is a directed interval, which allows one to specify any contiguous subset
+ * of the path's domain, including subsets that wrap around the initial point
+ * of the path.
  * @ingroup Paths */
 class PathInterval {
 public:
     typedef PathPosition Position;
     typedef PathInternal::Sequence::size_type size_type;
 
+    /** @brief Default interval.
+     * Default-constructed PathInterval includes only the initial point of the initial segment. */
     PathInterval();
+
+    /** @brief Construct an interval in the path's parameter domain.
+     * @param from Initial position
+     * @param to Final position
+     * @param cross_start If true, the interval will proceed from the initial to final
+     *   position through the initial point of the path, wrapping around the closing segment;
+     *   otherwise it will not wrap around the closing segment.
+     * @param path_size Size of the path to which this interval applies, required
+     *   to clean up degenerate cases */
     PathInterval(Position const &from, Position const &to, bool cross_start, size_type path_size);
 
     /// Get the position of the initial point.
@@ -223,6 +243,21 @@ inline PathInterval backward_interval(PathPosition const &from, PathPosition con
     return result;
 }
 
+/// Output an interval in the path's domain.
+/// @relates PathInterval
+inline std::ostream &operator<<(std::ostream &os, PathInterval const &ival) {
+    os << "PathInterval[";
+    if (ival.crossesStart()) {
+        os << ival.from() << " -> 0: 0.0 -> " << ival.to();
+    } else {
+        os << ival.from() << " -> " << ival.to();
+    }
+    os << "]";
+    return os;
+}
+
+
+
 template <>
 struct ShapeTraits<Path> {
     typedef PathPosition TimeType;
@@ -242,7 +277,15 @@ typedef Intersection<Path, Path> PathIntersection;
  * the final point of the last "real" curve to the initial point of the
  * first curve. This way the curves form a closed loop even for open paths.
  * If the closing segment has nonzero length and the path is closed, it is
- * considered a normal part of the path data.
+ * considered a normal part of the path data. There are three distinct sets
+ * of end iterators one can use to iterate over the segments:
+ *
+ * - Iterating between @a begin() and @a end() will iterate over segments
+ *   which are part of the path.
+ * - Iterating between @a begin() and @a end_closed()
+ *   will always iterate over a closed loop of segments.
+ * - Iterating between @a begin() and @a end_open() will always skip
+ *   the closing segment.
  *
  * When inserting, erasing and replacing curves in a path, line segments
  * are added automatically to keep the path contiguous. However, sometimes
@@ -294,7 +337,7 @@ public:
 
     // Path(Path const &other) - use default copy constructor
 
-    /** @brief Construct an empty path starting at the specified point. */
+    /// Construct an empty path starting at the specified point.
     explicit Path(Point const &p = Point())
         : _curves(new Sequence())
         , _closing_seg(new ClosingSegment(p, p))
@@ -304,7 +347,7 @@ public:
         _curves->push_back(_closing_seg);
     }
 
-    /** @brief Construct a path containing a range of curves. */
+    /// Construct a path containing a range of curves.
     template <typename Iter>
     Path(Iter first, Iter last, bool closed = false)
         : _curves(new Sequence())
@@ -354,12 +397,14 @@ public:
     /** @brief Access the last curve in the path. */
     Curve const &back() const { return back_default(); }
     Curve const &back_open() const {
-        if (empty()) {
-            THROW_RANGEERROR("Path contains not enough segments");
-        }
+        if (empty()) return _curves->back();
         return (*_curves)[_curves->size() - 2];
     }
-    Curve const &back_closed() const { return (*_curves)[_curves->size() - 1]; }
+    Curve const &back_closed() const {
+        return _closing_seg->isDegenerate()
+            ? (*_curves)[_curves->size() - 2]
+            : (*_curves)[_curves->size() - 1];
+    }
     Curve const &back_default() const { return (_closed ? back_closed() : back_open()); }
 
     const_iterator begin() const { return const_iterator(*this, 0); }
@@ -373,11 +418,21 @@ public:
     iterator end_open() { return iterator(*this, size_open()); }
     iterator end_closed() { return iterator(*this, size_closed()); }
 
+    /// Size without the closing segment, even if the path is closed.
     size_type size_open() const { return _curves->size() - 1; }
-    size_type size_closed() const { return _curves->size(); }
+
+    /** @brief Size with the closing segment, if it makes a difference.
+     * If the closing segment is degenerate, i.e. its initial and final points
+     * are exactly equal, then it is not included in this size. */
+    size_type size_closed() const {
+        return _closing_seg->isDegenerate() ? _curves->size() - 1 : _curves->size();
+    }
+
+    /// Natural size of the path.
     size_type size_default() const {
         return _includesClosingSegment() ? size_closed() : size_open();
     }
+    /// Natural size of the path.
     size_type size() const { return size_default(); }
 
     size_type max_size() const { return _curves->max_size() - 1; }
@@ -389,9 +444,11 @@ public:
      * degenerate closing segment may be at a different point, affecting the operation
      * of methods such as appendNew(). */
     bool empty() const { return (_curves->size() == 1); }
-    /** @brief Check whether the path is closed. */
+
+    /// Check whether the path is closed.
     bool closed() const { return _closed; }
-    /** @brief Set whether the path is closed. */
+
+    /// Set whether the path is closed.
     void close(bool closed = true) { _closed = closed; }
 
     /** @brief Remove all curves from the path.
@@ -402,6 +459,7 @@ public:
      * The rectangle returned by this method will contain all the curves, but it's not
      * guaranteed to be the smallest possible one */
     OptRect boundsFast() const;
+
     /** @brief Get a tight-fitting bounding box.
      * This will return the smallest possible axis-aligned rectangle containing
      * all the curves in the path. */
@@ -409,8 +467,10 @@ public:
 
     Piecewise<D2<SBasis> > toPwSb() const;
 
+    /// Test paths for exact equality.
     bool operator==(Path const &other) const;
 
+    /// Apply an affine transform.
     Path &operator*=(Affine const &m);
 
     /** @brief Get the allowed range of time values.
@@ -421,6 +481,7 @@ public:
      * @param t Time value
      * @param rest Optional storage for the corresponding time value in the curve */
     Curve const &curveAt(Coord t, Coord *rest = NULL) const;
+
     /** @brief Get the point at the specified time value.
      * Note that this method has reduced precision with respect to calling pointAt()
      * directly on the curve. If you want high precision results, use the version
@@ -429,7 +490,8 @@ public:
      * Allowed time values range from zero to the number of curves; you can retrieve
      * the allowed range of values with timeRange(). */
     Point pointAt(Coord t) const;
-    /// @brief Get one coordinate (X or Y) at the specified time value.
+
+    /// Get one coordinate (X or Y) at the specified time value.
     Coord valueAt(Coord t, Dim2 d) const;
 
     /// Get the curve at the specified position.
@@ -441,8 +503,10 @@ public:
 
     Point operator()(Coord t) const { return pointAt(t); }
 
+    /// Compute intersections with axis-aligned line.
     std::vector<Position> roots(Coord v, Dim2 d) const;
 
+    /// Compute intersections with another path.
     std::vector<PathIntersection> intersect(Path const &other, Coord precision = EPSILON) const;
 
     /** @brief Determine the winding number at the specified point.
@@ -467,8 +531,9 @@ public:
     Position nearestPosition(Point const &p, Coord *dist = NULL) const;
 
     void appendPortionTo(Path &p, Coord f, Coord t) const;
+
     /** @brief Append a subset of this path to another path.
-     * An extra linear segment will be inserted if the start point of the portion
+     * An extra stitching segment will be inserted if the start point of the portion
      * and the final point of the target path do not match exactly.
      * The closing segment of the target path will be modified. */
     void appendPortionTo(Path &p, Position const &from, Position const &to, bool cross_start = false) const {
@@ -476,6 +541,8 @@ public:
         appendPortionTo(p, ival, boost::none, boost::none);
     }
 
+    /** @brief Append a subset of this path to another path.
+     * This version allows you to explicitly pass a PathInterval. */
     void appendPortionTo(Path &p, PathInterval const &ival) const {
         appendPortionTo(p, ival, boost::none, boost::none);
     }
@@ -486,20 +553,13 @@ public:
     void appendPortionTo(Path &p, PathInterval const &ival,
                          boost::optional<Point> const &p_from, boost::optional<Point> const &p_to) const;
 
-    /** @brief Get a subset of the current path.
-     * Note that @a f can be larger than @a t, in which case the returned part of the path
-     * will go in the opposite direction.
-     * @param f Time value specifying the initial point of the returned path
-     * @param t Time value specifying the final point of the returned path
-     * @return Portion of the path */
     Path portion(Coord f, Coord t) const {
         Path ret;
         ret.close(false);
         appendPortionTo(ret, f, t);
         return ret;
     }
-    /** @brief Get a subset of the current path.
-     * This version takes an Interval. */
+
     Path portion(Interval const &i) const { return portion(i.min(), i.max()); }
 
     /** @brief Get a subset of the current path with full precision.
@@ -515,6 +575,8 @@ public:
         return ret;
     }
 
+    /** @brief Get a subset of the current path with full precision.
+     * This version allows you to explicitly pass a PathInterval. */
     Path portion(PathInterval const &ival) const {
         Path ret;
         ret.close(false);
@@ -542,10 +604,14 @@ public:
 
     /** @brief Get the first point in the path. */
     Point initialPoint() const { return (*_closing_seg)[1]; }
+
     /** @brief Get the last point in the path.
      * If the path is closed, this is always the same as the initial point. */
     Point finalPoint() const { return (*_closing_seg)[_closed ? 1 : 0]; }
 
+    /** @brief Add a new curve to the end of the path.
+     * This inserts the new curve right before the closing segment.
+     * The path takes ownership of the passed pointer, which should not be freed. */
     void append(Curve *curve) {
         _unshare();
         stitchTo(curve->initialPoint());
@@ -566,7 +632,7 @@ public:
         insert(end(), other.begin(), other.end());
     }
 
-    /** @brief Append a stitching segment ending at the specified point. */
+    /// Append a stitching segment ending at the specified point.
     void stitchTo(Point const &p) {
         if (!empty() && finalPoint() != p) {
             if (_exception_on_stitch) {
@@ -667,6 +733,7 @@ private:
         return iter.path->_curves->begin() + iter.index;
     }
 
+    // whether the closing segment is part of the path
     bool _includesClosingSegment() const {
         return _closed && !_closing_seg->isDegenerate();
     }

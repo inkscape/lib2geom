@@ -108,7 +108,7 @@ PathPosition PathInterval::inside(Coord min_dist) const
     // If dcurve == 0, it actually means that all curves are included in the domain
 
     if (_reverse) {
-        size_type dcurve = (_from.curve_index - _to.curve_index) % _path_size;
+        size_type dcurve = (_path_size + _from.curve_index - _to.curve_index) % _path_size;
         bool from_close = _from.t < min_dist;
         bool to_close = _to.t > 1 - min_dist;
 
@@ -121,7 +121,7 @@ PathPosition PathInterval::inside(Coord min_dist) const
                 result.curve_index = _from.curve_index;
                 Coord tmid = _from.t - ((1 - _to.t) + _from.t) * 0.5;
                 if (tmid < 0) {
-                    result.curve_index = (result.curve_index - 1) % _path_size;
+                    result.curve_index = (_path_size + result.curve_index - 1) % _path_size;
                     tmid += 1;
                 }
                 result.t = tmid;
@@ -142,7 +142,7 @@ PathPosition PathInterval::inside(Coord min_dist) const
         }
         return result;
     } else {
-        size_type dcurve = (_to.curve_index - _from.curve_index) % _path_size;
+        size_type dcurve = (_path_size + _to.curve_index - _from.curve_index) % _path_size;
         bool from_close = _from.t > 1 - min_dist;
         bool to_close = _to.t < min_dist;
 
@@ -640,7 +640,8 @@ void Path::appendPortionTo(Path &target, PathInterval const &ival,
     Position const &from = ival.from(), &to = ival.to();
 
     bool reverse = ival.reverse();
-    size_type di = reverse ? -1 : 1;
+    int di = reverse ? -1 : 1;
+    size_type s = size_closed();
 
     if (!ival.crossesStart() && from.curve_index == to.curve_index) {
         Curve *c = (*this)[from.curve_index].portion(from.t, to.t);
@@ -658,8 +659,8 @@ void Path::appendPortionTo(Path &target, PathInterval const &ival,
         }
         target.append(c_first);
 
-        for (size_type i = (from.curve_index + di) % size_closed(); i != to.curve_index;
-             i = (i + di) % size_closed())
+        for (size_type i = (from.curve_index + di) % s; i != to.curve_index;
+             i = (i + s + di) % s)
         {
             if (reverse) {
                 target.append((*this)[i].reverse());
