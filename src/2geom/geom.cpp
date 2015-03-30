@@ -372,7 +372,7 @@ int centroid(std::vector<Geom::Point> const &p, Geom::Point& centroid, double &a
     Geom::Point centroid_tmp(0,0);
     double atmp = 0;
     for (unsigned i = n-1, j = 0; j < n; i = j, j++) {
-        const double ai = -cross(p[j], p[i]);
+        const double ai = cross(p[j], p[i]);
         atmp += ai;
         centroid_tmp += (p[j] + p[i])*ai; // first moment.
     }

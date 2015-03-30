@@ -203,7 +203,7 @@ bool CLIPPER_CLASS::intersect (std::vector<Point> & crossing_points) const
 inline
 double signed_triangle_area (Point const& p1, Point const& p2, Point const& p3)
 {
-    return (cross(p3, p2) - cross(p3, p1) + cross(p2, p1));
+    return (cross(p2, p3) - cross(p1, p3) + cross(p1, p2));
 }
 
 

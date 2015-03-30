@@ -161,7 +161,7 @@ Coord atan2(Point const &p) {
  * @return Angle in \f$(-\pi, \pi]\f$.
  * @relates Point */
 Coord angle_between(Point const &a, Point const &b) {
-    return std::atan2(cross(b,a), dot(b,a));
+    return std::atan2(cross(a,b), dot(a,b));
 }
 
 /** @brief Create a normalized version of a point.
