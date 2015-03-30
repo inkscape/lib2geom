@@ -102,13 +102,26 @@ struct FragmentConcept {
 template <typename T>
 struct ShapeConcept {
     typedef typename ShapeTraits<T>::TimeType Time;
+    typedef typename ShapeTraits<T>::AffineClosureType AffineClosure;
+    typedef typename ShapeTraits<T>::IntersectionType Isect;
 
-    T shape;
+    T shape, other;
     Time t;
     Point p;
+    std::vector<Isect> ivec;
+    Rect r;
+    AffineClosure ac;
+    Affine m;
+    bool bool_;
 
     void constraints() {
         p = shape.pointAt(t);
+        ivec = shape.intersect(other);
+        t = shape.nearestTime(p);
+        r = shape.bounds();
+        ac = shape * m;
+        bool_ = (shape == other);
+        bool_ = (shape != other);
     }
 };
 
