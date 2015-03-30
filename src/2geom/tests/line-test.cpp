@@ -27,3 +27,12 @@ TEST(LineTest, AngleBisector) {
     EXPECT_FLOAT_EQ(aa1.angle(), Angle::from_degrees(45));
     EXPECT_FLOAT_EQ(aa2.angle(), Angle::from_degrees(45));
 }
+
+TEST(LineTest, Equality) {
+    Line a(Point(0,0), Point(2,2));
+    Line b(Point(2,2), Point(5,5));
+
+    EXPECT_EQ(a, a);
+    EXPECT_EQ(b, b);
+    EXPECT_EQ(a, b);
+}

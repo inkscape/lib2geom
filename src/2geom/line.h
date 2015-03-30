@@ -42,11 +42,16 @@
 #include <2geom/exception.h>
 #include <2geom/ray.h>
 #include <2geom/angle.h>
+#include <2geom/intersection.h>
 
 namespace Geom
 {
 
-class Line {
+class Line
+    : boost::equality_comparable1<Line
+    , MultipliableNoncommutative<Line, Affine
+      > >
+{
 private:
     Point _initial;
     Point _final;
@@ -200,8 +205,6 @@ public:
     }
 
     Coord valueAt(Coord t, Dim2 d) const {
-        //if (d < 0 || d > 1)
-        //    THROW_RANGEERROR("Line::valueAt, dimension argument out of range");
         return lerp(t, _initial[d], _final[d]);
     }
 
@@ -296,6 +299,19 @@ public:
         return n;
     }
     /// @}
+
+    //std::vector<LineIntersection> intersect(Line const &other, Coord precision = EPSILON) const;
+
+    Line &operator*=(Affine const &m) {
+        _initial *= m;
+        _final *= m;
+        return *this;
+    }
+    bool operator==(Line const &other) const {
+        if (distance(pointAt(nearestTime(other._initial)), other._initial) != 0) return false;
+        if (distance(pointAt(nearestTime(other._final)), other._final) != 0) return false;
+        return true;
+    }
 }; // end class Line
 
 
