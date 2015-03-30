@@ -98,6 +98,11 @@ public:
     C middle() const { return (max() + min()) / 2; }
     bool isSingular() const { return min() == max(); }
     C operator[](unsigned i) const { assert(i < 2); return _b[i]; }
+    C clamp(C val) const {
+        if (val < min()) return min();
+        if (val > max()) return max();
+        return val;
+    }
     /// @}
 
     /// @name Test coordinates and other intervals for inclusion.

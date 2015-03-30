@@ -190,6 +190,11 @@ public:
     C maxExtent() const { return std::max(f[X].extent(), f[Y].extent()); }
     /** @brief Get the smaller extent (width or height) of the rectangle. */
     C minExtent() const { return std::min(f[X].extent(), f[Y].extent()); }
+
+    /** @brief Clamp point to the rectangle. */
+    CPoint clamp(CPoint const &p) const {
+        return Point(f[X].clamp(p[X]), f[Y].clamp(p[Y]));
+    }
     /// @}
 
     /// @name Test other rectangles and points for inclusion.

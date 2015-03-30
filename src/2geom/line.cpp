@@ -161,7 +161,9 @@ boost::optional<LineSegment> Line::clip(Rect const &r) const
 
     OptInterval common = xpart & ypart;
     if (common) {
-        return segment(common->min(), common->max());
+        Point p1 = pointAt(common->min()), p2 = pointAt(common->max());
+        LineSegment result(r.clamp(p1), r.clamp(p2));
+        return result;
     } else {
         return boost::none;
     }
