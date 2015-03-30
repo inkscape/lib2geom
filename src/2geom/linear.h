@@ -61,37 +61,45 @@ public:
     Linear(double aa, double b) {a[0] = aa; a[1] = b;}
     Linear(double aa) {a[0] = aa; a[1] = aa;}
 
-    double operator[](const int i) const {
-        assert(i >= 0);
+    double operator[](unsigned i) const {
         assert(i < 2);
         return a[i];
     }
-    double& operator[](const int i) {
-        assert(i >= 0);
+    double &operator[](unsigned i) {
         assert(i < 2);
         return a[i];
     }
 
     //IMPL: FragmentConcept
     typedef double output_type;
-    inline bool isZero(double eps=EPSILON) const { return are_near(a[0], 0., eps) && are_near(a[1], 0., eps); }
-    inline bool isConstant(double eps=EPSILON) const { return are_near(a[0], a[1], eps); }
-    inline bool isFinite() const { return IS_FINITE(a[0]) && IS_FINITE(a[1]); }
+    bool isZero(double eps=EPSILON) const { return are_near(a[0], 0., eps) && are_near(a[1], 0., eps); }
+    bool isConstant(double eps=EPSILON) const { return are_near(a[0], a[1], eps); }
+    bool isFinite() const { return IS_FINITE(a[0]) && IS_FINITE(a[1]); }
 
-    inline Coord at0() const { return a[0]; }
-    inline Coord &at0() { return a[0]; }
-    inline Coord at1() const { return a[1]; }
-    inline Coord &at1() { return a[1]; }
+    Coord at0() const { return a[0]; }
+    Coord &at0() { return a[0]; }
+    Coord at1() const { return a[1]; }
+    Coord &at1() { return a[1]; }
 
-    inline double valueAt(double t) const { return lerp(t, a[0], a[1]); }
-    inline double operator()(double t) const { return valueAt(t); }
+    double valueAt(double t) const { return lerp(t, a[0], a[1]); }
+    double operator()(double t) const { return valueAt(t); }
+
+    // not very useful, but required for ShapeConcept
+    std::vector<Coord> valueAndDerivatives(Coord t, unsigned n) {
+        std::vector<Coord> result(n+1, 0.0);
+        result[0] = valueAt(t);
+        if (n >= 1) {
+            result[1] = a[1] - a[0];
+        }
+        return result;
+    }
 
     //defined in sbasis.h
     inline SBasis toSBasis() const;
 
-    inline OptInterval bounds_exact() const { return Interval(a[0], a[1]); }
-    inline OptInterval bounds_fast() const { return bounds_exact(); }
-    inline OptInterval bounds_local(double u, double v) const { return Interval(valueAt(u), valueAt(v)); }
+    OptInterval bounds_exact() const { return Interval(a[0], a[1]); }
+    OptInterval bounds_fast() const { return bounds_exact(); }
+    OptInterval bounds_local(double u, double v) const { return Interval(valueAt(u), valueAt(v)); }
 
     double tri() const {
         return a[1] - a[0];
@@ -102,6 +110,10 @@ public:
 };
 
 inline Linear reverse(Linear const &a) { return Linear(a[1], a[0]); }
+inline Linear portion(Linear const &a, Coord from, Coord to) {
+    Linear result(a.valueAt(from), a.valueAt(to));
+    return result;
+}
 
 //IMPL: AddableConcept
 inline Linear operator+(Linear const & a, Linear const & b) {

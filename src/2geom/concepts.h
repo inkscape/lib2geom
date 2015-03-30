@@ -37,7 +37,7 @@
 #include <2geom/rect.h>
 #include <2geom/intersection.h>
 #include <vector>
-#include <boost/concept_check.hpp>
+#include <boost/concept/assert.hpp>
 #include <2geom/forward.h>
 
 namespace Geom {
@@ -72,8 +72,8 @@ struct FragmentConcept {
     SbType sb;
     void constraints() {
         t = T(o);
-        b = t.isZero();
-        b = t.isConstant();
+        b = t.isZero(d);
+        b = t.isConstant(d);
         b = t.isFinite();
         o = t.at0();
         o = t.at1();
@@ -102,26 +102,28 @@ struct FragmentConcept {
 template <typename T>
 struct ShapeConcept {
     typedef typename ShapeTraits<T>::TimeType Time;
+    typedef typename ShapeTraits<T>::IntervalType Interval;
     typedef typename ShapeTraits<T>::AffineClosureType AffineClosure;
-    typedef typename ShapeTraits<T>::IntersectionType Isect;
+    //typedef typename ShapeTraits<T>::IntersectionType Isect;
 
-    T shape, other;
+    T shape;
     Time t;
     Point p;
-    std::vector<Isect> ivec;
-    Rect r;
     AffineClosure ac;
     Affine m;
+    Coord c;
     bool bool_;
 
     void constraints() {
         p = shape.pointAt(t);
-        ivec = shape.intersect(other);
+        c = shape.valueAt(t, X);
+        //ivec = shape.intersect(other);
         t = shape.nearestTime(p);
-        r = shape.bounds();
-        ac = shape * m;
-        bool_ = (shape == other);
-        bool_ = (shape != other);
+        ac = shape;
+        ac *= m;
+        bool_ = (shape == shape);
+        bool_ = (shape != shape);
+        bool_ = shape.isDegenerate();
     }
 };
 

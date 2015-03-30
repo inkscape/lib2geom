@@ -47,6 +47,8 @@ choose.h
 circle.cpp
 circle.h
 circulator.h
+concepts.cpp
+concepts.h
 conicsec.cpp
 conicsec.h
 conic_section_clipper.h
