@@ -150,8 +150,12 @@ TEST_F(PathTest, NearestPoint) {
     
     //cout << diederik.nearestTime(Point(247.32293,-43.339507)) << endl;
 
-    EXPECT_FLOAT_EQ(6.5814033, diederik.nearestTime(Point(511.75,40.85)));
-    //cout << diederik.pointAt(diederik.nearestTime(Point(511.75,40.85))) << endl;
+    Point p(511.75,40.85);
+    EXPECT_FLOAT_EQ(6.5814033, diederik.nearestTime(p));
+    /*cout << diederik.pointAt(diederik.nearestTime(p)) << endl
+         << diederik.pointAt(6.5814033) << endl
+         << distance(diederik.pointAt(diederik.nearestTime(p)), p) << "  "
+         << distance(diederik.pointAt(6.5814033), p) << endl;*/
 
 }
 

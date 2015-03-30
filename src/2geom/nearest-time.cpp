@@ -37,6 +37,59 @@
 namespace Geom
 {
 
+Coord nearest_time(Point const &p, D2<Bezier> const &input, Coord from, Coord to)
+{
+    Interval domain(from, to);
+    bool partial = false;
+
+    if (domain.min() < 0 || domain.max() > 1) {
+        THROW_RANGEERROR("[from,to] interval out of bounds");
+    }
+
+    if (input.isConstant(0)) return from;
+
+    D2<Bezier> bez;
+    if (domain.min() != 0 || domain.max() != 1) {
+        bez = portion(input, domain) - p;
+        partial = true;
+    } else {
+        bez = input - p;
+    }
+
+    // find extrema of the function x(t)^2 + y(t)^2
+    // use the fact that (f^2)' = 2 f f'
+    // this reduces the order of the distance function by 1
+    D2<Bezier> deriv = derivative(bez);
+    std::vector<Coord> ts = (multiply(bez[X], deriv[X]) + multiply(bez[Y], deriv[Y])).roots();
+
+    Coord t = -1, mind = infinity();
+    for (unsigned i = 0; i < ts.size(); ++i) {
+        Coord droot = L2sq(bez.valueAt(ts[i]));
+        if (droot < mind) {
+            mind = droot;
+            t = ts[i];
+        }
+    }
+
+    // also check endpoints
+    Coord dinitial = L2sq(bez.at0());
+    Coord dfinal = L2sq(bez.at1());
+
+    if (dinitial < mind) {
+        mind = dinitial;
+        t = 0;
+    }
+    if (dfinal < mind) {
+        mind = dfinal;
+        t = 1;
+    }
+
+    if (partial) {
+        t = domain.valueAt(t);
+    }
+    return t;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // D2<SBasis> versions
 

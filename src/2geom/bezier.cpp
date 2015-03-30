@@ -37,6 +37,7 @@
 
 #include <2geom/bezier.h>
 #include <2geom/solver.h>
+#include <2geom/concepts.h>
 
 namespace Geom {
 

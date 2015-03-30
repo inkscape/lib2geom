@@ -142,6 +142,7 @@ public:
     virtual std::vector<Coord> roots(Coord v, Dim2 d) const {
         return (inner[d] - v).roots();
     }
+    virtual Coord nearestTime(Point const &p, Coord from = 0, Coord to = 1) const;
     virtual Coord length(Coord tolerance) const;
     virtual std::vector<CurveIntersection> intersect(Curve const &other, Coord eps = EPSILON) const;
     virtual Point pointAt(Coord t) const { return inner.valueAt(t); }
@@ -246,10 +247,9 @@ public:
         }
     }
     virtual Curve *derivative() const;
-    
-    // the method below is defined so that LineSegment can specialize it
-    virtual Coord nearestTime(Point const& p, Coord from = 0, Coord to = 1) const {
-        return Curve::nearestTime(p, from, to);
+
+    virtual Coord nearestTime(Point const &p, Coord from = 0, Coord to = 1) const {
+        return BezierCurve::nearestTime(p, from, to);
     }
     virtual void feed(PathSink &sink, bool moveto_initial) const {
         // call super. this is implemented only to allow specializations

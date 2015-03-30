@@ -40,7 +40,7 @@
 #include <2geom/d2.h>
 #include <2geom/piecewise.h>
 #include <2geom/exception.h>
-
+#include <2geom/bezier.h>
 
 
 namespace Geom
@@ -56,6 +56,8 @@ inline double nearest_time(Point const &p, Point const &A, Point const &v)
     Point d(p - A);
     return d[0] * v[0] + d[1] * v[1];
 }
+
+Coord nearest_time(Point const &p, D2<Bezier> const &bez, Coord from = 0, Coord to = 1);
 
 ////////////////////////////////////////////////////////////////////////////////
 // D2<SBasis> versions

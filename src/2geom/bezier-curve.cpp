@@ -34,6 +34,7 @@
 #include <2geom/bezier-curve.h>
 #include <2geom/path-sink.h>
 #include <2geom/basic-intersection.h>
+#include <2geom/nearest-time.h>
 
 namespace Geom 
 {
@@ -172,6 +173,11 @@ bool BezierCurve::operator==(Curve const &c) const
         if (controlPoint(i) != other->controlPoint(i)) return false;
     }
     return true;
+}
+
+Coord BezierCurve::nearestTime(Point const &p, Coord from, Coord to) const
+{
+    return nearest_time(p, inner, from, to);
 }
 
 void BezierCurve::feed(PathSink &sink, bool moveto_initial) const
