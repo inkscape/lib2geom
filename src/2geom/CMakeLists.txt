@@ -32,6 +32,8 @@ angle.h
 
 basic-intersection.cpp
 basic-intersection.h
+bezier.cpp
+bezier.h
 bezier-clipping.cpp
 bezier-curve.cpp
 bezier-curve.h
