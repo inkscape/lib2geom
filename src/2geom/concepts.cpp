@@ -2,7 +2,7 @@
  * \file
  * \brief Concept checking
  *//*
- * Copyright 2007 Michael Sloan <mgsloan@gmail.com>
+ * Copyright 2015 Krzysztof Kosiński <tweenk.pl@gmail.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it either under the terms of the GNU Lesser General Public
