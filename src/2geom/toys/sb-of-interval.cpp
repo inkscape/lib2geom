@@ -38,6 +38,7 @@ static void plot(cairo_t* cr, SBasisOf<Interval> const &f, double vscale=1,doubl
 #endif
     D2<SBasis> plot;
     Path pth;
+    pth.setStitching(true);
     SBasis fmin(f.size(), Linear());
     SBasis fmax(f.size(), Linear());
     for(unsigned i = 0; i < f.size(); i++) {

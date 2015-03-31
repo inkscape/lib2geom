@@ -449,6 +449,7 @@ PathVector inner_sanitize(PathVector const & ps) {
         dir = !dir;
 
         Path res;
+        res.setStitching(true);
         do {
             visited[ix][jx] = true;
             //unsigned nix = ix, njx = jx;

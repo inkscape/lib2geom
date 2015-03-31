@@ -186,6 +186,7 @@ public:
     		p = compose( p, Linear(1.,0.) );
 		}
     	Path ret;
+        ret.setStitching(true);
     	Point center;
     	unsigned c_idx = source(o_edge, true);
     	if ( c_idx == NULL_IDX ){
@@ -208,6 +209,7 @@ public:
         Path boundaryToPath(Topology::Boundary b){
             Point pt;
             Path bndary;
+            bndary.setStitching(true);
 
             if (b.size()==0){ return Path(); }
 
@@ -221,7 +223,6 @@ public:
             for (unsigned i = 0; i < b.size(); i++){
                 bndary.append( edgeToPath(b[i]));
             }
-            bndary.appendNew<LineSegment>(bndary.initialPoint());//usefull??
             bndary.close();
             return bndary;
         }

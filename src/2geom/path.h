@@ -287,11 +287,10 @@ struct ShapeTraits<Path> {
  * - Iterating between @a begin() and @a end_open() will always skip
  *   the closing segment.
  *
- * When inserting, erasing and replacing curves in a path, line segments
- * are added automatically to keep the path contiguous. However, sometimes
- * such segments are unwanted. You can use the method setStitchingExceptions()
- * to enable the throwing of exceptions whenever a stitching segment is about
- * to be inserted.
+ * Normally, an exception will be thrown when you try to insert a curve
+ * that makes the path non-continuous. If you are working with unsanitized
+ * curve data, you can call setStitching(true), which will insert line segments
+ * to make the path continuous.
  *
  * Internally, Path uses copy-on-write data. This is done for two reasons: first,
  * copying a Curve requires calling a virtual function, so it's a little more expensive
@@ -342,17 +341,17 @@ public:
         : _curves(new Sequence())
         , _closing_seg(new ClosingSegment(p, p))
         , _closed(false)
-        , _exception_on_stitch(false)
+        , _exception_on_stitch(true)
     {
         _curves->push_back(_closing_seg);
     }
 
     /// Construct a path containing a range of curves.
     template <typename Iter>
-    Path(Iter first, Iter last, bool closed = false)
+    Path(Iter first, Iter last, bool closed = false, bool stitch = true)
         : _curves(new Sequence())
         , _closed(closed)
-        , _exception_on_stitch(false)
+        , _exception_on_stitch(stitch)
     {
         for (Iter i = first; i != last; ++i) {
             _curves->push_back(i->duplicate());
@@ -720,9 +719,11 @@ public:
      * If the path is not contiguous, this will throw a CountinuityError. */
     void checkContinuity() const;
 
-    /// Enable or disable the throwing of exceptions when stitching discontinuities.
-    void setStitchingExceptions(bool x) {
-        _exception_on_stitch = x;
+    /** @brief Enable or disable the throwing of exceptions when stitching discontinuities.
+     * Normally stitching will cause exceptions, but when you are working with unsanitized
+     * curve data, you can disable these exceptions. */
+    void setStitching(bool x) {
+        _exception_on_stitch = !x;
     }
 
 private:

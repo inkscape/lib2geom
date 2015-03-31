@@ -48,6 +48,7 @@ class IntersectDataTester: public Toy {
             p = compose( p, Linear(1.,0.) );
         }
         Path ret;
+        ret.setStitching(true);
         Point center;
         unsigned c_idx = topo.source(o_edge, true);
         if ( c_idx == NULL_IDX ){
@@ -70,6 +71,7 @@ class IntersectDataTester: public Toy {
     Path boundaryToPath(Topology::Boundary b){
         Point pt;
         Path bndary;
+        bndary.setStitching(true);
 
         if (b.size()==0){ return Path(); }
 
@@ -83,7 +85,6 @@ class IntersectDataTester: public Toy {
         for (unsigned i = 0; i < b.size(); i++){
             bndary.append( edgeToPath(b[i]));
         }
-        bndary.appendNew<LineSegment>(bndary.initialPoint());//usefull??
         bndary.close();
         return bndary;
     }
@@ -91,6 +92,7 @@ class IntersectDataTester: public Toy {
     //TODO:this should return a path vector, but we glue the components for easy drawing in the toy.
     Path areaToPath(unsigned a){
         Path bndary;
+        bndary.setStitching(true);
         if ( topo.areas[a].boundary.size()==0 ){//this is the unbounded component...
             OptRect bbox = bounds_fast( topo.input_paths );
             if (!bbox ){return Path();}//???

@@ -219,7 +219,7 @@ Path::Path(ConvexHull const &ch)
     : _curves(new Sequence())
     , _closing_seg(new ClosingSegment(Point(), Point()))
     , _closed(false)
-    , _exception_on_stitch(false)
+    , _exception_on_stitch(true)
 {
     if (ch.empty()) {
         _curves->push_back(_closing_seg);

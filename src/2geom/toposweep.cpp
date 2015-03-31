@@ -639,6 +639,7 @@ void remove_area_whiskers(Areas &areas) {
 
 Path area_to_path(PathVector const &ps, Area const &area) {
     Path ret;
+    ret.setStitching(true);
     if(area.size() == 0) return ret;
     Point prev = area[0]->fp;
     for(unsigned i = 0; i < area.size(); i++) {
@@ -650,6 +651,7 @@ Path area_to_path(PathVector const &ps, Area const &area) {
         delete curv;
         prev = forward ? area[i]->tp : area[i]->fp;
     }
+    ret.setStitching(false);
     return ret;
 }
 
