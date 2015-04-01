@@ -343,6 +343,17 @@ TYPED_TEST(GenericRectTest, Offset) {
     EXPECT_EQ(a, amp2);
 }
 
+TYPED_TEST(GenericRectTest, NearestEdgePoint) {
+    typename TestFixture::CRect a(0, 0, 10, 10);
+    typename TestFixture::CPoint p1(-5, 5), p2(15, 17), p3(6, 5),  p4(3, 9);
+    typename TestFixture::CPoint r1(0, 5),  r2(10, 10), r3(10, 5), r4(3, 10);
+
+    EXPECT_EQ(a.nearestEdgePoint(p1), r1);
+    EXPECT_EQ(a.nearestEdgePoint(p2), r2);
+    EXPECT_EQ(a.nearestEdgePoint(p3), r3);
+    EXPECT_EQ(a.nearestEdgePoint(p4), r4);
+}
+
 } // end namespace Geom
 
 /*

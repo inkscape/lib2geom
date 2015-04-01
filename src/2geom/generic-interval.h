@@ -103,6 +103,11 @@ public:
         if (val > max()) return max();
         return val;
     }
+    /// Return the closer end of the interval.
+    C nearestEnd(C val) const {
+        C dmin = std::abs(val - min()), dmax = std::abs(val - max());
+        return dmin <= dmax ? min() : max();
+    }
     /// @}
 
     /// @name Test coordinates and other intervals for inclusion.

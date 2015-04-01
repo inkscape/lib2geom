@@ -184,7 +184,7 @@ public:
     /** @brief Compute rectangle's area. */
     C area() const { return f[X].extent() * f[Y].extent(); }
     /** @brief Check whether the rectangle has zero area. */
-    bool hasZeroArea() const { return (area() == 0); }
+    bool hasZeroArea() const { return f[X].isSingular() || f[Y].isSingular(); }
 
     /** @brief Get the larger extent (width or height) of the rectangle. */
     C maxExtent() const { return std::max(f[X].extent(), f[Y].extent()); }
@@ -193,7 +193,24 @@ public:
 
     /** @brief Clamp point to the rectangle. */
     CPoint clamp(CPoint const &p) const {
-        return Point(f[X].clamp(p[X]), f[Y].clamp(p[Y]));
+        CPoint result(f[X].clamp(p[X]), f[Y].clamp(p[Y]));
+        return result;
+    }
+    /** @brief Get the nearest point on the edge of the rectangle. */
+    CPoint nearestEdgePoint(CPoint const &p) const {
+        CPoint result = p;
+        if (!contains(p)) {
+            result = clamp(p);
+        } else {
+            C cx = f[X].nearestEnd(p[X]);
+            C cy = f[Y].nearestEnd(p[Y]);
+            if (std::abs(cx - p[X]) <= std::abs(cy - p[Y])) {
+                result[X] = cx;
+            } else {
+                result[Y] = cy;
+            }
+        }
+        return result;
     }
     /// @}
 
