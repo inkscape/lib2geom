@@ -2,6 +2,7 @@
 #include <iostream>
 
 #include <2geom/line.h>
+#include <2geom/affine.h>
 
 using namespace Geom;
 
@@ -35,4 +36,20 @@ TEST(LineTest, Equality) {
     EXPECT_EQ(a, a);
     EXPECT_EQ(b, b);
     EXPECT_EQ(a, b);
+}
+
+TEST(LineTest, Reflection) {
+    Line a(Point(10, 0), Point(15,5));
+    Point pa(10,5), ra(15,0);
+
+    Line b(Point(1,-2), Point(2,0));
+    Point pb(5,1), rb(1,3);
+    Affine reflecta = a.reflection(), reflectb = b.reflection();
+
+    Point testra = pa * reflecta;
+    Point testrb = pb * reflectb;
+    EXPECT_FLOAT_EQ(testra[X], ra[X]);
+    EXPECT_FLOAT_EQ(testra[Y], ra[Y]);
+    EXPECT_FLOAT_EQ(testrb[X], rb[X]);
+    EXPECT_FLOAT_EQ(testrb[Y], rb[Y]);
 }

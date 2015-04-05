@@ -298,6 +298,17 @@ public:
         dist = -dot(n, _initial);
         return n;
     }
+
+    /// Compute an affine matrix representing a reflection about the line.
+    Affine reflection() const {
+        Point v = versor().normalized();
+        Coord x2 = v[X]*v[X], y2 = v[Y]*v[Y], xy = v[X]*v[Y];
+        Affine m(x2-y2, 2.*xy,
+                 2.*xy, y2-x2,
+                 _initial[X], _initial[Y]);
+        m = Translate(-_initial) * m;
+        return m;
+    }
     /// @}
 
     //std::vector<LineIntersection> intersect(Line const &other, Coord precision = EPSILON) const;

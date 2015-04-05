@@ -58,6 +58,9 @@ void concept_checks()
     //BOOST_CONCEPT_ASSERT((ShapeConcept<Path>));
     //BOOST_CONCEPT_ASSERT((ShapeConcept<PathVector>));
 
+    BOOST_CONCEPT_ASSERT((NearConcept<Coord>));
+    BOOST_CONCEPT_ASSERT((NearConcept<Point>));
+
     BOOST_CONCEPT_ASSERT((FragmentConcept<Bezier>));
     BOOST_CONCEPT_ASSERT((FragmentConcept<Linear>));
     BOOST_CONCEPT_ASSERT((FragmentConcept<SBasis>));
