@@ -344,6 +344,8 @@ inline Translate pow(Translate const &t, int n) {
 
 /** @brief Reflects objects about line.
  * The line, defined by a vector along the line and a point on it, acts as a mirror.
+ * @ingroup Transforms
+ * @see Line::reflection()
  */
 Affine reflection(Point const & vector, Point const & origin);
 

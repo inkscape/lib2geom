@@ -47,6 +47,7 @@
 namespace Geom
 {
 
+// class docs in cpp file
 class Line
     : boost::equality_comparable1<Line
     , MultipliableNoncommutative<Line, Affine
@@ -90,19 +91,19 @@ public:
         setCoefficients(a, b, c);
     }
 
-    /** @brief Create a line by extending a line segment. */
+    /// Create a line by extending a line segment.
     explicit Line(LineSegment const &seg)
         : _initial(seg.initialPoint())
         , _final(seg.finalPoint())
     {}
 
-    /** @brief Create a line by extending a ray. */
+    /// Create a line by extending a ray.
     explicit Line(Ray const &r)
         : _initial(r.origin())
         , _final(r.origin() + r.versor())
     {}
 
-    /** @brief Create a line normal to a vector at a specified distance from origin. */
+    /// Create a line normal to a vector at a specified distance from origin.
     static Line from_normal_distance(Point const &n, Coord c) {
         Point start = c * n.normalized();
         Line l(start, start + rot90(n));
@@ -124,13 +125,13 @@ public:
 
     /// @name Retrieve and set the line's parameters.
     /// @{
-    /** @brief Get the line's origin point. */
+
+    /// Get the line's origin point.
     Point origin() const { return _initial; }
-    /** @brief Get the line's direction unit vector. */
+    /** @brief Get the line's direction vector.
+     * Note that the retrieved vector is not normalized to unit length. */
     Point versor() const { return _final - _initial; }
-    // return the angle described by rotating the X-axis in cw direction
-    // until it overlaps the line
-    // the returned value is in the interval [0, PI[
+    /// Angle the line makes with the X axis, in mathematical convention.
     Coord angle() const {
         Point d = _final - _initial;
         double a = std::atan2(d[Y], d[X]);
@@ -152,6 +153,8 @@ public:
         _final = _initial + v;
     }
 
+    /** @brief Set the angle the line makes with the X axis.
+     * Origin remains unchanged. */
     void setAngle(Coord angle) {
         Point v;
         sincos(angle, v[Y], v[X]);
@@ -159,14 +162,23 @@ public:
         _final = _initial + v;
     }
 
-    /** @brief Set a line based on two points it should pass through. */
+    /// Set a line based on two points it should pass through.
     void setPoints(Point const &a, Point const &b) {
         _initial = a;
         _final = b;
     }
 
+    /** @brief Set the coefficients of the line equation.
+     * The line equation is: \f$ax + by = c\f$. Points that satisfy the equation
+     * are on the line. */
     void setCoefficients(double a, double b, double c);
+
+    /** @brief Get the coefficients of the line equation as a vector.
+     * @return STL vector @a v such that @a v[0] contains \f$a\f$, @a v[1] contains \f$b\f$,
+     * and @a v[2] contains \f$c\f$. */
     std::vector<double> coefficients() const;
+
+    /// Get the coefficients of the line equation by reference.
     void coefficients(Coord &a, Coord &b, Coord &c) const;
 
     /** @brief Check if the line has more than one point.
@@ -234,8 +246,8 @@ public:
     void reverse() {
         std::swap(_final, _initial);
     }
-    /** @brief Create a line containing the same points, but with negated time values.
-     * @return Line \f$g\f$ such that \f$g(t) = f(-t)\f$ */
+    /** @brief Create a line containing the same points, but in opposite direction.
+     * @return Line \f$g\f$ such that \f$g(t) = f(1-t)\f$ */
     Line reversed() const {
         Line result(_final, _initial);
         return result;
@@ -280,9 +292,10 @@ public:
         return result;
     }
 
-    /** @brief Create a line transformed by an affine transformation. */
+    /// Create a line transformed by an affine transformation.
     Line transformed(Affine const& m) const {
-        return Line(_initial * m, _final * m);
+        Line l(_initial * m, _final * m);
+        return l;
     }
 
     /** @brief Get a unit vector normal to the line.
@@ -350,7 +363,8 @@ public:
     }
 }; // end class Line
 
-
+/// @brief Compute distance from point to line.
+/// @relates Line
 inline
 double distance(Point const &p, Line const &line)
 {
@@ -374,23 +388,25 @@ bool are_parallel(Line const &l1, Line const &l2, double eps = EPSILON)
     return are_near(cross(l1.versor(), l2.versor()), 0, eps);
 }
 
+/** @brief Test whether two lines are approximately the same.
+ * This tests for being parallel and the origin of one line being close to the other,
+ * so it tests whether the images of the lines are similar, not whether the same time values
+ * correspond to similar points. For example a line from (1,1) to (2,2) and a line from
+ * (-1,-1) to (0,0) will the the same, because their images match, even though there is
+ * no time value for which the lines give similar points.
+ * @relates Line */
 inline
 bool are_same(Line const &l1, Line const &l2, double eps = EPSILON)
 {
     return are_parallel(l1, l2, eps) && are_near(l1.origin(), l2, eps);
 }
 
+/// Test whether two lines are perpendicular.
+/// @relates Line
 inline
 bool are_orthogonal(Line const &l1, Line const &l2, double eps = EPSILON)
 {
     return are_near(dot(l1.versor(), l2.versor()), 0, eps);
-}
-
-inline
-bool are_collinear(Point const& p1, Point const& p2, Point const& p3,
-                   double eps = EPSILON)
-{
-    return are_near( cross(p3, p2) - cross(p3, p1) + cross(p2, p1), 0, eps);
 }
 
 // evaluate the angle between l1 and l2 rotating l1 in cw direction

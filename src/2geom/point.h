@@ -375,30 +375,38 @@ inline Coord cross(Point const &a, Point const &b)
     return a[X] * b[Y] - a[Y] * b[X];
 }
 
-/** @brief Compute the (Euclidean) distance between points.
- * @relates Point */
+/// Compute the (Euclidean) distance between points.
+/// @relates Point
 inline Coord distance (Point const &a, Point const &b) {
     return (a - b).length();
 }
 
-/** @brief Compute the square of the distance between points.
- * @relates Point */
+/// Compute the square of the distance between points.
+/// @relates Point
 inline Coord distanceSq (Point const &a, Point const &b) {
     return L2sq(a - b);
 }
 
 //IMPL: NearConcept
-/** @brief Nearness predicate for points.
- * @relates Point */
-inline bool are_near(Point const &a, Point const &b, double const eps=EPSILON) {
+/// Test whether two points are no further apart than some threshold.
+/// @relates Point
+inline bool are_near(Point const &a, Point const &b, double eps = EPSILON) {
     return are_near(distance(a, b), 0, eps);
+}
+
+/// Test whether three points lie approximately on the same line.
+/// @relates Point
+inline bool are_collinear(Point const& p1, Point const& p2, Point const& p3,
+                          double eps = EPSILON)
+{
+    return are_near( cross(p3, p2) - cross(p3, p1) + cross(p2, p1), 0, eps);
 }
 
 Point unit_vector(Point const &a);
 Coord L1(Point const &p);
 Coord LInfty(Point const &p);
 bool is_zero(Point const &p);
-bool is_unit_vector(Point const &p);
+bool is_unit_vector(Point const &p, Coord eps = EPSILON);
 double atan2(Point const &p);
 double angle_between(Point const &a, Point const &b);
 Point abs(Point const &b);

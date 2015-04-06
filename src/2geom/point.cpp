@@ -146,8 +146,8 @@ bool is_zero(Point const &p) {
 
 /** @brief True if the point has a length near 1. The are_near() function is used.
  * @relates Point */
-bool is_unit_vector(Point const &p) {
-    return are_near(L2(p), 1.0);
+bool is_unit_vector(Point const &p, Coord eps) {
+    return are_near(L2(p), 1.0, eps);
 }
 /** @brief Return the angle between the point and the +X axis.
  * @return Angle in \f$(-\pi, \pi]\f$.
