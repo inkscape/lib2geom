@@ -309,6 +309,31 @@ public:
         m = Translate(-_initial) * m;
         return m;
     }
+
+    /** @brief Compute an affine which transforms all points on the line to zero X or Y coordinate.
+     * This operation is useful in reducing intersection problems to root-finding problems.
+     * There are many affines which do this transformation. This function returns one that
+     * preserves angles, areas and distances - a rotation combined with a translation, and
+     * additionaly moves the initial point of the line to (0,0). This way it works without
+     * problems even for lines perpendicular to the target, though may in some cases have
+     * lower precision than e.g. a shear transform.
+     * @param d Which coordinate of points on the line should be zero after the transformation */
+    Affine rotationToZero(Dim2 d) const {
+        Point v = versor();
+        if (d == X) {
+            std::swap(v[X], v[Y]);
+        } else {
+            v[Y] = -v[Y];
+        }
+        Affine m = Translate(-_initial) * Rotate(v);
+        return m;
+    }
+    /** @brief Compute a rotation affine which transforms the line to one of the axes.
+     * @param d Which line should be the axis */
+    Affine rotationToAxis(Dim2 d) const {
+        Affine m = rotationToZero(other_dimension(d));
+        return m;
+    }
     /// @}
 
     //std::vector<LineIntersection> intersect(Line const &other, Coord precision = EPSILON) const;

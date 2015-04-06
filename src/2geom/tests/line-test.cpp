@@ -53,3 +53,20 @@ TEST(LineTest, Reflection) {
     EXPECT_FLOAT_EQ(testrb[X], rb[X]);
     EXPECT_FLOAT_EQ(testrb[Y], rb[Y]);
 }
+
+TEST(LineTest, RotationToZero) {
+    Line a(Point(-5,23), Point(15,27));
+    Affine mx = a.rotationToZero(X);
+    Affine my = a.rotationToZero(Y);
+
+    for (unsigned i = 0; i <= 12; ++i) {
+        double t = -1 + 0.25 * i;
+        Point p = a.pointAt(t);
+        Point rx = p * mx;
+        Point ry = p * my;
+        //std::cout << rx[X] << " " << ry[Y] << std::endl;
+        // unfortunately this is precise only to about 1e-14
+        EXPECT_NEAR(rx[X], 0, 1e-14);
+        EXPECT_NEAR(ry[Y], 0, 1e-14);
+    }
+}
