@@ -24,6 +24,7 @@ ineaa
 arc-bez
 arc-length-param
 boolops
+boolops-new
 bound-path
 box3d
 center-warp
