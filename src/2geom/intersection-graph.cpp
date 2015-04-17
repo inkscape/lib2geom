@@ -63,6 +63,8 @@ PathIntersectionGraph::PathIntersectionGraph(Path const &a, Path const &b, Coord
     std::vector<PathIntersection> pxs = a.intersect(b, precision);
     if (pxs.empty()) return;
 
+    if (pxs.size() % 2) return;
+
     for (std::size_t i = 0; i < pxs.size(); ++i) {
         IntersectionVertex *xa, *xb;
         xa = new IntersectionVertex();
@@ -119,14 +121,12 @@ PathIntersectionGraph::PathIntersectionGraph(Path const &a, Path const &b, Coord
 
 PathVector PathIntersectionGraph::getUnion() const
 {
-    typedef IntersectionList::const_iterator Iter;
     PathVector result;
-
     // handle the case of no intersections
     if (_xs.empty()) {
         bool b_in_a = _a.winding(_b.initialPoint()) % 2;
         bool a_in_b = _b.winding(_a.initialPoint()) % 2;
-        
+
         assert(!(b_in_a && a_in_b));
 
         if (a_in_b) {
@@ -141,6 +141,39 @@ PathVector PathIntersectionGraph::getUnion() const
         result.push_back(_b);
         return result;
     }
+
+    result = _getResult(false, false);
+    return result;
+}
+
+PathVector PathIntersectionGraph::getIntersection() const
+{
+    PathVector result;
+    if (_xs.empty()) {
+        bool b_in_a = _a.winding(_b.initialPoint()) % 2;
+        bool a_in_b = _b.winding(_a.initialPoint()) % 2;
+
+        assert(!(b_in_a && a_in_b));
+
+        if (a_in_b) {
+            result.push_back(_a);
+            return result;
+        }
+        if (b_in_a) {
+            result.push_back(_b);
+            return result;
+        }
+        return result;
+    }
+
+    result = _getResult(true, true);
+    return result;
+}
+
+PathVector PathIntersectionGraph::_getResult(bool enter_a, bool enter_b) const
+{
+    typedef IntersectionList::const_iterator Iter;
+    PathVector result;
 
     // reset processed status
     for (unsigned nlist = 0; nlist < 2; ++nlist) {
@@ -164,12 +197,21 @@ PathVector PathIntersectionGraph::getUnion() const
         if (i == _xalist.end()) break;
 
         result.push_back(Path(i->p));
+        result.back().setStitching(true);
 
         while (!i->processed) {
             Iter prev = i;
             // determine which direction to go
             // union: always go outside
-            bool reverse = i->entry;
+            // intersection: always go inside
+            // a minus b: go inside in b, outside in a
+            // b minus a: go inside in a, outside in b
+            bool reverse = false;
+            if (cur == &_a) {
+                reverse = i->entry ^ enter_a;
+            } else {
+                reverse = i->entry ^ enter_b;
+            }
 
             // get next intersection
             if (reverse) {

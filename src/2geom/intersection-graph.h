@@ -75,8 +75,11 @@ public:
     PathIntersectionGraph(Path const &a, Path const &b, Coord precision = EPSILON);
 
     PathVector getUnion() const;
+    PathVector getIntersection() const;
 
 private:
+    PathVector _getResult(bool enter_a, bool enter_b) const;
+
     Path const &_a, &_b;
     boost::ptr_vector<IntersectionVertex> _xs;
     IntersectionList _xalist;
