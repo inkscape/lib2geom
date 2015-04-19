@@ -219,6 +219,8 @@ public:
         return result;
     }
 
+    size_type pathSize() const { return _path_size; }
+
 private:
     Position _from, _to;
     size_type _path_size;

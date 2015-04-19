@@ -631,6 +631,8 @@ void Path::appendPortionTo(Path &ret, double from, double to) const
 void Path::appendPortionTo(Path &target, PathInterval const &ival,
                            boost::optional<Point> const &p_from, boost::optional<Point> const &p_to) const
 {
+    assert(ival.pathSize() == size_closed());
+
     if (ival.isDegenerate()) {
         Point stitch_to = p_from ? *p_from : pointAt(ival.from());
         target.stitchTo(stitch_to);
@@ -659,7 +661,7 @@ void Path::appendPortionTo(Path &target, PathInterval const &ival,
         }
         target.append(c_first);
 
-        for (size_type i = (from.curve_index + di) % s; i != to.curve_index;
+        for (size_type i = (from.curve_index + s + di) % s; i != to.curve_index;
              i = (i + s + di) % s)
         {
             if (reverse) {
