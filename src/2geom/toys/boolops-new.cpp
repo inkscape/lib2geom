@@ -14,11 +14,11 @@
 using namespace Geom;
 
 class BoolOps : public Toy {
-    Path as, bs;
+    PathVector as, bs;
     PointHandle p;
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
         Translate t(p.pos);
-        Path bst = bs * t;
+        PathVector bst = bs * t;
 
         PathIntersectionGraph pig(as, bst);
         PathVector result = pig.getUnion();
@@ -33,7 +33,7 @@ class BoolOps : public Toy {
         cairo_path(cr, bst);
         cairo_fill(cr);
         
-        cairo_set_source_rgba(cr, 0, 0, 0, 0.4);
+        cairo_set_source_rgba(cr, 0, 0, 0, 1);
         cairo_set_line_width(cr, 2);
 
         for (unsigned i = 0; i < result.size(); ++i) {
@@ -61,12 +61,14 @@ class BoolOps : public Toy {
             path_b_name = argv[2];
         PathVector paths_a = read_svgd(path_a_name);
         PathVector paths_b = read_svgd(path_b_name);
-             
+        OptRect abox = paths_a.boundsExact();
+        Point pt = abox ? abox->midpoint() : Point(0,0);
+
         p = PointHandle(Point(300,300));
         handles.push_back(&p);
 
-        as = paths_a[0] * (Geom::Translate(Point(300.1,300.1)) * Geom::Translate(-paths_a.initialPoint()));
-        bs = paths_b[0] * Geom::Translate(-paths_b.initialPoint());
+        as = paths_a * Geom::Translate(Point(300,300) - pt);
+        bs = paths_b * Geom::Translate(-paths_b.initialPoint());
     }
     //virtual bool should_draw_numbers() {return false;}
 };

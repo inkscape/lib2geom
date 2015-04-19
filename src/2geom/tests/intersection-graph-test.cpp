@@ -47,6 +47,10 @@ TEST_F(IntersectionGraphTest, DisjointUnion) {
 }
 
 TEST_F(IntersectionGraphTest, CoverUnion) {
+    PathIntersectionGraph graph(bigrect, bigh);
+    PathVector r = graph.getUnion();
+    EXPECT_EQ(r.size(), 1);
+    EXPECT_EQ(r, bigrect);
 }
 
 /*

@@ -126,6 +126,22 @@ OptRect PathVector::boundsExact() const
     return bound;
 }
 
+std::vector<PVIntersection> PathVector::intersect(PathVector const &other, Coord precision) const
+{
+    typedef PathVectorPosition PVPos;
+    std::vector<PVIntersection> result;
+    for (std::size_t i = 0; i < size(); ++i) {
+        for (std::size_t j = 0; j < other.size(); ++j) {
+            std::vector<PathIntersection> xs = (*this)[i].intersect(other[j]);
+            for (std::size_t k = 0; k < xs.size(); ++k) {
+                PVIntersection pvx(PVPos(i, xs[k].first), PVPos(j, xs[k].second), xs[k].point());
+                result.push_back(pvx);
+            }
+        }
+    }
+    return result;
+}
+
 int PathVector::winding(Point const &p) const
 {
     int wind = 0;

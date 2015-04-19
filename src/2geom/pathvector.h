@@ -61,6 +61,8 @@ struct PathVectorPosition
     PathVectorPosition() : PathPosition(0, 0), path_index(0) {}
     PathVectorPosition(size_type _i, size_type _c, Coord _t)
         : PathPosition(_c, _t), path_index(_i) {}
+    PathVectorPosition(size_type _i, PathPosition const &pos)
+        : PathPosition(pos), path_index(_i) {}
 
     bool operator<(PathVectorPosition const &other) const {
         if (path_index < other.path_index) return true;
@@ -72,6 +74,10 @@ struct PathVectorPosition
     bool operator==(PathVectorPosition const &other) const {
         return path_index == other.path_index
             && static_cast<PathPosition const &>(*this) == static_cast<PathPosition const &>(other);
+    }
+
+    PathPosition const &asPathPosition() const {
+        return *static_cast<PathPosition const *>(this);
     }
 };
 
@@ -250,6 +256,8 @@ public:
     bool operator==(PathVector const &other) const {
         return boost::range::equal(_data, other._data);
     }
+
+    std::vector<PVIntersection> intersect(PathVector const &other, Coord precision = EPSILON) const;
 
     /** @brief Determine the winding number at the specified point.
      * This is simply the sum of winding numbers for constituent paths. */

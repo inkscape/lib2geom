@@ -39,7 +39,7 @@
 #include <boost/ptr_container/ptr_vector.hpp>
 #include <boost/intrusive/list.hpp>
 #include <2geom/forward.h>
-#include <2geom/path.h>
+#include <2geom/pathvector.h>
 
 namespace Geom {
 
@@ -51,13 +51,13 @@ enum InOutFlag {
 
 struct IntersectionVertex {
     boost::intrusive::list_member_hook<> _hook;
-    PathPosition pos;
-    Point p;
+    PathVectorPosition pos;
+    Point p; // guarantees that endpoints are exact
     IntersectionVertex *neighbor;
-    bool entry; // going in +t direction enters other polygon
+    bool entry; // going in +t direction enters the other path
     InOutFlag previous;
     InOutFlag next;
-    mutable bool processed;
+    bool processed; // TODO: use intrusive unprocessed list instead
 };
 
 typedef boost::intrusive::list
@@ -69,21 +69,26 @@ typedef boost::intrusive::list
         >
     > IntersectionList;
 
+
 class PathIntersectionGraph
 {
+    // this is called PathIntersectionGraph so that we can also have a class for polygons,
+    // e.g. PolygonIntersectionGraph, which is going to be significantly faster
 public:
-    PathIntersectionGraph(Path const &a, Path const &b, Coord precision = EPSILON);
+    PathIntersectionGraph(PathVector const &a, PathVector const &b, Coord precision = EPSILON);
 
-    PathVector getUnion() const;
-    PathVector getIntersection() const;
+    PathVector getUnion();
+    PathVector getIntersection();
 
 private:
-    PathVector _getResult(bool enter_a, bool enter_b) const;
+    PathVector _getResult(bool enter_a, bool enter_b);
+    void _handleNonintersectingPaths(PathVector &result, int which, bool inside);
+    bool _findUnprocessed(IntersectionList::iterator &result);
 
-    Path const &_a, &_b;
+    PathVector _a, _b;
     boost::ptr_vector<IntersectionVertex> _xs;
-    IntersectionList _xalist;
-    IntersectionList _xblist;
+    boost::ptr_vector<IntersectionList> _xalists;
+    boost::ptr_vector<IntersectionList> _xblists;
 };
 
 } // namespace Geom
