@@ -1,6 +1,3 @@
-#include <2geom/d2.h>
-#include <2geom/sbasis.h>
-
 #include <2geom/path.h>
 #include <2geom/pathvector.h>
 #include <2geom/svg-path-parser.h>
@@ -16,8 +13,6 @@
 using namespace Geom;
 
 class LoadSVGD: public Toy {
-    //Region b;
-    //Shape bs;
     PathVector pv;
     PointHandle offset_handle;
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
@@ -35,23 +30,6 @@ class LoadSVGD: public Toy {
         //sw.setOptimize(true);
         sw.feed(res);
         *notify << sw.str();
-        /*
-        for(unsigned i = 0; i < pv.size(); i++) {
-            if(pv[i].size() == 0) {
-                *notify << "naked moveto;";
-            } else 
-            for(unsigned j = 0; j < pv[i].size(); j++) {
-                const Curve* c = &pv[i][j];
-                const BezierCurve* bc = dynamic_cast<const BezierCurve*>(c);
-                if(bc) {
-                    for(unsigned k = 0; k < bc->order(); k++) {
-                        *notify << (*bc)[k];
-                    }
-                } else {
-                    *notify << typeid(*c).name() << ';' ;
-                }
-            }
-        }*/
 
         Toy::draw(cr, notify, width, height, save,timer_stream);
     }

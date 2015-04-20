@@ -119,8 +119,6 @@ ray.h
 rect.h
 rect.cpp
 recursive-bezier-intersection.cpp
-region.cpp
-region.h
 
 sbasis-2d.cpp
 sbasis-2d.h
@@ -136,8 +134,6 @@ sbasis-to-bezier.cpp
 sbasis-to-bezier.h
 sbasis.cpp
 sbasis.h
-shape.cpp
-shape.h
 solve-bezier.cpp
 solve-bezier-one-d.cpp
 solve-bezier-parametric.cpp

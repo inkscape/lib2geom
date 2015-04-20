@@ -4,7 +4,6 @@
 #include <2geom/bezier.h>
 #include <2geom/bezier-curve.h>
 
-#include <2geom/shape.h>
 #include <2geom/path.h>
 #include <2geom/pathvector.h>
 #include <2geom/svg-path-parser.h>

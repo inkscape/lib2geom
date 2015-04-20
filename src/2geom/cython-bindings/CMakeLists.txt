@@ -51,9 +51,6 @@ IF(2GEOM_CYTHON_BINDINGS)
           _cy_path.pxd
           _cy_path.pyx
           
-          _cy_shape.pxd
-          _cy_shape.pyx
-          
           _cy_conicsection.pxd
           _cy_conicsection.pyx
           

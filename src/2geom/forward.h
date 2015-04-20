@@ -104,11 +104,6 @@ class Zoom;
 template <typename> class D2;
 template <typename> class Piecewise;
 
-class Shape;
-class Region;
-class Hat;
-class Tri;
-
 // misc
 class SVGPathSink;
 template <typename> class SVGPathGenerator;

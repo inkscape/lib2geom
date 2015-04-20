@@ -23,7 +23,6 @@ aa
 ineaa
 arc-bez
 arc-length-param
-boolops
 boolops-new
 bound-path
 box3d
@@ -119,17 +118,12 @@ sketch-fitter
 rtree-toy
 sweep-graph
 sweeper-toy
-boolops-topo
 smash-intersector
 levelsets-test
 )
 
 SET(2GEOM_LPE_TOYS_SRC
 lpe-test
-)
-
-SET(2GEOM_CGAL_TOYS_SRC
-boolops-cgal
 )
 
 OPTION(2GEOM_TOYS_LPE
@@ -156,9 +150,6 @@ ENDIF(2GEOM_TOYS_LPE)
 OPTION(2GEOM_TOYS
   "Build the projects Toy files"
   ON)
-OPTION(2GEOM_TOYS_CGAL
-  "Build toys that require CGAL"
-  OFF)
 IF(2GEOM_TOYS)
     # make lib for toy
     ADD_LIBRARY(toy-2 ${LIB_TYPE} ${2GEOM_TOY-FRAMEWORK-2_SRC})
@@ -186,14 +177,5 @@ IF(2GEOM_TOYS)
         ENDIF(WIN32 OR APPLE)
         TARGET_LINK_LIBRARIES(${source} toy-2 ${LINK_GSL} 2geom "${GTK2_LINK_FLAGS} ${cairo_LINK_FLAGS}")
     ENDFOREACH(source)
-
-	IF(2GEOM_TOYS_CGAL)
-		FOREACH(source ${2GEOM_CGAL_TOYS_SRC})
-			set_source_files_properties(${source}.cpp PROPERTIES COMPILE_FLAGS "-frounding-math")
-			ADD_EXECUTABLE(${source} ${source}.cpp)
-			TARGET_LINK_LIBRARIES(${source} CGAL CGAL_Core gmp)
-			TARGET_LINK_LIBRARIES(${source} toy-2 ${LINK_GSL} 2geom "${GTK2_LINK_FLAGS} ${cairo_LINK_FLAGS}")
-		ENDFOREACH(source)
-	ENDIF(2GEOM_TOYS_CGAL)
 ENDIF(2GEOM_TOYS)
 
