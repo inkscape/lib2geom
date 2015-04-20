@@ -17,7 +17,6 @@ implicitization-test
 SET(2GEOM_GTESTS_SRC
 affine-test
 bezier-test
-chain-test  # what is this?
 convex-hull-test
 coord-test
 intersection-graph-test
