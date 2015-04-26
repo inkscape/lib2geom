@@ -59,7 +59,7 @@ void PathVector::reverse(bool reverse_paths)
     }
 }
 
-PathVector PathVector::reversed(bool reverse_paths)
+PathVector PathVector::reversed(bool reverse_paths) const
 {
     PathVector ret;
     for (iterator i = begin(); i != end(); ++i) {

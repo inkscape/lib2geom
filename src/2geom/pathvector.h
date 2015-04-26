@@ -202,7 +202,7 @@ public:
      * @param reverse_paths If this is true, the order of paths is reversed as well;
      *                      otherwise each path is reversed, but their order in the
      *                      PathVector stays the same */
-    PathVector reversed(bool reverse_paths = true);
+    PathVector reversed(bool reverse_paths = true) const;
 
     /// Get the range of allowed time values.
     Interval timeRange() const {
