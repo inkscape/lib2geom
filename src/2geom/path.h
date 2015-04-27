@@ -453,7 +453,8 @@ public:
     void close(bool closed = true) { _closed = closed; }
 
     /** @brief Remove all curves from the path.
-     * The initial and final points of the closing segment are set to (0,0). */
+     * The initial and final points of the closing segment are set to (0,0).
+     * The stitching flag remains unchanged. */
     void clear();
 
     /** @brief Get the approximate bounding box.
@@ -593,7 +594,18 @@ public:
     Path reversed() const;
 
     void insert(iterator pos, Curve const &curve);
-    void insert(iterator pos, const_iterator first, const_iterator last);
+    
+    template <typename Iter>
+    void insert(iterator pos, Iter first, Iter last) {
+        _unshare();
+        Sequence::iterator seq_pos(seq_iter(pos));
+        Sequence source;
+        for (; first != last; ++first) {
+            source.push_back(first->duplicate());
+        }
+        stitch(seq_pos, seq_pos, source);
+        do_update(seq_pos, seq_pos, source.begin(), source.end(), source);
+    }
 
     void erase(iterator pos);
     void erase(iterator first, iterator last);
@@ -609,6 +621,19 @@ public:
     /** @brief Get the last point in the path.
      * If the path is closed, this is always the same as the initial point. */
     Point finalPoint() const { return (*_closing_seg)[_closed ? 1 : 0]; }
+
+    void setInitial(Point const &p) {
+        _unshare();
+        _closed = false;
+        _curves->front().setInitial(p);
+        _closing_seg->setFinal(p);
+    }
+    void setFinal(Point const &p) {
+        _unshare();
+        _closed = false;
+        (*_curves)[size_open() - 1].setFinal(p);
+        _closing_seg->setInitial(p);
+    }
 
     /** @brief Add a new curve to the end of the path.
      * This inserts the new curve right before the closing segment.

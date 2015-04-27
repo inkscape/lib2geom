@@ -185,6 +185,10 @@ public:
             _path.clear();
         }
     }
+    
+    void setStitching(bool s) {
+        _path.setStitching(s);
+    }
 
     using PathSink::feed;
     void feed(Path const &other)

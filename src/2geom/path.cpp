@@ -705,15 +705,6 @@ void Path::insert(iterator pos, Curve const &curve)
     do_update(seq_pos, seq_pos, source.begin(), source.end(), source);
 }
 
-void Path::insert(iterator pos, const_iterator first, const_iterator last)
-{
-    _unshare();
-    Sequence::iterator seq_pos(seq_iter(pos));
-    Sequence source(seq_iter(first), seq_iter(last));
-    stitch(seq_pos, seq_pos, source);
-    do_update(seq_pos, seq_pos, source.begin(), source.end(), source);
-}
-
 void Path::erase(iterator pos)
 {
     _unshare();
