@@ -28,10 +28,19 @@ protected:
         circle = string_to_path("M 0,0 a 4.5,4.5 0 1 1 -9,0 4.5,4.5 0 1 1 9,0 z");
         diederik = string_to_path("m 262.6037,35.824151 c 0,0 -92.64892,-187.405851 30,-149.999981 104.06976,31.739531 170,109.9999815 170,109.9999815 l -10,-59.9999905 c 0,0 40,79.99999 -40,79.99999 -80,0 -70,-129.999981 -70,-129.999981 l 50,0 C 435.13571,-131.5667 652.76275,126.44872 505.74322,108.05672 358.73876,89.666591 292.6037,-14.175849 292.6037,15.824151 c 0,30 -30,20 -30,20 z");
         cmds = string_to_path("M 0,0 V 100 H 100 Q 100,0 0,0 L 200,0 C 200,100 300,100 300,0 S 200,-100 200,0");
+        
+        p_open = string_to_path("M 0,0 L 0,5 5,5 5,0");
+        p_closed = p_open;
+        p_closed.close(true);
+        p_add = string_to_path("M -1,6 L 6,6");
+
+        p_open.setStitching(true);
+        p_closed.setStitching(true);
     }
 
     // Objects declared here can be used by all tests in the test case for Foo.
     Path line, square, circle, diederik, cmds;
+    Path p_open, p_closed, p_add;
 };
 
 TEST_F(PathTest, PathInterval) {
@@ -262,6 +271,88 @@ TEST_F(PathTest, Portion) {
     EXPECT_EQ(square.portion(a1, b2), result);
     EXPECT_EQ(square.portion(a2, b1), result);
     EXPECT_EQ(square.portion(a2, b2), result);
+}
+
+TEST_F(PathTest, AppendSegment) {
+    Path p_open = line, p_closed = line;
+    p_open.setStitching(true);
+    p_open.append(new LineSegment(Point(10,20), Point(10,25)));
+    EXPECT_EQ(p_open.size(), 3);
+    EXPECT_NO_THROW(p_open.checkContinuity());
+    
+    p_closed.setStitching(true);
+    p_closed.close(true);
+    p_closed.append(new LineSegment(Point(10,20), Point(10,25)));
+    EXPECT_EQ(p_closed.size(), 4);
+    EXPECT_NO_THROW(p_closed.checkContinuity());
+}
+
+TEST_F(PathTest, AppendPath) {
+    Path p_open = line, p_closed = line;
+    Path papp = string_to_path("M 5,5 L 5,0 4,0 4,5"); // 3 segments
+
+    p_open.setStitching(true);
+    p_open.append(papp);
+    EXPECT_EQ(p_open.size(), 5);
+    EXPECT_NO_THROW(p_open.checkContinuity());
+    
+    p_closed.setStitching(true);
+    p_closed.close(true);
+    p_closed.append(papp);
+    EXPECT_EQ(p_closed.size(), 6);
+    EXPECT_NO_THROW(p_closed.checkContinuity());
+}
+
+TEST_F(PathTest, ReplaceMiddle) {
+    p_open.replace(p_open.begin() + 1, p_open.begin() + 2, p_add);
+    EXPECT_EQ(p_open.size(), 5);
+    EXPECT_NO_THROW(p_open.checkContinuity());
+    
+    p_closed.replace(p_closed.begin() + 1, p_closed.begin() + 2, p_add);
+    EXPECT_EQ(p_closed.size(), 6);
+    EXPECT_NO_THROW(p_closed.checkContinuity());
+}
+
+TEST_F(PathTest, ReplaceStart) {
+    p_open.replace(p_open.begin(), p_open.begin() + 2, p_add);
+    EXPECT_EQ(p_open.size(), 3);
+    EXPECT_NO_THROW(p_open.checkContinuity());
+    
+    p_closed.replace(p_closed.begin(), p_closed.begin() + 2, p_add);
+    EXPECT_EQ(p_closed.size(), 5);
+    EXPECT_NO_THROW(p_closed.checkContinuity());
+}
+
+TEST_F(PathTest, ReplaceEnd) {
+    p_open.replace(p_open.begin() + 1, p_open.begin() + 3, p_add);
+    EXPECT_EQ(p_open.size(), 3);
+    EXPECT_NO_THROW(p_open.checkContinuity());
+    
+    p_closed.replace(p_closed.begin() + 1, p_closed.begin() + 3, p_add);
+    EXPECT_EQ(p_closed.size(), 5);
+    EXPECT_NO_THROW(p_closed.checkContinuity());
+}
+
+TEST_F(PathTest, ReplaceClosing) {
+    p_open.replace(p_open.begin() + 1, p_open.begin() + 4, p_add);
+    EXPECT_EQ(p_open.size(), 3);
+    EXPECT_NO_THROW(p_open.checkContinuity());
+    
+    p_closed.replace(p_closed.begin() + 1, p_closed.begin() + 4, p_add);
+    EXPECT_EQ(p_closed.size(), 4);
+    EXPECT_NO_THROW(p_closed.checkContinuity());
+}
+
+TEST_F(PathTest, ReplaceEverything) {
+    p_open.replace(p_open.begin(), p_open.end(), p_add);
+    EXPECT_EQ(p_open.size(), 1);
+    EXPECT_NO_THROW(p_open.checkContinuity());
+
+    // TODO: in this specific case, it may make sense to set the path to open...
+    // Need to investigate what behavior is sensible here
+    p_closed.replace(p_closed.begin(), p_closed.end(), p_add);
+    EXPECT_EQ(p_closed.size(), 2);
+    EXPECT_NO_THROW(p_closed.checkContinuity());
 }
 
 /*

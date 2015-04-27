@@ -350,10 +350,10 @@ public:
 
     /// Construct a path containing a range of curves.
     template <typename Iter>
-    Path(Iter first, Iter last, bool closed = false, bool stitch = true)
+    Path(Iter first, Iter last, bool closed = false, bool stitch = false)
         : _curves(new Sequence())
         , _closed(closed)
-        , _exception_on_stitch(stitch)
+        , _exception_on_stitch(!stitch)
     {
         for (Iter i = first; i != last; ++i) {
             _curves->push_back(i->duplicate());
@@ -484,6 +484,9 @@ public:
      * @param rest Optional storage for the corresponding time value in the curve */
     Curve const &curveAt(Coord t, Coord *rest = NULL) const;
 
+    /// Get the closing segment of the path.
+    LineSegment const &closingSegment() const { return *_closing_seg; }
+
     /** @brief Get the point at the specified time value.
      * Note that this method has reduced precision with respect to calling pointAt()
      * directly on the curve. If you want high precision results, use the version
@@ -603,8 +606,7 @@ public:
         for (; first != last; ++first) {
             source.push_back(first->duplicate());
         }
-        stitch(seq_pos, seq_pos, source);
-        do_update(seq_pos, seq_pos, source.begin(), source.end(), source);
+        do_update(seq_pos, seq_pos, source);
     }
 
     void erase(iterator pos);
@@ -655,25 +657,30 @@ public:
         do_append(new SBasisCurve(curve));
     }
     void append(Path const &other) {
-        insert(end(), other.begin(), other.end());
-    }
-
-    /// Append a stitching segment ending at the specified point.
-    void stitchTo(Point const &p) {
-        if (!empty() && finalPoint() != p) {
-            if (_exception_on_stitch) {
-                THROW_CONTINUITYERROR();
-            }
-            _unshare();
-            do_append(new StitchSegment(finalPoint(), p));
-        }
+        replace(end_open(), other.begin(), other.end());
     }
 
     void replace(iterator replaced, Curve const &curve);
-    void replace(iterator first_replaced, iterator last_replaced, Curve const &curve);
-    void replace(iterator replaced, const_iterator first, const_iterator last);
-    void replace(iterator first_replaced, iterator last_replaced, const_iterator first,
-                 const_iterator last);
+    void replace(iterator first, iterator last, Curve const &curve);
+    void replace(iterator replaced, Path const &path);
+    void replace(iterator first, iterator last, Path const &path);
+
+    template <typename Iter>
+    void replace(iterator replaced, Iter first, Iter last) {
+        replace(replaced, replaced + 1, first, last);
+    }
+
+    template <typename Iter>
+    void replace(iterator first_replaced, iterator last_replaced, Iter first, Iter last) {
+        _unshare();
+        Sequence::iterator seq_first_replaced(seq_iter(first_replaced));
+        Sequence::iterator seq_last_replaced(seq_iter(last_replaced));
+        Sequence source;
+        for (; first != last; ++first) {
+            source.push_back(first->duplicate());
+        }
+        do_update(seq_first_replaced, seq_last_replaced, source);
+    }
 
     /** @brief Append a new curve to the path.
      *
@@ -742,6 +749,9 @@ public:
         do_append(new CurveType(finalPoint(), a, b, c, d, e, f, g, h, i));
     }
 
+    /// Append a stitching segment ending at the specified point.
+    void stitchTo(Point const &p);
+
     /** @brief Verify the continuity invariant.
      * If the path is not contiguous, this will throw a CountinuityError. */
     void checkContinuity() const;
@@ -774,9 +784,7 @@ private:
     Position _getPosition(Coord t) const;
 
     void stitch(Sequence::iterator first_replaced, Sequence::iterator last_replaced, Sequence &sequence);
-
-    void do_update(Sequence::iterator first_replaced, Sequence::iterator last_replaced, Sequence::iterator first,
-                   Sequence::iterator last, Sequence &source);
+    void do_update(Sequence::iterator first, Sequence::iterator last, Sequence &source);
 
     // n.b. takes ownership of curve object
     void do_append(Curve *curve);

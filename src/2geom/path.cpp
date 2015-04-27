@@ -701,8 +701,7 @@ void Path::insert(iterator pos, Curve const &curve)
     Sequence::iterator seq_pos(seq_iter(pos));
     Sequence source;
     source.push_back(curve.duplicate());
-    stitch(seq_pos, seq_pos, source);
-    do_update(seq_pos, seq_pos, source.begin(), source.end(), source);
+    do_update(seq_pos, seq_pos, source);
 }
 
 void Path::erase(iterator pos)
@@ -711,8 +710,7 @@ void Path::erase(iterator pos)
     Sequence::iterator seq_pos(seq_iter(pos));
 
     Sequence stitched;
-    stitch(seq_pos, seq_pos + 1, stitched);
-    do_update(seq_pos, seq_pos + 1, stitched.begin(), stitched.end(), stitched);
+    do_update(seq_pos, seq_pos + 1, stitched);
 }
 
 void Path::erase(iterator first, iterator last)
@@ -722,19 +720,23 @@ void Path::erase(iterator first, iterator last)
     Sequence::iterator seq_last = seq_iter(last);
 
     Sequence stitched;
-    stitch(seq_first, seq_last, stitched);
-    do_update(seq_first, seq_last, stitched.begin(), stitched.end(), stitched);
+    do_update(seq_first, seq_last, stitched);
+}
+
+void Path::stitchTo(Point const &p)
+{
+    if (!empty() && _closing_seg->initialPoint() != p) {
+        if (_exception_on_stitch) {
+            THROW_CONTINUITYERROR();
+        }
+        _unshare();
+        do_append(new StitchSegment(_closing_seg->initialPoint(), p));
+    }
 }
 
 void Path::replace(iterator replaced, Curve const &curve)
 {
-    _unshare();
-    Sequence::iterator seq_replaced(seq_iter(replaced));
-    Sequence source(1);
-    source.push_back(curve.duplicate());
-
-    stitch(seq_replaced, seq_replaced + 1, source);
-    do_update(seq_replaced, seq_replaced + 1, source.begin(), source.end(), source);
+    replace(replaced, replaced + 1, curve);
 }
 
 void Path::replace(iterator first_replaced, iterator last_replaced, Curve const &curve)
@@ -745,41 +747,87 @@ void Path::replace(iterator first_replaced, iterator last_replaced, Curve const 
     Sequence source(1);
     source.push_back(curve.duplicate());
 
-    stitch(seq_first_replaced, seq_last_replaced, source);
-    do_update(seq_first_replaced, seq_last_replaced, source.begin(), source.end(), source);
+    do_update(seq_first_replaced, seq_last_replaced, source);
 }
 
-void Path::replace(iterator replaced, const_iterator first, const_iterator last)
+void Path::replace(iterator replaced, Path const &path)
 {
-    _unshare();
-    Sequence::iterator seq_replaced(seq_iter(replaced));
-    Sequence source(seq_iter(first), seq_iter(last));
-
-    stitch(seq_replaced, seq_replaced + 1, source);
-    do_update(seq_replaced, seq_replaced + 1, source.begin(), source.end(), source);
+    replace(replaced, path.begin(), path.end());
 }
 
-void Path::replace(iterator first_replaced, iterator last_replaced, const_iterator first,
-                   const_iterator last)
+void Path::replace(iterator first, iterator last, Path const &path)
 {
-    _unshare();
-    Sequence::iterator seq_first_replaced(seq_iter(first_replaced));
-    Sequence::iterator seq_last_replaced(seq_iter(last_replaced));
-    Sequence source(seq_iter(first), seq_iter(last));
-
-    stitch(seq_first_replaced, seq_last_replaced, source);
-    do_update(seq_first_replaced, seq_last_replaced, source.begin(), source.end(), source);
+    replace(first, last, path.begin(), path.end());
 }
 
-void Path::do_update(Sequence::iterator first_replaced, Sequence::iterator last_replaced, Sequence::iterator first,
-                     Sequence::iterator last, Sequence &source)
+// replace curves between first and last with contents of source,
+// 
+void Path::do_update(Sequence::iterator first, Sequence::iterator last, Sequence &source)
 {
-    _curves->erase(first_replaced, last_replaced);
-    _curves->transfer(first_replaced, first, last, source);
+    // TODO: handle cases where first > last in closed paths?
+    bool last_beyond_closing_segment = (last == _curves->end());
 
-    if (&_curves->front() != _closing_seg) {
-        _closing_seg->setPoint(0, back().finalPoint());
-        _closing_seg->setPoint(1, front().initialPoint());
+    // special case:
+    // if do_update replaces the closing segment, we have to regenerate it
+    if (source.empty()) {
+        if (first == last) return; // nothing to do
+
+        // only removing some segments
+        if ((!_closed && first == _curves->begin()) || last_beyond_closing_segment) {
+            // just adjust the closing segment
+            // do nothing
+        } else if (first->initialPoint() != (last - 1)->finalPoint()) {
+            if (_exception_on_stitch) {
+                THROW_CONTINUITYERROR();
+            }
+            source.push_back(new StitchSegment(first->initialPoint(), (last - 1)->finalPoint()));
+        }
+    } else {
+        // replacing
+        if (first == _curves->begin() && last == _curves->end()) {
+            // special case: replacing everything should work the same in open and closed curves
+            _curves->erase(_curves->begin(), _curves->end() - 1);
+            _closing_seg->setFinal(source.front().initialPoint());
+            _closing_seg->setInitial(source.back().finalPoint());
+            _curves->transfer(_curves->begin(), source.begin(), source.end(), source);
+            return;
+        }
+
+        // stitch in front
+        if (!_closed && first == _curves->begin()) {
+            // not necessary to stitch in front
+        } else if (first->initialPoint() != source.front().initialPoint()) {
+            if (_exception_on_stitch) {
+                THROW_CONTINUITYERROR();
+            }
+            source.insert(source.begin(), new StitchSegment(first->initialPoint(), source.front().initialPoint()));
+        }
+
+        // stitch at the end
+        if ((!_closed && last == _curves->end() - 1) || last_beyond_closing_segment) {
+            // repurpose the closing segment as the stitch segment
+            // do nothing
+        } else if (source.back().finalPoint() != (last - 1)->finalPoint()) {
+            if (_exception_on_stitch) {
+                THROW_CONTINUITYERROR();
+            }
+            source.push_back(new StitchSegment(source.back().finalPoint(), (last - 1)->finalPoint()));
+        }
+    }
+
+    // do not erase the closing segment, adjust it instead
+    if (last_beyond_closing_segment) {
+        --last;
+    }
+    _curves->erase(first, last);
+    _curves->transfer(first, source.begin(), source.end(), source);
+
+    // adjust closing segment
+    if (size_open() == 0) {
+        _closing_seg->setFinal(_closing_seg->initialPoint());
+    } else {
+        _closing_seg->setInitial(back_open().finalPoint());
+        _closing_seg->setFinal(front().initialPoint());
     }
 
     checkContinuity();
@@ -790,45 +838,14 @@ void Path::do_append(Curve *c)
     if (&_curves->front() == _closing_seg) {
         _closing_seg->setFinal(c->initialPoint());
     } else {
-        if (c->initialPoint() != finalPoint()) {
+        // if we can't freely move the closing segment, we check whether
+        // the new curve connects with the last non-closing curve
+        if (c->initialPoint() != _closing_seg->initialPoint()) {
             THROW_CONTINUITYERROR();
         }
     }
     _curves->insert(_curves->end() - 1, c);
     _closing_seg->setInitial(c->finalPoint());
-}
-
-void Path::stitch(Sequence::iterator first_replaced, Sequence::iterator last_replaced, Sequence &source)
-{
-    if (!source.empty()) {
-        if (first_replaced != _curves->begin()) {
-            if (first_replaced->initialPoint() != source.front().initialPoint()) {
-                if (_exception_on_stitch) {
-                    THROW_CONTINUITYERROR();
-                }
-                Curve *stitch = new StitchSegment(first_replaced->initialPoint(), source.front().initialPoint());
-                source.insert(source.begin(), stitch);
-            }
-        }
-        if (last_replaced != (_curves->end() - 1)) {
-            if (last_replaced->finalPoint() != source.back().finalPoint()) {
-                if (_exception_on_stitch) {
-                    THROW_CONTINUITYERROR();
-                }
-                Curve *stitch = new StitchSegment(source.back().finalPoint(), last_replaced->finalPoint());
-                source.insert(source.end(), stitch);
-            }
-        }
-    } else if (first_replaced != last_replaced && first_replaced != _curves->begin() &&
-               last_replaced != _curves->end() - 1) {
-        if (first_replaced->initialPoint() != (last_replaced - 1)->finalPoint()) {
-            if (_exception_on_stitch) {
-                THROW_CONTINUITYERROR();
-            }
-            Curve *stitch = new StitchSegment((last_replaced - 1)->finalPoint(), first_replaced->initialPoint());
-            source.insert(source.begin(), stitch);
-        }
-    }
 }
 
 void Path::checkContinuity() const
