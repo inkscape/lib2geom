@@ -132,7 +132,7 @@ std::vector<PVIntersection> PathVector::intersect(PathVector const &other, Coord
     std::vector<PVIntersection> result;
     for (std::size_t i = 0; i < size(); ++i) {
         for (std::size_t j = 0; j < other.size(); ++j) {
-            std::vector<PathIntersection> xs = (*this)[i].intersect(other[j]);
+            std::vector<PathIntersection> xs = (*this)[i].intersect(other[j], precision);
             for (std::size_t k = 0; k < xs.size(); ++k) {
                 PVIntersection pvx(PVPos(i, xs[k].first), PVPos(j, xs[k].second), xs[k].point());
                 result.push_back(pvx);
