@@ -288,18 +288,16 @@ TEST_F(PathTest, AppendSegment) {
 }
 
 TEST_F(PathTest, AppendPath) {
-    Path p_open = line, p_closed = line;
-    Path papp = string_to_path("M 5,5 L 5,0 4,0 4,5"); // 3 segments
-
-    p_open.setStitching(true);
-    p_open.append(papp);
+    p_open.append(p_add);
+    Path p_expected = string_to_path("M 0,0 L 0,5 5,5 5,0 -1,6 6,6");
     EXPECT_EQ(p_open.size(), 5);
+    EXPECT_EQ(p_open, p_expected);
     EXPECT_NO_THROW(p_open.checkContinuity());
-    
-    p_closed.setStitching(true);
-    p_closed.close(true);
-    p_closed.append(papp);
+
+    p_expected.close(true);
+    p_closed.append(p_add);
     EXPECT_EQ(p_closed.size(), 6);
+    EXPECT_EQ(p_closed, p_expected);
     EXPECT_NO_THROW(p_closed.checkContinuity());
 }
 
@@ -353,6 +351,13 @@ TEST_F(PathTest, ReplaceEverything) {
     p_closed.replace(p_closed.begin(), p_closed.end(), p_add);
     EXPECT_EQ(p_closed.size(), 2);
     EXPECT_NO_THROW(p_closed.checkContinuity());
+}
+
+TEST_F(PathTest, EraseLast) {
+    p_open.erase_last();
+    Path p_expected = string_to_path("M 0,0 L 0,5 5,5");
+    EXPECT_EQ(p_open, p_expected);
+    EXPECT_NO_THROW(p_open.checkContinuity());
 }
 
 /*
