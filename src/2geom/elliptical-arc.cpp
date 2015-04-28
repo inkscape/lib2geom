@@ -895,6 +895,15 @@ D2<SBasis> EllipticalArc::toSBasis() const
 
 void EllipticalArc::transform(Affine const& m)
 {
+    if (isChord()) {
+        _initial_point *= m;
+        _final_point *= m;
+        _center = middle_point(_initial_point, _final_point);
+        _rays = Point(0,0);
+        _rot_angle = 0;
+        return;
+    }
+
     // TODO avoid allocating a new arc here
     Ellipse e(center(X), center(Y), ray(X), ray(Y), _rot_angle);
     e *= m;
