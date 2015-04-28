@@ -126,6 +126,13 @@ OptRect PathVector::boundsExact() const
     return bound;
 }
 
+void PathVector::snapEnds(Coord precision)
+{
+    for (std::size_t i = 0; i < size(); ++i) {
+        (*this)[i].snapEnds(precision);
+    }
+}
+
 std::vector<PVIntersection> PathVector::intersect(PathVector const &other, Coord precision) const
 {
     typedef PathVectorPosition PVPos;

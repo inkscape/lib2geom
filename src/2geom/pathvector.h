@@ -257,6 +257,8 @@ public:
         return boost::range::equal(_data, other._data);
     }
 
+    void snapEnds(Coord precision = EPSILON);
+
     std::vector<PVIntersection> intersect(PathVector const &other, Coord precision = EPSILON) const;
 
     /** @brief Determine the winding number at the specified point.
