@@ -106,6 +106,12 @@ public:
     Coord ray(Dim2 d) const { return _rays[d]; }
     Angle rotationAngle() const { return _angle; }
 
+    /** @brief Compute the transform that maps the unit circle to this ellipse.
+     * Each ellipse can be interpreted as a translated, scaled and rotate unit circle.
+     * This function returns the transform that maps the unit circle to this ellipse.
+     * @return Transform from unit circle to the ellipse */
+    Affine unitCircleTransform() const;
+
     std::vector<double> coefficients() const;
 
     Ellipse &operator*=(Translate const &t) {

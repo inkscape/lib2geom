@@ -111,6 +111,14 @@ void Ellipse::setCoefficients(double A, double B, double C, double D, double E, 
 }
 
 
+Affine Ellipse::unitCircleTransform() const
+{
+    Affine ret = Scale(ray(X), ray(Y)) * Rotate(_angle);
+    ret.setTranslation(center());
+    return ret;
+}
+
+
 std::vector<double> Ellipse::coefficients() const
 {
     if (ray(X) == 0 || ray(Y) == 0) {
@@ -202,7 +210,8 @@ Ellipse::arc(Point const &ip, Point const &inner, Point const &fp,
     return ret_arc;
 }
 
-Ellipse &Ellipse::operator*=(Rotate const &r) {
+Ellipse &Ellipse::operator*=(Rotate const &r)
+{
     _angle += r.angle();
     // keep the angle in the first quadrant
     if (_angle < 0) {
@@ -212,6 +221,7 @@ Ellipse &Ellipse::operator*=(Rotate const &r) {
         std::swap(_rays[X], _rays[Y]);
         _angle -= M_PI/2;
     }
+    _center *= r;
     return *this;
 }
 
