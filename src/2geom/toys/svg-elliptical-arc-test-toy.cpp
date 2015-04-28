@@ -208,7 +208,7 @@ class SVGEllipticalArcTestToy: public Toy
 
         // draw axes passing through the center of the ellipse supporting the arc
         cairo_set_source_rgba(cr, 0.0, 1.0, 0.0, 1.0);
-        cairo_set_line_width(cr, 0.2);
+        cairo_set_line_width(cr, 0.5);
         draw_axes(cr);
 
         // draw the the 2 ellipse with rays rx, ry passing through
@@ -231,7 +231,7 @@ class SVGEllipticalArcTestToy: public Toy
 
         // convert the elliptical arc to a sbasis path and draw it
         D2<SBasis> easb = ea.toSBasis();
-        cairo_set_line_width(cr, 0.2);
+        cairo_set_line_width(cr, 0.5);
         cairo_set_source_rgba(cr, 0.0, 0.0, 1.0, 1.0);
         cairo_d2_sb(cr, easb);
         cairo_stroke(cr);
@@ -253,7 +253,7 @@ class SVGEllipticalArcTestToy: public Toy
         if ( no_solution || point_overlap ) return;
 
         // draw the arc with cairo in order to make a visual comparison
-        cairo_set_line_width(cr, 0.3);
+        cairo_set_line_width(cr, 1);
         cairo_set_source_rgba(cr, 1.0, 0.0, 0.0, 1.0);
 
         if (ea.isSVGCompliant() && ea.isDegenerate())
@@ -312,7 +312,7 @@ class SVGEllipticalArcTestToy: public Toy
             = static_cast<SVGEllipticalArc*>(ea.portion(from_t, to_t));
         SVGEllipticalArc& eap = *eapp;
 
-        cairo_set_line_width(cr, 0.4);
+        cairo_set_line_width(cr, 0.8);
         cairo_set_source_rgba(cr, 0.0, 1.0, 1.0, 1.0);
         cairo_move_to(cr, eap.center(X), eap.center(Y));
         cairo_line_to(cr, eap.initialPoint()[X], eap.initialPoint()[Y]);
@@ -350,7 +350,7 @@ class SVGEllipticalArcTestToy: public Toy
         SVGEllipticalArc* eapp = static_cast<SVGEllipticalArc*>(ea.reverse());
         SVGEllipticalArc& eap = *eapp;
 
-        cairo_set_line_width(cr, 0.4);
+        cairo_set_line_width(cr, 0.8);
         cairo_set_source_rgba(cr, 0.2, 0.2, 0.2, 1.0);
 
         cairo_move_to(cr, eap.center(X), eap.center(Y));
@@ -444,7 +444,7 @@ class SVGEllipticalArcTestToy: public Toy
                         Point(-1000, ph.pos[Y]) };
         Point p2[2] = { Point(ph.pos[X], 1000),
                         Point(1000, ph.pos[Y]) };
-        cairo_set_line_width(cr, 0.2);
+        cairo_set_line_width(cr, 0.5);
         cairo_set_source_rgba(cr, 0.3, 0.3, 0.3, 1.0);
         cairo_move_to(cr, p1[DIM]);
         cairo_line_to(cr, p2[DIM]);
@@ -569,7 +569,7 @@ class SVGEllipticalArcTestToy: public Toy
             return;
         }
         D2<SBasis> sb = eat->toSBasis();
-        cairo_set_line_width(cr, 0.4);
+        cairo_set_line_width(cr, 0.8);
         cairo_set_source_rgba(cr, 0.8, 0.1, 0.1, 1.0);
         cairo_d2_sb(cr, sb);
         cairo_stroke(cr);
