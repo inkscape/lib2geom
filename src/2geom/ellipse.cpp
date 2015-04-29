@@ -170,33 +170,31 @@ EllipticalArc *
 Ellipse::arc(Point const &ip, Point const &inner, Point const &fp,
              bool _svg_compliant)
 {
-    Point sp_cp = ip    - center();
-    Point ep_cp = fp    - center();
-    Point ip_cp = inner - center();
+    // This is resistant to degenerate ellipses:
+    // both flags evaluate to false in that case.
 
-    double angle1 = angle_between(sp_cp, ep_cp);
-    double angle2 = angle_between(sp_cp, ip_cp);
-    double angle3 = angle_between(ip_cp, ep_cp);
+    bool large_arc_flag = false;
+    bool sweep_flag = false;
 
-    bool large_arc_flag = true;
-    bool sweep_flag = true;
+    // Determination of large arc flag:
+    // The arc is larger than half of the ellipse if the inner point
+    // is on the same side of the line going from the initial
+    // to the final point as the center of the ellipse
+    Line chord(ip, fp);
+    Point versor = fp - ip;
+    double sdist_c = cross(versor, _center - ip);
+    double sdist_inner = cross(versor, inner - ip);
 
-    if (angle1 > 0) {
-        if (angle2 > 0 && angle3 > 0) {
-            large_arc_flag = false;
-            sweep_flag = true;
-        } else {
-            large_arc_flag = true;
-            sweep_flag = false;
-        }
-    } else {
-        if (angle2 < 0 && angle3 < 0) {
-            large_arc_flag = false;
-            sweep_flag = false;
-        } else {
-            large_arc_flag = true;
-            sweep_flag = true;
-        }
+    // if we have exactly half of an arc, do not set the large flag.
+    if (sdist_c != 0 && sgn(sdist_c) == sgn(sdist_inner)) {
+        large_arc_flag = true;
+    }
+
+    // Determination of sweep flag:
+    // If the inner point is on the left side of the ip-fp line,
+    // we go in clockwise direction.
+    if (sdist_inner < 0) {
+        sweep_flag = true;
     }
 
     EllipticalArc *ret_arc;
