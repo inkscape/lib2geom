@@ -19,6 +19,7 @@ affine-test
 bezier-test
 convex-hull-test
 coord-test
+ellipse-test
 intersection-graph-test
 line-test
 path-test
