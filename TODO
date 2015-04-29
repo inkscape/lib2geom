@@ -1,47 +1,52 @@
 Code Health:
-  - remove tests from main code
-  - remove macros.cpp
-  - standardize naming
-  - timing tests
-  - reinstate valuable unit tests (focus on corner testing)
-  - resolve standards for operator/cast overloads
-  - make singlular constructors explicit
-  - remove unecessary #include s
+  - Rewrite old tests using Google Test Framework.
+  - Add more unit tests. Ideally, every method should be tested.
+  - More Doxygen documentation. Document algorithms used to implement each
+    nontrivial method, preferably with pictures.
 
-Path:
-  - inkscape conversions
-  - booleans (union, difference, intersection, exclusion, etc)
-  - cut
-  - dilation/contraction
-  - skeletal strokes
-  - port existing inkscape path/bezier algorithms
-  - implement pw concept
+Primitives:
+  - Add uniform points - Geom::UPoint.
+  - Add projective transformations - Geom::Projective.
+  - Add rational Bezier fragments / curves - Geom::D2U<Bezier>
 
-Bezier:
-  - implement functions inkscape uses/port existing algorithms
-  - move bezier specific code into bezier.h/bezier.cpp
-  - eliminate multiple representations (vector<point>, point*, double*, other bezier classes)
+Shapes:
+  - Geom::Triangle
+  - Geom::Quad
+  - Geom::Polygon
+  - Function that computes an Affine that maps between triangles.
+  - Function that maps between Rects.
+  - Function that maps between Ellipses (no skew).
 
-D2:
-  - add additional useful functions
+Path / PathVector:
+  - Built in support for arc length parametrization, computed on demand.
+  - Boolean operations accessible via operators: &, |, / (or -), ^
+  - Uncrossing.
+  - Conversion from nonzero winding rule to even-odd winding rule.
+  - Dashing - requires arc length parametrization.
+  - Offset.
+  - Stroke-to-path.
+  - Minkowski sum.
+  - Functions to facilitate node editing without conversion to a node list.
+  - Approximation of arbitrary paths with cubic Beziers, quadratic Beziers
+    or line segments, available as a path sink.
+  - Approximation by lines and circular / elliptical arcs.
+  - Support for per-node and per-segment user data?
 
-Pw:
-  - add additional useful functions
-  - check for 0-width in portion, etc
-
-Point:
-  - Test the waters in regards to D2<double>
+Fragments:
+  - Convert all uses of std::vector<Point> to D2<Bezier> where applicable.
+  - Consider adding push_back() for incremental building of Beziers.
+  - Implement Bezier versions of SBasis methods.
 
 Toys:
-  - generalize to path
-  - improve path-cairo
-  - improve toy framework (multiple handle lists, less hardcode)
-  - sketch toy
+  - Better Bezier / SBasis handles.
+  - Use GTK 3 to provide widgets such as checkboxes and buttons (?)
 
-* generate postscript stroke geometries
-
-* attempt to write nodepath editing in a more generic way
-
-* rewrite convex hull
-
-* replace/improve quadtree with a better spatial index
+Other:
+  - Rewrite conic section code to match coding style.
+  - Rewrite QuadTree and RTree to make them actually usable.
+  - BSP tree.
+  - Interval tree - Geom::IntervalSet, Geom::IntervalMap<T>
+  - Geom::MultiInterval
+  - Using the above, add regions, as seen in Cairo.
+  - Add some basic 3D functionality, enough to draw a 3D box.
+  - Write GDB pretty printers for all core classes. See the directory "tools"

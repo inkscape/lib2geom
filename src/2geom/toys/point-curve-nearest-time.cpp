@@ -53,9 +53,9 @@
 using namespace Geom;
 
 std::ostream&
-operator<< (std::ostream &out, PathVectorPosition const &pvp)
+operator<< (std::ostream &out, PathVectorTime const &pvp)
 {
-    return out << pvp.curve_index << "." << pvp.t;
+    return out << pvp.path_index << "." << pvp.curve_index << "." << pvp.t;
 }
 
 class NearestPoints : public Toy
@@ -213,8 +213,8 @@ private:
     	        }
     	        else
     	        {
-                    double t = path.nearestTime(p);
-                    np = path.pointAt(t);
+                    PathTime pt = path.nearestTime(p);
+                    np = path.pointAt(pt);
     	        }
                 break;
             }
@@ -232,13 +232,13 @@ private:
 
     	        if ( toggles[0].on )
     	        {
-                    std::vector<PathVectorPosition> t = pathv.allNearestPositions(p);
+                    std::vector<PathVectorTime> t = pathv.allNearestTimes(p);
                     for ( unsigned int i = 0; i < t.size(); ++i )
                         nps.push_back(pathv.pointAt(t[i]));
     	        }
     	        else
     	        {
-                    //boost::optional<PathVectorPosition>
+                    //boost::optional<PathVectorTime>
                     double s = 0, e = 1;
                     draw_cross(cr, pathv[0].pointAt(s));
                     draw_cross(cr, pathv[0].pointAt(e));

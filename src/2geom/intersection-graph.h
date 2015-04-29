@@ -51,7 +51,7 @@ enum InOutFlag {
 
 struct IntersectionVertex {
     boost::intrusive::list_member_hook<> _hook;
-    PathVectorPosition pos;
+    PathVectorTime pos;
     Point p; // guarantees that endpoints are exact
     IntersectionVertex *neighbor;
     bool entry; // going in +t direction enters the other path

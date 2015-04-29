@@ -43,7 +43,7 @@
 
 namespace Geom {
 
-/** @brief Position (generalized time value) in the path vector.
+/** @brief Generalized time value in the path vector.
  *
  * This class exists because mapping the range of multiple curves onto the same interval
  * as the curve index, we lose some precision. For instance, a path with 16 curves will
@@ -52,41 +52,41 @@ namespace Geom {
  * pointAt(), nearestTime() and so on.
  * 
  * @ingroup Paths */
-struct PathVectorPosition
-    : public PathPosition
-    , boost::totally_ordered<PathVectorPosition>
+struct PathVectorTime
+    : public PathTime
+    , boost::totally_ordered<PathVectorTime>
 {
     size_type path_index; ///< Index of the path in the vector
 
-    PathVectorPosition() : PathPosition(0, 0), path_index(0) {}
-    PathVectorPosition(size_type _i, size_type _c, Coord _t)
-        : PathPosition(_c, _t), path_index(_i) {}
-    PathVectorPosition(size_type _i, PathPosition const &pos)
-        : PathPosition(pos), path_index(_i) {}
+    PathVectorTime() : PathTime(0, 0), path_index(0) {}
+    PathVectorTime(size_type _i, size_type _c, Coord _t)
+        : PathTime(_c, _t), path_index(_i) {}
+    PathVectorTime(size_type _i, PathTime const &pos)
+        : PathTime(pos), path_index(_i) {}
 
-    bool operator<(PathVectorPosition const &other) const {
+    bool operator<(PathVectorTime const &other) const {
         if (path_index < other.path_index) return true;
         if (path_index == other.path_index) {
-            return static_cast<PathPosition const &>(*this) < static_cast<PathPosition const &>(other);
+            return static_cast<PathTime const &>(*this) < static_cast<PathTime const &>(other);
         }
         return false;
     }
-    bool operator==(PathVectorPosition const &other) const {
+    bool operator==(PathVectorTime const &other) const {
         return path_index == other.path_index
-            && static_cast<PathPosition const &>(*this) == static_cast<PathPosition const &>(other);
+            && static_cast<PathTime const &>(*this) == static_cast<PathTime const &>(other);
     }
 
-    PathPosition const &asPathPosition() const {
-        return *static_cast<PathPosition const *>(this);
+    PathTime const &asPathTime() const {
+        return *static_cast<PathTime const *>(this);
     }
 };
 
-typedef Intersection<PathVectorPosition> PathVectorIntersection;
+typedef Intersection<PathVectorTime> PathVectorIntersection;
 typedef PathVectorIntersection PVIntersection; ///< Alias to save typing
 
 template <>
 struct ShapeTraits<PathVector> {
-    typedef PathVectorPosition TimeType;
+    typedef PathVectorTime TimeType;
     //typedef PathVectorInterval IntervalType;
     typedef PathVector AffineClosureType;
     typedef PathVectorIntersection IntersectionType;
@@ -118,7 +118,7 @@ class PathVector
 {
     typedef std::vector<Path> Sequence;
 public:
-    typedef PathVectorPosition Position;
+    typedef PathVectorTime Position;
     typedef Sequence::iterator iterator;
     typedef Sequence::const_iterator const_iterator;
     typedef Sequence::size_type size_type;
@@ -224,19 +224,19 @@ public:
     Coord valueAt(Coord t, Dim2 d) const;
     Point pointAt(Coord t) const;
 
-    Path &pathAt(Position const &pos) {
+    Path &pathAt(PathVectorTime const &pos) {
         return const_cast<Path &>(static_cast<PathVector const*>(this)->pathAt(pos));
     }
-    Path const &pathAt(Position const &pos) const {
+    Path const &pathAt(PathVectorTime const &pos) const {
         return at(pos.path_index);
     }
-    Curve const &curveAt(Position const &pos) const {
+    Curve const &curveAt(PathVectorTime const &pos) const {
         return at(pos.path_index).at(pos.curve_index);
     }
-    Point pointAt(Position const &pos) const {
+    Point pointAt(PathVectorTime const &pos) const {
         return at(pos.path_index).at(pos.curve_index).pointAt(pos.t);
     }
-    Coord valueAt(Position const &pos, Dim2 d) const {
+    Coord valueAt(PathVectorTime const &pos, Dim2 d) const {
         return at(pos.path_index).at(pos.curve_index).valueAt(pos.t, d);
     }
 
@@ -265,12 +265,11 @@ public:
      * This is simply the sum of winding numbers for constituent paths. */
     int winding(Point const &p) const;
 
-    Coord nearestTime(Point const &p) const;
-    boost::optional<Position> nearestPosition(Point const &p, Coord *dist = NULL) const;
-    std::vector<Position> allNearestPositions(Point const &p, Coord *dist = NULL) const;
+    boost::optional<PathVectorTime> nearestTime(Point const &p, Coord *dist = NULL) const;
+    std::vector<PathVectorTime> allNearestTimes(Point const &p, Coord *dist = NULL) const;
 
 private:
-    Position _getPosition(Coord t) const;
+    PathVectorTime _factorTime(Coord t) const;
 
     Sequence _data;
 };

@@ -3,7 +3,6 @@ SET(2GEOM_TESTS_SRC
 #bezier-utils-test
 choose-test
 #lin_alg_test
-matrix-inv-test
 poly-test
 #svgd-test
 sbasis-text-test
@@ -19,6 +18,7 @@ affine-test
 bezier-test
 convex-hull-test
 coord-test
+ellipse-test
 intersection-graph-test
 line-test
 path-test
