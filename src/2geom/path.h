@@ -109,7 +109,7 @@ class BaseIterator
 
 }
 
-/** @brief Position (generalized time value) in the path.
+/** @brief Generalized time value in the path.
  *
  * This class exists because when mapping the range of multiple curves onto the same interval
  * as the curve index, we lose some precision. For instance, a path with 16 curves will
@@ -119,44 +119,46 @@ class BaseIterator
  * call the method again to obtain a high precision result.
  * 
  * @ingroup Paths */
-struct PathPosition
-    : boost::totally_ordered<PathPosition>
+struct PathTime
+    : boost::totally_ordered<PathTime>
 {
     typedef PathInternal::Sequence::size_type size_type;
 
     Coord t; ///< Time value in the curve
     size_type curve_index; ///< Index of the curve in the path
 
-    PathPosition() : t(0), curve_index(0) {}
-    PathPosition(size_type idx, Coord tval) : t(tval), curve_index(idx) {}
+    PathTime() : t(0), curve_index(0) {}
+    PathTime(size_type idx, Coord tval) : t(tval), curve_index(idx) {}
 
-    bool operator<(PathPosition const &other) const {
+    bool operator<(PathTime const &other) const {
         if (curve_index < other.curve_index) return true;
         if (curve_index == other.curve_index) {
             return t < other.t;
         }
         return false;
     }
-    bool operator==(PathPosition const &other) const {
+    bool operator==(PathTime const &other) const {
         return curve_index == other.curve_index && t == other.t;
     }
-    /// Convert positions at or beyond 1 to 0 on the next curve.
+    /// Convert times at or beyond 1 to 0 on the next curve.
     void normalizeForward(size_type path_size) {
         if (t >= 1) {
             curve_index = (curve_index + 1) % path_size;
             t = 0;
         }
     }
-    /// Convert positions at or before 0 to 1 on the previous curve.
+    /// Convert times at or before 0 to 1 on the previous curve.
     void normalizeBackward(size_type path_size) {
         if (t <= 0) {
             curve_index = (curve_index - 1) % path_size;
             t = 1;
         }
     }
+
+    Coord asFlatTime() const { return curve_index + t; }
 };
 
-inline std::ostream &operator<<(std::ostream &os, PathPosition const &pos) {
+inline std::ostream &operator<<(std::ostream &os, PathTime const &pos) {
     os << pos.curve_index << ": " << pos.t;
     return os;
 }
@@ -169,7 +171,6 @@ inline std::ostream &operator<<(std::ostream &os, PathPosition const &pos) {
  * @ingroup Paths */
 class PathInterval {
 public:
-    typedef PathPosition Position;
     typedef PathInternal::Sequence::size_type size_type;
 
     /** @brief Default interval.
@@ -177,22 +178,22 @@ public:
     PathInterval();
 
     /** @brief Construct an interval in the path's parameter domain.
-     * @param from Initial position
-     * @param to Final position
+     * @param from Initial time
+     * @param to Final time
      * @param cross_start If true, the interval will proceed from the initial to final
-     *   position through the initial point of the path, wrapping around the closing segment;
+     *   time through the initial point of the path, wrapping around the closing segment;
      *   otherwise it will not wrap around the closing segment.
      * @param path_size Size of the path to which this interval applies, required
      *   to clean up degenerate cases */
-    PathInterval(Position const &from, Position const &to, bool cross_start, size_type path_size);
+    PathInterval(PathTime const &from, PathTime const &to, bool cross_start, size_type path_size);
 
-    /// Get the position of the initial point.
-    Position const &initialPosition() const { return _from; }
-    /// Get the position of the final point.
-    Position const &finalPosition() const { return _to; }
+    /// Get the time value of the initial point.
+    PathTime const &initialTime() const { return _from; }
+    /// Get the time value of the final point.
+    PathTime const &finalTime() const { return _to; }
 
-    Position const &from() const { return _from; }
-    Position const &to() const { return _to; }
+    PathTime const &from() const { return _from; }
+    PathTime const &to() const { return _to; }
 
     /// Check whether the interval has only one point.
     bool isDegenerate() const { return _from == _to; }
@@ -201,19 +202,19 @@ public:
     /// True if the interior of the interval contains the initial point of the path.
     bool crossesStart() const { return _cross_start; }
 
-    /// Test a path position for inclusion.
-    bool contains(Position const &pos) const;
+    /// Test a path time for inclusion.
+    bool contains(PathTime const &pos) const;
 
-    /// Get a position at least @a min_dist away in parameter space from the ends.
-    /// If no such position exists, the middle point between these positions is returned.
-    Position inside(Coord min_dist = EPSILON) const;
+    /// Get a time at least @a min_dist away in parameter space from the ends.
+    /// If no such time exists, the middle point is returned.
+    PathTime inside(Coord min_dist = EPSILON) const;
 
     /// Select one of two intervals with given endpoints by parameter direction.
-    static PathInterval from_direction(Position const &from, Position const &to,
+    static PathInterval from_direction(PathTime const &from, PathTime const &to,
                                        bool reversed, size_type path_size);
 
     /// Select one of two intervals with given endpoints by whether it includes the initial point.
-    static PathInterval from_start_crossing(Position const &from, Position const &to,
+    static PathInterval from_start_crossing(PathTime const &from, PathTime const &to,
                                             bool cross_start, size_type path_size) {
         PathInterval result(from, to, cross_start, path_size);
         return result;
@@ -222,14 +223,14 @@ public:
     size_type pathSize() const { return _path_size; }
 
 private:
-    Position _from, _to;
+    PathTime _from, _to;
     size_type _path_size;
     bool _cross_start, _reverse;
 };
 
 /// Create an interval in the direction of increasing time value.
 /// @relates PathInterval
-inline PathInterval forward_interval(PathPosition const &from, PathPosition const &to,
+inline PathInterval forward_interval(PathTime const &from, PathTime const &to,
                                      PathInterval::size_type path_size)
 {
     PathInterval result = PathInterval::from_direction(from, to, false, path_size);
@@ -238,7 +239,7 @@ inline PathInterval forward_interval(PathPosition const &from, PathPosition cons
 
 /// Create an interval in the direction of decreasing time value.
 /// @relates PathInterval
-inline PathInterval backward_interval(PathPosition const &from, PathPosition const &to,
+inline PathInterval backward_interval(PathTime const &from, PathTime const &to,
                                       PathInterval::size_type path_size)
 {
     PathInterval result = PathInterval::from_direction(from, to, true, path_size);
@@ -258,11 +259,11 @@ inline std::ostream &operator<<(std::ostream &os, PathInterval const &ival) {
     return os;
 }
 
-typedef Intersection<PathPosition> PathIntersection;
+typedef Intersection<PathTime> PathIntersection;
 
 template <>
 struct ShapeTraits<Path> {
-    typedef PathPosition TimeType;
+    typedef PathTime TimeType;
     typedef PathInterval IntervalType;
     typedef Path AffineClosureType;
     typedef PathIntersection IntersectionType;
@@ -313,7 +314,6 @@ class Path
       > >
 {
 public:
-    typedef PathPosition Position;
     typedef PathInternal::Sequence Sequence;
     typedef PathInternal::BaseIterator<Path> iterator;
     typedef PathInternal::BaseIterator<Path const> const_iterator;
@@ -490,7 +490,7 @@ public:
     /** @brief Get the point at the specified time value.
      * Note that this method has reduced precision with respect to calling pointAt()
      * directly on the curve. If you want high precision results, use the version
-     * that takes a Position parameter.
+     * that takes a PathTime parameter.
      * 
      * Allowed time values range from zero to the number of curves; you can retrieve
      * the allowed range of values with timeRange(). */
@@ -499,17 +499,17 @@ public:
     /// Get one coordinate (X or Y) at the specified time value.
     Coord valueAt(Coord t, Dim2 d) const;
 
-    /// Get the curve at the specified position.
-    Curve const &curveAt(Position const &pos) const;
-    /// Get the point at the specified position.
-    Point pointAt(Position const &pos) const;
-    /// Get one coordinate at the specified position.
-    Coord valueAt(Position const &pos, Dim2 d) const;
+    /// Get the curve at the specified path time.
+    Curve const &curveAt(PathTime const &pos) const;
+    /// Get the point at the specified path time.
+    Point pointAt(PathTime const &pos) const;
+    /// Get one coordinate at the specified path time.
+    Coord valueAt(PathTime const &pos, Dim2 d) const;
 
     Point operator()(Coord t) const { return pointAt(t); }
 
     /// Compute intersections with axis-aligned line.
-    std::vector<Position> roots(Coord v, Dim2 d) const;
+    std::vector<PathTime> roots(Coord v, Dim2 d) const;
 
     /// Compute intersections with another path.
     std::vector<PathIntersection> intersect(Path const &other, Coord precision = EPSILON) const;
@@ -531,9 +531,8 @@ public:
         return allNearestTimes(p, 0, size_default());
     }
 
-    Coord nearestTime(Point const &p, Coord *dist = NULL) const;
+    PathTime nearestTime(Point const &p, Coord *dist = NULL) const;
     std::vector<Coord> nearestTimePerCurve(Point const &p) const;
-    Position nearestPosition(Point const &p, Coord *dist = NULL) const;
 
     void appendPortionTo(Path &p, Coord f, Coord t) const;
 
@@ -541,7 +540,7 @@ public:
      * An extra stitching segment will be inserted if the start point of the portion
      * and the final point of the target path do not match exactly.
      * The closing segment of the target path will be modified. */
-    void appendPortionTo(Path &p, Position const &from, Position const &to, bool cross_start = false) const {
+    void appendPortionTo(Path &p, PathTime const &from, PathTime const &to, bool cross_start = false) const {
         PathInterval ival(from, to, cross_start, size_closed());
         appendPortionTo(p, ival, boost::none, boost::none);
     }
@@ -573,7 +572,7 @@ public:
      * and will cross the initial point of the path. Therefore, when @a from is larger
      * than @a to and @a cross_start is true, the returned portion will not be reversed,
      * but will "wrap around" the end of the path. */
-    Path portion(Position const &from, Position const &to, bool cross_start = false) const {
+    Path portion(PathTime const &from, PathTime const &to, bool cross_start = false) const {
         Path ret;
         ret.close(false);
         appendPortionTo(ret, from, to, cross_start);
@@ -785,7 +784,7 @@ private:
             _closing_seg = static_cast<ClosingSegment*>(&_curves->back());
         }
     }
-    Position _getPosition(Coord t) const;
+    PathTime _factorTime(Coord t) const;
 
     void stitch(Sequence::iterator first_replaced, Sequence::iterator last_replaced, Sequence &sequence);
     void do_update(Sequence::iterator first, Sequence::iterator last, Sequence &source);
@@ -801,7 +800,10 @@ private:
 
 Piecewise<D2<SBasis> > paths_to_pw(PathVector const &paths);
 
-inline Coord nearest_time(Point const &p, Path const &c) { return c.nearestTime(p); }
+inline Coord nearest_time(Point const &p, Path const &c) {
+    PathTime pt = c.nearestTime(p);
+    return pt.curve_index + pt.t;
+}
 
 } // end namespace Geom
 

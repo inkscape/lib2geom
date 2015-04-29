@@ -44,7 +44,7 @@ protected:
 };
 
 TEST_F(PathTest, PathInterval) {
-    PathPosition n2_before(1, 0.9995), n2_after(2, 0.0005),
+    PathTime n2_before(1, 0.9995), n2_after(2, 0.0005),
                  n3_before(2, 0.9995), n3_after(3, 0.0005),
                  mid2(2, 0.5), mid3(3, 0.5);
 
@@ -94,10 +94,10 @@ TEST_F(PathTest, PathInterval) {
         }
     }
 
-    PathPosition n1(1, 0.0), n1x(0, 1.0),
+    PathTime n1(1, 0.0), n1x(0, 1.0),
                  n2(2, 0.0), n2x(1, 1.0),
                  n3(3, 0.0), n3x(2, 1.0);
-    PathPosition tests[8] = { n1, n1x, n2, n2x, n3, n3x, mid2, mid3 };
+    PathTime tests[8] = { n1, n1x, n2, n2x, n3, n3x, mid2, mid3 };
 
     // 0: false for both
     // 1: true for normal, false for cross_start
@@ -147,20 +147,20 @@ TEST_F(PathTest, ValueAt) {
 }
 
 TEST_F(PathTest, NearestPoint) {
-    EXPECT_EQ(0, line.nearestTime(Point(0,0)));
-    EXPECT_EQ(0.5, line.nearestTime(Point(0.5,0)));
-    EXPECT_EQ(0.5, line.nearestTime(Point(0.5,1)));
-    EXPECT_EQ(1, line.nearestTime(Point(100,0)));
-    EXPECT_EQ(0, line.nearestTime(Point(-100,1000)));
+    EXPECT_EQ(0, line.nearestTime(Point(0,0)).asFlatTime());
+    EXPECT_EQ(0.5, line.nearestTime(Point(0.5,0)).asFlatTime());
+    EXPECT_EQ(0.5, line.nearestTime(Point(0.5,1)).asFlatTime());
+    EXPECT_EQ(1, line.nearestTime(Point(100,0)).asFlatTime());
+    EXPECT_EQ(0, line.nearestTime(Point(-100,1000)).asFlatTime());
 
-    EXPECT_EQ(0, square.nearestTime(Point(0,0)));
-    EXPECT_EQ(1, square.nearestTime(Point(1,0)));
-    EXPECT_EQ(3, square.nearestTime(Point(0,1)));
+    EXPECT_EQ(0, square.nearestTime(Point(0,0)).asFlatTime());
+    EXPECT_EQ(1, square.nearestTime(Point(1,0)).asFlatTime());
+    EXPECT_EQ(3, square.nearestTime(Point(0,1)).asFlatTime());
     
     //cout << diederik.nearestTime(Point(247.32293,-43.339507)) << endl;
 
     Point p(511.75,40.85);
-    EXPECT_FLOAT_EQ(6.5814033, diederik.nearestTime(p));
+    EXPECT_FLOAT_EQ(6.5814033, diederik.nearestTime(p).asFlatTime());
     /*cout << diederik.pointAt(diederik.nearestTime(p)) << endl
          << diederik.pointAt(6.5814033) << endl
          << distance(diederik.pointAt(diederik.nearestTime(p)), p) << "  "
@@ -251,8 +251,8 @@ TEST_F(PathTest, SVGRoundtrip) {
 }
 
 TEST_F(PathTest, Portion) {
-    PathPosition a(0, 0.5), b(3, 0.5);
-    PathPosition c(1, 0.25), d(1, 0.75);
+    PathTime a(0, 0.5), b(3, 0.5);
+    PathTime c(1, 0.25), d(1, 0.75);
 
     EXPECT_EQ(square.portion(a, b), string_to_path("M 0.5, 0 L 1,0 1,1 0,1 0,0.5"));
     EXPECT_EQ(square.portion(b, a), string_to_path("M 0,0.5 L 0,1 1,1 1,0 0.5,0"));
@@ -264,8 +264,8 @@ TEST_F(PathTest, Portion) {
     EXPECT_EQ(square.portion(d, c, true), string_to_path("M 1,0.75 L 1,1 0,1 0,0 1,0 1,0.25"));
 
     // verify that no matter how an endpoint is specified, the result is the same
-    PathPosition a1(0, 1.0), a2(1, 0.0);
-    PathPosition b1(2, 1.0), b2(3, 0.0);
+    PathTime a1(0, 1.0), a2(1, 0.0);
+    PathTime b1(2, 1.0), b2(3, 0.0);
     Path result = string_to_path("M 1,0 L 1,1 0,1");
     EXPECT_EQ(square.portion(a1, b1), result);
     EXPECT_EQ(square.portion(a1, b2), result);

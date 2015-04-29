@@ -119,7 +119,7 @@ PathIntersectionGraph::PathIntersectionGraph(PathVector const &a, PathVector con
                 std::size_t pi = i->pos.path_index;
 
                 PathInterval ival = forward_interval(i->pos, n->pos, pv[pi].size());
-                PathPosition mid = ival.inside(precision);
+                PathTime mid = ival.inside(precision);
 
                 // TODO check for degenerate cases
                 // requires changes in the winding routine
@@ -216,7 +216,7 @@ PathVector PathIntersectionGraph::_getResult(bool enter_a, bool enter_b)
 
             // append portion of path
             PathInterval ival = PathInterval::from_direction(
-                prev->pos.asPathPosition(), i->pos.asPathPosition(),
+                prev->pos.asPathTime(), i->pos.asPathTime(),
                 reverse, (*cur)[pi].size());
 
             (*cur)[pi].appendPortionTo(result.back(), ival, prev->p, i->p);

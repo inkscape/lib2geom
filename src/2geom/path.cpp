@@ -53,7 +53,7 @@ PathInterval::PathInterval()
     , _reverse(false)
 {}
 
-PathInterval::PathInterval(Position const &from, Position const &to, bool cross_start, size_type path_size)
+PathInterval::PathInterval(PathTime const &from, PathTime const &to, bool cross_start, size_type path_size)
     : _from(from)
     , _to(to)
     , _path_size(path_size)
@@ -78,7 +78,7 @@ PathInterval::PathInterval(Position const &from, Position const &to, bool cross_
     }
 }
 
-bool PathInterval::contains(Position const &pos) const {
+bool PathInterval::contains(PathTime const &pos) const {
     if (_cross_start) {
         if (_reverse) {
             return pos >= _to || _from >= pos;
@@ -94,14 +94,14 @@ bool PathInterval::contains(Position const &pos) const {
     }
 }
 
-PathPosition PathInterval::inside(Coord min_dist) const
+PathTime PathInterval::inside(Coord min_dist) const
 {
     // If there is some node further than min_dist (in time coord) from the ends,
     // return that node. Otherwise, return the middle.
-    PathPosition result(0, 0.0);
+    PathTime result(0, 0.0);
 
     if (!_cross_start && _from.curve_index == _to.curve_index) {
-        PathPosition result(_from.curve_index, lerp(0.5, _from.t, _to.t));
+        PathTime result(_from.curve_index, lerp(0.5, _from.t, _to.t));
         return result;
     }
     // If _cross_start, then we can be sure that at least one node is in the domain.
@@ -181,7 +181,7 @@ PathPosition PathInterval::inside(Coord min_dist) const
     return result;
 }
 
-PathInterval PathInterval::from_direction(Position const &from, Position const &to, bool reversed, size_type path_size)
+PathInterval PathInterval::from_direction(PathTime const &from, PathTime const &to, bool reversed, size_type path_size)
 {
     PathInterval result;
     result._from = from;
@@ -351,7 +351,7 @@ Interval Path::timeRange() const
 
 Curve const &Path::curveAt(Coord t, Coord *rest) const
 {
-    Position pos = _getPosition(t);
+    PathTime pos = _factorTime(t);
     if (rest) {
         *rest = pos.t;
     }
@@ -360,34 +360,34 @@ Curve const &Path::curveAt(Coord t, Coord *rest) const
 
 Point Path::pointAt(Coord t) const
 {
-    return pointAt(_getPosition(t));
+    return pointAt(_factorTime(t));
 }
 
 Coord Path::valueAt(Coord t, Dim2 d) const
 {
-    return valueAt(_getPosition(t), d);
+    return valueAt(_factorTime(t), d);
 }
 
-Curve const &Path::curveAt(Position const &pos) const
+Curve const &Path::curveAt(PathTime const &pos) const
 {
     return at(pos.curve_index);
 }
-Point Path::pointAt(Position const &pos) const
+Point Path::pointAt(PathTime const &pos) const
 {
     return at(pos.curve_index).pointAt(pos.t);
 }
-Coord Path::valueAt(Position const &pos, Dim2 d) const
+Coord Path::valueAt(PathTime const &pos, Dim2 d) const
 {
     return at(pos.curve_index).valueAt(pos.t, d);
 }
 
-std::vector<PathPosition> Path::roots(Coord v, Dim2 d) const
+std::vector<PathTime> Path::roots(Coord v, Dim2 d) const
 {
-    std::vector<PathPosition> res;
+    std::vector<PathTime> res;
     for (unsigned i = 0; i <= size(); i++) {
         std::vector<Coord> temp = (*this)[i].roots(v, d);
         for (unsigned j = 0; j < temp.size(); j++)
-            res.push_back(PathPosition(i, temp[j]));
+            res.push_back(PathTime(i, temp[j]));
     }
     return res;
 }
@@ -402,7 +402,7 @@ std::vector<PathIntersection> Path::intersect(Path const &other, Coord precision
         for (size_type j = 0; j < other.size(); ++j) {
             std::vector<CurveIntersection> cx = (*this)[i].intersect(other[j], precision);
             for (std::size_t ci = 0; ci < cx.size(); ++ci) {
-                PathPosition a(i, cx[ci].first), b(j, cx[ci].second);
+                PathTime a(i, cx[ci].first), b(j, cx[ci].second);
                 PathIntersection px(a, b, cx[ci].point());
                 result.push_back(px);
             }
@@ -550,16 +550,10 @@ std::vector<Coord> Path::nearestTimePerCurve(Point const &p) const
     return np;
 }
 
-Coord Path::nearestTime(Point const &p, Coord *dist) const
-{
-    Position pos = nearestPosition(p, dist);
-    return pos.curve_index + pos.t;
-}
-
-PathPosition Path::nearestPosition(Point const &p, Coord *dist) const
+PathTime Path::nearestTime(Point const &p, Coord *dist) const
 {
     Coord mindist = std::numeric_limits<Coord>::max();
-    Position ret;
+    PathTime ret;
 
     if (_curves->size() == 1) {
         // naked moveto
@@ -639,7 +633,7 @@ void Path::appendPortionTo(Path &target, PathInterval const &ival,
         return;
     }
 
-    Position const &from = ival.from(), &to = ival.to();
+    PathTime const &from = ival.from(), &to = ival.to();
 
     bool reverse = ival.reverse();
     int di = reverse ? -1 : 1;
@@ -872,14 +866,15 @@ void Path::checkContinuity() const
     }
 }
 
-PathPosition Path::_getPosition(Coord t) const
+// breaks time value into integral and fractional part
+PathTime Path::_factorTime(Coord t) const
 {
     size_type sz = size_default();
     if (t < 0 || t > sz) {
         THROW_RANGEERROR("parameter t out of bounds");
     }
 
-    Position ret;
+    PathTime ret;
     Coord k;
     ret.t = modf(t, &k);
     ret.curve_index = k;

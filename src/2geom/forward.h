@@ -78,9 +78,9 @@ class SVGEllipticalArc;
 // paths and path sequences
 class Path;
 class PathVector;
-struct PathPosition;
+struct PathTime;
 class PathInterval;
-struct PathVectorPosition;
+struct PathVectorTime;
 
 // errors
 class Exception;

@@ -77,7 +77,7 @@ Path &PathVector::pathAt(Coord t, Coord *rest)
 }
 Path const &PathVector::pathAt(Coord t, Coord *rest) const
 {
-    Position pos = _getPosition(t);
+    PathVectorTime pos = _factorTime(t);
     if (rest) {
         *rest = Coord(pos.curve_index) + pos.t;
     }
@@ -85,7 +85,7 @@ Path const &PathVector::pathAt(Coord t, Coord *rest) const
 }
 Curve const &PathVector::curveAt(Coord t, Coord *rest) const
 {
-    Position pos = _getPosition(t);
+    PathVectorTime pos = _factorTime(t);
     if (rest) {
         *rest = pos.t;
     }
@@ -93,12 +93,12 @@ Curve const &PathVector::curveAt(Coord t, Coord *rest) const
 }
 Coord PathVector::valueAt(Coord t, Dim2 d) const
 {
-    Position pos = _getPosition(t);
+    PathVectorTime pos = _factorTime(t);
     return at(pos.path_index).at(pos.curve_index).valueAt(pos.t, d);
 }
 Point PathVector::pointAt(Coord t) const
 {
-    Position pos = _getPosition(t);
+    PathVectorTime pos = _factorTime(t);
     return at(pos.path_index).at(pos.curve_index).pointAt(pos.t);
 }
 
@@ -135,7 +135,7 @@ void PathVector::snapEnds(Coord precision)
 
 std::vector<PVIntersection> PathVector::intersect(PathVector const &other, Coord precision) const
 {
-    typedef PathVectorPosition PVPos;
+    typedef PathVectorTime PVPos;
     std::vector<PVIntersection> result;
     for (std::size_t i = 0; i < size(); ++i) {
         for (std::size_t j = 0; j < other.size(); ++j) {
@@ -158,17 +158,17 @@ int PathVector::winding(Point const &p) const
     return wind;
 }
 
-boost::optional<PathVectorPosition> PathVector::nearestPosition(Point const &p, Coord *dist) const
+boost::optional<PathVectorTime> PathVector::nearestTime(Point const &p, Coord *dist) const
 {
-    boost::optional<Position> retval;
+    boost::optional<PathVectorTime> retval;
 
     Coord mindist = infinity();
     for (size_type i = 0; i < size(); ++i) {
         Coord d;
-        PathPosition pos = (*this)[i].nearestPosition(p, &d);
+        PathTime pos = (*this)[i].nearestTime(p, &d);
         if (d < mindist) {
             mindist = d;
-            retval = Position(i, pos.curve_index, pos.t);
+            retval = PathVectorTime(i, pos.curve_index, pos.t);
         }
     }
 
@@ -178,20 +178,20 @@ boost::optional<PathVectorPosition> PathVector::nearestPosition(Point const &p, 
     return retval;
 }
 
-std::vector<PathVectorPosition> PathVector::allNearestPositions(Point const &p, Coord *dist) const
+std::vector<PathVectorTime> PathVector::allNearestTimes(Point const &p, Coord *dist) const
 {
-    std::vector<Position> retval;
+    std::vector<PathVectorTime> retval;
 
     Coord mindist = infinity();
     for (size_type i = 0; i < size(); ++i) {
         Coord d;
-        PathPosition pos = (*this)[i].nearestPosition(p, &d);
+        PathTime pos = (*this)[i].nearestTime(p, &d);
         if (d < mindist) {
             mindist = d;
             retval.clear();
         }
         if (d <= mindist) {
-            retval.push_back(Position(i, pos.curve_index, pos.t));
+            retval.push_back(PathVectorTime(i, pos.curve_index, pos.t));
         }
     }
 
@@ -201,9 +201,9 @@ std::vector<PathVectorPosition> PathVector::allNearestPositions(Point const &p, 
     return retval;
 }
 
-PathVectorPosition PathVector::_getPosition(Coord t) const
+PathVectorTime PathVector::_factorTime(Coord t) const
 {
-    Position ret;
+    PathVectorTime ret;
     Coord rest = 0;
     ret.t = modf(t, &rest);
     ret.curve_index = rest;
