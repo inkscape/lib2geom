@@ -212,7 +212,11 @@ class PathBuilder : public PathIteratorSink<SubpathInserter> {
 private:
     PathVector _pathset;
 public:
+    /// Create a builder that outputs to an internal pathvector.
     PathBuilder() : PathIteratorSink<SubpathInserter>(SubpathInserter(_pathset)) {}
+    /// Create a builder that outputs to pathvector given by reference.
+    PathBuilder(PathVector &pv) : PathIteratorSink<SubpathInserter>(SubpathInserter(pv)) {}
+
     /// Retrieve the path
     PathVector const &peek() const {return _pathset;}
     /// Clear the stored path vector
