@@ -288,7 +288,11 @@ struct ShapeTraits<Path> {
  * - Iterating between @a begin() and @a end_closed()
  *   will always iterate over a closed loop of segments.
  * - Iterating between @a begin() and @a end_open() will always skip
- *   the closing segment.
+ *   the final linear closing segment.
+ *
+ * If the final point of the last "real" segment coincides exactly with the initial
+ * point of the first segment, the closing segment will be absent from both
+ * [begin(), end_open()) and [begin(), end_closed()).
  *
  * Normally, an exception will be thrown when you try to insert a curve
  * that makes the path non-continuous. If you are working with unsanitized
