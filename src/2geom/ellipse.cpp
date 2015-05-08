@@ -180,7 +180,6 @@ Ellipse::arc(Point const &ip, Point const &inner, Point const &fp,
     // The arc is larger than half of the ellipse if the inner point
     // is on the same side of the line going from the initial
     // to the final point as the center of the ellipse
-    Line chord(ip, fp);
     Point versor = fp - ip;
     double sdist_c = cross(versor, _center - ip);
     double sdist_inner = cross(versor, inner - ip);
