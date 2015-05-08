@@ -33,6 +33,7 @@
 
 #include <2geom/toys/path-cairo.h>
 #include <2geom/toys/toy-framework-2.h>
+#include <2geom/cairo-path-sink.h>
 
 #include <vector>
 #include <string>
@@ -568,10 +569,14 @@ class SVGEllipticalArcTestToy: public Toy
             std::cerr << "elliptiarc transformation failed" << std::endl;
             return;
         }
-        D2<SBasis> sb = eat->toSBasis();
+
+        CairoPathSink ps(cr);
+
+        //D2<SBasis> sb = eat->toSBasis();
         cairo_set_line_width(cr, 0.8);
         cairo_set_source_rgba(cr, 0.8, 0.1, 0.1, 1.0);
-        cairo_d2_sb(cr, sb);
+        //cairo_d2_sb(cr, sb);
+        ps.feed(*eat);
         cairo_stroke(cr);
         delete eat;
     }
