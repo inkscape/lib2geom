@@ -46,7 +46,6 @@ cairo-path-sink.cpp
 choose.h
 circle.cpp
 circle.h
-circulator.h
 concepts.cpp
 concepts.h
 conicsec.cpp
