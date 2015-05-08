@@ -31,7 +31,7 @@
 
 #include <cairo.h>
 #include <2geom/cairo-path-sink.h>
-#include <2geom/elliptical-arc.h>
+#include <2geom/svg-elliptical-arc.h>
 
 namespace Geom {
 
@@ -71,7 +71,7 @@ void CairoPathSink::quadTo(Point const &p1, Point const &p2)
 void CairoPathSink::arcTo(double rx, double ry, double angle,
                           bool large_arc, bool sweep, Point const &p)
 {
-    EllipticalArc arc(_current_point, rx, ry, angle, large_arc, sweep, p);
+    SVGEllipticalArc arc(_current_point, rx, ry, angle, large_arc, sweep, p);
     // Cairo only does circular arcs.
     // To do elliptical arcs, we must use a temporary transform.
     Affine uct = arc.unitCircleTransform();
