@@ -112,9 +112,8 @@ class PathVector
     , MultipliableNoncommutative< PathVector, HShear
     , MultipliableNoncommutative< PathVector, VShear
     , MultipliableNoncommutative< PathVector, Zoom
-    , boost::addable< PathVector
     , boost::equality_comparable< PathVector
-      > > > > > > > > >
+      > > > > > > > >
 {
     typedef std::vector<Path> Sequence;
 public:
