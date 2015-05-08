@@ -109,6 +109,7 @@ public:
 
 private:
     bool _absolute;
+    bool _moveto_was_absolute;
     Point _current;
     Point _initial;
     Point _cubic_tangent;
