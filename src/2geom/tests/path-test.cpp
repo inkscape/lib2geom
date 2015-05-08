@@ -26,6 +26,7 @@ protected:
         line.append(LineSegment(Point(0,0), Point(1,0)));
         square = string_to_path("M 0,0 1,0 1,1 0,1 z");
         circle = string_to_path("M 0,0 a 4.5,4.5 0 1 1 -9,0 4.5,4.5 0 1 1 9,0 z");
+        arcs = string_to_path("M 0,0 a 5,10 45 0 1 10,10 a 5,10 45 0 1 0,0 z");
         diederik = string_to_path("m 262.6037,35.824151 c 0,0 -92.64892,-187.405851 30,-149.999981 104.06976,31.739531 170,109.9999815 170,109.9999815 l -10,-59.9999905 c 0,0 40,79.99999 -40,79.99999 -80,0 -70,-129.999981 -70,-129.999981 l 50,0 C 435.13571,-131.5667 652.76275,126.44872 505.74322,108.05672 358.73876,89.666591 292.6037,-14.175849 292.6037,15.824151 c 0,30 -30,20 -30,20 z");
         cmds = string_to_path("M 0,0 V 100 H 100 Q 100,0 0,0 L 200,0 C 200,100 300,100 300,0 S 200,-100 200,0");
         
@@ -39,7 +40,7 @@ protected:
     }
 
     // Objects declared here can be used by all tests in the test case for Foo.
-    Path line, square, circle, diederik, cmds;
+    Path line, square, circle, arcs, diederik, cmds;
     Path p_open, p_closed, p_add;
 };
 
@@ -228,6 +229,12 @@ TEST_F(PathTest, SVGRoundtrip) {
         //cout << sw.str() << endl;
         Path circle_svg = string_to_path(sw.str().c_str());
         EXPECT_TRUE(circle_svg == circle);
+        sw.clear();
+
+        sw.feed(arcs);
+        //cout << sw.str() << endl;
+        Path arcs_svg = string_to_path(sw.str().c_str());
+        EXPECT_TRUE(arcs_svg == arcs);
         sw.clear();
 
         sw.feed(diederik);
