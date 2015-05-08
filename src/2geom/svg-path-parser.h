@@ -40,6 +40,7 @@
 #include <2geom/exception.h>
 #include <2geom/point.h>
 #include <2geom/path-sink.h>
+#include <2geom/forward.h>
 
 namespace Geom {
 
@@ -60,6 +61,7 @@ namespace Geom {
 class SVGPathParser {
 public:
     SVGPathParser(PathSink &sink);
+    ~SVGPathParser();
 
     /** @brief Reset internal state.
      * Discards the internal state associated with partially parsed data,
@@ -94,6 +96,17 @@ public:
      * You should not call this after parse(). */
     void finish();
 
+    /** @brief Set the threshold for considering the closing segment degenerate.
+     * When the current point was reached by a relative command, is closer
+     * to the initial point of the path than the specified threshold
+     * and a 'z' is encountered, the last segment will be adjusted instead so that
+     * the closing segment has exactly zero length. This is useful when reading
+     * SVG 1.1 paths that have non-linear final segments written in relative
+     * coordinates, which always suffer from some loss of precision. SVG 2
+     * allows alternate placement of 'z' which does not have this problem. */
+    void setZSnapThreshold(Coord threshold) { _z_snap_threshold = threshold; }
+    Coord zSnapThreshold() const { return _z_snap_threshold; }
+
 private:
     bool _absolute;
     Point _current;
@@ -102,6 +115,8 @@ private:
     Point _quad_tangent;
     std::vector<Coord> _params;
     PathSink &_sink;
+    Coord _z_snap_threshold;
+    Curve *_curve;
 
     int cs;
     std::string _number_part;
@@ -118,6 +133,7 @@ private:
     void _arcTo(double rx, double ry, double angle,
                 bool large_arc, bool sweep, Point const &p);
     void _closePath();
+    void _pushCurve(Curve *c);
 
     void _parse(char const *str, char const *strend, bool finish);
 };

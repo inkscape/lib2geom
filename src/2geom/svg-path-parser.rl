@@ -49,8 +49,15 @@ namespace Geom {
 SVGPathParser::SVGPathParser(PathSink &sink)
     : _absolute(false)
     , _sink(sink)
+    , _z_snap_threshold(0)
+    , _curve(NULL)
 {
     reset();
+}
+
+SVGPathParser::~SVGPathParser()
+{
+    delete _curve;
 }
 
 void SVGPathParser::reset() {
@@ -58,6 +65,8 @@ void SVGPathParser::reset() {
     _current = _initial = Point(0, 0);
     _quad_tangent = _cubic_tangent = Point(0, 0);
     _params.clear();
+    delete _curve;
+    _curve = NULL;
 
     %%{
         write init;
@@ -125,23 +134,24 @@ Point SVGPathParser::_pop_point() {
 }
 
 void SVGPathParser::_moveTo(Point const &p) {
+    _pushCurve(NULL); // flush
     _sink.moveTo(p);
     _quad_tangent = _cubic_tangent = _current = _initial = p;
 }
 
 void SVGPathParser::_lineTo(Point const &p) {
-    _sink.lineTo(p);
+    _pushCurve(new LineSegment(_current, p));
     _quad_tangent = _cubic_tangent = _current = p;
 }
 
 void SVGPathParser::_curveTo(Point const &c0, Point const &c1, Point const &p) {
-    _sink.curveTo(c0, c1, p);
+    _pushCurve(new CubicBezier(_current, c0, c1, p));
     _quad_tangent = _current = p;
     _cubic_tangent = p + ( p - c1 );
 }
 
 void SVGPathParser::_quadTo(Point const &c, Point const &p) {
-    _sink.quadTo(c, p);
+    _pushCurve(new QuadraticBezier(_current, c, p));
     _cubic_tangent = _current = p;
     _quad_tangent = p + ( p - c );
 }
@@ -149,17 +159,29 @@ void SVGPathParser::_quadTo(Point const &c, Point const &p) {
 void SVGPathParser::_arcTo(Coord rx, Coord ry, Coord angle,
                            bool large_arc, bool sweep, Point const &p)
 {
-    if (are_near(_current, p)) {
+    if (_current == p) {
         return; // ignore invalid (ambiguous) arc segments where start and end point are the same (per SVG spec)
     }
 
-    _sink.arcTo(rx, ry, angle, large_arc, sweep, p);
+    _pushCurve(new SVGEllipticalArc(_current, rx, ry, angle, large_arc, sweep, p));
     _quad_tangent = _cubic_tangent = _current = p;
 }
 
 void SVGPathParser::_closePath() {
+    if (!_absolute && _curve && are_near(_initial, _current, _z_snap_threshold)) {
+        _curve->setFinal(_initial);
+    }
+    _pushCurve(NULL); // flush
     _sink.closePath();
     _quad_tangent = _cubic_tangent = _current = _initial;
+}
+
+void SVGPathParser::_pushCurve(Curve *c) {
+    if (_curve) {
+        _sink.feed(*_curve, false);
+        delete _curve;
+    }
+    _curve = c;
 }
 
 void SVGPathParser::_parse(char const *str, char const *strend, bool finish)
@@ -204,7 +226,7 @@ void SVGPathParser::_parse(char const *str, char const *strend, bool finish)
     
         action moveto {
             _moveTo(_pop_point());
-        }    
+        }
 
         action lineto {
             _lineTo(_pop_point());
@@ -406,6 +428,7 @@ void SVGPathParser::_parse(char const *str, char const *strend, bool finish)
     }
 
     if (finish) {
+        _pushCurve(NULL);
         _sink.flush();
         reset();
     }
