@@ -36,6 +36,7 @@
 #include <2geom/pathvector.h>
 #include <2geom/transforms.h>
 #include <2geom/convex-hull.h>
+#include <2geom/svg-path-writer.h>
 #include <algorithm>
 #include <limits>
 
@@ -689,14 +690,37 @@ Path Path::reversed() const
 {
     typedef std::reverse_iterator<Sequence::const_iterator> RIter;
 
-    Path ret;
-    ret._curves->pop_back(); // this also deletes the closing segment
-    RIter iter(_curves->end() - 1), rend(_curves->begin());
+    Path ret(finalPoint());
+    if (empty()) return ret;
+
+    ret._curves->pop_back(); // this also deletes the closing segment from ret
+
+    RIter iter(_includesClosingSegment() ? _curves->end() : _curves->end() - 1);
+    RIter rend(_curves->begin());
+
+    if (_closed) {
+        // when the path is closed, there are two cases:
+        BezierCurve const *iseg = dynamic_cast<BezierCurve const *>(&front());
+        if (iseg && iseg->size() == 2) {
+            // 1. initial segment is linear: it becomes the new closing segment.
+            rend = RIter(_curves->begin() + 1);
+            ret._closing_seg = new ClosingSegment(iseg->finalPoint(), iseg->initialPoint());
+        } else {
+            // 2. initial segment is not linear: the closing segment becomes degenerate.
+            // However, skip it if it's already degenerate.
+            Point fp = finalPoint();
+            ret._closing_seg = new ClosingSegment(fp, fp);
+        }
+    } else {
+        // when the path is open, we reverse all real curves, and add a reversed closing segment.
+        ret._closing_seg = static_cast<ClosingSegment *>(_closing_seg->reverse());
+    }
+
     for (; iter != rend; ++iter) {
         ret._curves->push_back(iter->reverse());
     }
-    ret._closing_seg = static_cast<ClosingSegment *>(_closing_seg->reverse());
     ret._curves->push_back(ret._closing_seg);
+    ret._closed = _closed;
     return ret;
 }
 
@@ -904,6 +928,14 @@ Piecewise<D2<SBasis> > paths_to_pw(PathVector const &paths)
         ret.concat(paths[i].toPwSb());
     }
     return ret;
+}
+
+std::ostream &operator<<(std::ostream &out, Path const &path)
+{
+    SVGPathWriter pw;
+    pw.feed(path);
+    out << pw.str();
+    return out;
 }
 
 } // end namespace Geom

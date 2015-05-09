@@ -402,6 +402,8 @@ public:
      * Since the curve always contains at least a degenerate closing segment,
      * it is always safe to use this method. */
     Curve const &front() const { return _curves->front(); }
+    /// Alias for front().
+    Curve const &initialCurve() const { return _curves->front(); }
     /** @brief Access the last curve in the path. */
     Curve const &back() const { return back_default(); }
     Curve const &back_open() const {
@@ -413,7 +415,12 @@ public:
             ? (*_curves)[_curves->size() - 2]
             : (*_curves)[_curves->size() - 1];
     }
-    Curve const &back_default() const { return (_closed ? back_closed() : back_open()); }
+    Curve const &back_default() const {
+        return _includesClosingSegment()
+            ? back_closed()
+            : back_open();
+    }
+    Curve const &finalCurve() const { return back_default(); }
 
     const_iterator begin() const { return const_iterator(*this, 0); }
     const_iterator end() const { return end_default(); }
@@ -811,6 +818,8 @@ inline Coord nearest_time(Point const &p, Path const &c) {
     PathTime pt = c.nearestTime(p);
     return pt.curve_index + pt.t;
 }
+
+std::ostream &operator<<(std::ostream &out, Path const &path);
 
 } // end namespace Geom
 

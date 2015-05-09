@@ -146,12 +146,29 @@ TEST_F(PathTest, RectConstructor) {
 }
 
 TEST_F(PathTest, Reversed) {
-    Path r_open = p_open.reversed();
+    std::vector<Path> a, r;
+    a.push_back(p_open);
+    a.push_back(p_closed);
+    a.push_back(circle);
+    a.push_back(diederik);
+    a.push_back(cmds);
 
-    EXPECT_EQ(r_open.size(), p_open.size());
-    EXPECT_EQ(r_open.initialPoint(), p_open.finalPoint());
-    EXPECT_EQ(r_open.finalPoint(), p_open.initialPoint());
-    EXPECT_EQ(r_open.reversed(), p_open);
+    for (unsigned i = 0; i < a.size(); ++i) {
+        r.push_back(a[i].reversed());
+    }
+
+    for (unsigned i = 0; i < a.size(); ++i) {
+        EXPECT_EQ(r[i].size(), a[i].size());
+        EXPECT_EQ(r[i].initialPoint(), a[i].finalPoint());
+        EXPECT_EQ(r[i].finalPoint(), a[i].initialPoint());
+        EXPECT_EQ(r[i].reversed(), a[i]);
+        Point p1 = r[i].pointAt(0.75);
+        Point p2 = a[i].pointAt(a[i].size() - 0.75);
+        EXPECT_FLOAT_EQ(p1[X], p2[X]);
+        EXPECT_FLOAT_EQ(p1[Y], p2[Y]);
+        EXPECT_EQ(r[i].closed(), a[i].closed());
+        a[i].checkContinuity();
+    }
 }
 
 TEST_F(PathTest, ValueAt) {
