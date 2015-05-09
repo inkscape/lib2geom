@@ -133,6 +133,27 @@ TEST_F(PathTest, Continuity) {
     cmds.checkContinuity();
 }
 
+TEST_F(PathTest, RectConstructor) {
+    Rect r(Point(0,0), Point(10,10));
+    Path rpath(r);
+
+    EXPECT_EQ(rpath.size(), 4);
+    EXPECT_TRUE(rpath.closed());
+    for (unsigned i = 0; i < 4; ++i) {
+        EXPECT_TRUE(dynamic_cast<LineSegment const *>(&rpath[i]) != NULL);
+        EXPECT_EQ(rpath[i].initialPoint(), r.corner(i));
+    }
+}
+
+TEST_F(PathTest, Reversed) {
+    Path r_open = p_open.reversed();
+
+    EXPECT_EQ(r_open.size(), p_open.size());
+    EXPECT_EQ(r_open.initialPoint(), p_open.finalPoint());
+    EXPECT_EQ(r_open.finalPoint(), p_open.initialPoint());
+    EXPECT_EQ(r_open.reversed(), p_open);
+}
+
 TEST_F(PathTest, ValueAt) {
     EXPECT_EQ(Point(0,0), line.initialPoint());
     EXPECT_EQ(Point(1,0), line.finalPoint());

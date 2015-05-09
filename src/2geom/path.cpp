@@ -215,6 +215,18 @@ PathInterval PathInterval::from_direction(PathTime const &from, PathTime const &
 }
 
 
+Path::Path(Rect const &r)
+    : _curves(new Sequence())
+    , _closing_seg(new ClosingSegment(r.corner(3), r.corner(0)))
+    , _closed(true)
+    , _exception_on_stitch(true)
+{
+    for (unsigned i = 0; i < 3; ++i) {
+        _curves->push_back(new LineSegment(r.corner(i), r.corner(i+1)));
+    }
+    _curves->push_back(_closing_seg);
+}
+
 Path::Path(ConvexHull const &ch)
     : _curves(new Sequence())
     , _closing_seg(new ClosingSegment(Point(), Point()))
@@ -678,12 +690,12 @@ Path Path::reversed() const
     typedef std::reverse_iterator<Sequence::const_iterator> RIter;
 
     Path ret;
-    ret._curves->pop_back();
-    RIter iter(_curves->end()), rend(_curves->begin());
+    ret._curves->pop_back(); // this also deletes the closing segment
+    RIter iter(_curves->end() - 1), rend(_curves->begin());
     for (; iter != rend; ++iter) {
         ret._curves->push_back(iter->reverse());
     }
-    ret._closing_seg = static_cast<ClosingSegment *>(ret._closing_seg->reverse());
+    ret._closing_seg = static_cast<ClosingSegment *>(_closing_seg->reverse());
     ret._curves->push_back(ret._closing_seg);
     return ret;
 }

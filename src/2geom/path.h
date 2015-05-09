@@ -371,6 +371,9 @@ public:
         _curves->push_back(_closing_seg);
     }
 
+    /// Construct a path from a rectangle.
+    Path(Rect const &r);
+
     /// Construct a path from a convex hull.
     Path(ConvexHull const &);
 
