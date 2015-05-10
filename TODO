@@ -42,6 +42,9 @@ Toys:
   - Use GTK 3 to provide widgets such as checkboxes and buttons (?)
 
 Other:
+  - sweeper.h: add variants of Sweeper that accept void Item
+    and add a version that does sweepline over two lists rather
+    than one.
   - Rewrite conic section code to match coding style.
   - Rewrite QuadTree and RTree to make them actually usable.
   - BSP tree.

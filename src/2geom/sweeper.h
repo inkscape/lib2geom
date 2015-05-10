@@ -56,6 +56,21 @@ struct RectSweepTraits {
     inline static Coord exit_value(Bound const &b) { return b[d].max(); }
 };
 
+/** @brief Generic sweepline algorithm.
+ *
+ * This class encapsulates an algorithm that sorts the objects according
+ * to their bounds, then moves an imaginary line (sweepline) over those
+ * bounds from left to right. Objects are added to the active list when
+ * the line starts intersecting their bounds, and removed when it completely
+ * passes over them.
+ *
+ * To use this, create a derived class and reimplement the _enter()
+ * and/or _leave() virtual functions, insert all the objects,
+ * and finally call process(). You can specify the bound type
+ * and how it should be accessed by defining a custom SweepTraits class.
+ *
+ * Look in path.cpp for example usage.
+ */
 template <typename Item, typename SweepTraits = IntervalSweepTraits>
 class Sweeper {
 public:
@@ -140,6 +155,7 @@ public:
     }
 
 protected:
+    /// The item and its sweepline boundary.
     struct Record {
         boost::intrusive::list_member_hook<> _hook;
         Bound bound;
