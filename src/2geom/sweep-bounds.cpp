@@ -1,8 +1,26 @@
-#include <2geom/sweep.h>
+#include <2geom/sweep-bounds.h>
 
 #include <algorithm>
 
 namespace Geom {
+
+struct Event {
+    double x;
+    unsigned ix;
+    bool closing;
+    Event(double pos, unsigned i, bool c) : x(pos), ix(i), closing(c) {}
+// Lexicographic ordering by x then closing
+    bool operator<(Event const &other) const {
+        if(x < other.x) return true;
+        if(x > other.x) return false;
+        return closing < other.closing;
+    }
+    bool operator==(Event const &other) const {
+        return other.x == x && other.ix == ix && other.closing == closing;
+    }
+};
+
+std::vector<std::vector<unsigned> > fake_cull(unsigned a, unsigned b);
 
 /**
  * \brief Make a list of pairs of self intersections in a list of Rects.

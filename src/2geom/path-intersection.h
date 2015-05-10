@@ -35,11 +35,9 @@
 #ifndef LIB2GEOM_SEEN_PATH_INTERSECTION_H
 #define LIB2GEOM_SEEN_PATH_INTERSECTION_H
 
-#include <2geom/path.h>
-
 #include <2geom/crossing.h>
-
-#include <2geom/sweep.h>
+#include <2geom/path.h>
+#include <2geom/sweep-bounds.h>
 
 namespace Geom {
 

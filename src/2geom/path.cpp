@@ -37,6 +37,7 @@
 #include <2geom/transforms.h>
 #include <2geom/convex-hull.h>
 #include <2geom/svg-path-writer.h>
+#include <2geom/sweeper.h>
 #include <algorithm>
 #include <limits>
 
@@ -405,23 +406,91 @@ std::vector<PathTime> Path::roots(Coord v, Dim2 d) const
     return res;
 }
 
-std::vector<PathIntersection> Path::intersect(Path const &other, Coord precision) const
-{
-    std::vector<PathIntersection> result;
 
-    // TODO: sweepline optimization
-    // TODO: remove multiple intersections within precision of each other?
-    for (size_type i = 0; i < size(); ++i) {
-        for (size_type j = 0; j < other.size(); ++j) {
-            std::vector<CurveIntersection> cx = (*this)[i].intersect(other[j], precision);
+// The class below implements sweepline optimization for curve intersection in paths.
+// Instead of O(N^2), this takes O(N + X), where X is the number of overlaps
+// between the bounding boxes of curves.
+namespace {
+
+struct CurveSweepTraits {
+    struct Bound {
+        Rect r;
+        std::size_t index;
+        int which;
+    };
+    typedef std::less<Coord> Compare;
+    inline static Coord entry_value(Bound const &b) { return b.r[X].min(); }
+    inline static Coord exit_value(Bound const &b) { return b.r[X].max(); }
+};
+
+class CurveSweeper
+    : public Sweeper<Curve const *, CurveSweepTraits>
+{
+public:
+    CurveSweeper(Path const &a, Path const &b, std::vector<PathIntersection> &result, Coord prec)
+        : _result(result)
+        , _precision(prec)
+    {
+        for (std::size_t i = 0; i < a.size(); ++i) {
+            Bound bound;
+            bound.r = a[i].boundsFast();
+            bound.index = i;
+            bound.which = 0;
+            insert(bound, &a[i]);
+        }
+        for (std::size_t i = 0; i < b.size(); ++i) {
+            Bound bound;
+            bound.r = b[i].boundsFast();
+            bound.index = i;
+            bound.which = 1;
+            insert(bound, &b[i]);
+        }
+    }
+
+protected:
+    void _enter(Record const &record) {
+        int which = record.bound.which;
+
+        for (RecordList::iterator i = _active_items.begin(); i != _active_items.end(); ++i) {
+            // do not intersect in the same path
+            if (i->bound.which == which) continue;
+            // do not intersect if boxes do not overlap in Y
+            if (!record.bound.r[Y].intersects(i->bound.r[Y])) continue;
+
+            std::vector<CurveIntersection> cx;
+            int ia = record.bound.index;
+            int ib = i->bound.index;
+
+            if (which == 0) {
+                cx = record.item->intersect(*i->item);
+            } else {
+                cx = i->item->intersect(*record.item, _precision);
+                std::swap(ia, ib);
+            }
+
             for (std::size_t ci = 0; ci < cx.size(); ++ci) {
-                PathTime a(i, cx[ci].first), b(j, cx[ci].second);
+                PathTime a(ia, cx[ci].first), b(ib, cx[ci].second);
                 PathIntersection px(a, b, cx[ci].point());
-                result.push_back(px);
+                _result.push_back(px);
             }
         }
     }
 
+private:
+    std::vector<PathIntersection> &_result;
+    Coord _precision;
+};
+
+} // end anonymous namespace
+
+std::vector<PathIntersection> Path::intersect(Path const &other, Coord precision) const
+{
+    std::vector<PathIntersection> result;
+
+    CurveSweeper sweeper(*this, other, result, precision);
+    sweeper.process();
+
+    // TODO: remove multiple intersections within precision of each other?
     return result;
 }
 

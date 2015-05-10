@@ -38,7 +38,7 @@
 
 #include <vector>
 #include <2geom/rect.h>
-#include <2geom/sweep.h>
+#include <2geom/sweep-bounds.h>
 #include <boost/optional/optional.hpp>
 #include <2geom/pathvector.h>
 

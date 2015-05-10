@@ -143,8 +143,9 @@ svg-path-parser.cpp
 svg-path-parser.h
 svg-path-writer.cpp
 svg-path-writer.h
-sweep.cpp
-sweep.h
+sweeper.h
+sweep-bounds.cpp
+sweep-bounds.h
 
 toposweep.cpp
 toposweep.h

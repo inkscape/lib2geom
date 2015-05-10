@@ -1,4 +1,4 @@
-#include <2geom/sweep.h>
+#include <2geom/sweep-bounds.h>
 
 #include <2geom/toys/path-cairo.h>
 #include <2geom/toys/toy-framework-2.h>
