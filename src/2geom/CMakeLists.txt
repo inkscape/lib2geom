@@ -147,8 +147,6 @@ sweeper.h
 sweep-bounds.cpp
 sweep-bounds.h
 
-toposweep.cpp
-toposweep.h
 transforms.cpp
 transforms.h
 

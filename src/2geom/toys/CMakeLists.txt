@@ -116,7 +116,6 @@ rdm-area
 sketch-fitter
 #redblack-toy
 rtree-toy
-sweep-graph
 sweeper-toy
 smash-intersector
 levelsets-test
