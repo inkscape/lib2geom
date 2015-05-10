@@ -131,6 +131,16 @@ template <typename T>
 inline T portion(const T& t, const Interval& i) { return portion(t, i.min(), i.max()); }
 
 template <typename T>
+struct EqualityComparableConcept {
+    T a, b;
+    bool bool_;
+    void constaints() {
+        bool_ = (a == b);
+        bool_ = (a != b);
+    }
+};
+
+template <typename T>
 struct NearConcept {
     T a, b;
     double tol;

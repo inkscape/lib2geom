@@ -33,7 +33,7 @@
 #define LIB2GEOM_SEEN_D2_H
 
 #include <iterator>
-#include <boost/concept_check.hpp>
+#include <boost/concept/assert.hpp>
 #include <boost/iterator/transform_iterator.hpp>
 #include <2geom/point.h>
 #include <2geom/interval.h>
@@ -107,30 +107,31 @@ class D2{
     //IMPL: FragmentConcept
     typedef Point output_type;
     bool isZero(double eps=EPSILON) const {
-        boost::function_requires<FragmentConcept<T> >();
+        BOOST_CONCEPT_ASSERT((FragmentConcept<T>));
         return f[X].isZero(eps) && f[Y].isZero(eps);
     }
     bool isConstant(double eps=EPSILON) const {
-        boost::function_requires<FragmentConcept<T> >();
+        BOOST_CONCEPT_ASSERT((FragmentConcept<T>));
         return f[X].isConstant(eps) && f[Y].isConstant(eps);
     }
     bool isFinite() const {
-        boost::function_requires<FragmentConcept<T> >();
+        BOOST_CONCEPT_ASSERT((FragmentConcept<T>));
         return f[X].isFinite() && f[Y].isFinite();
     }
     Point at0() const { 
-        boost::function_requires<FragmentConcept<T> >();
+        BOOST_CONCEPT_ASSERT((FragmentConcept<T>));
         return Point(f[X].at0(), f[Y].at0());
     }
     Point at1() const {
-        boost::function_requires<FragmentConcept<T> >();
+        BOOST_CONCEPT_ASSERT((FragmentConcept<T>));
         return Point(f[X].at1(), f[Y].at1());
     }
     Point valueAt(double t) const {
-        boost::function_requires<FragmentConcept<T> >();
+        BOOST_CONCEPT_ASSERT((FragmentConcept<T>));
         return (*this)(t);
     }
     std::vector<Point > valueAndDerivatives(double t, unsigned n) const {
+        BOOST_CONCEPT_ASSERT((FragmentConcept<T>));
         std::vector<Coord> x = f[X].valueAndDerivatives(t, n),
                            y = f[Y].valueAndDerivatives(t, n); // always returns a vector of size n+1
         std::vector<Point> res(n+1);
@@ -140,7 +141,7 @@ class D2{
         return res;
     }
     D2<SBasis> toSBasis() const {
-        boost::function_requires<FragmentConcept<T> >();
+        BOOST_CONCEPT_ASSERT((FragmentConcept<T>));
         return D2<SBasis>(f[X].toSBasis(), f[Y].toSBasis());
     }
 
@@ -149,33 +150,33 @@ class D2{
 };
 template <typename T>
 inline D2<T> reverse(const D2<T> &a) {
-    boost::function_requires<FragmentConcept<T> >();
+    BOOST_CONCEPT_ASSERT((FragmentConcept<T>));
     return D2<T>(reverse(a[X]), reverse(a[Y]));
 }
 
 template <typename T>
 inline D2<T> portion(const D2<T> &a, Coord f, Coord t) {
-    boost::function_requires<FragmentConcept<T> >();
+    BOOST_CONCEPT_ASSERT((FragmentConcept<T>));
     return D2<T>(portion(a[X], f, t), portion(a[Y], f, t));
 }
 
 template <typename T>
 inline D2<T> portion(const D2<T> &a, Interval i) {
-    boost::function_requires<FragmentConcept<T> >();
+    BOOST_CONCEPT_ASSERT((FragmentConcept<T>));
     return D2<T>(portion(a[X], i), portion(a[Y], i));
 }
 
-//IMPL: boost::EqualityComparableConcept
+//IMPL: EqualityComparableConcept
 template <typename T>
 inline bool
 operator==(D2<T> const &a, D2<T> const &b) {
-    boost::function_requires<boost::EqualityComparableConcept<T> >();
+    BOOST_CONCEPT_ASSERT((EqualityComparableConcept<T>));
     return a[0]==b[0] && a[1]==b[1];
 }
 template <typename T>
 inline bool
 operator!=(D2<T> const &a, D2<T> const &b) {
-    boost::function_requires<boost::EqualityComparableConcept<T> >();
+    BOOST_CONCEPT_ASSERT((EqualityComparableConcept<T>));
     return a[0]!=b[0] || a[1]!=b[1];
 }
 
@@ -183,7 +184,7 @@ operator!=(D2<T> const &a, D2<T> const &b) {
 template <typename T>
 inline bool
 are_near(D2<T> const &a, D2<T> const &b, double tol) {
-    boost::function_requires<NearConcept<T> >();
+    BOOST_CONCEPT_ASSERT((NearConcept<T>));
     return are_near(a[0], b[0], tol) && are_near(a[1], b[1], tol);
 }
 
@@ -191,7 +192,7 @@ are_near(D2<T> const &a, D2<T> const &b, double tol) {
 template <typename T>
 inline D2<T>
 operator+(D2<T> const &a, D2<T> const &b) {
-    boost::function_requires<AddableConcept<T> >();
+    BOOST_CONCEPT_ASSERT((AddableConcept<T>));
 
     D2<T> r;
     for(unsigned i = 0; i < 2; i++)
@@ -201,7 +202,7 @@ operator+(D2<T> const &a, D2<T> const &b) {
 template <typename T>
 inline D2<T>
 operator-(D2<T> const &a, D2<T> const &b) {
-    boost::function_requires<AddableConcept<T> >();
+    BOOST_CONCEPT_ASSERT((AddableConcept<T>));
 
     D2<T> r;
     for(unsigned i = 0; i < 2; i++)
@@ -211,7 +212,7 @@ operator-(D2<T> const &a, D2<T> const &b) {
 template <typename T>
 inline D2<T>
 operator+=(D2<T> &a, D2<T> const &b) {
-    boost::function_requires<AddableConcept<T> >();
+    BOOST_CONCEPT_ASSERT((AddableConcept<T>));
 
     for(unsigned i = 0; i < 2; i++)
         a[i] += b[i];
@@ -220,7 +221,7 @@ operator+=(D2<T> &a, D2<T> const &b) {
 template <typename T>
 inline D2<T>
 operator-=(D2<T> &a, D2<T> const & b) {
-    boost::function_requires<AddableConcept<T> >();
+    BOOST_CONCEPT_ASSERT((AddableConcept<T>));
 
     for(unsigned i = 0; i < 2; i++)
         a[i] -= b[i];
@@ -231,7 +232,7 @@ operator-=(D2<T> &a, D2<T> const & b) {
 template <typename T>
 inline D2<T>
 operator-(D2<T> const & a) {
-    boost::function_requires<ScalableConcept<T> >();
+    BOOST_CONCEPT_ASSERT((ScalableConcept<T>));
     D2<T> r;
     for(unsigned i = 0; i < 2; i++)
         r[i] = -a[i];
@@ -240,7 +241,7 @@ operator-(D2<T> const & a) {
 template <typename T>
 inline D2<T>
 operator*(D2<T> const & a, Point const & b) {
-    boost::function_requires<ScalableConcept<T> >();
+    BOOST_CONCEPT_ASSERT((ScalableConcept<T>));
 
     D2<T> r;
     for(unsigned i = 0; i < 2; i++)
@@ -250,7 +251,7 @@ operator*(D2<T> const & a, Point const & b) {
 template <typename T>
 inline D2<T>
 operator/(D2<T> const & a, Point const & b) {
-    boost::function_requires<ScalableConcept<T> >();
+    BOOST_CONCEPT_ASSERT((ScalableConcept<T>));
     //TODO: b==0?
     D2<T> r;
     for(unsigned i = 0; i < 2; i++)
@@ -260,7 +261,7 @@ operator/(D2<T> const & a, Point const & b) {
 template <typename T>
 inline D2<T>
 operator*=(D2<T> &a, Point const & b) {
-    boost::function_requires<ScalableConcept<T> >();
+    BOOST_CONCEPT_ASSERT((ScalableConcept<T>));
 
     for(unsigned i = 0; i < 2; i++)
         a[i] *= b[i];
@@ -269,7 +270,7 @@ operator*=(D2<T> &a, Point const & b) {
 template <typename T>
 inline D2<T>
 operator/=(D2<T> &a, Point const & b) {
-    boost::function_requires<ScalableConcept<T> >();
+    BOOST_CONCEPT_ASSERT((ScalableConcept<T>));
     //TODO: b==0?
     for(unsigned i = 0; i < 2; i++)
         a[i] /= b[i];
@@ -287,8 +288,8 @@ inline D2<T> operator/=(D2<T> & a, double b) { a[0] /= b; a[1] /= b; return a; }
 
 template<typename T>
 D2<T> operator*(D2<T> const &v, Affine const &m) {
-    boost::function_requires<AddableConcept<T> >();
-    boost::function_requires<ScalableConcept<T> >();
+    BOOST_CONCEPT_ASSERT((AddableConcept<T>));
+    BOOST_CONCEPT_ASSERT((ScalableConcept<T>));
     D2<T> ret;
     for(unsigned i = 0; i < 2; i++)
         ret[i] = v[X] * m[i] + v[Y] * m[i + 2] + m[i + 4];
@@ -299,7 +300,7 @@ D2<T> operator*(D2<T> const &v, Affine const &m) {
 template <typename T>
 inline D2<T>
 operator*(D2<T> const & a, T const & b) {
-    boost::function_requires<MultiplicableConcept<T> >();
+    BOOST_CONCEPT_ASSERT((MultiplicableConcept<T>));
     D2<T> ret;
     for(unsigned i = 0; i < 2; i++)
         ret[i] = a[i] * b;
@@ -312,7 +313,7 @@ operator*(D2<T> const & a, T const & b) {
 template <typename T>
 inline D2<T>
 operator+(D2<T> const & a, Point b) {
-    boost::function_requires<OffsetableConcept<T> >();
+    BOOST_CONCEPT_ASSERT((OffsetableConcept<T>));
     D2<T> r;
     for(unsigned i = 0; i < 2; i++)
         r[i] = a[i] + b[i];
@@ -321,7 +322,7 @@ operator+(D2<T> const & a, Point b) {
 template <typename T>
 inline D2<T>
 operator-(D2<T> const & a, Point b) {
-    boost::function_requires<OffsetableConcept<T> >();
+    BOOST_CONCEPT_ASSERT((OffsetableConcept<T>));
     D2<T> r;
     for(unsigned i = 0; i < 2; i++)
         r[i] = a[i] - b[i];
@@ -330,7 +331,7 @@ operator-(D2<T> const & a, Point b) {
 template <typename T>
 inline D2<T>
 operator+=(D2<T> & a, Point b) {
-    boost::function_requires<OffsetableConcept<T> >();
+    BOOST_CONCEPT_ASSERT((OffsetableConcept<T>));
     for(unsigned i = 0; i < 2; i++)
         a[i] += b[i];
     return a;
@@ -338,7 +339,7 @@ operator+=(D2<T> & a, Point b) {
 template <typename T>
 inline D2<T>
 operator-=(D2<T> & a, Point b) {
-    boost::function_requires<OffsetableConcept<T> >();
+    BOOST_CONCEPT_ASSERT((OffsetableConcept<T>));
     for(unsigned i = 0; i < 2; i++)
         a[i] -= b[i];
     return a;
@@ -347,8 +348,8 @@ operator-=(D2<T> & a, Point b) {
 template <typename T>
 inline T
 dot(D2<T> const & a, D2<T> const & b) {
-    boost::function_requires<AddableConcept<T> >();
-    boost::function_requires<MultiplicableConcept<T> >();
+    BOOST_CONCEPT_ASSERT((AddableConcept<T>));
+    BOOST_CONCEPT_ASSERT((MultiplicableConcept<T>));
 
     T r;
     for(unsigned i = 0; i < 2; i++)
@@ -362,8 +363,8 @@ dot(D2<T> const & a, D2<T> const & b) {
 template <typename T>
 inline T
 dot(D2<T> const & a, Point const & b) {
-    boost::function_requires<AddableConcept<T> >();
-    boost::function_requires<ScalableConcept<T> >();
+    BOOST_CONCEPT_ASSERT((AddableConcept<T>));
+    BOOST_CONCEPT_ASSERT((ScalableConcept<T>));
 
     T r;
     for(unsigned i = 0; i < 2; i++) {
@@ -378,8 +379,8 @@ dot(D2<T> const & a, Point const & b) {
 template <typename T>
 inline T
 cross(D2<T> const & a, D2<T> const & b) {
-    boost::function_requires<ScalableConcept<T> >();
-    boost::function_requires<MultiplicableConcept<T> >();
+    BOOST_CONCEPT_ASSERT((ScalableConcept<T>));
+    BOOST_CONCEPT_ASSERT((MultiplicableConcept<T>));
 
     return a[1] * b[0] - a[0] * b[1];
 }
@@ -389,7 +390,7 @@ cross(D2<T> const & a, D2<T> const & b) {
 template <typename T>
 inline D2<T>
 rot90(D2<T> const & a) {
-    boost::function_requires<ScalableConcept<T> >();
+    BOOST_CONCEPT_ASSERT((ScalableConcept<T>));
     return D2<T>(-a[Y], a[X]);
 }
 
@@ -468,17 +469,17 @@ namespace Geom {
 //Some D2 Fragment implementation which requires rect:
 template <typename T>
 OptRect bounds_fast(const D2<T> &a) {
-    boost::function_requires<FragmentConcept<T> >();
+    BOOST_CONCEPT_ASSERT((FragmentConcept<T>));
     return OptRect(bounds_fast(a[X]), bounds_fast(a[Y]));
 }
 template <typename T>
 OptRect bounds_exact(const D2<T> &a) {
-    boost::function_requires<FragmentConcept<T> >();
+    BOOST_CONCEPT_ASSERT((FragmentConcept<T>));
     return OptRect(bounds_exact(a[X]), bounds_exact(a[Y]));
 }
 template <typename T>
 OptRect bounds_local(const D2<T> &a, const OptInterval &t) {
-    boost::function_requires<FragmentConcept<T> >();
+    BOOST_CONCEPT_ASSERT((FragmentConcept<T>));
     return OptRect(bounds_local(a[X], t), bounds_local(a[Y], t));
 }
 
