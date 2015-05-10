@@ -79,6 +79,9 @@ public:
 
     PathVector getUnion();
     PathVector getIntersection();
+    PathVector getAminusB();
+    PathVector getBminusA();
+    PathVector getXOR();
 
 private:
     PathVector _getResult(bool enter_a, bool enter_b);

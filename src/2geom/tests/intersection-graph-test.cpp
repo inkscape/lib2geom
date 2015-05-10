@@ -33,6 +33,7 @@ TEST_F(IntersectionGraphTest, Union) {
 
     PathVector r = graph.getUnion();
     EXPECT_EQ(r.size(), 1);
+    EXPECT_EQ(r.curveCount(), 19);
 
     /*SVGPathWriter wr;
     wr.feed(r);
@@ -51,6 +52,21 @@ TEST_F(IntersectionGraphTest, CoverUnion) {
     PathVector r = graph.getUnion();
     EXPECT_EQ(r.size(), 1);
     EXPECT_EQ(r, bigrect);
+}
+
+TEST_F(IntersectionGraphTest, Subtraction) {
+    PathIntersectionGraph graph(rectangle, bigh);
+    PathVector a = graph.getAminusB();
+    EXPECT_EQ(a.size(), 4);
+    EXPECT_EQ(a.curveCount(), 17);
+
+    PathVector b = graph.getBminusA();
+    EXPECT_EQ(b.size(), 4);
+    EXPECT_EQ(b.curveCount(), 15);
+
+    PathVector x = graph.getXOR();
+    EXPECT_EQ(x.size(), 8);
+    EXPECT_EQ(x.curveCount(), 32);
 }
 
 /*

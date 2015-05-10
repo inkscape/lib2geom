@@ -463,8 +463,12 @@ public:
     /// Check whether the path is closed.
     bool closed() const { return _closed; }
 
-    /// Set whether the path is closed.
-    void close(bool closed = true) { _closed = closed; }
+    /** @brief Set whether the path is closed.
+     * When closing a path where the last segment can be represented as a closing
+     * segment, the last segment will be removed. When opening a path, the closing
+     * segment will be erased. This means that closing and then opening a path
+     * will not always give back the original path. */
+    void close(bool closed = true);
 
     /** @brief Remove all curves from the path.
      * The initial and final points of the closing segment are set to (0,0).

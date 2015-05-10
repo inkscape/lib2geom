@@ -212,6 +212,7 @@ public:
     virtual bool isDegenerate() const {
         return _initial_point == _final_point;
     }
+    virtual bool isLineSegment() const { return isChord(); }
     virtual Rect boundsFast() const {
         return boundsExact();
     }

@@ -254,6 +254,21 @@ Path::Path(ConvexHull const &ch)
     _closed = true;
 }
 
+void Path::close(bool c)
+{
+    if (c == _closed) return;
+    if (c && _curves->size() >= 2) {
+        // when closing, if last segment is linear and ends at initial point,
+        // replace it with the closing segment
+        Sequence::iterator last = _curves->end() - 2;
+        if (last->isLineSegment() && last->finalPoint() == initialPoint()) {
+            _closing_seg->setInitial(last->initialPoint());
+            _curves->erase(last);
+        }
+    }
+    _closed = c;
+}
+
 void Path::clear()
 {
     _unshare();
@@ -769,11 +784,10 @@ Path Path::reversed() const
 
     if (_closed) {
         // when the path is closed, there are two cases:
-        BezierCurve const *iseg = dynamic_cast<BezierCurve const *>(&front());
-        if (iseg && iseg->size() == 2) {
+        if (front().isLineSegment()) {
             // 1. initial segment is linear: it becomes the new closing segment.
             rend = RIter(_curves->begin() + 1);
-            ret._closing_seg = new ClosingSegment(iseg->finalPoint(), iseg->initialPoint());
+            ret._closing_seg = new ClosingSegment(front().finalPoint(), front().initialPoint());
         } else {
             // 2. initial segment is not linear: the closing segment becomes degenerate.
             // However, skip it if it's already degenerate.
@@ -951,6 +965,13 @@ void Path::do_append(Curve *c)
         // the new curve connects with the last non-closing curve
         if (c->initialPoint() != _closing_seg->initialPoint()) {
             THROW_CONTINUITYERROR();
+        }
+        if (_closed && c->isLineSegment() &&
+            c->finalPoint() == _closing_seg->finalPoint())
+        {
+            // appending a curve that matches the closing segment has no effect
+            delete c;
+            return;
         }
     }
     _curves->insert(_curves->end() - 1, c);

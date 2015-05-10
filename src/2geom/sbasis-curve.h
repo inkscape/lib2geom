@@ -88,6 +88,7 @@ public:
     virtual Point initialPoint() const    { return inner.at0(); }
     virtual Point finalPoint() const      { return inner.at1(); }
     virtual bool isDegenerate() const     { return inner.isConstant(0); }
+    virtual bool isLineSegment() const    { return inner[X].size() == 1; }
     virtual Point pointAt(Coord t) const  { return inner.valueAt(t); }
     virtual std::vector<Point> pointAndDerivatives(Coord t, unsigned n) const {
         return inner.valueAndDerivatives(t, n);

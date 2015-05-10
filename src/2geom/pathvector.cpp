@@ -31,10 +31,10 @@
  * the specific language governing rights and limitations.
  */
 
-#include <2geom/pathvector.h>
-
-#include <2geom/path.h>
 #include <2geom/affine.h>
+#include <2geom/path.h>
+#include <2geom/pathvector.h>
+#include <2geom/svg-path-writer.h>
 
 namespace Geom {
 
@@ -219,6 +219,14 @@ PathVectorTime PathVector::_factorTime(Coord t) const
         ret.curve_index -= s;
     }
     return ret;
+}
+
+std::ostream &operator<<(std::ostream &out, PathVector const &pv)
+{
+    SVGPathWriter wr;
+    wr.feed(pv);
+    out << wr.str();
+    return out;
 }
 
 } // namespace Geom

@@ -104,6 +104,7 @@ public:
     virtual Point initialPoint() const { return inner.at0(); }
     virtual Point finalPoint() const { return inner.at1(); }
     virtual bool isDegenerate() const { return inner.isConstant(0); }
+    virtual bool isLineSegment() const { return size() == 2; }
     virtual void setInitial(Point const &v) { setPoint(0, v); }
     virtual void setFinal(Point const &v) { setPoint(order(), v); }
     virtual Rect boundsFast() const { return *bounds_fast(inner); }
@@ -229,6 +230,10 @@ public:
                    BezierCurveN(sx.second, sy.second));
     }
 
+    virtual bool isLineSegment() const {
+        return size() == 2;
+    }
+
     virtual Curve *duplicate() const {
         return new BezierCurveN(*this);
     }
@@ -281,6 +286,7 @@ Curve *BezierCurveN<degree>::derivative() const {
 }
 
 // optimized specializations
+template <> inline bool BezierCurveN<1>::isLineSegment() const { return true; }
 template <> Curve *BezierCurveN<1>::derivative() const;
 template <> Coord BezierCurveN<1>::nearestTime(Point const &, Coord, Coord) const;
 template <> void BezierCurveN<1>::feed(PathSink &sink, bool moveto_initial) const;

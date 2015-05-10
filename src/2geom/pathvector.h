@@ -276,6 +276,8 @@ private:
 inline OptRect bounds_fast(PathVector const &pv) { return pv.boundsFast(); }
 inline OptRect bounds_exact(PathVector const &pv) { return pv.boundsExact(); }
 
+std::ostream &operator<<(std::ostream &out, PathVector const &pv);
+
 } // end namespace Geom
 
 #endif // LIB2GEOM_SEEN_PATHVECTOR_H

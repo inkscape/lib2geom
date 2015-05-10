@@ -94,6 +94,9 @@ public:
      *         no other points (its value set contains only one element). */
     virtual bool isDegenerate() const = 0;
 
+    /// Check whether the curve is a line segment.
+    virtual bool isLineSegment() const { return false; }
+
     /** @brief Get the interval of allowed time values.
      * @return \f$[0, 1]\f$ */
     virtual Interval timeRange() const {
