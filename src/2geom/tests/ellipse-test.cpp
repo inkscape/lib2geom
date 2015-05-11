@@ -53,6 +53,15 @@ TEST(EllipseTest, AreNear) {
     Ellipse c2(Point(19.999999,34.999999), Point(4.999999,5.000001), Angle::from_degrees(179.99999));
     //std::cout << c1 << "\n" << c2 << std::endl;
     EXPECT_TRUE(are_near(c1, c2, 2e-5));
+
+    EXPECT_FALSE(are_near(c1, e1, 1e-5));
+    EXPECT_FALSE(are_near(c2, e1, 1e-5));
+    EXPECT_FALSE(are_near(c1, e2, 1e-5));
+    EXPECT_FALSE(are_near(c2, e2, 1e-5));
+    EXPECT_FALSE(are_near(c1, e3, 1e-5));
+    EXPECT_FALSE(are_near(c2, e3, 1e-5));
+    EXPECT_FALSE(are_near(c1, e4, 1e-5));
+    EXPECT_FALSE(are_near(c2, e4, 1e-5));
 }
 
 TEST(EllipseTest, Transformations) {
