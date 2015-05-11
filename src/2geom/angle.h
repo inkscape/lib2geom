@@ -63,8 +63,9 @@ namespace Geom {
  */
 class Angle
     : boost::additive< Angle
+    , boost::additive< Angle, Coord
     , boost::equality_comparable< Angle
-      > >
+      > > >
 {
 public:
     Angle() : _angle(0) {} //added default constructor because of cython
@@ -80,6 +81,14 @@ public:
     Angle &operator-=(Angle const &o) {
         _angle -= o._angle;
         _normalize();
+        return *this;
+    }
+    Angle &operator+=(Coord a) {
+        *this += Angle(a);
+        return *this;
+    }
+    Angle &operator-=(Coord a) {
+        *this -= Angle(a);
         return *this;
     }
     bool operator==(Angle const &o) const {
@@ -141,6 +150,14 @@ private:
     Coord _angle; // this is always in [0, 2pi)
     friend class AngleInterval;
 };
+
+inline Angle distance(Angle const &a, Angle const &b) {
+    // the distance cannot be larger than M_PI.
+    Coord ac = a.radians0();
+    Coord bc = b.radians0();
+    Coord d = fabs(ac - bc);
+    return Angle(d > M_PI ? 2*M_PI - d : d);
+}
 
 /** @brief Directed angular interval.
  *
@@ -307,6 +324,10 @@ bool arc_contains (double a, double sa, double ia, double ea)
 }
 
 } // end namespace Geom
+
+namespace std {
+template <> class iterator_traits<Geom::Angle> {};
+}
 
 #endif // LIB2GEOM_SEEN_ANGLE_H
 

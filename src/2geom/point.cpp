@@ -35,6 +35,7 @@
 
 #include <assert.h>
 #include <math.h>
+#include <2geom/coord.h>
 #include <2geom/point.h>
 #include <2geom/transforms.h>
 
@@ -228,6 +229,13 @@ Point constrain_angle(Point const &A, Point const &B, unsigned int n, Point cons
     double angle = -angle_between(diff, dir);
     double k = round(angle * (double)n / (2.0*M_PI));
     return A + dir * Rotate(k * 2.0 * M_PI / (double)n) * L2(diff);
+}
+
+std::ostream &operator<<(std::ostream &out, const Geom::Point &p)
+{
+    out << "(" << format_coord_nice(p[X]) << ", "
+               << format_coord_nice(p[Y]) << ")";
+    return out;
 }
 
 } // end namespace Geom

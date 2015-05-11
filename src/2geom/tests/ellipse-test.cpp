@@ -38,3 +38,28 @@ TEST(EllipseTest, Arcs) {
     EXPECT_EQ(arc2r->largeArc(), true);
     EXPECT_EQ(arc2r->sweep(), false);
 }
+
+TEST(EllipseTest, AreNear) {
+    Ellipse e1(Point(5.000001,10), Point(5,10), Angle::from_degrees(45));
+    Ellipse e2(Point(5.000000,10), Point(5,10), Angle::from_degrees(225));
+    Ellipse e3(Point(4.999999,10), Point(10,5), Angle::from_degrees(135));
+    Ellipse e4(Point(5.000001,10), Point(10,5), Angle::from_degrees(315));
+
+    EXPECT_TRUE(are_near(e1, e2, 1e-5));
+    EXPECT_TRUE(are_near(e1, e3, 1e-5));
+    EXPECT_TRUE(are_near(e1, e4, 1e-5));
+
+    Ellipse c1(Point(20.000001,35.000001), Point(5.000001,4.999999), Angle::from_degrees(180.00001));
+    Ellipse c2(Point(19.999999,34.999999), Point(4.999999,5.000001), Angle::from_degrees(179.99999));
+    //std::cout << c1 << "\n" << c2 << std::endl;
+    EXPECT_TRUE(are_near(c1, c2, 2e-5));
+}
+
+TEST(EllipseTest, Transformations) {
+    Ellipse e(Point(5,10), Point(5,10), Angle::from_degrees(45));
+
+    Ellipse er = e * Rotate::around(Point(5,10), Angle::from_degrees(45));
+    Ellipse ercmp(Point(5,10), Point(5,10), Angle::from_degrees(90));
+    //std::cout << e << "\n" << er << "\n" << ercmp << std::endl;
+    EXPECT_TRUE(are_near(er, ercmp, 1e-12));
+}

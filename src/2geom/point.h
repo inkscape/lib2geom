@@ -250,17 +250,12 @@ public:
         Dim2 dim;
     };
     //template <typename First = std::less<Coord>, typename Second = std::less<Coord> > LexOrder
-
-    friend inline std::ostream &operator<< (std::ostream &out_file, const Geom::Point &in_pnt);
 };
 
 /** @brief Output operator for points.
  * Prints out the coordinates.
  * @relates Point */
-inline std::ostream &operator<< (std::ostream &out_file, const Geom::Point &in_pnt) {
-    out_file << "X: " << in_pnt[X] << "  Y: " << in_pnt[Y];
-    return out_file;
-}
+std::ostream &operator<<(std::ostream &out, const Geom::Point &p);
 
 template<> struct Point::LexLess<X> {
     typedef std::less<Coord> Primary;

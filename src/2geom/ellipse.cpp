@@ -38,6 +38,12 @@
 
 namespace Geom {
 
+Ellipse::Ellipse(Geom::Circle const &c)
+    : _center(c.center())
+    , _rays(c.radius(), c.radius())
+    , _angle(0)
+{}
+
 void Ellipse::setCoefficients(double A, double B, double C, double D, double E, double F)
 {
     double den = 4*A*C - B*B;
@@ -210,14 +216,6 @@ Ellipse::arc(Point const &ip, Point const &inner, Point const &fp,
 Ellipse &Ellipse::operator*=(Rotate const &r)
 {
     _angle += r.angle();
-    // keep the angle in the first quadrant
-    if (_angle < 0) {
-        _angle += M_PI;
-    }
-    if (_angle >= M_PI/2) {
-        std::swap(_rays[X], _rays[Y]);
-        _angle -= M_PI/2;
-    }
     _center *= r;
     return *this;
 }
@@ -261,10 +259,81 @@ Ellipse &Ellipse::operator*=(Affine const& m)
     return *this;
 }
 
-Ellipse::Ellipse(Geom::Circle const &c)
+Ellipse Ellipse::canonicalForm() const
 {
-    _center = c.center();
-    _rays[X] = _rays[Y] = c.radius();
+    Ellipse result(*this);
+    result.makeCanonical();
+    return result;
+}
+
+void Ellipse::makeCanonical()
+{
+    if (_rays[X] == _rays[Y]) {
+        _angle = 0;
+        return;
+    }
+
+    if (_angle < 0) {
+        _angle += M_PI;
+    }
+    if (_angle >= M_PI/2) {
+        std::swap(_rays[X], _rays[Y]);
+        _angle -= M_PI/2;
+    }
+}
+
+bool Ellipse::operator==(Ellipse const &other) const
+{
+    if (_center != other._center) return false;
+
+    Ellipse a = this->canonicalForm();
+    Ellipse b = other.canonicalForm();
+
+    if (a._rays != b._rays) return false;
+    if (a._angle != b._angle) return false;
+
+    return true;
+}
+
+
+bool are_near(Ellipse const &a, Ellipse const &b, Coord precision)
+{
+    // We want to know whether no point on ellipse a is further than precision
+    // from the corresponding point on ellipse b. To check this, we compute
+    // the four extreme points at the end of each ray for each ellipse
+    // and check whether they are sufficiently close.
+
+    // First, we need to correct the angles on the ellipses, so that they are
+    // no further than M_PI/4 apart. This can always be done by rotating
+    // and exchanging axes.
+    Ellipse ac = a, bc = b;
+    if (distance(ac.rotationAngle(), bc.rotationAngle()).radians0() >= M_PI/2) {
+        ac.setRotationAngle(ac.rotationAngle() + M_PI);
+    }
+    if (distance(ac.rotationAngle(), bc.rotationAngle()) >= M_PI/4) {
+        Angle d1 = distance(ac.rotationAngle() + M_PI/2, bc.rotationAngle());
+        Angle d2 = distance(ac.rotationAngle() - M_PI/2, bc.rotationAngle());
+        Coord adj = d1.radians0() < d2.radians0() ? M_PI/2 : -M_PI/2;
+        ac.setRotationAngle(ac.rotationAngle() + adj);
+        ac.setRays(ac.ray(Y), ac.ray(X));
+    }
+
+    // Do the actual comparison by computing four points on each ellipse.
+    Point tps[] = {Point(1,0), Point(0,1), Point(-1,0), Point(0,-1)};
+    for (unsigned i = 0; i < 4; ++i) {
+        if (!are_near(tps[i] * ac.unitCircleTransform(),
+                      tps[i] * bc.unitCircleTransform(),
+                      precision))
+            return false;
+    }
+    return true;
+}
+
+std::ostream &operator<<(std::ostream &out, Ellipse const &e)
+{
+    out << "Ellipse(" << e.center() << ", " << e.rays()
+        << ", " << format_coord_nice(e.rotationAngle()) << ")";
+    return out;
 }
 
 }  // end namespace Geom

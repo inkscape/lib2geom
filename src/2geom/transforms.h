@@ -217,6 +217,7 @@ public:
         Coord rad = (deg / 180.0) * M_PI;
         return Rotate(rad);
     }
+    static Affine around(Point const &p, Coord angle);
 
     friend class Point;
 };
