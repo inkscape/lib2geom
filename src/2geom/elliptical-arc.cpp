@@ -38,7 +38,6 @@
 #include <2geom/ellipse.h>
 #include <2geom/elliptical-arc.h>
 #include <2geom/path-sink.h>
-#include <2geom/poly.h>
 #include <2geom/sbasis-geometric.h>
 #include <2geom/transforms.h>
 #include <2geom/utils.h>

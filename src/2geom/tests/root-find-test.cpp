@@ -1,4 +1,4 @@
-#include <2geom/poly.h>
+#include <2geom/polynomial.h>
 #include <vector>
 #include <iterator>
 

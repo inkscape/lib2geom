@@ -33,7 +33,6 @@
 #include <2geom/numeric/fitting-model.h>
 #include <2geom/numeric/fitting-tool.h>
 #include <2geom/numeric/vector.h>
-#include <2geom/poly.h>
 #include <2geom/sbasis-geometric.h>
 #include <2geom/svg-elliptical-arc.h>
 

@@ -2,7 +2,7 @@
 #include <iostream>
 
 #include <2geom/bezier.h>
-#include <2geom/poly.h>
+#include <2geom/polynomial.h>
 #include <2geom/basic-intersection.h>
 #include <2geom/bezier-curve.h>
 #include <vector>

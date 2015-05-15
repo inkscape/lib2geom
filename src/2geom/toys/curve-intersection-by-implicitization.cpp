@@ -34,15 +34,9 @@
 
 #include <2geom/toys/path-cairo.h>
 #include <2geom/toys/toy-framework-2.h>
-
-
 #include <2geom/d2.h>
-#include <2geom/poly.h>
 #include <2geom/sbasis-poly.h>
-
-
 #include <2geom/numeric/linear_system.h>
-
 #include <2geom/symbolic/implicit.h>
 
 

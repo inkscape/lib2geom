@@ -108,8 +108,8 @@ piecewise.cpp
 piecewise.h
 point.cpp
 point.h
-poly.cpp
-poly.h
+polynomial.cpp
+polynomial.h
 
 quadtree.cpp
 quadtree.h

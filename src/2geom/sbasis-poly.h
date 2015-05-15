@@ -33,7 +33,7 @@
 #ifndef LIB2GEOM_SEEN_SBASIS_POLY_H
 #define LIB2GEOM_SEEN_SBASIS_POLY_H
 
-#include <2geom/poly.h>
+#include <2geom/polynomial.h>
 #include <2geom/sbasis.h>
 
 namespace Geom{

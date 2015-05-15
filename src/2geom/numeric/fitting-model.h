@@ -39,7 +39,7 @@
 #include <2geom/sbasis.h>
 #include <2geom/bezier.h>
 #include <2geom/bezier-curve.h>
-#include <2geom/poly.h>
+#include <2geom/polynomial.h>
 #include <2geom/ellipse.h>
 #include <2geom/circle.h>
 #include <2geom/utils.h>

@@ -5,7 +5,7 @@
 
 #include <2geom/geom.h>
 #include <2geom/d2.h>
-#include <2geom/poly.h>
+#include <2geom/polynomial.h>
 #include <2geom/sbasis-poly.h>
 #include <2geom/transforms.h>
 
