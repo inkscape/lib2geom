@@ -34,6 +34,7 @@
 
 #include <algorithm>
 #include <2geom/polynomial.h>
+#include <math.h>
 
 #ifdef HAVE_GSL
 #include <gsl/gsl_poly.h>
@@ -250,6 +251,9 @@ std::vector<Coord> solve_quadratic(Coord a, Coord b, Coord c)
 
 std::vector<Coord> solve_cubic(Coord a, Coord b, Coord c, Coord d)
 {
+    // based on:
+    // http://mathworld.wolfram.com/CubicFormula.html
+
     if (a == 0) {
         return solve_quadratic(b, c, d);
     }
@@ -302,45 +306,6 @@ std::vector<Coord> solve_cubic(Coord a, Coord b, Coord c, Coord d)
     std::sort(result.begin(), result.end());
     return result;
 }
-/*
-var disc, q, r, dum1, s, t, term1, r13;
-    q = (3.0*c - (b*b))/9.0;
-    r = -(27.0*d) + b*(9.0*c - 2.0*(b*b));
-    r /= 54.0;
-    disc = q*q*q + r*r;
-    dataForm.x1Im.value = 0; //The first root is always real.
-    term1 = (b/3.0);
-    if (disc > 0) { // one root real, two are complex
-        s = r + Math.sqrt(disc);
-        s = ((s < 0) ? -Math.pow(-s, (1.0/3.0)) : Math.pow(s, (1.0/3.0)));
-        t = r - Math.sqrt(disc);
-        t = ((t < 0) ? -Math.pow(-t, (1.0/3.0)) : Math.pow(t, (1.0/3.0)));
-        dataForm.x1Re.value = -term1 + s + t;
-        term1 += (s + t)/2.0;
-        dataForm.x3Re.value = dataForm.x2Re.value = -term1;
-        term1 = Math.sqrt(3.0)*(-t + s)/2;
-        dataForm.x2Im.value = term1;
-        dataForm.x3Im.value = -term1;
-        return;
-    } 
-    // End if (disc > 0)
-    // The remaining options are all real
-    dataForm.x3Im.value = dataForm.x2Im.value = 0;
-    if (disc == 0){ // All roots real, at least two are equal.
-        r13 = ((r < 0) ? -Math.pow(-r,(1.0/3.0)) : Math.pow(r,(1.0/3.0)));
-        dataForm.x1Re.value = -term1 + 2.0*r13;
-        dataForm.x3Re.value = dataForm.x2Re.value = -(r13 + term1);
-        return;
-    } // End if (disc == 0)
-    // Only option left is that all roots are real and unequal (to get here, q < 0)
-    q = -q;
-    dum1 = q*q*q;
-    dum1 = Math.acos(r/Math.sqrt(dum1));
-    r13 = 2.0*Math.sqrt(q);
-    dataForm.x1Re.value = -term1 + r13*Math.cos(dum1/3.0);
-    dataForm.x2Re.value = -term1 + r13*Math.cos((dum1 + 2.0*Math.PI)/3.0);
-    dataForm.x3Re.value = -term1 + r13*Math.cos((dum1 + 4.0*Math.PI)/3.0);
-    return;*/
 
 
 /*Poly divide_out_root(Poly const & p, double x) {
