@@ -1,5 +1,6 @@
 #include "testing.h"
 #include <iostream>
+#include <glib.h>
 
 #include <2geom/angle.h>
 #include <2geom/ellipse.h>
@@ -71,4 +72,35 @@ TEST(EllipseTest, Transformations) {
     Ellipse ercmp(Point(5,10), Point(5,10), Angle::from_degrees(90));
     //std::cout << e << "\n" << er << "\n" << ercmp << std::endl;
     EXPECT_TRUE(are_near(er, ercmp, 1e-12));
+}
+
+TEST(EllipseTest, TimeAt) {
+    Ellipse e(Point(4, 17), Point(22, 34), 2);
+
+    for (unsigned i = 0; i < 100; ++i) {
+        Coord t = g_random_double_range(0, 2*M_PI);
+        Point p = e.pointAt(t);
+        Coord t2 = e.timeAt(p);
+        EXPECT_FLOAT_EQ(t, t2);
+    }
+}
+
+TEST(EllipseTest, LineIntersection) {
+    Ellipse e(Point(0, 0), Point(3, 2), 0);
+    Line l(Point(0, -2), Point(1, 0));
+
+    std::vector<ShapeIntersection> xs = e.intersect(l);
+
+    ASSERT_EQ(xs.size(), 2);
+    EXPECT_FLOAT_EQ(xs[0].point()[X], 0);
+    EXPECT_FLOAT_EQ(xs[0].point()[Y], -2);
+    EXPECT_FLOAT_EQ(xs[1].point()[X], 9./5);
+    EXPECT_FLOAT_EQ(xs[1].point()[Y], 8./5);
+
+    // due to numeric imprecision when evaluating Ellipse,
+    // the points may deviate by around 2e-16
+    Point ep = e.pointAt(xs[0].first);
+    Point lp = l.pointAt(xs[0].second);
+    EXPECT_NEAR(ep[X], lp[X], 1e-15);
+    EXPECT_NEAR(ep[Y], lp[Y], 1e-15);
 }

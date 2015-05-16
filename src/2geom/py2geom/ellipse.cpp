@@ -42,6 +42,7 @@
 
 void  (Geom::Ellipse::*ellipse_set1)(Geom::Point const &, Geom::Point const &, double) = &Geom::Ellipse::set;
 void  (Geom::Ellipse::*ellipse_set2)(double, double, double, double, double) = &Geom::Ellipse::set;
+std::vector<Geom::Coord> (Geom::Ellipse::*ellipse_coefficients)() const = &Geom::Ellipse::coefficients;
 
 // i can't get these to work
 //Geom::Point  (Geom::Ellipse::*center_point)() = (Geom::Point (*)() const)&Geom::Ellipse::center;
@@ -65,7 +66,7 @@ void wrap_ellipse() {
         
         .def("ray", &Geom::Ellipse::ray)
         .def("rotationAngle", &Geom::Ellipse::rotationAngle)
-        .def("coefficients", &Geom::Ellipse::coefficients)
+        .def("coefficients", ellipse_coefficients)
         .def(self * Geom::Affine())
         .def(self *= Geom::Affine())
         // requires SVGEllipticalArc

@@ -101,6 +101,8 @@ struct ShapeTraits {
     typedef Intersection<> IntersectionType;
 };
 
+typedef Intersection<> ShapeIntersection;
+
 
 } // namespace Geom
 

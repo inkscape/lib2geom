@@ -188,6 +188,14 @@ public:
     bool isDegenerate() const {
         return _initial == _final;
     }
+    /// Check if the line is horizontal (y is constant).
+    bool isHorizontal() const {
+        return _initial[Y] == _final[Y];
+    }
+    /// Check if the line is vertical (x is constant).
+    bool isVertical() const {
+        return _initial[X] == _final[X];
+    }
 
     /** @brief Reparametrize the line so that it has unit speed. */
     void normalize() {
@@ -349,7 +357,7 @@ public:
     }
     /// @}
 
-    //std::vector<LineIntersection> intersect(Line const &other, Coord precision = EPSILON) const;
+    //std::vector<ShapeIntersection> intersect(Line const &other, Coord precision = EPSILON) const;
 
     Line &operator*=(Affine const &m) {
         _initial *= m;

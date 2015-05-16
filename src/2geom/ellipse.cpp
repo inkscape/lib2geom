@@ -123,15 +123,49 @@ Affine Ellipse::unitCircleTransform() const
     ret.setTranslation(center());
     return ret;
 }
+Affine Ellipse::inverseUnitCircleTransform() const
+{
+    if (ray(X) == 0 || ray(Y) == 0) {
+        THROW_RANGEERROR("a degenerate ellipse doesn't have an inverse unit circle transform");
+    }
+    Affine ret = Translate(-center()) * Rotate(-_angle) * Scale(1/ray(X), 1/ray(Y));
+    return ret;
+}
+
+
+LineSegment Ellipse::axis(Dim2 d) const
+{
+    Point a(0, 0), b(0, 0);
+    a[d] = -1;
+    b[d] = 1;
+    LineSegment ls(a, b);
+    ls.transform(unitCircleTransform());
+    return ls;
+}
+
+LineSegment Ellipse::semiaxis(Dim2 d, int sign) const
+{
+    Point a(0, 0), b(0, 0);
+    b[d] = sgn(sign);
+    LineSegment ls(a, b);
+    ls.transform(unitCircleTransform());
+    return ls;
+}
 
 
 std::vector<double> Ellipse::coefficients() const
+{
+    std::vector<double> c(6);
+    coefficients(c[0], c[1], c[2], c[3], c[4], c[5]);
+    return c;
+}
+
+void Ellipse::coefficients(Coord &A, Coord &B, Coord &C, Coord &D, Coord &E, Coord &F) const
 {
     if (ray(X) == 0 || ray(Y) == 0) {
         THROW_RANGEERROR("a degenerate ellipse doesn't have an implicit form");
     }
 
-    std::vector<double> coeff(6);
     double cosrot, sinrot;
     sincos(_angle, sinrot, cosrot);
     double cos2 = cosrot * cosrot;
@@ -140,16 +174,15 @@ std::vector<double> Ellipse::coefficients() const
     double invrx2 = 1 / (ray(X) * ray(X));
     double invry2 = 1 / (ray(Y) * ray(Y));
 
-    coeff[0] = invrx2 * cos2 + invry2 * sin2;
-    coeff[1] = 2 * (invrx2 - invry2) * cossin;
-    coeff[2] = invrx2 * sin2 + invry2 * cos2;
-    coeff[3] = -(2 * coeff[0] * center(X) + coeff[1] * center(Y));
-    coeff[4] = -(2 * coeff[2] * center(Y) + coeff[1] * center(X));
-    coeff[5] = coeff[0] * center(X) * center(X)
-             + coeff[1] * center(X) * center(Y)
-             + coeff[2] * center(Y) * center(Y)
-             - 1;
-    return coeff;
+    A = invrx2 * cos2 + invry2 * sin2;
+    B = 2 * (invrx2 - invry2) * cossin;
+    C = invrx2 * sin2 + invry2 * cos2;
+    D = -2 * A * center(X) - B * center(Y);
+    E = -2 * C * center(Y) - B * center(X);
+    F =   A * center(X) * center(X)
+        + B * center(X) * center(Y)
+        + C * center(Y) * center(Y)
+        - 1;
 }
 
 
@@ -281,6 +314,124 @@ void Ellipse::makeCanonical()
         _angle -= M_PI/2;
     }
 }
+
+Point Ellipse::pointAt(Coord t) const
+{
+    Point p = Point::polar(t);
+    p *= unitCircleTransform();
+    return p;
+}
+
+Coord Ellipse::valueAt(Coord t, Dim2 d) const
+{
+    // TODO: more efficient version.
+    return pointAt(t)[d];
+}
+
+Coord Ellipse::timeAt(Point const &p) const
+{
+    // degenerate ellipse is basically a reparametrized line segment
+    if (ray(X) == 0 || ray(Y) == 0) {
+        if (ray(X) != 0) {
+            return asin(Line(axis(X)).timeAt(p));
+        } else if (ray(Y) != 0) {
+            return acos(Line(axis(Y)).timeAt(p));
+        } else {
+            return 0;
+        }
+    }
+    Affine iuct = inverseUnitCircleTransform();
+    return Angle(atan2(p * iuct)).radians0(); // return a value in [0, 2pi)
+}
+
+std::vector<ShapeIntersection> Ellipse::intersect(Line const &line, Coord /*precision*/) const
+{
+
+    std::vector<ShapeIntersection> result;
+
+    if (line.isDegenerate()) return result;
+    if (ray(X) == 0 || ray(Y) == 0) {
+        // TODO intersect with line segment
+        return result;
+    }
+
+    // Ax^2 + Bxy + Cy^2 + Dx + Ey + F
+    Coord A, B, C, D, E, F;
+    coefficients(A, B, C, D, E, F);
+    Affine iuct = inverseUnitCircleTransform();
+
+    if (line.isHorizontal()) {
+        // substitute y into the ellipse equation and solve
+        Coord y = line.initialPoint()[Y];
+        std::vector<Coord> xs = solve_quadratic(A, B*y + D, C*y*y + E*y + F);
+        for (unsigned i = 0; i < xs.size(); ++i) {
+            Point p(xs[i], y);
+            result.push_back(ShapeIntersection(atan2(p * iuct), line.timeAt(p), p));
+        }
+        return result;
+    }
+    if (line.isVertical()) {
+        // substitute y into the ellipse equation and solve
+        Coord x = line.initialPoint()[X];
+        std::vector<Coord> ys = solve_quadratic(C, B*x + E, A*x*x + D*x + F);
+        for (unsigned i = 0; i < ys.size(); ++i) {
+            Point p(x, ys[i]);
+            result.push_back(ShapeIntersection(atan2(p * iuct), line.timeAt(p), p));
+        }
+        return result;
+    }
+
+    // generic case
+    Coord a, b, c;
+    line.coefficients(a, b, c);
+
+    // y = -a/b x - C/B
+    // TODO: when is it better to substitute X?
+    Coord q = -a/b;
+    Coord r = -c/b;
+
+    // substitute that into the ellipse equation, making it quadratic in x
+    Coord I = A + B*q + C*q*q;          // x^2 terms
+    Coord J = B*r + C*2*q*r + D + E*q;  // x^1 terms
+    Coord K = C*r*r + E*r + F;          // x^0 terms
+    std::vector<Coord> xs = solve_quadratic(I, J, K);
+
+    for (unsigned i = 0; i < xs.size(); ++i) {
+        Point p(xs[i], q*xs[i] + r);
+        result.push_back(ShapeIntersection(atan2(p * iuct), line.timeAt(p), p));
+    }
+    return result;
+}
+
+/*
+std::vector<ShapeIntersection> Ellipse::intersect(Ellipse const &other)
+{
+    // intersection of two ellipses can be solved analytically.
+    // http://maptools.home.comcast.net/~maptools/BivariateQuadratics.pdf
+
+    Coord A, B, C, D, E, F;
+    Coord a, b, c, d, e, f;
+
+    // note: this order is different to match the description in the PDF above
+    this->coefficients(A, E, B, C, D, F);
+    other.coefficients(a, e, b, c, d, f);
+
+    // Assume that 
+    // Given the two equations, solve the following determinant:
+    //
+    //
+    // mu Q + R = [
+    //
+    Coord I, J, K, L;
+    I = (-E*E*F + 4*A*B*F + C*D*E - A*D*D - B*C*C) / 4;
+    J = -((E*E - 4*A*B) * f + (2*E*F - C*D) * e + (2*A*D - C*E) * d +
+          (2*B*C - D*E) * c + (C*C - 4*A*F) * b + (D*D - 4*B*F) * a) / 4;
+    K = -((e*e - 4*a*b) * F + (2*e*f - c*d) * E + (2*a*d - c*e) * D +
+          (2*b*c - d*e) * C + (c*c - 4*a*f) * B + (d*d - 4*b*f) * A) / 4;
+    L = (-e*e*f + 4*a*b*f + c*d*e - a*d*d - b*c*c) / 4;
+
+    std::vector<Coord> mu = solve_cubic(I, J, K, L);
+}*/
 
 bool Ellipse::operator==(Ellipse const &other) const
 {

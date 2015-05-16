@@ -37,8 +37,9 @@
 
 #include <vector>
 #include <2geom/angle.h>
+#include <2geom/bezier-curve.h>
 #include <2geom/exception.h>
-#include <2geom/point.h>
+#include <2geom/line.h>
 #include <2geom/transforms.h>
 
 namespace Geom {
@@ -147,9 +148,42 @@ public:
      * This function returns the transform that maps the unit circle to this ellipse.
      * @return Transform from unit circle to the ellipse */
     Affine unitCircleTransform() const;
+    /** @brief Compute the transform that maps this ellipse to the unit circle.
+     * This may be a little more precise and/or faster than simply using
+     * unitCircleTransform().inverse(). An exception will be thrown for
+     * degenerate ellipses. */
+    Affine inverseUnitCircleTransform() const;
+
+    LineSegment majorAxis() const { return ray(X) >= ray(Y) ? axis(X) : axis(Y); }
+    LineSegment minorAxis() const { return ray(X) < ray(Y) ? axis(X) : axis(Y); }
+    LineSegment semimajorAxis(int sign = 1) const {
+        return ray(X) >= ray(Y) ? semiaxis(X, sign) : semiaxis(Y, sign);
+    }
+    LineSegment semiminorAxis(int sign = 1) const {
+        return ray(X) < ray(Y) ? semiaxis(X, sign) : semiaxis(Y, sign);
+    }
+    LineSegment axis(Dim2 d) const;
+    LineSegment semiaxis(Dim2 d, int sign = 1) const;
 
     /// Get the coefficients of the ellipse's implicit equation.
     std::vector<double> coefficients() const;
+    void coefficients(Coord &A, Coord &B, Coord &C, Coord &D, Coord &E, Coord &F) const;
+
+    /** @brief Evaluate a point on the ellipse.
+     * The parameter range is \f$[0, 2\pi)\f$; larger and smaller values
+     * wrap around. */
+    Point pointAt(Coord t) const;
+    /// Evaluate a single coordinate of a point on the ellipse.
+    Coord valueAt(Coord t, Dim2 d) const;
+
+    /** @brief Find the time value of a point on an ellipse.
+     * If the point is not on the ellipse, the returned time value will correspond
+     * to an intersection with a ray from the origin passing through the point
+     * with the ellipse. Note that this is NOT the nearest point on the ellipse. */
+    Coord timeAt(Point const &p) const;
+
+    /// Compute intersections with a line.
+    std::vector<ShapeIntersection> intersect(Line const &line, Coord precision = 0) const;
 
     Ellipse &operator*=(Translate const &t) {
         _center *= t;
