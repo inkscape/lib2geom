@@ -45,6 +45,8 @@ curve-intersection-by-implicitization
 d2sbasis-fitting
 d2sbasis-fitting-with-np
 ellipse-fitting
+ellipse-intersect
+ellipse-line-intersect
 ellipse-area-minimizer
 #ellipse-transform
 elliptiarc-3point-center-fitting

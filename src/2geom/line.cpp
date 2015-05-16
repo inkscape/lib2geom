@@ -62,7 +62,7 @@ void Line::setCoefficients (Coord a, Coord b, Coord c)
 {
     if (a == 0 && b == 0) {
         if (c != 0) {
-            THROW_LOGICALERROR("the passed coefficients gives the empty set");
+            THROW_LOGICALERROR("the passed coefficients give the empty set");
         }
         _initial = Point(0,0);
         _final = Point(0,0);
@@ -70,20 +70,20 @@ void Line::setCoefficients (Coord a, Coord b, Coord c)
     }
     if (a == 0) {
         // b must be nonzero
-        _initial = Point(0, c / b);
+        _initial = Point(0, -c / b);
         _final = _initial;
         _final[X] = 1;
         return;
     }
     if (b == 0) {
-        _initial = Point(c / a, 0);
+        _initial = Point(-c / a, 0);
         _final = _initial;
         _final[Y] = 1;
         return;
     }
 
-    _initial = Point(c / a, 0);
-    _final = Point(0, c / b);
+    _initial = Point(-c / a, 0);
+    _final = Point(0, -c / b);
 }
 
 void Line::coefficients(Coord &a, Coord &b, Coord &c) const

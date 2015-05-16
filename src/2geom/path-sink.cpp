@@ -68,6 +68,26 @@ void PathSink::feed(Rect const &r) {
     closePath();
 }
 
+void PathSink::feed(Circle const &e) {
+    Coord r = e.radius();
+    Point c = e.center();
+    Point a = c + Point(0, c[Y] + r);
+    Point b = c + Point(0, c[Y] - r);
+
+    moveTo(a);
+    arcTo(r, r, 0, false, false, b);
+    arcTo(r, r, 0, false, false, a);
+    closePath();
+}
+
+void PathSink::feed(Ellipse const &e) {
+    Point s = e.pointAt(0);
+    moveTo(s);
+    arcTo(e.ray(X), e.ray(Y), e.rotationAngle(), false, false, e.pointAt(M_PI));
+    arcTo(e.ray(X), e.ray(Y), e.rotationAngle(), false, false, s);
+    closePath();
+}
+
 }
 
 /*

@@ -104,3 +104,10 @@ TEST(EllipseTest, LineIntersection) {
     EXPECT_NEAR(ep[X], lp[X], 1e-15);
     EXPECT_NEAR(ep[Y], lp[Y], 1e-15);
 }
+
+TEST(EllipseTest, EllipseIntersection) {
+    Ellipse e1(Point(5, 5), Point(15, 10), 0.1);
+    Ellipse e2(Point(5, 15), Point(7, 10), -0.1);
+
+    e1.intersect(e2);
+}

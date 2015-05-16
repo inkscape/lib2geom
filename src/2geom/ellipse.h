@@ -182,8 +182,12 @@ public:
      * with the ellipse. Note that this is NOT the nearest point on the ellipse. */
     Coord timeAt(Point const &p) const;
 
-    /// Compute intersections with a line.
-    std::vector<ShapeIntersection> intersect(Line const &line, Coord precision = 0) const;
+    /// Compute intersections with an infinite line.
+    std::vector<ShapeIntersection> intersect(Line const &line) const;
+    /// Compute intersections with a line segment.
+    std::vector<ShapeIntersection> intersect(LineSegment const &seg) const;
+    /// Compute intersections with another ellipse.
+    std::vector<ShapeIntersection> intersect(Ellipse const &other) const;
 
     Ellipse &operator*=(Translate const &t) {
         _center *= t;

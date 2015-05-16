@@ -32,6 +32,7 @@
 #ifndef LIB2GEOM_SEEN_PATH_SINK_H
 #define LIB2GEOM_SEEN_PATH_SINK_H
 
+#include <2geom/forward.h>
 #include <2geom/pathvector.h>
 #include <2geom/curves.h>
 #include <iterator>
@@ -101,6 +102,10 @@ public:
     virtual void feed(PathVector const &v);
     /// Output an axis-aligned rectangle, using moveTo, lineTo and closePath.
     virtual void feed(Rect const &);
+    /// Output a circle as two elliptical arcs.
+    virtual void feed(Circle const &e);
+    /// Output an ellipse as two elliptical arcs.
+    virtual void feed(Ellipse const &e);
 
     virtual ~PathSink() {}
 };

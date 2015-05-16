@@ -123,6 +123,7 @@ Affine Ellipse::unitCircleTransform() const
     ret.setTranslation(center());
     return ret;
 }
+
 Affine Ellipse::inverseUnitCircleTransform() const
 {
     if (ray(X) == 0 || ray(Y) == 0) {
@@ -344,14 +345,14 @@ Coord Ellipse::timeAt(Point const &p) const
     return Angle(atan2(p * iuct)).radians0(); // return a value in [0, 2pi)
 }
 
-std::vector<ShapeIntersection> Ellipse::intersect(Line const &line, Coord /*precision*/) const
+std::vector<ShapeIntersection> Ellipse::intersect(Line const &line) const
 {
 
     std::vector<ShapeIntersection> result;
 
     if (line.isDegenerate()) return result;
     if (ray(X) == 0 || ray(Y) == 0) {
-        // TODO intersect with line segment
+        // TODO intersect with line segment.
         return result;
     }
 
@@ -403,25 +404,53 @@ std::vector<ShapeIntersection> Ellipse::intersect(Line const &line, Coord /*prec
     return result;
 }
 
-/*
-std::vector<ShapeIntersection> Ellipse::intersect(Ellipse const &other)
+std::vector<ShapeIntersection> Ellipse::intersect(LineSegment const &seg) const
 {
+    // we simply re-use the procedure for lines and filter out
+    // results where the line time value is outside of the unit interval.
+    std::vector<ShapeIntersection> xs = intersect(Line(seg));
+    std::vector<ShapeIntersection> result;
+    Interval unit(0, 1);
+
+    for (unsigned i = 0; i < xs.size(); ++i) {
+        if (unit.contains(xs[i].second)) {
+            result.push_back(xs[i]);
+        }
+    }
+    return result;
+}
+
+std::vector<ShapeIntersection> Ellipse::intersect(Ellipse const &other) const
+{
+    // handle degenerate cases first
+    if (ray(X) == 0 || ray(Y) == 0) {
+        
+    }
     // intersection of two ellipses can be solved analytically.
     // http://maptools.home.comcast.net/~maptools/BivariateQuadratics.pdf
 
     Coord A, B, C, D, E, F;
     Coord a, b, c, d, e, f;
 
-    // note: this order is different to match the description in the PDF above
+    // NOTE: the order of coefficients is different to match the convention in the PDF above
+    // Ax^2 + Bx^2 + Cx + Dy + Exy + F
     this->coefficients(A, E, B, C, D, F);
     other.coefficients(a, e, b, c, d, f);
 
-    // Assume that 
-    // Given the two equations, solve the following determinant:
+    // Assume that Q is the ellipse equation given by uppercase letters
+    // and R is the equation given by lowercase ones. An intersection exists when
+    // there is a coefficient mu such that
+    // mu Q + R = 0
     //
+    // This can be written in the following way:
     //
-    // mu Q + R = [
+    //                    |  ff  cc/2 dd/2 | |1|
+    // mu Q + R = [1 x y] | cc/2  aa  ee/2 | |x| = 0
+    //                    | dd/2 ee/2  bb  | |y|
     //
+    // where aa = mu A + a and so on. The determinant can be explicitly written out,
+    // giving an equation which is cubic in mu and can be solved analytically.
+
     Coord I, J, K, L;
     I = (-E*E*F + 4*A*B*F + C*D*E - A*D*D - B*C*C) / 4;
     J = -((E*E - 4*A*B) * f + (2*E*F - C*D) * e + (2*A*D - C*E) * d +
@@ -430,8 +459,83 @@ std::vector<ShapeIntersection> Ellipse::intersect(Ellipse const &other)
           (2*b*c - d*e) * C + (c*c - 4*a*f) * B + (d*d - 4*b*f) * A) / 4;
     L = (-e*e*f + 4*a*b*f + c*d*e - a*d*d - b*c*c) / 4;
 
-    std::vector<Coord> mu = solve_cubic(I, J, K, L);
-}*/
+    std::vector<Coord> mus = solve_cubic(I, J, K, L);
+    Coord mu = infinity();
+    std::vector<ShapeIntersection> result;
+
+    // Now that we have solved for mu, we need to check whether the conic
+    // determined by mu Q + R is reducible to a product of two lines. If it's not,
+    // it means that there are no intersections. If it is, the intersections of these
+    // lines with the original ellipses (if there are any) give the coordinates
+    // of intersections.
+
+    // Prefer middle root if there are three.
+    // Out of three possible pairs of lines that go through four points of intersection
+    // of two ellipses, this corresponds to cross-lines. These intersect the ellipses
+    // at less shallow angles than the other two options.
+    if (mus.size() == 3) {
+        std::swap(mus[1], mus[0]);
+    }
+    for (unsigned i = 0; i < mus.size(); ++i) {
+        Coord aa = mus[i] * A + a;
+        Coord bb = mus[i] * B + b;
+        Coord ee = mus[i] * E + e;
+        Coord delta = ee*ee - 4*aa*bb;
+        if (delta < 0) continue;
+        mu = mus[i];
+        break;
+    }
+
+    // if no suitable mu was found, there are no intersections
+    if (mu == infinity()) return result;
+
+    Coord aa = mu * A + a;
+    Coord bb = mu * B + b;
+    Coord cc = mu * C + c;
+    Coord dd = mu * D + d;
+    Coord ee = mu * E + e;
+    Coord ff = mu * F + f;
+
+    Line lines[2];
+
+    if (aa != 0) {
+        bb /= aa; cc /= aa; dd /= aa; ee /= aa; ff /= aa;
+        Coord s = (ee + std::sqrt(ee*ee - 4*bb)) / 2;
+        Coord q = ee - s;
+        Coord alpha = (dd - cc*q) / (s - q);
+        Coord beta = cc - alpha;
+
+        lines[0] = Line(1, q, alpha);
+        lines[1] = Line(1, s, beta);
+    } else if (bb != 0) {
+        cc /= bb; dd /= bb; ee /= bb; ff /= bb;
+        Coord s = ee;
+        Coord q = 0;
+        Coord alpha = cc / ee;
+        Coord beta = ff * ee / cc;
+
+        lines[0] = Line(q, 1, alpha);
+        lines[1] = Line(s, 1, beta);
+    } else {
+        lines[0] = Line(ee, 0, dd);
+        lines[1] = Line(0, 1, cc/ee);
+    }
+
+    // intersect with the obtained lines and report intersections
+    for (unsigned li = 0; li < 2; ++li) {
+        std::vector<ShapeIntersection> as = intersect(lines[li]);
+        std::vector<ShapeIntersection> bs = other.intersect(lines[li]);
+
+        if (!as.empty() && as.size() == bs.size()) {
+            for (unsigned i = 0; i < as.size(); ++i) {
+                ShapeIntersection ix(as[i].first, bs[i].first,
+                    middle_point(as[i].point(), bs[i].point()));
+                result.push_back(ix);
+            }
+        }
+    }
+    return result;
+}
 
 bool Ellipse::operator==(Ellipse const &other) const
 {

@@ -50,8 +50,9 @@ namespace Geom
 // class docs in cpp file
 class Line
     : boost::equality_comparable1<Line
+    , MultipliableNoncommutative<Line, Translate
     , MultipliableNoncommutative<Line, Affine
-      > >
+      > > >
 {
 private:
     Point _initial;
@@ -359,6 +360,11 @@ public:
 
     //std::vector<ShapeIntersection> intersect(Line const &other, Coord precision = EPSILON) const;
 
+    Line &operator*=(Translate const &tr) {
+        _initial *= tr;
+        _final *= tr;
+        return *this;
+    }
     Line &operator*=(Affine const &m) {
         _initial *= m;
         _final *= m;

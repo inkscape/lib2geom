@@ -1,5 +1,6 @@
 #include "testing.h"
 #include <iostream>
+#include <glib.h>
 
 #include <2geom/line.h>
 #include <2geom/affine.h>
@@ -68,5 +69,33 @@ TEST(LineTest, RotationToZero) {
         // unfortunately this is precise only to about 1e-14
         EXPECT_NEAR(rx[X], 0, 1e-14);
         EXPECT_NEAR(ry[Y], 0, 1e-14);
+    }
+}
+
+TEST(LineTest, Coefficients) {
+    for (unsigned i = 0; i < 100; ++i) {
+        double ax = g_random_double_range(-100, 100);
+        double ay = g_random_double_range(-100, 100);
+        double bx = g_random_double_range(-100, 100);
+        double by = g_random_double_range(-100, 100);
+
+        Line l(Point(ax, ay), Point(bx, by));
+
+        Coord a, b, c, A, B, C;
+        l.coefficients(a, b, c);
+        Line k(a, b, c);
+        k.coefficients(A, B, C);
+        b /= a; c /= a; a = 1;
+        B /= A; C /= A; A = 1;
+        EXPECT_FLOAT_EQ(b, B);
+        EXPECT_FLOAT_EQ(c, C);
+
+        //EXPECT_TRUE(are_near(l.initialPoint(), k.initialPoint(), 1e-12));
+
+        for (unsigned i = 0; i <10; ++i) {
+            double t = g_random_double_range(-10, 10);
+            Point p = l.pointAt(t);
+            EXPECT_NEAR(a*p[X] + b*p[Y] + c, 0, 1e-10);
+        }
     }
 }
