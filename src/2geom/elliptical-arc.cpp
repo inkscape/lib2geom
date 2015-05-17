@@ -800,6 +800,8 @@ void EllipticalArc::transform(Affine const& m)
         return;
     }
 
+    _initial_point *= m;
+    _final_point *= m;
     _ellipse *= m;
     if (m.det() < 0) {
         _sweep = !_sweep;
