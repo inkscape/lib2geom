@@ -112,9 +112,6 @@ point.h
 polynomial.cpp
 polynomial.h
 
-quadtree.cpp
-quadtree.h
-
 ray.h
 rect.h
 rect.cpp

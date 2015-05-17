@@ -3,7 +3,6 @@ SET(2GEOM_TESTS_SRC
 #bezier-utils-test
 choose-test
 #lin_alg_test
-#svgd-test
 sbasis-text-test
 root-find-test
 implicitization-test
