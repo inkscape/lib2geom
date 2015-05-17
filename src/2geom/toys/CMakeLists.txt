@@ -45,10 +45,11 @@ curve-intersection-by-implicitization
 d2sbasis-fitting
 d2sbasis-fitting-with-np
 ellipse-fitting
-ellipse-intersect
-ellipse-line-intersect
+ellipse-intersect-toy
+ellipse-line-intersect-toy
 ellipse-area-minimizer
 #ellipse-transform
+elliptical-arc-toy
 elliptiarc-3point-center-fitting
 #elliptiarc-5points-fitting
 elliptiarc-curve-fitting
@@ -86,7 +87,6 @@ sbasis-fitting
 scribble
 self-intersect
 squiggles
-svg-elliptical-arc-test-toy
 uncross
 worms
 winding-test

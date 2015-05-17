@@ -417,25 +417,5 @@ cdef class cy_EllipticalArc:
     cdef EllipticalArc* thisptr
 cdef cy_EllipticalArc wrap_EllipticalArc(EllipticalArc p)
 
-cdef extern from "2geom/svg-elliptical-arc.h" namespace "Geom":
-    cdef cppclass SVGEllipticalArc:
-        SVGEllipticalArc()
-        SVGEllipticalArc(Point, double, double, double, bint, bint, Point)
-        Coord valueAt(Coord, Dim2)
-        Point pointAt(Coord)
-        vector[Point] pointAndDerivatives(Coord, unsigned int)
-        Rect boundsExact()
-        OptRect boundsLocal(OptInterval &, unsigned int deg)
-        Curve * derivative()
-        Curve * duplicate()
-        vector[Coord] roots(Coord, Dim2)
-        vector[Coord] allNearestTimes(Point &, double, double)
-        D2[SBasis] toSBasis()
-        bint isSVGCompliant()
-
-cdef class cy_SVGEllipticalArc(cy_EllipticalArc):
-    pass
-cdef cy_SVGEllipticalArc wrap_SVGEllipticalArc(SVGEllipticalArc p)
-
 cdef Curve * get_Curve_p(object c)
 cdef bint is_Curve(object c)

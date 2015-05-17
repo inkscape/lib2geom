@@ -22,7 +22,7 @@ from cy2geom import lerp
 from cy2geom import LineSegment, QuadraticBezier, CubicBezier
 from cy2geom import HLineSegment, VLineSegment
 
-from cy2geom import EllipticalArc, SVGEllipticalArc
+from cy2geom import EllipticalArc
 
 class TestPrimitives(unittest.TestCase):
     def test_linear(self):
@@ -454,20 +454,5 @@ class TestPrimitives(unittest.TestCase):
         #TODO:
         #F.point_and_derivatives(t, 1)[0] differs from F(0) and F.bounds_exact, 
         #F.bounds_fast doesn't contain F(1)
-    def test_sVGEllipticalArc(self):
-        F1 = EllipticalArc(Point(), 1, 2, math.pi/6, True, True, Point(1, 1))
-        F2 = SVGEllipticalArc(Point(), 1, 2, math.pi/6, True, True, Point(1, 1))
-        for i in range(11):
-            t = i/10.0
-            self.assertAlmostEqual(F1(t), F2(t))
-        #degenerate ellipse
-        D = SVGEllipticalArc(Point(0, 0), 0.5, 0, 0, False, False, Point(1, 0))
-        self.assertTrue(D.is_degenerate())
-        for i in range(11):
-            t = i/10.0
-            self.assertAlmostEqual(D(t), D.chord()(t))
-            self.assertAlmostEqual(D.value_at(t, 0), t)
-            self.assertAlmostEqual(D.roots(t, 0)[0], t)
-        self.assertIsInstance(D.derivative(), LineSegment)
         
 unittest.main()

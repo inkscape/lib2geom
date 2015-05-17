@@ -75,11 +75,10 @@ public:
     void fit(std::vector<Point> const &points);
 
     EllipticalArc *
-    arc(Point const& initial, Point const& inner, Point const& final,
-        bool svg_compliant = true);
+    arc(Point const& initial, Point const& inner, Point const& final) const;
 
-    D2<SBasis> toSBasis();
-    void getPath(PathVector &path_out);
+    D2<SBasis> toSBasis() const;
+    void getPath(PathVector &path_out) const;
 
     Point center() const { return _center; }
     Coord center(Dim2 d) const { return _center[d]; }

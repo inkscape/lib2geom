@@ -64,12 +64,8 @@ cdef class cy_Circle:
             initial: Initial point of arc
             inner: Inner point of arc.
             final: Final point of arc.
-            _svg_compliant=True: Get SVGEllipticalArc/EllipticalArc
         """
-        if _svg_compliant:
-            return wrap_SVGEllipticalArc( deref(<SVGEllipticalArc *> self.thisptr.arc(deref( initial.thisptr ), deref( inner.thisptr ), deref( final.thisptr ), _svg_compliant)) )
-        else:
-            return wrap_EllipticalArc( deref(self.thisptr.arc(deref( initial.thisptr ), deref( inner.thisptr ), deref( final.thisptr ), _svg_compliant)) )
+        return wrap_EllipticalArc( deref(self.thisptr.arc(deref( initial.thisptr ), deref( inner.thisptr ), deref( final.thisptr ))) )
 
     def center(self):
         """Get center of circle in point."""
@@ -153,12 +149,8 @@ cdef class cy_Ellipse:
             initial: Initial point of arc
             inner: Inner point of arc.
             final: Final point of arc.
-            _svg_compliant=True: Get SVGEllipticalArc/EllipticalArc
         """
-        if svg_compliant:
-            return wrap_SVGEllipticalArc( deref(<SVGEllipticalArc *> self.thisptr.arc(deref( initial.thisptr ), deref( inner.thisptr ), deref( final.thisptr ), svg_compliant)) )
-        else:
-            return wrap_EllipticalArc( deref(self.thisptr.arc(deref( initial.thisptr ), deref( inner.thisptr ), deref( final.thisptr ), svg_compliant)) )
+        return wrap_EllipticalArc( deref(self.thisptr.arc(deref( initial.thisptr ), deref( inner.thisptr ), deref( final.thisptr ))) )
 
     def center(self):
         """Get center of ellipse."""

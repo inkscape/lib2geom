@@ -103,7 +103,7 @@ private:
             }
             case '2':
             {
-    	        SVGEllipticalArc earc;
+    	        EllipticalArc earc;
     	        bool earc_constraints_satisfied = true;
     	        try
     	        {
@@ -190,7 +190,7 @@ private:
     	        path.append(A);
     	        path.append(B);
     	        path.append(C);
-    	        SVGEllipticalArc D;
+    	        EllipticalArc D;
     	        bool earc_constraints_satisfied = true;
     	        try
     	        {
@@ -369,7 +369,7 @@ const char* NearestPoints::menu_items[] =
 {
     "",
     "LineSegment",
-    "SVGEllipticalArc",
+    "EllipticalArc",
     "SBasisCurve",
     "Piecewise",
     "Path",

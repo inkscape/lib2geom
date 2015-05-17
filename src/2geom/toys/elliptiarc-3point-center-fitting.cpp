@@ -40,7 +40,7 @@
 namespace Geom
 {
 
-bool make_elliptical_arc( SVGEllipticalArc & ea,
+bool make_elliptical_arc( EllipticalArc & ea,
 						  Point const& centre,
 		                  Point const& initial,
 		                  Point const& final,
@@ -248,7 +248,7 @@ class ElliptiArcMaker : public Toy
 
   private:
     PointHandle O, A, B, C;
-	SVGEllipticalArc ea;
+	EllipticalArc ea;
 };
 
 

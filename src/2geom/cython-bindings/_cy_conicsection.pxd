@@ -9,7 +9,6 @@ from _cy_affine cimport is_transform, get_Affine, Affine
 from _cy_curves cimport Curve, cy_Curve,  wrap_Curve_p
 from _cy_curves cimport SBasis, cy_SBasis
 from _cy_curves cimport EllipticalArc, cy_EllipticalArc, wrap_EllipticalArc
-from _cy_curves cimport SVGEllipticalArc, cy_SVGEllipticalArc, wrap_SVGEllipticalArc
 
 from _cy_path cimport Path, cy_Path
 

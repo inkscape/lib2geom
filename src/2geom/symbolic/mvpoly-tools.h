@@ -314,63 +314,44 @@ struct mvpoly<0, CoeffT>
   private:
     template <size_t i>
     static
-    void lex_degree_impl (type const& p, multi_index_type& D)
+    void lex_degree_impl (type const &/*p*/, multi_index_type&/*D*/)
     {
-        // if the parameters are not used the compiler gives a compile error
-        typedef int _t1_[sizeof(p)];
-        typedef int _t2_[sizeof(D)];
         return;
     }
 
     template <size_t i>
     static
-    bool max_degree_impl (type const& p,
-                          multi_index_type& D,
-                          multi_index_type const& I)
+    bool max_degree_impl (type const &/*p*/,
+                          multi_index_type &/*D*/,
+                          multi_index_type const &/*I*/)
     {
-        // if the parameters are not used the compiler gives a compile error
-        typedef int _t1_[sizeof(p)];
-        typedef int _t2_[sizeof(D)];
-        typedef int _t3_[sizeof(I)];
         return true;
     }
 
     template <size_t i>
     static
-    bool real_degree_impl (type const& p,
-                           multi_index_type& D,
-                           multi_index_type const& I)
+    bool real_degree_impl (type const &/*p*/,
+                           multi_index_type &/*D*/,
+                           multi_index_type const &/*I*/)
     {
-        // if the parameters are not used the compiler gives a compile error
-        typedef int _t1_[sizeof(p)];
-        typedef int _t2_[sizeof(D)];
-        typedef int _t3_[sizeof(I)];
         return true;
     }
 
     template <size_t i>
     static
-    void shift_impl(type & p, multi_index_type const& I)
-    {
-        // if the parameters are not used the compiler gives a compile error
-        typedef int _t1_[sizeof(p)];
-        typedef int _t2_[sizeof(I)];
-        return;
-    }
+    void shift_impl(type &/*p*/, multi_index_type const &/*I*/)
+    {}
 
     template <typename T, size_t i>
     static
-    T evaluate_impl(type const& p, boost::array<T, i> const& X)
+    T evaluate_impl(type const &p, boost::array<T, i> const &/*X*/)
     {
-        typedef int _t1_[sizeof(X)];
         return p;
     }
 
     static
-    void normalize(type & p)
-    {
-        typedef int _t1_[sizeof(p)];
-    }
+    void normalize(type &/*p*/)
+    {}
 
 
     template <size_t M, typename C>
@@ -423,12 +404,8 @@ struct monomial<0, CoeffT>
   private:
     template <size_t i>
     static
-    CoeffT make_impl(multi_index_type const& I, CoeffT c)
+    CoeffT make_impl(multi_index_type const &/*I*/, CoeffT c)
     {
-        // compiler complaints if a parameter is not used
-        // warning + metaprogramming recursion == error ? (at least on gcc)
-        // this is just a workaround
-        typedef int _t1_[sizeof(I)];
         return c;
     }
 

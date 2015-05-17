@@ -108,9 +108,8 @@
  *       fact that an identity transform can be interpreted as a rotation by zero
  *       degrees. To get the old behavior of returning false for identity, use
  *       methods prefixed with "Nonzero", e.g. Affine::isNonzeroRotation().
- *     - EllipticalArc and SVGEllipticalArc have been merged. EllipticalArc underwent
- *       substantial changes to match 2Geom naming conventions and make use of new
- *       angular geometric primitives.
+ *     - EllipticalArc and SVGEllipticalArc have been merged. Now there is only the former.
+ *       All arcs are SVG-compliant.
  *   - Minor changes:
  *     - Affine::without_translation() is now called Affine::withoutTranslation().
  *     - Interval::strict_contains() is now called Interval::interiorContains().

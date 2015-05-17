@@ -1,7 +1,10 @@
-/*
- * SVG Elliptical Arc Toy for testing
- *
- * Copyright 2008  Marco Cecchetti <mrcekets at gmail.com>
+/** @file
+ * @brief Demonstration of elliptical arc functions
+ *//*
+ * Authors:
+ *   Marco Cecchetti <mrcekets at gmail.com>
+ *   Krzysztof Kosiński <tweenk.pl@gmail.com>
+ * Copyright 2008-2015 Authors
  *
  * This library is free software; you can redistribute it and/or
  * modify it either under the terms of the GNU Lesser General Public
@@ -27,8 +30,6 @@
  * the specific language governing rights and limitations.
  */
 
-
-
 #include <2geom/svg-elliptical-arc.h>
 
 #include <2geom/toys/path-cairo.h>
@@ -50,7 +51,7 @@ std::string angle_formatter(double angle)
 
 
 
-class SVGEllipticalArcTestToy: public Toy
+class EllipticalArcToy: public Toy
 {
 
     enum menu_item_t
@@ -102,7 +103,7 @@ class SVGEllipticalArcTestToy: public Toy
 
     virtual void first_time(int /*argc*/, char** /*argv*/)
     {
-        draw_f = &SVGEllipticalArcTestToy::draw_menu;
+        draw_f = &EllipticalArcToy::draw_menu;
     }
 
     void init_common()
@@ -257,7 +258,7 @@ class SVGEllipticalArcTestToy: public Toy
         cairo_set_line_width(cr, 1);
         cairo_set_source_rgba(cr, 1.0, 0.0, 0.0, 1.0);
 
-        if (ea.isSVGCompliant() && ea.isDegenerate())
+        if (ea.isDegenerate())
         {
             cairo_move_to(cr, ea.initialPoint());
             cairo_line_to(cr, ea.finalPoint());
@@ -309,9 +310,9 @@ class SVGEllipticalArcTestToy: public Toy
         from_t = sliders[FROM_SLIDER].value();
         to_t = sliders[TO_SLIDER].value();
 
-        SVGEllipticalArc* eapp
-            = static_cast<SVGEllipticalArc*>(ea.portion(from_t, to_t));
-        SVGEllipticalArc& eap = *eapp;
+        EllipticalArc* eapp
+            = static_cast<EllipticalArc*>(ea.portion(from_t, to_t));
+        EllipticalArc& eap = *eapp;
 
         cairo_set_line_width(cr, 0.8);
         cairo_set_source_rgba(cr, 0.0, 1.0, 1.0, 1.0);
@@ -348,8 +349,8 @@ class SVGEllipticalArcTestToy: public Toy
 
         time = sliders[T_SLIDER].value();
 
-        SVGEllipticalArc* eapp = static_cast<SVGEllipticalArc*>(ea.reverse());
-        SVGEllipticalArc& eap = *eapp;
+        EllipticalArc* eapp = static_cast<EllipticalArc*>(ea.reverse());
+        EllipticalArc& eap = *eapp;
 
         cairo_set_line_width(cr, 0.8);
         cairo_set_source_rgba(cr, 0.2, 0.2, 0.2, 1.0);
@@ -508,9 +509,8 @@ class SVGEllipticalArcTestToy: public Toy
         D2<SBasis> easb = ea.toSBasis();
         try
         {
-            SVGEllipticalArc earc;
+            EllipticalArc earc;
             make_elliptical_arc convert(earc, easb, 5, 0.1);
-            convert.svg_compliant_flag(ea.isSVGCompliant());
             bool status = !convert();
             if ( status ) return;
             D2<SBasis> arc = earc.toSBasis();
@@ -560,9 +560,9 @@ class SVGEllipticalArcTestToy: public Toy
                    -ea.center(X), -ea.center(Y) );
 
 
-        SVGEllipticalArc* tea = static_cast<SVGEllipticalArc*>(ea.transformed(tm));
-        SVGEllipticalArc* eat = NULL;
-        eat = static_cast<SVGEllipticalArc*>(tea->transformed(TM));
+        EllipticalArc* tea = static_cast<EllipticalArc*>(ea.transformed(tm));
+        EllipticalArc* eat = NULL;
+        eat = static_cast<EllipticalArc*>(tea->transformed(TM));
         delete tea;
         if (eat == NULL)
         {
@@ -676,48 +676,48 @@ class SVGEllipticalArcTestToy: public Toy
         {
             case 'A':
                 init_menu();
-                draw_f = &SVGEllipticalArcTestToy::draw_menu;
+                draw_f = &EllipticalArcToy::draw_menu;
                 break;
             case 'B':
                 init_common();
-                draw_f = &SVGEllipticalArcTestToy::draw_common;
+                draw_f = &EllipticalArcToy::draw_common;
                 break;
             case 'C':
                 init_common();
-                draw_f = &SVGEllipticalArcTestToy::draw_comparison;
+                draw_f = &EllipticalArcToy::draw_comparison;
                 break;
             case 'D':
-                draw_f = &SVGEllipticalArcTestToy::draw_menu;
+                draw_f = &EllipticalArcToy::draw_menu;
                 init_portion();
-                draw_f = &SVGEllipticalArcTestToy::draw_portion;
+                draw_f = &EllipticalArcToy::draw_portion;
                 break;
             case 'E':
                 init_reverse();
-                draw_f = &SVGEllipticalArcTestToy::draw_reverse;
+                draw_f = &EllipticalArcToy::draw_reverse;
                 break;
             case 'F':
                 init_np();
-                draw_f = &SVGEllipticalArcTestToy::draw_np;
+                draw_f = &EllipticalArcToy::draw_np;
                 break;
             case 'G':
                 init_derivative();
-                draw_f = &SVGEllipticalArcTestToy::draw_derivative;
+                draw_f = &EllipticalArcToy::draw_derivative;
                 break;
             case 'H':
                 init_roots();
-                draw_f = &SVGEllipticalArcTestToy::draw_roots;
+                draw_f = &EllipticalArcToy::draw_roots;
                 break;
             case 'I':
                 init_bounds();
-                draw_f = &SVGEllipticalArcTestToy::draw_bounds;
+                draw_f = &EllipticalArcToy::draw_bounds;
                 break;
             case 'J':
                 init_fitting();
-                draw_f = &SVGEllipticalArcTestToy::draw_fitting;
+                draw_f = &EllipticalArcToy::draw_fitting;
                 break;
             case 'K':
                 init_transform();
-                draw_f = &SVGEllipticalArcTestToy::draw_transform;
+                draw_f = &EllipticalArcToy::draw_transform;
                 break;
         }
         redraw();
@@ -841,14 +841,10 @@ class SVGEllipticalArcTestToy: public Toy
     }
 
   public:
-    SVGEllipticalArcTestToy(bool _svg_compliant_flag)
-        : ea(_svg_compliant_flag ? *new SVGEllipticalArc() : *new EllipticalArc())
-    {}
-    ~SVGEllipticalArcTestToy()
-    { delete &ea; }
+    EllipticalArcToy() {}
 
   private:
-    typedef void (SVGEllipticalArcTestToy::* draw_func_t) (cairo_t*, std::ostringstream*, int, int, bool, std::ostringstream*);
+    typedef void (EllipticalArcToy::* draw_func_t) (cairo_t*, std::ostringstream*, int, int, bool, std::ostringstream*);
     draw_func_t draw_f;
     bool set_common_control_geometry;
     bool set_control_geometry;
@@ -858,7 +854,7 @@ class SVGEllipticalArcTestToy: public Toy
     PointHandle nph, ph;
     std::vector<Toggle> toggles;
     std::vector<Slider> sliders;
-    EllipticalArc &ea;
+    EllipticalArc ea;
 
     double from_t;
     double to_t;
@@ -867,7 +863,7 @@ class SVGEllipticalArcTestToy: public Toy
 };
 
 
-const char* SVGEllipticalArcTestToy::menu_items[] =
+const char* EllipticalArcToy::menu_items[] =
 {
     "show this menu",
     "basic",
@@ -882,7 +878,7 @@ const char* SVGEllipticalArcTestToy::menu_items[] =
     "transformation"
 };
 
-const char SVGEllipticalArcTestToy::keys[] =
+const char EllipticalArcToy::keys[] =
 {
      'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K'
 };
@@ -890,16 +886,7 @@ const char SVGEllipticalArcTestToy::keys[] =
 
 int main(int argc, char **argv)
 {
-    bool svg_compliant_flag = true;
-    std::string option("-nosvg");
-
-    if (argc > 1)
-    {
-        std::string argstr(argv[1]);
-        if (argstr == option)
-            svg_compliant_flag = false;
-    }
-    init( argc, argv, new SVGEllipticalArcTestToy(svg_compliant_flag), 850, 780 );
+    init( argc, argv, new EllipticalArcToy(), 850, 780 );
     return 0;
 }
 

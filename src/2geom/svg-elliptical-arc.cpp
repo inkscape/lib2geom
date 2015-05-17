@@ -41,18 +41,7 @@
 #include <memory>
 
 
-namespace Geom
-{
-
-/**
- * @class SVGEllipticalArc
- * @brief SVG 1.1-compliant elliptical arc.
- *
- * This class is almost identical to the normal elliptical arc, but it differs slightly
- * in the handling of degenerate arcs to be compliant with SVG 1.1 implementation guidelines.
- *
- * @ingroup Curves
- */
+namespace Geom {
 
 namespace detail
 {
@@ -109,8 +98,7 @@ make_elliptical_arc( EllipticalArc& _ea,
       tolerance(_tolerance), tol_at_extr(tolerance/2),
       tol_at_center(0.1), angle_tol(0.1),
       initial_point(curve.at0()), final_point(curve.at1()),
-      N(_total_samples), last(N-1), partitions(N-1), p(N),
-      svg_compliant(true)
+      N(_total_samples), last(N-1), partitions(N-1), p(N)
 {
 }
 
@@ -215,33 +203,12 @@ bool make_elliptical_arc::make_elliptiarc()
 
     Point inner_point = curve(0.5);
 
-    if (svg_compliant_flag())
-    {
 #ifdef CPP11
-        std::unique_ptr<EllipticalArc> arc( e.arc(initial_point, inner_point, final_point, true) );
+    std::unique_ptr<EllipticalArc> arc( e.arc(initial_point, inner_point, final_point) );
 #else
-        std::auto_ptr<EllipticalArc> arc( e.arc(initial_point, inner_point, final_point, true) );
+    std::auto_ptr<EllipticalArc> arc( e.arc(initial_point, inner_point, final_point) );
 #endif
-        ea = *arc;
-    }
-    else
-    {
-        try
-        {
-#ifdef CPP11
-            std::unique_ptr<EllipticalArc>
-#else
-            std::auto_ptr<EllipticalArc>
-#endif
-                eap( e.arc(initial_point, inner_point, final_point, false) );
-            ea = *eap;
-        }
-        catch(RangeError const &exc)
-        {
-            return false;
-        }
-    }
-
+    ea = *arc;
 
     if ( !are_near( e.center(),
                     ea.center(),

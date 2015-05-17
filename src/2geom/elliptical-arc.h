@@ -82,7 +82,7 @@ public:
         , _rot_angle(rot_angle)
         , _large_arc(large_arc)
     {
-        _updateCenterAndAngles(false);
+        _updateCenterAndAngles();
     }
 
     // methods new to EllipticalArc go here
@@ -130,7 +130,7 @@ public:
         _rot_angle = Angle(rot_angle);
         _large_arc = large_arc;
         _sweep = sweep;
-        _updateCenterAndAngles(isSVGCompliant());
+        _updateCenterAndAngles();
     }
     /** @brief Change the initial and final point in one operation.
      * This method exists because modifying any of the endpoints causes rather costly
@@ -140,7 +140,7 @@ public:
     void setEndpoints(Point const &ip, Point const &fp) {
         _initial_point = ip;
         _final_point = fp;
-        _updateCenterAndAngles(isSVGCompliant());
+        _updateCenterAndAngles();
     }
     /// @}
 
@@ -179,9 +179,6 @@ public:
     Affine unitCircleTransform() const;
     /// @}
 
-    /** @brief Check whether the arc adheres to SVG 1.1 implementation guidelines */
-    virtual bool isSVGCompliant() const { return false; }
-
     /// Check whether both rays are nonzero
     bool isChord() const {
         return _rays[0] == 0 || _rays[Y] == 0;
@@ -203,11 +200,11 @@ public:
     virtual Curve* duplicate() const { return new EllipticalArc(*this); }
     virtual void setInitial(Point const &p) {
         _initial_point = p;
-        _updateCenterAndAngles(isSVGCompliant());
+        _updateCenterAndAngles();
     }
     virtual void setFinal(Point const &p) {
         _final_point = p;
-        _updateCenterAndAngles(isSVGCompliant());
+        _updateCenterAndAngles();
     }
     virtual bool isDegenerate() const {
         return _initial_point == _final_point;
@@ -249,9 +246,11 @@ public:
 
     virtual D2<SBasis> toSBasis() const;
     virtual double valueAt(Coord t, Dim2 d) const {
-    	return valueAtAngle(angleAt(t), d);
+        if (isChord()) return chord().valueAt(t, d);
+        return valueAtAngle(angleAt(t), d);
     }
     virtual Point pointAt(Coord t) const {
+        if (isChord()) return chord().pointAt(t);
         return pointAtAngle(angleAt(t));
     }
     virtual Curve* portion(double f, double t) const;
@@ -260,7 +259,7 @@ public:
     virtual void feed(PathSink &sink, bool moveto_initial) const;
 
 protected:
-    void _updateCenterAndAngles(bool svg);
+    void _updateCenterAndAngles();
 
     Point _initial_point, _final_point;
     Point _rays, _center;
@@ -270,6 +269,8 @@ protected:
 private:
     Coord map_to_01(Coord angle) const; 
 }; // end class EllipticalArc
+
+std::ostream &operator<<(std::ostream &out, EllipticalArc const &ea);
 
 } // end namespace Geom
 

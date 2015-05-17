@@ -54,7 +54,7 @@ void wrap_circle() {
         
         .add_property("center", (Geom::Point (Geom::Circle::*)() const )&Geom::Circle::center)
         //.def("center", center)        
-        // requires SVGEllipticalArc
+        // requires EllipticalArc
         //.def("arc", &Geom::Circle::arc)
     ;
 

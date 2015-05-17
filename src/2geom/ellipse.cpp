@@ -32,7 +32,7 @@
  */
 
 #include <2geom/ellipse.h>
-#include <2geom/svg-elliptical-arc.h>
+#include <2geom/elliptical-arc.h>
 #include <2geom/numeric/fitting-tool.h>
 #include <2geom/numeric/fitting-model.h>
 
@@ -207,8 +207,7 @@ void Ellipse::fit(std::vector<Point> const &points)
 
 
 EllipticalArc *
-Ellipse::arc(Point const &ip, Point const &inner, Point const &fp,
-             bool _svg_compliant)
+Ellipse::arc(Point const &ip, Point const &inner, Point const &fp)
 {
     // This is resistant to degenerate ellipses:
     // both flags evaluate to false in that case.
@@ -236,14 +235,8 @@ Ellipse::arc(Point const &ip, Point const &inner, Point const &fp,
         sweep_flag = true;
     }
 
-    EllipticalArc *ret_arc;
-    if (_svg_compliant) {
-        ret_arc = new SVGEllipticalArc(ip, ray(X), ray(Y), rotationAngle(),
-                                       large_arc_flag, sweep_flag, fp);
-    } else {
-        ret_arc = new EllipticalArc(ip, ray(X), ray(Y), rotationAngle(),
-                                    large_arc_flag, sweep_flag, fp);
-    }
+    EllipticalArc *ret_arc = new EllipticalArc(ip, ray(X), ray(Y), rotationAngle(),
+                                               large_arc_flag, sweep_flag, fp);
     return ret_arc;
 }
 

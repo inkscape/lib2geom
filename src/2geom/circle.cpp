@@ -91,15 +91,14 @@ void Circle::fit(std::vector<Point> const& points)
  @param inner a point whose angle with the circle center is inside the angle that the arc spans
  */
 EllipticalArc *
-Circle::arc(Point const& initial, Point const& inner, Point const& final,
-             bool svg_compliant)
+Circle::arc(Point const& initial, Point const& inner, Point const& final) const
 {
     // TODO native implementation!
     Ellipse e(_center[X], _center[Y], _radius, _radius, 0);
-    return e.arc(initial, inner, final, svg_compliant);
+    return e.arc(initial, inner, final);
 }
 
-D2<SBasis> Circle::toSBasis()
+D2<SBasis> Circle::toSBasis() const
 {
     D2<SBasis> B;
     Linear bo = Linear(0, 2 * M_PI);
@@ -113,7 +112,8 @@ D2<SBasis> Circle::toSBasis()
 }
 
 void
-Circle::getPath(PathVector &path_out) {
+Circle::getPath(PathVector &path_out) const
+{
     Path pb;
 
     D2<SBasis> B = toSBasis();

@@ -157,8 +157,8 @@ public:
         if (!_in_path) {
             moveTo(_start_p);
         }
-        _path.template appendNew<SVGEllipticalArc>(rx, ry, angle,
-                                                 large_arc, sweep, p);
+        _path.template appendNew<EllipticalArc>(rx, ry, angle,
+                                                large_arc, sweep, p);
     }
 
     bool backspace()

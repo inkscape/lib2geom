@@ -1209,7 +1209,7 @@ void SVGPathParser::_arcTo(Coord rx, Coord ry, Coord angle,
         return; // ignore invalid (ambiguous) arc segments where start and end point are the same (per SVG spec)
     }
 
-    _pushCurve(new SVGEllipticalArc(_current, rx, ry, angle, large_arc, sweep, p));
+    _pushCurve(new EllipticalArc(_current, rx, ry, angle, large_arc, sweep, p));
     _quad_tangent = _cubic_tangent = _current = p;
 }
 

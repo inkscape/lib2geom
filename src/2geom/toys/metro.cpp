@@ -78,7 +78,7 @@ public:
     unsigned best_schematised_line(vector<Point>& angles, Point p,
                                    double & /*mean*/, double & cost) {
         cost = DBL_MAX;
-        unsigned bestAngle;
+        unsigned bestAngle = 0;
         for(unsigned i=0;i<angles.size();i++) {
             Point n = unit_vector(rot90(angles[i]));
             double dist = dot(n, p);

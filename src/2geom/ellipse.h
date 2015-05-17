@@ -134,8 +134,7 @@ public:
      * @param inner Point in the middle of the arc, used to pick one of two possibilities
      * @param fp Final point of the arc
      * @return Newly allocated arc, delete when no longer used */
-    EllipticalArc *arc(Point const &ip, Point const &inner, Point const &fp,
-                       bool svg_compliant = true);
+    EllipticalArc *arc(Point const &ip, Point const &inner, Point const &fp);
 
     /** @brief Return an ellipse with less degrees of freedom.
      * The canonical form always has the angle less than \f$\frac{\pi}{2}\f$,

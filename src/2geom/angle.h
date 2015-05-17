@@ -68,7 +68,7 @@ class Angle
       > > >
 {
 public:
-    Angle() : _angle(0) {} //added default constructor because of cython
+    Angle() : _angle(0) {}
     Angle(Coord v) : _angle(v) { _normalize(); } // this can be called implicitly
     explicit Angle(Point const &p) : _angle(atan2(p)) { _normalize(); }
     Angle(Point const &a, Point const &b) : _angle(angle_between(a, b)) { _normalize(); }

@@ -92,8 +92,13 @@ namespace Geom
 
 Rect EllipticalArc::boundsExact() const
 {
+    if (isChord()) {
+        return chord().boundsExact();
+    }
+
     using std::swap;
 
+    // TODO: simplify / document what is going on here.
     double extremes[4];
     double sinrot, cosrot;
     sincos(_rot_angle, sinrot, cosrot);
@@ -161,6 +166,10 @@ Affine EllipticalArc::unitCircleTransform() const
 
 std::vector<Coord> EllipticalArc::roots(Coord v, Dim2 d) const
 {
+    if (isChord()) {
+        return chord().roots(v, d);
+    }
+
     std::vector<Coord> sol;
 
     if ( are_near(ray(X), 0) && are_near(ray(Y), 0) ) {
@@ -335,6 +344,10 @@ std::vector<Coord> EllipticalArc::roots(Coord v, Dim2 d) const
 // of such an angle in the cw direction
 Curve *EllipticalArc::derivative() const
 {
+    if (isChord()) {
+        return chord().derivative();
+    }
+
     EllipticalArc *result = static_cast<EllipticalArc*>(duplicate());
     result->_center[X] = result->_center[Y] = 0;
     result->_start_angle += M_PI/2;
@@ -356,6 +369,10 @@ Curve *EllipticalArc::derivative() const
 std::vector<Point>
 EllipticalArc::pointAndDerivatives(Coord t, unsigned int n) const
 {
+    if (isChord()) {
+        return chord().pointAndDerivatives(t, n);
+    }
+
     unsigned int nn = n+1; // nn represents the size of the result vector.
     std::vector<Point> result;
     result.reserve(nn);
@@ -416,19 +433,20 @@ Curve* EllipticalArc::portion(double f, double t) const
     if ( f > t ) arc->_sweep = !_sweep;
     if ( _large_arc && fabs(sweepAngle() * (t-f)) < M_PI)
         arc->_large_arc = false;
-    arc->_updateCenterAndAngles(arc->isSVGCompliant()); //TODO: be more clever
+    arc->_updateCenterAndAngles(); //TODO: be more clever
     return arc;
 }
 
 // the arc is the same but traversed in the opposite direction
-Curve *EllipticalArc::reverse() const {
+Curve *EllipticalArc::reverse() const
+{
     EllipticalArc *rarc = static_cast<EllipticalArc*>(duplicate());
     rarc->_sweep = !_sweep;
     rarc->_initial_point = _final_point;
     rarc->_final_point = _initial_point;
     rarc->_start_angle = _end_angle;
     rarc->_end_angle = _start_angle;
-    rarc->_updateCenterAndAngles(rarc->isSVGCompliant());
+    rarc->_updateCenterAndAngles();
     return rarc;
 }
 
@@ -665,154 +683,33 @@ std::vector<double> EllipticalArc::allNearestTimes( Point const& p, double from,
  * NOTE: this implementation follows Standard SVG 1.1 implementation guidelines
  * for elliptical arc curves. See Appendix F.6.
  */
-void EllipticalArc::_updateCenterAndAngles(bool svg)
+void EllipticalArc::_updateCenterAndAngles()
 {
     Point d = initialPoint() - finalPoint();
 
-    // TODO move this to SVGElipticalArc?
-    if (svg)
-    {
-        if ( initialPoint() == finalPoint() )
-        {
-            _rot_angle = _start_angle = _end_angle = 0;
-            _center = initialPoint();
-            _rays = Geom::Point(0,0);
-            _large_arc = _sweep = false;
-            return;
-        }
-
-        _rays[X] = std::fabs(_rays[X]);
-        _rays[Y] = std::fabs(_rays[Y]);
-
-        if ( are_near(ray(X), 0) || are_near(ray(Y), 0) )
-        {
-            _rays[X] = L2(d) / 2;
-            _rays[Y] = 0;
-            _rot_angle = std::atan2(d[Y], d[X]);
-            _start_angle = 0;
-            _end_angle = M_PI;
-            _center = middle_point(initialPoint(), finalPoint());
-            _large_arc = false;
-            _sweep = false;
-            return;
-        }
+    // if ip = sp, the arc contains no other points
+    if (initialPoint() == finalPoint()) {
+        _rot_angle = _start_angle = _end_angle = 0;
+        _center = initialPoint();
+        _rays = Geom::Point(0,0);
+        _large_arc = _sweep = false;
+        return;
     }
-    else
-    {
-        if ( are_near(initialPoint(), finalPoint()) )
-        {
-            if ( are_near(ray(X), 0) && are_near(ray(Y), 0) )
-            {
-                _start_angle = _end_angle = 0;
-                _center = initialPoint();
-                return;
-            }
-            else
-            {
-                THROW_RANGEERROR("initial and final point are the same");
-            }
-        }
-        if ( are_near(ray(X), 0) && are_near(ray(Y), 0) )
-        { // but initialPoint != finalPoint
-            THROW_RANGEERROR(
-                "there is no ellipse that satisfies the given constraints: "
-                "ray(X) == 0 && ray(Y) == 0 but initialPoint != finalPoint"
-            );
-        }
-        if ( are_near(ray(Y), 0) )
-        {
-            Point v = initialPoint() - finalPoint();
-            if ( are_near(L2sq(v), 4*ray(X)*ray(X)) )
-            {
-                Angle angle(v);
-                if ( are_near( angle, _rot_angle ) )
-                {
-                    _start_angle = 0;
-                    _end_angle = M_PI;
-                    _center = v/2 + finalPoint();
-                    return;
-                }
-                angle -= M_PI;
-                if ( are_near( angle, _rot_angle ) )
-                {
-                    _start_angle = M_PI;
-                    _end_angle = 0;
-                    _center = v/2 + finalPoint();
-                    return;
-                }
-                THROW_RANGEERROR(
-                    "there is no ellipse that satisfies the given constraints: "
-                    "ray(Y) == 0 "
-                    "and slope(initialPoint - finalPoint) != rotation_angle "
-                    "and != rotation_angle + PI"
-                );
-            }
-            if ( L2sq(v) > 4*ray(X)*ray(X) )
-            {
-                THROW_RANGEERROR(
-                    "there is no ellipse that satisfies the given constraints: "
-                    "ray(Y) == 0 and distance(initialPoint, finalPoint) > 2*ray(X)"
-                );
-            }
-            else
-            {
-                THROW_RANGEERROR(
-                    "there is infinite ellipses that satisfy the given constraints: "
-                    "ray(Y) == 0  and distance(initialPoint, finalPoint) < 2*ray(X)"
-                );
-            }
 
-        }
+    // rays should be positive
+    _rays[X] = std::fabs(_rays[X]);
+    _rays[Y] = std::fabs(_rays[Y]);
 
-        if ( are_near(ray(X), 0) )
-        {
-            Point v = initialPoint() - finalPoint();
-            if ( are_near(L2sq(v), 4*ray(Y)*ray(Y)) )
-            {
-                double angle = std::atan2(v[Y], v[X]);
-                if (angle < 0) angle += 2*M_PI;
-                double rot_angle = _rot_angle.radians() + M_PI/2;
-                if ( !(rot_angle < 2*M_PI) ) rot_angle -= 2*M_PI;
-                if ( are_near( angle, rot_angle ) )
-                {
-                    _start_angle = M_PI/2;
-                    _end_angle = 3*M_PI/2;
-                    _center = v/2 + finalPoint();
-                    return;
-                }
-                angle -= M_PI;
-                if ( angle < 0 ) angle += 2*M_PI;
-                if ( are_near( angle, rot_angle ) )
-                {
-                    _start_angle = 3*M_PI/2;
-                    _end_angle = M_PI/2;
-                    _center = v/2 + finalPoint();
-                    return;
-                }
-                THROW_RANGEERROR(
-                    "there is no ellipse that satisfies the given constraints: "
-                    "ray(X) == 0 "
-                    "and slope(initialPoint - finalPoint) != rotation_angle + PI/2 "
-                    "and != rotation_angle + (3/2)*PI"
-                );
-            }
-            if ( L2sq(v) > 4*ray(Y)*ray(Y) )
-            {
-                THROW_RANGEERROR(
-                    "there is no ellipse that satisfies the given constraints: "
-                    "ray(X) == 0 and distance(initialPoint, finalPoint) > 2*ray(Y)"
-                );
-            }
-            else
-            {
-                THROW_RANGEERROR(
-                    "there is infinite ellipses that satisfy the given constraints: "
-                    "ray(X) == 0  and distance(initialPoint, finalPoint) < 2*ray(Y)"
-                );
-            }
-
-        }
-
+    if (ray(X) == 0 || ray(Y) == 0) {
+        _rays[X] = L2(d) / 2;
+        _rays[Y] = 0;
+        _rot_angle = std::atan2(d[Y], d[X]);
+        _start_angle = 0;
+        _end_angle = M_PI;
+        _center = middle_point(initialPoint(), finalPoint());
+        _large_arc = false;
+        _sweep = false;
+        return;
     }
 
     Rotate rm(_rot_angle);
@@ -832,8 +729,8 @@ void EllipticalArc::_updateCenterAndAngles(bool svg)
     assert(den != 0);
     double rad = num / den;
     Point c(0,0);
-    if (rad > 1)
-    {
+
+    if (rad > 1) {
         rad -= 1;
         rad = std::sqrt(rad);
 
@@ -841,19 +738,11 @@ void EllipticalArc::_updateCenterAndAngles(bool svg)
         c = rad * Point(rxpy / ray(Y), -rypx / ray(X));
 
         _center = c * rm + middle_point(initialPoint(), finalPoint());
-    }
-    else if (rad == 1 || svg)
-    {
+    } else {
         double lamda = std::sqrt(1 / rad);
         _rays[X] *= lamda;
         _rays[Y] *= lamda;
         _center = middle_point(initialPoint(), finalPoint());
-    }
-    else
-    {
-        THROW_RANGEERROR(
-            "there is no ellipse that satisfies the given constraints"
-        );
     }
 
     Point sp((p[X] - c[X]) / ray(X), (p[Y] - c[Y]) / ray(Y));
@@ -870,6 +759,10 @@ void EllipticalArc::_updateCenterAndAngles(bool svg)
 
 D2<SBasis> EllipticalArc::toSBasis() const
 {
+    if (isChord()) {
+        return chord().toSBasis();
+    }
+
     D2<SBasis> arc;
     // the interval of parametrization has to be [0,1]
     Coord et = initialAngle().radians() + ( _sweep ? sweepAngle() : -sweepAngle() );
@@ -903,14 +796,14 @@ void EllipticalArc::transform(Affine const& m)
         return;
     }
 
-    // TODO avoid allocating a new arc here
+    // TODO avoid allocating a new arc here?
+    // could be done by incorporating code from Ellipse::arc
     Ellipse e(center(X), center(Y), ray(X), ray(Y), _rot_angle);
     e *= m;
     Point inner_point = pointAt(0.5);
     EllipticalArc *arc = e.arc(initialPoint() * m,
                                inner_point * m,
-                               finalPoint() * m,
-                               isSVGCompliant());
+                               finalPoint() * m);
     *this = *arc;
     delete arc;
 }
@@ -942,6 +835,20 @@ Coord EllipticalArc::map_to_01(Coord angle) const
 {
     return map_circular_arc_on_unit_interval(angle, initialAngle(),
                                              finalAngle(), _sweep);
+}
+
+
+
+std::ostream &operator<<(std::ostream &out, EllipticalArc const &ea)
+{
+    out << "EllipticalArc("
+        << ea.initialPoint() << ", "
+        << format_coord_nice(ea.ray(X)) << ", " << format_coord_nice(ea.ray(Y)) << ", "
+        << format_coord_nice(ea.rotationAngle()) << ", "
+        << "large_arc=" << (ea.largeArc() ? "true" : "false") << ", "
+        << "sweep=" << (ea.sweep() ? "true" : "false") << ", "
+        << ea.finalPoint();
+    return out;
 }
 
 } // end namespace Geom

@@ -7,7 +7,7 @@
  *    Marco Cecchetti <mrcekets at gmail.com>
  *    Krzysztof Kosiński <tweenk.pl@gmail.com>
  * 
- * Copyright 2007-2009 Authors
+ * Copyright 2007-2015 Authors
  *
  * This library is free software; you can redistribute it and/or
  * modify it either under the terms of the GNU Lesser General Public
@@ -50,100 +50,6 @@
 
 namespace Geom {
 
-class SVGEllipticalArc : public EllipticalArc {
-public:
-    SVGEllipticalArc()
-        : EllipticalArc()
-    {}
-    SVGEllipticalArc( Point ip, double rx, double ry,
-                      double rot_angle, bool large_arc, bool sweep,
-                      Point fp
-                    )
-        : EllipticalArc()
-    {
-        _initial_point = ip;
-        _final_point = fp;
-        _rays[X] = rx; _rays[Y] = ry;
-        _rot_angle = rot_angle;
-        _large_arc = large_arc;
-        _sweep = sweep;
-        _updateCenterAndAngles(true);
-    }
-
-    virtual Curve *duplicate() const {
-        return new SVGEllipticalArc(*this);
-    }
-    virtual Coord valueAt(Coord t, Dim2 d) const {
-        if (isChord()) return chord().valueAt(t, d);
-        return EllipticalArc::valueAt(t, d);
-    }
-    virtual Point pointAt(Coord t) const {
-        if (isChord()) return chord().pointAt(t);
-        return EllipticalArc::pointAt(t);
-    }
-    virtual std::vector<Point> pointAndDerivatives(Coord t, unsigned int n) const {
-        if (isChord()) return chord().pointAndDerivatives(t, n);
-        return EllipticalArc::pointAndDerivatives(t, n);
-    }
-    virtual Rect boundsExact() const {
-        if (isChord()) return chord().boundsExact();
-        return EllipticalArc::boundsExact();
-    }
-    virtual OptRect boundsLocal(OptInterval const &i, unsigned int deg) const {
-        if (isChord()) return chord().boundsLocal(i, deg);
-        return EllipticalArc::boundsLocal(i, deg);
-    }
-
-    virtual Curve *derivative() const {
-        if (isChord()) return chord().derivative();
-        return EllipticalArc::derivative();
-    }
-
-    virtual std::vector<Coord> roots(Coord v, Dim2 d) const {
-        if (isChord()) return chord().roots(v, d);
-        return EllipticalArc::roots(v, d);
-    }
-#ifdef HAVE_GSL
-    virtual std::vector<Coord> allNearestTimes( Point const& p, double from = 0, double to = 1 ) const {
-        if (isChord()) {
-            std::vector<Coord> result;
-            result.push_back(chord().nearestTime(p, from, to));
-            return result;
-        }
-        return EllipticalArc::allNearestTimes(p, from, to);
-    }
-#endif
-    virtual D2<SBasis> toSBasis() const {
-        if (isChord()) return chord().toSBasis();
-        return EllipticalArc::toSBasis();
-    }
-    virtual bool isSVGCompliant() const { return true; }
-    // TODO move SVG-specific behavior here.
-//protected:
-    //virtual void _updateCenterAndAngles();
-}; // end class SVGEllipticalArc
-
-/*
- * useful for testing and debugging
- */
-template< class charT >
-inline
-std::basic_ostream<charT> &
-operator<< (std::basic_ostream<charT> & os, const SVGEllipticalArc & ea)
-{
-    os << "{ cx: " << ea.center(X) << ", cy: " <<  ea.center(Y)
-       << ", rx: " << ea.ray(X) << ", ry: " << ea.ray(Y)
-       << ", rot angle: " << decimal_round(rad_to_deg(ea.rotationAngle()),2)
-       << ", start angle: " << decimal_round(rad_to_deg(ea.initialAngle()),2)
-       << ", end angle: " << decimal_round(rad_to_deg(ea.finalAngle()),2)
-       << " }";
-
-    return os;
-}
-
-
-
-
 // forward declation
 namespace detail
 {
@@ -155,7 +61,7 @@ namespace detail
  * make_elliptical_arc
  *
  * convert a parametric polynomial curve given in symmetric power basis form
- * into an SVGEllipticalArc type; in order to be successfull the input curve
+ * into an EllipticalArc type; in order to be successfull the input curve
  * has to look like an actual elliptical arc even if a certain tolerance
  * is allowed through an ad-hoc parameter.
  * The conversion is performed through an interpolation on a certain amount of
@@ -175,7 +81,7 @@ class make_elliptical_arc
      *
      * it doesn't execute the conversion but set the input and output parameters
      *
-     * _ea:         the output SVGEllipticalArc that will be generated;
+     * _ea:         the output EllipticalArc that will be generated;
      * _curve:      the input curve to be converted;
      * _total_samples: the amount of sample points to be taken
      *                 on the input curve for performing the conversion
@@ -225,21 +131,6 @@ class make_elliptical_arc
         return true;
     }
 
-    /*
-     * you can set a boolean parameter to tell the conversion routine
-     * if the output elliptical arc has to be svg compliant or not;
-     * the default value is true
-     */
-    bool svg_compliant_flag() const
-    {
-        return svg_compliant;
-    }
-
-    void svg_compliant_flag(bool _svg_compliant)
-    {
-        svg_compliant = _svg_compliant;
-    }
-
   private:
       EllipticalArc& ea;                 // output elliptical arc
       const curve_type & curve;             // input curve
@@ -260,7 +151,6 @@ class make_elliptical_arc
       double partitions; // N-1
       std::vector<Point> p;                 // sample points
       double dist_err, dist_bound, angle_err;
-      bool svg_compliant;
 };
 
 } // end namespace Geom

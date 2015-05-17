@@ -69,7 +69,7 @@ void wrap_ellipse() {
         .def("coefficients", ellipse_coefficients)
         .def(self * Geom::Affine())
         .def(self *= Geom::Affine())
-        // requires SVGEllipticalArc
+        // requires EllipticalArc
         //.def("arc", &Geom::Ellipse::arc)
         
     ;

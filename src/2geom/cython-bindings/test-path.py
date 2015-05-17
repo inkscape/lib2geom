@@ -19,7 +19,7 @@ from cy2geom import Bezier, BezierCurve
 from cy2geom import LineSegment, QuadraticBezier, CubicBezier
 from cy2geom import HLineSegment, VLineSegment
 
-from cy2geom import EllipticalArc, SVGEllipticalArc
+from cy2geom import EllipticalArc
 
 from cy2geom import Path
 

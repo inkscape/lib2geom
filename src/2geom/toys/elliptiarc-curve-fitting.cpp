@@ -64,7 +64,7 @@ class EAFittingToy : public Toy
     	cairo_set_source_rgba(cr, 0.0, 0.0, 0.7, 1.0);
     	try
     	{
-    		SVGEllipticalArc EA;
+    		EllipticalArc EA;
     		make_elliptical_arc convert(EA, SB, 10, tolerance);
     		if ( !convert() )
     		{

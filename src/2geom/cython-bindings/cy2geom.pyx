@@ -52,7 +52,6 @@ from _cy_curves import cy_HLineSegment as HLineSegment
 from _cy_curves import cy_VLineSegment as VLineSegment
 
 from _cy_curves import cy_EllipticalArc as EllipticalArc
-from _cy_curves import cy_SVGEllipticalArc as SVGEllipticalArc
 #Wrap this? It doesn't fit into python's dynamic nature and 
 #BezierCurve covers most of it's functionality 
 #Maybe implement constructors for BezierCurve similar to those
