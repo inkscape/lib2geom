@@ -62,6 +62,88 @@ void Circle::setCoefficients(Coord A, Coord B, Coord C, Coord D)
     _radius = std::sqrt(r2);
 }
 
+void Circle::coefficients(Coord &A, Coord &B, Coord &C, Coord &D) const
+{
+    A = 1;
+    B = -2 * _center[X];
+    C = -2 * _center[Y];
+    D = _center[X] * _center[X] + _center[Y] * _center[Y] - _radius * _radius;
+}
+
+std::vector<Coord> Circle::coefficients() const
+{
+    std::vector<Coord> c(4);
+    coefficients(c[0], c[1], c[2], c[3]);
+    return c;
+}
+
+
+Zoom Circle::unitCircleTransform() const
+{
+    Zoom ret(_radius, _center / _radius);
+    return ret;
+}
+
+Zoom Circle::inverseUnitCircleTransform() const
+{
+    if (_radius == 0) {
+        THROW_RANGEERROR("degenerate circle does not have an inverse unit circle transform");
+    }
+
+    Zoom ret(1/_radius, Translate(-_center));
+    return ret;
+}
+
+
+Point Circle::pointAt(Coord t) const {
+    return _center + Point::polar(t) * _radius;
+}
+
+Coord Circle::valueAt(Coord t, Dim2 d) const {
+    Coord delta = (d == X ? std::cos(t) : std::sin(t));
+    return _center[d] + delta * _radius;
+}
+
+Coord Circle::timeAt(Point const &p) const {
+    return atan2(p - _center);
+}
+
+Coord Circle::nearestTime(Point const &p) const {
+    if (_center == p) return 0;
+    return timeAt(p);
+}
+
+/**
+ @param inner a point whose angle with the circle center is inside the angle that the arc spans
+ */
+EllipticalArc *
+Circle::arc(Point const& initial, Point const& inner, Point const& final) const
+{
+    // TODO native implementation!
+    Ellipse e(_center[X], _center[Y], _radius, _radius, 0);
+    return e.arc(initial, inner, final);
+}
+
+bool Circle::operator==(Circle const &other) const
+{
+    if (_center != other._center) return false;
+    if (_radius != other._radius) return false;
+    return true;
+}
+
+D2<SBasis> Circle::toSBasis() const
+{
+    D2<SBasis> B;
+    Linear bo = Linear(0, 2 * M_PI);
+
+    B[0] = cos(bo,4);
+    B[1] = sin(bo,4);
+
+    B = B * _radius + _center;
+
+    return B;
+}
+
 
 void Circle::fit(std::vector<Point> const& points)
 {
@@ -87,47 +169,14 @@ void Circle::fit(std::vector<Point> const& points)
     model.instance(*this, fitter.result(z));
 }
 
-/**
- @param inner a point whose angle with the circle center is inside the angle that the arc spans
- */
-EllipticalArc *
-Circle::arc(Point const& initial, Point const& inner, Point const& final) const
+
+std::ostream &operator<<(std::ostream &out, Circle const &c)
 {
-    // TODO native implementation!
-    Ellipse e(_center[X], _center[Y], _radius, _radius, 0);
-    return e.arc(initial, inner, final);
+    out << "Circle(" << c.center() << ", " << format_coord_nice(c.radius()) << ")";
+    return out;
 }
-
-D2<SBasis> Circle::toSBasis() const
-{
-    D2<SBasis> B;
-    Linear bo = Linear(0, 2 * M_PI);
-
-    B[0] = cos(bo,4);
-    B[1] = sin(bo,4);
-
-    B = B * _radius + _center;
-
-    return B;
-}
-
-void
-Circle::getPath(PathVector &path_out) const
-{
-    Path pb;
-
-    D2<SBasis> B = toSBasis();
-
-    pb.append(SBasisCurve(B));
-
-    path_out.push_back(pb);
-}
-
 
 }  // end namespace Geom
-
-
-
 
 /*
   Local Variables:

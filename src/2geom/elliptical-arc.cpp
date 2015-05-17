@@ -846,7 +846,7 @@ std::ostream &operator<<(std::ostream &out, EllipticalArc const &ea)
         << format_coord_nice(ea.rotationAngle()) << ", "
         << "large_arc=" << (ea.largeArc() ? "true" : "false") << ", "
         << "sweep=" << (ea.sweep() ? "true" : "false") << ", "
-        << ea.finalPoint();
+        << ea.finalPoint() << ")";
     return out;
 }
 

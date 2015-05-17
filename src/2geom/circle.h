@@ -45,10 +45,11 @@ class EllipticalArc;
 /** @brief Set of all points at a fixed distance from the center
  * @ingroup Shapes */
 class Circle
-    : MultipliableNoncommutative< Circle, Translate
+    : boost::equality_comparable1< Circle
+    , MultipliableNoncommutative< Circle, Translate
     , MultipliableNoncommutative< Circle, Rotate
     , MultipliableNoncommutative< Circle, Zoom
-      > > >
+      > > > >
 {
     Point _center;
     Coord _radius;
@@ -66,19 +67,27 @@ public:
         setCoefficients(A, B, C, D);
     }
 
+    // Construct the unique circle passing through three points.
+    //Circle(Point const &a, Point const &b, Point const &c);
+
     // build a circle by its implicit equation:
     // Ax^2 + Ay^2 + Bx + Cy + D = 0
     void setCoefficients(Coord A, Coord B, Coord C, Coord D);
+    void coefficients(Coord &A, Coord &B, Coord &C, Coord &D) const;
+    std::vector<Coord> coefficients() const;
 
-    /** @brief Fit the circle to the passed points using the least squares method.
-     * @param points Samples at the perimeter of the circle */
-    void fit(std::vector<Point> const &points);
+    Zoom unitCircleTransform() const;
+    Zoom inverseUnitCircleTransform() const;
+
+    Point pointAt(Coord t) const;
+    Coord valueAt(Coord t, Dim2 d) const;
+    Coord timeAt(Point const &p) const;
+    Coord nearestTime(Point const &p) const;
 
     EllipticalArc *
     arc(Point const& initial, Point const& inner, Point const& final) const;
 
     D2<SBasis> toSBasis() const;
-    void getPath(PathVector &path_out) const;
 
     Point center() const { return _center; }
     Coord center(Dim2 d) const { return _center[d]; }
@@ -99,7 +108,17 @@ public:
         _radius *= z.scale();
         return *this;
     }
+
+    bool operator==(Circle const &other) const;
+
+    /** @brief Fit the circle to the passed points using the least squares method.
+     * @param points Samples at the perimeter of the circle */
+    void fit(std::vector<Point> const &points);
 };
+
+std::ostream &operator<<(std::ostream &out, Circle const &c);
+
+//bool are_near(Circle const &a, Circle const &b, Coord eps = EPSILON);
 
 } // end namespace Geom
 
