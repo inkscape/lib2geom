@@ -104,6 +104,8 @@ public:
     void setCoefficients(double A, double B, double C, double D, double E, double F);
     /// Set the center.
     void setCenter(Point const &p) { _center = p; }
+    /// Set the center by coordinates.
+    void setCenter(Coord cx, Coord cy) { _center[X] = cx; _center[Y] = cy; }
     /// Set both rays of the ellipse.
     void setRays(Point const &p) { _rays = p; }
     /// Set both rays of the ellipse as coordinates.

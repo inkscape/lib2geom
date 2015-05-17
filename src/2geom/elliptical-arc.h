@@ -38,10 +38,11 @@
 #define LIB2GEOM_SEEN_ELLIPTICAL_ARC_H
 
 #include <algorithm>
+#include <2geom/affine.h>
 #include <2geom/angle.h>
 #include <2geom/bezier-curve.h>
 #include <2geom/curve.h>
-#include <2geom/affine.h>
+#include <2geom/ellipse.h>
 #include <2geom/sbasis-curve.h>  // for non-native methods
 #include <2geom/utils.h>
 
@@ -56,9 +57,6 @@ public:
         : AngleInterval(0, 0, true)
         , _initial_point(0,0)
         , _final_point(0,0)
-        , _rays(0,0)
-        , _center(0,0)
-        , _rot_angle(0)
         , _large_arc(true)
     {}
     /** @brief Create a new elliptical arc.
@@ -78,8 +76,7 @@ public:
         : AngleInterval(0,0,sweep)
         , _initial_point(ip)
         , _final_point(fp)
-        , _rays(rx, ry)
-        , _rot_angle(rot_angle)
+        , _ellipse(0, 0, rx, ry, rot_angle)
         , _large_arc(large_arc)
     {
         _updateCenterAndAngles();
@@ -98,15 +95,15 @@ public:
     /** @brief Get the defining ellipse's rotation
      * @return Angle between the +X ray of the ellipse and the +X axis */
     Angle rotationAngle() const {
-        return _rot_angle;
+        return _ellipse.rotationAngle();
     }
     /** @brief Get one of the ellipse's rays
      * @param d Dimension to retrieve
      * @return The selected ray of the ellipse */
-    Coord ray(Dim2 d) const { return _rays[d]; }
+    Coord ray(Dim2 d) const { return _ellipse.ray(d); }
     /** @brief Get both rays as a point
      * @return Point with X equal to the X ray and Y to Y ray */
-    Point rays() const { return _rays; }
+    Point rays() const { return _ellipse.rays(); }
     /** @brief Whether the arc is larger than half an ellipse.
      * @return True if the arc is larger than \f$\pi\f$, false otherwise */
     bool largeArc() const { return _large_arc; }
@@ -125,9 +122,8 @@ public:
     {
         _initial_point = ip;
         _final_point = fp;
-        _rays[X] = rx;
-        _rays[Y] = ry;
-        _rot_angle = Angle(rot_angle);
+        _ellipse.setRays(rx, ry);
+        _ellipse.setRotationAngle(rot_angle);
         _large_arc = large_arc;
         _sweep = sweep;
         _updateCenterAndAngles();
@@ -146,10 +142,10 @@ public:
 
     /// @name Access computed parameters of the arc
     /// @{
-    Coord center(Dim2 d) const { return _center[d]; }
+    Coord center(Dim2 d) const { return _ellipse.center(d); }
     /** @brief Get the arc's center
      * @return The arc's center, situated on the intersection of the ellipse's rays */
-    Point center() const { return _center; }
+    Point center() const { return _ellipse.center(); }
     /** @brief Get the extent of the arc
      * @return The angle between the initial and final point, in arc's angular coordinates */
     Coord sweepAngle() const {
@@ -177,11 +173,13 @@ public:
      * This function returns the transform that maps the unit circle to the arc's ellipse.
      * @return Transform from unit circle to the arc's ellipse */
     Affine unitCircleTransform() const;
+    Affine inverseUnitCircleTransform() const;
     /// @}
 
-    /// Check whether both rays are nonzero
+    /** @brief Check whether both rays are nonzero.
+     * If they are not, the arc is represented as a line segment instead. */
     bool isChord() const {
-        return _rays[0] == 0 || _rays[Y] == 0;
+        return ray(X) == 0 || ray(Y) == 0;
     }
 
     std::pair<EllipticalArc, EllipticalArc> subdivide(Coord t) const {
@@ -232,9 +230,9 @@ public:
     virtual Curve *derivative() const;
     virtual void transform(Affine const &m);
     virtual Curve &operator*=(Translate const &m) {
-        _initial_point += m.vector();
-        _final_point += m.vector();
-        _center += m.vector();
+        _initial_point *= m;
+        _final_point *= m;
+        _ellipse *= m;
         return *this;
     }
 
@@ -262,8 +260,7 @@ protected:
     void _updateCenterAndAngles();
 
     Point _initial_point, _final_point;
-    Point _rays, _center;
-    Angle _rot_angle;
+    Ellipse _ellipse;
     bool _large_arc;
 
 private:

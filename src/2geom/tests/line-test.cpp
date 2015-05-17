@@ -95,7 +95,7 @@ TEST(LineTest, Coefficients) {
         for (unsigned i = 0; i <10; ++i) {
             double t = g_random_double_range(-10, 10);
             Point p = l.pointAt(t);
-            EXPECT_NEAR(a*p[X] + b*p[Y] + c, 0, 1e-10);
+            EXPECT_NEAR(a*p[X] + b*p[Y] + c, 0, 2e-10);
         }
     }
 }
