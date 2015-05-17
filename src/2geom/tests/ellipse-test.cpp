@@ -73,9 +73,9 @@ TEST(EllipseTest, Transformations) {
     //std::cout << e << "\n" << er << "\n" << ercmp << std::endl;
     EXPECT_TRUE(are_near(er, ercmp, 1e-12));
 
-    Ellipse eoflip = e * Affine(Scale(-1));
-    Ellipse eoflipcmp(Point(-5, -10), Point(5,10), Angle::from_degrees(45));
-    EXPECT_TRUE(are_near(eoflip, eoflipcmp, 1e-12));
+    Ellipse eflip = e * Affine(Scale(-1,1));
+    Ellipse eflipcmp(Point(-5, 10), Point(5,10), Angle::from_degrees(135));
+    EXPECT_TRUE(are_near(eflip, eflipcmp, 1e-12));
 }
 
 TEST(EllipseTest, TimeAt) {
