@@ -8,7 +8,7 @@
 #include <2geom/sbasis-geometric.h>
 #include <2geom/path-intersection.h>
 #include <2geom/nearest-time.h>
-
+#include <2geom/circle.h>
 
 #include <cstdlib>
 #include <map>

@@ -30,7 +30,7 @@
  * the specific language governing rights and limitations.
  */
 
-#include <2geom/svg-elliptical-arc.h>
+#include <2geom/elliptical-arc.h>
 
 #include <2geom/toys/path-cairo.h>
 #include <2geom/toys/toy-framework-2.h>
@@ -510,9 +510,8 @@ class EllipticalArcToy: public Toy
         try
         {
             EllipticalArc earc;
-            make_elliptical_arc convert(earc, easb, 5, 0.1);
-            bool status = !convert();
-            if ( status ) return;
+            if (!arc_from_sbasis(earc, easb, 0.1, 5)) return;
+
             D2<SBasis> arc = earc.toSBasis();
             arc[0] += Linear(50, 50);
             cairo_d2_sb(cr, arc);

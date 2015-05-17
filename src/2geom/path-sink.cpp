@@ -31,6 +31,8 @@
 #include <2geom/sbasis-to-bezier.h>
 #include <2geom/path-sink.h>
 #include <2geom/exception.h>
+#include <2geom/circle.h>
+#include <2geom/ellipse.h>
 
 namespace Geom {
 

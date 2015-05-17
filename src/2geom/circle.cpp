@@ -33,7 +33,7 @@
 
 #include <2geom/circle.h>
 #include <2geom/ellipse.h>
-#include <2geom/svg-elliptical-arc.h>
+#include <2geom/elliptical-arc.h>
 #include <2geom/numeric/fitting-tool.h>
 #include <2geom/numeric/fitting-model.h>
 

@@ -35,7 +35,7 @@
 #include <2geom/numeric/fitting-model.h>
 
 #include <2geom/circle.h>
-#include <2geom/svg-elliptical-arc.h>
+#include <2geom/elliptical-arc.h>
 
 #include <2geom/toys/path-cairo.h>
 #include <2geom/toys/toy-framework-2.h>

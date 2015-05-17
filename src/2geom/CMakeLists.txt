@@ -72,6 +72,7 @@ ellipse.cpp
 ellipse.h
 elliptical-arc.cpp
 elliptical-arc.h
+elliptical-arc-from-sbasis.cpp
 exception.h
 
 forward.h
@@ -137,8 +138,6 @@ solve-bezier.cpp
 solve-bezier-one-d.cpp
 solve-bezier-parametric.cpp
 solver.h
-svg-elliptical-arc.cpp
-svg-elliptical-arc.h
 svg-path-parser.cpp
 svg-path-parser.h
 svg-path-writer.cpp

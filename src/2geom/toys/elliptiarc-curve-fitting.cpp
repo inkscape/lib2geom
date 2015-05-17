@@ -36,7 +36,7 @@
 #include <2geom/sbasis.h>
 #include <2geom/path.h>
 #include <2geom/bezier-to-sbasis.h>
-#include <2geom/svg-elliptical-arc.h>
+#include <2geom/elliptical-arc.h>
 
 #include <2geom/toys/path-cairo.h>
 #include <2geom/toys/toy-framework-2.h>
@@ -65,9 +65,7 @@ class EAFittingToy : public Toy
     	try
     	{
     		EllipticalArc EA;
-    		make_elliptical_arc convert(EA, SB, 10, tolerance);
-    		if ( !convert() )
-    		{
+		if (!arc_from_sbasis(EA, SB, tolerance, 10)) {
 //    			*notify << "distance error: " << convert.get_error()
 //    			        << " ( " << convert.get_bound() << " )" << std::endl
 //    			        << "angle error: " << convert.get_angle_error()

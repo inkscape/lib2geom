@@ -37,6 +37,7 @@
 #include <iterator>
 #include <stdexcept>
 #include <vector>
+#include <cstdio>
 #include <2geom/exception.h>
 #include <2geom/point.h>
 #include <2geom/path-sink.h>

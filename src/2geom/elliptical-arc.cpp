@@ -838,7 +838,6 @@ Coord EllipticalArc::map_to_01(Coord angle) const
 }
 
 
-
 std::ostream &operator<<(std::ostream &out, EllipticalArc const &ea)
 {
     out << "EllipticalArc("

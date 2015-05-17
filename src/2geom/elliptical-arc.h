@@ -270,6 +270,11 @@ private:
     Coord map_to_01(Coord angle) const; 
 }; // end class EllipticalArc
 
+
+// implemented in elliptical-arc-from-sbasis.cpp
+bool arc_from_sbasis(EllipticalArc &ea, D2<SBasis> const &in,
+                     double tolerance = EPSILON, unsigned num_samples = 20);
+
 std::ostream &operator<<(std::ostream &out, EllipticalArc const &ea);
 
 } // end namespace Geom

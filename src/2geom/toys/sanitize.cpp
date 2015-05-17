@@ -17,7 +17,7 @@ struct EndPoint {
   public:
     Point point, norm;
     double time;
-    EndPoint() { }
+    EndPoint() : time(0) { }
     EndPoint(Point p, Point n, double t) : point(p), norm(n), time(t) { }
 };
 
