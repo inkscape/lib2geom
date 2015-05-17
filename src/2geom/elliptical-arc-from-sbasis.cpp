@@ -48,7 +48,6 @@ namespace detail
     struct ellipse_equation;
 }
 
-// TODO this needs to be rewritten and moved to EllipticalArc header
 /*
  * make_elliptical_arc
  *
