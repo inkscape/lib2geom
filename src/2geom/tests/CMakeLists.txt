@@ -1,7 +1,6 @@
 # Use this variable for tests which provide their own main().
 SET(2GEOM_TESTS_SRC
 #bezier-utils-test
-choose-test
 #lin_alg_test
 sbasis-text-test
 root-find-test
@@ -14,6 +13,7 @@ implicitization-test
 SET(2GEOM_GTESTS_SRC
 affine-test
 bezier-test
+choose-test
 convex-hull-test
 coord-test
 ellipse-test

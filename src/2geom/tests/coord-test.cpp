@@ -1,11 +1,11 @@
-/*
- * Unit tests for Coord
+/** @file
+ * @brief Unit tests for functions related to Coord.
  * Uses the Google Testing Framework
  *//*
  * Authors:
  *   Krzysztof Kosiński <tweenk.pl@gmail.com>
  * 
- * Copyright 2010-2013 Authors
+ * Copyright 2014 Authors
  *
  * This library is free software; you can redistribute it and/or
  * modify it either under the terms of the GNU Lesser General Public

@@ -1,5 +1,5 @@
-/*
- * Unit tests for Rect, OptRect, IntRect, and OptIntRect
+/** @file
+ * @brief Unit tests for Rect, OptRect, IntRect, and OptIntRect.
  * Uses the Google Testing Framework
  *//*
  * Authors:

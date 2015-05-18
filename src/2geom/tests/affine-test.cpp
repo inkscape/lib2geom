@@ -1,5 +1,5 @@
-/*
- * Unit tests for Affine
+/** @file
+ * @brief Unit tests for Affine
  * Uses the Google Testing Framework
  *//*
  * Authors:
