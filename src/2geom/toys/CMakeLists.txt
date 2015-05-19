@@ -22,6 +22,7 @@ box3d
 center-warp
 circle-fitting
 circle-intersect
+circle-line-intersect
 circle-tangent-fitting
 collinear-normal
 conic-3

@@ -32,7 +32,6 @@
 #include <boost/python/implicit.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 
-#include <2geom/circle-circle.cpp>
 #include <2geom/geom.h>
 
 #include "py2geom.h"
@@ -49,7 +48,6 @@ BOOST_PYTHON_MODULE(_py2geom)
         .value("no_intersection", no_intersection)
     ;
     def("segment_intersect", segment_intersect);*/
-    def("circle_circle_intersection", Geom::circle_circle_intersection);
     
     wrap_point();
     wrap_etc();

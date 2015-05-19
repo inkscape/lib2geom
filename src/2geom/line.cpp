@@ -217,6 +217,34 @@ Coord Line::timeAt(Point const &p) const
     }
 }
 
+
+
+void filter_line_segment_intersections(std::vector<ShapeIntersection> &xs, bool a, bool b)
+{
+    Interval unit(0, 1);
+    std::vector<ShapeIntersection>::reverse_iterator i = xs.rbegin(), last = xs.rend();
+    while (i != last) {
+        if ((a && !unit.contains(i->first)) || (b && !unit.contains(i->second))) {
+            xs.erase((++i).base());
+        } else {
+            ++i;
+        }
+    }
+}
+
+void filter_ray_intersections(std::vector<ShapeIntersection> &xs, bool a, bool b)
+{
+    Interval unit(0, 1);
+    std::vector<ShapeIntersection>::reverse_iterator i = xs.rbegin(), last = xs.rend();
+    while (i != last) {
+        if ((a && i->first < 0) || (b && i->second < 0)) {
+            xs.erase((++i).base());
+        } else {
+            ++i;
+        }
+    }
+}
+
 namespace detail
 {
 

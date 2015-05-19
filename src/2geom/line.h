@@ -377,6 +377,15 @@ public:
     }
 }; // end class Line
 
+/** @brief Removes intersections outside of the unit interval.
+ * A helper used to implement line segment intersections.
+ * @param xs Line intersections
+ * @param a Whether the first time value has to be in the unit interval
+ * @param b Whether the second time value has to be in the unit interval
+ * @return Appropriately filtered intersections */
+void filter_line_segment_intersections(std::vector<ShapeIntersection> &xs, bool a=false, bool b=true);
+void filter_ray_intersections(std::vector<ShapeIntersection> &xs, bool a=false, bool b=true);
+
 /// @brief Compute distance from point to line.
 /// @relates Line
 inline

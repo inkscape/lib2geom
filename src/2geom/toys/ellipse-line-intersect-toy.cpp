@@ -20,12 +20,12 @@ class CircleIntersect : public Toy {
         double rot = Geom::atan2(eh.pts[1] - eh.pts[0]);
 
         Ellipse e(eh.pts[0], Point(rx, ry), rot);
-        Line l(lh.pts[0], lh.pts[1]);
+        LineSegment l(lh.pts[0], lh.pts[1]);
 
         cairo_set_line_width(cr, 1.0);
 
         cairo_set_source_rgb(cr, 0, 0, 0);
-        draw_line(cr, l, all);
+        draw_line_segment(cr, l, all);
         Geom::CairoPathSink cps(cr);
         cps.feed(e);
         cairo_stroke(cr);

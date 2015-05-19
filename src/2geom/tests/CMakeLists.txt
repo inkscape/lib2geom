@@ -14,6 +14,7 @@ SET(2GEOM_GTESTS_SRC
 affine-test
 bezier-test
 choose-test
+circle-test
 convex-hull-test
 coord-test
 ellipse-test

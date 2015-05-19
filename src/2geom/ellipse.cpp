@@ -401,15 +401,8 @@ std::vector<ShapeIntersection> Ellipse::intersect(LineSegment const &seg) const
 {
     // we simply re-use the procedure for lines and filter out
     // results where the line time value is outside of the unit interval.
-    std::vector<ShapeIntersection> xs = intersect(Line(seg));
-    std::vector<ShapeIntersection> result;
-    Interval unit(0, 1);
-
-    for (unsigned i = 0; i < xs.size(); ++i) {
-        if (unit.contains(xs[i].second)) {
-            result.push_back(xs[i]);
-        }
-    }
+    std::vector<ShapeIntersection> result = intersect(Line(seg));
+    filter_line_segment_intersections(result);
     return result;
 }
 

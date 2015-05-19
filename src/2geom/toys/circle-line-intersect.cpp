@@ -6,21 +6,20 @@ using namespace Geom;
 class CircleIntersect : public Toy {
     PointSetHandle psh[2];
     void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
-        double r1 = Geom::distance(psh[0].pts[0], psh[0].pts[1]);
-        double r2 = Geom::distance(psh[1].pts[0], psh[1].pts[1]);
+        Rect all(Point(0, 0), Point(width, height));
+        double r = Geom::distance(psh[0].pts[0], psh[0].pts[1]);
 
-        Circle c1(psh[0].pts[0], r1);
-        Circle c2(psh[1].pts[0], r2);
+        Circle circ(psh[0].pts[0], r);
+        Line line(psh[1].pts[0], psh[1].pts[1]);
 
-        std::vector<ShapeIntersection> result = c1.intersect(c2);
+        std::vector<ShapeIntersection> result = circ.intersect(line);
 
         cairo_set_line_width(cr, 1.0);
 
-        // draw the circles
+        // draw the shapes
         cairo_set_source_rgb(cr, 0, 0, 0);
-        cairo_arc(cr, c1.center(X), c1.center(Y), c1.radius(), 0, 2*M_PI);
-        cairo_stroke(cr);
-        cairo_arc(cr, c2.center(X), c2.center(Y), c2.radius(), 0, 2*M_PI);
+        cairo_arc(cr, circ.center(X), circ.center(Y), circ.radius(), 0, 2*M_PI);
+        draw_line(cr, line, all);
         cairo_stroke(cr);
 
         // draw intersection points
@@ -31,11 +30,9 @@ class CircleIntersect : public Toy {
         cairo_stroke(cr);
 
         // show message
-        if (c1.contains(c2)) {
-            *notify << "Containment";
-        } else if (!result.empty()) {
+        if (!result.empty()) {
             for (unsigned i = 0; i < result.size(); ++i) {
-                *notify << result[i].point() << "  ";
+                *notify << result[i].point() << ", ";
             }
         } else {
             *notify << "No intersection";

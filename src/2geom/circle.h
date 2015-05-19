@@ -34,8 +34,10 @@
 #ifndef LIB2GEOM_SEEN_CIRCLE_H
 #define LIB2GEOM_SEEN_CIRCLE_H
 
-#include <2geom/point.h>
 #include <2geom/forward.h>
+#include <2geom/intersection.h>
+#include <2geom/point.h>
+#include <2geom/rect.h>
 #include <2geom/transforms.h>
 
 namespace Geom {
@@ -70,6 +72,34 @@ public:
     // Construct the unique circle passing through three points.
     //Circle(Point const &a, Point const &b, Point const &c);
 
+    Point center() const { return _center; }
+    Coord center(Dim2 d) const { return _center[d]; }
+    Coord radius() const { return _radius; }
+    Coord area() const { return M_PI * _radius * _radius; }
+
+    void setCenter(Point const &p) { _center = p; }
+    void setRadius(Coord c) { _radius = c; }
+
+    Rect boundsFast() const;
+    Rect boundsExact() const { return boundsFast(); }
+
+    Point pointAt(Coord t) const;
+    Coord valueAt(Coord t, Dim2 d) const;
+    Coord timeAt(Point const &p) const;
+    Coord nearestTime(Point const &p) const;
+
+    bool contains(Point const &p) const { return distance(p, _center) <= _radius; }
+    bool contains(Rect const &other) const;
+    bool contains(Circle const &other) const;
+
+    bool intersects(Line const &l) const;
+    bool intersects(LineSegment const &l) const;
+    bool intersects(Circle const &other) const;
+
+    std::vector<ShapeIntersection> intersect(Line const &other) const;
+    std::vector<ShapeIntersection> intersect(LineSegment const &other) const;
+    std::vector<ShapeIntersection> intersect(Circle const &other) const;
+
     // build a circle by its implicit equation:
     // Ax^2 + Ay^2 + Bx + Cy + D = 0
     void setCoefficients(Coord A, Coord B, Coord C, Coord D);
@@ -79,22 +109,10 @@ public:
     Zoom unitCircleTransform() const;
     Zoom inverseUnitCircleTransform() const;
 
-    Point pointAt(Coord t) const;
-    Coord valueAt(Coord t, Dim2 d) const;
-    Coord timeAt(Point const &p) const;
-    Coord nearestTime(Point const &p) const;
-
     EllipticalArc *
     arc(Point const& initial, Point const& inner, Point const& final) const;
 
     D2<SBasis> toSBasis() const;
-
-    Point center() const { return _center; }
-    Coord center(Dim2 d) const { return _center[d]; }
-    Coord radius() const { return _radius; }
-
-    void setCenter(Point const &p) { _center = p; }
-    void setRadius(Coord c) { _radius = c; }
 
     Circle &operator*=(Translate const &t) {
         _center *= t;
@@ -115,6 +133,8 @@ public:
      * @param points Samples at the perimeter of the circle */
     void fit(std::vector<Point> const &points);
 };
+
+bool are_near(Circle const &a, Circle const &b, Coord eps=EPSILON);
 
 std::ostream &operator<<(std::ostream &out, Circle const &c);
 
