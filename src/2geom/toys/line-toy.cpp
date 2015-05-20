@@ -539,25 +539,22 @@ class LineToy : public Toy
         Ray r1(p3.pos, p4.pos);
         LineSegment s1(p5.pos, p6.pos);
 
-        OptCrossing cl1r1 = intersection(l1, r1);
-        OptCrossing cl1s1 = intersection(l1, s1);
-        OptCrossing cr1s1 = intersection(r1, s1);
+        std::vector<ShapeIntersection> cl1r1 = l1.intersect(r1);
+        std::vector<ShapeIntersection> cl1s1 = l1.intersect(s1);
+        std::vector<ShapeIntersection> cr1s1 = Line(r1).intersect(s1);
+        filter_ray_intersections(cr1s1, true, false);
 
         std::vector<Point> ip;
 
-        if(cl1r1)
-        {
-            ip.push_back(l1.pointAt(cl1r1->ta));
+        if (!cl1r1.empty()) {
+            ip.push_back(l1.pointAt(cl1r1[0].first));
         }
-        if(cl1s1)
-        {
-            ip.push_back(l1.pointAt(cl1s1->ta));
+        if (!cl1s1.empty()) {
+            ip.push_back(l1.pointAt(cl1s1[0].first));
         }
-        if(cr1s1)
-        {
-            ip.push_back(r1.pointAt(cr1s1->ta));
+        if (!cr1s1.empty()) {
+            ip.push_back(r1.pointAt(cr1s1[0].first));
         }
-
 
         cairo_set_source_rgba(cr, 0.2, 0.2, 0.2, 1.0);
         cairo_set_line_width(cr, 0.3);

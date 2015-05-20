@@ -92,7 +92,7 @@ private:
 };
 
 
-// TODO: move into new header
+// TODO: move into new header?
 template <typename T>
 struct ShapeTraits {
     typedef Coord TimeType;
@@ -100,6 +100,22 @@ struct ShapeTraits {
     typedef T AffineClosureType;
     typedef Intersection<> IntersectionType;
 };
+
+template <typename A, typename B> inline
+std::vector< Intersection<A, B> > transpose(std::vector< Intersection<B, A> > const &in) {
+    std::vector< Intersection<A, B> > result;
+    for (std::size_t i = 0; i < in.size(); ++i) {
+        result.push_back(Intersection<A, B>(in[i].second, in[i].first, in[i].point()));
+    }
+    return result;
+}
+
+template <typename T> inline
+void transpose_in_place(std::vector< Intersection<T, T> > &xs) {
+    for (std::size_t i = 0; i < xs.size(); ++i) {
+        std::swap(xs[i].first, xs[i].second);
+    }
+}
 
 typedef Intersection<> ShapeIntersection;
 

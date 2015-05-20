@@ -143,9 +143,15 @@ BezierCurve::intersect(Curve const &other, Coord eps) const
 {
     std::vector<CurveIntersection> result;
 
-    // optimization for the common case of no intersections
-    if (!boundsFast().intersects(other.boundsFast())) return result;
+    // in case we encounter an order-1 curve created from a vector
+    // or a degenerate elliptical arc
+    if (isLineSegment()) {
+        LineSegment ls(initialPoint(), finalPoint());
+        result = ls.intersect(other);
+        return result;
+    }
 
+    // here we are sure that this curve is at least a quadratic Bezier
     BezierCurve const *bez = dynamic_cast<BezierCurve const *>(&other);
     if (bez) {
         std::vector<std::pair<double, double> > xs;
@@ -154,10 +160,12 @@ BezierCurve::intersect(Curve const &other, Coord eps) const
             CurveIntersection x(*this, other, xs[i].first, xs[i].second);
             result.push_back(x);
         }
-    } else {
-        THROW_NOTIMPLEMENTED();
+        return result;
     }
 
+    // pass other intersection types to the other curve
+    result = other.intersect(*this, eps);
+    transpose_in_place(result);
     return result;
 }
 
@@ -250,6 +258,26 @@ Coord BezierCurveN<1>::nearestTime(Point const& p, Coord from, Coord to) const
     if ( t <= 0 )  		return from;
     else if ( t >= 1 )  return to;
     else return from + t*(to-from);
+}
+
+template <>
+std::vector<CurveIntersection> BezierCurveN<1>::intersect(Curve const &other, Coord eps) const
+{
+    std::vector<CurveIntersection> result;
+
+    // only handle intersections with other LineSegments here
+    if (other.isLineSegment()) {
+        Line this_line(initialPoint(), finalPoint());
+        Line other_line(other.initialPoint(), other.finalPoint());
+        result = this_line.intersect(other_line);
+        filter_line_segment_intersections(result, true, true);
+        return result;
+    }
+
+    // pass all other types to the other curve
+    result = other.intersect(*this, eps);
+    transpose_in_place(result);
+    return result;
 }
 
 template <>

@@ -226,6 +226,7 @@ public:
         }
         return allNearestTimes(p, from, to).front();
     }
+    virtual std::vector<CurveIntersection> intersect(Curve const &other, Coord eps=EPSILON) const;
     virtual int degreesOfFreedom() const { return 7; }
     virtual Curve *derivative() const;
     virtual void transform(Affine const &m);
@@ -258,6 +259,7 @@ public:
 
 protected:
     void _updateCenterAndAngles();
+    void _filterIntersections(std::vector<ShapeIntersection> &xs, bool is_first) const;
 
     Point _initial_point, _final_point;
     Ellipse _ellipse;

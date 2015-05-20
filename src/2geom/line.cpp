@@ -217,6 +217,38 @@ Coord Line::timeAt(Point const &p) const
     }
 }
 
+std::vector<ShapeIntersection> Line::intersect(Line const &other) const
+{
+    std::vector<ShapeIntersection> result;
+
+    Point v1 = versor();
+    Point v2 = other.versor();
+    Coord cp = cross(v1, v2);
+    if (cp == 0) return result;
+
+    Point odiff = other.initialPoint() - initialPoint();
+    Coord t1 = cross(odiff, v2) / cp;
+    Coord t2 = cross(odiff, v1) / cp;
+    result.push_back(ShapeIntersection(*this, other, t1, t2));
+    return result;
+}
+
+std::vector<ShapeIntersection> Line::intersect(Ray const &r) const
+{
+    Line other(r);
+    std::vector<ShapeIntersection> result = intersect(other);
+    filter_ray_intersections(result, false, true);
+    return result;
+}
+
+std::vector<ShapeIntersection> Line::intersect(LineSegment const &ls) const
+{
+    Line other(ls);
+    std::vector<ShapeIntersection> result = intersect(other);
+    filter_line_segment_intersections(result, false, true);
+    return result;
+}
+
 
 
 void filter_line_segment_intersections(std::vector<ShapeIntersection> &xs, bool a, bool b)

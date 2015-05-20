@@ -685,6 +685,60 @@ std::vector<double> EllipticalArc::allNearestTimes( Point const& p, double from,
 }
 #endif
 
+
+void EllipticalArc::_filterIntersections(std::vector<ShapeIntersection> &xs, bool is_first) const
+{
+    Interval unit(0, 1);
+    std::vector<ShapeIntersection>::reverse_iterator i = xs.rbegin(), last = xs.rend();
+    while (i != last) {
+        Coord t = timeAtAngle(is_first ? i->first : i->second);
+        if (!unit.contains(t)) {
+            xs.erase((++i).base());
+            continue;
+        } else {
+            (is_first ? i->first : i->second) = t;
+            ++i;
+        }
+    }
+}
+
+std::vector<CurveIntersection> EllipticalArc::intersect(Curve const &other, Coord eps) const
+{
+    if (isLineSegment()) {
+        LineSegment ls(_initial_point, _final_point);
+        return ls.intersect(other, eps);
+    }
+
+    std::vector<CurveIntersection> result;
+
+    if (other.isLineSegment()) {
+        LineSegment ls(other.initialPoint(), other.finalPoint());
+        result = _ellipse.intersect(ls);
+        _filterIntersections(result, true);
+        return result;
+    }
+
+    BezierCurve const *bez = dynamic_cast<BezierCurve const *>(&other);
+    if (bez) {
+        result = _ellipse.intersect(bez->fragment());
+        _filterIntersections(result, true);
+        return result;
+    }
+
+    EllipticalArc const *arc = dynamic_cast<EllipticalArc const *>(&other);
+    if (arc) {
+        result = _ellipse.intersect(arc->_ellipse);
+        _filterIntersections(result, true);
+        arc->_filterIntersections(result, false);
+        return result;
+    }
+
+    // in case someone wants to make a custom curve type
+    result = other.intersect(*this, eps);
+    transpose_in_place(result);
+    return result;
+}
+
 /*
  * NOTE: this implementation follows Standard SVG 1.1 implementation guidelines
  * for elliptical arc curves. See Appendix F.6.

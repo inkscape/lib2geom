@@ -69,6 +69,7 @@ public:
     /** @brief Get the control points.
      * @return Vector with order() + 1 control points. */
     std::vector<Point> controlPoints() const { return bezier_points(inner); }
+    D2<Bezier> const &fragment() const { return inner; }
 
     /** @brief Modify a control point.
      * @param ix The zero-based index of the point to modify. Note that the caller is responsible for checking that this value is <= order().
@@ -256,6 +257,10 @@ public:
     virtual Coord nearestTime(Point const &p, Coord from = 0, Coord to = 1) const {
         return BezierCurve::nearestTime(p, from, to);
     }
+    virtual std::vector<CurveIntersection> intersect(Curve const &other, Coord eps = EPSILON) const {
+        // call super. this is implemented only to allow specializations
+        return BezierCurve::intersect(other, eps);
+    }
     virtual void feed(PathSink &sink, bool moveto_initial) const {
         // call super. this is implemented only to allow specializations
         BezierCurve::feed(sink, moveto_initial);
@@ -289,6 +294,7 @@ Curve *BezierCurveN<degree>::derivative() const {
 template <> inline bool BezierCurveN<1>::isLineSegment() const { return true; }
 template <> Curve *BezierCurveN<1>::derivative() const;
 template <> Coord BezierCurveN<1>::nearestTime(Point const &, Coord, Coord) const;
+template <> std::vector<CurveIntersection> BezierCurveN<1>::intersect(Curve const &, Coord) const;
 template <> void BezierCurveN<1>::feed(PathSink &sink, bool moveto_initial) const;
 template <> void BezierCurveN<2>::feed(PathSink &sink, bool moveto_initial) const;
 template <> void BezierCurveN<3>::feed(PathSink &sink, bool moveto_initial) const;

@@ -132,3 +132,34 @@ TEST(LineTest, Coefficients) {
         }
     }
 }
+
+TEST(LineTest, Intersection) {
+    Line a(Point(0,3), Point(1,2));
+    Line b(Point(0,-3), Point(1,-2));
+    LineSegment lsa(Point(0,3), Point(1,2));
+    LineSegment lsb(Point(0,-3), Point(1,-2));
+    LineSegment lsc(Point(3,1), Point(3, -1));
+
+    std::vector<ShapeIntersection> r1, r2, r3;
+
+    r1 = a.intersect(b);
+    ASSERT_EQ(r1.size(), 1);
+    EXPECT_EQ(r1[0].point(), Point(3,0));
+    EXPECT_intersections_valid(a, b, r1, 1e-15);
+
+    r2 = a.intersect(lsc);
+    ASSERT_EQ(r2.size(), 1);
+    EXPECT_EQ(r2[0].point(), Point(3,0));
+    EXPECT_intersections_valid(a, lsc, r2, 1e-15);
+
+    r3 = b.intersect(lsc);
+    ASSERT_EQ(r3.size(), 1);
+    EXPECT_EQ(r3[0].point(), Point(3,0));
+    EXPECT_intersections_valid(a, lsc, r3, 1e-15);
+
+    EXPECT_TRUE(lsa.intersect(lsb).empty());
+    EXPECT_TRUE(lsa.intersect(lsc).empty());
+    EXPECT_TRUE(lsb.intersect(lsc).empty());
+    EXPECT_TRUE(a.intersect(lsb).empty());
+    EXPECT_TRUE(b.intersect(lsa).empty());
+}

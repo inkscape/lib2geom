@@ -49,10 +49,15 @@ namespace Geom
 
 // class docs in cpp file
 class Line
-    : boost::equality_comparable1<Line
-    , MultipliableNoncommutative<Line, Translate
-    , MultipliableNoncommutative<Line, Affine
-      > > >
+    : boost::equality_comparable1< Line
+    , MultipliableNoncommutative< Line, Translate
+    , MultipliableNoncommutative< Line, Scale
+    , MultipliableNoncommutative< Line, Rotate
+    , MultipliableNoncommutative< Line, HShear
+    , MultipliableNoncommutative< Line, VShear
+    , MultipliableNoncommutative< Line, Zoom
+    , MultipliableNoncommutative< Line, Affine
+      > > > > > > > >
 {
 private:
     Point _initial;
@@ -358,18 +363,18 @@ public:
     }
     /// @}
 
-    //std::vector<ShapeIntersection> intersect(Line const &other, Coord precision = EPSILON) const;
+    std::vector<ShapeIntersection> intersect(Line const &other) const;
+    std::vector<ShapeIntersection> intersect(Ray const &r) const;
+    std::vector<ShapeIntersection> intersect(LineSegment const &ls) const;
 
-    Line &operator*=(Translate const &tr) {
+    template <typename T>
+    Line &operator*=(T const &tr) {
+        BOOST_CONCEPT_ASSERT((TransformConcept<T>));
         _initial *= tr;
         _final *= tr;
         return *this;
     }
-    Line &operator*=(Affine const &m) {
-        _initial *= m;
-        _final *= m;
-        return *this;
-    }
+
     bool operator==(Line const &other) const {
         if (distance(pointAt(nearestTime(other._initial)), other._initial) != 0) return false;
         if (distance(pointAt(nearestTime(other._final)), other._final) != 0) return false;
