@@ -61,14 +61,26 @@ public:
     {}
     /** @brief Create a new elliptical arc.
      * @param ip Initial point of the arc
-     * @param rx First ray of the ellipse
-     * @param ry Second ray of the ellipse
+     * @param r Rays of the ellipse as a point
      * @param rot Angle of rotation of the X axis of the ellipse in radians
      * @param large If true, the large arc is chosen (always >= 180 degrees), otherwise
      *              the smaller arc is chosen
      * @param sweep If true, the clockwise arc is chosen, otherwise the counter-clockwise
      *              arc is chosen
      * @param fp Final point of the arc */
+    EllipticalArc( Point const &ip, Point const &r,
+                   Coord rot_angle, bool large_arc, bool sweep,
+                   Point const &fp
+                 )
+        : AngleInterval(0,0,sweep)
+        , _initial_point(ip)
+        , _final_point(fp)
+        , _ellipse(0, 0, r[X], r[Y], rot_angle)
+        , _large_arc(large_arc)
+    {
+        _updateCenterAndAngles();
+    }
+
     EllipticalArc( Point const &ip, Coord rx, Coord ry,
                    Coord rot_angle, bool large_arc, bool sweep,
                    Point const &fp

@@ -19,6 +19,7 @@ circle-test
 convex-hull-test
 coord-test
 ellipse-test
+elliptical-arc-test
 intersection-graph-test
 line-test
 path-test

@@ -476,17 +476,7 @@ TEST_F(BezierTest, Intersection) {
                       << tests[i].s[j].tb << " = " << tests[i].b.valueAt(tests[i].s[j].tb) << std::endl;
         }
 
-        for (unsigned j = 0; j < xs.size(); ++j) {
-            //EXPECT_NEAR(xs[j].first, tests[i].s[j].ta, 2e-5);
-            //EXPECT_NEAR(xs[j].second, tests[i].s[j].tb, 2e-5);
-            Point pa = a.pointAt(xs[j].first);
-            Point pb = b.pointAt(xs[j].second);
-            //EXPECT_NEAR(pa[X], tests[i].s[j].p[X], 2e-5);
-            //EXPECT_NEAR(pa[Y], tests[i].s[j].p[Y], 2e-5);
-            //EXPECT_NEAR(pb[X], tests[i].s[j].p[X], 2e-5);
-            //EXPECT_NEAR(pb[Y], tests[i].s[j].p[Y], 2e-5);
-            EXPECT_NEAR(distance(pa, pb), 0, 1e-6);
-        }
+        EXPECT_intersections_valid(a, b, xs, 1e-6);
     }
 
     #if 0
