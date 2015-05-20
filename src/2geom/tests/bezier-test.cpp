@@ -148,8 +148,8 @@ TEST_F(BezierTest, Casteljau) {
         double vr = casteljau_subdivision<double>(t, &wiggle[0], NULL, &right2[0], wiggle.order());
         EXPECT_EQ(vl, vok);
         EXPECT_EQ(vr, vok);
-        vector_equal(left2, left);
-        vector_equal(right2, right);
+        EXPECT_vector_equal(left2, left);
+        EXPECT_vector_equal(right2, right);
 
         double vnone = casteljau_subdivision<double>(t, &wiggle[0], NULL, NULL, wiggle.order());
         EXPECT_EQ(vnone, vok);
@@ -306,7 +306,7 @@ TEST_F(BezierTest, Roots) {
         Bezier b = array_roots(tests[test_i]);
         //std::cout << tests[test_i] << ": " << b << std::endl;
         //std::cout << b.roots() << std::endl;
-        vector_equal(tests[test_i], b.roots(), eps);
+        EXPECT_vector_near(tests[test_i], b.roots(), eps);
     }
 }
 

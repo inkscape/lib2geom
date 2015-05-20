@@ -126,7 +126,12 @@ class D2{
         BOOST_CONCEPT_ASSERT((FragmentConcept<T>));
         return Point(f[X].at1(), f[Y].at1());
     }
+    Point pointAt(double t) const {
+        BOOST_CONCEPT_ASSERT((FragmentConcept<T>));
+        return (*this)(t);
+    }
     Point valueAt(double t) const {
+        // TODO: remove this alias
         BOOST_CONCEPT_ASSERT((FragmentConcept<T>));
         return (*this)(t);
     }

@@ -146,7 +146,7 @@ public:
     virtual Coord nearestTime(Point const &p, Coord from = 0, Coord to = 1) const;
     virtual Coord length(Coord tolerance) const;
     virtual std::vector<CurveIntersection> intersect(Curve const &other, Coord eps = EPSILON) const;
-    virtual Point pointAt(Coord t) const { return inner.valueAt(t); }
+    virtual Point pointAt(Coord t) const { return inner.pointAt(t); }
     virtual std::vector<Point> pointAndDerivatives(Coord t, unsigned n) const {
         return inner.valueAndDerivatives(t, n);
     }

@@ -136,8 +136,25 @@ TEST(EllipseTest, LineIntersection) {
 
     // due to numeric imprecision when evaluating Ellipse,
     // the points may deviate by around 2e-16
-    Point ep = e.pointAt(xs[0].first);
-    Point lp = l.pointAt(xs[0].second);
-    EXPECT_NEAR(ep[X], lp[X], 1e-15);
-    EXPECT_NEAR(ep[Y], lp[Y], 1e-15);
+    EXPECT_intersections_valid(e, l, xs, 1e-15);
+}
+
+TEST(EllipseTest, EllipseIntersection) {
+    Ellipse e1(Point(300, 300), Point(212, 70), -0.785);
+    Ellipse e2(Point(250, 300), Point(230, 90), 1.321);
+
+    std::vector<ShapeIntersection> xs = e1.intersect(e2);
+
+    EXPECT_EQ(xs.size(), 4);
+    EXPECT_intersections_valid(e1, e2, xs, 1e-10);
+}
+
+TEST(EllipseTest, BezierIntersection) {
+    Ellipse e(Point(300, 300), Point(212, 70), -0.785);
+    D2<Bezier> b(Bezier(100, 300, 100, 500), Bezier(100, 100, 500, 500));
+
+    std::vector<ShapeIntersection> xs = e.intersect(b);
+
+    EXPECT_EQ(xs.size(), 2);
+    EXPECT_intersections_valid(e, b, xs, 2e-13);
 }

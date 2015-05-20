@@ -100,16 +100,15 @@ TEST(CircleTest, CircleIntersection) {
     r1 = a.intersect(b);
     ASSERT_EQ(r1.size(), 1);
     EXPECT_EQ(r1[0].point(), Point(10,5));
+    EXPECT_intersections_valid(a, b, r1, 1e-15);
 
     r2 = a.intersect(c);
     EXPECT_EQ(r2.size(), 2);
-    for (unsigned i = 0; i < r2.size(); ++i) {
-        Point pa = a.pointAt(r2[i].first);
-        Point pc = c.pointAt(r2[i].second);
-        EXPECT_TRUE(are_near(pa, pc, 1e-15));
-        EXPECT_TRUE(are_near(pa, r2[i].point(), 1e-15));
-        EXPECT_TRUE(are_near(pc, r2[i].point(), 1e-15));
-    }
+    EXPECT_intersections_valid(a, c, r2, 1e-15);
+
+    r3 = b.intersect(c);
+    EXPECT_EQ(r3.size(), 2);
+    EXPECT_intersections_valid(b, c, r3, 3e-15);
 
     EXPECT_TRUE(a.intersect(d).empty());
     EXPECT_TRUE(b.intersect(d).empty());
@@ -130,22 +129,12 @@ TEST(CircleTest, LineIntersection) {
 
     r1 = c.intersect(l1);
     ASSERT_EQ(r1.size(), 1);
-    {
-        Point pc = c.pointAt(r1[0].first);
-        Point pl = l1.pointAt(r1[0].second);
-        EXPECT_EQ(r1[0].point(), Point(-5, 5));
-        EXPECT_TRUE(are_near(pc, pl, 1e-15));
-    }
+    EXPECT_EQ(r1[0].point(), Point(-5, 5));
+    EXPECT_intersections_valid(c, l1, r1, 1e-15);
 
     r2 = c.intersect(l2);
     EXPECT_EQ(r2.size(), 2);
-    for (unsigned i = 0; i < r2.size(); ++i) {
-        Point pc = c.pointAt(r2[i].first);
-        Point pl = l2.pointAt(r2[i].second);
-        EXPECT_TRUE(are_near(pc, pl, 1e-14));
-        EXPECT_TRUE(are_near(pc, r2[i].point(), 1e-14));
-        EXPECT_TRUE(are_near(pl, r2[i].point(), 1e-14));
-    }
+    EXPECT_intersections_valid(c, l2, r2, 1e-14);
 
     r3 = c.intersect(l3);
     EXPECT_TRUE(r3.empty());

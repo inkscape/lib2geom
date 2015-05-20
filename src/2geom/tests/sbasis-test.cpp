@@ -122,7 +122,7 @@ TEST_F(SBasisTest, Roots) {
         SBasis b = array_roots(tests[test_i]);
         std::cout << tests[test_i] << ": " << b << std::endl;
         std::cout << roots(b) << std::endl;
-        vector_equal(tests[test_i], roots(b), eps);
+        EXPECT_vector_near(tests[test_i], roots(b), eps);
     }
 
     vector<Linear> broken;
