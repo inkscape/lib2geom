@@ -65,7 +65,8 @@ class Angle
     : boost::additive< Angle
     , boost::additive< Angle, Coord
     , boost::equality_comparable< Angle
-      > > >
+    , boost::equality_comparable< Angle, Coord
+      > > > >
 {
 public:
     Angle() : _angle(0) {}
@@ -93,6 +94,9 @@ public:
     }
     bool operator==(Angle const &o) const {
         return _angle == o._angle;
+    }
+    bool operator==(Coord c) const {
+        return _angle == Angle(c)._angle;
     }
 
     /** @brief Get the angle as radians.
@@ -168,6 +172,10 @@ inline Angle distance(Angle const &a, Angle const &b) {
  * the end angle for 1, and interpolate linearly for other values. Note that such functions
  * are not continuous if the interval contains the zero angle.
  *
+ * It is currently not possible to represent the full angle with this class.
+ * If you specify the same start and end angle, the interval will be treated as empty
+ * except for that value.
+ *
  * This class is immutable - you cannot change the values of start and end angles
  * without creating a new instance of this class.
  *
@@ -175,39 +183,58 @@ inline Angle distance(Angle const &a, Angle const &b) {
  */
 class AngleInterval {
 public:
+    /** @brief Create an angular interval.
+     * @param s Starting angle
+     * @param e Ending angle
+     * @param cw Which direction the interval goes. True means that it goes
+     *   in the direction of increasing angles, while false means in the direction
+     *   of decreasing angles. */
     AngleInterval(Angle const &s, Angle const &e, bool cw = false)
         : _start_angle(s), _end_angle(e), _sweep(cw)
     {}
     AngleInterval(double s, double e, bool cw = false)
         : _start_angle(s), _end_angle(e), _sweep(cw)
     {}
-    /** @brief Get the angular coordinate of the interval's initial point
-     * @return Angle in range \f$[0,2\pi)\f$ corresponding to the start of arc */
+
+    /// Get the start angle.
     Angle const &initialAngle() const { return _start_angle; }
-    /** @brief Get the angular coordinate of the interval's final point
-     * @return Angle in range \f$[0,2\pi)\f$ corresponding to the end of arc */
+    /// Get the end angle.
     Angle const &finalAngle() const { return _end_angle; }
+    /// Check whether the interval contains only a single angle.
     bool isDegenerate() const { return initialAngle() == finalAngle(); }
-    /** @brief Get an angle corresponding to the specified time value. */
+
+    /// Get an angle corresponding to the specified time value.
     Angle angleAt(Coord t) const {
         Coord span = extent();
         Angle ret = _start_angle.radians0() + span * (_sweep ? t : -t);
         return ret;
     }
     Angle operator()(Coord t) const { return angleAt(t); }
-#if 0
-    /** @brief Find an angle nearest to the specified time value.
-     * @param a Query angle
-     * @return If the interval contains the query angle, a number from the range [0, 1]
-     *         such that a = angleAt(t); otherwise, 0 or 1, depending on which extreme
-     *         angle is nearer. */
-    Coord nearestAngle(Angle const &a) const {
-        Coord dist = distance(_start_angle, a, _sweep).radians0();
-        Coord span = distance(_start_angle, _end_angle, _sweep).radians0();
-        if (dist <= span) return dist / span;
-        else return distance_abs(_start_angle, a).radians0() > distance_abs(_end_angle, a).radians0() ? 1.0 : 0.0;
+
+    /** @brief Compute a time value that would evaluate to the given angle.
+     * If the start and end angle are exactly the same, NaN will be returned. */
+    Coord timeAtAngle(Angle const &a) const {
+        Coord ex = extent();
+        Coord outex = 2*M_PI - ex;
+        if (_sweep) {
+            Angle midout = _start_angle - outex / 2;
+            Angle acmp = a - midout, scmp = _start_angle - midout;
+            if (acmp.radians0() >= scmp.radians0()) {
+                return (a - _start_angle).radians0() / ex;
+            } else {
+                return -(_start_angle - a).radians0() / ex;
+            }
+        } else {
+            Angle midout = _start_angle + outex / 2;
+            Angle acmp = a - midout, scmp = _start_angle - midout;
+            if (acmp.radians0() <= scmp.radians0()) {
+                return (_start_angle - a).radians0() / ex;
+            } else {
+                return -(a - _start_angle).radians0() / ex;
+            }
+        }
     }
-#endif
+
     /** @brief Check whether the interval includes the given angle. */
     bool contains(Angle const &a) const {
         Coord s = _start_angle.radians0();
@@ -224,10 +251,9 @@ public:
     /** @brief Extent of the angle interval.
      * @return Extent in range \f$[0, 2\pi)\f$ */
     Coord extent() const {
-        Coord d = _end_angle - _start_angle;
-        if (!_sweep) d = -d;
-        if (d < 0) d += 2*M_PI;
-        return d;
+        return _sweep
+            ? (_end_angle - _start_angle).radians0()
+            : (_start_angle - _end_angle).radians0();
     }
 protected:
     AngleInterval() {}

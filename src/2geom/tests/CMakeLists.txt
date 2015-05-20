@@ -12,6 +12,7 @@ implicitization-test
 # Use this variable for GTest tests which should have a default main().
 SET(2GEOM_GTESTS_SRC
 affine-test
+angle-test
 bezier-test
 choose-test
 circle-test
