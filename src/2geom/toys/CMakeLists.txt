@@ -43,6 +43,7 @@ d2sbasis-fitting
 d2sbasis-fitting-with-np
 draw-toy
 ellipse-area-minimizer
+ellipse-bezier-intersect-toy
 ellipse-fitting
 ellipse-intersect-toy
 ellipse-line-intersect-toy

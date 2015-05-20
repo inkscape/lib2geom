@@ -39,6 +39,7 @@
 #include <2geom/angle.h>
 #include <2geom/bezier-curve.h>
 #include <2geom/exception.h>
+#include <2geom/forward.h>
 #include <2geom/line.h>
 #include <2geom/transforms.h>
 
@@ -189,6 +190,8 @@ public:
     std::vector<ShapeIntersection> intersect(LineSegment const &seg) const;
     /// Compute intersections with another ellipse.
     std::vector<ShapeIntersection> intersect(Ellipse const &other) const;
+    /// Compute intersections with a 2D Bezier polynomial.
+    std::vector<ShapeIntersection> intersect(D2<Bezier> const &other) const;
 
     Ellipse &operator*=(Translate const &t) {
         _center *= t;

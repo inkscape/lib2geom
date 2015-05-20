@@ -210,7 +210,7 @@ Bezier &Bezier::operator-=(Bezier const &other)
 
 
 
-Bezier multiply(Bezier const &f, Bezier const &g)
+Bezier operator*(Bezier const &f, Bezier const &g)
 {
     unsigned m = f.order();
     unsigned n = g.order();

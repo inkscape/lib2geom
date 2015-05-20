@@ -523,6 +523,22 @@ std::vector<ShapeIntersection> Ellipse::intersect(Ellipse const &other) const
     return result;
 }
 
+std::vector<ShapeIntersection> Ellipse::intersect(D2<Bezier> const &b) const
+{
+    Coord A, B, C, D, E, F;
+    coefficients(A, B, C, D, E, F);
+
+    Bezier x = A*b[X]*b[X] + B*b[X]*b[Y] + C*b[Y]*b[Y] + D*b[X] + E*b[Y] + F;
+    std::vector<Coord> r = x.roots();
+
+    std::vector<ShapeIntersection> result;
+    for (unsigned i = 0; i < r.size(); ++i) {
+        Point p = b.valueAt(r[i]);
+        result.push_back(ShapeIntersection(timeAt(p), r[i], p));
+    }
+    return result;
+}
+
 bool Ellipse::operator==(Ellipse const &other) const
 {
     if (_center != other._center) return false;

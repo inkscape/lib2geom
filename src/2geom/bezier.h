@@ -308,7 +308,11 @@ public:
 
 void bezier_to_sbasis (SBasis &sb, Bezier const &bz);
 
-Bezier multiply(Bezier const &f, Bezier const &g);
+Bezier operator*(Bezier const &f, Bezier const &g);
+inline Bezier multiply(Bezier const &f, Bezier const &g) {
+    Bezier result = f * g;
+    return result;
+}
 
 inline Bezier reverse(const Bezier & a) {
     Bezier result = Bezier(Bezier::Order(a));
