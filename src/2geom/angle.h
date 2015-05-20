@@ -149,7 +149,9 @@ public:
 private:
 
     void _normalize() {
-        _angle -= floor(_angle * (1.0/(2*M_PI))) * 2*M_PI;
+        _angle = std::fmod(_angle, 2*M_PI);
+        if (_angle < 0) _angle += 2*M_PI;
+        //_angle -= floor(_angle * (1.0/(2*M_PI))) * 2*M_PI;
     }
     Coord _angle; // this is always in [0, 2pi)
     friend class AngleInterval;
@@ -170,7 +172,7 @@ inline Angle distance(Angle const &a, Angle const &b) {
  * in the interval (it is a closed interval). Angular intervals can also be interptered
  * as functions \f$f: [0, 1] \to [-\pi, \pi)\f$, which return the start angle for 0,
  * the end angle for 1, and interpolate linearly for other values. Note that such functions
- * are not continuous if the interval contains the zero angle.
+ * are not continuous if the interval crosses the angle \f$\pi\f$.
  *
  * It is currently not possible to represent the full angle with this class.
  * If you specify the same start and end angle, the interval will be treated as empty
