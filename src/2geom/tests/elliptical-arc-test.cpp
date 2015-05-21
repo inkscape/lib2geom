@@ -65,7 +65,7 @@ TEST(EllipticalArcTest, ArcIntersection) {
 TEST(EllipticalArcTest, BezierIntersection) {
     std::vector<CurveIntersection> r1;
 
-    EllipticalArc a3(Point(0,0), Point(5,1.5), 0, true, true, Point(0,2));
+    EllipticalArc a3(Point(0,0), Point(1.5,5), M_PI/2, true, true, Point(0,2));
     CubicBezier bez(Point(0,3), Point(7,3), Point(0,-1), Point(7,-1));
 
     r1 = a3.intersect(bez);
