@@ -258,6 +258,10 @@ void sbasis_to_cubic_bezier (std::vector<Point> & bz, D2<SBasis> const& sb)
         dely[1] = 0;
     } else if  (std::abs(xprime[1]*yprime[0] - yprime[1]*xprime[0]) >  // general case : fit mid fxn value
         0.002 * std::abs(xprime[1]*xprime[0] + yprime[1]*yprime[0])) { // approx. 0.1 degree of angle
+        double test1 = (bz[1][Y] - bz[0][Y])*(bz[3][X] - bz[0][X]) - (bz[1][X] - bz[0][X])*(bz[3][Y] - bz[0][Y]);
+        double test2 = (bz[2][Y] - bz[0][Y])*(bz[3][X] - bz[0][X]) - (bz[2][X] - bz[0][X])*(bz[3][Y] - bz[0][Y]);
+        if (test1*test2 < 0) // reject anti-symmetric case, LP Bug 1428267 & Bug 1428683
+            return;
         denom = 3.0*(xprime[1]*yprime[0] - yprime[1]*xprime[0]);
         for (int i = 0; i < 2; ++i) {
             numer = xprime[1 - i]*midy - yprime[1 - i]*midx;
