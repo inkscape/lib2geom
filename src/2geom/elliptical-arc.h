@@ -158,11 +158,6 @@ public:
     /** @brief Get the arc's center
      * @return The arc's center, situated on the intersection of the ellipse's rays */
     Point center() const { return _ellipse.center(); }
-    /** @brief Get the extent of the arc
-     * @return The angle between the initial and final point, in arc's angular coordinates */
-    Coord sweepAngle() const {
-        return extent();
-    }
     /// @}
     
     /// @name Angular evaluation
@@ -260,10 +255,7 @@ public:
         if (isChord()) return chord().valueAt(t, d);
         return valueAtAngle(angleAt(t), d);
     }
-    virtual Point pointAt(Coord t) const {
-        if (isChord()) return chord().pointAt(t);
-        return pointAtAngle(angleAt(t));
-    }
+    virtual Point pointAt(Coord t) const;
     virtual Curve* portion(double f, double t) const;
     virtual Curve* reverse() const;
     virtual bool operator==(Curve const &c) const;

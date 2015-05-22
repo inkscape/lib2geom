@@ -31,7 +31,6 @@
  * the specific language governing rights and limitations.
  */
 
-#include "testing.h"
 #include <iostream>
 #include <glib.h>
 
@@ -39,6 +38,8 @@
 #include <2geom/ellipse.h>
 #include <2geom/elliptical-arc.h>
 #include <memory>
+
+#include "testing.h"
 
 using namespace Geom;
 
@@ -150,11 +151,66 @@ TEST(EllipseTest, EllipseIntersection) {
 }
 
 TEST(EllipseTest, BezierIntersection) {
-    Ellipse e(Point(300, 300), Point(212, 70), -0.785);
+    Ellipse e(Point(300, 300), Point(212, 70), -3.926);
     D2<Bezier> b(Bezier(100, 300, 100, 500), Bezier(100, 100, 500, 500));
 
     std::vector<ShapeIntersection> xs = e.intersect(b);
 
     EXPECT_EQ(xs.size(), 2);
-    EXPECT_intersections_valid(e, b, xs, 2e-13);
+    EXPECT_intersections_valid(e, b, xs, 6e-13);
+}
+
+TEST(EllipseTest, Coefficients) {
+    std::vector<Ellipse> es;
+    es.push_back(Ellipse(Point(-15,25), Point(10,15), Angle::from_degrees(45).radians0()));
+    es.push_back(Ellipse(Point(-10,33), Point(40,20), M_PI));
+    es.push_back(Ellipse(Point(10,-33), Point(40,20), Angle::from_degrees(135).radians0()));
+    es.push_back(Ellipse(Point(-10,-33), Point(50,10), Angle::from_degrees(330).radians0()));
+
+    for (unsigned i = 0; i < es.size(); ++i) {
+        Coord a, b, c, d, e, f;
+        es[i].coefficients(a, b, c, d, e, f);
+        Ellipse te(a, b, c, d, e, f);
+        EXPECT_near(es[i], te, 1e-10);
+        for (Coord t = -5; t < 5; t += 0.125) {
+            Point p = es[i].pointAt(t);
+            Coord eq = a*p[X]*p[X] + b*p[X]*p[Y] + c*p[Y]*p[Y]
+              + d*p[X] + e*p[Y] + f;
+            EXPECT_NEAR(eq, 0, 1e-10);
+        }
+    }
+}
+
+TEST(EllipseTest, UnitCircleTransform) {
+    std::vector<Ellipse> es;
+    es.push_back(Ellipse(Point(-15,25), Point(10,15), Angle::from_degrees(45).radians0()));
+    es.push_back(Ellipse(Point(-10,33), Point(40,20), M_PI));
+    es.push_back(Ellipse(Point(10,-33), Point(40,20), Angle::from_degrees(135).radians0()));
+    es.push_back(Ellipse(Point(-10,-33), Point(50,10), Angle::from_degrees(330).radians0()));
+
+    for (unsigned i = 0; i < es.size(); ++i) {
+        EXPECT_near(es[i].unitCircleTransform() * es[i].inverseUnitCircleTransform(), Affine::identity(), 1e-8);
+
+        for (Coord t = -1; t < 10; t += 0.25) {
+            Point p = es[i].pointAt(t);
+            p *= es[i].inverseUnitCircleTransform();
+            EXPECT_near(p.length(), 1., 1e-10);
+            p *= es[i].unitCircleTransform();
+            EXPECT_near(es[i].pointAt(t), p, 1e-10);
+        }
+    }
+}
+
+TEST(EllipseTest, PointAt) {
+    Ellipse a(Point(0,0), Point(10,20), 0);
+    EXPECT_near(a.pointAt(0), Point(10,0), 1e-10);
+    EXPECT_near(a.pointAt(M_PI/2), Point(0,20), 1e-10);
+    EXPECT_near(a.pointAt(M_PI), Point(-10,0), 1e-10);
+    EXPECT_near(a.pointAt(3*M_PI/2), Point(0,-20), 1e-10);
+
+    Ellipse b(Point(0,0), Point(10,20), M_PI/2);
+    EXPECT_near(b.pointAt(0), Point(0,10), 1e-10);
+    EXPECT_near(b.pointAt(M_PI/2), Point(-20,0), 1e-10);
+    EXPECT_near(b.pointAt(M_PI), Point(0,-10), 1e-10);
+    EXPECT_near(b.pointAt(3*M_PI/2), Point(20,0), 1e-10);
 }

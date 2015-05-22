@@ -251,11 +251,22 @@ public:
         }
     }
     /** @brief Extent of the angle interval.
-     * @return Extent in range \f$[0, 2\pi)\f$ */
+     * Equivalent to the absolute value of the sweep angle.
+     * @return Extent in range \f$[0, 2\pi)\f$. */
     Coord extent() const {
         return _sweep
             ? (_end_angle - _start_angle).radians0()
             : (_start_angle - _end_angle).radians0();
+    }
+    /** @brief Get the sweep angle of the interval.
+     * This is the value you need to add to the initial angle to get the final angle.
+     * It is positive when sweep is true. Denoted as \f$\Delta\theta\f$ in the SVG
+     * elliptical arc implementation notes. */
+    Coord sweepAngle() const {
+        Coord sa = _end_angle.radians0() - _start_angle.radians0();
+        if (_sweep && sa < 0) sa += 2*M_PI;
+        if (!_sweep && sa > 0) sa -= 2*M_PI;
+        return sa;
     }
 protected:
     AngleInterval() {}

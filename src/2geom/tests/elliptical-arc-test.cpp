@@ -37,6 +37,44 @@
 
 using namespace Geom;
 
+TEST(EllipticalArcTest, PointAt) {
+    EllipticalArc a(Point(0,0), Point(10,20), M_PI/2, false, true, Point(-40,0));
+    EXPECT_near(a.pointAt(0), a.initialPoint(), 1e-14);
+    EXPECT_near(a.pointAt(1), a.finalPoint(), 1e-14);
+    EXPECT_near(a.pointAt(0.5), Point(-20,10), 1e-14);
+
+    EllipticalArc b(Point(0,0), Point(10,20), 0, false, true, Point(-40,0));
+    EXPECT_near(b.pointAt(0), b.initialPoint(), 1e-14);
+    EXPECT_near(b.pointAt(1), b.finalPoint(), 1e-14);
+    EXPECT_near(b.pointAt(0.5), Point(-20,40), 1e-14);
+
+    EllipticalArc c(Point(200,0), Point(40,20), Angle::from_degrees(90), false, false, Point(200,100));
+    EXPECT_near(c.pointAt(0), c.initialPoint(), 1e-13);
+    EXPECT_near(c.pointAt(1), c.finalPoint(), 1e-13);
+    EXPECT_near(c.pointAt(0.5), Point(175, 50), 1e-13);
+}
+
+TEST(EllipticalArc, Transform) {
+    EllipticalArc a(Point(0,0), Point(10,20), M_PI/2, false, true, Point(-40,0));
+    EllipticalArc b(Point(-40,0), Point(10,20), M_PI/2, false, true, Point(0,0));
+    EllipticalArc c = a;
+    Affine m = Rotate::around(Point(-20,0), M_PI);
+    c.transform(m);
+
+    for (unsigned i = 0; i <= 100; ++i) {
+        Coord t = i/100.;
+        EXPECT_near(c.pointAt(t), b.pointAt(t), 1e-12);
+        EXPECT_near(a.pointAt(t)*m, c.pointAt(t), 1e-12);
+    }
+}
+
+TEST(EllipticalArcTest, Duplicate) {
+    EllipticalArc a(Point(0,0), Point(10,20), M_PI/2, true, false, Point(-40,0));
+    EllipticalArc *b = static_cast<EllipticalArc*>(a.duplicate());
+    EXPECT_EQ(a, *b);
+    delete b;
+}
+
 TEST(EllipticalArcTest, LineSegmentIntersection) {
     std::vector<CurveIntersection> r1;
     EllipticalArc a3(Point(0,0), Point(5,1.5), 0, true, true, Point(0,2));
@@ -63,12 +101,17 @@ TEST(EllipticalArcTest, ArcIntersection) {
 }
 
 TEST(EllipticalArcTest, BezierIntersection) {
-    std::vector<CurveIntersection> r1;
+    std::vector<CurveIntersection> r1, r2;
 
     EllipticalArc a3(Point(0,0), Point(1.5,5), M_PI/2, true, true, Point(0,2));
-    CubicBezier bez(Point(0,3), Point(7,3), Point(0,-1), Point(7,-1));
-
-    r1 = a3.intersect(bez);
+    CubicBezier bez1(Point(0,3), Point(7,3), Point(0,-1), Point(7,-1));
+    r1 = a3.intersect(bez1);
     EXPECT_EQ(r1.size(), 2);
-    EXPECT_intersections_valid(a3, bez, r1, 1e-10);
+    EXPECT_intersections_valid(a3, bez1, r1, 1e-10);
+
+    EllipticalArc a4(Point(3,5), Point(5,1.5), 3*M_PI/2, true, true, Point(5,5));
+    CubicBezier bez2(Point(0,5), Point(10,-4), Point(10,5), Point(0,-4));
+    r2 = a4.intersect(bez2);
+    EXPECT_EQ(r2.size(), 4);
+    EXPECT_intersections_valid(a4, bez2, r2, 1e-10);
 }

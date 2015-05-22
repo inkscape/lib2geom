@@ -22,6 +22,7 @@ class BoolOps : public Toy {
 
         PathIntersectionGraph pig(as, bst);
         PathVector result = pig.getUnion();
+        std::vector<Point> ix = pig.intersectionPoints();
 
         cairo_set_line_cap(cr, CAIRO_LINE_CAP_SQUARE);
         cairo_set_line_join(cr, CAIRO_LINE_JOIN_BEVEL);
@@ -42,6 +43,12 @@ class BoolOps : public Toy {
         }
 
         cairo_set_line_width(cr, 1);
+
+        cairo_set_source_rgb(cr, 1, 0, 0);
+        for (unsigned i = 0; i < ix.size(); ++i) {
+            draw_handle(cr, ix[i]);
+        }
+        cairo_stroke(cr);
 
         Toy::draw(cr, notify, width, height, save,timer_stream);
     }
