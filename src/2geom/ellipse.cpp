@@ -63,17 +63,11 @@ void Ellipse::setCoefficients(double A, double B, double C, double D, double E, 
 
 
     //evaluate ellipse rotation angle
-    double rot = std::atan2( -B, -(A - C) )/2;
-//      std::cerr << "rot = " << rot << std::endl;
-    bool swap_axes = false;
-
-    if (rot >= M_PI/2 || rot < 0) {
-        swap_axes = true;
-    }
+    _angle = std::atan2( -B, -(A - C) )/2;
 
     // evaluate the length of the ellipse rays
     double sinrot, cosrot;
-    sincos(rot, sinrot, cosrot);
+    sincos(_angle, sinrot, cosrot);
     double cos2 = cosrot * cosrot;
     double sin2 = sinrot * sinrot;
     double cossin = cosrot * sinrot;
@@ -86,7 +80,7 @@ void Ellipse::setCoefficients(double A, double B, double C, double D, double E, 
     if (rx2 < 0) {
         THROW_RANGEERROR("rx2 < 0, while computing 'rx' coefficient");
     }
-    double rx = std::sqrt(rx2);
+    _rays[X] = std::sqrt(rx2);
 
     den = C * cos2 - B * cossin + A * sin2;
     if (den == 0) {
@@ -96,24 +90,11 @@ void Ellipse::setCoefficients(double A, double B, double C, double D, double E, 
     if (ry2 < 0) {
         THROW_RANGEERROR("ry2 < 0, while computing 'rx' coefficient");
     }
-    double ry = std::sqrt(ry2);
+    _rays[Y] = std::sqrt(ry2);
 
     // the solution is not unique so we choose always the ellipse
     // with a rotation angle between 0 and PI/2
-    if (swap_axes) {
-        std::swap(rx, ry);
-    }
-
-    if (rx == ry) {
-        rot = 0;
-    }
-    if (rot < 0) {
-        rot += M_PI/2;
-    }
-
-    _rays[X] = rx;
-    _rays[Y] = ry;
-    _angle = rot;
+    makeCanonical();
 }
 
 

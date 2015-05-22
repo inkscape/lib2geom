@@ -788,10 +788,7 @@ void EllipticalArc::_updateCenterAndAngles()
 
     // Correct out-of-range radii
     Coord lambda = hypot(p[X]/r[X], p[Y]/r[Y]);
-    //std::cout << initialPoint() << "\n" << mid << "\n" << rotationAngle() << " " << p << "\n";
-    //std::cout << lambda << " ";
     if (lambda > 1) {
-        //r *= lambda_sqrt;
         r *= lambda;
         _ellipse.setRays(r);
         _ellipse.setCenter(mid);
@@ -873,10 +870,11 @@ void EllipticalArc::transform(Affine const& m)
         _sweep = !_sweep;
     }
 
-    // need to call this, because ellipse transformation does not preserve
-    // its functional form, i.e. e.pointAt(0.5)*m and (e*m).pointAt(0.5)
-    // can be different
-    _updateCenterAndAngles();
+    // ellipse transformation does not preserve its functional form,
+    // i.e. e.pointAt(0.5)*m and (e*m).pointAt(0.5) can be different.
+    // We need to recompute start / end angles.
+    _start_angle = _ellipse.timeAt(_initial_point);
+    _end_angle = _ellipse.timeAt(_final_point);
 }
 
 bool EllipticalArc::operator==(Curve const &c) const
