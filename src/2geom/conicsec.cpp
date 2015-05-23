@@ -80,41 +80,6 @@ static double boxprod(Point a, Point b, Point c) {
     return det(a,b) - det(a,c) + det(b,c);
 }
 
-
-/**
- * Find the roots of (q2x + q1)x+q0 = 0
- * Tries to be numerically robust.
- */
-template <typename T>
-static std::vector<T> quadratic_roots(T q0, T q1, T q2) {
-    std::vector<double> r;
-    if(q2 == 0) {
-        if(q1 == 0) { // zero or infinite roots
-            return r;
-        }
-        r.push_back(-q0/q1);
-    } else {
-        double desc = q1*q1 - 4*q2*q0;
-        /*cout << q2 << ", "
-          << q1 << ", "
-          << q0 << "; "
-          << desc << "\n";*/
-        if (desc < 0)
-            return r;
-        else if (desc == 0)
-            r.push_back(-q1/(2*q2));
-        else {
-            desc = std::sqrt(desc);
-            double t = -0.5*(q1+sgn(q1)*desc);
-            r.push_back(t/q2);
-            r.push_back(q0/t);
-        }
-    }
-    return r;
-}
-
-
-
 class BadConversion : public std::runtime_error {
 public:
     BadConversion(const std::string& s)

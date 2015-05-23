@@ -34,6 +34,7 @@
 
 #include <algorithm>
 #include <2geom/polynomial.h>
+#include <2geom/math-utils.h>
 #include <math.h>
 
 #ifdef HAVE_GSL
@@ -235,7 +236,7 @@ std::vector<Coord> solve_quadratic(Coord a, Coord b, Coord c)
 
     if (delta == 0) {
         // one root
-        result.push_back(-0.5 * b / a);
+        result.push_back(-b / (2*a));
     } else if (delta > 0) {
         // two roots
         Coord delta_sqrt = sqrt(delta);
@@ -243,13 +244,9 @@ std::vector<Coord> solve_quadratic(Coord a, Coord b, Coord c)
         // Use different formulas depending on sign of b to preserve
         // numerical stability. See e.g.:
         // http://people.csail.mit.edu/bkph/articles/Quadratics.pdf
-        if (b >= 0) {
-            result.push_back((-b - delta_sqrt)/(2*a));
-            result.push_back(2*c/(-b - delta_sqrt));
-        } else {
-            result.push_back(2*c/(-b + delta_sqrt));
-            result.push_back((-b + delta_sqrt)/(2*a));
-        }
+        Coord t = -0.5 * (b + sgn(b) * delta_sqrt);
+        result.push_back(t / a);
+        result.push_back(c / t);
     }
     // no roots otherwise
 
