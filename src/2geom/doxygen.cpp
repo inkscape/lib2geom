@@ -56,6 +56,7 @@
  * - @ref ShapeOps "Shape operations" - boolean algebra, offsets and other advanced operations.
  * - @ref Containers "Geometric containers" - efficient ways to store and retrieve
  *   geometric information.
+ * - @ref Utilities "Utilities" - other useful code that does not fit under the above categories.
  * - @subpage ReleaseNotes "Release notes" - what's new in 2Geom
  *
  * @section DeveloperInfo Developer information
@@ -282,6 +283,12 @@
  * @defgroup Paths Paths and path sequences
  * @brief Sequences of contiguous curves, aka splines, and their procesing
  */
+
+/**
+ * @defgroup Utilities Miscellaneous utilities
+ * @brief Useful code that does not fit under other categories.
+ */
+
 /*
   Local Variables:
   mode:c++

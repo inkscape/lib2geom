@@ -41,6 +41,9 @@
 
 namespace Geom {
 
+/** @brief Sweep traits class for interval bounds.
+ * @relates Sweeper
+ * @ingroup Utilities */
 struct IntervalSweepTraits {
     typedef Interval Bound;
     typedef std::less<Coord> Compare;
@@ -48,12 +51,22 @@ struct IntervalSweepTraits {
     inline static Coord exit_value(Bound const &b) { return b.max(); }
 };
 
-template <Dim2 d>
+/** @brief Sweep traits class for rectangle bounds.
+ * @tparam D Which axis to use for sweeping
+ * @ingroup Utilities */
+template <Dim2 D>
 struct RectSweepTraits {
     typedef Rect Bound;
     typedef std::less<Coord> Compare;
-    inline static Coord entry_value(Bound const &b) { return b[d].min(); }
-    inline static Coord exit_value(Bound const &b) { return b[d].max(); }
+    inline static Coord entry_value(Bound const &b) { return b[D].min(); }
+    inline static Coord exit_value(Bound const &b) { return b[D].max(); }
+};
+
+template <typename T>
+struct BoundsFast {
+    Rect operator()(T const &item) const {
+        return item.boundsFast();
+    }
 };
 
 /** @brief Generic sweepline algorithm.
@@ -66,18 +79,30 @@ struct RectSweepTraits {
  *
  * To use this, create a derived class and reimplement the _enter()
  * and/or _leave() virtual functions, insert all the objects,
- * and finally call process(). You can specify the bound type
+ * and finally call process(). Inside _enter() and _leave(), the items that have
+ * their bounds intersected by the sweepline are available in a list called
+ * _active_items. This is an intrusive linked list, so you should access it using
+ * iterators. Do not add or remove items from it. You can specify the bound type
  * and how it should be accessed by defining a custom SweepTraits class.
  *
  * Look in path.cpp for example usage.
+ *
+ * @tparam Item The type of items to sweep
+ * @tparam SweepTraits Traits class that defines the items' bounds,
+ *   how to interpret them and how to sort the events
+ * @ingroup Utilities
  */
 template <typename Item, typename SweepTraits = IntervalSweepTraits>
 class Sweeper {
 public:
+    /// Type of the item's boundary - usually this will be an Interval or Rect.
     typedef typename SweepTraits::Bound Bound;
 
     Sweeper() {}
 
+    /** @brief Insert a single item for sweeping.
+     * @param bound Boundary of the item, as defined in sweep traits
+     * @param item The item itself */
     void insert(Bound const &bound, Item const &item) {
         assert(!(typename SweepTraits::Compare()(
             SweepTraits::exit_value(bound),
@@ -85,6 +110,11 @@ public:
         _items.push_back(Record(bound, item));
     }
 
+    /** @brief Insert a range of items using the supplied bounds functor.
+     * The bounds are computed from items using the supplied bounds functor.
+     * @param first Start of range
+     * @param last End of range (one-past-the-end iterator)
+     * @param f Bounds functor */
     template <typename Iter, typename BoundFunc>
     void insert(Iter first, Iter last, BoundFunc f = BoundFunc()) {
         for (; first != last; ++first) {
@@ -105,6 +135,8 @@ public:
 
         typename SweepTraits::Compare cmp;
 
+        // we store the events in heaps, which is slightly more efficient
+        // than sorting them, since a heap requires linear time to construct
         for (RecordIter i = _items.begin(); i != _items.end(); ++i) {
             _entry_events.push_back(i);
             _exit_events.push_back(i);

@@ -70,24 +70,24 @@ public:
     template <typename Iter>
     D2(Iter first, Iter last) {
         typedef typename std::iterator_traits<Iter>::value_type V;
-        typedef typename boost::transform_iterator<GetX<V>, Iter> XIter;
-        typedef typename boost::transform_iterator<GetY<V>, Iter> YIter;
+        typedef typename boost::transform_iterator<GetAxis<X,V>, Iter> XIter;
+        typedef typename boost::transform_iterator<GetAxis<Y,V>, Iter> YIter;
 
-        XIter xfirst(first, GetX<V>()), xlast(last, GetX<V>());
+        XIter xfirst(first, GetAxis<X,V>()), xlast(last, GetAxis<X,V>());
         f[X] = T(xfirst, xlast);
-        YIter yfirst(first, GetY<V>()), ylast(last, GetY<V>());
+        YIter yfirst(first, GetAxis<Y,V>()), ylast(last, GetAxis<Y,V>());
         f[Y] = T(yfirst, ylast);
     }
 
     D2(std::vector<Point> const &vec) {
         typedef Point V;
         typedef std::vector<Point>::const_iterator Iter;
-        typedef boost::transform_iterator<GetX<V>, Iter> XIter;
-        typedef boost::transform_iterator<GetY<V>, Iter> YIter;
+        typedef boost::transform_iterator<GetAxis<X,V>, Iter> XIter;
+        typedef boost::transform_iterator<GetAxis<Y,V>, Iter> YIter;
 
-        XIter xfirst(vec.begin(), GetX<V>()), xlast(vec.end(), GetX<V>());
+        XIter xfirst(vec.begin(), GetAxis<X,V>()), xlast(vec.end(), GetAxis<X,V>());
         f[X] = T(xfirst, xlast);
-        YIter yfirst(vec.begin(), GetY<V>()), ylast(vec.end(), GetY<V>());
+        YIter yfirst(vec.begin(), GetAxis<Y,V>()), ylast(vec.end(), GetAxis<Y,V>());
         f[Y] = T(yfirst, ylast);
     }
 
