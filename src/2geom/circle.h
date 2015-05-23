@@ -84,6 +84,8 @@ public:
     Rect boundsFast() const;
     Rect boundsExact() const { return boundsFast(); }
 
+    Point initialPoint() const;
+    Point finalPoint() const { return initialPoint(); }
     Point pointAt(Coord t) const;
     Coord valueAt(Coord t, Dim2 d) const;
     Coord timeAt(Point const &p) const;

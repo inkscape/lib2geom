@@ -101,6 +101,12 @@ Zoom Circle::inverseUnitCircleTransform() const
     return ret;
 }
 
+Point Circle::initialPoint() const
+{
+    Point p(_center);
+    p[X] += _radius;
+    return p;
+}
 
 Point Circle::pointAt(Coord t) const {
     return _center + Point::polar(t) * _radius;
@@ -112,11 +118,11 @@ Coord Circle::valueAt(Coord t, Dim2 d) const {
 }
 
 Coord Circle::timeAt(Point const &p) const {
+    if (_center == p) return 0;
     return atan2(p - _center);
 }
 
 Coord Circle::nearestTime(Point const &p) const {
-    if (_center == p) return 0;
     return timeAt(p);
 }
 
