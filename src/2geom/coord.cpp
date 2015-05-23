@@ -3656,7 +3656,7 @@ std::string format_coord_nice(Coord x)
 {
     static DoubleToStringConverter conv(
         DoubleToStringConverter::UNIQUE_ZERO,
-        "Inf", "NaN", 'e', -6, 21, 0, 0);
+        "inf", "NaN", 'e', -6, 21, 0, 0);
     std::string ret;
     ret.reserve(32);
     conv.ToShortest(x, ret);
@@ -3669,7 +3669,7 @@ Coord parse_coord(std::string const &s)
         StringToDoubleConverter::ALLOW_LEADING_SPACES |
         StringToDoubleConverter::ALLOW_TRAILING_SPACES |
         StringToDoubleConverter::ALLOW_SPACES_AFTER_SIGN,
-        0.0, nan(""), "Inf", "NaN");
+        0.0, nan(""), "inf", "NaN");
     int dummy;
     return conv.StringToDouble(s.c_str(), s.length(), &dummy);
 }
