@@ -195,8 +195,14 @@ public:
         return _initial[X] == _final[X];
     }
 
-    /** @brief Reparametrize the line so that it has unit speed. */
+    /** @brief Reparametrize the line so that it has unit speed.
+     * Note that the direction of the line may also change. */
     void normalize() {
+        // this helps with the nasty case of a line that starts somewhere far
+        // and ends very close to the origin
+        if (L2sq(_final) < L2sq(_initial)) {
+            std::swap(_initial, _final);
+        }
         Point v = _final - _initial;
         v.normalize();
         _final = _initial + v;

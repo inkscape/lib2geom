@@ -60,6 +60,7 @@ namespace Geom
  * satisfy the line equation with the given coefficients. */
 void Line::setCoefficients (Coord a, Coord b, Coord c)
 {
+    // degenerate case
     if (a == 0 && b == 0) {
         if (c != 0) {
             THROW_LOGICALERROR("the passed coefficients give the empty set");
@@ -68,22 +69,36 @@ void Line::setCoefficients (Coord a, Coord b, Coord c)
         _final = Point(0,0);
         return;
     }
+
+    // The way final / initial points are set based on coefficients is somewhat unusual.
+    // This is done to make sure that calling coefficients() will give back
+    // (almost) the same values.
+
+    // vertical case
     if (a == 0) {
         // b must be nonzero
-        _initial = Point(0, -c / b);
+        _initial = Point(-b/2, -c / b);
         _final = _initial;
-        _final[X] = 1;
-        return;
-    }
-    if (b == 0) {
-        _initial = Point(-c / a, 0);
-        _final = _initial;
-        _final[Y] = 1;
+        _final[X] = b/2;
         return;
     }
 
-    _initial = Point(-c / a, 0);
-    _final = Point(0, -c / b);
+    // horizontal case
+    if (b == 0) {
+        _initial = Point(-c / a, a/2);
+        _final = _initial;
+        _final[Y] = -a/2;
+        return;
+    }
+
+    // This gives reasonable results regardless of the magnitudes of a, b and c.
+    _initial = Point(-b/2,a/2);
+    _final = Point(b/2,-a/2);
+
+    Point offset(-c/(2*a), -c/(2*b));
+
+    _initial += offset;
+    _final += offset;
 }
 
 void Line::coefficients(Coord &a, Coord &b, Coord &c) const
@@ -94,15 +109,18 @@ void Line::coefficients(Coord &a, Coord &b, Coord &c) const
     c = cross(_initial, _final);
 }
 
-/** @brief Get the line equation coefficients of this line.
+/** @brief Get the implicit line equation coefficients.
+ * Note that conversion to implicit form always causes loss of
+ * precision when dealing with lines that start far from the origin
+ * and end very close to it. It is recommended to normalize the line
+ * before converting it to implicit form.
  * @return Vector with three values corresponding to the A, B and C
  *         coefficients of the line equation for this line. */
 std::vector<Coord> Line::coefficients() const
 {
-    Coord c[3];
+    std::vector<Coord> c(3);
     coefficients(c[0], c[1], c[2]);
-    std::vector<Coord> coeff(c, c+3);
-    return coeff;
+    return c;
 }
 
 /** @brief Find intersection with an axis-aligned line.

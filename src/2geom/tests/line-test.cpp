@@ -106,29 +106,38 @@ TEST(LineTest, RotationToZero) {
 }
 
 TEST(LineTest, Coefficients) {
-    for (unsigned i = 0; i < 100; ++i) {
-        double ax = g_random_double_range(-100, 100);
-        double ay = g_random_double_range(-100, 100);
-        double bx = g_random_double_range(-100, 100);
-        double by = g_random_double_range(-100, 100);
+    std::vector<Line> lines;
+    lines.push_back(Line(Point(1e9,1e9), Point(1,1)));
+    //the case below will never work without normalizing the line
+    //lines.push_back(Line(Point(1e5,1e5), Point(1e-15,0)));
+    lines.push_back(Line(Point(1e5,1e5), Point(1e5,-1e5)));
+    lines.push_back(Line(Point(-3,10), Point(3,10)));
+    lines.push_back(Line(Point(250,333), Point(-72,121)));
 
-        Line l(Point(ax, ay), Point(bx, by));
-
+    for (unsigned i = 0; i < lines.size(); ++i) {
         Coord a, b, c, A, B, C;
-        l.coefficients(a, b, c);
+        lines[i].coefficients(a, b, c);
+        /*std::cout << format_coord_nice(a) << " "
+                  << format_coord_nice(b) << " "
+                  << format_coord_nice(c) << std::endl;*/
         Line k(a, b, c);
+        //std::cout << k.initialPoint() << " " << k.finalPoint() << std::endl;
         k.coefficients(A, B, C);
-        b /= a; c /= a; a = 1;
-        B /= A; C /= A; A = 1;
-        EXPECT_FLOAT_EQ(b, B);
-        EXPECT_FLOAT_EQ(c, C);
+        /*std::cout << format_coord_nice(A) << " "
+                  << format_coord_nice(B) << " "
+                  << format_coord_nice(C) << std::endl;*/
+        EXPECT_DOUBLE_EQ(a, A);
+        EXPECT_DOUBLE_EQ(b, B);
+        EXPECT_DOUBLE_EQ(c, C);
 
-        //EXPECT_TRUE(are_near(l.initialPoint(), k.initialPoint(), 1e-12));
-
-        for (unsigned i = 0; i <10; ++i) {
-            double t = g_random_double_range(-10, 10);
-            Point p = l.pointAt(t);
-            EXPECT_NEAR(a*p[X] + b*p[Y] + c, 0, 2e-10);
+        for (unsigned j = 0; j <= 10; ++j) {
+            double t = j / 10.;
+            Point p = lines[i].pointAt(t);
+            /*std::cout << t << " " << p << " "
+                      << A*p[X] + B*p[Y] + C << " "
+                      << A*(p[X]-1) + B*(p[Y]+1) + C << std::endl;*/
+            EXPECT_near(A*p[X] + B*p[Y] + C, 0., 2e-11);
+            EXPECT_not_near(A*(p[X]-1) + B*(p[Y]+1) + C, 0., 1e-6);
         }
     }
 }
