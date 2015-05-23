@@ -287,13 +287,14 @@ public:
     virtual std::vector<CurveIntersection> intersect(Curve const &other, Coord eps=EPSILON) const;
     virtual int degreesOfFreedom() const { return 7; }
     virtual Curve *derivative() const;
-    virtual void transform(Affine const &m);
-    virtual Curve &operator*=(Translate const &m) {
-        _initial_point *= m;
-        _final_point *= m;
-        _ellipse *= m;
-        return *this;
-    }
+
+    using Curve::operator*=;
+    virtual void operator*=(Translate const &tr);
+    virtual void operator*=(Scale const &s);
+    virtual void operator*=(Rotate const &r);
+    virtual void operator*=(Zoom const &z);
+    virtual void operator*=(Affine const &m);
+
     virtual std::vector<Point> pointAndDerivatives(Coord t, unsigned int n) const;
     virtual D2<SBasis> toSBasis() const;
     virtual Curve *portion(double f, double t) const;

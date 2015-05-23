@@ -144,19 +144,7 @@ Point EllipticalArc::pointAtAngle(Coord t) const
 
 Coord EllipticalArc::valueAtAngle(Coord t, Dim2 d) const
 {
-    Coord sinrot, cosrot, cost, sint;
-    sincos(rotationAngle(), sinrot, cosrot);
-    sincos(t, sint, cost);
-
-    if ( d == X ) {
-        return    ray(X) * cosrot * cost
-                - ray(Y) * sinrot * sint
-                + center(X);
-    } else {
-        return    ray(X) * sinrot * cost
-                + ray(Y) * cosrot * sint
-                + center(Y);
-    }
+    return _ellipse.valueAt(t, d);
 }
 
 std::vector<Coord> EllipticalArc::roots(Coord v, Dim2 d) const
@@ -826,7 +814,39 @@ D2<SBasis> EllipticalArc::toSBasis() const
     return arc;
 }
 
-void EllipticalArc::transform(Affine const& m)
+// All operations that do not contain skew can be evaulated
+// without passing through the implicit form of the ellipse,
+// which preserves precision.
+
+void EllipticalArc::operator*=(Translate const &tr)
+{
+    _initial_point *= tr;
+    _final_point *= tr;
+    _ellipse *= tr;
+}
+
+void EllipticalArc::operator*=(Scale const &s)
+{
+    _initial_point *= s;
+    _final_point *= s;
+    _ellipse *= s;
+}
+
+void EllipticalArc::operator*=(Rotate const &r)
+{
+    _initial_point *= r;
+    _final_point *= r;
+    _ellipse *= r;
+}
+
+void EllipticalArc::operator*=(Zoom const &z)
+{
+    _initial_point *= z;
+    _final_point *= z;
+    _ellipse *= z;
+}
+
+void EllipticalArc::operator*=(Affine const& m)
 {
     if (isChord()) {
         _initial_point *= m;

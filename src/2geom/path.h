@@ -313,9 +313,7 @@ struct ShapeTraits<Path> {
  *
  * @ingroup Paths */
 class Path
-    : boost::equality_comparable1< Path
-    , MultipliableNoncommutative< Path, Affine
-      > >
+    : boost::equality_comparable< Path >
 {
 public:
     typedef PathInternal::Sequence Sequence;
@@ -493,8 +491,24 @@ public:
     /// Test paths for exact equality.
     bool operator==(Path const &other) const;
 
-    /// Apply an affine transform.
-    Path &operator*=(Affine const &m);
+    /// Apply a transform to each curve.
+    template <typename T>
+    Path &operator*=(T const &tr) {
+        BOOST_CONCEPT_ASSERT((TransformConcept<T>));
+        _unshare();
+        for (std::size_t i = 0; i < _curves->size(); ++i) {
+            (*_curves)[i] *= tr;
+        }
+        return *this;
+    }
+
+    template <typename T>
+    friend Path operator*(Path const &path, T const &tr) {
+        BOOST_CONCEPT_ASSERT((TransformConcept<T>));
+        Path result(path);
+        result *= tr;
+        return result;
+    }
 
     /** @brief Get the allowed range of time values.
      * @return Values for which pointAt() and valueAt() yield valid results. */

@@ -97,6 +97,14 @@ void Ellipse::setCoefficients(double A, double B, double C, double D, double E, 
     makeCanonical();
 }
 
+Point Ellipse::initialPoint() const
+{
+    Coord sinrot, cosrot;
+    sincos(_angle, sinrot, cosrot);
+    Point p(ray(X) * cosrot + center(X), ray(X) * sinrot + center(Y));
+    return p;
+}
+
 
 Affine Ellipse::unitCircleTransform() const
 {
@@ -299,8 +307,19 @@ Point Ellipse::pointAt(Coord t) const
 
 Coord Ellipse::valueAt(Coord t, Dim2 d) const
 {
-    // TODO: more efficient version.
-    return pointAt(t)[d];
+    Coord sinrot, cosrot, cost, sint;
+    sincos(rotationAngle(), sinrot, cosrot);
+    sincos(t, sint, cost);
+
+    if ( d == X ) {
+        return    ray(X) * cosrot * cost
+                - ray(Y) * sinrot * sint
+                + center(X);
+    } else {
+        return    ray(X) * sinrot * cost
+                + ray(Y) * cosrot * sint
+                + center(Y);
+    }
 }
 
 Coord Ellipse::timeAt(Point const &p) const
@@ -317,6 +336,12 @@ Coord Ellipse::timeAt(Point const &p) const
     }
     Affine iuct = inverseUnitCircleTransform();
     return Angle(atan2(p * iuct)).radians0(); // return a value in [0, 2pi)
+}
+
+bool Ellipse::contains(Point const &p) const
+{
+    Point tp = p * inverseUnitCircleTransform();
+    return tp.length() <= 1;
 }
 
 std::vector<ShapeIntersection> Ellipse::intersect(Line const &line) const

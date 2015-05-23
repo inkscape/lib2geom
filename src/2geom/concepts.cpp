@@ -51,9 +51,9 @@ void concept_checks()
     BOOST_CONCEPT_ASSERT((ShapeConcept<Line>));
     //BOOST_CONCEPT_ASSERT((ShapeConcept<Circle>));
     //BOOST_CONCEPT_ASSERT((ShapeConcept<Ellipse>));
-    //BOOST_CONCEPT_ASSERT((ShapeConcept<BezierCurve>));
+    BOOST_CONCEPT_ASSERT((ShapeConcept<BezierCurve>));
+    BOOST_CONCEPT_ASSERT((ShapeConcept<EllipticalArc>));
     //BOOST_CONCEPT_ASSERT((ShapeConcept<SBasisCurve>));
-    //BOOST_CONCEPT_ASSERT((ShapeConcept<EllipticalArc>));
     //BOOST_CONCEPT_ASSERT((ShapeConcept<ConvexHull>));
     //BOOST_CONCEPT_ASSERT((ShapeConcept<Path>));
     //BOOST_CONCEPT_ASSERT((ShapeConcept<PathVector>));

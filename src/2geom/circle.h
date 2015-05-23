@@ -76,6 +76,7 @@ public:
     Coord center(Dim2 d) const { return _center[d]; }
     Coord radius() const { return _radius; }
     Coord area() const { return M_PI * _radius * _radius; }
+    bool isDegenerate() const { return _radius == 0; }
 
     void setCenter(Point const &p) { _center = p; }
     void setRadius(Coord c) { _radius = c; }
@@ -138,7 +139,13 @@ bool are_near(Circle const &a, Circle const &b, Coord eps=EPSILON);
 
 std::ostream &operator<<(std::ostream &out, Circle const &c);
 
-//bool are_near(Circle const &a, Circle const &b, Coord eps = EPSILON);
+template <>
+struct ShapeTraits<Circle> {
+    typedef Coord TimeType;
+    typedef Interval IntervalType;
+    typedef Ellipse AffineClosureType;
+    typedef Intersection<> IntersectionType;
+};
 
 } // end namespace Geom
 

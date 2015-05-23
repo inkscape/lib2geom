@@ -184,7 +184,17 @@ public:
      * Because of this method, all curve types must be closed under affine
      * transformations.
      * @param m Affine describing the affine transformation */
-    virtual void transform(Affine const &m) = 0;
+    void transform(Affine const &m) {
+         *this *= m;
+    }
+
+    virtual void operator*=(Translate const &tr) { *this *= Affine(tr); }
+    virtual void operator*=(Scale const &s) { *this *= Affine(s); }
+    virtual void operator*=(Rotate const &r) { *this *= Affine(r); }
+    virtual void operator*=(HShear const &hs) { *this *= Affine(hs); }
+    virtual void operator*=(VShear const &vs) { *this *= Affine(vs); }
+    virtual void operator*=(Zoom const &z) { *this *= Affine(z); }
+    virtual void operator*=(Affine const &m) = 0;
 
     /** @brief Create a curve transformed by an affine transformation.
      * This method returns a new curve instead modifying the existing one.

@@ -129,8 +129,21 @@ public:
         return new BezierCurve(Geom::reverse(inner));
     }
 
-    virtual void transform(Affine const &m) {
-        for (unsigned i = 0;  i < size(); ++i) {
+    using Curve::operator*=;
+    virtual void operator*=(Translate const &tr) {
+        for (unsigned i = 0; i < size(); ++i) {
+            inner[X][i] += tr[X];
+            inner[Y][i] += tr[Y];
+        }
+    }
+    virtual void operator*=(Scale const &s) {
+        for (unsigned i = 0; i < size(); ++i) {
+            inner[X][i] *= s[X];
+            inner[Y][i] *= s[Y];
+        }
+    }
+    virtual void operator*=(Affine const &m) {
+        for (unsigned i = 0; i < size(); ++i) {
             setPoint(i, controlPoint(i) * m);
         }
     }

@@ -39,6 +39,7 @@
 #include <vector>
 #include <boost/concept/assert.hpp>
 #include <2geom/forward.h>
+#include <2geom/transforms.h>
 
 namespace Geom {
 
@@ -82,8 +83,8 @@ struct FragmentConcept {
         o = t.valueAt(d);
         o = t(d);
         v = t.valueAndDerivatives(d, u-1);
-		//Is a pure derivative (ignoring others) accessor ever much faster?
-		//u = number of values returned. first val is value.
+        //Is a pure derivative (ignoring others) accessor ever much faster?
+        //u = number of values returned. first val is value.
         sb = t.toSBasis();
         t = reverse(t);
         i = bounds_fast(t);
@@ -104,26 +105,30 @@ struct ShapeConcept {
     typedef typename ShapeTraits<T>::TimeType Time;
     typedef typename ShapeTraits<T>::IntervalType Interval;
     typedef typename ShapeTraits<T>::AffineClosureType AffineClosure;
-    //typedef typename ShapeTraits<T>::IntersectionType Isect;
+    typedef typename ShapeTraits<T>::IntersectionType Isect;
 
-    T shape;
+    T shape, other;
     Time t;
     Point p;
     AffineClosure ac;
     Affine m;
+    Translate tr;
     Coord c;
     bool bool_;
+    std::vector<Isect> ivec;
 
     void constraints() {
         p = shape.pointAt(t);
         c = shape.valueAt(t, X);
-        //ivec = shape.intersect(other);
+        ivec = shape.intersect(other);
         t = shape.nearestTime(p);
+        shape *= tr;
         ac = shape;
         ac *= m;
         bool_ = (shape == shape);
-        bool_ = (shape != shape);
+        bool_ = (shape != other);
         bool_ = shape.isDegenerate();
+        //bool_ = are_near(shape, other, c);
     }
 };
 

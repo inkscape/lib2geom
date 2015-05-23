@@ -49,15 +49,7 @@ namespace Geom
 
 // class docs in cpp file
 class Line
-    : boost::equality_comparable1< Line
-    , MultipliableNoncommutative< Line, Translate
-    , MultipliableNoncommutative< Line, Scale
-    , MultipliableNoncommutative< Line, Rotate
-    , MultipliableNoncommutative< Line, HShear
-    , MultipliableNoncommutative< Line, VShear
-    , MultipliableNoncommutative< Line, Zoom
-    , MultipliableNoncommutative< Line, Affine
-      > > > > > > > >
+    : boost::equality_comparable< Line >
 {
 private:
     Point _initial;
@@ -379,6 +371,14 @@ public:
         if (distance(pointAt(nearestTime(other._initial)), other._initial) != 0) return false;
         if (distance(pointAt(nearestTime(other._final)), other._final) != 0) return false;
         return true;
+    }
+
+    template <typename T>
+    friend Line operator*(Line const &l, T const &tr) {
+        BOOST_CONCEPT_ASSERT((TransformConcept<T>));
+        Line result(l);
+        result *= tr;
+        return result;
     }
 }; // end class Line
 

@@ -380,20 +380,6 @@ bool Path::operator==(Path const &other) const
     return *_curves == *other._curves;
 }
 
-Path &Path::operator*=(Affine const &m)
-{
-    _unshare();
-    Sequence::iterator last = _curves->end() - 1;
-    Sequence::iterator it;
-
-    for (it = _curves->begin(); it != last; ++it) {
-        it->transform(m);
-    }
-    _closing_seg->transform(m);
-    checkContinuity();
-    return *this;
-}
-
 void Path::start(Point const &p) {
     if (_curves->size() > 1) {
         clear();

@@ -124,6 +124,10 @@ public:
     Coord ray(Dim2 d) const { return _rays[d]; }
     /// Get the angle the X ray makes with the +X axis.
     Angle rotationAngle() const { return _angle; }
+    /// Get the point corresponding to the +X ray of the ellipse.
+    Point initialPoint() const;
+    /// Get the point corresponding to the +X ray of the ellipse.
+    Point finalPoint() const { return initialPoint(); }
 
     /** @brief Create an ellipse passing through the specified points
      * At least five points have to be specified. */
@@ -183,6 +187,9 @@ public:
      * to an intersection with a ray from the origin passing through the point
      * with the ellipse. Note that this is NOT the nearest point on the ellipse. */
     Coord timeAt(Point const &p) const;
+
+    /// Check whether the ellipse contains the given point.
+    bool contains(Point const &p) const;
 
     /// Compute intersections with an infinite line.
     std::vector<ShapeIntersection> intersect(Line const &line) const;

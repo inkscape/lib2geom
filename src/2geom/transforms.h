@@ -40,6 +40,7 @@
 #include <2geom/forward.h>
 #include <2geom/affine.h>
 #include <2geom/angle.h>
+#include <boost/concept/assert.hpp>
 
 namespace Geom {
 
@@ -95,6 +96,7 @@ public:
  * @ingroup Transforms */
 template <typename T>
 T pow(T const &t, int n) {
+    BOOST_CONCEPT_ASSERT((TransformConcept<T>));
     if (n == 0) return T::identity();
     T result(T::identity());
     T x(n < 0 ? t.inverse() : t);
