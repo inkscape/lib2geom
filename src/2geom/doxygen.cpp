@@ -40,7 +40,7 @@
  *
  * 2Geom is a computational geometry library intended for use with 2D vector graphics.
  * It concentrates on high-level algorithms, such as computing the length of a curve
- * or exact boolean operations on paths. It evolved from the geometry code used
+ * or Boolean operations on paths. It evolved from the geometry code used
  * in Inkscape, a free software, cross-platform vector graphics editor.
  *
  * @section UserGuide User guide

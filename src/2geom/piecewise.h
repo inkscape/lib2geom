@@ -42,12 +42,14 @@
 
 namespace Geom {
 /**
- * %Piecewise function class.
+ * @brief Function defined as discrete pieces.
+ *
  * The Piecewise class manages a sequence of elements of a type as segments and
  * the ’cuts’ between them. These cuts are time values which separate the pieces.
  * This function representation allows for more interesting functions, as it provides
  * a viable output for operations such as inversion, which may require multiple
  * SBasis to properly invert the original.
+ *
  * As for technical details, while the actual SBasis segments begin on the ﬁrst
  * cut and end on the last, the function is deﬁned throughout all inputs by ex-
  * tending the ﬁrst and last segments. The exact switching between segments is
@@ -62,6 +64,8 @@ namespace Geom {
  *      s_n,& c_n <= t
  *      \end{array}\right.
  * \f]
+ *
+ * @ingroup Fragments
  */
 template <typename T>
 class Piecewise {

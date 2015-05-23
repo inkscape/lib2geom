@@ -44,6 +44,8 @@
 
 namespace Geom {
 
+/** @brief Polynomial in canonical (monomial) basis.
+ * @ingroup Fragments */
 class Poly : public std::vector<double>{
 public:
     // coeff; // sum x^i*coeff[i]

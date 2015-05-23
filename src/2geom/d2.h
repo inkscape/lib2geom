@@ -43,20 +43,16 @@
 
 namespace Geom {
 /**
- * The D2 class takes two instances of a scalar data type and treats them
- * like a point. All operations which make sense on a point are deﬁned for D2.
- * A D2<double> is a Point. A D2<Interval> is a standard axis aligned rectangle.
- * D2<SBasis> provides a 2d parametric function which maps t to a point
- * x(t), y(t)
+ * @brief Adaptor that creates 2D functions from 1D ones.
+ * @ingroup Fragments
  */
-template <class T>
-class D2{
-    //BOOST_CLASS_REQUIRE(T, boost, AssignableConcept);
-  private:
+template <typename T>
+class D2
+{
+private:
     T f[2];
 
-  public:
-
+public:
     typedef T D1Value;
     typedef T &D1Reference;
     typedef T const &D1ConstReference;

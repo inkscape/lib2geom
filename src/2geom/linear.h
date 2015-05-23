@@ -51,7 +51,7 @@ namespace Geom {
 class SBasis;
 
 /**
- * @brief Linear function fragment
+ * @brief Function that interpolates linearly between two values.
  * @ingroup Fragments
  */
 class Linear {
