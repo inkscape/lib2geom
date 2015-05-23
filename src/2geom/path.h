@@ -159,7 +159,7 @@ struct PathTime
 };
 
 inline std::ostream &operator<<(std::ostream &os, PathTime const &pos) {
-    os << pos.curve_index << ": " << pos.t;
+    os << pos.curve_index << ": " << format_coord_nice(pos.t);
     return os;
 }
 

@@ -63,7 +63,7 @@ protected:
 
 TEST_F(IntersectionGraphTest, Union) {
     PathIntersectionGraph graph(rectangle, bigh);
-
+    std::cout << graph << std::endl;
     PathVector r = graph.getUnion();
     EXPECT_EQ(r.size(), 1);
     EXPECT_EQ(r.curveCount(), 19);
@@ -101,6 +101,14 @@ TEST_F(IntersectionGraphTest, Subtraction) {
     EXPECT_EQ(x.size(), 8);
     EXPECT_EQ(x.curveCount(), 32);
 }
+
+// crashes
+/*TEST_F(IntersectionGraphTest, EqualUnion) {
+    PathIntersectionGraph graph(bigh, bigh);
+    std::cout << graph << std::endl;
+    PathVector a = graph.getUnion();
+    EXPECT_EQ(PathVector(bigh), a);
+}*/
 
 /*
   Local Variables:

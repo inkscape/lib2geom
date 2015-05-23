@@ -81,6 +81,11 @@ struct PathVectorTime
     }
 };
 
+inline std::ostream &operator<<(std::ostream &os, PathVectorTime const &pvt) {
+    os << pvt.path_index << ": " << pvt.asPathTime();
+    return os;
+}
+
 typedef Intersection<PathVectorTime> PathVectorIntersection;
 typedef PathVectorIntersection PVIntersection; ///< Alias to save typing
 

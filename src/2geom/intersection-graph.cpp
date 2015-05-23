@@ -319,6 +319,17 @@ bool PathIntersectionGraph::_findUnprocessed(IntersectionList::iterator &result)
     return false;
 }
 
+
+std::ostream &operator<<(std::ostream &os, PathIntersectionGraph const &pig)
+{
+    os << "Path intersection graph:\n"
+       << pig._xs.size() << " intersections\n";
+    for (std::size_t i = 0; i < pig._xs.size(); ++i) {
+        os << pig._xs[i].pos << " " << pig._xs[i].p << "\n";
+    }
+    return os;
+}
+
 } // namespace Geom
 
 /*

@@ -94,7 +94,11 @@ private:
     boost::ptr_vector<IntersectionVertex> _xs;
     boost::ptr_vector<IntersectionList> _xalists;
     boost::ptr_vector<IntersectionList> _xblists;
+
+    friend std::ostream &operator<<(std::ostream &, PathIntersectionGraph const &);
 };
+
+std::ostream &operator<<(std::ostream &os, PathIntersectionGraph const &pig);
 
 } // namespace Geom
 

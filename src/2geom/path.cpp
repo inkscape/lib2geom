@@ -493,7 +493,7 @@ protected:
             int ib = i->bound.index;
 
             if (which == 0) {
-                cx = record.item->intersect(*i->item);
+                cx = record.item->intersect(*i->item, _precision);
             } else {
                 cx = i->item->intersect(*record.item, _precision);
                 std::swap(ia, ib);
