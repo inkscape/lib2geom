@@ -10,14 +10,6 @@ class TestPrimitives(unittest.TestCase):
     def test_angle(self):
         self.assertAlmostEqual(Angle.deg_to_rad(45), pi/4)
         self.assertAlmostEqual(Angle.rad_to_deg(pi/6), 30)
-        self.assertAlmostEqual(
-            Angle.map_circular_arc_on_unit_interval(pi/6, 0, pi/2),
-            1/3.)
-        self.assertAlmostEqual(
-            Angle.map_unit_interval_on_circular_arc(0.4, 0, pi),
-            2*pi/5)
-        self.assertTrue(Angle.arc_contains(pi/3, pi/4, pi/2, pi))
-        self.assertFalse(Angle.arc_contains(pi/6, pi/4, pi/2, pi))
 
         p = Point(1, sqrt(3))
         alpha = Angle.from_Point(p)

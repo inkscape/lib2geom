@@ -30,9 +30,6 @@ cdef extern from "2geom/angle.h" namespace "Geom":
 
     Coord deg_to_rad(Coord)
     Coord rad_to_deg(Coord)
-    double map_circular_arc_on_unit_interval(double, double, double, bint)
-    Coord map_unit_interval_on_circular_arc(Coord, double, double, bint)
-    bint arc_contains (double, double, double, double)
 
 cdef extern from "2geom/angle.h" namespace "Geom::Angle":
     Angle from_radians(Coord d)

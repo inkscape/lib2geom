@@ -102,21 +102,6 @@ cdef class cy_Angle:
         """Convert radians to degrees."""
         return rad_to_deg(rad)
 
-    @classmethod
-    def map_circular_arc_on_unit_interval(cls, angle, start_angle, end_angle, cw=True):
-        """Convert from angle to unit interval."""
-        return map_circular_arc_on_unit_interval(angle, start_angle, end_angle, cw)
-
-    @classmethod
-    def map_unit_interval_on_circular_arc(cls, t, start_angle, end_angle, cw=True):
-        """Convert from unit interval to angle."""
-        return map_unit_interval_on_circular_arc(t, start_angle, end_angle, cw)
-
-    @classmethod
-    def arc_contains(cls, angle, start_angle, inside_angle, end_angle):
-        """Test if arc contains an angle."""
-        return arc_contains(angle, start_angle, inside_angle, end_angle)
-
 cdef cy_Angle wrap_Angle(Angle p):
     cdef Angle * retp = new Angle()
     retp[0] = p

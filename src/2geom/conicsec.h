@@ -462,13 +462,8 @@ public:
     bool arc_contains (const Point & _point, const Point & _initial,
                        const Point & _inner, const Point & _final) const
     {
-        double pa = angle_at (_point);
-        double sa = angle_at (_initial);
-        double ia = angle_at (_inner);
-        double ea = angle_at (_final);
-        // we test if _point and _inner have the same position
-        // wrt _initial and _final
-        return Geom::arc_contains (pa, sa, ia, ea);
+        AngleInterval ai(angle_at(_initial), angle_at(_inner), angle_at(_final));
+        return ai.contains(angle_at(_point));
     }
 
     Rect arc_bound (const Point & P1, const Point & Q, const Point & P2) const;

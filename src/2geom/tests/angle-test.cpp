@@ -44,6 +44,7 @@ TEST(AngleIntervalTest, InnerAngleConstrutor) {
     ivs.push_back(AngleInterval(0, M_PI, false));
     ivs.push_back(AngleInterval(M_PI, 0, true));
     ivs.push_back(AngleInterval(M_PI, 0, false));
+    ivs.push_back(AngleInterval(0, 0, M_PI));
 
     for (unsigned i = 0; i < ivs.size(); ++i) {
         AngleInterval inner(ivs[i].angleAt(0), ivs[i].angleAt(0.5), ivs[i].angleAt(1));
@@ -56,6 +57,7 @@ TEST(AngleIntervalTest, Containment) {
     AngleInterval b(0, M_PI, false);
     AngleInterval c(M_PI, 0, true);
     AngleInterval d(M_PI, 0, false);
+    AngleInterval e = AngleInterval::create_full(M_PI, true);
 
     EXPECT_TRUE(a.contains(1.));
     EXPECT_FALSE(a.contains(5.));
@@ -72,6 +74,10 @@ TEST(AngleIntervalTest, Containment) {
     EXPECT_TRUE(d.contains(1.));
     EXPECT_FALSE(d.contains(5.));
     EXPECT_EQ(d.extent(), M_PI);
+
+    EXPECT_TRUE(e.contains(1.));
+    EXPECT_TRUE(e.contains(5.));
+    EXPECT_EQ(e.extent(), 2*M_PI);
 }
 
 TEST(AngleIntervalTest, TimeAtAngle) {
@@ -80,6 +86,8 @@ TEST(AngleIntervalTest, TimeAtAngle) {
     AngleInterval b(pi32, M_PI, true);
     AngleInterval c(M_PI, 0, false);
     AngleInterval d(M_PI/2, M_PI, false);
+    AngleInterval e = AngleInterval::create_full(M_PI, true);
+    AngleInterval f = AngleInterval::create_full(M_PI, false);
     Interval unit(0, 1);
 
     EXPECT_EQ(a.timeAtAngle(M_PI), 0);
@@ -126,12 +134,36 @@ TEST(AngleIntervalTest, TimeAtAngle) {
         EXPECT_EQ(unit.contains(ti), d.contains(angle));
         EXPECT_FLOAT_EQ(ti, t);
     }
+
+    EXPECT_EQ(e.timeAtAngle(M_PI), 0);
+    EXPECT_EQ(e.extent(), 2*M_PI);
+    EXPECT_FLOAT_EQ(e.timeAtAngle(0), 0.5);
+    for (Coord t = 0; t < 1; t += 0.125) {
+        Coord angle = lerp(t, M_PI, 3*M_PI);
+        Coord ti = e.timeAtAngle(angle);
+        EXPECT_EQ(unit.contains(ti), true);
+        EXPECT_EQ(e.contains(angle), true);
+        EXPECT_FLOAT_EQ(ti, t);
+    }
+
+    EXPECT_EQ(f.timeAtAngle(M_PI), 0);
+    EXPECT_EQ(f.extent(), 2*M_PI);
+    EXPECT_FLOAT_EQ(e.timeAtAngle(0), 0.5);
+    for (Coord t = 0; t < 1; t += 0.125) {
+        Coord angle = lerp(t, M_PI, -M_PI);
+        Coord ti = f.timeAtAngle(angle);
+        EXPECT_EQ(unit.contains(ti), true);
+        EXPECT_EQ(f.contains(angle), true);
+        EXPECT_FLOAT_EQ(ti, t);
+    }
 }
 
 TEST(AngleIntervalTest, AngleAt) {
     Coord pi32 = (3./2.)*M_PI;
     AngleInterval a(M_PI, pi32, true);
     AngleInterval c(M_PI, 0, false);
+    AngleInterval f1 = AngleInterval::create_full(0, true);
+    AngleInterval f2 = AngleInterval::create_full(M_PI, false);
 
     EXPECT_EQ(a.angleAt(0), M_PI);
     EXPECT_EQ(a.angleAt(1), pi32);
@@ -140,11 +172,22 @@ TEST(AngleIntervalTest, AngleAt) {
         EXPECT_FLOAT_EQ(a.angleAt(t), Angle(lerp(t, M_PI, pi32)));
     }
 
-    EXPECT_EQ(c.timeAtAngle(M_PI), 0);
-    EXPECT_EQ(c.timeAtAngle(0), 1);
+    EXPECT_EQ(c.angleAt(0), M_PI);
+    EXPECT_EQ(c.angleAt(1), 0.);
     EXPECT_EQ(c.extent(), M_PI);
     for (Coord t = -0.25; t <= 1.25; t += 0.0625) {
         EXPECT_FLOAT_EQ(c.angleAt(t), Angle(lerp(t, M_PI, 0)));
+    }
+
+    EXPECT_EQ(f1.angleAt(0), 0.);
+    EXPECT_EQ(f1.angleAt(1), 0.);
+    for (Coord t = 0; t < 1; t += 0.125) {
+        EXPECT_FLOAT_EQ(f1.angleAt(t), Angle(lerp(t, 0, 2*M_PI)));
+    }
+    EXPECT_EQ(f2.angleAt(0), M_PI);
+    EXPECT_EQ(f2.angleAt(1), M_PI);
+    for (Coord t = 0; t < 1; t += 0.125) {
+        EXPECT_FLOAT_EQ(f2.angleAt(t), Angle(lerp(t, M_PI, -M_PI)));
     }
 }
 

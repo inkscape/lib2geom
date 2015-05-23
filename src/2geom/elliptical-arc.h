@@ -219,7 +219,7 @@ public:
     virtual Point pointAt(Coord t) const;
 
     /// Evaluate a single coordinate on the arc in the curve domain.
-    virtual double valueAt(Coord t, Dim2 d) const;
+    virtual Coord valueAt(Coord t, Dim2 d) const;
 
     /** @brief Compute a transform that maps the unit circle to the arc's ellipse.
      * Each ellipse can be interpreted as a translated, scaled and rotate unit circle.

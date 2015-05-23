@@ -177,9 +177,9 @@ inline Angle distance(Angle const &a, Angle const &b) {
  * the end angle for 1, and interpolate linearly for other values. Note that such functions
  * are not continuous if the interval crosses the angle \f$\pi\f$.
  *
- * It is currently not possible to represent the full angle with this class.
- * If you specify the same start and end angle, the interval will be treated as empty
- * except for that value.
+ * This class can represent all directed angular intervals, including empty ones.
+ * However, not all possible intervals can be created with the constructors.
+ * For full control, use the setInitial(), setFinal() and setAngles() methods.
  *
  * @ingroup Primitives
  */
@@ -189,21 +189,28 @@ class AngleInterval
 public:
     AngleInterval() {}
     /** @brief Create an angular interval from two angles and direction.
+     * If the initial and final angle are the same, a degenerate interval
+     * (containing only one angle) will be created.
      * @param s Starting angle
      * @param e Ending angle
      * @param cw Which direction the interval goes. True means that it goes
      *   in the direction of increasing angles, while false means in the direction
      *   of decreasing angles. */
-    AngleInterval(Angle const &s, Angle const &e, bool cw = false)
-        : _start_angle(s), _end_angle(e), _sweep(cw)
+    AngleInterval(Angle s, Angle e, bool cw = false)
+        : _start_angle(s), _end_angle(e), _sweep(cw), _full(false)
     {}
     AngleInterval(double s, double e, bool cw = false)
-        : _start_angle(s), _end_angle(e), _sweep(cw)
+        : _start_angle(s), _end_angle(e), _sweep(cw), _full(false)
     {}
     /** @brief Create an angular interval from three angles.
      * If the inner angle is exactly equal to initial or final angle,
      * the sweep flag will be set to true, i.e. the interval will go
      * in the direction of increasing angles.
+     *
+     * If the initial and final angle are the same, but the inner angle
+     * is different, a full angle in the direction of increasing angles
+     * will be created.
+     *
      * @param s Initial angle
      * @param inner Angle contained in the interval
      * @param e Final angle */
@@ -211,22 +218,55 @@ public:
         : _start_angle(s)
         , _end_angle(e)
         , _sweep((inner-s).radians0() <= (e-s).radians0())
-    {}
+        , _full(s == e && s != inner)
+    {
+        if (_full) {
+            _sweep = true;
+        }
+    }
 
     /// Get the start angle.
-    Angle const &initialAngle() const { return _start_angle; }
+    Angle initialAngle() const { return _start_angle; }
     /// Get the end angle.
-    Angle const &finalAngle() const { return _end_angle; }
+    Angle finalAngle() const { return _end_angle; }
     /// Check whether the interval goes in the direction of increasing angles.
     bool sweep() const { return _sweep; }
     /// Check whether the interval contains only a single angle.
-    bool isDegenerate() const { return initialAngle() == finalAngle(); }
+    bool isDegenerate() const {
+        return _start_angle == _end_angle && !_full;
+    }
+    /// Check whether the interval contains all angles.
+    bool isFull() const {
+        return _start_angle == _end_angle && _full;
+    }
 
-    void setInitial(Angle a) { _start_angle = a; }
-    void setFinal(Angle a) { _end_angle = a; }
-    void setAngles(Angle s, Angle e) {
+    /** @brief Set the initial angle.
+     * @param a Angle to set
+     * @param prefer_full Whether to set a full angular interval when
+     * the initial angle is set to the final angle */
+    void setInitial(Angle a, bool prefer_full = false) {
+        _start_angle = a;
+        _full = prefer_full && a == _end_angle;
+    }
+
+    /** @brief Set the final angle.
+     * @param a Angle to set
+     * @param prefer_full Whether to set a full angular interval when
+     * the initial angle is set to the final angle */
+    void setFinal(Angle a, bool prefer_full = false) {
+        _end_angle = a;
+        _full = prefer_full && a == _start_angle;
+    }
+    /** @brief Set both angles at once.
+     * The direction (sweep flag) is left unchanged.
+     * @param s Initial angle
+     * @param e Final angle
+     * @param prefer_full Whether to set a full interval when the passed
+     * initial and final angle are the same */
+    void setAngles(Angle s, Angle e, bool prefer_full = false) {
         _start_angle = s;
         _end_angle = e;
+        _full = prefer_full && s == e;
     }
     /// Set whether the interval goes in the direction of increasing angles.
     void setSweep(bool s) { _sweep = s; }
@@ -257,6 +297,10 @@ public:
      * Negative values will be returned for angles between the initial angle
      * and the angle exactly opposite the midpoint of the interval. */
     Coord timeAtAngle(Angle a) const {
+        if (_full) {
+            Angle ta = _sweep ? a - _start_angle : _start_angle - a;
+            return ta.radians0() / (2*M_PI);
+        }
         Coord ex = extent();
         Coord outex = 2*M_PI - ex;
         if (_sweep) {
@@ -280,6 +324,7 @@ public:
 
     /// Check whether the interval includes the given angle.
     bool contains(Angle a) const {
+        if (_full) return true;
         Coord s = _start_angle.radians0();
         Coord e = _end_angle.radians0();
         Coord x = a.radians0();
@@ -295,6 +340,7 @@ public:
      * Equivalent to the absolute value of the sweep angle.
      * @return Extent in range \f$[0, 2\pi)\f$. */
     Coord extent() const {
+        if (_full) return 2*M_PI;
         return _sweep
             ? (_end_angle - _start_angle).radians0()
             : (_start_angle - _end_angle).radians0();
@@ -304,23 +350,35 @@ public:
      * It is positive when sweep is true. Denoted as \f$\Delta\theta\f$ in the SVG
      * elliptical arc implementation notes. */
     Coord sweepAngle() const {
+        if (_full) return _sweep ? 2*M_PI : -2*M_PI;
         Coord sa = _end_angle.radians0() - _start_angle.radians0();
         if (_sweep && sa < 0) sa += 2*M_PI;
         if (!_sweep && sa > 0) sa -= 2*M_PI;
         return sa;
     }
 
+    /// Check another interval for equality.
     bool operator==(AngleInterval const &other) const {
         if (_start_angle != other._start_angle) return false;
         if (_end_angle != other._end_angle) return false;
         if (_sweep != other._sweep) return false;
+        if (_full != other._full) return false;
         return true;
+    }
+
+    static AngleInterval create_full(Angle start, bool sweep = true) {
+        AngleInterval result;
+        result._start_angle = result._end_angle = start;
+        result._sweep = sweep;
+        result._full = true;
+        return result;
     }
 
 private:
     Angle _start_angle;
     Angle _end_angle;
     bool _sweep;
+    bool _full;
 };
 
 /** @brief Given an angle in degrees, return radians
@@ -329,89 +387,6 @@ inline Coord deg_to_rad(Coord deg) { return deg*M_PI/180.0;}
 /** @brief Given an angle in radians, return degrees
  * @relates Angle */
 inline Coord rad_to_deg(Coord rad) { return rad*180.0/M_PI;}
-
-/*
- *  start_angle and angle must belong to [0, 2PI[
- *  and angle must belong to the cirsular arc defined by
- *  start_angle, end_angle and with rotation direction cw
- */
-// equivalent to AngleInterval(start_angle, end_angle, cw).timeAtAngle(angle)
-inline
-double map_circular_arc_on_unit_interval( double angle, double start_angle, double end_angle, bool cw = true )
-{
-    double d = end_angle - start_angle;
-    double t = angle - start_angle;
-    if ( !cw )
-    {
-    	d = -d;
-    	t = -t;
-    }
-    d = std::fmod(d, 2*M_PI);
-    t = std::fmod(t, 2*M_PI);
-    if ( d < 0 ) d += 2*M_PI;
-    if ( t < 0 ) t += 2*M_PI;
-    return t / d;
-}
-
-// equivalent to AngleInterval(start_angle, end_angle, cw).angleAt(t)
-inline
-Coord map_unit_interval_on_circular_arc(Coord t, double start_angle, double end_angle, bool cw = true)
-{
-	double sweep_angle = end_angle - start_angle;
-	if ( !cw ) sweep_angle = -sweep_angle;
-	sweep_angle = std::fmod(sweep_angle, 2*M_PI);
-	if ( sweep_angle < 0 ) sweep_angle += 2*M_PI;
-
-	Coord angle = start_angle;
-    if ( cw )
-    {
-        angle += sweep_angle * t;
-    }
-    else
-    {
-        angle -= sweep_angle * t;
-    }
-    angle = std::fmod(angle, 2*M_PI);
-    if (angle < 0) angle += 2*M_PI;
-    return angle;
-}
-
-/*
- *  Return true if the given angle is contained in the circular arc determined
- *  by the passed angles.
- *
- *  a:     the angle to be tested
- *  sa:    the angle the arc start from
- *  ia:    an angle strictly inner to the arc
- *  ea:    the angle the arc end to
- *
- *  prerequisite: the inner angle has to be not equal (mod 2PI) to the start
- *                or the end angle, except when they are equal each other, too.
- *  warning: when sa == ea (mod 2PI) they define a whole circle
- *           if ia != sa (mod 2PI), on the contrary if ia == sa == ea (mod 2PI)
- *           they define a single point.
- */
-// equivalent to AngleInterval(sa, ia, ea).contains(a)
-inline
-bool arc_contains (double a, double sa, double ia, double ea)
-{
-    a -= sa;
-    a = std::fmod(a, 2*M_PI);
-    if (a < 0) a += 2*M_PI;
-    ia -= sa;
-    ia = std::fmod(ia, 2*M_PI);
-    if (ia < 0) ia += 2*M_PI;
-    ea -= sa;
-    ea = std::fmod(ea, 2*M_PI);
-    if (ea < 0) ea += 2*M_PI;
-
-    if (ia == 0 && ea == 0)  return (a == 0);
-    if (ia == 0 || ia == ea)
-    {
-        THROW_RANGEERROR ("arc_contains: passed angles do not define an arc");
-    }
-    return (ia < ea && a <= ea) || (ia > ea && (a >= ea || a == 0));
-}
 
 } // end namespace Geom
 
