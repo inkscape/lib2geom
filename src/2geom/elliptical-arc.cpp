@@ -83,9 +83,11 @@ namespace Geom
  * and the ellipse's rotation. Each set of those parameters corresponds to four different arcs,
  * with two of them larger than half an ellipse and two of them turning clockwise while traveling
  * from initial to final point. The two flags disambiguate between them: "large arc flag" selects
- * the bigger arc, while the "sweep flag" selects the clockwise arc.
+ * the bigger arc, while the "sweep flag" selects the arc going in the direction of positive
+ * angles. Angles always increase when going from the +X axis in the direction of the +Y axis,
+ * so if Y grows downwards, this means clockwise.
  *
- * @image html elliptical-arc-flags.png "The four possible arcs and the meaning of flags"
+ * @image html elliptical-arc-flags.png "Meaning of arc flags (Y grows downwards)"
  *
  * @ingroup Curves
  */
@@ -157,18 +159,6 @@ Coord EllipticalArc::valueAtAngle(Coord t, Dim2 d) const
     }
 }
 
-Affine EllipticalArc::unitCircleTransform() const
-{
-    Affine ret = _ellipse.unitCircleTransform();
-    return ret;
-}
-
-Affine EllipticalArc::inverseUnitCircleTransform() const
-{
-    Affine ret = _ellipse.inverseUnitCircleTransform();
-    return ret;
-}
-
 std::vector<Coord> EllipticalArc::roots(Coord v, Dim2 d) const
 {
     if (isChord()) {
@@ -176,6 +166,7 @@ std::vector<Coord> EllipticalArc::roots(Coord v, Dim2 d) const
     }
 
     std::vector<Coord> sol;
+    Interval unit_interval(0, 1);
 
     if ( are_near(ray(X), 0) && are_near(ray(Y), 0) ) {
         if ( center(d) == v )
@@ -251,7 +242,7 @@ std::vector<Coord> EllipticalArc::roots(Coord v, Dim2 d) const
             {
                 case X:
                     s = std::asin(s); // return a value in [-PI/2,PI/2]
-                    if ( logical_xor( _sweep, are_near(initialAngle(), M_PI/2) )  )
+                    if ( logical_xor( sweep(), are_near(initialAngle(), M_PI/2) )  )
                     {
                         if ( s < 0 ) s += 2*M_PI;
                     }
@@ -263,7 +254,7 @@ std::vector<Coord> EllipticalArc::roots(Coord v, Dim2 d) const
                     break;
                 case Y:
                     s = std::acos(s); // return a value in [0,PI]
-                    if ( logical_xor( _sweep, are_near(initialAngle(), 0) ) )
+                    if ( logical_xor( sweep(), are_near(initialAngle(), 0) ) )
                     {
                         s = 2*M_PI - s;
                         if ( !(s < 2*M_PI) ) s -= 2*M_PI;
@@ -272,10 +263,11 @@ std::vector<Coord> EllipticalArc::roots(Coord v, Dim2 d) const
             }
 
             //std::cerr << "s = " << rad_to_deg(s);
-            s = map_to_01(s);
+            s = timeAtAngle(s);
             //std::cerr << " -> t: " << s << std::endl;
-            if ( !(s < 0 || s > 1) )
+            if (unit_interval.contains(s)) {
                 sol.push_back(s);
+            }
             return sol;
         }
     }
@@ -331,13 +323,13 @@ std::vector<Coord> EllipticalArc::roots(Coord v, Dim2 d) const
     }
 
     std::vector<double> arc_sol;
-    for (unsigned int i = 0; i < sol.size(); ++i )
-    {
+    for (unsigned int i = 0; i < sol.size(); ++i ) {
         //std::cerr << "s = " << rad_to_deg(sol[i]);
-        sol[i] = map_to_01(sol[i]);
+        sol[i] = timeAtAngle(sol[i]);
         //std::cerr << " -> t: " << sol[i] << std::endl;
-        if ( !(sol[i] < 0 || sol[i] > 1) )
+        if (unit_interval.contains(sol[i])) {
             arc_sol.push_back(sol[i]);
+        }
     }
     return arc_sol;
 }
@@ -355,16 +347,8 @@ Curve *EllipticalArc::derivative() const
 
     EllipticalArc *result = static_cast<EllipticalArc*>(duplicate());
     result->_ellipse.setCenter(0, 0);
-    result->_start_angle += M_PI/2;
-    if( !( result->_start_angle < 2*M_PI ) )
-    {
-        result->_start_angle -= 2*M_PI;
-    }
-    result->_end_angle += M_PI/2;
-    if( !( result->_end_angle < 2*M_PI ) )
-    {
-        result->_end_angle -= 2*M_PI;
-    }
+    result->_angles.setInitial(result->_angles.initialAngle() + M_PI/2);
+    result->_angles.setFinal(result->_angles.finalAngle() + M_PI/2);
     result->_initial_point = result->pointAtAngle( result->initialAngle() );
     result->_final_point = result->pointAtAngle( result->finalAngle() );
     return result;
@@ -381,15 +365,14 @@ EllipticalArc::pointAndDerivatives(Coord t, unsigned int n) const
     unsigned int nn = n+1; // nn represents the size of the result vector.
     std::vector<Point> result;
     result.reserve(nn);
-    double angle = map_unit_interval_on_circular_arc(t, initialAngle(),
-                                                     finalAngle(), _sweep);
+    double angle = angleAt(t);
     std::auto_ptr<EllipticalArc> ea( static_cast<EllipticalArc*>(duplicate()) );
     ea->_ellipse.setCenter(0, 0);
     unsigned int m = std::min(nn, 4u);
     for ( unsigned int i = 0; i < m; ++i )
     {
         result.push_back( ea->pointAtAngle(angle) );
-        angle += (_sweep ? M_PI/2 : -M_PI/2);
+        angle += (sweep() ? M_PI/2 : -M_PI/2);
         if ( !(angle < 2*M_PI) ) angle -= 2*M_PI;
     }
     m = nn / 4;
@@ -408,15 +391,16 @@ EllipticalArc::pointAndDerivatives(Coord t, unsigned int n) const
     return result;
 }
 
-bool EllipticalArc::containsAngle(Coord angle) const
-{
-    return AngleInterval::contains(angle);
-}
-
 Point EllipticalArc::pointAt(Coord t) const
 {
     if (isChord()) return chord().pointAt(t);
     return _ellipse.pointAt(angleAt(t));
+}
+
+Coord EllipticalArc::valueAt(Coord t, Dim2 d) const
+{
+    if (isChord()) return chord().valueAt(t, d);
+    return valueAtAngle(angleAt(t), d);
 }
 
 Curve* EllipticalArc::portion(double f, double t) const
@@ -427,39 +411,30 @@ Curve* EllipticalArc::portion(double f, double t) const
     if (t < 0) t = 0;
     if (t > 1) t = 1;
 
-    if (f == t)
-    {
-        EllipticalArc *arc = static_cast<EllipticalArc*>(duplicate());
+    if (f == t) {
+        EllipticalArc *arc = new EllipticalArc();
         arc->_initial_point = arc->_final_point = pointAt(f);
-        arc->_start_angle = arc->_end_angle = 0;
-        arc->_ellipse = Ellipse();
-        arc->_sweep = false;
-        arc->_large_arc = false;
         return arc;
     }
 
     EllipticalArc *arc = static_cast<EllipticalArc*>(duplicate());
     arc->_initial_point = pointAt(f);
     arc->_final_point = pointAt(t);
-    if ( f > t ) arc->_sweep = !_sweep;
-    if ( _large_arc && fabs(sweepAngle() * (t-f)) < M_PI) {
+    arc->_angles.setAngles(angleAt(f), angleAt(t));
+    if (f > t) arc->_angles.setSweep(!sweep());
+    if ( _large_arc && fabs(angularExtent() * (t-f)) <= M_PI) {
         arc->_large_arc = false;
     }
-    //arc->_start_angle = angleAt(f);
-    //arc->_end_angle = angleAt(t);
-    arc->_updateCenterAndAngles(); //TODO: be more clever
     return arc;
 }
 
 // the arc is the same but traversed in the opposite direction
 Curve *EllipticalArc::reverse() const
 {
+    using std::swap;
     EllipticalArc *rarc = static_cast<EllipticalArc*>(duplicate());
-    rarc->_sweep = !_sweep;
-    rarc->_initial_point = _final_point;
-    rarc->_final_point = _initial_point;
-    rarc->_start_angle = _end_angle;
-    rarc->_end_angle = _start_angle;
+    rarc->_angles.reverse();
+    swap(rarc->_initial_point, rarc->_final_point);
     return rarc;
 }
 
@@ -625,14 +600,14 @@ std::vector<double> EllipticalArc::allNearestTimes( Point const& p, double from,
         }
     }
 
-    double t = map_to_01( real_sol[mi1] );
+    double t = timeAtAngle(real_sol[mi1]);
     if ( !(t < from || t > to) )
     {
         result.push_back(t);
     }
 
     bool second_sol = false;
-    t = map_to_01( real_sol[mi2] );
+    t = timeAtAngle(real_sol[mi2]);
     if ( real_sol.size() == 4 && !(t < from || t > to) )
     {
         if ( result.empty() || are_near(mindistsq1, mindistsq2) )
@@ -757,25 +732,23 @@ void EllipticalArc::_updateCenterAndAngles()
 
     // if ip = sp, the arc contains no other points
     if (initialPoint() == finalPoint()) {
-        _start_angle = _end_angle = 0;
-        _ellipse.setRotationAngle(0);
+        _ellipse = Ellipse();
         _ellipse.setCenter(initialPoint());
-        _ellipse.setRays(0, 0);
-        _large_arc = _sweep = false;
+        _angles = AngleInterval();
+        _large_arc = false;
         return;
     }
 
     // rays should be positive
     _ellipse.setRays(std::fabs(ray(X)), std::fabs(ray(Y)));
 
-    if (ray(X) == 0 || ray(Y) == 0) {
-        _start_angle = 0;
-        _end_angle = M_PI;
+    if (isChord()) {
         _ellipse.setRays(L2(d) / 2, 0);
         _ellipse.setRotationAngle(atan2(d));
         _ellipse.setCenter(mid);
+        _angles.setAngles(0, M_PI);
+        _angles.setSweep(false);
         _large_arc = false;
-        _sweep = false;
         return;
     }
 
@@ -801,7 +774,7 @@ void EllipticalArc::_updateCenterAndAngles()
         // normally rad should never be negative, but numerical inaccuracy may cause this
         if (rad > 0) {
             rad = std::sqrt(rad);
-            if (_sweep == _large_arc) {
+            if (sweep() == _large_arc) {
                 rad = -rad;
             }
             c = rad * Point(r[X]*p[Y]/r[Y], -r[Y]*p[X]/r[X]);
@@ -816,12 +789,13 @@ void EllipticalArc::_updateCenterAndAngles()
     Point sp((p[X] - c[X]) / r[X], (p[Y] - c[Y]) / r[Y]);
     Point ep((-p[X] - c[X]) / r[X], (-p[Y] - c[Y]) / r[Y]);
     Point v(1, 0);
-    _start_angle = angle_between(v, sp);
-    double sweep_angle = angle_between(sp, ep);
-    if (!_sweep && sweep_angle > 0) sweep_angle -= 2*M_PI;
-    if (_sweep && sweep_angle < 0) sweep_angle += 2*M_PI;
 
-    _end_angle = _start_angle + sweep_angle;
+    _angles.setInitial(angle_between(v, sp));
+    _angles.setFinal(angle_between(v, ep));
+
+    /*double sweep_angle = angle_between(sp, ep);
+    if (!sweep() && sweep_angle > 0) sweep_angle -= 2*M_PI;
+    if (sweep() && sweep_angle < 0) sweep_angle += 2*M_PI;*/
 }
 
 D2<SBasis> EllipticalArc::toSBasis() const
@@ -867,14 +841,14 @@ void EllipticalArc::transform(Affine const& m)
     _final_point *= m;
     _ellipse *= m;
     if (m.det() < 0) {
-        _sweep = !_sweep;
+        _angles.setSweep(!sweep());
     }
 
     // ellipse transformation does not preserve its functional form,
     // i.e. e.pointAt(0.5)*m and (e*m).pointAt(0.5) can be different.
     // We need to recompute start / end angles.
-    _start_angle = _ellipse.timeAt(_initial_point);
-    _end_angle = _ellipse.timeAt(_final_point);
+    _angles.setInitial(_ellipse.timeAt(_initial_point));
+    _angles.setFinal(_ellipse.timeAt(_final_point));
 }
 
 bool EllipticalArc::operator==(Curve const &c) const
@@ -888,7 +862,7 @@ bool EllipticalArc::operator==(Curve const &c) const
     if (rays() != other->rays()) return false;
     if (rotationAngle() != other->rotationAngle()) return false;
     if (_large_arc != other->_large_arc) return false;
-    if (_sweep != other->_sweep) return false;
+    if (sweep() != other->sweep()) return false;
     return true;
 }
 
@@ -897,15 +871,8 @@ void EllipticalArc::feed(PathSink &sink, bool moveto_initial) const
     if (moveto_initial) {
         sink.moveTo(_initial_point);
     }
-    sink.arcTo(ray(X), ray(Y), rotationAngle(), _large_arc, _sweep, _final_point);
+    sink.arcTo(ray(X), ray(Y), rotationAngle(), _large_arc, sweep(), _final_point);
 }
-
-Coord EllipticalArc::map_to_01(Coord angle) const
-{
-    return map_circular_arc_on_unit_interval(angle, initialAngle(),
-                                             finalAngle(), _sweep);
-}
-
 
 std::ostream &operator<<(std::ostream &out, EllipticalArc const &ea)
 {

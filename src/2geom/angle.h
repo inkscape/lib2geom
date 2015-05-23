@@ -59,6 +59,9 @@ namespace Geom {
  * to <tt>double</tt> is in the range \f$[-\pi, \pi)\f$ - the convention used by C's
  * math library.
  *
+ * This class holds only a single floating point value, so passing it by value will generally
+ * be faster than passing it by const reference.
+ *
  * @ingroup Primitives
  */
 class Angle
@@ -74,12 +77,12 @@ public:
     explicit Angle(Point const &p) : _angle(atan2(p)) { _normalize(); }
     Angle(Point const &a, Point const &b) : _angle(angle_between(a, b)) { _normalize(); }
     operator Coord() const { return radians(); }
-    Angle &operator+=(Angle const &o) {
+    Angle &operator+=(Angle o) {
         _angle += o._angle;
         _normalize();
         return *this;
     }
-    Angle &operator-=(Angle const &o) {
+    Angle &operator-=(Angle o) {
         _angle -= o._angle;
         _normalize();
         return *this;
@@ -92,7 +95,7 @@ public:
         *this -= Angle(a);
         return *this;
     }
-    bool operator==(Angle const &o) const {
+    bool operator==(Angle o) const {
         return _angle == o._angle;
     }
     bool operator==(Coord c) const {
@@ -178,14 +181,14 @@ inline Angle distance(Angle const &a, Angle const &b) {
  * If you specify the same start and end angle, the interval will be treated as empty
  * except for that value.
  *
- * This class is immutable - you cannot change the values of start and end angles
- * without creating a new instance of this class.
- *
  * @ingroup Primitives
  */
-class AngleInterval {
+class AngleInterval
+    : boost::equality_comparable< AngleInterval >
+{
 public:
-    /** @brief Create an angular interval.
+    AngleInterval() {}
+    /** @brief Create an angular interval from two angles and direction.
      * @param s Starting angle
      * @param e Ending angle
      * @param cw Which direction the interval goes. True means that it goes
@@ -197,13 +200,49 @@ public:
     AngleInterval(double s, double e, bool cw = false)
         : _start_angle(s), _end_angle(e), _sweep(cw)
     {}
+    /** @brief Create an angular interval from three angles.
+     * If the inner angle is exactly equal to initial or final angle,
+     * the sweep flag will be set to true, i.e. the interval will go
+     * in the direction of increasing angles.
+     * @param s Initial angle
+     * @param inner Angle contained in the interval
+     * @param e Final angle */
+    AngleInterval(Angle s, Angle inner, Angle e)
+        : _start_angle(s)
+        , _end_angle(e)
+        , _sweep((inner-s).radians0() <= (e-s).radians0())
+    {}
 
     /// Get the start angle.
     Angle const &initialAngle() const { return _start_angle; }
     /// Get the end angle.
     Angle const &finalAngle() const { return _end_angle; }
+    /// Check whether the interval goes in the direction of increasing angles.
+    bool sweep() const { return _sweep; }
     /// Check whether the interval contains only a single angle.
     bool isDegenerate() const { return initialAngle() == finalAngle(); }
+
+    void setInitial(Angle a) { _start_angle = a; }
+    void setFinal(Angle a) { _end_angle = a; }
+    void setAngles(Angle s, Angle e) {
+        _start_angle = s;
+        _end_angle = e;
+    }
+    /// Set whether the interval goes in the direction of increasing angles.
+    void setSweep(bool s) { _sweep = s; }
+
+    /// Reverse the direction of the interval while keeping contained values the same.
+    void reverse() {
+        using std::swap;
+        swap(_start_angle, _end_angle);
+        _sweep = !_sweep;
+    }
+    /// Get a new interval with reversed direction.
+    AngleInterval reversed() const {
+        AngleInterval result(*this);
+        result.reverse();
+        return result;
+    }
 
     /// Get an angle corresponding to the specified time value.
     Angle angleAt(Coord t) const {
@@ -214,8 +253,10 @@ public:
     Angle operator()(Coord t) const { return angleAt(t); }
 
     /** @brief Compute a time value that would evaluate to the given angle.
-     * If the start and end angle are exactly the same, NaN will be returned. */
-    Coord timeAtAngle(Angle const &a) const {
+     * If the start and end angle are exactly the same, NaN will be returned.
+     * Negative values will be returned for angles between the initial angle
+     * and the angle exactly opposite the midpoint of the interval. */
+    Coord timeAtAngle(Angle a) const {
         Coord ex = extent();
         Coord outex = 2*M_PI - ex;
         if (_sweep) {
@@ -237,8 +278,8 @@ public:
         }
     }
 
-    /** @brief Check whether the interval includes the given angle. */
-    bool contains(Angle const &a) const {
+    /// Check whether the interval includes the given angle.
+    bool contains(Angle a) const {
         Coord s = _start_angle.radians0();
         Coord e = _end_angle.radians0();
         Coord x = a.radians0();
@@ -268,8 +309,15 @@ public:
         if (!_sweep && sa > 0) sa -= 2*M_PI;
         return sa;
     }
-protected:
-    AngleInterval() {}
+
+    bool operator==(AngleInterval const &other) const {
+        if (_start_angle != other._start_angle) return false;
+        if (_end_angle != other._end_angle) return false;
+        if (_sweep != other._sweep) return false;
+        return true;
+    }
+
+private:
     Angle _start_angle;
     Angle _end_angle;
     bool _sweep;
@@ -287,6 +335,7 @@ inline Coord rad_to_deg(Coord rad) { return rad*180.0/M_PI;}
  *  and angle must belong to the cirsular arc defined by
  *  start_angle, end_angle and with rotation direction cw
  */
+// equivalent to AngleInterval(start_angle, end_angle, cw).timeAtAngle(angle)
 inline
 double map_circular_arc_on_unit_interval( double angle, double start_angle, double end_angle, bool cw = true )
 {
@@ -304,6 +353,7 @@ double map_circular_arc_on_unit_interval( double angle, double start_angle, doub
     return t / d;
 }
 
+// equivalent to AngleInterval(start_angle, end_angle, cw).angleAt(t)
 inline
 Coord map_unit_interval_on_circular_arc(Coord t, double start_angle, double end_angle, bool cw = true)
 {
@@ -341,6 +391,7 @@ Coord map_unit_interval_on_circular_arc(Coord t, double start_angle, double end_
  *           if ia != sa (mod 2PI), on the contrary if ia == sa == ea (mod 2PI)
  *           they define a single point.
  */
+// equivalent to AngleInterval(sa, ia, ea).contains(a)
 inline
 bool arc_contains (double a, double sa, double ia, double ea)
 {

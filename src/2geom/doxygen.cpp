@@ -46,9 +46,10 @@
  * @section UserGuide User guide
  *
  * - @subpage Overview "Overview of 2Geom"
- * - @ref Primitives "Geometrical primitives" - points, angles, lines, axis-aligned rectangles...
- * - @ref Transforms "Affine transformations" - mathematical representation for operations
+ * - @ref Primitives "Primitives" - points, angles, lines, axis-aligned rectangles...
+ * - @ref Transforms "Transformations" - mathematical representation for operations
  *   like translation, scaling and rotation.
+ * - @ref Fragments "Fragments" - one-dimensional functions and related utilities.
  * - @ref Curves "Curves" - functions mapping the unit interval to points on a plane.
  * - @ref Shapes "Shapes" - circles, ellipses, polygons and the like.
  * - @ref Paths "Paths" - sequences of contiguous curves, aka splines, and their processing.
@@ -244,7 +245,7 @@
  */
 
 /**
- * @defgroup Primitives Geometrical primitives
+ * @defgroup Primitives Primitives
  * @brief Basic mathematical objects such as intervals and points
  *
  * 2Geom has several basic geometrical objects: points, lines, intervals, angles,

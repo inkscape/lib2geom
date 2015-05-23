@@ -31,13 +31,27 @@
  * the specific language governing rights and limitations.
  */
 
-#include "testing.h"
 #include <2geom/angle.h>
 #include <glib.h>
+#include "testing.h"
 
 using namespace Geom;
 
-TEST(AngleTest, Containment) {
+TEST(AngleIntervalTest, InnerAngleConstrutor) {
+    std::vector<AngleInterval> ivs;
+
+    ivs.push_back(AngleInterval(0, M_PI, true));
+    ivs.push_back(AngleInterval(0, M_PI, false));
+    ivs.push_back(AngleInterval(M_PI, 0, true));
+    ivs.push_back(AngleInterval(M_PI, 0, false));
+
+    for (unsigned i = 0; i < ivs.size(); ++i) {
+        AngleInterval inner(ivs[i].angleAt(0), ivs[i].angleAt(0.5), ivs[i].angleAt(1));
+        EXPECT_EQ(inner, ivs[i]);
+    }
+}
+
+TEST(AngleIntervalTest, Containment) {
     AngleInterval a(0, M_PI, true);
     AngleInterval b(0, M_PI, false);
     AngleInterval c(M_PI, 0, true);
@@ -60,7 +74,7 @@ TEST(AngleTest, Containment) {
     EXPECT_EQ(d.extent(), M_PI);
 }
 
-TEST(AngleTest, IntervalTimeAtAngle) {
+TEST(AngleIntervalTest, TimeAtAngle) {
     Coord pi32 = (3./2.)*M_PI;
     AngleInterval a(M_PI, pi32, true);
     AngleInterval b(pi32, M_PI, true);
@@ -114,7 +128,7 @@ TEST(AngleTest, IntervalTimeAtAngle) {
     }
 }
 
-TEST(AngleTest, IntervalAngleAt) {
+TEST(AngleIntervalTest, AngleAt) {
     Coord pi32 = (3./2.)*M_PI;
     AngleInterval a(M_PI, pi32, true);
     AngleInterval c(M_PI, 0, false);
@@ -134,7 +148,7 @@ TEST(AngleTest, IntervalAngleAt) {
     }
 }
 
-TEST(AngleTest, IntervalExtent) {
+TEST(AngleIntervalTest, Extent) {
      Coord pi32 = (3./2.)*M_PI;
     AngleInterval a(M_PI, pi32, true);
     AngleInterval b(pi32, M_PI, true);
