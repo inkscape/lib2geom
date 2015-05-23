@@ -239,8 +239,17 @@ std::vector<Coord> solve_quadratic(Coord a, Coord b, Coord c)
     } else if (delta > 0) {
         // two roots
         Coord delta_sqrt = sqrt(delta);
-        result.push_back((-b + delta_sqrt)/(2*a));
-        result.push_back((-b - delta_sqrt)/(2*a));
+
+        // Use different formulas depending on sign of b to preserve
+        // numerical stability. See e.g.:
+        // http://people.csail.mit.edu/bkph/articles/Quadratics.pdf
+        if (b >= 0) {
+            result.push_back((-b - delta_sqrt)/(2*a));
+            result.push_back(2*c/(-b - delta_sqrt));
+        } else {
+            result.push_back(2*c/(-b + delta_sqrt));
+            result.push_back((-b + delta_sqrt)/(2*a));
+        }
     }
     // no roots otherwise
 
