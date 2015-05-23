@@ -371,11 +371,14 @@ public:
         _curves->push_back(_closing_seg);
     }
 
-    /// Construct a path from a rectangle.
-    Path(Rect const &r);
-
-    /// Construct a path from a convex hull.
-    Path(ConvexHull const &);
+    /// Create a path from a rectangle.
+    explicit Path(Rect const &r);
+    /// Create a path from a convex hull.
+    explicit Path(ConvexHull const &);
+    /// Create a path from a circle, using two elliptical arcs.
+    explicit Path(Circle const &c);
+    /// Create a path from an ellipse, using two elliptical arcs.
+    explicit Path(Ellipse const &e);
 
     virtual ~Path() {}
 

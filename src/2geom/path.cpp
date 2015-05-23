@@ -35,6 +35,8 @@
 #include <2geom/path.h>
 #include <2geom/pathvector.h>
 #include <2geom/transforms.h>
+#include <2geom/circle.h>
+#include <2geom/ellipse.h>
 #include <2geom/convex-hull.h>
 #include <2geom/svg-path-writer.h>
 #include <2geom/sweeper.h>
@@ -232,7 +234,7 @@ Path::Path(Rect const &r)
 Path::Path(ConvexHull const &ch)
     : _curves(new Sequence())
     , _closing_seg(new ClosingSegment(Point(), Point()))
-    , _closed(false)
+    , _closed(true)
     , _exception_on_stitch(true)
 {
     if (ch.empty()) {
@@ -252,6 +254,34 @@ Path::Path(ConvexHull const &ch)
 
     _curves->push_back(_closing_seg);
     _closed = true;
+}
+
+Path::Path(Circle const &c)
+    : _curves(new Sequence())
+    , _closing_seg(NULL)
+    , _closed(true)
+    , _exception_on_stitch(true)
+{
+    Point p1 = c.pointAt(0);
+    Point p2 = c.pointAt(M_PI);
+    _curves->push_back(new EllipticalArc(p1, c.radius(), c.radius(), 0, false, true, p2));
+    _curves->push_back(new EllipticalArc(p2, c.radius(), c.radius(), 0, false, true, p1));
+    _closing_seg = new ClosingSegment(p1, p1);
+    _curves->push_back(_closing_seg);
+}
+
+Path::Path(Ellipse const &e)
+    : _curves(new Sequence())
+    , _closing_seg(NULL)
+    , _closed(true)
+    , _exception_on_stitch(true)
+{
+    Point p1 = e.pointAt(0);
+    Point p2 = e.pointAt(M_PI);
+    _curves->push_back(new EllipticalArc(p1, e.rays(), e.rotationAngle(), false, true, p2));
+    _curves->push_back(new EllipticalArc(p2, e.rays(), e.rotationAngle(), false, true, p1));
+    _closing_seg = new ClosingSegment(p1, p1);
+    _curves->push_back(_closing_seg);
 }
 
 void Path::close(bool c)
