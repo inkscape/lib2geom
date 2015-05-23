@@ -61,6 +61,20 @@ TEST(PolynomialTest, SolveQuadratic) {
     }
 }
 
+TEST(PolynomialTest, SolvePathologicalQuadratic) {
+    std::vector<Coord> r1, r2;
+
+    r1 = solve_quadratic(1, -1e9, 1);
+    ASSERT_EQ(r1.size(), 2);
+    EXPECT_FLOAT_EQ(r1[0], 1e-9);
+    EXPECT_FLOAT_EQ(r1[1], 1e9);
+
+    r2 = solve_quadratic(1, -4, 3.999999);
+    ASSERT_EQ(r2.size(), 2);
+    EXPECT_FLOAT_EQ(r2[0], 1.999);
+    EXPECT_FLOAT_EQ(r2[1], 2.001);
+}
+
 TEST(PolynomialTest, SolveCubic) {
     for (unsigned i = 0; i < 1000; ++i) {
         Coord x1 = g_random_double_range(-100, 100);
@@ -76,7 +90,7 @@ TEST(PolynomialTest, SolveCubic) {
         std::vector<Coord> x(3); x[0] = x1; x[1] = x2; x[2] = x3;
         std::sort(x.begin(), x.end());
 
-        EXPECT_EQ(result.size(), 3);
+        ASSERT_EQ(result.size(), 3);
         EXPECT_FLOAT_EQ(result[0], x[0]);
         EXPECT_FLOAT_EQ(result[1], x[1]);
         EXPECT_FLOAT_EQ(result[2], x[2]);
