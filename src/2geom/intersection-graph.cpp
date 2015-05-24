@@ -110,6 +110,7 @@ PathIntersectionGraph::PathIntersectionGraph(PathVector const &a, PathVector con
     // determine in/out/on flags using winding
     for (unsigned npv = 0; npv < 2; ++npv) {
         boost::ptr_vector<PathData> &ls = npv ? _bpaths : _apaths;
+        boost::ptr_vector<PathData> &ols = npv ? _apaths : _bpaths;
         PathVector const &pv = npv ? b : a;
         PathVector const &other = npv ? a : b;
 
@@ -140,6 +141,8 @@ PathIntersectionGraph::PathIntersectionGraph(PathVector const &a, PathVector con
             // and assign exit / entry flags
             for (Iter i = xl.begin(); i != xl.end();) {
                 if (i->previous == i->next) {
+                    IntersectionList &oxl = ols[i->neighbor->pos.path_index].xlist;
+                    oxl.erase(oxl.iterator_to(*i->neighbor));
                     xl.erase(i++);
                     if (i->next == POINT_INSIDE) {
                         ++ls[li].removed_in;

@@ -156,11 +156,17 @@ TEST_F(IntersectionGraphTest, RhombusInSquare) {
 }
 
 /*TEST_F(IntersectionGraphTest, EqualUnion) {
-    PathIntersectionGraph graph(bigh, bigh);
-    std::cout << graph << std::endl;
+    PathVector shape = string_to_path("M 0,0 L 2,1 -1,2 -1,3 0,3 z");
+    PathIntersectionGraph graph(shape, shape);
+    //std::cout << graph << std::endl;
     PathVector a = graph.getUnion();
-    std::cout << a << std::endl;
-    EXPECT_EQ(PathVector(bigh), a);
+    //std::cout << a << std::endl;
+    EXPECT_EQ(PathVector(shape), a);
+
+    PathIntersectionGraph graph2(bigh, bigh);
+    PathVector b = graph2.getUnion();
+    //std::cout << b << std::endl;
+    EXPECT_EQ(PathVector(bigh), b);
 }*/
 
 /*
