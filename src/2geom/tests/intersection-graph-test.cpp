@@ -57,13 +57,12 @@ protected:
         smallrect = string_to_path("M 7,4 L 9,4 9,7 7,7 Z");
     }
 
-    // Objects declared here can be used by all tests in the test case for Foo.
     Path rectangle, bigrect, bigh, smallrect;
 };
 
 TEST_F(IntersectionGraphTest, Union) {
     PathIntersectionGraph graph(rectangle, bigh);
-    std::cout << graph << std::endl;
+    //std::cout << graph << std::endl;
     PathVector r = graph.getUnion();
     EXPECT_EQ(r.size(), 1);
     EXPECT_EQ(r.curveCount(), 19);
@@ -102,11 +101,65 @@ TEST_F(IntersectionGraphTest, Subtraction) {
     EXPECT_EQ(x.curveCount(), 32);
 }
 
-// crashes
+TEST_F(IntersectionGraphTest, PointOnEdge) {
+    PathVector a = string_to_path("M 0,0 L 10,0 10,10 0,10 z");
+    PathVector b = string_to_path("M -5,2 L 0,2 5,5 0,8 -5,8 z");
+
+    PathIntersectionGraph graph(a, b);
+    PathVector u = graph.getUnion();
+    //std::cout << u << std::endl;
+    EXPECT_EQ(u.size(), 1);
+    EXPECT_EQ(u.curveCount(), 8);
+
+    PathVector i = graph.getIntersection();
+    //std::cout << i << std::endl;
+    EXPECT_EQ(i.size(), 1);
+    EXPECT_EQ(i.curveCount(), 3);
+
+    PathVector s1 = graph.getAminusB();
+    //std::cout << s1 << std::endl;
+    EXPECT_EQ(s1.size(), 1);
+    EXPECT_EQ(s1.curveCount(), 7);
+
+    PathVector s2 = graph.getBminusA();
+    //std::cout << s2 << std::endl;
+    EXPECT_EQ(s2.size(), 1);
+    EXPECT_EQ(s2.curveCount(), 4);
+
+    PathVector x = graph.getXOR();
+    //std::cout << x << std::endl;
+    EXPECT_EQ(x.size(), 2);
+    EXPECT_EQ(x.curveCount(), 11);
+}
+
+TEST_F(IntersectionGraphTest, RhombusInSquare) {
+    PathVector square = string_to_path("M 0,0 L 10,0 10,10 0,10 z");
+    PathVector rhombus = string_to_path("M 5,0 L 10,5 5,10 0,5 z");
+
+    PathIntersectionGraph graph(square, rhombus);
+    //std::cout << graph << std::endl;
+    PathVector u = graph.getUnion();
+    EXPECT_EQ(u.size(), 1);
+    EXPECT_EQ(u.curveCount(), 4);
+
+    PathVector i = graph.getIntersection();
+    EXPECT_EQ(i.size(), 1);
+    EXPECT_EQ(i.curveCount(), 4);
+
+    PathVector s1 = graph.getAminusB();
+    EXPECT_EQ(s1.size(), 2);
+    EXPECT_EQ(s1.curveCount(), 8);
+
+    PathVector s2 = graph.getBminusA();
+    EXPECT_EQ(s2.size(), 0);
+    EXPECT_EQ(s2.curveCount(), 0);
+}
+
 /*TEST_F(IntersectionGraphTest, EqualUnion) {
     PathIntersectionGraph graph(bigh, bigh);
     std::cout << graph << std::endl;
     PathVector a = graph.getUnion();
+    std::cout << a << std::endl;
     EXPECT_EQ(PathVector(bigh), a);
 }*/
 

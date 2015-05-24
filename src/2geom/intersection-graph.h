@@ -43,33 +43,6 @@
 
 namespace Geom {
 
-enum InOutFlag {
-    POINT_INSIDE,
-    POINT_OUTSIDE,
-    POINT_ON_EDGE
-};
-
-struct IntersectionVertex {
-    boost::intrusive::list_member_hook<> _hook;
-    PathVectorTime pos;
-    Point p; // guarantees that endpoints are exact
-    IntersectionVertex *neighbor;
-    bool entry; // going in +t direction enters the other path
-    InOutFlag previous;
-    InOutFlag next;
-    bool processed; // TODO: use intrusive unprocessed list instead
-};
-
-typedef boost::intrusive::list
-    < IntersectionVertex
-    , boost::intrusive::member_hook
-        < IntersectionVertex
-        , boost::intrusive::list_member_hook<>
-        , &IntersectionVertex::_hook
-        >
-    > IntersectionList;
-
-
 class PathIntersectionGraph
 {
     // this is called PathIntersectionGraph so that we can also have a class for polygons,
@@ -83,17 +56,57 @@ public:
     PathVector getBminusA();
     PathVector getXOR();
 
+    /// Returns the number of intersections used when computing Boolean operations.
+    std::size_t size() const;
     std::vector<Point> intersectionPoints() const;
 
 private:
+    enum InOutFlag {
+        POINT_INSIDE,
+        POINT_OUTSIDE
+    };
+
+    struct IntersectionVertex {
+        boost::intrusive::list_member_hook<> _hook;
+        PathVectorTime pos;
+        Point p; // guarantees that endpoints are exact
+        IntersectionVertex *neighbor;
+        bool entry; // going in +t direction enters the other path
+        InOutFlag previous;
+        InOutFlag next;
+        bool processed; // TODO: use intrusive unprocessed list instead
+    };
+
+    typedef boost::intrusive::list
+        < IntersectionVertex
+        , boost::intrusive::member_hook
+            < IntersectionVertex
+            , boost::intrusive::list_member_hook<>
+            , &IntersectionVertex::_hook
+            >
+        > IntersectionList;
+
+    struct PathData {
+        IntersectionList xlist;
+        unsigned removed_in;
+        unsigned removed_out;
+
+        PathData()
+            : removed_in(0)
+            , removed_out(0)
+        {}
+    };
+
+    struct IntersectionVertexLess;
+
     PathVector _getResult(bool enter_a, bool enter_b);
     void _handleNonintersectingPaths(PathVector &result, int which, bool inside);
     bool _findUnprocessed(IntersectionList::iterator &result);
 
     PathVector _a, _b;
     boost::ptr_vector<IntersectionVertex> _xs;
-    boost::ptr_vector<IntersectionList> _xalists;
-    boost::ptr_vector<IntersectionList> _xblists;
+    boost::ptr_vector<PathData> _apaths;
+    boost::ptr_vector<PathData> _bpaths;
 
     friend std::ostream &operator<<(std::ostream &, PathIntersectionGraph const &);
 };

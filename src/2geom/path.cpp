@@ -521,7 +521,14 @@ std::vector<PathIntersection> Path::intersect(Path const &other, Coord precision
     CurveSweeper sweeper(*this, other, result, precision);
     sweeper.process();
 
-    // TODO: remove multiple intersections within precision of each other?
+    // preprocessing to remove duplicate intersections at endpoints
+    for (std::size_t i = 0; i < result.size(); ++i) {
+        result[i].first.normalizeForward(size());
+        result[i].second.normalizeForward(other.size());
+    }
+    std::sort(result.begin(), result.end());
+    result.erase(std::unique(result.begin(), result.end()), result.end());
+
     return result;
 }
 

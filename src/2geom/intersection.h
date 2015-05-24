@@ -44,6 +44,7 @@ namespace Geom {
  */
 template <typename TimeA = Coord, typename TimeB = TimeA>
 class Intersection
+    : boost::totally_ordered< Intersection<TimeA, TimeB> >
 {
 public:
     /** @brief Construct from shape references and time values.
@@ -77,6 +78,17 @@ public:
         swap(a.first, b.first);
         swap(a.second, b.second);
         swap(a._point, b._point);
+    }
+
+    bool operator==(Intersection const &other) const {
+        if (first != other.first) return false;
+        if (second != other.second) return false;
+        return true;
+    }
+    bool operator<(Intersection const &other) const {
+        if (first < other.first) return true;
+        if (first == other.first && second < other.second) return true;
+        return false;
     }
 
 public:
