@@ -338,6 +338,14 @@ Coord Ellipse::timeAt(Point const &p) const
     return Angle(atan2(p * iuct)).radians0(); // return a value in [0, 2pi)
 }
 
+Point Ellipse::unitTangentAt(Coord t) const
+{
+    Point p = Point::polar(t + M_PI/2);
+    p *= unitCircleTransform().withoutTranslation();
+    p.normalize();
+    return p;
+}
+
 bool Ellipse::contains(Point const &p) const
 {
     Point tp = p * inverseUnitCircleTransform();

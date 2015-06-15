@@ -214,3 +214,18 @@ TEST(EllipseTest, PointAt) {
     EXPECT_near(b.pointAt(M_PI), Point(0,-10), 1e-10);
     EXPECT_near(b.pointAt(3*M_PI/2), Point(20,0), 1e-10);
 }
+
+TEST(EllipseTest, UnitTangentAt) {
+    Ellipse a(Point(14,-7), Point(20,10), 0);
+    Ellipse b(Point(-77,23), Point(40,10), Angle::from_degrees(45));
+
+    EXPECT_near(a.unitTangentAt(0), Point(0,1), 1e-12);
+    EXPECT_near(a.unitTangentAt(M_PI/2), Point(-1,0), 1e-12);
+    EXPECT_near(a.unitTangentAt(M_PI), Point(0,-1), 1e-12);
+    EXPECT_near(a.unitTangentAt(3*M_PI/2), Point(1,0), 1e-12);
+
+    EXPECT_near(b.unitTangentAt(0), Point(-M_SQRT2/2, M_SQRT2/2), 1e-12);
+    EXPECT_near(b.unitTangentAt(M_PI/2), Point(-M_SQRT2/2, -M_SQRT2/2), 1e-12);
+    EXPECT_near(b.unitTangentAt(M_PI), Point(M_SQRT2/2, -M_SQRT2/2), 1e-12);
+    EXPECT_near(b.unitTangentAt(3*M_PI/2), Point(M_SQRT2/2, M_SQRT2/2), 1e-12);
+}

@@ -188,6 +188,9 @@ public:
      * with the ellipse. Note that this is NOT the nearest point on the ellipse. */
     Coord timeAt(Point const &p) const;
 
+    /// Get the value of the derivative at time t normalized to unit length.
+    Point unitTangentAt(Coord t) const;
+
     /// Check whether the ellipse contains the given point.
     bool contains(Point const &p) const;
 
