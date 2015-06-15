@@ -21,11 +21,12 @@ class BoolOps : public Toy {
         PathVector bst = bs * t;
 
         PathIntersectionGraph pig(as, bst);
-        PathVector result = pig.getUnion();
+        PathVector result = pig.getAminusB();
         std::vector<Point> ix = pig.intersectionPoints();
 
         cairo_set_line_cap(cr, CAIRO_LINE_CAP_SQUARE);
         cairo_set_line_join(cr, CAIRO_LINE_JOIN_BEVEL);
+        cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
 
         cairo_set_source_rgba(cr, 1, 0, 0, 0.3);
         cairo_path(cr, as);
