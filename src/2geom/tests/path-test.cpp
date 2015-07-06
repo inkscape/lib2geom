@@ -44,6 +44,28 @@ protected:
     Path p_open, p_closed, p_add;
 };
 
+TEST_F(PathTest, CopyConstruction) {
+    Path pa = p_closed;
+    Path pc(p_closed);
+    EXPECT_EQ(pa, p_closed);
+    EXPECT_EQ(pa.closed(), p_closed.closed());
+    EXPECT_EQ(pc, p_closed);
+    EXPECT_EQ(pc.closed(), p_closed.closed());
+    
+    Path poa = cmds;
+    Path poc(cmds);
+    EXPECT_EQ(poa, cmds);
+    EXPECT_EQ(poa.closed(), cmds.closed());
+    EXPECT_EQ(poc, cmds);
+    EXPECT_EQ(poc.closed(), cmds.closed());
+    
+    PathVector pvc(pa);
+    EXPECT_EQ(pvc[0], pa);
+    PathVector pva((Geom::Path()));
+    pva[0] = pa;
+    EXPECT_EQ(pva[0], pa);
+}
+
 TEST_F(PathTest, PathInterval) {
     PathTime n2_before(1, 0.9995), n2_after(2, 0.0005),
                  n3_before(2, 0.9995), n3_after(3, 0.0005),
