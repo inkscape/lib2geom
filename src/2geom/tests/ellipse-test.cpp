@@ -72,6 +72,30 @@ TEST(EllipseTest, Arcs) {
     EXPECT_EQ(arc2r->boundsExact(), arc2->boundsExact());
     EXPECT_EQ(arc2r->largeArc(), true);
     EXPECT_EQ(arc2r->sweep(), false);
+
+    // exactly half arc
+    std::auto_ptr<EllipticalArc> arc3(e.arc(Point(5,0), Point(0,10), Point(5,20)));
+    
+    EXPECT_EQ(arc3->boundsExact(), Rect::from_xywh(0,0,5,20));
+    EXPECT_EQ(arc3->largeArc(), false);
+    EXPECT_EQ(arc3->sweep(), false);
+
+    // inner point exactly at midpoint between endpoints
+    std::auto_ptr<EllipticalArc> arc4(e.arc(Point(5,0), Point(2.5,5), Point(0,10)));
+
+    EXPECT_EQ(arc4->initialPoint(), Point(5,0));
+    EXPECT_EQ(arc4->finalPoint(), Point(0,10));
+    EXPECT_EQ(arc4->boundsExact(), Rect::from_xywh(0,0,5,10));
+    EXPECT_EQ(arc4->largeArc(), false);
+    EXPECT_EQ(arc4->sweep(), false);
+
+    std::auto_ptr<EllipticalArc> arc4r(e.arc(Point(0,10), Point(2.5,5), Point(5,0)));
+
+    EXPECT_EQ(arc4r->initialPoint(), Point(0,10));
+    EXPECT_EQ(arc4r->finalPoint(), Point(5,0));
+    EXPECT_EQ(arc4r->boundsExact(), Rect::from_xywh(0,0,5,10));
+    EXPECT_EQ(arc4r->largeArc(), false);
+    EXPECT_EQ(arc4r->sweep(), true);
 }
 
 TEST(EllipseTest, AreNear) {
