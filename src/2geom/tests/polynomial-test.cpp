@@ -95,4 +95,17 @@ TEST(PolynomialTest, SolveCubic) {
         EXPECT_FLOAT_EQ(result[1], x[1]);
         EXPECT_FLOAT_EQ(result[2], x[2]);
     }
+
+    // corner cases
+    // (x^2 + 7)(x - 2)
+    std::vector<Coord> r1 = solve_cubic(1, -2, 7, -14);
+    EXPECT_EQ(r1.size(), 1);
+    EXPECT_FLOAT_EQ(r1[0], 2);
+
+    // (x + 1)^2 (x-2)
+    std::vector<Coord> r2 = solve_cubic(1, 0, -3, -2);
+    ASSERT_EQ(r2.size(), 3);
+    EXPECT_FLOAT_EQ(r2[0], -1);
+    EXPECT_FLOAT_EQ(r2[1], -1);
+    EXPECT_FLOAT_EQ(r2[2], 2);
 }
