@@ -16,13 +16,35 @@ using namespace Geom;
 class BoolOps : public Toy {
     PathVector as, bs;
     PointHandle p;
+    std::vector<Toggle> togs;
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
         Translate t(p.pos);
         PathVector bst = bs * t;
 
         PathIntersectionGraph pig(as, bst);
-        PathVector result = pig.getAminusB();
         std::vector<Point> ix = pig.intersectionPoints();
+        PathVector result;
+        if (togs[0].on && !togs[1].on && !togs[2].on) {
+            result = pig.getAminusB();
+        }
+        if (!togs[0].on && togs[1].on && !togs[2].on) {
+            result = pig.getIntersection();
+        }
+        if (!togs[0].on && !togs[1].on && togs[2].on) {
+            result = pig.getBminusA();
+        }
+        if (togs[0].on && togs[1].on && !togs[2].on) {
+            result = as;
+        }
+        if (togs[0].on && !togs[1].on && togs[2].on) {
+            result = pig.getXOR();
+        }
+        if (!togs[0].on && togs[1].on && togs[2].on) {
+            result = bst;
+        }
+        if (togs[0].on && togs[1].on && togs[2].on) {
+            result = pig.getUnion();
+        }
 
         cairo_set_line_cap(cr, CAIRO_LINE_CAP_SQUARE);
         cairo_set_line_join(cr, CAIRO_LINE_JOIN_BEVEL);
@@ -51,10 +73,18 @@ class BoolOps : public Toy {
         }
         cairo_stroke(cr);
 
+
+        double x = width - 90, y = height - 40;
+        Point p(x, y), dpoint(25,25), xo(25,0);
+        togs[0].bounds = Rect(p,     p + dpoint);
+        togs[1].bounds = Rect(p + xo, p + xo + dpoint);
+        togs[2].bounds = Rect(p + 2*xo, p + 2*xo + dpoint);
+        draw_toggles(cr, togs);
         Toy::draw(cr, notify, width, height, save,timer_stream);
     }
 
     void mouse_pressed(GdkEventButton* e) {
+        toggle_events(togs, e);
         Toy::mouse_pressed(e);
     }
     public:
@@ -72,11 +102,14 @@ class BoolOps : public Toy {
         OptRect abox = paths_a.boundsExact();
         Point pt = abox ? abox->midpoint() : Point(0,0);
 
-        p = PointHandle(Point(300,300));
-        handles.push_back(&p);
-
         as = paths_a * Geom::Translate(Point(300,300) - pt);
         bs = paths_b * Geom::Translate(-paths_b.initialPoint());
+
+        p = PointHandle(Point(300,300));
+        handles.push_back(&p);
+        togs.push_back(Toggle("R", true));
+        togs.push_back(Toggle("&", false));
+        togs.push_back(Toggle("B", false));
     }
     //virtual bool should_draw_numbers() {return false;}
 };
