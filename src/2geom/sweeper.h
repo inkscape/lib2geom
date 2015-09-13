@@ -98,7 +98,9 @@ public:
     /// Type of the item's boundary - usually this will be an Interval or Rect.
     typedef typename SweepTraits::Bound Bound;
 
-    Sweeper() {}
+    explicit Sweeper(std::size_t expected_size = 0) {
+        _items.reserve(expected_size);
+    }
 
     /** @brief Insert a single item for sweeping.
      * @param bound Boundary of the item, as defined in sweep traits

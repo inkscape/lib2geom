@@ -483,8 +483,10 @@ class CurveSweeper
     : public Sweeper<Curve const *, CurveSweepTraits>
 {
 public:
+    typedef Sweeper<Curve const *, CurveSweepTraits> Base;
     CurveSweeper(Path const &a, Path const &b, std::vector<PathIntersection> &result, Coord prec)
-        : _result(result)
+        : Base(a.size() + b.size())
+        , _result(result)
         , _precision(prec)
     {
         for (std::size_t i = 0; i < a.size(); ++i) {
