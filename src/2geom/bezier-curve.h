@@ -104,7 +104,7 @@ public:
     // implementation of virtual methods goes here
     virtual Point initialPoint() const { return inner.at0(); }
     virtual Point finalPoint() const { return inner.at1(); }
-    virtual bool isDegenerate() const { return inner.isConstant(0); }
+    virtual bool isDegenerate() const;
     virtual bool isLineSegment() const { return size() == 2; }
     virtual void setInitial(Point const &v) { setPoint(0, v); }
     virtual void setFinal(Point const &v) { setPoint(order(), v); }
@@ -244,6 +244,10 @@ public:
                    BezierCurveN(sx.second, sy.second));
     }
 
+    virtual bool isDegenerate() const {
+        return BezierCurve::isDegenerate();
+    }
+
     virtual bool isLineSegment() const {
         return size() == 2;
     }
@@ -304,6 +308,9 @@ Curve *BezierCurveN<degree>::derivative() const {
 }
 
 // optimized specializations
+template <> inline bool BezierCurveN<1>::isDegenerate() const {
+    return inner[X][0] == inner[X][1] && inner[Y][0] == inner[Y][1];
+}
 template <> inline bool BezierCurveN<1>::isLineSegment() const { return true; }
 template <> Curve *BezierCurveN<1>::derivative() const;
 template <> Coord BezierCurveN<1>::nearestTime(Point const &, Coord, Coord) const;

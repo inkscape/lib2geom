@@ -115,6 +115,17 @@ BezierCurve::BezierCurve(std::vector<Point> const &pts)
     }
 }
 
+bool BezierCurve::isDegenerate() const
+{
+    for (unsigned d = 0; d < 2; ++d) {
+        Coord ic = inner[d][0];
+        for (unsigned i = 1; i < size(); ++i) {
+            if (inner[d][i] != ic) return false;
+        }
+    }
+    return true;
+}
+
 Coord BezierCurve::length(Coord tolerance) const
 {
     switch (order())
