@@ -100,6 +100,8 @@ public:
 
     explicit Sweeper(std::size_t expected_size = 0) {
         _items.reserve(expected_size);
+        _entry_events.reserve(expected_size);
+        _exit_events.reserve(expected_size);
     }
 
     /** @brief Insert a single item for sweeping.
