@@ -20,6 +20,8 @@ class BoolOps : public Toy {
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
         Translate t(p.pos);
         PathVector bst = bs * t;
+        Timer tm;
+        tm.start();
 
         PathIntersectionGraph pig(as, bst);
         std::vector<Point> ix = pig.intersectionPoints();
@@ -45,6 +47,7 @@ class BoolOps : public Toy {
         if (togs[0].on && togs[1].on && togs[2].on) {
             result = pig.getUnion();
         }
+        Timer::Time boolop_time = tm.lap();
 
         cairo_set_line_cap(cr, CAIRO_LINE_CAP_SQUARE);
         cairo_set_line_join(cr, CAIRO_LINE_JOIN_BEVEL);
@@ -80,6 +83,7 @@ class BoolOps : public Toy {
         togs[1].bounds = Rect(p + xo, p + xo + dpoint);
         togs[2].bounds = Rect(p + 2*xo, p + 2*xo + dpoint);
         draw_toggles(cr, togs);
+        *notify << "boolop time: " << boolop_time << std::endl;
         Toy::draw(cr, notify, width, height, save,timer_stream);
     }
 
