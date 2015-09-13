@@ -34,6 +34,7 @@
 #include <2geom/intersection-graph.h>
 #include <2geom/path.h>
 #include <2geom/pathvector.h>
+#include <2geom/utils.h>
 #include <iostream>
 #include <iterator>
 
@@ -56,84 +57,80 @@ struct PathIntersectionGraph::IntersectionVertexLess {
  */
 
 PathIntersectionGraph::PathIntersectionGraph(PathVector const &a, PathVector const &b, Coord precision)
-    : _a(a)
-    , _b(b)
 {
     if (a.empty() || b.empty()) return;
 
+    _pv[0] = a;
+    _pv[1] = b;
+
     // all paths must be closed, otherwise we will miss some intersections
-    for (std::size_t i = 0; i < a.size(); ++i) {
-        _a[i].close();
-    }
-    for (std::size_t i = 0; i < b.size(); ++i) {
-        _b[i].close();
+    for (int w = 0; w < 2; ++w) {
+        for (std::size_t i = 0; i < _pv[w].size(); ++i) {
+            _pv[w][i].close();
+        }
     }
 
-    std::vector<PVIntersection> pxs = _a.intersect(_b, precision);
+    std::vector<PVIntersection> pxs = _pv[0].intersect(_pv[1], precision);
     // NOTE: this early return means that the path data structures will not be created
     // if there are no intersections at all!
     if (pxs.empty()) return;
 
     // prepare intersection lists for each path component
-    for (std::size_t i = 0; i < _a.size(); ++i) {
-        _apaths.push_back(new PathData());
-    }
-    for (std::size_t i = 0; i < _b.size(); ++i) {
-        _bpaths.push_back(new PathData());
+    for (unsigned w = 0; w < 2; ++w) {
+        for (std::size_t i = 0; i < _pv[w].size(); ++i) {
+            _components[w].push_back(new PathData(w, i));
+        }
     }
 
     for (std::size_t i = 0; i < pxs.size(); ++i) {
         IntersectionVertex *xa, *xb;
         xa = new IntersectionVertex();
         xb = new IntersectionVertex();
-        xa->processed = xb->processed = false;
+        //xa->processed = xb->processed = false;
+        xa->which = 0; xb->which = 1;
         xa->pos = pxs[i].first;
         xb->pos = pxs[i].second;
         xa->p = xb->p = pxs[i].point();
         xa->neighbor = xb;
         xb->neighbor = xa;
+        xa->next = xa->previous = xb->next = xb->previous = OUTSIDE;
         _xs.push_back(xa);
         _xs.push_back(xb);
-        _apaths[xa->pos.path_index].xlist.push_back(*xa);
-        _bpaths[xb->pos.path_index].xlist.push_back(*xb);
+        _components[0][xa->pos.path_index].xlist.push_back(*xa);
+        _components[1][xb->pos.path_index].xlist.push_back(*xb);
     }
 
-    for (std::size_t i = 0; i < _apaths.size(); ++i) {
-        _apaths[i].xlist.sort(IntersectionVertexLess());
-    }
-    for (std::size_t i = 0; i < _bpaths.size(); ++i) {
-        _bpaths[i].xlist.sort(IntersectionVertexLess());
+    // sort components according to time value of intersections
+    for (unsigned w = 0; w < 2; ++w) {
+        for (std::size_t i = 0; i < _components[w].size(); ++i) {
+            _components[w][i].xlist.sort(IntersectionVertexLess());
+        }
     }
 
     typedef IntersectionList::iterator Iter;
 
     // determine in/out/on flags using winding
-    for (unsigned npv = 0; npv < 2; ++npv) {
-        boost::ptr_vector<PathData> &ls = npv ? _bpaths : _apaths;
-        boost::ptr_vector<PathData> &ols = npv ? _apaths : _bpaths;
-        PathVector const &pv = npv ? b : a;
-        PathVector const &other = npv ? a : b;
+    for (unsigned w = 0; w < 2; ++w) {
+        unsigned ow = (w+1) % 2;
 
-        for (unsigned li = 0; li < ls.size(); ++li) {
-            IntersectionList &xl = ls[li].xlist;
+        for (unsigned li = 0; li < _components[w].size(); ++li) {
+            IntersectionList &xl = _components[w][li].xlist;
             for (Iter i = xl.begin(); i != xl.end(); ++i) {
-                Iter n = boost::next(i);
-                if (n == xl.end()) {
-                    n = xl.begin();
-                }
+                if (i->next == OVERLAPPING_BORDER) continue;
+                Iter n = cyclic_next(i, xl);
                 std::size_t pi = i->pos.path_index;
 
-                PathInterval ival = forward_interval(i->pos, n->pos, pv[pi].size());
+                PathInterval ival = forward_interval(i->pos, n->pos, _pv[w][pi].size());
                 PathTime mid = ival.inside(precision);
 
                 // TODO check for degenerate cases
-                int w = other.winding(pv[pi].pointAt(mid));
-                if (w % 2) {
-                    i->next = POINT_INSIDE;
-                    n->previous = POINT_INSIDE;
+                int wdg = _pv[ow].winding(_pv[w][pi].pointAt(mid));
+                if (wdg % 2) {
+                    i->next = INSIDE;
+                    n->previous = INSIDE;
                 } else {
-                    i->next = POINT_OUTSIDE;
-                    n->previous = POINT_OUTSIDE;
+                    i->next = OUTSIDE;
+                    n->previous = OUTSIDE;
                 }
             }
 
@@ -141,16 +138,19 @@ PathIntersectionGraph::PathIntersectionGraph(PathVector const &a, PathVector con
             // and assign exit / entry flags
             for (Iter i = xl.begin(); i != xl.end();) {
                 if (i->previous == i->next) {
-                    IntersectionList &oxl = ols[i->neighbor->pos.path_index].xlist;
+                    std::size_t oli = i->neighbor->pos.path_index;
+                    IntersectionList &oxl = _components[ow][oli].xlist;
                     oxl.erase(oxl.iterator_to(*i->neighbor));
                     xl.erase(i++);
-                    if (i->next == POINT_INSIDE) {
-                        ++ls[li].removed_in;
+                    if (i->next == INSIDE) {
+                        ++_components[w][li].removed_in;
+                        ++_components[ow][oli].removed_out;
                     } else {
-                        ++ls[li].removed_out;
+                        ++_components[w][li].removed_out;
+                        ++_components[ow][oli].removed_in;
                     }
                 } else {
-                    i->entry = ((i->next == POINT_INSIDE) && (i->previous == POINT_OUTSIDE));
+                    i->entry = ((i->next == INSIDE) && (i->previous == OUTSIDE));
                     ++i;
                 }
             }
@@ -201,8 +201,8 @@ PathVector PathIntersectionGraph::getXOR()
 std::size_t PathIntersectionGraph::size() const
 {
     std::size_t result = 0;
-    for (std::size_t i = 0; i < _apaths.size(); ++i) {
-        result += _apaths[i].xlist.size();
+    for (std::size_t i = 0; i < _components[0].size(); ++i) {
+        result += _components[0][i].xlist.size();
     }
     return result;
 }
@@ -212,8 +212,8 @@ std::vector<Point> PathIntersectionGraph::intersectionPoints() const
     std::vector<Point> result;
 
     typedef IntersectionList::const_iterator Iter;
-    for (std::size_t i = 0; i < _apaths.size(); ++i) {
-        for (Iter j = _apaths[i].xlist.begin(); j != _apaths[i].xlist.end(); ++j) {
+    for (std::size_t i = 0; i < _components[0].size(); ++i) {
+        for (Iter j = _components[0][i].xlist.begin(); j != _components[0][i].xlist.end(); ++j) {
             result.push_back(j->p);
         }
     }
@@ -223,15 +223,16 @@ std::vector<Point> PathIntersectionGraph::intersectionPoints() const
 PathVector PathIntersectionGraph::_getResult(bool enter_a, bool enter_b)
 {
     typedef IntersectionList::iterator Iter;
+    typedef boost::ptr_vector<PathData>::iterator PIter;
     PathVector result;
     if (_xs.empty()) return result;
 
     // reset processed status
-    for (unsigned npv = 0; npv < 2; ++npv) {
-        boost::ptr_vector<PathData> &ls = npv ? _bpaths : _apaths;
-        for (std::size_t li = 0; li < ls.size(); ++li) {
-            for (Iter k = ls[li].xlist.begin(); k != ls[li].xlist.end(); ++k) {
-                k->processed = false;
+    _ulist.clear();
+    for (unsigned w = 0; w < 2; ++w) {
+        for (PIter li = _components[w].begin(); li != _components[w].end(); ++li) {
+            for (Iter k = li->xlist.begin(); k != li->xlist.end(); ++k) {
+                _ulist.push_back(*k);
             }
         }
     }
@@ -239,17 +240,16 @@ PathVector PathIntersectionGraph::_getResult(bool enter_a, bool enter_b)
     unsigned n_processed = 0;
 
     while (true) {
-        PathVector const *cur = &_a, *other = &_b;
-        boost::ptr_vector<PathData> *lscur = &_apaths, *lsother = &_bpaths;
-
-        // find unprocessed intersection
-        Iter i;
-        if (!_findUnprocessed(i)) break;
+        // get unprocessed intersection
+        if (_ulist.empty()) break;
+        IntersectionVertex &iv = _ulist.front();
+        unsigned w = iv.which;
+        Iter i = _components[w][iv.pos.path_index].xlist.iterator_to(iv);
 
         result.push_back(Path(i->p));
         result.back().setStitching(true);
 
-        while (!i->processed) {
+        while (i->_proc_hook.is_linked()) {
             Iter prev = i;
             std::size_t pi = i->pos.path_index;
             // determine which direction to go
@@ -258,7 +258,7 @@ PathVector PathIntersectionGraph::_getResult(bool enter_a, bool enter_b)
             // a minus b: go inside in b, outside in a
             // b minus a: go inside in a, outside in b
             bool reverse = false;
-            if (cur == &_a) {
+            if (w == 0) {
                 reverse = i->entry ^ enter_a;
             } else {
                 reverse = i->entry ^ enter_b;
@@ -266,33 +266,32 @@ PathVector PathIntersectionGraph::_getResult(bool enter_a, bool enter_b)
 
             // get next intersection
             if (reverse) {
-                if (i == (*lscur)[pi].xlist.begin()) {
-                    i = (*lscur)[pi].xlist.end();
-                }
-                --i;
+                i = cyclic_prior(i, _components[w][pi].xlist);
             } else {
-                ++i;
-                if (i == (*lscur)[pi].xlist.end()) {
-                    i = (*lscur)[pi].xlist.begin();
-                }
+                i = cyclic_next(i, _components[w][pi].xlist);
             }
 
             // append portion of path
             PathInterval ival = PathInterval::from_direction(
                 prev->pos.asPathTime(), i->pos.asPathTime(),
-                reverse, (*cur)[pi].size());
+                reverse, _pv[w][pi].size());
 
-            (*cur)[pi].appendPortionTo(result.back(), ival, prev->p, i->p);
+            _pv[w][pi].appendPortionTo(result.back(), ival, prev->p, i->p);
 
             // mark both vertices as processed
-            prev->processed = true;
-            i->processed = true;
+            //prev->processed = true;
+            //i->processed = true;
             n_processed += 2;
+            if (prev->_proc_hook.is_linked()) {
+                _ulist.erase(_ulist.iterator_to(*prev));
+            }
+            if (i->_proc_hook.is_linked()) {
+                _ulist.erase(_ulist.iterator_to(*i));
+            }
 
             // switch to the other path
-            i = (*lsother)[i->neighbor->pos.path_index].xlist.iterator_to(*i->neighbor);
-            std::swap(lscur, lsother);
-            std::swap(cur, other);
+            w = (w+1) % 2;
+            i = _components[w][i->neighbor->pos.path_index].xlist.iterator_to(*i->neighbor);
         }
         result.back().close(true);
 
@@ -304,7 +303,7 @@ PathVector PathIntersectionGraph::_getResult(bool enter_a, bool enter_b)
     return result;
 }
 
-void PathIntersectionGraph::_handleNonintersectingPaths(PathVector &result, int which, bool inside)
+void PathIntersectionGraph::_handleNonintersectingPaths(PathVector &result, unsigned which, bool inside)
 {
     /* Every component that has any intersections will be processed by _getResult.
      * Here we take care of paths that don't have any intersections. They are either
@@ -312,68 +311,42 @@ void PathIntersectionGraph::_handleNonintersectingPaths(PathVector &result, int 
      * evaluating the winding rule at the initial point. If inside is true and
      * the path is inside, we add it to the result.
      */
-    boost::ptr_vector<PathData> const &ls = which ? _bpaths : _apaths;
-    PathVector const &cur = which ? _b : _a;
-    PathVector const &other = which ? _a : _b;
+    unsigned w = which;
+    unsigned ow = (w+1) % 2;
 
-    for (std::size_t i = 0; i < cur.size(); ++i) {
+    for (std::size_t i = 0; i < _pv[w].size(); ++i) {
         // the path data vector might have been left empty if there were no intersections at all
-        bool has_path_data = !ls.empty();
+        bool has_path_data = !_components[w].empty();
         // Skip if the path has intersections
-        if (has_path_data && !ls[i].xlist.empty()) continue;
+        if (has_path_data && !_components[w][i].xlist.empty()) continue;
         bool path_inside = false;
 
         // If the path had any intersections removed, use the result of that,
         // since one of those might have been at the initial point.
         // Also, it saves time.
-        if (has_path_data && ls[i].removed_in != 0) {
+        if (has_path_data && _components[w][i].removed_in != 0) {
             path_inside = true;
-        } else if (has_path_data && ls[i].removed_out != 0) {
+        } else if (has_path_data && _components[w][i].removed_out != 0) {
             path_inside = false;
         } else {
-            int w = other.winding(cur[i].initialPoint());
-            path_inside = w % 2 != 0;
+            int wdg = _pv[ow].winding(_pv[w][i].initialPoint());
+            path_inside = wdg % 2 != 0;
         }
 
         if (path_inside == inside) {
-            result.push_back(cur[i]);
+            result.push_back(_pv[w][i]);
         }
     }
 }
-
-bool PathIntersectionGraph::_findUnprocessed(IntersectionList::iterator &result)
-{
-    typedef IntersectionList::iterator Iter;
-
-    Iter it, last;
-
-    for (std::size_t k = 0; k < _apaths.size(); ++k) {
-        it = _apaths[k].xlist.begin();
-        last = _apaths[k].xlist.end();
-        for (; it != last; ++it) {
-            if (!it->_hook.is_linked()) {
-                // this intersection was removed since it did not change inside/outside status
-                continue;
-            }
-            if (!it->processed) {
-                result = it;
-                return true;
-            }
-        }
-    }
-
-    return false;
-}
-
 
 std::ostream &operator<<(std::ostream &os, PathIntersectionGraph const &pig)
 {
     os << "Intersection graph:\n"
        << pig._xs.size()/2 << " total intersections\n"
        << pig.size() << " considered intersections\n";
-    for (std::size_t i = 0; i < pig._apaths.size(); ++i) {
+    for (std::size_t i = 0; i < pig._components[0].size(); ++i) {
         typedef PathIntersectionGraph::IntersectionList::const_iterator Iter;
-        for (Iter j = pig._apaths[i].xlist.begin(); j != pig._apaths[i].xlist.end(); ++j) {
+        for (Iter j = pig._components[0][i].xlist.begin(); j != pig._components[0][i].xlist.end(); ++j) {
             os << j->pos << " - " << j->neighbor->pos << " @ " << j->p << "\n";
         }
     }
