@@ -9,6 +9,10 @@ implicitization-test
 #rtree-performance-test
 )
 
+SET(2GEOM_PERFORMANCE_SRC
+boolops-performance
+)
+
 # Use this variable for GTest tests which should have a default main().
 SET(2GEOM_GTESTS_SRC
 affine-test
@@ -39,7 +43,6 @@ FOREACH(source ${2GEOM_GTESTS_SRC})
 	ADD_TEST(NAME ${source} COMMAND ${source})
 ENDFOREACH()
 
-
 FOREACH(source ${2GEOM_TESTS_SRC})
     IF(${source} STREQUAL timing-test)
         ADD_EXECUTABLE(${source} ${source}.cpp)
@@ -54,12 +57,17 @@ FOREACH(source ${2GEOM_TESTS_SRC})
             LINK_DIRECTORIES(/home/vag/projects/inkscape/spatialindex-lib/lib)
 
             ADD_EXECUTABLE(${source} ${source}.cpp)
-            TARGET_LINK_LIBRARIES(${source} ${LINK_GSL} spatialindex 2geom toy-2 ${GTK2_LINK_FLAGS})
+            TARGET_LINK_LIBRARIES(${source} spatialindex 2geom toy-2 ${LINK_GSL} ${GTK2_LINK_FLAGS})
             ADD_TEST(NAME ${source} COMMAND ${source})
         ENDIF(${source} STREQUAL time-ops)
     ELSE()
         ADD_EXECUTABLE(${source} ${source}.cpp)
-        TARGET_LINK_LIBRARIES(${source} ${LINK_GSL} 2geom ${GTK2_LINK_FLAGS} gtest)
+        TARGET_LINK_LIBRARIES(${source} 2geom ${LINK_GSL} ${GTK2_LINK_FLAGS} gtest)
         ADD_TEST(NAME ${source} COMMAND ${source})
     ENDIF()
 ENDFOREACH(source)
+
+FOREACH(source ${2GEOM_PERFORMANCE_SRC})
+	ADD_EXECUTABLE(${source} ${source}.cpp)
+	TARGET_LINK_LIBRARIES(${source} 2geom ${LINK_GSL} ${GTK2_LINK_FLAGS})
+ENDFOREACH()
