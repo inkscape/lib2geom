@@ -139,6 +139,9 @@ std::vector<PVIntersection> PathVector::intersect(PathVector const &other, Coord
     std::vector<PVIntersection> result;
     for (std::size_t i = 0; i < size(); ++i) {
         for (std::size_t j = 0; j < other.size(); ++j) {
+            if (!(*this)[i].boundsFast().intersects(other[j].boundsFast())) {
+                continue;
+            }
             std::vector<PathIntersection> xs = (*this)[i].intersect(other[j], precision);
             for (std::size_t k = 0; k < xs.size(); ++k) {
                 PVIntersection pvx(PVPos(i, xs[k].first), PVPos(j, xs[k].second), xs[k].point());
@@ -153,6 +156,7 @@ int PathVector::winding(Point const &p) const
 {
     int wind = 0;
     for (const_iterator i = begin(); i != end(); ++i) {
+        if (!i->boundsFast().contains(p)) continue;
         wind += i->winding(p);
     }
     return wind;
