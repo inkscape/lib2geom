@@ -136,6 +136,13 @@ TEST_F(PathTest, PathInterval) {
         { CROSS,  CROSS,  CROSS,  CROSS,  NORMAL, NORMAL, BOTH,   BOTH   },
         { CROSS,  CROSS,  CROSS,  CROSS,  CROSS,  CROSS,  NORMAL, CROSS  }
     };
+    unsigned sizes[5][2] = {
+        { 2, 4 },
+        { 3, 3 },
+        { 2, 4 },
+        { 2, 4 },
+        { 1, 5 }
+    };
 
     for (unsigned i = 0; i < 5; ++i) {
         for (unsigned j = 0; j < 8; ++j) {
@@ -144,6 +151,10 @@ TEST_F(PathTest, PathInterval) {
             EXPECT_EQ(ival[i][2].contains(tests[j]), bool(includes[i][j] & CROSS));
             EXPECT_EQ(ival[i][3].contains(tests[j]), bool(includes[i][j] & CROSS));
         }
+        EXPECT_EQ(ival[i][0].curveCount(), sizes[i][0]);
+        EXPECT_EQ(ival[i][1].curveCount(), sizes[i][0]);
+        EXPECT_EQ(ival[i][2].curveCount(), sizes[i][1]);
+        EXPECT_EQ(ival[i][3].curveCount(), sizes[i][1]);
     }
 }
 

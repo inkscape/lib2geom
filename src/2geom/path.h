@@ -226,6 +226,7 @@ public:
     }
 
     size_type pathSize() const { return _path_size; }
+    size_type curveCount() const;
 
 private:
     PathTime _from, _to;

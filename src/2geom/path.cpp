@@ -98,6 +98,24 @@ bool PathInterval::contains(PathTime const &pos) const {
     }
 }
 
+PathInterval::size_type PathInterval::curveCount() const
+{
+    if (isDegenerate()) return 0;
+    if (_cross_start) {
+        if (_reverse) {
+            return _path_size - _to.curve_index + _from.curve_index + 1;
+        } else {
+            return _path_size - _from.curve_index + _to.curve_index + 1;
+        }
+    } else {
+        if (_reverse) {
+            return _from.curve_index - _to.curve_index + 1;
+        } else {
+            return _to.curve_index - _from.curve_index + 1;
+        }
+    }
+}
+
 PathTime PathInterval::inside(Coord min_dist) const
 {
     // If there is some node further than min_dist (in time coord) from the ends,
