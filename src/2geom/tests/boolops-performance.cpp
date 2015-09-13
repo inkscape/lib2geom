@@ -40,12 +40,13 @@ using namespace Geom;
 
 int main(int argc, char **argv)
 {
-    if (argc != 3) {
+    if (argc != 4) {
         std::cout << "Wrong number of arguments";
     }
 
-    PathVector a = read_svgd(argv[1]);
-    PathVector b = read_svgd(argv[2]);
+    PathVector a = read_svgd(argv[2]);
+    PathVector b = read_svgd(argv[3]);
+    unsigned const ops = atoi(argv[1]);
 
     OptRect abox = a.boundsExact();
     OptRect bbox = a.boundsExact();
@@ -67,7 +68,7 @@ int main(int argc, char **argv)
     // for reproducibility.
     g_random_set_seed(1234);
 
-    for (unsigned i = 0; i < 10000; ++i) {
+    for (unsigned i = 0; i < ops; ++i) {
         Point delta;
         delta[X] = g_random_double_range(-bbox->width(), abox->width());
         delta[Y] = g_random_double_range(-bbox->height(), abox->height());
@@ -80,7 +81,7 @@ int main(int argc, char **argv)
         num_outcv += x.curveCount();
     }
 
-    std::cout << "Completed 10000 operations.\n"
+    std::cout << "Completed " << ops << " operations.\n"
               << "Total intersections: " << num_intersections << "\n"
               << "Total output curves: " << num_outcv << std::endl;
 
