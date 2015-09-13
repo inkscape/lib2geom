@@ -64,7 +64,7 @@ private:
     enum InOutFlag {
         INSIDE,
         OUTSIDE,
-        OVERLAPPING_BORDER
+        BOTH
     };
 
     struct IntersectionVertex {
@@ -102,14 +102,12 @@ private:
         IntersectionList xlist;
         std::size_t path_index;
         int which;
-        unsigned removed_in;
-        unsigned removed_out;
+        InOutFlag status;
 
         PathData(int w, std::size_t pi)
             : path_index(pi)
             , which(w)
-            , removed_in(0)
-            , removed_out(0)
+            , status(BOTH)
         {}
     };
 

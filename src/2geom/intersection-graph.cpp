@@ -109,14 +109,14 @@ PathIntersectionGraph::PathIntersectionGraph(PathVector const &a, PathVector con
 
     typedef IntersectionList::iterator Iter;
 
-    // determine in/out/on flags using winding
+    // determine the winding numbers of path portions between intersections
     for (unsigned w = 0; w < 2; ++w) {
         unsigned ow = (w+1) % 2;
 
         for (unsigned li = 0; li < _components[w].size(); ++li) {
             IntersectionList &xl = _components[w][li].xlist;
             for (Iter i = xl.begin(); i != xl.end(); ++i) {
-                if (i->next == OVERLAPPING_BORDER) continue;
+                //if (i->next == BOTH) continue;
                 Iter n = cyclic_next(i, xl);
                 std::size_t pi = i->pos.path_index;
 
@@ -133,7 +133,59 @@ PathIntersectionGraph::PathIntersectionGraph(PathVector const &a, PathVector con
                     n->previous = OUTSIDE;
                 }
             }
+        }
+    }
 
+    // correct disagreements
+    for (unsigned w = 0; w < 2; ++w) {
+        unsigned ow = (w+1) % 2;
+        for (unsigned li = 0; li < _components[w].size(); ++li) {
+            IntersectionList &xl = _components[w][li].xlist;
+            for (Iter i = xl.begin(); i != xl.end(); ++i) {
+                if (i->next == i->previous) {
+                    IntersectionList &oxl = _components[ow][i->neighbor->pos.path_index].xlist;
+                    InOutFlag x = BOTH;
+                    if (i->next == OUTSIDE) {
+                        x = INSIDE;
+                    } else if (i->next == INSIDE) {
+                        x = OUTSIDE;
+                    }
+                    Iter niter = oxl.iterator_to(*i->neighbor);
+                    niter->next = niter->previous = x;
+                    cyclic_prior(niter, oxl)->next = x;
+                    cyclic_next(niter, oxl)->previous = x;
+                }
+            }
+        }
+    }
+
+    // If a path has only degenerate intersections, assign its status now.
+    // This protects against later accidentaly picking a point for winding
+    // determination that is exactly at a removed intersection.
+    for (unsigned w = 0; w < 2; ++w) {
+        for (unsigned li = 0; li < _components[w].size(); ++li) {
+            IntersectionList &xl = _components[w][li].xlist;
+            bool has_in = false;
+            bool has_out = false;
+            for (Iter i = xl.begin(); i != xl.end(); ++i) {
+                has_in |= (i->next == INSIDE);
+                has_out |= (i->next == OUTSIDE);
+            }
+            if (has_in && !has_out) {
+                _components[w][li].status = INSIDE;
+            }
+            if (!has_in && has_out) {
+                _components[w][li].status = OUTSIDE;
+            }
+        }
+    }
+
+    // Assign entry / exit flags.
+    // TODO: overlapping edges.
+    for (unsigned w = 0; w < 2; ++w) {
+        unsigned ow = (w+1) % 2;
+        for (unsigned li = 0; li < _components[w].size(); ++li) {
+            IntersectionList &xl = _components[w][li].xlist;
             // remove intersections that don't change between in/out
             // and assign exit / entry flags
             for (Iter i = xl.begin(); i != xl.end();) {
@@ -142,13 +194,6 @@ PathIntersectionGraph::PathIntersectionGraph(PathVector const &a, PathVector con
                     IntersectionList &oxl = _components[ow][oli].xlist;
                     oxl.erase(oxl.iterator_to(*i->neighbor));
                     xl.erase(i++);
-                    if (i->next == INSIDE) {
-                        ++_components[w][li].removed_in;
-                        ++_components[ow][oli].removed_out;
-                    } else {
-                        ++_components[w][li].removed_out;
-                        ++_components[ow][oli].removed_in;
-                    }
                 } else {
                     i->entry = ((i->next == INSIDE) && (i->previous == OUTSIDE));
                     ++i;
@@ -321,12 +366,10 @@ void PathIntersectionGraph::_handleNonintersectingPaths(PathVector &result, unsi
         if (has_path_data && !_components[w][i].xlist.empty()) continue;
         bool path_inside = false;
 
-        // If the path had any intersections removed, use the result of that,
-        // since one of those might have been at the initial point.
-        // Also, it saves time.
-        if (has_path_data && _components[w][i].removed_in != 0) {
+        // Use the in/out determination from constructor, if available
+        if (has_path_data && _components[w][i].status == INSIDE) {
             path_inside = true;
-        } else if (has_path_data && _components[w][i].removed_out != 0) {
+        } else if (has_path_data && _components[w][i].status == OUTSIDE) {
             path_inside = false;
         } else {
             int wdg = _pv[ow].winding(_pv[w][i].initialPoint());

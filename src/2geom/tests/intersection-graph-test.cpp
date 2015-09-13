@@ -38,6 +38,7 @@
 #include <2geom/pathvector.h>
 #include <2geom/svg-path-parser.h>
 #include <2geom/svg-path-writer.h>
+#include <glib.h>
 
 using namespace std;
 using namespace Geom;
@@ -48,6 +49,14 @@ Path string_to_path(const char* s) {
     return pv[0];
 }
 
+enum Operation {
+    UNION,
+    INTERSECTION,
+    XOR,
+    A_MINUS_B,
+    B_MINUS_A
+};
+
 class IntersectionGraphTest : public ::testing::Test {
 protected:
     IntersectionGraphTest() {
@@ -55,6 +64,39 @@ protected:
         bigrect = string_to_path("M -3,-4 L 7,-4 7,12 -3,12 Z");
         bigh = string_to_path("M 2,-3 L 3,-2 1,2 3,4 4,2 6,3 2,11 0,10 2,5 1,4 -1,6 -2,5 Z");
         smallrect = string_to_path("M 7,4 L 9,4 9,7 7,7 Z");
+        g_random_set_seed(2345);
+    }
+
+    void checkRandomPoints(PathVector const &a, PathVector const &b, PathVector const &result,
+                           Operation op, unsigned npts = 5000)
+    {
+        Rect bounds = *(a.boundsFast() | b.boundsFast());
+        for (unsigned i = 0; i < npts; ++i) {
+            Point p;
+            p[X] = g_random_double_range(bounds[X].min(), bounds[X].max());
+            p[Y] = g_random_double_range(bounds[Y].min(), bounds[Y].max());
+            bool in_a = a.winding(p) % 2;
+            bool in_b = b.winding(p) % 2;
+            bool in_res = result.winding(p) % 2;
+
+            switch (op) {
+            case UNION:
+                EXPECT_EQ(in_res, in_a || in_b);
+                break;
+            case INTERSECTION:
+                EXPECT_EQ(in_res, in_a && in_b);
+                break;
+            case XOR:
+                EXPECT_EQ(in_res, in_a ^ in_b);
+                break;
+            case A_MINUS_B:
+                EXPECT_EQ(in_res, in_a && !in_b);
+                break;
+            case B_MINUS_A:
+                EXPECT_EQ(in_res, !in_a && in_b);
+                break;
+            }
+        }
     }
 
     Path rectangle, bigrect, bigh, smallrect;
@@ -67,6 +109,8 @@ TEST_F(IntersectionGraphTest, Union) {
     EXPECT_EQ(r.size(), 1);
     EXPECT_EQ(r.curveCount(), 19);
 
+    checkRandomPoints(rectangle, bigh, r, UNION);
+
     /*SVGPathWriter wr;
     wr.feed(r);
     std::cout << wr.str() << std::endl;*/
@@ -77,6 +121,7 @@ TEST_F(IntersectionGraphTest, DisjointUnion) {
 
     PathVector r = graph.getUnion();
     EXPECT_EQ(r.size(), 2);
+    checkRandomPoints(rectangle, smallrect, r, UNION);
 }
 
 TEST_F(IntersectionGraphTest, CoverUnion) {
@@ -91,14 +136,17 @@ TEST_F(IntersectionGraphTest, Subtraction) {
     PathVector a = graph.getAminusB();
     EXPECT_EQ(a.size(), 4);
     EXPECT_EQ(a.curveCount(), 17);
+    checkRandomPoints(rectangle, bigh, a, A_MINUS_B);
 
     PathVector b = graph.getBminusA();
     EXPECT_EQ(b.size(), 4);
     EXPECT_EQ(b.curveCount(), 15);
+    checkRandomPoints(rectangle, bigh, b, B_MINUS_A);
 
     PathVector x = graph.getXOR();
     EXPECT_EQ(x.size(), 8);
     EXPECT_EQ(x.curveCount(), 32);
+    checkRandomPoints(rectangle, bigh, x, XOR);
 }
 
 TEST_F(IntersectionGraphTest, PointOnEdge) {
@@ -110,26 +158,31 @@ TEST_F(IntersectionGraphTest, PointOnEdge) {
     //std::cout << u << std::endl;
     EXPECT_EQ(u.size(), 1);
     EXPECT_EQ(u.curveCount(), 8);
+    checkRandomPoints(a, b, u, UNION);
 
     PathVector i = graph.getIntersection();
     //std::cout << i << std::endl;
     EXPECT_EQ(i.size(), 1);
     EXPECT_EQ(i.curveCount(), 3);
+    checkRandomPoints(a, b, i, INTERSECTION);
 
     PathVector s1 = graph.getAminusB();
     //std::cout << s1 << std::endl;
     EXPECT_EQ(s1.size(), 1);
     EXPECT_EQ(s1.curveCount(), 7);
+    checkRandomPoints(a, b, s1, A_MINUS_B);
 
     PathVector s2 = graph.getBminusA();
     //std::cout << s2 << std::endl;
     EXPECT_EQ(s2.size(), 1);
     EXPECT_EQ(s2.curveCount(), 4);
+    checkRandomPoints(a, b, s2, B_MINUS_A);
 
     PathVector x = graph.getXOR();
     //std::cout << x << std::endl;
     EXPECT_EQ(x.size(), 2);
     EXPECT_EQ(x.curveCount(), 11);
+    checkRandomPoints(a, b, x, XOR);
 }
 
 TEST_F(IntersectionGraphTest, RhombusInSquare) {
@@ -141,33 +194,37 @@ TEST_F(IntersectionGraphTest, RhombusInSquare) {
     PathVector u = graph.getUnion();
     EXPECT_EQ(u.size(), 1);
     EXPECT_EQ(u.curveCount(), 4);
+    checkRandomPoints(square, rhombus, u, UNION);
 
     PathVector i = graph.getIntersection();
     EXPECT_EQ(i.size(), 1);
     EXPECT_EQ(i.curveCount(), 4);
+    checkRandomPoints(square, rhombus, i, INTERSECTION);
 
     PathVector s1 = graph.getAminusB();
     EXPECT_EQ(s1.size(), 2);
     EXPECT_EQ(s1.curveCount(), 8);
+    checkRandomPoints(square, rhombus, s1, A_MINUS_B);
 
     PathVector s2 = graph.getBminusA();
     EXPECT_EQ(s2.size(), 0);
     EXPECT_EQ(s2.curveCount(), 0);
+    checkRandomPoints(square, rhombus, s2, B_MINUS_A);
 }
 
-/*TEST_F(IntersectionGraphTest, EqualUnion) {
+TEST_F(IntersectionGraphTest, EqualUnionAndIntersection) {
     PathVector shape = string_to_path("M 0,0 L 2,1 -1,2 -1,3 0,3 z");
     PathIntersectionGraph graph(shape, shape);
     //std::cout << graph << std::endl;
     PathVector a = graph.getUnion();
+    //std::cout << shape << std::endl;
     //std::cout << a << std::endl;
-    EXPECT_EQ(PathVector(shape), a);
+    checkRandomPoints(shape, shape, a, UNION);
 
     PathIntersectionGraph graph2(bigh, bigh);
-    PathVector b = graph2.getUnion();
-    //std::cout << b << std::endl;
-    EXPECT_EQ(PathVector(bigh), b);
-}*/
+    PathVector b = graph2.getIntersection();
+    checkRandomPoints(bigh, bigh, b, INTERSECTION);
+}
 
 /*
   Local Variables:
