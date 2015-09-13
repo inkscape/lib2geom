@@ -35,6 +35,7 @@
 #include <2geom/path.h>
 #include <2geom/pathvector.h>
 #include <2geom/svg-path-writer.h>
+#include <2geom/sweeper.h>
 
 namespace Geom {
 
@@ -133,22 +134,96 @@ void PathVector::snapEnds(Coord precision)
     }
 }
 
-std::vector<PVIntersection> PathVector::intersect(PathVector const &other, Coord precision) const
-{
-    typedef PathVectorTime PVPos;
-    std::vector<PVIntersection> result;
-    for (std::size_t i = 0; i < size(); ++i) {
-        for (std::size_t j = 0; j < other.size(); ++j) {
-            if (!(*this)[i].boundsFast().intersects(other[j].boundsFast())) {
-                continue;
-            }
-            std::vector<PathIntersection> xs = (*this)[i].intersect(other[j], precision);
-            for (std::size_t k = 0; k < xs.size(); ++k) {
-                PVIntersection pvx(PVPos(i, xs[k].first), PVPos(j, xs[k].second), xs[k].point());
-                result.push_back(pvx);
-            }
+// sweepline optimization
+// this is very similar to CurveIntersectionSweepSet in path.cpp
+// should probably be merged
+class PathIntersectionSweepSet {
+public:
+    struct PathRecord {
+        boost::intrusive::list_member_hook<> _hook;
+        Path const *path;
+        std::size_t index;
+        unsigned which;
+
+        PathRecord(Path const &p, std::size_t i, unsigned w)
+            : path(&p)
+            , index(i)
+            , which(w)
+        {}
+    };
+
+    typedef std::vector<PathRecord>::iterator ItemIterator;
+
+    PathIntersectionSweepSet(std::vector<PVIntersection> &result,
+                             PathVector const &a, PathVector const &b, Coord precision)
+        : _result(result)
+        , _precision(precision)
+    {
+        _records.reserve(a.size() + b.size());
+        for (std::size_t i = 0; i < a.size(); ++i) {
+            _records.push_back(PathRecord(a[i], i, 0));
+        }
+        for (std::size_t i = 0; i < a.size(); ++i) {
+            _records.push_back(PathRecord(b[i], i, 1));
         }
     }
+
+    std::vector<PathRecord> &items() { return _records; }
+
+    Interval itemBounds(ItemIterator ii) {
+        OptRect r = ii->path->boundsFast();
+        return (*r)[X];
+    }
+
+    void addActiveItem(ItemIterator ii) {
+        unsigned w = ii->which;
+        unsigned ow = (ii->which + 1) % 2;
+
+        for (ActivePathList::iterator i = _active[ow].begin(); i != _active[ow].end(); ++i) {
+            if (!ii->path->boundsFast().intersects(i->path->boundsFast())) continue;
+            std::vector<PathIntersection> px = ii->path->intersect(*i->path, _precision);
+            for (std::size_t k = 0; k < px.size(); ++k) {
+                PathVectorTime tw(ii->index, px[k].first), tow(i->index, px[k].second);
+                _result.push_back(PVIntersection(
+                    w == 0 ? tw : tow,
+                    w == 0 ? tow : tw,
+                    px[k].point()));
+            }
+        }
+        _active[w].push_back(*ii);
+    }
+
+    void removeActiveItem(ItemIterator ii) {
+        ActivePathList &apl = _active[ii->which];
+        apl.erase(apl.iterator_to(*ii));
+    }
+
+private:
+    typedef boost::intrusive::list
+        < PathRecord
+        , boost::intrusive::member_hook
+            < PathRecord
+            , boost::intrusive::list_member_hook<>
+            , &PathRecord::_hook
+            >
+        > ActivePathList;
+
+    std::vector<PVIntersection> &_result;
+    std::vector<PathRecord> _records;
+    ActivePathList _active[2];
+    Coord _precision;
+};
+
+std::vector<PVIntersection> PathVector::intersect(PathVector const &other, Coord precision) const
+{
+    std::vector<PVIntersection> result;
+
+    PathIntersectionSweepSet pisset(result, *this, other, precision);
+    Sweeper<PathIntersectionSweepSet> sweeper(pisset);
+    sweeper.process();
+
+    std::sort(result.begin(), result.end());
+
     return result;
 }
 

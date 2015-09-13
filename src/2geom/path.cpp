@@ -468,88 +468,106 @@ std::vector<PathTime> Path::roots(Coord v, Dim2 d) const
 // Instead of O(N^2), this takes O(N + X), where X is the number of overlaps
 // between the bounding boxes of curves.
 
-struct CurveSweepTraits {
-    struct Bound {
-        Rect r;
-        std::size_t index;
-        int which;
-    };
-    typedef std::less<Coord> Compare;
-    inline static Coord entry_value(Bound const &b) { return b.r[X].min(); }
-    inline static Coord exit_value(Bound const &b) { return b.r[X].max(); }
-};
-
-class CurveSweeper
-    : public Sweeper<Curve const *, CurveSweepTraits>
+struct CurveIntersectionSweepSet
 {
 public:
-    typedef Sweeper<Curve const *, CurveSweepTraits> Base;
-    CurveSweeper(Path const &a, Path const &b, std::vector<PathIntersection> &result, Coord prec)
-        : Base(a.size() + b.size())
-        , _result(result)
-        , _precision(prec)
+    struct CurveRecord {
+        boost::intrusive::list_member_hook<> _hook;
+        Curve const *curve;
+        Rect bounds;
+        std::size_t index;
+        unsigned which;
+
+        CurveRecord(Curve const *pc, std::size_t idx, unsigned w)
+            : curve(pc)
+            , bounds(curve->boundsFast())
+            , index(idx)
+            , which(w)
+        {}
+    };
+
+    typedef std::vector<CurveRecord>::const_iterator ItemIterator;
+
+    CurveIntersectionSweepSet(std::vector<PathIntersection> &result,
+                              Path const &a, Path const &b, Coord precision)
+        : _result(result)
+        , _precision(precision)
+        , _sweep_dir(X)
     {
-        for (std::size_t i = 0; i < a.size(); ++i) {
-            Bound bound;
-            bound.r = a[i].boundsFast();
-            bound.index = i;
-            bound.which = 0;
-            insert(bound, &a[i]);
+        std::size_t asz = a.size(), bsz = b.size();
+        _records.reserve(asz + bsz);
+
+        for (std::size_t i = 0; i < asz; ++i) {
+            _records.push_back(CurveRecord(&a[i], i, 0));
         }
-        for (std::size_t i = 0; i < b.size(); ++i) {
-            Bound bound;
-            bound.r = b[i].boundsFast();
-            bound.index = i;
-            bound.which = 1;
-            insert(bound, &b[i]);
+        for (std::size_t i = 0; i < bsz; ++i) {
+            _records.push_back(CurveRecord(&b[i], i, 1));
+        }
+
+        OptRect abb = a.boundsFast() | b.boundsFast();
+        if (abb && abb->height() > abb->width()) {
+            _sweep_dir = Y;
         }
     }
 
-protected:
-    void _enter(Record const &record) {
-        int which = record.bound.which;
+    std::vector<CurveRecord> const &items() { return _records; }
+    Interval itemBounds(ItemIterator ii) {
+        return ii->bounds[_sweep_dir];
+    }
 
-        for (RecordList::iterator i = _active_items.begin(); i != _active_items.end(); ++i) {
-            // do not intersect in the same path
-            if (i->bound.which == which) continue;
-            // do not intersect if boxes do not overlap in Y
-            if (!record.bound.r[Y].intersects(i->bound.r[Y])) continue;
+    void addActiveItem(ItemIterator ii) {
+        unsigned w = ii->which;
+        unsigned ow = (w+1) % 2;
 
-            std::vector<CurveIntersection> cx;
-            int ia = record.bound.index;
-            int ib = i->bound.index;
+        _active[w].push_back(const_cast<CurveRecord&>(*ii));
 
-            if (which == 0) {
-                cx = record.item->intersect(*i->item, _precision);
-            } else {
-                cx = i->item->intersect(*record.item, _precision);
-                std::swap(ia, ib);
-            }
-
-            for (std::size_t ci = 0; ci < cx.size(); ++ci) {
-                PathTime a(ia, cx[ci].first), b(ib, cx[ci].second);
-                PathIntersection px(a, b, cx[ci].point());
-                _result.push_back(px);
+        for (ActiveCurveList::iterator i = _active[ow].begin(); i != _active[ow].end(); ++i) {
+            if (!ii->bounds.intersects(i->bounds)) continue;
+            std::vector<CurveIntersection> cx = ii->curve->intersect(*i->curve, _precision);
+            for (std::size_t k = 0; k < cx.size(); ++k) {
+                PathTime tw(ii->index, cx[k].first), tow(i->index, cx[k].second);
+                _result.push_back(PathIntersection(
+                    w == 0 ? tw : tow,
+                    w == 0 ? tow : tw,
+                    cx[k].point()));
             }
         }
+    }
+    void removeActiveItem(ItemIterator ii) {
+        ActiveCurveList &acl = _active[ii->which];
+        acl.erase(acl.iterator_to(*ii));
     }
 
 private:
+    typedef boost::intrusive::list
+        < CurveRecord
+        , boost::intrusive::member_hook
+            < CurveRecord
+            , boost::intrusive::list_member_hook<>
+            , &CurveRecord::_hook
+            >
+        > ActiveCurveList;
+
+    std::vector<CurveRecord> _records;
     std::vector<PathIntersection> &_result;
+    ActiveCurveList _active[2];
     Coord _precision;
+    Dim2 _sweep_dir;
 };
 
 std::vector<PathIntersection> Path::intersect(Path const &other, Coord precision) const
 {
     std::vector<PathIntersection> result;
 
-    CurveSweeper sweeper(*this, other, result, precision);
+    CurveIntersectionSweepSet cisset(result, *this, other, precision);
+    Sweeper<CurveIntersectionSweepSet> sweeper(cisset);
     sweeper.process();
 
     // preprocessing to remove duplicate intersections at endpoints
+    std::size_t asz = size(), bsz = other.size();
     for (std::size_t i = 0; i < result.size(); ++i) {
-        result[i].first.normalizeForward(size());
-        result[i].second.normalizeForward(other.size());
+        result[i].first.normalizeForward(asz);
+        result[i].second.normalizeForward(bsz);
     }
     std::sort(result.begin(), result.end());
     result.erase(std::unique(result.begin(), result.end()), result.end());

@@ -41,32 +41,24 @@
 
 namespace Geom {
 
-/** @brief Sweep traits class for interval bounds.
- * @relates Sweeper
- * @ingroup Utilities */
-struct IntervalSweepTraits {
-    typedef Interval Bound;
-    typedef std::less<Coord> Compare;
-    inline static Coord entry_value(Bound const &b) { return b.min(); }
-    inline static Coord exit_value(Bound const &b) { return b.max(); }
-};
+// exposition only
+template <typename Item>
+class SweepVector {
+public:
+    typedef typename std::vector<Item>::const_iterator ItemIterator;
 
-/** @brief Sweep traits class for rectangle bounds.
- * @tparam D Which axis to use for sweeping
- * @ingroup Utilities */
-template <Dim2 D>
-struct RectSweepTraits {
-    typedef Rect Bound;
-    typedef std::less<Coord> Compare;
-    inline static Coord entry_value(Bound const &b) { return b[D].min(); }
-    inline static Coord exit_value(Bound const &b) { return b[D].max(); }
-};
+    SweepVector(std::vector<Item> const &v)
+        : _items(v)
+    {}
 
-template <typename T>
-struct BoundsFast {
-    Rect operator()(T const &item) const {
-        return item.boundsFast();
-    }
+    std::vector<Item> const &items() { return _items; }
+    Interval itemBounds(ItemIterator ii) { return Interval(); }
+
+    void addActiveItem(ItemIterator ii) {}
+    void removeActiveItem(ItemIterator ii) {}
+
+private:
+    std::vector<Item> const &_items;
 };
 
 /** @brief Generic sweepline algorithm.
@@ -92,42 +84,17 @@ struct BoundsFast {
  *   how to interpret them and how to sort the events
  * @ingroup Utilities
  */
-template <typename Item, typename SweepTraits = IntervalSweepTraits>
+template <typename SweepSet>
 class Sweeper {
 public:
-    /// Type of the item's boundary - usually this will be an Interval or Rect.
-    typedef typename SweepTraits::Bound Bound;
+    typedef typename SweepSet::ItemIterator Iter;
 
-    explicit Sweeper(std::size_t expected_size = 0) {
-        _items.reserve(expected_size);
-        _entry_events.reserve(expected_size);
-        _exit_events.reserve(expected_size);
-    }
-
-    /** @brief Insert a single item for sweeping.
-     * @param bound Boundary of the item, as defined in sweep traits
-     * @param item The item itself */
-    void insert(Bound const &bound, Item const &item) {
-        assert(!(typename SweepTraits::Compare()(
-            SweepTraits::exit_value(bound),
-            SweepTraits::entry_value(bound))));
-        _items.push_back(Record(bound, item));
-    }
-
-    /** @brief Insert a range of items using the supplied bounds functor.
-     * The bounds are computed from items using the supplied bounds functor.
-     * @param first Start of range
-     * @param last End of range (one-past-the-end iterator)
-     * @param f Bounds functor */
-    template <typename Iter, typename BoundFunc>
-    void insert(Iter first, Iter last, BoundFunc f = BoundFunc()) {
-        for (; first != last; ++first) {
-            Bound b = f(*first);
-            assert(!(typename SweepTraits::Compare()(
-                SweepTraits::exit_value(b),
-                SweepTraits::entry_value(b))));
-            _items.push_back(Record(b, *first));
-        }
+    explicit Sweeper(SweepSet &set)
+        : _set(set)
+    {
+        std::size_t sz = std::distance(set.items().begin(), set.items().end());
+        _entry_events.reserve(sz);
+        _exit_events.reserve(sz);
     }
 
     /** @brief Process entry and exit events.
@@ -135,109 +102,70 @@ public:
      * functions _enter() and _leave() according to the order of the boundaries
      * of each item. */
     void process() {
-        if (_items.empty()) return;
+        if (_set.items().empty()) return;
 
-        typename SweepTraits::Compare cmp;
-
-        // we store the events in heaps, which is slightly more efficient
-        // than sorting them, since a heap requires linear time to construct
-        for (RecordIter i = _items.begin(); i != _items.end(); ++i) {
-            _entry_events.push_back(i);
-            _exit_events.push_back(i);
+        Iter last = _set.items().end();
+        for (Iter i = _set.items().begin(); i != last; ++i) {
+            Interval b = _set.itemBounds(i);
+            // guard against NANs
+            assert(b.min() == b.min() && b.max() == b.max());
+            _entry_events.push_back(Event(b.max(), i));
+            _exit_events.push_back(Event(b.min(), i));
         }
-        boost::make_heap(_entry_events, _entry_heap_compare);
-        boost::make_heap(_exit_events, _exit_heap_compare);
-        boost::pop_heap(_entry_events, _entry_heap_compare);
-        boost::pop_heap(_exit_events, _exit_heap_compare);
 
-        RecordIter next_entry = _entry_events.back();
-        RecordIter next_exit = _exit_events.back();
-        _entry_events.pop_back();
-        _exit_events.pop_back();
+        boost::make_heap(_entry_events);
+        boost::make_heap(_exit_events);
 
-        while (next_entry != _items.end() || next_exit != _items.end()) {
-            assert(next_exit != _items.end());
+        Event next_entry = _get_next(_entry_events);
+        Event next_exit = _get_next(_exit_events);
 
-            if (next_entry == _items.end() ||
-                cmp(SweepTraits::exit_value(next_exit->bound),
-                    SweepTraits::entry_value(next_entry->bound)))
-            {
+        while (next_entry || next_exit) {
+            assert(next_exit);
+
+            if (!next_entry || next_exit > next_entry) {
                 // exit event - remove record from active list
-                _leave(*next_exit);
-                _active_items.erase(_active_items.iterator_to(*next_exit));
-                if (!_exit_events.empty()) {
-                    boost::pop_heap(_exit_events, _exit_heap_compare);
-                    next_exit = _exit_events.back();
-                    _exit_events.pop_back();
-                } else {
-                    next_exit = _items.end();
-                    // we should end the loop after this happens
-                }
+                _set.removeActiveItem(next_exit.item);
+                next_exit = _get_next(_exit_events);
             } else {
                 // entry event - add record to active list
-                _enter(*next_entry);
-                _active_items.push_back(*next_entry);
-                if (!_entry_events.empty()) {
-                    boost::pop_heap(_entry_events, _entry_heap_compare);
-                    next_entry = _entry_events.back();
-                    _entry_events.pop_back();
-                } else {
-                    next_entry = _items.end();
-                }
+                _set.addActiveItem(next_entry.item);
+                next_entry = _get_next(_entry_events);
             }
         }
-
-        assert(_active_items.empty());
     }
-
-protected:
-    /// The item and its sweepline boundary.
-    struct Record {
-        boost::intrusive::list_member_hook<> _hook;
-        Bound bound;
-        Item item;
-
-        Record(Bound const &b, Item const &i)
-            : bound(b), item(i)
-        {}
-    };
-    typedef typename std::vector<Record>::iterator RecordIter;
-
-    typedef boost::intrusive::list
-    < Record
-    , boost::intrusive::member_hook
-        < Record
-        , boost::intrusive::list_member_hook<>
-        , &Record::_hook
-        >
-    > RecordList;
-
-    /** @brief Enter an item record.
-     * Override this to process an item as it is about to enter the active list.
-     * When called, the passed record will not be part of the active list. */
-    virtual void _enter(Record const &) {}
-    /** @brief Leave an item record.
-     * Override this to process an item as it is about to leave the active list.
-     * When called, the passed record will be part of the active list. */
-    virtual void _leave(Record const &) {}
-
-    /// The list of all item records undergoing sweeping.
-    std::vector<Record> _items;
-    /// The list of active item records.
-    RecordList _active_items;
 
 private:
-    inline static bool _entry_heap_compare(RecordIter a, RecordIter b) {
-        typename SweepTraits::Compare cmp;
-        return cmp(SweepTraits::entry_value(b->bound), SweepTraits::entry_value(a->bound));
-    }
-    inline static bool _exit_heap_compare(RecordIter a, RecordIter b) {
-        typename SweepTraits::Compare cmp;
-        return cmp(SweepTraits::exit_value(b->bound), SweepTraits::exit_value(a->bound));
+    struct Event
+        : boost::totally_ordered<Event>
+    {
+        Coord coord;
+        Iter item;
+
+        Event(Coord c, Iter const &i)
+            : coord(c), item(i)
+        {}
+        Event()
+            : coord(nan("")), item()
+        {}
+        bool operator<(Event const &other) const { return coord < other.coord; }
+        bool operator==(Event const &other) const { return coord == other.coord; }
+        operator bool() const { return !IS_NAN(coord); }
+    };
+
+    static Event _get_next(std::vector<Event> &heap) {
+        if (heap.empty()) {
+            Event e;
+            return e;
+        }
+        boost::pop_heap(heap);
+        Event ret = heap.back();
+        heap.pop_back();
+        return ret;
     }
 
-    std::vector<RecordIter> _entry_events;
-    std::vector<RecordIter> _exit_events;
+    SweepSet &_set;
+    std::vector<Event> _entry_events;
+    std::vector<Event> _exit_events;
 };
 
 } // namespace Geom
