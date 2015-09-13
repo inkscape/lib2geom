@@ -841,6 +841,8 @@ inline Coord nearest_time(Point const &p, Path const &c) {
     return pt.curve_index + pt.t;
 }
 
+bool are_near(Path const &a, Path const &b, Coord precision = EPSILON);
+
 std::ostream &operator<<(std::ostream &out, Path const &path);
 
 } // end namespace Geom

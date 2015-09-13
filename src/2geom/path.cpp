@@ -1040,6 +1040,16 @@ Piecewise<D2<SBasis> > paths_to_pw(PathVector const &paths)
     return ret;
 }
 
+bool are_near(Path const &a, Path const &b, Coord precision)
+{
+    if (a.size() != b.size()) return false;
+
+    for (unsigned i = 0; i < a.size(); ++i) {
+        if (!a[i].isNear(b[i], precision)) return false;
+    }
+    return true;
+}
+
 std::ostream &operator<<(std::ostream &out, Path const &path)
 {
     SVGPathWriter pw;

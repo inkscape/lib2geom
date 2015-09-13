@@ -180,6 +180,29 @@ BezierCurve::intersect(Curve const &other, Coord eps) const
     return result;
 }
 
+bool BezierCurve::isNear(Curve const &c, Coord precision) const
+{
+    if (this == &c) return true;
+
+    BezierCurve const *other = dynamic_cast<BezierCurve const *>(&c);
+    if (!other) return false;
+
+    if (!are_near(inner.at0(), other->inner.at0(), precision)) return false;
+    if (!are_near(inner.at1(), other->inner.at1(), precision)) return false;
+
+    if (size() == other->size()) {
+        for (unsigned i = 1; i < order(); ++i) {
+            if (!are_near(inner.point(i), other->inner.point(i), precision)) {
+                return false;
+            }
+        }
+        return true;
+    } else {
+        // TODO: comparison after degree elevation
+        return false;
+    }
+}
+
 bool BezierCurve::operator==(Curve const &c) const
 {
     if (this == &c) return true;

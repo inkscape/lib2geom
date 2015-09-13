@@ -427,6 +427,15 @@ TEST_F(PathTest, EraseLast) {
     EXPECT_NO_THROW(p_open.checkContinuity());
 }
 
+TEST_F(PathTest, AreNear) {
+    Path nudged_arcs1 = string_to_path("M 0,0 a 5,10 45 0 1 10,10.0000005 a 5,10 45 0 1 0,0 z");
+    Path nudged_arcs2 = string_to_path("M 0,0 a 5,10 45 0 1 10,10.00005 a 5,10 45 0 1 0,0 z");
+    EXPECT_EQ(are_near(diederik, diederik, 0), true);
+    EXPECT_EQ(are_near(cmds, diederik, 1e-6), false);
+    EXPECT_EQ(are_near(arcs, nudged_arcs1, 1e-6), true);
+    EXPECT_EQ(are_near(arcs, nudged_arcs2, 1e-6), false);
+}
+
 /*
   Local Variables:
   mode:c++

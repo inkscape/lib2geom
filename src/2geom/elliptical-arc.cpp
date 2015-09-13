@@ -886,6 +886,25 @@ bool EllipticalArc::operator==(Curve const &c) const
     return true;
 }
 
+bool EllipticalArc::isNear(Curve const &c, Coord precision) const
+{
+    EllipticalArc const *other = dynamic_cast<EllipticalArc const *>(&c);
+    if (!other) {
+        if (isChord()) {
+            return c.isNear(chord(), precision);
+        }
+        return false;
+    }
+
+    if (!are_near(_initial_point, other->_initial_point, precision)) return false;
+    if (!are_near(_final_point, other->_final_point, precision)) return false;
+    if (isChord() && other->isChord()) return true;
+
+    if (sweep() != other->sweep()) return false;
+    if (!are_near(_ellipse, other->_ellipse, precision)) return false;
+    return true;
+}
+
 void EllipticalArc::feed(PathSink &sink, bool moveto_initial) const
 {
     if (moveto_initial) {

@@ -166,6 +166,7 @@ public:
     }
     virtual Coord valueAt(Coord t, Dim2 d) const { return inner[d].valueAt(t); }
     virtual D2<SBasis> toSBasis() const {return inner.toSBasis(); }
+    virtual bool isNear(Curve const &c, Coord precision) const;
     virtual bool operator==(Curve const &c) const;
     virtual void feed(PathSink &sink, bool) const;
 };
