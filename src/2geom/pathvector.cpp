@@ -163,7 +163,7 @@ public:
         for (std::size_t i = 0; i < a.size(); ++i) {
             _records.push_back(PathRecord(a[i], i, 0));
         }
-        for (std::size_t i = 0; i < a.size(); ++i) {
+        for (std::size_t i = 0; i < b.size(); ++i) {
             _records.push_back(PathRecord(b[i], i, 1));
         }
     }
