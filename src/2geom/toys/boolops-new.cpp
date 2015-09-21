@@ -53,22 +53,19 @@ class BoolOps : public Toy {
         cairo_set_line_join(cr, CAIRO_LINE_JOIN_BEVEL);
         cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
 
-        cairo_set_source_rgba(cr, 1, 0, 0, 0.3);
-        cairo_path(cr, as);
+        cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
+        cairo_path(cr, result);
         cairo_fill(cr);
-        cairo_set_source_rgba(cr, 0, 0, 1, 0.3);
-        cairo_path(cr, bst);
-        cairo_fill(cr);
-        
-        cairo_set_source_rgba(cr, 0, 0, 0, 1);
-        cairo_set_line_width(cr, 2);
-
-        for (unsigned i = 0; i < result.size(); ++i) {
-            cairo_path(cr, result[i]);
-            cairo_stroke(cr);
-        }
 
         cairo_set_line_width(cr, 1);
+        cairo_set_source_rgb(cr, 1, 0, 0);
+        cairo_path(cr, as);
+        cairo_stroke(cr);
+        cairo_set_source_rgb(cr, 0, 0, 1);
+        cairo_path(cr, bst);
+        cairo_stroke(cr);
+
+        //cairo_set_line_width(cr, 1);
 
         cairo_set_source_rgb(cr, 1, 0, 0);
         for (unsigned i = 0; i < ix.size(); ++i) {
