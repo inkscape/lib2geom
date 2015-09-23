@@ -59,6 +59,7 @@ public:
     /// Returns the number of intersections used when computing Boolean operations.
     std::size_t size() const;
     std::vector<Point> intersectionPoints() const;
+    bool valid() const { return _graph_valid; }
 
 private:
     enum InOutFlag {
@@ -128,6 +129,7 @@ private:
     boost::ptr_vector<IntersectionVertex> _xs;
     boost::ptr_vector<PathData> _components[2];
     UnprocessedList _ulist;
+    bool _graph_valid;
 
     friend std::ostream &operator<<(std::ostream &, PathIntersectionGraph const &);
 };

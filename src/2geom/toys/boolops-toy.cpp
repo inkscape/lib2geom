@@ -26,26 +26,29 @@ class BoolOps : public Toy {
         PathIntersectionGraph pig(as, bst);
         std::vector<Point> ix = pig.intersectionPoints();
         PathVector result;
-        if (togs[0].on && !togs[1].on && !togs[2].on) {
-            result = pig.getAminusB();
-        }
-        if (!togs[0].on && togs[1].on && !togs[2].on) {
-            result = pig.getIntersection();
-        }
-        if (!togs[0].on && !togs[1].on && togs[2].on) {
-            result = pig.getBminusA();
-        }
-        if (togs[0].on && togs[1].on && !togs[2].on) {
-            result = as;
-        }
-        if (togs[0].on && !togs[1].on && togs[2].on) {
-            result = pig.getXOR();
-        }
-        if (!togs[0].on && togs[1].on && togs[2].on) {
-            result = bst;
-        }
-        if (togs[0].on && togs[1].on && togs[2].on) {
-            result = pig.getUnion();
+
+        if (pig.valid()) {
+            if (togs[0].on && !togs[1].on && !togs[2].on) {
+                result = pig.getAminusB();
+            }
+            if (!togs[0].on && togs[1].on && !togs[2].on) {
+                result = pig.getIntersection();
+            }
+            if (!togs[0].on && !togs[1].on && togs[2].on) {
+                result = pig.getBminusA();
+            }
+            if (togs[0].on && togs[1].on && !togs[2].on) {
+                result = as;
+            }
+            if (togs[0].on && !togs[1].on && togs[2].on) {
+                result = pig.getXOR();
+            }
+            if (!togs[0].on && togs[1].on && togs[2].on) {
+                result = bst;
+            }
+            if (togs[0].on && togs[1].on && togs[2].on) {
+                result = pig.getUnion();
+            }
         }
         Timer::Time boolop_time = tm.lap();
 
@@ -80,7 +83,11 @@ class BoolOps : public Toy {
         togs[1].bounds = Rect(p + xo, p + xo + dpoint);
         togs[2].bounds = Rect(p + 2*xo, p + 2*xo + dpoint);
         draw_toggles(cr, togs);
-        *notify << "boolop time: " << boolop_time << std::endl;
+        if (pig.valid()) {
+            *notify << "boolop time: " << boolop_time << std::endl;
+        } else {
+            *notify << "boolop failed, time: " << boolop_time << std::endl;
+        }
         Toy::draw(cr, notify, width, height, save,timer_stream);
     }
 

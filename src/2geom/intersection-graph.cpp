@@ -57,6 +57,7 @@ struct PathIntersectionGraph::IntersectionVertexLess {
  */
 
 PathIntersectionGraph::PathIntersectionGraph(PathVector const &a, PathVector const &b, Coord precision)
+    : _graph_valid(true)
 {
     if (a.empty() || b.empty()) return;
 
@@ -70,7 +71,9 @@ PathIntersectionGraph::PathIntersectionGraph(PathVector const &a, PathVector con
     _assignEdgeWindingParities(precision);
     _assignComponentStatusFromDegenerateIntersections();
     _removeDegenerateIntersections();
-    _verify();
+    if (_graph_valid) {
+        _verify();
+    }
 }
 
 void PathIntersectionGraph::_prepareArguments()
@@ -206,8 +209,12 @@ void PathIntersectionGraph::_removeDegenerateIntersections()
                     // have the same winding, we have a defective intersection,
                     // which is neither degenerate nor normal. Those can occur in paths
                     // that contain overlapping segments. We cannot handle that case
-                    // for now, so just assert that it doesn't happen.
-                    assert(cyclic_prior(nn, oxl)->next_edge == nn->next_edge);
+                    // for now, so throw an exception.
+                    if (cyclic_prior(nn, oxl)->next_edge != nn->next_edge) {
+                        _graph_valid = false;
+                        ++i;
+                        continue;
+                    }
 
                     oxl.erase(nn);
                     xl.erase(n);
