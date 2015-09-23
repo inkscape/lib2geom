@@ -15,7 +15,7 @@ SET(2GEOM_TOYS-2_SRC
 aa
 arc-bez
 arc-length-param
-boolops-new
+boolops-toy
 bound-path
 bounds-test
 box3d
