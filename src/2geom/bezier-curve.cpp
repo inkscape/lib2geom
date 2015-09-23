@@ -315,6 +315,23 @@ std::vector<CurveIntersection> BezierCurveN<1>::intersect(Curve const &other, Co
 }
 
 template <>
+int BezierCurveN<1>::winding(Point const &p) const
+{
+    Point ip = inner.at0(), fp = inner.at1();
+    if (p[Y] == std::max(ip[Y], fp[Y])) return 0;
+
+    Point v = fp - ip;
+    assert(v[Y] != 0);
+    Coord t = (p[Y] - ip[Y]) / v[Y];
+    assert(t >= 0 && t <= 1);
+    Coord xcross = lerp(t, ip[X], fp[X]);
+    if (xcross > p[X]) {
+        return v[Y] > 0 ? 1 : -1;
+    }
+    return 0;
+}
+
+template <>
 void BezierCurveN<1>::feed(PathSink &sink, bool moveto_initial) const
 {
     if (moveto_initial) {

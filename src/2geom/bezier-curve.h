@@ -279,6 +279,9 @@ public:
         // call super. this is implemented only to allow specializations
         return BezierCurve::intersect(other, eps);
     }
+    virtual int winding(Point const &p) const {
+        return Curve::winding(p);
+    }
     virtual void feed(PathSink &sink, bool moveto_initial) const {
         // call super. this is implemented only to allow specializations
         BezierCurve::feed(sink, moveto_initial);
@@ -316,6 +319,7 @@ template <> inline bool BezierCurveN<1>::isLineSegment() const { return true; }
 template <> Curve *BezierCurveN<1>::derivative() const;
 template <> Coord BezierCurveN<1>::nearestTime(Point const &, Coord, Coord) const;
 template <> std::vector<CurveIntersection> BezierCurveN<1>::intersect(Curve const &, Coord) const;
+template <> int BezierCurveN<1>::winding(Point const &) const;
 template <> void BezierCurveN<1>::feed(PathSink &sink, bool moveto_initial) const;
 template <> void BezierCurveN<2>::feed(PathSink &sink, bool moveto_initial) const;
 template <> void BezierCurveN<3>::feed(PathSink &sink, bool moveto_initial) const;
