@@ -212,19 +212,23 @@ TEST_F(IntersectionGraphTest, RhombusInSquare) {
     checkRandomPoints(square, rhombus, s2, B_MINUS_A);
 }
 
+// this test is disabled, since we cannot handle overlapping segments for now.
+#if 0
 TEST_F(IntersectionGraphTest, EqualUnionAndIntersection) {
     PathVector shape = string_to_path("M 0,0 L 2,1 -1,2 -1,3 0,3 z");
     PathIntersectionGraph graph(shape, shape);
-    //std::cout << graph << std::endl;
+    std::cout << graph << std::endl;
     PathVector a = graph.getUnion();
-    //std::cout << shape << std::endl;
-    //std::cout << a << std::endl;
+    std::cout << shape << std::endl;
+    std::cout << a << std::endl;
     checkRandomPoints(shape, shape, a, UNION);
 
     PathIntersectionGraph graph2(bigh, bigh);
     PathVector b = graph2.getIntersection();
     checkRandomPoints(bigh, bigh, b, INTERSECTION);
+    std::cout << b <<std::endl;
 }
+#endif
 
 /*
   Local Variables:

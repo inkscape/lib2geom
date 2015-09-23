@@ -73,11 +73,8 @@ private:
         PathVectorTime pos;
         Point p; // guarantees that endpoints are exact
         IntersectionVertex *neighbor;
-        bool entry; // going in +t direction enters the other path
-        InOutFlag previous;
-        InOutFlag next;
+        InOutFlag next_edge;
         unsigned which;
-        //bool processed; // TODO: use intrusive unprocessed list instead
     };
 
     typedef boost::intrusive::list
@@ -112,9 +109,20 @@ private:
     };
 
     struct IntersectionVertexLess;
+    typedef IntersectionList::iterator ILIter;
+    typedef IntersectionList::const_iterator CILIter;
 
     PathVector _getResult(bool enter_a, bool enter_b);
     void _handleNonintersectingPaths(PathVector &result, unsigned which, bool inside);
+    void _prepareArguments();
+    bool _prepareIntersectionLists(Coord precision);
+    void _assignEdgeWindingParities(Coord precision);
+    void _assignComponentStatusFromDegenerateIntersections();
+    void _removeDegenerateIntersections();
+    void _verify();
+
+    ILIter _getNeighbor(ILIter iter);
+    PathData &_getPathData(ILIter iter);
 
     PathVector _pv[2];
     boost::ptr_vector<IntersectionVertex> _xs;
