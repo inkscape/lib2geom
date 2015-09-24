@@ -170,12 +170,4 @@ INSTALL(FILES ${files} DESTINATION include/2geom-${2GEOM_VERSION}/2geom/numeric)
 CONFIGURE_FILE( ${CMAKE_SOURCE_DIR}/2geom.pc.in
                 ${CMAKE_BINARY_DIR}/2geom.pc @ONLY IMMEDIATE )
 INSTALL(FILES "${CMAKE_BINARY_DIR}/2geom.pc" DESTINATION lib/pkgconfig)
-ADD_SUBDIRECTORY (toys)
-ADD_SUBDIRECTORY (tests)
-ADD_SUBDIRECTORY (py2geom)
-ADD_SUBDIRECTORY (performance-tests)
-
-
-add_subdirectory(cython-bindings)
-
 
