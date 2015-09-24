@@ -69,13 +69,19 @@ private:
  * the line starts intersecting their bounds, and removed when it completely
  * passes over them.
  *
- * To use this, create a derived class and reimplement the _enter()
- * and/or _leave() virtual functions, insert all the objects,
- * and finally call process(). Inside _enter() and _leave(), the items that have
- * their bounds intersected by the sweepline are available in a list called
- * _active_items. This is an intrusive linked list, so you should access it using
- * iterators. Do not add or remove items from it. You can specify the bound type
- * and how it should be accessed by defining a custom SweepTraits class.
+ * To use this, create a class that exposes the following methods:
+ * - Range items() - returns a forward iterable range of items that will be swept.
+ * - Interval itemBounds(iterator i) - given an iterator from the above range,
+ *   compute the bounding interval of the referenced item in the direction of sweep.
+ * - void addActiveItem(iterator i) - add an item to the active list.
+ * - void removeActiveItem(iterator i) - remove an item from the active list.
+ *
+ * Create the object, then instantiate this template with the above class
+ * as the template parameter, pass it the constructed object of the class,
+ * and call the process() method.
+ *
+ * A good choice for the active list is a Boost intrusive list, which allows
+ * you to get an iterator from a value in constant time.
  *
  * Look in path.cpp for example usage.
  *
