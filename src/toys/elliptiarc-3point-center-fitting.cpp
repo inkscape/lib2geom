@@ -143,7 +143,7 @@ bool make_elliptical_arc( EllipticalArc & ea,
 
 	std::cerr << "swap axes: " << swap_axes << std::endl;
 	std::cerr << "rx = " << rx << " ry = " << ry << std::endl;
-	std::cerr << "rot = " << rad_to_deg(rot) << std::endl;
+	std::cerr << "rot = " << deg_from_rad(rot) << std::endl;
 	std::cerr << "centre: " << centre << std::endl;
 
 

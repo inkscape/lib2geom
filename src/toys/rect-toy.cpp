@@ -46,7 +46,7 @@ using namespace Geom;
 
 std::string angle_formatter(double angle)
 {
-    return default_formatter(decimal_round(rad_to_deg(angle),2));
+    return default_formatter(decimal_round(deg_from_rad(angle),2));
 }
 
 class LineToy : public Toy

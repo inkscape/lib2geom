@@ -46,7 +46,7 @@ using namespace Geom;
 
 std::string angle_formatter(double angle)
 {
-    return default_formatter(decimal_round(rad_to_deg(angle),2));
+    return default_formatter(decimal_round(deg_from_rad(angle),2));
 }
 
 
@@ -485,7 +485,7 @@ class EllipticalArcToy: public Toy
 
 //      for ( unsigned int i = 0; i < limits.size(); ++i )
 //      {
-//          std::cerr << "angle[" << i << "] = " <<  rad_to_deg(limits[i]) << std::endl;
+//          std::cerr << "angle[" << i << "] = " <<  deg_from_rad(limits[i]) << std::endl;
 //          Point extreme = ea.pointAtAngle(limits[i]);
 //          draw_handle(cr, extreme );
 //          draw_text(cr, extreme, msg[i]);

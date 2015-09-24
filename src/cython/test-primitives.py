@@ -8,8 +8,8 @@ from cy2geom import LineSegment, Curve
 class TestPrimitives(unittest.TestCase):
 
     def test_angle(self):
-        self.assertAlmostEqual(Angle.deg_to_rad(45), pi/4)
-        self.assertAlmostEqual(Angle.rad_to_deg(pi/6), 30)
+        self.assertAlmostEqual(Angle.rad_from_deg(45), pi/4)
+        self.assertAlmostEqual(Angle.deg_from_rad(pi/6), 30)
 
         p = Point(1, sqrt(3))
         alpha = Angle.from_Point(p)

@@ -28,8 +28,8 @@ cdef extern from "2geom/angle.h" namespace "Geom":
         bint operator==(Angle &)
         bint operator!=(Angle &)
 
-    Coord deg_to_rad(Coord)
-    Coord rad_to_deg(Coord)
+    Coord rad_from_deg(Coord)
+    Coord deg_from_rad(Coord)
 
 cdef extern from "2geom/angle.h" namespace "Geom::Angle":
     Angle from_radians(Coord d)

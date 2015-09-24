@@ -250,7 +250,7 @@ std::vector<Coord> EllipticalArc::roots(Coord v, Dim2 d) const
                     break;
             }
 
-            //std::cerr << "s = " << rad_to_deg(s);
+            //std::cerr << "s = " << deg_from_rad(s);
             s = timeAtAngle(s);
             //std::cerr << " -> t: " << s << std::endl;
             if (unit_interval.contains(s)) {
@@ -312,7 +312,7 @@ std::vector<Coord> EllipticalArc::roots(Coord v, Dim2 d) const
 
     std::vector<double> arc_sol;
     for (unsigned int i = 0; i < sol.size(); ++i ) {
-        //std::cerr << "s = " << rad_to_deg(sol[i]);
+        //std::cerr << "s = " << deg_from_rad(sol[i]);
         sol[i] = timeAtAngle(sol[i]);
         //std::cerr << " -> t: " << sol[i] << std::endl;
         if (unit_interval.contains(sol[i])) {

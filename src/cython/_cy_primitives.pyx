@@ -93,14 +93,14 @@ cdef class cy_Angle:
         return self.thisptr.degreesClock()
 
     @classmethod
-    def deg_to_rad(cls, deg):
+    def rad_from_deg(cls, deg):
         """Convert degrees to radians."""
-        return deg_to_rad(deg)
+        return rad_from_deg(deg)
 
     @classmethod
-    def rad_to_deg(cls, rad):
+    def deg_from_rad(cls, rad):
         """Convert radians to degrees."""
-        return rad_to_deg(rad)
+        return deg_from_rad(rad)
 
 cdef cy_Angle wrap_Angle(Angle p):
     cdef Angle * retp = new Angle()

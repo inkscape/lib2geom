@@ -283,7 +283,7 @@ void SVGPathParser::_parse(char const *str, char const *strend, bool finish)
             Point point = _pop_point();
             bool sweep = _pop_flag();
             bool large_arc = _pop_flag();
-            double angle = deg_to_rad(_pop());
+            double angle = rad_from_deg(_pop());
             double ry = _pop();
             double rx = _pop();
 
