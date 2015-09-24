@@ -12,24 +12,35 @@
 
 using namespace Geom;
 
+/**
+ * @brief SVG path data loading toy.
+ *
+ * A very simple toy that loads a file containing raw SVG path data
+ * and displays it scaled so that it fits inside the window.
+ *
+ * Use this toy to see what the path data looks like without
+ * pasting it into the d= attribute of a path in Inkscape.
+ */
 class LoadSVGD: public Toy {
     PathVector pv;
-    PointHandle offset_handle;
-    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
-        
-        cairo_set_line_width(cr, 1);
-        cairo_set_source_rgb(cr, 0,0,0);
+    OptRect bounds;
 
-        PathVector res = pv * Translate(offset_handle.pos);
+    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
+
+        int pw = width - 20, ph = height - 20;
+        Coord s = std::min(pw / bounds->width(), ph / bounds->height());
+        Coord sw = bounds->width() * s, sh = bounds->height() * s;
+        Coord tx = (width - sw) / 2, ty = (height - sh) / 2;
+        PathVector res = pv * (Scale(s) * Translate(tx, ty));
         CairoPathSink sink(cr);
         sink.feed(res);
-        cairo_stroke(cr);
 
-        // spit out some diagnostic info about the path
-        SVGPathWriter sw;
-        //sw.setOptimize(true);
-        sw.feed(res);
-        *notify << sw.str();
+        cairo_set_source_rgb(cr, 1, 0, 0);
+        cairo_fill_preserve(cr);
+        cairo_set_line_width(cr, 1);
+        cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
+        cairo_set_source_rgb(cr, 0,0,0);
+        cairo_stroke(cr);
 
         Toy::draw(cr, notify, width, height, save,timer_stream);
     }
@@ -41,13 +52,12 @@ class LoadSVGD: public Toy {
         if (argc > 1)
             path_b_name = argv[1];
         pv = read_svgd(path_b_name);
-        std::cout << pv.size() << "\n";
-        std::cout << pv[0].size() << "\n";
-        pv *= Translate(-pv[0].initialPoint());
-        
-        Rect bounds = *pv[0].boundsExact();
-        handles.push_back(&offset_handle);
-        offset_handle.pos = bounds.midpoint() - bounds.corner(0);
+        bounds = pv.boundsExact();
+        if (!bounds) {
+            std::cerr << "Empty path, aborting" << std::endl;
+            std::exit(1);
+        }
+        pv *= Translate(-bounds->corner(0));
     }
 };
 
