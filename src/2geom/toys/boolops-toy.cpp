@@ -70,7 +70,7 @@ class BoolOps : public Toy {
 
         //cairo_set_line_width(cr, 1);
 
-        cairo_set_source_rgb(cr, 1, 0, 0);
+        cairo_set_source_rgb(cr, 0, 1, 0);
         for (unsigned i = 0; i < ix.size(); ++i) {
             draw_handle(cr, ix[i]);
         }
