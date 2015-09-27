@@ -1,7 +1,8 @@
-Jabber Channel
-==============
-At the moment, communication about this project occurs on the jabber channel
-lib2geom@conference.gristle.org
+Mailing list
+============
+Communication about this project occurs on the lib2geom mailing list:
+
+	https://lists.sourceforge.net/lists/listinfo/lib2geom-devel
 
 Help Wanted
 ===========
@@ -35,7 +36,7 @@ For Debian-like platforms, the following packages are required:
 
 To compile, type ‘cmake .’ and then ‘make’.
 
-If you have problems, just ask in the channel.
+If you have problems, just ask on the mailing list.
 
 Running tests
 =============

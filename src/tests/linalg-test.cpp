@@ -33,6 +33,9 @@ void check_test( const char* description, T output, U expected )
 
 void vector_test()
 {
+	// Deprecated. Replaced by ** Vector examples **
+	// in nl-vector-test.cpp
+	/*
 	NL::Vector v1(10), v2(10), v3(5);
 	for (unsigned int i = 0; i < v1.size(); ++i)
 	{
@@ -75,10 +78,9 @@ void vector_test()
 	std::cout << "v2.set_all(0) : " << v2 << std::endl;
 	value = v2.is_zero();
 	std::cout << "v2.is_zero() : " << value << std::endl;
-	
 	NL::swap(v1, v2);
 	std::cout << "swap(v1, v2) : v1: " << v1 << " v2: " << v2 << std::endl;
-	
+	*/
 }
 
 
@@ -164,6 +166,9 @@ void const_vector_view_test()
 
 void vector_view_test()
 {
+	// Deprecated. Replaced by ** VectorView examples **
+	// in nl-vector-test.cpp
+	/*
 	NL::Vector v1(10);
 	for (unsigned int i = 0; i < v1.size(); ++i)
 		v1[i] = i;
@@ -204,6 +209,7 @@ void vector_view_test()
 	check_test( "vv1 -= v2", vv1.str(), "[-6, -6, 2, 3, 4]");
 	NL::swap_view(vv1, vv4);
 	check_test( "swap_view(vv1, vv4)", v1.str(), "[-6, -6, 2, 3, 4, 2, 6, 7, 8, 4]");
+	*/
 }
 
 
