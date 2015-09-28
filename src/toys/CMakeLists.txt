@@ -30,7 +30,6 @@ conic-4
 conic-5
 conic-6
 conic-section-toy
-#convex-toy
 convole
 curvature-curve
 curvature-test
@@ -47,9 +46,7 @@ ellipse-bezier-intersect-toy
 ellipse-fitting
 ellipse-intersect-toy
 ellipse-line-intersect-toy
-#ellipse-transform
 elliptiarc-3point-center-fitting
-#elliptiarc-5points-fitting
 elliptiarc-curve-fitting
 elliptical-arc-toy
 evolute
@@ -62,8 +59,6 @@ ineaa
 inner-product-clip
 intersect-data
 inverse-test
-#involute
-#kerning
 kinematic_templates
 levelsets-test
 line-toy
@@ -89,13 +84,11 @@ precise-flat
 pw-compose-test
 pw-funcs
 pw-toy
-#ray-sorting-test
 rdm-area
 rect_01
 rect_02
 rect_03
 rect-toy
-#redblack-toy
 root-finder-comparer
 rtree-toy
 sanitize
