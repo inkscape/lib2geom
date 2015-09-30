@@ -65,7 +65,6 @@ curve.h
 curves.h
 
 d2-sbasis.cpp
-d2-sbasis.h
 d2.h
 
 ellipse.cpp
