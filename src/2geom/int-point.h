@@ -92,6 +92,10 @@ public:
 
     /// @name Vector-like arithmetic operations
     /// @{
+    IntPoint operator-() const {
+        IntPoint ret(-_pt[X], -_pt[Y]);
+        return ret;
+    }
     IntPoint &operator+=(IntPoint const &o) {
         _pt[X] += o._pt[X];
         _pt[Y] += o._pt[Y];
