@@ -148,16 +148,17 @@ function( compile_pyx _name generated_file )
           endif()
         endforeach()
 
-        # check for pxd dependencies
-
-        # Look for cimport statements.
         set( module_dependencies "" )
-        file( STRINGS "${pxd}" cimport_statements REGEX cimport )
+
+        # Look for cimport and include statements.
+        file( STRINGS "${pxd}" cimport_statements REGEX "(cimport|include)" )
         foreach( statement ${cimport_statements} )
           if( ${statement} MATCHES from )
-            string( REGEX REPLACE "from[ ]+([^ ]+).*" "\\1" module "${statement}" )
+            string( REGEX REPLACE "from[ ]+([^ ]+).*" "\\1.pxd" module "${statement}" )
+          elseif( ${statement} MATCHES include )
+            string( REGEX REPLACE "include[ ]+[\"]([^\"]+)[\"].*" "\\1" module "${statement}" )
           else()
-            string( REGEX REPLACE "cimport[ ]+([^ ]+).*" "\\1" module "${statement}" )
+            string( REGEX REPLACE "cimport[ ]+([^ ]+).*" "\\1.pxd" module "${statement}" )
           endif()
           list( APPEND module_dependencies ${module} )
         endforeach()
@@ -165,7 +166,7 @@ function( compile_pyx _name generated_file )
         # Add the module to the files to check, if appropriate.
         foreach( module ${module_dependencies} )
           unset( pxd_location CACHE )
-          find_file( pxd_location ${module}.pxd
+          find_file( pxd_location ${module}
             PATHS "${pyx_path}" ${cmake_include_directories} NO_DEFAULT_PATH )
           if( pxd_location )
             list( FIND pxds_checked ${pxd_location} pxd_idx )
@@ -176,6 +177,8 @@ function( compile_pyx _name generated_file )
                 list( APPEND pxd_dependencies ${pxd_location} )
               endif() # if it is not already going to be checked
             endif() # if it has not already been checked
+          else()
+            message("${module} ignored")
           endif() # if pxd file can be found
         endforeach() # for each module dependency discovered
       endforeach() # for each pxd file to check
