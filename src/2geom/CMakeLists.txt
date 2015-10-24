@@ -147,9 +147,6 @@ transforms.h
 
 utils.cpp
 utils.h
-
-viewbox.cpp
-viewbox.h
 )
 
 # make lib for 2geom

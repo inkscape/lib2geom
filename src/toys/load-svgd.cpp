@@ -27,11 +27,9 @@ class LoadSVGD: public Toy {
 
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
 
-        int pw = width - 20, ph = height - 20;
-        Coord s = std::min(pw / bounds->width(), ph / bounds->height());
-        Coord sw = bounds->width() * s, sh = bounds->height() * s;
-        Coord tx = (width - sw) / 2, ty = (height - sh) / 2;
-        PathVector res = pv * (Scale(s) * Translate(tx, ty));
+        Rect viewport(Point(10, 10), Point(width-10, height-10));
+        PathVector res = pv * bounds->transformTo(viewport, Aspect(ALIGN_XMID_YMID));
+
         CairoPathSink sink(cr);
         sink.feed(res);
 
@@ -57,7 +55,6 @@ class LoadSVGD: public Toy {
             std::cerr << "Empty path, aborting" << std::endl;
             std::exit(1);
         }
-        pv *= Translate(-bounds->corner(0));
     }
 };
 
