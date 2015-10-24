@@ -135,7 +135,7 @@ void wrap_interval() {
     class_<Geom::OptInterval>("OptInterval", init<double, double>())
         .def(init<Geom::Interval>())
         .def("unionWith", &Geom::OptInterval::unionWith)
-        .def("isEmpty", &Geom::OptInterval::isEmpty)
+        .def("empty", &Geom::OptInterval::empty)
         .def("toInterval", from_optinterval)
 
         .def(self == self)

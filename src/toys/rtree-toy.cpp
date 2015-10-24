@@ -569,7 +569,7 @@ intersection test
 				r3( Point(50, 50), Point(100, 100));
 		OptRect a_intersection_b;
 		a_intersection_b = intersect( r1, r2 );
-		std::cout << "r1, r2  " << a_intersection_b.isEmpty() << std::endl;
+		std::cout << "r1, r2  " << a_intersection_b.empty() << std::endl;
 		a_intersection_b = intersect( r1, r3 );
-		std::cout << "r1, r3  " << a_intersection_b.isEmpty() << std::endl;
+		std::cout << "r1, r3  " << a_intersection_b.empty() << std::endl;
 */

@@ -267,7 +267,7 @@ double RTree::find_enlargement( const Rect &a, const Rect &b ) const{
     OptRect a_intersection_b = intersect( a, b );
 
     // a, b do not intersect
-    if( a_intersection_b.isEmpty() ){ 
+    if( a_intersection_b.empty() ){ 
         _RTREE_PRINT("      find_enlargement (no intersect): " << union_rect.area() - a.area() - b.area() );
         return union_rect.area() - a.area() - b.area();
     }

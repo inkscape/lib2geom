@@ -247,10 +247,10 @@ TYPED_TEST(GenericRectTest, Area) {
 
 TYPED_TEST(GenericRectTest, Emptiness) {
     typename TestFixture::OptCRect empty, oa(0, 0, 10, 10);
-    EXPECT_TRUE(empty.isEmpty());
+    EXPECT_TRUE(empty.empty());
     EXPECT_FALSE(empty);
     EXPECT_TRUE(!empty);
-    EXPECT_FALSE(oa.isEmpty());
+    EXPECT_FALSE(oa.empty());
     EXPECT_TRUE(oa);
     EXPECT_FALSE(!oa);
 }
