@@ -157,7 +157,7 @@ public:
      * to the specified viewport. The aspect parameter specifies how to
      * to the transformation (whether the aspect ratio of content
      * should be kept and where it should be placed in the viewport). */
-    Affine transformTo(Rect const &viewport, Aspect const &aspect = Aspect());
+    Affine transformTo(Rect const &viewport, Aspect const &aspect = Aspect()) const;
     /// @}
 
     /// @name Operators

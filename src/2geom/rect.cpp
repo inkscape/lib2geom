@@ -96,7 +96,7 @@ Rect &Rect::operator*=(Affine const &m) {
     return *this;
 }
 
-Affine Rect::transformTo(Rect const &viewport, Aspect const &aspect)
+Affine Rect::transformTo(Rect const &viewport, Aspect const &aspect) const
 {
     // 1. translate viewbox to origin
     Geom::Affine total = Translate(-min());
