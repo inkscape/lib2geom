@@ -747,6 +747,16 @@ PathTime Path::nearestTime(Point const &p, Coord *dist) const
     return ret;
 }
 
+std::vector<Point> Path::nodes() const
+{
+    std::vector<Point> result;
+    size_type path_size = size_closed();
+    for (size_type i = 0; i < path_size; ++i) {
+        result.push_back(_data->curves[i].initialPoint());
+    }
+    return result;
+}
+
 void Path::appendPortionTo(Path &ret, double from, double to) const
 {
     if (!(from >= 0 && to >= 0)) {

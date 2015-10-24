@@ -577,6 +577,8 @@ public:
     PathTime nearestTime(Point const &p, Coord *dist = NULL) const;
     std::vector<Coord> nearestTimePerCurve(Point const &p) const;
 
+    std::vector<Point> nodes() const;
+
     void appendPortionTo(Path &p, Coord f, Coord t) const;
 
     /** @brief Append a subset of this path to another path.

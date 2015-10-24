@@ -280,6 +280,18 @@ std::vector<PathVectorTime> PathVector::allNearestTimes(Point const &p, Coord *d
     return retval;
 }
 
+std::vector<Point> PathVector::nodes() const
+{
+    std::vector<Point> result;
+    for (size_type i = 0; i < size(); ++i) {
+        size_type path_size = (*this)[i].size_closed();
+        for (size_type j = 0; j < path_size; ++j) {
+            result.push_back((*this)[i][j].initialPoint());
+        }
+    }
+    return result;
+}
+
 PathVectorTime PathVector::_factorTime(Coord t) const
 {
     PathVectorTime ret;
