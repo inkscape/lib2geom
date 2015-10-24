@@ -9,10 +9,6 @@ implicitization-test
 #rtree-performance-test
 )
 
-SET(2GEOM_PERFORMANCE_SRC
-boolops-performance
-)
-
 # Use this variable for GTest tests which should have a default main().
 SET(2GEOM_GTESTS_SRC
 affine-test
@@ -45,8 +41,3 @@ FOREACH(source ${2GEOM_TESTS_SRC})
     TARGET_LINK_LIBRARIES(${source} 2geom ${LINK_GSL} ${GTK2_LINK_FLAGS} gtest)
     ADD_TEST(NAME ${source} COMMAND ${source})
 ENDFOREACH(source)
-
-FOREACH(source ${2GEOM_PERFORMANCE_SRC})
-	ADD_EXECUTABLE(${source} ${source}.cpp)
-	TARGET_LINK_LIBRARIES(${source} 2geom ${LINK_GSL} ${GTK2_LINK_FLAGS})
-ENDFOREACH()

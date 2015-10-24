@@ -1,5 +1,6 @@
 SET(2GEOM_PERFORMANCE_TESTS_SRC
 example-performance-test
+boolops-performance-test
 bendpath-test
 bezier-utils-test
 parse-svg-test
