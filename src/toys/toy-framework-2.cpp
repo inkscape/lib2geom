@@ -338,6 +338,7 @@ void save_cairo_backend(const char* filename) {
     unsigned l = strlen(filename);
     int width = 600;
     int height = 600;
+    gdk_drawable_get_size(canvas->window, &width, &height);
     bool save_png = false;
 
     if (l >= 4 && strcmp(filename + l - 4, ".png") == 0) {
