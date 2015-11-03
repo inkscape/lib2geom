@@ -43,7 +43,7 @@ public:
         PathIntersectionGraph pig(ast, bst);
         std::vector<Point> dix, ix, wpoints;
         ix = pig.intersectionPoints();
-        dix = pig.defectiveIntersectionPoints();
+        dix = pig.intersectionPoints(true);
         wpoints = pig.windingPoints();
         PathVector result, f_in, f_out;
 
