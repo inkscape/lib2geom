@@ -126,6 +126,7 @@ bool PathIntersectionGraph::_prepareIntersectionLists(Coord precision)
         xa->neighbor = xb;
         xb->neighbor = xa;
         xa->next_edge = xb->next_edge = OUTSIDE;
+        xa->defective = xb->defective = false;
         _xs.push_back(xa);
         _xs.push_back(xb);
         _components[0][xa->pos.path_index].xlist.push_back(*xa);
@@ -157,7 +158,9 @@ void PathIntersectionGraph::_assignEdgeWindingParities(Coord precision)
                 PathInterval ival = forward_interval(i->pos, n->pos, _pv[w][pi].size());
                 PathTime mid = ival.inside(precision);
 
-                int wdg = _pv[ow].winding(_pv[w][pi].pointAt(mid));
+                Point wpoint = _pv[w][pi].pointAt(mid);
+                _winding_points.push_back(wpoint);
+                int wdg = _pv[ow].winding(wpoint);
                 if (wdg % 2) {
                     i->next_edge = INSIDE;
                 } else {
@@ -212,6 +215,8 @@ void PathIntersectionGraph::_removeDegenerateIntersections()
                     // for now, so throw an exception.
                     if (cyclic_prior(nn, oxl)->next_edge != nn->next_edge) {
                         _graph_valid = false;
+                        n->defective = true;
+                        nn->defective = true;
                         ++i;
                         continue;
                     }
@@ -291,17 +296,41 @@ std::size_t PathIntersectionGraph::size() const
     return result;
 }
 
-std::vector<Point> PathIntersectionGraph::intersectionPoints() const
+std::vector<Point> PathIntersectionGraph::intersectionPoints(bool defective) const
 {
     std::vector<Point> result;
 
     typedef IntersectionList::const_iterator CILIter;
     for (std::size_t i = 0; i < _components[0].size(); ++i) {
         for (CILIter j = _components[0][i].xlist.begin(); j != _components[0][i].xlist.end(); ++j) {
-            result.push_back(j->p);
+            if (j->defective == defective) {
+                result.push_back(j->p);
+            }
         }
     }
     return result;
+}
+
+void PathIntersectionGraph::fragments(PathVector &in, PathVector &out) const
+{
+    typedef boost::ptr_vector<PathData>::const_iterator PIter;
+    for (unsigned w = 0; w < 2; ++w) {
+        for (PIter li = _components[w].begin(); li != _components[w].end(); ++li) {
+            for (CILIter k = li->xlist.begin(); k != li->xlist.end(); ++k) {
+                CILIter n = cyclic_next(k, li->xlist);
+                // TODO: investigate why non-contiguous paths are sometimes generated here
+                Path frag(k->p);
+                frag.setStitching(true);
+                PathInterval ival = forward_interval(k->pos, n->pos, _pv[w][k->pos.path_index].size());
+                _pv[w][k->pos.path_index].appendPortionTo(frag, ival, k->p, n->p);
+                if (k->next_edge == INSIDE) {
+                    in.push_back(frag);
+                } else {
+                    out.push_back(frag);
+                }
+            }
+        }
+    }
 }
 
 PathVector PathIntersectionGraph::_getResult(bool enter_a, bool enter_b)

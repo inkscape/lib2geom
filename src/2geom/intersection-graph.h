@@ -58,7 +58,11 @@ public:
 
     /// Returns the number of intersections used when computing Boolean operations.
     std::size_t size() const;
-    std::vector<Point> intersectionPoints() const;
+    std::vector<Point> intersectionPoints(bool defective = false) const;
+    std::vector<Point> windingPoints() const {
+        return _winding_points;
+    }
+    void fragments(PathVector &in, PathVector &out) const;
     bool valid() const { return _graph_valid; }
 
 private:
@@ -76,6 +80,7 @@ private:
         IntersectionVertex *neighbor;
         InOutFlag next_edge;
         unsigned which;
+        bool defective;
     };
 
     typedef boost::intrusive::list
@@ -130,6 +135,7 @@ private:
     boost::ptr_vector<PathData> _components[2];
     UnprocessedList _ulist;
     bool _graph_valid;
+    std::vector<Point> _winding_points;
 
     friend std::ostream &operator<<(std::ostream &, PathIntersectionGraph const &);
 };
