@@ -149,116 +149,14 @@ Coord EllipticalArc::valueAtAngle(Coord t, Dim2 d) const
 
 std::vector<Coord> EllipticalArc::roots(Coord v, Dim2 d) const
 {
-    if (isChord()) {
-        return chord().roots(v, d);
-    }
-
     std::vector<Coord> sol;
-    Interval unit_interval(0, 1);
 
-    if ( are_near(ray(X), 0) && are_near(ray(Y), 0) ) {
-        if ( center(d) == v )
-            sol.push_back(0);
+    if (isChord()) {
+        sol = chord().roots(v, d);
         return sol;
     }
 
-    static const char* msg[2][2] =
-    {
-        { "d == X; ray(X) == 0; "
-          "s = (v - center(X)) / ( -ray(Y) * std::sin(_rot_angle) ); "
-          "s should be contained in [-1,1]",
-          "d == X; ray(Y) == 0; "
-          "s = (v - center(X)) / ( ray(X) * std::cos(_rot_angle) ); "
-          "s should be contained in [-1,1]"
-        },
-        { "d == Y; ray(X) == 0; "
-          "s = (v - center(X)) / ( ray(Y) * std::cos(_rot_angle) ); "
-          "s should be contained in [-1,1]",
-          "d == Y; ray(Y) == 0; "
-          "s = (v - center(X)) / ( ray(X) * std::sin(_rot_angle) ); "
-          "s should be contained in [-1,1]"
-        },
-    };
-
-    for ( unsigned int dim = 0; dim < 2; ++dim )
-    {
-        if (ray((Dim2) dim) == 0)
-        {
-            if ( initialPoint()[d] == v && finalPoint()[d] == v )
-            {
-                THROW_INFINITESOLUTIONS(0);
-            }
-            if ( (initialPoint()[d] < finalPoint()[d])
-                 && (initialPoint()[d] > v || finalPoint()[d] < v) )
-            {
-                return sol;
-            }
-            if ( (initialPoint()[d] > finalPoint()[d])
-                 && (finalPoint()[d] > v || initialPoint()[d] < v) )
-            {
-                return sol;
-            }
-            double ray_prj = 0.0;
-            switch(d)
-            {
-                case X:
-                    switch(dim)
-                    {
-                        case X: ray_prj = -ray(Y) * std::sin(rotationAngle());
-                                break;
-                        case Y: ray_prj = ray(X) * std::cos(rotationAngle());
-                                break;
-                    }
-                    break;
-                case Y:
-                    switch(dim)
-                    {
-                        case X: ray_prj = ray(Y) * std::cos(rotationAngle());
-                                break;
-                        case Y: ray_prj = ray(X) * std::sin(rotationAngle());
-                                break;
-                    }
-                    break;
-            }
-
-            double s = (v - center(d)) / ray_prj;
-            if ( s < -1 || s > 1 )
-            {
-                THROW_LOGICALERROR(msg[d][dim]);
-            }
-            switch(dim)
-            {
-                case X:
-                    s = std::asin(s); // return a value in [-PI/2,PI/2]
-                    if ( logical_xor( sweep(), are_near(initialAngle(), M_PI/2) )  )
-                    {
-                        if ( s < 0 ) s += 2*M_PI;
-                    }
-                    else
-                    {
-                        s = M_PI - s;
-                        if (!(s < 2*M_PI) ) s -= 2*M_PI;
-                    }
-                    break;
-                case Y:
-                    s = std::acos(s); // return a value in [0,PI]
-                    if ( logical_xor( sweep(), are_near(initialAngle(), 0) ) )
-                    {
-                        s = 2*M_PI - s;
-                        if ( !(s < 2*M_PI) ) s -= 2*M_PI;
-                    }
-                    break;
-            }
-
-            //std::cerr << "s = " << deg_from_rad(s);
-            s = timeAtAngle(s);
-            //std::cerr << " -> t: " << s << std::endl;
-            if (unit_interval.contains(s)) {
-                sol.push_back(s);
-            }
-            return sol;
-        }
-    }
+    Interval unit_interval(0, 1);
 
     double rotx, roty;
     if (d == X) {
@@ -278,10 +176,10 @@ std::vector<Coord> EllipticalArc::roots(Coord v, Dim2 d) const
     //std::cerr << "b = " << b << std::endl;
     //std::cerr << "c = " << c << std::endl;
 
-    if ( are_near(a,0) )
+    if (a == 0)
     {
         sol.push_back(M_PI);
-        if ( !are_near(b,0) )
+        if (b != 0)
         {
             double s = 2 * std::atan(-c/(2*b));
             if ( s < 0 ) s += 2*M_PI;
@@ -292,8 +190,7 @@ std::vector<Coord> EllipticalArc::roots(Coord v, Dim2 d) const
     {
         double delta = b * b - a * c;
         //std::cerr << "delta = " << delta << std::endl;
-        if ( are_near(delta, 0) )
-        {
+        if (delta == 0) {
             double s = 2 * std::atan(-b/a);
             if ( s < 0 ) s += 2*M_PI;
             sol.push_back(s);
