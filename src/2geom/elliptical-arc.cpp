@@ -92,47 +92,58 @@ namespace Geom
  * @ingroup Curves
  */
 
+
+/** @brief Compute bounds of an elliptical arc.
+ * The bounds computation works as follows. The extreme X and Y points
+ * are either the endpoints or local minima / maxima of the ellipse.
+ * We already have endpoints, and we can find the local extremes
+ * by computing a partial derivative with respect to the angle
+ * and equating that to zero:
+ * \f{align*}{
+     x &= r_x \cos \varphi \cos \theta - r_y \sin \varphi \sin \theta + c_x \\ 
+     \frac{\partial x}{\partial \theta} &= -r_x \cos \varphi \sin \theta - r_y \sin \varphi \cos \theta = 0 \\ 
+     \frac{\sin \theta}{\cos \theta} &= \tan\theta = -\frac{r_y \sin \varphi}{r_x \cos \varphi} \\ 
+     \theta &= \tan^{-1} \frac{-r_y \sin \varphi}{r_x \cos \varphi}
+   \f}
+ * The local extremes correspond to two angles separated by \f$\pi\f$.
+ * Once we compute these angles, we check whether they belong to the arc,
+ * and if they do, we evaluate the ellipse at these angles.
+ * The bounding box of the arc is equal to the bounding box of the endpoints
+ * and the local extrema that belong to the arc.
+ */
 Rect EllipticalArc::boundsExact() const
 {
     if (isChord()) {
         return chord().boundsExact();
     }
 
-    using std::swap;
+    Coord coord[2][4] = {
+        { _initial_point[X], _final_point[X], 0, 0 },
+        { _initial_point[Y], _final_point[Y], 0, 0 }
+    };
+    int ncoord[2] = { 2, 2 };
 
-    // TODO: simplify / document what is going on here.
-    double extremes[4];
+    Angle extremes[2][2];
     double sinrot, cosrot;
     sincos(rotationAngle(), sinrot, cosrot);
 
-    extremes[0] = std::atan2( -ray(Y) * sinrot, ray(X) * cosrot );
-    extremes[1] = extremes[0] + M_PI;
-    if ( extremes[0] < 0 ) extremes[0] += 2*M_PI;
-    extremes[2] = std::atan2( ray(Y) * cosrot, ray(X) * sinrot );
-    extremes[3] = extremes[2] + M_PI;
-    if ( extremes[2] < 0 ) extremes[2] += 2*M_PI;
+    extremes[X][0] = std::atan2( -ray(Y) * sinrot, ray(X) * cosrot );
+    extremes[X][1] = extremes[X][0] + M_PI;
+    extremes[Y][0] = std::atan2( ray(Y) * cosrot, ray(X) * sinrot );
+    extremes[Y][1] = extremes[Y][0] + M_PI;
 
-
-    double arc_extremes[4];
-    arc_extremes[0] = initialPoint()[X];
-    arc_extremes[1] = finalPoint()[X];
-    if ( arc_extremes[0] < arc_extremes[1] )
-        swap(arc_extremes[0], arc_extremes[1]);
-    arc_extremes[2] = initialPoint()[Y];
-    arc_extremes[3] = finalPoint()[Y];
-    if ( arc_extremes[2] < arc_extremes[3] )
-        swap(arc_extremes[2], arc_extremes[3]);
-
-    if ( !are_near(initialPoint(), finalPoint()) ) {
-        for (unsigned i = 0; i < 4; ++i) {
-            if (containsAngle(extremes[i])) {
-                arc_extremes[i] = valueAtAngle(extremes[i], (i >> 1) ? Y : X);
+    for (unsigned d = 0; d < 2; ++d) {
+        for (unsigned i = 0; i < 2; ++i) {
+            if (containsAngle(extremes[d][i])) {
+                coord[d][ncoord[d]++] = valueAtAngle(extremes[d][i], d ? Y : X);
             }
         }
     }
 
-    return Rect( Point(arc_extremes[1], arc_extremes[3]) ,
-                 Point(arc_extremes[0], arc_extremes[2]) );
+    Interval xival = Interval::from_range(coord[X], coord[X] + ncoord[X]);
+    Interval yival = Interval::from_range(coord[Y], coord[Y] + ncoord[Y]);
+    Rect result(xival, yival);
+    return result;
 }
 
 

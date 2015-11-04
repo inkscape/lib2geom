@@ -142,6 +142,24 @@ LineSegment Ellipse::semiaxis(Dim2 d, int sign) const
     return ls;
 }
 
+Rect Ellipse::boundsExact() const
+{
+    Angle extremes[2][2];
+    double sinrot, cosrot;
+    sincos(_angle, sinrot, cosrot);
+
+    extremes[X][0] = std::atan2( -ray(Y) * sinrot, ray(X) * cosrot );
+    extremes[X][1] = extremes[X][0] + M_PI;
+    extremes[Y][0] = std::atan2( ray(Y) * cosrot, ray(X) * sinrot );
+    extremes[Y][1] = extremes[Y][0] + M_PI;
+
+    Rect result;
+    for (unsigned d = 0; d < 2; ++d) {
+        result[d] = Interval(valueAt(extremes[d][0], d ? Y : X),
+                             valueAt(extremes[d][1], d ? Y : X));
+    }
+    return result;
+}
 
 std::vector<double> Ellipse::coefficients() const
 {

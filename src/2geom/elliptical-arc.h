@@ -215,7 +215,7 @@ public:
     /// Get the angular interval of the arc.
     AngleInterval angularInterval() const { return _angles; }
 
-    /// Evaluate the arc in the curve domain, i.e. \f$[0, 1]\$.
+    /// Evaluate the arc in the curve domain, i.e. \f$[0, 1]\f$.
     virtual Point pointAt(Coord t) const;
 
     /// Evaluate a single coordinate on the arc in the curve domain.

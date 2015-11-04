@@ -153,7 +153,7 @@ TEST(EllipseTest, LineIntersection) {
 
     std::vector<ShapeIntersection> xs = e.intersect(l);
 
-    ASSERT_EQ(xs.size(), 2);
+    ASSERT_EQ(xs.size(), 2ul);
     EXPECT_FLOAT_EQ(xs[0].point()[X], 0);
     EXPECT_FLOAT_EQ(xs[0].point()[Y], -2);
     EXPECT_FLOAT_EQ(xs[1].point()[X], 9./5);
@@ -170,7 +170,7 @@ TEST(EllipseTest, EllipseIntersection) {
 
     std::vector<ShapeIntersection> xs = e1.intersect(e2);
 
-    EXPECT_EQ(xs.size(), 4);
+    EXPECT_EQ(xs.size(), 4ul);
     EXPECT_intersections_valid(e1, e2, xs, 1e-10);
 }
 
@@ -180,7 +180,7 @@ TEST(EllipseTest, BezierIntersection) {
 
     std::vector<ShapeIntersection> xs = e.intersect(b);
 
-    EXPECT_EQ(xs.size(), 2);
+    EXPECT_EQ(xs.size(), 2ul);
     EXPECT_intersections_valid(e, b, xs, 6e-13);
 }
 
@@ -207,10 +207,10 @@ TEST(EllipseTest, Coefficients) {
 
 TEST(EllipseTest, UnitCircleTransform) {
     std::vector<Ellipse> es;
-    es.push_back(Ellipse(Point(-15,25), Point(10,15), Angle::from_degrees(45).radians0()));
+    es.push_back(Ellipse(Point(-15,25), Point(10,15), Angle::from_degrees(45)));
     es.push_back(Ellipse(Point(-10,33), Point(40,20), M_PI));
-    es.push_back(Ellipse(Point(10,-33), Point(40,20), Angle::from_degrees(135).radians0()));
-    es.push_back(Ellipse(Point(-10,-33), Point(50,10), Angle::from_degrees(330).radians0()));
+    es.push_back(Ellipse(Point(10,-33), Point(40,20), Angle::from_degrees(135)));
+    es.push_back(Ellipse(Point(-10,-33), Point(50,10), Angle::from_degrees(330)));
 
     for (unsigned i = 0; i < es.size(); ++i) {
         EXPECT_near(es[i].unitCircleTransform() * es[i].inverseUnitCircleTransform(), Affine::identity(), 1e-8);
@@ -252,4 +252,23 @@ TEST(EllipseTest, UnitTangentAt) {
     EXPECT_near(b.unitTangentAt(M_PI/2), Point(-M_SQRT2/2, -M_SQRT2/2), 1e-12);
     EXPECT_near(b.unitTangentAt(M_PI), Point(M_SQRT2/2, -M_SQRT2/2), 1e-12);
     EXPECT_near(b.unitTangentAt(3*M_PI/2), Point(M_SQRT2/2, M_SQRT2/2), 1e-12);
+}
+
+TEST(EllipseTest, BoundsExact) {
+    std::vector<Ellipse> es;
+    es.push_back(Ellipse(Point(-15,25), Point(10,15), Angle::from_degrees(45)));
+    es.push_back(Ellipse(Point(-10,33), Point(40,20), M_PI));
+    es.push_back(Ellipse(Point(10,-33), Point(40,20), Angle::from_degrees(111)));
+    es.push_back(Ellipse(Point(-10,-33), Point(50,10), Angle::from_degrees(222)));
+
+    // for reproducibility
+    g_random_set_seed(1234);
+
+    for (unsigned i = 0; i < es.size(); ++i) {
+        Rect r = es[i].boundsExact();
+        for (unsigned j = 0; j < 10000; ++j) {
+            Coord t = g_random_double_range(-M_PI, M_PI);
+            EXPECT_TRUE(r.contains(es[i].pointAt(t)));
+        }
+    }
 }
