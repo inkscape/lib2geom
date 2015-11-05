@@ -40,7 +40,7 @@ using namespace Geom;
 TEST(ChooseTest, PascalsTriangle) {
     // check whether the values match Pascal's triangle
     for (unsigned i = 0; i < 500; ++i) {
-        int n = g_random_int_range(1, 100);
+        int n = g_random_int_range(3, 100);
         int k = g_random_int_range(1, n-1);
 
         double a = choose<double>(n, k);
