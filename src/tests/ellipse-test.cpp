@@ -271,4 +271,22 @@ TEST(EllipseTest, BoundsExact) {
             EXPECT_TRUE(r.contains(es[i].pointAt(t)));
         }
     }
+
+    Ellipse e(Point(0,0), Point(10, 10), M_PI);
+    Rect bounds = e.boundsExact();
+    EXPECT_EQ(bounds, Rect(Point(-10,-10), Point(10,10)));
+    EXPECT_TRUE(bounds.contains(e.pointAt(0)));
+    EXPECT_TRUE(bounds.contains(e.pointAt(M_PI/2)));
+    EXPECT_TRUE(bounds.contains(e.pointAt(M_PI)));
+    EXPECT_TRUE(bounds.contains(e.pointAt(3*M_PI/2)));
+    EXPECT_TRUE(bounds.contains(e.pointAt(2*M_PI)));
+
+    e = Ellipse(Point(0,0), Point(10, 10), M_PI/2);
+    bounds = e.boundsExact();
+    EXPECT_EQ(bounds, Rect(Point(-10,-10), Point(10,10)));
+    EXPECT_TRUE(bounds.contains(e.pointAt(0)));
+    EXPECT_TRUE(bounds.contains(e.pointAt(M_PI/2)));
+    EXPECT_TRUE(bounds.contains(e.pointAt(M_PI)));
+    EXPECT_TRUE(bounds.contains(e.pointAt(3*M_PI/2)));
+    EXPECT_TRUE(bounds.contains(e.pointAt(2*M_PI)));
 }
