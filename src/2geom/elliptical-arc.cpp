@@ -821,6 +821,104 @@ void EllipticalArc::feed(PathSink &sink, bool moveto_initial) const
     sink.arcTo(ray(X), ray(Y), rotationAngle(), _large_arc, sweep(), _final_point);
 }
 
+int EllipticalArc::winding(Point const &p) const
+{
+    using std::swap;
+
+    double sinrot, cosrot;
+    sincos(rotationAngle(), sinrot, cosrot);
+
+    Angle ymin_a = std::atan2( ray(Y) * cosrot, ray(X) * sinrot );
+    Angle ymax_a = ymin_a + M_PI;
+
+    Point ymin = pointAtAngle(ymin_a);
+    Point ymax = pointAtAngle(ymax_a);
+    if (ymin[Y] > ymax[Y]) {
+        swap(ymin, ymax);
+        swap(ymin_a, ymax_a);
+    }
+
+    Interval yspan(ymin[Y], ymax[Y]);
+    if (!yspan.lowerContains(p[Y])) return 0;
+
+    bool left = cross(ymax - ymin, p - ymin) > 0;
+    bool inside = _ellipse.contains(p);
+    bool includes_ymin = _angles.contains(ymin_a);
+    bool includes_ymax = _angles.contains(ymax_a);
+
+    AngleInterval rarc(ymin_a, ymax_a, true),
+                  larc(ymax_a, ymin_a, true);
+
+    // we'll compute the result for an arc in the direction of increasing angles
+    // and then negate if necessary
+    Angle ia = initialAngle(), fa = finalAngle();
+    Point ip = _initial_point, fp = _final_point;
+    if (!sweep()) {
+        swap(ia, fa);
+        swap(ip, fp);
+    }
+
+    bool initial_left = larc.contains(ia);
+    bool initial_right = !initial_left; //rarc.contains(ia);
+    bool final_right = rarc.contains(fa);
+    bool final_left = !final_right;//larc.contains(fa);
+
+    int result = 0;
+    if (inside || left) {
+        if (includes_ymin && final_right) {
+            Interval ival(ymin[Y], fp[Y]);
+            if (ival.lowerContains(p[Y])) {
+                ++result;
+            }
+        }
+        if (initial_right && final_right && !largeArc()) {
+            Interval ival(ip[Y], fp[Y]);
+            if (ival.lowerContains(p[Y])) {
+                ++result;
+            }
+        }
+        if (initial_right && includes_ymax) {
+            Interval ival(ip[Y], ymax[Y]);
+            if (ival.lowerContains(p[Y])) {
+                ++result;
+            }
+        }
+        if (!initial_right && !final_right && includes_ymin && includes_ymax) {
+            Interval ival(ymax[Y], ymin[Y]);
+            if (ival.lowerContains(p[Y])) {
+                ++result;
+            }
+        }
+    }
+    if (left && !inside) {
+        if (includes_ymin && initial_left) {
+            Interval ival(ymin[Y], ip[Y]);
+            if (ival.lowerContains(p[Y])) {
+                --result;
+            }
+        }
+        if (initial_left && final_left && !largeArc()) {
+            Interval ival(ip[Y], fp[Y]);
+            if (ival.lowerContains(p[Y])) {
+                --result;
+            }
+        }
+        if (final_left && includes_ymax) {
+            Interval ival(fp[Y], ymax[Y]);
+            if (ival.lowerContains(p[Y])) {
+                --result;
+            }
+        }
+        if (!initial_left && !final_left && includes_ymin && includes_ymax) {
+            Interval ival(ymax[Y], ymin[Y]);
+            if (ival.lowerContains(p[Y])) {
+                --result;
+            }
+        }
+    }
+    return sweep() ? result : -result;
+}
+
 std::ostream &operator<<(std::ostream &out, EllipticalArc const &ea)
 {
     out << "EllipticalArc("

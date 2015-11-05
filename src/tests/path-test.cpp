@@ -265,6 +265,35 @@ TEST_F(PathTest, Winding) {
     EXPECT_EQ(circle.winding(Point(-10,0)), 0);
     EXPECT_EQ(circle.winding(Point(1,0)), 0);
 
+    Path yellipse = string_to_path("M 0,0 A 40 20 90 0 0 0,-80 40 20 90 0 0 0,0 z");
+    EXPECT_EQ(yellipse.winding(Point(-1, 0)), 0);
+    EXPECT_EQ(yellipse.winding(Point(-1, -80)), 0);
+    EXPECT_EQ(yellipse.winding(Point(1, 0)), 0);
+    EXPECT_EQ(yellipse.winding(Point(1, -80)), 0);
+    EXPECT_EQ(yellipse.winding(Point(0, -40)), -1);
+    std::vector<double> r[4];
+    r[0] = yellipse[0].roots(0, Y);
+    r[1] = yellipse[0].roots(-80, Y);
+    r[2] = yellipse[1].roots(0, Y);
+    r[3] = yellipse[1].roots(-80, Y);
+    for (unsigned i = 0; i < 4; ++i) {
+        for (unsigned j = 0; j < r[i].size(); ++j) {
+            std::cout << format_coord_nice(r[i][j]) << " ";
+        }
+        std::cout << std::endl;
+    }
+    std::cout << yellipse[0].unitTangentAt(0) << " "
+              << yellipse[0].unitTangentAt(1) << " "
+              << yellipse[1].unitTangentAt(0) << " "
+              << yellipse[1].unitTangentAt(1) << std::endl;
+
+    Path half_ellipse = string_to_path("M 0,0 A 40 20 90 0 0 0,-80 L -20,-40 z");
+    EXPECT_EQ(half_ellipse.winding(Point(-1, 0)), 0);
+    EXPECT_EQ(half_ellipse.winding(Point(-1, -80)), 0);
+    EXPECT_EQ(half_ellipse.winding(Point(1, 0)), 0);
+    EXPECT_EQ(half_ellipse.winding(Point(1, -80)), 0);
+    EXPECT_EQ(half_ellipse.winding(Point(0, -40)), -1);
+
     // extra nasty cases with exact double roots
     Path hump = string_to_path("M 0,0 Q 1,1 2,0 L 2,2 0,2 Z");
     EXPECT_EQ(hump.winding(Point(0.25, 0.5)), 1);

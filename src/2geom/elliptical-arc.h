@@ -302,6 +302,7 @@ public:
     virtual bool operator==(Curve const &c) const;
     virtual bool isNear(Curve const &other, Coord precision) const;
     virtual void feed(PathSink &sink, bool moveto_initial) const;
+    virtual int winding(Point const &p) const;
 
 private:
     void _updateCenterAndAngles();
