@@ -359,7 +359,7 @@ void BezierCurveN<3>::feed(PathSink &sink, bool moveto_initial) const
 }
 
 
-static Coord bezier_length_internal(std::vector<Point> &v1, Coord tolerance)
+static Coord bezier_length_internal(std::vector<Point> &v1, Coord tolerance, int level)
 {
     /* The Bezier length algorithm used in 2Geom utilizes a simple fact:
      * the Bezier curve is longer than the distance between its endpoints
@@ -368,13 +368,15 @@ static Coord bezier_length_internal(std::vector<Point> &v1, Coord tolerance)
      * error tolerance, we can be sure that the true value is no further than
      * 0.5 * tolerance from their arithmetic mean. When it's larger, we recursively
      * subdivide the Bezier curve into two parts and add their lengths.
+     * 
+     * We cap the maximum number of subdivisions at 256, which corresponds to 8 levels.
      */
     Coord lower = distance(v1.front(), v1.back());
     Coord upper = 0.0;
     for (size_t i = 0; i < v1.size() - 1; ++i) {
         upper += distance(v1[i], v1[i+1]);
     }
-    if (upper - lower < 2*tolerance) {
+    if (upper - lower <= 2*tolerance || level >= 8) {
         return (lower + upper) / 2;
     }
         
@@ -432,7 +434,8 @@ static Coord bezier_length_internal(std::vector<Point> &v1, Coord tolerance)
         v2[i] = v1[0];
     }
 
-    return bezier_length_internal(v1, 0.5*tolerance) + bezier_length_internal(v2, 0.5*tolerance);
+    return bezier_length_internal(v1, 0.5 * tolerance, level + 1) +
+           bezier_length_internal(v2, 0.5 * tolerance, level + 1);
 }
 
 /** @brief Compute the length of a bezier curve given by a vector of its control points
@@ -441,17 +444,17 @@ Coord bezier_length(std::vector<Point> const &points, Coord tolerance)
 {
     if (points.size() < 2) return 0.0;
     std::vector<Point> v1 = points;
-    return bezier_length_internal(v1, tolerance);
+    return bezier_length_internal(v1, tolerance, 0);
 }
 
-/** @brief Compute the length of a quadratic bezier curve given by its control points
- * @relatesalso QuadraticBezier */
-Coord bezier_length(Point a0, Point a1, Point a2, Coord tolerance)
+static Coord bezier_length_internal(Point a0, Point a1, Point a2, Coord tolerance, int level)
 {
     Coord lower = distance(a0, a2);
     Coord upper = distance(a0, a1) + distance(a1, a2);
 
-    if (upper - lower < 2*tolerance) return (lower + upper)/2;
+    if (upper - lower <= 2*tolerance || level >= 8) {
+        return (lower + upper) / 2;
+    }
 
     Point // Casteljau subdivision
         // b0 = a0,
@@ -459,17 +462,25 @@ Coord bezier_length(Point a0, Point a1, Point a2, Coord tolerance)
         b1 = 0.5*(a0 + a1),
         c1 = 0.5*(a1 + a2),
         b2 = 0.5*(b1 + c1); // == c2
-    return bezier_length(a0, b1, b2, 0.5*tolerance) + bezier_length(b2, c1, a2, 0.5*tolerance);
+    return bezier_length_internal(a0, b1, b2, 0.5 * tolerance, level + 1) +
+           bezier_length_internal(b2, c1, a2, 0.5 * tolerance, level + 1);
 }
 
-/** @brief Compute the length of a cubic bezier curve given by its control points
- * @relatesalso CubicBezier */
-Coord bezier_length(Point a0, Point a1, Point a2, Point a3, Coord tolerance)
+/** @brief Compute the length of a quadratic bezier curve given by its control points
+ * @relatesalso QuadraticBezier */
+Coord bezier_length(Point a0, Point a1, Point a2, Coord tolerance)
+{
+    return bezier_length_internal(a0, a1, a2, tolerance, 0);
+}
+
+static Coord bezier_length_internal(Point a0, Point a1, Point a2, Point a3, Coord tolerance, int level)
 {
     Coord lower = distance(a0, a3);
     Coord upper = distance(a0, a1) + distance(a1, a2) + distance(a2, a3);
 
-    if (upper - lower < 2*tolerance) return (lower + upper)/2;
+    if (upper - lower <= 2*tolerance || level >= 8) {
+        return (lower + upper) / 2;
+    }
 
     Point // Casteljau subdivision
         // b0 = a0,
@@ -480,7 +491,15 @@ Coord bezier_length(Point a0, Point a1, Point a2, Point a3, Coord tolerance)
         b2 = 0.5*(b1 + t0),
         c2 = 0.5*(t0 + c1),
         b3 = 0.5*(b2 + c2); // == c3
-    return bezier_length(a0, b1, b2, b3, 0.5*tolerance) + bezier_length(b3, c2, c1, a3, 0.5*tolerance);
+    return bezier_length_internal(a0, b1, b2, b3, 0.5 * tolerance, level + 1) +
+           bezier_length_internal(b3, c2, c1, a3, 0.5 * tolerance, level + 1);
+}
+
+/** @brief Compute the length of a cubic bezier curve given by its control points
+ * @relatesalso CubicBezier */
+Coord bezier_length(Point a0, Point a1, Point a2, Point a3, Coord tolerance)
+{
+    return bezier_length_internal(a0, a1, a2, a3, tolerance, 0);
 }
 
 } // end namespace Geom
