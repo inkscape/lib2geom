@@ -3,6 +3,8 @@ Code Health:
   - Add more unit tests. Ideally, every method should be tested.
   - More Doxygen documentation. Document algorithms used to implement each
     nontrivial method, preferably with pictures.
+  - Coding style.
+  - Rewrite or remove old junk.
 
 Primitives:
   - Add uniform points - Geom::UPoint.
