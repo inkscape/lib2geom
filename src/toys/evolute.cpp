@@ -49,7 +49,7 @@ virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height
     cairo_d2_pw_sb(cr, ev4);
     cairo_stroke(cr);
     if(1) {
-        std::cout << "bnd" << bounds_exact(dot(ev4, ev4)) << std::endl;
+        std::cout << "bnd" << *bounds_exact(dot(ev4, ev4)) << std::endl;
         cairo_d2_pw_sb(cr, D2<Piecewise<SBasis> >(Piecewise<SBasis>(SBasis(Linear(0,1000))), dot(ev4, ev4)*1000));
         cairo_stroke(cr);
         vector<double> rts = roots(dot(ev4, ev4)-1);
