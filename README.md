@@ -6,7 +6,8 @@ What is this?
 
 2Geom is a C++ 2D geometry library geared towards processing data
 associated with vector graphics. The primary design consideration
-is ease of use and clarity.
+is ease of use and clarity. It is dual-licensed under LGPL 2.1 and
+MPL 1.1.
 
 The library is descended from a set of geometric routines present in
 Inkscape, a vector graphics editor based around the Scalable Vector
