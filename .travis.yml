@@ -19,4 +19,4 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install gtkmm gsl; fi
 script:
-  - cmake . && make && make test
+  - cmake . && make && ctest -V
