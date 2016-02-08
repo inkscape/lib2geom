@@ -50,7 +50,7 @@ TEST(PolynomialTest, SolveQuadratic) {
 
         std::vector<Coord> result = solve_quadratic(a, b, c);
 
-        EXPECT_EQ(result.size(), 2);
+        EXPECT_EQ(result.size(), 2u);
         if (x1 < x2) {
             EXPECT_FLOAT_EQ(result[0], x1);
             EXPECT_FLOAT_EQ(result[1], x2);
@@ -65,12 +65,12 @@ TEST(PolynomialTest, SolvePathologicalQuadratic) {
     std::vector<Coord> r1, r2;
 
     r1 = solve_quadratic(1, -1e9, 1);
-    ASSERT_EQ(r1.size(), 2);
+    ASSERT_EQ(r1.size(), 2u);
     EXPECT_FLOAT_EQ(r1[0], 1e-9);
     EXPECT_FLOAT_EQ(r1[1], 1e9);
 
     r2 = solve_quadratic(1, -4, 3.999999);
-    ASSERT_EQ(r2.size(), 2);
+    ASSERT_EQ(r2.size(), 2u);
     EXPECT_FLOAT_EQ(r2[0], 1.999);
     EXPECT_FLOAT_EQ(r2[1], 2.001);
 }
@@ -90,7 +90,7 @@ TEST(PolynomialTest, SolveCubic) {
         std::vector<Coord> x(3); x[0] = x1; x[1] = x2; x[2] = x3;
         std::sort(x.begin(), x.end());
 
-        ASSERT_EQ(result.size(), 3);
+        ASSERT_EQ(result.size(), 3u);
         EXPECT_FLOAT_EQ(result[0], x[0]);
         EXPECT_FLOAT_EQ(result[1], x[1]);
         EXPECT_FLOAT_EQ(result[2], x[2]);
@@ -99,12 +99,12 @@ TEST(PolynomialTest, SolveCubic) {
     // corner cases
     // (x^2 + 7)(x - 2)
     std::vector<Coord> r1 = solve_cubic(1, -2, 7, -14);
-    EXPECT_EQ(r1.size(), 1);
+    EXPECT_EQ(r1.size(), 1u);
     EXPECT_FLOAT_EQ(r1[0], 2);
 
     // (x + 1)^2 (x-2)
     std::vector<Coord> r2 = solve_cubic(1, 0, -3, -2);
-    ASSERT_EQ(r2.size(), 3);
+    ASSERT_EQ(r2.size(), 3u);
     EXPECT_FLOAT_EQ(r2[0], -1);
     EXPECT_FLOAT_EQ(r2[1], -1);
     EXPECT_FLOAT_EQ(r2[2], 2);

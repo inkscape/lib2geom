@@ -170,6 +170,7 @@ public:
                 
                 return a->sb[1](ar[0]) < b->sb[1](br[0]);
         }
+        return 0; // FIXME
     }
     
     
