@@ -75,7 +75,6 @@ dot_plot3d(cairo_t *cr, SBasisN<2> const &f, Frame frame){
 
 
 class SBasisDimToy: public Toy {
-    unsigned size;
     PointSetHandle hand;
 
     void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {

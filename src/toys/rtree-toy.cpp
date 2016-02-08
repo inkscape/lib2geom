@@ -73,8 +73,6 @@ class RTreeToy: public Toy
 	colour color_shape, color_shape_guide;
 	colour color_select_area, color_select_area_guide;	// red(a=0.6), red
 
-
-	bool alter_existing_rect;
 	bool add_new_rect;
 	bool delete_rect;
 

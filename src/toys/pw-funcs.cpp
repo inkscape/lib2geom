@@ -45,8 +45,6 @@ Piecewise<SBasis> xlogx(Interval in) {
 }
 
 class PwToy: public Toy {
-
-    unsigned segs, handles_per_curve, curves;
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
         cairo_set_source_rgba (cr, 0., 0., 0., 1);
         cairo_set_line_width (cr, 1);
@@ -82,9 +80,7 @@ class PwToy: public Toy {
     bool should_draw_numbers() { return false; }
     int should_draw_bounds() { return 2; }
     public:
-    PwToy () {
-        segs = 3;
-    }
+    PwToy () {}
 };
 
 int main(int argc, char **argv) {

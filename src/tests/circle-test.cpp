@@ -98,16 +98,16 @@ TEST(CircleTest, CircleIntersection) {
     std::vector<ShapeIntersection> r1, r2, r3;
 
     r1 = a.intersect(b);
-    ASSERT_EQ(r1.size(), 1);
+    ASSERT_EQ(r1.size(), 1u);
     EXPECT_EQ(r1[0].point(), Point(10,5));
     EXPECT_intersections_valid(a, b, r1, 1e-15);
 
     r2 = a.intersect(c);
-    EXPECT_EQ(r2.size(), 2);
+    EXPECT_EQ(r2.size(), 2u);
     EXPECT_intersections_valid(a, c, r2, 1e-15);
 
     r3 = b.intersect(c);
-    EXPECT_EQ(r3.size(), 2);
+    EXPECT_EQ(r3.size(), 2u);
     EXPECT_intersections_valid(b, c, r3, 3e-15);
 
     EXPECT_TRUE(a.intersect(d).empty());

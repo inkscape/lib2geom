@@ -80,7 +80,7 @@ TEST(EllipticalArcTest, LineSegmentIntersection) {
     EllipticalArc a3(Point(0,0), Point(5,1.5), 0, true, true, Point(0,2));
     LineSegment ls(Point(0,5), Point(7,-3));
     r1 = a3.intersect(ls);
-    EXPECT_EQ(r1.size(), 2);
+    EXPECT_EQ(r1.size(), 2u);
     EXPECT_intersections_valid(a3, ls, r1, 1e-10);
 }
 
@@ -90,13 +90,13 @@ TEST(EllipticalArcTest, ArcIntersection) {
     EllipticalArc a1(Point(0,0), Point(6,3), 0.1, false, false, Point(10,0));
     EllipticalArc a2(Point(0,2), Point(6,3), -0.1, false, true, Point(10,2));
     r1 = a1.intersect(a2);
-    EXPECT_EQ(r1.size(), 2);
+    EXPECT_EQ(r1.size(), 2u);
     EXPECT_intersections_valid(a1, a2, r1, 1e-10);
 
     EllipticalArc a3(Point(0,0), Point(5,1.5), 0, true, true, Point(0,2));
     EllipticalArc a4(Point(3,5), Point(5,1.5), M_PI/2, true, true, Point(5,0));
     r2 = a3.intersect(a4);
-    EXPECT_EQ(r2.size(), 3);
+    EXPECT_EQ(r2.size(), 3u);
     EXPECT_intersections_valid(a3, a4, r2, 1e-10);
 }
 
@@ -106,12 +106,12 @@ TEST(EllipticalArcTest, BezierIntersection) {
     EllipticalArc a3(Point(0,0), Point(1.5,5), M_PI/2, true, true, Point(0,2));
     CubicBezier bez1(Point(0,3), Point(7,3), Point(0,-1), Point(7,-1));
     r1 = a3.intersect(bez1);
-    EXPECT_EQ(r1.size(), 2);
+    EXPECT_EQ(r1.size(), 2u);
     EXPECT_intersections_valid(a3, bez1, r1, 1e-10);
 
     EllipticalArc a4(Point(3,5), Point(5,1.5), 3*M_PI/2, true, true, Point(5,5));
     CubicBezier bez2(Point(0,5), Point(10,-4), Point(10,5), Point(0,-4));
     r2 = a4.intersect(bez2);
-    EXPECT_EQ(r2.size(), 4);
+    EXPECT_EQ(r2.size(), 4u);
     EXPECT_intersections_valid(a4, bez2, r2, 1e-10);
 }

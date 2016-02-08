@@ -45,7 +45,7 @@ using namespace Geom;
 
 Path string_to_path(const char* s) {
     PathVector pv = parse_svg_path(s);
-    assert(pv.size() == 1);
+    assert(pv.size() == 1u);
     return pv[0];
 }
 
@@ -106,8 +106,8 @@ TEST_F(IntersectionGraphTest, Union) {
     PathIntersectionGraph graph(rectangle, bigh);
     //std::cout << graph << std::endl;
     PathVector r = graph.getUnion();
-    EXPECT_EQ(r.size(), 1);
-    EXPECT_EQ(r.curveCount(), 19);
+    EXPECT_EQ(r.size(), 1u);
+    EXPECT_EQ(r.curveCount(), 19u);
 
     checkRandomPoints(rectangle, bigh, r, UNION);
 
@@ -120,32 +120,32 @@ TEST_F(IntersectionGraphTest, DisjointUnion) {
     PathIntersectionGraph graph(rectangle, smallrect);
 
     PathVector r = graph.getUnion();
-    EXPECT_EQ(r.size(), 2);
+    EXPECT_EQ(r.size(), 2u);
     checkRandomPoints(rectangle, smallrect, r, UNION);
 }
 
 TEST_F(IntersectionGraphTest, CoverUnion) {
     PathIntersectionGraph graph(bigrect, bigh);
     PathVector r = graph.getUnion();
-    EXPECT_EQ(r.size(), 1);
+    EXPECT_EQ(r.size(), 1u);
     EXPECT_EQ(r, bigrect);
 }
 
 TEST_F(IntersectionGraphTest, Subtraction) {
     PathIntersectionGraph graph(rectangle, bigh);
     PathVector a = graph.getAminusB();
-    EXPECT_EQ(a.size(), 4);
-    EXPECT_EQ(a.curveCount(), 17);
+    EXPECT_EQ(a.size(), 4u);
+    EXPECT_EQ(a.curveCount(), 17u);
     checkRandomPoints(rectangle, bigh, a, A_MINUS_B);
 
     PathVector b = graph.getBminusA();
-    EXPECT_EQ(b.size(), 4);
-    EXPECT_EQ(b.curveCount(), 15);
+    EXPECT_EQ(b.size(), 4u);
+    EXPECT_EQ(b.curveCount(), 15u);
     checkRandomPoints(rectangle, bigh, b, B_MINUS_A);
 
     PathVector x = graph.getXOR();
-    EXPECT_EQ(x.size(), 8);
-    EXPECT_EQ(x.curveCount(), 32);
+    EXPECT_EQ(x.size(), 8u);
+    EXPECT_EQ(x.curveCount(), 32u);
     checkRandomPoints(rectangle, bigh, x, XOR);
 }
 
@@ -156,32 +156,32 @@ TEST_F(IntersectionGraphTest, PointOnEdge) {
     PathIntersectionGraph graph(a, b);
     PathVector u = graph.getUnion();
     //std::cout << u << std::endl;
-    EXPECT_EQ(u.size(), 1);
-    EXPECT_EQ(u.curveCount(), 8);
+    EXPECT_EQ(u.size(), 1u);
+    EXPECT_EQ(u.curveCount(), 8u);
     checkRandomPoints(a, b, u, UNION);
 
     PathVector i = graph.getIntersection();
     //std::cout << i << std::endl;
-    EXPECT_EQ(i.size(), 1);
-    EXPECT_EQ(i.curveCount(), 3);
+    EXPECT_EQ(i.size(), 1u);
+    EXPECT_EQ(i.curveCount(), 3u);
     checkRandomPoints(a, b, i, INTERSECTION);
 
     PathVector s1 = graph.getAminusB();
     //std::cout << s1 << std::endl;
-    EXPECT_EQ(s1.size(), 1);
-    EXPECT_EQ(s1.curveCount(), 7);
+    EXPECT_EQ(s1.size(), 1u);
+    EXPECT_EQ(s1.curveCount(), 7u);
     checkRandomPoints(a, b, s1, A_MINUS_B);
 
     PathVector s2 = graph.getBminusA();
     //std::cout << s2 << std::endl;
-    EXPECT_EQ(s2.size(), 1);
-    EXPECT_EQ(s2.curveCount(), 4);
+    EXPECT_EQ(s2.size(), 1u);
+    EXPECT_EQ(s2.curveCount(), 4u);
     checkRandomPoints(a, b, s2, B_MINUS_A);
 
     PathVector x = graph.getXOR();
     //std::cout << x << std::endl;
-    EXPECT_EQ(x.size(), 2);
-    EXPECT_EQ(x.curveCount(), 11);
+    EXPECT_EQ(x.size(), 2u);
+    EXPECT_EQ(x.curveCount(), 11u);
     checkRandomPoints(a, b, x, XOR);
 }
 
@@ -192,23 +192,23 @@ TEST_F(IntersectionGraphTest, RhombusInSquare) {
     PathIntersectionGraph graph(square, rhombus);
     //std::cout << graph << std::endl;
     PathVector u = graph.getUnion();
-    EXPECT_EQ(u.size(), 1);
-    EXPECT_EQ(u.curveCount(), 4);
+    EXPECT_EQ(u.size(), 1u);
+    EXPECT_EQ(u.curveCount(), 4u);
     checkRandomPoints(square, rhombus, u, UNION);
 
     PathVector i = graph.getIntersection();
-    EXPECT_EQ(i.size(), 1);
-    EXPECT_EQ(i.curveCount(), 4);
+    EXPECT_EQ(i.size(), 1u);
+    EXPECT_EQ(i.curveCount(), 4u);
     checkRandomPoints(square, rhombus, i, INTERSECTION);
 
     PathVector s1 = graph.getAminusB();
-    EXPECT_EQ(s1.size(), 2);
-    EXPECT_EQ(s1.curveCount(), 8);
+    EXPECT_EQ(s1.size(), 2u);
+    EXPECT_EQ(s1.curveCount(), 8u);
     checkRandomPoints(square, rhombus, s1, A_MINUS_B);
 
     PathVector s2 = graph.getBminusA();
-    EXPECT_EQ(s2.size(), 0);
-    EXPECT_EQ(s2.curveCount(), 0);
+    EXPECT_EQ(s2.size(), 0u);
+    EXPECT_EQ(s2.curveCount(), 0u);
     checkRandomPoints(square, rhombus, s2, B_MINUS_A);
 }
 

@@ -518,11 +518,6 @@ private:
 	};
 	
 private:
-	#ifdef CPP11
-	constexpr
-	#endif
-	static const Coord EPSILON = 1e-5;
-
 	cairo_t* cr;
 	D2<SBasis> const& cc1, cc2;
 	Piecewise< D2<SBasis> > c1, c2;

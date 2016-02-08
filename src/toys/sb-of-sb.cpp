@@ -345,7 +345,6 @@ sbofsb_cubic_solve(SBasisOf<SBasisOf<double> > const &f, Geom::Point const &A, G
 }
 
 class SBasis0fSBasisToy: public Toy {
-    unsigned size;
     PointSetHandle hand;
     PointSetHandle cut_hand;
     void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {

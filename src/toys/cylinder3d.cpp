@@ -30,7 +30,6 @@ void cairo_pw(cairo_t *cr, Piecewise<SBasis> p) {
     }
 }
 
-static const int segments = 50;
 Geom::Point orig;
 
 static void draw_box (cairo_t *cr, Geom::Point corners[8]);

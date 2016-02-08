@@ -61,8 +61,6 @@ Piecewise<SBasis> interpolate(std::vector<double> values, std::vector<double> ti
 //#include <toys/pwsbhandle.cpp  // FIXME: This looks like it may give problems later, (including a .cpp file)
 
 class Squiggles: public Toy {
-    unsigned segs, handles_per_curve, curves;
-
     PointSetHandle hand;
     unsigned current_ctl_pt;
     Point current_pos;
