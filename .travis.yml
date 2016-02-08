@@ -1,0 +1,13 @@
+language: cpp
+sudo: required
+dist: trusty
+compiler:
+- gcc
+- clang
+os:
+- linux
+before_install:
+- sudo apt-get -qq update
+- sudo apt-get -y install libboost-dev libcairomm-1.0-dev libgtkmm-2.4-dev libgsl0-dev libatlas-base-dev
+script:
+- cmake . && make && make test
