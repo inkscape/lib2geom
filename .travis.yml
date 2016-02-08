@@ -15,8 +15,9 @@ addons:
       - libgtkmm-2.4-dev
       - libgsl0-dev
       - libatlas-base-dev
+      - ragel
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install gtkmm gsl; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install gtkmm gsl ragel; fi
 script:
   - cmake . && make && ctest -V
