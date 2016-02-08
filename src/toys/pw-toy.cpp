@@ -43,7 +43,7 @@ class PwToy: public Toy {
         cairo_set_source_rgba (cr, 0., 0., 0., 1);
         cairo_set_line_width (cr, 1);
         
-        Piecewise<SBasis> pws[curves];
+        std::vector<Piecewise<SBasis> > pws(curves);
         for(unsigned a = 0; a < curves; a++) {
             pws[a] = pwsbh[a].value();
             cairo_pw(cr, pws[a]);
