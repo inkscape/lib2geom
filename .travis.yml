@@ -2,12 +2,21 @@ language: cpp
 sudo: required
 dist: trusty
 compiler:
-- gcc
-- clang
+  - gcc
+  - clang
 os:
-- linux
+  - linux
+  - osx
+addons:
+  apt:
+    packages:
+      - libboost-dev
+      - libcairomm-1.0-dev
+      - libgtkmm-2.4-dev
+      - libgsl0-dev
+      - libatlas-base-dev
 before_install:
-- sudo apt-get -qq update
-- sudo apt-get -y install libboost-dev libcairomm-1.0-dev libgtkmm-2.4-dev libgsl0-dev libatlas-base-dev
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install gtkmm gsl; fi
 script:
-- cmake . && make && make test
+  - cmake . && make && make test
