@@ -1,8 +1,10 @@
+# Dependencies Packages
+
+find_package(Boost 1.40 REQUIRED)
+
 SET(2GEOM_DEPENDS gtk+-2.0 gtkmm-2.4 cairomm-1.0 cairo gsl pycairo)
 include(UsePkgConfig)
 # lib SpatialIndex is added only for tests/rtree-performance.cpp
-
-# Dependencies Packages
 
 FOREACH(dep ${2GEOM_DEPENDS})
     # This is a hack due to a bug in Cmake vars system,temp fix until cmake 2.4.4 is out //verbalshadow
@@ -22,8 +24,6 @@ FOREACH(dep ${2GEOM_DEPENDS})
     ENDIF("${dep}_FOUND")
 ENDFOREACH(dep)
 # end Dependencies
-
-INCLUDE(FindBoost)
 
 # WTF! All other standard checking macros don't work!
 INCLUDE (CheckCXXSourceCompiles)
