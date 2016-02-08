@@ -52,10 +52,10 @@ public:
     {}
 
     std::vector<Item> const &items() { return _items; }
-    Interval itemBounds(ItemIterator ii) { return Interval(); }
+    Interval itemBounds(ItemIterator /*ii*/) { return Interval(); }
 
-    void addActiveItem(ItemIterator ii) {}
-    void removeActiveItem(ItemIterator ii) {}
+    void addActiveItem(ItemIterator /*ii*/) {}
+    void removeActiveItem(ItemIterator /*ii*/) {}
 
 private:
     std::vector<Item> const &_items;

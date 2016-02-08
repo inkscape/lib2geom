@@ -152,17 +152,17 @@ TEST(LineTest, Intersection) {
     std::vector<ShapeIntersection> r1, r2, r3;
 
     r1 = a.intersect(b);
-    ASSERT_EQ(r1.size(), 1);
+    ASSERT_EQ(r1.size(), 1u);
     EXPECT_EQ(r1[0].point(), Point(3,0));
     EXPECT_intersections_valid(a, b, r1, 1e-15);
 
     r2 = a.intersect(lsc);
-    ASSERT_EQ(r2.size(), 1);
+    ASSERT_EQ(r2.size(), 1u);
     EXPECT_EQ(r2[0].point(), Point(3,0));
     EXPECT_intersections_valid(a, lsc, r2, 1e-15);
 
     r3 = b.intersect(lsc);
-    ASSERT_EQ(r3.size(), 1);
+    ASSERT_EQ(r3.size(), 1u);
     EXPECT_EQ(r3[0].point(), Point(3,0));
     EXPECT_intersections_valid(a, lsc, r3, 1e-15);
 
