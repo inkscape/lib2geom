@@ -562,7 +562,7 @@ std::pair<unsigned, enum_add_to_group> RTree::pick_next(    RTreeNode* group_a,
     unsigned max_increase_difference_node = 0;
     double current_increase_difference = 0; 
 
-    enum_add_to_group group_to_add;
+    enum_add_to_group group_to_add = ADD_TO_GROUP_A;
 
     /*
     bounding boxes of the 2 new groups. This info isn't available, since they 

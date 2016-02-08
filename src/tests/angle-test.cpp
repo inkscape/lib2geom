@@ -44,7 +44,7 @@ TEST(AngleIntervalTest, InnerAngleConstrutor) {
     ivs.push_back(AngleInterval(0, M_PI, false));
     ivs.push_back(AngleInterval(M_PI, 0, true));
     ivs.push_back(AngleInterval(M_PI, 0, false));
-    ivs.push_back(AngleInterval(0, 0, Angle(M_PI)));
+    ivs.push_back(AngleInterval(Angle(0), Angle(0), Angle(M_PI)));
 
     for (unsigned i = 0; i < ivs.size(); ++i) {
         AngleInterval inner(ivs[i].angleAt(0), ivs[i].angleAt(0.5), ivs[i].angleAt(1));

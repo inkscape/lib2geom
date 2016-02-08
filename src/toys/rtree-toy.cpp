@@ -419,7 +419,7 @@ public:
 		rectangles(0),
 	 	color_shape(0, 0, 0, 0.9), color_shape_guide(1, 0, 0, 1),
 		color_select_area(1, 0, 0, 0.6 ),  color_select_area_guide(1, 0, 0, 1 ), //1, 0, 0, 1
-		alter_existing_rect( false ), add_new_rect( false ), delete_rect( false ), 
+		add_new_rect( false ), delete_rect( false ), 
 		rect_chosen(), dummy_draw(),
 		rects_level( no_of_colors ),
 		color_rtree_level( no_of_colors, colour(0, 0, 0, 0) ),

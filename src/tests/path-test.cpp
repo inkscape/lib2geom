@@ -170,7 +170,7 @@ TEST_F(PathTest, RectConstructor) {
     Rect r(Point(0,0), Point(10,10));
     Path rpath(r);
 
-    EXPECT_EQ(rpath.size(), 4);
+    EXPECT_EQ(rpath.size(), 4u);
     EXPECT_TRUE(rpath.closed());
     for (unsigned i = 0; i < 4; ++i) {
         EXPECT_TRUE(dynamic_cast<LineSegment const *>(&rpath[i]) != NULL);
@@ -384,79 +384,79 @@ TEST_F(PathTest, AppendSegment) {
     Path p_open = line, p_closed = line;
     p_open.setStitching(true);
     p_open.append(new LineSegment(Point(10,20), Point(10,25)));
-    EXPECT_EQ(p_open.size(), 3);
+    EXPECT_EQ(p_open.size(), 3u);
     EXPECT_NO_THROW(p_open.checkContinuity());
     
     p_closed.setStitching(true);
     p_closed.close(true);
     p_closed.append(new LineSegment(Point(10,20), Point(10,25)));
-    EXPECT_EQ(p_closed.size(), 4);
+    EXPECT_EQ(p_closed.size(), 4u);
     EXPECT_NO_THROW(p_closed.checkContinuity());
 }
 
 TEST_F(PathTest, AppendPath) {
     p_open.append(p_add);
     Path p_expected = string_to_path("M 0,0 L 0,5 5,5 5,0 -1,6 6,6");
-    EXPECT_EQ(p_open.size(), 5);
+    EXPECT_EQ(p_open.size(), 5u);
     EXPECT_EQ(p_open, p_expected);
     EXPECT_NO_THROW(p_open.checkContinuity());
 
     p_expected.close(true);
     p_closed.append(p_add);
-    EXPECT_EQ(p_closed.size(), 6);
+    EXPECT_EQ(p_closed.size(), 6u);
     EXPECT_EQ(p_closed, p_expected);
     EXPECT_NO_THROW(p_closed.checkContinuity());
 }
 
 TEST_F(PathTest, ReplaceMiddle) {
     p_open.replace(p_open.begin() + 1, p_open.begin() + 2, p_add);
-    EXPECT_EQ(p_open.size(), 5);
+    EXPECT_EQ(p_open.size(), 5u);
     EXPECT_NO_THROW(p_open.checkContinuity());
     
     p_closed.replace(p_closed.begin() + 1, p_closed.begin() + 2, p_add);
-    EXPECT_EQ(p_closed.size(), 6);
+    EXPECT_EQ(p_closed.size(), 6u);
     EXPECT_NO_THROW(p_closed.checkContinuity());
 }
 
 TEST_F(PathTest, ReplaceStart) {
     p_open.replace(p_open.begin(), p_open.begin() + 2, p_add);
-    EXPECT_EQ(p_open.size(), 3);
+    EXPECT_EQ(p_open.size(), 3u);
     EXPECT_NO_THROW(p_open.checkContinuity());
     
     p_closed.replace(p_closed.begin(), p_closed.begin() + 2, p_add);
-    EXPECT_EQ(p_closed.size(), 5);
+    EXPECT_EQ(p_closed.size(), 5u);
     EXPECT_NO_THROW(p_closed.checkContinuity());
 }
 
 TEST_F(PathTest, ReplaceEnd) {
     p_open.replace(p_open.begin() + 1, p_open.begin() + 3, p_add);
-    EXPECT_EQ(p_open.size(), 3);
+    EXPECT_EQ(p_open.size(), 3u);
     EXPECT_NO_THROW(p_open.checkContinuity());
     
     p_closed.replace(p_closed.begin() + 1, p_closed.begin() + 3, p_add);
-    EXPECT_EQ(p_closed.size(), 5);
+    EXPECT_EQ(p_closed.size(), 5u);
     EXPECT_NO_THROW(p_closed.checkContinuity());
 }
 
 TEST_F(PathTest, ReplaceClosing) {
     p_open.replace(p_open.begin() + 1, p_open.begin() + 4, p_add);
-    EXPECT_EQ(p_open.size(), 3);
+    EXPECT_EQ(p_open.size(), 3u);
     EXPECT_NO_THROW(p_open.checkContinuity());
     
     p_closed.replace(p_closed.begin() + 1, p_closed.begin() + 4, p_add);
-    EXPECT_EQ(p_closed.size(), 4);
+    EXPECT_EQ(p_closed.size(), 4u);
     EXPECT_NO_THROW(p_closed.checkContinuity());
 }
 
 TEST_F(PathTest, ReplaceEverything) {
     p_open.replace(p_open.begin(), p_open.end(), p_add);
-    EXPECT_EQ(p_open.size(), 1);
+    EXPECT_EQ(p_open.size(), 1u);
     EXPECT_NO_THROW(p_open.checkContinuity());
 
     // TODO: in this specific case, it may make sense to set the path to open...
     // Need to investigate what behavior is sensible here
     p_closed.replace(p_closed.begin(), p_closed.end(), p_add);
-    EXPECT_EQ(p_closed.size(), 2);
+    EXPECT_EQ(p_closed.size(), 2u);
     EXPECT_NO_THROW(p_closed.checkContinuity());
 }
 

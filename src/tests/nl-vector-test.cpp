@@ -169,7 +169,7 @@ TEST(Vector, Max) {
 }
 
 TEST(Vector, MaxIndex) {
-	EXPECT_EQ(V3(1, 5, 3).max_index(), 1);
+	EXPECT_EQ(V3(1, 5, 3).max_index(), 1u);
 }
 
 TEST(Vector, Min) {
@@ -177,7 +177,7 @@ TEST(Vector, Min) {
 }
 
 TEST(Vector, MinIndex) {
-	EXPECT_EQ(V3(1, 5, 3).min_index(), 0);
+	EXPECT_EQ(V3(1, 5, 3).min_index(), 0u);
 }
 
 TEST_F(VectorTest, SetAll) {
