@@ -107,7 +107,12 @@ TEST_F(VectorTest, VectorAssignment) {
 
 TEST_F(VectorTest, AssignedVectorMustBeSameSize) {
 	NL::Vector v2(5);
-	EXPECT_DEATH({v2 = v1;}, "Assertion .* failed.");
+	// On Linux, the assertion message is:
+	// Assertion ... failed ...
+	// On OSX, it is:
+	// Assertion failed: (...), function ..., file ..., line ...
+	// Thus we just look for the word "Assertion".
+	EXPECT_DEATH({v2 = v1;}, "Assertion");
 }
 
 TEST_F(VectorTest, VectorScalesInplace) {
@@ -260,7 +265,7 @@ TEST_F(VectorViewTest, AssignmentFromVectorAvailableForViews) {
 
 TEST_F(VectorViewTest, AssignmentFromVectorMustBeSameSize) {
 	NL::VectorView vv(v1, 5);
-	EXPECT_DEATH({vv = v1;}, "Assertion .* failed.");
+	EXPECT_DEATH({vv = v1;}, "Assertion");
 }
 
 TEST_F(VectorViewTest, AssignmentFromViewAvailableForViews) {
@@ -274,7 +279,7 @@ TEST_F(VectorViewTest, AssignmentFromViewAvailableForViews) {
 TEST_F(VectorViewTest, AssignmentFromViewMustBeSameSize) {
 	NL::VectorView view1(v1, v1.size());
 	NL::VectorView view2(view1, view1.size() - 1);
-	EXPECT_DEATH({view2 = view1;}, "Assertion .* failed.");
+	EXPECT_DEATH({view2 = view1;}, "Assertion");
 }
 
 // Add- and subtract assigment
@@ -313,7 +318,7 @@ TEST_F(VectorViewTest, SwappingFromSameSourceVectorModifiesViews) {
 TEST_F(VectorViewTest, SwappingDifferentLengthViewFails) {
 	NL::VectorView vv1(v1, 4);
 	NL::VectorView vv2(v1, 3);
-	EXPECT_DEATH({NL::swap_view(vv1, vv2);}, "Assertion .* failed.");
+	EXPECT_DEATH({NL::swap_view(vv1, vv2);}, "Assertion");
 }
 
 
