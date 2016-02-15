@@ -40,6 +40,15 @@
 
 using namespace Geom;
 
+TEST(LineTest, VectorAndVersor) {
+    Line a(Point(10, 10), Point(-10, 20));
+    Line b(Point(10, 10), Point(15, 15));
+    EXPECT_EQ(a.vector(), Point(-20, 10));
+    EXPECT_EQ(b.vector(), Point(5, 5));
+    EXPECT_EQ(a.versor(), a.vector().normalized());
+    EXPECT_EQ(b.versor(), b.vector().normalized());
+}
+
 TEST(LineTest, AngleBisector) {
     Point o(0,0), a(1,1), b(3,0), c(-4, 0);
     Point d(0.5231, 0.75223);

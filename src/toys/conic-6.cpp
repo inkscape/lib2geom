@@ -227,9 +227,9 @@ class Conic6: public Toy {
             }
             cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
             
-            Line L0 = Line::from_origin_and_versor(B0, rot90(n0));
+            Line L0 = Line::from_origin_and_vector(B0, rot90(n0));
             draw_line(cr, L0, screen_rect);
-            Line L1 = Line::from_origin_and_versor(B0, rot90(n1));
+            Line L1 = Line::from_origin_and_vector(B0, rot90(n1));
             draw_line(cr, L1, screen_rect);
             
             cairo_set_source_rgb(cr, 1, 0., 0.);

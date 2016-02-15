@@ -386,7 +386,7 @@ class FindDerivatives : public Toy
         Point prj = r.pointAt(r.nearestTime(Point(m_width/2-30, m_height/2-30)));
         if (L2(r.origin() - prj) < 100)
         {
-            prj = r.origin() + 100*r.versor();
+            prj = r.origin() + 100*r.vector();
         }
         draw_text(cr, prj+op, label);
     }
