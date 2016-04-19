@@ -561,8 +561,234 @@ std::vector<double> EllipticalArc::allNearestTimes( Point const& p, double from,
 
     return result;
 }
-#endif
+//TODO: Fix it currently give nearest points
+std::vector<double> EllipticalArc::allFurthestTimes( Point const& p, double from, double to ) const
+{
+    std::vector<double> result;
 
+    if ( from > to ) std::swap(from, to);
+    if ( from < 0 || to > 1 )
+    {
+        THROW_RANGEERROR("[from,to] interval out of range");
+    }
+
+    if ( ( are_near(ray(X), 0) && are_near(ray(Y), 0) )  || are_near(from, to) )
+    {
+        result.push_back(to);
+        return result;
+    }
+    else if ( are_near(ray(X), 0) || are_near(ray(Y), 0) )
+    {
+        LineSegment seg(pointAt(from), pointAt(to));
+        Point fp = seg.pointAt( seg.furthestTime(p) );
+        if ( are_near(ray(Y), 0) )
+        {
+            if ( are_near(rotationAngle(), M_PI/2)
+                 || are_near(rotationAngle(), 3*M_PI/2) )
+            {
+                result = roots(fp[Y], Y);
+            }
+            else
+            {
+                result = roots(fp[X], X);
+            }
+        }
+        else
+        {
+            if ( are_near(rotationAngle(), M_PI/2)
+                 || are_near(rotationAngle(), 3*M_PI/2) )
+            {
+                result = roots(fp[X], X);
+            }
+            else
+            {
+                result = roots(fp[Y], Y);
+            }
+        }
+        return result;
+    }
+    else if ( are_near(ray(X), ray(Y)) )
+    {
+        Point r = p - center();
+        if ( are_near(r, Point(0,0)) )
+        {
+            THROW_INFINITESOLUTIONS(0);
+        }
+        // TODO: implement case r != 0
+//      Point np = ray(X) * unit_vector(r);
+//      std::vector<double> solX = roots(np[X],X);
+//      std::vector<double> solY = roots(np[Y],Y);
+//      double t;
+//      if ( are_near(solX[0], solY[0]) || are_near(solX[0], solY[1]))
+//      {
+//          t = solX[0];
+//      }
+//      else
+//      {
+//          t = solX[1];
+//      }
+//      if ( !(t < from || t > to) )
+//      {
+//          result.push_back(t);
+//      }
+//      else
+//      {
+//
+//      }
+    }
+
+    // solve the equation <D(E(t),t)|E(t)-p> == 0
+    // that provides min and max distance points
+    // on the ellipse E wrt the point p
+    // after the substitutions:
+    // cos(t) = (1 - s^2) / (1 + s^2)
+    // sin(t) = 2t / (1 + s^2)
+    // where s = tan(t/2)
+    // we get a 4th degree equation in s
+    /*
+     *  ry s^4 ((-cy + py) Cos[Phi] + (cx - px) Sin[Phi]) +
+     *  ry ((cy - py) Cos[Phi] + (-cx + px) Sin[Phi]) +
+     *  2 s^3 (rx^2 - ry^2 + (-cx + px) rx Cos[Phi] + (-cy + py) rx Sin[Phi]) +
+     *  2 s (-rx^2 + ry^2 + (-cx + px) rx Cos[Phi] + (-cy + py) rx Sin[Phi])
+     */
+
+    Point p_c = p - center();
+    double rx2_ry2 = (ray(X) - ray(Y)) * (ray(X) + ray(Y));
+    double sinrot, cosrot;
+    sincos(rotationAngle(), sinrot, cosrot);
+    double expr1 = ray(X) * (p_c[X] * cosrot + p_c[Y] * sinrot);
+    Poly coeff;
+    coeff.resize(5);
+    coeff[4] = ray(Y) * ( p_c[Y] * cosrot - p_c[X] * sinrot );
+    coeff[3] = 2 * ( rx2_ry2 + expr1 );
+    coeff[2] = 0;
+    coeff[1] = 2 * ( -rx2_ry2 + expr1 );
+    coeff[0] = -coeff[4];
+
+//  for ( unsigned int i = 0; i < 5; ++i )
+//      std::cerr << "c[" << i << "] = " << coeff[i] << std::endl;
+
+    std::vector<double> real_sol;
+    // gsl_poly_complex_solve raises an error
+    // if the leading coefficient is zero
+    if ( are_near(coeff[4], 0) )
+    {
+        real_sol.push_back(0);
+        if ( !are_near(coeff[3], 0) )
+        {
+            double sq = -coeff[1] / coeff[3];
+            if ( sq > 0 )
+            {
+                double s = std::sqrt(sq);
+                real_sol.push_back(s);
+                real_sol.push_back(-s);
+            }
+        }
+    }
+    else
+    {
+        real_sol = solve_reals(coeff);
+    }
+
+    for ( unsigned int i = 0; i < real_sol.size(); ++i )
+    {
+        real_sol[i] = 2 * std::atan(real_sol[i]);
+        if ( real_sol[i] < 0 ) real_sol[i] += 2*M_PI;
+    }
+    // when s -> Infinity then <D(E)|E-p> -> 0 iff coeff[4] == 0
+    // so we add M_PI to the solutions being lim arctan(s) = PI when s->Infinity
+    if ( (real_sol.size() % 2) != 0 )
+    {
+        real_sol.push_back(M_PI);
+    }
+
+    double maxdistsq1 = 0;
+    double maxdistsq2 = 0;
+    double dsq = 0;
+    unsigned int mi1 = 0, mi2 = 0;
+    for ( unsigned int i = 0; i < real_sol.size(); ++i )
+    {
+        dsq = distanceSq(p, pointAtAngle(real_sol[i]));
+        if ( maxdistsq1 < dsq )
+        {
+            maxdistsq2 = maxdistsq1;
+            mi2 = mi1;
+            maxdistsq1 = dsq;
+            mi1 = i;
+        }
+        else if ( maxdistsq2 < dsq )
+        {
+            maxdistsq2 = dsq;
+            mi2 = i;
+        }
+    }
+
+    double t = timeAtAngle(real_sol[mi1]);
+    if ( !(t < from || t > to) )
+    {
+        result.push_back(t);
+    }
+
+    bool second_sol = false;
+    t = timeAtAngle(real_sol[mi2]);
+    if ( real_sol.size() == 4 && !(t < from || t > to) )
+    {
+        if ( result.empty() || are_near(maxdistsq1, maxdistsq2) )
+        {
+            result.push_back(t);
+            second_sol = true;
+        }
+    }
+
+    // we need to test extreme points too
+    double dsq1 = distanceSq(p, pointAt(from));
+    double dsq2 = distanceSq(p, pointAt(to));
+    if ( second_sol )
+    {
+        if ( maxdistsq2 < dsq1 )
+        {
+            result.clear();
+            result.push_back(from);
+            maxdistsq2 = dsq1;
+        }
+        else if ( are_near(maxdistsq2, dsq1) )
+        {
+            result.push_back(from);
+        }
+        if ( maxdistsq2 < dsq2 )
+        {
+            result.clear();
+            result.push_back(to);
+        }
+        else if ( are_near(maxdistsq2, dsq2) )
+        {
+            result.push_back(to);
+        }
+
+    }
+    else
+    {
+        if ( result.empty() )
+        {
+            if ( are_near(dsq1, dsq2) )
+            {
+                result.push_back(from);
+                result.push_back(to);
+            }
+            else if ( dsq2 > dsq1 )
+            {
+                result.push_back(to);
+            }
+            else
+            {
+                result.push_back(from);
+            }
+        }
+    }
+
+    return result;
+}
+#endif
 
 void EllipticalArc::_filterIntersections(std::vector<ShapeIntersection> &xs, bool is_first) const
 {

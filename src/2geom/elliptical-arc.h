@@ -283,6 +283,10 @@ public:
         }
         return allNearestTimes(p, from, to).front();
     }
+    virtual std::vector<double> allFurthestTimes( Point const& p, double from = 0, double to = 1 ) const;
+    virtual double furthestTime( Point const& p, double from = 0, double to = 1 ) const {
+        return allFurthestTimes(p, from, to).front();
+    }
 #endif
     virtual std::vector<CurveIntersection> intersect(Curve const &other, Coord eps=EPSILON) const;
     virtual int degreesOfFreedom() const { return 7; }

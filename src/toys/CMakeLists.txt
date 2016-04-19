@@ -35,6 +35,7 @@ curvature-curve
 curvature-test
 curve-curve-distance
 curve-curve-nearest-time
+curve-curve-furthest-time
 curve-intersection-by-bezier-clipping
 curve-intersection-by-implicitization
 cylinder3d
@@ -79,6 +80,7 @@ pencil
 pencil-2
 plane3d
 point-curve-nearest-time
+point-curve-furthest-time
 portion-test
 precise-flat
 pw-compose-test

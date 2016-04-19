@@ -51,7 +51,7 @@ namespace Geom
  * return the point on L furthest to p. Note that the returned value
  * is with respect to the _normalized_ direction of v!
  */
-inline double furthest_time(Point const &p, Point const &A, Point const &v)
+inline double furthest_time(Point const, Point const, Point const)
 {
     return infinity();
 }

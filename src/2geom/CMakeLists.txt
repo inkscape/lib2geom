@@ -92,6 +92,9 @@ math-utils.h
 nearest-time.cpp
 nearest-time.h
 
+furthest-time.cpp
+furthest-time.h
+
 numeric/matrix.cpp
 
 ord.h

@@ -747,6 +747,135 @@ PathTime Path::nearestTime(Point const &p, Coord *dist) const
     return ret;
 }
 
+std::vector<Coord> Path::furthestTimePerCurve(Point const &p) const
+{
+    // return a single furthest time for each curve in this path
+    std::vector<Coord> np;
+    for (const_iterator it = begin(); it != end_default(); ++it) {
+        np.push_back(it->furthestTime(p));
+    }
+    return np;
+}
+
+std::vector<double> Path::allFurthestTimes(Point const &_point, double from, double to) const
+{
+    // TODO from and to are not used anywhere.
+    // rewrite this to simplify.
+    using std::swap;
+
+    if (from > to)
+        swap(from, to);
+    const Path &_path = *this;
+    unsigned int sz = _path.size();
+    if (_path.closed())
+        ++sz;
+    if (from < 0 || to > sz) {
+        THROW_RANGEERROR("[from,to] interval out of bounds");
+    }
+    double sif, st = modf(from, &sif);
+    double eif, et = modf(to, &eif);
+    unsigned int si = static_cast<unsigned int>(sif);
+    unsigned int ei = static_cast<unsigned int>(eif);
+    if (si == sz) {
+        --si;
+        st = 1;
+    }
+    if (ei == sz) {
+        --ei;
+        et = 1;
+    }
+    if (si == ei) {
+        std::vector<double> all_furthest = _path[si].allFurthestTimes(_point, st, et);
+        for (unsigned int i = 0; i < all_furthest.size(); ++i) {
+            all_furthest[i] = si + all_furthest[i];
+        }
+        return all_furthest;
+    }
+    std::vector<double> all_t;
+    std::vector<std::vector<double> > all_fp;
+    all_fp.push_back(_path[si].allFurthestTimes(_point, st));
+    std::vector<unsigned int> ni;
+    ni.push_back(si);
+    double dsq;
+    double maxdistsq = distanceSq(_point, _path[si].pointAt(all_fp.front().front()));
+    Rect bb(Geom::Point(0, 0), Geom::Point(0, 0));
+    for (unsigned int i = si + 1; i < ei; ++i) {
+        bb = (_path[i].boundsFast());
+        dsq = distanceSq(_point, bb);
+        if (maxdistsq > dsq)
+            continue;
+        all_t = _path[i].allFurthestTimes(_point);
+        dsq = distanceSq(_point, _path[i].pointAt(all_t.front()));
+        if (maxdistsq < dsq) {
+            all_fp.clear();
+            all_fp.push_back(all_t);
+            ni.clear();
+            ni.push_back(i);
+            maxdistsq = dsq;
+        } else if (maxdistsq == dsq) {
+            all_fp.push_back(all_t);
+            ni.push_back(i);
+        }
+    }
+    bb = (_path[ei].boundsFast());
+    dsq = distanceSq(_point, bb);
+    if (maxdistsq < dsq) {
+        all_t = _path[ei].allFurthestTimes(_point, 0, et);
+        dsq = distanceSq(_point, _path[ei].pointAt(all_t.front()));
+        if (maxdistsq < dsq) {
+            for (unsigned int i = 0; i < all_t.size(); ++i) {
+                all_t[i] = ei + all_t[i];
+            }
+            return all_t;
+        } else if (maxdistsq == dsq) {
+            all_fp.push_back(all_t);
+            ni.push_back(ei);
+        }
+    }
+    std::vector<double> all_furthest;
+    for (unsigned int i = 0; i < all_fp.size(); ++i) {
+        for (unsigned int j = 0; j < all_fp[i].size(); ++j) {
+            all_furthest.push_back(ni[i] + all_fp[i][j]);
+        }
+    }
+    all_furthest.erase(std::unique(all_furthest.begin(), all_furthest.end()), all_furthest.end());
+    return all_furthest;
+}
+
+PathTime Path::furthestTime(Point const &p, Coord *dist) const
+{
+    Coord maxdist = 0;
+    PathTime ret;
+
+    if (_data->curves.size() == 1) {
+        // naked moveto
+        ret.curve_index = 0;
+        ret.t = 0;
+        if (dist) {
+            *dist = distance(_closing_seg->initialPoint(), p);
+        }
+        return ret;
+    }
+
+    for (size_type i = 0; i < size_default(); ++i) {
+        Curve const &c = at(i);
+        if (distance(p, c.boundsFast()) < maxdist) continue;
+
+        Coord t = c.furthestTime(p);
+        Coord d = distance(c.pointAt(t), p);
+        if (d > maxdist) {
+            maxdist = d;
+            ret.curve_index = i;
+            ret.t = t;
+        }
+    }
+    if (dist) {
+        *dist = maxdist;
+    }
+
+    return ret;
+}
+
 std::vector<Point> Path::nodes() const
 {
     std::vector<Point> result;
