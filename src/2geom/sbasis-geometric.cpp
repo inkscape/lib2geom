@@ -101,7 +101,7 @@ static SBasis divide_by_t1k(SBasis const &a, int k) {
 static D2<SBasis> RescaleForNonVanishingEnds(D2<SBasis> const &MM, double ZERO=1.e-4){
     D2<SBasis> M = MM;
     //TODO: divide by all the s at once!!!
-    while ((M[0].size()>0||M[1].size()>0) &&
+    while ((M[0].size()>1||M[1].size()>1) &&
            fabs(M[0].at0())<ZERO && 
            fabs(M[1].at0())<ZERO &&
            fabs(M[0].at1())<ZERO && 
@@ -109,12 +109,12 @@ static D2<SBasis> RescaleForNonVanishingEnds(D2<SBasis> const &MM, double ZERO=1
         M[0] = divide_by_sk(M[0],1);
         M[1] = divide_by_sk(M[1],1);
     }
-    while ((M[0].size()>0||M[1].size()>0) &&
+    while ((M[0].size()>1||M[1].size()>1) &&
            fabs(M[0].at0())<ZERO && fabs(M[1].at0())<ZERO){
         M[0] = divide_by_t0k(M[0],1);
         M[1] = divide_by_t0k(M[1],1);
     }
-    while ((M[0].size()>0||M[1].size()>0) && 
+    while ((M[0].size()>1||M[1].size()>1) && 
            fabs(M[0].at1())<ZERO && fabs(M[1].at1())<ZERO){
         M[0] = divide_by_t1k(M[0],1);
         M[1] = divide_by_t1k(M[1],1);
