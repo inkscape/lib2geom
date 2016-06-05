@@ -265,6 +265,33 @@ public:
         return allNearestTimes(p, i.min(), i.max());
     }
 
+    /** @brief Compute a time value at which the curve comes closest to a specified point.
+     * The first value with the smallest distance is returned if there are multiple such points.
+     * @param p Query point
+     * @param a Minimum time value to consider
+     * @param b Maximum time value to consider; \f$a < b\f$
+     * @return \f$q \in [a, b]: ||\mathbf{C}(q) - \mathbf{p}|| = 
+               \inf(\{r \in \mathbb{R} : ||\mathbf{C}(r) - \mathbf{p}||\})\f$ */
+    virtual Coord furthestTime( Point const& p, Coord a = 0, Coord b = 1 ) const;
+
+    /** @brief A version that takes an Interval. */
+    Coord furthestTime(Point const &p, Interval const &i) const {
+        return furthestTime(p, i.min(), i.max());
+    }
+
+    /** @brief Compute time values at which the curve comes closest to a specified point.
+     * @param p Query point
+     * @param a Minimum time value to consider
+     * @param b Maximum time value to consider; \f$a < b\f$
+     * @return Vector of points closest and equally far away from the query point */
+    virtual std::vector<Coord> allFurthestTimes( Point const& p, Coord from = 0,
+        Coord to = 1 ) const;
+
+    /** @brief A version that takes an Interval. */
+    std::vector<Coord> allFurthestTimes(Point const &p, Interval const &i) {
+        return allFurthestTimes(p, i.min(), i.max());
+    }
+
     /** @brief Compute the arc length of this curve.
      * For a curve \f$\mathbf{C}(t) = (C_x(t), C_y(t))\f$, arc length is defined for 2D curves as
      * \f[ \ell = \int_{0}^{1} \sqrt { [C_x'(t)]^2 + [C_y'(t)]^2 }\, \text{d}t \f]
@@ -344,6 +371,11 @@ public:
 inline
 Coord nearest_time(Point const& p, Curve const& c) {
     return c.nearestTime(p);
+}
+
+inline
+Coord furthest_time(Point const& p, Curve const& c) {
+    return c.furthestTime(p);
 }
 
 // for make benefit glorious library of Boost Pointer Container

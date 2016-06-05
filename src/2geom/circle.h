@@ -90,6 +90,7 @@ public:
     Coord valueAt(Coord t, Dim2 d) const;
     Coord timeAt(Point const &p) const;
     Coord nearestTime(Point const &p) const;
+    Coord furthestTime(Point const &p) const;
 
     bool contains(Point const &p) const { return distance(p, _center) <= _radius; }
     bool contains(Rect const &other) const;
