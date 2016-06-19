@@ -115,12 +115,8 @@ public:
     }
     /// Find furthest time in [0,1] that maps to the given value. */
     Coord furthestTime(Coord v) {
-        if (v <= min()) return 1;
-        if (v >= max()) return 0;
-        if (v + min() > max() - v) {
-            return timeAt(max());
-        }
-        return timeAt(min());
+        if (v <= 0.5) return 1;
+        return 0;
     }
     /// @}
 

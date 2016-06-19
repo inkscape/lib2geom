@@ -265,7 +265,7 @@ public:
         return allNearestTimes(p, i.min(), i.max());
     }
 
-    /** @brief Compute a time value at which the curve comes closest to a specified point.
+    /** @brief Compute a time value at which the curve comes furthest to a specified point.
      * The first value with the smallest distance is returned if there are multiple such points.
      * @param p Query point
      * @param a Minimum time value to consider
@@ -279,7 +279,7 @@ public:
         return furthestTime(p, i.min(), i.max());
     }
 
-    /** @brief Compute time values at which the curve comes closest to a specified point.
+    /** @brief Compute a time value at which the curve comes furthest to a specified point.
      * @param p Query point
      * @param a Minimum time value to consider
      * @param b Maximum time value to consider; \f$a < b\f$

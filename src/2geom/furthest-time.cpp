@@ -3,6 +3,7 @@
  *//*
  * Authors:
  *   Marco Cecchetti <mrcekets at gmail.com>
+ *   Jabier Arraiza <jabier.arraiza@marker.es>
  *
  * Copyright 2007-2008  authors
  *

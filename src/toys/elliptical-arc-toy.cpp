@@ -62,7 +62,7 @@ class EllipticalArcToy: public Toy
         TEST_PORTION,
         TEST_REVERSE,
         TEST_NEAREST_POINTS,
-        TEST_FURHEST_POINTS,
+        TEST_FURTHEST_POINTS,
         TEST_DERIVATIVE,
         TEST_ROOTS,
         TEST_BOUNDS,
