@@ -13,6 +13,8 @@ addons:
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install gtkmm gsl ragel; fi
+before_script:
+  - git submodule update --init
 
 matrix:
   include:
