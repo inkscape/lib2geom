@@ -32,6 +32,12 @@ To build 2Geom, you will need:
 Building
 --------
 
+2Geom uses GoogleTest as git submodule, so make sure to initialize it after
+initial repository clone:
+
+    git submodule init
+    git submodule update
+
 2Geom uses CMake as the build and configuration system. To build, type:
 
     cmake .
