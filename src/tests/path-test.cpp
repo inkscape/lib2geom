@@ -476,6 +476,25 @@ TEST_F(PathTest, AreNear) {
     EXPECT_EQ(are_near(arcs, nudged_arcs2, 1e-6), false);
 }
 
+TEST_F(PathTest, Roots) {
+    Path path;
+    path.start(Point(0, 0));
+    path.appendNew<Geom::LineSegment>(Point(1, 1));
+    path.appendNew<Geom::LineSegment>(Point(2, 0));
+
+    EXPECT_FALSE(path.closed());
+
+    // Trivial case: make sure that path is not closed
+    std::vector<PathTime> roots = path.roots(0.5, Geom::X);
+    EXPECT_EQ(roots.size(), 1);
+    EXPECT_EQ(path.valueAt(roots[0], Geom::Y), 0.5);
+
+    // Now check that it is closed if we make it so
+    path.close(true);
+    roots = path.roots(0.5, Geom::X);
+    EXPECT_EQ(roots.size(), 2);
+}
+
 /*
   Local Variables:
   mode:c++
