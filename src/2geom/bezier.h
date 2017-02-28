@@ -275,6 +275,8 @@ public:
     void subdivide(Coord t, Bezier *left, Bezier *right) const;
     std::pair<Bezier, Bezier> subdivide(Coord t) const;
 
+    std::vector<Bezier> subdivide(std::vector<Coord> times) const;
+
     std::vector<Coord> roots() const;
     std::vector<Coord> roots(Interval const &ivl) const;
 

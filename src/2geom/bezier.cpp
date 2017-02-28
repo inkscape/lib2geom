@@ -95,6 +95,43 @@ std::pair<Bezier, Bezier> Bezier::subdivide(Coord t) const
     return ret;
 }
 
+std::vector<Bezier> Bezier::subdivide(std::vector<Coord> times_in) const
+{
+    std::vector<Bezier> result;
+    // First we need to sort the times ascending.
+    std::sort(times_in.begin(), times_in.end());
+
+    // Second we filer the times and remove duplicates as well as 0 and 1.
+    double last_time = -1;
+    std::vector<double> times;
+    for (auto const time : times_in) {
+        if (std::abs(last_time - time) > 1e-16 && time > 0 && time < 1) {
+            times.push_back(time);
+            last_time = time;
+        }
+    }
+
+    Bezier latest_bezier = *this;
+    Bezier left, right;
+    for (size_t ii = 0; ii < times.size(); ++ii) {
+        latest_bezier.subdivide(times[ii], &left, &right);
+        result.push_back(left);
+        latest_bezier = right;
+        /*
+         * In your example where you want to subdivide at t=0.2 and 0.6,
+         * the new parameter for 0.6 should be (0.6-0.2)/(1-0.2) = 0.5.
+         * So, you can simply subdivide the 2nd curve at t=0.5.
+         * Divide at t1 and t2 => new parameter for t2 is (t2 - t1)/(1-t1)
+         * In our case t1 == times[ii] and t2 = times[jj]
+         */
+        for (size_t jj = ii+1; jj < times.size(); ++jj) {
+            times[jj] = (times[jj] - times[ii]) / (1.0 - times[ii]);
+        }
+    }
+    result.push_back(latest_bezier);
+    return result;
+}
+
 std::vector<Coord> Bezier::roots() const
 {
     std::vector<Coord> solutions;

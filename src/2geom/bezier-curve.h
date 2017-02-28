@@ -245,6 +245,20 @@ public:
                    BezierCurveN(sx.second, sy.second));
     }
 
+    /** @brief Divide a Bezier curve into two curves
+     * @param t Time value
+     * @return Pair of Bezier curves \f$(\mathbf{D}, \mathbf{E})\f$ such that
+     *         \f$\mathbf{D}[ [0,1] ] = \mathbf{C}[ [0,t] ]\f$ and
+     *         \f$\mathbf{E}[ [0,1] ] = \mathbf{C}[ [t,1] ]\f$ */
+    std::vector<BezierCurveN> subdivide(std::vector<Coord> t) const {
+        std::vector<Bezier> sx = inner[X].subdivide(t), sy = inner[Y].subdivide(t);
+        std::vector<BezierCurveN> result;
+        for (size_t ii = 0; ii < sx.size(); ++ii) {
+            result.push_back(BezierCurveN(sx[ii], sy[ii]));
+        }
+        return result;
+    }
+
     virtual bool isDegenerate() const {
         return BezierCurve::isDegenerate();
     }
