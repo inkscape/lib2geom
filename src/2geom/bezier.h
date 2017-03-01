@@ -275,6 +275,14 @@ public:
     void subdivide(Coord t, Bezier *left, Bezier *right) const;
     std::pair<Bezier, Bezier> subdivide(Coord t) const;
 
+    /**
+     * @brief Subdivide a Bezier into an arbitrary number of shorter Beziers
+     * @param times Vector of times where the Bezier shall be splitted.
+     * The vector will be sorted, values <= 0 and >= 1 will be removed and subsequent
+     * values with a distance smaller thatn 1e-16 will be de-duplicated so the number of
+     * Beziers in the resulting vector might be smaller than the number of entries in the given vector.
+     * @return Vector of Beziers.
+     */
     std::vector<Bezier> subdivide(std::vector<Coord> times) const;
 
     std::vector<Coord> roots() const;

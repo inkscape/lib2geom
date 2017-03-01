@@ -250,6 +250,16 @@ public:
      * @return Pair of Bezier curves \f$(\mathbf{D}, \mathbf{E})\f$ such that
      *         \f$\mathbf{D}[ [0,1] ] = \mathbf{C}[ [0,t] ]\f$ and
      *         \f$\mathbf{E}[ [0,1] ] = \mathbf{C}[ [t,1] ]\f$ */
+    /**
+     * @brief Subdivide a Bezier curve into an arbitrary number of shorter Bezier curves
+     * @param times Vector of times where the Bezier curve shall be splitted.
+     * The vector will be sorted, values <= 0 and >= 1 will be removed and subsequent
+     * values with a distance smaller thatn 1e-16 will be de-duplicated so the number of
+     * Bezier curves in the resulting vector might be smaller than the number of entries in the given vector.
+     * @return Vector of Bezier curves such that
+     *    \f$\mathbf{result[i]}[ [0,1] ] = \mathbf{C}[ [t_{i-1},t_i] ]\f$ where \f$t_{-1} := 0\f$ for i < times.size()
+     * and \f$\mathbf{result[times.size()]}[ [0,1] ] = \mathbf{C}[ [t_{times.size()-1},1] ]\f$
+     */
     std::vector<BezierCurveN> subdivide(std::vector<Coord> t) const {
         std::vector<Bezier> sx = inner[X].subdivide(t), sy = inner[Y].subdivide(t);
         std::vector<BezierCurveN> result;

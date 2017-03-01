@@ -118,9 +118,6 @@ std::vector<Bezier> Bezier::subdivide(std::vector<Coord> times_in) const
         result.push_back(left);
         latest_bezier = right;
         /*
-         * In your example where you want to subdivide at t=0.2 and 0.6,
-         * the new parameter for 0.6 should be (0.6-0.2)/(1-0.2) = 0.5.
-         * So, you can simply subdivide the 2nd curve at t=0.5.
          * Divide at t1 and t2 => new parameter for t2 is (t2 - t1)/(1-t1)
          * In our case t1 == times[ii] and t2 = times[jj]
          */
