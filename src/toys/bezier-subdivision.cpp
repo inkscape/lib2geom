@@ -119,8 +119,13 @@ public:
         double const t2 = sliders[1].value();
         double const t3 = sliders[2].value();
 
-        std::vector<double> const t_set {t1, t2};
-        std::vector<double> const t_set2 {t1, t2, t3};
+        std::vector<double> t_set;
+        t_set.push_back(t1);
+        t_set.push_back(t2);
+        std::vector<double> t_set2;
+        t_set2.push_back(t1);
+        t_set2.push_back(t2);
+        t_set2.push_back(t3);
 
         D2<SBasis> B1 = b_handle.asBezier();
         Piecewise<D2<SBasis> >B;
