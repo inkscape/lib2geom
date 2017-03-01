@@ -13,6 +13,7 @@ implicitization-test
 SET(2GEOM_GTESTS_SRC
 affine-test
 angle-test
+bezier-subdivision-test
 bezier-test
 choose-test
 circle-test
