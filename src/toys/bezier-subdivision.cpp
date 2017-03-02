@@ -20,7 +20,8 @@ using namespace Geom;
 double asymmetric_furthest_distance(Path const& a, Path const& b) {
 
     double result = 0;
-    for (auto const& curve : a) {
+    for (size_t ii = 0; ii < a.size(); ++ii) {
+        Curve const& curve = a[ii];
         for (double t = 0; t <= 1; t += .01) {
             double current_dist = 0;
             b.nearestTime(curve.pointAt(t), &current_dist);
@@ -36,30 +37,6 @@ double symmetric_furthest_distance(Path const& a, Path const& b) {
                 asymmetric_furthest_distance(a,b),
                 asymmetric_furthest_distance(b,a)
                 );
-}
-
-static void dot_plot(cairo_t *cr, Piecewise<D2<SBasis> > const &M, double space=10){
-    //double dt=(M[0].cuts.back()-M[0].cuts.front())/space;
-    Piecewise<D2<SBasis> > Mperp = rot90(derivative(M)) * 2;
-    for( double t = M.cuts.front(); t < M.cuts.back(); t += space) {
-        Point pos = M(t), perp = Mperp(t);
-        draw_line_seg(cr, pos + perp, pos - perp);
-    }
-    cairo_pw_d2_sb(cr, M);
-    cairo_stroke(cr);
-}
-
-static void cross_plot(
-        cairo_t *cr,
-        std::vector<Geom::Point> const& data,
-        Geom::Point offset = Geom::Point(0,0),
-        double const size = 10){
-    for (auto point : data) {
-        Geom::Point dx(size/2, 0);
-        Geom::Point dy(0, size/2);
-        draw_line_seg(cr, offset + point + dx, offset + point - dx);
-        draw_line_seg(cr, offset + point + dy, offset + point - dy);
-    }
 }
 
 void plot_bezier_with_handles(cairo_t *cr, CubicBezier const& bez, Geom::Point offset = Geom::Point(0,0), double size = 10) {
@@ -82,7 +59,8 @@ void plot_bezier_with_handles(cairo_t *cr, CubicBezier const& bez, Geom::Point o
 }
 
 void plot_bezier_with_handles(cairo_t *cr, Path const& path, Geom::Point offset = Geom::Point(0,0), double size = 10) {
-    for (auto const& curve : path) {
+    for (size_t ii = 0; ii < path.size(); ++ii) {
+        Curve const& curve = path[ii];
         CubicBezier const& bez = dynamic_cast<CubicBezier const&>(curve);
         plot_bezier_with_handles(cr, bez, offset, size);
     }
@@ -92,8 +70,8 @@ Geom::Path subdivide(CubicBezier const& bez, std::vector<double> const& times_in
     Path result;
     // First we need to sort the times ascending.
     std::vector<CubicBezier> curves = bez.subdivide(times_in);
-    for (const auto& c : curves) {
-        result.append(c);
+    for (size_t ii = 0; ii < curves.size(); ++ii) {
+        result.append(curves[ii]);
     }
     return result;
 }
@@ -142,39 +120,23 @@ public:
 
         cairo_set_line_width (cr, 2.);
         cairo_set_source_rgba (cr, 0., 0.5, 0., 1);
-        //cairo_d2_sb(cr, B1);
-        //cairo_pw_d2_sb(cr, C);
-        //cairo_pw_d2_sb(cr, B);
         cairo_stroke(cr);
 
-        Timer tm;
-        Timer::Time als_time = tm.lap();
-
         cairo_set_source_rgba (cr, 0., 0., 0.9, 1);
-        //dot_plot(cr,uniform_B);
         cairo_stroke(cr);
 
         std::cout << B[0] << std::endl;
 
-        Geom::Affine translation;
-
         Geom::Path original_path;
-        //original_bezier.append(B[0]);
-        //original_bezier.appendNew<CubicBezier> (B[0]);
         CubicBezier original_bezier(b_handle.pts);
         original_path.append(original_bezier);
-
-
 
         cairo_set_source_rgba (cr, 0., 0., .9, 1);
         cairo_path(cr, original_path);
 
 
         if(1) {
-            tm.ask_for_timeslice();
-            tm.start();
-            auto result = original_bezier.subdivide(t1);
-            als_time = tm.lap();
+            std::pair<CubicBezier, CubicBezier> result = original_bezier.subdivide(t1);
 
             Point translation(Geom::Point(0,300));
 
@@ -187,12 +149,9 @@ public:
         }
 
         if(1) {
-            tm.ask_for_timeslice();
-            tm.start();
             Path result = subdivide(original_bezier, t_set);
             std::cout << "Difference between original and divided curve ("
                       << result.size() << "): " << symmetric_furthest_distance(original_path, result) << std::endl;
-            als_time = tm.lap();
 
             Point translation(Geom::Point(300,300));
 
@@ -204,12 +163,9 @@ public:
         }
 
         if(1) {
-            tm.ask_for_timeslice();
-            tm.start();
             Path result = subdivide(original_bezier, t_set2);
             std::cout << "Difference between original and divided curve ("
                       << result.size() << "): " << symmetric_furthest_distance(original_path, result) << std::endl;
-            als_time = tm.lap();
 
             Point translation(Geom::Point(300,0));
 
@@ -248,9 +204,6 @@ public:
 private:
     std::vector<Slider> sliders;
     bool first_time = true;
-    bool randomize_times = false;
-    std::random_device rd;
-    std::default_random_engine generator;
 };
 
 int main(int argc, char **argv) {

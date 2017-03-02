@@ -48,7 +48,8 @@ namespace Geom {
 double asymmetric_furthest_distance(Path const& a, Path const& b) {
 
     double result = 0;
-    for (Curve const& curve : a) {
+    for (size_t ii = 0; ii < a.size(); ++ii) {
+        Curve const& curve = a[ii];
         for (double t = 0; t <= 1; t += .05) {
             double current_dist = 0;
             b.nearestTime(curve.pointAt(t), &current_dist);
@@ -90,17 +91,17 @@ double symmetric_furthest_distance(C const& a_in, Path const& b) {
 
 template<class C>
 /**
- * @brief Create a
- * @param bez
- * @param times_in
- * @return
+ * @brief Create a Path from a single curve and a set of subdivision times.
+ * @param bez Original bezier path.
+ * @param times_in Times for splitting the path.
+ * @return A Geom::Path with the subdivied beziers.
  */
 Geom::Path subdivide(C const& bez, std::vector<double> const& times_in) {
     Path result;
     // First we need to sort the times ascending.
     std::vector<C> curves = bez.subdivide(times_in);
-    for (C const& c : curves) {
-        result.append(c);
+    for (size_t ii = 0; ii < curves.size(); ++ii) {
+        result.append(curves[ii]);
     }
     return result;
 }
@@ -194,8 +195,8 @@ CubicBezier random_curve() {
  * @brief Print a vector of doubles to std::cout
  */
 void print_vector(std::vector<double> const& in) {
-    for (double const val : in) {
-        std::cout << val << " ";
+    for (size_t ii = 0; ii < in.size(); ++ii) {
+        std::cout << in[ii] << " ";
     }
     std::cout << std::endl;
 }
@@ -289,7 +290,8 @@ C add_noise(C curve, double const scale = .1) {
  * @return Copy of the original vector with modified entries.
  */
 std::vector<double> add_noise(std::vector<double> times, double const scale = .1) {
-    for (double& t : times) {
+    for (size_t ii = 0; ii < times.size(); ++ii) {
+        double& t = times[ii];
         double const noise = random_uniform(-scale, scale);
         t += noise;
         if (t < 0) {
