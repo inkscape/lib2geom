@@ -104,7 +104,8 @@ std::vector<Bezier> Bezier::subdivide(std::vector<Coord> times_in) const
     // Second we filer the times and remove duplicates as well as 0 and 1.
     double last_time = -1;
     std::vector<double> times;
-    for (auto const time : times_in) {
+    for (size_t ii = 0; ii < times_in.size(); ++ii) {
+        double const time = times_in[ii];
         if (std::abs(last_time - time) > 1e-16 && time > 0 && time < 1) {
             times.push_back(time);
             last_time = time;
