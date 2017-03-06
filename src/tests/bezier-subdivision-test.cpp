@@ -5,7 +5,7 @@
  * Authors:
  *   Alexander Brock <Brock.Alexander@web.de>
  *
- * Copyright 2010 Authors
+ * Copyright 2017 Authors
  *
  * This library is free software; you can redistribute it and/or
  * modify it either under the terms of the GNU Lesser General Public
