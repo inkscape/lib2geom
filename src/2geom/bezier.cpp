@@ -101,7 +101,7 @@ std::vector<Bezier> Bezier::subdivide(std::vector<Coord> times_in) const
     // First we need to sort the times ascending.
     std::sort(times_in.begin(), times_in.end());
 
-    // Second we filer the times and remove duplicates as well as 0 and 1.
+    // Second we filter the times and remove duplicates as well as 0 and 1.
     double last_time = -1;
     std::vector<double> times;
     for (size_t ii = 0; ii < times_in.size(); ++ii) {
