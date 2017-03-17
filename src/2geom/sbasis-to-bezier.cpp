@@ -188,7 +188,8 @@ void sbasis_to_cubic_bezier (std::vector<Point> & bz, D2<SBasis> const& sb)
     double xprime[2], yprime[2];
     double midx = 0;
     double midy = 0;
-    double numer;
+    double midx_0, midy_0;
+    double numer[2], numer_0[2];
     double denom;
     double div;
 
@@ -239,21 +240,23 @@ void sbasis_to_cubic_bezier (std::vector<Point> & bz, D2<SBasis> const& sb)
 
     midx = 8*midx - 4*bz[0][X] - 4*bz[3][X];  // re-define relative to center
     midy = 8*midy - 4*bz[0][Y] - 4*bz[3][Y];
+    midx_0 = sb[X][1][0] + sb[X][1][1];       // zeroth order estimate
+    midy_0 = sb[Y][1][0] + sb[Y][1][1];
 
     if ((std::abs(xprime[0]) < EPSILON) && (std::abs(yprime[0]) < EPSILON)
     && ((std::abs(xprime[1]) > EPSILON) || (std::abs(yprime[1]) > EPSILON)))  { // degenerate handle at 0 : use distance of closest approach
-        numer = midx*xprime[1] + midy*yprime[1];
+        numer[0] = midx*xprime[1] + midy*yprime[1];
         denom = 3.0*(xprime[1]*xprime[1] + yprime[1]*yprime[1]);
         delx[0] = 0;
         dely[0] = 0;
-        delx[1] = -xprime[1]*numer/denom;
-        dely[1] = -yprime[1]*numer/denom;
+        delx[1] = -xprime[1]*numer[0]/denom;
+        dely[1] = -yprime[1]*numer[0]/denom;
     } else if ((std::abs(xprime[1]) < EPSILON) && (std::abs(yprime[1]) < EPSILON)
            && ((std::abs(xprime[0]) > EPSILON) || (std::abs(yprime[0]) > EPSILON)))  { // degenerate handle at 1 : ditto
-        numer = midx*xprime[0] + midy*yprime[0];
+        numer[1] = midx*xprime[0] + midy*yprime[0];
         denom = 3.0*(xprime[0]*xprime[0] + yprime[0]*yprime[0]);
-        delx[0] = xprime[0]*numer/denom;
-        dely[0] = yprime[0]*numer/denom;
+        delx[0] = xprime[0]*numer[1]/denom;
+        dely[0] = yprime[0]*numer[1]/denom;
         delx[1] = 0;
         dely[1] = 0;
     } else if  (std::abs(xprime[1]*yprime[0] - yprime[1]*xprime[0]) >  // general case : fit mid fxn value
@@ -264,15 +267,21 @@ void sbasis_to_cubic_bezier (std::vector<Point> & bz, D2<SBasis> const& sb)
             return;
         denom = 3.0*(xprime[1]*yprime[0] - yprime[1]*xprime[0]);
         for (int i = 0; i < 2; ++i) {
-            numer = xprime[1 - i]*midy - yprime[1 - i]*midx;
-            delx[i] = xprime[i]*numer/denom;
-            dely[i] = yprime[i]*numer/denom;
+            numer_0[i] = xprime[1 - i]*midy_0 - yprime[1 - i]*midx_0;
+            numer[i] = xprime[1 - i]*midy - yprime[1 - i]*midx;
+            delx[i] = xprime[i]*numer[i]/denom;
+            dely[i] = yprime[i]*numer[i]/denom;
+            if (numer_0[i]*numer[i] < 0)  // check for reversal of direction, LP Bug 1544680
+                return;
         }
+        if (std::abs((numer[0] - numer_0[0])*numer_0[1]) > 10.0*std::abs((numer[1] - numer_0[1])*numer_0[0]) // check for asymmetry
+        ||  std::abs((numer[1] - numer_0[1])*numer_0[0]) > 10.0*std::abs((numer[0] - numer_0[0])*numer_0[1]))
+            return;
     } else if ((xprime[0]*xprime[1] < 0) || (yprime[0]*yprime[1] < 0)) { // symmetric case : use distance of closest approach
-        numer = midx*xprime[0] + midy*yprime[0];
+        numer[0] = midx*xprime[0] + midy*yprime[0];
         denom = 6.0*(xprime[0]*xprime[0] + yprime[0]*yprime[0]);
-        delx[0] = xprime[0]*numer/denom;
-        dely[0] = yprime[0]*numer/denom;
+        delx[0] = xprime[0]*numer[0]/denom;
+        dely[0] = yprime[0]*numer[0]/denom;
         delx[1] = -delx[0];
         dely[1] = -dely[0];
     } else {                                    // anti-symmetric case : fit mid slope
@@ -291,10 +300,10 @@ void sbasis_to_cubic_bezier (std::vector<Point> & bz, D2<SBasis> const& sb)
         }
         if (midx*yprime[0] != midy*xprime[0]) {
             denom = midx*yprime[0] - midy*xprime[0];
-            numer = midx*(bz[3][Y] - bz[0][Y]) - midy*(bz[3][X] - bz[0][X]);
+            numer[0] = midx*(bz[3][Y] - bz[0][Y]) - midy*(bz[3][X] - bz[0][X]);
             for (int i = 0; i < 2; ++i) {
-                delx[i] = xprime[0]*numer/denom;
-                dely[i] = yprime[0]*numer/denom;
+                delx[i] = xprime[0]*numer[0]/denom;
+                dely[i] = yprime[0]*numer[0]/denom;
             }
         } else {                                // linear case
             for (int i = 0; i < 2; ++i) {
