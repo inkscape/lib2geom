@@ -1,5 +1,5 @@
 /*
- * point-curve nearest point routines testing
+ * point-curve furthest point routines testing
  *
  * Authors:
  * 		Marco Cecchetti <mrcekets at gmail.com>
@@ -58,7 +58,7 @@ operator<< (std::ostream &out, PathVectorTime const &pvp)
     return out << pvp.path_index << "." << pvp.curve_index << "." << pvp.t;
 }
 
-class NearestPoints : public Toy
+class FurthestPoints : public Toy
 {
     enum menu_item_t
     {
@@ -93,7 +93,7 @@ private:
                 LineSegment seg(psh.pts[0], psh.pts[1]);
                 cairo_move_to(cr, psh.pts[0]);
                 cairo_curve(cr, seg);
-                double t = seg.nearestTime(p);
+                double t = seg.furthestTime(p);
                 np = seg.pointAt(t);
                 if ( toggles[0].on )
                 {
@@ -118,13 +118,13 @@ private:
                     cairo_d2_sb(cr, earc.toSBasis());
                     if ( toggles[0].on )
                     {
-                        std::vector<double> t = earc.allNearestTimes(p);
+                        std::vector<double> t = earc.allFurthestTimes(p);
                         for ( unsigned int i = 0; i < t.size(); ++i )
                             nps.push_back(earc.pointAt(t[i]));
                     }
                     else
                     {
-                        double t = earc.nearestTime(p);
+                        double t = earc.furthestTime(p);
                         np = earc.pointAt(t);
                     }
     	        }
@@ -136,13 +136,13 @@ private:
                 cairo_d2_sb(cr, A);
     	        if ( toggles[0].on )
     	        {
-                    std::vector<double> t = Geom::all_nearest_times(p, A);
+                    std::vector<double> t = Geom::all_furthest_times(p, A);
                     for ( unsigned int i = 0; i < t.size(); ++i )
                         nps.push_back(A(t[i]));
     	        }
     	        else
     	        {
-                    double t = nearest_time(p, A);
+                    double t = furthest_time(p, A);
                     np = A(t);
     	        }
                 break;
@@ -169,13 +169,13 @@ private:
     	        pwc.push_cut(1);
     	        if ( toggles[0].on )
     	        {
-                    std::vector<double> t = Geom::all_nearest_times(p, pwc);
+                    std::vector<double> t = Geom::all_furthest_times(p, pwc);
                     for ( unsigned int i = 0; i < t.size(); ++i )
                         nps.push_back(pwc(t[i]));
     	        }
     	        else
     	        {
-                    double t = Geom::nearest_time(p, pwc);
+                    double t = Geom::furthest_time(p, pwc);
                     np = pwc(t);
     	        }
                 break;
@@ -207,13 +207,13 @@ private:
 
     	        if ( toggles[0].on )
     	        {
-                    std::vector<double> t = path.allNearestTimes(p);
+                    std::vector<double> t = path.allFurthestTimes(p);
                     for ( unsigned int i = 0; i < t.size(); ++i )
                         nps.push_back(path.pointAt(t[i]));
     	        }
     	        else
     	        {
-                    PathTime pt = path.nearestTime(p);
+                    PathTime pt = path.furthestTime(p);
                     np = path.pointAt(pt);
     	        }
                 break;
@@ -232,7 +232,7 @@ private:
 
     	        if ( toggles[0].on )
     	        {
-                    std::vector<PathVectorTime> t = pathv.allNearestTimes(p);
+                    std::vector<PathVectorTime> t = pathv.allFurthestTimes(p);
                     for ( unsigned int i = 0; i < t.size(); ++i )
                         nps.push_back(pathv.pointAt(t[i]));
     	        }
@@ -242,7 +242,7 @@ private:
                     double s = 0, e = 1;
                     draw_cross(cr, pathv[0].pointAt(s));
                     draw_cross(cr, pathv[0].pointAt(e));
-                    double t = pathv[0][0].nearestTime(p, 0, 1);
+                    double t = pathv[0][0].furthestTime(p, 0, 1);
                     if(t) {
                         *notify << p+psh.pts[0] << std::endl;
                         *notify << t << std::endl;
@@ -341,12 +341,12 @@ private:
 
 public:
     void first_time(int argc, char** argv) {
-        const char *path_b_name = "star.svgd";
+        const char *path_b_name="star.svgd";
         if(argc > 1)
             path_b_name = argv[1];
         paths_b = read_svgd(path_b_name);
     }
-    NearestPoints()
+    FurthestPoints()
         : total_handles(0), choice('0'), closed_toggle(false)
     {
         handles.push_back(&psh);
@@ -365,7 +365,7 @@ private:
     bool closed_toggle;
 };
 
-const char* NearestPoints::menu_items[] =
+const char* FurthestPoints::menu_items[] =
 {
     "",
     "LineSegment",
@@ -380,7 +380,7 @@ const char* NearestPoints::menu_items[] =
 
 int main(int argc, char **argv)
 {
-    init( argc, argv, new NearestPoints() );
+    init( argc, argv, new FurthestPoints() );
     return 0;
 }
 
