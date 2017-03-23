@@ -455,7 +455,7 @@ Coord Path::valueAt(PathTime const &pos, Dim2 d) const
 std::vector<PathTime> Path::roots(Coord v, Dim2 d) const
 {
     std::vector<PathTime> res;
-    for (unsigned i = 0; i <= size(); i++) {
+    for (unsigned i = 0; i < size(); i++) {
         std::vector<Coord> temp = (*this)[i].roots(v, d);
         for (unsigned j = 0; j < temp.size(); j++)
             res.push_back(PathTime(i, temp[j]));
