@@ -125,7 +125,7 @@ OPTION(2GEOM_TOYS_LPE
 IF(2GEOM_TOYS_LPE)
     # make lib for lpetoy
     ADD_LIBRARY(lpetoy ${LIB_TYPE} ${2GEOM_LPE_TOY_FRAMEWORK_SRC})
-    TARGET_LINK_LIBRARIES(lpetoy 2geom "${GTK2_LINK_FLAGS} ${cairo_LINK_FLAGS}")
+    TARGET_LINK_LIBRARIES(lpetoy 2geom ${GTK2_LINK_FLAGS} ${cairo_LINK_FLAGS})
 
     FOREACH(source ${2GEOM_LPE_TOYS_SRC})
         ADD_EXECUTABLE(${source} ${source}.cpp)
@@ -135,7 +135,7 @@ IF(2GEOM_TOYS_LPE)
             TARGET_LINK_LIBRARIES(lpetoy "-lrt")
           #SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -lrt")
         ENDIF(WIN32 OR APPLE)
-        TARGET_LINK_LIBRARIES(${source} lpetoy ${LINK_GSL} 2geom "${GTK2_LINK_FLAGS} ${cairo_LINK_FLAGS}")
+        TARGET_LINK_LIBRARIES(${source} lpetoy ${LINK_GSL} 2geom ${GTK2_LINK_FLAGS} ${cairo_LINK_FLAGS})
     ENDFOREACH(source)
 
 ENDIF(2GEOM_TOYS_LPE)
@@ -146,7 +146,7 @@ OPTION(2GEOM_TOYS
 IF(2GEOM_TOYS)
     # make lib for toy
     ADD_LIBRARY(toy-2 ${LIB_TYPE} ${2GEOM_TOY-FRAMEWORK-2_SRC})
-    TARGET_LINK_LIBRARIES(toy-2 2geom "${GTK2_LINK_FLAGS} ${cairo_LINK_FLAGS}")
+    TARGET_LINK_LIBRARIES(toy-2 2geom ${GTK2_LINK_FLAGS} ${cairo_LINK_FLAGS})
 
     FOREACH(source ${2GEOM_TOYS-2_SRC})
         IF(${source} STREQUAL aa)
@@ -168,7 +168,7 @@ IF(2GEOM_TOYS)
 	  TARGET_LINK_LIBRARIES(toy-2 "-lrt")
           #SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -lrt")
         ENDIF(WIN32 OR APPLE)
-        TARGET_LINK_LIBRARIES(${source} toy-2 ${LINK_GSL} 2geom "${GTK2_LINK_FLAGS} ${cairo_LINK_FLAGS}")
+        TARGET_LINK_LIBRARIES(${source} toy-2 ${LINK_GSL} 2geom ${GTK2_LINK_FLAGS} ${cairo_LINK_FLAGS})
     ENDFOREACH(source)
 ENDIF(2GEOM_TOYS)
 
