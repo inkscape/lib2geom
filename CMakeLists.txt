@@ -16,7 +16,7 @@ LINK_DIRECTORIES (${CMAKE_CURRENT_SOURCE_DIR}/src/2geom)
 
 IF(gsl_FOUND)
 # must have GSL
-    SET(NEEDS_GSL 
+    SET(NEEDS_GSL
     differential-constraint
     root-finder-comparer
 #   contour
@@ -24,10 +24,10 @@ IF(gsl_FOUND)
     )
     SET(LINK_GSL ${gsl_LINK_FLAGS})
     SET(gsl_CFLAGS "${gsl_CFLAGS} -DHAVE_GSL")
-ENDIF(gsl_FOUND) 
+ENDIF(gsl_FOUND)
 IF(pycairo_FOUND)
     SET(pycairo_CFLAGS "${pycairo_CFLAGS} -DHAVE_PYCAIRO")
-ENDIF(pycairo_FOUND) 
+ENDIF(pycairo_FOUND)
 
 # Set Compiler Flags
 SET(CXX_WARNINGS_FLAGS "-Wall -Wformat -Wformat-security -W -Wpointer-arith -Wcast-align -Wsign-compare -Woverloaded-virtual -Wswitch -Werror=return-type")
@@ -39,6 +39,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     if (WIN32)
         SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-ignored-attributes")
     endif()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-local-typedef")
 endif()
 
 # the required C++11 flag depends on the compiler brand:
@@ -57,7 +58,7 @@ OPTION(USE_CPP11
   "Build lib2geom with C++11 enabled"
   OFF)
 if (USE_CPP11)
-#if (1) 
+#if (1)
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CPP11_FLAG} -DCPP11")
     # if we want to enable some C++11 code by #ifdefs, add the defines here
     # add_definitions(-DHAS_MOVESEMANTICS)
