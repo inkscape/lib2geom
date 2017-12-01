@@ -235,7 +235,7 @@ class Piecewise {
         cuts[size()] = dom.max();
     }
 
-    //Concatenates this Piecewise function with another, offseting time of the other to match the end.
+    //Concatenates this Piecewise function with another, offsetting time of the other to match the end.
     inline void concat(const Piecewise<T> &other) {
         if(other.empty()) return;
 
@@ -738,7 +738,7 @@ inline Piecewise<T>& operator*=(Piecewise<T> &a, Piecewise<T> const &b) {
 
 Piecewise<SBasis> divide(Piecewise<SBasis> const &a, Piecewise<SBasis> const &b, unsigned k);
 //TODO: replace divide(a,b,k) by divide(a,b,tol,k)?
-//TODO: atm, relative error is ~(tol/a)%. Find a way to make it independant of a.
+//TODO: atm, relative error is ~(tol/a)%. Find a way to make it independent of a.
 //Nota: the result is 'truncated' where b is smaller than 'zero': ~ a/max(b,zero).
 Piecewise<SBasis>
 divide(Piecewise<SBasis> const &a, Piecewise<SBasis> const &b, double tol, unsigned k, double zero=1.e-3);

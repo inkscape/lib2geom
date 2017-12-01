@@ -52,7 +52,7 @@ namespace detail
  * make_elliptical_arc
  *
  * convert a parametric polynomial curve given in symmetric power basis form
- * into an EllipticalArc type; in order to be successfull the input curve
+ * into an EllipticalArc type; in order to be successful the input curve
  * has to look like an actual elliptical arc even if a certain tolerance
  * is allowed through an ad-hoc parameter.
  * The conversion is performed through an interpolation on a certain amount of
@@ -109,7 +109,7 @@ class make_elliptical_arc
   public:
     /*
      * perform the actual conversion
-     * return true if the conversion is successfull, false on the contrary
+     * return true if the conversion is successful, false on the contrary
      */
     bool operator()()
     {

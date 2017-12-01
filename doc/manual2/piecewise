@@ -10,13 +10,13 @@ still be accurate.  An example of this is the *inverse* function.
 
 In the world of lib2geom, this is implemented as the *Piecewise*
 template class.  It manages a sequence of fragment 'segments' and the
-cuts between them.  These cuts are the various t-values which seperate
+cuts between them.  These cuts are the various t-values which separate
 the different segments.
 
 h2. Cuts
 
 The first and last cuts of a piecewise define it's intended range, and
-the intermediary cuts seperate the segments.  With indices, segment i
+the intermediary cuts separate the segments.  With indices, segment i
 is always bordered on the left with cut i and on the right with cut i+1.
 In general, c = s+1, where c is the number of cuts and s is the number
 of segments.  These invariants are checked by the

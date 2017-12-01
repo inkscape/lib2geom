@@ -540,7 +540,7 @@ public:
         //std::printf("entering event loop:\n");
         int step=0;
         for(Sweeper::Event event = sweeper.getNextEvent(); ; event = sweeper.getNextEvent() ){
-//            std::printf("   new event recieved: ");
+//            std::printf("   new event received: ");
             //print();
             //debug only!!!
             if ( steps_max >= 0 && step > steps_max ){
@@ -551,11 +551,11 @@ public:
             //---------
 
             if (event.empty()){
-                //std::printf("   empty event recieved\n");
+                //std::printf("   empty event received\n");
                 break;
             }
 
-            //std::printf("   non empty event recieved:");
+            //std::printf("   non empty event received:");
             //sweeper.printEvent(event);
 
             //is this a new event or the continuation of an old one?

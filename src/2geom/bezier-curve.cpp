@@ -79,7 +79,7 @@ namespace Geom
  * @image html bezier-curve-evaluation.png "Evaluation of the Bezier curve"
  *
  * An important property of the Bezier curves is that their parameters (control points)
- * have an intutive geometric interpretation. Because of this, they are frequently used
+ * have an intuitive geometric interpretation. Because of this, they are frequently used
  * in vector graphics editors.
  *
  * Every Bezier curve is contained in its control polygon (the convex polygon composed

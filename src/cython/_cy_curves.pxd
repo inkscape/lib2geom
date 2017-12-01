@@ -263,7 +263,7 @@ cdef extern from "2geom/bezier.h" namespace "Geom":
     Bezier multiply(Bezier &, Bezier &)
     Bezier reverse(Bezier &)
 
-#This is ugly workaround around cython's lack of support for interger template parameters
+#This is ugly workaround around cython's lack of support for integer template parameters
 cdef extern from *:
     ctypedef int n_0 "0"
     ctypedef int n_1 "1"

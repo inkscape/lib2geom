@@ -729,7 +729,7 @@ const Interval H2_INTERVAL(nextafter(0.5, 1.0), 1.0);
  * in case the clipping doesn't shrink the initial interval more than 20%,
  * a subdivision step is performed.
  * If during the computation both curves collapse to a single point
- * the routine exits indipendently by the precision reached in the computation
+ * the routine exits independently by the precision reached in the computation
  * of the curve intervals.
  */
 template <>
@@ -888,7 +888,7 @@ void iterate<intersection_point_tag> (std::vector<Interval>& domsA,
  * in case the clipping doesn't shrink the initial interval more than 20%,
  * a subdivision step is performed.
  * If during the computation one of the two curve interval length becomes less
- * than MAX_PRECISION the routine exits indipendently by the precision reached
+ * than MAX_PRECISION the routine exits independently by the precision reached
  * in the computation of the other curve interval.
  */
 template <>

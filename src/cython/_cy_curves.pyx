@@ -177,7 +177,7 @@ cdef class cy_Linear:
     def __cinit__(self, aa = None, b = None):
         """Create new Linear from two end values.
 
-        No arguments create zero constant, one value creats constant.
+        No arguments create zero constant, one value creates constant.
         """
         if aa is None:
             self.thisptr = new Linear()
@@ -943,7 +943,7 @@ cdef class cy_Bezier:
 #TODO: ask someone what this function does.
 #~         """Compute forward difference of degree k.
 #~
-#~         First forward difference of B is rougly function B'(t) = B(t+h)-B(t)
+#~         First forward difference of B is roughly function B'(t) = B(t+h)-B(t)
 #~         for fixed step h"""
         return wrap_Bezier(self.thisptr.forward_difference(k))
 

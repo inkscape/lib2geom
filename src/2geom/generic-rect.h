@@ -280,7 +280,7 @@ public:
     void unionWith(OptCRect const &b);
 
     /** @brief Expand the rectangle in both directions by the specified amount.
-     * Note that this is different from scaling. Negative values wil shrink the
+     * Note that this is different from scaling. Negative values will shrink the
      * rectangle. If <code>-amount</code> is larger than
      * half of the width, the X interval will contain only the X coordinate
      * of the midpoint; same for height. */
@@ -288,7 +288,7 @@ public:
         expandBy(amount, amount);
     }
     /** @brief Expand the rectangle in both directions.
-     * Note that this is different from scaling. Negative values wil shrink the
+     * Note that this is different from scaling. Negative values will shrink the
      * rectangle. If <code>-x</code> is larger than
      * half of the width, the X interval will contain only the X coordinate
      * of the midpoint; same for height. */

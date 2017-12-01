@@ -208,7 +208,7 @@ cdef class cy_Point:
         return wrap_Point(self.thisptr.cw())
 
     def __getitem__(self, key):
-        """Acces coordinates of point."""
+        """Access coordinates of point."""
         return deref(self.thisptr)[key]
 
     @property

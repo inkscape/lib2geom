@@ -1246,7 +1246,7 @@ xAx xAx::rotate (double angle) const
 
 /*
  * Decompose a degenerate conic in two lines the conic section is made by.
- * Return true if the decomposition is successfull, else if it fails.
+ * Return true if the decomposition is successful, else if it fails.
  *
  * l1, l2: out parameters where the decomposed conic section is returned
  */

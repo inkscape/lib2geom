@@ -185,7 +185,7 @@ void IntervalTree::RightRotate(IntervalTreeNode* y) {
 /**/
 /*  EFFECTS:  Inserts z into the tree as if it were a regular binary tree */
 /*            using the algorithm described in _Introduction_To_Algorithms_ */
-/*            by Cormen et al.  This funciton is only intended to be called */
+/*            by Cormen et al.  This function is only intended to be called */
 /*            by the InsertTree function and not by the user */
 /***********************************************************************/
 
@@ -245,7 +245,7 @@ void IntervalTree::FixUpMaxHigh(IntervalTreeNode * x) {
 #endif
 }
 
-/*  Before calling InsertNode  the node x should have its key set */
+/*  Before calling InsertNode the node x should have its key set */
 
 /***********************************************************************/
 /*  FUNCTION:  InsertNode */

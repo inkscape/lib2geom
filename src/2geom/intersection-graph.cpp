@@ -174,7 +174,7 @@ void PathIntersectionGraph::_assignEdgeWindingParities(Coord precision)
 void PathIntersectionGraph::_assignComponentStatusFromDegenerateIntersections()
 {
     // If a path has only degenerate intersections, assign its status now.
-    // This protects against later accidentaly picking a point for winding
+    // This protects against later accidentally picking a point for winding
     // determination that is exactly at a removed intersection.
     for (unsigned w = 0; w < 2; ++w) {
         for (unsigned li = 0; li < _components[w].size(); ++li) {

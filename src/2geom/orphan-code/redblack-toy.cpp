@@ -61,7 +61,7 @@ class RedBlackToy: public Toy
 
 	Rect rect_chosen;	// the rectangle of the search area
 	Rect dummy_draw;	// the "helper" rectangle that is shown during the click and drag (before the mouse release)
-	int mode;			// insert/alter, search, delete  modes
+	int mode;			// insert/alter, search, delete modes
 
 	// printing of the tree
 	int help_counter;	// the "x" of the label of each node

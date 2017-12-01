@@ -46,11 +46,11 @@
 
  *  the gsl poly roots finder is faster than bernstein too, but we don't use it for 3 reasons:
 
- a) it requires convertion to poly, which is numerically unstable
+ a) it requires conversion to poly, which is numerically unstable
 
  b) it requires gsl (which is currently not a dependency, and would bring in a whole slew of unrelated stuff)
 
- c) it finds all roots, even complex ones.  We don't want to accidently treat a nearly real root as a real root
+ c) it finds all roots, even complex ones.  We don't want to accidentally treat a nearly real root as a real root
 
 From memory gsl poly roots was about 10 times faster than bernstein in the case where all the roots
 are in [0,1] for polys of order 5.  I spent some time working out whether eigenvalue root finding
@@ -231,7 +231,7 @@ static void multi_roots_internal(SBasis const &f,
         }
         return;
     }
-////usefull?
+////useful?
 //     if (f.size()==1){
 //         int idxa=upper_level(levels,fa);
 //         int idxb=upper_level(levels,fb);

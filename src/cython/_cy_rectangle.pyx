@@ -1257,7 +1257,7 @@ cdef class cy_GenericRect:
         return wrap_GenericRect( deref(self.thisptr) - make_PyPoint(p) )
 
     def __or__(cy_GenericRect self, cy_GenericRect o):
-        """Return union of two rects - it's actualy bounding rect of union."""
+        """Return union of two rects - it's actually bounding rect of union."""
         return wrap_GenericRect( deref(self.thisptr) | deref( o.thisptr ))
 
     def __richcmp__(cy_GenericRect self, cy_GenericRect o, int op):
@@ -1502,7 +1502,7 @@ cdef class cy_Rect:
             return wrap_Rect( deref(self.thisptr) * at )
 
     def __or__(cy_Rect self, cy_Rect o):
-        """Return union of two rects - it's actualy bounding rect of union."""
+        """Return union of two rects - it's actually bounding rect of union."""
         return wrap_Rect( deref(self.thisptr) | deref( o.thisptr ))
 
     def __richcmp__(cy_Rect self, o, int op):
@@ -1686,7 +1686,7 @@ cdef class cy_OptRect:
         self.thisptr.expandTo( deref(p.thisptr) )
 
     def __or__(cy_OptRect self, cy_OptRect other):
-        """Return union of two rects - it's actualy bounding rect of union."""
+        """Return union of two rects - it's actually bounding rect of union."""
         return wrap_OptRect( deref(self.thisptr) | deref(other.thisptr) )
 
     def __and__(cy_OptRect self, other):
@@ -1965,7 +1965,7 @@ cdef class cy_IntRect:
         return wrap_IntRect( deref(self.thisptr) - deref( p.thisptr ) )
 
     def __or__(cy_IntRect self, cy_IntRect o):
-        """Return union of two rects - it's actualy bounding rect of union."""
+        """Return union of two rects - it's actually bounding rect of union."""
         return wrap_IntRect( deref(self.thisptr) | deref( o.thisptr ))
 
     def __richcmp__(cy_IntRect self, cy_IntRect o, int op):
@@ -2127,7 +2127,7 @@ cdef class cy_OptIntRect:
         self.thisptr.expandTo( deref(p.thisptr) )
 
     def __or__(cy_OptIntRect self, cy_OptIntRect other):
-        """Return union of two rects - it's actualy bounding rect of union."""
+        """Return union of two rects - it's actually bounding rect of union."""
         return wrap_OptIntRect( deref(self.thisptr) | deref(other.thisptr) )
         
     def __and__(cy_OptIntRect self, other):

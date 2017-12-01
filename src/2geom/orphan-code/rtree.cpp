@@ -287,7 +287,7 @@ double RTree::find_enlargement( const Rect &a, const Rect &b ) const{
         return b.area() - a.area();
     }
 
-    // a partialy cover b
+    // a partially cover b
     _RTREE_PRINT("      find_enlargement (intersect: a partial cover b): " << union_rect.area() - a.area() - b.area() - a_intersection_b->area() );
     return union_rect.area() 
             - ( a.area() - a_intersection_b->area() ) 
@@ -322,7 +322,7 @@ QS2) check if done:
 QS3) select entry and assign:
     Inkvoke pick_next() to choose the next entry to assign. 
     *[in pick_next] Add it to the group whose covering rectangle will have to be enlrarged least to 
-    accomodate it. Resolve ties by adding the entry to the group with the smaller are, then to the 
+    accommodate it. Resolve ties by adding the entry to the group with the smaller are, then to the 
     one with fewer entries, then to either of the two.
     goto 2.
 */
@@ -471,7 +471,7 @@ std::pair<RTreeNode*, RTreeNode*> RTree::quadratic_split( RTreeNode *s ) {
 
 /*
 PS1) caclulate ineffeciency of grouping entries together:
-    Foreach pair of entries E1 (i), E2 (j) compose rectangle J (i_union_j) inlcuding E1, E2. 
+    Foreach pair of entries E1 (i), E2 (j) compose rectangle J (i_union_j) including E1, E2. 
     Calculate d = area(i_union_j) - area(i) - area(j)
 PS2) choose the most wastefull pair:
     Choose pair with largest d
@@ -545,9 +545,9 @@ pick_next:
 select one remaining entry for classification in a group
 
 PN1) Determine cost of putting each entry in each group:
-    Foreach entry E not yet in a group, calulate 
-    d1= area increase required in the cover rect of Group 1 to inlcude E
-    d2= area increase required in the cover rect of Group 2 to inlcude E
+    Foreach entry E not yet in a group, calculate 
+    d1= area increase required in the cover rect of Group 1 to include E
+    d2= area increase required in the cover rect of Group 2 to include E
 PN2) Find entry with greatest preference for each group:
     Choose any entry with the maximum difference between d1 and d2
 
@@ -963,7 +963,7 @@ void RTree::sanity_check(RTreeNode* subtree_root, int depth, bool used_during_in
 ===============================================================================
 Given an RTree whose root node is T find all index records whose rects overlap search rect S
 S1) Search subtrees:
-    IF T isnt a leaf, check every entry E to determine whether E I overlaps S
+    IF T isn't a leaf, check every entry E to determine whether E I overlaps S
         FOR all overlapping entries invoke Search on the tree whose root node is pointed by E P
 S2) ELSE T is leaf
         check all entries E to determine whether E I overlaps S
@@ -1324,7 +1324,7 @@ int RTree::remove_record_from_parent( RTreeNode* parent, RTreeNode* child ) {
         if( it->data == child ){
             // delete element: implement step D2)
             parent->children_nodes.erase( it ); 
-            return 0; // sucess
+            return 0; // success
         }
     }
     return 1; // failure

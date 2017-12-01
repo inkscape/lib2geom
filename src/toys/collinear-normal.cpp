@@ -116,7 +116,7 @@ class CurveIntersect : public Toy
             cairo_restore(cr);
             }*/
         *notify << "Hausdorf distance = " << h_dist 
-                << "occuring at " << h_a_t 
+                << "occurring at " << h_a_t 
                 << " B=" << h_b_t << std::endl;
 
         Toy::draw(cr, notify, width, height, save,timer_stream);

@@ -93,7 +93,7 @@ KinematicTemplate::next_point(Point const &last_pt, Point const &delta)
     Point new_delta;
     if (L2(last_pt + delta - center) < radius) {
         /*
-         * We are withing the radius of action of the kinematic template.
+         * We are within the radius of action of the kinematic template.
          * Compute displacement w.r.t. the v/w-coordinate system.
          */
         new_delta = (dotv*sx + cx)*v + (dotw*sy + cy)*w;

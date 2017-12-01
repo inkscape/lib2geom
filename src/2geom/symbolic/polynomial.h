@@ -120,7 +120,7 @@ class Polynomial
     }
 
     /*
-     *  degree of the term with the hightest degree
+     *  degree of the term with the highest degree
      *  and an initialized coefficient (even if zero)
      */
     size_t max_degree() const
@@ -137,7 +137,7 @@ class Polynomial
     }
 
     /*
-     *  degree of the term with the hightest degree
+     *  degree of the term with the highest degree
      *  and an initialized coefficient that is not null
      */
     size_t real_degree() const
