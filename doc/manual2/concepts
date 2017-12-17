@@ -19,7 +19,7 @@ This is perhaps the most important concept within lib2geom, as it defines
 the interface for the basic, one-dimensional functions.  Fragments are
 defined on the interval [0,1], which is referred to as the _intended domain_
 of the function.  Functions may be well defined for all values (many are),
-but the 0-to-1 domain has signifigant semantic value.  When the functions
+but the 0-to-1 domain has significant semantic value.  When the functions
 are used to represent a *Curve*, 0 is the start and 1 is the end.
 
 h4. @ T::output_type @

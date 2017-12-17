@@ -142,7 +142,7 @@ inline bool are_near(Translate const &a, Translate const &b, Coord eps=EPSILON) 
 }
 
 /** @brief Scaling from the origin.
- * During scaling, the point (0,0) will not move. To obtain a scale  with a different
+ * During scaling, the point (0,0) will not move. To obtain a scale with a different
  * invariant point, combine with translation to the origin and back.
  * @ingroup Transforms */
 class Scale

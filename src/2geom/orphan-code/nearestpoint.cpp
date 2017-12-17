@@ -249,7 +249,7 @@ static int ControlPolygonFlatEnough(
     double 	a, b, c;		/* Coefficients of implicit	*/
     					/* eqn for line from V[0]-V[deg]*/
 
-    /* Find the  perpendicular distance		*/
+    /* Find the perpendicular distance		*/
     /* from each interior control point to 	*/
     /* line connecting V[0] and V[degree]	*/
     distance = (double *)malloc((unsigned)(degree + 1) * 					sizeof(double));

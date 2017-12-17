@@ -877,7 +877,7 @@ const char* LineToy::menu_items[] =
 {
     "show this menu",
     "line generation",
-    "projection on  a line",
+    "projection on a line",
     "make orthogonal/parallel",
     "distance",
     "position",

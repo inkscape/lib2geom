@@ -128,7 +128,7 @@ class SBasisDimToy: public Toy {
         LinearN<2> u,v;
         setToVariable(u,0);
         setToVariable(v,1);
-        SBasisN<2> f, x = u, y = v; //x,y are used for convertion :-(
+        SBasisN<2> f, x = u, y = v; //x,y are used for conversion :-(
 
         
 //--------------------

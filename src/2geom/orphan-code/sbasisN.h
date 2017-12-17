@@ -13,7 +13,7 @@
  *
  * Caution: degrees are expressed as degrees of s=t*(1-t). The real degree
  * (with respect to t) of the polynomial is twice that + 0 or 1 depending 
- * wether the relevant LinearN<n> coeff is constant or not.
+ * whether the relevant LinearN<n> coeff is constant or not.
  *//*
  *
  *  Authors:
@@ -367,7 +367,7 @@ public:
 /**
  * Resize an SBasisN<n> to match new sizes.
  *
- * Caution: if a new size is smaller, the coresponding coefficients are discarded.
+ * Caution: if a new size is smaller, the corresponding coefficients are discarded.
  */
     void multi_resize(unsigned new_sizes[], LinearN<n> def_value = LinearN<n>(0.)){
         SBasisN<n> result;
@@ -530,7 +530,7 @@ public:
 
 /**
  * \brief Internal recursive function.
- * Replace each variable  by it's value in the 's=t*(1-t)' factor 
+ * Replace each variable by it's value in the 's=t*(1-t)' factor 
  * but not in the LinearN<n> coeffs. Then sum up all coefficients.
  * \param t[n]: values of the variables.
  */

@@ -415,7 +415,7 @@ public:
 
             //At this point, the tile is closed (i.e. both ends are in the known area)
             //Such tiles do 'nested parens' like travels in the unknown area.
-            //We are interested in the second occurence only (to give a chance to open tiles to exist inbetween).
+            //We are interested in the second occurrence only (to give a chance to open tiles to exist in between).
             if ( unmatched_closed_tiles.size()==0 || tile_idx != unmatched_closed_tiles.back() ){
                 unmatched_closed_tiles.push_back( tile_idx );
 //                std::printf("open paren %u\n",tile_idx);
@@ -813,7 +813,7 @@ public:
                         if ( boxes[k][1-D].contains(hit_place) ){
                             result = true;
                             //taking a point on the boundary is dangerous!! 
-                            //Either use >0 tolerance here, or find 2 intersection points and split inbetween.
+                            //Either use >0 tolerance here, or find 2 intersection points and split in between.
                             splitTile( i, t, tol, false);
                             break;
                         }
@@ -977,7 +977,7 @@ public:
 
 
     //-------------------------------
-    //-- intialize all data.
+    //-- initialize all data.
     //-------------------------------
 
     Sweeper(){}

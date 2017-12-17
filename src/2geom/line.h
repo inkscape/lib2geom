@@ -342,7 +342,7 @@ public:
      * This operation is useful in reducing intersection problems to root-finding problems.
      * There are many affines which do this transformation. This function returns one that
      * preserves angles, areas and distances - a rotation combined with a translation, and
-     * additionaly moves the initial point of the line to (0,0). This way it works without
+     * additionally moves the initial point of the line to (0,0). This way it works without
      * problems even for lines perpendicular to the target, though may in some cases have
      * lower precision than e.g. a shear transform.
      * @param d Which coordinate of points on the line should be zero after the transformation */

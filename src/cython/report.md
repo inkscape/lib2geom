@@ -151,7 +151,7 @@ go there.
 
 ##`utils.py`
 Only a simple function to draw curve/path to Tk windows and regular
-N-agon creating fucntion reside there, useful mainly for debugging
+N-agon creating function reside there, useful mainly for debugging
 
 ##`wrapper.py`
 Script used to cut the most trivial part of creating bindings, writing
@@ -165,7 +165,7 @@ the program. Simplest solution is adding `except +` after every method that
 possibly raises exceptions, but traces won't look that nice.
 
 cython has some kind of problem with docstrings, it doesn't write function's
-argument to them, just ellipsis. This can be addresed by specifying all 
+argument to them, just ellipsis. This can be addressed by specifying all 
 arguments in the docstring.
 
 Design decision has been made to put most of function not belonging to any 

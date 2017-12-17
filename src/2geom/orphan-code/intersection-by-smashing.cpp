@@ -248,7 +248,7 @@ std::vector<SmashIntersection> monotonic_smash_intersect( D2<SBasis> const &a, D
 	 * it would give points in the 2*tol neighborhood of bb (if the slope of aa is never more than 1).
 	 *  + faster computation.
 	 *  - implies little jumps depending on the subdivision of the input curve into monotonic pieces
-	 *  and on the choice of prefered axis. If noticable, these jumps would feel random to the user :-(
+	 *  and on the choice of preferred axis. If noticeable, these jumps would feel random to the user :-(
 	 */
 	for (unsigned j=0; j<tbs.size(); j++){
 		result[j].times[Y] = tbs[j];

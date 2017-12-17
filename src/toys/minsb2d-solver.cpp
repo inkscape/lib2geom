@@ -272,7 +272,7 @@ public:
 
             bits_n_bobs par = {&f, A, B, dA, dB};
             bits_n_bobs* bnb = &par;
-            std::cout << f[0] << "= intial f \n";
+            std::cout << f[0] << "= initial f \n";
             const gsl_multimin_fminimizer_type *T = 
                 gsl_multimin_fminimizer_nmsimplex;
             gsl_multimin_fminimizer *s = NULL;

@@ -5,7 +5,7 @@
  it has a nice haskell connection, btw
  rather than representing things as finite polynomials, we can store them as lazy lists and simply take enough terms at the end of the calculations
  did you at least look at the examples?
- namely, convertion of nurbs to beziers and offset curves?
+ namely, conversion of nurbs to beziers and offset curves?
  the basic idea is that although polynomials (which are really linear combinations of 1, x, x^2, x^3...) are easy to work with
  they are crap for two main reasons: a) though they are always correct for 0, any rounding or truncation will make the values at 1 fluctuate
  b) converting between bezier and polynomial is mathematically inprecise
@@ -24,7 +24,7 @@
  that article basically shows that anything you can do with polynomials, you can do with s-pbs
  (with a little extra work)
  so I'll probably remove poly.h
- every curve can be written as an inifinite s-pb
+ every curve can be written as an infinite s-pb
  including things like spirals
  so we could do spiral offset directly
  basically, if you can write an operation mathematically, you can do it symbolically on an s-pb

@@ -615,14 +615,14 @@ solve_lambda0(double a0,double a1,double c0,double c1,
 * or
 *    value, speed, and cross(acceleration,speed) 
 * of the original curve at the both ends.
-* (the second is often technically usefull, as it avoids unnecessary division by |v|^2) 
+* (the second is often technically useful, as it avoids unnecessary division by |v|^2) 
 * Recall that K=1/R=cross(acceleration,speed)/|speed|^3.
 *
 * Moreover, a 7-th argument 'insist_on_speed_signs' can be supplied to select solutions:  
 * If insist_on_speed_signs == 1, only consider solutions where speeds at both ends are positively
 * proportional to the given ones.
 * If insist_on_speed_signs == 0, allow speeds to point in the opposite direction (both at the same time) 
-* If insist_on_speed_signs == -1, allow speeds to point in both direction independantly. 
+* If insist_on_speed_signs == -1, allow speeds to point in both direction independently. 
 *
 * \relates D2
 */

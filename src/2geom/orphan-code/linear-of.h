@@ -237,7 +237,7 @@ inline LinearOf<T> operator/=(LinearOf<T> & a, double b) {
     return a;
 }
 /*
-//We can in fact rescale in coeff ring T... (but not devide!)
+//We can in fact rescale in coeff ring T... (but not divide!)
 template <typename T>
 inline LinearOf<T> operator*(LinearOf<T> const & a, T b) {
     return LinearOf<T>(a[0]*b, a[1]*b);

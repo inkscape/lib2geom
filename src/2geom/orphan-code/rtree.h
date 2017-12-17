@@ -127,7 +127,7 @@ R-Tree has 2 kinds of nodes
 This causes some code duplication in rtree.cpp. There are 2 cases:
 - we care whether we touch a leaf/non-leaf node, since we write data in the node, so we want to 
   write the correct thing (int or RTreeNode*)
-- we do NOT care  whether we touch a leaf/non-leaf node, because we only read/write the bounding 
+- we do NOT care whether we touch a leaf/non-leaf node, because we only read/write the bounding 
   boxes which is the same in both cases.
 
 TODO:

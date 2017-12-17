@@ -404,7 +404,7 @@ cdef cy_OptRect wrap_OptRect(OptRect p)
 
 
 cdef extern from "2geom/int-rect.h" namespace "Geom":
-    #redeclaring because cython complains about ambigous overloading othewise
+    #redeclaring because cython complains about ambiguous overloading otherwise
     cdef cppclass OptIntRect:
         OptIntRect()
         OptIntRect(IntRect &)
