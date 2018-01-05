@@ -246,7 +246,7 @@ public:
     }
 
     /** @brief Get the line segment connecting the arc's endpoints.
-     * @return A linear segment with initial and final point correspoding to those of the arc. */
+     * @return A linear segment with initial and final point corresponding to those of the arc. */
     LineSegment chord() const { return LineSegment(_initial_point, _final_point); }
     /// @}
 

@@ -1,5 +1,5 @@
 /* 
- * sb-to-bez Toy - Tests convertions from sbasis to cubic bezier.
+ * sb-to-bez Toy - Tests conversions from sbasis to cubic bezier.
  *
  * Copyright 2007 jf barraud.
  * 2008 njh

@@ -282,7 +282,7 @@ TEST_F(VectorViewTest, AssignmentFromViewMustBeSameSize) {
 	EXPECT_DEATH({view2 = view1;}, "Assertion");
 }
 
-// Add- and subtract assigment
+// Add- and subtract assignment
 
 TEST_F(VectorViewTest, AddAssignAvailableForViews) {
 	NL::VectorView v2(v1);

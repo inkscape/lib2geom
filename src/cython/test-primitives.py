@@ -108,7 +108,7 @@ class TestPrimitives(unittest.TestCase):
         self.assertAlmostEqual(Point.atan2(Point(1, 1)), pi/4)
         self.assertAlmostEqual(Point.angle_between(p, p_ccw), -pi/2)
         self.assertAlmostEqual(Point.abs(-p), p)
-    #TODO I have no idea what should this funcion do
+    #TODO I have no idea what should this function do
     #    self.assertAlmostEqual(
     #        Point.constrain_angle(Point(1, 0), Point(0, 1), 1, Point(sqrt(2)/2, sqrt(2)/2)),
     #

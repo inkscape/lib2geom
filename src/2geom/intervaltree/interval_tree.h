@@ -97,7 +97,7 @@ protected:
   /*  A sentinel is used for root and for nil.  These sentinels are */
   /*  created when ITTreeCreate is caled.  root->left should always */
   /*  point to the node which is the root of the tree.  nil points to a */
-  /*  node which should always be black but has aribtrary children and */
+  /*  node which should always be black but has arbitrary children and */
   /*  parent and no key or info.  The point of using these sentinels is so */
   /*  that the root and nil nodes do not require special cases in the code */
   IntervalTreeNode * root;

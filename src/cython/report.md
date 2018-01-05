@@ -95,7 +95,7 @@ cases.
 For rectangles, situations is almost identical as for intervals. GenericRect,
 return 2-tuples as a points, which is a bit of disadvantage, because adding 
 tuples doesn't add element-wise, but append them one after another. It might
-be convenient to implement PyPoint overloading this funtionality.
+be convenient to implement PyPoint overloading this functionality.
 
 A bit problematic region is in comparing all the intervals and rectangles.
 Should every interval be comparable to every other type, Interval with 

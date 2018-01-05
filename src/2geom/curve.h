@@ -302,7 +302,7 @@ public:
      * This will return an unit vector (a Point with length() equal to 1) that denotes a vector
      * tangent to the curve. This vector is defined as
      * \f$ \mathbf{v}(t) = \frac{\mathbf{C}'(t)}{||\mathbf{C}'(t)||} \f$. It is pointed
-     * in the direction of increasing \f$t\f$, at the specfied time value. The method uses
+     * in the direction of increasing \f$t\f$, at the specified time value. The method uses
      * l'Hopital's rule when the derivative is zero. A zero vector is returned if no non-zero
      * derivative could be found.
      * @param t Time value

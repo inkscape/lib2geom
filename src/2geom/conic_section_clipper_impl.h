@@ -324,7 +324,7 @@ void CLIPPER_CLASS::rsplit (std::list<Point> & points,
     }
 
     // they have to be called both to keep the number of points in the list
-    // in the form 2k+1 where k are the sub-arcs the initial arc is splitted in.
+    // in the form 2k+1 where k are the sub-arcs the initial arc is split in.
     rsplit (points, sp, ip, length);
     rsplit (points, ip, fp, length);
 }

@@ -336,7 +336,7 @@ public:
 
     /*
      *  Compute the centre of simmetry of the conic section when it exists,
-     *  else it return an unitialized boost::optional<Point> instance.
+     *  else it return an uninitialized boost::optional<Point> instance.
      */
     boost::optional<Point> centre() const
     {

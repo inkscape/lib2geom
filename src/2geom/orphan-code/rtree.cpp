@@ -85,7 +85,7 @@ void RTree::insert( const RTreeRecord_Leaf &leaf_record,
     _RTREE_PRINT("insert private. element:" << leaf_record.data << "  insert high:" << insert_high << "  stop height:" << stop_height );
     RTreeNode *position = 0;
 
-    // if tree is unsued create the root Node, not described in source, stupid me :P
+    // if tree is unused create the root Node, not described in source, stupid me :P
     if(root == 0){
         root = new RTreeNode();
     }
@@ -203,7 +203,7 @@ leaf: if flag is NOT set
         if N is leaf return N
     insert_height = true
 3) Choose subtree: If N not leaf OR not we are not in the proper height then   
-    let F be an entry in N whose rect Fi needs least enlargement to incude r
+    let F be an entry in N whose rect Fi needs least enlargement to include r
     ties resolved with rect of smallest area
 4) descend until a leaf is reached OR proper height is reached: set N to the child node pointed to by F and goto 2.
 */
@@ -254,7 +254,7 @@ RTreeNode* RTree::choose_node( const Rect &r, const bool &insert_high /* false *
 /* 
 find_enlargement:
 
-enlargement that "a" needs in order to incude "b"
+enlargement that "a" needs in order to include "b"
 b is the new rect we want to insert.
 a is the rect of the node we try to see if b should go in.
 */
@@ -359,7 +359,7 @@ std::pair<RTreeNode*, RTreeNode*> RTree::quadratic_split( RTreeNode *s ) {
         while( num_of_not_assigned ){// QS2 a
             _RTREE_PRINT("  QS2 b,   num_of_not_assigned:" << num_of_not_assigned);    // QS2 b
             /* 
-                we are on NON leaf node so children of splitted groups must be nodes
+                we are on NON leaf node so children of split groups must be nodes
 
                 Check each group to see if one group has so few entries that all the rest must 
                 be assignmed to it, in order for it to have the min number.
@@ -423,7 +423,7 @@ std::pair<RTreeNode*, RTreeNode*> RTree::quadratic_split( RTreeNode *s ) {
         while( num_of_not_assigned ){// QS2 a
             _RTREE_PRINT("  QS2 b,   num_of_not_assigned:" << num_of_not_assigned);    // QS2 b
             /* 
-                we are on leaf node so children of splitted groups must be leaves
+                we are on leaf node so children of split groups must be leaves
 
                 Check each group to see if one group has so few entries that all the rest must 
                 be assignmed to it, in order for it to have the min number.

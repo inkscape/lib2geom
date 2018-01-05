@@ -859,7 +859,7 @@ cdef class cy_Bezier:
         return self.thisptr.order()
 
     def size(self):
-        """Return number of coefficents."""
+        """Return number of coefficients."""
         return self.thisptr.size()
 
     def __mul__( cy_Bezier self, double v):
