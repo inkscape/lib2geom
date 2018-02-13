@@ -281,7 +281,7 @@
 
 /**
  * @defgroup Paths Paths and path sequences
- * @brief Sequences of contiguous curves, aka splines, and their procesing
+ * @brief Sequences of contiguous curves, aka splines, and their processing
  */
 
 /**
