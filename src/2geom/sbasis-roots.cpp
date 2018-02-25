@@ -390,8 +390,8 @@ static std::vector<Interval> fuseContiguous(std::vector<Interval> const &sets, d
    -compute f at both ends of the given segment [a,b].
    -compute bounds m<df(t)<M for df on the segment.
     Suppose f(a) is between two 'levels' c and C. Then
-      f wont enter c before a + (f(a)-c.max())/m
-      f wont enter C before a + (C.min()-f(a))/M
+      f won't enter c before a + (f(a)-c.max())/m
+      f won't enter C before a + (C.min()-f(a))/M
     From this we conclude nothing happens before a'=a+min((f(a)-c.max())/m,(C.min()-f(a))/M).
     We do the same for b: compute some b' such that nothing happens in (b',b].
     -if [a',b'] is not empty, repeat the process with [a',(a'+b')/2] and [(a'+b')/2,b'].
