@@ -328,7 +328,7 @@ IntervalTreeNode * IntervalTree::Insert(Interval * newInterval)
 /***********************************************************************/
 /*  FUNCTION:  GetSuccessorOf  */
 /**/
-/*    INPUTS:  x is the node we want the succesor of */
+/*    INPUTS:  x is the node we want the successor of */
 /**/
 /*    OUTPUT:  This function returns the successor of x or NULL if no */
 /*             successor exists. */
@@ -343,7 +343,7 @@ IntervalTreeNode * IntervalTree::GetSuccessorOf(IntervalTreeNode * x) const
   IntervalTreeNode* y;
 
   if (nil != (y = x->right)) { /* assignment to y is intentional */
-    while(y->left != nil) { /* returns the minium of the right subtree of x */
+    while(y->left != nil) { /* returns the minimum of the right subtree of x */
       y=y->left;
     }
     return(y);

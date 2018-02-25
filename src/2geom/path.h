@@ -728,7 +728,7 @@ public:
 
     /** @brief Append a new curve to the path.
      *
-     * This family of methods will automaticaly use the current final point of the path
+     * This family of methods will automatically use the current final point of the path
      * as the first argument of the new curve's constructor. To call this method,
      * you'll need to write e.g.:
      * @code

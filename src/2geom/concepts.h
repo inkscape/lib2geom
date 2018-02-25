@@ -139,7 +139,7 @@ template <typename T>
 struct EqualityComparableConcept {
     T a, b;
     bool bool_;
-    void constaints() {
+    void constraints() {
         bool_ = (a == b);
         bool_ = (a != b);
     }

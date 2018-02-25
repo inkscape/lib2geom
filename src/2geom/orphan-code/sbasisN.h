@@ -262,7 +262,7 @@ public:
             }
             if (find_non_empty_level(var, fixed_degrees)) return true;
         }
-        return false;//FIXME: this shoud return -infty in all variables!
+        return false;//FIXME: this should return -infty in all variables!
     }
 
 /**
@@ -572,7 +572,7 @@ public:
 //--------------------------------------------------
 
 /**
- * Accessing the SBasisN<n> coefficents.
+ * Accessing the SBasisN<n> coefficients.
  */
     LinearN<n> operator[](unsigned i) const {
         assert(i < this->size());

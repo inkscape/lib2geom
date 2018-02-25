@@ -53,7 +53,7 @@ bool CLIPPER_CLASS::intersect (std::vector<Point> & crossing_points) const
 
     bool no_crossing = true;
 
-    // rigth edge
+    // right edge
     cs.roots (rts, R.right(), X);
     if (!rts.empty())
     {

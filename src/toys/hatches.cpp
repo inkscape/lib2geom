@@ -159,7 +159,7 @@ std::vector<double>generateLevels(Interval const &domain,
 
 
 //-------------------------------------------------------
-// Walk through the intersections to creat linear hatches
+// Walk through the intersections to create linear hatches
 //-------------------------------------------------------
 std::vector<Point> linearSnake(Piecewise<D2<SBasis> > const &f, double dy,double growth, double rdmness){
 

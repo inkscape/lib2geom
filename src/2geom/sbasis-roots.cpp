@@ -85,7 +85,7 @@ namespace Geom{
 
 /** Find the smallest interval that bounds a
  \param a sbasis function
- \returns inteval
+ \returns interval
 
 */
 
@@ -113,7 +113,7 @@ OptInterval bounds_exact(SBasis const &a) {
 
 /** Find a small interval that bounds a
  \param a sbasis function
- \returns inteval
+ \returns interval
 
 */
 // I have no idea how this works, some clever bounding argument by jfb.

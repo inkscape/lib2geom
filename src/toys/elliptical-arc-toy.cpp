@@ -243,7 +243,7 @@ class EllipticalArcToy: public Toy
         draw_text(cr, ea.finalPoint() + Point(5, 0), "final");
         cairo_stroke(cr);
 
-        // TODO reenable this
+        // TODO re-enable this
         //*notify << ea;
     }
 

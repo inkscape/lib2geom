@@ -218,7 +218,7 @@ void Bernsteins::find_bernstein_roots(Bezier const &bz,
             dsplit_t = dsolutions[0];
             split_t = left_t + (right_t - left_t)*dsplit_t;
             debug(std::cout << "split_value = " << bz(split_t) << std::endl);
-            debug(std::cout << "spliting around " << dsplit_t << " = " 
+            debug(std::cout << "splitting around " << dsplit_t << " = " 
                   << split_t << "\n");
         
         }

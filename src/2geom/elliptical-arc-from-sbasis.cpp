@@ -42,7 +42,7 @@
 
 namespace Geom {
 
-// forward declation
+// forward declaration
 namespace detail
 {
     struct ellipse_equation;

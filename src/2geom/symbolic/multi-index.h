@@ -79,7 +79,7 @@ namespace Geom { namespace SL {
  *  we can write it in the simpler form X^I where X=(x_(0), .., x_(N-1))
  *  and I=(i_(0), .., i_(N-1)) is a multi-index
  *  A multi-index is represented as a valarray this let us make simple
- *  aritmetic operations on a multi-index
+ *  arithmetic operations on a multi-index
  */
 
 typedef std::valarray<size_t> multi_index_type;

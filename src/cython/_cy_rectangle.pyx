@@ -379,7 +379,7 @@ cdef class cy_Interval:
 
     @classmethod
     def from_list(cls, lst):
-        """Create interval containg all values in a list."""
+        """Create interval containing all values in a list."""
         if len(lst) == 0:
             return cy_Interval()
         ret = cy_Interval(lst[0])
@@ -1322,7 +1322,7 @@ cdef class cy_Rect:
 
     @classmethod
     def from_list(cls, lst):
-        """Create rectangle containg all points in list."""
+        """Create rectangle containing all points in list."""
         if lst == []:
             return cy_Rect()
         if len(lst) == 1:
@@ -1548,7 +1548,7 @@ cdef class cy_OptRect:
 
     """Class representing optionally empty rect in real plane.
 
-    This class corresponds to OptRect in 2geom, and it tries to mimick
+    This class corresponds to OptRect in 2geom, and it tries to mimic
     the behaviour of boost::optional. In addition to OptRect methods,
     this class passes calls for Rect methods to underlying Rect class,
     or throws ValueError when it's empty.
@@ -1811,7 +1811,7 @@ cdef class cy_IntRect:
 
     @classmethod
     def from_list(cls, lst):
-        """Create rectangle containg all points in list."""
+        """Create rectangle containing all points in list."""
         if lst == []:
             return cy_IntRect()
         if len(lst) == 1:
@@ -1988,7 +1988,7 @@ cdef class cy_OptIntRect:
 
     """Class representing optionally empty rect in with integer coordinates.
 
-    This class corresponds to OptIntRect in 2geom, and it tries to mimick
+    This class corresponds to OptIntRect in 2geom, and it tries to mimic
     the behaviour of boost::optional. In addition to OptIntRect methods,
     this class passes calls for IntRect methods to underlying IntRect class,
     or throws ValueError when it's empty.
