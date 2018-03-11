@@ -1274,7 +1274,7 @@ bool RTree::condense_tree( RTreeNode* position )
         insert( RTreeRecord_Leaf() , true, it->second, it->first );
         _RTREE_PRINT("  inserted nonleaf------------");
         _RTREE_PRINT_TREE( root, 0);
-        // TODO this fake RTreeRecord_Leaf() looks stupid. find better way to to this ???
+        // TODO this fake RTreeRecord_Leaf() looks stupid. find better way to do this ???
     }
     
     return root_elimination_performed;

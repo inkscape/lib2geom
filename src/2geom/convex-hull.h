@@ -203,7 +203,7 @@ public:
     /// @name Iterate over points.
     /// @{
     /** @brief Get the begin iterator to the points that form the hull.
-     * Points are are returned beginning the the leftmost one, going along
+     * Points are returned beginning with the leftmost one, going along
      * the upper (minimum Y) side, and then along the bottom.
      * Thus the points are always ordered clockwise. No point is
      * repeated. */
