@@ -213,7 +213,7 @@ class EllipticalArcToy: public Toy
         cairo_set_line_width(cr, 0.5);
         draw_axes(cr);
 
-        // draw the the 2 ellipse with rays rx, ry passing through
+        // draw the 2 ellipse with rays rx, ry passing through
         // the 2 given point and with the x-axis inclined of rot_angle
         if ( !(are_near(ea.ray(X), 0) || are_near(ea.ray(Y), 0)) )
         {
