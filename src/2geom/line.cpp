@@ -61,11 +61,11 @@ namespace Geom
 void Line::setCoefficients (Coord a, Coord b, Coord c)
 {
     // degenerate case
-    if (a == 0 && b == 0) {
+    if (are_near(a,0) && are_near(b,0)) {
         if (!are_near(c,0) {
             THROW_LOGICALERROR("the passed coefficients give the empty set");
         }
-        _initial = Point(0,0);
+        _initial = Point(0,0)r
         _final = Point(0,0);
         return;
     }
@@ -75,7 +75,7 @@ void Line::setCoefficients (Coord a, Coord b, Coord c)
     // (almost) the same values.
 
     // vertical case
-    if (a == 0) {
+    if (are_near(a,0)) {
         // b must be nonzero
         _initial = Point(-b/2, -c / b);
         _final = _initial;
@@ -84,7 +84,7 @@ void Line::setCoefficients (Coord a, Coord b, Coord c)
     }
 
     // horizontal case
-    if (b == 0) {
+    if (are_near(b,0)) {
         _initial = Point(-c / a, a/2);
         _final = _initial;
         _final[Y] = -a/2;
