@@ -62,7 +62,7 @@ void Line::setCoefficients (Coord a, Coord b, Coord c)
 {
     // degenerate case
     if (a == 0 && b == 0) {
-        if (are_near(c,0) {
+        if (!are_near(c,0) {
             THROW_LOGICALERROR("the passed coefficients give the empty set");
         }
         _initial = Point(0,0);
