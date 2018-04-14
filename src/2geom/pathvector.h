@@ -222,9 +222,9 @@ public:
     Point finalPoint() const {
         return _data.back().finalPoint();
     }
-    Path &pathAt(Coord t, Coord *rest = NULL);
-    Path const &pathAt(Coord t, Coord *rest = NULL) const;
-    Curve const &curveAt(Coord t, Coord *rest = NULL) const;
+    Path &pathAt(Coord t, Coord *rest = nullptr);
+    Path const &pathAt(Coord t, Coord *rest = nullptr) const;
+    Curve const &curveAt(Coord t, Coord *rest = nullptr) const;
     Coord valueAt(Coord t, Dim2 d) const;
     Point pointAt(Coord t) const;
 
@@ -269,8 +269,8 @@ public:
      * This is simply the sum of winding numbers for constituent paths. */
     int winding(Point const &p) const;
 
-    boost::optional<PathVectorTime> nearestTime(Point const &p, Coord *dist = NULL) const;
-    std::vector<PathVectorTime> allNearestTimes(Point const &p, Coord *dist = NULL) const;
+    boost::optional<PathVectorTime> nearestTime(Point const &p, Coord *dist = nullptr) const;
+    std::vector<PathVectorTime> allNearestTimes(Point const &p, Coord *dist = nullptr) const;
 
     std::vector<Point> nodes() const;
 

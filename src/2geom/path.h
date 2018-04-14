@@ -76,7 +76,7 @@ class BaseIterator
     typedef BaseIterator<P> Self;
 
   public:
-    BaseIterator() : path(NULL), index(0) {}
+    BaseIterator() : path(nullptr), index(0) {}
 
     bool operator<(BaseIterator const &other) const {
         return path == other.path && index < other.index;
@@ -525,7 +525,7 @@ public:
     /** Get the curve at the specified time value.
      * @param t Time value
      * @param rest Optional storage for the corresponding time value in the curve */
-    Curve const &curveAt(Coord t, Coord *rest = NULL) const;
+    Curve const &curveAt(Coord t, Coord *rest = nullptr) const;
 
     /// Get the closing segment of the path.
     LineSegment const &closingSegment() const { return *_closing_seg; }
@@ -574,7 +574,7 @@ public:
         return allNearestTimes(p, 0, size_default());
     }
 
-    PathTime nearestTime(Point const &p, Coord *dist = NULL) const;
+    PathTime nearestTime(Point const &p, Coord *dist = nullptr) const;
     std::vector<Coord> nearestTimePerCurve(Point const &p) const;
 
     std::vector<Point> nodes() const;

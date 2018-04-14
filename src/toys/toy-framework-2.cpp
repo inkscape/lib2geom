@@ -118,7 +118,7 @@ void draw_text(cairo_t *cr, Geom::Point loc, const char* txt, bool bottom, const
     pango_layout_set_font_description(layout, font_desc);
     pango_font_description_free (font_desc);
     PangoRectangle logical_extent;
-    pango_layout_get_pixel_extents(layout, NULL, &logical_extent);
+    pango_layout_get_pixel_extents(layout, nullptr, &logical_extent);
     cairo_move_to(cr, loc - Geom::Point(0, bottom ? logical_extent.height : 0));
     pango_cairo_show_layout(cr, layout);
 }
@@ -156,9 +156,9 @@ void redraw() { gtk_widget_queue_draw(GTK_WIDGET(window)); }
 
 #include <typeinfo>
 
-Toy::Toy() : hit_data(0), show_timings(0), spool_file(NULL), to_load_file(NULL) {
+Toy::Toy() : hit_data(nullptr), show_timings(0), spool_file(nullptr), to_load_file(nullptr) {
     mouse_down = false;
-    selected = NULL;
+    selected = nullptr;
     notify_offset = 0;
 }
 
@@ -222,8 +222,8 @@ void Toy::mouse_moved(GdkEventMotion* e)
 
 void Toy::mouse_pressed(GdkEventButton* e) {
     Geom::Point mouse(e->x, e->y);
-    selected = NULL;
-    hit_data = NULL;
+    selected = nullptr;
+    hit_data = nullptr;
     canvas_click_button = e->button;
     if(e->button == 1) {
         for(unsigned i = 0; i < handles.size(); i++) {
@@ -248,13 +248,13 @@ void Toy::canvas_click(Geom::Point at, int button) {
 }
 
 void Toy::mouse_released(GdkEventButton* e) {
-    if(selected == NULL) {
+    if(selected == nullptr) {
         Geom::Point mouse(e->x, e->y);
         canvas_click(mouse, canvas_click_button);
         canvas_click_button = 0;
     }
-    selected = NULL;
-    hit_data = NULL;
+    selected = nullptr;
+    hit_data = nullptr;
     if(e->button == 1)
 	mouse_down = false;
     redraw();
@@ -308,7 +308,7 @@ Geom::Interval read_interval(FILE* f) {
 }
 
 void open() {
-    if(current_toy != NULL) {
+    if(current_toy != nullptr) {
 	GtkWidget* d = gtk_file_chooser_dialog_new("Open handle configuration", window, GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, NULL);
         if(gtk_dialog_run(GTK_DIALOG(d)) == GTK_RESPONSE_ACCEPT) {
             const char* filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(d));
@@ -321,7 +321,7 @@ void open() {
 }
 
 void save() {
-    if(current_toy != NULL) {
+    if(current_toy != nullptr) {
         GtkWidget* d = gtk_file_chooser_dialog_new("Save handle configuration", window, GTK_FILE_CHOOSER_ACTION_SAVE, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT, NULL);
         if(gtk_dialog_run(GTK_DIALOG(d)) == GTK_RESPONSE_ACCEPT) {
             const char* filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(d));
@@ -364,7 +364,7 @@ void save_cairo_backend(const char* filename) {
         cairo_paint(cr);
         cairo_restore(cr);
     }
-    if(current_toy != NULL) {
+    if(current_toy != nullptr) {
         std::ostringstream * notify = new std::ostringstream;
         std::ostringstream * timer_stream = new std::ostringstream;
         current_toy->draw(cr, notify, width, height, true, timer_stream);
@@ -396,7 +396,7 @@ void take_screenshot(const char* filename) {
     cairo_surface_t* cr_s = cairo_image_surface_create ( CAIRO_FORMAT_ARGB32, width, height );
     cairo_t* cr = cairo_create(cr_s);
 
-    if(current_toy != NULL) {
+    if(current_toy != nullptr) {
         std::ostringstream * notify = new std::ostringstream;
         std::ostringstream * timer_stream = new std::ostringstream;
 	current_toy->draw(cr, notify, width, height, true, timer_stream);
@@ -447,14 +447,14 @@ static gboolean expose_event(GtkWidget *widget, GdkEventExpose */*event*/, gpoin
     if(!resized) {
 	Geom::Rect alloc_size(Geom::Interval(0, width),
 			      Geom::Interval(0, height));
-	if(current_toy != NULL)
+	if(current_toy != nullptr)
 	    current_toy->resize_canvas(alloc_size);
 	resized = true;
     }
     cairo_rectangle(cr, 0, 0, width, height);
     cairo_set_source_rgba(cr,1,1,1,1);
     cairo_fill(cr);
-    if(current_toy != NULL) {
+    if(current_toy != nullptr) {
         std::ostringstream * timer_stream = new std::ostringstream;
         
         if(current_toy->spool_file) {
@@ -476,7 +476,7 @@ static gint mouse_motion_event(GtkWidget* widget, GdkEventMotion* e, gpointer da
     (void)(data);
     (void)(widget);
 
-    if(current_toy != NULL) current_toy->mouse_moved(e);
+    if(current_toy != nullptr) current_toy->mouse_moved(e);
 
     return FALSE;
 }
@@ -485,7 +485,7 @@ static gint mouse_event(GtkWidget* widget, GdkEventButton* e, gpointer data) {
     (void)(data);
     (void)(widget);
 
-    if(current_toy != NULL) current_toy->mouse_pressed(e);
+    if(current_toy != nullptr) current_toy->mouse_pressed(e);
 
     return FALSE;
 }
@@ -493,7 +493,7 @@ static gint mouse_event(GtkWidget* widget, GdkEventButton* e, gpointer data) {
 static gint scroll_event(GtkWidget* widget, GdkEventScroll* e, gpointer data) {
     (void)(data);
     (void)(widget);
-    if(current_toy != NULL) current_toy->scroll(e);
+    if(current_toy != nullptr) current_toy->scroll(e);
 
     return FALSE;
 }
@@ -502,7 +502,7 @@ static gint mouse_release_event(GtkWidget* widget, GdkEventButton* e, gpointer d
     (void)(data);
     (void)(widget);
 
-    if(current_toy != NULL) current_toy->mouse_released(e);
+    if(current_toy != nullptr) current_toy->mouse_released(e);
 
     return FALSE;
 }
@@ -511,7 +511,7 @@ static gint key_press_event(GtkWidget *widget, GdkEventKey *e, gpointer data) {
     (void)(data);
     (void)(widget);
 
-    if(current_toy != NULL) current_toy->key_hit(e);
+    if(current_toy != nullptr) current_toy->key_hit(e);
 
     return FALSE;
 }
@@ -522,22 +522,22 @@ static gint size_allocate_event(GtkWidget* widget, GtkAllocation *allocation, gp
 
     Geom::Rect alloc_size(Geom::Interval(allocation->x, allocation->x+ allocation->width),
 			  Geom::Interval(allocation->y, allocation->y+allocation->height));
-    if(current_toy != NULL) current_toy->resize_canvas(alloc_size);
+    if(current_toy != nullptr) current_toy->resize_canvas(alloc_size);
 
     return FALSE;
 }
 
 GtkItemFactoryEntry menu_items[] = {
-    { (gchar*)"/_File",             NULL,           NULL,           0,  (gchar*)"<Branch>", 0                    },
+    { (gchar*)"/_File",             nullptr,           nullptr,           0,  (gchar*)"<Branch>", nullptr                    },
     { (gchar*)"/File/_Open Handles",(gchar*)"<CTRL>O",      open,           0,  (gchar*)"<StockItem>", GTK_STOCK_OPEN },
     { (gchar*)"/File/_Save Handles",(gchar*)"<CTRL>S",      save,           0,  (gchar*)"<StockItem>", GTK_STOCK_SAVE_AS },
-    { (gchar*)"/File/sep",          NULL,           NULL,           0,  (gchar*)"<Separator>", 0                 },
-    { (gchar*)"/File/Save SVG or PDF", NULL,           save_cairo,     0,  (gchar*)"<StockItem>", GTK_STOCK_SAVE },
-    { (gchar*)"/File/sep",          NULL,           NULL,           0,  (gchar*)"<Separator>" , 0                },
-    { (gchar*)"/File/_Show Timings",  NULL,         toggle_show_timings,  0,  (gchar*)"<CheckItem>", 0 },
+    { (gchar*)"/File/sep",          nullptr,           nullptr,           0,  (gchar*)"<Separator>", nullptr                 },
+    { (gchar*)"/File/Save SVG or PDF", nullptr,           save_cairo,     0,  (gchar*)"<StockItem>", GTK_STOCK_SAVE },
+    { (gchar*)"/File/sep",          nullptr,           nullptr,           0,  (gchar*)"<Separator>" , nullptr                },
+    { (gchar*)"/File/_Show Timings",  nullptr,         toggle_show_timings,  0,  (gchar*)"<CheckItem>", nullptr },
     { (gchar*)"/File/_Quit",        (gchar*)"<CTRL>Q",      gtk_main_quit,  0,  (gchar*)"<StockItem>", GTK_STOCK_QUIT },
-    { (gchar*)"/_Help",             NULL,           NULL,           0,  (gchar*)"<LastBranch>", 0                },
-    { (gchar*)"/Help/About",        NULL,           make_about,     0,  (gchar*)"<StockItem>", GTK_STOCK_ABOUT}
+    { (gchar*)"/_Help",             nullptr,           nullptr,           0,  (gchar*)"<LastBranch>", nullptr                },
+    { (gchar*)"/Help/About",        nullptr,           make_about,     0,  (gchar*)"<StockItem>", GTK_STOCK_ABOUT}
 };
 gint nmenu_items = 9;
 
@@ -551,7 +551,7 @@ void init(int argc, char **argv, Toy* t, int width, int height) {
     //int digit_optind = 0;
 
     int screenshot_only_type = 0;
-    char *screenshot_output_name = 0;
+    char *screenshot_output_name = nullptr;
     t->name = typeid(*t).name();
 
     while (1)
@@ -560,7 +560,7 @@ void init(int argc, char **argv, Toy* t, int width, int height) {
         int option_index = 0;
 
         c = getopt_long (argc, argv, "hs:m:d:012",
-                         NULL, &option_index);
+                         nullptr, &option_index);
         if (c == -1)
             break;
 
@@ -613,7 +613,7 @@ void init(int argc, char **argv, Toy* t, int width, int height) {
     window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
 
 //Find last slash - remainder is title
-    char* title = 0;
+    char* title = nullptr;
     for(char* ch = argv[0]; *ch != '\0'; ch++)
         if(*ch == '/') title = ch+1;
 
@@ -622,7 +622,7 @@ void init(int argc, char **argv, Toy* t, int width, int height) {
 //Creates the menu from the menu data above
     GtkAccelGroup* accel_group = gtk_accel_group_new();
     GtkItemFactory* item_factory = gtk_item_factory_new(GTK_TYPE_MENU_BAR, "<main>", accel_group);
-    gtk_item_factory_create_items(item_factory, nmenu_items, menu_items, NULL);
+    gtk_item_factory_create_items(item_factory, nmenu_items, menu_items, nullptr);
     gtk_window_add_accel_group(window, accel_group);
     GtkWidget* menu = gtk_item_factory_get_widget(item_factory, "<main>");
 
@@ -705,7 +705,7 @@ void* Toggle::hit(Geom::Point mouse)
         toggle();
         return this;
     }
-    return 0;
+    return nullptr;
 }
 
 void toggle_events(std::vector<Toggle> &ts, GdkEventButton* e) {
@@ -836,7 +836,7 @@ void PointHandle::draw(cairo_t *cr, bool /*annotes*/) {
 void* PointHandle::hit(Geom::Point mouse) {
     if(Geom::distance(mouse, pos) < 5)
 	return this;
-    return 0;
+    return nullptr;
 }
 
 void PointHandle::move_to(void* /*hit*/, Geom::Point /*om*/, Geom::Point m) {
@@ -863,7 +863,7 @@ void* PointSetHandle::hit(Geom::Point mouse) {
 	if(Geom::distance(mouse, pts[i]) < 5)
 	    return (void*)(&pts[i]);
     }
-    return 0;
+    return nullptr;
 }
 
 void PointSetHandle::move_to(void* hit, Geom::Point /*om*/, Geom::Point m) {
@@ -917,7 +917,7 @@ void* RectHandle::hit(Geom::Point mouse) {
 	if(Geom::distance(ls.pointAt(ls.nearestTime(mouse)),mouse) < 5)
             return (void*)(intptr_t)(6+i);
     }
-    return 0;
+    return nullptr;
     
 }
 

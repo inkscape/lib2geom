@@ -169,9 +169,9 @@ class EllipticalArcToy: public Toy
 
     virtual void draw_common( cairo_t *cr, std::ostringstream *notify,
                               int width, int height, bool /*save*/,
-                              std::ostringstream *timer_stream=0)
+                              std::ostringstream *timer_stream=nullptr)
     {
-        if(timer_stream == 0)
+        if(timer_stream == nullptr)
             timer_stream = notify;
         init_common_ctrl_geom(cr, width, height, notify);
 
@@ -561,10 +561,10 @@ class EllipticalArcToy: public Toy
 
 
         EllipticalArc* tea = static_cast<EllipticalArc*>(ea.transformed(tm));
-        EllipticalArc* eat = NULL;
+        EllipticalArc* eat = nullptr;
         eat = static_cast<EllipticalArc*>(tea->transformed(TM));
         delete tea;
-        if (eat == NULL)
+        if (eat == nullptr)
         {
             std::cerr << "elliptiarc transformation failed" << std::endl;
             return;

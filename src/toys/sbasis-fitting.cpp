@@ -72,12 +72,12 @@ class SBasisFitting : public Toy
             
             handles[0] = &psh;
             
-            if (fmsb != NULL) delete fmsb;
+            if (fmsb != nullptr) delete fmsb;
             fmsb = new NL::LFMSBasis(order);
-            assert(fmsb != NULL);
-            if (lsf_sb != NULL) delete lsf_sb;
+            assert(fmsb != nullptr);
+            if (lsf_sb != nullptr) delete lsf_sb;
             lsf_sb = new NL::least_squeares_fitter<NL::LFMSBasis>(*fmsb, 25);
-            assert(lsf_sb != NULL);
+            assert(lsf_sb != nullptr);
             
             double t = 0;
             for (size_t i = 0; i < total_handles; ++i)
@@ -142,9 +142,9 @@ class SBasisFitting : public Toy
         handles.push_back(&psh);
         
         fmsb = new NL::LFMSBasis(order);
-        assert(fmsb != NULL);
+        assert(fmsb != nullptr);
         lsf_sb = new NL::least_squeares_fitter<NL::LFMSBasis>(*fmsb, 25);
-        assert(lsf_sb != NULL);
+        assert(lsf_sb != nullptr);
 
         double t = 0;
         for (size_t i = 0; i < total_handles; ++i)
@@ -171,8 +171,8 @@ class SBasisFitting : public Toy
     
     ~SBasisFitting() override
     {
-        if (fmsb != NULL) delete fmsb;
-        if (lsf_sb != NULL) delete lsf_sb;
+        if (fmsb != nullptr) delete fmsb;
+        if (lsf_sb != nullptr) delete lsf_sb;
     }
     
   private:

@@ -55,7 +55,7 @@ vector<double> c4_bot;
 vector<double> c4_top;
 
 CubicBezier create_bezier(Point const &anchor, double angle /* in degrees */,
-                             double length, double dx1, double dx2, cairo_t *cr = NULL) {
+                             double length, double dx1, double dx2, cairo_t *cr = nullptr) {
     Point A = anchor;
     Point dir = Point(1.0, 0) * Rotate(-angle) * length;
     Point B = anchor + dir;
@@ -91,7 +91,7 @@ CubicBezier create_bezier(Point const &anchor, double angle /* in degrees */,
  */
 CubicBezier
 create_bezier_again(Point const &anchor1, Point const &anchor2, Point const &dir1, Point const &dir2,
-                    double /*c1*/, double /*c2*/, double c3, double c4, double mu, cairo_t *cr = NULL) {
+                    double /*c1*/, double /*c2*/, double c3, double c4, double mu, cairo_t *cr = nullptr) {
     Point A = anchor1;// - dir * c1;
     Point B = anchor1 + dir1 * (c3 + mu);
     Point C = anchor2 - dir2 * (c4 + mu);
@@ -112,7 +112,7 @@ create_bezier_along_curve(Piecewise<D2<SBasis> > const &curve1,
                           Piecewise<D2<SBasis> > const &curve2,
                           double segdist,
                           Coord const t1, Coord const t2, Point const &n,
-                          double c1, double c2, double /*c3*/, double /*c4*/, double /*mu*/, cairo_t *cr = NULL) {
+                          double c1, double c2, double /*c3*/, double /*c4*/, double /*mu*/, cairo_t *cr = nullptr) {
     cout << "create_bezier_along_curve -- start" << endl;
     /*
     Point A = curve1.valueAt(t1 - c1);

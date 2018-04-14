@@ -180,7 +180,7 @@ struct mvpoly
     void for_each
         (type & p,
          boost::function<void (typename mvpoly<M, CoeffT>::type &)> const& op,
-         typename boost::enable_if_c<(M < N)>::type* = 0)
+         typename boost::enable_if_c<(M < N)>::type* = nullptr)
     {
         for (size_t k = 0; k <= p.real_degree(); ++k)
         {
@@ -292,7 +292,7 @@ struct mvpoly<0, CoeffT>
     void for_each
         (type & p,
          boost::function<void (typename mvpoly<M, CoeffT>::type &)> const& op,
-         typename boost::enable_if_c<(M == 0)>::type* = 0)
+         typename boost::enable_if_c<(M == 0)>::type* = nullptr)
     {
         op(p);
     }

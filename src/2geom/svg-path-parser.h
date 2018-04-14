@@ -178,7 +178,7 @@ inline PathVector read_svgd_f(FILE * fi) {
  * @ingroup Paths */
 inline PathVector read_svgd(char const *filename) {
     FILE* fi = fopen(filename, "r");
-    if(fi == NULL) throw(std::runtime_error("Error opening file"));
+    if(fi == nullptr) throw(std::runtime_error("Error opening file"));
     PathVector out = read_svgd_f(fi);
     fclose(fi);
     return out;

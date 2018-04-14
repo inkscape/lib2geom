@@ -59,7 +59,7 @@ class ConvexHullLowerIterator
 public:
     typedef ConvexHullLowerIterator Self;
     ConvexHullLowerIterator()
-        : _data(NULL)
+        : _data(nullptr)
         , _size(0)
         , _x(0)
     {}

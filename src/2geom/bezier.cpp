@@ -79,12 +79,12 @@ void Bezier::subdivide(Coord t, Bezier *left, Bezier *right) const
                 &left->c_[0], &right->c_[0], order());
         } else {
             casteljau_subdivision<double>(t, &const_cast<std::valarray<Coord>&>(c_)[0],
-                &left->c_[0], NULL, order());
+                &left->c_[0], nullptr, order());
         }
     } else if (right) {
         right->c_.resize(size());
         casteljau_subdivision<double>(t, &const_cast<std::valarray<Coord>&>(c_)[0],
-            NULL, &right->c_[0], order());
+            nullptr, &right->c_[0], order());
     }
 }
 
@@ -244,12 +244,12 @@ Bezier portion(Bezier const &a, double from, double to)
             if (to == 1) {
                 break;
             }
-            casteljau_subdivision<double>(to, &ret.c_[0], &ret.c_[0], NULL, ret.order());
+            casteljau_subdivision<double>(to, &ret.c_[0], &ret.c_[0], nullptr, ret.order());
             break; 
         }
-        casteljau_subdivision<double>(from, &ret.c_[0], NULL, &ret.c_[0], ret.order());
+        casteljau_subdivision<double>(from, &ret.c_[0], nullptr, &ret.c_[0], ret.order());
         if (to == 1) break;
-        casteljau_subdivision<double>((to - from) / (1 - from), &ret.c_[0], &ret.c_[0], NULL, ret.order());
+        casteljau_subdivision<double>((to - from) / (1 - from), &ret.c_[0], &ret.c_[0], nullptr, ret.order());
         // to protect against numerical inaccuracy in the above expression, we manually set
         // the last coefficient to a value evaluated directly from the original polynomial
         ret.c_[ret.order()] = a.valueAt(to);

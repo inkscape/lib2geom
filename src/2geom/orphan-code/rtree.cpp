@@ -83,10 +83,10 @@ void RTree::insert( const RTreeRecord_Leaf &leaf_record,
 {
     _RTREE_PRINT("\n--------------");
     _RTREE_PRINT("insert private. element:" << leaf_record.data << "  insert high:" << insert_high << "  stop height:" << stop_height );
-    RTreeNode *position = 0;
+    RTreeNode *position = nullptr;
 
     // if tree is unused create the root Node, not described in source, stupid me :P
-    if(root == 0){
+    if(root == nullptr){
         root = new RTreeNode();
     }
 
@@ -1083,7 +1083,7 @@ RTreeNode* RTree::find_leaf( RTreeNode* subtree, const Rect &search_area, const 
             }
         }
     }
-    return 0;
+    return nullptr;
 }
 
 

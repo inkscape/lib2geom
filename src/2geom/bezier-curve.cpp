@@ -257,7 +257,7 @@ BezierCurve *BezierCurve::create(std::vector<Point> const &pts)
     case 0:
     case 1:
         THROW_LOGICALERROR("BezierCurve::create: too few points in vector");
-        return NULL;
+        return nullptr;
     case 2:
         return new LineSegment(pts[0], pts[1]);
     case 3:

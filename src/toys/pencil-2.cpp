@@ -286,8 +286,8 @@ bezier_fit_cubic(Point *bezier, Point const *data, int len, double error)
 int
 bezier_fit_cubic_r(Point bezier[], Point const data[], int const len, double const error, unsigned const max_beziers)
 {
-    if(bezier == NULL || 
-       data == NULL || 
+    if(bezier == nullptr || 
+       data == nullptr || 
        len <= 0 || 
        max_beziers >= (1ul << (31 - 2 - 1 - 3))) 
         return -1;
@@ -301,7 +301,7 @@ bezier_fit_cubic_r(Point bezier[], Point const data[], int const len, double con
     }
 
     /* Call fit-cubic function with recursion. */
-    int const ret = bezier_fit_cubic_full(bezier, NULL, uniqued_data, uniqued_len,
+    int const ret = bezier_fit_cubic_full(bezier, nullptr, uniqued_data, uniqued_len,
                                           unconstrained_tangent, unconstrained_tangent,
                                           error, max_beziers);
     delete[] uniqued_data;
@@ -361,8 +361,8 @@ bezier_fit_cubic_full(Point bezier[], int split_points[],
 {
     int const maxIterations = 4;   /* std::max times to try iterating */
     
-    if(!(bezier != NULL) ||
-       !(data != NULL) ||
+    if(!(bezier != nullptr) ||
+       !(data != nullptr) ||
        !(len > 0) ||
        !(max_beziers >= 1) ||
        !(error >= 0.0))
@@ -483,13 +483,13 @@ bezier_fit_cubic_full(Point bezier[], int split_points[],
             return -1;
         }
         assert( nsegs1 != 0 );
-        if (split_points != NULL) {
+        if (split_points != nullptr) {
             split_points[nsegs1 - 1] = splitPoint;
         }
         unsigned const rec_max_beziers2 = max_beziers - nsegs1;
         int const nsegs2 = bezier_fit_cubic_full(bezier + nsegs1*4,
-                                                     ( split_points == NULL
-                                                       ? NULL
+                                                     ( split_points == nullptr
+                                                       ? nullptr
                                                        : split_points + nsegs1 ),
                                                      data + splitPoint, len - splitPoint,
                                                      recTHat1, tHat2, error, rec_max_beziers2);

@@ -1082,7 +1082,7 @@ SVGPathParser::SVGPathParser(PathSink &sink)
     : _absolute(false)
     , _sink(sink)
     , _z_snap_threshold(0)
-    , _curve(NULL)
+    , _curve(nullptr)
 {
     reset();
 }
@@ -1098,7 +1098,7 @@ void SVGPathParser::reset() {
     _quad_tangent = _cubic_tangent = Point(0, 0);
     _params.clear();
     delete _curve;
-    _curve = NULL;
+    _curve = nullptr;
 
     
 #line 1105 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.cpp"
@@ -1177,7 +1177,7 @@ Point SVGPathParser::_pop_point()
 
 void SVGPathParser::_moveTo(Point const &p)
 {
-    _pushCurve(NULL); // flush
+    _pushCurve(nullptr); // flush
     _sink.moveTo(p);
     _quad_tangent = _cubic_tangent = _current = _initial = p;
 }
@@ -1221,7 +1221,7 @@ void SVGPathParser::_closePath()
         _curve->setFinal(_initial);
     }
 
-    _pushCurve(NULL); // flush
+    _pushCurve(nullptr); // flush
     _sink.closePath();
     _quad_tangent = _cubic_tangent = _current = _initial;
 }
@@ -1239,8 +1239,8 @@ void SVGPathParser::_parse(char const *str, char const *strend, bool finish)
 {
     char const *p = str;
     char const *pe = strend;
-    char const *eof = finish ? pe : NULL;
-    char const *start = NULL;
+    char const *eof = finish ? pe : nullptr;
+    char const *start = nullptr;
 
     
 #line 1247 "/home/tweenk/src/lib2geom/src/2geom/svg-path-parser.cpp"
@@ -1328,11 +1328,11 @@ _match:
 	{
             if (start) {
                 std::string buf(start, p);
-                _push(g_ascii_strtod(buf.c_str(), NULL));
-                start = NULL;
+                _push(g_ascii_strtod(buf.c_str(), nullptr));
+                start = nullptr;
             } else {
                 std::string buf(str, p);
-                _push(g_ascii_strtod((_number_part + buf).c_str(), NULL));
+                _push(g_ascii_strtod((_number_part + buf).c_str(), nullptr));
                 _number_part.clear();
             }
         }
@@ -1458,11 +1458,11 @@ _again:
 	{
             if (start) {
                 std::string buf(start, p);
-                _push(g_ascii_strtod(buf.c_str(), NULL));
-                start = NULL;
+                _push(g_ascii_strtod(buf.c_str(), nullptr));
+                start = nullptr;
             } else {
                 std::string buf(str, p);
-                _push(g_ascii_strtod((_number_part + buf).c_str(), NULL));
+                _push(g_ascii_strtod((_number_part + buf).c_str(), nullptr));
                 _number_part.clear();
             }
         }
@@ -1558,12 +1558,12 @@ _again:
         if (cs < svg_path_first_final) {
             throw SVGPathParseError();
         }
-    } else if (start != NULL) {
+    } else if (start != nullptr) {
         _number_part = std::string(start, pe);
     }
 
     if (finish) {
-        _pushCurve(NULL);
+        _pushCurve(nullptr);
         _sink.flush();
         reset();
     }

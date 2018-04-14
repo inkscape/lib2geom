@@ -218,7 +218,7 @@ class RTreeToy: public Toy
 //					check_if_duplicates( );
 					delete_rect = true;
 				}
-				hit = NULL;
+				hit = nullptr;
 			}
 		}
 		else if( e->button == 2 ){	//middle button
@@ -428,7 +428,7 @@ public:
 		out_str( insert_str ), 
 		drawBB_str("ON"), drawBB_color_str("all"),
 		rtree( rmin, rmax, QUADRATIC_SPIT ),
-		hit( 0 ), rect_id( 0 )
+		hit( nullptr ), rect_id( 0 )
 	{
 		// only "bright" colors
 		color_rtree_level[0] = colour(0, 0.80, 1, 1); 		// cyan
@@ -447,8 +447,8 @@ public:
 
 int main(int argc, char **argv) {
 
-	char* min_arg = NULL;
-	char* max_arg = NULL;
+	char* min_arg = nullptr;
+	char* max_arg = nullptr;
 
 	int set_min_max = 0;
 
@@ -461,10 +461,10 @@ int main(int argc, char **argv) {
 			/* These options set a flag. */
 			/* These options don't set a flag.
 			We distinguish them by their indices. */
-			{"min-nodes",	required_argument,	0, 'n'},
-			{"max-nodes",	required_argument,	0, 'm'},
-			{"help",		no_argument,		0, 'h'},
-			{0, 0, 0, 0}
+			{"min-nodes",	required_argument,	nullptr, 'n'},
+			{"max-nodes",	required_argument,	nullptr, 'm'},
+			{"help",		no_argument,		nullptr, 'h'},
+			{nullptr, 0, nullptr, 0}
 		};
 		/* getopt_long stores the option index here. */
 		int option_index = 0;

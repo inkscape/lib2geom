@@ -40,7 +40,7 @@ void* PWSBHandle::hit(Geom::Point mouse) {
 	if(Geom::distance(mouse, pts[i]) < 5)
 	    return (void*)(&pts[i]);
     }
-    return 0;
+    return nullptr;
 }
 
 void PWSBHandle::move_to(void* hit, Geom::Point /*om*/, Geom::Point m) {

@@ -107,7 +107,7 @@ public:
     Rect bounding_box;
     RTreeNode* data;    
 
-    RTreeRecord_NonLeaf(): bounding_box(), data(0)
+    RTreeRecord_NonLeaf(): bounding_box(), data(nullptr)
     {}
 
     RTreeRecord_NonLeaf(Rect bb, RTreeNode* d): bounding_box(bb), data(d)
@@ -161,7 +161,7 @@ public:
 
 
     RTree( unsigned n, unsigned m, enum_split_strategy split_s ): 
-        root(0), min_records( n ), max_records( m ), split_strategy( split_s ),
+        root(nullptr), min_records( n ), max_records( m ), split_strategy( split_s ),
         tree_height(0)
     {}
 

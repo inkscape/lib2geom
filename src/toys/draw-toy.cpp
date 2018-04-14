@@ -38,7 +38,7 @@ class DrawToy: public Toy {
         cairo_stroke(cr);
     }
     void mouse_pressed(GdkEventButton* e) override {
-        selected = NULL;
+        selected = nullptr;
         Geom::Point mouse(e->x, e->y);
         int close_i = 0;
         float close_d = 1000;
@@ -79,7 +79,7 @@ class DrawToy: public Toy {
     void mouse_moved(GdkEventMotion* e) override {
         Geom::Point mouse(e->x, e->y);
         
-        if(e->state & (GDK_BUTTON1_MASK) && selected != NULL) {
+        if(e->state & (GDK_BUTTON1_MASK) && selected != nullptr) {
             // NOTE this is completely broken.
             int hd = 0;
             if (hd % 3 == 0) {

@@ -133,7 +133,7 @@ void tighten(std::vector<Point> &pts, double radius, bool linear){
     }
 }
 
-double dist_to(std::vector<Point> const &pts, Point const &p, unsigned *idx=NULL){
+double dist_to(std::vector<Point> const &pts, Point const &p, unsigned *idx=nullptr){
     double d,d_min = std::numeric_limits<float>::infinity();
     if (idx) *idx = pts.size();
     for (unsigned i = 0; i<pts.size(); i++){
@@ -159,7 +159,7 @@ void fuse_close_points(std::vector<Point> &pts, double dist_min){
 }
 
 
-unsigned nearest_after(std::vector<Point>const &pts, unsigned idx, double *dist = NULL){
+unsigned nearest_after(std::vector<Point>const &pts, unsigned idx, double *dist = nullptr){
     if ( idx >= pts.size()-1 ) return pts.size();
     Point p = pts[idx];
     unsigned res = idx+1;
@@ -850,7 +850,7 @@ public:
   public:
     SketchFitterToy()
     {
-        srand ( time(NULL) );
+        srand ( time(nullptr) );
         sliders = std::vector<Slider>(TOTAL_SLIDERS, Slider(0., 1., 0, 0., ""));
 
         sliders[TIGHTEN_NBHD_SIZE  ] = Slider(0., 1., 0, 0.65, "neighborhood size");

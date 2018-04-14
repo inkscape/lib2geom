@@ -121,14 +121,14 @@ void polish_intersections(std::vector<std::pair<double, double> > &xs,
  */
 double hausdorfl(D2<SBasis>& A, D2<SBasis> const &B,
                  double m_precision,
-                 double *a_t=NULL, double *b_t=NULL);
+                 double *a_t=nullptr, double *b_t=nullptr);
 
 /** 
  * Compute the symmetric Hausdorf distance.
  */
 double hausdorf(D2<SBasis> &A, D2<SBasis> const &B,
                 double m_precision,
-                double *a_t=NULL, double *b_t=NULL);
+                double *a_t=nullptr, double *b_t=nullptr);
 }
 
 #endif // !LIB2GEOM_SEEN_BASIC_INTERSECTION_H

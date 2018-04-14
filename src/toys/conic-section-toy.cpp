@@ -730,7 +730,7 @@ class ConicSectionToy : public Toy
                        int width, int height, bool save,
                        std::ostringstream *timer_stream ) override
     {
-        if (timer_stream == 0)  timer_stream = notify;
+        if (timer_stream == nullptr)  timer_stream = notify;
         m_width = width;
         m_height = height;
         m_length = (m_width > m_height) ? m_width : m_height;

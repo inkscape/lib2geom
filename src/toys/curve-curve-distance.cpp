@@ -72,7 +72,7 @@ class CurvePortion
 
     ~CurvePortion()
     {
-        if (m_curve_ptr != NULL)
+        if (m_curve_ptr != nullptr)
             delete m_curve_ptr;
     }
 

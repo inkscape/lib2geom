@@ -65,7 +65,7 @@ double NearestPointOnCurve(Geom::Point P, Geom::Point *V)
 
     /* Find distances for candidate points	*/
     for (int i = 0; i < n_solutions; i++) {
-        Geom::Point p = Bez(V, DEGREE, t_candidate[i], NULL, NULL);
+        Geom::Point p = Bez(V, DEGREE, t_candidate[i], nullptr, nullptr);
         double new_dist = SquaredLength(P - p);
         if (new_dist < dist) {
             dist = new_dist;
@@ -379,12 +379,12 @@ static Geom::Point Bez(
         }
     }
     
-    if (Left != NULL) {
+    if (Left != nullptr) {
         for (int j = 0; j <= degree; j++) {
             Left[j]  = Vtemp[j][0];
         }
     }
-    if (Right != NULL) {
+    if (Right != nullptr) {
         for (int j = 0; j <= degree; j++) {
             Right[j] = Vtemp[degree-j][j];
         }

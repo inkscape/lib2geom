@@ -865,7 +865,7 @@ public:
       pango_layout_set_font_description(layout, font_desc);
       PangoRectangle logical_extent;
       pango_layout_get_pixel_extents(layout,
-				     NULL,
+				     nullptr,
 				     &logical_extent);
       cairo_move_to(cr, 0, height-logical_extent.height);
       pango_cairo_show_layout(cr, layout);

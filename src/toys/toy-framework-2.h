@@ -96,18 +96,18 @@ class VectorHandle : public Handle
 
     void* hit(Geom::Point pos) override
     {
-        void* result = NULL;
+        void* result = nullptr;
         for (iterator it = m_handles.begin(); it != m_handles.end(); ++it)
         {
             result = it->hit(pos);
-            if (result != NULL)  break;
+            if (result != nullptr)  break;
         }
         return result;
     }
 
     void move_to(void* hit, Geom::Point om, Geom::Point m) override
     {
-        if (hit != NULL)
+        if (hit != nullptr)
         {
             static_cast<T*>(hit)->move_to(hit, om, m);
         }
@@ -279,9 +279,9 @@ class Slider : public Handle
 
     void* hit(Geom::Point pos) override
     {
-        if (m_handle.hit(pos) != NULL)
+        if (m_handle.hit(pos) != nullptr)
             return this;
-        return NULL;
+        return nullptr;
     }
 
     void move_to(void* hit, Geom::Point om, Geom::Point m) override;

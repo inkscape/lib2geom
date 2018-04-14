@@ -173,7 +173,7 @@ TEST_F(PathTest, RectConstructor) {
     EXPECT_EQ(rpath.size(), 4u);
     EXPECT_TRUE(rpath.closed());
     for (unsigned i = 0; i < 4; ++i) {
-        EXPECT_TRUE(dynamic_cast<LineSegment const *>(&rpath[i]) != NULL);
+        EXPECT_TRUE(dynamic_cast<LineSegment const *>(&rpath[i]) != nullptr);
         EXPECT_EQ(rpath[i].initialPoint(), r.corner(i));
     }
 }

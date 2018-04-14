@@ -114,9 +114,9 @@ namespace {
 template <typename T>
 class Vector {
  public:
-  Vector() : start_(NULL), length_(0) {}
+  Vector() : start_(nullptr), length_(0) {}
   Vector(T* data, int length) : start_(data), length_(length) {
-    ASSERT(length == 0 || (length > 0 && data != NULL));
+    ASSERT(length == 0 || (length > 0 && data != nullptr));
   }
 
   Vector<T> SubVector(int from, int to) {
@@ -2776,7 +2776,7 @@ bool DoubleToStringConverter::HandleSpecialValues(
     std::string &result) const {
   Double double_inspect(value);
   if (double_inspect.IsInfinite()) {
-    if (infinity_symbol_ == NULL) return false;
+    if (infinity_symbol_ == nullptr) return false;
     if (value < 0) {
       result += '-';
     }
@@ -2784,7 +2784,7 @@ bool DoubleToStringConverter::HandleSpecialValues(
     return true;
   }
   if (double_inspect.IsNan()) {
-    if (nan_symbol_ == NULL) return false;
+    if (nan_symbol_ == nullptr) return false;
     result = nan_symbol_;
     return true;
   }
@@ -3327,7 +3327,7 @@ double StringToDoubleConverter::StringToIeee(
     current = next_non_space;
   }
 
-  if (infinity_symbol_ != NULL) {
+  if (infinity_symbol_ != nullptr) {
     if (*current == infinity_symbol_[0]) {
       if (!ConsumeSubString(&current, end, infinity_symbol_)) {
         return junk_string_value_;
@@ -3346,7 +3346,7 @@ double StringToDoubleConverter::StringToIeee(
     }
   }
 
-  if (nan_symbol_ != NULL) {
+  if (nan_symbol_ != nullptr) {
     if (*current == nan_symbol_[0]) {
       if (!ConsumeSubString(&current, end, nan_symbol_)) {
         return junk_string_value_;

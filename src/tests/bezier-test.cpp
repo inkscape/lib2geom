@@ -144,14 +144,14 @@ TEST_F(BezierTest, Casteljau) {
         EXPECT_EQ(left[wiggle.order()], right[0]);
         EXPECT_EQ(right[wiggle.order()], wiggle.at1());
 
-        double vl = casteljau_subdivision<double>(t, &wiggle[0], &left2[0], NULL, wiggle.order());
-        double vr = casteljau_subdivision<double>(t, &wiggle[0], NULL, &right2[0], wiggle.order());
+        double vl = casteljau_subdivision<double>(t, &wiggle[0], &left2[0], nullptr, wiggle.order());
+        double vr = casteljau_subdivision<double>(t, &wiggle[0], nullptr, &right2[0], wiggle.order());
         EXPECT_EQ(vl, vok);
         EXPECT_EQ(vr, vok);
         EXPECT_vector_equal(left2, left);
         EXPECT_vector_equal(right2, right);
 
-        double vnone = casteljau_subdivision<double>(t, &wiggle[0], NULL, NULL, wiggle.order());
+        double vnone = casteljau_subdivision<double>(t, &wiggle[0], nullptr, nullptr, wiggle.order());
         EXPECT_EQ(vnone, vok);
     }
 }

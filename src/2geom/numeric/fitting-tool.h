@@ -69,7 +69,7 @@ class lsf_base
         : m_model(_model),
           m_total_samples(0),
           m_matrix(forecasted_samples, m_model.size()),
-          m_psdinv_matrix(NULL)
+          m_psdinv_matrix(nullptr)
     {
     }
 
@@ -77,13 +77,13 @@ class lsf_base
     void update()
     {
         if (total_samples() == 0) return;
-        if (m_psdinv_matrix != NULL)
+        if (m_psdinv_matrix != nullptr)
         {
             delete m_psdinv_matrix;
         }
         MatrixView mv(m_matrix, 0, 0, total_samples(), m_matrix.columns());
         m_psdinv_matrix = new Matrix( pseudo_inverse(mv) );
-        assert(m_psdinv_matrix != NULL);
+        assert(m_psdinv_matrix != nullptr);
     }
 
     size_t total_samples() const
@@ -104,7 +104,7 @@ class lsf_base
     virtual
     ~lsf_base()
     {
-        if (m_psdinv_matrix != NULL)
+        if (m_psdinv_matrix != nullptr)
         {
             delete m_psdinv_matrix;
         }
@@ -368,7 +368,7 @@ class lsf_with_fixed_terms<ModelT, true>
                                         size_t forecasted_samples )
         : base_type(_model, forecasted_samples),
           m_vector(forecasted_samples),
-          m_vector_view(NULL)
+          m_vector_view(nullptr)
     {
     }
     void append(parameter_type const& sample_parameter)
@@ -394,17 +394,17 @@ class lsf_with_fixed_terms<ModelT, true>
     {
         base_type::update();
         if (total_samples() == 0) return;
-        if (m_vector_view != NULL)
+        if (m_vector_view != nullptr)
         {
             delete m_vector_view;
         }
         m_vector_view = new VectorView(m_vector, base_type::total_samples());
-        assert(m_vector_view != NULL);
+        assert(m_vector_view != nullptr);
     }
 
     ~lsf_with_fixed_terms<model_type, true>() override
     {
-        if (m_vector_view != NULL)
+        if (m_vector_view != nullptr)
         {
             delete m_vector_view;
         }

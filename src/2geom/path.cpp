@@ -276,7 +276,7 @@ Path::Path(ConvexHull const &ch)
 
 Path::Path(Circle const &c)
     : _data(new PathData())
-    , _closing_seg(NULL)
+    , _closing_seg(nullptr)
     , _closed(true)
     , _exception_on_stitch(true)
 {
@@ -290,7 +290,7 @@ Path::Path(Circle const &c)
 
 Path::Path(Ellipse const &e)
     : _data(new PathData())
-    , _closing_seg(NULL)
+    , _closing_seg(nullptr)
     , _closed(true)
     , _exception_on_stitch(true)
 {
