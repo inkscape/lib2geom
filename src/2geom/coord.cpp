@@ -91,13 +91,13 @@
 
 #ifndef DISALLOW_COPY_AND_ASSIGN
 #define DISALLOW_COPY_AND_ASSIGN(TypeName)      \
-  TypeName(const TypeName&);                    \
-  void operator=(const TypeName&)
+  TypeName(const TypeName&) = delete;           \
+  void operator=(const TypeName&) = delete
 #endif
 
 #ifndef DISALLOW_IMPLICIT_CONSTRUCTORS
 #define DISALLOW_IMPLICIT_CONSTRUCTORS(TypeName) \
-  TypeName();                                    \
+  TypeName() = delete;                           \
   DISALLOW_COPY_AND_ASSIGN(TypeName)
 #endif
 

@@ -289,7 +289,7 @@ public:
 };
 
 // BezierCurveN<0> is meaningless; specialize it out
-template<> class BezierCurveN<0> : public BezierCurveN<1> { private: BezierCurveN();};
+template<> class BezierCurveN<0> : public BezierCurveN<1> { private: BezierCurveN() = delete;};
 
 /** @brief Line segment.
  * Line segments are Bezier curves of order 1. They have only two control points,
