@@ -57,7 +57,7 @@ class Circle
     Coord _radius;
 
 public:
-    Circle() {}
+    Circle() = default;
     Circle(Coord cx, Coord cy, Coord r)
         : _center(cx, cy), _radius(r)
     {}

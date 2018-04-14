@@ -80,7 +80,7 @@ class PwToy: public Toy {
     bool should_draw_numbers() override { return false; }
     int should_draw_bounds() override { return 2; }
     public:
-    PwToy () {}
+    PwToy () = default;
 };
 
 int main(int argc, char **argv) {

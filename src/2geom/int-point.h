@@ -55,7 +55,7 @@ class IntPoint
 public:
     /// @name Creating integer points
     /// @{
-    IntPoint() { }
+    IntPoint() = default;
     IntPoint(IntCoord x, IntCoord y) {
         _pt[X] = x;
         _pt[Y] = y;

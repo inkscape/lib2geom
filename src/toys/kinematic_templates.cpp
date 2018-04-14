@@ -74,9 +74,7 @@ KinematicTemplate::KinematicTemplate(double const sx, double const sy, double co
 {
 }
 
-KinematicTemplate::~KinematicTemplate()
-{
-}
+KinematicTemplate::~KinematicTemplate() = default;
 
 Point
 KinematicTemplate::next_point(Point const &last_pt, Point const &delta)
@@ -161,7 +159,7 @@ GridKinematicTemplate::next_point(Point const &at, Point const &delta) {
 // My idea was to compute the gradient of an arbitrary potential function as the transform.  Probably the right way to do this is to use the hessian as the integrand -- njh
 class ImplicitKinematicTemplate : public KinematicTemplate {
 public:
-    ImplicitKinematicTemplate() {}
+    ImplicitKinematicTemplate() = default;
 
     Point next_point(Point const &at, Point const &delta) override {
         if (L2(at + delta - center) < radius) {

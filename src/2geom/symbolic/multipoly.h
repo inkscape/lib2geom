@@ -63,9 +63,7 @@ public:
     static const size_t rank = N;
 
 public:
-    MultiPoly()
-    {
-    }
+    MultiPoly() = default;
 
     MultiPoly(poly_type const& p)
         : m_poly(p)

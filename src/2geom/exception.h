@@ -58,7 +58,7 @@ public:
         msgstr = os.str();
     }
 
-    ~Exception() throw() override {} // necessary to destroy the string object!!!
+    ~Exception() throw() override = default; // necessary to destroy the string object!!!
 
     const char* what() const throw () override {
         return msgstr.c_str();

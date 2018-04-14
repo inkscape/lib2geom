@@ -77,7 +77,7 @@ class Curve
      : boost::equality_comparable<Curve>
 {
 public:
-    virtual ~Curve() {}
+    virtual ~Curve() = default;
 
     /// @name Evaluate the curve
     /// @{

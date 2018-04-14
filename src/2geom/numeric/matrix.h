@@ -58,9 +58,7 @@ namespace detail
 class BaseMatrixImpl
 {
   public:
-	virtual ~BaseMatrixImpl()
-	{
-	}
+	virtual ~BaseMatrixImpl() = default;
 
 	ConstVectorView row_const_view(size_t i) const
 	{

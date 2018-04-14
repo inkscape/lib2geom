@@ -40,7 +40,7 @@ public:
     double Sx = 0, Sy = 0, Sxx = 0, Syy = 0, Sxy = 0;
     double n = 0;
     
-    sufficient_stats() {}
+    sufficient_stats() = default;
     void
     operator+=(Point p) {
         Sx += p[0];
@@ -273,7 +273,7 @@ public:
             return combined;
         return OptRect();
     }
-    build_bounds() {}
+    build_bounds() = default;
 };
 
 /**
@@ -894,8 +894,7 @@ public:
         handles.push_back(&directions);
     }
 
-    MetroMap() {
-  }
+    MetroMap() = default;
 
 };
 

@@ -292,7 +292,7 @@ class Zoom
 {
     Coord _scale = 1;
     Point _trans = {};
-    Zoom() {}
+    Zoom() = default;
 public:
     /// Construct a zoom from a scaling factor.
     explicit Zoom(Coord s) : _scale(s) {}

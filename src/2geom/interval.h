@@ -63,7 +63,7 @@ public:
     /// @name Create intervals.
     /// @{
     /** @brief Create an interval that contains only zero. */
-    Interval() {}
+    Interval() = default;
     /** @brief Create an interval that contains a single point. */
     explicit Interval(Coord u) : Base(u) {}
     /** @brief Create an interval that contains all points between @c u and @c v. */

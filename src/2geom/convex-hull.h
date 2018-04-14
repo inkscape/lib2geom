@@ -58,7 +58,7 @@ class ConvexHullLowerIterator
 {
 public:
     typedef ConvexHullLowerIterator Self;
-    ConvexHullLowerIterator() {}
+    ConvexHullLowerIterator() = default;
     ConvexHullLowerIterator(std::vector<Point> const &pts, std::size_t x)
         : _data(&pts[0])
         , _size(pts.size())
@@ -121,7 +121,7 @@ public:
     /// @{
 
     /// Create an empty convex hull.
-    ConvexHull() {}
+    ConvexHull() = default;
     /// Construct a singular convex hull.
     explicit ConvexHull(Point const &a)
         : _boundary(1, a)

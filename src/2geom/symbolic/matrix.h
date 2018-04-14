@@ -59,8 +59,7 @@ class Matrix
     typedef Coeff coeff_type;
     typedef std::vector<coeff_type> container_type;
 
-    Matrix()
-    {}
+    Matrix() = default;
 
     Matrix(size_t m, size_t n)
         : m_data(m*n), m_rows(m), m_columns(n)

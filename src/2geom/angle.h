@@ -72,7 +72,7 @@ class Angle
       > > > >
 {
 public:
-    Angle() {}
+    Angle() = default;
     Angle(Coord v) : _angle(v) { _normalize(); } // this can be called implicitly
     explicit Angle(Point const &p) : _angle(atan2(p)) { _normalize(); }
     Angle(Point const &a, Point const &b) : _angle(angle_between(a, b)) { _normalize(); }
@@ -187,7 +187,7 @@ class AngleInterval
     : boost::equality_comparable< AngleInterval >
 {
 public:
-    AngleInterval() {}
+    AngleInterval() = default;
     /** @brief Create an angular interval from two angles and direction.
      * If the initial and final angle are the same, a degenerate interval
      * (containing only one angle) will be created.

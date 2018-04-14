@@ -47,7 +47,7 @@ class SVGPathWriter
 {
 public:
     SVGPathWriter();
-    ~SVGPathWriter() override {}
+    ~SVGPathWriter() override = default;
 
     void moveTo(Point const &p) override;
     void lineTo(Point const &p) override;

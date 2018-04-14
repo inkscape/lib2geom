@@ -49,7 +49,7 @@ struct Crossing {
     bool dir = false; //True: along a, a becomes outside.
     double ta = 0, tb = 1;  //time on a and b of crossing
     unsigned a = 0, b = 1;  //storage of indices
-    Crossing() {}
+    Crossing() = default;
     Crossing(double t_a, double t_b, bool direction) : dir(direction), ta(t_a), tb(t_b), a(0), b(1) {}
     Crossing(double t_a, double t_b, unsigned ai, unsigned bi, bool direction) : dir(direction), ta(t_a), tb(t_b), a(ai), b(bi) {}
     bool operator==(const Crossing & other) const { return a == other.a && b == other.b && dir == other.dir && ta == other.ta && tb == other.tb; }
@@ -157,7 +157,7 @@ struct CrossingTraits<Path> {
 template<typename T>
 struct Crosser {
     typedef typename CrossingTraits<T>::VectorT VectorT;
-    virtual ~Crosser() {}
+    virtual ~Crosser() = default;
     virtual Crossings crossings(T const &a, T const &b) {
         return crossings(CrossingTraits<T>::vector_one(a), CrossingTraits<T>::vector_one(b))[0]; }
     virtual CrossingSet crossings(VectorT const &a, VectorT const &b) {

@@ -74,8 +74,7 @@ void mvpoly1_to_poly(Geom::Poly & p, SL::MVPoly1 const& q)
  */
 struct intersection_info
 {
-    intersection_info()
-    {}
+    intersection_info() = default;
 
     intersection_info(Point const& _p, Coord _t0, Coord _t1)
         : p(_p), t0(_t0), t1(_t1)

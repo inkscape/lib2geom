@@ -194,7 +194,7 @@ template<>
 class LinearN<0>{
 public:
     double d;
-    LinearN () {}
+    LinearN () = default;
     LinearN(double d) :d(d) {}
     operator double() const { return d; }
     double operator[](const int i) const {assert (i==0); return d;}

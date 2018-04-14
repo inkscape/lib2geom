@@ -509,8 +509,8 @@ public:
     //-- Fill data using a sweeper...
     //----------------------------------------------------
 
-    Topology(){}
-    ~Topology(){}
+    Topology() = default;
+    ~Topology() = default;
     Topology(PathVector const &paths, cairo_t* cairo, double tol=EPSILON, int stepsmax=-1){
 //        std::printf("\n---------------------\n---------------------\n---------------------\n");
 //        std::printf("Topology creation\n");

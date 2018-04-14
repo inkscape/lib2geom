@@ -107,7 +107,7 @@ public:
     /// Output an ellipse as two elliptical arcs.
     virtual void feed(Ellipse const &e);
 
-    virtual ~PathSink() {}
+    virtual ~PathSink() = default;
 };
 
 /** @brief Store paths to an output iterator

@@ -86,8 +86,7 @@ class SimpleRect: public Toy {
     }
 
     public:
-    SimpleRect(){
-    }
+    SimpleRect() = default;
 };
 
 int main(int argc, char **argv) {   

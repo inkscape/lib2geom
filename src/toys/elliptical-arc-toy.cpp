@@ -841,7 +841,7 @@ class EllipticalArcToy: public Toy
     }
 
   public:
-    EllipticalArcToy() {}
+    EllipticalArcToy() = default;
 
   private:
     typedef void (EllipticalArcToy::* draw_func_t) (cairo_t*, std::ostringstream*, int, int, bool, std::ostringstream*);

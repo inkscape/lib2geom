@@ -17,7 +17,7 @@ struct EndPoint {
   public:
     Point point, norm;
     double time = 0;
-    EndPoint() { }
+    EndPoint() = default;
     EndPoint(Point p, Point n, double t) : point(p), norm(n), time(t) { }
 };
 
@@ -26,7 +26,7 @@ struct Edge {
     EndPoint from, to;
     int ix;
     bool cw;
-    Edge() { }
+    Edge() = default;
     Edge(EndPoint f, EndPoint t, int i, bool c) : from(f), to(t), ix(i), cw(c) { }
     bool operator==(Edge const &other) { return from.time == other.from.time && to.time == other.to.time; }
 };
@@ -183,7 +183,7 @@ class Sanitize: public Toy {
     }
     
     public:
-    Sanitize () {}
+    Sanitize () = default;
     void first_time(int argc, char** argv) override {
         const char *path_name="sanitize_examples.svgd";
         if(argc > 1)

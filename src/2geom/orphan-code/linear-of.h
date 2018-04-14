@@ -48,7 +48,7 @@ class SBasisOf;
 template <typename T>
 class HatOf{
 public:
-    HatOf () {}
+    HatOf () = default;
     HatOf(T d) :d(d) {}
     operator T() const { return d; }
     T d;
@@ -57,7 +57,7 @@ public:
 template <typename T>
 class TriOf{
 public:
-    TriOf () {}
+    TriOf () = default;
     TriOf(double d) :d(d) {}
     operator T() const { return d; }
     T d;
@@ -76,7 +76,7 @@ template <typename T>
 class LinearOf{
 public:
     T a[2];
-    LinearOf() {}
+    LinearOf() = default;
     LinearOf(T aa, T b) {a[0] = aa; a[1] = b;}
     //LinearOf(double aa, double b) {a[0] = T(aa); a[1] = T(b);}
     LinearOf(HatOf<T> h, TriOf<T> t) {

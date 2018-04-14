@@ -76,7 +76,7 @@ class BaseIterator
     typedef BaseIterator<P> Self;
 
   public:
-    BaseIterator() {}
+    BaseIterator() = default;
 
     bool operator<(BaseIterator const &other) const {
         return path == other.path && index < other.index;
@@ -132,7 +132,7 @@ struct PathTime
     Coord t = 0; ///< Time value in the curve
     size_type curve_index = 0; ///< Index of the curve in the path
 
-    PathTime() {}
+    PathTime() = default;
     PathTime(size_type idx, Coord tval) : t(tval), curve_index(idx) {}
 
     bool operator<(PathTime const &other) const {
@@ -383,7 +383,7 @@ public:
     /// Create a path from an ellipse, using two elliptical arcs.
     explicit Path(Ellipse const &e);
 
-    virtual ~Path() {}
+    virtual ~Path() = default;
 
     // Path &operator=(Path const &other) - use default assignment operator
 

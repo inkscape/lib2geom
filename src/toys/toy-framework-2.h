@@ -52,7 +52,7 @@ public:
     std::string name;
     float rgb[3];
     Handle() {rgb[0] = rgb[1] = rgb[2] = 0;}
-    virtual ~Handle() {}
+    virtual ~Handle() = default;
     virtual void draw(cairo_t *cr, bool annotes=false) = 0;
 
     virtual void* hit(Geom::Point pos) = 0;
@@ -66,7 +66,7 @@ public:
     Geom::Rect bounds = {};
     const char* text = "";
     bool on = false;
-    Toggle() {}
+    Toggle() = default;
     Toggle(const char* txt, bool v) : text(txt), on(v) {}
     Toggle(Geom::Rect bnds, const char* txt, bool v) : bounds(bnds), text(txt), on(v) {}
     void draw(cairo_t *cr, bool annotes = false) override;
@@ -165,7 +165,7 @@ class PointHandle : public Handle{
 public:
     PointHandle(double x, double y) : pos(x,y) {}
     PointHandle(Geom::Point pt) : pos(pt) {}
-    PointHandle() {}
+    PointHandle() = default;
     Geom::Point pos;
     void draw(cairo_t *cr, bool annotes = false) override;
 
@@ -177,7 +177,7 @@ public:
 
 class PointSetHandle : public Handle{
 public:
-    PointSetHandle() {}
+    PointSetHandle() = default;
     std::vector<Geom::Point> pts;
     void draw(cairo_t *cr, bool annotes = false) override;
 
@@ -193,7 +193,7 @@ public:
 
 class RectHandle : public Handle{
 public:
-    RectHandle() {}
+    RectHandle() = default;
     RectHandle(Geom::Rect pos, bool show_center_handle) : pos(pos), show_center_handle(show_center_handle) {}
     Geom::Rect pos;
     bool show_center_handle;
@@ -324,7 +324,7 @@ public:
 
     Toy();
 
-    virtual ~Toy() {}
+    virtual ~Toy() = default;
 
     virtual void draw(cairo_t *cr, std::ostringstream *notify, int w, int h, bool save, std::ostringstream *timing_stream);
 
@@ -366,7 +366,7 @@ const long long NS_PER_NS = 1;
 
 class Timer{
 public:
-  Timer() {}
+  Timer() = default;
   // note that CPU time is tracked per-thread, so the timer is only useful
   // in the thread it was start()ed from.
 

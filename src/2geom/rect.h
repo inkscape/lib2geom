@@ -96,7 +96,7 @@ public:
     /// @name Create rectangles.
     /// @{
     /** @brief Create a rectangle that contains only the point at (0,0). */
-    Rect() {}
+    Rect() = default;
     /** @brief Create a rectangle from X and Y intervals. */
     Rect(Interval const &a, Interval const &b) : Base(a,b) {}
     /** @brief Create a rectangle from two points. */

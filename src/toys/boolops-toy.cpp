@@ -21,7 +21,7 @@ class BoolOps : public Toy {
     bool path_handles_inited = false;
 
 public:
-    BoolOps() {}
+    BoolOps() = default;
 
     void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) override {
         if (!path_handles_inited) {

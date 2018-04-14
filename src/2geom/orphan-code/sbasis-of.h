@@ -58,7 +58,7 @@ typedef Geom::SBasisOf<double> SBasis;
 template<typename T>
 class SBasisOf : public std::vector<LinearOf<T> >{
 public:
-    SBasisOf() {}
+    SBasisOf() = default;
     explicit SBasisOf(T a) {
         this->push_back(LinearOf<T>(a,a));
     }

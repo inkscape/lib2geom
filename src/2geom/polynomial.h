@@ -160,8 +160,8 @@ public:
     void normalize();
 
     void monicify();
-    Poly() {}
-    Poly(const Poly& p) : std::vector<double>(p) {}
+    Poly() = default;
+    Poly(const Poly& p) = default;
     Poly(const double a) {push_back(a);}
 
 public:

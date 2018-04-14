@@ -53,7 +53,7 @@ class EllipticalArc : public Curve
 {
 public:
     /** @brief Creates an arc with all variables set to zero. */
-    EllipticalArc() {}
+    EllipticalArc() = default;
     /** @brief Create a new elliptical arc.
      * @param ip Initial point of the arc
      * @param r Rays of the ellipse as a point

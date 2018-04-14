@@ -65,7 +65,7 @@ struct MultipliableNoncommutative : B
 struct NullIterator
     : public boost::output_iterator_helper<NullIterator>
 {
-    NullIterator() {}
+    NullIterator() = default;
 
     template <typename T>
     void operator=(T const &) {}

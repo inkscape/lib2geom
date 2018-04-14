@@ -76,7 +76,7 @@ class Piecewise {
     std::vector<T> segs;
     //segs[i] stretches from cuts[i] to cuts[i+1].
 
-    Piecewise() {}
+    Piecewise() = default;
 
     explicit Piecewise(const T &s) {
         push_cut(0.);

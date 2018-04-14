@@ -43,7 +43,7 @@ class LoadSVGD: public Toy {
         Toy::draw(cr, notify, width, height, save,timer_stream);
     }
     public:
-    LoadSVGD() {}
+    LoadSVGD() = default;
 
     void first_time(int argc, char** argv) override {
         const char *path_b_name="star.svgd";

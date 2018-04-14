@@ -67,7 +67,7 @@ class RatQuad{
 public:
     Point P[3];
     double w;
-    RatQuad() {}
+    RatQuad() = default;
     RatQuad(Point a, Point b, Point c, double w) : w(w) {
         P[0] = a;
         P[1] = b;
@@ -118,7 +118,7 @@ public:
     };
 
 
-    xAx() {}
+    xAx() = default;
 
     /*
      *  Define the conic section by its algebraic equation coefficients

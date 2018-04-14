@@ -630,7 +630,7 @@ template<>
 class SBasisN<0>{
 public:
     double d;
-    SBasisN () {}
+    SBasisN () = default;
     SBasisN(double d) :d(d) {}
     operator double() const { return d; }
 };

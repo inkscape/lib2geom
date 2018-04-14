@@ -152,13 +152,12 @@ class SBasis2d : public std::vector<Linear2d>{
 public:
     // vector in u,v
     unsigned us, vs; // number of u terms, v terms
-    SBasis2d() {}
+    SBasis2d() = default;
     SBasis2d(Linear2d const & bo) 
         : us(1), vs(1) {
         push_back(bo);
     }
-    SBasis2d(SBasis2d const & a) 
-        : std::vector<Linear2d>(a), us(a.us), vs(a.vs) {}
+    SBasis2d(SBasis2d const & a) = default;
     
     Linear2d& index(unsigned ui, unsigned vi) {
         assert(ui < us);

@@ -19,12 +19,11 @@ namespace Geom {
 class OldBezier {
 public:
     std::vector<Geom::Point> p;
-    OldBezier() {
-    }
+    OldBezier() = default;
     void split(double t, OldBezier &a, OldBezier &b) const;
     Point operator()(double t) const;
 
-    ~OldBezier() {}
+    ~OldBezier() = default;
 
     void bounds(double &minax, double &maxax,
                 double &minay, double &maxay) {

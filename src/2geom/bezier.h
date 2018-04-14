@@ -148,7 +148,7 @@ public:
     unsigned degree() const { return order(); }
     unsigned size() const { return c_.size();}
 
-    Bezier() {}
+    Bezier() = default;
     Bezier(const Bezier& b) :c_(b.c_) {}
     Bezier &operator=(Bezier const &other) {
         if ( c_.size() != other.c_.size() ) {

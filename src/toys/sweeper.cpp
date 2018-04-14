@@ -900,7 +900,7 @@ public:
         double place; //x or y value on the exit line.
         unsigned ray_idx;
         double time; //exit time on curve.
-        ExitPoint(){}
+        ExitPoint() = default;
         ExitPoint(unsigned s, double p, unsigned r, double t){
             side =s;
             place = p;
@@ -980,7 +980,7 @@ public:
     //-- initialize all data.
     //-------------------------------
 
-    Sweeper(){}
+    Sweeper() = default;
     Sweeper(PathVector const &input_paths, Dim2 sweep_dir, double tolerance=1e-5){
         paths = input_paths;//use a ptr...
         dim = sweep_dir;

@@ -234,7 +234,7 @@ class RandomGenerator {
 public:
     RandomGenerator();
     RandomGenerator(Piecewise<D2<SBasis> >f_in, double tol=.1);
-    ~RandomGenerator(){};
+    ~RandomGenerator() = default;
     void setDomain(Piecewise<D2<SBasis> >f_in, double tol=.1);
     void set_generator(double (*rand_func)());
     void resetRandomizer();

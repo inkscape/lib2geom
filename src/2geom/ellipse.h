@@ -70,7 +70,7 @@ class Ellipse
     Point _rays;
     Angle _angle;
 public:
-    Ellipse() {}
+    Ellipse() = default;
     Ellipse(Point const &c, Point const &r, Coord angle)
         : _center(c)
         , _rays(r)

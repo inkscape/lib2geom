@@ -624,7 +624,7 @@ class distance_impl
                         t );
     }
 
-    distance_impl() {}
+    distance_impl() = default;
 
     void set_accuracy(double _accuracy)
     {

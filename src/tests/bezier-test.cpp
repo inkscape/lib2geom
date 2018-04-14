@@ -373,7 +373,7 @@ struct XPt {
     XPt(Coord x, Coord y, Coord ta, Coord tb)
         : p(x, y), ta(ta), tb(tb)
     {}
-    XPt() {}
+    XPt() = default;
     Point p;
     Coord ta, tb;
 };

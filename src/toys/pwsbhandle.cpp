@@ -1,7 +1,7 @@
 class PWSBHandle : public Handle{
 public:
     unsigned handles_per_curve, curve_size, segs;
-    PWSBHandle()  {}
+    PWSBHandle() = default;
     PWSBHandle(unsigned cs, unsigned segs) :handles_per_curve(cs*segs),curve_size(cs), segs(segs) {}
     std::vector<Geom::Point> pts;
     void draw(cairo_t *cr, bool annotes = false) override;

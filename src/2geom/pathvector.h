@@ -132,7 +132,7 @@ public:
     typedef Path *pointer;
     typedef std::ptrdiff_t difference_type;
 
-    PathVector() {}
+    PathVector() = default;
     PathVector(Path const &p)
         : _data(1, p)
     {}

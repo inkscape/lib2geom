@@ -125,9 +125,7 @@ class BaseVectorImpl
 
 	std::string str() const;
 
-	virtual ~BaseVectorImpl()
-	{
-	}
+	virtual ~BaseVectorImpl() = default;
 
   protected:
 	size_t m_size;

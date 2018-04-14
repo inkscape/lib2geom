@@ -114,7 +114,7 @@ namespace {
 template <typename T>
 class Vector {
  public:
-  Vector() {}
+  Vector() = default;
   Vector(T* data, int length) : start_(data), length_(length) {
     ASSERT(length == 0 || (length > 0 && data != nullptr));
   }
@@ -165,7 +165,7 @@ class DiyFp {
  public:
   static const int kSignificandSize = 64;
 
-  DiyFp() {}
+  DiyFp() = default;
   DiyFp(uint64_t f, int e) : f_(f), e_(e) {}
 
   void Subtract(const DiyFp& other) {
@@ -251,7 +251,7 @@ class Double {
   static const int kPhysicalSignificandSize = 52;  // Excludes the hidden bit.
   static const int kSignificandSize = 53;
 
-  Double() {}
+  Double() = default;
   explicit Double(double d) : d64_(double_to_uint64(d)) {}
   explicit Double(uint64_t d64) : d64_(d64) {}
   explicit Double(DiyFp diy_fp)
@@ -2035,7 +2035,7 @@ bool FastDtoa(double v,
 // platforms that support 128bit integers.
 class UInt128 {
  public:
-  UInt128() { }
+  UInt128() = default;
   UInt128(uint64_t high, uint64_t low) : high_bits_(high), low_bits_(low) { }
 
   void Multiply(uint32_t multiplicand) {

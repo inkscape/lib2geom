@@ -117,9 +117,7 @@ public:
     explicit SBasis(double a, double b)
         : d(1, Linear(a, b))
     {}
-    SBasis(SBasis const &a)
-        : d(a.d)
-    {}
+    SBasis(SBasis const &a) = default;
     SBasis(std::vector<Linear> const &ls)
         : d(ls)
     {}
