@@ -307,7 +307,7 @@ bool make_elliptical_arc::make_elliptiarc()
 #ifdef CPP11
     std::unique_ptr<EllipticalArc> arc( e.arc(initial_point, inner_point, final_point) );
 #else
-    std::auto_ptr<EllipticalArc> arc( e.arc(initial_point, inner_point, final_point) );
+    std::unique_ptr<EllipticalArc> arc( e.arc(initial_point, inner_point, final_point) );
 #endif
     ea = *arc;
 

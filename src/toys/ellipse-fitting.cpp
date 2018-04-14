@@ -83,7 +83,7 @@ class EllipseFitting : public Toy
         {
             try
             {
-                std::auto_ptr<EllipticalArc> eap( e.arc(psh.pts[0], psh.pts[2], psh.pts[4]) );
+                std::unique_ptr<EllipticalArc> eap( e.arc(psh.pts[0], psh.pts[2], psh.pts[4]) );
                 ea = *eap;
             }
             catch(RangeError exc)

@@ -262,7 +262,7 @@ EllipticalArc::pointAndDerivatives(Coord t, unsigned int n) const
     std::vector<Point> result;
     result.reserve(nn);
     double angle = angleAt(t);
-    std::auto_ptr<EllipticalArc> ea( static_cast<EllipticalArc*>(duplicate()) );
+    std::unique_ptr<EllipticalArc> ea( static_cast<EllipticalArc*>(duplicate()) );
     ea->_ellipse.setCenter(0, 0);
     unsigned int m = std::min(nn, 4u);
     for ( unsigned int i = 0; i < m; ++i )
