@@ -98,11 +98,11 @@ private:
     Point _current;
     Point _quad_tangent;
     Point _cubic_tangent;
-    Coord _epsilon;
-    int _precision;
-    bool _optimize;
-    bool _use_shorthands;
-    char _command;
+    Coord _epsilon = 0;
+    int _precision = -1;
+    bool _optimize = false;
+    bool _use_shorthands = true;
+    char _command = 0;
 };
 
 std::string write_svg_path(PathVector const &pv, int prec = -1, bool optimize = false, bool shorthands = true);

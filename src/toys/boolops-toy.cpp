@@ -18,12 +18,10 @@ class BoolOps : public Toy {
     Line ah, bh;
     PointHandle path_handles[4];
     std::vector<Toggle> togs;
-    bool path_handles_inited;
+    bool path_handles_inited = false;
 
 public:
-    BoolOps()
-        : path_handles_inited(false)
-    {}
+    BoolOps() {}
 
     void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) override {
         if (!path_handles_inited) {

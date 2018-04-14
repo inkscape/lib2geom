@@ -56,9 +56,9 @@ struct PathVectorTime
     : public PathTime
     , boost::totally_ordered<PathVectorTime>
 {
-    size_type path_index; ///< Index of the path in the vector
+    size_type path_index = 0; ///< Index of the path in the vector
 
-    PathVectorTime() : PathTime(0, 0), path_index(0) {}
+    PathVectorTime() : PathTime(0, 0) {}
     PathVectorTime(size_type _i, size_type _c, Coord _t)
         : PathTime(_c, _t), path_index(_i) {}
     PathVectorTime(size_type _i, PathTime const &pos)

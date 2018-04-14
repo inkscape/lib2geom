@@ -77,10 +77,10 @@ Point align_factors(Align align);
 struct Aspect {
     Align align;
     Expansion expansion;
-    bool deferred; ///< for SVG compatibility
+    bool deferred = false; ///< for SVG compatibility
 
     Aspect(Align a = ALIGN_NONE, Expansion ex = EXPANSION_MEET)
-        : align(a), expansion(ex), deferred(false)
+        : align(a), expansion(ex)
     {}
 };
 

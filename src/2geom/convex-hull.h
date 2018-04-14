@@ -58,11 +58,7 @@ class ConvexHullLowerIterator
 {
 public:
     typedef ConvexHullLowerIterator Self;
-    ConvexHullLowerIterator()
-        : _data(nullptr)
-        , _size(0)
-        , _x(0)
-    {}
+    ConvexHullLowerIterator() {}
     ConvexHullLowerIterator(std::vector<Point> const &pts, std::size_t x)
         : _data(&pts[0])
         , _size(pts.size())
@@ -103,9 +99,9 @@ public:
     }
 
 private:
-    Point const *_data;
-    std::size_t _size;
-    std::size_t _x;
+    Point const *_data = nullptr;
+    std::size_t _size = 0;
+    std::size_t _x = 0;
 };
 
 } // end anonymous namespace

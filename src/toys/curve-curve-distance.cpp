@@ -106,9 +106,9 @@ class distance_impl
     typedef CurveT curveB_type;
     // determine how near a distance sample and the value computed through 
     // the interpolated function have to be
-    double accuracy;
+    double accuracy = 1e-3;
     // determine the recursion limit
-    double adaptive_limit;
+    double adaptive_limit = 1e-5;
     // pieces of the initial subdivision  
     unsigned int piecees;
     // degree of the polynomial used to interpolate a piece
@@ -624,10 +624,7 @@ class distance_impl
                         t );
     }
 
-    distance_impl()
-        : accuracy(1e-3),
-          adaptive_limit(1e-5)
-    {}
+    distance_impl() {}
 
     void set_accuracy(double _accuracy)
     {

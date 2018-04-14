@@ -124,10 +124,8 @@ class SBasisFitting : public Toy
     
   public:
     SBasisFitting()
-        : degree(3),
-          total_handles(degree+1),
+        : total_handles(degree+1),
           order(total_handles/2 - 1),
-          interval_length(400),
           dstep(interval_length/degree),
           step(1.0/degree)
     {
@@ -176,10 +174,10 @@ class SBasisFitting : public Toy
     }
     
   private:
-    size_t degree;
+    size_t degree = 3;
     size_t total_handles;
     size_t order;
-    double interval_length;
+    double interval_length = 400;
     double dstep;
     double step;
     double sx;

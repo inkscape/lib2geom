@@ -53,11 +53,7 @@ class EllipticalArc : public Curve
 {
 public:
     /** @brief Creates an arc with all variables set to zero. */
-    EllipticalArc()
-        : _initial_point(0,0)
-        , _final_point(0,0)
-        , _large_arc(false)
-    {}
+    EllipticalArc() {}
     /** @brief Create a new elliptical arc.
      * @param ip Initial point of the arc
      * @param r Rays of the ellipse as a point
@@ -311,7 +307,7 @@ private:
     Point _initial_point, _final_point;
     Ellipse _ellipse;
     AngleInterval _angles;
-    bool _large_arc;
+    bool _large_arc = false;
 }; // end class EllipticalArc
 
 

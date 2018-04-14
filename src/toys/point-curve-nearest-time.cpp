@@ -347,7 +347,6 @@ public:
         paths_b = read_svgd(path_b_name);
     }
     NearestPoints()
-        : total_handles(0), choice('0'), closed_toggle(false)
     {
         handles.push_back(&psh);
         handles.push_back(&ph);
@@ -360,9 +359,9 @@ private:
     PointSetHandle psh;
     PointHandle ph;
     std::vector<Toggle> toggles;
-    unsigned int total_handles;
-    char choice;
-    bool closed_toggle;
+    unsigned int total_handles = 0;
+    char choice = '0';
+    bool closed_toggle = false;
 };
 
 const char* NearestPoints::menu_items[] =

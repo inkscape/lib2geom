@@ -76,7 +76,7 @@ class BaseIterator
     typedef BaseIterator<P> Self;
 
   public:
-    BaseIterator() : path(nullptr), index(0) {}
+    BaseIterator() {}
 
     bool operator<(BaseIterator const &other) const {
         return path == other.path && index < other.index;
@@ -106,8 +106,8 @@ class BaseIterator
     }
 
   private:
-    P *path;
-    unsigned index;
+    P *path = nullptr;
+    unsigned index = 0;
 
     friend class ::Geom::Path;
 };
@@ -129,10 +129,10 @@ struct PathTime
 {
     typedef PathInternal::Sequence::size_type size_type;
 
-    Coord t; ///< Time value in the curve
-    size_type curve_index; ///< Index of the curve in the path
+    Coord t = 0; ///< Time value in the curve
+    size_type curve_index = 0; ///< Index of the curve in the path
 
-    PathTime() : t(0), curve_index(0) {}
+    PathTime() {}
     PathTime(size_type idx, Coord tval) : t(tval), curve_index(idx) {}
 
     bool operator<(PathTime const &other) const {
@@ -230,8 +230,8 @@ public:
 
 private:
     PathTime _from, _to;
-    size_type _path_size;
-    bool _cross_start, _reverse;
+    size_type _path_size = 1;
+    bool _cross_start = false, _reverse = false;
 };
 
 /// Create an interval in the direction of increasing time value.
@@ -351,8 +351,6 @@ public:
     explicit Path(Point const &p = Point())
         : _data(new PathData())
         , _closing_seg(new ClosingSegment(p, p))
-        , _closed(false)
-        , _exception_on_stitch(true)
     {
         _data->curves.push_back(_closing_seg);
     }
@@ -842,8 +840,8 @@ private:
 
     boost::shared_ptr<PathData> _data;
     ClosingSegment *_closing_seg;
-    bool _closed;
-    bool _exception_on_stitch;
+    bool _closed = false;
+    bool _exception_on_stitch = true;
 }; // end class Path
 
 Piecewise<D2<SBasis> > paths_to_pw(PathVector const &paths);

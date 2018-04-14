@@ -52,9 +52,6 @@ namespace Geom {
 PathInterval::PathInterval()
     : _from(0, 0.0)
     , _to(0, 0.0)
-    , _path_size(1)
-    , _cross_start(false)
-    , _reverse(false)
 {}
 
 PathInterval::PathInterval(PathTime const &from, PathTime const &to, bool cross_start, size_type path_size)

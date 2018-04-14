@@ -290,12 +290,12 @@ inline bool are_near(VShear const &a, VShear const &b, Coord eps=EPSILON) {
 class Zoom
     : public TransformOperations< Zoom >
 {
-    Coord _scale;
-    Point _trans;
-    Zoom() : _scale(1), _trans() {}
+    Coord _scale = 1;
+    Point _trans = {};
+    Zoom() {}
 public:
     /// Construct a zoom from a scaling factor.
-    explicit Zoom(Coord s) : _scale(s), _trans() {}
+    explicit Zoom(Coord s) : _scale(s) {}
     /// Construct a zoom from a translation.
     explicit Zoom(Translate const &t) : _scale(1), _trans(t.vector()) {}
     /// Construct a zoom from a scaling factor and a translation.

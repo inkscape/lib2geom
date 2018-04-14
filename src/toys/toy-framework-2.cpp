@@ -156,7 +156,7 @@ void redraw() { gtk_widget_queue_draw(GTK_WIDGET(window)); }
 
 #include <typeinfo>
 
-Toy::Toy() : hit_data(nullptr), show_timings(0), spool_file(nullptr), to_load_file(nullptr) {
+Toy::Toy() {
     mouse_down = false;
     selected = nullptr;
     notify_offset = 0;

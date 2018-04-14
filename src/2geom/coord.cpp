@@ -114,7 +114,7 @@ namespace {
 template <typename T>
 class Vector {
  public:
-  Vector() : start_(nullptr), length_(0) {}
+  Vector() {}
   Vector(T* data, int length) : start_(data), length_(length) {
     ASSERT(length == 0 || (length > 0 && data != nullptr));
   }
@@ -138,8 +138,8 @@ class Vector {
   T& last() { return start_[length_ - 1]; }
 
  private:
-  T* start_;
-  int length_;
+  T* start_ = nullptr;
+  int length_ = 0;
 };
 
 template <class Dest, class Source>
@@ -165,7 +165,7 @@ class DiyFp {
  public:
   static const int kSignificandSize = 64;
 
-  DiyFp() : f_(0), e_(0) {}
+  DiyFp() {}
   DiyFp(uint64_t f, int e) : f_(f), e_(e) {}
 
   void Subtract(const DiyFp& other) {
@@ -238,8 +238,8 @@ class DiyFp {
  private:
   static const uint64_t kUint64MSB = UINT64_2PART_C(0x80000000, 00000000);
 
-  uint64_t f_;
-  int e_;
+  uint64_t f_ = 0;
+  int e_ = 0;
 };
 
 class Double {
@@ -251,7 +251,7 @@ class Double {
   static const int kPhysicalSignificandSize = 52;  // Excludes the hidden bit.
   static const int kSignificandSize = 53;
 
-  Double() : d64_(0) {}
+  Double() {}
   explicit Double(double d) : d64_(double_to_uint64(d)) {}
   explicit Double(uint64_t d64) : d64_(d64) {}
   explicit Double(DiyFp diy_fp)
@@ -405,7 +405,7 @@ class Double {
   static const uint64_t kInfinity = UINT64_2PART_C(0x7FF00000, 00000000);
   static const uint64_t kNaN = UINT64_2PART_C(0x7FF80000, 00000000);
 
-  const uint64_t d64_;
+  const uint64_t d64_ = 0;
 
   static uint64_t DiyFpToUint64(DiyFp diy_fp) {
     uint64_t significand = diy_fp.f();
@@ -451,7 +451,7 @@ class Bignum {
   static const int kMaxSignificantBits = 3584;
 
   Bignum()
-    : bigits_(bigits_buffer_, kBigitCapacity), used_digits_(0), exponent_(0)
+    : bigits_(bigits_buffer_, kBigitCapacity)
   {
     for (int i = 0; i < kBigitCapacity; ++i) {
       bigits_[i] = 0;
@@ -582,9 +582,9 @@ class Bignum {
   // A vector backed by bigits_buffer_. This way accesses to the array are
   // checked for out-of-bounds errors.
   Vector<Chunk> bigits_;
-  int used_digits_;
+  int used_digits_ = 0;
   // The Bignum's value equals value(bigits_) * 2^(exponent_ * kBigitSize).
-  int exponent_;
+  int exponent_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(Bignum);
 };
@@ -2035,7 +2035,7 @@ bool FastDtoa(double v,
 // platforms that support 128bit integers.
 class UInt128 {
  public:
-  UInt128() : high_bits_(0), low_bits_(0) { }
+  UInt128() { }
   UInt128(uint64_t high, uint64_t low) : high_bits_(high), low_bits_(low) { }
 
   void Multiply(uint32_t multiplicand) {
@@ -2108,8 +2108,8 @@ class UInt128 {
  private:
   static const uint64_t kMask32 = 0xFFFFFFFF;
   // Value == (high_bits_ << 64) + low_bits_
-  uint64_t high_bits_;
-  uint64_t low_bits_;
+  uint64_t high_bits_ = 0;
+  uint64_t low_bits_ = 0;
 };
 
 

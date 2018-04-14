@@ -43,11 +43,6 @@ static inline bool is_digit(char c) {
 }
 
 SVGPathWriter::SVGPathWriter()
-    : _epsilon(0)
-    , _precision(-1)
-    , _optimize(false)
-    , _use_shorthands(true)
-    , _command(0)
 {
     // always use C locale for number formatting
     _ns.imbue(std::locale::classic());

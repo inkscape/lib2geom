@@ -16,8 +16,8 @@ using namespace Geom;
 struct EndPoint {
   public:
     Point point, norm;
-    double time;
-    EndPoint() : time(0) { }
+    double time = 0;
+    EndPoint() { }
     EndPoint(Point p, Point n, double t) : point(p), norm(n), time(t) { }
 };
 

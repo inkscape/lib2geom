@@ -93,9 +93,9 @@ class RTreeNode;
 class RTreeRecord_Leaf{
 public:
     Rect bounding_box;
-    int data;
+    int data = 0;
 
-    RTreeRecord_Leaf(): bounding_box(), data(0)
+    RTreeRecord_Leaf(): bounding_box()
     {}
 
     RTreeRecord_Leaf(Rect bb, int d): bounding_box(bb), data(d)
@@ -105,9 +105,9 @@ public:
 class RTreeRecord_NonLeaf{
 public:
     Rect bounding_box;
-    RTreeNode* data;    
+    RTreeNode* data = nullptr;    
 
-    RTreeRecord_NonLeaf(): bounding_box(), data(nullptr)
+    RTreeRecord_NonLeaf(): bounding_box()
     {}
 
     RTreeRecord_NonLeaf(Rect bb, RTreeNode* d): bounding_box(bb), data(d)

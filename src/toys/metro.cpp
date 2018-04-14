@@ -37,10 +37,10 @@ vector<vector<Point> > paths;
 
 class sufficient_stats{
 public:
-    double Sx, Sy, Sxx, Syy, Sxy;
-    double n;
+    double Sx = 0, Sy = 0, Sxx = 0, Syy = 0, Sxy = 0;
+    double n = 0;
     
-    sufficient_stats() : Sx(0), Sy(0), Sxx(0), Syy(0), Sxy(0), n(0) {}
+    sufficient_stats() {}
     void
     operator+=(Point p) {
         Sx += p[0];
@@ -254,7 +254,7 @@ public:
 
 class build_bounds{
 public:
-    int total_n;
+    int total_n = 0;
     Point starting[2];
     Rect combined;
     void add_point(Point const &P) {
@@ -273,7 +273,7 @@ public:
             return combined;
         return OptRect();
     }
-    build_bounds() : total_n(0) {}
+    build_bounds() {}
 };
 
 /**

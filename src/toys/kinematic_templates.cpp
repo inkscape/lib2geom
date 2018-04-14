@@ -62,7 +62,7 @@ public:
 protected:
     double sx, sy, cx, cy;
     Point center;
-    double radius;
+    double radius = 100;
 };
 
 KinematicTemplate::KinematicTemplate(double const sx, double const sy, double const cx, double const cy)
@@ -70,8 +70,7 @@ KinematicTemplate::KinematicTemplate(double const sx, double const sy, double co
       sy(sy),
       cx(cx),
       cy(cy),
-      center(300,300),
-      radius(100)
+      center(300,300)
 {
 }
 

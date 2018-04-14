@@ -63,11 +63,11 @@ public:
 
 class Toggle : public Handle{
 public:
-    Geom::Rect bounds;
-    const char* text;
-    bool on;
-    Toggle() : bounds(Geom::Point(0,0), Geom::Point(0,0)), text(""), on(false) {}
-    Toggle(const char* txt, bool v) : bounds(Geom::Point(0,0), Geom::Point(0,0)), text(txt), on(v) {}
+    Geom::Rect bounds = {};
+    const char* text = "";
+    bool on = false;
+    Toggle() {}
+    Toggle(const char* txt, bool v) : text(txt), on(v) {}
     Toggle(Geom::Rect bnds, const char* txt, bool v) : bounds(bnds), text(txt), on(v) {}
     void draw(cairo_t *cr, bool annotes = false) override;
     void toggle();
@@ -222,9 +222,7 @@ class Slider : public Handle
     typedef double value_type;
 
     Slider()
-        : m_handle(), m_pos(Geom::Point(0,0)), m_length(1),
-         m_min(0), m_max(1), m_step(0), m_dir(Geom::X),
-         m_label(""), m_formatter(&default_formatter)
+        : m_formatter(&default_formatter)
     {
         value(0);
     }
@@ -232,7 +230,7 @@ class Slider : public Handle
     // pass step = 0 for having a continuos value variation
     Slider( value_type _min, value_type _max, value_type _step,
             value_type _value, const std::string& _label = "" )
-        : m_handle(),m_pos(Geom::Point(0,0)), m_length(1),
+        : m_length(1),
           m_min(_min), m_max(_max), m_step(_step), m_dir(Geom::X),
           m_label(_label), m_formatter(&default_formatter)
     {
@@ -297,12 +295,12 @@ class Slider : public Handle
     }
 
   private:
-    PointHandle m_handle;
-    Geom::Point m_pos;
-    value_type m_length;
-    value_type m_min, m_max, m_step;
-    int m_dir;
-    std::string m_label;
+    PointHandle m_handle = {};
+    Geom::Point m_pos = {};
+    value_type m_length = 1;
+    value_type m_min = 0, m_max = 1, m_step = 0;
+    int m_dir = Geom::X;
+    std::string m_label = "";
     formatter_t m_formatter;
 };
 
@@ -316,13 +314,13 @@ public:
     bool mouse_down;
     Geom::Point old_mouse_point;
     Handle* selected;
-    void* hit_data;
+    void* hit_data = nullptr;
     int canvas_click_button;
     double notify_offset;
     std::string name;
-    bool show_timings;
-    FILE* spool_file; // if non-NULL we record all interactions to this file
-    FILE* to_load_file; // if non-NULL and not eof we read back a handle state at every frame.
+    bool show_timings = 0;
+    FILE* spool_file = nullptr; // if non-NULL we record all interactions to this file
+    FILE* to_load_file = nullptr; // if non-NULL and not eof we read back a handle state at every frame.
 
     Toy();
 

@@ -33,8 +33,8 @@ extern unsigned total_steps, total_subs;
 
 class MatchCurve: public Toy {
 public:
-    double timer_precision;
-    double units;
+    double timer_precision = 0.1;
+    double units = 1e6; // microseconds
     PointSetHandle psh;
     
     void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) override {
@@ -136,7 +136,7 @@ public:
         cairo_stroke(cr);
         Toy::draw(cr, notify, width, height, save,timer_stream);
     }
-    MatchCurve() : timer_precision(0.1), units(1e6) // microseconds
+    MatchCurve()
     {
         handles.push_back(&psh);
         for(int i = 0; i < 6; i++)

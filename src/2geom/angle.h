@@ -72,7 +72,7 @@ class Angle
       > > > >
 {
 public:
-    Angle() : _angle(0) {}
+    Angle() {}
     Angle(Coord v) : _angle(v) { _normalize(); } // this can be called implicitly
     explicit Angle(Point const &p) : _angle(atan2(p)) { _normalize(); }
     Angle(Point const &a, Point const &b) : _angle(angle_between(a, b)) { _normalize(); }
@@ -156,7 +156,7 @@ private:
         if (_angle < 0) _angle += 2*M_PI;
         //_angle -= floor(_angle * (1.0/(2*M_PI))) * 2*M_PI;
     }
-    Coord _angle; // this is always in [0, 2pi)
+    Coord _angle = 0; // this is always in [0, 2pi)
     friend class AngleInterval;
 };
 

@@ -91,7 +91,6 @@ class D2SBasisFitting : public Toy
   public:
     D2SBasisFitting()
         : sb_curve(),
-          total_handles(8),
           order(total_handles / 2 - 1),
           fmd2sb(order),
           lsf_2dsb(fmd2sb, total_handles),
@@ -117,7 +116,7 @@ class D2SBasisFitting : public Toy
     
   private:
     D2<SBasis> sb_curve;
-    unsigned int total_handles;
+    unsigned int total_handles = 8;
     unsigned int order;
     NL::LFMD2SBasis fmd2sb;
     NL::least_squeares_fitter<NL::LFMD2SBasis> lsf_2dsb;
