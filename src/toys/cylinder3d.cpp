@@ -46,7 +46,7 @@ class Box3d: public Toy {
     Piecewise<D2<SBasis> >  path_a_pw;
     PointSetHandle hand;
     
-    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
+    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) override {
         orig = hand.pts[7];
 	
         Geom::Point dir(1,-2);
@@ -127,7 +127,7 @@ class Box3d: public Toy {
         
         Toy::draw(cr, notify, width, height, save,timer_stream);
     }
-    void first_time(int argc, char** argv) {
+    void first_time(int argc, char** argv) override {
         const char *path_a_name="star.svgd";
         if(argc > 1)
             path_a_name = argv[1];
@@ -162,12 +162,12 @@ class Box3d: public Toy {
         togs.push_back(Toggle("S", true));
         handles.push_back(&hand);
     }
-    void key_hit(GdkEventKey *e) {
+    void key_hit(GdkEventKey *e) override {
         if(e->keyval == 'c') togs[0].set(1); else
         if(e->keyval == 's') togs[0].set(0);
         redraw();
     }
-    void mouse_pressed(GdkEventButton* e) {
+    void mouse_pressed(GdkEventButton* e) override {
         toggle_events(togs, e);
         Toy::mouse_pressed(e);
     }

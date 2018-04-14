@@ -347,7 +347,7 @@ sbofsb_cubic_solve(SBasisOf<SBasisOf<double> > const &f, Geom::Point const &A, G
 class SBasis0fSBasisToy: public Toy {
     PointSetHandle hand;
     PointSetHandle cut_hand;
-    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
+    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) override {
         
         double slider_top = width/4.;
         double slider_bot = width*3./4.;

@@ -71,13 +71,13 @@ Crossings mono_intersect(Curve const & A, Interval const &Ad,
                     
 struct SimpleCrosser : public Crosser<Path> {
     Crossings crossings(Curve const &a, Curve const &b);
-    Crossings crossings(Path const &a, Path const &b) { return curve_sweep<SimpleCrosser>(a, b); }
-    CrossingSet crossings(PathVector const &a, PathVector const &b) { return Crosser<Path>::crossings(a, b); }
+    Crossings crossings(Path const &a, Path const &b) override { return curve_sweep<SimpleCrosser>(a, b); }
+    CrossingSet crossings(PathVector const &a, PathVector const &b) override { return Crosser<Path>::crossings(a, b); }
 };
 
 struct MonoCrosser : public Crosser<Path> {
-    Crossings crossings(Path const &a, Path const &b) { return crossings(PathVector(a), PathVector(b))[0]; }
-    CrossingSet crossings(PathVector const &a, PathVector const &b);
+    Crossings crossings(Path const &a, Path const &b) override { return crossings(PathVector(a), PathVector(b))[0]; }
+    CrossingSet crossings(PathVector const &a, PathVector const &b) override;
 };
 
 typedef SimpleCrosser DefaultCrosser;

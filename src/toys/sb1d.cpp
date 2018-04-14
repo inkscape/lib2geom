@@ -41,7 +41,7 @@ double handle_to_sb_t(unsigned i, unsigned n) {
 class Sb1d: public Toy {
 public:
     PointSetHandle hand;
-    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
+    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) override {
         cairo_set_source_rgba (cr, 0., 0.5, 0, 1);
         cairo_set_line_width (cr, 1);
         

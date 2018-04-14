@@ -44,7 +44,7 @@ public:
     }
 
     Geom::Piecewise<Geom::D2<Geom::SBasis> >
-    doEffect_pwd2 (Geom::Piecewise<Geom::D2<Geom::SBasis> > const & pwd2_in)
+    doEffect_pwd2 (Geom::Piecewise<Geom::D2<Geom::SBasis> > const & pwd2_in) override
     {
         using namespace Geom;
 

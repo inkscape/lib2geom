@@ -85,58 +85,58 @@ public:
     explicit SBasisCurve(D2<SBasis> const &sb) : inner(sb) {}
     explicit SBasisCurve(Curve const &other) : inner(other.toSBasis()) {}
 
-    virtual Curve *duplicate() const { return new SBasisCurve(*this); }
-    virtual Point initialPoint() const    { return inner.at0(); }
-    virtual Point finalPoint() const      { return inner.at1(); }
-    virtual bool isDegenerate() const     { return inner.isConstant(0); }
-    virtual bool isLineSegment() const    { return inner[X].size() == 1; }
-    virtual Point pointAt(Coord t) const  { return inner.valueAt(t); }
-    virtual std::vector<Point> pointAndDerivatives(Coord t, unsigned n) const {
+    Curve *duplicate() const override { return new SBasisCurve(*this); }
+    Point initialPoint() const override    { return inner.at0(); }
+    Point finalPoint() const override      { return inner.at1(); }
+    bool isDegenerate() const override     { return inner.isConstant(0); }
+    bool isLineSegment() const override    { return inner[X].size() == 1; }
+    Point pointAt(Coord t) const override  { return inner.valueAt(t); }
+    std::vector<Point> pointAndDerivatives(Coord t, unsigned n) const override {
         return inner.valueAndDerivatives(t, n);
     }
-    virtual Coord valueAt(Coord t, Dim2 d) const { return inner[d].valueAt(t); }
-    virtual void setInitial(Point const &v) {
+    Coord valueAt(Coord t, Dim2 d) const override { return inner[d].valueAt(t); }
+    void setInitial(Point const &v) override {
         for (unsigned d = 0; d < 2; d++) { inner[d][0][0] = v[d]; }
     }
-    virtual void setFinal(Point const &v) {
+    void setFinal(Point const &v) override {
         for (unsigned d = 0; d < 2; d++) { inner[d][0][1] = v[d]; }
     }
-    virtual Rect boundsFast() const  { return *bounds_fast(inner); }
-    virtual Rect boundsExact() const { return *bounds_exact(inner); }
-    virtual OptRect boundsLocal(OptInterval const &i, unsigned deg) const {
+    Rect boundsFast() const override  { return *bounds_fast(inner); }
+    Rect boundsExact() const override { return *bounds_exact(inner); }
+    OptRect boundsLocal(OptInterval const &i, unsigned deg) const override {
         return bounds_local(inner, i, deg);
     }
-    virtual std::vector<Coord> roots(Coord v, Dim2 d) const { return Geom::roots(inner[d] - v); }
-    virtual Coord nearestTime( Point const& p, Coord from = 0, Coord to = 1 ) const {
+    std::vector<Coord> roots(Coord v, Dim2 d) const override { return Geom::roots(inner[d] - v); }
+    Coord nearestTime( Point const& p, Coord from = 0, Coord to = 1 ) const override {
         return nearest_time(p, inner, from, to);
     }
-    virtual std::vector<Coord> allNearestTimes( Point const& p, Coord from = 0,
-        Coord to = 1 ) const
+    std::vector<Coord> allNearestTimes( Point const& p, Coord from = 0,
+        Coord to = 1 ) const override
     {
         return all_nearest_times(p, inner, from, to);
     }
-    virtual Coord length(Coord tolerance) const { return ::Geom::length(inner, tolerance); }
-    virtual Curve *portion(Coord f, Coord t) const {
+    Coord length(Coord tolerance) const override { return ::Geom::length(inner, tolerance); }
+    Curve *portion(Coord f, Coord t) const override {
         return new SBasisCurve(Geom::portion(inner, f, t));
     }
 
     using Curve::operator*=;
-    virtual void operator*=(Affine const &m) { inner = inner * m; }
+    void operator*=(Affine const &m) override { inner = inner * m; }
 
-    virtual Curve *derivative() const {
+    Curve *derivative() const override {
         return new SBasisCurve(Geom::derivative(inner));
     }
-    virtual D2<SBasis> toSBasis() const { return inner; }
-    virtual bool operator==(Curve const &c) const {
+    D2<SBasis> toSBasis() const override { return inner; }
+    bool operator==(Curve const &c) const override {
         SBasisCurve const *other = dynamic_cast<SBasisCurve const *>(&c);
         if (!other) return false;
         return inner == other->inner;
     }
-    virtual bool isNear(Curve const &/*c*/, Coord /*eps*/) const {
+    bool isNear(Curve const &/*c*/, Coord /*eps*/) const override {
         THROW_NOTIMPLEMENTED();
         return false;
     }
-    virtual int degreesOfFreedom() const {
+    int degreesOfFreedom() const override {
         return inner[0].degreesOfFreedom() + inner[1].degreesOfFreedom();
     }
 };

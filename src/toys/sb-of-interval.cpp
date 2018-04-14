@@ -95,7 +95,7 @@ class SbOfInterval: public Toy {
   }
 
     PointSetHandle hand;
-    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
+    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) override {
         
         SBasisOf<Interval> f;
         double min=150, max=450;

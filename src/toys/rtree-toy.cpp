@@ -126,7 +126,7 @@ class RTreeToy: public Toy
 
 
 
-    void draw( cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream ) {
+    void draw( cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream ) override {
         cairo_set_line_width( cr, 1 );
 	    cairo_set_source_rgba( cr, color_shape );
 		cairo_stroke( cr );
@@ -175,7 +175,7 @@ class RTreeToy: public Toy
 		Toy::draw( cr, notify, width, height, save,timer_stream );
     }        
     
-    void mouse_moved( GdkEventMotion* e ){
+    void mouse_moved( GdkEventMotion* e ) override{
 		if(add_new_rect &&
 			( mode == INSERT_MODE || mode == SEARCH_MODE ) )
 		{
@@ -184,7 +184,7 @@ class RTreeToy: public Toy
 		}
 	}
 
-    void mouse_pressed( GdkEventButton* e ) {
+    void mouse_pressed( GdkEventButton* e ) override {
 		Toy::mouse_pressed( e );
 		if(e->button == 1){		// left mouse button
 			if( mode == INSERT_MODE ){
@@ -227,7 +227,7 @@ class RTreeToy: public Toy
 		}
     }
 
-    virtual void mouse_released( GdkEventButton* e ) {
+    void mouse_released( GdkEventButton* e ) override {
 		Toy::mouse_released( e );
 		if( e->button == 1 ) { 		//left mouse button
 			if( mode == INSERT_MODE ) {	
@@ -284,7 +284,7 @@ class RTreeToy: public Toy
     }
 
 
-    void key_hit( GdkEventKey *e )
+    void key_hit( GdkEventKey *e ) override
     {
         char choice = std::toupper( e->keyval );
         switch ( choice )

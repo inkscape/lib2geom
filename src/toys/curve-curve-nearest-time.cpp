@@ -537,7 +537,7 @@ class NearestPoints : public Toy
 {
   private:
     void draw( cairo_t *cr,	std::ostringstream *notify, 
-    		   int width, int height, bool save, std::ostringstream *timer_stream) 
+    		   int width, int height, bool save, std::ostringstream *timer_stream) override 
     {
     	cairo_set_line_width (cr, 0.3);
         D2<SBasis> A = pshA.asBezier();

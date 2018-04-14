@@ -57,7 +57,7 @@ class RootFinderComparer: public Toy {
 public:
     PointSetHandle psh;
     
-    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
+    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) override {
         std::vector<Geom::Point> trans;
         trans.resize(psh.size());
         for(unsigned i = 0; i < handles.size(); i++) {

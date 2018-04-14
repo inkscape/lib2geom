@@ -11,7 +11,7 @@ class PwToy: public Toy {
 public:
     vector<PointSetHandle*> pw_handles;
     PointSetHandle slids;
-    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
+    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) override {
         cairo_set_source_rgba (cr, 0., 0.5, 0, 1);
         cairo_set_line_width (cr, 1);
        
@@ -60,7 +60,7 @@ public:
         Toy::draw(cr, notify, width, height, save,timer_stream);
     }
 
-    bool should_draw_numbers() { return false; }
+    bool should_draw_numbers() override { return false; }
         
     public:
     PwToy () {

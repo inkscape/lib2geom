@@ -25,7 +25,7 @@ class LoadSVGD: public Toy {
     PathVector pv;
     OptRect bounds;
 
-    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
+    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) override {
 
         Rect viewport(Point(10, 10), Point(width-10, height-10));
         PathVector res = pv * bounds->transformTo(viewport, Aspect(ALIGN_XMID_YMID));
@@ -45,7 +45,7 @@ class LoadSVGD: public Toy {
     public:
     LoadSVGD() {}
 
-    void first_time(int argc, char** argv) {
+    void first_time(int argc, char** argv) override {
         const char *path_b_name="star.svgd";
         if (argc > 1)
             path_b_name = argv[1];

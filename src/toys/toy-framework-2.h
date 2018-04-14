@@ -69,14 +69,14 @@ public:
     Toggle() : bounds(Geom::Point(0,0), Geom::Point(0,0)), text(""), on(false) {}
     Toggle(const char* txt, bool v) : bounds(Geom::Point(0,0), Geom::Point(0,0)), text(txt), on(v) {}
     Toggle(Geom::Rect bnds, const char* txt, bool v) : bounds(bnds), text(txt), on(v) {}
-    void draw(cairo_t *cr, bool annotes = false);
+    void draw(cairo_t *cr, bool annotes = false) override;
     void toggle();
     void set(bool state);
     void handle_click(GdkEventButton* e);
-    void* hit(Geom::Point pos);
-    void move_to(void* /*hit*/, Geom::Point /*om*/, Geom::Point /*m*/) { /* not implemented */ }
-    void load(FILE* /*f*/) { /* not implemented */ }
-    void save(FILE* /*f*/) { /* not implemented */ }
+    void* hit(Geom::Point pos) override;
+    void move_to(void* /*hit*/, Geom::Point /*om*/, Geom::Point /*m*/) override { /* not implemented */ }
+    void load(FILE* /*f*/) override { /* not implemented */ }
+    void save(FILE* /*f*/) override { /* not implemented */ }
 };
 
 
@@ -88,13 +88,13 @@ class VectorHandle : public Handle
         : m_handles()
     {
     }
-    virtual void draw(cairo_t *cr, bool annotes=false)
+    void draw(cairo_t *cr, bool annotes=false) override
     {
         for (iterator it = m_handles.begin(); it != m_handles.end(); ++it)
             it->draw(cr, annotes);
     }
 
-    virtual void* hit(Geom::Point pos)
+    void* hit(Geom::Point pos) override
     {
         void* result = NULL;
         for (iterator it = m_handles.begin(); it != m_handles.end(); ++it)
@@ -105,7 +105,7 @@ class VectorHandle : public Handle
         return result;
     }
 
-    virtual void move_to(void* hit, Geom::Point om, Geom::Point m)
+    void move_to(void* hit, Geom::Point om, Geom::Point m) override
     {
         if (hit != NULL)
         {
@@ -113,13 +113,13 @@ class VectorHandle : public Handle
         }
     }
 
-    virtual void load(FILE* f)
+    void load(FILE* f) override
     {
         for (iterator it = m_handles.begin(); it != m_handles.end(); ++it)
             it->load(f);
     }
 
-    virtual void save(FILE* f)
+    void save(FILE* f) override
     {
         for (iterator it = m_handles.begin(); it != m_handles.end(); ++it)
             it->save(f);
@@ -167,28 +167,28 @@ public:
     PointHandle(Geom::Point pt) : pos(pt) {}
     PointHandle() {}
     Geom::Point pos;
-    virtual void draw(cairo_t *cr, bool annotes = false);
+    void draw(cairo_t *cr, bool annotes = false) override;
 
-    virtual void* hit(Geom::Point mouse);
-    virtual void move_to(void* hit, Geom::Point om, Geom::Point m);
-    virtual void load(FILE* f);
-    virtual void save(FILE* f);
+    void* hit(Geom::Point mouse) override;
+    void move_to(void* hit, Geom::Point om, Geom::Point m) override;
+    void load(FILE* f) override;
+    void save(FILE* f) override;
 };
 
 class PointSetHandle : public Handle{
 public:
     PointSetHandle() {}
     std::vector<Geom::Point> pts;
-    virtual void draw(cairo_t *cr, bool annotes = false);
+    void draw(cairo_t *cr, bool annotes = false) override;
 
-    virtual void* hit(Geom::Point mouse);
-    virtual void move_to(void* hit, Geom::Point om, Geom::Point m);
+    void* hit(Geom::Point mouse) override;
+    void move_to(void* hit, Geom::Point om, Geom::Point m) override;
     void push_back(double x, double y) {pts.push_back(Geom::Point(x,y));}
     void push_back(Geom::Point pt) {pts.push_back(pt);}
     unsigned size() {return pts.size();}
     Geom::D2<Geom::SBasis> asBezier();
-    virtual void load(FILE* f);
-    virtual void save(FILE* f);
+    void load(FILE* f) override;
+    void save(FILE* f) override;
 };
 
 class RectHandle : public Handle{
@@ -197,12 +197,12 @@ public:
     RectHandle(Geom::Rect pos, bool show_center_handle) : pos(pos), show_center_handle(show_center_handle) {}
     Geom::Rect pos;
     bool show_center_handle;
-    virtual void draw(cairo_t *cr, bool annotes = false);
+    void draw(cairo_t *cr, bool annotes = false) override;
 
-    virtual void* hit(Geom::Point mouse);
-    virtual void move_to(void* hit, Geom::Point om, Geom::Point m);
-    virtual void load(FILE* f);
-    virtual void save(FILE* f);
+    void* hit(Geom::Point mouse) override;
+    void move_to(void* hit, Geom::Point om, Geom::Point m) override;
+    void load(FILE* f) override;
+    void save(FILE* f) override;
 };
 
 
@@ -270,28 +270,28 @@ class Slider : public Handle
     // dir = X horizontal slider dir = Y vertical slider
     void geometry(Geom::Point _pos, value_type _length, Geom::Dim2 _dir = Geom::X);
 
-    void draw(cairo_t* cr, bool annotate = false);
+    void draw(cairo_t* cr, bool annotate = false) override;
 
     void formatter( formatter_t _formatter )
     {
         m_formatter = _formatter;
     }
 
-    void* hit(Geom::Point pos)
+    void* hit(Geom::Point pos) override
     {
         if (m_handle.hit(pos) != NULL)
             return this;
         return NULL;
     }
 
-    void move_to(void* hit, Geom::Point om, Geom::Point m);
+    void move_to(void* hit, Geom::Point om, Geom::Point m) override;
 
-    void load(FILE* f)
+    void load(FILE* f) override
     {
         m_handle.load(f);
     }
 
-    void save(FILE* f)
+    void save(FILE* f) override
     {
         m_handle.save(f);
     }

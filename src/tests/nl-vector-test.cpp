@@ -45,7 +45,7 @@ public:
 	CountingVectorFixture() : v1(10) { }
 
 protected:
-  virtual void SetUp() {
+  void SetUp() override {
 	for (unsigned int i = 0; i < this->v1.size(); ++i)
 		this->v1[i] = i;
   }

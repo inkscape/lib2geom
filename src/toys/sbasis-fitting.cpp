@@ -48,7 +48,7 @@ class SBasisFitting : public Toy
 {
   private:
     void draw( cairo_t *cr, std::ostringstream *notify, 
-               int width, int height, bool save, std::ostringstream *timer_stream)
+               int width, int height, bool save, std::ostringstream *timer_stream) override
     {
         sliders[0].geometry(Point(50, 30), 100);
        
@@ -169,7 +169,7 @@ class SBasisFitting : public Toy
         handles.push_back(&(sliders[0]));
     }
     
-    ~SBasisFitting()
+    ~SBasisFitting() override
     {
         if (fmsb != NULL) delete fmsb;
         if (lsf_sb != NULL) delete lsf_sb;

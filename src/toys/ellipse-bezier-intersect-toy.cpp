@@ -9,7 +9,7 @@ using namespace Geom;
 class CircleIntersect : public Toy {
     PointSetHandle eh, bh;
 
-    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
+    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) override {
 
         Rect all(Point(0,0), Point(width, height));
 

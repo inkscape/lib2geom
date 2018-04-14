@@ -24,7 +24,7 @@ class Box3d: public Toy {
     PointSetHandle vanishing_points_handles;
     PathVector paths_a;
     
-    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
+    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) override {
 
         Geom::Point orig = origin_handle.pos;
 	cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
@@ -75,7 +75,7 @@ class Box3d: public Toy {
         
         Toy::draw(cr, notify, width, height, save,timer_stream);
     }
-    void first_time(int argc, char** argv) {
+    void first_time(int argc, char** argv) override {
         const char *path_a_name="ptitle.svgd";
         if(argc > 1)
             path_a_name = argv[1];

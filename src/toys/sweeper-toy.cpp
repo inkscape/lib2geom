@@ -78,7 +78,7 @@ class SweeperToy: public Toy {
         drawTile(cr, idx, 4);
     }
 
-    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
+    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) override {
         cairo_set_source_rgba (cr, 0., 0., 0, 1);
         cairo_set_line_width (cr, 1);
 
@@ -139,7 +139,7 @@ class SweeperToy: public Toy {
 		sliders[3].formatter(&exp_formatter);
     }
 
-    void first_time(int /*argc*/, char** /*argv*/) {
+    void first_time(int /*argc*/, char** /*argv*/) override {
 
     }
 };

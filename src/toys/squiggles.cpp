@@ -71,7 +71,7 @@ class Squiggles: public Toy {
     double tot_length;
     int mode; //0=set curvature, 1=set curv.+rotation, 2=translate, 3=slide time.
 
-    virtual void mouse_moved(GdkEventMotion* e){
+    void mouse_moved(GdkEventMotion* e) override{
         mode = 0;
         if((e->state & (GDK_SHIFT_MASK)) && 
            (e->state & (GDK_CONTROL_MASK))) {
@@ -85,7 +85,7 @@ class Squiggles: public Toy {
     }
 
 
-    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
+    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) override {
         cairo_set_source_rgba (cr, 0., 0., 0., 1);
         cairo_set_line_width (cr, 1);
         
@@ -180,7 +180,7 @@ class Squiggles: public Toy {
         Toy::draw(cr, notify, width, height, save,timer_stream);
     }
 
-    bool should_draw_numbers() { return false; }
+    bool should_draw_numbers() override { return false; }
 
 public:
     Squiggles () {

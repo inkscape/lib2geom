@@ -70,7 +70,7 @@ class ConicSectionToy : public Toy
     static const char* menu_items[TOTAL_ITEMS];
     static const char keys[TOTAL_ITEMS];
 
-    virtual void first_time(int /*argc*/, char** /*argv*/)
+    void first_time(int /*argc*/, char** /*argv*/) override
     {
         draw_f = &ConicSectionToy::draw_menu;
     }
@@ -672,7 +672,7 @@ class ConicSectionToy : public Toy
     }
 
 
-    void key_hit(GdkEventKey *e)
+    void key_hit(GdkEventKey *e) override
     {
         char choice = std::toupper(e->keyval);
         switch ( choice )
@@ -726,9 +726,9 @@ class ConicSectionToy : public Toy
         redraw();
     }
 
-    virtual void draw( cairo_t *cr, std::ostringstream *notify,
+    void draw( cairo_t *cr, std::ostringstream *notify,
                        int width, int height, bool save,
-                       std::ostringstream *timer_stream )
+                       std::ostringstream *timer_stream ) override
     {
         if (timer_stream == 0)  timer_stream = notify;
         m_width = width;

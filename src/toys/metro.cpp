@@ -816,9 +816,9 @@ public:
   vector<PointSetHandle> metro_lines;
   PointHandle directions;
   
-  virtual bool should_draw_numbers() { return false; }
+  bool should_draw_numbers() override { return false; }
   
-  virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
+  void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) override {
     double slider_margin = 20;
     double slider_top = 20;
     double slider_bot = 200;
@@ -873,7 +873,7 @@ public:
     Toy::draw(cr, notify, width, height, save,timer_stream);
   }
 
-    void first_time(int argc, char** argv) {
+    void first_time(int argc, char** argv) override {
         string location_file_name("data/london-locations.csv");
         string path_file_name("data/london.txt");
         if(argc > 2) {

@@ -296,7 +296,7 @@ class Vector : public detail::VectorImpl
 		gsl_vector_memcpy(m_vector, _vector.get_gsl_vector());
 	}
 
-	virtual ~Vector()
+	~Vector() override
 	{
 		gsl_vector_free(m_vector);
 	}

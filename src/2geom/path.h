@@ -333,16 +333,16 @@ public:
       public:
         ClosingSegment() : LineSegment() {}
         ClosingSegment(Point const &p1, Point const &p2) : LineSegment(p1, p2) {}
-        virtual Curve *duplicate() const { return new ClosingSegment(*this); }
-        virtual Curve *reverse() const { return new ClosingSegment((*this)[1], (*this)[0]); }
+        Curve *duplicate() const override { return new ClosingSegment(*this); }
+        Curve *reverse() const override { return new ClosingSegment((*this)[1], (*this)[0]); }
     };
 
     class StitchSegment : public LineSegment {
       public:
         StitchSegment() : LineSegment() {}
         StitchSegment(Point const &p1, Point const &p2) : LineSegment(p1, p2) {}
-        virtual Curve *duplicate() const { return new StitchSegment(*this); }
-        virtual Curve *reverse() const { return new StitchSegment((*this)[1], (*this)[0]); }
+        Curve *duplicate() const override { return new StitchSegment(*this); }
+        Curve *reverse() const override { return new StitchSegment((*this)[1], (*this)[0]); }
     };
 
     // Path(Path const &other) - use default copy constructor

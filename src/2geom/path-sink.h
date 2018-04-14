@@ -118,7 +118,7 @@ public:
     explicit PathIteratorSink(OutputIterator out)
     : _in_path(false), _out(out) {}
 
-    void moveTo(Point const &p) {
+    void moveTo(Point const &p) override {
         flush();
         _path.start(p);
         _start_p = p;
@@ -126,7 +126,7 @@ public:
     }
 //TODO: what if _in_path = false?
 
-    void lineTo(Point const &p) {
+    void lineTo(Point const &p) override {
         // check for implicit moveto, like in: "M 1,1 L 2,2 z l 2,2 z"
         if (!_in_path) {
             moveTo(_start_p);
@@ -134,7 +134,7 @@ public:
         _path.template appendNew<LineSegment>(p);
     }
 
-    void quadTo(Point const &c, Point const &p) {
+    void quadTo(Point const &c, Point const &p) override {
         // check for implicit moveto, like in: "M 1,1 L 2,2 z l 2,2 z"
         if (!_in_path) {
             moveTo(_start_p);
@@ -142,7 +142,7 @@ public:
         _path.template appendNew<QuadraticBezier>(c, p);
     }
 
-    void curveTo(Point const &c0, Point const &c1, Point const &p) {
+    void curveTo(Point const &c0, Point const &c1, Point const &p) override {
         // check for implicit moveto, like in: "M 1,1 L 2,2 z l 2,2 z"
         if (!_in_path) {
             moveTo(_start_p);
@@ -151,7 +151,7 @@ public:
     }
 
     void arcTo(Coord rx, Coord ry, Coord angle,
-               bool large_arc, bool sweep, Point const &p)
+               bool large_arc, bool sweep, Point const &p) override
     {
         // check for implicit moveto, like in: "M 1,1 L 2,2 z l 2,2 z"
         if (!_in_path) {
@@ -161,7 +161,7 @@ public:
                                                 large_arc, sweep, p);
     }
 
-    bool backspace()
+    bool backspace() override
     {
         if (_in_path && _path.size() > 0) {
             _path.erase_last();
@@ -178,14 +178,14 @@ public:
         _path.append(other);
     }
 
-    void closePath() {
+    void closePath() override {
         if (_in_path) {
             _path.close();
             flush();
         }
     }
 
-    void flush() {
+    void flush() override {
         if (_in_path) {
             _in_path = false;
             *_out++ = _path;
@@ -198,7 +198,7 @@ public:
     }
 
     using PathSink::feed;
-    void feed(Path const &other)
+    void feed(Path const &other) override
     {
         flush();
         *_out++ = other;

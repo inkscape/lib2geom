@@ -232,7 +232,7 @@ public:
     PointSetHandle b2_handle;
     void draw(cairo_t *cr,
 	      std::ostringstream *notify,
-	      int width, int height, bool save, std::ostringstream *timer_stream) {
+	      int width, int height, bool save, std::ostringstream *timer_stream) override {
     
         D2<SBasis> B1 = b1_handle.asBezier();
         D2<SBasis> B2 = b2_handle.asBezier();

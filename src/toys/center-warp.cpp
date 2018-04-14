@@ -32,7 +32,7 @@ class CentreWarp: public Toy {
     D2<SBasis2d> sb2;
     Piecewise<D2<SBasis> >  path_a_pw;
     PointHandle brush_handle;
-    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
+    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) override {
         Geom::Point dir(1,-2);
 
 	D2<Piecewise<SBasis> > B = make_cuts_independent(path_a_pw);
@@ -74,7 +74,7 @@ class CentreWarp: public Toy {
         
         Toy::draw(cr, notify, width, height, save,timer_stream);
     }
-    void first_time(int argc, char** argv) {
+    void first_time(int argc, char** argv) override {
         const char *path_a_name="star.svgd";
         if(argc > 1)
             path_a_name = argv[1];

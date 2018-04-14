@@ -44,8 +44,8 @@ using namespace Geom;
 
 class SimpleRect: public Toy {
     PointSetHandle psh;
-    virtual void draw( cairo_t *cr, std::ostringstream *notify,
-                   int width, int height, bool save, std::ostringstream *timer_stream)
+    void draw( cairo_t *cr, std::ostringstream *notify,
+                   int width, int height, bool save, std::ostringstream *timer_stream) override
 	{
 
         PointHandle p1, p2;

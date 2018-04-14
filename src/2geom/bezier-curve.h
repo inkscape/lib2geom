@@ -102,15 +102,15 @@ public:
     /// @}
 
     // implementation of virtual methods goes here
-    virtual Point initialPoint() const { return inner.at0(); }
-    virtual Point finalPoint() const { return inner.at1(); }
-    virtual bool isDegenerate() const;
-    virtual bool isLineSegment() const { return size() == 2; }
-    virtual void setInitial(Point const &v) { setPoint(0, v); }
-    virtual void setFinal(Point const &v) { setPoint(order(), v); }
-    virtual Rect boundsFast() const { return *bounds_fast(inner); }
-    virtual Rect boundsExact() const { return *bounds_exact(inner); }
-    virtual OptRect boundsLocal(OptInterval const &i, unsigned deg) const {
+    Point initialPoint() const override { return inner.at0(); }
+    Point finalPoint() const override { return inner.at1(); }
+    bool isDegenerate() const override;
+    bool isLineSegment() const override { return size() == 2; }
+    void setInitial(Point const &v) override { setPoint(0, v); }
+    void setFinal(Point const &v) override { setPoint(order(), v); }
+    Rect boundsFast() const override { return *bounds_fast(inner); }
+    Rect boundsExact() const override { return *bounds_exact(inner); }
+    OptRect boundsLocal(OptInterval const &i, unsigned deg) const override {
         if (!i) return OptRect();
         if(i->min() == 0 && i->max() == 1) return boundsFast();
         if(deg == 0) return bounds_local(inner, i);
@@ -119,56 +119,56 @@ public:
                                                    bounds_local(Geom::derivative(inner[Y]), i));
         return OptRect();
     }
-    virtual Curve *duplicate() const {
+    Curve *duplicate() const override {
         return new BezierCurve(*this);
     }
-    virtual Curve *portion(Coord f, Coord t) const {
+    Curve *portion(Coord f, Coord t) const override {
         return new BezierCurve(Geom::portion(inner, f, t));
     }
-    virtual Curve *reverse() const {
+    Curve *reverse() const override {
         return new BezierCurve(Geom::reverse(inner));
     }
 
     using Curve::operator*=;
-    virtual void operator*=(Translate const &tr) {
+    void operator*=(Translate const &tr) override {
         for (unsigned i = 0; i < size(); ++i) {
             inner[X][i] += tr[X];
             inner[Y][i] += tr[Y];
         }
     }
-    virtual void operator*=(Scale const &s) {
+    void operator*=(Scale const &s) override {
         for (unsigned i = 0; i < size(); ++i) {
             inner[X][i] *= s[X];
             inner[Y][i] *= s[Y];
         }
     }
-    virtual void operator*=(Affine const &m) {
+    void operator*=(Affine const &m) override {
         for (unsigned i = 0; i < size(); ++i) {
             setPoint(i, controlPoint(i) * m);
         }
     }
 
-    virtual Curve *derivative() const {
+    Curve *derivative() const override {
         return new BezierCurve(Geom::derivative(inner[X]), Geom::derivative(inner[Y]));
     }
-    virtual int degreesOfFreedom() const {
+    int degreesOfFreedom() const override {
         return 2 * (order() + 1);
     }
-    virtual std::vector<Coord> roots(Coord v, Dim2 d) const {
+    std::vector<Coord> roots(Coord v, Dim2 d) const override {
         return (inner[d] - v).roots();
     }
-    virtual Coord nearestTime(Point const &p, Coord from = 0, Coord to = 1) const;
-    virtual Coord length(Coord tolerance) const;
-    virtual std::vector<CurveIntersection> intersect(Curve const &other, Coord eps = EPSILON) const;
-    virtual Point pointAt(Coord t) const { return inner.pointAt(t); }
-    virtual std::vector<Point> pointAndDerivatives(Coord t, unsigned n) const {
+    Coord nearestTime(Point const &p, Coord from = 0, Coord to = 1) const override;
+    Coord length(Coord tolerance) const override;
+    std::vector<CurveIntersection> intersect(Curve const &other, Coord eps = EPSILON) const override;
+    Point pointAt(Coord t) const override { return inner.pointAt(t); }
+    std::vector<Point> pointAndDerivatives(Coord t, unsigned n) const override {
         return inner.valueAndDerivatives(t, n);
     }
-    virtual Coord valueAt(Coord t, Dim2 d) const { return inner[d].valueAt(t); }
-    virtual D2<SBasis> toSBasis() const {return inner.toSBasis(); }
-    virtual bool isNear(Curve const &c, Coord precision) const;
-    virtual bool operator==(Curve const &c) const;
-    virtual void feed(PathSink &sink, bool) const;
+    Coord valueAt(Coord t, Dim2 d) const override { return inner[d].valueAt(t); }
+    D2<SBasis> toSBasis() const override {return inner.toSBasis(); }
+    bool isNear(Curve const &c, Coord precision) const override;
+    bool operator==(Curve const &c) const override;
+    void feed(PathSink &sink, bool) const override;
 };
 
 template <unsigned degree>
@@ -245,44 +245,44 @@ public:
                    BezierCurveN(sx.second, sy.second));
     }
 
-    virtual bool isDegenerate() const {
+    bool isDegenerate() const override {
         return BezierCurve::isDegenerate();
     }
 
-    virtual bool isLineSegment() const {
+    bool isLineSegment() const override {
         return size() == 2;
     }
 
-    virtual Curve *duplicate() const {
+    Curve *duplicate() const override {
         return new BezierCurveN(*this);
     }
-    virtual Curve *portion(Coord f, Coord t) const {
+    Curve *portion(Coord f, Coord t) const override {
         if (degree == 1) {
             return new BezierCurveN<1>(pointAt(f), pointAt(t));
         } else {
             return new BezierCurveN(Geom::portion(inner, f, t));
         }
     }
-    virtual Curve *reverse() const {
+    Curve *reverse() const override {
         if (degree == 1) {
             return new BezierCurveN<1>(finalPoint(), initialPoint()); 
         } else {
             return new BezierCurveN(Geom::reverse(inner));
         }
     }
-    virtual Curve *derivative() const;
+    Curve *derivative() const override;
 
-    virtual Coord nearestTime(Point const &p, Coord from = 0, Coord to = 1) const {
+    Coord nearestTime(Point const &p, Coord from = 0, Coord to = 1) const override {
         return BezierCurve::nearestTime(p, from, to);
     }
-    virtual std::vector<CurveIntersection> intersect(Curve const &other, Coord eps = EPSILON) const {
+    std::vector<CurveIntersection> intersect(Curve const &other, Coord eps = EPSILON) const override {
         // call super. this is implemented only to allow specializations
         return BezierCurve::intersect(other, eps);
     }
-    virtual int winding(Point const &p) const {
+    int winding(Point const &p) const override {
         return Curve::winding(p);
     }
-    virtual void feed(PathSink &sink, bool moveto_initial) const {
+    void feed(PathSink &sink, bool moveto_initial) const override {
         // call super. this is implemented only to allow specializations
         BezierCurve::feed(sink, moveto_initial);
     }

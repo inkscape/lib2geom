@@ -6,7 +6,7 @@
 class DrawToy: public Toy {
     PointSetHandle hand;
     //Knot : Och : Och : Knot : Och : Och : Knot : Och : Och : ...
-    void draw(cairo_t *cr, std::ostringstream */*notify*/, int /*width*/, int /*height*/, bool save, std::ostringstream*) {
+    void draw(cairo_t *cr, std::ostringstream */*notify*/, int /*width*/, int /*height*/, bool save, std::ostringstream*) override {
         if(!save) {
             cairo_set_source_rgba (cr, 0, 0.5, 0, 1);
             cairo_set_line_width (cr, 1);
@@ -37,7 +37,7 @@ class DrawToy: public Toy {
         cairo_path(cr, pb);
         cairo_stroke(cr);
     }
-    void mouse_pressed(GdkEventButton* e) {
+    void mouse_pressed(GdkEventButton* e) override {
         selected = NULL;
         Geom::Point mouse(e->x, e->y);
         int close_i = 0;
@@ -76,7 +76,7 @@ class DrawToy: public Toy {
         }
     }
 
-    void mouse_moved(GdkEventMotion* e) {
+    void mouse_moved(GdkEventMotion* e) override {
         Geom::Point mouse(e->x, e->y);
         
         if(e->state & (GDK_BUTTON1_MASK) && selected != NULL) {
@@ -91,7 +91,7 @@ class DrawToy: public Toy {
         }
     }
 
-    bool should_draw_numbers() { return false; }
+    bool should_draw_numbers() override { return false; }
 public:
     DrawToy() {
 

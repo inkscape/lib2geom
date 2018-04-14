@@ -10,7 +10,7 @@ using namespace Geom;
 
 class SBZeros: public Toy {
     PointSetHandle pB1, pB2;
-    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
+    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) override {
         D2<SBasis> B1 = pB1.asBezier();
         D2<SBasis> B2 = pB2.asBezier();
         Piecewise<D2<SBasis> >B;

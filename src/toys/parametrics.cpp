@@ -69,7 +69,7 @@ class Parametrics: public Toy {
     int count;
     void draw(cairo_t *cr,
 	      std::ostringstream *notify,
-	      int width, int height, bool save, std::ostringstream *timer_stream) {
+	      int width, int height, bool save, std::ostringstream *timer_stream) override {
       //double t = handles[0][0] / 20.;
 
 #ifdef USE_TIME

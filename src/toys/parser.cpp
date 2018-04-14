@@ -35,7 +35,7 @@
 
 class SVGPathTestPrinter : public Geom::PathSink {
 public:
-    void moveTo(Geom::Point const &p) {
+    void moveTo(Geom::Point const &p) override {
         std::cout << "M " << p << std::endl;
     }
     
@@ -47,35 +47,35 @@ public:
         std::cout << "V " << v << std::endl;
     }
 
-    void lineTo(Geom::Point const &p) {
+    void lineTo(Geom::Point const &p) override {
         std::cout << "L " << p << std::endl;
     }
 
-    void curveTo(Geom::Point const &c0, Geom::Point const &c1, Geom::Point const &p) {
+    void curveTo(Geom::Point const &c0, Geom::Point const &c1, Geom::Point const &p) override {
         std::cout << "C " << c0 << " " << c1 << " " << p << std::endl;
     }
 
-    void quadTo(Geom::Point const &c, Geom::Point const &p) {
+    void quadTo(Geom::Point const &c, Geom::Point const &p) override {
         std::cout << "Q " << c << " " << p << std::endl;
     }
 
     void arcTo(double rx, double ry, double angle,
-               bool large_arc, bool sweep, Geom::Point const &p)
+               bool large_arc, bool sweep, Geom::Point const &p) override
     {
         std::cout << "A " << rx << " " << ry << " " << angle << " " << large_arc << " " << sweep << " " << p << std::endl;
     }
 
-    bool backspace()
+    bool backspace() override
     {
         //std::cout << "[remove last segment]" << std::endl;
         return false;
     }
 
-    void closePath() {
+    void closePath() override {
         std::cout << "Z" << std::endl;
     }
 
-    void flush() {
+    void flush() override {
 	;
     }
 

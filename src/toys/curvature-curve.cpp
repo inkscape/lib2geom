@@ -17,7 +17,7 @@ using namespace std;
 class CurvatureTester: public Toy {
     PointSetHandle curve_handle;
     Path current_curve;
-    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
+    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) override {
         cairo_set_line_width (cr, 1);
         current_curve = Path();
         
@@ -91,7 +91,7 @@ class CurvatureTester: public Toy {
         Toy::draw(cr, notify, width, height, save,timer_stream);
     }        
   
-    void canvas_click(Geom::Point at, int button) {
+    void canvas_click(Geom::Point at, int button) override {
         std::cout << "clicked at:" << at << " with button " << button << std::endl;
         if(button == 1) {
             double dist;

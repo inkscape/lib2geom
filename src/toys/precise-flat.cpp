@@ -17,7 +17,7 @@ unsigned total_pieces_inc;
 
 class PreciseFlat: public Toy {
     PointSetHandle hand;
-virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
+void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) override {
     cairo_set_line_width (cr, 0.5);
     
     D2<SBasis> B = hand.asBezier();

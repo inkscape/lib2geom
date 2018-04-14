@@ -338,7 +338,7 @@ class SketchFitterToy: public Toy {
     static const char keys[TOTAL_ITEMS];
 
     void fit_empty(){}
-    virtual void first_time(int /*argc*/, char** /*argv*/)
+    void first_time(int /*argc*/, char** /*argv*/) override
     {
         draw_f = &SketchFitterToy::draw_menu;
         fit_f =  &SketchFitterToy::fit_empty;
@@ -725,7 +725,7 @@ public:
     vector<Point> improved_mouses;
     Piecewise<D2<SBasis > > stroke;
     
-    void mouse_pressed(GdkEventButton* e) {
+    void mouse_pressed(GdkEventButton* e) override {
         //toggle_events(toggles, e);
 	Toy::mouse_pressed(e);
 	if(!selected) {
@@ -736,7 +736,7 @@ public:
 	}
     }
 
-    virtual void mouse_moved(GdkEventMotion* e) {
+    void mouse_moved(GdkEventMotion* e) override {
 	if(mouse_drag) {
 	    mouses.push_back(Point(e->x, e->y));
 	    redraw();
@@ -745,7 +745,7 @@ public:
 	}
     }
 
-    virtual void mouse_released(GdkEventButton* e) {
+    void mouse_released(GdkEventButton* e) override {
         mouse_drag = 0;
         if(!mouses.empty()) {            
             (this->*fit_f)();
@@ -785,7 +785,7 @@ public:
         }
     }
 
-    void key_hit(GdkEventKey *e)
+    void key_hit(GdkEventKey *e) override
     {
         char choice = std::toupper(e->keyval);
         switch ( choice )
@@ -835,8 +835,8 @@ public:
         redraw();
     }
 
-    virtual void draw( cairo_t *cr, std::ostringstream *notify,
-                       int width, int height, bool save, std::ostringstream *timer_stream )
+    void draw( cairo_t *cr, std::ostringstream *notify,
+                       int width, int height, bool save, std::ostringstream *timer_stream ) override
     {
         m_width = width;
         m_height = height;

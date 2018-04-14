@@ -43,7 +43,7 @@ class InnerProductClip: public Toy {
     std::vector<Toggle> togs;
     PointHandle start_handle, end_handle;
     
-    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
+    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) override {
 	cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
 
 	D2<Piecewise<SBasis> > B = make_cuts_independent(path_a_pw);
@@ -126,16 +126,16 @@ class InnerProductClip: public Toy {
         
         Toy::draw(cr, notify, width, height, save,timer_stream);
     }
-    void key_hit(GdkEventKey *e) {
+    void key_hit(GdkEventKey *e) override {
         if(e->keyval == 's') togs[1].toggle(); else
         if(e->keyval == 'c') togs[0].toggle();
         redraw();
     }
-    void mouse_pressed(GdkEventButton* e) {
+    void mouse_pressed(GdkEventButton* e) override {
         toggle_events(togs, e);
         Toy::mouse_pressed(e);
     }
-    void first_time(int argc, char** argv) {
+    void first_time(int argc, char** argv) override {
         const char *path_a_name="star.svgd";
         if(argc > 1)
             path_a_name = argv[1];

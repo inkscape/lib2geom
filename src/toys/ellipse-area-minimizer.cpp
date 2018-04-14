@@ -232,7 +232,7 @@ class EllipseAreaMinimizer : public Toy
 {
   public:
     void draw( cairo_t *cr, std::ostringstream *notify,
-               int width, int height, bool save, std::ostringstream *timer_stream)
+               int width, int height, bool save, std::ostringstream *timer_stream) override
     {
         Point toggle_sp( 300, height - 50);
         toggles[0].bounds = Rect( toggle_sp, toggle_sp + Point(135,25) );

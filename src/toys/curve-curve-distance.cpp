@@ -742,7 +742,7 @@ class DCCToy : public Toy
 {
   private:
     void draw( cairo_t *cr, std::ostringstream *notify, 
-               int width, int height, bool save, std::ostringstream *timer_stream) 
+               int width, int height, bool save, std::ostringstream *timer_stream) override 
     {
         Point ulc(width - 300, height - 60 );
         toggles[0].bounds = Rect(ulc, ulc + Point(160,25) );

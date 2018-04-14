@@ -165,8 +165,8 @@ class Sanitize: public Toy {
     std::vector<Edges> es;
     PointSetHandle angh;
     PointSetHandle pathix;
-    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save,
-                      std::ostringstream *timer_stream)
+    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save,
+                      std::ostringstream *timer_stream) override
     {
         int ix = pathix.pts[0][X] / 10;
         es = cells(cr, paths);
@@ -184,7 +184,7 @@ class Sanitize: public Toy {
     
     public:
     Sanitize () {}
-    void first_time(int argc, char** argv) {
+    void first_time(int argc, char** argv) override {
         const char *path_name="sanitize_examples.svgd";
         if(argc > 1)
             path_name = argv[1];

@@ -17,7 +17,7 @@ public:
     Sb2d() {
         handles.push_back(&hand);
     }
-    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
+    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) override {
         SBasis2d sb2;
         sb2.us = 2;
         sb2.vs = 2;

@@ -67,7 +67,7 @@ class FindDerivatives : public Toy
     PointSetHandle curve_handle;
     PointHandle sample_point;
 
-    virtual void first_time(int /*argc*/, char** /*argv*/)
+    void first_time(int /*argc*/, char** /*argv*/) override
     {
         draw_f = &FindDerivatives::draw_menu;
     }
@@ -409,7 +409,7 @@ class FindDerivatives : public Toy
         }
     }
 
-    void key_hit(GdkEventKey *e)
+    void key_hit(GdkEventKey *e) override
     {
         char choice = std::toupper(e->keyval);
         switch ( choice )
@@ -434,8 +434,8 @@ class FindDerivatives : public Toy
         redraw();
     }
 
-    virtual void draw( cairo_t *cr, std::ostringstream *notify,
-                       int width, int height, bool save, std::ostringstream *timer_stream)
+    void draw( cairo_t *cr, std::ostringstream *notify,
+                       int width, int height, bool save, std::ostringstream *timer_stream) override
     {
         m_width = width;
         m_height = height;

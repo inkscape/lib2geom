@@ -255,7 +255,7 @@ class SbToBezierTester: public Toy {
     std::vector<Toggle> toggles;
     Piecewise<D2<SBasis > > stroke;
 
-  void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
+  void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) override {
       cairo_save(cr);
 
       cairo_set_source_rgba (cr, 0., 0., 0., 1);
@@ -304,14 +304,14 @@ class SbToBezierTester: public Toy {
   }
   
 public:
-    void key_hit(GdkEventKey *e) {
+    void key_hit(GdkEventKey *e) override {
         if(e->keyval == 's') toggles[0].toggle();
         redraw();
     }
     vector<Point> mouses;
     int mouse_drag;
     
-    void mouse_pressed(GdkEventButton* e) {
+    void mouse_pressed(GdkEventButton* e) override {
         toggle_events(toggles, e);
 	Toy::mouse_pressed(e);
 	if(!selected) {
@@ -321,7 +321,7 @@ public:
     }
     
     
-    virtual void mouse_moved(GdkEventMotion* e) {
+    void mouse_moved(GdkEventMotion* e) override {
 	if(mouse_drag) {
 	    mouses.push_back(Point(e->x, e->y));
 	    redraw();
@@ -330,7 +330,7 @@ public:
 	}
     }
 
-    virtual void mouse_released(GdkEventButton* e) {
+    void mouse_released(GdkEventButton* e) override {
 	mouse_drag = 0;
 	stroke.clear();
 	stroke.push_cut(0);

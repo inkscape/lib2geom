@@ -61,7 +61,7 @@ int winding(PathVector ps, Point p) {
 class WindingTest: public Toy {
     PathVector path;
     PointHandle test_pt_handle;
-    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
+    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) override {
         cairo_set_source_rgb(cr, 0, 0, 0);
         cairo_path(cr, path);
         cairo_stroke(cr);
@@ -80,7 +80,7 @@ class WindingTest: public Toy {
 
     public:
     WindingTest () : test_pt_handle(300,300) {}
-    void first_time(int argc, char** argv) {
+    void first_time(int argc, char** argv) override {
         const char *path_name="winding.svgd";
         if(argc > 1)
             path_name = argv[1];

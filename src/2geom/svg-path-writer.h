@@ -47,16 +47,16 @@ class SVGPathWriter
 {
 public:
     SVGPathWriter();
-    ~SVGPathWriter() {}
+    ~SVGPathWriter() override {}
 
-    void moveTo(Point const &p);
-    void lineTo(Point const &p);
-    void quadTo(Point const &c, Point const &p);
-    void curveTo(Point const &c0, Point const &c1, Point const &p);
+    void moveTo(Point const &p) override;
+    void lineTo(Point const &p) override;
+    void quadTo(Point const &c, Point const &p) override;
+    void curveTo(Point const &c0, Point const &c1, Point const &p) override;
     void arcTo(double rx, double ry, double angle,
-               bool large_arc, bool sweep, Point const &p);
-    void closePath();
-    void flush();
+               bool large_arc, bool sweep, Point const &p) override;
+    void closePath() override;
+    void flush() override;
 
     /// Clear any path data written so far.
     void clear();

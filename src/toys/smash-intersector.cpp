@@ -433,7 +433,7 @@ class Intersector : public Toy
 {
   private:
 	void draw( cairo_t *cr,	std::ostringstream *notify,
-    		   int width, int height, bool save, std::ostringstream *timer_stream) 
+    		   int width, int height, bool save, std::ostringstream *timer_stream) override 
     {
         double tol = exp_rescale(slider.value());
     	D2<SBasis> A = handles_to_sbasis(psh.pts.begin(), A_bez_ord-1);

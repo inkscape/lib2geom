@@ -216,10 +216,10 @@ public:
     AngleInterval angularInterval() const { return _angles; }
 
     /// Evaluate the arc in the curve domain, i.e. \f$[0, 1]\f$.
-    virtual Point pointAt(Coord t) const;
+    Point pointAt(Coord t) const override;
 
     /// Evaluate a single coordinate on the arc in the curve domain.
-    virtual Coord valueAt(Coord t, Dim2 d) const;
+    Coord valueAt(Coord t, Dim2 d) const override;
 
     /** @brief Compute a transform that maps the unit circle to the arc's ellipse.
      * Each ellipse can be interpreted as a translated, scaled and rotate unit circle.
@@ -251,58 +251,58 @@ public:
     /// @}
 
     // implementation of overloads goes here
-    virtual Point initialPoint() const { return _initial_point; }
-    virtual Point finalPoint() const { return _final_point; }
-    virtual Curve* duplicate() const { return new EllipticalArc(*this); }
-    virtual void setInitial(Point const &p) {
+    Point initialPoint() const override { return _initial_point; }
+    Point finalPoint() const override { return _final_point; }
+    Curve* duplicate() const override { return new EllipticalArc(*this); }
+    void setInitial(Point const &p) override {
         _initial_point = p;
         _updateCenterAndAngles();
     }
-    virtual void setFinal(Point const &p) {
+    void setFinal(Point const &p) override {
         _final_point = p;
         _updateCenterAndAngles();
     }
-    virtual bool isDegenerate() const {
+    bool isDegenerate() const override {
         return _initial_point == _final_point;
     }
-    virtual bool isLineSegment() const { return isChord(); }
-    virtual Rect boundsFast() const {
+    bool isLineSegment() const override { return isChord(); }
+    Rect boundsFast() const override {
         return boundsExact();
     }
-    virtual Rect boundsExact() const;
+    Rect boundsExact() const override;
     // TODO: native implementation of the following methods
-    virtual OptRect boundsLocal(OptInterval const &i, unsigned int deg) const {
+    OptRect boundsLocal(OptInterval const &i, unsigned int deg) const override {
         return SBasisCurve(toSBasis()).boundsLocal(i, deg);
     }
-    virtual std::vector<double> roots(double v, Dim2 d) const;
+    std::vector<double> roots(double v, Dim2 d) const override;
 #ifdef HAVE_GSL
-    virtual std::vector<double> allNearestTimes( Point const& p, double from = 0, double to = 1 ) const;
-    virtual double nearestTime( Point const& p, double from = 0, double to = 1 ) const {
+    std::vector<double> allNearestTimes( Point const& p, double from = 0, double to = 1 ) const override;
+    double nearestTime( Point const& p, double from = 0, double to = 1 ) const override {
         if ( are_near(ray(X), ray(Y)) && are_near(center(), p) ) {
             return from;
         }
         return allNearestTimes(p, from, to).front();
     }
 #endif
-    virtual std::vector<CurveIntersection> intersect(Curve const &other, Coord eps=EPSILON) const;
-    virtual int degreesOfFreedom() const { return 7; }
-    virtual Curve *derivative() const;
+    std::vector<CurveIntersection> intersect(Curve const &other, Coord eps=EPSILON) const override;
+    int degreesOfFreedom() const override { return 7; }
+    Curve *derivative() const override;
 
     using Curve::operator*=;
-    virtual void operator*=(Translate const &tr);
-    virtual void operator*=(Scale const &s);
-    virtual void operator*=(Rotate const &r);
-    virtual void operator*=(Zoom const &z);
-    virtual void operator*=(Affine const &m);
+    void operator*=(Translate const &tr) override;
+    void operator*=(Scale const &s) override;
+    void operator*=(Rotate const &r) override;
+    void operator*=(Zoom const &z) override;
+    void operator*=(Affine const &m) override;
 
-    virtual std::vector<Point> pointAndDerivatives(Coord t, unsigned int n) const;
-    virtual D2<SBasis> toSBasis() const;
-    virtual Curve *portion(double f, double t) const;
-    virtual Curve *reverse() const;
-    virtual bool operator==(Curve const &c) const;
-    virtual bool isNear(Curve const &other, Coord precision) const;
-    virtual void feed(PathSink &sink, bool moveto_initial) const;
-    virtual int winding(Point const &p) const;
+    std::vector<Point> pointAndDerivatives(Coord t, unsigned int n) const override;
+    D2<SBasis> toSBasis() const override;
+    Curve *portion(double f, double t) const override;
+    Curve *reverse() const override;
+    bool operator==(Curve const &c) const override;
+    bool isNear(Curve const &other, Coord precision) const override;
+    void feed(PathSink &sink, bool moveto_initial) const override;
+    int winding(Point const &p) const override;
 
 private:
     void _updateCenterAndAngles();

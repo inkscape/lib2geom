@@ -58,7 +58,7 @@ Piecewise< D2<SBasis> > zaggy(Interval intv, double dt, double radius) {
 class BoolOps: public Toy {
     PathVector pv;
     PointHandle offset_handle;
-    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
+    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) override {
         Geom::Translate t(offset_handle.pos);
         
         cairo_set_line_width(cr, 1);
@@ -106,7 +106,7 @@ class BoolOps: public Toy {
     public:
     BoolOps () {}
 
-    void first_time(int argc, char** argv) {
+    void first_time(int argc, char** argv) override {
         const char *path_b_name="star.svgd";
         if(argc > 1)
             path_b_name = argv[1];

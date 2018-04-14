@@ -390,7 +390,7 @@ class Matrix: public detail::MatrixImpl
 	    return *this;
 	}
 
-	virtual ~Matrix()
+	~Matrix() override
 	{
 		gsl_matrix_free(m_matrix);
 	}

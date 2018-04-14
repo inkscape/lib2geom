@@ -48,7 +48,7 @@ class EllipseFitting : public Toy
 {
   private:
     void draw( cairo_t *cr, std::ostringstream *notify,
-               int width, int height, bool save, std::ostringstream *timer_stream)
+               int width, int height, bool save, std::ostringstream *timer_stream) override
     {
         if (first_time)
         {

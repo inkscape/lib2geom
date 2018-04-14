@@ -59,7 +59,7 @@ class BoundsPath : public Toy
     
   private:
     void draw( cairo_t *cr, std::ostringstream *notify, 
-               int width, int height, bool save, std::ostringstream *timer_stream)
+               int width, int height, bool save, std::ostringstream *timer_stream) override
     {
         cairo_set_line_width (cr, 0.3);
         m_selection_kind = (unsigned int) (sliders[0].value());
@@ -116,7 +116,7 @@ class BoundsPath : public Toy
     }
     
     
-    void mouse_pressed(GdkEventButton* e)
+    void mouse_pressed(GdkEventButton* e) override
     {
         Point pos(e->x, e->y);
         double d, t;

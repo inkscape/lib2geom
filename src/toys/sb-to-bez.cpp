@@ -254,7 +254,7 @@ class SbToBezierTester: public Toy {
     PointHandle adjuster, adjuster2;
     std::vector<Toggle> toggles;
 
-  void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
+  void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) override {
       cairo_save(cr);
       for(unsigned i = 1; i < path_psh.size(); i++)
           path_psh[i-1]->pts.back() = path_psh[i]->pts[0];
@@ -359,11 +359,11 @@ class SbToBezierTester: public Toy {
   }
   
 public:
-    void key_hit(GdkEventKey *e) {
+    void key_hit(GdkEventKey *e) override {
         if(e->keyval == 's') toggles[0].toggle();
         redraw();
     }
-    void mouse_pressed(GdkEventButton* e) {
+    void mouse_pressed(GdkEventButton* e) override {
         toggle_events(toggles, e);
         Toy::mouse_pressed(e);
     }

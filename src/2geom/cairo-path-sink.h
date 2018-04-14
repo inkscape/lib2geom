@@ -58,14 +58,14 @@ class CairoPathSink
 public:
     CairoPathSink(cairo_t *cr);
 
-    void moveTo(Point const &p);
-    void lineTo(Point const &p);
-    void curveTo(Point const &c0, Point const &c1, Point const &p);
-    void quadTo(Point const &c, Point const &p);
+    void moveTo(Point const &p) override;
+    void lineTo(Point const &p) override;
+    void curveTo(Point const &c0, Point const &c1, Point const &p) override;
+    void quadTo(Point const &c, Point const &p) override;
     void arcTo(Coord rx, Coord ry, Coord angle,
-               bool large_arc, bool sweep, Point const &p);
-    void closePath();
-    void flush();
+               bool large_arc, bool sweep, Point const &p) override;
+    void closePath() override;
+    void flush() override;
 
 private:
     cairo_t *_cr;

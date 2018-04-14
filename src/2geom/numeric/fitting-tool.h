@@ -402,8 +402,7 @@ class lsf_with_fixed_terms<ModelT, true>
         assert(m_vector_view != NULL);
     }
 
-    virtual
-    ~lsf_with_fixed_terms<model_type, true>()
+    ~lsf_with_fixed_terms<model_type, true>() override
     {
         if (m_vector_view != NULL)
         {

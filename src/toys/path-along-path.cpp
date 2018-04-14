@@ -14,9 +14,9 @@ using namespace Geom;
 class PathAlongPathToy: public Toy {
     PointSetHandle skel_handles, pat_handles;
     PointHandle origin_handle;
-    bool should_draw_numbers(){return false;}
+    bool should_draw_numbers() override{return false;}
 
-    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
+    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) override {
         D2<SBasis> skeleton = skel_handles.asBezier();
         D2<SBasis> pattern  = pat_handles.asBezier();
 

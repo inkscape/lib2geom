@@ -25,7 +25,7 @@ public:
         : path_handles_inited(false)
     {}
 
-    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
+    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) override {
         if (!path_handles_inited) {
             Rect vp(Point(10,10), Point(width-10, height-10));
             setup_path_handles(vp);
@@ -156,12 +156,12 @@ public:
         Toy::draw(cr, notify, width, height, save,timer_stream);
     }
 
-    void mouse_pressed(GdkEventButton* e) {
+    void mouse_pressed(GdkEventButton* e) override {
         toggle_events(togs, e);
         Toy::mouse_pressed(e);
     }
 
-    void first_time(int argc, char** argv) {
+    void first_time(int argc, char** argv) override {
         const char *path_a_name="svgd/winding.svgd";
         const char *path_b_name="svgd/star.svgd";
         if(argc > 1)

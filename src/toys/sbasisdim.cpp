@@ -77,7 +77,7 @@ dot_plot3d(cairo_t *cr, SBasisN<2> const &f, Frame frame){
 class SBasisDimToy: public Toy {
     PointSetHandle hand;
 
-    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
+    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) override {
 
         double slider_top = width/4.;
         double slider_bot = width*3./4.;

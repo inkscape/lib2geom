@@ -98,7 +98,7 @@ class Worm {
 class Intro: public Toy {
     int t;
     vector<Worm> worms;
-    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
+    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) override {
         t++;
         if(t < 40 && t % 2 == 0) {
             worms.push_back(Worm(t, uniform(), uniform(), uniform(), uniform() * 200 + 50));
@@ -113,7 +113,7 @@ class Intro: public Toy {
         redraw();
     }
 
-    virtual int should_draw_bounds() { return 0; }
+    int should_draw_bounds() override { return 0; }
     
     public:
     Intro () {

@@ -15,7 +15,7 @@ class Box3d: public Toy {
     PointHandle origin_handle;
     PointSetHandle vanishing_points_handles, axes_handles;
     
-    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
+    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) override {
         Geom::Point dir(1,-2);
 
 	cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
@@ -56,7 +56,7 @@ class Box3d: public Toy {
 
         Toy::draw(cr, notify, width, height, save,timer_stream);
     }
-    void first_time(int /*argc*/, char** /*argv*/) {
+    void first_time(int /*argc*/, char** /*argv*/) override {
         // Finite images of the three vanishing points and the origin
         handles.push_back(&origin_handle);
         handles.push_back(&vanishing_points_handles);

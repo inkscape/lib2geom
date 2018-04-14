@@ -37,7 +37,7 @@ public:
     double units;
     PointSetHandle psh;
     
-    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
+    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) override {
         cairo_set_line_width (cr, 1);
         cairo_set_source_rgb(cr, 0,0,0);
         std::vector<Geom::Point> trans;

@@ -77,7 +77,7 @@ class NearestPoints : public Toy
 private:
     PathVector paths_b;
     void draw( cairo_t *cr,	std::ostringstream *notify,
-               int width, int height, bool save, std::ostringstream *timer_stream)
+               int width, int height, bool save, std::ostringstream *timer_stream) override
     {
 
     	Point p = ph.pos;
@@ -290,7 +290,7 @@ private:
     	Toy::draw(cr, notify, width, height, save,timer_stream);
     }
 
-    void key_hit(GdkEventKey *e)
+    void key_hit(GdkEventKey *e) override
     {
     	choice = e->keyval;
     	switch ( choice )
@@ -333,14 +333,14 @@ private:
     	redraw();
     }
 
-    void mouse_pressed(GdkEventButton* e)
+    void mouse_pressed(GdkEventButton* e) override
     {
         toggle_events(toggles, e);
         Toy::mouse_pressed(e);
     }
 
 public:
-    void first_time(int argc, char** argv) {
+    void first_time(int argc, char** argv) override {
         const char *path_b_name="star.svgd";
         if(argc > 1)
             path_b_name = argv[1];

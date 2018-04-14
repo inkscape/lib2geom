@@ -117,7 +117,7 @@ class RadialKinematicTemplate : public KinematicTemplate {
 public:
     RadialKinematicTemplate(Point const &center, double const sx, double const sy, double const cx, double const cy);
 
-    virtual std::pair<Point, Point> local_coordinate_system(Point const &at) {
+    std::pair<Point, Point> local_coordinate_system(Point const &at) override {
         /* Return 'radial' coordinates around polar_center */
         Point v = unit_vector(at - center);
         return std::make_pair(v, rot90(v));
@@ -138,7 +138,7 @@ class GridKinematicTemplate : public KinematicTemplate {
 public:
     GridKinematicTemplate(double const sx = 0.0, double const sy = 0.0, double const cx = 0.0, double const cy = 0.0)
         : KinematicTemplate(sx, sy, cx, cy) {};
-    virtual Point next_point(Point const &at, Point const &delta);// { return at; }
+    Point next_point(Point const &at, Point const &delta) override;// { return at; }
 };
 
 Point
@@ -164,7 +164,7 @@ class ImplicitKinematicTemplate : public KinematicTemplate {
 public:
     ImplicitKinematicTemplate() {}
 
-    virtual Point next_point(Point const &at, Point const &delta) {
+    Point next_point(Point const &at, Point const &delta) override {
         if (L2(at + delta - center) < radius) {
             // we are within the radius of action
 
@@ -218,7 +218,7 @@ class KinematicTemplatesToy : public Toy {
         *notify << "Current choice: " << cur_choice << endl;
     }
 
-    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
+    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) override {
 	cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
 	cairo_set_line_width (cr, 1);
 
@@ -243,7 +243,7 @@ class KinematicTemplatesToy : public Toy {
         Toy::draw(cr, notify, width, height, save,timer_stream);
     }
 
-    void first_time(int /*argc*/, char** /*argv*/) {
+    void first_time(int /*argc*/, char** /*argv*/) override {
         p1.pos = Point(200, 200);
         handles.push_back(&p1);
 
@@ -261,7 +261,7 @@ class KinematicTemplatesToy : public Toy {
         dragging_center = false;
     }
 
-    void mouse_pressed(GdkEventButton *e) {
+    void mouse_pressed(GdkEventButton *e) override {
         Point at(e->x, e->y);
 
         if(L2(at - p1.pos) < 5) {
@@ -279,11 +279,11 @@ class KinematicTemplatesToy : public Toy {
         Toy::mouse_pressed(e);
     }
 
-    void mouse_released(GdkEventButton */*e*/) {
+    void mouse_released(GdkEventButton */*e*/) override {
         dragging_center = false;
     }
 
-    void mouse_moved(GdkEventMotion* e) {
+    void mouse_moved(GdkEventMotion* e) override {
         if (!dragging_center) {
             Point at(e->x, e->y);
 
@@ -303,7 +303,7 @@ class KinematicTemplatesToy : public Toy {
         Toy::mouse_moved(e);
     }
 
-    void key_hit(GdkEventKey *e)
+    void key_hit(GdkEventKey *e) override
     {
         char choice = std::toupper(e->keyval);
         // No need to copy and paste code

@@ -221,7 +221,7 @@ class GearToy: public Toy {
             hand.pts.push_back(Geom::Point(uniform()*400, uniform()*400));
         handles.push_back(&hand);
     }
-    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
+    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) override {
         cairo_set_source_rgba (cr, 0., 0., 0, 0.8);
         cairo_set_line_width (cr, 0.5);
         

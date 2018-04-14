@@ -4,10 +4,10 @@ public:
     PWSBHandle()  {}
     PWSBHandle(unsigned cs, unsigned segs) :handles_per_curve(cs*segs),curve_size(cs), segs(segs) {}
     std::vector<Geom::Point> pts;
-    virtual void draw(cairo_t *cr, bool annotes = false);
+    void draw(cairo_t *cr, bool annotes = false) override;
   
-    virtual void* hit(Geom::Point mouse);
-    virtual void move_to(void* hit, Geom::Point om, Geom::Point m);
+    void* hit(Geom::Point mouse) override;
+    void move_to(void* hit, Geom::Point om, Geom::Point m) override;
     void push_back(double x, double y) {pts.push_back(Geom::Point(x,y));}
     Piecewise<SBasis> value(double y_0=150) {
         Piecewise<SBasis> pws;
@@ -25,8 +25,8 @@ public:
 	assert(pws.invariants());
 	return pws;
     }
-    virtual void load(FILE* f);
-    virtual void save(FILE* f);
+    void load(FILE* f) override;
+    void save(FILE* f) override;
 };
 
 void PWSBHandle::draw(cairo_t *cr, bool /*annotes*/) {

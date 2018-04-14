@@ -48,7 +48,7 @@ class D2SBasisFitting : public Toy
 {
   private:
     void draw( cairo_t *cr, std::ostringstream *notify, 
-               int width, int height, bool save, std::ostringstream *timer_stream)
+               int width, int height, bool save, std::ostringstream *timer_stream) override
     {
         bool changed = false;
         for (size_t i = 0; i < total_handles; ++i)

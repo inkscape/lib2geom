@@ -5,7 +5,7 @@ using namespace Geom;
 
 class CircleIntersect : public Toy {
     PointSetHandle psh[2];
-    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
+    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) override {
         double r1 = Geom::distance(psh[0].pts[0], psh[0].pts[1]);
         double r2 = Geom::distance(psh[1].pts[0], psh[1].pts[1]);
 

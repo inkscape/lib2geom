@@ -9,7 +9,7 @@ class Sweep: public Toy {
 public:
     PointSetHandle hand;
     unsigned count_a, count_b;
-    virtual void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
+    void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) override {
         std::vector<Rect> rects_a, rects_b;
         cairo_set_source_rgb(cr, 0,0,0);
 
@@ -57,7 +57,7 @@ public:
         
         Toy::draw(cr, notify, width, height, save,timer_stream);
     }
-    bool should_draw_numbers() { return false; }
+    bool should_draw_numbers() override { return false; }
     public:
     Sweep () {
         count_a = 20;

@@ -33,7 +33,7 @@ static void plot_bar(cairo_t* cr, Interval height, double vscale=1,double a=0,do
 
 class BoundsTester: public Toy {
 
-	void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) {
+	void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) override {
         
         for (unsigned i=0;i<size;i++){
             hand.pts[i    ][0]=150+15*(i-size);

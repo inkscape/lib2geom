@@ -47,7 +47,7 @@ class CurveIntersect : public Toy
 {
 
     void draw( cairo_t *cr, std::ostringstream *notify,
-               int width, int height, bool save, std::ostringstream *timer_stream)
+               int width, int height, bool save, std::ostringstream *timer_stream) override
     {
         m_width = width;
         m_height = height;
