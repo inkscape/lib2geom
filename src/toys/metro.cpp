@@ -15,6 +15,7 @@
 #include <sstream>
 #include <iostream>
 #include <fstream>
+#include <utility>
 #include <vector>
 #include <string>
 #include <map>
@@ -216,8 +217,8 @@ public:
     void C_endpoint();
     
     vector<Geom::Point> angles;
-    fit(vector<Point> const & in)
-        :input(in) {
+    fit(vector<Point> in)
+        :input(std::move(in)) {
             /*
         Geom::Point as[] = {Point(0,1), Point(1,0), Point(1,1), Point(1,-1)};
         for(unsigned c = 0; c < 4; c++) {

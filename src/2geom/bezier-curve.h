@@ -41,6 +41,8 @@
 #include <2geom/bezier.h>
 #include <2geom/transforms.h>
 
+#include <utility>
+
 namespace Geom 
 {
 
@@ -52,7 +54,7 @@ protected:
     BezierCurve(std::vector<Point> const &pts);
 
 public:
-    explicit BezierCurve(D2<Bezier> const &b) : inner(b) {}
+    explicit BezierCurve(D2<Bezier> b) : inner(std::move(b)) {}
 
     /// @name Access and modify control points
     /// @{

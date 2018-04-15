@@ -8,6 +8,7 @@
 #include <sstream>
 #include <gtk/gtk.h>
 #include <cairo.h>
+#include <utility>
 #include <vector>
 #include <string>
 
@@ -229,21 +230,21 @@ class Slider : public Handle
 
     // pass step = 0 for having a continuos value variation
     Slider( value_type _min, value_type _max, value_type _step,
-            value_type _value, const std::string& _label = "" )
+            value_type _value, std::string _label = "" )
         : m_length(1),
           m_min(_min), m_max(_max), m_step(_step), m_dir(Geom::X),
-          m_label(_label), m_formatter(&default_formatter)
+          m_label(std::move(_label)), m_formatter(&default_formatter)
     {
         value(_value);
     }
 
     void set( value_type _min, value_type _max, value_type _step,
-              value_type _value, const std::string& _label = "" )
+              value_type _value, std::string _label = "" )
     {
           m_min = _min;
           m_max = _max;
           m_step = _step;
-          m_label = _label;
+          m_label = std::move(_label);
           value(_value);
     }
 

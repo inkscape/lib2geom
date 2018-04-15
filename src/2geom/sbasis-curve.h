@@ -42,6 +42,8 @@
 #include <2geom/sbasis-geometric.h>
 #include <2geom/transforms.h>
 
+#include <utility>
+
 namespace Geom 
 {
 
@@ -82,7 +84,7 @@ private:
     D2<SBasis> inner;
   
 public:
-    explicit SBasisCurve(D2<SBasis> const &sb) : inner(sb) {}
+    explicit SBasisCurve(D2<SBasis> sb) : inner(std::move(sb)) {}
     explicit SBasisCurve(Curve const &other) : inner(other.toSBasis()) {}
 
     Curve *duplicate() const override { return new SBasisCurve(*this); }

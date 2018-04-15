@@ -38,9 +38,7 @@
 #include <2geom/symbolic/mvpoly-tools.h>
 
 #include <boost/bind.hpp> // needed for generating for_each operator argument
-
-
-
+#include <utility>
 
 namespace Geom { namespace SL {
 
@@ -65,8 +63,8 @@ public:
 public:
     MultiPoly() = default;
 
-    MultiPoly(poly_type const& p)
-        : m_poly(p)
+    MultiPoly(poly_type p)
+        : m_poly(std::move(p))
     {
     }
 
