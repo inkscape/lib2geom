@@ -107,7 +107,7 @@ public:
                 //cairo_set_source_rgba(cr, uniform(), uniform(), uniform(), .5);
                 //draw_rect(cr, bounds.min(), bounds.max());
                 cairo_stroke(cr);
-                pieces.push_back(Piece());
+                pieces.emplace_back();
                 pieces.back().bounds = bounds;
                 pieces.back().curve = &it;
                 pieces.back().parameters = Interval(0,1);
@@ -197,8 +197,8 @@ public:
         std::vector<std::vector<unsigned> > pairs(rs.size());
 
         for(unsigned i = 0; i < rs.size(); i++) {
-            events.push_back(Event(rs[i].left(), i, false));
-            events.push_back(Event(rs[i].right(), i, true));
+            events.emplace_back(rs[i].left(), i, false);
+            events.emplace_back(rs[i].right(), i, true);
         }
         //std::sort(events.begin(), events.end());
         std::make_heap(events.begin(), events.end());
@@ -253,8 +253,8 @@ public:
         std::vector<std::vector<unsigned> > pairs(rs.size());
 
         for(unsigned i = 0; i < rs.size(); i++) {
-            events.push_back(Event(rs[i].left(), i, false));
-            events.push_back(Event(rs[i].right(), i, true));
+            events.emplace_back(rs[i].left(), i, false);
+            events.emplace_back(rs[i].right(), i, true);
         }
         std::sort(events.begin(), events.end());
         
@@ -336,7 +336,7 @@ class WindingTest: public Toy {
                 /*cairo_set_source_rgba(cr, uniform(), uniform(), uniform(), .5);
                 draw_rect(cr, bounds.min(), bounds.max());
                 cairo_stroke(cr);*/
-                pieces.push_back(Uncross::Piece());
+                pieces.emplace_back();
                 pieces.back().bounds = bounds;
                 pieces.back().curve = &*it;
                 pieces.back().parameters = Interval(0,1);
@@ -345,7 +345,7 @@ class WindingTest: public Toy {
                 pieces.back().id = id_counter++;
                 if(it != p.begin() and !crosses.empty())
                     crosses.back().joins.push_back(pieces.back().id);
-                crosses.push_back(Uncross::Crossing());
+                crosses.emplace_back();
                 crosses.back().joins.push_back(pieces.back().id);
             }
             crosses.back().joins.push_back(pieces[piece_start].id);
@@ -394,13 +394,13 @@ class WindingTest: public Toy {
                             D2<SBasis> Asb = portion(A.sb, A_slice);
                             OptRect Abnds = bounds_exact(Asb);
                             if(Abnds) {
-                                new_pieces.push_back(Uncross::Piece());
+                                new_pieces.emplace_back();
                                 new_pieces.back().bounds = *Abnds;
                                 new_pieces.back().curve = A.curve;
                                 new_pieces.back().parameters = A_slice;
                                 new_pieces.back().sb = Asb;
                                 new_pieces.back().id = id_counter++;
-                                crosses.push_back(Uncross::Crossing());
+                                crosses.emplace_back();
                                 crosses.back().joins.push_back(A_prec_id);
                                 crosses.back().joins.push_back(new_pieces.back().id);
                                 A.mark = 1;
@@ -411,13 +411,13 @@ class WindingTest: public Toy {
                             D2<SBasis> Bsb = portion(B.sb, B_slice);
                             OptRect Bbnds = bounds_exact(Bsb);
                             if(Bbnds) {
-                                new_pieces.push_back(Uncross::Piece());
+                                new_pieces.emplace_back();
                                 new_pieces.back().bounds = *Bbnds;
                                 new_pieces.back().curve = B.curve;
                                 new_pieces.back().parameters = B_slice;
                                 new_pieces.back().sb = Bsb;
                                 new_pieces.back().id = id_counter++;
-                                crosses.push_back(Uncross::Crossing());
+                                crosses.emplace_back();
                                 crosses.back().joins.push_back(B_prec_id);
                                 crosses.back().joins.push_back(new_pieces.back().id);
                                 B.mark = 1;

@@ -379,8 +379,8 @@ public:
       handles.push_back(&adjuster);
       adjuster2.pos = Geom::Point(150,300);
       handles.push_back(&adjuster2);
-      toggles.push_back(Toggle("Seq", true));
-      toggles.push_back(Toggle("Linfty", true));
+      toggles.emplace_back("Seq", true);
+      toggles.emplace_back("Linfty", true);
       //}
     //sliders.push_back(Slider(0.0, 1.0, 0.0, 0.0, "t"));
     //handles.push_back(&(sliders[0]));

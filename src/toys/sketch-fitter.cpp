@@ -737,7 +737,7 @@ public:
 
     void mouse_moved(GdkEventMotion* e) override {
 	if(mouse_drag) {
-	    mouses.push_back(Point(e->x, e->y));
+	    mouses.emplace_back(e->x, e->y);
 	    redraw();
 	} else {
 	    Toy::mouse_moved(e);

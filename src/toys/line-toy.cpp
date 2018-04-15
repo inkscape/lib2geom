@@ -118,7 +118,7 @@ class LineToy : public Toy
         p2.pos = Point(450, 450);
         O.pos = Point(50, 400);
 
-        sliders.push_back(Slider(0, 2*M_PI, 0, 0, "angle"));
+        sliders.emplace_back(0, 2*M_PI, 0, 0, "angle");
         sliders[ANGLE_SLIDER].formatter(&angle_formatter);
 
         handles.push_back(&p1);
@@ -591,9 +591,9 @@ class LineToy : public Toy
 
         Line l(p1.pos, p2.pos);
         std::vector<double> coeff = l.coefficients();
-        sliders.push_back( Slider(-1, 1, 0, coeff[0], "A"));
-        sliders.push_back( Slider(-1, 1, 0, coeff[1], "B"));
-        sliders.push_back( Slider(-500, 500, 0, coeff[2], "C"));
+        sliders.emplace_back(-1, 1, 0, coeff[0], "A");
+        sliders.emplace_back(-1, 1, 0, coeff[1], "B");
+        sliders.emplace_back(-500, 500, 0, coeff[2], "C");
 
         handles.push_back(&p1);
         handles.push_back(&p2);

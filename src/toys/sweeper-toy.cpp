@@ -116,7 +116,7 @@ class SweeperToy: public Toy {
     SweeperToy(int paths, int curves_in_path, int degree) :
         nb_paths(paths), nb_curves_per_path(curves_in_path), degree(degree) {
         for (int i = 0; i < nb_paths; i++){
-            paths_handles.push_back(PointSetHandle());
+            paths_handles.emplace_back();
         }
         for(int i = 0; i < nb_paths; i++){
             for(int j = 0; j < (nb_curves_per_path*degree)+1; j++){
@@ -124,10 +124,10 @@ class SweeperToy: public Toy {
             }
             handles.push_back(&paths_handles[i]);
         }
-        sliders.push_back(Slider(0.0, 1, 0, 0.0, "intersection chooser"));
-        sliders.push_back(Slider(0.0, 1, 0, 0.0, "ray chooser"));
-        sliders.push_back(Slider(0.0, 1, 0, 0.0, "area chooser"));
-        sliders.push_back(Slider(-5.0, 2, 0, 0.0, "tolerance chooser"));
+        sliders.emplace_back(0.0, 1, 0, 0.0, "intersection chooser");
+        sliders.emplace_back(0.0, 1, 0, 0.0, "ray chooser");
+        sliders.emplace_back(0.0, 1, 0, 0.0, "area chooser");
+        sliders.emplace_back(-5.0, 2, 0, 0.0, "tolerance chooser");
         handles.push_back(&(sliders[0]));
         handles.push_back(&(sliders[1]));
         handles.push_back(&(sliders[2]));

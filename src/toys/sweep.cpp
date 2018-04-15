@@ -14,10 +14,10 @@ public:
         cairo_set_source_rgb(cr, 0,0,0);
 
         for(unsigned i = 0; i < count_a; i++)
-            rects_a.push_back(Rect(hand.pts[i*2], hand.pts[i*2+1]));
+            rects_a.emplace_back(hand.pts[i*2], hand.pts[i*2+1]);
 
         for(unsigned i = 0; i < count_b; i++)
-            rects_b.push_back(Rect(hand.pts[i*2 + count_a*2], hand.pts[i*2+1 + count_a*2]));
+            rects_b.emplace_back(hand.pts[i*2 + count_a*2], hand.pts[i*2+1 + count_a*2]);
         
         {
             std::vector<std::vector<unsigned> > res = sweep_bounds(rects_a);

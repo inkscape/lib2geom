@@ -101,7 +101,7 @@ class Intro: public Toy {
     void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool save, std::ostringstream *timer_stream) override {
         t++;
         if(t < 40 && t % 2 == 0) {
-            worms.push_back(Worm(t, uniform(), uniform(), uniform(), uniform() * 200 + 50));
+            worms.emplace_back(t, uniform(), uniform(), uniform(), uniform() * 200 + 50);
         }
 
         for(auto & worm : worms) {

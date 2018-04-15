@@ -402,7 +402,7 @@ void fit::test() {
         Point c = dot(max,d)*d;
         Point start = a+b;
         Point end = a+c;
-        lines.push_back(make_pair(start,end));
+        lines.emplace_back(start,end);
         thickness.push_back(1);
     }
     thickness[best] = 4;
@@ -414,7 +414,7 @@ void fit::schematised_merging(unsigned number_of_directions) {
     blocks.resize(N);
     for(unsigned i = 0; i<number_of_directions ; i++) {
         double t = M_PI*i/float(number_of_directions);
-        angles.push_back(Point(cos(t),sin(t)));
+        angles.emplace_back(cos(t),sin(t));
     }
     // pairs
     for(unsigned i = 0; i < N; i++) {
@@ -529,7 +529,7 @@ void fit::schematised_merging(unsigned number_of_directions) {
                     assert(c);
                     end = ln.pointAt(c->ta);
                 }                
-                lines.push_back(make_pair(start,end));
+                lines.emplace_back(start,end);
             }
             prev = beg;
             beg = b.next;
@@ -883,7 +883,7 @@ public:
         cout << location_file_name << ", " << path_file_name << endl;
         parse_data(paths, location_file_name, path_file_name);
         for(auto & path : paths) {
-            metro_lines.push_back(PointSetHandle());
+            metro_lines.emplace_back();
             for(auto p : path) {
                 metro_lines.back().push_back(p);
             }

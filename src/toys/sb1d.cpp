@@ -100,10 +100,10 @@ public:
     }
 public:
 Sb1d () {
-    hand.pts.push_back(Geom::Point(0,450));
+    hand.pts.emplace_back(0,450);
     for(unsigned i = 0; i < 4; i++)
-        hand.pts.push_back(Geom::Point(uniform()*400, uniform()*400));
-    hand.pts.push_back(Geom::Point(0,450));
+        hand.pts.emplace_back(uniform()*400, uniform()*400);
+    hand.pts.emplace_back(0,450);
     handles.push_back(&hand);
 }
 };

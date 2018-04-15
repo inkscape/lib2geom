@@ -95,7 +95,7 @@ std::vector<std::complex<double> > solve(Poly const & pp) {
     gsl_poly_complex_workspace_free (w);
      
     for (unsigned int i = 0; i < p.degree(); i++) {
-        roots.push_back(std::complex<double> (z[2*i] ,z[2*i+1]));
+        roots.emplace_back(z[2*i] ,z[2*i+1]);
         //printf ("z%d = %+.18f %+.18f\n", i, z[2*i], z[2*i+1]);
     }    
     delete[] z;

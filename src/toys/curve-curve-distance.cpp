@@ -912,7 +912,7 @@ class DCCToy : public Toy
                 single_curve_psh.push_back(700*uniform(), 500*uniform());
             }
             handles.push_back(&single_curve_psh);
-            sliders.push_back(Slider(0.0, 1.0, 0.0, 0.0, "t"));
+            sliders.emplace_back(0.0, 1.0, 0.0, 0.0, "t");
         }
         else if (choice == 1)
         {
@@ -921,7 +921,7 @@ class DCCToy : public Toy
                 path_psh.push_back(700*uniform(), 500*uniform());
             }
             handles.push_back(&path_psh);
-            sliders.push_back(Slider(0.0, path_curves, 0.0, 0.0, "t"));
+            sliders.emplace_back(0.0, path_curves, 0.0, 0.0, "t");
         }
         else if (choice == 2)
         {
@@ -939,7 +939,7 @@ class DCCToy : public Toy
                 handles.push_back(&(pwc_psh[i]));
                 pwA.cuts[i+1] = pwA.cuts[i] + length;
             }
-            sliders.push_back(Slider(0.0, 1.0, 0.0, 0.0, "t"));
+            sliders.emplace_back(0.0, 1.0, 0.0, 0.0, "t");
         }
         
         for (unsigned int i = 0; i < B_handles; ++i)
@@ -947,10 +947,10 @@ class DCCToy : public Toy
             B_psh.push_back(700*uniform(), 500*uniform());
         }
         handles.push_back(&B_psh);
-        sliders.push_back(Slider(0.0, 1.0, 0.0, 0.0, "t"));
+        sliders.emplace_back(0.0, 1.0, 0.0, 0.0, "t");
         
-        toggles.push_back(Toggle("d(A,B) <-> d(B,A)", false));
-        toggles.push_back(Toggle("Show/Hide cuts", false));
+        toggles.emplace_back("d(A,B) <-> d(B,A)", false);
+        toggles.emplace_back("Show/Hide cuts", false);
         
         handles.push_back(&(toggles[0]));
         handles.push_back(&(toggles[1]));

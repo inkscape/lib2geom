@@ -126,9 +126,9 @@ TEST_F(SBasisTest, Roots) {
     }
 
     vector<Linear> broken;
-    broken.push_back(Linear(0, 42350.1));
-    broken.push_back(Linear(-71082.3, -67071.5));
-    broken.push_back(Linear(1783.41, 796047));
+    broken.emplace_back(0, 42350.1);
+    broken.emplace_back(-71082.3, -67071.5);
+    broken.emplace_back(1783.41, 796047);
     SBasis b(broken);
     Bezier bz;
     sbasis_to_bezier(bz, b);
@@ -164,7 +164,7 @@ TEST_F(SBasisTest, Subdivide) {
             EXPECT_EQ(result.second.valueAt(1), input.valueAt(1));
 
             if (result.first.at1() != result.second.at0()) {
-                errors.push_back(std::pair<SBasis,double>(input, t));
+                errors.emplace_back(input, t);
             }
         }
     }

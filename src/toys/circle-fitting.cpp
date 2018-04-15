@@ -126,8 +126,8 @@ class CircleFitting : public Toy
         psh.pts[2] = Point(250, 400);
 
 
-        toggles.push_back(Toggle(" arc / circle ", false));
-        sliders.push_back(Slider(0, 5, 1, 0, "more handles"));
+        toggles.emplace_back(" arc / circle ", false);
+        sliders.emplace_back(0, 5, 1, 0, "more handles");
 
         handles.push_back(&psh);
         handles.push_back(&(toggles[0]));

@@ -40,11 +40,11 @@ using namespace Geom;
 TEST(AngleIntervalTest, InnerAngleConstrutor) {
     std::vector<AngleInterval> ivs;
 
-    ivs.push_back(AngleInterval(0, M_PI, true));
-    ivs.push_back(AngleInterval(0, M_PI, false));
-    ivs.push_back(AngleInterval(M_PI, 0, true));
-    ivs.push_back(AngleInterval(M_PI, 0, false));
-    ivs.push_back(AngleInterval(Angle(0), Angle(0), Angle(M_PI)));
+    ivs.emplace_back(0, M_PI, true);
+    ivs.emplace_back(0, M_PI, false);
+    ivs.emplace_back(M_PI, 0, true);
+    ivs.emplace_back(M_PI, 0, false);
+    ivs.emplace_back(Angle(0), Angle(0), Angle(M_PI));
 
     for (auto & iv : ivs) {
         AngleInterval inner(iv.angleAt(0), iv.angleAt(0.5), iv.angleAt(1));

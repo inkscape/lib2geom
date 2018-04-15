@@ -107,7 +107,7 @@ class PairIntersect: public Toy {
 }
 public:
     PairIntersect (unsigned A_bez_ord, unsigned B_bez_ord) {
-        toggles.push_back(Toggle("Path", true));
+        toggles.emplace_back("Path", true);
         toggles[0].bounds = Rect(Point(10,100), Point(100, 130));
         //toggles.push_back(Toggle("Curve", true));
         //toggles[1].bounds = Rect(Point(10,130), Point(100, 160));

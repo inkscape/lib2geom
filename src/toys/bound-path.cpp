@@ -238,12 +238,12 @@ class BoundsPath : public Toy
             }
         }
         
-        sliders.push_back(Slider(0, 2, 1, 0, "selection type"));
+        sliders.emplace_back(0, 2, 1, 0, "selection type");
         sliders[0].geometry(Point(10, 20), 50, X);
         sliders[0].formatter(&option_formatter);
         
         Rect toggle_bound(Point(300,20), Point(390, 45));
-        toggles.push_back(Toggle(toggle_bound, "fast/exact", EXACT));
+        toggles.emplace_back(toggle_bound, "fast/exact", EXACT);
         
         handles.push_back(&(sliders[0]));
         handles.push_back(&(toggles[0]));

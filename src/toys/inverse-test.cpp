@@ -149,7 +149,7 @@ public:
     size=4;
     if(hand.pts.empty()) {
       for(int i = 0; i < 2*size; i++)
-	hand.pts.push_back(Geom::Point(0,150+150+uniform()*300*0));
+	hand.pts.emplace_back(0,150+150+uniform()*300*0);
     }
     hand.pts[0][1]=300;
     hand.pts[size][1]=150;

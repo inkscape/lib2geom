@@ -163,7 +163,7 @@ class SBasisFitting : public Toy
         fmsb->instance(sb_curve, lsf_sb->result(curr_ys));
         
         
-        sliders.push_back(Slider(1, 11, 2, 3, "degree"));
+        sliders.emplace_back(1, 11, 2, 3, "degree");
         handles.push_back(&(sliders[0]));
     }
     

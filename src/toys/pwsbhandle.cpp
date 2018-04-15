@@ -8,7 +8,7 @@ public:
   
     void* hit(Geom::Point mouse) override;
     void move_to(void* hit, Geom::Point om, Geom::Point m) override;
-    void push_back(double x, double y) {pts.push_back(Geom::Point(x,y));}
+    void push_back(double x, double y) {pts.emplace_back(x,y);}
     Piecewise<SBasis> value(double y_0=150) {
         Piecewise<SBasis> pws;
 	Point* base = &pts[0];

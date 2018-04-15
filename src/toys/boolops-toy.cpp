@@ -195,15 +195,15 @@ public:
         ah = Line(*apts.first, *apts.second);
         bh = Line(*bpts.first, *bpts.second);
 
-        togs.push_back(Toggle("R", true));
-        togs.push_back(Toggle("&", false));
-        togs.push_back(Toggle("B", false));
+        togs.emplace_back("R", true);
+        togs.emplace_back("&", false);
+        togs.emplace_back("B", false);
 
-        togs.push_back(Toggle("X", true));
-        togs.push_back(Toggle("D", true));
-        togs.push_back(Toggle("I", false));
-        togs.push_back(Toggle("O", false));
-        togs.push_back(Toggle("W", false));
+        togs.emplace_back("X", true);
+        togs.emplace_back("D", true);
+        togs.emplace_back("I", false);
+        togs.emplace_back("O", false);
+        togs.emplace_back("W", false);
     }
     
     void setup_path_handles(Rect const &viewport) {

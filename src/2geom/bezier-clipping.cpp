@@ -395,7 +395,7 @@ OptInterval clip_interval (std::vector<Point> const& B,
     for (size_t i = 0; i < B.size(); ++i)
     {
         const double d = signed_distance(B[i], l);
-        D.push_back (Point(i/n, d));
+        D.emplace_back(i/n, d);
     }
     //print(D);
 

@@ -351,8 +351,8 @@ public:
         handles.push_back(&psh);
         handles.push_back(&ph);
         ph.pos = Point(uniform()*400, uniform()*400);
-        toggles.push_back( Toggle("ALL NP", false) );
-        toggles.push_back( Toggle("CLOSED", false) );
+        toggles.emplace_back("ALL NP", false );
+        toggles.emplace_back("CLOSED", false );
     }
 
 private:

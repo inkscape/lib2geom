@@ -149,8 +149,8 @@ class InnerProductClip: public Toy {
         // Finite images of the three vanishing points and the origin
         handles.push_back(&start_handle);
         handles.push_back(&end_handle);
-        togs.push_back(Toggle("C", true));
-        togs.push_back(Toggle("S", true));
+        togs.emplace_back("C", true);
+        togs.emplace_back("S", true);
     }
 public:
     InnerProductClip() : start_handle(150,300),

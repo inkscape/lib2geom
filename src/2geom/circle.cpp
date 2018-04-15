@@ -175,7 +175,7 @@ std::vector<ShapeIntersection> Circle::intersect(Line const &l) const
         Coord ix = (D*dy) / (dr*dr);
         Coord iy = (-D*dx) / (dr*dr);
         Point ip(ix, iy); ip += _center;
-        result.push_back(ShapeIntersection(timeAt(ip), l.timeAt(ip), ip));
+        result.emplace_back(timeAt(ip), l.timeAt(ip), ip);
         return result;
     }
 
@@ -190,8 +190,8 @@ std::vector<ShapeIntersection> Circle::intersect(Line const &l) const
     Coord i2y = (-D*dx - fabs(dy) * sqrt_delta) / (dr*dr);
     Point i2p(i2x, i2y); i2p += _center;
 
-    result.push_back(ShapeIntersection(timeAt(i1p), l.timeAt(i1p), i1p));
-    result.push_back(ShapeIntersection(timeAt(i2p), l.timeAt(i2p), i2p));
+    result.emplace_back(timeAt(i1p), l.timeAt(i1p), i1p);
+    result.emplace_back(timeAt(i2p), l.timeAt(i2p), i2p);
     return result;
 }
 
@@ -222,7 +222,7 @@ std::vector<ShapeIntersection> Circle::intersect(Circle const &other) const
     if (d == R + r) {
         Point px = lerp(R / d, _center, other._center);
         Coord T = timeAt(px), t = other.timeAt(px);
-        result.push_back(ShapeIntersection(T, t, px));
+        result.emplace_back(T, t, px);
         return result;
     }
 
@@ -242,8 +242,8 @@ std::vector<ShapeIntersection> Circle::intersect(Circle const &other) const
     Point x1 = qp + qd;
     Point x2 = qp - qd;
 
-    result.push_back(ShapeIntersection(timeAt(x1), other.timeAt(x1), x1));
-    result.push_back(ShapeIntersection(timeAt(x2), other.timeAt(x2), x2));
+    result.emplace_back(timeAt(x1), other.timeAt(x1), x1);
+    result.emplace_back(timeAt(x2), other.timeAt(x2), x2);
     return result;
 }
 

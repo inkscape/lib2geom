@@ -270,9 +270,9 @@ public:
         }
         handles.push_back(&C1H);
         handles.push_back(&C2H);
-        sliders.push_back(Slider(-1.0, 1.0, 0, 0.0, "a"));
-        sliders.push_back(Slider(-1.0, 1.0, 0, 0.0, "b"));
-        sliders.push_back(Slider(0.0, 5.0, 0, 0.0, "c"));
+        sliders.emplace_back(-1.0, 1.0, 0, 0.0, "a");
+        sliders.emplace_back(-1.0, 1.0, 0, 0.0, "b");
+        sliders.emplace_back(0.0, 5.0, 0, 0.0, "c");
         handles.push_back(&(sliders[0]));
         handles.push_back(&(sliders[1]));
         handles.push_back(&(sliders[2]));

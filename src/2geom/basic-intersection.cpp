@@ -178,8 +178,8 @@ void find_self_intersections(std::vector<std::pair<double, double> > &xs,
                     //if((l == 1) && (r == 0))
                     if( ( l > precision ) && (r < precision) )//FIXME: what precision should be used here???
                         continue;
-                xs.push_back(std::make_pair((1-l)*dr[i] + l*dr[i+1],
-                                                (1-r)*dr[j] + r*dr[j+1]));
+                xs.emplace_back((1-l)*dr[i] + l*dr[i+1],
+                                                (1-r)*dr[j] + r*dr[j+1]);
             }
         }
     }

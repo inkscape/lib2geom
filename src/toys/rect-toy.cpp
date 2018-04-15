@@ -112,7 +112,7 @@ class LineToy : public Toy
         p1.pos = Point(400, 50);
         p2.pos = Point(450, 450);
 
-        sliders.push_back(Slider(0, 2*M_PI, 0, 0, "angle"));
+        sliders.emplace_back(0, 2*M_PI, 0, 0, "angle");
         sliders[ANGLE_SLIDER].formatter(&angle_formatter);
 
         handles.push_back(&p1);

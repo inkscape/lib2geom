@@ -41,7 +41,7 @@ static void plot(cairo_t* cr, Piecewise<SBasis> const &f,double vscale=1){
 
     plot[0].cuts.push_back(f.cuts.front());
     plot[0].cuts.push_back(f.cuts.back());
-    plot[0].segs.push_back(Linear(150,450));
+    plot[0].segs.emplace_back(Linear(150,450));
 
     for (unsigned i=1; i<f.size(); i++){
         double t=f.cuts[i],ft=f.segs[i].at0();

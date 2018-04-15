@@ -275,7 +275,7 @@ std::vector<Piecewise<D2<SBasis> > > fuse_nearby_ends(std::vector<Piecewise<D2<S
             }
         }
         if (!inserted) {
-            pre_result.push_back(std::vector<unsigned>());
+            pre_result.emplace_back();
             pre_result.back().push_back(i);
         }
     }

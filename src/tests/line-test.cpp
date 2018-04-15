@@ -116,12 +116,12 @@ TEST(LineTest, RotationToZero) {
 
 TEST(LineTest, Coefficients) {
     std::vector<Line> lines;
-    lines.push_back(Line(Point(1e9,1e9), Point(1,1)));
+    lines.emplace_back(Point(1e9,1e9), Point(1,1));
     //the case below will never work without normalizing the line
     //lines.push_back(Line(Point(1e5,1e5), Point(1e-15,0)));
-    lines.push_back(Line(Point(1e5,1e5), Point(1e5,-1e5)));
-    lines.push_back(Line(Point(-3,10), Point(3,10)));
-    lines.push_back(Line(Point(250,333), Point(-72,121)));
+    lines.emplace_back(Point(1e5,1e5), Point(1e5,-1e5));
+    lines.emplace_back(Point(-3,10), Point(3,10));
+    lines.emplace_back(Point(250,333), Point(-72,121));
 
     for (auto & line : lines) {
         Coord a, b, c, A, B, C;

@@ -139,15 +139,15 @@ class Box3d: public Toy {
         path_a_pw = path_a.toPwSb();
 
         // Finite images of the three vanishing points and the origin
-        hand.pts.push_back(Point(150,300));
-        hand.pts.push_back(Point(380,40));
-        hand.pts.push_back(Point(550,350));
-        hand.pts.push_back(Point(340,450));
+        hand.pts.emplace_back(150,300);
+        hand.pts.emplace_back(380,40);
+        hand.pts.emplace_back(550,350);
+        hand.pts.emplace_back(340,450);
 
         // Hand.Pts for moving in axes directions
-        hand.pts.push_back(Point(30,300));
-        hand.pts.push_back(Point(45,300));
-        hand.pts.push_back(Point(60,300));
+        hand.pts.emplace_back(30,300);
+        hand.pts.emplace_back(45,300);
+        hand.pts.emplace_back(60,300);
         
         // Box corners
         for (int i = 0; i < 8; ++i) {
@@ -158,8 +158,8 @@ class Box3d: public Toy {
         }
 
         // Origin handle
-	hand.pts.push_back(Point(180,70));
-        togs.push_back(Toggle("S", true));
+	hand.pts.emplace_back(180,70);
+        togs.emplace_back("S", true);
         handles.push_back(&hand);
     }
     void key_hit(GdkEventKey *e) override {

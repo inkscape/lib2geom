@@ -449,7 +449,7 @@ std::vector<std::vector<Rect> > split_bounds(PathVector const &p, std::vector<st
     for(unsigned i = 0; i < p.size(); i++) {
         std::vector<Rect> res;
         for(unsigned j = 1; j < splits[i].size(); j++)
-            res.push_back(Rect(p[i].pointAt(splits[i][j-1]), p[i].pointAt(splits[i][j])));
+            res.emplace_back(p[i].pointAt(splits[i][j-1]), p[i].pointAt(splits[i][j]));
         ret.push_back(res);
     }
     return ret;

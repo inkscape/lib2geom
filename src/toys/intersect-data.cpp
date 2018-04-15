@@ -296,10 +296,10 @@ class IntersectDataTester: public Toy {
 
 
     void initSliders(){
-        sliders.push_back(Slider(0.0, 1, 0, 0.0, "intersection chooser"));
-        sliders.push_back(Slider(0.0, 1, 0, 0.0, "ray chooser"));
-        sliders.push_back(Slider(0.0, 1, 0, 0.0, "area chooser"));
-        sliders.push_back(Slider(-5.0, 2, 0, 0.0, "tolerance chooser"));
+        sliders.emplace_back(0.0, 1, 0, 0.0, "intersection chooser");
+        sliders.emplace_back(0.0, 1, 0, 0.0, "ray chooser");
+        sliders.emplace_back(0.0, 1, 0, 0.0, "area chooser");
+        sliders.emplace_back(-5.0, 2, 0, 0.0, "tolerance chooser");
 
         handles.push_back(&(sliders[0]));
         handles.push_back(&(sliders[1]));
@@ -326,7 +326,7 @@ class IntersectDataTester: public Toy {
                 cmd_line_paths[i].appendNew<LineSegment>(cmd_line_paths[i].initialPoint() );
             }
             Point p = cmd_line_paths[i].initialPoint();
-            paths_handles.push_back(PointSetHandle());
+            paths_handles.emplace_back();
             paths_handles[i].push_back(p);
             handles.push_back( &paths_handles[i] );
         }        
@@ -349,21 +349,21 @@ class IntersectDataTester: public Toy {
     IntersectDataTester(){
         nb_paths=3; nb_curves_per_path = 5; degree = 1;
 
-        paths_handles.push_back(PointSetHandle());
+        paths_handles.emplace_back();
         paths_handles[0].push_back(100,100);
         paths_handles[0].push_back(100,200);
         paths_handles[0].push_back(300,200);
         paths_handles[0].push_back(300,100);
         paths_handles[0].push_back(100,100);
 
-        paths_handles.push_back(PointSetHandle());
+        paths_handles.emplace_back();
         paths_handles[1].push_back(120,190);
         paths_handles[1].push_back(200,210);
         paths_handles[1].push_back(280,190);
         paths_handles[1].push_back(200,300);
         paths_handles[1].push_back(120,190);
 
-        paths_handles.push_back(PointSetHandle());
+        paths_handles.emplace_back();
         paths_handles[2].push_back(180,150);
         paths_handles[2].push_back(200,140);
         paths_handles[2].push_back(220,150);

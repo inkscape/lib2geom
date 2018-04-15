@@ -96,7 +96,7 @@ std::vector<Interval> monotonicSplit(D2<SBasis> const &p){
 	unique(cuts.begin(), cuts.end() );
 
 	for (unsigned i=1; i<cuts.size(); i++){
-		result.push_back( Interval( cuts[i-1], cuts[i] ) );
+		result.emplace_back( cuts[i-1], cuts[i] );
 	}
 	return result;
 }
@@ -285,9 +285,9 @@ std::vector<SmashIntersection> monotonic_smash_intersect( D2<SBasis> const &a, D
 		Interval x_dom = rts_top[0];
 
 		if ( x_dom.max() <= x_range_strict.min() ){
-			tas.push_back( Interval ( ( aa[X].at0() < aa[X].at1() ) ? 0 : 1 ) );
+			tas.emplace_back( ( aa[X].at0() < aa[X].at1() ) ? 0 : 1 );
 		}else if ( x_dom.min() >= x_range_strict.max() ){
-			tas.push_back( Interval ( ( aa[X].at0() < aa[X].at1() ) ? 1 : 0 ) );
+			tas.emplace_back( ( aa[X].at0() < aa[X].at1() ) ? 1 : 0 );
 		}else{
 			tas = level_set(aa[X], x_dom );
 		}

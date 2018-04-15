@@ -183,7 +183,7 @@ public:
 
     void* hit(Geom::Point mouse) override;
     void move_to(void* hit, Geom::Point om, Geom::Point m) override;
-    void push_back(double x, double y) {pts.push_back(Geom::Point(x,y));}
+    void push_back(double x, double y) {pts.emplace_back(x,y);}
     void push_back(Geom::Point pt) {pts.push_back(pt);}
     unsigned size() {return pts.size();}
     Geom::D2<Geom::SBasis> asBezier();

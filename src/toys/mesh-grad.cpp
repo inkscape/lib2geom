@@ -46,8 +46,8 @@ public:
                 for(unsigned ui = 0; ui < sb2[0].us; ui++)
                     for(unsigned iv = 0; iv < 2; iv++)
                         for(unsigned iu = 0; iu < 2; iu++)
-                            hand.pts.push_back(Geom::Point((2*(iu+ui)/(2.*ui+1)+1)*width/4.,
-                                                          (2*(iv+vi)/(2.*vi+1)+1)*width/4.));
+                            hand.pts.emplace_back((2*(iu+ui)/(2.*ui+1)+1)*width/4.,
+                                                          (2*(iv+vi)/(2.*vi+1)+1)*width/4.);
         
         }
         

@@ -62,7 +62,7 @@ void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool s
 public:
 PreciseFlat () {
     for(unsigned i = 0; i < 4; i++)
-        hand.pts.push_back(Geom::Point(uniform()*400, uniform()*400));
+        hand.pts.emplace_back(uniform()*400, uniform()*400);
     handles.push_back(&hand);
 }
 

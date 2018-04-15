@@ -69,9 +69,9 @@ class PortionTester: public Toy {
   
 public:
     PortionTester(){
-        toggles.push_back(Toggle("Path", true));
+        toggles.emplace_back("Path", true);
         toggles[0].bounds = Rect(Point(10,100), Point(100, 130));
-        toggles.push_back(Toggle("Curve", true));
+        toggles.emplace_back("Curve", true);
         toggles[1].bounds = Rect(Point(10,130), Point(100, 160));
         if(handles.empty()) {
             handles.push_back(&curve_handle);

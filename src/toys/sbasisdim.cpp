@@ -83,12 +83,12 @@ class SBasisDimToy: public Toy {
         double slider_bot = width*3./4.;
         double slider_margin = width/8.;
         if(hand.pts.empty()) {
-            hand.pts.push_back(Geom::Point(width*3./16., 3*width/4.));
+            hand.pts.emplace_back(width*3./16., 3*width/4.);
             hand.pts.push_back(hand.pts[0] + Geom::Point(width/2., 0));
             hand.pts.push_back(hand.pts[0] + Geom::Point(width/8., -width/12.));
             hand.pts.push_back(hand.pts[0] + Geom::Point(0,-width/4.));
-            hand.pts.push_back(Geom::Point(slider_margin,slider_bot));
-            hand.pts.push_back(Geom::Point(width-slider_margin,slider_top));
+            hand.pts.emplace_back(slider_margin,slider_bot);
+            hand.pts.emplace_back(width-slider_margin,slider_top);
         }
         
         hand.pts[4][X] = slider_margin;

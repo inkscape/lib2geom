@@ -323,7 +323,7 @@ public:
     
     void mouse_moved(GdkEventMotion* e) override {
 	if(mouse_drag) {
-	    mouses.push_back(Point(e->x, e->y));
+	    mouses.emplace_back(e->x, e->y);
 	    redraw();
 	} else {
 	    Toy::mouse_moved(e);
@@ -349,8 +349,8 @@ public:
       handles.push_back(&adjuster2);
       adjuster3.pos = Geom::Point(450,300);
       handles.push_back(&adjuster3);
-      toggles.push_back(Toggle("Seq", false));
-      toggles.push_back(Toggle("Linfty", true));
+      toggles.emplace_back("Seq", false);
+      toggles.emplace_back("Linfty", true);
       //}
     //sliders.push_back(Slider(0.0, 1.0, 0.0, 0.0, "t"));
     //handles.push_back(&(sliders[0]));

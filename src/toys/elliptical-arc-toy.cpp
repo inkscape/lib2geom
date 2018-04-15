@@ -147,15 +147,15 @@ class EllipticalArcToy: public Toy
 
         sliders.clear();
         sliders.reserve(50);
-        sliders.push_back(Slider(0, 500, 0, ea.ray(X), "ray X"));
-        sliders.push_back(Slider(0, 500, 0, ea.ray(Y), "ray Y"));
-        sliders.push_back(Slider(0, 2*M_PI, 0, ea.rotationAngle(), "rot angle"));
+        sliders.emplace_back(0, 500, 0, ea.ray(X), "ray X");
+        sliders.emplace_back(0, 500, 0, ea.ray(Y), "ray Y");
+        sliders.emplace_back(0, 2*M_PI, 0, ea.rotationAngle(), "rot angle");
         sliders[ROT_ANGLE_SLIDER].formatter(&angle_formatter);
 
         toggles.clear();
         toggles.reserve(50);
-        toggles.push_back(Toggle("Large Arc Flag", ea.largeArc()));
-        toggles.push_back(Toggle("Sweep Flag", ea.sweep()));
+        toggles.emplace_back("Large Arc Flag", ea.largeArc());
+        toggles.emplace_back("Sweep Flag", ea.sweep());
 
         handles.clear();
         handles.push_back(&initial_point);
@@ -293,8 +293,8 @@ class EllipticalArcToy: public Toy
         from_t = 0;
         to_t = 1;
 
-        sliders.push_back( Slider(0, 1, 0, from_t, "from"));
-        sliders.push_back( Slider(0, 1, 0, to_t, "to"));
+        sliders.emplace_back(0, 1, 0, from_t, "from");
+        sliders.emplace_back(0, 1, 0, to_t, "to");
 
         handles.push_back(&(sliders[FROM_SLIDER]));
         handles.push_back(&(sliders[TO_SLIDER]));
@@ -335,7 +335,7 @@ class EllipticalArcToy: public Toy
         init_common();
         time = 0;
 
-        sliders.push_back( Slider(0, 1, 0, time, "t"));
+        sliders.emplace_back(0, 1, 0, time, "t");
         handles.push_back(&(sliders[T_SLIDER]));
     }
 
@@ -397,7 +397,7 @@ class EllipticalArcToy: public Toy
         init_common();
         time = 0;
 
-        sliders.push_back( Slider(0, 1, 0, time, "t"));
+        sliders.emplace_back(0, 1, 0, time, "t");
         handles.push_back(&(sliders[T_SLIDER]));
     }
 
@@ -427,7 +427,7 @@ class EllipticalArcToy: public Toy
     {
         init_common();
         ph.pos = Point(10,10);
-        toggles.push_back( Toggle("X/Y roots", true) );
+        toggles.emplace_back("X/Y roots", true );
 
         handles.push_back(&ph);
         handles.push_back(&(toggles[X_Y_TOGGLE]));
@@ -533,10 +533,10 @@ class EllipticalArcToy: public Toy
         double max = 4;
         double min = -max;
 
-        sliders.push_back( Slider(min, max, 0, 1, "TM0"));
-        sliders.push_back( Slider(min, max, 0, 0, "TM1"));
-        sliders.push_back( Slider(min, max, 0, 0, "TM2"));
-        sliders.push_back( Slider(min, max, 0, 1, "TM3"));
+        sliders.emplace_back(min, max, 0, 1, "TM0");
+        sliders.emplace_back(min, max, 0, 0, "TM1");
+        sliders.emplace_back(min, max, 0, 0, "TM2");
+        sliders.emplace_back(min, max, 0, 1, "TM3");
 
         handles.push_back(&(sliders[TM0_SLIDER]));
         handles.push_back(&(sliders[TM1_SLIDER]));

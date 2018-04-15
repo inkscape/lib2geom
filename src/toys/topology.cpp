@@ -563,7 +563,7 @@ public:
             Rect r = sweeper.context.pending_vertex;
             if (vertices.empty() || !r.intersects( vertices.back().bounds ) ){
                 v = vertices.size();
-                vertices.push_back(Vertex());
+                vertices.emplace_back();
                 vertices[v].bounds = r;
 //                std::printf("   new intersection created (%u).\n",v);
             }else{

@@ -261,7 +261,7 @@ std::vector<ShapeIntersection> Line::intersect(Line const &other) const
     Point odiff = other.initialPoint() - initialPoint();
     Coord t1 = cross(odiff, v2) / cp;
     Coord t2 = cross(odiff, v1) / cp;
-    result.push_back(ShapeIntersection(*this, other, t1, t2));
+    result.emplace_back(*this, other, t1, t2);
     return result;
 }
 

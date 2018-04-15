@@ -145,11 +145,11 @@ public:
         size=5;
         if(hand.pts.empty()) {
             for(unsigned i = 0; i < 2*size; i++)
-                hand.pts.push_back(Geom::Point(0,150+150+uniform()*300*0));
+                hand.pts.emplace_back(0,150+150+uniform()*300*0);
         }
-        hand.pts.push_back(Geom::Point(150,300+ 50+uniform()*100));
-        hand.pts.push_back(Geom::Point(150,300- 50+uniform()*100));
-        hand.pts.push_back(Geom::Point(150,300-150+uniform()*100));
+        hand.pts.emplace_back(150,300+ 50+uniform()*100);
+        hand.pts.emplace_back(150,300- 50+uniform()*100);
+        hand.pts.emplace_back(150,300-150+uniform()*100);
         handles.push_back(&hand);
     }
 };

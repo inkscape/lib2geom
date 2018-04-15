@@ -270,7 +270,7 @@ public:
     public:
         std::vector<Ray> rays;
         FatVertex(const Rect &r, unsigned const tile, bool centrifuge) : Rect(r){
-            rays.push_back( Ray(tile, centrifuge) );
+            rays.emplace_back(tile, centrifuge );
         }
         FatVertex(Rect r) : Rect(r){}
         FatVertex() : Rect(){}
@@ -1061,7 +1061,7 @@ public:
             high = low;
             do{
 //                v.rays.push_back( Ray(*high, !tiles_data[*high].open) );
-                v.rays.push_back( Ray(*high, tiles_data[*high].state!=0) );
+                v.rays.emplace_back(*high, tiles_data[*high].state!=0 );
                 high++;
             }while( high != tiles.end() && tiles_data[ *high ].cur_box()==pos );
 

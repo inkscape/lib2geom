@@ -153,8 +153,8 @@ class EllipseFitting : public Toy
         psh.pts[4] = Point(50, 250);
 
 
-        toggles.push_back(Toggle(" arc / ellipse ", false));
-        sliders.push_back(Slider(0, 5, 1, 0, "more handles"));
+        toggles.emplace_back(" arc / ellipse ", false);
+        sliders.emplace_back(0, 5, 1, 0, "more handles");
 
         handles.push_back(&psh);
         handles.push_back(&(toggles[0]));

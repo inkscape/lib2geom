@@ -191,7 +191,7 @@ TEST_F(BezierTest, Subdivide) {
             EXPECT_EQ(result.second.valueAt(1), input.valueAt(1));
 
             if (result.first.at1() != result.second.at0()) {
-                errors.push_back(std::pair<Bezier,double>(input, t));
+                errors.emplace_back(input, t);
             }
         }
     }
@@ -403,7 +403,7 @@ TEST_F(BezierTest, Intersection) {
     std::vector<XTest> tests;
 
     // Example 1
-    tests.push_back(XTest());
+    tests.emplace_back();
     tests.back().a = D2Bez(Bezier(-3.3, -3.3, 0, 3.3, 3.3), Bezier(1.3, -0.7, 2.3, -0.7, 1.3));
     tests.back().b = D2Bez(Bezier(-4.0, -4.0, 0, 4.0, 4.0), Bezier(-0.35, 3.0, -2.6, 3.0, -0.35));
     tests.back().s.resize(4);
@@ -413,7 +413,7 @@ TEST_F(BezierTest, Intersection) {
     tests.back().s[3] = XPt(3.12109, 0.76362, 0.90166, 0.79396);
 
     // Example 2
-    tests.push_back(XTest());
+    tests.emplace_back();
     tests.back().a = D2Bez(Bezier(0, 0, 3, 3), Bezier(0, 14, -9, 5));
     tests.back().b = D2Bez(Bezier(-1, 13, -10, 4), Bezier(4, 4, 1, 1));
     tests.back().s.resize(9);
@@ -428,7 +428,7 @@ TEST_F(BezierTest, Intersection) {
     tests.back().s[8] = XPt(2.99191, 3.82750, 0.96971, 0.14570);
 
     // Example 3
-    tests.push_back(XTest());
+    tests.emplace_back();
     tests.back().a = D2Bez(Bezier(-5, -5, -3, 0, 3, 5, 5), Bezier(0, 3.555, -1, 4.17, -1, 3.555, 0));
     tests.back().b = D2Bez(Bezier(-6, -6, -3, 0, 3, 6, 6), Bezier(3, -0.555, 4, -1.17, 4, -0.555, 3));
     tests.back().s.resize(6);
@@ -440,7 +440,7 @@ TEST_F(BezierTest, Intersection) {
     tests.back().s[5] = XPt(3.64353, 1.49822, 0.76880, 0.72695);
 
     // Example 4
-    tests.push_back(XTest());
+    tests.emplace_back();
     tests.back().a = D2Bez(Bezier(-4, -10, -2, -2, 2, 2, 10, 4), Bezier(0, 6, 6, 0, 0, 6, 6, 0));
     tests.back().b = D2Bez(Bezier(-8, 0, 8), Bezier(1, 6, 1));
     tests.back().s.resize(4);

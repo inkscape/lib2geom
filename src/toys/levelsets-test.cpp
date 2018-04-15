@@ -70,9 +70,9 @@ class BoundsTester: public Toy {
         hand.pts[2*size  ][Y]=std::max(hand.pts[2*size  ][Y],hand.pts[2*size+1][Y]+2*vtol);
 
         vector<Interval> levels;
-        levels.push_back( Interval(300-(hand.pts[2*size  ][Y]-vtol), 300-(hand.pts[2*size  ][Y]+vtol)) );
-        levels.push_back( Interval(300-(hand.pts[2*size+1][Y]-vtol), 300-(hand.pts[2*size+1][Y]+vtol)) );
-        levels.push_back( Interval(300-(hand.pts[2*size+2][Y]-vtol), 300-(hand.pts[2*size+2][Y]+vtol)) );
+        levels.emplace_back(300-(hand.pts[2*size  ][Y]-vtol), 300-(hand.pts[2*size  ][Y]+vtol) );
+        levels.emplace_back(300-(hand.pts[2*size+1][Y]-vtol), 300-(hand.pts[2*size+1][Y]+vtol) );
+        levels.emplace_back(300-(hand.pts[2*size+2][Y]-vtol), 300-(hand.pts[2*size+2][Y]+vtol) );
 
         for (auto & level : levels) plot_bar(cr,level.middle());
         cairo_set_source_rgba( cr, 1., 0., 0., 1);
@@ -118,11 +118,11 @@ public:
         size=5;
         if(hand.pts.empty()) {
             for(unsigned i = 0; i < 2*size; i++)
-                hand.pts.push_back(Geom::Point(0,150+150+uniform()*300*0));
+                hand.pts.emplace_back(0,150+150+uniform()*300*0);
         }
-        hand.pts.push_back(Geom::Point(150,300+ 50+uniform()*100));
-        hand.pts.push_back(Geom::Point(150,300- 50+uniform()*100));
-        hand.pts.push_back(Geom::Point(150,300-150+uniform()*100));
+        hand.pts.emplace_back(150,300+ 50+uniform()*100);
+        hand.pts.emplace_back(150,300- 50+uniform()*100);
+        hand.pts.emplace_back(150,300-150+uniform()*100);
         handles.push_back(&hand);
     	slider = Slider(-5, 2, 0, 0.5, "tolerance");
     	slider.geometry(Point(50, 20), 250);

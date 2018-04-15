@@ -148,28 +148,28 @@ class OffsetTester: public Toy {
         double slider_middle = (slider_top + slider_bot) / 2;
 
         if(psh.pts.empty()) {
-            psh.pts.push_back(Point(200,300));
-            psh.pts.push_back(Point(350,250));
-            psh.pts.push_back(Point(500,280));
-            psh.pts.push_back(Point(700,300));
+            psh.pts.emplace_back(200,300);
+            psh.pts.emplace_back(350,250);
+            psh.pts.emplace_back(500,280);
+            psh.pts.emplace_back(700,300);
 
-            psh.pts.push_back(Point(400,300));
-            psh.pts.push_back(Point(550,250));
-            psh.pts.push_back(Point(700,280));
-            psh.pts.push_back(Point(900,300));
+            psh.pts.emplace_back(400,300);
+            psh.pts.emplace_back(550,250);
+            psh.pts.emplace_back(700,280);
+            psh.pts.emplace_back(900,300);
 
-            psh.pts.push_back(Point(900,500));
-            psh.pts.push_back(Point(700,480));
-            psh.pts.push_back(Point(550,450));
-            psh.pts.push_back(Point(400,500));
+            psh.pts.emplace_back(900,500);
+            psh.pts.emplace_back(700,480);
+            psh.pts.emplace_back(550,450);
+            psh.pts.emplace_back(400,500);
 
-            psh_rand.pts.push_back(Geom::Point(slider_margin,slider_bot));
-            psh_rand.pts.push_back(Geom::Point(slider_margin,slider_top));
-            psh_rand.pts.push_back(Geom::Point(slider_margin,slider_top));
-            psh_rand.pts.push_back(Geom::Point(slider_margin,slider_top));
-            psh_rand.pts.push_back(Geom::Point(slider_margin,slider_top));
-            psh_rand.pts.push_back(Geom::Point(slider_margin,slider_bot));
-            psh_rand.pts.push_back(Geom::Point(slider_margin,slider_middle));
+            psh_rand.pts.emplace_back(slider_margin,slider_bot);
+            psh_rand.pts.emplace_back(slider_margin,slider_top);
+            psh_rand.pts.emplace_back(slider_margin,slider_top);
+            psh_rand.pts.emplace_back(slider_margin,slider_top);
+            psh_rand.pts.emplace_back(slider_margin,slider_top);
+            psh_rand.pts.emplace_back(slider_margin,slider_bot);
+            psh_rand.pts.emplace_back(slider_margin,slider_middle);
         }
 
         psh_rand.pts[0][X] = slider_margin;

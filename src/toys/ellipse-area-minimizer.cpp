@@ -317,7 +317,7 @@ class EllipseAreaMinimizer : public Toy
 
         handles.push_back(&psh);
 
-        toggles.push_back(Toggle("Area/Perimeter", true));
+        toggles.emplace_back("Area/Perimeter", true);
         handles.push_back(&(toggles[0]));
     }
 

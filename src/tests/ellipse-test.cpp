@@ -186,10 +186,10 @@ TEST(EllipseTest, BezierIntersection) {
 
 TEST(EllipseTest, Coefficients) {
     std::vector<Ellipse> es;
-    es.push_back(Ellipse(Point(-15,25), Point(10,15), Angle::from_degrees(45).radians0()));
-    es.push_back(Ellipse(Point(-10,33), Point(40,20), M_PI));
-    es.push_back(Ellipse(Point(10,-33), Point(40,20), Angle::from_degrees(135).radians0()));
-    es.push_back(Ellipse(Point(-10,-33), Point(50,10), Angle::from_degrees(330).radians0()));
+    es.emplace_back(Point(-15,25), Point(10,15), Angle::from_degrees(45).radians0());
+    es.emplace_back(Point(-10,33), Point(40,20), M_PI);
+    es.emplace_back(Point(10,-33), Point(40,20), Angle::from_degrees(135).radians0());
+    es.emplace_back(Point(-10,-33), Point(50,10), Angle::from_degrees(330).radians0());
 
     for (auto & it : es) {
         Coord a, b, c, d, e, f;
@@ -207,10 +207,10 @@ TEST(EllipseTest, Coefficients) {
 
 TEST(EllipseTest, UnitCircleTransform) {
     std::vector<Ellipse> es;
-    es.push_back(Ellipse(Point(-15,25), Point(10,15), Angle::from_degrees(45)));
-    es.push_back(Ellipse(Point(-10,33), Point(40,20), M_PI));
-    es.push_back(Ellipse(Point(10,-33), Point(40,20), Angle::from_degrees(135)));
-    es.push_back(Ellipse(Point(-10,-33), Point(50,10), Angle::from_degrees(330)));
+    es.emplace_back(Point(-15,25), Point(10,15), Angle::from_degrees(45));
+    es.emplace_back(Point(-10,33), Point(40,20), M_PI);
+    es.emplace_back(Point(10,-33), Point(40,20), Angle::from_degrees(135));
+    es.emplace_back(Point(-10,-33), Point(50,10), Angle::from_degrees(330));
 
     for (auto & e : es) {
         EXPECT_near(e.unitCircleTransform() * e.inverseUnitCircleTransform(), Affine::identity(), 1e-8);
@@ -256,10 +256,10 @@ TEST(EllipseTest, UnitTangentAt) {
 
 TEST(EllipseTest, BoundsExact) {
     std::vector<Ellipse> es;
-    es.push_back(Ellipse(Point(-15,25), Point(10,15), Angle::from_degrees(45)));
-    es.push_back(Ellipse(Point(-10,33), Point(40,20), M_PI));
-    es.push_back(Ellipse(Point(10,-33), Point(40,20), Angle::from_degrees(111)));
-    es.push_back(Ellipse(Point(-10,-33), Point(50,10), Angle::from_degrees(222)));
+    es.emplace_back(Point(-15,25), Point(10,15), Angle::from_degrees(45));
+    es.emplace_back(Point(-10,33), Point(40,20), M_PI);
+    es.emplace_back(Point(10,-33), Point(40,20), Angle::from_degrees(111));
+    es.emplace_back(Point(-10,-33), Point(50,10), Angle::from_degrees(222));
 
     // for reproducibility
     g_random_set_seed(1234);

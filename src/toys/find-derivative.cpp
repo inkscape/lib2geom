@@ -98,7 +98,7 @@ class FindDerivatives : public Toy
         p2.pos = Point(450, 450);
         O.pos = Point(50, 400);
 
-        sliders.push_back(Slider(0, 2*M_PI, 0, 0, "angle"));
+        sliders.emplace_back(0, 2*M_PI, 0, 0, "angle");
         sliders[ANGLE_SLIDER].formatter(&angle_formatter);
 
         handles.push_back(&p1);
@@ -227,7 +227,7 @@ class FindDerivatives : public Toy
         handles.push_back(&curve_handle);
         handles.push_back(&sample_point);
 
-        toggles.push_back(Toggle(" tangent / normal ", false));
+        toggles.emplace_back(" tangent / normal ", false);
         handles.push_back(&(toggles[0]));
         for(unsigned i = 0; i < 4; i++)
             curve_handle.push_back(150+uniform()*300,150+uniform()*300);
