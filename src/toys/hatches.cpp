@@ -37,13 +37,13 @@ public:
     LevelsCrossings(std::vector<std::vector<double> > const &times,
                     Piecewise<D2<SBasis> > const &f,
                     Piecewise<SBasis> const &dx){
-        for (unsigned i=0; i<times.size(); i++){
+        for (const auto & time : times){
             LevelCrossings lcs;
-            for (unsigned j=0; j<times[i].size(); j++){
+            for (double d : time){
                 LevelCrossing lc;
-                lc.pt = f.valueAt(times[i][j]);
-                lc.t = times[i][j];
-                lc.sign = ( dx.valueAt(times[i][j])>0 );
+                lc.pt = f.valueAt(d);
+                lc.t = d;
+                lc.sign = ( dx.valueAt(d)>0 );
                 lc.used = false;
                 lcs.push_back(lc);
             }
@@ -53,9 +53,9 @@ public:
         }
     }
     void flipInOut(){
-        for (unsigned i=0; i<size(); i++){
-            for (unsigned j=0; j<(*this)[i].size(); j++){
-                (*this)[i][j].sign = !(*this)[i][j].sign;
+        for (auto & v : *this){
+            for (auto & it : v){
+                it.sign = !it.sign;
             }
         }
     }
@@ -180,9 +180,9 @@ std::vector<Point> linearSnake(Piecewise<D2<SBasis> > const &f, double dy,double
     for (unsigned i=0; i<times.size(); i++){
         if ( times[i].size()>0 ){
             double last_t = times[i][0]-1;//ugly hack!!
-            for (unsigned j=0; j<times[i].size(); j++){
-                if (times[i][j]-last_t >0.000001){
-                    last_t = times[i][j];
+            for (double t : times[i]){
+                if (t-last_t >0.000001){
+                    last_t = t;
                     cleaned_times[i].push_back(last_t);
                 }
             }
@@ -191,8 +191,8 @@ std::vector<Point> linearSnake(Piecewise<D2<SBasis> > const &f, double dy,double
     times = cleaned_times;
     for (unsigned i=0; i<times.size(); i++){
         std::cout << "roots on level "<<i<<": ";
-        for (unsigned j=0; j<times[i].size(); j++){
-            std::cout << times[i][j] <<" ";
+        for (double time : times[i]){
+            std::cout << time <<" ";
         }
         std::cout <<"\n";
     }

@@ -213,8 +213,8 @@ class FindDerivatives : public Toy
         D2<SBasis> deriv = derivative(B);
         SBasis dotp = dot(deriv, rot90(vector));
         std::vector<double> sol = roots(dotp);
-        for (unsigned i = 0; i < sol.size(); ++i) {
-            draw_handle(cr, B.valueAt(sol[i]));         // the solutions are in vector 'sol'
+        for (double d : sol) {
+            draw_handle(cr, B.valueAt(d));         // the solutions are in vector 'sol'
         }
 
         cairo_set_source_rgba (cr, 0.5, 0.2, 0., 0.8);
@@ -248,9 +248,9 @@ class FindDerivatives : public Toy
         std::vector<double> sol = toggles[0].on ?
             find_tangents(sample_point.pos, B)
             : find_normals(sample_point.pos, B);
-        for (unsigned i = 0; i < sol.size(); ++i) {
-            draw_handle(cr, B.valueAt(sol[i]));         // the solutions are in vector 'sol'
-            draw_segment(cr, B.valueAt(sol[i]), sample_point.pos);
+        for (double d : sol) {
+            draw_handle(cr, B.valueAt(d));         // the solutions are in vector 'sol'
+            draw_segment(cr, B.valueAt(d), sample_point.pos);
         }
 
         cairo_set_source_rgba (cr, 0.5, 0.2, 0., 0.8);

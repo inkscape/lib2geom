@@ -80,8 +80,8 @@ Path interpolateToPath2(std::vector<Point> const &points, double tolerance_sq, u
 int main()
 {
     std::vector<Point> data_vector;
-    for (unsigned int i = 0; i < data_len; i++) {
-        data_vector.push_back(data[i]);
+    for (auto p : data) {
+        data_vector.push_back(p);
     }
 
     const int num_repeats = 2000;

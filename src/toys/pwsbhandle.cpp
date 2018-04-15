@@ -30,15 +30,15 @@ public:
 };
 
 void PWSBHandle::draw(cairo_t *cr, bool /*annotes*/) {
-    for(unsigned i = 0; i < pts.size(); i++) {
-	draw_circ(cr, pts[i]);
+    for(auto pt : pts) {
+	draw_circ(cr, pt);
     }
 }
 
 void* PWSBHandle::hit(Geom::Point mouse) {
-    for(unsigned i = 0; i < pts.size(); i++) {
-	if(Geom::distance(mouse, pts[i]) < 5)
-	    return (void*)(&pts[i]);
+    for(auto & pt : pts) {
+	if(Geom::distance(mouse, pt) < 5)
+	    return (void*)(&pt);
     }
     return nullptr;
 }
@@ -71,7 +71,7 @@ void PWSBHandle::load(FILE* f) {
 
 void PWSBHandle::save(FILE* f) {
     fprintf(f, "%d %d %lu\n", curve_size, segs, pts.size());
-    for(unsigned i = 0; i < pts.size(); i++) {
-	fprintf(f, "%lf %lf\n", pts[i][0], pts[i][1]);
+    for(auto & pt : pts) {
+	fprintf(f, "%lf %lf\n", pt[0], pt[1]);
     }
 }

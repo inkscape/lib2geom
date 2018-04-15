@@ -494,8 +494,8 @@ std::vector<Point> intersect(const xAx & C1, const xAx & C2);
 bool clip (std::vector<RatQuad> & rq, const xAx & cs, const Rect & R);
 
 inline std::ostream &operator<< (std::ostream &out_file, const xAx &x) {
-    for(int i = 0; i < 6; i++) {
-        out_file << x.c[i] << ", ";
+    for(double c : x.c) {
+        out_file << c << ", ";
     }
     return out_file;
 }

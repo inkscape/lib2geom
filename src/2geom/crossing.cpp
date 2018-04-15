@@ -134,28 +134,28 @@ void merge_crossings(Crossings &a, Crossings &b, unsigned i) {
 }
 
 void offset_crossings(Crossings &cr, double a, double b) {
-    for(unsigned i = 0; i < cr.size(); i++) {
-        cr[i].ta += a;
-        cr[i].tb += b;
+    for(auto & c : cr) {
+        c.ta += a;
+        c.tb += b;
     }
 }
 
 Crossings reverse_ta(Crossings const &cr, std::vector<double> max) {
     Crossings ret;
-    for(Crossings::const_iterator i = cr.begin(); i != cr.end(); ++i) {
-        double mx = max[i->a];
-        ret.push_back(Crossing(i->ta > mx+0.01 ? (1 - (i->ta - mx) + mx) : mx - i->ta,
-                               i->tb, !i->dir));
+    for(const auto & c : cr) {
+        double mx = max[c.a];
+        ret.push_back(Crossing(c.ta > mx+0.01 ? (1 - (c.ta - mx) + mx) : mx - c.ta,
+                               c.tb, !c.dir));
     }
     return ret;
 }
 
 Crossings reverse_tb(Crossings const &cr, unsigned split, std::vector<double> max) {
     Crossings ret;
-    for(Crossings::const_iterator i = cr.begin(); i != cr.end(); ++i) {
-        double mx = max[i->b - split];
-        ret.push_back(Crossing(i->ta, i->tb > mx+0.01 ? (1 - (i->tb - mx) + mx) : mx - i->tb,
-                               !i->dir));
+    for(const auto & c : cr) {
+        double mx = max[c.b - split];
+        ret.push_back(Crossing(c.ta, c.tb > mx+0.01 ? (1 - (c.tb - mx) + mx) : mx - c.tb,
+                               !c.dir));
     }
     return ret;
 }

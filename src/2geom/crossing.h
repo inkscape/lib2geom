@@ -165,11 +165,10 @@ struct Crosser {
     
         std::vector<std::vector<unsigned> > cull = sweep_bounds(bounds(a), bounds(b));
         for(unsigned i = 0; i < cull.size(); i++) {
-            for(unsigned jx = 0; jx < cull[i].size(); jx++) {
-                unsigned j = cull[i][jx];
+            for(unsigned int j : cull[i]) {
                 unsigned jc = j + a.size();
                 Crossings cr = crossings(a[i], b[j]);
-                for(unsigned k = 0; k < cr.size(); k++) { cr[k].a = i; cr[k].b = jc; }
+                for(auto & c : cr) { c.a = i; c.b = jc; }
                 
                 //Sort & add A-sorted crossings
                 sort_crossings(cr, i);

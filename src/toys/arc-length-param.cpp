@@ -41,8 +41,8 @@ public:
         std::vector< Piecewise<D2<SBasis> > > pieces;
         pieces = fuse_nearby_ends(split_at_discontinuities(B),9);
         Piecewise<D2<SBasis> > C;
-        for (unsigned i=0; i<pieces.size(); i++){
-            C.concat(pieces[i]);
+        for (const auto & piece : pieces){
+            C.concat(piece);
         }
 // testing fuse_nearby_ends
 

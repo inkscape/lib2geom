@@ -186,8 +186,8 @@ TEST_F(PathTest, Reversed) {
     a.push_back(diederik);
     a.push_back(cmds);
 
-    for (unsigned i = 0; i < a.size(); ++i) {
-        r.push_back(a[i].reversed());
+    for (auto & p : a) {
+        r.push_back(p.reversed());
     }
 
     for (unsigned i = 0; i < a.size(); ++i) {
@@ -276,9 +276,9 @@ TEST_F(PathTest, Winding) {
     r[1] = yellipse[0].roots(-80, Y);
     r[2] = yellipse[1].roots(0, Y);
     r[3] = yellipse[1].roots(-80, Y);
-    for (unsigned i = 0; i < 4; ++i) {
-        for (unsigned j = 0; j < r[i].size(); ++j) {
-            std::cout << format_coord_nice(r[i][j]) << " ";
+    for (auto & a : r) {
+        for (double j : a) {
+            std::cout << format_coord_nice(j) << " ";
         }
         std::cout << std::endl;
     }

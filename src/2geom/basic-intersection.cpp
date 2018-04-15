@@ -170,9 +170,9 @@ void find_self_intersections(std::vector<std::pair<double, double> > &xs,
             std::vector<std::pair<double, double> > section;
             
             find_intersections(section, pieces[i], pieces[j], precision);
-            for(unsigned k = 0; k < section.size(); k++) {
-                double l = section[k].first;
-                double r = section[k].second;
+            for(const auto & it : section) {
+                double l = it.first;
+                double r = it.second;
 // XXX: This condition will prune out false positives, but it might create some false negatives.  Todo: Confirm it is correct.
                 if(j == i+1)
                     //if((l == 1) && (r == 0))
@@ -212,14 +212,14 @@ void subdivide(D2<Bezier> const &a,
     }
 
     std::pair<double, double> prev = std::make_pair(0., 0.);
-    for (unsigned i = 0; i < xs.size(); ++i) {
-        av.push_back(portion(a, prev.first, xs[i].first));
-        bv.push_back(portion(b, prev.second, xs[i].second));
+    for (const auto & x : xs) {
+        av.push_back(portion(a, prev.first, x.first));
+        bv.push_back(portion(b, prev.second, x.second));
         av.back()[X].at0() = bv.back()[X].at0() = lerp(0.5, av.back()[X].at0(), bv.back()[X].at0());
         av.back()[X].at1() = bv.back()[X].at1() = lerp(0.5, av.back()[X].at1(), bv.back()[X].at1());
         av.back()[Y].at0() = bv.back()[Y].at0() = lerp(0.5, av.back()[Y].at0(), bv.back()[Y].at0());
         av.back()[Y].at1() = bv.back()[Y].at1() = lerp(0.5, av.back()[Y].at1(), bv.back()[Y].at1());
-        prev = xs[i];
+        prev = x;
     }
     av.push_back(portion(a, prev.first, 1));
     bv.push_back(portion(b, prev.second, 1));
@@ -390,9 +390,9 @@ static void intersect_polish_root (D2<SBasis> const &A, double &s,
 void polish_intersections(std::vector<std::pair<double, double> > &xs, 
                         D2<SBasis> const  &A, D2<SBasis> const &B)
 {
-    for(unsigned i = 0; i < xs.size(); i++)
-        intersect_polish_root(A, xs[i].first,
-                              B, xs[i].second);
+    for(auto & x : xs)
+        intersect_polish_root(A, x.first,
+                              B, x.second);
 }
 
 /**
@@ -424,17 +424,17 @@ double hausdorfl(D2<SBasis>& A, D2<SBasis> const& B,
         h_b_t = t;
         h_dist = dist;
     }
-    for (size_t i = 0; i < xs.size(); ++i)
+    for (auto & x : xs)
     {
-        Point At = A(xs[i].first);
-        Point Bu = B(xs[i].second);
+        Point At = A(x.first);
+        Point Bu = B(x.second);
         double distAtBu = Geom::distance(At, Bu);
         t = Geom::nearest_time(At, B);
         dist = Geom::distance(At, B(t));
         //FIXME: we might miss it due to floating point precision...
         if (dist >= distAtBu-.1 && distAtBu > h_dist) {
-            h_a_t = xs[i].first;
-            h_b_t = xs[i].second;
+            h_a_t = x.first;
+            h_b_t = x.second;
             h_dist = distAtBu;
         }
             

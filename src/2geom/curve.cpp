@@ -73,8 +73,7 @@ int Curve::winding(Point const &p) const
         bool ignore_1 = unitTangentAt(1)[Y] >= 0;
 
         int wind = 0;
-        for (std::size_t i = 0; i < ts.size(); ++i) {
-            Coord t = ts[i];
+        for (double t : ts) {
             //std::cout << t << std::endl;
             if ((t == 0 && ignore_0) || (t == 1 && ignore_1)) continue;
             if (valueAt(t, X) > p[X]) { // root is ray intersection
@@ -118,10 +117,10 @@ std::vector<CurveIntersection> Curve::intersectSelf(Coord eps) const
 
     boost::ptr_vector<Curve> parts;
     Coord previous = 0;
-    for (unsigned i = 0; i < splits.size(); ++i) {
-        if (splits[i] == 0.) continue;
-        parts.push_back(portion(previous, splits[i]));
-        previous = splits[i];
+    for (double split : splits) {
+        if (split == 0.) continue;
+        parts.push_back(portion(previous, split));
+        previous = split;
     }
 
     Coord prev_i = 0;
@@ -135,14 +134,14 @@ std::vector<CurveIntersection> Curve::intersectSelf(Coord eps) const
             prev_j = splits[j];
 
             std::vector<CurveIntersection> xs = parts[i].intersect(parts[j], eps);
-            for (unsigned k = 0; k < xs.size(); ++k) {
+            for (auto & x : xs) {
                 // to avoid duplicated intersections, skip values at exactly 1
-                if (xs[k].first == 1. || xs[k].second == 1.) continue;
+                if (x.first == 1. || x.second == 1.) continue;
 
-                Coord ti = dom_i.valueAt(xs[k].first);
-                Coord tj = dom_j.valueAt(xs[k].second);
+                Coord ti = dom_i.valueAt(x.first);
+                Coord tj = dom_j.valueAt(x.second);
 
-                CurveIntersection real(ti, tj, xs[k].point());
+                CurveIntersection real(ti, tj, x.point());
                 result.push_back(real);
             }
         }

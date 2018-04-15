@@ -871,9 +871,9 @@ class DCCToy : public Toy
         *notify << "total cuts: " << pwc.cuts.size();
         if (toggles[1].on)
         {
-            for (unsigned int i = 0; i < pwc.cuts.size(); ++i)
+            for (double cut : pwc.cuts)
             {
-                draw_handle(cr, pwc(pwc.cuts[i]));
+                draw_handle(cr, pwc(cut));
             }
         }
         else

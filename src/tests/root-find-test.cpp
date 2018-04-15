@@ -97,11 +97,11 @@ int main() {
     }
     double ave_left = 0;
     cout << "err from exact\n";
-    for(unsigned i = 0; i < trials.size(); i++) {
+    for(auto & trial : trials) {
         SBasis B = Linear(1.,1);
-        sort(trials[i].begin(), trials[i].end());
-        for(unsigned j = 0; j < trials[i].size(); j++) {
-            B = B*linear(1, -trials[i][j]);
+        sort(trial.begin(), trial.end());
+        for(double it : trial) {
+            B = B*linear(1, -it);
         }
         double left_time;
         clock_t end_t = clock()+clock_t(timer_precision*CLOCKS_PER_SEC);
@@ -113,18 +113,17 @@ int main() {
         left_time = timer_precision*units/iterations;
         vector<double> rt = roots(B);
         double err = 0;
-        for(unsigned k = 0; k < rt.size(); k++) {
-            double r = rt[k];
-            double best = fabs(r - trials[i][0]);
-            for(unsigned j = 1; j < trials[i].size(); j++) {
-                if(fabs(r - trials[i][j]) < best)
-                    best = fabs(r - trials[i][j]);
+        for(double r : rt) {
+            double best = fabs(r - trial[0]);
+            for(unsigned j = 1; j < trial.size(); j++) {
+                if(fabs(r - trial[j]) < best)
+                    best = fabs(r - trial[j]);
             }
             err += best;
         }
         if(err > 1e-8){
-            for(unsigned j = 0; j < trials[i].size(); j++) {
-                cout << trials[i][j] << ", ";
+            for(double it : trial) {
+                cout << it << ", ";
             }
             cout << endl;
         }
@@ -135,8 +134,8 @@ int main() {
     
     for(int i = 10; i >= 0; i--) {
         vector<double> rt = roots(Linear(i,-1));
-        for(unsigned j = 0; j < rt.size(); j++) {
-            cout << rt[j] << ", ";
+        for(double d : rt) {
+            cout << d << ", ";
         }
         cout << endl;
     }

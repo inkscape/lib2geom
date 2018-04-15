@@ -63,11 +63,11 @@ Coord nearest_time(Point const &p, D2<Bezier> const &input, Coord from, Coord to
     std::vector<Coord> ts = (multiply(bez[X], deriv[X]) + multiply(bez[Y], deriv[Y])).roots();
 
     Coord t = -1, mind = infinity();
-    for (unsigned i = 0; i < ts.size(); ++i) {
-        Coord droot = L2sq(bez.valueAt(ts[i]));
+    for (double c : ts) {
+        Coord droot = L2sq(bez.valueAt(c));
         if (droot < mind) {
             mind = droot;
-            t = ts[i];
+            t = c;
         }
     }
 
@@ -117,12 +117,12 @@ double nearest_time(Point const& p,
 
     double closest = from;
     double min_dist_sq = L2sq(c(from) - p);
-    for ( size_t i = 0; i < zeros.size(); ++i )
+    for (double zero : zeros)
     {
-        double distsq = L2sq(c(zeros[i]) - p);
-        if ( min_dist_sq > L2sq(c(zeros[i]) - p) )
+        double distsq = L2sq(c(zero) - p);
+        if ( min_dist_sq > L2sq(c(zero) - p) )
         {
-            closest = zeros[i];
+            closest = zero;
             min_dist_sq = distsq;
         }
     }
@@ -165,8 +165,8 @@ all_nearest_times(Point const &p,
     candidates.push_back(to);
     std::vector<double> distsq;
     distsq.reserve(candidates.size());
-    for (unsigned i = 0; i < candidates.size(); ++i) {
-        distsq.push_back(L2sq(c(candidates[i]) - p));
+    for (double candidate : candidates) {
+        distsq.push_back(L2sq(c(candidate) - p));
     }
     unsigned closest = 0;
     double dsq = distsq[0];
@@ -256,9 +256,9 @@ all_nearest_times(Point const &p,
     {
         std::vector<double>	all_nearest =
             all_nearest_times(p, c[si], c.segT(from, si), c.segT(to, si));
-        for ( unsigned int i = 0; i < all_nearest.size(); ++i )
+        for (double & nearest : all_nearest)
         {
-            all_nearest[i] = c.mapToDomain(all_nearest[i], si);
+            nearest = c.mapToDomain(nearest, si);
         }
         return all_nearest;
     }
@@ -297,8 +297,8 @@ all_nearest_times(Point const &p,
         all_t = all_nearest_times(p, c[ei], 0, c.segT(to, ei));
         dsq = distanceSq( p, c[ei](all_t.front()) );
         if (mindistsq > dsq) {
-            for (unsigned int i = 0; i < all_t.size(); ++i) {
-                all_t[i] = c.mapToDomain(all_t[i], ei);
+            for (double & it : all_t) {
+                it = c.mapToDomain(it, ei);
             }
             return all_t;
         } else if (mindistsq == dsq) {
@@ -308,8 +308,8 @@ all_nearest_times(Point const &p,
     }
     std::vector<double> all_nearest;
     for (unsigned i = 0; i < all_np.size(); ++i) {
-        for (unsigned int j = 0; j < all_np[i].size(); ++j) {
-            all_nearest.push_back( c.mapToDomain(all_np[i][j], ni[i]) );
+        for (double d : all_np[i]) {
+            all_nearest.push_back( c.mapToDomain(d, ni[i]) );
         }
     }
     all_nearest.erase(std::unique(all_nearest.begin(), all_nearest.end()),

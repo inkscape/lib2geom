@@ -47,7 +47,7 @@ bool make_elliptical_arc( EllipticalArc & ea,
 		                  Point const& inner )
 {
 
-	Point p[3] = { initial, inner, final };
+	Point ps[3] = { initial, inner, final };
 	double x1, x2, x3, x4;
 	double y1, y2, y3, y4;
 	double x1y1, x2y2, x3y1, x1y3;
@@ -57,11 +57,11 @@ bool make_elliptical_arc( EllipticalArc & ea,
 
 	m.set_all(0);
 	v.set_all(0);
-	for (unsigned int k = 0; k < 3; ++k)
+	for (auto & p : ps)
 	{
 		// init_x_y
-		x1 = p[k][X] - centre[X]; x2 = x1 * x1; x3 = x2 * x1; x4 = x3 * x1;
-		y1 = p[k][Y] - centre[Y]; y2 = y1 * y1; y3 = y2 * y1; y4 = y3 * y1;
+		x1 = p[X] - centre[X]; x2 = x1 * x1; x3 = x2 * x1; x4 = x3 * x1;
+		y1 = p[Y] - centre[Y]; y2 = y1 * y1; y3 = y2 * y1; y4 = y3 * y1;
 		x1y1 = x1 * y1;
 		x2y2 = x2 * y2;
 		x3y1 = x3 * y1; x1y3 = x1 * y3;

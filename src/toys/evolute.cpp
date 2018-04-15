@@ -28,8 +28,8 @@ void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool s
     SBasis crs = cross(ddA, dA);
     cairo_d2_sb(cr, D2<SBasis>(Linear(0,1000), crs*(500./bounds_exact(crs)->extent())));
     vector<double> rts = roots(crs);
-    for(unsigned i = 0; i < rts.size(); i++) {
-        draw_handle(cr, A(rts[i]));
+    for(double rt : rts) {
+        draw_handle(cr, A(rt));
     }
     cairo_d2_sb(cr, A);
     cairo_stroke(cr);
@@ -53,9 +53,9 @@ void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool s
         cairo_d2_pw_sb(cr, D2<Piecewise<SBasis> >(Piecewise<SBasis>(SBasis(Linear(0,1000))), dot(ev4, ev4)*1000));
         cairo_stroke(cr);
         vector<double> rts = roots(dot(ev4, ev4)-1);
-        for(unsigned i = 0; i < rts.size(); i++) {
-            std::cout << rts[i] << std::endl;
-            draw_handle(cr, ev4(rts[i]));
+        for(double rt : rts) {
+            std::cout << rt << std::endl;
+            draw_handle(cr, ev4(rt));
         }
     }
     cairo_set_source_rgba (cr, 1., 0., 1, 1);

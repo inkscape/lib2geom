@@ -510,7 +510,7 @@ std::vector<double> roots(const Piecewise<T> &pw) {
     std::vector<double> ret;
     for(unsigned i = 0; i < pw.size(); i++) {
         std::vector<double> sr = roots(pw[i]);
-        for (unsigned j = 0; j < sr.size(); j++) ret.push_back(sr[j] * (pw.cuts[i + 1] - pw.cuts[i]) + pw.cuts[i]);
+        for (double & d : sr) ret.push_back(d * (pw.cuts[i + 1] - pw.cuts[i]) + pw.cuts[i]);
 
     }
     return ret;

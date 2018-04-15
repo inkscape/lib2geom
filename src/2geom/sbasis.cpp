@@ -180,8 +180,8 @@ SBasis& operator*=(SBasis& a, double b) {
     if (b == 0)
         a.clear();
     else
-        for(unsigned i = 0; i < a.size(); i++)
-            a[i] *= b;
+        for(auto & p : a)
+            p *= b;
     return a;
 }
 

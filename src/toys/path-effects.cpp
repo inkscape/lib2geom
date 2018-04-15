@@ -69,8 +69,8 @@ class BoolOps: public Toy {
         cairo_stroke(cr);
 	
         cairo_set_source_rgb(cr, 0,0,0);
-	for(unsigned i = 0; i < pv.size(); i++) {
-	  Piecewise<D2<SBasis> > B = pv[i].toPwSb();
+	for(const auto & p : pv) {
+	  Piecewise<D2<SBasis> > B = p.toPwSb();
 	  Piecewise<D2<SBasis> > n = rot90(unitVector(derivative(B)));
 	  Piecewise<SBasis > al = arcLengthSb(B);
 	  
@@ -91,13 +91,12 @@ class BoolOps: public Toy {
 	  cairo_path(cr, zz_path*t);
 	  cairo_stroke(cr);
 	}        
-        for(unsigned i = 0; i < pv.size(); i++) {
-            if(pv[i].size() == 0) {
+        for(const auto & p : pv) {
+            if(p.size() == 0) {
                 *notify << "naked moveto;";
             } else 
-            for(unsigned j = 0; j < pv[i].size(); j++) {
-                const Curve* c = &pv[i][j];
-                *notify << typeid(*c).name() << ';' ;
+            for(const Curve & c : p) {
+                *notify << typeid(c).name() << ';' ;
             }
         }
 

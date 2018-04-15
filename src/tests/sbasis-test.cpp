@@ -83,8 +83,8 @@ SBasis linear_root(double t) {
 
 SBasis array_roots(vector<double> x) {
     SBasis b(1);
-    for(unsigned i = 0; i < x.size(); i++) {
-        b = multiply(b, linear_root(x[i]));
+    for(double d : x) {
+        b = multiply(b, linear_root(d));
     }
     return b;
 }
@@ -118,11 +118,11 @@ TEST_F(SBasisTest, Roots) {
     tests.push_back(vector_from_array((const double[]){.1,.2,.3,.4,.5,.6}));
     tests.push_back(vector_from_array((const double[]){0.25,0.25,0.25,0.75,0.75,0.75}));
     
-    for(unsigned test_i = 0; test_i < tests.size(); test_i++) {
-        SBasis b = array_roots(tests[test_i]);
-        std::cout << tests[test_i] << ": " << b << std::endl;
+    for(const auto & test : tests) {
+        SBasis b = array_roots(test);
+        std::cout << test << ": " << b << std::endl;
         std::cout << roots(b) << std::endl;
-        EXPECT_vector_near(tests[test_i], roots(b), eps);
+        EXPECT_vector_near(test, roots(b), eps);
     }
 
     vector<Linear> broken;
@@ -148,8 +148,7 @@ TEST_F(SBasisTest, Subdivide) {
     std::vector<std::pair<SBasis, double> > errors;
     for (unsigned i = 0; i < 10000; ++i) {
         double t = g_random_double_range(0, 1e-6);
-        for (unsigned i = 0; i < 4; ++i) {
-            SBasis &input = fragments[i];
+        for (auto & input : fragments) {
             std::pair<SBasis, SBasis> result;
             result.first = portion(input, 0, t);
             result.second = portion(input, t, 1);
@@ -212,8 +211,7 @@ TEST_F(SBasisTest,Operators) {
     EXPECT_TRUE(bounds_local(hump, Interval(0.3, 0.6))->contains(tight_local_bounds));
 
     SBasis Bs[] = {unit, hump, wiggle};
-    for(unsigned i = 0; i < sizeof(Bs)/sizeof(SBasis); i++) {
-        SBasis B = Bs[i];
+    for(auto B : Bs) {
         SBasis product = multiply(B, B);
         for(int i = 0; i <= 16; i++) {
             double t = i/16.0;

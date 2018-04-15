@@ -78,7 +78,7 @@ This is a multi-root test...
         levels.push_back((300-hand.pts[2*size  ][1]));
         levels.push_back((300-hand.pts[2*size+1][1]));
         levels.push_back((300-hand.pts[2*size+2][1]));
-        for (unsigned i=0;i<levels.size();i++) plot_bar(cr,levels[i]);
+        for (double level : levels) plot_bar(cr,level);
         
         cairo_set_source_rgba (cr, 0., 0.5, 0., 1);
         
@@ -104,8 +104,8 @@ This is a multi-root test...
         //}
 
         for (unsigned i=0;i<sols.size();i++){
-            for (unsigned j=0;j<sols[i].size();j++){
-                draw_handle(cr,Point(150+300*sols[i][j],300-levels[i]));
+            for (double j : sols[i]){
+                draw_handle(cr,Point(150+300*j,300-levels[i]));
             }
         }
         cairo_set_source_rgba (cr, 0.9, 0., 0.8, 1);

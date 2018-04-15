@@ -139,8 +139,8 @@ Geom::cutAtRoots(Piecewise<D2<SBasis> > const &M, double ZERO){
         vector<double> seg_rts = roots((M.segs[i])[0]);
         seg_rts = vect_intersect(seg_rts, roots((M.segs[i])[1]), ZERO);
         Linear mapToDom = Linear(M.cuts[i],M.cuts[i+1]);
-        for (unsigned r=0; r<seg_rts.size(); r++){
-            seg_rts[r]= mapToDom(seg_rts[r]);
+        for (double & seg_rt : seg_rts){
+            seg_rt= mapToDom(seg_rt);
         }
         rts.insert(rts.end(),seg_rts.begin(),seg_rts.end());
     }
@@ -600,8 +600,8 @@ solve_lambda0(double a0,double a1,double c0,double c1,
         return std::vector<double>();
     p = compose(p,Linear(domain->min(),domain->max()));
     std::vector<double>rts = roots(p);
-    for (unsigned i=0; i<rts.size(); i++){
-        rts[i] = domain->min() + rts[i] * domain->extent();
+    for (double & rt : rts){
+        rt = domain->min() + rt * domain->extent();
     }
     return rts;
 }
@@ -668,8 +668,7 @@ Geom::cubics_fitting_curvature(Point const &M0,   Point const &M1,
         }else{
             //find lamda0 by solving a deg 4 equation d0+d1*X+...+d4*X^4=0
             vector<double> solns=solve_lambda0(a0,a1,c0,c1,insist_on_speed_signs);
-            for (unsigned i=0;i<solns.size();i++){
-                double lbda0=solns[i];
+            for (double lbda0 : solns){
                 double lbda1=c0+a0*lbda0*lbda0;
                 //is this solution pointing in the + direction at both ends?
                 if (lbda0>=0. && lbda1>=0.){

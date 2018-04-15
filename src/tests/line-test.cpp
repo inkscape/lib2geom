@@ -123,9 +123,9 @@ TEST(LineTest, Coefficients) {
     lines.push_back(Line(Point(-3,10), Point(3,10)));
     lines.push_back(Line(Point(250,333), Point(-72,121)));
 
-    for (unsigned i = 0; i < lines.size(); ++i) {
+    for (auto & line : lines) {
         Coord a, b, c, A, B, C;
-        lines[i].coefficients(a, b, c);
+        line.coefficients(a, b, c);
         /*std::cout << format_coord_nice(a) << " "
                   << format_coord_nice(b) << " "
                   << format_coord_nice(c) << std::endl;*/
@@ -141,7 +141,7 @@ TEST(LineTest, Coefficients) {
 
         for (unsigned j = 0; j <= 10; ++j) {
             double t = j / 10.;
-            Point p = lines[i].pointAt(t);
+            Point p = line.pointAt(t);
             /*std::cout << t << " " << p << " "
                       << A*p[X] + B*p[Y] + C << " "
                       << A*(p[X]-1) + B*(p[Y]+1) + C << std::endl;*/

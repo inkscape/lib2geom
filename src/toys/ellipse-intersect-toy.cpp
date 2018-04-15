@@ -83,8 +83,8 @@ class CircleIntersect : public Toy {
         ea = Ellipse(psh[0].pts[0], Point(r1x, r1y), rot1);
         eb = Ellipse(psh[1].pts[0], Point(r2x, r2y), rot2);
 
-        for (unsigned i = 0; i < 6; ++i) {
-            l[i] = Line(0, 0, 0);
+        for (auto & p : l) {
+            p = Line(0, 0, 0);
         }
 
         cairo_set_line_width(cr, 1.0);
@@ -119,8 +119,8 @@ class CircleIntersect : public Toy {
             }
 
             cairo_set_source_rgb(cr, 1, 0, 0);
-            for (unsigned i = 0; i < result.size(); ++i) {
-                draw_handle(cr, result[i].point());
+            for (auto & si : result) {
+                draw_handle(cr, si.point());
             }
             cairo_stroke(cr);
         } catch(...) {

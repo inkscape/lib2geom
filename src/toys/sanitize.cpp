@@ -67,8 +67,8 @@ Edges edges(PathVector const &ps, CrossingSet const &crs) {
 
 PathVector edges_to_paths(Edges const &es, PathVector const &ps) {
     PathVector ret;
-    for(unsigned i = 0; i < es.size(); i++) {
-        ret.push_back(ps[es[i].ix].portion(es[i].from.time, es[i].to.time));
+    for(const auto & e : es) {
+        ret.push_back(ps[e.ix].portion(e.from.time, e.to.time));
     }
     return ret;
 }
@@ -121,26 +121,26 @@ std::vector<Edges> cells(cairo_t */*cr*/, PathVector const &ps) {
             //Point to = curpnt.point + norm *20;
             
             //std::cout << norm;
-            for(unsigned i = 0; i < es.size(); i++) {
-                if(es[i] == was || es[i].cw != start.cw) continue;
-                if((!are_near(curpnt.time, es[i].from.time)) &&
-                    are_near(curpnt.point, es[i].from.point, 0.1)) {
-                    double v = ang(norm, es[i].from.norm);
+            for(auto & e : es) {
+                if(e == was || e.cw != start.cw) continue;
+                if((!are_near(curpnt.time, e.from.time)) &&
+                    are_near(curpnt.point, e.from.point, 0.1)) {
+                    double v = ang(norm, e.from.norm);
                     //draw_line_seg(cr, curpnt.point, to);
                     //draw_line_seg(cr, to, es[i].from.point + es[i].from.norm*30); 
                     //std::cout << v << "\n";
                     if(start.cw ? v < a : v > a ) {
                         a = v;
-                        cur = es[i];
+                        cur = e;
                         rev = false;
                     }
                 }
-                if((!are_near(curpnt.time, es[i].to.time)) &&
-                    are_near(curpnt.point, es[i].to.point, 0.1)) {
-                    double v = ang(norm, -es[i].to.norm);
+                if((!are_near(curpnt.time, e.to.time)) &&
+                    are_near(curpnt.point, e.to.point, 0.1)) {
+                    double v = ang(norm, -e.to.norm);
                     if(start.cw ? v < a : v > a) {
                         a = v;
-                        cur = es[i];
+                        cur = e;
                         rev = true; 
                     }
                 }

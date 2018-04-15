@@ -42,15 +42,15 @@ class Box3d: public Toy {
         }
 
         *notify << "Projection matrix:" << endl;
-        for (int i = 0; i < 3; ++i) {
-            for (int j = 0; j < 4; ++j) {
-                *notify << tmat[i][j] << " ";
+        for (auto & a : tmat) {
+            for (double d : a) {
+                *notify << d << " ";
             }
             *notify << endl;
         }
 
-        for(unsigned i = 0; i < paths_a.size(); i++) {
-            Piecewise<D2<SBasis> >  path_a_pw = paths_a[i].toPwSb();
+        for(const auto & p : paths_a) {
+            Piecewise<D2<SBasis> >  path_a_pw = p.toPwSb();
 
             D2<Piecewise<SBasis> > B = make_cuts_independent(path_a_pw);
             Piecewise<SBasis> preimage[4];

@@ -53,11 +53,11 @@ class Sb2d2: public Toy {
             cairo_d2_sb(cr, B);
             for(unsigned dim = 0; dim < 2; dim++) {
                 std::vector<double> r = roots(B[dim]);
-                for(unsigned i = 0; i < r.size(); i++)
-                    draw_cross(cr, B(r[i]));
+                for(double d : r)
+                    draw_cross(cr, B(d));
                 r = roots(Linear(width/4) - B[dim]);
-                for(unsigned i = 0; i < r.size(); i++)
-                    draw_cross(cr, B(r[i]));
+                for(double d : r)
+                    draw_cross(cr, B(d));
             }
             cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
             cairo_stroke(cr);

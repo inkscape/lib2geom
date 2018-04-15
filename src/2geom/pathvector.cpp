@@ -44,8 +44,8 @@ namespace Geom {
 PathVector::size_type PathVector::curveCount() const
 {
     size_type n = 0;
-    for (const_iterator it = begin(); it != end(); ++it) {
-        n += it->size_default();
+    for (const auto & it : *this) {
+        n += it.size_default();
     }
     return n;
 }
@@ -55,16 +55,16 @@ void PathVector::reverse(bool reverse_paths)
     if (reverse_paths) {
         std::reverse(begin(), end());
     }
-    for (iterator i = begin(); i != end(); ++i) {
-        *i = i->reversed();
+    for (auto & it : *this) {
+        it = it.reversed();
     }
 }
 
 PathVector PathVector::reversed(bool reverse_paths) const
 {
     PathVector ret;
-    for (const_iterator i = begin(); i != end(); ++i) {
-        ret.push_back(i->reversed());
+    for (const auto & it : *this) {
+        ret.push_back(it.reversed());
     }
     if (reverse_paths) {
         std::reverse(ret.begin(), ret.end());
@@ -179,15 +179,15 @@ public:
         unsigned w = ii->which;
         unsigned ow = (ii->which + 1) % 2;
 
-        for (ActivePathList::iterator i = _active[ow].begin(); i != _active[ow].end(); ++i) {
-            if (!ii->path->boundsFast().intersects(i->path->boundsFast())) continue;
-            std::vector<PathIntersection> px = ii->path->intersect(*i->path, _precision);
-            for (std::size_t k = 0; k < px.size(); ++k) {
-                PathVectorTime tw(ii->index, px[k].first), tow(i->index, px[k].second);
+        for (auto & active : _active[ow]) {
+            if (!ii->path->boundsFast().intersects(active.path->boundsFast())) continue;
+            std::vector<PathIntersection> px = ii->path->intersect(*active.path, _precision);
+            for (auto & pi : px) {
+                PathVectorTime tw(ii->index, pi.first), tow(active.index, pi.second);
                 _result.push_back(PVIntersection(
                     w == 0 ? tw : tow,
                     w == 0 ? tow : tw,
-                    px[k].point()));
+                    pi.point()));
             }
         }
         _active[w].push_back(*ii);
@@ -230,9 +230,9 @@ std::vector<PVIntersection> PathVector::intersect(PathVector const &other, Coord
 int PathVector::winding(Point const &p) const
 {
     int wind = 0;
-    for (const_iterator i = begin(); i != end(); ++i) {
-        if (!i->boundsFast().contains(p)) continue;
-        wind += i->winding(p);
+    for (const auto & it : *this) {
+        if (!it.boundsFast().contains(p)) continue;
+        wind += it.winding(p);
     }
     return wind;
 }

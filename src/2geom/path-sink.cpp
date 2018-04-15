@@ -57,8 +57,8 @@ void PathSink::feed(Path const &path) {
 }
 
 void PathSink::feed(PathVector const &pv) {
-    for (PathVector::const_iterator i = pv.begin(); i != pv.end(); ++i) {
-        feed(*i);
+    for (const auto & p : pv) {
+        feed(p);
     }
 }
 

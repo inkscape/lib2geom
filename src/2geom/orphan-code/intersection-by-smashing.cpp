@@ -149,10 +149,10 @@ static
 std::vector<Interval> intersect( std::vector<Interval> const &a, std::vector<Interval> const &b){
 	std::vector<Interval> result;
 	//TODO: use order to optimize this!
-	for (unsigned i=0; i < a.size(); i++){
-		for (unsigned j=0; j < b.size(); j++){
-			OptInterval c( a[i] );
-			c &= b[j];
+	for (auto it : a){
+		for (auto it2 : b){
+			OptInterval c( it );
+			c &= it2;
 			if ( c ) {
 				result.push_back( *c );
 			}
@@ -221,12 +221,12 @@ std::vector<SmashIntersection> monotonic_smash_intersect( D2<SBasis> const &a, D
 
 	// find times when bb is in the neighborhood of aa.
 	std::vector<Interval> tbs;
-	for (unsigned i=0; i<bx_in_ax_range.size(); i++){
+	for (auto i : bx_in_ax_range){
 		D2<Piecewise<SBasis> > bb_in;
-		bb_in[X] = Piecewise<SBasis> ( portion( bb[X], bx_in_ax_range[i] ) );
-		bb_in[Y] = Piecewise<SBasis> ( portion( bb[Y], bx_in_ax_range[i]) );
-		bb_in[X].setDomain( bx_in_ax_range[i] );
-		bb_in[Y].setDomain( bx_in_ax_range[i] );
+		bb_in[X] = Piecewise<SBasis> ( portion( bb[X], i ) );
+		bb_in[Y] = Piecewise<SBasis> ( portion( bb[Y], i) );
+		bb_in[X].setDomain( i );
+		bb_in[Y].setDomain( i );
 
 		Piecewise<SBasis> h;
 		Interval level;
@@ -266,18 +266,18 @@ std::vector<SmashIntersection> monotonic_smash_intersect( D2<SBasis> const &a, D
 		h = top_b[Y] - compose( fat_y_of_x, top_b[X] );
 		level = Interval( +infinity(), 0 );
 		std::vector<Interval> rts_top = level_set( h, level);
-		for (unsigned idx=0; idx < rts_top.size(); idx++){
-			rts_top[idx] = Interval( top_b[X].valueAt( rts_top[idx].min() ),
-									 top_b[X].valueAt( rts_top[idx].max() ) );
+		for (auto & i : rts_top){
+			i = Interval( top_b[X].valueAt( i.min() ),
+									 top_b[X].valueAt( i.max() ) );
 		}
 		assert( rts_top.size() == 1 );
 
 		h = bot_b[Y] - compose( fat_y_of_x, bot_b[X] );
 		level = Interval( 0, -infinity());
 		std::vector<Interval> rts_bot = level_set( h, level);
-		for (unsigned idx=0; idx < rts_bot.size(); idx++){
-			rts_bot[idx] = Interval( bot_b[X].valueAt( rts_bot[idx].min() ),
-									 bot_b[X].valueAt( rts_bot[idx].max() ) );
+		for (auto & i : rts_bot){
+			i = Interval( bot_b[X].valueAt( i.min() ),
+									 bot_b[X].valueAt( i.max() ) );
 		}
 		assert( rts_bot.size() == 1 );
 		rts_top = intersect( rts_top, rts_bot );
@@ -300,13 +300,13 @@ std::vector<SmashIntersection> monotonic_smash_intersect( D2<SBasis> const &a, D
 	}
 
 	if (swapresult) {
-		for ( unsigned i=0; i<result.size(); i++){
-			swap( result[i].times[X], result[i].times[Y]);
+		for (auto & i : result){
+			swap( i.times[X], i.times[Y]);
 		}
 	}
 	if (swapcoord) {
-		for ( unsigned i=0; i<result.size(); i++){
-			swap( result[i].bbox[X], result[i].bbox[Y] );
+		for (auto & i : result){
+			swap( i.bbox[X], i.bbox[Y] );
 		}
 	}
 
@@ -319,14 +319,14 @@ std::vector<SmashIntersection> smash_intersect( D2<SBasis> const &a, D2<SBasis> 
 
 	std::vector<Interval> acuts = monotonicSplit(a);
 	std::vector<Interval> bcuts = monotonicSplit(b);
-	for (unsigned i=0; i<acuts.size(); i++){
-		D2<SBasis> ai = portion( a, acuts[i]);
-		for (unsigned j=0; j<bcuts.size(); j++){
-			D2<SBasis> bj = portion( b, bcuts[j]);
+	for (auto & acut : acuts){
+		D2<SBasis> ai = portion( a, acut);
+		for (auto & bcut : bcuts){
+			D2<SBasis> bj = portion( b, bcut);
 			std::vector<SmashIntersection> ai_cap_bj = monotonic_smash_intersect( ai, bj, tol );
-			for (unsigned k=0; k < ai_cap_bj.size(); k++){
-				ai_cap_bj[k].times[X] = ai_cap_bj[k].times[X] * acuts[i].extent() + acuts[i].min();
-				ai_cap_bj[k].times[Y] = ai_cap_bj[k].times[Y] * bcuts[j].extent() + bcuts[j].min();
+			for (auto & i : ai_cap_bj){
+				i.times[X] = i.times[X] * acut.extent() + acut.min();
+				i.times[Y] = i.times[Y] * bcut.extent() + bcut.min();
 			}
 			result.insert( result.end(), ai_cap_bj.begin(), ai_cap_bj.end() );
 		}

@@ -106,9 +106,9 @@ std::vector<double > solve_reals(Poly const & p) {
     std::vector<std::complex<double> > roots = solve(p);
     std::vector<double> real_roots;
     
-    for(unsigned int i = 0; i < roots.size(); i++) {
-        if(roots[i].imag() == 0) // should be more lenient perhaps
-            real_roots.push_back(roots[i].real());
+    for(auto & root : roots) {
+        if(root.imag() == 0) // should be more lenient perhaps
+            real_roots.push_back(root.real());
     }
     return real_roots;
 }

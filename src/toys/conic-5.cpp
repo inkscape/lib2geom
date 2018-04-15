@@ -68,9 +68,9 @@ void draw(cairo_t* cr, xAx C, Rect bnd) {
         double y = bnd[Y].valueAt(t);
         vector<double> rts = C.roots(Point(1, 0), Point(0, y));
         int top = 0;
-        for(unsigned j = 0; j < rts.size(); j++) {
-            if(bnd[0].contains(rts[j])) {
-                rts[top] = rts[j];
+        for(double rt : rts) {
+            if(bnd[0].contains(rt)) {
+                rts[top] = rt;
                 top++;
             }
         }
@@ -235,8 +235,8 @@ class Conic5: public Toy {
 
                         Q.toCurve(rh.pos);
                         vector<Point> crs = Q.crossings(rh.pos);
-                        for(unsigned ei = 0; ei < crs.size(); ei++) {
-                            draw_cross(cr, crs[ei]);
+                        for(auto ei : crs) {
+                            draw_cross(cr, ei);
                         }
 
                     }
@@ -256,10 +256,10 @@ class Conic5: public Toy {
             std::vector<Point> intrs = intersect(oxo, sources[0] - sources[1]);
             Timer::Time als_time = tm.lap();
             *notify << "intersect time = " << als_time << std::endl;
-            for(unsigned i = 0; i < intrs.size(); i++) {
+            for(auto intr : intrs) {
                 cairo_save(cr);
                 cairo_set_source_rgb(cr, 1, 0,0);
-                draw_cross(cr, intrs[i]);
+                draw_cross(cr, intr);
                 cairo_stroke(cr);
                 cairo_restore(cr);
             }

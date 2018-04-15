@@ -25,15 +25,15 @@ void cairo_pw(cairo_t *cr, Piecewise<SBasis> p) {
 }
 
 void cairo_horiz(cairo_t *cr, double y, vector<double> p) {
-    for(unsigned i = 0; i < p.size(); i++) {
-        cairo_move_to(cr, p[i], y);
+    for(double d : p) {
+        cairo_move_to(cr, d, y);
         cairo_rel_line_to(cr, 0, 10);
     }
 }
 
 void cairo_vert(cairo_t *cr, double x, vector<double> p) {
-    for(unsigned i = 0; i < p.size(); i++) {
-        cairo_move_to(cr, x, p[i]);
+    for(double d : p) {
+        cairo_move_to(cr, x, d);
         cairo_rel_line_to(cr, 10, 0);
     }
 }

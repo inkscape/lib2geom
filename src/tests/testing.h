@@ -38,9 +38,9 @@ void expect_array(const T (&x)[xn], std::vector<T> y) {
 Geom::Interval bound_vector(std::vector<double> const &v) {
     double low = v[0];
     double high = v[0];
-    for(unsigned i = 0; i < v.size(); i++) {
-      low = std::min(v[i], low);
-      high = std::max(v[i], high);
+    for(double d : v) {
+      low = std::min(d, low);
+      high = std::max(d, high);
     }
     return Geom::Interval(low-1, high-1);
 }

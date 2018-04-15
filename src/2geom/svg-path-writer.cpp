@@ -184,9 +184,9 @@ void SVGPathWriter::flush()
     char lastchar = _command;
     bool contained_dot = false;
 
-    for (unsigned i = 0; i < _current_pars.size(); ++i) {
+    for (double current_par : _current_pars) {
         // TODO: optimize the use of absolute / relative coords
-        std::string cs = _formatCoord(_current_pars[i]);
+        std::string cs = _formatCoord(current_par);
 
         // Separator handling logic.
         // Floating point values can end with a digit or dot

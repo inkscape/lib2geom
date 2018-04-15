@@ -58,8 +58,8 @@ public:
         D2<SBasis> B;
         B[0] = Linear(width/4, 3*width/4);
         B[1].resize(hand.pts.size()/2);
-        for(unsigned i = 0; i < B[1].size(); i++) {
-            B[1][i] = Linear(0);
+        for(auto & it : B[1]) {
+            it = Linear(0);
         }
         for(unsigned i = 0; i < hand.pts.size(); i++) {
             handle_to_sb(i, hand.pts.size(), B[1]) = 3*width/4 - hand.pts[i][1];
@@ -93,8 +93,8 @@ public:
         Geom::ConvexHull ch(hand.pts);
     
         cairo_move_to(cr, ch.back());
-        for(unsigned i = 0; i < ch.size(); i++) {
-            cairo_line_to(cr, ch[i]);
+        for(auto it : ch) {
+            cairo_line_to(cr, it);
         }
         Toy::draw(cr, notify, width, height, save,timer_stream);
     }

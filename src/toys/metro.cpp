@@ -227,8 +227,8 @@ public:
         sufficient_stats ss;
         ss.Sx = ss.Sy = ss.Sxx = ss.Sxy = ss.Syy = 0;
         ac_ss.push_back(ss);
-        for(unsigned l = 0; l < input.size(); l++) {
-            ss += input[l];
+        for(auto p : input) {
+            ss += p;
             ac_ss.push_back(ss);
         }
     }
@@ -329,9 +329,9 @@ void parse_data(vector<vector<Point> >& paths,
     }
     Rect bounds = *bld_bounds.result();
     //cout << bounds.min() << " - " << bounds.max() << endl;
-    for(unsigned i = 0; i < paths.size(); i++) {
-        for(unsigned j = 0; j < paths[i].size();j++) {
-            paths[i][j] = map_point(paths[i][j], bounds, 
+    for(auto & path : paths) {
+        for(auto & p : path) {
+            p = map_point(p, bounds, 
                                     Point(0,512), Point(512*bounds[0].extent()/bounds[1].extent(),0));
         }
     }
@@ -363,15 +363,15 @@ void parse_data(vector<vector<Point> >& paths,
 void extremePoints(vector<Point> const & pts, Point const & dir, 
                    Point & min, Point & max) {
     double minProj = DBL_MAX, maxProj = -DBL_MAX;
-    for(unsigned i=0;i<pts.size();i++) {
-        double p = dot(pts[i],dir);
+    for(auto pt : pts) {
+        double p = dot(pt,dir);
         if(p < minProj) {
             minProj = p;
-            min = pts[i];
+            min = pt;
         }
         if(p > maxProj) {
             maxProj = p;
-            max = pts[i];
+            max = pt;
         }
     }
 } 
@@ -882,14 +882,14 @@ public:
         }
         cout << location_file_name << ", " << path_file_name << endl;
         parse_data(paths, location_file_name, path_file_name);
-        for(unsigned i=0;i<paths.size();i++) {
+        for(auto & path : paths) {
             metro_lines.push_back(PointSetHandle());
-            for(unsigned j=0;j<paths[i].size();j++) {
-                metro_lines.back().push_back(paths[i][j]);
+            for(auto p : path) {
+                metro_lines.back().push_back(p);
             }
         }
-        for(unsigned i=0;i<metro_lines.size();i++) {
-            handles.push_back(&metro_lines[i]);
+        for(auto & metro_line : metro_lines) {
+            handles.push_back(&metro_line);
         }
         handles.push_back(&directions);
     }

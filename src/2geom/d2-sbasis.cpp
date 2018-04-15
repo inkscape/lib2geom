@@ -260,16 +260,16 @@ std::vector<Piecewise<D2<SBasis> > > fuse_nearby_ends(std::vector<Piecewise<D2<S
         bool inserted = false;
         Point a = f[i].firstValue();
         Point b = f[i].lastValue();
-        for (unsigned j=0; j<pre_result.size(); j++){
-            Point aj = f.at(pre_result[j].back()).lastValue();
-            Point bj = f.at(pre_result[j].front()).firstValue();
+        for (auto & v : pre_result){
+            Point aj = f.at(v.back()).lastValue();
+            Point bj = f.at(v.front()).firstValue();
             if ( L2(a-aj) < tol ) {
-                pre_result[j].push_back(i);
+                v.push_back(i);
                 inserted = true;
                 break;
             }
             if ( L2(b-bj) < tol ) {
-                pre_result[j].insert(pre_result[j].begin(),i);
+                v.insert(v.begin(),i);
                 inserted = true;
                 break;
             }
@@ -279,10 +279,10 @@ std::vector<Piecewise<D2<SBasis> > > fuse_nearby_ends(std::vector<Piecewise<D2<S
             pre_result.back().push_back(i);
         }
     }
-    for (unsigned i=0; i<pre_result.size(); i++){
+    for (auto & v : pre_result){
         Piecewise<D2<SBasis> > comp;
-        for (unsigned j=0; j<pre_result[i].size(); j++){
-            Piecewise<D2<SBasis> > new_comp = f.at(pre_result[i][j]);
+        for (unsigned j=0; j<v.size(); j++){
+            Piecewise<D2<SBasis> > new_comp = f.at(v[j]);
             if ( j>0 ){
                 set_first_point( new_comp, comp.segs.back().at1() );
             }
@@ -303,10 +303,10 @@ std::vector<Piecewise<D2<SBasis> > > fuse_nearby_ends(std::vector<Piecewise<D2<S
 static std::vector<Interval> intersect( std::vector<Interval> const &a, std::vector<Interval> const &b){
 	std::vector<Interval> result;
 	//TODO: use order!
-	for (unsigned i=0; i < a.size(); i++){
-		for (unsigned j=0; j < b.size(); j++){
-			OptInterval c( a[i] );
-			c &= b[j];
+	for (auto i : a){
+		for (auto j : b){
+			OptInterval c( i );
+			c &= j;
 			if ( c ) {
 				result.push_back( *c );
 			}

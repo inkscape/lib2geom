@@ -46,9 +46,9 @@ TEST(AngleIntervalTest, InnerAngleConstrutor) {
     ivs.push_back(AngleInterval(M_PI, 0, false));
     ivs.push_back(AngleInterval(Angle(0), Angle(0), Angle(M_PI)));
 
-    for (unsigned i = 0; i < ivs.size(); ++i) {
-        AngleInterval inner(ivs[i].angleAt(0), ivs[i].angleAt(0.5), ivs[i].angleAt(1));
-        EXPECT_EQ(inner, ivs[i]);
+    for (auto & iv : ivs) {
+        AngleInterval inner(iv.angleAt(0), iv.angleAt(0.5), iv.angleAt(1));
+        EXPECT_EQ(inner, iv);
     }
 }
 

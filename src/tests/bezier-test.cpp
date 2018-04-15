@@ -160,8 +160,7 @@ TEST_F(BezierTest, Portion) {
     for (unsigned i = 0; i < 10000; ++i) {
         double from = g_random_double_range(0, 1);
         double to = g_random_double_range(0, 1);
-        for (unsigned i = 0; i < 4; ++i) {
-            Bezier &input = fragments[i];
+        for (auto & input : fragments) {
             Bezier result = portion(input, from, to);
 
             // the endpoints must correspond exactly
@@ -175,8 +174,7 @@ TEST_F(BezierTest, Subdivide) {
     std::vector<std::pair<Bezier, double> > errors;
     for (unsigned i = 0; i < 10000; ++i) {
         double t = g_random_double_range(0, 1e-6);
-        for (unsigned i = 0; i < 4; ++i) {
-            Bezier &input = fragments[i];
+        for (auto & input : fragments) {
             std::pair<Bezier, Bezier> result = input.subdivide(t);
 
             // the endpoints must correspond exactly
@@ -256,8 +254,8 @@ Bezier linear_root(double t) {
 // Constructs a Bezier with roots at the locations in x
 Bezier array_roots(vector<double> x) {
     Bezier b(1);
-    for(unsigned i = 0; i < x.size(); i++) {
-        b = multiply(b, linear_root(x[i]));
+    for(double d : x) {
+        b = multiply(b, linear_root(d));
     }
     return b;
 }
@@ -302,11 +300,11 @@ TEST_F(BezierTest, Roots) {
     tests.push_back(vector_from_array((const double[]){.1,.2,.3,.4,.5,.6}));
     tests.push_back(vector_from_array((const double[]){0.25,0.25,0.25,0.75,0.75,0.75}));
     
-    for(unsigned test_i = 0; test_i < tests.size(); test_i++) {
-        Bezier b = array_roots(tests[test_i]);
+    for(const auto & test : tests) {
+        Bezier b = array_roots(test);
         //std::cout << tests[test_i] << ": " << b << std::endl;
         //std::cout << b.roots() << std::endl;
-        EXPECT_vector_near(tests[test_i], b.roots(), eps);
+        EXPECT_vector_near(test, b.roots(), eps);
     }
 }
 
@@ -358,8 +356,7 @@ TEST_F(BezierTest, Operators) {
     EXPECT_TRUE(bounds_local(hump, Interval(0.3, 0.6))->contains(tight_local_bounds));
 
     Bezier Bs[] = {unit, hump, wiggle};
-    for(unsigned i = 0; i < sizeof(Bs)/sizeof(Bezier); i++) {
-        Bezier B = Bs[i];
+    for(auto B : Bs) {
         Bezier product = multiply(B, B);
         for(int i = 0; i <= 16; i++) {
             double t = i/16.0;

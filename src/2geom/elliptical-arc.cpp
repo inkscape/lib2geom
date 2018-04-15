@@ -133,9 +133,9 @@ Rect EllipticalArc::boundsExact() const
     extremes[Y][1] = extremes[Y][0] + M_PI;
 
     for (unsigned d = 0; d < 2; ++d) {
-        for (unsigned i = 0; i < 2; ++i) {
-            if (containsAngle(extremes[d][i])) {
-                coord[d][ncoord[d]++] = valueAtAngle(extremes[d][i], d ? Y : X);
+        for (auto angle : extremes[d]) {
+            if (containsAngle(angle)) {
+                coord[d][ncoord[d]++] = valueAtAngle(angle, d ? Y : X);
             }
         }
     }
@@ -219,12 +219,12 @@ std::vector<Coord> EllipticalArc::roots(Coord v, Dim2 d) const
     }
 
     std::vector<double> arc_sol;
-    for (unsigned int i = 0; i < sol.size(); ++i ) {
-        //std::cerr << "s = " << deg_from_rad(sol[i]);
-        sol[i] = timeAtAngle(sol[i]);
-        //std::cerr << " -> t: " << sol[i] << std::endl;
-        if (unit_interval.contains(sol[i])) {
-            arc_sol.push_back(sol[i]);
+    for (double & d : sol) {
+        //std::cerr << "s = " << deg_from_rad(d);
+        d = timeAtAngle(d);
+        //std::cerr << " -> t: " << d << std::endl;
+        if (unit_interval.contains(d)) {
+            arc_sol.push_back(d);
         }
     }
     return arc_sol;
@@ -463,10 +463,10 @@ std::vector<double> EllipticalArc::allNearestTimes( Point const& p, double from,
         real_sol = solve_reals(coeff);
     }
 
-    for ( unsigned int i = 0; i < real_sol.size(); ++i )
+    for (double & d : real_sol)
     {
-        real_sol[i] = 2 * std::atan(real_sol[i]);
-        if ( real_sol[i] < 0 ) real_sol[i] += 2*M_PI;
+        d = 2 * std::atan(d);
+        if ( d < 0 ) d += 2*M_PI;
     }
     // when s -> Infinity then <D(E)|E-p> -> 0 iff coeff[4] == 0
     // so we add M_PI to the solutions being lim arctan(s) = PI when s->Infinity

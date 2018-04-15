@@ -58,8 +58,8 @@ public:
         a[3] = 0; 
     }
     Linear2d(double aa) {
-        for(unsigned i = 0 ; i < 4; i ++) 
-            a[i] = aa;
+        for(double & d : a) 
+            d = aa;
     }
     Linear2d(double a00, double a01, double a10, double a11) 
     {

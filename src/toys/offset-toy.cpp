@@ -80,13 +80,13 @@ class OffsetTester: public Toy {
         
         cairo_path(cr, offset_path);
         cairo_stroke(cr);
-        for(unsigned int pi = 0; pi < offset_path.size(); pi++) {
-            Crossings cs = self_crossings(offset_path[pi]);
-            for(unsigned int i = 0; i < cs.size(); i++) {
-                draw_cross(cr, offset_path[pi].pointAt(cs[i].ta));
+        for(const auto & pi : offset_path) {
+            Crossings cs = self_crossings(pi);
+            for(auto & c : cs) {
+                draw_cross(cr, pi.pointAt(c.ta));
                 std::stringstream s;
-                Point Pa = offset_path[pi].pointAt(cs[i].ta);
-                Point Pb = offset_path[pi].pointAt(cs[i].tb);
+                Point Pa = pi.pointAt(c.ta);
+                Point Pb = pi.pointAt(c.tb);
                 s << L1(Pa - Pb) << std::endl;
                 std::string ss = s.str();
                 draw_text(cr, Pa+Point(3,3), ss.c_str(), false, "Serif 6");

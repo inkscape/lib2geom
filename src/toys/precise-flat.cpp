@@ -35,10 +35,10 @@ void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool s
     SBasis inflect = dot(dB, rot90(ddB));
     std::vector<double> rts = roots(inflect);
     double f = 3;
-    for(unsigned i = 0; i < rts.size(); i++) {
-        draw_handle(cr, B(rts[i]));
+    for(double rt : rts) {
+        draw_handle(cr, B(rt));
         
-        double tp = rts[i];
+        double tp = rt;
         Geom::Point st = unit_vector(dB(tp));
         Geom::Point O = B(tp);
         double s4 = fabs(dot(hand.pts[3] - O, rot90(st)));

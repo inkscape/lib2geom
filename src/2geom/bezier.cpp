@@ -294,8 +294,8 @@ OptInterval bounds_exact(Bezier const &b)
 {
     OptInterval ret(b.at0(), b.at1());
     std::vector<Coord> r = derivative(b).roots();
-    for (unsigned i = 0; i < r.size(); ++i) {
-        ret->expandTo(b.valueAt(r[i]));
+    for (double c : r) {
+        ret->expandTo(b.valueAt(c));
     }
     return ret;
 }

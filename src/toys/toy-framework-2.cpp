@@ -185,9 +185,9 @@ void Toy::draw(cairo_t *cr, std::ostringstream *notify, int width, int height, b
     }
 
     cairo_set_line_width (cr, 1);
-    for(unsigned i = 0; i < handles.size(); i++) {
-        cairo_set_source_rgb (cr, handles[i]->rgb[0], handles[i]->rgb[1], handles[i]->rgb[2]);
-	handles[i]->draw(cr, should_draw_numbers());
+    for(auto & handle : handles) {
+        cairo_set_source_rgb (cr, handle->rgb[0], handle->rgb[1], handle->rgb[2]);
+	handle->draw(cr, should_draw_numbers());
     }
 
     cairo_set_source_rgba (cr, 0.5, 0, 0, 1);
@@ -226,10 +226,10 @@ void Toy::mouse_pressed(GdkEventButton* e) {
     hit_data = nullptr;
     canvas_click_button = e->button;
     if(e->button == 1) {
-        for(unsigned i = 0; i < handles.size(); i++) {
-    	    void * hit = handles[i]->hit(mouse);
+        for(auto & handle : handles) {
+    	    void * hit = handle->hit(mouse);
     	    if(hit) {
-    		selected = handles[i];
+    		selected = handle;
     		hit_data = hit;
     	    }
         }
@@ -265,15 +265,15 @@ void Toy::load(FILE* f) {
     if (fscanf(f, "%1024s", data)) {
         name = data;
     }
-    for(unsigned i = 0; i < handles.size(); i++) {
-        handles[i]->load(f);
+    for(auto & handle : handles) {
+        handle->load(f);
     }
 }
 
 void Toy::save(FILE* f) {
 	fprintf(f, "%s\n", name.c_str());
-    for(unsigned i = 0; i < handles.size(); i++)
-	handles[i]->save(f);
+    for(auto & handle : handles)
+	handle->save(f);
 }
 
 //Gui Event Callbacks
@@ -709,11 +709,11 @@ void* Toggle::hit(Geom::Point mouse)
 }
 
 void toggle_events(std::vector<Toggle> &ts, GdkEventButton* e) {
-    for(unsigned i = 0; i < ts.size(); i++) ts[i].handle_click(e);
+    for(auto & t : ts) t.handle_click(e);
 }
 
 void draw_toggles(cairo_t *cr, std::vector<Toggle> &ts) {
-    for(unsigned i = 0; i < ts.size(); i++) ts[i].draw(cr);
+    for(auto & t : ts) t.draw(cr);
 }
 
 
@@ -859,9 +859,9 @@ void PointSetHandle::draw(cairo_t *cr, bool annotes) {
 }
 
 void* PointSetHandle::hit(Geom::Point mouse) {
-    for(unsigned i = 0; i < pts.size(); i++) {
-	if(Geom::distance(mouse, pts[i]) < 5)
-	    return (void*)(&pts[i]);
+    for(auto & pt : pts) {
+	if(Geom::distance(mouse, pt) < 5)
+	    return (void*)(&pt);
     }
     return nullptr;
 }
@@ -883,8 +883,8 @@ void PointSetHandle::load(FILE* f) {
 
 void PointSetHandle::save(FILE* f) {
     fprintf(f, "%d\n", (int)pts.size());
-    for(unsigned i = 0; i < pts.size(); i++) {
-	fprintf(f, "%lf %lf\n", pts[i][0], pts[i][1]);
+    for(auto & pt : pts) {
+	fprintf(f, "%lf %lf\n", pt[0], pt[1]);
     }
 }
 

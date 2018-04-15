@@ -395,10 +395,10 @@ std::vector<double> curve_mono_splits(Curve const &d) {
 }
 
 /** Convenience function to add a value to each entry in a vector of doubles. */
-std::vector<double> offset_doubles(std::vector<double> const &x, double offs) {
+std::vector<double> offset_doubles(std::vector<double> const &xs, double offs) {
     std::vector<double> ret;
-    for(unsigned i = 0; i < x.size(); i++) {
-        ret.push_back(x[i] + offs);
+    for(double x : xs) {
+        ret.push_back(x + offs);
     }
     return ret;
 }
@@ -434,8 +434,8 @@ std::vector<double> path_mono_splits(Path const &p) {
  */
 std::vector<std::vector<double> > paths_mono_splits(PathVector const &ps) {
     std::vector<std::vector<double> > ret;
-    for(unsigned i = 0; i < ps.size(); i++)
-        ret.push_back(path_mono_splits(ps[i]));
+    for(const auto & p : ps)
+        ret.push_back(path_mono_splits(p));
     return ret;
 }
 
@@ -473,29 +473,27 @@ CrossingSet MonoCrosser::crossings(PathVector const &a, PathVector const &b) {
     std::vector<std::vector<Rect> > bounds_a = split_bounds(a, splits_a), bounds_b = split_bounds(b, splits_b);
     
     std::vector<Rect> bounds_a_union, bounds_b_union; 
-    for(unsigned i = 0; i < bounds_a.size(); i++) bounds_a_union.push_back(union_list(bounds_a[i]));
-    for(unsigned i = 0; i < bounds_b.size(); i++) bounds_b_union.push_back(union_list(bounds_b[i]));
+    for(const auto & r : bounds_a) bounds_a_union.push_back(union_list(r));
+    for(const auto & r : bounds_b) bounds_b_union.push_back(union_list(r));
     
     std::vector<std::vector<unsigned> > cull = sweep_bounds(bounds_a_union, bounds_b_union);
     Crossings n;
     for(unsigned i = 0; i < cull.size(); i++) {
-        for(unsigned jx = 0; jx < cull[i].size(); jx++) {
-            unsigned j = cull[i][jx];
+        for(unsigned int j : cull[i]) {
             unsigned jc = j + a.size();
             Crossings res;
             
             //Sweep of the monotonic portions
             std::vector<std::vector<unsigned> > cull2 = sweep_bounds(bounds_a[i], bounds_b[j]);
             for(unsigned k = 0; k < cull2.size(); k++) {
-                for(unsigned lx = 0; lx < cull2[k].size(); lx++) {
-                    unsigned l = cull2[k][lx];
+                for(unsigned int l : cull2[k]) {
                     mono_pair(a[i], splits_a[i][k-1], splits_a[i][k],
                               b[j], splits_b[j][l-1], splits_b[j][l],
                               res, .1);
                 }
             }
             
-            for(unsigned k = 0; k < res.size(); k++) { res[k].a = i; res[k].b = jc; }
+            for(auto & c : res) { c.a = i; c.b = jc; }
             
             merge_crossings(results[i], res, i);
             merge_crossings(results[i], res, jc);
@@ -665,16 +663,15 @@ Crossings self_crossings(Path const &p) {
         Crossings res = curve_self_crossings(p[i]);
         offset_crossings(res, i, i);
         append(ret, res);
-        for(unsigned jx = 0; jx < cull[i].size(); jx++) {
-            unsigned j = cull[i][jx];
+        for(unsigned int j : cull[i]) {
             res.clear();
             pair_intersect(p[i], 0, 1, p[j], 0, 1, res);
             
             //if(fabs(int(i)-j) == 1 || fabs(int(i)-j) == p.size()-1) {
                 Crossings res2;
-                for(unsigned k = 0; k < res.size(); k++) {
-                    if(res[k].ta != 0 && res[k].ta != 1 && res[k].tb != 0 && res[k].tb != 1) {
-                        res2.push_back(res[k]);
+                for(auto & c : res) {
+                    if(c.ta != 0 && c.ta != 1 && c.tb != 0 && c.tb != 1) {
+                        res2.push_back(c);
                     }
                 }
                 res = res2;
@@ -687,8 +684,8 @@ Crossings self_crossings(Path const &p) {
 }
 
 void flip_crossings(Crossings &crs) {
-    for(unsigned i = 0; i < crs.size(); i++)
-        crs[i] = Crossing(crs[i].tb, crs[i].ta, crs[i].b, crs[i].a, !crs[i].dir);
+    for(auto & cr : crs)
+        cr = Crossing(cr.tb, cr.ta, cr.b, cr.a, !cr.dir);
 }
 
 CrossingSet crossings_among(PathVector const &p) {
@@ -700,15 +697,13 @@ CrossingSet crossings_among(PathVector const &p) {
     std::vector<std::vector<unsigned> > cull = sweep_bounds(bounds(p));
     for(unsigned i = 0; i < cull.size(); i++) {
         Crossings res = self_crossings(p[i]);
-        for(unsigned k = 0; k < res.size(); k++) { res[k].a = res[k].b = i; }
+        for(auto & c : res) { c.a = c.b = i; }
         merge_crossings(results[i], res, i);
         flip_crossings(res);
         merge_crossings(results[i], res, i);
-        for(unsigned jx = 0; jx < cull[i].size(); jx++) {
-            unsigned j = cull[i][jx];
-            
+        for(unsigned int j : cull[i]) {
             Crossings res = cc.crossings(p[i], p[j]);
-            for(unsigned k = 0; k < res.size(); k++) { res[k].a = i; res[k].b = j; }
+            for(auto & c : res) { c.a = i; c.b = j; }
             merge_crossings(results[i], res, i);
             merge_crossings(results[j], res, j);
         }

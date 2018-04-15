@@ -61,13 +61,13 @@ public:
         // connecting lines should be put at cusps
         Piecewise<D2<SBasis> > deriv = derivative(pwd2_in);
         std::vector<double> cusps; // = roots(deriv);
-        for (unsigned i = 0; i < cusps.size() ; ++i) {
-            pwd2_out.concat( connector + pwd2_in.valueAt(cusps[i]) );
+        for (double cusp : cusps) {
+            pwd2_out.concat( connector + pwd2_in.valueAt(cusp) );
         }
         // connecting lines should be put where the tangent of the path equals the extrude_vector in direction
         std::vector<double> rts = roots(dot(deriv, rot90(vector)));
-        for (unsigned i = 0; i < rts.size() ; ++i) {
-            pwd2_out.concat( connector + pwd2_in.valueAt(rts[i]) );
+        for (double rt : rts) {
+            pwd2_out.concat( connector + pwd2_in.valueAt(rt) );
         }
 
         return pwd2_out;

@@ -263,8 +263,8 @@ class SbToBezierTester: public Toy {
       
       if(!mouses.empty()) {
 	  cairo_move_to(cr, mouses[0]);
-	  for(unsigned i = 0; i < mouses.size(); i++) {
-	      cairo_line_to(cr, mouses[i]);
+	  for(auto mouse : mouses) {
+	      cairo_line_to(cr, mouse);
 	  }
 	  cairo_stroke(cr);
       }

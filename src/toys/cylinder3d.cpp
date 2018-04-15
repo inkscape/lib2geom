@@ -76,9 +76,9 @@ class Box3d: public Toy {
         }
 
         *notify << "Projection matrix:" << endl;
-        for (int i = 0; i < 3; ++i) {
-            for (int j = 0; j < 4; ++j) {
-                *notify << tmat[i][j] << " ";
+        for (auto & a : tmat) {
+            for (double d : a) {
+                *notify << d << " ";
             }
             *notify << endl;
         }

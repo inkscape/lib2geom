@@ -810,14 +810,14 @@ std::pair< RTreeNode*, bool > RTree::find_parent( RTreeNode* subtree_root,
     std::pair< RTreeNode*, bool > result;   
     if( subtree_root->children_nodes.size() > 0 ){
         
-        for( unsigned i=0; i < subtree_root->children_nodes.size(); i++ ){
-            if( subtree_root->children_nodes[i].data == wanted){
+        for(auto & children_node : subtree_root->children_nodes){
+            if( children_node.data == wanted){
                 _RTREE_PRINT("FOUND!!");     // non leaf node
                 return std::make_pair( subtree_root, true );
             }
 
-            if( subtree_root->children_nodes[i].bounding_box.intersects( search_area ) ){
-                result = find_parent( subtree_root->children_nodes[i].data, search_area, wanted);
+            if( children_node.bounding_box.intersects( search_area ) ){
+                result = find_parent( children_node.data, search_area, wanted);
                 if ( result.second ){
                     break;
                 }
@@ -834,16 +834,16 @@ void RTree::copy_group_a_to_existing_node( RTreeNode *position, RTreeNode* group
         _RTREE_PRINT("  copy_group...(): install group A to existing non-leaf node");    
         // non leaf-node: position
         position->children_nodes.clear();
-        for( unsigned i=0; i < group_a->children_nodes.size(); i++ ){
-            position->children_nodes.push_back( group_a->children_nodes[i] );
+        for(const auto & children_node : group_a->children_nodes){
+            position->children_nodes.push_back( children_node );
         }
     }
     else{
         _RTREE_PRINT("  copy_group...(): install group A to existing leaf node");    
         // leaf-node: positions
         position->children_leaves.clear();
-        for( unsigned i=0; i < group_a->children_leaves.size(); i++ ){
-            position->children_leaves.push_back( group_a->children_leaves[i] );
+        for(const auto & children_leave : group_a->children_leaves){
+            position->children_leaves.push_back( children_leave );
         }
     }
 }
@@ -880,13 +880,13 @@ void RTree::print_tree(RTreeNode* subtree_root, int depth ) const{
     if( subtree_root->children_nodes.size() > 0 ){ 
 
         // descend in each one of the elements and call print_tree
-        for( unsigned i=0; i < subtree_root->children_nodes.size(); i++ ){
+        for(auto & children_node : subtree_root->children_nodes){
             //print spaces for indentation
             for(int j=0; j < depth; j++){
                 std::cout << "  " ;
             }
 
-            std::cout << subtree_root->children_nodes[i].bounding_box << ",  " << subtree_root->children_nodes.size() << std::endl ;
+            std::cout << children_node.bounding_box << ",  " << subtree_root->children_nodes.size() << std::endl ;
             _RTREE_PRINT_TREE_INS( subtree_root->children_nodes[i].data, depth+1, used_during_insert);
         }
 
@@ -898,8 +898,8 @@ void RTree::print_tree(RTreeNode* subtree_root, int depth ) const{
         std::cout << subtree_root->children_leaves.size() << ": " ;
 
         // print all the elements of the leaf node
-        for( unsigned i=0; i < subtree_root->children_leaves.size(); i++ ){
-            std::cout << subtree_root->children_leaves[i].data << ", " ;
+        for(auto & children_leave : subtree_root->children_leaves){
+            std::cout << children_leave.data << ", " ;
         }
         std::cout << std::endl ;
 
@@ -911,8 +911,8 @@ void RTree::sanity_check(RTreeNode* subtree_root, int depth, bool used_during_in
 
     if( subtree_root->children_nodes.size() > 0 ){ 
         // descend in each one of the elements and call sanity_check
-        for( unsigned i=0; i < subtree_root->children_nodes.size(); i++ ){
-            sanity_check( subtree_root->children_nodes[i].data, depth+1, used_during_insert);
+        for(auto & children_node : subtree_root->children_nodes){
+            sanity_check( children_node.data, depth+1, used_during_insert);
         }
 
 
@@ -974,17 +974,17 @@ S2) ELSE T is leaf
 void RTree::search( const Rect &search_area, std::vector< int >* result, const RTreeNode* subtree ) const {
     // S1
     if( subtree->children_nodes.size() > 0  ){   // non-leaf: subtree
-        for( unsigned i = 0; i < subtree->children_nodes.size(); i++  ){
-            if( subtree->children_nodes[ i ].bounding_box.intersects( search_area ) ){
-                search( search_area, result, subtree->children_nodes[ i ].data );
+        for(const auto & children_node : subtree->children_nodes){
+            if( children_node.bounding_box.intersects( search_area ) ){
+                search( search_area, result, children_node.data );
             }
         }
     }
     // S2
     else{   // leaf: subtree
-        for( unsigned i = 0; i < subtree->children_leaves.size(); i++  ){
-            if( subtree->children_leaves[ i ].bounding_box.intersects( search_area ) ){
-                result->push_back( subtree->children_leaves[ i ].data );
+        for(const auto & children_leave : subtree->children_leaves){
+            if( children_leave.bounding_box.intersects( search_area ) ){
+                result->push_back( children_leave.data );
             }
         }
     }    
@@ -1064,9 +1064,9 @@ FL2) search leaf node for record
 RTreeNode* RTree::find_leaf( RTreeNode* subtree, const Rect &search_area, const int shape_to_delete ) const {
     // FL1
     if( subtree->children_nodes.size() > 0  ){   // non-leaf: subtree
-        for( std::vector< RTreeRecord_NonLeaf >::iterator it = subtree->children_nodes.begin(); it!=subtree->children_nodes.end(); ++it ){
-            if( it->bounding_box.intersects( search_area ) ){
-                RTreeNode* t = find_leaf( it->data, search_area, shape_to_delete );
+        for(auto & children_node : subtree->children_nodes){
+            if( children_node.bounding_box.intersects( search_area ) ){
+                RTreeNode* t = find_leaf( children_node.data, search_area, shape_to_delete );
                 if( t ){ // if search was successful terminate
                     return t;
                 }
@@ -1199,9 +1199,9 @@ bool RTree::condense_tree( RTreeNode* position )
             if( position->children_nodes.size() < min_records ){  
                 _RTREE_PRINT("  CT3.2   add N to Q");    
                 // CT3.2 add N to set Q ( EN the record that points to N )
-                for( unsigned i = 0; i < position->children_nodes.size(); i++ ){
+                for(auto & children_node : position->children_nodes){
                     _RTREE_PRINT("  i " << i );
-                    std::pair< RTreeRecord_NonLeaf, unsigned > t = std::make_pair( position->children_nodes[i], current_height-1);
+                    std::pair< RTreeRecord_NonLeaf, unsigned > t = std::make_pair( children_node, current_height-1);
                     Q_nonleaf_records.push_back( t );
 
                 }
@@ -1227,10 +1227,10 @@ bool RTree::condense_tree( RTreeNode* position )
             if( position->children_leaves.size() < min_records ){  
                 _RTREE_PRINT("  CT3.2   add N to Q " << position->children_leaves.size() );    
                 // CT3.2 add N to set Q
-                for( unsigned i = 0; i < position->children_leaves.size(); i++ ){
+                for(auto & children_leave : position->children_leaves){
                     _RTREE_PRINT("  i " << i );
-                    Q_leaf_records.push_back( position->children_leaves[i] ); // TODO problem here
-                    special_case_bounding_box = position->children_leaves[i].bounding_box;
+                    Q_leaf_records.push_back( children_leave ); // TODO problem here
+                    special_case_bounding_box = children_leave.bounding_box;
                 }
 
                 _RTREE_PRINT("  CT3.1   delete in parent, position's record EN");    
@@ -1263,15 +1263,15 @@ bool RTree::condense_tree( RTreeNode* position )
     }
 
     _RTREE_PRINT("  CT6 ");
-    for( std::vector< RTreeRecord_Leaf >::iterator it = Q_leaf_records.begin(); it != Q_leaf_records.end(); ++it ){
-        insert( *it );
+    for(auto & Q_leaf_record : Q_leaf_records){
+        insert( Q_leaf_record );
         _RTREE_PRINT("  inserted leaf:" << (*it).data << "  ------------");
         _RTREE_PRINT_TREE( root, 0);
     }
 
     
-    for( std::vector< std::pair< RTreeRecord_NonLeaf, unsigned > >::iterator it = Q_nonleaf_records.begin(); it != Q_nonleaf_records.end(); ++it ){
-        insert( RTreeRecord_Leaf() , true, it->second, it->first );
+    for(auto & Q_nonleaf_record : Q_nonleaf_records){
+        insert( RTreeRecord_Leaf() , true, Q_nonleaf_record.second, Q_nonleaf_record.first );
         _RTREE_PRINT("  inserted nonleaf------------");
         _RTREE_PRINT_TREE( root, 0);
         // TODO this fake RTreeRecord_Leaf() looks stupid. find better way to do this ???

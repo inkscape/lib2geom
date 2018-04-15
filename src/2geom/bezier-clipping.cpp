@@ -205,9 +205,9 @@ void derivative(std::vector<Point> & D, std::vector<Point> const& B)
 void normal(std::vector<Point> & N, std::vector<Point> const& B)
 {
     derivative(N,B);
-    for (size_t i = 0; i < N.size(); ++i)
+    for (auto & p : N)
     {
-        N[i] = rot90(N[i]);
+        p = rot90(p);
     }
 }
 
@@ -361,8 +361,8 @@ Interval fat_line_bounds (std::vector<Point> const &c,
                           Line const &l)
 {
     Interval bound(0, 0);
-    for (size_t i = 0; i < c.size(); ++i) {
-        bound.expandTo(signed_distance(c[i], l));
+    for (auto p : c) {
+        bound.expandTo(signed_distance(p, l));
     }
     return bound;
 }

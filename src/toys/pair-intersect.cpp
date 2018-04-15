@@ -40,8 +40,7 @@ class PairIntersect: public Toy {
     crs = shift(crs*Linear(-1, 0)*Linear(-1, 0), -2);
     crs = crs * (300/(*bounds_exact(crs)).extent());
     vector<double> rts = roots(crs);
-    for(unsigned i = 0; i < rts.size(); i++) {
-        double t = rts[i];
+    for(double t : rts) {
         cairo_move_to(cr, A(0));
         cairo_line_to(cr, A(t));
         cairo_stroke(cr);
@@ -74,9 +73,9 @@ class PairIntersect: public Toy {
         for(unsigned i = 0; i < cs.size(); i++) {
             Crossings section = cs[i];
             *notify << "section " << i << ": " << section.size() << '\n';
-            for(unsigned j = 0; j < section.size(); j++) {
-                draw_handle(cr, A(section[j].ta));
-                *notify << Geom::distance(A(section[j].ta), B(section[j].tb)) 
+            for(auto & c : section) {
+                draw_handle(cr, A(c.ta));
+                *notify << Geom::distance(A(c.ta), B(c.tb)) 
                         << std::endl;
             }
         }

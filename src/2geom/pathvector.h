@@ -251,8 +251,8 @@ public:
     BOOST_CONCEPT_REQUIRES(((TransformConcept<T>)), (PathVector &))
     operator*=(T const &t) {
         if (empty()) return *this;
-        for (iterator i = begin(); i != end(); ++i) {
-            *i *= t;
+        for (auto & it : *this) {
+            it *= t;
         }
         return *this;
     }

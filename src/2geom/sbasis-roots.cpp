@@ -104,8 +104,8 @@ OptInterval bounds_exact(SBasis const &a) {
     Interval result = Interval(a.at0(), a.at1());
     SBasis df = derivative(a);
     vector<double>extrema = roots(df);
-    for (unsigned i=0; i<extrema.size(); i++){
-        result.expandTo(a(extrema[i]));
+    for (double d : extrema){
+        result.expandTo(a(d));
     }
     return result;
 }
@@ -536,10 +536,10 @@ std::vector<std::vector<Interval> > level_sets(SBasis const &f,
     SBasis df=derivative(f);
     level_sets_internal(f,df,levels,solsets,a,f(a),b,f(b),tol);
     // Fuse overlapping intervals...
-    for (unsigned i=0; i<solsets.size(); i++){
-    	if ( solsets[i].size() == 0 ) continue;
-    	std::sort( solsets[i].begin(), solsets[i].end(), compareIntervalMin );
-    	solsets[i] = fuseContiguous( solsets[i], tol );
+    for (auto & solset : solsets){
+    	if ( solset.size() == 0 ) continue;
+    	std::sort( solset.begin(), solset.end(), compareIntervalMin );
+    	solset = fuseContiguous( solset, tol );
     }
     return solsets;
 }

@@ -64,10 +64,10 @@ bool CLIPPER_CLASS::intersect (std::vector<Point> & crossing_points) const
         Point corner1 = R.corner(TOP_RIGHT);
         Point corner2 = R.corner(BOTTOM_RIGHT);
 
-        for (size_t i = 0; i < rts.size(); ++i)
+        for (double rt : rts)
         {
-            if (rts[i] < R.top() || rts[i] > R.bottom())  continue;
-            Point P (R.right(), rts[i]);
+            if (rt < R.top() || rt > R.bottom())  continue;
+            Point P (R.right(), rt);
             if (are_near (P, corner1))
                 P = corner1;
             else if (are_near (P, corner2))
@@ -93,10 +93,10 @@ bool CLIPPER_CLASS::intersect (std::vector<Point> & crossing_points) const
         Point corner1 = R.corner(TOP_RIGHT);
         Point corner2 = R.corner(TOP_LEFT);
 
-        for (size_t i = 0; i < rts.size(); ++i)
+        for (double rt : rts)
         {
-            if (rts[i] < R.left() || rts[i] > R.right())  continue;
-            Point P (rts[i], R.top());
+            if (rt < R.left() || rt > R.right())  continue;
+            Point P (rt, R.top());
             if (are_near (P, corner1))
                 P = corner1;
             else if (are_near (P, corner2))
@@ -122,10 +122,10 @@ bool CLIPPER_CLASS::intersect (std::vector<Point> & crossing_points) const
         Point corner1 = R.corner(TOP_LEFT);
         Point corner2 = R.corner(BOTTOM_LEFT);
 
-        for (size_t i = 0; i < rts.size(); ++i)
+        for (double rt : rts)
         {
-            if (rts[i] < R.top() || rts[i] > R.bottom())  continue;
-            Point P (R.left(), rts[i]);
+            if (rt < R.top() || rt > R.bottom())  continue;
+            Point P (R.left(), rt);
             if (are_near (P, corner1))
                 P = corner1;
             else if (are_near (P, corner2))
@@ -151,10 +151,10 @@ bool CLIPPER_CLASS::intersect (std::vector<Point> & crossing_points) const
         Point corner1 = R.corner(BOTTOM_RIGHT);
         Point corner2 = R.corner(BOTTOM_LEFT);
 
-        for (size_t i = 0; i < rts.size(); ++i)
+        for (double rt : rts)
         {
-            if (rts[i] < R.left() || rts[i] > R.right())  continue;
-            Point P (rts[i], R.bottom());
+            if (rt < R.left() || rt > R.right())  continue;
+            Point P (rt, R.bottom());
             if (are_near (P, corner1))
                 P = corner1;
             else if (are_near (P, corner2))
@@ -244,9 +244,9 @@ bool CLIPPER_CLASS::are_paired (Point& M, const Point & P1, const Point & P2) co
 
 
     std::vector<Point> extrema;
-    for (size_t i = 0; i < rts.size(); ++i)
+    for (double rt : rts)
     {
-        extrema.push_back (gl.pointAt (rts[i]));
+        extrema.push_back (gl.pointAt (rt));
     }
 
     if (extrema.size() == 2)
@@ -267,9 +267,9 @@ bool CLIPPER_CLASS::are_paired (Point& M, const Point & P1, const Point & P2) co
     }
 
     std::vector<Point> inner_points;
-    for (size_t i = 0; i < extrema.size(); ++i)
+    for (auto p : extrema)
     {
-        if (!R.contains (extrema[i]))  continue;
+        if (!R.contains (p))  continue;
         // in case we are dealing with an ellipse tangent to two orthogonal
         // rectangle edges we could have two extrema on opposite sides wrt the
         // line passing through P1P2 and both inner the rectangle; anyway, since
@@ -278,13 +278,13 @@ bool CLIPPER_CLASS::are_paired (Point& M, const Point & P1, const Point & P2) co
         // remark: the other arc will be selected when we test for the arc P2P1.
         double P1angle = cs.angle_at (P1);
         double P2angle = cs.angle_at (P2);
-        double Qangle = cs.angle_at (extrema[i]);
+        double Qangle = cs.angle_at (p);
         if (P1angle < P2angle && !(P1angle <= Qangle && Qangle <= P2angle))
             continue;
         if (P1angle > P2angle && !(P1angle <= Qangle || Qangle <= P2angle))
             continue;
 
-        inner_points.push_back (extrema[i]);
+        inner_points.push_back (p);
     }
 
     if (inner_points.size() > 1)

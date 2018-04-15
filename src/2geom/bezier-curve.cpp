@@ -167,9 +167,9 @@ BezierCurve::intersect(Curve const &other, Coord eps) const
     if (bez) {
         std::vector<std::pair<double, double> > xs;
         find_intersections(xs, inner, bez->inner, eps);
-        for (unsigned i = 0; i < xs.size(); ++i) {
-            CurveIntersection x(*this, other, xs[i].first, xs[i].second);
-            result.push_back(x);
+        for (const auto & x : xs) {
+            CurveIntersection i(*this, other, x.first, x.second);
+            result.push_back(i);
         }
         return result;
     }

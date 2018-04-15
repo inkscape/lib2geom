@@ -223,13 +223,13 @@ class KinematicTemplatesToy : public Toy {
         draw_menu(cr, notify, width, height, save, timer_stream);
 
         // draw all points accumulated so far
-        for (unsigned int i = 0; i < pts.size(); ++i) {
-            if (pts[i]->size() > 0) {
-                cairo_move_to(cr, (*pts[i])[0]);
+        for (auto & pt : pts) {
+            if (pt->size() > 0) {
+                cairo_move_to(cr, (*pt)[0]);
             }
-            for (unsigned int j = 0; j < pts[i]->size(); ++j) {
-                //cout << "   --> drawing line to point #" << j << endl;
-                cairo_line_to(cr, (*pts[i])[j]);
+            for (auto p : *pt) {
+                //cout << "   --> drawing line to point #" << p << endl;
+                cairo_line_to(cr, p);
             }
         }
 

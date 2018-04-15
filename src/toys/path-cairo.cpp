@@ -14,8 +14,8 @@ void cairo_rectangle(cairo_t *cr, Rect const& r) {
 void cairo_convex_hull(cairo_t *cr, ConvexHull const& ch) {
     if(ch.empty()) return;
     cairo_move_to(cr, ch[ch.size()-1]);
-    for(unsigned i = 0; i < ch.size(); i++) {
-        cairo_line_to(cr, ch[i]);
+    for(auto p : ch) {
+        cairo_line_to(cr, p);
     }
 }
 
@@ -46,8 +46,8 @@ void cairo_curve(cairo_t *cr, Curve const& c) {
         Path sbasis_path = cubicbezierpath_from_sbasis(c.toSBasis(), 0.1);
 
         //recurse to convert the new path resulting from the sbasis to svgd
-        for(Path::iterator iter = sbasis_path.begin(); iter != sbasis_path.end(); ++iter) {
-            cairo_curve(cr, *iter);
+        for(const auto & it : sbasis_path) {
+            cairo_curve(cr, it);
         }
     }
 }
@@ -62,17 +62,15 @@ void cairo_path(cairo_t *cr, Path const &p) {
         return;
     }
 
-    for(Path::const_iterator iter(p.begin()), end(p.end()); iter != end; ++iter) {
-        cairo_curve(cr, *iter);
+    for(const auto & it : p) {
+        cairo_curve(cr, it);
     }
     if(p.closed())
         cairo_close_path(cr);
 }
 
 void cairo_path_stitches(cairo_t *cr, Path const &p) {
-    Path::const_iterator iter;
-    for ( iter = p.begin() ; iter != p.end() ; ++iter ) {
-        Curve const &c=*iter;
+    for (Curve const & c : p) {
         if (dynamic_cast<Path::StitchSegment const *>(&c)) {
             cairo_move_to(cr, c.initialPoint()[X], c.initialPoint()[Y]);
             cairo_line_to(cr, c.finalPoint()[X], c.finalPoint()[Y]);

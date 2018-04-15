@@ -45,12 +45,12 @@ using namespace Geom;
 void points_from_shape(std::vector<Point> &pts, std::string const &shape) {
     pts.clear();
     int x = 0, y = 0;
-    for (unsigned c = 0; c < shape.size(); ++c) {
-        if (shape[c] == '\n') {
+    for (char c : shape) {
+        if (c == '\n') {
             x = 0; ++y;
             continue;
         }
-        if (shape[c] == ' ') {
+        if (c == ' ') {
             ++x;
             continue;
         }
@@ -238,13 +238,13 @@ TEST_F(ConvexHullTest, PointContainment) {
     std::vector<Point> pts;
 
     points_from_shape(pts, gem_shape);
-    for (unsigned i = 0; i < pts.size(); ++i) {
-        EXPECT_TRUE(HullContainsPoint(gem, pts[i]));
+    for (auto pt : pts) {
+        EXPECT_TRUE(HullContainsPoint(gem, pt));
     }
 
     points_from_shape(pts, diamond_shape);
-    for (unsigned i = 0; i < pts.size(); ++i) {
-        EXPECT_TRUE(HullContainsPoint(diamond, pts[i]));
+    for (auto pt : pts) {
+        EXPECT_TRUE(HullContainsPoint(diamond, pt));
     }
 
     /*EXPECT_FALSE(null.interiorContains(zero));

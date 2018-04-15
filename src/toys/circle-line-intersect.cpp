@@ -24,15 +24,15 @@ class CircleIntersect : public Toy {
 
         // draw intersection points
         cairo_set_source_rgb(cr, 1, 0, 0);
-        for (unsigned i = 0; i < result.size(); ++i) {
-            draw_handle(cr, result[i].point());
+        for (auto & si : result) {
+            draw_handle(cr, si.point());
         }
         cairo_stroke(cr);
 
         // show message
         if (!result.empty()) {
-            for (unsigned i = 0; i < result.size(); ++i) {
-                *notify << result[i].point() << ", ";
+            for (auto & si : result) {
+                *notify << si.point() << ", ";
             }
         } else {
             *notify << "No intersection";

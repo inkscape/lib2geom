@@ -27,8 +27,8 @@ void draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool s
     
     cairo_stroke(cr);
     cairo_set_source_rgba (cr, 1., 0., 1, 1);
-    for(unsigned i = 0; i < all_si.size(); i++) {
-        draw_handle(cr, A(all_si[i].first));
+    for(auto & si : all_si) {
+        draw_handle(cr, A(si.first));
     }
     cairo_stroke(cr);
     

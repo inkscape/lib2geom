@@ -65,9 +65,9 @@ class IntersectDataTester: public Toy {
         Crossings cs = crossings(p0, p1);
         
         
-            for(unsigned int i = 0; i < cs.size(); i++) {
-                *notify << cs[i].ta << ", " << cs[i].tb << '\n';
-                Point cp =p0(cs[i].ta);
+            for(auto & c : cs) {
+                *notify << c.ta << ", " << c.tb << '\n';
+                Point cp =p0(c.ta);
                 //draw_circ(cr, cp);
                 //cairo_stroke(cr);
                 double p0pt = nearest_time(cp, pieces[0]);
@@ -88,9 +88,9 @@ class IntersectDataTester: public Toy {
 	  D2<SBasis> dist = pieces[endi]-pieces[0].at1();
 	  *notify << dist << "\n";
 	  vector<double> locs = roots(dot(dist,dist) - SBasis(r*r));
-	  for(unsigned i = 0; i < locs.size(); i++) {
+	  for(double loc : locs) {
 	    //draw_circ(cr, pieces[endi](locs[i]));
-	    *notify  << locs[i] << ' ';
+	    *notify  << loc << ' ';
 	  }
 	  if(locs.size()) {
 	    std::sort(locs.begin(), locs.end());

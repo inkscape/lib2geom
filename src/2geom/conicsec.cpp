@@ -280,13 +280,13 @@ std::vector<Point> decompose_degenerate(xAx const & C1, xAx const & C2, xAx cons
         Line L1 = Line::from_origin_and_vector(B0, rot90(n1));
 
         std::vector<double> rts = C1.roots(L0);
-        for(unsigned i = 0; i < rts.size(); i++) {
-            Point P = L0.pointAt(rts[i]);
+        for(double rt : rts) {
+            Point P = L0.pointAt(rt);
             res.push_back(P);
         }
         rts = C1.roots(L1);
-        for(unsigned i = 0; i < rts.size(); i++) {
-            Point P = L1.pointAt(rts[i]);
+        for(double rt : rts) {
+            Point P = L1.pointAt(rt);
             res.push_back(P);
         }
     } else {
@@ -329,8 +329,8 @@ std::vector<Point> decompose_degenerate(xAx const & C1, xAx const & C2, xAx cons
 
         Line Lx = Line::from_origin_and_vector(trial_pt, g); // a line along the gradient
         std::vector<double> rts = xC0.roots(Lx);
-        for(unsigned i = 0; i < rts.size(); i++) {
-            Point P0 = Lx.pointAt(rts[i]);
+        for(double rt : rts) {
+            Point P0 = Lx.pointAt(rt);
             //std::cout << P0 << "\n";
             Line L = Line::from_origin_and_vector(P0, rot90(g));
             std::vector<double> cnrts;
@@ -339,8 +339,8 @@ std::vector<Point> decompose_degenerate(xAx const & C1, xAx const & C2, xAx cons
                 cnrts = C1.roots(L);
             else
                 cnrts = C2.roots(L);
-            for(unsigned j = 0; j < cnrts.size(); j++) {
-                Point P = L.pointAt(cnrts[j]);
+            for(double cnrt : cnrts) {
+                Point P = L.pointAt(cnrt);
                 res.push_back(P);
             }
         }
@@ -500,8 +500,8 @@ xAx xAx::operator*(double const &b) const {
     D2<SBasis> lssb = ls.toSBasis();
     SBasis edge_curve = evaluate_at(lssb[0], lssb[1]);
     std::vector<double> rts = Geom::roots(edge_curve);
-    for(unsigned eci = 0; eci < rts.size(); eci++) {
-      res.push_back(lssb.valueAt(rts[eci]));
+    for(double rt : rts) {
+      res.push_back(lssb.valueAt(rt));
     }
   }
   return res;
@@ -1374,8 +1374,8 @@ Rect xAx::arc_bound (const Point & P1, const Point & Q, const Point & P2) const
         if (empty[dim])  continue;
         rts = roots (gl[dim]);
         M.clear();
-        for (size_t i = 0; i < rts.size(); ++i)
-            M.push_back (gl[dim].pointAt (rts[i]));
+        for (double rt : rts)
+            M.push_back (gl[dim].pointAt (rt));
         if (M.size() == 1)
         {
             double Mside = signed_triangle_area (P1, M[0], P2);

@@ -572,10 +572,10 @@ class LineToy : public Toy
         std::string label("A");
         cairo_set_source_rgba(cr, 1.0, 0.0, 0.0, 1.0);
         cairo_set_line_width(cr, 0.5);
-        for (unsigned int i = 0; i < ip.size(); ++i)
+        for (auto p : ip)
         {
-            draw_handle(cr, ip[i]);
-            draw_text(cr, ip[i]+op, label.c_str());
+            draw_handle(cr, p);
+            draw_text(cr, p+op, label.c_str());
             label[0] += 1;
         }
         cairo_stroke(cr);

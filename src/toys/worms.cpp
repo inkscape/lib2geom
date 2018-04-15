@@ -104,9 +104,9 @@ class Intro: public Toy {
             worms.push_back(Worm(t, uniform(), uniform(), uniform(), uniform() * 200 + 50));
         }
 
-        for(unsigned i = 0; i < worms.size(); i++) {
-            worms[i].draw(cr, t);
-            if(uniform() > .999) worms[i].tele(t);
+        for(auto & worm : worms) {
+            worm.draw(cr, t);
+            if(uniform() > .999) worm.tele(t);
         }
         
         Toy::draw(cr, notify, width, height, save,timer_stream);

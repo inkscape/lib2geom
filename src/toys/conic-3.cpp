@@ -45,8 +45,8 @@ class Conic3: public Toy {
         double angle = Geom::angle_between(a[0], a[1]);
         double len = std::max(Geom::L2(a[0]),
                                 Geom::L2(a[1]));
-        for(int i = 0; i < 2; i++) 
-        a[i] = len*unit_vector(a[i]);
+        for(auto & p : a) 
+        p = len*unit_vector(p);
         *notify << "angle = " << angle;
         *notify << " sinC = " << sinC(angle);
         *notify << " cosC = " << cosC(angle);

@@ -173,9 +173,9 @@ Point ConvexHull::topPoint() const
     Point ret;
     ret[Y] = std::numeric_limits<Coord>::infinity();
 
-    for (UpperIterator i = upperHull().begin(); i != upperHull().end(); ++i) {
-        if (ret[Y] >= i->y()) {
-            ret = *i;
+    for (auto p : upperHull()) {
+        if (ret[Y] >= p.y()) {
+            ret = p;
         } else {
             break;
         }
@@ -189,9 +189,9 @@ Point ConvexHull::bottomPoint() const
     Point ret;
     ret[Y] = -std::numeric_limits<Coord>::infinity();
 
-    for (LowerIterator j = lowerHull().begin(); j != lowerHull().end(); ++j) {
-        if (ret[Y] <= j->y()) {
-            ret = *j;
+    for (auto p : lowerHull()) {
+        if (ret[Y] <= p.y()) {
+            ret = p;
         } else {
             break;
         }
@@ -265,8 +265,8 @@ bool ConvexHull::contains(ConvexHull const &ch) const
         return true;
     }*/
 
-    for (iterator i = ch.begin(); i != ch.end(); ++i) {
-        if (!contains(*i)) return false;
+    for (auto p : ch) {
+        if (!contains(p)) return false;
     }
     return true;
 }

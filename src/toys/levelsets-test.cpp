@@ -74,10 +74,10 @@ class BoundsTester: public Toy {
         levels.push_back( Interval(300-(hand.pts[2*size+1][Y]-vtol), 300-(hand.pts[2*size+1][Y]+vtol)) );
         levels.push_back( Interval(300-(hand.pts[2*size+2][Y]-vtol), 300-(hand.pts[2*size+2][Y]+vtol)) );
 
-        for (unsigned i=0;i<levels.size();i++) plot_bar(cr,levels[i].middle());
+        for (auto & level : levels) plot_bar(cr,level.middle());
         cairo_set_source_rgba( cr, 1., 0., 0., 1);
         cairo_stroke(cr);
-        for (unsigned i=0;i<levels.size();i++) plot_bar(cr,levels[i]);
+        for (auto level : levels) plot_bar(cr,level);
         cairo_set_source_rgba( cr, 1., 0., 0., .2);
         cairo_fill(cr);
 
@@ -87,20 +87,20 @@ class BoundsTester: public Toy {
         
         vector<vector<Interval> > sols=level_sets(B,levels,0,1);
         for (unsigned i=0;i<sols.size();i++){
-            for (unsigned j=0;j<sols[i].size();j++){
+            for (auto & inter : sols[i]){
             	Interval ys = levels[i];
             	ys.expandTo(0.);
                 cairo_set_line_width (cr, .3);
-                plot_bar(cr,ys, 1., sols[i][j].min(), sols[i][j].max());
+                plot_bar(cr,ys, 1., inter.min(), inter.max());
                 cairo_set_source_rgba( cr, 0., 0., 1., .3);
                 cairo_fill(cr);
-                plot_bar(cr,ys, 1., sols[i][j].min(), sols[i][j].max());
+                plot_bar(cr,ys, 1., inter.min(), inter.max());
                 cairo_set_source_rgba( cr, 0., 0., 1., .3);
                 cairo_stroke(cr);
                 cairo_set_line_width (cr, 1.6);
                 cairo_set_source_rgba( cr, 0., 0., 1, 1);
-                plot_bar(cr,0., 1., sols[i][j].min(), sols[i][j].max());
-                Point sol ( 150 + 300 * sols[i][j].middle(), 300);
+                plot_bar(cr,0., 1., inter.min(), inter.max());
+                Point sol ( 150 + 300 * inter.middle(), 300);
                 draw_cross(cr, sol);
                 cairo_stroke(cr);
             }

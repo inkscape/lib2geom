@@ -84,11 +84,11 @@ std::vector<SmashIntersection> monotonic_smash_intersect( Curve const &a, Interv
     D2<SBasis> bsb = b.toSBasis();
     bsb = portion( bsb, b_dom );
     result = monotonic_smash_intersect(asb, bsb, tol );
-    for (unsigned i=0; i < result.size(); i++){
-    	result[i].times[X] *= a_dom.extent();
-    	result[i].times[X] += a_dom.min();
-    	result[i].times[Y] *= b_dom.extent();
-    	result[i].times[Y] += b_dom.min();
+    for (auto & si : result){
+    	si.times[X] *= a_dom.extent();
+    	si.times[X] += a_dom.min();
+    	si.times[Y] *= b_dom.extent();
+    	si.times[Y] += b_dom.min();
     }
     return result;
 }
@@ -150,15 +150,15 @@ public:
     	result.push_back( apair );
 
     	std::sort(inters.begin(), inters.end(), IntersectionMinTimeOrder(which) );
-    	for (unsigned i=0; i < inters.size(); i++){
-    		if ( !inters[i].times[which].intersects( dom ) )//this should never happen.
+    	for (auto & inter : inters){
+    		if ( !inter.times[which].intersects( dom ) )//this should never happen.
     			continue;
-    		if ( result.back().first.intersects( inters[i].times[which] ) ){
-    			result.back().first.unionWith( inters[i].times[which] );
-    			result.back().second.unionWith( inters[i].bbox );
+    		if ( result.back().first.intersects( inter.times[which] ) ){
+    			result.back().first.unionWith( inter.times[which] );
+    			result.back().second.unionWith( inter.bbox );
     		}else{
-    	    	apair.first  = inters[i].times[which];
-    	    	apair.second = inters[i].bbox;
+    	    	apair.first  = inter.times[which];
+    	    	apair.second = inter.bbox;
     	    	result.push_back( apair );
     		}
     	}
@@ -734,8 +734,8 @@ public:
 
     //debug only!!
     bool isContained(Rect b,   std::vector<Rect> const &boxes ){
-        for (unsigned i=0; i<boxes.size(); i++){
-            if ( boxes[i].contains(b) ) return true;
+        for (const auto & box : boxes){
+            if ( box.contains(b) ) return true;
         }
         return false;
     }
@@ -744,9 +744,9 @@ public:
     //NB: enlarging a vertex may create intersection with already scanned ones...
     std::vector<Rect> collectBoxes(){
         std::vector<Rect> ret;
-        for (unsigned i=0; i<tiles_data.size(); i++){
-            fuseInsert(tiles_data[i].fbox, ret, dim);
-            fuseInsert(tiles_data[i].tbox, ret, dim);
+        for (auto & data : tiles_data){
+            fuseInsert(data.fbox, ret, dim);
+            fuseInsert(data.tbox, ret, dim);
         }
         return ret;
     }
@@ -792,12 +792,12 @@ public:
 
         bool result = false;
         for (unsigned i=0; i<tiles_data.size(); i++){
-            for (unsigned k=0; k < boxes.size(); k++){
-                if ( Point::LexLessRt(dim)( tiles_data[i].max(), boxes[k].min()) ) break;
-                if ( Point::LexLessRt(dim)( boxes[k].max(), tiles_data[i].min()) ) continue;
-                if ( !boxes[k].intersects( tiles_data[i].bbox() ) ) continue;
-                if ( tiles_data[i].fbox.intersects( boxes[k] ) ) continue;
-                if ( tiles_data[i].tbox.intersects( boxes[k] ) ) continue;
+            for (auto & box : boxes){
+                if ( Point::LexLessRt(dim)( tiles_data[i].max(), box.min()) ) break;
+                if ( Point::LexLessRt(dim)( box.max(), tiles_data[i].min()) ) continue;
+                if ( !box.intersects( tiles_data[i].bbox() ) ) continue;
+                if ( tiles_data[i].fbox.intersects( box ) ) continue;
+                if ( tiles_data[i].tbox.intersects( box ) ) continue;
 
                 //at this point box[k] intersects the curve bbox away from the fbox and tbox.
 
@@ -805,12 +805,12 @@ public:
 //----------> use level-set!!
                 for (unsigned corner=0; corner<4; corner++){
                     unsigned D = corner % 2;
-                    double val = boxes[k].corner(corner)[D];
+                    double val = box.corner(corner)[D];
                     std::vector<double> times = roots( c[D] - val );
                     if ( times.size()>0 ){
                         double t = lerp( times.front(), tiles_data[i].f, tiles_data[i].t );
                         double hit_place = c[1-D](times.front());
-                        if ( boxes[k][1-D].contains(hit_place) ){
+                        if ( box[1-D].contains(hit_place) ){
                             result = true;
                             //taking a point on the boundary is dangerous!! 
                             //Either use >0 tolerance here, or find 2 intersection points and split in between.
@@ -874,17 +874,17 @@ public:
     OptRect isolateVertex(Rect const &box){
         OptRect sep ( Interval( -infinity(), infinity() ) , Interval(-infinity(), infinity() ) );
         //separate this vertex from the others. Find a better way.
-        for (unsigned i=0; i<vtxboxes.size(); i++){
-            if ( Point::LexLessRt(dim)( sep->max(), vtxboxes[i].min() ) ){
+        for (auto & vtxbox : vtxboxes){
+            if ( Point::LexLessRt(dim)( sep->max(), vtxbox.min() ) ){
                 break;
             }
-            if ( vtxboxes[i]!=box ){//&& !vtxboxes[i].intersects(box) ){
-                OptRect sepi = separate(box, vtxboxes[i]);
+            if ( vtxbox!=box ){//&& !vtxboxes[i].intersects(box) ){
+                OptRect sepi = separate(box, vtxbox);
                 if ( sep && sepi ){
                     sep = intersect(*sep, *sepi);
                 }else{
                     std::cout<<"box="<<box<<"\n";
-                    std::cout<<"vtxboxes[i]="<<vtxboxes[i]<<"\n";
+                    std::cout<<"vtxboxes[i]="<<vtxbox<<"\n";
                     assert(sepi);
                 }
             }
@@ -928,8 +928,8 @@ public:
     }
     void printVertex(FatVertex const &v){
         std::printf("Vertex: [%f,%f]x[%f,%f]\n", v[X].min(),v[X].max(),v[Y].min(),v[Y].max() );
-        for (unsigned i=0; i < v.rays.size(); i++){
-            printRay(v.rays[i]);
+        for (const auto & ray : v.rays){
+            printRay(ray);
         }
     }
 
@@ -938,15 +938,15 @@ public:
     void sortRays( FatVertex &v ){
         OptRect sep = isolateVertex(v);
 
-        for (unsigned i=0; i < v.rays.size(); i++){
-            v.rays[i].centrifuge = (tiles_data[ v.rays[i].tile ].fbox == v);
-            v.rays[i].exit_time = v.rays[i].centrifuge ? 1 : 0 ;
+        for (auto & ray : v.rays){
+            ray.centrifuge = (tiles_data[ ray.tile ].fbox == v);
+            ray.exit_time = ray.centrifuge ? 1 : 0 ;
         }
 
-        for (unsigned i=0; i < v.rays.size(); i++){
+        for (auto & ray : v.rays){
             //TODO: don't convert each time!!!
-            assert( v.rays[i].tile < tiles_data.size() );
-            D2<SBasis> c = tileToSB( tiles_data[ v.rays[i].tile ] );
+            assert( ray.tile < tiles_data.size() );
+            D2<SBasis> c = tileToSB( tiles_data[ ray.tile ] );
 
             for (unsigned side=0; side<4; side++){//scan X or Y direction, on level min or max...
                 double level = sep->corner( side )[1-side%2];
@@ -954,16 +954,16 @@ public:
                     std::vector<double> times = roots(c[1-side%2]-level);
                     if ( times.size() > 0 ) {
                         double t;
-                        assert( v.rays[i].tile < tiles_data.size() );
-                        if (tiles_data[ v.rays[i].tile ].fbox == v){
+                        assert( ray.tile < tiles_data.size() );
+                        if (tiles_data[ ray.tile ].fbox == v){
                             t = times.front();
-                            if ( v.rays[i].exit_side > 3 || v.rays[i].exit_time > t ){
-                                v.rays[i].setExitInfo( side, c[side%2](t), t);
+                            if ( ray.exit_side > 3 || ray.exit_time > t ){
+                                ray.setExitInfo( side, c[side%2](t), t);
                             }
                         }else{
                             t = times.back();
-                            if ( v.rays[i].exit_side > 3 || v.rays[i].exit_time < t ){
-                                v.rays[i].setExitInfo( side, c[side%2](t), t);
+                            if ( ray.exit_side > 3 || ray.exit_time < t ){
+                                ray.setExitInfo( side, c[side%2](t), t);
                             }
                         }
                     }

@@ -374,9 +374,9 @@ class ConicSectionToy : public Toy
         {
             std::cerr << e.what() << std::endl;
         }
-        for ( unsigned int i = 0; i < values.size(); ++i )
+        for (double value : values)
         {
-            Point p(values[i], values[i]);
+            Point p(value, value);
             p[DIM] = p1.pos[DIM];
             draw_handle(cr, p);
         }
@@ -514,9 +514,9 @@ class ConicSectionToy : public Toy
         cairo_set_source_rgba(cr, 0.8, 0.1, 0.1, 1.0);
         cairo_set_line_width (cr, 0.5);
         cairo_rectangle (cr, Rect (Point (100, 100),Point (width-100, height-100)));
-        for (size_t i = 0; i < rq.size(); ++i)
+        for (auto & it : rq)
         {
-            cairo_d2_sb (cr, rq[i].toCubic().toSBasis());
+            cairo_d2_sb (cr, it.toCubic().toSBasis());
         }
         cairo_stroke(cr);
     }

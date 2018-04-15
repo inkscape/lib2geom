@@ -75,10 +75,10 @@ class CurveIntersect : public Toy
         *timer_stream << "find_collinear_normal " << als_time << std::endl;
         cairo_set_line_width (cr, 0.3);
         cairo_set_source_rgba (cr, 0.0, 0.0, 0.7, 1);
-        for (size_t i = 0; i < xs.size(); ++i)
+        for (auto & x : xs)
         {
-            Point At = A(xs[i].first);
-            Point Bu = B(xs[i].second);
+            Point At = A(x.first);
+            Point Bu = B(x.second);
             draw_axis(cr, At, Bu);
             draw_handle(cr, At);
             draw_handle(cr, Bu);

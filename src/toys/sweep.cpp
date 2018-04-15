@@ -25,8 +25,8 @@ public:
             cairo_save(cr);
             cairo_set_source_rgb(cr, 1, 0, 0);
             for(unsigned i = 0; i < res.size(); i++) {
-                for(unsigned j = 0; j < res[i].size(); j++) {
-                    draw_line_seg(cr, rects_a[i].midpoint(), rects_a[res[i][j]].midpoint());
+                for(unsigned int j : res[i]) {
+                    draw_line_seg(cr, rects_a[i].midpoint(), rects_a[j].midpoint());
                     cairo_stroke(cr);
                 }
             }
@@ -37,8 +37,8 @@ public:
             cairo_save(cr);
             cairo_set_source_rgb(cr, 0.5, 0, 0.5);
             for(unsigned i = 0; i < res.size(); i++) {
-                for(unsigned j = 0; j < res[i].size(); j++) {
-                    draw_line_seg(cr, rects_a[i].midpoint(), rects_b[res[i][j]].midpoint());
+                for(unsigned int j : res[i]) {
+                    draw_line_seg(cr, rects_a[i].midpoint(), rects_b[j].midpoint());
                     cairo_stroke(cr);
                 }
             }

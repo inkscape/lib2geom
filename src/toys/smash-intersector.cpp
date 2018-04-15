@@ -480,14 +480,14 @@ class Intersector : public Toy
 		std::vector<SmashIntersection> my_intersections;
      	my_intersections = smash_intersect( A, B, tol );
 
-     	for (unsigned k=0; k<my_intersections.size(); k++){
+     	for (auto & my_intersection : my_intersections){
      		cairo_set_line_width (cr, 2.5);
             cairo_set_source_rgba(cr, 1., 0., 0., .8 );
-            cairo_d2_sb(cr, portion( A, my_intersections[k].times[X]));
+            cairo_d2_sb(cr, portion( A, my_intersection.times[X]));
         	cairo_stroke(cr);
             cairo_set_line_width (cr, 2.5);
             cairo_set_source_rgba(cr, 0., 0., 1., .8 );
-            cairo_d2_sb(cr, portion( B, my_intersections[k].times[Y]));
+            cairo_d2_sb(cr, portion( B, my_intersection.times[Y]));
         	cairo_stroke(cr);
      	}
 #if 0

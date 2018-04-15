@@ -109,8 +109,8 @@ std::map<double,unsigned> compose_pullback(std::vector<double> const &values, SB
 
    std::vector<std::vector<double> > roots = multi_roots(g, values);
    for(unsigned i=0; i<roots.size(); i++){
-       for(unsigned j=0; j<roots[i].size();j++){
-           result[roots[i][j]]=i;
+       for(double j : roots[i]){
+           result[j]=i;
        }
    }
   // Also map 0 and 1 to the first value above(or =) g(0) and g(1).
@@ -207,8 +207,8 @@ std::vector<double> roots(Piecewise<SBasis> const &f){
     for (unsigned i=0; i<f.size(); i++){
         std::vector<double> rts=roots(f.segs[i]);
 
-        for (unsigned r=0; r<rts.size(); r++){
-            result.push_back(f.mapToDomain(rts[r], i));
+        for (double rt : rts){
+            result.push_back(f.mapToDomain(rt, i));
         }
     }
     return result;
@@ -219,8 +219,8 @@ std::vector<std::vector<double> > multi_roots(Piecewise<SBasis> const &f, std::v
     for (unsigned i=0; i<f.size(); i++) {
         std::vector<std::vector<double> > rts = multi_roots(f.segs[i], values);
         for(unsigned j=0; j<rts.size(); j++) {
-            for(unsigned r=0; r<rts[j].size(); r++){
-                result[j].push_back(f.mapToDomain(rts[j][r], i));
+            for(double r : rts[j]){
+                result[j].push_back(f.mapToDomain(r, i));
             }
         }
     }

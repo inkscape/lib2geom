@@ -40,8 +40,8 @@ class CircleIntersect : public Toy {
         std::vector<ShapeIntersection> result = e.intersect(b);
 
         cairo_set_source_rgb(cr, 1, 0, 0);
-        for (unsigned i = 0; i < result.size(); ++i) {
-            draw_handle(cr, result[i].point());
+        for (auto & si : result) {
+            draw_handle(cr, si.point());
         }
         cairo_stroke(cr);
 

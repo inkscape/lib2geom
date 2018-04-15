@@ -3137,8 +3137,8 @@ static const int kWhitespaceTable7Length = ARRAY_SIZE(kWhitespaceTable7);
 
 static bool isWhitespace(int x) {
   if (x < 128) {
-    for (int i = 0; i < kWhitespaceTable7Length; i++) {
-      if (kWhitespaceTable7[i] == x) return true;
+    for (char c : kWhitespaceTable7) {
+      if (c == x) return true;
     }
   }
   return false;

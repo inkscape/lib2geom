@@ -106,24 +106,24 @@ public:
 
         if (togs[7].on) {
             cairo_set_source_rgb(cr, 0, 1, 1);
-            for (unsigned i = 0; i < wpoints.size(); ++i) {
-                draw_handle(cr, wpoints[i]);
+            for (auto wpoint : wpoints) {
+                draw_handle(cr, wpoint);
             }
             cairo_stroke(cr);
         }
 
         if (togs[3].on) {
             cairo_set_source_rgb(cr, 0, 1, 0);
-            for (unsigned i = 0; i < ix.size(); ++i) {
-                draw_handle(cr, ix[i]);
+            for (auto i : ix) {
+                draw_handle(cr, i);
             }
             cairo_stroke(cr);
         }
 
         if (togs[4].on) {
             cairo_set_source_rgb(cr, 1, 0, 0);
-            for (unsigned i = 0; i < dix.size(); ++i) {
-                draw_handle(cr, dix[i]);
+            for (auto i : dix) {
+                draw_handle(cr, i);
             }
             cairo_stroke(cr);
         }
@@ -215,8 +215,8 @@ public:
         path_handles[2] = PointHandle(bht.initialPoint());
         path_handles[3] = PointHandle(bht.finalPoint());
 
-        for (unsigned i = 0; i < 4; ++i) {
-            handles.push_back(&path_handles[i]);
+        for (auto & path_handle : path_handles) {
+            handles.push_back(&path_handle);
         }
         path_handles_inited = true;
     }

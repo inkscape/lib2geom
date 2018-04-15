@@ -343,8 +343,8 @@ class SbToBezierTester: public Toy {
       }
       Geom::PathVector vpt = path_from_piecewise(f_as_pw, curve_precision, true);
       unsigned default_number_curves = 0;
-      for(unsigned i = 0; i < vpt.size(); i++) {
-          default_number_curves += vpt[i].size();
+      for(const auto & p : vpt) {
+          default_number_curves += p.size();
       }
       
       *notify << "      segments from default algorithm: "<< default_number_curves <<"\n";

@@ -60,8 +60,8 @@ public:
         cairo_set_source_rgba (cr, 0., 0.125, 0, 1);
         cairo_stroke(cr);
         if(!save)
-            for(unsigned i = 0; i < display_handles.size(); i++)
-                draw_circ(cr, display_handles[i]);
+            for(auto display_handle : display_handles)
+                draw_circ(cr, display_handle);
         Toy::draw(cr, notify, width, height, save,timer_stream);
     }
 };

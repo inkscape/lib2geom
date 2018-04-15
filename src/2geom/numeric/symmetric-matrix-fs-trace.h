@@ -265,9 +265,9 @@ struct trace_sgn<2,3>
         int em;
         std::frexp(*maxp, &em);
         double d = 0;
-        for (size_t i = 0; i < 6; ++i)
+        for (double it : t)
         {
-            d += t[i];
+            d += it;
         }
         double r = std::fabs (std::ldexp (d, -em));  // relative error
         //std::cout << "trace_sgn<2,3>: d = " << d << std::endl;
@@ -298,9 +298,9 @@ struct trace_sgn<3,3>
         int em;
         std::frexp(*maxp, &em);
         double d = 0;
-        for (size_t i = 0; i < 5; ++i)
+        for (double it : t)
         {
-            d += t[i];
+            d += it;
         }
         //std::cout << "trace_sgn<3,3>: d = " << d << std::endl;
         double r = std::fabs (std::ldexp (d, -em));  // relative error

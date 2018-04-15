@@ -273,8 +273,8 @@ Piecewise<SBasis> cos(          SBasis  const &f, double tol, int order){
 
 void truncateResult(Piecewise<SBasis> &f, int order){
     if (order>=0){
-        for (unsigned k=0; k<f.segs.size(); k++){
-            f.segs[k].truncate(order);
+        for (auto & seg : f.segs){
+            seg.truncate(order);
         }
     }
 }

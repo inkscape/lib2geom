@@ -85,20 +85,20 @@ LPEToy::doEffect_path (Geom::PathVector const &path_in)
 
     if ( !concatenate_before_pwd2 ) {
         // default behavior
-        for (unsigned int i=0; i < path_in.size(); i++) {
-            Geom::Piecewise<Geom::D2<Geom::SBasis> > pwd2_in = path_in[i].toPwSb();
+        for (const auto & p : path_in) {
+            Geom::Piecewise<Geom::D2<Geom::SBasis> > pwd2_in = p.toPwSb();
             Geom::Piecewise<Geom::D2<Geom::SBasis> > pwd2_out = doEffect_pwd2(pwd2_in);
             Geom::PathVector path = Geom::path_from_piecewise( pwd2_out, LPE_CONVERSION_TOLERANCE);
             // add the output path vector to the already accumulated vector:
-            for (unsigned int j=0; j < path.size(); j++) {
-                path_out.push_back(path[j]);
+            for (const auto & j : path) {
+                path_out.push_back(j);
             }
         }
     } else {
       // concatenate the path into possibly discontinuous pwd2
         Geom::Piecewise<Geom::D2<Geom::SBasis> > pwd2_in;
-        for (unsigned int i=0; i < path_in.size(); i++) {
-            pwd2_in.concat( path_in[i].toPwSb() );
+        for (const auto & p : path_in) {
+            pwd2_in.concat( p.toPwSb() );
         }
         Geom::Piecewise<Geom::D2<Geom::SBasis> > pwd2_out = doEffect_pwd2(pwd2_in);
         path_out = Geom::path_from_piecewise( pwd2_out, LPE_CONVERSION_TOLERANCE);

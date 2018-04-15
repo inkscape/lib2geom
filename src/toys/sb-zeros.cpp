@@ -23,10 +23,10 @@ class SBZeros: public Toy {
         for(int j = 0; j <= 5; j++) {
             for(unsigned d = 0; d < 2; d++) {
                 std::vector<double> r = roots(make_cuts_independent(s[j])[d]);
-                for(unsigned k = 0; k < r.size(); k++) e.push_back(B.valueAt(r[k]));
+                for(double d : r) e.push_back(B.valueAt(d));
             }
         }
-        for(unsigned i = 0; i < e.size(); i++) draw_cross(cr, e[i]);
+        for(auto p : e) draw_cross(cr, p);
         
         cairo_set_line_width (cr, .5);
         cairo_set_source_rgba (cr, 0., 0.5, 0., 1);

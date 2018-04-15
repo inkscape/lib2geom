@@ -234,9 +234,9 @@ public:
 		// of the other curve
 		cuts1.clear();
 		cuts1.reserve(dk2_roots.size());
-		for ( unsigned int i = 0; i < dk2_roots.size(); ++i )
+		for (double dk2_root : dk2_roots)
 		{
-			cuts1.push_back(nearest_time(_c2(dk2_roots[i]), _c1, dc1, cd1));
+			cuts1.push_back(nearest_time(_c2(dk2_root), _c1, dc1, cd1));
 		}
 		
 //		for( unsigned int i = 0; i < dk2_roots.size(); ++i )
@@ -476,11 +476,11 @@ private:
 		std::vector<double> zeros = roots(dd);
 		double closest = from;
 		double distsq = L2sq(sbc(from));
-		for ( unsigned int i = 0; i < zeros.size(); ++i )
+		for (double zero : zeros)
 		{
-			if ( distsq > L2sq(sbc(zeros[i])) )
+			if ( distsq > L2sq(sbc(zero)) )
 			{
-				closest = zeros[i];
+				closest = zero;
 				distsq = L2sq(sbc(closest));
 			}
 		}

@@ -383,10 +383,10 @@ class EllipticalArcToy: public Toy
         if ( no_solution || point_overlap ) return;
 
         std::vector<double> times = ea.allNearestTimes( nph.pos );
-        for ( unsigned int i = 0; i < times.size(); ++i )
+        for (double time : times)
         {
             cairo_move_to(cr,nph.pos);
-            cairo_line_to( cr, ea.pointAt(times[i]) );
+            cairo_line_to( cr, ea.pointAt(time) );
         }
         cairo_stroke(cr);
     }
@@ -461,9 +461,9 @@ class EllipticalArcToy: public Toy
         {
             std::cerr << e.what() << std::endl;
         }
-        for ( unsigned int i = 0; i < times.size(); ++i )
+        for (double time : times)
         {
-            draw_handle(cr, ea.pointAt(times[i]));
+            draw_handle(cr, ea.pointAt(time));
         }
         cairo_stroke(cr);
     }
