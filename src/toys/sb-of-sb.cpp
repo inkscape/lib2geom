@@ -1,4 +1,4 @@
-#include <time.h>
+#include <ctime>
 #include <vector>
 #include <toys/path-cairo.h>
 #include <toys/toy-framework-2.h>

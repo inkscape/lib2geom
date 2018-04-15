@@ -6,7 +6,7 @@
 #include <2geom/sbasis-poly.h>
 #include <2geom/sbasis-to-bezier.h>
 #include <2geom/solver.h>
-#include <time.h>
+#include <ctime>
 
 using namespace std;
 using namespace Geom;

@@ -1,5 +1,5 @@
-#include <string.h>
-#include <stdint.h>
+#include <cstring>
+#include <cstdint>
 #include <toys/toy-framework-2.h>
 
 #include <cairo-features.h>

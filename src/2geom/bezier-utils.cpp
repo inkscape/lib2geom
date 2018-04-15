@@ -49,7 +49,7 @@
 
 #include <2geom/bezier-utils.h>
 #include <2geom/math-utils.h>
-#include <assert.h>
+#include <cassert>
 
 namespace Geom {
 

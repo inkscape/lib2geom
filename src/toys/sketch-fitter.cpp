@@ -50,7 +50,7 @@ using std::vector;
 using namespace Geom;
 using namespace std;
 
-#include <stdio.h>
+#include <cstdio>
 #include <gsl/gsl_poly.h>
 
 std::vector<Point> neighbors(std::vector<Point> const &pts, unsigned idx, double radius){

@@ -5,7 +5,7 @@
 #include <toys/path-cairo.h>
 #include <toys/toy-framework-2.h>
 
-#include <time.h>
+#include <ctime>
 using std::vector;
 using namespace Geom;
 using namespace std;

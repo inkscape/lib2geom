@@ -11,7 +11,7 @@
 #include <vector>
 #include <string>
 
-#include <assert.h>
+#include <cassert>
 #include <2geom/exception.h>
 #include <2geom/point.h>
 #include <2geom/geom.h>

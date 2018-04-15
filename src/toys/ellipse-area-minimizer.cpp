@@ -41,7 +41,7 @@
 #include <toys/path-cairo.h>
 #include <toys/toy-framework-2.h>
 
-#include <stdio.h>
+#include <cstdio>
 
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_math.h>

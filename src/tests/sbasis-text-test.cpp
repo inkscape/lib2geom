@@ -1,5 +1,5 @@
 #include <iostream>
-#include <math.h>
+#include <cmath>
 #include <cassert>
 #include <2geom/sbasis.h>
 #include <2geom/sbasis-poly.h>

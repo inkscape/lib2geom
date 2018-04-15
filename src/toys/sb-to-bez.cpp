@@ -45,7 +45,7 @@ using std::vector;
 using namespace Geom;
 using namespace std;
 
-#include <stdio.h>
+#include <cstdio>
 #include <gsl/gsl_poly.h>
 
 void cairo_pw(cairo_t *cr, Piecewise<SBasis> p, double hscale=1., double vscale=1.) {
@@ -185,7 +185,7 @@ double quadratic (double x, void *params) {
     return single_curvature_fitter(*p->f, p->t0, x) - p->precision;
 }
      
-#include <stdio.h>
+#include <cstdio>
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_roots.h>

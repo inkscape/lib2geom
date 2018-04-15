@@ -47,8 +47,8 @@ using std::vector;
 using namespace Geom;
 using namespace std;
 
-#include <stdio.h>
-#include <math.h>
+#include <cstdio>
+#include <cmath>
 
 #include <toys/pwsbhandle.cpp>  // FIXME: This looks like it may give problems later, (including a .cpp file)
 

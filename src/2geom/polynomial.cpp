@@ -35,7 +35,7 @@
 #include <algorithm>
 #include <2geom/polynomial.h>
 #include <2geom/math-utils.h>
-#include <math.h>
+#include <cmath>
 
 #ifdef HAVE_GSL
 #include <gsl/gsl_poly.h>

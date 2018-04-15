@@ -34,7 +34,7 @@
 
 #ifndef LIB2GEOM_SEEN_POLY_H
 #define LIB2GEOM_SEEN_POLY_H
-#include <assert.h>
+#include <cassert>
 #include <vector>
 #include <iostream>
 #include <algorithm>

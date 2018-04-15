@@ -28,8 +28,8 @@
  *
  */
  
-#include <string.h>
-#include <stdint.h>
+#include <cstring>
+#include <cstdint>
 #include <toys/lpe-framework.h>
 
 #include <2geom/sbasis-to-bezier.h>

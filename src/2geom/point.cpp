@@ -33,8 +33,8 @@
  * the specific language governing rights and limitations.
  */
 
-#include <assert.h>
-#include <math.h>
+#include <cassert>
+#include <cmath>
 #include <2geom/coord.h>
 #include <2geom/point.h>
 #include <2geom/transforms.h>

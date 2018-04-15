@@ -10,7 +10,7 @@
 #include <vector>
 #include <algorithm>
 
-#include <limits.h>
+#include <climits>
 #define NULL_IDX UINT_MAX
 
 #include <2geom/orphan-code/intersection-by-smashing.h>

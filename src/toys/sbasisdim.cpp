@@ -5,7 +5,7 @@
 #include <toys/path-cairo.h>
 #include <toys/toy-framework-2.h>
 
-#include <time.h>
+#include <ctime>
 #include <vector>
 
 #include <2geom/orphan-code/linearN.h>

@@ -36,8 +36,8 @@
 
 #include <2geom/d2.h>
 #include <2geom/sbasis-math.h>
-#include <stdio.h>
-#include <math.h>
+#include <cstdio>
+#include <cmath>
 //#define ZERO 1e-3
 
 

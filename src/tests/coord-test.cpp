@@ -34,7 +34,7 @@
 #include <gtest/gtest.h>
 #include <2geom/coord.h>
 #include <climits>
-#include <stdint.h>
+#include <cstdint>
 #include <glib.h>
 #include <iostream>
 

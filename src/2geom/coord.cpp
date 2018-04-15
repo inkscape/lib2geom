@@ -62,7 +62,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <2geom/coord.h>
-#include <stdint.h>
+#include <cstdint>
 #include <cstdlib>
 #include <cassert>
 #include <cstring>
