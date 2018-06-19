@@ -1,5 +1,3 @@
-[![Travis CI status](https://api.travis-ci.org/inkscape/lib2geom.png)](https://api.travis-ci.org/inkscape/lib2geom.png)
-
 2Geom: easy 2D graphics library
 ===============================
 
