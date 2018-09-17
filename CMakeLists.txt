@@ -92,11 +92,7 @@ ELSE(2GEOM_USE_GPL_CODE)
     # Do Nothing
 ENDIF(2GEOM_USE_GPL_CODE)
 
-#make dist target
-SET(2GEOM_DIST_PREFIX "${PROJECT_NAME}-${2GEOM_VERSION}")
-ADD_CUSTOM_TARGET(dist svn export --force -q "${CMAKE_SOURCE_DIR}" "${CMAKE_BINARY_DIR}/${2GEOM_DIST_PREFIX}" 
-		COMMAND tar -czf "${CMAKE_BINARY_DIR}/${2GEOM_DIST_PREFIX}.tar.gz" -C "${CMAKE_BINARY_DIR}" --exclude=".hidden" ${2GEOM_DIST_PREFIX}
-		WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
+include(CMakeScripts/Dist.cmake)
 
 #make unistall target
 CONFIGURE_FILE(

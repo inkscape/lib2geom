@@ -1,0 +1,7 @@
+#make dist target
+SET(2GEOM_DIST_PREFIX "${PROJECT_NAME}-${2GEOM_VERSION}")
+ADD_CUSTOM_TARGET(dist
+    COMMAND git config tar.bz2.command bzip2
+    COMMAND git archive --prefix=${2GEOM_DIST_PREFIX}/ -o ${CMAKE_BINARY_DIR}/${2GEOM_DIST_PREFIX}.tar.bz2 HEAD
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    VERBATIM)
