@@ -107,7 +107,7 @@ inline void sincos(double angle, double &sin_, double &cos_) {
 # define IS_NAN(_a) (__isnan(_a))
 #elif defined(__APPLE__) && __GNUC__ == 3
 # define IS_NAN(_a) (__isnan(_a))	/* MacOSX/Darwin definition < 10.4 */
-#elif defined(WIN32) || defined(_isnan)
+#elif defined(_WIN32) || defined(_isnan)
 # define IS_NAN(_a) (_isnan(_a)) 	/* Win32 definition */
 #elif defined(isnan) || defined(__FreeBSD__) || defined(__osf__)
 # define IS_NAN(_a) (isnan(_a))		/* GNU definition */
