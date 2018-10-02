@@ -2,9 +2,6 @@
  *  \brief Various geometrical calculations.
  */
 
-#ifdef HAVE_CONFIG_H
-# include <config.h>
-#endif
 #include <2geom/geom.h>
 #include <2geom/point.h>
 #include <algorithm>

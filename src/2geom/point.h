@@ -35,7 +35,6 @@
 #ifndef LIB2GEOM_SEEN_POINT_H
 #define LIB2GEOM_SEEN_POINT_H
 
-#include "config.h"
 #include <iostream>
 #include <iterator>
 #include <boost/operators.hpp>
