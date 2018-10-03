@@ -1,0 +1,15 @@
+# Dependencies are managed in the Dockerfile in the inkscape-ci-docker
+# Git repository. Recycle the one for the 0.92.x Inkscape branch for now
+image: registry.gitlab.com/inkscape/inkscape-ci-docker/0-92-x
+
+variables:
+  GIT_DEPTH: "10"
+  GIT_SUBMODULE_STRATEGY: recursive
+
+
+2geom:
+  stage: build
+  script:
+    - cmake .
+    - make -j3
+    - make -j3 test
