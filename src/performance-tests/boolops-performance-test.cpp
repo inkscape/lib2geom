@@ -41,7 +41,8 @@ using namespace Geom;
 int main(int argc, char **argv)
 {
     if (argc != 4) {
-        std::cout << "Wrong number of arguments";
+        std::cout << "boolops: wrong number of arguments; no tests run!" << std::endl;
+        exit(0); // TODO: add suitable arguments in CMake target / actually do some tests here
     }
 
     PathVector a = read_svgd(argv[2]);

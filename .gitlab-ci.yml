@@ -17,6 +17,7 @@ variables:
     - cmake . -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
     - make -j3
     - make -j3 test
+    - make -j3 perf
   cache:
     paths:
       - ccache/
