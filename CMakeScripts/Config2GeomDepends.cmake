@@ -33,5 +33,8 @@ MACRO(CHECK_MATH_FUNCTION FUNCTION VAR)
 ENDMACRO(CHECK_MATH_FUNCTION)
 
 CHECK_MATH_FUNCTION("sincos(a,&b,&c)" HAVE_SINCOS)
+if(WIN32)
+    SET(HAVE_SINCOS OFF)  # currently results in internal compiler error with mingw-w64 (gcc 8.2.0)
+ENDIF(WIN32)
 
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/src/2geom/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
