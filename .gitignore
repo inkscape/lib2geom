@@ -35,3 +35,4 @@ install_manifest.txt
 *.so
 *.a
 *.dll
+*.pyd

@@ -44,11 +44,11 @@ void wrap_d2();
 void wrap_path();
 void wrap_parser();
 void wrap_ray();
-void wrap_shape();
+// void wrap_shape();
 void wrap_line();
 void wrap_conic();
 void wrap_crossing();
-void wrap_convex_cover();
+// void wrap_convex_cover();
 namespace Geom{
 class Point;
 class Linear;

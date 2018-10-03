@@ -80,8 +80,9 @@ OPTION(2GEOM_BOOST_PYTHON
   "Build a python binding with Boost.Python"
   OFF)
 IF(2GEOM_BOOST_PYTHON)
-        FIND_PACKAGE(Boost)
-        FIND_PACKAGE(PythonLibs)
+        FIND_PACKAGE(Boost REQUIRED COMPONENTS python27)
+        set(Python_ADDITIONAL_VERSIONS 2.7)
+        FIND_PACKAGE(PythonLibs REQUIRED)
         SET(PYDEXTENSION FALSE)
         IF (WIN32)
             GET_FILENAME_COMPONENT(PYTHON_LIB_INSTALL "${PYTHON_LIBRARY}" PATH)
@@ -105,10 +106,10 @@ IF(2GEOM_BOOST_PYTHON)
         IF (BUILD_BOOST_PYTHON_STATIC)
             TARGET_LINK_LIBRARIES(py2geom 2geom ${PYTHON_LIBRARIES})
         ELSE (BUILD_BOOST_PYTHON_STATIC)
-            TARGET_LINK_LIBRARIES(py2geom 2geom ${BOOST_PYTHON_LIBRARY} ${PYTHON_LIBRARIES})
+            TARGET_LINK_LIBRARIES(py2geom 2geom ${Boost_PYTHON27_LIBRARY} ${PYTHON_LIBRARIES})
         ENDIF (BUILD_BOOST_PYTHON_STATIC)
 
-        set_property(TARGET 2geom PROPERTY POSITION_INDEPENDENT_CODE ON)  # we need -fPIC to link py2geom agains 2geom
+        set_property(TARGET 2geom PROPERTY POSITION_INDEPENDENT_CODE ON)  # we need -fPIC to link py2geom against 2geom
 
         IF(pycairo_FOUND)
             TARGET_LINK_LIBRARIES(py2geom ${cairo_LINK_FLAGS})
