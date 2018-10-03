@@ -172,7 +172,7 @@ void SVGPathParser::_arcTo(Coord rx, Coord ry, Coord angle,
         return; // ignore invalid (ambiguous) arc segments where start and end point are the same (per SVG spec)
     }
 
-    _pushCurve(new EllipticalArc(_current, rx, ry, angle, large_arc, sweep, p));
+    _pushCurve(new EllipticalArc(_current, fabs(rx), fabs(ry), angle, large_arc, sweep, p));
     _quad_tangent = _cubic_tangent = _current = p;
 }
 
@@ -323,8 +323,8 @@ void SVGPathParser::_parse(char const *str, char const *strend, bool finish)
         coordinate = number $(number,1) %(number,0);
         coordinate_pair = (coordinate $(coordinate_pair_a,1) %(coordinate_pair_a,0) comma_wsp? coordinate $(coordinate_pair_b,1) %(coordinate_pair_b,0)) $(coordinate_pair,1) %(coordinate_pair,0);
         elliptical_arc_argument =
-            (nonnegative_number $(elliptical_arg_a,1) %(elliptical_arg_a,0) comma_wsp?
-             nonnegative_number $(elliptical_arg_b,1) %(elliptical_arg_b,0) comma_wsp?
+            (number $(elliptical_arg_a,1) %(elliptical_arg_a,0) comma_wsp?
+             number $(elliptical_arg_b,1) %(elliptical_arg_b,0) comma_wsp?
              number comma_wsp
              flag comma_wsp? flag comma_wsp?
              coordinate_pair)
