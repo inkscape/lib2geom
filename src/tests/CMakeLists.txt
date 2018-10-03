@@ -30,6 +30,10 @@ rect-test
 sbasis-test
 )
 
+IF(WIN32 AND 2GEOM_BUILD_SHARED)
+    ADD_CUSTOM_TARGET(copy ALL COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_BINARY_DIR}/src/2geom/lib2geom.dll ${CMAKE_BINARY_DIR}/src/tests/lib2geom.dll)
+ENDIF()
+
 FOREACH(source ${2GEOM_GTESTS_SRC})
 	ADD_EXECUTABLE(${source} ${source}.cpp)
 	TARGET_LINK_LIBRARIES(${source} 2geom gtest_main gtest)
