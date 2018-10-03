@@ -108,6 +108,8 @@ IF(2GEOM_BOOST_PYTHON)
             TARGET_LINK_LIBRARIES(py2geom 2geom ${BOOST_PYTHON_LIBRARY} ${PYTHON_LIBRARIES})
         ENDIF (BUILD_BOOST_PYTHON_STATIC)
 
+        set_property(TARGET 2geom PROPERTY POSITION_INDEPENDENT_CODE ON)  # we need -fPIC to link py2geom agains 2geom
+
         IF(pycairo_FOUND)
             TARGET_LINK_LIBRARIES(py2geom ${cairo_LINK_FLAGS})
         ENDIF(pycairo_FOUND)
