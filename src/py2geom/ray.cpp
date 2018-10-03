@@ -33,10 +33,10 @@
 #include "py2geom.h"
 #include "helpers.h"
 
-#include "../point.h"
-#include "../ray.h"
-// #include "../bezier_curve.h"
-#include "../exception.h"
+#include "2geom/point.h"
+#include "2geom/ray.h"
+// #include "2geom/bezier_curve.h"
+#include "2geom/exception.h"
 
 
 using namespace boost::python;

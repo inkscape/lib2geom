@@ -33,9 +33,9 @@
 #include "py2geom.h"
 #include "helpers.h"
 
-#include "../point.h"
-#include "../sbasis.h"
-#include "../exception.h"
+#include "2geom/point.h"
+#include "2geom/sbasis.h"
+#include "2geom/exception.h"
 
 using namespace boost::python;
 

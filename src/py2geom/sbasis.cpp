@@ -33,9 +33,9 @@
 #include "py2geom.h"
 #include "helpers.h"
 
-#include "../sbasis.h"
-#include "../sbasis-math.h"
-#include "../point.h"
+#include "2geom/sbasis.h"
+#include "2geom/sbasis-math.h"
+#include "2geom/point.h"
 
 using namespace boost::python;
 
@@ -63,8 +63,8 @@ int sbasis_len(Geom::SBasis const& p)
     return p.size();
 }
 
-#include "../sbasis-to-bezier.h"
-#include "../bezier.h"
+#include "2geom/sbasis-to-bezier.h"
+#include "2geom/bezier.h"
 
 Geom::Bezier sbasis_to_returned_bezier (Geom::SBasis const& sb, size_t sz = 0) {
     Geom::Bezier res;

@@ -33,9 +33,9 @@
 #include "py2geom.h"
 #include "helpers.h"
 
-#include "../point.h"
-#include "../circle.h"
-#include "../exception.h"
+#include "2geom/point.h"
+#include "2geom/circle.h"
+#include "2geom/exception.h"
 
 // i can't get these to work
 //Geom::Point  (Geom::Circle::*center_point)() = (Geom::Point (*)() const)&Geom::Circle::center;

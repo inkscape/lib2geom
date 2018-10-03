@@ -32,9 +32,9 @@
 #include "py2geom.h"
 #include "helpers.h"
 
-#include "../affine.h"
-#include "../d2.h"
-#include "../interval.h"
+#include "2geom/affine.h"
+#include "2geom/d2.h"
+#include "2geom/interval.h"
 
 using namespace boost::python;
 

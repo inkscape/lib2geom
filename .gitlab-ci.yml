@@ -14,7 +14,9 @@ variables:
     - export CCACHE_BASEDIR=${PWD}
     - export CCACHE_DIR=${PWD}/ccache
   script:
-    - cmake . -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+    - cmake . -DCMAKE_C_COMPILER_LAUNCHER=ccache
+              -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+              -D2GEOM_BOOST_PYTHON=ON
     - make -j3
     - make -j3 test
     - make -j3 perf

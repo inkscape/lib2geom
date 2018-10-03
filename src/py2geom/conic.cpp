@@ -33,9 +33,9 @@
 #include "py2geom.h"
 #include "helpers.h"
 
-#include "../point.h"
-#include "../line.h"
-#include "../conicsec.h"
+#include "2geom/point.h"
+#include "2geom/line.h"
+#include "2geom/conicsec.h"
 
 using namespace boost::python;
 

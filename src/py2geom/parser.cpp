@@ -31,8 +31,8 @@
 #include "py2geom.h"
 #include "helpers.h"
 
-#include "../path-sink.h"
-#include "../svg-path-parser.h"
+#include "2geom/path-sink.h"
+#include "2geom/svg-path-parser.h"
 
 
 using namespace boost::python;

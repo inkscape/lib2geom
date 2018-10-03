@@ -33,11 +33,11 @@
 #include "py2geom.h"
 #include "helpers.h"
 
-#include "../point.h"
-#include "../ellipse.h"
-#include "../circle.h"
-#include "../exception.h"
-#include "../d2.h"
+#include "2geom/point.h"
+#include "2geom/ellipse.h"
+#include "2geom/circle.h"
+#include "2geom/exception.h"
+#include "2geom/d2.h"
 
 
 void  (Geom::Ellipse::*ellipse_set1)(Geom::Point const &, Geom::Point const &, double) = &Geom::Ellipse::set;

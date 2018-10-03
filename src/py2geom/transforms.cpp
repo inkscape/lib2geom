@@ -30,7 +30,7 @@
 
 #include "py2geom.h"
 
-#include "../transforms.h"
+#include "2geom/transforms.h"
 
 using namespace boost::python;
 

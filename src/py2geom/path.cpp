@@ -31,16 +31,16 @@
 #include <boost/python.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 
-#include "../curve.h"
-#include "../bezier-curve.h"
-#include "../path.h"
-#include "../pathvector.h"
-#include "../sbasis-to-bezier.h"
+#include "2geom/curve.h"
+#include "2geom/bezier-curve.h"
+#include "2geom/path.h"
+#include "2geom/pathvector.h"
+#include "2geom/sbasis-to-bezier.h"
 #include "helpers.h"
 
-#include "../point.h"
-#include "../rect.h"
-#include "../d2.h"
+#include "2geom/point.h"
+#include "2geom/rect.h"
+#include "2geom/d2.h"
 
 using namespace boost::python;
 

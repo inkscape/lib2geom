@@ -29,11 +29,11 @@
 #include <boost/python/implicit.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 
-#include "../sbasis.h"
-#include "../piecewise.h"
-#include "../d2.h"
-#include "../sbasis-math.h"
-#include "../sbasis-geometric.h"
+#include "2geom/sbasis.h"
+#include "2geom/piecewise.h"
+#include "2geom/d2.h"
+#include "2geom/sbasis-math.h"
+#include "2geom/sbasis-geometric.h"
 
 #include "py2geom.h"
 #include "helpers.h"

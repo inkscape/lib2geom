@@ -33,9 +33,9 @@
 #include "py2geom.h"
 #include "helpers.h"
 
-#include "../point.h"
-#include "../exception.h"
-#include "../convex-cover.h"
+#include "2geom/point.h"
+#include "2geom/exception.h"
+#include "2geom/convex-cover.h"
 
 
 

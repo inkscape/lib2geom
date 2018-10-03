@@ -32,9 +32,9 @@
 #include "py2geom.h"
 #include "helpers.h"
 
-#include "../linear.h"
-#include "../point.h"
-#include "../sbasis.h"
+#include "2geom/linear.h"
+#include "2geom/point.h"
+#include "2geom/sbasis.h"
 
 using namespace boost::python;
 

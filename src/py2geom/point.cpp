@@ -32,7 +32,7 @@
 #include "py2geom.h"
 #include "helpers.h"
 
-#include "../point.h"
+#include "2geom/point.h"
 
 using namespace boost::python;
 

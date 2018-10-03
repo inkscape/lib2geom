@@ -33,9 +33,9 @@
 #include "py2geom.h"
 #include "helpers.h"
 
-#include "../line.h"
-//#include "../bezier-curve.h"
-#include "../point.h"
+#include "2geom/line.h"
+//#include "2geom/bezier-curve.h"
+#include "2geom/point.h"
 
 using namespace boost::python;
 
