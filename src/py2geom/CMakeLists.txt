@@ -80,7 +80,16 @@ OPTION(2GEOM_BOOST_PYTHON
   "Build a python binding with Boost.Python"
   OFF)
 IF(2GEOM_BOOST_PYTHON)
-        FIND_PACKAGE(Boost REQUIRED COMPONENTS python27)
+        FIND_PACKAGE(Boost REQUIRED)
+        FIND_PACKAGE(Boost COMPONENTS python python27)
+        IF(Boost_PYTHON27_LIBRARY)
+            set(Boost_PYTHON_LIBRARY ${Boost_PYTHON27_LIBRARY})
+        ELSEIF(Boost_PYTHON_LIBRARY)
+            # pass
+        ELSE()
+            message(FATAL "Could not find Boost.Python")
+        ENDIF()
+
         set(Python_ADDITIONAL_VERSIONS 2.7)
         FIND_PACKAGE(PythonLibs REQUIRED)
         SET(PYDEXTENSION FALSE)
@@ -106,7 +115,7 @@ IF(2GEOM_BOOST_PYTHON)
         IF (BUILD_BOOST_PYTHON_STATIC)
             TARGET_LINK_LIBRARIES(py2geom 2geom ${PYTHON_LIBRARIES})
         ELSE (BUILD_BOOST_PYTHON_STATIC)
-            TARGET_LINK_LIBRARIES(py2geom 2geom ${Boost_PYTHON27_LIBRARY} ${PYTHON_LIBRARIES})
+            TARGET_LINK_LIBRARIES(py2geom 2geom ${Boost_PYTHON_LIBRARY} ${PYTHON_LIBRARIES})
         ENDIF (BUILD_BOOST_PYTHON_STATIC)
 
         set_property(TARGET 2geom PROPERTY POSITION_INDEPENDENT_CODE ON)  # we need -fPIC to link py2geom against 2geom
