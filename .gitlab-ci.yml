@@ -9,7 +9,14 @@ variables:
 
 2geom:
   stage: build
+  before_script:
+    - mkdir -p ccache
+    - export CCACHE_BASEDIR=${PWD}
+    - export CCACHE_DIR=${PWD}/ccache
   script:
-    - cmake .
+    - cmake . -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
     - make -j3
     - make -j3 test
+  cache:
+    paths:
+      - ccache/
