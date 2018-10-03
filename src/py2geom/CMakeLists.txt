@@ -126,15 +126,6 @@ IF(2GEOM_BOOST_PYTHON)
 
         INSTALL(TARGETS py2geom DESTINATION "${SITEPACKAGE}/py2geom")
         INSTALL(FILES "${CMAKE_CURRENT_SOURCE_DIR}/__init__.py" DESTINATION "${SITEPACKAGE}/py2geom")
-        IF (WIN32 AND NOT BUILD_BOOST_PYTHON_STATIC)
-            # on windows, statically linking boost.python does not work :-(  So we have to copy that DLL to py2geom's dir too
-            GET_FILENAME_COMPONENT(BOOST_PYTHON_NAME ${BOOST_PYTHON_LIBRARY} NAME_WE)
-            # NO LONGER NEEDED: if the dll name has "lib" in front of it, remove it.
-            STRING( REPLACE "lib" "" BOOST_PYTHON_NAME_WO_LIB ${BOOST_PYTHON_NAME})
-            GET_FILENAME_COMPONENT(BOOST_PYTHON_PATH ${BOOST_PYTHON_LIBRARY} PATH)
-            INSTALL(FILES "${BOOST_PYTHON_PATH}/${BOOST_PYTHON_NAME}.dll" DESTINATION "${SITEPACKAGE}/py2geom")
-        ENDIF(WIN32 AND NOT BUILD_BOOST_PYTHON_STATIC)
-
 ENDIF(2GEOM_BOOST_PYTHON)
 
 
