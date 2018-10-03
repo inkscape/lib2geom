@@ -6,6 +6,8 @@ cmake_install.cmake
 config.h
 /Makefile
 src/**/Makefile
+.ninja*
+*.ninja
 2geom.pc
 !src/toys/*.cpp
 !src/toys/data
@@ -23,10 +25,13 @@ doxygen_warnings.log
 Testing
 CTestTestfile.cmake
 src/tests/*-test
+src/tests/*-test.exe
 src/performance-tests/*-test
+src/performance-tests/*-test.exe
 src/cython-bindings/cython_debug
 install_manifest.txt
 *.cxx
 *.so.*
 *.so
 *.a
+*.dll
