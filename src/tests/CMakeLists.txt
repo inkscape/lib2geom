@@ -32,7 +32,7 @@ sbasis-test
 
 FOREACH(source ${2GEOM_GTESTS_SRC})
 	ADD_EXECUTABLE(${source} ${source}.cpp)
-	TARGET_LINK_LIBRARIES(${source} 2geom gtest gtest_main)
+	TARGET_LINK_LIBRARIES(${source} 2geom gtest_main gtest)
 	ADD_TEST(NAME ${source} COMMAND ${source})
 ENDFOREACH()
 
