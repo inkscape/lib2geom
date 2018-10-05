@@ -172,6 +172,7 @@ public:
 
     Interval itemBounds(ItemIterator ii) {
         OptRect r = ii->path->boundsFast();
+        if (!r) return Interval();
         return (*r)[X];
     }
 
