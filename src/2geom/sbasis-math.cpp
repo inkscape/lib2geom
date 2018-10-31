@@ -340,7 +340,7 @@ Piecewise<SBasis> reciprocal(Piecewise<SBasis> const &f, double tol, int order){
 }
 
 /**
- * \brief Retruns a Piecewise SBasis with prescribed values at prescribed times.
+ * \brief Returns a Piecewise SBasis with prescribed values at prescribed times.
  * 
  * \param times: vector of times at which the values are given. Should be sorted in increasing order.
  * \param values: vector of prescribed values. Should have the same size as times and be sorted accordingly.

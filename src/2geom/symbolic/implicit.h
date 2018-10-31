@@ -245,7 +245,7 @@ void basis_to_poly(MVPoly3 & p0, poly_vector_type const& v)
  * that the implicit equation of such polynomial parametrization can be
  * evaluated computing the determinant of the Bezout matrix made up using
  * the polinomial p and q as univariate polynomials in t with coefficients
- * in R[x,y], so the resulting Bezout matix will be a matrix with bivariate
+ * in R[x,y], so the resulting Bezout matrix will be a matrix with bivariate
  * polynomials as entries. A Bezout matrix is always symmetric.
  * Reference:
  * Sederberg, Zheng - Algebraic Methods for Computer Aided Geometric Design

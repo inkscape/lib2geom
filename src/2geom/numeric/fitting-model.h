@@ -145,7 +145,7 @@ class LinearFittingModelWithFixedTerms
 
 // incomplete model, it can be inherited to make up different kinds of
 // instance type; the raw data is a vector of coefficients of a polynomial
-// rapresented in standard power basis
+// represented in standard power basis
 template< typename InstanceType >
 class LFMPowerBasis
     : public LinearFittingModel<double, double, InstanceType>
@@ -201,7 +201,7 @@ class LFMPoly
 
 // incomplete model, it can be inherited to make up different kinds of
 // instance type; the raw data is a vector of coefficients of a polynomial
-// rapresented in standard power basis with leading term coefficient equal to 1
+// represented in standard power basis with leading term coefficient equal to 1
 template< typename InstanceType >
 class LFMNormalizedPowerBasis
     : public LinearFittingModelWithFixedTerms<double, double, InstanceType>

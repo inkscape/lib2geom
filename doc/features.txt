@@ -15,7 +15,7 @@
 - point, tangent, curvature at location
 - efficient arc length and inverse arc length
 * Path algebra
-- computations such as offset curves can be written with their mathematical definition and still get a bounded error, efficient curve.  (preliminary trials indicat offset done this way out performs the method used in Inkscape)
+- computations such as offset curves can be written with their mathematical definition and still get a bounded error, efficient curve.  (preliminary trials indicate offset done this way out performs the method used in Inkscape)
 - arbitrary distortion (with bounded error)
 -- mesh distorts
 -- computational distorts such as the GIMP's 'vortex' plugin

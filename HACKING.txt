@@ -9,7 +9,7 @@ Help Wanted
 We greatly appreciate contributions.  You don't need to be a math-whiz or
 über-hacker (though these are definitely appreciated :) ) to help.  The tasks of
 code cleanup, consistency, testing, documentation, and toys mostly just require
-perserverance, and benefit the project greatly.
+perseverance, and benefit the project greatly.
 
 As far as very specialized skill, we are always in need of mathy people, even if
 it is just for their insight on problems and techniques (as opposed to coding).

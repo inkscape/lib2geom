@@ -320,7 +320,7 @@ class Matrix: public detail::MatrixImpl
 	typedef detail::MatrixImpl base_type;
 
   public:
-	// the matrix is not inizialized
+	// the matrix is not initialized
 	Matrix(size_t n1, size_t n2)
 	{
 		m_rows = n1;

@@ -423,7 +423,7 @@ struct monomial<0, CoeffT>
  *  rank = rank<PolyT> - N - 1, that is it is the type of the object returned
  *  by applying the operator[] of a Polynomial object N+1 times;
  *
- *  "zero" rapresents the zero element (in the group theory meaning)
+ *  "zero" represents the zero element (in the group theory meaning)
  *  for the coefficient type "type"; having it as a static class member
  *  allows to return always a (const) reference by the "get_safe" method
  *
