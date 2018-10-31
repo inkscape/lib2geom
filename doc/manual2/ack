@@ -23,7 +23,7 @@ time to separate out the geometry portions of inkscape into a
 separate library for general use and improvement.  The namespace was
 changed from NR to Geom and a prototype for paths sketched out.
 Nathan studied the state of the art for computational geometry whilst
-mentally focused on the design of Paths.
+MenTaLguY focused on the design of Paths.
 
 Before the re-merging of 2Geom with the inkscape svn HEAD it was felt
 that a few smaller projects should be ported to use 2Geom.  Michael

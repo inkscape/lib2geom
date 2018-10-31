@@ -52,7 +52,7 @@ the role of tests, and provides immediate motivation/reward for work.
 
 Every toy uses the same framework, which hides the details of making a
 user interface.  You simply request some handles to interact with, and
-write some code to draw the output from the handles.  
+write some code to draw the output from the handles.
 
 \begin{figure}
   \begin{center}
@@ -199,7 +199,7 @@ An interval is simply a pair of Coords which define a closed interval $[min, max
 
 \includegraphics[height=50mm]{media/rect.png}
 
-\code{Rect}s are rectangles with all sides parallel to the axes. 
+\code{Rect}s are rectangles with all sides parallel to the axes.
 \code{Rect}s are in fact defined as a \verb|D2<Interval>|.
 
 A rectangle can have 0 area and not be empty --- $[0,0] \times [0,0]$ contains exactly 1 point 0,0 and has 0 area.  Similarly, $[0,0] \times [0,1]$ defines a 0 area line segment.
@@ -235,11 +235,11 @@ As for technical details, while the actual SBasis segments begin on the
 first cut and end on the last, the function is defined throughout all
 inputs by extending the first and last segments.  The exact switching
 between segments is arbitrarily such that beginnings (t=0) have
-preference over endings (t=1).  That is, each segment is $[t_0, t_1)$.  
+preference over endings (t=1).  That is, each segment is $[t_0, t_1)$.
 This only matters if it is discontinuous at the location.
 
 $$
-f(t) \rightarrow \left\{ 
+f(t) \rightarrow \left\{
 \begin{array}{cc}
 s_1,& t <= c_2 \\
 s_2,& c_2 <= t <= c_3\\
@@ -250,13 +250,13 @@ $$
 
 \chapter{Paths}
 
-A \code{Path} is an ordered set of \code{Curve}s.  Each \code{Path} is $C0$ continuous.  To make multiple contours for a region, use \code{PathVector}. 
+A \code{Path} is an ordered set of \code{Curve}s.  Each \code{Path} is $C0$ continuous.  To make multiple contours for a region, use \code{PathVector}.
 
-A \code{PathVector} in Inkscape is drawn in a single fill and stroke.  
+A \code{PathVector} in Inkscape is drawn in a single fill and stroke.
 
 This allows us lots of flexibility with what sort of elements we can
 'understand', while only taking slightly more memory than a sequence
-of points in the poly line or poly bezier case. 
+of points in the poly line or poly bezier case.
 
 The Curves themselves are immutable, which means that they can be shared between Paths.
 
@@ -516,7 +516,7 @@ It may be possible for the boolean operations to return a set of portions. When 
 
 The current representation of crossings between sets of paths is fairly awkward. The main core of the data structure, storing times and the direction boolean is fine, the main issue is the storage methods of collections of these crossings. I've come to realize it's actually one of the main reasons that sanitization is as hard as it has been. I've figured out that a better representation would be for each crossing to store pointers to the next and previous crossings along both its participating paths. This would form a connectivity graph, where each vertex has a degree of 4. A dedicated structure such as this would likely be worth it, as algorithms that use it would be more efficient, simpler, and less buggy.
 
-Without too much work, it should also be possible to do boolean operations with non-filled paths. The main change would be to have \verb|shape_boolean| handle coincident crossings, and to derive the resultant region fill from the fill of the contributing regions. This would allow all combinations of boolean operations between filled regions and paths. 
+Without too much work, it should also be possible to do boolean operations with non-filled paths. The main change would be to have \verb|shape_boolean| handle coincident crossings, and to derive the resultant region fill from the fill of the contributing regions. This would allow all combinations of boolean operations between filled regions and paths.
 
 \chapter{Acknowledgements and history}
 
@@ -544,7 +544,7 @@ time to separate out the geometry portions of inkscape into a
 separate library for general use and improvement.  The namespace was
 changed from NR to Geom and a prototype for paths sketched out.
 Nathan studied the state of the art for computational geometry whilst
-mentally focused on the design of Paths.
+MenTaLguY focused on the design of Paths.
 
 Before the re-merging of 2Geom with the inkscape svn HEAD it was felt
 that a few smaller projects should be ported to use 2Geom.  Michael

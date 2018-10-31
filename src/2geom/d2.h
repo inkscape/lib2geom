@@ -95,7 +95,7 @@ public:
         f[Y] = T(yfirst, ylast);
     }
 
-    //TODO: ask mental about operator= as seen in Point
+    //TODO: ask MenTaLguY about operator= as seen in Point
 
     T& operator[](unsigned i)              { return f[i]; }
     T const & operator[](unsigned i) const { return f[i]; }
@@ -118,7 +118,7 @@ public:
         BOOST_CONCEPT_ASSERT((FragmentConcept<T>));
         return f[X].isFinite() && f[Y].isFinite();
     }
-    Point at0() const { 
+    Point at0() const {
         BOOST_CONCEPT_ASSERT((FragmentConcept<T>));
         return Point(f[X].at0(), f[Y].at0());
     }
@@ -284,11 +284,11 @@ operator/=(D2<T> &a, Point const & b) {
 
 template <typename T>
 inline D2<T> operator*(D2<T> const & a, double b) { return D2<T>(a[0]*b, a[1]*b); }
-template <typename T> 
+template <typename T>
 inline D2<T> operator*=(D2<T> & a, double b) { a[0] *= b; a[1] *= b; return a; }
 template <typename T>
 inline D2<T> operator/(D2<T> const & a, double b) { return D2<T>(a[0]/b, a[1]/b); }
-template <typename T> 
+template <typename T>
 inline D2<T> operator/=(D2<T> & a, double b) { a[0] /= b; a[1] /= b; return a; }
 
 template<typename T>
@@ -312,7 +312,7 @@ operator*(D2<T> const & a, T const & b) {
     return ret;
 }
 
-//IMPL: 
+//IMPL:
 
 //IMPL: OffsetableConcept
 template <typename T>

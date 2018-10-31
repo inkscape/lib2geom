@@ -1,7 +1,7 @@
 #include "utest.h"
 #include <glib.h>
 
-/* mental disclaims all responsibility for this evil idea for testing
+/* MenTaLguY disclaims all responsibility for this evil idea for testing
    static functions.  The main disadvantages are that we retain the
    #define's and `using' directives of the included file. */
 #include "../bezier-utils.cpp"
