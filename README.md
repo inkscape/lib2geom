@@ -44,7 +44,8 @@ To run tests:
 
     make test
 
-Also check out some of the interactive programs in src/2geom/toys.
+Also check out some of the interactive programs in src/toys.
+
 Documentation is generated from source comments using Doxygen.
 Run `doxygen` in the project root to generate documentation in
 `doc/html`.
