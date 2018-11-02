@@ -50,13 +50,28 @@ Documentation is generated from source comments using Doxygen.
 Run `doxygen` in the project root to generate documentation in
 `doc/html`.
 
-ABI note
---------
+API / ABI Stability
+-------------------
 
-2Geom does not make any guarantees of ABI or API stability at this time,
-and there are no official releases. You are using it at your own risk.
-If you want to use it in your project, consider including it as a Git
-submodule.
+Version 1.0 of 2Geom marks its first official release.  With this
+release the library's API/ABI is considered stable:
+
+ * All public APIs will not be renamed or have their parameters changed
+   without providing backwards-compatible aliases.
+
+ * New functionality added to these APIs will not change their meaning
+   or fundamental behaviors.
+
+ * If an API needs to be removed or replaced, it will be declared
+   deprecated but will remain in the API until the next major version.
+   Warnings will be issued when the deprecated method is called.
+
+ * We'll only break backwards compatibility of these APIs if a bug or
+   security hole makes it completely unavoidable.
+
+Improvements that would break the API/ABI will be noted in our bug
+tracker, for a future Version 2.0 release.
+
 
 Further information
 -------------------
