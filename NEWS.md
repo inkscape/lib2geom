@@ -6,23 +6,23 @@ geometric calculations, designed to be well suited for vector graphics:
 Bézier curves, conics, paths, intersections, transformations, and basic
 geometries.
 
-This library was originally developed to restructure and improve the
-various path data structures in Inkscape, but the design intent is for
-it to be of general utility to others.  The codebase has shipped as and
-been maintained as part of the Inkscape software for over a decade.
+Originally developed to restructure and improve path data structures in
+Inkscape, this library's codebase has been maintained and shipped as
+part of the professional vector graphics software for over a decade.
 
-It has been a very long time since 2geom saw a packaged release, and so
-much has changed it is hard to reduce to a summary.  Recent work has
-focused on updating its source control, build, test, and packaging
-systems to more modern technologies for both Linux and Windows, and on
-restoring the py2geom python extension package to usability.  Attention
-in recent years has also focused on stabilization and code quality
-improvement.
+The major contributors to the 2geom library are Nathan Hurst, Michael
+G. Sloan, Krzysztof Kosiński, Johan B. C. Engelen, MenTaLguY, Aaron
+Spike, Marco Cechetti and JF Barraud.
 
-The primary motivation for this 1.0 release is in support of overall
-efforts towards the (future) Inkscape 1.0 release, but we also hope that
-having this as a distinct package from Inkscape itself will facilitate
-wider collaboration.  We would love to hear people find good uses for
-this beyond the Inkscape codebase!
+Work on this release has focused on updating the 2geom source control,
+build, test and packaging systems for both Linux and Windows. The py2geom
+python extension package has been restored and improvements have been
+made to overall code stabilization and quality.
 
+The primary motivation for 2geom's 1.0 release is to support a future
+Inkscape 1.0 launch.
+
+With this evolution to a distinct package, the 2geom team is seeking
+new opportunities to collaborate with individuals and projects
+interested in using this proven tool.
 

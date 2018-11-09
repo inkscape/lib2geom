@@ -36,3 +36,5 @@ install_manifest.txt
 *.a
 *.dll
 *.pyd
+*.tar.bz2
+*.sig
