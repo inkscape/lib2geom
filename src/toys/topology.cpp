@@ -85,7 +85,7 @@ public:
     class Edge {
     public:
         unsigned left, right;// the indices of the areas on the left and on the right this edge.
-        unsigned start, end; // the indices of vertices at start and at end of this ege.
+        unsigned start, end; // the indices of vertices at start and at end of this edge.
         Geom::Interval portion;
         unsigned path;
         unsigned curve;

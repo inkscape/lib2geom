@@ -443,7 +443,7 @@ class SketchFitterToy: public Toy {
     }
 
 //-----------------------------------------------------------------------------------------
-// Eat by step: eats the curve moving at each step in the avarage direction of the neighbors.
+// Eat by step: eats the curve moving at each step in the average direction of the neighbors.
 //-----------------------------------------------------------------------------------------
     void init_eat()
     {
@@ -580,7 +580,7 @@ class SketchFitterToy: public Toy {
     }
 
 //-----------------------------------------------------------------------------------------
-// Avarage curvature.
+// Average curvature.
 //-----------------------------------------------------------------------------------------
     void init_curvature()
     {
@@ -696,7 +696,7 @@ class SketchFitterToy: public Toy {
         *notify << "    mean square line (or circle).\n";
         *notify << "Eat:\n";
         *notify << "    eat points like a pacman; at each step, move to the\n";
-        *notify << "    avarage of the not already visited neighbor points.\n";
+        *notify << "    average of the not already visited neighbor points.\n";
         *notify << "Sort:\n";
         *notify << "     move from one point to the nearest one.\n";
         *notify << "    Stop at the first jump longer than sort-radius\n";
@@ -710,7 +710,7 @@ class SketchFitterToy: public Toy {
         *notify << "Curvature: \n";
         *notify << "    Compute the curvature at a given point from the circle fitting the\n";
         *notify << "    nearby points (just for fun: the stroke is the 'integral' of this\n";
-        *notify << "    avarage curvature)\n";
+        *notify << "    average curvature)\n";
         *notify << "Numerical: \n";
         *notify << "    still waiting for someone to implement me ;-)\n\n";
         *notify << std::endl;
