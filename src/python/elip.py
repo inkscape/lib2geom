@@ -15,7 +15,7 @@ def draw_handle(w, h, name = ""):
     w.draw_line(g, int(x-3), int(y), int(x+3), int(y))
     w.draw_line(g, int(x), int(y-3), int(x), int(y+3))
     templayout.set_text(name)
-    w.draw_layout(g, x, y, templayout)
+    w.draw_layout(g, int(x), int(y), templayout)
 
 def draw_ray(w, h, d):
     x,y = h.x, h.y
@@ -42,26 +42,26 @@ def seg(a0, a1, b0, b1):
 
 def draw_elip(w, h):
     g = gtk.gdk.GC(w)
-    w.draw_line(g, h[0].x, h[0].y, h[1].x, h[1].y)
-    w.draw_line(g, h[3].x, h[3].y, h[4].x, h[4].y)
-    w.draw_line(g, h[3].x, h[3].y, h[2].x, h[2].y)
-    w.draw_line(g, h[2].x, h[2].y, h[1].x, h[1].y)
+    w.draw_line(g, int(h[0].x), int(h[0].y), int(h[1].x), int(h[1].y))
+    w.draw_line(g, int(h[3].x), int(h[3].y), int(h[4].x), int(h[4].y))
+    w.draw_line(g, int(h[3].x), int(h[3].y), int(h[2].x), int(h[2].y))
+    w.draw_line(g, int(h[2].x), int(h[2].y), int(h[1].x), int(h[1].y))
 
     c = seg(h[0], h[1], h[3], h[4])
     draw_handle(w, c)
-    
+
     if 0:
         for i in range(6):
             w.draw_line(g, h[i].x, h[i].y, h[(i+1)%6].x, h[(i+1)%6].y)
-        
-    
+
+
     cx,cy = c.x, c.y
 
     ox, oy = None, None
     for i in range(0, 101):
         t = i/100.0
-        
-        
+
+
         nx = (1-t)*h[0].x + t*h[3].x
         ny = (1-t)*h[0].y + t*h[3].y
         #w.draw_line(g, 2*cx-nx, 2*cy-ny, nx, ny)
@@ -74,10 +74,10 @@ def draw_elip(w, h):
         six = seg(c1, h[3], c2, h[1])
         #draw_spot(w, six)
         if ox:
-            w.draw_line(g, ox, oy, six.x, six.y)
+            w.draw_line(g, int(ox), int(oy), int(six.x), int(six.y))
         ox, oy = six.x, six.y
     return
-    
+
     r = math.hypot(h[0].x - cx, h[0].y - cy)
     s = math.atan2(h[0].y - h[3].y, h[0].x - h[3].x)
     e = math.atan2(h[1].y - h[4].y, h[1].x - h[4].x)
@@ -86,7 +86,7 @@ def draw_elip(w, h):
         nx, ny = r*math.cos(t)+cx, r*math.sin(t)+cy
         sx, sy = r*math.cos(t+math.pi)+cx, r*math.sin(t+math.pi)+cy
         w.draw_line(g, sx, sy, nx, ny)
-    
+
 
 class handle:
     def __init__(self, x, y):
@@ -103,8 +103,8 @@ def display(da, ev):
     g = gtk.gdk.GC(da.window)
     i = 0
 
-    
-    
+
+
     for h in handles:
         draw_handle(da.window, h, str(i))
         i += 1
