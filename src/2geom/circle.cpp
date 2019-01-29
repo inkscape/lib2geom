@@ -126,6 +126,12 @@ Coord Circle::nearestTime(Point const &p) const {
     return timeAt(p);
 }
 
+Coord Circle::furthestTime(Point const &p) const {
+    Coord angle = std::fmod(timeAt(p) + rad_from_deg(180), 2*M_PI);
+    if (angle < 0) angle += 2*M_PI;
+    return angle;
+}
+
 bool Circle::contains(Rect const &r) const
 {
     for (unsigned i = 0; i < 4; ++i) {

@@ -62,6 +62,7 @@ class EllipticalArcToy: public Toy
         TEST_PORTION,
         TEST_REVERSE,
         TEST_NEAREST_POINTS,
+        TEST_FURTHEST_POINTS,
         TEST_DERIVATIVE,
         TEST_ROOTS,
         TEST_BOUNDS,
@@ -390,7 +391,28 @@ class EllipticalArcToy: public Toy
         }
         cairo_stroke(cr);
     }
+    
+    void init_fp()
+    {
+        init_common();
+        fph.pos = Point(10,10);
+        handles.push_back(&fph);
+    }
 
+    void draw_fp(cairo_t *cr, std::ostringstream *notify,
+                 int width, int height, bool save, std::ostringstream */*timer_stream*/)
+    {
+        draw_common(cr, notify, width, height, save);
+        if ( no_solution || point_overlap ) return;
+
+        std::vector<double> times = ea.allFurthestTimes( fph.pos );
+        for ( unsigned int i = 0; i < times.size(); ++i )
+        {
+            cairo_move_to(cr,fph.pos);
+            cairo_line_to( cr, ea.pointAt(times[i]) );
+        }
+        cairo_stroke(cr);
+    }
 
     void init_derivative()
     {
@@ -700,22 +722,26 @@ class EllipticalArcToy: public Toy
                 draw_f = &EllipticalArcToy::draw_np;
                 break;
             case 'G':
+                init_fp();
+                draw_f = &EllipticalArcToy::draw_fp;
+                break;
+            case 'H':
                 init_derivative();
                 draw_f = &EllipticalArcToy::draw_derivative;
                 break;
-            case 'H':
+            case 'I':
                 init_roots();
                 draw_f = &EllipticalArcToy::draw_roots;
                 break;
-            case 'I':
+            case 'J':
                 init_bounds();
                 draw_f = &EllipticalArcToy::draw_bounds;
                 break;
-            case 'J':
+            case 'K':
                 init_fitting();
                 draw_f = &EllipticalArcToy::draw_fitting;
                 break;
-            case 'K':
+            case 'L':
                 init_transform();
                 draw_f = &EllipticalArcToy::draw_transform;
                 break;
@@ -851,7 +877,7 @@ class EllipticalArcToy: public Toy
     bool no_solution, point_overlap;
     bool degenerate;
     PointHandle initial_point, final_point;
-    PointHandle nph, ph;
+    PointHandle nph, ph, fph;
     std::vector<Toggle> toggles;
     std::vector<Slider> sliders;
     EllipticalArc ea;
@@ -871,6 +897,7 @@ const char* EllipticalArcToy::menu_items[] =
     "portion, pointAt",
     "reverse, valueAt",
     "nearest points",
+    "furthest points",
     "derivative",
     "roots",
     "bounding box",

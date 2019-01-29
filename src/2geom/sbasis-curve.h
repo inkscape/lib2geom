@@ -39,6 +39,7 @@
 #include <2geom/curve.h>
 #include <2geom/exception.h>
 #include <2geom/nearest-time.h>
+#include <2geom/furthest-time.h>
 #include <2geom/sbasis-geometric.h>
 #include <2geom/transforms.h>
 
@@ -114,6 +115,14 @@ public:
         Coord to = 1 ) const
     {
         return all_nearest_times(p, inner, from, to);
+    }
+    virtual Coord furthestTime( Point const& p, Coord from = 0, Coord to = 1 ) const {
+        return furthest_time(p, inner, from, to);
+    }
+    virtual std::vector<Coord> allFurthestTimes( Point const& p, Coord from = 0,
+        Coord to = 1 ) const
+    {
+        return all_furthest_times(p, inner, from, to);
     }
     virtual Coord length(Coord tolerance) const { return ::Geom::length(inner, tolerance); }
     virtual Curve *portion(Coord f, Coord t) const {

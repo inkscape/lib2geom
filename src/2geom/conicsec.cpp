@@ -1470,6 +1470,14 @@ std::vector<Point> xAx::allNearestTimes (const Point &P) const
     return points;
 }
 
+/*
+ *  Maybe we also need do this?.
+ *  std::vector<Point> xAx::allFurthestTimes (const Point &P) const
+ *
+ *  P: the point to compute the furthest one
+ */
+
+
 
 
 bool clip (std::vector<RatQuad> & rq, const xAx & cs, const Rect & R)

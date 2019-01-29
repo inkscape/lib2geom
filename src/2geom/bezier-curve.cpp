@@ -35,6 +35,7 @@
 #include <2geom/path-sink.h>
 #include <2geom/basic-intersection.h>
 #include <2geom/nearest-time.h>
+#include <2geom/furthest-time.h>
 
 namespace Geom 
 {
@@ -222,6 +223,11 @@ Coord BezierCurve::nearestTime(Point const &p, Coord from, Coord to) const
     return nearest_time(p, inner, from, to);
 }
 
+Coord BezierCurve::furthestTime(Point const &p, Coord from, Coord to) const
+{
+    return furthest_time(p, inner, from, to);
+}
+
 void BezierCurve::feed(PathSink &sink, bool moveto_initial) const
 {
     if (size() > 4) {
@@ -292,6 +298,18 @@ Coord BezierCurveN<1>::nearestTime(Point const& p, Coord from, Coord to) const
     if ( t <= 0 )  		return from;
     else if ( t >= 1 )  return to;
     else return from + t*(to-from);
+}
+
+template<>
+Coord BezierCurveN<1>::furthestTime(Point const& p, Coord from, Coord to) const
+{
+    using std::swap;
+
+    if ( from > to ) swap(from, to);
+    Point ip = pointAt(from);
+    Point fp = pointAt(to);
+    if ( Geom::distance(fp,p) >= Geom::distance(ip,p) )  return to;
+    else return from;
 }
 
 template <>

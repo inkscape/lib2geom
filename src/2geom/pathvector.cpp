@@ -281,6 +281,50 @@ std::vector<PathVectorTime> PathVector::allNearestTimes(Point const &p, Coord *d
     return retval;
 }
 
+
+boost::optional<PathVectorTime> PathVector::furthestTime(Point const &p, Coord *dist) const
+{
+    boost::optional<PathVectorTime> retval;
+
+    Coord maxdist = 0;
+    for (size_type i = 0; i < size(); ++i) {
+        Coord d;
+        PathTime pos = (*this)[i].furthestTime(p, &d);
+        if (d > maxdist) {
+            maxdist = d;
+            retval = PathVectorTime(i, pos.curve_index, pos.t);
+        }
+    }
+
+    if (dist) {
+        *dist = maxdist;
+    }
+    return retval;
+}
+
+std::vector<PathVectorTime> PathVector::allFurthestTimes(Point const &p, Coord *dist) const
+{
+    std::vector<PathVectorTime> retval;
+
+    Coord maxdist = 0;
+    for (size_type i = 0; i < size(); ++i) {
+        Coord d;
+        PathTime pos = (*this)[i].furthestTime(p, &d);
+        if (d > maxdist) {
+            maxdist = d;
+            retval.clear();
+        }
+        if (d > maxdist) {
+            retval.push_back(PathVectorTime(i, pos.curve_index, pos.t));
+        }
+    }
+
+    if (dist) {
+        *dist = maxdist;
+    }
+    return retval;
+}
+
 std::vector<Point> PathVector::nodes() const
 {
     std::vector<Point> result;

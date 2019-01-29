@@ -573,10 +573,15 @@ public:
     std::vector<Coord> allNearestTimes(Point const &p) const {
         return allNearestTimes(p, 0, size_default());
     }
+    std::vector<Coord> allFurthestTimes(Point const &p, Coord from, Coord to) const;
+    std::vector<Coord> allFurthestTimes(Point const &p) const {
+        return allFurthestTimes(p, 0, size_default());
+    }
 
     PathTime nearestTime(Point const &p, Coord *dist = NULL) const;
+    PathTime furthestTime(Point const &p, Coord *dist = NULL) const;
     std::vector<Coord> nearestTimePerCurve(Point const &p) const;
-
+    std::vector<Coord> furthestTimePerCurve(Point const &p) const;
     std::vector<Point> nodes() const;
 
     void appendPortionTo(Path &p, Coord f, Coord t) const;
@@ -850,6 +855,11 @@ Piecewise<D2<SBasis> > paths_to_pw(PathVector const &paths);
 
 inline Coord nearest_time(Point const &p, Path const &c) {
     PathTime pt = c.nearestTime(p);
+    return pt.curve_index + pt.t;
+}
+
+inline Coord furthest_time(Point const &p, Path const &c) {
+    PathTime pt = c.furthestTime(p);
     return pt.curve_index + pt.t;
 }
 

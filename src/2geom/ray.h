@@ -105,6 +105,9 @@ public:
         if (t < 0) t = 0;
         return t;
     }
+    Coord furthestTime(Point const) const {
+        return infinity();
+    }
     Ray reverse() const {
         Ray result;
         result.setOrigin(_origin);
