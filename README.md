@@ -23,7 +23,7 @@ concentrates on higher level algorithms and geometric computations.
 Features List
 -------------
 
-* C++
+* C++ 11
 * Functional programming style.
 * Points
 * Efficient affine transformations
@@ -60,6 +60,7 @@ Dependencies
 
 To build 2Geom, you will need:
 
+* C++ 11
 * [Boost](http://www.boost.org/) (headers only)
 * [glib](https://wiki.gnome.org/Projects/GLib)
 * [GNU Scientific Library](http://www.gnu.org/software/gsl/)
