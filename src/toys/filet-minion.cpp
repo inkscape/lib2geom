@@ -75,7 +75,7 @@ class IntersectDataTester: public Toy {
                 Circle circ(cp[0], cp[1], r);
                 //cairo_arc(cr, circ.center(X), circ.center(Y), circ.ray(), 0, 2*M_PI);
                 
-                std::auto_ptr<EllipticalArc> eap(
+                std::unique_ptr<EllipticalArc> eap(
                     circ.arc(pieces[0](p0pt), pieces[0](1), pieces[1](p1pt)) );
                 D2<SBasis> easb = eap->toSBasis();
                 cairo_d2_sb(cr, easb);

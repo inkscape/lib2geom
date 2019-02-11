@@ -82,7 +82,7 @@ class CircleFitting : public Toy
         {
             try
             {
-                std::auto_ptr<EllipticalArc> eap( c.arc(psh.pts[0], psh.pts[1], psh.pts[2]) );
+                std::unique_ptr<EllipticalArc> eap( c.arc(psh.pts[0], psh.pts[1], psh.pts[2]) );
                 ea = *eap;
             }
             catch(RangeError exc)

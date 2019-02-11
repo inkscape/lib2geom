@@ -304,11 +304,7 @@ bool make_elliptical_arc::make_elliptiarc()
 
     Point inner_point = curve(0.5);
 
-#ifdef CPP11
     std::unique_ptr<EllipticalArc> arc( e.arc(initial_point, inner_point, final_point) );
-#else
-    std::auto_ptr<EllipticalArc> arc( e.arc(initial_point, inner_point, final_point) );
-#endif
     ea = *arc;
 
     if ( !are_near( e.center(),

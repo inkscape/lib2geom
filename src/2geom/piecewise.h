@@ -143,13 +143,11 @@ class Piecewise {
         push_seg(s);
         push_cut(to);
     }
-#ifdef CPP11
     inline void push(T &&s, double to) {
         assert(cuts.size() - segs.size() == 1);
         push_seg(s);
         push_cut(to);
     }
-#endif
     //Convenience/implementation hiding function to add cuts.
     inline void push_cut(double c) {
         ASSERT_INVARIANTS(cuts.empty() || c > cuts.back());
@@ -157,9 +155,7 @@ class Piecewise {
     }
     //Convenience/implementation hiding function to add segments.
     inline void push_seg(const T &s) { segs.push_back(s); }
-#ifdef CPP11
     inline void push_seg(T &&s) { segs.emplace_back(s); }
-#endif
 
     /**Returns the segment index which corresponds to a 'global' piecewise time.
      * Also takes optional low/high parameters to expedite the search for the segment.
