@@ -244,7 +244,8 @@ std::vector<Coord> solve_quadratic(Coord a, Coord b, Coord c)
         // Use different formulas depending on sign of b to preserve
         // numerical stability. See e.g.:
         // http://people.csail.mit.edu/bkph/articles/Quadratics.pdf
-        Coord t = -0.5 * (b + sgn(b) * delta_sqrt);
+        int sign = b >= 0 ? 1 : -1;
+        Coord t = -0.5 * (b + sign * delta_sqrt);
         result.push_back(t / a);
         result.push_back(c / t);
     }
