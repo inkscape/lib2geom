@@ -486,13 +486,13 @@ TEST_F(PathTest, Roots) {
 
     // Trivial case: make sure that path is not closed
     std::vector<PathTime> roots = path.roots(0.5, Geom::X);
-    EXPECT_EQ(roots.size(), 1);
+    EXPECT_EQ(roots.size(), 1u);
     EXPECT_EQ(path.valueAt(roots[0], Geom::Y), 0.5);
 
     // Now check that it is closed if we make it so
     path.close(true);
     roots = path.roots(0.5, Geom::X);
-    EXPECT_EQ(roots.size(), 2);
+    EXPECT_EQ(roots.size(), 2u);
 }
 
 /*

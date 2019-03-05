@@ -20,6 +20,7 @@ include(CheckCXXSourceCompiles)
 
 # Find dependencies
 find_package(Boost 1.40 REQUIRED)
+find_package(DoubleConversion REQUIRED)
 find_package(PkgConfig REQUIRED)
 find_package(Cython)
 find_package(Threads)
