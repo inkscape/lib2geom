@@ -50,8 +50,12 @@ tuple pwd2sb_centroid(Geom::Piecewise<Geom::D2<Geom::SBasis> > const &pw)
 }
      
 
+void (Geom::Piecewise<Geom::SBasis>::*push_pwsb)(Geom::SBasis const &, double) = &Geom::Piecewise<Geom::SBasis>::push;
+void (Geom::Piecewise<Geom::SBasis>::*push_seg_pwsb)(Geom::SBasis const &) = &Geom::Piecewise<Geom::SBasis>::push_seg;
 Geom::Piecewise<Geom::SBasis> (*portion_pwsb)(const Geom::Piecewise<Geom::SBasis> &, double, double) = &Geom::portion;
-Geom::Piecewise<Geom::D2<Geom::SBasis> > (*portion_pwd2sb)(const Geom::Piecewise<Geom::D2<Geom::SBasis> > &, double, double) = &Geom::portion;
+void (Geom::Piecewise<Geom::D2<Geom::SBasis>>::*push_pwd2sb)(Geom::D2<Geom::SBasis> const &, double) = &Geom::Piecewise<Geom::D2<Geom::SBasis>>::push;
+void (Geom::Piecewise<Geom::D2<Geom::SBasis>>::*push_seg_pwd2sb)(Geom::D2<Geom::SBasis> const &) = &Geom::Piecewise<Geom::D2<Geom::SBasis>>::push_seg;
+Geom::Piecewise<Geom::D2<Geom::SBasis>> (*portion_pwd2sb)(const Geom::Piecewise<Geom::D2<Geom::SBasis> > &, double, double) = &Geom::portion;
 std::vector<double> (*roots_pwsb)(const Geom::Piecewise<Geom::SBasis> &) = &Geom::roots;
 //Geom::Piecewise<Geom::SBasis> (*multiply_pwsb)(Geom::Piecewise<Geom::SBasis> const &, Geom::Piecewise<Geom::SBasis> const &) = &Geom::multiply;
 Geom::Piecewise<Geom::SBasis> (*divide_pwsb)(Geom::Piecewise<Geom::SBasis> const &, Geom::Piecewise<Geom::SBasis> const &, unsigned) = &Geom::divide;
@@ -144,9 +148,9 @@ void wrap_pw() {
         .def("valueAt", &Geom::Piecewise<Geom::SBasis>::valueAt)
         .def("size", &Geom::Piecewise<Geom::SBasis>::size)
         .def("empty", &Geom::Piecewise<Geom::SBasis>::empty)
-        .def("push", &Geom::Piecewise<Geom::SBasis>::push)
+        .def("push", push_pwsb)
         .def("push_cut", &Geom::Piecewise<Geom::SBasis>::push_cut)
-        .def("push_seg", &Geom::Piecewise<Geom::SBasis>::push_seg)
+        .def("push_seg", push_seg_pwsb)
 
         .def("segN", &Geom::Piecewise<Geom::SBasis>::segN)
         .def("segT", &Geom::Piecewise<Geom::SBasis>::segT)
@@ -180,9 +184,9 @@ void wrap_pw() {
         .def("valueAt", &Geom::Piecewise<Geom::D2<Geom::SBasis> >::valueAt)
         .def("size", &Geom::Piecewise<Geom::D2<Geom::SBasis> >::size)
         .def("empty", &Geom::Piecewise<Geom::D2<Geom::SBasis> >::empty)
-        .def("push", &Geom::Piecewise<Geom::D2<Geom::SBasis> >::push)
+        .def("push", push_pwd2sb)
         .def("push_cut", &Geom::Piecewise<Geom::D2<Geom::SBasis> >::push_cut)
-        .def("push_seg", &Geom::Piecewise<Geom::D2<Geom::SBasis> >::push_seg)
+        .def("push_seg", push_seg_pwd2sb)
 
         .def("segN", &Geom::Piecewise<Geom::D2<Geom::SBasis> >::segN)
         .def("segT", &Geom::Piecewise<Geom::D2<Geom::SBasis> >::segT)
