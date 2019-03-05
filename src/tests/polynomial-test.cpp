@@ -4,8 +4,8 @@
  *//*
  * Authors:
  *   Krzysztof Kosiński <tweenk.pl@gmail.com>
- * 
- * Copyright 2015 Authors
+ *
+ * Copyright 2015-2019 Authors
  *
  * This library is free software; you can redistribute it and/or
  * modify it either under the terms of the GNU Lesser General Public
@@ -62,17 +62,32 @@ TEST(PolynomialTest, SolveQuadratic) {
 }
 
 TEST(PolynomialTest, SolvePathologicalQuadratic) {
-    std::vector<Coord> r1, r2;
+    std::vector<Coord> r;
 
-    r1 = solve_quadratic(1, -1e9, 1);
-    ASSERT_EQ(r1.size(), 2u);
-    EXPECT_FLOAT_EQ(r1[0], 1e-9);
-    EXPECT_FLOAT_EQ(r1[1], 1e9);
+    r = solve_quadratic(1, -1e9, 1);
+    ASSERT_EQ(r.size(), 2u);
+    EXPECT_FLOAT_EQ(r[0], 1e-9);
+    EXPECT_FLOAT_EQ(r[1], 1e9);
 
-    r2 = solve_quadratic(1, -4, 3.999999);
-    ASSERT_EQ(r2.size(), 2u);
-    EXPECT_FLOAT_EQ(r2[0], 1.999);
-    EXPECT_FLOAT_EQ(r2[1], 2.001);
+    r = solve_quadratic(1, -4, 3.999999);
+    ASSERT_EQ(r.size(), 2u);
+    EXPECT_FLOAT_EQ(r[0], 1.999);
+    EXPECT_FLOAT_EQ(r[1], 2.001);
+
+    r = solve_quadratic(1, 0, -4);
+    ASSERT_EQ(r.size(), 2u);
+    EXPECT_FLOAT_EQ(r[0], -2);
+    EXPECT_FLOAT_EQ(r[1], 2);
+
+    r = solve_quadratic(1, 0, -16);
+    ASSERT_EQ(r.size(), 2u);
+    EXPECT_FLOAT_EQ(r[0], -4);
+    EXPECT_FLOAT_EQ(r[1], 4);
+
+    r = solve_quadratic(1, 0, -100);
+    ASSERT_EQ(r.size(), 2u);
+    EXPECT_FLOAT_EQ(r[0], -10);
+    EXPECT_FLOAT_EQ(r[1], 10);
 }
 
 TEST(PolynomialTest, SolveCubic) {
