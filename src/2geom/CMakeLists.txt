@@ -13,16 +13,13 @@ find_program(RAGEL_PROGRAM
          ${RAGEL_BIN}
          ${MINGW_BIN}
 )
-IF( RAGEL_PROGRAM )
-IF(GENERATE_SVG_PARSER OR REGENERATE_SVG_PARSER)
-  ADD_CUSTOM_COMMAND(OUTPUT "${SVG_PARSER_CPP}"
-                     COMMAND ${RAGEL_PROGRAM} -C -T0 -o "${SVG_PARSER_CPP}" "${SVG_PARSER_RL}"
-                     DEPENDS "${SVG_PARSER_RL}"
-                     WORKING_DIRECTORY "${CURRENT_SOURCE_DIR}"
-                     COMMENT "Generating svg_path_parser.cpp with ragel"
-                     )
-ENDIF(GENERATE_SVG_PARSER OR REGENERATE_SVG_PARSER)
-ENDIF( RAGEL_PROGRAM )
+if(RAGEL_PROGRAM AND (GENERATE_SVG_PARSER OR REGENERATE_SVG_PARSER))
+    add_custom_command(OUTPUT "${SVG_PARSER_CPP}"
+                       COMMAND ${RAGEL_PROGRAM} -C -T0 -o "${SVG_PARSER_CPP}" "${SVG_PARSER_RL}"
+                       DEPENDS "${SVG_PARSER_RL}"
+                       WORKING_DIRECTORY "${CURRENT_SOURCE_DIR}"
+                       COMMENT "Generating svg_path_parser.cpp with ragel")
+endif()
 
 SET(2GEOM_SRC
 
@@ -150,21 +147,22 @@ utils.h
 )
 
 # make lib for 2geom
-ADD_LIBRARY(2geom ${LIB_TYPE} ${2GEOM_SRC})
-TARGET_LINK_LIBRARIES(2geom "${LINK_GSL}" "${GTK2_LINK_FLAGS}")
-SET_TARGET_PROPERTIES(2geom PROPERTIES SOVERSION "${2GEOM_ABI_VERSION}")
-INSTALL(TARGETS 2geom
-  RUNTIME DESTINATION bin
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib
+add_library(2geom ${LIB_TYPE} ${2GEOM_SRC})
+target_include_directories(2geom PRIVATE ${GSL_INCLUDE_DIRS} ${CAIRO_INCLUDE_DIRS})
+target_link_libraries(2geom ${GSL_LIBRARIES} ${CAIRO_LIBRARIES})
+set_target_properties(2geom PROPERTIES SOVERSION "${2GEOM_ABI_VERSION}")
+
+install(TARGETS 2geom
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
 )
-FILE(GLOB files "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
-INSTALL(FILES ${files} DESTINATION include/2geom-${2GEOM_VERSION}/2geom)
-INSTALL(FILES ${CMAKE_BINARY_DIR}/config.h DESTINATION include/2geom-${2GEOM_VERSION}/2geom)
-FILE(GLOB files "${CMAKE_CURRENT_SOURCE_DIR}/numeric/*.h")
-INSTALL(FILES ${files} DESTINATION include/2geom-${2GEOM_VERSION}/2geom/numeric)
 
-CONFIGURE_FILE( ${CMAKE_SOURCE_DIR}/2geom.pc.in
+file(GLOB files "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
+install(FILES ${files} DESTINATION include/2geom-${2GEOM_VERSION}/2geom)
+file(GLOB files "${CMAKE_CURRENT_SOURCE_DIR}/numeric/*.h")
+install(FILES ${files} DESTINATION include/2geom-${2GEOM_VERSION}/2geom/numeric)
+
+configure_file( ${CMAKE_SOURCE_DIR}/2geom.pc.in
                 ${CMAKE_BINARY_DIR}/2geom.pc @ONLY IMMEDIATE )
-INSTALL(FILES "${CMAKE_BINARY_DIR}/2geom.pc" DESTINATION lib/pkgconfig)
-
+install(FILES "${CMAKE_BINARY_DIR}/2geom.pc" DESTINATION lib/pkgconfig)

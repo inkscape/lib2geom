@@ -36,7 +36,6 @@
 #ifndef LIB2GEOM_SEEN_MATH_UTILS_H
 #define LIB2GEOM_SEEN_MATH_UTILS_H
 
-#include "config.h"
 #include <math.h> // sincos is usually only available in math.h
 #include <cmath>
 #include <utility> // for std::pair

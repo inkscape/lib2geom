@@ -1,6 +1,6 @@
 # Dependencies are managed in the Dockerfile in the inkscape-ci-docker
-# Git repository. Recycle the one for the 0.92.x Inkscape branch for now
-image: registry.gitlab.com/inkscape/inkscape-ci-docker/0-92-x
+# Git repository. Recycle the one for the master Inkscape branch for now
+image: registry.gitlab.com/inkscape/inkscape-ci-docker/master
 
 variables:
   GIT_DEPTH: "10"

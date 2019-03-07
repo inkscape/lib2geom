@@ -313,18 +313,17 @@ class Slider : public Handle
 class Toy {
 public:
     vector<Handle*> handles;
-    bool mouse_down;
+    bool mouse_down = false;
     Geom::Point old_mouse_point;
-    Handle* selected;
-    void* hit_data;
-    int canvas_click_button;
-    double notify_offset;
+    Handle* selected = nullptr;
+    void* hit_data = nullptr;
+    int canvas_click_button = 0;
+    double notify_offset = 0.0;
     std::string name;
-    bool show_timings;
-    FILE* spool_file; // if non-NULL we record all interactions to this file
-    FILE* to_load_file; // if non-NULL and not eof we read back a handle state at every frame.
+    bool show_timings = false;
+    FILE* spool_file = nullptr; // if non-NULL we record all interactions to this file
 
-    Toy();
+    Toy() {}
 
     virtual ~Toy() {}
 

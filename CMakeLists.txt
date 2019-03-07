@@ -1,104 +1,107 @@
-cmake_minimum_required(VERSION 2.6)
-cmake_policy(VERSION 2.6)
-PROJECT(lib2geom CXX C) # C is required by CHECK_SYMBOL_EXISTS
-SET(2GEOM_MAJOR_VERSION 1)
-SET(2GEOM_MINOR_VERSION 0)
-SET(2GEOM_PATCH_VERSION 0)
-SET(2GEOM_VERSION ${2GEOM_MAJOR_VERSION}.${2GEOM_MINOR_VERSION}.${2GEOM_PATCH_VERSION})
-SET(2GEOM_ABI_VERSION ${2GEOM_MAJOR_VERSION}.${2GEOM_MINOR_VERSION}.0)
+cmake_minimum_required(VERSION 3.1)
+cmake_policy(SET CMP0054 NEW)
 
-SET(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib)
-SET(CMAKE_SKIP_RPATH:BOOL OFF)
-SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeScripts)
-ENABLE_TESTING()
-INCLUDE(Config2GeomDepends)
+project(lib2geom CXX C) # C is required by CHECK_SYMBOL_EXISTS
+set(2GEOM_MAJOR_VERSION 1)
+set(2GEOM_MINOR_VERSION 0)
+set(2GEOM_PATCH_VERSION 0)
+set(2GEOM_VERSION ${2GEOM_MAJOR_VERSION}.${2GEOM_MINOR_VERSION}.${2GEOM_PATCH_VERSION})
+set(2GEOM_ABI_VERSION ${2GEOM_MAJOR_VERSION}.${2GEOM_MINOR_VERSION}.0)
 
-INCLUDE_DIRECTORIES (src src/googletest/googletest/include ${CMAKE_CURRENT_BINARY_DIR})
-LINK_DIRECTORIES (${CMAKE_CURRENT_SOURCE_DIR}/src/2geom)
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib)
+set(CMAKE_SKIP_RPATH:BOOL OFF)
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeScripts)
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+enable_testing()
 
-IF(gsl_FOUND)
-# must have GSL
-    SET(NEEDS_GSL
-    differential-constraint
-    root-finder-comparer
-#   contour
-    sb-to-bez
-    )
-    SET(LINK_GSL ${gsl_LINK_FLAGS})
-    SET(gsl_CFLAGS "${gsl_CFLAGS} -DHAVE_GSL")
-ENDIF(gsl_FOUND)
-IF(pycairo_FOUND)
-    SET(pycairo_CFLAGS "${pycairo_CFLAGS} -DHAVE_PYCAIRO")
-ENDIF(pycairo_FOUND)
+include(CheckCXXSourceCompiles)
 
-# Set Compiler Flags
-SET(CXX_WARNINGS_FLAGS "-Wall -Wformat -Wformat-security -W -Wpointer-arith -Wcast-align -Wsign-compare -Woverloaded-virtual -Wswitch -Werror=return-type")
-# set the general CXX flags, note that subproject folders may add to this list for themselves
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GTK2_CFLAGS} ${cairo_CFLAGS} ${gsl_CFLAGS} ${pycairo_CFLAGS} ${CXX_WARNINGS_FLAGS} -O2")
+# Find dependencies
+find_package(Boost 1.40 REQUIRED)
+find_package(PkgConfig REQUIRED)
+find_package(Cython)
+find_package(Threads)
+pkg_check_modules(GTK3 gtk+-3.0)
+pkg_check_modules(GLIB glib-2.0)
+pkg_check_modules(CAIRO cairo)
+pkg_check_modules(GSL gsl)
+
+# Add global include and link directories
+include_directories(src src/googletest/googletest/include ${CMAKE_CURRENT_BINARY_DIR})
+link_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/2geom)
+
+check_cxx_source_compiles("#include <math.h>\nint main() { double a=0.5,b=0.5,c=0.5; sincos(a, &b, &c); return 0; }" HAVE_SINCOS)
+if(HAVE_SINCOS)
+	add_definitions(-DHAVE_SINCOS)
+endif()
+if(GSL_FOUND)
+	add_definitions(-DHAVE_GSL)
+endif()
+if(PYCAIRO_FOUND)
+    add_definitions(-DHAVE_PYCAIRO)
+endif()
+
+
+#    SET(NEEDS_GSL
+#        differential-constraint
+#        root-finder-comparer
+#        # contour
+#        sb-to-bez
+#    )
+
+add_compile_options(-Wall -Wformat-security -Woverloaded-virtual -Wpointer-arith -Werror=return-type)
+add_compile_options(-O2)
 
 # suppress the very annoying "#pragma ms_struct" Clang warning, caused by -mms-bitfield required for GTK
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    if (WIN32)
-        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-ignored-attributes")
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    if(WIN32)
+    	add_compile_options(-Wno-ignored-attributes)
     endif()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-local-typedef")
+    add_compile_options(-Wno-unused-local-typedef)
 endif()
 
-# the required C++11 flag depends on the compiler brand:
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fcolor-diagnostics")  # force colored output through make/ninja
-    SET(CPP11_FLAG "-std=c++11")
-elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    SET(CPP11_FLAG "-std=gnu++0x")
-elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
-    SET(CPP11_FLAG "-std=c++11")
-elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-  # using Visual Studio C++
+option(WITH_PROFILING
+    "Build lib2geom with profiling enabled"
+    OFF)
+  
+if(WITH_PROFILING)
+    add_compile_options(-pg)
+    set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -pg")
 endif()
 
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CPP11_FLAG} -DCPP11")
+option(2GEOM_BUILD_SHARED
+    "Build lib2geom and libtoy as shared libraries."
+    OFF)
 
-OPTION(COMPILE_WITH_PROFILER
-  "Build lib2geom with profiling enabled"
-  OFF)
-if (COMPILE_WITH_PROFILER)
-  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
-  SET (CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -pg")
+if(2GEOM_BUILD_SHARED)
+    set(LIB_TYPE SHARED)
+else()
+    set(LIB_TYPE STATIC)
 endif()
 
-SET(CMAKE_MAKE_PROGRAM "${CMAKE_MAKE_PROGRAM}")
+option(2GEOM_USE_GPL_CODE
+    "Build lib2geom with GPL licensed Code."
+    ON)
 
-OPTION(2GEOM_BUILD_SHARED
-  "Build lib2geom and libtoy as shared libraries."
-  OFF)
-IF(2GEOM_BUILD_SHARED)
-    SET(LIB_TYPE SHARED)
-ELSE(2GEOM_BUILD_SHARED)
-    SET(LIB_TYPE STATIC)
-ENDIF(2GEOM_BUILD_SHARED)
-
-OPTION(2GEOM_USE_GPL_CODE
-  "Build lib2geom with GPL licensed Code."
-  ON)
-IF(2GEOM_USE_GPL_CODE)
-  ADD_DEFINITIONS(-DGPL_TAINT)
-ELSE(2GEOM_USE_GPL_CODE)
-    # Do Nothing
-ENDIF(2GEOM_USE_GPL_CODE)
+if(2GEOM_USE_GPL_CODE)
+    add_definitions(-DGPL_TAINT)
+endif()
 
 include(CMakeScripts/Dist.cmake)
 
-#make unistall target
-CONFIGURE_FILE(
+# make unistall target
+configure_file(
   "${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"
   "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
   IMMEDIATE @ONLY)
 
-ADD_CUSTOM_TARGET(uninstall
+add_custom_target(uninstall
   "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake")
 
-ADD_SUBDIRECTORY(src)
+add_subdirectory(src)
 
-# install config.h
-FILE(GLOB files "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
-INSTALL(FILES ${files} DESTINATION include/2geom-${2GEOM_VERSION}/2geom)
+# install headers
+file(GLOB files "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
+install(FILES ${files} DESTINATION include/2geom-${2GEOM_VERSION}/2geom)

@@ -68,12 +68,12 @@ IF (BUILD_BOOST_PYTHON_STATIC)
   )
 ENDIF (BUILD_BOOST_PYTHON_STATIC)
 
-IF(pycairo_FOUND)
+IF(PYCAIRO_FOUND)
     SET(2GEOM_BOOST_PYTHON_SRC
     ${2GEOM_BOOST_PYTHON_SRC}
     cairo-helpers.cpp
     )
-ENDIF(pycairo_FOUND)
+ENDIF(PYCAIRO_FOUND)
 
 
 OPTION(2GEOM_BOOST_PYTHON
@@ -81,10 +81,10 @@ OPTION(2GEOM_BOOST_PYTHON
   OFF)
 IF(2GEOM_BOOST_PYTHON)
         FIND_PACKAGE(Boost REQUIRED)
-        FIND_PACKAGE(Boost COMPONENTS python python27)
-        IF(Boost_PYTHON27_LIBRARY)
-            set(Boost_PYTHON_LIBRARY ${Boost_PYTHON27_LIBRARY})
-        ELSEIF(Boost_PYTHON_LIBRARY)
+        FIND_PACKAGE(Boost QUIET COMPONENTS python python27)
+        IF(Boost_PYTHON27_LIBRARIES)
+            set(Boost_PYTHON_LIBRARIES ${Boost_PYTHON27_LIBRARIES})
+        ELSEIF(Boost_PYTHON_LIBRARIES)
             # pass
         ELSE()
             message(FATAL "Could not find Boost.Python")
@@ -120,9 +120,9 @@ IF(2GEOM_BOOST_PYTHON)
 
         set_property(TARGET 2geom PROPERTY POSITION_INDEPENDENT_CODE ON)  # we need -fPIC to link py2geom against 2geom
 
-        IF(pycairo_FOUND)
-            TARGET_LINK_LIBRARIES(py2geom ${cairo_LINK_FLAGS})
-        ENDIF(pycairo_FOUND)
+        IF(PYCAIRO_FOUND)
+            TARGET_LINK_LIBRARIES(py2geom ${CAIRO_LIBRARIES})
+        ENDIF(PYCAIRO_FOUND)
 
         INSTALL(TARGETS py2geom DESTINATION "${SITEPACKAGE}/py2geom")
         INSTALL(FILES "${CMAKE_CURRENT_SOURCE_DIR}/__init__.py" DESTINATION "${SITEPACKAGE}/py2geom")

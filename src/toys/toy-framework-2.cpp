@@ -1,5 +1,8 @@
-#include <string.h>
-#include <stdint.h>
+#include <cstring>
+#include <cstdint>
+#include <typeinfo>
+#include <cairo.h>
+#include <gtk/gtk.h>
 #include <toys/toy-framework-2.h>
 
 #include <cairo-features.h>
@@ -10,11 +13,17 @@
 #include <cairo-svg.h>
 #endif
 
-#include <getopt.h>
+GtkApplicationWindow* the_window = nullptr;
+static GtkWidget *the_canvas = nullptr;
+Toy* the_toy = nullptr;
+int the_requested_height = 0;
+int the_requested_width = 0;
+gchar **the_emulated_argv = nullptr;
 
-GtkWindow* window;
-static GtkWidget *canvas;
-Toy* current_toy;
+gchar *arg_spool_filename = nullptr;
+gchar *arg_handles_filename = nullptr;
+gchar *arg_screenshot_filename = nullptr;
+gchar **arg_extra_files = nullptr;
 
 //Utility functions
 
@@ -152,16 +161,7 @@ void draw_number(cairo_t *cr, Geom::Point pos, double num, std::string name, boo
 }
 
 //Framework Accessors
-void redraw() { gtk_widget_queue_draw(GTK_WIDGET(window)); }
-
-#include <typeinfo>
-
-Toy::Toy() : hit_data(0), show_timings(0), spool_file(NULL), to_load_file(NULL) {
-    mouse_down = false;
-    selected = NULL;
-    notify_offset = 0;
-}
-
+void redraw() { gtk_widget_queue_draw(GTK_WIDGET(the_window)); }
 
 void Toy::draw(cairo_t *cr, std::ostringstream *notify, int width, int height, bool /*save*/, std::ostringstream *timer_stream)
 {
@@ -278,10 +278,10 @@ void Toy::save(FILE* f) {
 
 //Gui Event Callbacks
 
-void make_about() {
+void show_about_dialog(GSimpleAction *, GVariant *, gpointer) {
     GtkWidget* about_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_title(GTK_WINDOW(about_window), "About");
-    gtk_window_set_policy(GTK_WINDOW(about_window), FALSE, FALSE, TRUE);
+    gtk_window_set_resizable(GTK_WINDOW(about_window), FALSE);
 
     GtkWidget* about_text = gtk_text_view_new();
     GtkTextBuffer* buf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(about_text));
@@ -289,6 +289,10 @@ void make_about() {
     gtk_container_add(GTK_CONTAINER(about_window), about_text);
 
     gtk_widget_show_all(about_window);
+}
+
+void quit(GSimpleAction *, GVariant *, gpointer) {
+    g_application_quit(g_application_get_default());
 }
 
 Geom::Point read_point(FILE* f) {
@@ -307,38 +311,39 @@ Geom::Interval read_interval(FILE* f) {
     return p;
 }
 
-void open() {
-    if(current_toy != NULL) {
-	GtkWidget* d = gtk_file_chooser_dialog_new("Open handle configuration", window, GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, NULL);
-        if(gtk_dialog_run(GTK_DIALOG(d)) == GTK_RESPONSE_ACCEPT) {
-            const char* filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(d));
-            FILE* f = fopen(filename, "r");
-	    current_toy->load(f);
-            fclose(f);
-        }
-        gtk_widget_destroy(d);
+void open_handles(GSimpleAction *, GVariant *, gpointer) {
+    if (!the_toy) return;
+	GtkWidget* d = gtk_file_chooser_dialog_new(
+	     "Open handle configuration", GTK_WINDOW(the_window), GTK_FILE_CHOOSER_ACTION_OPEN,
+	     "Cancel", GTK_RESPONSE_CANCEL, "Open", GTK_RESPONSE_ACCEPT, NULL);
+    if (gtk_dialog_run(GTK_DIALOG(d)) == GTK_RESPONSE_ACCEPT) {
+        const char* filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(d));
+        FILE* f = fopen(filename, "r");
+        the_toy->load(f);
+        fclose(f);
     }
+    gtk_widget_destroy(d);
 }
 
-void save() {
-    if(current_toy != NULL) {
-        GtkWidget* d = gtk_file_chooser_dialog_new("Save handle configuration", window, GTK_FILE_CHOOSER_ACTION_SAVE, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT, NULL);
-        if(gtk_dialog_run(GTK_DIALOG(d)) == GTK_RESPONSE_ACCEPT) {
-            const char* filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(d));
-            FILE* f = fopen(filename, "w");
-	    current_toy->save(f);
-            fclose(f);
-        }
-        gtk_widget_destroy(d);
+void save_handles(GSimpleAction *, GVariant *, gpointer) {
+    if (!the_toy) return;
+    GtkWidget* d = gtk_file_chooser_dialog_new(
+         "Save handle configuration", GTK_WINDOW(the_window), GTK_FILE_CHOOSER_ACTION_SAVE,
+         "Cancel", GTK_RESPONSE_CANCEL, "Save", GTK_RESPONSE_ACCEPT, NULL);
+    if (gtk_dialog_run(GTK_DIALOG(d)) == GTK_RESPONSE_ACCEPT) {
+        const char* filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(d));
+        FILE* f = fopen(filename, "w");
+        the_toy->save(f);
+        fclose(f);
     }
+    gtk_widget_destroy(d);
 }
 
-void save_cairo_backend(const char* filename) {
+void write_image(const char* filename) {
     cairo_surface_t* cr_s;
     unsigned l = strlen(filename);
-    int width = 600;
-    int height = 600;
-    gdk_drawable_get_size(canvas->window, &width, &height);
+    int width = gdk_window_get_width(gtk_widget_get_window(the_canvas));
+    int height = gdk_window_get_height(gtk_widget_get_window(the_canvas));
     bool save_png = false;
 
     if (l >= 4 && strcmp(filename + l - 4, ".png") == 0) {
@@ -364,10 +369,10 @@ void save_cairo_backend(const char* filename) {
         cairo_paint(cr);
         cairo_restore(cr);
     }
-    if(current_toy != NULL) {
+    if(the_toy != NULL) {
         std::ostringstream * notify = new std::ostringstream;
         std::ostringstream * timer_stream = new std::ostringstream;
-        current_toy->draw(cr, notify, width, height, true, timer_stream);
+        the_toy->draw(cr, notify, width, height, true, timer_stream);
         delete notify;
         delete timer_stream;
     }
@@ -379,67 +384,38 @@ void save_cairo_backend(const char* filename) {
     cairo_surface_destroy (cr_s);
 }
 
-void save_cairo() {
-    GtkWidget* d = gtk_file_chooser_dialog_new("Save file as svg, pdf or png", window, GTK_FILE_CHOOSER_ACTION_SAVE, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT, NULL);
-    if(gtk_dialog_run(GTK_DIALOG(d)) == GTK_RESPONSE_ACCEPT) {
-        const char* filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(d));
-        save_cairo_backend(filename);
+void save_cairo(GSimpleAction *, GVariant *, gpointer) {
+    GtkWidget* d = gtk_file_chooser_dialog_new(
+        "Save file as svg, pdf or png", GTK_WINDOW(the_window), GTK_FILE_CHOOSER_ACTION_SAVE,
+        "Cancel", GTK_RESPONSE_CANCEL, "Save", GTK_RESPONSE_ACCEPT, NULL);
+    if (gtk_dialog_run(GTK_DIALOG(d)) == GTK_RESPONSE_ACCEPT) {
+        const gchar *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(d));
+        write_image(filename);
     }
     gtk_widget_destroy(d);
 }
 
-void take_screenshot(const char* filename) {
-    int width = 256;
-    int height = 256;
-    gdk_drawable_get_size(canvas->window, &width, &height);
-
-    cairo_surface_t* cr_s = cairo_image_surface_create ( CAIRO_FORMAT_ARGB32, width, height );
-    cairo_t* cr = cairo_create(cr_s);
-
-    if(current_toy != NULL) {
-        std::ostringstream * notify = new std::ostringstream;
-        std::ostringstream * timer_stream = new std::ostringstream;
-	current_toy->draw(cr, notify, width, height, true, timer_stream);
-        delete notify;
-        delete timer_stream;
-    }
-
-    cairo_show_page(cr);
-    cairo_surface_write_to_png(cr_s, filename);
-    cairo_destroy (cr);
-    cairo_surface_destroy (cr_s);
-}
-
-void save_image() {
-    GtkWidget* d = gtk_file_chooser_dialog_new("Save file as png", window, GTK_FILE_CHOOSER_ACTION_SAVE, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT, NULL);
-    if(gtk_dialog_run(GTK_DIALOG(d)) == GTK_RESPONSE_ACCEPT) {
-        take_screenshot(gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(d)));
-    }
-    gtk_widget_destroy(d);
-}
-
-static gint delete_event(GtkWidget* window, GdkEventAny* e, gpointer data) {
-    (void)( window);
-    (void)( e);
-    (void)( data);
-
-    gtk_main_quit();
+static gint delete_event(GtkWidget*, GdkEventAny*, gpointer) {
+    quit(nullptr, nullptr, nullptr);
     return FALSE;
 }
 
-void toggle_show_timings() {
-    if(current_toy)
-        current_toy->show_timings = !current_toy->show_timings;
+
+static void toggle_action(GSimpleAction *action, GVariant *, gpointer) {
+    GVariant *state = g_action_get_state(G_ACTION(action));
+    g_action_change_state(G_ACTION(action), g_variant_new_boolean(!g_variant_get_boolean(state)));
+    g_variant_unref(state);
 }
 
-static gboolean expose_event(GtkWidget *widget, GdkEventExpose */*event*/, gpointer data)
-{
-    (void)(data);
-    cairo_t *cr = gdk_cairo_create(widget->window);
+static void set_show_timings(GSimpleAction *action, GVariant *variant, gpointer) {
+    the_toy->show_timings = g_variant_get_boolean(variant);
+    g_simple_action_set_state(action, variant);
+}
 
-    int width = 256;
-    int height = 256;
-    gdk_drawable_get_size(widget->window, &width, &height);
+static gboolean draw_callback(GtkWidget *widget, cairo_t *cr)
+{
+    int width = gdk_window_get_width(gtk_widget_get_window(widget));
+    int height = gdk_window_get_height(gtk_widget_get_window(widget));
 
     std::ostringstream notify;
 
@@ -447,27 +423,23 @@ static gboolean expose_event(GtkWidget *widget, GdkEventExpose */*event*/, gpoin
     if(!resized) {
 	Geom::Rect alloc_size(Geom::Interval(0, width),
 			      Geom::Interval(0, height));
-	if(current_toy != NULL)
-	    current_toy->resize_canvas(alloc_size);
+	if(the_toy != NULL)
+	    the_toy->resize_canvas(alloc_size);
 	resized = true;
     }
     cairo_rectangle(cr, 0, 0, width, height);
     cairo_set_source_rgba(cr,1,1,1,1);
     cairo_fill(cr);
-    if(current_toy != NULL) {
+    if (the_toy != NULL) {
         std::ostringstream * timer_stream = new std::ostringstream;
         
-        if(current_toy->spool_file) {
-            current_toy->save(current_toy->spool_file);
-        } else if(current_toy->to_load_file and !feof(current_toy->to_load_file)) {
-            current_toy->load(current_toy->to_load_file);
-            redraw();
+        if (the_toy->spool_file) {
+            the_toy->save(the_toy->spool_file);
         }
 
-        current_toy->draw(cr, &notify, width, height, false, timer_stream);
+        the_toy->draw(cr, &notify, width, height, false, timer_stream);
         delete timer_stream;
     }
-    cairo_destroy(cr);
 
     return TRUE;
 }
@@ -476,7 +448,7 @@ static gint mouse_motion_event(GtkWidget* widget, GdkEventMotion* e, gpointer da
     (void)(data);
     (void)(widget);
 
-    if(current_toy != NULL) current_toy->mouse_moved(e);
+    if(the_toy != NULL) the_toy->mouse_moved(e);
 
     return FALSE;
 }
@@ -485,7 +457,7 @@ static gint mouse_event(GtkWidget* widget, GdkEventButton* e, gpointer data) {
     (void)(data);
     (void)(widget);
 
-    if(current_toy != NULL) current_toy->mouse_pressed(e);
+    if(the_toy != NULL) the_toy->mouse_pressed(e);
 
     return FALSE;
 }
@@ -493,7 +465,7 @@ static gint mouse_event(GtkWidget* widget, GdkEventButton* e, gpointer data) {
 static gint scroll_event(GtkWidget* widget, GdkEventScroll* e, gpointer data) {
     (void)(data);
     (void)(widget);
-    if(current_toy != NULL) current_toy->scroll(e);
+    if(the_toy != NULL) the_toy->scroll(e);
 
     return FALSE;
 }
@@ -502,7 +474,7 @@ static gint mouse_release_event(GtkWidget* widget, GdkEventButton* e, gpointer d
     (void)(data);
     (void)(widget);
 
-    if(current_toy != NULL) current_toy->mouse_released(e);
+    if(the_toy != NULL) the_toy->mouse_released(e);
 
     return FALSE;
 }
@@ -511,7 +483,7 @@ static gint key_press_event(GtkWidget *widget, GdkEventKey *e, gpointer data) {
     (void)(data);
     (void)(widget);
 
-    if(current_toy != NULL) current_toy->key_hit(e);
+    if(the_toy != NULL) the_toy->key_hit(e);
 
     return FALSE;
 }
@@ -522,151 +494,163 @@ static gint size_allocate_event(GtkWidget* widget, GtkAllocation *allocation, gp
 
     Geom::Rect alloc_size(Geom::Interval(allocation->x, allocation->x+ allocation->width),
 			  Geom::Interval(allocation->y, allocation->y+allocation->height));
-    if(current_toy != NULL) current_toy->resize_canvas(alloc_size);
+    if(the_toy != NULL) the_toy->resize_canvas(alloc_size);
 
     return FALSE;
 }
 
-GtkItemFactoryEntry menu_items[] = {
-    { (gchar*)"/_File",             NULL,           NULL,           0,  (gchar*)"<Branch>", 0                    },
-    { (gchar*)"/File/_Open Handles",(gchar*)"<CTRL>O",      open,           0,  (gchar*)"<StockItem>", GTK_STOCK_OPEN },
-    { (gchar*)"/File/_Save Handles",(gchar*)"<CTRL>S",      save,           0,  (gchar*)"<StockItem>", GTK_STOCK_SAVE_AS },
-    { (gchar*)"/File/sep",          NULL,           NULL,           0,  (gchar*)"<Separator>", 0                 },
-    { (gchar*)"/File/Save SVG or PDF", NULL,           save_cairo,     0,  (gchar*)"<StockItem>", GTK_STOCK_SAVE },
-    { (gchar*)"/File/sep",          NULL,           NULL,           0,  (gchar*)"<Separator>" , 0                },
-    { (gchar*)"/File/_Show Timings",  NULL,         toggle_show_timings,  0,  (gchar*)"<CheckItem>", 0 },
-    { (gchar*)"/File/_Quit",        (gchar*)"<CTRL>Q",      gtk_main_quit,  0,  (gchar*)"<StockItem>", GTK_STOCK_QUIT },
-    { (gchar*)"/_Help",             NULL,           NULL,           0,  (gchar*)"<LastBranch>", 0                },
-    { (gchar*)"/Help/About",        NULL,           make_about,     0,  (gchar*)"<StockItem>", GTK_STOCK_ABOUT}
+
+const char *the_builder_xml = R"xml(
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <menu id="menu">
+    <submenu>
+      <attribute name="label">File</attribute>
+      <section>
+        <item>
+          <attribute name="label">Open Handles...</attribute>
+          <attribute name="action">app.open-handles</attribute>
+        </item>
+        <item>
+          <attribute name="label">Save Handles...</attribute>
+          <attribute name="action">app.save-handles</attribute>
+        </item>
+      </section>
+      <section>
+        <item>
+          <attribute name="label">Save as SVG of PDF...</attribute>
+          <attribute name="action">app.save-image</attribute>
+        </item>
+      </section>
+      <section>
+        <item>
+          <attribute name="label">Show Timings</attribute>
+          <attribute name="action">app.show-timings</attribute>
+        </item>
+        <item>
+          <attribute name="label">Quit</attribute>
+          <attribute name="action">app.quit</attribute>
+        </item>
+      </section>
+    </submenu>
+    <submenu>
+      <attribute name="label">Help</attribute>
+      <item>
+        <attribute name="label">About...</attribute>
+        <attribute name="action">app.about</attribute>
+      </item>
+    </submenu>
+  </menu>
+</interface>
+)xml";
+
+static GActionEntry the_actions[] =
+{
+    {"open-handles", open_handles, nullptr, nullptr, nullptr},
+    {"save-handles", save_handles, nullptr, nullptr, nullptr},
+    {"save-image", save_cairo, nullptr, nullptr, nullptr},
+    {"show-timings", toggle_action, nullptr, "false", set_show_timings},
+    {"quit", quit, nullptr, nullptr, nullptr},
+    {"about", show_about_dialog, nullptr, nullptr, nullptr},
 };
-gint nmenu_items = 9;
+
+static GOptionEntry const the_options[] = {
+    {"handles", 'h', G_OPTION_FLAG_NONE, G_OPTION_ARG_FILENAME, &arg_handles_filename,
+     "Load handle positions from given file", "FILE"},
+    {"spool", 'm', G_OPTION_FLAG_NONE, G_OPTION_ARG_FILENAME, &arg_spool_filename,
+     "Record all interaction to the given file", "FILE"},
+    {"screenshot", 's', G_OPTION_FLAG_NONE, G_OPTION_ARG_FILENAME, &arg_screenshot_filename,
+     "Take screenshot and exit", nullptr},
+    {G_OPTION_REMAINING, 0, G_OPTION_FLAG_NONE, G_OPTION_ARG_FILENAME_ARRAY, &arg_extra_files,
+     "Additional data files", "FILES..."},
+    {nullptr, 0, G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, nullptr, nullptr, nullptr},
+};
+
+static void activate(GApplication *app, gpointer);
+static void startup(GApplication *app, gpointer);
 
 void init(int argc, char **argv, Toy* t, int width, int height) {
-    current_toy = t;
-    gtk_init (&argc, &argv);
+    the_toy = t;
+    the_requested_width = width;
+    the_requested_height = height;
 
-    gdk_rgb_init();
+    std::string app_name = "org.inkscape.lib2geom.toy.";
+    char const *dir_pos = strrchr(argv[0], G_DIR_SEPARATOR);
+    std::string argv_name = dir_pos ? dir_pos + 1 : argv[0];
 
-    int c;
-    //int digit_optind = 0;
+    // Erase extension for Windows
+    size_t dot_pos = argv_name.rfind('.');
+    if (dot_pos != std::string::npos) {
+        argv_name.erase(dot_pos);
+    }
+    the_toy->name = argv_name;
+    app_name += argv_name;
 
-    int screenshot_only_type = 0;
-    char *screenshot_output_name = 0;
-    t->name = typeid(*t).name();
+    GtkApplication* app = gtk_application_new(app_name.c_str(), G_APPLICATION_FLAGS_NONE);
+    g_application_add_main_option_entries(G_APPLICATION(app), the_options);
+    g_action_map_add_action_entries(G_ACTION_MAP(app), the_actions, G_N_ELEMENTS(the_actions), nullptr);
+    g_signal_connect(G_OBJECT(app), "startup", G_CALLBACK(startup), nullptr);
+    g_signal_connect(G_OBJECT(app), "activate", G_CALLBACK(activate), nullptr);
 
-    while (1)
-    {
-        //int this_option_optind = optind ? optind : 1;
-        int option_index = 0;
+    g_application_run(G_APPLICATION(app), argc, argv);
+    g_object_unref(app);
+}
 
-        c = getopt_long (argc, argv, "hs:m:d:012",
-                         NULL, &option_index);
-        if (c == -1)
-            break;
+static void startup(GApplication *app, gpointer) {
+    GtkBuilder *builder = gtk_builder_new_from_string(the_builder_xml, -1);
+    GMenuModel *menu = G_MENU_MODEL(gtk_builder_get_object(builder, "menu"));
+    gtk_application_set_menubar(GTK_APPLICATION(app), menu);
+    g_object_unref(builder);
+}
 
-        switch (c)
-        {
-            case 'h':
-                t->to_load_file = fopen(argv[2], "r");
-                break;
-
-            case 's':
-                screenshot_only_type = 1;
-                screenshot_output_name = strdup(optarg);
-                break;
-
-            case 'm':
-                current_toy->spool_file = fopen(strdup(optarg), "w");
-                break;
-
-            case 'c':
-                printf ("option c with value `%s'\n", optarg);
-                break;
-
-            case 'd':
-                printf ("option d with value `%s'\n", optarg);
-                break;
-
-            case '?':
-                break;
-
-            default:
-                printf ("?? getopt returned character code 0%o ??\n", c);
-        }
+static void activate(GApplication *app, gpointer) {
+    if (arg_spool_filename) {
+        the_toy->spool_file = fopen(arg_spool_filename, "w");
     }
 
-    for(int i = 1; i <= argc-optind; i++)
-        argv[i] = argv[i-1+optind];
-    argc -= optind-1;
+    int const emulated_argc = arg_extra_files ? g_strv_length(arg_extra_files) + 1 : 1;
+    gchar const **emulated_argv = new gchar const*[emulated_argc];
+    emulated_argv[0] = the_toy->name.c_str();
+    for (int i = 1; i < emulated_argc; ++i) {
+        emulated_argv[i] = arg_extra_files[i-1];
+    }
+    the_toy->first_time(emulated_argc, const_cast<char**>(emulated_argv));
+    delete[] emulated_argv;
 
-    t->first_time(argc, argv);
+    if (arg_handles_filename) {
+        FILE *handles_file = fopen(arg_handles_filename, "r");
+        the_toy->load(handles_file);
+        fclose(handles_file);
+    }
 
-    if(t->to_load_file)
-        t->load(t->to_load_file);
-
-    if(screenshot_only_type > 0) {
-        if(screenshot_output_name)
-            save_cairo_backend(screenshot_output_name);
+    if (arg_screenshot_filename) {
+        write_image(arg_screenshot_filename);
+        g_application_quit(app);
         return;
     }
 
-    window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
+    the_window = GTK_APPLICATION_WINDOW(gtk_application_window_new(GTK_APPLICATION(g_application_get_default())));
+    gtk_window_set_title(GTK_WINDOW(the_window), the_toy->name.c_str());
+    g_signal_connect(G_OBJECT(the_window), "delete_event", G_CALLBACK(delete_event), NULL);
 
-//Find last slash - remainder is title
-    char* title = 0;
-    for(char* ch = argv[0]; *ch != '\0'; ch++)
-        if(*ch == '/') title = ch+1;
+    the_canvas = gtk_drawing_area_new();
+    gtk_widget_add_events(the_canvas, (GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_KEY_PRESS_MASK | GDK_POINTER_MOTION_MASK | GDK_SCROLL_MASK));
+    g_signal_connect(G_OBJECT(the_canvas), "draw", G_CALLBACK(draw_callback), 0);
+    g_signal_connect(G_OBJECT(the_canvas), "scroll-event", G_CALLBACK(scroll_event), 0);
+    g_signal_connect(G_OBJECT(the_canvas), "button-press-event", G_CALLBACK(mouse_event), 0);
+    g_signal_connect(G_OBJECT(the_canvas), "button-release-event", G_CALLBACK(mouse_release_event), 0);
+    g_signal_connect(G_OBJECT(the_canvas), "motion-notify-event", G_CALLBACK(mouse_motion_event), 0);
+    g_signal_connect(G_OBJECT(the_canvas), "key-press-event", G_CALLBACK(key_press_event), 0);
+    g_signal_connect(G_OBJECT(the_canvas), "size-allocate", G_CALLBACK(size_allocate_event), 0);
 
-    gtk_window_set_title(GTK_WINDOW(window), title);
-
-//Creates the menu from the menu data above
-    GtkAccelGroup* accel_group = gtk_accel_group_new();
-    GtkItemFactory* item_factory = gtk_item_factory_new(GTK_TYPE_MENU_BAR, "<main>", accel_group);
-    gtk_item_factory_create_items(item_factory, nmenu_items, menu_items, NULL);
-    gtk_window_add_accel_group(window, accel_group);
-    GtkWidget* menu = gtk_item_factory_get_widget(item_factory, "<main>");
-
-//gtk_window_set_policy(GTK_WINDOW(window), TRUE, TRUE, TRUE);
-
-    gtk_signal_connect(GTK_OBJECT(window), "delete_event", GTK_SIGNAL_FUNC(delete_event), NULL);
-
-    gtk_widget_push_visual(gdk_rgb_get_visual());
-    gtk_widget_push_colormap(gdk_rgb_get_cmap());
-    canvas = gtk_drawing_area_new();
-
-    gtk_widget_add_events(canvas, (GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_KEY_PRESS_MASK | GDK_POINTER_MOTION_MASK | GDK_SCROLL_MASK));
-
-    gtk_signal_connect(GTK_OBJECT (canvas), "expose_event", GTK_SIGNAL_FUNC(expose_event), 0);
-    gtk_signal_connect(GTK_OBJECT(canvas), "scroll_event", GTK_SIGNAL_FUNC(scroll_event), 0);
-    gtk_signal_connect(GTK_OBJECT(canvas), "button_press_event", GTK_SIGNAL_FUNC(mouse_event), 0);
-    gtk_signal_connect(GTK_OBJECT (canvas), "button_release_event", GTK_SIGNAL_FUNC(mouse_release_event), 0);
-    gtk_signal_connect(GTK_OBJECT (canvas), "motion_notify_event", GTK_SIGNAL_FUNC(mouse_motion_event), 0);
-    gtk_signal_connect(GTK_OBJECT(canvas), "key_press_event", GTK_SIGNAL_FUNC(key_press_event), 0);
-    gtk_signal_connect(GTK_OBJECT(canvas), "size-allocate", GTK_SIGNAL_FUNC(size_allocate_event), 0);
-
-    gtk_widget_pop_colormap();
-    gtk_widget_pop_visual();
-
-    GtkWidget* box = gtk_vbox_new (FALSE, 0);
-    gtk_container_add(GTK_CONTAINER(window), box);
-
-    gtk_box_pack_start (GTK_BOX (box), menu, FALSE, FALSE, 0);
-
-    GtkWidget* pain = gtk_vpaned_new();
-    gtk_box_pack_start(GTK_BOX(box), pain, TRUE, TRUE, 0);
-    gtk_paned_add1(GTK_PANED(pain), canvas);
-
-    gtk_window_set_default_size(GTK_WINDOW(window), width, height);
-
-    gtk_widget_show_all(GTK_WIDGET(window));
+    gtk_container_add(GTK_CONTAINER(the_window), the_canvas);
+    gtk_window_set_default_size(GTK_WINDOW(the_window), the_requested_width, the_requested_height);
+    gtk_widget_show_all(GTK_WIDGET(the_window));
 
     // Make sure the canvas can receive key press events.
-    GTK_WIDGET_SET_FLAGS(canvas, GTK_CAN_FOCUS);
-    assert(GTK_WIDGET_CAN_FOCUS(canvas));
-    gtk_widget_grab_focus(canvas);
-    assert(gtk_widget_is_focus(canvas));
-
-    gtk_main();
+    gtk_widget_set_can_focus(the_canvas, TRUE);
+    gtk_widget_grab_focus(the_canvas);
+    assert(gtk_widget_is_focus(the_canvas));
 }
 
 
